@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useEffect } from 'react';
+import { forwardRef, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import type { ProjectOption } from '../../stores/SetupStore';
 import {
@@ -23,35 +23,26 @@ import {
   compareLabelFn,
   CustomSelectorInput,
   PlusIcon,
+  RepoIcon,
+  ArrowCircleRightIcon,
 } from '@finos/legend-art';
-import { generateSetupRoute } from '../../stores/LegendStudioRouter';
+import {
+  generateSetupRoute,
+  generateViewProjectRoute,
+} from '../../stores/LegendStudioRouter';
 import { flowResult } from 'mobx';
 import { useSetupStore } from './SetupStoreProvider';
 import { useApplicationStore } from '@finos/legend-application';
 import type { LegendStudioConfig } from '../../application/LegendStudioConfig';
 
-const formatOptionLabel = (option: ProjectOption): React.ReactNode => (
-  <div className="setup__project__label">
-    <div
-      className={clsx([
-        `setup__project__label__tag setup__project__label__tag--${option.tag.toLowerCase()}`,
-        { 'setup__project__label__tag--disabled': option.disabled },
-      ])}
-    >
-      {option.tag}
-    </div>
-    <div className="setup__project__label__name">{option.label}</div>
-  </div>
-);
-
 export const ProjectSelector = observer(
-  (
-    props: {
+  forwardRef<
+    SelectComponent,
+    {
       onChange: (focusNext: boolean) => void;
       create: () => void;
-    },
-    ref: React.Ref<SelectComponent>,
-  ) => {
+    }
+  >(function ProjectSelector(props, ref) {
     const { onChange, create } = props;
     const setupStore = useSetupStore();
     const applicationStore = useApplicationStore<LegendStudioConfig>();
@@ -60,6 +51,49 @@ export const ProjectSelector = observer(
     const selectedOption =
       options.find((option) => option.value === currentProjectId) ?? null;
     const isLoadingOptions = setupStore.loadProjectsState.isInProgress;
+
+    const formatOptionLabel = (option: ProjectOption): React.ReactNode => {
+      const viewProject = (): void =>
+        applicationStore.navigator.openNewWindow(
+          applicationStore.navigator.generateLocation(
+            generateViewProjectRoute(
+              applicationStore.config.currentSDLCServerOption,
+              option.value,
+            ),
+          ),
+        );
+
+      return (
+        <div className="setup__project-option">
+          <div className="setup__project-option__label">
+            <div
+              className={clsx([
+                `setup__project-option__label__tag setup__project-option__label__tag--${option.tag.toLowerCase()}`,
+                {
+                  'setup__project-option__label__tag--disabled':
+                    option.disabled,
+                },
+              ])}
+            >
+              {option.tag}
+            </div>
+            <div className="setup__project-option__label__name">
+              {option.label}
+            </div>
+          </div>
+          <button
+            className="setup__project-option__visit-btn"
+            tabIndex={-1}
+            onClick={viewProject}
+          >
+            <div className="setup__project-option__visit-btn__label">view</div>
+            <div className="setup__project-option__visit-btn__icon">
+              <ArrowCircleRightIcon />
+            </div>
+          </button>
+        </div>
+      );
+    };
 
     const onSelectionChange = (val: ProjectOption | null): void => {
       if (
@@ -70,13 +104,13 @@ export const ProjectSelector = observer(
         setupStore.setCurrentProjectId(val?.value);
         if (val && !setupStore.currentProjectWorkspaces) {
           flowResult(setupStore.fetchWorkspaces(val.value)).catch(
-            applicationStore.alertIllegalUnhandledError,
+            applicationStore.alertUnhandledError,
           );
         }
         applicationStore.navigator.goTo(
           generateSetupRoute(
             applicationStore.config.currentSDLCServerOption,
-            val?.value ?? '',
+            val?.value,
           ),
         );
       }
@@ -95,13 +129,7 @@ export const ProjectSelector = observer(
         }
         onChange(false);
       }
-    }, [
-      applicationStore,
-      setupStore.projects,
-      setupStore.currentProject,
-      currentProjectId,
-      onChange,
-    ]);
+    }, [applicationStore, setupStore.projects, setupStore.currentProject, currentProjectId, onChange]);
 
     const projectSelectorPlaceholder = isLoadingOptions
       ? 'Loading projects'
@@ -113,18 +141,9 @@ export const ProjectSelector = observer(
 
     return (
       <div className="setup-selector">
-        <button
-          className="setup-selector__action btn--dark"
-          onClick={create}
-          tabIndex={-1}
-          disabled={
-            applicationStore.config.options
-              .TEMPORARY__disableSDLCProjectCreation
-          }
-          title={'Create a Project'}
-        >
-          <PlusIcon />
-        </button>
+        <div className="setup-selector__icon-box">
+          <RepoIcon className="setup-selector__icon" />
+        </div>
         <CustomSelectorInput
           className="setup-selector__input"
           ref={ref}
@@ -141,9 +160,21 @@ export const ProjectSelector = observer(
           isOptionDisabled={(option: { disabled: boolean }): boolean =>
             option.disabled
           }
+          // menuIsOpen={true}
         />
+        <button
+          className="setup-selector__action btn--dark"
+          onClick={create}
+          tabIndex={-1}
+          disabled={
+            applicationStore.config.options
+              .TEMPORARY__disableSDLCProjectCreation
+          }
+          title={'Create a Project'}
+        >
+          <PlusIcon />
+        </button>
       </div>
     );
-  },
-  { forwardRef: true },
+  }),
 );

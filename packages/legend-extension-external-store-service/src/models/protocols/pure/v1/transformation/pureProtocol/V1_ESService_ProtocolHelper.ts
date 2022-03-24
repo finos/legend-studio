@@ -34,11 +34,11 @@ import {
   object,
   raw,
 } from 'serializr';
-import { V1_ServiceStore } from '../../model/packageableElements/store/serviceStore/model/V1_ServiceStore';
-import { V1_ServiceStoreService } from '../../model/packageableElements/store/serviceStore/model/V1_ServiceStoreService';
-import { V1_ServiceGroup } from '../../model/packageableElements/store/serviceStore/model/V1_ServiceGroup';
-import type { V1_ServiceStoreElement } from '../../model/packageableElements/store/serviceStore/model/V1_ServiceStoreElement';
-import { V1_ServiceParameter } from '../../model/packageableElements/store/serviceStore/model/V1_ServiceParameter';
+import { V1_ServiceStore } from '../../model/packageableElements/store/serviceStore/model/V1_ESService_ServiceStore';
+import { V1_ServiceStoreService } from '../../model/packageableElements/store/serviceStore/model/V1_ESService_ServiceStoreService';
+import { V1_ServiceGroup } from '../../model/packageableElements/store/serviceStore/model/V1_ESService_ServiceGroup';
+import type { V1_ServiceStoreElement } from '../../model/packageableElements/store/serviceStore/model/V1_ESService_ServiceStoreElement';
+import { V1_ServiceParameter } from '../../model/packageableElements/store/serviceStore/model/V1_ESService_ServiceParameter';
 import {
   type V1_TypeReference,
   V1_BooleanTypeReference,
@@ -46,24 +46,28 @@ import {
   V1_FloatTypeReference,
   V1_IntegerTypeReference,
   V1_StringTypeReference,
-} from '../../model/packageableElements/store/serviceStore/model/V1_TypeReference';
-import { V1_SerializationFormat } from '../../model/packageableElements/store/serviceStore/model/V1_SerializationFormat';
-import { V1_ServiceStoreConnection } from '../../model/packageableElements/store/serviceStore/connection/V1_ServicestoreConnection';
-import { V1_RootServiceStoreClassMapping } from '../../model/packageableElements/store/serviceStore/mapping/V1_RootServiceStoreClassMapping';
-import { V1_LocalMappingProperty } from '../../model/packageableElements/store/serviceStore/mapping/V1_LocalMappingProperty';
-import { V1_ServiceMapping } from '../../model/packageableElements/store/serviceStore/mapping/V1_ServiceMapping';
-import { V1_ServiceStoreServicePtr } from '../../model/packageableElements/store/serviceStore/model/V1_ServiceStoreServicePtr';
-import { V1_ServiceGroupPtr } from '../../model/packageableElements/store/serviceStore/model/V1_ServiceGroupPtr';
-import type { V1_ServiceParameterMapping } from '../../model/packageableElements/store/serviceStore/mapping/V1_ServiceParameterMapping';
+} from '../../model/packageableElements/store/serviceStore/model/V1_ESService_TypeReference';
+import { V1_SerializationFormat } from '../../model/packageableElements/store/serviceStore/model/V1_ESService_SerializationFormat';
+import { V1_ServiceStoreConnection } from '../../model/packageableElements/store/serviceStore/connection/V1_ESService_ServicestoreConnection';
+import { V1_RootServiceStoreClassMapping } from '../../model/packageableElements/store/serviceStore/mapping/V1_ESService_RootServiceStoreClassMapping';
+import { V1_LocalMappingProperty } from '../../model/packageableElements/store/serviceStore/mapping/V1_ESService_LocalMappingProperty';
+import { V1_ServiceMapping } from '../../model/packageableElements/store/serviceStore/mapping/V1_ESService_ServiceMapping';
+import { V1_ServiceStoreServicePtr } from '../../model/packageableElements/store/serviceStore/model/V1_ESService_ServiceStoreServicePtr';
+import { V1_ServiceGroupPtr } from '../../model/packageableElements/store/serviceStore/model/V1_ESService_ServiceGroupPtr';
+import type { V1_ServiceParameterMapping } from '../../model/packageableElements/store/serviceStore/mapping/V1_ESService_ServiceParameterMapping';
 import {
   type PureProtocolProcessorPlugin,
   V1_Multiplicity,
   V1_rawLambdaModelSchema,
 } from '@finos/legend-graph';
-import { V1_ParameterIndexedParameterMapping } from '../../model/packageableElements/store/serviceStore/mapping/V1_ParameterIndexedParameterMapping';
-import { V1_PropertyIndexedParameterMapping } from '../../model/packageableElements/store/serviceStore/mapping/V1_PropertyIndexedParameterMapping';
-import type { V1_SecurityScheme } from '../../model/packageableElements/store/serviceStore/model/V1_SecurityScheme';
+import { V1_ParameterIndexedParameterMapping } from '../../model/packageableElements/store/serviceStore/mapping/V1_ESService_ParameterIndexedParameterMapping';
+import { V1_PropertyIndexedParameterMapping } from '../../model/packageableElements/store/serviceStore/mapping/V1_ESService_PropertyIndexedParameterMapping';
+import type { V1_SecurityScheme } from '../../model/packageableElements/store/serviceStore/model/V1_ESService_SecurityScheme';
 import type { ExternalStoreService_PureProtocolPlugin_Extension } from '../../../ExternalStoreService_PureProtocolPlugin_Extension';
+import { V1_ServiceRequestBuildInfo } from '../../model/packageableElements/store/serviceStore/mapping/V1_ESService_ServiceRequestBuildInfo';
+import { V1_ServiceRequestParametersBuildInfo } from '../../model/packageableElements/store/serviceStore/mapping/V1_ESService_ServiceRequestParametersBuildInfo';
+import { V1_ServiceRequestParameterBuildInfo } from '../../model/packageableElements/store/serviceStore/mapping/V1_ESService_ServiceRequestParameterBuildInfo';
+import { V1_ServiceRequestBodyBuildInfo } from '../../model/packageableElements/store/serviceStore/mapping/V1_ESService_ServiceRequestBodyBuildInfo';
 
 export const V1_SERVICE_STORE_ELEMENT_PROTOCOL_TYPE = 'serviceStore';
 export const V1_SERVICE_STORE_MAPPING_PROTOCOL_TYPE = 'serviceStore';
@@ -184,6 +188,7 @@ const V1_serviceParameterModelSchema = createModelSchema(V1_ServiceParameter, {
   enumeration: optional(primitive()),
   location: primitive(),
   name: primitive(),
+  required: optional(primitive()),
   serializationFormat: optional(
     usingModelSchema(V1_serializationFormatModelSchema),
   ),
@@ -361,6 +366,42 @@ const V1_propertyIndexedParameterMappingModelSchema = createModelSchema(
   },
 );
 
+const V1_serializeServiceRequestBodyBuildInfo = createModelSchema(
+  V1_ServiceRequestBodyBuildInfo,
+  {
+    transform: usingModelSchema(V1_rawLambdaModelSchema),
+  },
+);
+
+const V1_serializeServiceRequestParameterBuildInfo = createModelSchema(
+  V1_ServiceRequestParameterBuildInfo,
+  {
+    serviceParameter: primitive(),
+    transform: usingModelSchema(V1_rawLambdaModelSchema),
+  },
+);
+
+const V1_serializeServiceRequestParametersBuildInfo = createModelSchema(
+  V1_ServiceRequestParametersBuildInfo,
+  {
+    parameterBuildInfoList: list(
+      usingModelSchema(V1_serializeServiceRequestParameterBuildInfo),
+    ),
+  },
+);
+
+const V1_serializeServiceRequestBuildInfo = createModelSchema(
+  V1_ServiceRequestBuildInfo,
+  {
+    requestBodyBuildInfo: optional(
+      usingModelSchema(V1_serializeServiceRequestBodyBuildInfo),
+    ),
+    requestParametersBuildInfo: optional(
+      usingModelSchema(V1_serializeServiceRequestParametersBuildInfo),
+    ),
+  },
+);
+
 const V1_serializeServiceParameterMapping = (
   protocol: V1_ServiceParameterMapping,
 ): PlainObject<V1_ServiceParameterMapping> => {
@@ -392,13 +433,16 @@ const V1_deserializeServiceParameterMapping = (
 };
 
 const V1_serviceMappingModelSchema = createModelSchema(V1_ServiceMapping, {
-  parameterMappings: list(
-    custom(
-      (val) => V1_serializeServiceParameterMapping(val),
-      (val) => V1_deserializeServiceParameterMapping(val),
+  parameterMappings: optional(
+    list(
+      custom(
+        (val) => V1_serializeServiceParameterMapping(val),
+        (val) => V1_deserializeServiceParameterMapping(val),
+      ),
     ),
   ),
   pathOffset: raw(),
+  requestBuildInfo: usingModelSchema(V1_serializeServiceRequestBuildInfo),
   service: usingModelSchema(V1_servicePtrModelSchema),
 });
 

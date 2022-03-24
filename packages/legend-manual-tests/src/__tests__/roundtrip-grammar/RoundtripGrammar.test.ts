@@ -44,17 +44,24 @@ jest.mock('@finos/legend-shared', () => ({
 import { resolve, basename } from 'path';
 import fs from 'fs';
 import axios, { type AxiosResponse } from 'axios';
-import type { PlainObject } from '@finos/legend-shared';
+import {
+  type PlainObject,
+  WebConsole,
+  Log,
+  LogEvent,
+} from '@finos/legend-shared';
 import {
   type V1_PackageableElement,
   TEST__GraphPluginManager,
   TEST__buildGraphWithEntities,
   TEST__checkGraphHashUnchanged,
   TEST__getTestGraphManagerState,
+  DSLExternalFormat_GraphPreset,
+  GRAPH_MANAGER_LOG_EVENT,
+  V1_ENGINE_LOG_EVENT,
 } from '@finos/legend-graph';
 import { DSLText_GraphPreset } from '@finos/legend-extension-dsl-text';
 import { DSLDiagram_GraphPreset } from '@finos/legend-extension-dsl-diagram';
-import { DSLSerializer_GraphPreset } from '@finos/legend-extension-dsl-serializer';
 import { DSLDataSpace_GraphPreset } from '@finos/legend-extension-dsl-data-space';
 import { ESService_GraphPreset } from '@finos/legend-extension-external-store-service';
 
@@ -80,6 +87,9 @@ const SKIP = Symbol('SKIP GRAMMAR ROUNDTRIP TEST');
 const EXCLUSIONS: { [key: string]: ROUNTRIP_TEST_PHASES[] | typeof SKIP } = {
   // post processor mismatch between engine (undefined) vs studio ([])
   'relational-connection.pure': [ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP],
+  'relational-connection-databricks.pure': [
+    ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP,
+  ],
 
   // TODO: remove these when we can properly handle relational mapping `mainTable` and `primaryKey` in transformers.
   // See https://github.com/finos/legend-studio/issues/295
@@ -96,9 +106,7 @@ const EXCLUSIONS: { [key: string]: ROUNTRIP_TEST_PHASES[] | typeof SKIP } = {
   'relational-property-mapping-local-property.pure': [
     ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP,
   ],
-
-  // TODO: remove this when https://github.com/finos/legend-engine/pull/519 is merged.
-  'ESService-path-offset.pure': SKIP,
+  'merge-operation-mapping.pure': [ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP],
 
   // TODO: remove these when the issue of source ID in relational property mapping is resolved.
   // Engine is removing these sources when the owner is the parent class mapping and studio is not
@@ -113,6 +121,9 @@ const EXCLUSIONS: { [key: string]: ROUNTRIP_TEST_PHASES[] | typeof SKIP } = {
   'mapping-include-enum-mapping.pure': [
     ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP,
   ],
+  // Used to test graph building performance. Test passes but will SKIP as to not increase build time
+  // Current time to complete test is 6576 ms
+  'profiling-model-cdm.pure': SKIP,
 };
 
 type GrammarRoundtripOptions = {
@@ -122,19 +133,24 @@ type GrammarRoundtripOptions = {
 const logPhase = (
   phase: ROUNTRIP_TEST_PHASES,
   excludeConfig: ROUNTRIP_TEST_PHASES[] | typeof SKIP,
+  log: Log,
   debug?: boolean,
 ): void => {
   if (debug) {
     const skip = excludeConfig === SKIP || excludeConfig.includes(phase);
-    // eslint-disable-next-line no-console
-    console.log(`${skip ? 'Skipping' : 'Running'} phase '${phase}'`);
+    log.info(
+      LogEvent.create(`${skip ? 'Skipping' : 'Running'} phase '${phase}'`),
+    );
   }
 };
 
-const logSuccess = (phase: ROUNTRIP_TEST_PHASES, debug?: boolean): void => {
+const logSuccess = (
+  phase: ROUNTRIP_TEST_PHASES,
+  log: Log,
+  debug?: boolean,
+): void => {
   if (debug) {
-    // eslint-disable-next-line no-console
-    console.log(`Success running phase '${phase}' `);
+    log.info(LogEvent.create(`Success running phase '${phase}' `));
   }
 };
 
@@ -150,19 +166,22 @@ const checkGrammarRoundtrip = async (
   options?: GrammarRoundtripOptions,
 ): Promise<void> => {
   const pluginManager = new TEST__GraphPluginManager();
-  pluginManager.usePresets([
-    new DSLText_GraphPreset(),
-    new DSLDiagram_GraphPreset(),
-    new DSLSerializer_GraphPreset(),
-    new DSLDataSpace_GraphPreset(),
-    new ESService_GraphPreset(),
-  ]);
+  pluginManager
+    .usePresets([
+      new DSLText_GraphPreset(),
+      new DSLDiagram_GraphPreset(),
+      new DSLExternalFormat_GraphPreset(),
+      new DSLDataSpace_GraphPreset(),
+      new ESService_GraphPreset(),
+    ])
+    .usePlugins([new WebConsole()]);
   pluginManager.install();
-  const graphManagerState = TEST__getTestGraphManagerState(pluginManager);
+  const log = new Log();
+  log.registerPlugins(pluginManager.getLoggerPlugins());
+  const graphManagerState = TEST__getTestGraphManagerState(pluginManager, log);
 
   if (options?.debug) {
-    // eslint-disable-next-line no-console
-    console.log(`Roundtrip test case: ${testCase}`);
+    log.info(LogEvent.create(`Roundtrip test case: ${testCase}`));
   }
   const excludes = Object.keys(EXCLUSIONS)
     .filter((key) => EXCLUSIONS[key] !== SKIP)
@@ -172,8 +191,9 @@ const checkGrammarRoundtrip = async (
 
   // Phase 1: protocol roundtrip check
   let phase = ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP;
-  logPhase(phase, excludes, options?.debug);
+  logPhase(phase, excludes, log, options?.debug);
   const grammarText = fs.readFileSync(filePath, { encoding: 'utf-8' });
+  let startTime = Date.now();
   const transformGrammarToJsonResult = await axios.post<
     unknown,
     AxiosResponse<{ modelDataContext: { elements: object[] } }>
@@ -184,15 +204,44 @@ const checkGrammarRoundtrip = async (
     },
     {},
   );
+  if (options?.debug) {
+    log.info(
+      LogEvent.create(V1_ENGINE_LOG_EVENT.GRAMMAR_TO_JSON),
+      Date.now() - startTime,
+      'ms',
+    );
+  }
   const entities = graphManagerState.graphManager.pureProtocolToEntities(
     JSON.stringify(transformGrammarToJsonResult.data.modelDataContext),
   );
+  if (options?.debug) {
+    log.info(
+      LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_ENTITIES_FETCHED),
+      `[entities: ${entities.length}]`,
+    );
+  }
+  startTime = Date.now();
   await TEST__buildGraphWithEntities(graphManagerState, entities, {
     TEMPORARY__keepSectionIndex: true,
   });
+  if (options?.debug) {
+    log.info(
+      LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_INITIALIZED),
+      Date.now() - startTime,
+      'ms',
+    );
+  }
+  startTime = Date.now();
   const transformedEntities = graphManagerState.graph.allOwnElements.map(
     (element) => graphManagerState.graphManager.elementToEntity(element),
   );
+  if (options?.debug) {
+    log.info(
+      LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_PROTOCOL_SERIALIZED),
+      Date.now() - startTime,
+      'ms',
+    );
+  }
 
   if (!excludes.includes(phase)) {
     // ensure that transformed entities have all fields ordered alphabetically
@@ -210,22 +259,22 @@ const checkGrammarRoundtrip = async (
             elementProtocol._type !== 'sectionIndex',
         ),
     );
-    logSuccess(phase, options?.debug);
+    logSuccess(phase, log, options?.debug);
   }
 
   // Phase 2: hash and local changes check
   phase = ROUNTRIP_TEST_PHASES.HASH;
-  logPhase(phase, excludes, options?.debug);
+  logPhase(phase, excludes, log, options?.debug);
   // check hash computation
 
   if (!excludes.includes(phase)) {
     await TEST__checkGraphHashUnchanged(graphManagerState, entities);
-    logSuccess(phase, options?.debug);
+    logSuccess(phase, log, options?.debug);
   }
 
   // Phase 3: grammar roundtrip check
   phase = ROUNTRIP_TEST_PHASES.GRAMMAR_ROUNDTRIP;
-  logPhase(phase, excludes, options?.debug);
+  logPhase(phase, excludes, log, options?.debug);
   // compose grammar and compare that with original grammar text
   // NOTE: this is optional test as `grammar text <-> protocol` test should be covered
   // in engine already.
@@ -240,6 +289,7 @@ const checkGrammarRoundtrip = async (
       .concat(sectionIndices)
       .map((entity) => entity.content),
   };
+  startTime = Date.now();
   const transformJsonToGrammarResult = await axios.post<
     unknown,
     AxiosResponse<{ code: string }>
@@ -251,23 +301,38 @@ const checkGrammarRoundtrip = async (
     },
     {},
   );
+  if (options?.debug) {
+    log.info(
+      LogEvent.create(V1_ENGINE_LOG_EVENT.JSON_TO_GRAMMAR),
+      Date.now() - startTime,
+      'ms',
+    );
+  }
   if (!excludes.includes(phase)) {
     expect(transformJsonToGrammarResult.data.code).toEqual(grammarText);
-    logSuccess(phase, options?.debug);
+    logSuccess(phase, log, options?.debug);
   }
 
   // Phase 4: Compilation check using serialized protocol
   phase = ROUNTRIP_TEST_PHASES.COMPILATION;
-  logPhase(phase, excludes, options?.debug);
+  logPhase(phase, excludes, log, options?.debug);
   if (!excludes.includes(phase)) {
     // Test successful compilation with graph from serialization
+    startTime = Date.now();
     const compileResult = await axios.post<
       unknown,
       AxiosResponse<{ message: string }>
     >(`${ENGINE_SERVER_URL}/pure/v1/compilation/compile`, modelDataContext);
+    if (options?.debug) {
+      log.info(
+        LogEvent.create(V1_ENGINE_LOG_EVENT.COMPILATION),
+        Date.now() - startTime,
+        'ms',
+      );
+    }
     expect(compileResult.status).toBe(200);
     expect(compileResult.data.message).toEqual('OK');
-    logSuccess(phase, options?.debug);
+    logSuccess(phase, log, options?.debug);
   }
 };
 

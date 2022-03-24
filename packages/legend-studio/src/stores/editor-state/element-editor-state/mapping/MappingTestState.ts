@@ -208,7 +208,7 @@ export class MappingTestObjectInputDataState extends MappingTestInputDataState {
 
   get runtime(): Runtime {
     const engineConfig =
-      this.editorStore.graphManagerState.graphManager.TEMP__getEngineConfig();
+      this.editorStore.graphManagerState.graphManager.TEMPORARY__getEngineConfig();
     const runtime = new EngineRuntime();
     runtime.addMapping(
       PackageableElementExplicitReference.create(this.mapping),
@@ -241,7 +241,7 @@ export class MappingTestFlatDataInputDataState extends MappingTestInputDataState
 
   get runtime(): Runtime {
     const engineConfig =
-      this.editorStore.graphManagerState.graphManager.TEMP__getEngineConfig();
+      this.editorStore.graphManagerState.graphManager.TEMPORARY__getEngineConfig();
     const runtime = new EngineRuntime();
     runtime.addMapping(
       PackageableElementExplicitReference.create(this.mapping),
@@ -406,7 +406,7 @@ export class MappingTestState {
       this.test.query,
     );
     flowResult(queryState.updateLamba(this.test.query)).catch(
-      this.editorStore.applicationStore.alertIllegalUnhandledError,
+      this.editorStore.applicationStore.alertUnhandledError,
     );
     return queryState;
   }
@@ -571,7 +571,9 @@ export class MappingTestState {
           query,
           runtime,
           PureClientVersion.VX_X_X,
-          true,
+          {
+            useLosslessParse: true,
+          },
         )) as ExecutionResult;
       if (
         this.assertionState instanceof MappingTestExpectedOutputAssertionState
@@ -630,7 +632,9 @@ export class MappingTestState {
           this.test.query,
           runtime,
           PureClientVersion.VX_X_X,
-          true,
+          {
+            useLosslessParse: true,
+          },
         )) as ExecutionResult;
       this.testExecutionResultText = losslessStringify(
         extractExecutionResultValues(result),

@@ -17,7 +17,7 @@
 import { createContext, useContext } from 'react';
 import { useLocalObservable } from 'mobx-react-lite';
 import { ApplicationStore } from '../stores/ApplicationStore';
-import type { LegendApplicationConfig } from '../stores/ApplicationConfig';
+import type { LegendApplicationConfig } from '../stores/LegendApplicationConfig';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { useWebApplicationNavigator } from './WebApplicationNavigatorProvider';
 import type { LegendApplicationPluginManager } from '../application/LegendApplicationPluginManager';

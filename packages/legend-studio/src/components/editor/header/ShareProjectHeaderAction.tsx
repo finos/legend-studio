@@ -63,7 +63,7 @@ const ShareModal = observer(
         .then(() =>
           applicationStore.notifySuccess('Copied project link to clipboard'),
         )
-        .catch(applicationStore.alertIllegalUnhandledError)
+        .catch(applicationStore.alertUnhandledError)
         .finally(() => closeModal());
     };
     const renderOptions = versions.map((version) => ({
@@ -75,13 +75,7 @@ const ShareModal = observer(
     ): void => setSelectedVersion(val?.value);
 
     return (
-      <Dialog
-        onClose={closeModal}
-        open={open}
-        TransitionProps={{
-          appear: false, // disable transition
-        }}
-      >
+      <Dialog onClose={closeModal} open={open}>
         <div className="modal modal--dark modal--no-padding">
           <PanelLoadingIndicator isLoading={isDispatchingAction} />
           <div className="modal__body">

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback, forwardRef } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   type TreeNodeContainerProps,
@@ -45,7 +45,6 @@ import {
   type QueryBuilderFilterDropTarget,
   type QueryBuilderFilterTreeNodeData,
   type QueryBuilderFilterOperator,
-  QUERY_BUILDER_FILTER_GROUP_OPERATION,
   QUERY_BUILDER_FILTER_DND_TYPE,
   FilterConditionState,
   QueryBuilderFilterTreeConditionNodeData,
@@ -75,12 +74,13 @@ import {
   type QueryBuilderParameterDragSource,
   QUERY_BUILDER_PARAMETER_TREE_DND_TYPE,
 } from '../stores/QueryParametersState';
+import { QUERY_BUILDER_GROUP_OPERATION } from '../stores/QueryBuilderOperatorsHelper';
 
 const FilterConditionDragLayer: React.FC = () => {
   const { itemType, item, isDragging, currentPosition } = useDragLayer(
     (monitor) => ({
       itemType: monitor.getItemType() as QUERY_BUILDER_FILTER_DND_TYPE,
-      item: monitor.getItem() as QueryBuilderFilterConditionDragSource | null,
+      item: monitor.getItem<QueryBuilderFilterConditionDragSource | null>(),
       isDragging: monitor.isDragging(),
       initialOffset: monitor.getInitialSourceClientOffset(),
       currentPosition: monitor.getClientOffset(),
@@ -126,9 +126,9 @@ const QueryBuilderFilterGroupConditionEditor = observer(
     ): void => {
       event.stopPropagation(); // prevent triggering selecting the node
       node.setGroupOperation(
-        node.groupOperation === QUERY_BUILDER_FILTER_GROUP_OPERATION.AND
-          ? QUERY_BUILDER_FILTER_GROUP_OPERATION.OR
-          : QUERY_BUILDER_FILTER_GROUP_OPERATION.AND,
+        node.groupOperation === QUERY_BUILDER_GROUP_OPERATION.AND
+          ? QUERY_BUILDER_GROUP_OPERATION.OR
+          : QUERY_BUILDER_GROUP_OPERATION.AND,
       );
     };
     return (
@@ -141,9 +141,9 @@ const QueryBuilderFilterGroupConditionEditor = observer(
         <div
           className={clsx('query-builder-filter-tree__group-node', {
             'query-builder-filter-tree__group-node--and':
-              node.groupOperation === QUERY_BUILDER_FILTER_GROUP_OPERATION.AND,
+              node.groupOperation === QUERY_BUILDER_GROUP_OPERATION.AND,
             'query-builder-filter-tree__group-node--or':
-              node.groupOperation === QUERY_BUILDER_FILTER_GROUP_OPERATION.OR,
+              node.groupOperation === QUERY_BUILDER_GROUP_OPERATION.OR,
           })}
           title="Switch Operation"
           onClick={switchOperation}
@@ -299,13 +299,13 @@ const QueryBuilderFilterBlankConditionEditor = observer(
 );
 
 const QueryBuilderFilterConditionContextMenu = observer(
-  (
-    props: {
+  forwardRef<
+    HTMLDivElement,
+    {
       queryBuilderState: QueryBuilderState;
       node: QueryBuilderFilterTreeNodeData;
-    },
-    ref: React.Ref<HTMLDivElement>,
-  ) => {
+    }
+  >(function QueryBuilderFilterConditionContextMenu(props, ref) {
     const { queryBuilderState, node } = props;
     const filterState = queryBuilderState.filterState;
     const removeNode = (): void => filterState.removeNodeAndPruneBranch(node);
@@ -345,8 +345,7 @@ const QueryBuilderFilterConditionContextMenu = observer(
         <MenuContentItem onClick={removeNode}>Remove</MenuContentItem>
       </MenuContent>
     );
-  },
-  { forwardRef: true },
+  }),
 );
 
 const QueryBuilderFilterTreeNodeContainer = observer(

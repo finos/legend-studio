@@ -3818,9 +3818,12 @@ export const TEST_DATA__RelationalDatabaseConnectionRoundtrip = [
         },
         datasourceSpecification: {
           _type: 'redshift',
+          clusterID: 'cluster',
           databaseName: 'test',
-          endpoint: 'endpoint',
+          endpointURL: 'endpoint',
+          host: 'myserver',
           port: 5439,
+          region: 'region-1',
         },
         element: 'apps::pure::studio::relational::tests::dbInc',
         type: 'H2',

@@ -42,12 +42,13 @@ import {
   DelegatedKerberosAuthenticationStrategy,
   OAuthAuthenticationStrategy,
   SnowflakePublicAuthenticationStrategy,
-  UserPasswordAuthenticationStrategy,
+  ApiTokenAuthenticationStrategy,
   UsernamePasswordAuthenticationStrategy,
   GCPWorkloadIdentityFederationAuthenticationStrategy,
   EmbeddedH2DatasourceSpecification,
   LocalH2DatasourceSpecification,
   SnowflakeDatasourceSpecification,
+  DatabricksDatasourceSpecification,
   StaticDatasourceSpecification,
   BigQueryDatasourceSpecification,
   RedshiftDatasourceSpecification,
@@ -477,6 +478,51 @@ const EmbeddedH2DatasourceSpecificationEditor = observer(
   },
 );
 
+const DatabricksDatasourceSpecificationEditor = observer(
+  (props: {
+    sourceSpec: DatabricksDatasourceSpecification;
+    isReadOnly: boolean;
+  }) => {
+    const { sourceSpec, isReadOnly } = props;
+    return (
+      <>
+        <ConnectionEditor_StringEditor
+          isReadOnly={isReadOnly}
+          value={sourceSpec.hostname}
+          propertyName="hostname"
+          update={(value: string | undefined): void =>
+            sourceSpec.setHostName(value ?? '')
+          }
+        />
+        <ConnectionEditor_StringEditor
+          isReadOnly={isReadOnly}
+          value={sourceSpec.port}
+          propertyName="port"
+          update={(value: string | undefined): void =>
+            sourceSpec.setPort(value ?? '')
+          }
+        />
+        <ConnectionEditor_StringEditor
+          isReadOnly={isReadOnly}
+          value={sourceSpec.protocol}
+          propertyName="protocol"
+          update={(value: string | undefined): void =>
+            sourceSpec.setProtocol(value ?? '')
+          }
+        />
+        <ConnectionEditor_StringEditor
+          isReadOnly={isReadOnly}
+          value={sourceSpec.httpPath}
+          propertyName="httpPath"
+          update={(value: string | undefined): void =>
+            sourceSpec.setHttpPath(value ?? '')
+          }
+        />
+      </>
+    );
+  },
+);
+
 const SnowflakeDatasourceSpecificationEditor = observer(
   (props: {
     sourceSpec: SnowflakeDatasourceSpecification;
@@ -602,18 +648,10 @@ const RedshiftDatasourceSpecificationEditor = observer(
       <>
         <ConnectionEditor_StringEditor
           isReadOnly={isReadOnly}
-          value={sourceSpec.databaseName}
-          propertyName="database"
+          value={sourceSpec.host}
+          propertyName="host"
           update={(value: string | undefined): void =>
-            sourceSpec.setDatabaseName(value ?? '')
-          }
-        />
-        <ConnectionEditor_StringEditor
-          isReadOnly={isReadOnly}
-          value={sourceSpec.endpoint}
-          propertyName="endpoint"
-          update={(value: string | undefined): void =>
-            sourceSpec.setEndpoint(value ?? '')
+            sourceSpec.setHost(value ?? '')
           }
         />
         <div className="panel__content__form__section">
@@ -629,6 +667,39 @@ const RedshiftDatasourceSpecificationEditor = observer(
             onChange={changePort}
           />
         </div>
+        <ConnectionEditor_StringEditor
+          isReadOnly={isReadOnly}
+          value={sourceSpec.databaseName}
+          propertyName="database"
+          update={(value: string | undefined): void =>
+            sourceSpec.setDatabaseName(value ?? '')
+          }
+        />
+
+        <ConnectionEditor_StringEditor
+          isReadOnly={isReadOnly}
+          value={sourceSpec.region}
+          propertyName="region"
+          update={(value: string | undefined): void =>
+            sourceSpec.setRegion(value ?? '')
+          }
+        />
+        <ConnectionEditor_StringEditor
+          isReadOnly={isReadOnly}
+          value={sourceSpec.clusterID}
+          propertyName="cluster"
+          update={(value: string | undefined): void =>
+            sourceSpec.setClusterID(value ?? '')
+          }
+        />
+        <ConnectionEditor_StringEditor
+          isReadOnly={isReadOnly}
+          value={sourceSpec.endpointURL}
+          propertyName="endpointURL"
+          update={(value: string | undefined): void =>
+            sourceSpec.setEndpointURL(value ?? '')
+          }
+        />
       </>
     );
   },
@@ -686,6 +757,27 @@ const DelegatedKerberosAuthenticationStrategyEditor = observer(
   },
 );
 
+const ApiTokenAuthenticationStrategyEditor = observer(
+  (props: {
+    authSpec: ApiTokenAuthenticationStrategy;
+    isReadOnly: boolean;
+  }) => {
+    const { authSpec, isReadOnly } = props;
+    return (
+      <>
+        <ConnectionEditor_StringEditor
+          isReadOnly={isReadOnly}
+          value={authSpec.apiToken}
+          propertyName={'apiTokenRef'}
+          update={(value: string | undefined): void =>
+            authSpec.setApiToken(value ?? '')
+          }
+        />
+      </>
+    );
+  },
+);
+
 const SnowflakePublicAuthenticationStrategyEditor = observer(
   (props: {
     authSpec: SnowflakePublicAuthenticationStrategy;
@@ -716,35 +808,6 @@ const SnowflakePublicAuthenticationStrategyEditor = observer(
           propertyName={'public user name'}
           update={(value: string | undefined): void =>
             authSpec.setPublicUserName(value ?? '')
-          }
-        />
-      </>
-    );
-  },
-);
-
-const UserPasswordAuthenticationStrategyEditor = observer(
-  (props: {
-    authSpec: UserPasswordAuthenticationStrategy;
-    isReadOnly: boolean;
-  }) => {
-    const { authSpec, isReadOnly } = props;
-    return (
-      <>
-        <ConnectionEditor_StringEditor
-          isReadOnly={isReadOnly}
-          value={authSpec.userName}
-          propertyName={'userName'}
-          update={(value: string | undefined): void =>
-            authSpec.setUserName(value ?? '')
-          }
-        />
-        <ConnectionEditor_StringEditor
-          isReadOnly={isReadOnly}
-          value={authSpec.passwordVaultReference}
-          propertyName={'passwordVaultReference'}
-          update={(value: string | undefined): void =>
-            authSpec.setPasswordVaultReference(value ?? '')
           }
         />
       </>
@@ -789,7 +852,7 @@ const UsernamePasswordAuthenticationStrategyEditor = observer(
         <ConnectionEditor_StringEditor
           isReadOnly={isReadOnly}
           value={authSpec.baseVaultReference}
-          propertyName={'base valut reference'}
+          propertyName={'base vault reference'}
           update={(value: string | undefined): void =>
             authSpec.setBaseVaultReference(value)
           }
@@ -805,7 +868,7 @@ const UsernamePasswordAuthenticationStrategyEditor = observer(
         <ConnectionEditor_StringEditor
           isReadOnly={isReadOnly}
           value={authSpec.passwordVaultReference}
-          propertyName={'password valut reference'}
+          propertyName={'password vault reference'}
           update={(value: string | undefined): void =>
             authSpec.setPasswordVaultReference(value ?? '')
           }
@@ -937,6 +1000,13 @@ const renderDatasourceSpecificationEditor = (
         isReadOnly={isReadOnly}
       />
     );
+  } else if (sourceSpec instanceof DatabricksDatasourceSpecification) {
+    return (
+      <DatabricksDatasourceSpecificationEditor
+        sourceSpec={sourceSpec}
+        isReadOnly={isReadOnly}
+      />
+    );
   } else if (sourceSpec instanceof SnowflakeDatasourceSpecification) {
     return (
       <SnowflakeDatasourceSpecificationEditor
@@ -1003,9 +1073,9 @@ const renderAuthenticationStrategyEditor = (
         isReadOnly={isReadOnly}
       />
     );
-  } else if (authSpec instanceof UserPasswordAuthenticationStrategy) {
+  } else if (authSpec instanceof ApiTokenAuthenticationStrategy) {
     return (
-      <UserPasswordAuthenticationStrategyEditor
+      <ApiTokenAuthenticationStrategyEditor
         authSpec={authSpec}
         isReadOnly={isReadOnly}
       />

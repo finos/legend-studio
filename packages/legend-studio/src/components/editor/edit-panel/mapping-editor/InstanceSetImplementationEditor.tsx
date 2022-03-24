@@ -158,7 +158,7 @@ export const InstanceSetImplementationSourceExplorer = observer(
               setImplementation,
               droppedPackagableElement,
             ),
-          ).catch(applicationStore.alertIllegalUnhandledError);
+          ).catch(applicationStore.alertUnhandledError);
         } else if (droppedPackagableElement instanceof FlatData) {
           if (droppedPackagableElement.recordTypes.length === 0) {
             applicationStore.notifyWarning(
@@ -172,7 +172,7 @@ export const InstanceSetImplementationSourceExplorer = observer(
                 setImplementation,
                 droppedPackagableElement.recordTypes[0],
               ),
-            ).catch(applicationStore.alertIllegalUnhandledError);
+            ).catch(applicationStore.alertUnhandledError);
           } else {
             setSourceElementForSourceSelectorModal(
               droppedPackagableElement.recordTypes[0],
@@ -200,7 +200,7 @@ export const InstanceSetImplementationSourceExplorer = observer(
                 setImplementation,
                 mainTableAlias,
               ),
-            ).catch(applicationStore.alertIllegalUnhandledError);
+            ).catch(applicationStore.alertUnhandledError);
           } else {
             setSourceElementForSourceSelectorModal(mainTableAlias);
           }
@@ -460,14 +460,14 @@ export const InstanceSetImplementationEditor = observer(
       }
       flowResult(
         instanceSetImplementationState.convertPropertyMappingTransformObjects(),
-      ).catch(applicationStore.alertIllegalUnhandledError);
+      ).catch(applicationStore.alertUnhandledError);
       if (
         instanceSetImplementationState instanceof
           PureInstanceSetImplementationState &&
         instanceSetImplementationState.mappingElement.filter
       ) {
         flowResult(instanceSetImplementationState.convertFilter()).catch(
-          applicationStore.alertIllegalUnhandledError,
+          applicationStore.alertUnhandledError,
         );
       }
       return isReadOnly

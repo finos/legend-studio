@@ -38,6 +38,7 @@ import TEST_DATA__ComplexM2MModel from './TEST_DATA__QueryBuilder_Model_ComplexM
 import TEST_DATA__M2MWithInheritance from './TEST_DATA__QueryBuilder_Model_M2MWithInheritance.json';
 import TEST_DATA__COVIDDataSimpleModel from './TEST_DATA__QueryBuilder_Model_COVID.json';
 import TEST_DATA__SimpleM2MModel from './TEST_DATA__QueryBuilder_Model_SimpleM2M.json';
+import TEST_DATA__PostFilterModel from './TEST_DATA__QueryBuilder_Model_PostFilter.json';
 import {
   TEST_DATA__lambda_simpleSingleConditionFilterWithParameter,
   TEST_DATA__lambda_enumerationOperatorFilter,
@@ -76,6 +77,11 @@ import {
 import { LegendQueryPluginManager } from '../../application/LegendQueryPluginManager';
 import { Query_GraphPreset } from '../../models/Query_GraphPreset';
 import { TEST__getTestQueryConfig } from '../QueryStoreTestUtils';
+import {
+  TEST_DATA__lambda_simpleConditionPostFilter,
+  TEST_DATA__lambda_aggregationPostFilter,
+  TEST_DATA__lambda_derivationPostFilter,
+} from './TEST_DATA__QueryBuilder_Roundtrip_TestPostFilterQueries';
 
 type RoundtripTestCase = [
   string,
@@ -104,6 +110,10 @@ const relationalFilterCtx = {
 
 const m2mFilterCtx = {
   entities: TEST_DATA__SimpleM2MModel,
+};
+
+const postFilterCtx = {
+  entities: TEST_DATA__PostFilterModel,
 };
 
 const cases: RoundtripTestCase[] = [
@@ -276,6 +286,25 @@ const cases: RoundtripTestCase[] = [
     m2mFilterCtx,
     TEST_DATA__lambda_output_filterWithFullPathFunctions,
     TEST_DATA__lambda_input_filterWithFullPathFunctions,
+  ],
+  // post-filter
+  [
+    'Post-filter on primitives',
+    postFilterCtx,
+    TEST_DATA__lambda_simpleConditionPostFilter,
+    undefined,
+  ],
+  [
+    'Post-filter on aggregation column',
+    postFilterCtx,
+    TEST_DATA__lambda_aggregationPostFilter,
+    undefined,
+  ],
+  [
+    'Post-filter on derivation column',
+    postFilterCtx,
+    TEST_DATA__lambda_derivationPostFilter,
+    undefined,
   ],
 ];
 

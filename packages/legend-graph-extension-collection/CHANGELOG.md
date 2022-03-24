@@ -1,5 +1,21 @@
 # @finos/legend-graph-extension-collection
 
+## 0.0.21
+
+### Patch Changes
+
+- [#838](https://github.com/finos/legend-studio/pull/838) [`854d8aa5`](https://github.com/finos/legend-studio/commit/854d8aa58ff31f67f698d99a498e0d51bfd668a2) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Rename `DSL Serializer` to `DSL External Format` and move it to core.
+
+## 0.0.20
+
+## 0.0.19
+
+## 0.0.18
+
+## 0.0.17
+
+## 0.0.16
+
 ## 0.0.15
 
 ## 0.0.14

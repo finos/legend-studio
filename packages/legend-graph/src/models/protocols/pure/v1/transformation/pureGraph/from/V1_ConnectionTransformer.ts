@@ -33,9 +33,8 @@ import {
   DefaultH2AuthenticationStrategy,
   SnowflakePublicAuthenticationStrategy,
   GCPApplicationDefaultCredentialsAuthenticationStrategy,
+  ApiTokenAuthenticationStrategy,
   DelegatedKerberosAuthenticationStrategy,
-  TestDatabaseAuthenticationStrategy,
-  UserPasswordAuthenticationStrategy,
   OAuthAuthenticationStrategy,
   UsernamePasswordAuthenticationStrategy,
   GCPWorkloadIdentityFederationAuthenticationStrategy,
@@ -45,6 +44,7 @@ import {
   LocalH2DatasourceSpecification,
   StaticDatasourceSpecification,
   EmbeddedH2DatasourceSpecification,
+  DatabricksDatasourceSpecification,
   SnowflakeDatasourceSpecification,
   RedshiftDatasourceSpecification,
   BigQueryDatasourceSpecification,
@@ -61,6 +61,7 @@ import {
   V1_EmbeddedH2DatasourceSpecification,
   V1_SnowflakeDatasourceSpecification,
   V1_BigQueryDatasourceSpecification,
+  V1_DatabricksDatasourceSpecification,
   V1_StaticDatasourceSpecification,
   V1_RedshiftDatasourceSpecification,
 } from '../../../model/packageableElements/store/relational/connection/V1_DatasourceSpecification';
@@ -68,11 +69,10 @@ import {
   type V1_AuthenticationStrategy,
   V1_DefaultH2AuthenticationStrategy,
   V1_SnowflakePublicAuthenticationStrategy,
-  V1_UserPasswordAuthenticationStrategy,
   V1_GCPApplicationDefaultCredentialsAuthenticationStrategy,
   V1_UsernamePasswordAuthenticationStrategy,
+  V1_ApiTokenAuthenticationStrategy,
   V1_DelegatedKerberosAuthenticationStrategy,
-  V1_TestDatabaseAuthenticationStrategy,
   V1_OAuthAuthenticationStrategy,
   V1_GCPWorkloadIdentityFederationAuthenticationStrategy,
 } from '../../../model/packageableElements/store/relational/connection/V1_AuthenticationStrategy';
@@ -111,6 +111,17 @@ const transformEmbeddedH2DatasourceSpecification = (
   return source;
 };
 
+const transformDatabricksDatasourceSpecification = (
+  metamodel: DatabricksDatasourceSpecification,
+): V1_DatabricksDatasourceSpecification => {
+  const source = new V1_DatabricksDatasourceSpecification();
+  source.hostname = metamodel.hostname;
+  source.port = metamodel.port;
+  source.protocol = metamodel.protocol;
+  source.httpPath = metamodel.httpPath;
+  return source;
+};
+
 const transformSnowflakeDatasourceSpecification = (
   metamodel: SnowflakeDatasourceSpecification,
 ): V1_SnowflakeDatasourceSpecification => {
@@ -135,8 +146,11 @@ const transformRedshiftDatasourceSpecification = (
 ): V1_RedshiftDatasourceSpecification => {
   const source = new V1_RedshiftDatasourceSpecification();
   source.databaseName = metamodel.databaseName;
-  source.endpoint = metamodel.endpoint;
+  source.endpointURL = metamodel.endpointURL;
   source.port = metamodel.port;
+  source.clusterID = metamodel.clusterID;
+  source.host = metamodel.host;
+  source.region = metamodel.region;
   return source;
 };
 
@@ -157,6 +171,8 @@ const transformDatasourceSpecification = (
     return transformStaticDatasourceSpecification(metamodel);
   } else if (metamodel instanceof EmbeddedH2DatasourceSpecification) {
     return transformEmbeddedH2DatasourceSpecification(metamodel);
+  } else if (metamodel instanceof DatabricksDatasourceSpecification) {
+    return transformDatabricksDatasourceSpecification(metamodel);
   } else if (metamodel instanceof SnowflakeDatasourceSpecification) {
     return transformSnowflakeDatasourceSpecification(metamodel);
   } else if (metamodel instanceof BigQueryDatasourceSpecification) {
@@ -207,20 +223,17 @@ const transformAuthenticationStrategy = (
     const auth = new V1_DelegatedKerberosAuthenticationStrategy();
     auth.serverPrincipal = metamodel.serverPrincipal;
     return auth;
-  } else if (metamodel instanceof TestDatabaseAuthenticationStrategy) {
-    return new V1_TestDatabaseAuthenticationStrategy();
   } else if (metamodel instanceof OAuthAuthenticationStrategy) {
     return transformOAuthtAuthenticationStrategy(metamodel);
+  } else if (metamodel instanceof ApiTokenAuthenticationStrategy) {
+    const auth = new V1_ApiTokenAuthenticationStrategy();
+    auth.apiToken = metamodel.apiToken;
+    return auth;
   } else if (metamodel instanceof SnowflakePublicAuthenticationStrategy) {
     const auth = new V1_SnowflakePublicAuthenticationStrategy();
     auth.privateKeyVaultReference = metamodel.privateKeyVaultReference;
     auth.passPhraseVaultReference = metamodel.passPhraseVaultReference;
     auth.publicUserName = metamodel.publicUserName;
-    return auth;
-  } else if (metamodel instanceof UserPasswordAuthenticationStrategy) {
-    const auth = new V1_UserPasswordAuthenticationStrategy();
-    auth.userName = metamodel.userName;
-    auth.passwordVaultReference = metamodel.passwordVaultReference;
     return auth;
   } else if (
     metamodel instanceof GCPApplicationDefaultCredentialsAuthenticationStrategy

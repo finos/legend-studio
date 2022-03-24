@@ -42,7 +42,7 @@ const ES_RULES = {
   'dot-notation': [ERROR, { allowKeywords: true }],
   'eol-last': [WARN, 'always'],
   eqeqeq: ERROR,
-  'func-call-spacing': ERROR,
+  'func-call-spacing': OFF,
   'guard-for-in': ERROR,
   'jsx-quotes': ERROR,
   'key-spacing': WARN,
@@ -135,6 +135,7 @@ const TYPESCRIPT_RULES = {
     WARN,
     { allowTypedFunctionExpressions: true },
   ],
+  '@typescript-eslint/func-call-spacing': ERROR,
   '@typescript-eslint/no-inferrable-types': [WARN, { ignoreParameters: true }],
   '@typescript-eslint/no-var-requires': OFF,
   '@typescript-eslint/no-unused-vars': [
@@ -142,6 +143,7 @@ const TYPESCRIPT_RULES = {
     { args: 'none', ignoreRestSiblings: true },
   ],
   '@typescript-eslint/no-extra-semi': WARN,
+  '@typescript-eslint/no-shadow': WARN,
   // NOTE: since functions are hoisted in ES6, it is then advisable to enable this rule so that we can have functions that depend on each other and not causing
   // circular module dependency. It is also said to be safe to use
   // See https://github.com/typescript-eslint/typescript-eslint/blob/master/packages/eslint-plugin/docs/rules/no-use-before-define.md#options

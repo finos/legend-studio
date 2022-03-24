@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { sep, resolve } from 'path';
+import { sep, resolve, basename, extname } from 'path';
 import micromatch from 'micromatch';
 import { execSync } from 'child_process';
 import { lstatSync, existsSync } from 'fs';
@@ -25,14 +25,12 @@ import { exitWithError, loadJSON } from './DevUtils.js';
 const getDir = (file) =>
   lstatSync(file).isDirectory() ? file : file.split(sep).slice(0, -1).join(sep);
 
-const PACKAGE_JSON_PATTERN = /package\.json$/;
-
-const getProjectInfo = (dirname, projectPath) => {
+const getTSProjectInfo = (dirname, projectPath, tsConfigFileName) => {
   const projectFullPath = resolve(dirname, `${projectPath}`);
   const dir = getDir(projectFullPath);
   const tsConfigPath = !lstatSync(projectFullPath).isDirectory()
     ? projectFullPath
-    : resolve(projectFullPath, 'tsconfig.json');
+    : resolve(projectFullPath, tsConfigFileName);
   // NOTE: since tsconfig files don't inherit `references` it's safe to just get the file and extract
   // `references` field instead of resolving the full tsconfig file which takes time.
   const tsConfigFile = getTsConfigJSON(tsConfigPath);
@@ -53,7 +51,7 @@ const getProjectInfo = (dirname, projectPath) => {
 /**
  * This script attempts to address a problem when using Typescript
  * `project reference` in a monorepo project: that is the dependency
- * has to be listed in both `package.json` and `tsconfig.json`.
+ * has to be listed in both `package.json` and TS config.
  * See https://github.com/microsoft/TypeScript/issues/25376
  *
  * Note that we only check for one-direction: that is if a Typescript
@@ -63,8 +61,8 @@ const getProjectInfo = (dirname, projectPath) => {
  * Note that this script makes the assumption that the monorepo project
  * uses project reference and organized in a particular way:
  *
- *  - the root `tsconfig.json` lists all references to all child modules
- *  - each child module contains a `tsconfig.json` that lists all of its
+ *  - the root TS config lists all references to all child modules
+ *  - each child module contains a TS config that lists all of its
  *    dependent modules by the name specified in their respective
  *    `package.json`
  *  - for each child module, `package.json` and the referenced `tsconfig.*.json`
@@ -74,21 +72,26 @@ const getProjectInfo = (dirname, projectPath) => {
  */
 export const checkProjectReferenceConfig = ({
   rootDir,
+  tsConfigFileName = 'tsconfig.json',
   /* micromatch glob patterns */
   excludePackagePatterns = [],
   excludeReferencePatterns = [],
 }) => {
   const errors = [];
   try {
-    // resolve all projects referenced in the root `tsconfig.json`
+    // resolve all projects referenced in the root TS config
     // and build a lookup table between project and corresponding package
-    const rootTsConfigPath = resolve(rootDir, './tsconfig.json');
+    const rootTsConfigPath = resolve(rootDir, tsConfigFileName);
     const projectMap = new Map();
     (getTsConfigJSON(rootTsConfigPath).references ?? [])
       .map((ref) => ref.path)
       .forEach((projectPath) => {
         try {
-          const projectInfo = getProjectInfo(rootDir, projectPath);
+          const projectInfo = getTSProjectInfo(
+            rootDir,
+            projectPath,
+            tsConfigFileName,
+          );
           const { dir, packageJson, projectReferences } = projectInfo;
           if (projectInfo) {
             projectMap.set(dir, { packageJson, projectReferences });
@@ -100,6 +103,7 @@ export const checkProjectReferenceConfig = ({
 
     // find all Typescript packages
     const tsPackages = new Set();
+    const PACKAGE_JSON_PATTERN = /[\\/]package\.json$/;
     const packageJsonFiles = execSync('git ls-files', { encoding: 'utf-8' })
       .trim()
       .split('\n')
@@ -108,23 +112,22 @@ export const checkProjectReferenceConfig = ({
       );
 
     packageJsonFiles.forEach((file) => {
-      if (micromatch.isMatch(file, excludePackagePatterns)) {
-        return;
-      }
       const packageJsonPath = resolve(rootDir, `${file}`);
       const dir = getDir(packageJsonPath);
       const packageJson = loadJSON(packageJsonPath);
-      const tsConfigPath = resolve(dir, `tsconfig.json`);
-      if (!existsSync(tsConfigPath)) {
-        // if `tsconfig.json` does not exists, this package is not written in Typescript, therefore we can skip it
-        // NOTE: this check seems rather optimistic, the `tsconfig.json` file could be named differently
-        // we might need to come up with a more sophisticated check (e.g. check `types` file in `package.json`)
+      // if `tsconfig.json` file does not exists, this package is likely not written in Typescript, therefore we can skip it
+      // NOTE: this check seems rather optimistic, the TS config file could be named differently
+      // we might need to come up with a more sophisticated check (e.g. check `types` file in `package.json`)
+      if (!existsSync(resolve(dir, `tsconfig.json`))) {
         return;
       }
-      // check if a package written in Typescript is not listed as a project reference in the root `tsconfig.json`
+      if (micromatch.isMatch(packageJson.name, excludePackagePatterns)) {
+        return;
+      }
+      // check if a package written in Typescript is not listed as a project reference in the root TS config
       if (!projectMap.has(dir)) {
         errors.push(
-          `Project '${dir}' corresponding to package '${packageJson.name}' is not listed as a reference in root \`tsconfig.json\``,
+          `Project '${dir}' corresponding to package '${packageJson.name}' is not listed as a reference in root TypeScript config`,
         );
       } else {
         tsPackages.add(packageJson.name);
@@ -146,21 +149,38 @@ export const checkProjectReferenceConfig = ({
         .map((ref) => ref.path)
         .forEach((projectPath) => {
           try {
-            const projectInfo = getProjectInfo(dir, projectPath);
+            const projectInfo = getTSProjectInfo(
+              dir,
+              projectPath,
+              tsConfigFileName,
+            );
             if (
               micromatch.isMatch(projectInfo.path, excludeReferencePatterns)
             ) {
               return;
             }
-            if (!projectMap.has(projectInfo.dir)) {
-              // check if a Typescript project is not listed as a reference the root `tsconfig.json`
+            if (
+              tsConfigFileName !== 'tsconfig.json' &&
+              (!extname(projectPath) ||
+                tsConfigFileName !== basename(projectPath))
+            ) {
               errors.push(
-                `Root \`tsconfig.json\` needs to list project '${projectInfo.dir}' corresponding to package '${projectInfo.packageJson.name}' as a reference`,
+                `TypeScript project corresponding to package '${
+                  packageJson.name
+                }' needs to reference TypeScript projects of similar types (expected: '${tsConfigFileName}', found: '${
+                  !extname(projectPath) ? '' : basename(projectPath)
+                }')`,
+              );
+            }
+            if (!projectMap.has(projectInfo.dir)) {
+              // check if a Typescript project is not listed as a reference the root TS config
+              errors.push(
+                `Root TypeScript config needs to reference TypeScript project '${projectInfo.dir}' corresponding to package '${projectInfo.packageJson.name}'`,
               );
             } else if (
               !allDependencies.includes(projectInfo.packageJson.name)
             ) {
-              // check if a project reference is listed in `tsconfig.*.json` then its corresponding
+              // check if a project reference is listed in TS config then its corresponding
               // package must also be listed as a dependency in `package.json`
               errors.push(
                 `Package '${packageJson.name}' needs to list package '${projectInfo.packageJson.name}' as a dependency`,
@@ -174,11 +194,11 @@ export const checkProjectReferenceConfig = ({
         });
 
       // check if a package written in Typescript that is a dependency of another package but not
-      // listed as a project reference in the `tsconfig.json` file of that dependent project
+      // listed as a project reference in the TS config file of that dependent project
       if (dependenciesToBeReferenced.size > 0) {
         dependenciesToBeReferenced.forEach((dep) => {
           errors.push(
-            `Project corresponding to package '${packageJson.name}' needs to list project corresponding to package '${dep}' as a reference`,
+            `TypeScript project corresponding to package '${packageJson.name}' needs to reference TypeScript project corresponding to package '${dep}'`,
           );
         });
       }
@@ -191,11 +211,13 @@ export const checkProjectReferenceConfig = ({
     exitWithError(
       `Found ${
         errors.length
-      } issue(s) with Typescript project reference configuration:\n${errors.map(
-        (msg) => `${chalk.red('\u2717')} ${msg}`,
-      )}`,
+      } issue(s) with Typescript project reference configuration:\n${errors
+        .map((msg) => `${chalk.red('\u2717')} ${msg}`)
+        .join('\n')}`,
     );
   } else {
-    console.log('No issues with Typescript project reference found!');
+    console.log(
+      chalk.green('No issues with Typescript project reference found!'),
+    );
   }
 };

@@ -174,7 +174,7 @@ export class TestContainerState {
                 .connectionValue
             : identifiedConnection.connection;
         const engineConfig =
-          this.editorStore.graphManagerState.graphManager.TEMP__getEngineConfig();
+          this.editorStore.graphManagerState.graphManager.TEMPORARY__getEngineConfig();
 
         if (connection instanceof JsonModelConnection) {
           newRuntime.addIdentifiedConnection(
@@ -297,7 +297,9 @@ export class TestContainerState {
             execution.func,
             decoratedRuntime,
             PureClientVersion.VX_X_X,
-            true,
+            {
+              useLosslessParse: true,
+            },
           )) as ExecutionResult;
         this.setAssertionData(
           /* @MARKER: Workaround for https://github.com/finos/legend-studio/issues/68 */
@@ -349,7 +351,9 @@ export class TestContainerState {
             execution.func,
             decoratedRuntime,
             PureClientVersion.VX_X_X,
-            true,
+            {
+              useLosslessParse: true,
+            },
           )) as ExecutionResult;
         this.setTestExecutionResultText({
           expected: this.assertionData ?? '',

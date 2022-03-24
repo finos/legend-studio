@@ -1,5 +1,21 @@
 # @finos/legend-server-depot
 
+## 0.0.25
+
+## 0.0.24
+
+## 0.0.23
+
+### Patch Changes
+
+- [#911](https://github.com/finos/legend-studio/pull/911) [`c848bfa`](https://github.com/finos/legend-studio/commit/c848bfa512f9d7a5301e9c1d0f7d2c878d36d3db) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Add a utility function to compare `SemVer` versions.
+
+## 0.0.22
+
+## 0.0.21
+
+## 0.0.20
+
 ## 0.0.19
 
 ## 0.0.18

@@ -112,9 +112,7 @@ export const getEnumerationMappingsByEnumeration = (
   mapping: Mapping,
   enumeration: Enumeration,
 ): EnumerationMapping[] =>
-  // TODO: we don't support included mapings yet
-  // return this.includes.map(m => m.included).flat().map(m => m.enumerationMappingsByEnumeration(e)).concat(this.enumerationMappings.filter(em => em.enumeration === e));
-  mapping.enumerationMappings.filter(
+  getAllEnumerationMappings(mapping).filter(
     (enumerationMapping) =>
       enumerationMapping.enumeration.value === enumeration,
   );

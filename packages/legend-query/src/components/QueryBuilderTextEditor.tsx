@@ -32,17 +32,16 @@ export const QueryBuilderTextEditor = observer(
     const { queryBuilderState } = props;
     const applicationStore = useApplicationStore();
     const queryTextEditorState = queryBuilderState.queryTextEditorState;
-    const close = (): Promise<void> =>
-      flowResult(queryBuilderState.queryTextEditorState.closeModal()).catch(
-        applicationStore.alertIllegalUnhandledError,
-      );
+    const close = applicationStore.guardUnhandledError(() =>
+      flowResult(queryBuilderState.queryTextEditorState.closeModal()),
+    );
     const discardChanges = (): void =>
       queryBuilderState.queryTextEditorState.setMode(undefined);
     const mode = queryTextEditorState.mode;
     useEffect(() => {
       flowResult(
         queryTextEditorState.convertLambdaObjectToGrammarString(true),
-      ).catch(applicationStore.alertIllegalUnhandledError);
+      ).catch(applicationStore.alertUnhandledError);
     }, [applicationStore, queryTextEditorState]);
 
     return (
@@ -53,9 +52,6 @@ export const QueryBuilderTextEditor = observer(
           root: 'editor-modal__root-container',
           container: 'editor-modal__container',
           paper: 'editor-modal__content',
-        }}
-        TransitionProps={{
-          appear: false, // disable transition
         }}
       >
         <div

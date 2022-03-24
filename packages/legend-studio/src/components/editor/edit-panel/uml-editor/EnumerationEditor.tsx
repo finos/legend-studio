@@ -81,7 +81,6 @@ const EnumBasicEditor = observer(
           value={_enum.name}
           onChange={changeValue}
           placeholder={`Enum name`}
-          name={`Type enum name`}
           validationErrorMessage={
             isEnumValueDuplicated(_enum) ? 'Duplicated enum' : undefined
           }

@@ -15,11 +15,17 @@
  */
 
 import { action, makeAutoObservable } from 'mobx';
-import { uuid, deleteEntry, addUniqueEntry } from '@finos/legend-shared';
+import {
+  uuid,
+  deleteEntry,
+  addUniqueEntry,
+  guaranteeNonNullable,
+} from '@finos/legend-shared';
 import type {
   AbstractPropertyExpression,
   PureModel,
   SimpleFunctionExpression,
+  Type,
   ValueSpecification,
   VariableExpression,
 } from '@finos/legend-graph';
@@ -67,6 +73,16 @@ export abstract class QueryBuilderAggregateOperator {
     lambdaParam: VariableExpression,
     projectionColumnState: QueryBuilderProjectionColumnState,
   ): QueryBuilderAggregateColumnState | undefined;
+
+  /**
+   * Returns the expected return type of the operator.
+   * defaults to using the return type of the projection column state which is being aggregated.
+   */
+  getReturnType(aggregateColumnState: QueryBuilderAggregateColumnState): Type {
+    return guaranteeNonNullable(
+      aggregateColumnState.projectionColumnState.getReturnType(),
+    );
+  }
 }
 
 export class QueryBuilderAggregateColumnState {
@@ -94,6 +110,10 @@ export class QueryBuilderAggregateColumnState {
     this.operator = operator;
   }
 
+  get columnName(): string {
+    return this.projectionColumnState.columnName;
+  }
+
   setColumnState(val: QueryBuilderProjectionColumnState): void {
     this.projectionColumnState = val;
   }
@@ -104,6 +124,10 @@ export class QueryBuilderAggregateColumnState {
 
   setOperator(val: QueryBuilderAggregateOperator): void {
     this.operator = val;
+  }
+
+  getReturnType(): Type {
+    return this.operator.getReturnType(this);
   }
 }
 

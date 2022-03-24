@@ -35,6 +35,7 @@ export * from './application/TestUtils';
 export * from './application/SerializationUtils';
 export * from './application/RandomizerUtils';
 export * from './application/ActionState';
+export * from './application/StopWatch';
 export * from './application/AbstractPluginManager';
 export * from './application/BrowserUtils';
 

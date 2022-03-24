@@ -1,0 +1,37 @@
+###Relational
+Database store::db
+(
+)
+
+
+###Connection
+RelationalDatabaseConnection connection::relational::MyDatabricks
+{
+  store: store::db;
+  type: Databricks;
+  specification: Databricks
+  {
+    hostname: 'hostname';
+    port: 'port';
+    protocol: 'protocol';
+    httpPath: 'httpPath';
+  };
+  auth: DefaultH2;
+}
+
+RelationalDatabaseConnection connection::relational::MyDatabricksWithApi
+{
+  store: store::db;
+  type: Databricks;
+  specification: Databricks
+  {
+    hostname: 'hostname';
+    port: 'port';
+    protocol: 'protocol';
+    httpPath: 'httpPath';
+  };
+  auth: ApiToken
+  {
+    apiToken: 'tokenRef';
+  };
+}

@@ -15,7 +15,7 @@
  */
 
 import packageJson from '../../../../package.json';
-import { V1_Diagram } from './v1/model/packageableElements/diagram/V1_Diagram';
+import { V1_Diagram } from './v1/model/packageableElements/diagram/V1_DSLDiagram_Diagram';
 import { type PlainObject, assertType } from '@finos/legend-shared';
 import { deserialize, serialize } from 'serializr';
 import {
@@ -35,7 +35,7 @@ import {
   V1_ElementBuilder,
 } from '@finos/legend-graph';
 import { V1_transformDiagram } from './v1/transformation/pureGraph/V1_DSLDiagram_TransformerHelper';
-import { Diagram } from '../../metamodels/pure/packageableElements/diagram/Diagram';
+import { Diagram } from '../../metamodels/pure/packageableElements/diagram/DSLDiagram_Diagram';
 import { getDiagram } from '../../../graphManager/DSLDiagram_GraphManagerHelper';
 import {
   V1_buildClassView,

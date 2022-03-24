@@ -160,13 +160,11 @@ export interface LegendStudioConfigurationData
     | PlainObject<SDLCServerOption>[];
   depot: { url: string };
   engine: { url: string; queryUrl?: string };
-  documentation: { url: string };
 }
 
 export class LegendStudioConfig extends LegendApplicationConfig {
   readonly options = new ApplicationCoreOptions();
 
-  readonly documentationUrl: string;
   readonly engineServerUrl: string;
   readonly engineQueryServerUrl?: string | undefined;
   readonly depotServerUrl: string;
@@ -252,14 +250,6 @@ export class LegendStudioConfig extends LegendApplicationConfig {
     this.depotServerUrl = guaranteeNonEmptyString(
       configData.depot.url,
       `Can't configure application: 'depot.url' field is missing or empty`,
-    );
-    assertNonNullable(
-      configData.documentation,
-      `Can't configure application: 'documentation' field is missing`,
-    );
-    this.documentationUrl = guaranteeNonEmptyString(
-      configData.documentation.url,
-      `Can't configure application: 'documentation.url' field is missing or empty`,
     );
     this.options = ApplicationCoreOptions.create(
       (configData.extensions?.core ??

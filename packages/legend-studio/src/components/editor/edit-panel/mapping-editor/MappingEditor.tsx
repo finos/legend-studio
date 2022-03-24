@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useEffect, useState } from 'react';
+import { forwardRef, useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { toSentenceCase } from '@finos/legend-shared';
 import {
@@ -87,21 +87,21 @@ export const MappingEditorSplashScreen: React.FC = () => {
 };
 
 const MappingEditorHeaderTabContextMenu = observer(
-  (
-    props: {
+  forwardRef<
+    HTMLDivElement,
+    {
       tabState: MappingEditorTabState;
-    },
-    ref: React.Ref<HTMLDivElement>,
-  ) => {
+    }
+  >(function MappingEditorHeaderTabContextMenu(props, ref) {
     const { tabState } = props;
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
     const mappingEditorState =
       editorStore.getCurrentEditorState(MappingEditorState);
-    const close = applicationStore.guaranteeSafeAction(() =>
+    const close = applicationStore.guardUnhandledError(() =>
       flowResult(mappingEditorState.closeTab(tabState)),
     );
-    const closeOthers = applicationStore.guaranteeSafeAction(() =>
+    const closeOthers = applicationStore.guardUnhandledError(() =>
       flowResult(mappingEditorState.closeAllOtherTabs(tabState)),
     );
     const closeAll = (): void => mappingEditorState.closeAllTabs();
@@ -129,8 +129,7 @@ const MappingEditorHeaderTabContextMenu = observer(
         </button>
       </div>
     );
-  },
-  { forwardRef: true },
+  }),
 );
 
 const getMappingElementTargetIcon = (
@@ -196,7 +195,7 @@ export const MappingEditor = observer(() => {
   };
   const closeTab = (tabState: MappingEditorTabState) => (): void => {
     flowResult(mappingEditorState.closeTab(tabState)).catch(
-      applicationStore.alertIllegalUnhandledError,
+      applicationStore.alertUnhandledError,
     );
   };
   const closeTabOnMiddleClick =
@@ -204,12 +203,12 @@ export const MappingEditor = observer(() => {
     (event): void => {
       if (event.nativeEvent.button === 1) {
         flowResult(mappingEditorState.closeTab(tabState)).catch(
-          applicationStore.alertIllegalUnhandledError,
+          applicationStore.alertUnhandledError,
         );
       }
     };
-  const openTab = (tabState: MappingEditorTabState): (() => Promise<void>) =>
-    applicationStore.guaranteeSafeAction(() =>
+  const openTab = (tabState: MappingEditorTabState): (() => void) =>
+    applicationStore.guardUnhandledError(() =>
       flowResult(mappingEditorState.openTab(tabState)),
     );
 

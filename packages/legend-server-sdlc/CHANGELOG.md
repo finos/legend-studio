@@ -1,5 +1,21 @@
 # @finos/legend-server-sdlc
 
+## 0.2.2
+
+## 0.2.1
+
+## 0.2.0
+
+### Minor Changes
+
+- [#910](https://github.com/finos/legend-studio/pull/910) [`86424505`](https://github.com/finos/legend-studio/commit/864245057273c69d8d056df69bddfc9b1c7eeb1d) ([@akphi](https://github.com/akphi)) - Add `webUrl` attribute to `Project` model.
+
+## 0.1.4
+
+## 0.1.3
+
+## 0.1.2
+
 ## 0.1.1
 
 ## 0.1.0

@@ -94,6 +94,8 @@ const FORBIDDEN_EXTENSION_ELEMENT_CLASS = new Set([
  */
 export abstract class BasicModel {
   root: Package;
+
+  // FIXME: to be moved, this is graph-manager logic and should be moved elsewhere
   buildState = ActionState.create();
 
   private readonly extensions: PureGraphExtension<PackageableElement>[] = [];
@@ -194,7 +196,7 @@ export abstract class BasicModel {
       setOwnFileGeneration: action,
       deleteOwnElement: action,
       renameOwnElement: action,
-      TEMP__deleteOwnSectionIndex: action,
+      TEMPORARY__deleteOwnSectionIndex: action,
     });
 
     this.root = new Package(rootPackageName);
@@ -693,7 +695,7 @@ export abstract class BasicModel {
    * TODO: this will be removed once we fully support section index in SDLC flow
    * @deprecated
    */
-  TEMP__deleteOwnSectionIndex(): void {
+  TEMPORARY__deleteOwnSectionIndex(): void {
     this.sectionIndicesIndex.forEach((sectionIndex) => {
       sectionIndex.setIsDeleted(true);
       this.sectionIndicesIndex.delete(sectionIndex.path);

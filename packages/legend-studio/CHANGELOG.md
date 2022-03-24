@@ -1,5 +1,53 @@
 # @finos/legend-studio
 
+## 3.1.0
+
+### Minor Changes
+
+- [#931](https://github.com/finos/legend-studio/pull/931) [`9b133f6b`](https://github.com/finos/legend-studio/commit/9b133f6bfaf5f845831f8772180ce6c1cc1a07eb) ([@AFine-gs](https://github.com/AFine-gs)) - Add support for `Redshift` connector
+
+### Patch Changes
+
+- [#838](https://github.com/finos/legend-studio/pull/838) [`854d8aa5`](https://github.com/finos/legend-studio/commit/854d8aa58ff31f67f698d99a498e0d51bfd668a2) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Leverage `External Format` APIs to dynamically fetch available `external format` types.
+
+* [#838](https://github.com/finos/legend-studio/pull/838) [`854d8aa5`](https://github.com/finos/legend-studio/commit/854d8aa58ff31f67f698d99a498e0d51bfd668a2) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Rename `DSL Serializer` to `DSL External Format` and move it to core.
+
+- [#963](https://github.com/finos/legend-studio/pull/963) [`b138cf17`](https://github.com/finos/legend-studio/commit/b138cf17e5d761d570a64453d3a0c4911edbcbe0) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Support opening dependency project in configuration editor.
+
+## 3.0.1
+
+### Patch Changes
+
+- [#924](https://github.com/finos/legend-studio/pull/924) [`4e258277`](https://github.com/finos/legend-studio/commit/4e258277de6ef51dd5cdfe1b0412d2842ae5787b) ([@akphi](https://github.com/akphi)) - Fix a regression with project selector `view` button launching a link without base URL.
+
+## 3.0.0
+
+### Major Changes
+
+- [#899](https://github.com/finos/legend-studio/pull/899) [`d4f0aec5`](https://github.com/finos/legend-studio/commit/d4f0aec5d536b3ad167ac702cc5c2070c265ed51) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Auto-prefix URL patterns in extensions with `/extensions/` to avoid potential conflicts with main routes.
+
+### Minor Changes
+
+- [#330](https://github.com/finos/legend-studio/pull/330) [`0b9263c`](https://github.com/finos/legend-studio/commit/0b9263c887753473a217e7b1c4a325dfdc3084aa) ([@aamend](https://github.com/aamend)) - Supporting Delta Lake JDBC connection.
+
+* [#910](https://github.com/finos/legend-studio/pull/910) [`86424505`](https://github.com/finos/legend-studio/commit/864245057273c69d8d056df69bddfc9b1c7eeb1d) ([@akphi](https://github.com/akphi)) - Support opening project's `web url` (i.e. view project in underlying VCS system) from project overview panel.
+
+### Patch Changes
+
+- [#899](https://github.com/finos/legend-studio/pull/899) [`d4f0aec5`](https://github.com/finos/legend-studio/commit/d4f0aec5d536b3ad167ac702cc5c2070c265ed51) ([@akphi](https://github.com/akphi)) - Move `documentation` field in config to shared Legend application framework config. `documentation.url` is now optional. If no `URL` is provided, documentation is inaccessible.
+
+* [#911](https://github.com/finos/legend-studio/pull/911) [`c848bfa5`](https://github.com/finos/legend-studio/commit/c848bfa512f9d7a5301e9c1d0f7d2c878d36d3db) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Sort dependency project versions in descending order.
+
+- [#901](https://github.com/finos/legend-studio/pull/901) [`58d25ea1`](https://github.com/finos/legend-studio/commit/58d25ea122ffab5a28b4b36aa93fc0ec44762b46) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Correctly display mapping elements from the included mappings in their corresponding mapping editor tab
+
+* [#897](https://github.com/finos/legend-studio/pull/897) [`9b27c41e`](https://github.com/finos/legend-studio/commit/9b27c41e45eafaded36df06cc353635afe993e86) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Display `database tables/views` and `classes` from dependency projects in the source selector dropdown in the mapping editor.
+
+## 2.4.7
+
+## 2.4.6
+
+## 2.4.5
+
 ## 2.4.4
 
 ### Patch Changes

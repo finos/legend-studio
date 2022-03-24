@@ -24,7 +24,9 @@ import type { Entity } from '@finos/legend-model-storage';
 import type { GraphManagerState } from '../../../GraphManagerState';
 import {
   TEST__buildGraphWithEntities,
+  TEST__checkBuildingElementsRoundtrip,
   TEST__getTestGraphManagerState,
+  TEST__GraphPluginManager,
 } from '../../../GraphManagerTestUtils';
 import { Database } from '../../../models/metamodels/pure/packageableElements/store/relational/model/Database';
 import { RootRelationalInstanceSetImplementation } from '../../../models/metamodels/pure/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation';
@@ -32,6 +34,8 @@ import { getOwnClassMappingsByClass } from '../../../helpers/MappingHelper';
 import { EmbeddedRelationalInstanceSetImplementation } from '../../../models/metamodels/pure/packageableElements/store/relational/mapping/EmbeddedRelationalInstanceSetImplementation';
 import { RelationalPropertyMapping } from '../../../models/metamodels/pure/packageableElements/store/relational/mapping/RelationalPropertyMapping';
 import { PRIMITIVE_TYPE } from '../../../MetaModelConst';
+import { TEST_DATA__SemiStructuredRelationalTypeRoundtrip } from './TEST_DATA__SemiStructuredRelationalTypeRoundtrip';
+import { DSLExternalFormat_GraphPreset } from '../../../graph/DSLExternalFormat_Extension';
 
 let graphManagerState: GraphManagerState;
 
@@ -117,5 +121,15 @@ test(unitTest('Relational Mapping is loaded properly'), () => {
   expect(propertyMapping.sourceSetImplementation).toBe(firmExtensionSetImpl);
   expect(propertyMapping.property.value.genericType.value.rawType).toBe(
     graph.getPrimitiveType(PRIMITIVE_TYPE.DATE),
+  );
+});
+
+const pluginManager = new TEST__GraphPluginManager();
+pluginManager.usePresets([new DSLExternalFormat_GraphPreset()]).install();
+
+test(unitTest('SemiStructured relational type roundtrip'), async () => {
+  await TEST__checkBuildingElementsRoundtrip(
+    TEST_DATA__SemiStructuredRelationalTypeRoundtrip as Entity[],
+    pluginManager,
   );
 });

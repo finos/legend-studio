@@ -129,7 +129,6 @@ export const ClassMappingSelectorModal = observer(
         open={true}
         onClose={hideClassMappingSelectorModal}
         TransitionProps={{
-          appear: false, // disable transition
           onEnter: handleEnterClassMappingSelectorModal,
         }}
         classes={{ container: 'search-modal__container' }}
@@ -205,7 +204,7 @@ const MappingExecutionQueryEditor = observer(
                 )
               : RawLambda.createStub(),
           ),
-        ).catch(applicationStore.alertIllegalUnhandledError);
+        ).catch(applicationStore.alertUnhandledError);
         hideClassMappingSelectorModal();
 
         // Attempt to generate data for input data panel as we pick the class mapping:
@@ -220,7 +219,7 @@ const MappingExecutionQueryEditor = observer(
             MappingExecutionEmptyInputDataState
           ) {
             if (setImplementation instanceof OperationSetImplementation) {
-              editorStore.applicationStore.notifyWarning(
+              applicationStore.notifyWarning(
                 `Can't auto-generate input data for operation class mapping. Please pick a concrete class mapping instead`,
               );
             } else {
@@ -286,10 +285,9 @@ const MappingExecutionQueryEditor = observer(
       [handleDrop],
     );
 
-    const clearQuery = (): Promise<void> =>
-      flowResult(
-        executionState.queryState.updateLamba(RawLambda.createStub()),
-      ).catch(applicationStore.alertIllegalUnhandledError);
+    const clearQuery = applicationStore.guardUnhandledError(() =>
+      flowResult(executionState.queryState.updateLamba(RawLambda.createStub())),
+    );
 
     return (
       <div className="panel mapping-execution-builder__query-panel">
@@ -637,16 +635,16 @@ export const MappingExecutionBuilder = observer(
     const mappingEditorState = executionState.mappingEditorState;
     const applicationStore = useApplicationStore();
     const { queryState, inputDataState } = executionState;
-    const generatePlan = applicationStore.guaranteeSafeAction(() =>
+    const generatePlan = applicationStore.guardUnhandledError(() =>
       flowResult(executionState.generatePlan()),
     );
     // execution
-    const execute = applicationStore.guaranteeSafeAction(() =>
+    const execute = applicationStore.guardUnhandledError(() =>
       flowResult(executionState.executeMapping()),
     );
     const executionResultText = executionState.executionResultText;
     // actions
-    const promote = applicationStore.guaranteeSafeAction(() =>
+    const promote = applicationStore.guardUnhandledError(() =>
       flowResult(executionState.promoteToTest()),
     );
     const promoteToService = (): void =>

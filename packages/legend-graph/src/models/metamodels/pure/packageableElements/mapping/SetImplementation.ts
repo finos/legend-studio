@@ -18,9 +18,12 @@ import { observable, action, computed, makeObservable } from 'mobx';
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import { fromElementPathToMappingElementId } from '../../../../../MetaModelUtils';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
-import type { PackageableElementReference } from '../PackageableElementReference';
+import {
+  PackageableElementExplicitReference,
+  type PackageableElementReference,
+} from '../PackageableElementReference';
 import type { PropertyOwnerImplementation } from './PropertyOwnerImplementation';
-import type { Class } from '../domain/Class';
+import { Class } from '../domain/Class';
 import type { Mapping, MappingElementLabel } from './Mapping';
 import type { Stubable } from '../../../../../helpers/Stubable';
 import type { OperationSetImplementation } from './OperationSetImplementation';
@@ -29,13 +32,23 @@ import type { FlatDataInstanceSetImplementation } from '../store/flatData/mappin
 import type { EmbeddedFlatDataPropertyMapping } from '../store/flatData/mapping/EmbeddedFlatDataPropertyMapping';
 import type { RelationalInstanceSetImplementation } from '../store/relational/mapping/RelationalInstanceSetImplementation';
 import type { RootRelationalInstanceSetImplementation } from '../store/relational/mapping/RootRelationalInstanceSetImplementation';
-import type { InferableMappingElementIdValue } from './InferableMappingElementId';
-import type { InferableMappingElementRoot } from './InferableMappingElementRoot';
+import {
+  InferableMappingElementIdExplicitValue,
+  type InferableMappingElementIdValue,
+} from './InferableMappingElementId';
+import {
+  InferableMappingElementRootExplicitValue,
+  type InferableMappingElementRoot,
+} from './InferableMappingElementRoot';
 import type { AggregationAwareSetImplementation } from './aggregationAware/AggregationAwareSetImplementation';
 import type { InstanceSetImplementation } from './InstanceSetImplementation';
+import type { MergeOperationSetImplementation } from './MergeOperationSetImplementation';
 
 export interface SetImplementationVisitor<T> {
   visit_SetImplementation(setImplementation: InstanceSetImplementation): T;
+  visit_MergeOperationSetImplementation(
+    setImplementation: MergeOperationSetImplementation,
+  ): T;
   visit_OperationSetImplementation(
     setImplementation: OperationSetImplementation,
   ): T;
@@ -57,6 +70,9 @@ export interface SetImplementationVisitor<T> {
   ): T;
   visit_AggregationAwareSetImplementation(
     setImplementation: AggregationAwareSetImplementation,
+  ): T;
+  visit_TEMPORARY__UnresolvedSetImplementation(
+    setImplementation: TEMPORARY__UnresolvedSetImplementation,
   ): T;
 }
 
@@ -136,10 +152,36 @@ export enum BASIC_SET_IMPLEMENTATION_TYPE {
 
 export enum SET_IMPLEMENTATION_TYPE {
   OPERATION = 'operation',
+  MERGE_OPERATION = 'mergeOperation',
   PUREINSTANCE = 'pureInstance',
   FLAT_DATA = 'flatData',
   EMBEDDED_FLAT_DATA = 'embeddedFlatData',
   RELATIONAL = 'relational',
   EMBEDDED_RELATIONAL = 'embeddedRelational',
   AGGREGATION_AWARE = 'aggregationAware',
+}
+
+/* @MARKER: RELAXED GRAPH CHECK - See https://github.com/finos/legend-studio/issues/880 */
+/**
+ * When set implementation cannot be resolved by ID,
+ * we try to avoid failing graph building for now
+ * instead, we will leave this loose end unresolved.
+ *
+ * NOTE: this is just a temporary solutions until we make this a hard-fail post migration.
+ *
+ * See https://github.com/finos/legend-studio/issues/880
+ */
+export class TEMPORARY__UnresolvedSetImplementation extends SetImplementation {
+  constructor(id: string, parent: Mapping) {
+    super(
+      InferableMappingElementIdExplicitValue.create(id, ''),
+      parent,
+      PackageableElementExplicitReference.create(new Class('')),
+      InferableMappingElementRootExplicitValue.create(false),
+    );
+  }
+
+  accept_SetImplementationVisitor<T>(visitor: SetImplementationVisitor<T>): T {
+    return visitor.visit_TEMPORARY__UnresolvedSetImplementation(this);
+  }
 }

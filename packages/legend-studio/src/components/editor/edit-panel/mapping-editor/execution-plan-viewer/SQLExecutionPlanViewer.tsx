@@ -112,11 +112,10 @@ const QueryViewer: React.FC<{
   </div>
 );
 
-interface labelprops {
+const ResultColumnsDataViewer: React.FC<{
   label: string;
   dataType: string;
-}
-const ResultColumnsDataViewer: React.FC<labelprops> = ({ label, dataType }) => (
+}> = ({ label, dataType }) => (
   <div className="property-basic-editor">
     <div className="property-basic-editor__type ">
       <input
@@ -143,7 +142,7 @@ const ResultColumnsViewer: React.FC<{ resultColumns: SQLResultColumn[] }> = ({
   <div>
     {resultColumns.map((resultColumn) => {
       const label = resultColumn.label.match(/(?:"[^"]*"|^[^"]*$)/);
-      if (!(label === null)) {
+      if (label !== null) {
         return (
           <ResultColumnsDataViewer
             key={resultColumn.label}
@@ -151,15 +150,14 @@ const ResultColumnsViewer: React.FC<{ resultColumns: SQLResultColumn[] }> = ({
             dataType={generateDataTypeLabel(resultColumn.dataType)}
           />
         );
-      } else {
-        return (
-          <ResultColumnsDataViewer
-            key={resultColumn.label}
-            label={resultColumn.label}
-            dataType={generateDataTypeLabel(resultColumn.dataType)}
-          />
-        );
       }
+      return (
+        <ResultColumnsDataViewer
+          key={resultColumn.label}
+          label={resultColumn.label}
+          dataType={generateDataTypeLabel(resultColumn.dataType)}
+        />
+      );
     })}
   </div>
 );

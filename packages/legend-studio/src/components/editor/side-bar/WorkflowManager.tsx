@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useEffect } from 'react';
+import { forwardRef, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   type TreeData,
@@ -195,7 +195,7 @@ const WorkflowJobLogsViewer = observer(
     const closeLogViewer = (): void => {
       logState.closeModal();
       flowResult(workflowState.fetchAllWorkflows()).catch(
-        workflowState.editorStore.applicationStore.alertIllegalUnhandledError,
+        workflowState.editorStore.applicationStore.alertUnhandledError,
       );
     };
     const refreshLogs = (): void => {
@@ -210,9 +210,6 @@ const WorkflowJobLogsViewer = observer(
           root: 'editor-modal__root-container',
           container: 'editor-modal__container',
           paper: 'editor-modal__content',
-        }}
-        TransitionProps={{
-          appear: false, // disable transition
         }}
       >
         <div className="modal modal--dark editor-modal">
@@ -253,17 +250,19 @@ const WorkflowJobLogsViewer = observer(
     );
   },
 );
+
 const WorkflowExplorerContextMenu = observer(
-  (
-    props: {
+  forwardRef<
+    HTMLDivElement,
+    {
       workflowManagerState: WorkflowManagerState;
       workflowState: WorkflowState;
       node: WorkflowExplorerTreeNodeData;
       treeData: TreeData<WorkflowExplorerTreeNodeData>;
-    },
-    ref: React.Ref<HTMLDivElement>,
-  ) => {
+    }
+  >(function WorkflowExplorerContextMenu(props, ref) {
     const { node, workflowManagerState, workflowState, treeData } = props;
+    const applicationStore = useApplicationStore();
     const retryJob = (): void => {
       if (node instanceof WorkflowJobTreeNodeData) {
         workflowState.retryJob(node.workflowJob, treeData);
@@ -281,13 +280,9 @@ const WorkflowExplorerContextMenu = observer(
     };
     const visitWeburl = (): void => {
       if (node instanceof WorkflowJobTreeNodeData) {
-        workflowState.editorStore.applicationStore.navigator.openNewWindow(
-          node.workflowJob.webURL,
-        );
+        applicationStore.navigator.openNewWindow(node.workflowJob.webURL);
       } else if (node instanceof WorkflowTreeNodeData) {
-        workflowState.editorStore.applicationStore.navigator.openNewWindow(
-          node.workflow.webURL,
-        );
+        applicationStore.navigator.openNewWindow(node.workflow.webURL);
       }
     };
 
@@ -312,8 +307,7 @@ const WorkflowExplorerContextMenu = observer(
         )}
       </MenuContent>
     );
-  },
-  { forwardRef: true },
+  }),
 );
 
 const WorkflowTreeNodeContainer: React.FC<
@@ -342,6 +336,7 @@ const WorkflowTreeNodeContainer: React.FC<
           guaranteeType(node, WorkflowJobTreeNodeData).workflowJob.status,
         );
   const selectNode: React.MouseEventHandler = (event) => onNodeSelect?.(node);
+
   return (
     <ContextMenu
       content={
@@ -475,12 +470,12 @@ export const WorkflowManager = observer(
       </>
     );
 
-    const refresh = applicationStore.guaranteeSafeAction(() =>
+    const refresh = applicationStore.guardUnhandledError(() =>
       flowResult(workflowManagerState.fetchAllWorkflows()),
     );
     useEffect(() => {
       flowResult(workflowManagerState.fetchAllWorkflows()).catch(
-        applicationStore.alertIllegalUnhandledError,
+        applicationStore.alertUnhandledError,
       );
     }, [applicationStore, workflowManagerState]);
 

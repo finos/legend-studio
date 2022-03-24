@@ -1,5 +1,21 @@
 # @finos/legend-extension-external-store-service
 
+## 1.1.2
+
+## 1.1.1
+
+## 1.1.0
+
+### Minor Changes
+
+- [#892](https://github.com/finos/legend-studio/pull/892) [`5991a60c`](https://github.com/finos/legend-studio/commit/5991a60ce523a5d917c55e53fea5b4f4f71ce16d) ([@hardikmaheshwari](https://github.com/hardikmaheshwari)) - Add support for modeling `optional/required` service parameters.
+
+## 1.0.17
+
+## 1.0.16
+
+## 1.0.15
+
 ## 1.0.14
 
 ### Patch Changes

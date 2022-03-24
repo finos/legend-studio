@@ -1,12 +1,24 @@
 # @finos/legend-application
 
+## 1.2.2
+
+## 1.2.1
+
+## 1.2.0
+
+### Minor Changes
+
+- [#899](https://github.com/finos/legend-studio/pull/899) [`d4f0aec5`](https://github.com/finos/legend-studio/commit/d4f0aec5d536b3ad167ac702cc5c2070c265ed51) ([@akphi](https://github.com/akphi)) - Create `LegendApplicationDocumentationRegistry` with shape `documentation: { url: string, entries: Record<string, string>}` to store links/references for documentation.
+
+## 1.1.9
+
+## 1.1.8
+
+## 1.1.7
+
 ## 1.1.6
 
 ## 1.1.5
-
-### Patch Changes
-
-- [#846](https://github.com/finos/legend-studio/pull/846) [`ede47204`](https://github.com/finos/legend-studio/commit/ede472048fb1f0596e4f835c56363e1071fdf910) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Remove TransitionProps `appear` flag to display lambda in lambda editor modal.
 
 ## 1.1.4
 

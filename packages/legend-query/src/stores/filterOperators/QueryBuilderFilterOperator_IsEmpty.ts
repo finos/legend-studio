@@ -26,11 +26,13 @@ import {
 } from '@finos/legend-graph';
 import {
   buildFilterConditionState,
-  buildNotExpression,
   buildFilterConditionExpression,
-  unwrapNotExpression,
 } from './QueryBuilderFilterOperatorHelper';
 import { SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
+import {
+  buildNotExpression,
+  unwrapNotExpression,
+} from '../QueryBuilderOperatorsHelper';
 
 export class QueryBuilderFilterOperator_IsEmpty extends QueryBuilderFilterOperator {
   getLabel(filterConditionState: FilterConditionState): string {
@@ -100,7 +102,8 @@ export class QueryBuilderFilterOperator_IsNotEmpty extends QueryBuilderFilterOpe
     filterConditionState: FilterConditionState,
   ): ValueSpecification {
     return buildNotExpression(
-      filterConditionState,
+      filterConditionState.filterState.queryBuilderState.graphManagerState
+        .graph,
       super.buildFilterConditionExpression(filterConditionState),
     );
   }

@@ -125,7 +125,7 @@ const MappingTestQueryEditor = observer(
                 )
               : RawLambda.createStub(),
           ),
-        ).catch(applicationStore.alertIllegalUnhandledError);
+        ).catch(applicationStore.alertUnhandledError);
         hideClassMappingSelectorModal();
 
         // Attempt to generate data for input data panel as we pick the class mapping
@@ -180,10 +180,9 @@ const MappingTestQueryEditor = observer(
       [handleDrop],
     );
 
-    const clearQuery = (): Promise<void> =>
-      flowResult(
-        testState.queryState.updateLamba(RawLambda.createStub()),
-      ).catch(applicationStore.alertIllegalUnhandledError);
+    const clearQuery = applicationStore.guardUnhandledError(() =>
+      flowResult(testState.queryState.updateLamba(RawLambda.createStub())),
+    );
 
     return (
       <div className="panel mapping-test-editor__query-panel">
@@ -488,7 +487,7 @@ export const MappingTestExpectedOutputAssertionBuilder = observer(
         tryToFormatLosslessJSONString(assertionState.expectedResult),
       );
     // Actions
-    const regenerateExpectedResult = applicationStore.guaranteeSafeAction(() =>
+    const regenerateExpectedResult = applicationStore.guardUnhandledError(() =>
       flowResult(testState.regenerateExpectedResult()),
     );
 
@@ -571,7 +570,7 @@ export const MappingTestBuilder = observer(
     // In case we switch out to another tab to do editing on some class, we want to refresh the test state data so that we can detect problem in deep fetch tree
     useEffect(() => {
       flowResult(testState.onTestStateOpen()).catch(
-        applicationStore.alertIllegalUnhandledError,
+        applicationStore.alertUnhandledError,
       );
     }, [applicationStore, testState]);
 
@@ -624,12 +623,12 @@ export const MappingTestEditor = observer(
       (): void =>
         testState.setSelectedTab(tab);
 
-    const runTest = applicationStore.guaranteeSafeAction(() =>
+    const runTest = applicationStore.guardUnhandledError(() =>
       flowResult(testState.runTest()),
     );
     // Plan
     const executionPlanState = testState.executionPlanState;
-    const generatePlan = applicationStore.guaranteeSafeAction(() =>
+    const generatePlan = applicationStore.guardUnhandledError(() =>
       flowResult(testState.generatePlan()),
     );
     // Test Result

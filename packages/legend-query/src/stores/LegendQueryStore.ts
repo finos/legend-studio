@@ -32,6 +32,7 @@ import {
   assertTrue,
   guaranteeNonNullable,
   ActionState,
+  StopWatch,
 } from '@finos/legend-shared';
 import {
   type LightQuery,
@@ -49,6 +50,9 @@ import {
   PureSingleExecution,
   PackageableElementExplicitReference,
   RuntimePointer,
+  GRAPH_MANAGER_LOG_EVENT,
+  type GraphBuilderReport,
+  GraphManagerTelemetry,
 } from '@finos/legend-graph';
 import {
   QueryBuilderState,
@@ -450,7 +454,9 @@ export class LegendQueryStore {
       );
       this.queryBuilderState.querySetupState.setMappingIsReadOnly(true);
       this.queryBuilderState.querySetupState.setRuntimeIsReadOnly(true);
-      this.queryBuilderState.buildStateFromRawLambda(
+
+      // leverage initialization of query builder state to ensure we handle unsupported queries
+      this.queryBuilderState.initialize(
         (yield this.graphManagerState.graphManager.pureCodeToLambda(
           query.content,
         )) as RawLambda,
@@ -550,9 +556,8 @@ export class LegendQueryStore {
       }
       this.queryBuilderState.querySetupState.setMappingIsReadOnly(true);
       this.queryBuilderState.querySetupState.setRuntimeIsReadOnly(true);
-      this.queryBuilderState.buildStateFromRawLambda(
-        queryInfoState.service.execution.func,
-      );
+      // leverage initialization of query builder state to ensure we handle unsupported queries
+      this.queryBuilderState.initialize(queryInfoState.service.execution.func);
       this.setOnSaveQuery(async (lambda: RawLambda) => {
         this.setQueryExportState(
           new QueryExportState(this, lambda, false, undefined),
@@ -716,11 +721,22 @@ export class LegendQueryStore {
     }
   }
 
-  *buildGraph(project: ProjectData, versionId: string): GeneratorFn<void> {
+  *buildGraph(
+    project: ProjectData,
+    versionId: string,
+    options?: { quiet?: boolean },
+  ): GeneratorFn<void> {
     try {
       this.buildGraphState.inProgress();
-      let entities: Entity[] = [];
+      const stopWatch = new StopWatch();
 
+      // reset
+      this.graphManagerState.resetGraph();
+
+      // fetch entities
+      stopWatch.record();
+      this.buildGraphState.setMessage(`Fetching entities...`);
+      let entities: Entity[] = [];
       if (versionId === SNAPSHOT_VERSION_ALIAS) {
         entities = (yield this.depotServerClient.getLatestRevisionEntities(
           project.groupId,
@@ -735,28 +751,62 @@ export class LegendQueryStore {
             : versionId,
         )) as Entity[];
       }
+      this.buildGraphState.setMessage(undefined);
+      stopWatch.record(GRAPH_MANAGER_LOG_EVENT.GRAPH_ENTITIES_FETCHED);
 
-      this.graphManagerState.resetGraph();
-      // build dependencies
+      // fetch dependencies
+      stopWatch.record();
       const dependencyManager =
         this.graphManagerState.createEmptyDependencyManager();
-      yield flowResult(
+      dependencyManager.buildState.setMessage(`Fetching dependencies...`);
+      const dependencyEntitiesMap = (yield flowResult(
+        this.getProjectDependencyEntities(project, versionId, options),
+      )) as Map<string, Entity[]>;
+      stopWatch.record(GRAPH_MANAGER_LOG_EVENT.GRAPH_DEPENDENCIES_FETCHED);
+
+      // build dependencies
+      const dependency_buildReport = (yield flowResult(
         this.graphManagerState.graphManager.buildDependencies(
           this.graphManagerState.coreModel,
           this.graphManagerState.systemModel,
           dependencyManager,
-          (yield flowResult(
-            this.getProjectDependencyEntities(project, versionId),
-          )) as Map<string, Entity[]>,
+          dependencyEntitiesMap,
         ),
-      );
+      )) as GraphBuilderReport;
       this.graphManagerState.graph.setDependencyManager(dependencyManager);
+      dependency_buildReport.timings[
+        GRAPH_MANAGER_LOG_EVENT.GRAPH_DEPENDENCIES_FETCHED
+      ] = stopWatch.getRecord(
+        GRAPH_MANAGER_LOG_EVENT.GRAPH_DEPENDENCIES_FETCHED,
+      );
+
       // build graph
-      yield flowResult(
+      const graph_buildReport = (yield flowResult(
         this.graphManagerState.graphManager.buildGraph(
           this.graphManagerState.graph,
           entities,
         ),
+      )) as GraphBuilderReport;
+      graph_buildReport.timings[
+        GRAPH_MANAGER_LOG_EVENT.GRAPH_ENTITIES_FETCHED
+      ] = stopWatch.getRecord(GRAPH_MANAGER_LOG_EVENT.GRAPH_ENTITIES_FETCHED);
+
+      // report
+      stopWatch.record();
+      const graphBuilderReportData = {
+        timings: {
+          [GRAPH_MANAGER_LOG_EVENT.GRAPH_INITIALIZED]: stopWatch.elapsed,
+        },
+        dependencies: dependency_buildReport,
+        graph: graph_buildReport,
+      };
+      this.applicationStore.log.info(
+        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_INITIALIZED),
+        graphBuilderReportData,
+      );
+      GraphManagerTelemetry.logEvent_GraphInitialized(
+        this.applicationStore.telemetryService,
+        graphBuilderReportData,
       );
 
       this.buildGraphState.pass();
@@ -774,9 +824,12 @@ export class LegendQueryStore {
   *getProjectDependencyEntities(
     project: ProjectData,
     versionId: string,
+    options?: { quiet?: boolean },
   ): GeneratorFn<Map<string, Entity[]>> {
     this.buildGraphState.inProgress();
     const dependencyEntitiesMap = new Map<string, Entity[]>();
+    const startTime = Date.now();
+
     try {
       let dependencyEntitiesJson: PlainObject<ProjectVersionEntities>[] = [];
       if (versionId === SNAPSHOT_VERSION_ALIAS) {
@@ -798,6 +851,13 @@ export class LegendQueryStore {
             true,
             false,
           )) as PlainObject<ProjectVersionEntities>[];
+      }
+      if (!options?.quiet) {
+        this.graphManagerState.graphManager.log.info(
+          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_ENTITIES_FETCHED),
+          Date.now() - startTime,
+          'ms',
+        );
       }
       dependencyEntitiesJson
         .map((e) => ProjectVersionEntities.serialization.fromJson(e))

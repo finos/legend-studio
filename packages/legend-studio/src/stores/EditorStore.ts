@@ -28,7 +28,7 @@ import {
 import { ElementEditorState } from './editor-state/element-editor-state/ElementEditorState';
 import { MappingEditorState } from './editor-state/element-editor-state/mapping/MappingEditorState';
 import {
-  type GraphBuilderReport,
+  type GraphBuilderResult,
   EditorGraphState,
   GraphBuilderStatus,
 } from './EditorGraphState';
@@ -322,7 +322,7 @@ export class EditorStore {
         [LEGEND_STUDIO_HOTKEY_MAP.COMPILE],
         this.createGlobalHotKeyAction(() => {
           flowResult(this.graphState.globalCompileInFormMode()).catch(
-            applicationStore.alertIllegalUnhandledError,
+            applicationStore.alertUnhandledError,
           );
         }),
       ),
@@ -332,7 +332,7 @@ export class EditorStore {
         this.createGlobalHotKeyAction(() => {
           flowResult(
             this.graphState.graphGenerationState.globalGenerate(),
-          ).catch(applicationStore.alertIllegalUnhandledError);
+          ).catch(applicationStore.alertUnhandledError);
         }),
       ),
       new HotkeyConfiguration(
@@ -352,7 +352,7 @@ export class EditorStore {
         [LEGEND_STUDIO_HOTKEY_MAP.TOGGLE_TEXT_MODE],
         this.createGlobalHotKeyAction(() => {
           flowResult(this.toggleTextMode()).catch(
-            applicationStore.alertIllegalUnhandledError,
+            applicationStore.alertUnhandledError,
           );
         }),
       ),
@@ -368,7 +368,7 @@ export class EditorStore {
         [LEGEND_STUDIO_HOTKEY_MAP.SYNC_WITH_WORKSPACE],
         this.createGlobalHotKeyAction(() => {
           flowResult(this.localChangesState.pushLocalChanges()).catch(
-            applicationStore.alertIllegalUnhandledError,
+            applicationStore.alertUnhandledError,
           );
         }),
       ),
@@ -551,8 +551,10 @@ export class EditorStore {
     this.initState.inProgress();
     const onLeave = (hasBuildSucceeded: boolean): void => {
       this.initState.complete(hasBuildSucceeded);
+      this.initState.setMessage(undefined);
     };
 
+    this.initState.setMessage(`Setting up workspace...`);
     yield flowResult(
       this.sdlcState.fetchCurrentProject(projectId, {
         suppressNotification: true,
@@ -665,7 +667,7 @@ export class EditorStore {
             type: ActionAlertActionType.STANDARD,
             handler: (): void => {
               createWorkspaceAndRelaunch().catch(
-                this.applicationStore.alertIllegalUnhandledError,
+                this.applicationStore.alertUnhandledError,
               );
             },
           },
@@ -737,6 +739,7 @@ export class EditorStore {
       this.workspaceUpdaterState.fetchLatestCommittedReviews(),
       this.projectConfigurationEditorState.fetchLatestProjectStructureVersion(),
       this.graphState.graphGenerationState.fetchAvailableFileGenerationDescriptions(),
+      this.graphState.graphGenerationState.externalFormatState.fetchExternalFormatsDescriptions(),
       this.modelLoaderState.fetchAvailableModelImportDescriptions(),
       this.sdlcState.fetchProjectVersions(),
     ]);
@@ -759,7 +762,7 @@ export class EditorStore {
             flowResult(
               this.conflictResolutionState.discardConflictResolutionChanges(),
             ).catch((error) =>
-              this.applicationStore.alertIllegalUnhandledError(error),
+              this.applicationStore.alertUnhandledError(error),
             );
           },
         },
@@ -775,6 +778,7 @@ export class EditorStore {
       this.sdlcState.checkIfWorkspaceIsOutdated(),
       this.projectConfigurationEditorState.fetchLatestProjectStructureVersion(),
       this.graphState.graphGenerationState.fetchAvailableFileGenerationDescriptions(),
+      this.graphState.graphGenerationState.externalFormatState.fetchExternalFormatsDescriptions(),
       this.modelLoaderState.fetchAvailableModelImportDescriptions(),
       this.sdlcState.fetchProjectVersions(),
     ]);
@@ -784,7 +788,8 @@ export class EditorStore {
     const startTime = Date.now();
     let entities: Entity[];
     let projectConfiguration: PlainObject<ProjectConfiguration>;
-    this.graphState.isInitializingGraph = true;
+
+    this.initState.setMessage(`Fetching entities...`);
     try {
       // fetch workspace entities and config at the same time
       const result = (yield Promise.all([
@@ -816,21 +821,20 @@ export class EditorStore {
       );
     } catch {
       return;
+    } finally {
+      this.initState.setMessage(undefined);
     }
 
     try {
-      const graphBuilderReport = (yield flowResult(
+      const result = (yield flowResult(
         // NOTE: if graph entities are provided, we will use that to build the graph.
         // We use this method as a way to fully reset the application with the entities, but we still use
         // the workspace entities for hashing as those are the base entities.
         this.graphState.buildGraph(graphEntities ?? entities),
-      )) as GraphBuilderReport;
+      )) as GraphBuilderResult;
 
-      if (graphBuilderReport.error) {
-        if (
-          graphBuilderReport.status ===
-          GraphBuilderStatus.REDIRECTED_TO_TEXT_MODE
-        ) {
+      if (result.error) {
+        if (result.status === GraphBuilderStatus.REDIRECTED_TO_TEXT_MODE) {
           yield flowResult(
             this.changeDetectionState.workspaceLocalLatestRevisionState.buildEntityHashesIndex(
               entities,
@@ -842,6 +846,10 @@ export class EditorStore {
         }
         return;
       }
+
+      // build explorer tree
+      this.explorerTreeState.buildImmutableModelTrees();
+      this.explorerTreeState.build();
 
       // ======= (RE)START CHANGE DETECTION =======
       this.changeDetectionState.stop();
@@ -1129,8 +1137,8 @@ export class EditorStore {
             plugin as DSL_LegendStudioPlugin_Extension
           ).getExtraElementEditorPostDeleteActions?.() ?? [],
       );
-    for (const action of extraElementEditorPostDeleteActions) {
-      action(this, element);
+    for (const postDeleteAction of extraElementEditorPostDeleteActions) {
+      postDeleteAction(this, element);
     }
 
     // reprocess project explorer tree
@@ -1160,8 +1168,8 @@ export class EditorStore {
             plugin as DSL_LegendStudioPlugin_Extension
           ).getExtraElementEditorPostRenameActions?.() ?? [],
       );
-    for (const action of extraElementEditorPostRenameActions) {
-      action(this, element);
+    for (const postRenameAction of extraElementEditorPostRenameActions) {
+      postRenameAction(this, element);
     }
 
     // reprocess project explorer tree

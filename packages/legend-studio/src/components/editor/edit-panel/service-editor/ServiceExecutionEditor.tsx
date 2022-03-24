@@ -104,7 +104,7 @@ const PureSingleExecutionConfigurationEditor = observer(
         selectedExecution.setMapping(val.value);
         executionState.autoSelectRuntimeOnMappingChange(val.value);
         flowResult(selectedTestState.generateTestData()).catch(
-          applicationStore.alertIllegalUnhandledError,
+          applicationStore.alertUnhandledError,
         );
       }
     };
@@ -199,7 +199,7 @@ const PureSingleExecutionConfigurationEditor = observer(
           if (element instanceof Mapping) {
             selectedExecution.setMapping(element);
             flowResult(selectedTestState.generateTestData()).catch(
-              applicationStore.alertIllegalUnhandledError,
+              applicationStore.alertUnhandledError,
             );
             executionState.autoSelectRuntimeOnMappingChange(element);
           } else if (
@@ -215,7 +215,7 @@ const PureSingleExecutionConfigurationEditor = observer(
         }
       },
       [
-        applicationStore.alertIllegalUnhandledError,
+        applicationStore.alertUnhandledError,
         executionState,
         isReadOnly,
         mapping,
@@ -412,9 +412,9 @@ const PureExecutionEditor = observer(
   }) => {
     const { executionState, isReadOnly } = props;
     const execution = executionState.execution;
-    const editorStore = useEditorStore();
+    const applicationStore = useApplicationStore();
     const addKey = (): void =>
-      editorStore.applicationStore.notifyError(
+      applicationStore.notifyError(
         'Multi key execution currently not supported',
       );
 

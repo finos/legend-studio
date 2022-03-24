@@ -101,7 +101,7 @@ const TaxonomyNodeDataSpaceItem = observer(
         .then(() =>
           applicationStore.notifySuccess('Copied data space link to clipboard'),
         )
-        .catch(applicationStore.alertIllegalUnhandledError);
+        .catch(applicationStore.alertUnhandledError);
     };
 
     return (
@@ -156,7 +156,7 @@ const TaxonomyNodeViewerExplorer = observer(
       (): void => {
         flowResult(
           taxonomyNodeViewerState.initializeDataSpaceViewer(rawDataSpace),
-        ).catch(applicationStore.alertIllegalUnhandledError);
+        ).catch(applicationStore.alertUnhandledError);
       };
 
     return (
@@ -198,11 +198,12 @@ const TaxonomyNodeDataSpaceViewer = observer(
   (props: { dataSpaceViewerState: DataSpaceViewerState }) => {
     const { dataSpaceViewerState } = props;
     const taxonomyStore = useLegendTaxonomyStore();
+    const applicationStore = useApplicationStore();
     const queryDataSpace = (): void =>
       taxonomyStore.queryUsingDataSpace(dataSpaceViewerState);
     const viewDataSpace = (): void =>
-      taxonomyStore.applicationStore.navigator.openNewWindow(
-        taxonomyStore.applicationStore.navigator.generateLocation(
+      applicationStore.navigator.openNewWindow(
+        applicationStore.navigator.generateLocation(
           generateStandaloneDataSpaceViewerRoute(
             generateGAVCoordinates(
               dataSpaceViewerState.dataSpaceGroupId,
@@ -248,6 +249,7 @@ const TaxonomyNodeDataSpaceViewer = observer(
 export const TaxonomyNodeViewer = observer(
   (props: { taxonomyNodeViewerState: TaxonomyNodeViewerState }) => {
     const { taxonomyNodeViewerState } = props;
+    const taxonomyStore = useLegendTaxonomyStore();
     const description =
       taxonomyNodeViewerState.taxonomyNode.taxonomyData?.description;
 
@@ -287,7 +289,16 @@ export const TaxonomyNodeViewer = observer(
                   <div className="taxonomy-node-viewer__content-placeholder">
                     <PanelLoadingIndicator isLoading={true} />
                     <BlankPanelContent>
-                      Setting up data space...
+                      {taxonomyNodeViewerState.initDataSpaceViewerState
+                        .message ??
+                        taxonomyStore.graphManagerState.graph.systemModel
+                          .buildState.message ??
+                        taxonomyStore.graphManagerState.graph.dependencyManager
+                          .buildState.message ??
+                        taxonomyStore.graphManagerState.graph.generationModel
+                          .buildState.message ??
+                        taxonomyStore.graphManagerState.graph.buildState
+                          .message}
                     </BlankPanelContent>
                   </div>
                 )}

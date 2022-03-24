@@ -1,0 +1,37 @@
+Class test::Person
+{
+  firstName: String[0..1];
+  lastName: String[0..1];
+}
+
+Class test::S_PersonLastName
+{
+  id: Integer[1];
+  lastName: String[1];
+}
+
+Class test::S_PersonFirstName
+{
+  id: Integer[1];
+  firstName: String[1];
+}
+
+
+###Mapping
+Mapping test::Map
+(
+  test::Person[s1]: Pure
+  {
+    ~src test::S_PersonLastName
+    lastName: $src.lastName
+  }
+  test::Person[s2]: Pure
+  {
+    ~src test::S_PersonFirstName
+    firstName: $src.firstName
+  }
+  *test::Person: Operation
+  {
+    meta::pure::router::operations::merge_OperationSetImplementation_1__SetImplementation_MANY_([s1,s2],{x: test::S_PersonLastName[1],y: test::S_PersonFirstName[1]|$x.id == $y.id})
+  }
+)

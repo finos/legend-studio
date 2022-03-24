@@ -36,7 +36,7 @@ export const StandaloneDataSpaceViewer = observer(() => {
 
   useEffect(() => {
     flowResult(taxonomyStore.initializeStandaloneDataSpaceViewer(params)).catch(
-      applicationStore.alertIllegalUnhandledError,
+      applicationStore.alertUnhandledError,
     );
   }, [applicationStore, params, taxonomyStore]);
   const queryDataSpace = (): void => {
@@ -77,8 +77,14 @@ export const StandaloneDataSpaceViewer = observer(() => {
         {!taxonomyStore.standaloneDataSpaceViewerState &&
           taxonomyStore.initStandaloneDataSpaceViewerState.isInProgress && (
             <BlankPanelContent>
-              {taxonomyStore.initStandaloneDataSpaceViewerStatusText ??
-                `Setting up data space...`}
+              {taxonomyStore.initStandaloneDataSpaceViewerState.message ??
+                taxonomyStore.graphManagerState.graph.systemModel.buildState
+                  .message ??
+                taxonomyStore.graphManagerState.graph.dependencyManager
+                  .buildState.message ??
+                taxonomyStore.graphManagerState.graph.generationModel.buildState
+                  .message ??
+                taxonomyStore.graphManagerState.graph.buildState.message}
             </BlankPanelContent>
           )}
         {!taxonomyStore.standaloneDataSpaceViewerState &&

@@ -96,7 +96,7 @@ export class QueryParameterState {
   uuid = uuid();
   queryParameterState: QueryParametersState;
   parameter: VariableExpression;
-  values: InstanceValue | undefined;
+  value: InstanceValue | undefined;
 
   constructor(
     queryParameterState: QueryParametersState,
@@ -104,16 +104,16 @@ export class QueryParameterState {
   ) {
     makeObservable(this, {
       parameter: observable,
-      values: observable,
-      setValues: action,
-      mockParameterValues: action,
+      value: observable,
+      setValue: action,
+      mockParameterValue: action,
     });
     this.queryParameterState = queryParameterState;
     this.parameter = variableExpression;
   }
 
-  mockParameterValues(): void {
-    this.setValues(
+  mockParameterValue(): void {
+    this.setValue(
       this.generateMockValues(
         this.parameter.genericType?.value.rawType,
         this.parameter.multiplicity,
@@ -160,8 +160,8 @@ export class QueryParameterState {
     return undefined;
   }
 
-  setValues(values: InstanceValue | undefined): void {
-    this.values = values;
+  setValue(value: InstanceValue | undefined): void {
+    this.value = value;
   }
 
   static createDefault(
@@ -186,7 +186,7 @@ export class QueryParameterState {
   changeVariableType(type: Type): void {
     if (type !== this.variableType) {
       this.parameter.genericType?.value.setRawType(type);
-      this.mockParameterValues();
+      this.mockParameterValue();
     }
   }
 
@@ -201,7 +201,7 @@ export class QueryParameterState {
     ) {
       current.setLowerBound(lowerBound);
       current.setUpperBound(uppderBound);
-      this.mockParameterValues();
+      this.mockParameterValue();
     }
   }
 
@@ -214,28 +214,73 @@ export class QueryParameterState {
   }
 }
 
+export enum PARAMETER_SUBMIT_ACTION {
+  EXECUTE = 'EXECUTE',
+  EXPORT = 'EXPORT',
+}
+
+export class ParameterInstanceValuesEditorState {
+  showModal = false;
+  submitAction:
+    | {
+        handler: () => Promise<void>;
+        label: PARAMETER_SUBMIT_ACTION;
+      }
+    | undefined;
+
+  constructor() {
+    makeObservable(this, {
+      showModal: observable,
+      submitAction: observable,
+      setShowModal: action,
+      open: action,
+      setSubmitAction: action,
+    });
+  }
+
+  setShowModal(val: boolean): void {
+    this.showModal = val;
+  }
+
+  setSubmitAction(
+    val:
+      | {
+          handler: () => Promise<void>;
+          label: PARAMETER_SUBMIT_ACTION;
+        }
+      | undefined,
+  ): void {
+    this.submitAction = val;
+  }
+
+  open(handler: () => Promise<void>, label: PARAMETER_SUBMIT_ACTION): void {
+    this.setSubmitAction({ handler, label });
+    this.setShowModal(true);
+  }
+
+  close(): void {
+    this.setSubmitAction(undefined);
+    this.setShowModal(false);
+  }
+}
+
 export class QueryParametersState {
   selectedParameter: QueryParameterState | undefined;
   queryBuilderState: QueryBuilderState;
   parameters: QueryParameterState[] = [];
-  valuesEditorIsOpen = false;
+  parameterValuesEditorState = new ParameterInstanceValuesEditorState();
 
   constructor(queryBuilderState: QueryBuilderState) {
     makeObservable(this, {
-      valuesEditorIsOpen: observable,
+      parameterValuesEditorState: observable,
       parameters: observable,
       selectedParameter: observable,
-      setValuesEditorIsOpen: action,
       setSelectedParameter: action,
       addParameter: action,
       removeParameter: action,
     });
 
     this.queryBuilderState = queryBuilderState;
-  }
-
-  setValuesEditorIsOpen(val: boolean): void {
-    this.valuesEditorIsOpen = val;
   }
 
   setSelectedParameter(val: QueryParameterState | undefined): void {

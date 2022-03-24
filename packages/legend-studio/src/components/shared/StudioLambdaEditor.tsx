@@ -80,7 +80,7 @@ export const StudioLambdaEditor = observer(
                 !disabled,
                 () => flowResult(editorStore.toggleTextMode()),
               ),
-            ).catch(applicationStore.alertIllegalUnhandledError);
+            ).catch(applicationStore.alertUnhandledError);
           },
         },
         {
@@ -94,7 +94,7 @@ export const StudioLambdaEditor = observer(
                 () =>
                   flowResult(editorStore.graphState.globalCompileInFormMode()),
               ),
-            ).catch(applicationStore.alertIllegalUnhandledError);
+            ).catch(applicationStore.alertUnhandledError);
           },
         },
         {
@@ -110,7 +110,7 @@ export const StudioLambdaEditor = observer(
                     editorStore.graphState.graphGenerationState.globalGenerate(),
                   ),
               ),
-            ).catch(applicationStore.alertIllegalUnhandledError);
+            ).catch(applicationStore.alertUnhandledError);
           },
         },
       ],

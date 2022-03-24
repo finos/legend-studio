@@ -45,7 +45,7 @@ export const QueryBuilderDialog = observer(() => {
   const closeQueryBuilder = (): void => {
     flowResult(
       queryBuilderExtensionState.setEmbeddedQueryBuilderMode(undefined),
-    ).catch(applicationStore.alertIllegalUnhandledError);
+    ).catch(applicationStore.alertUnhandledError);
     queryBuilderExtensionState.reset();
   };
 
@@ -58,9 +58,6 @@ export const QueryBuilderDialog = observer(() => {
         container: 'editor-modal__container',
         paper:
           'editor-modal__content query-builder__dialog__container__content',
-      }}
-      TransitionProps={{
-        appear: false, // disable transition
       }}
     >
       <div

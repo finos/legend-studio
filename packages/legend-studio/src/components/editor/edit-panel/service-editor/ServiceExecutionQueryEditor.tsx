@@ -60,9 +60,6 @@ const ServiceExecutionResultViewer = observer(
           container: 'editor-modal__container',
           paper: 'editor-modal__content',
         }}
-        TransitionProps={{
-          appear: false, // disable transition
-        }}
       >
         <div className="modal modal--dark editor-modal">
           <div className="modal__header">
@@ -118,7 +115,7 @@ const ServiceExecutionQueryImporter = observer(
     const onQueryOptionChange = (option: QueryOption | null): void => {
       if (option?.value !== queryState.selectedQueryInfo?.query.id) {
         flowResult(queryState.setSelectedQueryInfo(option?.value)).catch(
-          applicationStore.alertIllegalUnhandledError,
+          applicationStore.alertUnhandledError,
         );
       }
     };
@@ -144,7 +141,7 @@ const ServiceExecutionQueryImporter = observer(
       () =>
         debounce((input: string): void => {
           flowResult(queryState.loadQueries(input)).catch(
-            applicationStore.alertIllegalUnhandledError,
+            applicationStore.alertUnhandledError,
           );
         }, 500),
       [applicationStore, queryState],
@@ -158,13 +155,13 @@ const ServiceExecutionQueryImporter = observer(
     };
     const importQuery = (): void => {
       flowResult(queryState.importQuery()).catch(
-        applicationStore.alertIllegalUnhandledError,
+        applicationStore.alertUnhandledError,
       );
     };
 
     useEffect(() => {
       flowResult(queryState.loadQueries('')).catch(
-        applicationStore.alertIllegalUnhandledError,
+        applicationStore.alertUnhandledError,
       );
     }, [queryState, applicationStore]);
 
@@ -173,7 +170,6 @@ const ServiceExecutionQueryImporter = observer(
         open={queryState.openQueryImporter}
         onClose={closeQueryImporter}
         TransitionProps={{
-          appear: false, // disable transition
           onEnter: handleEnterQueryImporter,
         }}
         classes={{ container: 'search-modal__container' }}
@@ -232,7 +228,7 @@ export const ServiceExecutionQueryEditor = observer(
     const { executionState, isReadOnly } = props;
     const queryState = executionState.queryState;
     const editorStore = useEditorStore();
-    const applicationStore = editorStore.applicationStore;
+    const applicationStore = useApplicationStore();
     const extraServiceQueryEditorActions = editorStore.pluginManager
       .getStudioPlugins()
       .flatMap(
@@ -250,16 +246,16 @@ export const ServiceExecutionQueryEditor = observer(
       queryState.setOpenQueryImporter(true);
     };
     // execution
-    const execute = applicationStore.guaranteeSafeAction(() =>
+    const execute = applicationStore.guardUnhandledError(() =>
       flowResult(executionState.execute()),
     );
-    const generatePlan = applicationStore.guaranteeSafeAction(() =>
+    const generatePlan = applicationStore.guardUnhandledError(() =>
       flowResult(executionState.generatePlan()),
     );
     // convert to string
     useEffect(() => {
       flowResult(queryState.convertLambdaObjectToGrammarString(true)).catch(
-        applicationStore.alertIllegalUnhandledError,
+        applicationStore.alertUnhandledError,
       );
     }, [applicationStore, queryState]);
 

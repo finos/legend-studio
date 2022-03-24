@@ -600,8 +600,8 @@ export class NewElementState {
             plugin as DSL_LegendStudioPlugin_Extension
           ).getExtraElementEditorPostCreateActions?.() ?? [],
       );
-    for (const action of extraElementEditorPostCreateActions) {
-      action(this.editorStore, element);
+    for (const postCreateAction of extraElementEditorPostCreateActions) {
+      postCreateAction(this.editorStore, element);
     }
   }
 

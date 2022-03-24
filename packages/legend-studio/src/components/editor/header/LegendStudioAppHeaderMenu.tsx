@@ -43,13 +43,7 @@ const AboutModal: React.FC<{
   const config = applicationStore.config;
 
   return (
-    <Dialog
-      onClose={closeModal}
-      open={open}
-      TransitionProps={{
-        appear: false, // disable transition
-      }}
-    >
+    <Dialog onClose={closeModal} open={open}>
       <div className="modal modal--dark about-modal">
         <div className="modal__header">
           <div className="modal__title">
@@ -121,7 +115,7 @@ const AboutModal: React.FC<{
 
 export const LegendStudioAppHeaderMenu: React.FC = () => {
   const applicationStore = useApplicationStore<LegendStudioConfig>();
-  const config = applicationStore.config;
+  const appDocUrl = applicationStore.docRegistry.url;
 
   // menu
   const [openMenuDropdown, setOpenMenuDropdown] = useState(false);
@@ -132,8 +126,11 @@ export const LegendStudioAppHeaderMenu: React.FC = () => {
   const showAboutModal = (): void => setOpenAboutModal(true);
   const hideAboutModal = (): void => setOpenAboutModal(false);
   // documentation
-  const goToDocumentation = (): void =>
-    applicationStore.navigator.openNewWindow(config.documentationUrl);
+  const goToDocumentation = (): void => {
+    if (appDocUrl) {
+      applicationStore.navigator.openNewWindow(appDocUrl);
+    }
+  };
 
   // SDLC server
   const [openSDLCServerDropdown, setOpenSDLCServerDropdown] = useState(false);
@@ -213,6 +210,7 @@ export const LegendStudioAppHeaderMenu: React.FC = () => {
             </MenuContentItem>
             <MenuContentItem
               className="app__header__menu__item"
+              disabled={!appDocUrl}
               onClick={goToDocumentation}
             >
               Documentation

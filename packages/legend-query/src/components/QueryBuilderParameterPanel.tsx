@@ -39,36 +39,37 @@ import {
 import {
   type PackageableElementOption,
   buildElementOption,
+  useApplicationStore,
 } from '@finos/legend-application';
 import { useDrag, useDragLayer } from 'react-dnd';
 import { getEmptyImage } from 'react-dnd-html5-backend';
 import { QueryBuilderValueSpecificationEditor } from './QueryBuilderValueSpecificationEditor';
-import { flowResult } from 'mobx';
+import { prettyCONSTName } from '@finos/legend-shared';
 
 const ParameterValuesEditor = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
-    // main state
     const { queryBuilderState } = props;
+    const applicationStore = useApplicationStore();
     const parameterState = queryBuilderState.queryParametersState;
-    const close = (): void => parameterState.setValuesEditorIsOpen(false);
-    const execute = (): void => {
-      close();
-      flowResult(queryBuilderState.resultState.execute()).catch(
-        queryBuilderState.applicationStore.alertIllegalUnhandledError,
-      );
-    };
+    const parameterValuesEditorState =
+      parameterState.parameterValuesEditorState;
+    const close = (): void => parameterValuesEditorState.close();
+    const submitAction = parameterValuesEditorState.submitAction;
+    const submit = applicationStore.guardUnhandledError(async () => {
+      if (submitAction) {
+        close();
+        await submitAction.handler();
+      }
+    });
 
     return (
       <Dialog
-        open={Boolean(parameterState.valuesEditorIsOpen)}
+        open={Boolean(parameterValuesEditorState.showModal)}
         onClose={close}
         classes={{
           root: 'editor-modal__root-container',
           container: 'editor-modal__container',
           paper: 'editor-modal__content',
-        }}
-        TransitionProps={{
-          appear: false, // disable transition
         }}
       >
         <div className="modal modal--dark editor-modal query-builder__parameters__values__editor__modal">
@@ -93,9 +94,9 @@ const ParameterValuesEditor = observer(
                       {variableType.name}
                     </div>
                   </div>
-                  {paramState.values && (
+                  {paramState.value && (
                     <QueryBuilderValueSpecificationEditor
-                      valueSpecification={paramState.values}
+                      valueSpecification={paramState.value}
                       graph={queryBuilderState.graphManagerState.graph}
                       expectedType={variableType}
                       className="query-builder__parameters__value__editor"
@@ -106,13 +107,15 @@ const ParameterValuesEditor = observer(
             })}
           </div>
           <div className="modal__footer">
-            <button
-              className="btn modal__footer__close-btn"
-              title="execute"
-              onClick={execute}
-            >
-              Execute
-            </button>
+            {submitAction && (
+              <button
+                className="btn modal__footer__close-btn"
+                title={submitAction.label}
+                onClick={submit}
+              >
+                {prettyCONSTName(submitAction.label)}
+              </button>
+            )}
             <button className="btn modal__footer__close-btn" onClick={close}>
               Close
             </button>
@@ -209,9 +212,6 @@ const VariableExpressionEditor = observer(
           container: 'editor-modal__container',
           paper: 'editor-modal__content',
         }}
-        TransitionProps={{
-          appear: false, // disable transition
-        }}
       >
         <div className="modal modal--dark editor-modal query-builder__parameters__modal">
           <div className="modal__header">
@@ -298,7 +298,7 @@ const QueryBuilderParameterDragLayer = observer(
       (monitor) => ({
         itemType:
           monitor.getItemType() as QUERY_BUILDER_PARAMETER_TREE_DND_TYPE,
-        item: monitor.getItem() as QueryBuilderParameterDragSource | null,
+        item: monitor.getItem<QueryBuilderParameterDragSource | null>(),
         isDragging: monitor.isDragging(),
         initialOffset: monitor.getInitialSourceClientOffset(),
         currentPosition: monitor.getClientOffset(),
@@ -412,7 +412,7 @@ export const QueryBuilderParameterPanel = observer(
         const parmaterState =
           QueryParameterState.createDefault(queryParameterState);
         queryParameterState.setSelectedParameter(parmaterState);
-        parmaterState.mockParameterValues();
+        parmaterState.mockParameterValue();
       }
     };
 
@@ -455,7 +455,7 @@ export const QueryBuilderParameterPanel = observer(
             variableExpressionState={queryParameterState.selectedParameter}
           />
         )}
-        {queryParameterState.valuesEditorIsOpen && (
+        {queryParameterState.parameterValuesEditorState.showModal && (
           <ParameterValuesEditor queryBuilderState={queryBuilderState} />
         )}
       </div>

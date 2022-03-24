@@ -10,5 +10,12 @@
     "src/**/__mocks__/**/*.ts",
     "src/**/__mocks__/**/*.tsx"
   ],
-  "references": [{ "path": "./tsconfig.package.json" }]
+  "references": [
+    { "path": "./tsconfig.package.json" },
+    { "path": "../legend-graph/tsconfig.build.json" },
+    { "path": "../legend-studio/tsconfig.build.json" },
+    { "path": "../legend-shared/tsconfig.build.json" },
+    { "path": "../legend-model-storage/tsconfig.build.json" },
+    { "path": "../legend-art/tsconfig.build.json" }
+  ]
 }

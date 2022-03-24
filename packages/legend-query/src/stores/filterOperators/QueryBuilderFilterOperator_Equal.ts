@@ -34,14 +34,16 @@ import {
 import { UnsupportedOperationError } from '@finos/legend-shared';
 import {
   buildFilterConditionState,
-  buildNotExpression,
-  buildPrimitiveInstanceValue,
   buildFilterConditionExpression,
-  getNonCollectionValueSpecificationType,
-  unwrapNotExpression,
 } from './QueryBuilderFilterOperatorHelper';
 import { SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
 import { generateDefaultValueForPrimitiveType } from '../QueryBuilderValueSpecificationBuilderHelper';
+import {
+  buildNotExpression,
+  unwrapNotExpression,
+  buildPrimitiveInstanceValue,
+  getNonCollectionValueSpecificationType,
+} from '../QueryBuilderOperatorsHelper';
 
 export class QueryBuilderFilterOperator_Equal extends QueryBuilderFilterOperator {
   getLabel(filterConditionState: FilterConditionState): string {
@@ -118,7 +120,7 @@ export class QueryBuilderFilterOperator_Equal extends QueryBuilderFilterOperator
       case PRIMITIVE_TYPE.FLOAT:
       case PRIMITIVE_TYPE.INTEGER: {
         return buildPrimitiveInstanceValue(
-          filterConditionState,
+          filterConditionState.filterState.queryBuilderState,
           propertyType.path,
           generateDefaultValueForPrimitiveType(propertyType.path),
         );
@@ -186,7 +188,8 @@ export class QueryBuilderFilterOperator_NotEqual extends QueryBuilderFilterOpera
     filterConditionState: FilterConditionState,
   ): ValueSpecification {
     return buildNotExpression(
-      filterConditionState,
+      filterConditionState.filterState.queryBuilderState.graphManagerState
+        .graph,
       super.buildFilterConditionExpression(filterConditionState),
     );
   }

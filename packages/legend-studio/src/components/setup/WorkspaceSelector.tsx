@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useEffect } from 'react';
+import { forwardRef, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import type { WorkspaceOption } from '../../stores/SetupStore';
 import { WorkspaceType } from '@finos/legend-server-sdlc';
@@ -25,6 +25,7 @@ import {
   PlusIcon,
   UserIcon,
   UsersIcon,
+  GitBranchIcon,
 } from '@finos/legend-art';
 import { generateSetupRoute } from '../../stores/LegendStudioRouter';
 import { useSetupStore } from './SetupStoreProvider';
@@ -45,13 +46,13 @@ const formatOptionLabel = (option: WorkspaceOption): React.ReactNode => (
 );
 
 export const WorkspaceSelector = observer(
-  (
-    props: {
+  forwardRef<
+    SelectComponent,
+    {
       onChange: (focusNext: boolean) => void;
       create: () => void;
-    },
-    ref: React.Ref<SelectComponent>,
-  ) => {
+    }
+  >(function WorkspaceSelector(props, ref) {
     const { onChange, create } = props;
     const setupStore = useSetupStore();
     const applicationStore = useApplicationStore<LegendStudioConfig>();
@@ -90,12 +91,7 @@ export const WorkspaceSelector = observer(
       if (setupStore.currentProjectWorkspaces && !currentWorkspaceCompositeId) {
         onChange(false);
       }
-    }, [
-      setupStore.currentProjectWorkspaces,
-      setupStore.currentProjectId,
-      currentWorkspaceCompositeId,
-      onChange,
-    ]);
+    }, [setupStore.currentProjectWorkspaces, setupStore.currentProjectId, currentWorkspaceCompositeId, onChange]);
 
     const workspaceSelectorPlacerHold = isLoadingOptions
       ? 'Loading workspaces'
@@ -107,14 +103,9 @@ export const WorkspaceSelector = observer(
 
     return (
       <div className="setup-selector">
-        <button
-          className="setup-selector__action btn--dark"
-          onClick={create}
-          tabIndex={-1}
-          title={'Create a Workspace'}
-        >
-          <PlusIcon />
-        </button>
+        <div className="setup-selector__icon-box">
+          <GitBranchIcon className="setup-selector__icon" />
+        </div>
         <CustomSelectorInput
           className="setup-selector__input"
           allowCreating={false}
@@ -130,8 +121,15 @@ export const WorkspaceSelector = observer(
           escapeClearsValue={true}
           darkMode={true}
         />
+        <button
+          className="setup-selector__action btn--dark"
+          onClick={create}
+          tabIndex={-1}
+          title="Create a Workspace"
+        >
+          <PlusIcon />
+        </button>
       </div>
     );
-  },
-  { forwardRef: true },
+  }),
 );

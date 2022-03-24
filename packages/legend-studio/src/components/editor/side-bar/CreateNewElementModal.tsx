@@ -379,7 +379,6 @@ export const CreateNewElementModal = observer(() => {
       open={newElementState.showModal}
       onClose={closeModal}
       TransitionProps={{
-        appear: false, // disable transition
         onEnter: handleEnter,
       }}
       classes={{ container: 'search-modal__container' }}
@@ -414,7 +413,6 @@ export const CreateNewElementModal = observer(() => {
               getElementTypeLabel(editorStore, newElementState.type) ??
               'element'
             }`}
-            name={`Element name`}
           />
           {renderNewElementDriver(newElementState.type, editorStore)}
         </div>

@@ -105,7 +105,7 @@ export const ServiceRegistrationModalEditor = observer(() => {
     event.preventDefault();
     if (selectedEnvOption && selectedServiceType) {
       flowResult(registrationState.registerService()).catch(
-        applicationStore.alertIllegalUnhandledError,
+        applicationStore.alertUnhandledError,
       );
     }
   };
@@ -122,9 +122,6 @@ export const ServiceRegistrationModalEditor = observer(() => {
       onClose={closeModal}
       classes={{ container: 'search-modal__container' }}
       PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
-      TransitionProps={{
-        appear: false, // disable transition
-      }}
     >
       <div
         data-testid={LEGEND_STUDIO_TEST_ID.SERVICE_REGISTRATION_MODAL}

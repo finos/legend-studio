@@ -112,7 +112,6 @@ const EnumerationMappingSourceSelectorModal = observer(
         open={open}
         onClose={closeModal}
         TransitionProps={{
-          appear: false, // disable transition
           onEnter: handleEnter,
         }}
         classes={{

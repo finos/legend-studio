@@ -35,7 +35,7 @@ import {
   ResizablePanelGroup,
   ResizablePanelSplitter,
   getControlledResizablePanelProps,
-  EyeIcon,
+  RepoIcon,
   ListIcon,
   CodeBranchIcon,
   WindowMaximizeIcon,
@@ -89,7 +89,7 @@ const ViewerStatusBar = observer(() => {
   }`;
   const toggleExpandMode = (): void =>
     editorStore.setExpandedMode(!editorStore.isInExpandedMode);
-  const handleTextModeClick = applicationStore.guaranteeSafeAction(() =>
+  const handleTextModeClick = applicationStore.guardUnhandledError(() =>
     flowResult(editorStore.toggleTextMode()),
   );
 
@@ -205,7 +205,7 @@ const ViewerActivityBar = observer(() => {
       title: 'Project',
       icon: (
         <div className="activity-bar__project-overview-icon">
-          <EyeIcon />
+          <RepoIcon />
         </div>
       ),
     },
@@ -282,7 +282,7 @@ export const ViewerInner = observer(() => {
     [LEGEND_STUDIO_HOTKEY.TOGGLE_TEXT_MODE]:
       editorStore.createGlobalHotKeyAction(() => {
         flowResult(editorStore.toggleTextMode()).catch(
-          applicationStore.alertIllegalUnhandledError,
+          applicationStore.alertUnhandledError,
         );
       }),
   };
@@ -301,7 +301,7 @@ export const ViewerInner = observer(() => {
   // on the second call when we remove entity path from the route
   useEffect(() => {
     flowResult(viewerStore.initialize(params)).catch(
-      applicationStore.alertIllegalUnhandledError,
+      applicationStore.alertUnhandledError,
     );
   }, [applicationStore, viewerStore, params]);
 

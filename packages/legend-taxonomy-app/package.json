@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-taxonomy-app",
-  "version": "3.3.0",
+  "version": "4.2.0",
   "description": "Legend Taxonomy web application",
   "keywords": [
     "legend",
@@ -25,15 +25,15 @@
   "module": "lib/index.js",
   "types": "lib/index.d.ts",
   "scripts": {
-    "build": "yarn clean && yarn build:sass && yarn build:tsc",
+    "build": "yarn clean && yarn build:sass && yarn build:ts",
     "build:sass": "cross-env INIT_CWD=$INIT_CWD node ../../scripts/workflow/buildSass.js",
-    "build:tsc": "tsc --project ./tsconfig.build.json",
+    "build:ts": "tsc --project ./tsconfig.build.json",
     "clean": "npm-run-all clean:cache clean:lib",
     "clean:cache": "rimraf \"build\"",
     "clean:lib": "rimraf \"lib\"",
-    "dev": "npm-run-all --parallel dev:sass dev:tsc",
+    "dev": "npm-run-all --parallel dev:sass dev:ts",
     "dev:sass": "sass style lib --watch --load-path=../../node_modules/@finos/legend-art/scss",
-    "dev:tsc": "tsc --watch --preserveWatchOutput",
+    "dev:ts": "tsc --watch --preserveWatchOutput",
     "lint:js": "cross-env NODE_ENV=production eslint --cache --cache-location ./build/.eslintcache --report-unused-disable-directives --parser-options=project:\"./tsconfig.json\" \"./src/**/*.{js,ts,tsx}\"",
     "publish:prepare": "node ../../scripts/release/preparePublishContent.js",
     "publish:snapshot": "node ../../scripts/release/publishDevSnapshot.js"
@@ -44,17 +44,17 @@
     "@finos/legend-graph-extension-collection": "workspace:*",
     "@finos/legend-shared": "workspace:*",
     "@finos/legend-taxonomy": "workspace:*",
-    "@types/react": "17.0.38",
+    "@types/react": "17.0.42",
     "react": "17.0.2"
   },
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",
     "cross-env": "7.0.3",
-    "eslint": "8.8.0",
+    "eslint": "8.11.0",
     "npm-run-all": "4.1.5",
     "rimraf": "3.0.2",
-    "sass": "1.49.7",
-    "typescript": "4.5.5"
+    "sass": "1.49.9",
+    "typescript": "4.6.2"
   },
   "publishConfig": {
     "directory": "build/publishContent"

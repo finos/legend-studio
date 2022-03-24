@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-extension-external-store-service",
-  "version": "1.0.14",
+  "version": "1.1.2",
   "description": "Legend extension for Service Store",
   "keywords": [
     "legend",
@@ -26,41 +26,41 @@
   "module": "lib/index.js",
   "types": "lib/index.d.ts",
   "scripts": {
-    "build": "yarn clean && yarn build:tsc",
-    "build:tsc": "tsc --project ./tsconfig.build.json",
+    "build": "yarn clean && yarn build:ts",
+    "build:ts": "tsc --project ./tsconfig.build.json",
     "clean": "npm-run-all clean:cache clean:lib",
     "clean:cache": "rimraf \"build\"",
     "clean:lib": "rimraf \"lib\"",
-    "dev": "yarn dev:tsc",
-    "dev:tsc": "tsc --watch --preserveWatchOutput",
+    "dev": "yarn dev:ts",
+    "dev:ts": "tsc --watch --preserveWatchOutput",
     "lint:js": "cross-env NODE_ENV=production eslint --cache --cache-location ./build/.eslintcache --report-unused-disable-directives --parser-options=project:\"./tsconfig.json\" \"./src/**/*.{js,ts,tsx}\"",
     "publish:prepare": "node ../../scripts/release/preparePublishContent.js",
+    "publish:snapshot": "node ../../scripts/release/publishDevSnapshot.js",
     "test": "jest",
     "test:watch": "jest --watch"
   },
   "dependencies": {
     "@finos/legend-art": "workspace:*",
-    "@finos/legend-extension-dsl-serializer": "workspace:*",
     "@finos/legend-graph": "workspace:*",
     "@finos/legend-model-storage": "workspace:*",
     "@finos/legend-shared": "workspace:*",
     "@finos/legend-studio": "workspace:*",
-    "@types/react": "17.0.38",
-    "mobx": "6.3.13",
-    "mobx-react-lite": "3.2.3",
-    "monaco-editor": "0.31.1",
+    "@types/react": "17.0.42",
+    "mobx": "6.5.0",
+    "mobx-react-lite": "3.3.0",
+    "monaco-editor": "0.33.0",
     "react": "17.0.2",
     "serializr": "2.0.5"
   },
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",
     "cross-env": "7.0.3",
-    "eslint": "8.8.0",
-    "jest": "27.4.7",
+    "eslint": "8.11.0",
+    "jest": "27.5.1",
     "npm-run-all": "4.1.5",
     "rimraf": "3.0.2",
-    "sass": "1.49.7",
-    "typescript": "4.5.5"
+    "sass": "1.49.9",
+    "typescript": "4.6.2"
   },
   "peerDependencies": {
     "react": "^17.0.0"

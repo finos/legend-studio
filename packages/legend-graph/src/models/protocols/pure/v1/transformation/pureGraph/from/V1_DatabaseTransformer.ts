@@ -35,6 +35,7 @@ import {
   TinyInt,
   SmallInt,
   BigInt,
+  SemiStructured,
 } from '../../../../../../metamodels/pure/packageableElements/store/relational/model/RelationalDataType';
 import {
   type TableAlias,
@@ -77,6 +78,7 @@ import {
   V1_VarBinary,
   V1_Binary,
   V1_Other,
+  V1_SemiStructured,
 } from '../../../model/packageableElements/store/relational/model/V1_RelationalDataType';
 import { V1_Database } from '../../../model/packageableElements/store/relational/model/V1_Database';
 import {
@@ -156,6 +158,8 @@ const transformRelationalDataType = (
     return new V1_Timestamp();
   } else if (type instanceof Other) {
     return new V1_Other();
+  } else if (type instanceof SemiStructured) {
+    return new V1_SemiStructured();
   }
   throw new UnsupportedOperationError(
     `Can't transform relational data type`,

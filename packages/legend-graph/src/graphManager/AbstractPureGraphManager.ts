@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-import type { ExecutionResult } from './action/execution/ExecutionResult';
+import type {
+  ExecutionResult,
+  EXECUTION_SERIALIZATION_FORMAT,
+} from './action/execution/ExecutionResult';
 import type { ServiceRegistrationResult } from './action/service/ServiceRegistrationResult';
 import type { Service } from '../models/metamodels/pure/packageableElements/service/Service';
 import type {
@@ -38,7 +41,7 @@ import type {
 import type { ValueSpecification } from '../models/metamodels/pure/valueSpecification/ValueSpecification';
 import type { RawValueSpecification } from '../models/metamodels/pure/rawValueSpecification/RawValueSpecification';
 import type { ServiceExecutionMode } from './action/service/ServiceExecutionMode';
-import type { TEMP__AbstractEngineConfig } from './action/TEMP__AbstractEngineConfig';
+import type { TEMPORARY__AbstractEngineConfig } from './action/TEMPORARY__AbstractEngineConfig';
 import type { DatabaseBuilderInput } from './action/generation/DatabaseBuilderInput';
 import type { RawRelationalOperationElement } from '../models/metamodels/pure/packageableElements/store/relational/model/RawRelationalOperationElement';
 import type {
@@ -56,8 +59,11 @@ import type { LightQuery, Query } from './action/query/Query';
 import type { Entity } from '@finos/legend-model-storage';
 import type { GraphPluginManager } from '../GraphPluginManager';
 import type { QuerySearchSpecification } from './action/query/QuerySearchSpecification';
+import type { ExternalFormatDescription } from './action/externalFormat/ExternalFormatDescription';
+import type { ConfigurationProperty } from '../models/metamodels/pure/packageableElements/fileGeneration/ConfigurationProperty';
+import type { GraphBuilderReport } from './GraphBuilderReport';
 
-export interface TEMP__EngineSetupConfig {
+export interface TEMPORARY__EngineSetupConfig {
   env: string;
   tabSize: number;
   clientConfig: ServerClientConfig & {
@@ -66,11 +72,19 @@ export interface TEMP__EngineSetupConfig {
 }
 
 export interface GraphBuilderOptions {
-  quiet?: boolean;
   // the `keepSectionIndex` flag is kept until we have stable support and enable usage of section index.
   TEMPORARY__keepSectionIndex?: boolean;
   // when we change our handling of section index, we should be able to get rid of this flag.
   TEMPORARY__disableRawLambdaResolver?: boolean;
+}
+
+export interface ExecutionOptions {
+  /**
+   * Use lossless algorithm while parsing the execution result object.
+   * NOTE: This will result in numeric values being stored as object instead of primitive type number values.
+   */
+  useLosslessParse?: boolean | undefined;
+  serializationFormat?: EXECUTION_SERIALIZATION_FORMAT | undefined;
 }
 
 export abstract class AbstractPureGraphManager {
@@ -90,10 +104,10 @@ export abstract class AbstractPureGraphManager {
    * As such, we should expose a generic config instead.
    * See https://github.com/finos/legend-studio/issues/407
    */
-  abstract TEMP__getEngineConfig(): TEMP__AbstractEngineConfig;
+  abstract TEMPORARY__getEngineConfig(): TEMPORARY__AbstractEngineConfig;
 
   abstract initialize(
-    config: TEMP__EngineSetupConfig,
+    config: TEMPORARY__EngineSetupConfig,
     options?: {
       tracerService?: TracerService | undefined;
     },
@@ -111,7 +125,7 @@ export abstract class AbstractPureGraphManager {
     coreModel: CoreModel,
     systemModel: SystemModel,
     options?: GraphBuilderOptions,
-  ): GeneratorFn<void>;
+  ): GeneratorFn<GraphBuilderReport>;
 
   /**
    * Process entities and build the main graph.
@@ -120,7 +134,7 @@ export abstract class AbstractPureGraphManager {
     graph: PureModel,
     entities: Entity[],
     options?: GraphBuilderOptions,
-  ): GeneratorFn<void>;
+  ): GeneratorFn<GraphBuilderReport>;
 
   /**
    * Build immutable models which holds dependencies.
@@ -136,13 +150,13 @@ export abstract class AbstractPureGraphManager {
     dependencyManager: DependencyManager,
     dependencyEntitiesMap: Map<string, Entity[]>,
     options?: GraphBuilderOptions,
-  ): GeneratorFn<void>;
+  ): GeneratorFn<GraphBuilderReport>;
 
   abstract buildGenerations(
     graph: PureModel,
     generationEntities: Map<string, Entity[]>,
     options?: GraphBuilderOptions,
-  ): GeneratorFn<void>;
+  ): GeneratorFn<GraphBuilderReport>;
 
   // ------------------------------------------- Grammar -------------------------------------------
 
@@ -226,6 +240,17 @@ export abstract class AbstractPureGraphManager {
     graph: PureModel,
   ): Promise<Entity[]>;
 
+  // ------------------------------------------- External Format ----------------------------------
+
+  abstract getAvailableExternalFormatsDescriptions(): Promise<
+    ExternalFormatDescription[]
+  >;
+
+  abstract generateModelFromExternalFormat(
+    configs: ConfigurationProperty[],
+    graph: PureModel,
+  ): Promise<string>;
+
   // ------------------------------------------- Import -------------------------------------------
 
   abstract getAvailableImportConfigurationDescriptions(): Promise<
@@ -249,11 +274,7 @@ export abstract class AbstractPureGraphManager {
     lambda: RawLambda,
     runtime: Runtime,
     clientVersion: string,
-    /**
-     * Use lossless algorithm while parsing the execution result object.
-     * NOTE: This will result in numeric values being stored as object instead of primitive type number values.
-     */
-    lossless: boolean,
+    options?: ExecutionOptions,
   ): Promise<ExecutionResult>;
 
   abstract generateMappingTestData(

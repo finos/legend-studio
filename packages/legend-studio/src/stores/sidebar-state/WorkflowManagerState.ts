@@ -193,7 +193,7 @@ export class WorkflowState {
 
   constructor(
     editorStore: EditorStore,
-    WorkflowManagerState: WorkflowManagerState,
+    workflowManagerState: WorkflowManagerState,
     workflow: Workflow,
     jobs: WorkflowJob[] | undefined,
   ) {
@@ -204,7 +204,7 @@ export class WorkflowState {
     });
 
     this.editorStore = editorStore;
-    this.workflowManagerState = WorkflowManagerState;
+    this.workflowManagerState = workflowManagerState;
     this.treeData = this.buildTreeData(workflow, jobs);
   }
 
@@ -395,9 +395,11 @@ export abstract class WorkflowManagerState {
             flowResult(this.getJobs(workflow.id)).then((jobs: WorkflowJob[]) =>
               workflowToJobsMap.set(
                 workflow.id,
-                jobs.sort(
-                  (a, b) => a.createdAt.getTime() - b.createdAt.getTime(),
-                ),
+                jobs
+                  .slice()
+                  .sort(
+                    (a, b) => a.createdAt.getTime() - b.createdAt.getTime(),
+                  ),
               ),
             ),
           ),
@@ -445,7 +447,7 @@ export class WorkspaceWorkflowManagerState extends WorkflowManagerState {
         this.sdlcState.activeWorkspace,
         job,
       )) as PlainObject<WorkflowJob>[]
-    ).map((job) => WorkflowJob.serialization.fromJson(job));
+    ).map((j) => WorkflowJob.serialization.fromJson(j));
   }
 
   override *getWorkflows(): GeneratorFn<Workflow[]> {
@@ -526,7 +528,7 @@ export class ProjectVersionWorkflowManagerState extends WorkflowManagerState {
         this.version.id.id,
         job,
       )) as PlainObject<WorkflowJob>[]
-    ).map((job) => WorkflowJob.serialization.fromJson(job));
+    ).map((j) => WorkflowJob.serialization.fromJson(j));
   }
 
   override *getWorkflows(): GeneratorFn<Workflow[]> {
@@ -597,7 +599,7 @@ export class ProjectWorkflowManagerState extends WorkflowManagerState {
         undefined,
         job,
       )) as PlainObject<WorkflowJob>[]
-    ).map((job) => WorkflowJob.serialization.fromJson(job));
+    ).map((j) => WorkflowJob.serialization.fromJson(j));
   }
 
   override *getWorkflows(): GeneratorFn<Workflow[]> {

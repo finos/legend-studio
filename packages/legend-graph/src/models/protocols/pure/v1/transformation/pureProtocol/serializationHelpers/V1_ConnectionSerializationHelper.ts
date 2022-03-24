@@ -44,6 +44,7 @@ import {
 import {
   type V1_DatasourceSpecification,
   V1_LocalH2DataSourceSpecification,
+  V1_DatabricksDatasourceSpecification,
   V1_SnowflakeDatasourceSpecification,
   V1_BigQueryDatasourceSpecification,
   V1_StaticDatasourceSpecification,
@@ -52,13 +53,12 @@ import {
 } from '../../../model/packageableElements/store/relational/connection/V1_DatasourceSpecification';
 import {
   type V1_AuthenticationStrategy,
+  V1_ApiTokenAuthenticationStrategy,
   V1_SnowflakePublicAuthenticationStrategy,
   V1_GCPApplicationDefaultCredentialsAuthenticationStrategy,
   V1_OAuthAuthenticationStrategy,
   V1_DefaultH2AuthenticationStrategy,
   V1_DelegatedKerberosAuthenticationStrategy,
-  V1_TestDatabaseAuthenticationStrategy,
-  V1_UserPasswordAuthenticationStrategy,
   V1_UsernamePasswordAuthenticationStrategy,
   V1_GCPWorkloadIdentityFederationAuthenticationStrategy,
 } from '../../../model/packageableElements/store/relational/connection/V1_AuthenticationStrategy';
@@ -135,6 +135,7 @@ enum V1_DatasourceSpecificationType {
   STATIC = 'static',
   H2_EMBEDDED = 'h2Embedded',
   H2_LOCAL = 'h2Local',
+  DATABRICKS = 'databricks',
   SNOWFLAKE = 'snowflake',
   REDSHIFT = 'redshift',
   BIGQUERY = 'bigQuery',
@@ -169,6 +170,17 @@ const localH2DatasourceSpecificationModelSchema = createModelSchema(
   },
 );
 
+const databricksDatasourceSpecificationModelSchema = createModelSchema(
+  V1_DatabricksDatasourceSpecification,
+  {
+    _type: usingConstantValueSchema(V1_DatasourceSpecificationType.DATABRICKS),
+    hostname: primitive(),
+    port: primitive(),
+    protocol: primitive(),
+    httpPath: primitive(),
+  },
+);
+
 const snowflakeDatasourceSpecificationModelSchema = createModelSchema(
   V1_SnowflakeDatasourceSpecification,
   {
@@ -192,9 +204,12 @@ const redshiftDatasourceSpecificationModelSchema = createModelSchema(
   V1_RedshiftDatasourceSpecification,
   {
     _type: usingConstantValueSchema(V1_DatasourceSpecificationType.REDSHIFT),
+    clusterID: primitive(),
     databaseName: primitive(),
-    endpoint: primitive(),
+    endpointURL: optional(primitive()),
+    host: primitive(),
     port: primitive(),
+    region: primitive(),
   },
 );
 
@@ -215,6 +230,8 @@ export const V1_serializeDatasourceSpecification = (
     return serialize(staticDatasourceSpecificationModelSchema, protocol);
   } else if (protocol instanceof V1_EmbeddedH2DatasourceSpecification) {
     return serialize(embeddedH2DatasourceSpecificationModelSchema, protocol);
+  } else if (protocol instanceof V1_DatabricksDatasourceSpecification) {
+    return serialize(databricksDatasourceSpecificationModelSchema, protocol);
   } else if (protocol instanceof V1_SnowflakeDatasourceSpecification) {
     return serialize(snowflakeDatasourceSpecificationModelSchema, protocol);
   } else if (protocol instanceof V1_BigQueryDatasourceSpecification) {
@@ -253,6 +270,8 @@ export const V1_deserializeDatasourceSpecification = (
       return deserialize(staticDatasourceSpecificationModelSchema, json);
     case V1_DatasourceSpecificationType.H2_EMBEDDED:
       return deserialize(embeddedH2DatasourceSpecificationModelSchema, json);
+    case V1_DatasourceSpecificationType.DATABRICKS:
+      return deserialize(databricksDatasourceSpecificationModelSchema, json);
     case V1_DatasourceSpecificationType.SNOWFLAKE:
       return deserialize(snowflakeDatasourceSpecificationModelSchema, json);
     case V1_DatasourceSpecificationType.BIGQUERY:
@@ -289,10 +308,9 @@ enum V1_AuthenticationStrategyType {
   DELEGATED_KERBEROS = 'delegatedKerberos',
   SNOWFLAKE_PUBLIC = 'snowflakePublic',
   GCP_APPLICATION_DEFAULT_CREDENTIALS = 'gcpApplicationDefaultCredentials',
+  API_TOKEN = 'apiToken',
   H2_DEFAULT = 'h2Default',
-  TEST = 'test',
   OAUTH = 'oauth',
-  USER_PASSWORD = 'userPassword',
   USERNAME_PASSWORD = 'userNamePassword',
   GCP_WORKLOAD_IDENTITY_FEDERATION = 'gcpWorkloadIdentityFederation',
 }
@@ -312,9 +330,12 @@ const V1_defaultH2AuthenticationStrategyModelSchema = createModelSchema(
   { _type: usingConstantValueSchema(V1_AuthenticationStrategyType.H2_DEFAULT) },
 );
 
-const V1_testDatabaseAuthenticationStrategyModelSchema = createModelSchema(
-  V1_TestDatabaseAuthenticationStrategy,
-  { _type: usingConstantValueSchema(V1_AuthenticationStrategyType.TEST) },
+const V1_apiTokenAuthenticationStrategyModelSchema = createModelSchema(
+  V1_ApiTokenAuthenticationStrategy,
+  {
+    _type: usingConstantValueSchema(V1_AuthenticationStrategyType.API_TOKEN),
+    apiToken: primitive(),
+  },
 );
 
 const V1_snowflakePublicAuthenticationStrategyModelSchema = createModelSchema(
@@ -326,17 +347,6 @@ const V1_snowflakePublicAuthenticationStrategyModelSchema = createModelSchema(
     privateKeyVaultReference: primitive(),
     passPhraseVaultReference: primitive(),
     publicUserName: primitive(),
-  },
-);
-
-const V1_userPasswordAuthenticationStrategyModelSchema = createModelSchema(
-  V1_UserPasswordAuthenticationStrategy,
-  {
-    _type: usingConstantValueSchema(
-      V1_AuthenticationStrategyType.USER_PASSWORD,
-    ),
-    userName: primitive(),
-    passwordVaultReference: primitive(),
   },
 );
 
@@ -388,11 +398,8 @@ export const V1_serializeAuthenticationStrategy = (
     );
   } else if (protocol instanceof V1_DefaultH2AuthenticationStrategy) {
     return serialize(V1_defaultH2AuthenticationStrategyModelSchema, protocol);
-  } else if (protocol instanceof V1_TestDatabaseAuthenticationStrategy) {
-    return serialize(
-      V1_testDatabaseAuthenticationStrategyModelSchema,
-      protocol,
-    );
+  } else if (protocol instanceof V1_ApiTokenAuthenticationStrategy) {
+    return serialize(V1_apiTokenAuthenticationStrategyModelSchema, protocol);
   } else if (protocol instanceof V1_SnowflakePublicAuthenticationStrategy) {
     return serialize(
       V1_snowflakePublicAuthenticationStrategyModelSchema,
@@ -415,11 +422,6 @@ export const V1_serializeAuthenticationStrategy = (
     );
   } else if (protocol instanceof V1_OAuthAuthenticationStrategy) {
     return serialize(V1_oAuthAuthenticationStrategyModelSchema, protocol);
-  } else if (protocol instanceof V1_UserPasswordAuthenticationStrategy) {
-    return serialize(
-      V1_userPasswordAuthenticationStrategyModelSchema,
-      protocol,
-    );
   } else if (protocol instanceof V1_UsernamePasswordAuthenticationStrategy) {
     return serialize(
       V1_UsernamePasswordAuthenticationStrategyModelSchema,
@@ -458,14 +460,11 @@ export const V1_deserializeAuthenticationStrategy = (
       );
     case V1_AuthenticationStrategyType.H2_DEFAULT:
       return deserialize(V1_defaultH2AuthenticationStrategyModelSchema, json);
+    case V1_AuthenticationStrategyType.API_TOKEN:
+      return deserialize(V1_apiTokenAuthenticationStrategyModelSchema, json);
     case V1_AuthenticationStrategyType.SNOWFLAKE_PUBLIC:
       return deserialize(
         V1_snowflakePublicAuthenticationStrategyModelSchema,
-        json,
-      );
-    case V1_AuthenticationStrategyType.USER_PASSWORD:
-      return deserialize(
-        V1_userPasswordAuthenticationStrategyModelSchema,
         json,
       );
     case V1_AuthenticationStrategyType.GCP_APPLICATION_DEFAULT_CREDENTIALS:
@@ -476,11 +475,6 @@ export const V1_deserializeAuthenticationStrategy = (
     case V1_AuthenticationStrategyType.GCP_WORKLOAD_IDENTITY_FEDERATION:
       return deserialize(
         V1_GCPWorkloadIdentityFederationAuthenticationStrategyModelSchema,
-        json,
-      );
-    case V1_AuthenticationStrategyType.TEST:
-      return deserialize(
-        V1_testDatabaseAuthenticationStrategyModelSchema,
         json,
       );
     case V1_AuthenticationStrategyType.OAUTH:

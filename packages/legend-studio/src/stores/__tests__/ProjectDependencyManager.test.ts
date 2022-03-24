@@ -361,7 +361,7 @@ test(
         true,
       ),
     ).rejects.toThrowError(
-      "Expected 1 project for project id 'PROD_1'. Got 2 projects with coordinates 'org.finos.legend:my-artifact', 'org.finos.legend:my-artifact-diff'.",
+      "Expected 1 project for project ID 'PROD_1'. Got 2 projects with coordinates 'org.finos.legend:my-artifact', 'org.finos.legend:my-artifact-diff'.",
     );
   },
 );

@@ -766,23 +766,29 @@ export class MappingEditorState extends ElementEditorState {
       );
       return;
     }
+    // Open mapping element from included mapping in another mapping editor tab
+    if (mappingElement.parent !== this.element) {
+      this.editorStore.openElement(mappingElement.parent);
+    }
+    const currentMappingEditorState =
+      this.editorStore.getCurrentEditorState(MappingEditorState);
     // If the next mapping element to be opened is not opened yet, we will find the right place to put it in the tab bar
     if (
-      !this.openedTabStates.find(
+      !currentMappingEditorState.openedTabStates.find(
         (tabState) =>
           tabState instanceof MappingElementState &&
           tabState.mappingElement === mappingElement,
       )
     ) {
       const newMappingElementState = guaranteeNonNullable(
-        this.createMappingElementState(mappingElement),
+        currentMappingEditorState.createMappingElementState(mappingElement),
       );
       if (openInAdjacentTab) {
         const currentMappingElementIndex = this.openedTabStates.findIndex(
           (tabState) => tabState === this.currentTabState,
         );
         if (currentMappingElementIndex !== -1) {
-          this.openedTabStates.splice(
+          currentMappingEditorState.openedTabStates.splice(
             currentMappingElementIndex + 1,
             0,
             newMappingElementState,
@@ -791,16 +797,17 @@ export class MappingEditorState extends ElementEditorState {
           throw new IllegalStateError(`Can't find current mapping editor tab`);
         }
       } else {
-        this.openedTabStates.push(newMappingElementState);
+        currentMappingEditorState.openedTabStates.push(newMappingElementState);
       }
     }
     // Set current mapping element, i.e. switch to new tab
-    this.currentTabState = this.openedTabStates.find(
-      (tabState) =>
-        tabState instanceof MappingElementState &&
-        tabState.mappingElement === mappingElement,
-    );
-    this.reprocessMappingExplorerTree(true);
+    currentMappingEditorState.currentTabState =
+      currentMappingEditorState.openedTabStates.find(
+        (tabState) =>
+          tabState instanceof MappingElementState &&
+          tabState.mappingElement === mappingElement,
+      );
+    currentMappingEditorState.reprocessMappingExplorerTree(true);
   }
 
   /* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */

@@ -53,6 +53,7 @@ import {
   createStubRelationalOperationElement,
   EmbeddedRelationalInstanceSetImplementation,
   getEnumerationMappingsByEnumeration,
+  type TEMPORARY__UnresolvedSetImplementation,
 } from '@finos/legend-graph';
 import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../DSLMapping_LegendStudioPlugin_Extension';
 import type { EditorStore } from '../../../EditorStore';
@@ -95,6 +96,18 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
   }
 
   visit_OperationSetImplementation(
+    setImplementation: OperationSetImplementation,
+  ): void {
+    setImplementation.setParameters(
+      setImplementation.parameters.filter((param) =>
+        getAllClassMappings(setImplementation.parent).find(
+          (setImp) => setImp === param.setImplementation.value,
+        ),
+      ),
+    );
+  }
+
+  visit_MergeOperationSetImplementation(
     setImplementation: OperationSetImplementation,
   ): void {
     setImplementation.setParameters(
@@ -499,6 +512,12 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
       decorator(setImplementation);
     }
   }
+
+  visit_TEMPORARY__UnresolvedSetImplementation(
+    setImplementation: TEMPORARY__UnresolvedSetImplementation,
+  ): void {
+    return;
+  }
 }
 
 /* @MARKER: ACTION ANALYTICS */
@@ -529,6 +548,14 @@ export class MappingElementDecorationCleaner
   }
 
   visit_OperationSetImplementation(
+    setImplementation: OperationSetImplementation,
+  ): void {
+    setImplementation.setParameters(
+      setImplementation.parameters.filter((param) => !param.isStub),
+    );
+  }
+
+  visit_MergeOperationSetImplementation(
     setImplementation: OperationSetImplementation,
   ): void {
     setImplementation.setParameters(
@@ -607,5 +634,11 @@ export class MappingElementDecorationCleaner
     for (const decorationCleaner of extraSetImplementationDecorationCleaners) {
       decorationCleaner(setImplementation);
     }
+  }
+
+  visit_TEMPORARY__UnresolvedSetImplementation(
+    setImplementation: TEMPORARY__UnresolvedSetImplementation,
+  ): void {
+    return;
   }
 }

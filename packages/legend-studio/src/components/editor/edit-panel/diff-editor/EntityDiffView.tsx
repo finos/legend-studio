@@ -106,12 +106,12 @@ export const EntityDiffView = observer(
     }, [diffEditorState]);
     useEffect(() => {
       flowResult(diffEditorState.getFromGrammar()).catch(
-        applicationStore.alertIllegalUnhandledError,
+        applicationStore.alertUnhandledError,
       );
     }, [applicationStore, diffEditorState, diffEditorState.fromEntity]);
     useEffect(() => {
       flowResult(diffEditorState.getToGrammar()).catch(
-        applicationStore.alertIllegalUnhandledError,
+        applicationStore.alertUnhandledError,
       );
     }, [applicationStore, diffEditorState, diffEditorState.toEntity]);
 

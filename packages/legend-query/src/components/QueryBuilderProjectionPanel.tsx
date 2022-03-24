@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useEffect, useRef, useCallback, useState } from 'react';
+import { useEffect, useRef, useCallback, useState, forwardRef } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   clsx,
@@ -62,12 +62,21 @@ import {
   type QueryBuilderParameterDragSource,
   QUERY_BUILDER_PARAMETER_TREE_DND_TYPE,
 } from '../stores/QueryParametersState';
+import {
+  type ConcreteFunctionDefinition,
+  RawLambda,
+  generateFunctionCallString,
+} from '@finos/legend-graph';
+import {
+  type QueryBuilderFunctionsExplorerDragSource,
+  QUERY_BUILDER_FUNCTIONS_EXPLORER_TREE_DND_TYPE,
+} from '../stores/QueryFunctionsExplorerState';
 
 const ProjectionColumnDragLayer: React.FC = () => {
   const { itemType, item, isDragging, currentPosition } = useDragLayer(
     (monitor) => ({
       itemType: monitor.getItemType(),
-      item: monitor.getItem() as QueryBuilderProjectionColumnDragSource | null,
+      item: monitor.getItem<QueryBuilderProjectionColumnDragSource | null>(),
       isDragging: monitor.isDragging(),
       initialOffset: monitor.getInitialSourceClientOffset(),
       currentPosition: monitor.getClientOffset(),
@@ -103,13 +112,15 @@ const ProjectionColumnDragLayer: React.FC = () => {
 };
 
 const QueryBuilderProjectionColumnContextMenu = observer(
-  (
-    props: {
+  forwardRef<
+    HTMLDivElement,
+    {
       projectionColumnState: QueryBuilderProjectionColumnState;
-    },
-    ref: React.Ref<HTMLDivElement>,
-  ) => {
+    }
+  >(function QueryBuilderProjectionColumnContextMenu(props, ref) {
     const { projectionColumnState } = props;
+    const removeColumn = (): void =>
+      projectionColumnState.projectionState.removeColumn(projectionColumnState);
     const convertToDerivation = (): void => {
       if (
         projectionColumnState instanceof QueryBuilderSimpleProjectionColumnState
@@ -128,10 +139,10 @@ const QueryBuilderProjectionColumnContextMenu = observer(
             Convert To Derivation
           </MenuContentItem>
         )}
+        <MenuContentItem onClick={removeColumn}>Remove</MenuContentItem>
       </MenuContent>
     );
-  },
-  { forwardRef: true },
+  }),
 );
 
 const QueryBuilderSimpleProjectionColumnEditor = observer(
@@ -141,7 +152,12 @@ const QueryBuilderSimpleProjectionColumnEditor = observer(
     const { projectionColumnState } = props;
     const onPropertyExpressionChange = (
       node: QueryBuilderExplorerTreePropertyNodeData,
-    ): void => projectionColumnState.changeProperty(node);
+    ): void =>
+      projectionColumnState.changeProperty(
+        node,
+        projectionColumnState.projectionState.queryBuilderState.explorerState
+          .humanizePropertyName,
+      );
 
     return (
       <div className="query-builder__projection__column__value__property">
@@ -167,7 +183,8 @@ const QueryBuilderDerivationProjectionColumnEditor = observer(
       (
         item:
           | QueryBuilderExplorerTreeDragSource
-          | QueryBuilderParameterDragSource,
+          | QueryBuilderParameterDragSource
+          | QueryBuilderFunctionsExplorerDragSource,
         type: string,
       ): void => {
         if (type === QUERY_BUILDER_PARAMETER_TREE_DND_TYPE.VARIABLE) {
@@ -177,6 +194,17 @@ const QueryBuilderDerivationProjectionColumnEditor = observer(
             }$${
               (item as QueryBuilderParameterDragSource).variable.variableName
             }`,
+          );
+        } else if (
+          type === QUERY_BUILDER_FUNCTIONS_EXPLORER_TREE_DND_TYPE.FUNCTION
+        ) {
+          projectionColumnState.derivationLambdaEditorState.setLambdaString(
+            `${
+              projectionColumnState.derivationLambdaEditorState.lambdaString
+            }${`${generateFunctionCallString(
+              (item as QueryBuilderFunctionsExplorerDragSource).node
+                .packageableElement as ConcreteFunctionDefinition,
+            )}`}`,
           );
         } else {
           projectionColumnState.derivationLambdaEditorState.setLambdaString(
@@ -195,21 +223,19 @@ const QueryBuilderDerivationProjectionColumnEditor = observer(
           QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY,
           QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY,
           QUERY_BUILDER_PARAMETER_TREE_DND_TYPE.VARIABLE,
+          QUERY_BUILDER_FUNCTIONS_EXPLORER_TREE_DND_TYPE.FUNCTION,
         ],
         drop: (
           item:
             | QueryBuilderExplorerTreeDragSource
-            | QueryBuilderParameterDragSource,
+            | QueryBuilderParameterDragSource
+            | QueryBuilderFunctionsExplorerDragSource,
           monitor,
         ): void => {
           if (!monitor.didDrop()) {
             handleDrop(item, monitor.getItemType() as string);
           } // prevent drop event propagation to accomondate for nested DnD
         },
-        collect: (monitor): { item: unknown; dragItemType: string } => ({
-          item: monitor.getItem(),
-          dragItemType: monitor.getItemType() as string,
-        }),
       }),
       [handleDrop],
     );
@@ -499,17 +525,55 @@ export const QueryBuilderProjectionPanel = observer(
       (columnState) => columnState.isBeingDragged,
     );
     const handleDrop = useCallback(
-      (item: QueryBuilderExplorerTreeDragSource): void =>
-        projectionState.addColumn(
-          new QueryBuilderSimpleProjectionColumnState(
-            projectionState,
-            buildPropertyExpressionFromExplorerTreeNodeData(
-              queryBuilderState.explorerState.nonNullableTreeData,
-              item.node,
-              projectionState.queryBuilderState.graphManagerState.graph,
-            ),
-          ),
-        ),
+      (
+        item:
+          | QueryBuilderExplorerTreeDragSource
+          | QueryBuilderFunctionsExplorerDragSource,
+        type: string,
+      ): void => {
+        switch (type) {
+          case QUERY_BUILDER_FUNCTIONS_EXPLORER_TREE_DND_TYPE.FUNCTION: {
+            const derivationProjectionColumn =
+              new QueryBuilderDerivationProjectionColumnState(
+                projectionState,
+                new RawLambda(
+                  [{ _type: 'var', name: 'x' }],
+                  [
+                    {
+                      _type: 'string',
+                      multiplicity: { lowerBound: 1, upperBound: 1 },
+                      values: [''],
+                    },
+                  ],
+                ),
+              );
+            derivationProjectionColumn.derivationLambdaEditorState.setLambdaString(
+              `x|${generateFunctionCallString(
+                (item as QueryBuilderFunctionsExplorerDragSource).node
+                  .packageableElement as ConcreteFunctionDefinition,
+              )}`,
+            );
+            projectionState.addColumn(derivationProjectionColumn);
+            break;
+          }
+          case QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY:
+          case QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY:
+            projectionState.addColumn(
+              new QueryBuilderSimpleProjectionColumnState(
+                projectionState,
+                buildPropertyExpressionFromExplorerTreeNodeData(
+                  queryBuilderState.explorerState.nonNullableTreeData,
+                  (item as QueryBuilderExplorerTreeDragSource).node,
+                  projectionState.queryBuilderState.graphManagerState.graph,
+                ),
+                queryBuilderState.explorerState.humanizePropertyName,
+              ),
+            );
+            break;
+          default:
+            break;
+        }
+      },
       [queryBuilderState, projectionState],
     );
     const [{ isPropertyDragOver }, dropConnector] = useDrop(
@@ -517,13 +581,16 @@ export const QueryBuilderProjectionPanel = observer(
         accept: [
           QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY,
           QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY,
+          QUERY_BUILDER_FUNCTIONS_EXPLORER_TREE_DND_TYPE.FUNCTION,
         ],
         drop: (
-          item: QueryBuilderExplorerTreeDragSource,
+          item:
+            | QueryBuilderExplorerTreeDragSource
+            | QueryBuilderFunctionsExplorerDragSource,
           monitor: DropTargetMonitor,
         ): void => {
           if (!monitor.didDrop()) {
-            handleDrop(item);
+            handleDrop(item, monitor.getItemType() as string);
           } // prevent drop event propagation to accomondate for nested DnD
         },
         collect: (monitor): { isPropertyDragOver: boolean } => ({
@@ -535,7 +602,7 @@ export const QueryBuilderProjectionPanel = observer(
 
     useEffect(() => {
       flowResult(projectionState.convertDerivationProjectionObjects()).catch(
-        applicationStore.alertIllegalUnhandledError,
+        applicationStore.alertUnhandledError,
       );
     }, [applicationStore, projectionState]);
 

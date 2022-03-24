@@ -52,8 +52,14 @@ export const prettyPropertyName = (value: string): string =>
 
 export const getPropertyChainName = (
   propertyExpression: AbstractPropertyExpression,
+  humanizePropertyName: boolean,
 ): string => {
-  const propertyNameChain = [prettyPropertyName(propertyExpression.func.name)];
+  const propertyNameDecorator = humanizePropertyName
+    ? prettyPropertyName
+    : (val: string): string => val;
+  const propertyNameChain = [
+    propertyNameDecorator(propertyExpression.func.name),
+  ];
   let currentExpression: ValueSpecification | undefined = propertyExpression;
   while (currentExpression instanceof AbstractPropertyExpression) {
     currentExpression = getNullableFirstElement(
@@ -61,7 +67,7 @@ export const getPropertyChainName = (
     );
     if (currentExpression instanceof AbstractPropertyExpression) {
       propertyNameChain.unshift(
-        prettyPropertyName(currentExpression.func.name),
+        propertyNameDecorator(currentExpression.func.name),
       );
     }
     // Take care of chains of subtype (a pattern that is not useful, but we want to support and rectify)
@@ -73,11 +79,11 @@ export const getPropertyChainName = (
         SUPPORTED_FUNCTIONS.SUBTYPE,
       )
     ) {
-      const propertyWithSubtype = `(${TYPE_CAST_TOKEN}${prettyPropertyName(
+      const propertyWithSubtype = `(${TYPE_CAST_TOKEN}${propertyNameDecorator(
         currentExpression.parametersValues.filter(
           (param) => param instanceof InstanceValue,
         )[0]?.genericType?.value.rawType.name ?? '',
-      )})${prettyPropertyName(
+      )})${propertyNameDecorator(
         currentExpression.parametersValues[0] instanceof
           AbstractPropertyExpression
           ? currentExpression.parametersValues[0]?.func.name
@@ -89,7 +95,7 @@ export const getPropertyChainName = (
       );
     }
   }
-  return propertyNameChain.join('/');
+  return propertyNameChain.join(humanizePropertyName ? '/' : '.');
 };
 
 export const getPropertyPath = (
@@ -189,7 +195,7 @@ export class QueryBuilderDerivedPropertyExpressionState {
     propertyExpression: AbstractPropertyExpression,
   ) {
     this.path = getPropertyPath(propertyExpression);
-    this.title = getPropertyChainName(propertyExpression);
+    this.title = getPropertyChainName(propertyExpression, true);
     this.propertyExpression = propertyExpression;
     this.queryBuilderState = queryBuilderState;
     this.derivedProperty = guaranteeType(
@@ -280,7 +286,7 @@ export class QueryBuilderPropertyExpressionState {
     this.queryBuilderState = queryBuilderState;
     this.propertyExpression = propertyExpression;
     this.path = getPropertyPath(propertyExpression);
-    this.title = getPropertyChainName(propertyExpression);
+    this.title = getPropertyChainName(propertyExpression, true);
     this.initDerivedPropertyExpressionStates();
   }
 
@@ -332,6 +338,6 @@ export class QueryBuilderPropertyExpressionState {
       }
     }
     this.requiresExistsHandling = requiresExistsHandling;
-    this.derivedPropertyExpressionStates = result.reverse();
+    this.derivedPropertyExpressionStates = result.slice().reverse();
   }
 }

@@ -19,6 +19,7 @@ import {
   LogEvent,
   prettyCONSTName,
   assertErrorThrown,
+  guaranteeNonNullable,
 } from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
 import {
@@ -34,6 +35,7 @@ import {
   TimesIcon,
   CheckCircleIcon,
   ExclamationCircleIcon,
+  ExternalLinkSquareIcon,
 } from '@finos/legend-art';
 import { flowResult } from 'mobx';
 import {
@@ -47,7 +49,11 @@ import {
   useApplicationStore,
 } from '@finos/legend-application';
 import { LEGEND_STUDIO_LOG_EVENT_TYPE } from '../../../../stores/LegendStudioLogEvent';
-import type { ProjectData } from '@finos/legend-server-depot';
+import {
+  type ProjectData,
+  compareSemVerVersions,
+  generateGAVCoordinates,
+} from '@finos/legend-server-depot';
 
 interface VersionOption {
   label: string;
@@ -91,11 +97,11 @@ const ProjectStructureEditor = observer(
         projectConfig.setArtifactId(event.target.value);
       }
     };
-    const updateVersion = applicationStore.guaranteeSafeAction(() =>
+    const updateVersion = (): void => {
       flowResult(
         editorStore.projectConfigurationEditorState.updateToLatestStructure(),
-      ),
-    );
+      ).catch(applicationStore.alertUnhandledError);
+    };
 
     return (
       <div className="panel__content__lists">
@@ -197,7 +203,7 @@ const ProjectDependencyEditor = observer(
     // init
     const { projectDependency, deleteValue, isReadOnly } = props;
     const editorStore = useEditorStore();
-    const logger = editorStore.applicationStore.log;
+    const applicationStore = useApplicationStore();
     const projectSelectorRef = useRef<SelectComponent>(null);
     const versionSelectorRef = useRef<SelectComponent>(null);
     const configState = editorStore.projectConfigurationEditorState;
@@ -230,7 +236,10 @@ const ProjectDependencyEditor = observer(
     // version
     const version = projectDependency.versionId;
     const versions = selectedProject?.versions ?? [];
-    const versionOptions = versions.map((v) => ({ value: v, label: v }));
+    const versionOptions = versions
+      .slice()
+      .sort((v1, v2) => compareSemVerVersions(v2, v1))
+      .map((v) => ({ value: v, label: v }));
     const selectedVersionOption: VersionOption | null =
       versionOptions.find((v) => v.value === version.id) ?? null;
     const versionDisabled =
@@ -249,11 +258,22 @@ const ProjectDependencyEditor = observer(
           projectDependency.setVersionId(val?.value ?? '');
         } catch (error) {
           assertErrorThrown(error);
-          logger.error(
+          applicationStore.log.error(
             LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.SDLC_MANAGER_FAILURE),
             error,
           );
         }
+      }
+    };
+    const openProject = (): void => {
+      if (!projectDependency.isLegacyDependency) {
+        applicationStore.navigator.openNewWindow(
+          `${applicationStore.config.baseUrl}view/${generateGAVCoordinates(
+            guaranteeNonNullable(projectDependency.groupId),
+            guaranteeNonNullable(projectDependency.artifactId),
+            projectDependency.versionId.id,
+          )}`,
+        );
       }
     };
     const projectSelectorPlaceholder = !projectDependency.projectId.length
@@ -293,6 +313,19 @@ const ProjectDependencyEditor = observer(
           }
           darkMode={true}
         />
+        <button
+          className="project-dependency-editor__visit-btn btn--dark btn--sm"
+          disabled={
+            projectDependency.isLegacyDependency ||
+            !selectedProject ||
+            !selectedVersionOption
+          }
+          onClick={openProject}
+          tabIndex={-1}
+          title={'Open Project'}
+        >
+          <ExternalLinkSquareIcon />
+        </button>
         <button
           className="project-dependency-editor__remove-btn"
           disabled={isReadOnly}
@@ -374,7 +407,7 @@ export const ProjectConfigurationEditor = observer(() => {
             handler: (): void => {
               editorStore.setIgnoreNavigationBlocking(true);
               flowResult(configState.updateConfigs()).catch(
-                applicationStore.alertIllegalUnhandledError,
+                applicationStore.alertUnhandledError,
               );
             },
           },
@@ -387,7 +420,7 @@ export const ProjectConfigurationEditor = observer(() => {
       });
     } else {
       flowResult(configState.updateConfigs()).catch(
-        applicationStore.alertIllegalUnhandledError,
+        applicationStore.alertUnhandledError,
       );
     }
   };
@@ -398,7 +431,7 @@ export const ProjectConfigurationEditor = observer(() => {
       !configState.associatedProjectsAndVersionsFetched
     ) {
       flowResult(configState.fectchAssociatedProjectsAndVersions()).catch(
-        applicationStore.alertIllegalUnhandledError,
+        applicationStore.alertUnhandledError,
       );
     }
   }, [applicationStore, configState, selectedTab]);

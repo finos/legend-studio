@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useEffect, useState } from 'react';
+import { forwardRef, useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   clsx,
@@ -170,12 +170,12 @@ export const EditPanelSplashScreen: React.FC = () => {
 };
 
 const EditPanelHeaderTabContextMenu = observer(
-  (
-    props: {
+  forwardRef<
+    HTMLDivElement,
+    {
       editorState: EditorState;
-    },
-    ref: React.Ref<HTMLDivElement>,
-  ) => {
+    }
+  >(function EditPanelHeaderTabContextMenu(props, ref) {
     const { editorState } = props;
     const editorStore = useEditorStore();
     const close = (): void => editorStore.closeState(editorState);
@@ -206,8 +206,7 @@ const EditPanelHeaderTabContextMenu = observer(
         </button>
       </div>
     );
-  },
-  { forwardRef: true },
+  }),
 );
 
 export const EditPanel = observer(() => {

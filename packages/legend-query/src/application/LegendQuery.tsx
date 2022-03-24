@@ -31,7 +31,10 @@ import { LegendQueryApplication } from '../components/LegendQueryApplication';
 import { LegendQueryPluginManager } from './LegendQueryPluginManager';
 import { Query_GraphPreset } from '../models/Query_GraphPreset';
 import { getRootElement } from '@finos/legend-art';
-import { CorePureGraphManagerPlugin } from '@finos/legend-graph';
+import {
+  CorePureGraphManagerPlugin,
+  DSLExternalFormat_GraphPreset,
+} from '@finos/legend-graph';
 import {
   type LegendQueryConfigurationData,
   LegendQueryConfig,
@@ -56,7 +59,14 @@ export class LegendQuery extends LegendApplication {
   static create(): LegendQuery {
     const application = new LegendQuery(LegendQueryPluginManager.create());
     application.withBasePlugins([new CorePureGraphManagerPlugin()]);
-    application.withBasePresets([new Query_GraphPreset()]);
+    application.withBasePresets([
+      new Query_GraphPreset(),
+      // NOTE: This makes it easier to eventually modularize `DSL External Format`,
+      // but it makes the layering a bit strange since core graph has DSLs depending on
+      // `DSL External Format` like generation and relational, which ideally we could move out later
+      // See https://github.com/finos/legend-studio/issues/65
+      new DSLExternalFormat_GraphPreset(),
+    ]);
     return application;
   }
 

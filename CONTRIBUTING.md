@@ -101,7 +101,7 @@ yarn changeset:cli
 
 Make sure to install [Node.js](https://nodejs.org/en/) and [Yarn](https://yarnpkg.com/). For IDE, we highly recommend [Visual Studio Code](https://code.visualstudio.com/). Also, to assist development, don't forget to install [ESLint](https://eslint.org/) and [Stylelint](https://stylelint.io/) plugins to help you catch problems while writing code; and install [Prettier](https://prettier.io/) plugin to help you auto-format code. Last but not least, run the `setup` script.
 
-Studio relies on SDLC and Engine servers as its backend. If you don't have these servers [setup to run locally](https://legend.finos.org/docs/installation/maven-install-guide#installation-steps), you can make use of [this Docker compose project](https://github.com/finos/legend/tree/master/installers/docker-compose/legend-studio-dev) to quickly set them up.
+Studio relies _minimumly_ on SDLC and Engine servers as its backend. To quickly set these up, use our development [Docker compose](https://github.com/finos/legend/tree/master/installers/docker-compose/legend-studio-dev). If you need to debug and code on the backend at the same time, follow [this guide](./fixtures/legend-docker-setup/studio-dev-setup/README.md) to set them up using `maven`.
 
 ```sh
 # Install dependencies, link and set up the workspaces, and build the workspaces to make sure your project is in good shape.
@@ -131,11 +131,11 @@ Each workspace in the monorepo should have a `dev` script. Run these (in separat
 yarn dev
 
 # have other terminal tabs for auto-building code and style
-yarn dev:tsc
+yarn dev:ts
 yarn dev:sass
 ```
 
-> Note that `dev:tsc` is convenient as it watches for changes in the whole project, but sometimes, it might take long time or cause Webpack recompilation to take a long time. So there are times when it's better to focus the watcher in a particular workspace using the command `yarn workspace <workspace-name> <workspace-script>`, e.g. to call `dev` script of workspace `lib1`, use the command `yarn workspace lib1 dev`.
+> Note that `dev:ts` is convenient as it watches for changes in the whole project, but sometimes, it might take long time or cause Webpack recompilation to take a long time. So there are times when it's better to focus the watcher in a particular workspace using the command `yarn workspace <workspace-name> <workspace-script>`, e.g. to call `dev` script of workspace `lib1`, use the command `yarn workspace lib1 dev`.
 
 #### :construction: Testing your code
 
@@ -166,12 +166,12 @@ Don't forget to keep your code nice and tidy. We run `prettier` when you commit 
 # Make sure your code file has proper copyright header.
 yarn check:copyright
 
-# Check problems with Typescript project reference.
+# Check problems with typings and Typescript project reference setup.
 # See https://www.typescriptlang.org/docs/handbook/project-references.html
-yarn check:project-ref
+yarn check:ts
 
-# Check constraints on `package.json` and dependencies.
-yarn check:pkg-constraints
+# Check package manifests
+yarn check:pkg
 
 # To run all the checks we have in our CI build.
 yarn check:ci

@@ -365,7 +365,7 @@ export class LocalChangesState {
           this.editorStore.changeDetectionState.workspaceRemoteLatestRevisionState.setEntities(
             [],
           );
-          this.editorStore.changeDetectionState.setpotentialWorkspacePullConflicts(
+          this.editorStore.changeDetectionState.setPotentialWorkspacePullConflicts(
             [],
           );
           this.editorStore.changeDetectionState.setAggregatedWorkspaceRemoteChanges(
@@ -525,9 +525,7 @@ export class LocalChangesState {
               this.editorStore.setActiveActivity(ACTIVITY_MODE.LOCAL_CHANGES);
               flowResult(
                 this.editorStore.localChangesState.workspaceSyncState.pullChanges(),
-              ).catch(
-                this.editorStore.applicationStore.alertIllegalUnhandledError,
-              );
+              ).catch(this.editorStore.applicationStore.alertUnhandledError);
             },
           },
           {
@@ -645,8 +643,9 @@ export class LocalChangesState {
                 label: 'Refresh changes',
                 type: ActionAlertActionType.STANDARD,
                 default: true,
-                handler: (): Promise<void> =>
-                  flowResult(this.refreshLocalChanges()),
+                handler: this.editorStore.applicationStore.guardUnhandledError(
+                  () => flowResult(this.refreshLocalChanges()),
+                ),
               },
             ],
           });

@@ -33,7 +33,7 @@ import type { PackageableElement } from '@finos/legend-graph';
 import {
   DataSpace,
   DataSpaceExecutionContext,
-} from '../../models/metamodels/pure/model/packageableElements/dataSpace/DataSpace';
+} from '../../models/metamodels/pure/model/packageableElements/dataSpace/DSLDataSpace_DataSpace';
 import { LATEST_VERSION_ALIAS } from '@finos/legend-server-depot';
 
 const DATA_SPACE_ELEMENT_TYPE = 'DATA SPACE';

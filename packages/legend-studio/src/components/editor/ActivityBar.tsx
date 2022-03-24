@@ -21,7 +21,7 @@ import {
   CheckIcon,
   clsx,
   DropdownMenu,
-  EyeIcon,
+  RepoIcon,
   MenuContent,
   MenuContentItem,
   MenuContentItemIcon,
@@ -36,9 +36,10 @@ import {
   WrenchIcon,
 } from '@finos/legend-art';
 import { useEditorStore } from './EditorStoreProvider';
+import { forwardRef } from 'react';
 
 const SettingsMenu = observer(
-  (props, ref: React.Ref<HTMLDivElement>) => {
+  forwardRef<HTMLDivElement, unknown>(function SettingsMenu(props, ref) {
     const editorStore = useEditorStore();
     const toggleDevTool = (): void => {
       editorStore.setDevTool(!editorStore.isDevToolEnabled);
@@ -54,8 +55,7 @@ const SettingsMenu = observer(
         </MenuContentItem>
       </MenuContent>
     );
-  },
-  { forwardRef: true },
+  }),
 );
 
 export interface ActivityDisplay {
@@ -236,7 +236,7 @@ export const ActivityBar = observer(() => {
       title: 'Project',
       icon: (
         <div className="activity-bar__project-overview-icon">
-          <EyeIcon />
+          <RepoIcon />
         </div>
       ),
     },

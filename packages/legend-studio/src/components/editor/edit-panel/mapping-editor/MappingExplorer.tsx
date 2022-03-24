@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, forwardRef } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   type MappingExplorerDropTarget,
@@ -27,7 +27,7 @@ import {
   clsx,
   TreeView,
   ContextMenu,
-  MdVerticalAlignBottom,
+  VerticalAlignBottomIcon,
   AddIcon,
   PlusIcon,
   LockIcon,
@@ -69,13 +69,13 @@ import {
 } from '../../../../stores/editor-state/element-editor-state/mapping/PureInstanceSetImplementationState';
 
 export const MappingExplorerContextMenu = observer(
-  (
-    props: {
+  forwardRef<
+    HTMLDivElement,
+    {
       mappingElement?: MappingElement;
       openNewMapingModal?: () => void;
-    },
-    ref: React.Ref<HTMLDivElement>,
-  ) => {
+    }
+  >(function MappingExplorerContextMenu(props, ref) {
     const { mappingElement, openNewMapingModal } = props;
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
@@ -89,7 +89,7 @@ export const MappingExplorerContextMenu = observer(
       if (mappingElement) {
         flowResult(
           mappingEditorState.deleteMappingElement(mappingElement),
-        ).catch(applicationStore.alertIllegalUnhandledError);
+        ).catch(applicationStore.alertUnhandledError);
       }
       if (currentMappingElement instanceof EnumerationMapping) {
         new MappingElementDecorator(editorStore).visitEnumerationMapping(
@@ -109,14 +109,14 @@ export const MappingExplorerContextMenu = observer(
     const executeMappingElement = (): void => {
       if (mappingElement instanceof SetImplementation) {
         flowResult(mappingEditorState.buildExecution(mappingElement)).catch(
-          applicationStore.alertIllegalUnhandledError,
+          applicationStore.alertUnhandledError,
         );
       }
     };
     const createTestForMappingElement = (): void => {
       if (mappingElement instanceof SetImplementation) {
         flowResult(mappingEditorState.createNewTest(mappingElement)).catch(
-          applicationStore.alertIllegalUnhandledError,
+          applicationStore.alertUnhandledError,
         );
       }
     };
@@ -139,7 +139,7 @@ export const MappingExplorerContextMenu = observer(
         }
       }
     };
-    const removeMappingFilter = applicationStore.guaranteeSafeAction(
+    const removeMappingFilter = applicationStore.guardUnhandledError(
       async () => {
         if (
           mappingEditorState.currentTabState instanceof
@@ -218,8 +218,7 @@ export const MappingExplorerContextMenu = observer(
         )}
       </div>
     );
-  },
-  { forwardRef: true },
+  }),
 );
 
 export const MappingElementExplorer = observer(
@@ -568,7 +567,7 @@ export const MappingExplorer = observer((props: { isReadOnly: boolean }) => {
                 {'Add a mapping element'}
               </div>
               <div className="mapping-explorer__content__adder__action">
-                <MdVerticalAlignBottom className="mapping-explorer__content__adder__action__dnd-icon" />
+                <VerticalAlignBottomIcon className="mapping-explorer__content__adder__action__dnd-icon" />
                 <AddIcon className="mapping-explorer__content__adder__action__add-icon" />
               </div>
             </div>

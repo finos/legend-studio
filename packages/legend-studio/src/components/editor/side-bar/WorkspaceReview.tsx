@@ -119,16 +119,16 @@ export const WorkspaceReview = observer(() => {
     workspaceReviewState.isRecreatingWorkspaceAfterCommittingReview;
   const refresh = (): void => {
     flowResult(workspaceReviewState.refreshWorkspaceChanges()).catch(
-      applicationStore.alertIllegalUnhandledError,
+      applicationStore.alertUnhandledError,
     );
     flowResult(workspaceReviewState.fetchCurrentWorkspaceReview()).catch(
-      applicationStore.alertIllegalUnhandledError,
+      applicationStore.alertUnhandledError,
     );
   };
   const closeReview = (): void => {
     workspaceReviewState.setReviewTitle('');
     flowResult(workspaceReviewState.closeWorkspaceReview()).catch(
-      applicationStore.alertIllegalUnhandledError,
+      applicationStore.alertUnhandledError,
     );
   };
   const commitReview = (): void => {
@@ -137,7 +137,7 @@ export const WorkspaceReview = observer(() => {
         workspaceReviewState.setReviewTitle('');
         flowResult(
           workspaceReviewState.commitWorkspaceReview(workspaceReview),
-        ).catch(applicationStore.alertIllegalUnhandledError);
+        ).catch(applicationStore.alertUnhandledError);
       };
       if (editorStore.hasUnpushedChanges) {
         editorStore.setActionAltertInfo({
@@ -178,7 +178,7 @@ export const WorkspaceReview = observer(() => {
         workspaceReviewState.createWorkspaceReview(
           workspaceReviewState.reviewTitle,
         ),
-      ).catch(applicationStore.alertIllegalUnhandledError);
+      ).catch(applicationStore.alertUnhandledError);
     }
   };
 
@@ -187,7 +187,7 @@ export const WorkspaceReview = observer(() => {
   // of `syncWithWorkspace` for example; in case it is bad, user can click refresh to make it right again
   useEffect(() => {
     flowResult(workspaceReviewState.fetchCurrentWorkspaceReview()).catch(
-      applicationStore.alertIllegalUnhandledError,
+      applicationStore.alertUnhandledError,
     );
   }, [applicationStore, workspaceReviewState]);
 

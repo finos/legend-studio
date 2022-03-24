@@ -73,7 +73,7 @@ const ModelGenerationDragLayer: React.FC = () => {
   const { itemType, item, isDragging, currentPosition } = useDragLayer(
     (monitor) => ({
       itemType: monitor.getItemType(),
-      item: monitor.getItem() as GenerationSpecNodeDragSource | null,
+      item: monitor.getItem<GenerationSpecNodeDragSource | null>(),
       isDragging: monitor.isDragging(),
       initialOffset: monitor.getInitialSourceClientOffset(),
       currentPosition: monitor.getClientOffset(),
@@ -543,10 +543,10 @@ export const GenerationSpecificationEditor = observer(() => {
   );
   const modelGenerationState = editorStore.graphState.graphGenerationState;
   const generationSpec = generationSpecificationState.spec;
-  const generate = applicationStore.guaranteeSafeAction(() =>
+  const generate = applicationStore.guardUnhandledError(() =>
     flowResult(modelGenerationState.globalGenerate()),
   );
-  const emptyGenerationEntities = applicationStore.guaranteeSafeAction(() =>
+  const emptyGenerationEntities = applicationStore.guardUnhandledError(() =>
     flowResult(modelGenerationState.clearGenerations()),
   );
 

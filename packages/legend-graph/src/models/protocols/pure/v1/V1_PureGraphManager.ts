@@ -37,12 +37,15 @@ import {
   assertTrue,
   assertErrorThrown,
   promisify,
+  type ActionState,
+  StopWatch,
 } from '@finos/legend-shared';
-import type { TEMP__AbstractEngineConfig } from '../../../../graphManager/action/TEMP__AbstractEngineConfig';
+import type { TEMPORARY__AbstractEngineConfig } from '../../../../graphManager/action/TEMPORARY__AbstractEngineConfig';
 import {
   AbstractPureGraphManager,
-  type TEMP__EngineSetupConfig,
+  type TEMPORARY__EngineSetupConfig,
   type GraphBuilderOptions,
+  type ExecutionOptions,
 } from '../../../../graphManager/AbstractPureGraphManager';
 import type { Mapping } from '../../../metamodels/pure/packageableElements/mapping/Mapping';
 import type { Runtime } from '../../../metamodels/pure/packageableElements/runtime/Runtime';
@@ -208,6 +211,10 @@ import {
 import { PackageableElementReference } from '../../../metamodels/pure/packageableElements/PackageableElementReference';
 import type { GraphPluginManager } from '../../../../GraphPluginManager';
 import type { QuerySearchSpecification } from '../../../../graphManager/action/query/QuerySearchSpecification';
+import type { ExternalFormatDescription } from '../../../../graphManager/action/externalFormat/ExternalFormatDescription';
+import type { ConfigurationProperty } from '../../../metamodels/pure/packageableElements/fileGeneration/ConfigurationProperty';
+import { V1_ExternalFormatModelGenerationInput } from './engine/externalFormat/V1_ExternalFormatModelGeneration';
+import { GraphBuilderReport } from '../../../../graphManager/GraphBuilderReport';
 
 const V1_FUNCTION_SUFFIX_MULTIPLICITY_INFINITE = 'MANY';
 
@@ -267,7 +274,20 @@ class V1_PureModelContextDataIndex {
   >();
 }
 
+const mergePureModelContextData = (
+  ...data: V1_PureModelContextData[]
+): V1_PureModelContextData => {
+  const mergedData = new V1_PureModelContextData();
+  for (const _data of data) {
+    mergedData.elements = mergedData.elements.concat(_data.elements);
+    mergedData.serializer = _data.serializer ?? mergedData.serializer;
+    mergedData.origin = _data.origin ?? mergedData.origin;
+  }
+  return mergedData;
+};
+
 const indexPureModelContextData = (
+  report: GraphBuilderReport,
   data: V1_PureModelContextData,
   extensions: V1_GraphBuilderExtensions,
 ): V1_PureModelContextDataIndex => {
@@ -327,6 +347,42 @@ const indexPureModelContextData = (
       (index.otherElementsByBuilder.get(builder) ?? []).concat(elements),
     );
   });
+
+  // report
+  report.elementCount.total = report.elementCount.total + index.elements.length;
+  report.elementCount.other =
+    (report.elementCount.other ?? 0) +
+    otherElementsByClass.size +
+    index.fileGenerations.length +
+    index.generationSpecifications.length;
+  report.elementCount.sectionIndex =
+    (report.elementCount.sectionIndex ?? 0) + index.sectionIndices.length;
+
+  report.elementCount.association =
+    (report.elementCount.association ?? 0) + index.associations.length;
+  report.elementCount.class =
+    (report.elementCount.class ?? 0) + index.classes.length;
+  report.elementCount.enumeration =
+    (report.elementCount.enumeration ?? 0) + index.enumerations.length;
+  report.elementCount.function =
+    (report.elementCount.function ?? 0) + index.functions.length;
+  report.elementCount.profile =
+    (report.elementCount.profile ?? 0) + index.profiles.length;
+  report.elementCount.measure =
+    (report.elementCount.measure ?? 0) + index.measures.length;
+
+  report.elementCount.store =
+    (report.elementCount.store ?? 0) + index.stores.length;
+  report.elementCount.mapping =
+    (report.elementCount.mapping ?? 0) + index.mappings.length;
+  report.elementCount.connection =
+    (report.elementCount.connection ?? 0) + index.connections.length;
+  report.elementCount.runtime =
+    (report.elementCount.runtime ?? 0) + index.runtimes.length;
+
+  report.elementCount.service =
+    (report.elementCount.service ?? 0) + index.services.length;
+
   return index;
 };
 
@@ -354,22 +410,24 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
     makeObservable<
       V1_PureGraphManager,
+      | 'buildGraphFromInputs'
       | 'initializeAndIndexElements'
       | 'postProcess'
       | 'buildTypes'
       | 'buildStores'
       | 'buildMappings'
       | 'buildConnectionsAndRuntimes'
-      | 'buildSectionIndex'
+      | 'buildSectionIndices'
       | 'buildOtherElements'
       | 'buildServices'
       | 'buildFileGenerations'
-      | 'buildGenerationSpecificationss'
+      | 'buildGenerationSpecifications'
     >(this, {
       initialize: flow,
       buildSystem: flow,
       buildDependencies: flow,
       buildGraph: flow,
+      buildGraphFromInputs: flow,
       buildGenerations: flow,
       initializeAndIndexElements: flow,
       postProcess: flow,
@@ -377,11 +435,11 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       buildStores: flow,
       buildMappings: flow,
       buildConnectionsAndRuntimes: flow,
-      buildSectionIndex: flow,
+      buildSectionIndices: flow,
       buildOtherElements: flow,
       buildServices: flow,
       buildFileGenerations: flow,
-      buildGenerationSpecificationss: flow,
+      buildGenerationSpecifications: flow,
     });
 
     // setup plugins
@@ -406,12 +464,12 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
-  TEMP__getEngineConfig(): TEMP__AbstractEngineConfig {
+  TEMPORARY__getEngineConfig(): TEMPORARY__AbstractEngineConfig {
     return this.engine.config;
   }
 
   *initialize(
-    config: TEMP__EngineSetupConfig,
+    config: TEMPORARY__EngineSetupConfig,
     options?: {
       tracerService?: TracerService | undefined;
     },
@@ -429,8 +487,11 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     coreModel: CoreModel,
     systemModel: SystemModel,
     options?: GraphBuilderOptions,
-  ): GeneratorFn<void> {
-    const startTime = Date.now();
+  ): GeneratorFn<GraphBuilderReport> {
+    const stopWatch = new StopWatch();
+    const report = new GraphBuilderReport();
+    const graphBuilderState = systemModel.buildState;
+    graphBuilderState.reset();
 
     // Create a dummy graph for system processing. This is to ensure system model does not depend on the main graph
     const graph = new PureModel(
@@ -438,63 +499,58 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       systemModel,
       this.pluginManager.getPureGraphPlugins(),
     );
+
     try {
-      const systemData = new V1_PureModelContextData();
-      yield V1_entitiesToPureModelContextData(
-        /**
-         * Get all system entities.
-         *
-         * NOTE: right now, we are doing extra work here: JSON -> protocol -> entities -> protocol, since we are
-         * expecting to get these models from some a remote SDLC project in the future.
-         */
-        V1_deserializePureModelContextData(V1_CORE_SYSTEM_MODELS)
-          .elements.concat(
-            this.pluginManager
-              .getPureProtocolProcessorPlugins()
-              .flatMap((plugin) => plugin.V1_getExtraSystemModels?.() ?? [])
-              .flatMap(
-                (modelContextData) =>
-                  V1_deserializePureModelContextData(modelContextData).elements,
-              ),
-          )
-          .map((element) => this.elementProtocolToEntity(element)),
-        systemData,
-        this.pluginManager.getPureProtocolProcessorPlugins(),
+      // deserialize
+      graphBuilderState.setMessage(`Collecting and deserializing elements...`);
+      const systemData = mergePureModelContextData(
+        V1_deserializePureModelContextData(V1_CORE_SYSTEM_MODELS),
+        ...this.pluginManager
+          .getPureProtocolProcessorPlugins()
+          .flatMap((plugin) => plugin.V1_getExtraSystemModels?.() ?? [])
+          .map((modelContextData) =>
+            V1_deserializePureModelContextData(modelContextData),
+          ),
       );
-      const systemGraphBuilderInput = [
+      stopWatch.record(
+        GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_ELEMENTS_DESERIALIZED,
+      );
+
+      // prepare build inputs
+      const buildInputs = [
         {
           model: systemModel,
-          data: indexPureModelContextData(systemData, this.extensions),
+          data: indexPureModelContextData(report, systemData, this.extensions),
         },
       ];
+
+      // build
       yield flowResult(
-        this.initializeAndIndexElements(graph, systemGraphBuilderInput),
+        this.buildGraphFromInputs(
+          graph,
+          buildInputs,
+          report,
+          stopWatch,
+          graphBuilderState,
+          options,
+        ),
       );
-      // NOTE: right now we only have profile and enumeration for system, we might need to generalize this step in the future
-      yield flowResult(this.buildTypes(graph, systemGraphBuilderInput));
-      yield flowResult(this.buildOtherElements(graph, systemGraphBuilderInput));
-      yield flowResult(this.postProcess(graph, systemGraphBuilderInput));
-      if (!options?.quiet) {
-        this.log.info(
-          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_SYSTEM_BUILT),
-          Date.now() - startTime,
-          'ms',
-          `[profile: ${systemModel.ownProfiles.length}, enumeration: ${systemModel.ownEnumerations.length}]`,
-        );
-      }
-      systemModel.buildState.pass();
+
+      graphBuilderState.pass();
+      report.timings = {
+        ...Object.fromEntries(stopWatch.records),
+        [GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_COMPLETED]: stopWatch.elapsed,
+      };
+      return report;
     } catch (error) {
       assertErrorThrown(error);
-      systemModel.buildState.fail();
-      if (!options?.quiet) {
-        this.log.info(
-          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE),
-          '[ERROR]',
-          Date.now() - startTime,
-          'ms',
-        );
-      }
+      graphBuilderState.fail();
+      this.log.error(
+        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE),
+      );
       throw new SystemGraphBuilderError(error);
+    } finally {
+      graphBuilderState.setMessage(undefined);
     }
   }
 
@@ -504,9 +560,12 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     dependencyManager: DependencyManager,
     dependencyEntitiesMap: Map<string, Entity[]>,
     options?: GraphBuilderOptions,
-  ): GeneratorFn<void> {
-    const startTime = Date.now();
-    dependencyManager.buildState.reset();
+  ): GeneratorFn<GraphBuilderReport> {
+    const stopWatch = new StopWatch();
+    const report = new GraphBuilderReport();
+    const graphBuilderState = dependencyManager.buildState;
+    graphBuilderState.reset();
+
     // Create a dummy graph for system processing. This is to ensure dependency models do not depend on the main graph
     const graph = new PureModel(
       coreModel,
@@ -514,9 +573,14 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       this.pluginManager.getPureGraphPlugins(),
     );
     graph.setDependencyManager(dependencyManager);
+
     try {
       dependencyManager.initialize(dependencyEntitiesMap);
-      // Parse/Build Data
+
+      // deserialize
+      graphBuilderState.setMessage(
+        `Partitioning and deserializing elements...`,
+      );
       const dependencyDataMap = new Map<string, V1_PureModelContextData>();
       yield Promise.all(
         Array.from(dependencyEntitiesMap.entries()).map(
@@ -531,79 +595,50 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           },
         ),
       );
-      const preprocessingFinishedTime = Date.now();
-      if (!options?.quiet) {
-        this.log.info(
-          LogEvent.create(
-            GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_DEPENDENCIES_PREPROCESSED,
-          ),
-          preprocessingFinishedTime - startTime,
-          'ms',
-        );
-      }
+      stopWatch.record(
+        GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_ELEMENTS_DESERIALIZED,
+      );
 
-      const graphBuilderInput: V1_GraphBuilderInput[] = Array.from(
+      // prepare build inputs
+      const buildInputs: V1_GraphBuilderInput[] = Array.from(
         dependencyDataMap.entries(),
       ).map(([dependencyKey, dependencyData]) => ({
-        data: indexPureModelContextData(dependencyData, this.extensions),
+        data: indexPureModelContextData(
+          report,
+          dependencyData,
+          this.extensions,
+        ),
         model: graph.dependencyManager.getModel(dependencyKey),
       }));
+
+      // build
       yield flowResult(
-        this.initializeAndIndexElements(graph, graphBuilderInput, options),
-      );
-      // NOTE: we might need to process sectionIndex if we support unresolved element paths in dependencies
-      yield flowResult(this.buildTypes(graph, graphBuilderInput, options));
-      yield flowResult(this.buildStores(graph, graphBuilderInput, options));
-      yield flowResult(this.buildMappings(graph, graphBuilderInput, options));
-      yield flowResult(
-        this.buildConnectionsAndRuntimes(graph, graphBuilderInput, options),
-      );
-      yield flowResult(this.buildServices(graph, graphBuilderInput, options));
-      yield flowResult(
-        this.buildFileGenerations(graph, graphBuilderInput, options),
-      );
-      yield flowResult(
-        this.buildGenerationSpecificationss(graph, graphBuilderInput, options),
-      );
-      yield flowResult(
-        this.buildOtherElements(graph, graphBuilderInput, options),
+        this.buildGraphFromInputs(
+          graph,
+          buildInputs,
+          report,
+          stopWatch,
+          graphBuilderState,
+          options,
+        ),
       );
 
-      yield flowResult(this.postProcess(graph, graphBuilderInput));
-      const processingFinishedTime = Date.now();
-      if (!options?.quiet) {
-        this.log.info(
-          LogEvent.create(
-            GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_DEPENDENCIES_PROCESSED,
-          ),
-          processingFinishedTime - preprocessingFinishedTime,
-          'ms',
-        );
-      }
-
-      dependencyManager.buildState.pass();
-      if (!options?.quiet) {
-        this.log.info(
-          LogEvent.create(
-            GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_DEPENDENCIES_BUILT,
-          ),
-          '[TOTAL]',
-          Date.now() - startTime,
-          'ms',
-        );
-      }
+      graphBuilderState.pass();
+      report.otherStats.projectCount = dependencyEntitiesMap.size;
+      report.timings = {
+        ...Object.fromEntries(stopWatch.records),
+        [GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_COMPLETED]: stopWatch.elapsed,
+      };
+      return report;
     } catch (error) {
       assertErrorThrown(error);
-      if (!options?.quiet) {
-        this.log.info(
-          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE),
-          '[ERROR]',
-          Date.now() - startTime,
-          'ms',
-        );
-      }
-      dependencyManager.buildState.fail();
+      this.log.error(
+        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE),
+      );
+      graphBuilderState.fail();
       throw new DependencyGraphBuilderError(error);
+    } finally {
+      graphBuilderState.setMessage(undefined);
     }
   }
 
@@ -611,221 +646,57 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     graph: PureModel,
     entities: Entity[],
     options?: GraphBuilderOptions,
-  ): GeneratorFn<void> {
-    let stepStartTime = Date.now();
-    let stepFinishedTime;
-    const startTime = stepStartTime;
+  ): GeneratorFn<GraphBuilderReport> {
+    const stopWatch = new StopWatch();
+    const report = new GraphBuilderReport();
+    const graphBuilderState = graph.buildState;
+    graphBuilderState.reset();
+
     try {
-      // Parse/Build Data
+      // deserialize
+      graphBuilderState.setMessage(`Deserializing elements...`);
       const data = new V1_PureModelContextData();
       yield V1_entitiesToPureModelContextData(
         entities,
         data,
         this.pluginManager.getPureProtocolProcessorPlugins(),
       );
+      stopWatch.record(
+        GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_ELEMENTS_DESERIALIZED,
+      );
 
-      const graphBuilderInput: V1_GraphBuilderInput[] = [
+      // prepare build inputs
+      const buildInputs: V1_GraphBuilderInput[] = [
         {
           model: graph,
-          data: indexPureModelContextData(data, this.extensions),
+          data: indexPureModelContextData(report, data, this.extensions),
         },
       ];
-      stepFinishedTime = Date.now();
-      if (!options?.quiet) {
-        this.log.info(
-          LogEvent.create(
-            GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_DATA_MODEL_PARSED,
-          ),
-          stepFinishedTime - stepStartTime,
-          'ms',
-        );
-      }
-      stepStartTime = stepFinishedTime;
 
+      // build
       yield flowResult(
-        this.initializeAndIndexElements(graph, graphBuilderInput, options),
+        this.buildGraphFromInputs(
+          graph,
+          buildInputs,
+          report,
+          stopWatch,
+          graphBuilderState,
+          options,
+        ),
       );
-      stepFinishedTime = Date.now();
-      if (!options?.quiet) {
-        this.log.info(
-          LogEvent.create(
-            GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_ELEMENTS_INITIALIZED_AND_INDEXED,
-          ),
-          stepFinishedTime - stepStartTime,
-          'ms',
-          `[element: ${data.elements.length}]`,
-        );
-      }
-      stepStartTime = stepFinishedTime;
 
-      // Section index
-      yield flowResult(
-        this.buildSectionIndex(graph, graphBuilderInput, options),
-      );
-      stepFinishedTime = Date.now();
-      if (!options?.quiet) {
-        this.log.info(
-          LogEvent.create(
-            GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_SECTION_INDICES_BUILT,
-          ),
-          stepFinishedTime - stepStartTime,
-          'ms',
-          `[sectionIndex: ${graph.ownSectionIndices.length}]`,
-        );
-      }
-      stepStartTime = stepFinishedTime;
-      // Types
-      yield flowResult(this.buildTypes(graph, graphBuilderInput, options));
-      stepFinishedTime = Date.now();
-      if (!options?.quiet) {
-        this.log.info(
-          LogEvent.create(
-            GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_DOMAIN_MODELS_BUILT,
-          ),
-          stepFinishedTime - stepStartTime,
-          'ms',
-          `[class: ${graph.ownClasses.length}, enumeration: ${graph.ownEnumerations.length}, association: ${graph.ownAssociations.length}, profile: ${graph.ownProfiles.length}, functions: ${graph.ownFunctions.length}]`,
-        );
-      }
-      stepStartTime = stepFinishedTime;
-
-      // Stores
-      yield flowResult(this.buildStores(graph, graphBuilderInput, options));
-      stepFinishedTime = Date.now();
-      // TODO: we might want to detail out the number of stores by type
-      if (!options?.quiet) {
-        this.log.info(
-          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_STORES_BUILT),
-          stepFinishedTime - stepStartTime,
-          'ms',
-          `[store: ${graph.ownStores.length}]`,
-        );
-      }
-      stepStartTime = stepFinishedTime;
-
-      // Mappings
-      yield flowResult(this.buildMappings(graph, graphBuilderInput, options));
-      stepFinishedTime = Date.now();
-      if (!options?.quiet) {
-        this.log.info(
-          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_MAPPINGS_BUILT),
-          stepFinishedTime - stepStartTime,
-          'ms',
-          `[mapping: ${graph.ownMappings.length}]`,
-        );
-      }
-      stepStartTime = stepFinishedTime;
-
-      // Connections and runtimes
-      yield flowResult(
-        this.buildConnectionsAndRuntimes(graph, graphBuilderInput, options),
-      );
-      stepFinishedTime = Date.now();
-      if (!options?.quiet) {
-        this.log.info(
-          LogEvent.create(
-            GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_CONNECTIONS_BUILT,
-          ),
-          stepFinishedTime - stepStartTime,
-          'ms',
-          `[connection: ${graph.ownConnections.length}]`,
-        );
-        this.log.info(
-          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_RUNTIMES_BUILT),
-          stepFinishedTime - stepStartTime,
-          'ms',
-          `[runtime: ${graph.ownRuntimes.length}]`,
-        );
-      }
-      stepStartTime = stepFinishedTime;
-
-      // Services
-      yield flowResult(this.buildServices(graph, graphBuilderInput, options));
-      stepFinishedTime = Date.now();
-      if (!options?.quiet) {
-        this.log.info(
-          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_SERVICES_BUILT),
-          stepFinishedTime - stepStartTime,
-          'ms',
-          `[service: ${graph.ownServices.length}]`,
-        );
-      }
-      stepStartTime = stepFinishedTime;
-
-      // File Generation
-      yield flowResult(
-        this.buildFileGenerations(graph, graphBuilderInput, options),
-      );
-      stepFinishedTime = Date.now();
-      if (!options?.quiet) {
-        this.log.info(
-          LogEvent.create(
-            GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FILE_GENERATIONS_BUILT,
-          ),
-          stepFinishedTime - stepStartTime,
-          'ms',
-          `[file-generation: ${graph.ownFileGenerations.length}]`,
-        );
-      }
-      stepStartTime = stepFinishedTime;
-
-      // Generation Specifications (tree)
-      yield flowResult(
-        this.buildGenerationSpecificationss(graph, graphBuilderInput, options),
-      );
-      stepFinishedTime = Date.now();
-      if (!options?.quiet) {
-        this.log.info(
-          LogEvent.create(
-            GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_GENERATION_TREE_BUILT,
-          ),
-          stepFinishedTime - stepStartTime,
-          'ms',
-          `[generation-specification: ${graph.ownGenerationSpecifications.length}]`,
-        );
-      }
-      stepStartTime = stepFinishedTime;
-
-      // Other elements
-      yield flowResult(
-        this.buildOtherElements(graph, graphBuilderInput, options),
-      );
-      stepFinishedTime = Date.now();
-      if (!options?.quiet) {
-        this.log.info(
-          LogEvent.create(
-            GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_OTHER_ELEMENTS_BUILT,
-          ),
-          stepFinishedTime - stepStartTime,
-          'ms',
-        );
-      }
-
-      yield flowResult(
-        this.postProcess(graph, graphBuilderInput, {
-          TEMPORARY__keepSectionIndex: options?.TEMPORARY__keepSectionIndex,
-        }),
-      );
-      graph.buildState.pass();
-      if (!options?.quiet) {
-        this.log.info(
-          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_COMPLETED),
-          '[TOTAL]',
-          Date.now() - startTime,
-          'ms',
-        );
-      }
+      graphBuilderState.pass();
+      report.timings = {
+        ...Object.fromEntries(stopWatch.records),
+        [GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_COMPLETED]: stopWatch.elapsed,
+      };
+      return report;
     } catch (error) {
       assertErrorThrown(error);
-      if (!options?.quiet) {
-        this.log.info(
-          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE),
-          '[ERROR]',
-          Date.now() - startTime,
-          'ms',
-        );
-      }
-      graph.buildState.fail();
+      this.log.error(
+        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE),
+      );
+      graphBuilderState.fail();
       /**
        * Wrap all error with `GraphBuilderError`, as we throw a lot of assertion error in the graph builder
        * But we might want to rethink this decision in the future and throw appropriate type of error
@@ -833,6 +704,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       throw error instanceof GraphBuilderError
         ? error
         : new GraphBuilderError(error);
+    } finally {
+      graphBuilderState.setMessage(undefined);
     }
   }
 
@@ -840,18 +713,16 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     graph: PureModel,
     generatedEntities: Map<string, Entity[]>,
     options?: GraphBuilderOptions,
-  ): GeneratorFn<void> {
-    const stepStartTime = Date.now();
+  ): GeneratorFn<GraphBuilderReport> {
+    const stopWatch = new StopWatch();
+    const report = new GraphBuilderReport();
     const generatedModel = graph.generationModel;
-    generatedModel.buildState.reset();
+    const graphBuilderState = generatedModel.buildState;
+    graphBuilderState.reset();
+
     try {
-      if (!options?.quiet) {
-        this.log.info(
-          LogEvent.create(
-            GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_DATA_MODEL_PARSED,
-          ),
-        );
-      }
+      // deserialize
+      graphBuilderState.setMessage(`Deserializing elements...`);
       const generatedDataMap = new Map<string, V1_PureModelContextData>();
       yield Promise.all(
         Array.from(generatedEntities.entries()).map(
@@ -866,57 +737,48 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           },
         ),
       );
-      const generationGraphBuilderInput = Array.from(
-        generatedDataMap.entries(),
-      ).map(([generationParentPath, generatedData]) => ({
-        parentElementPath: generationParentPath,
-        data: indexPureModelContextData(generatedData, this.extensions),
-        model: generatedModel,
-      }));
-
-      yield flowResult(
-        this.initializeAndIndexElements(graph, generationGraphBuilderInput),
+      stopWatch.record(
+        GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_ELEMENTS_DESERIALIZED,
       );
 
-      yield flowResult(this.buildTypes(graph, generationGraphBuilderInput));
-      yield flowResult(this.buildStores(graph, generationGraphBuilderInput));
-      yield flowResult(this.buildMappings(graph, generationGraphBuilderInput));
-      yield flowResult(
-        this.buildConnectionsAndRuntimes(graph, generationGraphBuilderInput),
-      );
-      yield flowResult(this.buildServices(graph, generationGraphBuilderInput));
-      yield flowResult(
-        this.buildFileGenerations(graph, generationGraphBuilderInput),
-      );
-      yield flowResult(
-        this.buildGenerationSpecificationss(graph, generationGraphBuilderInput),
-      );
-      yield flowResult(
-        this.buildOtherElements(graph, generationGraphBuilderInput),
-      );
-
-      yield flowResult(this.postProcess(graph, generationGraphBuilderInput));
-      generatedModel.buildState.pass();
-      if (!options?.quiet) {
-        this.log.info(
-          LogEvent.create(
-            GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_GENERATIONS_BUILT,
+      // prepare build inputs
+      const buildInputs = Array.from(generatedDataMap.entries()).map(
+        ([generationParentPath, generatedData]) => ({
+          parentElementPath: generationParentPath,
+          data: indexPureModelContextData(
+            report,
+            generatedData,
+            this.extensions,
           ),
-          Date.now() - stepStartTime,
-          `${graph.generationModel.allOwnElements.length} generated elements processed`,
-          'ms',
-        );
-      }
+          model: generatedModel,
+        }),
+      );
+
+      // build
+      yield flowResult(
+        this.buildGraphFromInputs(
+          graph,
+          buildInputs,
+          report,
+          stopWatch,
+          graphBuilderState,
+          options,
+        ),
+      );
+
+      graphBuilderState.pass();
+      report.otherStats.generationCount = generatedDataMap.size;
+      report.timings = {
+        ...Object.fromEntries(stopWatch.records),
+        [GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_COMPLETED]: stopWatch.elapsed,
+      };
+      return report;
     } catch (error) {
       assertErrorThrown(error);
-      if (!options?.quiet) {
-        this.log.info(
-          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE),
-          Date.now() - stepStartTime,
-          'ms',
-        );
-      }
-      generatedModel.buildState.fail();
+      this.log.error(
+        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE),
+      );
+      graphBuilderState.fail();
       /**
        * Wrap all error with `GraphBuilderError`, as we throw a lot of assertion error in the graph builder
        * But we might want to rethink this decision in the future and throw appropriate type of error
@@ -924,7 +786,79 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       throw error instanceof GraphBuilderError
         ? error
         : new GraphBuilderError(error);
+    } finally {
+      graphBuilderState.setMessage(undefined);
     }
+  }
+
+  private *buildGraphFromInputs(
+    graph: PureModel,
+    inputs: V1_GraphBuilderInput[],
+    report: GraphBuilderReport,
+    stopWatch: StopWatch,
+    graphBuilderState: ActionState,
+    options?: GraphBuilderOptions,
+  ): GeneratorFn<void> {
+    // index
+    graphBuilderState.setMessage(
+      `Indexing ${report.elementCount.total} elements...`,
+    );
+    yield flowResult(this.initializeAndIndexElements(graph, inputs, options));
+    stopWatch.record(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_ELEMENTS_INDEXED);
+
+    // build section index
+    graphBuilderState.setMessage(`Building section indices...`);
+    yield flowResult(this.buildSectionIndices(graph, inputs, options));
+    stopWatch.record(
+      GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_SECTION_INDICES_BUILT,
+    );
+
+    // build types
+    graphBuilderState.setMessage(`Building domain models...`);
+    yield flowResult(this.buildTypes(graph, inputs, options));
+    stopWatch.record(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_DOMAIN_MODELS_BUILT);
+
+    // build stores
+    graphBuilderState.setMessage(`Building stores...`);
+    yield flowResult(this.buildStores(graph, inputs, options));
+    stopWatch.record(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_STORES_BUILT);
+
+    // build mappings
+    graphBuilderState.setMessage(`Building mappings...`);
+    yield flowResult(this.buildMappings(graph, inputs, options));
+    stopWatch.record(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_MAPPINGS_BUILT);
+
+    // build connections and runtimes
+    graphBuilderState.setMessage(`Building connections and runtimes...`);
+    yield flowResult(this.buildConnectionsAndRuntimes(graph, inputs, options));
+    stopWatch.record(
+      GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_CONNECTIONS_AND_RUNTIMES_BUILT,
+    );
+
+    // build services
+    graphBuilderState.setMessage(`Building services...`);
+    yield flowResult(this.buildServices(graph, inputs, options));
+    stopWatch.record(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_SERVICES_BUILT);
+
+    // build other elements
+    graphBuilderState.setMessage(`Building other elements...`);
+    yield flowResult(this.buildFileGenerations(graph, inputs, options));
+    yield flowResult(
+      this.buildGenerationSpecifications(graph, inputs, options),
+    );
+    yield flowResult(this.buildOtherElements(graph, inputs, options));
+    stopWatch.record(
+      GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_OTHER_ELEMENTS_BUILT,
+    );
+
+    // post-process
+    graphBuilderState.setMessage(`Post-processing graph...`);
+    yield flowResult(
+      this.postProcess(graph, inputs, {
+        TEMPORARY__keepSectionIndex: options?.TEMPORARY__keepSectionIndex,
+      }),
+    );
+    stopWatch.record(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_POST_PROCESSED);
   }
 
   private getBuilderContext(
@@ -1033,7 +967,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
      * perserve the element path both resolved and unresolved
      */
     if (!options?.TEMPORARY__keepSectionIndex) {
-      graph.TEMP__deleteOwnSectionIndex();
+      graph.TEMPORARY__deleteOwnSectionIndex();
     }
   }
 
@@ -1311,7 +1245,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
-  private *buildGenerationSpecificationss(
+  private *buildGenerationSpecifications(
     graph: PureModel,
     inputs: V1_GraphBuilderInput[],
     options?: GraphBuilderOptions,
@@ -1330,7 +1264,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
-  private *buildSectionIndex(
+  private *buildSectionIndices(
     graph: PureModel,
     inputs: V1_GraphBuilderInput[],
     options?: GraphBuilderOptions,
@@ -1723,6 +1657,26 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
+  // ------------------------------------------- External Format --------------------------------
+  getAvailableExternalFormatsDescriptions(): Promise<
+    ExternalFormatDescription[]
+  > {
+    return this.engine.getAvailableExternalFormatsDescriptions();
+  }
+
+  generateModelFromExternalFormat(
+    configurationProperties: ConfigurationProperty[],
+    graph: PureModel,
+  ): Promise<string> {
+    const config: Record<PropertyKey, unknown> = {};
+    configurationProperties.forEach((property) => {
+      config[property.name] = property.value as Record<PropertyKey, unknown>;
+    });
+    const model = this.getFullGraphModelData(graph);
+    const input = new V1_ExternalFormatModelGenerationInput(model, config);
+    return this.engine.generateModel(input);
+  }
+
   // ------------------------------------------- Import -------------------------------------------
 
   getAvailableImportConfigurationDescriptions(): Promise<
@@ -1852,7 +1806,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     lambda: RawLambda,
     runtime: Runtime,
     clientVersion: string,
-    useLosslessParse: boolean,
+    options?: ExecutionOptions,
   ): Promise<ExecutionResult> {
     return V1_buildExecutionResult(
       await this.engine.executeMapping(
@@ -1863,7 +1817,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           runtime,
           clientVersion,
         ),
-        useLosslessParse,
+        options,
       ),
     );
   }
@@ -1941,8 +1895,11 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   ): Promise<ServiceTestResult[]> {
     const protocolGraph = this.getFullGraphModelData(graph);
     const targetService = guaranteeNonNullable(
-      protocolGraph
-        .getElementsOfType(V1_Service)
+      protocolGraph.elements
+        .filter(
+          (element: V1_PackageableElement): element is V1_Service =>
+            element instanceof V1_Service,
+        )
         .find((element) => element.path === service.path),
       `Can't run service test: service '${service.path}' not found`,
     );

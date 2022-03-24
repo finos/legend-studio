@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
+import { APPLICATION_LOG_EVENT } from '@finos/legend-application';
 import type { TelemetryService } from '@finos/legend-shared';
 
-const APPLICATION_LOADED = 'application_loaded';
 type ApplicationLoaded_TelemetryData = {
   browser: {
     userAgent: string;
@@ -41,6 +41,9 @@ export class LegendStudioTelemetryService {
   }
 
   logEvent_ApplicationLoaded(data: ApplicationLoaded_TelemetryData): void {
-    this.telemetryService.logEvent(APPLICATION_LOADED, data);
+    this.telemetryService.logEvent(
+      APPLICATION_LOG_EVENT.APPLICATION_LOADED,
+      data,
+    );
   }
 }

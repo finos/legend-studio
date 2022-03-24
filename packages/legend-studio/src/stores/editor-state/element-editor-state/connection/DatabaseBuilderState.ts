@@ -497,9 +497,6 @@ export class DatabaseBuilderState {
       this.editorStore.graphManagerState.graphManager.buildGraph(
         dbGraph,
         entities,
-        {
-          quiet: true,
-        },
       ),
     )) as Entity[];
     assertTrue(
@@ -521,9 +518,6 @@ export class DatabaseBuilderState {
       this.editorStore.graphManagerState.graphManager.buildGraph(
         dbGraph,
         entities,
-        {
-          quiet: true,
-        },
       ),
     )) as Entity[];
     assertTrue(

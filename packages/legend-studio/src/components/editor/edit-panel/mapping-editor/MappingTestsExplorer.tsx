@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, forwardRef } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useDrop } from 'react-dnd';
 import {
@@ -27,7 +27,7 @@ import {
   clsx,
   ContextMenu,
   ProgressBar,
-  MdVerticalAlignBottom,
+  VerticalAlignBottomIcon,
   AddIcon,
   PlayIcon,
   EmptyCircleIcon,
@@ -55,20 +55,20 @@ const addTestPromps = [
 ];
 
 export const MappingTestExplorerContextMenu = observer(
-  (
-    props: {
+  forwardRef<
+    HTMLDivElement,
+    {
       mappingTestState?: MappingTestState;
       showCreateNewTestModal?: () => void;
       isReadOnly: boolean;
-    },
-    ref: React.Ref<HTMLDivElement>,
-  ) => {
+    }
+  >(function MappingTestExplorerContextMenu(props, ref) {
     const { mappingTestState, isReadOnly, showCreateNewTestModal } = props;
     const applicationStore = useApplicationStore();
     const runMappingTest = (): void => {
       if (mappingTestState) {
         flowResult(mappingTestState.runTest()).catch(
-          applicationStore.alertIllegalUnhandledError,
+          applicationStore.alertUnhandledError,
         );
       }
     };
@@ -76,7 +76,7 @@ export const MappingTestExplorerContextMenu = observer(
       if (mappingTestState) {
         flowResult(
           mappingTestState.mappingEditorState.deleteTest(mappingTestState.test),
-        ).catch(applicationStore.alertIllegalUnhandledError);
+        ).catch(applicationStore.alertUnhandledError);
       }
     };
     const toggleSkipTest = (): void => mappingTestState?.toggleSkipTest();
@@ -149,8 +149,7 @@ export const MappingTestExplorerContextMenu = observer(
         )}
       </div>
     );
-  },
-  { forwardRef: true },
+  }),
 );
 
 export const MappingTestStatusIndicator: React.FC<{
@@ -222,10 +221,10 @@ export const MappingTestExplorer = observer(
     const applicationStore = useApplicationStore();
     const mappingEditorState =
       editorStore.getCurrentEditorState(MappingEditorState);
-    const openTest = applicationStore.guaranteeSafeAction(() =>
+    const openTest = applicationStore.guardUnhandledError(() =>
       flowResult(mappingEditorState.openTest(testState.test)),
     );
-    const runTest = applicationStore.guaranteeSafeAction(() =>
+    const runTest = applicationStore.guardUnhandledError(() =>
       flowResult(testState.runTest()),
     );
     const [isSelectedFromContextMenu, setIsSelectedFromContextMenu] =
@@ -300,7 +299,7 @@ export const MappingTestsExplorer = observer(
     const applicationStore = useApplicationStore();
     const mappingEditorState =
       editorStore.getCurrentEditorState(MappingEditorState);
-    const runAllTests = applicationStore.guaranteeSafeAction(() =>
+    const runAllTests = applicationStore.guardUnhandledError(() =>
       flowResult(mappingEditorState.runTests()),
     );
     // all test run report summary
@@ -350,15 +349,11 @@ export const MappingTestsExplorer = observer(
         }
         if (item.data instanceof SetImplementation) {
           flowResult(mappingEditorState.createNewTest(item.data)).catch(
-            applicationStore.alertIllegalUnhandledError,
+            applicationStore.alertUnhandledError,
           );
         }
       },
-      [
-        applicationStore.alertIllegalUnhandledError,
-        isReadOnly,
-        mappingEditorState,
-      ],
+      [applicationStore.alertUnhandledError, isReadOnly, mappingEditorState],
     );
     const [{ isDragOver }, dropRef] = useDrop(
       () => ({
@@ -382,7 +377,7 @@ export const MappingTestsExplorer = observer(
       (setImplementation: SetImplementation | undefined): void => {
         if (setImplementation) {
           flowResult(mappingEditorState.createNewTest(setImplementation)).catch(
-            applicationStore.alertIllegalUnhandledError,
+            applicationStore.alertUnhandledError,
           );
           hideClassMappingSelectorModal();
         }
@@ -494,7 +489,7 @@ export const MappingTestsExplorer = observer(
                     addTestPromps[0]}
                 </div>
                 <div className="mapping-test-explorer__content__adder__action">
-                  <MdVerticalAlignBottom className="mapping-test-explorer__content__adder__action__dnd-icon" />
+                  <VerticalAlignBottomIcon className="mapping-test-explorer__content__adder__action__dnd-icon" />
                   <AddIcon className="mapping-test-explorer__content__adder__action__add-icon" />
                 </div>
               </div>

@@ -15,6 +15,7 @@
  */
 
 import {
+  assertNonEmptyString,
   guaranteeNonEmptyString,
   guaranteeNonNullable,
 } from '@finos/legend-shared';
@@ -45,7 +46,10 @@ import {
   GenerationPropertyItem,
   getGenerationPropertyItemType,
 } from '../../../../../graphManager/action/generation/GenerationConfigurationDescription';
-import type { V1_GenerationConfigurationDescription } from './generation/V1_GenerationConfigurationDescription';
+import type {
+  V1_GenerationConfigurationDescription,
+  V1_GenerationProperty,
+} from './generation/V1_GenerationConfigurationDescription';
 import type { V1_CompilationError } from './compilation/V1_CompilationError';
 import type { V1_ParserError } from './grammar/V1_ParserError';
 import {
@@ -64,6 +68,8 @@ import {
 import { V1_TaggedValue } from '../model/packageableElements/domain/V1_TaggedValue';
 import { V1_TagPtr } from '../model/packageableElements/domain/V1_TagPtr';
 import { V1_StereotypePtr } from '../model/packageableElements/domain/V1_StereotypePtr';
+import type { V1_ExternalFormatDescription } from './externalFormat/V1_ExternalFormatDescription';
+import { ExternalFormatDescription } from '../../../../../graphManager/action/externalFormat/ExternalFormatDescription';
 
 export const V1_buildLightQuery = (
   protocol: V1_LightQuery,
@@ -299,6 +305,57 @@ export const V1_buildImportConfigurationDescription = (
   return metamodel;
 };
 
+export const V1_buildGenerationProperty = (
+  protocol: V1_GenerationProperty,
+): GenerationProperty => {
+  const metamodel = new GenerationProperty();
+  metamodel.name = guaranteeNonNullable(
+    protocol.name,
+    `Generation property 'name' field is missing`,
+  );
+  metamodel.description = guaranteeNonNullable(
+    protocol.description,
+    `Generation property 'description' field is missing`,
+  );
+  metamodel.type = getGenerationPropertyItemType(
+    guaranteeNonNullable(
+      protocol.type,
+      `Generation property 'type' field is missing`,
+    ),
+  );
+  if (protocol.items) {
+    const generationPropertyItem = new GenerationPropertyItem();
+    generationPropertyItem.types = protocol.items.types.map(
+      getGenerationPropertyItemType,
+    );
+    generationPropertyItem.enums = protocol.items.enums;
+    metamodel.items = generationPropertyItem;
+  }
+  metamodel.defaultValue = protocol.defaultValue;
+  metamodel.required = protocol.required;
+  return metamodel;
+};
+export const V1_buildExternalFormatDescription = (
+  protocol: V1_ExternalFormatDescription,
+): ExternalFormatDescription => {
+  assertNonEmptyString(
+    protocol.name,
+    `External configuration description 'name' field is missing`,
+  );
+  const metamodel = new ExternalFormatDescription(protocol.name);
+  metamodel.contentTypes = protocol.contentTypes;
+  // model generation
+  metamodel.supportsModelGeneration = protocol.supportsModelGeneration;
+  metamodel.modelGenerationProperties = protocol.modelGenerationProperties.map(
+    V1_buildGenerationProperty,
+  );
+  // schema generation
+  metamodel.supportsSchemaGeneration = protocol.supportsSchemaGeneration;
+  metamodel.schemaGenerationProperties =
+    protocol.schemaGenerationProperties.map(V1_buildGenerationProperty);
+  return metamodel;
+};
+
 export const V1_buildGenerationOutput = (
   protocol: V1_GenerationOutput,
 ): GenerationOutput => {
@@ -327,34 +384,7 @@ export const V1_buildGenerationConfigurationDescription = (
     protocol.label,
     `Generation configuration description 'label' field is missing`,
   );
-  metamodel.properties = protocol.properties.map((_property) => {
-    const property = new GenerationProperty();
-    property.name = guaranteeNonNullable(
-      _property.name,
-      `Generation property 'name' field is missing`,
-    );
-    property.description = guaranteeNonNullable(
-      _property.description,
-      `Generation property 'description' field is missing`,
-    );
-    property.type = getGenerationPropertyItemType(
-      guaranteeNonNullable(
-        _property.type,
-        `Generation property 'type' field is missing`,
-      ),
-    );
-    if (_property.items) {
-      const generationPropertyItem = new GenerationPropertyItem();
-      generationPropertyItem.types = _property.items.types.map(
-        getGenerationPropertyItemType,
-      );
-      generationPropertyItem.enums = _property.items.enums;
-      property.items = generationPropertyItem;
-    }
-    property.defaultValue = _property.defaultValue;
-    property.required = _property.required;
-    return property;
-  });
+  metamodel.properties = protocol.properties.map(V1_buildGenerationProperty);
   metamodel.generationMode = guaranteeNonNullable(
     Object.values(GenerationMode).find(
       (mode) => mode === protocol.generationMode,

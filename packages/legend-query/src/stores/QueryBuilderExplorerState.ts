@@ -246,6 +246,7 @@ const resolveTargetSetImplementationForPropertyMapping = (
 const resolvePropertyMappingsForSetImpl = (
   graphManagerState: GraphManagerState,
   setImpl: SetImplementation,
+  rootMapping: Mapping,
 ): PropertyMapping[] => {
   const propertyMappings =
     graphManagerState.getMappingElementPropertyMappings(setImpl);
@@ -256,7 +257,8 @@ const resolvePropertyMappingsForSetImpl = (
     graphManagerState.isInstanceSetImplementation(setImpl) &&
     setImpl.class.value.propertiesFromAssociations.length
   ) {
-    setImpl.parent.associationMappings
+    // Always choose the mapping used in the query builder setup panel
+    rootMapping.associationMappings
       .map((am) => am.propertyMappings)
       .flat()
       .forEach((pm) => {
@@ -283,26 +285,11 @@ const isAutoMappedProperty = (
   return false;
 };
 
-export const generatePropertyNodeMappingDataForNonPrimitveProperty = (
-  propertyMapping: PropertyMapping,
-): QueryBuilderPropertyMappingData => {
-  const targetSetImpl =
-    resolveTargetSetImplementationForPropertyMapping(propertyMapping);
-  return {
-    mapped: true,
-    // NOTE: we could potentially resolve all the leaves and then overlap them somehow to
-    // help identifying the mapped properties. However, we would not do that here
-    // as opertion mapping can support more complicated branching logic (right now we just assume
-    // it's always simple union), that Studio should not try to analyze.
-    skipMappingCheck: targetSetImpl instanceof OperationSetImplementation,
-    targetSetImpl,
-  };
-};
-
 export const getPropertyNodeMappingData = (
   graphManagerState: GraphManagerState,
   property: AbstractProperty,
   parentMappingData: QueryBuilderPropertyMappingData,
+  rootMapping: Mapping,
 ): QueryBuilderPropertyMappingData => {
   const parentTargetSetImpl = parentMappingData.targetSetImpl;
   // For now, derived properties will be considered mapped if its parent class is mapped.
@@ -318,29 +305,46 @@ export const getPropertyNodeMappingData = (
     if (parentMappingData.skipMappingCheck) {
       return { mapped: true, skipMappingCheck: true };
     } else if (parentTargetSetImpl) {
-      const superSetImplementations =
-        getAllSuperSetImplementations(parentTargetSetImpl);
       const propertyMappings = resolvePropertyMappingsForSetImpl(
         graphManagerState,
         parentTargetSetImpl,
-      );
-      const propertyMappingsFromSuperSetImpls = superSetImplementations
-        .map((s) => resolvePropertyMappingsForSetImpl(graphManagerState, s))
-        .flat();
-      const mappedPropertyMappings = propertyMappings
-        .concat(propertyMappingsFromSuperSetImpls)
+        rootMapping,
+      )
+        // property mappings from super set implementations
+        .concat(
+          getAllSuperSetImplementations(parentTargetSetImpl)
+            .map((s) =>
+              resolvePropertyMappingsForSetImpl(
+                graphManagerState,
+                s,
+                rootMapping,
+              ),
+            )
+            .flat(),
+        )
         .filter((p) => !p.isStub);
-      // propertyMappings from the current level is the highest priority
-      const propertyMapping = mappedPropertyMappings.find(
-        (p) => p.property.value === property,
+      // NOTE: observe how we scan and prepare the list of property mappings above,
+      // searching for the property mapping to be used takes into account
+      // precedence, i.e. property mappings from super set implementations are of lower precedence
+      const propertyMapping = propertyMappings.find(
+        (pm) => pm.property.value === property,
       );
       // check if property is mapped through defined property mappings
       if (propertyMapping) {
-        // if class we need to resolve the Set Implementation
+        // if class we need to resolve the set implementation
         if (property.genericType.value.rawType instanceof Class) {
-          return generatePropertyNodeMappingDataForNonPrimitveProperty(
-            propertyMapping,
-          );
+          const targetSetImpl =
+            resolveTargetSetImplementationForPropertyMapping(propertyMapping);
+          return {
+            mapped: true,
+            // NOTE: we could potentially resolve all the leaves and then overlap them somehow to
+            // help identifying the mapped properties. However, we would not do that here
+            // as opertion mapping can support more complicated branching logic (right now we just assume
+            // it's always simple union), that Studio should not try to analyze.
+            skipMappingCheck:
+              targetSetImpl instanceof OperationSetImplementation,
+            targetSetImpl,
+          };
         }
         return { mapped: true, skipMappingCheck: false };
       }
@@ -386,11 +390,13 @@ export const getQueryBuilderPropertyNodeData = (
   graphManagerState: GraphManagerState,
   property: AbstractProperty,
   parentNode: QueryBuilderExplorerTreeNodeData,
+  rootMapping: Mapping,
 ): QueryBuilderExplorerTreePropertyNodeData => {
   const mappingNodeData = getPropertyNodeMappingData(
     graphManagerState,
     property,
     parentNode.mappingData,
+    rootMapping,
   );
   const isPartOfDerivedPropertyBranch =
     property instanceof DerivedProperty ||
@@ -463,11 +469,11 @@ export const getQueryBuilderSubTypeNodeData = (
 const getQueryBuilderTreeData = (
   graphManagerState: GraphManagerState,
   rootClass: Class,
-  mapping: Mapping,
+  rootMapping: Mapping,
 ): TreeData<QueryBuilderExplorerTreeNodeData> => {
   const rootIds = [];
   const nodes = new Map<string, QueryBuilderExplorerTreeNodeData>();
-  const mappingData = getRootMappingData(mapping, rootClass);
+  const mappingData = getRootMappingData(rootMapping, rootClass);
   const treeRootNode = new QueryBuilderExplorerTreeRootNodeData(
     '@dummy_rootNode',
     rootClass.name,
@@ -494,6 +500,7 @@ const getQueryBuilderTreeData = (
         graphManagerState,
         property,
         treeRootNode,
+        rootMapping,
       );
       addUniqueEntry(treeRootNode.childrenIds, propertyTreeNodeData.id);
       nodes.set(propertyTreeNodeData.id, propertyTreeNodeData);

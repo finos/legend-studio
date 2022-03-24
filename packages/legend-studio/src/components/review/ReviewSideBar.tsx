@@ -83,16 +83,16 @@ export const ReviewSideBar = observer(() => {
     reviewStore.isClosingReview ||
     reviewStore.isCommittingReview ||
     reviewStore.isReopeningReview;
-  const closeReview = applicationStore.guaranteeSafeAction(() =>
+  const closeReview = applicationStore.guardUnhandledError(() =>
     flowResult(reviewStore.closeReview()),
   );
-  const reOpenReview = applicationStore.guaranteeSafeAction(() =>
+  const reOpenReview = applicationStore.guardUnhandledError(() =>
     flowResult(reviewStore.reOpenReview()),
   );
-  const commitReview = applicationStore.guaranteeSafeAction(() =>
+  const commitReview = applicationStore.guardUnhandledError(() =>
     flowResult(reviewStore.commitReview()),
   );
-  const approveReview = applicationStore.guaranteeSafeAction(() =>
+  const approveReview = applicationStore.guardUnhandledError(() =>
     flowResult(reviewStore.approveReview()),
   );
   // Changes

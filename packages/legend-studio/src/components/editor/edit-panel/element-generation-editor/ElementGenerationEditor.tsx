@@ -87,7 +87,6 @@ const NewFileGenerationModal = observer(
         open={elementGenerationState.showNewFileGenerationModal}
         onClose={close}
         TransitionProps={{
-          appear: false, // disable transition
           onEnter: handleEnter,
         }}
         PaperProps={{
@@ -142,7 +141,7 @@ export const ElementGenerationEditor = observer(
 
     useEffect(() => {
       flowResult(elementGenerationState.regenerate()).catch(
-        applicationStore.alertIllegalUnhandledError,
+        applicationStore.alertUnhandledError,
       );
     }, [applicationStore, currentElementState, elementGenerationState]);
 
