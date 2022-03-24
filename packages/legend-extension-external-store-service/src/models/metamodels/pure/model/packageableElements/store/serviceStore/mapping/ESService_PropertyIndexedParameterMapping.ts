@@ -16,15 +16,34 @@
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../ESService_ModelUtils';
-import type { ServiceRequestParameterBuildInfo } from './ESService_ServiceRequestParameterBuildInfo';
+import { ServiceParameterMapping } from './ESService_ServiceParameterMapping';
+import { action, computed, makeObservable, observable } from 'mobx';
 
-export class ServiceRequestParametersBuildInfo implements Hashable {
-  parameterBuildInfoList: ServiceRequestParameterBuildInfo[] = [];
+export class PropertyIndexedParameterMapping
+  extends ServiceParameterMapping
+  implements Hashable
+{
+  property!: string;
 
-  get hashCode(): string {
+  constructor() {
+    super();
+
+    makeObservable(this, {
+      property: observable,
+      setProperty: action,
+      hashCode: computed,
+    });
+  }
+
+  setProperty(value: string): void {
+    this.property = value;
+  }
+
+  override get hashCode(): string {
     return hashArray([
-      SERVICE_STORE_HASH_STRUCTURE.SERVICE_REQUEST_PARAMETERS_BUILD_INFO,
-      hashArray(this.parameterBuildInfoList),
+      SERVICE_STORE_HASH_STRUCTURE.PROPERTY_INDEXED_PARAMETER_MAPPING,
+      this.serviceParameter.name,
+      this.property,
     ]);
   }
 }

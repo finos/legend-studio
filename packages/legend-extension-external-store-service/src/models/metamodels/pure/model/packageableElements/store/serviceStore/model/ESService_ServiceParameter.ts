@@ -21,7 +21,6 @@ import type { TypeReference } from './ESService_TypeReference';
 import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../ESService_ModelUtils';
 
 export enum LOCATION {
-  HEADER = 'HEADER',
   PATH = 'PATH',
   QUERY = 'QUERY',
 }

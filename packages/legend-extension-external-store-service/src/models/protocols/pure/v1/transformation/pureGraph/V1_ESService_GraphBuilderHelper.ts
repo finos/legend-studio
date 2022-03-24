@@ -57,7 +57,9 @@ import {
   ServiceParameter,
 } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/model/ESService_ServiceParameter';
 import type { V1_ServiceParameterMapping } from '../../model/packageableElements/store/serviceStore/mapping/V1_ESService_ServiceParameterMapping';
+import type { ServiceParameterMapping } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/mapping/ESService_ServiceParameterMapping';
 import { V1_ParameterIndexedParameterMapping } from '../../model/packageableElements/store/serviceStore/mapping/V1_ESService_ParameterIndexedParameterMapping';
+import { V1_PropertyIndexedParameterMapping } from '../../model/packageableElements/store/serviceStore/mapping/V1_ESService_PropertyIndexedParameterMapping';
 import type { V1_ServiceStoreElement } from '../../model/packageableElements/store/serviceStore/model/V1_ESService_ServiceStoreElement';
 import type { ServiceStoreElement } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/model/ESService_ServiceStoreElement';
 import { V1_ServiceStoreService } from '../../model/packageableElements/store/serviceStore/model/V1_ESService_ServiceStoreService';
@@ -72,11 +74,8 @@ import {
   getServiceGroup,
   getParameter,
 } from '../../../../../../helpers/ESService_Helper';
-import { ServiceRequestBuildInfo } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/mapping/ESService_ServiceRequestBuildInfo';
-import type { V1_ServiceRequestBuildInfo } from '../../model/packageableElements/store/serviceStore/mapping/V1_ESService_ServiceRequestBuildInfo';
-import { ServiceRequestBodyBuildInfo } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/mapping/ESService_ServiceRequestBodyBuildInfo';
-import { ServiceRequestParametersBuildInfo } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/mapping/ESService_ServiceRequestParametersBuildInfo';
-import { ServiceRequestParameterBuildInfo } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/mapping/ESService_ServiceRequestParameterBuildInfo';
+import { ParameterIndexedParameterMapping } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/mapping/ESService_ParameterIndexedParameterMapping';
+import { PropertyIndexedParameterMapping } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/mapping/ESService_PropertyIndexedParameterMapping';
 
 export const V1_resolveServiceStore = (
   path: string,
@@ -194,63 +193,32 @@ export const V1_buildServiceParameter = (
 export const V1_buildServiceParameterMapping = (
   protocol: V1_ServiceParameterMapping,
   service: ServiceStoreService,
-): ServiceRequestParameterBuildInfo => {
+): ServiceParameterMapping => {
   if (protocol instanceof V1_ParameterIndexedParameterMapping) {
-    const requestParameterBuildInfo = new ServiceRequestParameterBuildInfo();
-    requestParameterBuildInfo.serviceParameter = getParameter(
+    const mapping = new ParameterIndexedParameterMapping();
+    mapping.serviceParameter = getParameter(
       protocol.serviceParameter,
       service.parameters,
     );
-    requestParameterBuildInfo.transform = new RawLambda(
+    const lambda = new RawLambda(
       protocol.transform.parameters,
       protocol.transform.body,
     );
-    return requestParameterBuildInfo;
+    mapping.transform = lambda;
+    return mapping;
+  } else if (protocol instanceof V1_PropertyIndexedParameterMapping) {
+    const mapping = new PropertyIndexedParameterMapping();
+    mapping.serviceParameter = getParameter(
+      protocol.serviceParameter,
+      service.parameters,
+    );
+    mapping.property = protocol.property;
+    return mapping;
   }
   throw new UnsupportedOperationError(
     `Can't build service parameter mapping`,
     protocol,
   );
-};
-
-export const V1_buildServiceRequestBuildInfo = (
-  protocol: V1_ServiceRequestBuildInfo,
-  service: ServiceStoreService,
-): ServiceRequestBuildInfo => {
-  const requestBuildInfo = new ServiceRequestBuildInfo();
-
-  if (protocol.requestBodyBuildInfo) {
-    const requestBodyBuildInfo = new ServiceRequestBodyBuildInfo();
-    requestBodyBuildInfo.transform = new RawLambda(
-      protocol.requestBodyBuildInfo.transform.parameters,
-      protocol.requestBodyBuildInfo.transform.body,
-    );
-    requestBuildInfo.requestBodyBuildInfo = requestBodyBuildInfo;
-  }
-
-  if (protocol.requestParametersBuildInfo) {
-    const requestParametersBuildInfo = new ServiceRequestParametersBuildInfo();
-    requestParametersBuildInfo.parameterBuildInfoList =
-      protocol.requestParametersBuildInfo.parameterBuildInfoList.map(
-        (parameterBuildInfo) => {
-          const requestParameterBuildInfo =
-            new ServiceRequestParameterBuildInfo();
-          requestParameterBuildInfo.serviceParameter = getParameter(
-            parameterBuildInfo.serviceParameter,
-            service.parameters,
-          );
-          requestParameterBuildInfo.transform = new RawLambda(
-            parameterBuildInfo.transform.parameters,
-            parameterBuildInfo.transform.body,
-          );
-          return requestParameterBuildInfo;
-        },
-      );
-
-    requestBuildInfo.requestParametersBuildInfo = requestParametersBuildInfo;
-  }
-
-  return requestBuildInfo;
 };
 
 const V1_buildSecurityScheme = (
