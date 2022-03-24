@@ -17,7 +17,7 @@
 import type { EditorStore } from '../EditorStore';
 import type { EditorSDLCState } from '../EditorSDLCState';
 import { action, makeAutoObservable, flowResult } from 'mobx';
-import { CHANGE_DETECTION_LOG_EVENT } from '../ChangeDetectionLogEvent';
+import { CHANGE_DETECTION_EVENT } from '../ChangeDetectionEvent';
 import {
   type GeneratorFn,
   type PlainObject,
@@ -42,7 +42,7 @@ import {
   Revision,
   RevisionAlias,
 } from '@finos/legend-server-sdlc';
-import { LEGEND_STUDIO_LOG_EVENT_TYPE } from '../LegendStudioLogEvent';
+import { LEGEND_STUDIO_APP_EVENT } from '../LegendStudioAppEvent';
 
 export class WorkspaceUpdaterState {
   editorStore: EditorStore;
@@ -218,7 +218,7 @@ export class WorkspaceUpdaterState {
         ),
       ]);
       this.editorStore.applicationStore.log.info(
-        LogEvent.create(CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_RESTARTED),
+        LogEvent.create(CHANGE_DETECTION_EVENT.CHANGE_DETECTION_RESTARTED),
         Date.now() - restartChangeDetectionStartTime,
         'ms',
       );
@@ -226,7 +226,7 @@ export class WorkspaceUpdaterState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.SDLC_MANAGER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -276,7 +276,7 @@ export class WorkspaceUpdaterState {
           this.sdlcState.activeWorkspace,
         )) as WorkspaceUpdateReport;
       this.editorStore.applicationStore.log.info(
-        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.WORKSPACE_UPDATED),
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.WORKSPACE_UPDATED),
         Date.now() - startTime,
         'ms',
       );
@@ -294,7 +294,7 @@ export class WorkspaceUpdaterState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.SDLC_MANAGER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -350,7 +350,7 @@ export class WorkspaceUpdaterState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.SDLC_MANAGER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);

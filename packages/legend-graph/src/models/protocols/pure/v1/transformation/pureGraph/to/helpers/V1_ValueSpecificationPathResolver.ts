@@ -19,7 +19,7 @@ import {
   assertErrorThrown,
   returnUndefOnError,
 } from '@finos/legend-shared';
-import { GRAPH_MANAGER_LOG_EVENT } from '../../../../../../../../graphManager/GraphManagerLogEvent';
+import { GRAPH_MANAGER_EVENT } from '../../../../../../../../graphManager/GraphManagerEvent';
 import type { PackageableElement } from '../../../../../../../metamodels/pure/packageableElements/PackageableElement';
 import type { PackageableElementReference } from '../../../../../../../metamodels/pure/packageableElements/PackageableElementReference';
 import { RawLambda } from '../../../../../../../metamodels/pure/rawValueSpecification/RawLambda';
@@ -364,7 +364,7 @@ const V1_resolveLambdaElementPaths = (
     // return orginal lambda if anything goes wrong
     error.message = `Can't resolve element paths for lambda:\n${error.message}`;
     _context.log.warn(
-      LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE),
+      LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_FAILURE),
       error,
     );
     return rawLambdaProtocol;

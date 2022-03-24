@@ -23,7 +23,7 @@ import {
   flow,
   makeObservable,
 } from 'mobx';
-import { CHANGE_DETECTION_LOG_EVENT } from './ChangeDetectionLogEvent';
+import { CHANGE_DETECTION_EVENT } from './ChangeDetectionEvent';
 import {
   type GeneratorFn,
   LogEvent,
@@ -126,7 +126,7 @@ class RevisionChangeDetectionState {
     if (!quiet) {
       this.editorStore.applicationStore.log.info(
         LogEvent.create(
-          CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_CHANGES_COMPUTED,
+          CHANGE_DETECTION_EVENT.CHANGE_DETECTION_CHANGES_COMPUTED,
         ),
         Date.now() - startTime,
         'ms',
@@ -162,7 +162,7 @@ class RevisionChangeDetectionState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_FAILURE),
+        LogEvent.create(CHANGE_DETECTION_EVENT.CHANGE_DETECTION_FAILURE),
         `Can't build hashes index`,
       );
       this.setEntityHashesIndex(new Map<string, string>());
@@ -423,7 +423,7 @@ export class ChangeDetectionState {
     if (!quiet) {
       this.editorStore.applicationStore.log.info(
         LogEvent.create(
-          CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_GRAPH_HASH_SNAPSHOTED,
+          CHANGE_DETECTION_EVENT.CHANGE_DETECTION_GRAPH_HASH_SNAPSHOTED,
         ),
         Date.now() - startTime,
         'ms',
@@ -484,7 +484,7 @@ export class ChangeDetectionState {
       if (!quiet) {
         this.editorStore.applicationStore.log.info(
           LogEvent.create(
-            CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_CHANGES_COMPUTED,
+            CHANGE_DETECTION_EVENT.CHANGE_DETECTION_CHANGES_COMPUTED,
           ),
           Date.now() - startTime,
           'ms',
@@ -564,7 +564,7 @@ export class ChangeDetectionState {
     if (!quiet) {
       this.editorStore.applicationStore.log.info(
         LogEvent.create(
-          CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_WORKSPACE_UPDATE_CONFLICTS_COMPUTED,
+          CHANGE_DETECTION_EVENT.CHANGE_DETECTION_WORKSPACE_UPDATE_CONFLICTS_COMPUTED,
         ),
         Date.now() - startTime,
         'ms',
@@ -596,7 +596,7 @@ export class ChangeDetectionState {
     if (!quiet) {
       this.editorStore.applicationStore.log.info(
         LogEvent.create(
-          CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_CONFLICT_RESOLUTION_CONFLICTS_COMPUTED,
+          CHANGE_DETECTION_EVENT.CHANGE_DETECTION_CONFLICT_RESOLUTION_CONFLICTS_COMPUTED,
         ),
         Date.now() - startTime,
         'ms',
@@ -730,7 +730,7 @@ export class ChangeDetectionState {
     if (!quiet) {
       this.editorStore.applicationStore.log.info(
         LogEvent.create(
-          CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_CHANGES_COMPUTED,
+          CHANGE_DETECTION_EVENT.CHANGE_DETECTION_CHANGES_COMPUTED,
         ),
         Date.now() - startTime,
         'ms',

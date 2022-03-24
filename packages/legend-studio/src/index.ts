@@ -23,7 +23,7 @@ export {
   LEGEND_STUDIO_PATH_PARAM_TOKEN,
   generateRoutePatternWithSDLCServerKey,
 } from './stores/LegendStudioRouter';
-export { LEGEND_STUDIO_LOG_EVENT_TYPE } from './stores/LegendStudioLogEvent';
+export * from './stores/LegendStudioAppEvent';
 
 // stores
 export * from './stores/LegendStudioPlugin';

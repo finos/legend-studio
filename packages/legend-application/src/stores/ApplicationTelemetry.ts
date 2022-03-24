@@ -14,6 +14,24 @@
  * limitations under the License.
  */
 
-export enum LEGEND_QUERY_LOG_EVENT_TYPE {
-  QUERY_PROBLEM = 'QUERY_PROBLEM',
+import type { TelemetryService } from '@finos/legend-shared';
+import { APPLICATION_EVENT } from './ApplicationEvent';
+
+type ApplicationLoaded_TelemetryData = {
+  browser: {
+    userAgent: string;
+  };
+  screen: {
+    height: number;
+    width: number;
+  };
+};
+
+export class ApplicationTelemetry {
+  static logEvent_GraphInitialized(
+    telemetryService: TelemetryService,
+    data: ApplicationLoaded_TelemetryData,
+  ): void {
+    telemetryService.logEvent(APPLICATION_EVENT.APPLICATION_LOADED, data);
+  }
 }

@@ -37,7 +37,7 @@ import {
   deleteEntry,
   ActionState,
 } from '@finos/legend-shared';
-import { CHANGE_DETECTION_LOG_EVENT } from '../ChangeDetectionLogEvent';
+import { CHANGE_DETECTION_EVENT } from '../ChangeDetectionEvent';
 import { EntityChangeConflictEditorState } from '../editor-state/entity-diff-editor-state/EntityChangeConflictEditorState';
 import {
   type EntityDiffEditorState,
@@ -516,7 +516,7 @@ export class WorkspaceSyncState {
       this.editorStore.changeDetectionState.workspaceLocalLatestRevisionState.buildEntityHashesIndex(
         entities,
         LogEvent.create(
-          CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_LOCAL_HASHES_INDEX_BUILT,
+          CHANGE_DETECTION_EVENT.CHANGE_DETECTION_LOCAL_HASHES_INDEX_BUILT,
         ),
       ),
     );

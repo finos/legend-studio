@@ -53,7 +53,7 @@ import {
   GenericTypeExplicitReference,
   GenericType,
   PRIMITIVE_TYPE,
-  GRAPH_MANAGER_LOG_EVENT,
+  GRAPH_MANAGER_EVENT,
   CompilationError,
   extractSourceInformationCoordinates,
   LambdaFunctionInstanceValue,
@@ -488,7 +488,7 @@ export class QueryBuilderState {
       } catch (error) {
         assertErrorThrown(error);
         this.applicationStore.log.error(
-          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.COMPILATION_FAILURE),
+          LogEvent.create(GRAPH_MANAGER_EVENT.COMPILATION_FAILURE),
           error,
         );
         let fallbackToTextModeForDebugging = true;
@@ -535,7 +535,7 @@ export class QueryBuilderState {
         assertErrorThrown(error);
         if (error instanceof CompilationError) {
           this.applicationStore.log.error(
-            LogEvent.create(GRAPH_MANAGER_LOG_EVENT.COMPILATION_FAILURE),
+            LogEvent.create(GRAPH_MANAGER_EVENT.COMPILATION_FAILURE),
             error,
           );
           this.applicationStore.notifyWarning(

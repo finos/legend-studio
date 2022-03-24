@@ -29,7 +29,7 @@ import {
   getNullableFirstElement,
   assertTrue,
 } from '@finos/legend-shared';
-import { LEGEND_STUDIO_LOG_EVENT_TYPE } from '../../../LegendStudioLogEvent';
+import { LEGEND_STUDIO_APP_EVENT } from '../../../LegendStudioAppEvent';
 import { Version } from '@finos/legend-server-sdlc';
 import {
   type ServiceRegistrationResult,
@@ -233,9 +233,7 @@ export class ServiceRegistrationState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(
-          LEGEND_STUDIO_LOG_EVENT_TYPE.SERVICE_REGISTRATION_FAILURE,
-        ),
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.SERVICE_REGISTRATION_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);

@@ -16,7 +16,7 @@
 
 import type { TelemetryService } from '@finos/legend-shared';
 import type { GraphBuilderReport } from './GraphBuilderReport';
-import { GRAPH_MANAGER_LOG_EVENT } from './GraphManagerLogEvent';
+import { GRAPH_MANAGER_EVENT } from './GraphManagerEvent';
 
 type GraphBuilt_TelemetryData = {
   timings: Record<string, number>;
@@ -30,6 +30,6 @@ export class GraphManagerTelemetry {
     telemetryService: TelemetryService,
     data: GraphBuilt_TelemetryData,
   ): void {
-    telemetryService.logEvent(GRAPH_MANAGER_LOG_EVENT.GRAPH_INITIALIZED, data);
+    telemetryService.logEvent(GRAPH_MANAGER_EVENT.GRAPH_INITIALIZED, data);
   }
 }

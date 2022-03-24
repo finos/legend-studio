@@ -60,7 +60,7 @@ import {
   type View,
   extractExecutionResultValues,
   LAMBDA_PIPE,
-  GRAPH_MANAGER_LOG_EVENT,
+  GRAPH_MANAGER_EVENT,
   MappingTest,
   Class,
   ObjectInputData,
@@ -148,7 +148,7 @@ export class MappingExecutionQueryState extends LambdaEditorState {
       } catch (error) {
         assertErrorThrown(error);
         this.editorStore.applicationStore.log.error(
-          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
+          LogEvent.create(GRAPH_MANAGER_EVENT.PARSING_FAILURE),
           error,
         );
       }
@@ -559,7 +559,7 @@ export class MappingExecutionState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE),
+        LogEvent.create(GRAPH_MANAGER_EVENT.EXECUTION_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -620,7 +620,7 @@ export class MappingExecutionState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE),
+        LogEvent.create(GRAPH_MANAGER_EVENT.EXECUTION_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -659,7 +659,7 @@ export class MappingExecutionState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE),
+        LogEvent.create(GRAPH_MANAGER_EVENT.EXECUTION_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -690,7 +690,7 @@ export class MappingExecutionState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE),
+        LogEvent.create(GRAPH_MANAGER_EVENT.EXECUTION_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);

@@ -40,7 +40,7 @@ import {
   Version,
   Workspace,
 } from '@finos/legend-server-sdlc';
-import { LEGEND_STUDIO_LOG_EVENT_TYPE } from './LegendStudioLogEvent';
+import { LEGEND_STUDIO_APP_EVENT } from './LegendStudioAppEvent';
 import { TAB_SIZE } from '@finos/legend-application';
 import {
   type ProjectGAVCoordinates,
@@ -50,7 +50,7 @@ import {
   ProjectData,
   ProjectVersionEntities,
 } from '@finos/legend-server-depot';
-import { GRAPH_MANAGER_LOG_EVENT } from '@finos/legend-graph';
+import { GRAPH_MANAGER_EVENT } from '@finos/legend-graph';
 import {
   type WorkflowManagerState,
   ProjectVersionWorkflowManagerState,
@@ -148,7 +148,7 @@ export class ViewerStore {
       this.editorStore.graphState.isInitializingGraph = true;
       const startTime = Date.now();
       this.editorStore.applicationStore.log.info(
-        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_ENTITIES_FETCHED),
+        LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_ENTITIES_FETCHED),
         Date.now() - startTime,
         'ms',
       );
@@ -182,7 +182,7 @@ export class ViewerStore {
         ),
       );
       this.editorStore.applicationStore.log.info(
-        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_INITIALIZED),
+        LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_INITIALIZED),
         '[TOTAL]',
         Date.now() - startTime,
         'ms',
@@ -194,7 +194,7 @@ export class ViewerStore {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE),
+        LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_FAILURE),
         error,
       );
       this.editorStore.graphManagerState.graph.buildState.fail();
@@ -523,7 +523,7 @@ export class ViewerStore {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.SDLC_MANAGER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);

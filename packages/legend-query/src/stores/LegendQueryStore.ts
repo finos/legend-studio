@@ -50,7 +50,7 @@ import {
   PureSingleExecution,
   PackageableElementExplicitReference,
   RuntimePointer,
-  GRAPH_MANAGER_LOG_EVENT,
+  GRAPH_MANAGER_EVENT,
   type GraphBuilderReport,
   GraphManagerTelemetry,
 } from '@finos/legend-graph';
@@ -65,7 +65,7 @@ import {
   generateCreateQueryRoute,
   generateExistingQueryRoute,
 } from './LegendQueryRouter';
-import { LEGEND_QUERY_LOG_EVENT_TYPE } from '../LegendQueryLogEvent';
+import { LEGEND_QUERY_APP_EVENT } from '../LegendQueryAppEvent';
 import type { Entity } from '@finos/legend-model-storage';
 import {
   type DepotServerClient,
@@ -78,7 +78,7 @@ import {
 } from '@finos/legend-server-depot';
 import {
   type ApplicationStore,
-  APPLICATION_LOG_EVENT,
+  APPLICATION_EVENT,
   TAB_SIZE,
 } from '@finos/legend-application';
 import type { LegendQueryPluginManager } from '../application/LegendQueryPluginManager';
@@ -288,7 +288,7 @@ export class QueryExportState {
     } catch (error) {
       assertErrorThrown(error);
       this.queryStore.applicationStore.log.error(
-        LogEvent.create(LEGEND_QUERY_LOG_EVENT_TYPE.QUERY_PROBLEM),
+        LogEvent.create(LEGEND_QUERY_APP_EVENT.QUERY_PROBLEM),
         error,
       );
       this.queryStore.applicationStore.notifyError(error);
@@ -330,7 +330,7 @@ export class QueryExportState {
     } catch (error) {
       assertErrorThrown(error);
       this.queryStore.applicationStore.log.error(
-        LogEvent.create(LEGEND_QUERY_LOG_EVENT_TYPE.QUERY_PROBLEM),
+        LogEvent.create(LEGEND_QUERY_APP_EVENT.QUERY_PROBLEM),
         error,
       );
       this.queryStore.applicationStore.notifyError(error);
@@ -474,7 +474,7 @@ export class LegendQueryStore {
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.log.error(
-        LogEvent.create(LEGEND_QUERY_LOG_EVENT_TYPE.QUERY_PROBLEM),
+        LogEvent.create(LEGEND_QUERY_APP_EVENT.QUERY_PROBLEM),
         error,
       );
       this.applicationStore.notifyError(error);
@@ -566,7 +566,7 @@ export class LegendQueryStore {
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.log.error(
-        LogEvent.create(LEGEND_QUERY_LOG_EVENT_TYPE.QUERY_PROBLEM),
+        LogEvent.create(LEGEND_QUERY_APP_EVENT.QUERY_PROBLEM),
         error,
       );
       this.applicationStore.notifyError(error);
@@ -658,7 +658,7 @@ export class LegendQueryStore {
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.log.error(
-        LogEvent.create(LEGEND_QUERY_LOG_EVENT_TYPE.QUERY_PROBLEM),
+        LogEvent.create(LEGEND_QUERY_APP_EVENT.QUERY_PROBLEM),
         error,
       );
       this.applicationStore.notifyError(error);
@@ -676,7 +676,7 @@ export class LegendQueryStore {
       // eslint-disable-next-line no-process-env
       if (process.env.NODE_ENV === 'development') {
         this.applicationStore.log.info(
-          LogEvent.create(APPLICATION_LOG_EVENT.DEVELOPMENT_ISSUE),
+          LogEvent.create(APPLICATION_EVENT.DEVELOPMENT_ISSUE),
           `Fast-refreshing the app - undoing cleanUp() and preventing initialize() recall...`,
         );
         return;
@@ -711,7 +711,7 @@ export class LegendQueryStore {
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.log.error(
-        LogEvent.create(LEGEND_QUERY_LOG_EVENT_TYPE.QUERY_PROBLEM),
+        LogEvent.create(LEGEND_QUERY_APP_EVENT.QUERY_PROBLEM),
         error,
       );
       this.applicationStore.setBlockingAlert({
@@ -752,7 +752,7 @@ export class LegendQueryStore {
         )) as Entity[];
       }
       this.buildGraphState.setMessage(undefined);
-      stopWatch.record(GRAPH_MANAGER_LOG_EVENT.GRAPH_ENTITIES_FETCHED);
+      stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_ENTITIES_FETCHED);
 
       // fetch dependencies
       stopWatch.record();
@@ -762,7 +762,7 @@ export class LegendQueryStore {
       const dependencyEntitiesMap = (yield flowResult(
         this.getProjectDependencyEntities(project, versionId, options),
       )) as Map<string, Entity[]>;
-      stopWatch.record(GRAPH_MANAGER_LOG_EVENT.GRAPH_DEPENDENCIES_FETCHED);
+      stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED);
 
       // build dependencies
       const dependency_buildReport = (yield flowResult(
@@ -775,10 +775,8 @@ export class LegendQueryStore {
       )) as GraphBuilderReport;
       this.graphManagerState.graph.setDependencyManager(dependencyManager);
       dependency_buildReport.timings[
-        GRAPH_MANAGER_LOG_EVENT.GRAPH_DEPENDENCIES_FETCHED
-      ] = stopWatch.getRecord(
-        GRAPH_MANAGER_LOG_EVENT.GRAPH_DEPENDENCIES_FETCHED,
-      );
+        GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED
+      ] = stopWatch.getRecord(GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED);
 
       // build graph
       const graph_buildReport = (yield flowResult(
@@ -787,21 +785,20 @@ export class LegendQueryStore {
           entities,
         ),
       )) as GraphBuilderReport;
-      graph_buildReport.timings[
-        GRAPH_MANAGER_LOG_EVENT.GRAPH_ENTITIES_FETCHED
-      ] = stopWatch.getRecord(GRAPH_MANAGER_LOG_EVENT.GRAPH_ENTITIES_FETCHED);
+      graph_buildReport.timings[GRAPH_MANAGER_EVENT.GRAPH_ENTITIES_FETCHED] =
+        stopWatch.getRecord(GRAPH_MANAGER_EVENT.GRAPH_ENTITIES_FETCHED);
 
       // report
       stopWatch.record();
       const graphBuilderReportData = {
         timings: {
-          [GRAPH_MANAGER_LOG_EVENT.GRAPH_INITIALIZED]: stopWatch.elapsed,
+          [GRAPH_MANAGER_EVENT.GRAPH_INITIALIZED]: stopWatch.elapsed,
         },
         dependencies: dependency_buildReport,
         graph: graph_buildReport,
       };
       this.applicationStore.log.info(
-        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_INITIALIZED),
+        LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_INITIALIZED),
         graphBuilderReportData,
       );
       GraphManagerTelemetry.logEvent_GraphInitialized(
@@ -813,7 +810,7 @@ export class LegendQueryStore {
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.log.error(
-        LogEvent.create(LEGEND_QUERY_LOG_EVENT_TYPE.QUERY_PROBLEM),
+        LogEvent.create(LEGEND_QUERY_APP_EVENT.QUERY_PROBLEM),
         error,
       );
       this.applicationStore.notifyError(error);
@@ -854,7 +851,7 @@ export class LegendQueryStore {
       }
       if (!options?.quiet) {
         this.graphManagerState.graphManager.log.info(
-          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_ENTITIES_FETCHED),
+          LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_ENTITIES_FETCHED),
           Date.now() - startTime,
           'ms',
         );
@@ -867,7 +864,7 @@ export class LegendQueryStore {
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.log.error(
-        LogEvent.create(LEGEND_QUERY_LOG_EVENT_TYPE.QUERY_PROBLEM),
+        LogEvent.create(LEGEND_QUERY_APP_EVENT.QUERY_PROBLEM),
         error,
       );
       this.applicationStore.notifyError(error);

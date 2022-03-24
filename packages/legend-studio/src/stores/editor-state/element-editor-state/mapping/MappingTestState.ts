@@ -57,7 +57,7 @@ import {
   type Mapping,
   type ExecutionResult,
   extractExecutionResultValues,
-  GRAPH_MANAGER_LOG_EVENT,
+  GRAPH_MANAGER_EVENT,
   LAMBDA_PIPE,
   Class,
   ExpectedOutputMappingTestAssert,
@@ -144,7 +144,7 @@ export class MappingTestQueryState extends LambdaEditorState {
       } catch (error) {
         assertErrorThrown(error);
         this.editorStore.applicationStore.log.error(
-          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
+          LogEvent.create(GRAPH_MANAGER_EVENT.PARSING_FAILURE),
           error,
         );
       }
@@ -600,7 +600,7 @@ export class MappingTestState {
         throw new UnsupportedOperationError();
       }
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE),
+        LogEvent.create(GRAPH_MANAGER_EVENT.EXECUTION_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -658,7 +658,7 @@ export class MappingTestState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE),
+        LogEvent.create(GRAPH_MANAGER_EVENT.EXECUTION_FAILURE),
         error,
       );
       this.errorRunningTest = error;
@@ -689,7 +689,7 @@ export class MappingTestState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE),
+        LogEvent.create(GRAPH_MANAGER_EVENT.EXECUTION_FAILURE),
         error.message,
       );
       yield flowResult(this.editorStore.graphState.globalCompileInFormMode()); // recompile graph if there is problem with the deep fetch tree of a test
@@ -713,7 +713,7 @@ export class MappingTestState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE),
+        LogEvent.create(GRAPH_MANAGER_EVENT.EXECUTION_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);

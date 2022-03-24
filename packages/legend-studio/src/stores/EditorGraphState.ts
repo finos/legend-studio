@@ -15,7 +15,7 @@
  */
 
 import { action, computed, flowResult, makeAutoObservable } from 'mobx';
-import { CHANGE_DETECTION_LOG_EVENT } from './ChangeDetectionLogEvent';
+import { CHANGE_DETECTION_EVENT } from './ChangeDetectionEvent';
 import { GRAPH_EDITOR_MODE, AUX_PANEL_MODE } from './EditorConfig';
 import {
   type GeneratorFn,
@@ -52,7 +52,7 @@ import {
 import {
   type SetImplementation,
   type PackageableElement,
-  GRAPH_MANAGER_LOG_EVENT,
+  GRAPH_MANAGER_EVENT,
   CompilationError,
   EngineError,
   extractSourceInformationCoordinates,
@@ -214,7 +214,7 @@ export class EditorGraphState {
       const dependencyEntitiesMap = (yield flowResult(
         this.getConfigurationProjectDependencyEntities(),
       )) as Map<string, Entity[]>;
-      stopWatch.record(GRAPH_MANAGER_LOG_EVENT.GRAPH_DEPENDENCIES_FETCHED);
+      stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED);
 
       // build dependencies
       const dependency_buildReport = (yield flowResult(
@@ -229,10 +229,8 @@ export class EditorGraphState {
         dependencyManager,
       );
       dependency_buildReport.timings[
-        GRAPH_MANAGER_LOG_EVENT.GRAPH_DEPENDENCIES_FETCHED
-      ] = stopWatch.getRecord(
-        GRAPH_MANAGER_LOG_EVENT.GRAPH_DEPENDENCIES_FETCHED,
-      );
+        GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED
+      ] = stopWatch.getRecord(GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED);
 
       // build graph
       const graph_buildReport = (yield flowResult(
@@ -262,14 +260,14 @@ export class EditorGraphState {
       stopWatch.record();
       const graphBuilderReportData = {
         timings: {
-          [GRAPH_MANAGER_LOG_EVENT.GRAPH_INITIALIZED]: stopWatch.elapsed,
+          [GRAPH_MANAGER_EVENT.GRAPH_INITIALIZED]: stopWatch.elapsed,
         },
         dependencies: dependency_buildReport,
         graph: graph_buildReport,
         generations: generation_buildReport,
       };
       this.editorStore.applicationStore.log.info(
-        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_INITIALIZED),
+        LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_INITIALIZED),
         graphBuilderReportData,
       );
       GraphManagerTelemetry.logEvent_GraphInitialized(
@@ -286,7 +284,7 @@ export class EditorGraphState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE),
+        LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_FAILURE),
         error,
       );
       if (error instanceof DependencyGraphBuilderError) {
@@ -328,7 +326,7 @@ export class EditorGraphState {
         } catch (error2) {
           assertErrorThrown(error2);
           this.editorStore.applicationStore.log.error(
-            LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE),
+            LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_FAILURE),
             error2,
           );
           if (error2 instanceof NetworkClientError) {
@@ -493,7 +491,7 @@ export class EditorGraphState {
       // i.e. there should be a catch-all handler (we can use if-else construct to check error types)
       assertType(error, EngineError, `Unhandled exception:\n${error}`);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.COMPILATION_FAILURE),
+        LogEvent.create(GRAPH_MANAGER_EVENT.COMPILATION_FAILURE),
         error,
       );
       let fallbackToTextModeForDebugging = true;
@@ -600,7 +598,7 @@ export class EditorGraphState {
         this.editorStore.grammarTextEditorState.setError(error);
       }
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.COMPILATION_FAILURE),
+        LogEvent.create(GRAPH_MANAGER_EVENT.COMPILATION_FAILURE),
         'Compilation failed:',
         error,
       );
@@ -659,7 +657,7 @@ export class EditorGraphState {
           this.editorStore.grammarTextEditorState.setError(error);
         }
         this.editorStore.applicationStore.log.error(
-          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.COMPILATION_FAILURE),
+          LogEvent.create(GRAPH_MANAGER_EVENT.COMPILATION_FAILURE),
           'Compilation failed:',
           error,
         );
@@ -698,7 +696,7 @@ export class EditorGraphState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.COMPILATION_FAILURE),
+        LogEvent.create(GRAPH_MANAGER_EVENT.COMPILATION_FAILURE),
         error,
       );
     } finally {
@@ -873,7 +871,7 @@ export class EditorGraphState {
       );
 
       this.editorStore.applicationStore.log.info(
-        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_UPDATED_AND_REBUILT),
+        LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_UPDATED_AND_REBUILT),
         '[TOTAL]',
         Date.now() - startTime,
         'ms',
@@ -888,14 +886,14 @@ export class EditorGraphState {
         this.editorStore.changeDetectionState.computeLocalChanges(true),
       );
       this.editorStore.applicationStore.log.info(
-        LogEvent.create(CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_RESTARTED),
+        LogEvent.create(CHANGE_DETECTION_EVENT.CHANGE_DETECTION_RESTARTED),
         '[ASYNC]',
       );
       // ======= FINISHED (RE)START CHANGE DETECTION =======
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE),
+        LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_FAILURE),
         error,
       );
       this.editorStore.changeDetectionState.stop(true); // force stop change detection
@@ -976,7 +974,7 @@ export class EditorGraphState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE),
+        LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(
@@ -1044,7 +1042,7 @@ export class EditorGraphState {
       assertErrorThrown(error);
       const message = `Can't acquire dependency entitites. Error: ${error.message}`;
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE),
+        LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_FAILURE),
         message,
       );
       this.editorStore.applicationStore.notifyError(error);
