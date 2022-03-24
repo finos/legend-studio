@@ -93,15 +93,6 @@ export const roundtripTestData = [
                 list: false,
               },
             },
-            {
-              location: 'HEADER',
-              name: 'headerParam',
-              serializationFormat: {},
-              type: {
-                _type: 'string',
-                list: false,
-              },
-            },
           ],
           path: '/testService',
           response: {
