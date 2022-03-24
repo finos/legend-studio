@@ -39,7 +39,7 @@ import {
   EDITOR_LANGUAGE,
 } from '@finos/legend-application';
 import { StudioTextInputEditor } from '../../shared/StudioTextInputEditor';
-import type { ExtraModelLoaderRendererConfiguration } from '../../../stores/LegendStudioPlugin';
+import type { ExtraModelLoaderExtensionsConfiguration } from '../../../stores/LegendStudioPlugin';
 
 export const ModelLoader = observer(() => {
   const editorStore = useEditorStore();
@@ -47,12 +47,11 @@ export const ModelLoader = observer(() => {
   const modelLoaderState = editorStore.getCurrentEditorState(ModelLoaderState);
   const nativeInputTypes = Object.values(MODEL_UPDATER_INPUT_TYPE);
   const externalFormatInputTypes = modelLoaderState.modelImportDescriptions;
-  const extraModelLoaderRendererConfigs =
-    modelLoaderState.extraModelLoaderRendererConfigurations;
+  const extraModelLoaderExtensionsConfigs =
+    modelLoaderState.extraModelLoaderExtensionsConfigurations;
   // input type
   const currentInputType = modelLoaderState.currentInputType;
-  const currentExtraNativeInputType =
-    modelLoaderState.currentExtraNativeInputType;
+  const currentExtraInputType = modelLoaderState.currentExtraInputType;
   const currentExternalInputType = modelLoaderState.currentExternalInputType;
   const currentExternalInputLabel = currentExternalInputType
     ? modelLoaderState.getImportConfiguration(currentExternalInputType).label
@@ -66,9 +65,9 @@ export const ModelLoader = observer(() => {
     (): void =>
       modelLoaderState.setCurrentExternalFormatInputType(inputType);
   const setCurrentExtraNativeInput =
-    (inputType: ExtraModelLoaderRendererConfiguration): (() => void) =>
+    (inputType: ExtraModelLoaderExtensionsConfiguration): (() => void) =>
     (): void =>
-      modelLoaderState.setCurrentExtraNativeInputType(inputType);
+      modelLoaderState.setCurrentExtraInputType(inputType);
   // replace flag
   const replace = modelLoaderState.replace;
   const toggleReplace = (): void => modelLoaderState.setReplaceFlag(!replace);
@@ -133,17 +132,6 @@ export const ModelLoader = observer(() => {
                         {prettyCONSTName(inputType)}
                       </MenuContentItem>
                     ))}
-                    {extraModelLoaderRendererConfigs.map(
-                      (config: ExtraModelLoaderRendererConfiguration) => (
-                        <MenuContentItem
-                          key={config.key}
-                          className="model-loader__header__configs__type-option__group__option"
-                          onClick={setCurrentExtraNativeInput(config)}
-                        >
-                          {prettyCONSTName(config.key)}
-                        </MenuContentItem>
-                      ),
-                    )}
                   </div>
                 </div>
                 {Boolean(externalFormatInputTypes) && (
@@ -167,6 +155,29 @@ export const ModelLoader = observer(() => {
                     </div>
                   </>
                 )}
+                {Boolean(externalFormatInputTypes) && (
+                  <>
+                    <div className="model-loader__header__configs__type-option__group__separator" />
+                    <div className="model-loader__header__configs__type-option__group model-loader__header__configs__type-option__group--external">
+                      <div className="model-loader__header__configs__type-option__group__name">
+                        external
+                      </div>
+                      <div className="model-loader__header__configs__type-option__group__options">
+                        {extraModelLoaderExtensionsConfigs.map(
+                          (config: ExtraModelLoaderExtensionsConfiguration) => (
+                            <MenuContentItem
+                              key={config.key}
+                              className="model-loader__header__configs__type-option__group__option"
+                              onClick={setCurrentExtraNativeInput(config)}
+                            >
+                              {config?.label ?? prettyCONSTName(config.key)}
+                            </MenuContentItem>
+                          ),
+                        )}
+                      </div>
+                    </div>
+                  </>
+                )}
               </MenuContent>
             }
             menuProps={{
@@ -178,8 +189,9 @@ export const ModelLoader = observer(() => {
               <div className="model-loader__header__configs__type__label">
                 {currentExternalInputType
                   ? currentExternalInputLabel
-                  : currentExtraNativeInputType
-                  ? prettyCONSTName(currentExtraNativeInputType)
+                  : currentExtraInputType
+                  ? currentExtraInputType?.label ??
+                    prettyCONSTName(currentExtraInputType.key)
                   : prettyCONSTName(currentInputType)}
               </div>
               <div className="model-loader__header__configs__type__icon">
@@ -187,7 +199,8 @@ export const ModelLoader = observer(() => {
               </div>
             </div>
           </DropdownMenu>
-          {!modelLoaderState.currentExtraNativeInputType && (
+          {(!modelLoaderState.currentExtraInputType ||
+            modelLoaderState.currentExtraInputType.hardReplaceOption) && (
             <div
               className="model-loader__header__configs__edit-mode"
               onClick={toggleReplace}
@@ -202,7 +215,7 @@ export const ModelLoader = observer(() => {
           )}
           {!(
             modelLoaderState.currentExternalInputType ||
-            modelLoaderState.currentExtraNativeInputType
+            modelLoaderState.currentExtraInputType
           ) && (
             <button
               className="model-loader__header__configs__load-project-entities-btn"
@@ -214,28 +227,22 @@ export const ModelLoader = observer(() => {
             </button>
           )}
         </div>
-        {!modelLoaderState.currentExtraNativeInputType && (
-          <div className="model-loader__header__action">
-            <button
-              className="btn--dark model-loader__header__load-btn"
-              onClick={loadModel}
-              disabled={modelLoaderState.isLoadingModel}
-              tabIndex={-1}
-              title="Load model"
-            >
-              Load
-            </button>
-          </div>
-        )}
+        <div className="model-loader__header__action">
+          <button
+            className="btn--dark model-loader__header__load-btn"
+            onClick={modelLoaderState.currentExtraInputType?.load ?? loadModel}
+            disabled={modelLoaderState.isLoadingModel}
+            tabIndex={-1}
+            title="Load model"
+          >
+            Load
+          </button>
+        </div>
       </div>
       <div className="panel__content model-loader__editor">
-        {modelLoaderState.currentExtraNativeInputType ? (
-          modelLoaderState
-            .getExtraModelLoaderRendererConfig(
-              modelLoaderState.currentExtraNativeInputType,
-            )
-            .renderer(modelLoaderState)
-        ) : (
+        {modelLoaderState.currentExtraInputType?.renderer(
+          editorStore.modelLoaderState,
+        ) ?? (
           <StudioTextInputEditor
             language={EDITOR_LANGUAGE.JSON}
             inputValue={modelLoaderState.modelText}

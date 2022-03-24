@@ -33,7 +33,7 @@ import {
 } from '@finos/legend-graph';
 import { TAB_SIZE } from '@finos/legend-application';
 import type {
-  ExtraModelLoaderRendererConfiguration,
+  ExtraModelLoaderExtensionsConfiguration,
   LegendStudioPlugin,
 } from '../LegendStudioPlugin';
 
@@ -45,10 +45,10 @@ export enum MODEL_UPDATER_INPUT_TYPE {
 export class ModelLoaderState extends EditorState {
   modelText = this.getExampleEntitiesInputText();
   currentInputType = MODEL_UPDATER_INPUT_TYPE.ENTITIES;
-  currentExtraNativeInputType?: string | undefined;
+  currentExtraInputType?: ExtraModelLoaderExtensionsConfiguration | undefined;
   currentExternalInputType?: string | undefined;
   modelImportDescriptions: ImportConfigurationDescription[] = [];
-  extraModelLoaderRendererConfigurations: ExtraModelLoaderRendererConfiguration[] =
+  extraModelLoaderExtensionsConfigurations: ExtraModelLoaderExtensionsConfiguration[] =
     [];
   replace = true;
   isLoadingModel = false;
@@ -61,27 +61,28 @@ export class ModelLoaderState extends EditorState {
       currentInputType: observable,
       currentExternalInputType: observable,
       modelImportDescriptions: observable,
-      extraModelLoaderRendererConfigurations: observable,
+      extraModelLoaderExtensionsConfigurations: observable,
       replace: observable,
       isLoadingModel: observable,
       setReplaceFlag: action,
       setModelText: action,
       setCurrentInputType: action,
       setCurrentExternalFormatInputType: action,
-      setCurrentExtraNativeInputType: action,
+      setCurrentExtraInputType: action,
       loadCurrentProjectEntities: flow,
       loadModel: flow,
       fetchAvailableModelImportDescriptions: flow,
     });
 
     //extensions
-    this.extraModelLoaderRendererConfigurations = this.editorStore.pluginManager
-      .getStudioPlugins()
-      .flatMap(
-        (plugin: LegendStudioPlugin) =>
-          plugin.getExtraModelLoaderRendererConfigurations?.() ?? [],
-      )
-      .filter(isNonNullable);
+    this.extraModelLoaderExtensionsConfigurations =
+      this.editorStore.pluginManager
+        .getStudioPlugins()
+        .flatMap(
+          (plugin: LegendStudioPlugin) =>
+            plugin.getExtraModelLoaderExtensionsConfigurations?.() ?? [],
+        )
+        .filter(isNonNullable);
   }
 
   get headerName(): string {
@@ -98,7 +99,7 @@ export class ModelLoaderState extends EditorState {
   setCurrentInputType(inputType: MODEL_UPDATER_INPUT_TYPE): void {
     this.currentInputType = inputType;
     this.setCurrentExternalFormatInputType(undefined);
-    this.setCurrentExtraNativeInputType(undefined);
+    this.setCurrentExtraInputType(undefined);
     switch (inputType) {
       case MODEL_UPDATER_INPUT_TYPE.PURE_PROTOCOL: {
         this.modelText = this.getExamplePureProtocolInputText();
@@ -120,32 +121,19 @@ export class ModelLoaderState extends EditorState {
   ): void {
     this.currentExternalInputType = inputType?.key;
     if (this.currentExternalInputType) {
-      this.setCurrentExtraNativeInputType(undefined);
+      this.setCurrentExtraInputType(undefined);
       this.modelText = this.getExampleExternalFormatInputText();
     }
   }
 
-  setCurrentExtraNativeInputType(
-    inputType: ExtraModelLoaderRendererConfiguration | undefined,
+  setCurrentExtraInputType(
+    inputType: ExtraModelLoaderExtensionsConfiguration | undefined,
   ): void {
-    this.currentExtraNativeInputType = inputType?.key;
+    this.currentExtraInputType = inputType;
     if (this.currentExternalInputType) {
       this.setCurrentExternalFormatInputType(undefined);
-      this.modelText = this.getExtraModelLoaderRendererConfig(
-        this.currentExtraNativeInputType as string,
-      ).defaultModelText;
+      this.modelText = ``;
     }
-  }
-
-  getExtraModelLoaderRendererConfig(
-    key: string,
-  ): ExtraModelLoaderRendererConfiguration {
-    return guaranteeNonNullable(
-      this.extraModelLoaderRendererConfigurations.find(
-        (config) => config.key === key,
-      ),
-      `Can't find extension model loader of the specified type: no built extension model loader available from plugins`,
-    );
   }
 
   /**
