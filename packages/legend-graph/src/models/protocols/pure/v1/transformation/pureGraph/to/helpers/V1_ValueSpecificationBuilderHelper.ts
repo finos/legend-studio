@@ -866,15 +866,10 @@ export function V1_processProperty(
   } else {
     inferredVariable = processedParameters[0];
   }
-  let inferredType = inferredVariable?.genericType?.value.rawType;
-  if (inferredVariable instanceof AbstractPropertyExpression) {
-    inferredType = inferredVariable.func.genericType.value.rawType;
-  } else {
-    inferredType = V1_resolvePropertyExpressionTypeInference(
-      inferredVariable,
-      context,
-    );
-  }
+  const inferredType =
+    inferredVariable instanceof AbstractPropertyExpression
+      ? inferredVariable.func.genericType.value.rawType
+      : V1_resolvePropertyExpressionTypeInference(inferredVariable, context);
   if (inferredType instanceof Class) {
     const processedProperty = new AbstractPropertyExpression(
       '',

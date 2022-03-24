@@ -14,4 +14,18 @@
  * limitations under the License.
  */
 
-export class GraphBuilderReport {}
+import { GRAPH_MANAGER_LOG_EVENT } from './GraphManagerLogEvent';
+
+export class GraphBuilderReport {
+  timings: {
+    [GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_COMPLETED]: number;
+    [key: string]: number;
+  } = { [GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_COMPLETED]: 0 };
+  elementCount: {
+    total: number;
+    [key: string]: number;
+  } = {
+    total: 0,
+  };
+  otherStats: Record<PropertyKey, unknown> = {};
+}

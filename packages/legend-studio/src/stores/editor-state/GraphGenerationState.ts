@@ -99,7 +99,7 @@ export class GraphGenerationState {
       fileGenerationConfigurationOptions: computed,
       supportedFileGenerationConfigurationsForCurrentElement: computed,
       setFileGenerationConfigurations: action,
-      addMissingGenerationSpecifications: action,
+      possiblyAddMissingGenerationSpecifications: action,
       processGenerationResult: action,
       reprocessGenerationFileState: action,
       reprocessNodeTree: action,
@@ -349,7 +349,7 @@ export class GraphGenerationState {
    * 1. no generation specification has been defined in graph
    * 2. there exists a generation element
    */
-  addMissingGenerationSpecifications(): void {
+  possiblyAddMissingGenerationSpecifications(): void {
     if (
       !this.editorStore.graphManagerState.graph.ownGenerationSpecifications
         .length

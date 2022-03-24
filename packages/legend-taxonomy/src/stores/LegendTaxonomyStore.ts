@@ -29,7 +29,12 @@ import {
   getResolvedDataSpace,
 } from '@finos/legend-extension-dsl-data-space';
 import type { ClassView } from '@finos/legend-extension-dsl-diagram';
-import type { GraphManagerState } from '@finos/legend-graph';
+import {
+  type GraphBuilderReport,
+  type GraphManagerState,
+  GraphManagerTelemetry,
+  GRAPH_MANAGER_LOG_EVENT,
+} from '@finos/legend-graph';
 import type { Entity } from '@finos/legend-model-storage';
 import {
   type DepotServerClient,
@@ -50,6 +55,7 @@ import {
   guaranteeNonNullable,
   ActionState,
   assertErrorThrown,
+  StopWatch,
 } from '@finos/legend-shared';
 import {
   makeObservable,
@@ -187,6 +193,11 @@ export class TaxonomyNodeViewerState {
   *initializeDataSpaceViewer(rawDataSpace: RawDataSpace): GeneratorFn<void> {
     try {
       this.initDataSpaceViewerState.inProgress();
+      const stopWatch = new StopWatch();
+
+      // reset
+      this.taxonomyStore.graphManagerState.resetGraph();
+
       const groupId = guaranteeNonNullable(
         rawDataSpace.json.groupId,
         `Data space 'groupId' field is missing`,
@@ -200,7 +211,9 @@ export class TaxonomyNodeViewerState {
         `Data space 'versionId' field is missing`,
       ) as string;
 
-      // build graph
+      // fetch entities
+      stopWatch.record();
+      this.initDataSpaceViewerState.setMessage(`Fetching entities...`);
       const projectData = ProjectData.serialization.fromJson(
         (yield flowResult(
           this.taxonomyStore.depotServerClient.getProject(groupId, artifactId),
@@ -216,10 +229,14 @@ export class TaxonomyNodeViewerState {
           artifactId,
           resolvedVersionId,
         )) as Entity[];
-      this.taxonomyStore.graphManagerState.resetGraph();
-      // build dependencies
+      this.initDataSpaceViewerState.setMessage(undefined);
+      stopWatch.record(GRAPH_MANAGER_LOG_EVENT.GRAPH_ENTITIES_FETCHED);
+
+      // fetch dependencies
+      stopWatch.record();
       const dependencyManager =
         this.taxonomyStore.graphManagerState.createEmptyDependencyManager();
+      dependencyManager.buildState.setMessage(`Fetching dependencies...`);
       const dependencyEntitiesMap = new Map<string, Entity[]>();
       (
         (yield this.taxonomyStore.depotServerClient.getDependencyEntities(
@@ -234,25 +251,57 @@ export class TaxonomyNodeViewerState {
         .forEach((dependencyInfo) => {
           dependencyEntitiesMap.set(dependencyInfo.id, dependencyInfo.entities);
         });
-      yield flowResult(
+      stopWatch.record(GRAPH_MANAGER_LOG_EVENT.GRAPH_DEPENDENCIES_FETCHED);
+
+      // build dependencies
+      const dependency_buildReport = (yield flowResult(
         this.taxonomyStore.graphManagerState.graphManager.buildDependencies(
           this.taxonomyStore.graphManagerState.coreModel,
           this.taxonomyStore.graphManagerState.systemModel,
           dependencyManager,
           dependencyEntitiesMap,
         ),
-      );
+      )) as GraphBuilderReport;
       this.taxonomyStore.graphManagerState.graph.setDependencyManager(
         dependencyManager,
       );
-      yield flowResult(
+      dependency_buildReport.timings[
+        GRAPH_MANAGER_LOG_EVENT.GRAPH_DEPENDENCIES_FETCHED
+      ] = stopWatch.getRecord(
+        GRAPH_MANAGER_LOG_EVENT.GRAPH_DEPENDENCIES_FETCHED,
+      );
+
+      // build graph
+      const graph_buildReport = (yield flowResult(
         this.taxonomyStore.graphManagerState.graphManager.buildGraph(
           this.taxonomyStore.graphManagerState.graph,
           entities,
         ),
+      )) as GraphBuilderReport;
+      graph_buildReport.timings[
+        GRAPH_MANAGER_LOG_EVENT.GRAPH_ENTITIES_FETCHED
+      ] = stopWatch.getRecord(GRAPH_MANAGER_LOG_EVENT.GRAPH_ENTITIES_FETCHED);
+
+      // report
+      stopWatch.record();
+      const graphBuilderReportData = {
+        timings: {
+          [GRAPH_MANAGER_LOG_EVENT.GRAPH_INITIALIZED]: stopWatch.elapsed,
+        },
+        dependencies: dependency_buildReport,
+        graph: graph_buildReport,
+      };
+      this.taxonomyStore.applicationStore.log.info(
+        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_INITIALIZED),
+        graphBuilderReportData,
+      );
+      GraphManagerTelemetry.logEvent_GraphInitialized(
+        this.taxonomyStore.applicationStore.telemetryService,
+        graphBuilderReportData,
       );
 
-      // resolve data space
+      // build dataspace
+      this.initDataSpaceViewerState.setMessage(`Building dataspace...`);
       const resolvedDataSpace = getResolvedDataSpace(
         rawDataSpace.json,
         this.taxonomyStore.graphManagerState.graph,
@@ -296,6 +345,8 @@ export class TaxonomyNodeViewerState {
         );
       };
       this.dataSpaceViewerState = dataSpaceViewerState;
+      this.initDataSpaceViewerState.setMessage(undefined);
+
       this.currentDataSpace = rawDataSpace;
     } catch (error) {
       assertErrorThrown(error);
@@ -343,7 +394,6 @@ export class LegendTaxonomyStore {
   // standalone data space viewer
   initStandaloneDataSpaceViewerState = ActionState.create();
   standaloneDataSpaceViewerState?: DataSpaceViewerState | undefined;
-  initStandaloneDataSpaceViewerStatusText?: string | undefined;
 
   constructor(
     applicationStore: ApplicationStore<LegendTaxonomyConfig>,
@@ -357,7 +407,6 @@ export class LegendTaxonomyStore {
       standaloneDataSpaceViewerState: observable,
       treeData: observable.ref,
       currentTaxonomyNodeViewerState: observable,
-      initStandaloneDataSpaceViewerStatusText: observable,
       initialize: flow,
       initializeStandaloneDataSpaceViewer: flow,
       setExpandedMode: action,
@@ -670,6 +719,7 @@ export class LegendTaxonomyStore {
       return;
     }
     this.initStandaloneDataSpaceViewerState.inProgress();
+    const stopWatch = new StopWatch();
 
     try {
       yield flowResult(
@@ -691,8 +741,13 @@ export class LegendTaxonomyStore {
 
       yield flowResult(this.graphManagerState.initializeSystem());
 
-      // fetch data space entity
-      this.initStandaloneDataSpaceViewerStatusText = `Fetching information for data space...`;
+      // reset
+      this.graphManagerState.resetGraph();
+
+      // analyze the dataspace
+      this.initStandaloneDataSpaceViewerState.setMessage(
+        `Analyzing dataspace...`,
+      );
       const { dataSpacePath, gav } = params;
       const dataSpaceGAVCoordinates = parseGAVCoordinates(gav);
       const dataSpaceProjectData = ProjectData.serialization.fromJson(
@@ -728,8 +783,6 @@ export class LegendTaxonomyStore {
         `Data space 'versionId' field is missing`,
       ) as string;
 
-      // build graph
-      this.initStandaloneDataSpaceViewerStatusText = `Building graph...`;
       const projectData = ProjectData.serialization.fromJson(
         (yield flowResult(
           this.depotServerClient.getProject(groupId, artifactId),
@@ -739,15 +792,25 @@ export class LegendTaxonomyStore {
         versionId === LATEST_VERSION_ALIAS
           ? projectData.latestVersion
           : versionId;
+
+      // fetch entities
+      stopWatch.record();
+      this.initStandaloneDataSpaceViewerState.setMessage(
+        `Fetching entities...`,
+      );
       const entities = (yield this.depotServerClient.getVersionEntities(
         groupId,
         artifactId,
         resolvedVersionId,
       )) as Entity[];
-      this.graphManagerState.resetGraph();
+      this.initStandaloneDataSpaceViewerState.setMessage(undefined);
+      stopWatch.record(GRAPH_MANAGER_LOG_EVENT.GRAPH_ENTITIES_FETCHED);
+
       // build dependencies
+      stopWatch.record();
       const dependencyManager =
         this.graphManagerState.createEmptyDependencyManager();
+      dependencyManager.buildState.setMessage(`Fetching dependencies...`);
       const dependencyEntitiesMap = new Map<string, Entity[]>();
       (
         (yield this.depotServerClient.getDependencyEntities(
@@ -762,27 +825,61 @@ export class LegendTaxonomyStore {
         .forEach((dependencyInfo) => {
           dependencyEntitiesMap.set(dependencyInfo.id, dependencyInfo.entities);
         });
-      yield flowResult(
+      stopWatch.record(GRAPH_MANAGER_LOG_EVENT.GRAPH_DEPENDENCIES_FETCHED);
+
+      const dependency_buildReport = (yield flowResult(
         this.graphManagerState.graphManager.buildDependencies(
           this.graphManagerState.coreModel,
           this.graphManagerState.systemModel,
           dependencyManager,
           dependencyEntitiesMap,
         ),
-      );
+      )) as GraphBuilderReport;
       this.graphManagerState.graph.setDependencyManager(dependencyManager);
-      yield flowResult(
+      dependency_buildReport.timings[
+        GRAPH_MANAGER_LOG_EVENT.GRAPH_DEPENDENCIES_FETCHED
+      ] = stopWatch.getRecord(
+        GRAPH_MANAGER_LOG_EVENT.GRAPH_DEPENDENCIES_FETCHED,
+      );
+
+      // build graph
+      const graph_buildReport = (yield flowResult(
         this.graphManagerState.graphManager.buildGraph(
           this.graphManagerState.graph,
           entities,
         ),
+      )) as GraphBuilderReport;
+      graph_buildReport.timings[
+        GRAPH_MANAGER_LOG_EVENT.GRAPH_ENTITIES_FETCHED
+      ] = stopWatch.getRecord(GRAPH_MANAGER_LOG_EVENT.GRAPH_ENTITIES_FETCHED);
+
+      // report
+      stopWatch.record();
+      const graphBuilderReportData = {
+        timings: {
+          [GRAPH_MANAGER_LOG_EVENT.GRAPH_INITIALIZED]: stopWatch.elapsed,
+        },
+        dependencies: dependency_buildReport,
+        graph: graph_buildReport,
+      };
+      this.applicationStore.log.info(
+        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_INITIALIZED),
+        graphBuilderReportData,
+      );
+      GraphManagerTelemetry.logEvent_GraphInitialized(
+        this.applicationStore.telemetryService,
+        graphBuilderReportData,
       );
 
-      // resolve data space
+      // build dataspace
+      this.initStandaloneDataSpaceViewerState.setMessage(
+        `Building dataspace...`,
+      );
       const resolvedDataSpace = getResolvedDataSpace(
         dataSpaceEntity.content,
         this.graphManagerState.graph,
       );
+
       const dataSpaceViewerState = new DataSpaceViewerState(
         this.graphManagerState,
         groupId,
@@ -822,14 +919,13 @@ export class LegendTaxonomyStore {
         );
       };
       this.standaloneDataSpaceViewerState = dataSpaceViewerState;
+      this.initStandaloneDataSpaceViewerState.setMessage(undefined);
 
       this.initStandaloneDataSpaceViewerState.pass();
     } catch (error) {
       assertErrorThrown(error);
       this.initStandaloneDataSpaceViewerState.fail();
       this.applicationStore.notifyError(error);
-    } finally {
-      this.initStandaloneDataSpaceViewerStatusText = undefined;
     }
   }
 

@@ -249,6 +249,7 @@ const TaxonomyNodeDataSpaceViewer = observer(
 export const TaxonomyNodeViewer = observer(
   (props: { taxonomyNodeViewerState: TaxonomyNodeViewerState }) => {
     const { taxonomyNodeViewerState } = props;
+    const taxonomyStore = useLegendTaxonomyStore();
     const description =
       taxonomyNodeViewerState.taxonomyNode.taxonomyData?.description;
 
@@ -288,7 +289,16 @@ export const TaxonomyNodeViewer = observer(
                   <div className="taxonomy-node-viewer__content-placeholder">
                     <PanelLoadingIndicator isLoading={true} />
                     <BlankPanelContent>
-                      Setting up data space...
+                      {taxonomyNodeViewerState.initDataSpaceViewerState
+                        .message ??
+                        taxonomyStore.graphManagerState.graph.systemModel
+                          .buildState.message ??
+                        taxonomyStore.graphManagerState.graph.dependencyManager
+                          .buildState.message ??
+                        taxonomyStore.graphManagerState.graph.generationModel
+                          .buildState.message ??
+                        taxonomyStore.graphManagerState.graph.buildState
+                          .message}
                     </BlankPanelContent>
                   </div>
                 )}

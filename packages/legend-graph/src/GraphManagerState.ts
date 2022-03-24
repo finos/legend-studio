@@ -80,9 +80,9 @@ export class GraphManagerState {
   }
 
   /**
-   * NOTE: this is temporary. System entities might eventually be in a seperate SDLC project and compressed for performance.
+   * NOTE: this is temporary. System entities might eventually be collected from a metadata project.
    * Right now the essential profiles have been extracted from Pure to load the minimum system models.
-   * We might add more system entities as needed until the SDLC project is setup.
+   * We might add more system entities as needed until the system model project(s) are setup.
    */
   *initializeSystem(options?: GraphBuilderOptions): GeneratorFn<void> {
     if (!this.initSystemState.isInInitialState) {

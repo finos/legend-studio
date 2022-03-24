@@ -94,6 +94,8 @@ const FORBIDDEN_EXTENSION_ELEMENT_CLASS = new Set([
  */
 export abstract class BasicModel {
   root: Package;
+
+  // FIXME: to be moved, this is graph-manager logic and should be moved elsewhere
   buildState = ActionState.create();
 
   private readonly extensions: PureGraphExtension<PackageableElement>[] = [];

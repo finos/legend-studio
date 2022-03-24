@@ -184,6 +184,8 @@ export {
   AbstractPureGraphManager,
   type GraphBuilderOptions,
 } from './graphManager/AbstractPureGraphManager';
+export { GraphBuilderReport } from './graphManager/GraphBuilderReport';
+export { GraphManagerTelemetry } from './graphManager/GraphManagerTelemetry';
 export * from './graphManager/GraphManagerUtils';
 export { GRAPH_MANAGER_LOG_EVENT } from './graphManager/GraphManagerLogEvent';
 export * from './graphManager/DSLMapping_PureGraphManagerPlugin_Extension';

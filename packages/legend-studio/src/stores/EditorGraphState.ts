@@ -28,6 +28,7 @@ import {
   isNonNullable,
   NetworkClientError,
   guaranteeNonNullable,
+  StopWatch,
 } from '@finos/legend-shared';
 import type { EditorStore } from './EditorStore';
 import { ElementEditorState } from './editor-state/element-editor-state/ElementEditorState';
@@ -85,6 +86,8 @@ import {
   DependencyGraphBuilderError,
   GraphDataDeserializationError,
   GraphBuilderError,
+  type GraphBuilderReport,
+  GraphManagerTelemetry,
 } from '@finos/legend-graph';
 import {
   type LambdaEditorState,
@@ -100,7 +103,7 @@ export enum GraphBuilderStatus {
   REDIRECTED_TO_TEXT_MODE = 'REDIRECTED_TO_TEXT_MODE',
 }
 
-export interface GraphBuilderReport {
+export interface GraphBuilderResult {
   status: GraphBuilderStatus;
   error?: Error;
 }
@@ -195,31 +198,44 @@ export class EditorGraphState {
     return false;
   }
 
-  *buildGraph(entities: Entity[]): GeneratorFn<GraphBuilderReport> {
+  *buildGraph(entities: Entity[]): GeneratorFn<GraphBuilderResult> {
     try {
       this.isInitializingGraph = true;
-      const startTime = Date.now();
+      const stopWatch = new StopWatch();
+
       // reset
       this.editorStore.graphManagerState.resetGraph();
-      // build compile context
+
+      // fetch dependencies
+      stopWatch.record();
       const dependencyManager =
         this.editorStore.graphManagerState.createEmptyDependencyManager();
-      yield flowResult(
+      dependencyManager.buildState.setMessage(`Fetching dependencies...`);
+      const dependencyEntitiesMap = (yield flowResult(
+        this.getConfigurationProjectDependencyEntities(),
+      )) as Map<string, Entity[]>;
+      stopWatch.record(GRAPH_MANAGER_LOG_EVENT.GRAPH_DEPENDENCIES_FETCHED);
+
+      // build dependencies
+      const dependency_buildReport = (yield flowResult(
         this.editorStore.graphManagerState.graphManager.buildDependencies(
           this.editorStore.graphManagerState.coreModel,
           this.editorStore.graphManagerState.systemModel,
           dependencyManager,
-          (yield flowResult(
-            this.getConfigurationProjectDependencyEntities(),
-          )) as Map<string, Entity[]>,
+          dependencyEntitiesMap,
         ),
-      );
+      )) as GraphBuilderReport;
       this.editorStore.graphManagerState.graph.setDependencyManager(
         dependencyManager,
       );
-      this.editorStore.explorerTreeState.buildImmutableModelTrees();
+      dependency_buildReport.timings[
+        GRAPH_MANAGER_LOG_EVENT.GRAPH_DEPENDENCIES_FETCHED
+      ] = stopWatch.getRecord(
+        GRAPH_MANAGER_LOG_EVENT.GRAPH_DEPENDENCIES_FETCHED,
+      );
+
       // build graph
-      yield flowResult(
+      const graph_buildReport = (yield flowResult(
         this.editorStore.graphManagerState.graphManager.buildGraph(
           this.editorStore.graphManagerState.graph,
           entities,
@@ -232,26 +248,38 @@ export class EditorGraphState {
                 .TEMPORARY__disableRawLambdaResolver,
           },
         ),
-      );
+      )) as GraphBuilderReport;
+
       // build generations
-      yield flowResult(
+      const generation_buildReport = (yield flowResult(
         this.editorStore.graphManagerState.graphManager.buildGenerations(
           this.editorStore.graphManagerState.graph,
           this.graphGenerationState.generatedEntities,
         ),
-      );
+      )) as GraphBuilderReport;
 
-      // NOTE: we will see that: (time for fetching entities + time for building graph) < time for instantiating graph
-      // this could be due to the time it takes for React to render in response to the fact that the model is just built
+      // report
+      stopWatch.record();
+      const graphBuilderReportData = {
+        timings: {
+          [GRAPH_MANAGER_LOG_EVENT.GRAPH_INITIALIZED]: stopWatch.elapsed,
+        },
+        dependencies: dependency_buildReport,
+        graph: graph_buildReport,
+        generations: generation_buildReport,
+      };
       this.editorStore.applicationStore.log.info(
         LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_INITIALIZED),
-        '[TOTAL]',
-        Date.now() - startTime,
-        'ms',
+        graphBuilderReportData,
       );
-      this.editorStore.explorerTreeState.build();
+      GraphManagerTelemetry.logEvent_GraphInitialized(
+        this.editorStore.applicationStore.telemetryService,
+        graphBuilderReportData,
+      );
+
       // add generation specification if model generation elements exists in graph and no generation specification
-      this.graphGenerationState.addMissingGenerationSpecifications();
+      this.graphGenerationState.possiblyAddMissingGenerationSpecifications();
+
       return {
         status: GraphBuilderStatus.SUCCEEDED,
       };
@@ -802,7 +830,6 @@ export class EditorGraphState {
           newGraph,
           entities,
           {
-            quiet: true,
             TEMPORARY__keepSectionIndex:
               this.editorStore.applicationStore.config.options
                 .EXPERIMENTAL__enableFullGrammarImportSupport,
@@ -960,9 +987,9 @@ export class EditorGraphState {
     }
   }
 
-  *getConfigurationProjectDependencyEntities(options?: {
-    quiet?: boolean;
-  }): GeneratorFn<Map<string, Entity[]>> {
+  *getConfigurationProjectDependencyEntities(): GeneratorFn<
+    Map<string, Entity[]>
+  > {
     const dependencyEntitiesMap = new Map<string, Entity[]>();
     const currentConfiguration =
       this.editorStore.projectConfigurationEditorState
@@ -974,7 +1001,6 @@ export class EditorGraphState {
             currentConfiguration.projectDependencies,
           ),
         )) as ProjectDependencyCoordinates[];
-        const startTime = Date.now();
         // NOTE: if A@v1 is transitive dependencies of 2 or more
         // direct dependencies, metadata server will take care of deduplication
         const dependencyEntitiesJson =
@@ -985,15 +1011,6 @@ export class EditorGraphState {
             true,
             true,
           )) as PlainObject<ProjectVersionEntities>[];
-        if (!options?.quiet) {
-          this.editorStore.applicationStore.log.info(
-            LogEvent.create(
-              GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_DEPENDENCIES_ENTITIES_FETCHED,
-            ),
-            Date.now() - startTime,
-            'ms',
-          );
-        }
         const dependencyEntities = dependencyEntitiesJson.map((e) =>
           ProjectVersionEntities.serialization.fromJson(e),
         );

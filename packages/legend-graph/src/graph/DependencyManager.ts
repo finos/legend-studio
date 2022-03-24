@@ -59,6 +59,8 @@ class DependencyModel extends BasicModel {
 export class DependencyManager {
   root = new Package(ROOT_PACKAGE_NAME.PROJECT_DEPENDENCY_ROOT);
   projectDependencyModelsIndex = new Map<string, BasicModel>();
+
+  // FIXME: to be moved, this is graph-manager logic and should be moved elsewhere
   buildState = ActionState.create();
 
   private readonly extensionElementClasses: Clazz<PackageableElement>[];
@@ -89,6 +91,9 @@ export class DependencyManager {
     });
 
     this.extensionElementClasses = extensionElementClasses;
+    this.buildState.setMessageFormatter(
+      (message: string) => `[dependency] ${message}`,
+    );
   }
 
   /**

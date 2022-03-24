@@ -487,11 +487,25 @@ const ServiceQuerySetup = observer(
                     !queryStore.graphManagerState.graph.buildState.hasSucceeded
                   }
                 />
-                <BlankPanelContent>
-                  {queryStore.graphManagerState.graph.buildState.hasFailed
-                    ? `Can't build graph`
-                    : 'Project and version must be specified'}
-                </BlankPanelContent>
+                {queryStore.buildGraphState.isInProgress && (
+                  <BlankPanelContent>
+                    {queryStore.buildGraphState.message ??
+                      queryStore.graphManagerState.graph.systemModel.buildState
+                        .message ??
+                      queryStore.graphManagerState.graph.dependencyManager
+                        .buildState.message ??
+                      queryStore.graphManagerState.graph.generationModel
+                        .buildState.message ??
+                      queryStore.graphManagerState.graph.buildState.message}
+                  </BlankPanelContent>
+                )}
+                {!queryStore.buildGraphState.isInProgress && (
+                  <BlankPanelContent>
+                    {queryStore.graphManagerState.graph.buildState.hasFailed
+                      ? `Can't build graph`
+                      : 'Project and version must be specified'}
+                  </BlankPanelContent>
+                )}
               </div>
             )}
             {querySetupState.currentProject &&
@@ -756,11 +770,25 @@ const CreateQuerySetup = observer(
                     !queryStore.graphManagerState.graph.buildState.hasSucceeded
                   }
                 />
-                <BlankPanelContent>
-                  {queryStore.graphManagerState.graph.buildState.hasFailed
-                    ? `Can't build graph`
-                    : 'Project and version must be specified'}
-                </BlankPanelContent>
+                {queryStore.buildGraphState.isInProgress && (
+                  <BlankPanelContent>
+                    {queryStore.buildGraphState.message ??
+                      queryStore.graphManagerState.graph.systemModel.buildState
+                        .message ??
+                      queryStore.graphManagerState.graph.dependencyManager
+                        .buildState.message ??
+                      queryStore.graphManagerState.graph.generationModel
+                        .buildState.message ??
+                      queryStore.graphManagerState.graph.buildState.message}
+                  </BlankPanelContent>
+                )}
+                {!queryStore.buildGraphState.isInProgress && (
+                  <BlankPanelContent>
+                    {queryStore.graphManagerState.graph.buildState.hasFailed
+                      ? `Can't build graph`
+                      : 'Project and version must be specified'}
+                  </BlankPanelContent>
+                )}
               </div>
             )}
             {querySetupState.currentProject &&

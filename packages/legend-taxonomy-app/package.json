@@ -44,7 +44,7 @@
     "@finos/legend-graph-extension-collection": "workspace:*",
     "@finos/legend-shared": "workspace:*",
     "@finos/legend-taxonomy": "workspace:*",
-    "@types/react": "17.0.41",
+    "@types/react": "17.0.42",
     "react": "17.0.2"
   },
   "devDependencies": {

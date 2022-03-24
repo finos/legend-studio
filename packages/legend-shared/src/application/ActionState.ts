@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { action, makeAutoObservable } from 'mobx';
+import { action, computed, makeObservable, observable } from 'mobx';
 
 enum ACTION_STATE {
   INITIAL = 'INITIAL',
@@ -25,9 +25,19 @@ enum ACTION_STATE {
 
 export class ActionState {
   state: ACTION_STATE;
+  private _message: string | undefined;
+  private _messageFormatter: ((message: string) => string) | undefined;
 
-  private constructor() {
+  protected constructor() {
     this.state = ACTION_STATE.INITIAL;
+  }
+
+  setMessage(val: string | undefined): void {
+    this._message = val;
+  }
+
+  setMessageFormatter(val: ((message: string) => string) | undefined): void {
+    this._messageFormatter = val;
   }
 
   reset(): ActionState {
@@ -75,6 +85,14 @@ export class ActionState {
     return this.state === ACTION_STATE.SUCCEEDED;
   }
 
+  get message(): string | undefined {
+    return this._message
+      ? this._messageFormatter
+        ? this._messageFormatter(this._message)
+        : this._message
+      : undefined;
+  }
+
   /**
    * Use this if only the completion state of the action is of concern,
    * i.e. we don't care if it fails or succeeds.
@@ -84,12 +102,21 @@ export class ActionState {
   }
 
   static create(): ActionState {
-    return makeAutoObservable(new ActionState(), {
+    return makeObservable<ActionState, '_message'>(new ActionState(), {
+      state: observable,
+      _message: observable,
       reset: action,
       inProgress: action,
       pass: action,
       fail: action,
       complete: action,
+      setMessage: action,
+      isInInitialState: computed,
+      isInProgress: computed,
+      hasFailed: computed,
+      hasSucceeded: computed,
+      hasCompleted: computed,
+      message: computed,
     });
   }
 }

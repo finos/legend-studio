@@ -14,36 +14,22 @@
  * limitations under the License.
  */
 
-import { APPLICATION_LOG_EVENT } from '@finos/legend-application';
 import type { TelemetryService } from '@finos/legend-shared';
+import type { GraphBuilderReport } from './GraphBuilderReport';
+import { GRAPH_MANAGER_LOG_EVENT } from './GraphManagerLogEvent';
 
-type ApplicationLoaded_TelemetryData = {
-  browser: {
-    userAgent: string;
-  };
-  screen: {
-    height: number;
-    width: number;
-  };
+type GraphBuilt_TelemetryData = {
+  timings: Record<string, number>;
+  dependencies: GraphBuilderReport;
+  graph: GraphBuilderReport;
+  generations?: GraphBuilderReport;
 };
 
-export class LegendStudioTelemetryService {
-  private telemetryService!: TelemetryService;
-
-  private constructor(telemetryService: TelemetryService) {
-    this.telemetryService = telemetryService;
-  }
-
-  static create(
+export class GraphManagerTelemetry {
+  static logEvent_GraphInitialized(
     telemetryService: TelemetryService,
-  ): LegendStudioTelemetryService {
-    return new LegendStudioTelemetryService(telemetryService);
-  }
-
-  logEvent_ApplicationLoaded(data: ApplicationLoaded_TelemetryData): void {
-    this.telemetryService.logEvent(
-      APPLICATION_LOG_EVENT.APPLICATION_LOADED,
-      data,
-    );
+    data: GraphBuilt_TelemetryData,
+  ): void {
+    telemetryService.logEvent(GRAPH_MANAGER_LOG_EVENT.GRAPH_INITIALIZED, data);
   }
 }
