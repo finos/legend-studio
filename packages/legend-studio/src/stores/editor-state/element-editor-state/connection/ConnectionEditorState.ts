@@ -40,8 +40,6 @@ import {
   SnowflakePublicAuthenticationStrategy,
   GCPApplicationDefaultCredentialsAuthenticationStrategy,
   GCPWorkloadIdentityFederationAuthenticationStrategy,
-  TestDatabaseAuthenticationStrategy,
-  UserPasswordAuthenticationStrategy,
   EmbeddedH2DatasourceSpecification,
   LocalH2DatasourceSpecification,
   DatabricksDatasourceSpecification,
