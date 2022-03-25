@@ -89,14 +89,10 @@ import {
   V1_ValidityMilestoning,
 } from '../../../model/packageableElements/persistence/V1_Persistence';
 import {
-  Binding,
-  PackageableElementReference,
   type V1_GraphTransformerContext,
   V1_initPackageableElement,
   V1_transformElementReference,
 } from '@finos/legend-graph';
-import { V1_Binding } from '@finos/legend-graph/lib/models/protocols/pure/v1/model/packageableElements/externalFormat/store/V1_DSLExternalFormat_Binding';
-import { V1_ModelUnit } from '@finos/legend-graph/lib/models/protocols/pure/v1/model/packageableElements/externalFormat/store/V1_DSLExternalFormat_ModelUnit';
 import { V1_transformConnection } from '@finos/legend-graph/lib/models/protocols/pure/v1/transformation/pureGraph/from/V1_ConnectionTransformer';
 import { UnsupportedOperationError } from '@finos/legend-shared';
 
@@ -152,7 +148,7 @@ export const V1_transformPersister = (
 ): V1_Persister => {
   if (element instanceof StreamingPersister) {
     const protocol = new V1_StreamingPersister();
-    protocol.binding = V1_transformBinding(element.binding, context);
+    protocol.binding = element.binding.value.path;
 
     if (element.connection) {
       protocol.connection = V1_transformConnection(
@@ -165,7 +161,7 @@ export const V1_transformPersister = (
     return protocol;
   } else if (element instanceof BatchPersister) {
     const protocol = new V1_BatchPersister();
-    protocol.binding = V1_transformBinding(element.binding, context);
+    protocol.binding = element.binding.value.path;
 
     if (element.connection) {
       protocol.connection = V1_transformConnection(
@@ -218,39 +214,6 @@ export const V1_transformNotifyee = (
   throw new UnsupportedOperationError(
     `Unable to transform notifyee '${element}'`,
   );
-};
-
-/**********
- * binding
- **********/
-
-export const V1_transformBinding = (
-  element: Binding,
-  context: V1_GraphTransformerContext,
-): V1_Binding => {
-  const protocol = new V1_Binding();
-  V1_initPackageableElement(protocol, element);
-  protocol.name = element.name;
-  protocol.package = element.package?.fullPath ?? '';
-  protocol.schemaId = element.schemaId;
-  protocol.schemaSet = element.schemaSet.valueForSerialization;
-  protocol.contentType = element.contentType;
-  const modelUnit = new V1_ModelUnit();
-  modelUnit.packageableElementExcludes =
-    element.modelUnit.packageableElementExcludes.map((path) =>
-      path instanceof PackageableElementReference
-        ? path.valueForSerialization ?? ''
-        : path,
-    );
-  modelUnit.packageableElementIncludes =
-    element.modelUnit.packageableElementIncludes.map((path) =>
-      path instanceof PackageableElementReference
-        ? path.valueForSerialization ?? ''
-        : path,
-    );
-  protocol.modelUnit = modelUnit;
-  protocol.includedStores = [];
-  return protocol;
 };
 
 /**********

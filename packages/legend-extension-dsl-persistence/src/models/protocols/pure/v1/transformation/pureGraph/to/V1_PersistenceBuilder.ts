@@ -92,18 +92,13 @@ import {
   Binding,
   Connection,
   GraphBuilderError,
-  ModelUnit,
-  toOptionalPackageableElementReference,
+  PackageableElementImplicitReference,
+  PackageableElementReference,
   V1_Connection,
   type V1_GraphBuilderContext,
-  V1_resolveSchemaSet,
 } from '@finos/legend-graph';
 import { V1_ProtocolToMetaModelConnectionBuilder } from '@finos/legend-graph/lib/models/protocols/pure/v1/transformation/pureGraph/to/V1_ProtocolToMetaModelConnectionBuilder';
-import {
-  assertNonNullable,
-  guaranteeNonEmptyString,
-} from '@finos/legend-shared';
-import type { V1_Binding } from '@finos/legend-graph/lib/models/protocols/pure/v1/model/packageableElements/externalFormat/store/V1_DSLExternalFormat_Binding';
+import { guaranteeNonEmptyString } from '@finos/legend-shared';
 
 /**********
  * persistence
@@ -157,21 +152,23 @@ export const V1_buildPersister = (
 ): Persister => {
   if (protocol instanceof V1_StreamingPersister) {
     const persister = new StreamingPersister();
-    persister.binding = V1_buildBinding(protocol.binding, context);
-
+    persister.binding = context.resolveElement(
+      protocol.binding,
+      false,
+    ) as PackageableElementImplicitReference<Binding>;
     if (protocol.connection) {
       persister.connection = V1_buildConnection(protocol.connection, context);
     }
-
     return persister;
   } else if (protocol instanceof V1_BatchPersister) {
     const persister = new BatchPersister();
-    persister.binding = V1_buildBinding(protocol.binding, context);
-
+    persister.binding = context.resolveElement(
+      protocol.binding,
+      false,
+    ) as PackageableElementImplicitReference<Binding>;
     if (protocol.connection) {
       persister.connection = V1_buildConnection(protocol.connection, context);
     }
-
     persister.ingestMode = V1_buildIngestMode(protocol.ingestMode, context);
     persister.targetShape = V1_buildTargetShape(protocol.targetShape, context);
     return persister;
@@ -208,43 +205,6 @@ export const V1_buildNotifyee = (
     return notifyee;
   }
   throw new GraphBuilderError(`Unrecognized notifier '${protocol}'`);
-};
-
-/**********
- * binding
- **********/
-
-export const V1_buildBinding = (
-  protocol: V1_Binding,
-  context: V1_GraphBuilderContext,
-): Binding => {
-  const binding = new Binding(protocol.name);
-  binding.schemaId = protocol.schemaId;
-
-  const schemaSet = protocol.schemaSet
-    ? V1_resolveSchemaSet(protocol.schemaSet, context)
-    : undefined;
-  binding.schemaSet = toOptionalPackageableElementReference(schemaSet);
-
-  binding.contentType = guaranteeNonEmptyString(
-    protocol.contentType,
-    `Binding 'contentType' '${protocol.contentType}' is not supported`,
-  );
-
-  assertNonNullable(protocol.modelUnit, `Binding 'modelUnit' field is missing`);
-
-  const modelUnit = new ModelUnit();
-  modelUnit.packageableElementIncludes =
-    protocol.modelUnit.packageableElementIncludes.map((e) =>
-      context.resolveElement(e, true),
-    );
-  modelUnit.packageableElementExcludes =
-    protocol.modelUnit.packageableElementExcludes.map((e) =>
-      context.resolveElement(e, true),
-    );
-  binding.modelUnit = modelUnit;
-
-  return binding;
 };
 
 /**********

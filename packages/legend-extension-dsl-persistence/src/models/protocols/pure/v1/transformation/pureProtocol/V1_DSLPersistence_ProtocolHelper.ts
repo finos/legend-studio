@@ -167,10 +167,7 @@ const V1_batchPersisterModelSchema = (
 ): ModelSchema<V1_BatchPersister> =>
   createModelSchema(V1_BatchPersister, {
     _type: usingConstantValueSchema(V1_PersisterType.BATCH_PERSISTER),
-    binding: custom(
-      (val) => serialize(V1_bindingModelSchema, val),
-      (val) => deserialize(V1_bindingModelSchema, val),
-    ),
+    binding: primitive(),
     connection: custom(
       (val) => V1_serializeConnectionValue(val, true, plugins),
       (val) => V1_deserializeConnectionValue(val, true, plugins),
