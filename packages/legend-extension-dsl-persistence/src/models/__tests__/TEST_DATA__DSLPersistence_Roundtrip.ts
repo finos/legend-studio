@@ -175,6 +175,21 @@ export const TEST_DATA__roundtrip = [
     },
   },
   {
+    path: 'org::dxl::ZooBinding',
+    classifierPath: 'meta::external::shared::format::binding::Binding',
+    content: {
+      _type: 'binding',
+      contentType: 'application/json',
+      includedStores: [],
+      modelUnit: {
+        packageableElementExcludes: [],
+        packageableElementIncludes: ['org::dxl::Person'],
+      },
+      name: 'ZooBinding',
+      package: 'org::dxl',
+    },
+  },
+  {
     path: 'org::dxl::ZooPersistence',
     classifierPath: 'meta::pure::persistence::metamodel::Persistence',
     content: {
@@ -196,96 +211,60 @@ export const TEST_DATA__roundtrip = [
       package: 'org::dxl',
       persister: {
         _type: 'batchPersister',
-        connections: [
-          {
-            connection: {
-              _type: 'JsonModelConnection',
-              class: 'org::dxl::Animal',
-              url: 'file:///foo',
-            },
-            id: 'c1',
+        binding: 'org::dxl::ZooBinding',
+        connection: {
+          _type: 'JsonModelConnection',
+          class: 'org::dxl::Animal',
+          url: 'file:///foo',
+        },
+        ingestMode: {
+          _type: 'bitemporalSnapshot',
+          transactionMilestoning: {
+            _type: 'batchIdAndDateTimeTransactionMilestoning',
+            batchIdInName: 'batchIdIn',
+            batchIdOutName: 'batchIdOut',
+            dateTimeInName: 'IN_Z',
+            dateTimeOutName: 'OUT_Z',
           },
-        ],
+          validityMilestoning: {
+            _type: 'dateTimeValidityMilestoning',
+            dateTimeFromName: 'FROM_Z',
+            dateTimeThruName: 'THRU_Z',
+            derivation: {
+              _type: 'sourceSpecifiesFromAndThruDateTime',
+              sourceDateTimeFromField: 'effectiveFrom',
+              sourceDateTimeThrmField: 'effectiveThru',
+            },
+          },
+        },
         targetShape: {
           _type: 'multiFlatTarget',
           modelClass: 'org::dxl::Zoo',
           parts: [
             {
-              property: 'zookeeper',
-              flatTarget: {
-                _type: 'flatTarget',
-                deduplicationStrategy: {
-                  _type: 'noDeduplicationStrategy',
-                },
-                ingestMode: {
-                  _type: 'appendOnly',
-                  auditing: {
-                    _type: 'noAuditing',
-                  },
-                  filterDuplicates: false,
-                },
-                modelClass: 'org::dxl::Person',
-                partitionProperties: [],
-                targetName: 'PersonDataset1',
+              deduplicationStrategy: {
+                _type: 'noDeduplicationStrategy',
               },
+              modelProperty: 'zookeeper',
+              partitionFields: [],
+              targetName: 'PersonDataset1',
             },
             {
-              property: 'admin',
-              flatTarget: {
-                _type: 'flatTarget',
-                deduplicationStrategy: {
-                  _type: 'maxVersionDeduplicationStrategy',
-                  versionProperty: 'version',
-                },
-                ingestMode: {
-                  _type: 'unitemporalDelta',
-                  mergeStrategy: {
-                    _type: 'deleteIndicatorMergeStrategy',
-                    deleteProperty: 'deleted',
-                    deleteValues: ['T'],
-                  },
-                  transactionMilestoning: {
-                    _type: 'batchIdTransactionMilestoning',
-                    batchIdInFieldName: 'BATCH_IN_Z',
-                    batchIdOutFieldName: 'BATCH_OUT_Z',
-                  },
-                },
-                modelClass: 'org::dxl::Person',
-                partitionProperties: [],
-                targetName: 'PersonDataset2',
+              deduplicationStrategy: {
+                _type: 'maxVersionDeduplicationStrategy',
+                versionField: 'version',
               },
+              modelProperty: 'admin',
+              partitionFields: [],
+              targetName: 'PersonDataset2',
             },
             {
-              property: 'owner',
-              flatTarget: {
-                _type: 'flatTarget',
-                deduplicationStrategy: {
-                  _type: 'noDeduplicationStrategy',
-                },
-                ingestMode: {
-                  _type: 'bitemporalSnapshot',
-                  transactionMilestoning: {
-                    _type: 'batchIdAndDateTimeTransactionMilestoning',
-                    batchIdInFieldName: 'batchIdIn',
-                    batchIdOutFieldName: 'batchIdOut',
-                    dateTimeInFieldName: 'IN_Z',
-                    dateTimeOutFieldName: 'OUT_Z',
-                  },
-                  validityMilestoning: {
-                    _type: 'dateTimeValidityMilestoning',
-                    dateTimeFromFieldName: 'FROM_Z',
-                    dateTimeThruFieldName: 'THRU_Z',
-                    derivation: {
-                      _type: 'sourceSpecifiesFromAndThruDateTime',
-                      sourceDateTimeFromProperty: 'effectiveFrom',
-                      sourceDateTimeThruProperty: 'effectiveThru',
-                    },
-                  },
-                },
-                modelClass: 'org::dxl::Person',
-                partitionProperties: [],
-                targetName: 'PersonDataset3',
+              deduplicationStrategy: {
+                _type: 'noDeduplicationStrategy',
               },
+              modelProperty: 'owner',
+              partitionFields: [],
+              targetName: 'PersonDataset3',
             },
           ],
           transactionScope: 'ALL_TARGETS',

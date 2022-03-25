@@ -313,8 +313,8 @@ const V1_multiFlatTargetPartSchema = createModelSchema(V1_MultiFlatTargetPart, {
     (val) => V1_serializeDeduplicationStrategy(val),
     (val) => V1_deserializeDeduplicationStrategy(val),
   ),
+  modelProperty: primitive(),
   partitionFields: list(primitive()),
-  property: primitive(),
   targetName: primitive(),
 });
 
