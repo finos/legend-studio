@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 2.0.1
+
+### Patch Changes
+
+- [#983](https://github.com/finos/legend-studio/pull/983) [`872c37a8`](https://github.com/finos/legend-studio/commit/872c37a804a47c9a86ec646ad3668728c482aeca) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Build light graphs for several exploration workflows to improve load time for `Legend Query`.
+
 ## 2.0.0
 
 ### Major Changes

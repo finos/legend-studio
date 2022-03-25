@@ -1,5 +1,11 @@
 # @finos/legend-query
 
+## 1.2.1
+
+### Patch Changes
+
+- [#983](https://github.com/finos/legend-studio/pull/983) [`872c37a8`](https://github.com/finos/legend-studio/commit/872c37a804a47c9a86ec646ad3668728c482aeca) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Take included mappings into account when finding compatible runtimes in query setup.
+
 ## 1.2.0
 
 ### Minor Changes
