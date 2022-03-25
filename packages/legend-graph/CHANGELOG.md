@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 2.0.2
+
+### Patch Changes
+
+- [#991](https://github.com/finos/legend-studio/pull/991) [`0787fcec`](https://github.com/finos/legend-studio/commit/0787fcec7b074342d26d295623fcbcb863ef9dee) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Initialize `DependencyManager` when creating light query graphs.
+
 ## 2.0.1
 
 ### Patch Changes

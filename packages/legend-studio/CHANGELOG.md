@@ -1,5 +1,11 @@
 # @finos/legend-studio
 
+## 4.1.0
+
+### Minor Changes
+
+- [#988](https://github.com/finos/legend-studio/pull/988) [`3c135896`](https://github.com/finos/legend-studio/commit/3c135896a938da82f9a52583f1209514c9f0803c) ([@akphi](https://github.com/akphi)) - Show progress message and report metrics for graph builder process in viewer mode.
+
 ## 4.0.1
 
 ## 4.0.0
