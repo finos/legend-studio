@@ -336,6 +336,19 @@ export abstract class AbstractPureGraphManager {
   abstract updateQuery(query: Query, graph: PureModel): Promise<Query>;
   abstract deleteQuery(queryId: string): Promise<void>;
 
+  // ------------------------------------------- Legend Query -------------------------------------
+  abstract buildGraphForCreateQuerySetup(
+    graph: PureModel,
+    entities: Entity[],
+    dependencyEntitiesMap: Map<string, Entity[]>,
+  ): Promise<void>;
+
+  abstract buildGraphForServiceQuerySetup(
+    graph: PureModel,
+    entities: Entity[],
+    dependencyEntitiesMap: Map<string, Entity[]>,
+  ): Promise<void>;
+
   // ------------------------------------------- Utilities -------------------------------------------
 
   abstract buildDatabase(

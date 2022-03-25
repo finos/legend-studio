@@ -28,7 +28,6 @@ import {
   type PlainObject,
   ActionState,
   assertErrorThrown,
-  guaranteeNonNullable,
 } from '@finos/legend-shared';
 import {
   type LightQuery,
@@ -168,13 +167,19 @@ export class CreateQuerySetupState extends QuerySetupState {
   }
 
   get runtimeOptions(): PackageableElementOption<PackageableRuntime>[] {
-    return this.currentMapping
-      ? this.queryStore.queryBuilderState.runtimeOptions.filter((option) =>
-          option.value.runtimeValue.mappings
-            .map((mappingReference) => mappingReference.value)
-            .includes(guaranteeNonNullable(this.currentMapping)),
-        )
-      : [];
+    const currentMapping = this.currentMapping;
+    if (!currentMapping) {
+      return [];
+    }
+    return this.queryStore.queryBuilderState.runtimeOptions.filter((runtime) =>
+      runtime.value.runtimeValue.mappings
+        .map((mappingReference) => [
+          mappingReference.value,
+          ...mappingReference.value.allIncludedMappings,
+        ])
+        .flat()
+        .includes(currentMapping),
+    );
   }
 
   *loadProjects(): GeneratorFn<void> {
