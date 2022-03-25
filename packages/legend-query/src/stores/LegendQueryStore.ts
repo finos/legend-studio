@@ -495,33 +495,32 @@ export class LegendQueryStore {
 
     try {
       this.editorInitState.inProgress();
-      let queryInfoState: ServiceQueryInfoState;
+      let projectData: ProjectData;
       if (this.queryInfoState instanceof ServiceQueryInfoState) {
         assertTrue(this.queryInfoState.project.groupId === groupId);
         assertTrue(this.queryInfoState.project.artifactId === artifactId);
         assertTrue(this.queryInfoState.versionId === versionId);
         assertTrue(this.queryInfoState.service.path === servicePath);
         assertTrue(this.queryInfoState.key === serviceExecutionKey);
-        queryInfoState = this.queryInfoState;
+        projectData = this.queryInfoState.project;
       } else {
-        const project = ProjectData.serialization.fromJson(
+        projectData = ProjectData.serialization.fromJson(
           (yield flowResult(
             this.depotServerClient.getProject(groupId, artifactId),
           )) as PlainObject<ProjectData>,
         );
-        yield flowResult(this.buildGraph(project, versionId));
-
-        const currentService =
-          this.graphManagerState.graph.getService(servicePath);
-        queryInfoState = new ServiceQueryInfoState(
-          this,
-          project,
-          versionId,
-          currentService,
-          serviceExecutionKey,
-        );
-        this.setQueryInfoState(queryInfoState);
       }
+      yield flowResult(this.buildGraph(projectData, versionId));
+      const currentService =
+        this.graphManagerState.graph.getService(servicePath);
+      const queryInfoState = new ServiceQueryInfoState(
+        this,
+        projectData,
+        versionId,
+        currentService,
+        serviceExecutionKey,
+      );
+      this.setQueryInfoState(queryInfoState);
       assertType(
         queryInfoState.service.execution,
         PureExecution,
@@ -595,6 +594,9 @@ export class LegendQueryStore {
         assertTrue(this.queryInfoState.project.groupId === groupId);
         assertTrue(this.queryInfoState.project.artifactId === artifactId);
         assertTrue(this.queryInfoState.versionId === versionId);
+        yield flowResult(
+          this.buildGraph(this.queryInfoState.project, versionId),
+        );
         this.queryInfoState.setMapping(
           this.graphManagerState.graph.getMapping(mappingPath),
         );
@@ -806,6 +808,138 @@ export class LegendQueryStore {
         graphBuilderReportData,
       );
 
+      this.buildGraphState.pass();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.log.error(
+        LogEvent.create(LEGEND_QUERY_APP_EVENT.QUERY_PROBLEM),
+        error,
+      );
+      this.applicationStore.notifyError(error);
+      this.buildGraphState.fail();
+    }
+  }
+
+  *buildGraphForCreateQuerySetup(
+    project: ProjectData,
+    versionId: string,
+    options?: { quiet?: boolean },
+  ): GeneratorFn<void> {
+    try {
+      this.buildGraphState.inProgress();
+      const stopWatch = new StopWatch();
+
+      // reset
+      this.graphManagerState.resetGraph();
+
+      // fetch entities
+      stopWatch.record();
+      this.buildGraphState.setMessage(`Fetching entities...`);
+      let entities: Entity[] = [];
+      if (versionId === SNAPSHOT_VERSION_ALIAS) {
+        entities = (yield this.depotServerClient.getLatestRevisionEntities(
+          project.groupId,
+          project.artifactId,
+        )) as Entity[];
+      } else {
+        entities = (yield this.depotServerClient.getVersionEntities(
+          project.groupId,
+          project.artifactId,
+          versionId === LATEST_VERSION_ALIAS
+            ? project.latestVersion
+            : versionId,
+        )) as Entity[];
+      }
+      this.buildGraphState.setMessage(undefined);
+      stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_ENTITIES_FETCHED);
+
+      // fetch dependencies
+      stopWatch.record();
+      this.graphManagerState.resetGraph();
+      //build dependencies
+      const dependencyManager =
+        this.graphManagerState.createEmptyDependencyManager();
+      dependencyManager.buildState.setMessage(`Fetching dependencies...`);
+      const dependencyEntitiesMap = (yield flowResult(
+        this.getProjectDependencyEntities(project, versionId, options),
+      )) as Map<string, Entity[]>;
+      stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED);
+      this.graphManagerState.graph.setDependencyManager(dependencyManager);
+      // build light create query graph
+      yield flowResult(
+        this.graphManagerState.graphManager.buildGraphForCreateQuerySetup(
+          this.graphManagerState.graph,
+          entities,
+          dependencyEntitiesMap,
+        ),
+      );
+      this.graphManagerState.graph.buildState.pass();
+      this.buildGraphState.pass();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.log.error(
+        LogEvent.create(LEGEND_QUERY_APP_EVENT.QUERY_PROBLEM),
+        error,
+      );
+      this.applicationStore.notifyError(error);
+      this.buildGraphState.fail();
+    }
+  }
+
+  *buildGraphForServiceQuerySetup(
+    project: ProjectData,
+    versionId: string,
+    options?: { quiet?: boolean },
+  ): GeneratorFn<void> {
+    try {
+      this.buildGraphState.inProgress();
+      const stopWatch = new StopWatch();
+
+      // reset
+      this.graphManagerState.resetGraph();
+
+      // fetch entities
+      stopWatch.record();
+      this.buildGraphState.setMessage(`Fetching entities...`);
+      let entities: Entity[] = [];
+      if (versionId === SNAPSHOT_VERSION_ALIAS) {
+        entities = (yield this.depotServerClient.getLatestRevisionEntities(
+          project.groupId,
+          project.artifactId,
+        )) as Entity[];
+      } else {
+        entities = (yield this.depotServerClient.getVersionEntities(
+          project.groupId,
+          project.artifactId,
+          versionId === LATEST_VERSION_ALIAS
+            ? project.latestVersion
+            : versionId,
+        )) as Entity[];
+      }
+      this.buildGraphState.setMessage(undefined);
+      stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_ENTITIES_FETCHED);
+
+      // fetch dependencies
+      stopWatch.record();
+      this.graphManagerState.resetGraph();
+      //build dependencies
+      const dependencyManager =
+        this.graphManagerState.createEmptyDependencyManager();
+      dependencyManager.buildState.setMessage(`Fetching dependencies...`);
+      const dependencyEntitiesMap = (yield flowResult(
+        this.getProjectDependencyEntities(project, versionId, options),
+      )) as Map<string, Entity[]>;
+      stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED);
+      this.graphManagerState.graph.setDependencyManager(dependencyManager);
+      // build light service query graph
+      yield flowResult(
+        this.graphManagerState.graphManager.buildGraphForServiceQuerySetup(
+          this.graphManagerState.graph,
+          entities,
+          dependencyEntitiesMap,
+        ),
+      );
+      this.graphManagerState.graph.buildState.pass();
       this.buildGraphState.pass();
     } catch (error) {
       assertErrorThrown(error);
