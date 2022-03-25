@@ -177,6 +177,7 @@ export class PureModel extends BasicModel {
   generationModel: GenerationModel;
   dependencyManager: DependencyManager; // used to manage the elements from dependency projects
   graphPlugins: PureGraphPlugin[] = [];
+  elementIndex: Map<string, PackageableElement> = new Map();
 
   constructor(
     coreModel: CoreModel,
@@ -401,6 +402,15 @@ export class PureModel extends BasicModel {
     return element;
   }
 
+  get allElements(): PackageableElement[] {
+    return [
+      ...this.allOwnElements,
+      ...this.dependencyManager.allElements,
+      ...this.systemModel.allOwnElements,
+      ...this.coreModel.allOwnElements,
+    ];
+  }
+
   /**
    * We cache some typical/frequently-used multiplicity.
    */
@@ -474,6 +484,7 @@ export class PureModel extends BasicModel {
       );
       extension.setElement(element.path, element);
     }
+    this.elementIndex.set(element.path, element);
   }
 
   deleteElement(element: PackageableElement): void {

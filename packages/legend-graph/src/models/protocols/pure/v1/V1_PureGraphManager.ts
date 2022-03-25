@@ -898,6 +898,21 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     inputs: V1_GraphBuilderInput[],
     options?: GraphBuilderOptions,
   ): GeneratorFn<void> {
+    const nativeElements = inputs.flatMap((e) => e.data.nativeElements);
+    const extraElements = this.extensions.sortedExtraElementBuilders.flatMap(
+      (builder) =>
+        inputs.flatMap(
+          (input) => input.data.otherElementsByBuilder.get(builder) ?? [],
+        ),
+    );
+    const currentElmentsPaths = new Set(graph.allElements.map((e) => e.path));
+    [...nativeElements, ...extraElements].forEach((el) => {
+      assertTrue(
+        !currentElmentsPaths.has(el.path),
+        `Element '${el.path}' already exists`,
+      );
+      currentElmentsPaths.add(el.path);
+    });
     yield Promise.all(
       inputs.flatMap((input) =>
         input.data.nativeElements.map((element) =>

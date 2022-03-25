@@ -108,10 +108,6 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
       element.package,
       element.name,
     );
-    assertTrue(
-      !this.context.graph.getNullableElement(path),
-      `Element '${path}' already exists`,
-    );
     this.context.currentSubGraph
       .getOrCreatePackage(element.package)
       .addElement(profile);
@@ -133,10 +129,7 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
       element.package,
       element.name,
     );
-    assertTrue(
-      !this.context.graph.getNullableElement(path),
-      `Element '${path}' already exists`,
-    );
+
     this.context.currentSubGraph
       .getOrCreatePackage(element.package)
       .addElement(pureEnumeration);
@@ -157,10 +150,6 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
     const path = this.context.currentSubGraph.buildPath(
       element.package,
       element.name,
-    );
-    assertTrue(
-      !this.context.graph.getNullableElement(path),
-      `Element '${path}' already exists`,
     );
     this.context.currentSubGraph
       .getOrCreatePackage(element.package)
@@ -183,10 +172,6 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
       element.package,
       element.name,
     );
-    assertTrue(
-      !this.context.graph.getNullableElement(path),
-      `Element '${path}' already exists`,
-    );
     this.context.currentSubGraph
       .getOrCreatePackage(element.package)
       .addElement(_class);
@@ -207,10 +192,6 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
     const path = this.context.currentSubGraph.buildPath(
       element.package,
       element.name,
-    );
-    assertTrue(
-      !this.context.graph.getNullableElement(path),
-      `Element '${path}' already exists`,
     );
     this.context.currentSubGraph
       .getOrCreatePackage(element.package)
@@ -245,10 +226,7 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
       element.package,
       element.name,
     );
-    assertTrue(
-      !this.context.graph.getNullableElement(path),
-      `Element '${path}' already exists`,
-    );
+
     this.context.currentSubGraph
       .getOrCreatePackage(element.package)
       .addElement(func);
@@ -269,10 +247,6 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
     const path = this.context.currentSubGraph.buildPath(
       element.package,
       element.name,
-    );
-    assertTrue(
-      !this.context.graph.getNullableElement(path),
-      `Element '${path}' already exists`,
     );
     this.context.currentSubGraph
       .getOrCreatePackage(element.package)
@@ -295,10 +269,6 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
       element.package,
       element.name,
     );
-    assertTrue(
-      !this.context.graph.getNullableElement(path),
-      `Element '${path}' already exists`,
-    );
     this.context.currentSubGraph
       .getOrCreatePackage(element.package)
       .addElement(database);
@@ -320,10 +290,6 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
       element.package,
       element.name,
     );
-    assertTrue(
-      !this.context.graph.getNullableElement(path),
-      `Element '${path}' already exists`,
-    );
     this.context.currentSubGraph
       .getOrCreatePackage(element.package)
       .addElement(pureMapping);
@@ -344,10 +310,6 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
     const path = this.context.currentSubGraph.buildPath(
       element.package,
       element.name,
-    );
-    assertTrue(
-      !this.context.graph.getNullableElement(path),
-      `Element '${path}' already exists`,
     );
     this.context.currentSubGraph
       .getOrCreatePackage(element.package)
@@ -371,10 +333,6 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
     const path = this.context.currentSubGraph.buildPath(
       element.package,
       element.name,
-    );
-    assertTrue(
-      !this.context.graph.getNullableElement(path),
-      `Element '${path}' already exists`,
     );
     this.context.currentSubGraph
       .getOrCreatePackage(element.package)
@@ -400,10 +358,6 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
       element.package,
       element.name,
     );
-    assertTrue(
-      !this.context.graph.getNullableElement(path),
-      `Element '${path}' already exists`,
-    );
     this.context.currentSubGraph
       .getOrCreatePackage(element.package)
       .addElement(generationSpec);
@@ -428,10 +382,6 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
       element.package,
       element.name,
     );
-    assertTrue(
-      !this.context.graph.getNullableElement(path),
-      `Element '${path}' already exists`,
-    );
     this.context.currentSubGraph
       .getOrCreatePackage(element.package)
       .addElement(runtime);
@@ -454,10 +404,6 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
     const path = this.context.currentSubGraph.buildPath(
       element.package,
       element.name,
-    );
-    assertTrue(
-      !this.context.graph.getNullableElement(path),
-      `Element '${path}' already exists`,
     );
     this.context.currentSubGraph
       .getOrCreatePackage(element.package)
