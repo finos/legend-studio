@@ -210,6 +210,9 @@ export class EditorGraphState {
       stopWatch.record();
       const dependencyManager =
         this.editorStore.graphManagerState.createEmptyDependencyManager();
+      this.editorStore.graphManagerState.graph.setDependencyManager(
+        dependencyManager,
+      );
       dependencyManager.buildState.setMessage(`Fetching dependencies...`);
       const dependencyEntitiesMap = (yield flowResult(
         this.getConfigurationProjectDependencyEntities(),
@@ -225,9 +228,6 @@ export class EditorGraphState {
           dependencyEntitiesMap,
         ),
       )) as GraphBuilderReport;
-      this.editorStore.graphManagerState.graph.setDependencyManager(
-        dependencyManager,
-      );
       dependency_buildReport.timings[
         GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED
       ] = stopWatch.getRecord(GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED);
@@ -257,10 +257,12 @@ export class EditorGraphState {
       )) as GraphBuilderReport;
 
       // report
-      stopWatch.record();
+      stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_INITIALIZED);
       const graphBuilderReportData = {
         timings: {
-          [GRAPH_MANAGER_EVENT.GRAPH_INITIALIZED]: stopWatch.elapsed,
+          [GRAPH_MANAGER_EVENT.GRAPH_INITIALIZED]: stopWatch.getRecord(
+            GRAPH_MANAGER_EVENT.GRAPH_INITIALIZED,
+          ),
         },
         dependencies: dependency_buildReport,
         graph: graph_buildReport,
@@ -790,6 +792,7 @@ export class EditorGraphState {
         );
         const dependencyManager =
           this.editorStore.graphManagerState.createEmptyDependencyManager();
+        newGraph.setDependencyManager(dependencyManager);
         yield flowResult(
           this.editorStore.graphManagerState.graphManager.buildDependencies(
             this.editorStore.graphManagerState.coreModel,
@@ -800,7 +803,6 @@ export class EditorGraphState {
             )) as Map<string, Entity[]>,
           ),
         );
-        newGraph.setDependencyManager(dependencyManager);
       }
 
       /* @MARKER: MEMORY-SENSITIVE */

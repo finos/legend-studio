@@ -760,6 +760,7 @@ export class LegendQueryStore {
       stopWatch.record();
       const dependencyManager =
         this.graphManagerState.createEmptyDependencyManager();
+      this.graphManagerState.graph.setDependencyManager(dependencyManager);
       dependencyManager.buildState.setMessage(`Fetching dependencies...`);
       const dependencyEntitiesMap = (yield flowResult(
         this.getProjectDependencyEntities(project, versionId, options),
@@ -775,7 +776,6 @@ export class LegendQueryStore {
           dependencyEntitiesMap,
         ),
       )) as GraphBuilderReport;
-      this.graphManagerState.graph.setDependencyManager(dependencyManager);
       dependency_buildReport.timings[
         GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED
       ] = stopWatch.getRecord(GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED);
@@ -791,10 +791,12 @@ export class LegendQueryStore {
         stopWatch.getRecord(GRAPH_MANAGER_EVENT.GRAPH_ENTITIES_FETCHED);
 
       // report
-      stopWatch.record();
+      stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_INITIALIZED);
       const graphBuilderReportData = {
         timings: {
-          [GRAPH_MANAGER_EVENT.GRAPH_INITIALIZED]: stopWatch.elapsed,
+          [GRAPH_MANAGER_EVENT.GRAPH_INITIALIZED]: stopWatch.getRecord(
+            GRAPH_MANAGER_EVENT.GRAPH_INITIALIZED,
+          ),
         },
         dependencies: dependency_buildReport,
         graph: graph_buildReport,

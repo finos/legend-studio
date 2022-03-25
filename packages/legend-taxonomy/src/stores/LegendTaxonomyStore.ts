@@ -236,6 +236,9 @@ export class TaxonomyNodeViewerState {
       stopWatch.record();
       const dependencyManager =
         this.taxonomyStore.graphManagerState.createEmptyDependencyManager();
+      this.taxonomyStore.graphManagerState.graph.setDependencyManager(
+        dependencyManager,
+      );
       dependencyManager.buildState.setMessage(`Fetching dependencies...`);
       const dependencyEntitiesMap = new Map<string, Entity[]>();
       (
@@ -262,9 +265,6 @@ export class TaxonomyNodeViewerState {
           dependencyEntitiesMap,
         ),
       )) as GraphBuilderReport;
-      this.taxonomyStore.graphManagerState.graph.setDependencyManager(
-        dependencyManager,
-      );
       dependency_buildReport.timings[
         GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED
       ] = stopWatch.getRecord(GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED);
@@ -280,10 +280,12 @@ export class TaxonomyNodeViewerState {
         stopWatch.getRecord(GRAPH_MANAGER_EVENT.GRAPH_ENTITIES_FETCHED);
 
       // report
-      stopWatch.record();
+      stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_INITIALIZED);
       const graphBuilderReportData = {
         timings: {
-          [GRAPH_MANAGER_EVENT.GRAPH_INITIALIZED]: stopWatch.elapsed,
+          [GRAPH_MANAGER_EVENT.GRAPH_INITIALIZED]: stopWatch.getRecord(
+            GRAPH_MANAGER_EVENT.GRAPH_INITIALIZED,
+          ),
         },
         dependencies: dependency_buildReport,
         graph: graph_buildReport,
@@ -807,6 +809,7 @@ export class LegendTaxonomyStore {
       stopWatch.record();
       const dependencyManager =
         this.graphManagerState.createEmptyDependencyManager();
+      this.graphManagerState.graph.setDependencyManager(dependencyManager);
       dependencyManager.buildState.setMessage(`Fetching dependencies...`);
       const dependencyEntitiesMap = new Map<string, Entity[]>();
       (
@@ -832,7 +835,6 @@ export class LegendTaxonomyStore {
           dependencyEntitiesMap,
         ),
       )) as GraphBuilderReport;
-      this.graphManagerState.graph.setDependencyManager(dependencyManager);
       dependency_buildReport.timings[
         GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED
       ] = stopWatch.getRecord(GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED);
