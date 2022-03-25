@@ -70,12 +70,12 @@
     "css-loader": "6.7.1",
     "cssnano": "5.1.5",
     "html-webpack-plugin": "5.5.0",
-    "isbinaryfile": "4.0.8",
+    "isbinaryfile": "4.0.10",
     "jest": "27.5.1",
     "jest-extended": "2.0.0",
     "jest-watch-typeahead": "1.0.0",
     "jsonc-parser": "3.0.0",
-    "micromatch": "4.0.4",
+    "micromatch": "4.0.5",
     "mini-css-extract-plugin": "2.6.0",
     "monaco-editor": "0.33.0",
     "monaco-editor-webpack-plugin": "7.0.1",
@@ -85,7 +85,7 @@
     "resolve": "1.22.0",
     "sass": "1.49.9",
     "sass-loader": "12.6.0",
-    "typescript": "4.6.2",
+    "typescript": "4.6.3",
     "webpack": "5.70.0"
   },
   "devDependencies": {
