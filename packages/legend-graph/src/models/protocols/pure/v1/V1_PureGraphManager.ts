@@ -227,13 +227,13 @@ import type { ExternalFormatDescription } from '../../../../graphManager/action/
 import type { ConfigurationProperty } from '../../../metamodels/pure/packageableElements/fileGeneration/ConfigurationProperty';
 import { V1_ExternalFormatModelGenerationInput } from './engine/externalFormat/V1_ExternalFormatModelGeneration';
 import { GraphBuilderReport } from '../../../../graphManager/GraphBuilderReport';
-import { V1_buildMappingInclude } from './transformation/pureGraph/to/helpers/V1_MappingBuilderHelper';
 import {
   V1_PureMultiExecution,
   V1_PureSingleExecution,
 } from './model/packageableElements/service/V1_ServiceExecution';
 import { V1_MAPPING_ELEMENT_PROTOCOL_TYPE } from './transformation/pureProtocol/serializationHelpers/V1_MappingSerializationHelper';
 import { V1_SERVICE_ELEMENT_PROTOCOL_TYPE } from './transformation/pureProtocol/serializationHelpers/V1_ServiceSerializationHelper';
+import { MappingInclude } from '../../../metamodels/pure/packageableElements/mapping/MappingInclude';
 
 const V1_FUNCTION_SUFFIX_MULTIPLICITY_INFINITE = 'MANY';
 
@@ -2042,6 +2042,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     entityFilterFunc?: (entity: Entity) => boolean,
   ): Promise<V1_GraphBuilderInput[]> {
     let entities = _entities;
+    graph.dependencyManager.initialize(dependencyEntities);
     if (entityFilterFunc) {
       Array.from(dependencyEntities.entries()).forEach(
         ([dependencyKey, dEntities]) => {
@@ -2140,7 +2141,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
               i.includedMappingPath,
               `Mapping include 'includedMappingPath' field is missing or empty`,
             );
-            return V1_buildMappingInclude(i, context, mapping);
+            return new MappingInclude(
+              mapping,
+              context.resolveMapping(i.includedMappingPath),
+            );
           });
         }
       });
