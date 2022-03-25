@@ -23,7 +23,7 @@ import {
   AssertionError,
   LogEvent,
   IllegalStateError,
-  ActionState,
+  StopWatch,
 } from '@finos/legend-shared';
 import {
   type ViewerPathParams,
@@ -50,16 +50,19 @@ import {
   ProjectData,
   ProjectVersionEntities,
 } from '@finos/legend-server-depot';
-import { GRAPH_MANAGER_EVENT } from '@finos/legend-graph';
 import {
   type WorkflowManagerState,
   ProjectVersionWorkflowManagerState,
   ProjectWorkflowManagerState,
 } from './sidebar-state/WorkflowManagerState';
+import {
+  type GraphBuilderReport,
+  GraphManagerTelemetry,
+  GRAPH_MANAGER_EVENT,
+} from '@finos/legend-graph';
 
 export class ViewerStore {
   editorStore: EditorStore;
-  initState = ActionState.create();
   currentRevision?: Revision | undefined;
   latestVersion?: Version | undefined;
   revision?: Revision | undefined;
@@ -137,75 +140,6 @@ export class ViewerStore {
     }
   }
 
-  /**
-   * Create a lean/read-only view of the project:
-   * - No change detection
-   * - No project viewer
-   * - No text mode support
-   */
-  private *buildGraphForSDLCProject(entities: Entity[]): GeneratorFn<void> {
-    try {
-      this.editorStore.graphState.isInitializingGraph = true;
-      const startTime = Date.now();
-      this.editorStore.applicationStore.log.info(
-        LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_ENTITIES_FETCHED),
-        Date.now() - startTime,
-        'ms',
-      );
-
-      // reset
-      this.editorStore.changeDetectionState.stop();
-      this.editorStore.graphManagerState.resetGraph();
-
-      // build dependencies
-      const dependencyManager =
-        this.editorStore.graphManagerState.createEmptyDependencyManager();
-      yield flowResult(
-        this.editorStore.graphManagerState.graphManager.buildDependencies(
-          this.editorStore.graphManagerState.coreModel,
-          this.editorStore.graphManagerState.systemModel,
-          dependencyManager,
-          (yield flowResult(
-            this.editorStore.graphState.getConfigurationProjectDependencyEntities(),
-          )) as Map<string, Entity[]>,
-        ),
-      );
-      this.editorStore.graphManagerState.graph.setDependencyManager(
-        dependencyManager,
-      );
-
-      // build graph
-      yield flowResult(
-        this.editorStore.graphManagerState.graphManager.buildGraph(
-          this.editorStore.graphManagerState.graph,
-          entities,
-        ),
-      );
-      this.editorStore.applicationStore.log.info(
-        LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_INITIALIZED),
-        '[TOTAL]',
-        Date.now() - startTime,
-        'ms',
-      );
-
-      // build explorer tree
-      this.editorStore.explorerTreeState.buildImmutableModelTrees();
-      this.editorStore.explorerTreeState.build();
-    } catch (error) {
-      assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
-        LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_FAILURE),
-        error,
-      );
-      this.editorStore.graphManagerState.graph.buildState.fail();
-      this.editorStore.applicationStore.notifyError(
-        `Can't build graph. Error: ${error.message}`,
-      );
-    } finally {
-      this.editorStore.graphState.isInitializingGraph = false;
-    }
-  }
-
   private *initializeGraphManagerState(): GeneratorFn<void> {
     // setup engine
     yield flowResult(
@@ -233,10 +167,126 @@ export class ViewerStore {
   /**
    * Initialize the graph by fetching project information from the SDLC server.
    */
-  private *initializeForSDLCProject(
-    entities: Entity[],
-    projectConfiguration: ProjectConfiguration,
+  private *initializeWithProjectInformation(
+    projectId: string,
+    versionId: string | undefined,
+    revisionId: string | undefined,
   ): GeneratorFn<void> {
+    const stopWatch = new StopWatch();
+
+    // fetch project informations
+    this.editorStore.initState.setMessage(`Fetching project information...`);
+    yield flowResult(this.editorStore.sdlcState.fetchCurrentProject(projectId));
+    const stubWorkspace = new Workspace();
+    stubWorkspace.projectId = projectId;
+    stubWorkspace.workspaceId = '';
+    this.editorStore.sdlcState.setCurrentWorkspace(stubWorkspace);
+
+    // get current revision so we can show how "outdated" the `current view` of the project is
+    this.currentRevision = Revision.serialization.fromJson(
+      (yield this.editorStore.sdlcServerClient.getRevision(
+        this.editorStore.sdlcState.activeProject.projectId,
+        undefined,
+        RevisionAlias.CURRENT,
+      )) as PlainObject<Revision>,
+    );
+    this.latestVersion = Version.serialization.fromJson(
+      (yield this.editorStore.sdlcServerClient.getLatestVersion(
+        this.editorStore.sdlcState.activeProject.projectId,
+      )) as PlainObject<Version>,
+    );
+
+    // fetch project versions
+    yield flowResult(this.editorStore.sdlcState.fetchProjectVersions());
+
+    // ensure only either version or revision is specified
+    if (versionId && revisionId) {
+      throw new IllegalStateError(
+        `Can't have both version ID and revision ID specified for viewer mode`,
+      );
+    }
+
+    let graphBuildingMaterial: [Entity[], PlainObject<ProjectConfiguration>];
+    this.editorStore.initState.setMessage(undefined);
+
+    // fetch entities
+    stopWatch.record();
+    this.editorStore.initState.setMessage(`Fetching entities...`);
+    if (versionId) {
+      // get version info if a version is specified
+      this.version =
+        versionId !== this.latestVersion.id.id
+          ? Version.serialization.fromJson(
+              (yield this.editorStore.sdlcServerClient.getVersion(
+                this.editorStore.sdlcState.activeProject.projectId,
+                versionId,
+              )) as PlainObject<Version>,
+            )
+          : this.latestVersion;
+      graphBuildingMaterial = (yield Promise.all([
+        this.editorStore.sdlcServerClient.getEntitiesByVersion(
+          this.editorStore.sdlcState.activeProject.projectId,
+          versionId,
+        ),
+        this.editorStore.sdlcServerClient.getConfigurationByVersion(
+          this.editorStore.sdlcState.activeProject.projectId,
+          versionId,
+        ),
+      ])) as [Entity[], PlainObject<ProjectConfiguration>];
+    } else if (revisionId) {
+      // get revision info if a revision is specified
+      this.revision =
+        revisionId !== this.currentRevision.id
+          ? Revision.serialization.fromJson(
+              (yield this.editorStore.sdlcServerClient.getRevision(
+                this.editorStore.sdlcState.activeProject.projectId,
+                undefined,
+                revisionId,
+              )) as PlainObject<Revision>,
+            )
+          : this.currentRevision;
+      graphBuildingMaterial = (yield Promise.all([
+        this.editorStore.sdlcServerClient.getEntitiesByRevision(
+          this.editorStore.sdlcState.activeProject.projectId,
+          undefined,
+          revisionId,
+        ),
+        this.editorStore.sdlcServerClient.getConfigurationByRevision(
+          this.editorStore.sdlcState.activeProject.projectId,
+          undefined,
+          revisionId,
+        ),
+      ])) as [Entity[], PlainObject<ProjectConfiguration>];
+    }
+    // if no revision ID or version ID is specified, we will just get the project HEAD
+    else if (!revisionId && !versionId) {
+      try {
+        graphBuildingMaterial = (yield Promise.all([
+          this.editorStore.sdlcServerClient.getEntities(
+            this.editorStore.sdlcState.activeProject.projectId,
+            undefined,
+          ),
+          this.editorStore.sdlcServerClient.getConfiguration(
+            this.editorStore.sdlcState.activeProject.projectId,
+            undefined,
+          ),
+        ])) as [Entity[], PlainObject<ProjectConfiguration>];
+      } catch {
+        return;
+      }
+    } else {
+      throw new IllegalStateError(
+        `Can't initialize viewer when both 'verisonId' and 'revisionId' are provided`,
+      );
+    }
+    this.editorStore.initState.setMessage(undefined);
+    stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_ENTITIES_FETCHED);
+
+    const entities = graphBuildingMaterial[0];
+    const projectConfiguration = ProjectConfiguration.serialization.fromJson(
+      graphBuildingMaterial[1],
+    );
+
     this.editorStore.projectConfigurationEditorState.setProjectConfiguration(
       projectConfiguration,
     );
@@ -248,11 +298,72 @@ export class ViewerStore {
     this.editorStore.changeDetectionState.workspaceLocalLatestRevisionState.setEntities(
       entities,
     );
+    this.editorStore.changeDetectionState.stop();
 
+    // fetch dependencies
+    stopWatch.record();
+    this.editorStore.initState.setMessage(`Fetching dependencies...`);
+    const dependencyEntitiesMap = (yield flowResult(
+      this.editorStore.graphState.getConfigurationProjectDependencyEntities(),
+    )) as Map<string, Entity[]>;
+    this.editorStore.initState.setMessage(undefined);
+    stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED);
+
+    // reset
+    this.editorStore.graphManagerState.resetGraph();
     yield flowResult(this.initializeGraphManagerState());
-    yield flowResult(this.buildGraphForSDLCProject(entities));
+    stopWatch.record();
+
+    // build dependencies
+    const dependencyManager =
+      this.editorStore.graphManagerState.createEmptyDependencyManager();
+    this.editorStore.graphManagerState.graph.setDependencyManager(
+      dependencyManager,
+    );
+    const dependency_buildReport = (yield flowResult(
+      this.editorStore.graphManagerState.graphManager.buildDependencies(
+        this.editorStore.graphManagerState.coreModel,
+        this.editorStore.graphManagerState.systemModel,
+        dependencyManager,
+        dependencyEntitiesMap,
+      ),
+    )) as GraphBuilderReport;
+    dependency_buildReport.timings[
+      GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED
+    ] = stopWatch.getRecord(GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED);
+
+    // build graph
+    const graph_buildReport = (yield flowResult(
+      this.editorStore.graphManagerState.graphManager.buildGraph(
+        this.editorStore.graphManagerState.graph,
+        entities,
+      ),
+    )) as GraphBuilderReport;
+    graph_buildReport.timings[GRAPH_MANAGER_EVENT.GRAPH_ENTITIES_FETCHED] =
+      stopWatch.getRecord(GRAPH_MANAGER_EVENT.GRAPH_ENTITIES_FETCHED);
+
+    // report
+    stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_INITIALIZED);
+    const graphBuilderReportData = {
+      timings: {
+        [GRAPH_MANAGER_EVENT.GRAPH_INITIALIZED]: stopWatch.getRecord(
+          GRAPH_MANAGER_EVENT.GRAPH_INITIALIZED,
+        ),
+      },
+      dependencies: dependency_buildReport,
+      graph: graph_buildReport,
+    };
+    this.editorStore.applicationStore.log.info(
+      LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_INITIALIZED),
+      graphBuilderReportData,
+    );
+    GraphManagerTelemetry.logEvent_GraphInitialized(
+      this.editorStore.applicationStore.telemetryService,
+      graphBuilderReportData,
+    );
 
     // fetch available file generation descriptions
+    this.editorStore.initState.setMessage(`Generating elements...`);
     yield flowResult(
       this.editorStore.graphState.graphGenerationState.fetchAvailableFileGenerationDescriptions(),
     );
@@ -269,6 +380,7 @@ export class ViewerStore {
         this.editorStore.graphState.graphGenerationState.globalGenerate(),
       );
     }
+    this.editorStore.initState.setMessage(undefined);
   }
 
   /**
@@ -277,17 +389,25 @@ export class ViewerStore {
    * from Depot server here, where SDLC objects like project configurations
    * are not available.
    */
-  private *initializeForGAV(
+  private *initializeWithGAV(
     groupId: string,
     artifactId: string,
     versionId: string,
   ): GeneratorFn<void> {
-    const project = ProjectData.serialization.fromJson(
+    const stopWatch = new StopWatch();
+
+    // fetch project data
+    this.editorStore.initState.setMessage(`Fetching project data...`);
+    const projectData = ProjectData.serialization.fromJson(
       (yield flowResult(
         this.editorStore.depotServerClient.getProject(groupId, artifactId),
       )) as PlainObject<ProjectData>,
     );
+    this.editorStore.initState.setMessage(undefined);
 
+    // fetch entities
+    stopWatch.record();
+    this.editorStore.initState.setMessage(`Fetching entities...`);
     let entities: Entity[] = [];
     if (versionId === SNAPSHOT_VERSION_ALIAS) {
       entities =
@@ -299,14 +419,17 @@ export class ViewerStore {
       entities = (yield this.editorStore.depotServerClient.getVersionEntities(
         groupId,
         artifactId,
-        versionId === LATEST_VERSION_ALIAS ? project.latestVersion : versionId,
+        versionId === LATEST_VERSION_ALIAS
+          ? projectData.latestVersion
+          : versionId,
       )) as Entity[];
     }
+    this.editorStore.initState.setMessage(undefined);
+    stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_ENTITIES_FETCHED);
 
-    yield flowResult(this.initializeGraphManagerState());
-    this.editorStore.graphManagerState.resetGraph();
-
-    // build dependencies
+    // fetch dependencies
+    stopWatch.record();
+    this.editorStore.initState.setMessage(`Fetching dependencies...`);
     const dependencyEntitiesMap = new Map<string, Entity[]>();
     (versionId === SNAPSHOT_VERSION_ALIAS
       ? ((yield this.editorStore.depotServerClient.getLatestDependencyEntities(
@@ -319,7 +442,7 @@ export class ViewerStore {
           groupId,
           artifactId,
           versionId === LATEST_VERSION_ALIAS
-            ? project.latestVersion
+            ? projectData.latestVersion
             : versionId,
           true,
           false,
@@ -329,175 +452,99 @@ export class ViewerStore {
       .forEach((dependencyInfo) => {
         dependencyEntitiesMap.set(dependencyInfo.id, dependencyInfo.entities);
       });
+    this.editorStore.initState.setMessage(undefined);
+    stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED);
+
+    // reset
+    this.editorStore.graphManagerState.resetGraph();
+    yield flowResult(this.initializeGraphManagerState());
+    stopWatch.record();
+
     const dependencyManager =
       this.editorStore.graphManagerState.createEmptyDependencyManager();
-    yield flowResult(
+    this.editorStore.graphManagerState.graph.setDependencyManager(
+      dependencyManager,
+    );
+
+    // build dependencies
+    const dependency_buildReport = (yield flowResult(
       this.editorStore.graphManagerState.graphManager.buildDependencies(
         this.editorStore.graphManagerState.coreModel,
         this.editorStore.graphManagerState.systemModel,
         dependencyManager,
         dependencyEntitiesMap,
       ),
-    );
-    this.editorStore.graphManagerState.graph.setDependencyManager(
-      dependencyManager,
-    );
+    )) as GraphBuilderReport;
+    dependency_buildReport.timings[
+      GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED
+    ] = stopWatch.getRecord(GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED);
 
     // build graph
-    yield flowResult(
+    const graph_buildReport = (yield flowResult(
       this.editorStore.graphManagerState.graphManager.buildGraph(
         this.editorStore.graphManagerState.graph,
         entities,
       ),
-    );
+    )) as GraphBuilderReport;
+    graph_buildReport.timings[GRAPH_MANAGER_EVENT.GRAPH_ENTITIES_FETCHED] =
+      stopWatch.getRecord(GRAPH_MANAGER_EVENT.GRAPH_ENTITIES_FETCHED);
 
-    // build explorer tree
-    this.editorStore.explorerTreeState.buildImmutableModelTrees();
-    this.editorStore.explorerTreeState.build();
+    // report
+    stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_INITIALIZED);
+    const graphBuilderReportData = {
+      timings: {
+        [GRAPH_MANAGER_EVENT.GRAPH_INITIALIZED]: stopWatch.getRecord(
+          GRAPH_MANAGER_EVENT.GRAPH_INITIALIZED,
+        ),
+      },
+      dependencies: dependency_buildReport,
+      graph: graph_buildReport,
+    };
+    this.editorStore.applicationStore.log.info(
+      LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_INITIALIZED),
+      graphBuilderReportData,
+    );
+    GraphManagerTelemetry.logEvent_GraphInitialized(
+      this.editorStore.applicationStore.telemetryService,
+      graphBuilderReportData,
+    );
   }
 
   *initialize(params: ViewerPathParams): GeneratorFn<void> {
-    if (!this.initState.isInInitialState) {
+    if (!this.editorStore.initState.isInInitialState) {
       return;
     }
-    const { gav, projectId, revisionId, versionId } = params;
+    const { gav, projectId } = params;
 
-    this.initState.inProgress();
+    this.editorStore.initState.inProgress();
     const onLeave = (hasBuildSucceeded: boolean): void => {
-      this.initState.complete(hasBuildSucceeded);
+      this.editorStore.initState.complete(hasBuildSucceeded);
     };
 
     try {
       if (projectId) {
-        // fetch basic SDLC infos
         yield flowResult(
-          this.editorStore.sdlcState.fetchCurrentProject(projectId),
-        );
-        const stubWorkspace = new Workspace();
-        stubWorkspace.projectId = projectId;
-        stubWorkspace.workspaceId = '';
-        this.editorStore.sdlcState.setCurrentWorkspace(stubWorkspace);
-
-        // get current revision so we can show how "outdated" the `current view` of the project is
-        this.currentRevision = Revision.serialization.fromJson(
-          (yield this.editorStore.sdlcServerClient.getRevision(
-            this.editorStore.sdlcState.activeProject.projectId,
-            undefined,
-            RevisionAlias.CURRENT,
-          )) as PlainObject<Revision>,
-        );
-        this.latestVersion = Version.serialization.fromJson(
-          (yield this.editorStore.sdlcServerClient.getLatestVersion(
-            this.editorStore.sdlcState.activeProject.projectId,
-          )) as PlainObject<Version>,
-        );
-
-        // fetch project versions
-        yield flowResult(this.editorStore.sdlcState.fetchProjectVersions());
-
-        // ensure only either version or revision is specified
-        if (versionId && revisionId) {
-          throw new IllegalStateError(
-            `Can't have both version ID and revision ID specified for viewer mode`,
-          );
-        }
-
-        let graphBuildingMaterial: [
-          Entity[],
-          PlainObject<ProjectConfiguration>,
-        ];
-
-        if (versionId) {
-          // get version info if a version is specified
-          this.version =
-            versionId !== this.latestVersion.id.id
-              ? Version.serialization.fromJson(
-                  (yield this.editorStore.sdlcServerClient.getVersion(
-                    this.editorStore.sdlcState.activeProject.projectId,
-                    versionId,
-                  )) as PlainObject<Version>,
-                )
-              : this.latestVersion;
-          graphBuildingMaterial = (yield Promise.all([
-            this.editorStore.sdlcServerClient.getEntitiesByVersion(
-              this.editorStore.sdlcState.activeProject.projectId,
-              versionId,
-            ),
-            this.editorStore.sdlcServerClient.getConfigurationByVersion(
-              this.editorStore.sdlcState.activeProject.projectId,
-              versionId,
-            ),
-          ])) as [Entity[], PlainObject<ProjectConfiguration>];
-        } else if (revisionId) {
-          // get revision info if a revision is specified
-          this.revision =
-            revisionId !== this.currentRevision.id
-              ? Revision.serialization.fromJson(
-                  (yield this.editorStore.sdlcServerClient.getRevision(
-                    this.editorStore.sdlcState.activeProject.projectId,
-                    undefined,
-                    revisionId,
-                  )) as PlainObject<Revision>,
-                )
-              : this.currentRevision;
-          graphBuildingMaterial = (yield Promise.all([
-            this.editorStore.sdlcServerClient.getEntitiesByRevision(
-              this.editorStore.sdlcState.activeProject.projectId,
-              undefined,
-              revisionId,
-            ),
-            this.editorStore.sdlcServerClient.getConfigurationByRevision(
-              this.editorStore.sdlcState.activeProject.projectId,
-              undefined,
-              revisionId,
-            ),
-          ])) as [Entity[], PlainObject<ProjectConfiguration>];
-        }
-        // if no revision ID or version ID is specified, we will just get the project HEAD
-        else if (!revisionId && !versionId) {
-          try {
-            graphBuildingMaterial = (yield Promise.all([
-              this.editorStore.sdlcServerClient.getEntities(
-                this.editorStore.sdlcState.activeProject.projectId,
-                undefined,
-              ),
-              this.editorStore.sdlcServerClient.getConfiguration(
-                this.editorStore.sdlcState.activeProject.projectId,
-                undefined,
-              ),
-            ])) as [Entity[], PlainObject<ProjectConfiguration>];
-          } catch {
-            return;
-          }
-        } else {
-          throw new IllegalStateError(
-            `Can't initialize viewer when both 'verisonId' and 'revisionId' are provided`,
-          );
-        }
-
-        yield flowResult(
-          this.initializeForSDLCProject(
-            graphBuildingMaterial[0],
-            ProjectConfiguration.serialization.fromJson(
-              graphBuildingMaterial[1],
-            ),
+          this.initializeWithProjectInformation(
+            projectId,
+            params.versionId,
+            params.revisionId,
           ),
         );
       } else if (gav) {
         this.projectGAVCoordinates = parseGAVCoordinates(gav);
-        const {
-          groupId,
-          artifactId,
-          versionId: _versionId,
-        } = this.projectGAVCoordinates;
+        const { groupId, artifactId, versionId } = this.projectGAVCoordinates;
         yield flowResult(
-          this.initializeForGAV(groupId, artifactId, _versionId),
+          this.initializeWithGAV(groupId, artifactId, versionId),
         );
       } else {
         throw new IllegalStateError(
           `Can't initialize viewer when neither 'projectId' nor 'gav' is provided`,
         );
       }
+
+      // build explorer tree
+      this.editorStore.explorerTreeState.buildImmutableModelTrees();
+      this.editorStore.explorerTreeState.build();
 
       // open element if provided an element path
       if (
