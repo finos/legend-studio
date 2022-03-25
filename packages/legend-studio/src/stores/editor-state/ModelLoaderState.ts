@@ -45,7 +45,9 @@ export enum MODEL_UPDATER_INPUT_TYPE {
 export class ModelLoaderState extends EditorState {
   modelText = this.getExampleEntitiesInputText();
   currentInputType = MODEL_UPDATER_INPUT_TYPE.ENTITIES;
-  currentExtraInputType?: ExtraModelLoaderExtensionsConfiguration | undefined;
+  currentExtensionInputType?:
+    | ExtraModelLoaderExtensionsConfiguration
+    | undefined;
   currentExternalInputType?: string | undefined;
   modelImportDescriptions: ImportConfigurationDescription[] = [];
   extraModelLoaderExtensionsConfigurations: ExtraModelLoaderExtensionsConfiguration[] =
@@ -129,7 +131,7 @@ export class ModelLoaderState extends EditorState {
   setCurrentExtraInputType(
     inputType: ExtraModelLoaderExtensionsConfiguration | undefined,
   ): void {
-    this.currentExtraInputType = inputType;
+    this.currentExtensionInputType = inputType;
     if (this.currentExternalInputType) {
       this.setCurrentExternalFormatInputType(undefined);
       this.modelText = ``;

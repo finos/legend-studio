@@ -55,7 +55,7 @@ export type ClassPreviewRenderer = (
 
 export type ExtraModelLoaderExtensionsConfiguration = {
   key: string;
-  label?: string;
+  label?: string | undefined;
   hardReplaceOption?: boolean | undefined;
   load: () => void;
   renderer: (modelLoaderState: ModelLoaderState) => React.ReactNode | undefined;

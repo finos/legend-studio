@@ -51,7 +51,7 @@ export const ModelLoader = observer(() => {
     modelLoaderState.extraModelLoaderExtensionsConfigurations;
   // input type
   const currentInputType = modelLoaderState.currentInputType;
-  const currentExtraInputType = modelLoaderState.currentExtraInputType;
+  const currentExtensionInputType = modelLoaderState.currentExtensionInputType;
   const currentExternalInputType = modelLoaderState.currentExternalInputType;
   const currentExternalInputLabel = currentExternalInputType
     ? modelLoaderState.getImportConfiguration(currentExternalInputType).label
@@ -189,9 +189,9 @@ export const ModelLoader = observer(() => {
               <div className="model-loader__header__configs__type__label">
                 {currentExternalInputType
                   ? currentExternalInputLabel
-                  : currentExtraInputType
-                  ? currentExtraInputType?.label ??
-                    prettyCONSTName(currentExtraInputType.key)
+                  : currentExtensionInputType
+                  ? currentExtensionInputType?.label ??
+                    prettyCONSTName(currentExtensionInputType.key)
                   : prettyCONSTName(currentInputType)}
               </div>
               <div className="model-loader__header__configs__type__icon">
@@ -199,8 +199,8 @@ export const ModelLoader = observer(() => {
               </div>
             </div>
           </DropdownMenu>
-          {(!modelLoaderState.currentExtraInputType ||
-            modelLoaderState.currentExtraInputType.hardReplaceOption) && (
+          {(!modelLoaderState.currentExtensionInputType ||
+            modelLoaderState.currentExtensionInputType.hardReplaceOption) && (
             <div
               className="model-loader__header__configs__edit-mode"
               onClick={toggleReplace}
@@ -214,8 +214,8 @@ export const ModelLoader = observer(() => {
             </div>
           )}
           {!(
-            modelLoaderState.currentExternalInputType ||
-            modelLoaderState.currentExtraInputType
+            modelLoaderState.currentExternalInputType ??
+            modelLoaderState.currentExtensionInputType
           ) && (
             <button
               className="model-loader__header__configs__load-project-entities-btn"
@@ -230,7 +230,9 @@ export const ModelLoader = observer(() => {
         <div className="model-loader__header__action">
           <button
             className="btn--dark model-loader__header__load-btn"
-            onClick={modelLoaderState.currentExtraInputType?.load ?? loadModel}
+            onClick={
+              modelLoaderState.currentExtensionInputType?.load ?? loadModel
+            }
             disabled={modelLoaderState.isLoadingModel}
             tabIndex={-1}
             title="Load model"
@@ -240,7 +242,7 @@ export const ModelLoader = observer(() => {
         </div>
       </div>
       <div className="panel__content model-loader__editor">
-        {modelLoaderState.currentExtraInputType?.renderer(
+        {modelLoaderState.currentExtensionInputType?.renderer(
           editorStore.modelLoaderState,
         ) ?? (
           <StudioTextInputEditor
