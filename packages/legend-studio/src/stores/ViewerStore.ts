@@ -337,6 +337,9 @@ export class ViewerStore {
       this.editorStore.graphManagerState.graphManager.buildGraph(
         this.editorStore.graphManagerState.graph,
         entities,
+        {
+          TEMPORARY_skipGraphBuilderPostProcessing: true,
+        },
       ),
     )) as GraphBuilderReport;
     graph_buildReport.timings[GRAPH_MANAGER_EVENT.GRAPH_ENTITIES_FETCHED] =
@@ -484,6 +487,9 @@ export class ViewerStore {
       this.editorStore.graphManagerState.graphManager.buildGraph(
         this.editorStore.graphManagerState.graph,
         entities,
+        {
+          TEMPORARY_skipGraphBuilderPostProcessing: true,
+        },
       ),
     )) as GraphBuilderReport;
     graph_buildReport.timings[GRAPH_MANAGER_EVENT.GRAPH_ENTITIES_FETCHED] =

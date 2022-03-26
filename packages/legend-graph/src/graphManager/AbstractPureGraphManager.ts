@@ -76,6 +76,10 @@ export interface GraphBuilderOptions {
   TEMPORARY__keepSectionIndex?: boolean;
   // when we change our handling of section index, we should be able to get rid of this flag.
   TEMPORARY__disableRawLambdaResolver?: boolean;
+  // skip specific post processing used when editing graph. i.e `freezing` a generated/dependency element.
+  TEMPORARY_skipGraphBuilderPostProcessing?: boolean;
+  // skip post processing specific to generated elements
+  TEMPORARY_skipGeneratedElementsPostProcessing?: boolean;
 }
 
 export interface ExecutionOptions {

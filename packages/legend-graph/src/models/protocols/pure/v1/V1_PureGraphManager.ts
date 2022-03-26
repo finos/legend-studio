@@ -860,11 +860,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
     // post-process
     graphBuilderState.setMessage(`Post-processing graph...`);
-    yield flowResult(
-      this.postProcess(graph, inputs, {
-        TEMPORARY__keepSectionIndex: options?.TEMPORARY__keepSectionIndex,
-      }),
-    );
+    yield flowResult(this.postProcess(graph, inputs, options));
     stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_POST_PROCESSED);
   }
 
@@ -940,34 +936,50 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   private *postProcess(
     graph: PureModel,
     inputs: V1_GraphBuilderInput[],
-    options?:
-      | {
-          TEMPORARY__keepSectionIndex?: boolean | undefined;
-        }
-      | undefined,
+    options?: GraphBuilderOptions,
   ): GeneratorFn<void> {
-    yield Promise.all(
-      inputs.flatMap((input) =>
-        input.data.elements.map((el) =>
-          promisify(() =>
-            runInAction(() => {
-              const element = graph.getElement(el.path);
-              if (input.parentElementPath) {
-                element.generationParentElement = graph.getElement(
-                  input.parentElementPath,
+    if (!options?.TEMPORARY_skipGraphBuilderPostProcessing) {
+      yield Promise.all(
+        inputs.flatMap((input) =>
+          input.data.elements.map((el) =>
+            promisify(() =>
+              runInAction(() => {
+                // TODO: check performance once `getNullableElement` is optimized
+                const element = graph.getElement(el.path);
+                const isElementReadOnly = Boolean(
+                  element.getRoot().path !== ROOT_PACKAGE_NAME.MAIN,
                 );
-              }
-              const isElementReadOnly = Boolean(
-                element.getRoot().path !== ROOT_PACKAGE_NAME.MAIN,
-              );
-              if (isElementReadOnly) {
-                element.freeze();
-              }
-            }),
+                if (isElementReadOnly) {
+                  element.freeze();
+                }
+              }),
+            ),
           ),
         ),
-      ),
-    );
+      );
+    }
+    if (!options?.TEMPORARY_skipGeneratedElementsPostProcessing) {
+      // Assign generated elements to their parent generation element (config that drives generation)
+      yield Promise.all(
+        inputs
+          .filter((input) => Boolean(input.parentElementPath))
+          .flatMap((input) =>
+            input.data.elements.map((el) =>
+              promisify(() =>
+                runInAction(() => {
+                  // TODO: check performance once `getNullableElement` is optimized
+                  const element = graph.getElement(el.path);
+                  if (input.parentElementPath) {
+                    element.generationParentElement = graph.getElement(
+                      input.parentElementPath,
+                    );
+                  }
+                }),
+              ),
+            ),
+          ),
+      );
+    }
     /**
      * For now, we delete the section index. We are able to read both resolved and unresolved element paths
      * but when we write (serialize) we write only resolved paths. In the future once the issue with dependency is solved we will
