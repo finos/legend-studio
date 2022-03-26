@@ -54,14 +54,6 @@ export class ServiceRegistrationEnvInfo {
 
 class ApplicationCoreOptions {
   /**
-   * Allows enabling additional runtime check to ensure the application works as intended.
-   *
-   * This flag is highly recommended for DEVELOPMENT mode.
-   * It is a runtime check which impacts performance of the app, hence should be
-   * disabled in `production` environment.
-   */
-  DEV__enableStrictRuntimeChecks = false;
-  /**
    * Allows disabling support for project creation.
    *
    * NOTE: when we properly partition Production and Prototype projects, we can remove this flag.
@@ -87,7 +79,7 @@ class ApplicationCoreOptions {
    *
    * NOTE: when we move to save imports as part of the user's project, this feature
    * will no longer be needed and can be removed. This flag will only be relevant if
-   * EXPERIMENTAL__enableFullGrammarImportSupport is set to false since full grammar import support
+   * `EXPERIMENTAL__enableFullGrammarImportSupport` is set to false since full grammar import support
    * will not require a lambda resolver.
    */
   TEMPORARY__disableRawLambdaResolver = false;
@@ -109,7 +101,6 @@ class ApplicationCoreOptions {
 
   private static readonly serialization = new SerializationFactory(
     createModelSchema(ApplicationCoreOptions, {
-      DEV__enableStrictRuntimeChecks: optional(primitive()),
       TEMPORARY__disableSDLCProjectCreation: optional(primitive()),
       TEMPORARY__useSDLCProductionProjectsOnly: optional(primitive()),
       EXPERIMENTAL__enableFullGrammarImportSupport: optional(primitive()),
@@ -127,11 +118,7 @@ class ApplicationCoreOptions {
   static create(
     configData: PlainObject<ApplicationCoreOptions>,
   ): ApplicationCoreOptions {
-    const config = ApplicationCoreOptions.serialization.fromJson(configData);
-    if (config.DEV__enableStrictRuntimeChecks) {
-      // do nothing
-    }
-    return config;
+    return ApplicationCoreOptions.serialization.fromJson(configData);
   }
 }
 
