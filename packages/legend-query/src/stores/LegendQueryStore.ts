@@ -785,6 +785,10 @@ export class LegendQueryStore {
         this.graphManagerState.graphManager.buildGraph(
           this.graphManagerState.graph,
           entities,
+          {
+            TEMPORARY_skipGraphBuilderPostProcessing: true,
+            TEMPORARY_skipGeneratedElementsPostProcessing: true,
+          },
         ),
       )) as GraphBuilderReport;
       graph_buildReport.timings[GRAPH_MANAGER_EVENT.GRAPH_ENTITIES_FETCHED] =
