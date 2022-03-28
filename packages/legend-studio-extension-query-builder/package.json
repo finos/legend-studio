@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-studio-extension-query-builder",
-  "version": "0.2.20",
+  "version": "0.2.21",
   "description": "Legend Studio preset for query builder",
   "keywords": [
     "legend",
