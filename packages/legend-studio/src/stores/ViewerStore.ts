@@ -326,6 +326,9 @@ export class ViewerStore {
         this.editorStore.graphManagerState.systemModel,
         dependencyManager,
         dependencyEntitiesMap,
+        {
+          TEMPORARY_skipGraphBuilderPostProcessing: true,
+        },
       ),
     )) as GraphBuilderReport;
     dependency_buildReport.timings[
@@ -476,6 +479,9 @@ export class ViewerStore {
         this.editorStore.graphManagerState.systemModel,
         dependencyManager,
         dependencyEntitiesMap,
+        {
+          TEMPORARY_skipGraphBuilderPostProcessing: true,
+        },
       ),
     )) as GraphBuilderReport;
     dependency_buildReport.timings[

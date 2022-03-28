@@ -774,6 +774,10 @@ export class LegendQueryStore {
           this.graphManagerState.systemModel,
           dependencyManager,
           dependencyEntitiesMap,
+          {
+            TEMPORARY_skipGraphBuilderPostProcessing: true,
+            TEMPORARY_skipGeneratedElementsPostProcessing: true,
+          },
         ),
       )) as GraphBuilderReport;
       dependency_buildReport.timings[
