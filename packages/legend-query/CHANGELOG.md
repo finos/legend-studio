@@ -1,5 +1,15 @@
 # @finos/legend-query
 
+## 1.3.0
+
+### Minor Changes
+
+- [#995](https://github.com/finos/legend-studio/pull/995) [`5b78a3fd`](https://github.com/finos/legend-studio/commit/5b78a3fdb48d28037ba93f7e27cb724d8d02d7a1) ([@akphi](https://github.com/akphi)) - Allow toggling to enable/disable network request payload compression for better debugging experience.
+
+* [#995](https://github.com/finos/legend-studio/pull/995) [`5b78a3fd`](https://github.com/finos/legend-studio/commit/5b78a3fdb48d28037ba93f7e27cb724d8d02d7a1) ([@akphi](https://github.com/akphi)) - Allow toggling network request payload compression to improve debugging experience.
+
+- [#995](https://github.com/finos/legend-studio/pull/995) [`5b78a3fd`](https://github.com/finos/legend-studio/commit/5b78a3fdb48d28037ba93f7e27cb724d8d02d7a1) ([@akphi](https://github.com/akphi)) - Support debugging execution plan generation.
+
 ## 1.2.3
 
 ### Patch Changes
