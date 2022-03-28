@@ -19,6 +19,10 @@ import type { V1_RawLambda } from '@finos/legend-graph';
 import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../../ESService_ModelUtils';
 import { V1_ServiceParameterMapping } from './V1_ESService_ServiceParameterMapping';
 
+/**
+ * TODO: this will be removed in upcoming releases
+ * @deprecated
+ */
 export class V1_ParameterIndexedParameterMapping
   extends V1_ServiceParameterMapping
   implements Hashable

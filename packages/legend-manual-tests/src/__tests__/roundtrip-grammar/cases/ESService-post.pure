@@ -1,0 +1,87 @@
+###ServiceStore
+ServiceStore meta::external::store::service::showcase::store::ServiceStoreWithPostServices
+(
+  ServiceGroup FirmServices
+  (
+    path : '/firms';
+
+    Service FirmDetailsByName
+    (
+      path : '/firmDetailsByName';
+      requestBody : meta::external::store::service::showcase::domain::FirmSearch <- meta::external::store::service::showcase::store::employeeFirmServiceStoreSchemaBinding;
+      method : POST;
+      parameters :
+      (
+        constantParam : Integer ( location = query )
+      );
+      response : [meta::external::store::service::showcase::domain::Firm <- meta::external::store::service::showcase::store::employeeFirmServiceStoreSchemaBinding];
+      security : [];
+    )
+  )
+)
+
+
+###ExternalFormat
+SchemaSet meta::external::store::service::showcase::store::employeeFirmServiceStoreSchemaSet
+{
+  format: JSON;
+  schemas: [
+    {
+      id: Firm;
+      location: 'meta/external/store/service/showcase/domain/Firm.json';
+      content: '{\n  "$schema": "http://json-schema.org/draft-07/schema#",\n  "title": "meta::external::store::service::showcase::domain::Firm",\n  "type": "object",\n  "properties": {\n    "legalName": {\n      "type": "string"\n    },\n    "addresses": {\n      "type": "array",\n      "items": {\n        "$ref": "#/definitions/meta::external::store::service::showcase::domain::Address"\n      }\n    }\n  },\n  "required": [\n    "legalName"\n  ],\n  "definitions": {\n    "meta::external::store::service::showcase::domain::Address": {\n      "$schema": "http://json-schema.org/draft-07/schema#",\n      "title": "meta::external::store::service::showcase::domain::Address",\n      "type": "object",\n      "properties": {\n        "street": {\n          "type": "string"\n        },\n        "city": {\n          "type": "string"\n        },\n        "country": {\n          "type": "string"\n        }\n      },\n      "required": [\n        "street",\n        "city",\n        "country"\n      ]\n    }\n  }\n}';
+    },
+    {
+      id: FirmSearch;
+      location: 'meta/external/store/service/showcase/domain/FirmSearch.json';
+      content: '{\n  "$schema": "http://json-schema.org/draft-07/schema#",\n  "title": "meta::external::store::service::showcase::domain::FirmSearch",\n  "type": "object",\n  "properties": {\n    "legalNames": {\n      "type": "array",\n      "items": {\n        "type": "string"\n      }\n    }\n  }\n}';
+    }
+  ];
+}
+
+Binding meta::external::store::service::showcase::store::employeeFirmServiceStoreSchemaBinding
+{
+  schemaSet: meta::external::store::service::showcase::store::employeeFirmServiceStoreSchemaSet;
+  contentType: 'application/json';
+  modelIncludes: [
+    meta::external::store::service::showcase::domain::Firm,
+    meta::external::store::service::showcase::domain::Address,
+    meta::external::store::service::showcase::domain::FirmSearch
+  ];
+}
+
+
+###Pure
+Class meta::external::store::service::showcase::domain::Firm
+{
+  legalName: String[1];
+  addresses: meta::external::store::service::showcase::domain::Address[*];
+}
+
+Class meta::external::store::service::showcase::domain::Address
+{
+  street: String[1];
+  city: String[1];
+  country: String[1];
+}
+
+Class meta::external::store::service::showcase::domain::FirmSearch
+{
+  legalNames: String[*];
+}
+
+
+###Mapping
+Mapping meta::external::store::service::showcase::mapping::ServiceStoreMapping
+(
+  *meta::external::store::service::showcase::domain::Firm[firm_set]: ServiceStore
+  {
+    ~service [meta::external::store::service::showcase::store::ServiceStoreWithPostServices] FirmServices.FirmDetailsByName
+    (
+      ~request
+      (
+        body = ^meta::external::store::service::showcase::domain::FirmSearch(legalNames=$this.legalName)
+      )
+    )
+  }
+)
