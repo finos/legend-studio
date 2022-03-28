@@ -88,6 +88,7 @@ import {
   buildSourceInformationSourceId,
   PureClientVersion,
   TableAlias,
+  type RawExecutionPlan,
 } from '@finos/legend-graph';
 import {
   ActionAlertActionType,
@@ -409,13 +410,15 @@ export class MappingExecutionState {
   name: string;
   editorStore: EditorStore;
   mappingEditorState: MappingEditorState;
-  isExecuting = false;
-  isGeneratingPlan = false;
   queryState: MappingExecutionQueryState;
   inputDataState: MappingExecutionInputDataState;
-  executionResultText?: string | undefined; // NOTE: stored as lossless JSON text
   showServicePathModal = false;
+
+  executionResultText?: string | undefined; // NOTE: stored as lossless JSON text
+  isExecuting = false;
+  isGeneratingPlan = false;
   executionPlanState: ExecutionPlanState;
+  planGenerationDebugText?: string | undefined;
 
   constructor(
     editorStore: EditorStore,
@@ -429,10 +432,10 @@ export class MappingExecutionState {
       setQueryState: action,
       setInputDataState: action,
       setExecutionResultText: action,
+      setPlanGenerationDebugText: action,
       setShowServicePathModal: action,
       setInputDataStateBasedOnSource: action,
       reset: action,
-      generatePlan: flow,
     });
 
     this.editorStore = editorStore;
@@ -462,6 +465,9 @@ export class MappingExecutionState {
   setShowServicePathModal = (val: boolean): void => {
     this.showServicePathModal = val;
   };
+  setPlanGenerationDebugText(val: string | undefined): void {
+    this.planGenerationDebugText = val;
+  }
 
   reset(): void {
     this.queryState = new MappingExecutionQueryState(
@@ -669,7 +675,7 @@ export class MappingExecutionState {
     }
   }
 
-  *generatePlan(): GeneratorFn<void> {
+  *generatePlan(debug: boolean): GeneratorFn<void> {
     try {
       const query = this.queryState.query;
       const runtime = this.inputDataState.runtime;
@@ -679,13 +685,40 @@ export class MappingExecutionState {
         !this.isGeneratingPlan
       ) {
         this.isGeneratingPlan = true;
-        yield flowResult(
-          this.executionPlanState.generatePlan(
-            this.mappingEditorState.mapping,
-            query,
-            runtime,
-          ),
-        );
+        let rawPlan: RawExecutionPlan;
+        if (debug) {
+          const debugResult =
+            (yield this.editorStore.graphManagerState.graphManager.debugExecutionPlanGeneration(
+              this.editorStore.graphManagerState.graph,
+              this.mappingEditorState.mapping,
+              query,
+              runtime,
+              PureClientVersion.VX_X_X,
+            )) as { plan: RawExecutionPlan; debug: string };
+          rawPlan = debugResult.plan;
+          this.executionPlanState.setDebugText(debugResult.debug);
+          this.executionPlanState.setShowDebugPanel(true);
+        } else {
+          rawPlan =
+            (yield this.editorStore.graphManagerState.graphManager.generateExecutionPlan(
+              this.editorStore.graphManagerState.graph,
+              this.mappingEditorState.mapping,
+              query,
+              runtime,
+              PureClientVersion.VX_X_X,
+            )) as object;
+        }
+        try {
+          this.executionPlanState.setRawPlan(rawPlan);
+          const plan =
+            this.editorStore.graphManagerState.graphManager.buildExecutionPlan(
+              rawPlan,
+              this.editorStore.graphManagerState.graph,
+            );
+          this.executionPlanState.setPlan(plan);
+        } catch {
+          // do nothing
+        }
       }
     } catch (error) {
       assertErrorThrown(error);

@@ -290,6 +290,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
   // ------------------------------------------- Execute -------------------------------------------
 
   _execution = (): string => `${this._pure()}/execution`;
+
   execute = (
     input: PlainObject<V1_ExecuteInput>,
     options?: {
@@ -322,6 +323,20 @@ export class V1_EngineServerClient extends AbstractServerClient {
       undefined,
       { enableCompression: true },
     );
+
+  debugPlanGeneration = (
+    input: PlainObject<V1_ExecuteInput>,
+  ): Promise<{ plan: PlainObject<V1_ExecutionPlan>; debug: string[] }> =>
+    this.postWithTracing(
+      this.getTraceData(CORE_ENGINE_TRACER_SPAN.GENERATE_EXECUTION_PLAN),
+      `${this._execution()}/generatePlan/debug`,
+      input,
+      {},
+      undefined,
+      undefined,
+      { enableCompression: true },
+    );
+
   generateTestDataWithDefaultSeed = (
     input: PlainObject<V1_ExecuteInput>,
   ): Promise<string> =>

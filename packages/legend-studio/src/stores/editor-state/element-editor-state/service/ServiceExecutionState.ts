@@ -54,6 +54,7 @@ import {
   PureClientVersion,
   QueryProjectCoordinates,
   QuerySearchSpecification,
+  type RawExecutionPlan,
 } from '@finos/legend-graph';
 import type { Entity } from '@finos/legend-model-storage';
 import { parseGACoordinates } from '@finos/legend-server-depot';
@@ -392,20 +393,47 @@ export class ServicePureExecutionState extends ServiceExecutionState {
     this.queryState = queryState;
   };
 
-  *generatePlan(): GeneratorFn<void> {
+  *generatePlan(debug: boolean): GeneratorFn<void> {
     if (!this.selectedExecutionConfiguration || this.isGeneratingPlan) {
       return;
     }
     try {
-      this.isGeneratingPlan = true;
       const query = this.queryState.query;
-      yield flowResult(
-        this.executionPlanState.generatePlan(
-          this.selectedExecutionConfiguration.mapping.value,
-          query,
-          this.selectedExecutionConfiguration.runtime,
-        ),
-      );
+      this.isGeneratingPlan = true;
+      let rawPlan: RawExecutionPlan;
+      if (debug) {
+        const debugResult =
+          (yield this.editorStore.graphManagerState.graphManager.debugExecutionPlanGeneration(
+            this.editorStore.graphManagerState.graph,
+            this.selectedExecutionConfiguration.mapping.value,
+            query,
+            this.selectedExecutionConfiguration.runtime,
+            PureClientVersion.VX_X_X,
+          )) as { plan: RawExecutionPlan; debug: string };
+        rawPlan = debugResult.plan;
+        this.executionPlanState.setDebugText(debugResult.debug);
+        this.executionPlanState.setShowDebugPanel(true);
+      } else {
+        rawPlan =
+          (yield this.editorStore.graphManagerState.graphManager.generateExecutionPlan(
+            this.editorStore.graphManagerState.graph,
+            this.selectedExecutionConfiguration.mapping.value,
+            query,
+            this.selectedExecutionConfiguration.runtime,
+            PureClientVersion.VX_X_X,
+          )) as object;
+      }
+      try {
+        this.executionPlanState.setRawPlan(rawPlan);
+        const plan =
+          this.editorStore.graphManagerState.graphManager.buildExecutionPlan(
+            rawPlan,
+            this.editorStore.graphManagerState.graph,
+          );
+        this.executionPlanState.setPlan(plan);
+      } catch {
+        // do nothing
+      }
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(

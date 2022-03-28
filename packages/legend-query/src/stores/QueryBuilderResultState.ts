@@ -45,13 +45,14 @@ const DEFAULT_LIMIT = 1000;
 
 export class QueryBuilderResultState {
   queryBuilderState: QueryBuilderState;
-  isExecutingQuery = false;
-  isGeneratingPlan = false;
   exportDataState = ActionState.create();
-  executionResult?: ExecutionResult | undefined;
-  executionPlan?: RawExecutionPlan | undefined;
   showServicePathModal = false;
   previewLimit = DEFAULT_LIMIT;
+  isExecutingQuery = false;
+  isGeneratingPlan = false;
+  executionResult?: ExecutionResult | undefined;
+  executionPlan?: RawExecutionPlan | undefined;
+  debugText?: string | undefined;
 
   constructor(queryBuilderState: QueryBuilderState) {
     makeAutoObservable(this, {
@@ -76,6 +77,10 @@ export class QueryBuilderResultState {
   setPreviewLimit = (val: number): void => {
     this.previewLimit = Math.max(1, val);
   };
+
+  setDebugText(val: string | undefined): void {
+    this.debugText = val;
+  }
 
   buildExecutionRawLambda(): RawLambda {
     let query: RawLambda;
@@ -202,7 +207,7 @@ export class QueryBuilderResultState {
     }
   }
 
-  *generateExecutionPlan(): GeneratorFn<void> {
+  *generatePlan(debug: boolean): GeneratorFn<void> {
     try {
       this.isGeneratingPlan = true;
       const mapping = guaranteeNonNullable(
@@ -214,16 +219,28 @@ export class QueryBuilderResultState {
         `Runtime is required to execute query`,
       );
       const query = this.queryBuilderState.getQuery();
-      const result =
-        (yield this.queryBuilderState.graphManagerState.graphManager.generateExecutionPlan(
-          this.queryBuilderState.graphManagerState.graph,
-          mapping,
-          query,
-          runtime,
-          PureClientVersion.VX_X_X,
-        )) as ExecutionResult;
-      this.setExecutionPlan(result);
-      this.isGeneratingPlan = false;
+      if (debug) {
+        const debugResult =
+          (yield this.queryBuilderState.graphManagerState.graphManager.debugExecutionPlanGeneration(
+            this.queryBuilderState.graphManagerState.graph,
+            mapping,
+            query,
+            runtime,
+            PureClientVersion.VX_X_X,
+          )) as { plan: RawExecutionPlan; debug: string };
+        this.setExecutionPlan(debugResult.plan);
+        this.setDebugText(debugResult.debug);
+      } else {
+        const result =
+          (yield this.queryBuilderState.graphManagerState.graphManager.generateExecutionPlan(
+            this.queryBuilderState.graphManagerState.graph,
+            mapping,
+            query,
+            runtime,
+            PureClientVersion.VX_X_X,
+          )) as object;
+        this.setExecutionPlan(result);
+      }
     } catch (error) {
       assertErrorThrown(error);
       this.queryBuilderState.applicationStore.log.error(
@@ -231,6 +248,7 @@ export class QueryBuilderResultState {
         error,
       );
       this.queryBuilderState.applicationStore.notifyError(error);
+    } finally {
       this.isGeneratingPlan = false;
     }
   }
