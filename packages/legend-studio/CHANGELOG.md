@@ -1,5 +1,15 @@
 # @finos/legend-studio
 
+## 5.0.0
+
+### Major Changes
+
+- [#995](https://github.com/finos/legend-studio/pull/995) [`5b78a3fd`](https://github.com/finos/legend-studio/commit/5b78a3fdb48d28037ba93f7e27cb724d8d02d7a1) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Remove `DEV__enableStrictRuntimeChecks` config flag.
+
+### Minor Changes
+
+- [#995](https://github.com/finos/legend-studio/pull/995) [`5b78a3fd`](https://github.com/finos/legend-studio/commit/5b78a3fdb48d28037ba93f7e27cb724d8d02d7a1) ([@akphi](https://github.com/akphi)) - Support debugging execution plan generation.
+
 ## 4.1.1
 
 ### Patch Changes

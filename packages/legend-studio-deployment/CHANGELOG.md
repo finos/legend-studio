@@ -1,5 +1,7 @@
 # @finos/legend-studio-deployment
 
+## 4.7.0
+
 ## 4.6.0
 
 ## 4.5.0
