@@ -16,23 +16,20 @@
 
 @use 'mixins' as *;
 
-.query-builder__activity-bar {
-  width: 5rem;
-  background: var(--color-dark-grey-80);
-  height: 100%;
-  overflow-x: hidden;
-  overflow-y: hidden;
-}
-
 .query-builder {
   height: 100%;
   width: 100%;
 
   &__content {
     display: flex;
-    padding: 0.3rem;
     height: calc(100% - 5.4rem);
     background: var(--color-dark-grey-50);
+  }
+
+  &__main {
+    height: 100%;
+    width: calc(100% - 5rem);
+    padding: 0.3rem;
   }
 
   &__sub-header {
@@ -75,6 +72,46 @@
     svg {
       font-size: 1rem;
       margin-left: 1rem;
+    }
+  }
+
+  &__activity-bar {
+    width: 5rem;
+    background: var(--color-dark-grey-200);
+    height: 100%;
+    overflow-x: hidden;
+    overflow-y: hidden;
+
+    &__items {
+      height: calc(100% - 5rem);
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+
+    &__item {
+      @include flexCenter;
+
+      height: 5rem;
+      width: 5rem;
+      color: var(--color-dark-grey-400);
+      cursor: pointer;
+    }
+
+    &__item svg {
+      font-size: 2rem;
+    }
+
+    &__item:hover {
+      color: var(--color-light-grey-0);
+      cursor: pointer;
+    }
+
+    &__setting__menu {
+      min-width: 20rem;
+
+      svg {
+        font-size: 1rem;
+      }
     }
   }
 

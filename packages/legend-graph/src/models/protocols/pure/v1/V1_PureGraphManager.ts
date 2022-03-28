@@ -421,7 +421,7 @@ export interface V1_EngineSetupConfig {
 }
 
 export class V1_PureGraphManager extends AbstractPureGraphManager {
-  engine!: V1_Engine;
+  engine: V1_Engine;
   extensions: V1_GraphBuilderExtensions;
 
   constructor(pluginManager: GraphPluginManager, log: Log) {
@@ -460,6 +460,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       buildFileGenerations: flow,
       buildGenerationSpecifications: flow,
     });
+
+    this.engine = new V1_Engine({}, log);
 
     // setup plugins
     this.extensions = new V1_GraphBuilderExtensions(
