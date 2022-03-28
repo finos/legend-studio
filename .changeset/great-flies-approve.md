@@ -3,4 +3,4 @@
 '@finos/legend-studio': minor
 ---
 
-Support printing debug log for execution plan generation.
+Support debugging execution plan generation.
