@@ -379,7 +379,6 @@ export const ExecutionPlanViewer = observer(
       executionPlanState.setExecutionPlanDisplayData('');
       executionPlanState.setSelectedNode(undefined);
       executionPlanState.setDebugText(undefined);
-      executionPlanState.setShowDebugPanel(false);
     };
     const rawPlan = executionPlanState.rawPlan;
 
@@ -401,7 +400,7 @@ export const ExecutionPlanViewer = observer(
             <div className="modal__title">Execution Plan</div>
           </div>
           <div className="modal__body">
-            {executionPlanState.showDebugPanel ? (
+            {executionPlanState.debugText ? (
               <ResizablePanelGroup orientation="horizontal">
                 <ResizablePanel minSize={100}>
                   <ExecutionPlanViewerContent
@@ -424,9 +423,7 @@ export const ExecutionPlanViewer = observer(
 
                     <div className="panel__content">
                       <StudioTextInputEditor
-                        inputValue={
-                          executionPlanState.debugText ?? '// no-content'
-                        }
+                        inputValue={executionPlanState.debugText}
                         isReadOnly={true}
                         language={EDITOR_LANGUAGE.TEXT}
                         showMiniMap={true}

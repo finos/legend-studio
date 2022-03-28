@@ -50,7 +50,6 @@ export class ExecutionPlanState {
   rawPlan?: RawExecutionPlan | undefined;
   plan?: ExecutionPlan | undefined;
   debugText?: string | undefined;
-  showDebugPanel = false;
 
   constructor(editorStore: EditorStore) {
     makeObservable(this, {
@@ -61,7 +60,6 @@ export class ExecutionPlanState {
       rawPlan: observable,
       plan: observable,
       debugText: observable,
-      showDebugPanel: observable,
       setExecutionPlanDisplayData: action,
       setExecutionPlanDisplayDataJson: action,
       transformMetadataToProtocolJson: action,
@@ -71,7 +69,6 @@ export class ExecutionPlanState {
       setPlan: action,
       setViewMode: action,
       setDebugText: action,
-      setShowDebugPanel: action,
     });
     this.editorStore = editorStore;
   }
@@ -94,10 +91,6 @@ export class ExecutionPlanState {
 
   setDebugText(val: string | undefined): void {
     this.debugText = val;
-  }
-
-  setShowDebugPanel(val: boolean): void {
-    this.showDebugPanel = val;
   }
 
   setSelectedNode(

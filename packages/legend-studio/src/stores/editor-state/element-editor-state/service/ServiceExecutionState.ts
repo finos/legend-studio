@@ -412,7 +412,6 @@ export class ServicePureExecutionState extends ServiceExecutionState {
           )) as { plan: RawExecutionPlan; debug: string };
         rawPlan = debugResult.plan;
         this.executionPlanState.setDebugText(debugResult.debug);
-        this.executionPlanState.setShowDebugPanel(true);
       } else {
         rawPlan =
           (yield this.editorStore.graphManagerState.graphManager.generateExecutionPlan(
