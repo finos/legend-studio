@@ -52,10 +52,9 @@ export type ClassPreviewRenderer = (
   _class: Class,
 ) => React.ReactNode | undefined;
 
-export type ExtraModelLoaderExtensionsConfiguration = {
+export type ModelLoaderExtensionConfiguration = {
   key: string;
   label?: string | undefined;
-  hardReplaceOption?: boolean | undefined;
   load: (editorStore: EditorStore) => Promise<void>;
   renderer: (editorStore: EditorStore) => React.ReactNode | undefined;
 };
@@ -102,9 +101,9 @@ export abstract class LegendStudioPlugin extends AbstractPlugin {
   getExtraEditorExtensionComponentRendererConfigurations?(): EditorExtensionComponentRendererConfiguration[];
 
   /**
-   * Get the list of configurations for the renderer of model loader.
+   * Get the list of extension configurations for model loader.
    */
-  getExtraModelLoaderExtensionsConfigurations?(): ExtraModelLoaderExtensionsConfiguration[];
+  getExtraModelLoaderExtensionConfigurations?(): ModelLoaderExtensionConfiguration[];
 }
 
 export type ElementTypeGetter = (

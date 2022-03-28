@@ -4,13 +4,11 @@ import { MappingGenerationEditorState } from '../stores/MappingGenerationEditorS
 import {
   type EditorStore,
   type DSLMapping_LegendStudioPlugin_Extension,
-  type ExtraModelLoaderExtensionsConfiguration,
+  type ModelLoaderExtensionConfiguration,
   LegendStudioPlugin,
 } from '@finos/legend-studio';
 import { assertErrorThrown, LogEvent } from '@finos/legend-shared';
 import type { Entity } from '@finos/legend-model-storage';
-import { type EntityChange, EntityChangeType } from '@finos/legend-server-sdlc';
-import { flowResult } from 'mobx';
 
 const GENERATION_TYPE_NAME = `RELATIONAL_MAPPING_GENERATION`;
 const GENERATION_TYPE_FAILURE = `RELATIONAL_MAPPING_GENERATION_FAILURE`;
@@ -23,7 +21,7 @@ export class MappingGeneration_LegendStudioPlugin
     super(packageJson.extensions.studioPlugin, packageJson.version);
   }
 
-  override getExtraModelLoaderExtensionsConfigurations(): ExtraModelLoaderExtensionsConfiguration[] {
+  override getExtraModelLoaderExtensionConfigurations(): ModelLoaderExtensionConfiguration[] {
     return [
       {
         key: GENERATION_TYPE_NAME,
@@ -36,16 +34,19 @@ export class MappingGeneration_LegendStudioPlugin
                 await editorStore.graphManagerState.graphManager.pureCodeToEntities(
                   modelLoaderState.modelText,
                 );
-              const newEntities: EntityChange[] = entities.map((e) => ({
-                type: EntityChangeType.CREATE,
-                entityPath: e.path,
-                content: e.content,
-              }));
-              await flowResult(
-                editorStore.graphState.loadEntityChangesToGraph(
-                  newEntities,
-                  undefined,
-                ),
+              const message = `loading entities from ${
+                editorStore.applicationStore.config.appName
+              } [${modelLoaderState.replace ? `potentially affected ` : ''} ${
+                entities.length
+              } entities]`;
+              await editorStore.sdlcServerClient.updateEntities(
+                editorStore.sdlcState.activeProject.projectId,
+                editorStore.sdlcState.activeWorkspace,
+                {
+                  replace: modelLoaderState.replace,
+                  entities,
+                  message,
+                },
               );
               editorStore.applicationStore.notifySuccess(
                 'Generated elements imported into project',

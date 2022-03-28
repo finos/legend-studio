@@ -1,5 +1,5 @@
 ---
-'@finos/legend-studio': patch
+'@finos/legend-studio': minor
 ---
 
 Add modelLoader extension studio plugin

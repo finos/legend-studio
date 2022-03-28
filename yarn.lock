@@ -2247,6 +2247,33 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@finos/legend-extension-mapping-generation@workspace:packages/legend-extension-mapping-generation":
+  version: 0.0.0-use.local
+  resolution: "@finos/legend-extension-mapping-generation@workspace:packages/legend-extension-mapping-generation"
+  dependencies:
+    "@finos/legend-application": "workspace:*"
+    "@finos/legend-art": "workspace:*"
+    "@finos/legend-dev-utils": "workspace:*"
+    "@finos/legend-graph": "workspace:*"
+    "@finos/legend-model-storage": "workspace:*"
+    "@finos/legend-server-depot": "workspace:*"
+    "@finos/legend-server-sdlc": "workspace:*"
+    "@finos/legend-shared": "workspace:*"
+    "@finos/legend-studio": "workspace:*"
+    cross-env: 7.0.3
+    eslint: 8.11.0
+    jest: 27.5.1
+    mobx: 6.5.0
+    mobx-react-lite: 3.3.0
+    npm-run-all: 4.1.5
+    react: 17.0.2
+    rimraf: 3.0.2
+    sass: 1.49.9
+    serializr: 2.0.5
+    typescript: 4.6.2
+  languageName: unknown
+  linkType: soft
+
 "@finos/legend-fixture-mock-server@workspace:fixtures/legend-mock-server":
   version: 0.0.0-use.local
   resolution: "@finos/legend-fixture-mock-server@workspace:fixtures/legend-mock-server"
@@ -14485,6 +14512,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"typescript@npm:4.6.2":
+  version: 4.6.2
+  resolution: "typescript@npm:4.6.2"
+  bin:
+    tsc: bin/tsc
+    tsserver: bin/tsserver
+  checksum: 8a44ed7e6f6c4cb1ebe8cf236ecda2fb119d84dcf0fbd77e707b2dfea1bbcfc4e366493a143513ce7f57203c75da9d4e20af6fe46de89749366351046be7577c
+  languageName: node
+  linkType: hard
+
 "typescript@npm:4.6.3":
   version: 4.6.3
   resolution: "typescript@npm:4.6.3"
@@ -14492,6 +14529,16 @@ __metadata:
     tsc: bin/tsc
     tsserver: bin/tsserver
   checksum: 255bb26c8cb846ca689dd1c3a56587af4f69055907aa2c154796ea28ee0dea871535b1c78f85a6212c77f2657843a269c3a742d09d81495b97b914bf7920415b
+  languageName: node
+  linkType: hard
+
+"typescript@patch:typescript@4.6.2#~builtin<compat/typescript>":
+  version: 4.6.2
+  resolution: "typescript@patch:typescript@npm%3A4.6.2#~builtin<compat/typescript>::version=4.6.2&hash=bda367"
+  bin:
+    tsc: bin/tsc
+    tsserver: bin/tsserver
+  checksum: 40b493a71747fb89fa70df104e2c4a5e284b43750af5bea024090a5261cefa387f7a9372411b13030f7bf5555cee4275443d08805642ae5c74ef76740854a4c7
   languageName: node
   linkType: hard
 

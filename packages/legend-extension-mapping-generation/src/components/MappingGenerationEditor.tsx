@@ -11,10 +11,7 @@ import {
   clsx,
   PanelLoadingIndicator,
 } from '@finos/legend-art';
-import {
-  type EditorStore,
-  StudioTextInputEditor,
-} from '@finos/legend-studio';
+import { type EditorStore, StudioTextInputEditor } from '@finos/legend-studio';
 import {
   EDITOR_LANGUAGE,
   useApplicationStore,
@@ -337,7 +334,7 @@ export const MappingGenerationEditor = observer(
                             !mappingGenerationEditorState.sourceMapping ||
                             !mappingGenerationEditorState.mappingToRegenerate
                           }
-                          onClick={(value): void => generate()}
+                          onClick={(): void => generate()}
                           tabIndex={-1}
                         >
                           Generate
@@ -371,7 +368,7 @@ export const MappingGenerationEditor = observer(
                           !mappingGenerationEditorState.sourceMapping ||
                           !mappingGenerationEditorState.mappingToRegenerate
                         }
-                        onClick={(value): void => generate()}
+                        onClick={(): void => generate()}
                         title={'Re-generate'}
                       >
                         <RefreshIcon />
@@ -382,9 +379,7 @@ export const MappingGenerationEditor = observer(
                     <PanelLoadingIndicator isLoading={isGenerating} />
                     <StudioTextInputEditor
                       language={EDITOR_LANGUAGE.PURE}
-                      inputValue={
-                        editorStore.modelLoaderState.modelText as string
-                      }
+                      inputValue={editorStore.modelLoaderState.modelText}
                       updateInput={updateModel}
                       showMiniMap={true}
                       isReadOnly={true}

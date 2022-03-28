@@ -33,7 +33,7 @@ import {
 } from '@finos/legend-graph';
 import { TAB_SIZE } from '@finos/legend-application';
 import type {
-  ExtraModelLoaderExtensionsConfiguration,
+  ModelLoaderExtensionConfiguration,
   LegendStudioPlugin,
 } from '../LegendStudioPlugin';
 
@@ -45,13 +45,10 @@ export enum MODEL_UPDATER_INPUT_TYPE {
 export class ModelLoaderState extends EditorState {
   modelText = this.getExampleEntitiesInputText();
   currentInputType = MODEL_UPDATER_INPUT_TYPE.ENTITIES;
-  currentExtensionInputType?:
-    | ExtraModelLoaderExtensionsConfiguration
-    | undefined;
+  currentExtensionInputType?: ModelLoaderExtensionConfiguration | undefined;
   currentExternalInputType?: string | undefined;
   modelImportDescriptions: ImportConfigurationDescription[] = [];
-  extraModelLoaderExtensionsConfigurations: ExtraModelLoaderExtensionsConfiguration[] =
-    [];
+  ModelLoaderExtensionConfigurations: ModelLoaderExtensionConfiguration[] = [];
   replace = true;
   isLoadingModel = false;
 
@@ -63,7 +60,7 @@ export class ModelLoaderState extends EditorState {
       currentInputType: observable,
       currentExternalInputType: observable,
       modelImportDescriptions: observable,
-      extraModelLoaderExtensionsConfigurations: observable,
+      ModelLoaderExtensionConfigurations: observable,
       replace: observable,
       isLoadingModel: observable,
       setReplaceFlag: action,
@@ -77,14 +74,13 @@ export class ModelLoaderState extends EditorState {
     });
 
     //extensions
-    this.extraModelLoaderExtensionsConfigurations =
-      this.editorStore.pluginManager
-        .getStudioPlugins()
-        .flatMap(
-          (plugin: LegendStudioPlugin) =>
-            plugin.getExtraModelLoaderExtensionsConfigurations?.() ?? [],
-        )
-        .filter(isNonNullable);
+    this.ModelLoaderExtensionConfigurations = this.editorStore.pluginManager
+      .getStudioPlugins()
+      .flatMap(
+        (plugin: LegendStudioPlugin) =>
+          plugin.getExtraModelLoaderExtensionConfigurations?.() ?? [],
+      )
+      .filter(isNonNullable);
   }
 
   get headerName(): string {
@@ -129,7 +125,7 @@ export class ModelLoaderState extends EditorState {
   }
 
   setCurrentExtraInputType(
-    inputType: ExtraModelLoaderExtensionsConfiguration | undefined,
+    inputType: ModelLoaderExtensionConfiguration | undefined,
   ): void {
     this.currentExtensionInputType = inputType;
     if (this.currentExternalInputType) {

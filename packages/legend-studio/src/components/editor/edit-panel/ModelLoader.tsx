@@ -39,7 +39,7 @@ import {
   EDITOR_LANGUAGE,
 } from '@finos/legend-application';
 import { StudioTextInputEditor } from '../../shared/StudioTextInputEditor';
-import type { ExtraModelLoaderExtensionsConfiguration } from '../../../stores/LegendStudioPlugin';
+import type { ModelLoaderExtensionConfiguration } from '../../../stores/LegendStudioPlugin';
 
 export const ModelLoader = observer(() => {
   const editorStore = useEditorStore();
@@ -48,7 +48,7 @@ export const ModelLoader = observer(() => {
   const nativeInputTypes = Object.values(MODEL_UPDATER_INPUT_TYPE);
   const externalFormatInputTypes = modelLoaderState.modelImportDescriptions;
   const extraModelLoaderExtensionsConfigs =
-    modelLoaderState.extraModelLoaderExtensionsConfigurations;
+    modelLoaderState.ModelLoaderExtensionConfigurations;
   // input type
   const currentInputType = modelLoaderState.currentInputType;
   const currentExtensionInputType = modelLoaderState.currentExtensionInputType;
@@ -65,7 +65,7 @@ export const ModelLoader = observer(() => {
     (): void =>
       modelLoaderState.setCurrentExternalFormatInputType(inputType);
   const setCurrentExtraInput =
-    (inputType: ExtraModelLoaderExtensionsConfiguration): (() => void) =>
+    (inputType: ModelLoaderExtensionConfiguration): (() => void) =>
     (): void =>
       modelLoaderState.setCurrentExtraInputType(inputType);
   // replace flag
@@ -165,7 +165,7 @@ export const ModelLoader = observer(() => {
                       </div>
                       <div className="model-loader__header__configs__type-option__group__options">
                         {extraModelLoaderExtensionsConfigs.map(
-                          (config: ExtraModelLoaderExtensionsConfiguration) => (
+                          (config: ModelLoaderExtensionConfiguration) => (
                             <MenuContentItem
                               key={config.key}
                               className="model-loader__header__configs__type-option__group__option"
@@ -200,20 +200,17 @@ export const ModelLoader = observer(() => {
               </div>
             </div>
           </DropdownMenu>
-          {(!modelLoaderState.currentExtensionInputType ||
-            modelLoaderState.currentExtensionInputType.hardReplaceOption) && (
-            <div
-              className="model-loader__header__configs__edit-mode"
-              onClick={toggleReplace}
-            >
-              <div className="model-loader__header__configs__edit-mode__icon">
-                {replace ? <CheckSquareIcon /> : <EmptySquareIcon />}
-              </div>
-              <div className="model-loader__header__configs__edit-mode__label">
-                replace
-              </div>
+          <div
+            className="model-loader__header__configs__edit-mode"
+            onClick={toggleReplace}
+          >
+            <div className="model-loader__header__configs__edit-mode__icon">
+              {replace ? <CheckSquareIcon /> : <EmptySquareIcon />}
             </div>
-          )}
+            <div className="model-loader__header__configs__edit-mode__label">
+              replace
+            </div>
+          </div>
           {!(
             modelLoaderState.currentExternalInputType ??
             modelLoaderState.currentExtensionInputType
