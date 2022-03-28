@@ -103,9 +103,10 @@ export const ModelLoader = observer(() => {
         ],
       });
     } else {
-      flowResult(modelLoaderState.loadModel()).catch(
-        applicationStore.alertUnhandledError,
-      );
+      currentExtensionInputType?.load(editorStore) ??
+        flowResult(modelLoaderState.loadModel()).catch(
+          applicationStore.alertUnhandledError,
+        );
     }
   };
   const updateModel = (val: string): void => modelLoaderState.setModelText(val);
@@ -170,7 +171,7 @@ export const ModelLoader = observer(() => {
                               className="model-loader__header__configs__type-option__group__option"
                               onClick={setCurrentExtraInput(config)}
                             >
-                              {config?.label ?? prettyCONSTName(config.key)}
+                              {config.label ?? prettyCONSTName(config.key)}
                             </MenuContentItem>
                           ),
                         )}
@@ -190,7 +191,7 @@ export const ModelLoader = observer(() => {
                 {currentExternalInputType
                   ? currentExternalInputLabel
                   : currentExtensionInputType
-                  ? currentExtensionInputType?.label ??
+                  ? currentExtensionInputType.label ??
                     prettyCONSTName(currentExtensionInputType.key)
                   : prettyCONSTName(currentInputType)}
               </div>
@@ -230,9 +231,7 @@ export const ModelLoader = observer(() => {
         <div className="model-loader__header__action">
           <button
             className="btn--dark model-loader__header__load-btn"
-            onClick={
-              modelLoaderState.currentExtensionInputType?.load ?? loadModel
-            }
+            onClick={loadModel}
             disabled={modelLoaderState.isLoadingModel}
             tabIndex={-1}
             title="Load model"
@@ -242,9 +241,7 @@ export const ModelLoader = observer(() => {
         </div>
       </div>
       <div className="panel__content model-loader__editor">
-        {modelLoaderState.currentExtensionInputType?.renderer(
-          editorStore.modelLoaderState,
-        ) ?? (
+        {modelLoaderState.currentExtensionInputType?.renderer(editorStore) ?? (
           <StudioTextInputEditor
             language={EDITOR_LANGUAGE.JSON}
             inputValue={modelLoaderState.modelText}

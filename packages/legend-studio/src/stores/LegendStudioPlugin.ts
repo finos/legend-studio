@@ -20,7 +20,6 @@ import type { ElementEditorState } from './editor-state/element-editor-state/Ele
 import type { EditorExtensionState, EditorStore } from './EditorStore';
 import type { NewElementDriver, NewElementState } from './NewElementState';
 import type { Class, PackageableElement } from '@finos/legend-graph';
-import type { ModelLoaderState } from './editor-state/ModelLoaderState';
 
 export type ApplicationSetup = (
   pluginManager: LegendStudioPluginManager,
@@ -57,8 +56,8 @@ export type ExtraModelLoaderExtensionsConfiguration = {
   key: string;
   label?: string | undefined;
   hardReplaceOption?: boolean | undefined;
-  load: () => void;
-  renderer: (modelLoaderState: ModelLoaderState) => React.ReactNode | undefined;
+  load: (editorStore: EditorStore) => Promise<void>;
+  renderer: (editorStore: EditorStore) => React.ReactNode | undefined;
 };
 
 export abstract class LegendStudioPlugin extends AbstractPlugin {
