@@ -15,25 +15,15 @@
  */
 
 import type { EditorStore } from './EditorStore';
-import { observable, action, makeObservable, flow } from 'mobx';
+import { observable, action, makeObservable } from 'mobx';
 import type {
   ExecutionNodeTreeNodeData,
   ExecutionPlanViewTreeNodeData,
 } from '../components/editor/edit-panel/mapping-editor/execution-plan-viewer/ExecutionPlanTree';
 import {
-  type GeneratorFn,
-  assertErrorThrown,
-  LogEvent,
-} from '@finos/legend-shared';
-import {
   type RawExecutionPlan,
-  type Mapping,
-  type RawLambda,
-  type Runtime,
   ExecutionPlan,
   ExecutionNode,
-  GRAPH_MANAGER_EVENT,
-  PureClientVersion,
 } from '@finos/legend-graph';
 
 export enum SQL_DISPLAY_TABS {
@@ -59,7 +49,7 @@ export class ExecutionPlanState {
   viewMode: EXECUTION_PLAN_VIEW_MODE = EXECUTION_PLAN_VIEW_MODE.FORM;
   rawPlan?: RawExecutionPlan | undefined;
   plan?: ExecutionPlan | undefined;
-  isGenerating = false;
+  debugText?: string | undefined;
 
   constructor(editorStore: EditorStore) {
     makeObservable(this, {
@@ -67,18 +57,18 @@ export class ExecutionPlanState {
       displayDataJson: observable,
       sqlSelectedTab: observable,
       viewMode: observable,
-      isGenerating: observable,
       rawPlan: observable,
       plan: observable,
+      debugText: observable,
       setExecutionPlanDisplayData: action,
       setExecutionPlanDisplayDataJson: action,
-      transformMetaDataToProtocolJson: action,
+      transformMetadataToProtocolJson: action,
       setSelectedNode: action,
       setSqlSelectedTab: action,
       setRawPlan: action,
       setPlan: action,
       setViewMode: action,
-      generatePlan: flow,
+      setDebugText: action,
     });
     this.editorStore = editorStore;
   }
@@ -98,6 +88,10 @@ export class ExecutionPlanState {
   setPlan = (val: ExecutionPlan | undefined): void => {
     this.plan = val;
   };
+
+  setDebugText(val: string | undefined): void {
+    this.debugText = val;
+  }
 
   setSelectedNode(
     node: ExecutionNodeTreeNodeData | ExecutionPlanViewTreeNodeData | undefined,
@@ -122,7 +116,7 @@ export class ExecutionPlanState {
     );
   }
 
-  transformMetaDataToProtocolJson(
+  transformMetadataToProtocolJson(
     metaModel: ExecutionPlan | ExecutionNode,
   ): void {
     if (metaModel instanceof ExecutionPlan) {
@@ -137,48 +131,6 @@ export class ExecutionPlanState {
           metaModel,
         );
       this.setExecutionPlanDisplayDataJson(protocolJson);
-    }
-  }
-
-  *generatePlan(
-    mapping: Mapping,
-    lambda: RawLambda,
-    runtime: Runtime,
-  ): GeneratorFn<void> {
-    try {
-      this.isGenerating = true;
-      const rawPlan =
-        (yield this.editorStore.graphManagerState.graphManager.generateExecutionPlan(
-          this.editorStore.graphManagerState.graph,
-          mapping,
-          lambda,
-          runtime,
-          PureClientVersion.VX_X_X,
-        )) as object;
-      this.buildExecutionPlan(rawPlan);
-    } catch (error) {
-      assertErrorThrown(error);
-      this.editorStore.applicationStore.log.error(
-        LogEvent.create(GRAPH_MANAGER_EVENT.EXECUTION_FAILURE),
-        error,
-      );
-      this.editorStore.applicationStore.notifyError(error);
-    } finally {
-      this.isGenerating = false;
-    }
-  }
-
-  buildExecutionPlan(rawPlan: object): void {
-    try {
-      this.setRawPlan(rawPlan);
-      const plan =
-        this.editorStore.graphManagerState.graphManager.buildExecutionPlan(
-          rawPlan,
-          this.editorStore.graphManagerState.graph,
-        );
-      this.setPlan(plan);
-    } catch {
-      // do nothing
     }
   }
 }

@@ -242,9 +242,9 @@ export const ExecutionPlanTree: React.FC<{
     node: ExecutionPlanViewTreeNodeData | ExecutionNodeTreeNodeData,
   ): void => {
     if (node instanceof ExecutionPlanViewTreeNodeData) {
-      executionPlanState.transformMetaDataToProtocolJson(node.executionPlan);
+      executionPlanState.transformMetadataToProtocolJson(node.executionPlan);
     } else if (node instanceof ExecutionNodeTreeNodeData) {
-      executionPlanState.transformMetaDataToProtocolJson(node.executionNode);
+      executionPlanState.transformMetadataToProtocolJson(node.executionNode);
     }
     executionPlanState.setSelectedNode(node);
   };

@@ -20,11 +20,14 @@ import {
   BlankPanelContent,
   PanelLoadingIndicator,
   PlayIcon,
-  PaperScrollIcon,
   DropdownMenu,
   MenuContent,
   MenuContentItem,
   CaretDownIcon,
+  ResizablePanelGroup,
+  ResizablePanel,
+  ResizablePanelSplitter,
+  ResizablePanelSplitterLine,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { flowResult } from 'mobx';
@@ -116,21 +119,6 @@ export const QueryBuilderResultPanel = observer(
     const executionResult = resultState.executionResult;
     const USER_ATTESTATION_MESSAGE =
       'I attest that I am aware of the sensitive data leakage risk when exporting queried data. The data I export will only be used by me.';
-    const execute = (): void => {
-      if (queryParametersState.parameters.length) {
-        queryParametersState.parameterValuesEditorState.open(
-          (): Promise<void> =>
-            flowResult(resultState.execute()).catch(
-              applicationStore.alertUnhandledError,
-            ),
-          PARAMETER_SUBMIT_ACTION.EXECUTE,
-        );
-      } else {
-        flowResult(resultState.execute()).catch(
-          applicationStore.alertUnhandledError,
-        );
-      }
-    };
     const exportQueryResults = async (
       format: EXECUTION_SERIALIZATION_FORMAT,
     ): Promise<void> => {
@@ -169,8 +157,26 @@ export const QueryBuilderResultPanel = observer(
         ],
       });
     };
-    const executePlan = applicationStore.guardUnhandledError(() =>
-      flowResult(resultState.generateExecutionPlan()),
+    const execute = (): void => {
+      if (queryParametersState.parameters.length) {
+        queryParametersState.parameterValuesEditorState.open(
+          (): Promise<void> =>
+            flowResult(resultState.execute()).catch(
+              applicationStore.alertUnhandledError,
+            ),
+          PARAMETER_SUBMIT_ACTION.EXECUTE,
+        );
+      } else {
+        flowResult(resultState.execute()).catch(
+          applicationStore.alertUnhandledError,
+        );
+      }
+    };
+    const generatePlan = applicationStore.guardUnhandledError(() =>
+      flowResult(resultState.generatePlan(true)),
+    );
+    const debugPlanGeneration = applicationStore.guardUnhandledError(() =>
+      flowResult(resultState.generatePlan(false)),
     );
     const planText = resultState.executionPlan
       ? JSON.stringify(resultState.executionPlan, undefined, TAB_SIZE)
@@ -206,23 +212,53 @@ export const QueryBuilderResultPanel = observer(
                   className="input--dark query-builder__result__limit__input"
                   spellCheck={false}
                   type="number"
-                  value={queryBuilderState.resultState.previewLimit}
+                  value={resultState.previewLimit}
                   onChange={changeLimit}
                 />
               </div>
             )}
             <button
-              className="panel__header__action query-builder__result__execute-btn"
+              className="query-builder__result__execute-btn"
               onClick={execute}
+              disabled={
+                resultState.isExecutingQuery || resultState.isGeneratingPlan
+              }
               tabIndex={-1}
-              title="Execute"
             >
-              <div className="query-builder__result__execute-btn__icon">
-                <PlayIcon />
-              </div>
               <div className="query-builder__result__execute-btn__label">
-                Execute
+                <PlayIcon className="query-builder__result__execute-btn__label__icon" />
+                <div className="query-builder__result__execute-btn__label__title">
+                  Execute
+                </div>
               </div>
+              <DropdownMenu
+                className="query-builder__result__execute-btn__dropdown-btn"
+                disabled={
+                  resultState.isExecutingQuery || resultState.isGeneratingPlan
+                }
+                content={
+                  <MenuContent>
+                    <MenuContentItem
+                      className="query-builder__result__execute-btn__option"
+                      onClick={generatePlan}
+                    >
+                      Generate Plan
+                    </MenuContentItem>
+                    <MenuContentItem
+                      className="query-builder__result__execute-btn__option"
+                      onClick={debugPlanGeneration}
+                    >
+                      Debug
+                    </MenuContentItem>
+                  </MenuContent>
+                }
+                menuProps={{
+                  anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
+                  transformOrigin: { vertical: 'top', horizontal: 'right' },
+                }}
+              >
+                <CaretDownIcon />
+              </DropdownMenu>
             </button>
             <DropdownMenu
               className="query-builder__result__export__dropdown"
@@ -258,14 +294,6 @@ export const QueryBuilderResultPanel = observer(
                 <CaretDownIcon />
               </div>
             </DropdownMenu>
-            <button
-              className="panel__header__action"
-              onClick={executePlan}
-              tabIndex={-1}
-              title="View Exection Plan"
-            >
-              <PaperScrollIcon />
-            </button>
           </div>
         </div>
         <div className="panel__content">
@@ -280,6 +308,10 @@ export const QueryBuilderResultPanel = observer(
             </div>
           )}
         </div>
+        {/*
+          NOTE: we should be able to use <ExecutionPlanViewer> component when it's properly modularized
+          See https://github.com/finos/legend-studio/issues/717
+         */}
         <Dialog
           open={Boolean(resultState.executionPlan)}
           onClose={(): void => resultState.setExecutionPlan(undefined)}
@@ -294,12 +326,48 @@ export const QueryBuilderResultPanel = observer(
               <div className="modal__title">Execution Plan</div>
             </div>
             <div className="modal__body">
-              <TextInputEditor
-                inputValue={planText}
-                isReadOnly={true}
-                language={EDITOR_LANGUAGE.JSON}
-                showMiniMap={true}
-              />
+              {resultState.debugText ? (
+                <ResizablePanelGroup orientation="horizontal">
+                  <ResizablePanel minSize={100}>
+                    <TextInputEditor
+                      inputValue={planText}
+                      isReadOnly={true}
+                      language={EDITOR_LANGUAGE.JSON}
+                      showMiniMap={true}
+                    />
+                  </ResizablePanel>
+                  <ResizablePanelSplitter>
+                    <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+                  </ResizablePanelSplitter>
+                  <ResizablePanel size={200} minSize={28}>
+                    <div className="panel execution-plan-viewer__debug-panel">
+                      <div className="panel__header">
+                        <div className="panel__header__title">
+                          <div className="panel__header__title__label">
+                            DEBUG LOG
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="panel__content">
+                        <TextInputEditor
+                          inputValue={resultState.debugText}
+                          isReadOnly={true}
+                          language={EDITOR_LANGUAGE.TEXT}
+                          showMiniMap={true}
+                        />
+                      </div>
+                    </div>
+                  </ResizablePanel>
+                </ResizablePanelGroup>
+              ) : (
+                <TextInputEditor
+                  inputValue={planText}
+                  isReadOnly={true}
+                  language={EDITOR_LANGUAGE.JSON}
+                  showMiniMap={true}
+                />
+              )}
             </div>
             <div className="modal__footer">
               <button

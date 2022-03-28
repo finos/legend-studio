@@ -421,7 +421,7 @@ export interface V1_EngineSetupConfig {
 }
 
 export class V1_PureGraphManager extends AbstractPureGraphManager {
-  engine!: V1_Engine;
+  engine: V1_Engine;
   extensions: V1_GraphBuilderExtensions;
 
   constructor(pluginManager: GraphPluginManager, log: Log) {
@@ -460,6 +460,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       buildFileGenerations: flow,
       buildGenerationSpecifications: flow,
     });
+
+    this.engine = new V1_Engine({}, log);
 
     // setup plugins
     this.extensions = new V1_GraphBuilderExtensions(
@@ -1861,6 +1863,22 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
+  async debugExecutionPlanGeneration(
+    graph: PureModel,
+    mapping: Mapping,
+    lambda: RawLambda,
+    runtime: Runtime,
+    clientVersion: string,
+  ): Promise<{ plan: RawExecutionPlan; debug: string }> {
+    const result = await this.engine.debugExecutionPlanGeneration(
+      this.createExecutionInput(graph, mapping, lambda, runtime, clientVersion),
+    );
+    return {
+      plan: result.plan,
+      debug: result.debug.join('\n'),
+    };
+  }
+
   buildExecutionPlan(
     executionPlanJson: PlainObject<V1_ExecutionPlan>,
     graph: PureModel,
@@ -2047,6 +2065,9 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
+  // TODO: we could potentially reshape this method to build light graph with just indexing
+  // and return a slightly more complicated object instead: separating the graph and the dependencies part instead of
+  // return a list of `V1_GraphBuilderInput`. This method would be useful for any other light graph builder algo.
   async indexEntitiesWithDependencyIntoGraph(
     graph: PureModel,
     _entities: Entity[],

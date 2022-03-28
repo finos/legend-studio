@@ -78,13 +78,14 @@
     "last 2 Chrome versions"
   ],
   "resolutions": {
-    "glob-parent": "^6.0.1"
+    "glob-parent": "^6.0.1",
+    "minimist": "^1.2.6"
   },
   "devDependencies": {
     "@actions/core": "1.6.0",
     "@actions/github": "5.0.0",
     "@babel/core": "7.17.8",
-    "@changesets/cli": "2.21.1",
+    "@changesets/cli": "2.22.0",
     "@finos/babel-preset-legend-studio": "workspace:*",
     "@finos/eslint-plugin-legend-studio": "workspace:*",
     "@finos/legend-dev-utils": "workspace:*",
@@ -94,7 +95,7 @@
     "chalk": "5.0.1",
     "cross-env": "7.0.3",
     "envinfo": "7.8.1",
-    "eslint": "8.11.0",
+    "eslint": "8.12.0",
     "fs-extra": "10.0.1",
     "husky": "7.0.4",
     "inquirer": "8.2.2",

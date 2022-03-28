@@ -448,6 +448,14 @@ export class V1_Engine {
     );
   }
 
+  debugExecutionPlanGeneration(
+    input: V1_ExecuteInput,
+  ): Promise<{ plan: PlainObject<V1_ExecutionPlan>; debug: string[] }> {
+    return this.engineServerClient.debugPlanGeneration(
+      V1_ExecuteInput.serialization.toJson(input),
+    );
+  }
+
   generateMappingTestData(input: V1_ExecuteInput): Promise<string> {
     return this.engineServerClient.generateTestDataWithDefaultSeed(
       V1_ExecuteInput.serialization.toJson(input),
