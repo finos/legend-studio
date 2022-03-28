@@ -104,6 +104,22 @@ export const TEST_DATA__roundtrip = [
     },
   },
   {
+    path: 'org::dxl::ZooBinding',
+    classifierPath: 'meta::external::shared::format::binding::Binding',
+    content: {
+      _type: 'binding',
+      contentType: 'application/json',
+      includedStores: [],
+      modelUnit: {
+        packageableElementExcludes: [],
+        packageableElementIncludes: ['org::dxl::Person'],
+      },
+      name: 'ZooBinding',
+      package: 'org::dxl',
+      schemaSet: undefined,
+    },
+  },
+  {
     path: 'org::dxl::Mapping',
     classifierPath: 'meta::pure::mapping::Mapping',
     content: {
@@ -175,21 +191,6 @@ export const TEST_DATA__roundtrip = [
     },
   },
   {
-    path: 'org::dxl::ZooBinding',
-    classifierPath: 'meta::external::shared::format::binding::Binding',
-    content: {
-      _type: 'binding',
-      contentType: 'application/json',
-      includedStores: [],
-      modelUnit: {
-        packageableElementExcludes: [],
-        packageableElementIncludes: ['org::dxl::Person'],
-      },
-      name: 'ZooBinding',
-      package: 'org::dxl',
-    },
-  },
-  {
     path: 'org::dxl::ZooPersistence',
     classifierPath: 'meta::pure::persistence::metamodel::Persistence',
     content: {
@@ -233,7 +234,7 @@ export const TEST_DATA__roundtrip = [
             derivation: {
               _type: 'sourceSpecifiesFromAndThruDateTime',
               sourceDateTimeFromField: 'effectiveFrom',
-              sourceDateTimeThrmField: 'effectiveThru',
+              sourceDateTimeThruField: 'effectiveThru',
             },
           },
         },
