@@ -1,5 +1,11 @@
 # @finos/legend-studio
 
+## 4.1.1
+
+### Patch Changes
+
+- [#992](https://github.com/finos/legend-studio/pull/992) [`a8693108`](https://github.com/finos/legend-studio/commit/a869310843265cf10a7595a3f53fb5b11ecf64aa) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add `TEMPORARY_skipGraphBuilderPostProcessing` flag to allow skipping post-processing in graph builder to boost performance.
+
 ## 4.1.0
 
 ### Minor Changes
