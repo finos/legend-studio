@@ -161,6 +161,13 @@ export class GraphGenerationState {
     return [];
   }
 
+  findGenerationParentPath(genChildPath: string): string | undefined {
+    const genEntity = Array.from(this.generatedEntities.entries()).find(
+      ([, genEntities]) => genEntities.find((m) => m.path === genChildPath),
+    );
+    return genEntity?.[0];
+  }
+
   setFileGenerationConfigurations(
     fileGenerationConfigurations: GenerationConfigurationDescription[],
   ): void {

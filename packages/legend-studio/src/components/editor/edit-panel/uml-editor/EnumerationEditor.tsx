@@ -419,9 +419,18 @@ export const EnumerationEditor = observer(
       [handleDropStereotype],
     );
     // Generation
+    const generationParentElementPath =
+      editorStore.graphState.graphGenerationState.findGenerationParentPath(
+        enumeration.path,
+      );
+    const generationParentElement = generationParentElementPath
+      ? editorStore.graphManagerState.graph.getNullableElement(
+          generationParentElementPath,
+        )
+      : undefined;
     const visitGenerationParentElement = (): void => {
-      if (enumeration.generationParentElement) {
-        editorStore.openElement(enumeration.generationParentElement);
+      if (generationParentElement) {
+        editorStore.openElement(generationParentElement);
       }
     };
 
@@ -441,18 +450,18 @@ export const EnumerationEditor = observer(
                   </div>
                 </div>
                 <div className="panel__header__actions">
-                  {enumeration.generationParentElement && (
+                  {generationParentElement && (
                     <button
                       className="uml-element-editor__header__generation-origin"
                       onClick={visitGenerationParentElement}
                       tabIndex={-1}
-                      title={`Visit generation parent '${enumeration.generationParentElement.path}'`}
+                      title={`Visit generation parent '${generationParentElement.path}'`}
                     >
                       <div className="uml-element-editor__header__generation-origin__label">
                         <FireIcon />
                       </div>
                       <div className="uml-element-editor__header__generation-origin__parent-name">
-                        {enumeration.generationParentElement.name}
+                        {generationParentElement.name}
                       </div>
                       <div className="uml-element-editor__header__generation-origin__visit-btn">
                         <StickArrowCircleRightIcon />

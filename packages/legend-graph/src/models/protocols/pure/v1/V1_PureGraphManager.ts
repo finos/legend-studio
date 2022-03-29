@@ -411,7 +411,6 @@ const indexPureModelContextData = (
 interface V1_GraphBuilderInput {
   model: BasicModel;
   data: V1_PureModelContextDataIndex;
-  parentElementPath?: string | undefined;
 }
 
 export interface V1_EngineSetupConfig {
@@ -958,28 +957,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
             ),
           ),
         ),
-      );
-    }
-    if (!options?.TEMPORARY_skipGeneratedElementsPostProcessing) {
-      // Assign generated elements to their parent generation element (config that drives generation)
-      yield Promise.all(
-        inputs
-          .filter((input) => Boolean(input.parentElementPath))
-          .flatMap((input) =>
-            input.data.elements.map((el) =>
-              promisify(() =>
-                runInAction(() => {
-                  // TODO: check performance once `getNullableElement` is optimized
-                  const element = graph.getElement(el.path);
-                  if (input.parentElementPath) {
-                    element.generationParentElement = graph.getElement(
-                      input.parentElementPath,
-                    );
-                  }
-                }),
-              ),
-            ),
-          ),
       );
     }
     /**

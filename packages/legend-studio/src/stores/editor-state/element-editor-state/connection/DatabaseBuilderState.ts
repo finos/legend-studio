@@ -499,7 +499,6 @@ export class DatabaseBuilderState {
         entities,
         {
           TEMPORARY_skipGraphBuilderPostProcessing: true,
-          TEMPORARY_skipGeneratedElementsPostProcessing: true,
         },
       ),
     )) as Entity[];
@@ -524,7 +523,6 @@ export class DatabaseBuilderState {
         entities,
         {
           TEMPORARY_skipGraphBuilderPostProcessing: true,
-          TEMPORARY_skipGeneratedElementsPostProcessing: true,
         },
       ),
     )) as Entity[];
