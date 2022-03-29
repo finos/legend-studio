@@ -25,6 +25,7 @@ import type { PackageableConnection } from './PackageableConnection';
 import type { RelationalDatabaseConnection } from '../store/relational/connection/RelationalDatabaseConnection';
 import type { PackageableElementReference } from '../PackageableElementReference';
 import type { ModelChainConnection } from '../store/modelToModel/connection/ModelChainConnection';
+import { setPackageableElementReferenceValue } from '../../../../DomainModifierHelper';
 
 export interface ConnectionVisitor<T> {
   visit_Connection(connection: Connection): T;
@@ -77,7 +78,7 @@ export class ConnectionPointer extends Connection implements Hashable {
   }
 
   setPackageableConnection(value: PackageableConnection): void {
-    this.packageableConnection.setValue(value);
+    setPackageableElementReferenceValue(this.packageableConnection, value);
   }
 
   get hashCode(): string {

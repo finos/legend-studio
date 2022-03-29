@@ -53,6 +53,10 @@ import type { V1_Measure } from '../../../model/packageableElements/domain/V1_Me
 import { V1_buildDatabaseSchemaViewsFirstPass } from '../../../transformation/pureGraph/to/helpers/V1_DatabaseBuilderHelper';
 import type { V1_SectionIndex } from '../../../model/packageableElements/section/V1_SectionIndex';
 import { GraphBuilderError } from '../../../../../../../graphManager/GraphManagerUtils';
+import {
+  addClassSubclass,
+  addClassSuperType,
+} from '../../../../../../DomainModifierHelper';
 
 export class V1_ProtocolToMetaModelGraphThirdPassBuilder
   implements V1_PackageableElementVisitor<void>
@@ -90,9 +94,9 @@ export class V1_ProtocolToMetaModelGraphThirdPassBuilder
       if (type !== CORE_PURE_PATH.ANY) {
         try {
           const genricTypeReference = this.context.resolveGenericType(type);
-          _class.addSuperType(genricTypeReference);
+          addClassSuperType(_class, genricTypeReference);
           if (genricTypeReference.ownerReference.value instanceof Class) {
-            genricTypeReference.ownerReference.value.addSubclass(_class);
+            addClassSubclass(genricTypeReference.ownerReference.value, _class);
           }
         } catch (error) {
           assertErrorThrown(error);
@@ -139,10 +143,10 @@ export class V1_ProtocolToMetaModelGraphThirdPassBuilder
         ),
       );
     }
-    association.setProperties([
+    association.properties = [
       V1_buildAssociationProperty(first, second, this.context, association),
       V1_buildAssociationProperty(second, first, this.context, association),
-    ]);
+    ];
     association.stereotypes = element.stereotypes
       .map((stereotype) => this.context.resolveStereotype(stereotype))
       .filter(isNonNullable);

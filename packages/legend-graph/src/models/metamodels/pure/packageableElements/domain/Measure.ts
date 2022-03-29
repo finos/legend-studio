@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { observable, action, makeObservable, override } from 'mobx';
+import { observable, makeObservable, override } from 'mobx';
 import {
   hashArray,
   UnsupportedOperationError,
@@ -40,7 +40,6 @@ export class Unit extends DataType implements Hashable {
     makeObservable(this, {
       measure: observable,
       conversionFunction: observable,
-      setConversionFunction: action,
       hashCode: override,
     });
 
@@ -53,10 +52,6 @@ export class Unit extends DataType implements Hashable {
   }
   isSubType(type: Type): boolean {
     return this.measure === type;
-  }
-
-  setConversionFunction(lambda: RawLambda): void {
-    this.conversionFunction = lambda;
   }
 
   override get hashCode(): string {
@@ -84,13 +79,8 @@ export class Measure extends Type implements Hashable {
     makeObservable<Measure, '_elementHashCode'>(this, {
       canonicalUnit: observable,
       nonCanonicalUnits: observable,
-      setCanonicalUnit: action,
       _elementHashCode: override,
     });
-  }
-
-  setCanonicalUnit(unit: Unit): void {
-    this.canonicalUnit = unit;
   }
 
   isSubType(type: Type): boolean {

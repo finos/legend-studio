@@ -24,6 +24,7 @@ import { ReferenceWithOwner } from '../../../../Reference';
 import type { Database } from './Database';
 import type { Column } from './Column';
 import { getSchemaFromRelation } from './RelationReference';
+import { setPackageableElementReferenceValue } from '../../../../../../DomainModifierHelper';
 
 export abstract class ColumnReference extends ReferenceWithOwner {
   override readonly ownerReference: PackageableElementReference<Database>;
@@ -46,7 +47,10 @@ export abstract class ColumnReference extends ReferenceWithOwner {
 
   setValue(value: Column): void {
     this.value = value;
-    this.ownerReference.setValue(getSchemaFromRelation(value.owner).owner);
+    setPackageableElementReferenceValue(
+      this.ownerReference,
+      getSchemaFromRelation(value.owner).owner,
+    );
   }
 }
 

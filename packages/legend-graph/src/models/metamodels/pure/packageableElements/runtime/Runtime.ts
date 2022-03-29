@@ -37,6 +37,7 @@ import {
   getElementPointerHashCode,
   PACKAGEABLE_ELEMENT_POINTER_TYPE,
 } from '../PackageableElement';
+import { setPackageableElementReferenceValue } from '../../../../DomainModifierHelper';
 
 export class IdentifiedConnection implements Hashable {
   uuid = uuid();
@@ -213,7 +214,7 @@ export class RuntimePointer extends Runtime implements Hashable {
   }
 
   setPackageableRuntime(value: PackageableRuntime): void {
-    this.packageableRuntime.setValue(value);
+    setPackageableElementReferenceValue(this.packageableRuntime, value);
   }
 
   get hashCode(): string {

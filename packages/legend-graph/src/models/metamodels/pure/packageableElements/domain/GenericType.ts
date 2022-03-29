@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { observable, action, computed, makeObservable } from 'mobx';
+import { observable, computed, makeObservable } from 'mobx';
 import { type Clazz, guaranteeType, uuid } from '@finos/legend-shared';
 import type { Type } from './Type';
 import type { Stubable } from '../../../../../helpers/Stubable';
@@ -26,7 +26,6 @@ export class GenericType implements Stubable {
   constructor(rawType: Type) {
     makeObservable(this, {
       rawType: observable,
-      setRawType: action,
       isStub: computed,
     });
 
@@ -35,9 +34,6 @@ export class GenericType implements Stubable {
 
   getRawType = <T extends Type>(clazz: Clazz<T>): T =>
     guaranteeType<T>(this.rawType, clazz);
-  setRawType(type: Type): void {
-    this.rawType = type;
-  }
 
   // NOTE: we don't have a `createStub` for GenericType because it all depends on the type passed in
   // so might as well use constructor

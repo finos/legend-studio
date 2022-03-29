@@ -66,6 +66,7 @@ import {
   FileGenerationSpecification,
   PackageableElementExplicitReference,
   GenerationTreeNode,
+  setPackageableElementReferenceValue,
 } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
 
@@ -120,7 +121,7 @@ const ModelGenerationItem = observer(
       val: PackageableElementOption<FileGenerationSpecification> | null,
     ): void => {
       if (val !== null) {
-        modelGenerationRef.setValue(val.value);
+        setPackageableElementReferenceValue(modelGenerationRef, val.value);
       }
     };
     const deleteNode = (): void =>
@@ -390,7 +391,7 @@ const FileGenerationItem = observer(
       val: PackageableElementOption<FileGenerationSpecification> | null,
     ): void => {
       if (val !== null) {
-        fileGeneraitonRef.setValue(val.value);
+        setPackageableElementReferenceValue(fileGeneraitonRef, val.value);
       }
     };
     const deleteColumnSort = (): void =>

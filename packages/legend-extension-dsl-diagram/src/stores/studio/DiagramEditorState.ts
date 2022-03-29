@@ -35,6 +35,7 @@ import {
   Property,
   GenericType,
   PropertyExplicitReference,
+  addClassProperty,
 } from '@finos/legend-graph';
 import {
   type EditorStore,
@@ -401,7 +402,8 @@ export class DiagramEditorState extends ElementEditorState {
     this.renderer.handleAddSimpleProperty = (classView: ClassView): void => {
       if (!this.isReadOnly && !classView.class.value.isReadOnly) {
         const _class = classView.class.value;
-        _class.addProperty(
+        addClassProperty(
+          _class,
           new Property(
             `property_${_class.properties.length + 1}`,
             this.editorStore.graphManagerState.graph.getTypicalMultiplicity(

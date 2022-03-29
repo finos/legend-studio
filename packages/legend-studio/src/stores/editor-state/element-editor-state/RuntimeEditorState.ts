@@ -60,6 +60,7 @@ import {
   RelationalDatabaseConnection,
   StaticDatasourceSpecification,
   DefaultH2AuthenticationStrategy,
+  setPackageableElementReferenceValue,
 } from '@finos/legend-graph';
 import type { DSLMapping_LegendStudioPlugin_Extension } from '../../DSLMapping_LegendStudioPlugin_Extension';
 
@@ -662,7 +663,7 @@ export class RuntimeEditorState {
     mappingRef: PackageableElementReference<Mapping>,
     newVal: Mapping,
   ): void {
-    mappingRef.setValue(newVal);
+    setPackageableElementReferenceValue(mappingRef, newVal);
     decorateRuntimeWithNewMapping(this.runtimeValue, newVal, this.editorStore);
     this.reprocessRuntimeExplorerTree();
   }

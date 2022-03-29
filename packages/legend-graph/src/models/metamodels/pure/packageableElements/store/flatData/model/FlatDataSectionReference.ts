@@ -25,6 +25,7 @@ import {
 import { ReferenceWithOwner } from '../../../../Reference';
 import type { FlatData } from './FlatData';
 import type { FlatDataSection } from './FlatDataSection';
+import { setPackageableElementReferenceValue } from '../../../../../../DomainModifierHelper';
 
 export abstract class FlatDataSectionReference extends ReferenceWithOwner {
   override readonly ownerReference: PackageableElementReference<FlatData>;
@@ -48,7 +49,7 @@ export abstract class FlatDataSectionReference extends ReferenceWithOwner {
 
   setValue(value: FlatDataSection): void {
     this.value = value;
-    this.ownerReference.setValue(value.owner);
+    setPackageableElementReferenceValue(this.ownerReference, value.owner);
   }
 
   get pointerHashCode(): string {

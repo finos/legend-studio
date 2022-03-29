@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { observable, action, computed, makeObservable } from 'mobx';
+import { observable, computed, makeObservable } from 'mobx';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import { hashArray, uuid, type Hashable } from '@finos/legend-shared';
 import { RawLambda } from '../../rawValueSpecification/RawLambda';
@@ -37,8 +37,6 @@ export class Constraint implements Hashable, Stubable {
       externalId: observable,
       enforcementLevel: observable,
       messageFunction: observable,
-      setName: action,
-      setFunctionDefinition: action,
       isStub: computed,
       hashCode: computed,
     });
@@ -46,13 +44,6 @@ export class Constraint implements Hashable, Stubable {
     this.name = name;
     this.owner = owner;
     this.functionDefinition = functionDefinition;
-  }
-
-  setName(name: string): void {
-    this.name = name;
-  }
-  setFunctionDefinition(lambda: RawLambda): void {
-    this.functionDefinition = lambda;
   }
 
   static createStub = (_class: Class): Constraint =>

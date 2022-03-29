@@ -40,17 +40,11 @@ export abstract class GenericTypeReference
 
     makeObservable(this, {
       value: observable,
-      setValue: action,
       isStub: computed,
     });
 
     this.ownerReference = ownerReference;
     this.value = value;
-  }
-
-  setValue(value: GenericType): void {
-    this.value = value;
-    this.ownerReference.setValue(value.rawType);
   }
 
   get isStub(): boolean {
