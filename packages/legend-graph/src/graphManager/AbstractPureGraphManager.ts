@@ -78,8 +78,6 @@ export interface GraphBuilderOptions {
   TEMPORARY__disableRawLambdaResolver?: boolean;
   // skip specific post processing used when editing graph. i.e `freezing` a generated/dependency element.
   TEMPORARY_skipGraphBuilderPostProcessing?: boolean;
-  // skip post processing specific to generated elements
-  TEMPORARY_skipGeneratedElementsPostProcessing?: boolean;
 }
 
 export interface ExecutionOptions {

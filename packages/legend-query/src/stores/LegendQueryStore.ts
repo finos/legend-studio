@@ -776,7 +776,6 @@ export class LegendQueryStore {
           dependencyEntitiesMap,
           {
             TEMPORARY_skipGraphBuilderPostProcessing: true,
-            TEMPORARY_skipGeneratedElementsPostProcessing: true,
           },
         ),
       )) as GraphBuilderReport;
@@ -791,7 +790,6 @@ export class LegendQueryStore {
           entities,
           {
             TEMPORARY_skipGraphBuilderPostProcessing: true,
-            TEMPORARY_skipGeneratedElementsPostProcessing: true,
           },
         ),
       )) as GraphBuilderReport;

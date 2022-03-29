@@ -265,7 +265,6 @@ export class TaxonomyNodeViewerState {
           dependencyEntitiesMap,
           {
             TEMPORARY_skipGraphBuilderPostProcessing: true,
-            TEMPORARY_skipGeneratedElementsPostProcessing: true,
           },
         ),
       )) as GraphBuilderReport;
@@ -280,7 +279,6 @@ export class TaxonomyNodeViewerState {
           entities,
           {
             TEMPORARY_skipGraphBuilderPostProcessing: true,
-            TEMPORARY_skipGeneratedElementsPostProcessing: true,
           },
         ),
       )) as GraphBuilderReport;
@@ -843,7 +841,6 @@ export class LegendTaxonomyStore {
           dependencyEntitiesMap,
           {
             TEMPORARY_skipGraphBuilderPostProcessing: true,
-            TEMPORARY_skipGeneratedElementsPostProcessing: true,
           },
         ),
       )) as GraphBuilderReport;
@@ -858,7 +855,6 @@ export class LegendTaxonomyStore {
           entities,
           {
             TEMPORARY_skipGraphBuilderPostProcessing: true,
-            TEMPORARY_skipGeneratedElementsPostProcessing: true,
           },
         ),
       )) as GraphBuilderReport;
