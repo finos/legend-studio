@@ -124,10 +124,6 @@ const EXCLUSIONS: { [key: string]: ROUNTRIP_TEST_PHASES[] | typeof SKIP } = {
   // Used to test graph building performance. Test passes but will SKIP as to not increase build time
   // Current time to complete test is 6576 ms
   'profiling-model-cdm.pure': SKIP,
-
-  // TODO: remove this when https://github.com/finos/legend-studio/pull/984 is reverted.
-  'ESService-basic.pure': SKIP,
-  'ESService-path-offset.pure': SKIP,
 };
 
 type GrammarRoundtripOptions = {
