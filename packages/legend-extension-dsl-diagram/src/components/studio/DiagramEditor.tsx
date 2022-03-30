@@ -84,6 +84,10 @@ import {
   isValidFullPath,
   isValidPathIdentifier,
   resolvePackagePathAndElementName,
+  setPropertyName,
+  setPropertyGenericType,
+  setPropertyMultiplicity,
+  addPackageElement,
 } from '@finos/legend-graph';
 import {
   guaranteeNonNullable,
@@ -853,9 +857,10 @@ const DiagramEditorInlineClassCreatorInner = observer(
         diagramEditorState.setInlineClassCreatorState(undefined);
         const [packagePath, name] = resolvePackagePathAndElementName(path);
         const _class = new Class(name);
-        editorStore.graphManagerState.graph
-          .getOrCreatePackage(packagePath)
-          .addElement(_class);
+        addPackageElement(
+          editorStore.graphManagerState.graph.getOrCreatePackage(packagePath),
+          _class,
+        );
         editorStore.graphManagerState.graph.addElement(_class);
         editorStore.explorerTreeState.reprocess();
         diagramEditorState.renderer.addClassView(
@@ -1027,14 +1032,14 @@ const DiagramEditorInlinePropertyEditorInner = observer(
       event,
     ) => {
       if (property instanceof DerivedProperty || property instanceof Property) {
-        property.setName(event.target.value);
+        setPropertyName(property, event.target.value);
         diagramEditorState.renderer.render();
       }
     };
 
     const changeMultiplicity = (val: Multiplicity): void => {
       if (property instanceof DerivedProperty || property instanceof Property) {
-        property.setMultiplicity(val);
+        setPropertyMultiplicity(property, val);
         diagramEditorState.renderer.render();
       }
     };
@@ -1054,7 +1059,7 @@ const DiagramEditorInlinePropertyEditorInner = observer(
     };
     const changePropertyType = (val: PackageableElementOption<Type>): void => {
       if (property instanceof Property || property instanceof DerivedProperty) {
-        property.setGenericType(new GenericType(val.value));
+        setPropertyGenericType(property, new GenericType(val.value));
       }
     };
 

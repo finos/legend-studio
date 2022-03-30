@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { observable, computed, action, makeObservable, override } from 'mobx';
+import { observable, computed, makeObservable, override } from 'mobx';
 import {
   type Hashable,
   guaranteeNonNullable,
@@ -24,7 +24,6 @@ import {
   hashArray,
   addUniqueEntry,
   deleteEntry,
-  changeEntry,
 } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import {
@@ -40,6 +39,7 @@ import type { TaggedValue } from './TaggedValue';
 import type { StereotypeReference } from './StereotypeReference';
 import { DerivedProperty } from './DerivedProperty';
 import type { AbstractProperty } from './AbstractProperty';
+import { setGenericTypeReferenceValue } from '../../../../DomainModifierHelper';
 
 // NOTE: we might want to revisit this decision to initialize to association properties to stubs
 const initAssociationProperties = (
@@ -87,12 +87,6 @@ export class Association
       stereotypes: observable,
       taggedValues: observable,
       derivedProperties: observable,
-      setProperties: action,
-      deleteTaggedValue: action,
-      addTaggedValue: action,
-      deleteStereotype: action,
-      changeStereotype: action,
-      addStereotype: action,
       isStub: computed,
       _elementHashCode: override,
     });
@@ -153,30 +147,8 @@ export class Association
     // set up the relationship between the other property and the new class
     addUniqueEntry(type.propertiesFromAssociations, otherProperty);
     // set new type for the property
-    property.genericType.setValue(new GenericType(type));
+    setGenericTypeReferenceValue(property.genericType, new GenericType(type));
   };
-
-  setProperties(val: [Property, Property]): void {
-    this.properties = val;
-  }
-  deleteTaggedValue(val: TaggedValue): void {
-    deleteEntry(this.taggedValues, val);
-  }
-  addTaggedValue(val: TaggedValue): void {
-    addUniqueEntry(this.taggedValues, val);
-  }
-  deleteStereotype(val: StereotypeReference): void {
-    deleteEntry(this.stereotypes, val);
-  }
-  changeStereotype(
-    oldVal: StereotypeReference,
-    newVal: StereotypeReference,
-  ): void {
-    changeEntry(this.stereotypes, oldVal, newVal);
-  }
-  addStereotype(val: StereotypeReference): void {
-    addUniqueEntry(this.stereotypes, val);
-  }
 
   override get isStub(): boolean {
     return super.isStub && isStubArray(this.properties);

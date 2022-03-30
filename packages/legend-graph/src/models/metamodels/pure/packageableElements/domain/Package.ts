@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { observable, action, makeObservable, override } from 'mobx';
+import { observable, makeObservable, override } from 'mobx';
 import {
   CORE_HASH_STRUCTURE,
   ELEMENT_PATH_DELIMITER,
@@ -29,6 +29,7 @@ import {
   type PackageableElementVisitor,
   PackageableElement,
 } from '../PackageableElement';
+import { addPackageChild } from '../../../../DomainModifierHelper';
 
 export const RESERVERD_PACKAGE_NAMES = ['$implicit'];
 
@@ -40,8 +41,6 @@ export class Package extends PackageableElement implements Hashable {
 
     makeObservable(this, {
       children: observable,
-      addChild: action,
-      addElement: action,
       hashCode: override,
     });
   }
@@ -56,17 +55,6 @@ export class Package extends PackageableElement implements Hashable {
     return newPackage;
   }
 
-  addChild(value: PackageableElement): void {
-    // NOTE: here we directly push the element to the children array without any checks rather than use `addUniqueEntry` to improve performance.
-    // Duplication checks should be handled separately
-    this.children.push(value);
-  }
-
-  addElement(element: PackageableElement): void {
-    this.addChild(element);
-    element.setPackage(this);
-  }
-
   get fullPath(): string {
     if (!this.package) {
       return '';
@@ -75,12 +63,6 @@ export class Package extends PackageableElement implements Hashable {
     return !parentPackageName
       ? this.name
       : `${parentPackageName}${ELEMENT_PATH_DELIMITER}${this.name}`;
-  }
-
-  deleteElement(packageableElement: PackageableElement): void {
-    this.children = this.children.filter(
-      (child) => child !== packageableElement,
-    );
   }
 
   /**
@@ -107,7 +89,7 @@ export class Package extends PackageableElement implements Hashable {
       }
       // create the node if it is not in parent package
       node = Package.createPackageFromParent(str, parent);
-      parent.addChild(node);
+      addPackageChild(parent, node);
     }
     if (index !== -1) {
       return Package.getOrCreatePackage(

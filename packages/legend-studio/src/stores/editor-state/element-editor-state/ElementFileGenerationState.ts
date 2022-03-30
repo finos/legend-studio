@@ -20,6 +20,7 @@ import { action, flowResult, makeAutoObservable } from 'mobx';
 import { ElementEditorState } from './ElementEditorState';
 import { type GeneratorFn, AssertionError, uuid } from '@finos/legend-shared';
 import {
+  addPackageElement,
   FileGenerationSpecification,
   PackageableElementExplicitReference,
 } from '@finos/legend-graph';
@@ -58,7 +59,7 @@ export class ElementFileGenerationState {
       this.editorStore.graphManagerState.graph.getOrCreatePackage(packagePath);
     const fileGeneration = this.fileGenerationState.fileGeneration;
     fileGeneration.name = name;
-    fileGenerationPackage.addElement(fileGeneration);
+    addPackageElement(fileGenerationPackage, fileGeneration);
     this.editorStore.graphManagerState.graph.addElement(fileGeneration);
     this.editorStore.openElement(fileGeneration);
     // reset file generation state so since the current file generation is promoted to a packageable element in the graph

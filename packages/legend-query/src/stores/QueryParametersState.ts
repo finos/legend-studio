@@ -29,6 +29,9 @@ import {
   Multiplicity,
   PRIMITIVE_TYPE,
   VariableExpression,
+  setMultiplicityLowerBound,
+  setMultiplicityUpperBound,
+  setGenericTypeRawType,
 } from '@finos/legend-graph';
 import {
   addUniqueEntry,
@@ -185,7 +188,10 @@ export class QueryParameterState {
 
   changeVariableType(type: Type): void {
     if (type !== this.variableType) {
-      this.parameter.genericType?.value.setRawType(type);
+      const genricType = this.parameter.genericType?.value;
+      if (genricType) {
+        setGenericTypeRawType(genricType, type);
+      }
       this.mockParameterValue();
     }
   }
@@ -199,8 +205,8 @@ export class QueryParameterState {
       current.lowerBound !== lowerBound ||
       current.upperBound !== uppderBound
     ) {
-      current.setLowerBound(lowerBound);
-      current.setUpperBound(uppderBound);
+      setMultiplicityLowerBound(current, lowerBound);
+      setMultiplicityUpperBound(current, uppderBound);
       this.mockParameterValue();
     }
   }

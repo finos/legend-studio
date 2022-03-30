@@ -23,6 +23,7 @@ import {
 import { ReferenceWithOwner } from '../../../../Reference';
 import type { RootFlatDataRecordType } from './FlatDataDataType';
 import type { FlatData } from './FlatData';
+import { setPackageableElementReferenceValue } from '../../../../../../DomainModifierHelper';
 
 export abstract class RootFlatDataRecordTypeReference extends ReferenceWithOwner {
   override readonly ownerReference: PackageableElementReference<FlatData>;
@@ -45,7 +46,7 @@ export abstract class RootFlatDataRecordTypeReference extends ReferenceWithOwner
 
   setValue(value: RootFlatDataRecordType): void {
     this.value = value;
-    this.ownerReference.setValue(value.owner.owner);
+    setPackageableElementReferenceValue(this.ownerReference, value.owner.owner);
   }
 }
 

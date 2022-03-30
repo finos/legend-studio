@@ -14,14 +14,8 @@
  * limitations under the License.
  */
 
-import { action, observable, makeObservable, override } from 'mobx';
-import {
-  type Hashable,
-  hashArray,
-  addUniqueEntry,
-  deleteEntry,
-  changeEntry,
-} from '@finos/legend-shared';
+import { observable, makeObservable, override } from 'mobx';
+import { type Hashable, hashArray } from '@finos/legend-shared';
 import { hashLambda } from '../../../../../MetaModelUtils';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import type { PackageableElementVisitor } from '../PackageableElement';
@@ -58,51 +52,11 @@ export class ConcreteFunctionDefinition
       body: observable.ref,
       stereotypes: observable,
       taggedValues: observable,
-      deleteParameter: action,
-      addParameter: action,
-      setReturnType: action,
-      setReturnMultiplicity: action,
-      deleteTaggedValue: action,
-      addTaggedValue: action,
-      deleteStereotype: action,
-      changeStereotype: action,
-      addStereotype: action,
       _elementHashCode: override,
     });
 
     this.returnType = returnType;
     this.returnMultiplicity = returnMultiplicity;
-  }
-
-  deleteParameter(val: RawVariableExpression): void {
-    deleteEntry(this.parameters, val);
-  }
-  addParameter(val: RawVariableExpression): void {
-    addUniqueEntry(this.parameters, val);
-  }
-  setReturnType(val: Type): void {
-    this.returnType.setValue(val);
-  }
-  setReturnMultiplicity(val: Multiplicity): void {
-    this.returnMultiplicity = val;
-  }
-  deleteTaggedValue(val: TaggedValue): void {
-    deleteEntry(this.taggedValues, val);
-  }
-  addTaggedValue(val: TaggedValue): void {
-    addUniqueEntry(this.taggedValues, val);
-  }
-  deleteStereotype(val: StereotypeReference): void {
-    deleteEntry(this.stereotypes, val);
-  }
-  changeStereotype(
-    oldVal: StereotypeReference,
-    newVal: StereotypeReference,
-  ): void {
-    changeEntry(this.stereotypes, oldVal, newVal);
-  }
-  addStereotype(val: StereotypeReference): void {
-    addUniqueEntry(this.stereotypes, val);
   }
 
   protected override get _elementHashCode(): string {

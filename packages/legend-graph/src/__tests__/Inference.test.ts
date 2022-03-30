@@ -28,6 +28,7 @@ import {
   TEST__excludeSectionIndex,
   TEST__getTestGraphManagerState,
 } from '../GraphManagerTestUtils';
+import { setTag } from '../models/DomainModifierHelper';
 
 test(unitTest('Infer default mapping element ID'), async () => {
   const graphManagerState = TEST__getTestGraphManagerState();
@@ -93,9 +94,14 @@ test(
       { TEMPORARY__keepSectionIndex: true },
     );
     let enumeration = graphManagerState.graph.getEnumeration('test::tEnum');
-    enumeration.taggedValues[0]?.setTag(
-      graphManagerState.graph.getProfile('test::tProf').getTag('s4'),
-    );
+    const tagValue = enumeration.taggedValues[0];
+    if (tagValue) {
+      setTag(
+        tagValue,
+        graphManagerState.graph.getProfile('test::tProf').getTag('s4'),
+      );
+    }
+
     expect(
       graphManagerState.graph.allOwnElements.map((element) =>
         graphManagerState.graphManager.elementToEntity(element),
@@ -113,9 +119,14 @@ test(
       TEST_DATA__ReferenceModification.original as Entity[],
     );
     enumeration = graphManagerState.graph.getEnumeration('test::tEnum');
-    enumeration.taggedValues[0]?.setTag(
-      graphManagerState.graph.getProfile('test2::tProf').getTag('s1'),
-    );
+    const taggedValue = enumeration.taggedValues[0];
+    if (taggedValue) {
+      setTag(
+        taggedValue,
+        graphManagerState.graph.getProfile('test2::tProf').getTag('s1'),
+      );
+    }
+
     expect(
       graphManagerState.graph.allOwnElements.map((element) =>
         graphManagerState.graphManager.elementToEntity(element),

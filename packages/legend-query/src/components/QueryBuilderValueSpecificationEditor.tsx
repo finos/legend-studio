@@ -53,6 +53,7 @@ import {
   PRIMITIVE_TYPE,
   TYPICAL_MULTIPLICITY_TYPE,
   VariableExpression,
+  setGenericTypeRawType,
 } from '@finos/legend-graph';
 import { getMultiplicityDescription } from './shared/QueryBuilderUtils';
 import {
@@ -551,7 +552,7 @@ export const DateInstanceValueEditor = observer(
     const latestDate = graph.getPrimitiveType(PRIMITIVE_TYPE.LATESTDATE);
     const changeType = (val: PackageableElementOption<Type>): void => {
       if (variableType !== val.value) {
-        valueSpecification.genericType.value.setRawType(val.value);
+        setGenericTypeRawType(valueSpecification.genericType.value, val.value);
       }
       if (
         valueSpecification.genericType.value.rawType.name !==

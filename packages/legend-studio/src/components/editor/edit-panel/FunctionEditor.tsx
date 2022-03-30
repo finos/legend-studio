@@ -62,6 +62,14 @@ import {
   Class,
   PrimitiveType,
   StereotypeExplicitReference,
+  setFunctionReturnType,
+  setFunctionReturnMultiplicity,
+  addFunctionParameter,
+  deleteFunctionParameter,
+  addTaggedValue,
+  addStereotype,
+  deleteStereotype,
+  deleteTaggedValue,
 } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
 import { StudioLambdaEditor } from '../../shared/StudioLambdaEditor';
@@ -306,7 +314,7 @@ const ReturnTypeEditor = observer(
     });
     const selectedType = { value: returnType, label: returnType.value.name };
     const changeType = (val: PackageableElementOption<Type>): void => {
-      functionElement.setReturnType(val.value);
+      setFunctionReturnType(functionElement, val.value);
       setIsEditingType(false);
     };
 
@@ -338,7 +346,10 @@ const ReturnTypeEditor = observer(
           ? upper
           : parseInt(upper, 10);
       if (!isNaN(lBound) && (uBound === undefined || !isNaN(uBound))) {
-        functionElement.setReturnMultiplicity(new Multiplicity(lBound, uBound));
+        setFunctionReturnMultiplicity(
+          functionElement,
+          new Multiplicity(lBound, uBound),
+        );
       }
     };
     const changeLowerBound: React.ChangeEventHandler<HTMLInputElement> = (
@@ -479,19 +490,21 @@ export const FunctionMainEditor = observer(
     const lambdaEditorState = functionEditorState.functionBodyEditorState;
     // Parameters
     const addParameter = (): void => {
-      functionElement.addParameter(
+      addFunctionParameter(
+        functionElement,
         RawVariableExpression.createStub(defaultType),
       );
     };
     const deleteParameter =
       (val: RawVariableExpression): (() => void) =>
       (): void => {
-        functionElement.deleteParameter(val);
+        deleteFunctionParameter(functionElement, val);
       };
     const handleDropParameter = useCallback(
       (item: UMLEditorElementDropTarget): void => {
         if (!isReadOnly && item.data.packageableElement instanceof Type) {
-          functionElement.addParameter(
+          addFunctionParameter(
+            functionElement,
             RawVariableExpression.createStub(item.data.packageableElement),
           );
         }
@@ -514,7 +527,7 @@ export const FunctionMainEditor = observer(
     const handleDropReturnType = useCallback(
       (item: UMLEditorElementDropTarget): void => {
         if (!isReadOnly && item.data.packageableElement instanceof Type) {
-          functionElement.setReturnType(item.data.packageableElement);
+          setFunctionReturnType(functionElement, item.data.packageableElement);
         }
       },
       [functionElement, isReadOnly],
@@ -632,11 +645,13 @@ export const FunctionEditor = observer(() => {
   const add = (): void => {
     if (!isReadOnly) {
       if (selectedTab === FUNCTION_SPEC_TAB.TAGGED_VALUES) {
-        functionElement.addTaggedValue(
+        addTaggedValue(
+          functionElement,
           TaggedValue.createStub(Tag.createStub(Profile.createStub())),
         );
       } else if (selectedTab === FUNCTION_SPEC_TAB.STEREOTYPES) {
-        functionElement.addStereotype(
+        addStereotype(
+          functionElement,
           StereotypeExplicitReference.create(
             Stereotype.createStub(Profile.createStub()),
           ),
@@ -647,7 +662,8 @@ export const FunctionEditor = observer(() => {
   const handleDropTaggedValue = useCallback(
     (item: UMLEditorElementDropTarget): void => {
       if (!isReadOnly && item.data.packageableElement instanceof Profile) {
-        functionElement.addTaggedValue(
+        addTaggedValue(
+          functionElement,
           TaggedValue.createStub(Tag.createStub(item.data.packageableElement)),
         );
       }
@@ -667,7 +683,8 @@ export const FunctionEditor = observer(() => {
   const handleDropStereotype = useCallback(
     (item: UMLEditorElementDropTarget): void => {
       if (!isReadOnly && item.data.packageableElement instanceof Profile) {
-        functionElement.addStereotype(
+        addStereotype(
+          functionElement,
           StereotypeExplicitReference.create(
             Stereotype.createStub(item.data.packageableElement),
           ),
@@ -686,14 +703,14 @@ export const FunctionEditor = observer(() => {
     }),
     [handleDropStereotype],
   );
-  const deleteStereotype =
+  const _deleteStereotype =
     (val: StereotypeReference): (() => void) =>
     (): void =>
-      functionElement.deleteStereotype(val);
-  const deleteTaggedValue =
+      deleteStereotype(functionElement, val);
+  const _deleteTaggedValue =
     (val: TaggedValue): (() => void) =>
     (): void =>
-      functionElement.deleteTaggedValue(val);
+      deleteTaggedValue(functionElement, val);
   const changeTab =
     (tab: FUNCTION_SPEC_TAB): (() => void) =>
     (): void =>
@@ -770,7 +787,7 @@ export const FunctionEditor = observer(() => {
                   <TaggedValueEditor
                     key={taggedValue.uuid}
                     taggedValue={taggedValue}
-                    deleteValue={deleteTaggedValue(taggedValue)}
+                    deleteValue={_deleteTaggedValue(taggedValue)}
                     isReadOnly={isReadOnly}
                   />
                 ))}
@@ -788,7 +805,7 @@ export const FunctionEditor = observer(() => {
                   <StereotypeSelector
                     key={stereotype.value.uuid}
                     stereotype={stereotype}
-                    deleteStereotype={deleteStereotype(stereotype)}
+                    deleteStereotype={_deleteStereotype(stereotype)}
                     isReadOnly={isReadOnly}
                   />
                 ))}

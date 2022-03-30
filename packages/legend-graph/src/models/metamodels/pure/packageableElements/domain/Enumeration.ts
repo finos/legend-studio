@@ -14,14 +14,11 @@
  * limitations under the License.
  */
 
-import { observable, action, computed, makeObservable, override } from 'mobx';
+import { observable, computed, makeObservable, override } from 'mobx';
 import {
   type Hashable,
   hashArray,
   guaranteeNonNullable,
-  addUniqueEntry,
-  deleteEntry,
-  changeEntry,
 } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import { DataType } from './DataType';
@@ -44,13 +41,6 @@ export class Enumeration extends DataType implements Hashable, Stubable {
       values: observable,
       stereotypes: observable,
       taggedValues: observable,
-      addValue: action,
-      deleteValue: action,
-      deleteTaggedValue: action,
-      addTaggedValue: action,
-      deleteStereotype: action,
-      changeStereotype: action,
-      addStereotype: action,
       isStub: computed,
       _elementHashCode: override,
     });
@@ -63,32 +53,6 @@ export class Enumeration extends DataType implements Hashable, Stubable {
       this.values.find((value) => value.name === name),
       `Can't find enum value '${name}' in enumeration '${this.path}'`,
     );
-
-  addValue(value: Enum): void {
-    addUniqueEntry(this.values, value);
-  }
-  deleteValue(value: Enum): void {
-    deleteEntry(this.values, value);
-  }
-  deleteTaggedValue(value: TaggedValue): void {
-    deleteEntry(this.taggedValues, value);
-  }
-  addTaggedValue(value: TaggedValue): void {
-    addUniqueEntry(this.taggedValues, value);
-  }
-  deleteStereotype(value: StereotypeReference): void {
-    deleteEntry(this.stereotypes, value);
-  }
-  changeStereotype(
-    oldValue: StereotypeReference,
-    newValue: StereotypeReference,
-  ): void {
-    changeEntry(this.stereotypes, oldValue, newValue);
-  }
-  addStereotype(value: StereotypeReference): void {
-    addUniqueEntry(this.stereotypes, value);
-  }
-
   static createStub = (): Enumeration => new Enumeration('');
 
   override get isStub(): boolean {

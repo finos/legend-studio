@@ -52,6 +52,7 @@ import {
   PackageableElementExplicitReference,
   PureSingleExecution,
   Service,
+  addPackageElement,
 } from '@finos/legend-graph';
 import { QueryBuilder_EditorExtensionState } from '../stores/QueryBuilder_EditorExtensionState';
 import {
@@ -92,7 +93,7 @@ const promoteQueryToService = async (
     );
     const servicePackage =
       editorStore.graphManagerState.graph.getOrCreatePackage(packageName);
-    servicePackage.addElement(service);
+    addPackageElement(servicePackage, service);
     editorStore.graphManagerState.graph.addElement(service);
     editorStore.openElement(service);
     await flowResult(

@@ -30,13 +30,8 @@ export abstract class PackageableElementReference<
 
     makeObservable(this, {
       value: observable,
-      setValue: action,
     });
 
-    this.value = value;
-  }
-
-  setValue(value: T): void {
     this.value = value;
   }
 

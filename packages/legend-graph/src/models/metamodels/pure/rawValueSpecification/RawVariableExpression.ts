@@ -28,6 +28,7 @@ import {
   type RawValueSpecificationVisitor,
   RawValueSpecification,
 } from './RawValueSpecification';
+import { setPackageableElementReferenceValue } from '../../../DomainModifierHelper';
 
 export class RawVariableExpression
   extends RawValueSpecification
@@ -64,7 +65,7 @@ export class RawVariableExpression
     this.name = value;
   }
   setType(value: Type): void {
-    this.type.setValue(value);
+    setPackageableElementReferenceValue(this.type, value);
   }
   setMultiplicity(value: Multiplicity): void {
     this.multiplicity = value;

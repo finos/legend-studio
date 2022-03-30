@@ -23,6 +23,7 @@ import {
 import { ReferenceWithOwner } from '../../../../Reference';
 import type { Database } from './Database';
 import type { Join } from './Join';
+import { setPackageableElementReferenceValue } from '../../../../../../DomainModifierHelper';
 
 export abstract class JoinReference extends ReferenceWithOwner {
   override readonly ownerReference: PackageableElementReference<Database>;
@@ -45,7 +46,7 @@ export abstract class JoinReference extends ReferenceWithOwner {
 
   setValue(value: Join): void {
     this.value = value;
-    this.ownerReference.setValue(value.owner);
+    setPackageableElementReferenceValue(this.ownerReference, value.owner);
   }
 }
 

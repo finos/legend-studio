@@ -14,13 +14,11 @@
  * limitations under the License.
  */
 
-import { observable, action, computed, makeObservable, override } from 'mobx';
+import { observable, computed, makeObservable, override } from 'mobx';
 import {
   type Hashable,
   guaranteeNonNullable,
   hashArray,
-  deleteEntry,
-  addUniqueEntry,
 } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import {
@@ -41,29 +39,9 @@ export class Profile extends PackageableElement implements Hashable, Stubable {
     makeObservable<Profile, '_elementHashCode'>(this, {
       stereotypes: observable,
       tags: observable,
-      addTag: action,
-      deleteTag: action,
-      addStereotype: action,
-      deleteStereotype: action,
       isStub: computed,
       _elementHashCode: override,
     });
-  }
-
-  addTag(value: Tag): void {
-    addUniqueEntry(this.tags, value);
-  }
-
-  deleteTag(value: Tag): void {
-    deleteEntry(this.tags, value);
-  }
-
-  addStereotype(value: Stereotype): void {
-    addUniqueEntry(this.stereotypes, value);
-  }
-
-  deleteStereotype(value: Stereotype): void {
-    deleteEntry(this.stereotypes, value);
   }
 
   getTag = (value: string): Tag =>
