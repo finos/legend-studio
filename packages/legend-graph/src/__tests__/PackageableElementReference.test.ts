@@ -15,7 +15,10 @@
  */
 
 import { unitTest } from '@finos/legend-shared';
-import { setPackageableElementReferenceValue } from '../models/DomainModifierHelper';
+import {
+  addPackageElement,
+  setPackageableElementReferenceValue,
+} from '../models/DomainModifierHelper';
 import { Class } from '../models/metamodels/pure/packageableElements/domain/Class';
 import { Package } from '../models/metamodels/pure/packageableElements/domain/Package';
 import { PrimitiveType } from '../models/metamodels/pure/packageableElements/domain/PrimitiveType';
@@ -33,11 +36,11 @@ test(
   () => {
     const rootPackage = new Package('testRoot');
     const _package = new Package('model');
-    rootPackage.addElement(_package);
+    addPackageElement(rootPackage, _package);
     const class1 = new Class('Class1');
     const class2 = new Class('Class2');
     const primitiveType1 = new PrimitiveType('PrimitiveType1');
-    _package.addElement(class1);
+    addPackageElement(_package, class1);
 
     // test explicit reference
     expect(

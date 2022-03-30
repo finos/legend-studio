@@ -33,6 +33,7 @@ import type {
   Unit,
 } from './metamodels/pure/packageableElements/domain/Measure';
 import type { Multiplicity } from './metamodels/pure/packageableElements/domain/Multiplicity';
+import type { Package } from './metamodels/pure/packageableElements/domain/Package';
 import type { Profile } from './metamodels/pure/packageableElements/domain/Profile';
 import type { Property } from './metamodels/pure/packageableElements/domain/Property';
 import type { PropertyReference } from './metamodels/pure/packageableElements/domain/PropertyReference';
@@ -56,54 +57,6 @@ export const setPackageableElementReferenceValue = action(
     ref.value = value;
   },
 );
-
-// AnnotatedElement
-export const addTaggedValue = action(
-  (annotatedElement: AnnotatedElement, value: TaggedValue): void => {
-    addUniqueEntry(annotatedElement.taggedValues, value);
-  },
-);
-export const deleteTaggedValue = action(
-  (_property: AnnotatedElement, value: TaggedValue): void => {
-    deleteEntry(_property.taggedValues, value);
-  },
-);
-export const addStereotype = action(
-  (annotatedElement: AnnotatedElement, value: StereotypeReference): void => {
-    addUniqueEntry(annotatedElement.stereotypes, value);
-  },
-);
-export const changePropertyStereotype = action(
-  (
-    annotatedElement: AnnotatedElement,
-    oldValue: StereotypeReference,
-    newValue: StereotypeReference,
-  ): void => {
-    changeEntry(annotatedElement.stereotypes, oldValue, newValue);
-  },
-);
-export const deleteStereotype = action(
-  (annotatedElement: AnnotatedElement, value: StereotypeReference): void => {
-    deleteEntry(annotatedElement.stereotypes, value);
-  },
-);
-
-export const setTag = action((val: TaggedValue, tag: Tag): void => {
-  val.tag.setValue(tag);
-});
-
-export const setTaggedValueValue = action(
-  (val: TaggedValue, value: string): void => {
-    val.value = value;
-  },
-);
-
-export const setTagStereotypeValue = action(
-  (_tag: Tag | Stereotype, value: string): void => {
-    _tag.value = value;
-  },
-);
-
 // Class
 export const deleteClassProperty = action(
   (_class: Class, val: Property): void => {
@@ -237,6 +190,53 @@ export const setTagReferenceValue = (tV: TagReference, value: Tag): void => {
   tV.value = value;
   setPackageableElementReferenceValue(tV.ownerReference, value.owner);
 };
+// AnnotatedElement
+export const addTaggedValue = action(
+  (annotatedElement: AnnotatedElement, value: TaggedValue): void => {
+    addUniqueEntry(annotatedElement.taggedValues, value);
+  },
+);
+export const deleteTaggedValue = action(
+  (_property: AnnotatedElement, value: TaggedValue): void => {
+    deleteEntry(_property.taggedValues, value);
+  },
+);
+export const addStereotype = action(
+  (annotatedElement: AnnotatedElement, value: StereotypeReference): void => {
+    addUniqueEntry(annotatedElement.stereotypes, value);
+  },
+);
+export const changePropertyStereotype = action(
+  (
+    annotatedElement: AnnotatedElement,
+    oldValue: StereotypeReference,
+    newValue: StereotypeReference,
+  ): void => {
+    changeEntry(annotatedElement.stereotypes, oldValue, newValue);
+  },
+);
+export const deleteStereotype = action(
+  (annotatedElement: AnnotatedElement, value: StereotypeReference): void => {
+    deleteEntry(annotatedElement.stereotypes, value);
+  },
+);
+
+export const setTag = action((val: TaggedValue, tag: Tag): void => {
+  setTagReferenceValue(val.tag, tag);
+});
+
+export const setTaggedValueValue = action(
+  (val: TaggedValue, value: string): void => {
+    val.value = value;
+  },
+);
+
+export const setTagStereotypeValue = action(
+  (_tag: Tag | Stereotype, value: string): void => {
+    _tag.value = value;
+  },
+);
+
 // DerivedProperty
 export const setDerivedPropertyBody = (
   dp: DerivedProperty,
@@ -344,5 +344,30 @@ export const setMeasureCanonicalUnit = action(
 export const setUnitConversionFunction = action(
   (unit: Unit, lambda: RawLambda): void => {
     unit.conversionFunction = lambda;
+  },
+);
+
+// Package
+
+export const addPackageChild = action(
+  (parent: Package, value: PackageableElement): void => {
+    // NOTE: here we directly push the element to the children array without any checks rather than use `addUniqueEntry` to improve performance.
+    // Duplication checks should be handled separately
+    parent.children.push(value);
+  },
+);
+
+export const addPackageElement = action(
+  (parent: Package, element: PackageableElement): void => {
+    addPackageChild(parent, element);
+    element.setPackage(parent);
+  },
+);
+
+export const deletePackageElement = action(
+  (parent: Package, packageableElement: PackageableElement): void => {
+    parent.children = parent.children.filter(
+      (child) => child !== packageableElement,
+    );
   },
 );

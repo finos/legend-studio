@@ -42,6 +42,7 @@ import {
   Database,
   isValidFullPath,
   resolvePackagePathAndElementName,
+  addPackageElement,
 } from '@finos/legend-graph';
 
 export abstract class DatabaseBuilderTreeNodeData implements TreeNodeData {
@@ -560,7 +561,7 @@ export class DatabaseBuilderState {
           this.editorStore.graphManagerState.graph.getOrCreatePackage(
             PackagePath,
           );
-        databasePackage.addElement(newDatabase);
+        addPackageElement(databasePackage, newDatabase);
         this.editorStore.graphManagerState.graph.addElement(newDatabase);
         currentDatabase = newDatabase;
         this.editorStore.explorerTreeState.reprocess();

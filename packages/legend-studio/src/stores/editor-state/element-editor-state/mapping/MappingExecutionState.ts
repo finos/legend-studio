@@ -89,6 +89,7 @@ import {
   PureClientVersion,
   TableAlias,
   type RawExecutionPlan,
+  addPackageElement,
 } from '@finos/legend-graph';
 import {
   ActionAlertActionType,
@@ -613,7 +614,7 @@ export class MappingExecutionState {
               packagePath,
             );
           service.test = singleExecutionTest;
-          servicePackage.addElement(service);
+          addPackageElement(servicePackage, service);
           this.editorStore.graphManagerState.graph.addElement(service);
           this.editorStore.openElement(service);
         } else {

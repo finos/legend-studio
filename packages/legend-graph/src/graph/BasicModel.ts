@@ -61,6 +61,10 @@ import {
   isValidPath,
   resolvePackagePathAndElementName,
 } from '../MetaModelUtils';
+import {
+  addPackageChild,
+  deletePackageElement,
+} from '../models/DomainModifierHelper';
 
 const FORBIDDEN_EXTENSION_ELEMENT_CLASS = new Set([
   PackageableElement,
@@ -510,7 +514,7 @@ export abstract class BasicModel {
 
   deleteOwnElement(element: PackageableElement): void {
     if (element.package) {
-      element.package.deleteElement(element);
+      deletePackageElement(element.package, element);
     }
     if (element instanceof Mapping) {
       this.mappingsIndex.delete(element.path);
@@ -592,9 +596,11 @@ export abstract class BasicModel {
       element.setName(elementName);
       // update element package if needed
       if (element.package !== parentPackage) {
-        element.package?.deleteElement(element);
+        if (element.package) {
+          deletePackageElement(element.package, element);
+        }
         element.setPackage(parentPackage);
-        parentPackage.addChild(element);
+        addPackageChild(parentPackage, element);
       }
     }
 
@@ -671,11 +677,11 @@ export abstract class BasicModel {
        */
       const currentParentPackage = element.package;
       if (currentParentPackage !== this.getNullablePackage(packagePath)) {
-        currentParentPackage.deleteElement(element);
+        deletePackageElement(currentParentPackage, element);
         const newParentPackage =
           packagePath !== '' ? this.getOrCreatePackage(packagePath) : this.root;
         element.setPackage(newParentPackage);
-        newParentPackage.addChild(element);
+        addPackageChild(newParentPackage, element);
       }
       childElements.forEach((childElement, childElementOriginalPath) => {
         this.renameOwnElement(

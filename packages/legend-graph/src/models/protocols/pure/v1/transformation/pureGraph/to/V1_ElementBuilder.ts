@@ -19,6 +19,7 @@ import {
   assertNonEmptyString,
   assertTrue,
 } from '@finos/legend-shared';
+import { addPackageElement } from '../../../../../../DomainModifierHelper';
 import type { PackageableElement } from '../../../../../../metamodels/pure/packageableElements/PackageableElement';
 import type { V1_PackageableElement } from '../../../model/packageableElements/V1_PackageableElement';
 import type { V1_GraphBuilderContext } from './V1_GraphBuilderContext';
@@ -121,9 +122,10 @@ export class V1_ElementBuilder<T extends V1_PackageableElement> {
       `Element '${path}' already exists`,
     );
     const element = this.firstPass(elementProtocol, context);
-    context.currentSubGraph
-      .getOrCreatePackage(elementProtocol.package)
-      .addElement(element);
+    addPackageElement(
+      context.currentSubGraph.getOrCreatePackage(elementProtocol.package),
+      element,
+    );
     return element;
   }
 

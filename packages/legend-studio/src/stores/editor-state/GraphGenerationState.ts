@@ -60,6 +60,7 @@ import {
   Enumeration,
   GenerationSpecification,
   ELEMENT_PATH_DELIMITER,
+  addPackageElement,
 } from '@finos/legend-graph';
 import type { DSLGenerationSpecification_LegendStudioPlugin_Extension } from '../DSLGenerationSpecification_LegendStudioPlugin_Extension';
 import { ExternalFormatState } from './ExternalFormatState';
@@ -378,7 +379,7 @@ export class GraphGenerationState {
         const specPackage = guaranteeNonNullable(
           [...modelGenerationElements, ...fileGenerations][0]?.package,
         );
-        specPackage.addElement(generationSpec);
+        addPackageElement(specPackage, generationSpec);
         this.editorStore.graphManagerState.graph.addElement(generationSpec);
       }
     }
