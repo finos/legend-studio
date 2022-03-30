@@ -96,6 +96,63 @@
         }
       }
     }
+
+    &__item {
+      @include flexVCenter;
+      margin: 0 0 1rem;
+
+      &__dropdown {
+        max-width: none;
+      }
+
+      &__btn {
+        &[disabled] {
+          cursor: not-allowed;
+        }
+
+        &__add
+        {
+          height: 2.8rem;
+          margin-left: 0.5rem;
+          width: 5rem;
+        }
+        &__cancel
+        {
+          height: 2.8rem;
+          margin-left: 0.5rem;
+          width: 7rem;
+        }
+      }
+
+      &__label {
+        @include flexCenter;
+
+        background: var(--color-dark-grey-100);
+        margin-right: 0.5rem;
+      }
+
+    }
+
+    &__item .panel__content__form__section__dropdown {
+      width: 100%;
+    }
+
+    &__mapping-option--empty {
+      @include flexVCenter;
+
+      cursor: help;
+
+      &__label {
+        color: var(--color-red-100);
+        margin-right: 0.5rem;
+      }
+
+      svg {
+        color: var(--color-red-100);
+        stroke-width: 0.4;
+        stroke: var(--color-red-100);
+      }
+    }
   }
 
   &__generation {

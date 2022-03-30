@@ -258,6 +258,8 @@ export { V1_serializeValueSpecification } from './models/protocols/pure/v1/trans
 export { V1_ValueSpecificationBuilder } from './models/protocols/pure/v1/transformation/pureGraph/to/helpers/V1_ValueSpecificationBuilderHelper';
 export * from './models/protocols/pure/v1/transformation/pureProtocol/serializationHelpers/V1_CoreSerializationHelper';
 export * from './models/protocols/pure/v1/transformation/pureGraph/to/V1_DSLExternalFormat_GraphBuilderHelper';
+export * from './models/ModelGenerationConfiguration';
+export * from './models/protocols/pure/MappingGeneration_PureProtocolProcessorPlugin_Extension';
 
 // --------------------------------------------- TO BE MODULARIZED --------------------------------------------------
 

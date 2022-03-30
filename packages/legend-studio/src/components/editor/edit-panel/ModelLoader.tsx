@@ -48,7 +48,7 @@ export const ModelLoader = observer(() => {
   const nativeInputTypes = Object.values(MODEL_UPDATER_INPUT_TYPE);
   const externalFormatInputTypes = modelLoaderState.modelImportDescriptions;
   const extraModelLoaderExtensionsConfigs =
-    modelLoaderState.ModelLoaderExtensionConfigurations;
+    modelLoaderState.modelLoaderExtensionConfigurations;
   // input type
   const currentInputType = modelLoaderState.currentInputType;
   const currentExtensionInputType = modelLoaderState.currentExtensionInputType;
@@ -66,8 +66,11 @@ export const ModelLoader = observer(() => {
       modelLoaderState.setCurrentExternalFormatInputType(inputType);
   const setCurrentExtraInput =
     (inputType: ModelLoaderExtensionConfiguration): (() => void) =>
-    (): void =>
+    (): void => {
+      modelLoaderState.setReplaceFlag(inputType.allowHardReplace ?? false);
+      modelLoaderState.setModelText('');
       modelLoaderState.setCurrentExtraInputType(inputType);
+    };
   // replace flag
   const replace = modelLoaderState.replace;
   const toggleReplace = (): void => modelLoaderState.setReplaceFlag(!replace);
@@ -103,7 +106,6 @@ export const ModelLoader = observer(() => {
         ],
       });
     } else {
-      currentExtensionInputType?.load(editorStore) ??
         flowResult(modelLoaderState.loadModel()).catch(
           applicationStore.alertUnhandledError,
         );
@@ -167,11 +169,11 @@ export const ModelLoader = observer(() => {
                         {extraModelLoaderExtensionsConfigs.map(
                           (config: ModelLoaderExtensionConfiguration) => (
                             <MenuContentItem
-                              key={config.key}
+                              key={config.modelGenerationConfig.key}
                               className="model-loader__header__configs__type-option__group__option"
                               onClick={setCurrentExtraInput(config)}
                             >
-                              {config.label ?? prettyCONSTName(config.key)}
+                              {config.modelGenerationConfig.label ?? prettyCONSTName(config.modelGenerationConfig.key)}
                             </MenuContentItem>
                           ),
                         )}
@@ -191,8 +193,8 @@ export const ModelLoader = observer(() => {
                 {currentExternalInputType
                   ? currentExternalInputLabel
                   : currentExtensionInputType
-                  ? currentExtensionInputType.label ??
-                    prettyCONSTName(currentExtensionInputType.key)
+                  ? currentExtensionInputType.modelGenerationConfig.label ??
+                    prettyCONSTName(currentExtensionInputType.modelGenerationConfig.key)
                   : prettyCONSTName(currentInputType)}
               </div>
               <div className="model-loader__header__configs__type__icon">
@@ -200,17 +202,19 @@ export const ModelLoader = observer(() => {
               </div>
             </div>
           </DropdownMenu>
-          <div
+          {!(currentExtensionInputType
+            && !currentExtensionInputType.allowHardReplace) && <div
             className="model-loader__header__configs__edit-mode"
             onClick={toggleReplace}
           >
             <div className="model-loader__header__configs__edit-mode__icon">
-              {replace ? <CheckSquareIcon /> : <EmptySquareIcon />}
+              {replace ? <CheckSquareIcon/> : <EmptySquareIcon/>}
             </div>
             <div className="model-loader__header__configs__edit-mode__label">
               replace
             </div>
           </div>
+          }
           {!(
             modelLoaderState.currentExternalInputType ??
             modelLoaderState.currentExtensionInputType

@@ -48,7 +48,7 @@ export class ModelLoaderState extends EditorState {
   currentExtensionInputType?: ModelLoaderExtensionConfiguration | undefined;
   currentExternalInputType?: string | undefined;
   modelImportDescriptions: ImportConfigurationDescription[] = [];
-  ModelLoaderExtensionConfigurations: ModelLoaderExtensionConfiguration[] = [];
+  modelLoaderExtensionConfigurations: ModelLoaderExtensionConfiguration[] = [];
   replace = true;
   isLoadingModel = false;
 
@@ -59,8 +59,9 @@ export class ModelLoaderState extends EditorState {
       modelText: observable,
       currentInputType: observable,
       currentExternalInputType: observable,
+      currentExtensionInputType: observable,
       modelImportDescriptions: observable,
-      ModelLoaderExtensionConfigurations: observable,
+      modelLoaderExtensionConfigurations: observable,
       replace: observable,
       isLoadingModel: observable,
       setReplaceFlag: action,
@@ -74,7 +75,7 @@ export class ModelLoaderState extends EditorState {
     });
 
     //extensions
-    this.ModelLoaderExtensionConfigurations = this.editorStore.pluginManager
+    this.modelLoaderExtensionConfigurations = this.editorStore.pluginManager
       .getStudioPlugins()
       .flatMap(
         (plugin: LegendStudioPlugin) =>
@@ -194,6 +195,9 @@ export class ModelLoaderState extends EditorState {
             this.currentExternalInputType,
             ImportMode.SCHEMA_IMPORT,
           )) as Entity[];
+      } else if (this.currentExtensionInputType) {
+        entities = (yield this.currentExtensionInputType.load(this.editorStore)
+        ) as Entity[];
       } else {
         switch (this.currentInputType) {
           case MODEL_UPDATER_INPUT_TYPE.PURE_PROTOCOL: {

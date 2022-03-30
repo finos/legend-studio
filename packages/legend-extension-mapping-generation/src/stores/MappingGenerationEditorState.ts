@@ -1,28 +1,28 @@
-import { action, flowResult, makeObservable, observable } from 'mobx';
-import {
-  type EditorStore,
-  LEGEND_STUDIO_LOG_EVENT_TYPE,
-} from '@finos/legend-studio';
-import {
-  type V1_PureGraphManager,
-  V1_entitiesToPureModelContextData,
-  V1_PureModelContextData,
+import { action, flow, makeObservable, observable } from 'mobx';
+import type {EditorStore, PackageableElementOption} from '@finos/legend-studio';
+import type {
+  V1_PureGraphManager,
+  Mapping,
+  ModelGenerationConfiguration,
 } from '@finos/legend-graph';
 import { V1_MappingGenConfiguration } from '../models/protocols/pure/v1/model/V1_MappingGenConfiguration';
-import { V1_generateRelationalMapping } from '../models/protocols/pure/v1/engine/V1_MappingGeneration_Engine';
-import { assertErrorThrown, LogEvent } from '@finos/legend-shared';
+import {assertErrorThrown, GeneratorFn, LogEvent} from '@finos/legend-shared';
+import type { Entity } from "@finos/legend-model-storage";
 
+const MAPPING_GENERATION_LOG_EVENT_TYPE = 'MAPPING_GENERATION_FAILURE';
 export class MappingGenerationEditorState {
   editorStore: EditorStore;
-  sourceMapping?: string | undefined;
-  mappingToRegenerate?: string | undefined;
+  config: ModelGenerationConfiguration;
+  sourceMapping?: PackageableElementOption<Mapping> | undefined;
+  mappingToRegenerate?: PackageableElementOption<Mapping> | undefined;
   mappingNewName?: string | undefined;
   storeNewName?: string | undefined;
-  m2mAdditionalMappings: string[] = [];
+  m2mAdditionalMappings: PackageableElementOption<Mapping>[] = [];
   isGenerating = false;
 
-  constructor(editorStore: EditorStore) {
+  constructor(editorStore: EditorStore, config: ModelGenerationConfiguration) {
     this.editorStore = editorStore;
+    this.config = config;
     makeObservable(this, {
       sourceMapping: observable,
       mappingToRegenerate: observable,
@@ -35,14 +35,15 @@ export class MappingGenerationEditorState {
       setMappingName: action,
       setStoreName: action,
       setM2mAdditionalMappings: action,
+      generate: flow,
     });
   }
 
-  setSourceMapping(sourceMapping: string | undefined): void {
+  setSourceMapping(sourceMapping: PackageableElementOption<Mapping> | undefined): void {
     this.sourceMapping = sourceMapping;
   }
 
-  setMappingToRegenerate(mappingToRegenerate: string | undefined): void {
+  setMappingToRegenerate(mappingToRegenerate: PackageableElementOption<Mapping>): void {
     this.mappingToRegenerate = mappingToRegenerate;
   }
 
@@ -54,11 +55,11 @@ export class MappingGenerationEditorState {
     this.storeNewName = storeNewName;
   }
 
-  setM2mAdditionalMappings(m2mAdditionalMappings: string[]): void {
+  setM2mAdditionalMappings(m2mAdditionalMappings: PackageableElementOption<Mapping>[]): void {
     this.m2mAdditionalMappings = m2mAdditionalMappings;
   }
 
-  generate = async (): Promise<void> => {
+  *generate(): GeneratorFn<void>  {
     try {
       this.isGenerating = true;
       const engine = (
@@ -66,48 +67,33 @@ export class MappingGenerationEditorState {
       ).engine;
       this.editorStore.modelLoaderState.setModelText('');
       const config = new V1_MappingGenConfiguration(
-        this.sourceMapping,
-        this.mappingToRegenerate,
+        this.sourceMapping?.value.path,
+        this.mappingToRegenerate?.value.path,
         this.mappingNewName,
         this.storeNewName,
-        this.m2mAdditionalMappings,
+        this.m2mAdditionalMappings.map(m2m => m2m.value.path),
+        this.config.key,
+        this.config.label
       );
 
-      const model = await this.transformModelToPureModelContext();
-      // const model = (this.editorStore.graphManagerState.graphManager as V1_PureGraphManager).getFullGraphModelData(this.editorStore.graphManagerState.graph);
-      const pmcd = await V1_generateRelationalMapping(engine, config, model);
+      const entities: Entity[] = (yield this.editorStore.graphManagerState.graphManager.generateModelFromConfiguration(
+        config, this.editorStore.graphManagerState.graph)) as Entity[];
 
-      const generatedModelGrammar = await flowResult(
-        engine.pureModelContextDataToPureCode(pmcd),
-      );
+      const generatedModelGrammar: string =
+        (yield this.editorStore.graphManagerState.graphManager.entitiesToPureCode(
+          entities,
+        )) as string;
 
       this.editorStore.modelLoaderState.setModelText(generatedModelGrammar);
       this.isGenerating = false;
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.GENERATION_FAILURE),
+        LogEvent.create(MAPPING_GENERATION_LOG_EVENT_TYPE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
       this.isGenerating = false;
     }
   };
-
-  private transformModelToPureModelContext =
-    async (): Promise<V1_PureModelContextData> => {
-      const transformedEntities =
-        this.editorStore.graphManagerState.graph.allOwnElements.map((element) =>
-          this.editorStore.graphManagerState.graphManager.elementToEntity(
-            element,
-          ),
-        );
-      const graphData = new V1_PureModelContextData();
-      await V1_entitiesToPureModelContextData(
-        transformedEntities,
-        graphData,
-        this.editorStore.graphManagerState.graphManager.pluginManager.getPureProtocolProcessorPlugins(),
-      );
-      return graphData;
-    };
 }

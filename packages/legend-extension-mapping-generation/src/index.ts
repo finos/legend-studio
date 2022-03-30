@@ -15,3 +15,4 @@
  */
 
 export * from './components/MappingGeneration_LegendStudioPlugin';
+export * from './models/MappingGeneration_Extension';

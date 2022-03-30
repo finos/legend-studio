@@ -65,6 +65,8 @@
     "directory": "build/publishContent"
   },
   "extensions": {
-    "studioPlugin": "@finos/legend-studio-plugin-external-language-morphir"
+    "graphPreset": "@finos/legend-graph-preset-mapping-generation",
+    "studioPlugin": "@finos/legend-studio-plugin-mapping-generation-extension",
+    "pureProtocolProcessorPlugin": "@finos/legend-graph-plugin-mapping-generation-pure-protocol-processor"
   }
 }

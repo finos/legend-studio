@@ -234,6 +234,8 @@ import {
 import { V1_MAPPING_ELEMENT_PROTOCOL_TYPE } from './transformation/pureProtocol/serializationHelpers/V1_MappingSerializationHelper';
 import { V1_SERVICE_ELEMENT_PROTOCOL_TYPE } from './transformation/pureProtocol/serializationHelpers/V1_ServiceSerializationHelper';
 import { MappingInclude } from '../../../metamodels/pure/packageableElements/mapping/MappingInclude';
+import type {ModelGenerationConfiguration} from "../../../ModelGenerationConfiguration";
+import type {MappingGeneration_PureProtocolProcessorPlugin_Extension} from "../MappingGeneration_PureProtocolProcessorPlugin_Extension";
 
 const V1_FUNCTION_SUFFIX_MULTIPLICITY_INFINITE = 'MANY';
 
@@ -1608,6 +1610,36 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       throw new UnsupportedOperationError(
         `Can't generate model using the specified generation element: no compatible generator available from plugins`,
         generationElement,
+      );
+    }
+    return this.pureModelContextDataToEntities(generatedModel);
+  }
+
+  async generateModelFromConfiguration(
+    config: ModelGenerationConfiguration,
+    graph: PureModel,
+  ): Promise<Entity[]> {
+    const model = this.getFullGraphModelData(graph);
+    let generatedModel: V1_PureModelContextData | undefined = undefined;
+    const extraModelGenerators = this.pluginManager
+      .getPureProtocolProcessorPlugins()
+      .flatMap(
+        (plugin) =>
+          (
+            plugin as MappingGeneration_PureProtocolProcessorPlugin_Extension
+          ).V1_getExtraModelGeneratorsFromConfiguration?.() ?? [],
+      );
+    for (const generator of extraModelGenerators) {
+      const _model = await generator(config, model, this.engine);
+      if (_model) {
+        generatedModel = _model;
+        break;
+      }
+    }
+    if (!generatedModel) {
+      throw new UnsupportedOperationError(
+        `Can't generate model using the specified configuration: no compatible generator available from plugins`,
+        config,
       );
     }
     return this.pureModelContextDataToEntities(generatedModel);

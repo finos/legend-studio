@@ -19,7 +19,12 @@ import type { LegendStudioPluginManager } from '../application/LegendStudioPlugi
 import type { ElementEditorState } from './editor-state/element-editor-state/ElementEditorState';
 import type { EditorExtensionState, EditorStore } from './EditorStore';
 import type { NewElementDriver, NewElementState } from './NewElementState';
-import type { Class, PackageableElement } from '@finos/legend-graph';
+import type {
+  Class,
+  PackageableElement,
+  ModelGenerationConfiguration
+} from '@finos/legend-graph';
+import type { Entity } from "@finos/legend-model-storage";
 
 export type ApplicationSetup = (
   pluginManager: LegendStudioPluginManager,
@@ -53,9 +58,9 @@ export type ClassPreviewRenderer = (
 ) => React.ReactNode | undefined;
 
 export type ModelLoaderExtensionConfiguration = {
-  key: string;
-  label?: string | undefined;
-  load: (editorStore: EditorStore) => Promise<void>;
+  modelGenerationConfig: ModelGenerationConfiguration;
+  allowHardReplace?: boolean;
+  load: (editorStore: EditorStore) => Promise<Entity[]>;
   renderer: (editorStore: EditorStore) => React.ReactNode | undefined;
 };
 
