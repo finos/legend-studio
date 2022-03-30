@@ -1281,10 +1281,24 @@ export class EditorStore {
         showLoading: true,
       });
       try {
-        const graphGrammar =
-          (yield this.graphManagerState.graphManager.graphToPureCode(
-            this.graphManagerState.graph,
-          )) as string;
+        let graphGrammar;
+        if (
+          this.isInViewerMode &&
+          (!this.graphManagerState.graph.buildState.hasSucceeded ||
+            !this.graphManagerState.graph.dependencyManager.buildState
+              .hasSucceeded)
+        ) {
+          graphGrammar =
+            (yield this.graphManagerState.graphManager.entitiesToPureCode(
+              this.changeDetectionState.workspaceLocalLatestRevisionState
+                .entities,
+            )) as string;
+        } else {
+          graphGrammar =
+            (yield this.graphManagerState.graphManager.graphToPureCode(
+              this.graphManagerState.graph,
+            )) as string;
+        }
         yield flowResult(
           this.grammarTextEditorState.setGraphGrammarText(graphGrammar),
         );
