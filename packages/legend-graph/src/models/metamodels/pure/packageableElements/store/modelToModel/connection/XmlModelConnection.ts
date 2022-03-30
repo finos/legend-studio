@@ -22,6 +22,7 @@ import type { Class } from '../../../domain/Class';
 import type { ModelStore } from '../model/ModelStore';
 import { PureModelConnection } from './PureModelConnection';
 import type { PackageableElementReference } from '../../../PackageableElementReference';
+import { setPackageableElementReferenceValue } from '../../../../../../DomainModifierHelper';
 
 export class XmlModelConnection
   extends PureModelConnection
@@ -51,7 +52,7 @@ export class XmlModelConnection
   }
 
   setClass(value: Class): void {
-    this.class.setValue(value);
+    setPackageableElementReferenceValue(this.class, value);
   }
   setUrl(value: string): void {
     this.url = value;

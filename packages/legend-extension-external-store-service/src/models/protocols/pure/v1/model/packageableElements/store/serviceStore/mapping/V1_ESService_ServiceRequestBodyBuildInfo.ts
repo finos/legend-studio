@@ -14,23 +14,17 @@
  * limitations under the License.
  */
 
-import { observable, makeObservable, action } from 'mobx';
-import type { Hashable } from '@finos/legend-shared';
-import type { ServiceParameter } from '../model/ESService_ServiceParameter';
+import { hashArray, type Hashable } from '@finos/legend-shared';
+import type { V1_RawLambda } from '@finos/legend-graph';
+import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../../ESService_ModelUtils';
 
-export abstract class ServiceParameterMapping implements Hashable {
-  serviceParameter!: ServiceParameter;
+export class V1_ServiceRequestBodyBuildInfo implements Hashable {
+  transform!: V1_RawLambda;
 
-  constructor() {
-    makeObservable(this, {
-      serviceParameter: observable,
-      setServiceParameter: action,
-    });
+  get hashCode(): string {
+    return hashArray([
+      SERVICE_STORE_HASH_STRUCTURE.SERVICE_REQUEST_BODY_BUILD_INFO,
+      this.transform,
+    ]);
   }
-
-  setServiceParameter(value: string): void {
-    this.serviceParameter.setName(value);
-  }
-
-  abstract get hashCode(): string;
 }

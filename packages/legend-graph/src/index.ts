@@ -160,6 +160,7 @@ export * from './helpers/ValidationHelper';
 export * from './helpers/Stubable'; // TODO: to be removed
 export * from './helpers/DomainHelper';
 export * from './helpers/PureLanguageHelper';
+export * from './models/DomainModifierHelper';
 
 // --------------------------------------------- GRAPH --------------------------------------------------
 

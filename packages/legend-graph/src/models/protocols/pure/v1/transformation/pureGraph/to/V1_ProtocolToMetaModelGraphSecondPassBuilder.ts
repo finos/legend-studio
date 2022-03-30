@@ -74,6 +74,7 @@ import {
 import type { V1_Measure } from '../../../model/packageableElements/domain/V1_Measure';
 import type { V1_SectionIndex } from '../../../model/packageableElements/section/V1_SectionIndex';
 import { V1_buildSection } from '../../../transformation/pureGraph/to/helpers/V1_SectionBuilderHelper';
+import { setMeasureCanonicalUnit } from '../../../../../../DomainModifierHelper';
 
 export class V1_ProtocolToMetaModelGraphSecondPassBuilder
   implements V1_PackageableElementVisitor<void>
@@ -165,7 +166,8 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
     const measure = this.context.graph.getMeasure(
       this.context.graph.buildPath(element.package, element.name),
     );
-    measure.setCanonicalUnit(
+    setMeasureCanonicalUnit(
+      measure,
       V1_buildUnit(
         element.canonicalUnit,
         measure,

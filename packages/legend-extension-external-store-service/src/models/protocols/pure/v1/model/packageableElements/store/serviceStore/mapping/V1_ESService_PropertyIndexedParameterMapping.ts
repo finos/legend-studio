@@ -18,6 +18,10 @@ import { hashArray, type Hashable } from '@finos/legend-shared';
 import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../../ESService_ModelUtils';
 import { V1_ServiceParameterMapping } from './V1_ESService_ServiceParameterMapping';
 
+/**
+ * TODO: this will be removed in upcoming releases
+ * @deprecated
+ */
 export class V1_PropertyIndexedParameterMapping
   extends V1_ServiceParameterMapping
   implements Hashable

@@ -31,6 +31,7 @@ import {
   createValidationError,
 } from '../../../../../helpers/ValidationHelper';
 import type { PackageableElementReference } from '../PackageableElementReference';
+import { setPackageableElementReferenceValue } from '../../../../DomainModifierHelper';
 
 export abstract class ServiceExecution implements Hashable {
   private readonly _$nominalTypeBrand!: 'ServiceExecution';
@@ -102,7 +103,7 @@ export class PureSingleExecution extends PureExecution implements Hashable {
   }
 
   setMapping(value: Mapping): void {
-    this.mapping.setValue(value);
+    setPackageableElementReferenceValue(this.mapping, value);
   }
   setRuntime(value: Runtime): void {
     this.runtime = value;
@@ -160,7 +161,7 @@ export class KeyedExecutionParameter implements Hashable {
     this.key = value;
   }
   setMapping(value: Mapping): void {
-    this.mapping.setValue(value);
+    setPackageableElementReferenceValue(this.mapping, value);
   }
   setRuntime(value: Runtime): void {
     this.runtime = value;

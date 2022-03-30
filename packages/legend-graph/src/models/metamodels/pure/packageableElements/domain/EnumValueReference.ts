@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { observable, action, computed, makeObservable } from 'mobx';
+import { observable, computed, makeObservable } from 'mobx';
 import {
   PackageableElementExplicitReference,
   type PackageableElementReference,
@@ -40,17 +40,11 @@ export abstract class EnumValueReference
 
     makeObservable(this, {
       value: observable,
-      setValue: action,
       isStub: computed,
     });
 
     this.ownerReference = ownerReference;
     this.value = value;
-  }
-
-  setValue(value: Enum): void {
-    this.value = value;
-    this.ownerReference.setValue(value.owner);
   }
 
   get isStub(): boolean {

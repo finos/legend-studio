@@ -413,7 +413,6 @@ const indexPureModelContextData = (
 interface V1_GraphBuilderInput {
   model: BasicModel;
   data: V1_PureModelContextDataIndex;
-  parentElementPath?: string | undefined;
 }
 
 export interface V1_EngineSetupConfig {
@@ -423,7 +422,7 @@ export interface V1_EngineSetupConfig {
 }
 
 export class V1_PureGraphManager extends AbstractPureGraphManager {
-  engine!: V1_Engine;
+  engine: V1_Engine;
   extensions: V1_GraphBuilderExtensions;
 
   constructor(pluginManager: GraphPluginManager, log: Log) {
@@ -462,6 +461,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       buildFileGenerations: flow,
       buildGenerationSpecifications: flow,
     });
+
+    this.engine = new V1_Engine({}, log);
 
     // setup plugins
     this.extensions = new V1_GraphBuilderExtensions(
@@ -958,28 +959,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
             ),
           ),
         ),
-      );
-    }
-    if (!options?.TEMPORARY_skipGeneratedElementsPostProcessing) {
-      // Assign generated elements to their parent generation element (config that drives generation)
-      yield Promise.all(
-        inputs
-          .filter((input) => Boolean(input.parentElementPath))
-          .flatMap((input) =>
-            input.data.elements.map((el) =>
-              promisify(() =>
-                runInAction(() => {
-                  // TODO: check performance once `getNullableElement` is optimized
-                  const element = graph.getElement(el.path);
-                  if (input.parentElementPath) {
-                    element.generationParentElement = graph.getElement(
-                      input.parentElementPath,
-                    );
-                  }
-                }),
-              ),
-            ),
-          ),
       );
     }
     /**
@@ -1893,6 +1872,22 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
+  async debugExecutionPlanGeneration(
+    graph: PureModel,
+    mapping: Mapping,
+    lambda: RawLambda,
+    runtime: Runtime,
+    clientVersion: string,
+  ): Promise<{ plan: RawExecutionPlan; debug: string }> {
+    const result = await this.engine.debugExecutionPlanGeneration(
+      this.createExecutionInput(graph, mapping, lambda, runtime, clientVersion),
+    );
+    return {
+      plan: result.plan,
+      debug: result.debug.join('\n'),
+    };
+  }
+
   buildExecutionPlan(
     executionPlanJson: PlainObject<V1_ExecutionPlan>,
     graph: PureModel,
@@ -2079,6 +2074,9 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
+  // TODO: we could potentially reshape this method to build light graph with just indexing
+  // and return a slightly more complicated object instead: separating the graph and the dependencies part instead of
+  // return a list of `V1_GraphBuilderInput`. This method would be useful for any other light graph builder algo.
   async indexEntitiesWithDependencyIntoGraph(
     graph: PureModel,
     _entities: Entity[],

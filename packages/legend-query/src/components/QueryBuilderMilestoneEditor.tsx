@@ -30,6 +30,7 @@ import {
   PRIMITIVE_TYPE,
   TYPICAL_MULTIPLICITY_TYPE,
   VariableExpression,
+  setGenericTypeRawType,
 } from '@finos/legend-graph';
 import {
   DatePrimitiveInstanceValueEditor,
@@ -122,7 +123,10 @@ const MilestoningParameterEditor = observer(
         .map((p) => buildElementOption(p) as PackageableElementOption<Type>);
     const changeType = (val: PackageableElementOption<Type>): void => {
       if (variableType !== val.value) {
-        milestoningParameter?.genericType?.value.setRawType(val.value);
+        const genType = milestoningParameter?.genericType?.value;
+        if (genType) {
+          setGenericTypeRawType(genType, val.value);
+        }
       }
       if (
         milestoningParameter instanceof PrimitiveInstanceValue &&

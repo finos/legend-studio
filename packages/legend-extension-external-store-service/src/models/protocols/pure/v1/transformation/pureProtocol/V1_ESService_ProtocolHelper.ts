@@ -64,6 +64,10 @@ import { V1_ParameterIndexedParameterMapping } from '../../model/packageableElem
 import { V1_PropertyIndexedParameterMapping } from '../../model/packageableElements/store/serviceStore/mapping/V1_ESService_PropertyIndexedParameterMapping';
 import type { V1_SecurityScheme } from '../../model/packageableElements/store/serviceStore/model/V1_ESService_SecurityScheme';
 import type { ExternalStoreService_PureProtocolPlugin_Extension } from '../../../ExternalStoreService_PureProtocolPlugin_Extension';
+import { V1_ServiceRequestBuildInfo } from '../../model/packageableElements/store/serviceStore/mapping/V1_ESService_ServiceRequestBuildInfo';
+import { V1_ServiceRequestParametersBuildInfo } from '../../model/packageableElements/store/serviceStore/mapping/V1_ESService_ServiceRequestParametersBuildInfo';
+import { V1_ServiceRequestParameterBuildInfo } from '../../model/packageableElements/store/serviceStore/mapping/V1_ESService_ServiceRequestParameterBuildInfo';
+import { V1_ServiceRequestBodyBuildInfo } from '../../model/packageableElements/store/serviceStore/mapping/V1_ESService_ServiceRequestBodyBuildInfo';
 
 export const V1_SERVICE_STORE_ELEMENT_PROTOCOL_TYPE = 'serviceStore';
 export const V1_SERVICE_STORE_MAPPING_PROTOCOL_TYPE = 'serviceStore';
@@ -362,6 +366,42 @@ const V1_propertyIndexedParameterMappingModelSchema = createModelSchema(
   },
 );
 
+const V1_serializeServiceRequestBodyBuildInfo = createModelSchema(
+  V1_ServiceRequestBodyBuildInfo,
+  {
+    transform: usingModelSchema(V1_rawLambdaModelSchema),
+  },
+);
+
+const V1_serializeServiceRequestParameterBuildInfo = createModelSchema(
+  V1_ServiceRequestParameterBuildInfo,
+  {
+    serviceParameter: primitive(),
+    transform: usingModelSchema(V1_rawLambdaModelSchema),
+  },
+);
+
+const V1_serializeServiceRequestParametersBuildInfo = createModelSchema(
+  V1_ServiceRequestParametersBuildInfo,
+  {
+    parameterBuildInfoList: list(
+      usingModelSchema(V1_serializeServiceRequestParameterBuildInfo),
+    ),
+  },
+);
+
+const V1_serializeServiceRequestBuildInfo = createModelSchema(
+  V1_ServiceRequestBuildInfo,
+  {
+    requestBodyBuildInfo: optional(
+      usingModelSchema(V1_serializeServiceRequestBodyBuildInfo),
+    ),
+    requestParametersBuildInfo: optional(
+      usingModelSchema(V1_serializeServiceRequestParametersBuildInfo),
+    ),
+  },
+);
+
 const V1_serializeServiceParameterMapping = (
   protocol: V1_ServiceParameterMapping,
 ): PlainObject<V1_ServiceParameterMapping> => {
@@ -393,13 +433,16 @@ const V1_deserializeServiceParameterMapping = (
 };
 
 const V1_serviceMappingModelSchema = createModelSchema(V1_ServiceMapping, {
-  parameterMappings: list(
-    custom(
-      (val) => V1_serializeServiceParameterMapping(val),
-      (val) => V1_deserializeServiceParameterMapping(val),
+  parameterMappings: optional(
+    list(
+      custom(
+        (val) => V1_serializeServiceParameterMapping(val),
+        (val) => V1_deserializeServiceParameterMapping(val),
+      ),
     ),
   ),
   pathOffset: raw(),
+  requestBuildInfo: usingModelSchema(V1_serializeServiceRequestBuildInfo),
   service: usingModelSchema(V1_servicePtrModelSchema),
 });
 

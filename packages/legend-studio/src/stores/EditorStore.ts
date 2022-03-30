@@ -1104,10 +1104,17 @@ export class EditorStore {
     if (this.graphState.checkIfApplicationUpdateOperationIsRunning()) {
       return;
     }
-    const generatedChildrenElements =
-      this.graphManagerState.graph.generationModel.allOwnElements.filter(
-        (e) => e.generationParentElement === element,
-      );
+    const generatedChildrenElements = (
+      this.graphState.graphGenerationState.generatedEntities.get(
+        element.path,
+      ) ?? []
+    )
+      .map((genChildEntity) =>
+        this.graphManagerState.graph.generationModel.allOwnElements.find(
+          (genElement) => genElement.path === genChildEntity.path,
+        ),
+      )
+      .filter(isNonNullable);
     const elementsToDelete = [element, ...generatedChildrenElements];
     if (
       this.currentEditorState &&

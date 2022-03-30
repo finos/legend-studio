@@ -74,7 +74,6 @@ export abstract class PackageableElement implements Hashable, Stubable {
   protected _isImmutable = false;
   name: string;
   package?: Package | undefined;
-  generationParentElement?: PackageableElement | undefined;
 
   constructor(name: string) {
     makeObservable<
@@ -125,7 +124,9 @@ export abstract class PackageableElement implements Hashable, Stubable {
 
   deleteElementFromGraph(): void {
     if (this.package) {
-      this.package.deleteElement(this);
+      this.package.children = this.package.children.filter(
+        (child) => child !== this,
+      );
     }
     this.setIsDeleted(true);
   }

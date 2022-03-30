@@ -263,6 +263,9 @@ export class TaxonomyNodeViewerState {
           this.taxonomyStore.graphManagerState.systemModel,
           dependencyManager,
           dependencyEntitiesMap,
+          {
+            TEMPORARY_skipGraphBuilderPostProcessing: true,
+          },
         ),
       )) as GraphBuilderReport;
       dependency_buildReport.timings[
@@ -276,7 +279,6 @@ export class TaxonomyNodeViewerState {
           entities,
           {
             TEMPORARY_skipGraphBuilderPostProcessing: true,
-            TEMPORARY_skipGeneratedElementsPostProcessing: true,
           },
         ),
       )) as GraphBuilderReport;
@@ -837,6 +839,9 @@ export class LegendTaxonomyStore {
           this.graphManagerState.systemModel,
           dependencyManager,
           dependencyEntitiesMap,
+          {
+            TEMPORARY_skipGraphBuilderPostProcessing: true,
+          },
         ),
       )) as GraphBuilderReport;
       dependency_buildReport.timings[
@@ -850,7 +855,6 @@ export class LegendTaxonomyStore {
           entities,
           {
             TEMPORARY_skipGraphBuilderPostProcessing: true,
-            TEMPORARY_skipGeneratedElementsPostProcessing: true,
           },
         ),
       )) as GraphBuilderReport;

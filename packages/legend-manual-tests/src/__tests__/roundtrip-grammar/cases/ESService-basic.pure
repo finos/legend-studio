@@ -93,6 +93,17 @@ ServiceStore test::ServiceStore1
       response : test::gen::Trade <- test::gen::TestBinding;
       security : [];
     )
+    Service TestService4
+    (
+      path : '/testService4';
+      method : GET;
+      parameters :
+      (
+        param1 : String ( location = header, allowReserved = true, required = true )
+      );
+      response : test::gen::Trade <- test::gen::TestBinding;
+      security : [];
+    )
   )
 )
 
@@ -104,9 +115,12 @@ Mapping test::mapping
   {
     ~service [test::testServiceStoreCompilationWithSingleService1] TestService
     (
-      ~paramMapping
+      ~request
       (
-        serializationFormat : 'CSV'
+        parameters
+        (
+          serializationFormat = 'CSV'
+        )
       )
     )
   }

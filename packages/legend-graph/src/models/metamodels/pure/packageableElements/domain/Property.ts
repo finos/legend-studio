@@ -14,15 +14,8 @@
  * limitations under the License.
  */
 
-import { observable, action, computed, makeObservable } from 'mobx';
-import {
-  type Hashable,
-  hashArray,
-  uuid,
-  deleteEntry,
-  addUniqueEntry,
-  changeEntry,
-} from '@finos/legend-shared';
+import { observable, computed, makeObservable } from 'mobx';
+import { type Hashable, hashArray, uuid } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import {
   type GenericTypeReference,
@@ -60,14 +53,6 @@ export class Property
       multiplicity: observable,
       stereotypes: observable,
       taggedValues: observable,
-      setName: action,
-      setGenericType: action,
-      setMultiplicity: action,
-      addTaggedValue: action,
-      deleteTaggedValue: action,
-      addStereotype: action,
-      changeStereotype: action,
-      deleteStereotype: action,
       isStub: computed,
       hashCode: computed,
     });
@@ -76,34 +61,6 @@ export class Property
     this.multiplicity = multiplicity;
     this.genericType = genericType;
     this.owner = owner;
-  }
-
-  setName(value: string): void {
-    this.name = value;
-  }
-  setGenericType(value: GenericType): void {
-    this.genericType.setValue(value);
-  }
-  setMultiplicity(value: Multiplicity): void {
-    this.multiplicity = value;
-  }
-  addTaggedValue(value: TaggedValue): void {
-    addUniqueEntry(this.taggedValues, value);
-  }
-  deleteTaggedValue(value: TaggedValue): void {
-    deleteEntry(this.taggedValues, value);
-  }
-  addStereotype(value: StereotypeReference): void {
-    addUniqueEntry(this.stereotypes, value);
-  }
-  changeStereotype(
-    oldValue: StereotypeReference,
-    newValue: StereotypeReference,
-  ): void {
-    changeEntry(this.stereotypes, oldValue, newValue);
-  }
-  deleteStereotype(value: StereotypeReference): void {
-    deleteEntry(this.stereotypes, value);
   }
 
   static createStub = (type: Type, _class: Class): Property =>

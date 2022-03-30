@@ -42,7 +42,6 @@ import {
   CaretDownIcon,
   ErrorIcon,
   RefreshIcon,
-  PaperScrollIcon,
   WrenchIcon,
 } from '@finos/legend-art';
 import { useDrop } from 'react-dnd';
@@ -622,14 +621,16 @@ export const MappingTestEditor = observer(
       (tab: MAPPING_TEST_EDITOR_TAB_TYPE): (() => void) =>
       (): void =>
         testState.setSelectedTab(tab);
-
+    // execute
     const runTest = applicationStore.guardUnhandledError(() =>
       flowResult(testState.runTest()),
     );
-    // Plan
     const executionPlanState = testState.executionPlanState;
     const generatePlan = applicationStore.guardUnhandledError(() =>
-      flowResult(testState.generatePlan()),
+      flowResult(testState.generatePlan(false)),
+    );
+    const debugPlanGeneration = applicationStore.guardUnhandledError(() =>
+      flowResult(testState.generatePlan(true)),
     );
     // Test Result
     let testResult = '';
@@ -677,21 +678,51 @@ export const MappingTestEditor = observer(
           </div>
           <div className="mapping-test-editor__header__actions">
             <button
-              className="mapping-test-editor__header__action"
-              disabled={testState.isExecutingTest}
+              className="mapping-test-editor__execute-btn"
               onClick={runTest}
+              disabled={
+                testState.isRunningTest ||
+                testState.isExecutingTest ||
+                testState.isGeneratingPlan
+              }
               tabIndex={-1}
-              title={'Run Test'}
             >
-              <PlayIcon className="mapping-test-editor__icon__run" />
-            </button>
-            <button
-              className="mapping-test-editor__header__action"
-              onClick={generatePlan}
-              tabIndex={-1}
-              title="View Execution Plan"
-            >
-              <PaperScrollIcon className="mapping-test-editor__icon__generate-plan" />
+              <div className="mapping-test-editor__execute-btn__label">
+                <PlayIcon className="mapping-test-editor__execute-btn__label__icon" />
+                <div className="mapping-test-editor__execute-btn__label__title">
+                  Run Test
+                </div>
+              </div>
+              <DropdownMenu
+                className="mapping-test-editor__execute-btn__dropdown-btn"
+                disabled={
+                  testState.isRunningTest ||
+                  testState.isExecutingTest ||
+                  testState.isGeneratingPlan
+                }
+                content={
+                  <MenuContent>
+                    <MenuContentItem
+                      className="mapping-test-editor__execute-btn__option"
+                      onClick={generatePlan}
+                    >
+                      Generate Plan
+                    </MenuContentItem>
+                    <MenuContentItem
+                      className="mapping-test-editor__execute-btn__option"
+                      onClick={debugPlanGeneration}
+                    >
+                      Debug
+                    </MenuContentItem>
+                  </MenuContent>
+                }
+                menuProps={{
+                  anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
+                  transformOrigin: { vertical: 'top', horizontal: 'right' },
+                }}
+              >
+                <CaretDownIcon />
+              </DropdownMenu>
             </button>
           </div>
         </div>

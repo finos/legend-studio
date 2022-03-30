@@ -36,6 +36,8 @@ import {
   GenericType,
   Property,
   Multiplicity,
+  addClassProperty,
+  addClassSuperType,
 } from '@finos/legend-graph';
 import { action, makeObservable, observable } from 'mobx';
 import type { Diagram } from './models/metamodels/pure/packageableElements/diagram/DSLDiagram_Diagram';
@@ -580,7 +582,8 @@ export class DiagramRenderer {
                 startClassView.class.value,
               )
             ) {
-              startClassView.class.value.addSuperType(
+              addClassSuperType(
+                startClassView.class.value,
                 GenericTypeExplicitReference.create(
                   new GenericType(targetClassView.class.value),
                 ),
@@ -619,7 +622,7 @@ export class DiagramRenderer {
               ),
               startClassView.class.value,
             );
-            startClassView.class.value.addProperty(property);
+            addClassProperty(startClassView.class.value, property);
             // only create property view if the classviews are different
             // else we end up with a weird rendering where the property view
             // is not targetable

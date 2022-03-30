@@ -60,6 +60,7 @@ import {
   Enumeration,
   GenerationSpecification,
   ELEMENT_PATH_DELIMITER,
+  addPackageElement,
 } from '@finos/legend-graph';
 import type { DSLGenerationSpecification_LegendStudioPlugin_Extension } from '../DSLGenerationSpecification_LegendStudioPlugin_Extension';
 import { ExternalFormatState } from './ExternalFormatState';
@@ -159,6 +160,13 @@ export class GraphGenerationState {
       });
     }
     return [];
+  }
+
+  findGenerationParentPath(genChildPath: string): string | undefined {
+    const genEntity = Array.from(this.generatedEntities.entries()).find(
+      ([, genEntities]) => genEntities.find((m) => m.path === genChildPath),
+    );
+    return genEntity?.[0];
   }
 
   setFileGenerationConfigurations(
@@ -378,7 +386,7 @@ export class GraphGenerationState {
         const specPackage = guaranteeNonNullable(
           [...modelGenerationElements, ...fileGenerations][0]?.package,
         );
-        specPackage.addElement(generationSpec);
+        addPackageElement(specPackage, generationSpec);
         this.editorStore.graphManagerState.graph.addElement(generationSpec);
       }
     }

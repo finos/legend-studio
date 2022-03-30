@@ -16,6 +16,10 @@
 
 import type { Hashable } from '@finos/legend-shared';
 
+/**
+ * TODO: this will be removed in upcoming releases
+ * @deprecated
+ */
 export abstract class V1_ServiceParameterMapping implements Hashable {
   serviceParameter!: string;
 

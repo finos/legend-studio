@@ -20,6 +20,24 @@
   height: 100%;
   width: 100%;
 
+  &__content {
+    height: 100%;
+    width: 100%;
+  }
+
+  &__debug-panel {
+    background: var(--color-dark-grey-50);
+
+    .panel__header {
+      background: var(--color-dark-grey-250);
+    }
+
+    .panel__content {
+      position: relative;
+      background: var(--color-dark-grey-50);
+    }
+  }
+
   &__close-btn {
     border-color: var(--color-blue-200);
     background: var(--color-blue-300);

@@ -71,6 +71,7 @@ import {
   StaticDatasourceSpecification,
   DefaultH2AuthenticationStrategy,
   ModelGenerationSpecification,
+  addPackageElement,
 } from '@finos/legend-graph';
 import type { DSLMapping_LegendStudioPlugin_Extension } from './DSLMapping_LegendStudioPlugin_Extension';
 
@@ -549,12 +550,14 @@ export class NewElementState {
         );
       } else {
         const element = this.createElement(elementName);
-        (packagePath
-          ? this.editorStore.graphManagerState.graph.getOrCreatePackage(
-              packagePath,
-            )
-          : this.editorStore.graphManagerState.graph.root
-        ).addElement(element);
+        addPackageElement(
+          packagePath
+            ? this.editorStore.graphManagerState.graph.getOrCreatePackage(
+                packagePath,
+              )
+            : this.editorStore.graphManagerState.graph.root,
+          element,
+        );
         this.editorStore.graphManagerState.graph.addElement(element);
         if (element instanceof Package) {
           // expand tree node only
@@ -584,7 +587,8 @@ export class NewElementState {
         generationSpec = new GenerationSpecification(
           DEFAULT_GENERATION_SPECIFICATION_NAME,
         );
-        guaranteeNonNullable(generationElement.package).addElement(
+        addPackageElement(
+          guaranteeNonNullable(generationElement.package),
           generationSpec,
         );
         this.editorStore.graphManagerState.graph.addElement(generationSpec);

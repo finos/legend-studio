@@ -79,6 +79,7 @@ import {
   buildSourceInformationSourceId,
   PureClientVersion,
   TableAlias,
+  type RawExecutionPlan,
 } from '@finos/legend-graph';
 import { LambdaEditorState, TAB_SIZE } from '@finos/legend-application';
 
@@ -700,16 +701,42 @@ export class MappingTestState {
     this.test.setAssert(this.assertionState.assert);
   }
 
-  *generatePlan(): GeneratorFn<void> {
+  *generatePlan(debug: boolean): GeneratorFn<void> {
     try {
       this.isGeneratingPlan = true;
-      yield flowResult(
-        this.executionPlanState.generatePlan(
-          this.mappingEditorState.mapping,
-          this.queryState.query,
-          this.inputDataState.runtime,
-        ),
-      );
+      let rawPlan: RawExecutionPlan;
+      if (debug) {
+        const debugResult =
+          (yield this.editorStore.graphManagerState.graphManager.debugExecutionPlanGeneration(
+            this.editorStore.graphManagerState.graph,
+            this.mappingEditorState.mapping,
+            this.queryState.query,
+            this.inputDataState.runtime,
+            PureClientVersion.VX_X_X,
+          )) as { plan: RawExecutionPlan; debug: string };
+        rawPlan = debugResult.plan;
+        this.executionPlanState.setDebugText(debugResult.debug);
+      } else {
+        rawPlan =
+          (yield this.editorStore.graphManagerState.graphManager.generateExecutionPlan(
+            this.editorStore.graphManagerState.graph,
+            this.mappingEditorState.mapping,
+            this.queryState.query,
+            this.inputDataState.runtime,
+            PureClientVersion.VX_X_X,
+          )) as object;
+      }
+      try {
+        this.executionPlanState.setRawPlan(rawPlan);
+        const plan =
+          this.editorStore.graphManagerState.graphManager.buildExecutionPlan(
+            rawPlan,
+            this.editorStore.graphManagerState.graph,
+          );
+        this.executionPlanState.setPlan(plan);
+      } catch {
+        // do nothing
+      }
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
