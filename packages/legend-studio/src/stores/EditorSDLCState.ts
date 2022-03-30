@@ -26,7 +26,7 @@ import {
   guaranteeNonNullable,
   assertTrue,
 } from '@finos/legend-shared';
-import { CHANGE_DETECTION_LOG_EVENT } from './ChangeDetectionLogEvent';
+import { CHANGE_DETECTION_EVENT } from './ChangeDetectionEvent';
 import { EDITOR_MODE, ACTIVITY_MODE } from './EditorConfig';
 import {
   type Entity,
@@ -44,7 +44,7 @@ import {
   Workspace,
   WorkspaceAccessType,
 } from '@finos/legend-server-sdlc';
-import { LEGEND_STUDIO_LOG_EVENT_TYPE } from './LegendStudioLogEvent';
+import { LEGEND_STUDIO_APP_EVENT } from './LegendStudioAppEvent';
 
 export const entityDiffSorter = (a: EntityDiff, b: EntityDiff): number =>
   extractEntityNameFromPath(a.newPath ?? a.oldPath ?? '').localeCompare(
@@ -140,7 +140,7 @@ export class EditorSDLCState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.SDLC_MANAGER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       if (!options?.suppressNotification) {
@@ -177,7 +177,7 @@ export class EditorSDLCState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.SDLC_MANAGER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       if (!options?.suppressNotification) {
@@ -197,7 +197,7 @@ export class EditorSDLCState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.SDLC_MANAGER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
     } finally {
@@ -237,7 +237,7 @@ export class EditorSDLCState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.SDLC_MANAGER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -267,7 +267,7 @@ export class EditorSDLCState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.SDLC_MANAGER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -289,7 +289,7 @@ export class EditorSDLCState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.SDLC_MANAGER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -353,7 +353,7 @@ export class EditorSDLCState {
         this.editorStore.changeDetectionState.workspaceLocalLatestRevisionState.buildEntityHashesIndex(
           entities,
           LogEvent.create(
-            CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_LOCAL_HASHES_INDEX_BUILT,
+            CHANGE_DETECTION_EVENT.CHANGE_DETECTION_LOCAL_HASHES_INDEX_BUILT,
           ),
         ),
       );
@@ -361,7 +361,7 @@ export class EditorSDLCState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.SDLC_MANAGER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -383,7 +383,7 @@ export class EditorSDLCState {
         this.editorStore.changeDetectionState.workspaceBaseRevisionState.buildEntityHashesIndex(
           workspaceBaseEntities,
           LogEvent.create(
-            CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_WORKSPACE_HASHES_INDEX_BUILT,
+            CHANGE_DETECTION_EVENT.CHANGE_DETECTION_WORKSPACE_HASHES_INDEX_BUILT,
           ),
         ),
       );
@@ -391,7 +391,7 @@ export class EditorSDLCState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.SDLC_MANAGER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -412,7 +412,7 @@ export class EditorSDLCState {
         this.editorStore.changeDetectionState.projectLatestRevisionState.buildEntityHashesIndex(
           projectLatestEntities,
           LogEvent.create(
-            CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_PROJECT_LATEST_HASHES_INDEX_BUILT,
+            CHANGE_DETECTION_EVENT.CHANGE_DETECTION_PROJECT_LATEST_HASHES_INDEX_BUILT,
           ),
         ),
       );
@@ -420,7 +420,7 @@ export class EditorSDLCState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.SDLC_MANAGER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -439,7 +439,7 @@ export class EditorSDLCState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.SDLC_MANAGER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);

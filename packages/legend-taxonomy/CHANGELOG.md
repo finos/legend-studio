@@ -1,5 +1,23 @@
 # @finos/legend-taxonomy
 
+## 1.1.4
+
+## 1.1.3
+
+### Patch Changes
+
+- [#992](https://github.com/finos/legend-studio/pull/992) [`a8693108`](https://github.com/finos/legend-studio/commit/a869310843265cf10a7595a3f53fb5b11ecf64aa) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add `TEMPORARY_skipGraphBuilderPostProcessing` flag to allow skipping post-processing in graph builder to boost performance.
+
+## 1.1.2
+
+## 1.1.1
+
+## 1.1.0
+
+### Minor Changes
+
+- [#977](https://github.com/finos/legend-studio/pull/977) [`37490b13`](https://github.com/finos/legend-studio/commit/37490b13d6156ad610bba2799e5621632885163d) ([@akphi](https://github.com/akphi)) - Show progress message and report metrics for graph builder process.
+
 ## 1.0.2
 
 ## 1.0.1

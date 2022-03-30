@@ -14,8 +14,4 @@
  * limitations under the License.
  */
 
-import { PureClientVersion } from '../../../../../../graphManager/GraphManagerUtils';
-
-export class V1_PureModelContext {
-  version = PureClientVersion.V1_0_0;
-}
+export class V1_PureModelContext {}

@@ -15,7 +15,7 @@
  */
 
 import {
-  GRAPH_MANAGER_LOG_EVENT,
+  GRAPH_MANAGER_EVENT,
   buildSourceInformationSourceId,
   ParserError,
   RawLambda,
@@ -112,7 +112,7 @@ export class QueryTextEditorState extends LambdaEditorState {
           this.setParserError(error);
         }
         this.queryBuilderState.applicationStore.log.error(
-          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
+          LogEvent.create(GRAPH_MANAGER_EVENT.PARSING_FAILURE),
           error,
         );
       }
@@ -150,7 +150,7 @@ export class QueryTextEditorState extends LambdaEditorState {
       } catch (error) {
         assertErrorThrown(error);
         this.queryBuilderState.applicationStore.log.error(
-          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
+          LogEvent.create(GRAPH_MANAGER_EVENT.PARSING_FAILURE),
           error,
         );
         this.isConvertingLambdaToString = false;

@@ -57,7 +57,7 @@ import {
   type Mapping,
   type ExecutionResult,
   extractExecutionResultValues,
-  GRAPH_MANAGER_LOG_EVENT,
+  GRAPH_MANAGER_EVENT,
   LAMBDA_PIPE,
   Class,
   ExpectedOutputMappingTestAssert,
@@ -79,6 +79,7 @@ import {
   buildSourceInformationSourceId,
   PureClientVersion,
   TableAlias,
+  type RawExecutionPlan,
 } from '@finos/legend-graph';
 import { LambdaEditorState, TAB_SIZE } from '@finos/legend-application';
 
@@ -144,7 +145,7 @@ export class MappingTestQueryState extends LambdaEditorState {
       } catch (error) {
         assertErrorThrown(error);
         this.editorStore.applicationStore.log.error(
-          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
+          LogEvent.create(GRAPH_MANAGER_EVENT.PARSING_FAILURE),
           error,
         );
       }
@@ -600,7 +601,7 @@ export class MappingTestState {
         throw new UnsupportedOperationError();
       }
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE),
+        LogEvent.create(GRAPH_MANAGER_EVENT.EXECUTION_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -658,7 +659,7 @@ export class MappingTestState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE),
+        LogEvent.create(GRAPH_MANAGER_EVENT.EXECUTION_FAILURE),
         error,
       );
       this.errorRunningTest = error;
@@ -689,7 +690,7 @@ export class MappingTestState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE),
+        LogEvent.create(GRAPH_MANAGER_EVENT.EXECUTION_FAILURE),
         error.message,
       );
       yield flowResult(this.editorStore.graphState.globalCompileInFormMode()); // recompile graph if there is problem with the deep fetch tree of a test
@@ -700,20 +701,46 @@ export class MappingTestState {
     this.test.setAssert(this.assertionState.assert);
   }
 
-  *generatePlan(): GeneratorFn<void> {
+  *generatePlan(debug: boolean): GeneratorFn<void> {
     try {
       this.isGeneratingPlan = true;
-      yield flowResult(
-        this.executionPlanState.generatePlan(
-          this.mappingEditorState.mapping,
-          this.queryState.query,
-          this.inputDataState.runtime,
-        ),
-      );
+      let rawPlan: RawExecutionPlan;
+      if (debug) {
+        const debugResult =
+          (yield this.editorStore.graphManagerState.graphManager.debugExecutionPlanGeneration(
+            this.editorStore.graphManagerState.graph,
+            this.mappingEditorState.mapping,
+            this.queryState.query,
+            this.inputDataState.runtime,
+            PureClientVersion.VX_X_X,
+          )) as { plan: RawExecutionPlan; debug: string };
+        rawPlan = debugResult.plan;
+        this.executionPlanState.setDebugText(debugResult.debug);
+      } else {
+        rawPlan =
+          (yield this.editorStore.graphManagerState.graphManager.generateExecutionPlan(
+            this.editorStore.graphManagerState.graph,
+            this.mappingEditorState.mapping,
+            this.queryState.query,
+            this.inputDataState.runtime,
+            PureClientVersion.VX_X_X,
+          )) as object;
+      }
+      try {
+        this.executionPlanState.setRawPlan(rawPlan);
+        const plan =
+          this.editorStore.graphManagerState.graphManager.buildExecutionPlan(
+            rawPlan,
+            this.editorStore.graphManagerState.graph,
+          );
+        this.executionPlanState.setPlan(plan);
+      } catch {
+        // do nothing
+      }
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE),
+        LogEvent.create(GRAPH_MANAGER_EVENT.EXECUTION_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);

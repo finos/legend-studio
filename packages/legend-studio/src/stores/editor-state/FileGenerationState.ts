@@ -16,7 +16,7 @@
 
 import type { EditorStore } from '../EditorStore';
 import { observable, action, makeAutoObservable } from 'mobx';
-import { LEGEND_STUDIO_LOG_EVENT_TYPE } from '../LegendStudioLogEvent';
+import { LEGEND_STUDIO_APP_EVENT } from '../LegendStudioAppEvent';
 import type { TreeData } from '@finos/legend-art';
 import {
   type GenerationTreeNodeData,
@@ -124,7 +124,7 @@ export class FileGenerationState {
       this.selectedNode = undefined;
       this.processGenerationResult([]);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.GENERATION_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.GENERATION_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -149,7 +149,7 @@ export class FileGenerationState {
       entry.cleanFileName(rootFolder);
       if (generationResultMap.has(entry.fileName)) {
         this.editorStore.applicationStore.log.warn(
-          LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.GENERATION_FAILURE),
+          LogEvent.create(LEGEND_STUDIO_APP_EVENT.GENERATION_FAILURE),
           'Found 2 generation outputs with same path',
         );
       }

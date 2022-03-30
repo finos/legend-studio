@@ -27,7 +27,7 @@ import { ElementEditorState } from './ElementEditorState';
 import {
   type CompilationError,
   type PackageableElement,
-  GRAPH_MANAGER_LOG_EVENT,
+  GRAPH_MANAGER_EVENT,
   LAMBDA_PIPE,
   ParserError,
   ConcreteFunctionDefinition,
@@ -82,7 +82,7 @@ export class FunctionBodyEditorState extends LambdaEditorState {
           this.setParserError(error);
         }
         this.editorStore.applicationStore.log.error(
-          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
+          LogEvent.create(GRAPH_MANAGER_EVENT.PARSING_FAILURE),
           error,
         );
       }
@@ -139,7 +139,7 @@ export class FunctionBodyEditorState extends LambdaEditorState {
       } catch (error) {
         assertErrorThrown(error);
         this.editorStore.applicationStore.log.error(
-          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
+          LogEvent.create(GRAPH_MANAGER_EVENT.PARSING_FAILURE),
           error,
         );
         this.isConvertingFunctionBodyToString = false;
@@ -200,7 +200,7 @@ export class FunctionEditorState extends ElementEditorState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.warn(
-        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.COMPILATION_FAILURE),
+        LogEvent.create(GRAPH_MANAGER_EVENT.COMPILATION_FAILURE),
         `Can't locate error`,
         error,
       );

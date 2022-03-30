@@ -72,9 +72,6 @@ const testGeneratedElements = async (
   expect(graphManagerState.graph.generationModel.allOwnElements.length).toBe(
     generatedElementPaths.length,
   );
-  const parentElement = guaranteeNonNullable(
-    graphManagerState.graph.getElement(PARENT_ELEMENT_PATH),
-  );
   generatedElementPaths.forEach((e) => {
     const element =
       graphManagerState.graph.generationModel.getOwnNullableElement(e);
@@ -93,7 +90,6 @@ const testGeneratedElements = async (
     expect(elementInMainGraph).toBeUndefined();
     expect(elementInGraph).toBe(element);
     expect(elementInGraph.isReadOnly).toBe(true);
-    expect(elementInGraph.generationParentElement).toBe(parentElement);
   });
 
   const transformedEntities = graphManagerState.graph.allOwnElements.map((el) =>

@@ -22,7 +22,7 @@ import {
 /**
  * @deprecated
  *
- * We might eventually make it similar to HackedClass where we make it a subclass of PackageableElementPtr
+ * We might eventually handle it in the same way we handled `HackedClass` where we make it a subclass of PackageableElementPtr
  */
 export class V1_HackedUnit extends V1_ValueSpecification {
   unitType!: string;

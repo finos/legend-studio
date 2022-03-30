@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-taxonomy",
-  "version": "1.0.2",
+  "version": "1.1.4",
   "description": "Legend Taxonomy core",
   "keywords": [
     "legend",
@@ -46,7 +46,7 @@
     "@finos/legend-model-storage": "workspace:*",
     "@finos/legend-server-depot": "workspace:*",
     "@finos/legend-shared": "workspace:*",
-    "@types/react": "17.0.42",
+    "@types/react": "17.0.43",
     "@types/react-dom": "17.0.14",
     "@types/react-router-dom": "5.3.2",
     "history": "5.3.0",
@@ -63,12 +63,12 @@
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",
     "cross-env": "7.0.3",
-    "eslint": "8.11.0",
+    "eslint": "8.12.0",
     "jest": "27.5.1",
     "npm-run-all": "4.1.5",
     "rimraf": "3.0.2",
     "sass": "1.49.9",
-    "typescript": "4.6.2"
+    "typescript": "4.6.3"
   },
   "peerDependencies": {
     "react": "^17.0.0"

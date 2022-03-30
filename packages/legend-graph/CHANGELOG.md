@@ -1,5 +1,37 @@
 # @finos/legend-graph
 
+## 2.0.4
+
+## 2.0.3
+
+### Patch Changes
+
+- [#992](https://github.com/finos/legend-studio/pull/992) [`a8693108`](https://github.com/finos/legend-studio/commit/a869310843265cf10a7595a3f53fb5b11ecf64aa) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add `TEMPORARY_skipGraphBuilderPostProcessing` flag to allow skipping post-processing in graph builder to boost performance.
+
+## 2.0.2
+
+### Patch Changes
+
+- [#991](https://github.com/finos/legend-studio/pull/991) [`0787fcec`](https://github.com/finos/legend-studio/commit/0787fcec7b074342d26d295623fcbcb863ef9dee) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Initialize `DependencyManager` when creating light query graphs.
+
+## 2.0.1
+
+### Patch Changes
+
+- [#983](https://github.com/finos/legend-studio/pull/983) [`872c37a8`](https://github.com/finos/legend-studio/commit/872c37a804a47c9a86ec646ad3668728c482aeca) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Build light graphs for several exploration workflows to improve load time for `Legend Query`.
+
+## 2.0.0
+
+### Major Changes
+
+- [#981](https://github.com/finos/legend-studio/pull/981) [`e3efb96f`](https://github.com/finos/legend-studio/commit/e3efb96feb2bcd5e0b9578bafd90a586ad65ed7e) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Renamed `GRAPH_MANAGER_LOG_EVENT` to `GRAPH_MANAGER_EVENT` and `V1_ENGINE_LOG_EVENT` to `V1_ENGINE_EVENT` which are meant to be used for more than just logging.
+
+* [#981](https://github.com/finos/legend-studio/pull/981) [`e3efb96f`](https://github.com/finos/legend-studio/commit/e3efb96feb2bcd5e0b9578bafd90a586ad65ed7e) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Renamed `AbstractPureGraphManager.pureProtocolToEntities()` to `pureProtocolTextToEntities()`.
+
+### Minor Changes
+
+- [#977](https://github.com/finos/legend-studio/pull/977) [`37490b13`](https://github.com/finos/legend-studio/commit/37490b13d6156ad610bba2799e5621632885163d) ([@akphi](https://github.com/akphi)) - Graph builder methods will now output a report when completed.
+
 ## 1.3.0
 
 ### Minor Changes
