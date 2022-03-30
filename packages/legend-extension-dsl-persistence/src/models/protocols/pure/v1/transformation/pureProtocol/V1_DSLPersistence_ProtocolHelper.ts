@@ -63,8 +63,8 @@ import {
   optional,
   primitive,
   serialize,
+  SKIP,
 } from 'serializr';
-import { V1_bindingModelSchema } from '@finos/legend-graph/lib/models/protocols/pure/v1/transformation/pureProtocol/serializationHelpers/V1_DSLExternalFormat_ProtocolHelper';
 
 /**********
  * persistence
@@ -155,7 +155,7 @@ const V1_streamingPersisterModelSchema = (
     _type: usingConstantValueSchema(V1_PersisterType.STREAMING_PERSISTER),
     binding: optional(primitive()),
     connection: custom(
-      (val) => V1_serializeConnectionValue(val, true, plugins),
+      (val) => (val ? V1_serializeConnectionValue(val, true, plugins) : SKIP),
       (val) => V1_deserializeConnectionValue(val, true, plugins),
     ),
   });
@@ -167,7 +167,7 @@ const V1_batchPersisterModelSchema = (
     _type: usingConstantValueSchema(V1_PersisterType.BATCH_PERSISTER),
     binding: optional(primitive()),
     connection: custom(
-      (val) => V1_serializeConnectionValue(val, true, plugins),
+      (val) => (val ? V1_serializeConnectionValue(val, true, plugins) : SKIP),
       (val) => V1_deserializeConnectionValue(val, true, plugins),
     ),
     ingestMode: custom(
