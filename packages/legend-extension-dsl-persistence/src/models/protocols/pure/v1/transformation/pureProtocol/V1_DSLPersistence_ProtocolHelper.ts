@@ -60,6 +60,7 @@ import {
   deserialize,
   list,
   ModelSchema,
+  optional,
   primitive,
   serialize,
 } from 'serializr';
@@ -152,10 +153,7 @@ const V1_streamingPersisterModelSchema = (
 ): ModelSchema<V1_StreamingPersister> =>
   createModelSchema(V1_StreamingPersister, {
     _type: usingConstantValueSchema(V1_PersisterType.STREAMING_PERSISTER),
-    binding: custom(
-      (val) => serialize(V1_bindingModelSchema, val),
-      (val) => deserialize(V1_bindingModelSchema, val),
-    ),
+    binding: optional(primitive()),
     connection: custom(
       (val) => V1_serializeConnectionValue(val, true, plugins),
       (val) => V1_deserializeConnectionValue(val, true, plugins),
@@ -167,7 +165,7 @@ const V1_batchPersisterModelSchema = (
 ): ModelSchema<V1_BatchPersister> =>
   createModelSchema(V1_BatchPersister, {
     _type: usingConstantValueSchema(V1_PersisterType.BATCH_PERSISTER),
-    binding: primitive(),
+    binding: optional(primitive()),
     connection: custom(
       (val) => V1_serializeConnectionValue(val, true, plugins),
       (val) => V1_deserializeConnectionValue(val, true, plugins),

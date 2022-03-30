@@ -82,20 +82,20 @@ export abstract class V1_Persister implements Hashable {
 }
 
 export class V1_StreamingPersister extends V1_Persister implements Hashable {
-  binding!: string;
+  binding?: string;
   connection?: V1_Connection;
 
   override get hashCode(): string {
     return hashArray([
       PERSISTENCE_HASH_STRUCTURE.STREAMING_PERSISTER,
-      this.binding,
+      this.binding ?? '',
       this.connection ?? '',
     ]);
   }
 }
 
 export class V1_BatchPersister extends V1_Persister implements Hashable {
-  binding!: string;
+  binding?: string;
   connection?: V1_Connection;
   ingestMode!: V1_IngestMode;
   targetShape!: V1_TargetShape;
@@ -103,7 +103,7 @@ export class V1_BatchPersister extends V1_Persister implements Hashable {
   override get hashCode(): string {
     return hashArray([
       PERSISTENCE_HASH_STRUCTURE.BATCH_PERSISTER,
-      this.binding,
+      this.binding ?? '',
       this.connection ?? '',
       this.ingestMode,
       this.targetShape,

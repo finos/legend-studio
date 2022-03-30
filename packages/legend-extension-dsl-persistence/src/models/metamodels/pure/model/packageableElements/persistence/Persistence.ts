@@ -99,20 +99,20 @@ export abstract class Persister implements Hashable {
 }
 
 export class StreamingPersister extends Persister implements Hashable {
-  binding!: PackageableElementReference<Binding>;
+  binding?: PackageableElementReference<Binding>;
   connection?: Connection;
 
   override get hashCode(): string {
     return hashArray([
       PERSISTENCE_HASH_STRUCTURE.STREAMING_PERSISTER,
-      this.binding.hashValue,
+      this.binding ? this.binding.hashValue : '',
       this.connection ?? '',
     ]);
   }
 }
 
 export class BatchPersister extends Persister implements Hashable {
-  binding!: PackageableElementReference<Binding>;
+  binding?: PackageableElementReference<Binding>;
   connection?: Connection;
   ingestMode!: IngestMode;
   targetShape!: TargetShape;
@@ -120,7 +120,7 @@ export class BatchPersister extends Persister implements Hashable {
   override get hashCode(): string {
     return hashArray([
       PERSISTENCE_HASH_STRUCTURE.BATCH_PERSISTER,
-      this.binding.hashValue,
+      this.binding ? this.binding.hashValue : '',
       this.connection ?? '',
       this.ingestMode,
       this.targetShape,

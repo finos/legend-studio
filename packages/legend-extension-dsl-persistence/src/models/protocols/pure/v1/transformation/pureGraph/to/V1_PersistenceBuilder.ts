@@ -152,20 +152,24 @@ export const V1_buildPersister = (
 ): Persister => {
   if (protocol instanceof V1_StreamingPersister) {
     const persister = new StreamingPersister();
-    persister.binding = context.resolveElement(
-      protocol.binding,
-      false,
-    ) as PackageableElementImplicitReference<Binding>;
+    if (protocol.binding) {
+      persister.binding = context.resolveElement(
+        protocol.binding,
+        false,
+      ) as PackageableElementImplicitReference<Binding>;
+    }
     if (protocol.connection) {
       persister.connection = V1_buildConnection(protocol.connection, context);
     }
     return persister;
   } else if (protocol instanceof V1_BatchPersister) {
     const persister = new BatchPersister();
-    persister.binding = context.resolveElement(
-      protocol.binding,
-      false,
-    ) as PackageableElementImplicitReference<Binding>;
+    if (protocol.binding) {
+      persister.binding = context.resolveElement(
+        protocol.binding,
+        false,
+      ) as PackageableElementImplicitReference<Binding>;
+    }
     if (protocol.connection) {
       persister.connection = V1_buildConnection(protocol.connection, context);
     }

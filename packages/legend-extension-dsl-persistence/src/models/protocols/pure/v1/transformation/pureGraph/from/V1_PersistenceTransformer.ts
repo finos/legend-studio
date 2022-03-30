@@ -148,8 +148,9 @@ export const V1_transformPersister = (
 ): V1_Persister => {
   if (element instanceof StreamingPersister) {
     const protocol = new V1_StreamingPersister();
-    protocol.binding = element.binding.value.path;
-
+    if (element.binding) {
+      protocol.binding = element.binding.value.path;
+    }
     if (element.connection) {
       protocol.connection = V1_transformConnection(
         element.connection,
@@ -157,12 +158,12 @@ export const V1_transformPersister = (
         context,
       );
     }
-
     return protocol;
   } else if (element instanceof BatchPersister) {
     const protocol = new V1_BatchPersister();
-    protocol.binding = element.binding.value.path;
-
+    if (element.binding) {
+      protocol.binding = element.binding.value.path;
+    }
     if (element.connection) {
       protocol.connection = V1_transformConnection(
         element.connection,
@@ -170,7 +171,6 @@ export const V1_transformPersister = (
         context,
       );
     }
-
     protocol.ingestMode = V1_transformIngestMode(element.ingestMode, context);
     protocol.targetShape = V1_transformTargetShape(
       element.targetShape,
