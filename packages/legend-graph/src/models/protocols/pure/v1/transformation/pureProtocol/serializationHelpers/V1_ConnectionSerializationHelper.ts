@@ -66,10 +66,6 @@ import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProces
 import type { StoreRelational_PureProtocolProcessorPlugin_Extension } from '../../../../StoreRelational_PureProtocolProcessorPlugin_Extension';
 import type { DSLMapping_PureProtocolProcessorPlugin_Extension } from '../../../../DSLMapping_PureProtocolProcessorPlugin_Extension';
 import { V1_ConnectionPointer } from '../../../model/packageableElements/connection/V1_ConnectionPointer';
-import {
-  GCPApplicationDefaultCredentialsAuthenticationStrategy,
-  GCPWorkloadIdentityFederationAuthenticationStrategy,
-} from '../../../../../../..';
 
 export const V1_PACKAGEABLE_CONNECTION_ELEMENT_PROTOCOL_TYPE = 'connection';
 
