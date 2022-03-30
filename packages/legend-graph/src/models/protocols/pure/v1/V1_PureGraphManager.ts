@@ -234,8 +234,8 @@ import {
 import { V1_MAPPING_ELEMENT_PROTOCOL_TYPE } from './transformation/pureProtocol/serializationHelpers/V1_MappingSerializationHelper';
 import { V1_SERVICE_ELEMENT_PROTOCOL_TYPE } from './transformation/pureProtocol/serializationHelpers/V1_ServiceSerializationHelper';
 import { MappingInclude } from '../../../metamodels/pure/packageableElements/mapping/MappingInclude';
-import type {ModelGenerationConfiguration} from "../../../ModelGenerationConfiguration";
-import type {MappingGeneration_PureProtocolProcessorPlugin_Extension} from "../MappingGeneration_PureProtocolProcessorPlugin_Extension";
+import type { ModelGenerationConfiguration } from '../../../ModelGenerationConfiguration';
+import type { MappingGeneration_PureProtocolProcessorPlugin_Extension } from '../MappingGeneration_PureProtocolProcessorPlugin_Extension';
 
 const V1_FUNCTION_SUFFIX_MULTIPLICITY_INFINITE = 'MANY';
 

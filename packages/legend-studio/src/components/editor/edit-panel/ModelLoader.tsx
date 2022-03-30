@@ -106,9 +106,9 @@ export const ModelLoader = observer(() => {
         ],
       });
     } else {
-        flowResult(modelLoaderState.loadModel()).catch(
-          applicationStore.alertUnhandledError,
-        );
+      flowResult(modelLoaderState.loadModel()).catch(
+        applicationStore.alertUnhandledError,
+      );
     }
   };
   const updateModel = (val: string): void => modelLoaderState.setModelText(val);
@@ -173,7 +173,10 @@ export const ModelLoader = observer(() => {
                               className="model-loader__header__configs__type-option__group__option"
                               onClick={setCurrentExtraInput(config)}
                             >
-                              {config.modelGenerationConfig.label ?? prettyCONSTName(config.modelGenerationConfig.key)}
+                              {config.modelGenerationConfig.label ??
+                                prettyCONSTName(
+                                  config.modelGenerationConfig.key,
+                                )}
                             </MenuContentItem>
                           ),
                         )}
@@ -194,7 +197,9 @@ export const ModelLoader = observer(() => {
                   ? currentExternalInputLabel
                   : currentExtensionInputType
                   ? currentExtensionInputType.modelGenerationConfig.label ??
-                    prettyCONSTName(currentExtensionInputType.modelGenerationConfig.key)
+                    prettyCONSTName(
+                      currentExtensionInputType.modelGenerationConfig.key,
+                    )
                   : prettyCONSTName(currentInputType)}
               </div>
               <div className="model-loader__header__configs__type__icon">
@@ -202,19 +207,22 @@ export const ModelLoader = observer(() => {
               </div>
             </div>
           </DropdownMenu>
-          {!(currentExtensionInputType
-            && !currentExtensionInputType.allowHardReplace) && <div
-            className="model-loader__header__configs__edit-mode"
-            onClick={toggleReplace}
-          >
-            <div className="model-loader__header__configs__edit-mode__icon">
-              {replace ? <CheckSquareIcon/> : <EmptySquareIcon/>}
+          {!(
+            currentExtensionInputType &&
+            !currentExtensionInputType.allowHardReplace
+          ) && (
+            <div
+              className="model-loader__header__configs__edit-mode"
+              onClick={toggleReplace}
+            >
+              <div className="model-loader__header__configs__edit-mode__icon">
+                {replace ? <CheckSquareIcon /> : <EmptySquareIcon />}
+              </div>
+              <div className="model-loader__header__configs__edit-mode__label">
+                replace
+              </div>
             </div>
-            <div className="model-loader__header__configs__edit-mode__label">
-              replace
-            </div>
-          </div>
-          }
+          )}
           {!(
             modelLoaderState.currentExternalInputType ??
             modelLoaderState.currentExtensionInputType

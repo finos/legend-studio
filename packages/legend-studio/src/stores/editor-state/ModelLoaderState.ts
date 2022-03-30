@@ -196,8 +196,9 @@ export class ModelLoaderState extends EditorState {
             ImportMode.SCHEMA_IMPORT,
           )) as Entity[];
       } else if (this.currentExtensionInputType) {
-        entities = (yield this.currentExtensionInputType.load(this.editorStore)
-        ) as Entity[];
+        entities = (yield this.currentExtensionInputType.load(
+          this.editorStore,
+        )) as Entity[];
       } else {
         switch (this.currentInputType) {
           case MODEL_UPDATER_INPUT_TYPE.PURE_PROTOCOL: {

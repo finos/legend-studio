@@ -1,13 +1,35 @@
+/**
+ * Copyright (c) 2020-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 import { action, flow, makeObservable, observable } from 'mobx';
-import type {EditorStore, PackageableElementOption} from '@finos/legend-studio';
 import type {
-  V1_PureGraphManager,
+  EditorStore,
+  PackageableElementOption,
+} from '@finos/legend-studio';
+import type {
   Mapping,
   ModelGenerationConfiguration,
 } from '@finos/legend-graph';
 import { V1_MappingGenConfiguration } from '../models/protocols/pure/v1/model/V1_MappingGenConfiguration';
-import {assertErrorThrown, GeneratorFn, LogEvent} from '@finos/legend-shared';
-import type { Entity } from "@finos/legend-model-storage";
+import {
+  assertErrorThrown,
+  LogEvent,
+  type GeneratorFn,
+} from '@finos/legend-shared';
+import type { Entity } from '@finos/legend-model-storage';
 
 const MAPPING_GENERATION_LOG_EVENT_TYPE = 'MAPPING_GENERATION_FAILURE';
 export class MappingGenerationEditorState {
@@ -39,11 +61,15 @@ export class MappingGenerationEditorState {
     });
   }
 
-  setSourceMapping(sourceMapping: PackageableElementOption<Mapping> | undefined): void {
+  setSourceMapping(
+    sourceMapping: PackageableElementOption<Mapping> | undefined,
+  ): void {
     this.sourceMapping = sourceMapping;
   }
 
-  setMappingToRegenerate(mappingToRegenerate: PackageableElementOption<Mapping>): void {
+  setMappingToRegenerate(
+    mappingToRegenerate: PackageableElementOption<Mapping>,
+  ): void {
     this.mappingToRegenerate = mappingToRegenerate;
   }
 
@@ -55,29 +81,31 @@ export class MappingGenerationEditorState {
     this.storeNewName = storeNewName;
   }
 
-  setM2mAdditionalMappings(m2mAdditionalMappings: PackageableElementOption<Mapping>[]): void {
+  setM2mAdditionalMappings(
+    m2mAdditionalMappings: PackageableElementOption<Mapping>[],
+  ): void {
     this.m2mAdditionalMappings = m2mAdditionalMappings;
   }
 
-  *generate(): GeneratorFn<void>  {
+  *generate(): GeneratorFn<void> {
     try {
       this.isGenerating = true;
-      const engine = (
-        this.editorStore.graphManagerState.graphManager as V1_PureGraphManager
-      ).engine;
       this.editorStore.modelLoaderState.setModelText('');
       const config = new V1_MappingGenConfiguration(
         this.sourceMapping?.value.path,
         this.mappingToRegenerate?.value.path,
         this.mappingNewName,
         this.storeNewName,
-        this.m2mAdditionalMappings.map(m2m => m2m.value.path),
+        this.m2mAdditionalMappings.map((m2m) => m2m.value.path),
         this.config.key,
-        this.config.label
+        this.config.label,
       );
 
-      const entities: Entity[] = (yield this.editorStore.graphManagerState.graphManager.generateModelFromConfiguration(
-        config, this.editorStore.graphManagerState.graph)) as Entity[];
+      const entities: Entity[] =
+        (yield this.editorStore.graphManagerState.graphManager.generateModelFromConfiguration(
+          config,
+          this.editorStore.graphManagerState.graph,
+        )) as Entity[];
 
       const generatedModelGrammar: string =
         (yield this.editorStore.graphManagerState.graphManager.entitiesToPureCode(
@@ -95,5 +123,5 @@ export class MappingGenerationEditorState {
       this.editorStore.applicationStore.notifyError(error);
       this.isGenerating = false;
     }
-  };
+  }
 }

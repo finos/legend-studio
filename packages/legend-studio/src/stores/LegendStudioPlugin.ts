@@ -22,9 +22,9 @@ import type { NewElementDriver, NewElementState } from './NewElementState';
 import type {
   Class,
   PackageableElement,
-  ModelGenerationConfiguration
+  ModelGenerationConfiguration,
 } from '@finos/legend-graph';
-import type { Entity } from "@finos/legend-model-storage";
+import type { Entity } from '@finos/legend-model-storage';
 
 export type ApplicationSetup = (
   pluginManager: LegendStudioPluginManager,

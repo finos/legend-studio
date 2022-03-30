@@ -1,3 +1,19 @@
+/**
+ * Copyright (c) 2020-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 import { useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
@@ -11,9 +27,11 @@ import {
   CustomSelectorInput,
   PURE_MappingIcon,
   clsx,
-  PanelLoadingIndicator, ErrorIcon,
+  PanelLoadingIndicator,
+  ErrorIcon,
 } from '@finos/legend-art';
-import { type EditorStore,
+import {
+  type EditorStore,
   StudioTextInputEditor,
   type PackageableElementOption,
 } from '@finos/legend-studio';
@@ -22,11 +40,8 @@ import {
   useApplicationStore,
 } from '@finos/legend-application';
 import type { MappingGenerationEditorState } from '../stores/MappingGenerationEditorState';
-import {flowResult, runInAction} from 'mobx';
-import {
-  Mapping,
-  createValidationError,
-} from "@finos/legend-graph";
+import { flowResult, runInAction } from 'mobx';
+import { Mapping, createValidationError } from '@finos/legend-graph';
 
 const StringEditor = observer(
   (props: {
@@ -74,11 +89,20 @@ const ArrayEditor = observer(
     update: (updatedValues: PackageableElementOption<Mapping>[]) => void;
     mappingOptions: PackageableElementOption<Mapping>[];
   }) => {
-    const { propertyName, description, values, isReadOnly, update, mappingOptions } = props;
+    const {
+      propertyName,
+      description,
+      values,
+      isReadOnly,
+      update,
+      mappingOptions,
+    } = props;
     const arrayValues: PackageableElementOption<Mapping>[] = values;
     // NOTE: `showEditInput` is either boolean (to hide/show the add value button) or a number (index of the item being edited)
     const [showEditInput, setShowEditInput] = useState<boolean | number>(false);
-    const [itemValue, setItemValue] = useState<PackageableElementOption<Mapping>>({label: '', value: new Mapping('')});
+    const [itemValue, setItemValue] = useState<
+      PackageableElementOption<Mapping>
+    >({ label: '', value: new Mapping('') });
     const showAddItemInput = (): void => setShowEditInput(true);
     const showEditItemInput =
       (value: PackageableElementOption<Mapping>, idx: number): (() => void) =>
@@ -88,7 +112,7 @@ const ArrayEditor = observer(
       };
     const hideAddOrEditItemInput = (): void => {
       setShowEditInput(false);
-      setItemValue({label: '', value: new Mapping('')});
+      setItemValue({ label: '', value: new Mapping('') });
     };
     const changeItemInputValue = (
       val: PackageableElementOption<Mapping>,
@@ -98,7 +122,11 @@ const ArrayEditor = observer(
       }
     };
     const addValue = (): void => {
-      if (itemValue && !isReadOnly && !arrayValues.includes(itemValue)) {
+      if (
+        itemValue.value.name !== '' &&
+        !isReadOnly &&
+        !arrayValues.includes(itemValue)
+      ) {
         update(arrayValues.concat([itemValue]));
       }
       hideAddOrEditItemInput();
@@ -106,7 +134,11 @@ const ArrayEditor = observer(
     const updateValue =
       (idx: number): (() => void) =>
       (): void => {
-        if (itemValue && !isReadOnly && !arrayValues.includes(itemValue)) {
+        if (
+          itemValue.value.name !== '' &&
+          !isReadOnly &&
+          !arrayValues.includes(itemValue)
+        ) {
           runInAction(() => {
             arrayValues[idx] = itemValue;
           });
@@ -156,22 +188,22 @@ const ArrayEditor = observer(
                       value={itemValue}
                       darkMode={true}
                     />
-                      <button
-                        className="btn--dark btn--sm mapping-generation-editor__configuration__item__btn"
-                        disabled={isReadOnly || arrayValues.includes(itemValue)}
-                        onClick={updateValue(idx)}
-                        tabIndex={-1}
-                      >
-                        Save
-                      </button>
-                      <button
-                        className="btn--dark btn--sm mapping-generation-editor__configuration__item__btn"
-                        disabled={isReadOnly}
-                        onClick={hideAddOrEditItemInput}
-                        tabIndex={-1}
-                      >
-                        Cancel
-                      </button>
+                    <button
+                      className="btn--dark btn--sm mapping-generation-editor__configuration__item__btn"
+                      disabled={isReadOnly || arrayValues.includes(itemValue)}
+                      onClick={updateValue(idx)}
+                      tabIndex={-1}
+                    >
+                      Save
+                    </button>
+                    <button
+                      className="btn--dark btn--sm mapping-generation-editor__configuration__item__btn"
+                      disabled={isReadOnly}
+                      onClick={hideAddOrEditItemInput}
+                      tabIndex={-1}
+                    >
+                      Cancel
+                    </button>
                   </>
                 ) : (
                   <>
@@ -210,22 +242,22 @@ const ArrayEditor = observer(
                   value={itemValue}
                   darkMode={true}
                 />
-                  <button
-                    className="btn--dark btn--sm mapping-generation-editor__configuration__item__btn__add"
-                    disabled={isReadOnly || arrayValues.includes(itemValue)}
-                    onClick={addValue}
-                    tabIndex={-1}
-                  >
-                    Save
-                  </button>
-                  <button
-                    className="btn--dark btn--sm mapping-generation-editor__configuration__item__btn__cancel"
-                    disabled={isReadOnly}
-                    onClick={hideAddOrEditItemInput}
-                    tabIndex={-1}
-                  >
-                    Cancel
-                  </button>
+                <button
+                  className="btn--dark btn--sm mapping-generation-editor__configuration__item__btn__add"
+                  disabled={isReadOnly || arrayValues.includes(itemValue)}
+                  onClick={addValue}
+                  tabIndex={-1}
+                >
+                  Save
+                </button>
+                <button
+                  className="btn--dark btn--sm mapping-generation-editor__configuration__item__btn__cancel"
+                  disabled={isReadOnly}
+                  onClick={hideAddOrEditItemInput}
+                  tabIndex={-1}
+                >
+                  Cancel
+                </button>
               </div>
             )}
           </div>
@@ -255,7 +287,13 @@ const MappingSelectorEditor = observer(
     description: string;
     editorStore: EditorStore;
   }) => {
-    const { selectedMapping, setMapping, propertyName, description, editorStore } = props;
+    const {
+      selectedMapping,
+      setMapping,
+      propertyName,
+      description,
+      editorStore,
+    } = props;
     // mapping
     const isMappingEmpty = selectedMapping?.value.isStub
       ? createValidationError(['Mapping cannot be empty'])
@@ -284,15 +322,14 @@ const MappingSelectorEditor = observer(
         setMapping(val);
       }
     };
-    return ( <div
-      className="panel__content__form__section"
-    >
-      <div className="panel__content__form__section__header__label">
-        {propertyName}
-      </div>
-      <div className="panel__content__form__section__header__prompt">
-        {description}
-      </div>
+    return (
+      <div className="panel__content__form__section">
+        <div className="panel__content__form__section__header__label">
+          {propertyName}
+        </div>
+        <div className="panel__content__form__section__header__prompt">
+          {description}
+        </div>
         <div className="mapping-generation-editor__configuration__item">
           <div className="btn--sm mapping-generation-editor__configuration__item__label">
             <PURE_MappingIcon />
@@ -306,9 +343,10 @@ const MappingSelectorEditor = observer(
             hasError={isMappingEmpty}
           />
         </div>
-    </div>);
-  }
-  );
+      </div>
+    );
+  },
+);
 
 export const MappingGenerationEditor = observer(
   (props: { mappingGenerationEditorState: MappingGenerationEditorState }) => {
@@ -344,13 +382,19 @@ export const MappingGenerationEditor = observer(
                       </div>
                     </div>
                     <div className="mapping-generation-editor__configuration__content">
-                    <MappingSelectorEditor
-                        description={'Provide a full path to a mapping with XStore ' +
-                        'between Pure and Relational class mapping that will be ' +
-                        'a starting point for relational mapping generation'}
+                      <MappingSelectorEditor
+                        description={
+                          'Provide a full path to a mapping with XStore ' +
+                          'between Pure and Relational class mapping that will be ' +
+                          'a starting point for relational mapping generation'
+                        }
                         propertyName={'Mapping to regenerate'}
-                        selectedMapping={mappingGenerationEditorState.mappingToRegenerate}
-                        setMapping={(value: PackageableElementOption<Mapping>): void =>
+                        selectedMapping={
+                          mappingGenerationEditorState.mappingToRegenerate
+                        }
+                        setMapping={(
+                          value: PackageableElementOption<Mapping>,
+                        ): void =>
                           mappingGenerationEditorState.setMappingToRegenerate(
                             value,
                           )
@@ -364,11 +408,13 @@ export const MappingGenerationEditor = observer(
                           ' that is a ultimate source for M2M class mapping ' +
                           'regeneration'
                         }
-                        selectedMapping={mappingGenerationEditorState.sourceMapping}
-                        setMapping={(value: PackageableElementOption<Mapping>): void =>
-                          mappingGenerationEditorState.setSourceMapping(
-                            value,
-                          )
+                        selectedMapping={
+                          mappingGenerationEditorState.sourceMapping
+                        }
+                        setMapping={(
+                          value: PackageableElementOption<Mapping>,
+                        ): void =>
+                          mappingGenerationEditorState.setSourceMapping(value)
                         }
                         editorStore={mappingGenerationEditorState.editorStore}
                       />
@@ -378,7 +424,9 @@ export const MappingGenerationEditor = observer(
                           mappingGenerationEditorState.m2mAdditionalMappings
                         }
                         isReadOnly={false}
-                        update={(values: PackageableElementOption<Mapping>[]): void =>
+                        update={(
+                          values: PackageableElementOption<Mapping>[],
+                        ): void =>
                           mappingGenerationEditorState.setM2mAdditionalMappings(
                             values,
                           )
