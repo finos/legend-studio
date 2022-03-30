@@ -384,7 +384,7 @@ export const MappingGenerationEditor = observer(
                     <div className="mapping-generation-editor__configuration__content">
                       <MappingSelectorEditor
                         description={
-                          'Provide a full path to a mapping with XStore ' +
+                          'Pick a mapping with XStore ' +
                           'between Pure and Relational class mapping that will be ' +
                           'a starting point for relational mapping generation'
                         }
@@ -404,7 +404,7 @@ export const MappingGenerationEditor = observer(
                       <MappingSelectorEditor
                         propertyName={'Source Mapping'}
                         description={
-                          'Provide a full path to a relational mapping' +
+                          'Pick a relational mapping' +
                           ' that is a ultimate source for M2M class mapping ' +
                           'regeneration'
                         }
