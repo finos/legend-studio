@@ -1,5 +1,11 @@
 # @finos/legend-studio
 
+## 5.1.0
+
+### Minor Changes
+
+- [#1004](https://github.com/finos/legend-studio/pull/1004) [`99c19279`](https://github.com/finos/legend-studio/commit/99c19279b19c15fa01cab5cf3389a20c036d62e3) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Rework the logic of resolving the generation parent for generated elements
+
 ## 5.0.0
 
 ### Major Changes
