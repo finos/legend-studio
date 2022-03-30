@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-studio-extension-query-builder",
-  "version": "0.2.17",
+  "version": "0.2.22",
   "description": "Legend Studio preset for query builder",
   "keywords": [
     "legend",
@@ -51,7 +51,7 @@
     "@finos/legend-server-depot": "workspace:*",
     "@finos/legend-shared": "workspace:*",
     "@finos/legend-studio": "workspace:*",
-    "@types/react": "17.0.42",
+    "@types/react": "17.0.43",
     "mobx": "6.5.0",
     "mobx-react-lite": "3.3.0",
     "react": "17.0.2",
@@ -59,15 +59,15 @@
   },
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",
-    "@testing-library/dom": "8.11.4",
+    "@testing-library/dom": "8.12.0",
     "@testing-library/react": "12.1.4",
     "cross-env": "7.0.3",
-    "eslint": "8.11.0",
+    "eslint": "8.12.0",
     "jest": "27.5.1",
     "npm-run-all": "4.1.5",
     "rimraf": "3.0.2",
     "sass": "1.49.9",
-    "typescript": "4.6.2"
+    "typescript": "4.6.3"
   },
   "peerDependencies": {
     "react": "^17.0.0"

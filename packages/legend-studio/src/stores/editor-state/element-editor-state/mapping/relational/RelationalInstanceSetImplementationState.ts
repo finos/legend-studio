@@ -39,7 +39,7 @@ import {
   RelationalPropertyMapping,
   createStubRelationalOperationElement,
   ParserError,
-  GRAPH_MANAGER_LOG_EVENT,
+  GRAPH_MANAGER_EVENT,
   EmbeddedRelationalInstanceSetImplementation,
   buildSourceInformationSourceId,
 } from '@finos/legend-graph';
@@ -96,7 +96,7 @@ export class RelationalPropertyMappingState extends PropertyMappingState {
           this.setParserError(error);
         }
         this.editorStore.applicationStore.log.error(
-          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
+          LogEvent.create(GRAPH_MANAGER_EVENT.PARSING_FAILURE),
           error,
         );
       }
@@ -131,7 +131,7 @@ export class RelationalPropertyMappingState extends PropertyMappingState {
         } catch (error) {
           assertErrorThrown(error);
           this.editorStore.applicationStore.log.error(
-            LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
+            LogEvent.create(GRAPH_MANAGER_EVENT.PARSING_FAILURE),
             error,
           );
         }
@@ -336,7 +336,7 @@ export class RootRelationalInstanceSetImplementationState extends RelationalInst
       } catch (error) {
         assertErrorThrown(error);
         this.editorStore.applicationStore.log.error(
-          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
+          LogEvent.create(GRAPH_MANAGER_EVENT.PARSING_FAILURE),
           error,
         );
       } finally {

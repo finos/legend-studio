@@ -65,7 +65,7 @@ import {
   type InputData,
   type Type,
   getAllClassMappings,
-  GRAPH_MANAGER_LOG_EVENT,
+  GRAPH_MANAGER_EVENT,
   PRIMITIVE_TYPE,
   fromElementPathToMappingElementId,
   extractSourceInformationCoordinates,
@@ -1187,7 +1187,7 @@ export class MappingEditorState extends ElementEditorState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.warn(
-        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.COMPILATION_FAILURE),
+        LogEvent.create(GRAPH_MANAGER_EVENT.COMPILATION_FAILURE),
         `Can't locate error, redirecting to text mode`,
         error,
       );

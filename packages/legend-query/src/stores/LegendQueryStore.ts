@@ -50,7 +50,7 @@ import {
   PureSingleExecution,
   PackageableElementExplicitReference,
   RuntimePointer,
-  GRAPH_MANAGER_LOG_EVENT,
+  GRAPH_MANAGER_EVENT,
   type GraphBuilderReport,
   GraphManagerTelemetry,
 } from '@finos/legend-graph';
@@ -65,7 +65,7 @@ import {
   generateCreateQueryRoute,
   generateExistingQueryRoute,
 } from './LegendQueryRouter';
-import { LEGEND_QUERY_LOG_EVENT_TYPE } from '../LegendQueryLogEvent';
+import { LEGEND_QUERY_APP_EVENT } from '../LegendQueryAppEvent';
 import type { Entity } from '@finos/legend-model-storage';
 import {
   type DepotServerClient,
@@ -78,7 +78,7 @@ import {
 } from '@finos/legend-server-depot';
 import {
   type ApplicationStore,
-  APPLICATION_LOG_EVENT,
+  APPLICATION_EVENT,
   TAB_SIZE,
 } from '@finos/legend-application';
 import type { LegendQueryPluginManager } from '../application/LegendQueryPluginManager';
@@ -288,7 +288,7 @@ export class QueryExportState {
     } catch (error) {
       assertErrorThrown(error);
       this.queryStore.applicationStore.log.error(
-        LogEvent.create(LEGEND_QUERY_LOG_EVENT_TYPE.QUERY_PROBLEM),
+        LogEvent.create(LEGEND_QUERY_APP_EVENT.QUERY_PROBLEM),
         error,
       );
       this.queryStore.applicationStore.notifyError(error);
@@ -330,7 +330,7 @@ export class QueryExportState {
     } catch (error) {
       assertErrorThrown(error);
       this.queryStore.applicationStore.log.error(
-        LogEvent.create(LEGEND_QUERY_LOG_EVENT_TYPE.QUERY_PROBLEM),
+        LogEvent.create(LEGEND_QUERY_APP_EVENT.QUERY_PROBLEM),
         error,
       );
       this.queryStore.applicationStore.notifyError(error);
@@ -474,7 +474,7 @@ export class LegendQueryStore {
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.log.error(
-        LogEvent.create(LEGEND_QUERY_LOG_EVENT_TYPE.QUERY_PROBLEM),
+        LogEvent.create(LEGEND_QUERY_APP_EVENT.QUERY_PROBLEM),
         error,
       );
       this.applicationStore.notifyError(error);
@@ -495,33 +495,32 @@ export class LegendQueryStore {
 
     try {
       this.editorInitState.inProgress();
-      let queryInfoState: ServiceQueryInfoState;
+      let projectData: ProjectData;
       if (this.queryInfoState instanceof ServiceQueryInfoState) {
         assertTrue(this.queryInfoState.project.groupId === groupId);
         assertTrue(this.queryInfoState.project.artifactId === artifactId);
         assertTrue(this.queryInfoState.versionId === versionId);
         assertTrue(this.queryInfoState.service.path === servicePath);
         assertTrue(this.queryInfoState.key === serviceExecutionKey);
-        queryInfoState = this.queryInfoState;
+        projectData = this.queryInfoState.project;
       } else {
-        const project = ProjectData.serialization.fromJson(
+        projectData = ProjectData.serialization.fromJson(
           (yield flowResult(
             this.depotServerClient.getProject(groupId, artifactId),
           )) as PlainObject<ProjectData>,
         );
-        yield flowResult(this.buildGraph(project, versionId));
-
-        const currentService =
-          this.graphManagerState.graph.getService(servicePath);
-        queryInfoState = new ServiceQueryInfoState(
-          this,
-          project,
-          versionId,
-          currentService,
-          serviceExecutionKey,
-        );
-        this.setQueryInfoState(queryInfoState);
       }
+      yield flowResult(this.buildGraph(projectData, versionId));
+      const currentService =
+        this.graphManagerState.graph.getService(servicePath);
+      const queryInfoState = new ServiceQueryInfoState(
+        this,
+        projectData,
+        versionId,
+        currentService,
+        serviceExecutionKey,
+      );
+      this.setQueryInfoState(queryInfoState);
       assertType(
         queryInfoState.service.execution,
         PureExecution,
@@ -566,7 +565,7 @@ export class LegendQueryStore {
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.log.error(
-        LogEvent.create(LEGEND_QUERY_LOG_EVENT_TYPE.QUERY_PROBLEM),
+        LogEvent.create(LEGEND_QUERY_APP_EVENT.QUERY_PROBLEM),
         error,
       );
       this.applicationStore.notifyError(error);
@@ -595,6 +594,9 @@ export class LegendQueryStore {
         assertTrue(this.queryInfoState.project.groupId === groupId);
         assertTrue(this.queryInfoState.project.artifactId === artifactId);
         assertTrue(this.queryInfoState.versionId === versionId);
+        yield flowResult(
+          this.buildGraph(this.queryInfoState.project, versionId),
+        );
         this.queryInfoState.setMapping(
           this.graphManagerState.graph.getMapping(mappingPath),
         );
@@ -658,7 +660,7 @@ export class LegendQueryStore {
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.log.error(
-        LogEvent.create(LEGEND_QUERY_LOG_EVENT_TYPE.QUERY_PROBLEM),
+        LogEvent.create(LEGEND_QUERY_APP_EVENT.QUERY_PROBLEM),
         error,
       );
       this.applicationStore.notifyError(error);
@@ -676,7 +678,7 @@ export class LegendQueryStore {
       // eslint-disable-next-line no-process-env
       if (process.env.NODE_ENV === 'development') {
         this.applicationStore.log.info(
-          LogEvent.create(APPLICATION_LOG_EVENT.DEVELOPMENT_ISSUE),
+          LogEvent.create(APPLICATION_EVENT.DEVELOPMENT_ISSUE),
           `Fast-refreshing the app - undoing cleanUp() and preventing initialize() recall...`,
         );
         return;
@@ -711,7 +713,7 @@ export class LegendQueryStore {
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.log.error(
-        LogEvent.create(LEGEND_QUERY_LOG_EVENT_TYPE.QUERY_PROBLEM),
+        LogEvent.create(LEGEND_QUERY_APP_EVENT.QUERY_PROBLEM),
         error,
       );
       this.applicationStore.setBlockingAlert({
@@ -752,17 +754,18 @@ export class LegendQueryStore {
         )) as Entity[];
       }
       this.buildGraphState.setMessage(undefined);
-      stopWatch.record(GRAPH_MANAGER_LOG_EVENT.GRAPH_ENTITIES_FETCHED);
+      stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_ENTITIES_FETCHED);
 
       // fetch dependencies
       stopWatch.record();
       const dependencyManager =
         this.graphManagerState.createEmptyDependencyManager();
+      this.graphManagerState.graph.setDependencyManager(dependencyManager);
       dependencyManager.buildState.setMessage(`Fetching dependencies...`);
       const dependencyEntitiesMap = (yield flowResult(
         this.getProjectDependencyEntities(project, versionId, options),
       )) as Map<string, Entity[]>;
-      stopWatch.record(GRAPH_MANAGER_LOG_EVENT.GRAPH_DEPENDENCIES_FETCHED);
+      stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED);
 
       // build dependencies
       const dependency_buildReport = (yield flowResult(
@@ -771,37 +774,41 @@ export class LegendQueryStore {
           this.graphManagerState.systemModel,
           dependencyManager,
           dependencyEntitiesMap,
+          {
+            TEMPORARY_skipGraphBuilderPostProcessing: true,
+          },
         ),
       )) as GraphBuilderReport;
-      this.graphManagerState.graph.setDependencyManager(dependencyManager);
       dependency_buildReport.timings[
-        GRAPH_MANAGER_LOG_EVENT.GRAPH_DEPENDENCIES_FETCHED
-      ] = stopWatch.getRecord(
-        GRAPH_MANAGER_LOG_EVENT.GRAPH_DEPENDENCIES_FETCHED,
-      );
+        GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED
+      ] = stopWatch.getRecord(GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED);
 
       // build graph
       const graph_buildReport = (yield flowResult(
         this.graphManagerState.graphManager.buildGraph(
           this.graphManagerState.graph,
           entities,
+          {
+            TEMPORARY_skipGraphBuilderPostProcessing: true,
+          },
         ),
       )) as GraphBuilderReport;
-      graph_buildReport.timings[
-        GRAPH_MANAGER_LOG_EVENT.GRAPH_ENTITIES_FETCHED
-      ] = stopWatch.getRecord(GRAPH_MANAGER_LOG_EVENT.GRAPH_ENTITIES_FETCHED);
+      graph_buildReport.timings[GRAPH_MANAGER_EVENT.GRAPH_ENTITIES_FETCHED] =
+        stopWatch.getRecord(GRAPH_MANAGER_EVENT.GRAPH_ENTITIES_FETCHED);
 
       // report
-      stopWatch.record();
+      stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_INITIALIZED);
       const graphBuilderReportData = {
         timings: {
-          [GRAPH_MANAGER_LOG_EVENT.GRAPH_INITIALIZED]: stopWatch.elapsed,
+          [GRAPH_MANAGER_EVENT.GRAPH_INITIALIZED]: stopWatch.getRecord(
+            GRAPH_MANAGER_EVENT.GRAPH_INITIALIZED,
+          ),
         },
         dependencies: dependency_buildReport,
         graph: graph_buildReport,
       };
       this.applicationStore.log.info(
-        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_INITIALIZED),
+        LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_INITIALIZED),
         graphBuilderReportData,
       );
       GraphManagerTelemetry.logEvent_GraphInitialized(
@@ -813,7 +820,139 @@ export class LegendQueryStore {
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.log.error(
-        LogEvent.create(LEGEND_QUERY_LOG_EVENT_TYPE.QUERY_PROBLEM),
+        LogEvent.create(LEGEND_QUERY_APP_EVENT.QUERY_PROBLEM),
+        error,
+      );
+      this.applicationStore.notifyError(error);
+      this.buildGraphState.fail();
+    }
+  }
+
+  *buildGraphForCreateQuerySetup(
+    project: ProjectData,
+    versionId: string,
+    options?: { quiet?: boolean },
+  ): GeneratorFn<void> {
+    try {
+      this.buildGraphState.inProgress();
+      const stopWatch = new StopWatch();
+
+      // reset
+      this.graphManagerState.resetGraph();
+
+      // fetch entities
+      stopWatch.record();
+      this.buildGraphState.setMessage(`Fetching entities...`);
+      let entities: Entity[] = [];
+      if (versionId === SNAPSHOT_VERSION_ALIAS) {
+        entities = (yield this.depotServerClient.getLatestRevisionEntities(
+          project.groupId,
+          project.artifactId,
+        )) as Entity[];
+      } else {
+        entities = (yield this.depotServerClient.getVersionEntities(
+          project.groupId,
+          project.artifactId,
+          versionId === LATEST_VERSION_ALIAS
+            ? project.latestVersion
+            : versionId,
+        )) as Entity[];
+      }
+      this.buildGraphState.setMessage(undefined);
+      stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_ENTITIES_FETCHED);
+
+      // fetch dependencies
+      stopWatch.record();
+      this.graphManagerState.resetGraph();
+      //build dependencies
+      const dependencyManager =
+        this.graphManagerState.createEmptyDependencyManager();
+      dependencyManager.buildState.setMessage(`Fetching dependencies...`);
+      const dependencyEntitiesMap = (yield flowResult(
+        this.getProjectDependencyEntities(project, versionId, options),
+      )) as Map<string, Entity[]>;
+      stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED);
+      this.graphManagerState.graph.setDependencyManager(dependencyManager);
+      // build light create query graph
+      yield flowResult(
+        this.graphManagerState.graphManager.buildGraphForCreateQuerySetup(
+          this.graphManagerState.graph,
+          entities,
+          dependencyEntitiesMap,
+        ),
+      );
+      this.graphManagerState.graph.buildState.pass();
+      this.buildGraphState.pass();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.log.error(
+        LogEvent.create(LEGEND_QUERY_APP_EVENT.QUERY_PROBLEM),
+        error,
+      );
+      this.applicationStore.notifyError(error);
+      this.buildGraphState.fail();
+    }
+  }
+
+  *buildGraphForServiceQuerySetup(
+    project: ProjectData,
+    versionId: string,
+    options?: { quiet?: boolean },
+  ): GeneratorFn<void> {
+    try {
+      this.buildGraphState.inProgress();
+      const stopWatch = new StopWatch();
+
+      // reset
+      this.graphManagerState.resetGraph();
+
+      // fetch entities
+      stopWatch.record();
+      this.buildGraphState.setMessage(`Fetching entities...`);
+      let entities: Entity[] = [];
+      if (versionId === SNAPSHOT_VERSION_ALIAS) {
+        entities = (yield this.depotServerClient.getLatestRevisionEntities(
+          project.groupId,
+          project.artifactId,
+        )) as Entity[];
+      } else {
+        entities = (yield this.depotServerClient.getVersionEntities(
+          project.groupId,
+          project.artifactId,
+          versionId === LATEST_VERSION_ALIAS
+            ? project.latestVersion
+            : versionId,
+        )) as Entity[];
+      }
+      this.buildGraphState.setMessage(undefined);
+      stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_ENTITIES_FETCHED);
+
+      // fetch dependencies
+      stopWatch.record();
+      this.graphManagerState.resetGraph();
+      //build dependencies
+      const dependencyManager =
+        this.graphManagerState.createEmptyDependencyManager();
+      dependencyManager.buildState.setMessage(`Fetching dependencies...`);
+      const dependencyEntitiesMap = (yield flowResult(
+        this.getProjectDependencyEntities(project, versionId, options),
+      )) as Map<string, Entity[]>;
+      stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED);
+      this.graphManagerState.graph.setDependencyManager(dependencyManager);
+      // build light service query graph
+      yield flowResult(
+        this.graphManagerState.graphManager.buildGraphForServiceQuerySetup(
+          this.graphManagerState.graph,
+          entities,
+          dependencyEntitiesMap,
+        ),
+      );
+      this.graphManagerState.graph.buildState.pass();
+      this.buildGraphState.pass();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.log.error(
+        LogEvent.create(LEGEND_QUERY_APP_EVENT.QUERY_PROBLEM),
         error,
       );
       this.applicationStore.notifyError(error);
@@ -854,7 +993,7 @@ export class LegendQueryStore {
       }
       if (!options?.quiet) {
         this.graphManagerState.graphManager.log.info(
-          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_ENTITIES_FETCHED),
+          LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_ENTITIES_FETCHED),
           Date.now() - startTime,
           'ms',
         );
@@ -867,7 +1006,7 @@ export class LegendQueryStore {
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.log.error(
-        LogEvent.create(LEGEND_QUERY_LOG_EVENT_TYPE.QUERY_PROBLEM),
+        LogEvent.create(LEGEND_QUERY_APP_EVENT.QUERY_PROBLEM),
         error,
       );
       this.applicationStore.notifyError(error);

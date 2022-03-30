@@ -27,7 +27,7 @@ import {
   type Constraint,
   type DerivedProperty,
   LAMBDA_PIPE,
-  GRAPH_MANAGER_LOG_EVENT,
+  GRAPH_MANAGER_EVENT,
   ParserError,
   RawLambda,
   buildSourceInformationSourceId,
@@ -85,7 +85,7 @@ export class DerivedPropertyState extends LambdaEditorState {
           this.setParserError(error);
         }
         this.editorStore.applicationStore.log.error(
-          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
+          LogEvent.create(GRAPH_MANAGER_EVENT.PARSING_FAILURE),
           error,
         );
       }
@@ -121,7 +121,7 @@ export class DerivedPropertyState extends LambdaEditorState {
       } catch (error) {
         assertErrorThrown(error);
         this.editorStore.applicationStore.log.error(
-          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
+          LogEvent.create(GRAPH_MANAGER_EVENT.PARSING_FAILURE),
           error,
         );
       }
@@ -174,7 +174,7 @@ export class ConstraintState extends LambdaEditorState {
           this.setParserError(error);
         }
         this.editorStore.applicationStore.log.error(
-          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
+          LogEvent.create(GRAPH_MANAGER_EVENT.PARSING_FAILURE),
           error,
         );
       }
@@ -204,7 +204,7 @@ export class ConstraintState extends LambdaEditorState {
       } catch (error) {
         assertErrorThrown(error);
         this.editorStore.applicationStore.log.error(
-          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
+          LogEvent.create(GRAPH_MANAGER_EVENT.PARSING_FAILURE),
           error,
         );
       }
@@ -345,7 +345,7 @@ export class ClassState {
       } catch (error) {
         assertErrorThrown(error);
         this.editorStore.applicationStore.log.error(
-          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
+          LogEvent.create(GRAPH_MANAGER_EVENT.PARSING_FAILURE),
           error,
         );
       } finally {
@@ -383,7 +383,7 @@ export class ClassState {
       } catch (error) {
         assertErrorThrown(error);
         this.editorStore.applicationStore.log.error(
-          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
+          LogEvent.create(GRAPH_MANAGER_EVENT.PARSING_FAILURE),
           error,
         );
       } finally {

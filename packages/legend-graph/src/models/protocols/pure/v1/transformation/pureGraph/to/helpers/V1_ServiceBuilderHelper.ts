@@ -21,7 +21,7 @@ import {
   assertType,
   assertNonNullable,
 } from '@finos/legend-shared';
-import { GRAPH_MANAGER_LOG_EVENT } from '../../../../../../../../graphManager/GraphManagerLogEvent';
+import { GRAPH_MANAGER_EVENT } from '../../../../../../../../graphManager/GraphManagerEvent';
 import {
   type Runtime,
   RuntimePointer,
@@ -159,7 +159,7 @@ export const V1_buildServiceTest = (
      */
     if (executionKeys.size) {
       context.log.error(
-        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE),
+        LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_FAILURE),
         new GraphBuilderError(
           `Execution(s) with key '${Array.from(executionKeys.values()).join(
             ', ',

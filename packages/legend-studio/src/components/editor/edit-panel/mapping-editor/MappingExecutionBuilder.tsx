@@ -36,7 +36,6 @@ import {
   MenuContentItem,
   CaretDownIcon,
   RefreshIcon,
-  PaperScrollIcon,
   RobotIcon,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
@@ -635,10 +634,13 @@ export const MappingExecutionBuilder = observer(
     const mappingEditorState = executionState.mappingEditorState;
     const applicationStore = useApplicationStore();
     const { queryState, inputDataState } = executionState;
+    // execute
     const generatePlan = applicationStore.guardUnhandledError(() =>
-      flowResult(executionState.generatePlan()),
+      flowResult(executionState.generatePlan(false)),
     );
-    // execution
+    const debugPlanGeneration = applicationStore.guardUnhandledError(() =>
+      flowResult(executionState.generatePlan(true)),
+    );
     const execute = applicationStore.guardUnhandledError(() =>
       flowResult(executionState.executeMapping()),
     );
@@ -660,32 +662,6 @@ export const MappingExecutionBuilder = observer(
         <div className="mapping-execution-builder__header">
           <div />
           <div className="mapping-execution-builder__header__actions">
-            <button
-              className="mapping-execution-builder__header__action"
-              disabled={
-                queryState.query.isStub ||
-                !inputDataState.isValid ||
-                executionState.isExecuting
-              }
-              onClick={execute}
-              tabIndex={-1}
-              title="Execute"
-            >
-              <PlayIcon className="mapping-execution-builder__icon__execute" />
-            </button>
-            <button
-              className="mapping-execution-builder__header__action"
-              disabled={
-                queryState.query.isStub ||
-                !inputDataState.isValid ||
-                executionState.isGeneratingPlan
-              }
-              onClick={generatePlan}
-              tabIndex={-1}
-              title="View Execution Plan"
-            >
-              <PaperScrollIcon className="mapping-execution-builder__icon__generate-plan" />
-            </button>
             {!mappingEditorState.isReadOnly && (
               <button
                 className="mapping-execution-builder__header__action"
@@ -718,6 +694,55 @@ export const MappingExecutionBuilder = observer(
                 <FlaskIcon />
               </button>
             )}
+            <button
+              className="mapping-execution-builder__execute-btn"
+              onClick={execute}
+              disabled={
+                queryState.query.isStub ||
+                !inputDataState.isValid ||
+                executionState.isGeneratingPlan ||
+                executionState.isExecuting
+              }
+              tabIndex={-1}
+            >
+              <div className="mapping-execution-builder__execute-btn__label">
+                <PlayIcon className="mapping-execution-builder__execute-btn__label__icon" />
+                <div className="mapping-execution-builder__execute-btn__label__title">
+                  Execute
+                </div>
+              </div>
+              <DropdownMenu
+                className="mapping-execution-builder__execute-btn__dropdown-btn"
+                disabled={
+                  queryState.query.isStub ||
+                  !inputDataState.isValid ||
+                  executionState.isGeneratingPlan ||
+                  executionState.isExecuting
+                }
+                content={
+                  <MenuContent>
+                    <MenuContentItem
+                      className="mapping-execution-builder__execute-btn__option"
+                      onClick={generatePlan}
+                    >
+                      Generate Plan
+                    </MenuContentItem>
+                    <MenuContentItem
+                      className="mapping-execution-builder__execute-btn__option"
+                      onClick={debugPlanGeneration}
+                    >
+                      Debug
+                    </MenuContentItem>
+                  </MenuContent>
+                }
+                menuProps={{
+                  anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
+                  transformOrigin: { vertical: 'top', horizontal: 'right' },
+                }}
+              >
+                <CaretDownIcon />
+              </DropdownMenu>
+            </button>
           </div>
         </div>
         <div className="mapping-execution-builder__content">

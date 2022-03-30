@@ -14,6 +14,6 @@
  * limitations under the License.
  */
 
-export enum LEGEND_TAXONOMY_LOG_EVENT {
-  TAXONOMY_DATA_CHECK_FAILURE = 'TAXONOMY_DATA_CHECK_FAILURE',
+export enum LEGEND_QUERY_APP_EVENT {
+  QUERY_PROBLEM = 'QUERY_PROBLEM',
 }

@@ -76,6 +76,8 @@ export interface GraphBuilderOptions {
   TEMPORARY__keepSectionIndex?: boolean;
   // when we change our handling of section index, we should be able to get rid of this flag.
   TEMPORARY__disableRawLambdaResolver?: boolean;
+  // skip specific post processing used when editing graph. i.e `freezing` a generated/dependency element.
+  TEMPORARY_skipGraphBuilderPostProcessing?: boolean;
 }
 
 export interface ExecutionOptions {
@@ -264,7 +266,7 @@ export abstract class AbstractPureGraphManager {
   abstract getExamplePureProtocolText(): string;
   abstract getExampleExternalFormatImportText(): string;
   abstract entitiesToPureProtocolText(entities: Entity[]): Promise<string>;
-  abstract pureProtocolToEntities(protocol: string): Entity[];
+  abstract pureProtocolTextToEntities(protocol: string): Entity[];
 
   // ------------------------------------------- Execute -------------------------------------------
 
@@ -277,14 +279,6 @@ export abstract class AbstractPureGraphManager {
     options?: ExecutionOptions,
   ): Promise<ExecutionResult>;
 
-  abstract generateMappingTestData(
-    graph: PureModel,
-    mapping: Mapping,
-    lambda: RawLambda,
-    runtime: Runtime,
-    clientVersion: string,
-  ): Promise<string>;
-
   abstract generateExecutionPlan(
     graph: PureModel,
     mapping: Mapping,
@@ -292,6 +286,14 @@ export abstract class AbstractPureGraphManager {
     runtime: Runtime,
     clientVersion: string,
   ): Promise<RawExecutionPlan>;
+
+  abstract debugExecutionPlanGeneration(
+    graph: PureModel,
+    mapping: Mapping,
+    lambda: RawLambda,
+    runtime: Runtime,
+    clientVersion: string,
+  ): Promise<{ plan: RawExecutionPlan; debug: string }>;
 
   abstract buildExecutionPlan(
     executionPlanJson: RawExecutionPlan,
@@ -303,6 +305,14 @@ export abstract class AbstractPureGraphManager {
   ): RawExecutionPlan;
 
   abstract serializeExecutionNode(executionNode: ExecutionNode): object;
+
+  abstract generateMappingTestData(
+    graph: PureModel,
+    mapping: Mapping,
+    lambda: RawLambda,
+    runtime: Runtime,
+    clientVersion: string,
+  ): Promise<string>;
 
   // ------------------------------------------- Service -------------------------------------------
 
@@ -335,6 +345,19 @@ export abstract class AbstractPureGraphManager {
   abstract createQuery(query: Query, graph: PureModel): Promise<Query>;
   abstract updateQuery(query: Query, graph: PureModel): Promise<Query>;
   abstract deleteQuery(queryId: string): Promise<void>;
+
+  // ------------------------------------------- Legend Query -------------------------------------
+  abstract buildGraphForCreateQuerySetup(
+    graph: PureModel,
+    entities: Entity[],
+    dependencyEntitiesMap: Map<string, Entity[]>,
+  ): Promise<void>;
+
+  abstract buildGraphForServiceQuerySetup(
+    graph: PureModel,
+    entities: Entity[],
+    dependencyEntitiesMap: Map<string, Entity[]>,
+  ): Promise<void>;
 
   // ------------------------------------------- Utilities -------------------------------------------
 

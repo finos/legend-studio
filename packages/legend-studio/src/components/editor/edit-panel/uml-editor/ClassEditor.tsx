@@ -1087,9 +1087,18 @@ export const ClassFormEditor = observer(
       [handleDropStereotype],
     );
     // Generation
+    const generationParentElementPath =
+      editorStore.graphState.graphGenerationState.findGenerationParentPath(
+        _class.path,
+      );
+    const generationParentElement = generationParentElementPath
+      ? editorStore.graphManagerState.graph.getNullableElement(
+          generationParentElementPath,
+        )
+      : undefined;
     const visitGenerationParentElement = (): void => {
-      if (_class.generationParentElement) {
-        editorStore.openElement(_class.generationParentElement);
+      if (generationParentElement) {
+        editorStore.openElement(generationParentElement);
       }
     };
     // On change handler (this is used for other editors which embeds editor)
@@ -1128,18 +1137,18 @@ export const ClassFormEditor = observer(
                   </div>
                 </div>
                 <div className="panel__header__actions">
-                  {_class.generationParentElement && (
+                  {generationParentElement && (
                     <button
                       className="uml-element-editor__header__generation-origin"
                       onClick={visitGenerationParentElement}
                       tabIndex={-1}
-                      title={`Visit generation parent '${_class.generationParentElement.path}'`}
+                      title={`Visit generation parent '${generationParentElement.path}'`}
                     >
                       <div className="uml-element-editor__header__generation-origin__label">
                         <FireIcon />
                       </div>
                       <div className="uml-element-editor__header__generation-origin__parent-name">
-                        {_class.generationParentElement.name}
+                        {generationParentElement.name}
                       </div>
                       <div className="uml-element-editor__header__generation-origin__visit-btn">
                         <StickArrowCircleRightIcon />

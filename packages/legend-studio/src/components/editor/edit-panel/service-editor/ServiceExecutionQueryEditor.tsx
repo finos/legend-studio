@@ -29,7 +29,10 @@ import {
   CustomSelectorInput,
   PanelLoadingIndicator,
   PlayIcon,
-  PaperScrollIcon,
+  DropdownMenu,
+  MenuContent,
+  CaretDownIcon,
+  MenuContentItem,
 } from '@finos/legend-art';
 import { debounce } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
@@ -245,12 +248,15 @@ export const ServiceExecutionQueryEditor = observer(
     const importQuery = (): void => {
       queryState.setOpenQueryImporter(true);
     };
-    // execution
+    // execute
     const execute = applicationStore.guardUnhandledError(() =>
       flowResult(executionState.execute()),
     );
     const generatePlan = applicationStore.guardUnhandledError(() =>
-      flowResult(executionState.generatePlan()),
+      flowResult(executionState.generatePlan(false)),
+    );
+    const debugPlanGeneration = applicationStore.guardUnhandledError(() =>
+      flowResult(executionState.generatePlan(true)),
     );
     // convert to string
     useEffect(() => {
@@ -279,20 +285,47 @@ export const ServiceExecutionQueryEditor = observer(
               <ArrowCircleDownIcon />
             </button>
             <button
-              className="panel__header__action"
+              className="service-editor__execution__execute-btn"
               onClick={execute}
+              disabled={
+                executionState.isExecuting || executionState.isGeneratingPlan
+              }
               tabIndex={-1}
-              title="Run service execution"
             >
-              <PlayIcon />
-            </button>
-            <button
-              className="panel__header__action"
-              onClick={generatePlan}
-              tabIndex={-1}
-              title="Generate execution plan"
-            >
-              <PaperScrollIcon />
+              <div className="service-editor__execution__execute-btn__label">
+                <PlayIcon className="service-editor__execution__execute-btn__label__icon" />
+                <div className="service-editor__execution__execute-btn__label__title">
+                  Execute
+                </div>
+              </div>
+              <DropdownMenu
+                className="service-editor__execution__execute-btn__dropdown-btn"
+                disabled={
+                  executionState.isExecuting || executionState.isGeneratingPlan
+                }
+                content={
+                  <MenuContent>
+                    <MenuContentItem
+                      className="service-editor__execution__execute-btn__option"
+                      onClick={generatePlan}
+                    >
+                      Generate Plan
+                    </MenuContentItem>
+                    <MenuContentItem
+                      className="service-editor__execution__execute-btn__option"
+                      onClick={debugPlanGeneration}
+                    >
+                      Debug
+                    </MenuContentItem>
+                  </MenuContent>
+                }
+                menuProps={{
+                  anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
+                  transformOrigin: { vertical: 'top', horizontal: 'right' },
+                }}
+              >
+                <CaretDownIcon />
+              </DropdownMenu>
             </button>
           </div>
         </div>

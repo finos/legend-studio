@@ -49,7 +49,6 @@ export {
   FaArrowCircleRight as StickArrowCircleRightIcon,
   FaUser as UserIcon,
   FaShapes as ShapesIcon,
-  FaScroll as PaperScrollIcon,
   FaEnvelope as EnvelopIcon,
   FaSkull as SkullIcon,
   FaDollarSign as DollarIcon,

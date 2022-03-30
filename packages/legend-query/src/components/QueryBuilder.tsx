@@ -31,6 +31,7 @@ import {
   MenuContentItemLabel,
   CheckIcon,
   CaretDownIcon,
+  CogIcon,
 } from '@finos/legend-art';
 import { QueryBuilderFilterPanel } from './QueryBuilderFilterPanel';
 import { QueryBuilderExplorerPanel } from './QueryBuilderExplorerPanel';
@@ -146,6 +147,15 @@ export const QueryBuilder = observer(
       );
     };
 
+    // settings
+    // NOTE: this is temporary until we find a better home for these settings in query builder
+    const engineConfig =
+      queryBuilderState.graphManagerState.graphManager.TEMPORARY__getEngineConfig();
+    const toggleEngineClientRequestPayloadCompression = (): void =>
+      engineConfig.setUseClientRequestPayloadCompression(
+        !engineConfig.useClientRequestPayloadCompression,
+      );
+
     return (
       <div
         data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER}
@@ -208,107 +218,149 @@ export const QueryBuilder = observer(
         <GlobalHotKeys keyMap={keyMap} handlers={handlers}>
           <Backdrop className="backdrop" open={queryBuilderState.backdrop} />
           <div className="query-builder__content">
-            <ResizablePanelGroup orientation="horizontal">
-              <ResizablePanel minSize={120}>
-                {isQuerySupported ? (
-                  <ResizablePanelGroup orientation="vertical">
-                    <ResizablePanel size={450} minSize={300}>
-                      <ResizablePanelGroup orientation="horizontal">
-                        {queryBuilderState.querySetupState.showSetupPanel && (
-                          <ResizablePanel minSize={40} direction={1}>
-                            <QueryBuilderSetupPanel
-                              queryBuilderState={queryBuilderState}
-                            />
-                          </ResizablePanel>
-                        )}
-                        {!queryBuilderState.querySetupState.showSetupPanel && (
-                          <ResizablePanel minSize={40} size={40} direction={1}>
-                            <QueryBuilderSetupPanel
-                              queryBuilderState={queryBuilderState}
-                            />
-                          </ResizablePanel>
-                        )}
-                        <ResizablePanelSplitter />
-                        <ResizablePanel minSize={40} direction={[1, -1]}>
-                          <QueryBuilderExplorerPanel
-                            queryBuilderState={queryBuilderState}
-                          />
-                        </ResizablePanel>
-                        <ResizablePanelSplitter />
-                        {queryBuilderState.showFunctionPanel && (
-                          <ResizablePanel
-                            minSize={40}
-                            direction={
-                              queryBuilderState.showParameterPanel
-                                ? [1, -1]
-                                : -1
-                            }
-                          >
-                            <QueryBuilderFunctionsExplorerPanel
-                              queryBuilderState={queryBuilderState}
-                            />
-                          </ResizablePanel>
-                        )}
-                        {queryBuilderState.showFunctionPanel &&
-                        queryBuilderState.showParameterPanel ? (
-                          <ResizablePanelSplitter />
+            <div className="query-builder__activity-bar">
+              <div className="query-builder__activity-bar__items"></div>
+              <DropdownMenu
+                className="query-builder__activity-bar__setting"
+                content={
+                  <MenuContent>
+                    <MenuContentItem
+                      onClick={toggleEngineClientRequestPayloadCompression}
+                    >
+                      <MenuContentItemIcon>
+                        {engineConfig.useClientRequestPayloadCompression ? (
+                          <CheckIcon />
                         ) : null}
-                        {queryBuilderState.showParameterPanel && (
-                          <ResizablePanel minSize={40} direction={-1}>
-                            <QueryBuilderParameterPanel
+                      </MenuContentItemIcon>
+                      <MenuContentItemLabel>
+                        Compress request payload
+                      </MenuContentItemLabel>
+                    </MenuContentItem>
+                  </MenuContent>
+                }
+                menuProps={{
+                  anchorOrigin: { vertical: 'center', horizontal: 'center' },
+                  transformOrigin: { vertical: 'bottom', horizontal: 'left' },
+                  elevation: 7,
+                }}
+              >
+                <button
+                  className="query-builder__activity-bar__item"
+                  tabIndex={-1}
+                  title="Settings..."
+                >
+                  <CogIcon />
+                </button>
+              </DropdownMenu>
+            </div>
+            <div className="query-builder__main">
+              <ResizablePanelGroup orientation="horizontal">
+                <ResizablePanel minSize={120}>
+                  {isQuerySupported ? (
+                    <ResizablePanelGroup orientation="vertical">
+                      <ResizablePanel size={450} minSize={300}>
+                        <ResizablePanelGroup orientation="horizontal">
+                          {queryBuilderState.querySetupState.showSetupPanel && (
+                            <ResizablePanel minSize={40} direction={1}>
+                              <QueryBuilderSetupPanel
+                                queryBuilderState={queryBuilderState}
+                              />
+                            </ResizablePanel>
+                          )}
+                          {!queryBuilderState.querySetupState
+                            .showSetupPanel && (
+                            <ResizablePanel
+                              minSize={40}
+                              size={40}
+                              direction={1}
+                            >
+                              <QueryBuilderSetupPanel
+                                queryBuilderState={queryBuilderState}
+                              />
+                            </ResizablePanel>
+                          )}
+                          <ResizablePanelSplitter />
+                          <ResizablePanel minSize={40} direction={[1, -1]}>
+                            <QueryBuilderExplorerPanel
                               queryBuilderState={queryBuilderState}
                             />
                           </ResizablePanel>
-                        )}
-                      </ResizablePanelGroup>
-                    </ResizablePanel>
-                    <ResizablePanelSplitter />
-                    <ResizablePanel minSize={300}>
-                      <QueryBuilderFetchStructurePanel
-                        queryBuilderState={queryBuilderState}
-                      />
-                    </ResizablePanel>
-                    <ResizablePanelSplitter />
-                    <ResizablePanel minSize={300}>
-                      {!postFilterState.showPostFilterPanel && (
-                        <QueryBuilderFilterPanel
+                          <ResizablePanelSplitter />
+                          {queryBuilderState.showFunctionPanel && (
+                            <ResizablePanel
+                              minSize={40}
+                              direction={
+                                queryBuilderState.showParameterPanel
+                                  ? [1, -1]
+                                  : -1
+                              }
+                            >
+                              <QueryBuilderFunctionsExplorerPanel
+                                queryBuilderState={queryBuilderState}
+                              />
+                            </ResizablePanel>
+                          )}
+                          {queryBuilderState.showFunctionPanel &&
+                          queryBuilderState.showParameterPanel ? (
+                            <ResizablePanelSplitter />
+                          ) : null}
+                          {queryBuilderState.showParameterPanel && (
+                            <ResizablePanel minSize={40} direction={-1}>
+                              <QueryBuilderParameterPanel
+                                queryBuilderState={queryBuilderState}
+                              />
+                            </ResizablePanel>
+                          )}
+                        </ResizablePanelGroup>
+                      </ResizablePanel>
+                      <ResizablePanelSplitter />
+                      <ResizablePanel minSize={300}>
+                        <QueryBuilderFetchStructurePanel
                           queryBuilderState={queryBuilderState}
                         />
-                      )}
-                      {postFilterState.showPostFilterPanel && (
-                        <ResizablePanelGroup orientation="horizontal">
-                          <ResizablePanel minSize={300}>
-                            <QueryBuilderFilterPanel
-                              queryBuilderState={queryBuilderState}
-                            />
-                          </ResizablePanel>
-                          <ResizablePanelSplitter />
-                          <ResizablePanel>
-                            <QueryBuilderPostFilterPanel
-                              queryBuilderState={queryBuilderState}
-                            />
-                          </ResizablePanel>
-                        </ResizablePanelGroup>
-                      )}
-                    </ResizablePanel>
-                  </ResizablePanelGroup>
-                ) : (
-                  <QueryBuilderUnsupportedQueryEditor
-                    queryBuilderState={queryBuilderState}
-                  />
-                )}
-              </ResizablePanel>
-              {queryBuilderState.mode.isResultPanelHidden ? null : (
-                <ResizablePanelSplitter />
-              )}
-              {queryBuilderState.mode.isResultPanelHidden ? null : (
-                <ResizablePanel size={300} minSize={40}>
-                  <QueryBuilderResultPanel
-                    queryBuilderState={queryBuilderState}
-                  />
+                      </ResizablePanel>
+                      <ResizablePanelSplitter />
+                      <ResizablePanel minSize={300}>
+                        {!postFilterState.showPostFilterPanel && (
+                          <QueryBuilderFilterPanel
+                            queryBuilderState={queryBuilderState}
+                          />
+                        )}
+                        {postFilterState.showPostFilterPanel && (
+                          <ResizablePanelGroup orientation="horizontal">
+                            <ResizablePanel minSize={300}>
+                              <QueryBuilderFilterPanel
+                                queryBuilderState={queryBuilderState}
+                              />
+                            </ResizablePanel>
+                            <ResizablePanelSplitter />
+                            <ResizablePanel>
+                              <QueryBuilderPostFilterPanel
+                                queryBuilderState={queryBuilderState}
+                              />
+                            </ResizablePanel>
+                          </ResizablePanelGroup>
+                        )}
+                      </ResizablePanel>
+                    </ResizablePanelGroup>
+                  ) : (
+                    <QueryBuilderUnsupportedQueryEditor
+                      queryBuilderState={queryBuilderState}
+                    />
+                  )}
                 </ResizablePanel>
-              )}
-            </ResizablePanelGroup>
+                {queryBuilderState.mode.isResultPanelHidden ? null : (
+                  <ResizablePanelSplitter />
+                )}
+                {queryBuilderState.mode.isResultPanelHidden ? null : (
+                  <ResizablePanel size={300} minSize={40}>
+                    <QueryBuilderResultPanel
+                      queryBuilderState={queryBuilderState}
+                    />
+                  </ResizablePanel>
+                )}
+              </ResizablePanelGroup>
+            </div>
           </div>
           <QueryBuilderStatusBar queryBuilderState={queryBuilderState} />
           {queryBuilderState.queryTextEditorState.mode && (
