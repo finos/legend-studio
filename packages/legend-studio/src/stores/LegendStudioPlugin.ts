@@ -24,7 +24,6 @@ import type {
   PackageableElement,
   ModelGenerationConfiguration,
 } from '@finos/legend-graph';
-import type { Entity } from '@finos/legend-model-storage';
 
 export type ApplicationSetup = (
   pluginManager: LegendStudioPluginManager,
@@ -60,7 +59,7 @@ export type ClassPreviewRenderer = (
 export type ModelLoaderExtensionConfiguration = {
   modelGenerationConfig: ModelGenerationConfiguration;
   allowHardReplace?: boolean;
-  load: (editorStore: EditorStore) => Promise<Entity[]>;
+  load: (editorStore: EditorStore) => Promise<void>;
   renderer: (editorStore: EditorStore) => React.ReactNode | undefined;
 };
 

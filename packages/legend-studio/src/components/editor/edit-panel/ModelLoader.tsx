@@ -106,9 +106,10 @@ export const ModelLoader = observer(() => {
         ],
       });
     } else {
-      flowResult(modelLoaderState.loadModel()).catch(
-        applicationStore.alertUnhandledError,
-      );
+      currentExtensionInputType?.load(editorStore) ??
+        flowResult(modelLoaderState.loadModel()).catch(
+          applicationStore.alertUnhandledError,
+        );
     }
   };
   const updateModel = (val: string): void => modelLoaderState.setModelText(val);

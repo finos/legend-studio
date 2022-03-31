@@ -24,6 +24,7 @@ import {
   LegendStudioPlugin,
 } from '@finos/legend-studio';
 import type { Entity } from '@finos/legend-model-storage';
+import { EntityChangeType } from '@finos/legend-server-sdlc';
 
 const GENERATION_TYPE_NAME = `RELATIONAL_MAPPING_GENERATION`;
 
@@ -39,19 +40,29 @@ export class MappingGeneration_LegendStudioPlugin
     return [
       {
         modelGenerationConfig: { key: GENERATION_TYPE_NAME },
-        load: async (editorStore: EditorStore): Promise<Entity[]> => {
+        load: async (editorStore: EditorStore): Promise<void> => {
           const modelLoaderState = editorStore.modelLoaderState;
           if (modelLoaderState.modelText.length > 0) {
             const entities: Entity[] =
               await editorStore.graphManagerState.graphManager.pureCodeToEntities(
                 modelLoaderState.modelText,
               );
-            return entities;
+            const newEntities = entities.map((e) => ({
+              type: EntityChangeType.CREATE,
+              entityPath: e.path,
+              content: e.content,
+            }));
+            await editorStore.graphState.loadEntityChangesToGraph(
+              newEntities,
+              undefined,
+            );
+            editorStore.applicationStore.notifySuccess(
+              'Generated elements imported into project',
+            );
           } else {
             editorStore.applicationStore.notifyWarning(
               'There is no generation code to import into project',
             );
-            return [];
           }
         },
         renderer: (editorStore: EditorStore): React.ReactNode | undefined => {
