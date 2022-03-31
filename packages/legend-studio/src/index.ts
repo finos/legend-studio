@@ -48,6 +48,8 @@ export {
 export { ExplorerTreeRootPackageLabel } from './stores/ExplorerTreeState';
 export * from './stores/DSLMapping_LegendStudioPlugin_Extension';
 export * from './stores/DSLService_LegendStudioPlugin_Extension';
+export * from './stores/DomainModifierHelper';
+export * from './stores/ModifierHelper';
 
 // components
 export * from './components/editor/EditorStoreProvider';

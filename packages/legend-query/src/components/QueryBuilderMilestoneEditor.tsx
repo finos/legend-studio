@@ -30,7 +30,6 @@ import {
   PRIMITIVE_TYPE,
   TYPICAL_MULTIPLICITY_TYPE,
   VariableExpression,
-  setGenericTypeRawType,
 } from '@finos/legend-graph';
 import {
   DatePrimitiveInstanceValueEditor,
@@ -52,6 +51,7 @@ import {
 import { Dialog, CustomSelectorInput, RefreshIcon } from '@finos/legend-art';
 import format from 'date-fns/format/index';
 import { addDays } from 'date-fns';
+import { setGenericTypeRawType } from '../stores/QueryModifierHelper';
 
 const MilestoningParameterEditor = observer(
   (props: { queryBuilderState: QueryBuilderState; parameterIndex: number }) => {

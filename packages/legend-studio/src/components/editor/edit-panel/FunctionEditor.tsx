@@ -62,18 +62,25 @@ import {
   Class,
   PrimitiveType,
   StereotypeExplicitReference,
-  setFunctionReturnType,
-  setFunctionReturnMultiplicity,
-  addFunctionParameter,
-  deleteFunctionParameter,
-  addTaggedValue,
-  addStereotype,
-  deleteStereotype,
-  deleteTaggedValue,
 } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
 import { StudioLambdaEditor } from '../../shared/StudioLambdaEditor';
 import { getElementIcon } from '../../shared/ElementIconUtils';
+import {
+  function_setReturnType,
+  functio_setReturnMultiplicity,
+  function_addParameter,
+  function_deleteParameter,
+  annotatedElement_addTaggedValue,
+  annotatedElement_addStereotype,
+  annotatedElement_deleteStereotype,
+  annotatedElement_deleteTaggedValue,
+} from '../../../stores/DomainModifierHelper';
+import {
+  rawVariableExpression_setMultiplicity,
+  rawVariableExpression_setName,
+  rawVariableExpression_setType,
+} from '../../../stores/ModifierHelper';
 
 enum FUNCTION_PARAMETER_TYPE {
   CLASS = 'CLASS',
@@ -107,7 +114,7 @@ const ParameterBasicEditor = observer(
     const editorStore = useEditorStore();
     // Name
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) =>
-      parameter.setName(event.target.value);
+      rawVariableExpression_setName(parameter, event.target.value);
     // Type
     const [isEditingType, setIsEditingType] = useState(false);
     const typeOptions = editorStore.classPropertyGenericTypeOptions;
@@ -121,7 +128,7 @@ const ParameterBasicEditor = observer(
     });
     const selectedType = { value: paramType, label: paramType.name };
     const changeType = (val: PackageableElementOption<Type>): void => {
-      parameter.setType(val.value);
+      rawVariableExpression_setType(parameter, val.value);
       setIsEditingType(false);
     };
     const openElement = (): void => {
@@ -150,7 +157,10 @@ const ParameterBasicEditor = observer(
           ? upper
           : parseInt(upper, 10);
       if (!isNaN(lBound) && (uBound === undefined || !isNaN(uBound))) {
-        parameter.setMultiplicity(new Multiplicity(lBound, uBound));
+        rawVariableExpression_setMultiplicity(
+          parameter,
+          new Multiplicity(lBound, uBound),
+        );
       }
     };
     const changeLowerBound: React.ChangeEventHandler<HTMLInputElement> = (
@@ -314,7 +324,7 @@ const ReturnTypeEditor = observer(
     });
     const selectedType = { value: returnType, label: returnType.value.name };
     const changeType = (val: PackageableElementOption<Type>): void => {
-      setFunctionReturnType(functionElement, val.value);
+      function_setReturnType(functionElement, val.value);
       setIsEditingType(false);
     };
 
@@ -346,7 +356,7 @@ const ReturnTypeEditor = observer(
           ? upper
           : parseInt(upper, 10);
       if (!isNaN(lBound) && (uBound === undefined || !isNaN(uBound))) {
-        setFunctionReturnMultiplicity(
+        functio_setReturnMultiplicity(
           functionElement,
           new Multiplicity(lBound, uBound),
         );
@@ -490,7 +500,7 @@ export const FunctionMainEditor = observer(
     const lambdaEditorState = functionEditorState.functionBodyEditorState;
     // Parameters
     const addParameter = (): void => {
-      addFunctionParameter(
+      function_addParameter(
         functionElement,
         RawVariableExpression.createStub(defaultType),
       );
@@ -498,12 +508,12 @@ export const FunctionMainEditor = observer(
     const deleteParameter =
       (val: RawVariableExpression): (() => void) =>
       (): void => {
-        deleteFunctionParameter(functionElement, val);
+        function_deleteParameter(functionElement, val);
       };
     const handleDropParameter = useCallback(
       (item: UMLEditorElementDropTarget): void => {
         if (!isReadOnly && item.data.packageableElement instanceof Type) {
-          addFunctionParameter(
+          function_addParameter(
             functionElement,
             RawVariableExpression.createStub(item.data.packageableElement),
           );
@@ -527,7 +537,7 @@ export const FunctionMainEditor = observer(
     const handleDropReturnType = useCallback(
       (item: UMLEditorElementDropTarget): void => {
         if (!isReadOnly && item.data.packageableElement instanceof Type) {
-          setFunctionReturnType(functionElement, item.data.packageableElement);
+          function_setReturnType(functionElement, item.data.packageableElement);
         }
       },
       [functionElement, isReadOnly],
@@ -645,12 +655,12 @@ export const FunctionEditor = observer(() => {
   const add = (): void => {
     if (!isReadOnly) {
       if (selectedTab === FUNCTION_SPEC_TAB.TAGGED_VALUES) {
-        addTaggedValue(
+        annotatedElement_addTaggedValue(
           functionElement,
           TaggedValue.createStub(Tag.createStub(Profile.createStub())),
         );
       } else if (selectedTab === FUNCTION_SPEC_TAB.STEREOTYPES) {
-        addStereotype(
+        annotatedElement_addStereotype(
           functionElement,
           StereotypeExplicitReference.create(
             Stereotype.createStub(Profile.createStub()),
@@ -662,7 +672,7 @@ export const FunctionEditor = observer(() => {
   const handleDropTaggedValue = useCallback(
     (item: UMLEditorElementDropTarget): void => {
       if (!isReadOnly && item.data.packageableElement instanceof Profile) {
-        addTaggedValue(
+        annotatedElement_addTaggedValue(
           functionElement,
           TaggedValue.createStub(Tag.createStub(item.data.packageableElement)),
         );
@@ -683,7 +693,7 @@ export const FunctionEditor = observer(() => {
   const handleDropStereotype = useCallback(
     (item: UMLEditorElementDropTarget): void => {
       if (!isReadOnly && item.data.packageableElement instanceof Profile) {
-        addStereotype(
+        annotatedElement_addStereotype(
           functionElement,
           StereotypeExplicitReference.create(
             Stereotype.createStub(item.data.packageableElement),
@@ -706,11 +716,11 @@ export const FunctionEditor = observer(() => {
   const _deleteStereotype =
     (val: StereotypeReference): (() => void) =>
     (): void =>
-      deleteStereotype(functionElement, val);
+      annotatedElement_deleteStereotype(functionElement, val);
   const _deleteTaggedValue =
     (val: TaggedValue): (() => void) =>
     (): void =>
-      deleteTaggedValue(functionElement, val);
+      annotatedElement_deleteTaggedValue(functionElement, val);
   const changeTab =
     (tab: FUNCTION_SPEC_TAB): (() => void) =>
     (): void =>

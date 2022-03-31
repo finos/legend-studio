@@ -64,6 +64,7 @@ import { DatabaseBuilder } from './DatabaseBuilder';
 import { useEditorStore } from '../../EditorStoreProvider';
 import { EDITOR_LANGUAGE } from '@finos/legend-application';
 import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor';
+import { connection_setStore } from '../../../../stores/ModifierHelper';
 
 /**
  * NOTE: this is a WIP we did to quickly assemble a modular UI for relational database connection editor
@@ -910,7 +911,8 @@ const RelationalConnectionStoreEditor = observer(
       val: PackageableElementOption<Store> | null,
     ): void => {
       if (val) {
-        connection.setStore(
+        connection_setStore(
+          connection,
           PackageableElementExplicitReference.create(val.value),
         );
       }

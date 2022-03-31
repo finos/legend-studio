@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { observable, computed, action, makeObservable } from 'mobx';
+import { observable, computed, makeObservable } from 'mobx';
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import type { FlatDataSection } from './FlatDataSection';
@@ -109,17 +109,8 @@ export class FlatDataDate extends FlatDataDataType implements Hashable {
     makeObservable(this, {
       dateFormat: observable,
       timeZone: observable,
-      setDateFormat: action,
-      setTimeZone: action,
       hashCode: computed,
     });
-  }
-
-  setDateFormat(value: string | undefined): void {
-    this.dateFormat = value;
-  }
-  setTimeZone(value: string | undefined): void {
-    this.timeZone = value;
   }
 
   get hashCode(): string {
@@ -167,17 +158,12 @@ export class FlatDataRecordField implements Hashable {
       flatDataDataType: observable,
       optional: observable,
       address: observable,
-      setAddress: action,
       hashCode: computed,
     });
 
     this.label = label;
     this.flatDataDataType = flatDataDataType;
     this.optional = optional;
-  }
-
-  setAddress(value: string | undefined): void {
-    this.address = value;
   }
 
   get hashCode(): string {

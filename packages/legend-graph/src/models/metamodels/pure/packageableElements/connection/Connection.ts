@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { computed, makeObservable, action, observable } from 'mobx';
+import { computed, makeObservable, observable } from 'mobx';
 import { hashArray, uuid, type Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import type { Store } from '../store/Store';
@@ -25,7 +25,6 @@ import type { PackageableConnection } from './PackageableConnection';
 import type { RelationalDatabaseConnection } from '../store/relational/connection/RelationalDatabaseConnection';
 import type { PackageableElementReference } from '../PackageableElementReference';
 import type { ModelChainConnection } from '../store/modelToModel/connection/ModelChainConnection';
-import { setPackageableElementReferenceValue } from '../../../../DomainModifierHelper';
 
 export interface ConnectionVisitor<T> {
   visit_Connection(connection: Connection): T;
@@ -48,13 +47,8 @@ export abstract class Connection implements Hashable {
     this.store = store;
 
     makeObservable(this, {
-      setStore: action,
       store: observable,
     });
-  }
-
-  setStore(val: PackageableElementReference<Store>): void {
-    this.store = val;
   }
 
   abstract get hashCode(): string;
@@ -78,7 +72,7 @@ export class ConnectionPointer extends Connection implements Hashable {
   }
 
   setPackageableConnection(value: PackageableConnection): void {
-    setPackageableElementReferenceValue(this.packageableConnection, value);
+    this.packageableConnection.value = value;
   }
 
   get hashCode(): string {

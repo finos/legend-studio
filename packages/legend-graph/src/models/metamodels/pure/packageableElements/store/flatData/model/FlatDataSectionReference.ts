@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { observable, action, computed, makeObservable } from 'mobx';
+import { observable, computed, makeObservable } from 'mobx';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import { hashString } from '@finos/legend-shared';
 import {
@@ -25,7 +25,6 @@ import {
 import { ReferenceWithOwner } from '../../../../Reference';
 import type { FlatData } from './FlatData';
 import type { FlatDataSection } from './FlatDataSection';
-import { setPackageableElementReferenceValue } from '../../../../../../DomainModifierHelper';
 
 export abstract class FlatDataSectionReference extends ReferenceWithOwner {
   override readonly ownerReference: PackageableElementReference<FlatData>;
@@ -39,17 +38,11 @@ export abstract class FlatDataSectionReference extends ReferenceWithOwner {
 
     makeObservable(this, {
       value: observable,
-      setValue: action,
       pointerHashCode: computed,
     });
 
     this.ownerReference = ownerReference;
     this.value = value;
-  }
-
-  setValue(value: FlatDataSection): void {
-    this.value = value;
-    setPackageableElementReferenceValue(this.ownerReference, value.owner);
   }
 
   get pointerHashCode(): string {

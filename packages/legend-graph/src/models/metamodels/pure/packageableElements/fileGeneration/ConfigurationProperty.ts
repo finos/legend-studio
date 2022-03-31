@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { observable, action, computed, makeObservable } from 'mobx';
+import { observable, computed, makeObservable } from 'mobx';
 import { hashArray, hashObject, type Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 
@@ -26,15 +26,10 @@ export class ConfigurationProperty implements Hashable {
     makeObservable(this, {
       name: observable,
       value: observable.ref,
-      setValue: action,
       hashCode: computed,
     });
 
     this.name = name;
-    this.value = value;
-  }
-
-  setValue(value: unknown): void {
     this.value = value;
   }
 

@@ -82,6 +82,10 @@ import {
   type RawExecutionPlan,
 } from '@finos/legend-graph';
 import { LambdaEditorState, TAB_SIZE } from '@finos/legend-application';
+import {
+  runtime_addIdentifiedConnection,
+  runtime_addMapping,
+} from '../../../ModifierHelper';
 
 export enum TEST_RESULT {
   NONE = 'NONE', // test has not run yet
@@ -211,7 +215,8 @@ export class MappingTestObjectInputDataState extends MappingTestInputDataState {
     const engineConfig =
       this.editorStore.graphManagerState.graphManager.TEMPORARY__getEngineConfig();
     const runtime = new EngineRuntime();
-    runtime.addMapping(
+    runtime_addMapping(
+      runtime,
       PackageableElementExplicitReference.create(this.mapping),
     );
     const connection = new JsonModelConnection(
@@ -227,7 +232,8 @@ export class MappingTestObjectInputDataState extends MappingTestInputDataState {
         engineConfig.useBase64ForAdhocConnectionDataUrls,
       ),
     );
-    runtime.addIdentifiedConnection(
+    runtime_addIdentifiedConnection(
+      runtime,
       new IdentifiedConnection(
         runtime.generateIdentifiedConnectionId(),
         connection,
@@ -244,7 +250,8 @@ export class MappingTestFlatDataInputDataState extends MappingTestInputDataState
     const engineConfig =
       this.editorStore.graphManagerState.graphManager.TEMPORARY__getEngineConfig();
     const runtime = new EngineRuntime();
-    runtime.addMapping(
+    runtime_addMapping(
+      runtime,
       PackageableElementExplicitReference.create(this.mapping),
     );
     const connection = new FlatDataConnection(
@@ -257,7 +264,8 @@ export class MappingTestFlatDataInputDataState extends MappingTestInputDataState
         engineConfig.useBase64ForAdhocConnectionDataUrls,
       ),
     );
-    runtime.addIdentifiedConnection(
+    runtime_addIdentifiedConnection(
+      runtime,
       new IdentifiedConnection(
         runtime.generateIdentifiedConnectionId(),
         connection,
@@ -286,7 +294,8 @@ export class MappingTestRelationalInputDataState extends MappingTestInputDataSta
         throw new UnsupportedOperationError(`Invalid input data type`);
     }
     const runtime = new EngineRuntime();
-    runtime.addMapping(
+    runtime_addMapping(
+      runtime,
       PackageableElementExplicitReference.create(this.mapping),
     );
     const connection = new RelationalDatabaseConnection(
@@ -295,7 +304,8 @@ export class MappingTestRelationalInputDataState extends MappingTestInputDataSta
       datasourceSpecification,
       new DefaultH2AuthenticationStrategy(),
     );
-    runtime.addIdentifiedConnection(
+    runtime_addIdentifiedConnection(
+      runtime,
       new IdentifiedConnection(
         runtime.generateIdentifiedConnectionId(),
         connection,

@@ -84,10 +84,6 @@ import {
   isValidFullPath,
   isValidPathIdentifier,
   resolvePackagePathAndElementName,
-  setPropertyName,
-  setPropertyGenericType,
-  setPropertyMultiplicity,
-  addPackageElement,
 } from '@finos/legend-graph';
 import {
   guaranteeNonNullable,
@@ -104,6 +100,10 @@ import {
   CORE_DND_TYPE,
   ElementDragSource,
   useEditorStore,
+  property_setName,
+  property_setGenericType,
+  property_setMultiplicity,
+  package_addElement,
 } from '@finos/legend-studio';
 import { cleanUpDeadReferencesInDiagram } from '../../helpers/DiagramHelper';
 import { Point } from '../../models/metamodels/pure/packageableElements/diagram/geometry/DSLDiagram_Point';
@@ -857,7 +857,7 @@ const DiagramEditorInlineClassCreatorInner = observer(
         diagramEditorState.setInlineClassCreatorState(undefined);
         const [packagePath, name] = resolvePackagePathAndElementName(path);
         const _class = new Class(name);
-        addPackageElement(
+        package_addElement(
           editorStore.graphManagerState.graph.getOrCreatePackage(packagePath),
           _class,
         );
@@ -1032,14 +1032,14 @@ const DiagramEditorInlinePropertyEditorInner = observer(
       event,
     ) => {
       if (property instanceof DerivedProperty || property instanceof Property) {
-        setPropertyName(property, event.target.value);
+        property_setName(property, event.target.value);
         diagramEditorState.renderer.render();
       }
     };
 
     const changeMultiplicity = (val: Multiplicity): void => {
       if (property instanceof DerivedProperty || property instanceof Property) {
-        setPropertyMultiplicity(property, val);
+        property_setMultiplicity(property, val);
         diagramEditorState.renderer.render();
       }
     };
@@ -1059,7 +1059,7 @@ const DiagramEditorInlinePropertyEditorInner = observer(
     };
     const changePropertyType = (val: PackageableElementOption<Type>): void => {
       if (property instanceof Property || property instanceof DerivedProperty) {
-        setPropertyGenericType(property, new GenericType(val.value));
+        property_setGenericType(property, new GenericType(val.value));
       }
     };
 

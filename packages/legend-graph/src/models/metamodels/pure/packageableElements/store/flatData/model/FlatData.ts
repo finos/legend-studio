@@ -14,14 +14,11 @@
  * limitations under the License.
  */
 
-import { observable, computed, action, makeObservable, override } from 'mobx';
+import { observable, computed, makeObservable, override } from 'mobx';
 import {
   type Hashable,
   guaranteeNonNullable,
   hashArray,
-  addUniqueEntry,
-  deleteEntry,
-  changeEntry,
 } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import type { FlatDataSection } from './FlatDataSection';
@@ -37,9 +34,6 @@ export class FlatData extends Store implements Hashable {
 
     makeObservable<FlatData, '_elementHashCode'>(this, {
       sections: observable,
-      deleteSection: action,
-      changeSection: action,
-      addSection: action,
       recordTypes: computed,
       _elementHashCode: override,
     });
@@ -50,15 +44,6 @@ export class FlatData extends Store implements Hashable {
       this.sections.find((section) => section.name === sectionName),
       `Can't find section '${sectionName}' in flat-data store '${this.path}'`,
     );
-  deleteSection(value: FlatDataSection): void {
-    deleteEntry(this.sections, value);
-  }
-  changeSection(value: FlatDataSection, newVal: FlatDataSection): void {
-    changeEntry(this.sections, value, newVal);
-  }
-  addSection(value: FlatDataSection): void {
-    addUniqueEntry(this.sections, value);
-  }
 
   get recordTypes(): RootFlatDataRecordType[] {
     return this.sections.flatMap((section) =>

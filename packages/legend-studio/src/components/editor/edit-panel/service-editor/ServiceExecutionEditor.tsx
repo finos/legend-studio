@@ -66,6 +66,10 @@ import {
   PackageableElementExplicitReference,
 } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
+import {
+  pureSingleExecution_setMapping,
+  pureSingleExecution_setRuntime,
+} from '../../../../stores/DSLService_ModifierHelper';
 
 const PureSingleExecutionConfigurationEditor = observer(
   (props: {
@@ -101,7 +105,7 @@ const PureSingleExecutionConfigurationEditor = observer(
       val: PackageableElementOption<Mapping>,
     ): void => {
       if (val.value !== mapping) {
-        selectedExecution.setMapping(val.value);
+        pureSingleExecution_setMapping(selectedExecution, val.value);
         executionState.autoSelectRuntimeOnMappingChange(val.value);
         flowResult(selectedTestState.generateTestData()).catch(
           applicationStore.alertUnhandledError,
@@ -182,7 +186,7 @@ const PureSingleExecutionConfigurationEditor = observer(
       if (val.value === undefined) {
         executionState.useCustomRuntime();
       } else if (val.value !== runtime) {
-        selectedExecution.setRuntime(val.value);
+        pureSingleExecution_setRuntime(selectedExecution, val.value);
       }
     };
     const visitRuntime = (): void => {
@@ -197,7 +201,7 @@ const PureSingleExecutionConfigurationEditor = observer(
         const element = item.data.packageableElement;
         if (!isReadOnly) {
           if (element instanceof Mapping) {
-            selectedExecution.setMapping(element);
+            pureSingleExecution_setMapping(selectedExecution, element);
             flowResult(selectedTestState.generateTestData()).catch(
               applicationStore.alertUnhandledError,
             );
@@ -206,7 +210,8 @@ const PureSingleExecutionConfigurationEditor = observer(
             element instanceof PackageableRuntime &&
             element.runtimeValue.mappings.map((m) => m.value).includes(mapping)
           ) {
-            selectedExecution.setRuntime(
+            pureSingleExecution_setRuntime(
+              selectedExecution,
               new RuntimePointer(
                 PackageableElementExplicitReference.create(element),
               ),

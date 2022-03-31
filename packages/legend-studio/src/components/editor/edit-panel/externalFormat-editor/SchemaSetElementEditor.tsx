@@ -53,6 +53,13 @@ import {
 } from '@finos/legend-shared';
 import { GenerationPropertyEditor } from '../element-generation-editor/FileGenerationEditor';
 import { useEditorStore } from '../../EditorStoreProvider';
+import {
+  externalFormat_schemaSet_addSchema,
+  externalFormat_schemaSet_deleteSchema,
+  externalFormat_schema_setContent,
+  externalFormat_schema_setId,
+  externalFormat_schema_setLocation,
+} from '../../../../stores/ModifierHelper';
 
 const SchemaLoader = observer(
   (props: { schemaSetEditorState: SchemaSetEditorState }) => {
@@ -153,10 +160,10 @@ const SchemaBasicEditor = observer(
   }) => {
     const { schema, isReadOnly, language } = props;
     const changeId: React.ChangeEventHandler<HTMLInputElement> = (event) =>
-      schema.setId(event.target.value);
+      externalFormat_schema_setId(schema, event.target.value);
     const changeLocation: React.ChangeEventHandler<HTMLInputElement> = (
       event,
-    ) => schema.setLocation(event.target.value);
+    ) => externalFormat_schema_setLocation(schema, event.target.value);
     return (
       <div className="schema-editor">
         <input
@@ -181,7 +188,7 @@ const SchemaBasicEditor = observer(
               inputValue={schema.content}
               language={language}
               updateInput={(val: string): void => {
-                schema.setContent(val);
+                externalFormat_schema_setContent(schema, val);
               }}
               hideGutter={true}
             />
@@ -218,8 +225,8 @@ const SchemaSetGeneralEditor = observer(
     const addSchema = (): void => {
       if (!isReadOnly) {
         const schema = new Schema();
-        schema.setContent('');
-        schemaSet.addSchema(schema);
+        externalFormat_schema_setContent(schema, '');
+        externalFormat_schemaSet_addSchema(schemaSet, schema);
         schemaSetEditorState.setCurrentSchema(schema);
       }
     };
@@ -228,7 +235,7 @@ const SchemaSetGeneralEditor = observer(
     const deleteSchema =
       (val: Schema): (() => void) =>
       (): void => {
-        schemaSet.deleteSchema(val);
+        externalFormat_schemaSet_deleteSchema(schemaSet, val);
         if (schemaSet.schemas.length !== 0) {
           schemaSetEditorState.setCurrentSchema(
             schemaSet.schemas[schemaSet.schemas.length - 1],

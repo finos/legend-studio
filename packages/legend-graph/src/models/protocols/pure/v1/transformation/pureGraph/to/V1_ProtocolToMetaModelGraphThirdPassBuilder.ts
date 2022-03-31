@@ -21,6 +21,7 @@ import {
   assertErrorThrown,
   guaranteeNonNullable,
   LogEvent,
+  addUniqueEntry,
 } from '@finos/legend-shared';
 import { CORE_PURE_PATH } from '../../../../../../../MetaModelConst';
 import { Class } from '../../../../../../metamodels/pure/packageableElements/domain/Class';
@@ -53,10 +54,6 @@ import type { V1_Measure } from '../../../model/packageableElements/domain/V1_Me
 import { V1_buildDatabaseSchemaViewsFirstPass } from '../../../transformation/pureGraph/to/helpers/V1_DatabaseBuilderHelper';
 import type { V1_SectionIndex } from '../../../model/packageableElements/section/V1_SectionIndex';
 import { GraphBuilderError } from '../../../../../../../graphManager/GraphManagerUtils';
-import {
-  addClassSubclass,
-  addClassSuperType,
-} from '../../../../../../DomainModifierHelper';
 
 export class V1_ProtocolToMetaModelGraphThirdPassBuilder
   implements V1_PackageableElementVisitor<void>
@@ -94,9 +91,12 @@ export class V1_ProtocolToMetaModelGraphThirdPassBuilder
       if (type !== CORE_PURE_PATH.ANY) {
         try {
           const genricTypeReference = this.context.resolveGenericType(type);
-          addClassSuperType(_class, genricTypeReference);
+          addUniqueEntry(_class.generalizations, genricTypeReference);
           if (genricTypeReference.ownerReference.value instanceof Class) {
-            addClassSubclass(genricTypeReference.ownerReference.value, _class);
+            addUniqueEntry(
+              genricTypeReference.ownerReference.value.subclasses,
+              _class,
+            );
           }
         } catch (error) {
           assertErrorThrown(error);

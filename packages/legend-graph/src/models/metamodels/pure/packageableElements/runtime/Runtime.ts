@@ -14,15 +14,13 @@
  * limitations under the License.
  */
 
-import { observable, computed, action, makeObservable } from 'mobx';
+import { observable, computed, makeObservable } from 'mobx';
 import {
   type Hashable,
   hashArray,
   generateEnumerableNameFromToken,
   assertTrue,
   uuid,
-  addUniqueEntry,
-  deleteEntry,
 } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import type { Connection } from '../connection/Connection';
@@ -30,14 +28,10 @@ import type { PackageableRuntime } from './PackageableRuntime';
 import type { Mapping } from '../mapping/Mapping';
 import type { Store } from '../store/Store';
 import {
-  type PackageableElementReference,
-  PackageableElementExplicitReference,
-} from '../PackageableElementReference';
-import {
   getElementPointerHashCode,
   PACKAGEABLE_ELEMENT_POINTER_TYPE,
 } from '../PackageableElement';
-import { setPackageableElementReferenceValue } from '../../../../DomainModifierHelper';
+import type { PackageableElementReference } from '../PackageableElementReference';
 
 export class IdentifiedConnection implements Hashable {
   uuid = uuid();
@@ -108,56 +102,9 @@ export class EngineRuntime extends Runtime implements Hashable {
     makeObservable(this, {
       mappings: observable,
       connections: observable,
-      addIdentifiedConnection: action,
-      deleteIdentifiedConnection: action,
-      addUniqueStoreConnectionsForStore: action,
-      setMappings: action,
-      addMapping: action,
-      deleteMapping: action,
       allIdentifiedConnections: computed,
       hashCode: computed,
     });
-  }
-
-  addIdentifiedConnection(value: IdentifiedConnection): void {
-    const store = value.connection.store;
-    const storeConnections =
-      this.connections.find((sc) => sc.store.value === store.value) ??
-      new StoreConnections(store);
-    addUniqueEntry(this.connections, storeConnections);
-    assertTrue(
-      !storeConnections.storeConnections
-        .map((connection) => connection.id)
-        .includes(value.id),
-      `Can't add identified connection as a connection with the same ID '${value.id} already existed'`,
-    );
-    addUniqueEntry(storeConnections.storeConnections, value);
-  }
-
-  deleteIdentifiedConnection(value: IdentifiedConnection): void {
-    const storeConnections = this.connections.find(
-      (sc) => sc.store.value === value.connection.store.value,
-    );
-    if (storeConnections) {
-      deleteEntry(storeConnections.storeConnections, value);
-    }
-  }
-
-  addUniqueStoreConnectionsForStore(value: Store): void {
-    if (!this.connections.find((sc) => sc.store.value === value)) {
-      this.connections.push(
-        new StoreConnections(PackageableElementExplicitReference.create(value)),
-      );
-    }
-  }
-  setMappings(value: PackageableElementReference<Mapping>[]): void {
-    this.mappings = value;
-  }
-  addMapping(value: PackageableElementReference<Mapping>): void {
-    addUniqueEntry(this.mappings, value);
-  }
-  deleteMapping(value: PackageableElementReference<Mapping>): void {
-    deleteEntry(this.mappings, value);
   }
 
   get allIdentifiedConnections(): IdentifiedConnection[] {
@@ -211,10 +158,6 @@ export class RuntimePointer extends Runtime implements Hashable {
     });
 
     this.packageableRuntime = packageableRuntime;
-  }
-
-  setPackageableRuntime(value: PackageableRuntime): void {
-    setPackageableElementReferenceValue(this.packageableRuntime, value);
   }
 
   get hashCode(): string {

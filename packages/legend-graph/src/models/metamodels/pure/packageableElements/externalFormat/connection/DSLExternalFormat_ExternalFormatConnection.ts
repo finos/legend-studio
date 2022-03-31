@@ -15,7 +15,7 @@
  */
 
 import { type Hashable, ContentType, hashArray } from '@finos/legend-shared';
-import { action, computed, makeObservable, observable } from 'mobx';
+import { computed, makeObservable, observable } from 'mobx';
 import type { Binding } from '../store/DSLExternalFormat_Binding';
 import type { UrlStream } from './DSLExternalFormat_UrlStream';
 import {
@@ -34,7 +34,6 @@ export class ExternalFormatConnection extends Connection implements Hashable {
 
     makeObservable(this, {
       externalSource: observable,
-      setSource: action,
       hashCode: computed,
     });
   }

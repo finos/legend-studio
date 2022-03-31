@@ -106,6 +106,7 @@ import {
 import { LambdaEditorState } from '@finos/legend-application';
 import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../DSLMapping_LegendStudioPlugin_Extension';
 import type { LegendStudioPlugin } from '../../../LegendStudioPlugin';
+import { flatData_setSourceRootRecordType } from '../../../ModifierHelper';
 
 export interface MappingExplorerTreeNodeData extends TreeNodeData {
   mappingElement: MappingElement;
@@ -830,7 +831,7 @@ export class MappingEditorState extends ElementEditorState {
         newSource instanceof RootFlatDataRecordType &&
         !setImplementation.getEmbeddedSetImplmentations().length
       ) {
-        setImplementation.setSourceRootRecordType(newSource);
+        flatData_setSourceRootRecordType(setImplementation, newSource);
       } else {
         // here we require a change of set implementation as the source type does not match the what the current class mapping supports
         let newSetImp: InstanceSetImplementation;

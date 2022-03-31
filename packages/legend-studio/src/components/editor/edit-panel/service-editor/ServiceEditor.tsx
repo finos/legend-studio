@@ -39,6 +39,15 @@ import { useEditorStore } from '../../EditorStoreProvider';
 import { useApplicationStore } from '@finos/legend-application';
 import { validateServicePattern } from '@finos/legend-graph';
 import type { LegendStudioConfig } from '../../../../application/LegendStudioConfig';
+import {
+  service_addOwner,
+  service_deleteOwner,
+  service_removePatternParameter,
+  service_setAutoActivateUpdates,
+  service_setDocumentation,
+  service_setPattern,
+  service_updateOwner,
+} from '../../../../stores/DSLService_ModifierHelper';
 
 const ServiceGeneralEditor = observer(() => {
   const editorStore = useEditorStore();
@@ -52,7 +61,7 @@ const ServiceGeneralEditor = observer(() => {
     setPattern(event.target.value);
   const updatePattern = (): void => {
     if (!isReadOnly) {
-      service.setPattern(pattern);
+      service_setPattern(service, pattern);
     }
   };
   const patternValidationResult = validateServicePattern(pattern);
@@ -61,7 +70,7 @@ const ServiceGeneralEditor = observer(() => {
   const removePatternParameter =
     (val: string): (() => void) =>
     (): void => {
-      service.removePatternParameter(val);
+      service_removePatternParameter(service, val);
       setPattern(service.pattern);
     };
   // Owners
@@ -86,7 +95,7 @@ const ServiceGeneralEditor = observer(() => {
   ) => setOwnerInputValue(event.target.value);
   const addOwner = (): void => {
     if (ownerInputValue && !isReadOnly && !owners.includes(ownerInputValue)) {
-      service.addOwner(ownerInputValue);
+      service_addOwner(service, ownerInputValue);
     }
     hideAddOrEditOwnerInput();
   };
@@ -94,14 +103,14 @@ const ServiceGeneralEditor = observer(() => {
     (idx: number): (() => void) =>
     (): void => {
       if (ownerInputValue && !isReadOnly && !owners.includes(ownerInputValue)) {
-        service.updateOwner(ownerInputValue, idx);
+        service_updateOwner(service, ownerInputValue, idx);
       }
     };
   const deleteOwner =
     (idx: number): (() => void) =>
     (): void => {
       if (!isReadOnly) {
-        service.deleteOwner(idx);
+        service_deleteOwner(service, idx);
         // Since we keep track of the value currently being edited using the index, we have to account for it as we delete entry
         if (
           typeof showOwnerEditInput === 'number' &&
@@ -116,11 +125,11 @@ const ServiceGeneralEditor = observer(() => {
     event,
   ) => {
     if (!isReadOnly) {
-      service.setDocumentation(event.target.value);
+      service_setDocumentation(service, event.target.value);
     }
   };
   const toggleAutoActivateUpdates = (): void => {
-    service.setAutoActivateUpdates(!service.autoActivateUpdates);
+    service_setAutoActivateUpdates(service, !service.autoActivateUpdates);
   };
 
   useEffect(() => {

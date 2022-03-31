@@ -29,9 +29,6 @@ import {
   Multiplicity,
   PRIMITIVE_TYPE,
   VariableExpression,
-  setMultiplicityLowerBound,
-  setMultiplicityUpperBound,
-  setGenericTypeRawType,
 } from '@finos/legend-graph';
 import {
   addUniqueEntry,
@@ -42,6 +39,11 @@ import {
 import { observable, makeObservable, action } from 'mobx';
 import type { QueryBuilderState } from './QueryBuilderState';
 import { DATE_FORMAT, DATE_TIME_FORMAT } from '@finos/legend-application';
+import {
+  multiplicity_setLowerBound,
+  multiplicity_setUpperBound,
+  setGenericTypeRawType,
+} from './QueryModifierHelper';
 
 export enum QUERY_BUILDER_PARAMETER_TREE_DND_TYPE {
   VARIABLE = 'VARIABLE',
@@ -205,8 +207,8 @@ export class QueryParameterState {
       current.lowerBound !== lowerBound ||
       current.upperBound !== uppderBound
     ) {
-      setMultiplicityLowerBound(current, lowerBound);
-      setMultiplicityUpperBound(current, uppderBound);
+      multiplicity_setLowerBound(current, lowerBound);
+      multiplicity_setUpperBound(current, uppderBound);
       this.mockParameterValue();
     }
   }

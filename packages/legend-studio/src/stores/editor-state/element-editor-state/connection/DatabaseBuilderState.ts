@@ -42,8 +42,9 @@ import {
   Database,
   isValidFullPath,
   resolvePackagePathAndElementName,
-  addPackageElement,
 } from '@finos/legend-graph';
+import { package_addElement } from '../../../DomainModifierHelper';
+import { connection_setStore } from '../../../ModifierHelper';
 
 export abstract class DatabaseBuilderTreeNodeData implements TreeNodeData {
   isOpen?: boolean | undefined;
@@ -548,7 +549,8 @@ export class DatabaseBuilderState {
       const isUpdating = Boolean(this.currentDatabase);
       if (!this.currentDatabase) {
         const newDatabase = new Database(database.name);
-        this.connection.setStore(
+        connection_setStore(
+          this.connection,
           PackageableElementExplicitReference.create(newDatabase),
         );
         const PackagePath = guaranteeNonNullable(
@@ -559,7 +561,7 @@ export class DatabaseBuilderState {
           this.editorStore.graphManagerState.graph.getOrCreatePackage(
             PackagePath,
           );
-        addPackageElement(databasePackage, newDatabase);
+        package_addElement(databasePackage, newDatabase);
         this.editorStore.graphManagerState.graph.addElement(newDatabase);
         currentDatabase = newDatabase;
         this.editorStore.explorerTreeState.reprocess();

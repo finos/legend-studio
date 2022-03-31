@@ -71,9 +71,20 @@ import {
   StaticDatasourceSpecification,
   DefaultH2AuthenticationStrategy,
   ModelGenerationSpecification,
-  addPackageElement,
 } from '@finos/legend-graph';
 import type { DSLMapping_LegendStudioPlugin_Extension } from './DSLMapping_LegendStudioPlugin_Extension';
+import { package_addElement } from './DomainModifierHelper';
+import {
+  fileGeneration_setScopeElements,
+  fileGeneration_setType,
+  generationSpecification_addGenerationElement,
+  packageableConnection_setConnectionValue,
+  runtime_addMapping,
+} from './ModifierHelper';
+import {
+  service_initNewService,
+  service_setExecution,
+} from './DSLService_ModifierHelper';
 
 export const resolvePackageAndElementName = (
   _package: Package,
@@ -138,8 +149,9 @@ export class NewPackageableRuntimeDriver extends NewElementDriver<PackageableRun
 
   createElement(name: string): PackageableRuntime {
     const runtime = new PackageableRuntime(name);
-    runtime.setRuntimeValue(new EngineRuntime());
-    runtime.runtimeValue.addMapping(
+    runtime.runtimeValue = new EngineRuntime();
+    runtime_addMapping(
+      runtime.runtimeValue,
       PackageableElementExplicitReference.create(
         guaranteeNonNullable(this.mapping),
       ),
@@ -340,7 +352,8 @@ export class NewPackageableConnectionDriver extends NewElementDriver<Packageable
 
   createElement(name: string): PackageableConnection {
     const connection = new PackageableConnection(name);
-    connection.setConnectionValue(
+    packageableConnection_setConnectionValue(
+      connection,
       this.newConnectionValueDriver.createConnection(
         this.store ?? this.editorStore.graphManagerState.graph.modelStore,
       ),
@@ -377,9 +390,13 @@ export class NewFileGenerationDriver extends NewElementDriver<FileGenerationSpec
 
   createElement(name: string): FileGenerationSpecification {
     const fileGeneration = new FileGenerationSpecification(name);
-    fileGeneration.setType(guaranteeNonNullable(this.typeOption).value);
+    fileGeneration_setType(
+      fileGeneration,
+      guaranteeNonNullable(this.typeOption).value,
+    );
     // default to all packages
-    fileGeneration.setScopeElements(
+    fileGeneration_setScopeElements(
+      fileGeneration,
       this.editorStore.graphManagerState.graph.root.children
         .filter((element) => element instanceof Package)
         .map((element) => PackageableElementExplicitReference.create(element)),
@@ -550,7 +567,7 @@ export class NewElementState {
         );
       } else {
         const element = this.createElement(elementName);
-        addPackageElement(
+        package_addElement(
           packagePath
             ? this.editorStore.graphManagerState.graph.getOrCreatePackage(
                 packagePath,
@@ -587,13 +604,16 @@ export class NewElementState {
         generationSpec = new GenerationSpecification(
           DEFAULT_GENERATION_SPECIFICATION_NAME,
         );
-        addPackageElement(
+        package_addElement(
           guaranteeNonNullable(generationElement.package),
           generationSpec,
         );
         this.editorStore.graphManagerState.graph.addElement(generationSpec);
       }
-      generationSpec.addGenerationElement(generationElement);
+      generationSpecification_addGenerationElement(
+        generationSpec,
+        generationElement,
+      );
     }
 
     const extraElementEditorPostCreateActions = this.editorStore.pluginManager
@@ -671,7 +691,8 @@ export class NewElementState {
             this.editorStore,
           );
         }
-        service.setExecution(
+        service_setExecution(
+          service,
           new PureSingleExecution(
             RawLambda.createStub(),
             service,
@@ -679,7 +700,7 @@ export class NewElementState {
             runtimeValue,
           ),
         );
-        service.initNewService();
+        service_initNewService(service);
         element = service;
         break;
       }

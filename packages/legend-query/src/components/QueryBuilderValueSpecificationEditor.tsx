@@ -53,7 +53,6 @@ import {
   PRIMITIVE_TYPE,
   TYPICAL_MULTIPLICITY_TYPE,
   VariableExpression,
-  setGenericTypeRawType,
 } from '@finos/legend-graph';
 import { getMultiplicityDescription } from './shared/QueryBuilderUtils';
 import {
@@ -63,6 +62,7 @@ import {
 } from '@finos/legend-application';
 import format from 'date-fns/format/index';
 import { addDays } from 'date-fns';
+import { setGenericTypeRawType } from '../stores/QueryModifierHelper';
 
 const QueryBuilderParameterInfoTooltip: React.FC<{
   variable: VariableExpression;

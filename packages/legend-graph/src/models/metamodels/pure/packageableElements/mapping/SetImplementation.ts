@@ -94,7 +94,6 @@ export abstract class SetImplementation
     makeObservable(this, {
       root: observable,
       parent: observable,
-      setId: action,
       setRoot: action,
       label: computed,
     });
@@ -103,10 +102,6 @@ export abstract class SetImplementation
     this.parent = parent;
     this.class = _class;
     this.root = root;
-  }
-
-  setId(value: string): void {
-    this.id.setValue(value);
   }
   setRoot(value: boolean): void {
     this.root.setValue(value);

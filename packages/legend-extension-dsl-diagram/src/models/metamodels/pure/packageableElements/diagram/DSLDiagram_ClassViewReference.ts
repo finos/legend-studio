@@ -20,10 +20,10 @@ import type { ClassView } from './DSLDiagram_ClassView';
 import {
   PackageableElementExplicitReference,
   ReferenceWithOwner,
-  setPackageableElementReferenceValue,
   type PackageableElementImplicitReference,
   type PackageableElementReference,
 } from '@finos/legend-graph';
+import { packageableElementReference_setValue } from '@finos/legend-studio';
 
 export abstract class ClassViewReference extends ReferenceWithOwner {
   override readonly ownerReference: PackageableElementReference<Diagram>;
@@ -46,7 +46,7 @@ export abstract class ClassViewReference extends ReferenceWithOwner {
 
   setValue(value: ClassView): void {
     this.value = value;
-    setPackageableElementReferenceValue(this.ownerReference, value.owner);
+    packageableElementReference_setValue(this.ownerReference, value.owner);
   }
 }
 

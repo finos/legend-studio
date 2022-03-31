@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { observable, action, computed, makeObservable } from 'mobx';
+import { observable, computed, makeObservable } from 'mobx';
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import { InstanceSetImplementation } from '../../../mapping/InstanceSetImplementation';
@@ -23,7 +23,6 @@ import type { Class } from '../../../domain/Class';
 import type { Mapping } from '../../../mapping/Mapping';
 import type { SetImplementationVisitor } from '../../../mapping/SetImplementation';
 import { EmbeddedFlatDataPropertyMapping } from './EmbeddedFlatDataPropertyMapping';
-import type { RootFlatDataRecordType } from '../model/FlatDataDataType';
 import type { InferableMappingElementIdValue } from '../../../mapping/InferableMappingElementId';
 import type { RawLambda } from '../../../../rawValueSpecification/RawLambda';
 import type { PackageableElementReference } from '../../../PackageableElementReference';
@@ -49,19 +48,10 @@ export class FlatDataInstanceSetImplementation
 
     makeObservable(this, {
       filter: observable,
-      setSourceRootRecordType: action,
-      setPropertyMappings: action,
       hashCode: computed,
     });
 
     this.sourceRootRecordType = sourceRootRecordType;
-  }
-
-  setSourceRootRecordType(value: RootFlatDataRecordType): void {
-    this.sourceRootRecordType.setValue(value);
-  }
-  setPropertyMappings(value: AbstractFlatDataPropertyMapping[]): void {
-    this.propertyMappings = value;
   }
 
   findPropertyMapping(

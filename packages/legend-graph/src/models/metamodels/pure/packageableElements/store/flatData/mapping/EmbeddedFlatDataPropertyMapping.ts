@@ -90,9 +90,6 @@ export class EmbeddedFlatDataPropertyMapping
     this.parent = rootInstanceSetImplementation.parent;
   }
 
-  setId(value: string): void {
-    throw new UnsupportedOperationError();
-  }
   setRoot(value: boolean): void {
     throw new UnsupportedOperationError();
   }

@@ -36,6 +36,7 @@ export {
   CLASS_PROPERTY_TYPE,
   getClassPropertyType,
 } from './models/metamodels/pure/packageableElements/domain/Class';
+export { type AnnotatedElement } from './models/metamodels/pure/packageableElements/domain/AnnotatedElement';
 export { Package } from './models/metamodels/pure/packageableElements/domain/Package';
 export { Constraint } from './models/metamodels/pure/packageableElements/domain/Constraint';
 export { Association } from './models/metamodels/pure/packageableElements/domain/Association';
@@ -69,6 +70,10 @@ export {
   TagReference,
   TagExplicitReference,
 } from './models/metamodels/pure/packageableElements/domain/TagReference';
+export {
+  RuntimePointer,
+  StoreConnections,
+} from './models/metamodels/pure/packageableElements/runtime/Runtime';
 // metamodel external formats
 export { Binding } from './models/metamodels/pure/packageableElements/externalFormat/store/DSLExternalFormat_Binding';
 export { ModelUnit } from './models/metamodels/pure/packageableElements/externalFormat/store/DSLExternalFormat_ModelUnit';
@@ -77,6 +82,7 @@ export { Schema as ExternalFormatSchema } from './models/metamodels/pure/package
 export { ExternalFormatConnection } from './models/metamodels/pure/packageableElements/externalFormat/connection/DSLExternalFormat_ExternalFormatConnection';
 export { UrlStream } from './models/metamodels/pure/packageableElements/externalFormat/connection/DSLExternalFormat_UrlStream';
 export { DSLExternalFormat_GraphPreset } from './graph/DSLExternalFormat_Extension';
+export { BindingTransformer } from './models/metamodels/pure/packageableElements/externalFormat/store/BindingTransformer';
 // V1 protocols
 export * from './models/protocols/pure/v1/model/packageableElements/V1_PackageableElement';
 export { V1_StereotypePtr } from './models/protocols/pure/v1/model/packageableElements/domain/V1_StereotypePtr';
@@ -160,7 +166,7 @@ export * from './helpers/ValidationHelper';
 export * from './helpers/Stubable'; // TODO: to be removed
 export * from './helpers/DomainHelper';
 export * from './helpers/PureLanguageHelper';
-export * from './models/DomainModifierHelper';
+export * from './models/GraphModifierHelper';
 
 // --------------------------------------------- GRAPH --------------------------------------------------
 
