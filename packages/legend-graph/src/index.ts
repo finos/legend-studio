@@ -124,6 +124,7 @@ export {
   PropertyGraphFetchTreeInstanceValue,
   RootGraphFetchTreeInstanceValue,
 } from './models/metamodels/pure/valueSpecification/GraphFetchTree';
+export { V1_PureGraphManager } from './models/protocols/pure/v1/V1_PureGraphManager';
 
 // V1 protocols
 export { V1_AppliedFunction } from './models/protocols/pure/v1/model/valueSpecification/application/V1_AppliedFunction';
@@ -245,7 +246,10 @@ export { V1_transformPropertyReference } from './models/protocols/pure/v1/transf
 export { V1_EngineServerClient } from './models/protocols/pure/v1/engine/V1_EngineServerClient';
 export { V1_Engine } from './models/protocols/pure/v1/engine/V1_Engine';
 export * from './models/protocols/pure/v1/engine/V1_EngineEvent';
-export { V1_deserializePureModelContextData as V1_jsonToPureModelContextData } from './models/protocols/pure/v1/transformation/pureProtocol/V1_PureProtocolSerialization';
+export {
+  V1_entitiesToPureModelContextData,
+  V1_deserializePureModelContextData,
+} from './models/protocols/pure/v1/transformation/pureProtocol/V1_PureProtocolSerialization';
 export {
   V1_propertyPointerModelSchema,
   V1_stereotypePtrSchema,
@@ -255,6 +259,8 @@ export { V1_serializeValueSpecification } from './models/protocols/pure/v1/trans
 export { V1_ValueSpecificationBuilder } from './models/protocols/pure/v1/transformation/pureGraph/to/helpers/V1_ValueSpecificationBuilderHelper';
 export * from './models/protocols/pure/v1/transformation/pureProtocol/serializationHelpers/V1_CoreSerializationHelper';
 export * from './models/protocols/pure/v1/transformation/pureGraph/to/V1_DSLExternalFormat_GraphBuilderHelper';
+export * from './models/ModelGenerationConfiguration';
+export * from './models/protocols/pure/MappingGeneration_PureProtocolProcessorPlugin_Extension';
 
 // --------------------------------------------- TO BE MODULARIZED --------------------------------------------------
 
