@@ -26,7 +26,6 @@ import type { Database } from './Database';
 import type { View } from './View';
 import { NamedRelationalReference } from './TableReference';
 import { SELF_JOIN_SCHEMA_NAME, SELF_JOIN_TABLE_NAME } from './Join';
-import { setPackageableElementReferenceValue } from '../../../../../../DomainModifierHelper';
 
 export abstract class ViewReference extends NamedRelationalReference {
   value: View;
@@ -49,10 +48,7 @@ export abstract class ViewReference extends NamedRelationalReference {
 
   setValue(value: View): void {
     this.value = value;
-    setPackageableElementReferenceValue(
-      this.ownerReference,
-      value.schema.owner,
-    );
+    this.ownerReference.value = value.schema.owner;
   }
 
   get pointerHashCode(): string {

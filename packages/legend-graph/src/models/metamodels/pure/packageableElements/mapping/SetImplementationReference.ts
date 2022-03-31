@@ -23,7 +23,6 @@ import {
 import type { Mapping } from './Mapping';
 import type { SetImplementation } from './SetImplementation';
 import { ReferenceWithOwner } from '../../Reference';
-import { setPackageableElementReferenceValue } from '../../../../DomainModifierHelper';
 
 export abstract class SetImplementationReference extends ReferenceWithOwner {
   override readonly ownerReference: PackageableElementReference<Mapping>;
@@ -46,7 +45,7 @@ export abstract class SetImplementationReference extends ReferenceWithOwner {
 
   setValue(value: SetImplementation): void {
     this.value = value;
-    setPackageableElementReferenceValue(this.ownerReference, value.parent);
+    this.ownerReference.value = value.parent;
   }
 }
 

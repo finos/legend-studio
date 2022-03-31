@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { observable, action, computed, makeObservable } from 'mobx';
+import { observable, computed, makeObservable } from 'mobx';
 import { hashArray, uuid, type Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../MetaModelConst';
 import type { Type } from '../packageableElements/domain/Type';
@@ -28,7 +28,6 @@ import {
   type RawValueSpecificationVisitor,
   RawValueSpecification,
 } from './RawValueSpecification';
-import { setPackageableElementReferenceValue } from '../../../DomainModifierHelper';
 
 export class RawVariableExpression
   extends RawValueSpecification
@@ -49,9 +48,6 @@ export class RawVariableExpression
     makeObservable(this, {
       name: observable,
       multiplicity: observable,
-      setName: action,
-      setType: action,
-      setMultiplicity: action,
       isStub: computed,
       hashCode: computed,
     });
@@ -59,16 +55,6 @@ export class RawVariableExpression
     this.name = name;
     this.multiplicity = multiplicity;
     this.type = type;
-  }
-
-  setName(value: string): void {
-    this.name = value;
-  }
-  setType(value: Type): void {
-    setPackageableElementReferenceValue(this.type, value);
-  }
-  setMultiplicity(value: Multiplicity): void {
-    this.multiplicity = value;
   }
 
   static createStub = (type: Type): RawVariableExpression =>

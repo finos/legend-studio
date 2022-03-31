@@ -57,6 +57,7 @@ import {
 } from '@finos/legend-graph';
 import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../DSLMapping_LegendStudioPlugin_Extension';
 import type { EditorStore } from '../../../EditorStore';
+import { mapping_setPropertyMappings } from '../../../DSLMApping_ModifierHelper';
 
 /* @MARKER: ACTION ANALYTICS */
 /**
@@ -332,7 +333,8 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
       }
       return [];
     };
-    setImplementation.setPropertyMappings(
+    mapping_setPropertyMappings(
+      setImplementation,
       getDecoratedSetImplementationPropertyMappings<AbstractFlatDataPropertyMapping>(
         setImplementation,
         decoratePropertyMapping,
@@ -485,7 +487,8 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
       }
       return [];
     };
-    setImplementation.setPropertyMappings(
+    mapping_setPropertyMappings(
+      setImplementation,
       getDecoratedSetImplementationPropertyMappings<PropertyMapping>(
         setImplementation,
         decoratePropertyMapping,
@@ -566,7 +569,8 @@ export class MappingElementDecorationCleaner
   visit_PureInstanceSetImplementation(
     setImplementation: PureInstanceSetImplementation,
   ): void {
-    setImplementation.setPropertyMappings(
+    mapping_setPropertyMappings(
+      setImplementation,
       setImplementation.propertyMappings.filter(
         (propertyMapping) => !propertyMapping.transform.isStub,
       ),
@@ -578,7 +582,8 @@ export class MappingElementDecorationCleaner
       | FlatDataInstanceSetImplementation
       | EmbeddedFlatDataPropertyMapping,
   ): void {
-    setImplementation.setPropertyMappings(
+    mapping_setPropertyMappings(
+      setImplementation,
       setImplementation.propertyMappings.filter(
         (propertyMapping) =>
           (propertyMapping instanceof FlatDataPropertyMapping &&

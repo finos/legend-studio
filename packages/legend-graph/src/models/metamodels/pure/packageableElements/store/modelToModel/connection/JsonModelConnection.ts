@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { observable, computed, action, makeObservable } from 'mobx';
+import { observable, computed, makeObservable } from 'mobx';
 import {
   type Hashable,
   hashArray,
@@ -27,7 +27,6 @@ import type { Class } from '../../../domain/Class';
 import type { ModelStore } from '../model/ModelStore';
 import { PureModelConnection } from './PureModelConnection';
 import type { PackageableElementReference } from '../../../PackageableElementReference';
-import { setPackageableElementReferenceValue } from '../../../../../../DomainModifierHelper';
 
 export class JsonModelConnection
   extends PureModelConnection
@@ -51,20 +50,11 @@ export class JsonModelConnection
 
     makeObservable(this, {
       url: observable,
-      setClass: action,
-      setUrl: action,
       hashCode: computed,
     });
 
     this.class = _class;
     this.url = url;
-  }
-
-  setClass(value: Class): void {
-    setPackageableElementReferenceValue(this.class, value);
-  }
-  setUrl(value: string): void {
-    this.url = value;
   }
 
   get hashCode(): string {

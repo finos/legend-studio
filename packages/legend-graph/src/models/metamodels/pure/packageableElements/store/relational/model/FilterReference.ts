@@ -23,7 +23,6 @@ import {
 import { ReferenceWithOwner } from '../../../../Reference';
 import type { Database } from './Database';
 import type { Filter } from './Filter';
-import { setPackageableElementReferenceValue } from '../../../../../../DomainModifierHelper';
 
 export abstract class FilterReference extends ReferenceWithOwner {
   override readonly ownerReference: PackageableElementReference<Database>;
@@ -46,7 +45,7 @@ export abstract class FilterReference extends ReferenceWithOwner {
 
   setValue(value: Filter): void {
     this.value = value;
-    setPackageableElementReferenceValue(this.ownerReference, value.owner);
+    this.ownerReference.value = value.owner;
   }
 }
 

@@ -89,7 +89,6 @@ import {
   PureClientVersion,
   TableAlias,
   type RawExecutionPlan,
-  addPackageElement,
 } from '@finos/legend-graph';
 import {
   ActionAlertActionType,
@@ -97,6 +96,15 @@ import {
   LambdaEditorState,
   TAB_SIZE,
 } from '@finos/legend-application';
+import { package_addElement } from '../../../DomainModifierHelper';
+import {
+  runtime_addIdentifiedConnection,
+  runtime_addMapping,
+} from '../../../ModifierHelper';
+import {
+  service_initNewService,
+  service_setExecution,
+} from '../../../DSLService_ModifierHelper';
 
 export class MappingExecutionQueryState extends LambdaEditorState {
   editorStore: EditorStore;
@@ -192,8 +200,12 @@ export const createRuntimeForExecution = (
   connection: Connection,
 ): Runtime => {
   const runtime = new EngineRuntime();
-  runtime.addMapping(PackageableElementExplicitReference.create(mapping));
-  runtime.addIdentifiedConnection(
+  runtime_addMapping(
+    runtime,
+    PackageableElementExplicitReference.create(mapping),
+  );
+  runtime_addIdentifiedConnection(
+    runtime,
     new IdentifiedConnection(
       runtime.generateIdentifiedConnectionId(),
       connection,
@@ -588,7 +600,7 @@ export class MappingExecutionState {
           this.inputDataState instanceof MappingExecutionObjectInputDataState
         ) {
           const service = new Service(serviceName);
-          service.initNewService();
+          service_initNewService(service);
           const pureSingleExecution = new PureSingleExecution(
             query,
             service,
@@ -597,7 +609,7 @@ export class MappingExecutionState {
             ),
             this.inputDataState.runtime,
           );
-          service.setExecution(pureSingleExecution);
+          service_setExecution(service, pureSingleExecution);
           const singleExecutionTest = new SingleExecutionTest(
             service,
             tryToMinifyJSONString(this.inputDataState.inputData.data),
@@ -614,7 +626,7 @@ export class MappingExecutionState {
               packagePath,
             );
           service.test = singleExecutionTest;
-          addPackageElement(servicePackage, service);
+          package_addElement(servicePackage, service);
           this.editorStore.graphManagerState.graph.addElement(service);
           this.editorStore.openElement(service);
         } else {

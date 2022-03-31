@@ -46,7 +46,7 @@ import type { V1_DerivedProperty } from '../../../../model/packageableElements/d
 import type { V1_Unit } from '../../../../model/packageableElements/domain/V1_Measure';
 import type { V1_TaggedValue } from '../../../../model/packageableElements/domain/V1_TaggedValue';
 import { V1_resolvePathsInRawLambda } from './V1_ValueSpecificationPathResolver';
-import { addPackageElement } from '../../../../../../../DomainModifierHelper';
+import { _package_addElement } from '../../../../../../../GraphModifierHelper';
 
 export const V1_buildTaggedValue = (
   taggedValue: V1_TaggedValue,
@@ -145,7 +145,7 @@ export const V1_buildUnit = (
     !currentGraph.getOwnNullableElement(path),
     `Element '${path}' already exists`,
   );
-  addPackageElement(currentGraph.getOrCreatePackage(unit.package), pureUnit);
+  _package_addElement(currentGraph.getOrCreatePackage(unit.package), pureUnit);
   currentGraph.setOwnType(path, pureUnit);
   return pureUnit;
 };

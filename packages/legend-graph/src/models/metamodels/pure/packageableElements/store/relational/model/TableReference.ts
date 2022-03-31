@@ -26,7 +26,6 @@ import { ReferenceWithOwner } from '../../../../Reference';
 import type { Database } from './Database';
 import type { Table } from './Table';
 import { SELF_JOIN_SCHEMA_NAME, SELF_JOIN_TABLE_NAME } from './Join';
-import { setPackageableElementReferenceValue } from '../../../../../../DomainModifierHelper';
 
 export abstract class NamedRelationalReference extends ReferenceWithOwner {
   override readonly ownerReference: PackageableElementReference<Database>;
@@ -58,10 +57,7 @@ export abstract class TableReference extends NamedRelationalReference {
 
   setValue(value: Table): void {
     this.value = value;
-    setPackageableElementReferenceValue(
-      this.ownerReference,
-      value.schema.owner,
-    );
+    this.ownerReference.value = value.schema.owner;
   }
 
   get pointerHashCode(): string {

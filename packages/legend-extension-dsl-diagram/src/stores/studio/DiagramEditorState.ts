@@ -35,12 +35,12 @@ import {
   Property,
   GenericType,
   PropertyExplicitReference,
-  addClassProperty,
 } from '@finos/legend-graph';
 import {
   type EditorStore,
   ClassEditorState,
   ElementEditorState,
+  class_addProperty,
 } from '@finos/legend-studio';
 import type { ClassView } from '../../models/metamodels/pure/packageableElements/diagram/DSLDiagram_ClassView';
 import type { Point } from '../../models/metamodels/pure/packageableElements/diagram/geometry/DSLDiagram_Point';
@@ -402,7 +402,7 @@ export class DiagramEditorState extends ElementEditorState {
     this.renderer.handleAddSimpleProperty = (classView: ClassView): void => {
       if (!this.isReadOnly && !classView.class.value.isReadOnly) {
         const _class = classView.class.value;
-        addClassProperty(
+        class_addProperty(
           _class,
           new Property(
             `property_${_class.properties.length + 1}`,

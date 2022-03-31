@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
-export { Service } from './models/metamodels/pure/packageableElements/service/Service';
+export {
+  Service,
+  DEFAULT_SERVICE_PATTERN,
+} from './models/metamodels/pure/packageableElements/service/Service';
 export * from './models/metamodels/pure/packageableElements/service/ServiceTest';
 export * from './models/metamodels/pure/packageableElements/service/ServiceExecution';

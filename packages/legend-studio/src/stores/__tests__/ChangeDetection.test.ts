@@ -18,7 +18,8 @@ import { unitTest } from '@finos/legend-shared';
 import { TEST__getTestEditorStore } from '../EditorStoreTestUtils';
 import { flowResult } from 'mobx';
 import { type EntityDiff, EntityChangeType } from '@finos/legend-server-sdlc';
-import { Class, setPropertyName } from '@finos/legend-graph';
+import { Class } from '@finos/legend-graph';
+import { property_setName } from '../DomainModifierHelper';
 
 const entities = [
   {
@@ -72,7 +73,7 @@ test(unitTest('Change detection works properly'), async () => {
   const _class = editorStore.graphManagerState.graph.getClass('model::ClassA');
 
   // modify
-  setPropertyName(_class.getProperty('prop'), 'prop1');
+  property_setName(_class.getProperty('prop'), 'prop1');
 
   await flowResult(editorStore.graphManagerState.precomputeHashes());
   await flowResult(editorStore.changeDetectionState.computeLocalChanges(true));
@@ -84,7 +85,7 @@ test(unitTest('Change detection works properly'), async () => {
     .workspaceLocalLatestRevisionState.changes[0] as EntityDiff;
   expect(change.entityChangeType).toEqual(EntityChangeType.MODIFY);
   expect(change.oldPath).toEqual(_class.path);
-  setPropertyName(_class.getProperty('prop1'), 'prop'); // reset
+  property_setName(_class.getProperty('prop1'), 'prop'); // reset
 
   // add
   const newClass = new Class('ClassB');

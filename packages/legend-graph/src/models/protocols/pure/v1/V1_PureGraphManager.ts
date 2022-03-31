@@ -2207,11 +2207,9 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         const runtime = runtimes.find((e) => e.path === element.path);
         if (runtime) {
           const runtimeValue = new EngineRuntime();
-          runtime.setRuntimeValue(runtimeValue);
-          runtimeValue.setMappings(
-            element.runtimeValue.mappings.map((mapping) =>
-              context.resolveMapping(mapping.path),
-            ),
+          runtime.runtimeValue = runtimeValue;
+          runtimeValue.mappings = element.runtimeValue.mappings.map((mapping) =>
+            context.resolveMapping(mapping.path),
           );
         }
       });
@@ -2278,15 +2276,13 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
                     new EngineRuntime(),
                   ),
               );
-            service.setExecution(execution);
+            service.execution = execution;
           } else if (serviceExecution instanceof V1_PureSingleExecution) {
-            service.setExecution(
-              new PureSingleExecution(
-                RawLambda.createStub(),
-                service,
-                PackageableElementExplicitReference.create(new Mapping('')),
-                new EngineRuntime(),
-              ),
+            service.execution = new PureSingleExecution(
+              RawLambda.createStub(),
+              service,
+              PackageableElementExplicitReference.create(new Mapping('')),
+              new EngineRuntime(),
             );
           }
         }

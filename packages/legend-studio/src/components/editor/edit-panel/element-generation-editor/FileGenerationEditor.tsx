@@ -82,6 +82,12 @@ import {
 import { useApplicationStore } from '@finos/legend-application';
 import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor';
 import type { DSLGenerationSpecification_LegendStudioPlugin_Extension } from '../../../../stores/DSLGenerationSpecification_LegendStudioPlugin_Extension';
+import {
+  fileGeneration_addScopeElement,
+  fileGeneration_changeScopeElement,
+  fileGeneration_deleteScopeElement,
+  fileGeneration_setGenerationOutputPath,
+} from '../../../../stores/ModifierHelper';
 
 export const FileGenerationTreeNodeContainer: React.FC<
   TreeNodeContainerProps<
@@ -362,7 +368,7 @@ const FileGenerationScopeEditor = observer(
     const deleteScopeElement = (
       scopeElement: PackageableElementReference<PackageableElement> | string,
     ): void => {
-      fileGeneration.deleteScopeElement(scopeElement);
+      fileGeneration_deleteScopeElement(fileGeneration, scopeElement);
       regenerate()?.catch(applicationStore.alertUnhandledError);
     };
     const changeItemInputValue: React.ChangeEventHandler<HTMLInputElement> = (
@@ -406,7 +412,8 @@ const FileGenerationScopeEditor = observer(
             );
           if (element) {
             regenerate.cancel();
-            fileGeneration.changeScopeElement(
+            fileGeneration_changeScopeElement(
+              fileGeneration,
               value,
               PackageableElementExplicitReference.create(element),
             );
@@ -1295,7 +1302,7 @@ export const FileGenerationConfigurationEditor = observer(
 
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
       const val = event.target.value;
-      fileGeneration.setGenerationOutputPath(val || undefined);
+      fileGeneration_setGenerationOutputPath(fileGeneration, val || undefined);
     };
 
     // Drag and Drop
@@ -1308,7 +1315,8 @@ export const FileGenerationConfigurationEditor = observer(
           !fileGenerationState.getScopeElement(element)
         ) {
           debouncedRegenerate.cancel();
-          fileGeneration.addScopeElement(
+          fileGeneration_addScopeElement(
+            fileGeneration,
             PackageableElementExplicitReference.create(element),
           );
           debouncedRegenerate()?.catch(applicationStore.alertUnhandledError);

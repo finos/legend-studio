@@ -39,7 +39,6 @@ import type { TaggedValue } from './TaggedValue';
 import type { StereotypeReference } from './StereotypeReference';
 import { DerivedProperty } from './DerivedProperty';
 import type { AbstractProperty } from './AbstractProperty';
-import { setGenericTypeReferenceValue } from '../../../../DomainModifierHelper';
 
 // NOTE: we might want to revisit this decision to initialize to association properties to stubs
 const initAssociationProperties = (
@@ -147,7 +146,9 @@ export class Association
     // set up the relationship between the other property and the new class
     addUniqueEntry(type.propertiesFromAssociations, otherProperty);
     // set new type for the property
-    setGenericTypeReferenceValue(property.genericType, new GenericType(type));
+    const _genType = new GenericType(type);
+    property.genericType.value = _genType;
+    property.genericType.ownerReference.value = _genType.rawType;
   };
 
   override get isStub(): boolean {

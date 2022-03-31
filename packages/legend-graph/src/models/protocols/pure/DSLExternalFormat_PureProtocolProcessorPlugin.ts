@@ -86,7 +86,7 @@ import {
   V1_schemaSetModelSchema,
   V1_SCHEMA_SET_ELEMENT_PROTOCOL_TYPE,
 } from './v1/transformation/pureProtocol/serializationHelpers/V1_DSLExternalFormat_ProtocolHelper';
-import { addPackageElement } from '../../DomainModifierHelper';
+import { _package_addElement } from '../../GraphModifierHelper';
 
 const BINDING_ELEMENT_CLASSIFIER_PATH =
   'meta::external::shared::format::binding::Binding';
@@ -119,7 +119,7 @@ export class DSLExternalFormat_PureProtocolProcessorPlugin
             elementProtocol.package,
             elementProtocol.name,
           );
-          addPackageElement(
+          _package_addElement(
             context.currentSubGraph.getOrCreatePackage(elementProtocol.package),
             element,
           );
@@ -195,11 +195,9 @@ export class DSLExternalFormat_PureProtocolProcessorPlugin
           element.format = guaranteeNonEmptyString(elementProtocol.format);
           element.schemas = elementProtocol.schemas.map((schema) => {
             const schemaElement = new Schema();
-            schemaElement.setContent(
-              guaranteeNonEmptyString(
-                schema.content,
-                `Schema 'content' field is missing or empty`,
-              ),
+            schemaElement.content = guaranteeNonEmptyString(
+              schema.content,
+              `Schema 'content' field is missing or empty`,
             );
             schemaElement.id = schema.id;
             schemaElement.location = schema.location;
@@ -355,11 +353,9 @@ export class DSLExternalFormat_PureProtocolProcessorPlugin
             `External format connection 'externalSource' field is missing`,
           );
           const urlStream = new UrlStream();
-          urlStream.setUrl(
-            guaranteeNonEmptyString(
-              connection.externalSource.url,
-              `URL stream 'url' field is missing or empty`,
-            ),
+          urlStream.url = guaranteeNonEmptyString(
+            connection.externalSource.url,
+            `URL stream 'url' field is missing or empty`,
           );
           externalFormatConnection.externalSource = urlStream;
           return externalFormatConnection;

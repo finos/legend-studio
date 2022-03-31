@@ -59,6 +59,7 @@ import {
 } from '@finos/legend-graph';
 import { TAB_SIZE } from '@finos/legend-application';
 import type { DSLService_LegendStudioPlugin_Extension } from '../../../DSLService_LegendStudioPlugin_Extension';
+import { runtime_addIdentifiedConnection } from '../../../ModifierHelper';
 
 interface ServiceTestExecutionResult {
   expected: string;
@@ -177,7 +178,8 @@ export class TestContainerState {
           this.editorStore.graphManagerState.graphManager.TEMPORARY__getEngineConfig();
 
         if (connection instanceof JsonModelConnection) {
-          newRuntime.addIdentifiedConnection(
+          runtime_addIdentifiedConnection(
+            newRuntime,
             new IdentifiedConnection(
               newRuntime.generateIdentifiedConnectionId(),
               new JsonModelConnection(
@@ -195,7 +197,8 @@ export class TestContainerState {
             ),
           );
         } else if (connection instanceof XmlModelConnection) {
-          newRuntime.addIdentifiedConnection(
+          runtime_addIdentifiedConnection(
+            newRuntime,
             new IdentifiedConnection(
               newRuntime.generateIdentifiedConnectionId(),
               new XmlModelConnection(
@@ -212,7 +215,8 @@ export class TestContainerState {
             ),
           );
         } else if (connection instanceof FlatDataConnection) {
-          newRuntime.addIdentifiedConnection(
+          runtime_addIdentifiedConnection(
+            newRuntime,
             new IdentifiedConnection(
               newRuntime.generateIdentifiedConnectionId(),
               new FlatDataConnection(
@@ -228,7 +232,8 @@ export class TestContainerState {
             ),
           );
         } else if (connection instanceof RelationalDatabaseConnection) {
-          newRuntime.addIdentifiedConnection(
+          runtime_addIdentifiedConnection(
+            newRuntime,
             new IdentifiedConnection(
               newRuntime.generateIdentifiedConnectionId(),
               new RelationalDatabaseConnection(
@@ -258,7 +263,8 @@ export class TestContainerState {
             }
           }
           if (testConnection) {
-            newRuntime.addIdentifiedConnection(
+            runtime_addIdentifiedConnection(
+              newRuntime,
               new IdentifiedConnection(
                 newRuntime.generateIdentifiedConnectionId(),
                 testConnection,

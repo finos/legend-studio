@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { observable, computed, action, makeObservable } from 'mobx';
+import { observable, computed, makeObservable } from 'mobx';
 import {
   type Hashable,
   hashArray,
@@ -44,7 +44,6 @@ export class FlatDataConnection extends Connection implements Hashable {
     makeObservable(this, {
       url: observable,
       flatDataStore: computed,
-      setUrl: action,
       hashCode: computed,
     });
 
@@ -57,10 +56,6 @@ export class FlatDataConnection extends Connection implements Hashable {
       FlatData,
       'Flat-data connection must have a flat-data store',
     );
-  }
-
-  setUrl(url: string): void {
-    this.url = url;
   }
 
   get hashCode(): string {

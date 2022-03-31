@@ -66,9 +66,14 @@ import {
   FileGenerationSpecification,
   PackageableElementExplicitReference,
   GenerationTreeNode,
-  setPackageableElementReferenceValue,
 } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
+import { packageableElementReference_setValue } from '../../../stores/DomainModifierHelper';
+import {
+  generationSpecification_addFileGeneration,
+  generationSpecification_deleteFileGeneration,
+  generationSpecification_setId,
+} from '../../../stores/ModifierHelper';
 
 const ModelGenerationDragLayer: React.FC = () => {
   const { itemType, item, isDragging, currentPosition } = useDragLayer(
@@ -121,7 +126,7 @@ const ModelGenerationItem = observer(
       val: PackageableElementOption<FileGenerationSpecification> | null,
     ): void => {
       if (val !== null) {
-        setPackageableElementReferenceValue(modelGenerationRef, val.value);
+        packageableElementReference_setValue(modelGenerationRef, val.value);
       }
     };
     const deleteNode = (): void =>
@@ -137,7 +142,7 @@ const ModelGenerationItem = observer(
       generationTreeNode.id ===
         generationTreeNode.generationElement.value.path && isUnique;
     const changeNodeId: React.ChangeEventHandler<HTMLInputElement> = (event) =>
-      generationTreeNode.setId(event.target.value);
+      generationSpecification_setId(generationTreeNode, event.target.value);
     // Drag and Drop
     const handleHover = useCallback(
       (
@@ -391,11 +396,12 @@ const FileGenerationItem = observer(
       val: PackageableElementOption<FileGenerationSpecification> | null,
     ): void => {
       if (val !== null) {
-        setPackageableElementReferenceValue(fileGeneraitonRef, val.value);
+        packageableElementReference_setValue(fileGeneraitonRef, val.value);
       }
     };
     const deleteColumnSort = (): void =>
-      generationSpecificationEditorState.spec.deleteFileGeneration(
+      generationSpecification_deleteFileGeneration(
+        generationSpecificationEditorState.spec,
         fileGeneraitonRef,
       );
     const visitFileGen = (): void => editorStore.openElement(fileGeneration);
@@ -453,7 +459,7 @@ const FileGenerationSpecifications = observer(
     const addFileGeneration = (): void => {
       const option = getNullableFirstElement(fileGenerationsOptions);
       if (option) {
-        generationSpec.addFileGeneration(option.value);
+        generationSpecification_addFileGeneration(generationSpec, option.value);
       }
     };
     // drag and drop
@@ -464,7 +470,7 @@ const FileGenerationSpecifications = observer(
           element instanceof FileGenerationSpecification &&
           !fileGenerations.includes(element)
         ) {
-          generationSpec.addFileGeneration(element);
+          generationSpecification_addFileGeneration(generationSpec, element);
         }
       },
       [fileGenerations, generationSpec],

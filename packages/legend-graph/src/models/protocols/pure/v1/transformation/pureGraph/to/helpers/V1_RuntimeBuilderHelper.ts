@@ -29,8 +29,8 @@ export const V1_buildEngineRuntime = (
   context: V1_GraphBuilderContext,
 ): EngineRuntime => {
   const runtimeValue = new EngineRuntime();
-  runtimeValue.setMappings(
-    runtime.mappings.map((mapping) => context.resolveMapping(mapping.path)),
+  runtimeValue.mappings = runtime.mappings.map((mapping) =>
+    context.resolveMapping(mapping.path),
   );
   // NOTE: here we don't check if the mappings are fully covered by the runtime, we leave this job for the full compiler
   // and make this a validation check in the UI

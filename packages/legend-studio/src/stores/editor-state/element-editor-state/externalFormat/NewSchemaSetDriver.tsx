@@ -21,6 +21,7 @@ import { makeObservable, observable, action } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { useEditorStore } from '../../../../components/editor/EditorStoreProvider';
 import type { EditorStore } from '../../../EditorStore';
+import { externalFormat_schemaSet_setFormat } from '../../../ModifierHelper';
 import { NewElementDriver } from '../../../NewElementState';
 import type { ExternalFormatTypeOption } from '../../ExternalFormatState';
 
@@ -52,7 +53,10 @@ export class NewSchemaSetDriver extends NewElementDriver<SchemaSet> {
 
   createElement(name: string): SchemaSet {
     const schemaSet = new SchemaSet(name);
-    schemaSet.setFormat(guaranteeNonNullable(this.formatOption).value);
+    externalFormat_schemaSet_setFormat(
+      schemaSet,
+      guaranteeNonNullable(this.formatOption).value,
+    );
     return schemaSet;
   }
 }

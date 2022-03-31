@@ -14,21 +14,19 @@
  * limitations under the License.
  */
 
-import { type Hashable, hashArray } from '@finos/legend-shared';
-import { computed, makeObservable, observable } from 'mobx';
-import { DSL_EXTERNAL_FORMAT_HASH_STRUCTURE } from '../../../../../DSLExternalFormat_ModelUtils';
+import {
+  type GenericType,
+  type Type,
+  _multiplicity_setLowerBound,
+  _multiplicity_setUpperBound,
+} from '@finos/legend-graph';
+import { action } from 'mobx';
 
-export class UrlStream implements Hashable {
-  url!: string;
+export const genericType_setRawType = action(
+  (genericType: GenericType, type: Type): void => {
+    genericType.rawType = type;
+  },
+);
 
-  constructor() {
-    makeObservable(this, {
-      url: observable,
-      hashCode: computed,
-    });
-  }
-
-  get hashCode(): string {
-    return hashArray([DSL_EXTERNAL_FORMAT_HASH_STRUCTURE.URL_STREAM, this.url]);
-  }
-}
+export const multiplicity_setLowerBound = action(_multiplicity_setLowerBound);
+export const multiplicity_setUpperBound = action(_multiplicity_setUpperBound);

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { observable, action, makeObservable } from 'mobx';
+import { observable, makeObservable } from 'mobx';
 import {
   PackageableElementExplicitReference,
   type PackageableElementReference,
@@ -23,7 +23,6 @@ import {
 import { ReferenceWithOwner } from '../../../../Reference';
 import type { RootFlatDataRecordType } from './FlatDataDataType';
 import type { FlatData } from './FlatData';
-import { setPackageableElementReferenceValue } from '../../../../../../DomainModifierHelper';
 
 export abstract class RootFlatDataRecordTypeReference extends ReferenceWithOwner {
   override readonly ownerReference: PackageableElementReference<FlatData>;
@@ -37,16 +36,10 @@ export abstract class RootFlatDataRecordTypeReference extends ReferenceWithOwner
 
     makeObservable(this, {
       value: observable,
-      setValue: action,
     });
 
     this.ownerReference = ownerReference;
     this.value = value;
-  }
-
-  setValue(value: RootFlatDataRecordType): void {
-    this.value = value;
-    setPackageableElementReferenceValue(this.ownerReference, value.owner.owner);
   }
 }
 

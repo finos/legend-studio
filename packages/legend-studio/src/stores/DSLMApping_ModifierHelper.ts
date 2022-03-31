@@ -14,21 +14,21 @@
  * limitations under the License.
  */
 
-import { type Hashable, hashArray } from '@finos/legend-shared';
-import { computed, makeObservable, observable } from 'mobx';
-import { DSL_EXTERNAL_FORMAT_HASH_STRUCTURE } from '../../../../../DSLExternalFormat_ModelUtils';
+import type {
+  InstanceSetImplementation,
+  PropertyMapping,
+  SetImplementation,
+} from '@finos/legend-graph';
+import { action } from 'mobx';
 
-export class UrlStream implements Hashable {
-  url!: string;
-
-  constructor() {
-    makeObservable(this, {
-      url: observable,
-      hashCode: computed,
-    });
-  }
-
-  get hashCode(): string {
-    return hashArray([DSL_EXTERNAL_FORMAT_HASH_STRUCTURE.URL_STREAM, this.url]);
-  }
-}
+export const mapping_setPropertyMappings = action(
+  (si: InstanceSetImplementation, pm: PropertyMapping[]): void => {
+    si.propertyMappings = pm;
+  },
+);
+export const setImpl_setRoot = (
+  owner: SetImplementation,
+  val: boolean,
+): void => {
+  owner.root.setValue(val);
+};

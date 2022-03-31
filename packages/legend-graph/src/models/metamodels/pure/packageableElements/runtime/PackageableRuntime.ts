@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { observable, action, makeObservable, override } from 'mobx';
+import { observable, makeObservable, override } from 'mobx';
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import {
@@ -31,13 +31,8 @@ export class PackageableRuntime extends PackageableElement implements Hashable {
 
     makeObservable<PackageableRuntime, '_elementHashCode'>(this, {
       runtimeValue: observable,
-      setRuntimeValue: action,
       _elementHashCode: override,
     });
-  }
-
-  setRuntimeValue(value: EngineRuntime): void {
-    this.runtimeValue = value;
   }
 
   protected override get _elementHashCode(): string {

@@ -24,12 +24,12 @@ import {
 } from '@finos/legend-art';
 import type { PackageableElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';
 import { useEditorStore } from '../../EditorStoreProvider';
-import {
-  type Profile,
-  type StereotypeReference,
-  type Stereotype,
-  setStereotypeReferenceValue,
+import type {
+  Profile,
+  StereotypeReference,
+  Stereotype,
 } from '@finos/legend-graph';
+import { stereotypeReference_setValue } from '../../../../stores/DomainModifierHelper';
 
 interface StereotypeOption {
   label: string;
@@ -60,7 +60,7 @@ export const StereotypeSelector = observer(
     const changeProfile = (val: PackageableElementOption<Profile>): void => {
       if (val.value.stereotypes.length) {
         setSelectedProfile(val);
-        setStereotypeReferenceValue(
+        stereotypeReference_setValue(
           stereotype,
           val.value.stereotypes[0] as Stereotype,
         );
@@ -83,7 +83,7 @@ export const StereotypeSelector = observer(
       label: stereotype.value.value,
     };
     const updateStereotype = (val: StereotypeOption): void =>
-      setStereotypeReferenceValue(stereotype, val.value);
+      stereotypeReference_setValue(stereotype, val.value);
     return (
       <div className="stereotype-selector">
         <div className="stereotype-selector__profile">

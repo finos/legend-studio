@@ -29,7 +29,6 @@ import {
   type PackageableElementVisitor,
   PackageableElement,
 } from '../PackageableElement';
-import { addPackageChild } from '../../../../DomainModifierHelper';
 
 export const RESERVERD_PACKAGE_NAMES = ['$implicit'];
 
@@ -51,7 +50,7 @@ export class Package extends PackageableElement implements Hashable {
       `Can't create package with reserved name '${name}'`,
     );
     const newPackage = new Package(name);
-    newPackage.setPackage(parent);
+    newPackage.package = parent;
     return newPackage;
   }
 
@@ -89,7 +88,9 @@ export class Package extends PackageableElement implements Hashable {
       }
       // create the node if it is not in parent package
       node = Package.createPackageFromParent(str, parent);
-      addPackageChild(parent, node);
+      // NOTE: here we directly push the element to the children array without any checks rather than use `addUniqueEntry` to improve performance.
+      // Duplication checks should be handled separately
+      parent.children.push(node);
     }
     if (index !== -1) {
       return Package.getOrCreatePackage(

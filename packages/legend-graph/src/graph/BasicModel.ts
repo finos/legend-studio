@@ -62,9 +62,9 @@ import {
   resolvePackagePathAndElementName,
 } from '../MetaModelUtils';
 import {
-  addPackageChild,
-  deletePackageElement,
-} from '../models/DomainModifierHelper';
+  _package_addElement,
+  _package_deleteElement,
+} from '../models/GraphModifierHelper';
 
 const FORBIDDEN_EXTENSION_ELEMENT_CLASS = new Set([
   PackageableElement,
@@ -514,7 +514,7 @@ export abstract class BasicModel {
 
   deleteOwnElement(element: PackageableElement): void {
     if (element.package) {
-      deletePackageElement(element.package, element);
+      _package_deleteElement(element.package, element);
     }
     if (element instanceof Mapping) {
       this.mappingsIndex.delete(element.path);
@@ -593,14 +593,13 @@ export abstract class BasicModel {
         this.getNullablePackage(packagePath) ??
         (packagePath !== '' ? this.getOrCreatePackage(packagePath) : this.root);
       // update element name
-      element.setName(elementName);
+      element.name = elementName;
       // update element package if needed
       if (element.package !== parentPackage) {
         if (element.package) {
-          deletePackageElement(element.package, element);
+          _package_deleteElement(element.package, element);
         }
-        element.setPackage(parentPackage);
-        addPackageChild(parentPackage, element);
+        _package_addElement(parentPackage, element);
       }
     }
 
@@ -662,7 +661,7 @@ export abstract class BasicModel {
         childElements.set(childElement.path, childElement);
       });
       // update element name
-      element.setName(elementName);
+      element.name = elementName;
       if (!element.package) {
         throw new IllegalStateError(`Can't rename root package`);
       }
@@ -677,11 +676,10 @@ export abstract class BasicModel {
        */
       const currentParentPackage = element.package;
       if (currentParentPackage !== this.getNullablePackage(packagePath)) {
-        deletePackageElement(currentParentPackage, element);
+        _package_deleteElement(currentParentPackage, element);
         const newParentPackage =
           packagePath !== '' ? this.getOrCreatePackage(packagePath) : this.root;
-        element.setPackage(newParentPackage);
-        addPackageChild(newParentPackage, element);
+        _package_addElement(newParentPackage, element);
       }
       childElements.forEach((childElement, childElementOriginalPath) => {
         this.renameOwnElement(

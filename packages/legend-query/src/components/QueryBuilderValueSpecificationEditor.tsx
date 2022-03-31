@@ -53,7 +53,6 @@ import {
   PRIMITIVE_TYPE,
   TYPICAL_MULTIPLICITY_TYPE,
   VariableExpression,
-  setGenericTypeRawType,
 } from '@finos/legend-graph';
 import { getMultiplicityDescription } from './shared/QueryBuilderUtils';
 import {
@@ -63,6 +62,7 @@ import {
 } from '@finos/legend-application';
 import format from 'date-fns/format/index';
 import { addDays } from 'date-fns';
+import { genericType_setRawType } from '../stores/QueryModifierHelper';
 
 const QueryBuilderParameterInfoTooltip: React.FC<{
   variable: VariableExpression;
@@ -552,7 +552,7 @@ export const DateInstanceValueEditor = observer(
     const latestDate = graph.getPrimitiveType(PRIMITIVE_TYPE.LATESTDATE);
     const changeType = (val: PackageableElementOption<Type>): void => {
       if (variableType !== val.value) {
-        setGenericTypeRawType(valueSpecification.genericType.value, val.value);
+        genericType_setRawType(valueSpecification.genericType.value, val.value);
       }
       if (
         valueSpecification.genericType.value.rawType.name !==

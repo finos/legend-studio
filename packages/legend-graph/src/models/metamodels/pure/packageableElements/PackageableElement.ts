@@ -91,10 +91,7 @@ export abstract class PackageableElement implements Hashable, Stubable {
       _elementHashCode: computed,
       // We need to enable `keepAlive` to facillitate precomputation of element hash code
       hashCode: computed({ keepAlive: true }),
-      setName: action,
-      setPackage: action,
       setIsDeleted: action,
-      deleteElementFromGraph: action,
       dispose: action,
       freeze: action,
     });
@@ -110,25 +107,8 @@ export abstract class PackageableElement implements Hashable, Stubable {
     return this._isDeleted;
   }
 
-  setName(value: string): void {
-    this.name = value;
-  }
-
-  setPackage(val: Package | undefined): void {
-    this.package = val;
-  }
-
   setIsDeleted(value: boolean): void {
     this._isDeleted = value;
-  }
-
-  deleteElementFromGraph(): void {
-    if (this.package) {
-      this.package.children = this.package.children.filter(
-        (child) => child !== this,
-      );
-    }
-    this.setIsDeleted(true);
   }
 
   /**

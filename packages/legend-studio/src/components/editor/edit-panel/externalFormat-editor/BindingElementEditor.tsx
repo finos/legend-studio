@@ -46,6 +46,15 @@ import {
   type ElementDragSource,
   type UMLEditorElementDropTarget,
 } from '../../../../stores/shared/DnDUtil';
+import {
+  externalFormat_Binding_setContentType,
+  externalFormat_Binding_setSchemaId,
+  externalFormat_Binding_setSchemaSet,
+  externalFormat_modelUnit_addPackageableElementExcludes,
+  externalFormat_modelUnit_addPackageableElementIncludes,
+  externalFormat_modelUnit_deletePackageableElementExcludes,
+  externalFormat_modelUnit_deletePackageableElementIncludes,
+} from '../../../../stores/ModifierHelper';
 
 const BindingScopeEntryEditor = observer(
   (props: {
@@ -185,8 +194,8 @@ const BindingGeneralEditor = observer(
       label: string;
       value: SchemaSet;
     }): void => {
-      binding.setSchemaId(undefined);
-      return binding.setSchemaSet(val.value);
+      externalFormat_Binding_setSchemaId(binding, undefined);
+      return externalFormat_Binding_setSchemaSet(binding, val.value);
     };
     const selectedSchemaSet = {
       value: binding.schemaSet,
@@ -198,7 +207,7 @@ const BindingGeneralEditor = observer(
     }));
     const onSchemaIdChange = (
       val: { label: string; value: string } | null,
-    ): void => binding.setSchemaId(val?.value);
+    ): void => externalFormat_Binding_setSchemaId(binding, val?.value);
     const selectedSchemaId = {
       value: binding.schemaId,
       label: binding.schemaId,
@@ -212,7 +221,7 @@ const BindingGeneralEditor = observer(
         }),
       );
     const onContentTypeChange = (val: { label: string; value: string }): void =>
-      binding.setContentType(val.value);
+      externalFormat_Binding_setContentType(binding, val.value);
     const selectedContentType = {
       value: binding.contentType,
       label: binding.contentType,
@@ -301,7 +310,8 @@ export const BindingEditor = observer(() => {
   const allowAddingElement = !isReadOnly && Boolean(elements.length);
   const addInclusion = (): void => {
     if (allowAddingElement) {
-      modelUnit.addPackageableElementIncludes(
+      externalFormat_modelUnit_addPackageableElementIncludes(
+        modelUnit,
         PackageableElementExplicitReference.create(
           guaranteeNonNullable(elements[0]),
         ),
@@ -310,7 +320,8 @@ export const BindingEditor = observer(() => {
   };
   const addExclusion = (): void => {
     if (allowAddingElement) {
-      modelUnit.addPackageableElementExcludes(
+      externalFormat_modelUnit_addPackageableElementExcludes(
+        modelUnit,
         PackageableElementExplicitReference.create(
           guaranteeNonNullable(elements[0]),
         ),
@@ -319,10 +330,12 @@ export const BindingEditor = observer(() => {
   };
   const removeInclusion = (
     val: PackageableElementReference<PackageableElement>,
-  ): void => modelUnit.deletePackageableElementIncludes(val);
+  ): void =>
+    externalFormat_modelUnit_deletePackageableElementIncludes(modelUnit, val);
   const removeExclusion = (
     val: PackageableElementReference<PackageableElement>,
-  ): void => modelUnit.deletePackageableElementExcludes(val);
+  ): void =>
+    externalFormat_modelUnit_deletePackageableElementExcludes(modelUnit, val);
   const handleDropInclusion = useCallback(
     (item: UMLEditorElementDropTarget): void => {
       const element = item.data.packageableElement;
@@ -332,7 +345,8 @@ export const BindingEditor = observer(() => {
           .map((e) => e.value)
           .includes(element)
       ) {
-        modelUnit.addPackageableElementIncludes(
+        externalFormat_modelUnit_addPackageableElementIncludes(
+          modelUnit,
           PackageableElementExplicitReference.create(element),
         );
       }
@@ -348,7 +362,8 @@ export const BindingEditor = observer(() => {
           .map((e) => e.value)
           .includes(element)
       ) {
-        modelUnit.addPackageableElementExcludes(
+        externalFormat_modelUnit_addPackageableElementExcludes(
+          modelUnit,
           PackageableElementExplicitReference.create(element),
         );
       }

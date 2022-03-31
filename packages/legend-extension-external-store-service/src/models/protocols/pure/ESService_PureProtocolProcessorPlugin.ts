@@ -67,7 +67,7 @@ import {
   V1_ElementBuilder,
   V1_initPackageableElement,
   V1_transformElementReference,
-  addPackageElement,
+  _package_addElement,
 } from '@finos/legend-graph';
 import { V1_RootServiceStoreClassMapping } from './v1/model/packageableElements/store/serviceStore/mapping/V1_ESService_RootServiceStoreClassMapping';
 import { RootServiceInstanceSetImplementation } from '../../metamodels/pure/model/packageableElements/store/serviceStore/mapping/ESService_RootServiceInstanceSetImplementation';
@@ -120,7 +120,7 @@ export class ESService_PureProtocolProcessorPlugin
             elementProtocol.package,
             elementProtocol.name,
           );
-          addPackageElement(
+          _package_addElement(
             context.currentSubGraph.getOrCreatePackage(elementProtocol.package),
             element,
           );

@@ -30,7 +30,7 @@ export class Table extends NamedRelation implements Hashable {
   schema!: Schema;
   primaryKey: Column[] = [];
   milestoning: Milestoning[] = [];
-  // // TODO
+  //TODO
   // temporaryTable : Boolean[0..1];
 
   constructor(name: string, schema: Schema) {
