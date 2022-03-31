@@ -67,6 +67,7 @@ import {
   V1_ElementBuilder,
   V1_initPackageableElement,
   V1_transformElementReference,
+  _package_addElement,
 } from '@finos/legend-graph';
 import { V1_RootServiceStoreClassMapping } from './v1/model/packageableElements/store/serviceStore/mapping/V1_ESService_RootServiceStoreClassMapping';
 import { RootServiceInstanceSetImplementation } from '../../metamodels/pure/model/packageableElements/store/serviceStore/mapping/ESService_RootServiceInstanceSetImplementation';
@@ -89,7 +90,6 @@ import {
 } from './v1/transformation/pureGraph/V1_ESService_TransformerHelper';
 import { ServiceRequestBuildInfo } from '../../metamodels/pure/model/packageableElements/store/serviceStore/mapping/ESService_ServiceRequestBuildInfo';
 import { ServiceRequestParametersBuildInfo } from '../../metamodels/pure/model/packageableElements/store/serviceStore/mapping/ESService_ServiceRequestParametersBuildInfo';
-import { package_addElement } from '@finos/legend-studio';
 
 const SERVICE_STORE_ELEMENT_CLASSIFIER_PATH =
   'meta::external::store::service::metamodel::ServiceStore';
@@ -120,7 +120,7 @@ export class ESService_PureProtocolProcessorPlugin
             elementProtocol.package,
             elementProtocol.name,
           );
-          package_addElement(
+          _package_addElement(
             context.currentSubGraph.getOrCreatePackage(elementProtocol.package),
             element,
           );

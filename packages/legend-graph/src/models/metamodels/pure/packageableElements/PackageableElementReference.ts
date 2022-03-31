@@ -40,10 +40,6 @@ export abstract class PackageableElementReference<
   get hashValue(): string {
     return this.valueForSerialization ?? '';
   }
-
-  setValue(value: T): void {
-    this.value = value;
-  }
 }
 
 export class PackageableElementExplicitReference<

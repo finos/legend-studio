@@ -39,7 +39,6 @@ import type { TaggedValue } from './TaggedValue';
 import type { StereotypeReference } from './StereotypeReference';
 import { DerivedProperty } from './DerivedProperty';
 import type { AbstractProperty } from './AbstractProperty';
-import { _genericTypeReference_setValue } from '../../../../GraphModifierHelper';
 
 // NOTE: we might want to revisit this decision to initialize to association properties to stubs
 const initAssociationProperties = (

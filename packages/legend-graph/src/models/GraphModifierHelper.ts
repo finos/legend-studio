@@ -13,9 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import type { GenericType } from './metamodels/pure/packageableElements/domain/GenericType';
-import type { GenericTypeReference } from './metamodels/pure/packageableElements/domain/GenericTypeReference';
 import type { Multiplicity } from './metamodels/pure/packageableElements/domain/Multiplicity';
 import type { Package } from './metamodels/pure/packageableElements/domain/Package';
 import type { Tag } from './metamodels/pure/packageableElements/domain/Tag';
@@ -24,23 +21,16 @@ import type { PackageableElement } from './metamodels/pure/packageableElements/P
 
 export const _tagReference_setValue = (tV: TagReference, value: Tag): void => {
   tV.value = value;
-  tV.ownerReference.setValue(value.owner);
-};
-// Package
-export const _package_addChild = (
-  parent: Package,
-  value: PackageableElement,
-): void => {
-  // NOTE: here we directly push the element to the children array without any checks rather than use `addUniqueEntry` to improve performance.
-  // Duplication checks should be handled separately
-  parent.children.push(value);
+  tV.ownerReference.value = value.owner;
 };
 
 export const _package_addElement = (
   parent: Package,
   element: PackageableElement,
 ): void => {
-  _package_addChild(parent, element);
+  // NOTE: here we directly push the element to the children array without any checks rather than use `addUniqueEntry` to improve performance.
+  // Duplication checks should be handled separately
+  parent.children.push(element);
   element.package = parent;
 };
 

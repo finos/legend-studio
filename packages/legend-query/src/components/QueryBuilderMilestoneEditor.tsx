@@ -51,7 +51,7 @@ import {
 import { Dialog, CustomSelectorInput, RefreshIcon } from '@finos/legend-art';
 import format from 'date-fns/format/index';
 import { addDays } from 'date-fns';
-import { setGenericTypeRawType } from '../stores/QueryModifierHelper';
+import { genericType_setRawType } from '../stores/QueryModifierHelper';
 
 const MilestoningParameterEditor = observer(
   (props: { queryBuilderState: QueryBuilderState; parameterIndex: number }) => {
@@ -125,7 +125,7 @@ const MilestoningParameterEditor = observer(
       if (variableType !== val.value) {
         const genType = milestoningParameter?.genericType?.value;
         if (genType) {
-          setGenericTypeRawType(genType, val.value);
+          genericType_setRawType(genType, val.value);
         }
       }
       if (

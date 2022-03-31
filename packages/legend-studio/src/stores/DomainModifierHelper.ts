@@ -44,7 +44,6 @@ import {
   type Unit,
   type RawLambda,
   Association,
-  _package_addChild,
   _package_addElement,
   _package_deleteElement,
   _tagReference_setValue,
@@ -117,13 +116,12 @@ export const class_deleteSubclass = action(
 );
 
 // --------------------------------------------- GenericTypeReference -------------------------------------
-export const setGenericTypeReferenceValue = action( (
-  gen: GenericTypeReference,
-  value: GenericType,
-): void => {
-  gen.value = value;
-  gen.ownerReference.value = value.rawType;
-});
+export const setGenericTypeReferenceValue = action(
+  (gen: GenericTypeReference, value: GenericType): void => {
+    gen.value = value;
+    gen.ownerReference.value = value.rawType;
+  },
+);
 
 // --------------------------------------------- Property ------------------------------------------------
 export const property_setName = action(
@@ -219,7 +217,6 @@ export const derivedProperty_setParameters = (
   dp.parameters = value;
 };
 
-
 // --------------------------------------------- Constraint -------------------------------------
 export const constraint_setName = action(
   (_constraint: Constraint, name: string): void => {
@@ -308,6 +305,5 @@ export const unit_setConversionFunction = action(
 );
 
 // ------------------------------------------ Package -------------------------------------
-export const package_addChild = action(_package_addChild);
 export const package_addElement = action(_package_addElement);
 export const package_deleteElement = action(_package_deleteElement);

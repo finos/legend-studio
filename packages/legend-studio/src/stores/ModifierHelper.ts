@@ -47,7 +47,6 @@ import {
   GenerationTreeNode,
   PackageableElementExplicitReference,
   ModelGenerationSpecification,
-  DEFAULT_SERVICE_PATTERN,
 } from '@finos/legend-graph';
 import {
   addUniqueEntry,
@@ -55,7 +54,6 @@ import {
   changeEntry,
   deleteEntry,
   UnsupportedOperationError,
-  uuid,
 } from '@finos/legend-shared';
 import { action } from 'mobx';
 

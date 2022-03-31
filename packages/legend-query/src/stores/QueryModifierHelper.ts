@@ -22,7 +22,7 @@ import {
 } from '@finos/legend-graph';
 import { action } from 'mobx';
 
-export const setGenericTypeRawType = action(
+export const genericType_setRawType = action(
   (genericType: GenericType, type: Type): void => {
     genericType.rawType = type;
   },

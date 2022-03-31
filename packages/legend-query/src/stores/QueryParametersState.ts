@@ -42,7 +42,7 @@ import { DATE_FORMAT, DATE_TIME_FORMAT } from '@finos/legend-application';
 import {
   multiplicity_setLowerBound,
   multiplicity_setUpperBound,
-  setGenericTypeRawType,
+  genericType_setRawType,
 } from './QueryModifierHelper';
 
 export enum QUERY_BUILDER_PARAMETER_TREE_DND_TYPE {
@@ -192,7 +192,7 @@ export class QueryParameterState {
     if (type !== this.variableType) {
       const genricType = this.parameter.genericType?.value;
       if (genricType) {
-        setGenericTypeRawType(genricType, type);
+        genericType_setRawType(genricType, type);
       }
       this.mockParameterValue();
     }

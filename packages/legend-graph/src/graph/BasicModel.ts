@@ -62,7 +62,7 @@ import {
   resolvePackagePathAndElementName,
 } from '../MetaModelUtils';
 import {
-  _package_addChild,
+  _package_addElement,
   _package_deleteElement,
 } from '../models/GraphModifierHelper';
 
@@ -599,8 +599,7 @@ export abstract class BasicModel {
         if (element.package) {
           _package_deleteElement(element.package, element);
         }
-        element.package = parentPackage;
-        _package_addChild(parentPackage, element);
+        _package_addElement(parentPackage, element);
       }
     }
 
@@ -680,8 +679,7 @@ export abstract class BasicModel {
         _package_deleteElement(currentParentPackage, element);
         const newParentPackage =
           packagePath !== '' ? this.getOrCreatePackage(packagePath) : this.root;
-        element.package = newParentPackage;
-        _package_addChild(newParentPackage, element);
+        _package_addElement(newParentPackage, element);
       }
       childElements.forEach((childElement, childElementOriginalPath) => {
         this.renameOwnElement(
