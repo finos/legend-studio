@@ -1,5 +1,11 @@
 # @finos/legend-studio
 
+## 5.1.1
+
+### Patch Changes
+
+- [#980](https://github.com/finos/legend-studio/pull/980) [`f95f5b42`](https://github.com/finos/legend-studio/commit/f95f5b429a017ecdac55f436e974d4f8f53d5f7c) ([@emilia-sokol-gs](https://github.com/emilia-sokol-gs)) - Add extension mechanism for loading models with model loader.
+
 ## 5.1.0
 
 ### Minor Changes
