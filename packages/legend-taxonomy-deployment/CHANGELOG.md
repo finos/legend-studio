@@ -1,5 +1,7 @@
 # @finos/legend-taxonomy-deployment
 
+## 4.10.0
+
 ## 4.9.0
 
 ## 4.8.0
