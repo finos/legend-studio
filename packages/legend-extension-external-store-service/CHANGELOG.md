@@ -1,5 +1,11 @@
 # @finos/legend-extension-external-store-service
 
+## 1.2.2
+
+### Patch Changes
+
+- [#1017](https://github.com/finos/legend-studio/pull/1017) [`0dd7cc2e`](https://github.com/finos/legend-studio/commit/0dd7cc2ebf1ee068b394d052003c3442e298ff63) ([@gayathrir11](https://github.com/gayathrir11)) - Fix `ServiceStore` element appearing multiple times in explorer tree.
+
 ## 1.2.1
 
 ## 1.2.0
