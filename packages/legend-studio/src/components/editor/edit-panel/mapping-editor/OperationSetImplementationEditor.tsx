@@ -50,6 +50,11 @@ import {
   getClassMappingsByClass,
 } from '@finos/legend-graph';
 import { useEditorStore } from '../../EditorStoreProvider';
+import {
+  operationMapping_addParameter,
+  operationMapping_changeParameter,
+  operationMapping_deleteParameter,
+} from '../../../../stores/DSLMApping_ModifierHelper';
 
 interface SetImplementationOption {
   value: SetImplementation;
@@ -83,7 +88,8 @@ export const OperationSetImplementationEditor = observer(
       stringify: (option: SetImplementationOption): string => option.label,
     });
     const addParameter = (): void =>
-      setImplementation.addParameter(
+      operationMapping_addParameter(
+        setImplementation,
         new SetImplementationContainer(
           SetImplementationExplicitReference.create(
             new OperationSetImplementation(
@@ -99,7 +105,7 @@ export const OperationSetImplementationEditor = observer(
     const deleteParameter =
       (val: SetImplementationContainer): (() => void) =>
       (): void =>
-        setImplementation.deleteParameter(val);
+        operationMapping_deleteParameter(setImplementation, val);
     const changeParamater =
       (
         val: SetImplementationContainer,
@@ -107,7 +113,8 @@ export const OperationSetImplementationEditor = observer(
       (option: SetImplementationOption | null): void => {
         const setImpl = option?.value;
         if (setImpl) {
-          setImplementation.changeParameter(
+          operationMapping_changeParameter(
+            setImplementation,
             val,
             new SetImplementationContainer(
               SetImplementationExplicitReference.create(setImpl),
@@ -128,7 +135,8 @@ export const OperationSetImplementationEditor = observer(
           ) &&
           mappingElement !== setImplementation
         ) {
-          setImplementation.addParameter(
+          operationMapping_addParameter(
+            setImplementation,
             new SetImplementationContainer(
               SetImplementationExplicitReference.create(mappingElement),
             ),

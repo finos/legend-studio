@@ -57,7 +57,13 @@ import {
 } from '@finos/legend-graph';
 import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../DSLMapping_LegendStudioPlugin_Extension';
 import type { EditorStore } from '../../../EditorStore';
-import { mapping_setPropertyMappings } from '../../../DSLMApping_ModifierHelper';
+import {
+  enumMapping_setEnumValueMappings,
+  enumValueMapping_addSourceValue,
+  enumValueMapping_setSourceValues,
+  mapping_setPropertyMappings,
+  operationMapping_setParameters,
+} from '../../../DSLMApping_ModifierHelper';
 
 /* @MARKER: ACTION ANALYTICS */
 /**
@@ -85,12 +91,13 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
         const newEnumValueMapping = new EnumValueMapping(
           EnumValueExplicitReference.create(enumValue),
         );
-        newEnumValueMapping.addSourceValue();
+        enumValueMapping_addSourceValue(newEnumValueMapping);
         enumValueMappingsToAdd.push(newEnumValueMapping);
       }
     });
     if (enumValueMappingsToAdd.length) {
-      enumerationMapping.setEnumValueMappings(
+      enumMapping_setEnumValueMappings(
+        enumerationMapping,
         enumerationMapping.enumValueMappings.concat(enumValueMappingsToAdd),
       );
     }
@@ -99,7 +106,8 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
   visit_OperationSetImplementation(
     setImplementation: OperationSetImplementation,
   ): void {
-    setImplementation.setParameters(
+    operationMapping_setParameters(
+      setImplementation,
       setImplementation.parameters.filter((param) =>
         getAllClassMappings(setImplementation.parent).find(
           (setImp) => setImp === param.setImplementation.value,
@@ -111,7 +119,8 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
   visit_MergeOperationSetImplementation(
     setImplementation: OperationSetImplementation,
   ): void {
-    setImplementation.setParameters(
+    operationMapping_setParameters(
+      setImplementation,
       setImplementation.parameters.filter((param) =>
         getAllClassMappings(setImplementation.parent).find(
           (setImp) => setImp === param.setImplementation.value,
@@ -543,17 +552,22 @@ export class MappingElementDecorationCleaner
       );
     // Prune the empty source values of each enum value mapping
     nonEmptyEnumValueMappings.forEach((enumValueMapping) => {
-      enumValueMapping.setSourceValues(
+      enumValueMapping_setSourceValues(
+        enumValueMapping,
         enumValueMapping.sourceValues.filter(isNonNullable),
       );
     });
-    enumerationMapping.setEnumValueMappings(nonEmptyEnumValueMappings);
+    enumMapping_setEnumValueMappings(
+      enumerationMapping,
+      nonEmptyEnumValueMappings,
+    );
   }
 
   visit_OperationSetImplementation(
     setImplementation: OperationSetImplementation,
   ): void {
-    setImplementation.setParameters(
+    operationMapping_setParameters(
+      setImplementation,
       setImplementation.parameters.filter((param) => !param.isStub),
     );
   }
@@ -561,7 +575,8 @@ export class MappingElementDecorationCleaner
   visit_MergeOperationSetImplementation(
     setImplementation: OperationSetImplementation,
   ): void {
-    setImplementation.setParameters(
+    operationMapping_setParameters(
+      setImplementation,
       setImplementation.parameters.filter((param) => !param.isStub),
     );
   }

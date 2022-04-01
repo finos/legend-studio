@@ -14,12 +14,8 @@
  * limitations under the License.
  */
 
-import { observable, action, makeObservable } from 'mobx';
-import {
-  hashArray,
-  getNullableFirstElement,
-  addUniqueEntry,
-} from '@finos/legend-shared';
+import { observable, makeObservable } from 'mobx';
+import { hashArray, getNullableFirstElement } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import type { PackageableElementReference } from '../PackageableElementReference';
 import type { Mapping } from './Mapping';
@@ -34,15 +30,10 @@ export class MappingInclude {
     makeObservable(this, {
       included: observable,
       storeSubstitutions: observable,
-      addStoreSubstitution: action,
     });
 
     this.owner = owner;
     this.included = included;
-  }
-
-  addStoreSubstitution(value: SubstituteStore): void {
-    addUniqueEntry(this.storeSubstitutions, value);
   }
 
   get hashCode(): string {

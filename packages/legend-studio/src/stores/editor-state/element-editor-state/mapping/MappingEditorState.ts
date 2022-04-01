@@ -107,6 +107,15 @@ import { LambdaEditorState } from '@finos/legend-application';
 import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../DSLMapping_LegendStudioPlugin_Extension';
 import type { LegendStudioPlugin } from '../../../LegendStudioPlugin';
 import { flatData_setSourceRootRecordType } from '../../../ModifierHelper';
+import {
+  mapping_addClassMapping,
+  mapping_addEnumerationMapping,
+  mapping_addTest,
+  mapping_deleteAssociationMapping,
+  mapping_deleteClassMapping,
+  mapping_deleteEnumerationMapping,
+  mapping_deleteTest,
+} from '../../../DSLMApping_ModifierHelper';
 
 export interface MappingExplorerTreeNodeData extends TreeNodeData {
   mappingElement: MappingElement;
@@ -282,7 +291,7 @@ export const createClassMapping = (
       return undefined;
   }
   updateRootSetImplementationOnCreate(setImp);
-  mapping.addClassMapping(setImp);
+  mapping_addClassMapping(mapping, setImp);
   return setImp;
 };
 
@@ -298,7 +307,7 @@ export const createEnumerationMapping = (
     mapping,
     OptionalPackageableElementExplicitReference.create(sourceType),
   );
-  mapping.addEnumerationMapping(enumMapping);
+  mapping_addEnumerationMapping(mapping, enumMapping);
   return enumMapping;
 };
 
@@ -932,9 +941,9 @@ export class MappingEditorState extends ElementEditorState {
   *deleteMappingElement(mappingElement: MappingElement): GeneratorFn<void> {
     /* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
     if (mappingElement instanceof EnumerationMapping) {
-      this.mapping.deleteEnumerationMapping(mappingElement);
+      mapping_deleteEnumerationMapping(this.mapping, mappingElement);
     } else if (mappingElement instanceof AssociationImplementation) {
-      this.mapping.deleteAssociationMapping(mappingElement);
+      mapping_deleteAssociationMapping(this.mapping, mappingElement);
     } else if (mappingElement instanceof EmbeddedFlatDataPropertyMapping) {
       deleteEntry(mappingElement.owner.propertyMappings, mappingElement);
     } else if (
@@ -942,7 +951,7 @@ export class MappingEditorState extends ElementEditorState {
     ) {
       deleteEntry(mappingElement.owner.propertyMappings, mappingElement);
     } else if (mappingElement instanceof SetImplementation) {
-      this.mapping.deleteClassMapping(mappingElement);
+      mapping_deleteClassMapping(this.mapping, mappingElement);
     }
     if (mappingElement instanceof SetImplementation) {
       updateRootSetImplementationOnDelete(mappingElement);
@@ -1337,7 +1346,7 @@ export class MappingEditorState extends ElementEditorState {
     this.mappingTestStates.push(
       new MappingTestState(this.editorStore, test, this),
     );
-    this.mapping.addTest(test);
+    mapping_addTest(this.mapping, test);
     yield flowResult(this.openTest(test));
   }
 
@@ -1346,7 +1355,7 @@ export class MappingEditorState extends ElementEditorState {
       tabState: MappingEditorTabState | undefined,
     ): boolean =>
       tabState instanceof MappingTestState && tabState.test === test;
-    this.mapping.deleteTest(test);
+    mapping_deleteTest(this.mapping, test);
     if (this.currentTabState && matchMappingTestState(this.currentTabState)) {
       yield flowResult(this.closeTab(this.currentTabState));
     }
@@ -1408,7 +1417,7 @@ export class MappingEditorState extends ElementEditorState {
       [inputData],
       new ExpectedOutputMappingTestAssert('{}'),
     );
-    this.mapping.addTest(newTest);
+    mapping_addTest(this.mapping, newTest);
     // open the test
     this.mappingTestStates.push(
       new MappingTestState(this.editorStore, newTest, this),

@@ -86,6 +86,11 @@ import {
   runtime_addIdentifiedConnection,
   runtime_addMapping,
 } from '../../../ModifierHelper';
+import {
+  expectedOutputMappingTestAssert_setExpectedOutput,
+  mappingTest_setAssert,
+  mappingTest_setQuery,
+} from '../../../DSLMApping_ModifierHelper';
 
 export enum TEST_RESULT {
   NONE = 'NONE', // test has not run yet
@@ -125,7 +130,7 @@ export class MappingTestQueryState extends LambdaEditorState {
 
   *updateLamba(val: RawLambda): GeneratorFn<void> {
     this.query = val;
-    this.test.setQuery(val);
+    mappingTest_setQuery(this.test, val);
     yield flowResult(this.convertLambdaObjectToGrammarString(true));
   }
 
@@ -345,7 +350,8 @@ export class MappingTestExpectedOutputAssertionState extends MappingTestAssertio
 
   setExpectedResult(val: string): void {
     this.expectedResult = val;
-    this.assert.setExpectedOutput(
+    expectedOutputMappingTestAssert_setExpectedOutput(
+      this.assert,
       /* @MARKER: Workaround for https://github.com/finos/legend-studio/issues/68 */
       toGrammarString(tryToMinifyLosslessJSONString(this.expectedResult)),
     );
@@ -708,7 +714,7 @@ export class MappingTestState {
   }
 
   updateAssertion(): void {
-    this.test.setAssert(this.assertionState.assert);
+    mappingTest_setAssert(this.test, this.assertionState.assert);
   }
 
   *generatePlan(debug: boolean): GeneratorFn<void> {
