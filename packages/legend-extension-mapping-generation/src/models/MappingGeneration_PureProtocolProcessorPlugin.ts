@@ -16,23 +16,20 @@
 
 import packageJson from '../../package.json';
 import {
-  type MappingGeneration_PureProtocolProcessorPlugin_Extension,
-  type V1_ModelGeneratorFromConfiguration,
-  type V1_PureModelContextData,
-  type V1_Engine,
   type ModelGenerationConfiguration,
   PureProtocolProcessorPlugin,
-  V1_deserializePureModelContextData,
+  type V1_Engine,
+  V1_jsonToPureModelContextData,
+  type V1_ModelGeneratorFromConfiguration,
+  type V1_PureModelContextData,
 } from '@finos/legend-graph';
 import { V1_MappingGenerateModelInput } from './protocols/pure/v1/engine/V1_MappingGenerateModelInput';
-import { V1_MappingGenConfiguration } from './protocols/pure/v1/model/V1_MappingGenConfiguration';
+import { MappingGenerationConfiguration } from './MappingGenerationConfiguration';
+import { V1_MappingGenerationConfiguration } from './protocols/pure/v1/model/V1_MappingGenerationConfiguration';
 
 const GENERATE_MAPPING_ENGINE_TRACER_SPAN = 'generate relational mapping';
 
-export class MappingGeneration_PureProtocolProcessorPlugin
-  extends PureProtocolProcessorPlugin
-  implements MappingGeneration_PureProtocolProcessorPlugin_Extension
-{
+export class MappingGeneration_PureProtocolProcessorPlugin extends PureProtocolProcessorPlugin {
   constructor() {
     super(
       packageJson.extensions.pureProtocolProcessorPlugin,
@@ -40,17 +37,26 @@ export class MappingGeneration_PureProtocolProcessorPlugin
     );
   }
 
-  V1_getExtraModelGeneratorsFromConfiguration(): V1_ModelGeneratorFromConfiguration[] {
+  override V1_getExtraModelGeneratorsFromConfiguration(): V1_ModelGeneratorFromConfiguration[] {
     return [
       async (
         config: ModelGenerationConfiguration,
         model: V1_PureModelContextData,
         engine: V1_Engine,
       ): Promise<V1_PureModelContextData | undefined> => {
-        if (config instanceof V1_MappingGenConfiguration) {
-          const configInput = new V1_MappingGenerateModelInput(config, model);
+        if (config instanceof MappingGenerationConfiguration) {
+          const configInput = new V1_MappingGenerateModelInput(
+            new V1_MappingGenerationConfiguration(
+              config.sourceMapping?.path,
+              config.mappingToRegenerate?.path,
+              config.mappingNewName,
+              config.storeNewName,
+              config.m2mAdditionalMappings.map((m2m) => m2m.path),
+            ),
+            model,
+          );
           const engineServerClient = engine.getEngineServerClient();
-          const pmcd = V1_deserializePureModelContextData(
+          return V1_jsonToPureModelContextData(
             await engineServerClient.postWithTracing(
               engineServerClient.getTraceData(
                 GENERATE_MAPPING_ENGINE_TRACER_SPAN,
@@ -63,7 +69,6 @@ export class MappingGeneration_PureProtocolProcessorPlugin
               { enableCompression: true },
             ),
           );
-          return pmcd;
         }
         return undefined;
       },

@@ -254,7 +254,7 @@ export { V1_Engine } from './models/protocols/pure/v1/engine/V1_Engine';
 export * from './models/protocols/pure/v1/engine/V1_EngineEvent';
 export {
   V1_entitiesToPureModelContextData,
-  V1_deserializePureModelContextData,
+  V1_deserializePureModelContextData as V1_jsonToPureModelContextData,
 } from './models/protocols/pure/v1/transformation/pureProtocol/V1_PureProtocolSerialization';
 export {
   V1_propertyPointerModelSchema,
@@ -265,8 +265,7 @@ export { V1_serializeValueSpecification } from './models/protocols/pure/v1/trans
 export { V1_ValueSpecificationBuilder } from './models/protocols/pure/v1/transformation/pureGraph/to/helpers/V1_ValueSpecificationBuilderHelper';
 export * from './models/protocols/pure/v1/transformation/pureProtocol/serializationHelpers/V1_CoreSerializationHelper';
 export * from './models/protocols/pure/v1/transformation/pureGraph/to/V1_DSLExternalFormat_GraphBuilderHelper';
-export * from './models/ModelGenerationConfiguration';
-export * from './models/protocols/pure/MappingGeneration_PureProtocolProcessorPlugin_Extension';
+export * from './graphManager/action/generation/ModelGenerationConfiguration';
 
 // --------------------------------------------- TO BE MODULARIZED --------------------------------------------------
 

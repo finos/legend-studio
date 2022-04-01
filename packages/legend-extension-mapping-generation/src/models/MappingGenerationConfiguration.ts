@@ -14,21 +14,24 @@
  * limitations under the License.
  */
 
-import { ModelGenerationConfiguration } from '@finos/legend-graph';
+import {
+  type Mapping,
+  ModelGenerationConfiguration,
+} from '@finos/legend-graph';
 
-export class V1_MappingGenConfiguration extends ModelGenerationConfiguration {
-  sourceMapping?: string | undefined;
-  mappingToRegenerate?: string | undefined;
+export class MappingGenerationConfiguration extends ModelGenerationConfiguration {
+  sourceMapping?: Mapping | undefined;
+  mappingToRegenerate?: Mapping | undefined;
   mappingNewName?: string | undefined;
   storeNewName?: string | undefined;
-  m2mAdditionalMappings: string[] = [];
+  m2mAdditionalMappings: Mapping[] = [];
 
   constructor(
-    sourceMapping: string | undefined,
-    mappingToRegenerate: string | undefined,
+    sourceMapping: Mapping | undefined,
+    mappingToRegenerate: Mapping | undefined,
     mappingNewName: string | undefined,
     storeNewName: string | undefined,
-    m2mAdditionalMappings: string[],
+    m2mAdditionalMappings: Mapping[],
     key: string,
     label?: string | undefined,
   ) {

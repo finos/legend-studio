@@ -62,7 +62,7 @@ import type { QuerySearchSpecification } from './action/query/QuerySearchSpecifi
 import type { ExternalFormatDescription } from './action/externalFormat/ExternalFormatDescription';
 import type { ConfigurationProperty } from '../models/metamodels/pure/packageableElements/fileGeneration/ConfigurationProperty';
 import type { GraphBuilderReport } from './GraphBuilderReport';
-import type { ModelGenerationConfiguration } from '../models/ModelGenerationConfiguration';
+import type { ModelGenerationConfiguration } from './action/generation/ModelGenerationConfiguration';
 
 export interface TEMPORARY__EngineSetupConfig {
   env: string;

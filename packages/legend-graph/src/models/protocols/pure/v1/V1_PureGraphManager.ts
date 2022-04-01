@@ -234,8 +234,7 @@ import {
 import { V1_MAPPING_ELEMENT_PROTOCOL_TYPE } from './transformation/pureProtocol/serializationHelpers/V1_MappingSerializationHelper';
 import { V1_SERVICE_ELEMENT_PROTOCOL_TYPE } from './transformation/pureProtocol/serializationHelpers/V1_ServiceSerializationHelper';
 import { MappingInclude } from '../../../metamodels/pure/packageableElements/mapping/MappingInclude';
-import type { ModelGenerationConfiguration } from '../../../ModelGenerationConfiguration';
-import type { MappingGeneration_PureProtocolProcessorPlugin_Extension } from '../MappingGeneration_PureProtocolProcessorPlugin_Extension';
+import type { ModelGenerationConfiguration } from '../../../../graphManager/action/generation/ModelGenerationConfiguration';
 
 const V1_FUNCTION_SUFFIX_MULTIPLICITY_INFINITE = 'MANY';
 
@@ -1604,9 +1603,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       .getPureProtocolProcessorPlugins()
       .flatMap(
         (plugin) =>
-          (
-            plugin as MappingGeneration_PureProtocolProcessorPlugin_Extension
-          ).V1_getExtraModelGeneratorsFromConfiguration?.() ?? [],
+          plugin.V1_getExtraModelGeneratorsFromConfiguration?.() ?? [],
       );
     for (const generator of extraModelGenerators) {
       const _model = await generator(config, model, this.engine);
@@ -2396,7 +2393,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           ),
       ),
     );
-
   elementToEntity = (
     element: PackageableElement,
     pruneSourceInformation?: boolean,

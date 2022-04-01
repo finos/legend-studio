@@ -23,7 +23,7 @@ import type {
   Mapping,
   ModelGenerationConfiguration,
 } from '@finos/legend-graph';
-import { V1_MappingGenConfiguration } from '../models/protocols/pure/v1/model/V1_MappingGenConfiguration';
+import { MappingGenerationConfiguration } from '../models/MappingGenerationConfiguration';
 import {
   assertErrorThrown,
   LogEvent,
@@ -91,12 +91,12 @@ export class MappingGenerationEditorState {
     try {
       this.isGenerating = true;
       this.editorStore.modelLoaderState.setModelText('');
-      const config = new V1_MappingGenConfiguration(
-        this.sourceMapping?.value.path,
-        this.mappingToRegenerate?.value.path,
+      const config = new MappingGenerationConfiguration(
+        this.sourceMapping?.value,
+        this.mappingToRegenerate?.value,
         this.mappingNewName,
         this.storeNewName,
-        this.m2mAdditionalMappings.map((m2m) => m2m.value.path),
+        this.m2mAdditionalMappings.map((m2m) => m2m.value),
         this.config.key,
         this.config.label,
       );

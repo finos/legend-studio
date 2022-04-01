@@ -26,10 +26,10 @@ import {
   V1_PureModelContextData,
   PureClientVersion,
 } from '@finos/legend-graph';
-import { V1_MappingGenConfiguration } from '../model/V1_MappingGenConfiguration';
+import { V1_MappingGenerationConfiguration } from '../model/V1_MappingGenerationConfiguration';
 
-export const V1_mappingGenConfigModelSchema = createModelSchema(
-  V1_MappingGenConfiguration,
+export const V1_mappingGenerationConfigModelSchema = createModelSchema(
+  V1_MappingGenerationConfiguration,
   {
     sourceMapping: primitive(),
     mappingToRegenerate: primitive(),
@@ -42,10 +42,10 @@ export const V1_mappingGenConfigModelSchema = createModelSchema(
 export class V1_MappingGenerateModelInput {
   clientVersion?: string | undefined;
   model: V1_PureModelContextData;
-  config: V1_MappingGenConfiguration;
+  config: V1_MappingGenerationConfiguration;
 
   constructor(
-    config: V1_MappingGenConfiguration,
+    config: V1_MappingGenerationConfiguration,
     model: V1_PureModelContextData,
   ) {
     this.clientVersion = PureClientVersion.VX_X_X;
@@ -57,7 +57,7 @@ export class V1_MappingGenerateModelInput {
     createModelSchema(V1_MappingGenerateModelInput, {
       clientVersion: optional(primitive()),
       model: object(V1_PureModelContextData),
-      config: usingModelSchema(V1_mappingGenConfigModelSchema),
+      config: usingModelSchema(V1_mappingGenerationConfigModelSchema),
     }),
   );
 }

@@ -30,6 +30,8 @@ import type { SimpleFunctionExpression } from '../../metamodels/pure/valueSpecif
 import type { ValueSpecification } from '../../metamodels/pure/valueSpecification/ValueSpecification';
 import type { GraphPluginManager } from '../../../GraphPluginManager';
 import type { Type } from '../../metamodels/pure/packageableElements/domain/Type';
+import type { ModelGenerationConfiguration } from '../../../graphManager/action/generation/ModelGenerationConfiguration';
+import type { V1_Engine } from './v1/engine/V1_Engine';
 
 export type V1_ElementProtocolClassifierPathGetter = (
   protocol: V1_PackageableElement,
@@ -68,6 +70,12 @@ export type V1_ExecutionInputGetter = (
 export type V1_PropertyExpressionTypeInferrer = (
   variable: ValueSpecification | undefined,
 ) => Type | undefined;
+
+export type V1_ModelGeneratorFromConfiguration = (
+  config: ModelGenerationConfiguration,
+  model: V1_PureModelContextData,
+  engine: V1_Engine,
+) => Promise<V1_PureModelContextData | undefined>;
 
 /**
  * Plugins for protocol processors. Technically, this is a sub-part of `PureGraphManagerPlugin`
@@ -149,4 +157,9 @@ export abstract class PureProtocolProcessorPlugin extends AbstractPlugin {
    * Get the list of type inferrers for property expression.
    */
   V1_getExtraPropertyExpressionTypeInferrers?(): V1_PropertyExpressionTypeInferrer[];
+
+  /**
+   * Get generators for model generation from configuration.
+   */
+  V1_getExtraModelGeneratorsFromConfiguration?(): V1_ModelGeneratorFromConfiguration[];
 }

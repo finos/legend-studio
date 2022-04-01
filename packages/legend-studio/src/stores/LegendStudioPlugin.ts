@@ -58,7 +58,18 @@ export type ClassPreviewRenderer = (
 
 export type ModelLoaderExtensionConfiguration = {
   modelGenerationConfig: ModelGenerationConfiguration;
+  /**
+   * this flag allows user to do hard replace of all project's entities
+   * with generated elements when they load them into their project.
+   * If available, the logic for hard replace should be implemented in
+   * load function
+   */
   allowHardReplace?: boolean;
+  /**
+   * load function has logic that allows loading generated elements
+   * via extension to user's project
+   * @param editorStore
+   */
   load: (editorStore: EditorStore) => Promise<void>;
   renderer: (editorStore: EditorStore) => React.ReactNode | undefined;
 };
