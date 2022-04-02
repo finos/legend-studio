@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { observable, action, computed, makeObservable } from 'mobx';
+import { observable, computed, makeObservable } from 'mobx';
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import { fromElementPathToMappingElementId } from '../../../../../MetaModelUtils';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
@@ -94,7 +94,6 @@ export abstract class SetImplementation
     makeObservable(this, {
       root: observable,
       parent: observable,
-      setRoot: action,
       label: computed,
     });
 
@@ -103,10 +102,6 @@ export abstract class SetImplementation
     this.class = _class;
     this.root = root;
   }
-  setRoot(value: boolean): void {
-    this.root.setValue(value);
-  }
-
   get label(): MappingElementLabel {
     return {
       value: `${

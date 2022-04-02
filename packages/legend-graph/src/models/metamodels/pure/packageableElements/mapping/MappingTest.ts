@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { observable, action, computed, makeObservable } from 'mobx';
+import { observable, computed, makeObservable } from 'mobx';
 import { uuid, hashArray, type Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import type { MappingTestAssert } from './MappingTestAssert';
@@ -43,10 +43,6 @@ export class MappingTest implements Hashable {
       query: observable,
       inputData: observable,
       assert: observable,
-      setName: action,
-      setInputData: action,
-      setQuery: action,
-      setAssert: action,
       validationResult: computed,
       hashCode: computed,
     });
@@ -55,22 +51,6 @@ export class MappingTest implements Hashable {
     this.query = query;
     this.inputData = inputData;
     this.assert = assert;
-  }
-
-  setName(value: string): void {
-    this.name = value;
-  }
-
-  setInputData(value: InputData[]): void {
-    this.inputData = value;
-  }
-
-  setQuery(value: RawLambda): void {
-    this.query = value;
-  }
-
-  setAssert(value: MappingTestAssert): void {
-    this.assert = value;
   }
 
   get validationResult(): ValidationIssue[] | undefined {

@@ -42,12 +42,14 @@ export const updateRootSetImplementationOnCreate = (
     setImp.class.value,
   ).filter((si) => si !== setImp);
   if (classMappingsWithSimilarTarget.length) {
-    setImp.setRoot(false);
+    setImp.root.setValue(false);
     if (classMappingsWithSimilarTarget.length === 1) {
-      (classMappingsWithSimilarTarget[0] as SetImplementation).setRoot(false);
+      (classMappingsWithSimilarTarget[0] as SetImplementation).root.setValue(
+        false,
+      );
     }
   } else {
-    setImp.setRoot(true);
+    setImp.root.setValue(true);
   }
 };
 
@@ -64,7 +66,9 @@ export const updateRootSetImplementationOnDelete = (
     setImp.class.value,
   ).filter((si) => si !== setImp);
   if (classMappingsWithSimilarTarget.length === 1) {
-    (classMappingsWithSimilarTarget[0] as SetImplementation).setRoot(false);
+    (classMappingsWithSimilarTarget[0] as SetImplementation).root.setValue(
+      false,
+    );
   }
 };
 
@@ -83,10 +87,10 @@ export const nominateRootSetImplementation = (
   );
   classMappingsWithSimilarTarget.forEach((si) => {
     if (si !== setImp) {
-      si.setRoot(false);
+      si.root.setValue(false);
     }
   });
-  setImp.setRoot(true);
+  setImp.root.setValue(true);
 };
 
 export const findRootSetImplementation = (
@@ -100,7 +104,7 @@ export const findRootSetImplementation = (
     classMappingsWithSimilarTarget.length === 1 &&
     classMappingsWithSimilarTarget[0]?.root.value === false
   ) {
-    classMappingsWithSimilarTarget[0].setRoot(true);
+    classMappingsWithSimilarTarget[0].root.setValue(true);
     return classMappingsWithSimilarTarget[0];
   }
   return findLast(

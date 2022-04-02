@@ -21,6 +21,7 @@ import {
   assertTrue,
   assertType,
   UnsupportedOperationError,
+  addUniqueEntry,
 } from '@finos/legend-shared';
 import { PRIMITIVE_TYPE } from '../../../../../../../../MetaModelConst';
 import { fromElementPathToMappingElementId } from '../../../../../../../../MetaModelUtils';
@@ -189,7 +190,8 @@ export const V1_buildMappingInclude = (
     context.resolveMapping(mappingInclude.includedMappingPath),
   );
   if (mappingInclude.sourceDatabasePath && mappingInclude.targetDatabasePath) {
-    includedMapping.addStoreSubstitution(
+    addUniqueEntry(
+      includedMapping.storeSubstitutions,
       new SubstituteStore(
         includedMapping,
         context.resolveStore(mappingInclude.sourceDatabasePath),

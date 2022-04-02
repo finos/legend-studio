@@ -14,14 +14,9 @@
  * limitations under the License.
  */
 
-import { observable, action, computed, makeObservable, override } from 'mobx';
+import { observable, computed, makeObservable, override } from 'mobx';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
-import {
-  hashArray,
-  deleteEntry,
-  addUniqueEntry,
-  type Hashable,
-} from '@finos/legend-shared';
+import { hashArray, type Hashable } from '@finos/legend-shared';
 import type { EnumerationMapping } from './EnumerationMapping';
 import type { SetImplementation } from './SetImplementation';
 import type { AssociationImplementation } from './AssociationImplementation';
@@ -49,52 +44,12 @@ export class Mapping extends PackageableElement implements Hashable, Stubable {
       enumerationMappings: observable,
       associationMappings: observable,
       tests: observable,
-      addClassMapping: action,
-      deleteClassMapping: action,
-      addEnumerationMapping: action,
-      deleteEnumerationMapping: action,
-      addAssociationMapping: action,
-      deleteAssociationMapping: action,
-      deleteTest: action,
-      addTest: action,
       allOwnClassMappings: computed,
       allOwnEnumerationMappings: computed,
       allIncludedMappings: computed,
       isStub: computed,
       _elementHashCode: override,
     });
-  }
-
-  addClassMapping(val: SetImplementation): void {
-    addUniqueEntry(this.classMappings, val);
-  }
-
-  deleteClassMapping(val: SetImplementation): void {
-    deleteEntry(this.classMappings, val);
-  }
-
-  addEnumerationMapping(val: EnumerationMapping): void {
-    addUniqueEntry(this.enumerationMappings, val);
-  }
-
-  deleteEnumerationMapping(val: EnumerationMapping): void {
-    deleteEntry(this.enumerationMappings, val);
-  }
-
-  addAssociationMapping(val: AssociationImplementation): void {
-    addUniqueEntry(this.associationMappings, val);
-  }
-
-  deleteAssociationMapping(val: AssociationImplementation): void {
-    deleteEntry(this.associationMappings, val);
-  }
-
-  deleteTest(val: MappingTest): void {
-    deleteEntry(this.tests, val);
-  }
-
-  addTest(val: MappingTest): void {
-    addUniqueEntry(this.tests, val);
   }
 
   get allOwnClassMappings(): SetImplementation[] {
