@@ -14,13 +14,8 @@
  * limitations under the License.
  */
 
-import { observable, action, makeObservable, computed } from 'mobx';
-import {
-  type Hashable,
-  hashArray,
-  addUniqueEntry,
-  deleteEntry,
-} from '@finos/legend-shared';
+import { observable, makeObservable, computed } from 'mobx';
+import { type Hashable, hashArray } from '@finos/legend-shared';
 import {
   InstanceSetImplementation,
   type Class,
@@ -53,28 +48,8 @@ export class RootServiceInstanceSetImplementation
     makeObservable(this, {
       localMappingProperties: observable,
       servicesMapping: observable,
-      addLocalMappingProperty: action,
-      deleteLocalMappingProperty: action,
-      addServiceMapping: action,
-      deleteServiceMapping: action,
       hashCode: computed,
     });
-  }
-
-  addLocalMappingProperty(value: LocalMappingProperty): void {
-    addUniqueEntry(this.localMappingProperties, value);
-  }
-
-  deleteLocalMappingProperty(value: LocalMappingProperty): void {
-    deleteEntry(this.localMappingProperties, value);
-  }
-
-  addServiceMapping(value: ServiceMapping): void {
-    addUniqueEntry(this.servicesMapping, value);
-  }
-
-  deleteServiceMapping(value: ServiceMapping): void {
-    deleteEntry(this.servicesMapping, value);
   }
 
   override get hashCode(): string {

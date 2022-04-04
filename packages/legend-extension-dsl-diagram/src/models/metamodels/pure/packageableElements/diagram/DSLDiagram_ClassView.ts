@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { computed, observable, action, makeObservable } from 'mobx';
+import { computed, observable, makeObservable } from 'mobx';
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import { PositionedRectangle } from './geometry/DSLDiagram_PositionedRectangle';
 import { Rectangle } from './geometry/DSLDiagram_Rectangle';
@@ -43,25 +43,12 @@ export class ClassView extends PositionedRectangle implements Hashable {
       hideProperties: observable,
       hideTaggedValues: observable,
       hideStereotypes: observable,
-      setHideProperties: action,
-      setHideStereotypes: action,
-      setHideTaggedValues: action,
       hashCode: computed,
     });
 
     this.owner = owner;
     this.id = id;
     this.class = _class;
-  }
-
-  setHideProperties(val: boolean): void {
-    this.hideProperties = val;
-  }
-  setHideStereotypes(val: boolean): void {
-    this.hideStereotypes = val;
-  }
-  setHideTaggedValues(val: boolean): void {
-    this.hideTaggedValues = val;
   }
 
   override get hashCode(): string {

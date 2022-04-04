@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { observable, computed, makeObservable, action } from 'mobx';
+import { observable, computed, makeObservable } from 'mobx';
 import { hashObjectWithoutSourceInformation } from '@finos/legend-graph';
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../ESService_ModelUtils';
@@ -32,18 +32,8 @@ export class ServiceMapping implements Hashable {
     makeObservable(this, {
       service: observable,
       requestBuildInfo: observable,
-      setService: action,
-      setRequestBuildInfo: action,
       hashCode: computed,
     });
-  }
-
-  setService(value: string): void {
-    this.service.setId(value);
-  }
-
-  setRequestBuildInfo(value: ServiceRequestBuildInfo | undefined): void {
-    this.requestBuildInfo = value;
   }
 
   get hashCode(): string {

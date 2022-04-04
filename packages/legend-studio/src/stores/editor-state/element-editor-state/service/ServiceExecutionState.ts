@@ -62,6 +62,7 @@ import { runtime_addMapping } from '../../../ModifierHelper';
 import {
   pureExecution_setFunction,
   pureSingleExecution_setRuntime,
+  singleExecTest_setData,
 } from '../../../DSLService_ModifierHelper';
 
 export enum SERVICE_EXECUTION_TAB {
@@ -97,12 +98,15 @@ export abstract class ServiceExecutionState {
       test,
     );
     // TODO: format to other format when we support other connections in the future
-    this.selectedSingeExecutionTestState?.test.setData(
-      /* @MARKER: Workaround for https://github.com/finos/legend-studio/issues/68 */
-      tryToFormatLosslessJSONString(
-        this.selectedSingeExecutionTestState.test.data,
-      ),
-    ); // pre-format test data
+    if (this.selectedSingeExecutionTestState?.test) {
+      singleExecTest_setData(
+        this.selectedSingeExecutionTestState.test,
+        /* @MARKER: Workaround for https://github.com/finos/legend-studio/issues/68 */
+        tryToFormatLosslessJSONString(
+          this.selectedSingeExecutionTestState.test.data,
+        ),
+      ); // pre-format test data
+    }
   }
 
   setSelectedTab(val: SERVICE_EXECUTION_TAB): void {

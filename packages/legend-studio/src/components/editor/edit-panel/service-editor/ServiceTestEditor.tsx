@@ -62,6 +62,7 @@ import {
 } from '@finos/legend-application';
 import type { TestContainer } from '@finos/legend-graph';
 import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor';
+import { singleExecTest_setData } from '../../../../stores/DSLService_ModifierHelper';
 
 const TestContainerContextMenu = observer(
   forwardRef<
@@ -662,7 +663,8 @@ export const ServiceTestEditor = observer(
     const serviceState = editorStore.getCurrentEditorState(ServiceEditorState);
     const isReadOnly = serviceState.isReadOnly;
     // test data
-    const updateTestData = (val: string): void => selectedTest.setData(val);
+    const updateTestData = (val: string): void =>
+      singleExecTest_setData(selectedTest, val);
     const generateTestData = (): void => {
       if (!isReadOnly) {
         flowResult(selectedTestState.generateTestData()).catch(

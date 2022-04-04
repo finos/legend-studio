@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { observable, action, computed, makeObservable } from 'mobx';
+import { observable, computed, makeObservable } from 'mobx';
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import type { Class } from '../../../domain/Class';
@@ -53,24 +53,11 @@ export class PureInstanceSetImplementation
 
     makeObservable(this, {
       filter: observable,
-      setPropertyMappings: action,
-      setSrcClass: action,
-      setMappingFilter: action,
       isStub: computed,
       hashCode: computed,
     });
 
     this.srcClass = srcClass;
-  }
-
-  setPropertyMappings(value: PurePropertyMapping[]): void {
-    this.propertyMappings = value;
-  }
-  setSrcClass(value: Class | undefined): void {
-    this.srcClass.setValue(value);
-  }
-  setMappingFilter(value: RawLambda | undefined): void {
-    this.filter = value;
   }
 
   findPropertyMapping(

@@ -25,9 +25,11 @@ import {
   type Service,
   type ServiceExecution,
   type ServiceTest,
+  type SingleExecutionTest,
+  type TestContainer,
   DEFAULT_SERVICE_PATTERN,
 } from '@finos/legend-graph';
-import { addUniqueEntry, uuid } from '@finos/legend-shared';
+import { addUniqueEntry, deleteEntry, uuid } from '@finos/legend-shared';
 import { action } from 'mobx';
 
 export const service_initNewService = action(
@@ -114,5 +116,22 @@ export const pureMultiExecution_setExecutionKey = action(
 export const pureMultiExecution_addExecutionParameter = action(
   (pe: PureMultiExecution, value: KeyedExecutionParameter): void => {
     addUniqueEntry(pe.executionParameters, value);
+  },
+);
+export const singleExecTest_setData = action(
+  (val: SingleExecutionTest, value: string): void => {
+    val.data = value;
+  },
+);
+
+export const singleExecTest_addAssert = action(
+  (val: SingleExecutionTest, value: TestContainer): void => {
+    addUniqueEntry(val.asserts, value);
+  },
+);
+
+export const singleExecTest_deleteAssert = action(
+  (val: SingleExecutionTest, value: TestContainer): void => {
+    deleteEntry(val.asserts, value);
   },
 );

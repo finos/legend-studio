@@ -45,14 +45,37 @@ import { PositionedRectangle } from './models/metamodels/pure/packageableElement
 import { ClassView } from './models/metamodels/pure/packageableElements/diagram/DSLDiagram_ClassView';
 import type { PropertyHolderView } from './models/metamodels/pure/packageableElements/diagram/DSLDiagram_PropertyHolderView';
 import { GeneralizationView } from './models/metamodels/pure/packageableElements/diagram/DSLDiagram_GeneralizationView';
-import {
-  type RelationshipView,
-  manageInsidePointsDynamically,
-} from './models/metamodels/pure/packageableElements/diagram/DSLDiagram_RelationshipView';
+import type { RelationshipView } from './models/metamodels/pure/packageableElements/diagram/DSLDiagram_RelationshipView';
 import { PropertyView } from './models/metamodels/pure/packageableElements/diagram/DSLDiagram_PropertyView';
 import { getElementPosition } from './helpers/DiagramHelper';
 import { AssociationView } from './models/metamodels/pure/packageableElements/diagram/DSLDiagram_AssociationView';
 import { class_addProperty, class_addSuperType } from '@finos/legend-studio';
+import {
+  classView_setHideProperties,
+  classView_setHideStereotypes,
+  classView_setHideTaggedValues,
+  diagram_addClassView,
+  diagram_addGeneralizationView,
+  diagram_addPropertyView,
+  diagram_deleteAssociationView,
+  diagram_deleteClassView,
+  diagram_deleteGeneralizationView,
+  diagram_deletePropertyView,
+  diagram_setAssociationViews,
+  diagram_setClassViews,
+  diagram_setGeneralizationViews,
+  diagram_setPropertyViews,
+  findOrBuildPoint,
+  positionedRectangle_forceRefreshHash,
+  positionedRectangle_setPosition,
+  positionedRectangle_setRectangle,
+  relationShipEdgeView_setOffsetX,
+  relationShipEdgeView_setOffsetY,
+  relationshipView_changePoint,
+  relationView_possiblyFlattenPath,
+  relationView_setPath,
+} from './stores/studio/DSLDiagram_ModifierHelper';
+import { _relationView_manageInsidePointsDynamically } from './models/metamodels/pure/packageableElements/diagram/DSLDiagram_GraphModifierHelper';
 
 export enum DIAGRAM_INTERACTION_MODE {
   LAYOUT,
@@ -601,7 +624,7 @@ export class DiagramRenderer {
                 startClassView,
                 targetClassView,
               );
-              this.diagram.addGeneralizationView(gview);
+              diagram_addGeneralizationView(this.diagram, gview);
               return gview;
             }
             return undefined;
@@ -632,7 +655,7 @@ export class DiagramRenderer {
                 startClassView,
                 targetClassView,
               );
-              this.diagram.addPropertyView(pView);
+              diagram_addPropertyView(this.diagram, pView);
               return pView;
             }
             return undefined;
@@ -724,7 +747,7 @@ export class DiagramRenderer {
         .concat(this.diagram.propertyViews);
       for (const relationshipView of relationshipViews) {
         let fullPath = relationshipView.buildFullPath();
-        fullPath = manageInsidePointsDynamically(
+        fullPath = _relationView_manageInsidePointsDynamically(
           fullPath,
           relationshipView.from.classView.value,
           relationshipView.to.classView.value,
@@ -860,7 +883,8 @@ export class DiagramRenderer {
         id,
         PackageableElementExplicitReference.create(addedClass),
       );
-      newClassView.setPosition(
+      positionedRectangle_setPosition(
+        newClassView,
         classViewModelCoordinate ??
           this.canvasCoordinateToModelCoordinate(
             new Point(
@@ -871,10 +895,10 @@ export class DiagramRenderer {
             ),
           ),
       );
-      this.diagram.addClassView(newClassView);
+      diagram_addClassView(this.diagram, newClassView);
       // Refresh hash since ClassView position is not observable
       // NOTE: here we refresh after adding the class view to the diagram, that way the diagram hash is refreshed
-      newClassView.forceRefreshHash();
+      positionedRectangle_forceRefreshHash(newClassView);
       this.diagram.classViews
         .filter((classView) => classView.class.value !== addedClass)
         .forEach((classView) => {
@@ -885,7 +909,8 @@ export class DiagramRenderer {
               .map((generalization) => generalization.value.rawType)
               .includes(_class)
           ) {
-            this.diagram.addGeneralizationView(
+            diagram_addGeneralizationView(
+              this.diagram,
               new GeneralizationView(this.diagram, newClassView, classView),
             );
           }
@@ -894,14 +919,18 @@ export class DiagramRenderer {
               .map((generalization) => generalization.value.rawType)
               .includes(addedClass)
           ) {
-            this.diagram.addGeneralizationView(
+            diagram_addGeneralizationView(
+              this.diagram,
+
               new GeneralizationView(this.diagram, classView, newClassView),
             );
           }
           // Add property view
           addedClass.getAllOwnedProperties().forEach((property) => {
             if (property.genericType.value.rawType === _class) {
-              this.diagram.addPropertyView(
+              diagram_addPropertyView(
+                this.diagram,
+
                 new PropertyView(
                   this.diagram,
                   PropertyExplicitReference.create(property),
@@ -913,7 +942,8 @@ export class DiagramRenderer {
           });
           _class.getAllOwnedProperties().forEach((property) => {
             if (property.genericType.value.rawType === addedClass) {
-              this.diagram.addPropertyView(
+              diagram_addPropertyView(
+                this.diagram,
                 new PropertyView(
                   this.diagram,
                   PropertyExplicitReference.create(property),
@@ -1452,7 +1482,7 @@ export class DiagramRenderer {
         classView.rectangle.height > classMinHeight
           ? classView.rectangle.height
           : classMinHeight;
-      classView.setRectangle(new Rectangle(width, height));
+      positionedRectangle_setRectangle(classView, new Rectangle(width, height));
     }
   }
 
@@ -1630,7 +1660,7 @@ export class DiagramRenderer {
     // NOTE: force hash reload when we redraw class view; this would help with cases where
     // we auto add new properties to the class view, causing the box to expand, hence we need
     // to recompute hash
-    classView.forceRefreshHash();
+    positionedRectangle_forceRefreshHash(classView);
   }
 
   private drawLinePropertyNameAndMultiplicity(
@@ -1794,7 +1824,7 @@ export class DiagramRenderer {
 
   private drawPropertyOrAssociation(propertyView: PropertyView): void {
     let fullPath = propertyView.buildFullPath();
-    fullPath = manageInsidePointsDynamically(
+    fullPath = _relationView_manageInsidePointsDynamically(
       fullPath,
       propertyView.from.classView.value,
       propertyView.to.classView.value,
@@ -1885,7 +1915,7 @@ export class DiagramRenderer {
   private drawInheritance(inheritance: GeneralizationView): void {
     const rect = inheritance.to.classView.value.rectangle;
     let fullPath = inheritance.buildFullPath();
-    fullPath = manageInsidePointsDynamically(
+    fullPath = _relationView_manageInsidePointsDynamically(
       fullPath,
       inheritance.from.classView.value,
       inheritance.to.classView.value,
@@ -2043,7 +2073,8 @@ export class DiagramRenderer {
         selectedClasses.indexOf(assoView.from.classView.value) !== -1 &&
         selectedClasses.indexOf(assoView.to.classView.value) !== -1
       ) {
-        assoView.setPath(
+        relationView_setPath(
+          assoView,
           assoView.path.map(
             (point) =>
               new Point(point.x - newMovingDeltaX, point.y - newMovingDeltaY),
@@ -2058,8 +2089,10 @@ export class DiagramRenderer {
     if ('Delete' === e.key) {
       if (!this.isReadOnly) {
         this.selectedClasses.forEach((classView) => {
-          this.diagram.deleteClassView(classView);
-          this.diagram.setAssociationViews(
+          diagram_deleteClassView(this.diagram, classView);
+          diagram_setAssociationViews(
+            this.diagram,
+
             this.diagram.associationViews.filter(
               (associationView) =>
                 !(
@@ -2068,7 +2101,9 @@ export class DiagramRenderer {
                 ),
             ),
           );
-          this.diagram.setGeneralizationViews(
+          diagram_setGeneralizationViews(
+            this.diagram,
+
             this.diagram.generalizationViews.filter(
               (generalizationView) =>
                 !(
@@ -2077,7 +2112,9 @@ export class DiagramRenderer {
                 ),
             ),
           );
-          this.diagram.setPropertyViews(
+          diagram_setPropertyViews(
+            this.diagram,
+
             this.diagram.propertyViews.filter(
               (propertyView) =>
                 !(
@@ -2088,11 +2125,16 @@ export class DiagramRenderer {
           );
         });
         if (this.selectedPropertyOrAssociation instanceof AssociationView) {
-          this.diagram.deleteAssociationView(
+          diagram_deleteAssociationView(
+            this.diagram,
+
             this.selectedPropertyOrAssociation,
           );
         } else if (this.selectedPropertyOrAssociation instanceof PropertyView) {
-          this.diagram.deletePropertyView(this.selectedPropertyOrAssociation);
+          diagram_deletePropertyView(
+            this.diagram,
+            this.selectedPropertyOrAssociation,
+          );
         }
         if (this.selectedInheritance) {
           if (
@@ -2101,7 +2143,10 @@ export class DiagramRenderer {
                 generalizationView === this.selectedInheritance,
             )
           ) {
-            this.diagram.deleteGeneralizationView(this.selectedInheritance);
+            diagram_deleteGeneralizationView(
+              this.diagram,
+              this.selectedInheritance,
+            );
           }
         }
         this.selectedClasses = [];
@@ -2208,7 +2253,7 @@ export class DiagramRenderer {
       if (!this.isReadOnly) {
         if (this.selectedClasses.length !== 0) {
           this.selectedClasses.forEach((classView) => {
-            classView.setHideProperties(!classView.hideProperties);
+            classView_setHideProperties(classView, !classView.hideProperties);
           });
           this.drawScreen();
         }
@@ -2219,7 +2264,7 @@ export class DiagramRenderer {
       if (!this.isReadOnly) {
         if (this.selectedClasses.length !== 0) {
           this.selectedClasses.forEach((classView) => {
-            classView.setHideStereotypes(!classView.hideStereotypes);
+            classView_setHideStereotypes(classView, !classView.hideStereotypes);
           });
           this.drawScreen();
         }
@@ -2230,7 +2275,10 @@ export class DiagramRenderer {
       if (!this.isReadOnly) {
         if (this.selectedClasses.length !== 0) {
           this.selectedClasses.forEach((classView) => {
-            classView.setHideTaggedValues(!classView.hideTaggedValues);
+            classView_setHideTaggedValues(
+              classView,
+              !classView.hideTaggedValues,
+            );
           });
           this.drawScreen();
         }
@@ -2285,8 +2333,8 @@ export class DiagramRenderer {
         1,
       );
       const res = this.layoutTaxonomy(views, this.diagram, false, true);
-      res[0].forEach((cv) => this.diagram.addClassView(cv));
-      res[1].forEach((gv) => this.diagram.addGeneralizationView(gv));
+      res[0].forEach((cv) => diagram_addClassView(this.diagram, cv));
+      res[1].forEach((gv) => diagram_addGeneralizationView(this.diagram, gv));
 
       this.drawScreen();
     }
@@ -2318,8 +2366,8 @@ export class DiagramRenderer {
           false,
           false,
         );
-        res[0].forEach((cv) => this.diagram.addClassView(cv));
-        res[1].forEach((gv) => this.diagram.addGeneralizationView(gv));
+        res[0].forEach((cv) => diagram_addClassView(this.diagram, cv));
+        res[1].forEach((gv) => diagram_addGeneralizationView(this.diagram, gv));
       }
 
       this.drawScreen();
@@ -2331,13 +2379,13 @@ export class DiagramRenderer {
       switch (this.interactionMode) {
         case DIAGRAM_INTERACTION_MODE.LAYOUT: {
           this.diagram.generalizationViews.forEach((generalizationView) =>
-            generalizationView.possiblyFlattenPath(),
+            relationView_possiblyFlattenPath(generalizationView),
           );
           this.diagram.associationViews.forEach((associationView) =>
-            associationView.possiblyFlattenPath(),
+            relationView_possiblyFlattenPath(associationView),
           );
           this.diagram.propertyViews.forEach((propertyView) =>
-            propertyView.possiblyFlattenPath(),
+            relationView_possiblyFlattenPath(propertyView),
           );
           break;
         }
@@ -2425,28 +2473,32 @@ export class DiagramRenderer {
                 );
 
                 if (gview) {
-                  gview.from.setOffsetX(
+                  relationShipEdgeView_setOffsetX(
+                    gview.from,
                     -(
                       this.startClassView.position.x +
                       this.startClassView.rectangle.width / 2 -
                       this.selectionStart.x
                     ),
                   );
-                  gview.from.setOffsetY(
+                  relationShipEdgeView_setOffsetY(
+                    gview.from,
                     -(
                       this.startClassView.position.y +
                       this.startClassView.rectangle.height / 2 -
                       this.selectionStart.y
                     ),
                   );
-                  gview.to.setOffsetX(
+                  relationShipEdgeView_setOffsetX(
+                    gview.to,
                     -(
                       targetClassView.position.x +
                       targetClassView.rectangle.width / 2 -
                       eventPointInModelCoordinate.x
                     ),
                   );
-                  gview.to.setOffsetY(
+                  relationShipEdgeView_setOffsetY(
+                    gview.to,
                     -(
                       targetClassView.position.y +
                       targetClassView.rectangle.height / 2 -
@@ -2591,7 +2643,8 @@ export class DiagramRenderer {
               this.setSelectedClassCorner(this.diagram.classViews[i]);
               if (!this.isReadOnly) {
                 // Bring the class view to front
-                this.diagram.setClassViews(
+                diagram_setClassViews(
+                  this.diagram,
                   this.reorderDiagramDomain(
                     guaranteeNonNullable(this.selectedClassCorner),
                     this.diagram,
@@ -2631,7 +2684,9 @@ export class DiagramRenderer {
                   }
                   if (!this.isReadOnly) {
                     // Bring the class view to front
-                    this.diagram.setClassViews(
+                    diagram_setClassViews(
+                      this.diagram,
+
                       this.reorderDiagramDomain(
                         this.selectedClasses[0] as ClassView,
                         this.diagram,
@@ -2669,7 +2724,8 @@ export class DiagramRenderer {
                 // check for selection of inheritance view
                 for (const generalizationView of this.diagram
                   .generalizationViews) {
-                  const val = generalizationView.findOrBuildPoint(
+                  const val = findOrBuildPoint(
+                    generalizationView,
                     eventPointInModelCoordinate.x,
                     eventPointInModelCoordinate.y,
                     this.zoom,
@@ -2685,7 +2741,8 @@ export class DiagramRenderer {
                 // check for selection of association view
                 if (!this.selectedPoint) {
                   for (const associationView of this.diagram.associationViews) {
-                    const val = associationView.findOrBuildPoint(
+                    const val = findOrBuildPoint(
+                      associationView,
                       eventPointInModelCoordinate.x,
                       eventPointInModelCoordinate.y,
                       this.zoom,
@@ -2702,7 +2759,8 @@ export class DiagramRenderer {
                 // check for selection of property view
                 if (!this.selectedPoint) {
                   for (const propertyView of this.diagram.propertyViews) {
-                    const val = propertyView.findOrBuildPoint(
+                    const val = findOrBuildPoint(
+                      propertyView,
                       eventPointInModelCoordinate.x,
                       eventPointInModelCoordinate.y,
                       this.zoom,
@@ -2810,7 +2868,8 @@ export class DiagramRenderer {
           // Resize class view
           if (this.selectedClassCorner) {
             // Make sure width and height are in range!
-            this.selectedClassCorner.setRectangle(
+            positionedRectangle_setRectangle(
+              this.selectedClassCorner,
               new Rectangle(
                 eventPointInModelCoordinate.x -
                   this.selectedClassCorner.position.x,
@@ -2819,7 +2878,7 @@ export class DiagramRenderer {
               ),
             );
             // Refresh hash since ClassView rectangle is not observable
-            this.selectedClassCorner.forceRefreshHash();
+            positionedRectangle_forceRefreshHash(this.selectedClassCorner);
             this.drawClassView(this.selectedClassCorner);
             this.drawScreen();
           }
@@ -2846,9 +2905,12 @@ export class DiagramRenderer {
                     (this.clickY - selectedClassOldPosition.oldPos.y);
                   newMovingDeltaX = selectedClass.position.x - newMovingX;
                   newMovingDeltaY = selectedClass.position.y - newMovingY;
-                  selectedClass.setPosition(new Point(newMovingX, newMovingY));
+                  positionedRectangle_setPosition(
+                    selectedClass,
+                    new Point(newMovingX, newMovingY),
+                  );
                   // Refresh hash since ClassView position is not observable
-                  selectedClass.forceRefreshHash();
+                  positionedRectangle_forceRefreshHash(selectedClass);
                 }
               });
               this.potentiallyShiftRelationships(
@@ -2876,12 +2938,14 @@ export class DiagramRenderer {
           // Change line (add a new point to the line)
           if (this.selectedPoint) {
             if (this.selectedPropertyOrAssociation) {
-              this.selectedPropertyOrAssociation.changePoint(
+              relationshipView_changePoint(
+                this.selectedPropertyOrAssociation,
                 this.selectedPoint,
                 eventPointInModelCoordinate,
               );
             } else if (this.selectedInheritance) {
-              this.selectedInheritance.changePoint(
+              relationshipView_changePoint(
+                this.selectedInheritance,
                 this.selectedPoint,
                 eventPointInModelCoordinate,
               );
@@ -3101,7 +3165,7 @@ export class DiagramRenderer {
       ];
       for (const propertyHolderView of propertyHolderViews) {
         let fullPath = propertyHolderView.buildFullPath();
-        fullPath = manageInsidePointsDynamically(
+        fullPath = _relationView_manageInsidePointsDynamically(
           fullPath,
           propertyHolderView.from.classView.value,
           propertyHolderView.to.classView.value,
@@ -3233,11 +3297,15 @@ export class DiagramRenderer {
 
       // Set layout of current level
       if (positionInitialClass || currentLevelIndex > 0) {
-        (levels[0] as ClassView).setPosition(new Point(startX, currentLevelY));
+        positionedRectangle_setPosition(
+          levels[0] as ClassView,
+          new Point(startX, currentLevelY),
+        );
         levels.forEach((view, idx) => {
           if (idx > 0) {
             const precedent = levels[idx - 1] as ClassView;
-            view.setPosition(
+            positionedRectangle_setPosition(
+              view,
               new Point(
                 precedent.position.x + precedent.rectangle.width + spaceX,
                 currentLevelY,

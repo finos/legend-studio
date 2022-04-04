@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { observable, computed, action, makeObservable } from 'mobx';
+import { observable, computed, makeObservable } from 'mobx';
 import {
   hashArray,
   UnsupportedOperationError,
@@ -79,7 +79,6 @@ export class EmbeddedFlatDataPropertyMapping
       rootInstanceSetImplementation: observable,
       parent: observable,
       label: computed,
-      setPropertyMappings: action,
       isStub: computed,
       hashCode: computed,
     });
@@ -100,12 +99,6 @@ export class EmbeddedFlatDataPropertyMapping
       root: this.root.value,
       tooltip: this.class.value.path,
     };
-  }
-
-  setPropertyMappings(
-    propertyMappings: AbstractFlatDataPropertyMapping[],
-  ): void {
-    this.propertyMappings = propertyMappings;
   }
 
   // As of now, there is no stub cases of Embedded Flat Property Mapping since they are created with an existing property mapping

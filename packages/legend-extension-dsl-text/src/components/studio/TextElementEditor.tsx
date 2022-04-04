@@ -31,6 +31,10 @@ import {
 } from '@finos/legend-art';
 import { EDITOR_LANGUAGE } from '@finos/legend-application';
 import { TEXT_TYPE } from '../../models/metamodels/pure/model/packageableElements/text/DSLText_Text';
+import {
+  text_setContent,
+  text_setType,
+} from '../../stores/studio/DSLText_ModifierHelper';
 
 const getTextElementEditorLanguage = (type: TEXT_TYPE): EDITOR_LANGUAGE => {
   switch (type) {
@@ -54,9 +58,10 @@ export const TextElementEditor = observer(() => {
   const changeType =
     (val: TEXT_TYPE): (() => void) =>
     (): void => {
-      !isReadOnly && textElement.setType(val);
+      !isReadOnly && text_setType(textElement, val);
     };
-  const changeContent = (val: string): void => textElement.setContent(val);
+  const changeContent = (val: string): void =>
+    text_setContent(textElement, val);
 
   useEffect(() => {
     if (!isReadOnly) {

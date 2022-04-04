@@ -60,6 +60,11 @@ import {
 import { TAB_SIZE } from '@finos/legend-application';
 import type { DSLService_LegendStudioPlugin_Extension } from '../../../DSLService_LegendStudioPlugin_Extension';
 import { runtime_addIdentifiedConnection } from '../../../ModifierHelper';
+import {
+  singleExecTest_addAssert,
+  singleExecTest_deleteAssert,
+  singleExecTest_setData,
+} from '../../../DSLService_ModifierHelper';
 
 interface ServiceTestExecutionResult {
   expected: string;
@@ -446,7 +451,7 @@ export class SingleExecutionTestState {
       ),
       this.test,
     );
-    this.test.addAssert(testContainer);
+    singleExecTest_addAssert(this.test, testContainer);
     this.openTestContainer(testContainer);
     this.allTestRunTime = 0;
   }
@@ -454,7 +459,7 @@ export class SingleExecutionTestState {
   deleteTestContainerState(val: TestContainer): void {
     const idx = this.test.asserts.findIndex((assert) => assert === val);
     if (idx !== -1) {
-      this.test.deleteAssert(val);
+      singleExecTest_deleteAssert(this.test, val);
       this.testResults.splice(idx, 1);
       this.allTestRunTime = 0;
     }
@@ -509,9 +514,9 @@ export class SingleExecutionTestState {
       }
     }
     if (generatedTestData) {
-      this.test.setData(generatedTestData);
+      singleExecTest_setData(this.test, generatedTestData);
     } else {
-      this.test.setData('');
+      singleExecTest_setData(this.test, '');
       this.editorStore.applicationStore.notifyError(
         `Can't auto-generate test data for service`,
       );

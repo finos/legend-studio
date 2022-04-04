@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { observable, computed, makeObservable, action } from 'mobx';
+import { observable, computed, makeObservable } from 'mobx';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import { hashArray, guaranteeType } from '@finos/legend-shared';
 import {
@@ -61,19 +61,9 @@ export abstract class DatabaseConnection extends Connection {
       type: observable,
       timeZone: observable,
       quoteIdentifiers: observable,
-      setType: action,
-      setQuoteIdentifiers: action,
     });
 
     this.type = type;
-  }
-
-  setType(val: DatabaseType): void {
-    this.type = val;
-  }
-
-  setQuoteIdentifiers(val: boolean): void {
-    this.quoteIdentifiers = val;
   }
 }
 
@@ -103,8 +93,6 @@ export class RelationalDatabaseConnection extends DatabaseConnection {
       authenticationStrategy: observable,
       database: computed,
       hashCode: computed,
-      setDatasourceSpecification: action,
-      setAuthenticationStrategy: action,
     });
 
     this.datasourceSpecification = datasourceSpecification;
@@ -121,14 +109,6 @@ export class RelationalDatabaseConnection extends DatabaseConnection {
       this.authenticationStrategy,
       hashArray(this.postProcessors),
     ]);
-  }
-
-  setDatasourceSpecification(val: DatasourceSpecification): void {
-    this.datasourceSpecification = val;
-  }
-
-  setAuthenticationStrategy(val: AuthenticationStrategy): void {
-    this.authenticationStrategy = val;
   }
 
   accept_ConnectionVisitor<T>(visitor: ConnectionVisitor<T>): T {

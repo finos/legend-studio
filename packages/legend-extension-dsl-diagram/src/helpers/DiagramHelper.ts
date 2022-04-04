@@ -15,6 +15,7 @@
  */
 
 import type { PureModel } from '@finos/legend-graph';
+import { deleteEntry } from '@finos/legend-shared';
 import type { ClassView } from '../models/metamodels/pure/packageableElements/diagram/DSLDiagram_ClassView';
 import type { Diagram } from '../models/metamodels/pure/packageableElements/diagram/DSLDiagram_Diagram';
 import { Point } from '../models/metamodels/pure/packageableElements/diagram/geometry/DSLDiagram_Point';
@@ -51,14 +52,14 @@ export const cleanUpDeadReferencesInDiagram = (
         .includes(propertyView.property.value.name),
   );
   propertyViewsToRemove.forEach((propertyView) =>
-    diagram.deletePropertyView(propertyView),
+    deleteEntry(diagram.propertyViews, propertyView),
   );
 
   // Fix orphan class views
   const classViewsToRemove = diagram.classViews.filter(
     (cv) => !graph.getNullableClass(cv.class.value.path),
   );
-  classViewsToRemove.forEach((cw) => diagram.deleteClassView(cw));
+  classViewsToRemove.forEach((cw) => deleteEntry(diagram.classViews, cw));
 
   // Fix orphan gneralization views
   const generalizationViewsToRemove = diagram.generalizationViews.filter(
@@ -74,6 +75,6 @@ export const cleanUpDeadReferencesInDiagram = (
     },
   );
   generalizationViewsToRemove.forEach((g) =>
-    diagram.deleteGeneralizationView(g),
+    deleteEntry(diagram.generalizationViews, g),
   );
 };

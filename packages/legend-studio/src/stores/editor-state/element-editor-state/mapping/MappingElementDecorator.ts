@@ -63,7 +63,12 @@ import {
   enumValueMapping_setSourceValues,
   mapping_setPropertyMappings,
   operationMapping_setParameters,
-} from '../../../DSLMApping_ModifierHelper';
+} from '../../../DSLMapping_ModifierHelpers';
+import {
+  pureInstanceSetImpl_setPropertyMappings,
+  purePropertyMapping_setTransformer,
+} from '../../../ModifierHelper';
+import { rootRelationalSetImp_setPropertyMappings } from '../../../DSLRelational_ModifierHelper';
 
 /* @MARKER: ACTION ANALYTICS */
 /**
@@ -192,12 +197,15 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
           // If there is only 1 enumeration mapping, make it the transformer of the property mapping
           // Else, delete current transformer if it's not in the list of extisting enumeration mappings
           if (existingEnumerationMappings.length === 1) {
-            epm.setTransformer(existingEnumerationMappings[0]);
+            purePropertyMapping_setTransformer(
+              epm,
+              existingEnumerationMappings[0],
+            );
           } else if (
             existingEnumerationMappings.length === 0 ||
             !existingEnumerationMappings.find((eem) => eem === epm.transformer)
           ) {
-            epm.setTransformer(undefined);
+            purePropertyMapping_setTransformer(epm, undefined);
           }
         });
         return enumerationPropertyMapping;
@@ -244,7 +252,8 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
       }
       return [];
     };
-    setImplementation.setPropertyMappings(
+    pureInstanceSetImpl_setPropertyMappings(
+      setImplementation,
       getDecoratedSetImplementationPropertyMappings<PurePropertyMapping>(
         setImplementation,
         decoratePropertyMapping,
@@ -624,7 +633,8 @@ export class MappingElementDecorationCleaner
   visit_RootRelationalInstanceSetImplementation(
     setImplementation: RootRelationalInstanceSetImplementation,
   ): void {
-    setImplementation.setPropertyMappings(
+    rootRelationalSetImp_setPropertyMappings(
+      setImplementation,
       setImplementation.propertyMappings.filter(
         (propertyMapping) =>
           (propertyMapping instanceof RelationalPropertyMapping &&

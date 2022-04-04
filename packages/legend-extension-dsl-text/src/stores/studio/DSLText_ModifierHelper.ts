@@ -14,20 +14,15 @@
  * limitations under the License.
  */
 
-import { observable, makeObservable } from 'mobx';
-import type { ClassViewReference } from './DSLDiagram_ClassViewReference';
+import { action } from 'mobx';
+import type {
+  TEXT_TYPE,
+  Text,
+} from '../../models/metamodels/pure/model/packageableElements/text/DSLText_Text';
 
-export class RelationShipEdgeView {
-  classView: ClassViewReference;
-  offsetX?: number | undefined;
-  offsetY?: number | undefined;
-
-  constructor(classView: ClassViewReference) {
-    makeObservable(this, {
-      offsetX: observable,
-      offsetY: observable,
-    });
-
-    this.classView = classView;
-  }
-}
+export const text_setType = action((text: Text, type: TEXT_TYPE): void => {
+  text.type = type;
+});
+export const text_setContent = action((text: Text, content: string): void => {
+  text.content = content;
+});
