@@ -36,6 +36,7 @@ import type { V1_Rectangle } from '../../model/packageableElements/diagram/geome
 import type { V1_PropertyView } from '../../model/packageableElements/diagram/V1_DSLDiagram_PropertyView';
 import type { V1_GeneralizationView } from '../../model/packageableElements/diagram/V1_DSLDiagram_GeneralizationView';
 import { getClassView } from '../../../../../../helpers/DiagramHelper';
+import { _relationView_possiblyFlattenPath } from '../../../../../metamodels/pure/packageableElements/diagram/DSLDiagram_GraphModifierHelper';
 
 const buildPoint = (point: V1_Point): Point => {
   const x = guaranteeNonNullable(point.x, `Point 'x' coordinate is missing`);
@@ -115,7 +116,7 @@ export const V1_buildPropertyView = (
     targetClassView,
   );
   view.path = propertyView.line.points.map((point) => buildPoint(point));
-  view.possiblyFlattenPath(); // transform the line because we store only 2 end points that are inside points and we will calculate the offset
+  _relationView_possiblyFlattenPath(view); // transform the line because we store only 2 end points that are inside points and we will calculate the offset
   return view;
 };
 
@@ -141,7 +142,7 @@ export const V1_buildGeneralizationView = (
     targetClassView,
   );
   view.path = generalizationView.line.points.map((point) => buildPoint(point));
-  view.possiblyFlattenPath(); // transform the line because we store only 2 end points that are inside points and we will calculate the offset
+  _relationView_possiblyFlattenPath(view); // transform the line because we store only 2 end points that are inside points and we will calculate the offset
   return view;
 };
 

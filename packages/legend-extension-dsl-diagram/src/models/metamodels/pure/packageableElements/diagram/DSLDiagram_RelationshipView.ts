@@ -14,46 +14,15 @@
  * limitations under the License.
  */
 
-import { observable, action, computed, makeObservable } from 'mobx';
-import { hashArray, changeEntry, type Hashable } from '@finos/legend-shared';
+import { observable, computed, makeObservable } from 'mobx';
+import { hashArray, type Hashable } from '@finos/legend-shared';
 import { RelationShipEdgeView as RelationshipEdgeView } from './DSLDiagram_RelationshipEdgeView';
 import { Point } from './geometry/DSLDiagram_Point';
 import type { ClassView } from './DSLDiagram_ClassView';
-import { Vector } from './geometry/DSLDiagram_Vector';
 import type { Diagram } from './DSLDiagram_Diagram';
 import { ClassViewExplicitReference } from './DSLDiagram_ClassViewReference';
 import { DIAGRAM_HASH_STRUCTURE } from '../../../../DSLDiagram_ModelUtils';
-
-/**
- * For a path, only counts the points which lie outside of the 2 class views
- */
-export const manageInsidePointsDynamically = (
-  path: Point[],
-  from: ClassView,
-  to: ClassView,
-): Point[] => {
-  if (!path.length) {
-    return [];
-  }
-
-  let start = 0;
-  let startPoint = path[start] as Point;
-
-  while (start < path.length - 1 && from.contains(startPoint.x, startPoint.y)) {
-    start++;
-    startPoint = path[start] as Point;
-  }
-
-  let end = path.length - 1;
-  let endPoint = path[end] as Point;
-
-  while (end > 0 && to.contains(endPoint.x, endPoint.y)) {
-    end--;
-    endPoint = path[end] as Point;
-  }
-
-  return path.slice(start - 1, end + 2);
-};
+import { _relationView_manageInsidePointsDynamically } from './DSLDiagram_GraphModifierHelper';
 
 export class RelationshipView implements Hashable {
   owner: Diagram;
@@ -66,8 +35,6 @@ export class RelationshipView implements Hashable {
   constructor(owner: Diagram, from: ClassView, to: ClassView) {
     makeObservable(this, {
       path: observable,
-      setPath: action,
-      changePoint: action,
       fullPath: computed,
     });
 
@@ -76,13 +43,6 @@ export class RelationshipView implements Hashable {
       ClassViewExplicitReference.create(from),
     );
     this.to = new RelationshipEdgeView(ClassViewExplicitReference.create(to));
-  }
-
-  setPath(val: Point[]): void {
-    this.path = val;
-  }
-  changePoint(val: Point, newVal: Point): void {
-    changeEntry(this.path, val, newVal);
   }
 
   /**
@@ -101,112 +61,11 @@ export class RelationshipView implements Hashable {
    * This method will compute the full path from the offset within class view for persistence purpose
    */
   get fullPath(): Point[] {
-    return manageInsidePointsDynamically(
+    return _relationView_manageInsidePointsDynamically(
       this.buildFullPath(),
       this.from.classView.value,
       this.to.classView.value,
     );
-  }
-
-  /**
-   * Flatten the path if the angle is wide enough
-   * Also `swallow` points in path which lie inside of the rectangle of a view
-   */
-  possiblyFlattenPath(): void {
-    const fullPath = this.buildFullPath();
-    // NOTE: this method here will `swallow` up points inside of the boxes
-    const newPath = manageInsidePointsDynamically(
-      fullPath,
-      this.from.classView.value,
-      this.to.classView.value,
-    );
-
-    // recompute the offset point from center inside of `from` and `to` classviews.
-    // for each, we first check if `manageInsidePointsDynamically` removes any points from the full path
-    // if it does we will update the offset
-    if (newPath[0] !== fullPath[0]) {
-      const center = this.from.classView.value.center();
-      this.from.setOffsetX((newPath[0] as Point).x - center.x);
-      this.from.setOffsetY((newPath[0] as Point).y - center.y);
-    }
-
-    if (newPath[newPath.length - 1] !== fullPath[fullPath.length - 1]) {
-      const center = this.to.classView.value.center();
-      this.to.setOffsetX((newPath[newPath.length - 1] as Point).x - center.x);
-      this.to.setOffsetY((newPath[newPath.length - 1] as Point).y - center.y);
-    }
-
-    // find the point which can be flattened due to its wide angle
-    const result = [];
-    for (let i = 0; i < newPath.length - 2; i++) {
-      const v1 = Vector.fromPoints(
-        newPath[i + 1] as Point,
-        newPath[i] as Point,
-      ).norm();
-      const v2 = Vector.fromPoints(
-        newPath[i + 1] as Point,
-        newPath[i + 2] as Point,
-      ).norm();
-      const dot = v1.dotProduct(v2);
-      const angle = (Math.acos(dot) * 180) / Math.PI;
-      if (Math.abs(angle - 180) > 5) {
-        result.push(newPath[i + 1] as Point);
-      }
-    }
-    // here's where we will modify the path, i.e. swallow inside points if we have to
-    this.setPath(result);
-  }
-
-  /**
-   * Based on the location, find the point on the path that matches or create new point
-   * (within a threshold of proximity) from the coordinate and put this in the path array
-   * so it doesn't look too weird
-   */
-  findOrBuildPoint(
-    x: number,
-    y: number,
-    zoom: number,
-    allowChange = true,
-  ): Point | undefined {
-    for (const pt of this.path) {
-      if (
-        Math.sqrt((x - pt.x) * (x - pt.x) + (y - pt.y) * (y - pt.y)) <
-        10 / zoom
-      ) {
-        return pt;
-      }
-    }
-
-    const fullPath = this.buildFullPath(allowChange);
-    const newPath = [];
-    let point;
-
-    for (let i = 0; i < fullPath.length - 1; i++) {
-      const a = fullPath[i] as Point;
-      const b = fullPath[i + 1] as Point;
-      const n = new Vector(a.x, a.y).normal(new Vector(b.x, b.y)).norm();
-      const v = Vector.fromPoints(a, new Point(x, y));
-
-      if (Math.abs(n.dotProduct(v)) < 5 / zoom) {
-        const lx = (a.x < b.x ? a.x : b.x) - 5 / zoom;
-        const hx = (a.x < b.x ? b.x : a.x) + 5 / zoom;
-        const ly = (a.y < b.y ? a.y : b.y) - 5 / zoom;
-        const hy = (a.y < b.y ? b.y : a.y) + 5 / zoom;
-
-        if (lx <= x && x <= hx && ly <= y && y <= hy) {
-          point = new Point(x, y);
-          newPath.push(point);
-        }
-      }
-
-      if (i < fullPath.length - 2) {
-        newPath.push(fullPath[i + 1] as Point);
-      }
-    }
-    if (point && allowChange) {
-      this.setPath(newPath);
-    }
-    return point;
   }
 
   /**
@@ -224,8 +83,8 @@ export class RelationshipView implements Hashable {
       return new Point(newX, newY);
     }
     if (allowChange) {
-      edgeView.setOffsetX(0);
-      edgeView.setOffsetY(0);
+      edgeView.offsetX = 0;
+      edgeView.offsetY = 0;
     }
     return new Point(center.x, center.y);
   }

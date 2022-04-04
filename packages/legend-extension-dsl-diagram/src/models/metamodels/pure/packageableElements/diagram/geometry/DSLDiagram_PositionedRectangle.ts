@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { observable, action, makeObservable } from 'mobx';
+import { observable, makeObservable } from 'mobx';
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import { Point } from './DSLDiagram_Point';
 import { Rectangle } from './DSLDiagram_Rectangle';
@@ -28,26 +28,10 @@ export class PositionedRectangle implements Hashable {
   constructor(position: Point, rectangle: Rectangle) {
     makeObservable(this, {
       dummyObservable: observable,
-      forceRefreshHash: action,
     });
 
     this.position = position;
     this.rectangle = rectangle;
-  }
-
-  setRectangle(value: Rectangle): void {
-    this.rectangle = value;
-  }
-  setPosition(value: Point): void {
-    this.position = value;
-  }
-  /**
-   * NOTE: Having `position` and `rectangle` as observables compromises the performance of diagram
-   * so we want to have a way to refresh the hash for change detection to pick up new hash when we resize
-   * the class view box or move it.
-   */
-  forceRefreshHash(): void {
-    this.dummyObservable = {};
   }
 
   edgePoint = (): Point =>

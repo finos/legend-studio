@@ -81,6 +81,11 @@ import {
 } from '@finos/legend-graph';
 import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor';
 import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../../stores/DSLMapping_LegendStudioPlugin_Extension';
+import { flatData_setData } from '../../../../stores/ModifierHelper';
+import {
+  relationalInputData_setData,
+  relationalInputData_setInputType,
+} from '../../../../stores/DSLRelational_ModifierHelper';
 
 const MappingTestQueryEditor = observer(
   (props: { testState: MappingTestState; isReadOnly: boolean }) => {
@@ -274,7 +279,7 @@ export const MappingTestFlatDataInputDataBuilder = observer(
 
     // Input data
     const updateInput = (val: string): void =>
-      inputDataState.inputData.setData(val);
+      flatData_setData(inputDataState.inputData, val);
 
     return (
       <div className="panel__content mapping-test-editor__input-data-panel__content">
@@ -301,7 +306,7 @@ export const MappingTestRelationalInputDataBuilder = observer(
 
     // Input data
     const updateInput = (val: string): void =>
-      inputDataState.inputData.setData(val);
+      relationalInputData_setData(inputDataState.inputData, val);
 
     return (
       <div className="panel__content mapping-test-editor__input-data-panel__content">
@@ -328,7 +333,7 @@ const RelationalMappingTestInputDataTypeSelector = observer(
     const changeInputType =
       (val: string): (() => void) =>
       (): void => {
-        inputDataState.inputData.setInputType(val);
+        relationalInputData_setInputType(inputDataState.inputData, val);
       };
     return (
       <DropdownMenu

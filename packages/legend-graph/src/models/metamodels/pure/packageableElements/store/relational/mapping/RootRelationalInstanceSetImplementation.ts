@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { observable, computed, makeObservable, action } from 'mobx';
+import { observable, computed, makeObservable } from 'mobx';
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import type { SetImplementationVisitor } from '../../../mapping/SetImplementation';
@@ -31,7 +31,6 @@ import type { Mapping } from '../../../mapping/Mapping';
 import type { PackageableElementReference } from '../../../PackageableElementReference';
 import type { Class } from '../../../domain/Class';
 import type { InferableMappingElementRoot } from '../../../mapping/InferableMappingElementRoot';
-import type { PropertyMapping } from '../../../mapping/PropertyMapping';
 
 export class RootRelationalInstanceSetImplementation
   extends RelationalInstanceSetImplementation
@@ -59,13 +58,8 @@ export class RootRelationalInstanceSetImplementation
       groupBy: observable,
       mainTableAlias: observable,
       superSetImplementationId: observable,
-      setPropertyMappings: action,
       hashCode: computed,
     });
-  }
-
-  setPropertyMappings(value: PropertyMapping[]): void {
-    this.propertyMappings = value;
   }
 
   override accept_SetImplementationVisitor<T>(

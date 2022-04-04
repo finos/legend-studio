@@ -98,6 +98,8 @@ import {
 } from '@finos/legend-application';
 import { package_addElement } from '../../../DomainModifierHelper';
 import {
+  flatData_setData,
+  objectInputData_setData,
   runtime_addIdentifiedConnection,
   runtime_addMapping,
 } from '../../../ModifierHelper';
@@ -105,6 +107,11 @@ import {
   service_initNewService,
   service_setExecution,
 } from '../../../DSLService_ModifierHelper';
+import {
+  localH2DatasourceSpecification_setTestDataSetupCsv,
+  localH2DatasourceSpecification_setTestDataSetupSqls,
+  relationalInputData_setInputType,
+} from '../../../DSLRelational_ModifierHelper';
 
 export class MappingExecutionQueryState extends LambdaEditorState {
   editorStore: EditorStore;
@@ -383,13 +390,17 @@ export class MappingExecutionRelationalInputDataState extends MappingExecutionIn
     const datasourceSpecification = new LocalH2DatasourceSpecification();
     switch (this.inputData.inputType) {
       case RelationalInputType.SQL:
-        datasourceSpecification.setTestDataSetupSqls(
+        localH2DatasourceSpecification_setTestDataSetupSqls(
+          datasourceSpecification,
           // NOTE: this is a gross simplification of handling the input for relational input data
           [this.inputData.data],
         );
         break;
       case RelationalInputType.CSV:
-        datasourceSpecification.setTestDataSetupCsv(this.inputData.data);
+        localH2DatasourceSpecification_setTestDataSetupCsv(
+          datasourceSpecification,
+          this.inputData.data,
+        );
         break;
       default:
         throw new UnsupportedOperationError(`Invalid input data type`);
@@ -506,7 +517,8 @@ export class MappingExecutionState {
         source,
       );
       if (populateWithMockData) {
-        newRuntimeState.inputData.setData(
+        objectInputData_setData(
+          newRuntimeState.inputData,
           createMockDataForMappingElementSource(source, this.editorStore),
         );
       }
@@ -518,7 +530,8 @@ export class MappingExecutionState {
         source,
       );
       if (populateWithMockData) {
-        newRuntimeState.inputData.setData(
+        flatData_setData(
+          newRuntimeState.inputData,
           createMockDataForMappingElementSource(source, this.editorStore),
         );
       }
@@ -530,7 +543,8 @@ export class MappingExecutionState {
         source.relation.value,
       );
       if (populateWithMockData) {
-        newRuntimeState.inputData.setData(
+        relationalInputData_setInputType(
+          newRuntimeState.inputData,
           createMockDataForMappingElementSource(source, this.editorStore),
         );
       }

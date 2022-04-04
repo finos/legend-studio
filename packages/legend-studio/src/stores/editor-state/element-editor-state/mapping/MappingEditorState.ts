@@ -106,7 +106,10 @@ import {
 import { LambdaEditorState } from '@finos/legend-application';
 import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../DSLMapping_LegendStudioPlugin_Extension';
 import type { LegendStudioPlugin } from '../../../LegendStudioPlugin';
-import { flatData_setSourceRootRecordType } from '../../../ModifierHelper';
+import {
+  flatData_setSourceRootRecordType,
+  pureInstanceSetImpl_setSrcClass,
+} from '../../../ModifierHelper';
 import {
   mapping_addClassMapping,
   mapping_addEnumerationMapping,
@@ -115,7 +118,7 @@ import {
   mapping_deleteClassMapping,
   mapping_deleteEnumerationMapping,
   mapping_deleteTest,
-} from '../../../DSLMApping_ModifierHelper';
+} from '../../../DSLMapping_ModifierHelpers';
 
 export interface MappingExplorerTreeNodeData extends TreeNodeData {
   mappingElement: MappingElement;
@@ -834,7 +837,7 @@ export class MappingEditorState extends ElementEditorState {
         setImplementation instanceof PureInstanceSetImplementation &&
         (newSource instanceof Class || newSource === undefined)
       ) {
-        setImplementation.setSrcClass(newSource);
+        pureInstanceSetImpl_setSrcClass(setImplementation, newSource);
       } else if (
         setImplementation instanceof FlatDataInstanceSetImplementation &&
         newSource instanceof RootFlatDataRecordType &&

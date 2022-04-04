@@ -24,10 +24,8 @@ export { DiagramRenderer, DIAGRAM_INTERACTION_MODE } from './DiagramRenderer';
 
 export { Diagram } from './models/metamodels/pure/packageableElements/diagram/DSLDiagram_Diagram';
 export { ClassView } from './models/metamodels/pure/packageableElements/diagram/DSLDiagram_ClassView';
-export {
-  RelationshipView,
-  manageInsidePointsDynamically,
-} from './models/metamodels/pure/packageableElements/diagram/DSLDiagram_RelationshipView';
+export { RelationshipView } from './models/metamodels/pure/packageableElements/diagram/DSLDiagram_RelationshipView';
+export { _relationView_manageInsidePointsDynamically } from './models/metamodels/pure/packageableElements/diagram/DSLDiagram_GraphModifierHelper';
 export { PropertyHolderView } from './models/metamodels/pure/packageableElements/diagram/DSLDiagram_PropertyHolderView';
 export { PropertyView } from './models/metamodels/pure/packageableElements/diagram/DSLDiagram_PropertyView';
 export { AssociationView } from './models/metamodels/pure/packageableElements/diagram/DSLDiagram_AssociationView';

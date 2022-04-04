@@ -42,6 +42,13 @@ import {
   type XmlModelConnection,
   type IdentifiedConnection,
   type Mapping,
+  type FlatDataInputData,
+  type FlatDataPropertyMapping,
+  type EnumerationMapping,
+  type ObjectInputData,
+  type PureInstanceSetImplementation,
+  type PurePropertyMapping,
+  type RawLambda,
   StoreConnections,
   FileGenerationSpecification,
   GenerationTreeNode,
@@ -403,3 +410,52 @@ export const flatData_setSourceRootRecordType = action(
     fl.sourceRootRecordType.value = value;
   },
 );
+
+export const flatData_setData = (
+  input: FlatDataInputData,
+  value: string,
+): void => {
+  input.data = value;
+};
+
+export const flatDataPropertyMapping_setTransformer = (
+  val: FlatDataPropertyMapping,
+  value: EnumerationMapping | undefined,
+): void => {
+  val.transformer = value;
+};
+
+// --------------------------------------------- M2M -------------------------------------
+
+export const objectInputData_setData = (
+  o: ObjectInputData,
+  val: string,
+): void => {
+  o.data = val;
+};
+
+export const pureInstanceSetImpl_setPropertyMappings = (
+  val: PureInstanceSetImplementation,
+  value: PurePropertyMapping[],
+): void => {
+  val.propertyMappings = value;
+};
+export const pureInstanceSetImpl_setSrcClass = (
+  val: PureInstanceSetImplementation,
+  value: Class | undefined,
+): void => {
+  val.srcClass.setValue(value);
+};
+export const pureInstanceSetImpl_setMappingFilter = (
+  val: PureInstanceSetImplementation,
+  value: RawLambda | undefined,
+): void => {
+  val.filter = value;
+};
+
+export const purePropertyMapping_setTransformer = (
+  val: PurePropertyMapping,
+  value: EnumerationMapping | undefined,
+): void => {
+  val.transformer = value;
+};

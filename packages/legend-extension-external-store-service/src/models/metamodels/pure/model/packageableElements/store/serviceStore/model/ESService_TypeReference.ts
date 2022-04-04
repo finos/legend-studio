@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { observable, action, makeObservable, computed } from 'mobx';
+import { observable, makeObservable, computed } from 'mobx';
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../ESService_ModelUtils';
 import type {
@@ -30,12 +30,7 @@ export abstract class TypeReference implements Hashable {
   constructor() {
     makeObservable(this, {
       list: observable,
-      setList: action,
     });
-  }
-
-  setList(value: boolean): void {
-    this.list = value;
   }
 
   abstract get hashCode(): string;

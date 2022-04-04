@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { observable, action, computed, makeObservable } from 'mobx';
+import { observable, computed, makeObservable } from 'mobx';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import type { EnumerationMapping } from '../../../mapping/EnumerationMapping';
@@ -44,16 +44,11 @@ export class FlatDataPropertyMapping
     makeObservable(this, {
       transformer: observable,
       transform: observable,
-      setTransformer: action,
       isStub: computed,
       hashCode: computed,
     });
 
     this.transform = transform;
-  }
-
-  setTransformer(value: EnumerationMapping | undefined): void {
-    this.transformer = value;
   }
 
   override get isStub(): boolean {

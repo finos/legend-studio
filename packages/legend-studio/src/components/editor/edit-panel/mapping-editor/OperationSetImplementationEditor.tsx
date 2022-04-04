@@ -54,7 +54,7 @@ import {
   operationMapping_addParameter,
   operationMapping_changeParameter,
   operationMapping_deleteParameter,
-} from '../../../../stores/DSLMApping_ModifierHelper';
+} from '../../../../stores/DSLMapping_ModifierHelpers';
 
 interface SetImplementationOption {
   value: SetImplementation;

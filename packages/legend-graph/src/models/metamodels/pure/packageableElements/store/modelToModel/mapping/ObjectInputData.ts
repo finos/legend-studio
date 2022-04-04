@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { observable, computed, makeObservable, action } from 'mobx';
+import { observable, computed, makeObservable } from 'mobx';
 import {
   type Hashable,
   hashArray,
@@ -64,7 +64,6 @@ export class ObjectInputData extends InputData implements Hashable {
     makeObservable(this, {
       inputType: observable,
       data: observable,
-      setData: action,
       validationResult: computed,
       hashCode: computed,
     });
@@ -76,10 +75,6 @@ export class ObjectInputData extends InputData implements Hashable {
       inputType === ObjectInputType.JSON
         ? tryToMinifyLosslessJSONString(data)
         : data;
-  }
-
-  setData(val: string): void {
-    this.data = val;
   }
 
   get validationResult(): ValidationIssue | undefined {

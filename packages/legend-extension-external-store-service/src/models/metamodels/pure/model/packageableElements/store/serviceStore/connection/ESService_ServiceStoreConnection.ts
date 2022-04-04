@@ -20,7 +20,7 @@ import {
   type ConnectionVisitor,
   type PackageableElementReference,
 } from '@finos/legend-graph';
-import { action, computed, makeObservable, observable } from 'mobx';
+import { computed, makeObservable, observable } from 'mobx';
 import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../ESService_ModelUtils';
 import type { ServiceStore } from '../model/ESService_ServiceStore';
 
@@ -32,13 +32,8 @@ export class ServiceStoreConnection extends Connection implements Hashable {
 
     makeObservable(this, {
       baseUrl: observable,
-      setUrl: action,
       hashCode: computed,
     });
-  }
-
-  setUrl(value: string): void {
-    this.baseUrl = value;
   }
 
   get hashCode(): string {

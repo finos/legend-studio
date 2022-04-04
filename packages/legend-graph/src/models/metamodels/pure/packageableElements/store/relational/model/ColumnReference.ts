@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { observable, action, makeObservable } from 'mobx';
+import { observable, makeObservable } from 'mobx';
 import {
   PackageableElementExplicitReference,
   type PackageableElementReference,
@@ -37,16 +37,10 @@ export abstract class ColumnReference extends ReferenceWithOwner {
 
     makeObservable(this, {
       value: observable,
-      setValue: action,
     });
 
     this.ownerReference = ownerReference;
     this.value = value;
-  }
-
-  setValue(value: Column): void {
-    this.value = value;
-    this.ownerReference.value = getSchemaFromRelation(value.owner).owner;
   }
 }
 

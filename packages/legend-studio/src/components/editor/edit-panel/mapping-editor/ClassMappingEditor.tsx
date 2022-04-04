@@ -43,7 +43,7 @@ import {
   operationMapping_setOperation,
   operationMapping_setParameters,
   setImpl_setRoot,
-} from '../../../../stores/DSLMApping_ModifierHelper';
+} from '../../../../stores/DSLMapping_ModifierHelpers';
 
 export const OperatorSelector = observer(
   (props: {

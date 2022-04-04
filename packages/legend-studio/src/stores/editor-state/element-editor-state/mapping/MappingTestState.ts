@@ -83,6 +83,8 @@ import {
 } from '@finos/legend-graph';
 import { LambdaEditorState, TAB_SIZE } from '@finos/legend-application';
 import {
+  flatData_setData,
+  objectInputData_setData,
   runtime_addIdentifiedConnection,
   runtime_addMapping,
 } from '../../../ModifierHelper';
@@ -90,7 +92,12 @@ import {
   expectedOutputMappingTestAssert_setExpectedOutput,
   mappingTest_setAssert,
   mappingTest_setQuery,
-} from '../../../DSLMApping_ModifierHelper';
+} from '../../../DSLMapping_ModifierHelpers';
+import {
+  localH2DatasourceSpecification_setTestDataSetupCsv,
+  localH2DatasourceSpecification_setTestDataSetupSqls,
+  relationalInputData_setData,
+} from '../../../DSLRelational_ModifierHelper';
 
 export enum TEST_RESULT {
   NONE = 'NONE', // test has not run yet
@@ -213,7 +220,7 @@ export class MappingTestObjectInputDataState extends MappingTestInputDataState {
   setData(val: string): void {
     this.data = val;
     /* @MARKER: Workaround for https://github.com/finos/legend-studio/issues/68 */
-    this.inputData.setData(tryToMinifyLosslessJSONString(val));
+    objectInputData_setData(this.inputData, tryToMinifyLosslessJSONString(val));
   }
 
   get runtime(): Runtime {
@@ -287,13 +294,17 @@ export class MappingTestRelationalInputDataState extends MappingTestInputDataSta
     const datasourceSpecification = new LocalH2DatasourceSpecification();
     switch (this.inputData.inputType) {
       case RelationalInputType.SQL:
-        datasourceSpecification.setTestDataSetupSqls(
+        localH2DatasourceSpecification_setTestDataSetupSqls(
+          datasourceSpecification,
           // NOTE: this is a gross simplification of handling the input for relational input data
           [this.inputData.data],
         );
         break;
       case RelationalInputType.CSV:
-        datasourceSpecification.setTestDataSetupCsv(this.inputData.data);
+        localH2DatasourceSpecification_setTestDataSetupCsv(
+          datasourceSpecification,
+          this.inputData.data,
+        );
         break;
       default:
         throw new UnsupportedOperationError(`Invalid input data type`);
@@ -511,7 +522,8 @@ export class MappingTestState {
       );
       if (populateWithMockData) {
         if (source) {
-          newInputDataState.inputData.setData(
+          objectInputData_setData(
+            newInputDataState.inputData,
             createMockDataForMappingElementSource(source, this.editorStore),
           );
         }
@@ -529,7 +541,8 @@ export class MappingTestState {
         ),
       );
       if (populateWithMockData) {
-        newInputDataState.inputData.setData(
+        flatData_setData(
+          newInputDataState.inputData,
           createMockDataForMappingElementSource(source, this.editorStore),
         );
       }
@@ -547,7 +560,8 @@ export class MappingTestState {
         ),
       );
       if (populateWithMockData) {
-        newInputDataState.inputData.setData(
+        relationalInputData_setData(
+          newInputDataState.inputData,
           createMockDataForMappingElementSource(source, this.editorStore),
         );
       }

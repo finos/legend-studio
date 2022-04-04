@@ -46,6 +46,7 @@ import {
   getEnumerationMappingsByEnumeration,
 } from '@finos/legend-graph';
 import { StudioLambdaEditor } from '../../../shared/StudioLambdaEditor';
+import { flatDataPropertyMapping_setTransformer } from '../../../../stores/ModifierHelper';
 
 const SimplePropertyMappingEditor = observer(
   (props: {
@@ -135,7 +136,8 @@ const EnumerationPropertyMappingEditor = observer(
     const transformer = propertyMapping.transformer?.id.value ?? '';
     const handleSelectionChange = (
       val: { label: string; value: EnumerationMapping } | null,
-    ): void => propertyMapping.setTransformer(val?.value);
+    ): void =>
+      flatDataPropertyMapping_setTransformer(propertyMapping, val?.value);
     // Walker
     const visit = (): void => {
       const currentTransformer = propertyMapping.transformer;
@@ -151,7 +153,10 @@ const EnumerationPropertyMappingEditor = observer(
               newEnumerationMapping: MappingElement | undefined,
             ): void => {
               if (newEnumerationMapping instanceof EnumerationMapping) {
-                propertyMapping.setTransformer(newEnumerationMapping);
+                flatDataPropertyMapping_setTransformer(
+                  propertyMapping,
+                  newEnumerationMapping,
+                );
               }
             },
           });
