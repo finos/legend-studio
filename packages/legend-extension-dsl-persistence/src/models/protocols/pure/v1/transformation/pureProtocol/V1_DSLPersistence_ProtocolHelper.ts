@@ -41,6 +41,9 @@ import {
   V1_UnitemporalSnapshot,
   V1_ValidityDerivation,
   V1_ValidityMilestoning,
+  V1_ObjectStorageSink,
+  V1_RelationalSink,
+  V1_Sink,
 } from '../../model/packageableElements/persistence/V1_Persistence';
 import type { PureProtocolProcessorPlugin } from '@finos/legend-graph';
 import {
@@ -262,6 +265,66 @@ const V1_deserializeNotifyee = (
     default:
       throw new UnsupportedOperationError(
         `Unable to deserialize notifyee '${json._type}'`,
+      );
+  }
+};
+
+/**********
+ * sink
+ **********/
+
+enum V1_SinkType {
+  RELATIONAL_SINK = 'relationalSink',
+  OBJECT_STORAGE_SINK = 'objectStorageSink',
+}
+
+const V1_relationalSinkModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_RelationalSink> =>
+  createModelSchema(V1_RelationalSink, {
+    _type: usingConstantValueSchema(V1_SinkType.RELATIONAL_SINK),
+    connection: custom(
+      (val) => (val ? V1_serializeConnectionValue(val, true, plugins) : SKIP),
+      (val) => V1_deserializeConnectionValue(val, true, plugins),
+    ),
+  });
+
+const V1_objectStorageSinkModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_ObjectStorageSink> =>
+  createModelSchema(V1_ObjectStorageSink, {
+    _type: usingConstantValueSchema(V1_SinkType.OBJECT_STORAGE_SINK),
+    binding: optional(primitive()),
+    connection: custom(
+      (val) => V1_serializeConnectionValue(val, true, plugins),
+      (val) => V1_deserializeConnectionValue(val, true, plugins),
+    ),
+  });
+
+const V1_serializeSink = (
+  protocol: V1_Sink,
+  plugins: PureProtocolProcessorPlugin[],
+): PlainObject<V1_Sink> => {
+  if (protocol instanceof V1_RelationalSink) {
+    return serialize(V1_relationalSinkModelSchema(plugins), protocol);
+  } else if (protocol instanceof V1_ObjectStorageSink) {
+    return serialize(V1_objectStorageSinkModelSchema(plugins), protocol);
+  }
+  throw new UnsupportedOperationError(`Unable to serialize sink`, protocol);
+};
+
+const V1_deserializeSink = (
+  json: PlainObject<V1_Sink>,
+  plugins: PureProtocolProcessorPlugin[],
+): V1_Sink => {
+  switch (json._type) {
+    case V1_SinkType.RELATIONAL_SINK:
+      return deserialize(V1_relationalSinkModelSchema(plugins), json);
+    case V1_SinkType.OBJECT_STORAGE_SINK:
+      return deserialize(V1_objectStorageSinkModelSchema(plugins), json);
+    default:
+      throw new UnsupportedOperationError(
+        `Unable to deserialize sink '${json._type}'`,
       );
   }
 };

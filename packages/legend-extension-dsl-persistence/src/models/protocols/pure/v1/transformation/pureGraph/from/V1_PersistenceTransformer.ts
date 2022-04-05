@@ -20,6 +20,7 @@ import {
   MaxVersionDeduplicationStrategy,
   MergeStrategy,
   MultiFlatTarget,
+  MultiFlatTargetPart,
   NoAuditing,
   NoDeduplicationStrategy,
   NoDeletesMergeStrategy,
@@ -27,10 +28,12 @@ import {
   NontemporalSnapshot,
   Notifier,
   Notifyee,
+  ObjectStorageSink,
   PagerDutyNotifyee,
   Persistence,
   Persister,
-  MultiFlatTargetPart,
+  RelationalSink,
+  Sink,
   SourceSpecifiesFromAndThruDateTime,
   SourceSpecifiesFromDateTime,
   StreamingPersister,
@@ -65,6 +68,7 @@ import {
   V1_MaxVersionDeduplicationStrategy,
   V1_MergeStrategy,
   V1_MultiFlatTarget,
+  V1_MultiFlatTargetPart,
   V1_NoAuditing,
   V1_NoDeduplicationStrategy,
   V1_NoDeletesMergeStrategy,
@@ -75,7 +79,6 @@ import {
   V1_PagerDutyNotifyee,
   V1_Persistence,
   V1_Persister,
-  V1_MultiFlatTargetPart,
   V1_SourceSpecifiesFromAndThruDateTime,
   V1_SourceSpecifiesFromDateTime,
   V1_StreamingPersister,
@@ -87,6 +90,9 @@ import {
   V1_UnitemporalSnapshot,
   V1_ValidityDerivation,
   V1_ValidityMilestoning,
+  V1_Sink,
+  V1_RelationalSink,
+  V1_ObjectStorageSink,
 } from '../../../model/packageableElements/persistence/V1_Persistence';
 import {
   type V1_GraphTransformerContext,
@@ -148,29 +154,11 @@ export const V1_transformPersister = (
 ): V1_Persister => {
   if (element instanceof StreamingPersister) {
     const protocol = new V1_StreamingPersister();
-    if (element.binding) {
-      protocol.binding = element.binding.value.path;
-    }
-    if (element.connection) {
-      protocol.connection = V1_transformConnection(
-        element.connection,
-        true,
-        context,
-      );
-    }
+    protocol.sink = V1_transformSink(element.sink, context);
     return protocol;
   } else if (element instanceof BatchPersister) {
     const protocol = new V1_BatchPersister();
-    if (element.binding) {
-      protocol.binding = element.binding.value.path;
-    }
-    if (element.connection) {
-      protocol.connection = V1_transformConnection(
-        element.connection,
-        true,
-        context,
-      );
-    }
+    protocol.sink = V1_transformSink(element.sink, context);
     protocol.ingestMode = V1_transformIngestMode(element.ingestMode, context);
     protocol.targetShape = V1_transformTargetShape(
       element.targetShape,
@@ -214,6 +202,51 @@ export const V1_transformNotifyee = (
   throw new UnsupportedOperationError(
     `Unable to transform notifyee '${element}'`,
   );
+};
+
+/**********
+ * sink
+ **********/
+
+export const V1_transformSink = (
+  element: Sink,
+  context: V1_GraphTransformerContext,
+): V1_Sink => {
+  if (element instanceof RelationalSink) {
+    return V1_transformRelationalSink(element, context);
+  } else if (element instanceof ObjectStorageSink) {
+    return V1_transformObjectStorageSink(element, context);
+  }
+  throw new UnsupportedOperationError(`Unable to transform sink '${element}'`);
+};
+
+export const V1_transformRelationalSink = (
+  element: RelationalSink,
+  context: V1_GraphTransformerContext,
+): V1_RelationalSink => {
+  const protocol = new V1_RelationalSink();
+  if (element.connection) {
+    protocol.connection = V1_transformConnection(
+      element.connection,
+      true,
+      context,
+    );
+  }
+  return protocol;
+};
+
+export const V1_transformObjectStorageSink = (
+  element: ObjectStorageSink,
+  context: V1_GraphTransformerContext,
+): V1_ObjectStorageSink => {
+  const protocol = new V1_ObjectStorageSink();
+  protocol.connection = V1_transformConnection(
+    element.connection,
+    true,
+    context,
+  );
+  protocol.binding = element.binding.value.path;
+  return protocol;
 };
 
 /**********

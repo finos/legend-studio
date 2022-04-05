@@ -1,4 +1,7 @@
 import {
+  Binding,
+  Connection,
+  PackageableElementReference,
   V1_Connection,
   V1_PackageableElement,
   type V1_PackageableElementVisitor,
@@ -82,29 +85,25 @@ export abstract class V1_Persister implements Hashable {
 }
 
 export class V1_StreamingPersister extends V1_Persister implements Hashable {
-  binding?: string;
-  connection?: V1_Connection;
+  sink!: V1_Sink;
 
   override get hashCode(): string {
     return hashArray([
       PERSISTENCE_HASH_STRUCTURE.STREAMING_PERSISTER,
-      this.binding ?? '',
-      this.connection ?? '',
+      this.sink,
     ]);
   }
 }
 
 export class V1_BatchPersister extends V1_Persister implements Hashable {
-  binding?: string;
-  connection?: V1_Connection;
+  sink!: V1_Sink;
   ingestMode!: V1_IngestMode;
   targetShape!: V1_TargetShape;
 
   override get hashCode(): string {
     return hashArray([
       PERSISTENCE_HASH_STRUCTURE.BATCH_PERSISTER,
-      this.binding ?? '',
-      this.connection ?? '',
+      this.sink,
       this.ingestMode,
       this.targetShape,
     ]);
@@ -147,6 +146,40 @@ export class V1_PagerDutyNotifyee extends V1_Notifyee implements Hashable {
     return hashArray([
       PERSISTENCE_HASH_STRUCTURE.PAGER_DUTY_NOTIFYEE,
       this.url,
+    ]);
+  }
+}
+
+/**********
+ * sink
+ **********/
+
+export abstract class V1_Sink implements Hashable {
+  private readonly _$nominalTypeBrand!: 'V1_Sink';
+
+  abstract get hashCode(): string;
+}
+
+export class V1_RelationalSink extends V1_Sink implements Hashable {
+  connection?: V1_Connection;
+
+  override get hashCode(): string {
+    return hashArray([
+      PERSISTENCE_HASH_STRUCTURE.RELATIONAL_SINK,
+      this.connection ?? '',
+    ]);
+  }
+}
+
+export class V1_ObjectStorageSink extends V1_Sink implements Hashable {
+  binding!: string;
+  connection!: V1_Connection;
+
+  override get hashCode(): string {
+    return hashArray([
+      PERSISTENCE_HASH_STRUCTURE.OBJECT_STORAGE_SINK,
+      this.binding,
+      this.connection,
     ]);
   }
 }

@@ -20,6 +20,7 @@ import {
   V1_MaxVersionDeduplicationStrategy,
   V1_MergeStrategy,
   V1_MultiFlatTarget,
+  V1_MultiFlatTargetPart,
   V1_NoAuditing,
   V1_NoDeduplicationStrategy,
   V1_NoDeletesMergeStrategy,
@@ -27,10 +28,12 @@ import {
   V1_NontemporalSnapshot,
   V1_Notifier,
   V1_Notifyee,
+  V1_ObjectStorageSink,
   V1_PagerDutyNotifyee,
   type V1_Persistence,
   V1_Persister,
-  V1_MultiFlatTargetPart,
+  V1_RelationalSink,
+  V1_Sink,
   V1_SourceSpecifiesFromAndThruDateTime,
   V1_SourceSpecifiesFromDateTime,
   V1_StreamingPersister,
@@ -65,6 +68,7 @@ import {
   MaxVersionDeduplicationStrategy,
   MergeStrategy,
   MultiFlatTarget,
+  MultiFlatTargetPart,
   NoAuditing,
   NoDeduplicationStrategy,
   NoDeletesMergeStrategy,
@@ -72,9 +76,11 @@ import {
   NontemporalSnapshot,
   Notifier,
   Notifyee,
+  ObjectStorageSink,
   PagerDutyNotifyee,
   Persister,
-  MultiFlatTargetPart,
+  RelationalSink,
+  Sink,
   SourceSpecifiesFromAndThruDateTime,
   SourceSpecifiesFromDateTime,
   StreamingPersister,
@@ -93,7 +99,6 @@ import {
   Connection,
   GraphBuilderError,
   PackageableElementImplicitReference,
-  PackageableElementReference,
   V1_Connection,
   type V1_GraphBuilderContext,
 } from '@finos/legend-graph';
@@ -152,27 +157,11 @@ export const V1_buildPersister = (
 ): Persister => {
   if (protocol instanceof V1_StreamingPersister) {
     const persister = new StreamingPersister();
-    if (protocol.binding) {
-      persister.binding = context.resolveElement(
-        protocol.binding,
-        false,
-      ) as PackageableElementImplicitReference<Binding>;
-    }
-    if (protocol.connection) {
-      persister.connection = V1_buildConnection(protocol.connection, context);
-    }
+    persister.sink = V1_buildSink(protocol.sink, context);
     return persister;
   } else if (protocol instanceof V1_BatchPersister) {
     const persister = new BatchPersister();
-    if (protocol.binding) {
-      persister.binding = context.resolveElement(
-        protocol.binding,
-        false,
-      ) as PackageableElementImplicitReference<Binding>;
-    }
-    if (protocol.connection) {
-      persister.connection = V1_buildConnection(protocol.connection, context);
-    }
+    persister.sink = V1_buildSink(protocol.sink, context);
     persister.ingestMode = V1_buildIngestMode(protocol.ingestMode, context);
     persister.targetShape = V1_buildTargetShape(protocol.targetShape, context);
     return persister;
@@ -209,6 +198,46 @@ export const V1_buildNotifyee = (
     return notifyee;
   }
   throw new GraphBuilderError(`Unrecognized notifier '${protocol}'`);
+};
+
+/**********
+ * sink
+ **********/
+
+export const V1_buildSink = (
+  protocol: V1_Sink,
+  context: V1_GraphBuilderContext,
+): Sink => {
+  if (protocol instanceof V1_RelationalSink) {
+    return V1_buildRelationalSink(protocol, context);
+  } else if (protocol instanceof V1_ObjectStorageSink) {
+    return V1_buildObjectStorageSink(protocol, context);
+  }
+  throw new GraphBuilderError(`Unrecognized sink '${protocol}'`);
+};
+
+export const V1_buildRelationalSink = (
+  protocol: V1_RelationalSink,
+  context: V1_GraphBuilderContext,
+): RelationalSink => {
+  const sink = new RelationalSink();
+  if (protocol.connection) {
+    sink.connection = V1_buildConnection(protocol.connection, context);
+  }
+  return sink;
+};
+
+export const V1_buildObjectStorageSink = (
+  protocol: V1_ObjectStorageSink,
+  context: V1_GraphBuilderContext,
+): ObjectStorageSink => {
+  const sink = new ObjectStorageSink();
+  sink.connection = V1_buildConnection(protocol.connection, context);
+  sink.binding = context.resolveElement(
+    protocol.binding,
+    false,
+  ) as PackageableElementImplicitReference<Binding>;
+  return sink;
 };
 
 /**********
