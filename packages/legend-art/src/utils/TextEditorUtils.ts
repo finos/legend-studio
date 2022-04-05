@@ -145,7 +145,7 @@ export const resetLineNumberGutterWidth = (
   const currentValue = editor.getValue();
   editor.updateOptions({
     lineNumbersMinChars: Math.max(
-      Math.floor(Math.log10(currentValue.split(/\r\n|\r|\n/g).length)) + 3,
+      Math.floor(Math.log10(currentValue?.split(/\r\n|\r|\n/g).length)) + 3,
       5,
     ),
   });

@@ -23,6 +23,7 @@ export const DropdownMenu: React.FC<{
   menuProps?: Partial<MuiMenuProps> | undefined;
   content?: React.ReactNode | undefined;
   className?: string | undefined;
+  testId?: string | undefined;
   disabled?: boolean | undefined;
   onOpen?: (() => void) | undefined;
   onClose?: (() => void) | undefined;
@@ -30,6 +31,7 @@ export const DropdownMenu: React.FC<{
   const {
     open,
     className,
+    testId,
     children,
     menuProps,
     content,
@@ -70,7 +72,12 @@ export const DropdownMenu: React.FC<{
   }, [anchorEl, open]);
 
   return (
-    <div ref={triggerRef} className={className} onClick={onTriggerClick}>
+    <div
+      data-testid={testId}
+      ref={triggerRef}
+      className={className}
+      onClick={onTriggerClick}
+    >
       {children}
       <BaseMenu
         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}

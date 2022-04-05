@@ -702,7 +702,10 @@ const ProjectExplorerActionPanel = observer((props: { disabled: boolean }) => {
     editorStore.openState(editorStore.modelLoaderState);
 
   return (
-    <div className="panel__header__actions">
+    <div
+      data-testid={LEGEND_STUDIO_TEST_ID.PROJECT_EXPLORER}
+      className="panel__header__actions"
+    >
       {!editorStore.isInViewerMode && (
         <button
           className="panel__header__action"

@@ -26,7 +26,7 @@ import {
 import type { Entity } from '@finos/legend-model-storage';
 import { EntityChangeType } from '@finos/legend-server-sdlc';
 
-const GENERATION_TYPE_NAME = `RELATIONAL_MAPPING_GENERATION`;
+export const GENERATION_TYPE_NAME = `RELATIONAL_MAPPING_GENERATION`;
 
 export class MappingGeneration_LegendStudioPlugin
   extends LegendStudioPlugin

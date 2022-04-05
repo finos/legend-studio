@@ -42,6 +42,7 @@ import {
 import type { MappingGenerationEditorState } from '../stores/MappingGenerationEditorState';
 import { flowResult, runInAction } from 'mobx';
 import { Mapping, createValidationError } from '@finos/legend-graph';
+import { MAPPING_GENERATION_TEST_ID } from './MappingGeneration_TestID';
 
 const StringEditor = observer(
   (props: {
@@ -286,6 +287,8 @@ const MappingSelectorEditor = observer(
     propertyName: string;
     description: string;
     editorStore: EditorStore;
+    testId?: string | undefined;
+    placeholder?: string | undefined;
   }) => {
     const {
       selectedMapping,
@@ -293,6 +296,8 @@ const MappingSelectorEditor = observer(
       propertyName,
       description,
       editorStore,
+      placeholder,
+      testId,
     } = props;
     // mapping
     const isMappingEmpty = selectedMapping?.value.isStub
@@ -330,7 +335,10 @@ const MappingSelectorEditor = observer(
         <div className="panel__content__form__section__header__prompt">
           {description}
         </div>
-        <div className="mapping-generation-editor__configuration__item">
+        <div
+          data-testid={testId}
+          className="mapping-generation-editor__configuration__item"
+        >
           <div className="btn--sm mapping-generation-editor__configuration__item__label">
             <PURE_MappingIcon />
           </div>
@@ -338,9 +346,10 @@ const MappingSelectorEditor = observer(
             className="panel__content__form__section__dropdown mapping-generation-editor__configuration__item__dropdown"
             options={mappingOptions}
             onChange={onMappingSelectionChange}
-            value={selectedMappingOption}
+            value={selectedMapping !== undefined ? selectedMappingOption : null}
             darkMode={true}
             hasError={isMappingEmpty}
+            placeholder={placeholder}
           />
         </div>
       </div>
@@ -369,7 +378,10 @@ export const MappingGenerationEditor = observer(
           className="panel__content element-generation-editor__content"
           style={{ height: '100%' }}
         >
-          <div className="mapping-generation-editor">
+          <div
+            data-testid={MAPPING_GENERATION_TEST_ID.MAPPING_GENERATION_EDITOR}
+            className="mapping-generation-editor"
+          >
             <ResizablePanelGroup orientation="vertical">
               <ResizablePanel minSize={50} size={300}>
                 <div className="mapping-generation-editor">
@@ -383,6 +395,8 @@ export const MappingGenerationEditor = observer(
                     </div>
                     <div className="mapping-generation-editor__configuration__content">
                       <MappingSelectorEditor
+                        testId={MAPPING_GENERATION_TEST_ID.MAPPING_TO_GENERATE}
+                        placeholder={'Choose mapping to regenerate'}
                         description={
                           'Pick a mapping with XStore ' +
                           'between Pure and Relational class mapping that will be ' +
@@ -402,6 +416,8 @@ export const MappingGenerationEditor = observer(
                         editorStore={mappingGenerationEditorState.editorStore}
                       />
                       <MappingSelectorEditor
+                        testId={MAPPING_GENERATION_TEST_ID.SOURCE_MAPPING}
+                        placeholder={'Choose source mapping'}
                         propertyName={'Source Mapping'}
                         description={
                           'Pick a relational mapping' +
@@ -498,7 +514,12 @@ export const MappingGenerationEditor = observer(
                       </button>
                     </div>
                   </div>
-                  <div className="panel__content">
+                  <div
+                    data-testid={
+                      MAPPING_GENERATION_TEST_ID.MAPPING_GENERATION_VIEW_RESULTS
+                    }
+                    className="panel__content"
+                  >
                     <PanelLoadingIndicator isLoading={isGenerating} />
                     <StudioTextInputEditor
                       language={EDITOR_LANGUAGE.PURE}

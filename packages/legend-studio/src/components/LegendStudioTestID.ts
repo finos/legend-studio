@@ -29,6 +29,7 @@ export enum LEGEND_STUDIO_TEST_ID {
 
   SIDEBAR_PANEL_HEADER__CHANGES_COUNT = 'side-bar__panel__header__changes-count',
   ELEMENT_EXPLORER = 'element-explorer',
+  PROJECT_EXPLORER = 'project-explorer',
   EXPLORER_TREES = 'explorer-trees',
   EXPLORER_CONTEXT_MENU = 'explorer__context-menu',
 
@@ -40,6 +41,9 @@ export enum LEGEND_STUDIO_TEST_ID {
   EDIT_PANEL__HEADER_TABS = 'edit-panel__header-tabs',
   EDIT_PANEL__ELEMENT_VIEW__OPTIONS = 'edit-panel__element-view__options',
   EDITOR__TABS__HEADER = 'editor__tabs__header',
+
+  MODEL_LOADER = 'model-loader',
+  MODEL_LOADER_CONFIG_TYPES = 'model-loader_header_configs_types',
 
   CLASS_FORM_EDITOR = 'class-form-editor',
   ENUMERATION_EDITOR = 'enumeration-editor',

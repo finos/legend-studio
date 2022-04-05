@@ -40,6 +40,7 @@ import {
 } from '@finos/legend-application';
 import { StudioTextInputEditor } from '../../shared/StudioTextInputEditor';
 import type { ModelLoaderExtensionConfiguration } from '../../../stores/LegendStudioPlugin';
+import { LEGEND_STUDIO_TEST_ID } from '../../LegendStudioTestID';
 
 export const ModelLoader = observer(() => {
   const editorStore = useEditorStore();
@@ -115,10 +116,14 @@ export const ModelLoader = observer(() => {
   const updateModel = (val: string): void => modelLoaderState.setModelText(val);
 
   return (
-    <div className="panel model-loader">
+    <div
+      className="panel model-loader"
+      data-testid={LEGEND_STUDIO_TEST_ID.MODEL_LOADER}
+    >
       <div className="panel__header model-loader__header">
         <div className="model-loader__header__configs">
           <DropdownMenu
+            testId={LEGEND_STUDIO_TEST_ID.MODEL_LOADER_CONFIG_TYPES}
             className="edit-panel__element-view"
             content={
               <MenuContent className="model-loader__header__configs__types">

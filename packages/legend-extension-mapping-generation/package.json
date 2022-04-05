@@ -42,15 +42,18 @@
     "@finos/legend-art": "workspace:*",
     "@finos/legend-graph": "workspace:*",
     "@finos/legend-model-storage": "workspace:*",
+    "@finos/legend-server-sdlc": "workspace:*",
     "@finos/legend-shared": "workspace:*",
     "@finos/legend-studio": "workspace:*",
     "mobx": "6.5.0",
     "mobx-react-lite": "3.3.0",
     "react": "17.0.2",
+    "react-dom": "17.0.2",
     "serializr": "2.0.5"
   },
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",
+    "@testing-library/react": "12.1.4",
     "cross-env": "7.0.3",
     "eslint": "8.12.0",
     "jest": "27.5.1",
