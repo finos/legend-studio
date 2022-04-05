@@ -15,7 +15,6 @@
  */
 
 import { unitTest } from '@finos/legend-shared';
-import { flowResult } from 'mobx';
 import { TEST__getTestGraphManagerState } from '../../GraphManagerTestUtils';
 import { DependencyManager } from '../../graph/DependencyManager';
 import type { Entity } from '@finos/legend-model-storage';
@@ -94,7 +93,7 @@ test(
     const secondDependencyKey = 'dep2';
     const graphManagerState = TEST__getTestGraphManagerState();
 
-    await flowResult(graphManagerState.initializeSystem());
+    await graphManagerState.initializeSystem();
     const dependencyManager = new DependencyManager([]);
     const dependencyEntitiesMap = new Map<string, Entity[]>();
     dependencyEntitiesMap.set(firstDependencyKey, firstDependencyEntities);
@@ -138,7 +137,7 @@ test(
   async () => {
     const graphManagerState = TEST__getTestGraphManagerState();
 
-    await flowResult(graphManagerState.initializeSystem());
+    await graphManagerState.initializeSystem();
     const dependencyManager = new DependencyManager([]);
     const dependencyEntitiesMap = new Map<string, Entity[]>();
     dependencyEntitiesMap.set('dep', firstDependencyEntities);

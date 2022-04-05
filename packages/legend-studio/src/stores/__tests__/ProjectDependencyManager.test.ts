@@ -227,7 +227,7 @@ const testDependencyElements = async (
       )
       .mockResolvedValue(projectsData);
   }
-  await flowResult(editorStore.graphManagerState.initializeSystem());
+  await editorStore.graphManagerState.initializeSystem();
   const dependencyManager = new DependencyManager([]);
   const dependencyEntitiesMap = await flowResult(
     editorStore.graphState.getConfigurationProjectDependencyEntities(),

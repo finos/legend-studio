@@ -34,7 +34,6 @@ import {
 import { LegendQueryPluginManager } from '../../application/LegendQueryPluginManager';
 import { Query_GraphPreset } from '../../models/Query_GraphPreset';
 import { TEST__provideMockedLegendQueryStore } from '../../components/QueryComponentTestUtils';
-import { flowResult } from 'mobx';
 import {
   TEST_DATA__Auto_M2M,
   TEST_DATA__Relational_Inline,
@@ -214,7 +213,7 @@ describe(integrationTest('Build property mapping data'), () => {
     });
     const graphManagerState =
       mockedQueryStore.queryBuilderState.graphManagerState;
-    await flowResult(graphManagerState.initializeSystem());
+    await graphManagerState.initializeSystem();
     await graphManagerState.graphManager.buildGraph(
       graphManagerState.graph,
       entities,

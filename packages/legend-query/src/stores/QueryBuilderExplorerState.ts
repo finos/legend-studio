@@ -295,7 +295,7 @@ export const getPropertyNodeMappingData = (
   // For now, derived properties will be considered mapped if its parent class is mapped.
   // NOTE: we don't want to do complex analytics such as to drill down into the body
   // of the derived properties to see if each properties being used are mapped to determine
-  // if the dervied property itself is considered mapped.
+  // if the derived property itself is considered mapped.
   if (property instanceof DerivedProperty) {
     return {
       mapped: parentMappingData.mapped,

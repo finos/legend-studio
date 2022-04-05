@@ -124,7 +124,7 @@ test(unitTest('Apply entity changes'), async () => {
 
 test(unitTest('Load entity changes'), async () => {
   const editorStore = TEST__getTestEditorStore();
-  await flowResult(editorStore.graphManagerState.initializeSystem());
+  await editorStore.graphManagerState.initializeSystem();
   await editorStore.graphManagerState.graphManager.buildGraph(
     editorStore.graphManagerState.graph,
     entities,

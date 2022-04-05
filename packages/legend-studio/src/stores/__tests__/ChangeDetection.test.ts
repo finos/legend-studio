@@ -46,7 +46,7 @@ const entities = [
 test(unitTest('Change detection works properly'), async () => {
   const editorStore = TEST__getTestEditorStore();
 
-  await flowResult(editorStore.graphManagerState.initializeSystem());
+  await editorStore.graphManagerState.initializeSystem();
   await editorStore.graphManagerState.graphManager.buildGraph(
     editorStore.graphManagerState.graph,
     entities,

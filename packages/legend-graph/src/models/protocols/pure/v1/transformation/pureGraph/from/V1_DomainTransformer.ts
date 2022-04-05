@@ -166,7 +166,7 @@ const transformProperty = (element: Property): V1_Property => {
   return property;
 };
 
-const transformDerviedProperty = (
+const transformDerivedProperty = (
   element: DerivedProperty,
   context: V1_GraphTransformerContext,
 ): V1_DerivedProperty => {
@@ -202,7 +202,7 @@ export const V1_transformClass = (
     (e) => e.ownerReference.valueForSerialization ?? '',
   );
   _class.derivedProperties = element.derivedProperties.map((dp) =>
-    transformDerviedProperty(dp, context),
+    transformDerivedProperty(dp, context),
   );
   return _class;
 };
@@ -215,7 +215,7 @@ export const V1_transformAssociation = (
   V1_initPackageableElement(association, element);
   association.properties = element.properties.map(transformProperty);
   association.derivedProperties = element.derivedProperties.map((dp) =>
-    transformDerviedProperty(dp, context),
+    transformDerivedProperty(dp, context),
   );
   association.stereotypes = element.stereotypes.map(V1_transformStereotype);
   association.taggedValues = element.taggedValues.map(V1_transformTaggedValue);

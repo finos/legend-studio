@@ -659,7 +659,7 @@ export class LegendTaxonomyStore {
         },
       );
 
-      yield flowResult(this.graphManagerState.initializeSystem());
+      yield this.graphManagerState.initializeSystem();
 
       // NOTE: here we build the full tree, which might be expensive when we have a big
       // tree in the future, we might have to come up with a better algorithm then
@@ -732,7 +732,7 @@ export class LegendTaxonomyStore {
         },
       );
 
-      yield flowResult(this.graphManagerState.initializeSystem());
+      yield this.graphManagerState.initializeSystem();
 
       // reset
       this.graphManagerState.resetGraph();

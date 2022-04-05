@@ -21,7 +21,6 @@ import {
   TEST_DATA__ReferenceWithoutSection,
   TEST_DATA__ReferenceModification,
 } from './TEST_DATA__Inference';
-import { flowResult } from 'mobx';
 import type { Entity } from '@finos/legend-model-storage';
 import {
   TEST__buildGraphWithEntities,
@@ -50,7 +49,7 @@ test(
   unitTest('Import resolution throws when multiple matches found'),
   async () => {
     const graphManagerState = TEST__getTestGraphManagerState();
-    await flowResult(graphManagerState.initializeSystem());
+    await graphManagerState.initializeSystem();
     await expect(() =>
       graphManagerState.graphManager.buildGraph(
         graphManagerState.graph,

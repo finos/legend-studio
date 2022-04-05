@@ -705,7 +705,7 @@ export class LegendQueryStore {
         },
       );
 
-      yield flowResult(this.graphManagerState.initializeSystem());
+      yield this.graphManagerState.initializeSystem();
 
       this.initState.pass();
     } catch (error) {

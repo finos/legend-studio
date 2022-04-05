@@ -22,7 +22,7 @@ import {
   ActionState,
   assertErrorThrown,
 } from '@finos/legend-shared';
-import { action, flow, makeObservable, observable } from 'mobx';
+import { action, makeObservable, observable } from 'mobx';
 import { DependencyManager } from './graph/DependencyManager';
 import {
   CoreModel,
@@ -65,7 +65,6 @@ export class GraphManagerState {
     makeObservable(this, {
       graph: observable,
       resetGraph: action,
-      initializeSystem: flow,
     });
 
     this.pluginManager = pluginManager;
@@ -85,13 +84,13 @@ export class GraphManagerState {
    * Right now the essential profiles have been extracted from Pure to load the minimum system models.
    * We might add more system entities as needed until the system model project(s) are setup.
    */
-  *initializeSystem(options?: GraphBuilderOptions): GeneratorFn<void> {
+  async initializeSystem(options?: GraphBuilderOptions): Promise<void> {
     if (!this.initSystemState.isInInitialState) {
       return;
     }
     try {
       this.initSystemState.inProgress();
-      yield this.graphManager.buildSystem(
+      await this.graphManager.buildSystem(
         this.coreModel,
         this.systemModel,
         options,

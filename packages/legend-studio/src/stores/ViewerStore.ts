@@ -159,7 +159,7 @@ export class ViewerStore {
     );
 
     // initialize graph manager
-    yield flowResult(this.editorStore.graphManagerState.initializeSystem());
+    yield this.editorStore.graphManagerState.initializeSystem();
   }
 
   /**
