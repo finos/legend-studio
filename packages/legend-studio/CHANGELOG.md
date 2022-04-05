@@ -1,5 +1,11 @@
 # @finos/legend-studio
 
+## 5.1.3
+
+### Patch Changes
+
+- [#1030](https://github.com/finos/legend-studio/pull/1030) [`36a575ee`](https://github.com/finos/legend-studio/commit/36a575ee93f170178771937878e64d0edda8691a) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix model loader not be able to select import config type.
+
 ## 5.1.2
 
 ## 5.1.1
