@@ -20,6 +20,7 @@ import {
   V1_MaxVersionDeduplicationStrategy,
   V1_MergeStrategy,
   V1_MultiFlatTarget,
+  V1_MultiFlatTargetPart,
   V1_NoAuditing,
   V1_NoDeduplicationStrategy,
   V1_NoDeletesMergeStrategy,
@@ -27,10 +28,12 @@ import {
   V1_NontemporalSnapshot,
   V1_Notifier,
   V1_Notifyee,
+  V1_ObjectStorageSink,
   V1_PagerDutyNotifyee,
   V1_Persistence,
   V1_Persister,
-  V1_MultiFlatTargetPart,
+  V1_RelationalSink,
+  V1_Sink,
   V1_SourceSpecifiesFromAndThruDateTime,
   V1_SourceSpecifiesFromDateTime,
   V1_StreamingPersister,
@@ -41,9 +44,6 @@ import {
   V1_UnitemporalSnapshot,
   V1_ValidityDerivation,
   V1_ValidityMilestoning,
-  V1_ObjectStorageSink,
-  V1_RelationalSink,
-  V1_Sink,
 } from '../../model/packageableElements/persistence/V1_Persistence';
 import type { PureProtocolProcessorPlugin } from '@finos/legend-graph';
 import {
@@ -156,10 +156,9 @@ const V1_streamingPersisterModelSchema = (
 ): ModelSchema<V1_StreamingPersister> =>
   createModelSchema(V1_StreamingPersister, {
     _type: usingConstantValueSchema(V1_PersisterType.STREAMING_PERSISTER),
-    binding: optional(primitive()),
-    connection: custom(
-      (val) => (val ? V1_serializeConnectionValue(val, true, plugins) : SKIP),
-      (val) => V1_deserializeConnectionValue(val, true, plugins),
+    sink: custom(
+      (val) => V1_serializeSink(val, plugins),
+      (val) => V1_deserializeSink(val, plugins),
     ),
   });
 
@@ -168,14 +167,13 @@ const V1_batchPersisterModelSchema = (
 ): ModelSchema<V1_BatchPersister> =>
   createModelSchema(V1_BatchPersister, {
     _type: usingConstantValueSchema(V1_PersisterType.BATCH_PERSISTER),
-    binding: optional(primitive()),
-    connection: custom(
-      (val) => (val ? V1_serializeConnectionValue(val, true, plugins) : SKIP),
-      (val) => V1_deserializeConnectionValue(val, true, plugins),
-    ),
     ingestMode: custom(
       (val) => V1_serializeIngestMode(val),
       (val) => V1_deserializeIngestMode(val),
+    ),
+    sink: custom(
+      (val) => V1_serializeSink(val, plugins),
+      (val) => V1_deserializeSink(val, plugins),
     ),
     targetShape: custom(
       (val) => V1_serializeTargetShape(val),

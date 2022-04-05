@@ -212,12 +212,6 @@ export const TEST_DATA__roundtrip = [
       package: 'org::dxl',
       persister: {
         _type: 'batchPersister',
-        binding: 'org::dxl::ZooBinding',
-        connection: {
-          _type: 'JsonModelConnection',
-          class: 'org::dxl::Animal',
-          url: 'file:///foo',
-        },
         ingestMode: {
           _type: 'bitemporalSnapshot',
           transactionMilestoning: {
@@ -236,6 +230,15 @@ export const TEST_DATA__roundtrip = [
               sourceDateTimeFromField: 'effectiveFrom',
               sourceDateTimeThruField: 'effectiveThru',
             },
+          },
+        },
+        sink: {
+          _type: 'objectStorageSink',
+          binding: 'org::dxl::ZooBinding',
+          connection: {
+            _type: 'JsonModelConnection',
+            class: 'org::dxl::Animal',
+            url: 'file:///foo',
           },
         },
         targetShape: {
