@@ -82,7 +82,7 @@ class PackageableElementObserver implements PackageableElementVisitor<void> {
   }
 
   visit_Package(element: Package): void {
-    observe_Package(element);
+    observe_Package(element, this.observerContext);
   }
 
   visit_SectionIndex(element: SectionIndex): void {

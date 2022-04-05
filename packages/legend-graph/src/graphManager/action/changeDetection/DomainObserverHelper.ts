@@ -30,7 +30,7 @@ import {
   Measure,
   Unit,
 } from '../../../models/metamodels/pure/packageableElements/domain/Measure';
-import type { Package } from '../../../models/metamodels/pure/packageableElements/domain/Package';
+import { Package } from '../../../models/metamodels/pure/packageableElements/domain/Package';
 import type { Profile } from '../../../models/metamodels/pure/packageableElements/domain/Profile';
 import type { Property } from '../../../models/metamodels/pure/packageableElements/domain/Property';
 import type { PropertyReference } from '../../../models/metamodels/pure/packageableElements/domain/PropertyReference';
@@ -51,22 +51,34 @@ import {
   observe_Abstract_PackageableElement,
   observe_PackageableElementReference,
   skipObserved,
+  skipObservedWithContext,
 } from './CoreObserverHelper';
+import { observe_PackageabElement } from './PackageableElementObserver';
 import {
   observe_RawLambda,
   observe_RawVariableExpression,
 } from './RawValueSpecificationObserver';
 
-export const observe_Package = skipObserved((metamodel: Package): Package => {
-  observe_Abstract_PackageableElement(metamodel);
+export const observe_Package = skipObservedWithContext(
+  (metamodel: Package, context): Package => {
+    observe_Abstract_PackageableElement(metamodel);
 
-  makeObservable(metamodel, {
-    children: observable,
-    hashCode: override,
-  });
+    makeObservable(metamodel, {
+      children: observable,
+      hashCode: override,
+    });
 
-  return metamodel;
-});
+    metamodel.children.forEach((child) => {
+      if (child instanceof Package) {
+        observe_Package(child, context);
+      } else {
+        observe_PackageabElement(child, context);
+      }
+    });
+
+    return metamodel;
+  },
+);
 
 export const observe_StereotypeReference = skipObserved(
   (metamodel: StereotypeReference): StereotypeReference => {
