@@ -15,7 +15,6 @@
  */
 
 import { unitTest } from '@finos/legend-shared';
-import { flowResult } from 'mobx';
 import type { Entity } from '@finos/legend-model-storage';
 import { DSLDiagram_GraphPreset } from '../../DSLDiagram_Extension';
 import {
@@ -81,13 +80,10 @@ test(unitTest('Missing class in diagram class view'), async () => {
   pluginManager.usePresets([new DSLDiagram_GraphPreset()]).install();
   const graphManagerState = TEST__getTestGraphManagerState(pluginManager);
 
-  const buildGraph = flowResult(
+  await expect(() =>
     graphManagerState.graphManager.buildGraph(
       graphManagerState.graph,
       TEST_DATA__MissingClassInDiagram as Entity[],
     ),
-  );
-  await expect(buildGraph).rejects.toThrowError(
-    `Can't find type 'ui::test1::NotFound'`,
-  );
+  ).rejects.toThrowError(`Can't find type 'ui::test1::NotFound'`);
 });

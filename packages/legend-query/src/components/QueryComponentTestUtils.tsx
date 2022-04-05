@@ -115,11 +115,9 @@ export const TEST__setUpQueryEditor = async (
   lightQuery.isCurrentUserQuery = true;
 
   await flowResult(mockedQueryStore.graphManagerState.initializeSystem());
-  await flowResult(
-    mockedQueryStore.graphManagerState.graphManager.buildGraph(
-      mockedQueryStore.graphManagerState.graph,
-      entities,
-    ),
+  await mockedQueryStore.graphManagerState.graphManager.buildGraph(
+    mockedQueryStore.graphManagerState.graph,
+    entities,
   );
 
   const query = new Query();

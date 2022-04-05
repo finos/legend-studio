@@ -26,7 +26,7 @@ import {
   _relationView_setPath,
 } from '../../models/metamodels/pure/packageableElements/diagram/DSLDiagram_GraphModifierHelper';
 import type { PropertyView } from '../../models/metamodels/pure/packageableElements/diagram/DSLDiagram_PropertyView';
-import type { RelationShipEdgeView } from '../../models/metamodels/pure/packageableElements/diagram/DSLDiagram_RelationshipEdgeView';
+import type { RelationshipEdgeView } from '../../models/metamodels/pure/packageableElements/diagram/DSLDiagram_RelationshipEdgeView';
 import type { RelationshipView } from '../../models/metamodels/pure/packageableElements/diagram/DSLDiagram_RelationshipView';
 import type { Point } from '../../models/metamodels/pure/packageableElements/diagram/geometry/DSLDiagram_Point';
 import type { PositionedRectangle } from '../../models/metamodels/pure/packageableElements/diagram/geometry/DSLDiagram_PositionedRectangle';
@@ -103,13 +103,13 @@ export const classView_setHideTaggedValues = action(
     cv.hideTaggedValues = val;
   },
 );
-export const relationShipEdgeView_setOffsetX = action(
-  (r: RelationShipEdgeView, val: number): void => {
+export const relationshipEdgeView_setOffsetX = action(
+  (r: RelationshipEdgeView, val: number): void => {
     r.offsetX = val;
   },
 );
-export const relationShipEdgeView_setOffsetY = action(
-  (r: RelationShipEdgeView, val: number): void => {
+export const relationshipEdgeView_setOffsetY = action(
+  (r: RelationshipEdgeView, val: number): void => {
     r.offsetY = val;
   },
 );

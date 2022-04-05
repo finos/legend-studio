@@ -70,16 +70,11 @@ export abstract class PackageableElement implements Hashable, Stubable {
   uuid = uuid();
   protected _isDeleted = false;
   protected _isDisposed = false;
-  protected _isImmutable = false;
   name: string;
   package?: Package | undefined;
 
   constructor(name: string) {
     this.name = name;
-  }
-
-  get isReadOnly(): boolean {
-    return this._isImmutable;
   }
 
   get isDeleted(): boolean {
@@ -128,17 +123,6 @@ export abstract class PackageableElement implements Hashable, Stubable {
     }
   }
 
-  freeze(): void {
-    this._isImmutable = true;
-    // Since hash code computation depends on this flag, we retrigger and wrap in a try catch to prevent future call
-    // to get `hashCode`, as this would indicate mutation
-    try {
-      this.hashCode;
-    } catch {
-      /* do nothing */
-    }
-  }
-
   protected get _elementHashCode(): string {
     return hashArray([CORE_HASH_STRUCTURE.PACKAGEABLE_ELEMENT, this.path]);
   }
@@ -147,22 +131,7 @@ export abstract class PackageableElement implements Hashable, Stubable {
     if (this._isDisposed) {
       throw new IllegalStateError(`Element '${this.path}' is already disposed`);
     }
-    // If this computation is placed after checking for immutability flag,
-    // error will be thrown and therefore, `mobx` will not recompute this at all.
-    // By putting this here, we make sure that even when the element is frozen,
-    // if somehow the element modified, computation of the hash code will be triggered.
-    // As a result, error will be thrown again. This is a good way to notify developer
-    // that the object has been modified, this is a better alternative to than using
-    // `Object.freeze`, which requires a more complicated setup.
-    // Also, using `Object.freeze` does not really solve the problem
-    // See https://github.com/mobxjs/mobx/issues/3008
-    const hashCode = this._elementHashCode;
-    if (this._isImmutable) {
-      throw new IllegalStateError(
-        `Readonly element '${this.path}' is modified`,
-      );
-    }
-    return hashCode;
+    return this._elementHashCode;
   }
 
   abstract accept_PackageableElementVisitor<T>(

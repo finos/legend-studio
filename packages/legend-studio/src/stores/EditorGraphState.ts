@@ -220,21 +220,20 @@ export class EditorGraphState {
       stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED);
 
       // build dependencies
-      const dependency_buildReport = (yield flowResult(
-        this.editorStore.graphManagerState.graphManager.buildDependencies(
+      const dependency_buildReport =
+        (yield this.editorStore.graphManagerState.graphManager.buildDependencies(
           this.editorStore.graphManagerState.coreModel,
           this.editorStore.graphManagerState.systemModel,
           dependencyManager,
           dependencyEntitiesMap,
-        ),
-      )) as GraphBuilderReport;
+        )) as GraphBuilderReport;
       dependency_buildReport.timings[
         GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED
       ] = stopWatch.getRecord(GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED);
 
       // build graph
-      const graph_buildReport = (yield flowResult(
-        this.editorStore.graphManagerState.graphManager.buildGraph(
+      const graph_buildReport =
+        (yield this.editorStore.graphManagerState.graphManager.buildGraph(
           this.editorStore.graphManagerState.graph,
           entities,
           {
@@ -245,16 +244,14 @@ export class EditorGraphState {
               this.editorStore.applicationStore.config.options
                 .TEMPORARY__disableRawLambdaResolver,
           },
-        ),
-      )) as GraphBuilderReport;
+        )) as GraphBuilderReport;
 
       // build generations
-      const generation_buildReport = (yield flowResult(
-        this.editorStore.graphManagerState.graphManager.buildGenerations(
+      const generation_buildReport =
+        (yield this.editorStore.graphManagerState.graphManager.buildGenerations(
           this.editorStore.graphManagerState.graph,
           this.graphGenerationState.generatedEntities,
-        ),
-      )) as GraphBuilderReport;
+        )) as GraphBuilderReport;
 
       // report
       stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_INITIALIZED);
@@ -793,15 +790,13 @@ export class EditorGraphState {
         const dependencyManager =
           this.editorStore.graphManagerState.createEmptyDependencyManager();
         newGraph.setDependencyManager(dependencyManager);
-        yield flowResult(
-          this.editorStore.graphManagerState.graphManager.buildDependencies(
-            this.editorStore.graphManagerState.coreModel,
-            this.editorStore.graphManagerState.systemModel,
-            dependencyManager,
-            (yield flowResult(
-              this.getConfigurationProjectDependencyEntities(),
-            )) as Map<string, Entity[]>,
-          ),
+        yield this.editorStore.graphManagerState.graphManager.buildDependencies(
+          this.editorStore.graphManagerState.coreModel,
+          this.editorStore.graphManagerState.systemModel,
+          dependencyManager,
+          (yield flowResult(
+            this.getConfigurationProjectDependencyEntities(),
+          )) as Map<string, Entity[]>,
         );
       }
 
@@ -825,27 +820,23 @@ export class EditorGraphState {
       this.editorStore.changeDetectionState.stop(); // stop change detection before disposing hash
       yield flowResult(this.editorStore.graphManagerState.graph.dispose());
 
-      yield flowResult(
-        this.editorStore.graphManagerState.graphManager.buildGraph(
-          newGraph,
-          entities,
-          {
-            TEMPORARY__keepSectionIndex:
-              this.editorStore.applicationStore.config.options
-                .EXPERIMENTAL__enableFullGrammarImportSupport,
-            TEMPORARY__disableRawLambdaResolver:
-              this.editorStore.applicationStore.config.options
-                .TEMPORARY__disableRawLambdaResolver,
-          },
-        ),
+      yield this.editorStore.graphManagerState.graphManager.buildGraph(
+        newGraph,
+        entities,
+        {
+          TEMPORARY__keepSectionIndex:
+            this.editorStore.applicationStore.config.options
+              .EXPERIMENTAL__enableFullGrammarImportSupport,
+          TEMPORARY__disableRawLambdaResolver:
+            this.editorStore.applicationStore.config.options
+              .TEMPORARY__disableRawLambdaResolver,
+        },
       );
 
       // NOTE: build model generation entities every-time we rebuild the graph - should we do this?
-      yield flowResult(
-        this.editorStore.graphManagerState.graphManager.buildGenerations(
-          newGraph,
-          this.graphGenerationState.generatedEntities,
-        ),
+      yield this.editorStore.graphManagerState.graphManager.buildGenerations(
+        newGraph,
+        this.graphGenerationState.generatedEntities,
       );
       this.editorStore.graphManagerState.graph = newGraph;
       /* @MARKER: MEMORY-SENSITIVE */
@@ -950,11 +941,9 @@ export class EditorGraphState {
       // we reset the generation model
       this.editorStore.graphManagerState.graph.generationModel =
         this.editorStore.graphManagerState.createEmptyGenerationModel();
-      yield flowResult(
-        this.editorStore.graphManagerState.graphManager.buildGenerations(
-          this.editorStore.graphManagerState.graph,
-          this.graphGenerationState.generatedEntities,
-        ),
+      yield this.editorStore.graphManagerState.graphManager.buildGenerations(
+        this.editorStore.graphManagerState.graph,
+        this.graphGenerationState.generatedEntities,
       );
 
       /* @MARKER: MEMORY-SENSITIVE */

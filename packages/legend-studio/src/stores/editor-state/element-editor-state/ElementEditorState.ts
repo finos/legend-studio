@@ -61,7 +61,9 @@ export abstract class ElementEditorState extends EditorState {
     });
 
     this.element = element;
-    this.isReadOnly = element.isReadOnly || editorStore.isInViewerMode;
+    this.isReadOnly =
+      editorStore.graphManagerState.isElementReadOnly(element) ||
+      editorStore.isInViewerMode;
   }
 
   get headerName(): string {

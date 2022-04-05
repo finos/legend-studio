@@ -1101,7 +1101,10 @@ export class EditorStore {
   }
 
   *deleteElement(element: PackageableElement): GeneratorFn<void> {
-    if (this.graphState.checkIfApplicationUpdateOperationIsRunning()) {
+    if (
+      this.graphState.checkIfApplicationUpdateOperationIsRunning() ||
+      this.graphManagerState.isElementReadOnly(element)
+    ) {
       return;
     }
     const generatedChildrenElements = (
@@ -1160,7 +1163,7 @@ export class EditorStore {
     element: PackageableElement,
     newPath: string,
   ): GeneratorFn<void> {
-    if (element.isReadOnly) {
+    if (this.graphManagerState.isElementReadOnly(element)) {
       return;
     }
     this.graphManagerState.graph.renameOwnElement(element, newPath);

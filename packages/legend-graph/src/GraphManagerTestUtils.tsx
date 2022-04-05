@@ -172,12 +172,10 @@ export const TEST__buildGraphWithEntities = async (
   options?: GraphBuilderOptions,
 ): Promise<void> => {
   await flowResult(graphManagerState.initializeSystem(options));
-  await flowResult(
-    graphManagerState.graphManager.buildGraph(
-      graphManagerState.graph,
-      entities,
-      options,
-    ),
+  await graphManagerState.graphManager.buildGraph(
+    graphManagerState.graph,
+    entities,
+    options,
   );
 };
 
@@ -240,11 +238,9 @@ export const TEST__checkBuildingResolvedElements = async (
 ): Promise<void> => {
   const graphManagerState = TEST__getTestGraphManagerState();
   await flowResult(graphManagerState.initializeSystem());
-  await flowResult(
-    graphManagerState.graphManager.buildGraph(
-      graphManagerState.graph,
-      entities,
-    ),
+  await graphManagerState.graphManager.buildGraph(
+    graphManagerState.graph,
+    entities,
   );
   const transformedEntities = graphManagerState.graph.allOwnElements.map(
     (element) => graphManagerState.graphManager.elementToEntity(element),

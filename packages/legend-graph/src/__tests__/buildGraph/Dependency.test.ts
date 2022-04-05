@@ -100,23 +100,19 @@ test(
     dependencyEntitiesMap.set(firstDependencyKey, firstDependencyEntities);
     dependencyEntitiesMap.set(secondDependencyKey, secondDependencyEntities);
     graphManagerState.graph.setDependencyManager(dependencyManager);
-    await flowResult(
-      graphManagerState.graphManager.buildDependencies(
-        graphManagerState.coreModel,
-        graphManagerState.systemModel,
-        dependencyManager,
-        dependencyEntitiesMap,
-      ),
+    await graphManagerState.graphManager.buildDependencies(
+      graphManagerState.coreModel,
+      graphManagerState.systemModel,
+      dependencyManager,
+      dependencyEntitiesMap,
     );
     expect(
       graphManagerState.graph.dependencyManager.buildState.hasSucceeded,
     ).toBe(true);
 
-    await flowResult(
-      graphManagerState.graphManager.buildGraph(
-        graphManagerState.graph,
-        entities,
-      ),
+    await graphManagerState.graphManager.buildGraph(
+      graphManagerState.graph,
+      entities,
     );
     expect(graphManagerState.graph.buildState.hasSucceeded).toBe(true);
     Array.from(dependencyEntitiesMap.keys()).forEach((k) =>
@@ -147,27 +143,21 @@ test(
     const dependencyEntitiesMap = new Map<string, Entity[]>();
     dependencyEntitiesMap.set('dep', firstDependencyEntities);
     graphManagerState.graph.setDependencyManager(dependencyManager);
-    await flowResult(
-      graphManagerState.graphManager.buildDependencies(
-        graphManagerState.coreModel,
-        graphManagerState.systemModel,
-        dependencyManager,
-        dependencyEntitiesMap,
-      ),
+    await graphManagerState.graphManager.buildDependencies(
+      graphManagerState.coreModel,
+      graphManagerState.systemModel,
+      dependencyManager,
+      dependencyEntitiesMap,
     );
     expect(
       graphManagerState.graph.dependencyManager.buildState.hasSucceeded,
     ).toBe(true);
 
-    const buildGraphPromise = flowResult(
+    await expect(() =>
       graphManagerState.graphManager.buildGraph(
         graphManagerState.graph,
         firstDependencyEntities,
       ),
-    );
-
-    await expect(buildGraphPromise).rejects.toThrowError(
-      `Element 'model::ClassB' already exists`,
-    );
+    ).rejects.toThrowError(`Element 'model::ClassB' already exists`);
   },
 );

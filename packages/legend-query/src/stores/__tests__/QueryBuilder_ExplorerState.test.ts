@@ -215,11 +215,9 @@ describe(integrationTest('Build property mapping data'), () => {
     const graphManagerState =
       mockedQueryStore.queryBuilderState.graphManagerState;
     await flowResult(graphManagerState.initializeSystem());
-    await flowResult(
-      graphManagerState.graphManager.buildGraph(
-        graphManagerState.graph,
-        entities,
-      ),
+    await graphManagerState.graphManager.buildGraph(
+      graphManagerState.graph,
+      entities,
     );
     const _mapping = graphManagerState.graph.getMapping(mapping);
     const _class = graphManagerState.graph.getClass(rootClass);

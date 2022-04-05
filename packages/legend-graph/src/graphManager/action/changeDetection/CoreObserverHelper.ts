@@ -55,14 +55,12 @@ export const observe_Abstract_PackageableElement = (
 ): void => {
   makeObservable<
     PackageableElement,
-    '_isDeleted' | '_isDisposed' | '_isImmutable' | '_elementHashCode'
+    '_isDeleted' | '_isDisposed' | '_elementHashCode'
   >(metamodel, {
     _isDeleted: observable,
     _isDisposed: observable, // TO BE REMOVED
-    _isImmutable: observable, // TO BE REMOVED
     name: observable,
     package: observable,
-    isReadOnly: computed, // TO BE REMOVED
     isDeleted: computed,
     path: computed,
     _elementHashCode: computed,
@@ -70,7 +68,6 @@ export const observe_Abstract_PackageableElement = (
     hashCode: computed({ keepAlive: true }),
     setIsDeleted: action,
     dispose: action, // TO BE REMOVED
-    freeze: action, // TO BE REMOVED
   });
 };
 

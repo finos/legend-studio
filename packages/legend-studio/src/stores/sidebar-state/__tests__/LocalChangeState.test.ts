@@ -125,11 +125,9 @@ test(unitTest('Apply entity changes'), async () => {
 test(unitTest('Load entity changes'), async () => {
   const editorStore = TEST__getTestEditorStore();
   await flowResult(editorStore.graphManagerState.initializeSystem());
-  await flowResult(
-    editorStore.graphManagerState.graphManager.buildGraph(
-      editorStore.graphManagerState.graph,
-      entities,
-    ),
+  await editorStore.graphManagerState.graphManager.buildGraph(
+    editorStore.graphManagerState.graph,
+    entities,
   );
   const changes = entityChanges.entityChanges.map((e) =>
     EntityChange.serialization.fromJson(e),

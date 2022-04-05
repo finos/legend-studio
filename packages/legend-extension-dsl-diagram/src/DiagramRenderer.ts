@@ -69,8 +69,8 @@ import {
   positionedRectangle_forceRefreshHash,
   positionedRectangle_setPosition,
   positionedRectangle_setRectangle,
-  relationShipEdgeView_setOffsetX,
-  relationShipEdgeView_setOffsetY,
+  relationshipEdgeView_setOffsetX,
+  relationshipEdgeView_setOffsetY,
   relationshipView_changePoint,
   relationView_possiblyFlattenPath,
   relationView_setPath,
@@ -2473,7 +2473,7 @@ export class DiagramRenderer {
                 );
 
                 if (gview) {
-                  relationShipEdgeView_setOffsetX(
+                  relationshipEdgeView_setOffsetX(
                     gview.from,
                     -(
                       this.startClassView.position.x +
@@ -2481,7 +2481,7 @@ export class DiagramRenderer {
                       this.selectionStart.x
                     ),
                   );
-                  relationShipEdgeView_setOffsetY(
+                  relationshipEdgeView_setOffsetY(
                     gview.from,
                     -(
                       this.startClassView.position.y +
@@ -2489,7 +2489,7 @@ export class DiagramRenderer {
                       this.selectionStart.y
                     ),
                   );
-                  relationShipEdgeView_setOffsetX(
+                  relationshipEdgeView_setOffsetX(
                     gview.to,
                     -(
                       targetClassView.position.x +
@@ -2497,7 +2497,7 @@ export class DiagramRenderer {
                       eventPointInModelCoordinate.x
                     ),
                   );
-                  relationShipEdgeView_setOffsetY(
+                  relationshipEdgeView_setOffsetY(
                     gview.to,
                     -(
                       targetClassView.position.y +

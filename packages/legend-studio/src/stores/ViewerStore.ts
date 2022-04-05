@@ -142,22 +142,20 @@ export class ViewerStore {
 
   private *initializeGraphManagerState(): GeneratorFn<void> {
     // setup engine
-    yield flowResult(
-      this.editorStore.graphManagerState.graphManager.initialize(
-        {
-          env: this.editorStore.applicationStore.config.env,
-          tabSize: TAB_SIZE,
-          clientConfig: {
-            baseUrl: this.editorStore.applicationStore.config.engineServerUrl,
-            queryBaseUrl:
-              this.editorStore.applicationStore.config.engineQueryServerUrl,
-            enableCompression: true,
-          },
+    yield this.editorStore.graphManagerState.graphManager.initialize(
+      {
+        env: this.editorStore.applicationStore.config.env,
+        tabSize: TAB_SIZE,
+        clientConfig: {
+          baseUrl: this.editorStore.applicationStore.config.engineServerUrl,
+          queryBaseUrl:
+            this.editorStore.applicationStore.config.engineQueryServerUrl,
+          enableCompression: true,
         },
-        {
-          tracerService: this.editorStore.applicationStore.tracerService,
-        },
-      ),
+      },
+      {
+        tracerService: this.editorStore.applicationStore.tracerService,
+      },
     );
 
     // initialize graph manager
@@ -320,31 +318,23 @@ export class ViewerStore {
     this.editorStore.graphManagerState.graph.setDependencyManager(
       dependencyManager,
     );
-    const dependency_buildReport = (yield flowResult(
-      this.editorStore.graphManagerState.graphManager.buildDependencies(
+    const dependency_buildReport =
+      (yield this.editorStore.graphManagerState.graphManager.buildDependencies(
         this.editorStore.graphManagerState.coreModel,
         this.editorStore.graphManagerState.systemModel,
         dependencyManager,
         dependencyEntitiesMap,
-        {
-          TEMPORARY_skipGraphBuilderPostProcessing: true,
-        },
-      ),
-    )) as GraphBuilderReport;
+      )) as GraphBuilderReport;
     dependency_buildReport.timings[
       GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED
     ] = stopWatch.getRecord(GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED);
 
     // build graph
-    const graph_buildReport = (yield flowResult(
-      this.editorStore.graphManagerState.graphManager.buildGraph(
+    const graph_buildReport =
+      (yield this.editorStore.graphManagerState.graphManager.buildGraph(
         this.editorStore.graphManagerState.graph,
         entities,
-        {
-          TEMPORARY_skipGraphBuilderPostProcessing: true,
-        },
-      ),
-    )) as GraphBuilderReport;
+      )) as GraphBuilderReport;
     graph_buildReport.timings[GRAPH_MANAGER_EVENT.GRAPH_ENTITIES_FETCHED] =
       stopWatch.getRecord(GRAPH_MANAGER_EVENT.GRAPH_ENTITIES_FETCHED);
 
@@ -473,31 +463,23 @@ export class ViewerStore {
     );
 
     // build dependencies
-    const dependency_buildReport = (yield flowResult(
-      this.editorStore.graphManagerState.graphManager.buildDependencies(
+    const dependency_buildReport =
+      (yield this.editorStore.graphManagerState.graphManager.buildDependencies(
         this.editorStore.graphManagerState.coreModel,
         this.editorStore.graphManagerState.systemModel,
         dependencyManager,
         dependencyEntitiesMap,
-        {
-          TEMPORARY_skipGraphBuilderPostProcessing: true,
-        },
-      ),
-    )) as GraphBuilderReport;
+      )) as GraphBuilderReport;
     dependency_buildReport.timings[
       GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED
     ] = stopWatch.getRecord(GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED);
 
     // build graph
-    const graph_buildReport = (yield flowResult(
-      this.editorStore.graphManagerState.graphManager.buildGraph(
+    const graph_buildReport =
+      (yield this.editorStore.graphManagerState.graphManager.buildGraph(
         this.editorStore.graphManagerState.graph,
         entities,
-        {
-          TEMPORARY_skipGraphBuilderPostProcessing: true,
-        },
-      ),
-    )) as GraphBuilderReport;
+      )) as GraphBuilderReport;
     graph_buildReport.timings[GRAPH_MANAGER_EVENT.GRAPH_ENTITIES_FETCHED] =
       stopWatch.getRecord(GRAPH_MANAGER_EVENT.GRAPH_ENTITIES_FETCHED);
 

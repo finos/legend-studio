@@ -47,11 +47,9 @@ test(unitTest('Change detection works properly'), async () => {
   const editorStore = TEST__getTestEditorStore();
 
   await flowResult(editorStore.graphManagerState.initializeSystem());
-  await flowResult(
-    editorStore.graphManagerState.graphManager.buildGraph(
-      editorStore.graphManagerState.graph,
-      entities,
-    ),
+  await editorStore.graphManagerState.graphManager.buildGraph(
+    editorStore.graphManagerState.graph,
+    entities,
   );
 
   // set original hash

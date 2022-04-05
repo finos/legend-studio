@@ -690,21 +690,19 @@ export class LegendQueryStore {
     }
     try {
       this.initState.inProgress();
-      yield flowResult(
-        this.graphManagerState.graphManager.initialize(
-          {
-            env: this.applicationStore.config.env,
-            tabSize: TAB_SIZE,
-            clientConfig: {
-              baseUrl: this.applicationStore.config.engineServerUrl,
-              queryBaseUrl: this.applicationStore.config.engineQueryServerUrl,
-              enableCompression: true,
-            },
+      yield this.graphManagerState.graphManager.initialize(
+        {
+          env: this.applicationStore.config.env,
+          tabSize: TAB_SIZE,
+          clientConfig: {
+            baseUrl: this.applicationStore.config.engineServerUrl,
+            queryBaseUrl: this.applicationStore.config.engineQueryServerUrl,
+            enableCompression: true,
           },
-          {
-            tracerService: this.applicationStore.tracerService,
-          },
-        ),
+        },
+        {
+          tracerService: this.applicationStore.tracerService,
+        },
       );
 
       yield flowResult(this.graphManagerState.initializeSystem());
@@ -768,31 +766,23 @@ export class LegendQueryStore {
       stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED);
 
       // build dependencies
-      const dependency_buildReport = (yield flowResult(
-        this.graphManagerState.graphManager.buildDependencies(
+      const dependency_buildReport =
+        (yield this.graphManagerState.graphManager.buildDependencies(
           this.graphManagerState.coreModel,
           this.graphManagerState.systemModel,
           dependencyManager,
           dependencyEntitiesMap,
-          {
-            TEMPORARY_skipGraphBuilderPostProcessing: true,
-          },
-        ),
-      )) as GraphBuilderReport;
+        )) as GraphBuilderReport;
       dependency_buildReport.timings[
         GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED
       ] = stopWatch.getRecord(GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED);
 
       // build graph
-      const graph_buildReport = (yield flowResult(
-        this.graphManagerState.graphManager.buildGraph(
+      const graph_buildReport =
+        (yield this.graphManagerState.graphManager.buildGraph(
           this.graphManagerState.graph,
           entities,
-          {
-            TEMPORARY_skipGraphBuilderPostProcessing: true,
-          },
-        ),
-      )) as GraphBuilderReport;
+        )) as GraphBuilderReport;
       graph_buildReport.timings[GRAPH_MANAGER_EVENT.GRAPH_ENTITIES_FETCHED] =
         stopWatch.getRecord(GRAPH_MANAGER_EVENT.GRAPH_ENTITIES_FETCHED);
 

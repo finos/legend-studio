@@ -22,7 +22,7 @@ import {
   ActionState,
   assertErrorThrown,
 } from '@finos/legend-shared';
-import { action, flow, flowResult, makeObservable, observable } from 'mobx';
+import { action, flow, makeObservable, observable } from 'mobx';
 import { DependencyManager } from './graph/DependencyManager';
 import {
   CoreModel,
@@ -36,6 +36,7 @@ import type {
 } from './graphManager/AbstractPureGraphManager';
 import { GRAPH_MANAGER_EVENT } from './graphManager/GraphManagerEvent';
 import type { GraphPluginManager } from './GraphPluginManager';
+import { ROOT_PACKAGE_NAME } from './MetaModelConst';
 import { AssociationImplementation } from './models/metamodels/pure/packageableElements/mapping/AssociationImplementation';
 import type { EnumerationMapping } from './models/metamodels/pure/packageableElements/mapping/EnumerationMapping';
 import { InstanceSetImplementation } from './models/metamodels/pure/packageableElements/mapping/InstanceSetImplementation';
@@ -90,12 +91,10 @@ export class GraphManagerState {
     }
     try {
       this.initSystemState.inProgress();
-      yield flowResult(
-        this.graphManager.buildSystem(
-          this.coreModel,
-          this.systemModel,
-          options,
-        ),
+      yield this.graphManager.buildSystem(
+        this.coreModel,
+        this.systemModel,
+        options,
       );
       this.systemModel.initializeAutoImports();
       this.initSystemState.pass();
@@ -260,5 +259,9 @@ export class GraphManagerState {
     return systemElements.filter((element) =>
       allowedSystemElements.includes(element.path),
     );
+  }
+
+  isElementReadOnly(element: PackageableElement): boolean {
+    return element.getRoot().path !== ROOT_PACKAGE_NAME.MAIN;
   }
 }

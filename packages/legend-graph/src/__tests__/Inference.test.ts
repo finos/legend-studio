@@ -52,11 +52,9 @@ test(
     const graphManagerState = TEST__getTestGraphManagerState();
     await flowResult(graphManagerState.initializeSystem());
     await expect(() =>
-      flowResult(
-        graphManagerState.graphManager.buildGraph(
-          graphManagerState.graph,
-          TEST_DATA__ImportResolutionMultipleMatchesFound as Entity[],
-        ),
+      graphManagerState.graphManager.buildGraph(
+        graphManagerState.graph,
+        TEST_DATA__ImportResolutionMultipleMatchesFound as Entity[],
       ),
     ).rejects.toThrow(
       `Can't resolve element with path 'A' - multiple matches found [test::A, test2::A]`,

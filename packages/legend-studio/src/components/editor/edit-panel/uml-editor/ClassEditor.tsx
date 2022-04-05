@@ -807,7 +807,7 @@ export const ClassFormEditor = observer(
     const { _class, editorState, onHashChange } = props;
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
-    const classHash = _class.isReadOnly
+    const classHash = editorStore.graphManagerState.isElementReadOnly(_class)
       ? undefined
       : applicationStore.notifyAndReturnAlternativeOnError(
           () => _class.hashCode,
