@@ -91,6 +91,7 @@ import {
   FlatDataConnection,
   RelationalDatabaseConnection,
   PackageableElementExplicitReference,
+  ModelChainConnection,
 } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
 import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../stores/DSLMapping_LegendStudioPlugin_Extension';
@@ -115,6 +116,8 @@ const getConnectionTooltipText = (
     return `Flat-data connection \u2022 Flat-data store ${connectionValue.store.value.path}`;
   } else if (connectionValue instanceof RelationalDatabaseConnection) {
     return `Relational database connection \u2020 database store ${connectionValue.store.value.path}`;
+  } else if (connectionValue instanceof ModelChainConnection) {
+    return `Model chain connection \u2022`;
   }
   const extraConnectionToolTipTexts = editorStore.pluginManager
     .getStudioPlugins()
