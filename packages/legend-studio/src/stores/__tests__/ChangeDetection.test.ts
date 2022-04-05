@@ -53,14 +53,12 @@ test(unitTest('Change detection works properly'), async () => {
   );
 
   // set original hash
-  const protocolHashesIndex =
-    await editorStore.graphManagerState.graphManager.buildHashesIndex(entities);
   editorStore.changeDetectionState.workspaceLocalLatestRevisionState.setEntityHashesIndex(
-    protocolHashesIndex,
+    await editorStore.graphManagerState.graphManager.buildHashesIndex(entities),
   );
 
   // check hash
-  await flowResult(editorStore.graphManagerState.precomputeHashes());
+  await editorStore.changeDetectionState.precomputeHashes();
   await flowResult(editorStore.changeDetectionState.computeLocalChanges(true));
   expect(
     editorStore.changeDetectionState.workspaceLocalLatestRevisionState.changes
@@ -73,7 +71,7 @@ test(unitTest('Change detection works properly'), async () => {
   // modify
   property_setName(_class.getProperty('prop'), 'prop1');
 
-  await flowResult(editorStore.graphManagerState.precomputeHashes());
+  await flowResult(editorStore.changeDetectionState.precomputeHashes());
   await flowResult(editorStore.changeDetectionState.computeLocalChanges(true));
   expect(
     editorStore.changeDetectionState.workspaceLocalLatestRevisionState.changes
@@ -89,7 +87,7 @@ test(unitTest('Change detection works properly'), async () => {
   const newClass = new Class('ClassB');
   editorStore.graphManagerState.graph.addElement(newClass);
 
-  await flowResult(editorStore.graphManagerState.precomputeHashes());
+  await flowResult(editorStore.changeDetectionState.precomputeHashes());
   await flowResult(editorStore.changeDetectionState.computeLocalChanges(true));
   expect(
     editorStore.changeDetectionState.workspaceLocalLatestRevisionState.changes
@@ -104,7 +102,7 @@ test(unitTest('Change detection works properly'), async () => {
   // delete
   editorStore.graphManagerState.graph.deleteElement(_class);
 
-  await flowResult(editorStore.graphManagerState.precomputeHashes());
+  await flowResult(editorStore.changeDetectionState.precomputeHashes());
   await flowResult(editorStore.changeDetectionState.computeLocalChanges(true));
   expect(
     editorStore.changeDetectionState.workspaceLocalLatestRevisionState.changes

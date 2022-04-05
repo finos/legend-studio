@@ -15,9 +15,7 @@
  */
 
 import {
-  type GeneratorFn,
   type Log,
-  LogEvent,
   uniq,
   ActionState,
   assertErrorThrown,
@@ -34,7 +32,6 @@ import type {
   AbstractPureGraphManager,
   GraphBuilderOptions,
 } from './graphManager/AbstractPureGraphManager';
-import { GRAPH_MANAGER_EVENT } from './graphManager/GraphManagerEvent';
 import type { GraphPluginManager } from './GraphPluginManager';
 import { ROOT_PACKAGE_NAME } from './MetaModelConst';
 import { AssociationImplementation } from './models/metamodels/pure/packageableElements/mapping/AssociationImplementation';
@@ -212,35 +209,6 @@ export class GraphManagerState {
         .flat();
     }
     return uniq(mappedProperties);
-  }
-
-  /**
-   * Call `get hashCode()` on each element once so we trigger the first time we compute the hash for that element.
-   * This plays well with `keepAlive` flag on each of the element `get hashCode()` function. This is due to
-   * the fact that we want to get hashCode inside a `setTimeout()` to make this non-blocking, but that way `mobx` will
-   * not trigger memoization on computed so we need to enable `keepAlive`
-   */
-  *precomputeHashes(): GeneratorFn<void> {
-    const startTime = Date.now();
-    if (this.graph.allOwnElements.length) {
-      yield Promise.all<void>(
-        this.graph.allOwnElements.map(
-          (element) =>
-            new Promise((resolve) =>
-              setTimeout(() => {
-                element.hashCode; // manually trigger hash code recomputation
-                resolve();
-              }, 0),
-            ),
-        ),
-      );
-    }
-    this.log.info(
-      LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_HASHES_PRECOMPUTED),
-      '[ASYNC]',
-      Date.now() - startTime,
-      'ms',
-    );
   }
 
   /**

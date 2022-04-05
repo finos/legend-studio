@@ -279,6 +279,7 @@ export * from './graphManager/action/changeDetection/RawValueSpecificationObserv
 export * from './graphManager/action/changeDetection/ValueSpecificationObserver';
 export * from './graphManager/action/changeDetection/StoreRelational_ObserverHelper';
 export * from './graphManager/action/changeDetection/StoreFlatData_ObserverHelper';
+export * from './graphManager/action/changeDetection/GraphObserverHelper';
 
 // --------------------------------------------- TO BE MODULARIZED --------------------------------------------------
 

@@ -873,7 +873,7 @@ export class EditorGraphState {
 
       // ======= (RE)START CHANGE DETECTION =======
       /* @MARKER: MEMORY-SENSITIVE */
-      yield flowResult(this.editorStore.graphManagerState.precomputeHashes());
+      yield this.editorStore.changeDetectionState.precomputeHashes();
       this.editorStore.changeDetectionState.start();
       yield flowResult(
         this.editorStore.changeDetectionState.computeLocalChanges(true),

@@ -2261,7 +2261,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
     await Promise.all(
       pureModelContextData.elements.map((element) =>
-        promisify(() => () => hashMap.set(element.path, element.hashCode)),
+        promisify(() => hashMap.set(element.path, element.hashCode)),
       ),
     );
     return hashMap;
