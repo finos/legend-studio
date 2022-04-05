@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { observable, makeObservable } from 'mobx';
 import type { Hashable } from '@finos/legend-shared';
 import type { ServiceStore } from './ESService_ServiceStore';
 import type { ServiceGroup } from './ESService_ServiceGroup';
@@ -26,11 +25,5 @@ export abstract class ServiceStoreElement implements Hashable {
   id!: string;
   path!: string;
 
-  constructor() {
-    makeObservable(this, {
-      id: observable,
-      path: observable,
-    });
-  }
   abstract get hashCode(): string;
 }

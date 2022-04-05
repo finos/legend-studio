@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { observable, computed, makeObservable } from 'mobx';
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import type { Class } from '../../../domain/Class';
@@ -38,9 +37,9 @@ export class PureInstanceSetImplementation
   extends InstanceSetImplementation
   implements Hashable, Stubable
 {
+  declare propertyMappings: PurePropertyMapping[];
   srcClass: OptionalPackageableElementReference<Class>;
   filter?: RawLambda | undefined; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
-  declare propertyMappings: PurePropertyMapping[];
 
   constructor(
     id: InferableMappingElementIdValue,
@@ -50,13 +49,6 @@ export class PureInstanceSetImplementation
     srcClass: OptionalPackageableElementReference<Class>,
   ) {
     super(id, parent, _class, root);
-
-    makeObservable(this, {
-      filter: observable,
-      isStub: computed,
-      hashCode: computed,
-    });
-
     this.srcClass = srcClass;
   }
 

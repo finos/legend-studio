@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { observable, computed, makeObservable } from 'mobx';
 import { type Clazz, guaranteeType, uuid } from '@finos/legend-shared';
 import type { Type } from './Type';
 import type { Stubable } from '../../../../../helpers/Stubable';
@@ -24,11 +23,6 @@ export class GenericType implements Stubable {
   rawType: Type;
 
   constructor(rawType: Type) {
-    makeObservable(this, {
-      rawType: observable,
-      isStub: computed,
-    });
-
     this.rawType = rawType;
   }
 

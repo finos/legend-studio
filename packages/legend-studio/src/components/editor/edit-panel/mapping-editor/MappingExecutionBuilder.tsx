@@ -83,7 +83,7 @@ import {
 import {
   relationalInputData_setData,
   relationalInputData_setInputType,
-} from '../../../../stores/DSLRelational_ModifierHelper';
+} from '../../../../stores/StoreRelational_ModifierHelper';
 
 interface ClassMappingSelectOption {
   label: string;

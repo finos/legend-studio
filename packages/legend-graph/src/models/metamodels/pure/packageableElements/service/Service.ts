@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { observable, computed, makeObservable, override } from 'mobx';
 import { hashArray, uniq, type Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import type { ServiceExecution } from './ServiceExecution';
@@ -40,18 +39,6 @@ export class Service extends PackageableElement implements Hashable {
 
   constructor(name: string) {
     super(name);
-
-    makeObservable<Service, '_elementHashCode'>(this, {
-      pattern: observable,
-      owners: observable,
-      documentation: observable,
-      autoActivateUpdates: observable,
-      execution: observable,
-      test: observable,
-      patternParameters: computed,
-      _elementHashCode: override,
-    });
-
     this.test = new SingleExecutionTest(this, '');
   }
   get patternParameters(): string[] {

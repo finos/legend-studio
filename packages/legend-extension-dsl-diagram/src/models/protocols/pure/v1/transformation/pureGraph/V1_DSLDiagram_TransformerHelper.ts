@@ -18,7 +18,7 @@ import type { ClassView } from '../../../../../metamodels/pure/packageableElemen
 import type { Diagram } from '../../../../../metamodels/pure/packageableElements/diagram/DSLDiagram_Diagram';
 import type { GeneralizationView } from '../../../../../metamodels/pure/packageableElements/diagram/DSLDiagram_GeneralizationView';
 import type { PropertyView } from '../../../../../metamodels/pure/packageableElements/diagram/DSLDiagram_PropertyView';
-import type { RelationShipEdgeView } from '../../../../../metamodels/pure/packageableElements/diagram/DSLDiagram_RelationshipEdgeView';
+import type { RelationshipEdgeView } from '../../../../../metamodels/pure/packageableElements/diagram/DSLDiagram_RelationshipEdgeView';
 import { V1_Point } from '../../model/packageableElements/diagram/geometry/V1_DSLDiagram_Point';
 import { V1_ClassView } from '../../model/packageableElements/diagram/V1_DSLDiagram_ClassView';
 import { V1_Diagram } from '../../model/packageableElements/diagram/V1_DSLDiagram_Diagram';
@@ -32,7 +32,7 @@ import {
   V1_transformPropertyReference,
 } from '@finos/legend-graph';
 
-const relationshipEdgeViewTransformer = (value: RelationShipEdgeView): string =>
+const relationshipEdgeViewTransformer = (value: RelationshipEdgeView): string =>
   value.classView.value.id;
 
 const createRectangle = (height: number, width: number): V1_Rectangle => {

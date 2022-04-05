@@ -30,6 +30,7 @@ import {
   tryToFormatLosslessJSONString,
   tryToFormatJSONString,
   createUrlStringFromData,
+  ContentType,
 } from '@finos/legend-shared';
 import type { EditorStore } from '../../../EditorStore';
 import {
@@ -195,7 +196,7 @@ export class TestContainerState {
                 createUrlStringFromData(
                   /* @MARKER: Workaround for https://github.com/finos/legend-studio/issues/68 */
                   tryToMinifyLosslessJSONString(testData),
-                  JsonModelConnection.CONTENT_TYPE,
+                  ContentType.APPLICATION_JSON,
                   engineConfig.useBase64ForAdhocConnectionDataUrls,
                 ),
               ),
@@ -213,7 +214,7 @@ export class TestContainerState {
                 connection.class,
                 createUrlStringFromData(
                   testData,
-                  XmlModelConnection.CONTENT_TYPE,
+                  ContentType.APPLICATION_XML,
                   engineConfig.useBase64ForAdhocConnectionDataUrls,
                 ),
               ),
@@ -226,11 +227,11 @@ export class TestContainerState {
               newRuntime.generateIdentifiedConnectionId(),
               new FlatDataConnection(
                 PackageableElementExplicitReference.create(
-                  connection.flatDataStore,
+                  connection.store.value,
                 ),
                 createUrlStringFromData(
                   testData,
-                  FlatDataConnection.CONTENT_TYPE,
+                  ContentType.TEXT_PLAIN,
                   engineConfig.useBase64ForAdhocConnectionDataUrls,
                 ),
               ),
@@ -242,7 +243,9 @@ export class TestContainerState {
             new IdentifiedConnection(
               newRuntime.generateIdentifiedConnectionId(),
               new RelationalDatabaseConnection(
-                PackageableElementExplicitReference.create(connection.database),
+                PackageableElementExplicitReference.create(
+                  connection.store.value,
+                ),
                 // TODO: hard-coded this combination for now, we might want to change to something that makes more sense?
                 DatabaseType.H2,
                 new StaticDatasourceSpecification('dummyHost', 80, 'myDb'),

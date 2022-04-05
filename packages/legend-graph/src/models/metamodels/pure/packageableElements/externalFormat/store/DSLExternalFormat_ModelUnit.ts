@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { observable, computed, makeObservable } from 'mobx';
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import type { PackageableElementReference } from '../../PackageableElementReference';
 import type { PackageableElement } from '../../PackageableElement';
@@ -25,14 +24,6 @@ export class ModelUnit implements Hashable {
     [];
   packageableElementExcludes: PackageableElementReference<PackageableElement>[] =
     [];
-
-  constructor() {
-    makeObservable(this, {
-      packageableElementIncludes: observable,
-      packageableElementExcludes: observable,
-      hashCode: computed,
-    });
-  }
 
   get hashCode(): string {
     return hashArray([

@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { observable, computed, makeObservable } from 'mobx';
 import { type Hashable, uuid, hashArray } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import type { Enumeration } from './Enumeration';
@@ -31,14 +30,6 @@ export class Enum implements AnnotatedElement, Hashable, Stubable {
   taggedValues: TaggedValue[] = [];
 
   constructor(name: string, owner: Enumeration) {
-    makeObservable(this, {
-      name: observable,
-      stereotypes: observable,
-      taggedValues: observable,
-      isStub: computed,
-      hashCode: computed,
-    });
-
     this.name = name;
     this.owner = owner;
   }

@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { observable, computed, makeObservable } from 'mobx';
 import { type Hashable, uuid, isNumber, hashArray } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import { Enum } from '../domain/Enum';
@@ -26,11 +25,6 @@ export class SourceValue implements Stubable {
   value: Enum | string | number | undefined;
 
   constructor(value: Enum | string | number | undefined) {
-    makeObservable(this, {
-      value: observable,
-      isStub: computed,
-    });
-
     this.value = value;
   }
 
@@ -44,14 +38,9 @@ export class EnumValueMapping implements Hashable, Stubable {
   sourceValues: SourceValue[] = [];
 
   constructor(enumValue: EnumValueReference) {
-    makeObservable(this, {
-      sourceValues: observable,
-      isStub: computed,
-      hashCode: computed,
-    });
-
     this.enum = enumValue;
   }
+
   get isStub(): boolean {
     return !this.sourceValues.filter((value) => !value.isStub).length;
   }

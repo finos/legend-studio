@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { observable, computed, makeObservable, override } from 'mobx';
 import {
   type Hashable,
   hashArray,
@@ -33,18 +32,6 @@ export class Enumeration extends DataType implements Hashable, Stubable {
   values: Enum[] = [];
   stereotypes: StereotypeReference[] = [];
   taggedValues: TaggedValue[] = [];
-
-  constructor(name: string) {
-    super(name);
-
-    makeObservable<Enumeration, '_elementHashCode'>(this, {
-      values: observable,
-      stereotypes: observable,
-      taggedValues: observable,
-      isStub: computed,
-      _elementHashCode: override,
-    });
-  }
 
   getValueNames = (): string[] =>
     this.values.map((value) => value.name).filter(Boolean);

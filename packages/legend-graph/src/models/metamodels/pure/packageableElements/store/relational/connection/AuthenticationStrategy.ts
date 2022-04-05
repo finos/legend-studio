@@ -16,7 +16,6 @@
 
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import { type Hashable, hashArray } from '@finos/legend-shared';
-import { observable, computed, makeObservable } from 'mobx';
 
 export abstract class AuthenticationStrategy implements Hashable {
   private readonly _$nominalTypeBrand!: 'AuthenticationStrategy';
@@ -29,13 +28,6 @@ export class DelegatedKerberosAuthenticationStrategy
   implements Hashable
 {
   serverPrincipal?: string | undefined;
-  constructor() {
-    super();
-
-    makeObservable(this, {
-      hashCode: computed,
-    });
-  }
 
   get hashCode(): string {
     return hashArray([
@@ -49,14 +41,6 @@ export class DefaultH2AuthenticationStrategy
   extends AuthenticationStrategy
   implements Hashable
 {
-  constructor() {
-    super();
-
-    makeObservable(this, {
-      hashCode: computed,
-    });
-  }
-
   get hashCode(): string {
     return hashArray([CORE_HASH_STRUCTURE.DEFAULT_H2_AUTHENTICATION_STRATEGY]);
   }
@@ -70,12 +54,6 @@ export class ApiTokenAuthenticationStrategy
 
   constructor(apiToken: string) {
     super();
-
-    makeObservable(this, {
-      apiToken: observable,
-      hashCode: computed,
-    });
-
     this.apiToken = apiToken;
   }
 
@@ -96,12 +74,6 @@ export class OAuthAuthenticationStrategy
 
   constructor(oauthKey: string, scopeName: string) {
     super();
-
-    makeObservable(this, {
-      oauthKey: observable,
-      scopeName: observable,
-      hashCode: computed,
-    });
     this.oauthKey = oauthKey;
     this.scopeName = scopeName;
   }
@@ -129,14 +101,6 @@ export class SnowflakePublicAuthenticationStrategy
     publicUserName: string,
   ) {
     super();
-
-    makeObservable(this, {
-      privateKeyVaultReference: observable,
-      passPhraseVaultReference: observable,
-      publicUserName: observable,
-      hashCode: computed,
-    });
-
     this.privateKeyVaultReference = privateKeyVaultReference;
     this.passPhraseVaultReference = passPhraseVaultReference;
     this.publicUserName = publicUserName;
@@ -156,14 +120,6 @@ export class GCPApplicationDefaultCredentialsAuthenticationStrategy
   extends AuthenticationStrategy
   implements Hashable
 {
-  constructor() {
-    super();
-
-    makeObservable(this, {
-      hashCode: computed,
-    });
-  }
-
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.GCP_APPLICATION_DEFAULT_CREDENTIALS_AUTHENTICATION_STRATEGY,
@@ -181,14 +137,6 @@ export class UsernamePasswordAuthenticationStrategy
 
   constructor(userNameVaultReference: string, passwordVaultReference: string) {
     super();
-
-    makeObservable(this, {
-      hashCode: computed,
-      userNameVaultReference: observable,
-      passwordVaultReference: observable,
-      baseVaultReference: observable,
-    });
-
     this.userNameVaultReference = userNameVaultReference;
     this.passwordVaultReference = passwordVaultReference;
   }

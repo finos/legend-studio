@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { observable, computed, makeObservable } from 'mobx';
 import {
   type Hashable,
   hashArray,
@@ -39,12 +38,6 @@ export class IdentifiedConnection implements Hashable {
   connection: Connection;
 
   constructor(id: string, connection: Connection) {
-    makeObservable(this, {
-      id: observable,
-      connection: observable,
-      hashCode: computed,
-    });
-
     this.id = id;
     this.connection = connection;
   }
@@ -63,12 +56,6 @@ export class StoreConnections implements Hashable {
   storeConnections: IdentifiedConnection[] = [];
 
   constructor(store: PackageableElementReference<Store>) {
-    makeObservable(this, {
-      storeConnections: observable,
-      isStub: computed,
-      hashCode: computed,
-    });
-
     this.store = store;
   }
 
@@ -95,17 +82,6 @@ export abstract class Runtime implements Hashable {
 export class EngineRuntime extends Runtime implements Hashable {
   mappings: PackageableElementReference<Mapping>[] = [];
   connections: StoreConnections[] = [];
-
-  constructor() {
-    super();
-
-    makeObservable(this, {
-      mappings: observable,
-      connections: observable,
-      allIdentifiedConnections: computed,
-      hashCode: computed,
-    });
-  }
 
   get allIdentifiedConnections(): IdentifiedConnection[] {
     return this.connections.flatMap(
@@ -152,11 +128,6 @@ export class RuntimePointer extends Runtime implements Hashable {
     packageableRuntime: PackageableElementReference<PackageableRuntime>,
   ) {
     super();
-
-    makeObservable(this, {
-      hashCode: computed,
-    });
-
     this.packageableRuntime = packageableRuntime;
   }
 

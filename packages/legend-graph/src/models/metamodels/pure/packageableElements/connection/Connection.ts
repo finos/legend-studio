@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { computed, makeObservable, observable } from 'mobx';
 import { hashArray, uuid, type Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import type { Store } from '../store/Store';
@@ -45,10 +44,6 @@ export abstract class Connection implements Hashable {
 
   constructor(store: PackageableElementReference<Store>) {
     this.store = store;
-
-    makeObservable(this, {
-      store: observable,
-    });
   }
 
   abstract get hashCode(): string;
@@ -63,11 +58,6 @@ export class ConnectionPointer extends Connection implements Hashable {
     packageableConnection: PackageableElementReference<PackageableConnection>,
   ) {
     super(packageableConnection.value.connectionValue.store);
-
-    makeObservable(this, {
-      hashCode: computed,
-    });
-
     this.packageableConnection = packageableConnection;
   }
 

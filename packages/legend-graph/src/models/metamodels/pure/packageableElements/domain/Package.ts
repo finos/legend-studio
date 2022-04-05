@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { observable, makeObservable, override } from 'mobx';
 import {
   CORE_HASH_STRUCTURE,
   ELEMENT_PATH_DELIMITER,
@@ -34,15 +33,6 @@ export const RESERVERD_PACKAGE_NAMES = ['$implicit'];
 
 export class Package extends PackageableElement implements Hashable {
   children: PackageableElement[] = [];
-
-  constructor(name: string) {
-    super(name);
-
-    makeObservable(this, {
-      children: observable,
-      hashCode: override,
-    });
-  }
 
   static createPackageFromParent(name: string, parent: Package): Package {
     assertTrue(

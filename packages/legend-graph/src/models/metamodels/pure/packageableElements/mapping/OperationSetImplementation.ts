@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { observable, computed, makeObservable } from 'mobx';
 import {
   type Hashable,
   hashArray,
@@ -61,14 +60,6 @@ export class OperationSetImplementation
     operation: OperationType,
   ) {
     super(id, parent, pureClass, root);
-
-    makeObservable(this, {
-      parameters: observable,
-      operation: observable,
-      isStub: computed,
-      hashCode: computed,
-    });
-
     this.operation = operation;
   }
 

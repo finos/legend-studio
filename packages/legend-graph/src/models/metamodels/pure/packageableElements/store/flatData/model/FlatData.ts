@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { observable, computed, makeObservable, override } from 'mobx';
 import {
   type Hashable,
   guaranteeNonNullable,
@@ -28,16 +27,6 @@ import type { RootFlatDataRecordType } from './FlatDataDataType';
 
 export class FlatData extends Store implements Hashable {
   sections: FlatDataSection[] = [];
-
-  constructor(name: string) {
-    super(name);
-
-    makeObservable<FlatData, '_elementHashCode'>(this, {
-      sections: observable,
-      recordTypes: computed,
-      _elementHashCode: override,
-    });
-  }
 
   findSection = (sectionName: string): FlatDataSection =>
     guaranteeNonNullable(

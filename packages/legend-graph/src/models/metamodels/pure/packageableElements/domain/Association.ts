@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { observable, computed, makeObservable, override } from 'mobx';
 import {
   type Hashable,
   guaranteeNonNullable,
@@ -77,19 +76,6 @@ export class Association
   stereotypes: StereotypeReference[] = [];
   taggedValues: TaggedValue[] = [];
   derivedProperties: DerivedProperty[] = [];
-
-  constructor(name: string) {
-    super(name);
-
-    makeObservable<Association, '_elementHashCode'>(this, {
-      properties: observable,
-      stereotypes: observable,
-      taggedValues: observable,
-      derivedProperties: observable,
-      isStub: computed,
-      _elementHashCode: override,
-    });
-  }
 
   getFirstProperty = (): Property => guaranteeNonNullable(this.properties[0]);
   getSecondProperty = (): Property => guaranteeNonNullable(this.properties[1]);

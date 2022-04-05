@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { observable, computed, makeObservable } from 'mobx';
 import { hashArray, uuid, type Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../MetaModelConst';
 import type { Type } from '../packageableElements/domain/Type';
@@ -44,14 +43,6 @@ export class RawVariableExpression
     type: PackageableElementReference<Type>,
   ) {
     super();
-
-    makeObservable(this, {
-      name: observable,
-      multiplicity: observable,
-      isStub: computed,
-      hashCode: computed,
-    });
-
     this.name = name;
     this.multiplicity = multiplicity;
     this.type = type;
@@ -79,6 +70,6 @@ export class RawVariableExpression
   accept_RawValueSpecificationVisitor<T>(
     visitor: RawValueSpecificationVisitor<T>,
   ): T {
-    return visitor.visit_RawVariable(this);
+    return visitor.visit_RawVariableExpression(this);
   }
 }

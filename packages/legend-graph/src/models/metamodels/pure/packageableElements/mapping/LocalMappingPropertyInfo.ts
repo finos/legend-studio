@@ -21,6 +21,7 @@ import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 
 export class LocalMappingPropertyInfo implements Hashable {
   localMappingProperty!: boolean;
+  // TODO: refactor this to use `PackageableElementReference`
   localMappingPropertyType!: Type;
   localMappingPropertyMultiplicity!: Multiplicity;
 

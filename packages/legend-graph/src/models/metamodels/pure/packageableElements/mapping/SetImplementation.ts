@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { observable, computed, makeObservable } from 'mobx';
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import { fromElementPathToMappingElementId } from '../../../../../MetaModelUtils';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
@@ -91,17 +90,12 @@ export abstract class SetImplementation
     _class: PackageableElementReference<Class>,
     root: InferableMappingElementRoot,
   ) {
-    makeObservable(this, {
-      root: observable,
-      parent: observable,
-      label: computed,
-    });
-
     this.id = id;
     this.parent = parent;
     this.class = _class;
     this.root = root;
   }
+
   get label(): MappingElementLabel {
     return {
       value: `${
@@ -151,7 +145,7 @@ export enum SET_IMPLEMENTATION_TYPE {
   AGGREGATION_AWARE = 'aggregationAware',
 }
 
-/* @MARKER: RELAXED GRAPH CHECK - See https://github.com/finos/legend-studio/issues/880 */
+/* @MARKER: RELAXED GRAPH CHECK - See https://github.com/finos/legend-studio/issues/941 */
 /**
  * When set implementation cannot be resolved by ID,
  * we try to avoid failing graph building for now
@@ -160,6 +154,7 @@ export enum SET_IMPLEMENTATION_TYPE {
  * NOTE: this is just a temporary solutions until we make this a hard-fail post migration.
  *
  * See https://github.com/finos/legend-studio/issues/880
+ * See https://github.com/finos/legend-studio/issues/941
  */
 export class TEMPORARY__UnresolvedSetImplementation extends SetImplementation {
   constructor(id: string, parent: Mapping) {

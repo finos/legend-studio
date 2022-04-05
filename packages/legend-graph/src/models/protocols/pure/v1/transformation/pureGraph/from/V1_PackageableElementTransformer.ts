@@ -62,10 +62,6 @@ import type {
 } from '../../../../PureProtocolProcessorPlugin';
 import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext';
 
-/**
- * NOTE: During serialization, we try our best to have the props within each schema ordered the same way
- * as in the backend (which is in alphabetical order). This helps reduce noises when showing JSON diffs.
- */
 export class V1_PackageableElementTransformer
   implements PackageableElementVisitor<V1_PackageableElement>
 {

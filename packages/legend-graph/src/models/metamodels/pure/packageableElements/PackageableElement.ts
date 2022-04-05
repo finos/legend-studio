@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { observable, action, computed, makeObservable } from 'mobx';
 import {
   type Hashable,
   hashArray,
@@ -76,26 +75,6 @@ export abstract class PackageableElement implements Hashable, Stubable {
   package?: Package | undefined;
 
   constructor(name: string) {
-    makeObservable<
-      PackageableElement,
-      '_isDeleted' | '_isDisposed' | '_isImmutable' | '_elementHashCode'
-    >(this, {
-      _isDeleted: observable,
-      _isDisposed: observable,
-      _isImmutable: observable,
-      name: observable,
-      package: observable,
-      isReadOnly: computed,
-      isDeleted: computed,
-      path: computed,
-      _elementHashCode: computed,
-      // We need to enable `keepAlive` to facillitate precomputation of element hash code
-      hashCode: computed({ keepAlive: true }),
-      setIsDeleted: action,
-      dispose: action,
-      freeze: action,
-    });
-
     this.name = name;
   }
 
@@ -129,7 +108,6 @@ export abstract class PackageableElement implements Hashable, Stubable {
       : `${parentPackageName}${ELEMENT_PATH_DELIMITER}${this.name}`;
   }
 
-  // NOTE: we don't need `createStub` as the subclasses will have to implement their own for type narrowing
   get isStub(): boolean {
     return !this.name && !this.package;
   }

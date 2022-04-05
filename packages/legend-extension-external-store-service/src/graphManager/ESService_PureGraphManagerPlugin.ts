@@ -22,8 +22,17 @@ import {
   type PackageableElement,
   type PureGrammarElementLabeler,
   type PureGrammarConnectionLabeler,
+  type ElementObserver,
+  type ObserverContext,
+  SetImplementation,
+  SetImplementationObserver,
 } from '@finos/legend-graph';
 import { ServiceStoreConnection } from '../models/metamodels/pure/model/packageableElements/store/serviceStore/connection/ESService_ServiceStoreConnection';
+import {
+  observe_RootServiceInstanceSetImplementation,
+  observe_ServiceStore,
+} from './action/changeDetection/ESService_ObserverHelper';
+import { RootServiceInstanceSetImplementation } from '../models/metamodels/pure/model/packageableElements/store/serviceStore/mapping/ESService_RootServiceInstanceSetImplementation';
 
 const PURE_GRAMMAR_SERVICE_STORE_PARSER_NAME = 'ServiceStore';
 const PURE_GRAMMAR_SERVICE_STORE_ELEMENT_TYPE_LABEL = 'ServiceStore';
@@ -62,11 +71,42 @@ export class ESService_PureGraphManagerPlugin
     ];
   }
 
+  override getExtraElementObservers(): ElementObserver[] {
+    return [
+      (
+        element: PackageableElement,
+        context: ObserverContext,
+      ): PackageableElement | undefined => {
+        if (element instanceof ServiceStore) {
+          return observe_ServiceStore(element, context);
+        }
+        return undefined;
+      },
+    ];
+  }
+
   getExtraPureGrammarConnectionLabelers(): PureGrammarConnectionLabeler[] {
     return [
       (connection): string | undefined => {
         if (connection instanceof ServiceStoreConnection) {
           return PURE_GRAMMAR_SERVICE_STORE_CONNECTION_TYPE_LABEL;
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  getExtraSetImplementationObservers(): SetImplementationObserver[] {
+    return [
+      (
+        metamodel: SetImplementation,
+        context: ObserverContext,
+      ): SetImplementation | undefined => {
+        if (metamodel instanceof RootServiceInstanceSetImplementation) {
+          return observe_RootServiceInstanceSetImplementation(
+            metamodel,
+            context,
+          );
         }
         return undefined;
       },

@@ -15,7 +15,6 @@
  */
 
 import { type Hashable, hashArray } from '@finos/legend-shared';
-import { observable, makeObservable, override } from 'mobx';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import type {
   PackageableElementVisitor,
@@ -34,18 +33,6 @@ export class FileGenerationSpecification
   scopeElements: (PackageableElementReference<PackageableElement> | string)[] =
     [];
   configurationProperties: ConfigurationProperty[] = [];
-
-  constructor(name: string) {
-    super(name);
-
-    makeObservable<FileGenerationSpecification, '_elementHashCode'>(this, {
-      type: observable,
-      generationOutputPath: observable,
-      scopeElements: observable,
-      configurationProperties: observable,
-      _elementHashCode: override,
-    });
-  }
 
   getConfigValue(name: string): unknown | undefined {
     return this.getConfig(name)?.value;

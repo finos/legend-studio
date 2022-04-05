@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { observable, computed, makeObservable } from 'mobx';
 import { type Hashable, hashArray, uuid } from '@finos/legend-shared';
 import { hashLambda } from '../../../../../MetaModelUtils';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
@@ -51,17 +50,6 @@ export class DerivedProperty
     genericType: GenericTypeReference,
     owner: PropertyOwner,
   ) {
-    makeObservable(this, {
-      name: observable,
-      multiplicity: observable,
-      stereotypes: observable,
-      taggedValues: observable,
-      body: observable.ref,
-      parameters: observable.ref,
-      isStub: computed,
-      hashCode: computed,
-    });
-
     this.name = name;
     this.multiplicity = multiplicity;
     this.genericType = genericType;

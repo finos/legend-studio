@@ -22,9 +22,16 @@ import {
 } from '../../../connection/Connection';
 import type { Mapping } from '../../../mapping/Mapping';
 import type { PackageableElementReference } from '../../../PackageableElementReference';
+import type { ModelStore } from '../model/ModelStore';
 
 export class ModelChainConnection extends Connection {
+  declare store: PackageableElementReference<ModelStore>;
   mappings: PackageableElementReference<Mapping>[] = [];
+
+  constructor(store: PackageableElementReference<ModelStore>) {
+    super(store);
+    this.store = store;
+  }
 
   accept_ConnectionVisitor<T>(visitor: ConnectionVisitor<T>): T {
     return visitor.visit_ModelChainConnection(this);

@@ -14,16 +14,15 @@
  * limitations under the License.
  */
 
-import { observable, computed, makeObservable } from 'mobx';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
-import { hashArray, guaranteeType } from '@finos/legend-shared';
+import { hashArray } from '@finos/legend-shared';
 import {
   type ConnectionVisitor,
   Connection,
 } from '../../../connection/Connection';
 import type { DatasourceSpecification } from './DatasourceSpecification';
 import type { AuthenticationStrategy } from './AuthenticationStrategy';
-import { Database } from '../model/Database';
+import type { Database } from '../model/Database';
 import type { PackageableElementReference } from '../../../PackageableElementReference';
 import type { PostProcessor } from './postprocessor/PostProcessor';
 
@@ -45,6 +44,7 @@ export enum DatabaseType {
 }
 
 export abstract class DatabaseConnection extends Connection {
+  declare store: PackageableElementReference<Database>;
   type: DatabaseType;
   // debug?: boolean | undefined;
   timeZone?: string | undefined;
@@ -56,13 +56,6 @@ export abstract class DatabaseConnection extends Connection {
     type: DatabaseType,
   ) {
     super(store);
-
-    makeObservable(this, {
-      type: observable,
-      timeZone: observable,
-      quoteIdentifiers: observable,
-    });
-
     this.type = type;
   }
 }
@@ -72,14 +65,6 @@ export class RelationalDatabaseConnection extends DatabaseConnection {
   authenticationStrategy: AuthenticationStrategy;
   postProcessors: PostProcessor[] = [];
 
-  get database(): Database {
-    return guaranteeType(
-      this.store.value,
-      Database,
-      'Relational database connection must have a database store',
-    );
-  }
-
   constructor(
     store: PackageableElementReference<Database>,
     type: DatabaseType,
@@ -87,14 +72,6 @@ export class RelationalDatabaseConnection extends DatabaseConnection {
     authenticationStrategy: AuthenticationStrategy,
   ) {
     super(store, type);
-
-    makeObservable(this, {
-      datasourceSpecification: observable,
-      authenticationStrategy: observable,
-      database: computed,
-      hashCode: computed,
-    });
-
     this.datasourceSpecification = datasourceSpecification;
     this.authenticationStrategy = authenticationStrategy;
   }

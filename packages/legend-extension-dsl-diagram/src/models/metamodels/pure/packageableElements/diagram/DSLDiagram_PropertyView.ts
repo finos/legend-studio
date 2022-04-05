@@ -14,28 +14,11 @@
  * limitations under the License.
  */
 
-import { computed, makeObservable } from 'mobx';
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import { PropertyHolderView } from './DSLDiagram_PropertyHolderView';
-import type { Diagram } from './DSLDiagram_Diagram';
-import type { ClassView } from './DSLDiagram_ClassView';
-import type { PropertyReference } from '@finos/legend-graph';
 import { DIAGRAM_HASH_STRUCTURE } from '../../../../DSLDiagram_ModelUtils';
 
 export class PropertyView extends PropertyHolderView implements Hashable {
-  constructor(
-    owner: Diagram,
-    property: PropertyReference,
-    from: ClassView,
-    to: ClassView,
-  ) {
-    super(owner, property, from, to);
-
-    makeObservable(this, {
-      hashCode: computed,
-    });
-  }
-
   override get hashCode(): string {
     return hashArray([DIAGRAM_HASH_STRUCTURE.PROPERTY_VIEW, super.hashCode]);
   }

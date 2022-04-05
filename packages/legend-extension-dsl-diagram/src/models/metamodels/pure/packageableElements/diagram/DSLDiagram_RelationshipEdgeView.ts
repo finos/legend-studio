@@ -14,20 +14,14 @@
  * limitations under the License.
  */
 
-import { observable, makeObservable } from 'mobx';
 import type { ClassViewReference } from './DSLDiagram_ClassViewReference';
 
-export class RelationShipEdgeView {
+export class RelationshipEdgeView {
   classView: ClassViewReference;
   offsetX?: number | undefined;
   offsetY?: number | undefined;
 
   constructor(classView: ClassViewReference) {
-    makeObservable(this, {
-      offsetX: observable,
-      offsetY: observable,
-    });
-
     this.classView = classView;
   }
 }

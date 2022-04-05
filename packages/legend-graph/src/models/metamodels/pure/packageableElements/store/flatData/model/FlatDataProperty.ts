@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { observable, computed, makeObservable } from 'mobx';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import { type Hashable, hashArray } from '@finos/legend-shared';
 
@@ -25,12 +24,6 @@ export class FlatDataProperty implements Hashable {
   value: FlatDataPropertyValue;
 
   constructor(name: string, value: FlatDataPropertyValue) {
-    makeObservable(this, {
-      name: observable,
-      value: observable,
-      hashCode: computed,
-    });
-
     this.name = name;
     this.value = value;
   }

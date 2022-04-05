@@ -47,7 +47,7 @@ import type { ServiceStoreElement } from '../../../../../metamodels/pure/model/p
 import type { V1_ServiceStoreElement } from '../../model/packageableElements/store/serviceStore/model/V1_ESService_ServiceStoreElement';
 import type { V1_SecurityScheme } from '../../model/packageableElements/store/serviceStore/model/V1_ESService_SecurityScheme';
 import type { SecurityScheme } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/model/ESService_SecurityScheme';
-import type { ExternalStoreService_PureProtocolPlugin_Extension } from '../../../ExternalStoreService_PureProtocolPlugin_Extension';
+import type { ESService_PureProtocolPlugin_Extension } from '../../../ESService_PureProtocolPlugin_Extension';
 import type { ServiceRequestBuildInfo } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/mapping/ESService_ServiceRequestBuildInfo';
 import { V1_ServiceRequestBuildInfo } from '../../model/packageableElements/store/serviceStore/mapping/V1_ESService_ServiceRequestBuildInfo';
 import { V1_ServiceRequestParametersBuildInfo } from '../../model/packageableElements/store/serviceStore/mapping/V1_ESService_ServiceRequestParametersBuildInfo';
@@ -179,7 +179,7 @@ const V1_transformSecurityScheme = (
   const extraSecuritySchemeTransformers = context.plugins.flatMap(
     (plugin) =>
       (
-        plugin as ExternalStoreService_PureProtocolPlugin_Extension
+        plugin as ESService_PureProtocolPlugin_Extension
       ).V1_getExtraSecuritySchemeTransformers?.() ?? [],
   );
   for (const transformer of extraSecuritySchemeTransformers) {

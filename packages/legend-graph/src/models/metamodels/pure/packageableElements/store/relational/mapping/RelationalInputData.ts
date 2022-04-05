@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { observable, computed, makeObservable } from 'mobx';
 import {
   hashArray,
   UnsupportedOperationError,
@@ -58,14 +57,6 @@ export class RelationalInputData extends InputData implements Hashable {
     inputType: RelationalInputType,
   ) {
     super();
-
-    makeObservable(this, {
-      data: observable,
-      inputType: observable,
-      validationResult: computed,
-      hashCode: computed,
-    });
-
     this.database = database;
     this.data = data;
     this.inputType = inputType;

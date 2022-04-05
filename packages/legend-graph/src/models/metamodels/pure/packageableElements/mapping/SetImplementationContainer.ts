@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { computed, makeObservable } from 'mobx';
 import { uuid } from '@finos/legend-shared';
 import type { SetImplementationReference } from './SetImplementationReference';
 import type { Stubable } from '../../../../../helpers/Stubable';
@@ -24,10 +23,6 @@ export class SetImplementationContainer implements Stubable {
   setImplementation: SetImplementationReference;
 
   constructor(setImplementation: SetImplementationReference) {
-    makeObservable(this, {
-      isStub: computed,
-    });
-
     this.setImplementation = setImplementation;
   }
 

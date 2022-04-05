@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { computed, observable, makeObservable } from 'mobx';
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import { PositionedRectangle } from './geometry/DSLDiagram_PositionedRectangle';
 import { Rectangle } from './geometry/DSLDiagram_Rectangle';
@@ -37,15 +36,6 @@ export class ClassView extends PositionedRectangle implements Hashable {
     _class: PackageableElementReference<Class>,
   ) {
     super(new Point(0, 0), new Rectangle(0, 0));
-
-    makeObservable(this, {
-      id: observable,
-      hideProperties: observable,
-      hideTaggedValues: observable,
-      hideStereotypes: observable,
-      hashCode: computed,
-    });
-
     this.owner = owner;
     this.id = id;
     this.class = _class;

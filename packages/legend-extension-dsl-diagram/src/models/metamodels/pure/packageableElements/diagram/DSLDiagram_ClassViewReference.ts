@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { observable, makeObservable } from 'mobx';
 import type { Diagram } from './DSLDiagram_Diagram';
 import type { ClassView } from './DSLDiagram_ClassView';
 import {
@@ -33,11 +32,6 @@ export abstract class ClassViewReference extends ReferenceWithOwner {
     value: ClassView,
   ) {
     super(ownerReference);
-
-    makeObservable(this, {
-      value: observable,
-    });
-
     this.ownerReference = ownerReference;
     this.value = value;
   }

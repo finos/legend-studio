@@ -109,7 +109,7 @@ import {
   usernamePasswordAuthenticationStrategy_setBaseVaultReference,
   usernamePasswordAuthenticationStrategy_setPasswordVaultReference,
   usernamePasswordAuthenticationStrategy_setUserNameVaultReference,
-} from '../../../../stores/DSLRelational_ModifierHelper';
+} from '../../../../stores/StoreRelational_ModifierHelper';
 
 /**
  * NOTE: this is a WIP we did to quickly assemble a modular UI for relational database connection editor

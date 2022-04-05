@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { observable, computed, makeObservable } from 'mobx';
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import { fromElementPathToMappingElementId } from '../../../../../MetaModelUtils';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
@@ -47,14 +46,6 @@ export class EnumerationMapping implements Hashable, Stubable {
     parent: Mapping,
     sourceType: OptionalPackageableElementReference<Type>,
   ) {
-    makeObservable(this, {
-      sourceType: observable,
-      enumValueMappings: observable,
-      label: computed,
-      isStub: computed,
-      hashCode: computed,
-    });
-
     this.id = id;
     this.enumeration = enumeration;
     this.parent = parent;

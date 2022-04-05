@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-import { observable, computed, makeObservable } from 'mobx';
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { RelationShipEdgeView as RelationshipEdgeView } from './DSLDiagram_RelationshipEdgeView';
+import { RelationshipEdgeView } from './DSLDiagram_RelationshipEdgeView';
 import { Point } from './geometry/DSLDiagram_Point';
 import type { ClassView } from './DSLDiagram_ClassView';
 import type { Diagram } from './DSLDiagram_Diagram';
@@ -33,11 +32,6 @@ export class RelationshipView implements Hashable {
   path: Point[] = [];
 
   constructor(owner: Diagram, from: ClassView, to: ClassView) {
-    makeObservable(this, {
-      path: observable,
-      fullPath: computed,
-    });
-
     this.owner = owner;
     this.from = new RelationshipEdgeView(
       ClassViewExplicitReference.create(from),

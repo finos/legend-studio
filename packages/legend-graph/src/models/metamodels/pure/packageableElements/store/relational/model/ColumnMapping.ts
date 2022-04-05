@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { computed, observable, makeObservable } from 'mobx';
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import type { RelationalOperationElement } from './RelationalOperationElement';
@@ -27,12 +26,6 @@ export class ColumnMapping implements Hashable {
     columnName: string,
     relationalOperationElement: RelationalOperationElement,
   ) {
-    makeObservable(this, {
-      columnName: observable,
-      relationalOperationElement: observable,
-      hashCode: computed,
-    });
-
     this.columnName = columnName;
     this.relationalOperationElement = relationalOperationElement;
   }
