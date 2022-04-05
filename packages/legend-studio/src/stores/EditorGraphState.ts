@@ -372,7 +372,7 @@ export class EditorGraphState {
     this.editorStore.applicationStore.notifyWarning(
       `Can't de-serialize graph model from entities. Redirected to model loader for debugging. Error: ${error.message}`,
     );
-    this.editorStore.modelLoaderState.setCurrentInputType(
+    this.editorStore.modelLoaderState.setCurrentModelLoadType(
       MODEL_UPDATER_INPUT_TYPE.ENTITIES,
     );
     // Making an async call
