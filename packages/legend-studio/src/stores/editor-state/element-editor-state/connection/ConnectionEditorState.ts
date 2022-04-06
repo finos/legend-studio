@@ -320,7 +320,8 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
         return;
       }
       case CORE_AUTHENTICATION_STRATEGY_TYPE.GCP_WORKLOAD_IDENTITY_FEDERATION: {
-        this.connection.setAuthenticationStrategy(
+        relationDbConnection_setAuthenticationStrategy(
+          this.connection,
           new GCPWorkloadIdentityFederationAuthenticationStrategy('', []),
         );
         return;
