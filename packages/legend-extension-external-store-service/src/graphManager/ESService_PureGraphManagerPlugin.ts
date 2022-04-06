@@ -24,8 +24,8 @@ import {
   type PureGrammarConnectionLabeler,
   type ElementObserver,
   type ObserverContext,
-  SetImplementation,
-  SetImplementationObserver,
+  type SetImplementation,
+  type SetImplementationObserver,
 } from '@finos/legend-graph';
 import { ServiceStoreConnection } from '../models/metamodels/pure/model/packageableElements/store/serviceStore/connection/ESService_ServiceStoreConnection';
 import {

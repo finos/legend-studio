@@ -22,8 +22,8 @@ import type { Diagram } from '../../models/metamodels/pure/packageableElements/d
 import type { GeneralizationView } from '../../models/metamodels/pure/packageableElements/diagram/DSLDiagram_GeneralizationView';
 import {
   _findOrBuildPoint,
-  _relationView_possiblyFlattenPath,
-  _relationView_setPath,
+  _relationshipView_SimplifyPath as _relationshipView_simplifyPath,
+  _relationshipView_setPath,
 } from '../../models/metamodels/pure/packageableElements/diagram/DSLDiagram_GraphModifierHelper';
 import type { PropertyView } from '../../models/metamodels/pure/packageableElements/diagram/DSLDiagram_PropertyView';
 import type { RelationshipEdgeView } from '../../models/metamodels/pure/packageableElements/diagram/DSLDiagram_RelationshipEdgeView';
@@ -119,12 +119,12 @@ export const relationshipView_changePoint = action(
     changeEntry(v.path, val, newVal);
   },
 );
-export const relationView_possiblyFlattenPath = action(
-  _relationView_possiblyFlattenPath,
+export const relationshipView_simplifyPath = action(
+  _relationshipView_simplifyPath,
 );
 
 export const findOrBuildPoint = action(_findOrBuildPoint);
-export const relationView_setPath = action(_relationView_setPath);
+export const relationshipView_setPath = action(_relationshipView_setPath);
 
 export const positionedRectangle_setRectangle = action(
   (pR: PositionedRectangle, value: Rectangle): void => {

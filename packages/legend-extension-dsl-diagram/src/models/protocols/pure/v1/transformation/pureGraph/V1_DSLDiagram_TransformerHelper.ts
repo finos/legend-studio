@@ -52,7 +52,7 @@ const createPoint = (x: number, y: number): V1_Point => {
 const transformPropertyView = (element: PropertyView): V1_PropertyView => {
   const view = new V1_PropertyView();
   const line = new V1_Line();
-  line.points = element.fullPath;
+  line.points = element.pathForSerialization;
   view.line = line;
   view.property = V1_transformPropertyReference(element.property);
   view.sourceView = relationshipEdgeViewTransformer(element.from);
@@ -65,7 +65,7 @@ const transformGenerationView = (
 ): V1_GeneralizationView => {
   const view = new V1_GeneralizationView();
   const line = new V1_Line();
-  line.points = element.fullPath;
+  line.points = element.pathForSerialization;
   view.line = line;
   view.sourceView = relationshipEdgeViewTransformer(element.from);
   view.targetView = relationshipEdgeViewTransformer(element.to);

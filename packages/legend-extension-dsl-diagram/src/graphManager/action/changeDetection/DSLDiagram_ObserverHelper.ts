@@ -84,8 +84,10 @@ export const observe_RelationShipEdgeView = skipObserved(
 export const observe_RelationshipView = skipObserved(
   (metamodel: RelationshipView): RelationshipView => {
     makeObservable(metamodel, {
+      // NOTE: to optimize performance for diagram, we have made classview's position and rectangle non-observable
+      // if we want to further optimize, perhaps we can also remove observability from path
       path: observable,
-      fullPath: computed,
+      pathForSerialization: computed,
     });
 
     observe_RelationShipEdgeView(metamodel.from);
