@@ -149,7 +149,7 @@ export const setupLegendApplicationUILibrary = async (
 
   configureMobx({
     // Force state modification to be done via actions
-    // See https://github.com/mobxjs/mobx/blob/gh-pages/docs/refguide/api.md#enforceactions
+    // See https://mobx.js.org/configuration.html#enforceactions
     enforceActions: 'observed',
   });
 

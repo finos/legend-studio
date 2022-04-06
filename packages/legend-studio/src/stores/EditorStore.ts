@@ -853,13 +853,14 @@ export class EditorStore {
       this.changeDetectionState.stop();
       this.changeDetectionState.observeGraph();
       yield Promise.all([
-        yield this.changeDetectionState.precomputeHashes(), // for local changes detection
+        this.changeDetectionState.preComputeGraphElementHashes(), // for local changes detection
         this.changeDetectionState.workspaceLocalLatestRevisionState.buildEntityHashesIndex(
           entities,
           LogEvent.create(
             CHANGE_DETECTION_EVENT.CHANGE_DETECTION_LOCAL_HASHES_INDEX_BUILT,
           ),
         ),
+
         this.sdlcState.buildWorkspaceBaseRevisionEntityHashesIndex(),
         this.sdlcState.buildProjectLatestRevisionEntityHashesIndex(),
       ]);

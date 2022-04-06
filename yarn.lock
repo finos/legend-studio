@@ -2804,6 +2804,7 @@ __metadata:
     jest: 27.5.1
     mobx: 6.5.0
     mobx-react-lite: 3.3.0
+    mobx-utils: 6.0.5
     monaco-editor: 0.33.0
     node-diff3: 3.1.0
     npm-run-all: 4.1.5
@@ -10699,6 +10700,15 @@ __metadata:
     react-native:
       optional: true
   checksum: 0f55bd2009a9cedc6b81d70b88b57dc4161362a16ba6ae0af341e673ca1c627bc3c4088c0cb13133e57e6fa6748b09b4c26aff7fab26c60ed95d27e939846fa3
+  languageName: node
+  linkType: hard
+
+"mobx-utils@npm:6.0.5":
+  version: 6.0.5
+  resolution: "mobx-utils@npm:6.0.5"
+  peerDependencies:
+    mobx: ^6.0.0
+  checksum: 51fc38c6395d0bc852c26d7473286e53019eadba56587f8b0a8773ddd36638dc5fae9c1d044ee1da5ee799dc613bc3ae0095eae5991d305bedf3086b301f8992
   languageName: node
   linkType: hard
 

@@ -19,6 +19,7 @@ import {
   type LoggerPlugin,
   Log,
   AbstractPluginManager,
+  promisify,
 } from '@finos/legend-shared';
 import type { PureGraphManagerPlugin } from './graphManager/PureGraphManagerPlugin';
 import { GraphManagerState } from './GraphManagerState';
@@ -186,14 +187,10 @@ export const TEST__checkGraphHashUnchanged = async (
     await graphManagerState.graphManager.buildHashesIndex(entities);
   const graphHashesIndex = new Map<string, string>();
   await Promise.all<void>(
-    graphManagerState.graph.allOwnElements.map(
-      (element) =>
-        new Promise((resolve) =>
-          setTimeout(() => {
-            graphHashesIndex.set(element.path, element.hashCode);
-            resolve();
-          }, 0),
-        ),
+    graphManagerState.graph.allOwnElements.map((element) =>
+      promisify(() => {
+        graphHashesIndex.set(element.path, element.hashCode);
+      }),
     ),
   );
   expect(

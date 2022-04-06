@@ -741,8 +741,7 @@ export class EditorGraphState {
    * 1. State management Mobx allows references, as such, it is sometimes hard to trace down which references can cause problem
    *    We have to understand that the behind this updater is very simple (replace), yet to do it cleanly is not easy, since
    *    so far it is tempting to refer to elements in the graph from various editor state. On top of that, change detection
-   *    sometimes obfuscate the investigation but we have cleared it out with explicit disposing of reaction and `keepAlive`
-   *    computations (e.g. hash)
+   *    sometimes obfuscate the investigation but we have cleared it out with explicit disposing of reaction
    * 2. Reusable models, at this point in time, we haven't completed stabilize the logic for handling generated models, as well
    *    as depdendencies, we intended to save computation time by reusing these while updating the graph. This can pose potential
    *    danger as well. Beware the way when we start to make system/project dependencies references elements of current graph
@@ -873,7 +872,8 @@ export class EditorGraphState {
 
       // ======= (RE)START CHANGE DETECTION =======
       /* @MARKER: MEMORY-SENSITIVE */
-      yield this.editorStore.changeDetectionState.precomputeHashes();
+      this.editorStore.changeDetectionState.observeGraph();
+      yield this.editorStore.changeDetectionState.preComputeGraphElementHashes();
       this.editorStore.changeDetectionState.start();
       yield flowResult(
         this.editorStore.changeDetectionState.computeLocalChanges(true),

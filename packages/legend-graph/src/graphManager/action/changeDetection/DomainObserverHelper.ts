@@ -384,7 +384,7 @@ export const observe_Class = skipObserved((metamodel: Class): Class => {
     stereotypes: observable,
     taggedValues: observable,
     allSuperclasses: computed,
-    allSubclasses: computed({ keepAlive: true }),
+    allSubclasses: computed,
     dispose: override,
     isStub: computed,
     _elementHashCode: override,

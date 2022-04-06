@@ -308,7 +308,7 @@ export const observe_ServiceRequestBuilderInfo = skipObserved(
   (metamodel: ServiceRequestBuildInfo): ServiceRequestBuildInfo => {
     makeObservable(metamodel, {
       requestBodyBuildInfo: observable,
-      requestParametersBuildInfo: observable.ref,
+      // TODO? requestParametersBuildInfo: observable.ref,
       hashCode: computed,
     });
 
