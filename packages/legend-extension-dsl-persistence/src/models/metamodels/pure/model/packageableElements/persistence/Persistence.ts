@@ -9,7 +9,6 @@ import {
   Service,
 } from '@finos/legend-graph';
 import { type Hashable, hashArray } from '@finos/legend-shared';
-import { makeObservable, observable, override } from 'mobx';
 
 /**********
  * persistence
@@ -21,19 +20,6 @@ export class Persistence extends PackageableElement implements Hashable {
   service!: PackageableElementReference<Service>;
   persister!: Persister;
   notifier!: Notifier;
-
-  constructor(name: string) {
-    super(name);
-
-    makeObservable<Persistence, '_elementHashCode'>(this, {
-      documentation: observable,
-      trigger: observable,
-      service: observable,
-      persister: observable,
-      notifier: observable,
-      _elementHashCode: override,
-    });
-  }
 
   protected override get _elementHashCode(): string {
     return hashArray([
