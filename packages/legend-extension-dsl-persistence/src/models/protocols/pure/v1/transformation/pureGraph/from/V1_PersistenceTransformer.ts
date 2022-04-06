@@ -13,6 +13,7 @@ import {
   DateTimeValidityMilestoning,
   DeduplicationStrategy,
   DeleteIndicatorMergeStrategy,
+  DuplicateCountDeduplicationStrategy,
   EmailNotifyee,
   FlatTarget,
   IngestMode,
@@ -61,6 +62,7 @@ import {
   V1_DateTimeValidityMilestoning,
   V1_DeduplicationStrategy,
   V1_DeleteIndicatorMergeStrategy,
+  V1_DuplicateCountDeduplicationStrategy,
   V1_EmailNotifyee,
   V1_FlatTarget,
   V1_IngestMode,
@@ -344,6 +346,10 @@ export const V1_transformDeduplicationStrategy = (
   } else if (element instanceof MaxVersionDeduplicationStrategy) {
     const protocol = new V1_MaxVersionDeduplicationStrategy();
     protocol.versionField = element.versionField;
+    return protocol;
+  } else if (element instanceof DuplicateCountDeduplicationStrategy) {
+    const protocol = new V1_DuplicateCountDeduplicationStrategy();
+    protocol.duplicateCountName = element.duplicateCountName;
     return protocol;
   }
   throw new UnsupportedOperationError(

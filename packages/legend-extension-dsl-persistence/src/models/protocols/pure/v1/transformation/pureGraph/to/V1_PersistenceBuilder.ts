@@ -13,6 +13,7 @@ import {
   V1_DateTimeValidityMilestoning,
   V1_DeduplicationStrategy,
   V1_DeleteIndicatorMergeStrategy,
+  V1_DuplicateCountDeduplicationStrategy,
   V1_EmailNotifyee,
   V1_FlatTarget,
   V1_IngestMode,
@@ -61,6 +62,7 @@ import {
   DateTimeValidityMilestoning,
   DeduplicationStrategy,
   DeleteIndicatorMergeStrategy,
+  DuplicateCountDeduplicationStrategy,
   EmailNotifyee,
   FlatTarget,
   IngestMode,
@@ -346,6 +348,10 @@ export const V1_buildDeduplicationStrategy = (
   } else if (protocol instanceof V1_MaxVersionDeduplicationStrategy) {
     const strategy = new MaxVersionDeduplicationStrategy();
     strategy.versionField = protocol.versionField;
+    return strategy;
+  } else if (protocol instanceof V1_DuplicateCountDeduplicationStrategy) {
+    const strategy = new DuplicateCountDeduplicationStrategy();
+    strategy.duplicateCountName = protocol.duplicateCountName;
     return strategy;
   }
   throw new GraphBuilderError(

@@ -292,6 +292,20 @@ export class V1_MaxVersionDeduplicationStrategy
   }
 }
 
+export class V1_DuplicateCountDeduplicationStrategy
+  extends V1_DeduplicationStrategy
+  implements Hashable
+{
+  duplicateCountName!: string;
+
+  override get hashCode(): string {
+    return hashArray([
+      PERSISTENCE_HASH_STRUCTURE.DUPLICATE_COUNT_DEDUPLICATION_STRATEGY,
+      this.duplicateCountName,
+    ]);
+  }
+}
+
 /**********
  * ingest mode
  **********/

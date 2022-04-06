@@ -13,6 +13,7 @@ import {
   V1_DateTimeValidityMilestoning,
   V1_DeduplicationStrategy,
   V1_DeleteIndicatorMergeStrategy,
+  V1_DuplicateCountDeduplicationStrategy,
   V1_EmailNotifyee,
   V1_FlatTarget,
   V1_IngestMode,
@@ -414,6 +415,7 @@ enum V1_DeduplicationStrategyType {
   NO_DEDUPLICATION_STRATEGY = 'noDeduplicationStrategy',
   ANY_VERSION_DEDUPLICATION_STRATEGY = 'anyVersionDeduplicationStrategy',
   MAX_VERSION_DEDUPLICATION_STRATEGY = 'maxVersionDeduplicationStrategy',
+  DUPLICATE_COUNT_DEDUPLICATION_STRATEGY = 'duplicateCountDeduplicationStrategy',
 }
 
 const V1_noDeduplicationStrategyModelSchema = createModelSchema(
@@ -444,6 +446,16 @@ const V1_maxVersionDeduplicationStrategyModelSchema = createModelSchema(
   },
 );
 
+const V1_duplicateCountDeduplicationStrategyModelSchema = createModelSchema(
+  V1_DuplicateCountDeduplicationStrategy,
+  {
+    _type: usingConstantValueSchema(
+      V1_DeduplicationStrategyType.DUPLICATE_COUNT_DEDUPLICATION_STRATEGY,
+    ),
+    duplicateCountName: primitive(),
+  },
+);
+
 const V1_serializeDeduplicationStrategy = (
   protocol: V1_DeduplicationStrategy,
 ): PlainObject<V1_DeduplicationStrategy> => {
@@ -453,6 +465,11 @@ const V1_serializeDeduplicationStrategy = (
     return serialize(V1_anyVersionDeduplicationStrategyModelSchema, protocol);
   } else if (protocol instanceof V1_MaxVersionDeduplicationStrategy) {
     return serialize(V1_maxVersionDeduplicationStrategyModelSchema, protocol);
+  } else if (protocol instanceof V1_DuplicateCountDeduplicationStrategy) {
+    return serialize(
+      V1_duplicateCountDeduplicationStrategyModelSchema,
+      protocol,
+    );
   }
   throw new UnsupportedOperationError(
     `Unable to serialize deduplication strategy`,
@@ -470,6 +487,11 @@ const V1_deserializeDeduplicationStrategy = (
       return deserialize(V1_anyVersionDeduplicationStrategyModelSchema, json);
     case V1_DeduplicationStrategyType.MAX_VERSION_DEDUPLICATION_STRATEGY:
       return deserialize(V1_maxVersionDeduplicationStrategyModelSchema, json);
+    case V1_DeduplicationStrategyType.DUPLICATE_COUNT_DEDUPLICATION_STRATEGY:
+      return deserialize(
+        V1_duplicateCountDeduplicationStrategyModelSchema,
+        json,
+      );
     default:
       throw new UnsupportedOperationError(
         `Unable to deserialize deduplicationStrategy '${json._type}'`,
