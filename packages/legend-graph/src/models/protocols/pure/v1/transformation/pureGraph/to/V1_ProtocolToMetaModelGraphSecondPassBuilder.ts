@@ -165,13 +165,11 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
     const measure = this.context.graph.getMeasure(
       this.context.graph.buildPath(element.package, element.name),
     );
-    measure.setCanonicalUnit(
-      V1_buildUnit(
-        element.canonicalUnit,
-        measure,
-        this.context.graph,
-        this.context,
-      ),
+    measure.canonicalUnit = V1_buildUnit(
+      element.canonicalUnit,
+      measure,
+      this.context.graph,
+      this.context,
     );
     measure.nonCanonicalUnits = element.nonCanonicalUnits.map((unit) =>
       V1_buildUnit(unit, measure, this.context.currentSubGraph, this.context),
@@ -290,8 +288,10 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
     service.documentation = element.documentation;
     service.autoActivateUpdates = element.autoActivateUpdates;
     // NOTE: process execution before the test, so we can do some check between test and execution (such matching type, keys, etc.)
-    service.setExecution(
-      V1_buildServiceExecution(element.execution, this.context, service),
+    service.execution = V1_buildServiceExecution(
+      element.execution,
+      this.context,
+      service,
     );
     service.test = V1_buildServiceTest(element.test, this.context, service);
   }
@@ -313,10 +313,10 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
     const fileGeneration = this.context.graph.getFileGeneration(
       this.context.graph.buildPath(element.package, element.name),
     );
-    fileGeneration.setType(element.type);
+    fileGeneration.type = element.type;
     fileGeneration.configurationProperties =
       element.configurationProperties.map(V1_buildConfigurationProperty);
-    fileGeneration.setGenerationOutputPath(element.generationOutputPath);
+    fileGeneration.generationOutputPath = element.generationOutputPath;
     fileGeneration.scopeElements = element.scopeElements.map((scopeElement) =>
       V1_buildScopeElement(scopeElement, this.context),
     );
@@ -338,8 +338,9 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
     const runtime = this.context.graph.getRuntime(
       this.context.graph.buildPath(element.package, element.name),
     );
-    runtime.setRuntimeValue(
-      V1_buildEngineRuntime(element.runtimeValue, this.context),
+    runtime.runtimeValue = V1_buildEngineRuntime(
+      element.runtimeValue,
+      this.context,
     );
   }
 
@@ -352,10 +353,9 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
         'Packageable connection value cannot be a connection pointer',
       );
     }
-    connection.setConnectionValue(
+    connection.connectionValue =
       element.connectionValue.accept_ConnectionVisitor(
         new V1_ProtocolToMetaModelConnectionBuilder(this.context),
-      ),
-    );
+      );
   }
 }

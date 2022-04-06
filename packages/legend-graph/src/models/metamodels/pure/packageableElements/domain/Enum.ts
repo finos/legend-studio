@@ -14,15 +14,7 @@
  * limitations under the License.
  */
 
-import { observable, action, computed, makeObservable } from 'mobx';
-import {
-  type Hashable,
-  uuid,
-  hashArray,
-  deleteEntry,
-  addUniqueEntry,
-  changeEntry,
-} from '@finos/legend-shared';
+import { type Hashable, uuid, hashArray } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import type { Enumeration } from './Enumeration';
 import type { TaggedValue } from './TaggedValue';
@@ -38,44 +30,8 @@ export class Enum implements AnnotatedElement, Hashable, Stubable {
   taggedValues: TaggedValue[] = [];
 
   constructor(name: string, owner: Enumeration) {
-    makeObservable(this, {
-      name: observable,
-      stereotypes: observable,
-      taggedValues: observable,
-      setName: action,
-      deleteTaggedValue: action,
-      addTaggedValue: action,
-      deleteStereotype: action,
-      changeStereotype: action,
-      addStereotype: action,
-      isStub: computed,
-      hashCode: computed,
-    });
-
     this.name = name;
     this.owner = owner;
-  }
-
-  setName(value: string): void {
-    this.name = value;
-  }
-  deleteTaggedValue(value: TaggedValue): void {
-    deleteEntry(this.taggedValues, value);
-  }
-  addTaggedValue(value: TaggedValue): void {
-    addUniqueEntry(this.taggedValues, value);
-  }
-  deleteStereotype(value: StereotypeReference): void {
-    deleteEntry(this.stereotypes, value);
-  }
-  changeStereotype(
-    oldValue: StereotypeReference,
-    newValue: StereotypeReference,
-  ): void {
-    changeEntry(this.stereotypes, oldValue, newValue);
-  }
-  addStereotype(value: StereotypeReference): void {
-    addUniqueEntry(this.stereotypes, value);
   }
 
   static createStub = (parentEnumeration: Enumeration): Enum =>

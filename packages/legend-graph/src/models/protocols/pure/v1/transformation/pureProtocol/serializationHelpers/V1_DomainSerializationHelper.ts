@@ -71,6 +71,8 @@ export const V1_propertyPointerModelSchema = createModelSchema(
   },
 );
 
+// ------------------------------------- Profile -------------------------------------
+
 export const V1_stereotypePtrSchema = createModelSchema(V1_StereotypePtr, {
   profile: primitive(),
   value: primitive(),
@@ -93,6 +95,8 @@ export const V1_profileSchema = createModelSchema(V1_Profile, {
   stereotypes: list(primitive()),
   tags: list(primitive()),
 });
+
+// ------------------------------------- Enumeration -------------------------------------
 
 export const V1_enumValueSchema = createModelSchema(V1_EnumValue, {
   stereotypes: custom(
@@ -124,22 +128,6 @@ export const V1_enumValueSchema = createModelSchema(V1_EnumValue, {
       ),
   ),
   value: primitive(),
-});
-
-export const V1_unitSchema = createModelSchema(V1_Unit, {
-  _type: usingConstantValueSchema(V1_UNIT_ELEMENT_PROTOCOL_TYPE),
-  conversionFunction: optional(usingModelSchema(V1_rawLambdaModelSchema)),
-  measure: primitive(),
-  name: primitive(),
-  package: primitive(),
-});
-
-export const V1_measureSchema = createModelSchema(V1_Measure, {
-  _type: usingConstantValueSchema(V1_MEASURE_ELEMENT_PROTOCOL_TYPE),
-  canonicalUnit: optional(usingModelSchema(V1_unitSchema)),
-  name: primitive(),
-  nonCanonicalUnits: list(usingModelSchema(V1_unitSchema)),
-  package: primitive(),
 });
 
 export const V1_enumerationSchema = createModelSchema(V1_Enumeration, {
@@ -176,6 +164,26 @@ export const V1_enumerationSchema = createModelSchema(V1_Enumeration, {
   ),
   values: list(usingModelSchema(V1_enumValueSchema)),
 });
+
+// ------------------------------------- Measure -------------------------------------
+
+export const V1_unitSchema = createModelSchema(V1_Unit, {
+  _type: usingConstantValueSchema(V1_UNIT_ELEMENT_PROTOCOL_TYPE),
+  conversionFunction: optional(usingModelSchema(V1_rawLambdaModelSchema)),
+  measure: primitive(),
+  name: primitive(),
+  package: primitive(),
+});
+
+export const V1_measureSchema = createModelSchema(V1_Measure, {
+  _type: usingConstantValueSchema(V1_MEASURE_ELEMENT_PROTOCOL_TYPE),
+  canonicalUnit: optional(usingModelSchema(V1_unitSchema)),
+  name: primitive(),
+  nonCanonicalUnits: list(usingModelSchema(V1_unitSchema)),
+  package: primitive(),
+});
+
+// ------------------------------------- Class -------------------------------------
 
 export const V1_propertySchema = createModelSchema(V1_Property, {
   multiplicity: usingModelSchema(V1_multiplicitySchema),
@@ -342,6 +350,8 @@ export const V1_classSchema = createModelSchema(V1_Class, {
   ),
 });
 
+// ------------------------------------- Association -------------------------------------
+
 export const V1_associationSchema = createModelSchema(V1_Association, {
   _type: usingConstantValueSchema(V1_ASSOCIATION_ELEMENT_PROTOCOL_TYPE),
   name: primitive(),
@@ -397,6 +407,8 @@ export const V1_associationSchema = createModelSchema(V1_Association, {
       ),
   ),
 });
+
+// ------------------------------------- Function -------------------------------------
 
 export const V1_functionSchema = createModelSchema(
   V1_ConcreteFunctionDefinition,

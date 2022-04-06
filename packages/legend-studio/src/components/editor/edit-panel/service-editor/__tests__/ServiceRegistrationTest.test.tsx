@@ -52,6 +52,7 @@ import {
 } from '@finos/legend-graph';
 import { TEST__getTestStudioConfig } from '../../../../../stores/EditorStoreTestUtils';
 import { LegendStudioPluginManager } from '../../../../../application/LegendStudioPluginManager';
+import { service_deleteOwner } from '../../../../../stores/graphModifier/DSLService_GraphModifierHelper';
 
 let renderResult: RenderResult;
 
@@ -323,9 +324,9 @@ test(
       NOTIFCATION_SEVERITY.SUCCESS,
     );
     // check no owners check
-    serviceEditorState.service.deleteOwner(0);
-    serviceEditorState.service.deleteOwner(0);
-    serviceEditorState.service.deleteOwner(0);
+    service_deleteOwner(serviceEditorState.service, 0);
+    service_deleteOwner(serviceEditorState.service, 0);
+    service_deleteOwner(serviceEditorState.service, 0);
     await flowResult(registrationState.registerService());
     expect(mockedEditorStore.applicationStore.notification?.severity).toBe(
       NOTIFCATION_SEVERITY.ERROR,

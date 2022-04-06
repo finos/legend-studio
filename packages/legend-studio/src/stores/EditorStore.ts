@@ -851,8 +851,9 @@ export class EditorStore {
 
       // ======= (RE)START CHANGE DETECTION =======
       this.changeDetectionState.stop();
+      this.changeDetectionState.observeGraph();
       yield Promise.all([
-        this.graphManagerState.precomputeHashes(), // for local changes detection
+        yield this.changeDetectionState.precomputeHashes(), // for local changes detection
         this.changeDetectionState.workspaceLocalLatestRevisionState.buildEntityHashesIndex(
           entities,
           LogEvent.create(
@@ -1101,7 +1102,10 @@ export class EditorStore {
   }
 
   *deleteElement(element: PackageableElement): GeneratorFn<void> {
-    if (this.graphState.checkIfApplicationUpdateOperationIsRunning()) {
+    if (
+      this.graphState.checkIfApplicationUpdateOperationIsRunning() ||
+      this.graphManagerState.isElementReadOnly(element)
+    ) {
       return;
     }
     const generatedChildrenElements = (
@@ -1160,7 +1164,7 @@ export class EditorStore {
     element: PackageableElement,
     newPath: string,
   ): GeneratorFn<void> {
-    if (element.isReadOnly) {
+    if (this.graphManagerState.isElementReadOnly(element)) {
       return;
     }
     this.graphManagerState.graph.renameOwnElement(element, newPath);

@@ -49,6 +49,11 @@ import {
   PackageableElementExplicitReference,
   ELEMENT_PATH_DELIMITER,
 } from '@finos/legend-graph';
+import {
+  configurationProperty_setValue,
+  fileGeneration_addScopeElement,
+  fileGeneration_deleteScopeElement,
+} from '../graphModifier/DSLGeneration_GraphModifierHelper';
 
 export class FileGenerationState {
   editorStore: EditorStore;
@@ -232,7 +237,8 @@ export class FileGenerationState {
   addScopeElement(element: PackageableElement | string): void {
     const el = this.getScopeElement(element);
     if (!el) {
-      this.fileGeneration.addScopeElement(
+      fileGeneration_addScopeElement(
+        this.fileGeneration,
         element instanceof PackageableElement
           ? PackageableElementExplicitReference.create(element)
           : element,
@@ -243,7 +249,7 @@ export class FileGenerationState {
   deleteScopeElement(element: PackageableElement | string): void {
     const el = this.getScopeElement(element);
     if (el) {
-      this.fileGeneration.deleteScopeElement(el);
+      fileGeneration_deleteScopeElement(this.fileGeneration, el);
     }
   }
 
@@ -267,7 +273,9 @@ export class FileGenerationState {
           generationProperty.name,
         );
         if (configProperty) {
-          configProperty.setValue({ ...(newValue as object) });
+          configurationProperty_setValue(configProperty, {
+            ...(newValue as object),
+          });
         } else {
           const newItem = new ConfigurationProperty(
             generationProperty.name,
@@ -287,7 +295,7 @@ export class FileGenerationState {
       const newConfigValue = useDefaultValue ? undefined : newValue;
       if (newConfigValue !== undefined) {
         if (configProperty) {
-          configProperty.setValue(newConfigValue);
+          configurationProperty_setValue(configProperty, newConfigValue);
         } else {
           const newItem = new ConfigurationProperty(
             generationProperty.name,

@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-import { observable, computed, action, makeObservable } from 'mobx';
-import { hashArray, ContentType, type Hashable } from '@finos/legend-shared';
+import { hashArray, type Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import type { ConnectionVisitor } from '../../../connection/Connection';
 import type { Class } from '../../../domain/Class';
@@ -27,8 +26,7 @@ export class XmlModelConnection
   extends PureModelConnection
   implements Hashable
 {
-  static readonly CONTENT_TYPE = ContentType.APPLICATION_XML;
-
+  declare store: PackageableElementReference<ModelStore>;
   class: PackageableElementReference<Class>;
   url: string;
 
@@ -38,23 +36,8 @@ export class XmlModelConnection
     url: string,
   ) {
     super(store);
-
-    makeObservable(this, {
-      url: observable,
-      setClass: action,
-      setUrl: action,
-      hashCode: computed,
-    });
-
     this.class = _class;
     this.url = url;
-  }
-
-  setClass(value: Class): void {
-    this.class.setValue(value);
-  }
-  setUrl(value: string): void {
-    this.url = value;
   }
 
   get hashCode(): string {

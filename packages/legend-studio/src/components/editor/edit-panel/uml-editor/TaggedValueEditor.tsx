@@ -27,7 +27,11 @@ import {
 } from '@finos/legend-art';
 import type { PackageableElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';
 import { useEditorStore } from '../../EditorStoreProvider';
-import type { Profile, TaggedValue, Tag } from '@finos/legend-graph';
+import type { TaggedValue, Tag, Profile } from '@finos/legend-graph';
+import {
+  taggedValue_setValue,
+  taggedValue_setTag,
+} from '../../../../stores/graphModifier/DomainGraphModifierHelper';
 
 interface TagOption {
   label: string;
@@ -45,7 +49,7 @@ export const TaggedValueEditor = observer(
     // Name
     const changeValue: React.ChangeEventHandler<
       HTMLTextAreaElement | HTMLInputElement
-    > = (event) => taggedValue.setValue(event.target.value);
+    > = (event) => taggedValue_setValue(taggedValue, event.target.value);
     // Profile
     const profileOptions = editorStore.profileOptions.filter(
       (p) => p.value.tags.length,
@@ -65,7 +69,7 @@ export const TaggedValueEditor = observer(
     const changeProfile = (val: PackageableElementOption<Profile>): void => {
       if (val.value.tags.length) {
         setSelectedProfile(val);
-        taggedValue.setTag(val.value.tags[0] as Tag);
+        taggedValue_setTag(taggedValue, val.value.tags[0] as Tag);
       }
     };
     const visitProfile = (): void =>
@@ -85,7 +89,8 @@ export const TaggedValueEditor = observer(
       value: inferableTag.value,
       label: inferableTag.value.value,
     };
-    const changeTag = (val: TagOption): void => taggedValue.setTag(val.value);
+    const changeTag = (val: TagOption): void =>
+      taggedValue_setTag(taggedValue, val.value);
     // Value
     const [isExpanded, setIsExpanded] = useState(false);
     const toggleExpandedMode = (): void => setIsExpanded(!isExpanded);

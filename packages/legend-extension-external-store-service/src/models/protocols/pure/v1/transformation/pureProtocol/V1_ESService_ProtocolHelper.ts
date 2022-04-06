@@ -63,7 +63,7 @@ import {
 import { V1_ParameterIndexedParameterMapping } from '../../model/packageableElements/store/serviceStore/mapping/V1_ESService_ParameterIndexedParameterMapping';
 import { V1_PropertyIndexedParameterMapping } from '../../model/packageableElements/store/serviceStore/mapping/V1_ESService_PropertyIndexedParameterMapping';
 import type { V1_SecurityScheme } from '../../model/packageableElements/store/serviceStore/model/V1_ESService_SecurityScheme';
-import type { ExternalStoreService_PureProtocolPlugin_Extension } from '../../../ExternalStoreService_PureProtocolPlugin_Extension';
+import type { ESService_PureProtocolPlugin_Extension } from '../../../ESService_PureProtocolPlugin_Extension';
 import { V1_ServiceRequestBuildInfo } from '../../model/packageableElements/store/serviceStore/mapping/V1_ESService_ServiceRequestBuildInfo';
 import { V1_ServiceRequestParametersBuildInfo } from '../../model/packageableElements/store/serviceStore/mapping/V1_ESService_ServiceRequestParametersBuildInfo';
 import { V1_ServiceRequestParameterBuildInfo } from '../../model/packageableElements/store/serviceStore/mapping/V1_ESService_ServiceRequestParameterBuildInfo';
@@ -205,7 +205,7 @@ const V1_serializeSecurityScheme = (
   const extraSecuritySchemeProtocolSerializers = plugins.flatMap(
     (plugin) =>
       (
-        plugin as ExternalStoreService_PureProtocolPlugin_Extension
+        plugin as ESService_PureProtocolPlugin_Extension
       ).V1_getExtraSecuritySchemeProtocolSerializers?.() ?? [],
   );
   for (const serializer of extraSecuritySchemeProtocolSerializers) {
@@ -227,7 +227,7 @@ const V1_deserializeSecurityScheme = (
   const extraSecuritySchemeProtocolDeserializers = plugins.flatMap(
     (plugin) =>
       (
-        plugin as ExternalStoreService_PureProtocolPlugin_Extension
+        plugin as ESService_PureProtocolPlugin_Extension
       ).V1_getExtraSecuritySchemeProtocolDeserializers?.() ?? [],
   );
   for (const deserializer of extraSecuritySchemeProtocolDeserializers) {

@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { computed, makeObservable } from 'mobx';
 import { InferableValue } from '../../InferableValue';
 
 export abstract class InferableMappingElementRoot extends InferableValue<
@@ -25,10 +24,6 @@ export abstract class InferableMappingElementRoot extends InferableValue<
 export class InferableMappingElementRootExplicitValue extends InferableMappingElementRoot {
   private constructor(value: boolean) {
     super(value);
-
-    makeObservable(this, {
-      valueForSerialization: computed,
-    });
   }
 
   static create(value: boolean): InferableMappingElementRootExplicitValue {
@@ -45,11 +40,6 @@ export class InferableMappingElementRootImplicitValue extends InferableMappingEl
 
   private constructor(value: boolean, input: boolean) {
     super(value);
-
-    makeObservable(this, {
-      valueForSerialization: computed,
-    });
-
     this.input = input;
   }
 

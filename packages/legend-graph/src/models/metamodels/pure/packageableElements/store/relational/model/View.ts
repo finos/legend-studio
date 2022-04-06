@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { computed, observable, makeObservable } from 'mobx';
 import {
   type Hashable,
   hashArray,
@@ -44,16 +43,6 @@ export class View
 
   constructor(name: string, schema: Schema) {
     super(name);
-
-    makeObservable(this, {
-      primaryKey: observable,
-      columnMappings: observable,
-      filter: observable,
-      distinct: observable,
-      groupBy: observable,
-      hashCode: computed,
-    });
-
     this.schema = schema;
   }
 

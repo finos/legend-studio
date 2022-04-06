@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import { observable, action, makeObservable } from 'mobx';
-
 /**
  * Sometimes people can give us corrupted protocol or ones with missing information, it is then the job
  * of the graph builder (in Studio) or the compiler (in the execution server) to do inference
@@ -45,16 +43,7 @@ export abstract class InferableValue<T, V> {
   value: T;
 
   constructor(value: T) {
-    makeObservable(this, {
-      value: observable,
-      setValue: action,
-    });
-
     this.value = value;
-  }
-
-  setValue(val: T): void {
-    this.value = val;
   }
 
   abstract get valueForSerialization(): V;

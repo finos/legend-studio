@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { observable, action, makeObservable, override } from 'mobx';
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import {
@@ -28,20 +27,6 @@ export class PackageableConnection
   implements Hashable
 {
   connectionValue!: Connection;
-
-  constructor(name: string) {
-    super(name);
-
-    makeObservable<PackageableConnection, '_elementHashCode'>(this, {
-      connectionValue: observable,
-      setConnectionValue: action,
-      _elementHashCode: override,
-    });
-  }
-
-  setConnectionValue(connection: Connection): void {
-    this.connectionValue = connection;
-  }
 
   protected override get _elementHashCode(): string {
     return hashArray([

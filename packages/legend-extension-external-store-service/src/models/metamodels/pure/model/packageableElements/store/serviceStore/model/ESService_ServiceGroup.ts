@@ -14,37 +14,12 @@
  * limitations under the License.
  */
 
-import { observable, computed, makeObservable, action } from 'mobx';
-import {
-  addUniqueEntry,
-  deleteEntry,
-  hashArray,
-  type Hashable,
-} from '@finos/legend-shared';
+import { hashArray, type Hashable } from '@finos/legend-shared';
 import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../ESService_ModelUtils';
 import { ServiceStoreElement } from './ESService_ServiceStoreElement';
 
 export class ServiceGroup extends ServiceStoreElement implements Hashable {
   elements: ServiceStoreElement[] = [];
-
-  constructor() {
-    super();
-
-    makeObservable(this, {
-      elements: observable,
-      addElement: action,
-      deleteElement: action,
-      hashCode: computed,
-    });
-  }
-
-  addElement(value: ServiceStoreElement): void {
-    addUniqueEntry(this.elements, value);
-  }
-
-  deleteElement(value: ServiceStoreElement): void {
-    deleteEntry(this.elements, value);
-  }
 
   override get hashCode(): string {
     return hashArray([

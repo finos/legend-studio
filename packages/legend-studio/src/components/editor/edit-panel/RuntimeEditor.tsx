@@ -94,6 +94,10 @@ import {
 } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
 import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../stores/DSLMapping_LegendStudioPlugin_Extension';
+import {
+  runtime_addIdentifiedConnection,
+  runtime_deleteIdentifiedConnection,
+} from '../../../stores/graphModifier/DSLMapping_GraphModifierHelper';
 
 const getConnectionTooltipText = (
   connection: Connection,
@@ -524,8 +528,8 @@ const IdentifiedConnectionEditor = observer(
           runtimeValue.generateIdentifiedConnectionId(),
           customConnection,
         );
-        runtimeValue.addIdentifiedConnection(newIdentifiedConnection);
-        runtimeValue.deleteIdentifiedConnection(identifiedConnection);
+        runtime_addIdentifiedConnection(runtimeValue, newIdentifiedConnection);
+        runtime_deleteIdentifiedConnection(runtimeValue, identifiedConnection);
         currentRuntimeEditorTabState.openIdentifiedConnection(
           newIdentifiedConnection,
         );
@@ -542,8 +546,8 @@ const IdentifiedConnectionEditor = observer(
           runtimeValue.generateIdentifiedConnectionId(),
           connectionPointer,
         );
-        runtimeValue.addIdentifiedConnection(newIdentifiedConnection);
-        runtimeValue.deleteIdentifiedConnection(identifiedConnection);
+        runtime_addIdentifiedConnection(runtimeValue, newIdentifiedConnection);
+        runtime_deleteIdentifiedConnection(runtimeValue, identifiedConnection);
         currentRuntimeEditorTabState.openIdentifiedConnection(
           newIdentifiedConnection,
         );

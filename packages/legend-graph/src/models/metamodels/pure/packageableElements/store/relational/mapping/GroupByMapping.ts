@@ -14,18 +14,9 @@
  * limitations under the License.
  */
 
-import { observable, makeObservable } from 'mobx';
 import type { RelationalOperationElement } from '../model/RelationalOperationElement';
-import type { RelationalInstanceSetImplementation } from './RelationalInstanceSetImplementation';
 
 export class GroupByMapping {
-  setMappingOwner?: RelationalInstanceSetImplementation | undefined;
+  // setMappingOwner?: RelationalInstanceSetImplementation | undefined;
   columns: RelationalOperationElement[] = [];
-
-  constructor() {
-    makeObservable(this, {
-      setMappingOwner: observable,
-      columns: observable,
-    });
-  }
 }

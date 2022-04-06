@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { observable, action, makeObservable, override } from 'mobx';
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import type { SchemaSet } from '../schemaSet/DSLExternalFormat_SchemaSet';
 import { Store } from '../../store/Store';
@@ -28,38 +27,6 @@ export class Binding extends Store implements Hashable {
   schemaId?: string | undefined;
   contentType!: string;
   modelUnit!: ModelUnit;
-
-  constructor(name: string) {
-    super(name);
-
-    makeObservable<Binding, '_elementHashCode'>(this, {
-      schemaSet: observable,
-      schemaId: observable,
-      contentType: observable,
-      modelUnit: observable,
-      setSchemaSet: action,
-      setSchemaId: action,
-      setContentType: action,
-      setModelUnit: action,
-      _elementHashCode: override,
-    });
-  }
-
-  setSchemaSet(value: SchemaSet | undefined): void {
-    this.schemaSet.setValue(value);
-  }
-
-  setSchemaId(value: string | undefined): void {
-    this.schemaId = value;
-  }
-
-  setContentType(value: string): void {
-    this.contentType = value;
-  }
-
-  setModelUnit(value: ModelUnit): void {
-    this.modelUnit = value;
-  }
 
   protected override get _elementHashCode(): string {
     return hashArray([

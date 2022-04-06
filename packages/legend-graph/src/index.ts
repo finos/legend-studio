@@ -36,6 +36,7 @@ export {
   CLASS_PROPERTY_TYPE,
   getClassPropertyType,
 } from './models/metamodels/pure/packageableElements/domain/Class';
+export { type AnnotatedElement } from './models/metamodels/pure/packageableElements/domain/AnnotatedElement';
 export { Package } from './models/metamodels/pure/packageableElements/domain/Package';
 export { Constraint } from './models/metamodels/pure/packageableElements/domain/Constraint';
 export { Association } from './models/metamodels/pure/packageableElements/domain/Association';
@@ -69,6 +70,10 @@ export {
   TagReference,
   TagExplicitReference,
 } from './models/metamodels/pure/packageableElements/domain/TagReference';
+export {
+  RuntimePointer,
+  StoreConnections,
+} from './models/metamodels/pure/packageableElements/runtime/Runtime';
 // metamodel external formats
 export { Binding } from './models/metamodels/pure/packageableElements/externalFormat/store/DSLExternalFormat_Binding';
 export { ModelUnit } from './models/metamodels/pure/packageableElements/externalFormat/store/DSLExternalFormat_ModelUnit';
@@ -77,6 +82,7 @@ export { Schema as ExternalFormatSchema } from './models/metamodels/pure/package
 export { ExternalFormatConnection } from './models/metamodels/pure/packageableElements/externalFormat/connection/DSLExternalFormat_ExternalFormatConnection';
 export { UrlStream } from './models/metamodels/pure/packageableElements/externalFormat/connection/DSLExternalFormat_UrlStream';
 export { DSLExternalFormat_GraphPreset } from './graph/DSLExternalFormat_Extension';
+export { BindingTransformer } from './models/metamodels/pure/packageableElements/externalFormat/store/DSLExternalFormat_BindingTransformer';
 // V1 protocols
 export * from './models/protocols/pure/v1/model/packageableElements/V1_PackageableElement';
 export { V1_StereotypePtr } from './models/protocols/pure/v1/model/packageableElements/domain/V1_StereotypePtr';
@@ -124,6 +130,7 @@ export {
   PropertyGraphFetchTreeInstanceValue,
   RootGraphFetchTreeInstanceValue,
 } from './models/metamodels/pure/valueSpecification/GraphFetchTree';
+export { V1_PureGraphManager } from './models/protocols/pure/v1/V1_PureGraphManager';
 
 // V1 protocols
 export { V1_AppliedFunction } from './models/protocols/pure/v1/model/valueSpecification/application/V1_AppliedFunction';
@@ -154,7 +161,6 @@ export * from './MetaModelConst';
 export * from './helpers/ServiceHelper';
 export * from './helpers/DatabaseHelper';
 export * from './helpers/MappingHelper';
-export * from './helpers/MappingResolutionHelper';
 export * from './helpers/ValidationHelper';
 export * from './helpers/Stubable'; // TODO: to be removed
 export * from './helpers/DomainHelper';
@@ -215,7 +221,8 @@ export { SourceInformation } from './graphManager/action/SourceInformation';
 export { getGraphManager } from './models/protocols/pure/Pure';
 export * from './models/protocols/pure/PureProtocolProcessorPlugin';
 
-// V1 transformation
+// --------------------------------------------- TRANSFORMATION --------------------------------------------------
+
 export {
   V1_transformStereotype,
   V1_transformTaggedValue,
@@ -244,7 +251,10 @@ export { V1_transformPropertyReference } from './models/protocols/pure/v1/transf
 export { V1_EngineServerClient } from './models/protocols/pure/v1/engine/V1_EngineServerClient';
 export { V1_Engine } from './models/protocols/pure/v1/engine/V1_Engine';
 export * from './models/protocols/pure/v1/engine/V1_EngineEvent';
-export { V1_deserializePureModelContextData as V1_jsonToPureModelContextData } from './models/protocols/pure/v1/transformation/pureProtocol/V1_PureProtocolSerialization';
+export {
+  V1_entitiesToPureModelContextData,
+  V1_deserializePureModelContextData,
+} from './models/protocols/pure/v1/transformation/pureProtocol/V1_PureProtocolSerialization';
 export {
   V1_propertyPointerModelSchema,
   V1_stereotypePtrSchema,
@@ -254,6 +264,20 @@ export { V1_serializeValueSpecification } from './models/protocols/pure/v1/trans
 export { V1_ValueSpecificationBuilder } from './models/protocols/pure/v1/transformation/pureGraph/to/helpers/V1_ValueSpecificationBuilderHelper';
 export * from './models/protocols/pure/v1/transformation/pureProtocol/serializationHelpers/V1_CoreSerializationHelper';
 export * from './models/protocols/pure/v1/transformation/pureGraph/to/V1_DSLExternalFormat_GraphBuilderHelper';
+export * from './models/ModelGenerationConfiguration';
+export * from './models/protocols/pure/MappingGeneration_PureProtocolProcessorPlugin_Extension';
+
+// --------------------------------------------- OBSERVER --------------------------------------------------
+
+export * from './graphManager/action/changeDetection/PackageableElementObserver';
+export * from './graphManager/action/changeDetection/CoreObserverHelper';
+export * from './graphManager/action/changeDetection/DomainObserverHelper';
+export * from './graphManager/action/changeDetection/DSLMapping_ObserverHelper';
+export * from './graphManager/action/changeDetection/RawValueSpecificationObserver';
+export * from './graphManager/action/changeDetection/ValueSpecificationObserver';
+export * from './graphManager/action/changeDetection/StoreRelational_ObserverHelper';
+export * from './graphManager/action/changeDetection/StoreFlatData_ObserverHelper';
+export * from './graphManager/action/changeDetection/GraphObserverHelper';
 
 // --------------------------------------------- TO BE MODULARIZED --------------------------------------------------
 

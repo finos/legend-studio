@@ -118,9 +118,6 @@ export class DSLExternalFormat_PureProtocolProcessorPlugin
             elementProtocol.package,
             elementProtocol.name,
           );
-          context.currentSubGraph
-            .getOrCreatePackage(elementProtocol.package)
-            .addElement(element);
           context.currentSubGraph.setOwnStore(path, element);
           return element;
         },
@@ -193,11 +190,9 @@ export class DSLExternalFormat_PureProtocolProcessorPlugin
           element.format = guaranteeNonEmptyString(elementProtocol.format);
           element.schemas = elementProtocol.schemas.map((schema) => {
             const schemaElement = new Schema();
-            schemaElement.setContent(
-              guaranteeNonEmptyString(
-                schema.content,
-                `Schema 'content' field is missing or empty`,
-              ),
+            schemaElement.content = guaranteeNonEmptyString(
+              schema.content,
+              `Schema 'content' field is missing or empty`,
             );
             schemaElement.id = schema.id;
             schemaElement.location = schema.location;
@@ -353,11 +348,9 @@ export class DSLExternalFormat_PureProtocolProcessorPlugin
             `External format connection 'externalSource' field is missing`,
           );
           const urlStream = new UrlStream();
-          urlStream.setUrl(
-            guaranteeNonEmptyString(
-              connection.externalSource.url,
-              `URL stream 'url' field is missing or empty`,
-            ),
+          urlStream.url = guaranteeNonEmptyString(
+            connection.externalSource.url,
+            `URL stream 'url' field is missing or empty`,
           );
           externalFormatConnection.externalSource = urlStream;
           return externalFormatConnection;

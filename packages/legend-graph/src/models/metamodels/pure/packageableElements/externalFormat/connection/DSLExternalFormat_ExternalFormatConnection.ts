@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-import { type Hashable, ContentType, hashArray } from '@finos/legend-shared';
-import { action, computed, makeObservable, observable } from 'mobx';
+import { type Hashable, hashArray } from '@finos/legend-shared';
 import type { Binding } from '../store/DSLExternalFormat_Binding';
 import type { UrlStream } from './DSLExternalFormat_UrlStream';
 import {
@@ -26,22 +25,8 @@ import type { PackageableElementReference } from '../../PackageableElementRefere
 import { DSL_EXTERNAL_FORMAT_HASH_STRUCTURE } from '../../../../../DSLExternalFormat_ModelUtils';
 
 export class ExternalFormatConnection extends Connection implements Hashable {
-  static readonly CONTENT_TYPE = ContentType.TEXT_PLAIN;
+  declare store: PackageableElementReference<Binding>;
   externalSource!: UrlStream;
-
-  constructor(store: PackageableElementReference<Binding>) {
-    super(store);
-
-    makeObservable(this, {
-      externalSource: observable,
-      setSource: action,
-      hashCode: computed,
-    });
-  }
-
-  setSource(value: UrlStream): void {
-    this.externalSource = value;
-  }
 
   get hashCode(): string {
     return hashArray([

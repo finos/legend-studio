@@ -48,8 +48,6 @@
  */
 export abstract class Reference {
   abstract value?: unknown | undefined;
-
-  abstract setValue(value: unknown | undefined): void;
 }
 
 export abstract class OptionalReference extends Reference {}

@@ -19,6 +19,7 @@ import { TEST__getTestEditorStore } from '../EditorStoreTestUtils';
 import { flowResult } from 'mobx';
 import { type EntityDiff, EntityChangeType } from '@finos/legend-server-sdlc';
 import { Class } from '@finos/legend-graph';
+import { property_setName } from '../graphModifier/DomainGraphModifierHelper';
 
 const entities = [
   {
@@ -45,23 +46,19 @@ const entities = [
 test(unitTest('Change detection works properly'), async () => {
   const editorStore = TEST__getTestEditorStore();
 
-  await flowResult(editorStore.graphManagerState.initializeSystem());
-  await flowResult(
-    editorStore.graphManagerState.graphManager.buildGraph(
-      editorStore.graphManagerState.graph,
-      entities,
-    ),
+  await editorStore.graphManagerState.initializeSystem();
+  await editorStore.graphManagerState.graphManager.buildGraph(
+    editorStore.graphManagerState.graph,
+    entities,
   );
 
   // set original hash
-  const protocolHashesIndex =
-    await editorStore.graphManagerState.graphManager.buildHashesIndex(entities);
   editorStore.changeDetectionState.workspaceLocalLatestRevisionState.setEntityHashesIndex(
-    protocolHashesIndex,
+    await editorStore.graphManagerState.graphManager.buildHashesIndex(entities),
   );
 
   // check hash
-  await flowResult(editorStore.graphManagerState.precomputeHashes());
+  await editorStore.changeDetectionState.precomputeHashes();
   await flowResult(editorStore.changeDetectionState.computeLocalChanges(true));
   expect(
     editorStore.changeDetectionState.workspaceLocalLatestRevisionState.changes
@@ -72,9 +69,9 @@ test(unitTest('Change detection works properly'), async () => {
   const _class = editorStore.graphManagerState.graph.getClass('model::ClassA');
 
   // modify
-  _class.getProperty('prop').setName('prop1');
+  property_setName(_class.getProperty('prop'), 'prop1');
 
-  await flowResult(editorStore.graphManagerState.precomputeHashes());
+  await flowResult(editorStore.changeDetectionState.precomputeHashes());
   await flowResult(editorStore.changeDetectionState.computeLocalChanges(true));
   expect(
     editorStore.changeDetectionState.workspaceLocalLatestRevisionState.changes
@@ -84,13 +81,13 @@ test(unitTest('Change detection works properly'), async () => {
     .workspaceLocalLatestRevisionState.changes[0] as EntityDiff;
   expect(change.entityChangeType).toEqual(EntityChangeType.MODIFY);
   expect(change.oldPath).toEqual(_class.path);
-  _class.getProperty('prop1').setName('prop'); // reset
+  property_setName(_class.getProperty('prop1'), 'prop'); // reset
 
   // add
   const newClass = new Class('ClassB');
   editorStore.graphManagerState.graph.addElement(newClass);
 
-  await flowResult(editorStore.graphManagerState.precomputeHashes());
+  await flowResult(editorStore.changeDetectionState.precomputeHashes());
   await flowResult(editorStore.changeDetectionState.computeLocalChanges(true));
   expect(
     editorStore.changeDetectionState.workspaceLocalLatestRevisionState.changes
@@ -105,7 +102,7 @@ test(unitTest('Change detection works properly'), async () => {
   // delete
   editorStore.graphManagerState.graph.deleteElement(_class);
 
-  await flowResult(editorStore.graphManagerState.precomputeHashes());
+  await flowResult(editorStore.changeDetectionState.precomputeHashes());
   await flowResult(editorStore.changeDetectionState.computeLocalChanges(true));
   expect(
     editorStore.changeDetectionState.workspaceLocalLatestRevisionState.changes

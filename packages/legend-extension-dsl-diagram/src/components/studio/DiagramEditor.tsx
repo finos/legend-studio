@@ -100,10 +100,19 @@ import {
   CORE_DND_TYPE,
   ElementDragSource,
   useEditorStore,
+  property_setName,
+  property_setGenericType,
+  property_setMultiplicity,
+  package_addElement,
 } from '@finos/legend-studio';
 import { cleanUpDeadReferencesInDiagram } from '../../helpers/DiagramHelper';
 import { Point } from '../../models/metamodels/pure/packageableElements/diagram/geometry/DSLDiagram_Point';
 import type { DSLDiagram_LegendStudioPlugin_Extension } from './DSLDiagram_LegendStudioPlugin_Extension';
+import {
+  classView_setHideProperties,
+  classView_setHideStereotypes,
+  classView_setHideTaggedValues,
+} from '../../stores/studio/DSLDiagram_GraphModifierHelper';
 
 const DiagramEditorContextMenu = observer(
   forwardRef<
@@ -515,21 +524,21 @@ const DiagramEditorClassViewEditor = observer(
       if (isReadOnly) {
         return;
       }
-      classView.setHideProperties(!classView.hideProperties);
+      classView_setHideProperties(classView, !classView.hideProperties);
       diagramEditorState.renderer.render();
     };
     const toggleHideTaggedValues = (): void => {
       if (isReadOnly) {
         return;
       }
-      classView.setHideTaggedValues(!classView.hideTaggedValues);
+      classView_setHideTaggedValues(classView, !classView.hideTaggedValues);
       diagramEditorState.renderer.render();
     };
     const toggleHideStereotypes = (): void => {
       if (isReadOnly) {
         return;
       }
-      classView.setHideStereotypes(!classView.hideStereotypes);
+      classView_setHideStereotypes(classView, !classView.hideStereotypes);
       diagramEditorState.renderer.render();
     };
 
@@ -853,9 +862,10 @@ const DiagramEditorInlineClassCreatorInner = observer(
         diagramEditorState.setInlineClassCreatorState(undefined);
         const [packagePath, name] = resolvePackagePathAndElementName(path);
         const _class = new Class(name);
-        editorStore.graphManagerState.graph
-          .getOrCreatePackage(packagePath)
-          .addElement(_class);
+        package_addElement(
+          editorStore.graphManagerState.graph.getOrCreatePackage(packagePath),
+          _class,
+        );
         editorStore.graphManagerState.graph.addElement(_class);
         editorStore.explorerTreeState.reprocess();
         diagramEditorState.renderer.addClassView(
@@ -1027,14 +1037,14 @@ const DiagramEditorInlinePropertyEditorInner = observer(
       event,
     ) => {
       if (property instanceof DerivedProperty || property instanceof Property) {
-        property.setName(event.target.value);
+        property_setName(property, event.target.value);
         diagramEditorState.renderer.render();
       }
     };
 
     const changeMultiplicity = (val: Multiplicity): void => {
       if (property instanceof DerivedProperty || property instanceof Property) {
-        property.setMultiplicity(val);
+        property_setMultiplicity(property, val);
         diagramEditorState.renderer.render();
       }
     };
@@ -1054,7 +1064,7 @@ const DiagramEditorInlinePropertyEditorInner = observer(
     };
     const changePropertyType = (val: PackageableElementOption<Type>): void => {
       if (property instanceof Property || property instanceof DerivedProperty) {
-        property.setGenericType(new GenericType(val.value));
+        property_setGenericType(property, new GenericType(val.value));
       }
     };
 

@@ -15,11 +15,31 @@
  */
 
 import type { Connection } from '../models/metamodels/pure/packageableElements/connection/Connection';
+import type { InputData } from '../models/metamodels/pure/packageableElements/mapping/InputData';
+import type { PropertyMapping } from '../models/metamodels/pure/packageableElements/mapping/PropertyMapping';
+import type { SetImplementation } from '../models/metamodels/pure/packageableElements/mapping/SetImplementation';
+import type { ObserverContext } from './action/changeDetection/CoreObserverHelper';
 import type { PureGraphManagerPlugin } from './PureGraphManagerPlugin';
 
 export type PureGrammarConnectionLabeler = (
   connection: Connection,
 ) => string | undefined;
+export type ConnectionObserver = (
+  connection: Connection,
+  context: ObserverContext,
+) => Connection | undefined;
+export type SetImplementationObserver = (
+  setImplementation: SetImplementation,
+  context: ObserverContext,
+) => SetImplementation | undefined;
+export type PropertyMappingObserver = (
+  propertyMapping: PropertyMapping,
+  context: ObserverContext,
+) => PropertyMapping | undefined;
+export type MappingTestInputDataObserver = (
+  inputData: InputData,
+  context: ObserverContext,
+) => InputData | undefined;
 
 export interface DSLMapping_PureGraphManagerPlugin_Extension
   extends PureGraphManagerPlugin {
@@ -27,4 +47,12 @@ export interface DSLMapping_PureGraphManagerPlugin_Extension
    * Get the list of Pure grammar type labelers for connections.
    */
   getExtraPureGrammarConnectionLabelers?(): PureGrammarConnectionLabeler[];
+
+  getExtraSetImplementationObservers?(): SetImplementationObserver[];
+
+  getExtraMappingTestInputDataObservers?(): MappingTestInputDataObserver[];
+
+  getExtraPropertyMappingObservers?(): PropertyMappingObserver[];
+
+  getExtraConnectionObservers?(): ConnectionObserver[];
 }

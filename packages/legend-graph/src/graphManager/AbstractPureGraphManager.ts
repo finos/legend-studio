@@ -50,7 +50,6 @@ import type {
 } from '../models/metamodels/pure/executionPlan/ExecutionPlan';
 import type { ExecutionNode } from '../models/metamodels/pure/executionPlan/nodes/ExecutionNode';
 import type {
-  GeneratorFn,
   Log,
   ServerClientConfig,
   TracerService,
@@ -62,6 +61,7 @@ import type { QuerySearchSpecification } from './action/query/QuerySearchSpecifi
 import type { ExternalFormatDescription } from './action/externalFormat/ExternalFormatDescription';
 import type { ConfigurationProperty } from '../models/metamodels/pure/packageableElements/fileGeneration/ConfigurationProperty';
 import type { GraphBuilderReport } from './GraphBuilderReport';
+import type { ModelGenerationConfiguration } from '../models/ModelGenerationConfiguration';
 
 export interface TEMPORARY__EngineSetupConfig {
   env: string;
@@ -76,8 +76,6 @@ export interface GraphBuilderOptions {
   TEMPORARY__keepSectionIndex?: boolean;
   // when we change our handling of section index, we should be able to get rid of this flag.
   TEMPORARY__disableRawLambdaResolver?: boolean;
-  // skip specific post processing used when editing graph. i.e `freezing` a generated/dependency element.
-  TEMPORARY_skipGraphBuilderPostProcessing?: boolean;
 }
 
 export interface ExecutionOptions {
@@ -113,7 +111,7 @@ export abstract class AbstractPureGraphManager {
     options?: {
       tracerService?: TracerService | undefined;
     },
-  ): GeneratorFn<void>;
+  ): Promise<void>;
 
   // --------------------------------------------- Graph Builder ---------------------------------------------
 
@@ -127,7 +125,7 @@ export abstract class AbstractPureGraphManager {
     coreModel: CoreModel,
     systemModel: SystemModel,
     options?: GraphBuilderOptions,
-  ): GeneratorFn<GraphBuilderReport>;
+  ): Promise<GraphBuilderReport>;
 
   /**
    * Process entities and build the main graph.
@@ -136,7 +134,7 @@ export abstract class AbstractPureGraphManager {
     graph: PureModel,
     entities: Entity[],
     options?: GraphBuilderOptions,
-  ): GeneratorFn<GraphBuilderReport>;
+  ): Promise<GraphBuilderReport>;
 
   /**
    * Build immutable models which holds dependencies.
@@ -152,13 +150,13 @@ export abstract class AbstractPureGraphManager {
     dependencyManager: DependencyManager,
     dependencyEntitiesMap: Map<string, Entity[]>,
     options?: GraphBuilderOptions,
-  ): GeneratorFn<GraphBuilderReport>;
+  ): Promise<GraphBuilderReport>;
 
   abstract buildGenerations(
     graph: PureModel,
     generationEntities: Map<string, Entity[]>,
     options?: GraphBuilderOptions,
-  ): GeneratorFn<GraphBuilderReport>;
+  ): Promise<GraphBuilderReport>;
 
   // ------------------------------------------- Grammar -------------------------------------------
 
@@ -239,6 +237,10 @@ export abstract class AbstractPureGraphManager {
   ): Promise<GenerationOutput[]>;
   abstract generateModel(
     generationElement: PackageableElement,
+    graph: PureModel,
+  ): Promise<Entity[]>;
+  abstract generateModelFromConfiguration(
+    config: ModelGenerationConfiguration,
     graph: PureModel,
   ): Promise<Entity[]>;
 

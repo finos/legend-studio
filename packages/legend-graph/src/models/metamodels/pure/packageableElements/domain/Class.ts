@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { observable, action, computed, makeObservable, override } from 'mobx';
 import {
   type Hashable,
   hashArray,
@@ -22,9 +21,6 @@ import {
   IllegalStateError,
   guaranteeNonNullable,
   UnsupportedOperationError,
-  addUniqueEntry,
-  deleteEntry,
-  changeEntry,
 } from '@finos/legend-shared';
 import {
   CORE_HASH_STRUCTURE,
@@ -61,94 +57,6 @@ export class Class extends Type implements Hashable, Stubable {
   constraints: Constraint[] = [];
   stereotypes: StereotypeReference[] = [];
   taggedValues: TaggedValue[] = [];
-
-  constructor(name: string) {
-    super(name);
-
-    makeObservable<Class, '_elementHashCode'>(this, {
-      properties: observable,
-      propertiesFromAssociations: observable,
-      derivedProperties: observable,
-      generalizations: observable,
-      subclasses: observable,
-      constraints: observable,
-      stereotypes: observable,
-      taggedValues: observable,
-      deleteProperty: action,
-      addProperty: action,
-      deleteDerivedProperty: action,
-      addDerivedProperty: action,
-      addConstraint: action,
-      deleteConstraint: action,
-      changeConstraint: action,
-      addSuperType: action,
-      deleteSuperType: action,
-      addSubclass: action,
-      deleteSubclass: action,
-      deleteTaggedValue: action,
-      addTaggedValue: action,
-      deleteStereotype: action,
-      changeStereotype: action,
-      addStereotype: action,
-      allSuperclasses: computed,
-      allSubclasses: computed({ keepAlive: true }),
-      dispose: override,
-      isStub: computed,
-      _elementHashCode: override,
-    });
-  }
-
-  deleteProperty(val: Property): void {
-    deleteEntry(this.properties, val);
-  }
-  addProperty(val: Property): void {
-    addUniqueEntry(this.properties, val);
-  }
-  deleteDerivedProperty(val: DerivedProperty): void {
-    deleteEntry(this.derivedProperties, val);
-  }
-  addDerivedProperty(val: DerivedProperty): void {
-    addUniqueEntry(this.derivedProperties, val);
-  }
-  addConstraint(val: Constraint): void {
-    addUniqueEntry(this.constraints, val);
-  }
-  deleteConstraint(val: Constraint): void {
-    deleteEntry(this.constraints, val);
-  }
-  changeConstraint(val: Constraint, newVal: Constraint): void {
-    changeEntry(this.constraints, val, newVal);
-  }
-  addSuperType(val: GenericTypeReference): void {
-    addUniqueEntry(this.generalizations, val);
-  }
-  deleteSuperType(val: GenericTypeReference): void {
-    deleteEntry(this.generalizations, val);
-  }
-  addSubclass(val: Class): void {
-    addUniqueEntry(this.subclasses, val);
-  }
-  deleteSubclass(val: Class): void {
-    deleteEntry(this.subclasses, val);
-  }
-  deleteTaggedValue(val: TaggedValue): void {
-    deleteEntry(this.taggedValues, val);
-  }
-  addTaggedValue(val: TaggedValue): void {
-    addUniqueEntry(this.taggedValues, val);
-  }
-  deleteStereotype(val: StereotypeReference): void {
-    deleteEntry(this.stereotypes, val);
-  }
-  changeStereotype(
-    oldVal: StereotypeReference,
-    newVal: StereotypeReference,
-  ): void {
-    changeEntry(this.stereotypes, oldVal, newVal);
-  }
-  addStereotype(val: StereotypeReference): void {
-    addUniqueEntry(this.stereotypes, val);
-  }
 
   /**
    * Get class and its supertypes' properties recursively, duplications and loops are handled (Which should be caught by compiler)

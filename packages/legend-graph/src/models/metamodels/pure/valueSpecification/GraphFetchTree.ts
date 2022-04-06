@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { makeObservable, observable, action, computed } from 'mobx';
 import { addUniqueEntry, deleteEntry } from '@finos/legend-shared';
 import type { Class } from '../packageableElements/domain/Class';
 import type { PropertyReference } from '../packageableElements/domain/PropertyReference';
@@ -31,15 +30,6 @@ import { InstanceValue } from './InstanceValue';
 
 export abstract class GraphFetchTree {
   subTrees: GraphFetchTree[] = [];
-
-  constructor() {
-    makeObservable(this, {
-      subTrees: observable,
-      addSubTree: action,
-      removeSubTree: action,
-      isEmpty: computed,
-    });
-  }
 
   get isEmpty(): boolean {
     return !this.subTrees.length;
@@ -72,13 +62,6 @@ export class PropertyGraphFetchTree extends GraphFetchTree {
     val?: OptionalPackageableElementReference<Class>,
   ) {
     super();
-
-    makeObservable(this, {
-      alias: observable,
-      parameters: observable,
-      subType: observable,
-      withSubType: action,
-    });
     this.property = property;
     this.subType =
       val ??

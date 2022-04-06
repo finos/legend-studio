@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { observable, computed, makeObservable } from 'mobx';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import type { PackageableElement } from '../PackageableElement';
@@ -33,12 +32,6 @@ export abstract class Section implements Hashable {
   elements: PackageableElementExplicitReference<PackageableElement>[] = [];
 
   constructor(parserName: string, parent: SectionIndex) {
-    makeObservable(this, {
-      parent: observable,
-      parserName: observable,
-      elements: observable,
-    });
-
     this.parserName = parserName;
     this.parent = parent;
   }
@@ -55,15 +48,6 @@ export abstract class Section implements Hashable {
 export class ImportAwareCodeSection extends Section {
   imports: PackageableElementExplicitReference<Package>[] = [];
 
-  constructor(parserName: string, parent: SectionIndex) {
-    super(parserName, parent);
-
-    makeObservable(this, {
-      imports: observable,
-      hashCode: computed,
-    });
-  }
-
   override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.IMPORT_AWARE_CODE_SECTION,
@@ -74,14 +58,6 @@ export class ImportAwareCodeSection extends Section {
 }
 
 export class DefaultCodeSection extends Section {
-  constructor(parserName: string, parent: SectionIndex) {
-    super(parserName, parent);
-
-    makeObservable(this, {
-      hashCode: computed,
-    });
-  }
-
   override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.DEFAULT_CODE_SECTION,

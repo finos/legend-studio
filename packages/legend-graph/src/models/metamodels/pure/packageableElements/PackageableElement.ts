@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { observable, action, computed, makeObservable } from 'mobx';
 import {
   type Hashable,
   hashArray,
@@ -71,62 +70,19 @@ export abstract class PackageableElement implements Hashable, Stubable {
   uuid = uuid();
   protected _isDeleted = false;
   protected _isDisposed = false;
-  protected _isImmutable = false;
   name: string;
   package?: Package | undefined;
 
   constructor(name: string) {
-    makeObservable<
-      PackageableElement,
-      '_isDeleted' | '_isDisposed' | '_isImmutable' | '_elementHashCode'
-    >(this, {
-      _isDeleted: observable,
-      _isDisposed: observable,
-      _isImmutable: observable,
-      name: observable,
-      package: observable,
-      isReadOnly: computed,
-      isDeleted: computed,
-      path: computed,
-      _elementHashCode: computed,
-      // We need to enable `keepAlive` to facillitate precomputation of element hash code
-      hashCode: computed({ keepAlive: true }),
-      setName: action,
-      setPackage: action,
-      setIsDeleted: action,
-      deleteElementFromGraph: action,
-      dispose: action,
-      freeze: action,
-    });
-
     this.name = name;
-  }
-
-  get isReadOnly(): boolean {
-    return this._isImmutable;
   }
 
   get isDeleted(): boolean {
     return this._isDeleted;
   }
 
-  setName(value: string): void {
-    this.name = value;
-  }
-
-  setPackage(val: Package | undefined): void {
-    this.package = val;
-  }
-
   setIsDeleted(value: boolean): void {
     this._isDeleted = value;
-  }
-
-  deleteElementFromGraph(): void {
-    if (this.package) {
-      this.package.deleteElement(this);
-    }
-    this.setIsDeleted(true);
   }
 
   /**
@@ -147,7 +103,6 @@ export abstract class PackageableElement implements Hashable, Stubable {
       : `${parentPackageName}${ELEMENT_PATH_DELIMITER}${this.name}`;
   }
 
-  // NOTE: we don't need `createStub` as the subclasses will have to implement their own for type narrowing
   get isStub(): boolean {
     return !this.name && !this.package;
   }
@@ -168,17 +123,6 @@ export abstract class PackageableElement implements Hashable, Stubable {
     }
   }
 
-  freeze(): void {
-    this._isImmutable = true;
-    // Since hash code computation depends on this flag, we retrigger and wrap in a try catch to prevent future call
-    // to get `hashCode`, as this would indicate mutation
-    try {
-      this.hashCode;
-    } catch {
-      /* do nothing */
-    }
-  }
-
   protected get _elementHashCode(): string {
     return hashArray([CORE_HASH_STRUCTURE.PACKAGEABLE_ELEMENT, this.path]);
   }
@@ -187,22 +131,7 @@ export abstract class PackageableElement implements Hashable, Stubable {
     if (this._isDisposed) {
       throw new IllegalStateError(`Element '${this.path}' is already disposed`);
     }
-    // If this computation is placed after checking for immutability flag,
-    // error will be thrown and therefore, `mobx` will not recompute this at all.
-    // By putting this here, we make sure that even when the element is frozen,
-    // if somehow the element modified, computation of the hash code will be triggered.
-    // As a result, error will be thrown again. This is a good way to notify developer
-    // that the object has been modified, this is a better alternative to than using
-    // `Object.freeze`, which requires a more complicated setup.
-    // Also, using `Object.freeze` does not really solve the problem
-    // See https://github.com/mobxjs/mobx/issues/3008
-    const hashCode = this._elementHashCode;
-    if (this._isImmutable) {
-      throw new IllegalStateError(
-        `Readonly element '${this.path}' is modified`,
-      );
-    }
-    return hashCode;
+    return this._elementHashCode;
   }
 
   abstract accept_PackageableElementVisitor<T>(

@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { observable, makeObservable, action } from 'mobx';
 import { deleteEntry, addUniqueEntry, type Pair } from '@finos/legend-shared';
 import {
   type ValueSpecificationVisitor,
@@ -62,18 +61,9 @@ export class InstanceValue extends ValueSpecification {
 export class PrimitiveInstanceValue extends InstanceValue {
   override genericType: GenericTypeReference;
 
-  // NOTE: when we support editing more types, we should move observability to fields like `values` to parent class
   constructor(genericType: GenericTypeReference, multiplicity: Multiplicity) {
     super(multiplicity, undefined);
     this.genericType = genericType;
-
-    makeObservable<PrimitiveInstanceValue>(this, {
-      genericType: observable,
-      values: observable,
-      deleteValue: action,
-      addValue: action,
-      changeValue: action,
-    });
   }
 
   override accept_ValueSpecificationVisitor<T>(
@@ -89,14 +79,6 @@ export class EnumValueInstanceValue extends InstanceValue {
   constructor(genericType: GenericTypeReference, multiplicity: Multiplicity) {
     super(multiplicity, undefined);
     this.genericType = genericType;
-
-    makeObservable<EnumValueInstanceValue>(this, {
-      genericType: observable,
-      values: observable,
-      deleteValue: action,
-      addValue: action,
-      changeValue: action,
-    });
   }
 
   override accept_ValueSpecificationVisitor<T>(
@@ -148,19 +130,6 @@ export class PureListInstanceValue extends InstanceValue {
 
 export class CollectionInstanceValue extends InstanceValue {
   override values: ValueSpecification[] = [];
-
-  constructor(
-    multiplicity: Multiplicity,
-    genericTypeReference?: GenericTypeReference,
-  ) {
-    super(multiplicity, genericTypeReference);
-
-    makeObservable<CollectionInstanceValue>(this, {
-      genericType: observable,
-      values: observable,
-      changeValues: action,
-    });
-  }
 
   override accept_ValueSpecificationVisitor<T>(
     visitor: ValueSpecificationVisitor<T>,

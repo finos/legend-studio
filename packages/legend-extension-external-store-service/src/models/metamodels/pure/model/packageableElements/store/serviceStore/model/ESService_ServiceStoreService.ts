@@ -14,13 +14,7 @@
  * limitations under the License.
  */
 
-import { observable, computed, makeObservable, action } from 'mobx';
-import {
-  addUniqueEntry,
-  deleteEntry,
-  hashArray,
-  type Hashable,
-} from '@finos/legend-shared';
+import { hashArray, type Hashable } from '@finos/legend-shared';
 import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../ESService_ModelUtils';
 import { ServiceStoreElement } from './ESService_ServiceStoreElement';
 import type { ServiceParameter } from './ESService_ServiceParameter';
@@ -44,54 +38,6 @@ export class ServiceStoreService
   parameters: ServiceParameter[] = [];
   response!: ComplexTypeReference;
   security: SecurityScheme[] = [];
-
-  constructor() {
-    super();
-
-    makeObservable(this, {
-      requestBody: observable,
-      method: observable,
-      parameters: observable,
-      response: observable,
-      security: observable,
-      setRequestBody: action,
-      setMethod: action,
-      addParameter: action,
-      deleteParameter: action,
-      setResponse: action,
-      addSecurity: action,
-      deleteSecurity: action,
-      hashCode: computed,
-    });
-  }
-
-  setRequestBody(value: TypeReference): void {
-    this.requestBody = value;
-  }
-
-  setMethod(value: HTTP_METHOD): void {
-    this.method = value;
-  }
-
-  addParameter(value: ServiceParameter): void {
-    addUniqueEntry(this.parameters, value);
-  }
-
-  deleteParameter(value: ServiceParameter): void {
-    deleteEntry(this.parameters, value);
-  }
-
-  setResponse(value: ComplexTypeReference): void {
-    this.response = value;
-  }
-
-  addSecurity(value: SecurityScheme): void {
-    addUniqueEntry(this.security, value);
-  }
-
-  deleteSecurity(value: SecurityScheme): void {
-    deleteEntry(this.security, value);
-  }
 
   override get hashCode(): string {
     return hashArray([

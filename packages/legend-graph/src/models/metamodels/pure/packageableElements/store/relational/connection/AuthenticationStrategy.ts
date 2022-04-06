@@ -16,7 +16,6 @@
 
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import { type Hashable, hashArray } from '@finos/legend-shared';
-import { observable, computed, makeObservable, action } from 'mobx';
 
 export abstract class AuthenticationStrategy implements Hashable {
   private readonly _$nominalTypeBrand!: 'AuthenticationStrategy';
@@ -29,18 +28,6 @@ export class DelegatedKerberosAuthenticationStrategy
   implements Hashable
 {
   serverPrincipal?: string | undefined;
-  constructor() {
-    super();
-
-    makeObservable(this, {
-      hashCode: computed,
-      setServerPrincipal: action,
-    });
-  }
-
-  setServerPrincipal(val?: string): void {
-    this.serverPrincipal = val;
-  }
 
   get hashCode(): string {
     return hashArray([
@@ -54,14 +41,6 @@ export class DefaultH2AuthenticationStrategy
   extends AuthenticationStrategy
   implements Hashable
 {
-  constructor() {
-    super();
-
-    makeObservable(this, {
-      hashCode: computed,
-    });
-  }
-
   get hashCode(): string {
     return hashArray([CORE_HASH_STRUCTURE.DEFAULT_H2_AUTHENTICATION_STRATEGY]);
   }
@@ -75,18 +54,7 @@ export class ApiTokenAuthenticationStrategy
 
   constructor(apiToken: string) {
     super();
-
-    makeObservable(this, {
-      apiToken: observable,
-      setApiToken: action,
-      hashCode: computed,
-    });
-
     this.apiToken = apiToken;
-  }
-
-  setApiToken(val: string): void {
-    this.apiToken = val;
   }
 
   get hashCode(): string {
@@ -106,24 +74,8 @@ export class OAuthAuthenticationStrategy
 
   constructor(oauthKey: string, scopeName: string) {
     super();
-
-    makeObservable(this, {
-      oauthKey: observable,
-      scopeName: observable,
-      hashCode: computed,
-      setOauthKey: action,
-      setScopeName: action,
-    });
     this.oauthKey = oauthKey;
     this.scopeName = scopeName;
-  }
-
-  setOauthKey(val: string): void {
-    this.oauthKey = val;
-  }
-
-  setScopeName(val: string): void {
-    this.scopeName = val;
   }
 
   get hashCode(): string {
@@ -149,32 +101,9 @@ export class SnowflakePublicAuthenticationStrategy
     publicUserName: string,
   ) {
     super();
-
-    makeObservable(this, {
-      privateKeyVaultReference: observable,
-      passPhraseVaultReference: observable,
-      publicUserName: observable,
-      setPrivateKeyVaultReference: action,
-      setPassPhraseVaultReference: action,
-      setPublicUserName: action,
-      hashCode: computed,
-    });
-
     this.privateKeyVaultReference = privateKeyVaultReference;
     this.passPhraseVaultReference = passPhraseVaultReference;
     this.publicUserName = publicUserName;
-  }
-
-  setPrivateKeyVaultReference(val: string): void {
-    this.privateKeyVaultReference = val;
-  }
-
-  setPassPhraseVaultReference(val: string): void {
-    this.passPhraseVaultReference = val;
-  }
-
-  setPublicUserName(val: string): void {
-    this.publicUserName = val;
   }
 
   get hashCode(): string {
@@ -191,14 +120,6 @@ export class GCPApplicationDefaultCredentialsAuthenticationStrategy
   extends AuthenticationStrategy
   implements Hashable
 {
-  constructor() {
-    super();
-
-    makeObservable(this, {
-      hashCode: computed,
-    });
-  }
-
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.GCP_APPLICATION_DEFAULT_CREDENTIALS_AUTHENTICATION_STRATEGY,
@@ -255,31 +176,8 @@ export class UsernamePasswordAuthenticationStrategy
 
   constructor(userNameVaultReference: string, passwordVaultReference: string) {
     super();
-
-    makeObservable(this, {
-      hashCode: computed,
-      userNameVaultReference: observable,
-      passwordVaultReference: observable,
-      baseVaultReference: observable,
-      setBaseVaultReference: action,
-      setPasswordVaultReference: action,
-      setUserNameVaultReference: action,
-    });
-
     this.userNameVaultReference = userNameVaultReference;
     this.passwordVaultReference = passwordVaultReference;
-  }
-
-  setBaseVaultReference(val: string | undefined): void {
-    this.baseVaultReference = val;
-  }
-
-  setUserNameVaultReference(val: string): void {
-    this.userNameVaultReference = val;
-  }
-
-  setPasswordVaultReference(val: string): void {
-    this.passwordVaultReference = val;
   }
 
   get hashCode(): string {

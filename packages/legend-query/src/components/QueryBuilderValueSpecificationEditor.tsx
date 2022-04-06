@@ -62,6 +62,7 @@ import {
 } from '@finos/legend-application';
 import format from 'date-fns/format/index';
 import { addDays } from 'date-fns';
+import { genericType_setRawType } from '../stores/QueryBuilderGraphModifierHelper';
 
 const QueryBuilderParameterInfoTooltip: React.FC<{
   variable: VariableExpression;
@@ -551,7 +552,7 @@ export const DateInstanceValueEditor = observer(
     const latestDate = graph.getPrimitiveType(PRIMITIVE_TYPE.LATESTDATE);
     const changeType = (val: PackageableElementOption<Type>): void => {
       if (variableType !== val.value) {
-        valueSpecification.genericType.value.setRawType(val.value);
+        genericType_setRawType(valueSpecification.genericType.value, val.value);
       }
       if (
         valueSpecification.genericType.value.rawType.name !==

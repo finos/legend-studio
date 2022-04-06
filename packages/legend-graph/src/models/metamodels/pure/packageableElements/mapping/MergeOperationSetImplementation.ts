@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { observable, action, makeObservable } from 'mobx';
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import type { PackageableElementReference } from '../PackageableElementReference';
@@ -46,17 +45,7 @@ export class MergeOperationSetImplementation
     validationFunction: RawLambda,
   ) {
     super(id, parent, pureClass, root, operation);
-
-    makeObservable(this, {
-      validationFunction: observable,
-      setValidationFunction: action,
-    });
-
     this.validationFunction = validationFunction;
-  }
-
-  setValidationFunction(value: RawLambda): void {
-    this.validationFunction = value;
   }
 
   override get hashCode(): string {

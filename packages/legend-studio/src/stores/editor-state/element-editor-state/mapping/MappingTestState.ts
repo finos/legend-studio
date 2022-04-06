@@ -36,6 +36,7 @@ import {
   tryToMinifyLosslessJSONString,
   tryToFormatLosslessJSONString,
   tryToMinifyJSONString,
+  ContentType,
 } from '@finos/legend-shared';
 import type { EditorStore } from '../../../EditorStore';
 import {
@@ -82,6 +83,20 @@ import {
   type RawExecutionPlan,
 } from '@finos/legend-graph';
 import { LambdaEditorState, TAB_SIZE } from '@finos/legend-application';
+import { flatData_setData } from '../../../graphModifier/StoreFlatData_GraphModifierHelper';
+import {
+  expectedOutputMappingTestAssert_setExpectedOutput,
+  mappingTest_setAssert,
+  mappingTest_setQuery,
+  objectInputData_setData,
+  runtime_addIdentifiedConnection,
+  runtime_addMapping,
+} from '../../../graphModifier/DSLMapping_GraphModifierHelper';
+import {
+  localH2DatasourceSpecification_setTestDataSetupCsv,
+  localH2DatasourceSpecification_setTestDataSetupSqls,
+  relationalInputData_setData,
+} from '../../../graphModifier/StoreRelational_GraphModifierHelper';
 
 export enum TEST_RESULT {
   NONE = 'NONE', // test has not run yet
@@ -121,7 +136,7 @@ export class MappingTestQueryState extends LambdaEditorState {
 
   *updateLamba(val: RawLambda): GeneratorFn<void> {
     this.query = val;
-    this.test.setQuery(val);
+    mappingTest_setQuery(this.test, val);
     yield flowResult(this.convertLambdaObjectToGrammarString(true));
   }
 
@@ -204,14 +219,15 @@ export class MappingTestObjectInputDataState extends MappingTestInputDataState {
   setData(val: string): void {
     this.data = val;
     /* @MARKER: Workaround for https://github.com/finos/legend-studio/issues/68 */
-    this.inputData.setData(tryToMinifyLosslessJSONString(val));
+    objectInputData_setData(this.inputData, tryToMinifyLosslessJSONString(val));
   }
 
   get runtime(): Runtime {
     const engineConfig =
       this.editorStore.graphManagerState.graphManager.TEMPORARY__getEngineConfig();
     const runtime = new EngineRuntime();
-    runtime.addMapping(
+    runtime_addMapping(
+      runtime,
       PackageableElementExplicitReference.create(this.mapping),
     );
     const connection = new JsonModelConnection(
@@ -223,11 +239,12 @@ export class MappingTestObjectInputDataState extends MappingTestInputDataState {
       ),
       createUrlStringFromData(
         this.inputData.data,
-        JsonModelConnection.CONTENT_TYPE,
+        ContentType.APPLICATION_JSON,
         engineConfig.useBase64ForAdhocConnectionDataUrls,
       ),
     );
-    runtime.addIdentifiedConnection(
+    runtime_addIdentifiedConnection(
+      runtime,
       new IdentifiedConnection(
         runtime.generateIdentifiedConnectionId(),
         connection,
@@ -244,7 +261,8 @@ export class MappingTestFlatDataInputDataState extends MappingTestInputDataState
     const engineConfig =
       this.editorStore.graphManagerState.graphManager.TEMPORARY__getEngineConfig();
     const runtime = new EngineRuntime();
-    runtime.addMapping(
+    runtime_addMapping(
+      runtime,
       PackageableElementExplicitReference.create(this.mapping),
     );
     const connection = new FlatDataConnection(
@@ -253,11 +271,12 @@ export class MappingTestFlatDataInputDataState extends MappingTestInputDataState
       ),
       createUrlStringFromData(
         this.inputData.data,
-        FlatDataConnection.CONTENT_TYPE,
+        ContentType.TEXT_PLAIN,
         engineConfig.useBase64ForAdhocConnectionDataUrls,
       ),
     );
-    runtime.addIdentifiedConnection(
+    runtime_addIdentifiedConnection(
+      runtime,
       new IdentifiedConnection(
         runtime.generateIdentifiedConnectionId(),
         connection,
@@ -274,19 +293,24 @@ export class MappingTestRelationalInputDataState extends MappingTestInputDataSta
     const datasourceSpecification = new LocalH2DatasourceSpecification();
     switch (this.inputData.inputType) {
       case RelationalInputType.SQL:
-        datasourceSpecification.setTestDataSetupSqls(
+        localH2DatasourceSpecification_setTestDataSetupSqls(
+          datasourceSpecification,
           // NOTE: this is a gross simplification of handling the input for relational input data
           [this.inputData.data],
         );
         break;
       case RelationalInputType.CSV:
-        datasourceSpecification.setTestDataSetupCsv(this.inputData.data);
+        localH2DatasourceSpecification_setTestDataSetupCsv(
+          datasourceSpecification,
+          this.inputData.data,
+        );
         break;
       default:
         throw new UnsupportedOperationError(`Invalid input data type`);
     }
     const runtime = new EngineRuntime();
-    runtime.addMapping(
+    runtime_addMapping(
+      runtime,
       PackageableElementExplicitReference.create(this.mapping),
     );
     const connection = new RelationalDatabaseConnection(
@@ -295,7 +319,8 @@ export class MappingTestRelationalInputDataState extends MappingTestInputDataSta
       datasourceSpecification,
       new DefaultH2AuthenticationStrategy(),
     );
-    runtime.addIdentifiedConnection(
+    runtime_addIdentifiedConnection(
+      runtime,
       new IdentifiedConnection(
         runtime.generateIdentifiedConnectionId(),
         connection,
@@ -335,7 +360,8 @@ export class MappingTestExpectedOutputAssertionState extends MappingTestAssertio
 
   setExpectedResult(val: string): void {
     this.expectedResult = val;
-    this.assert.setExpectedOutput(
+    expectedOutputMappingTestAssert_setExpectedOutput(
+      this.assert,
       /* @MARKER: Workaround for https://github.com/finos/legend-studio/issues/68 */
       toGrammarString(tryToMinifyLosslessJSONString(this.expectedResult)),
     );
@@ -495,7 +521,8 @@ export class MappingTestState {
       );
       if (populateWithMockData) {
         if (source) {
-          newInputDataState.inputData.setData(
+          objectInputData_setData(
+            newInputDataState.inputData,
             createMockDataForMappingElementSource(source, this.editorStore),
           );
         }
@@ -513,7 +540,8 @@ export class MappingTestState {
         ),
       );
       if (populateWithMockData) {
-        newInputDataState.inputData.setData(
+        flatData_setData(
+          newInputDataState.inputData,
           createMockDataForMappingElementSource(source, this.editorStore),
         );
       }
@@ -531,7 +559,8 @@ export class MappingTestState {
         ),
       );
       if (populateWithMockData) {
-        newInputDataState.inputData.setData(
+        relationalInputData_setData(
+          newInputDataState.inputData,
           createMockDataForMappingElementSource(source, this.editorStore),
         );
       }
@@ -698,7 +727,7 @@ export class MappingTestState {
   }
 
   updateAssertion(): void {
-    this.test.setAssert(this.assertionState.assert);
+    mappingTest_setAssert(this.test, this.assertionState.assert);
   }
 
   *generatePlan(debug: boolean): GeneratorFn<void> {

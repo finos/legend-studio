@@ -40,6 +40,7 @@ import {
   type EditorStore,
   ClassEditorState,
   ElementEditorState,
+  class_addProperty,
 } from '@finos/legend-studio';
 import type { ClassView } from '../../models/metamodels/pure/packageableElements/diagram/DSLDiagram_ClassView';
 import type { Point } from '../../models/metamodels/pure/packageableElements/diagram/geometry/DSLDiagram_Point';
@@ -274,18 +275,24 @@ export class DiagramEditorState extends ElementEditorState {
           return 'diagram-editor__cursor--resize';
         } else if (this.renderer.mouseOverClassProperty) {
           return this.isReadOnly ||
-            this.renderer.mouseOverClassProperty.owner.isReadOnly
+            this.editorStore.graphManagerState.isElementReadOnly(
+              this.renderer.mouseOverClassProperty.owner,
+            )
             ? 'diagram-editor__cursor--not-allowed'
             : 'diagram-editor__cursor--text';
         } else if (this.renderer.mouseOverPropertyHolderViewLabel) {
           return this.isReadOnly ||
-            this.renderer.mouseOverPropertyHolderViewLabel.property.value.owner
-              .isReadOnly
+            this.editorStore.graphManagerState.isElementReadOnly(
+              this.renderer.mouseOverPropertyHolderViewLabel.property.value
+                .owner,
+            )
             ? 'diagram-editor__cursor--not-allowed'
             : 'diagram-editor__cursor--text';
         } else if (this.renderer.mouseOverClassName) {
           return this.isReadOnly ||
-            this.renderer.mouseOverClassName.class.value.isReadOnly
+            this.editorStore.graphManagerState.isElementReadOnly(
+              this.renderer.mouseOverClassName.class.value,
+            )
             ? 'diagram-editor__cursor--not-allowed'
             : 'diagram-editor__cursor--text';
         } else if (this.renderer.mouseOverClassView) {
@@ -374,7 +381,12 @@ export class DiagramEditorState extends ElementEditorState {
       classView: ClassView,
       point: Point,
     ): void => {
-      if (!this.isReadOnly && !classView.class.value.isReadOnly) {
+      if (
+        !this.isReadOnly &&
+        !this.editorStore.graphManagerState.isElementReadOnly(
+          classView.class.value,
+        )
+      ) {
         this.setInlineClassRenamerState(
           new DiagramEditorInlineClassRenamerState(this, classView, point),
         );
@@ -385,7 +397,10 @@ export class DiagramEditorState extends ElementEditorState {
       point: Point,
       propertyHolderView: PropertyHolderView | undefined,
     ): void => {
-      if (!this.isReadOnly && !property.owner.isReadOnly) {
+      if (
+        !this.isReadOnly &&
+        !this.editorStore.graphManagerState.isElementReadOnly(property.owner)
+      ) {
         this.setInlinePropertyEditorState(
           new DiagramEditorInlinePropertyEditorState(
             this,
@@ -399,9 +414,15 @@ export class DiagramEditorState extends ElementEditorState {
     this.renderer.onClassPropertyDoubleClick = editProperty;
     this.renderer.handleEditProperty = editProperty;
     this.renderer.handleAddSimpleProperty = (classView: ClassView): void => {
-      if (!this.isReadOnly && !classView.class.value.isReadOnly) {
+      if (
+        !this.isReadOnly &&
+        !this.editorStore.graphManagerState.isElementReadOnly(
+          classView.class.value,
+        )
+      ) {
         const _class = classView.class.value;
-        _class.addProperty(
+        class_addProperty(
+          _class,
           new Property(
             `property_${_class.properties.length + 1}`,
             this.editorStore.graphManagerState.graph.getTypicalMultiplicity(

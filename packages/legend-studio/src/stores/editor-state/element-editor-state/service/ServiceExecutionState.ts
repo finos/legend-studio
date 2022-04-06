@@ -58,6 +58,12 @@ import {
 } from '@finos/legend-graph';
 import type { Entity } from '@finos/legend-model-storage';
 import { parseGACoordinates } from '@finos/legend-server-depot';
+import { runtime_addMapping } from '../../../graphModifier/DSLMapping_GraphModifierHelper';
+import {
+  pureExecution_setFunction,
+  pureSingleExecution_setRuntime,
+  singleExecTest_setData,
+} from '../../../graphModifier/DSLService_GraphModifierHelper';
 
 export enum SERVICE_EXECUTION_TAB {
   MAPPING_AND_RUNTIME = 'MAPPING_&_Runtime',
@@ -92,12 +98,15 @@ export abstract class ServiceExecutionState {
       test,
     );
     // TODO: format to other format when we support other connections in the future
-    this.selectedSingeExecutionTestState?.test.setData(
-      /* @MARKER: Workaround for https://github.com/finos/legend-studio/issues/68 */
-      tryToFormatLosslessJSONString(
-        this.selectedSingeExecutionTestState.test.data,
-      ),
-    ); // pre-format test data
+    if (this.selectedSingeExecutionTestState?.test) {
+      singleExecTest_setData(
+        this.selectedSingeExecutionTestState.test,
+        /* @MARKER: Workaround for https://github.com/finos/legend-studio/issues/68 */
+        tryToFormatLosslessJSONString(
+          this.selectedSingeExecutionTestState.test.data,
+        ),
+      ); // pre-format test data
+    }
   }
 
   setSelectedTab(val: SERVICE_EXECUTION_TAB): void {
@@ -184,7 +193,7 @@ export class ServicePureExecutionQueryState extends LambdaEditorState {
   }
 
   setLambda(val: RawLambda): void {
-    this.execution.setFunction(val);
+    pureExecution_setFunction(this.execution, val);
   }
 
   setOpenQueryImporter(val: boolean): void {
@@ -511,7 +520,8 @@ export class ServicePureExecutionState extends ServiceExecutionState {
   useCustomRuntime(): void {
     if (this.selectedExecutionConfiguration) {
       const customRuntime = new EngineRuntime();
-      customRuntime.addMapping(
+      runtime_addMapping(
+        customRuntime,
         PackageableElementExplicitReference.create(
           this.selectedExecutionConfiguration.mapping.value,
         ),
@@ -521,7 +531,10 @@ export class ServicePureExecutionState extends ServiceExecutionState {
         this.selectedExecutionConfiguration.mapping.value,
         this.editorStore,
       );
-      this.selectedExecutionConfiguration.setRuntime(customRuntime);
+      pureSingleExecution_setRuntime(
+        this.selectedExecutionConfiguration,
+        customRuntime,
+      );
     }
   }
 
@@ -532,7 +545,8 @@ export class ServicePureExecutionState extends ServiceExecutionState {
           runtime.runtimeValue.mappings.map((m) => m.value).includes(mapping),
         );
       if (runtimes.length) {
-        this.selectedExecutionConfiguration.setRuntime(
+        pureSingleExecution_setRuntime(
+          this.selectedExecutionConfiguration,
           (runtimes[0] as PackageableRuntime).runtimeValue,
         );
       } else {
@@ -556,6 +570,6 @@ export class ServicePureExecutionState extends ServiceExecutionState {
   }
 
   updateExecutionQuery(): void {
-    this.execution.setFunction(this.queryState.query);
+    pureExecution_setFunction(this.execution, this.queryState.query);
   }
 }

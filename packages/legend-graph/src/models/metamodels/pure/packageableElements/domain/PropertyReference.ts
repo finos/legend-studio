@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { observable, action, computed, makeObservable } from 'mobx';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import { hashString } from '@finos/legend-shared';
 import {
@@ -42,25 +41,8 @@ export abstract class PropertyReference
     value: AbstractProperty,
   ) {
     super(ownerReference);
-
-    makeObservable(this, {
-      value: observable,
-      setValue: action,
-      isStub: computed,
-      pointerHashCode: computed,
-    });
-
     this.ownerReference = ownerReference;
     this.value = value;
-  }
-
-  setValue(value: AbstractProperty): void {
-    this.value = value;
-    this.ownerReference.setValue(
-      value.owner instanceof Association
-        ? value.owner.getPropertyAssociatedClass(this.value)
-        : value.owner,
-    );
   }
 
   get isStub(): boolean {

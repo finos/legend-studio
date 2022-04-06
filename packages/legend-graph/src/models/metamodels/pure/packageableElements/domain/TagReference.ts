@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { observable, action, computed, makeObservable } from 'mobx';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import { hashString } from '@finos/legend-shared';
 import {
@@ -39,21 +38,8 @@ export abstract class TagReference
     value: Tag,
   ) {
     super(ownerReference);
-
-    makeObservable(this, {
-      value: observable,
-      setValue: action,
-      isStub: computed,
-      pointerHashCode: computed,
-    });
-
     this.ownerReference = ownerReference;
     this.value = value;
-  }
-
-  setValue(value: Tag): void {
-    this.value = value;
-    this.ownerReference.setValue(value.owner);
   }
 
   get isStub(): boolean {

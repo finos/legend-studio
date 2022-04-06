@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { observable, computed, makeObservable, action } from 'mobx';
 import {
   type Hashable,
   hashArray,
@@ -60,15 +59,6 @@ export class ObjectInputData extends InputData implements Hashable {
     data: string,
   ) {
     super();
-
-    makeObservable(this, {
-      inputType: observable,
-      data: observable,
-      setData: action,
-      validationResult: computed,
-      hashCode: computed,
-    });
-
     this.sourceClass = sourceClass;
     this.inputType = inputType;
     /* @MARKER: Workaround for https://github.com/finos/legend-studio/issues/66 */
@@ -76,10 +66,6 @@ export class ObjectInputData extends InputData implements Hashable {
       inputType === ObjectInputType.JSON
         ? tryToMinifyLosslessJSONString(data)
         : data;
-  }
-
-  setData(val: string): void {
-    this.data = val;
   }
 
   get validationResult(): ValidationIssue | undefined {

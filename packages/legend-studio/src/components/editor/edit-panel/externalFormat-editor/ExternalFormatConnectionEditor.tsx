@@ -24,6 +24,7 @@ import { computed, makeObservable } from 'mobx';
 import { ConnectionValueState } from '../../../../stores/editor-state/element-editor-state/connection/ConnectionEditorState';
 import type { EditorStore } from '../../../../stores/EditorStore';
 import { NewConnectionValueDriver } from '../../../../stores/NewElementState';
+import { externalFormat_urlStream_setUrl } from '../../../../stores/graphModifier/DSLExternalFormat_GraphModifierHelper';
 
 export class ExternalFormatConnectionValueState extends ConnectionValueState {
   override connection: ExternalFormatConnection;
@@ -46,7 +47,10 @@ export const ExternalFormatConnectionEditor = observer(
     const { connectionValueState, isReadOnly } = props;
     const connection = connectionValueState.connection;
     const changeUrl: React.ChangeEventHandler<HTMLTextAreaElement> = (event) =>
-      connection.externalSource.setUrl(event.target.value);
+      externalFormat_urlStream_setUrl(
+        connection.externalSource,
+        event.target.value,
+      );
     return (
       <div className="external-format-connection-editor">
         <div className="external-format-connection-editor__section">
@@ -87,7 +91,7 @@ export class NewExternalFormatConnectionDriver extends NewConnectionValueDriver<
       PackageableElementExplicitReference.create(store),
     );
     const urlStream = new UrlStream();
-    urlStream.setUrl('');
+    externalFormat_urlStream_setUrl(urlStream, '');
     externalFormatConnection.externalSource = urlStream;
     return externalFormatConnection;
   }

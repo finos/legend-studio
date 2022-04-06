@@ -50,6 +50,9 @@
     {
       "path": "packages/legend-extension-external-language-morphir"
     },
+    {
+      "path": "packages/legend-extension-mapping-generation"
+    },
     // fixtures
     {
       "path": "fixtures/legend-mock-server"

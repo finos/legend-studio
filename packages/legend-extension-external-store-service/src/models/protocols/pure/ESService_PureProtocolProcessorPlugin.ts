@@ -119,9 +119,6 @@ export class ESService_PureProtocolProcessorPlugin
             elementProtocol.package,
             elementProtocol.name,
           );
-          context.currentSubGraph
-            .getOrCreatePackage(elementProtocol.package)
-            .addElement(element);
           context.currentSubGraph.setOwnStore(path, element);
           return element;
         },

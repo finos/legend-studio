@@ -65,6 +65,52 @@ import { DatabaseBuilder } from './DatabaseBuilder';
 import { useEditorStore } from '../../EditorStoreProvider';
 import { EDITOR_LANGUAGE } from '@finos/legend-application';
 import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor';
+import { connection_setStore } from '../../../../stores/graphModifier/DSLMapping_GraphModifierHelper';
+import {
+  apiTokenAuthenticationStrategy_setApiToken,
+  bigQueryDatasourceSpecification_setDefaultDataset,
+  bigQueryDatasourceSpecification_setProjectId,
+  databricksDatasourceSpecification_setHostName,
+  databricksDatasourceSpecification_setHttpPath,
+  databricksDatasourceSpecification_setPort,
+  databricksDatasourceSpecification_setProtocol,
+  dBConnection_setQuoteIdentifiers,
+  dBConnection_setType,
+  delegatedKerberosAuthenticationStrategy_setServerPrincipal,
+  embeddedH2DatasourceSpecification_setAutoServerMode,
+  embeddedH2DatasourceSpecification_setDatabaseName,
+  embeddedH2DatasourceSpecification_setDirectory,
+  localH2DatasourceSpecification_setTestDataSetupSqls,
+  oAuthAuthenticationStrategy_setOauthKey,
+  oAuthAuthenticationStrategy_setScopeName,
+  redshiftDatasourceSpecification_setClusterID,
+  redshiftDatasourceSpecification_setDatabaseName,
+  redshiftDatasourceSpecification_setEndpointURL,
+  redshiftDatasourceSpecification_setHost,
+  redshiftDatasourceSpecification_setPort,
+  redshiftDatasourceSpecification_setRegion,
+  snowflakeDatasourceSpec_setAccountName,
+  snowflakeDatasourceSpec_setAccountType,
+  snowflakeDatasourceSpec_setCloudType,
+  snowflakeDatasourceSpec_setDatabaseName,
+  snowflakeDatasourceSpec_setNonProxyHosts,
+  snowflakeDatasourceSpec_setOrganization,
+  snowflakeDatasourceSpec_setProxyHost,
+  snowflakeDatasourceSpec_setProxyPort,
+  snowflakeDatasourceSpec_setQuotedIdentifiersIgnoreCase,
+  snowflakeDatasourceSpec_setRegion,
+  snowflakeDatasourceSpec_setRole,
+  snowflakeDatasourceSpec_setWarehouseName,
+  snowflakePublicAuthenticationStrategy_setPassPhraseVaultReference,
+  snowflakePublicAuthenticationStrategy_setPrivateKeyVaultReference,
+  snowflakePublicAuthenticationStrategy_setPublicUserName,
+  staticDatasourceSpecification_setDatabaseName,
+  staticDatasourceSpecification_setHost,
+  staticDatasourceSpecification_setPort,
+  usernamePasswordAuthenticationStrategy_setBaseVaultReference,
+  usernamePasswordAuthenticationStrategy_setPasswordVaultReference,
+  usernamePasswordAuthenticationStrategy_setUserNameVaultReference,
+} from '../../../../stores/graphModifier/StoreRelational_GraphModifierHelper';
 
 /**
  * NOTE: this is a WIP we did to quickly assemble a modular UI for relational database connection editor
@@ -385,7 +431,10 @@ const LocalH2DatasourceSpecificationEditor = observer(
           propertyName={'test data setup SQL'}
           language={EDITOR_LANGUAGE.SQL}
           update={(value: string | undefined): void =>
-            sourceSpec.setTestDataSetupSqls(value ? [value] : [])
+            localH2DatasourceSpecification_setTestDataSetupSqls(
+              sourceSpec,
+              value ? [value] : [],
+            )
           }
         />
       </>
@@ -402,7 +451,7 @@ const StaticDatasourceSpecificationEditor = observer(
     const { sourceSpec, isReadOnly } = props;
     const changePort: React.ChangeEventHandler<HTMLInputElement> = (event) => {
       const val = event.target.value;
-      sourceSpec.setPort(parseInt(val, 10));
+      staticDatasourceSpecification_setPort(sourceSpec, parseInt(val, 10));
     };
 
     return (
@@ -412,7 +461,7 @@ const StaticDatasourceSpecificationEditor = observer(
           value={sourceSpec.host}
           propertyName={'host'}
           update={(value: string | undefined): void =>
-            sourceSpec.setHost(value ?? '')
+            staticDatasourceSpecification_setHost(sourceSpec, value ?? '')
           }
         />
         <div className="panel__content__form__section">
@@ -433,7 +482,10 @@ const StaticDatasourceSpecificationEditor = observer(
           value={sourceSpec.databaseName}
           propertyName={'database'}
           update={(value: string | undefined): void =>
-            sourceSpec.setDatabaseName(value ?? '')
+            staticDatasourceSpecification_setDatabaseName(
+              sourceSpec,
+              value ?? '',
+            )
           }
         />
       </>
@@ -454,7 +506,10 @@ const EmbeddedH2DatasourceSpecificationEditor = observer(
           value={sourceSpec.databaseName}
           propertyName={'database'}
           update={(value: string | undefined): void =>
-            sourceSpec.setDatabaseName(value ?? '')
+            embeddedH2DatasourceSpecification_setDatabaseName(
+              sourceSpec,
+              value ?? '',
+            )
           }
         />
         <ConnectionEditor_StringEditor
@@ -462,7 +517,10 @@ const EmbeddedH2DatasourceSpecificationEditor = observer(
           value={sourceSpec.directory}
           propertyName={'directory'}
           update={(value: string | undefined): void =>
-            sourceSpec.setDirectory(value ?? '')
+            embeddedH2DatasourceSpecification_setDirectory(
+              sourceSpec,
+              value ?? '',
+            )
           }
         />
         <ConnectionEditor_BooleanEditor
@@ -470,7 +528,10 @@ const EmbeddedH2DatasourceSpecificationEditor = observer(
           value={sourceSpec.autoServerMode}
           propertyName={'auto server mode'}
           update={(value?: boolean): void =>
-            sourceSpec.setAutoServerMode(Boolean(value))
+            embeddedH2DatasourceSpecification_setAutoServerMode(
+              sourceSpec,
+              Boolean(value),
+            )
           }
         />
       </>
@@ -491,7 +552,10 @@ const DatabricksDatasourceSpecificationEditor = observer(
           value={sourceSpec.hostname}
           propertyName="hostname"
           update={(value: string | undefined): void =>
-            sourceSpec.setHostName(value ?? '')
+            databricksDatasourceSpecification_setHostName(
+              sourceSpec,
+              value ?? '',
+            )
           }
         />
         <ConnectionEditor_StringEditor
@@ -499,7 +563,7 @@ const DatabricksDatasourceSpecificationEditor = observer(
           value={sourceSpec.port}
           propertyName="port"
           update={(value: string | undefined): void =>
-            sourceSpec.setPort(value ?? '')
+            databricksDatasourceSpecification_setPort(sourceSpec, value ?? '')
           }
         />
         <ConnectionEditor_StringEditor
@@ -507,7 +571,10 @@ const DatabricksDatasourceSpecificationEditor = observer(
           value={sourceSpec.protocol}
           propertyName="protocol"
           update={(value: string | undefined): void =>
-            sourceSpec.setProtocol(value ?? '')
+            databricksDatasourceSpecification_setProtocol(
+              sourceSpec,
+              value ?? '',
+            )
           }
         />
         <ConnectionEditor_StringEditor
@@ -515,7 +582,10 @@ const DatabricksDatasourceSpecificationEditor = observer(
           value={sourceSpec.httpPath}
           propertyName="httpPath"
           update={(value: string | undefined): void =>
-            sourceSpec.setHttpPath(value ?? '')
+            databricksDatasourceSpecification_setHttpPath(
+              sourceSpec,
+              value ?? '',
+            )
           }
         />
       </>
@@ -536,7 +606,7 @@ const SnowflakeDatasourceSpecificationEditor = observer(
           value={sourceSpec.accountName}
           propertyName="account"
           update={(value: string | undefined): void =>
-            sourceSpec.setAccountName(value ?? '')
+            snowflakeDatasourceSpec_setAccountName(sourceSpec, value ?? '')
           }
         />
         <ConnectionEditor_StringEditor
@@ -544,7 +614,7 @@ const SnowflakeDatasourceSpecificationEditor = observer(
           value={sourceSpec.region}
           propertyName="region"
           update={(value: string | undefined): void =>
-            sourceSpec.setRegion(value ?? '')
+            snowflakeDatasourceSpec_setRegion(sourceSpec, value ?? '')
           }
         />
         <ConnectionEditor_StringEditor
@@ -552,7 +622,7 @@ const SnowflakeDatasourceSpecificationEditor = observer(
           value={sourceSpec.warehouseName}
           propertyName="warehouse"
           update={(value: string | undefined): void =>
-            sourceSpec.setWarehouseName(value ?? '')
+            snowflakeDatasourceSpec_setWarehouseName(sourceSpec, value ?? '')
           }
         />
         <ConnectionEditor_StringEditor
@@ -560,7 +630,7 @@ const SnowflakeDatasourceSpecificationEditor = observer(
           value={sourceSpec.databaseName}
           propertyName="database"
           update={(value: string | undefined): void =>
-            sourceSpec.setDatabaseName(value ?? '')
+            snowflakeDatasourceSpec_setDatabaseName(sourceSpec, value ?? '')
           }
         />
         <ConnectionEditor_StringEditor
@@ -568,7 +638,7 @@ const SnowflakeDatasourceSpecificationEditor = observer(
           value={sourceSpec.cloudType}
           propertyName="cloud type"
           update={(value: string | undefined): void =>
-            sourceSpec.setCloudType(value)
+            snowflakeDatasourceSpec_setCloudType(sourceSpec, value)
           }
         />
         <ConnectionEditor_StringEditor
@@ -576,7 +646,7 @@ const SnowflakeDatasourceSpecificationEditor = observer(
           value={sourceSpec.proxyHost}
           propertyName="proxy host"
           update={(value: string | undefined): void =>
-            sourceSpec.setProxyHost(value)
+            snowflakeDatasourceSpec_setProxyHost(sourceSpec, value)
           }
         />
         <ConnectionEditor_StringEditor
@@ -584,7 +654,7 @@ const SnowflakeDatasourceSpecificationEditor = observer(
           value={sourceSpec.proxyPort}
           propertyName="proxy port"
           update={(value: string | undefined): void =>
-            sourceSpec.setProxyPort(value)
+            snowflakeDatasourceSpec_setProxyPort(sourceSpec, value)
           }
         />
         <ConnectionEditor_StringEditor
@@ -592,7 +662,7 @@ const SnowflakeDatasourceSpecificationEditor = observer(
           value={sourceSpec.nonProxyHosts}
           propertyName="non proxy hosts"
           update={(value: string | undefined): void =>
-            sourceSpec.setNonProxyHosts(value)
+            snowflakeDatasourceSpec_setNonProxyHosts(sourceSpec, value)
           }
         />
         <ConnectionEditor_StringEditor
@@ -600,7 +670,7 @@ const SnowflakeDatasourceSpecificationEditor = observer(
           value={sourceSpec.organization}
           propertyName="organization"
           update={(value: string | undefined): void =>
-            sourceSpec.setOrganization(value)
+            snowflakeDatasourceSpec_setOrganization(sourceSpec, value)
           }
         />
         <ConnectionEditor_StringEditor
@@ -608,7 +678,7 @@ const SnowflakeDatasourceSpecificationEditor = observer(
           value={sourceSpec.accountType}
           propertyName="account type"
           update={(value: string | undefined): void =>
-            sourceSpec.setAccountType(value)
+            snowflakeDatasourceSpec_setAccountType(sourceSpec, value)
           }
         />
         <ConnectionEditor_StringEditor
@@ -616,7 +686,7 @@ const SnowflakeDatasourceSpecificationEditor = observer(
           value={sourceSpec.role}
           propertyName="role"
           update={(value: string | undefined): void =>
-            sourceSpec.setRole(value)
+            snowflakeDatasourceSpec_setRole(sourceSpec, value)
           }
         />
         {/* TODO: we should reconsider adding this field, it's an optional boolean, should we default it to `undefined` when it's `false`?*/}
@@ -626,7 +696,10 @@ const SnowflakeDatasourceSpecificationEditor = observer(
           propertyName="quoted identifiers ignore case"
           description="Controls whether Snowflake will treat alphabetic characters in double-quoted identifiers as uppercase"
           update={(value: boolean | undefined): void =>
-            sourceSpec.setQuotedIdentifiersIgnoreCase(Boolean(value))
+            snowflakeDatasourceSpec_setQuotedIdentifiersIgnoreCase(
+              sourceSpec,
+              Boolean(value),
+            )
           }
         />
       </>
@@ -642,7 +715,7 @@ const RedshiftDatasourceSpecificationEditor = observer(
     const { sourceSpec, isReadOnly } = props;
     const changePort: React.ChangeEventHandler<HTMLInputElement> = (event) => {
       const val = event.target.value;
-      sourceSpec.setPort(parseInt(val, 10));
+      redshiftDatasourceSpecification_setPort(sourceSpec, parseInt(val, 10));
     };
     return (
       <>
@@ -651,7 +724,7 @@ const RedshiftDatasourceSpecificationEditor = observer(
           value={sourceSpec.host}
           propertyName="host"
           update={(value: string | undefined): void =>
-            sourceSpec.setHost(value ?? '')
+            redshiftDatasourceSpecification_setHost(sourceSpec, value ?? '')
           }
         />
         <div className="panel__content__form__section">
@@ -672,7 +745,10 @@ const RedshiftDatasourceSpecificationEditor = observer(
           value={sourceSpec.databaseName}
           propertyName="database"
           update={(value: string | undefined): void =>
-            sourceSpec.setDatabaseName(value ?? '')
+            redshiftDatasourceSpecification_setDatabaseName(
+              sourceSpec,
+              value ?? '',
+            )
           }
         />
 
@@ -681,7 +757,7 @@ const RedshiftDatasourceSpecificationEditor = observer(
           value={sourceSpec.region}
           propertyName="region"
           update={(value: string | undefined): void =>
-            sourceSpec.setRegion(value ?? '')
+            redshiftDatasourceSpecification_setRegion(sourceSpec, value ?? '')
           }
         />
         <ConnectionEditor_StringEditor
@@ -689,7 +765,10 @@ const RedshiftDatasourceSpecificationEditor = observer(
           value={sourceSpec.clusterID}
           propertyName="cluster"
           update={(value: string | undefined): void =>
-            sourceSpec.setClusterID(value ?? '')
+            redshiftDatasourceSpecification_setClusterID(
+              sourceSpec,
+              value ?? '',
+            )
           }
         />
         <ConnectionEditor_StringEditor
@@ -697,7 +776,10 @@ const RedshiftDatasourceSpecificationEditor = observer(
           value={sourceSpec.endpointURL}
           propertyName="endpointURL"
           update={(value: string | undefined): void =>
-            sourceSpec.setEndpointURL(value ?? '')
+            redshiftDatasourceSpecification_setEndpointURL(
+              sourceSpec,
+              value ?? '',
+            )
           }
         />
       </>
@@ -718,7 +800,10 @@ const BigQueryDatasourceSpecificationEditor = observer(
           value={sourceSpec.projectId}
           propertyName={'project id'}
           update={(value: string | undefined): void =>
-            sourceSpec.setProjectId(value ?? '')
+            bigQueryDatasourceSpecification_setProjectId(
+              sourceSpec,
+              value ?? '',
+            )
           }
         />
         <ConnectionEditor_StringEditor
@@ -726,7 +811,10 @@ const BigQueryDatasourceSpecificationEditor = observer(
           value={sourceSpec.defaultDataset}
           propertyName={'default dataset'}
           update={(value: string | undefined): void =>
-            sourceSpec.setDefaultDataset(value ?? '')
+            bigQueryDatasourceSpecification_setDefaultDataset(
+              sourceSpec,
+              value ?? '',
+            )
           }
         />
       </>
@@ -749,7 +837,10 @@ const DelegatedKerberosAuthenticationStrategyEditor = observer(
           value={authSpec.serverPrincipal}
           propertyName={'server principal'}
           update={(value: string | undefined): void =>
-            authSpec.setServerPrincipal(value ?? '')
+            delegatedKerberosAuthenticationStrategy_setServerPrincipal(
+              authSpec,
+              value ?? '',
+            )
           }
         />
       </>
@@ -770,7 +861,7 @@ const ApiTokenAuthenticationStrategyEditor = observer(
           value={authSpec.apiToken}
           propertyName={'apiTokenRef'}
           update={(value: string | undefined): void =>
-            authSpec.setApiToken(value ?? '')
+            apiTokenAuthenticationStrategy_setApiToken(authSpec, value ?? '')
           }
         />
       </>
@@ -791,7 +882,10 @@ const SnowflakePublicAuthenticationStrategyEditor = observer(
           value={authSpec.privateKeyVaultReference}
           propertyName={'private key vault reference'}
           update={(value: string | undefined): void =>
-            authSpec.setPrivateKeyVaultReference(value ?? '')
+            snowflakePublicAuthenticationStrategy_setPrivateKeyVaultReference(
+              authSpec,
+              value ?? '',
+            )
           }
         />
         <ConnectionEditor_StringEditor
@@ -799,7 +893,10 @@ const SnowflakePublicAuthenticationStrategyEditor = observer(
           value={authSpec.passPhraseVaultReference}
           propertyName={'pass phrase vault reference'}
           update={(value: string | undefined): void =>
-            authSpec.setPassPhraseVaultReference(value ?? '')
+            snowflakePublicAuthenticationStrategy_setPassPhraseVaultReference(
+              authSpec,
+              value ?? '',
+            )
           }
         />
         <ConnectionEditor_StringEditor
@@ -807,7 +904,10 @@ const SnowflakePublicAuthenticationStrategyEditor = observer(
           value={authSpec.publicUserName}
           propertyName={'public user name'}
           update={(value: string | undefined): void =>
-            authSpec.setPublicUserName(value ?? '')
+            snowflakePublicAuthenticationStrategy_setPublicUserName(
+              authSpec,
+              value ?? '',
+            )
           }
         />
       </>
@@ -825,7 +925,7 @@ const OAuthAuthenticationStrategyEditor = observer(
           value={authSpec.oauthKey}
           propertyName={'oauth key'}
           update={(value: string | undefined): void =>
-            authSpec.setOauthKey(value ?? '')
+            oAuthAuthenticationStrategy_setOauthKey(authSpec, value ?? '')
           }
         />
         <ConnectionEditor_StringEditor
@@ -833,7 +933,7 @@ const OAuthAuthenticationStrategyEditor = observer(
           value={authSpec.scopeName}
           propertyName={'scope name'}
           update={(value: string | undefined): void =>
-            authSpec.setScopeName(value ?? '')
+            oAuthAuthenticationStrategy_setScopeName(authSpec, value ?? '')
           }
         />
       </>
@@ -854,7 +954,10 @@ const UsernamePasswordAuthenticationStrategyEditor = observer(
           value={authSpec.baseVaultReference}
           propertyName={'base vault reference'}
           update={(value: string | undefined): void =>
-            authSpec.setBaseVaultReference(value)
+            usernamePasswordAuthenticationStrategy_setBaseVaultReference(
+              authSpec,
+              value,
+            )
           }
         />
         <ConnectionEditor_StringEditor
@@ -862,7 +965,10 @@ const UsernamePasswordAuthenticationStrategyEditor = observer(
           value={authSpec.userNameVaultReference}
           propertyName={'user name vault reference'}
           update={(value: string | undefined): void =>
-            authSpec.setUserNameVaultReference(value ?? '')
+            usernamePasswordAuthenticationStrategy_setUserNameVaultReference(
+              authSpec,
+              value ?? '',
+            )
           }
         />
         <ConnectionEditor_StringEditor
@@ -870,7 +976,10 @@ const UsernamePasswordAuthenticationStrategyEditor = observer(
           value={authSpec.passwordVaultReference}
           propertyName={'password vault reference'}
           update={(value: string | undefined): void =>
-            authSpec.setPasswordVaultReference(value ?? '')
+            usernamePasswordAuthenticationStrategy_setPasswordVaultReference(
+              authSpec,
+              value ?? '',
+            )
           }
         />
       </>
@@ -941,7 +1050,8 @@ const RelationalConnectionStoreEditor = observer(
       val: PackageableElementOption<Store> | null,
     ): void => {
       if (val) {
-        connection.setStore(
+        connection_setStore(
+          connection,
           PackageableElementExplicitReference.create(val.value),
         );
       }
@@ -1142,7 +1252,7 @@ const RelationalConnectionGeneralEditor = observer(
     const onTypeChange = (
       val: { label: string; value: DatabaseType } | null,
     ): void => {
-      connection.setType(val?.value ?? DatabaseType.H2);
+      dBConnection_setType(connection, val?.value ?? DatabaseType.H2);
     };
 
     // source spec type
@@ -1229,7 +1339,7 @@ const RelationalConnectionGeneralEditor = observer(
                   propertyName="Quote identifiers"
                   description="Specifies whether to use double-quotes for SQL identifiers"
                   update={(value?: boolean): void =>
-                    connection.setQuoteIdentifiers(Boolean(value))
+                    dBConnection_setQuoteIdentifiers(connection, Boolean(value))
                   }
                 />
               </div>

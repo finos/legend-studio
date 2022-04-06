@@ -15,7 +15,6 @@
  */
 
 import { assertType } from '@finos/legend-shared';
-import { observable, action, computed, makeObservable } from 'mobx';
 import type { PackageableElement } from './PackageableElement';
 import type { Section } from './section/Section';
 import { RequiredReference, OptionalReference } from '../Reference';
@@ -27,16 +26,6 @@ export abstract class PackageableElementReference<
 
   protected constructor(value: T) {
     super();
-
-    makeObservable(this, {
-      value: observable,
-      setValue: action,
-    });
-
-    this.value = value;
-  }
-
-  setValue(value: T): void {
     this.value = value;
   }
 
@@ -52,10 +41,6 @@ export class PackageableElementExplicitReference<
 > extends PackageableElementReference<T> {
   private constructor(value: T) {
     super(value);
-
-    makeObservable(this, {
-      valueForSerialization: computed,
-    });
   }
 
   static create<V extends PackageableElement>(
@@ -104,10 +89,6 @@ export class PackageableElementImplicitReference<
     skipSectionCheck: boolean | undefined,
   ) {
     super(value);
-
-    makeObservable(this, {
-      valueForSerialization: computed,
-    });
 
     this.initialResolvedPath = value.path;
     this.input = input;
@@ -172,12 +153,6 @@ export abstract class OptionalPackageableElementReference<
 
   protected constructor(value: T | undefined) {
     super();
-
-    makeObservable(this, {
-      value: observable,
-      setValue: action,
-    });
-
     this.value = value;
   }
 
@@ -193,10 +168,6 @@ export class OptionalPackageableElementExplicitReference<
 > extends OptionalPackageableElementReference<T> {
   private constructor(value: T | undefined) {
     super(value);
-
-    makeObservable(this, {
-      valueForSerialization: computed,
-    });
   }
 
   static create<V extends PackageableElement>(
@@ -225,11 +196,6 @@ export class OptionalPackageableElementImplicitReference<
     skipSectionCheck: boolean | undefined,
   ) {
     super(value);
-
-    makeObservable(this, {
-      valueForSerialization: computed,
-    });
-
     this.initialResolvedPath = value?.path;
     this.input = input;
     this.parentSection = parentSection;

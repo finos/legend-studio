@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { computed, observable, makeObservable } from 'mobx';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import {
   type Hashable,
@@ -30,17 +29,10 @@ export class Table extends NamedRelation implements Hashable {
   schema!: Schema;
   primaryKey: Column[] = [];
   milestoning: Milestoning[] = [];
-  // // TODO
   // temporaryTable : Boolean[0..1];
 
   constructor(name: string, schema: Schema) {
     super(name);
-
-    makeObservable(this, {
-      primaryKey: observable,
-      hashCode: computed,
-    });
-
     this.schema = schema;
   }
 

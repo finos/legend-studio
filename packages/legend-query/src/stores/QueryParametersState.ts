@@ -39,6 +39,11 @@ import {
 import { observable, makeObservable, action } from 'mobx';
 import type { QueryBuilderState } from './QueryBuilderState';
 import { DATE_FORMAT, DATE_TIME_FORMAT } from '@finos/legend-application';
+import {
+  multiplicity_setLowerBound,
+  multiplicity_setUpperBound,
+  genericType_setRawType,
+} from './QueryBuilderGraphModifierHelper';
 
 export enum QUERY_BUILDER_PARAMETER_TREE_DND_TYPE {
   VARIABLE = 'VARIABLE',
@@ -185,7 +190,10 @@ export class QueryParameterState {
 
   changeVariableType(type: Type): void {
     if (type !== this.variableType) {
-      this.parameter.genericType?.value.setRawType(type);
+      const genricType = this.parameter.genericType?.value;
+      if (genricType) {
+        genericType_setRawType(genricType, type);
+      }
       this.mockParameterValue();
     }
   }
@@ -199,8 +207,8 @@ export class QueryParameterState {
       current.lowerBound !== lowerBound ||
       current.upperBound !== uppderBound
     ) {
-      current.setLowerBound(lowerBound);
-      current.setUpperBound(uppderBound);
+      multiplicity_setLowerBound(current, lowerBound);
+      multiplicity_setUpperBound(current, uppderBound);
       this.mockParameterValue();
     }
   }
