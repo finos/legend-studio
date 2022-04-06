@@ -69,6 +69,8 @@ import {
   apiTokenAuthenticationStrategy_setApiToken,
   bigQueryDatasourceSpecification_setDefaultDataset,
   bigQueryDatasourceSpecification_setProjectId,
+  bigQueryDatasourceSpecification_setProxyHost,
+  bigQueryDatasourceSpecification_setProxyPort,
   databricksDatasourceSpecification_setHostName,
   databricksDatasourceSpecification_setHttpPath,
   databricksDatasourceSpecification_setPort,
@@ -821,7 +823,10 @@ const BigQueryDatasourceSpecificationEditor = observer(
           value={sourceSpec.proxyHost}
           propertyName="proxy host"
           update={(value: string | undefined): void =>
-            sourceSpec.setProxyHost(value)
+            bigQueryDatasourceSpecification_setProxyHost(
+              sourceSpec,
+              value ?? '',
+            )
           }
         />
         <ConnectionEditor_StringEditor
@@ -829,7 +834,10 @@ const BigQueryDatasourceSpecificationEditor = observer(
           value={sourceSpec.proxyPort}
           propertyName="proxy port"
           update={(value: string | undefined): void =>
-            sourceSpec.setProxyPort(value)
+            bigQueryDatasourceSpecification_setProxyPort(
+              sourceSpec,
+              value ?? '',
+            )
           }
         />
       </>
