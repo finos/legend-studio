@@ -42,6 +42,7 @@ import {
   EntityChangeType,
   EntityDiff,
 } from '@finos/legend-server-sdlc';
+import { ObserverContext, observe_PureModel } from '@finos/legend-graph';
 
 class RevisionChangeDetectionState {
   editorStore: EditorStore;
@@ -736,5 +737,56 @@ export class ChangeDetectionState {
         'ms',
       );
     }
+  }
+
+  /**
+   * NOTE: right now we rely on `observe_PackageTree` method to observe all elements in the graph
+   * but potentially, we could improve this by observe all elements in parallel
+   */
+  observeGraph(): void {
+    const startTime = Date.now();
+    observe_PureModel(
+      this.editorStore.graphManagerState.graph,
+      new ObserverContext(
+        this.editorStore.pluginManager.getPureGraphManagerPlugins(),
+      ),
+    );
+    this.editorStore.applicationStore.log.info(
+      LogEvent.create(CHANGE_DETECTION_EVENT.CHANGE_DETECTION_GRAPH_OBSERVED),
+      '[ASYNC]',
+      Date.now() - startTime,
+      'ms',
+    );
+  }
+
+  /**
+   * Call `get hashCode()` on each element once so we trigger the first time we compute the hash for that element.
+   * This plays well with `keepAlive` flag on each of the element `get hashCode()` function. This is due to
+   * the fact that we want to get hashCode inside a `setTimeout()` to make this non-blocking, but that way `mobx` will
+   * not trigger memoization on computed so we need to enable `keepAlive`
+   */
+  async precomputeHashes(): Promise<void> {
+    const startTime = Date.now();
+    if (this.editorStore.graphManagerState.graph.allOwnElements.length) {
+      await Promise.all<void>(
+        this.editorStore.graphManagerState.graph.allOwnElements.map(
+          (element) =>
+            new Promise((resolve) =>
+              setTimeout(() => {
+                element.hashCode; // manually trigger hash code recomputation
+                resolve();
+              }, 0),
+            ),
+        ),
+      );
+    }
+    this.editorStore.applicationStore.log.info(
+      LogEvent.create(
+        CHANGE_DETECTION_EVENT.CHANGE_DETECTION_GRAPH_HASHES_PRECOMPUTED,
+      ),
+      '[ASYNC]',
+      Date.now() - startTime,
+      'ms',
+    );
   }
 }

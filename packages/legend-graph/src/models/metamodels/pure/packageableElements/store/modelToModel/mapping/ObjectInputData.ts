@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { observable, computed, makeObservable } from 'mobx';
 import {
   type Hashable,
   hashArray,
@@ -60,14 +59,6 @@ export class ObjectInputData extends InputData implements Hashable {
     data: string,
   ) {
     super();
-
-    makeObservable(this, {
-      inputType: observable,
-      data: observable,
-      validationResult: computed,
-      hashCode: computed,
-    });
-
     this.sourceClass = sourceClass;
     this.inputType = inputType;
     /* @MARKER: Workaround for https://github.com/finos/legend-studio/issues/66 */

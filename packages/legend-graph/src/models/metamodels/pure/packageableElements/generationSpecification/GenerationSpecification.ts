@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { computed, observable, makeObservable, override } from 'mobx';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import {
@@ -31,18 +30,11 @@ import type { FileGenerationSpecification } from '../fileGeneration/FileGenerati
 export class GenerationTreeNode implements Hashable {
   generationElement: PackageableElementReference<PackageableElement>;
   id: string;
-  parent?: GenerationTreeNode | undefined;
 
   constructor(
     generationElement: PackageableElementReference<PackageableElement>,
     id?: string,
   ) {
-    makeObservable(this, {
-      id: observable,
-      parent: observable,
-      hashCode: computed,
-    });
-
     this.generationElement = generationElement;
     this.id = id ?? generationElement.value.path;
   }
@@ -63,16 +55,6 @@ export class GenerationSpecification
   generationNodes: GenerationTreeNode[] = [];
   fileGenerations: PackageableElementReference<FileGenerationSpecification>[] =
     [];
-
-  constructor(name: string) {
-    super(name);
-
-    makeObservable<GenerationSpecification, '_elementHashCode'>(this, {
-      generationNodes: observable,
-      fileGenerations: observable,
-      _elementHashCode: override,
-    });
-  }
 
   findGenerationElementById(id: string): PackageableElement | undefined {
     return this.generationNodes.find((node) => node.id === id)

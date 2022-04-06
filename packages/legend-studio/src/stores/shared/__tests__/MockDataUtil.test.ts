@@ -18,17 +18,14 @@ import TEST_DATA__completeGraphEntities from './TEST_DATA__MockDataGeneration.js
 import { classHasCycle, createMockClassInstance } from '../MockDataUtil';
 import { unitTest } from '@finos/legend-shared';
 import { TEST__getTestEditorStore } from '../../EditorStoreTestUtils';
-import { flowResult } from 'mobx';
 import type { Entity } from '@finos/legend-model-storage';
 
 const editorStore = TEST__getTestEditorStore();
 
 beforeAll(async () => {
-  await flowResult(
-    editorStore.graphManagerState.graphManager.buildGraph(
-      editorStore.graphManagerState.graph,
-      TEST_DATA__completeGraphEntities as Entity[],
-    ),
+  await editorStore.graphManagerState.graphManager.buildGraph(
+    editorStore.graphManagerState.graph,
+    TEST_DATA__completeGraphEntities as Entity[],
   );
 });
 

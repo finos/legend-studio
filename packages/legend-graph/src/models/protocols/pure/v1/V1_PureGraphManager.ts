@@ -14,17 +14,14 @@
  * limitations under the License.
  */
 
-import { flow, flowResult, makeObservable, runInAction } from 'mobx';
 import { GRAPH_MANAGER_EVENT } from '../../../../graphManager/GraphManagerEvent';
 import {
   CORE_PURE_PATH,
   ELEMENT_PATH_DELIMITER,
-  ROOT_PACKAGE_NAME,
   SOURCE_INFORMATION_KEY,
 } from '../../../../MetaModelConst';
 import {
   type Clazz,
-  type GeneratorFn,
   type Log,
   type PlainObject,
   type ServerClientConfig,
@@ -427,41 +424,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   constructor(pluginManager: GraphPluginManager, log: Log) {
     super(pluginManager, log);
-
-    makeObservable<
-      V1_PureGraphManager,
-      | 'buildGraphFromInputs'
-      | 'initializeAndIndexElements'
-      | 'postProcess'
-      | 'buildTypes'
-      | 'buildStores'
-      | 'buildMappings'
-      | 'buildConnectionsAndRuntimes'
-      | 'buildSectionIndices'
-      | 'buildOtherElements'
-      | 'buildServices'
-      | 'buildFileGenerations'
-      | 'buildGenerationSpecifications'
-    >(this, {
-      initialize: flow,
-      buildSystem: flow,
-      buildDependencies: flow,
-      buildGraph: flow,
-      buildGraphFromInputs: flow,
-      buildGenerations: flow,
-      initializeAndIndexElements: flow,
-      postProcess: flow,
-      buildTypes: flow,
-      buildStores: flow,
-      buildMappings: flow,
-      buildConnectionsAndRuntimes: flow,
-      buildSectionIndices: flow,
-      buildOtherElements: flow,
-      buildServices: flow,
-      buildFileGenerations: flow,
-      buildGenerationSpecifications: flow,
-    });
-
     this.engine = new V1_Engine({}, log);
 
     // setup plugins
@@ -490,26 +452,26 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     return this.engine.config;
   }
 
-  *initialize(
+  async initialize(
     config: TEMPORARY__EngineSetupConfig,
     options?: {
       tracerService?: TracerService | undefined;
     },
-  ): GeneratorFn<void> {
+  ): Promise<void> {
     this.engine = new V1_Engine(config.clientConfig, this.log);
     this.engine
       .getEngineServerClient()
       .setTracerService(options?.tracerService ?? new TracerService());
-    yield this.engine.setup(config);
+    await this.engine.setup(config);
   }
 
   // --------------------------------------------- Graph Builder ---------------------------------------------
 
-  *buildSystem(
+  async buildSystem(
     coreModel: CoreModel,
     systemModel: SystemModel,
     options?: GraphBuilderOptions,
-  ): GeneratorFn<GraphBuilderReport> {
+  ): Promise<GraphBuilderReport> {
     const stopWatch = new StopWatch();
     const report = new GraphBuilderReport();
     const graphBuilderState = systemModel.buildState;
@@ -545,15 +507,13 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       ];
 
       // build
-      yield flowResult(
-        this.buildGraphFromInputs(
-          graph,
-          buildInputs,
-          report,
-          stopWatch,
-          graphBuilderState,
-          options,
-        ),
+      await this.buildGraphFromInputs(
+        graph,
+        buildInputs,
+        report,
+        stopWatch,
+        graphBuilderState,
+        options,
       );
 
       graphBuilderState.pass();
@@ -574,13 +534,13 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     }
   }
 
-  *buildDependencies(
+  async buildDependencies(
     coreModel: CoreModel,
     systemModel: SystemModel,
     dependencyManager: DependencyManager,
     dependencyEntitiesMap: Map<string, Entity[]>,
     options?: GraphBuilderOptions,
-  ): GeneratorFn<GraphBuilderReport> {
+  ): Promise<GraphBuilderReport> {
     const stopWatch = new StopWatch();
     const report = new GraphBuilderReport();
     const graphBuilderState = dependencyManager.buildState;
@@ -602,7 +562,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         `Partitioning and deserializing elements...`,
       );
       const dependencyDataMap = new Map<string, V1_PureModelContextData>();
-      yield Promise.all(
+      await Promise.all(
         Array.from(dependencyEntitiesMap.entries()).map(
           ([dependencyKey, entities]) => {
             const projectModelData = new V1_PureModelContextData();
@@ -630,15 +590,13 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       }));
 
       // build
-      yield flowResult(
-        this.buildGraphFromInputs(
-          graph,
-          buildInputs,
-          report,
-          stopWatch,
-          graphBuilderState,
-          options,
-        ),
+      await this.buildGraphFromInputs(
+        graph,
+        buildInputs,
+        report,
+        stopWatch,
+        graphBuilderState,
+        options,
       );
 
       graphBuilderState.pass();
@@ -660,11 +618,11 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     }
   }
 
-  *buildGraph(
+  async buildGraph(
     graph: PureModel,
     entities: Entity[],
     options?: GraphBuilderOptions,
-  ): GeneratorFn<GraphBuilderReport> {
+  ): Promise<GraphBuilderReport> {
     const stopWatch = new StopWatch();
     const report = new GraphBuilderReport();
     const graphBuilderState = graph.buildState;
@@ -674,7 +632,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       // deserialize
       graphBuilderState.setMessage(`Deserializing elements...`);
       const data = new V1_PureModelContextData();
-      yield V1_entitiesToPureModelContextData(
+      await V1_entitiesToPureModelContextData(
         entities,
         data,
         this.pluginManager.getPureProtocolProcessorPlugins(),
@@ -690,16 +648,23 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       ];
 
       // build
-      yield flowResult(
-        this.buildGraphFromInputs(
-          graph,
-          buildInputs,
-          report,
-          stopWatch,
-          graphBuilderState,
-          options,
-        ),
+      await this.buildGraphFromInputs(
+        graph,
+        buildInputs,
+        report,
+        stopWatch,
+        graphBuilderState,
+        options,
       );
+
+      /**
+       * For now, we delete the section index. We are able to read both resolved and unresolved element paths
+       * but when we write (serialize) we write only resolved paths. In the future once the issue with dependency is solved we will
+       * perserve the element path both resolved and unresolved
+       */
+      if (!options?.TEMPORARY__keepSectionIndex) {
+        graph.TEMPORARY__deleteOwnSectionIndex();
+      }
 
       graphBuilderState.pass();
       report.timings = {
@@ -725,11 +690,11 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     }
   }
 
-  *buildGenerations(
+  async buildGenerations(
     graph: PureModel,
     generatedEntities: Map<string, Entity[]>,
     options?: GraphBuilderOptions,
-  ): GeneratorFn<GraphBuilderReport> {
+  ): Promise<GraphBuilderReport> {
     const stopWatch = new StopWatch();
     const report = new GraphBuilderReport();
     const generatedModel = graph.generationModel;
@@ -740,7 +705,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       // deserialize
       graphBuilderState.setMessage(`Deserializing elements...`);
       const generatedDataMap = new Map<string, V1_PureModelContextData>();
-      yield Promise.all(
+      await Promise.all(
         Array.from(generatedEntities.entries()).map(
           ([generationParentPath, entities]) => {
             const generatedData = new V1_PureModelContextData();
@@ -769,15 +734,13 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       );
 
       // build
-      yield flowResult(
-        this.buildGraphFromInputs(
-          graph,
-          buildInputs,
-          report,
-          stopWatch,
-          graphBuilderState,
-          options,
-        ),
+      await this.buildGraphFromInputs(
+        graph,
+        buildInputs,
+        report,
+        stopWatch,
+        graphBuilderState,
+        options,
       );
 
       graphBuilderState.pass();
@@ -805,66 +768,59 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     }
   }
 
-  private *buildGraphFromInputs(
+  private async buildGraphFromInputs(
     graph: PureModel,
     inputs: V1_GraphBuilderInput[],
     report: GraphBuilderReport,
     stopWatch: StopWatch,
     graphBuilderState: ActionState,
     options?: GraphBuilderOptions,
-  ): GeneratorFn<void> {
+  ): Promise<void> {
     // index
     graphBuilderState.setMessage(
       `Indexing ${report.elementCount.total} elements...`,
     );
-    yield flowResult(this.initializeAndIndexElements(graph, inputs, options));
+    await this.initializeAndIndexElements(graph, inputs, options);
     stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_ELEMENTS_INDEXED);
 
     // build section index
     graphBuilderState.setMessage(`Building section indices...`);
-    yield flowResult(this.buildSectionIndices(graph, inputs, options));
+    await this.buildSectionIndices(graph, inputs, options);
     stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_SECTION_INDICES_BUILT);
 
     // build types
     graphBuilderState.setMessage(`Building domain models...`);
-    yield flowResult(this.buildTypes(graph, inputs, options));
+    await this.buildTypes(graph, inputs, options);
     stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_DOMAIN_MODELS_BUILT);
 
     // build stores
     graphBuilderState.setMessage(`Building stores...`);
-    yield flowResult(this.buildStores(graph, inputs, options));
+    await this.buildStores(graph, inputs, options);
     stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_STORES_BUILT);
 
     // build mappings
     graphBuilderState.setMessage(`Building mappings...`);
-    yield flowResult(this.buildMappings(graph, inputs, options));
+    await this.buildMappings(graph, inputs, options);
     stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_MAPPINGS_BUILT);
 
     // build connections and runtimes
     graphBuilderState.setMessage(`Building connections and runtimes...`);
-    yield flowResult(this.buildConnectionsAndRuntimes(graph, inputs, options));
+    await this.buildConnectionsAndRuntimes(graph, inputs, options);
     stopWatch.record(
       GRAPH_MANAGER_EVENT.GRAPH_BUILDER_CONNECTIONS_AND_RUNTIMES_BUILT,
     );
 
     // build services
     graphBuilderState.setMessage(`Building services...`);
-    yield flowResult(this.buildServices(graph, inputs, options));
+    await this.buildServices(graph, inputs, options);
     stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_SERVICES_BUILT);
 
     // build other elements
     graphBuilderState.setMessage(`Building other elements...`);
-    yield flowResult(this.buildFileGenerations(graph, inputs, options));
-    yield flowResult(
-      this.buildGenerationSpecifications(graph, inputs, options),
-    );
-    yield flowResult(this.buildOtherElements(graph, inputs, options));
+    await this.buildFileGenerations(graph, inputs, options);
+    await this.buildGenerationSpecifications(graph, inputs, options);
+    await this.buildOtherElements(graph, inputs, options);
     stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_OTHER_ELEMENTS_BUILT);
-
-    // post-process
-    graphBuilderState.setMessage(`Post-processing graph...`);
-    yield flowResult(this.postProcess(graph, inputs, options));
-    stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_POST_PROCESSED);
   }
 
   private getBuilderContext(
@@ -892,12 +848,12 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
    *
    * NOTE: We aim to not do anything more than running the first pass and indexing the first pass.
    */
-  private *initializeAndIndexElements(
+  private async initializeAndIndexElements(
     graph: PureModel,
     inputs: V1_GraphBuilderInput[],
     options?: GraphBuilderOptions,
-  ): GeneratorFn<void> {
-    yield Promise.all(
+  ): Promise<void> {
+    await Promise.all(
       inputs.flatMap((input) =>
         input.data.nativeElements.map((element) =>
           this.visitWithErrorHandling(
@@ -909,7 +865,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         ),
       ),
     );
-    yield Promise.all(
+    await Promise.all(
       this.extensions.sortedExtraElementBuilders.map(async (builder) => {
         await Promise.all(
           inputs.flatMap((input) =>
@@ -933,51 +889,13 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
-  /**
-   * Run post-processers on elements of the graph.
-   */
-  private *postProcess(
+  private async buildTypes(
     graph: PureModel,
     inputs: V1_GraphBuilderInput[],
     options?: GraphBuilderOptions,
-  ): GeneratorFn<void> {
-    if (!options?.TEMPORARY_skipGraphBuilderPostProcessing) {
-      yield Promise.all(
-        inputs.flatMap((input) =>
-          input.data.elements.map((el) =>
-            promisify(() =>
-              runInAction(() => {
-                // TODO: check performance once `getNullableElement` is optimized
-                const element = graph.getElement(el.path);
-                const isElementReadOnly = Boolean(
-                  element.getRoot().path !== ROOT_PACKAGE_NAME.MAIN,
-                );
-                if (isElementReadOnly) {
-                  element.freeze();
-                }
-              }),
-            ),
-          ),
-        ),
-      );
-    }
-    /**
-     * For now, we delete the section index. We are able to read both resolved and unresolved element paths
-     * but when we write (serialize) we write only resolved paths. In the future once the issue with dependency is solved we will
-     * perserve the element path both resolved and unresolved
-     */
-    if (!options?.TEMPORARY__keepSectionIndex) {
-      graph.TEMPORARY__deleteOwnSectionIndex();
-    }
-  }
-
-  private *buildTypes(
-    graph: PureModel,
-    inputs: V1_GraphBuilderInput[],
-    options?: GraphBuilderOptions,
-  ): GeneratorFn<void> {
+  ): Promise<void> {
     // Second pass
-    yield Promise.all(
+    await Promise.all(
       inputs.flatMap((input) =>
         input.data.profiles.map((element) =>
           this.visitWithErrorHandling(
@@ -989,7 +907,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         ),
       ),
     );
-    yield Promise.all(
+    await Promise.all(
       inputs.flatMap((input) =>
         input.data.classes.map((element) =>
           this.visitWithErrorHandling(
@@ -1001,7 +919,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         ),
       ),
     );
-    yield Promise.all(
+    await Promise.all(
       inputs.flatMap((input) =>
         input.data.enumerations.map((element) =>
           this.visitWithErrorHandling(
@@ -1013,7 +931,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         ),
       ),
     );
-    yield Promise.all(
+    await Promise.all(
       inputs.flatMap((input) =>
         input.data.measures.map((element) =>
           this.visitWithErrorHandling(
@@ -1025,7 +943,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         ),
       ),
     );
-    yield Promise.all(
+    await Promise.all(
       inputs.flatMap((input) =>
         input.data.functions.map((element) =>
           this.visitWithErrorHandling(
@@ -1038,7 +956,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       ),
     );
     // Third pass
-    yield Promise.all(
+    await Promise.all(
       inputs.flatMap((input) =>
         input.data.classes.map((element) =>
           this.visitWithErrorHandling(
@@ -1050,7 +968,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         ),
       ),
     );
-    yield Promise.all(
+    await Promise.all(
       inputs.flatMap((input) =>
         input.data.associations.map((element) =>
           this.visitWithErrorHandling(
@@ -1063,7 +981,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       ),
     );
     // Fifth pass
-    yield Promise.all(
+    await Promise.all(
       inputs.flatMap((input) =>
         input.data.classes.map((element) =>
           this.visitWithErrorHandling(
@@ -1077,12 +995,12 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
-  private *buildStores(
+  private async buildStores(
     graph: PureModel,
     inputs: V1_GraphBuilderInput[],
     options?: GraphBuilderOptions,
-  ): GeneratorFn<void> {
-    yield Promise.all(
+  ): Promise<void> {
+    await Promise.all(
       inputs.flatMap((input) =>
         input.data.stores.map((element) =>
           this.visitWithErrorHandling(
@@ -1094,7 +1012,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         ),
       ),
     );
-    yield Promise.all(
+    await Promise.all(
       inputs.flatMap((input) =>
         input.data.stores.map((element) =>
           this.visitWithErrorHandling(
@@ -1106,7 +1024,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         ),
       ),
     );
-    yield Promise.all(
+    await Promise.all(
       inputs.flatMap((input) =>
         input.data.stores.map((element) =>
           this.visitWithErrorHandling(
@@ -1118,7 +1036,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         ),
       ),
     );
-    yield Promise.all(
+    await Promise.all(
       inputs.flatMap((input) =>
         input.data.stores.map((element) =>
           this.visitWithErrorHandling(
@@ -1132,12 +1050,12 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
-  private *buildMappings(
+  private async buildMappings(
     graph: PureModel,
     inputs: V1_GraphBuilderInput[],
     options?: GraphBuilderOptions,
-  ): GeneratorFn<void> {
-    yield Promise.all(
+  ): Promise<void> {
+    await Promise.all(
       inputs.flatMap((input) =>
         input.data.mappings.map((element) =>
           this.visitWithErrorHandling(
@@ -1149,7 +1067,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         ),
       ),
     );
-    yield Promise.all(
+    await Promise.all(
       inputs.flatMap((input) =>
         input.data.mappings.map((element) =>
           this.visitWithErrorHandling(
@@ -1161,7 +1079,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         ),
       ),
     );
-    yield Promise.all(
+    await Promise.all(
       inputs.flatMap((input) =>
         input.data.mappings.map((element) =>
           this.visitWithErrorHandling(
@@ -1175,13 +1093,13 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
-  private *buildConnectionsAndRuntimes(
+  private async buildConnectionsAndRuntimes(
     graph: PureModel,
     inputs: V1_GraphBuilderInput[],
     options?: GraphBuilderOptions,
-  ): GeneratorFn<void> {
+  ): Promise<void> {
     // NOTE: connections must be built before runtimes
-    yield Promise.all(
+    await Promise.all(
       inputs.flatMap((input) =>
         input.data.connections.map((element) =>
           this.visitWithErrorHandling(
@@ -1193,7 +1111,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         ),
       ),
     );
-    yield Promise.all(
+    await Promise.all(
       inputs.flatMap((input) =>
         input.data.runtimes.map((element) =>
           this.visitWithErrorHandling(
@@ -1207,12 +1125,12 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
-  private *buildServices(
+  private async buildServices(
     graph: PureModel,
     inputs: V1_GraphBuilderInput[],
     options?: GraphBuilderOptions,
-  ): GeneratorFn<void> {
-    yield Promise.all(
+  ): Promise<void> {
+    await Promise.all(
       inputs.flatMap((input) =>
         input.data.services.map((element) =>
           this.visitWithErrorHandling(
@@ -1226,12 +1144,12 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
-  private *buildFileGenerations(
+  private async buildFileGenerations(
     graph: PureModel,
     inputs: V1_GraphBuilderInput[],
     options?: GraphBuilderOptions,
-  ): GeneratorFn<void> {
-    yield Promise.all(
+  ): Promise<void> {
+    await Promise.all(
       inputs.flatMap((input) =>
         input.data.fileGenerations.map((element) =>
           this.visitWithErrorHandling(
@@ -1245,12 +1163,12 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
-  private *buildGenerationSpecifications(
+  private async buildGenerationSpecifications(
     graph: PureModel,
     inputs: V1_GraphBuilderInput[],
     options?: GraphBuilderOptions,
-  ): GeneratorFn<void> {
-    yield Promise.all(
+  ): Promise<void> {
+    await Promise.all(
       inputs.flatMap((input) =>
         input.data.generationSpecifications.map((element) =>
           this.visitWithErrorHandling(
@@ -1264,12 +1182,12 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
-  private *buildSectionIndices(
+  private async buildSectionIndices(
     graph: PureModel,
     inputs: V1_GraphBuilderInput[],
     options?: GraphBuilderOptions,
-  ): GeneratorFn<void> {
-    yield Promise.all(
+  ): Promise<void> {
+    await Promise.all(
       inputs.flatMap((input) =>
         input.data.sectionIndices.map((element) =>
           this.visitWithErrorHandling(
@@ -1283,12 +1201,12 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
-  private *buildOtherElements(
+  private async buildOtherElements(
     graph: PureModel,
     inputs: V1_GraphBuilderInput[],
     options?: GraphBuilderOptions,
-  ): GeneratorFn<void> {
-    yield Promise.all(
+  ): Promise<void> {
+    await Promise.all(
       this.extensions.sortedExtraElementBuilders.map(async (builder) => {
         await Promise.all(
           inputs.flatMap((input) =>
@@ -1371,9 +1289,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     visitor: V1_PackageableElementVisitor<T>,
   ): Promise<T> {
     try {
-      return promisify(() =>
-        runInAction(() => element.accept_PackageableElementVisitor(visitor)),
-      );
+      return promisify(() => element.accept_PackageableElementVisitor(visitor));
     } catch (err) {
       assertErrorThrown(err);
       const error =
@@ -2134,7 +2050,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       ...dependencyGraphBuilderInput,
       ...mainGraphBuilderInput,
     ];
-    await flowResult(this.initializeAndIndexElements(graph, graphBuilderInput));
+    await this.initializeAndIndexElements(graph, graphBuilderInput);
     return graphBuilderInput;
   }
 
@@ -2345,9 +2261,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
     await Promise.all(
       pureModelContextData.elements.map((element) =>
-        promisify(() =>
-          runInAction(() => hashMap.set(element.path, element.hashCode)),
-        ),
+        promisify(() => hashMap.set(element.path, element.hashCode)),
       ),
     );
     return hashMap;

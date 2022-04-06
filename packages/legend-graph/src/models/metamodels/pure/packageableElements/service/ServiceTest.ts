@@ -15,7 +15,6 @@
  */
 
 import { type Hashable, uuid, hashArray } from '@finos/legend-shared';
-import { observable, computed, makeObservable } from 'mobx';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import type { RawLambda } from '../../rawValueSpecification/RawLambda';
 import type { Service } from './Service';
@@ -37,13 +36,6 @@ export class TestContainer implements Hashable {
   singleExecutionTestParent: SingleExecutionTest;
 
   constructor(assert: RawLambda, parent: SingleExecutionTest) {
-    makeObservable(this, {
-      parametersValues: observable,
-      assert: observable,
-      singleExecutionTestParent: observable,
-      hashCode: computed,
-    });
-
     this.assert = assert;
     this.singleExecutionTestParent = parent;
   }
@@ -63,13 +55,6 @@ export class SingleExecutionTest extends ServiceTest implements Hashable {
 
   constructor(owner: Service, data: string) {
     super(owner);
-
-    makeObservable(this, {
-      data: observable,
-      asserts: observable,
-      hashCode: computed,
-    });
-
     this.data = data;
   }
 
@@ -90,11 +75,6 @@ export class KeyedSingleExecutionTest
 
   constructor(key: string, parentService: Service, data: string) {
     super(parentService, data);
-
-    makeObservable(this, {
-      key: observable,
-    });
-
     this.key = key;
   }
 
@@ -110,15 +90,6 @@ export class KeyedSingleExecutionTest
 
 export class MultiExecutionTest extends ServiceTest implements Hashable {
   tests: KeyedSingleExecutionTest[] = [];
-
-  constructor(owner: Service) {
-    super(owner);
-
-    makeObservable(this, {
-      tests: observable,
-      hashCode: computed,
-    });
-  }
 
   get hashCode(): string {
     return hashArray([

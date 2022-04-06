@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { observable, makeObservable, computed } from 'mobx';
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../ESService_ModelUtils';
 import type {
@@ -27,24 +26,10 @@ export abstract class TypeReference implements Hashable {
   private readonly _$nominalTypeBrand!: 'TypeReference';
   list!: boolean;
 
-  constructor() {
-    makeObservable(this, {
-      list: observable,
-    });
-  }
-
   abstract get hashCode(): string;
 }
 
 export class BooleanTypeReference extends TypeReference implements Hashable {
-  constructor() {
-    super();
-
-    makeObservable(this, {
-      hashCode: computed,
-    });
-  }
-
   override get hashCode(): string {
     return hashArray([
       SERVICE_STORE_HASH_STRUCTURE.BOOLEAN_TYPE_REFERENCE,
@@ -53,39 +38,7 @@ export class BooleanTypeReference extends TypeReference implements Hashable {
   }
 }
 
-export class ComplexTypeReference extends TypeReference implements Hashable {
-  type!: PackageableElementReference<Class>;
-  binding!: PackageableElementReference<Binding>;
-
-  constructor() {
-    super();
-
-    makeObservable(this, {
-      type: observable,
-      binding: observable,
-      hashCode: computed,
-    });
-  }
-
-  override get hashCode(): string {
-    return hashArray([
-      SERVICE_STORE_HASH_STRUCTURE.COMPLEX_TYPE_REFERENCE,
-      this.list.toString(),
-      this.type.valueForSerialization ?? '',
-      this.binding.valueForSerialization ?? '',
-    ]);
-  }
-}
-
 export class FloatTypeReference extends TypeReference implements Hashable {
-  constructor() {
-    super();
-
-    makeObservable(this, {
-      hashCode: computed,
-    });
-  }
-
   override get hashCode(): string {
     return hashArray([
       SERVICE_STORE_HASH_STRUCTURE.FLOAT_TYPE_REFERENCE,
@@ -95,14 +48,6 @@ export class FloatTypeReference extends TypeReference implements Hashable {
 }
 
 export class IntegerTypeReference extends TypeReference implements Hashable {
-  constructor() {
-    super();
-
-    makeObservable(this, {
-      hashCode: computed,
-    });
-  }
-
   override get hashCode(): string {
     return hashArray([
       SERVICE_STORE_HASH_STRUCTURE.INTEGER_TYPE_REFERENCE,
@@ -112,18 +57,24 @@ export class IntegerTypeReference extends TypeReference implements Hashable {
 }
 
 export class StringTypeReference extends TypeReference implements Hashable {
-  constructor() {
-    super();
-
-    makeObservable(this, {
-      hashCode: computed,
-    });
-  }
-
   override get hashCode(): string {
     return hashArray([
       SERVICE_STORE_HASH_STRUCTURE.STRING_TYPE_REFERENCE,
       this.list.toString(),
+    ]);
+  }
+}
+
+export class ComplexTypeReference extends TypeReference implements Hashable {
+  type!: PackageableElementReference<Class>;
+  binding!: PackageableElementReference<Binding>;
+
+  override get hashCode(): string {
+    return hashArray([
+      SERVICE_STORE_HASH_STRUCTURE.COMPLEX_TYPE_REFERENCE,
+      this.list.toString(),
+      this.type.valueForSerialization ?? '',
+      this.binding.valueForSerialization ?? '',
     ]);
   }
 }

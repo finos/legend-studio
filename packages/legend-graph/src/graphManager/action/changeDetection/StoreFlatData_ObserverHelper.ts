@@ -1,0 +1,278 @@
+/**
+ * Copyright (c) 2020-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import { computed, makeObservable, observable, override } from 'mobx';
+import type { FlatDataConnection } from '../../../models/metamodels/pure/packageableElements/store/flatData/connection/FlatDataConnection';
+import type { FlatDataInstanceSetImplementation } from '../../../models/metamodels/pure/packageableElements/store/flatData/mapping/FlatDataInstanceSetImplementation';
+import type { FlatData } from '../../../models/metamodels/pure/packageableElements/store/flatData/model/FlatData';
+import {
+  type FlatDataRecordField,
+  type FlatDataDataType,
+  FlatDataBoolean,
+  FlatDataRecordType,
+  FlatDataDate,
+  FlatDataNumber,
+  FlatDataString,
+} from '../../../models/metamodels/pure/packageableElements/store/flatData/model/FlatDataDataType';
+import type { FlatDataProperty } from '../../../models/metamodels/pure/packageableElements/store/flatData/model/FlatDataProperty';
+import type { FlatDataSection } from '../../../models/metamodels/pure/packageableElements/store/flatData/model/FlatDataSection';
+import type { RootFlatDataRecordTypeReference } from '../../../models/metamodels/pure/packageableElements/store/flatData/model/RootFlatDataRecordTypeReference';
+import type {
+  EmbeddedFlatDataPropertyMapping,
+  FlatDataInputData,
+  FlatDataPropertyMapping,
+  FlatDataSectionReference,
+} from '../../../StoreFlatData_Exports';
+import {
+  observe_Abstract_PackageableElement,
+  observe_PackageableElementReference,
+  skipObserved,
+  skipObservedWithContext,
+} from './CoreObserverHelper';
+import {
+  observe_Abstract_InstanceSetImplementation,
+  observe_Abstract_PropertyMapping,
+} from './DSLMapping_ObserverHelper';
+import { observe_RawLambda } from './RawValueSpecificationObserver';
+
+// ------------------------------------- Store -------------------------------------
+
+export const observe_FlatDataDataType = (
+  metamodel: FlatDataDataType,
+): FlatDataDataType => {
+  if (metamodel instanceof FlatDataBoolean) {
+    return makeObservable(metamodel, {
+      trueString: observable,
+      falseString: observable,
+      hashCode: computed,
+    });
+  } else if (metamodel instanceof FlatDataString) {
+    return makeObservable(metamodel, {
+      hashCode: computed,
+    });
+  } else if (metamodel instanceof FlatDataNumber) {
+    return makeObservable(metamodel, {
+      hashCode: computed,
+    });
+  } else if (metamodel instanceof FlatDataDate) {
+    return makeObservable(metamodel, {
+      dateFormat: observable,
+      timeZone: observable,
+      hashCode: computed,
+    });
+  } else if (metamodel instanceof FlatDataRecordType) {
+    return skipObserved(_observe_FlatDataRecordType)(metamodel);
+  }
+  return metamodel;
+};
+
+export const observe_FlatDataRecordField = skipObserved(
+  (metamodel: FlatDataRecordField): FlatDataRecordField => {
+    makeObservable(metamodel, {
+      label: observable,
+      flatDataDataType: observable,
+      optional: observable,
+      address: observable,
+      hashCode: computed,
+    });
+
+    observe_FlatDataDataType(metamodel.flatDataDataType);
+
+    return metamodel;
+  },
+);
+
+function _observe_FlatDataRecordType(
+  metamodel: FlatDataRecordType,
+): FlatDataRecordType {
+  makeObservable(metamodel, {
+    fields: observable,
+    hashCode: computed,
+  });
+
+  metamodel.fields.forEach(observe_FlatDataRecordField);
+
+  return metamodel;
+}
+
+export const observe_FlatDataRecordType = skipObserved(
+  _observe_FlatDataRecordType,
+);
+
+export const observe_RootFlatDataRecordType = skipObserved(
+  _observe_FlatDataRecordType,
+);
+
+export const observe_FlatDataProperty = skipObserved(
+  (metamodel: FlatDataProperty): FlatDataProperty => {
+    makeObservable(metamodel, {
+      name: observable,
+      value: observable,
+      hashCode: computed,
+    });
+
+    return metamodel;
+  },
+);
+
+export const observe_FlatDataSection = skipObserved(
+  (metamodel: FlatDataSection): FlatDataSection => {
+    makeObservable(metamodel, {
+      driverId: observable,
+      name: observable,
+      sectionProperties: observable,
+      recordType: observable,
+      hashCode: computed,
+    });
+
+    metamodel.sectionProperties.forEach(observe_FlatDataProperty);
+    if (metamodel.recordType) {
+      observe_RootFlatDataRecordType(metamodel.recordType);
+    }
+
+    return metamodel;
+  },
+);
+
+export const observe_FlatDataSectionReference = skipObserved(
+  (metamodel: FlatDataSectionReference): FlatDataSectionReference => {
+    makeObservable(metamodel, {
+      value: observable,
+      pointerHashCode: computed,
+    });
+
+    observe_PackageableElementReference(metamodel.ownerReference);
+
+    return metamodel;
+  },
+);
+
+export const observe_FlatData = skipObserved(
+  (metamodel: FlatData): FlatData => {
+    observe_Abstract_PackageableElement(metamodel);
+
+    makeObservable<FlatData, '_elementHashCode'>(metamodel, {
+      sections: observable,
+      recordTypes: computed,
+      _elementHashCode: override,
+    });
+
+    metamodel.sections.forEach(observe_FlatDataSection);
+
+    return metamodel;
+  },
+);
+
+// ------------------------------------- Mapping -------------------------------------
+
+export const observe_RootFlatDataRecordTypeReference = skipObserved(
+  (
+    metamodel: RootFlatDataRecordTypeReference,
+  ): RootFlatDataRecordTypeReference => {
+    makeObservable(metamodel, {
+      value: observable,
+    });
+
+    observe_PackageableElementReference(metamodel.ownerReference);
+
+    return metamodel;
+  },
+);
+
+export const observe_FlatDataInstanceSetImplementation =
+  skipObservedWithContext(
+    (
+      metamodel: FlatDataInstanceSetImplementation,
+      context,
+    ): FlatDataInstanceSetImplementation => {
+      observe_Abstract_InstanceSetImplementation(metamodel, context);
+
+      makeObservable(metamodel, {
+        filter: observable,
+        hashCode: computed,
+      });
+
+      observe_RootFlatDataRecordTypeReference(metamodel.sourceRootRecordType);
+      if (metamodel.filter) {
+        observe_RawLambda(metamodel.filter);
+      }
+
+      return metamodel;
+    },
+  );
+
+export const observe_EmbeddedFlatDataPropertyMapping = skipObservedWithContext(
+  (
+    metamodel: EmbeddedFlatDataPropertyMapping,
+    context,
+  ): EmbeddedFlatDataPropertyMapping => {
+    observe_Abstract_PropertyMapping(metamodel, context);
+    observe_Abstract_InstanceSetImplementation(metamodel, context);
+
+    makeObservable(metamodel, {
+      rootInstanceSetImplementation: observable,
+      isStub: computed,
+      hashCode: computed,
+    });
+
+    return metamodel;
+  },
+);
+
+export const observe_FlatDataPropertyMapping = skipObservedWithContext(
+  (metamodel: FlatDataPropertyMapping, context): FlatDataPropertyMapping => {
+    observe_Abstract_PropertyMapping(metamodel, context);
+
+    makeObservable(metamodel, {
+      transformer: observable,
+      transform: observable,
+      isStub: computed,
+      hashCode: computed,
+    });
+
+    // TODO transformer?: EnumerationMapping | undefined;
+    observe_RawLambda(metamodel.transform);
+
+    return metamodel;
+  },
+);
+
+export const observe_FlatDataInputData = skipObserved(
+  (metamodel: FlatDataInputData): FlatDataInputData => {
+    makeObservable(metamodel, {
+      data: observable,
+      validationResult: computed,
+      hashCode: computed,
+    });
+
+    observe_PackageableElementReference(metamodel.sourceFlatData);
+
+    return metamodel;
+  },
+);
+
+// ------------------------------------- Connection -------------------------------------
+
+export const observe_FlatDataConnection = skipObserved(
+  (metamodel: FlatDataConnection): FlatDataConnection => {
+    makeObservable(metamodel, {
+      url: observable,
+      hashCode: computed,
+    });
+
+    return metamodel;
+  },
+);

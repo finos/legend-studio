@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { observable, computed, makeObservable } from 'mobx';
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../ESService_ModelUtils';
 
@@ -22,13 +21,6 @@ export class SerializationFormat implements Hashable {
   style?: string | undefined;
   explode?: boolean | undefined;
 
-  constructor() {
-    makeObservable(this, {
-      style: observable,
-      explode: observable,
-      hashCode: computed,
-    });
-  }
   get hashCode(): string {
     return hashArray([
       SERVICE_STORE_HASH_STRUCTURE.SERIALIZATION_FORMAT,

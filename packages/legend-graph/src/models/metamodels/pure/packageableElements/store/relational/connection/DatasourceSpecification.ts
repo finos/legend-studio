@@ -16,7 +16,6 @@
 
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
-import { observable, computed, makeObservable } from 'mobx';
 
 export abstract class DatasourceSpecification implements Hashable {
   private readonly _$nominalTypeBrand!: 'DatasourceSpecification';
@@ -34,13 +33,6 @@ export class StaticDatasourceSpecification
 
   constructor(host: string, port: number, databaseName: string) {
     super();
-
-    makeObservable(this, {
-      host: observable,
-      port: observable,
-      databaseName: observable,
-      hashCode: computed,
-    });
     this.host = host;
     this.port = port;
     this.databaseName = databaseName;
@@ -72,14 +64,6 @@ export class DatabricksDatasourceSpecification
     httpPath: string,
   ) {
     super();
-
-    makeObservable(this, {
-      hostname: observable,
-      port: observable,
-      protocol: observable,
-      httpPath: observable,
-      hashCode: computed,
-    });
     this.hostname = hostname;
     this.port = port;
     this.protocol = protocol;
@@ -111,13 +95,6 @@ export class EmbeddedH2DatasourceSpecification
     autoServerMode: boolean,
   ) {
     super();
-
-    makeObservable(this, {
-      databaseName: observable,
-      directory: observable,
-      autoServerMode: observable,
-      hashCode: computed,
-    });
     this.databaseName = databaseName;
     this.directory = directory;
     this.autoServerMode = autoServerMode;
@@ -139,16 +116,6 @@ export class LocalH2DatasourceSpecification
 {
   testDataSetupCsv?: string | undefined;
   testDataSetupSqls: string[] = [];
-
-  constructor() {
-    super();
-
-    makeObservable(this, {
-      testDataSetupCsv: observable,
-      testDataSetupSqls: observable,
-      hashCode: computed,
-    });
-  }
 
   get hashCode(): string {
     return hashArray([
@@ -183,23 +150,6 @@ export class SnowflakeDatasourceSpecification
     databaseName: string,
   ) {
     super();
-
-    makeObservable(this, {
-      accountName: observable,
-      region: observable,
-      warehouseName: observable,
-      databaseName: observable,
-      cloudType: observable,
-      quotedIdentifiersIgnoreCase: observable,
-      proxyHost: observable,
-      proxyPort: observable,
-      nonProxyHosts: observable,
-      organization: observable,
-      accountType: observable,
-      role: observable,
-      hashCode: computed,
-    });
-
     this.region = region;
     this.warehouseName = warehouseName;
     this.databaseName = databaseName;
@@ -245,16 +195,6 @@ export class RedshiftDatasourceSpecification
     region: string,
   ) {
     super();
-
-    makeObservable(this, {
-      databaseName: observable,
-      endpointURL: observable,
-      port: observable,
-      region: observable,
-      clusterID: observable,
-      host: observable,
-      hashCode: computed,
-    });
     this.clusterID = clusterID;
     this.region = region;
     this.host = host;
@@ -284,12 +224,6 @@ export class BigQueryDatasourceSpecification
 
   constructor(projectId: string, defaultDataset: string) {
     super();
-
-    makeObservable(this, {
-      projectId: observable,
-      defaultDataset: observable,
-      hashCode: computed,
-    });
     this.projectId = projectId;
     this.defaultDataset = defaultDataset;
   }

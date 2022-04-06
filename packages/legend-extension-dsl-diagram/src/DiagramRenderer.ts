@@ -69,13 +69,13 @@ import {
   positionedRectangle_forceRefreshHash,
   positionedRectangle_setPosition,
   positionedRectangle_setRectangle,
-  relationShipEdgeView_setOffsetX,
-  relationShipEdgeView_setOffsetY,
+  relationshipEdgeView_setOffsetX,
+  relationshipEdgeView_setOffsetY,
   relationshipView_changePoint,
-  relationView_possiblyFlattenPath,
-  relationView_setPath,
+  relationshipView_simplifyPath,
+  relationshipView_setPath,
 } from './stores/studio/DSLDiagram_ModifierHelper';
-import { _relationView_manageInsidePointsDynamically } from './models/metamodels/pure/packageableElements/diagram/DSLDiagram_GraphModifierHelper';
+import { _relationshipView_pruneUnnecessaryInsidePoints } from './models/metamodels/pure/packageableElements/diagram/DSLDiagram_GraphModifierHelper';
 
 export enum DIAGRAM_INTERACTION_MODE {
   LAYOUT,
@@ -746,9 +746,8 @@ export class DiagramRenderer {
         .concat(this.diagram.generalizationViews)
         .concat(this.diagram.propertyViews);
       for (const relationshipView of relationshipViews) {
-        let fullPath = relationshipView.buildFullPath();
-        fullPath = _relationView_manageInsidePointsDynamically(
-          fullPath,
+        const fullPath = _relationshipView_pruneUnnecessaryInsidePoints(
+          relationshipView.buildFullPath(),
           relationshipView.from.classView.value,
           relationshipView.to.classView.value,
         );
@@ -1823,9 +1822,8 @@ export class DiagramRenderer {
   }
 
   private drawPropertyOrAssociation(propertyView: PropertyView): void {
-    let fullPath = propertyView.buildFullPath();
-    fullPath = _relationView_manageInsidePointsDynamically(
-      fullPath,
+    const fullPath = _relationshipView_pruneUnnecessaryInsidePoints(
+      propertyView.buildFullPath(),
       propertyView.from.classView.value,
       propertyView.to.classView.value,
     );
@@ -1914,9 +1912,8 @@ export class DiagramRenderer {
 
   private drawInheritance(inheritance: GeneralizationView): void {
     const rect = inheritance.to.classView.value.rectangle;
-    let fullPath = inheritance.buildFullPath();
-    fullPath = _relationView_manageInsidePointsDynamically(
-      fullPath,
+    const fullPath = _relationshipView_pruneUnnecessaryInsidePoints(
+      inheritance.buildFullPath(),
       inheritance.from.classView.value,
       inheritance.to.classView.value,
     );
@@ -2061,21 +2058,23 @@ export class DiagramRenderer {
     return newClasses;
   }
 
-  // TODO: add doc
+  /**
+   * Shift relationship views if both ends' classviews are moved.
+   */
   private potentiallyShiftRelationships(
-    assoViews: RelationshipView[],
+    relationshipViews: RelationshipView[],
     selectedClasses: ClassView[],
     newMovingDeltaX: number,
     newMovingDeltaY: number,
   ): void {
-    assoViews.forEach((assoView) => {
+    relationshipViews.forEach((view) => {
       if (
-        selectedClasses.indexOf(assoView.from.classView.value) !== -1 &&
-        selectedClasses.indexOf(assoView.to.classView.value) !== -1
+        selectedClasses.indexOf(view.from.classView.value) !== -1 &&
+        selectedClasses.indexOf(view.to.classView.value) !== -1
       ) {
-        relationView_setPath(
-          assoView,
-          assoView.path.map(
+        relationshipView_setPath(
+          view,
+          view.path.map(
             (point) =>
               new Point(point.x - newMovingDeltaX, point.y - newMovingDeltaY),
           ),
@@ -2379,13 +2378,13 @@ export class DiagramRenderer {
       switch (this.interactionMode) {
         case DIAGRAM_INTERACTION_MODE.LAYOUT: {
           this.diagram.generalizationViews.forEach((generalizationView) =>
-            relationView_possiblyFlattenPath(generalizationView),
+            relationshipView_simplifyPath(generalizationView),
           );
           this.diagram.associationViews.forEach((associationView) =>
-            relationView_possiblyFlattenPath(associationView),
+            relationshipView_simplifyPath(associationView),
           );
           this.diagram.propertyViews.forEach((propertyView) =>
-            relationView_possiblyFlattenPath(propertyView),
+            relationshipView_simplifyPath(propertyView),
           );
           break;
         }
@@ -2473,7 +2472,7 @@ export class DiagramRenderer {
                 );
 
                 if (gview) {
-                  relationShipEdgeView_setOffsetX(
+                  relationshipEdgeView_setOffsetX(
                     gview.from,
                     -(
                       this.startClassView.position.x +
@@ -2481,7 +2480,7 @@ export class DiagramRenderer {
                       this.selectionStart.x
                     ),
                   );
-                  relationShipEdgeView_setOffsetY(
+                  relationshipEdgeView_setOffsetY(
                     gview.from,
                     -(
                       this.startClassView.position.y +
@@ -2489,7 +2488,7 @@ export class DiagramRenderer {
                       this.selectionStart.y
                     ),
                   );
-                  relationShipEdgeView_setOffsetX(
+                  relationshipEdgeView_setOffsetX(
                     gview.to,
                     -(
                       targetClassView.position.x +
@@ -2497,7 +2496,7 @@ export class DiagramRenderer {
                       eventPointInModelCoordinate.x
                     ),
                   );
-                  relationShipEdgeView_setOffsetY(
+                  relationshipEdgeView_setOffsetY(
                     gview.to,
                     -(
                       targetClassView.position.y +
@@ -3164,9 +3163,8 @@ export class DiagramRenderer {
         ...this.diagram.associationViews,
       ];
       for (const propertyHolderView of propertyHolderViews) {
-        let fullPath = propertyHolderView.buildFullPath();
-        fullPath = _relationView_manageInsidePointsDynamically(
-          fullPath,
+        const fullPath = _relationshipView_pruneUnnecessaryInsidePoints(
+          propertyHolderView.buildFullPath(),
           propertyHolderView.from.classView.value,
           propertyHolderView.to.classView.value,
         );

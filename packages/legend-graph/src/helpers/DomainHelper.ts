@@ -17,6 +17,22 @@
 import type { PureModel } from '../graph/PureModel';
 import { Class } from '../models/metamodels/pure/packageableElements/domain/Class';
 import { CORE_PURE_PATH, MILESTONING_STEROTYPES } from '../MetaModelConst';
+import { Profile } from '../models/metamodels/pure/packageableElements/domain/Profile';
+import { Tag } from '../models/metamodels/pure/packageableElements/domain/Tag';
+import { Enum } from '../models/metamodels/pure/packageableElements/domain/Enum';
+import { Stereotype } from '../models/metamodels/pure/packageableElements/domain/Stereotype';
+import { TaggedValue } from '../models/metamodels/pure/packageableElements/domain/TaggedValue';
+import { TagExplicitReference } from '../models/metamodels/pure/packageableElements/domain/TagReference';
+import type { Enumeration } from '../models/metamodels/pure/packageableElements/domain/Enumeration';
+
+export const createStubTag = (profile: Profile): Tag => new Tag(profile, '');
+export const createStubTaggedValue = (tag: Tag): TaggedValue =>
+  new TaggedValue(TagExplicitReference.create(tag), '');
+export const createStubStereotype = (profile: Profile): Stereotype =>
+  new Stereotype(profile, '');
+export const createStubProfile = (): Profile => new Profile('');
+export const createStubEnum = (enumeration: Enumeration): Enum =>
+  new Enum('', enumeration);
 
 export const getMilestoneTemporalStereotype = (
   val: Class,

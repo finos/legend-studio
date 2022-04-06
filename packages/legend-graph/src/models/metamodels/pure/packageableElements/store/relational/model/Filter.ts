@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { computed, observable, makeObservable } from 'mobx';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import type { Operation } from './RelationalOperationElement';
@@ -26,12 +25,6 @@ export class Filter implements Hashable {
   operation: Operation;
 
   constructor(name: string, operation: Operation) {
-    makeObservable(this, {
-      name: observable,
-      operation: observable,
-      hashCode: computed,
-    });
-
     this.name = name;
     this.operation = operation;
   }

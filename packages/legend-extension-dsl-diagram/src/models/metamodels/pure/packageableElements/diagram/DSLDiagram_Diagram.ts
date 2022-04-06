@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { observable, makeObservable, override } from 'mobx';
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import type { ClassView } from './DSLDiagram_ClassView';
 import type { PropertyView } from './DSLDiagram_PropertyView';
@@ -31,18 +30,6 @@ export class Diagram extends PackageableElement implements Hashable {
   associationViews: AssociationView[] = [];
   generalizationViews: GeneralizationView[] = [];
   propertyViews: PropertyView[] = [];
-
-  constructor(name: string) {
-    super(name);
-
-    makeObservable<Diagram, '_elementHashCode'>(this, {
-      classViews: observable,
-      associationViews: observable,
-      generalizationViews: observable,
-      propertyViews: observable,
-      _elementHashCode: override,
-    });
-  }
 
   protected override get _elementHashCode(): string {
     return hashArray([

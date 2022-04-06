@@ -17,6 +17,7 @@
 import { AbstractPlugin } from '@finos/legend-shared';
 import type { GraphPluginManager } from '../GraphPluginManager';
 import type { PackageableElement } from '../models/metamodels/pure/packageableElements/PackageableElement';
+import type { ObserverContext } from './action/changeDetection/CoreObserverHelper';
 
 /**
  * Unlike `PureGraphPlugin`, this is for plugins of graph manager, i.e. operations acting
@@ -26,6 +27,11 @@ import type { PackageableElement } from '../models/metamodels/pure/packageableEl
 export type PureGrammarElementLabeler = (
   metamodel: PackageableElement,
 ) => string | undefined;
+
+export type ElementObserver = (
+  metamodel: PackageableElement,
+  context: ObserverContext,
+) => PackageableElement | undefined;
 
 export abstract class PureGraphManagerPlugin extends AbstractPlugin {
   private readonly _$nominalTypeBrand!: 'PureGraphManagerPlugin';
@@ -58,4 +64,10 @@ export abstract class PureGraphManagerPlugin extends AbstractPlugin {
    * able to see directly in selection/dropdown menus.
    */
   getExtraExposedSystemElementPath?(): string[];
+
+  /**
+   * Get the list of observers for packageable element. These observer will make the element
+   * become observable by change detection engine.
+   */
+  getExtraElementObservers?(): ElementObserver[];
 }

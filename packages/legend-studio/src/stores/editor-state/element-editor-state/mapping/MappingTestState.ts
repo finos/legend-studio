@@ -36,6 +36,7 @@ import {
   tryToMinifyLosslessJSONString,
   tryToFormatLosslessJSONString,
   tryToMinifyJSONString,
+  ContentType,
 } from '@finos/legend-shared';
 import type { EditorStore } from '../../../EditorStore';
 import {
@@ -97,7 +98,7 @@ import {
   localH2DatasourceSpecification_setTestDataSetupCsv,
   localH2DatasourceSpecification_setTestDataSetupSqls,
   relationalInputData_setData,
-} from '../../../DSLRelational_ModifierHelper';
+} from '../../../StoreRelational_ModifierHelper';
 
 export enum TEST_RESULT {
   NONE = 'NONE', // test has not run yet
@@ -240,7 +241,7 @@ export class MappingTestObjectInputDataState extends MappingTestInputDataState {
       ),
       createUrlStringFromData(
         this.inputData.data,
-        JsonModelConnection.CONTENT_TYPE,
+        ContentType.APPLICATION_JSON,
         engineConfig.useBase64ForAdhocConnectionDataUrls,
       ),
     );
@@ -272,7 +273,7 @@ export class MappingTestFlatDataInputDataState extends MappingTestInputDataState
       ),
       createUrlStringFromData(
         this.inputData.data,
-        FlatDataConnection.CONTENT_TYPE,
+        ContentType.TEXT_PLAIN,
         engineConfig.useBase64ForAdhocConnectionDataUrls,
       ),
     );

@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { observable, makeObservable } from 'mobx';
 import { hashArray, getNullableFirstElement } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import type { PackageableElementReference } from '../PackageableElementReference';
@@ -27,11 +26,6 @@ export class MappingInclude {
   storeSubstitutions: SubstituteStore[] = [];
 
   constructor(owner: Mapping, included: PackageableElementReference<Mapping>) {
-    makeObservable(this, {
-      included: observable,
-      storeSubstitutions: observable,
-    });
-
     this.owner = owner;
     this.included = included;
   }

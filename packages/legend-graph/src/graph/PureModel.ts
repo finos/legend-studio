@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { action, observable, makeObservable } from 'mobx';
 import {
   PRIMITIVE_TYPE,
   ROOT_PACKAGE_NAME,
@@ -187,14 +186,6 @@ export class PureModel extends BasicModel {
       (plugin) => plugin.getExtraPureGraphExtensionClasses?.() ?? [],
     );
     super(ROOT_PACKAGE_NAME.MAIN, extensionElementClasses);
-
-    makeObservable(this, {
-      generationModel: observable,
-      dependencyManager: observable,
-      setDependencyManager: action,
-      addElement: action,
-    });
-
     this.graphPlugins = graphPlugins;
     this.coreModel = coreModel;
     this.systemModel = systemModel;

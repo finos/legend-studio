@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { observable, computed, makeObservable } from 'mobx';
 import {
   hashArray,
   UnsupportedOperationError,
@@ -72,17 +71,6 @@ export class EmbeddedFlatDataPropertyMapping
     target?: SetImplementation,
   ) {
     super(owner, property, source, target);
-
-    makeObservable(this, {
-      id: observable,
-      propertyMappings: observable,
-      rootInstanceSetImplementation: observable,
-      parent: observable,
-      label: computed,
-      isStub: computed,
-      hashCode: computed,
-    });
-
     this.class = _class;
     this.id = id;
     this.rootInstanceSetImplementation = rootInstanceSetImplementation;

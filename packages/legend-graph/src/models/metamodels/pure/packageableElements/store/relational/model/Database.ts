@@ -20,7 +20,6 @@ import {
   type Hashable,
 } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
-import { observable, makeObservable, override } from 'mobx';
 import { Store } from '../../Store';
 import type { PackageableElementVisitor } from '../../../PackageableElement';
 import type { Schema } from './Schema';
@@ -32,17 +31,6 @@ export class Database extends Store implements Hashable {
   schemas: Schema[] = [];
   joins: Join[] = [];
   filters: Filter[] = [];
-
-  constructor(name: string) {
-    super(name);
-
-    makeObservable<Database, '_elementHashCode'>(this, {
-      schemas: observable,
-      joins: observable,
-      filters: observable,
-      _elementHashCode: override,
-    });
-  }
 
   static createStub = (): Database => new Database('');
 

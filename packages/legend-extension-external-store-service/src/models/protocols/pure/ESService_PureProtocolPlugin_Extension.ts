@@ -41,7 +41,7 @@ export type V1_SecuritySchemeProtocolDeserializer = (
   json: PlainObject<V1_SecurityScheme>,
 ) => V1_SecurityScheme | undefined;
 
-export interface ExternalStoreService_PureProtocolPlugin_Extension
+export interface ESService_PureProtocolPlugin_Extension
   extends PureProtocolProcessorPlugin {
   V1_getExtraSecuritySchemeBuilders?(): V1_SecuritySchemeBuilder[];
 

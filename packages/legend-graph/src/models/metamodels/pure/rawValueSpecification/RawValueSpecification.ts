@@ -20,7 +20,7 @@ import type { RawInstanceValue } from './RawInstanceValue';
 
 export interface RawValueSpecificationVisitor<T> {
   visit_RawLambda(valueSpecification: RawLambda): T;
-  visit_RawVariable(valueSpecification: RawVariableExpression): T;
+  visit_RawVariableExpression(valueSpecification: RawVariableExpression): T;
   visit_RawInstanceValue(valueSpecification: RawInstanceValue): T;
 }
 

@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { observable, computed, makeObservable } from 'mobx';
 import { uuid } from '@finos/legend-shared';
 import type { Profile } from './Profile';
 import type { Stubable } from '../../../../../helpers/Stubable';
@@ -25,11 +24,6 @@ export class Stereotype implements Stubable {
   value: string;
 
   constructor(owner: Profile, value: string) {
-    makeObservable(this, {
-      value: observable,
-      isStub: computed,
-    });
-
     this.owner = owner;
     this.value = value;
   }

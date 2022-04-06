@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { observable, computed, makeObservable } from 'mobx';
 import { hashArray, uuid, type Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import type { Tag } from './Tag';
@@ -27,12 +26,6 @@ export class TaggedValue implements Hashable, Stubable {
   value: string;
 
   constructor(tag: TagReference, value: string) {
-    makeObservable(this, {
-      value: observable,
-      isStub: computed,
-      hashCode: computed,
-    });
-
     this.tag = tag;
     this.value = value;
   }

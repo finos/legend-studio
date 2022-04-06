@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { observable, makeObservable } from 'mobx';
 import {
   UnsupportedOperationError,
   hashArray,
@@ -82,11 +81,6 @@ export abstract class PropertyMapping implements Hashable, Stubable {
     source: SetImplementation,
     target?: SetImplementation,
   ) {
-    makeObservable(this, {
-      sourceSetImplementation: observable,
-      targetSetImplementation: observable,
-    });
-
     this.owner = owner;
     this.sourceSetImplementation = source;
     this.targetSetImplementation = target;

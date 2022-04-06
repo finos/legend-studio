@@ -68,7 +68,7 @@ import {
   pureInstanceSetImpl_setPropertyMappings,
   purePropertyMapping_setTransformer,
 } from '../../../ModifierHelper';
-import { rootRelationalSetImp_setPropertyMappings } from '../../../DSLRelational_ModifierHelper';
+import { rootRelationalSetImp_setPropertyMappings } from '../../../StoreRelational_ModifierHelper';
 
 /* @MARKER: ACTION ANALYTICS */
 /**

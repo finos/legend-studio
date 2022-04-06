@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { observable, computed, makeObservable, override } from 'mobx';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import type { EnumerationMapping } from './EnumerationMapping';
@@ -34,23 +33,6 @@ export class Mapping extends PackageableElement implements Hashable, Stubable {
   enumerationMappings: EnumerationMapping[] = [];
   associationMappings: AssociationImplementation[] = [];
   tests: MappingTest[] = [];
-
-  constructor(name: string) {
-    super(name);
-
-    makeObservable<Mapping, '_elementHashCode'>(this, {
-      includes: observable,
-      classMappings: observable,
-      enumerationMappings: observable,
-      associationMappings: observable,
-      tests: observable,
-      allOwnClassMappings: computed,
-      allOwnEnumerationMappings: computed,
-      allIncludedMappings: computed,
-      isStub: computed,
-      _elementHashCode: override,
-    });
-  }
 
   get allOwnClassMappings(): SetImplementation[] {
     return this.classMappings;
@@ -95,7 +77,6 @@ export class Mapping extends PackageableElement implements Hashable, Stubable {
     return hashArray([
       CORE_HASH_STRUCTURE.MAPPING,
       this.path,
-      // TODO mapping include
       hashArray(this.classMappings),
       hashArray(this.enumerationMappings),
       hashArray(this.associationMappings),

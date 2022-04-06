@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { observable, computed, makeObservable, override } from 'mobx';
 import {
   type Hashable,
   guaranteeNonNullable,
@@ -32,17 +31,6 @@ import { type Stubable, isStubArray } from '../../../../../helpers/Stubable';
 export class Profile extends PackageableElement implements Hashable, Stubable {
   stereotypes: Stereotype[] = [];
   tags: Tag[] = [];
-
-  constructor(name: string) {
-    super(name);
-
-    makeObservable<Profile, '_elementHashCode'>(this, {
-      stereotypes: observable,
-      tags: observable,
-      isStub: computed,
-      _elementHashCode: override,
-    });
-  }
 
   getTag = (value: string): Tag =>
     guaranteeNonNullable(

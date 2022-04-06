@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { observable, computed, makeObservable } from 'mobx';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import type { EnumerationMapping } from '../../../mapping/EnumerationMapping';
@@ -22,39 +21,21 @@ import {
   type PropertyMappingVisitor,
   PropertyMapping,
 } from '../../../mapping/PropertyMapping';
-import type { PropertyMappingsImplementation } from '../../../mapping/PropertyMappingsImplementation';
-import type { PropertyReference } from '../../../domain/PropertyReference';
-import type { SetImplementation } from '../../../mapping/SetImplementation';
 import { hashObjectWithoutSourceInformation } from '../../../../../../../MetaModelUtils';
 import {
   isStubRelationalOperationElement,
   type RawRelationalOperationElement,
 } from '../model/RawRelationalOperationElement';
-import type { BindingTransformer } from '../../../externalFormat/store/BindingTransformer';
+import type { BindingTransformer } from '../../../externalFormat/store/DSLExternalFormat_BindingTransformer';
 
 export class RelationalPropertyMapping
   extends PropertyMapping
   implements Hashable
 {
+  // TODO: convert to reference
   transformer?: EnumerationMapping | undefined;
   relationalOperation!: RawRelationalOperationElement; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process relational operation element
   bindingTransformer?: BindingTransformer | undefined;
-
-  constructor(
-    owner: PropertyMappingsImplementation,
-    property: PropertyReference,
-    source: SetImplementation,
-    target?: SetImplementation,
-  ) {
-    super(owner, property, source, target);
-
-    makeObservable(this, {
-      transformer: observable,
-      relationalOperation: observable.ref,
-      bindingTransformer: observable,
-      hashCode: computed,
-    });
-  }
 
   accept_PropertyMappingVisitor<T>(visitor: PropertyMappingVisitor<T>): T {
     return visitor.visit_RelationalPropertyMapping(this);

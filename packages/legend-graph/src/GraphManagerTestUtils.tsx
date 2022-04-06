@@ -15,7 +15,6 @@
  */
 
 /// <reference types="jest-extended" />
-import { flowResult } from 'mobx';
 import {
   type LoggerPlugin,
   Log,
@@ -171,13 +170,11 @@ export const TEST__buildGraphWithEntities = async (
   entities: Entity[],
   options?: GraphBuilderOptions,
 ): Promise<void> => {
-  await flowResult(graphManagerState.initializeSystem(options));
-  await flowResult(
-    graphManagerState.graphManager.buildGraph(
-      graphManagerState.graph,
-      entities,
-      options,
-    ),
+  await graphManagerState.initializeSystem(options);
+  await graphManagerState.graphManager.buildGraph(
+    graphManagerState.graph,
+    entities,
+    options,
   );
 };
 
@@ -185,7 +182,6 @@ export const TEST__checkGraphHashUnchanged = async (
   graphManagerState: GraphManagerState,
   entities: Entity[],
 ): Promise<void> => {
-  await flowResult(graphManagerState.precomputeHashes());
   const originalHashesIndex =
     await graphManagerState.graphManager.buildHashesIndex(entities);
   const graphHashesIndex = new Map<string, string>();
@@ -239,12 +235,10 @@ export const TEST__checkBuildingResolvedElements = async (
   resolvedEntities: Entity[],
 ): Promise<void> => {
   const graphManagerState = TEST__getTestGraphManagerState();
-  await flowResult(graphManagerState.initializeSystem());
-  await flowResult(
-    graphManagerState.graphManager.buildGraph(
-      graphManagerState.graph,
-      entities,
-    ),
+  await graphManagerState.initializeSystem();
+  await graphManagerState.graphManager.buildGraph(
+    graphManagerState.graph,
+    entities,
   );
   const transformedEntities = graphManagerState.graph.allOwnElements.map(
     (element) => graphManagerState.graphManager.elementToEntity(element),

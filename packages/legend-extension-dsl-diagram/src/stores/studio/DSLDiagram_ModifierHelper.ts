@@ -22,11 +22,11 @@ import type { Diagram } from '../../models/metamodels/pure/packageableElements/d
 import type { GeneralizationView } from '../../models/metamodels/pure/packageableElements/diagram/DSLDiagram_GeneralizationView';
 import {
   _findOrBuildPoint,
-  _relationView_possiblyFlattenPath,
-  _relationView_setPath,
+  _relationshipView_SimplifyPath as _relationshipView_simplifyPath,
+  _relationshipView_setPath,
 } from '../../models/metamodels/pure/packageableElements/diagram/DSLDiagram_GraphModifierHelper';
 import type { PropertyView } from '../../models/metamodels/pure/packageableElements/diagram/DSLDiagram_PropertyView';
-import type { RelationShipEdgeView } from '../../models/metamodels/pure/packageableElements/diagram/DSLDiagram_RelationshipEdgeView';
+import type { RelationshipEdgeView } from '../../models/metamodels/pure/packageableElements/diagram/DSLDiagram_RelationshipEdgeView';
 import type { RelationshipView } from '../../models/metamodels/pure/packageableElements/diagram/DSLDiagram_RelationshipView';
 import type { Point } from '../../models/metamodels/pure/packageableElements/diagram/geometry/DSLDiagram_Point';
 import type { PositionedRectangle } from '../../models/metamodels/pure/packageableElements/diagram/geometry/DSLDiagram_PositionedRectangle';
@@ -103,13 +103,13 @@ export const classView_setHideTaggedValues = action(
     cv.hideTaggedValues = val;
   },
 );
-export const relationShipEdgeView_setOffsetX = action(
-  (r: RelationShipEdgeView, val: number): void => {
+export const relationshipEdgeView_setOffsetX = action(
+  (r: RelationshipEdgeView, val: number): void => {
     r.offsetX = val;
   },
 );
-export const relationShipEdgeView_setOffsetY = action(
-  (r: RelationShipEdgeView, val: number): void => {
+export const relationshipEdgeView_setOffsetY = action(
+  (r: RelationshipEdgeView, val: number): void => {
     r.offsetY = val;
   },
 );
@@ -119,12 +119,12 @@ export const relationshipView_changePoint = action(
     changeEntry(v.path, val, newVal);
   },
 );
-export const relationView_possiblyFlattenPath = action(
-  _relationView_possiblyFlattenPath,
+export const relationshipView_simplifyPath = action(
+  _relationshipView_simplifyPath,
 );
 
 export const findOrBuildPoint = action(_findOrBuildPoint);
-export const relationView_setPath = action(_relationView_setPath);
+export const relationshipView_setPath = action(_relationshipView_setPath);
 
 export const positionedRectangle_setRectangle = action(
   (pR: PositionedRectangle, value: Rectangle): void => {

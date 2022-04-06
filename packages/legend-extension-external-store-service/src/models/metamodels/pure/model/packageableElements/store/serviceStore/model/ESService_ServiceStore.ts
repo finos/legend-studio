@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { observable, makeObservable, override } from 'mobx';
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import { type PackageableElementVisitor, Store } from '@finos/legend-graph';
 import type { ServiceStoreElement } from './ESService_ServiceStoreElement';
@@ -23,16 +22,6 @@ import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../ESService_Mod
 export class ServiceStore extends Store implements Hashable {
   description?: string | undefined;
   elements: ServiceStoreElement[] = [];
-
-  constructor(name: string) {
-    super(name);
-
-    makeObservable<ServiceStore, '_elementHashCode'>(this, {
-      description: observable,
-      elements: observable,
-      _elementHashCode: override,
-    });
-  }
 
   protected override get _elementHashCode(): string {
     return hashArray([

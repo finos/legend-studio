@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { observable, computed, makeObservable } from 'mobx';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import {
@@ -32,6 +31,7 @@ export class PurePropertyMapping
   extends PropertyMapping
   implements Hashable, Stubable
 {
+  // TODO: convert to reference
   transformer?: EnumerationMapping | undefined;
   transform: RawLambda; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
   explodeProperty?: boolean | undefined;
@@ -45,15 +45,6 @@ export class PurePropertyMapping
     explodeProperty?: boolean,
   ) {
     super(owner, property, source, target);
-
-    makeObservable(this, {
-      transformer: observable,
-      transform: observable,
-      explodeProperty: observable,
-      isStub: computed,
-      hashCode: computed,
-    });
-
     this.transform = transform;
     this.explodeProperty = explodeProperty;
   }

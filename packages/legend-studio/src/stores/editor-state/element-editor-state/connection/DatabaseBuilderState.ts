@@ -495,14 +495,9 @@ export class DatabaseBuilderState {
         grammar,
       )) as Entity[];
     const dbGraph = this.editorStore.graphManagerState.createEmptyGraph();
-    (yield flowResult(
-      this.editorStore.graphManagerState.graphManager.buildGraph(
-        dbGraph,
-        entities,
-        {
-          TEMPORARY_skipGraphBuilderPostProcessing: true,
-        },
-      ),
+    (yield this.editorStore.graphManagerState.graphManager.buildGraph(
+      dbGraph,
+      entities,
     )) as Entity[];
     assertTrue(
       dbGraph.ownDatabases.length === 1,
@@ -519,14 +514,9 @@ export class DatabaseBuilderState {
         databaseBuilderInput,
       )) as Entity[];
     const dbGraph = this.editorStore.graphManagerState.createEmptyGraph();
-    (yield flowResult(
-      this.editorStore.graphManagerState.graphManager.buildGraph(
-        dbGraph,
-        entities,
-        {
-          TEMPORARY_skipGraphBuilderPostProcessing: true,
-        },
-      ),
+    (yield this.editorStore.graphManagerState.graphManager.buildGraph(
+      dbGraph,
+      entities,
     )) as Entity[];
     assertTrue(
       dbGraph.ownDatabases.length === 1,

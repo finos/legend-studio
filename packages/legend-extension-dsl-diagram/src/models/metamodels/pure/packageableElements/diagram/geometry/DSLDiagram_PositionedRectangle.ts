@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { observable, makeObservable } from 'mobx';
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import { Point } from './DSLDiagram_Point';
 import { Rectangle } from './DSLDiagram_Rectangle';
@@ -26,10 +25,6 @@ export class PositionedRectangle implements Hashable {
   dummyObservable = {};
 
   constructor(position: Point, rectangle: Rectangle) {
-    makeObservable(this, {
-      dummyObservable: observable,
-    });
-
     this.position = position;
     this.rectangle = rectangle;
   }

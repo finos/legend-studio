@@ -85,7 +85,7 @@ import { flatData_setData } from '../../../../stores/ModifierHelper';
 import {
   relationalInputData_setData,
   relationalInputData_setInputType,
-} from '../../../../stores/DSLRelational_ModifierHelper';
+} from '../../../../stores/StoreRelational_ModifierHelper';
 
 const MappingTestQueryEditor = observer(
   (props: { testState: MappingTestState; isReadOnly: boolean }) => {

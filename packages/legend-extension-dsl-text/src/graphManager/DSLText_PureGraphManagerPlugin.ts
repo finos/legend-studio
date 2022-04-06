@@ -18,9 +18,12 @@ import packageJson from '../../package.json';
 import { Text } from '../models/metamodels/pure/model/packageableElements/text/DSLText_Text';
 import {
   PureGraphManagerPlugin,
+  type ObserverContext,
+  type ElementObserver,
   type PackageableElement,
   type PureGrammarElementLabeler,
 } from '@finos/legend-graph';
+import { observe_Text } from './action/changeDetection/DSLText_ObserverHelper';
 
 const PURE_GRAMMAR_TEXT_PARSER_NAME = 'Text';
 const PURE_GRAMMAR_TEXT_ELEMENT_TYPE_LABEL = 'Text';
@@ -43,6 +46,20 @@ export class DSLText_PureGraphManagerPlugin extends PureGraphManagerPlugin {
       (element: PackageableElement): string | undefined => {
         if (element instanceof Text) {
           return PURE_GRAMMAR_TEXT_ELEMENT_TYPE_LABEL;
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  override getExtraElementObservers(): ElementObserver[] {
+    return [
+      (
+        element: PackageableElement,
+        context: ObserverContext,
+      ): PackageableElement | undefined => {
+        if (element instanceof Text) {
+          return observe_Text(element);
         }
         return undefined;
       },

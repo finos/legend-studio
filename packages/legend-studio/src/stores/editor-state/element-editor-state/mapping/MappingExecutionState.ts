@@ -46,6 +46,7 @@ import {
   createUrlStringFromData,
   losslessStringify,
   guaranteeType,
+  ContentType,
 } from '@finos/legend-shared';
 import { createMockDataForMappingElementSource } from '../../../shared/MockDataUtil';
 import { ExecutionPlanState } from '../../../ExecutionPlanState';
@@ -111,7 +112,7 @@ import {
   localH2DatasourceSpecification_setTestDataSetupCsv,
   localH2DatasourceSpecification_setTestDataSetupSqls,
   relationalInputData_setInputType,
-} from '../../../DSLRelational_ModifierHelper';
+} from '../../../StoreRelational_ModifierHelper';
 
 export class MappingExecutionQueryState extends LambdaEditorState {
   editorStore: EditorStore;
@@ -283,7 +284,7 @@ export class MappingExecutionObjectInputDataState extends MappingExecutionInputD
         ),
         createUrlStringFromData(
           tryToMinifyJSONString(this.inputData.data),
-          JsonModelConnection.CONTENT_TYPE,
+          ContentType.APPLICATION_JSON,
           engineConfig.useBase64ForAdhocConnectionDataUrls,
         ),
       ),
@@ -340,7 +341,7 @@ export class MappingExecutionFlatDataInputDataState extends MappingExecutionInpu
         ),
         createUrlStringFromData(
           this.inputData.data,
-          FlatDataConnection.CONTENT_TYPE,
+          ContentType.TEXT_PLAIN,
           engineConfig.useBase64ForAdhocConnectionDataUrls,
         ),
       ),

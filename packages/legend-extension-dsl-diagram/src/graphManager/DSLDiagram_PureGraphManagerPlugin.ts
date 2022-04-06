@@ -17,10 +17,13 @@
 import packageJson from '../../package.json';
 import {
   PureGraphManagerPlugin,
+  type ObserverContext,
+  type ElementObserver,
   type PackageableElement,
   type PureGrammarElementLabeler,
 } from '@finos/legend-graph';
 import { Diagram } from '../models/metamodels/pure/packageableElements/diagram/DSLDiagram_Diagram';
+import { observe_Diagram } from './action/changeDetection/DSLDiagram_ObserverHelper';
 
 const PURE_GRAMMAR_DIAGRAM_PARSER_NAME = 'Diagram';
 const PURE_GRAMMAR_DIAGRAM_ELEMENT_TYPE_LABEL = 'Diagram';
@@ -43,6 +46,20 @@ export class DSLDiagram_PureGraphManagerPlugin extends PureGraphManagerPlugin {
       (element: PackageableElement): string | undefined => {
         if (element instanceof Diagram) {
           return PURE_GRAMMAR_DIAGRAM_ELEMENT_TYPE_LABEL;
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  override getExtraElementObservers(): ElementObserver[] {
+    return [
+      (
+        element: PackageableElement,
+        context: ObserverContext,
+      ): PackageableElement | undefined => {
+        if (element instanceof Diagram) {
+          return observe_Diagram(element);
         }
         return undefined;
       },

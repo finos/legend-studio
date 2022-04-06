@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { computed, observable, makeObservable } from 'mobx';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import type { Database } from '../model/Database';
@@ -22,25 +21,16 @@ import {
   extractLine,
   type JoinTreeNode,
 } from '../model/RelationalOperationElement';
-import type { RelationalInstanceSetImplementation } from './RelationalInstanceSetImplementation';
 import type { FilterReference } from '../model/FilterReference';
 
 export class FilterMapping implements Hashable {
-  setMappingOwner?: RelationalInstanceSetImplementation | undefined;
+  // setMappingOwner?: RelationalInstanceSetImplementation | undefined;
   joinTreeNode?: JoinTreeNode | undefined;
   database: Database;
   filterName: string;
   filter: FilterReference;
 
   constructor(db: Database, filterName: string, filter: FilterReference) {
-    makeObservable(this, {
-      setMappingOwner: observable,
-      joinTreeNode: observable,
-      database: observable,
-      filterName: observable,
-      hashCode: computed,
-    });
-
     this.database = db;
     this.filterName = filterName;
     this.filter = filter;

@@ -14,15 +14,9 @@
  * limitations under the License.
  */
 
-import { observable, makeObservable, computed } from 'mobx';
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import {
   InstanceSetImplementation,
-  type Class,
-  type InferableMappingElementIdValue,
-  type InferableMappingElementRoot,
-  type Mapping,
-  type PackageableElementReference,
   type PropertyMapping,
   type SetImplementationVisitor,
 } from '@finos/legend-graph';
@@ -36,21 +30,6 @@ export class RootServiceInstanceSetImplementation
 {
   localMappingProperties: LocalMappingProperty[] = [];
   servicesMapping: ServiceMapping[] = [];
-
-  constructor(
-    id: InferableMappingElementIdValue,
-    parent: Mapping,
-    _class: PackageableElementReference<Class>,
-    root: InferableMappingElementRoot,
-  ) {
-    super(id, parent, _class, root);
-
-    makeObservable(this, {
-      localMappingProperties: observable,
-      servicesMapping: observable,
-      hashCode: computed,
-    });
-  }
 
   override get hashCode(): string {
     return hashArray([

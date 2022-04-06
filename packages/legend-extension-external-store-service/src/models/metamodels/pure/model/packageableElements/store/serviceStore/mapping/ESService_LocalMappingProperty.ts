@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { observable, computed, makeObservable } from 'mobx';
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import type { Multiplicity } from '@finos/legend-graph';
 import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../ESService_ModelUtils';
@@ -24,14 +23,6 @@ export class LocalMappingProperty implements Hashable {
   type!: string;
   multiplicity!: Multiplicity;
 
-  constructor() {
-    makeObservable(this, {
-      name: observable,
-      type: observable,
-      multiplicity: observable,
-      hashCode: computed,
-    });
-  }
   get hashCode(): string {
     return hashArray([
       SERVICE_STORE_HASH_STRUCTURE.LOCAL_MAPPING_PROPERTY,

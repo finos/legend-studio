@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { observable, computed, makeObservable } from 'mobx';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import { hashString } from '@finos/legend-shared';
 import {
@@ -42,13 +41,6 @@ export abstract class PropertyReference
     value: AbstractProperty,
   ) {
     super(ownerReference);
-
-    makeObservable(this, {
-      value: observable,
-      isStub: computed,
-      pointerHashCode: computed,
-    });
-
     this.ownerReference = ownerReference;
     this.value = value;
   }

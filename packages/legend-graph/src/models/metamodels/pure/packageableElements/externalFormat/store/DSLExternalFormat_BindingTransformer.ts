@@ -15,20 +15,12 @@
  */
 
 import { type Hashable, hashArray } from '@finos/legend-shared';
-import { computed, makeObservable, observable } from 'mobx';
 import { CORE_HASH_STRUCTURE } from '../../../../../../MetaModelConst';
 import type { PackageableElementReference } from '../../PackageableElementReference';
 import type { Binding } from './DSLExternalFormat_Binding';
 
 export class BindingTransformer implements Hashable {
   binding!: PackageableElementReference<Binding>;
-
-  constructor() {
-    makeObservable(this, {
-      binding: observable,
-      hashCode: computed,
-    });
-  }
 
   get hashCode(): string {
     return hashArray([

@@ -19,17 +19,18 @@ import type { RelationshipView } from './DSLDiagram_RelationshipView';
 import { Point } from './geometry/DSLDiagram_Point';
 import { Vector } from './geometry/DSLDiagram_Vector';
 
-export const _relationView_setPath = (
-  relationView: RelationshipView,
+export const _relationshipView_setPath = (
+  relationshipView: RelationshipView,
   val: Point[],
 ): void => {
-  relationView.path = val;
+  relationshipView.path = val;
 };
 
 /**
- * For a path, only counts the points which lie outside of the 2 class views
+ * For a path, only keep **at most** 1 point at each end that lies inside the class view.
+ * If there is no inside points, none of kept, so the path only contains outside points.
  */
-export const _relationView_manageInsidePointsDynamically = (
+export const _relationshipView_pruneUnnecessaryInsidePoints = (
   path: Point[],
   from: ClassView,
   to: ClassView,
@@ -46,6 +47,9 @@ export const _relationView_manageInsidePointsDynamically = (
     startPoint = path[start] as Point;
   }
 
+  // NOTE: due to the usage path, we could make sure `end > start`, but maybe this
+  // is an improvement to be done
+
   let end = path.length - 1;
   let endPoint = path[end] as Point;
 
@@ -54,39 +58,41 @@ export const _relationView_manageInsidePointsDynamically = (
     endPoint = path[end] as Point;
   }
 
+  // NOTE: slice upper bound is exclusive, hence the +2 instead of +1
   return path.slice(start - 1, end + 2);
 };
 
 /**
- * Flatten the path if the angle is wide enough
- * Also `swallow` points in path which lie inside of the rectangle of a view
+ * Simplify the path.
+ *
+ * Flatten the path if the angle is wide enough between 3 consecutive points
+ * Also remove unnecessary inside points
  */
-export const _relationView_possiblyFlattenPath = (
-  relationView: RelationshipView,
+export const _relationshipView_SimplifyPath = (
+  relationshipView: RelationshipView,
 ): void => {
-  const fullPath = relationView.buildFullPath();
+  const fullPath = relationshipView.buildFullPath();
   // NOTE: this method here will `swallow` up points inside of the boxes
-  const newPath = _relationView_manageInsidePointsDynamically(
+  const newPath = _relationshipView_pruneUnnecessaryInsidePoints(
     fullPath,
-    relationView.from.classView.value,
-    relationView.to.classView.value,
+    relationshipView.from.classView.value,
+    relationshipView.to.classView.value,
   );
 
   // recompute the offset point from center inside of `from` and `to` classviews.
   // for each, we first check if `manageInsidePointsDynamically` removes any points from the full path
   // if it does we will update the offset
   if (newPath[0] !== fullPath[0]) {
-    const center = relationView.from.classView.value.center();
-
-    relationView.from.offsetX = (newPath[0] as Point).x - center.x;
-    relationView.from.offsetY = (newPath[0] as Point).y - center.y;
+    const center = relationshipView.from.classView.value.center();
+    relationshipView.from.offsetX = (newPath[0] as Point).x - center.x;
+    relationshipView.from.offsetY = (newPath[0] as Point).y - center.y;
   }
 
   if (newPath[newPath.length - 1] !== fullPath[fullPath.length - 1]) {
-    const center = relationView.to.classView.value.center();
-    relationView.to.offsetX =
+    const center = relationshipView.to.classView.value.center();
+    relationshipView.to.offsetX =
       (newPath[newPath.length - 1] as Point).x - center.x;
-    relationView.to.offsetY =
+    relationshipView.to.offsetY =
       (newPath[newPath.length - 1] as Point).y - center.y;
   }
 
@@ -96,19 +102,20 @@ export const _relationView_possiblyFlattenPath = (
     const v1 = Vector.fromPoints(
       newPath[i + 1] as Point,
       newPath[i] as Point,
-    ).norm();
+    ).unit();
     const v2 = Vector.fromPoints(
       newPath[i + 1] as Point,
       newPath[i + 2] as Point,
-    ).norm();
+    ).unit();
     const dot = v1.dotProduct(v2);
     const angle = (Math.acos(dot) * 180) / Math.PI;
     if (Math.abs(angle - 180) > 5) {
       result.push(newPath[i + 1] as Point);
     }
   }
-  // here's where we will modify the path, i.e. swallow inside points if we have to
-  _relationView_setPath(relationView, result);
+
+  // NOTE: this new path does not contain the 2 end points
+  _relationshipView_setPath(relationshipView, result);
 };
 
 /**
@@ -117,13 +124,13 @@ export const _relationView_possiblyFlattenPath = (
  * so it doesn't look too weird
  */
 export const _findOrBuildPoint = (
-  relationView: RelationshipView,
+  relationshipView: RelationshipView,
   x: number,
   y: number,
   zoom: number,
-  allowChange = true,
+  allowChange: boolean,
 ): Point | undefined => {
-  for (const pt of relationView.path) {
+  for (const pt of relationshipView.path) {
     if (
       Math.sqrt((x - pt.x) * (x - pt.x) + (y - pt.y) * (y - pt.y)) <
       10 / zoom
@@ -132,17 +139,19 @@ export const _findOrBuildPoint = (
     }
   }
 
-  const fullPath = relationView.buildFullPath(allowChange);
+  const fullPath = relationshipView.buildFullPath(allowChange);
   const newPath = [];
   let point;
 
   for (let i = 0; i < fullPath.length - 1; i++) {
     const a = fullPath[i] as Point;
     const b = fullPath[i + 1] as Point;
-    const n = new Vector(a.x, a.y).normal(new Vector(b.x, b.y)).norm();
+    const u = new Vector(a.x, a.y).normal(new Vector(b.x, b.y)).unit();
     const v = Vector.fromPoints(a, new Point(x, y));
 
-    if (Math.abs(n.dotProduct(v)) < 5 / zoom) {
+    // if the selection point is not too far from the segment
+    // of the path, create a new point and make it part of the path
+    if (Math.abs(u.dotProduct(v)) < 5 / zoom) {
       const lx = (a.x < b.x ? a.x : b.x) - 5 / zoom;
       const hx = (a.x < b.x ? b.x : a.x) + 5 / zoom;
       const ly = (a.y < b.y ? a.y : b.y) - 5 / zoom;
@@ -159,7 +168,8 @@ export const _findOrBuildPoint = (
     }
   }
   if (point && allowChange) {
-    _relationView_setPath(relationView, newPath);
+    // NOTE: this new path does not contain the 2 end points
+    _relationshipView_setPath(relationshipView, newPath);
   }
   return point;
 };

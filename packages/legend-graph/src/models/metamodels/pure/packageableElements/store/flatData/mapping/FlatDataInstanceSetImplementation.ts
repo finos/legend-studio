@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { observable, computed, makeObservable } from 'mobx';
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import { InstanceSetImplementation } from '../../../mapping/InstanceSetImplementation';
@@ -45,12 +44,6 @@ export class FlatDataInstanceSetImplementation
     sourceRootRecordType: RootFlatDataRecordTypeReference,
   ) {
     super(id, parent, _class, root);
-
-    makeObservable(this, {
-      filter: observable,
-      hashCode: computed,
-    });
-
     this.sourceRootRecordType = sourceRootRecordType;
   }
 

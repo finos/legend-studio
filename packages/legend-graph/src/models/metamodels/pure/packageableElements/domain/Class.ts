@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { observable, computed, makeObservable, override } from 'mobx';
 import {
   type Hashable,
   hashArray,
@@ -58,26 +57,6 @@ export class Class extends Type implements Hashable, Stubable {
   constraints: Constraint[] = [];
   stereotypes: StereotypeReference[] = [];
   taggedValues: TaggedValue[] = [];
-
-  constructor(name: string) {
-    super(name);
-
-    makeObservable<Class, '_elementHashCode'>(this, {
-      properties: observable,
-      propertiesFromAssociations: observable,
-      derivedProperties: observable,
-      generalizations: observable,
-      subclasses: observable,
-      constraints: observable,
-      stereotypes: observable,
-      taggedValues: observable,
-      allSuperclasses: computed,
-      allSubclasses: computed({ keepAlive: true }),
-      dispose: override,
-      isStub: computed,
-      _elementHashCode: override,
-    });
-  }
 
   /**
    * Get class and its supertypes' properties recursively, duplications and loops are handled (Which should be caught by compiler)

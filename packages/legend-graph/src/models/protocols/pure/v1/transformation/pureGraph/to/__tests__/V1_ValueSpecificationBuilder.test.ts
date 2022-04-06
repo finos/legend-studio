@@ -16,7 +16,6 @@
 
 import type { Entity } from '@finos/legend-model-storage';
 import { unitTest, Log } from '@finos/legend-shared';
-import { flowResult } from 'mobx';
 import {
   CoreModel,
   PureModel,
@@ -67,7 +66,7 @@ describe(unitTest('Lambda processing roundtrip test'), () => {
       new TEST__GraphPluginManager(),
       new Log(),
     );
-    await flowResult(graphManager.buildGraph(graph, entities));
+    await graphManager.buildGraph(graph, entities);
     const fn = (): void => {
       graphManager.buildValueSpecification(lambdaJson, graph);
     };
