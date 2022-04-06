@@ -46,9 +46,5 @@ export abstract class InferableValue<T, V> {
     this.value = value;
   }
 
-  setValue(val: T): void {
-    this.value = val;
-  }
-
   abstract get valueForSerialization(): V;
 }

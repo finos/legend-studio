@@ -157,3 +157,9 @@ export const findRootSetImplementation = (
     (setImp: SetImplementation) => setImp.root.value,
   );
 };
+
+export const getRootSetImplementation = (
+  mapping: Mapping,
+  _class: Class,
+): SetImplementation | undefined =>
+  findRootSetImplementation(getClassMappingsByClass(mapping, _class));

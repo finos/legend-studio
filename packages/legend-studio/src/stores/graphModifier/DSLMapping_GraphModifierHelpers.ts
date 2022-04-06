@@ -34,6 +34,7 @@ import {
   PRIMITIVE_TYPE,
   SourceValue,
   Type,
+  getOwnClassMappingsByClass,
 } from '@finos/legend-graph';
 import {
   addUniqueEntry,
@@ -50,7 +51,7 @@ export const mapping_setPropertyMappings = action(
 );
 export const setImpl_setRoot = action(
   (owner: SetImplementation, val: boolean): void => {
-    owner.root.setValue(val);
+    owner.root.value = val;
   },
 );
 
@@ -119,8 +120,8 @@ export const mappingTest_setAssert = action(
   },
 );
 export const enumMapping_setId = action(
-  (eM: EnumerationMapping, value: string): void => {
-    eM.id.setValue(value);
+  (eM: EnumerationMapping, val: string): void => {
+    eM.id.value = val;
   },
 );
 
@@ -229,5 +230,73 @@ export const operationMapping_changeParameter = action(
 export const operationMapping_deleteParameter = action(
   (oI: OperationSetImplementation, value: SetImplementationContainer): void => {
     deleteEntry(oI.parameters, value);
+  },
+);
+
+/**
+ * If this is the only mapping element for the target class, automatically mark it as root,
+ * otherwise, if there is another set implementation make it non-root,
+ * otherwise, leave other set implementation root status as-is.
+ * NOTE: use get `OWN` class mappings as we are smartly updating the current mapping in the form editor,
+ * which does not support `include` mappings as of now.
+ */
+export const setImpl_updateRootOnCreate = action(
+  (setImp: SetImplementation): void => {
+    const classMappingsWithSimilarTarget = getOwnClassMappingsByClass(
+      setImp.parent,
+      setImp.class.value,
+    ).filter((si) => si !== setImp);
+    if (classMappingsWithSimilarTarget.length) {
+      setImpl_setRoot(setImp, false);
+      if (classMappingsWithSimilarTarget.length === 1) {
+        setImpl_setRoot(
+          classMappingsWithSimilarTarget[0] as SetImplementation,
+          false,
+        );
+      }
+    } else {
+      setImpl_setRoot(setImp, true);
+    }
+  },
+);
+
+/**
+ * If only one set implementation remained, it will be nominated as the new root
+ * NOTE: use get `OWN` class mappings as we are smartly updating the current mapping in the form editor,
+ * which does not support `include` mappings as of now.
+ */
+export const setImpl_updateRootOnDelete = action(
+  (setImp: SetImplementation): void => {
+    const classMappingsWithSimilarTarget = getOwnClassMappingsByClass(
+      setImp.parent,
+      setImp.class.value,
+    ).filter((si) => si !== setImp);
+    if (classMappingsWithSimilarTarget.length === 1) {
+      setImpl_setRoot(
+        classMappingsWithSimilarTarget[0] as SetImplementation,
+        false,
+      );
+    }
+  },
+);
+
+/**
+ * Make the nominated set implementation root and flip the root flag of all other
+ * set implementations with the same target
+ * NOTE: use get `OWN` class mappings as we are smartly updating the current mapping in the form editor,
+ * which does not support `include` mappings as of now.
+ */
+export const setImpl_nominateRoot = action(
+  (setImp: SetImplementation): void => {
+    const classMappingsWithSimilarTarget = getOwnClassMappingsByClass(
+      setImp.parent,
+      setImp.class.value,
+    );
+    classMappingsWithSimilarTarget.forEach((si) => {
+      if (si !== setImp) {
+        setImpl_setRoot(si, false);
+      }
+    });
+    setImpl_setRoot(setImp, true);
   },
 );

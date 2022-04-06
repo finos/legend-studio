@@ -37,9 +37,9 @@ import {
   SET_IMPLEMENTATION_TYPE,
   OperationSetImplementation,
   OperationType,
-  nominateRootSetImplementation,
 } from '@finos/legend-graph';
 import {
+  setImpl_nominateRoot,
   operationMapping_setOperation,
   operationMapping_setParameters,
   setImpl_setRoot,
@@ -154,7 +154,7 @@ export const ClassMappingEditor = observer(
         const isRoot = setImplementation.root.value;
         setImpl_setRoot(setImplementation, !isRoot);
         if (setImplementation.root.value) {
-          nominateRootSetImplementation(setImplementation);
+          setImpl_nominateRoot(setImplementation);
         }
       }
     };

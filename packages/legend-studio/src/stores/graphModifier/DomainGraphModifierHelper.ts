@@ -43,7 +43,6 @@ import {
   type Measure,
   type Unit,
   type RawLambda,
-  type TagReference,
   Association,
   _package_addElement,
   _package_deleteElement,
@@ -194,9 +193,9 @@ export const annotatedElement_deleteStereotype = action(
 );
 
 export const taggedValue_setTag = action(
-  (tagRef: TagReference, value: Tag): void => {
-    tagRef.value = value;
-    tagRef.ownerReference.value = value.owner;
+  (taggedValue: TaggedValue, value: Tag): void => {
+    taggedValue.tag.value = value;
+    taggedValue.tag.ownerReference.value = value.owner;
   },
 );
 

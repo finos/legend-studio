@@ -23,7 +23,7 @@ import {
 import {
   type SetImplementationVisitor,
   type SetImplementation,
-  type OperationSetImplementation,
+  OperationSetImplementation,
   type PureInstanceSetImplementation,
   type FlatDataInstanceSetImplementation,
   type EnumerationMapping,
@@ -34,9 +34,9 @@ import {
   type AggregationAwareSetImplementation,
   type PropertyMapping,
   type InstanceSetImplementation,
+  type TEMPORARY__UnresolvedSetImplementation,
+  type Mapping,
   getAllClassMappings,
-  getDecoratedSetImplementationPropertyMappings,
-  getLeafSetImplementations,
   PurePropertyMapping,
   EmbeddedFlatDataPropertyMapping,
   EnumValueMapping,
@@ -53,7 +53,7 @@ import {
   createStubRelationalOperationElement,
   EmbeddedRelationalInstanceSetImplementation,
   getEnumerationMappingsByEnumeration,
-  type TEMPORARY__UnresolvedSetImplementation,
+  getRootSetImplementation,
 } from '@finos/legend-graph';
 import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../DSLMapping_LegendStudioPlugin_Extension';
 import type { EditorStore } from '../../../EditorStore';
@@ -69,6 +69,51 @@ import {
   purePropertyMapping_setTransformer,
 } from '../../../graphModifier/GraphModifierHelper';
 import { rootRelationalSetImp_setPropertyMappings } from '../../../graphModifier/StoreRelational_GraphModifierHelper';
+
+/**
+ * Iterate through all properties (including supertypes' properties) of the set implementation
+ * and add property mappings for each
+ */
+export const getDecoratedSetImplementationPropertyMappings = <
+  T extends PropertyMapping,
+>(
+  setImp: InstanceSetImplementation,
+  decoratePropertyMapping: (
+    existingPropertyMappings: T[] | undefined,
+    property: Property,
+  ) => T[],
+): T[] => {
+  const propertyMappingMap = new Map<string, T[]>();
+  (setImp.propertyMappings as T[]).forEach((pm) => {
+    const propertyMapping = propertyMappingMap.get(pm.property.value.name);
+    if (propertyMapping) {
+      propertyMapping.push(pm);
+    } else {
+      propertyMappingMap.set(pm.property.value.name, [pm]);
+    }
+  });
+  setImp.class.value.getAllProperties().forEach((property) => {
+    propertyMappingMap.set(
+      property.name,
+      decoratePropertyMapping(propertyMappingMap.get(property.name), property),
+    );
+  });
+  return Array.from(propertyMappingMap.values()).flat();
+};
+
+export const getLeafSetImplementations = (
+  mapping: Mapping,
+  _class: Class,
+): SetImplementation[] | undefined => {
+  const setImp = getRootSetImplementation(mapping, _class);
+  if (!setImp) {
+    return undefined;
+  }
+  if (setImp instanceof OperationSetImplementation) {
+    return setImp.leafSetImplementations;
+  }
+  return [setImp];
+};
 
 /* @MARKER: ACTION ANALYTICS */
 /**

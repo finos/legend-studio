@@ -43,7 +43,6 @@ import { useEditorStore } from '../../EditorStoreProvider';
 import {
   type Property,
   getRootSetImplementation,
-  nominateRootSetImplementation,
   Class,
   CLASS_PROPERTY_TYPE,
   getClassPropertyType,
@@ -54,6 +53,10 @@ import {
   EmbeddedFlatDataPropertyMapping,
 } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
+import {
+  setImpl_nominateRoot,
+  setImpl_setRoot,
+} from '../../../../stores/graphModifier/DSLMapping_GraphModifierHelpers';
 
 export const PropertyMappingsEditor = observer(
   (props: {
@@ -102,6 +105,9 @@ export const PropertyMappingsEditor = observer(
             propertyRawType,
           );
           if (rootMappingElement) {
+            if (!rootMappingElement.root.value) {
+              setImpl_setRoot(rootMappingElement, true);
+            }
             const parent = rootMappingElement.parent;
             if (parent !== mappingEditorState.element) {
               // TODO: think more about this flow. Right now we open the mapping element in the parent mapping
@@ -124,7 +130,7 @@ export const PropertyMappingsEditor = observer(
                 ): void => {
                   // Make this set implementation the new root
                   if (newSetImpl instanceof SetImplementation) {
-                    nominateRootSetImplementation(newSetImpl);
+                    setImpl_nominateRoot(newSetImpl);
                   }
                 },
               });

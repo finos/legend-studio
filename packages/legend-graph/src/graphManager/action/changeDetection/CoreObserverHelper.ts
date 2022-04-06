@@ -107,6 +107,5 @@ export const observe_Abstract_InferableValue = <T, V>(
 ): void => {
   makeObservable(metamodel, {
     value: observable,
-    setValue: action,
   });
 };
