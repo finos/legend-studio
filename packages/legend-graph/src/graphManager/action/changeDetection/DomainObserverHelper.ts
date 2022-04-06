@@ -59,6 +59,10 @@ import {
   observe_RawVariableExpression,
 } from './RawValueSpecificationObserver';
 
+/**
+ * NOTE: here we try to be consistent by recrusively going down the package tree
+ * and observe all descendents.
+ */
 export const observe_Package = skipObservedWithContext(
   (metamodel: Package, context): Package => {
     observe_Abstract_PackageableElement(metamodel);
