@@ -104,10 +104,8 @@ import {
 import { LambdaEditorState } from '@finos/legend-application';
 import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../DSLMapping_LegendStudioPlugin_Extension';
 import type { LegendStudioPlugin } from '../../../LegendStudioPlugin';
-import {
-  flatData_setSourceRootRecordType,
-  pureInstanceSetImpl_setSrcClass,
-} from '../../../graphModifier/GraphModifierHelper';
+import { pureInstanceSetImpl_setSrcClass } from '../../../graphModifier/DSLMapping_GraphModifierHelper';
+import { flatData_setSourceRootRecordType } from '../../../graphModifier/StoreFlatData_GraphModifierHelper';
 import {
   mapping_addClassMapping,
   mapping_addEnumerationMapping,
@@ -118,7 +116,7 @@ import {
   mapping_deleteTest,
   setImpl_updateRootOnCreate,
   setImpl_updateRootOnDelete,
-} from '../../../graphModifier/DSLMapping_GraphModifierHelpers';
+} from '../../../graphModifier/DSLMapping_GraphModifierHelper';
 
 export interface MappingExplorerTreeNodeData extends TreeNodeData {
   mappingElement: MappingElement;

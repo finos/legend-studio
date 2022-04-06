@@ -44,7 +44,7 @@ import {
   resolvePackagePathAndElementName,
 } from '@finos/legend-graph';
 import { package_addElement } from '../../../graphModifier/DomainGraphModifierHelper';
-import { connection_setStore } from '../../../graphModifier/GraphModifierHelper';
+import { connection_setStore } from '../../../graphModifier/DSLMapping_GraphModifierHelper';
 
 export abstract class DatabaseBuilderTreeNodeData implements TreeNodeData {
   isOpen?: boolean | undefined;

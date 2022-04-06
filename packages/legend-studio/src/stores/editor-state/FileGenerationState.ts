@@ -53,7 +53,7 @@ import {
   configurationProperty_setValue,
   fileGeneration_addScopeElement,
   fileGeneration_deleteScopeElement,
-} from '../graphModifier/GraphModifierHelper';
+} from '../graphModifier/DSLGeneration_GraphModifierHelper';
 
 export class FileGenerationState {
   editorStore: EditorStore;

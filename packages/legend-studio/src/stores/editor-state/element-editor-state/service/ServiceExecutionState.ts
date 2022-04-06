@@ -58,7 +58,7 @@ import {
 } from '@finos/legend-graph';
 import type { Entity } from '@finos/legend-model-storage';
 import { parseGACoordinates } from '@finos/legend-server-depot';
-import { runtime_addMapping } from '../../../graphModifier/GraphModifierHelper';
+import { runtime_addMapping } from '../../../graphModifier/DSLMapping_GraphModifierHelper';
 import {
   pureExecution_setFunction,
   pureSingleExecution_setRuntime,

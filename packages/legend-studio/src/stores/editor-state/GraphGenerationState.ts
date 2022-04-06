@@ -67,7 +67,7 @@ import { package_addElement } from '../graphModifier/DomainGraphModifierHelper';
 import {
   generationSpecification_addFileGeneration,
   generationSpecification_addGenerationElement,
-} from '../graphModifier/GraphModifierHelper';
+} from '../graphModifier/DSLGeneration_GraphModifierHelper';
 
 export const DEFAULT_GENERATION_SPECIFICATION_NAME =
   'MyGenerationSpecification';

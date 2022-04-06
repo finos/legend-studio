@@ -73,7 +73,7 @@ import {
   generationSpecification_addFileGeneration,
   generationSpecification_deleteFileGeneration,
   generationSpecification_setId,
-} from '../../../stores/graphModifier/GraphModifierHelper';
+} from '../../../stores/graphModifier/DSLGeneration_GraphModifierHelper';
 
 const ModelGenerationDragLayer: React.FC = () => {
   const { itemType, item, isDragging, currentPosition } = useDragLayer(

@@ -97,7 +97,7 @@ import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../stores/DS
 import {
   runtime_addIdentifiedConnection,
   runtime_deleteIdentifiedConnection,
-} from '../../../stores/graphModifier/GraphModifierHelper';
+} from '../../../stores/graphModifier/DSLMapping_GraphModifierHelper';
 
 const getConnectionTooltipText = (
   connection: Connection,

@@ -38,7 +38,7 @@ import {
 import {
   generationSpecification_addNode,
   generationSpecification_deleteGenerationNode,
-} from '../graphModifier/GraphModifierHelper';
+} from '../graphModifier/DSLGeneration_GraphModifierHelper';
 
 export interface GenerationSpecNodeDragSource {
   nodeState: GenerationTreeNodeState;

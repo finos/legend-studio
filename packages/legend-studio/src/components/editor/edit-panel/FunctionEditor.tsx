@@ -80,7 +80,7 @@ import {
   rawVariableExpression_setMultiplicity,
   rawVariableExpression_setName,
   rawVariableExpression_setType,
-} from '../../../stores/graphModifier/GraphModifierHelper';
+} from '../../../stores/graphModifier/ValueSpecificationGraphModifierHelper';
 
 enum FUNCTION_PARAMETER_TYPE {
   CLASS = 'CLASS',

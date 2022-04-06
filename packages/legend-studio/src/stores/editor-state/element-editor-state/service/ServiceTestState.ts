@@ -60,7 +60,7 @@ import {
 } from '@finos/legend-graph';
 import { TAB_SIZE } from '@finos/legend-application';
 import type { DSLService_LegendStudioPlugin_Extension } from '../../../DSLService_LegendStudioPlugin_Extension';
-import { runtime_addIdentifiedConnection } from '../../../graphModifier/GraphModifierHelper';
+import { runtime_addIdentifiedConnection } from '../../../graphModifier/DSLMapping_GraphModifierHelper';
 import {
   singleExecTest_addAssert,
   singleExecTest_deleteAssert,

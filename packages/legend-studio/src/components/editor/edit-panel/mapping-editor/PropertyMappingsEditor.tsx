@@ -56,7 +56,7 @@ import { useApplicationStore } from '@finos/legend-application';
 import {
   setImpl_nominateRoot,
   setImpl_setRoot,
-} from '../../../../stores/graphModifier/DSLMapping_GraphModifierHelpers';
+} from '../../../../stores/graphModifier/DSLMapping_GraphModifierHelper';
 
 export const PropertyMappingsEditor = observer(
   (props: {

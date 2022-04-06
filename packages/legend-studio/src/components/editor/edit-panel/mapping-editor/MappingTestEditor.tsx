@@ -81,7 +81,7 @@ import {
 } from '@finos/legend-graph';
 import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor';
 import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../../stores/DSLMapping_LegendStudioPlugin_Extension';
-import { flatData_setData } from '../../../../stores/graphModifier/GraphModifierHelper';
+import { flatData_setData } from '../../../../stores/graphModifier/StoreFlatData_GraphModifierHelper';
 import {
   relationalInputData_setData,
   relationalInputData_setInputType,

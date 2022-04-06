@@ -99,11 +99,11 @@ import {
 } from '@finos/legend-application';
 import { package_addElement } from '../../../graphModifier/DomainGraphModifierHelper';
 import {
-  flatData_setData,
   objectInputData_setData,
   runtime_addIdentifiedConnection,
   runtime_addMapping,
-} from '../../../graphModifier/GraphModifierHelper';
+} from '../../../graphModifier/DSLMapping_GraphModifierHelper';
+import { flatData_setData } from '../../../graphModifier/StoreFlatData_GraphModifierHelper';
 import {
   service_initNewService,
   service_setExecution,

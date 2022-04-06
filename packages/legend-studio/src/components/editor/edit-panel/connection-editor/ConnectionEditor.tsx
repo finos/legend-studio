@@ -32,7 +32,7 @@ import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../../stores
 import {
   modelConnection_setClass,
   modelConnection_setUrl,
-} from '../../../../stores/graphModifier/GraphModifierHelper';
+} from '../../../../stores/graphModifier/DSLMapping_GraphModifierHelper';
 
 const ModelConnectionEditor = observer(
   (props: {

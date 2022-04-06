@@ -54,7 +54,7 @@ import {
   operationMapping_addParameter,
   operationMapping_changeParameter,
   operationMapping_deleteParameter,
-} from '../../../../stores/graphModifier/DSLMapping_GraphModifierHelpers';
+} from '../../../../stores/graphModifier/DSLMapping_GraphModifierHelper';
 
 interface SetImplementationOption {
   value: SetImplementation;

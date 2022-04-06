@@ -64,7 +64,7 @@ import { DatabaseBuilder } from './DatabaseBuilder';
 import { useEditorStore } from '../../EditorStoreProvider';
 import { EDITOR_LANGUAGE } from '@finos/legend-application';
 import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor';
-import { connection_setStore } from '../../../../stores/graphModifier/GraphModifierHelper';
+import { connection_setStore } from '../../../../stores/graphModifier/DSLMapping_GraphModifierHelper';
 import {
   apiTokenAuthenticationStrategy_setApiToken,
   bigQueryDatasourceSpecification_setDefaultDataset,

@@ -24,7 +24,7 @@ import {
   PackageableElementExplicitReference,
 } from '@finos/legend-graph';
 import { package_addElement } from '../../graphModifier/DomainGraphModifierHelper';
-import { fileGeneration_setType } from '../../graphModifier/GraphModifierHelper';
+import { fileGeneration_setType } from '../../graphModifier/DSLGeneration_GraphModifierHelper';
 
 export class ElementFileGenerationState {
   uuid = uuid();

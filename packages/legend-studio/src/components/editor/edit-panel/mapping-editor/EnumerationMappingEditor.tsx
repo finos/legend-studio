@@ -67,7 +67,7 @@ import {
   enumValueMapping_addSourceValue,
   enumValueMapping_deleteSourceValue,
   enumValueMapping_updateSourceValue,
-} from '../../../../stores/graphModifier/DSLMapping_GraphModifierHelpers';
+} from '../../../../stores/graphModifier/DSLMapping_GraphModifierHelper';
 
 const EnumerationMappingSourceSelectorModal = observer(
   (props: {

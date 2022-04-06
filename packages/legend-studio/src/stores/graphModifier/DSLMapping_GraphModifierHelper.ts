@@ -35,9 +35,26 @@ import {
   SourceValue,
   Type,
   getOwnClassMappingsByClass,
+  type JsonModelConnection,
+  type Connection,
+  type PackageableConnection,
+  type PackageableRuntime,
+  type EngineRuntime,
+  StoreConnections,
+  type IdentifiedConnection,
+  type PackageableElementReference,
+  PackageableElementExplicitReference,
+  type Store,
+  type RuntimePointer,
+  type XmlModelConnection,
+  type Class,
+  type PureInstanceSetImplementation,
+  type PurePropertyMapping,
+  type ObjectInputData,
 } from '@finos/legend-graph';
 import {
   addUniqueEntry,
+  assertTrue,
   changeEntry,
   deleteEntry,
   guaranteeNonNullable,
@@ -55,6 +72,7 @@ export const setImpl_setRoot = action(
   },
 );
 
+//
 export const mapping_addClassMapping = action(
   (mapping: Mapping, val: SetImplementation): void => {
     addUniqueEntry(mapping.classMappings, val);
@@ -96,29 +114,8 @@ export const mapping_addTest = action(
   },
 );
 
-export const mappingTest_setName = action(
-  (test: MappingTest, value: string): void => {
-    test.name = value;
-  },
-);
+// --------------------------------------------- Enumeration Mapping -------------------------------------
 
-export const mappingTest_setInputData = action(
-  (test: MappingTest, value: InputData[]): void => {
-    test.inputData = value;
-  },
-);
-
-export const mappingTest_setQuery = action(
-  (test: MappingTest, value: RawLambda): void => {
-    test.query = value;
-  },
-);
-
-export const mappingTest_setAssert = action(
-  (test: MappingTest, value: MappingTestAssert): void => {
-    test.assert = value;
-  },
-);
 export const enumMapping_setId = action(
   (eM: EnumerationMapping, val: string): void => {
     eM.id.value = val;
@@ -195,11 +192,40 @@ export const enumValueMapping_updateSourceValue = action(
     }
   },
 );
+
+// --------------------------------------------- Mapping Test -------------------------------------
+
+export const mappingTest_setName = action(
+  (test: MappingTest, value: string): void => {
+    test.name = value;
+  },
+);
+
+export const mappingTest_setInputData = action(
+  (test: MappingTest, value: InputData[]): void => {
+    test.inputData = value;
+  },
+);
+
+export const mappingTest_setQuery = action(
+  (test: MappingTest, value: RawLambda): void => {
+    test.query = value;
+  },
+);
+
+export const mappingTest_setAssert = action(
+  (test: MappingTest, value: MappingTestAssert): void => {
+    test.assert = value;
+  },
+);
 export const expectedOutputMappingTestAssert_setExpectedOutput = action(
   (e: ExpectedOutputMappingTestAssert, val: string): void => {
     e.expectedOutput = val;
   },
 );
+
+// --------------------------------------------- Operation Mapping -------------------------------------
+
 export const operationMapping_setOperation = action(
   (oI: OperationSetImplementation, value: OperationType): void => {
     oI.operation = value;
@@ -232,6 +258,8 @@ export const operationMapping_deleteParameter = action(
     deleteEntry(oI.parameters, value);
   },
 );
+
+// --------------------------------------------- Root Resolution -------------------------------------
 
 /**
  * If this is the only mapping element for the target class, automatically mark it as root,
@@ -298,5 +326,127 @@ export const setImpl_nominateRoot = action(
       }
     });
     setImpl_setRoot(setImp, true);
+  },
+);
+
+// --------------------------------------------- M2M -------------------------------------
+
+export const objectInputData_setData = (
+  o: ObjectInputData,
+  val: string,
+): void => {
+  o.data = val;
+};
+
+export const pureInstanceSetImpl_setPropertyMappings = (
+  val: PureInstanceSetImplementation,
+  value: PurePropertyMapping[],
+): void => {
+  val.propertyMappings = value;
+};
+export const pureInstanceSetImpl_setSrcClass = (
+  val: PureInstanceSetImplementation,
+  value: Class | undefined,
+): void => {
+  val.srcClass.setValue(value);
+};
+export const pureInstanceSetImpl_setMappingFilter = (
+  val: PureInstanceSetImplementation,
+  value: RawLambda | undefined,
+): void => {
+  val.filter = value;
+};
+
+export const purePropertyMapping_setTransformer = (
+  val: PurePropertyMapping,
+  value: EnumerationMapping | undefined,
+): void => {
+  val.transformer = value;
+};
+
+// --------------------------------------------- Connection -------------------------------------
+
+export const connection_setStore = action(
+  (con: Connection, val: PackageableElementReference<Store>): void => {
+    con.store = val;
+  },
+);
+export const modelConnection_setClass = action(
+  (val: JsonModelConnection | XmlModelConnection, value: Class): void => {
+    val.class.value = value;
+  },
+);
+export const modelConnection_setUrl = action(
+  (val: JsonModelConnection | XmlModelConnection, value: string): void => {
+    val.url = value;
+  },
+);
+export const packageableConnection_setConnectionValue = action(
+  (pc: PackageableConnection, connection: Connection): void => {
+    pc.connectionValue = connection;
+  },
+);
+
+// --------------------------------------------- Runtime -------------------------------------
+
+export const packageableRuntime_setRuntimeValue = action(
+  (pr: PackageableRuntime, value: EngineRuntime): void => {
+    pr.runtimeValue = value;
+  },
+);
+export const runtime_addIdentifiedConnection = action(
+  (eR: EngineRuntime, value: IdentifiedConnection): void => {
+    const store = value.connection.store;
+    const storeConnections =
+      eR.connections.find((sc) => sc.store.value === store.value) ??
+      new StoreConnections(store);
+    addUniqueEntry(eR.connections, storeConnections);
+    assertTrue(
+      !storeConnections.storeConnections
+        .map((connection) => connection.id)
+        .includes(value.id),
+      `Can't add identified connection as a connection with the same ID '${value.id} already existed'`,
+    );
+    addUniqueEntry(storeConnections.storeConnections, value);
+  },
+);
+export const runtime_deleteIdentifiedConnection = action(
+  (eR: EngineRuntime, value: IdentifiedConnection): void => {
+    const storeConnections = eR.connections.find(
+      (sc) => sc.store.value === value.connection.store.value,
+    );
+    if (storeConnections) {
+      deleteEntry(storeConnections.storeConnections, value);
+    }
+  },
+);
+export const runtime_addUniqueStoreConnectionsForStore = action(
+  (eR: EngineRuntime, value: Store): void => {
+    if (!eR.connections.find((sc) => sc.store.value === value)) {
+      eR.connections.push(
+        new StoreConnections(PackageableElementExplicitReference.create(value)),
+      );
+    }
+  },
+);
+export const runtime_setMappings = action(
+  (eR: EngineRuntime, value: PackageableElementReference<Mapping>[]): void => {
+    eR.mappings = value;
+  },
+);
+export const runtime_addMapping = action(
+  (eR: EngineRuntime, value: PackageableElementReference<Mapping>): void => {
+    addUniqueEntry(eR.mappings, value);
+  },
+);
+export const runtime_deleteMapping = action(
+  (eR: EngineRuntime, value: PackageableElementReference<Mapping>): void => {
+    deleteEntry(eR.mappings, value);
+  },
+);
+
+export const setPackageableRuntime = action(
+  (rP: RuntimePointer, value: PackageableRuntime): void => {
+    rP.packageableRuntime.value = value;
   },
 );

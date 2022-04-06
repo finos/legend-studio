@@ -69,7 +69,7 @@ import {
   runtime_addUniqueStoreConnectionsForStore,
   runtime_deleteIdentifiedConnection,
   runtime_deleteMapping,
-} from '../../graphModifier/GraphModifierHelper';
+} from '../../graphModifier/DSLMapping_GraphModifierHelper';
 
 /* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
 export const getClassMappingStore = (

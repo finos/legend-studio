@@ -59,7 +59,7 @@ import {
   externalFormat_schema_setContent,
   externalFormat_schema_setId,
   externalFormat_schema_setLocation,
-} from '../../../../stores/graphModifier/GraphModifierHelper';
+} from '../../../../stores/graphModifier/DSLExternalFormat_GraphModifierHelper';
 
 const SchemaLoader = observer(
   (props: { schemaSetEditorState: SchemaSetEditorState }) => {

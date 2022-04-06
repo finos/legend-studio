@@ -83,17 +83,15 @@ import {
   type RawExecutionPlan,
 } from '@finos/legend-graph';
 import { LambdaEditorState, TAB_SIZE } from '@finos/legend-application';
-import {
-  flatData_setData,
-  objectInputData_setData,
-  runtime_addIdentifiedConnection,
-  runtime_addMapping,
-} from '../../../graphModifier/GraphModifierHelper';
+import { flatData_setData } from '../../../graphModifier/StoreFlatData_GraphModifierHelper';
 import {
   expectedOutputMappingTestAssert_setExpectedOutput,
   mappingTest_setAssert,
   mappingTest_setQuery,
-} from '../../../graphModifier/DSLMapping_GraphModifierHelpers';
+  objectInputData_setData,
+  runtime_addIdentifiedConnection,
+  runtime_addMapping,
+} from '../../../graphModifier/DSLMapping_GraphModifierHelper';
 import {
   localH2DatasourceSpecification_setTestDataSetupCsv,
   localH2DatasourceSpecification_setTestDataSetupSqls,
