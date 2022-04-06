@@ -73,18 +73,18 @@ import {
   ModelGenerationSpecification,
 } from '@finos/legend-graph';
 import type { DSLMapping_LegendStudioPlugin_Extension } from './DSLMapping_LegendStudioPlugin_Extension';
-import { package_addElement } from './DomainModifierHelper';
+import { package_addElement } from './graphModifier/DomainGraphModifierHelper';
 import {
   fileGeneration_setScopeElements,
   fileGeneration_setType,
   generationSpecification_addGenerationElement,
   packageableConnection_setConnectionValue,
   runtime_addMapping,
-} from './ModifierHelper';
+} from './graphModifier/GraphModifierHelper';
 import {
   service_initNewService,
   service_setExecution,
-} from './DSLService_ModifierHelper';
+} from './graphModifier/DSLService_GraphModifierHelper';
 
 export const resolvePackageAndElementName = (
   _package: Package,

@@ -58,12 +58,12 @@ import {
 } from '@finos/legend-graph';
 import type { Entity } from '@finos/legend-model-storage';
 import { parseGACoordinates } from '@finos/legend-server-depot';
-import { runtime_addMapping } from '../../../ModifierHelper';
+import { runtime_addMapping } from '../../../graphModifier/GraphModifierHelper';
 import {
   pureExecution_setFunction,
   pureSingleExecution_setRuntime,
   singleExecTest_setData,
-} from '../../../DSLService_ModifierHelper';
+} from '../../../graphModifier/DSLService_GraphModifierHelper';
 
 export enum SERVICE_EXECUTION_TAB {
   MAPPING_AND_RUNTIME = 'MAPPING_&_Runtime',

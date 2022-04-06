@@ -62,7 +62,7 @@ import {
 } from '@finos/legend-application';
 import type { TestContainer } from '@finos/legend-graph';
 import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor';
-import { singleExecTest_setData } from '../../../../stores/DSLService_ModifierHelper';
+import { singleExecTest_setData } from '../../../../stores/graphModifier/DSLService_GraphModifierHelper';
 
 const TestContainerContextMenu = observer(
   forwardRef<

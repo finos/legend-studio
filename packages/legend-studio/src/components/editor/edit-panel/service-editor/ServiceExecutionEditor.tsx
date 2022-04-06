@@ -69,7 +69,7 @@ import { useApplicationStore } from '@finos/legend-application';
 import {
   pureSingleExecution_setMapping,
   pureSingleExecution_setRuntime,
-} from '../../../../stores/DSLService_ModifierHelper';
+} from '../../../../stores/graphModifier/DSLService_GraphModifierHelper';
 
 const PureSingleExecutionConfigurationEditor = observer(
   (props: {

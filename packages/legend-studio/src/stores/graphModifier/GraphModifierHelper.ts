@@ -65,6 +65,7 @@ import {
 import { action } from 'mobx';
 
 // --------------------------------------------- Connection -------------------------------------
+
 export const connection_setStore = action(
   (con: Connection, val: PackageableElementReference<Store>): void => {
     con.store = val;
@@ -77,6 +78,7 @@ export const packageableConnection_setConnectionValue = action(
 );
 
 // --------------------------------------------- External Format -------------------------------------
+
 export const externalFormat_urlStream_setUrl = action(
   (us: UrlStream, val: string): void => {
     us.url = val;
@@ -191,7 +193,8 @@ export const externalFormat_modelUnit_updatePackageableElementExcludes = action(
   },
 );
 
-// --------------------------------------------- Fil Generation -------------------------------------
+// --------------------------------------------- File Generation -------------------------------------
+
 export const configurationProperty_setValue = action(
   (cp: ConfigurationProperty, value: unknown): void => {
     cp.value = value;
@@ -242,6 +245,7 @@ export const fileGeneration_changeScopeElement = action(
 );
 
 // -------------------------------- Generation Specification -------------------------------------
+
 export const generationSpecification_addNode = action(
   (genSpec: GenerationSpecification, value: GenerationTreeNode): void => {
     addUniqueEntry(genSpec.generationNodes, value);
@@ -305,6 +309,7 @@ export const generationSpecification_addGenerationElement = action(
 );
 
 // --------------------------------------------- Runtime -------------------------------------
+
 export const packageableRuntime_setRuntimeValue = action(
   (pr: PackageableRuntime, value: EngineRuntime): void => {
     pr.runtimeValue = value;
@@ -368,6 +373,7 @@ export const setPackageableRuntime = action(
 );
 
 // --------------------------------------------- Raw Value Specification -------------------------------------
+
 export const rawVariableExpression_setName = action(
   (rV: RawVariableExpression, value: string): void => {
     rV.name = value;
@@ -385,6 +391,7 @@ export const rawVariableExpression_setMultiplicity = action(
 );
 
 // --------------------------------------------- Connection -------------------------------------
+
 export const modelConnection_setClass = action(
   (val: JsonModelConnection | XmlModelConnection, value: Class): void => {
     val.class.value = value;
@@ -402,6 +409,7 @@ export const flatData_setUrl = action(
 );
 
 // --------------------------------------------- Flat Data -------------------------------------
+
 export const flatData_setSourceRootRecordType = action(
   (
     fl: FlatDataInstanceSetImplementation,

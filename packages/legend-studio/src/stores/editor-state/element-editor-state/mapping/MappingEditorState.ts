@@ -109,7 +109,7 @@ import type { LegendStudioPlugin } from '../../../LegendStudioPlugin';
 import {
   flatData_setSourceRootRecordType,
   pureInstanceSetImpl_setSrcClass,
-} from '../../../ModifierHelper';
+} from '../../../graphModifier/GraphModifierHelper';
 import {
   mapping_addClassMapping,
   mapping_addEnumerationMapping,
@@ -118,7 +118,7 @@ import {
   mapping_deleteClassMapping,
   mapping_deleteEnumerationMapping,
   mapping_deleteTest,
-} from '../../../DSLMapping_ModifierHelpers';
+} from '../../../graphModifier/DSLMapping_GraphModifierHelpers';
 
 export interface MappingExplorerTreeNodeData extends TreeNodeData {
   mappingElement: MappingElement;

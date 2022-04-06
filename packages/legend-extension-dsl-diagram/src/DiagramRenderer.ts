@@ -45,7 +45,7 @@ import { PositionedRectangle } from './models/metamodels/pure/packageableElement
 import { ClassView } from './models/metamodels/pure/packageableElements/diagram/DSLDiagram_ClassView';
 import type { PropertyHolderView } from './models/metamodels/pure/packageableElements/diagram/DSLDiagram_PropertyHolderView';
 import { GeneralizationView } from './models/metamodels/pure/packageableElements/diagram/DSLDiagram_GeneralizationView';
-import type { RelationshipView } from './models/metamodels/pure/packageableElements/diagram/DSLDiagram_RelationshipView';
+import { RelationshipView } from './models/metamodels/pure/packageableElements/diagram/DSLDiagram_RelationshipView';
 import { PropertyView } from './models/metamodels/pure/packageableElements/diagram/DSLDiagram_PropertyView';
 import { getElementPosition } from './helpers/DiagramHelper';
 import { AssociationView } from './models/metamodels/pure/packageableElements/diagram/DSLDiagram_AssociationView';
@@ -74,8 +74,7 @@ import {
   relationshipView_changePoint,
   relationshipView_simplifyPath,
   relationshipView_setPath,
-} from './stores/studio/DSLDiagram_ModifierHelper';
-import { _relationshipView_pruneUnnecessaryInsidePoints } from './models/metamodels/pure/packageableElements/diagram/DSLDiagram_GraphModifierHelper';
+} from './stores/studio/DSLDiagram_GraphModifierHelper';
 
 export enum DIAGRAM_INTERACTION_MODE {
   LAYOUT,
@@ -746,7 +745,7 @@ export class DiagramRenderer {
         .concat(this.diagram.generalizationViews)
         .concat(this.diagram.propertyViews);
       for (const relationshipView of relationshipViews) {
-        const fullPath = _relationshipView_pruneUnnecessaryInsidePoints(
+        const fullPath = RelationshipView.pruneUnnecessaryInsidePoints(
           relationshipView.buildFullPath(),
           relationshipView.from.classView.value,
           relationshipView.to.classView.value,
@@ -1822,7 +1821,7 @@ export class DiagramRenderer {
   }
 
   private drawPropertyOrAssociation(propertyView: PropertyView): void {
-    const fullPath = _relationshipView_pruneUnnecessaryInsidePoints(
+    const fullPath = RelationshipView.pruneUnnecessaryInsidePoints(
       propertyView.buildFullPath(),
       propertyView.from.classView.value,
       propertyView.to.classView.value,
@@ -1912,7 +1911,7 @@ export class DiagramRenderer {
 
   private drawInheritance(inheritance: GeneralizationView): void {
     const rect = inheritance.to.classView.value.rectangle;
-    const fullPath = _relationshipView_pruneUnnecessaryInsidePoints(
+    const fullPath = RelationshipView.pruneUnnecessaryInsidePoints(
       inheritance.buildFullPath(),
       inheritance.from.classView.value,
       inheritance.to.classView.value,
@@ -3163,7 +3162,7 @@ export class DiagramRenderer {
         ...this.diagram.associationViews,
       ];
       for (const propertyHolderView of propertyHolderViews) {
-        const fullPath = _relationshipView_pruneUnnecessaryInsidePoints(
+        const fullPath = RelationshipView.pruneUnnecessaryInsidePoints(
           propertyHolderView.buildFullPath(),
           propertyHolderView.from.classView.value,
           propertyHolderView.to.classView.value,

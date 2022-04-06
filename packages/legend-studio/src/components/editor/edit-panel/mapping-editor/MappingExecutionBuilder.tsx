@@ -79,11 +79,11 @@ import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../../stores
 import {
   flatData_setData,
   objectInputData_setData,
-} from '../../../../stores/ModifierHelper';
+} from '../../../../stores/graphModifier/GraphModifierHelper';
 import {
   relationalInputData_setData,
   relationalInputData_setInputType,
-} from '../../../../stores/StoreRelational_ModifierHelper';
+} from '../../../../stores/graphModifier/StoreRelational_GraphModifierHelper';
 
 interface ClassMappingSelectOption {
   label: string;

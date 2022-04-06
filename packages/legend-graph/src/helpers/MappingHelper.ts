@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { guaranteeNonNullable, uniq } from '@finos/legend-shared';
+import { findLast, guaranteeNonNullable, uniq } from '@finos/legend-shared';
 import type { EnumerationMapping } from '../models/metamodels/pure/packageableElements/mapping/EnumerationMapping';
 import type { SetImplementation } from '../models/metamodels/pure/packageableElements/mapping/SetImplementation';
 import type { Class } from '../models/metamodels/pure/packageableElements/domain/Class';
@@ -137,4 +137,23 @@ export const getAllSuperSetImplementations = (
   } else {
     return [];
   }
+};
+
+export const findRootSetImplementation = (
+  classMappingsWithSimilarTarget: SetImplementation[],
+): SetImplementation | undefined => {
+  // NOTE: we use find last so that we can be sure we're picking the root set implementation of the current mapping first,
+  // not the root set implementation of one of the included mappings, in case there's no root, we would prefer the root
+  // of one of the included mappings (whichever comes later),
+  // if there is not root set, and only one set implementation is found, we assume that is the root
+  if (
+    classMappingsWithSimilarTarget.length === 1 &&
+    classMappingsWithSimilarTarget[0]?.root.value === false
+  ) {
+    return classMappingsWithSimilarTarget[0];
+  }
+  return findLast(
+    classMappingsWithSimilarTarget,
+    (setImp: SetImplementation) => setImp.root.value,
+  );
 };

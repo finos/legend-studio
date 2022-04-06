@@ -67,7 +67,7 @@ import {
   PureInstanceSetImplementationFilterState,
   PureInstanceSetImplementationState,
 } from '../../../../stores/editor-state/element-editor-state/mapping/PureInstanceSetImplementationState';
-import { pureInstanceSetImpl_setMappingFilter } from '../../../../stores/ModifierHelper';
+import { pureInstanceSetImpl_setMappingFilter } from '../../../../stores/graphModifier/GraphModifierHelper';
 
 export const MappingExplorerContextMenu = observer(
   forwardRef<

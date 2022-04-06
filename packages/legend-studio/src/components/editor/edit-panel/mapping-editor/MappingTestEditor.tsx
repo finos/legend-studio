@@ -81,11 +81,11 @@ import {
 } from '@finos/legend-graph';
 import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor';
 import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../../stores/DSLMapping_LegendStudioPlugin_Extension';
-import { flatData_setData } from '../../../../stores/ModifierHelper';
+import { flatData_setData } from '../../../../stores/graphModifier/GraphModifierHelper';
 import {
   relationalInputData_setData,
   relationalInputData_setInputType,
-} from '../../../../stores/StoreRelational_ModifierHelper';
+} from '../../../../stores/graphModifier/StoreRelational_GraphModifierHelper';
 
 const MappingTestQueryEditor = observer(
   (props: { testState: MappingTestState; isReadOnly: boolean }) => {

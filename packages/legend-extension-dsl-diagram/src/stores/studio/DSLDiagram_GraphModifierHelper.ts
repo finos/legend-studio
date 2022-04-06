@@ -22,9 +22,9 @@ import type { Diagram } from '../../models/metamodels/pure/packageableElements/d
 import type { GeneralizationView } from '../../models/metamodels/pure/packageableElements/diagram/DSLDiagram_GeneralizationView';
 import {
   _findOrBuildPoint,
-  _relationshipView_SimplifyPath as _relationshipView_simplifyPath,
+  _relationshipView_simplifyPath,
   _relationshipView_setPath,
-} from '../../models/metamodels/pure/packageableElements/diagram/DSLDiagram_GraphModifierHelper';
+} from '../../helpers/DiagramHelper';
 import type { PropertyView } from '../../models/metamodels/pure/packageableElements/diagram/DSLDiagram_PropertyView';
 import type { RelationshipEdgeView } from '../../models/metamodels/pure/packageableElements/diagram/DSLDiagram_RelationshipEdgeView';
 import type { RelationshipView } from '../../models/metamodels/pure/packageableElements/diagram/DSLDiagram_RelationshipView';

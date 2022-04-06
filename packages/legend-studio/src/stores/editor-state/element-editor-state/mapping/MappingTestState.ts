@@ -88,17 +88,17 @@ import {
   objectInputData_setData,
   runtime_addIdentifiedConnection,
   runtime_addMapping,
-} from '../../../ModifierHelper';
+} from '../../../graphModifier/GraphModifierHelper';
 import {
   expectedOutputMappingTestAssert_setExpectedOutput,
   mappingTest_setAssert,
   mappingTest_setQuery,
-} from '../../../DSLMapping_ModifierHelpers';
+} from '../../../graphModifier/DSLMapping_GraphModifierHelpers';
 import {
   localH2DatasourceSpecification_setTestDataSetupCsv,
   localH2DatasourceSpecification_setTestDataSetupSqls,
   relationalInputData_setData,
-} from '../../../StoreRelational_ModifierHelper';
+} from '../../../graphModifier/StoreRelational_GraphModifierHelper';
 
 export enum TEST_RESULT {
   NONE = 'NONE', // test has not run yet

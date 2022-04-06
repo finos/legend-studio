@@ -52,7 +52,7 @@ import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../DSLMappin
 import {
   relationDbConnection_setAuthenticationStrategy,
   relationDbConnection_setDatasourceSpecification,
-} from '../../../StoreRelational_ModifierHelper';
+} from '../../../graphModifier/StoreRelational_GraphModifierHelper';
 
 export abstract class ConnectionValueState {
   editorStore: EditorStore;

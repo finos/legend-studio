@@ -87,7 +87,7 @@ import {
   fileGeneration_changeScopeElement,
   fileGeneration_deleteScopeElement,
   fileGeneration_setGenerationOutputPath,
-} from '../../../../stores/ModifierHelper';
+} from '../../../../stores/graphModifier/GraphModifierHelper';
 
 export const FileGenerationTreeNodeContainer: React.FC<
   TreeNodeContainerProps<

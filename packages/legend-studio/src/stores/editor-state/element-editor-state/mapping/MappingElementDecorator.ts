@@ -63,12 +63,12 @@ import {
   enumValueMapping_setSourceValues,
   mapping_setPropertyMappings,
   operationMapping_setParameters,
-} from '../../../DSLMapping_ModifierHelpers';
+} from '../../../graphModifier/DSLMapping_GraphModifierHelpers';
 import {
   pureInstanceSetImpl_setPropertyMappings,
   purePropertyMapping_setTransformer,
-} from '../../../ModifierHelper';
-import { rootRelationalSetImp_setPropertyMappings } from '../../../StoreRelational_ModifierHelper';
+} from '../../../graphModifier/GraphModifierHelper';
+import { rootRelationalSetImp_setPropertyMappings } from '../../../graphModifier/StoreRelational_GraphModifierHelper';
 
 /* @MARKER: ACTION ANALYTICS */
 /**

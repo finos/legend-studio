@@ -112,7 +112,7 @@ import {
   classView_setHideProperties,
   classView_setHideStereotypes,
   classView_setHideTaggedValues,
-} from '../../stores/studio/DSLDiagram_ModifierHelper';
+} from '../../stores/studio/DSLDiagram_GraphModifierHelper';
 
 const DiagramEditorContextMenu = observer(
   forwardRef<

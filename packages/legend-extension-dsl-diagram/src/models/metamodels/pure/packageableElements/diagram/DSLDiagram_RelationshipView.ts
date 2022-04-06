@@ -21,7 +21,6 @@ import type { ClassView } from './DSLDiagram_ClassView';
 import type { Diagram } from './DSLDiagram_Diagram';
 import { ClassViewExplicitReference } from './DSLDiagram_ClassViewReference';
 import { DIAGRAM_HASH_STRUCTURE } from '../../../../DSLDiagram_ModelUtils';
-import { _relationshipView_pruneUnnecessaryInsidePoints } from './DSLDiagram_GraphModifierHelper';
 
 export class RelationshipView implements Hashable {
   owner: Diagram;
@@ -84,10 +83,49 @@ export class RelationshipView implements Hashable {
   }
 
   /**
+   * For a path, only keep **at most** 1 point at each end that lies inside the class view.
+   * If there is no inside points, none of kept, so the path only contains outside points.
+   */
+  static pruneUnnecessaryInsidePoints = (
+    path: Point[],
+    from: ClassView,
+    to: ClassView,
+  ): Point[] => {
+    if (!path.length) {
+      return [];
+    }
+
+    let start = 0;
+    let startPoint = path[start] as Point;
+
+    while (
+      start < path.length - 1 &&
+      from.contains(startPoint.x, startPoint.y)
+    ) {
+      start++;
+      startPoint = path[start] as Point;
+    }
+
+    // NOTE: due to the usage path, we could make sure `end > start`, but maybe this
+    // is an improvement to be done
+
+    let end = path.length - 1;
+    let endPoint = path[end] as Point;
+
+    while (end > 0 && to.contains(endPoint.x, endPoint.y)) {
+      end--;
+      endPoint = path[end] as Point;
+    }
+
+    // NOTE: slice upper bound is exclusive, hence the +2 instead of +1
+    return path.slice(start - 1, end + 2);
+  };
+
+  /**
    * This method will compute the full path from the offset within class view for serialization and persistence purpose
    */
   get pathForSerialization(): Point[] {
-    return _relationshipView_pruneUnnecessaryInsidePoints(
+    return RelationshipView.pruneUnnecessaryInsidePoints(
       this.buildFullPath(),
       this.from.classView.value,
       this.to.classView.value,

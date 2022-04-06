@@ -64,7 +64,7 @@ import { DatabaseBuilder } from './DatabaseBuilder';
 import { useEditorStore } from '../../EditorStoreProvider';
 import { EDITOR_LANGUAGE } from '@finos/legend-application';
 import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor';
-import { connection_setStore } from '../../../../stores/ModifierHelper';
+import { connection_setStore } from '../../../../stores/graphModifier/GraphModifierHelper';
 import {
   apiTokenAuthenticationStrategy_setApiToken,
   bigQueryDatasourceSpecification_setDefaultDataset,
@@ -109,7 +109,7 @@ import {
   usernamePasswordAuthenticationStrategy_setBaseVaultReference,
   usernamePasswordAuthenticationStrategy_setPasswordVaultReference,
   usernamePasswordAuthenticationStrategy_setUserNameVaultReference,
-} from '../../../../stores/StoreRelational_ModifierHelper';
+} from '../../../../stores/graphModifier/StoreRelational_GraphModifierHelper';
 
 /**
  * NOTE: this is a WIP we did to quickly assemble a modular UI for relational database connection editor

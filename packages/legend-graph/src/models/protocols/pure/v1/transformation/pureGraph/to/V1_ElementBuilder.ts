@@ -19,7 +19,7 @@ import {
   assertNonEmptyString,
   assertTrue,
 } from '@finos/legend-shared';
-import { _package_addElement } from '../../../../../../GraphModifierHelper';
+import { _package_addElement } from '../../../../../../../helpers/DomainHelper';
 import type { PackageableElement } from '../../../../../../metamodels/pure/packageableElements/PackageableElement';
 import type { V1_PackageableElement } from '../../../model/packageableElements/V1_PackageableElement';
 import type { V1_GraphBuilderContext } from './V1_GraphBuilderContext';

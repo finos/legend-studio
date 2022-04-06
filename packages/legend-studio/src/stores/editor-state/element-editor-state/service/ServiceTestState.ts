@@ -60,12 +60,12 @@ import {
 } from '@finos/legend-graph';
 import { TAB_SIZE } from '@finos/legend-application';
 import type { DSLService_LegendStudioPlugin_Extension } from '../../../DSLService_LegendStudioPlugin_Extension';
-import { runtime_addIdentifiedConnection } from '../../../ModifierHelper';
+import { runtime_addIdentifiedConnection } from '../../../graphModifier/GraphModifierHelper';
 import {
   singleExecTest_addAssert,
   singleExecTest_deleteAssert,
   singleExecTest_setData,
-} from '../../../DSLService_ModifierHelper';
+} from '../../../graphModifier/DSLService_GraphModifierHelper';
 
 interface ServiceTestExecutionResult {
   expected: string;

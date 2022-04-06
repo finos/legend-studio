@@ -68,12 +68,12 @@ import {
   GenerationTreeNode,
 } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
-import { packageableElementReference_setValue } from '../../../stores/DomainModifierHelper';
+import { packageableElementReference_setValue } from '../../../stores/graphModifier/DomainGraphModifierHelper';
 import {
   generationSpecification_addFileGeneration,
   generationSpecification_deleteFileGeneration,
   generationSpecification_setId,
-} from '../../../stores/ModifierHelper';
+} from '../../../stores/graphModifier/GraphModifierHelper';
 
 const ModelGenerationDragLayer: React.FC = () => {
   const { itemType, item, isDragging, currentPosition } = useDragLayer(

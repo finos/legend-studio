@@ -16,7 +16,7 @@
 
 import { observer } from 'mobx-react-lite';
 import type { FlatDataConnectionValueState } from '../../../../stores/editor-state/element-editor-state/connection/ConnectionEditorState';
-import { flatData_setUrl } from '../../../../stores/ModifierHelper';
+import { flatData_setUrl } from '../../../../stores/graphModifier/GraphModifierHelper';
 
 export const FlatDataConnectionEditor = observer(
   (props: {

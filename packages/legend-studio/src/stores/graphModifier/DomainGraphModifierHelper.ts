@@ -43,13 +43,14 @@ import {
   type Measure,
   type Unit,
   type RawLambda,
+  type TagReference,
   Association,
   _package_addElement,
   _package_deleteElement,
-  _tagReference_setValue,
 } from '@finos/legend-graph';
 
 // --------------------------------------------- PackageableElementReference -------------------------------------
+
 export const packageableElementReference_setValue = action(
   <T extends PackageableElement>(
     ref: PackageableElementReference<T>,
@@ -60,6 +61,7 @@ export const packageableElementReference_setValue = action(
 );
 
 // --------------------------------------------- Class -------------------------------------
+
 export const class_deleteProperty = action(
   (_class: Class, val: Property): void => {
     deleteEntry(_class.properties, val);
@@ -116,6 +118,7 @@ export const class_deleteSubclass = action(
 );
 
 // --------------------------------------------- GenericTypeReference -------------------------------------
+
 export const setGenericTypeReferenceValue = action(
   (gen: GenericTypeReference, value: GenericType): void => {
     gen.value = value;
@@ -124,6 +127,7 @@ export const setGenericTypeReferenceValue = action(
 );
 
 // --------------------------------------------- Property ------------------------------------------------
+
 export const property_setName = action(
   (_property: Property | DerivedProperty, value: string): void => {
     _property.name = value;
@@ -158,6 +162,7 @@ export const stereotypeReference_setValue = action(
 );
 
 // --------------------------------------------- AnnotatedElement -------------------------------------
+
 export const annotatedElement_addTaggedValue = action(
   (annotatedElement: AnnotatedElement, value: TaggedValue): void => {
     addUniqueEntry(annotatedElement.taggedValues, value);
@@ -188,9 +193,12 @@ export const annotatedElement_deleteStereotype = action(
   },
 );
 
-export const taggedValue_setTag = action((val: TaggedValue, tag: Tag): void => {
-  _tagReference_setValue(val.tag, tag);
-});
+export const taggedValue_setTag = action(
+  (tagRef: TagReference, value: Tag): void => {
+    tagRef.value = value;
+    tagRef.ownerReference.value = value.owner;
+  },
+);
 
 export const taggedValue_setValue = action(
   (val: TaggedValue, value: string): void => {
@@ -204,6 +212,7 @@ export const tagStereotype_setValue = action(
 );
 
 // --------------------------------------------- DerivedProperty -------------------------------------
+
 export const derivedProperty_setBody = (
   dp: DerivedProperty,
   value: object | undefined,
@@ -218,6 +227,7 @@ export const derivedProperty_setParameters = (
 };
 
 // --------------------------------------------- Constraint -------------------------------------
+
 export const constraint_setName = action(
   (_constraint: Constraint, name: string): void => {
     _constraint.name = name;
@@ -230,6 +240,7 @@ export const constraint_setFunctionDefinition = action(
 );
 
 // --------------------------------------------- Profile -------------------------------------
+
 export const profile_addTag = action((profile: Profile, value: Tag): void => {
   addUniqueEntry(profile.tags, value);
 });
@@ -250,6 +261,7 @@ export const profile_deleteStereotype = action(
 );
 
 // --------------------------------------------- Function -------------------------------------
+
 export const function_deleteParameter = action(
   (_func: ConcreteFunctionDefinition, val: RawVariableExpression): void => {
     deleteEntry(_func.parameters, val);
@@ -272,6 +284,7 @@ export const functio_setReturnMultiplicity = action(
 );
 
 // --------------------------------------------- Enumeration -------------------------------------
+
 export const enum_setName = action((val: Enum, value: string): void => {
   val.name = value;
 });
@@ -293,6 +306,7 @@ export const enumValueReference_setValue = action(
 );
 
 // --------------------------------------------- Measure -------------------------------------
+
 export const measure_setCanonicalUnit = action(
   (_measure: Measure, unit: Unit): void => {
     _measure.canonicalUnit = unit;
@@ -305,5 +319,6 @@ export const unit_setConversionFunction = action(
 );
 
 // ------------------------------------------ Package -------------------------------------
+
 export const package_addElement = action(_package_addElement);
 export const package_deleteElement = action(_package_deleteElement);

@@ -14,12 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  type GenericType,
-  type Type,
-  _multiplicity_setLowerBound,
-  _multiplicity_setUpperBound,
-} from '@finos/legend-graph';
+import type { GenericType, Type, Multiplicity } from '@finos/legend-graph';
 import { action } from 'mobx';
 
 export const genericType_setRawType = action(
@@ -28,5 +23,13 @@ export const genericType_setRawType = action(
   },
 );
 
-export const multiplicity_setLowerBound = action(_multiplicity_setLowerBound);
-export const multiplicity_setUpperBound = action(_multiplicity_setUpperBound);
+export const multiplicity_setLowerBound = action(
+  (_m: Multiplicity, val: number): void => {
+    _m.lowerBound = val;
+  },
+);
+export const multiplicity_setUpperBound = action(
+  (_m: Multiplicity, val: number | undefined): void => {
+    _m.upperBound = val;
+  },
+);

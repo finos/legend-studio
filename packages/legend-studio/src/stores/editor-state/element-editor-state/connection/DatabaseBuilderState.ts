@@ -43,8 +43,8 @@ import {
   isValidFullPath,
   resolvePackagePathAndElementName,
 } from '@finos/legend-graph';
-import { package_addElement } from '../../../DomainModifierHelper';
-import { connection_setStore } from '../../../ModifierHelper';
+import { package_addElement } from '../../../graphModifier/DomainGraphModifierHelper';
+import { connection_setStore } from '../../../graphModifier/GraphModifierHelper';
 
 export abstract class DatabaseBuilderTreeNodeData implements TreeNodeData {
   isOpen?: boolean | undefined;

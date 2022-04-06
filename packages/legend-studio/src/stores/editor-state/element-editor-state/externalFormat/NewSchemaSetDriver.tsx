@@ -21,7 +21,7 @@ import { makeObservable, observable, action } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { useEditorStore } from '../../../../components/editor/EditorStoreProvider';
 import type { EditorStore } from '../../../EditorStore';
-import { externalFormat_schemaSet_setFormat } from '../../../ModifierHelper';
+import { externalFormat_schemaSet_setFormat } from '../../../graphModifier/GraphModifierHelper';
 import { NewElementDriver } from '../../../NewElementState';
 import type { ExternalFormatTypeOption } from '../../ExternalFormatState';
 

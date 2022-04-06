@@ -38,7 +38,7 @@ import {
   buildSourceInformationSourceId,
 } from '@finos/legend-graph';
 import { LambdaEditorState } from '@finos/legend-application';
-import { pureInstanceSetImpl_setMappingFilter } from '../../../ModifierHelper';
+import { pureInstanceSetImpl_setMappingFilter } from '../../../graphModifier/GraphModifierHelper';
 
 export const FILTER_SOURCE_ID_LABEL = 'filter';
 
