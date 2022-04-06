@@ -110,6 +110,8 @@ import {
   usernamePasswordAuthenticationStrategy_setBaseVaultReference,
   usernamePasswordAuthenticationStrategy_setPasswordVaultReference,
   usernamePasswordAuthenticationStrategy_setUserNameVaultReference,
+  gcpWorkloadIdentityFederationAuthenticationStrategy_setServiceAccountEmail,
+  gcpWorkloadIdentityFederationAuthenticationStrategy_setAdditionalGcpScopes,
 } from '../../../../stores/graphModifier/StoreRelational_GraphModifierHelper';
 
 /**
@@ -1001,7 +1003,10 @@ const GCPWorkloadIdentityFederationAuthenticationStrategyEditor = observer(
           value={authSpec.serviceAccountEmail}
           propertyName={'Service Account Email'}
           update={(value: string | undefined): void =>
-            authSpec.setServiceAccountEmail(value ?? '')
+            gcpWorkloadIdentityFederationAuthenticationStrategy_setServiceAccountEmail(
+              authSpec,
+              value ?? '',
+            )
           }
         />
         <ConnectionEditor_StringEditor
@@ -1009,7 +1014,10 @@ const GCPWorkloadIdentityFederationAuthenticationStrategyEditor = observer(
           value={GCPScopes}
           propertyName={'Additional GCP Scopes'}
           update={(value: string | undefined): void =>
-            authSpec.setAdditionalGcpScopes(value ? [value] : [])
+            gcpWorkloadIdentityFederationAuthenticationStrategy_setAdditionalGcpScopes(
+              authSpec,
+              value ? [value] : [],
+            )
           }
         />
       </>

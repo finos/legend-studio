@@ -136,15 +136,6 @@ export class GCPWorkloadIdentityFederationAuthenticationStrategy
 
   constructor(serviceAccountEmail: string, additionalGcpScopes: string[] = []) {
     super();
-
-    makeObservable(this, {
-      hashCode: computed,
-      serviceAccountEmail: observable,
-      additionalGcpScopes: observable,
-      setServiceAccountEmail: action,
-      setAdditionalGcpScopes: action,
-    });
-
     this.serviceAccountEmail = serviceAccountEmail;
     this.additionalGcpScopes = additionalGcpScopes;
   }
@@ -155,14 +146,6 @@ export class GCPWorkloadIdentityFederationAuthenticationStrategy
       this.serviceAccountEmail,
       hashArray(this.additionalGcpScopes),
     ]);
-  }
-
-  setServiceAccountEmail(val: string): void {
-    this.serviceAccountEmail = val;
-  }
-
-  setAdditionalGcpScopes(val: string[]): void {
-    this.additionalGcpScopes = val;
   }
 }
 

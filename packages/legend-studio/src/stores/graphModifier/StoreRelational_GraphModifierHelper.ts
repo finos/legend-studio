@@ -38,6 +38,7 @@ import {
   type SnowflakePublicAuthenticationStrategy,
   type StaticDatasourceSpecification,
   type UsernamePasswordAuthenticationStrategy,
+  type GCPWorkloadIdentityFederationAuthenticationStrategy,
   getRelationalInputType,
 } from '@finos/legend-graph';
 import { action } from 'mobx';
@@ -125,6 +126,26 @@ export const usernamePasswordAuthenticationStrategy_setPasswordVaultReference =
   action((v: UsernamePasswordAuthenticationStrategy, val: string): void => {
     v.passwordVaultReference = val;
   });
+
+export const gcpWorkloadIdentityFederationAuthenticationStrategy_setServiceAccountEmail =
+  action(
+    (
+      v: GCPWorkloadIdentityFederationAuthenticationStrategy,
+      val: string,
+    ): void => {
+      v.serviceAccountEmail = val;
+    },
+  );
+
+export const gcpWorkloadIdentityFederationAuthenticationStrategy_setAdditionalGcpScopes =
+  action(
+    (
+      v: GCPWorkloadIdentityFederationAuthenticationStrategy,
+      val: string[],
+    ): void => {
+      v.additionalGcpScopes = val;
+    },
+  );
 
 // --------------------------------------------- DatasourceSpecification -------------------------------------
 export const staticDatasourceSpecification_setHost = action(
