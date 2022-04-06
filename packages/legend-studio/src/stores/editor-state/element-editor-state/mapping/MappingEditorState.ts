@@ -104,9 +104,9 @@ import {
 import { LambdaEditorState } from '@finos/legend-application';
 import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../DSLMapping_LegendStudioPlugin_Extension';
 import type { LegendStudioPlugin } from '../../../LegendStudioPlugin';
-import { pureInstanceSetImpl_setSrcClass } from '../../../graphModifier/DSLMapping_GraphModifierHelper';
 import { flatData_setSourceRootRecordType } from '../../../graphModifier/StoreFlatData_GraphModifierHelper';
 import {
+  pureInstanceSetImpl_setSrcClass,
   mapping_addClassMapping,
   mapping_addEnumerationMapping,
   mapping_addTest,
