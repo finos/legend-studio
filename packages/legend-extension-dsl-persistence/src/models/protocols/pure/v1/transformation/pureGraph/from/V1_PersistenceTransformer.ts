@@ -76,9 +76,12 @@ import {
   V1_NontemporalSnapshot,
   V1_Notifier,
   V1_Notifyee,
+  V1_ObjectStorageSink,
   V1_PagerDutyNotifyee,
   V1_Persistence,
   V1_Persister,
+  V1_RelationalSink,
+  V1_Sink,
   V1_SourceSpecifiesFromAndThruDateTime,
   V1_SourceSpecifiesFromDateTime,
   V1_StreamingPersister,
@@ -90,9 +93,6 @@ import {
   V1_UnitemporalSnapshot,
   V1_ValidityDerivation,
   V1_ValidityMilestoning,
-  V1_Sink,
-  V1_RelationalSink,
-  V1_ObjectStorageSink,
 } from '../../../model/packageableElements/persistence/V1_Persistence';
 import {
   type V1_GraphTransformerContext,
