@@ -71,7 +71,7 @@ import type { ConnectionValueState } from '../../../../stores/editor-state/eleme
 import {
   externalFormat_Binding_setContentType,
   externalFormat_urlStream_setUrl,
-} from '../../../../stores/ModifierHelper';
+} from '../../../../stores/graphModifier/DSLExternalFormat_GraphModifierHelper';
 
 const SCHEMA_SET_ELEMENT_TYPE = 'SCHEMASET';
 const SCHEMA_SET_ELEMENT_PROJECT_EXPLORER_DND_TYPE =

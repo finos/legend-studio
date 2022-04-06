@@ -47,7 +47,7 @@ import {
   service_setDocumentation,
   service_setPattern,
   service_updateOwner,
-} from '../../../../stores/DSLService_ModifierHelper';
+} from '../../../../stores/graphModifier/DSLService_GraphModifierHelper';
 
 const ServiceGeneralEditor = observer(() => {
   const editorStore = useEditorStore();

@@ -19,7 +19,7 @@ import { TEST__getTestEditorStore } from '../EditorStoreTestUtils';
 import { flowResult } from 'mobx';
 import { type EntityDiff, EntityChangeType } from '@finos/legend-server-sdlc';
 import { Class } from '@finos/legend-graph';
-import { property_setName } from '../DomainModifierHelper';
+import { property_setName } from '../graphModifier/DomainGraphModifierHelper';
 
 const entities = [
   {

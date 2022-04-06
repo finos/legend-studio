@@ -62,7 +62,7 @@ import {
 } from '@finos/legend-application';
 import format from 'date-fns/format/index';
 import { addDays } from 'date-fns';
-import { genericType_setRawType } from '../stores/QueryModifierHelper';
+import { genericType_setRawType } from '../stores/QueryBuilderGraphModifierHelper';
 
 const QueryBuilderParameterInfoTooltip: React.FC<{
   variable: VariableExpression;

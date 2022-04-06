@@ -46,7 +46,7 @@ import type { V1_DerivedProperty } from '../../../../model/packageableElements/d
 import type { V1_Unit } from '../../../../model/packageableElements/domain/V1_Measure';
 import type { V1_TaggedValue } from '../../../../model/packageableElements/domain/V1_TaggedValue';
 import { V1_resolvePathsInRawLambda } from './V1_ValueSpecificationPathResolver';
-import { _package_addElement } from '../../../../../../../GraphModifierHelper';
+import { _package_addElement } from '../../../../../../../../helpers/DomainHelper';
 
 export const V1_buildTaggedValue = (
   taggedValue: V1_TaggedValue,

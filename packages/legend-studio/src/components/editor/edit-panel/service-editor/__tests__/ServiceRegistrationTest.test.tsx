@@ -52,7 +52,7 @@ import {
 } from '@finos/legend-graph';
 import { TEST__getTestStudioConfig } from '../../../../../stores/EditorStoreTestUtils';
 import { LegendStudioPluginManager } from '../../../../../application/LegendStudioPluginManager';
-import { service_deleteOwner } from '../../../../../stores/DSLService_ModifierHelper';
+import { service_deleteOwner } from '../../../../../stores/graphModifier/DSLService_GraphModifierHelper';
 
 let renderResult: RenderResult;
 

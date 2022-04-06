@@ -74,7 +74,7 @@ import {
   annotatedElement_addTaggedValue,
   annotatedElement_addStereotype,
   annotatedElement_deleteTaggedValue,
-} from '../../../../stores/DomainModifierHelper';
+} from '../../../../stores/graphModifier/DomainGraphModifierHelper';
 
 const AssociationPropertyBasicEditor = observer(
   (props: {

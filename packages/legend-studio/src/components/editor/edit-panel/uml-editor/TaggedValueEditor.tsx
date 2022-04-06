@@ -31,7 +31,7 @@ import type { TaggedValue, Tag, Profile } from '@finos/legend-graph';
 import {
   taggedValue_setValue,
   taggedValue_setTag,
-} from '../../../../stores/DomainModifierHelper';
+} from '../../../../stores/graphModifier/DomainGraphModifierHelper';
 
 interface TagOption {
   label: string;

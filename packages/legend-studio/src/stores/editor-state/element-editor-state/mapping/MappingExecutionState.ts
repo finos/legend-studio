@@ -97,22 +97,22 @@ import {
   LambdaEditorState,
   TAB_SIZE,
 } from '@finos/legend-application';
-import { package_addElement } from '../../../DomainModifierHelper';
+import { package_addElement } from '../../../graphModifier/DomainGraphModifierHelper';
 import {
-  flatData_setData,
   objectInputData_setData,
   runtime_addIdentifiedConnection,
   runtime_addMapping,
-} from '../../../ModifierHelper';
+} from '../../../graphModifier/DSLMapping_GraphModifierHelper';
+import { flatData_setData } from '../../../graphModifier/StoreFlatData_GraphModifierHelper';
 import {
   service_initNewService,
   service_setExecution,
-} from '../../../DSLService_ModifierHelper';
+} from '../../../graphModifier/DSLService_GraphModifierHelper';
 import {
   localH2DatasourceSpecification_setTestDataSetupCsv,
   localH2DatasourceSpecification_setTestDataSetupSqls,
   relationalInputData_setInputType,
-} from '../../../StoreRelational_ModifierHelper';
+} from '../../../graphModifier/StoreRelational_GraphModifierHelper';
 
 export class MappingExecutionQueryState extends LambdaEditorState {
   editorStore: EditorStore;

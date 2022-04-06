@@ -54,7 +54,7 @@ import {
   externalFormat_modelUnit_addPackageableElementIncludes,
   externalFormat_modelUnit_deletePackageableElementExcludes,
   externalFormat_modelUnit_deletePackageableElementIncludes,
-} from '../../../../stores/ModifierHelper';
+} from '../../../../stores/graphModifier/DSLExternalFormat_GraphModifierHelper';
 
 const BindingScopeEntryEditor = observer(
   (props: {

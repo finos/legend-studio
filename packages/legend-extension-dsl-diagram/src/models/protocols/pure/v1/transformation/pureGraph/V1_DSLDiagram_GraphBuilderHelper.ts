@@ -35,8 +35,10 @@ import type { V1_Point } from '../../model/packageableElements/diagram/geometry/
 import type { V1_Rectangle } from '../../model/packageableElements/diagram/geometry/V1_DSLDiagram_Rectangle';
 import type { V1_PropertyView } from '../../model/packageableElements/diagram/V1_DSLDiagram_PropertyView';
 import type { V1_GeneralizationView } from '../../model/packageableElements/diagram/V1_DSLDiagram_GeneralizationView';
-import { getClassView } from '../../../../../../helpers/DiagramHelper';
-import { _relationshipView_SimplifyPath } from '../../../../../metamodels/pure/packageableElements/diagram/DSLDiagram_GraphModifierHelper';
+import {
+  getClassView,
+  _relationshipView_simplifyPath,
+} from '../../../../../../helpers/DiagramHelper';
 
 const buildPoint = (point: V1_Point): Point => {
   const x = guaranteeNonNullable(point.x, `Point 'x' coordinate is missing`);
@@ -116,7 +118,7 @@ export const V1_buildPropertyView = (
     targetClassView,
   );
   view.path = propertyView.line.points.map((point) => buildPoint(point));
-  _relationshipView_SimplifyPath(view); // transform the line because we store only 2 end points that are inside points and we will calculate the offset
+  _relationshipView_simplifyPath(view); // transform the line because we store only 2 end points that are inside points and we will calculate the offset
   return view;
 };
 
@@ -142,7 +144,7 @@ export const V1_buildGeneralizationView = (
     targetClassView,
   );
   view.path = generalizationView.line.points.map((point) => buildPoint(point));
-  _relationshipView_SimplifyPath(view); // transform the line because we store only 2 end points that are inside points and we will calculate the offset
+  _relationshipView_simplifyPath(view); // transform the line because we store only 2 end points that are inside points and we will calculate the offset
   return view;
 };
 

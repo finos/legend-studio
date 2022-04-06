@@ -100,17 +100,13 @@ import {
   AssociationImplementation,
   InferableMappingElementIdExplicitValue,
   InferableMappingElementRootExplicitValue,
-  updateRootSetImplementationOnCreate,
-  updateRootSetImplementationOnDelete,
 } from '@finos/legend-graph';
 import { LambdaEditorState } from '@finos/legend-application';
 import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../DSLMapping_LegendStudioPlugin_Extension';
 import type { LegendStudioPlugin } from '../../../LegendStudioPlugin';
+import { flatData_setSourceRootRecordType } from '../../../graphModifier/StoreFlatData_GraphModifierHelper';
 import {
-  flatData_setSourceRootRecordType,
   pureInstanceSetImpl_setSrcClass,
-} from '../../../ModifierHelper';
-import {
   mapping_addClassMapping,
   mapping_addEnumerationMapping,
   mapping_addTest,
@@ -118,7 +114,9 @@ import {
   mapping_deleteClassMapping,
   mapping_deleteEnumerationMapping,
   mapping_deleteTest,
-} from '../../../DSLMapping_ModifierHelpers';
+  setImpl_updateRootOnCreate,
+  setImpl_updateRootOnDelete,
+} from '../../../graphModifier/DSLMapping_GraphModifierHelper';
 
 export interface MappingExplorerTreeNodeData extends TreeNodeData {
   mappingElement: MappingElement;
@@ -293,7 +291,7 @@ export const createClassMapping = (
     default:
       return undefined;
   }
-  updateRootSetImplementationOnCreate(setImp);
+  setImpl_updateRootOnCreate(setImp);
   mapping_addClassMapping(mapping, setImp);
   return setImp;
 };
@@ -957,7 +955,7 @@ export class MappingEditorState extends ElementEditorState {
       mapping_deleteClassMapping(this.mapping, mappingElement);
     }
     if (mappingElement instanceof SetImplementation) {
-      updateRootSetImplementationOnDelete(mappingElement);
+      setImpl_updateRootOnDelete(mappingElement);
     }
     yield flowResult(this.closeMappingElementTabState(mappingElement));
     this.reprocessMappingExplorerTree();

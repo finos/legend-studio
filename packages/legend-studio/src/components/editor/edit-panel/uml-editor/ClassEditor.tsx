@@ -99,7 +99,7 @@ import {
   property_setGenericType,
   property_setMultiplicity,
   setGenericTypeReferenceValue,
-} from '../../../../stores/DomainModifierHelper';
+} from '../../../../stores/graphModifier/DomainGraphModifierHelper';
 
 const PropertyBasicEditor = observer(
   (props: {

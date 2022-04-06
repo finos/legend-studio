@@ -63,7 +63,7 @@ import {
 import {
   _package_addElement,
   _package_deleteElement,
-} from '../models/GraphModifierHelper';
+} from '../helpers/DomainHelper';
 
 const FORBIDDEN_EXTENSION_ELEMENT_CLASS = new Set([
   PackageableElement,

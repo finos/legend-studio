@@ -34,7 +34,7 @@ import { TEXT_TYPE } from '../../models/metamodels/pure/model/packageableElement
 import {
   text_setContent,
   text_setType,
-} from '../../stores/studio/DSLText_ModifierHelper';
+} from '../../stores/studio/DSLText_GraphModifierHelper';
 
 const getTextElementEditorLanguage = (type: TEXT_TYPE): EDITOR_LANGUAGE => {
   switch (type) {

@@ -46,7 +46,7 @@ import {
   getEnumerationMappingsByEnumeration,
 } from '@finos/legend-graph';
 import { StudioLambdaEditor } from '../../../shared/StudioLambdaEditor';
-import { purePropertyMapping_setTransformer } from '../../../../stores/ModifierHelper';
+import { purePropertyMapping_setTransformer } from '../../../../stores/graphModifier/DSLMapping_GraphModifierHelper';
 
 const SimplePropertyMappingEditor = observer(
   (props: {

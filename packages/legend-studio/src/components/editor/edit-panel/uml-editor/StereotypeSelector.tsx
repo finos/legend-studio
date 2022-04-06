@@ -29,7 +29,7 @@ import type {
   StereotypeReference,
   Stereotype,
 } from '@finos/legend-graph';
-import { stereotypeReference_setValue } from '../../../../stores/DomainModifierHelper';
+import { stereotypeReference_setValue } from '../../../../stores/graphModifier/DomainGraphModifierHelper';
 
 interface StereotypeOption {
   label: string;

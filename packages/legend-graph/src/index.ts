@@ -161,12 +161,10 @@ export * from './MetaModelConst';
 export * from './helpers/ServiceHelper';
 export * from './helpers/DatabaseHelper';
 export * from './helpers/MappingHelper';
-export * from './helpers/MappingResolutionHelper';
 export * from './helpers/ValidationHelper';
 export * from './helpers/Stubable'; // TODO: to be removed
 export * from './helpers/DomainHelper';
 export * from './helpers/PureLanguageHelper';
-export * from './models/GraphModifierHelper';
 
 // --------------------------------------------- GRAPH --------------------------------------------------
 
