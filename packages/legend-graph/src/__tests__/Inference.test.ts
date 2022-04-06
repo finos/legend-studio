@@ -21,7 +21,6 @@ import {
   TEST_DATA__ReferenceWithoutSection,
   TEST_DATA__ReferenceModification,
 } from './TEST_DATA__Inference';
-import { flowResult } from 'mobx';
 import type { Entity } from '@finos/legend-model-storage';
 import {
   TEST__buildGraphWithEntities,
@@ -49,13 +48,11 @@ test(
   unitTest('Import resolution throws when multiple matches found'),
   async () => {
     const graphManagerState = TEST__getTestGraphManagerState();
-    await flowResult(graphManagerState.initializeSystem());
+    await graphManagerState.initializeSystem();
     await expect(() =>
-      flowResult(
-        graphManagerState.graphManager.buildGraph(
-          graphManagerState.graph,
-          TEST_DATA__ImportResolutionMultipleMatchesFound as Entity[],
-        ),
+      graphManagerState.graphManager.buildGraph(
+        graphManagerState.graph,
+        TEST_DATA__ImportResolutionMultipleMatchesFound as Entity[],
       ),
     ).rejects.toThrow(
       `Can't resolve element with path 'A' - multiple matches found [test::A, test2::A]`,
@@ -93,9 +90,15 @@ test(
       { TEMPORARY__keepSectionIndex: true },
     );
     let enumeration = graphManagerState.graph.getEnumeration('test::tEnum');
-    enumeration.taggedValues[0]?.setTag(
-      graphManagerState.graph.getProfile('test::tProf').getTag('s4'),
-    );
+    const tagValue = enumeration.taggedValues[0];
+    if (tagValue) {
+      tagValue.tag.value = graphManagerState.graph
+        .getProfile('test::tProf')
+        .getTag('s4');
+      tagValue.tag.ownerReference.value =
+        graphManagerState.graph.getProfile('test::tProf');
+    }
+
     expect(
       graphManagerState.graph.allOwnElements.map((element) =>
         graphManagerState.graphManager.elementToEntity(element),
@@ -113,9 +116,15 @@ test(
       TEST_DATA__ReferenceModification.original as Entity[],
     );
     enumeration = graphManagerState.graph.getEnumeration('test::tEnum');
-    enumeration.taggedValues[0]?.setTag(
-      graphManagerState.graph.getProfile('test2::tProf').getTag('s1'),
-    );
+    const taggedValue = enumeration.taggedValues[0];
+    if (taggedValue) {
+      taggedValue.tag.value = graphManagerState.graph
+        .getProfile('test2::tProf')
+        .getTag('s1');
+      taggedValue.tag.ownerReference.value =
+        graphManagerState.graph.getProfile('test2::tProf');
+    }
+
     expect(
       graphManagerState.graph.allOwnElements.map((element) =>
         graphManagerState.graphManager.elementToEntity(element),

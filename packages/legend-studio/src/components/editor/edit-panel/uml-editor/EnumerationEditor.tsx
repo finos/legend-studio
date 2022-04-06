@@ -57,6 +57,15 @@ import {
   Stereotype,
   StereotypeExplicitReference,
 } from '@finos/legend-graph';
+import {
+  enum_setName,
+  annotatedElement_deleteStereotype,
+  annotatedElement_addStereotype,
+  annotatedElement_addTaggedValue,
+  annotatedElement_deleteTaggedValue,
+  enum_deleteValue,
+  enum_addValue,
+} from '../../../../stores/graphModifier/DomainGraphModifierHelper';
 
 const EnumBasicEditor = observer(
   (props: {
@@ -67,7 +76,7 @@ const EnumBasicEditor = observer(
   }) => {
     const { _enum, selectValue, deleteValue, isReadOnly } = props;
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
-      _enum.setName(event.target.value);
+      enum_setName(_enum, event.target.value);
     };
     const isEnumValueDuplicated = (val: Enum): boolean =>
       _enum.owner.values.filter((value) => value.name === val.name).length >= 2;
@@ -136,11 +145,13 @@ const EnumEditor = observer(
     const addValue = (): void => {
       if (!isReadOnly) {
         if (selectedTab === UML_EDITOR_TAB.TAGGED_VALUES) {
-          _enum.addTaggedValue(
+          annotatedElement_addTaggedValue(
+            _enum,
             TaggedValue.createStub(Tag.createStub(Profile.createStub())),
           );
         } else if (selectedTab === UML_EDITOR_TAB.STEREOTYPES) {
-          _enum.addStereotype(
+          annotatedElement_addStereotype(
+            _enum,
             StereotypeExplicitReference.create(
               Stereotype.createStub(Profile.createStub()),
             ),
@@ -148,19 +159,20 @@ const EnumEditor = observer(
         }
       }
     };
-    const deleteStereotype =
+    const _deleteStereotype =
       (val: StereotypeReference): (() => void) =>
       (): void =>
-        _enum.deleteStereotype(val);
-    const deleteTaggedValue =
+        annotatedElement_deleteStereotype(_enum, val);
+    const _deleteTaggedValue =
       (val: TaggedValue): (() => void) =>
       (): void =>
-        _enum.deleteTaggedValue(val);
+        annotatedElement_deleteTaggedValue(_enum, val);
     // Drag and Drop
     const handleDropTaggedValue = useCallback(
       (item: UMLEditorElementDropTarget): void => {
         if (!isReadOnly && item.data.packageableElement instanceof Profile) {
-          _enum.addTaggedValue(
+          annotatedElement_addTaggedValue(
+            _enum,
             TaggedValue.createStub(
               Tag.createStub(item.data.packageableElement),
             ),
@@ -182,7 +194,8 @@ const EnumEditor = observer(
     const handleDropStereotype = useCallback(
       (item: UMLEditorElementDropTarget): void => {
         if (!isReadOnly && item.data.packageableElement instanceof Profile) {
-          _enum.addStereotype(
+          annotatedElement_addStereotype(
+            _enum,
             StereotypeExplicitReference.create(
               Stereotype.createStub(item.data.packageableElement),
             ),
@@ -268,7 +281,7 @@ const EnumEditor = observer(
                   <TaggedValueEditor
                     key={taggedValue.uuid}
                     taggedValue={taggedValue}
-                    deleteValue={deleteTaggedValue(taggedValue)}
+                    deleteValue={_deleteTaggedValue(taggedValue)}
                     isReadOnly={isReadOnly}
                   />
                 ))}
@@ -286,7 +299,7 @@ const EnumEditor = observer(
                   <StereotypeSelector
                     key={stereotype.value.uuid}
                     stereotype={stereotype}
-                    deleteStereotype={deleteStereotype(stereotype)}
+                    deleteStereotype={_deleteStereotype(stereotype)}
                     isReadOnly={isReadOnly}
                   />
                 ))}
@@ -343,13 +356,15 @@ export const EnumerationEditor = observer(
     const add = (): void => {
       if (!isReadOnly) {
         if (selectedTab === UML_EDITOR_TAB.ENUM_VALUES) {
-          enumeration.addValue(Enum.createStub(enumeration));
+          enum_addValue(enumeration, Enum.createStub(enumeration));
         } else if (selectedTab === UML_EDITOR_TAB.TAGGED_VALUES) {
-          enumeration.addTaggedValue(
+          annotatedElement_addTaggedValue(
+            enumeration,
             TaggedValue.createStub(Tag.createStub(Profile.createStub())),
           );
         } else if (selectedTab === UML_EDITOR_TAB.STEREOTYPES) {
-          enumeration.addStereotype(
+          annotatedElement_addStereotype(
+            enumeration,
             StereotypeExplicitReference.create(
               Stereotype.createStub(Profile.createStub()),
             ),
@@ -360,24 +375,25 @@ export const EnumerationEditor = observer(
     const deleteValue =
       (val: Enum): (() => void) =>
       (): void => {
-        enumeration.deleteValue(val);
+        enum_deleteValue(enumeration, val);
         if (val === selectedEnum) {
           setSelectedEnum(undefined);
         }
       };
-    const deleteStereotype =
+    const _deleteStereotype =
       (val: StereotypeReference): (() => void) =>
       (): void =>
-        enumeration.deleteStereotype(val);
-    const deleteTaggedValue =
+        annotatedElement_deleteStereotype(enumeration, val);
+    const _deleteTaggedValue =
       (val: TaggedValue): (() => void) =>
       (): void =>
-        enumeration.deleteTaggedValue(val);
+        annotatedElement_deleteTaggedValue(enumeration, val);
     // Drag and Drop
     const handleDropTaggedValue = useCallback(
       (item: UMLEditorElementDropTarget): void => {
         if (!isReadOnly && item.data.packageableElement instanceof Profile) {
-          enumeration.addTaggedValue(
+          annotatedElement_addTaggedValue(
+            enumeration,
             TaggedValue.createStub(
               Tag.createStub(item.data.packageableElement),
             ),
@@ -399,7 +415,8 @@ export const EnumerationEditor = observer(
     const handleDropStereotype = useCallback(
       (item: UMLEditorElementDropTarget): void => {
         if (!isReadOnly && item.data.packageableElement instanceof Profile) {
-          enumeration.addStereotype(
+          annotatedElement_addStereotype(
+            enumeration,
             StereotypeExplicitReference.create(
               Stereotype.createStub(item.data.packageableElement),
             ),
@@ -526,7 +543,7 @@ export const EnumerationEditor = observer(
                       <TaggedValueEditor
                         key={taggedValue.uuid}
                         taggedValue={taggedValue}
-                        deleteValue={deleteTaggedValue(taggedValue)}
+                        deleteValue={_deleteTaggedValue(taggedValue)}
                         isReadOnly={isReadOnly}
                       />
                     ))}
@@ -544,7 +561,7 @@ export const EnumerationEditor = observer(
                       <StereotypeSelector
                         key={stereotype.value.uuid}
                         stereotype={stereotype}
-                        deleteStereotype={deleteStereotype(stereotype)}
+                        deleteStereotype={_deleteStereotype(stereotype)}
                         isReadOnly={isReadOnly}
                       />
                     ))}

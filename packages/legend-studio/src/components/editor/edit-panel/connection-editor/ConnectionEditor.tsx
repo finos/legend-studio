@@ -29,6 +29,10 @@ import type { Class } from '@finos/legend-graph';
 import { CustomSelectorInput, LockIcon } from '@finos/legend-art';
 import { useEditorStore } from '../../EditorStoreProvider';
 import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../../stores/DSLMapping_LegendStudioPlugin_Extension';
+import {
+  modelConnection_setClass,
+  modelConnection_setUrl,
+} from '../../../../stores/graphModifier/DSLMapping_GraphModifierHelper';
 
 const ModelConnectionEditor = observer(
   (props: {
@@ -43,11 +47,11 @@ const ModelConnectionEditor = observer(
     const classOptions = editorStore.classOptions;
     const sourceClass = connection.class.value;
     const onSourceClassChange = (val: { label: string; value: Class }): void =>
-      connection.setClass(val.value);
+      modelConnection_setClass(connection, val.value);
     // TODO: handle content type (XML/JSON)
     // url
     const changeUrl: React.ChangeEventHandler<HTMLTextAreaElement> = (event) =>
-      connection.setUrl(event.target.value);
+      modelConnection_setUrl(connection, event.target.value);
 
     return (
       <div className="panel__content__form">

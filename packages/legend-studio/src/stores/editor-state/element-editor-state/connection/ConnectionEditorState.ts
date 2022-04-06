@@ -49,6 +49,10 @@ import {
   createValidationError,
 } from '@finos/legend-graph';
 import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../DSLMapping_LegendStudioPlugin_Extension';
+import {
+  relationDbConnection_setAuthenticationStrategy,
+  relationDbConnection_setDatasourceSpecification,
+} from '../../../graphModifier/StoreRelational_GraphModifierHelper';
 
 export abstract class ConnectionValueState {
   editorStore: EditorStore;
@@ -164,43 +168,50 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
   changeDatasourceSpec(type: string): void {
     switch (type) {
       case CORE_DATASOURCE_SPEC_TYPE.STATIC: {
-        this.connection.setDatasourceSpecification(
+        relationDbConnection_setDatasourceSpecification(
+          this.connection,
           new StaticDatasourceSpecification('', 80, ''),
         );
         return;
       }
       case CORE_DATASOURCE_SPEC_TYPE.H2_LOCAL: {
-        this.connection.setDatasourceSpecification(
+        relationDbConnection_setDatasourceSpecification(
+          this.connection,
           new LocalH2DatasourceSpecification(),
         );
         return;
       }
       case CORE_DATASOURCE_SPEC_TYPE.H2_EMBEDDED: {
-        this.connection.setDatasourceSpecification(
+        relationDbConnection_setDatasourceSpecification(
+          this.connection,
           new EmbeddedH2DatasourceSpecification('', '', false),
         );
         return;
       }
       case CORE_DATASOURCE_SPEC_TYPE.DATABRICKS: {
-        this.connection.setDatasourceSpecification(
+        relationDbConnection_setDatasourceSpecification(
+          this.connection,
           new DatabricksDatasourceSpecification('', '', '', ''),
         );
         return;
       }
       case CORE_DATASOURCE_SPEC_TYPE.SNOWFLAKE: {
-        this.connection.setDatasourceSpecification(
+        relationDbConnection_setDatasourceSpecification(
+          this.connection,
           new SnowflakeDatasourceSpecification('', '', '', ''),
         );
         return;
       }
       case CORE_DATASOURCE_SPEC_TYPE.REDSHIFT: {
-        this.connection.setDatasourceSpecification(
+        relationDbConnection_setDatasourceSpecification(
+          this.connection,
           new RedshiftDatasourceSpecification('', '', 5439, '', '', ''),
         );
         return;
       }
       case CORE_DATASOURCE_SPEC_TYPE.BIGQUERY: {
-        this.connection.setDatasourceSpecification(
+        relationDbConnection_setDatasourceSpecification(
+          this.connection,
           new BigQueryDatasourceSpecification('', ''),
         );
         return;
@@ -218,7 +229,10 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
         for (const creator of extraDatasourceSpecificationCreators) {
           const spec = creator(type);
           if (spec) {
-            this.connection.setDatasourceSpecification(spec);
+            relationDbConnection_setDatasourceSpecification(
+              this.connection,
+              spec,
+            );
             return;
           }
         }
@@ -272,43 +286,50 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
   changeAuthenticationStrategy(type: string): void {
     switch (type) {
       case CORE_AUTHENTICATION_STRATEGY_TYPE.DELEGATED_KERBEROS: {
-        this.connection.setAuthenticationStrategy(
+        relationDbConnection_setAuthenticationStrategy(
+          this.connection,
           new DelegatedKerberosAuthenticationStrategy(),
         );
         return;
       }
       case CORE_AUTHENTICATION_STRATEGY_TYPE.API_TOKEN: {
-        this.connection.setAuthenticationStrategy(
+        relationDbConnection_setAuthenticationStrategy(
+          this.connection,
           new ApiTokenAuthenticationStrategy(''),
         );
         return;
       }
       case CORE_AUTHENTICATION_STRATEGY_TYPE.SNOWFLAKE_PUBLIC: {
-        this.connection.setAuthenticationStrategy(
+        relationDbConnection_setAuthenticationStrategy(
+          this.connection,
           new SnowflakePublicAuthenticationStrategy('', '', ''),
         );
         return;
       }
       case CORE_AUTHENTICATION_STRATEGY_TYPE.GCP_APPLICATION_DEFAULT_CREDENTIALS: {
-        this.connection.setAuthenticationStrategy(
+        relationDbConnection_setAuthenticationStrategy(
+          this.connection,
           new GCPApplicationDefaultCredentialsAuthenticationStrategy(),
         );
         return;
       }
       case CORE_AUTHENTICATION_STRATEGY_TYPE.H2_DEFAULT: {
-        this.connection.setAuthenticationStrategy(
+        relationDbConnection_setAuthenticationStrategy(
+          this.connection,
           new DefaultH2AuthenticationStrategy(),
         );
         return;
       }
       case CORE_AUTHENTICATION_STRATEGY_TYPE.USERNAME_PASSWORD: {
-        this.connection.setAuthenticationStrategy(
+        relationDbConnection_setAuthenticationStrategy(
+          this.connection,
           new UsernamePasswordAuthenticationStrategy('', ''),
         );
         return;
       }
       case CORE_AUTHENTICATION_STRATEGY_TYPE.OAUTH:
-        this.connection.setAuthenticationStrategy(
+        relationDbConnection_setAuthenticationStrategy(
+          this.connection,
           new OAuthAuthenticationStrategy('', ''),
         );
         return;
@@ -325,7 +346,10 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
         for (const creator of extraAuthenticationStrategyCreators) {
           const auth = creator(type);
           if (auth) {
-            this.connection.setAuthenticationStrategy(auth);
+            relationDbConnection_setAuthenticationStrategy(
+              this.connection,
+              auth,
+            );
             return;
           }
         }

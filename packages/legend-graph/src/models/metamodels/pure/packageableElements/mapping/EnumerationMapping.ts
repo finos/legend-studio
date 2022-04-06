@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { observable, action, computed, makeObservable } from 'mobx';
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import { fromElementPathToMappingElementId } from '../../../../../MetaModelUtils';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
@@ -47,45 +46,10 @@ export class EnumerationMapping implements Hashable, Stubable {
     parent: Mapping,
     sourceType: OptionalPackageableElementReference<Type>,
   ) {
-    makeObservable(this, {
-      sourceType: observable,
-      enumValueMappings: observable,
-      setId: action,
-      setSourceType: action,
-      setEnumValueMappings: action,
-      updateSourceType: action,
-      label: computed,
-      isStub: computed,
-      hashCode: computed,
-    });
-
     this.id = id;
     this.enumeration = enumeration;
     this.parent = parent;
     this.sourceType = sourceType;
-  }
-
-  setId(value: string): void {
-    this.id.setValue(value);
-  }
-  setSourceType(value: Type | undefined): void {
-    this.sourceType.setValue(value);
-  }
-  setEnumValueMappings(value: EnumValueMapping[]): void {
-    this.enumValueMappings = value;
-  }
-
-  updateSourceType(type: Type | undefined): void {
-    if (this.sourceType.value !== type) {
-      this.setSourceType(type);
-      this.enumValueMappings = this.enumValueMappings.map(
-        (enumValueMapping) => {
-          enumValueMapping.sourceValues = [];
-          enumValueMapping.addSourceValue();
-          return enumValueMapping;
-        },
-      );
-    }
   }
 
   get label(): MappingElementLabel {

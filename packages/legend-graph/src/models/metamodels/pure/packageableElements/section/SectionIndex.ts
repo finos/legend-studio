@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { observable, makeObservable, override } from 'mobx';
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import {
@@ -25,15 +24,6 @@ import type { Section } from './Section';
 
 export class SectionIndex extends PackageableElement implements Hashable {
   sections: Section[] = [];
-
-  constructor(name: string) {
-    super(name);
-
-    makeObservable<SectionIndex, '_elementHashCode'>(this, {
-      sections: observable,
-      _elementHashCode: override,
-    });
-  }
 
   protected override get _elementHashCode(): string {
     return hashArray([

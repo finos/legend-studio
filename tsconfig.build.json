@@ -47,6 +47,9 @@
     {
       "path": "packages/legend-extension-external-language-morphir/tsconfig.build.json"
     },
+    {
+      "path": "packages/legend-extension-mapping-generation/tsconfig.build.json"
+    },
     // fixtures
     {
       "path": "fixtures/legend-mock-server/tsconfig.build.json"

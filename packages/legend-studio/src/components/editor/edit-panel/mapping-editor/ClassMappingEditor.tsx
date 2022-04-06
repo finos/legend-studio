@@ -37,8 +37,13 @@ import {
   SET_IMPLEMENTATION_TYPE,
   OperationSetImplementation,
   OperationType,
-  nominateRootSetImplementation,
 } from '@finos/legend-graph';
+import {
+  setImpl_nominateRoot,
+  operationMapping_setOperation,
+  operationMapping_setParameters,
+  setImpl_setRoot,
+} from '../../../../stores/graphModifier/DSLMapping_GraphModifierHelper';
 
 export const OperatorSelector = observer(
   (props: {
@@ -59,8 +64,8 @@ export const OperatorSelector = observer(
     ): void => {
       const value = val?.value ? OperationType[val.value] : undefined;
       if (value && setImplementation.operation !== value) {
-        setImplementation.setOperation(value);
-        setImplementation.setParameters([]);
+        operationMapping_setOperation(setImplementation, value);
+        operationMapping_setParameters(setImplementation, []);
       }
     };
     return (
@@ -147,9 +152,9 @@ export const ClassMappingEditor = observer(
     const toggleRoot = (): void => {
       if (!isReadOnly) {
         const isRoot = setImplementation.root.value;
-        setImplementation.setRoot(!isRoot);
+        setImpl_setRoot(setImplementation, !isRoot);
         if (setImplementation.root.value) {
-          nominateRootSetImplementation(setImplementation);
+          setImpl_nominateRoot(setImplementation);
         }
       }
     };

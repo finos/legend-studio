@@ -79,6 +79,27 @@ import { StudioLambdaEditor } from '../../../shared/StudioLambdaEditor';
 import { useApplicationStore } from '@finos/legend-application';
 import { getElementIcon } from '../../../shared/ElementIconUtils';
 import type { ClassPreviewRenderer } from '../../../../stores/LegendStudioPlugin';
+import {
+  class_addProperty,
+  class_deleteDerivedProperty,
+  class_addDerivedProperty,
+  class_addContraint,
+  class_addSuperType,
+  annotatedElement_addTaggedValue,
+  annotatedElement_addStereotype,
+  annotatedElement_deleteStereotype,
+  annotatedElement_deleteTaggedValue,
+  class_deleteConstraint,
+  class_deleteSuperType,
+  class_deleteProperty,
+  class_deleteSubclass,
+  class_addSubclass,
+  constraint_setName,
+  property_setName,
+  property_setGenericType,
+  property_setMultiplicity,
+  setGenericTypeReferenceValue,
+} from '../../../../stores/graphModifier/DomainGraphModifierHelper';
 
 const PropertyBasicEditor = observer(
   (props: {
@@ -99,7 +120,7 @@ const PropertyBasicEditor = observer(
       _class.properties.filter((p) => p.name === val.name).length >= 2;
     // Name
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
-      property.setName(event.target.value);
+      property_setName(property, event.target.value);
     };
     // Generic Type
     const [isEditingType, setIsEditingType] = useState(false);
@@ -117,7 +138,7 @@ const PropertyBasicEditor = observer(
       label: propertyType.name,
     };
     const changePropertyType = (val: PackageableElementOption<Type>): void => {
-      property.setGenericType(new GenericType(val.value));
+      property_setGenericType(property, new GenericType(val.value));
       setIsEditingType(false);
     };
     // Multiplicity
@@ -139,7 +160,7 @@ const PropertyBasicEditor = observer(
           ? upper
           : parseInt(upper, 10);
       if (!isNaN(lBound) && (uBound === undefined || !isNaN(uBound))) {
-        property.setMultiplicity(new Multiplicity(lBound, uBound));
+        property_setMultiplicity(property, new Multiplicity(lBound, uBound));
       }
     };
     const changeLowerBound: React.ChangeEventHandler<HTMLInputElement> = (
@@ -365,7 +386,7 @@ const DerivedPropertyBasicEditor = observer(
     const isInheritedProperty = derivedProperty.owner !== _class;
     // Name
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) =>
-      derivedProperty.setName(event.target.value);
+      property_setName(derivedProperty, event.target.value);
     // Generic Type
     const [isEditingType, setIsEditingType] = useState(false);
     const propertyTypeOptions = editorStore.classPropertyGenericTypeOptions;
@@ -382,7 +403,7 @@ const DerivedPropertyBasicEditor = observer(
       label: propertyType.name,
     };
     const changePropertyType = (val: PackageableElementOption<Type>): void => {
-      derivedProperty.setGenericType(new GenericType(val.value));
+      property_setGenericType(derivedProperty, new GenericType(val.value));
       setIsEditingType(false);
     };
     // Multiplicity
@@ -404,7 +425,10 @@ const DerivedPropertyBasicEditor = observer(
           ? upper
           : parseInt(upper, 10);
       if (!isNaN(lBound) && (uBound === undefined || !isNaN(uBound))) {
-        derivedProperty.setMultiplicity(new Multiplicity(lBound, uBound));
+        property_setMultiplicity(
+          derivedProperty,
+          new Multiplicity(lBound, uBound),
+        );
       }
     };
     const changeLowerBound: React.ChangeEventHandler<HTMLInputElement> = (
@@ -631,7 +655,7 @@ const ConstraintEditor = observer(
       editorState.classState.getConstraintState(constraint);
     // Name
     const changeName: React.ChangeEventHandler<HTMLInputElement> = (event) =>
-      constraint.setName(event.target.value);
+      constraint_setName(constraint, event.target.value);
     // Actions
     const remove = applicationStore.guardUnhandledError(async () => {
       await flowResult(
@@ -736,7 +760,7 @@ const SuperTypeEditor = observer(
     });
     const selectedType = { value: rawType, label: rawType.name };
     const changeType = (val: PackageableElementOption<Class>): void =>
-      superType.setValue(new GenericType(val.value));
+      setGenericTypeReferenceValue(superType, new GenericType(val.value));
     const visitDerivationSource = (): void => editorStore.openElement(rawType);
 
     return (
@@ -783,7 +807,7 @@ export const ClassFormEditor = observer(
     const { _class, editorState, onHashChange } = props;
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
-    const classHash = _class.isReadOnly
+    const classHash = editorStore.graphManagerState.isElementReadOnly(_class)
       ? undefined
       : applicationStore.notifyAndReturnAlternativeOnError(
           () => _class.hashCode,
@@ -819,19 +843,19 @@ export const ClassFormEditor = observer(
         setSelectedProperty(undefined);
       };
     // Tagged value and Stereotype
-    const deleteStereotype =
+    const _deleteStereotype =
       (val: StereotypeReference): (() => void) =>
       (): void =>
-        _class.deleteStereotype(val);
-    const deleteTaggedValue =
+        annotatedElement_deleteStereotype(_class, val);
+    const _deleteTaggedValue =
       (val: TaggedValue): (() => void) =>
       (): void =>
-        _class.deleteTaggedValue(val);
+        annotatedElement_deleteTaggedValue(_class, val);
     // Property
     const deleteProperty =
       (property: Property): (() => void) =>
       (): void => {
-        _class.deleteProperty(property);
+        class_deleteProperty(_class, property);
         if (property === selectedProperty) {
           setSelectedProperty(undefined);
         }
@@ -849,7 +873,7 @@ export const ClassFormEditor = observer(
     const deleteConstraint =
       (constraint: Constraint): (() => void) =>
       (): void => {
-        _class.deleteConstraint(constraint);
+        class_deleteConstraint(_class, constraint);
         classState.deleteConstraintState(constraint);
       };
     const inheritedConstraints = _class
@@ -859,9 +883,9 @@ export const ClassFormEditor = observer(
     const deleteSuperType =
       (superType: GenericTypeReference): (() => void) =>
       (): void => {
-        _class.deleteSuperType(superType);
+        class_deleteSuperType(_class, superType);
         if (superType.value.rawType instanceof Class) {
-          superType.value.rawType.deleteSubclass(_class);
+          class_deleteSubclass(superType.value.rawType, _class);
         }
       };
     const possibleSupertypes =
@@ -886,7 +910,7 @@ export const ClassFormEditor = observer(
     const deleteDerivedProperty =
       (dp: DerivedProperty): (() => void) =>
       (): void => {
-        _class.deleteDerivedProperty(dp);
+        class_deleteDerivedProperty(_class, dp);
         classState.deleteDerivedPropertyState(dp);
         if (dp === selectedProperty) {
           setSelectedProperty(undefined);
@@ -923,32 +947,35 @@ export const ClassFormEditor = observer(
     const add = (): void => {
       if (!isReadOnly) {
         if (selectedTab === UML_EDITOR_TAB.PROPERTIES) {
-          _class.addProperty(Property.createStub(defaultType, _class));
+          class_addProperty(_class, Property.createStub(defaultType, _class));
         } else if (selectedTab === UML_EDITOR_TAB.DERIVED_PROPERTIES) {
           const dp = DerivedProperty.createStub(defaultType, _class);
-          _class.addDerivedProperty(dp);
+          class_addDerivedProperty(_class, dp);
           classState.addDerivedPropertyState(dp);
         } else if (selectedTab === UML_EDITOR_TAB.CONSTRAINTS) {
           const constraint = Constraint.createStub(_class);
-          _class.addConstraint(constraint);
+          class_addContraint(_class, constraint);
           classState.addConstraintState(constraint);
         } else if (
           selectedTab === UML_EDITOR_TAB.SUPER_TYPES &&
           possibleSupertypes.length
         ) {
           const possibleSupertype = possibleSupertypes[0] as Class;
-          _class.addSuperType(
+          class_addSuperType(
+            _class,
             GenericTypeExplicitReference.create(
               new GenericType(possibleSupertype),
             ),
           );
-          possibleSupertype.addSubclass(_class);
+          class_addSubclass(possibleSupertype, _class);
         } else if (selectedTab === UML_EDITOR_TAB.TAGGED_VALUES) {
-          _class.addTaggedValue(
+          annotatedElement_addTaggedValue(
+            _class,
             TaggedValue.createStub(Tag.createStub(Profile.createStub())),
           );
         } else if (selectedTab === UML_EDITOR_TAB.STEREOTYPES) {
-          _class.addStereotype(
+          annotatedElement_addStereotype(
+            _class,
             StereotypeExplicitReference.create(
               Stereotype.createStub(Profile.createStub()),
             ),
@@ -960,7 +987,8 @@ export const ClassFormEditor = observer(
     const handleDropProperty = useCallback(
       (item: UMLEditorElementDropTarget): void => {
         if (!isReadOnly && item.data.packageableElement instanceof Type) {
-          _class.addProperty(
+          class_addProperty(
+            _class,
             Property.createStub(item.data.packageableElement, _class),
           );
         }
@@ -987,7 +1015,7 @@ export const ClassFormEditor = observer(
             item.data.packageableElement,
             _class,
           );
-          _class.addDerivedProperty(dp);
+          class_addDerivedProperty(_class, dp);
           classState.addDerivedPropertyState(dp);
         }
       },
@@ -1021,10 +1049,11 @@ export const ClassFormEditor = observer(
           // Must not have the current class as a super type
           !element.allSuperclasses.includes(_class)
         ) {
-          _class.addSuperType(
+          class_addSuperType(
+            _class,
             GenericTypeExplicitReference.create(new GenericType(element)),
           );
-          element.addSubclass(_class);
+          class_addSubclass(element, _class);
         }
       },
       [_class, isReadOnly],
@@ -1045,7 +1074,8 @@ export const ClassFormEditor = observer(
     const handleDropTaggedValue = useCallback(
       (item: UMLEditorElementDropTarget): void => {
         if (!isReadOnly && item.data.packageableElement instanceof Profile) {
-          _class.addTaggedValue(
+          annotatedElement_addTaggedValue(
+            _class,
             TaggedValue.createStub(
               Tag.createStub(item.data.packageableElement),
             ),
@@ -1067,7 +1097,8 @@ export const ClassFormEditor = observer(
     const handleDropStereotype = useCallback(
       (item: UMLEditorElementDropTarget): void => {
         if (!isReadOnly && item.data.packageableElement instanceof Profile) {
-          _class.addStereotype(
+          annotatedElement_addStereotype(
+            _class,
             StereotypeExplicitReference.create(
               Stereotype.createStub(item.data.packageableElement),
             ),
@@ -1295,7 +1326,7 @@ export const ClassFormEditor = observer(
                       <TaggedValueEditor
                         key={taggedValue.uuid}
                         taggedValue={taggedValue}
-                        deleteValue={deleteTaggedValue(taggedValue)}
+                        deleteValue={_deleteTaggedValue(taggedValue)}
                         isReadOnly={isReadOnly}
                       />
                     ))}
@@ -1313,7 +1344,7 @@ export const ClassFormEditor = observer(
                       <StereotypeSelector
                         key={stereotype.value.uuid}
                         stereotype={stereotype}
-                        deleteStereotype={deleteStereotype(stereotype)}
+                        deleteStereotype={_deleteStereotype(stereotype)}
                         isReadOnly={isReadOnly}
                       />
                     ))}

@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { computed, makeObservable } from 'mobx';
 import { fromElementPathToMappingElementId } from '../../../../../MetaModelUtils';
 import { InferableValue } from '../../InferableValue';
 
@@ -26,11 +25,6 @@ export abstract class InferableMappingElementIdValue extends InferableValue<
 
   constructor(value: string, defaultValue: string) {
     super(value);
-
-    makeObservable(this, {
-      isDefault: computed,
-    });
-
     this.defaultValue = defaultValue;
   }
 
@@ -40,14 +34,6 @@ export abstract class InferableMappingElementIdValue extends InferableValue<
 }
 
 export class InferableMappingElementIdExplicitValue extends InferableMappingElementIdValue {
-  constructor(value: string, defaultValue: string) {
-    super(value, defaultValue);
-
-    makeObservable(this, {
-      valueForSerialization: computed,
-    });
-  }
-
   static create(
     value: string,
     targetPath: string,
@@ -73,11 +59,6 @@ export class InferableMappingElementIdImplicitValue extends InferableMappingElem
 
   constructor(value: string, defaultValue: string, input: string | undefined) {
     super(value, defaultValue);
-
-    makeObservable(this, {
-      valueForSerialization: computed,
-    });
-
     this.input = input;
   }
 

@@ -1,5 +1,25 @@
 # @finos/legend-studio
 
+## 5.1.3
+
+### Patch Changes
+
+- [#1030](https://github.com/finos/legend-studio/pull/1030) [`36a575ee`](https://github.com/finos/legend-studio/commit/36a575ee93f170178771937878e64d0edda8691a) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix model loader not be able to select import config type.
+
+## 5.1.2
+
+## 5.1.1
+
+### Patch Changes
+
+- [#980](https://github.com/finos/legend-studio/pull/980) [`f95f5b42`](https://github.com/finos/legend-studio/commit/f95f5b429a017ecdac55f436e974d4f8f53d5f7c) ([@emilia-sokol-gs](https://github.com/emilia-sokol-gs)) - Add extension mechanism for loading models with model loader.
+
+## 5.1.0
+
+### Minor Changes
+
+- [#1004](https://github.com/finos/legend-studio/pull/1004) [`99c19279`](https://github.com/finos/legend-studio/commit/99c19279b19c15fa01cab5cf3389a20c036d62e3) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Rework the logic of resolving the generation parent for generated elements
+
 ## 5.0.0
 
 ### Major Changes

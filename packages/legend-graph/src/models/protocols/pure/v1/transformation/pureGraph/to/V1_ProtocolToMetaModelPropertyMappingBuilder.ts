@@ -89,7 +89,7 @@ import {
 } from '../../../../../../../helpers/MappingHelper';
 import { GraphBuilderError } from '../../../../../../../graphManager/GraphManagerUtils';
 import type { AbstractProperty } from '../../../../../../metamodels/pure/packageableElements/domain/AbstractProperty';
-import { BindingTransformer } from '../../../../../../metamodels/pure/packageableElements/externalFormat/store/BindingTransformer';
+import { BindingTransformer } from '../../../../../../metamodels/pure/packageableElements/externalFormat/store/DSLExternalFormat_BindingTransformer';
 import type { Mapping } from '../../../../../../metamodels/pure/packageableElements/mapping/Mapping';
 import { V1_resolveBinding } from './V1_DSLExternalFormat_GraphBuilderHelper';
 

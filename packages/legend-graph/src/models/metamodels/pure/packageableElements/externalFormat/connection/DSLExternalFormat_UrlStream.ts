@@ -15,23 +15,10 @@
  */
 
 import { type Hashable, hashArray } from '@finos/legend-shared';
-import { action, computed, makeObservable, observable } from 'mobx';
 import { DSL_EXTERNAL_FORMAT_HASH_STRUCTURE } from '../../../../../DSLExternalFormat_ModelUtils';
 
 export class UrlStream implements Hashable {
   url!: string;
-
-  constructor() {
-    makeObservable(this, {
-      url: observable,
-      hashCode: computed,
-      setUrl: action,
-    });
-  }
-
-  setUrl(val: string): void {
-    this.url = val;
-  }
 
   get hashCode(): string {
     return hashArray([DSL_EXTERNAL_FORMAT_HASH_STRUCTURE.URL_STREAM, this.url]);

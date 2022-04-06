@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { observable, action, computed, makeObservable } from 'mobx';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import { hashString } from '@finos/legend-shared';
 import {
@@ -35,20 +34,8 @@ export abstract class FlatDataSectionReference extends ReferenceWithOwner {
     value: FlatDataSection,
   ) {
     super(ownerReference);
-
-    makeObservable(this, {
-      value: observable,
-      setValue: action,
-      pointerHashCode: computed,
-    });
-
     this.ownerReference = ownerReference;
     this.value = value;
-  }
-
-  setValue(value: FlatDataSection): void {
-    this.value = value;
-    this.ownerReference.setValue(value.owner);
   }
 
   get pointerHashCode(): string {

@@ -63,6 +63,11 @@ import {
 } from '@finos/legend-graph';
 import type { DSLGenerationSpecification_LegendStudioPlugin_Extension } from '../DSLGenerationSpecification_LegendStudioPlugin_Extension';
 import { ExternalFormatState } from './ExternalFormatState';
+import { package_addElement } from '../graphModifier/DomainGraphModifierHelper';
+import {
+  generationSpecification_addFileGeneration,
+  generationSpecification_addGenerationElement,
+} from '../graphModifier/DSLGeneration_GraphModifierHelper';
 
 export const DEFAULT_GENERATION_SPECIFICATION_NAME =
   'MyGenerationSpecification';
@@ -377,15 +382,17 @@ export class GraphGenerationState {
           DEFAULT_GENERATION_SPECIFICATION_NAME,
         );
         modelGenerationElements.forEach((e) =>
-          generationSpec.addGenerationElement(e),
+          generationSpecification_addGenerationElement(generationSpec, e),
         );
-        fileGenerations.forEach((e) => generationSpec.addFileGeneration(e));
+        fileGenerations.forEach((e) =>
+          generationSpecification_addFileGeneration(generationSpec, e),
+        );
         // NOTE: add generation specification at the same package as the first generation element found.
         // we might want to revisit this decision?
         const specPackage = guaranteeNonNullable(
           [...modelGenerationElements, ...fileGenerations][0]?.package,
         );
-        specPackage.addElement(generationSpec);
+        package_addElement(specPackage, generationSpec);
         this.editorStore.graphManagerState.graph.addElement(generationSpec);
       }
     }

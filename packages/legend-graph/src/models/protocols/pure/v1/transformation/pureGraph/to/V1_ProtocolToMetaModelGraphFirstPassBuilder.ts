@@ -56,6 +56,7 @@ import type { V1_PackageableConnection } from '../../../model/packageableElement
 import type { V1_FileGenerationSpecification } from '../../../model/packageableElements/fileGeneration/V1_FileGenerationSpecification';
 import type { V1_Measure } from '../../../model/packageableElements/domain/V1_Measure';
 import type { V1_SectionIndex } from '../../../model/packageableElements/section/V1_SectionIndex';
+import { _package_addElement } from '../../../../../../../helpers/DomainHelper';
 
 export class V1_ProtocolToMetaModelGraphFirstPassBuilder
   implements V1_PackageableElementVisitor<PackageableElement>
@@ -112,9 +113,10 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
       !this.context.graph.getNullableElement(path),
       `Element '${path}' already exists`,
     );
-    this.context.currentSubGraph
-      .getOrCreatePackage(element.package)
-      .addElement(profile);
+    _package_addElement(
+      this.context.currentSubGraph.getOrCreatePackage(element.package),
+      profile,
+    );
     this.context.currentSubGraph.setOwnProfile(path, profile);
     return profile;
   }
@@ -137,9 +139,10 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
       !this.context.graph.getNullableElement(path),
       `Element '${path}' already exists`,
     );
-    this.context.currentSubGraph
-      .getOrCreatePackage(element.package)
-      .addElement(pureEnumeration);
+    _package_addElement(
+      this.context.currentSubGraph.getOrCreatePackage(element.package),
+      pureEnumeration,
+    );
     this.context.currentSubGraph.setOwnType(path, pureEnumeration);
     return pureEnumeration;
   }
@@ -162,9 +165,10 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
       !this.context.graph.getNullableElement(path),
       `Element '${path}' already exists`,
     );
-    this.context.currentSubGraph
-      .getOrCreatePackage(element.package)
-      .addElement(pureMeasure);
+    _package_addElement(
+      this.context.currentSubGraph.getOrCreatePackage(element.package),
+      pureMeasure,
+    );
     this.context.currentSubGraph.setOwnType(path, pureMeasure);
     return pureMeasure;
   }
@@ -187,9 +191,10 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
       !this.context.graph.getNullableElement(path),
       `Element '${path}' already exists`,
     );
-    this.context.currentSubGraph
-      .getOrCreatePackage(element.package)
-      .addElement(_class);
+    _package_addElement(
+      this.context.currentSubGraph.getOrCreatePackage(element.package),
+      _class,
+    );
     this.context.currentSubGraph.setOwnType(path, _class);
     return _class;
   }
@@ -212,9 +217,10 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
       !this.context.graph.getNullableElement(path),
       `Element '${path}' already exists`,
     );
-    this.context.currentSubGraph
-      .getOrCreatePackage(element.package)
-      .addElement(association);
+    _package_addElement(
+      this.context.currentSubGraph.getOrCreatePackage(element.package),
+      association,
+    );
     this.context.currentSubGraph.setOwnAssociation(path, association);
     return association;
   }
@@ -249,9 +255,10 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
       !this.context.graph.getNullableElement(path),
       `Element '${path}' already exists`,
     );
-    this.context.currentSubGraph
-      .getOrCreatePackage(element.package)
-      .addElement(func);
+    _package_addElement(
+      this.context.currentSubGraph.getOrCreatePackage(element.package),
+      func,
+    );
     this.context.currentSubGraph.setOwnFunction(path, func);
     return func;
   }
@@ -274,9 +281,10 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
       !this.context.graph.getNullableElement(path),
       `Element '${path}' already exists`,
     );
-    this.context.currentSubGraph
-      .getOrCreatePackage(element.package)
-      .addElement(flatData);
+    _package_addElement(
+      this.context.currentSubGraph.getOrCreatePackage(element.package),
+      flatData,
+    );
     this.context.currentSubGraph.setOwnStore(path, flatData);
     return flatData;
   }
@@ -299,9 +307,10 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
       !this.context.graph.getNullableElement(path),
       `Element '${path}' already exists`,
     );
-    this.context.currentSubGraph
-      .getOrCreatePackage(element.package)
-      .addElement(database);
+    _package_addElement(
+      this.context.currentSubGraph.getOrCreatePackage(element.package),
+      database,
+    );
     this.context.currentSubGraph.setOwnStore(path, database);
     return database;
   }
@@ -324,9 +333,10 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
       !this.context.graph.getNullableElement(path),
       `Element '${path}' already exists`,
     );
-    this.context.currentSubGraph
-      .getOrCreatePackage(element.package)
-      .addElement(pureMapping);
+    _package_addElement(
+      this.context.currentSubGraph.getOrCreatePackage(element.package),
+      pureMapping,
+    );
     this.context.currentSubGraph.setOwnMapping(path, pureMapping);
     return pureMapping;
   }
@@ -349,9 +359,10 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
       !this.context.graph.getNullableElement(path),
       `Element '${path}' already exists`,
     );
-    this.context.currentSubGraph
-      .getOrCreatePackage(element.package)
-      .addElement(service);
+    _package_addElement(
+      this.context.currentSubGraph.getOrCreatePackage(element.package),
+      service,
+    );
     this.context.currentSubGraph.setOwnService(path, service);
     return service;
   }
@@ -376,9 +387,10 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
       !this.context.graph.getNullableElement(path),
       `Element '${path}' already exists`,
     );
-    this.context.currentSubGraph
-      .getOrCreatePackage(element.package)
-      .addElement(fileGeneration);
+    _package_addElement(
+      this.context.currentSubGraph.getOrCreatePackage(element.package),
+      fileGeneration,
+    );
     this.context.currentSubGraph.setOwnFileGeneration(path, fileGeneration);
     return fileGeneration;
   }
@@ -404,9 +416,10 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
       !this.context.graph.getNullableElement(path),
       `Element '${path}' already exists`,
     );
-    this.context.currentSubGraph
-      .getOrCreatePackage(element.package)
-      .addElement(generationSpec);
+    _package_addElement(
+      this.context.currentSubGraph.getOrCreatePackage(element.package),
+      generationSpec,
+    );
     this.context.currentSubGraph.setOwnGenerationSpecification(
       path,
       generationSpec,
@@ -432,9 +445,10 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
       !this.context.graph.getNullableElement(path),
       `Element '${path}' already exists`,
     );
-    this.context.currentSubGraph
-      .getOrCreatePackage(element.package)
-      .addElement(runtime);
+    _package_addElement(
+      this.context.currentSubGraph.getOrCreatePackage(element.package),
+      runtime,
+    );
     this.context.currentSubGraph.setOwnRuntime(path, runtime);
     return runtime;
   }
@@ -459,9 +473,10 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
       !this.context.graph.getNullableElement(path),
       `Element '${path}' already exists`,
     );
-    this.context.currentSubGraph
-      .getOrCreatePackage(element.package)
-      .addElement(connection);
+    _package_addElement(
+      this.context.currentSubGraph.getOrCreatePackage(element.package),
+      connection,
+    );
     this.context.currentSubGraph.setOwnConnection(path, connection);
     return connection;
   }

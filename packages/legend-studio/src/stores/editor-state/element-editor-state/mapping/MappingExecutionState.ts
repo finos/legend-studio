@@ -46,6 +46,7 @@ import {
   createUrlStringFromData,
   losslessStringify,
   guaranteeType,
+  ContentType,
 } from '@finos/legend-shared';
 import { createMockDataForMappingElementSource } from '../../../shared/MockDataUtil';
 import { ExecutionPlanState } from '../../../ExecutionPlanState';
@@ -96,6 +97,22 @@ import {
   LambdaEditorState,
   TAB_SIZE,
 } from '@finos/legend-application';
+import { package_addElement } from '../../../graphModifier/DomainGraphModifierHelper';
+import {
+  objectInputData_setData,
+  runtime_addIdentifiedConnection,
+  runtime_addMapping,
+} from '../../../graphModifier/DSLMapping_GraphModifierHelper';
+import { flatData_setData } from '../../../graphModifier/StoreFlatData_GraphModifierHelper';
+import {
+  service_initNewService,
+  service_setExecution,
+} from '../../../graphModifier/DSLService_GraphModifierHelper';
+import {
+  localH2DatasourceSpecification_setTestDataSetupCsv,
+  localH2DatasourceSpecification_setTestDataSetupSqls,
+  relationalInputData_setInputType,
+} from '../../../graphModifier/StoreRelational_GraphModifierHelper';
 
 export class MappingExecutionQueryState extends LambdaEditorState {
   editorStore: EditorStore;
@@ -191,8 +208,12 @@ export const createRuntimeForExecution = (
   connection: Connection,
 ): Runtime => {
   const runtime = new EngineRuntime();
-  runtime.addMapping(PackageableElementExplicitReference.create(mapping));
-  runtime.addIdentifiedConnection(
+  runtime_addMapping(
+    runtime,
+    PackageableElementExplicitReference.create(mapping),
+  );
+  runtime_addIdentifiedConnection(
+    runtime,
     new IdentifiedConnection(
       runtime.generateIdentifiedConnectionId(),
       connection,
@@ -263,7 +284,7 @@ export class MappingExecutionObjectInputDataState extends MappingExecutionInputD
         ),
         createUrlStringFromData(
           tryToMinifyJSONString(this.inputData.data),
-          JsonModelConnection.CONTENT_TYPE,
+          ContentType.APPLICATION_JSON,
           engineConfig.useBase64ForAdhocConnectionDataUrls,
         ),
       ),
@@ -320,7 +341,7 @@ export class MappingExecutionFlatDataInputDataState extends MappingExecutionInpu
         ),
         createUrlStringFromData(
           this.inputData.data,
-          FlatDataConnection.CONTENT_TYPE,
+          ContentType.TEXT_PLAIN,
           engineConfig.useBase64ForAdhocConnectionDataUrls,
         ),
       ),
@@ -370,13 +391,17 @@ export class MappingExecutionRelationalInputDataState extends MappingExecutionIn
     const datasourceSpecification = new LocalH2DatasourceSpecification();
     switch (this.inputData.inputType) {
       case RelationalInputType.SQL:
-        datasourceSpecification.setTestDataSetupSqls(
+        localH2DatasourceSpecification_setTestDataSetupSqls(
+          datasourceSpecification,
           // NOTE: this is a gross simplification of handling the input for relational input data
           [this.inputData.data],
         );
         break;
       case RelationalInputType.CSV:
-        datasourceSpecification.setTestDataSetupCsv(this.inputData.data);
+        localH2DatasourceSpecification_setTestDataSetupCsv(
+          datasourceSpecification,
+          this.inputData.data,
+        );
         break;
       default:
         throw new UnsupportedOperationError(`Invalid input data type`);
@@ -493,7 +518,8 @@ export class MappingExecutionState {
         source,
       );
       if (populateWithMockData) {
-        newRuntimeState.inputData.setData(
+        objectInputData_setData(
+          newRuntimeState.inputData,
           createMockDataForMappingElementSource(source, this.editorStore),
         );
       }
@@ -505,7 +531,8 @@ export class MappingExecutionState {
         source,
       );
       if (populateWithMockData) {
-        newRuntimeState.inputData.setData(
+        flatData_setData(
+          newRuntimeState.inputData,
           createMockDataForMappingElementSource(source, this.editorStore),
         );
       }
@@ -517,7 +544,8 @@ export class MappingExecutionState {
         source.relation.value,
       );
       if (populateWithMockData) {
-        newRuntimeState.inputData.setData(
+        relationalInputData_setInputType(
+          newRuntimeState.inputData,
           createMockDataForMappingElementSource(source, this.editorStore),
         );
       }
@@ -587,7 +615,7 @@ export class MappingExecutionState {
           this.inputDataState instanceof MappingExecutionObjectInputDataState
         ) {
           const service = new Service(serviceName);
-          service.initNewService();
+          service_initNewService(service);
           const pureSingleExecution = new PureSingleExecution(
             query,
             service,
@@ -596,7 +624,7 @@ export class MappingExecutionState {
             ),
             this.inputDataState.runtime,
           );
-          service.setExecution(pureSingleExecution);
+          service_setExecution(service, pureSingleExecution);
           const singleExecutionTest = new SingleExecutionTest(
             service,
             tryToMinifyJSONString(this.inputDataState.inputData.data),
@@ -613,7 +641,7 @@ export class MappingExecutionState {
               packagePath,
             );
           service.test = singleExecutionTest;
-          servicePackage.addElement(service);
+          package_addElement(servicePackage, service);
           this.editorStore.graphManagerState.graph.addElement(service);
           this.editorStore.openElement(service);
         } else {

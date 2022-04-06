@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-query",
-  "version": "1.3.0",
+  "version": "1.3.4",
   "description": "Legend Query core",
   "keywords": [
     "legend",
@@ -31,7 +31,7 @@
     "clean:cache": "rimraf \"build\"",
     "clean:lib": "rimraf \"lib\"",
     "dev": "npm-run-all --parallel dev:sass dev:ts",
-    "dev:sass": "sass style lib --watch --load-path=../../node_modules/@finos/legend-art/scss",
+    "dev:sass": "sass style:lib --watch --load-path=../../node_modules/@finos/legend-art/scss",
     "dev:ts": "tsc --watch --preserveWatchOutput",
     "lint:js": "cross-env NODE_ENV=production eslint --cache --cache-location ./build/.eslintcache --report-unused-disable-directives --parser-options=project:\"./tsconfig.json\" \"./src/**/*.{js,ts,tsx}\"",
     "publish:prepare": "node ../../scripts/release/preparePublishContent.js",
@@ -61,8 +61,8 @@
     "monaco-editor": "0.33.0",
     "papaparse": "5.3.2",
     "react": "17.0.2",
-    "react-dnd": "15.1.1",
-    "react-dnd-html5-backend": "15.1.2",
+    "react-dnd": "15.1.2",
+    "react-dnd-html5-backend": "15.1.3",
     "react-dom": "17.0.2",
     "react-hotkeys": "2.0.0",
     "react-router": "5.2.1",
@@ -76,7 +76,7 @@
     "jest": "27.5.1",
     "npm-run-all": "4.1.5",
     "rimraf": "3.0.2",
-    "sass": "1.49.9",
+    "sass": "1.49.11",
     "typescript": "4.6.3"
   },
   "peerDependencies": {

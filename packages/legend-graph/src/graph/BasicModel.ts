@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { observable, computed, action, flow, makeObservable } from 'mobx';
 import {
   type Clazz,
   type GeneratorFn,
@@ -61,6 +60,10 @@ import {
   isValidPath,
   resolvePackagePathAndElementName,
 } from '../MetaModelUtils';
+import {
+  _package_addElement,
+  _package_deleteElement,
+} from '../helpers/DomainHelper';
 
 const FORBIDDEN_EXTENSION_ELEMENT_CLASS = new Set([
   PackageableElement,
@@ -94,11 +97,11 @@ const FORBIDDEN_EXTENSION_ELEMENT_CLASS = new Set([
  */
 export abstract class BasicModel {
   root: Package;
+  readonly extensions: PureGraphExtension<PackageableElement>[] = [];
 
   // FIXME: to be moved, this is graph-manager logic and should be moved elsewhere
   buildState = ActionState.create();
 
-  private readonly extensions: PureGraphExtension<PackageableElement>[] = [];
   private elementSectionMap = new Map<string, Section>();
 
   private sectionIndicesIndex = new Map<string, SectionIndex>();
@@ -127,78 +130,6 @@ export abstract class BasicModel {
     rootPackageName: ROOT_PACKAGE_NAME,
     extensionElementClasses: Clazz<PackageableElement>[],
   ) {
-    makeObservable<
-      BasicModel,
-      | 'elementSectionMap'
-      | 'sectionIndicesIndex'
-      | 'profilesIndex'
-      | 'typesIndex'
-      | 'associationsIndex'
-      | 'functionsIndex'
-      | 'storesIndex'
-      | 'mappingsIndex'
-      | 'connectionsIndex'
-      | 'runtimesIndex'
-      | 'servicesIndex'
-      | 'generationSpecificationsIndex'
-      | 'fileGenerationsIndex'
-      | 'extensions'
-    >(this, {
-      elementSectionMap: observable,
-      sectionIndicesIndex: observable,
-      profilesIndex: observable,
-      typesIndex: observable,
-      associationsIndex: observable,
-      functionsIndex: observable,
-      storesIndex: observable,
-      mappingsIndex: observable,
-      connectionsIndex: observable,
-      runtimesIndex: observable,
-      servicesIndex: observable,
-      generationSpecificationsIndex: observable,
-      fileGenerationsIndex: observable,
-      extensions: observable,
-
-      ownSectionIndices: computed,
-      ownProfiles: computed,
-      ownEnumerations: computed,
-      ownMeasures: computed,
-      ownUnits: computed,
-      ownClasses: computed,
-      ownTypes: computed,
-      ownAssociations: computed,
-      ownFunctions: computed,
-      ownStores: computed,
-      ownFlatDatas: computed,
-      ownDatabases: computed,
-      ownMappings: computed,
-      ownServices: computed,
-      ownRuntimes: computed,
-      ownConnections: computed,
-      ownFileGenerations: computed,
-      ownGenerationSpecifications: computed,
-      allOwnElements: computed,
-
-      dispose: flow,
-
-      setOwnSection: action,
-      setOwnSectionIndex: action,
-      setOwnProfile: action,
-      setOwnType: action,
-      setOwnAssociation: action,
-      setOwnFunction: action,
-      setOwnStore: action,
-      setOwnMapping: action,
-      setOwnConnection: action,
-      setOwnRuntime: action,
-      setOwnService: action,
-      setOwnGenerationSpecification: action,
-      setOwnFileGeneration: action,
-      deleteOwnElement: action,
-      renameOwnElement: action,
-      TEMPORARY__deleteOwnSectionIndex: action,
-    });
-
     this.root = new Package(rootPackageName);
     this.extensions = this.createGraphExtensions(extensionElementClasses);
   }
@@ -452,6 +383,7 @@ export abstract class BasicModel {
     }
   }
 
+  // TODO
   buildPath = (
     packagePath: string | undefined,
     name: string | undefined,
@@ -510,7 +442,7 @@ export abstract class BasicModel {
 
   deleteOwnElement(element: PackageableElement): void {
     if (element.package) {
-      element.package.deleteElement(element);
+      _package_deleteElement(element.package, element);
     }
     if (element instanceof Mapping) {
       this.mappingsIndex.delete(element.path);
@@ -589,12 +521,13 @@ export abstract class BasicModel {
         this.getNullablePackage(packagePath) ??
         (packagePath !== '' ? this.getOrCreatePackage(packagePath) : this.root);
       // update element name
-      element.setName(elementName);
+      element.name = elementName;
       // update element package if needed
       if (element.package !== parentPackage) {
-        element.package?.deleteElement(element);
-        element.setPackage(parentPackage);
-        parentPackage.addChild(element);
+        if (element.package) {
+          _package_deleteElement(element.package, element);
+        }
+        _package_addElement(parentPackage, element);
       }
     }
 
@@ -656,7 +589,7 @@ export abstract class BasicModel {
         childElements.set(childElement.path, childElement);
       });
       // update element name
-      element.setName(elementName);
+      element.name = elementName;
       if (!element.package) {
         throw new IllegalStateError(`Can't rename root package`);
       }
@@ -671,11 +604,10 @@ export abstract class BasicModel {
        */
       const currentParentPackage = element.package;
       if (currentParentPackage !== this.getNullablePackage(packagePath)) {
-        currentParentPackage.deleteElement(element);
+        _package_deleteElement(currentParentPackage, element);
         const newParentPackage =
           packagePath !== '' ? this.getOrCreatePackage(packagePath) : this.root;
-        element.setPackage(newParentPackage);
-        newParentPackage.addChild(element);
+        _package_addElement(newParentPackage, element);
       }
       childElements.forEach((childElement, childElementOriginalPath) => {
         this.renameOwnElement(

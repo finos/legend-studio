@@ -14,22 +14,11 @@
  * limitations under the License.
  */
 
-import { computed, makeObservable } from 'mobx';
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import { RelationshipView } from './DSLDiagram_RelationshipView';
-import type { Diagram } from './DSLDiagram_Diagram';
-import type { ClassView } from './DSLDiagram_ClassView';
 import { DIAGRAM_HASH_STRUCTURE } from '../../../../DSLDiagram_ModelUtils';
 
 export class GeneralizationView extends RelationshipView implements Hashable {
-  constructor(owner: Diagram, from: ClassView, to: ClassView) {
-    super(owner, from, to);
-
-    makeObservable(this, {
-      hashCode: computed,
-    });
-  }
-
   override get hashCode(): string {
     return hashArray([
       DIAGRAM_HASH_STRUCTURE.GENERALIZATION_VIEW,

@@ -1,5 +1,25 @@
 # @finos/legend-graph
 
+## 2.1.3
+
+## 2.1.2
+
+### Patch Changes
+
+- [#1017](https://github.com/finos/legend-studio/pull/1017) [`0dd7cc2e`](https://github.com/finos/legend-studio/commit/0dd7cc2ebf1ee068b394d052003c3442e298ff63) ([@gayathrir11](https://github.com/gayathrir11)) - Fix `Binding` element appearing multiple times in explorer tree.
+
+## 2.1.1
+
+### Patch Changes
+
+- [#980](https://github.com/finos/legend-studio/pull/980) [`f95f5b42`](https://github.com/finos/legend-studio/commit/f95f5b429a017ecdac55f436e974d4f8f53d5f7c) ([@emilia-sokol-gs](https://github.com/emilia-sokol-gs)) - Add extension mechanism for loading models with model loader.
+
+## 2.1.0
+
+### Minor Changes
+
+- [#1004](https://github.com/finos/legend-studio/pull/1004) [`99c19279`](https://github.com/finos/legend-studio/commit/99c19279b19c15fa01cab5cf3389a20c036d62e3) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Rework the logic of resolving the generation parent for generated elements
+
 ## 2.0.4
 
 ## 2.0.3

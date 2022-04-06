@@ -14,14 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  type Hashable,
-  hashArray,
-  addUniqueEntry,
-  deleteEntry,
-  changeEntry,
-} from '@finos/legend-shared';
-import { observable, action, makeObservable, override } from 'mobx';
+import { type Hashable, hashArray } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import type {
   PackageableElementVisitor,
@@ -40,57 +33,6 @@ export class FileGenerationSpecification
   scopeElements: (PackageableElementReference<PackageableElement> | string)[] =
     [];
   configurationProperties: ConfigurationProperty[] = [];
-
-  constructor(name: string) {
-    super(name);
-
-    makeObservable<FileGenerationSpecification, '_elementHashCode'>(this, {
-      type: observable,
-      generationOutputPath: observable,
-      scopeElements: observable,
-      configurationProperties: observable,
-      setGenerationOutputPath: action,
-      setType: action,
-      setScopeElements: action,
-      addScopeElement: action,
-      deleteScopeElement: action,
-      changeScopeElement: action,
-      _elementHashCode: override,
-    });
-  }
-
-  setType(value: string): void {
-    this.type = value;
-  }
-
-  setGenerationOutputPath(val?: string): void {
-    this.generationOutputPath = val;
-  }
-
-  setScopeElements(
-    value: (PackageableElementReference<PackageableElement> | string)[],
-  ): void {
-    this.scopeElements = value;
-  }
-
-  addScopeElement(
-    value: PackageableElementReference<PackageableElement> | string,
-  ): void {
-    addUniqueEntry(this.scopeElements, value);
-  }
-
-  deleteScopeElement(
-    value: PackageableElementReference<PackageableElement> | string,
-  ): void {
-    deleteEntry(this.scopeElements, value);
-  }
-
-  changeScopeElement(
-    oldValue: PackageableElementReference<PackageableElement> | string,
-    newValue: PackageableElementReference<PackageableElement> | string,
-  ): void {
-    changeEntry(this.scopeElements, oldValue, newValue);
-  }
 
   getConfigValue(name: string): unknown | undefined {
     return this.getConfig(name)?.value;

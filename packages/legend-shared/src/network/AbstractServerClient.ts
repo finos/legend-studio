@@ -60,6 +60,7 @@ export abstract class AbstractServerClient {
       baseUrl: config.baseUrl,
       options: config.networkClientOptions,
     });
+
     this.baseUrl = config.baseUrl;
     this.enableCompression = Boolean(config.enableCompression);
     this.baseHeaders = config.baseHeaders;

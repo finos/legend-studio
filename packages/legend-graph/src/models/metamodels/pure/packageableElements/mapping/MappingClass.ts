@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { observable, makeObservable } from 'mobx';
 import type { SetImplementation } from './SetImplementation';
 import { Class } from '../domain/Class';
 import type { Property } from '../domain/Property';
@@ -23,12 +22,4 @@ export class MappingClass extends Class {
   setImplementation?: SetImplementation | undefined;
   class?: Class | undefined;
   localProperties: Property[] = [];
-
-  constructor(name: string) {
-    super(name);
-    makeObservable(this, {
-      setImplementation: observable,
-      class: observable,
-    });
-  }
 }

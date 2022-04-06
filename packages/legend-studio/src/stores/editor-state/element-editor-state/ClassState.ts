@@ -33,6 +33,11 @@ import {
   buildSourceInformationSourceId,
 } from '@finos/legend-graph';
 import { LambdaEditorState } from '@finos/legend-application';
+import {
+  constraint_setFunctionDefinition,
+  derivedProperty_setBody,
+  derivedProperty_setParameters,
+} from '../../graphModifier/DomainGraphModifierHelper';
 
 export const CONSTRAINT_SOURCE_ID_LABEL = 'constraint';
 export const DERIVED_PROPERTY_SOURCE_ID_LABEL = 'derivedProperty';
@@ -64,8 +69,8 @@ export class DerivedPropertyState extends LambdaEditorState {
   }
 
   setBodyAndParameters(lambda: RawLambda): void {
-    this.derivedProperty.setBody(lambda.body);
-    this.derivedProperty.setParameters(lambda.parameters);
+    derivedProperty_setBody(this.derivedProperty, lambda.body);
+    derivedProperty_setParameters(this.derivedProperty, lambda.parameters);
   }
 
   *convertLambdaGrammarStringToObject(): GeneratorFn<void> {
@@ -167,7 +172,10 @@ export class ConstraintState extends LambdaEditorState {
             this.lambdaId,
           )) as RawLambda | undefined;
         this.setParserError(undefined);
-        this.constraint.functionDefinition = lambda ?? emptyFunctionDefinition;
+        constraint_setFunctionDefinition(
+          this.constraint,
+          lambda ?? emptyFunctionDefinition,
+        );
       } catch (error) {
         assertErrorThrown(error);
         if (error instanceof ParserError) {
@@ -180,7 +188,10 @@ export class ConstraintState extends LambdaEditorState {
       }
     } else {
       this.clearErrors();
-      this.constraint.functionDefinition = emptyFunctionDefinition;
+      constraint_setFunctionDefinition(
+        this.constraint,
+        emptyFunctionDefinition,
+      );
     }
   }
 

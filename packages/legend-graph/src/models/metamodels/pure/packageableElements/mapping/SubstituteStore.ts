@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { observable, makeObservable } from 'mobx';
 import type { Store } from '../store/Store';
 import type { PackageableElementReference } from '../PackageableElementReference';
 import type { MappingInclude } from './MappingInclude';
@@ -29,11 +28,6 @@ export class SubstituteStore {
     original: PackageableElementReference<Store>,
     substitue: PackageableElementReference<Store>,
   ) {
-    makeObservable(this, {
-      original: observable,
-      substitute: observable,
-    });
-
     this.owner = owner;
     this.original = original;
     this.substitute = substitue;

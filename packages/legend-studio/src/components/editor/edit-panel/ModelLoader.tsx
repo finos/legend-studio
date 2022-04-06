@@ -29,7 +29,6 @@ import {
   TruckLoadingIcon,
   EmptySquareIcon,
 } from '@finos/legend-art';
-import type { ImportConfigurationDescription } from '@finos/legend-graph';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../EditorStoreProvider';
 import {
@@ -39,6 +38,7 @@ import {
   EDITOR_LANGUAGE,
 } from '@finos/legend-application';
 import { StudioTextInputEditor } from '../../shared/StudioTextInputEditor';
+import type { ModelLoaderExtensionConfiguration } from '../../../stores/LegendStudioPlugin';
 
 export const ModelLoader = observer(() => {
   const editorStore = useEditorStore();
@@ -46,20 +46,10 @@ export const ModelLoader = observer(() => {
   const modelLoaderState = editorStore.getCurrentEditorState(ModelLoaderState);
   const nativeInputTypes = Object.values(MODEL_UPDATER_INPUT_TYPE);
   const externalFormatInputTypes = modelLoaderState.modelImportDescriptions;
+  const extraModelLoaderExtensionsConfigs =
+    modelLoaderState.modelLoaderExtensionConfigurations;
   // input type
-  const currentInputType = modelLoaderState.currentInputType;
-  const currentExternalInputType = modelLoaderState.currentExternalInputType;
-  const currentExternalInputLabel = currentExternalInputType
-    ? modelLoaderState.getImportConfiguration(currentExternalInputType).label
-    : undefined;
-  const setCurrentInputType =
-    (inputType: MODEL_UPDATER_INPUT_TYPE): (() => void) =>
-    (): void =>
-      modelLoaderState.setCurrentInputType(inputType);
-  const setCurrentExternalInput =
-    (inputType: ImportConfigurationDescription): (() => void) =>
-    (): void =>
-      modelLoaderState.setCurrentExternalFormatInputType(inputType);
+  const currentModelLoadType = modelLoaderState.currentModelLoadType;
   // replace flag
   const replace = modelLoaderState.replace;
   const toggleReplace = (): void => modelLoaderState.setReplaceFlag(!replace);
@@ -67,8 +57,30 @@ export const ModelLoader = observer(() => {
   const loadCurrentProjectEntities = applicationStore.guardUnhandledError(() =>
     flowResult(modelLoaderState.loadCurrentProjectEntities()),
   );
+  const setCurrentInputType =
+    (inputType: string | MODEL_UPDATER_INPUT_TYPE): (() => void) =>
+    (): void => {
+      modelLoaderState.setCurrentModelLoadType(inputType);
+    };
+  const loaderExtensionConfig =
+    modelLoaderState.getLoaderExtensionConfiguration(currentModelLoadType);
+  const label =
+    modelLoaderState.getImportConfigurationDescription(currentModelLoadType)
+      ?.label ??
+    loaderExtensionConfig?.modelGenerationConfig.label ??
+    loaderExtensionConfig?.modelGenerationConfig.key ??
+    currentModelLoadType;
+  const allowHardReplace =
+    !loaderExtensionConfig || loaderExtensionConfig.allowHardReplace;
+  const isNativeInput = Object.values(MODEL_UPDATER_INPUT_TYPE).includes(
+    currentModelLoadType as MODEL_UPDATER_INPUT_TYPE,
+  );
   const loadModel = (): void => {
-    if (editorStore.hasUnpushedChanges) {
+    if (loaderExtensionConfig) {
+      loaderExtensionConfig
+        .load(editorStore)
+        .catch(applicationStore.alertUnhandledError);
+    } else if (editorStore.hasUnpushedChanges) {
       editorStore.setActionAltertInfo({
         message: 'You have unpushed changes',
         prompt:
@@ -138,11 +150,39 @@ export const ModelLoader = observer(() => {
                           <MenuContentItem
                             key={inputType.key}
                             className="model-loader__header__configs__type-option__group__option"
-                            onClick={setCurrentExternalInput(inputType)}
+                            onClick={setCurrentInputType(inputType.key)}
                           >
                             {inputType.label}
                           </MenuContentItem>
                         ))}
+                      </div>
+                    </div>
+                  </>
+                )}
+                {Boolean(extraModelLoaderExtensionsConfigs.length > 0) && (
+                  <>
+                    <div className="model-loader__header__configs__type-option__group__separator" />
+                    <div className="model-loader__header__configs__type-option__group model-loader__header__configs__type-option__group--extension">
+                      <div className="model-loader__header__configs__type-option__group__name">
+                        extensions
+                      </div>
+                      <div className="model-loader__header__configs__type-option__group__options">
+                        {extraModelLoaderExtensionsConfigs.map(
+                          (config: ModelLoaderExtensionConfiguration) => (
+                            <MenuContentItem
+                              key={config.modelGenerationConfig.key}
+                              className="model-loader__header__configs__type-option__group__option"
+                              onClick={setCurrentInputType(
+                                config.modelGenerationConfig.key,
+                              )}
+                            >
+                              {config.modelGenerationConfig.label ??
+                                prettyCONSTName(
+                                  config.modelGenerationConfig.key,
+                                )}
+                            </MenuContentItem>
+                          ),
+                        )}
                       </div>
                     </div>
                   </>
@@ -156,27 +196,27 @@ export const ModelLoader = observer(() => {
           >
             <div className="model-loader__header__configs__type">
               <div className="model-loader__header__configs__type__label">
-                {currentExternalInputType
-                  ? currentExternalInputLabel
-                  : prettyCONSTName(currentInputType)}
+                {prettyCONSTName(label)}
               </div>
               <div className="model-loader__header__configs__type__icon">
                 <CaretDownIcon />
               </div>
             </div>
           </DropdownMenu>
-          <div
-            className="model-loader__header__configs__edit-mode"
-            onClick={toggleReplace}
-          >
-            <div className="model-loader__header__configs__edit-mode__icon">
-              {replace ? <CheckSquareIcon /> : <EmptySquareIcon />}
+          {allowHardReplace && (
+            <div
+              className="model-loader__header__configs__edit-mode"
+              onClick={toggleReplace}
+            >
+              <div className="model-loader__header__configs__edit-mode__icon">
+                {replace ? <CheckSquareIcon /> : <EmptySquareIcon />}
+              </div>
+              <div className="model-loader__header__configs__edit-mode__label">
+                replace
+              </div>
             </div>
-            <div className="model-loader__header__configs__edit-mode__label">
-              replace
-            </div>
-          </div>
-          {!modelLoaderState.currentExternalInputType && (
+          )}
+          {isNativeInput && (
             <button
               className="model-loader__header__configs__load-project-entities-btn"
               tabIndex={-1}
@@ -200,12 +240,14 @@ export const ModelLoader = observer(() => {
         </div>
       </div>
       <div className="panel__content model-loader__editor">
-        <StudioTextInputEditor
-          language={EDITOR_LANGUAGE.JSON}
-          inputValue={modelLoaderState.modelText}
-          updateInput={updateModel}
-          showMiniMap={true}
-        />
+        {loaderExtensionConfig?.renderer(editorStore) ?? (
+          <StudioTextInputEditor
+            language={EDITOR_LANGUAGE.JSON}
+            inputValue={modelLoaderState.modelText}
+            updateInput={updateModel}
+            showMiniMap={true}
+          />
+        )}
       </div>
     </div>
   );

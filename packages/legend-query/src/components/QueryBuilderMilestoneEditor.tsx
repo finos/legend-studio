@@ -51,6 +51,7 @@ import {
 import { Dialog, CustomSelectorInput, RefreshIcon } from '@finos/legend-art';
 import format from 'date-fns/format/index';
 import { addDays } from 'date-fns';
+import { genericType_setRawType } from '../stores/QueryBuilderGraphModifierHelper';
 
 const MilestoningParameterEditor = observer(
   (props: { queryBuilderState: QueryBuilderState; parameterIndex: number }) => {
@@ -122,7 +123,10 @@ const MilestoningParameterEditor = observer(
         .map((p) => buildElementOption(p) as PackageableElementOption<Type>);
     const changeType = (val: PackageableElementOption<Type>): void => {
       if (variableType !== val.value) {
-        milestoningParameter?.genericType?.value.setRawType(val.value);
+        const genType = milestoningParameter?.genericType?.value;
+        if (genType) {
+          genericType_setRawType(genType, val.value);
+        }
       }
       if (
         milestoningParameter instanceof PrimitiveInstanceValue &&

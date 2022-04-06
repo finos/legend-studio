@@ -14,14 +14,7 @@
  * limitations under the License.
  */
 
-import { observable, computed, makeObservable, action } from 'mobx';
-import {
-  type Hashable,
-  addUniqueEntry,
-  changeEntry,
-  deleteEntry,
-  hashArray,
-} from '@finos/legend-shared';
+import { type Hashable, hashArray } from '@finos/legend-shared';
 import type { PackageableElementReference } from '../../PackageableElementReference';
 import type { PackageableElement } from '../../PackageableElement';
 import { DSL_EXTERNAL_FORMAT_HASH_STRUCTURE } from '../../../../../DSLExternalFormat_ModelUtils';
@@ -31,58 +24,6 @@ export class ModelUnit implements Hashable {
     [];
   packageableElementExcludes: PackageableElementReference<PackageableElement>[] =
     [];
-
-  constructor() {
-    makeObservable(this, {
-      packageableElementIncludes: observable,
-      packageableElementExcludes: observable,
-      hashCode: computed,
-      addPackageableElementIncludes: action,
-      deletePackageableElementIncludes: action,
-      updatePackageableElementIncludes: action,
-      addPackageableElementExcludes: action,
-      deletePackageableElementExcludes: action,
-      updatePackageableElementExcludes: action,
-    });
-  }
-
-  addPackageableElementIncludes(
-    value: PackageableElementReference<PackageableElement>,
-  ): void {
-    addUniqueEntry(this.packageableElementIncludes, value);
-  }
-
-  deletePackageableElementIncludes(
-    value: PackageableElementReference<PackageableElement>,
-  ): void {
-    deleteEntry(this.packageableElementIncludes, value);
-  }
-
-  updatePackageableElementIncludes(
-    oldValue: PackageableElementReference<PackageableElement>,
-    newValue: PackageableElementReference<PackageableElement>,
-  ): void {
-    changeEntry(this.packageableElementIncludes, oldValue, newValue);
-  }
-
-  addPackageableElementExcludes(
-    value: PackageableElementReference<PackageableElement>,
-  ): void {
-    addUniqueEntry(this.packageableElementExcludes, value);
-  }
-
-  deletePackageableElementExcludes(
-    value: PackageableElementReference<PackageableElement>,
-  ): void {
-    deleteEntry(this.packageableElementExcludes, value);
-  }
-
-  updatePackageableElementExcludes(
-    oldValue: PackageableElementReference<PackageableElement>,
-    newValue: PackageableElementReference<PackageableElement>,
-  ): void {
-    changeEntry(this.packageableElementExcludes, oldValue, newValue);
-  }
 
   get hashCode(): string {
     return hashArray([

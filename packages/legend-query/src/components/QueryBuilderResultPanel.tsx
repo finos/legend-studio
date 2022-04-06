@@ -173,10 +173,10 @@ export const QueryBuilderResultPanel = observer(
       }
     };
     const generatePlan = applicationStore.guardUnhandledError(() =>
-      flowResult(resultState.generatePlan(true)),
+      flowResult(resultState.generatePlan(false)),
     );
     const debugPlanGeneration = applicationStore.guardUnhandledError(() =>
-      flowResult(resultState.generatePlan(false)),
+      flowResult(resultState.generatePlan(true)),
     );
     const planText = resultState.executionPlan
       ? JSON.stringify(resultState.executionPlan, undefined, TAB_SIZE)

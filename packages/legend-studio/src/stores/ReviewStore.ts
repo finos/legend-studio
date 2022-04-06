@@ -69,22 +69,20 @@ export class ReviewStore {
   *initialize(): GeneratorFn<void> {
     try {
       // setup engine
-      yield flowResult(
-        this.editorStore.graphManagerState.graphManager.initialize(
-          {
-            env: this.editorStore.applicationStore.config.env,
-            tabSize: TAB_SIZE,
-            clientConfig: {
-              baseUrl: this.editorStore.applicationStore.config.engineServerUrl,
-              queryBaseUrl:
-                this.editorStore.applicationStore.config.engineQueryServerUrl,
-              enableCompression: true,
-            },
+      yield this.editorStore.graphManagerState.graphManager.initialize(
+        {
+          env: this.editorStore.applicationStore.config.env,
+          tabSize: TAB_SIZE,
+          clientConfig: {
+            baseUrl: this.editorStore.applicationStore.config.engineServerUrl,
+            queryBaseUrl:
+              this.editorStore.applicationStore.config.engineQueryServerUrl,
+            enableCompression: true,
           },
-          {
-            tracerService: this.editorStore.applicationStore.tracerService,
-          },
-        ),
+        },
+        {
+          tracerService: this.editorStore.applicationStore.tracerService,
+        },
       );
     } catch (error) {
       assertErrorThrown(error);

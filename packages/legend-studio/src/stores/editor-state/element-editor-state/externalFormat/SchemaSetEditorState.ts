@@ -49,6 +49,7 @@ import { type EntityChange, EntityChangeType } from '@finos/legend-server-sdlc';
 import type { EditorStore } from '../../../EditorStore';
 import { ElementEditorState } from '../ElementEditorState';
 import { LEGEND_STUDIO_APP_EVENT } from '../../../LegendStudioAppEvent';
+import { configurationProperty_setValue } from '../../../graphModifier/DSLGeneration_GraphModifierHelper';
 
 export enum SCHEMA_SET_TAB_TYPE {
   GENERAL = 'GENERAL',
@@ -120,7 +121,9 @@ export class SchemaSetModelGenerationState {
       } else {
         const configProperty = this.getConfig(generationProperty.name);
         if (configProperty) {
-          configProperty.setValue({ ...(newValue as object) });
+          configurationProperty_setValue(configProperty, {
+            ...(newValue as object),
+          });
         } else {
           const newItem = new ConfigurationProperty(
             generationProperty.name,
@@ -140,7 +143,7 @@ export class SchemaSetModelGenerationState {
       const newConfigValue = useDefaultValue ? undefined : newValue;
       if (newConfigValue !== undefined) {
         if (configProperty) {
-          configProperty.setValue(newConfigValue);
+          configurationProperty_setValue(configProperty, newConfigValue);
         } else {
           const newItem = new ConfigurationProperty(
             generationProperty.name,

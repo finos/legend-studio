@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { observable, action, computed, makeObservable } from 'mobx';
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import { InputData } from '../../../mapping/InputData';
@@ -38,20 +37,8 @@ export class FlatDataInputData extends InputData implements Hashable {
     data: string,
   ) {
     super();
-
-    makeObservable(this, {
-      data: observable,
-      setData: action,
-      validationResult: computed,
-      hashCode: computed,
-    });
-
     this.sourceFlatData = sourceFlatData;
     this.data = data;
-  }
-
-  setData(value: string): void {
-    this.data = value;
   }
 
   get validationResult(): ValidationIssue | undefined {

@@ -17,29 +17,15 @@
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import {
   Connection,
-  type ConnectionVisitor,
   type PackageableElementReference,
+  type ConnectionVisitor,
 } from '@finos/legend-graph';
-import { action, computed, makeObservable, observable } from 'mobx';
 import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../ESService_ModelUtils';
 import type { ServiceStore } from '../model/ESService_ServiceStore';
 
 export class ServiceStoreConnection extends Connection implements Hashable {
+  declare store: PackageableElementReference<ServiceStore>;
   baseUrl!: string;
-
-  constructor(store: PackageableElementReference<ServiceStore>) {
-    super(store);
-
-    makeObservable(this, {
-      baseUrl: observable,
-      setUrl: action,
-      hashCode: computed,
-    });
-  }
-
-  setUrl(value: string): void {
-    this.baseUrl = value;
-  }
 
   get hashCode(): string {
     return hashArray([

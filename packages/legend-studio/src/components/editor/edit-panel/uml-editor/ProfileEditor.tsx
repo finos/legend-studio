@@ -30,12 +30,19 @@ import {
 import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID';
 import { useEditorStore } from '../../EditorStoreProvider';
 import { type Profile, Tag, Stereotype } from '@finos/legend-graph';
+import {
+  profile_addTag,
+  profile_addStereotype,
+  profile_deleteTag,
+  profile_deleteStereotype,
+  tagStereotype_setValue,
+} from '../../../../stores/graphModifier/DomainGraphModifierHelper';
 
 const TagBasicEditor = observer(
   (props: { tag: Tag; deleteValue: () => void; isReadOnly: boolean }) => {
     const { tag, deleteValue, isReadOnly } = props;
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
-      tag.setValue(event.target.value);
+      tagStereotype_setValue(tag, event.target.value);
     };
     const isTagDuplicated = (val: Tag): boolean =>
       tag.owner.tags.filter((t) => t.value === val.value).length >= 2;
@@ -77,7 +84,7 @@ const StereotypeBasicEditor = observer(
   }) => {
     const { stereotype, deleteStereotype, isReadOnly } = props;
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
-      stereotype.setValue(event.target.value);
+      tagStereotype_setValue(stereotype, event.target.value);
     };
     const isStereotypeDuplicated = (val: Stereotype): boolean =>
       stereotype.owner.stereotypes.filter((s) => s.value === val.value)
@@ -141,20 +148,20 @@ export const ProfileEditor = observer((props: { profile: Profile }) => {
   const addValue = (): void => {
     if (!isReadOnly) {
       if (selectedTab === UML_EDITOR_TAB.TAGS) {
-        profile.addTag(Tag.createStub(profile));
+        profile_addTag(profile, Tag.createStub(profile));
       } else if (selectedTab === UML_EDITOR_TAB.STEREOTYPES) {
-        profile.addStereotype(Stereotype.createStub(profile));
+        profile_addStereotype(profile, Stereotype.createStub(profile));
       }
     }
   };
   const deleteStereotype =
     (val: Stereotype): (() => void) =>
     (): void =>
-      profile.deleteStereotype(val);
+      profile_deleteStereotype(profile, val);
   const deleteTag =
     (val: Tag): (() => void) =>
     (): void =>
-      profile.deleteTag(val);
+      profile_deleteTag(profile, val);
   return (
     <div className="uml-element-editor profile-editor">
       <div className="panel">

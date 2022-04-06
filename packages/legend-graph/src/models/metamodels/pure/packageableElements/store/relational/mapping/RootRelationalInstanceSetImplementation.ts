@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { observable, computed, makeObservable, action } from 'mobx';
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import type { SetImplementationVisitor } from '../../../mapping/SetImplementation';
@@ -26,12 +25,6 @@ import type { ColumnMapping } from '../model/ColumnMapping';
 import { RelationalInstanceSetImplementation } from './RelationalInstanceSetImplementation';
 import type { GroupByMapping } from './GroupByMapping';
 import type { FilterMapping } from './FilterMapping';
-import type { InferableMappingElementIdValue } from '../../../mapping/InferableMappingElementId';
-import type { Mapping } from '../../../mapping/Mapping';
-import type { PackageableElementReference } from '../../../PackageableElementReference';
-import type { Class } from '../../../domain/Class';
-import type { InferableMappingElementRoot } from '../../../mapping/InferableMappingElementRoot';
-import type { PropertyMapping } from '../../../mapping/PropertyMapping';
 
 export class RootRelationalInstanceSetImplementation
   extends RelationalInstanceSetImplementation
@@ -43,30 +36,6 @@ export class RootRelationalInstanceSetImplementation
   groupBy?: GroupByMapping | undefined;
   mainTableAlias?: TableAlias;
   superSetImplementationId?: string | undefined;
-
-  constructor(
-    id: InferableMappingElementIdValue,
-    parent: Mapping,
-    _class: PackageableElementReference<Class>,
-    root: InferableMappingElementRoot,
-  ) {
-    super(id, parent, _class, root);
-
-    makeObservable(this, {
-      columnMappings: observable,
-      filter: observable,
-      distinct: observable,
-      groupBy: observable,
-      mainTableAlias: observable,
-      superSetImplementationId: observable,
-      setPropertyMappings: action,
-      hashCode: computed,
-    });
-  }
-
-  setPropertyMappings(value: PropertyMapping[]): void {
-    this.propertyMappings = value;
-  }
 
   override accept_SetImplementationVisitor<T>(
     visitor: SetImplementationVisitor<T>,

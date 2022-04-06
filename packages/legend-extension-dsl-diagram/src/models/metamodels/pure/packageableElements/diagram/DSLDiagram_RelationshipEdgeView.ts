@@ -14,29 +14,19 @@
  * limitations under the License.
  */
 
-import { observable, action, makeObservable } from 'mobx';
 import type { ClassViewReference } from './DSLDiagram_ClassViewReference';
 
-export class RelationShipEdgeView {
+export class RelationshipEdgeView {
   classView: ClassViewReference;
+  /**
+   * Offsets from the center of the class view.
+   *
+   * These offsets can be used to compute the end points of relationship views.
+   */
   offsetX?: number | undefined;
   offsetY?: number | undefined;
 
   constructor(classView: ClassViewReference) {
-    makeObservable(this, {
-      offsetX: observable,
-      offsetY: observable,
-      setOffsetX: action,
-      setOffsetY: action,
-    });
-
     this.classView = classView;
-  }
-
-  setOffsetX(val: number): void {
-    this.offsetX = val;
-  }
-  setOffsetY(val: number): void {
-    this.offsetY = val;
   }
 }

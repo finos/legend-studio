@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-studio-extension-management-toolkit",
-  "version": "0.0.35",
+  "version": "0.0.39",
   "description": "Legend Studio extension for management/admin tooling",
   "keywords": [
     "legend",
@@ -33,7 +33,7 @@
     "clean:cache": "rimraf \"build\"",
     "clean:lib": "rimraf \"lib\"",
     "dev": "npm-run-all --parallel dev:sass dev:ts",
-    "dev:sass": "sass style lib --watch --load-path=../../node_modules/@finos/legend-art/scss",
+    "dev:sass": "sass style:lib --watch --load-path=../../node_modules/@finos/legend-art/scss",
     "dev:ts": "tsc --watch --preserveWatchOutput",
     "lint:js": "cross-env NODE_ENV=production eslint --cache --cache-location ./build/.eslintcache --report-unused-disable-directives --parser-options=project:\"./tsconfig.json\" \"./src/**/*.{js,ts,tsx}\"",
     "publish:prepare": "node ../../scripts/release/preparePublishContent.js",
@@ -61,7 +61,7 @@
     "jest": "27.5.1",
     "npm-run-all": "4.1.5",
     "rimraf": "3.0.2",
-    "sass": "1.49.9",
+    "sass": "1.49.11",
     "typescript": "4.6.3"
   },
   "peerDependencies": {

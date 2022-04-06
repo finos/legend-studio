@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { observable, computed, makeObservable, action } from 'mobx';
 import {
   CORE_HASH_STRUCTURE,
   MULTIPLICITY_INFINITE,
@@ -26,25 +25,8 @@ export class Multiplicity implements Hashable {
   upperBound?: number | undefined;
 
   constructor(lowerBound: number, upperBound: number | undefined) {
-    makeObservable(this, {
-      lowerBound: observable,
-      upperBound: observable,
-      str: computed,
-      hashCode: computed,
-      setLowerBound: action,
-      setUpperBound: action,
-    });
-
     this.lowerBound = lowerBound;
     this.upperBound = upperBound;
-  }
-
-  setLowerBound(val: number): void {
-    this.lowerBound = val;
-  }
-
-  setUpperBound(val: number | undefined): void {
-    this.upperBound = val;
   }
 
   get str(): string {
