@@ -27,7 +27,7 @@ import type { AbstractProperty } from './AbstractProperty';
 import type { Class } from './Class';
 import { Association } from './Association';
 
-export abstract class /*toCHECK*/ PropertyReference
+export abstract class PropertyReference
   extends ReferenceWithOwner
   implements Stubable
 {

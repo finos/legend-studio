@@ -31,7 +31,7 @@ export abstract class /*toCHECK*/ StereotypeReference
   implements Stubable
 {
   override readonly ownerReference: PackageableElementReference<Profile>;
-  value: Stereotype;
+  readonly value: Stereotype;
 
   protected constructor(
     ownerReference: PackageableElementReference<Profile>,

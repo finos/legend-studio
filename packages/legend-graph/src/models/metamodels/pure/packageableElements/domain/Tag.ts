@@ -18,7 +18,7 @@ import { uuid } from '@finos/legend-shared';
 import type { Profile } from './Profile';
 import type { Stubable } from '../../../../../helpers/Stubable';
 
-export class /*toCHECK*/ Tag implements Stubable {
+export class Tag implements Stubable {
   uuid = uuid();
   owner: Profile;
   value: string;
