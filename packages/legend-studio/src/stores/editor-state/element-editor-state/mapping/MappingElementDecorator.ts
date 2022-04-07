@@ -301,6 +301,7 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
         setImplementation,
         decoratePropertyMapping,
       ),
+      this.editorStore.changeDetectionState.observerContext,
     );
   }
 
@@ -400,6 +401,7 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
         setImplementation,
         decoratePropertyMapping,
       ),
+      this.editorStore.changeDetectionState.observerContext,
     );
   }
 
@@ -554,6 +556,7 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
         setImplementation,
         decoratePropertyMapping,
       ),
+      this.editorStore.changeDetectionState.observerContext,
     );
   }
 
@@ -641,6 +644,7 @@ export class MappingElementDecorationCleaner
       setImplementation.propertyMappings.filter(
         (propertyMapping) => !propertyMapping.transform.isStub,
       ),
+      this.editorStore.changeDetectionState.observerContext,
     );
   }
 
@@ -658,6 +662,7 @@ export class MappingElementDecorationCleaner
           (propertyMapping instanceof EmbeddedFlatDataPropertyMapping &&
             propertyMapping.property),
       ),
+      this.editorStore.changeDetectionState.observerContext,
     );
   }
 
@@ -685,6 +690,7 @@ export class MappingElementDecorationCleaner
           propertyMapping instanceof
             EmbeddedRelationalInstanceSetImplementation,
       ),
+      this.editorStore.changeDetectionState.observerContext,
     );
   }
 

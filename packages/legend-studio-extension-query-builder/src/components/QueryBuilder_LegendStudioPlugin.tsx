@@ -93,10 +93,15 @@ const promoteQueryToService = async (
         PackageableElementExplicitReference.create(mapping),
         runtime,
       ),
+      editorStore.changeDetectionState.observerContext,
     );
     const servicePackage =
       editorStore.graphManagerState.graph.getOrCreatePackage(packageName);
-    package_addElement(servicePackage, service);
+    package_addElement(
+      servicePackage,
+      service,
+      editorStore.changeDetectionState.observerContext,
+    );
     editorStore.graphManagerState.graph.addElement(service);
     editorStore.openElement(service);
     await flowResult(

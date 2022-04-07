@@ -201,6 +201,7 @@ export class TestContainerState {
                 ),
               ),
             ),
+            this.editorStore.changeDetectionState.observerContext,
           );
         } else if (connection instanceof XmlModelConnection) {
           runtime_addIdentifiedConnection(
@@ -219,6 +220,7 @@ export class TestContainerState {
                 ),
               ),
             ),
+            this.editorStore.changeDetectionState.observerContext,
           );
         } else if (connection instanceof FlatDataConnection) {
           runtime_addIdentifiedConnection(
@@ -236,6 +238,7 @@ export class TestContainerState {
                 ),
               ),
             ),
+            this.editorStore.changeDetectionState.observerContext,
           );
         } else if (connection instanceof RelationalDatabaseConnection) {
           runtime_addIdentifiedConnection(
@@ -252,6 +255,7 @@ export class TestContainerState {
                 new DefaultH2AuthenticationStrategy(),
               ),
             ),
+            this.editorStore.changeDetectionState.observerContext,
           );
         } else {
           let testConnection: Connection | undefined;
@@ -277,6 +281,7 @@ export class TestContainerState {
                 newRuntime.generateIdentifiedConnectionId(),
                 testConnection,
               ),
+              this.editorStore.changeDetectionState.observerContext,
             );
           } else {
             throw new UnsupportedOperationError(

@@ -60,7 +60,11 @@ export class ElementFileGenerationState {
       this.editorStore.graphManagerState.graph.getOrCreatePackage(packagePath);
     const fileGeneration = this.fileGenerationState.fileGeneration;
     fileGeneration.name = name;
-    package_addElement(fileGenerationPackage, fileGeneration);
+    package_addElement(
+      fileGenerationPackage,
+      fileGeneration,
+      this.editorStore.changeDetectionState.observerContext,
+    );
     this.editorStore.graphManagerState.graph.addElement(fileGeneration);
     this.editorStore.openElement(fileGeneration);
     // reset file generation state so since the current file generation is promoted to a packageable element in the graph

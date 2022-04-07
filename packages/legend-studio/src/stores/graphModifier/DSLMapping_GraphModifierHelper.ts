@@ -30,11 +30,6 @@ import {
   type OperationSetImplementation,
   type OperationType,
   type SetImplementationContainer,
-  Enumeration,
-  PRIMITIVE_TYPE,
-  SourceValue,
-  Type,
-  getOwnClassMappingsByClass,
   type JsonModelConnection,
   type Connection,
   type PackageableConnection,
@@ -43,7 +38,6 @@ import {
   StoreConnections,
   type IdentifiedConnection,
   type PackageableElementReference,
-  PackageableElementExplicitReference,
   type Store,
   type RuntimePointer,
   type XmlModelConnection,
@@ -51,6 +45,33 @@ import {
   type PureInstanceSetImplementation,
   type PurePropertyMapping,
   type ObjectInputData,
+  type ObserverContext,
+  PackageableElementExplicitReference,
+  Enumeration,
+  PRIMITIVE_TYPE,
+  SourceValue,
+  Type,
+  getOwnClassMappingsByClass,
+  observe_SetImplementation,
+  observe_EnumerationMapping,
+  observe_AssociationImplementation,
+  observe_MappingTest,
+  observe_SourceValue,
+  observe_MappingTestAssert,
+  observe_SetImplementationContainer,
+  observe_IdentifiedConnection,
+  observe_StoreConnections,
+  observe_PackageableElementReference,
+  observe_PackageableRuntime,
+  observe_PropertyMapping,
+  observe_Type,
+  observe_EnumValueMapping,
+  observe_InputData,
+  observe_RawLambda,
+  observe_PurePropertyMapping,
+  observe_Class,
+  observe_Connection,
+  observe_EngineRuntime,
 } from '@finos/legend-graph';
 import {
   addUniqueEntry,
@@ -62,8 +83,14 @@ import {
 import { action } from 'mobx';
 
 export const mapping_setPropertyMappings = action(
-  (si: InstanceSetImplementation, pm: PropertyMapping[]): void => {
-    si.propertyMappings = pm;
+  (
+    si: InstanceSetImplementation,
+    pm: PropertyMapping[],
+    observeContext: ObserverContext,
+  ): void => {
+    si.propertyMappings = pm.map((p) =>
+      observe_PropertyMapping(p, observeContext),
+    );
   },
 );
 export const setImpl_setRoot = action(
@@ -74,8 +101,15 @@ export const setImpl_setRoot = action(
 
 //
 export const mapping_addClassMapping = action(
-  (mapping: Mapping, val: SetImplementation): void => {
-    addUniqueEntry(mapping.classMappings, val);
+  (
+    mapping: Mapping,
+    val: SetImplementation,
+    observer: ObserverContext,
+  ): void => {
+    addUniqueEntry(
+      mapping.classMappings,
+      observe_SetImplementation(val, observer),
+    );
   },
 );
 export const mapping_deleteClassMapping = action(
@@ -85,7 +119,10 @@ export const mapping_deleteClassMapping = action(
 );
 export const mapping_addEnumerationMapping = action(
   (mapping: Mapping, val: EnumerationMapping): void => {
-    addUniqueEntry(mapping.enumerationMappings, val);
+    addUniqueEntry(
+      mapping.enumerationMappings,
+      observe_EnumerationMapping(val),
+    );
   },
 );
 export const mapping_deleteEnumerationMapping = action(
@@ -94,8 +131,15 @@ export const mapping_deleteEnumerationMapping = action(
   },
 );
 export const mapping_addAssociationMapping = action(
-  (mapping: Mapping, val: AssociationImplementation): void => {
-    addUniqueEntry(mapping.associationMappings, val);
+  (
+    mapping: Mapping,
+    val: AssociationImplementation,
+    observerContext: ObserverContext,
+  ): void => {
+    addUniqueEntry(
+      mapping.associationMappings,
+      observe_AssociationImplementation(val, observerContext),
+    );
   },
 );
 export const mapping_deleteAssociationMapping = action(
@@ -109,8 +153,12 @@ export const mapping_deleteTest = action(
   },
 );
 export const mapping_addTest = action(
-  (mapping: Mapping, val: MappingTest): void => {
-    addUniqueEntry(mapping.tests, val);
+  (
+    mapping: Mapping,
+    val: MappingTest,
+    observerContext: ObserverContext,
+  ): void => {
+    addUniqueEntry(mapping.tests, observe_MappingTest(val, observerContext));
   },
 );
 
@@ -124,13 +172,13 @@ export const enumMapping_setId = action(
 
 export const enumMapping_setSourceType = action(
   (eM: EnumerationMapping, value: Type | undefined): void => {
-    eM.sourceType.setValue(value);
+    eM.sourceType.setValue(value ? observe_Type(value) : undefined);
   },
 );
 
 export const enumMapping_setEnumValueMappings = action(
   (eM: EnumerationMapping, value: EnumValueMapping[]): void => {
-    eM.enumValueMappings = value;
+    eM.enumValueMappings = value.map(observe_EnumValueMapping);
   },
 );
 export const enumMapping_updateSourceType = action(
@@ -139,7 +187,9 @@ export const enumMapping_updateSourceType = action(
       enumMapping_setSourceType(eM, type);
       eM.enumValueMappings = eM.enumValueMappings.map((enumValueMapping) => {
         enumValueMapping.sourceValues = [];
-        enumValueMapping.sourceValues.push(new SourceValue(undefined));
+        enumValueMapping.sourceValues.push(
+          observe_SourceValue(new SourceValue(undefined)),
+        );
         return enumValueMapping;
       });
     }
@@ -152,12 +202,14 @@ export const sourceValue_setValue = action(
 );
 export const enumValueMapping_addSourceValue = action(
   (enumMapping: EnumValueMapping): void => {
-    enumMapping.sourceValues.push(new SourceValue(undefined));
+    enumMapping.sourceValues.push(
+      observe_SourceValue(new SourceValue(undefined)),
+    );
   },
 );
 export const enumValueMapping_setSourceValues = action(
   (enumMapping: EnumValueMapping, value: SourceValue[]): void => {
-    enumMapping.sourceValues = value;
+    enumMapping.sourceValues = value.map(observe_SourceValue);
   },
 );
 export const enumValueMapping_deleteSourceValue = action(
@@ -202,20 +254,28 @@ export const mappingTest_setName = action(
 );
 
 export const mappingTest_setInputData = action(
-  (test: MappingTest, value: InputData[]): void => {
-    test.inputData = value;
+  (
+    test: MappingTest,
+    value: InputData[],
+    observeContext: ObserverContext,
+  ): void => {
+    test.inputData = value.map((i) => observe_InputData(i, observeContext));
   },
 );
 
 export const mappingTest_setQuery = action(
   (test: MappingTest, value: RawLambda): void => {
-    test.query = value;
+    test.query = observe_RawLambda(value);
   },
 );
 
 export const mappingTest_setAssert = action(
-  (test: MappingTest, value: MappingTestAssert): void => {
-    test.assert = value;
+  (
+    test: MappingTest,
+    value: MappingTestAssert,
+    observerContext: ObserverContext,
+  ): void => {
+    test.assert = observe_MappingTestAssert(value, observerContext);
   },
 );
 export const expectedOutputMappingTestAssert_setExpectedOutput = action(
@@ -236,12 +296,12 @@ export const operationMapping_setParameters = action(
     oI: OperationSetImplementation,
     value: SetImplementationContainer[],
   ): void => {
-    oI.parameters = value;
+    oI.parameters = value.map(observe_SetImplementationContainer);
   },
 );
 export const operationMapping_addParameter = action(
   (oI: OperationSetImplementation, value: SetImplementationContainer): void => {
-    addUniqueEntry(oI.parameters, value);
+    addUniqueEntry(oI.parameters, observe_SetImplementationContainer(value));
   },
 );
 export const operationMapping_changeParameter = action(
@@ -250,7 +310,11 @@ export const operationMapping_changeParameter = action(
     oldValue: SetImplementationContainer,
     newValue: SetImplementationContainer,
   ): void => {
-    changeEntry(oI.parameters, oldValue, newValue);
+    changeEntry(
+      oI.parameters,
+      oldValue,
+      observe_SetImplementationContainer(newValue),
+    );
   },
 );
 export const operationMapping_deleteParameter = action(
@@ -341,39 +405,42 @@ export const objectInputData_setData = (
 export const pureInstanceSetImpl_setPropertyMappings = (
   val: PureInstanceSetImplementation,
   value: PurePropertyMapping[],
+  observeContext: ObserverContext,
 ): void => {
-  val.propertyMappings = value;
+  val.propertyMappings = value.map((pm) =>
+    observe_PurePropertyMapping(pm, observeContext),
+  );
 };
 export const pureInstanceSetImpl_setSrcClass = (
   val: PureInstanceSetImplementation,
   value: Class | undefined,
 ): void => {
-  val.srcClass.setValue(value);
+  val.srcClass.setValue(value ? observe_Class(value) : undefined);
 };
 export const pureInstanceSetImpl_setMappingFilter = (
   val: PureInstanceSetImplementation,
   value: RawLambda | undefined,
 ): void => {
-  val.filter = value;
+  val.filter = value ? observe_RawLambda(value) : undefined;
 };
 
 export const purePropertyMapping_setTransformer = (
   val: PurePropertyMapping,
   value: EnumerationMapping | undefined,
 ): void => {
-  val.transformer = value;
+  val.transformer = value ? observe_EnumerationMapping(value) : undefined;
 };
 
 // --------------------------------------------- Connection -------------------------------------
 
 export const connection_setStore = action(
   (con: Connection, val: PackageableElementReference<Store>): void => {
-    con.store = val;
+    con.store = observe_PackageableElementReference(val);
   },
 );
 export const modelConnection_setClass = action(
   (val: JsonModelConnection | XmlModelConnection, value: Class): void => {
-    val.class.value = value;
+    val.class.value = observe_Class(value);
   },
 );
 export const modelConnection_setUrl = action(
@@ -382,24 +449,37 @@ export const modelConnection_setUrl = action(
   },
 );
 export const packageableConnection_setConnectionValue = action(
-  (pc: PackageableConnection, connection: Connection): void => {
-    pc.connectionValue = connection;
+  (
+    pc: PackageableConnection,
+    connection: Connection,
+    observeContext: ObserverContext,
+  ): void => {
+    pc.connectionValue = observe_Connection(connection, observeContext);
   },
 );
 
 // --------------------------------------------- Runtime -------------------------------------
 
 export const packageableRuntime_setRuntimeValue = action(
-  (pr: PackageableRuntime, value: EngineRuntime): void => {
-    pr.runtimeValue = value;
+  (
+    pr: PackageableRuntime,
+    value: EngineRuntime,
+    observeContext: ObserverContext,
+  ): void => {
+    pr.runtimeValue = observe_EngineRuntime(value, observeContext);
   },
 );
 export const runtime_addIdentifiedConnection = action(
-  (eR: EngineRuntime, value: IdentifiedConnection): void => {
+  (
+    eR: EngineRuntime,
+    value: IdentifiedConnection,
+    observerContext: ObserverContext,
+  ): void => {
+    observe_IdentifiedConnection(value, observerContext);
     const store = value.connection.store;
     const storeConnections =
       eR.connections.find((sc) => sc.store.value === store.value) ??
-      new StoreConnections(store);
+      observe_StoreConnections(new StoreConnections(store), observerContext);
     addUniqueEntry(eR.connections, storeConnections);
     assertTrue(
       !storeConnections.storeConnections
@@ -421,22 +501,27 @@ export const runtime_deleteIdentifiedConnection = action(
   },
 );
 export const runtime_addUniqueStoreConnectionsForStore = action(
-  (eR: EngineRuntime, value: Store): void => {
+  (eR: EngineRuntime, value: Store, observerContext: ObserverContext): void => {
     if (!eR.connections.find((sc) => sc.store.value === value)) {
       eR.connections.push(
-        new StoreConnections(PackageableElementExplicitReference.create(value)),
+        observe_StoreConnections(
+          new StoreConnections(
+            PackageableElementExplicitReference.create(value),
+          ),
+          observerContext,
+        ),
       );
     }
   },
 );
 export const runtime_setMappings = action(
   (eR: EngineRuntime, value: PackageableElementReference<Mapping>[]): void => {
-    eR.mappings = value;
+    eR.mappings = value.map(observe_PackageableElementReference);
   },
 );
 export const runtime_addMapping = action(
   (eR: EngineRuntime, value: PackageableElementReference<Mapping>): void => {
-    addUniqueEntry(eR.mappings, value);
+    addUniqueEntry(eR.mappings, observe_PackageableElementReference(value));
   },
 );
 export const runtime_deleteMapping = action(
@@ -446,7 +531,11 @@ export const runtime_deleteMapping = action(
 );
 
 export const setPackageableRuntime = action(
-  (rP: RuntimePointer, value: PackageableRuntime): void => {
-    rP.packageableRuntime.value = value;
+  (
+    rP: RuntimePointer,
+    value: PackageableRuntime,
+    context: ObserverContext,
+  ): void => {
+    rP.packageableRuntime.value = observe_PackageableRuntime(value, context);
   },
 );

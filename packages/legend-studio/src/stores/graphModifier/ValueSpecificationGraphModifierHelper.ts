@@ -13,11 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import type {
-  Multiplicity,
-  RawVariableExpression,
-  Type,
+import {
+  type Multiplicity,
+  type RawVariableExpression,
+  type Type,
+  observe_Multiplicity,
+  observe_Type,
 } from '@finos/legend-graph';
 import { action } from 'mobx';
 
@@ -30,11 +31,11 @@ export const rawVariableExpression_setName = action(
 );
 export const rawVariableExpression_setType = action(
   (rV: RawVariableExpression, value: Type): void => {
-    rV.type.value = value;
+    rV.type.value = observe_Type(value);
   },
 );
 export const rawVariableExpression_setMultiplicity = action(
   (rV: RawVariableExpression, value: Multiplicity): void => {
-    rV.multiplicity = value;
+    rV.multiplicity = observe_Multiplicity(value);
   },
 );

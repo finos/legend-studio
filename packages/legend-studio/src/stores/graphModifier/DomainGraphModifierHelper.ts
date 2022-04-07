@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { addUniqueEntry, changeEntry, deleteEntry } from '@finos/legend-shared';
+import { addUniqueEntry, deleteEntry } from '@finos/legend-shared';
 import { action } from 'mobx';
 import {
   type GenericTypeReference,
@@ -23,12 +23,10 @@ import {
   type GenericType,
   type Type,
   type Multiplicity,
-  type PropertyReference,
   type Stereotype,
   type Tag,
   type PackageableElement,
   type PackageableElementReference,
-  type AbstractProperty,
   type AnnotatedElement,
   type Class,
   type Property,
@@ -43,9 +41,26 @@ import {
   type Measure,
   type Unit,
   type RawLambda,
-  Association,
+  type Package,
+  type ObserverContext,
   _package_addElement,
   _package_deleteElement,
+  observe_Enum,
+  observe_PackageabElement,
+  observe_DerivedProperty,
+  observe_GenericTypeReference,
+  observe_Property,
+  observe_RawVariableExpression,
+  observe_Stereotype,
+  observe_StereotypeReference,
+  observe_Tag,
+  observe_TaggedValue,
+  observe_Constraint,
+  observe_GenericType,
+  observe_Multiplicity,
+  observe_Type,
+  observe_Unit,
+  observe_RawLambda,
 } from '@finos/legend-graph';
 
 // --------------------------------------------- PackageableElementReference -------------------------------------
@@ -68,7 +83,7 @@ export const class_deleteProperty = action(
 );
 export const class_addProperty = action(
   (_class: Class, val: Property): void => {
-    addUniqueEntry(_class.properties, val);
+    addUniqueEntry(_class.properties, observe_Property(val));
   },
 );
 
@@ -79,12 +94,12 @@ export const class_deleteDerivedProperty = action(
 );
 export const class_addDerivedProperty = action(
   (_class: Class, val: DerivedProperty): void => {
-    addUniqueEntry(_class.derivedProperties, val);
+    addUniqueEntry(_class.derivedProperties, observe_DerivedProperty(val));
   },
 );
 export const class_addContraint = action(
   (_class: Class, val: Constraint): void => {
-    addUniqueEntry(_class.constraints, val);
+    addUniqueEntry(_class.constraints, observe_Constraint(val));
   },
 );
 export const class_deleteConstraint = action(
@@ -92,14 +107,9 @@ export const class_deleteConstraint = action(
     deleteEntry(_class.constraints, val);
   },
 );
-export const class_changeConstraint = action(
-  (_class: Class, val: Constraint, newVal: Constraint): void => {
-    changeEntry(_class.constraints, val, newVal);
-  },
-);
 export const class_addSuperType = action(
   (_class: Class, val: GenericTypeReference): void => {
-    addUniqueEntry(_class.generalizations, val);
+    addUniqueEntry(_class.generalizations, observe_GenericTypeReference(val));
   },
 );
 export const class_deleteSuperType = action(
@@ -120,6 +130,8 @@ export const class_deleteSubclass = action(
 
 export const setGenericTypeReferenceValue = action(
   (gen: GenericTypeReference, value: GenericType): void => {
+    observe_GenericTypeReference(gen);
+    observe_GenericType(value);
     gen.value = value;
     gen.ownerReference.value = value.rawType;
   },
@@ -134,28 +146,20 @@ export const property_setName = action(
 );
 export const property_setGenericType = action(
   (_property: Property | DerivedProperty, value: GenericType): void => {
-    setGenericTypeReferenceValue(_property.genericType, value);
+    setGenericTypeReferenceValue(
+      _property.genericType,
+      observe_GenericType(value),
+    );
   },
 );
 export const property_setMultiplicity = action(
   (_property: Property | DerivedProperty, value: Multiplicity): void => {
-    _property.multiplicity = value;
-  },
-);
-export const property_setReferenceValue = action(
-  (pV: PropertyReference, value: AbstractProperty): void => {
-    pV.value = value;
-    packageableElementReference_setValue(
-      pV.ownerReference,
-      value.owner instanceof Association
-        ? value.owner.getPropertyAssociatedClass(pV.value)
-        : value.owner,
-    );
+    _property.multiplicity = observe_Multiplicity(value);
   },
 );
 export const stereotypeReference_setValue = action(
   (sV: StereotypeReference, value: Stereotype): void => {
-    sV.value = value;
+    sV.value = observe_Stereotype(value);
     packageableElementReference_setValue(sV.ownerReference, value.owner);
   },
 );
@@ -164,7 +168,7 @@ export const stereotypeReference_setValue = action(
 
 export const annotatedElement_addTaggedValue = action(
   (annotatedElement: AnnotatedElement, value: TaggedValue): void => {
-    addUniqueEntry(annotatedElement.taggedValues, value);
+    addUniqueEntry(annotatedElement.taggedValues, observe_TaggedValue(value));
   },
 );
 export const annotatedElement_deleteTaggedValue = action(
@@ -174,16 +178,10 @@ export const annotatedElement_deleteTaggedValue = action(
 );
 export const annotatedElement_addStereotype = action(
   (annotatedElement: AnnotatedElement, value: StereotypeReference): void => {
-    addUniqueEntry(annotatedElement.stereotypes, value);
-  },
-);
-export const annotatedElement_changeStereotype = action(
-  (
-    annotatedElement: AnnotatedElement,
-    oldValue: StereotypeReference,
-    newValue: StereotypeReference,
-  ): void => {
-    changeEntry(annotatedElement.stereotypes, oldValue, newValue);
+    addUniqueEntry(
+      annotatedElement.stereotypes,
+      observe_StereotypeReference(value),
+    );
   },
 );
 export const annotatedElement_deleteStereotype = action(
@@ -194,7 +192,7 @@ export const annotatedElement_deleteStereotype = action(
 
 export const taggedValue_setTag = action(
   (taggedValue: TaggedValue, value: Tag): void => {
-    taggedValue.tag.value = value;
+    taggedValue.tag.value = observe_Tag(value);
     taggedValue.tag.ownerReference.value = value.owner;
   },
 );
@@ -234,14 +232,14 @@ export const constraint_setName = action(
 );
 export const constraint_setFunctionDefinition = action(
   (_constraint: Constraint, lambda: RawLambda): void => {
-    _constraint.functionDefinition = lambda;
+    _constraint.functionDefinition = observe_RawLambda(lambda);
   },
 );
 
 // --------------------------------------------- Profile -------------------------------------
 
 export const profile_addTag = action((profile: Profile, value: Tag): void => {
-  addUniqueEntry(profile.tags, value);
+  addUniqueEntry(profile.tags, observe_Tag(value));
 });
 export const profile_deleteTag = action(
   (profile: Profile, value: Tag): void => {
@@ -250,7 +248,7 @@ export const profile_deleteTag = action(
 );
 export const profile_addStereotype = action(
   (profile: Profile, value: Stereotype): void => {
-    addUniqueEntry(profile.stereotypes, value);
+    addUniqueEntry(profile.stereotypes, observe_Stereotype(value));
   },
 );
 export const profile_deleteStereotype = action(
@@ -268,17 +266,17 @@ export const function_deleteParameter = action(
 );
 export const function_addParameter = action(
   (_func: ConcreteFunctionDefinition, val: RawVariableExpression): void => {
-    addUniqueEntry(_func.parameters, val);
+    addUniqueEntry(_func.parameters, observe_RawVariableExpression(val));
   },
 );
 export const function_setReturnType = action(
   (_func: ConcreteFunctionDefinition, val: Type): void => {
-    packageableElementReference_setValue(_func.returnType, val);
+    packageableElementReference_setValue(_func.returnType, observe_Type(val));
   },
 );
 export const functio_setReturnMultiplicity = action(
   (_func: ConcreteFunctionDefinition, val: Multiplicity): void => {
-    _func.returnMultiplicity = val;
+    _func.returnMultiplicity = observe_Multiplicity(val);
   },
 );
 
@@ -289,7 +287,7 @@ export const enum_setName = action((val: Enum, value: string): void => {
 });
 export const enum_addValue = action(
   (enumeration: Enumeration, value: Enum): void => {
-    addUniqueEntry(enumeration.values, value);
+    addUniqueEntry(enumeration.values, observe_Enum(value));
   },
 );
 export const enum_deleteValue = action(
@@ -299,7 +297,7 @@ export const enum_deleteValue = action(
 );
 export const enumValueReference_setValue = action(
   (ref: EnumValueReference, value: Enum): void => {
-    ref.value = value;
+    ref.value = observe_Enum(value);
     packageableElementReference_setValue(ref.ownerReference, value.owner);
   },
 );
@@ -308,16 +306,25 @@ export const enumValueReference_setValue = action(
 
 export const measure_setCanonicalUnit = action(
   (_measure: Measure, unit: Unit): void => {
-    _measure.canonicalUnit = unit;
+    _measure.canonicalUnit = observe_Unit(unit);
   },
 );
 export const unit_setConversionFunction = action(
   (unit: Unit, lambda: RawLambda): void => {
-    unit.conversionFunction = lambda;
+    unit.conversionFunction = observe_RawLambda(lambda);
   },
 );
 
 // ------------------------------------------ Package -------------------------------------
 
-export const package_addElement = action(_package_addElement);
+export const package_addElement = action(
+  (
+    parent: Package,
+    element: PackageableElement,
+    context: ObserverContext,
+  ): void => {
+    _package_addElement(parent, observe_PackageabElement(element, context));
+  },
+);
+
 export const package_deleteElement = action(_package_deleteElement);

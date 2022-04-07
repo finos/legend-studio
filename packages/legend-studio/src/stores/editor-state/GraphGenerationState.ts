@@ -392,7 +392,11 @@ export class GraphGenerationState {
         const specPackage = guaranteeNonNullable(
           [...modelGenerationElements, ...fileGenerations][0]?.package,
         );
-        package_addElement(specPackage, generationSpec);
+        package_addElement(
+          specPackage,
+          generationSpec,
+          this.editorStore.changeDetectionState.observerContext,
+        );
         this.editorStore.graphManagerState.graph.addElement(generationSpec);
       }
     }

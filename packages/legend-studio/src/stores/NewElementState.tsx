@@ -359,6 +359,7 @@ export class NewPackageableConnectionDriver extends NewElementDriver<Packageable
       this.newConnectionValueDriver.createConnection(
         this.store ?? this.editorStore.graphManagerState.graph.modelStore,
       ),
+      this.editorStore.changeDetectionState.observerContext,
     ); // default to model store
     return connection;
   }
@@ -576,6 +577,7 @@ export class NewElementState {
               )
             : this.editorStore.graphManagerState.graph.root,
           element,
+          this.editorStore.changeDetectionState.observerContext,
         );
         this.editorStore.graphManagerState.graph.addElement(element);
         if (element instanceof Package) {
@@ -609,6 +611,7 @@ export class NewElementState {
         package_addElement(
           guaranteeNonNullable(generationElement.package),
           generationSpec,
+          this.editorStore.changeDetectionState.observerContext,
         );
         this.editorStore.graphManagerState.graph.addElement(generationSpec);
       }
@@ -701,6 +704,7 @@ export class NewElementState {
             PackageableElementExplicitReference.create(mapping),
             runtimeValue,
           ),
+          this.editorStore.changeDetectionState.observerContext,
         );
         service_initNewService(service);
         element = service;

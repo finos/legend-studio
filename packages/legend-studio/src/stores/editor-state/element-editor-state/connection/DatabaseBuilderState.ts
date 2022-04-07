@@ -551,7 +551,11 @@ export class DatabaseBuilderState {
           this.editorStore.graphManagerState.graph.getOrCreatePackage(
             PackagePath,
           );
-        package_addElement(databasePackage, newDatabase);
+        package_addElement(
+          databasePackage,
+          newDatabase,
+          this.editorStore.changeDetectionState.observerContext,
+        );
         this.editorStore.graphManagerState.graph.addElement(newDatabase);
         currentDatabase = newDatabase;
         this.editorStore.explorerTreeState.reprocess();

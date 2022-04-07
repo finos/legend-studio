@@ -120,7 +120,11 @@ export const decorateRuntimeWithNewMapping = (
       ? runtime.packageableRuntime.value.runtimeValue
       : guaranteeType(runtime, EngineRuntime);
   getStoresFromMappings([mapping], editorStore).forEach((store) =>
-    runtime_addUniqueStoreConnectionsForStore(runtimeValue, store),
+    runtime_addUniqueStoreConnectionsForStore(
+      runtimeValue,
+      store,
+      editorStore.changeDetectionState.observerContext,
+    ),
   );
   const sourceClasses = mapping.classMappings
     .map((classMapping) =>
@@ -165,6 +169,7 @@ export const decorateRuntimeWithNewMapping = (
             PackageableElementExplicitReference.create(_class),
           ),
         ),
+        editorStore.changeDetectionState.observerContext,
       ),
     );
 };
@@ -389,6 +394,7 @@ export abstract class IdentifiedConnectionsEditorTabState extends RuntimeEditorT
     runtime_addIdentifiedConnection(
       this.runtimeEditorState.runtimeValue,
       newIdentifiedConnection,
+      this.editorStore.changeDetectionState.observerContext,
     );
     this.openIdentifiedConnection(newIdentifiedConnection);
   }
@@ -681,7 +687,11 @@ export class RuntimeEditorState {
   }
 
   addIdentifiedConnection(identifiedConnection: IdentifiedConnection): void {
-    runtime_addIdentifiedConnection(this.runtimeValue, identifiedConnection);
+    runtime_addIdentifiedConnection(
+      this.runtimeValue,
+      identifiedConnection,
+      this.editorStore.changeDetectionState.observerContext,
+    );
     const connectionValue =
       identifiedConnection.connection instanceof ConnectionPointer
         ? identifiedConnection.connection.packageableConnection.value
@@ -745,7 +755,11 @@ export class RuntimeEditorState {
       this.runtimeValue.mappings.map((mapping) => mapping.value),
       this.editorStore,
     ).forEach((store) =>
-      runtime_addUniqueStoreConnectionsForStore(this.runtimeValue, store),
+      runtime_addUniqueStoreConnectionsForStore(
+        this.runtimeValue,
+        store,
+        this.editorStore.changeDetectionState.observerContext,
+      ),
     );
   }
 
