@@ -19,7 +19,7 @@ import {
   PropertyMapping,
 } from '../PropertyMapping';
 
-export class /*toCHECK*/ AggregationAwarePropertyMapping extends PropertyMapping {
+export class AggregationAwarePropertyMapping extends PropertyMapping {
   accept_PropertyMappingVisitor<T>(visitor: PropertyMappingVisitor<T>): T {
     return visitor.visit_AggregationAwarePropertyMapping(this);
   }

@@ -26,7 +26,7 @@ import { RelationalInstanceSetImplementation } from './RelationalInstanceSetImpl
 import type { GroupByMapping } from './GroupByMapping';
 import type { FilterMapping } from './FilterMapping';
 
-export class /*toCHECK*/ RootRelationalInstanceSetImplementation
+export class RootRelationalInstanceSetImplementation
   extends RelationalInstanceSetImplementation
   implements RelationalMappingSpecification, Hashable
 {

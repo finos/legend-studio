@@ -28,7 +28,7 @@ import {
   createValidationError,
 } from '../../../../../helpers/ValidationHelper';
 
-export class /*toCHECK*/ ExpectedOutputMappingTestAssert
+export class ExpectedOutputMappingTestAssert
   extends MappingTestAssert
   implements Hashable
 {

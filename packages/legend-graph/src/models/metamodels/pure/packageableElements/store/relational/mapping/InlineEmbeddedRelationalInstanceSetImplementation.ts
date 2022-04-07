@@ -24,7 +24,7 @@ import type { PropertyMappingVisitor } from '../../../mapping/PropertyMapping';
 import { hashArray, UnsupportedOperationError } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 
-export class /*toCHECK*/ InlineEmbeddedRelationalInstanceSetImplementation
+export class InlineEmbeddedRelationalInstanceSetImplementation
   extends EmbeddedRelationalInstanceSetImplementation
   implements InlineEmbeddedSetImplementation
 {

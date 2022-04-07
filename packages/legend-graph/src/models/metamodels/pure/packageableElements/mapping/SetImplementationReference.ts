@@ -23,7 +23,7 @@ import type { Mapping } from './Mapping';
 import type { SetImplementation } from './SetImplementation';
 import { ReferenceWithOwner } from '../../Reference';
 
-export abstract class /*toCHECK*/ SetImplementationReference extends ReferenceWithOwner {
+export abstract class SetImplementationReference extends ReferenceWithOwner {
   override readonly ownerReference: PackageableElementReference<Mapping>;
   value: SetImplementation;
 
@@ -42,7 +42,7 @@ export abstract class /*toCHECK*/ SetImplementationReference extends ReferenceWi
   }
 }
 
-export class /*toCHECK*/ SetImplementationExplicitReference extends SetImplementationReference {
+export class SetImplementationExplicitReference extends SetImplementationReference {
   override readonly ownerReference: PackageableElementExplicitReference<Mapping>;
 
   private constructor(value: SetImplementation) {
@@ -58,7 +58,7 @@ export class /*toCHECK*/ SetImplementationExplicitReference extends SetImplement
   }
 }
 
-export class /*toCHECK*/ SetImplementationImplicitReference extends SetImplementationReference {
+export class SetImplementationImplicitReference extends SetImplementationReference {
   override readonly ownerReference: PackageableElementImplicitReference<Mapping>;
 
   private constructor(

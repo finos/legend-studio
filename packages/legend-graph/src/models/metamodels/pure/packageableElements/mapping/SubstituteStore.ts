@@ -18,7 +18,7 @@ import type { Store } from '../store/Store';
 import type { PackageableElementReference } from '../PackageableElementReference';
 import type { MappingInclude } from './MappingInclude';
 
-export class /*toCHECK*/ SubstituteStore {
+export class SubstituteStore {
   owner: MappingInclude;
   original: PackageableElementReference<Store>;
   substitute: PackageableElementReference<Store>;

@@ -28,7 +28,7 @@ import type { Store } from '../store/Store';
 import type { PropertyMapping } from './PropertyMapping';
 import type { InferableMappingElementIdValue } from './InferableMappingElementId';
 
-export abstract class /*toCHECK*/ AssociationImplementation
+export abstract class AssociationImplementation
   implements PropertyMappingsImplementation, Hashable
 {
   association: PackageableElementReference<Association>;

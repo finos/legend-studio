@@ -27,10 +27,7 @@ import { type Stubable, isStubArray } from '../../../../../helpers/Stubable';
 import type { MappingTest } from './MappingTest';
 import type { MappingInclude } from './MappingInclude';
 
-export class /*toCHECK*/ Mapping
-  extends PackageableElement
-  implements Hashable, Stubable
-{
+export class Mapping extends PackageableElement implements Hashable, Stubable {
   includes: MappingInclude[] = [];
   classMappings: SetImplementation[] = [];
   enumerationMappings: EnumerationMapping[] = [];

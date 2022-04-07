@@ -75,7 +75,7 @@ export interface SetImplementationVisitor<T> {
   ): T;
 }
 
-export abstract class /*toCHECK*/ SetImplementation
+export abstract class SetImplementation
   implements PropertyOwnerImplementation, Hashable, Stubable
 {
   isEmbedded = false;
@@ -156,7 +156,7 @@ export enum SET_IMPLEMENTATION_TYPE {
  * See https://github.com/finos/legend-studio/issues/880
  * See https://github.com/finos/legend-studio/issues/941
  */
-export class /*toCHECK*/ TEMPORARY__UnresolvedSetImplementation extends SetImplementation {
+export class TEMPORARY__UnresolvedSetImplementation extends SetImplementation {
   constructor(id: string, parent: Mapping) {
     super(
       InferableMappingElementIdExplicitValue.create(id, ''),
