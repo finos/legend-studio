@@ -19,7 +19,7 @@ import { type PackageableElementVisitor, Store } from '@finos/legend-graph';
 import type { ServiceStoreElement } from './ESService_ServiceStoreElement';
 import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../ESService_ModelUtils';
 
-export class /*toCHECK*/ ServiceStore extends Store implements Hashable {
+export class ServiceStore extends Store implements Hashable {
   description?: string | undefined;
   elements: ServiceStoreElement[] = [];
 

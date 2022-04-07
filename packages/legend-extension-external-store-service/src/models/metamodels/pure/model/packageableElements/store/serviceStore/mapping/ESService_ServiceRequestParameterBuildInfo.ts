@@ -19,7 +19,7 @@ import type { RawLambda } from '@finos/legend-graph';
 import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../ESService_ModelUtils';
 import type { ServiceParameter } from '../model/ESService_ServiceParameter';
 
-export class /*toCHECK*/ ServiceRequestParameterBuildInfo implements Hashable {
+export class ServiceRequestParameterBuildInfo implements Hashable {
   serviceParameter!: ServiceParameter;
   transform!: RawLambda;
 

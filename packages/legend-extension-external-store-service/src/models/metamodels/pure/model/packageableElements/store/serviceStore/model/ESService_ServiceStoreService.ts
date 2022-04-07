@@ -29,7 +29,7 @@ export enum HTTP_METHOD {
   POST = 'POST',
 }
 
-export class /*toCHECK*/ ServiceStoreService
+export class ServiceStoreService
   extends ServiceStoreElement
   implements Hashable
 {

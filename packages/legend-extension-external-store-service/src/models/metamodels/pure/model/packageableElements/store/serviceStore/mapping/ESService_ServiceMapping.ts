@@ -21,7 +21,7 @@ import type { ServiceStoreService } from '../model/ESService_ServiceStoreService
 import type { RootServiceInstanceSetImplementation } from './ESService_RootServiceInstanceSetImplementation';
 import type { ServiceRequestBuildInfo } from './ESService_ServiceRequestBuildInfo';
 
-export class /*toCHECK*/ ServiceMapping implements Hashable {
+export class ServiceMapping implements Hashable {
   owner!: RootServiceInstanceSetImplementation;
   service!: ServiceStoreService;
   pathOffset?: object | undefined; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
