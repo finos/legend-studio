@@ -16,6 +16,6 @@
 
 import type { Hashable } from '@finos/legend-shared';
 
-export abstract class /*toCHECK*/ PostProcessor implements Hashable {
+export abstract class PostProcessor implements Hashable {
   abstract get hashCode(): string;
 }

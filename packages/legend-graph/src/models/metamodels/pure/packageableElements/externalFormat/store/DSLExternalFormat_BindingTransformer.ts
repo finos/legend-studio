@@ -19,7 +19,7 @@ import { CORE_HASH_STRUCTURE } from '../../../../../../MetaModelConst';
 import type { PackageableElementReference } from '../../PackageableElementReference';
 import type { Binding } from './DSLExternalFormat_Binding';
 
-export class /*toCHECK*/ BindingTransformer implements Hashable {
+export class BindingTransformer implements Hashable {
   binding!: PackageableElementReference<Binding>;
 
   get hashCode(): string {

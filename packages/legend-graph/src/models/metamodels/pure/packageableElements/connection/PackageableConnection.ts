@@ -22,7 +22,7 @@ import {
 } from '../PackageableElement';
 import type { Connection } from './Connection';
 
-export class /*toCHECK*/ PackageableConnection
+export class PackageableConnection
   extends PackageableElement
   implements Hashable
 {
