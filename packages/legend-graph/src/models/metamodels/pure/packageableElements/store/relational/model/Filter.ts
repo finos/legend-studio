@@ -19,7 +19,7 @@ import { type Hashable, hashArray } from '@finos/legend-shared';
 import type { Operation } from './RelationalOperationElement';
 import type { Database } from './Database';
 
-export class /*toCHECK*/ Filter implements Hashable {
+export class Filter implements Hashable {
   owner!: Database;
   name: string;
   operation: Operation;

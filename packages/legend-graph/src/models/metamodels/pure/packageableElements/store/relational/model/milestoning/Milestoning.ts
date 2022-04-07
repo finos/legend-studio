@@ -17,10 +17,10 @@
 import type { Hashable } from '@finos/legend-shared';
 import type { RawInstanceValue } from '../../../../../rawValueSpecification/RawInstanceValue';
 
-export abstract class /*toCHECK*/ Milestoning implements Hashable {
+export abstract class Milestoning implements Hashable {
   abstract get hashCode(): string;
 }
 
-export abstract class /*toCHECK*/ TemporalMilestoning extends Milestoning {
+export abstract class TemporalMilestoning extends Milestoning {
   infinityDate?: RawInstanceValue | undefined;
 }

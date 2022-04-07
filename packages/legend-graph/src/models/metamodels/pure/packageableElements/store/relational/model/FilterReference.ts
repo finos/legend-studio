@@ -23,7 +23,7 @@ import { ReferenceWithOwner } from '../../../../Reference';
 import type { Database } from './Database';
 import type { Filter } from './Filter';
 
-export abstract class /*toCHECK*/ FilterReference extends ReferenceWithOwner {
+export abstract class FilterReference extends ReferenceWithOwner {
   override readonly ownerReference: PackageableElementReference<Database>;
   value: Filter;
 
@@ -38,7 +38,7 @@ export abstract class /*toCHECK*/ FilterReference extends ReferenceWithOwner {
   }
 }
 
-export class /*toCHECK*/ FilterExplicitReference extends FilterReference {
+export class FilterExplicitReference extends FilterReference {
   override readonly ownerReference: PackageableElementExplicitReference<Database>;
 
   private constructor(value: Filter) {
@@ -54,7 +54,7 @@ export class /*toCHECK*/ FilterExplicitReference extends FilterReference {
   }
 }
 
-export class /*toCHECK*/ FilterImplicitReference extends FilterReference {
+export class FilterImplicitReference extends FilterReference {
   override readonly ownerReference: PackageableElementImplicitReference<Database>;
 
   private constructor(

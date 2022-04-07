@@ -19,7 +19,7 @@ import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import type { RawLambda } from '../../rawValueSpecification/RawLambda';
 import type { Service } from './Service';
 
-export abstract class /*toCHECK*/ ServiceTest implements Hashable {
+export abstract class ServiceTest implements Hashable {
   owner: Service;
 
   constructor(owner: Service) {
@@ -29,7 +29,7 @@ export abstract class /*toCHECK*/ ServiceTest implements Hashable {
   abstract get hashCode(): string;
 }
 
-export class /*toCHECK*/ TestContainer implements Hashable {
+export class TestContainer implements Hashable {
   uuid = uuid();
   parametersValues: unknown[] = []; // Any[*]; // ValueSpecification?
   assert: RawLambda; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
@@ -49,10 +49,7 @@ export class /*toCHECK*/ TestContainer implements Hashable {
   }
 }
 
-export class /*toCHECK*/ SingleExecutionTest
-  extends ServiceTest
-  implements Hashable
-{
+export class SingleExecutionTest extends ServiceTest implements Hashable {
   data: string;
   asserts: TestContainer[] = [];
 
@@ -70,7 +67,7 @@ export class /*toCHECK*/ SingleExecutionTest
   }
 }
 
-export class /*toCHECK*/ KeyedSingleExecutionTest
+export class KeyedSingleExecutionTest
   extends SingleExecutionTest
   implements Hashable
 {
@@ -91,10 +88,7 @@ export class /*toCHECK*/ KeyedSingleExecutionTest
   }
 }
 
-export class /*toCHECK*/ MultiExecutionTest
-  extends ServiceTest
-  implements Hashable
-{
+export class MultiExecutionTest extends ServiceTest implements Hashable {
   tests: KeyedSingleExecutionTest[] = [];
 
   get hashCode(): string {

@@ -25,7 +25,7 @@ import type { Schema } from './Schema';
 import { Column } from './Column';
 import type { Milestoning } from './milestoning/Milestoning';
 
-export class /*toCHECK*/ Table extends NamedRelation implements Hashable {
+export class Table extends NamedRelation implements Hashable {
   schema!: Schema;
   primaryKey: Column[] = [];
   milestoning: Milestoning[] = [];

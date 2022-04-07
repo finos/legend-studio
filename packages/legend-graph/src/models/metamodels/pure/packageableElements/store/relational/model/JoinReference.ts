@@ -23,7 +23,7 @@ import { ReferenceWithOwner } from '../../../../Reference';
 import type { Database } from './Database';
 import type { Join } from './Join';
 
-export abstract class /*toCHECK*/ JoinReference extends ReferenceWithOwner {
+export abstract class JoinReference extends ReferenceWithOwner {
   override readonly ownerReference: PackageableElementReference<Database>;
   value: Join;
 
@@ -37,7 +37,7 @@ export abstract class /*toCHECK*/ JoinReference extends ReferenceWithOwner {
   }
 }
 
-export class /*toCHECK*/ JoinExplicitReference extends JoinReference {
+export class JoinExplicitReference extends JoinReference {
   override readonly ownerReference: PackageableElementExplicitReference<Database>;
 
   private constructor(value: Join) {
@@ -53,7 +53,7 @@ export class /*toCHECK*/ JoinExplicitReference extends JoinReference {
   }
 }
 
-export class /*toCHECK*/ JoinImplicitReference extends JoinReference {
+export class JoinImplicitReference extends JoinReference {
   override readonly ownerReference: PackageableElementImplicitReference<Database>;
 
   private constructor(

@@ -26,16 +26,13 @@ import {
 } from '../../../../../helpers/ValidationHelper';
 import type { PackageableElementReference } from '../PackageableElementReference';
 
-export abstract class /*toCHECK*/ ServiceExecution implements Hashable {
+export abstract class ServiceExecution implements Hashable {
   private readonly _$nominalTypeBrand!: 'ServiceExecution';
 
   abstract get hashCode(): string;
 }
 
-export class /*toCHECK*/ PureExecution
-  extends ServiceExecution
-  implements Hashable
-{
+export class PureExecution extends ServiceExecution implements Hashable {
   owner: Service;
   func: RawLambda; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
 
@@ -63,10 +60,7 @@ export class /*toCHECK*/ PureExecution
   }
 }
 
-export class /*toCHECK*/ PureSingleExecution
-  extends PureExecution
-  implements Hashable
-{
+export class PureSingleExecution extends PureExecution implements Hashable {
   mapping: PackageableElementReference<Mapping>;
   runtime: Runtime;
 
@@ -97,7 +91,7 @@ export class /*toCHECK*/ PureSingleExecution
   }
 }
 
-export class /*toCHECK*/ KeyedExecutionParameter implements Hashable {
+export class KeyedExecutionParameter implements Hashable {
   uuid = uuid();
   key: string;
   mapping: PackageableElementReference<Mapping>;
@@ -129,10 +123,7 @@ export class /*toCHECK*/ KeyedExecutionParameter implements Hashable {
   }
 }
 
-export class /*toCHECK*/ PureMultiExecution
-  extends PureExecution
-  implements Hashable
-{
+export class PureMultiExecution extends PureExecution implements Hashable {
   executionKey: string;
   executionParameters: KeyedExecutionParameter[] = [];
 

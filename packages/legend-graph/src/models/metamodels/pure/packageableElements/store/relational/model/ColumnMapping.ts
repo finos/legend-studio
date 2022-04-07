@@ -18,7 +18,7 @@ import { type Hashable, hashArray } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import type { RelationalOperationElement } from './RelationalOperationElement';
 
-export class /*toCHECK*/ ColumnMapping implements Hashable {
+export class ColumnMapping implements Hashable {
   columnName: string;
   relationalOperationElement: RelationalOperationElement;
 

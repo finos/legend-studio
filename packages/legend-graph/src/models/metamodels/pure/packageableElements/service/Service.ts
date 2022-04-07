@@ -27,10 +27,7 @@ import type { TaggedValue } from '../domain/TaggedValue';
 
 export const DEFAULT_SERVICE_PATTERN = '/';
 
-export class /*toCHECK*/ Service
-  extends PackageableElement
-  implements Hashable
-{
+export class Service extends PackageableElement implements Hashable {
   stereotypes: StereotypeReference[] = [];
   taggedValues: TaggedValue[] = [];
   pattern = '/';

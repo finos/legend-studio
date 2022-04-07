@@ -18,7 +18,7 @@ import { CORE_HASH_STRUCTURE } from '../../../../../../../../MetaModelConst';
 import { hashArray } from '@finos/legend-shared';
 import { TemporalMilestoning } from './Milestoning';
 
-export class /*toCHECK*/ BusinessMilestoning extends TemporalMilestoning {
+export class BusinessMilestoning extends TemporalMilestoning {
   // from and to are columns in mm. We will use string for now until we add resolvement of columns
   from!: string;
   thru!: string;
