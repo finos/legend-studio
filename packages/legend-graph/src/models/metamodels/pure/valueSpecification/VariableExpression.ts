@@ -21,7 +21,7 @@ import {
   ValueSpecification,
 } from './ValueSpecification';
 
-export class VariableExpression extends ValueSpecification {
+export class /*toCHECK*/ VariableExpression extends ValueSpecification {
   name: string;
 
   constructor(

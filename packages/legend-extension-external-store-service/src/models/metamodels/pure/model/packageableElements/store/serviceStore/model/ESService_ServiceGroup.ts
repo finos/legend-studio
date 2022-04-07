@@ -18,7 +18,10 @@ import { hashArray, type Hashable } from '@finos/legend-shared';
 import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../ESService_ModelUtils';
 import { ServiceStoreElement } from './ESService_ServiceStoreElement';
 
-export class ServiceGroup extends ServiceStoreElement implements Hashable {
+export class /*toCHECK*/ ServiceGroup
+  extends ServiceStoreElement
+  implements Hashable
+{
   elements: ServiceStoreElement[] = [];
 
   override get hashCode(): string {

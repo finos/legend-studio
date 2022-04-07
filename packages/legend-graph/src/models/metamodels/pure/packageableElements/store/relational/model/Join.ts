@@ -23,7 +23,7 @@ export const SELF_JOIN_TABLE_NAME = '{target}';
 export const SELF_JOIN_SCHEMA_NAME = 'default';
 export const SELF_JOIN_ALIAS_PREFIX = 't_';
 
-export class Join implements Hashable {
+export class /*toCHECK*/ Join implements Hashable {
   owner!: Database;
   name: string;
   /**

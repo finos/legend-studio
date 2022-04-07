@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { toJS } from 'mobx';
 import type { RawValueSpecificationVisitor } from '../../../../../../metamodels/pure/rawValueSpecification/RawValueSpecification';
 import type { RawLambda } from '../../../../../../metamodels/pure/rawValueSpecification/RawLambda';
 import type { RawVariableExpression } from '../../../../../../metamodels/pure/rawValueSpecification/RawVariableExpression';
@@ -47,27 +46,20 @@ export class V1_RawValueSpecificationTransformer
     // e.g. { "classPointerSourceInformation": ... }
     // we will need to use the prune source information method from `V1_PureGraphManager`
     rawLambda.body = rawValueSpecification.body
-      ? toJS(
-          this.context.keepSourceInformation
-            ? rawValueSpecification.body
-            : recursiveOmit(
-                rawValueSpecification.body as Record<PropertyKey, unknown>,
-                [SOURCE_INFORMATION_KEY],
-              ),
-        )
+      ? this.context.keepSourceInformation
+        ? rawValueSpecification.body
+        : recursiveOmit(
+            rawValueSpecification.body as Record<PropertyKey, unknown>,
+            [SOURCE_INFORMATION_KEY],
+          )
       : undefined;
     rawLambda.parameters = rawValueSpecification.parameters
-      ? toJS(
-          this.context.keepSourceInformation
-            ? rawValueSpecification.parameters
-            : recursiveOmit(
-                rawValueSpecification.parameters as Record<
-                  PropertyKey,
-                  unknown
-                >,
-                [SOURCE_INFORMATION_KEY],
-              ),
-        )
+      ? this.context.keepSourceInformation
+        ? rawValueSpecification.parameters
+        : recursiveOmit(
+            rawValueSpecification.parameters as Record<PropertyKey, unknown>,
+            [SOURCE_INFORMATION_KEY],
+          )
       : undefined;
     return rawLambda;
   }

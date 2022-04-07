@@ -33,7 +33,7 @@ import type { InferableMappingElementIdValue } from '../../../mapping/InferableM
 import type { Mapping } from '../../../mapping/Mapping';
 import type { InferableMappingElementRoot } from '../../../mapping/InferableMappingElementRoot';
 
-export class PureInstanceSetImplementation
+export class /*toCHECK*/ PureInstanceSetImplementation
   extends InstanceSetImplementation
   implements Hashable, Stubable
 {

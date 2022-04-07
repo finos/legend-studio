@@ -24,7 +24,10 @@ import {
 import type { PackageableElementReference } from '../../PackageableElementReference';
 import { DSL_EXTERNAL_FORMAT_HASH_STRUCTURE } from '../../../../../DSLExternalFormat_ModelUtils';
 
-export class ExternalFormatConnection extends Connection implements Hashable {
+export class /*toCHECK*/ ExternalFormatConnection
+  extends Connection
+  implements Hashable
+{
   declare store: PackageableElementReference<Binding>;
   externalSource!: UrlStream;
 

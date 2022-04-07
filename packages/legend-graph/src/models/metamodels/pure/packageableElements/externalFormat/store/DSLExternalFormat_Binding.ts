@@ -22,7 +22,7 @@ import type { ModelUnit } from './DSLExternalFormat_ModelUnit';
 import type { PackageableElementVisitor } from '../../PackageableElement';
 import { DSL_EXTERNAL_FORMAT_HASH_STRUCTURE } from '../../../../../DSLExternalFormat_ModelUtils';
 
-export class Binding extends Store implements Hashable {
+export class /*toCHECK*/ Binding extends Store implements Hashable {
   schemaSet!: OptionalPackageableElementReference<SchemaSet>;
   schemaId?: string | undefined;
   contentType!: string;

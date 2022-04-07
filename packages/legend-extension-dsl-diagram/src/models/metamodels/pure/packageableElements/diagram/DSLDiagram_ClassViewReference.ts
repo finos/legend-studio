@@ -23,7 +23,7 @@ import {
   type PackageableElementReference,
 } from '@finos/legend-graph';
 
-export abstract class ClassViewReference extends ReferenceWithOwner {
+export abstract class /*toCHECK*/ ClassViewReference extends ReferenceWithOwner {
   override readonly ownerReference: PackageableElementReference<Diagram>;
   value: ClassView;
 
@@ -37,7 +37,7 @@ export abstract class ClassViewReference extends ReferenceWithOwner {
   }
 }
 
-export class ClassViewExplicitReference extends ClassViewReference {
+export class /*toCHECK*/ ClassViewExplicitReference extends ClassViewReference {
   override readonly ownerReference: PackageableElementExplicitReference<Diagram>;
 
   private constructor(value: ClassView) {
@@ -53,7 +53,7 @@ export class ClassViewExplicitReference extends ClassViewReference {
   }
 }
 
-export class ClassViewImplicitReference extends ClassViewReference {
+export class /*toCHECK*/ ClassViewImplicitReference extends ClassViewReference {
   override readonly ownerReference: PackageableElementImplicitReference<Diagram>;
 
   private constructor(

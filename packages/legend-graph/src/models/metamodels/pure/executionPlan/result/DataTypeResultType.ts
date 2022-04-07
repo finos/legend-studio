@@ -16,4 +16,4 @@
 
 import { ResultType } from './ResultType';
 
-export class DataTypeResultType extends ResultType {}
+export class /*toCHECK*/ DataTypeResultType extends ResultType {}

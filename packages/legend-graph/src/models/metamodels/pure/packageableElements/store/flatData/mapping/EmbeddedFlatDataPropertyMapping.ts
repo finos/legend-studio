@@ -49,7 +49,7 @@ import { InferableMappingElementRootExplicitValue } from '../../../mapping/Infer
  * despite the fact that it has the shape similar to a class mapping and it can contain multiple property mappings, it itselt is not a class mapping, it must
  * exsit "embedded" within a property mapping.
  */
-export class EmbeddedFlatDataPropertyMapping
+export class /*toCHECK*/ EmbeddedFlatDataPropertyMapping
   extends AbstractFlatDataPropertyMapping
   implements InstanceSetImplementation, Hashable
 {

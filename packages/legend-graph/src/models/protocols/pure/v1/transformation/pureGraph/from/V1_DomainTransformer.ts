@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { toJS } from 'mobx';
 import type { DerivedProperty } from '../../../../../../metamodels/pure/packageableElements/domain/DerivedProperty';
 import type { Constraint } from '../../../../../../metamodels/pure/packageableElements/domain/Constraint';
 import type {
@@ -172,8 +171,8 @@ const transformDerivedProperty = (
 ): V1_DerivedProperty => {
   const derivedProperty = new V1_DerivedProperty();
   derivedProperty.name = element.name;
-  derivedProperty.body = toJS(element.body);
-  derivedProperty.parameters = toJS(element.parameters);
+  derivedProperty.body = element.body;
+  derivedProperty.parameters = element.parameters;
   derivedProperty.returnMultiplicity = V1_transformMultiplicity(
     element.multiplicity,
   );
@@ -228,13 +227,12 @@ export const V1_transformFunction = (
 ): V1_ConcreteFunctionDefinition => {
   const _function = new V1_ConcreteFunctionDefinition();
   V1_initPackageableElement(_function, element);
-  _function.body = toJS(element.body);
-  _function.parameters = element.parameters.map((v) =>
-    toJS(
+  _function.body = element.body;
+  _function.parameters = element.parameters.map(
+    (v) =>
       v.accept_RawValueSpecificationVisitor(
         new V1_RawValueSpecificationTransformer(context),
       ) as V1_RawVariable,
-    ),
   );
   _function.returnType = V1_transformElementReference(element.returnType);
   _function.stereotypes = element.stereotypes.map(V1_transformStereotype);

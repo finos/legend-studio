@@ -16,4 +16,4 @@
 
 import { Type } from './Type';
 
-export abstract class DataType extends Type {}
+export abstract class /*toCHECK*/ DataType extends Type {}

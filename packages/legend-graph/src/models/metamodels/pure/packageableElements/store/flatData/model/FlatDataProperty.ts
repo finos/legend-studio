@@ -19,7 +19,7 @@ import { type Hashable, hashArray } from '@finos/legend-shared';
 
 export type FlatDataPropertyValue = boolean | string | number;
 
-export class FlatDataProperty implements Hashable {
+export class /*toCHECK*/ FlatDataProperty implements Hashable {
   name: string;
   value: FlatDataPropertyValue;
 

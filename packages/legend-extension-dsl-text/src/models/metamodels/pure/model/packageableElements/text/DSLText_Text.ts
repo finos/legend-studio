@@ -26,7 +26,7 @@ export enum TEXT_TYPE {
   MARKDOWN = 'markdown',
 }
 
-export class Text extends PackageableElement implements Hashable {
+export class /*toCHECK*/ Text extends PackageableElement implements Hashable {
   type: TEXT_TYPE;
   content: string;
 

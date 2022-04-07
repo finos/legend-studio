@@ -16,12 +16,12 @@
 
 import { InferableValue } from '../../InferableValue';
 
-export abstract class InferableMappingElementRoot extends InferableValue<
+export abstract class /*toCHECK*/ InferableMappingElementRoot extends InferableValue<
   boolean,
   boolean
 > {}
 
-export class InferableMappingElementRootExplicitValue extends InferableMappingElementRoot {
+export class /*toCHECK*/ InferableMappingElementRootExplicitValue extends InferableMappingElementRoot {
   private constructor(value: boolean) {
     super(value);
   }
@@ -35,7 +35,7 @@ export class InferableMappingElementRootExplicitValue extends InferableMappingEl
   }
 }
 
-export class InferableMappingElementRootImplicitValue extends InferableMappingElementRoot {
+export class /*toCHECK*/ InferableMappingElementRootImplicitValue extends InferableMappingElementRoot {
   private input!: boolean;
 
   private constructor(value: boolean, input: boolean) {

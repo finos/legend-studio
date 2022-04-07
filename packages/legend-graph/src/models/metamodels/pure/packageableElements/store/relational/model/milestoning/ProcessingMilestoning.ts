@@ -18,7 +18,7 @@ import { TemporalMilestoning } from './Milestoning';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../../MetaModelConst';
 import { hashArray } from '@finos/legend-shared';
 
-export class ProcessingMilestoning extends TemporalMilestoning {
+export class /*toCHECK*/ ProcessingMilestoning extends TemporalMilestoning {
   // TODO: resolve in, out to a column
   in: string;
   out: string;

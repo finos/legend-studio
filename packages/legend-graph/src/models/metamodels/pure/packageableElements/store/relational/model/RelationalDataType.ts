@@ -17,47 +17,47 @@
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import { hashArray } from '@finos/legend-shared';
 
-export abstract class RelationalDataType {
+export abstract class /*toCHECK*/ RelationalDataType {
   abstract get hashCode(): string;
 }
 
-export class BigInt extends RelationalDataType {
+export class /*toCHECK*/ BigInt extends RelationalDataType {
   get hashCode(): string {
     return hashArray([CORE_HASH_STRUCTURE.RELATIONAL_DATATYPE_BIGINT]);
   }
 }
 
-export class SmallInt extends RelationalDataType {
+export class /*toCHECK*/ SmallInt extends RelationalDataType {
   get hashCode(): string {
     return hashArray([CORE_HASH_STRUCTURE.RELATIONAL_DATATYPE_SMALLINT]);
   }
 }
 
-export class TinyInt extends RelationalDataType {
+export class /*toCHECK*/ TinyInt extends RelationalDataType {
   get hashCode(): string {
     return hashArray([CORE_HASH_STRUCTURE.RELATIONAL_DATATYPE_TINYINT]);
   }
 }
 
-export class Integer extends RelationalDataType {
+export class /*toCHECK*/ Integer extends RelationalDataType {
   get hashCode(): string {
     return hashArray([CORE_HASH_STRUCTURE.RELATIONAL_DATATYPE_INTEGER]);
   }
 }
 
-export class Float extends RelationalDataType {
+export class /*toCHECK*/ Float extends RelationalDataType {
   get hashCode(): string {
     return hashArray([CORE_HASH_STRUCTURE.RELATIONAL_DATATYPE_FLOAT]);
   }
 }
 
-export class Double extends RelationalDataType {
+export class /*toCHECK*/ Double extends RelationalDataType {
   get hashCode(): string {
     return hashArray([CORE_HASH_STRUCTURE.RELATIONAL_DATATYPE_DOUBLE]);
   }
 }
 
-export class VarChar extends RelationalDataType {
+export class /*toCHECK*/ VarChar extends RelationalDataType {
   size: number;
 
   constructor(size: number) {
@@ -73,7 +73,7 @@ export class VarChar extends RelationalDataType {
   }
 }
 
-export class Char extends RelationalDataType {
+export class /*toCHECK*/ Char extends RelationalDataType {
   size: number;
 
   constructor(size: number) {
@@ -89,7 +89,7 @@ export class Char extends RelationalDataType {
   }
 }
 
-export class VarBinary extends RelationalDataType {
+export class /*toCHECK*/ VarBinary extends RelationalDataType {
   size: number;
 
   constructor(size: number) {
@@ -105,7 +105,7 @@ export class VarBinary extends RelationalDataType {
   }
 }
 
-export class Decimal extends RelationalDataType {
+export class /*toCHECK*/ Decimal extends RelationalDataType {
   precision: number;
   scale: number;
 
@@ -124,7 +124,7 @@ export class Decimal extends RelationalDataType {
   }
 }
 
-export class Numeric extends RelationalDataType {
+export class /*toCHECK*/ Numeric extends RelationalDataType {
   precision: number;
   scale: number;
 
@@ -143,31 +143,31 @@ export class Numeric extends RelationalDataType {
   }
 }
 
-export class Timestamp extends RelationalDataType {
+export class /*toCHECK*/ Timestamp extends RelationalDataType {
   get hashCode(): string {
     return hashArray([CORE_HASH_STRUCTURE.RELATIONAL_DATATYPE_TIMESTAMP]);
   }
 }
 
-export class Date extends RelationalDataType {
+export class /*toCHECK*/ Date extends RelationalDataType {
   get hashCode(): string {
     return hashArray([CORE_HASH_STRUCTURE.RELATIONAL_DATATYPE_DATE]);
   }
 }
 
-export class Other extends RelationalDataType {
+export class /*toCHECK*/ Other extends RelationalDataType {
   get hashCode(): string {
     return hashArray([CORE_HASH_STRUCTURE.RELATIONAL_DATATYPE_VARCHAR]);
   }
 }
 
-export class Bit extends RelationalDataType {
+export class /*toCHECK*/ Bit extends RelationalDataType {
   get hashCode(): string {
     return hashArray([CORE_HASH_STRUCTURE.RELATIONAL_DATATYPE_BIT]);
   }
 }
 
-export class Binary extends RelationalDataType {
+export class /*toCHECK*/ Binary extends RelationalDataType {
   size: number;
 
   constructor(size: number) {
@@ -183,13 +183,13 @@ export class Binary extends RelationalDataType {
   }
 }
 
-export class Real extends RelationalDataType {
+export class /*toCHECK*/ Real extends RelationalDataType {
   get hashCode(): string {
     return hashArray([CORE_HASH_STRUCTURE.RELATIONAL_DATATYPE_REAL]);
   }
 }
 
-export class SemiStructured extends RelationalDataType {
+export class /*toCHECK*/ SemiStructured extends RelationalDataType {
   get hashCode(): string {
     return hashArray([CORE_HASH_STRUCTURE.RELATIONAL_DATATYPE_SEMISTRUCTURED]);
   }

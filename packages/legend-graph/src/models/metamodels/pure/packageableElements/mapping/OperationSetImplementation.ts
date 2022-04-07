@@ -45,7 +45,7 @@ export const getClassMappingOperationType = (value: string): OperationType =>
     `Encountered unsupproted class mapping operation type '${value}'`,
   );
 
-export class OperationSetImplementation
+export class /*toCHECK*/ OperationSetImplementation
   extends SetImplementation
   implements Hashable, Stubable
 {

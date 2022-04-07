@@ -66,7 +66,9 @@ export interface PackageableElementVisitor<T> {
   visit_GenerationSpecification(element: GenerationSpecification): T;
 }
 
-export abstract class PackageableElement implements Hashable, Stubable {
+export abstract class /*toCHECK*/ PackageableElement
+  implements Hashable, Stubable
+{
   uuid = uuid();
   protected _isDeleted = false;
   protected _isDisposed = false;
@@ -114,7 +116,8 @@ export abstract class PackageableElement implements Hashable, Stubable {
   dispose(): void {
     this._isDisposed = true;
     /**
-     * Trigger recomputation on `hashCode` so it removes itself from all observables it previously observed
+     * Trigger recomputation on `hashCode` so if the element is observed, hash code computation will now
+     * remove itself from all observables it previously observed
      *
      * NOTE: we used to do this since we decorate `hashCode` with `computed({ keepAlive: true })` which
      * poses a memory-leak threat

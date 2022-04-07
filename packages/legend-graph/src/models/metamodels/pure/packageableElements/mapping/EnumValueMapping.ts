@@ -20,7 +20,7 @@ import { Enum } from '../domain/Enum';
 import type { Stubable } from '../../../../../helpers/Stubable';
 import type { EnumValueReference } from '../domain/EnumValueReference';
 
-export class SourceValue implements Stubable {
+export class /*toCHECK*/ SourceValue implements Stubable {
   uuid = uuid();
   value: Enum | string | number | undefined;
 
@@ -33,7 +33,7 @@ export class SourceValue implements Stubable {
   }
 }
 
-export class EnumValueMapping implements Hashable, Stubable {
+export class /*toCHECK*/ EnumValueMapping implements Hashable, Stubable {
   enum: EnumValueReference;
   sourceValues: SourceValue[] = [];
 

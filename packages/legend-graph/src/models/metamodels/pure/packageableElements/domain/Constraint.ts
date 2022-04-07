@@ -20,7 +20,7 @@ import { RawLambda } from '../../rawValueSpecification/RawLambda';
 import type { Class } from './Class';
 import type { Stubable } from '../../../../../helpers/Stubable';
 
-export class Constraint implements Hashable, Stubable {
+export class /*toCHECK*/ Constraint implements Hashable, Stubable {
   uuid = uuid();
   name: string;
   owner: Class;

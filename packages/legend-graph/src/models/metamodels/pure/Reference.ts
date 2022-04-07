@@ -46,13 +46,13 @@
  *    ALWAYS change the reference instance, for DELETE or ADD, this is obvious, but for MODIFY, we can follow case 1,
  *    but for simplicity sake, we will just swap out to use new a new reference
  */
-export abstract class Reference {
+export abstract class /*toCHECK*/ Reference {
   abstract value?: unknown | undefined;
 }
 
-export abstract class OptionalReference extends Reference {}
+export abstract class /*toCHECK*/ OptionalReference extends Reference {}
 
-export abstract class RequiredReference extends Reference {
+export abstract class /*toCHECK*/ RequiredReference extends Reference {
   abstract override value: unknown;
 }
 
@@ -65,7 +65,7 @@ export abstract class RequiredReference extends Reference {
  * if we modify the child, we should ALWAYS modify the owner reference accordingly (except when we have a list, we will
  * trash the reference)
  */
-export abstract class ReferenceWithOwner extends RequiredReference {
+export abstract class /*toCHECK*/ ReferenceWithOwner extends RequiredReference {
   readonly ownerReference: RequiredReference;
 
   protected constructor(ownerReference: RequiredReference) {

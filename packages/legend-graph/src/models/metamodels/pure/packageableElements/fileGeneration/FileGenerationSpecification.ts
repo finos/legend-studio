@@ -24,7 +24,7 @@ import { PackageableElementReference } from '../PackageableElementReference';
 import { AbstractGenerationSpecification } from '../generationSpecification/AbstractGenerationSpecification';
 import type { ConfigurationProperty } from './ConfigurationProperty';
 
-export class FileGenerationSpecification
+export class /*toCHECK*/ FileGenerationSpecification
   extends AbstractGenerationSpecification
   implements Hashable
 {

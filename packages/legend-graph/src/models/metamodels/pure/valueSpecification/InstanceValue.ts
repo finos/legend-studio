@@ -32,7 +32,7 @@ import type { Mapping } from '../packageableElements/mapping/Mapping';
  * Also, right now, we haven't done the full build/transform flow for value specification
  * we use the subtypes to make it easier to transform metamodel back into protocol.
  */
-export class InstanceValue extends ValueSpecification {
+export class /*toCHECK*/ InstanceValue extends ValueSpecification {
   values: unknown[] = [];
 
   deleteValue(val: unknown): void {
@@ -58,7 +58,7 @@ export class InstanceValue extends ValueSpecification {
   }
 }
 
-export class PrimitiveInstanceValue extends InstanceValue {
+export class /*toCHECK*/ PrimitiveInstanceValue extends InstanceValue {
   override genericType: GenericTypeReference;
 
   constructor(genericType: GenericTypeReference, multiplicity: Multiplicity) {
@@ -73,7 +73,7 @@ export class PrimitiveInstanceValue extends InstanceValue {
   }
 }
 
-export class EnumValueInstanceValue extends InstanceValue {
+export class /*toCHECK*/ EnumValueInstanceValue extends InstanceValue {
   override values: EnumValueReference[] = [];
 
   constructor(genericType: GenericTypeReference, multiplicity: Multiplicity) {
@@ -88,7 +88,7 @@ export class EnumValueInstanceValue extends InstanceValue {
   }
 }
 
-export class RuntimeInstanceValue extends InstanceValue {
+export class /*toCHECK*/ RuntimeInstanceValue extends InstanceValue {
   override values: EngineRuntime[] = [];
 
   override accept_ValueSpecificationVisitor<T>(
@@ -98,7 +98,7 @@ export class RuntimeInstanceValue extends InstanceValue {
   }
 }
 
-export class PairInstanceValue extends InstanceValue {
+export class /*toCHECK*/ PairInstanceValue extends InstanceValue {
   override values: Pair<unknown, unknown>[] = [];
 
   override accept_ValueSpecificationVisitor<T>(
@@ -108,7 +108,7 @@ export class PairInstanceValue extends InstanceValue {
   }
 }
 
-export class MappingInstanceValue extends InstanceValue {
+export class /*toCHECK*/ MappingInstanceValue extends InstanceValue {
   override values: PackageableElementReference<Mapping>[] = [];
 
   override accept_ValueSpecificationVisitor<T>(
@@ -118,7 +118,7 @@ export class MappingInstanceValue extends InstanceValue {
   }
 }
 
-export class PureListInstanceValue extends InstanceValue {
+export class /*toCHECK*/ PureListInstanceValue extends InstanceValue {
   override values: ValueSpecification[] = [];
 
   override accept_ValueSpecificationVisitor<T>(
@@ -128,7 +128,7 @@ export class PureListInstanceValue extends InstanceValue {
   }
 }
 
-export class CollectionInstanceValue extends InstanceValue {
+export class /*toCHECK*/ CollectionInstanceValue extends InstanceValue {
   override values: ValueSpecification[] = [];
 
   override accept_ValueSpecificationVisitor<T>(

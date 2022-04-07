@@ -23,7 +23,7 @@ import {
 } from './RawValueSpecification';
 import type { Stubable } from '../../../../helpers/Stubable';
 
-export class RawLambda
+export class /*toCHECK*/ RawLambda
   extends RawValueSpecification
   implements Hashable, Stubable
 {

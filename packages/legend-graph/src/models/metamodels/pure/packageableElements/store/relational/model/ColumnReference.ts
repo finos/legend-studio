@@ -24,7 +24,7 @@ import type { Database } from './Database';
 import type { Column } from './Column';
 import { getSchemaFromRelation } from './RelationReference';
 
-export abstract class ColumnReference extends ReferenceWithOwner {
+export abstract class /*toCHECK*/ ColumnReference extends ReferenceWithOwner {
   override readonly ownerReference: PackageableElementReference<Database>;
   value: Column;
 
@@ -38,7 +38,7 @@ export abstract class ColumnReference extends ReferenceWithOwner {
   }
 }
 
-export class ColumnExplicitReference extends ColumnReference {
+export class /*toCHECK*/ ColumnExplicitReference extends ColumnReference {
   override readonly ownerReference: PackageableElementExplicitReference<Database>;
 
   private constructor(value: Column) {
@@ -54,7 +54,7 @@ export class ColumnExplicitReference extends ColumnReference {
   }
 }
 
-export class ColumnImplicitReference extends ColumnReference {
+export class /*toCHECK*/ ColumnImplicitReference extends ColumnReference {
   override readonly ownerReference: PackageableElementImplicitReference<Database>;
 
   private constructor(

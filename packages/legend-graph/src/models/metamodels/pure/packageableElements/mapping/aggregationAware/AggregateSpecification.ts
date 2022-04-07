@@ -19,7 +19,7 @@ import type { GroupByFunctionSpecification } from './GroupByFunctionSpecificatio
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../MetaModelConst';
 
-export class AggregateSpecification implements Hashable {
+export class /*toCHECK*/ AggregateSpecification implements Hashable {
   canAggregate: boolean;
   groupByFunctions: GroupByFunctionSpecification[] = [];
   aggregateValues: AggregationFunctionSpecification[] = [];

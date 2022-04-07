@@ -18,7 +18,7 @@ import { hashArray, type Hashable } from '@finos/legend-shared';
 import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../ESService_ModelUtils';
 import type { ServiceRequestParameterBuildInfo } from './ESService_ServiceRequestParameterBuildInfo';
 
-export class ServiceRequestParametersBuildInfo implements Hashable {
+export class /*toCHECK*/ ServiceRequestParametersBuildInfo implements Hashable {
   parameterBuildInfoList: ServiceRequestParameterBuildInfo[] = [];
 
   get hashCode(): string {

@@ -15,6 +15,6 @@
  */
 import type { Hashable } from '@finos/legend-shared';
 
-export abstract class SecurityScheme implements Hashable {
+export abstract class /*toCHECK*/ SecurityScheme implements Hashable {
   abstract get hashCode(): string;
 }

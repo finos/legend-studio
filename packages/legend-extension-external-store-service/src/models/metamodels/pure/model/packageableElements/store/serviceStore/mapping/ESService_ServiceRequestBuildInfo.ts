@@ -19,7 +19,7 @@ import type { ServiceRequestBodyBuildInfo } from './ESService_ServiceRequestBody
 import type { ServiceRequestParametersBuildInfo } from './ESService_ServiceRequestParametersBuildInfo';
 import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../ESService_ModelUtils';
 
-export class ServiceRequestBuildInfo implements Hashable {
+export class /*toCHECK*/ ServiceRequestBuildInfo implements Hashable {
   requestBodyBuildInfo?: ServiceRequestBodyBuildInfo | undefined;
   requestParametersBuildInfo?: ServiceRequestParametersBuildInfo | undefined;
 

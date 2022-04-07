@@ -30,7 +30,7 @@ import {
 import type { GroupByMapping } from '../mapping/GroupByMapping';
 import type { FilterMapping } from '../mapping/FilterMapping';
 
-export class View
+export class /*toCHECK*/ View
   extends NamedRelation
   implements RelationalMappingSpecification, Hashable
 {

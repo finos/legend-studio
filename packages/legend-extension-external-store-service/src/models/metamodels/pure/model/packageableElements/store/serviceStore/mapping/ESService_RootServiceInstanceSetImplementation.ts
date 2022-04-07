@@ -24,7 +24,7 @@ import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../ESService_Mod
 import type { LocalMappingProperty } from './ESService_LocalMappingProperty';
 import type { ServiceMapping } from './ESService_ServiceMapping';
 
-export class RootServiceInstanceSetImplementation
+export class /*toCHECK*/ RootServiceInstanceSetImplementation
   extends InstanceSetImplementation
   implements Hashable
 {

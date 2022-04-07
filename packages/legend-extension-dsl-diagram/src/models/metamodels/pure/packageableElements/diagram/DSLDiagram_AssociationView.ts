@@ -25,7 +25,10 @@ import type {
   PropertyReference,
 } from '@finos/legend-graph';
 
-export class AssociationView extends PropertyHolderView implements Hashable {
+export class /*toCHECK*/ AssociationView
+  extends PropertyHolderView
+  implements Hashable
+{
   association: PackageableElementReference<Association>;
 
   constructor(

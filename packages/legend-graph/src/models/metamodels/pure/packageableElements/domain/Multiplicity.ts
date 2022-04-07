@@ -20,7 +20,7 @@ import {
 } from '../../../../../MetaModelConst';
 import { hashArray, type Hashable } from '@finos/legend-shared';
 
-export class Multiplicity implements Hashable {
+export class /*toCHECK*/ Multiplicity implements Hashable {
   lowerBound: number;
   upperBound?: number | undefined;
 

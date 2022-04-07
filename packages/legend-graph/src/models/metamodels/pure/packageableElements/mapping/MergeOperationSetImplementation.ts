@@ -30,7 +30,7 @@ import type { RawLambda } from '../../rawValueSpecification/RawLambda';
 import type { SetImplementationVisitor } from './SetImplementation';
 import { hashLambda } from '../../../../../MetaModelUtils';
 
-export class MergeOperationSetImplementation
+export class /*toCHECK*/ MergeOperationSetImplementation
   extends OperationSetImplementation
   implements Hashable, Stubable
 {

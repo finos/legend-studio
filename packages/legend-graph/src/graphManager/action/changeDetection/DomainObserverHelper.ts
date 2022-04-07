@@ -354,8 +354,8 @@ export const observe_DerivedProperty = skipObserved(
       multiplicity: observable,
       stereotypes: observable,
       taggedValues: observable,
-      body: observable.ref,
-      parameters: observable.ref,
+      body: observable.ref, // only observe the reference, the object itself is not observed
+      parameters: observable.ref, // only observe the reference, the object itself is not observed
       isStub: computed,
       hashCode: computed,
     });
@@ -467,8 +467,8 @@ export const observe_ConcreteFunctionDefinition = skipObserved(
 
     makeObservable<ConcreteFunctionDefinition, '_elementHashCode'>(metamodel, {
       returnMultiplicity: observable,
-      parameters: observable.shallow,
-      body: observable.ref,
+      parameters: observable.shallow, // only observe the list structure, each object itself is not observed
+      body: observable.ref, // only observe the reference, the object itself is not observed
       stereotypes: observable,
       taggedValues: observable,
       _elementHashCode: override,

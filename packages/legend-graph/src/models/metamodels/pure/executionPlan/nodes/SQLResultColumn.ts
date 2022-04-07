@@ -16,7 +16,7 @@
 
 import type { RelationalDataType } from '../../packageableElements/store/relational/model/RelationalDataType';
 
-export class SQLResultColumn {
+export class /*toCHECK*/ SQLResultColumn {
   label!: string;
   dataType?: RelationalDataType | undefined;
 }

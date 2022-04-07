@@ -16,7 +16,7 @@
 
 import type { ClassViewReference } from './DSLDiagram_ClassViewReference';
 
-export class RelationshipEdgeView {
+export class /*toCHECK*/ RelationshipEdgeView {
   classView: ClassViewReference;
   /**
    * Offsets from the center of the class view.
