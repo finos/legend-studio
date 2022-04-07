@@ -25,7 +25,7 @@ import { Store } from '../../Store';
 import type { PackageableElementVisitor } from '../../../PackageableElement';
 import type { RootFlatDataRecordType } from './FlatDataDataType';
 
-export class /*toCHECK*/ FlatData extends Store implements Hashable {
+export class FlatData extends Store implements Hashable {
   sections: FlatDataSection[] = [];
 
   findSection = (sectionName: string): FlatDataSection =>

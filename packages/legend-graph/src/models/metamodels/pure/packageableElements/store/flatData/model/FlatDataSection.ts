@@ -24,7 +24,7 @@ import type { FlatData } from './FlatData';
 import type { FlatDataProperty } from './FlatDataProperty';
 import type { RootFlatDataRecordType } from './FlatDataDataType';
 
-export class /*toCHECK*/ FlatDataSection implements Hashable {
+export class FlatDataSection implements Hashable {
   owner: FlatData;
   driverId: string;
   name: string;

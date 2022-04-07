@@ -16,4 +16,4 @@
 
 import { PropertyMapping } from '../../../mapping/PropertyMapping';
 
-export abstract class /*toCHECK*/ AbstractFlatDataPropertyMapping extends PropertyMapping {}
+export abstract class AbstractFlatDataPropertyMapping extends PropertyMapping {}

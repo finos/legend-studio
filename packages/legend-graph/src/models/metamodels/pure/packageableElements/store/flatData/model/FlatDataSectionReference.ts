@@ -25,7 +25,7 @@ import { ReferenceWithOwner } from '../../../../Reference';
 import type { FlatData } from './FlatData';
 import type { FlatDataSection } from './FlatDataSection';
 
-export abstract class /*toCHECK*/ FlatDataSectionReference extends ReferenceWithOwner {
+export abstract class FlatDataSectionReference extends ReferenceWithOwner {
   override readonly ownerReference: PackageableElementReference<FlatData>;
   value: FlatDataSection;
 
@@ -49,7 +49,7 @@ export abstract class /*toCHECK*/ FlatDataSectionReference extends ReferenceWith
   }
 }
 
-export class /*toCHECK*/ FlatDataSectionExplicitReference extends FlatDataSectionReference {
+export class FlatDataSectionExplicitReference extends FlatDataSectionReference {
   override readonly ownerReference: PackageableElementExplicitReference<FlatData>;
 
   private constructor(value: FlatDataSection) {
@@ -65,7 +65,7 @@ export class /*toCHECK*/ FlatDataSectionExplicitReference extends FlatDataSectio
   }
 }
 
-export class /*toCHECK*/ FlatDataSectionImplicitReference extends FlatDataSectionReference {
+export class FlatDataSectionImplicitReference extends FlatDataSectionReference {
   override readonly ownerReference: PackageableElementImplicitReference<FlatData>;
 
   private constructor(

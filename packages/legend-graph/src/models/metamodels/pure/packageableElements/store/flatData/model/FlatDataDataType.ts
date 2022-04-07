@@ -19,8 +19,8 @@ import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import type { FlatDataSection } from './FlatDataSection';
 import type { PrimitiveType } from '../../../domain/PrimitiveType';
 
-export abstract class /*toCHECK*/ FlatDataDataType {
-  correspondingPrimitiveType?: PrimitiveType | undefined;
+export abstract class FlatDataDataType {
+  readonly correspondingPrimitiveType?: PrimitiveType | undefined;
 
   constructor(correspondingPrimitiveType?: PrimitiveType) {
     this.correspondingPrimitiveType = correspondingPrimitiveType;
@@ -29,10 +29,7 @@ export abstract class /*toCHECK*/ FlatDataDataType {
   abstract get hashCode(): string;
 }
 
-export class /*toCHECK*/ FlatDataBoolean
-  extends FlatDataDataType
-  implements Hashable
-{
+export class FlatDataBoolean extends FlatDataDataType implements Hashable {
   trueString?: string | undefined;
   falseString?: string | undefined;
 
@@ -45,55 +42,37 @@ export class /*toCHECK*/ FlatDataBoolean
   }
 }
 
-export class /*toCHECK*/ FlatDataString
-  extends FlatDataDataType
-  implements Hashable
-{
+export class FlatDataString extends FlatDataDataType implements Hashable {
   get hashCode(): string {
     return hashArray([CORE_HASH_STRUCTURE.FLAT_DATA_STRING]);
   }
 }
 
-export class /*toCHECK*/ FlatDataNumber
-  extends FlatDataDataType
-  implements Hashable
-{
+export class FlatDataNumber extends FlatDataDataType implements Hashable {
   get hashCode(): string {
     return hashArray([CORE_HASH_STRUCTURE.FLAT_DATA_NUMBER]);
   }
 }
 
-export class /*toCHECK*/ FlatDataInteger
-  extends FlatDataNumber
-  implements Hashable
-{
+export class FlatDataInteger extends FlatDataNumber implements Hashable {
   override get hashCode(): string {
     return hashArray([CORE_HASH_STRUCTURE.FLAT_DATA_INTEGER]);
   }
 }
 
-export class /*toCHECK*/ FlatDataFloat
-  extends FlatDataNumber
-  implements Hashable
-{
+export class FlatDataFloat extends FlatDataNumber implements Hashable {
   override get hashCode(): string {
     return hashArray([CORE_HASH_STRUCTURE.FLAT_DATA_FLOAT]);
   }
 }
 
-export class /*toCHECK*/ FlatDataDecimal
-  extends FlatDataNumber
-  implements Hashable
-{
+export class FlatDataDecimal extends FlatDataNumber implements Hashable {
   override get hashCode(): string {
     return hashArray([CORE_HASH_STRUCTURE.FLAT_DATA_DECIMAL]);
   }
 }
 
-export class /*toCHECK*/ FlatDataDate
-  extends FlatDataDataType
-  implements Hashable
-{
+export class FlatDataDate extends FlatDataDataType implements Hashable {
   dateFormat?: string | undefined;
   timeZone?: string | undefined;
 
@@ -106,10 +85,7 @@ export class /*toCHECK*/ FlatDataDate
   }
 }
 
-export class /*toCHECK*/ FlatDataDateTime
-  extends FlatDataDate
-  implements Hashable
-{
+export class FlatDataDateTime extends FlatDataDate implements Hashable {
   override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.FLAT_DATA_DATE_TIME,
@@ -119,10 +95,7 @@ export class /*toCHECK*/ FlatDataDateTime
   }
 }
 
-export class /*toCHECK*/ FlatDataStrictDate
-  extends FlatDataDate
-  implements Hashable
-{
+export class FlatDataStrictDate extends FlatDataDate implements Hashable {
   override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.FLAT_DATA_STRICT_DATE,
@@ -132,7 +105,7 @@ export class /*toCHECK*/ FlatDataStrictDate
   }
 }
 
-export class /*toCHECK*/ FlatDataRecordField implements Hashable {
+export class FlatDataRecordField implements Hashable {
   label: string;
   flatDataDataType: FlatDataDataType;
   optional: boolean;
@@ -168,10 +141,7 @@ export class /*toCHECK*/ FlatDataRecordField implements Hashable {
  * As for `RootFlatDataRecordType` it should extends `X` so that we remain open for the possibility that flat data can have embedded
  * structure. Also `X` should not have name, as it can be embedded.
  */
-export class /*toCHECK*/ FlatDataRecordType
-  extends FlatDataDataType
-  implements Hashable
-{
+export class FlatDataRecordType extends FlatDataDataType implements Hashable {
   fields: FlatDataRecordField[] = [];
 
   get hashCode(): string {
@@ -182,7 +152,7 @@ export class /*toCHECK*/ FlatDataRecordType
   }
 }
 
-export class /*toCHECK*/ RootFlatDataRecordType
+export class RootFlatDataRecordType
   extends FlatDataRecordType
   implements Hashable
 {
