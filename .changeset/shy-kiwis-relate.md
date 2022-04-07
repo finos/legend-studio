@@ -2,4 +2,5 @@
 '@finos/legend-graph': major
 ---
 
-Remove `TEMPORARY_skipGraphBuilderPostProcessing` flag. Graph builder nolonger needs post-processing anymore.
+pr: 1000
+**BREAKING CHANGE:** Remove `TEMPORARY_skipGraphBuilderPostProcessing` flag. Graph builder nolonger needs post-processing anymore.

@@ -2,4 +2,5 @@
 '@finos/legend-graph': major
 ---
 
-Moved `GraphManagerState.precomputeHashes` to `ChangeDetectionState`.
+pr: 1000
+**BREAKING CHANGE:** Moved `GraphManagerState.precomputeHashes` to `ChangeDetectionState`.
