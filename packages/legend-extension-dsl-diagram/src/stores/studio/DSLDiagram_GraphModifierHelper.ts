@@ -153,6 +153,9 @@ export const positionedRectangle_setPosition = action(
  * NOTE: Having `position` and `rectangle` as observables compromises the performance of diagram
  * so we want to have a way to refresh the hash for change detection to pick up new hash when we resize
  * the class view box or move it.
+ *
+ * We should re-consider the usefulness of this method, maybe it's more worthwhile to recompute hash
+ * for the whole diagram instead?
  */
 export const positionedRectangle_forceRefreshHash = action(
   (pR: PositionedRectangle): void => {

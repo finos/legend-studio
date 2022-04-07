@@ -143,7 +143,6 @@ import { RelationalInputData } from '../../../../../../metamodels/pure/packageab
 import { V1_RelationalInputData } from '../../../model/packageableElements/store/relational/mapping/V1_RelationalInputData';
 import { SOURCE_INFORMATION_KEY } from '../../../../../../../MetaModelConst';
 import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext';
-import { toJS } from 'mobx';
 import type { DSLMapping_PureProtocolProcessorPlugin_Extension } from '../../../../DSLMapping_PureProtocolProcessorPlugin_Extension';
 import type { InstanceSetImplementation } from '../../../../../../metamodels/pure/packageableElements/mapping/InstanceSetImplementation';
 import type { SubstituteStore } from '../../../../../../metamodels/pure/packageableElements/mapping/SubstituteStore';
@@ -477,13 +476,13 @@ const transformRelationalPropertyMapping = (
   // NOTE: if in the future, source information is stored under different key,
   // e.g. { "classPointerSourceInformation": ... }
   // we need to use the prune source information method from `V1_PureGraphManager`
-  propertyMapping.relationalOperation = toJS(
+  propertyMapping.relationalOperation = (
     context.keepSourceInformation
       ? element.relationalOperation
       : recursiveOmit(
           element.relationalOperation as Record<PropertyKey, unknown>,
           [SOURCE_INFORMATION_KEY],
-        ),
+        )
   ) as V1_RawRelationalOperationElement;
   // NOTE: isTransformingSourceId is needed for the roundtrip of association relational property mapping
   propertyMapping.source = isTransformingSourceId

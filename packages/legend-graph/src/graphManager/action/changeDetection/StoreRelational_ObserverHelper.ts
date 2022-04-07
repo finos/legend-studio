@@ -581,7 +581,7 @@ export const observe_RelationalPropertyMapping = skipObservedWithContext(
 
     makeObservable(metamodel, {
       transformer: observable,
-      relationalOperation: observable.ref,
+      relationalOperation: observable.ref, // only observe the reference, the object itself is not observed
       bindingTransformer: observable,
       hashCode: computed,
     });

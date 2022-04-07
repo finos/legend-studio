@@ -49,8 +49,8 @@ export const observe_RawInstanceValue = skipObserved(
 export const observe_RawLambda = skipObserved(
   (metamodel: RawLambda): RawLambda =>
     makeObservable(metamodel, {
-      body: observable.ref,
-      parameters: observable.ref,
+      body: observable.ref, // only observe the reference, the object itself is not observed
+      parameters: observable.ref, // only observe the reference, the object itself is not observed
       isStub: computed,
       hashCode: computed,
     }),
