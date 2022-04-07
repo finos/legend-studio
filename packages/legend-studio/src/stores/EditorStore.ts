@@ -851,7 +851,7 @@ export class EditorStore {
 
       // ======= (RE)START CHANGE DETECTION =======
       this.changeDetectionState.stop();
-      this.changeDetectionState.observeGraph();
+      yield this.changeDetectionState.observeGraph();
       yield Promise.all([
         this.changeDetectionState.preComputeGraphElementHashes(), // for local changes detection
         this.changeDetectionState.workspaceLocalLatestRevisionState.buildEntityHashesIndex(

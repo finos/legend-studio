@@ -747,9 +747,9 @@ export class ChangeDetectionState {
    * NOTE: right now we rely on `observe_PackageTree` method to observe all elements in the graph
    * but potentially, we could improve this by observe all elements in parallel
    */
-  observeGraph(): void {
+  async observeGraph(): Promise<void> {
     const startTime = Date.now();
-    observe_PureModel(
+    await observe_PureModel(
       this.editorStore.graphManagerState.graph,
       new ObserverContext(
         this.editorStore.pluginManager.getPureGraphManagerPlugins(),
