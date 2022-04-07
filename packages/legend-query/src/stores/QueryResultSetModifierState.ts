@@ -151,7 +151,7 @@ export class QueryResultSetModifierState {
   /**
    * Build result set modifiers into the lambda.
    */
-  processModifiersOnLambda(
+  buildResultSetModifiers(
     lambda: LambdaFunction,
     options?:
       | {

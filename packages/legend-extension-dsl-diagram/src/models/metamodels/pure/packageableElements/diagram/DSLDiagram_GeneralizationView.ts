@@ -18,10 +18,7 @@ import { hashArray, type Hashable } from '@finos/legend-shared';
 import { RelationshipView } from './DSLDiagram_RelationshipView';
 import { DIAGRAM_HASH_STRUCTURE } from '../../../../DSLDiagram_ModelUtils';
 
-export class /*toCHECK*/ GeneralizationView
-  extends RelationshipView
-  implements Hashable
-{
+export class GeneralizationView extends RelationshipView implements Hashable {
   override get hashCode(): string {
     return hashArray([
       DIAGRAM_HASH_STRUCTURE.GENERALIZATION_VIEW,

@@ -42,11 +42,6 @@ export class /*toCHECK*/ LambdaFunction {
   constructor(type: FunctionType) {
     this.functionType = type;
   }
-
-  withExpression(expressionSequence: ValueSpecification): LambdaFunction {
-    this.expressionSequence[0] = expressionSequence;
-    return this;
-  }
 }
 
 export class /*toCHECK*/ LambdaFunctionInstanceValue extends InstanceValue {
@@ -56,10 +51,5 @@ export class /*toCHECK*/ LambdaFunctionInstanceValue extends InstanceValue {
     visitor: ValueSpecificationVisitor<T>,
   ): T {
     return visitor.visit_LambdaFunctionInstanceValue(this);
-  }
-
-  withLambda(value: LambdaFunction): LambdaFunctionInstanceValue {
-    this.values[0] = value;
-    return this;
   }
 }

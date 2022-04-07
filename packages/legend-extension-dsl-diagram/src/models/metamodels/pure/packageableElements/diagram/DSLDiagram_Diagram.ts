@@ -25,10 +25,7 @@ import {
 } from '@finos/legend-graph';
 import { DIAGRAM_HASH_STRUCTURE } from '../../../../DSLDiagram_ModelUtils';
 
-export class /*toCHECK*/ Diagram
-  extends PackageableElement
-  implements Hashable
-{
+export class Diagram extends PackageableElement implements Hashable {
   classViews: ClassView[] = [];
   associationViews: AssociationView[] = [];
   generalizationViews: GeneralizationView[] = [];

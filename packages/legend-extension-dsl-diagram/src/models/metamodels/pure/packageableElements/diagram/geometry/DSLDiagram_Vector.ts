@@ -16,9 +16,9 @@
 
 import type { Point } from './DSLDiagram_Point';
 
-export class /*toCHECK*/ Vector {
-  x: number;
-  y: number;
+export class Vector {
+  readonly x: number;
+  readonly y: number;
 
   constructor(x: number, y: number) {
     this.x = x;
