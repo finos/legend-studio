@@ -15,7 +15,6 @@
  */
 
 import type { Clazz } from '@finos/legend-shared';
-import { observable, computed, action, makeObservable } from 'mobx';
 import type { PackageableElement } from '../models/metamodels/pure/packageableElements/PackageableElement';
 
 export class PureGraphExtension<T extends PackageableElement> {
@@ -23,12 +22,6 @@ export class PureGraphExtension<T extends PackageableElement> {
   private readonly index = new Map<string, T>();
 
   constructor(_class: Clazz<T>) {
-    makeObservable<PureGraphExtension<T>, 'index'>(this, {
-      index: observable,
-      elements: computed,
-      setElement: action,
-      deleteElement: action,
-    });
     this._class = _class;
   }
 

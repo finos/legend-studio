@@ -14,17 +14,11 @@
  * limitations under the License.
  */
 
-import { observable, makeObservable } from 'mobx';
 import type { Hashable } from '@finos/legend-shared';
 import type { MappingClass } from './MappingClass';
 import { SetImplementation } from './SetImplementation';
 import type { PropertyMappingsImplementation } from './PropertyMappingsImplementation';
 import type { PropertyMapping } from './PropertyMapping';
-import type { InferableMappingElementIdValue } from './InferableMappingElementId';
-import type { Mapping } from './Mapping';
-import type { PackageableElementReference } from '../PackageableElementReference';
-import type { Class } from '../domain/Class';
-import type { InferableMappingElementRoot } from './InferableMappingElementRoot';
 
 export abstract class InstanceSetImplementation
   extends SetImplementation
@@ -33,20 +27,6 @@ export abstract class InstanceSetImplementation
   mappingClass?: MappingClass | undefined;
   propertyMappings: PropertyMapping[] = [];
   // aggregateSpecification: AggregateSpecification[0..1];
-
-  constructor(
-    id: InferableMappingElementIdValue,
-    parent: Mapping,
-    _class: PackageableElementReference<Class>,
-    root: InferableMappingElementRoot,
-  ) {
-    super(id, parent, _class, root);
-
-    makeObservable(this, {
-      mappingClass: observable,
-      propertyMappings: observable,
-    });
-  }
 
   abstract getEmbeddedSetImplmentations(): InstanceSetImplementation[];
   abstract findPropertyMapping(

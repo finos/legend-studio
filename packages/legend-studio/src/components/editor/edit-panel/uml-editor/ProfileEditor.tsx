@@ -36,7 +36,7 @@ import {
   profile_deleteTag,
   profile_deleteStereotype,
   tagStereotype_setValue,
-} from '../../../../stores/DomainModifierHelper';
+} from '../../../../stores/graphModifier/DomainGraphModifierHelper';
 
 const TagBasicEditor = observer(
   (props: { tag: Tag; deleteValue: () => void; isReadOnly: boolean }) => {

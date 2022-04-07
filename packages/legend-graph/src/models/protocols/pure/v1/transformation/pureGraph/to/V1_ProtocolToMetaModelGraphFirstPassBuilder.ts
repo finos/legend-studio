@@ -56,7 +56,7 @@ import type { V1_PackageableConnection } from '../../../model/packageableElement
 import type { V1_FileGenerationSpecification } from '../../../model/packageableElements/fileGeneration/V1_FileGenerationSpecification';
 import type { V1_Measure } from '../../../model/packageableElements/domain/V1_Measure';
 import type { V1_SectionIndex } from '../../../model/packageableElements/section/V1_SectionIndex';
-import { _package_addElement } from '../../../../../../GraphModifierHelper';
+import { _package_addElement } from '../../../../../../../helpers/DomainHelper';
 
 export class V1_ProtocolToMetaModelGraphFirstPassBuilder
   implements V1_PackageableElementVisitor<PackageableElement>

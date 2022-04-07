@@ -30,6 +30,7 @@ import {
   tryToFormatLosslessJSONString,
   tryToFormatJSONString,
   createUrlStringFromData,
+  ContentType,
 } from '@finos/legend-shared';
 import type { EditorStore } from '../../../EditorStore';
 import {
@@ -59,7 +60,12 @@ import {
 } from '@finos/legend-graph';
 import { TAB_SIZE } from '@finos/legend-application';
 import type { DSLService_LegendStudioPlugin_Extension } from '../../../DSLService_LegendStudioPlugin_Extension';
-import { runtime_addIdentifiedConnection } from '../../../ModifierHelper';
+import { runtime_addIdentifiedConnection } from '../../../graphModifier/DSLMapping_GraphModifierHelper';
+import {
+  singleExecTest_addAssert,
+  singleExecTest_deleteAssert,
+  singleExecTest_setData,
+} from '../../../graphModifier/DSLService_GraphModifierHelper';
 
 interface ServiceTestExecutionResult {
   expected: string;
@@ -190,7 +196,7 @@ export class TestContainerState {
                 createUrlStringFromData(
                   /* @MARKER: Workaround for https://github.com/finos/legend-studio/issues/68 */
                   tryToMinifyLosslessJSONString(testData),
-                  JsonModelConnection.CONTENT_TYPE,
+                  ContentType.APPLICATION_JSON,
                   engineConfig.useBase64ForAdhocConnectionDataUrls,
                 ),
               ),
@@ -208,7 +214,7 @@ export class TestContainerState {
                 connection.class,
                 createUrlStringFromData(
                   testData,
-                  XmlModelConnection.CONTENT_TYPE,
+                  ContentType.APPLICATION_XML,
                   engineConfig.useBase64ForAdhocConnectionDataUrls,
                 ),
               ),
@@ -221,11 +227,11 @@ export class TestContainerState {
               newRuntime.generateIdentifiedConnectionId(),
               new FlatDataConnection(
                 PackageableElementExplicitReference.create(
-                  connection.flatDataStore,
+                  connection.store.value,
                 ),
                 createUrlStringFromData(
                   testData,
-                  FlatDataConnection.CONTENT_TYPE,
+                  ContentType.TEXT_PLAIN,
                   engineConfig.useBase64ForAdhocConnectionDataUrls,
                 ),
               ),
@@ -237,7 +243,9 @@ export class TestContainerState {
             new IdentifiedConnection(
               newRuntime.generateIdentifiedConnectionId(),
               new RelationalDatabaseConnection(
-                PackageableElementExplicitReference.create(connection.database),
+                PackageableElementExplicitReference.create(
+                  connection.store.value,
+                ),
                 // TODO: hard-coded this combination for now, we might want to change to something that makes more sense?
                 DatabaseType.H2,
                 new StaticDatasourceSpecification('dummyHost', 80, 'myDb'),
@@ -446,7 +454,7 @@ export class SingleExecutionTestState {
       ),
       this.test,
     );
-    this.test.addAssert(testContainer);
+    singleExecTest_addAssert(this.test, testContainer);
     this.openTestContainer(testContainer);
     this.allTestRunTime = 0;
   }
@@ -454,7 +462,7 @@ export class SingleExecutionTestState {
   deleteTestContainerState(val: TestContainer): void {
     const idx = this.test.asserts.findIndex((assert) => assert === val);
     if (idx !== -1) {
-      this.test.deleteAssert(val);
+      singleExecTest_deleteAssert(this.test, val);
       this.testResults.splice(idx, 1);
       this.allTestRunTime = 0;
     }
@@ -509,9 +517,9 @@ export class SingleExecutionTestState {
       }
     }
     if (generatedTestData) {
-      this.test.setData(generatedTestData);
+      singleExecTest_setData(this.test, generatedTestData);
     } else {
-      this.test.setData('');
+      singleExecTest_setData(this.test, '');
       this.editorStore.applicationStore.notifyError(
         `Can't auto-generate test data for service`,
       );

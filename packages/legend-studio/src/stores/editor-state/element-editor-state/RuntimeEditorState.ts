@@ -62,14 +62,14 @@ import {
   DefaultH2AuthenticationStrategy,
 } from '@finos/legend-graph';
 import type { DSLMapping_LegendStudioPlugin_Extension } from '../../DSLMapping_LegendStudioPlugin_Extension';
-import { packageableElementReference_setValue } from '../../DomainModifierHelper';
+import { packageableElementReference_setValue } from '../../graphModifier/DomainGraphModifierHelper';
 import {
   runtime_addIdentifiedConnection,
   runtime_addMapping,
   runtime_addUniqueStoreConnectionsForStore,
   runtime_deleteIdentifiedConnection,
   runtime_deleteMapping,
-} from '../../ModifierHelper';
+} from '../../graphModifier/DSLMapping_GraphModifierHelper';
 
 /* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
 export const getClassMappingStore = (

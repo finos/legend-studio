@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { observable, computed, makeObservable } from 'mobx';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import { hashArray, uuid, type Hashable } from '@finos/legend-shared';
 import { RawLambda } from '../../rawValueSpecification/RawLambda';
@@ -31,16 +30,6 @@ export class Constraint implements Hashable, Stubable {
   messageFunction?: RawLambda | undefined; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
 
   constructor(name: string, owner: Class, functionDefinition: RawLambda) {
-    makeObservable(this, {
-      name: observable,
-      functionDefinition: observable,
-      externalId: observable,
-      enforcementLevel: observable,
-      messageFunction: observable,
-      isStub: computed,
-      hashCode: computed,
-    });
-
     this.name = name;
     this.owner = owner;
     this.functionDefinition = functionDefinition;

@@ -82,7 +82,7 @@ export { Schema as ExternalFormatSchema } from './models/metamodels/pure/package
 export { ExternalFormatConnection } from './models/metamodels/pure/packageableElements/externalFormat/connection/DSLExternalFormat_ExternalFormatConnection';
 export { UrlStream } from './models/metamodels/pure/packageableElements/externalFormat/connection/DSLExternalFormat_UrlStream';
 export { DSLExternalFormat_GraphPreset } from './graph/DSLExternalFormat_Extension';
-export { BindingTransformer } from './models/metamodels/pure/packageableElements/externalFormat/store/BindingTransformer';
+export { BindingTransformer } from './models/metamodels/pure/packageableElements/externalFormat/store/DSLExternalFormat_BindingTransformer';
 // V1 protocols
 export * from './models/protocols/pure/v1/model/packageableElements/V1_PackageableElement';
 export { V1_StereotypePtr } from './models/protocols/pure/v1/model/packageableElements/domain/V1_StereotypePtr';
@@ -161,12 +161,10 @@ export * from './MetaModelConst';
 export * from './helpers/ServiceHelper';
 export * from './helpers/DatabaseHelper';
 export * from './helpers/MappingHelper';
-export * from './helpers/MappingResolutionHelper';
 export * from './helpers/ValidationHelper';
 export * from './helpers/Stubable'; // TODO: to be removed
 export * from './helpers/DomainHelper';
 export * from './helpers/PureLanguageHelper';
-export * from './models/GraphModifierHelper';
 
 // --------------------------------------------- GRAPH --------------------------------------------------
 
@@ -223,7 +221,8 @@ export { SourceInformation } from './graphManager/action/SourceInformation';
 export { getGraphManager } from './models/protocols/pure/Pure';
 export * from './models/protocols/pure/PureProtocolProcessorPlugin';
 
-// V1 transformation
+// --------------------------------------------- TRANSFORMATION --------------------------------------------------
+
 export {
   V1_transformStereotype,
   V1_transformTaggedValue,
@@ -267,6 +266,18 @@ export * from './models/protocols/pure/v1/transformation/pureProtocol/serializat
 export * from './models/protocols/pure/v1/transformation/pureGraph/to/V1_DSLExternalFormat_GraphBuilderHelper';
 export * from './models/ModelGenerationConfiguration';
 export * from './models/protocols/pure/MappingGeneration_PureProtocolProcessorPlugin_Extension';
+
+// --------------------------------------------- OBSERVER --------------------------------------------------
+
+export * from './graphManager/action/changeDetection/PackageableElementObserver';
+export * from './graphManager/action/changeDetection/CoreObserverHelper';
+export * from './graphManager/action/changeDetection/DomainObserverHelper';
+export * from './graphManager/action/changeDetection/DSLMapping_ObserverHelper';
+export * from './graphManager/action/changeDetection/RawValueSpecificationObserver';
+export * from './graphManager/action/changeDetection/ValueSpecificationObserver';
+export * from './graphManager/action/changeDetection/StoreRelational_ObserverHelper';
+export * from './graphManager/action/changeDetection/StoreFlatData_ObserverHelper';
+export * from './graphManager/action/changeDetection/GraphObserverHelper';
 
 // --------------------------------------------- TO BE MODULARIZED --------------------------------------------------
 

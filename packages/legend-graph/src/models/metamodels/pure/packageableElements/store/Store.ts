@@ -14,19 +14,10 @@
  * limitations under the License.
  */
 
-import { observable, makeObservable } from 'mobx';
 import type { Hashable } from '@finos/legend-shared';
 import { PackageableElement } from '../PackageableElement';
 import type { PackageableElementReference } from '../PackageableElementReference';
 
 export abstract class Store extends PackageableElement implements Hashable {
   includes: PackageableElementReference<Store>[] = [];
-
-  constructor(name: string) {
-    super(name);
-
-    makeObservable(this, {
-      includes: observable,
-    });
-  }
 }

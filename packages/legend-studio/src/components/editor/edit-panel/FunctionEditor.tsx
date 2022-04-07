@@ -75,12 +75,12 @@ import {
   annotatedElement_addStereotype,
   annotatedElement_deleteStereotype,
   annotatedElement_deleteTaggedValue,
-} from '../../../stores/DomainModifierHelper';
+} from '../../../stores/graphModifier/DomainGraphModifierHelper';
 import {
   rawVariableExpression_setMultiplicity,
   rawVariableExpression_setName,
   rawVariableExpression_setType,
-} from '../../../stores/ModifierHelper';
+} from '../../../stores/graphModifier/ValueSpecificationGraphModifierHelper';
 
 enum FUNCTION_PARAMETER_TYPE {
   CLASS = 'CLASS',

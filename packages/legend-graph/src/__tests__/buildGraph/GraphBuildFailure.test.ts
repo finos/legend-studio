@@ -31,7 +31,6 @@ import {
   TEST_DATA__DuplicateAssociationProperties,
 } from './TEST_DATA__GraphBuildFailure';
 import { unitTest } from '@finos/legend-shared';
-import { flowResult } from 'mobx';
 import type { Entity } from '@finos/legend-model-storage';
 import type { GraphManagerState } from '../../GraphManagerState';
 import { TEST__getTestGraphManagerState } from '../../GraphManagerTestUtils';
@@ -43,85 +42,72 @@ beforeEach(async () => {
 });
 
 test(unitTest('Missing super type'), async () => {
-  const buildGraph = flowResult(
+  await expect(() =>
     graphManagerState.graphManager.buildGraph(
       graphManagerState.graph,
       TEST_DATA__MissingSuperType as Entity[],
     ),
-  );
-  await expect(buildGraph).rejects.toThrowError(
+  ).rejects.toThrowError(
     `Can't find supertype 'ui::test1::Organism' of class 'ui::test1::Animal'`,
   );
 });
 
 test(unitTest('Missing profile'), async () => {
-  const buildGraph = flowResult(
+  await expect(() =>
     graphManagerState.graphManager.buildGraph(
       graphManagerState.graph,
       TEST_DATA__MissingProfile as Entity[],
     ),
-  );
-  await expect(buildGraph).rejects.toThrowError(
-    `Can't find profile 'ui::test1::ProfileTest'`,
-  );
+  ).rejects.toThrowError(`Can't find profile 'ui::test1::ProfileTest'`);
 });
 
 test(unitTest('Missing class property'), async () => {
-  const buildGraph = flowResult(
+  await expect(() =>
     graphManagerState.graphManager.buildGraph(
       graphManagerState.graph,
       TEST_DATA__MissingProperty as Entity[],
     ),
-  );
-  await expect(buildGraph).rejects.toThrowError(
-    `Can't find type 'ui::test1::NotFound'`,
-  );
+  ).rejects.toThrowError(`Can't find type 'ui::test1::NotFound'`);
 });
 
 test(unitTest('Missing stereotype'), async () => {
-  const buildGraph = flowResult(
+  await expect(() =>
     graphManagerState.graphManager.buildGraph(
       graphManagerState.graph,
       TEST_DATA__MissingStereoType as Entity[],
     ),
-  );
-  await expect(buildGraph).rejects.toThrowError(
+  ).rejects.toThrowError(
     `Can't find stereotype 'missingStereotype' in profile 'ui::meta::pure::profiles::TestProfile'`,
   );
 });
 
 test(unitTest('Missing tagged value'), async () => {
-  const buildGraph = flowResult(
+  await expect(() =>
     graphManagerState.graphManager.buildGraph(
       graphManagerState.graph,
       TEST_DATA__MissingTagValue as Entity[],
     ),
-  );
-  await expect(buildGraph).rejects.toThrowError(
+  ).rejects.toThrowError(
     `Can't find tag 'missingTag' in profile 'ui::meta::pure::profiles::TestProfile'`,
   );
 });
 
 test(unitTest('Missing class in Pure Instance class mapping'), async () => {
-  const buildGraph = flowResult(
+  await expect(() =>
     graphManagerState.graphManager.buildGraph(
       graphManagerState.graph,
       TEST_DATA__MissingTargetClassinMapping as Entity[],
     ),
-  );
-  await expect(buildGraph).rejects.toThrowError(
-    `Can't find type 'ui::test1::Target_Something'`,
-  );
+  ).rejects.toThrowError(`Can't find type 'ui::test1::Target_Something'`);
 });
 
 test(unitTest('Missing class mapping'), async () => {
-  const buildGraph = flowResult(
+  await expect(() =>
     graphManagerState.graphManager.buildGraph(
       graphManagerState.graph,
       TEST_DATA__MissingClassMapping as Entity[],
     ),
-  );
-  await expect(buildGraph).rejects.toThrowError(
+  ).rejects.toThrowError(
     `Can't find any class mapping for class 'ui::Employeer' in mapping 'ui::myMap'`,
   );
 });
@@ -130,13 +116,12 @@ test(unitTest('Missing class mapping'), async () => {
 // to ease Pure -> Legend migration push.
 /* @MARKER: RELAXED GRAPH CHECK - See https://github.com/finos/legend-studio/issues/880 */
 test.skip(unitTest('Missing class mapping with ID'), async () => {
-  const buildGraph = flowResult(
+  await expect(() =>
     graphManagerState.graphManager.buildGraph(
       graphManagerState.graph,
       TEST_DATA__MissingClassMappingWithTargetId as Entity[],
     ),
-  );
-  await expect(buildGraph).rejects.toThrowError(
+  ).rejects.toThrowError(
     `Can't find class mapping with ID 'notFound' in mapping 'ui::myMap'`,
   );
 });
@@ -144,78 +129,70 @@ test.skip(unitTest('Missing class mapping with ID'), async () => {
 // TODO: This test is skipped because we don't support include mappings. We don't fail yet
 // Unskip when include mappings support is added
 test.skip(unitTest('Missing set implementation'), async () => {
-  const buildGraph = flowResult(
+  await expect(() =>
     graphManagerState.graphManager.buildGraph(
       graphManagerState.graph,
       TEST_DATA__MissingSetImp as Entity[],
     ),
-  );
-  await expect(buildGraph).rejects.toThrowError(
-    `Can't find set implementation 'targetClassAMissing'`,
-  );
+  ).rejects.toThrowError(`Can't find set implementation 'targetClassAMissing'`);
 });
 
 /* @MARKER: RELAXED GRAPH CHECK - See https://github.com/finos/legend-studio/issues/660 */
 test.skip(unitTest('Duplicate enumeration values'), async () => {
-  const buildGraph = flowResult(
+  await expect(() =>
     graphManagerState.graphManager.buildGraph(
       graphManagerState.graph,
       TEST_DATA__DuplicateEnumerationValues as Entity[],
     ),
-  );
-  await expect(buildGraph).rejects.toThrowError(
+  ).rejects.toThrowError(
     `Found duplicated value 'enum_value' in enumeration 'test::enum'`,
   );
 });
 
 /* @MARKER: RELAXED GRAPH CHECK - See https://github.com/finos/legend-studio/issues/660 */
 test.skip(unitTest('Duplicate profile tags'), async () => {
-  const buildGraph = flowResult(
+  await expect(() =>
     graphManagerState.graphManager.buildGraph(
       graphManagerState.graph,
       TEST_DATA__DuplicateProfileTags as Entity[],
     ),
-  );
-  await expect(buildGraph).rejects.toThrowError(
+  ).rejects.toThrowError(
     `Found duplicated tag 'tag1' in profile 'test::profile1'`,
   );
 });
 
 /* @MARKER: RELAXED GRAPH CHECK - See https://github.com/finos/legend-studio/issues/660 */
 test.skip(unitTest('Duplicate profile stereotypes'), async () => {
-  const buildGraph = flowResult(
+  await expect(() =>
     graphManagerState.graphManager.buildGraph(
       graphManagerState.graph,
       TEST_DATA__DuplicateProfileStereotypes as Entity[],
     ),
-  );
-  await expect(buildGraph).rejects.toThrowError(
+  ).rejects.toThrowError(
     `Found duplicated stereotype 'stereotype1' in profile 'test::profile2'`,
   );
 });
 
 /* @MARKER: RELAXED GRAPH CHECK - See https://github.com/finos/legend-studio/issues/660 */
 test.skip(unitTest('Duplicate class properties'), async () => {
-  const buildGraph = flowResult(
+  await expect(() =>
     graphManagerState.graphManager.buildGraph(
       graphManagerState.graph,
       TEST_DATA__DuplicateClassProperties as Entity[],
     ),
-  );
-  await expect(buildGraph).rejects.toThrowError(
+  ).rejects.toThrowError(
     `Found duplicated property 'abc' in class 'test::class'`,
   );
 });
 
 /* @MARKER: RELAXED GRAPH CHECK - See https://github.com/finos/legend-studio/issues/660 */
 test.skip(unitTest('Duplicate association properties'), async () => {
-  const buildGraph = flowResult(
+  await expect(() =>
     graphManagerState.graphManager.buildGraph(
       graphManagerState.graph,
       TEST_DATA__DuplicateAssociationProperties as Entity[],
     ),
-  );
-  await expect(buildGraph).rejects.toThrowError(
+  ).rejects.toThrowError(
     `Found duplicated property 'abc' in association 'test::association'`,
   );
 });

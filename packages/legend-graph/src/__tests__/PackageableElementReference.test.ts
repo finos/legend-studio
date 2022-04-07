@@ -15,7 +15,7 @@
  */
 
 import { unitTest } from '@finos/legend-shared';
-import { _package_addElement } from '../models/GraphModifierHelper';
+import { _package_addElement } from '../helpers/DomainHelper';
 import { Class } from '../models/metamodels/pure/packageableElements/domain/Class';
 import { Package } from '../models/metamodels/pure/packageableElements/domain/Package';
 import { PrimitiveType } from '../models/metamodels/pure/packageableElements/domain/PrimitiveType';

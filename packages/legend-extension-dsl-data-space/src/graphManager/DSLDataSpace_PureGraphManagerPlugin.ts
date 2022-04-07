@@ -18,9 +18,12 @@ import packageJson from '../../package.json';
 import { DataSpace } from '../models/metamodels/pure/model/packageableElements/dataSpace/DSLDataSpace_DataSpace';
 import {
   PureGraphManagerPlugin,
+  type ObserverContext,
+  type ElementObserver,
   type PackageableElement,
   type PureGrammarElementLabeler,
 } from '@finos/legend-graph';
+import { observe_DataSpace } from './action/changeDetection/DSLDataSpace_ObserverHelper';
 
 const PURE_GRAMMAR_DATA_SPACE_PARSER_NAME = 'DataSpace';
 const PURE_GRAMMAR_DATA_SPACE_ELEMENT_TYPE_LABEL = 'DataSpace';
@@ -43,6 +46,20 @@ export class DSLDataSpace_PureGraphManagerPlugin extends PureGraphManagerPlugin 
       (element: PackageableElement): string | undefined => {
         if (element instanceof DataSpace) {
           return PURE_GRAMMAR_DATA_SPACE_ELEMENT_TYPE_LABEL;
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  override getExtraElementObservers(): ElementObserver[] {
+    return [
+      (
+        element: PackageableElement,
+        context: ObserverContext,
+      ): PackageableElement | undefined => {
+        if (element instanceof DataSpace) {
+          return observe_DataSpace(element);
         }
         return undefined;
       },

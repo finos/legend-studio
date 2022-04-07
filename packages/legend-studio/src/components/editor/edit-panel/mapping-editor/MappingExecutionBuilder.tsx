@@ -76,6 +76,12 @@ import {
 } from '@finos/legend-graph';
 import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor';
 import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../../stores/DSLMapping_LegendStudioPlugin_Extension';
+import { objectInputData_setData } from '../../../../stores/graphModifier/DSLMapping_GraphModifierHelper';
+import { flatData_setData } from '../../../../stores/graphModifier/StoreFlatData_GraphModifierHelper';
+import {
+  relationalInputData_setData,
+  relationalInputData_setInputType,
+} from '../../../../stores/graphModifier/StoreRelational_GraphModifierHelper';
 
 interface ClassMappingSelectOption {
   label: string;
@@ -352,7 +358,7 @@ export const MappingExecutionObjectInputDataBuilder = observer(
 
     // Input data
     const updateInput = (val: string): void =>
-      inputDataState.inputData.setData(val);
+      objectInputData_setData(inputDataState.inputData, val);
 
     return (
       <div className="panel__content mapping-execution-builder__input-data-panel__content">
@@ -372,7 +378,7 @@ export const MappingExecutionFlatDataInputDataBuilder = observer(
 
     // Input data
     const updateInput = (val: string): void =>
-      inputDataState.inputData.setData(val);
+      flatData_setData(inputDataState.inputData, val);
 
     return (
       <div className="panel__content mapping-execution-builder__input-data-panel__content">
@@ -395,7 +401,7 @@ export const MappingExecutionRelationalInputDataBuilder = observer(
 
     // Input data
     const updateInput = (val: string): void =>
-      inputDataState.inputData.setData(val);
+      relationalInputData_setData(inputDataState.inputData, val);
 
     return (
       <div className="panel__content mapping-execution-builder__input-data-panel__content">
@@ -464,7 +470,7 @@ const RelationalMappingExecutionInputDataTypeSelector = observer(
     const changeInputType =
       (val: string): (() => void) =>
       (): void => {
-        inputDataState.inputData.setInputType(val);
+        relationalInputData_setInputType(inputDataState.inputData, val);
       };
 
     return (

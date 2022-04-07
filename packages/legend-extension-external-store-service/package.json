@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-extension-external-store-service",
-  "version": "1.2.1",
+  "version": "1.2.3",
   "description": "Legend extension for Service Store",
   "keywords": [
     "legend",
@@ -59,7 +59,7 @@
     "jest": "27.5.1",
     "npm-run-all": "4.1.5",
     "rimraf": "3.0.2",
-    "sass": "1.49.9",
+    "sass": "1.49.11",
     "typescript": "4.6.3"
   },
   "peerDependencies": {

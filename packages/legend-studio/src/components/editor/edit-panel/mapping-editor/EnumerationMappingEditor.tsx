@@ -62,6 +62,12 @@ import {
   type EnumerationMapping,
   type OptionalPackageableElementReference,
 } from '@finos/legend-graph';
+import {
+  enumMapping_updateSourceType,
+  enumValueMapping_addSourceValue,
+  enumValueMapping_deleteSourceValue,
+  enumValueMapping_updateSourceValue,
+} from '../../../../stores/graphModifier/DSLMapping_GraphModifierHelper';
 
 const EnumerationMappingSourceSelectorModal = observer(
   (props: {
@@ -99,7 +105,7 @@ const EnumerationMappingSourceSelectorModal = observer(
     ): void => {
       const value = val?.value;
       if (!value || value instanceof Type) {
-        enumerationMapping.updateSourceType(value);
+        enumMapping_updateSourceType(enumerationMapping, value);
       }
       if (value) {
         closeModal();
@@ -258,7 +264,7 @@ const EnumValueMappingEditor = observer(
     );
     const addSourceValue = (): void =>
       matchingEnumValueMapping
-        ? matchingEnumValueMapping.addSourceValue()
+        ? enumValueMapping_addSourceValue(matchingEnumValueMapping)
         : undefined;
 
     return (
@@ -288,14 +294,18 @@ const EnumValueMappingEditor = observer(
                 sourceValue={sourceValue}
                 expectedType={sourceType.value}
                 updateSourceValue={(val: Enum | string | undefined): void =>
-                  matchingEnumValueMapping.updateSourceValue(
+                  enumValueMapping_updateSourceValue(
+                    matchingEnumValueMapping,
                     idx,
                     val,
                     sourceType.value,
                   )
                 }
                 deleteSourceValue={(): void =>
-                  matchingEnumValueMapping.deleteSourceValue(idx)
+                  enumValueMapping_deleteSourceValue(
+                    matchingEnumValueMapping,
+                    idx,
+                  )
                 }
               />
             ))}
@@ -340,7 +350,10 @@ export const EnumerationMappingEditor = observer(
     const handleDrop = useCallback(
       (item: MappingElementSourceDropTarget): void => {
         if (!isReadOnly && item.data.packageableElement instanceof Type) {
-          enumerationMapping.updateSourceType(item.data.packageableElement);
+          enumMapping_updateSourceType(
+            enumerationMapping,
+            item.data.packageableElement,
+          );
         }
       },
       [enumerationMapping, isReadOnly],

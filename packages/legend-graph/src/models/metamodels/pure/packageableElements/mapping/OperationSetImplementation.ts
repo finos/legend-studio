@@ -14,14 +14,10 @@
  * limitations under the License.
  */
 
-import { observable, action, computed, makeObservable } from 'mobx';
 import {
   type Hashable,
   hashArray,
   guaranteeNonNullable,
-  addUniqueEntry,
-  deleteEntry,
-  changeEntry,
 } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import type { PackageableElementReference } from '../PackageableElementReference';
@@ -64,39 +60,7 @@ export class OperationSetImplementation
     operation: OperationType,
   ) {
     super(id, parent, pureClass, root);
-
-    makeObservable(this, {
-      parameters: observable,
-      operation: observable,
-      setOperation: action,
-      setParameters: action,
-      addParameter: action,
-      changeParameter: action,
-      deleteParameter: action,
-      isStub: computed,
-      hashCode: computed,
-    });
-
     this.operation = operation;
-  }
-
-  setOperation(value: OperationType): void {
-    this.operation = value;
-  }
-  setParameters(value: SetImplementationContainer[]): void {
-    this.parameters = value;
-  }
-  addParameter(value: SetImplementationContainer): void {
-    addUniqueEntry(this.parameters, value);
-  }
-  changeParameter(
-    oldValue: SetImplementationContainer,
-    newValue: SetImplementationContainer,
-  ): void {
-    changeEntry(this.parameters, oldValue, newValue);
-  }
-  deleteParameter(value: SetImplementationContainer): void {
-    deleteEntry(this.parameters, value);
   }
 
   /**

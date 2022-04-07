@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { observable, action, computed, makeObservable } from 'mobx';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import type { EnumerationMapping } from '../../../mapping/EnumerationMapping';
@@ -29,6 +28,7 @@ export class FlatDataPropertyMapping
   extends AbstractFlatDataPropertyMapping
   implements Hashable
 {
+  // TODO: convert to reference
   transformer?: EnumerationMapping | undefined;
   transform: RawLambda; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
 
@@ -40,20 +40,7 @@ export class FlatDataPropertyMapping
     target?: SetImplementation,
   ) {
     super(owner, property, source, target);
-
-    makeObservable(this, {
-      transformer: observable,
-      transform: observable,
-      setTransformer: action,
-      isStub: computed,
-      hashCode: computed,
-    });
-
     this.transform = transform;
-  }
-
-  setTransformer(value: EnumerationMapping | undefined): void {
-    this.transformer = value;
   }
 
   override get isStub(): boolean {

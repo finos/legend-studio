@@ -37,7 +37,7 @@ import {
   constraint_setFunctionDefinition,
   derivedProperty_setBody,
   derivedProperty_setParameters,
-} from '../../DomainModifierHelper';
+} from '../../graphModifier/DomainGraphModifierHelper';
 
 export const CONSTRAINT_SOURCE_ID_LABEL = 'constraint';
 export const DERIVED_PROPERTY_SOURCE_ID_LABEL = 'derivedProperty';

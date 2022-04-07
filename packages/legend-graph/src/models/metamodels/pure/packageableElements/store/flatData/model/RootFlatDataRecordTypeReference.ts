@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { observable, makeObservable } from 'mobx';
 import {
   PackageableElementExplicitReference,
   type PackageableElementReference,
@@ -33,11 +32,6 @@ export abstract class RootFlatDataRecordTypeReference extends ReferenceWithOwner
     value: RootFlatDataRecordType,
   ) {
     super(ownerReference);
-
-    makeObservable(this, {
-      value: observable,
-    });
-
     this.ownerReference = ownerReference;
     this.value = value;
   }

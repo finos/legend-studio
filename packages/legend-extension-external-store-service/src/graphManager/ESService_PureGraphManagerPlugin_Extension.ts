@@ -15,20 +15,17 @@
  */
 
 import type {
-  InstanceSetImplementation,
-  PropertyMapping,
-  SetImplementation,
+  ObserverContext,
+  PureGraphManagerPlugin,
 } from '@finos/legend-graph';
-import { action } from 'mobx';
+import type { SecurityScheme } from '../models/metamodels/pure/model/packageableElements/store/serviceStore/model/ESService_SecurityScheme';
 
-export const mapping_setPropertyMappings = action(
-  (si: InstanceSetImplementation, pm: PropertyMapping[]): void => {
-    si.propertyMappings = pm;
-  },
-);
-export const setImpl_setRoot = (
-  owner: SetImplementation,
-  val: boolean,
-): void => {
-  owner.root.setValue(val);
-};
+export type SecuritySchemeObserver = (
+  metamodel: SecurityScheme,
+  context: ObserverContext,
+) => SecurityScheme | undefined;
+
+export interface ESService_PureGraphManagerPlugin_Extension
+  extends PureGraphManagerPlugin {
+  getExtraSecuritySchemeObservers?(): SecuritySchemeObserver[];
+}

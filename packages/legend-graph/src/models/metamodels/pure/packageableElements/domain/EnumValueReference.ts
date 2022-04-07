@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { observable, computed, makeObservable } from 'mobx';
 import {
   PackageableElementExplicitReference,
   type PackageableElementReference,
@@ -37,12 +36,6 @@ export abstract class EnumValueReference
     value: Enum,
   ) {
     super(ownerReference);
-
-    makeObservable(this, {
-      value: observable,
-      isStub: computed,
-    });
-
     this.ownerReference = ownerReference;
     this.value = value;
   }

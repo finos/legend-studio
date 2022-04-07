@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { observable, makeObservable, override } from 'mobx';
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import { hashLambda } from '../../../../../MetaModelUtils';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
@@ -45,16 +44,6 @@ export class ConcreteFunctionDefinition
     returnMultiplicity: Multiplicity,
   ) {
     super(name);
-
-    makeObservable<ConcreteFunctionDefinition, '_elementHashCode'>(this, {
-      returnMultiplicity: observable,
-      parameters: observable.shallow,
-      body: observable.ref,
-      stereotypes: observable,
-      taggedValues: observable,
-      _elementHashCode: override,
-    });
-
     this.returnType = returnType;
     this.returnMultiplicity = returnMultiplicity;
   }

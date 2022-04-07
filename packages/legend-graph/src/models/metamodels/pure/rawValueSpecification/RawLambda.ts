@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { computed, observable, makeObservable } from 'mobx';
 import { hashLambda } from '../../../../MetaModelUtils';
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../MetaModelConst';
@@ -33,14 +32,6 @@ export class RawLambda
 
   constructor(parameters: object | undefined, body: object | undefined) {
     super();
-
-    makeObservable(this, {
-      body: observable.ref,
-      parameters: observable.ref,
-      isStub: computed,
-      hashCode: computed,
-    });
-
     this.parameters = parameters;
     this.body = body;
   }

@@ -16,7 +16,6 @@
 
 import TEST_DATA__simpleGraphEntities from './TEST_DATA__FunctionSignatureGeneration.json';
 import { unitTest } from '@finos/legend-shared';
-import { flowResult } from 'mobx';
 import type { Entity } from '@finos/legend-model-storage';
 import { TEST__getTestGraphManagerState } from '../../GraphManagerTestUtils';
 import {
@@ -34,11 +33,9 @@ afterEach(() => {
 
 test(unitTest('Generate default parameter value for type'), async () => {
   const graphManagerState = TEST__getTestGraphManagerState();
-  await flowResult(
-    graphManagerState.graphManager.buildGraph(
-      graphManagerState.graph,
-      TEST_DATA__simpleGraphEntities as Entity[],
-    ),
+  await graphManagerState.graphManager.buildGraph(
+    graphManagerState.graph,
+    TEST_DATA__simpleGraphEntities as Entity[],
   );
   // NOTE: this will leak
   jest.useFakeTimers();

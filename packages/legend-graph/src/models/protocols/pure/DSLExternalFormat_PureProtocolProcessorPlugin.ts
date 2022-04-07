@@ -86,7 +86,6 @@ import {
   V1_schemaSetModelSchema,
   V1_SCHEMA_SET_ELEMENT_PROTOCOL_TYPE,
 } from './v1/transformation/pureProtocol/serializationHelpers/V1_DSLExternalFormat_ProtocolHelper';
-import { _package_addElement } from '../../GraphModifierHelper';
 
 const BINDING_ELEMENT_CLASSIFIER_PATH =
   'meta::external::shared::format::binding::Binding';
@@ -118,10 +117,6 @@ export class DSLExternalFormat_PureProtocolProcessorPlugin
           const path = context.currentSubGraph.buildPath(
             elementProtocol.package,
             elementProtocol.name,
-          );
-          _package_addElement(
-            context.currentSubGraph.getOrCreatePackage(elementProtocol.package),
-            element,
           );
           context.currentSubGraph.setOwnStore(path, element);
           return element;

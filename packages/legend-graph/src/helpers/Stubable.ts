@@ -22,9 +22,6 @@
  * and omit them from let's say transformer or hash computation
  */
 export interface Stubable {
-  // NOTE: since we cannot have static member for an interface, we leave this comment to remind user of
-  // this interface to implement a static `createStub()` method
-  // static createStub: (...args: any) => T;
   isStub: boolean;
 }
 

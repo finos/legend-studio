@@ -189,7 +189,7 @@ export const V1_buildMappingInclude = (
     context.resolveMapping(mappingInclude.includedMappingPath),
   );
   if (mappingInclude.sourceDatabasePath && mappingInclude.targetDatabasePath) {
-    includedMapping.addStoreSubstitution(
+    includedMapping.storeSubstitutions.push(
       new SubstituteStore(
         includedMapping,
         context.resolveStore(mappingInclude.sourceDatabasePath),

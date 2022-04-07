@@ -48,9 +48,9 @@ export {
 export { ExplorerTreeRootPackageLabel } from './stores/ExplorerTreeState';
 export * from './stores/DSLMapping_LegendStudioPlugin_Extension';
 export * from './stores/DSLService_LegendStudioPlugin_Extension';
-export * from './stores/DomainModifierHelper';
-export * from './stores/ModifierHelper';
-export * from './stores/DSLService_ModifierHelper';
+export * from './stores/graphModifier/DomainGraphModifierHelper';
+export * from './stores/graphModifier/DSLGeneration_GraphModifierHelper';
+export * from './stores/graphModifier/DSLService_GraphModifierHelper';
 
 // components
 export * from './components/editor/EditorStoreProvider';

@@ -63,11 +63,11 @@ import {
 } from '@finos/legend-graph';
 import type { DSLGenerationSpecification_LegendStudioPlugin_Extension } from '../DSLGenerationSpecification_LegendStudioPlugin_Extension';
 import { ExternalFormatState } from './ExternalFormatState';
-import { package_addElement } from '../DomainModifierHelper';
+import { package_addElement } from '../graphModifier/DomainGraphModifierHelper';
 import {
   generationSpecification_addFileGeneration,
   generationSpecification_addGenerationElement,
-} from '../ModifierHelper';
+} from '../graphModifier/DSLGeneration_GraphModifierHelper';
 
 export const DEFAULT_GENERATION_SPECIFICATION_NAME =
   'MyGenerationSpecification';

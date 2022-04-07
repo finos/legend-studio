@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { observable, computed, makeObservable } from 'mobx';
 import {
   type Hashable,
   hashArray,
@@ -32,27 +31,16 @@ export class JsonModelConnection
   extends PureModelConnection
   implements Hashable
 {
-  static readonly CONTENT_TYPE = ContentType.APPLICATION_JSON;
-
+  declare store: PackageableElementReference<ModelStore>;
   class: PackageableElementReference<Class>;
   url: string;
 
   constructor(
     store: PackageableElementReference<ModelStore>,
     _class: PackageableElementReference<Class>,
-    url = createUrlStringFromData(
-      '{}',
-      JsonModelConnection.CONTENT_TYPE,
-      false,
-    ),
+    url = createUrlStringFromData('{}', ContentType.APPLICATION_JSON, false),
   ) {
     super(store);
-
-    makeObservable(this, {
-      url: observable,
-      hashCode: computed,
-    });
-
     this.class = _class;
     this.url = url;
   }

@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { observable, action, computed, makeObservable } from 'mobx';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import { hashString } from '@finos/legend-shared';
 import {
@@ -44,20 +43,7 @@ export abstract class TableReference extends NamedRelationalReference {
     value: Table,
   ) {
     super(ownerReference);
-
-    makeObservable(this, {
-      value: observable,
-      setValue: action,
-      pointerHashCode: computed,
-      selfJoinPointerHashCode: computed,
-    });
-
     this.value = value;
-  }
-
-  setValue(value: Table): void {
-    this.value = value;
-    this.ownerReference.value = value.schema.owner;
   }
 
   get pointerHashCode(): string {

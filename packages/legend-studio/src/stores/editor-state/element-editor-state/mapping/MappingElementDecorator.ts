@@ -23,7 +23,7 @@ import {
 import {
   type SetImplementationVisitor,
   type SetImplementation,
-  type OperationSetImplementation,
+  OperationSetImplementation,
   type PureInstanceSetImplementation,
   type FlatDataInstanceSetImplementation,
   type EnumerationMapping,
@@ -34,9 +34,9 @@ import {
   type AggregationAwareSetImplementation,
   type PropertyMapping,
   type InstanceSetImplementation,
+  type TEMPORARY__UnresolvedSetImplementation,
+  type Mapping,
   getAllClassMappings,
-  getDecoratedSetImplementationPropertyMappings,
-  getLeafSetImplementations,
   PurePropertyMapping,
   EmbeddedFlatDataPropertyMapping,
   EnumValueMapping,
@@ -53,12 +53,65 @@ import {
   createStubRelationalOperationElement,
   EmbeddedRelationalInstanceSetImplementation,
   getEnumerationMappingsByEnumeration,
-  type TEMPORARY__UnresolvedSetImplementation,
   getRootSetImplementation,
 } from '@finos/legend-graph';
 import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../DSLMapping_LegendStudioPlugin_Extension';
 import type { EditorStore } from '../../../EditorStore';
-import { mapping_setPropertyMappings } from '../../../DSLMApping_ModifierHelper';
+import {
+  enumMapping_setEnumValueMappings,
+  enumValueMapping_addSourceValue,
+  enumValueMapping_setSourceValues,
+  mapping_setPropertyMappings,
+  operationMapping_setParameters,
+  pureInstanceSetImpl_setPropertyMappings,
+  purePropertyMapping_setTransformer,
+} from '../../../graphModifier/DSLMapping_GraphModifierHelper';
+import { rootRelationalSetImp_setPropertyMappings } from '../../../graphModifier/StoreRelational_GraphModifierHelper';
+
+/**
+ * Iterate through all properties (including supertypes' properties) of the set implementation
+ * and add property mappings for each
+ */
+export const getDecoratedSetImplementationPropertyMappings = <
+  T extends PropertyMapping,
+>(
+  setImp: InstanceSetImplementation,
+  decoratePropertyMapping: (
+    existingPropertyMappings: T[] | undefined,
+    property: Property,
+  ) => T[],
+): T[] => {
+  const propertyMappingMap = new Map<string, T[]>();
+  (setImp.propertyMappings as T[]).forEach((pm) => {
+    const propertyMapping = propertyMappingMap.get(pm.property.value.name);
+    if (propertyMapping) {
+      propertyMapping.push(pm);
+    } else {
+      propertyMappingMap.set(pm.property.value.name, [pm]);
+    }
+  });
+  setImp.class.value.getAllProperties().forEach((property) => {
+    propertyMappingMap.set(
+      property.name,
+      decoratePropertyMapping(propertyMappingMap.get(property.name), property),
+    );
+  });
+  return Array.from(propertyMappingMap.values()).flat();
+};
+
+export const getLeafSetImplementations = (
+  mapping: Mapping,
+  _class: Class,
+): SetImplementation[] | undefined => {
+  const setImp = getRootSetImplementation(mapping, _class);
+  if (!setImp) {
+    return undefined;
+  }
+  if (setImp instanceof OperationSetImplementation) {
+    return setImp.leafSetImplementations;
+  }
+  return [setImp];
+};
 
 /* @MARKER: ACTION ANALYTICS */
 /**
@@ -86,12 +139,13 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
         const newEnumValueMapping = new EnumValueMapping(
           EnumValueExplicitReference.create(enumValue),
         );
-        newEnumValueMapping.addSourceValue();
+        enumValueMapping_addSourceValue(newEnumValueMapping);
         enumValueMappingsToAdd.push(newEnumValueMapping);
       }
     });
     if (enumValueMappingsToAdd.length) {
-      enumerationMapping.setEnumValueMappings(
+      enumMapping_setEnumValueMappings(
+        enumerationMapping,
         enumerationMapping.enumValueMappings.concat(enumValueMappingsToAdd),
       );
     }
@@ -100,7 +154,8 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
   visit_OperationSetImplementation(
     setImplementation: OperationSetImplementation,
   ): void {
-    setImplementation.setParameters(
+    operationMapping_setParameters(
+      setImplementation,
       setImplementation.parameters.filter((param) =>
         getAllClassMappings(setImplementation.parent).find(
           (setImp) => setImp === param.setImplementation.value,
@@ -112,7 +167,8 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
   visit_MergeOperationSetImplementation(
     setImplementation: OperationSetImplementation,
   ): void {
-    setImplementation.setParameters(
+    operationMapping_setParameters(
+      setImplementation,
       setImplementation.parameters.filter((param) =>
         getAllClassMappings(setImplementation.parent).find(
           (setImp) => setImp === param.setImplementation.value,
@@ -184,12 +240,15 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
           // If there is only 1 enumeration mapping, make it the transformer of the property mapping
           // Else, delete current transformer if it's not in the list of extisting enumeration mappings
           if (existingEnumerationMappings.length === 1) {
-            epm.setTransformer(existingEnumerationMappings[0]);
+            purePropertyMapping_setTransformer(
+              epm,
+              existingEnumerationMappings[0],
+            );
           } else if (
             existingEnumerationMappings.length === 0 ||
             !existingEnumerationMappings.find((eem) => eem === epm.transformer)
           ) {
-            epm.setTransformer(undefined);
+            purePropertyMapping_setTransformer(epm, undefined);
           }
         });
         return enumerationPropertyMapping;
@@ -217,7 +276,8 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
       }
       return [];
     };
-    setImplementation.setPropertyMappings(
+    pureInstanceSetImpl_setPropertyMappings(
+      setImplementation,
       getDecoratedSetImplementationPropertyMappings<PurePropertyMapping>(
         setImplementation,
         decoratePropertyMapping,
@@ -525,17 +585,22 @@ export class MappingElementDecorationCleaner
       );
     // Prune the empty source values of each enum value mapping
     nonEmptyEnumValueMappings.forEach((enumValueMapping) => {
-      enumValueMapping.setSourceValues(
+      enumValueMapping_setSourceValues(
+        enumValueMapping,
         enumValueMapping.sourceValues.filter(isNonNullable),
       );
     });
-    enumerationMapping.setEnumValueMappings(nonEmptyEnumValueMappings);
+    enumMapping_setEnumValueMappings(
+      enumerationMapping,
+      nonEmptyEnumValueMappings,
+    );
   }
 
   visit_OperationSetImplementation(
     setImplementation: OperationSetImplementation,
   ): void {
-    setImplementation.setParameters(
+    operationMapping_setParameters(
+      setImplementation,
       setImplementation.parameters.filter((param) => !param.isStub),
     );
   }
@@ -543,7 +608,8 @@ export class MappingElementDecorationCleaner
   visit_MergeOperationSetImplementation(
     setImplementation: OperationSetImplementation,
   ): void {
-    setImplementation.setParameters(
+    operationMapping_setParameters(
+      setImplementation,
       setImplementation.parameters.filter((param) => !param.isStub),
     );
   }
@@ -591,7 +657,8 @@ export class MappingElementDecorationCleaner
   visit_RootRelationalInstanceSetImplementation(
     setImplementation: RootRelationalInstanceSetImplementation,
   ): void {
-    setImplementation.setPropertyMappings(
+    rootRelationalSetImp_setPropertyMappings(
+      setImplementation,
       setImplementation.propertyMappings.filter(
         (propertyMapping) =>
           (propertyMapping instanceof RelationalPropertyMapping &&

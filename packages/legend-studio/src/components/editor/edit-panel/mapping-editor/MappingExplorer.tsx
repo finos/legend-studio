@@ -67,6 +67,7 @@ import {
   PureInstanceSetImplementationFilterState,
   PureInstanceSetImplementationState,
 } from '../../../../stores/editor-state/element-editor-state/mapping/PureInstanceSetImplementationState';
+import { pureInstanceSetImpl_setMappingFilter } from '../../../../stores/graphModifier/DSLMapping_GraphModifierHelper';
 
 export const MappingExplorerContextMenu = observer(
   forwardRef<
@@ -125,7 +126,7 @@ export const MappingExplorerContextMenu = observer(
       if (mappingElement instanceof PureInstanceSetImplementation) {
         if (!mappingElement.filter) {
           const stubLambda = RawLambda.createStub();
-          mappingElement.setMappingFilter(stubLambda);
+          pureInstanceSetImpl_setMappingFilter(mappingElement, stubLambda);
         }
         if (
           mappingEditorState.currentTabState instanceof
@@ -152,7 +153,7 @@ export const MappingExplorerContextMenu = observer(
           );
           mappingEditorState.currentTabState.mappingFilterState = undefined;
           if (mappingElement instanceof PureInstanceSetImplementation) {
-            mappingElement.setMappingFilter(undefined);
+            pureInstanceSetImpl_setMappingFilter(mappingElement, undefined);
           }
         }
       },

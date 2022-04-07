@@ -16,7 +16,6 @@
 
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
-import { observable, computed, makeObservable, action } from 'mobx';
 
 export abstract class DatasourceSpecification implements Hashable {
   private readonly _$nominalTypeBrand!: 'DatasourceSpecification';
@@ -34,16 +33,6 @@ export class StaticDatasourceSpecification
 
   constructor(host: string, port: number, databaseName: string) {
     super();
-
-    makeObservable(this, {
-      host: observable,
-      port: observable,
-      databaseName: observable,
-      hashCode: computed,
-      setHost: action,
-      setPort: action,
-      setDatabaseName: action,
-    });
     this.host = host;
     this.port = port;
     this.databaseName = databaseName;
@@ -56,18 +45,6 @@ export class StaticDatasourceSpecification
       this.port.toString(),
       this.databaseName,
     ]);
-  }
-
-  setHost(val: string): void {
-    this.host = val;
-  }
-
-  setPort(val: number): void {
-    this.port = val;
-  }
-
-  setDatabaseName(val: string): void {
-    this.databaseName = val;
   }
 }
 
@@ -87,14 +64,6 @@ export class DatabricksDatasourceSpecification
     httpPath: string,
   ) {
     super();
-
-    makeObservable(this, {
-      hostname: observable,
-      port: observable,
-      protocol: observable,
-      httpPath: observable,
-      hashCode: computed,
-    });
     this.hostname = hostname;
     this.port = port;
     this.protocol = protocol;
@@ -109,22 +78,6 @@ export class DatabricksDatasourceSpecification
       this.protocol,
       this.httpPath,
     ]);
-  }
-
-  setHostName(val: string): void {
-    this.hostname = val;
-  }
-
-  setPort(val: string): void {
-    this.port = val;
-  }
-
-  setProtocol(val: string): void {
-    this.protocol = val;
-  }
-
-  setHttpPath(val: string): void {
-    this.httpPath = val;
   }
 }
 
@@ -142,31 +95,9 @@ export class EmbeddedH2DatasourceSpecification
     autoServerMode: boolean,
   ) {
     super();
-
-    makeObservable(this, {
-      databaseName: observable,
-      directory: observable,
-      autoServerMode: observable,
-      hashCode: computed,
-      setDatabaseName: action,
-      setDirectory: action,
-      setAutoServerMode: action,
-    });
     this.databaseName = databaseName;
     this.directory = directory;
     this.autoServerMode = autoServerMode;
-  }
-
-  setDatabaseName(val: string): void {
-    this.databaseName = val;
-  }
-
-  setDirectory(val: string): void {
-    this.directory = val;
-  }
-
-  setAutoServerMode(val: boolean): void {
-    this.autoServerMode = val;
   }
 
   get hashCode(): string {
@@ -185,26 +116,6 @@ export class LocalH2DatasourceSpecification
 {
   testDataSetupCsv?: string | undefined;
   testDataSetupSqls: string[] = [];
-
-  constructor() {
-    super();
-
-    makeObservable(this, {
-      testDataSetupCsv: observable,
-      testDataSetupSqls: observable,
-      setTestDataSetupCsv: action,
-      setTestDataSetupSqls: action,
-      hashCode: computed,
-    });
-  }
-
-  setTestDataSetupCsv(val: string | undefined): void {
-    this.testDataSetupCsv = val;
-  }
-
-  setTestDataSetupSqls(val: string[]): void {
-    this.testDataSetupSqls = val;
-  }
 
   get hashCode(): string {
     return hashArray([
@@ -239,87 +150,10 @@ export class SnowflakeDatasourceSpecification
     databaseName: string,
   ) {
     super();
-
-    makeObservable(this, {
-      accountName: observable,
-      region: observable,
-      warehouseName: observable,
-      databaseName: observable,
-      cloudType: observable,
-      quotedIdentifiersIgnoreCase: observable,
-      proxyHost: observable,
-      proxyPort: observable,
-      nonProxyHosts: observable,
-      organization: observable,
-      accountType: observable,
-      role: observable,
-      hashCode: computed,
-      setAccountName: action,
-      setRegion: action,
-      setWarehouseName: action,
-      setDatabaseName: action,
-      setCloudType: action,
-      setProxyHost: action,
-      setProxyPort: action,
-      setNonProxyHosts: action,
-      setOrganization: action,
-      setAccountType: action,
-      setRole: action,
-      setQuotedIdentifiersIgnoreCase: action,
-    });
-
     this.region = region;
     this.warehouseName = warehouseName;
     this.databaseName = databaseName;
     this.accountName = accountName;
-  }
-
-  setAccountName(val: string): void {
-    this.accountName = val;
-  }
-
-  setRegion(val: string): void {
-    this.region = val;
-  }
-
-  setWarehouseName(val: string): void {
-    this.warehouseName = val;
-  }
-
-  setDatabaseName(val: string): void {
-    this.databaseName = val;
-  }
-
-  setCloudType(val: string | undefined): void {
-    this.cloudType = val;
-  }
-
-  setQuotedIdentifiersIgnoreCase(val: boolean | undefined): void {
-    this.quotedIdentifiersIgnoreCase = val;
-  }
-
-  setProxyHost(val: string | undefined): void {
-    this.proxyHost = val;
-  }
-
-  setProxyPort(val: string | undefined): void {
-    this.proxyPort = val;
-  }
-
-  setNonProxyHosts(val: string | undefined): void {
-    this.nonProxyHosts = val;
-  }
-
-  setOrganization(val: string | undefined): void {
-    this.organization = val;
-  }
-
-  setAccountType(val: string | undefined): void {
-    this.accountType = val;
-  }
-
-  setRole(val: string | undefined): void {
-    this.role = val;
   }
 
   get hashCode(): string {
@@ -361,51 +195,12 @@ export class RedshiftDatasourceSpecification
     region: string,
   ) {
     super();
-
-    makeObservable(this, {
-      databaseName: observable,
-      endpointURL: observable,
-      port: observable,
-      region: observable,
-      clusterID: observable,
-      host: observable,
-      hashCode: computed,
-      setDatabaseName: action,
-      setEndpointURL: action,
-      setPort: action,
-      setRegion: action,
-      setClusterID: action,
-      setHost: action,
-    });
     this.clusterID = clusterID;
     this.region = region;
     this.host = host;
     this.databaseName = databaseName;
     this.endpointURL = endpointURL;
     this.port = port;
-  }
-
-  setDatabaseName(val: string): void {
-    this.databaseName = val;
-  }
-
-  setEndpointURL(val: string): void {
-    this.endpointURL = val;
-  }
-
-  setPort(val: number): void {
-    this.port = val;
-  }
-  setRegion(val: string): void {
-    this.region = val;
-  }
-
-  setHost(val: string): void {
-    this.host = val;
-  }
-
-  setClusterID(val: string): void {
-    this.clusterID = val;
   }
   get hashCode(): string {
     return hashArray([
@@ -429,23 +224,8 @@ export class BigQueryDatasourceSpecification
 
   constructor(projectId: string, defaultDataset: string) {
     super();
-
-    makeObservable(this, {
-      projectId: observable,
-      defaultDataset: observable,
-      hashCode: computed,
-      setProjectId: action,
-      setDefaultDataset: action,
-    });
     this.projectId = projectId;
     this.defaultDataset = defaultDataset;
-  }
-
-  setProjectId(val: string): void {
-    this.projectId = val;
-  }
-  setDefaultDataset(val: string): void {
-    this.defaultDataset = val;
   }
 
   get hashCode(): string {

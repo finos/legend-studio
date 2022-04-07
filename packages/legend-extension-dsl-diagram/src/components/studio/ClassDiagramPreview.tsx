@@ -21,11 +21,13 @@ import { useApplicationStore } from '@finos/legend-application';
 import type { Class } from '@finos/legend-graph';
 import { InheritanceDiagramRenderer } from './InheritanceDiagramRenderer';
 import { DSL_DIAGRAM_TEST_ID } from './DSLDiagram_TestID';
+import { useEditorStore } from '@finos/legend-studio';
 
 export const ClassDiagramPreview = observer((props: { _class: Class }) => {
   const { _class } = props;
   const applicationStore = useApplicationStore();
-  const classHash = _class.isReadOnly
+  const editorStore = useEditorStore();
+  const classHash = editorStore.graphManagerState.isElementReadOnly(_class)
     ? undefined
     : applicationStore.notifyAndReturnAlternativeOnError(
         () => _class.hashCode,

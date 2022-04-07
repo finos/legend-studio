@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { observable, makeObservable } from 'mobx';
 import {
   UnsupportedOperationError,
   hashArray,
@@ -68,15 +67,6 @@ export class EmbeddedRelationalInstanceSetImplementation
     target?: SetImplementation,
   ) {
     super(owner, property, source, target);
-
-    makeObservable(this, {
-      id: observable,
-      propertyMappings: observable,
-      rootInstanceSetImplementation: observable,
-      parent: observable,
-      primaryKey: observable,
-    });
-
     this.class = _class;
     this.id = id;
     this.rootInstanceSetImplementation = rootInstanceSetImplementation;

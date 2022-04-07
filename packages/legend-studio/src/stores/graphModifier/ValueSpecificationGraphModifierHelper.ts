@@ -14,19 +14,27 @@
  * limitations under the License.
  */
 
-import {
-  type GenericType,
-  type Type,
-  _multiplicity_setLowerBound,
-  _multiplicity_setUpperBound,
+import type {
+  Multiplicity,
+  RawVariableExpression,
+  Type,
 } from '@finos/legend-graph';
 import { action } from 'mobx';
 
-export const genericType_setRawType = action(
-  (genericType: GenericType, type: Type): void => {
-    genericType.rawType = type;
+// --------------------------------------------- Raw Value Specification -------------------------------------
+
+export const rawVariableExpression_setName = action(
+  (rV: RawVariableExpression, value: string): void => {
+    rV.name = value;
   },
 );
-
-export const multiplicity_setLowerBound = action(_multiplicity_setLowerBound);
-export const multiplicity_setUpperBound = action(_multiplicity_setUpperBound);
+export const rawVariableExpression_setType = action(
+  (rV: RawVariableExpression, value: Type): void => {
+    rV.type.value = value;
+  },
+);
+export const rawVariableExpression_setMultiplicity = action(
+  (rV: RawVariableExpression, value: Multiplicity): void => {
+    rV.multiplicity = value;
+  },
+);

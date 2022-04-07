@@ -64,7 +64,7 @@ import { V1_ServiceStoreService } from '../../model/packageableElements/store/se
 import { V1_ServiceGroup } from '../../model/packageableElements/store/serviceStore/model/V1_ESService_ServiceGroup';
 import type { SecurityScheme } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/model/ESService_SecurityScheme';
 import type { V1_SecurityScheme } from '../../model/packageableElements/store/serviceStore/model/V1_ESService_SecurityScheme';
-import type { ExternalStoreService_PureProtocolPlugin_Extension } from '../../../ExternalStoreService_PureProtocolPlugin_Extension';
+import type { ESService_PureProtocolPlugin_Extension } from '../../../ESService_PureProtocolPlugin_Extension';
 import { SerializationFormat } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/model/ESService_SerializationFormat';
 import type { V1_SerializationFormat } from '../../model/packageableElements/store/serviceStore/model/V1_ESService_SerializationFormat';
 import {
@@ -260,7 +260,7 @@ const V1_buildSecurityScheme = (
   const extraSecuritySchemeBuilders = context.extensions.plugins.flatMap(
     (plugin) =>
       (
-        plugin as ExternalStoreService_PureProtocolPlugin_Extension
+        plugin as ESService_PureProtocolPlugin_Extension
       ).V1_getExtraSecuritySchemeBuilders?.() ?? [],
   );
   for (const builder of extraSecuritySchemeBuilders) {

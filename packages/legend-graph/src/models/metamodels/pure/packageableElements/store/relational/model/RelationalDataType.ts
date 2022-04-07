@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { computed, observable, makeObservable } from 'mobx';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import { hashArray } from '@finos/legend-shared';
 
@@ -23,84 +22,36 @@ export abstract class RelationalDataType {
 }
 
 export class BigInt extends RelationalDataType {
-  constructor() {
-    super();
-
-    makeObservable(this, {
-      hashCode: computed,
-    });
-  }
-
   get hashCode(): string {
     return hashArray([CORE_HASH_STRUCTURE.RELATIONAL_DATATYPE_BIGINT]);
   }
 }
 
 export class SmallInt extends RelationalDataType {
-  constructor() {
-    super();
-
-    makeObservable(this, {
-      hashCode: computed,
-    });
-  }
-
   get hashCode(): string {
     return hashArray([CORE_HASH_STRUCTURE.RELATIONAL_DATATYPE_SMALLINT]);
   }
 }
 
 export class TinyInt extends RelationalDataType {
-  constructor() {
-    super();
-
-    makeObservable(this, {
-      hashCode: computed,
-    });
-  }
-
   get hashCode(): string {
     return hashArray([CORE_HASH_STRUCTURE.RELATIONAL_DATATYPE_TINYINT]);
   }
 }
 
 export class Integer extends RelationalDataType {
-  constructor() {
-    super();
-
-    makeObservable(this, {
-      hashCode: computed,
-    });
-  }
-
   get hashCode(): string {
     return hashArray([CORE_HASH_STRUCTURE.RELATIONAL_DATATYPE_INTEGER]);
   }
 }
 
 export class Float extends RelationalDataType {
-  constructor() {
-    super();
-
-    makeObservable(this, {
-      hashCode: computed,
-    });
-  }
-
   get hashCode(): string {
     return hashArray([CORE_HASH_STRUCTURE.RELATIONAL_DATATYPE_FLOAT]);
   }
 }
 
 export class Double extends RelationalDataType {
-  constructor() {
-    super();
-
-    makeObservable(this, {
-      hashCode: computed,
-    });
-  }
-
   get hashCode(): string {
     return hashArray([CORE_HASH_STRUCTURE.RELATIONAL_DATATYPE_DOUBLE]);
   }
@@ -111,12 +62,6 @@ export class VarChar extends RelationalDataType {
 
   constructor(size: number) {
     super();
-
-    makeObservable(this, {
-      size: observable,
-      hashCode: computed,
-    });
-
     this.size = size;
   }
 
@@ -133,12 +78,6 @@ export class Char extends RelationalDataType {
 
   constructor(size: number) {
     super();
-
-    makeObservable(this, {
-      size: observable,
-      hashCode: computed,
-    });
-
     this.size = size;
   }
 
@@ -155,12 +94,6 @@ export class VarBinary extends RelationalDataType {
 
   constructor(size: number) {
     super();
-
-    makeObservable(this, {
-      size: observable,
-      hashCode: computed,
-    });
-
     this.size = size;
   }
 
@@ -178,13 +111,6 @@ export class Decimal extends RelationalDataType {
 
   constructor(precision: number, scale: number) {
     super();
-
-    makeObservable(this, {
-      precision: observable,
-      scale: observable,
-      hashCode: computed,
-    });
-
     this.precision = precision;
     this.scale = scale;
   }
@@ -204,13 +130,6 @@ export class Numeric extends RelationalDataType {
 
   constructor(precision: number, scale: number) {
     super();
-
-    makeObservable(this, {
-      precision: observable,
-      scale: observable,
-      hashCode: computed,
-    });
-
     this.precision = precision;
     this.scale = scale;
   }
@@ -225,56 +144,24 @@ export class Numeric extends RelationalDataType {
 }
 
 export class Timestamp extends RelationalDataType {
-  constructor() {
-    super();
-
-    makeObservable(this, {
-      hashCode: computed,
-    });
-  }
-
   get hashCode(): string {
     return hashArray([CORE_HASH_STRUCTURE.RELATIONAL_DATATYPE_TIMESTAMP]);
   }
 }
 
 export class Date extends RelationalDataType {
-  constructor() {
-    super();
-
-    makeObservable(this, {
-      hashCode: computed,
-    });
-  }
-
   get hashCode(): string {
     return hashArray([CORE_HASH_STRUCTURE.RELATIONAL_DATATYPE_DATE]);
   }
 }
 
 export class Other extends RelationalDataType {
-  constructor() {
-    super();
-
-    makeObservable(this, {
-      hashCode: computed,
-    });
-  }
-
   get hashCode(): string {
     return hashArray([CORE_HASH_STRUCTURE.RELATIONAL_DATATYPE_VARCHAR]);
   }
 }
 
 export class Bit extends RelationalDataType {
-  constructor() {
-    super();
-
-    makeObservable(this, {
-      hashCode: computed,
-    });
-  }
-
   get hashCode(): string {
     return hashArray([CORE_HASH_STRUCTURE.RELATIONAL_DATATYPE_BIT]);
   }
@@ -285,12 +172,6 @@ export class Binary extends RelationalDataType {
 
   constructor(size: number) {
     super();
-
-    makeObservable(this, {
-      size: observable,
-      hashCode: computed,
-    });
-
     this.size = size;
   }
 
@@ -303,28 +184,12 @@ export class Binary extends RelationalDataType {
 }
 
 export class Real extends RelationalDataType {
-  constructor() {
-    super();
-
-    makeObservable(this, {
-      hashCode: computed,
-    });
-  }
-
   get hashCode(): string {
     return hashArray([CORE_HASH_STRUCTURE.RELATIONAL_DATATYPE_REAL]);
   }
 }
 
 export class SemiStructured extends RelationalDataType {
-  constructor() {
-    super();
-
-    makeObservable(this, {
-      hashCode: computed,
-    });
-  }
-
   get hashCode(): string {
     return hashArray([CORE_HASH_STRUCTURE.RELATIONAL_DATATYPE_SEMISTRUCTURED]);
   }

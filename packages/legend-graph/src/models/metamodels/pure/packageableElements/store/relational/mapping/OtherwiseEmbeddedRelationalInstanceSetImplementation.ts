@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { observable, computed, makeObservable } from 'mobx';
 import {
   type Hashable,
   hashArray,
@@ -23,51 +22,17 @@ import {
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import { EmbeddedRelationalInstanceSetImplementation } from './EmbeddedRelationalInstanceSetImplementation';
 import type { OtherwiseEmebddedSetImplementation } from '../../../mapping/EmbeddedSetImplementation';
-import type {
-  SetImplementation,
-  SetImplementationVisitor,
-} from '../../../mapping/SetImplementation';
+import type { SetImplementationVisitor } from '../../../mapping/SetImplementation';
 import type {
   PropertyMapping,
   PropertyMappingVisitor,
 } from '../../../mapping/PropertyMapping';
-import type { PropertyMappingsImplementation } from '../../../mapping/PropertyMappingsImplementation';
-import type { PropertyReference } from '../../../domain/PropertyReference';
-import type { RootRelationalInstanceSetImplementation } from './RootRelationalInstanceSetImplementation';
-import type { PackageableElementReference } from '../../../PackageableElementReference';
-import type { Class } from '../../../domain/Class';
-import type { InferableMappingElementIdValue } from '../../../mapping/InferableMappingElementId';
 
 export class OtherwiseEmbeddedRelationalInstanceSetImplementation
   extends EmbeddedRelationalInstanceSetImplementation
   implements OtherwiseEmebddedSetImplementation, Hashable
 {
   otherwisePropertyMapping!: PropertyMapping;
-
-  constructor(
-    owner: PropertyMappingsImplementation,
-    property: PropertyReference,
-    rootInstanceSetImplementation: RootRelationalInstanceSetImplementation,
-    source: SetImplementation,
-    _class: PackageableElementReference<Class>,
-    id: InferableMappingElementIdValue,
-    target?: SetImplementation,
-  ) {
-    super(
-      owner,
-      property,
-      rootInstanceSetImplementation,
-      source,
-      _class,
-      id,
-      target,
-    );
-
-    makeObservable(this, {
-      otherwisePropertyMapping: observable,
-      hashCode: computed,
-    });
-  }
 
   override accept_PropertyMappingVisitor<T>(
     visitor: PropertyMappingVisitor<T>,

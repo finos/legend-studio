@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { observable, computed, makeObservable, action } from 'mobx';
 import {
   type Hashable,
   hashArray,
@@ -37,20 +36,8 @@ export class ExpectedOutputMappingTestAssert
 
   constructor(expectedOutput: string) {
     super();
-
-    makeObservable(this, {
-      expectedOutput: observable,
-      setExpectedOutput: action,
-      validationResult: computed,
-      hashCode: computed,
-    });
-
     /* @MARKER: Workaround for https://github.com/finos/legend-studio/issues/68 */
     this.expectedOutput = tryToMinifyLosslessJSONString(expectedOutput);
-  }
-
-  setExpectedOutput(val: string): void {
-    this.expectedOutput = val;
   }
 
   get validationResult(): ValidationIssue | undefined {

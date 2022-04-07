@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { computed, observable, makeObservable } from 'mobx';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import { type Hashable, type Pair, hashArray } from '@finos/legend-shared';
 import type { Operation, TableAlias } from './RelationalOperationElement';
@@ -40,14 +39,6 @@ export class Join implements Hashable {
   operation: Operation;
 
   constructor(name: string, operation: Operation) {
-    makeObservable(this, {
-      name: observable,
-      target: observable,
-      aliases: observable,
-      operation: observable,
-      hashCode: computed,
-    });
-
     this.name = name;
     this.operation = operation;
   }

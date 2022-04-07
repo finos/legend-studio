@@ -72,7 +72,7 @@ export class V1_RawValueSpecificationTransformer
     return rawLambda;
   }
 
-  visit_RawVariable(
+  visit_RawVariableExpression(
     rawValueSpecification: RawVariableExpression,
   ): V1_RawValueSpecification {
     const rawVariable = new V1_RawVariable();

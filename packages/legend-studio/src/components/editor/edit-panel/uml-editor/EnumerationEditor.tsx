@@ -65,7 +65,7 @@ import {
   annotatedElement_deleteTaggedValue,
   enum_deleteValue,
   enum_addValue,
-} from '../../../../stores/DomainModifierHelper';
+} from '../../../../stores/graphModifier/DomainGraphModifierHelper';
 
 const EnumBasicEditor = observer(
   (props: {

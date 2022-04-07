@@ -58,11 +58,12 @@ import {
 } from '@finos/legend-graph';
 import type { Entity } from '@finos/legend-model-storage';
 import { parseGACoordinates } from '@finos/legend-server-depot';
-import { runtime_addMapping } from '../../../ModifierHelper';
+import { runtime_addMapping } from '../../../graphModifier/DSLMapping_GraphModifierHelper';
 import {
   pureExecution_setFunction,
   pureSingleExecution_setRuntime,
-} from '../../../DSLService_ModifierHelper';
+  singleExecTest_setData,
+} from '../../../graphModifier/DSLService_GraphModifierHelper';
 
 export enum SERVICE_EXECUTION_TAB {
   MAPPING_AND_RUNTIME = 'MAPPING_&_Runtime',
@@ -97,12 +98,15 @@ export abstract class ServiceExecutionState {
       test,
     );
     // TODO: format to other format when we support other connections in the future
-    this.selectedSingeExecutionTestState?.test.setData(
-      /* @MARKER: Workaround for https://github.com/finos/legend-studio/issues/68 */
-      tryToFormatLosslessJSONString(
-        this.selectedSingeExecutionTestState.test.data,
-      ),
-    ); // pre-format test data
+    if (this.selectedSingeExecutionTestState?.test) {
+      singleExecTest_setData(
+        this.selectedSingeExecutionTestState.test,
+        /* @MARKER: Workaround for https://github.com/finos/legend-studio/issues/68 */
+        tryToFormatLosslessJSONString(
+          this.selectedSingeExecutionTestState.test.data,
+        ),
+      ); // pre-format test data
+    }
   }
 
   setSelectedTab(val: SERVICE_EXECUTION_TAB): void {

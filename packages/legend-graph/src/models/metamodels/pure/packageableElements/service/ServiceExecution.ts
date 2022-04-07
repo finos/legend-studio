@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { observable, computed, makeObservable } from 'mobx';
 import { hashArray, uuid, type Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import type { Mapping } from '../mapping/Mapping';
@@ -39,12 +38,6 @@ export class PureExecution extends ServiceExecution implements Hashable {
 
   constructor(func: RawLambda, owner: Service) {
     super();
-
-    makeObservable(this, {
-      func: observable,
-      queryValidationResult: computed,
-    });
-
     this.func = func;
     this.owner = owner;
   }
@@ -78,13 +71,6 @@ export class PureSingleExecution extends PureExecution implements Hashable {
     runtime: Runtime,
   ) {
     super(func, owner);
-
-    makeObservable(this, {
-      runtime: observable,
-      mappingValidationResult: computed,
-      hashCode: computed,
-    });
-
     this.mapping = mapping;
     this.runtime = runtime;
   }
@@ -116,13 +102,6 @@ export class KeyedExecutionParameter implements Hashable {
     mapping: PackageableElementReference<Mapping>,
     runtime: Runtime,
   ) {
-    makeObservable(this, {
-      key: observable,
-      runtime: observable,
-      mappingValidationResult: computed,
-      hashCode: computed,
-    });
-
     this.key = key;
     this.mapping = mapping;
     this.runtime = runtime;
@@ -150,13 +129,6 @@ export class PureMultiExecution extends PureExecution implements Hashable {
 
   constructor(executionKey: string, func: RawLambda, parentService: Service) {
     super(func, parentService);
-
-    makeObservable(this, {
-      executionKey: observable,
-      executionParameters: observable,
-      hashCode: computed,
-    });
-
     this.executionKey = executionKey;
   }
 

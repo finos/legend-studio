@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { observable, computed, makeObservable } from 'mobx';
 import { uuid, hashArray, type Hashable } from '@finos/legend-shared';
 import { DSL_EXTERNAL_FORMAT_HASH_STRUCTURE } from '../../../../../DSLExternalFormat_ModelUtils';
 
@@ -23,15 +22,6 @@ export class Schema implements Hashable {
   id?: string | undefined;
   location?: string | undefined;
   content!: string;
-
-  constructor() {
-    makeObservable(this, {
-      id: observable,
-      location: observable,
-      content: observable,
-      hashCode: computed,
-    });
-  }
 
   get hashCode(): string {
     return hashArray([

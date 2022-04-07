@@ -15,14 +15,12 @@
  */
 
 import {
-  type GeneratorFn,
   type Log,
-  LogEvent,
   uniq,
   ActionState,
   assertErrorThrown,
 } from '@finos/legend-shared';
-import { action, flow, flowResult, makeObservable, observable } from 'mobx';
+import { action, makeObservable, observable } from 'mobx';
 import { DependencyManager } from './graph/DependencyManager';
 import {
   CoreModel,
@@ -34,8 +32,8 @@ import type {
   AbstractPureGraphManager,
   GraphBuilderOptions,
 } from './graphManager/AbstractPureGraphManager';
-import { GRAPH_MANAGER_EVENT } from './graphManager/GraphManagerEvent';
 import type { GraphPluginManager } from './GraphPluginManager';
+import { ROOT_PACKAGE_NAME } from './MetaModelConst';
 import { AssociationImplementation } from './models/metamodels/pure/packageableElements/mapping/AssociationImplementation';
 import type { EnumerationMapping } from './models/metamodels/pure/packageableElements/mapping/EnumerationMapping';
 import { InstanceSetImplementation } from './models/metamodels/pure/packageableElements/mapping/InstanceSetImplementation';
@@ -64,7 +62,6 @@ export class GraphManagerState {
     makeObservable(this, {
       graph: observable,
       resetGraph: action,
-      initializeSystem: flow,
     });
 
     this.pluginManager = pluginManager;
@@ -84,18 +81,16 @@ export class GraphManagerState {
    * Right now the essential profiles have been extracted from Pure to load the minimum system models.
    * We might add more system entities as needed until the system model project(s) are setup.
    */
-  *initializeSystem(options?: GraphBuilderOptions): GeneratorFn<void> {
+  async initializeSystem(options?: GraphBuilderOptions): Promise<void> {
     if (!this.initSystemState.isInInitialState) {
       return;
     }
     try {
       this.initSystemState.inProgress();
-      yield flowResult(
-        this.graphManager.buildSystem(
-          this.coreModel,
-          this.systemModel,
-          options,
-        ),
+      await this.graphManager.buildSystem(
+        this.coreModel,
+        this.systemModel,
+        options,
       );
       this.systemModel.initializeAutoImports();
       this.initSystemState.pass();
@@ -217,35 +212,6 @@ export class GraphManagerState {
   }
 
   /**
-   * Call `get hashCode()` on each element once so we trigger the first time we compute the hash for that element.
-   * This plays well with `keepAlive` flag on each of the element `get hashCode()` function. This is due to
-   * the fact that we want to get hashCode inside a `setTimeout()` to make this non-blocking, but that way `mobx` will
-   * not trigger memoization on computed so we need to enable `keepAlive`
-   */
-  *precomputeHashes(): GeneratorFn<void> {
-    const startTime = Date.now();
-    if (this.graph.allOwnElements.length) {
-      yield Promise.all<void>(
-        this.graph.allOwnElements.map(
-          (element) =>
-            new Promise((resolve) =>
-              setTimeout(() => {
-                element.hashCode; // manually trigger hash code recomputation
-                resolve();
-              }, 0),
-            ),
-        ),
-      );
-    }
-    this.log.info(
-      LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_HASHES_PRECOMPUTED),
-      '[ASYNC]',
-      Date.now() - startTime,
-      'ms',
-    );
-  }
-
-  /**
    * Filter the list of system elements that will be shown in selection options
    * to users. This is helpful to avoid overwhelming and confusing users in form
    * mode since many system elements are needed to build the graph, but should
@@ -260,5 +226,9 @@ export class GraphManagerState {
     return systemElements.filter((element) =>
       allowedSystemElements.includes(element.path),
     );
+  }
+
+  isElementReadOnly(element: PackageableElement): boolean {
+    return element.getRoot().path !== ROOT_PACKAGE_NAME.MAIN;
   }
 }

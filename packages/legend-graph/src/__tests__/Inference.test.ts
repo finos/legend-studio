@@ -21,14 +21,12 @@ import {
   TEST_DATA__ReferenceWithoutSection,
   TEST_DATA__ReferenceModification,
 } from './TEST_DATA__Inference';
-import { flowResult } from 'mobx';
 import type { Entity } from '@finos/legend-model-storage';
 import {
   TEST__buildGraphWithEntities,
   TEST__excludeSectionIndex,
   TEST__getTestGraphManagerState,
 } from '../GraphManagerTestUtils';
-import { _tagReference_setValue } from '../models/GraphModifierHelper';
 
 test(unitTest('Infer default mapping element ID'), async () => {
   const graphManagerState = TEST__getTestGraphManagerState();
@@ -50,13 +48,11 @@ test(
   unitTest('Import resolution throws when multiple matches found'),
   async () => {
     const graphManagerState = TEST__getTestGraphManagerState();
-    await flowResult(graphManagerState.initializeSystem());
+    await graphManagerState.initializeSystem();
     await expect(() =>
-      flowResult(
-        graphManagerState.graphManager.buildGraph(
-          graphManagerState.graph,
-          TEST_DATA__ImportResolutionMultipleMatchesFound as Entity[],
-        ),
+      graphManagerState.graphManager.buildGraph(
+        graphManagerState.graph,
+        TEST_DATA__ImportResolutionMultipleMatchesFound as Entity[],
       ),
     ).rejects.toThrow(
       `Can't resolve element with path 'A' - multiple matches found [test::A, test2::A]`,
@@ -96,10 +92,11 @@ test(
     let enumeration = graphManagerState.graph.getEnumeration('test::tEnum');
     const tagValue = enumeration.taggedValues[0];
     if (tagValue) {
-      _tagReference_setValue(
-        tagValue.tag,
-        graphManagerState.graph.getProfile('test::tProf').getTag('s4'),
-      );
+      tagValue.tag.value = graphManagerState.graph
+        .getProfile('test::tProf')
+        .getTag('s4');
+      tagValue.tag.ownerReference.value =
+        graphManagerState.graph.getProfile('test::tProf');
     }
 
     expect(
@@ -121,10 +118,11 @@ test(
     enumeration = graphManagerState.graph.getEnumeration('test::tEnum');
     const taggedValue = enumeration.taggedValues[0];
     if (taggedValue) {
-      _tagReference_setValue(
-        taggedValue.tag,
-        graphManagerState.graph.getProfile('test2::tProf').getTag('s1'),
-      );
+      taggedValue.tag.value = graphManagerState.graph
+        .getProfile('test2::tProf')
+        .getTag('s1');
+      taggedValue.tag.ownerReference.value =
+        graphManagerState.graph.getProfile('test2::tProf');
     }
 
     expect(

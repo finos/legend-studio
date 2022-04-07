@@ -49,7 +49,7 @@ import { type EntityChange, EntityChangeType } from '@finos/legend-server-sdlc';
 import type { EditorStore } from '../../../EditorStore';
 import { ElementEditorState } from '../ElementEditorState';
 import { LEGEND_STUDIO_APP_EVENT } from '../../../LegendStudioAppEvent';
-import { configurationProperty_setValue } from '../../../ModifierHelper';
+import { configurationProperty_setValue } from '../../../graphModifier/DSLGeneration_GraphModifierHelper';
 
 export enum SCHEMA_SET_TAB_TYPE {
   GENERAL = 'GENERAL',

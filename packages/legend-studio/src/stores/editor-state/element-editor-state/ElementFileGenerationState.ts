@@ -23,8 +23,8 @@ import {
   FileGenerationSpecification,
   PackageableElementExplicitReference,
 } from '@finos/legend-graph';
-import { package_addElement } from '../../DomainModifierHelper';
-import { fileGeneration_setType } from '../../ModifierHelper';
+import { package_addElement } from '../../graphModifier/DomainGraphModifierHelper';
+import { fileGeneration_setType } from '../../graphModifier/DSLGeneration_GraphModifierHelper';
 
 export class ElementFileGenerationState {
   uuid = uuid();

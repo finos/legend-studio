@@ -108,6 +108,11 @@ import {
 import { cleanUpDeadReferencesInDiagram } from '../../helpers/DiagramHelper';
 import { Point } from '../../models/metamodels/pure/packageableElements/diagram/geometry/DSLDiagram_Point';
 import type { DSLDiagram_LegendStudioPlugin_Extension } from './DSLDiagram_LegendStudioPlugin_Extension';
+import {
+  classView_setHideProperties,
+  classView_setHideStereotypes,
+  classView_setHideTaggedValues,
+} from '../../stores/studio/DSLDiagram_GraphModifierHelper';
 
 const DiagramEditorContextMenu = observer(
   forwardRef<
@@ -519,21 +524,21 @@ const DiagramEditorClassViewEditor = observer(
       if (isReadOnly) {
         return;
       }
-      classView.setHideProperties(!classView.hideProperties);
+      classView_setHideProperties(classView, !classView.hideProperties);
       diagramEditorState.renderer.render();
     };
     const toggleHideTaggedValues = (): void => {
       if (isReadOnly) {
         return;
       }
-      classView.setHideTaggedValues(!classView.hideTaggedValues);
+      classView_setHideTaggedValues(classView, !classView.hideTaggedValues);
       diagramEditorState.renderer.render();
     };
     const toggleHideStereotypes = (): void => {
       if (isReadOnly) {
         return;
       }
-      classView.setHideStereotypes(!classView.hideStereotypes);
+      classView_setHideStereotypes(classView, !classView.hideStereotypes);
       diagramEditorState.renderer.render();
     };
 

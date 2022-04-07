@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { observable, action, makeObservable } from 'mobx';
 import {
   PackageableElementExplicitReference,
   type PackageableElementReference,
@@ -33,12 +32,6 @@ export abstract class SetImplementationReference extends ReferenceWithOwner {
     value: SetImplementation,
   ) {
     super(ownerReference);
-
-    makeObservable(this, {
-      value: observable,
-      setValue: action,
-    });
-
     this.ownerReference = ownerReference;
     this.value = value;
   }

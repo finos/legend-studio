@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { computed, observable, makeObservable } from 'mobx';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import {
   type Hashable,
@@ -31,6 +30,11 @@ export class Schema implements Hashable {
   name: string;
   tables: Table[] = [];
   views: View[] = [];
+
+  constructor(name: string, owner: Database) {
+    this.name = name;
+    this.owner = owner;
+  }
 
   getTable = (name: string): Table =>
     guaranteeNonNullable(
@@ -49,18 +53,6 @@ export class Schema implements Hashable {
       `Can't find relation '${name}' in schema '${this.name}' of database '${this.owner.path}'`,
     );
   };
-
-  constructor(name: string, owner: Database) {
-    makeObservable(this, {
-      name: observable,
-      tables: observable,
-      views: observable,
-      hashCode: computed,
-    });
-
-    this.name = name;
-    this.owner = owner;
-  }
 
   get hashCode(): string {
     return hashArray([

@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { observable, action, makeObservable } from 'mobx';
 import {
   PackageableElementExplicitReference,
   type PackageableElementReference,
@@ -33,19 +32,8 @@ export abstract class JoinReference extends ReferenceWithOwner {
     value: Join,
   ) {
     super(ownerReference);
-
-    makeObservable(this, {
-      value: observable,
-      setValue: action,
-    });
-
     this.ownerReference = ownerReference;
     this.value = value;
-  }
-
-  setValue(value: Join): void {
-    this.value = value;
-    this.ownerReference.value = value.owner;
   }
 }
 
