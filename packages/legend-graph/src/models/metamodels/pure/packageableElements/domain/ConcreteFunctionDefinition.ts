@@ -27,7 +27,7 @@ import type { TaggedValue } from './TaggedValue';
 import type { PackageableElementReference } from '../PackageableElementReference';
 import { FunctionDefinition } from './Function';
 
-export class ConcreteFunctionDefinition
+export class /*toCHECK*/ ConcreteFunctionDefinition
   extends FunctionDefinition
   implements Hashable, Stubable
 {

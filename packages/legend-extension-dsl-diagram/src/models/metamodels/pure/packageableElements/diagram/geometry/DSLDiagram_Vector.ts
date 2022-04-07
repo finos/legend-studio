@@ -16,7 +16,7 @@
 
 import type { Point } from './DSLDiagram_Point';
 
-export class Vector {
+export class /*toCHECK*/ Vector {
   x: number;
   y: number;
 

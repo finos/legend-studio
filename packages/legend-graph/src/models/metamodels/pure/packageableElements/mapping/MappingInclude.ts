@@ -20,7 +20,7 @@ import type { PackageableElementReference } from '../PackageableElementReference
 import type { Mapping } from './Mapping';
 import type { SubstituteStore } from './SubstituteStore';
 
-export class MappingInclude {
+export class /*toCHECK*/ MappingInclude {
   owner: Mapping;
   included: PackageableElementReference<Mapping>;
   storeSubstitutions: SubstituteStore[] = [];

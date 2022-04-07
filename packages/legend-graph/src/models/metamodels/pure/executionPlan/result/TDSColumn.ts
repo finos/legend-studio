@@ -17,7 +17,7 @@
 import type { DataType } from '../../packageableElements/domain/DataType';
 import type { PackageableElementReference } from '../../packageableElements/PackageableElementReference';
 
-export class TDSColumn {
+export class /*toCHECK*/ TDSColumn {
   name!: string;
   offset?: number | undefined;
   type?: PackageableElementReference<DataType> | undefined;

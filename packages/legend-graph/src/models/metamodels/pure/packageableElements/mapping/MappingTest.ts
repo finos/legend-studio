@@ -24,7 +24,7 @@ import {
   createValidationError,
 } from '../../../../../helpers/ValidationHelper';
 
-export class MappingTest implements Hashable {
+export class /*toCHECK*/ MappingTest implements Hashable {
   uuid = uuid();
   name: string;
   query: RawLambda; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda

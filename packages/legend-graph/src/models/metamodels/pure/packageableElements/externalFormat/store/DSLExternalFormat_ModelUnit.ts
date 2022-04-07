@@ -19,7 +19,7 @@ import type { PackageableElementReference } from '../../PackageableElementRefere
 import type { PackageableElement } from '../../PackageableElement';
 import { DSL_EXTERNAL_FORMAT_HASH_STRUCTURE } from '../../../../../DSLExternalFormat_ModelUtils';
 
-export class ModelUnit implements Hashable {
+export class /*toCHECK*/ ModelUnit implements Hashable {
   packageableElementIncludes: PackageableElementReference<PackageableElement>[] =
     [];
   packageableElementExcludes: PackageableElementReference<PackageableElement>[] =

@@ -19,7 +19,7 @@ import { DataType } from './DataType';
 import type { PackageableElementVisitor } from '../PackageableElement';
 import type { Type } from './Type';
 
-export class PrimitiveType extends DataType {
+export class /*toCHECK*/ PrimitiveType extends DataType {
   isSuperType(type: Type): boolean {
     if (!(type instanceof PrimitiveType)) {
       return false;

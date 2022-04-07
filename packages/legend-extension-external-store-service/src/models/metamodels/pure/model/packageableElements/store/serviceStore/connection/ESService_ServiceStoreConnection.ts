@@ -23,7 +23,10 @@ import {
 import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../ESService_ModelUtils';
 import type { ServiceStore } from '../model/ESService_ServiceStore';
 
-export class ServiceStoreConnection extends Connection implements Hashable {
+export class /*toCHECK*/ ServiceStoreConnection
+  extends Connection
+  implements Hashable
+{
   declare store: PackageableElementReference<ServiceStore>;
   baseUrl!: string;
 

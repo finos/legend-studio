@@ -19,7 +19,7 @@ import { hashArray, type Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../MetaModelConst';
 import { hashLambda } from '../../../../../../MetaModelUtils';
 
-export class AggregationFunctionSpecification implements Hashable {
+export class /*toCHECK*/ AggregationFunctionSpecification implements Hashable {
   mapFn: RawLambda; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
   aggregateFn: RawLambda; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
 

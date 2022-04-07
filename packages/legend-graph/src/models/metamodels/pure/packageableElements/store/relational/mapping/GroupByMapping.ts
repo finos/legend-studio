@@ -16,7 +16,7 @@
 
 import type { RelationalOperationElement } from '../model/RelationalOperationElement';
 
-export class GroupByMapping {
+export class /*toCHECK*/ GroupByMapping {
   // setMappingOwner?: RelationalInstanceSetImplementation | undefined;
   columns: RelationalOperationElement[] = [];
 }

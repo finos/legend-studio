@@ -75,7 +75,7 @@ export interface ValueSpecificationVisitor<T> {
   ): T;
 }
 
-export abstract class ValueSpecification {
+export abstract class /*toCHECK*/ ValueSpecification {
   genericType?: GenericTypeReference | undefined;
   multiplicity!: Multiplicity;
 

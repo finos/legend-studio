@@ -27,7 +27,7 @@ import type { Join } from './Join';
 import type { Filter } from './Filter';
 import { getAllIncludedDbs } from '../../../../../../../helpers/DatabaseHelper';
 
-export class Database extends Store implements Hashable {
+export class /*toCHECK*/ Database extends Store implements Hashable {
   schemas: Schema[] = [];
   joins: Join[] = [];
   filters: Filter[] = [];

@@ -20,7 +20,7 @@ import {
   ValueSpecification,
 } from './ValueSpecification';
 
-export class INTERNAL__UnknownValueSpecification extends ValueSpecification {
+export class /*toCHECK*/ INTERNAL__UnknownValueSpecification extends ValueSpecification {
   content: object;
 
   constructor(content: object) {

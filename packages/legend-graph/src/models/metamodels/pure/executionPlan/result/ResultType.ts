@@ -18,7 +18,7 @@ import type { GenericTypeReference } from '../../packageableElements/domain/Gene
 import type { Type } from '../../packageableElements/domain/Type';
 import type { PackageableElementReference } from '../../packageableElements/PackageableElementReference';
 
-export class ResultType {
+export class /*toCHECK*/ ResultType {
   type!: PackageableElementReference<Type>;
   genericType?: GenericTypeReference | undefined;
 }

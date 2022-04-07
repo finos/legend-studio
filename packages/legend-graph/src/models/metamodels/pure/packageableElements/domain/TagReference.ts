@@ -26,7 +26,7 @@ import type { Tag } from './Tag';
 import type { Stubable } from '../../../../../helpers/Stubable';
 import { ReferenceWithOwner } from '../../Reference';
 
-export abstract class TagReference
+export abstract class /*toCHECK*/ TagReference
   extends ReferenceWithOwner
   implements Stubable
 {
@@ -57,7 +57,7 @@ export abstract class TagReference
   }
 }
 
-export class TagExplicitReference extends TagReference {
+export class /*toCHECK*/ TagExplicitReference extends TagReference {
   override readonly ownerReference: PackageableElementExplicitReference<Profile>;
 
   private constructor(value: Tag) {
@@ -73,7 +73,7 @@ export class TagExplicitReference extends TagReference {
   }
 }
 
-export class TagImplicitReference extends TagReference {
+export class /*toCHECK*/ TagImplicitReference extends TagReference {
   override readonly ownerReference: PackageableElementImplicitReference<Profile>;
 
   private constructor(

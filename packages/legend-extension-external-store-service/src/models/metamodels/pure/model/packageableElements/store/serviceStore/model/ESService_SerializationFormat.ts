@@ -17,7 +17,7 @@
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../ESService_ModelUtils';
 
-export class SerializationFormat implements Hashable {
+export class /*toCHECK*/ SerializationFormat implements Hashable {
   style?: string | undefined;
   explode?: boolean | undefined;
 

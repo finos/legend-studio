@@ -25,7 +25,7 @@ import type { Function } from '../packageableElements/domain/Function';
 import type { AbstractProperty } from '../packageableElements/domain/AbstractProperty';
 import { UnsupportedOperationError } from '@finos/legend-shared';
 
-export class Expression extends ValueSpecification {
+export class /*toCHECK*/ Expression extends ValueSpecification {
   classifierGenericType?: GenericTypeReference | undefined;
 
   accept_ValueSpecificationVisitor<T>(
@@ -35,7 +35,7 @@ export class Expression extends ValueSpecification {
   }
 }
 
-export class FunctionExpression extends Expression {
+export class /*toCHECK*/ FunctionExpression extends Expression {
   functionName: string;
   parametersValues: ValueSpecification[] = [];
 
@@ -55,7 +55,7 @@ export class FunctionExpression extends Expression {
   }
 }
 
-export class SimpleFunctionExpression extends FunctionExpression {
+export class /*toCHECK*/ SimpleFunctionExpression extends FunctionExpression {
   // eslint-disable-next-line @typescript-eslint/ban-types
   func?: PackageableElementReference<Function> | undefined;
 
@@ -66,7 +66,7 @@ export class SimpleFunctionExpression extends FunctionExpression {
   }
 }
 
-export class AbstractPropertyExpression extends FunctionExpression {
+export class /*toCHECK*/ AbstractPropertyExpression extends FunctionExpression {
   func!: AbstractProperty;
 
   override accept_ValueSpecificationVisitor<T>(

@@ -16,12 +16,12 @@
 
 import type { LambdaFunction } from './LambdaFunction';
 
-export abstract class ExecutionContext {
+export abstract class /*toCHECK*/ ExecutionContext {
   queryTimeOutInSeconds?: number | undefined;
   enableConstraints?: boolean | undefined;
 }
 
-export class AnalyticsExecutionContext extends ExecutionContext {
+export class /*toCHECK*/ AnalyticsExecutionContext extends ExecutionContext {
   useAnalytics: boolean;
   toFlowSetFunction: LambdaFunction;
 
@@ -32,4 +32,4 @@ export class AnalyticsExecutionContext extends ExecutionContext {
   }
 }
 
-export class BaseExecutionContext extends ExecutionContext {}
+export class /*toCHECK*/ BaseExecutionContext extends ExecutionContext {}

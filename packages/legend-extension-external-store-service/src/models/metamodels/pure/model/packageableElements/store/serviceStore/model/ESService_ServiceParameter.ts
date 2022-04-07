@@ -25,7 +25,7 @@ export enum LOCATION {
   QUERY = 'QUERY',
 }
 
-export class ServiceParameter implements Hashable {
+export class /*toCHECK*/ ServiceParameter implements Hashable {
   name!: string;
   type!: TypeReference;
   location!: LOCATION;

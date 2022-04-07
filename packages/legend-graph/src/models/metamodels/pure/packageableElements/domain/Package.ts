@@ -31,7 +31,10 @@ import {
 
 export const RESERVERD_PACKAGE_NAMES = ['$implicit'];
 
-export class Package extends PackageableElement implements Hashable {
+export class /*toCHECK*/ Package
+  extends PackageableElement
+  implements Hashable
+{
   children: PackageableElement[] = [];
 
   static createPackageFromParent(name: string, parent: Package): Package {

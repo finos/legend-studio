@@ -26,7 +26,7 @@ import type { AggregateSetImplementationContainer } from './AggregateSetImplemen
 import { hashArray } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../MetaModelConst';
 
-export class AggregationAwareSetImplementation extends InstanceSetImplementation {
+export class /*toCHECK*/ AggregationAwareSetImplementation extends InstanceSetImplementation {
   aggregateSetImplementations: AggregateSetImplementationContainer[] = [];
   mainSetImplementation: InstanceSetImplementation;
 

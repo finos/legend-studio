@@ -19,7 +19,7 @@ import { MODEL_STORE_NAME } from '../../../../../../../MetaModelConst';
 import { Store } from '../../Store';
 import type { PackageableElementVisitor } from '../../../PackageableElement';
 
-export class ModelStore extends Store {
+export class /*toCHECK*/ ModelStore extends Store {
   constructor() {
     super(MODEL_STORE_NAME);
   }

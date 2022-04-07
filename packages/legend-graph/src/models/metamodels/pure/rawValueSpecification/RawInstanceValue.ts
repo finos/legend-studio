@@ -24,7 +24,7 @@ import {
 } from './RawValueSpecification';
 import { CORE_HASH_STRUCTURE } from '../../../../MetaModelConst';
 
-export class RawInstanceValue
+export class /*toCHECK*/ RawInstanceValue
   extends RawValueSpecification
   implements Hashable
 {

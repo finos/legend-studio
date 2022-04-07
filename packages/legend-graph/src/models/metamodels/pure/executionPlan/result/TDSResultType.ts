@@ -17,6 +17,6 @@
 import { ResultType } from './ResultType';
 import type { TDSColumn } from './TDSColumn';
 
-export class TDSResultType extends ResultType {
+export class /*toCHECK*/ TDSResultType extends ResultType {
   tdsColumns: TDSColumn[] = [];
 }

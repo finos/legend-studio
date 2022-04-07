@@ -16,4 +16,4 @@
 
 import { Connection } from '../../../connection/Connection';
 
-export abstract class PureModelConnection extends Connection {}
+export abstract class /*toCHECK*/ PureModelConnection extends Connection {}

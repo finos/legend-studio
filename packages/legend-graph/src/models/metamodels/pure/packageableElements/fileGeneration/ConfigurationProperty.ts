@@ -17,7 +17,7 @@
 import { hashArray, hashObject, type Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 
-export class ConfigurationProperty implements Hashable {
+export class /*toCHECK*/ ConfigurationProperty implements Hashable {
   name: string;
   value: unknown;
 

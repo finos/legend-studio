@@ -18,7 +18,10 @@ import { hashArray, type Hashable } from '@finos/legend-shared';
 import { PropertyHolderView } from './DSLDiagram_PropertyHolderView';
 import { DIAGRAM_HASH_STRUCTURE } from '../../../../DSLDiagram_ModelUtils';
 
-export class PropertyView extends PropertyHolderView implements Hashable {
+export class /*toCHECK*/ PropertyView
+  extends PropertyHolderView
+  implements Hashable
+{
   override get hashCode(): string {
     return hashArray([DIAGRAM_HASH_STRUCTURE.PROPERTY_VIEW, super.hashCode]);
   }

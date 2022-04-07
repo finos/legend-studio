@@ -26,7 +26,7 @@ import type { View } from './View';
 import { NamedRelationalReference } from './TableReference';
 import { SELF_JOIN_SCHEMA_NAME, SELF_JOIN_TABLE_NAME } from './Join';
 
-export abstract class ViewReference extends NamedRelationalReference {
+export abstract class /*toCHECK*/ ViewReference extends NamedRelationalReference {
   value: View;
 
   protected constructor(
@@ -60,7 +60,7 @@ export abstract class ViewReference extends NamedRelationalReference {
   }
 }
 
-export class ViewExplicitReference extends ViewReference {
+export class /*toCHECK*/ ViewExplicitReference extends ViewReference {
   override readonly ownerReference: PackageableElementExplicitReference<Database>;
 
   private constructor(value: View) {
@@ -76,7 +76,7 @@ export class ViewExplicitReference extends ViewReference {
   }
 }
 
-export class ViewImplicitReference extends ViewReference {
+export class /*toCHECK*/ ViewImplicitReference extends ViewReference {
   override readonly ownerReference: PackageableElementImplicitReference<Database>;
 
   private constructor(

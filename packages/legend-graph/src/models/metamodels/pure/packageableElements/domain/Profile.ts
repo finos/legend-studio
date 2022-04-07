@@ -28,7 +28,10 @@ import type { Stereotype } from './Stereotype';
 import type { Tag } from './Tag';
 import { type Stubable, isStubArray } from '../../../../../helpers/Stubable';
 
-export class Profile extends PackageableElement implements Hashable, Stubable {
+export class /*toCHECK*/ Profile
+  extends PackageableElement
+  implements Hashable, Stubable
+{
   stereotypes: Stereotype[] = [];
   tags: Tag[] = [];
 

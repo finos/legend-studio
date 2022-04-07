@@ -43,7 +43,7 @@ export enum DatabaseType {
   BigQuery = 'BigQuery',
 }
 
-export abstract class DatabaseConnection extends Connection {
+export abstract class /*toCHECK*/ DatabaseConnection extends Connection {
   declare store: PackageableElementReference<Database>;
   type: DatabaseType;
   // debug?: boolean | undefined;
@@ -60,7 +60,7 @@ export abstract class DatabaseConnection extends Connection {
   }
 }
 
-export class RelationalDatabaseConnection extends DatabaseConnection {
+export class /*toCHECK*/ RelationalDatabaseConnection extends DatabaseConnection {
   datasourceSpecification: DatasourceSpecification;
   authenticationStrategy: AuthenticationStrategy;
   postProcessors: PostProcessor[] = [];

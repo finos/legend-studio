@@ -48,7 +48,7 @@ export const getObjectInputType = (type: string): ObjectInputType => {
   }
 };
 
-export class ObjectInputData extends InputData implements Hashable {
+export class /*toCHECK*/ ObjectInputData extends InputData implements Hashable {
   sourceClass: PackageableElementReference<Class>;
   inputType: ObjectInputType;
   data: string;

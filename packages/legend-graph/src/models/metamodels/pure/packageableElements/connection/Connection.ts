@@ -37,7 +37,7 @@ export interface ConnectionVisitor<T> {
   ): T;
 }
 
-export abstract class Connection implements Hashable {
+export abstract class /*toCHECK*/ Connection implements Hashable {
   uuid = uuid();
   // in Pure right now, this is of type Any[1], but technically it should be a store
   store: PackageableElementReference<Store>;
@@ -51,7 +51,10 @@ export abstract class Connection implements Hashable {
   abstract accept_ConnectionVisitor<T>(visitor: ConnectionVisitor<T>): T;
 }
 
-export class ConnectionPointer extends Connection implements Hashable {
+export class /*toCHECK*/ ConnectionPointer
+  extends Connection
+  implements Hashable
+{
   packageableConnection: PackageableElementReference<PackageableConnection>;
 
   constructor(

@@ -24,7 +24,7 @@ import { ReferenceWithOwner } from '../../Reference';
 import type { GenericType } from './GenericType';
 import type { Type } from './Type';
 
-export abstract class GenericTypeReference
+export abstract class /*toCHECK*/ GenericTypeReference
   extends ReferenceWithOwner
   implements Stubable
 {
@@ -46,7 +46,7 @@ export abstract class GenericTypeReference
   }
 }
 
-export class GenericTypeExplicitReference extends GenericTypeReference {
+export class /*toCHECK*/ GenericTypeExplicitReference extends GenericTypeReference {
   override readonly ownerReference: PackageableElementExplicitReference<Type>;
 
   private constructor(value: GenericType) {
@@ -62,7 +62,7 @@ export class GenericTypeExplicitReference extends GenericTypeReference {
   }
 }
 
-export class GenericTypeImplicitReference extends GenericTypeReference {
+export class /*toCHECK*/ GenericTypeImplicitReference extends GenericTypeReference {
   override readonly ownerReference: PackageableElementImplicitReference<Type>;
 
   private constructor(

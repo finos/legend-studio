@@ -22,14 +22,17 @@ import type {
   PackageableElementReference,
 } from '@finos/legend-graph';
 
-export abstract class TypeReference implements Hashable {
+export abstract class /*toCHECK*/ TypeReference implements Hashable {
   private readonly _$nominalTypeBrand!: 'TypeReference';
   list!: boolean;
 
   abstract get hashCode(): string;
 }
 
-export class BooleanTypeReference extends TypeReference implements Hashable {
+export class /*toCHECK*/ BooleanTypeReference
+  extends TypeReference
+  implements Hashable
+{
   override get hashCode(): string {
     return hashArray([
       SERVICE_STORE_HASH_STRUCTURE.BOOLEAN_TYPE_REFERENCE,
@@ -38,7 +41,10 @@ export class BooleanTypeReference extends TypeReference implements Hashable {
   }
 }
 
-export class FloatTypeReference extends TypeReference implements Hashable {
+export class /*toCHECK*/ FloatTypeReference
+  extends TypeReference
+  implements Hashable
+{
   override get hashCode(): string {
     return hashArray([
       SERVICE_STORE_HASH_STRUCTURE.FLOAT_TYPE_REFERENCE,
@@ -47,7 +53,10 @@ export class FloatTypeReference extends TypeReference implements Hashable {
   }
 }
 
-export class IntegerTypeReference extends TypeReference implements Hashable {
+export class /*toCHECK*/ IntegerTypeReference
+  extends TypeReference
+  implements Hashable
+{
   override get hashCode(): string {
     return hashArray([
       SERVICE_STORE_HASH_STRUCTURE.INTEGER_TYPE_REFERENCE,
@@ -56,7 +65,10 @@ export class IntegerTypeReference extends TypeReference implements Hashable {
   }
 }
 
-export class StringTypeReference extends TypeReference implements Hashable {
+export class /*toCHECK*/ StringTypeReference
+  extends TypeReference
+  implements Hashable
+{
   override get hashCode(): string {
     return hashArray([
       SERVICE_STORE_HASH_STRUCTURE.STRING_TYPE_REFERENCE,
@@ -65,7 +77,10 @@ export class StringTypeReference extends TypeReference implements Hashable {
   }
 }
 
-export class ComplexTypeReference extends TypeReference implements Hashable {
+export class /*toCHECK*/ ComplexTypeReference
+  extends TypeReference
+  implements Hashable
+{
   type!: PackageableElementReference<Class>;
   binding!: PackageableElementReference<Binding>;
 

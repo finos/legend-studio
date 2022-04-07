@@ -23,7 +23,7 @@ import {
   PropertyMapping,
 } from '../PropertyMapping';
 
-export class XStorePropertyMapping
+export class /*toCHECK*/ XStorePropertyMapping
   extends PropertyMapping
   implements Hashable, Stubable
 {

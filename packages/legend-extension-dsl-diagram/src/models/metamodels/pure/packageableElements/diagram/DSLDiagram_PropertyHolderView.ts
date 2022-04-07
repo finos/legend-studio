@@ -21,7 +21,10 @@ import type { Diagram } from './DSLDiagram_Diagram';
 import type { PropertyReference } from '@finos/legend-graph';
 import { DIAGRAM_HASH_STRUCTURE } from '../../../../DSLDiagram_ModelUtils';
 
-export class PropertyHolderView extends RelationshipView implements Hashable {
+export class /*toCHECK*/ PropertyHolderView
+  extends RelationshipView
+  implements Hashable
+{
   property: PropertyReference;
 
   constructor(

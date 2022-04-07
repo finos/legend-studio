@@ -46,7 +46,10 @@ export const getRelationalInputType = (type: string): RelationalInputType => {
   }
 };
 
-export class RelationalInputData extends InputData implements Hashable {
+export class /*toCHECK*/ RelationalInputData
+  extends InputData
+  implements Hashable
+{
   database: PackageableElementReference<Database>;
   data: string;
   inputType: RelationalInputType;

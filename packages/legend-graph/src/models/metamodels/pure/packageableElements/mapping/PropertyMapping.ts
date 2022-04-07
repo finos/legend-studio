@@ -60,7 +60,9 @@ export interface PropertyMappingVisitor<T> {
   visit_XStorePropertyMapping(propertyMapping: XStorePropertyMapping): T;
 }
 
-export abstract class PropertyMapping implements Hashable, Stubable {
+export abstract class /*toCHECK*/ PropertyMapping
+  implements Hashable, Stubable
+{
   isEmbedded = false;
   property: PropertyReference;
   owner: PropertyMappingsImplementation; // the immediate parent instance set implementation that holds the property mappings

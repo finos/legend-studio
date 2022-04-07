@@ -17,13 +17,13 @@
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import { type Hashable, hashArray } from '@finos/legend-shared';
 
-export abstract class AuthenticationStrategy implements Hashable {
+export abstract class /*toCHECK*/ AuthenticationStrategy implements Hashable {
   private readonly _$nominalTypeBrand!: 'AuthenticationStrategy';
 
   abstract get hashCode(): string;
 }
 
-export class DelegatedKerberosAuthenticationStrategy
+export class /*toCHECK*/ DelegatedKerberosAuthenticationStrategy
   extends AuthenticationStrategy
   implements Hashable
 {
@@ -37,7 +37,7 @@ export class DelegatedKerberosAuthenticationStrategy
   }
 }
 
-export class DefaultH2AuthenticationStrategy
+export class /*toCHECK*/ DefaultH2AuthenticationStrategy
   extends AuthenticationStrategy
   implements Hashable
 {
@@ -46,7 +46,7 @@ export class DefaultH2AuthenticationStrategy
   }
 }
 
-export class ApiTokenAuthenticationStrategy
+export class /*toCHECK*/ ApiTokenAuthenticationStrategy
   extends AuthenticationStrategy
   implements Hashable
 {
@@ -65,7 +65,7 @@ export class ApiTokenAuthenticationStrategy
   }
 }
 
-export class OAuthAuthenticationStrategy
+export class /*toCHECK*/ OAuthAuthenticationStrategy
   extends AuthenticationStrategy
   implements Hashable
 {
@@ -87,7 +87,7 @@ export class OAuthAuthenticationStrategy
   }
 }
 
-export class SnowflakePublicAuthenticationStrategy
+export class /*toCHECK*/ SnowflakePublicAuthenticationStrategy
   extends AuthenticationStrategy
   implements Hashable
 {
@@ -116,7 +116,7 @@ export class SnowflakePublicAuthenticationStrategy
   }
 }
 
-export class GCPApplicationDefaultCredentialsAuthenticationStrategy
+export class /*toCHECK*/ GCPApplicationDefaultCredentialsAuthenticationStrategy
   extends AuthenticationStrategy
   implements Hashable
 {
@@ -127,7 +127,7 @@ export class GCPApplicationDefaultCredentialsAuthenticationStrategy
   }
 }
 
-export class UsernamePasswordAuthenticationStrategy
+export class /*toCHECK*/ UsernamePasswordAuthenticationStrategy
   extends AuthenticationStrategy
   implements Hashable
 {

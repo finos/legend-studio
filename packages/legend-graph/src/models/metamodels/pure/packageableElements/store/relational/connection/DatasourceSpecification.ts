@@ -17,13 +17,13 @@
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 
-export abstract class DatasourceSpecification implements Hashable {
+export abstract class /*toCHECK*/ DatasourceSpecification implements Hashable {
   private readonly _$nominalTypeBrand!: 'DatasourceSpecification';
 
   abstract get hashCode(): string;
 }
 
-export class StaticDatasourceSpecification
+export class /*toCHECK*/ StaticDatasourceSpecification
   extends DatasourceSpecification
   implements Hashable
 {
@@ -48,7 +48,7 @@ export class StaticDatasourceSpecification
   }
 }
 
-export class DatabricksDatasourceSpecification
+export class /*toCHECK*/ DatabricksDatasourceSpecification
   extends DatasourceSpecification
   implements Hashable
 {
@@ -81,7 +81,7 @@ export class DatabricksDatasourceSpecification
   }
 }
 
-export class EmbeddedH2DatasourceSpecification
+export class /*toCHECK*/ EmbeddedH2DatasourceSpecification
   extends DatasourceSpecification
   implements Hashable
 {
@@ -110,7 +110,7 @@ export class EmbeddedH2DatasourceSpecification
   }
 }
 
-export class LocalH2DatasourceSpecification
+export class /*toCHECK*/ LocalH2DatasourceSpecification
   extends DatasourceSpecification
   implements Hashable
 {
@@ -126,7 +126,7 @@ export class LocalH2DatasourceSpecification
   }
 }
 
-export class SnowflakeDatasourceSpecification
+export class /*toCHECK*/ SnowflakeDatasourceSpecification
   extends DatasourceSpecification
   implements Hashable
 {
@@ -175,7 +175,7 @@ export class SnowflakeDatasourceSpecification
   }
 }
 
-export class RedshiftDatasourceSpecification
+export class /*toCHECK*/ RedshiftDatasourceSpecification
   extends DatasourceSpecification
   implements Hashable
 {
@@ -215,7 +215,7 @@ export class RedshiftDatasourceSpecification
   }
 }
 
-export class BigQueryDatasourceSpecification
+export class /*toCHECK*/ BigQueryDatasourceSpecification
   extends DatasourceSpecification
   implements Hashable
 {

@@ -28,7 +28,7 @@ import type { PackageableElementReference } from '../../../PackageableElementRef
 import type { RootFlatDataRecordTypeReference } from '../model/RootFlatDataRecordTypeReference';
 import type { InferableMappingElementRoot } from '../../../mapping/InferableMappingElementRoot';
 
-export class FlatDataInstanceSetImplementation
+export class /*toCHECK*/ FlatDataInstanceSetImplementation
   extends InstanceSetImplementation
   implements Hashable
 {

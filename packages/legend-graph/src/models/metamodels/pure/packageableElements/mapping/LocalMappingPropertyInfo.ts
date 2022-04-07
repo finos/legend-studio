@@ -19,7 +19,7 @@ import type { Multiplicity } from '../domain/Multiplicity';
 import type { Type } from '../domain/Type';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 
-export class LocalMappingPropertyInfo implements Hashable {
+export class /*toCHECK*/ LocalMappingPropertyInfo implements Hashable {
   localMappingProperty!: boolean;
   // TODO: refactor this to use `PackageableElementReference`
   localMappingPropertyType!: Type;

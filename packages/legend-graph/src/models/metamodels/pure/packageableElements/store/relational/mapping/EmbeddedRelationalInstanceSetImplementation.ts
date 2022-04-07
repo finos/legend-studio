@@ -41,7 +41,7 @@ import type { PropertyReference } from '../../../domain/PropertyReference';
 import type { RelationalInstanceSetImplementation } from './RelationalInstanceSetImplementation';
 import { InferableMappingElementRootExplicitValue } from '../../../mapping/InferableMappingElementRoot';
 
-export class EmbeddedRelationalInstanceSetImplementation
+export class /*toCHECK*/ EmbeddedRelationalInstanceSetImplementation
   extends PropertyMapping
   implements
     EmbeddedSetImplementation,

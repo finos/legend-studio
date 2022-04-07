@@ -22,7 +22,10 @@ import {
 } from '../PackageableElement';
 import type { Section } from './Section';
 
-export class SectionIndex extends PackageableElement implements Hashable {
+export class /*toCHECK*/ SectionIndex
+  extends PackageableElement
+  implements Hashable
+{
   sections: Section[] = [];
 
   protected override get _elementHashCode(): string {

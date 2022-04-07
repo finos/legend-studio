@@ -27,7 +27,7 @@ import type { PropertyMappingsImplementation } from '../../../mapping/PropertyMa
 import type { RawLambda } from '../../../../rawValueSpecification/RawLambda';
 import type { Stubable } from '../../../../../../../helpers/Stubable';
 
-export class PurePropertyMapping
+export class /*toCHECK*/ PurePropertyMapping
   extends PropertyMapping
   implements Hashable, Stubable
 {

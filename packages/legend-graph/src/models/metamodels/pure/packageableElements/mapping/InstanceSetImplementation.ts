@@ -20,7 +20,7 @@ import { SetImplementation } from './SetImplementation';
 import type { PropertyMappingsImplementation } from './PropertyMappingsImplementation';
 import type { PropertyMapping } from './PropertyMapping';
 
-export abstract class InstanceSetImplementation
+export abstract class /*toCHECK*/ InstanceSetImplementation
   extends SetImplementation
   implements PropertyMappingsImplementation, Hashable
 {

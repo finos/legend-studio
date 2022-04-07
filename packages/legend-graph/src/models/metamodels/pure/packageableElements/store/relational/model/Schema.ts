@@ -25,7 +25,7 @@ import type { Table } from './Table';
 import type { View } from './View';
 import type { Relation } from './RelationalOperationElement';
 
-export class Schema implements Hashable {
+export class /*toCHECK*/ Schema implements Hashable {
   owner: Database;
   name: string;
   tables: Table[] = [];

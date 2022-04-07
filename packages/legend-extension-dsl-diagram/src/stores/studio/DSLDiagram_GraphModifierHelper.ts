@@ -83,7 +83,7 @@ export const diagram_deleteGeneralizationView = action(
 );
 export const diagram_setPropertyViews = action(
   (diagram: Diagram, val: PropertyView[]): void => {
-    diagram.propertyViews = val.map((e) => observe_PropertyView(e));
+    diagram.propertyViews = val.map(observe_PropertyView);
   },
 );
 export const diagram_addPropertyView = action(

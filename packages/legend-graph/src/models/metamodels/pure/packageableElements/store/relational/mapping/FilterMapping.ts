@@ -23,7 +23,7 @@ import {
 } from '../model/RelationalOperationElement';
 import type { FilterReference } from '../model/FilterReference';
 
-export class FilterMapping implements Hashable {
+export class /*toCHECK*/ FilterMapping implements Hashable {
   // setMappingOwner?: RelationalInstanceSetImplementation | undefined;
   joinTreeNode?: JoinTreeNode | undefined;
   database: Database;

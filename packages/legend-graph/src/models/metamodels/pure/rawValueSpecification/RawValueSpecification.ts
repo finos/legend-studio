@@ -24,7 +24,7 @@ export interface RawValueSpecificationVisitor<T> {
   visit_RawInstanceValue(valueSpecification: RawInstanceValue): T;
 }
 
-export abstract class RawValueSpecification {
+export abstract class /*toCHECK*/ RawValueSpecification {
   abstract accept_RawValueSpecificationVisitor<T>(
     visitor: RawValueSpecificationVisitor<T>,
   ): T;

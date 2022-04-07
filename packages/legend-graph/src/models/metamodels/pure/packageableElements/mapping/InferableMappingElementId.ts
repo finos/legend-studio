@@ -17,7 +17,7 @@
 import { fromElementPathToMappingElementId } from '../../../../../MetaModelUtils';
 import { InferableValue } from '../../InferableValue';
 
-export abstract class InferableMappingElementIdValue extends InferableValue<
+export abstract class /*toCHECK*/ InferableMappingElementIdValue extends InferableValue<
   string,
   string | undefined
 > {
@@ -33,7 +33,7 @@ export abstract class InferableMappingElementIdValue extends InferableValue<
   }
 }
 
-export class InferableMappingElementIdExplicitValue extends InferableMappingElementIdValue {
+export class /*toCHECK*/ InferableMappingElementIdExplicitValue extends InferableMappingElementIdValue {
   static create(
     value: string,
     targetPath: string,
@@ -54,7 +54,7 @@ export class InferableMappingElementIdExplicitValue extends InferableMappingElem
   }
 }
 
-export class InferableMappingElementIdImplicitValue extends InferableMappingElementIdValue {
+export class /*toCHECK*/ InferableMappingElementIdImplicitValue extends InferableMappingElementIdValue {
   private input?: string | undefined;
 
   constructor(value: string, defaultValue: string, input: string | undefined) {

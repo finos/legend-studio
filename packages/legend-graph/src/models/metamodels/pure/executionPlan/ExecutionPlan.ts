@@ -18,7 +18,7 @@ import type { ExecutionNode } from './nodes/ExecutionNode';
 
 export type RawExecutionPlan = object;
 
-export class ExecutionPlan {
+export class /*toCHECK*/ ExecutionPlan {
   rootExecutionNode!: ExecutionNode;
   processingTemplateFunctions: string[] = [];
   authDependent!: boolean;

@@ -18,7 +18,7 @@ import type { SetImplementation } from './SetImplementation';
 import { Class } from '../domain/Class';
 import type { Property } from '../domain/Property';
 
-export class MappingClass extends Class {
+export class /*toCHECK*/ MappingClass extends Class {
   setImplementation?: SetImplementation | undefined;
   class?: Class | undefined;
   localProperties: Property[] = [];

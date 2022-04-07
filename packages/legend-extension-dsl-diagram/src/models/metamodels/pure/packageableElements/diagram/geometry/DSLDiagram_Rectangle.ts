@@ -17,7 +17,7 @@
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import { DIAGRAM_HASH_STRUCTURE } from '../../../../../DSLDiagram_ModelUtils';
 
-export class Rectangle implements Hashable {
+export class /*toCHECK*/ Rectangle implements Hashable {
   readonly width: number;
   readonly height: number;
 

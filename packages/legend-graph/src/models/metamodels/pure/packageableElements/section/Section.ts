@@ -26,7 +26,7 @@ export enum SectionType {
   DEFAULT = 'default',
 }
 
-export abstract class Section implements Hashable {
+export abstract class /*toCHECK*/ Section implements Hashable {
   parent: SectionIndex;
   parserName: string;
   elements: PackageableElementExplicitReference<PackageableElement>[] = [];
@@ -45,7 +45,7 @@ export abstract class Section implements Hashable {
   }
 }
 
-export class ImportAwareCodeSection extends Section {
+export class /*toCHECK*/ ImportAwareCodeSection extends Section {
   imports: PackageableElementExplicitReference<Package>[] = [];
 
   override get hashCode(): string {
@@ -57,7 +57,7 @@ export class ImportAwareCodeSection extends Section {
   }
 }
 
-export class DefaultCodeSection extends Section {
+export class /*toCHECK*/ DefaultCodeSection extends Section {
   override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.DEFAULT_CODE_SECTION,

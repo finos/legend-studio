@@ -28,7 +28,7 @@ import {
   RawValueSpecification,
 } from './RawValueSpecification';
 
-export class RawVariableExpression
+export class /*toCHECK*/ RawVariableExpression
   extends RawValueSpecification
   implements Hashable, Stubable
 {

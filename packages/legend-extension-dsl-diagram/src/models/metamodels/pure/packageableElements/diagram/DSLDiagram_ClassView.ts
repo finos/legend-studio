@@ -22,7 +22,10 @@ import type { Diagram } from './DSLDiagram_Diagram';
 import { DIAGRAM_HASH_STRUCTURE } from '../../../../DSLDiagram_ModelUtils';
 import type { Class, PackageableElementReference } from '@finos/legend-graph';
 
-export class ClassView extends PositionedRectangle implements Hashable {
+export class /*toCHECK*/ ClassView
+  extends PositionedRectangle
+  implements Hashable
+{
   owner: Diagram;
   class: PackageableElementReference<Class>;
   id: string;

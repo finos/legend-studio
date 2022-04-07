@@ -28,7 +28,7 @@ import type {
   PropertyMappingVisitor,
 } from '../../../mapping/PropertyMapping';
 
-export class OtherwiseEmbeddedRelationalInstanceSetImplementation
+export class /*toCHECK*/ OtherwiseEmbeddedRelationalInstanceSetImplementation
   extends EmbeddedRelationalInstanceSetImplementation
   implements OtherwiseEmebddedSetImplementation, Hashable
 {

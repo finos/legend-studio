@@ -19,7 +19,7 @@ import { Point } from './DSLDiagram_Point';
 import { Rectangle } from './DSLDiagram_Rectangle';
 import { DIAGRAM_HASH_STRUCTURE } from '../../../../../DSLDiagram_ModelUtils';
 
-export class PositionedRectangle implements Hashable {
+export class /*toCHECK*/ PositionedRectangle implements Hashable {
   position: Point;
   rectangle: Rectangle;
   dummyObservable = {};
