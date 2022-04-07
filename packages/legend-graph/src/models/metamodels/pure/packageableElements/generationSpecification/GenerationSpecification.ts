@@ -27,7 +27,7 @@ import type { FileGenerationSpecification } from '../fileGeneration/FileGenerati
 
 // NOTE: As of now the tree only supports a linear order of generation. This is because the only use case is linear,
 // but the shape has been left as a tree to support 'branching' off in the future.
-export class /*toCHECK*/ GenerationTreeNode implements Hashable {
+export class GenerationTreeNode implements Hashable {
   generationElement: PackageableElementReference<PackageableElement>;
   id: string;
 
@@ -48,7 +48,7 @@ export class /*toCHECK*/ GenerationTreeNode implements Hashable {
   }
 }
 
-export class /*toCHECK*/ GenerationSpecification
+export class GenerationSpecification
   extends PackageableElement
   implements Hashable
 {

@@ -16,4 +16,4 @@
 
 import { AbstractGenerationSpecification } from './AbstractGenerationSpecification';
 
-export abstract class /*toCHECK*/ ModelGenerationSpecification extends AbstractGenerationSpecification {}
+export abstract class ModelGenerationSpecification extends AbstractGenerationSpecification {}

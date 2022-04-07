@@ -16,4 +16,4 @@
 
 import { PackageableElement } from '../PackageableElement';
 
-export abstract class /*toCHECK*/ AbstractGenerationSpecification extends PackageableElement {}
+export abstract class AbstractGenerationSpecification extends PackageableElement {}
