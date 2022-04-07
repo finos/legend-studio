@@ -24,7 +24,7 @@ import type { Enum } from './Enum';
 import type { Stubable } from '../../../../../helpers/Stubable';
 import { ReferenceWithOwner } from '../../Reference';
 
-export abstract class /*toCHECK*/ EnumValueReference
+export abstract class EnumValueReference
   extends ReferenceWithOwner
   implements Stubable
 {
@@ -45,7 +45,7 @@ export abstract class /*toCHECK*/ EnumValueReference
   }
 }
 
-export class /*toCHECK*/ EnumValueExplicitReference extends EnumValueReference {
+export class EnumValueExplicitReference extends EnumValueReference {
   override readonly ownerReference: PackageableElementExplicitReference<Enumeration>;
 
   private constructor(value: Enum) {
@@ -61,7 +61,7 @@ export class /*toCHECK*/ EnumValueExplicitReference extends EnumValueReference {
   }
 }
 
-export class /*toCHECK*/ EnumValueImplicitReference extends EnumValueReference {
+export class EnumValueImplicitReference extends EnumValueReference {
   override readonly ownerReference: PackageableElementImplicitReference<Enumeration>;
 
   private constructor(

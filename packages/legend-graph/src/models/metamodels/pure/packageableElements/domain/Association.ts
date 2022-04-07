@@ -68,7 +68,7 @@ const initAssociationProperties = (
  * project
  * FIXME: we can make use of the root package to verify this in the UI and make this a validation error in a way.
  */
-export class /*toCHECK*/ Association
+export class Association
   extends PackageableElement
   implements AnnotatedElement, Hashable, Stubable
 {

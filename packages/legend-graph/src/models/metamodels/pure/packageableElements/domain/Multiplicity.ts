@@ -21,8 +21,8 @@ import {
 import { hashArray, type Hashable } from '@finos/legend-shared';
 
 export class /*toCHECK*/ Multiplicity implements Hashable {
-  lowerBound: number;
-  upperBound?: number | undefined;
+  readonly lowerBound: number;
+  readonly upperBound?: number | undefined;
 
   constructor(lowerBound: number, upperBound: number | undefined) {
     this.lowerBound = lowerBound;

@@ -31,7 +31,7 @@ import {
   GenericTypeExplicitReference,
 } from './GenericTypeReference';
 
-export class /*toCHECK*/ DerivedProperty
+export class DerivedProperty
   implements AbstractProperty, AnnotatedElement, Hashable, Stubable
 {
   uuid = uuid();

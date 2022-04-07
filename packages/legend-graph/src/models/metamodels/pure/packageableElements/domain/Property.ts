@@ -30,7 +30,7 @@ import { type Stubable, isStubArray } from '../../../../../helpers/Stubable';
 import type { Type } from './Type';
 import type { StereotypeReference } from './StereotypeReference';
 
-export class /*toCHECK*/ Property
+export class Property
   implements AbstractProperty, AnnotatedElement, Hashable, Stubable
 {
   uuid = uuid();

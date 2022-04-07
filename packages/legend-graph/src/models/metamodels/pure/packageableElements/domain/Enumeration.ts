@@ -28,10 +28,7 @@ import type { Type } from './Type';
 import type { StereotypeReference } from './StereotypeReference';
 import type { TaggedValue } from './TaggedValue';
 
-export class /*toCHECK*/ Enumeration
-  extends DataType
-  implements Hashable, Stubable
-{
+export class Enumeration extends DataType implements Hashable, Stubable {
   values: Enum[] = [];
   stereotypes: StereotypeReference[] = [];
   taggedValues: TaggedValue[] = [];

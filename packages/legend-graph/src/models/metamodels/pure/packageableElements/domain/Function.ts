@@ -20,7 +20,7 @@ import {
   PackageableElement,
 } from '../PackageableElement';
 
-export abstract class /*toCHECK*/ Function extends PackageableElement {
+export abstract class Function extends PackageableElement {
   functionName: string;
 
   constructor(name: string) {
@@ -29,9 +29,9 @@ export abstract class /*toCHECK*/ Function extends PackageableElement {
   }
 }
 
-export abstract class /*toCHECK*/ FunctionDefinition extends Function {}
+export abstract class FunctionDefinition extends Function {}
 
-export class /*toCHECK*/ NativeFunctiion extends Function {
+export class NativeFunctiion extends Function {
   accept_PackageableElementVisitor<T>(
     visitor: PackageableElementVisitor<T>,
   ): T {
@@ -39,7 +39,7 @@ export class /*toCHECK*/ NativeFunctiion extends Function {
   }
 }
 
-export class /*toCHECK*/ LambdaFunction extends FunctionDefinition {
+export class LambdaFunction extends FunctionDefinition {
   accept_PackageableElementVisitor<T>(
     visitor: PackageableElementVisitor<T>,
   ): T {

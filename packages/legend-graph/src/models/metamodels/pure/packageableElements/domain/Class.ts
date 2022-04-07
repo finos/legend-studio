@@ -40,7 +40,7 @@ import type { StereotypeReference } from './StereotypeReference';
 import type { TaggedValue } from './TaggedValue';
 import type { GenericTypeReference } from './GenericTypeReference';
 
-export class /*toCHECK*/ Class extends Type implements Hashable, Stubable {
+export class Class extends Type implements Hashable, Stubable {
   properties: Property[] = [];
   // derivedPropertiesFromAssociations: DerivedProperty[] = [];
   propertiesFromAssociations: Property[] = [];

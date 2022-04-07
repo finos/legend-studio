@@ -22,7 +22,7 @@ import type { AnnotatedElement } from './AnnotatedElement';
 import type { Stubable } from '../../../../../helpers/Stubable';
 import type { StereotypeReference } from './StereotypeReference';
 
-export class /*toCHECK*/ Enum implements AnnotatedElement, Hashable, Stubable {
+export class Enum implements AnnotatedElement, Hashable, Stubable {
   uuid = uuid();
   owner: Enumeration;
   name: string;
