@@ -16,13 +16,16 @@
 
 import {
   type PackageableElement,
-  type PackageableElementReference,
+  PackageableElementReference,
   type ConfigurationProperty,
   type GenerationSpecification,
   FileGenerationSpecification,
   GenerationTreeNode,
   PackageableElementExplicitReference,
   ModelGenerationSpecification,
+  observe_PackageableElementReference,
+  observe_FileGenerationSpecification,
+  observe_GenerationTreeNode,
 } from '@finos/legend-graph';
 import {
   addUniqueEntry,
@@ -54,7 +57,11 @@ export const fileGeneration_setScopeElements = action(
     fg: FileGenerationSpecification,
     value: (PackageableElementReference<PackageableElement> | string)[],
   ): void => {
-    fg.scopeElements = value;
+    fg.scopeElements = value.map((v) =>
+      v instanceof PackageableElementReference
+        ? observe_PackageableElementReference(v)
+        : v,
+    );
   },
 );
 export const fileGeneration_addScopeElement = action(
@@ -62,7 +69,12 @@ export const fileGeneration_addScopeElement = action(
     fg: FileGenerationSpecification,
     value: PackageableElementReference<PackageableElement> | string,
   ): void => {
-    addUniqueEntry(fg.scopeElements, value);
+    addUniqueEntry(
+      fg.scopeElements,
+      value instanceof PackageableElementReference
+        ? observe_PackageableElementReference(value)
+        : value,
+    );
   },
 );
 export const fileGeneration_deleteScopeElement = action(
@@ -79,7 +91,13 @@ export const fileGeneration_changeScopeElement = action(
     oldValue: PackageableElementReference<PackageableElement> | string,
     newValue: PackageableElementReference<PackageableElement> | string,
   ): void => {
-    changeEntry(fg.scopeElements, oldValue, newValue);
+    changeEntry(
+      fg.scopeElements,
+      oldValue,
+      newValue instanceof PackageableElementReference
+        ? observe_PackageableElementReference(newValue)
+        : newValue,
+    );
   },
 );
 
@@ -87,7 +105,7 @@ export const fileGeneration_changeScopeElement = action(
 
 export const generationSpecification_addNode = action(
   (genSpec: GenerationSpecification, value: GenerationTreeNode): void => {
-    addUniqueEntry(genSpec.generationNodes, value);
+    addUniqueEntry(genSpec.generationNodes, observe_GenerationTreeNode(value));
   },
 );
 export const generationSpecification_addFileGeneration = action(
@@ -97,7 +115,11 @@ export const generationSpecification_addFileGeneration = action(
   ): void => {
     addUniqueEntry(
       genSpec.fileGenerations,
-      PackageableElementExplicitReference.create(value),
+      observe_PackageableElementReference(
+        PackageableElementExplicitReference.create(
+          observe_FileGenerationSpecification(value),
+        ),
+      ),
     );
   },
 );
@@ -139,8 +161,10 @@ export const generationSpecification_addGenerationElement = action(
     } else {
       generationSpecification_addNode(
         genSpec,
-        new GenerationTreeNode(
-          PackageableElementExplicitReference.create(element),
+        observe_GenerationTreeNode(
+          new GenerationTreeNode(
+            PackageableElementExplicitReference.create(element),
+          ),
         ),
       );
     }

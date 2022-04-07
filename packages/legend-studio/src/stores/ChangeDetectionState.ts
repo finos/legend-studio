@@ -263,6 +263,8 @@ export class ChangeDetectionState {
   conflicts: EntityChangeConflict[] = []; // conflicts in conflict resolution mode (derived from aggregated workspace changes and conflict resolution changes)
   resolutions: EntityChangeConflictResolution[] = [];
 
+  observerContext: ObserverContext;
+
   constructor(editorStore: EditorStore, graphState: EditorGraphState) {
     makeObservable(this, {
       isChangeDetectionRunning: observable,
@@ -322,6 +324,9 @@ export class ChangeDetectionState {
     this.conflictResolutionBaseRevisionState = new RevisionChangeDetectionState(
       editorStore,
       graphState,
+    );
+    this.observerContext = new ObserverContext(
+      this.editorStore.pluginManager.getPureGraphManagerPlugins(),
     );
   }
 
@@ -747,9 +752,7 @@ export class ChangeDetectionState {
     const startTime = Date.now();
     observe_PureModel(
       this.editorStore.graphManagerState.graph,
-      new ObserverContext(
-        this.editorStore.pluginManager.getPureGraphManagerPlugins(),
-      ),
+      this.editorStore.changeDetectionState.observerContext,
     );
     this.editorStore.applicationStore.log.info(
       LogEvent.create(CHANGE_DETECTION_EVENT.CHANGE_DETECTION_GRAPH_OBSERVED),

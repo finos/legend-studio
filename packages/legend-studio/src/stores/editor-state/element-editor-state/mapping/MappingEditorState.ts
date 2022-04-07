@@ -264,6 +264,7 @@ export const createClassMapping = (
   id: string,
   _class: Class,
   setImpType: BASIC_SET_IMPLEMENTATION_TYPE,
+  editorStore: EditorStore,
 ): SetImplementation | undefined => {
   let setImp: SetImplementation;
   // NOTE: by default when we create a new instance set implementation, we will create PURE instance set implementation
@@ -292,7 +293,11 @@ export const createClassMapping = (
       return undefined;
   }
   setImpl_updateRootOnCreate(setImp);
-  mapping_addClassMapping(mapping, setImp);
+  mapping_addClassMapping(
+    mapping,
+    setImp,
+    editorStore.changeDetectionState.observerContext,
+  );
   return setImp;
 };
 
@@ -1347,7 +1352,11 @@ export class MappingEditorState extends ElementEditorState {
     this.mappingTestStates.push(
       new MappingTestState(this.editorStore, test, this),
     );
-    mapping_addTest(this.mapping, test);
+    mapping_addTest(
+      this.mapping,
+      test,
+      this.editorStore.changeDetectionState.observerContext,
+    );
     yield flowResult(this.openTest(test));
   }
 
@@ -1418,7 +1427,11 @@ export class MappingEditorState extends ElementEditorState {
       [inputData],
       new ExpectedOutputMappingTestAssert('{}'),
     );
-    mapping_addTest(this.mapping, newTest);
+    mapping_addTest(
+      this.mapping,
+      newTest,
+      this.editorStore.changeDetectionState.observerContext,
+    );
     // open the test
     this.mappingTestStates.push(
       new MappingTestState(this.editorStore, newTest, this),

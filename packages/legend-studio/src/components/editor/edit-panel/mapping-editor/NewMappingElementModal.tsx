@@ -158,6 +158,7 @@ export const NewMappingElementModal = observer(() => {
               id,
               spec.target,
               classMappingType.value,
+              editorStore,
             );
           }
         } else if (spec.target instanceof Enumeration) {

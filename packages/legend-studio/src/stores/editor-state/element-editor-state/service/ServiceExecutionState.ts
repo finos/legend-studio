@@ -534,6 +534,7 @@ export class ServicePureExecutionState extends ServiceExecutionState {
       pureSingleExecution_setRuntime(
         this.selectedExecutionConfiguration,
         customRuntime,
+        this.editorStore.changeDetectionState.observerContext,
       );
     }
   }
@@ -548,6 +549,7 @@ export class ServicePureExecutionState extends ServiceExecutionState {
         pureSingleExecution_setRuntime(
           this.selectedExecutionConfiguration,
           (runtimes[0] as PackageableRuntime).runtimeValue,
+          this.editorStore.changeDetectionState.observerContext,
         );
       } else {
         this.useCustomRuntime();

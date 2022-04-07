@@ -528,7 +528,11 @@ const IdentifiedConnectionEditor = observer(
           runtimeValue.generateIdentifiedConnectionId(),
           customConnection,
         );
-        runtime_addIdentifiedConnection(runtimeValue, newIdentifiedConnection);
+        runtime_addIdentifiedConnection(
+          runtimeValue,
+          newIdentifiedConnection,
+          editorStore.changeDetectionState.observerContext,
+        );
         runtime_deleteIdentifiedConnection(runtimeValue, identifiedConnection);
         currentRuntimeEditorTabState.openIdentifiedConnection(
           newIdentifiedConnection,
@@ -546,7 +550,11 @@ const IdentifiedConnectionEditor = observer(
           runtimeValue.generateIdentifiedConnectionId(),
           connectionPointer,
         );
-        runtime_addIdentifiedConnection(runtimeValue, newIdentifiedConnection);
+        runtime_addIdentifiedConnection(
+          runtimeValue,
+          newIdentifiedConnection,
+          editorStore.changeDetectionState.observerContext,
+        );
         runtime_deleteIdentifiedConnection(runtimeValue, identifiedConnection);
         currentRuntimeEditorTabState.openIdentifiedConnection(
           newIdentifiedConnection,

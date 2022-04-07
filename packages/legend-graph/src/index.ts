@@ -278,6 +278,9 @@ export * from './graphManager/action/changeDetection/ValueSpecificationObserver'
 export * from './graphManager/action/changeDetection/StoreRelational_ObserverHelper';
 export * from './graphManager/action/changeDetection/StoreFlatData_ObserverHelper';
 export * from './graphManager/action/changeDetection/GraphObserverHelper';
+export * from './graphManager/action/changeDetection/DSLExternalFormat_ObserverHelper';
+export * from './graphManager/action/changeDetection/DSLService_ObserverHelper';
+export * from './graphManager/action/changeDetection/DSLGenerationSpecification_ObserverHelper';
 
 // --------------------------------------------- TO BE MODULARIZED --------------------------------------------------
 

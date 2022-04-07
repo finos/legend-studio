@@ -206,6 +206,7 @@ abstract class MappingExecutionInputDataState {
 export const createRuntimeForExecution = (
   mapping: Mapping,
   connection: Connection,
+  editorStore: EditorStore,
 ): Runtime => {
   const runtime = new EngineRuntime();
   runtime_addMapping(
@@ -218,6 +219,7 @@ export const createRuntimeForExecution = (
       runtime.generateIdentifiedConnectionId(),
       connection,
     ),
+    editorStore.changeDetectionState.observerContext,
   );
   return runtime;
 };
@@ -288,6 +290,7 @@ export class MappingExecutionObjectInputDataState extends MappingExecutionInputD
           engineConfig.useBase64ForAdhocConnectionDataUrls,
         ),
       ),
+      this.editorStore,
     );
   }
 
@@ -345,6 +348,7 @@ export class MappingExecutionFlatDataInputDataState extends MappingExecutionInpu
           engineConfig.useBase64ForAdhocConnectionDataUrls,
         ),
       ),
+      this.editorStore,
     );
   }
 
@@ -416,6 +420,7 @@ export class MappingExecutionRelationalInputDataState extends MappingExecutionIn
         datasourceSpecification,
         new DefaultH2AuthenticationStrategy(),
       ),
+      this.editorStore,
     );
   }
 
@@ -624,7 +629,11 @@ export class MappingExecutionState {
             ),
             this.inputDataState.runtime,
           );
-          service_setExecution(service, pureSingleExecution);
+          service_setExecution(
+            service,
+            pureSingleExecution,
+            this.editorStore.changeDetectionState.observerContext,
+          );
           const singleExecutionTest = new SingleExecutionTest(
             service,
             tryToMinifyJSONString(this.inputDataState.inputData.data),
@@ -641,7 +650,11 @@ export class MappingExecutionState {
               packagePath,
             );
           service.test = singleExecutionTest;
-          package_addElement(servicePackage, service);
+          package_addElement(
+            servicePackage,
+            service,
+            this.editorStore.changeDetectionState.observerContext,
+          );
           this.editorStore.graphManagerState.graph.addElement(service);
           this.editorStore.openElement(service);
         } else {

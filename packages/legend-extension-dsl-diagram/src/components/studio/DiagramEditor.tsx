@@ -865,6 +865,7 @@ const DiagramEditorInlineClassCreatorInner = observer(
         package_addElement(
           editorStore.graphManagerState.graph.getOrCreatePackage(packagePath),
           _class,
+          editorStore.changeDetectionState.observerContext,
         );
         editorStore.graphManagerState.graph.addElement(_class);
         editorStore.explorerTreeState.reprocess();
