@@ -30,8 +30,8 @@ import {
   MultiExecutionTest,
   SingleExecutionTest,
 } from '../../../models/metamodels/pure/packageableElements/service/ServiceTest';
-import { observe_PackageabElement } from './PackageableElementObserver';
 import {
+  observe_Abstract_PackageableElement,
   observe_PackageableElementReference,
   skipObserved,
   skipObservedWithContext,
@@ -181,7 +181,7 @@ export const observe_ServiceExecution = (
 
 export const observe_Service = skipObservedWithContext(
   (metamodel: Service, context): Service => {
-    observe_PackageabElement(metamodel, context);
+    observe_Abstract_PackageableElement(metamodel);
 
     makeObservable<Service, '_elementHashCode'>(metamodel, {
       pattern: observable,

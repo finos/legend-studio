@@ -875,7 +875,12 @@ export class EditorStore {
         '[ASNYC]',
       );
       // ======= FINISHED (RE)START CHANGE DETECTION =======
-    } catch {
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.log.error(
+        LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_FAILURE),
+        error,
+      );
       // since errors have been handled accordingly, we don't need to do anything here
       return;
     }
