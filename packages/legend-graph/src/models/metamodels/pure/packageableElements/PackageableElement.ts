@@ -86,6 +86,7 @@ export abstract class PackageableElement implements Hashable, Stubable {
   }
 
   /**
+   * TODO: move this out to `DomainHelper` and make this method return `Package` instead of `PackageableElement`.
    * Get root element. In the ideal case, this method is important for finding the root package, but
    * if we do something like `this instanceof Package` that would case circular dependency.
    */
@@ -108,14 +109,22 @@ export abstract class PackageableElement implements Hashable, Stubable {
   }
 
   /**
-   * Since `keepAlive` can cause memory-leak, we need to dispose it manually when we are about to discard the graph
-   * in order to avoid leaking.
-   * See https://mobx.js.org/best/pitfalls.html#computed-values-run-more-often-than-expected
-   * See https://medium.com/terria/when-and-why-does-mobxs-keepalive-cause-a-memory-leak-8c29feb9ff55
+   * Dispose the element and its references to avoid memory leaks
    */
   dispose(): void {
     this._isDisposed = true;
-    // trigger recomputation on `hashCode` so it removes itself from all observables it previously observed
+    /**
+     * Trigger recomputation on `hashCode` so it removes itself from all observables it previously observed
+     *
+     * NOTE: we used to do this since we decorate `hashCode` with `computed({ keepAlive: true })` which
+     * poses a memory-leak threat
+     *
+     * See https://mobx.js.org/computeds.html#keepalive
+     *
+     * However, since we're calling `keepAlive` actively now and dispose it right away to return `hashCode` to
+     * a normal computed value, we might not need this step anymore. But we're being extremely defensive here
+     * to avoid memory leak.
+     */
     try {
       this.hashCode;
     } catch {

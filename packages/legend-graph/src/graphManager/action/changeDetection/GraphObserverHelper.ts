@@ -14,18 +14,21 @@
  * limitations under the License.
  */
 
-import { action, computed, flow, makeObservable, observable } from 'mobx';
+import {
+  action,
+  computed,
+  flow,
+  isObservable,
+  makeObservable,
+  observable,
+} from 'mobx';
 import type { BasicModel } from '../../../graph/BasicModel';
 import type { DependencyManager } from '../../../graph/DependencyManager';
 import type { PureGraphExtension } from '../../../graph/PureGraphExtension';
 import type { PureModel } from '../../../graph/PureModel';
 import type { PackageableElement } from '../../../models/metamodels/pure/packageableElements/PackageableElement';
-import {
-  type ObserverContext,
-  skipObserved,
-  skipObservedWithContext,
-} from './CoreObserverHelper';
-import { observe_Package } from './DomainObserverHelper';
+import { type ObserverContext, skipObserved } from './CoreObserverHelper';
+import { observe_PackageTree } from './DomainObserverHelper';
 
 const observe_PureGraphExtension = skipObserved(
   <T extends PackageableElement>(
@@ -39,10 +42,10 @@ const observe_PureGraphExtension = skipObserved(
     }),
 );
 
-export const observe_Abstract_BasicModel = (
+const observe_Abstract_BasicModel = async (
   metamodel: BasicModel,
   context: ObserverContext,
-): void => {
+): Promise<void> => {
   makeObservable<
     BasicModel,
     | 'elementSectionMap'
@@ -115,7 +118,15 @@ export const observe_Abstract_BasicModel = (
     TEMPORARY__deleteOwnSectionIndex: action,
   });
 
-  observe_Package(metamodel.root, context);
+  /**
+   * A note on performance here. We could observe the package tree recursively synchronously
+   * we have tried before and it does not take a long time, but at the risk of
+   * blocking the main thread, we parallize this anyway
+   *
+   * We have tried to traversed all the elements and observe them before, but that ends up
+   * being slower than just recursively going through the package tree.
+   */
+  await observe_PackageTree(metamodel.root, context);
   metamodel.extensions.forEach(observe_PureGraphExtension);
 };
 
@@ -146,19 +157,23 @@ export const observe_DependencyManager = skipObserved(
     }),
 );
 
-export const observe_PureModel = skipObservedWithContext(
-  (metamodel: PureModel, context): PureModel => {
-    observe_Abstract_BasicModel(metamodel, context);
-
-    makeObservable(metamodel, {
-      generationModel: observable,
-      dependencyManager: observable,
-      setDependencyManager: action,
-      addElement: action,
-    });
-
-    observe_DependencyManager(metamodel.dependencyManager);
-
+export const observe_PureModel = async (
+  metamodel: PureModel,
+  context: ObserverContext,
+): Promise<PureModel> => {
+  if (isObservable(metamodel)) {
     return metamodel;
-  },
-);
+  }
+  await observe_Abstract_BasicModel(metamodel, context);
+
+  makeObservable(metamodel, {
+    generationModel: observable,
+    dependencyManager: observable,
+    setDependencyManager: action,
+    addElement: action,
+  });
+
+  observe_DependencyManager(metamodel.dependencyManager);
+
+  return metamodel;
+};

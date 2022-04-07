@@ -68,6 +68,7 @@ export class DatabaseBuilderConfig {
 export class TargetDatabase {
   name: string;
   package: string;
+
   constructor(_package: string, name: string) {
     makeObservable(this, {
       name: observable,

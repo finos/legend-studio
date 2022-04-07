@@ -24,6 +24,7 @@ import {
   guaranteeNonNullable,
   IllegalStateError,
   returnUndefOnError,
+  promisify,
 } from '@finos/legend-shared';
 import {
   type ROOT_PACKAGE_NAME,
@@ -370,14 +371,10 @@ export abstract class BasicModel {
   *dispose(): GeneratorFn<void> {
     if (this.allOwnElements.length) {
       yield Promise.all<void>(
-        this.allOwnElements.map(
-          (element) =>
-            new Promise((resolve) =>
-              setTimeout(() => {
-                element.dispose();
-                resolve();
-              }, 0),
-            ),
+        this.allOwnElements.map((element) =>
+          promisify(() => {
+            element.dispose();
+          }),
         ),
       );
     }
