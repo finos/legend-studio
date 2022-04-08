@@ -264,7 +264,8 @@ export const TEST_DATA__roundtrip = [
             },
             {
               deduplicationStrategy: {
-                _type: 'noDeduplicationStrategy',
+                _type: 'duplicateCountDeduplicationStrategy',
+                duplicateCountName: 'DUP_COUNT',
               },
               modelProperty: 'owner',
               partitionFields: [],
