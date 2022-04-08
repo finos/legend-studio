@@ -16,12 +16,12 @@
 
 import { ExecutionNode } from './ExecutionNode';
 
-export abstract class /*toCHECK*/ RelationalInstantiationExecutionNode extends ExecutionNode {}
+export abstract class RelationalInstantiationExecutionNode extends ExecutionNode {}
 
-export class /*toCHECK*/ RelationalTDSInstantiationExecutionNode extends RelationalInstantiationExecutionNode {}
+export class RelationalTDSInstantiationExecutionNode extends RelationalInstantiationExecutionNode {}
 
-export class /*toCHECK*/ RelationalClassInstantiationExecutionNode extends RelationalInstantiationExecutionNode {}
+export class RelationalClassInstantiationExecutionNode extends RelationalInstantiationExecutionNode {}
 
-export class /*toCHECK*/ RelationalRelationDataInstantiationExecutionNode extends RelationalInstantiationExecutionNode {}
+export class RelationalRelationDataInstantiationExecutionNode extends RelationalInstantiationExecutionNode {}
 
-export class /*toCHECK*/ RelationalDataTypeInstantiationExecutionNode extends RelationalInstantiationExecutionNode {}
+export class RelationalDataTypeInstantiationExecutionNode extends RelationalInstantiationExecutionNode {}

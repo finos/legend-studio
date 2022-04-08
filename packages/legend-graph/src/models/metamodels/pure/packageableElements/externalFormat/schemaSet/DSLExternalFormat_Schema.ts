@@ -17,7 +17,7 @@
 import { uuid, hashArray, type Hashable } from '@finos/legend-shared';
 import { DSL_EXTERNAL_FORMAT_HASH_STRUCTURE } from '../../../../../DSLExternalFormat_ModelUtils';
 
-export class /*toCHECK*/ Schema implements Hashable {
+export class Schema implements Hashable {
   uuid = uuid();
   id?: string | undefined;
   location?: string | undefined;

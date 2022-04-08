@@ -22,10 +22,7 @@ import {
 } from '../../PackageableElement';
 import { DSL_EXTERNAL_FORMAT_HASH_STRUCTURE } from '../../../../../DSLExternalFormat_ModelUtils';
 
-export class /*toCHECK*/ SchemaSet
-  extends PackageableElement
-  implements Hashable
-{
+export class SchemaSet extends PackageableElement implements Hashable {
   format!: string;
   schemas: Schema[] = [];
 

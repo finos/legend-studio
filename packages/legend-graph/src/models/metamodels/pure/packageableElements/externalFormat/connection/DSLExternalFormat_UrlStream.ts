@@ -17,7 +17,7 @@
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import { DSL_EXTERNAL_FORMAT_HASH_STRUCTURE } from '../../../../../DSLExternalFormat_ModelUtils';
 
-export class /*toCHECK*/ UrlStream implements Hashable {
+export class UrlStream implements Hashable {
   url!: string;
 
   get hashCode(): string {

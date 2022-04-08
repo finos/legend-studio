@@ -39,7 +39,7 @@
  * or as a string). The less obvious ones are pointers to sub-elements, such as property, tag, stereotype, generic type, enum value, etc.
  * In fact, it is  important to note that each reference/pointer in the protocol will need to be converted into an inferable value
  */
-export abstract class /*toCHECK*/ InferableValue<T, V> {
+export abstract class InferableValue<T, V> {
   value: T;
 
   constructor(value: T) {
