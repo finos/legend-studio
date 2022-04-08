@@ -1,5 +1,11 @@
 # @finos/legend-studio
 
+## 5.1.4
+
+### Patch Changes
+
+- [#1036](https://github.com/finos/legend-studio/pull/1036) [`19996230`](https://github.com/finos/legend-studio/commit/19996230eeada8a8c1b7fd638b8ff1c45102a0ff) ([@akphi](https://github.com/akphi)) - Turn off `keepAlive` for element `hashCode` computed value to avoid potential memory leak.
+
 ## 5.1.3
 
 ### Patch Changes

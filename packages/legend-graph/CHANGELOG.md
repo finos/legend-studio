@@ -1,5 +1,15 @@
 # @finos/legend-graph
 
+## 3.0.0
+
+### Major Changes
+
+- [#1000](https://github.com/finos/legend-studio/pull/1000) [`4f7d04c`](https://github.com/finos/legend-studio/commit/4f7d04c52fc8d52b87251bcf04ec971afe8d3218) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** All graph meta models are no longer observable by default, instead, to activate observability, one would need to call observers specifically.
+
+* [#1000](https://github.com/finos/legend-studio/pull/1000) [`4f7d04c`](https://github.com/finos/legend-studio/commit/4f7d04c52fc8d52b87251bcf04ec971afe8d3218) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Moved `GraphManagerState.precomputeHashes` to `ChangeDetectionState`.
+
+- [#1000](https://github.com/finos/legend-studio/pull/1000) [`4f7d04c`](https://github.com/finos/legend-studio/commit/4f7d04c52fc8d52b87251bcf04ec971afe8d3218) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Remove `TEMPORARY_skipGraphBuilderPostProcessing` flag. Graph builder nolonger needs post-processing anymore.
+
 ## 2.1.3
 
 ## 2.1.2
