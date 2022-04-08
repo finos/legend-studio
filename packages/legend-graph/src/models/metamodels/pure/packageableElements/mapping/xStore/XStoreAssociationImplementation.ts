@@ -18,7 +18,7 @@ import { hashArray } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../MetaModelConst';
 import { AssociationImplementation } from '../AssociationImplementation';
 
-export class /*toCHECK*/ XStoreAssociationImplementation extends AssociationImplementation {
+export class XStoreAssociationImplementation extends AssociationImplementation {
   override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.XSTORE_ASSOCIATION_IMPLEMENTATION,

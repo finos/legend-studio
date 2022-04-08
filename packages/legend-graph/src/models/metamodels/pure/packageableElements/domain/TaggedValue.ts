@@ -20,8 +20,9 @@ import type { Tag } from './Tag';
 import type { Stubable } from '../../../../../helpers/Stubable';
 import { type TagReference, TagExplicitReference } from './TagReference';
 
-export class /*toCHECK*/ TaggedValue implements Hashable, Stubable {
-  uuid = uuid();
+export class TaggedValue implements Hashable, Stubable {
+  readonly uuid = uuid();
+
   tag: TagReference;
   value: string;
 

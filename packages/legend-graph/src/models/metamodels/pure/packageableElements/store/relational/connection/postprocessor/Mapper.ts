@@ -17,9 +17,9 @@
 import { CORE_HASH_STRUCTURE } from '../../../../../../../../MetaModelConst';
 import { type Hashable, hashArray } from '@finos/legend-shared';
 
-export class /*toCHECK*/ PostProcessorParameter {}
+export class PostProcessorParameter {}
 
-export abstract class /*toCHECK*/ Mapper
+export abstract class Mapper
   extends PostProcessorParameter
   implements Hashable
 {
@@ -37,13 +37,13 @@ export abstract class /*toCHECK*/ Mapper
   }
 }
 
-export class /*toCHECK*/ SchemaNameMapper extends Mapper {
+export class SchemaNameMapper extends Mapper {
   override get hashCode(): string {
     return hashArray([super.hashCode, CORE_HASH_STRUCTURE.SCHEMA_MAPPER]);
   }
 }
 
-export class /*toCHECK*/ TableNameMapper extends Mapper {
+export class TableNameMapper extends Mapper {
   schema: SchemaNameMapper;
   constructor(from: string, to: string, schema: SchemaNameMapper) {
     super(from, to);

@@ -19,7 +19,7 @@ import type { PackageableElement } from './PackageableElement';
 import type { Section } from './section/Section';
 import { RequiredReference, OptionalReference } from '../Reference';
 
-export abstract class /*toCHECK*/ PackageableElementReference<
+export abstract class PackageableElementReference<
   T extends PackageableElement,
 > extends RequiredReference {
   value: T;
@@ -36,7 +36,7 @@ export abstract class /*toCHECK*/ PackageableElementReference<
   }
 }
 
-export class /*toCHECK*/ PackageableElementExplicitReference<
+export class PackageableElementExplicitReference<
   T extends PackageableElement,
 > extends PackageableElementReference<T> {
   private constructor(value: T) {
@@ -65,7 +65,7 @@ export class /*toCHECK*/ PackageableElementExplicitReference<
  * transform the metamodel graph back to protocol, we keep the input as is.
  * This is needed to maintain hash-computation and round-trip stability.
  */
-export class /*toCHECK*/ PackageableElementImplicitReference<
+export class PackageableElementImplicitReference<
   T extends PackageableElement,
 > extends PackageableElementReference<T> {
   readonly initialResolvedPath: string;
@@ -146,7 +146,7 @@ export class /*toCHECK*/ PackageableElementImplicitReference<
   }
 }
 
-export abstract class /*toCHECK*/ OptionalPackageableElementReference<
+export abstract class OptionalPackageableElementReference<
   T extends PackageableElement,
 > extends OptionalReference {
   value?: T | undefined;
@@ -156,14 +156,10 @@ export abstract class /*toCHECK*/ OptionalPackageableElementReference<
     this.value = value;
   }
 
-  setValue(value: T | undefined): void {
-    this.value = value;
-  }
-
   abstract get valueForSerialization(): string | undefined;
 }
 
-export class /*toCHECK*/ OptionalPackageableElementExplicitReference<
+export class OptionalPackageableElementExplicitReference<
   T extends PackageableElement,
 > extends OptionalPackageableElementReference<T> {
   private constructor(value: T | undefined) {
@@ -181,7 +177,7 @@ export class /*toCHECK*/ OptionalPackageableElementExplicitReference<
   }
 }
 
-export class /*toCHECK*/ OptionalPackageableElementImplicitReference<
+export class OptionalPackageableElementImplicitReference<
   T extends PackageableElement,
 > extends OptionalPackageableElementReference<T> {
   readonly initialResolvedPath?: string | undefined;

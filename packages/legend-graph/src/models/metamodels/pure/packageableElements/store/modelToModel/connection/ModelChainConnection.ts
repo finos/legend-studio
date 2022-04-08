@@ -24,7 +24,7 @@ import type { Mapping } from '../../../mapping/Mapping';
 import type { PackageableElementReference } from '../../../PackageableElementReference';
 import type { ModelStore } from '../model/ModelStore';
 
-export class /*toCHECK*/ ModelChainConnection extends Connection {
+export class ModelChainConnection extends Connection {
   declare store: PackageableElementReference<ModelStore>;
   mappings: PackageableElementReference<Mapping>[] = [];
 

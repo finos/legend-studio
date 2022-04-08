@@ -27,7 +27,7 @@ import type { ModelStore } from '../model/ModelStore';
 import { PureModelConnection } from './PureModelConnection';
 import type { PackageableElementReference } from '../../../PackageableElementReference';
 
-export class /*toCHECK*/ JsonModelConnection
+export class JsonModelConnection
   extends PureModelConnection
   implements Hashable
 {

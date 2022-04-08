@@ -19,7 +19,7 @@ import { hashArray, type Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../MetaModelConst';
 import { hashLambda } from '../../../../../../MetaModelUtils';
 
-export class /*toCHECK*/ GroupByFunctionSpecification implements Hashable {
+export class GroupByFunctionSpecification implements Hashable {
   groupByFn: RawLambda; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
 
   constructor(groupByFn: RawLambda) {

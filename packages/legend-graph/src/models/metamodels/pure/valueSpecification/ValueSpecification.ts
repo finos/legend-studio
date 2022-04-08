@@ -75,7 +75,7 @@ export interface ValueSpecificationVisitor<T> {
   ): T;
 }
 
-export abstract class /*toCHECK*/ ValueSpecification {
+export abstract class ValueSpecification {
   genericType?: GenericTypeReference | undefined;
   multiplicity!: Multiplicity;
 
@@ -85,10 +85,6 @@ export abstract class /*toCHECK*/ ValueSpecification {
   ) {
     this.multiplicity = multiplicity;
     this.genericType = genericTypeReference;
-  }
-
-  setMultiplicity(val: Multiplicity): void {
-    this.multiplicity = val;
   }
 
   abstract accept_ValueSpecificationVisitor<T>(

@@ -22,7 +22,7 @@ import type { RelationalOperationElement } from '../model/RelationalOperationEle
 import type { PropertyMapping } from '../../../mapping/PropertyMapping';
 import { EmbeddedRelationalInstanceSetImplementation } from './EmbeddedRelationalInstanceSetImplementation';
 
-export class /*toCHECK*/ RelationalInstanceSetImplementation
+export class RelationalInstanceSetImplementation
   extends InstanceSetImplementation
   implements Hashable
 {

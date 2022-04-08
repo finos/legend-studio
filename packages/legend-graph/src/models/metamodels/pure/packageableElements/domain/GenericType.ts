@@ -18,8 +18,8 @@ import { type Clazz, guaranteeType, uuid } from '@finos/legend-shared';
 import type { Type } from './Type';
 import type { Stubable } from '../../../../../helpers/Stubable';
 
-export class /*toCHECK*/ GenericType implements Stubable {
-  uuid = uuid();
+export class GenericType implements Stubable {
+  readonly uuid = uuid();
   rawType: Type;
 
   constructor(rawType: Type) {

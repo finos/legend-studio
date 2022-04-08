@@ -18,9 +18,10 @@ import { uuid } from '@finos/legend-shared';
 import type { Profile } from './Profile';
 import type { Stubable } from '../../../../../helpers/Stubable';
 
-export class /*toCHECK*/ Stereotype implements Stubable {
-  uuid = uuid();
+export class Stereotype implements Stubable {
+  readonly uuid = uuid();
   owner: Profile;
+
   value: string;
 
   constructor(owner: Profile, value: string) {

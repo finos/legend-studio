@@ -62,7 +62,6 @@ const observe_Abstract_ValueSpecification = (
 ): void => {
   makeObservable<ValueSpecification>(metamodel, {
     multiplicity: observable,
-    setMultiplicity: action,
   });
 };
 
@@ -73,7 +72,6 @@ export const observe_VariableExpression = skipObserved(
     makeObservable<VariableExpression>(metamodel, {
       name: observable,
       genericType: observable,
-      setName: action,
     });
 
     return metamodel;
@@ -318,7 +316,6 @@ function observe_Abstract_FunctionExpression(
     functionName: observable,
     parametersValues: observable,
     classifierGenericType: observable,
-    setParametersValues: action,
   });
 
   metamodel.parametersValues.forEach((value) =>

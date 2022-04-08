@@ -23,7 +23,7 @@ import { ReferenceWithOwner } from '../../../../Reference';
 import type { RootFlatDataRecordType } from './FlatDataDataType';
 import type { FlatData } from './FlatData';
 
-export abstract class /*toCHECK*/ RootFlatDataRecordTypeReference extends ReferenceWithOwner {
+export abstract class RootFlatDataRecordTypeReference extends ReferenceWithOwner {
   override readonly ownerReference: PackageableElementReference<FlatData>;
   value: RootFlatDataRecordType;
 
@@ -37,7 +37,7 @@ export abstract class /*toCHECK*/ RootFlatDataRecordTypeReference extends Refere
   }
 }
 
-export class /*toCHECK*/ RootFlatDataRecordTypeExplicitReference extends RootFlatDataRecordTypeReference {
+export class RootFlatDataRecordTypeExplicitReference extends RootFlatDataRecordTypeReference {
   override readonly ownerReference: PackageableElementExplicitReference<FlatData>;
 
   private constructor(value: RootFlatDataRecordType) {
@@ -55,7 +55,7 @@ export class /*toCHECK*/ RootFlatDataRecordTypeExplicitReference extends RootFla
   }
 }
 
-export class /*toCHECK*/ RootFlatDataRecordTypeImplicitReference extends RootFlatDataRecordTypeReference {
+export class RootFlatDataRecordTypeImplicitReference extends RootFlatDataRecordTypeReference {
   override readonly ownerReference: PackageableElementImplicitReference<FlatData>;
 
   private constructor(

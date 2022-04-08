@@ -23,7 +23,7 @@ import type {
 } from './ValueSpecification';
 import type { Multiplicity } from '../packageableElements/domain/Multiplicity';
 
-export class /*toCHECK*/ FunctionType {
+export class FunctionType {
   returnType?: Type | undefined;
   parameters: VariableExpression[] = [];
   returnMultiplicity: Multiplicity;
@@ -34,7 +34,7 @@ export class /*toCHECK*/ FunctionType {
   }
 }
 
-export class /*toCHECK*/ LambdaFunction {
+export class LambdaFunction {
   functionType: FunctionType;
   openVariables: string[] = [];
   expressionSequence: ValueSpecification[] = [];
@@ -42,24 +42,14 @@ export class /*toCHECK*/ LambdaFunction {
   constructor(type: FunctionType) {
     this.functionType = type;
   }
-
-  withExpression(expressionSequence: ValueSpecification): LambdaFunction {
-    this.expressionSequence[0] = expressionSequence;
-    return this;
-  }
 }
 
-export class /*toCHECK*/ LambdaFunctionInstanceValue extends InstanceValue {
+export class LambdaFunctionInstanceValue extends InstanceValue {
   override values: LambdaFunction[] = [];
 
   override accept_ValueSpecificationVisitor<T>(
     visitor: ValueSpecificationVisitor<T>,
   ): T {
     return visitor.visit_LambdaFunctionInstanceValue(this);
-  }
-
-  withLambda(value: LambdaFunction): LambdaFunctionInstanceValue {
-    this.values[0] = value;
-    return this;
   }
 }

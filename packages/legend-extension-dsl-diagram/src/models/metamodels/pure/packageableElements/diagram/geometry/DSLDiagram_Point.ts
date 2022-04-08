@@ -17,7 +17,7 @@
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import { DIAGRAM_HASH_STRUCTURE } from '../../../../../DSLDiagram_ModelUtils';
 
-export class /*toCHECK*/ Point implements Hashable {
+export class Point implements Hashable {
   readonly x: number;
   readonly y: number;
 

@@ -499,7 +499,7 @@ export const buildLambdaFunction = (
   // build post-filter
   processPostFilterOnLambda(queryBuilderState.postFilterState, lambdaFunction);
   // build result set modifiers
-  queryBuilderState.resultSetModifierState.processModifiersOnLambda(
+  queryBuilderState.resultSetModifierState.buildResultSetModifiers(
     lambdaFunction,
     {
       overridingLimit: options?.isBuildingExecutionQuery

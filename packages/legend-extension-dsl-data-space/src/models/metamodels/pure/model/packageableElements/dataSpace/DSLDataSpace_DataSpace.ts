@@ -23,11 +23,11 @@ import {
 } from '@finos/legend-graph';
 import { DATA_SPACE_HASH_STRUCTURE } from '../../../../../DSLDataSpace_ModelUtils';
 
-export abstract class /*toCHECK*/ DataSpaceSupportInfo implements Hashable {
+export abstract class DataSpaceSupportInfo implements Hashable {
   abstract get hashCode(): string;
 }
 
-export class /*toCHECK*/ DataSpaceSupportEmail
+export class DataSpaceSupportEmail
   extends DataSpaceSupportInfo
   implements Hashable
 {
@@ -41,7 +41,7 @@ export class /*toCHECK*/ DataSpaceSupportEmail
   }
 }
 
-export class /*toCHECK*/ DataSpaceExecutionContext implements Hashable {
+export class DataSpaceExecutionContext implements Hashable {
   name!: string;
   description?: string | undefined;
   mapping!: string;
@@ -58,10 +58,7 @@ export class /*toCHECK*/ DataSpaceExecutionContext implements Hashable {
   }
 }
 
-export class /*toCHECK*/ DataSpace
-  extends PackageableElement
-  implements Hashable
-{
+export class DataSpace extends PackageableElement implements Hashable {
   stereotypes: StereotypeReference[] = [];
   taggedValues: TaggedValue[] = [];
   groupId!: string;

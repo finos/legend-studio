@@ -70,11 +70,6 @@ export const observe_ClassView = skipObserved(
 
 export const observe_RelationShipEdgeView = skipObserved(
   (metamodel: RelationshipEdgeView): RelationshipEdgeView => {
-    makeObservable(metamodel, {
-      offsetX: observable,
-      offsetY: observable,
-    });
-
     observe_ClassViewReference(metamodel.classView);
 
     return metamodel;

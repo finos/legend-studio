@@ -41,7 +41,7 @@ import type { PropertyReference } from '../../../domain/PropertyReference';
 import type { RelationalInstanceSetImplementation } from './RelationalInstanceSetImplementation';
 import { InferableMappingElementRootExplicitValue } from '../../../mapping/InferableMappingElementRoot';
 
-export class /*toCHECK*/ EmbeddedRelationalInstanceSetImplementation
+export class EmbeddedRelationalInstanceSetImplementation
   extends PropertyMapping
   implements
     EmbeddedSetImplementation,
@@ -49,7 +49,7 @@ export class /*toCHECK*/ EmbeddedRelationalInstanceSetImplementation
     Hashable
 {
   root = InferableMappingElementRootExplicitValue.create(false);
-  override isEmbedded = true;
+  override readonly isEmbedded = true;
   id: InferableMappingElementIdValue;
   propertyMappings: PropertyMapping[] = [];
   class: PackageableElementReference<Class>;

@@ -18,7 +18,7 @@ import { hashArray } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import { AssociationImplementation } from './AssociationImplementation';
 
-export class /*toCHECK*/ RelationalAssociationImplementation extends AssociationImplementation {
+export class RelationalAssociationImplementation extends AssociationImplementation {
   override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.RELATIONAL_ASSOCIATION_IMPLEMENTATION,

@@ -28,10 +28,7 @@ import {
 import type { PackageableElementReference } from '../../../PackageableElementReference';
 import type { FlatData } from '../model/FlatData';
 
-export class /*toCHECK*/ FlatDataConnection
-  extends Connection
-  implements Hashable
-{
+export class FlatDataConnection extends Connection implements Hashable {
   declare store: PackageableElementReference<FlatData>;
   url: string;
 

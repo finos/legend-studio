@@ -17,7 +17,7 @@
 import type { Hashable } from '@finos/legend-shared';
 import type { ValidationIssue } from '../../../../../helpers/ValidationHelper';
 
-export abstract class /*toCHECK*/ InputData implements Hashable {
+export abstract class InputData implements Hashable {
   private readonly _$nominalTypeBrand!: 'InputData';
 
   abstract get validationResult(): ValidationIssue | undefined;

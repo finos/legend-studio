@@ -14,13 +14,18 @@
  * limitations under the License.
  */
 
-import { addUniqueEntry, deleteEntry } from '@finos/legend-shared';
+import {
+  addUniqueEntry,
+  assertTrue,
+  deleteEntry,
+  guaranteeType,
+} from '@finos/legend-shared';
 import { action } from 'mobx';
 import {
   type GenericTypeReference,
   type TaggedValue,
   type StereotypeReference,
-  type GenericType,
+  GenericType,
   type Type,
   type Multiplicity,
   type Stereotype,
@@ -28,7 +33,6 @@ import {
   type PackageableElement,
   type PackageableElementReference,
   type AnnotatedElement,
-  type Class,
   type Property,
   type DerivedProperty,
   type Constraint,
@@ -43,6 +47,8 @@ import {
   type RawLambda,
   type Package,
   type ObserverContext,
+  type Association,
+  Class,
   _package_addElement,
   _package_deleteElement,
   observe_Enum,
@@ -299,6 +305,36 @@ export const enumValueReference_setValue = action(
   (ref: EnumValueReference, value: Enum): void => {
     ref.value = observe_Enum(value);
     packageableElementReference_setValue(ref.ownerReference, value.owner);
+  },
+);
+
+// --------------------------------------------- Association -------------------------------------
+
+export const association_changePropertyType = action(
+  (association: Association, property: Property, type: Class): void => {
+    const otherProperty = association.getOtherProperty(property);
+    // remove other property from current parent class of the to-be-changed property
+    const otherPropertyAssociatedClass = guaranteeType(
+      property.genericType.ownerReference.value,
+      Class,
+      `Association property '${property.name}' must be of type 'class'`,
+    );
+    // don't invoke deletion if the class is a stub (otherProperty is not present)
+    if (!otherPropertyAssociatedClass.isStub) {
+      assertTrue(
+        deleteEntry(
+          otherPropertyAssociatedClass.propertiesFromAssociations,
+          otherProperty,
+        ),
+        `Can't find property '${otherProperty.name}' from association '${association.path}' in associated class '${otherPropertyAssociatedClass.path}'`,
+      );
+    }
+    // set up the relationship between the other property and the new class
+    addUniqueEntry(type.propertiesFromAssociations, otherProperty);
+    // set new type for the property
+    const _genType = new GenericType(type);
+    property.genericType.value = _genType;
+    property.genericType.ownerReference.value = _genType.rawType;
   },
 );
 

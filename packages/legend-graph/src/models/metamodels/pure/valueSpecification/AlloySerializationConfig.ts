@@ -16,7 +16,7 @@
 
 import { InstanceValue } from './InstanceValue';
 
-export class /*toCHECK*/ AlloySerializationConfig {
+export class AlloySerializationConfig {
   typeKeyName: string;
   includeType?: boolean | undefined;
   includeEnumType?: boolean | undefined;
@@ -30,6 +30,6 @@ export class /*toCHECK*/ AlloySerializationConfig {
   }
 }
 
-export class /*toCHECK*/ AlloySerializationConfigInstanceValue extends InstanceValue {
+export class AlloySerializationConfigInstanceValue extends InstanceValue {
   override values: AlloySerializationConfig[] = [];
 }

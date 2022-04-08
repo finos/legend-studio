@@ -19,9 +19,7 @@ import type { AggregateSpecification } from './AggregateSpecification';
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../MetaModelConst';
 
-export class /*toCHECK*/ AggregateSetImplementationContainer
-  implements Hashable
-{
+export class AggregateSetImplementationContainer implements Hashable {
   index: number;
   aggregateSpecification: AggregateSpecification;
   setImplementation: InstanceSetImplementation;

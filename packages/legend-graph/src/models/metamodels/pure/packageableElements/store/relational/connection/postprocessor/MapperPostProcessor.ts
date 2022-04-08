@@ -19,10 +19,7 @@ import { PostProcessor } from './PostProcessor';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../../MetaModelConst';
 import { type Hashable, hashArray } from '@finos/legend-shared';
 
-export class /*toCHECK*/ MapperPostProcessor
-  extends PostProcessor
-  implements Hashable
-{
+export class MapperPostProcessor extends PostProcessor implements Hashable {
   mappers: Mapper[] = [];
 
   get hashCode(): string {

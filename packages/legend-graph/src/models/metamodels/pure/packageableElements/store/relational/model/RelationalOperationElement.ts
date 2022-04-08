@@ -29,13 +29,13 @@ import type { ColumnReference } from './ColumnReference';
 import type { Database } from './Database';
 import { SELF_JOIN_TABLE_NAME } from './Join';
 
-export abstract class /*toCHECK*/ RelationalOperationElement {
+export abstract class RelationalOperationElement {
   private readonly _$nominalTypeBrand!: 'RelationalOperationElement';
 
   abstract get hashCode(): string;
 }
 
-export abstract class /*toCHECK*/ Relation extends RelationalOperationElement {
+export abstract class Relation extends RelationalOperationElement {
   columns: RelationalOperationElement[] = [];
 
   get hashCode(): string {
@@ -43,7 +43,7 @@ export abstract class /*toCHECK*/ Relation extends RelationalOperationElement {
   }
 }
 
-export abstract class /*toCHECK*/ NamedRelation extends Relation {
+export abstract class NamedRelation extends Relation {
   name: string;
 
   constructor(name: string) {
@@ -52,11 +52,11 @@ export abstract class /*toCHECK*/ NamedRelation extends Relation {
   }
 }
 
-abstract class /*toCHECK*/ Function extends RelationalOperationElement {}
+abstract class Function extends RelationalOperationElement {}
 
-export abstract class /*toCHECK*/ Operation extends Function {}
+export abstract class Operation extends Function {}
 
-export class /*toCHECK*/ DynaFunction extends Operation {
+export class DynaFunction extends Operation {
   name: string;
   parameters: RelationalOperationElement[] = [];
 
@@ -103,7 +103,7 @@ export const getJoinType = (type: string): JoinType => {
 };
 
 // TODO: create RelationalTreeNode like in PURE?
-export class /*toCHECK*/ JoinTreeNode {
+export class JoinTreeNode {
   // FIXME: required in PURE
   alias?: TableAlias | undefined;
   children: JoinTreeNode[] = [];
@@ -136,7 +136,7 @@ export const extractLine = (joinTreeNode: JoinTreeNode): JoinTreeNode[] =>
       : [],
   );
 
-export class /*toCHECK*/ RelationalOperationElementWithJoin extends RelationalOperationElement {
+export class RelationalOperationElementWithJoin extends RelationalOperationElement {
   relationalOperationElement?: RelationalOperationElement | undefined;
   joinTreeNode?: JoinTreeNode | undefined;
 
@@ -149,10 +149,7 @@ export class /*toCHECK*/ RelationalOperationElementWithJoin extends RelationalOp
   }
 }
 
-export class /*toCHECK*/ TableAlias
-  extends RelationalOperationElement
-  implements Hashable
-{
+export class TableAlias extends RelationalOperationElement implements Hashable {
   // setMappingOwner?: PropertyMappingsImplementation | undefined;
   relation!: TableReference | ViewReference;
   name!: string;
@@ -164,7 +161,7 @@ export class /*toCHECK*/ TableAlias
   }
 }
 
-export class /*toCHECK*/ TableAliasColumn extends RelationalOperationElement {
+export class TableAliasColumn extends RelationalOperationElement {
   // setMappingOwner?: PropertyMappingsImplementation | undefined;
   alias!: TableAlias;
   column!: ColumnReference;
@@ -182,7 +179,7 @@ export class /*toCHECK*/ TableAliasColumn extends RelationalOperationElement {
   }
 }
 
-export class /*toCHECK*/ Literal extends RelationalOperationElement {
+export class Literal extends RelationalOperationElement {
   value: string | number | RelationalOperationElement;
 
   constructor(value: string | number | RelationalOperationElement) {
@@ -198,7 +195,7 @@ export class /*toCHECK*/ Literal extends RelationalOperationElement {
   }
 }
 
-export class /*toCHECK*/ LiteralList extends RelationalOperationElement {
+export class LiteralList extends RelationalOperationElement {
   values: Literal[] = [];
 
   get hashCode(): string {

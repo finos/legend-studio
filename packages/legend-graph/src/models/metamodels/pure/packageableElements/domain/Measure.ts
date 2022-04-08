@@ -25,7 +25,7 @@ import { Type } from './Type';
 import { DataType } from './DataType';
 import type { RawLambda } from '../../rawValueSpecification/RawLambda';
 
-export class /*toCHECK*/ Unit extends DataType implements Hashable {
+export class Unit extends DataType implements Hashable {
   measure: Measure;
   conversionFunction?: RawLambda | undefined; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
 
@@ -62,7 +62,7 @@ export class /*toCHECK*/ Unit extends DataType implements Hashable {
   }
 }
 
-export class /*toCHECK*/ Measure extends Type implements Hashable {
+export class Measure extends Type implements Hashable {
   canonicalUnit?: Unit | undefined;
   nonCanonicalUnits: Unit[] = [];
 

@@ -22,7 +22,7 @@ import type { Diagram } from './DSLDiagram_Diagram';
 import { ClassViewExplicitReference } from './DSLDiagram_ClassViewReference';
 import { DIAGRAM_HASH_STRUCTURE } from '../../../../DSLDiagram_ModelUtils';
 
-export class /*toCHECK*/ RelationshipView implements Hashable {
+export class RelationshipView implements Hashable {
   owner: Diagram;
   from: RelationshipEdgeView;
   to: RelationshipEdgeView;

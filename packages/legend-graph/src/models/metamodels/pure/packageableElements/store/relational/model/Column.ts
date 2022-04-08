@@ -22,10 +22,7 @@ import {
 } from './RelationalOperationElement';
 import type { RelationalDataType } from './RelationalDataType';
 
-export class /*toCHECK*/ Column
-  extends RelationalOperationElement
-  implements Hashable
-{
+export class Column extends RelationalOperationElement implements Hashable {
   owner!: Relation;
   name!: string;
   type!: RelationalDataType;

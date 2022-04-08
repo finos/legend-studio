@@ -24,7 +24,7 @@ import type { PropertyMappingsImplementation } from '../../../mapping/PropertyMa
 import type { PropertyReference } from '../../../domain/PropertyReference';
 import type { PropertyMappingVisitor } from '../../../mapping/PropertyMapping';
 
-export class /*toCHECK*/ FlatDataPropertyMapping
+export class FlatDataPropertyMapping
   extends AbstractFlatDataPropertyMapping
   implements Hashable
 {

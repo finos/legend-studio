@@ -28,7 +28,7 @@ import {
 } from '../model/RawRelationalOperationElement';
 import type { BindingTransformer } from '../../../externalFormat/store/DSLExternalFormat_BindingTransformer';
 
-export class /*toCHECK*/ RelationalPropertyMapping
+export class RelationalPropertyMapping
   extends PropertyMapping
   implements Hashable
 {

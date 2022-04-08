@@ -18,7 +18,7 @@ import { CORE_HASH_STRUCTURE } from '../../../../../../../../MetaModelConst';
 import { hashArray } from '@finos/legend-shared';
 import { TemporalMilestoning } from './Milestoning';
 
-export class /*toCHECK*/ BusinessSnapshotMilestoning extends TemporalMilestoning {
+export class BusinessSnapshotMilestoning extends TemporalMilestoning {
   // TODO: resolve snapshotDate to a column
   snapshotDate: string;
 

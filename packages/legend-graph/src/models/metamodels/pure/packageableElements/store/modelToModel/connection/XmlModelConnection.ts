@@ -22,7 +22,7 @@ import type { ModelStore } from '../model/ModelStore';
 import { PureModelConnection } from './PureModelConnection';
 import type { PackageableElementReference } from '../../../PackageableElementReference';
 
-export class /*toCHECK*/ XmlModelConnection
+export class XmlModelConnection
   extends PureModelConnection
   implements Hashable
 {

@@ -32,8 +32,9 @@ import {
 } from '../PackageableElement';
 import type { PackageableElementReference } from '../PackageableElementReference';
 
-export class /*toCHECK*/ IdentifiedConnection implements Hashable {
-  uuid = uuid();
+export class IdentifiedConnection implements Hashable {
+  readonly uuid = uuid();
+
   id: string;
   connection: Connection;
 
@@ -51,7 +52,7 @@ export class /*toCHECK*/ IdentifiedConnection implements Hashable {
   }
 }
 
-export class /*toCHECK*/ StoreConnections implements Hashable {
+export class StoreConnections implements Hashable {
   store: PackageableElementReference<Store>;
   storeConnections: IdentifiedConnection[] = [];
 
@@ -75,11 +76,11 @@ export class /*toCHECK*/ StoreConnections implements Hashable {
   }
 }
 
-export abstract class /*toCHECK*/ Runtime implements Hashable {
+export abstract class Runtime implements Hashable {
   abstract get hashCode(): string;
 }
 
-export class /*toCHECK*/ EngineRuntime extends Runtime implements Hashable {
+export class EngineRuntime extends Runtime implements Hashable {
   mappings: PackageableElementReference<Mapping>[] = [];
   connections: StoreConnections[] = [];
 
@@ -121,7 +122,7 @@ export class /*toCHECK*/ EngineRuntime extends Runtime implements Hashable {
   }
 }
 
-export class /*toCHECK*/ RuntimePointer extends Runtime implements Hashable {
+export class RuntimePointer extends Runtime implements Hashable {
   packageableRuntime: PackageableElementReference<PackageableRuntime>;
 
   constructor(

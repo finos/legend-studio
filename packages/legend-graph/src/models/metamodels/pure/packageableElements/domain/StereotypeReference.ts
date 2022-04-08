@@ -26,7 +26,7 @@ import type { Stubable } from '../../../../../helpers/Stubable';
 import { ReferenceWithOwner } from '../../Reference';
 import type { Stereotype } from './Stereotype';
 
-export abstract class /*toCHECK*/ StereotypeReference
+export abstract class StereotypeReference
   extends ReferenceWithOwner
   implements Stubable
 {
@@ -57,7 +57,7 @@ export abstract class /*toCHECK*/ StereotypeReference
   }
 }
 
-export class /*toCHECK*/ StereotypeExplicitReference extends StereotypeReference {
+export class StereotypeExplicitReference extends StereotypeReference {
   override readonly ownerReference: PackageableElementExplicitReference<Profile>;
 
   private constructor(value: Stereotype) {
@@ -73,7 +73,7 @@ export class /*toCHECK*/ StereotypeExplicitReference extends StereotypeReference
   }
 }
 
-export class /*toCHECK*/ StereotypeImplicitReference extends StereotypeReference {
+export class StereotypeImplicitReference extends StereotypeReference {
   override readonly ownerReference: PackageableElementImplicitReference<Profile>;
 
   private constructor(

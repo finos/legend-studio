@@ -20,10 +20,11 @@ import { RawLambda } from '../../rawValueSpecification/RawLambda';
 import type { Class } from './Class';
 import type { Stubable } from '../../../../../helpers/Stubable';
 
-export class /*toCHECK*/ Constraint implements Hashable, Stubable {
-  uuid = uuid();
-  name: string;
+export class Constraint implements Hashable, Stubable {
+  readonly uuid = uuid();
   owner: Class;
+
+  name: string;
   functionDefinition: RawLambda; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
   externalId?: string | undefined;
   enforcementLevel?: string | undefined;

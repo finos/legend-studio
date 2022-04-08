@@ -17,7 +17,7 @@
 import type { Multiplicity } from '../../packageableElements/domain/Multiplicity';
 import type { ResultType } from '../result/ResultType';
 
-export class /*toCHECK*/ ExecutionNode {
+export class ExecutionNode {
   // fromCluster : ClusteredValueSpecification[0..1];
   resultType!: ResultType;
   resultSizeRange?: Multiplicity | undefined;

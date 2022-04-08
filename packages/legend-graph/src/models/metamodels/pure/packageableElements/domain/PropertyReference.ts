@@ -27,7 +27,7 @@ import type { AbstractProperty } from './AbstractProperty';
 import type { Class } from './Class';
 import { Association } from './Association';
 
-export abstract class /*toCHECK*/ PropertyReference
+export abstract class PropertyReference
   extends ReferenceWithOwner
   implements Stubable
 {
@@ -60,7 +60,7 @@ export abstract class /*toCHECK*/ PropertyReference
   }
 }
 
-export class /*toCHECK*/ PropertyExplicitReference extends PropertyReference {
+export class PropertyExplicitReference extends PropertyReference {
   override readonly ownerReference: PackageableElementExplicitReference<Class>;
 
   private constructor(value: AbstractProperty) {
@@ -78,7 +78,7 @@ export class /*toCHECK*/ PropertyExplicitReference extends PropertyReference {
   }
 }
 
-export class /*toCHECK*/ PropertyImplicitReference extends PropertyReference {
+export class PropertyImplicitReference extends PropertyReference {
   override readonly ownerReference: PackageableElementImplicitReference<
     Class | Association
   >;

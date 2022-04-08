@@ -17,13 +17,13 @@
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 
-export abstract class /*toCHECK*/ DatasourceSpecification implements Hashable {
+export abstract class DatasourceSpecification implements Hashable {
   private readonly _$nominalTypeBrand!: 'DatasourceSpecification';
 
   abstract get hashCode(): string;
 }
 
-export class /*toCHECK*/ StaticDatasourceSpecification
+export class StaticDatasourceSpecification
   extends DatasourceSpecification
   implements Hashable
 {
@@ -48,7 +48,7 @@ export class /*toCHECK*/ StaticDatasourceSpecification
   }
 }
 
-export class /*toCHECK*/ DatabricksDatasourceSpecification
+export class DatabricksDatasourceSpecification
   extends DatasourceSpecification
   implements Hashable
 {
@@ -81,7 +81,7 @@ export class /*toCHECK*/ DatabricksDatasourceSpecification
   }
 }
 
-export class /*toCHECK*/ EmbeddedH2DatasourceSpecification
+export class EmbeddedH2DatasourceSpecification
   extends DatasourceSpecification
   implements Hashable
 {
@@ -110,7 +110,7 @@ export class /*toCHECK*/ EmbeddedH2DatasourceSpecification
   }
 }
 
-export class /*toCHECK*/ LocalH2DatasourceSpecification
+export class LocalH2DatasourceSpecification
   extends DatasourceSpecification
   implements Hashable
 {
@@ -126,7 +126,7 @@ export class /*toCHECK*/ LocalH2DatasourceSpecification
   }
 }
 
-export class /*toCHECK*/ SnowflakeDatasourceSpecification
+export class SnowflakeDatasourceSpecification
   extends DatasourceSpecification
   implements Hashable
 {
@@ -175,7 +175,7 @@ export class /*toCHECK*/ SnowflakeDatasourceSpecification
   }
 }
 
-export class /*toCHECK*/ RedshiftDatasourceSpecification
+export class RedshiftDatasourceSpecification
   extends DatasourceSpecification
   implements Hashable
 {
@@ -215,7 +215,7 @@ export class /*toCHECK*/ RedshiftDatasourceSpecification
   }
 }
 
-export class /*toCHECK*/ BigQueryDatasourceSpecification
+export class BigQueryDatasourceSpecification
   extends DatasourceSpecification
   implements Hashable
 {

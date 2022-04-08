@@ -28,10 +28,7 @@ import {
   createValidationError,
 } from '../../../../../../../helpers/ValidationHelper';
 
-export class /*toCHECK*/ FlatDataInputData
-  extends InputData
-  implements Hashable
-{
+export class FlatDataInputData extends InputData implements Hashable {
   sourceFlatData: PackageableElementReference<FlatData>;
   data: string;
 

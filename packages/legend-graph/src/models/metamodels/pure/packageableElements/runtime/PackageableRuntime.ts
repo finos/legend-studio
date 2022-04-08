@@ -22,10 +22,7 @@ import {
 } from '../PackageableElement';
 import type { EngineRuntime } from './Runtime';
 
-export class /*toCHECK*/ PackageableRuntime
-  extends PackageableElement
-  implements Hashable
-{
+export class PackageableRuntime extends PackageableElement implements Hashable {
   runtimeValue!: EngineRuntime;
 
   protected override get _elementHashCode(): string {

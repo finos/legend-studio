@@ -74,6 +74,7 @@ import {
   annotatedElement_addTaggedValue,
   annotatedElement_addStereotype,
   annotatedElement_deleteTaggedValue,
+  association_changePropertyType,
 } from '../../../../stores/graphModifier/DomainGraphModifierHelper';
 
 const AssociationPropertyBasicEditor = observer(
@@ -119,7 +120,8 @@ const AssociationPropertyBasicEditor = observer(
       label: propertyType.name,
     };
     const changePropertyType = (val: PackageableElementOption<Class>): void => {
-      association.changePropertyType(
+      association_changePropertyType(
+        association,
         property,
         guaranteeType(
           val.value,

@@ -21,8 +21,6 @@ import {
   assertTrue,
   UnsupportedOperationError,
   hashArray,
-  addUniqueEntry,
-  deleteEntry,
 } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import {
@@ -31,7 +29,6 @@ import {
 } from '../PackageableElement';
 import { Property } from './Property';
 import { type Stubable, isStubArray } from '../../../../../helpers/Stubable';
-import { GenericType } from './GenericType';
 import { Class } from './Class';
 import type { AnnotatedElement } from './AnnotatedElement';
 import type { TaggedValue } from './TaggedValue';
@@ -68,7 +65,7 @@ const initAssociationProperties = (
  * project
  * FIXME: we can make use of the root package to verify this in the UI and make this a validation error in a way.
  */
-export class /*toCHECK*/ Association
+export class Association
   extends PackageableElement
   implements AnnotatedElement, Hashable, Stubable
 {
@@ -110,32 +107,6 @@ export class /*toCHECK*/ Association
       this.properties.find((p) => p.name === name),
       `Can't find property '${name}' in class '${this.path}'`,
     );
-
-  changePropertyType = (property: Property, type: Class): void => {
-    const otherProperty = this.getOtherProperty(property);
-    // remove other property from current parent class of the to-be-changed property
-    const otherPropertyAssociatedClass = guaranteeType(
-      property.genericType.ownerReference.value,
-      Class,
-      `Association property '${property.name}' must be of type 'class'`,
-    );
-    // don't invoke deletion if the class is a stub (otherProperty is not present)
-    if (!otherPropertyAssociatedClass.isStub) {
-      assertTrue(
-        deleteEntry(
-          otherPropertyAssociatedClass.propertiesFromAssociations,
-          otherProperty,
-        ),
-        `Can't find property '${otherProperty.name}' from association '${this.path}' in associated class '${otherPropertyAssociatedClass.path}'`,
-      );
-    }
-    // set up the relationship between the other property and the new class
-    addUniqueEntry(type.propertiesFromAssociations, otherProperty);
-    // set new type for the property
-    const _genType = new GenericType(type);
-    property.genericType.value = _genType;
-    property.genericType.ownerReference.value = _genType.rawType;
-  };
 
   override get isStub(): boolean {
     return super.isStub && isStubArray(this.properties);

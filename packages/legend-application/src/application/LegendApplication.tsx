@@ -149,6 +149,8 @@ export const setupLegendApplicationUILibrary = async (
 
   configureMobx({
     // Force state modification to be done via actions
+    // Otherwise, warning will be shown in development mode
+    // However, no warning will shown in production mode
     // See https://mobx.js.org/configuration.html#enforceactions
     enforceActions: 'observed',
   });

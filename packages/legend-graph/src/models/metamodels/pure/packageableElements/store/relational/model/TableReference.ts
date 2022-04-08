@@ -26,7 +26,7 @@ import type { Database } from './Database';
 import type { Table } from './Table';
 import { SELF_JOIN_SCHEMA_NAME, SELF_JOIN_TABLE_NAME } from './Join';
 
-export abstract class /*toCHECK*/ NamedRelationalReference extends ReferenceWithOwner {
+export abstract class NamedRelationalReference extends ReferenceWithOwner {
   override readonly ownerReference: PackageableElementReference<Database>;
 
   protected constructor(ownerReference: PackageableElementReference<Database>) {
@@ -35,7 +35,7 @@ export abstract class /*toCHECK*/ NamedRelationalReference extends ReferenceWith
   }
 }
 
-export abstract class /*toCHECK*/ TableReference extends NamedRelationalReference {
+export abstract class TableReference extends NamedRelationalReference {
   value: Table;
 
   protected constructor(
@@ -69,7 +69,7 @@ export abstract class /*toCHECK*/ TableReference extends NamedRelationalReferenc
   }
 }
 
-export class /*toCHECK*/ TableExplicitReference extends TableReference {
+export class TableExplicitReference extends TableReference {
   override readonly ownerReference: PackageableElementExplicitReference<Database>;
 
   private constructor(value: Table) {
@@ -85,7 +85,7 @@ export class /*toCHECK*/ TableExplicitReference extends TableReference {
   }
 }
 
-export class /*toCHECK*/ TableImplicitReference extends TableReference {
+export class TableImplicitReference extends TableReference {
   override readonly ownerReference: PackageableElementImplicitReference<Database>;
 
   private constructor(

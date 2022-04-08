@@ -33,7 +33,7 @@ import {
   InferableMappingElementIdExplicitValue,
 } from './InferableMappingElementId';
 
-export class /*toCHECK*/ EnumerationMapping implements Hashable, Stubable {
+export class EnumerationMapping implements Hashable, Stubable {
   parent: Mapping;
   enumeration: PackageableElementReference<Enumeration>;
   id: InferableMappingElementIdValue;

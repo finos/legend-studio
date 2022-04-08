@@ -18,7 +18,7 @@ import type { DatabaseConnection } from '../../packageableElements/store/relatio
 import { ExecutionNode } from './ExecutionNode';
 import type { SQLResultColumn } from './SQLResultColumn';
 
-export class /*toCHECK*/ SQLExecutionNode extends ExecutionNode {
+export class SQLExecutionNode extends ExecutionNode {
   sqlQuery!: string;
   onConnectionCloseCommitQuery?: string | undefined;
   onConnectionCloseRollbackQuery?: string | undefined;
