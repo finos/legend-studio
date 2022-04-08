@@ -38,7 +38,8 @@ export interface ConnectionVisitor<T> {
 }
 
 export abstract class Connection implements Hashable {
-  uuid = uuid();
+  readonly uuid = uuid();
+
   // in Pure right now, this is of type Any[1], but technically it should be a store
   store: PackageableElementReference<Store>;
 
@@ -59,10 +60,6 @@ export class ConnectionPointer extends Connection implements Hashable {
   ) {
     super(packageableConnection.value.connectionValue.store);
     this.packageableConnection = packageableConnection;
-  }
-
-  setPackageableConnection(value: PackageableConnection): void {
-    this.packageableConnection.value = value;
   }
 
   get hashCode(): string {

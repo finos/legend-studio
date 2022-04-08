@@ -30,7 +30,8 @@ export abstract class ServiceTest implements Hashable {
 }
 
 export class TestContainer implements Hashable {
-  uuid = uuid();
+  readonly uuid = uuid();
+
   parametersValues: unknown[] = []; // Any[*]; // ValueSpecification?
   assert: RawLambda; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
   singleExecutionTestParent: SingleExecutionTest;

@@ -33,7 +33,8 @@ import {
 import type { PackageableElementReference } from '../PackageableElementReference';
 
 export class IdentifiedConnection implements Hashable {
-  uuid = uuid();
+  readonly uuid = uuid();
+
   id: string;
   connection: Connection;
 

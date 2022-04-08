@@ -28,11 +28,11 @@ import {
   RawValueSpecification,
 } from './RawValueSpecification';
 
-export class /*toCHECK*/ RawVariableExpression
+export class RawVariableExpression
   extends RawValueSpecification
   implements Hashable, Stubable
 {
-  uuid = uuid();
+  readonly uuid = uuid();
   name: string;
   type: PackageableElementReference<Type>;
   multiplicity: Multiplicity;

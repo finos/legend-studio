@@ -69,7 +69,8 @@ export interface PackageableElementVisitor<T> {
 export abstract class /*toCHECK*/ PackageableElement
   implements Hashable, Stubable
 {
-  uuid = uuid();
+  readonly uuid = uuid();
+
   protected _isDeleted = false;
   protected _isDisposed = false;
   name: string;

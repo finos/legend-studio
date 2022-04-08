@@ -172,7 +172,7 @@ export const enumMapping_setId = action(
 
 export const enumMapping_setSourceType = action(
   (eM: EnumerationMapping, value: Type | undefined): void => {
-    eM.sourceType.setValue(value ? observe_Type(value) : undefined);
+    eM.sourceType.value = value ? observe_Type(value) : undefined;
   },
 );
 
@@ -415,7 +415,7 @@ export const pureInstanceSetImpl_setSrcClass = (
   val: PureInstanceSetImplementation,
   value: Class | undefined,
 ): void => {
-  val.srcClass.setValue(value ? observe_Class(value) : undefined);
+  val.srcClass.value = value ? observe_Class(value) : undefined;
 };
 export const pureInstanceSetImpl_setMappingFilter = (
   val: PureInstanceSetImplementation,

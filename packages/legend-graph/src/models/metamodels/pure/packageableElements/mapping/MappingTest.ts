@@ -25,7 +25,8 @@ import {
 } from '../../../../../helpers/ValidationHelper';
 
 export class MappingTest implements Hashable {
-  uuid = uuid();
+  readonly uuid = uuid();
+
   name: string;
   query: RawLambda; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
   inputData: InputData[] = [];

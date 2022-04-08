@@ -86,7 +86,6 @@ export const observe_OptionalPackageableElementReference = skipObserved(
   ): OptionalPackageableElementReference<T> =>
     makeObservable(metamodel, {
       value: observable,
-      setValue: action,
       valueForSerialization: computed,
     }),
 );

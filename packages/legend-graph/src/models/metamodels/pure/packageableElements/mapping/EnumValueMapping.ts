@@ -21,7 +21,8 @@ import type { Stubable } from '../../../../../helpers/Stubable';
 import type { EnumValueReference } from '../domain/EnumValueReference';
 
 export class SourceValue implements Stubable {
-  uuid = uuid();
+  readonly uuid = uuid();
+
   value: Enum | string | number | undefined;
 
   constructor(value: Enum | string | number | undefined) {

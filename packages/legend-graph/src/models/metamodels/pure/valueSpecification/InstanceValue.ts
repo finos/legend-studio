@@ -62,7 +62,7 @@ export class /*toCHECK*/ PrimitiveInstanceValue extends InstanceValue {
   override genericType: GenericTypeReference;
 
   constructor(genericType: GenericTypeReference, multiplicity: Multiplicity) {
-    super(multiplicity, undefined);
+    super(multiplicity, genericType);
     this.genericType = genericType;
   }
 
@@ -77,8 +77,7 @@ export class /*toCHECK*/ EnumValueInstanceValue extends InstanceValue {
   override values: EnumValueReference[] = [];
 
   constructor(genericType: GenericTypeReference, multiplicity: Multiplicity) {
-    super(multiplicity, undefined);
-    this.genericType = genericType;
+    super(multiplicity, genericType);
   }
 
   override accept_ValueSpecificationVisitor<T>(

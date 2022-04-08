@@ -19,7 +19,7 @@ import type { Type } from './Type';
 import type { Stubable } from '../../../../../helpers/Stubable';
 
 export class GenericType implements Stubable {
-  uuid = uuid();
+  readonly uuid = uuid();
   rawType: Type;
 
   constructor(rawType: Type) {

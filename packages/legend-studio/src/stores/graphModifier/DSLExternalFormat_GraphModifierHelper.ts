@@ -76,7 +76,7 @@ export const externalFormat_BindingTransformer_setBinding = action(
 );
 export const externalFormat_Binding_setSchemaSet = action(
   (binding: Binding, value: SchemaSet | undefined): void => {
-    binding.schemaSet.setValue(value ? observe_SchemaSet(value) : undefined);
+    binding.schemaSet.value = value ? observe_SchemaSet(value) : undefined;
   },
 );
 export const externalFormat_Binding_setSchemaId = action(

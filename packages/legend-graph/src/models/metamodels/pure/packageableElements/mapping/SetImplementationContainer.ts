@@ -19,7 +19,8 @@ import type { SetImplementationReference } from './SetImplementationReference';
 import type { Stubable } from '../../../../../helpers/Stubable';
 
 export class SetImplementationContainer implements Stubable {
-  uuid = uuid();
+  readonly uuid = uuid();
+
   setImplementation: SetImplementationReference;
 
   constructor(setImplementation: SetImplementationReference) {
