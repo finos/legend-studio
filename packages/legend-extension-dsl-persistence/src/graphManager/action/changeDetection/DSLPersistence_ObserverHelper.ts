@@ -17,12 +17,12 @@
 import type { Persistence } from '../../../models/metamodels/pure/model/packageableElements/persistence/Persistence';
 import {
   observe_Abstract_PackageableElement,
-  skipObservedWithContext,
+  skipObserved,
 } from '@finos/legend-graph';
 import { makeObservable, observable, override } from 'mobx';
 
-export const observe_Persistence = skipObservedWithContext(
-  (metamodel: Persistence, context): Persistence => {
+export const observe_Persistence = skipObserved(
+  (metamodel: Persistence): Persistence => {
     observe_Abstract_PackageableElement(metamodel);
 
     makeObservable<Persistence, '_elementHashCode'>(metamodel, {

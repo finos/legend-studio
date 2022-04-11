@@ -20,7 +20,12 @@ import {
   PureGraphManagerPlugin,
   type PackageableElement,
   type PureGrammarElementLabeler,
+  ElementObserver,
+  ObserverContext,
 } from '@finos/legend-graph';
+import { DataSpace } from '@finos/legend-extension-dsl-data-space/lib/models/metamodels/pure/model/packageableElements/dataSpace/DSLDataSpace_DataSpace';
+import { observe_DataSpace } from '@finos/legend-extension-dsl-data-space/lib/graphManager/action/changeDetection/DSLDataSpace_ObserverHelper';
+import { observe_Persistence } from './action/changeDetection/DSLPersistence_ObserverHelper';
 
 const PURE_GRAMMAR_PERSISTENCE_PARSER_NAME = 'Persistence';
 const PURE_GRAMMAR_PERSISTENCE_ELEMENT_TYPE_LABEL = 'Persistence';
@@ -43,6 +48,20 @@ export class DSLPersistence_PureGraphManagerPlugin extends PureGraphManagerPlugi
       (element: PackageableElement): string | undefined => {
         if (element instanceof Persistence) {
           return PURE_GRAMMAR_PERSISTENCE_ELEMENT_TYPE_LABEL;
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  override getExtraElementObservers(): ElementObserver[] {
+    return [
+      (
+        element: PackageableElement,
+        context: ObserverContext,
+      ): PackageableElement | undefined => {
+        if (element instanceof Persistence) {
+          return observe_Persistence(element);
         }
         return undefined;
       },
