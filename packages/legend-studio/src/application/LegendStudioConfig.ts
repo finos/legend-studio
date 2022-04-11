@@ -16,11 +16,10 @@
 
 import {
   createModelSchema,
-  custom,
   list,
+  object,
   optional,
   primitive,
-  SKIP,
 } from 'serializr';
 import {
   type PlainObject,
@@ -84,10 +83,7 @@ class LegendStudioApplicationCoreOptions {
       EXPERIMENTAL__enableFullGrammarImportSupport: optional(primitive()),
       TEMPORARY__disableRawLambdaResolver: optional(primitive()),
       TEMPORARY__serviceRegistrationConfig: list(
-        custom(
-          (value) => SKIP,
-          (value) => ServiceRegistrationEnvInfo.serialization.fromJson(value),
-        ),
+        object(ServiceRegistrationEnvInfo),
       ),
     }),
   );

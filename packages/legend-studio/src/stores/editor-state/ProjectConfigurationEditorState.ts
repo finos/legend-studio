@@ -128,7 +128,7 @@ export class ProjectConfigurationEditorState extends EditorState {
       (
         (yield this.editorStore.depotServerClient.getProjects()) as PlainObject<ProjectData>[]
       )
-        .map((project) => ProjectData.serialization.fromJson(project))
+        .map(ProjectData.serialization.fromJson)
         // filter out non versioned projects
         .filter((p) => Boolean(p.versions.length))
         .forEach((project) => this.projects.set(project.coordinates, project));

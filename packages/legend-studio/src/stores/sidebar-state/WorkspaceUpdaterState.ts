@@ -345,7 +345,7 @@ export class WorkspaceUpdaterState {
           undefined,
         )) as PlainObject<Review>[]
       )
-        .map((review) => Review.serialization.fromJson(review))
+        .map(Review.serialization.fromJson)
         .filter((review) => !baseReview || review.id !== baseReview.id); // make sure to exclude the base review
     } catch (error) {
       assertErrorThrown(error);

@@ -510,7 +510,7 @@ export class V1_Engine {
           new V1_GenerateFileInput(textModel, configs),
         ),
       )
-    ).map((output) => V1_GenerationOutput.serialization.fromJson(output));
+    ).map(V1_GenerationOutput.serialization.fromJson);
   }
   // ------------------------------------------- External Format -----------------------------------------
 
@@ -587,7 +587,7 @@ export class V1_Engine {
       await this.engineServerClient.runServiceTests(
         V1_serializePureModelContextData(model),
       )
-    ).map((result) => V1_ServiceTestResult.serialization.fromJson(result));
+    ).map(V1_ServiceTestResult.serialization.fromJson);
   }
 
   async registerService(
@@ -639,7 +639,7 @@ export class V1_Engine {
       await this.engineServerClient.searchQueries(
         V1_QuerySearchSpecification.serialization.toJson(searchSpecification),
       )
-    ).map((query) => V1_LightQuery.serialization.fromJson(query));
+    ).map(V1_LightQuery.serialization.fromJson);
   }
 
   async getQuery(queryId: string): Promise<V1_Query> {

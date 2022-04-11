@@ -85,7 +85,7 @@ export class ProjectOverviewState {
         (yield this.editorStore.sdlcServerClient.getWorkspaces(
           this.sdlcState.activeProject.projectId,
         )) as PlainObject<Workspace>[]
-      ).map((workspace) => Workspace.serialization.fromJson(workspace));
+      ).map(Workspace.serialization.fromJson);
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
@@ -227,7 +227,7 @@ export class ProjectOverviewState {
             undefined,
           )) as PlainObject<Review>[]
         )
-          .map((review) => Review.serialization.fromJson(review))
+          .map(Review.serialization.fromJson)
           .filter(
             (review) =>
               !latestProjectVersionRevisionReview ||
@@ -243,7 +243,7 @@ export class ProjectOverviewState {
             undefined,
             undefined,
           )) as PlainObject<Review>[]
-        ).map((review) => Review.serialization.fromJson(review));
+        ).map(Review.serialization.fromJson);
       }
     } catch (error) {
       assertErrorThrown(error);

@@ -443,7 +443,7 @@ export class ViewerStore {
           false,
         )) as PlainObject<ProjectVersionEntities>[])
     )
-      .map((e) => ProjectVersionEntities.serialization.fromJson(e))
+      .map(ProjectVersionEntities.serialization.fromJson)
       .forEach((dependencyInfo) => {
         dependencyEntitiesMap.set(dependencyInfo.id, dependencyInfo.entities);
       });

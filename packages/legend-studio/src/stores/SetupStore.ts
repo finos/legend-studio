@@ -293,7 +293,7 @@ export class SetupStore {
           projectId,
         )) as PlainObject<Workspace>[]
       )
-        .map((workspace) => Workspace.serialization.fromJson(workspace))
+        .map(Workspace.serialization.fromJson)
         .forEach((workspace) => {
           // NOTE we don't handle workspaces that only have conflict resolution but no standard workspace
           // since that indicates bad state of the SDLC server
