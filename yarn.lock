@@ -2288,6 +2288,32 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@finos/legend-extension-dsl-persistence@workspace:*, @finos/legend-extension-dsl-persistence@workspace:packages/legend-extension-dsl-persistence":
+  version: 0.0.0-use.local
+  resolution: "@finos/legend-extension-dsl-persistence@workspace:packages/legend-extension-dsl-persistence"
+  dependencies:
+    "@finos/legend-art": "workspace:*"
+    "@finos/legend-dev-utils": "workspace:*"
+    "@finos/legend-graph": "workspace:*"
+    "@finos/legend-model-storage": "workspace:*"
+    "@finos/legend-shared": "workspace:*"
+    "@finos/legend-studio": "workspace:*"
+    "@types/react": 17.0.43
+    cross-env: 7.0.3
+    eslint: 8.12.0
+    jest: 27.5.1
+    monaco-editor: 0.33.0
+    npm-run-all: 4.1.5
+    react: 17.0.2
+    rimraf: 3.0.2
+    sass: 1.50.0
+    serializr: 2.0.5
+    typescript: 4.6.3
+  peerDependencies:
+    react: ^17.0.0
+  languageName: unknown
+  linkType: soft
+
 "@finos/legend-extension-dsl-text@workspace:*, @finos/legend-extension-dsl-text@workspace:packages/legend-extension-dsl-text":
   version: 0.0.0-use.local
   resolution: "@finos/legend-extension-dsl-text@workspace:packages/legend-extension-dsl-text"
@@ -2434,6 +2460,7 @@ __metadata:
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-extension-dsl-data-space": "workspace:*"
     "@finos/legend-extension-dsl-diagram": "workspace:*"
+    "@finos/legend-extension-dsl-persistence": "workspace:*"
     "@finos/legend-extension-dsl-text": "workspace:*"
     "@finos/legend-extension-external-format-json-schema": "workspace:*"
     "@finos/legend-extension-external-store-service": "workspace:*"
@@ -2684,6 +2711,7 @@ __metadata:
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-extension-dsl-data-space": "workspace:*"
     "@finos/legend-extension-dsl-diagram": "workspace:*"
+    "@finos/legend-extension-dsl-persistence": "workspace:*"
     "@finos/legend-extension-dsl-text": "workspace:*"
     "@finos/legend-extension-external-language-morphir": "workspace:*"
     "@finos/legend-extension-external-store-service": "workspace:*"
@@ -2974,24 +3002,6 @@ __metadata:
   version: 1.1.3
   resolution: "@gar/promisify@npm:1.1.3"
   checksum: 4059f790e2d07bf3c3ff3e0fec0daa8144fe35c1f6e0111c9921bd32106adaa97a4ab096ad7dab1e28ee6a9060083c4d1a4ada42a7f5f3f7a96b8812e2b757c1
-  languageName: node
-  linkType: hard
-
-"@humanwhocodes/config-array@npm:^0.9.2":
-  version: 0.9.5
-  resolution: "@humanwhocodes/config-array@npm:0.9.5"
-  dependencies:
-    "@humanwhocodes/object-schema": ^1.2.1
-    debug: ^4.1.1
-    minimatch: ^3.0.4
-  checksum: 8ba6281bc0590f6c6eadeefc14244b5a3e3f5903445aadd1a32099ed80e753037674026ce1b3c945ab93561bea5eb29e3c5bff67060e230c295595ba517a3492
-  languageName: node
-  linkType: hard
-
-"@humanwhocodes/object-schema@npm:^1.2.1":
-  version: 1.2.1
-  resolution: "@humanwhocodes/object-schema@npm:1.2.1"
-  checksum: a824a1ec31591231e4bad5787641f59e9633827d0a2eaae131a288d33c9ef0290bd16fda8da6f7c0fcb014147865d12118df10db57f27f41e20da92369fcb3f1
   languageName: node
   linkType: hard
 
