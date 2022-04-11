@@ -60,8 +60,6 @@ export class Persistence extends PackageableElement implements Hashable {
  **********/
 
 export abstract class Trigger implements Hashable {
-  private readonly _$nominalTypeBrand!: 'Trigger';
-
   abstract get hashCode(): string;
 }
 
@@ -95,8 +93,6 @@ export class CronTrigger extends Trigger implements Hashable {
  **********/
 
 export abstract class Persister implements Hashable {
-  private readonly _$nominalTypeBrand!: 'Persister';
-
   abstract get hashCode(): string;
 }
 
@@ -142,8 +138,6 @@ export class Notifier implements Hashable {
 }
 
 export abstract class Notifyee implements Hashable {
-  private readonly _$nominalTypeBrand!: 'Notifyee';
-
   abstract get hashCode(): string;
 }
 
@@ -171,8 +165,6 @@ export class PagerDutyNotifyee extends Notifyee implements Hashable {
  **********/
 
 export abstract class Sink implements Hashable {
-  private readonly _$nominalTypeBrand!: 'Sink';
-
   abstract get hashCode(): string;
 }
 
@@ -205,8 +197,6 @@ export class ObjectStorageSink extends Sink implements Hashable {
  **********/
 
 export abstract class TargetShape implements Hashable {
-  private readonly _$nominalTypeBrand!: 'TargetShape';
-
   abstract get hashCode(): string;
 }
 
@@ -269,8 +259,6 @@ export enum TransactionScope {
  **********/
 
 export abstract class DeduplicationStrategy implements Hashable {
-  private readonly _$nominalTypeBrand!: 'DeduplicationStrategy';
-
   abstract get hashCode(): string;
 }
 
@@ -327,8 +315,6 @@ export class DuplicateCountDeduplicationStrategy
  **********/
 
 export abstract class IngestMode implements Hashable {
-  private readonly _$nominalTypeBrand!: 'IngestMode';
-
   abstract get hashCode(): string;
 }
 
@@ -419,8 +405,6 @@ export class BitemporalDelta extends IngestMode implements Hashable {
 // merge strategy
 
 export abstract class MergeStrategy implements Hashable {
-  private readonly _$nominalTypeBrand!: 'MergeStrategy';
-
   abstract get hashCode(): string;
 }
 
@@ -468,8 +452,6 @@ export class AppendOnly extends IngestMode implements Hashable {
  **********/
 
 export abstract class Auditing implements Hashable {
-  private readonly _$nominalTypeBrand!: 'Auditing';
-
   abstract get hashCode(): string;
 }
 
@@ -495,8 +477,6 @@ export class DateTimeAuditing extends Auditing implements Hashable {
  **********/
 
 export abstract class TransactionMilestoning implements Hashable {
-  private readonly _$nominalTypeBrand!: 'TransactionMilestoning';
-
   abstract get hashCode(): string;
 }
 
@@ -557,8 +537,6 @@ export class BatchIdAndDateTimeTransactionMilestoning
  **********/
 
 export abstract class ValidityMilestoning implements Hashable {
-  private readonly _$nominalTypeBrand!: 'ValidityMilestoning';
-
   abstract get hashCode(): string;
 }
 
@@ -583,8 +561,6 @@ export class DateTimeValidityMilestoning
 // validity derivation
 
 export abstract class ValidityDerivation implements Hashable {
-  private readonly _$nominalTypeBrand!: 'ValidityDerivation';
-
   abstract get hashCode(): string;
 }
 

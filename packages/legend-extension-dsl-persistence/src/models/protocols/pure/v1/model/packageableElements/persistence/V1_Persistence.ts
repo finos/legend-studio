@@ -15,14 +15,10 @@
  */
 
 import {
-  Binding,
-  Connection,
-  PackageableElementReference,
   V1_Connection,
   V1_PackageableElement,
   type V1_PackageableElementVisitor,
 } from '@finos/legend-graph';
-import type { V1_Binding } from '@finos/legend-graph/lib/models/protocols/pure/v1/model/packageableElements/externalFormat/store/V1_DSLExternalFormat_Binding';
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../../DSLPersistence_ModelUtils';
 
@@ -60,8 +56,6 @@ export class V1_Persistence extends V1_PackageableElement implements Hashable {
  **********/
 
 export abstract class V1_Trigger implements Hashable {
-  private readonly _$nominalTypeBrand!: 'V1_Trigger';
-
   abstract get hashCode(): string;
 }
 
@@ -95,8 +89,6 @@ export class V1_CronTrigger extends V1_Trigger implements Hashable {
  **********/
 
 export abstract class V1_Persister implements Hashable {
-  private readonly _$nominalTypeBrand!: 'V1_Persister';
-
   abstract get hashCode(): string;
 }
 
@@ -142,8 +134,6 @@ export class V1_Notifier implements Hashable {
 }
 
 export abstract class V1_Notifyee implements Hashable {
-  private readonly _$nominalTypeBrand!: 'V1_Notifyee';
-
   abstract get hashCode(): string;
 }
 
@@ -171,8 +161,6 @@ export class V1_PagerDutyNotifyee extends V1_Notifyee implements Hashable {
  **********/
 
 export abstract class V1_Sink implements Hashable {
-  private readonly _$nominalTypeBrand!: 'V1_Sink';
-
   abstract get hashCode(): string;
 }
 
@@ -205,8 +193,6 @@ export class V1_ObjectStorageSink extends V1_Sink implements Hashable {
  **********/
 
 export abstract class V1_TargetShape implements Hashable {
-  private readonly _$nominalTypeBrand!: 'V1_Trigger';
-
   abstract get hashCode(): string;
 }
 
@@ -269,8 +255,6 @@ export enum V1_TransactionScope {
  **********/
 
 export abstract class V1_DeduplicationStrategy implements Hashable {
-  private readonly _$nominalTypeBrand!: 'V1_DeduplicationStrategy';
-
   abstract get hashCode(): string;
 }
 
@@ -327,8 +311,6 @@ export class V1_DuplicateCountDeduplicationStrategy
  **********/
 
 export abstract class V1_IngestMode implements Hashable {
-  private readonly _$nominalTypeBrand!: 'V1_IngestMode';
-
   abstract get hashCode(): string;
 }
 
@@ -419,8 +401,6 @@ export class V1_BitemporalDelta extends V1_IngestMode implements Hashable {
 // merge strategy
 
 export abstract class V1_MergeStrategy implements Hashable {
-  private readonly _$nominalTypeBrand!: 'V1_MergeStrategy';
-
   abstract get hashCode(): string;
 }
 
@@ -471,8 +451,6 @@ export class V1_AppendOnly extends V1_IngestMode implements Hashable {
  **********/
 
 export abstract class V1_Auditing implements Hashable {
-  private readonly _$nominalTypeBrand!: 'V1_Auditing';
-
   abstract get hashCode(): string;
 }
 
@@ -498,8 +476,6 @@ export class V1_DateTimeAuditing extends V1_Auditing implements Hashable {
  **********/
 
 export abstract class V1_TransactionMilestoning implements Hashable {
-  private readonly _$nominalTypeBrand!: 'V1_TransactionMilestoning';
-
   abstract get hashCode(): string;
 }
 
@@ -560,8 +536,6 @@ export class V1_BatchIdAndDateTimeTransactionMilestoning
  **********/
 
 export abstract class V1_ValidityMilestoning implements Hashable {
-  private readonly _$nominalTypeBrand!: 'V1_ValidityMilestoning';
-
   abstract get hashCode(): string;
 }
 
@@ -586,8 +560,6 @@ export class V1_DateTimeValidityMilestoning
 // validity derivation
 
 export abstract class V1_ValidityDerivation implements Hashable {
-  private readonly _$nominalTypeBrand!: 'V1_ValidityDerivation';
-
   abstract get hashCode(): string;
 }
 
