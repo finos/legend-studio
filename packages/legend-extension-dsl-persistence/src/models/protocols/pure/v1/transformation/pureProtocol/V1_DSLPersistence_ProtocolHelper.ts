@@ -143,7 +143,7 @@ const V1_serializeTrigger = (protocol: V1_Trigger): PlainObject<V1_Trigger> => {
   } else if (protocol instanceof V1_CronTrigger) {
     return serialize(V1_cronTriggerModelSchema, protocol);
   }
-  throw new UnsupportedOperationError(`Unable to serialize trigger`, protocol);
+  throw new UnsupportedOperationError(`Can't serialize trigger`, protocol);
 };
 
 const V1_deserializeTrigger = (json: PlainObject<V1_Trigger>): V1_Trigger => {
@@ -154,7 +154,7 @@ const V1_deserializeTrigger = (json: PlainObject<V1_Trigger>): V1_Trigger => {
       return deserialize(V1_cronTriggerModelSchema, json);
     default:
       throw new UnsupportedOperationError(
-        `Unable to deserialize trigger '${json._type}'`,
+        `Can't deserialize trigger '${json._type}'`,
       );
   }
 };
@@ -207,10 +207,7 @@ const V1_serializePersister = (
   } else if (protocol instanceof V1_BatchPersister) {
     return serialize(V1_batchPersisterModelSchema(plugins), protocol);
   }
-  throw new UnsupportedOperationError(
-    `Unable to serialize persister`,
-    protocol,
-  );
+  throw new UnsupportedOperationError(`Can't serialize persister`, protocol);
 };
 
 const V1_deserializePersister = (
@@ -224,7 +221,7 @@ const V1_deserializePersister = (
       return deserialize(V1_batchPersisterModelSchema(plugins), json);
     default:
       throw new UnsupportedOperationError(
-        `Unable to deserialize persister '${json._type}'`,
+        `Can't deserialize persister '${json._type}'`,
       );
   }
 };
@@ -266,7 +263,7 @@ const V1_serializeNotifyee = (
   } else if (protocol instanceof V1_PagerDutyNotifyee) {
     return serialize(V1_pagerDutyNotifyeeModelSchema, protocol);
   }
-  throw new UnsupportedOperationError(`Unable to serialize notifyee`, protocol);
+  throw new UnsupportedOperationError(`Can't serialize notifyee`, protocol);
 };
 
 const V1_deserializeNotifyee = (
@@ -279,7 +276,7 @@ const V1_deserializeNotifyee = (
       return deserialize(V1_pagerDutyNotifyeeModelSchema, json);
     default:
       throw new UnsupportedOperationError(
-        `Unable to deserialize notifyee '${json._type}'`,
+        `Can't deserialize notifyee '${json._type}'`,
       );
   }
 };
@@ -325,7 +322,7 @@ const V1_serializeSink = (
   } else if (protocol instanceof V1_ObjectStorageSink) {
     return serialize(V1_objectStorageSinkModelSchema(plugins), protocol);
   }
-  throw new UnsupportedOperationError(`Unable to serialize sink`, protocol);
+  throw new UnsupportedOperationError(`Can't serialize sink`, protocol);
 };
 
 const V1_deserializeSink = (
@@ -339,7 +336,7 @@ const V1_deserializeSink = (
       return deserialize(V1_objectStorageSinkModelSchema(plugins), json);
     default:
       throw new UnsupportedOperationError(
-        `Unable to deserialize sink '${json._type}'`,
+        `Can't deserialize sink '${json._type}'`,
       );
   }
 };
@@ -402,10 +399,7 @@ const V1_serializeTargetShape = (
   } else if (protocol instanceof V1_FlatTarget) {
     return serialize(V1_flatTargetModelSchema, protocol);
   }
-  throw new UnsupportedOperationError(
-    `Unable to serialize target shape`,
-    protocol,
-  );
+  throw new UnsupportedOperationError(`Can't serialize target shape`, protocol);
 };
 
 const V1_deserializeTargetShape = (
@@ -418,7 +412,7 @@ const V1_deserializeTargetShape = (
       return deserialize(V1_flatTargetModelSchema, json);
     default:
       throw new UnsupportedOperationError(
-        `Unable to deserialize target shape '${json._type}'`,
+        `Can't deserialize target shape '${json._type}'`,
       );
   }
 };
@@ -488,7 +482,7 @@ const V1_serializeDeduplicationStrategy = (
     );
   }
   throw new UnsupportedOperationError(
-    `Unable to serialize deduplication strategy`,
+    `Can't serialize deduplication strategy`,
     protocol,
   );
 };
@@ -510,7 +504,7 @@ const V1_deserializeDeduplicationStrategy = (
       );
     default:
       throw new UnsupportedOperationError(
-        `Unable to deserialize deduplicationStrategy '${json._type}'`,
+        `Can't deserialize deduplicationStrategy '${json._type}'`,
       );
   }
 };
@@ -633,10 +627,7 @@ const V1_serializeIngestMode = (
   } else if (protocol instanceof V1_AppendOnly) {
     return serialize(V1_appendOnlyModelSchema, protocol);
   }
-  throw new UnsupportedOperationError(
-    `Unable to serialize ingest mode`,
-    protocol,
-  );
+  throw new UnsupportedOperationError(`Can't serialize ingest mode`, protocol);
 };
 
 const V1_deserializeIngestMode = (
@@ -659,7 +650,7 @@ const V1_deserializeIngestMode = (
       return deserialize(V1_appendOnlyModelSchema, json);
     default:
       throw new UnsupportedOperationError(
-        `Unable to deserialize ingest mode '${json._type}'`,
+        `Can't deserialize ingest mode '${json._type}'`,
       );
   }
 };
@@ -700,7 +691,7 @@ const V1_serializeMergeStrategy = (
     return serialize(V1_deleteIndicatorMergeStrategyModelSchema, protocol);
   }
   throw new UnsupportedOperationError(
-    `Unable to serialize merge strategy`,
+    `Can't serialize merge strategy`,
     protocol,
   );
 };
@@ -715,7 +706,7 @@ const V1_deserializeMergeStrategy = (
       return deserialize(V1_deleteIndicatorMergeStrategyModelSchema, json);
     default:
       throw new UnsupportedOperationError(
-        `Unable to deserialize merge strategy '${json._type}'`,
+        `Can't deserialize merge strategy '${json._type}'`,
       );
   }
 };
@@ -746,7 +737,7 @@ const V1_serializeAuditing = (
   } else if (protocol instanceof V1_DateTimeAuditing) {
     return serialize(V1_dateTimeAuditingModelSchema, protocol);
   }
-  throw new UnsupportedOperationError(`Unable to serialize auditing`, protocol);
+  throw new UnsupportedOperationError(`Can't serialize auditing`, protocol);
 };
 
 const V1_deserializeAuditing = (
@@ -759,7 +750,7 @@ const V1_deserializeAuditing = (
       return deserialize(V1_dateTimeAuditingModelSchema, json);
     default:
       throw new UnsupportedOperationError(
-        `Unable to deserialize auditing '${json._type}'`,
+        `Can't deserialize auditing '${json._type}'`,
       );
   }
 };
@@ -821,7 +812,7 @@ const V1_serializeTransactionMilestoning = (
     );
   }
   throw new UnsupportedOperationError(
-    `Unable to serialize transaction milestoning`,
+    `Can't serialize transaction milestoning`,
     protocol,
   );
 };
@@ -841,7 +832,7 @@ const V1_deserializeTransactionMilestoning = (
       );
     default:
       throw new UnsupportedOperationError(
-        `Unable to deserialize transaction milestoning '${json._type}'`,
+        `Can't deserialize transaction milestoning '${json._type}'`,
       );
   }
 };
@@ -876,7 +867,7 @@ const V1_serializeValidityMilestoning = (
     return serialize(V1_dateTimeValidityMilestoningModelSchema, protocol);
   }
   throw new UnsupportedOperationError(
-    `Unable to serialize validity milestoning`,
+    `Can't serialize validity milestoning`,
     protocol,
   );
 };
@@ -889,7 +880,7 @@ const V1_deserializeValidityMilestoning = (
       return deserialize(V1_dateTimeValidityMilestoningModelSchema, json);
     default:
       throw new UnsupportedOperationError(
-        `Unable to deserialize validity milestoning '${json._type}'`,
+        `Can't deserialize validity milestoning '${json._type}'`,
       );
   }
 };
@@ -934,7 +925,7 @@ const V1_serializeValidityDerivation = (
     );
   }
   throw new UnsupportedOperationError(
-    `Unable to serialize validity derivation`,
+    `Can't serialize validity derivation`,
     protocol,
   );
 };
@@ -952,7 +943,7 @@ const V1_deserializeValidityDerivation = (
       );
     default:
       throw new UnsupportedOperationError(
-        `Unable to deserialize validity derivation '${json._type}'`,
+        `Can't deserialize validity derivation '${json._type}'`,
       );
   }
 };
