@@ -16,7 +16,7 @@
 
 import packageJson from '../../../../package.json';
 
-import { Persistence } from '../../metamodels/pure/model/packageableElements/persistence/Persistence';
+import { Persistence } from '../../metamodels/pure/model/packageableElements/persistence/DSLPersistence_Persistence';
 import { V1_Persistence } from './v1/model/packageableElements/persistence/V1_Persistence';
 import {
   V1_PERSISTENCE_ELEMENT_PROTOCOL_TYPE,

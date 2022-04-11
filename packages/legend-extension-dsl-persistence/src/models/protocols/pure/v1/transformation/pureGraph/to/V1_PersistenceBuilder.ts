@@ -63,54 +63,73 @@ import {
   V1_ValidityDerivation,
   V1_ValidityMilestoning,
 } from '../../../model/packageableElements/persistence/V1_Persistence';
+
+import {
+  Auditing,
+  DateTimeAuditing,
+  NoAuditing,
+} from '../../../../../../metamodels/pure/model/packageableElements/persistence/DSLPersistence_Auditing';
 import {
   AnyVersionDeduplicationStrategy,
+  DeduplicationStrategy,
+  DuplicateCountDeduplicationStrategy,
+  MaxVersionDeduplicationStrategy,
+  NoDeduplicationStrategy,
+} from '../../../../../../metamodels/pure/model/packageableElements/persistence/DSLPersistence_DeduplicationStrategy';
+import {
   AppendOnly,
-  Auditing,
-  BatchIdAndDateTimeTransactionMilestoning,
-  BatchIdTransactionMilestoning,
-  BatchPersister,
   BitemporalDelta,
   BitemporalSnapshot,
-  CronTrigger,
-  DateTimeAuditing,
-  DateTimeTransactionMilestoning,
-  DateTimeValidityMilestoning,
-  DeduplicationStrategy,
-  DeleteIndicatorMergeStrategy,
-  DuplicateCountDeduplicationStrategy,
-  EmailNotifyee,
-  FlatTarget,
   IngestMode,
-  ManualTrigger,
-  MaxVersionDeduplicationStrategy,
-  MergeStrategy,
-  MultiFlatTarget,
-  MultiFlatTargetPart,
-  NoAuditing,
-  NoDeduplicationStrategy,
-  NoDeletesMergeStrategy,
   NontemporalDelta,
   NontemporalSnapshot,
-  Notifier,
-  Notifyee,
-  ObjectStorageSink,
-  PagerDutyNotifyee,
-  Persister,
-  RelationalSink,
-  Sink,
-  SourceSpecifiesFromAndThruDateTime,
-  SourceSpecifiesFromDateTime,
-  StreamingPersister,
-  TargetShape,
-  TransactionMilestoning,
-  TransactionScope,
-  Trigger,
   UnitemporalDelta,
   UnitemporalSnapshot,
+} from '../../../../../../metamodels/pure/model/packageableElements/persistence/DSLPersistence_IngestMode';
+import {
+  DeleteIndicatorMergeStrategy,
+  MergeStrategy,
+  NoDeletesMergeStrategy,
+} from '../../../../../../metamodels/pure/model/packageableElements/persistence/DSLPersistence_MergeStrategy';
+import {
+  BatchIdAndDateTimeTransactionMilestoning,
+  BatchIdTransactionMilestoning,
+  DateTimeTransactionMilestoning,
+  DateTimeValidityMilestoning,
+  SourceSpecifiesFromAndThruDateTime,
+  SourceSpecifiesFromDateTime,
+  TransactionMilestoning,
   ValidityDerivation,
   ValidityMilestoning,
-} from '../../../../../../metamodels/pure/model/packageableElements/persistence/Persistence';
+} from '../../../../../../metamodels/pure/model/packageableElements/persistence/DSLPersistence_Milestoning';
+import {
+  EmailNotifyee,
+  Notifier,
+  Notifyee,
+  PagerDutyNotifyee,
+} from '../../../../../../metamodels/pure/model/packageableElements/persistence/DSLPersistence_Notifier';
+import {
+  BatchPersister,
+  Persister,
+  StreamingPersister,
+} from '../../../../../../metamodels/pure/model/packageableElements/persistence/DSLPersistence_Persister';
+import {
+  ObjectStorageSink,
+  RelationalSink,
+  Sink,
+} from '../../../../../../metamodels/pure/model/packageableElements/persistence/DSLPersistence_Sink';
+import {
+  FlatTarget,
+  MultiFlatTarget,
+  MultiFlatTargetPart,
+  TargetShape,
+  TransactionScope,
+} from '../../../../../../metamodels/pure/model/packageableElements/persistence/DSLPersistence_TargetShape';
+import {
+  CronTrigger,
+  ManualTrigger,
+  Trigger,
+} from '../../../../../../metamodels/pure/model/packageableElements/persistence/DSLPersistence_Trigger';
 import { getPersistence } from '../../../../../../../graphManager/DSLPersistence_GraphManagerHelper';
 import type {
   Binding,

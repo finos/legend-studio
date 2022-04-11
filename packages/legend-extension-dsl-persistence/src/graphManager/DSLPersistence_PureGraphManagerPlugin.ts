@@ -15,7 +15,8 @@
  */
 
 import packageJson from '../../package.json';
-import { Persistence } from '../models/metamodels/pure/model/packageableElements/persistence/Persistence';
+import { Persistence } from '../models/metamodels/pure/model/packageableElements/persistence/DSLPersistence_Persistence';
+import { observe_Persistence } from './action/changeDetection/DSLPersistence_ObserverHelper';
 import {
   PureGraphManagerPlugin,
   type PackageableElement,
@@ -23,7 +24,6 @@ import {
   ElementObserver,
   ObserverContext,
 } from '@finos/legend-graph';
-import { observe_Persistence } from './action/changeDetection/DSLPersistence_ObserverHelper';
 
 const PURE_GRAMMAR_PERSISTENCE_PARSER_NAME = 'Persistence';
 const PURE_GRAMMAR_PERSISTENCE_ELEMENT_TYPE_LABEL = 'Persistence';

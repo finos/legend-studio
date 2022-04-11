@@ -30,7 +30,7 @@ import {
   LegendStudioPlugin,
   UnsupportedElementEditorState,
 } from '@finos/legend-studio';
-import { Persistence } from '../../models/metamodels/pure/model/packageableElements/persistence/Persistence';
+import { Persistence } from '../../models/metamodels/pure/model/packageableElements/persistence/DSLPersistence_Persistence';
 
 const PERSISTENCE_ELEMENT_TYPE = 'PERSISTENCE';
 const PERSISTENCE_ELEMENT_PROJECT_EXPLORER_DND_TYPE =
