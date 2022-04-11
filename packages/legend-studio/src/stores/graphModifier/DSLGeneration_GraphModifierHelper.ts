@@ -26,6 +26,7 @@ import {
   observe_PackageableElementReference,
   observe_FileGenerationSpecification,
   observe_GenerationTreeNode,
+  observe_ConfigurationProperty,
 } from '@finos/legend-graph';
 import {
   addUniqueEntry,
@@ -47,6 +48,16 @@ export const fileGeneration_setType = action(
     fg.type = value;
   },
 );
+
+export const fileGeneration_addConfigurationProperty = action(
+  (fg: FileGenerationSpecification, cp: ConfigurationProperty): void => {
+    addUniqueEntry(
+      fg.configurationProperties,
+      observe_ConfigurationProperty(cp),
+    );
+  },
+);
+
 export const fileGeneration_setGenerationOutputPath = action(
   (fg: FileGenerationSpecification, val?: string): void => {
     fg.generationOutputPath = val;
@@ -123,6 +134,11 @@ export const generationSpecification_addFileGeneration = action(
     );
   },
 );
+
+export const createObservableFileGeneration = action(() =>
+  observe_FileGenerationSpecification(new FileGenerationSpecification('')),
+);
+
 export const generationSpecification_deleteFileGeneration = action(
   (
     genSpec: GenerationSpecification,

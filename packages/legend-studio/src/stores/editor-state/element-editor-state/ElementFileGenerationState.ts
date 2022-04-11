@@ -24,7 +24,10 @@ import {
   PackageableElementExplicitReference,
 } from '@finos/legend-graph';
 import { package_addElement } from '../../graphModifier/DomainGraphModifierHelper';
-import { fileGeneration_setType } from '../../graphModifier/DSLGeneration_GraphModifierHelper';
+import {
+  createObservableFileGeneration,
+  fileGeneration_setType,
+} from '../../graphModifier/DSLGeneration_GraphModifierHelper';
 
 export class ElementFileGenerationState {
   uuid = uuid();
@@ -43,7 +46,7 @@ export class ElementFileGenerationState {
 
     this.editorStore = editorStore;
     this.fileGenerationType = fileGenerationType;
-    const fileGeneration = new FileGenerationSpecification('');
+    const fileGeneration = createObservableFileGeneration();
     fileGeneration_setType(fileGeneration, fileGenerationType);
     this.fileGenerationState = new FileGenerationState(
       editorStore,
