@@ -61,6 +61,8 @@ import {
   TYPICAL_MULTIPLICITY_TYPE,
   MILESTONING_STEROTYPES,
   VariableExpression,
+  observe_ValueSpecification,
+  ObserverContext,
 } from '@finos/legend-graph';
 import {
   QueryBuilderFilterOperator_Equal,
@@ -162,6 +164,7 @@ export class QueryBuilderState {
   resultState: QueryBuilderResultState;
   queryTextEditorState: QueryTextEditorState;
   queryUnsupportedState: QueryBuilderUnsupportedState;
+  observableContext: ObserverContext;
   filterOperators: QueryBuilderFilterOperator[] = [
     new QueryBuilderFilterOperator_Equal(),
     new QueryBuilderFilterOperator_NotEqual(),
@@ -260,6 +263,9 @@ export class QueryBuilderState {
     this.queryTextEditorState = new QueryTextEditorState(this);
     this.queryUnsupportedState = new QueryBuilderUnsupportedState(this);
     this.mode = queryBuilderMode;
+    this.observableContext = new ObserverContext(
+      this.graphManagerState.pluginManager.getPureGraphManagerPlugins(),
+    );
   }
 
   setMode(val: QueryBuilderMode): void {
@@ -335,9 +341,12 @@ export class QueryBuilderState {
       this.changeClass(undefined, true);
       const parameters = ((rawLambda.parameters ?? []) as object[]).map(
         (param) =>
-          this.graphManagerState.graphManager.buildValueSpecification(
-            param as Record<PropertyKey, unknown>,
-            this.graphManagerState.graph,
+          observe_ValueSpecification(
+            this.graphManagerState.graphManager.buildValueSpecification(
+              param as Record<PropertyKey, unknown>,
+              this.graphManagerState.graph,
+            ),
+            this.observableContext,
           ),
       );
       processQueryParameters(
@@ -367,13 +376,15 @@ export class QueryBuilderState {
     this.resetQueryBuilder();
     this.resetQuerySetup();
     if (!rawLambda.isStub) {
-      const valueSpec =
+      const valueSpec = observe_ValueSpecification(
         this.graphManagerState.graphManager.buildValueSpecification(
           this.graphManagerState.graphManager.serializeRawValueSpecification(
             rawLambda,
           ),
           this.graphManagerState.graph,
-        );
+        ),
+        this.observableContext,
+      );
       const compiledValueSpecification = guaranteeType(
         valueSpec,
         LambdaFunctionInstanceValue,
