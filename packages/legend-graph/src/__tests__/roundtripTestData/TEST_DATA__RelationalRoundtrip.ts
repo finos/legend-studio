@@ -4037,6 +4037,30 @@ export const TEST_DATA__RelationalDatabaseConnectionRoundtrip = [
     },
     classifierPath: 'meta::pure::runtime::PackageableConnection',
   },
+  {
+    path: 'apps::myBigQuery',
+    content: {
+      _type: 'connection',
+      connectionValue: {
+        _type: 'RelationalDatabaseConnection',
+        authenticationStrategy: {
+          _type: 'gcpApplicationDefaultCredentials',
+        },
+        datasourceSpecification: {
+          _type: 'bigQuery',
+          defaultDataset: 'legend_testing_dataset',
+          projectId: 'legend-integration-testing',
+          proxyHost: 'proxy-host',
+          proxyPort: '8080',
+        },
+        element: 'apps::pure::studio::relational::tests::dbInc',
+        type: 'BigQuery',
+      },
+      name: 'myBigQuery',
+      package: 'apps',
+    },
+    classifierPath: 'meta::pure::runtime::PackageableConnection',
+  },
 ];
 
 export const TEST_DATA__RelationalInputData = [
