@@ -157,9 +157,7 @@ export const V1_transformTrigger = (
   } else if (element instanceof ManualTrigger) {
     return new V1_ManualTrigger();
   }
-  throw new UnsupportedOperationError(
-    `Unable to transform trigger '${element}'`,
-  );
+  throw new UnsupportedOperationError(`Can't transform trigger '${element}'`);
 };
 
 /**********
@@ -184,9 +182,7 @@ export const V1_transformPersister = (
     );
     return protocol;
   }
-  throw new UnsupportedOperationError(
-    `Unable to transform persister '${element}'`,
-  );
+  throw new UnsupportedOperationError(`Can't transform persister '${element}'`);
 };
 
 /**********
@@ -217,9 +213,7 @@ export const V1_transformNotifyee = (
     protocol.url = element.url;
     return protocol;
   }
-  throw new UnsupportedOperationError(
-    `Unable to transform notifyee '${element}'`,
-  );
+  throw new UnsupportedOperationError(`Can't transform notifyee '${element}'`);
 };
 
 /**********
@@ -235,7 +229,7 @@ export const V1_transformSink = (
   } else if (element instanceof ObjectStorageSink) {
     return V1_transformObjectStorageSink(element, context);
   }
-  throw new UnsupportedOperationError(`Unable to transform sink '${element}'`);
+  throw new UnsupportedOperationError(`Can't transform sink '${element}'`);
 };
 
 export const V1_transformRelationalSink = (
@@ -281,7 +275,7 @@ export const V1_transformTargetShape = (
     return V1_transformMultiFlatTarget(element, context);
   }
   throw new UnsupportedOperationError(
-    `Unable to transform target shape '${element}'`,
+    `Can't transform target shape '${element}'`,
   );
 };
 
@@ -343,7 +337,7 @@ export const V1_transformTransactionScope = (
     return V1_TransactionScope.ALL_TARGETS;
   }
   throw new UnsupportedOperationError(
-    `Unable to transform transaction scope '${element}'`,
+    `Can't transform transaction scope '${element}'`,
   );
 };
 
@@ -369,7 +363,7 @@ export const V1_transformDeduplicationStrategy = (
     return protocol;
   }
   throw new UnsupportedOperationError(
-    `Unable to transform deduplicationStrategy '${element}'`,
+    `Can't transform deduplicationStrategy '${element}'`,
   );
 };
 
@@ -444,7 +438,7 @@ export const V1_transformIngestMode = (
     return protocol;
   }
   throw new UnsupportedOperationError(
-    `Unable to transform ingest mode '${element}'`,
+    `Can't transform ingest mode '${element}'`,
   );
 };
 
@@ -463,7 +457,7 @@ export const V1_transformMergeStrategy = (
     return protocol;
   }
   throw new UnsupportedOperationError(
-    `Unable to transform merge strategy '${element}'`,
+    `Can't transform merge strategy '${element}'`,
   );
 };
 
@@ -482,9 +476,7 @@ export const V1_transformAuditing = (
     protocol.dateTimeField = element.dateTimeField;
     return protocol;
   }
-  throw new UnsupportedOperationError(
-    `Unable to transform auditing '${element}'`,
-  );
+  throw new UnsupportedOperationError(`Can't transform auditing '${element}'`);
 };
 
 /**********
@@ -514,7 +506,7 @@ export const V1_transformTransactionMilestoning = (
     return protocol;
   }
   throw new UnsupportedOperationError(
-    `Unable to transform transaction milestoning '${element}'`,
+    `Can't transform transaction milestoning '${element}'`,
   );
 };
 
@@ -537,7 +529,7 @@ export const V1_transformValidityMilestoning = (
     return protocol;
   }
   throw new UnsupportedOperationError(
-    `Unable to transform validity milestoning '${element}'`,
+    `Can't transform validity milestoning '${element}'`,
   );
 };
 
@@ -556,6 +548,6 @@ export const V1_transformValidityDerivation = (
     return protocol;
   }
   throw new UnsupportedOperationError(
-    `Unable to transform validity derivation '${element}'`,
+    `Can't transform validity derivation '${element}'`,
   );
 };

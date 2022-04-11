@@ -112,16 +112,18 @@ import {
   ValidityMilestoning,
 } from '../../../../../../metamodels/pure/model/packageableElements/persistence/Persistence';
 import { getPersistence } from '../../../../../../../graphManager/DSLPersistence_GraphManagerHelper';
-import {
+import type {
   Binding,
   Connection,
-  GraphBuilderError,
   PackageableElementImplicitReference,
   V1_Connection,
-  type V1_GraphBuilderContext,
+  V1_GraphBuilderContext,
 } from '@finos/legend-graph';
 import { V1_ProtocolToMetaModelConnectionBuilder } from '@finos/legend-graph/lib/models/protocols/pure/v1/transformation/pureGraph/to/V1_ProtocolToMetaModelConnectionBuilder';
-import { guaranteeNonEmptyString } from '@finos/legend-shared';
+import {
+  guaranteeNonEmptyString,
+  UnsupportedOperationError,
+} from '@finos/legend-shared';
 
 /**********
  * persistence
@@ -162,7 +164,7 @@ export const V1_buildTrigger = (
   } else if (protocol instanceof V1_ManualTrigger) {
     return new ManualTrigger();
   }
-  throw new GraphBuilderError(`Unrecognized trigger '${protocol}'`);
+  throw new UnsupportedOperationError(`Can't build trigger`, protocol);
 };
 
 /**********
@@ -184,7 +186,7 @@ export const V1_buildPersister = (
     persister.targetShape = V1_buildTargetShape(protocol.targetShape, context);
     return persister;
   }
-  throw new GraphBuilderError(`Unrecognized persister '${protocol}'`);
+  throw new UnsupportedOperationError(`Can't build persister`, protocol);
 };
 
 /**********
@@ -215,7 +217,7 @@ export const V1_buildNotifyee = (
     notifyee.url = protocol.url;
     return notifyee;
   }
-  throw new GraphBuilderError(`Unrecognized notifier '${protocol}'`);
+  throw new UnsupportedOperationError(`Can't build notifier`, protocol);
 };
 
 /**********
@@ -231,7 +233,7 @@ export const V1_buildSink = (
   } else if (protocol instanceof V1_ObjectStorageSink) {
     return V1_buildObjectStorageSink(protocol, context);
   }
-  throw new GraphBuilderError(`Unrecognized sink '${protocol}'`);
+  throw new UnsupportedOperationError(`Can't build sink`, protocol);
 };
 
 export const V1_buildRelationalSink = (
@@ -284,7 +286,7 @@ export const V1_buildTargetShape = (
   } else if (protocol instanceof V1_MultiFlatTarget) {
     return V1_buildMultiFlatTarget(protocol, context);
   }
-  throw new GraphBuilderError(`Unrecognized target shape '${protocol}'`);
+  throw new UnsupportedOperationError(`Can't build target shape`, protocol);
 };
 
 export const V1_buildFlatTarget = (
@@ -346,7 +348,10 @@ export const V1_buildTransactionScope = (
   } else if (protocol === V1_TransactionScope.ALL_TARGETS) {
     return TransactionScope.ALL_TARGETS;
   }
-  throw new GraphBuilderError(`Unrecognized transaction scope '${protocol}'`);
+  throw new UnsupportedOperationError(
+    `Can't build transaction scope`,
+    protocol,
+  );
 };
 
 /**********
@@ -370,8 +375,9 @@ export const V1_buildDeduplicationStrategy = (
     strategy.duplicateCountName = protocol.duplicateCountName;
     return strategy;
   }
-  throw new GraphBuilderError(
-    `Unrecognized deduplication strategy '${protocol}'`,
+  throw new UnsupportedOperationError(
+    `Can't build deduplication strategy`,
+    protocol,
   );
 };
 
@@ -445,7 +451,7 @@ export const V1_buildIngestMode = (
     ingestMode.filterDuplicates = protocol.filterDuplicates;
     return ingestMode;
   }
-  throw new GraphBuilderError(`Unrecognized ingest mode '${protocol}'`);
+  throw new UnsupportedOperationError(`Can't build ingest mode`, protocol);
 };
 
 // merge strategy
@@ -462,7 +468,7 @@ export const V1_buildMergeStrategy = (
     strategy.deleteValues = protocol.deleteValues;
     return strategy;
   }
-  throw new GraphBuilderError(`Unrecognized merge strategy '${protocol}'`);
+  throw new UnsupportedOperationError(`Can't build merge strategy`, protocol);
 };
 
 /**********
@@ -480,7 +486,7 @@ export const V1_buildAuditing = (
     auditing.dateTimeField = protocol.dateTimeField;
     return auditing;
   }
-  throw new GraphBuilderError(`Unrecognized auditing mode '${protocol}'`);
+  throw new UnsupportedOperationError(`Can't build auditing mode`, protocol);
 };
 
 /**********
@@ -509,8 +515,9 @@ export const V1_buildTransactionMilestoning = (
     milestoning.dateTimeOutName = protocol.dateTimeOutName;
     return milestoning;
   }
-  throw new GraphBuilderError(
-    `Unrecognized transaction milestoning mode '${protocol}'`,
+  throw new UnsupportedOperationError(
+    `Can't build transaction milestoning mode`,
+    protocol,
   );
 };
 
@@ -532,8 +539,9 @@ export const V1_buildValidityMilestoning = (
     );
     return milestoning;
   }
-  throw new GraphBuilderError(
-    `Unrecognized validity milestoning mode '${protocol}'`,
+  throw new UnsupportedOperationError(
+    `Can't build validity milestoning mode`,
+    protocol,
   );
 };
 
@@ -551,7 +559,8 @@ export const V1_buildValidityDerivation = (
     derivation.sourceDateTimeThruField = protocol.sourceDateTimeThruField;
     return derivation;
   }
-  throw new GraphBuilderError(
-    `Unrecognized validity derivation mode '${protocol}'`,
+  throw new UnsupportedOperationError(
+    `Can't build validity derivation mode`,
+    protocol,
   );
 };
