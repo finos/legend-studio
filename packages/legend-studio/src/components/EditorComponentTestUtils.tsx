@@ -45,6 +45,7 @@ import {
   WorkspaceType,
   TEST__SDLCServerClientProvider,
   TEST__getTestSDLCServerClient,
+  SDLCServerFeaturesConfiguration,
 } from '@finos/legend-server-sdlc';
 import {
   type ImportConfigurationDescription,
@@ -256,6 +257,8 @@ export const TEST__setUpEditor = async (
   // mock editor initialization data
 
   MOBX__enableSpyOrMock();
+
+  // SDLC
   jest
     .spyOn(mockedEditorStore.sdlcServerClient, 'getProject')
     .mockResolvedValue(project);
@@ -289,6 +292,12 @@ export const TEST__setUpEditor = async (
       'getLatestProjectStructureVersion',
     )
     .mockResolvedValue(latestProjectStructureVersion);
+  mockedEditorStore.sdlcServerClient._setFeatures(
+    SDLCServerFeaturesConfiguration.serialization.fromJson({
+      canCreateProject: true,
+      canCreateVersion: true,
+    }),
+  );
 
   // depot
   jest

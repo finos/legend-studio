@@ -90,6 +90,13 @@ export class SDLCServerClient extends AbstractServerClient {
     this.currentUser = value;
   };
 
+  /**
+   * NOTE: Should only be used for test
+   */
+  _setFeatures(val: SDLCServerFeaturesConfiguration): void {
+    this._features = val;
+  }
+
   get features(): SDLCServerFeaturesConfiguration {
     return guaranteeNonNullable(
       this._features,
