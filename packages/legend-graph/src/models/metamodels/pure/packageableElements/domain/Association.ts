@@ -61,9 +61,9 @@ const initAssociationProperties = (
  * of dependency between project. Imagine we create association between classes in project and system
  * or project dependencies. As such, in the app, we have to make it very clear that we prohibits this.
  *
- * TODO: we must change backend to do compilation check whether association refers to a class from a different
- * project
- * FIXME: we can make use of the root package to verify this in the UI and make this a validation error in a way.
+ * TODO: We probably should change backend to do compilation check whether association refers
+ * to a class from a different project. Here, while building the graph, we can make use of the
+ * root package to verify this in the UI and make this a validation error in a way.
  */
 export class Association
   extends PackageableElement

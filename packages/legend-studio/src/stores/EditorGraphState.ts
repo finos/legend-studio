@@ -310,7 +310,7 @@ export class EditorGraphState {
           `Can't build graph. Error: ${error.message}`,
         );
       } else {
-        // FIXME: we should split this into 2 notifications when we support multiple notifications
+        // TODO: we should split this into 2 notifications when we support multiple notifications
         this.editorStore.applicationStore.notifyError(
           `Can't build graph. Redirected to text mode for debugging. Error: ${error.message}`,
         );
@@ -450,7 +450,7 @@ export class EditorGraphState {
     }
   }
 
-  // FIXME: when we support showing multiple notifications, we can take this options out as the only users of this
+  // TODO: when we support showing multiple notifications, we can take this options out as the only users of this
   // is delete element flow, where we want to say `re-compiling graph after deletion`, but because compilation
   // sometimes is so fast, the message flashes, so we want to combine with the message in this method
   *globalCompileInFormMode(options?: {
@@ -528,7 +528,7 @@ export class EditorGraphState {
 
       // decide if we need to fall back to text mode for debugging
       if (fallbackToTextModeForDebugging) {
-        // FIXME: when we support showing multiple notifications, we can split this into 2
+        // TODO: when we support showing multiple notifications, we can split this into 2
         this.editorStore.applicationStore.notifyWarning(
           options?.message ??
             'Compilation failed and error cannot be located in form mode. Redirected to text mode for debugging.',
@@ -563,7 +563,7 @@ export class EditorGraphState {
     }
   }
 
-  // FIXME: when we support showing multiple notifications, we can take this `suppressCompilationFailureMessage` out as
+  // TODO: when we support showing multiple notifications, we can take this `suppressCompilationFailureMessage` out as
   // we can show the transition between form mode and text mode warning and the compilation failure warning at the same time
   *globalCompileInTextMode(options?: {
     ignoreBlocking?: boolean;
@@ -663,7 +663,7 @@ export class EditorGraphState {
           error,
         );
         if (this.editorStore.graphManagerState.graph.buildState.hasFailed) {
-          // FIXME when we support showing multiple notification, we can split this into 2 messages
+          // TODO: when we support showing multiple notification, we can split this into 2 messages
           this.editorStore.applicationStore.notifyWarning(
             `Can't build graph, please resolve compilation error before leaving text mode. Compilation failed with error: ${error.message}`,
           );
@@ -845,11 +845,12 @@ export class EditorGraphState {
       // this.editorStore.explorerTreeState.buildImmutableModelTrees();
       // this.editorStore.explorerTreeState.build();
 
-      // FIXME: we allow this so the UX stays the same but this causes memory leak
+      // FIXME: we allow this so the UX stays the same but this can cause memory leak
       // do this properly using node IDs -> this causes mem-leak right now
       this.editorStore.explorerTreeState.reprocess();
+
       // Reprocess editor states
-      // FIXME: we allow this so the UX stays the same but this causes memory leak
+      // FIXME: we allow this so the UX stays the same but this can cause memory leak
       // we should change `reprocess` model to do something like having source information on the form to navigate to it properly
 
       /* @MARKER: MEMORY-SENSITIVE */
@@ -949,7 +950,7 @@ export class EditorGraphState {
 
       /* @MARKER: MEMORY-SENSITIVE */
       // Reprocess explorer tree
-      // FIXME: we allow this so the UX stays the same but this causes memory leak
+      // FIXME: we allow this so the UX stays the same but this can cause memory leak
       // we should change `reprocess` model to do something like having source information on the form to navigate to it properly
       this.editorStore.explorerTreeState.reprocess();
 

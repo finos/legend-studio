@@ -1223,7 +1223,7 @@ export class EditorStore {
     );
   }
 
-  // FIXME: to be removed when we process editor states properly
+  // TODO: to be removed when we process editor states properly
   reprocessElementEditorState = (
     editorState: EditorState,
   ): EditorState | undefined => {
@@ -1243,7 +1243,7 @@ export class EditorStore {
     return undefined;
   };
 
-  // FIXME: to be removed when we process editor states properly
+  // TODO: to be removed when we process editor states properly
   findCurrentEditorState = (
     editor: EditorState | undefined,
   ): EditorState | undefined => {
@@ -1283,7 +1283,7 @@ export class EditorStore {
       if (preventDefault) {
         event?.preventDefault();
       }
-      // FIXME: maybe we should come up with a better way to block global hot keys, this seems highly restrictive.
+      // TODO: maybe we should come up with a better way to block global hot keys, this seems highly restrictive.
       const isResolvingConflicts =
         this.isInConflictResolutionMode &&
         !this.conflictResolutionState.hasResolvedAllConflicts;
