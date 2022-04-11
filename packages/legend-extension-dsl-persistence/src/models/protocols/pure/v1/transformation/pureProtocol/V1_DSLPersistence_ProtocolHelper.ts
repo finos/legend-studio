@@ -14,54 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  V1_AnyVersionDeduplicationStrategy,
-  V1_AppendOnly,
-  V1_Auditing,
-  V1_BatchIdAndDateTimeTransactionMilestoning,
-  V1_BatchIdTransactionMilestoning,
-  V1_BatchPersister,
-  V1_BitemporalDelta,
-  V1_BitemporalSnapshot,
-  V1_CronTrigger,
-  V1_DateTimeAuditing,
-  V1_DateTimeTransactionMilestoning,
-  V1_DateTimeValidityMilestoning,
-  V1_DeduplicationStrategy,
-  V1_DeleteIndicatorMergeStrategy,
-  V1_DuplicateCountDeduplicationStrategy,
-  V1_EmailNotifyee,
-  V1_FlatTarget,
-  V1_IngestMode,
-  V1_ManualTrigger,
-  V1_MaxVersionDeduplicationStrategy,
-  V1_MergeStrategy,
-  V1_MultiFlatTarget,
-  V1_MultiFlatTargetPart,
-  V1_NoAuditing,
-  V1_NoDeduplicationStrategy,
-  V1_NoDeletesMergeStrategy,
-  V1_NontemporalDelta,
-  V1_NontemporalSnapshot,
-  V1_Notifier,
-  V1_Notifyee,
-  V1_ObjectStorageSink,
-  V1_PagerDutyNotifyee,
-  V1_Persistence,
-  V1_Persister,
-  V1_RelationalSink,
-  V1_Sink,
-  V1_SourceSpecifiesFromAndThruDateTime,
-  V1_SourceSpecifiesFromDateTime,
-  V1_StreamingPersister,
-  V1_TargetShape,
-  V1_TransactionMilestoning,
-  V1_Trigger,
-  V1_UnitemporalDelta,
-  V1_UnitemporalSnapshot,
-  V1_ValidityDerivation,
-  V1_ValidityMilestoning,
-} from '../../model/packageableElements/persistence/V1_Persistence';
+import { V1_Persistence } from '../../model/packageableElements/persistence/V1_DSLPersistence_Persistence';
 import type { PureProtocolProcessorPlugin } from '@finos/legend-graph';
 import {
   V1_deserializeConnectionValue,
@@ -85,6 +38,71 @@ import {
   serialize,
   SKIP,
 } from 'serializr';
+import {
+  V1_CronTrigger,
+  V1_ManualTrigger,
+  V1_Trigger,
+} from '../../model/packageableElements/persistence/V1_DSLPersistence_Trigger';
+import {
+  V1_EmailNotifyee,
+  V1_Notifier,
+  V1_Notifyee,
+  V1_PagerDutyNotifyee,
+} from '../../model/packageableElements/persistence/V1_DSLPersistence_Notifier';
+import {
+  V1_ObjectStorageSink,
+  V1_RelationalSink,
+  V1_Sink,
+} from '../../model/packageableElements/persistence/V1_DSLPersistence_Sink';
+import {
+  V1_AnyVersionDeduplicationStrategy,
+  V1_DeduplicationStrategy,
+  V1_DuplicateCountDeduplicationStrategy,
+  V1_MaxVersionDeduplicationStrategy,
+  V1_NoDeduplicationStrategy,
+} from '../../model/packageableElements/persistence/V1_DSLPersistence_DeduplicationStrategy';
+import {
+  V1_Auditing,
+  V1_DateTimeAuditing,
+  V1_NoAuditing,
+} from '../../model/packageableElements/persistence/V1_DSLPersistence_Auditing';
+import {
+  V1_FlatTarget,
+  V1_MultiFlatTarget,
+  V1_MultiFlatTargetPart,
+  V1_TargetShape,
+} from '../../model/packageableElements/persistence/V1_DSLPersistence_TargetShape';
+import {
+  V1_DeleteIndicatorMergeStrategy,
+  V1_MergeStrategy,
+  V1_NoDeletesMergeStrategy,
+} from '../../model/packageableElements/persistence/V1_DSLPersistence_MergeStrategy';
+import {
+  V1_BatchIdAndDateTimeTransactionMilestoning,
+  V1_BatchIdTransactionMilestoning,
+  V1_DateTimeTransactionMilestoning,
+  V1_DateTimeValidityMilestoning,
+  V1_SourceSpecifiesFromAndThruDateTime,
+  V1_SourceSpecifiesFromDateTime,
+  V1_TransactionMilestoning,
+  V1_ValidityDerivation,
+  V1_ValidityMilestoning,
+} from '../../model/packageableElements/persistence/V1_DSLPersistence_Milestoning';
+import {
+  V1_AppendOnly,
+  V1_BitemporalDelta,
+  V1_BitemporalSnapshot,
+  V1_IngestMode,
+  V1_NontemporalDelta,
+  V1_NontemporalSnapshot,
+  V1_UnitemporalDelta,
+  V1_UnitemporalSnapshot,
+} from '../../model/packageableElements/persistence/V1_DSLPersistence_IngestMode';
+import {
+  V1_BatchPersister,
+  V1_Persister,
+  V1_StreamingPersister,
+} from '../../model/packageableElements/persistence/V1_DSLPersistence_Persister';
 
 /**********
  * persistence
