@@ -32,7 +32,7 @@ pluginManager
   ])
   .install();
 
-test(unitTest('Persistence roundtrip'), async () => {
+test(unitTest('DSL Persistence roundtrip'), async () => {
   await TEST__checkBuildingElementsRoundtrip(
     TEST_DATA__roundtrip as Entity[],
     pluginManager,
