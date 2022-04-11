@@ -16,7 +16,6 @@
 
 import { list, createModelSchema, primitive } from 'serializr';
 import { observable, action, computed, makeObservable } from 'mobx';
-import type { ProjectType } from '../project/Project';
 import { ProjectStructureVersion } from '../configuration/ProjectStructureVersion';
 import { ProjectDependency } from '../configuration/ProjectDependency';
 import {
@@ -33,7 +32,6 @@ const PROJECT_CONFIGURATION_HASH_STRUCTURE = 'PROJECT_CONFIGURATION';
 
 export class ProjectConfiguration implements Hashable {
   projectId!: string;
-  projectType!: ProjectType;
   groupId!: string;
   artifactId!: string;
   projectStructureVersion!: ProjectStructureVersion;
@@ -65,7 +63,6 @@ export class ProjectConfiguration implements Hashable {
       projectStructureVersion: usingModelSchema(
         ProjectStructureVersion.serialization.schema,
       ),
-      projectType: primitive(),
     }),
   );
 
@@ -97,7 +94,6 @@ export class ProjectConfiguration implements Hashable {
       PROJECT_CONFIGURATION_HASH_STRUCTURE,
       this.groupId,
       this.artifactId,
-      this.projectType,
       this.projectStructureVersion.version.toString(),
       this.projectStructureVersion.extensionVersion?.toString() ?? '',
       hashArray(this.projectDependencies),

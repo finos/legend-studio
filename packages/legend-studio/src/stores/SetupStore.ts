@@ -30,7 +30,6 @@ import {
   WorkspaceType,
   ImportReport,
   Project,
-  ProjectType,
   Review,
   Workspace,
   WorkspaceAccessType,
@@ -46,15 +45,11 @@ interface ImportProjectSuccessReport {
 export interface ProjectOption {
   label: string;
   value: string;
-  disabled?: boolean | undefined;
-  tag: string;
 }
 
 const buildProjectOption = (project: Project): ProjectOption => ({
   label: project.name,
   value: project.projectId,
-  disabled: false,
-  tag: project.projectType,
 });
 
 export interface WorkspaceOption {
@@ -173,41 +168,13 @@ export class SetupStore {
     this.loadProjectsState.inProgress();
     try {
       const projects = (
-        (yield Promise.all(
-          [
-            this.sdlcServerClient.getProjects(
-              ProjectType.PRODUCTION,
-              undefined,
-              undefined,
-              undefined,
-            ),
-            this.sdlcServerClient.getProjects(
-              ProjectType.PROTOTYPE,
-              undefined,
-              undefined,
-              undefined,
-            ),
-          ].map((promise, idx) =>
-            promise.catch((error) => {
-              const wrappedError = new Error(
-                `Error fetching ${
-                  idx === 0 ? ProjectType.PRODUCTION : ProjectType.PROTOTYPE
-                } projects: ${error.message}`,
-              );
-              this.applicationStore.log.error(
-                LogEvent.create(
-                  LEGEND_STUDIO_APP_EVENT.WORKSPACE_SETUP_FAILURE,
-                ),
-                wrappedError,
-              );
-              this.applicationStore.notifyError(wrappedError);
-              return [];
-            }),
-          ),
-        )) as PlainObject<Project>[][]
-      )
-        .flat()
-        .map((project) => Project.serialization.fromJson(project));
+        (yield this.sdlcServerClient.getProjects(
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+        )) as PlainObject<Project>[]
+      ).map(Project.serialization.fromJson);
       const projectMap = observable<string, Project>(new Map());
       projects.forEach((project) => projectMap.set(project.projectId, project));
       this.projects = projectMap;
@@ -223,10 +190,6 @@ export class SetupStore {
     }
   }
 
-  /**
-   * As of now we only create PROTOTYPE project since the creating PRODUCTION projects is not straight forward
-   * we need to go to Gitlab, create a project there then associate that with SDLC server, etc.
-   */
   *createProject(
     name: string,
     description: string,
@@ -240,7 +203,6 @@ export class SetupStore {
         (yield this.sdlcServerClient.createProject({
           name,
           description,
-          type: ProjectType.PROTOTYPE,
           groupId,
           artifactId,
           tags,
@@ -276,7 +238,6 @@ export class SetupStore {
       const report = ImportReport.serialization.fromJson(
         (yield this.sdlcServerClient.importProject({
           id,
-          type: ProjectType.PRODUCTION,
           groupId,
           artifactId,
         })) as PlainObject<ImportReport>,
@@ -305,13 +266,7 @@ export class SetupStore {
 
   get projectOptions(): ProjectOption[] {
     return this.projects
-      ? Array.from(this.projects.values()).map((project) => ({
-          ...buildProjectOption(project),
-          disabled:
-            project.projectType === ProjectType.PROTOTYPE &&
-            this.applicationStore.config.options
-              .TEMPORARY__useSDLCProductionProjectsOnly,
-        }))
+      ? Array.from(this.projects.values()).map(buildProjectOption)
       : [];
   }
 

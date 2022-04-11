@@ -123,7 +123,7 @@ const setup = async (
 
 test(
   integrationTest(
-    'Service Editor basic registration functionality for PRODUCTION projects',
+    'Service Editor basic registration functionality for projects with versions',
   ),
   async () => {
     const mockedEditorStore = await setup(
@@ -131,7 +131,6 @@ test(
         projectId: 'PROD-19481',
         description: 'sdlcTesting',
         tags: [],
-        projectType: 'PRODUCTION',
         name: 'TEST_SDLC',
       },
       {
@@ -240,7 +239,7 @@ test(
 
 test(
   integrationTest(
-    'Service Editor basic general and registration functionality for PROTOTYPE projects',
+    'Service Editor basic general and registration functionality for projects without versions',
   ),
   async () => {
     const mockedEditorStore = await setup(

@@ -80,7 +80,6 @@ export const TEST_DATA__DefaultSDLCInfo = {
     projectId: 'UAT-2689',
     description: 'sdlcTesting',
     tags: [],
-    projectType: 'PROTOTYPE',
     name: 'TEST_SDLC',
   },
   workspace: {
@@ -99,7 +98,6 @@ export const TEST_DATA__DefaultSDLCInfo = {
   projectConfig: {
     projectStructureVersion: { version: 6, extensionVersion: 1 },
     projectId: 'UAT-2689',
-    projectType: 'PROTOTYPE',
     groupId: 'com.test',
     artifactId: 'string',
     projectDependencies: [],

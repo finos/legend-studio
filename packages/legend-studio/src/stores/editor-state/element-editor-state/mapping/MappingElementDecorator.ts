@@ -385,7 +385,7 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
         });
         return ePropertyMapping;
       } else if (propertyType instanceof Class) {
-        // FIXME flat data property mapping for complex property might change to use union.
+        // NOTE: flat data property mapping for complex property might change to use union.
         // As such, for now we won't support it, and will hide this from the UI for now. Since the exact playout of this is not known
         // we cannot do decoration as well.
 

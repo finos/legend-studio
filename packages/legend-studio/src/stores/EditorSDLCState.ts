@@ -37,7 +37,6 @@ import {
   type WorkspaceType,
   Workflow,
   Project,
-  ProjectType,
   Revision,
   RevisionAlias,
   Version,
@@ -74,10 +73,6 @@ export class EditorSDLCState {
     });
 
     this.editorStore = editorStore;
-  }
-
-  get isCurrentProjectInProduction(): boolean {
-    return this.currentProject?.projectType === ProjectType.PRODUCTION;
   }
 
   get activeProject(): Project {

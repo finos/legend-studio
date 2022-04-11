@@ -227,7 +227,8 @@ export class ProjectConfigurationEditorState extends EditorState {
     }
   }
 
-  // FIXME: we will probably need to remove this in the future when we have a better strategy for change detection and persistence of project config
+  // TODO: we will probably need to remove this in the future when we have a better strategy for change detection and persistence of project config
+  // See https://github.com/finos/legend-studio/issues/952
   *updateConfigs(): GeneratorFn<void> {
     this.isUpdatingConfiguration = true;
     try {

@@ -54,21 +54,7 @@ export class ServiceRegistrationEnvInfo {
   );
 }
 
-class ApplicationCoreOptions {
-  /**
-   * Allows disabling support for project creation.
-   *
-   * NOTE: when we properly partition Production and Prototype projects, we can remove this flag.
-   */
-  TEMPORARY__disableSDLCProjectCreation = false;
-  /**
-   * Allows disabling support for prototype projects as the UAT/QA env for SDLC is sometimes
-   * rather unstable
-   *
-   * NOTE: this flag will potentially be removed when we partition the projects by SDLC instance
-   * e.g. prototype projects only show up in UAT/QA environments, and PROD projects only shows up in PROD
-   */
-  TEMPORARY__useSDLCProductionProjectsOnly = false;
+class LegendStudioApplicationCoreOptions {
   /**
    * Allows enabling support for section index.
    *
@@ -94,9 +80,7 @@ class ApplicationCoreOptions {
   TEMPORARY__serviceRegistrationConfig: ServiceRegistrationEnvInfo[] = [];
 
   private static readonly serialization = new SerializationFactory(
-    createModelSchema(ApplicationCoreOptions, {
-      TEMPORARY__disableSDLCProjectCreation: optional(primitive()),
-      TEMPORARY__useSDLCProductionProjectsOnly: optional(primitive()),
+    createModelSchema(LegendStudioApplicationCoreOptions, {
       EXPERIMENTAL__enableFullGrammarImportSupport: optional(primitive()),
       TEMPORARY__disableRawLambdaResolver: optional(primitive()),
       TEMPORARY__serviceRegistrationConfig: list(
@@ -109,9 +93,11 @@ class ApplicationCoreOptions {
   );
 
   static create(
-    configData: PlainObject<ApplicationCoreOptions>,
-  ): ApplicationCoreOptions {
-    return ApplicationCoreOptions.serialization.fromJson(configData);
+    configData: PlainObject<LegendStudioApplicationCoreOptions>,
+  ): LegendStudioApplicationCoreOptions {
+    return LegendStudioApplicationCoreOptions.serialization.fromJson(
+      configData,
+    );
   }
 }
 
@@ -143,7 +129,7 @@ export interface LegendStudioConfigurationData
 }
 
 export class LegendStudioConfig extends LegendApplicationConfig {
-  readonly options = new ApplicationCoreOptions();
+  readonly options = new LegendStudioApplicationCoreOptions();
 
   readonly engineServerUrl: string;
   readonly engineQueryServerUrl?: string | undefined;
@@ -231,9 +217,9 @@ export class LegendStudioConfig extends LegendApplicationConfig {
       configData.depot.url,
       `Can't configure application: 'depot.url' field is missing or empty`,
     );
-    this.options = ApplicationCoreOptions.create(
+    this.options = LegendStudioApplicationCoreOptions.create(
       (configData.extensions?.core ??
-        {}) as PlainObject<ApplicationCoreOptions>,
+        {}) as PlainObject<LegendStudioApplicationCoreOptions>,
     );
   }
 

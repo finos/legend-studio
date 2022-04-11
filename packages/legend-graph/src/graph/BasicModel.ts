@@ -99,7 +99,7 @@ export abstract class BasicModel {
   root: Package;
   readonly extensions: PureGraphExtension<PackageableElement>[] = [];
 
-  // FIXME: to be moved, this is graph-manager logic and should be moved elsewhere
+  // TODO: to be moved, this is graph-manager logic and should be moved elsewhere
   buildState = ActionState.create();
 
   private elementSectionMap = new Map<string, Section>();

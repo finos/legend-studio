@@ -199,7 +199,7 @@ export const generateLanguageMonarch = (
     tokenizer: {
       root: [
         // multiplicity
-        // FIXME: this as it can clash with array of numbers
+        // TODO: this as it can clash with array of numbers
         [/@multiplicity/, 'multiplicity'],
 
         // packages

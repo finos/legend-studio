@@ -144,11 +144,8 @@ export class ServiceRegistrationState {
     this.setServiceExecutionMode(this.executionModes[0]);
   }
 
-  /**
-   * NOTE: For Prototype projects, only fully-interactive mode is supported
-   */
   get options(): ServiceRegistrationEnvInfo[] {
-    if (this.editorStore.sdlcState.isCurrentProjectInProduction) {
+    if (this.editorStore.sdlcServerClient.features.canCreateVersion) {
       return this.editorStore.applicationStore.config.options
         .TEMPORARY__serviceRegistrationConfig;
     }
@@ -158,6 +155,7 @@ export class ServiceRegistrationState {
         envConfig.env = _envConfig.env;
         envConfig.executionUrl = _envConfig.executionUrl;
         envConfig.managementUrl = _envConfig.managementUrl;
+        // NOTE: For projects that we cannot create a version for, only fully-interactive mode is supported
         envConfig.modes = _envConfig.modes.filter(
           (mode) => mode === ServiceExecutionMode.FULL_INTERACTIVE,
         );
@@ -174,7 +172,7 @@ export class ServiceRegistrationState {
 
   get versionOptions(): ServiceVersionOption[] | undefined {
     if (
-      this.editorStore.sdlcState.isCurrentProjectInProduction &&
+      this.editorStore.sdlcServerClient.features.canCreateVersion &&
       this.serviceExecutionMode !== ServiceExecutionMode.FULL_INTERACTIVE
     ) {
       const options: ServiceVersionOption[] =

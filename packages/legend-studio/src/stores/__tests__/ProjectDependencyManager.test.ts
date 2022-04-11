@@ -116,7 +116,6 @@ const TEST_DEPENDENCY_PROJECT_ID = 'UAT-TEST_DEPENDENCY';
 const PROJECT_CONFIG = {
   projectStructureVersion: { version: 6, extensionVersion: 1 },
   projectId: TEST_DEPENDENCY_PROJECT_ID,
-  projectType: 'PROTOTYPE',
   groupId: 'com.test',
   artifactId: 'string',
   projectDependencies: [

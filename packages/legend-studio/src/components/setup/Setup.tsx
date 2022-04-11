@@ -41,7 +41,7 @@ import {
 } from '../../stores/LegendStudioRouter';
 import { LegendStudioAppHeaderMenu } from '../editor/header/LegendStudioAppHeaderMenu';
 import { flowResult } from 'mobx';
-import { ProjectType, WorkspaceType } from '@finos/legend-server-sdlc';
+import { WorkspaceType } from '@finos/legend-server-sdlc';
 import {
   useApplicationStore,
   AppHeader,
@@ -55,23 +55,11 @@ const CreateProjectModal = observer(() => {
   const applicationStore = useApplicationStore<LegendStudioConfig>();
   const importProjectSuccessReport = setupStore.importProjectSuccessReport;
   const projectNameInputRef = useRef<HTMLInputElement>(null);
-  const defaultType = applicationStore.config.options
-    .TEMPORARY__useSDLCProductionProjectsOnly
-    ? ProjectType.PRODUCTION
-    : ProjectType.PROTOTYPE;
-  const [projectType, setProjectType] = useState<ProjectType>(defaultType);
-  const currentOption = { label: projectType, value: projectType };
-  const onSelectionChange = (
-    val: { label: ProjectType; value: ProjectType } | null,
-  ): void => {
-    if (val?.value) {
-      setProjectType(val.value);
-    }
-  };
-  const options = Object.values(ProjectType).map((option) => ({
-    value: option,
-    label: option,
-  }));
+  const allowCreatingNewProject =
+    setupStore.sdlcServerClient.features.canCreateProject;
+  const [isImportingProject, setIsImportingProject] = useState(
+    !allowCreatingNewProject,
+  );
   const [projectIdentifier, setProjectIdentifier] = useState('');
   const [groupId, setGroupId] = useState('');
   const [artifactId, setArtifactId] = useState('');
@@ -85,17 +73,21 @@ const CreateProjectModal = observer(() => {
     setupStore.setShowCreateProjectModal(false);
     setupStore.setImportProjectSuccessReport(undefined);
   };
-  const createProject = applicationStore.guardUnhandledError(() =>
-    flowResult(
-      setupStore.createProject(
-        projectIdentifier,
-        description,
-        groupId,
-        artifactId,
-        tagsArray,
-      ),
-    ),
-  );
+  const toggleCreationMode = (): void =>
+    setIsImportingProject(!isImportingProject);
+  const createProject = (): void => {
+    if (allowCreatingNewProject) {
+      flowResult(
+        setupStore.createProject(
+          projectIdentifier,
+          description,
+          groupId,
+          artifactId,
+          tagsArray,
+        ),
+      ).catch(applicationStore.alertUnhandledError);
+    }
+  };
   const importProject = applicationStore.guardUnhandledError(() =>
     flowResult(
       setupStore.importProject(projectIdentifier, groupId, artifactId),
@@ -111,10 +103,10 @@ const CreateProjectModal = observer(() => {
       );
     } else {
       if (projectIdentifier && groupId && artifactId) {
-        if (projectType === ProjectType.PROTOTYPE) {
-          createProject();
-        } else {
+        if (isImportingProject) {
           importProject();
+        } else {
+          createProject();
         }
       }
     }
@@ -123,8 +115,7 @@ const CreateProjectModal = observer(() => {
     setProjectIdentifier('');
     projectNameInputRef.current?.focus();
   };
-  const modalTitle =
-    projectType === ProjectType.PROTOTYPE ? 'Create Project' : 'Import Project';
+  const modalTitle = isImportingProject ? 'Import Project' : 'Create Project';
   const changeDescription: React.ChangeEventHandler<HTMLTextAreaElement> = (
     event,
   ) => {
@@ -146,10 +137,9 @@ const CreateProjectModal = observer(() => {
     !importProjectSuccessReport;
   const submitLabel = importProjectSuccessReport
     ? 'Review'
-    : projectType === ProjectType.PROTOTYPE
-    ? 'Create'
-    : 'Import';
-
+    : isImportingProject
+    ? 'Import'
+    : 'Create';
   // NOTE: `showEditInput` is either boolean (to hide/show the add value button) or a number (index of the item being edited)
   const [showEditInput, setShowEditInput] = useState<boolean | number>(false);
   const showAddItemInput = (): void => setShowEditInput(true);
@@ -218,61 +208,78 @@ const CreateProjectModal = observer(() => {
             isLoading={setupStore.createOrImportProjectState.isInProgress}
           />
           <div className="setup-create__form">
-            <div className="panel__content__form">
-              <div className="panel__content__form__section">
-                <div className="panel__content__form__section__header__label setup-create__modal__project__type">
-                  Project Type
+            {allowCreatingNewProject && (
+              <div className="panel__content__form">
+                <div className="panel__content__form__section">
+                  <div className="panel__content__form__section__header__label">
+                    Import project
+                  </div>
+                  <div
+                    className={clsx('panel__content__form__section__toggler')}
+                    onClick={toggleCreationMode}
+                  >
+                    <button
+                      className={clsx(
+                        'panel__content__form__section__toggler__btn',
+                        {
+                          'panel__content__form__section__toggler__btn--toggled':
+                            isImportingProject,
+                        },
+                      )}
+                      disabled={Boolean(importProjectSuccessReport)}
+                    >
+                      {isImportingProject ? (
+                        <CheckSquareIcon />
+                      ) : (
+                        <SquareIcon />
+                      )}
+                    </button>
+                    <div className="panel__content__form__section__toggler__prompt">
+                      Specifies if the project will be imported from a
+                      version-control system (e.g. Gitlab)
+                    </div>
+                  </div>
                 </div>
-                <div className="panel__content__form__section__header__prompt">
-                  Any project intended for use in production must be a
-                  production project. Prototype projects should only be used as
-                  playgrounds or proofs-of-concept.
-                </div>
-                {applicationStore.config.options
-                  .TEMPORARY__useSDLCProductionProjectsOnly ||
-                Boolean(importProjectSuccessReport) ? (
+              </div>
+            )}
+            {!isImportingProject && (
+              <div className="panel__content__form">
+                <div className="panel__content__form__section">
+                  <div className="panel__content__form__section__header__label">
+                    Project Name
+                  </div>
                   <input
                     className="panel__content__form__section__input"
                     spellCheck={false}
-                    value={projectType}
-                    disabled={true}
+                    placeholder="MyProject"
+                    value={projectIdentifier}
+                    disabled={Boolean(importProjectSuccessReport)}
                     onChange={changeProjectIdentifier}
                   />
-                ) : (
-                  <CustomSelectorInput
-                    options={options}
-                    onChange={onSelectionChange}
-                    value={currentOption}
-                    darkMode={true}
-                  />
-                )}
-              </div>
-            </div>
-            <div className="panel__content__form">
-              <div className="panel__content__form__section">
-                <div className="panel__content__form__section__header__label">
-                  {projectType === ProjectType.PROTOTYPE
-                    ? 'Project Name'
-                    : 'Import Project ID'}
                 </div>
-                {projectType === ProjectType.PRODUCTION && (
+              </div>
+            )}
+            {isImportingProject && (
+              <div className="panel__content__form">
+                <div className="panel__content__form__section">
+                  <div className="panel__content__form__section__header__label">
+                    Project ID
+                  </div>
                   <div className="panel__content__form__section__header__prompt">
                     The ID of the project in the underlying version-control
                     system
                   </div>
-                )}
-                <input
-                  className="panel__content__form__section__input"
-                  spellCheck={false}
-                  placeholder={
-                    projectType === ProjectType.PROTOTYPE ? 'MyProject' : '1234'
-                  }
-                  value={projectIdentifier}
-                  disabled={Boolean(importProjectSuccessReport)}
-                  onChange={changeProjectIdentifier}
-                />
+                  <input
+                    className="panel__content__form__section__input"
+                    spellCheck={false}
+                    placeholder="1234"
+                    value={projectIdentifier}
+                    disabled={Boolean(importProjectSuccessReport)}
+                    onChange={changeProjectIdentifier}
+                  />
+                </div>
               </div>
-            </div>
+            )}
             <div className="panel__content__form">
               <div className="panel__content__form__section">
                 <div className="panel__content__form__section__header__label">
@@ -653,7 +660,6 @@ const CreateWorkspaceModal = observer(() => {
 const SetupSelection = observer(() => {
   const setupStore = useSetupStore();
   const applicationStore = useApplicationStore<LegendStudioConfig>();
-  const config = applicationStore.config;
   const projectSelectorRef = useRef<SelectComponent>(null);
   const workspaceSelectorRef = useRef<SelectComponent>(null);
   const proceedButtonRef = useRef<HTMLButtonElement>(null);
@@ -741,17 +747,6 @@ const SetupSelection = observer(() => {
                 Edit Workspace
               </button>
             </div>
-            {config.options.TEMPORARY__useSDLCProductionProjectsOnly && (
-              <div className="setup__view-project-btn__error">
-                <div className="setup__view-project-btn__error__label">
-                  <span className="setup__view-project-btn__error__label__text">
-                    Prototype projects are temporary unavailable due to issues
-                    with UAT environment. Please create and use Production
-                    projects instead
-                  </span>
-                </div>
-              </div>
-            )}
           </div>
           {/* We do this to reset the initial state of the modals */}
           {setupStore.showCreateProjectModal && <CreateProjectModal />}

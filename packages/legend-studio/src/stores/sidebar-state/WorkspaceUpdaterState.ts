@@ -310,8 +310,8 @@ export class WorkspaceUpdaterState {
   *fetchLatestCommittedReviews(): GeneratorFn<void> {
     try {
       // we find the review associated with the workspace base, this usually exist, except in 2 cases:
-      // 1. the revision is somehow directly added to the branch by the user (in the case of git, user unprotected master and directly pushed to master)
-      // 2. the revision is the merged/comitted review revision (this usually happens for prototype projects where fast forwarding merging is not default)
+      // 1. the revision is somehow directly added to the branch by the user (in the case of `git`, user directly pushed to unprotected default branch)
+      // 2. the revision is the merged/comitted review revision (this usually happens for projects where fast forwarding merging is not default)
       // in those case, we will get the time from the base revision
       const workspaceBaseRevision = Revision.serialization.fromJson(
         (yield this.editorStore.sdlcServerClient.getRevision(

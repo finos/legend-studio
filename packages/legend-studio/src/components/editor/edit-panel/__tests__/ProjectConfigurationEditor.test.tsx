@@ -35,7 +35,6 @@ let renderResult: RenderResult;
 const TEST_DATA__ProjectConfiguration = {
   projectStructureVersion: { version: 10, extensionVersion: 1 },
   projectId: 'PROD-1234',
-  projectType: 'PRODUCTION',
   groupId: 'org.finos.legend',
   artifactId: 'dependency-test',
   projectDependencies: [

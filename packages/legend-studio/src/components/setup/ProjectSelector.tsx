@@ -19,7 +19,6 @@ import { observer } from 'mobx-react-lite';
 import type { ProjectOption } from '../../stores/SetupStore';
 import {
   type SelectComponent,
-  clsx,
   compareLabelFn,
   CustomSelectorInput,
   PlusIcon,
@@ -66,17 +65,6 @@ export const ProjectSelector = observer(
       return (
         <div className="setup__project-option">
           <div className="setup__project-option__label">
-            <div
-              className={clsx([
-                `setup__project-option__label__tag setup__project-option__label__tag--${option.tag.toLowerCase()}`,
-                {
-                  'setup__project-option__label__tag--disabled':
-                    option.disabled,
-                },
-              ])}
-            >
-              {option.tag}
-            </div>
             <div className="setup__project-option__label__name">
               {option.label}
             </div>
@@ -157,19 +145,11 @@ export const ProjectSelector = observer(
           escapeClearsValue={true}
           darkMode={true}
           formatOptionLabel={formatOptionLabel}
-          isOptionDisabled={(option: { disabled: boolean }): boolean =>
-            option.disabled
-          }
-          // menuIsOpen={true}
         />
         <button
           className="setup-selector__action btn--dark"
           onClick={create}
           tabIndex={-1}
-          disabled={
-            applicationStore.config.options
-              .TEMPORARY__disableSDLCProjectCreation
-          }
           title={'Create a Project'}
         >
           <PlusIcon />

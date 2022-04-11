@@ -181,11 +181,7 @@ const ProjectStructureEditor = observer(
 
 const formatOptionLabel = (option: ProjectOption): React.ReactNode => (
   <div className="project-dependency-editor__label">
-    <div
-      className={clsx([
-        `project-dependency-editor__label__tag project-dependency-editor__label__tag--production`,
-      ])}
-    >
+    <div className="project-dependency-editor__label__tag">
       {option.value.projectId}
     </div>
     <div className="project-dependency-editor__label__name">

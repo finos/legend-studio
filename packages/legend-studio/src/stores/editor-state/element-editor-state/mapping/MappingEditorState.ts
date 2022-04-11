@@ -735,7 +735,7 @@ export class MappingEditorState extends ElementEditorState {
       reprocessMappingElementNodes(this.mapping, openedTreeNodeIds),
     );
     if (openNodeFoCurrentTab) {
-      // FIXME: we should follow the example of project explorer where we maintain the currentlySelectedNode
+      // TODO: we should follow the example of project explorer where we maintain the currentlySelectedNode
       // instead of adaptively show the `selectedNode` based on current tab state. This is bad
       // this.setMappingElementTreeNodeData(openNode(openElement, this.mappingElementsTreeData));
       // const openNode = (element: EmbeddedFlatDataPropertyMapping, treeData: TreeData<MappingElementTreeNodeData>): MappingElementTreeNodeData => {
