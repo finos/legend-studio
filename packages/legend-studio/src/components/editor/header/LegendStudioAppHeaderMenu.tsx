@@ -18,8 +18,6 @@ import { useState } from 'react';
 import {
   clsx,
   Dialog,
-  ChevronDownIcon,
-  ChevronUpIcon,
   DropdownMenu,
   MenuContent,
   MenuContentItem,
@@ -28,11 +26,7 @@ import {
   BarsIcon,
 } from '@finos/legend-art';
 import { useApplicationStore } from '@finos/legend-application';
-import type {
-  SDLCServerOption,
-  LegendStudioConfig,
-} from '../../../application/LegendStudioConfig';
-import { updateRouteWithNewSDLCServerOption } from '../../../stores/LegendStudioRouter';
+import type { LegendStudioConfig } from '../../../application/LegendStudioConfig';
 
 const AboutModal: React.FC<{
   open: boolean;
@@ -132,68 +126,8 @@ export const LegendStudioAppHeaderMenu: React.FC = () => {
     }
   };
 
-  // SDLC server
-  const [openSDLCServerDropdown, setOpenSDLCServerDropdown] = useState(false);
-  const showSDLCServerDropdown = (): void => setOpenSDLCServerDropdown(true);
-  const hideSDLCServerDropdown = (): void => setOpenSDLCServerDropdown(false);
-  const selectSDLCServer =
-    (option: SDLCServerOption): (() => void) =>
-    (): void => {
-      if (option !== applicationStore.config.currentSDLCServerOption) {
-        const updatedURL = updateRouteWithNewSDLCServerOption(
-          applicationStore.navigator.getCurrentLocationPath(),
-          option,
-        );
-        if (updatedURL) {
-          applicationStore.navigator.jumpTo(
-            applicationStore.navigator.generateLocation(updatedURL),
-          );
-        }
-      }
-    };
   return (
     <>
-      {applicationStore.config.SDLCServerOptions.length > 1 && (
-        <DropdownMenu
-          className={clsx('studio-app__header__server-dropdown')}
-          onClose={hideSDLCServerDropdown}
-          menuProps={{ elevation: 7 }}
-          content={
-            <MenuContent className="studio-app__header__server-dropdown__menu">
-              {applicationStore.config.SDLCServerOptions.map((option) => (
-                <MenuContentItem
-                  key={option.key}
-                  className={clsx(
-                    'studio-app__header__server-dropdown__menu__item',
-                    {
-                      'studio-app__header__server-dropdown__menu__item--active':
-                        option ===
-                        applicationStore.config.currentSDLCServerOption,
-                    },
-                  )}
-                  onClick={selectSDLCServer(option)}
-                >
-                  {option.label}
-                </MenuContentItem>
-              ))}
-            </MenuContent>
-          }
-        >
-          <button
-            className="studio-app__header__server-dropdown__label"
-            tabIndex={-1}
-            onClick={showSDLCServerDropdown}
-            title="Choose an SDLC server..."
-          >
-            <div className="studio-app__header__server-dropdown__label__text">
-              {applicationStore.config.currentSDLCServerOption.label}
-            </div>
-            <div className="studio-app__header__server-dropdown__label__icon">
-              {openSDLCServerDropdown ? <ChevronUpIcon /> : <ChevronDownIcon />}
-            </div>
-          </button>
-        </DropdownMenu>
-      )}
       <DropdownMenu
         className={clsx('app__header__action', {
           'menu__trigger--on-menu-open': openMenuDropdown,

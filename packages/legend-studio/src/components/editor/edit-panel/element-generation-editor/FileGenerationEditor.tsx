@@ -1422,7 +1422,7 @@ export const FileGenerationConfigurationEditor = observer(
                 getConfigValue={getConfigValue}
                 property={abstractGenerationProperty}
               />
-            ))}{' '}
+            ))}
           </div>
         </div>
       </div>

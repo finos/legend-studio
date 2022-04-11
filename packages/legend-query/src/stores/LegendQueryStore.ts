@@ -1012,11 +1012,11 @@ export class LegendQueryStore {
     entityPath: string | undefined,
   ): void {
     this.applicationStore.navigator.openNewWindow(
-      `${this.applicationStore.config.studioUrl}/view/${generateGAVCoordinates(
-        groupId,
-        artifactId,
-        versionId,
-      )}${entityPath ? `/entity/${entityPath}` : ''}`,
+      `${
+        this.applicationStore.config.studioUrl
+      }/view/archive/${generateGAVCoordinates(groupId, artifactId, versionId)}${
+        entityPath ? `/entity/${entityPath}` : ''
+      }`,
     );
   }
 }

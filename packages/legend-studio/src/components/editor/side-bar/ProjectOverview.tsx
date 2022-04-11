@@ -77,7 +77,6 @@ const WorkspaceViewerContextMenu = observer(
 const WorkspaceViewer = observer((props: { workspace: Workspace }) => {
   const { workspace } = props;
   const editorStore = useEditorStore();
-  const applicationStore = useApplicationStore<LegendStudioConfig>();
   const isActive = areWorkspacesEquivalent(
     editorStore.sdlcState.activeWorkspace,
     workspace,
@@ -105,7 +104,6 @@ const WorkspaceViewer = observer((props: { workspace: Workspace }) => {
         rel="noopener noreferrer"
         target="_blank"
         to={generateEditorRoute(
-          applicationStore.config.currentSDLCServerOption,
           workspace.projectId,
           workspace.workspaceId,
           workspace.workspaceType,
@@ -291,7 +289,6 @@ const ReleaseEditor = observer(() => {
                       rel="noopener noreferrer"
                       target="_blank"
                       to={generateViewVersionRoute(
-                        applicationStore.config.currentSDLCServerOption,
                         latestProjectVersion.projectId,
                         latestProjectVersion.id.id,
                       )}
@@ -345,11 +342,7 @@ const ReleaseEditor = observer(() => {
                     className="side-bar__panel__item workspace-updater__review__link"
                     rel="noopener noreferrer"
                     target="_blank"
-                    to={generateReviewRoute(
-                      applicationStore.config.currentSDLCServerOption,
-                      review.projectId,
-                      review.id,
-                    )}
+                    to={generateReviewRoute(review.projectId, review.id)}
                     title={'See review detail'}
                   >
                     <div className="workspace-updater__review">
@@ -410,11 +403,7 @@ const VersionsViewer = observer(() => {
               className="side-bar__panel__item project-overview__item__link"
               rel="noopener noreferrer"
               target="_blank"
-              to={generateViewVersionRoute(
-                applicationStore.config.currentSDLCServerOption,
-                version.projectId,
-                version.id.id,
-              )}
+              to={generateViewVersionRoute(version.projectId, version.id.id)}
               title={'See version detail'}
             >
               <div className="project-overview__item__link__content">

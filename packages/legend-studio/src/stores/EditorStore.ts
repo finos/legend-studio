@@ -592,10 +592,7 @@ export class EditorStore {
             type: ActionAlertActionType.STANDARD,
             handler: (): void => {
               this.applicationStore.navigator.goTo(
-                generateSetupRoute(
-                  this.applicationStore.config.currentSDLCServerOption,
-                  undefined,
-                ),
+                generateSetupRoute(undefined),
               );
             },
           },
@@ -659,10 +656,7 @@ export class EditorStore {
             type: ActionAlertActionType.STANDARD,
             handler: (): void => {
               this.applicationStore.navigator.goTo(
-                generateViewProjectRoute(
-                  this.applicationStore.config.currentSDLCServerOption,
-                  projectId,
-                ),
+                generateViewProjectRoute(projectId),
               );
             },
           },
@@ -680,12 +674,7 @@ export class EditorStore {
             type: ActionAlertActionType.STANDARD,
             handler: (): void => {
               this.applicationStore.navigator.goTo(
-                generateSetupRoute(
-                  this.applicationStore.config.currentSDLCServerOption,
-                  projectId,
-                  workspaceId,
-                  workspaceType,
-                ),
+                generateSetupRoute(projectId, workspaceId, workspaceType),
               );
             },
           },

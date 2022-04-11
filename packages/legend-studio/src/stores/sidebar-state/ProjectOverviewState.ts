@@ -120,7 +120,6 @@ export class ProjectOverviewState {
         this.editorStore.setIgnoreNavigationBlocking(true);
         this.editorStore.applicationStore.navigator.goTo(
           generateSetupRoute(
-            this.editorStore.applicationStore.config.currentSDLCServerOption,
             this.editorStore.sdlcState.activeProject.projectId,
           ),
         );

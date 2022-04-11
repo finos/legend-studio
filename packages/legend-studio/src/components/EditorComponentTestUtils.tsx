@@ -344,7 +344,6 @@ export const TEST__setUpEditor = async (
   const history = createMemoryHistory({
     initialEntries: [
       generateEditorRoute(
-        mockedEditorStore.applicationStore.config.currentSDLCServerOption,
         (workspace as unknown as Workspace).projectId,
         (workspace as unknown as Workspace).workspaceId,
         WorkspaceType.USER,

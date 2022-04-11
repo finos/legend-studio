@@ -108,24 +108,10 @@ export class ViewerStore {
       if (projectId) {
         this.editorStore.applicationStore.navigator.goTo(
           versionId
-            ? generateViewVersionRoute(
-                this.editorStore.applicationStore.config
-                  .currentSDLCServerOption,
-                projectId,
-                versionId,
-              )
+            ? generateViewVersionRoute(projectId, versionId)
             : revisionId
-            ? generateViewRevisionRoute(
-                this.editorStore.applicationStore.config
-                  .currentSDLCServerOption,
-                projectId,
-                revisionId,
-              )
-            : generateViewProjectRoute(
-                this.editorStore.applicationStore.config
-                  .currentSDLCServerOption,
-                projectId,
-              ),
+            ? generateViewRevisionRoute(projectId, revisionId)
+            : generateViewProjectRoute(projectId),
         );
       } else if (gav) {
         const {

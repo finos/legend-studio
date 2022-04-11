@@ -150,24 +150,14 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
             <CodeBranchIcon />
           </div>
           <div className="editor__status-bar__workspace__project">
-            <Link
-              to={generateSetupRoute(
-                applicationStore.config.currentSDLCServerOption,
-                projectId,
-              )}
-            >
+            <Link to={generateSetupRoute(projectId)}>
               {currentProject?.name ?? 'unknown'}
             </Link>
           </div>
           /
           <div className="editor__status-bar__workspace__workspace">
             <Link
-              to={generateSetupRoute(
-                applicationStore.config.currentSDLCServerOption,
-                projectId,
-                workspaceId,
-                workspaceType,
-              )}
+              to={generateSetupRoute(projectId, workspaceId, workspaceType)}
             >
               {workspaceId}
             </Link>

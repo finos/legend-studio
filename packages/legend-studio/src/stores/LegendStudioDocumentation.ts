@@ -14,22 +14,10 @@
  * limitations under the License.
  */
 
-import type { EditorStore } from '../EditorStore';
-import { generateViewEntityRoute } from '../LegendStudioRouter';
-import { EditorMode } from './EditorMode';
+export enum LEGEND_STUDIO_DOCUMENTATION_KEY {
+  NOT_FOUND_HELP = 'not-found-help',
 
-export class StandardEditorMode extends EditorMode {
-  editorStore: EditorStore;
-
-  constructor(editorStore: EditorStore) {
-    super();
-    this.editorStore = editorStore;
-  }
-
-  generateElementLink(elementPath: string): string {
-    return generateViewEntityRoute(
-      this.editorStore.sdlcState.activeProject.projectId,
-      elementPath,
-    );
-  }
+  SETUP_WORKSPACE = 'setup-workspace',
+  CREATE_PROJECT = 'create-project',
+  CREATE_WORKSPACE = 'create-workspace',
 }

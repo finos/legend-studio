@@ -14,8 +14,22 @@
  * limitations under the License.
  */
 
-export enum LEGEND_STUDIO_DOCUMENTATION_KEY {
-  SETUP_WORKSPACE = 'setup-workspace',
-  CREATE_PROJECT = 'create-project',
-  CREATE_WORKSPACE = 'create-workspace',
+import MarkdownIt from 'markdown-it';
+import type { PlainObject } from '../CommonUtils';
+import { guaranteeNonNullable } from '../error/AssertionUtils';
+
+const genericMarkdownItEngine = new MarkdownIt();
+
+export interface MarkdownText {
+  value: string;
 }
+
+export const deserializeMarkdownText = (
+  val: PlainObject<MarkdownText>,
+): MarkdownText => {
+  guaranteeNonNullable(val.value);
+  return val as unknown as MarkdownText;
+};
+
+export const renderMarkdownToHTML = (val: string): string =>
+  genericMarkdownItEngine.render(val);

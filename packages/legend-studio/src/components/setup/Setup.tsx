@@ -48,7 +48,7 @@ import {
   DocumentationLink,
 } from '@finos/legend-application';
 import type { LegendStudioConfig } from '../../application/LegendStudioConfig';
-import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../stores/LegendStudioDocumentationKey';
+import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../stores/LegendStudioDocumentation';
 
 const CreateProjectModal = observer(() => {
   const setupStore = useSetupStore();
@@ -692,7 +692,6 @@ const SetupSelection = observer(() => {
     ) {
       applicationStore.navigator.goTo(
         generateEditorRoute(
-          applicationStore.config.currentSDLCServerOption,
           setupStore.currentProjectId,
           setupStore.currentWorkspace.workspaceId,
           setupStore.currentWorkspace.workspaceType,

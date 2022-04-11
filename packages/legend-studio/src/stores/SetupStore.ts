@@ -214,10 +214,7 @@ export class SetupStore {
       yield flowResult(this.fetchProjects());
       this.projects?.set(createdProject.projectId, createdProject);
       this.applicationStore.navigator.goTo(
-        generateSetupRoute(
-          this.applicationStore.config.currentSDLCServerOption,
-          createdProject.projectId,
-        ),
+        generateSetupRoute(createdProject.projectId),
       );
       this.setShowCreateProjectModal(false);
     } catch (error) {

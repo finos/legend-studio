@@ -20,10 +20,6 @@ export * from './application/LegendStudio';
 export * from './application/LegendStudioConfig';
 export * from './application/LegendStudioPluginManager';
 export * from './stores/shared/PackageableElementOptionUtil';
-export {
-  LEGEND_STUDIO_PATH_PARAM_TOKEN,
-  generateRoutePatternWithSDLCServerKey,
-} from './stores/LegendStudioRouter';
 export * from './stores/LegendStudioAppEvent';
 
 // stores

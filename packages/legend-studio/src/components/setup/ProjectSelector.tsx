@@ -55,10 +55,7 @@ export const ProjectSelector = observer(
       const viewProject = (): void =>
         applicationStore.navigator.openNewWindow(
           applicationStore.navigator.generateLocation(
-            generateViewProjectRoute(
-              applicationStore.config.currentSDLCServerOption,
-              option.value,
-            ),
+            generateViewProjectRoute(option.value),
           ),
         );
 
@@ -95,12 +92,7 @@ export const ProjectSelector = observer(
             applicationStore.alertUnhandledError,
           );
         }
-        applicationStore.navigator.goTo(
-          generateSetupRoute(
-            applicationStore.config.currentSDLCServerOption,
-            val?.value,
-          ),
-        );
+        applicationStore.navigator.goTo(generateSetupRoute(val?.value));
       }
     };
 
@@ -108,12 +100,7 @@ export const ProjectSelector = observer(
       if (setupStore.projects && !setupStore.currentProject) {
         if (currentProjectId) {
           // For first load, if the project is not found, reset the URL
-          applicationStore.navigator.goTo(
-            generateSetupRoute(
-              applicationStore.config.currentSDLCServerOption,
-              undefined,
-            ),
-          );
+          applicationStore.navigator.goTo(generateSetupRoute(undefined));
         }
         onChange(false);
       }

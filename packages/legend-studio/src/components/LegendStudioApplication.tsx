@@ -15,20 +15,19 @@
  */
 
 import { useEffect } from 'react';
-import { Switch, Route, Redirect, useRouteMatch } from 'react-router-dom';
+import { Switch, Route } from 'react-router-dom';
 import { Setup } from './setup/Setup';
 import { Editor } from './editor/Editor';
 import { Review } from './review/Review';
 import { Viewer } from './viewer/Viewer';
 import { observer } from 'mobx-react-lite';
-import { PanelLoadingIndicator } from '@finos/legend-art';
 import {
-  type SDLCServerKeyPathParams,
-  URL_PATH_PLACEHOLDER,
-  generateSetupRoute,
-  LEGEND_STUDIO_ROUTE_PATTERN,
-  generateRoutePatternWithSDLCServerKey,
-} from '../stores/LegendStudioRouter';
+  clsx,
+  GhostIcon,
+  MarkdownTextViewer,
+  PanelLoadingIndicator,
+} from '@finos/legend-art';
+import { LEGEND_STUDIO_ROUTE_PATTERN } from '../stores/LegendStudioRouter';
 import { LegendStudioAppHeaderMenu } from './editor/header/LegendStudioAppHeaderMenu';
 import type { LegendStudioPluginManager } from '../application/LegendStudioPluginManager';
 import { flowResult } from 'mobx';
@@ -45,6 +44,66 @@ import {
   useApplicationStore,
 } from '@finos/legend-application';
 import type { LegendStudioConfig } from '../application/LegendStudioConfig';
+import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../stores/LegendStudioDocumentation';
+
+const LegendStudioNotFoundRouteScreen = observer(() => {
+  const applicationStore = useApplicationStore();
+
+  const currentPath = applicationStore.navigator.getCurrentLocationPath();
+
+  const documentation = applicationStore.docRegistry.getEntry(
+    LEGEND_STUDIO_DOCUMENTATION_KEY.NOT_FOUND_HELP,
+  );
+
+  return (
+    <div className="app__page">
+      <AppHeader>
+        <LegendStudioAppHeaderMenu />
+      </AppHeader>
+      <div className="app__content">
+        <div
+          className={clsx('not-found-screen', {
+            'not-found-screen--no-documentation': !documentation?.markdownText,
+          })}
+        >
+          <div className="not-found-screen__icon">
+            <div className="not-found-screen__icon__ghost">
+              <GhostIcon />
+            </div>
+            <div className="not-found-screen__icon__shadow">
+              <svg viewBox="0 0 600 400">
+                <g transform="translate(300 200)">
+                  <ellipse
+                    className="not-found-screen__icon__shadow__inner"
+                    rx="320"
+                    ry="80"
+                  ></ellipse>
+                </g>
+              </svg>
+            </div>
+          </div>
+          <div className="not-found-screen__text-content">
+            <div className="not-found-screen__text-content__title">
+              404. Not Found
+            </div>
+            <div className="not-found-screen__text-content__detail">
+              The requested URL
+              <span className="not-found-screen__text-content__detail__url">
+                {applicationStore.navigator.generateLocation(currentPath)}
+              </span>
+              was not found in the application
+            </div>
+          </div>
+          {documentation?.markdownText && (
+            <div className="not-found-screen__documentation">
+              <MarkdownTextViewer value={documentation.markdownText} />
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+});
 
 /**
  * Prefix URL patterns coming from extensions with `/extensions/`
@@ -82,14 +141,14 @@ export const LegendStudioApplicationRoot = observer(() => {
           <Route
             exact={true}
             path={[
-              ...LEGEND_STUDIO_ROUTE_PATTERN.VIEW,
+              LEGEND_STUDIO_ROUTE_PATTERN.VIEW,
               LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_GAV,
               LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_GAV_ENTITY,
-              ...LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_ENTITY,
-              ...LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_REVISION,
-              ...LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_VERSION,
-              ...LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_REVISION_ENTITY,
-              ...LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_VERSION_ENTITY,
+              LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_ENTITY,
+              LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_REVISION,
+              LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_VERSION,
+              LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_REVISION_ENTITY,
+              LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_VERSION_ENTITY,
             ]}
             component={Viewer}
           />
@@ -102,16 +161,18 @@ export const LegendStudioApplicationRoot = observer(() => {
             exact={true}
             strict={true}
             path={[
-              ...LEGEND_STUDIO_ROUTE_PATTERN.EDIT_GROUP,
-              ...LEGEND_STUDIO_ROUTE_PATTERN.EDIT,
+              LEGEND_STUDIO_ROUTE_PATTERN.EDIT_GROUP,
+              LEGEND_STUDIO_ROUTE_PATTERN.EDIT,
             ]}
             component={Editor}
           />
           <Route
             exact={true}
             path={[
-              ...LEGEND_STUDIO_ROUTE_PATTERN.SETUP,
-              ...LEGEND_STUDIO_ROUTE_PATTERN.SETUP_GROUP,
+              // root path will lead to setup page (home page)
+              '/',
+              LEGEND_STUDIO_ROUTE_PATTERN.SETUP,
+              LEGEND_STUDIO_ROUTE_PATTERN.SETUP_GROUP,
             ]}
             component={Setup}
           />
@@ -123,12 +184,23 @@ export const LegendStudioApplicationRoot = observer(() => {
               component={entry.component as React.ComponentType<unknown>}
             />
           ))}
-          <Redirect
-            to={generateSetupRoute(
-              applicationStore.config.defaultSDLCServerOption,
-              undefined,
-            )}
-          />
+          {/* <Route
+            exact={true}
+            path={[LEGEND_STUDIO_ROUTE_PATTERN.NOT_FOUND]}
+            component={LegendStudioNotFoundRouteScreen}
+          /> */}
+          {/* <Redirect
+            to={{
+              pathname: generateNotFoundRoute(),
+              state: {
+                from: applicationStore.navigator.getCurrentLocationPath(),
+              },
+            }}
+            push={false}
+          /> */}
+          <Route>
+            <LegendStudioNotFoundRouteScreen />
+          </Route>
         </Switch>
       )}
     </div>
@@ -142,57 +214,7 @@ export const LegendStudioApplication = observer(
   }) => {
     const { config, pluginManager } = props;
     const applicationStore = useApplicationStore();
-    const routeMatch = useRouteMatch<SDLCServerKeyPathParams>(
-      generateRoutePatternWithSDLCServerKey('/*'),
-    );
-    const matchedSDLCServerKey = routeMatch?.params.sdlcServerKey;
-    const matchingSDLCServerOption = config.SDLCServerOptions.find((option) => {
-      if (matchedSDLCServerKey === URL_PATH_PLACEHOLDER) {
-        return config.defaultSDLCServerOption;
-      }
-      return option.key === matchedSDLCServerKey;
-    });
 
-    /**
-     * NOTE: here we handle 3 cases:
-     * 1. When the URL matches specific server pattern, and the key is found: if the key doesn't match
-     *    the current server option, update the current server option.
-     * 2. When the URL matches specific server pattern, and the key is NOT found: auto-fix the URL by
-     *    redirecting users to the setup page with the default server option.
-     * 3. When the URL DOES NOT match specific server pattern: do nothing here, let the app flows through
-     *    because this might represent a sub-application that does not need to specify a server option
-     *    (i.e. use the default server option)
-     */
-    useEffect(() => {
-      if (matchedSDLCServerKey) {
-        // auto-fix the URL by using the default server option
-        if (!matchingSDLCServerOption) {
-          applicationStore.navigator.goTo(
-            generateSetupRoute(config.defaultSDLCServerOption, undefined),
-          );
-        } else if (
-          matchingSDLCServerOption !== config.currentSDLCServerOption
-        ) {
-          config.setCurrentSDLCServerOption(matchingSDLCServerOption);
-        }
-      }
-    }, [
-      config,
-      applicationStore,
-      matchedSDLCServerKey,
-      matchingSDLCServerOption,
-    ]);
-
-    if (
-      // See the note above, we will only pass when the either the server option is properly set
-      // or the URL does not match the specific server pattern at all (i.e. some sub applications that just
-      // uses the default server option)
-      matchedSDLCServerKey &&
-      (!matchingSDLCServerOption ||
-        matchingSDLCServerOption !== config.currentSDLCServerOption)
-    ) {
-      return null;
-    }
     return (
       <SDLCServerClientProvider
         config={{

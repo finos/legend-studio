@@ -14,22 +14,20 @@
  * limitations under the License.
  */
 
-import type { EditorStore } from '../EditorStore';
-import { generateViewEntityRoute } from '../LegendStudioRouter';
-import { EditorMode } from './EditorMode';
+import { type MarkdownText, renderMarkdownToHTML } from '@finos/legend-shared';
 
-export class StandardEditorMode extends EditorMode {
-  editorStore: EditorStore;
+export const MarkdownTextViewer: React.FC<{
+  value: MarkdownText;
+}> = (props) => {
+  const { value } = props;
+  const markdownHTMLText = renderMarkdownToHTML(value.value);
 
-  constructor(editorStore: EditorStore) {
-    super();
-    this.editorStore = editorStore;
-  }
-
-  generateElementLink(elementPath: string): string {
-    return generateViewEntityRoute(
-      this.editorStore.sdlcState.activeProject.projectId,
-      elementPath,
-    );
-  }
-}
+  return (
+    <div
+      className="markdown-content"
+      dangerouslySetInnerHTML={{
+        __html: markdownHTMLText,
+      }}
+    ></div>
+  );
+};

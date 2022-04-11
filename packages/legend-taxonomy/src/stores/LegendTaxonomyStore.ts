@@ -318,7 +318,7 @@ export class TaxonomyNodeViewerState {
             this.taxonomyStore.applicationStore.navigator.openNewWindow(
               `${
                 this.taxonomyStore.applicationStore.config.studioUrl
-              }/view/${generateGAVCoordinates(
+              }/view/archive/${generateGAVCoordinates(
                 _groupId,
                 _artifactId,
                 _versionId,
@@ -883,7 +883,7 @@ export class LegendTaxonomyStore {
             this.applicationStore.navigator.openNewWindow(
               `${
                 this.applicationStore.config.studioUrl
-              }/view/${generateGAVCoordinates(
+              }/view/archive/${generateGAVCoordinates(
                 _groupId,
                 _artifactId,
                 _versionId,
