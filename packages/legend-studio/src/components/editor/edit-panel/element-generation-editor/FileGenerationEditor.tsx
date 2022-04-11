@@ -812,7 +812,7 @@ const GenerationArrayPropertyEditor = observer(
       (): void => {
         if (!isReadOnly) {
           runInAction(() => arrayValues.splice(idx, 1));
-          update(property, arrayValues);
+          update(property, [...arrayValues]);
           // Since we keep track of the value currently being edited using the index, we have to account for it as we delete entry
           if (typeof showEditInput === 'number' && showEditInput > idx) {
             setShowEditInput(showEditInput - 1);
