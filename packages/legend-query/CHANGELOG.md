@@ -1,5 +1,11 @@
 # @finos/legend-query
 
+## 1.3.6
+
+### Patch Changes
+
+- [#1051](https://github.com/finos/legend-studio/pull/1051) [`c79e8723`](https://github.com/finos/legend-studio/commit/c79e872303ecbd3d13e1b6a4a4f994b7b810142c) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Observe `ValueSpecification` when initializing query builder.
+
 ## 1.3.5
 
 ## 1.3.4

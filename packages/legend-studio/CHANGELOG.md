@@ -1,5 +1,7 @@
 # @finos/legend-studio
 
+## 5.1.5
+
 ## 5.1.4
 
 ### Patch Changes

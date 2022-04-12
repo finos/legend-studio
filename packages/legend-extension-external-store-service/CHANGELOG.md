@@ -1,5 +1,7 @@
 # @finos/legend-extension-external-store-service
 
+## 1.2.5
+
 ## 1.2.4
 
 ## 1.2.3
