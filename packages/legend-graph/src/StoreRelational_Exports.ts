@@ -77,3 +77,4 @@ export {
   V1_serializeMapper,
   V1_deserializeMapper,
 } from './models/protocols/pure/v1/transformation/pureProtocol/serializationHelpers/V1_PostProcessorSerializationHelper';
+export * from './graphManager/StoreRelational_PureGraphManagerPlugin_Extension';
