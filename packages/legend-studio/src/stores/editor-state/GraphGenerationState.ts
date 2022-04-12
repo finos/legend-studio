@@ -104,13 +104,13 @@ export class GraphGenerationState {
       fileGenerationConfigurationOptions: computed,
       supportedFileGenerationConfigurationsForCurrentElement: computed,
       setFileGenerationConfigurations: action,
-      possiblyAddMissingGenerationSpecifications: action,
       processGenerationResult: action,
       reprocessGenerationFileState: action,
       reprocessNodeTree: action,
       onTreeNodeSelect: action,
       setSelectedNode: action,
       emptyFileGeneration: action,
+      possiblyAddMissingGenerationSpecifications: flow,
       fetchAvailableFileGenerationDescriptions: flow,
       globalGenerate: flow,
       generateModels: flow,
@@ -361,7 +361,7 @@ export class GraphGenerationState {
    * 1. no generation specification has been defined in graph
    * 2. there exists a generation element
    */
-  possiblyAddMissingGenerationSpecifications(): void {
+  *possiblyAddMissingGenerationSpecifications(): GeneratorFn<void> {
     if (
       !this.editorStore.graphManagerState.graph.ownGenerationSpecifications
         .length
@@ -397,7 +397,7 @@ export class GraphGenerationState {
           generationSpec,
           this.editorStore.changeDetectionState.observerContext,
         );
-        this.editorStore.graphManagerState.graph.addElement(generationSpec);
+        yield flowResult(this.editorStore.addElement(generationSpec, false));
       }
     }
   }

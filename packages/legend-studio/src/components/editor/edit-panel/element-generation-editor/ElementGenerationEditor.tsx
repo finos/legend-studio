@@ -46,6 +46,7 @@ const NewFileGenerationModal = observer(
     elementGenerationState: ElementFileGenerationState;
   }) => {
     const { elementGenerationState, currentElementState } = props;
+    const applicationStore = useApplicationStore();
     const isReadOnly = currentElementState.isReadOnly;
     const element = currentElementState.element;
     const mappingPackage = guaranteeType(element.package, Package);
@@ -66,18 +67,20 @@ const NewFileGenerationModal = observer(
       editorStore.graphManagerState.graph.allOwnElements
         .map((el) => el.path)
         .includes(packagePath + ELEMENT_PATH_DELIMITER + serviceName);
-    const create = (): void => {
+    const promoteToFileGeneration = async (): Promise<void> => {
       if (servicePath && !isReadOnly && !elementAlreadyExists) {
-        elementGenerationState.promoteToFileGeneration(
-          packagePath,
-          serviceName,
+        await flowResult(
+          elementGenerationState.promoteToFileGeneration(
+            packagePath,
+            serviceName,
+          ),
         );
         close();
       }
     };
     const onSubmit = (event: React.FormEvent<HTMLFormElement>): void => {
       event.preventDefault();
-      create();
+      promoteToFileGeneration().catch(applicationStore.alertUnhandledError);
     };
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) =>
       setServicePath(event.target.value);

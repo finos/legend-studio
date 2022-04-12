@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { deleteEntry, addUniqueEntry, type Pair } from '@finos/legend-shared';
+import type { Pair } from '@finos/legend-shared';
 import {
   type ValueSpecificationVisitor,
   ValueSpecification,
@@ -32,24 +32,8 @@ import type { Mapping } from '../packageableElements/mapping/Mapping';
  * Also, right now, we haven't done the full build/transform flow for value specification
  * we use the subtypes to make it easier to transform metamodel back into protocol.
  */
-export class /*toCHECK*/ InstanceValue extends ValueSpecification {
+export class InstanceValue extends ValueSpecification {
   values: unknown[] = [];
-
-  deleteValue(val: unknown): void {
-    deleteEntry(this.values, val);
-  }
-
-  addValue(val: unknown): void {
-    addUniqueEntry(this.values, val);
-  }
-
-  changeValue(val: unknown, idx: number): void {
-    this.values[idx] = val;
-  }
-
-  changeValues(val: unknown[]): void {
-    this.values = val;
-  }
 
   accept_ValueSpecificationVisitor<T>(
     visitor: ValueSpecificationVisitor<T>,
@@ -58,7 +42,7 @@ export class /*toCHECK*/ InstanceValue extends ValueSpecification {
   }
 }
 
-export class /*toCHECK*/ PrimitiveInstanceValue extends InstanceValue {
+export class PrimitiveInstanceValue extends InstanceValue {
   override genericType: GenericTypeReference;
 
   constructor(genericType: GenericTypeReference, multiplicity: Multiplicity) {
@@ -73,7 +57,7 @@ export class /*toCHECK*/ PrimitiveInstanceValue extends InstanceValue {
   }
 }
 
-export class /*toCHECK*/ EnumValueInstanceValue extends InstanceValue {
+export class EnumValueInstanceValue extends InstanceValue {
   override values: EnumValueReference[] = [];
 
   constructor(genericType: GenericTypeReference, multiplicity: Multiplicity) {
@@ -87,7 +71,7 @@ export class /*toCHECK*/ EnumValueInstanceValue extends InstanceValue {
   }
 }
 
-export class /*toCHECK*/ RuntimeInstanceValue extends InstanceValue {
+export class RuntimeInstanceValue extends InstanceValue {
   override values: EngineRuntime[] = [];
 
   override accept_ValueSpecificationVisitor<T>(
@@ -97,7 +81,7 @@ export class /*toCHECK*/ RuntimeInstanceValue extends InstanceValue {
   }
 }
 
-export class /*toCHECK*/ PairInstanceValue extends InstanceValue {
+export class PairInstanceValue extends InstanceValue {
   override values: Pair<unknown, unknown>[] = [];
 
   override accept_ValueSpecificationVisitor<T>(
@@ -107,7 +91,7 @@ export class /*toCHECK*/ PairInstanceValue extends InstanceValue {
   }
 }
 
-export class /*toCHECK*/ MappingInstanceValue extends InstanceValue {
+export class MappingInstanceValue extends InstanceValue {
   override values: PackageableElementReference<Mapping>[] = [];
 
   override accept_ValueSpecificationVisitor<T>(
@@ -117,7 +101,7 @@ export class /*toCHECK*/ MappingInstanceValue extends InstanceValue {
   }
 }
 
-export class /*toCHECK*/ PureListInstanceValue extends InstanceValue {
+export class PureListInstanceValue extends InstanceValue {
   override values: ValueSpecification[] = [];
 
   override accept_ValueSpecificationVisitor<T>(
@@ -127,7 +111,7 @@ export class /*toCHECK*/ PureListInstanceValue extends InstanceValue {
   }
 }
 
-export class /*toCHECK*/ CollectionInstanceValue extends InstanceValue {
+export class CollectionInstanceValue extends InstanceValue {
   override values: ValueSpecification[] = [];
 
   override accept_ValueSpecificationVisitor<T>(

@@ -39,6 +39,8 @@ import {
   PACKAGEABLE_ELEMENT_TYPE,
 } from '@finos/legend-graph';
 import type { FileGenerationTypeOption } from '../../../stores/editor-state/GraphGenerationState';
+import { flowResult } from 'mobx';
+import { useApplicationStore } from '@finos/legend-application';
 
 export const getElementTypeLabel = (
   editorStore: EditorStore,
@@ -324,6 +326,7 @@ const renderNewElementDriver = (
 // TODO: investigate the potential approach of VSCode to have inline input in the tree to create element quickly
 export const CreateNewElementModal = observer(() => {
   const editorStore = useEditorStore();
+  const applicationStore = useApplicationStore();
   const newElementState = editorStore.newElementState;
   const selectedPackage = newElementState.selectedPackage;
   // Name
@@ -359,9 +362,9 @@ export const CreateNewElementModal = observer(() => {
     resolvedPackage?.children.find((child) => child.name === elementName),
   );
   const isDisabled = !name || needsToOverride || !newElementState.isValid;
-  const save = (): void => {
-    newElementState.save();
-  };
+  const save = applicationStore.guardUnhandledError(() =>
+    flowResult(newElementState.save()),
+  );
   const handleEnter = (): void => {
     newElementState.setName('');
     elementNameInputRef.current?.focus();

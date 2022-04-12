@@ -32,6 +32,10 @@ import {
   QueryBuilderExplorerTreeSubTypeNodeData,
 } from './QueryBuilderExplorerState';
 import type { QueryBuilderState } from './QueryBuilderState';
+import {
+  graphFetchTree_addSubTree,
+  graphFetchTree_removeSubTree,
+} from './QueryBuilderValueSpecificationModifierHelper';
 
 export class QueryBuilderGraphFetchTreeNodeData implements TreeNodeData {
   isSelected?: boolean | undefined;
@@ -147,10 +151,10 @@ const removeNode = (
     : undefined;
   if (parentNode) {
     deleteEntry(parentNode.childrenIds, node.id);
-    parentNode.tree.removeSubTree(node.tree);
+    graphFetchTree_removeSubTree(parentNode.tree, node.tree);
   } else {
     deleteEntry(treeData.rootIds, node.id);
-    treeData.tree.removeSubTree(node.tree);
+    graphFetchTree_removeSubTree(treeData.tree, node.tree);
   }
   treeData.nodes.delete(node.id);
 };
@@ -266,10 +270,10 @@ export const addQueryBuilderPropertyNode = (
     treeData.nodes.set(childNode.id, childNode);
     if (parentNode) {
       addUniqueEntry(parentNode.childrenIds, childNode.id);
-      parentNode.tree.addSubTree(childNode.tree);
+      graphFetchTree_addSubTree(parentNode.tree, childNode.tree);
     } else {
       addUniqueEntry(treeData.rootIds, childNode.id);
-      treeData.tree.addSubTree(childNode.tree);
+      graphFetchTree_addSubTree(treeData.tree, childNode.tree);
     }
   }
 };

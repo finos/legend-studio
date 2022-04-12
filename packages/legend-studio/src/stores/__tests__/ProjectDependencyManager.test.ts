@@ -232,7 +232,7 @@ const testDependencyElements = async (
   const dependencyEntitiesMap = await flowResult(
     editorStore.graphState.getConfigurationProjectDependencyEntities(),
   );
-  editorStore.graphManagerState.graph.setDependencyManager(dependencyManager);
+  editorStore.graphManagerState.graph.dependencyManager = dependencyManager;
   await editorStore.graphManagerState.graphManager.buildDependencies(
     editorStore.graphManagerState.coreModel,
     editorStore.graphManagerState.systemModel,

@@ -20,10 +20,12 @@ import {
   computed,
   makeObservable,
   makeAutoObservable,
+  flowResult,
 } from 'mobx';
 import type { EditorStore } from './EditorStore';
 import {
   type Clazz,
+  type GeneratorFn,
   IllegalStateError,
   guaranteeType,
   UnsupportedOperationError,
@@ -448,8 +450,6 @@ export class NewElementState {
       setElementType: action,
       openModal: action,
       closeModal: action,
-      save: action,
-      postCreatingElementAction: action,
       createElement: action,
     });
 
@@ -556,7 +556,7 @@ export class NewElementState {
     this.setName('');
   }
 
-  save(): void {
+  *save(): GeneratorFn<void> {
     if (this.name && this.isValid) {
       const [packagePath, elementName] = this.elementAndPackageName;
       if (
@@ -579,59 +579,57 @@ export class NewElementState {
           element,
           this.editorStore.changeDetectionState.observerContext,
         );
-        this.editorStore.graphManagerState.graph.addElement(element);
-        if (element instanceof Package) {
-          // expand tree node only
-          this.editorStore.explorerTreeState.openNode(element);
-        } else {
-          this.editorStore.openElement(element);
+
+        yield flowResult(this.editorStore.addElement(element, true));
+
+        // post creation handling
+        if (
+          element instanceof FileGenerationSpecification ||
+          element instanceof ModelGenerationSpecification
+        ) {
+          const generationElement = element;
+          const generationSpecifications =
+            this.editorStore.graphManagerState.graph
+              .ownGenerationSpecifications;
+          let generationSpec: GenerationSpecification;
+          if (generationSpecifications.length) {
+            // TODO? handle case when more than one generation specification
+            generationSpec =
+              generationSpecifications[0] as GenerationSpecification;
+          } else {
+            generationSpec = new GenerationSpecification(
+              DEFAULT_GENERATION_SPECIFICATION_NAME,
+            );
+            package_addElement(
+              guaranteeNonNullable(generationElement.package),
+              generationSpec,
+              this.editorStore.changeDetectionState.observerContext,
+            );
+            yield flowResult(
+              this.editorStore.addElement(generationSpec, false),
+            );
+          }
+          generationSpecification_addGenerationElement(
+            generationSpec,
+            generationElement,
+          );
         }
-        this.postCreatingElementAction(element);
+
+        const extraElementEditorPostCreateActions =
+          this.editorStore.pluginManager
+            .getStudioPlugins()
+            .flatMap(
+              (plugin) =>
+                (
+                  plugin as DSL_LegendStudioPlugin_Extension
+                ).getExtraElementEditorPostCreateActions?.() ?? [],
+            );
+        for (const postCreateAction of extraElementEditorPostCreateActions) {
+          postCreateAction(this.editorStore, element);
+        }
       }
     }
     this.closeModal();
-  }
-
-  postCreatingElementAction(element: PackageableElement): void {
-    if (
-      element instanceof FileGenerationSpecification ||
-      element instanceof ModelGenerationSpecification
-    ) {
-      const generationElement = element;
-      const generationSpecifications =
-        this.editorStore.graphManagerState.graph.ownGenerationSpecifications;
-      let generationSpec: GenerationSpecification;
-      if (generationSpecifications.length) {
-        // TODO? handle case when more than one generation specification
-        generationSpec = generationSpecifications[0] as GenerationSpecification;
-      } else {
-        generationSpec = new GenerationSpecification(
-          DEFAULT_GENERATION_SPECIFICATION_NAME,
-        );
-        package_addElement(
-          guaranteeNonNullable(generationElement.package),
-          generationSpec,
-          this.editorStore.changeDetectionState.observerContext,
-        );
-        this.editorStore.graphManagerState.graph.addElement(generationSpec);
-      }
-      generationSpecification_addGenerationElement(
-        generationSpec,
-        generationElement,
-      );
-    }
-
-    const extraElementEditorPostCreateActions = this.editorStore.pluginManager
-      .getStudioPlugins()
-      .flatMap(
-        (plugin) =>
-          (
-            plugin as DSL_LegendStudioPlugin_Extension
-          ).getExtraElementEditorPostCreateActions?.() ?? [],
-      );
-    for (const postCreateAction of extraElementEditorPostCreateActions) {
-      postCreateAction(this.editorStore, element);
-    }
   }
 
   createElement(name: string): PackageableElement {

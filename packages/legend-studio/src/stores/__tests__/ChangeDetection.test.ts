@@ -20,6 +20,10 @@ import { flowResult } from 'mobx';
 import { type EntityDiff, EntityChangeType } from '@finos/legend-server-sdlc';
 import { Class } from '@finos/legend-graph';
 import { property_setName } from '../graphModifier/DomainGraphModifierHelper';
+import {
+  graph_addElement,
+  graph_deleteElement,
+} from '../graphModifier/GraphModifierHelper';
 
 const entities = [
   {
@@ -83,7 +87,7 @@ test(unitTest('Change detection works properly'), async () => {
 
   // add
   const newClass = new Class('ClassB');
-  editorStore.graphManagerState.graph.addElement(newClass);
+  graph_addElement(editorStore.graphManagerState.graph, newClass);
 
   await flowResult(editorStore.changeDetectionState.computeLocalChanges(true));
   expect(
@@ -94,10 +98,10 @@ test(unitTest('Change detection works properly'), async () => {
     .changes[0] as EntityDiff;
   expect(change.entityChangeType).toEqual(EntityChangeType.CREATE);
   expect(change.newPath).toEqual(newClass.path);
-  editorStore.graphManagerState.graph.deleteElement(newClass); // reset
+  graph_deleteElement(editorStore.graphManagerState.graph, newClass); // reset
 
   // delete
-  editorStore.graphManagerState.graph.deleteElement(_class);
+  graph_deleteElement(editorStore.graphManagerState.graph, _class);
 
   await flowResult(editorStore.changeDetectionState.computeLocalChanges(true));
   expect(

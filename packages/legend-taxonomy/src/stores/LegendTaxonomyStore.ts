@@ -236,9 +236,8 @@ export class TaxonomyNodeViewerState {
       stopWatch.record();
       const dependencyManager =
         this.taxonomyStore.graphManagerState.createEmptyDependencyManager();
-      this.taxonomyStore.graphManagerState.graph.setDependencyManager(
-        dependencyManager,
-      );
+      this.taxonomyStore.graphManagerState.graph.dependencyManager =
+        dependencyManager;
       dependencyManager.buildState.setMessage(`Fetching dependencies...`);
       const dependencyEntitiesMap = new Map<string, Entity[]>();
       (
@@ -803,7 +802,7 @@ export class LegendTaxonomyStore {
       stopWatch.record();
       const dependencyManager =
         this.graphManagerState.createEmptyDependencyManager();
-      this.graphManagerState.graph.setDependencyManager(dependencyManager);
+      this.graphManagerState.graph.dependencyManager = dependencyManager;
       dependencyManager.buildState.setMessage(`Fetching dependencies...`);
       const dependencyEntitiesMap = new Map<string, Entity[]>();
       (

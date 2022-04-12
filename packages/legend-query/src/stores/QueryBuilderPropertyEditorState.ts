@@ -46,7 +46,7 @@ import {
 import { generateDefaultValueForPrimitiveType } from './QueryBuilderValueSpecificationBuilderHelper';
 import type { QueryBuilderState } from './QueryBuilderState';
 import { SUPPORTED_FUNCTIONS } from '../QueryBuilder_Const';
-import { functionExpression_setParametersValues } from './QueryBuilderGraphModifierHelper';
+import { functionExpression_setParametersValues } from './QueryBuilderValueSpecificationModifierHelper';
 
 export const prettyPropertyName = (value: string): string =>
   isCamelCase(value) ? prettyCamelCase(value) : prettyCONSTName(value);

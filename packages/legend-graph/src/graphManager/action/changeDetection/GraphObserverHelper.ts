@@ -14,14 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  action,
-  computed,
-  flow,
-  isObservable,
-  makeObservable,
-  observable,
-} from 'mobx';
+import { computed, isObservable, makeObservable, observable } from 'mobx';
 import type { BasicModel } from '../../../graph/BasicModel';
 import type { DependencyManager } from '../../../graph/DependencyManager';
 import type { PureGraphExtension } from '../../../graph/PureGraphExtension';
@@ -37,8 +30,6 @@ const observe_PureGraphExtension = skipObserved(
     makeObservable<PureGraphExtension<T>, 'index'>(metamodel, {
       index: observable,
       elements: computed,
-      setElement: action,
-      deleteElement: action,
     }),
 );
 
@@ -97,25 +88,6 @@ const observe_Abstract_BasicModel = async (
     ownFileGenerations: computed,
     ownGenerationSpecifications: computed,
     allOwnElements: computed,
-
-    dispose: flow,
-
-    setOwnSection: action,
-    setOwnSectionIndex: action,
-    setOwnProfile: action,
-    setOwnType: action,
-    setOwnAssociation: action,
-    setOwnFunction: action,
-    setOwnStore: action,
-    setOwnMapping: action,
-    setOwnConnection: action,
-    setOwnRuntime: action,
-    setOwnService: action,
-    setOwnGenerationSpecification: action,
-    setOwnFileGeneration: action,
-    deleteOwnElement: action,
-    renameOwnElement: action,
-    TEMPORARY__deleteOwnSectionIndex: action,
   });
 
   /**
@@ -169,8 +141,6 @@ export const observe_PureModel = async (
   makeObservable(metamodel, {
     generationModel: observable,
     dependencyManager: observable,
-    setDependencyManager: action,
-    addElement: action,
   });
 
   observe_DependencyManager(metamodel.dependencyManager);

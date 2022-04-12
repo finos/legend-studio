@@ -96,6 +96,7 @@ import {
 } from '@finos/legend-application';
 import { CONFIGURATION_EDITOR_TAB } from './editor-state/ProjectConfigurationEditorState';
 import type { DSLMapping_LegendStudioPlugin_Extension } from './DSLMapping_LegendStudioPlugin_Extension';
+import { graph_dispose } from './graphModifier/GraphModifierHelper';
 
 export enum GraphBuilderStatus {
   SUCCEEDED = 'SUCCEEDED',
@@ -210,9 +211,8 @@ export class EditorGraphState {
       stopWatch.record();
       const dependencyManager =
         this.editorStore.graphManagerState.createEmptyDependencyManager();
-      this.editorStore.graphManagerState.graph.setDependencyManager(
-        dependencyManager,
-      );
+      this.editorStore.graphManagerState.graph.dependencyManager =
+        dependencyManager;
       dependencyManager.buildState.setMessage(`Fetching dependencies...`);
       const dependencyEntitiesMap = (yield flowResult(
         this.getConfigurationProjectDependencyEntities(),
@@ -275,7 +275,9 @@ export class EditorGraphState {
       );
 
       // add generation specification if model generation elements exists in graph and no generation specification
-      this.graphGenerationState.possiblyAddMissingGenerationSpecifications();
+      yield flowResult(
+        this.graphGenerationState.possiblyAddMissingGenerationSpecifications(),
+      );
 
       return {
         status: GraphBuilderStatus.SUCCEEDED,
@@ -774,9 +776,8 @@ export class EditorGraphState {
         this.editorStore.graphManagerState.graph.dependencyManager.buildState
           .hasSucceeded
       ) {
-        newGraph.setDependencyManager(
-          this.editorStore.graphManagerState.graph.dependencyManager,
-        );
+        newGraph.dependencyManager =
+          this.editorStore.graphManagerState.graph.dependencyManager;
       } else {
         this.editorStore.projectConfigurationEditorState.setProjectConfiguration(
           ProjectConfiguration.serialization.fromJson(
@@ -788,7 +789,7 @@ export class EditorGraphState {
         );
         const dependencyManager =
           this.editorStore.graphManagerState.createEmptyDependencyManager();
-        newGraph.setDependencyManager(dependencyManager);
+        newGraph.dependencyManager = dependencyManager;
         yield this.editorStore.graphManagerState.graphManager.buildDependencies(
           this.editorStore.graphManagerState.coreModel,
           this.editorStore.graphManagerState.systemModel,
@@ -817,7 +818,7 @@ export class EditorGraphState {
 
       /* @MARKER: MEMORY-SENSITIVE */
       this.editorStore.changeDetectionState.stop(); // stop change detection before disposing hash
-      yield flowResult(this.editorStore.graphManagerState.graph.dispose());
+      yield flowResult(graph_dispose(this.editorStore.graphManagerState.graph));
 
       yield this.editorStore.graphManagerState.graphManager.buildGraph(
         newGraph,

@@ -655,8 +655,7 @@ export class MappingExecutionState {
             service,
             this.editorStore.changeDetectionState.observerContext,
           );
-          this.editorStore.graphManagerState.graph.addElement(service);
-          this.editorStore.openElement(service);
+          yield flowResult(this.editorStore.addElement(service, true));
         } else {
           throw new UnsupportedOperationError(
             `Can't build service from input data state`,

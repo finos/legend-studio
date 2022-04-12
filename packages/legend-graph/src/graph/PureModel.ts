@@ -205,10 +205,6 @@ export class PureModel extends BasicModel {
     return this.coreModel.primitiveTypes;
   }
 
-  setDependencyManager = (dependencyManager: DependencyManager): void => {
-    this.dependencyManager = dependencyManager;
-  };
-
   getPrimitiveType = (type: PRIMITIVE_TYPE): PrimitiveType =>
     guaranteeNonNullable(
       this.coreModel.primitiveTypesIndex.get(type),
@@ -477,5 +473,16 @@ export class PureModel extends BasicModel {
     for (const cleaner of deadReferencesCleaners) {
       cleaner(this);
     }
+  }
+
+  renameElement(element: PackageableElement, newPath: string): void {
+    const existingElement = this.getNullableElement(newPath);
+    if (existingElement) {
+      throw new IllegalStateError(
+        `Can't rename element '${element.path}' to '${newPath}': another element with the same path already existed`,
+      );
+    }
+
+    super.renameOwnElement(element, newPath);
   }
 }

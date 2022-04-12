@@ -62,7 +62,11 @@ import {
 } from '@finos/legend-application';
 import format from 'date-fns/format/index';
 import { addDays } from 'date-fns';
-import { genericType_setRawType } from '../stores/QueryBuilderGraphModifierHelper';
+import {
+  genericType_setRawType,
+  instanceValue_changeValue,
+  instanceValue_changeValues,
+} from '../stores/QueryBuilderValueSpecificationModifierHelper';
 
 const QueryBuilderParameterInfoTooltip: React.FC<{
   variable: VariableExpression;
@@ -156,7 +160,7 @@ const StringPrimitiveInstanceValueEditor = observer(
     const { valueSpecification, className } = props;
     const value = valueSpecification.values[0] as string;
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) =>
-      valueSpecification.changeValue(event.target.value, 0);
+      instanceValue_changeValue(valueSpecification, event.target.value, 0);
 
     return (
       <div className={clsx('query-builder-value-spec-editor', className)}>
@@ -179,7 +183,8 @@ const BooleanPrimitiveInstanceValueEditor = observer(
   }) => {
     const { valueSpecification, className } = props;
     const value = valueSpecification.values[0] as boolean;
-    const toggleValue = (): void => valueSpecification.changeValue(!value, 0);
+    const toggleValue = (): void =>
+      instanceValue_changeValue(valueSpecification, !value, 0);
 
     return (
       <div className={clsx('query-builder-value-spec-editor', className)}>
@@ -209,7 +214,7 @@ const NumberPrimitiveInstanceValueEditor = observer(
         ? parseInt(event.target.value, 10)
         : parseFloat(event.target.value);
       inputVal = isNaN(inputVal) ? 0 : inputVal;
-      valueSpecification.changeValue(inputVal, 0);
+      instanceValue_changeValue(valueSpecification, inputVal, 0);
     };
 
     return (
@@ -234,7 +239,7 @@ export const DatePrimitiveInstanceValueEditor = observer(
     const { valueSpecification, className } = props;
     const value = valueSpecification.values[0] as string;
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
-      valueSpecification.changeValue(event.target.value, 0);
+      instanceValue_changeValue(valueSpecification, event.target.value, 0);
     };
 
     return (
@@ -259,7 +264,7 @@ export const DateTimePrimitiveInstanceValueEditor = observer(
     const { valueSpecification, className } = props;
     const value = valueSpecification.values[0] as string;
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
-      valueSpecification.changeValue(event.target.value, 0);
+      instanceValue_changeValue(valueSpecification, event.target.value, 0);
     };
 
     return (
@@ -291,7 +296,8 @@ const EnumValueInstanceValueEditor = observer(
       value: value,
     }));
     const changeValue = (val: { value: Enum; label: string }): void => {
-      valueSpecification.changeValue(
+      instanceValue_changeValue(
+        valueSpecification,
         EnumValueExplicitReference.create(val.value),
         0,
       );
@@ -342,7 +348,7 @@ const setCollectionValue = (
   value: string,
 ): void => {
   if (value.trim().length === 0) {
-    valueSpecification.changeValues([]);
+    instanceValue_changeValues(valueSpecification, []);
     return;
   }
   const multiplicityOne = graph.getTypicalMultiplicity(
@@ -429,7 +435,7 @@ const setCollectionValue = (
       })
       .filter(isNonNullable);
   }
-  valueSpecification.changeValues(result);
+  instanceValue_changeValues(valueSpecification, result);
 };
 
 const COLLECTION_PREVIEW_CHAR_LIMIT = 50;

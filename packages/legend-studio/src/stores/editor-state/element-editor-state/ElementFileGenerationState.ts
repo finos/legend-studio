@@ -16,7 +16,7 @@
 
 import type { EditorStore } from '../../EditorStore';
 import { FileGenerationState } from '../../editor-state/FileGenerationState';
-import { action, flowResult, makeAutoObservable } from 'mobx';
+import { action, flow, flowResult, makeAutoObservable } from 'mobx';
 import { ElementEditorState } from './ElementEditorState';
 import { type GeneratorFn, AssertionError, uuid } from '@finos/legend-shared';
 import {
@@ -41,7 +41,7 @@ export class ElementFileGenerationState {
       uuid: false,
       editorStore: false,
       setShowNewFileGenerationModal: action,
-      promoteToFileGeneration: action,
+      promoteToFileGeneration: flow,
     });
 
     this.editorStore = editorStore;
@@ -58,7 +58,10 @@ export class ElementFileGenerationState {
     this.showNewFileGenerationModal = show;
   }
 
-  promoteToFileGeneration(packagePath: string, name: string): void {
+  *promoteToFileGeneration(
+    packagePath: string,
+    name: string,
+  ): GeneratorFn<void> {
     const fileGenerationPackage =
       this.editorStore.graphManagerState.graph.getOrCreatePackage(packagePath);
     const fileGeneration = this.fileGenerationState.fileGeneration;
@@ -68,8 +71,7 @@ export class ElementFileGenerationState {
       fileGeneration,
       this.editorStore.changeDetectionState.observerContext,
     );
-    this.editorStore.graphManagerState.graph.addElement(fileGeneration);
-    this.editorStore.openElement(fileGeneration);
+    yield flowResult(this.editorStore.addElement(fileGeneration, true));
     // reset file generation state so since the current file generation is promoted to a packageable element in the graph
     // otherwise if we keep this reference, editing this element generation state will also modify the packageable element
     const newFileGeneration = new FileGenerationSpecification('');

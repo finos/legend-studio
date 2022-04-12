@@ -315,9 +315,8 @@ export class ViewerStore {
     // build dependencies
     const dependencyManager =
       this.editorStore.graphManagerState.createEmptyDependencyManager();
-    this.editorStore.graphManagerState.graph.setDependencyManager(
-      dependencyManager,
-    );
+    this.editorStore.graphManagerState.graph.dependencyManager =
+      dependencyManager;
     const dependency_buildReport =
       (yield this.editorStore.graphManagerState.graphManager.buildDependencies(
         this.editorStore.graphManagerState.coreModel,
@@ -458,9 +457,8 @@ export class ViewerStore {
 
     const dependencyManager =
       this.editorStore.graphManagerState.createEmptyDependencyManager();
-    this.editorStore.graphManagerState.graph.setDependencyManager(
-      dependencyManager,
-    );
+    this.editorStore.graphManagerState.graph.dependencyManager =
+      dependencyManager;
 
     // build dependencies
     const dependency_buildReport =
