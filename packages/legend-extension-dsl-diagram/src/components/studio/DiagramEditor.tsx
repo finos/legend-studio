@@ -830,6 +830,7 @@ const DiagramEditorInlineClassCreatorInner = observer(
   }) => {
     const { inlineClassCreatorState } = props;
     const editorStore = useEditorStore();
+    const applicationStore = useApplicationStore();
     const diagramEditorState = inlineClassCreatorState.diagramEditorState;
     const isReadOnly = diagramEditorState.isReadOnly;
     const [path, setPath] = useState(
@@ -856,7 +857,7 @@ const DiagramEditorInlineClassCreatorInner = observer(
     const canCreateClass =
       isClassPathNonEmpty && isNotTopLevelClass && isValidPath && isClassUnique;
 
-    const close = async (
+    const createClass = async (
       event: React.MouseEvent<HTMLButtonElement>,
     ): Promise<void> => {
       event.preventDefault();
@@ -875,6 +876,9 @@ const DiagramEditorInlineClassCreatorInner = observer(
           inlineClassCreatorState.point,
         );
       }
+    };
+    const close = (event: React.MouseEvent<HTMLButtonElement>): void => {
+      createClass(event).catch(applicationStore.alertUnhandledError);
     };
     const pathInputRef = useRef<HTMLInputElement>(null);
 
