@@ -102,8 +102,7 @@ const promoteQueryToService = async (
       service,
       editorStore.changeDetectionState.observerContext,
     );
-    editorStore.graphManagerState.graph.addElement(service);
-    editorStore.openElement(service);
+    await flowResult(editorStore.addElement(service, true));
     await flowResult(
       queryBuilderExtension.setEmbeddedQueryBuilderMode(undefined),
     ).catch(applicationStore.alertUnhandledError);

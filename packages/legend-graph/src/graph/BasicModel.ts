@@ -16,7 +16,6 @@
 
 import {
   type Clazz,
-  type GeneratorFn,
   ActionState,
   assertNonEmptyString,
   UnsupportedOperationError,
@@ -366,11 +365,12 @@ export abstract class BasicModel {
 
   /**
    * Dispose the current graph and any potential reference from parts outside of the graph to the graph
-   * This is a MUST to prevent memory-leak as we use referneces to link between objects instead of string pointers
+   * This is a MUST to prevent memory-leak as we might have references between metamodels from this graph
+   * and other graphs
    */
-  *dispose(): GeneratorFn<void> {
+  async dispose(): Promise<void> {
     if (this.allOwnElements.length) {
-      yield Promise.all<void>(
+      await Promise.all<void>(
         this.allOwnElements.map((element) =>
           promisify(() => {
             element.dispose();
@@ -472,7 +472,7 @@ export abstract class BasicModel {
     } else if (element instanceof GenerationSpecification) {
       this.generationSpecificationsIndex.delete(element.path);
     } else if (element instanceof Package) {
-      element.children.forEach((el) => this.deleteOwnElement(el));
+      element.children.forEach(this.deleteOwnElement);
     } else {
       const extension = this.getExtensionForElementClass(
         getClass<PackageableElement>(element),
@@ -481,7 +481,17 @@ export abstract class BasicModel {
     }
   }
 
-  renameOwnElement(element: PackageableElement, newPath: string): void {
+  /**
+   * NOTE: this method has to do with graph modification
+   * and as of the current set up, we should not allow it to be called
+   * on any immutable graphs. As such, we protect it and let the main graph
+   * expose it. The other benefit of exposing this in the main graph is that we could
+   * do better duplicated path check
+   */
+  protected renameOwnElement(
+    element: PackageableElement,
+    newPath: string,
+  ): void {
     const elementCurrentPath = element.path;
     // validation before renaming
     if (elementCurrentPath === newPath) {
@@ -503,7 +513,7 @@ export abstract class BasicModel {
     const existingElement = this.getOwnNullableElement(newPath, true);
     if (existingElement) {
       throw new UnsupportedOperationError(
-        `Can't rename element '${elementCurrentPath} to '${newPath}': element with the same path already existed'`,
+        `Can't rename element '${elementCurrentPath} to '${newPath}': another element with the same path already existed'`,
       );
     }
     const [packagePath, elementName] =

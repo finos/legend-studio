@@ -22,8 +22,11 @@ import {
   type ValueSpecification,
   type ObserverContext,
   type VariableExpression,
+  type InstanceValue,
+  type GraphFetchTree,
   observe_ValueSpecification,
 } from '@finos/legend-graph';
+import { addUniqueEntry, deleteEntry } from '@finos/legend-shared';
 import { action } from 'mobx';
 
 export const genericType_setRawType = action(
@@ -58,5 +61,29 @@ export const functionExpression_setParametersValues = action(
 export const variableExpression_setName = action(
   (v: VariableExpression, val: string): void => {
     v.name = val;
+  },
+);
+
+export const instanceValue_changeValue = action(
+  (instanceValue: InstanceValue, val: unknown, idx: number) => {
+    instanceValue.values[idx] = val;
+  },
+);
+
+export const instanceValue_changeValues = action(
+  (instanceValue: InstanceValue, val: unknown[]) => {
+    instanceValue.values = val;
+  },
+);
+
+export const graphFetchTree_addSubTree = action(
+  (tree: GraphFetchTree, val: GraphFetchTree): void => {
+    addUniqueEntry(tree.subTrees, val);
+  },
+);
+
+export const graphFetchTree_removeSubTree = action(
+  (tree: GraphFetchTree, val: GraphFetchTree): void => {
+    deleteEntry(tree.subTrees, val);
   },
 );

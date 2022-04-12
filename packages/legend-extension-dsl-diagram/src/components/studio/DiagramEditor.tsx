@@ -856,7 +856,9 @@ const DiagramEditorInlineClassCreatorInner = observer(
     const canCreateClass =
       isClassPathNonEmpty && isNotTopLevelClass && isValidPath && isClassUnique;
 
-    const close = (event: React.MouseEvent<HTMLButtonElement>): void => {
+    const close = async (
+      event: React.MouseEvent<HTMLButtonElement>,
+    ): Promise<void> => {
       event.preventDefault();
       if (canCreateClass) {
         diagramEditorState.setInlineClassCreatorState(undefined);
@@ -867,8 +869,7 @@ const DiagramEditorInlineClassCreatorInner = observer(
           _class,
           editorStore.changeDetectionState.observerContext,
         );
-        editorStore.graphManagerState.graph.addElement(_class);
-        editorStore.explorerTreeState.reprocess();
+        await flowResult(editorStore.addElement(_class, false));
         diagramEditorState.renderer.addClassView(
           _class,
           inlineClassCreatorState.point,

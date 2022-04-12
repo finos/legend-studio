@@ -46,9 +46,10 @@ export {
   type TransformDropTarget,
 } from './stores/shared/DnDUtil';
 export { ExplorerTreeRootPackageLabel } from './stores/ExplorerTreeState';
+export * from './stores/graphModifier/GraphModifierHelper';
+export * from './stores/graphModifier/DomainGraphModifierHelper';
 export * from './stores/DSLMapping_LegendStudioPlugin_Extension';
 export * from './stores/DSLService_LegendStudioPlugin_Extension';
-export * from './stores/graphModifier/DomainGraphModifierHelper';
 export * from './stores/graphModifier/DSLGeneration_GraphModifierHelper';
 export * from './stores/graphModifier/DSLService_GraphModifierHelper';
 

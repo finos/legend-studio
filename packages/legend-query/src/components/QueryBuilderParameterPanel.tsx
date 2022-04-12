@@ -45,7 +45,7 @@ import { useDrag, useDragLayer } from 'react-dnd';
 import { getEmptyImage } from 'react-dnd-html5-backend';
 import { QueryBuilderValueSpecificationEditor } from './QueryBuilderValueSpecificationEditor';
 import { prettyCONSTName } from '@finos/legend-shared';
-import { variableExpression_setName } from '../stores/QueryBuilderGraphModifierHelper';
+import { variableExpression_setName } from '../stores/QueryBuilderValueSpecificationModifierHelper';
 
 const ParameterValuesEditor = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {

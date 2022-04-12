@@ -46,6 +46,7 @@ const NewFileGenerationModal = observer(
     elementGenerationState: ElementFileGenerationState;
   }) => {
     const { elementGenerationState, currentElementState } = props;
+    const applicationStore = useApplicationStore();
     const isReadOnly = currentElementState.isReadOnly;
     const element = currentElementState.element;
     const mappingPackage = guaranteeType(element.package, Package);
@@ -66,12 +67,14 @@ const NewFileGenerationModal = observer(
       editorStore.graphManagerState.graph.allOwnElements
         .map((el) => el.path)
         .includes(packagePath + ELEMENT_PATH_DELIMITER + serviceName);
-    const create = (): void => {
+    const create = async (): Promise<void> => {
       if (servicePath && !isReadOnly && !elementAlreadyExists) {
-        elementGenerationState.promoteToFileGeneration(
-          packagePath,
-          serviceName,
-        );
+        await flowResult(
+          elementGenerationState.promoteToFileGeneration(
+            packagePath,
+            serviceName,
+          ),
+        ).catch(applicationStore.alertUnhandledError);
         close();
       }
     };

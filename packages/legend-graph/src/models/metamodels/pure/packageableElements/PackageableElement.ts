@@ -66,9 +66,7 @@ export interface PackageableElementVisitor<T> {
   visit_GenerationSpecification(element: GenerationSpecification): T;
 }
 
-export abstract class /*toCHECK*/ PackageableElement
-  implements Hashable, Stubable
-{
+export abstract class PackageableElement implements Hashable, Stubable {
   readonly uuid = uuid();
 
   protected _isDeleted = false;

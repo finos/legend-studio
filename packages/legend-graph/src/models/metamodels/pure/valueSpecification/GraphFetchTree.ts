@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { addUniqueEntry, deleteEntry } from '@finos/legend-shared';
 import type { Class } from '../packageableElements/domain/Class';
 import type { PropertyReference } from '../packageableElements/domain/PropertyReference';
 import {
@@ -28,21 +27,15 @@ import type {
 } from './ValueSpecification';
 import { InstanceValue } from './InstanceValue';
 
-export abstract class /*toCHECK*/ GraphFetchTree {
+export abstract class GraphFetchTree {
   subTrees: GraphFetchTree[] = [];
 
   get isEmpty(): boolean {
     return !this.subTrees.length;
   }
-  addSubTree(val: GraphFetchTree): void {
-    addUniqueEntry(this.subTrees, val);
-  }
-  removeSubTree(val: GraphFetchTree): void {
-    deleteEntry(this.subTrees, val);
-  }
 }
 
-export class /*toCHECK*/ RootGraphFetchTree extends GraphFetchTree {
+export class RootGraphFetchTree extends GraphFetchTree {
   class: PackageableElementReference<Class>;
 
   constructor(_class: PackageableElementReference<Class>) {
@@ -51,7 +44,7 @@ export class /*toCHECK*/ RootGraphFetchTree extends GraphFetchTree {
   }
 }
 
-export class /*toCHECK*/ PropertyGraphFetchTree extends GraphFetchTree {
+export class PropertyGraphFetchTree extends GraphFetchTree {
   property: PropertyReference;
   alias?: string | undefined;
   parameters: ValueSpecification[] = []; //TODO
@@ -67,20 +60,13 @@ export class /*toCHECK*/ PropertyGraphFetchTree extends GraphFetchTree {
       val ??
       OptionalPackageableElementExplicitReference.create<Class>(undefined);
   }
-
-  withSubType(
-    val: OptionalPackageableElementReference<Class>,
-  ): PropertyGraphFetchTree {
-    this.subType = val;
-    return this;
-  }
 }
 
-export abstract class /*toCHECK*/ GraphFetchTreeInstanceValue extends InstanceValue {
+export abstract class GraphFetchTreeInstanceValue extends InstanceValue {
   override values: GraphFetchTree[] = [];
 }
 
-export class /*toCHECK*/ PropertyGraphFetchTreeInstanceValue extends GraphFetchTreeInstanceValue {
+export class PropertyGraphFetchTreeInstanceValue extends GraphFetchTreeInstanceValue {
   override values: PropertyGraphFetchTree[] = [];
 
   override accept_ValueSpecificationVisitor<T>(
@@ -90,7 +76,7 @@ export class /*toCHECK*/ PropertyGraphFetchTreeInstanceValue extends GraphFetchT
   }
 }
 
-export class /*toCHECK*/ RootGraphFetchTreeInstanceValue extends GraphFetchTreeInstanceValue {
+export class RootGraphFetchTreeInstanceValue extends GraphFetchTreeInstanceValue {
   override values: RootGraphFetchTree[] = [];
 
   override accept_ValueSpecificationVisitor<T>(

@@ -552,7 +552,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       systemModel,
       this.pluginManager.getPureGraphPlugins(),
     );
-    graph.setDependencyManager(dependencyManager);
+    graph.dependencyManager = dependencyManager;
 
     try {
       dependencyManager.initialize(dependencyEntitiesMap);

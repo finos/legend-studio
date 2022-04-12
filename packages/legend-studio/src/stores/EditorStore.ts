@@ -136,6 +136,12 @@ import type { LegendStudioConfig } from '../application/LegendStudioConfig';
 import type { EditorMode } from './editor/EditorMode';
 import { StandardEditorMode } from './editor/StandardEditorMode';
 import { WorkspaceUpdateConflictResolutionState } from './sidebar-state/WorkspaceUpdateConflictResolutionState';
+import {
+  graph_addElement,
+  graph_deleteElement,
+  graph_deleteOwnElement,
+  graph_renameElement,
+} from './graphModifier/GraphModifierHelper';
 
 export abstract class EditorExtensionState {
   private readonly _$nominalTypeBrand!: 'EditorExtensionState';
@@ -1092,18 +1098,32 @@ export class EditorStore {
       // the cheap way to do this is to search by element label text, e.g. `Mapping some::package::someMapping`
       this.grammarTextEditorState.setCurrentElementLabelRegexString(element);
     } else {
-      const existingElementState = this.openedEditorStates.find(
-        (state) =>
-          state instanceof ElementEditorState && state.element === element,
-      );
-      const elementState =
-        existingElementState ?? this.createElementState(element);
-      if (elementState && !existingElementState) {
-        this.openedEditorStates.push(elementState);
+      if (!(element instanceof Package)) {
+        const existingElementState = this.openedEditorStates.find(
+          (state) =>
+            state instanceof ElementEditorState && state.element === element,
+        );
+        const elementState =
+          existingElementState ?? this.createElementState(element);
+        if (elementState && !existingElementState) {
+          this.openedEditorStates.push(elementState);
+        }
+        this.setCurrentEditorState(elementState);
       }
-      this.setCurrentEditorState(elementState);
       // expand tree node
       this.explorerTreeState.openNode(element);
+    }
+  }
+
+  *addElement(
+    element: PackageableElement,
+    openAfterCreate: boolean,
+  ): GeneratorFn<void> {
+    graph_addElement(this.graphManagerState.graph, element);
+    this.explorerTreeState.reprocess();
+
+    if (openAfterCreate) {
+      this.openElement(element);
     }
   }
 
@@ -1126,6 +1146,7 @@ export class EditorStore {
       )
       .filter(isNonNullable);
     const elementsToDelete = [element, ...generatedChildrenElements];
+
     if (
       this.currentEditorState &&
       this.currentEditorState instanceof ElementEditorState &&
@@ -1140,9 +1161,9 @@ export class EditorStore {
     );
     // remove/retire the element's generated children before remove the element itself
     generatedChildrenElements.forEach((el) =>
-      this.graphManagerState.graph.generationModel.deleteOwnElement(el),
+      graph_deleteOwnElement(this.graphManagerState.graph.generationModel, el),
     );
-    this.graphManagerState.graph.deleteElement(element);
+    graph_deleteElement(this.graphManagerState.graph, element);
 
     const extraElementEditorPostDeleteActions = this.pluginManager
       .getStudioPlugins()
@@ -1173,7 +1194,7 @@ export class EditorStore {
     if (this.graphManagerState.isElementReadOnly(element)) {
       return;
     }
-    this.graphManagerState.graph.renameOwnElement(element, newPath);
+    graph_renameElement(this.graphManagerState.graph, element, newPath);
 
     const extraElementEditorPostRenameActions = this.pluginManager
       .getStudioPlugins()

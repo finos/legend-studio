@@ -556,9 +556,8 @@ export class DatabaseBuilderState {
           newDatabase,
           this.editorStore.changeDetectionState.observerContext,
         );
-        this.editorStore.graphManagerState.graph.addElement(newDatabase);
+        yield flowResult(this.editorStore.addElement(newDatabase, false));
         currentDatabase = newDatabase;
-        this.editorStore.explorerTreeState.reprocess();
       } else {
         currentDatabase = this.currentDatabase;
       }

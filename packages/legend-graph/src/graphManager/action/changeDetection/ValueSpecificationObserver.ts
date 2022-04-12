@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { action, computed, makeObservable, observable } from 'mobx';
+import { computed, makeObservable, observable } from 'mobx';
 import type { AlloySerializationConfigInstanceValue } from '../../../models/metamodels/pure/valueSpecification/AlloySerializationConfig';
 import {
   type RootGraphFetchTreeInstanceValue,
@@ -95,9 +95,6 @@ export const observe_PrimitiveInstanceValue = skipObserved(
     makeObservable<PrimitiveInstanceValue>(metamodel, {
       genericType: observable,
       values: observable,
-      deleteValue: action,
-      addValue: action,
-      changeValue: action,
     });
 
     observe_GenericTypeReference(metamodel.genericType);
@@ -113,9 +110,6 @@ export const observe_EnumValueInstanceValue = skipObserved(
     makeObservable<EnumValueInstanceValue>(metamodel, {
       genericType: observable,
       values: observable,
-      deleteValue: action,
-      addValue: action,
-      changeValue: action,
     });
 
     metamodel.values.forEach(observe_EnumValueReference);
@@ -296,7 +290,6 @@ function _observe_CollectionInstanceValue(
   makeObservable<CollectionInstanceValue>(metamodel, {
     genericType: observable,
     values: observable,
-    changeValues: action,
   });
 
   metamodel.values.forEach((value) =>
@@ -331,8 +324,6 @@ function observe_Abstract_GraphFetchTree(
 ): GraphFetchTree {
   makeObservable(metamodel, {
     subTrees: observable,
-    addSubTree: action,
-    removeSubTree: action,
     isEmpty: computed,
   });
 
@@ -359,7 +350,6 @@ function _observe_PropertyGraphFetchTree(
     alias: observable,
     parameters: observable,
     subType: observable,
-    withSubType: action,
   });
 
   observe_PropertyReference(metamodel.property);

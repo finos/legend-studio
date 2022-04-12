@@ -51,7 +51,7 @@ import {
 import { Dialog, CustomSelectorInput, RefreshIcon } from '@finos/legend-art';
 import format from 'date-fns/format/index';
 import { addDays } from 'date-fns';
-import { genericType_setRawType } from '../stores/QueryBuilderGraphModifierHelper';
+import { genericType_setRawType } from '../stores/QueryBuilderValueSpecificationModifierHelper';
 
 const MilestoningParameterEditor = observer(
   (props: { queryBuilderState: QueryBuilderState; parameterIndex: number }) => {

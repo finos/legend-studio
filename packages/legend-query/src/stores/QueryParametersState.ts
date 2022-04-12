@@ -43,7 +43,7 @@ import {
   multiplicity_setLowerBound,
   multiplicity_setUpperBound,
   genericType_setRawType,
-} from './QueryBuilderGraphModifierHelper';
+} from './QueryBuilderValueSpecificationModifierHelper';
 
 export enum QUERY_BUILDER_PARAMETER_TREE_DND_TYPE {
   VARIABLE = 'VARIABLE',
