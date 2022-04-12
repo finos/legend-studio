@@ -29,6 +29,7 @@ import {
   PanelLoadingIndicator,
   CheckSquareIcon,
   PencilIcon,
+  MarkdownTextViewer,
 } from '@finos/legend-art';
 import type { ProjectOption } from '../../stores/SetupStore';
 import { SetupStoreProvider, useSetupStore } from './SetupStoreProvider';
@@ -132,6 +133,9 @@ const CreateProjectModal = observer(() => {
   ) => {
     setArtifactId(event.target.value);
   };
+  const importProjectDocumentation = applicationStore.docRegistry.getEntry(
+    LEGEND_STUDIO_DOCUMENTATION_KEY.IMPORT_PROJECT,
+  );
   const disableSubmit =
     (dispatchingActions || !projectIdentifier || !artifactId || !groupId) &&
     !importProjectSuccessReport;
@@ -199,7 +203,11 @@ const CreateProjectModal = observer(() => {
             {modalTitle}
             <DocumentationLink
               className="setup__doc__create-project"
-              documentationKey={LEGEND_STUDIO_DOCUMENTATION_KEY.CREATE_PROJECT}
+              documentationKey={
+                isImportingProject
+                  ? LEGEND_STUDIO_DOCUMENTATION_KEY.IMPORT_PROJECT
+                  : LEGEND_STUDIO_DOCUMENTATION_KEY.CREATE_PROJECT
+              }
             />
           </div>
         </div>
@@ -207,267 +215,257 @@ const CreateProjectModal = observer(() => {
           <PanelLoadingIndicator
             isLoading={setupStore.createOrImportProjectState.isInProgress}
           />
-          <div className="setup-create__form">
+          <div className="setup-create__form panel__content__form">
             {allowCreatingNewProject && (
-              <div className="panel__content__form">
-                <div className="panel__content__form__section">
-                  <div className="panel__content__form__section__header__label">
-                    Import project
-                  </div>
-                  <div
-                    className={clsx('panel__content__form__section__toggler')}
-                    onClick={toggleCreationMode}
+              <div className="panel__content__form__section">
+                <div className="panel__content__form__section__header__label">
+                  Import project
+                </div>
+                <div
+                  className={clsx('panel__content__form__section__toggler')}
+                  onClick={toggleCreationMode}
+                >
+                  <button
+                    className={clsx(
+                      'panel__content__form__section__toggler__btn',
+                      {
+                        'panel__content__form__section__toggler__btn--toggled':
+                          isImportingProject,
+                      },
+                    )}
+                    disabled={Boolean(importProjectSuccessReport)}
                   >
-                    <button
-                      className={clsx(
-                        'panel__content__form__section__toggler__btn',
-                        {
-                          'panel__content__form__section__toggler__btn--toggled':
-                            isImportingProject,
-                        },
-                      )}
-                      disabled={Boolean(importProjectSuccessReport)}
-                    >
-                      {isImportingProject ? (
-                        <CheckSquareIcon />
-                      ) : (
-                        <SquareIcon />
-                      )}
-                    </button>
-                    <div className="panel__content__form__section__toggler__prompt">
-                      Specifies if the project will be imported from a
-                      version-control system (e.g. Gitlab)
-                    </div>
+                    {isImportingProject ? <CheckSquareIcon /> : <SquareIcon />}
+                  </button>
+                  <div className="panel__content__form__section__toggler__prompt">
+                    Specifies if the project will be imported from a
+                    version-control system (e.g. Gitlab)
                   </div>
                 </div>
               </div>
             )}
-            {!isImportingProject && (
-              <div className="panel__content__form">
+            {!allowCreatingNewProject &&
+              importProjectDocumentation &&
+              importProjectDocumentation.markdownText && (
                 <div className="panel__content__form__section">
-                  <div className="panel__content__form__section__header__label">
-                    Project Name
-                  </div>
-                  <input
-                    className="panel__content__form__section__input"
-                    spellCheck={false}
-                    placeholder="MyProject"
-                    value={projectIdentifier}
-                    disabled={Boolean(importProjectSuccessReport)}
-                    onChange={changeProjectIdentifier}
+                  <MarkdownTextViewer
+                    value={importProjectDocumentation.markdownText}
                   />
                 </div>
+              )}
+            {!isImportingProject && (
+              <div className="panel__content__form__section">
+                <div className="panel__content__form__section__header__label">
+                  Project Name
+                </div>
+                <input
+                  className="panel__content__form__section__input"
+                  spellCheck={false}
+                  placeholder="MyProject"
+                  value={projectIdentifier}
+                  disabled={Boolean(importProjectSuccessReport)}
+                  onChange={changeProjectIdentifier}
+                />
               </div>
             )}
             {isImportingProject && (
-              <div className="panel__content__form">
-                <div className="panel__content__form__section">
-                  <div className="panel__content__form__section__header__label">
-                    Project ID
-                  </div>
-                  <div className="panel__content__form__section__header__prompt">
-                    The ID of the project in the underlying version-control
-                    system
-                  </div>
-                  <input
-                    className="panel__content__form__section__input"
-                    spellCheck={false}
-                    placeholder="1234"
-                    value={projectIdentifier}
-                    disabled={Boolean(importProjectSuccessReport)}
-                    onChange={changeProjectIdentifier}
-                  />
+              <div className="panel__content__form__section">
+                <div className="panel__content__form__section__header__label">
+                  Project ID
                 </div>
+                <div className="panel__content__form__section__header__prompt">
+                  The ID of the project in the underlying version-control system
+                </div>
+                <input
+                  className="panel__content__form__section__input"
+                  spellCheck={false}
+                  placeholder="1234"
+                  value={projectIdentifier}
+                  disabled={Boolean(importProjectSuccessReport)}
+                  onChange={changeProjectIdentifier}
+                />
               </div>
             )}
-            <div className="panel__content__form">
-              <div className="panel__content__form__section">
-                <div className="panel__content__form__section__header__label">
-                  Description
-                </div>
-                <textarea
-                  className="panel__content__form__section__textarea"
-                  spellCheck={false}
-                  value={description}
-                  onChange={changeDescription}
-                />
+            <div className="panel__content__form__section">
+              <div className="panel__content__form__section__header__label">
+                Description
               </div>
+              <textarea
+                className="panel__content__form__section__textarea"
+                spellCheck={false}
+                value={description}
+                onChange={changeDescription}
+              />
             </div>
-            <div className="panel__content__form">
-              <div className="panel__content__form__section">
-                <div className="panel__content__form__section__header__label">
-                  Group ID
-                </div>
-                <div className="panel__content__form__section__header__prompt">
-                  The domain for artifacts generated as part of the project
-                  build pipeline and published to an artifact repository
-                </div>
-                <input
-                  className="panel__content__form__section__input"
-                  spellCheck={false}
-                  placeholder="org.finos.legend.*"
-                  value={groupId}
-                  disabled={Boolean(importProjectSuccessReport)}
-                  onChange={changeGroupId}
-                />
+            <div className="panel__content__form__section">
+              <div className="panel__content__form__section__header__label">
+                Group ID
               </div>
-            </div>
-            <div className="panel__content__form">
-              <div className="panel__content__form__section">
-                <div className="panel__content__form__section__header__label">
-                  Artifact ID
-                </div>
-                <div className="panel__content__form__section__header__prompt">
-                  The identifier (within the domain specified by group ID) for
-                  artifacts generated as part of the project build pipeline and
-                  published to an artifact repository
-                </div>
-                <input
-                  className="panel__content__form__section__input"
-                  placeholder="my-project"
-                  spellCheck={false}
-                  value={artifactId}
-                  disabled={Boolean(importProjectSuccessReport)}
-                  onChange={changeArtifactId}
-                />
+              <div className="panel__content__form__section__header__prompt">
+                The domain for artifacts generated as part of the project build
+                pipeline and published to an artifact repository
               </div>
+              <input
+                className="panel__content__form__section__input"
+                spellCheck={false}
+                placeholder="org.finos.legend.*"
+                value={groupId}
+                disabled={Boolean(importProjectSuccessReport)}
+                onChange={changeGroupId}
+              />
             </div>
-            <div className="panel__content__form">
-              <div className="panel__content__form__section">
-                <div className="panel__content__form__section__header__label">
-                  Tags
-                </div>
-                <div className="panel__content__form__section__header__prompt">
-                  List of annotations to categorize projects
-                </div>
-                <div className="panel__content__form__section__list"></div>
-                <div
-                  className="panel__content__form__section__list__items"
-                  data-testid={
-                    LEGEND_STUDIO_TEST_ID.PANEL_CONTENT_FORM_SECTION_LIST_ITEMS
-                  }
-                >
-                  {tagsArray.map((value, idx) => (
-                    // NOTE: since the value must be unique, we will use it as the key
-                    <div
-                      key={value}
-                      className={
-                        showEditInput === idx
-                          ? 'panel__content__form__section__list__new-item'
-                          : 'panel__content__form__section__list__item'
-                      }
-                    >
-                      {showEditInput === idx ? (
-                        <>
-                          <input
-                            className="panel__content__form__section__input panel__content__form__section__list__new-item__input"
-                            spellCheck={false}
-                            value={itemValue}
-                            onChange={changeItemInputValue}
-                          />
-                          <div className="panel__content__form__section__list__new-item__actions">
-                            <button
-                              className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
-                              disabled={tagsArray.includes(itemValue)}
-                              onClick={updateValue(idx)}
-                              tabIndex={-1}
-                            >
-                              Save
-                            </button>
-                            <button
-                              className="panel__content__form__section__list__new-item__cancel-btn btn btn--dark"
-                              onClick={hideAddOrEditItemInput}
-                              tabIndex={-1}
-                            >
-                              Cancel
-                            </button>
-                          </div>
-                        </>
-                      ) : (
-                        <>
-                          <div className="panel__content__form__section__list__item__value">
-                            {value}
-                          </div>
-                          <div className="panel__content__form__section__list__item__actions">
-                            <button
-                              className="panel__content__form__section__list__item__edit-btn"
-                              onClick={showEditItemInput(value, idx)}
-                              tabIndex={-1}
-                            >
-                              <PencilIcon />
-                            </button>
-                            <button
-                              className="panel__content__form__section__list__item__remove-btn"
-                              onClick={deleteValue(idx)}
-                              tabIndex={-1}
-                            >
-                              <TimesIcon />
-                            </button>
-                          </div>
-                        </>
-                      )}
+            <div className="panel__content__form__section">
+              <div className="panel__content__form__section__header__label">
+                Artifact ID
+              </div>
+              <div className="panel__content__form__section__header__prompt">
+                The identifier (within the domain specified by group ID) for
+                artifacts generated as part of the project build pipeline and
+                published to an artifact repository
+              </div>
+              <input
+                className="panel__content__form__section__input"
+                placeholder="my-project"
+                spellCheck={false}
+                value={artifactId}
+                disabled={Boolean(importProjectSuccessReport)}
+                onChange={changeArtifactId}
+              />
+            </div>
+            <div className="panel__content__form__section">
+              <div className="panel__content__form__section__header__label">
+                Tags
+              </div>
+              <div className="panel__content__form__section__header__prompt">
+                List of annotations to categorize projects
+              </div>
+              <div className="panel__content__form__section__list"></div>
+              <div
+                className="panel__content__form__section__list__items"
+                data-testid={
+                  LEGEND_STUDIO_TEST_ID.PANEL_CONTENT_FORM_SECTION_LIST_ITEMS
+                }
+              >
+                {tagsArray.map((value, idx) => (
+                  // NOTE: since the value must be unique, we will use it as the key
+                  <div
+                    key={value}
+                    className={
+                      showEditInput === idx
+                        ? 'panel__content__form__section__list__new-item'
+                        : 'panel__content__form__section__list__item'
+                    }
+                  >
+                    {showEditInput === idx ? (
+                      <>
+                        <input
+                          className="panel__content__form__section__input panel__content__form__section__list__new-item__input"
+                          spellCheck={false}
+                          value={itemValue}
+                          onChange={changeItemInputValue}
+                        />
+                        <div className="panel__content__form__section__list__new-item__actions">
+                          <button
+                            className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
+                            disabled={tagsArray.includes(itemValue)}
+                            onClick={updateValue(idx)}
+                            tabIndex={-1}
+                          >
+                            Save
+                          </button>
+                          <button
+                            className="panel__content__form__section__list__new-item__cancel-btn btn btn--dark"
+                            onClick={hideAddOrEditItemInput}
+                            tabIndex={-1}
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="panel__content__form__section__list__item__value">
+                          {value}
+                        </div>
+                        <div className="panel__content__form__section__list__item__actions">
+                          <button
+                            className="panel__content__form__section__list__item__edit-btn"
+                            onClick={showEditItemInput(value, idx)}
+                            tabIndex={-1}
+                          >
+                            <PencilIcon />
+                          </button>
+                          <button
+                            className="panel__content__form__section__list__item__remove-btn"
+                            onClick={deleteValue(idx)}
+                            tabIndex={-1}
+                          >
+                            <TimesIcon />
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                ))}
+                {/* ADD NEW VALUE */}
+                {showEditInput === true && (
+                  <div className="panel__content__form__section__list__new-item">
+                    <input
+                      className="panel__content__form__section__input panel__content__form__section__list__new-item__input"
+                      spellCheck={false}
+                      value={itemValue}
+                      onChange={changeItemInputValue}
+                    />
+                    <div className="panel__content__form__section__list__new-item__actions">
+                      <button
+                        className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
+                        disabled={tagsArray.includes(itemValue)}
+                        onClick={addValue}
+                        tabIndex={-1}
+                      >
+                        Save
+                      </button>
+                      <button
+                        className="panel__content__form__section__list__new-item__cancel-btn btn btn--dark"
+                        onClick={hideAddOrEditItemInput}
+                        tabIndex={-1}
+                      >
+                        Cancel
+                      </button>
                     </div>
-                  ))}
-                  {/* ADD NEW VALUE */}
-                  {showEditInput === true && (
-                    <div className="panel__content__form__section__list__new-item">
-                      <input
-                        className="panel__content__form__section__input panel__content__form__section__list__new-item__input"
-                        spellCheck={false}
-                        value={itemValue}
-                        onChange={changeItemInputValue}
-                      />
-                      <div className="panel__content__form__section__list__new-item__actions">
-                        <button
-                          className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
-                          disabled={tagsArray.includes(itemValue)}
-                          onClick={addValue}
-                          tabIndex={-1}
-                        >
-                          Save
-                        </button>
-                        <button
-                          className="panel__content__form__section__list__new-item__cancel-btn btn btn--dark"
-                          onClick={hideAddOrEditItemInput}
-                          tabIndex={-1}
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-                {showEditInput !== true && (
-                  <div className="panel__content__form__section__list__new-item__add">
-                    <button
-                      className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
-                      onClick={showAddItemInput}
-                      tabIndex={-1}
-                    >
-                      Add Value
-                    </button>
                   </div>
                 )}
               </div>
-              {Boolean(importProjectSuccessReport) && (
-                <div className="setup-create__modal__success">
-                  <div className="setup-create__modal__success__label">
-                    <span className="setup-create__modal__success__label__text">
-                      The SDLC server has successfully registered your project.
-                      To complete the import, please commit the following
-                    </span>
-                    <a
-                      className="setup-create__modal__success__label__link"
-                      href={importProjectSuccessReport?.reviewUrl}
-                      rel="noopener noreferrer"
-                      target="_blank"
-                    >
-                      review.
-                    </a>
-                  </div>
+              {showEditInput !== true && (
+                <div className="panel__content__form__section__list__new-item__add">
+                  <button
+                    className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
+                    onClick={showAddItemInput}
+                    tabIndex={-1}
+                  >
+                    Add Value
+                  </button>
                 </div>
               )}
             </div>
+            {Boolean(importProjectSuccessReport) && (
+              <div className="setup-create__modal__success">
+                <div className="setup-create__modal__success__label">
+                  <span className="setup-create__modal__success__label__text">
+                    The SDLC server has successfully registered your project. To
+                    complete the import, please commit the following
+                  </span>
+                  <a
+                    className="setup-create__modal__success__label__link"
+                    href={importProjectSuccessReport?.reviewUrl}
+                    rel="noopener noreferrer"
+                    target="_blank"
+                  >
+                    review.
+                  </a>
+                </div>
+              </div>
+            )}
           </div>
           <button
             disabled={disableSubmit}

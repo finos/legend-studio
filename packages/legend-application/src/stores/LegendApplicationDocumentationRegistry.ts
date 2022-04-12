@@ -28,4 +28,8 @@ export class LegendApplicationDocumentationRegistry {
   getEntry(key: string): LegendApplicationDocumentationEntry | undefined {
     return this.registry.get(key);
   }
+
+  hasEntry(key: string): boolean {
+    return this.registry.has(key);
+  }
 }

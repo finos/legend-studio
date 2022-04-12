@@ -19,5 +19,6 @@ export enum LEGEND_STUDIO_DOCUMENTATION_KEY {
 
   SETUP_WORKSPACE = 'setup-workspace',
   CREATE_PROJECT = 'create-project',
+  IMPORT_PROJECT = 'import-project',
   CREATE_WORKSPACE = 'create-workspace',
 }
