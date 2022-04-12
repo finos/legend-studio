@@ -36,7 +36,7 @@ import {
 import { useLegendTaxonomyStore } from './LegendTaxonomyStoreProvider';
 import { isNonNullable } from '@finos/legend-shared';
 import { useApplicationStore } from '@finos/legend-application';
-import { generateViewTaxonomyNodeRoute } from '../stores/LegendTaxonomyRouter';
+import { generateExploreTaxonomyTreeNodeRoute } from '../stores/LegendTaxonomyRouter';
 import type { LegendTaxonomyConfig } from '../application/LegendTaxonomyConfig';
 
 const TaxonomyTreeNodeContainer = observer(
@@ -90,8 +90,8 @@ const TaxonomyTreeNodeContainer = observer(
       applicationStore
         .copyTextToClipboard(
           applicationStore.navigator.generateLocation(
-            generateViewTaxonomyNodeRoute(
-              applicationStore.config.currentTaxonomyServerOption,
+            generateExploreTaxonomyTreeNodeRoute(
+              applicationStore.config.currentTaxonomyTreeOption.key,
               node.id,
             ),
           ),

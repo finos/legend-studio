@@ -20,7 +20,6 @@ import { guaranteeNonNullable } from '@finos/legend-shared';
 import { generatePath } from 'react-router-dom';
 
 export enum LEGEND_STUDIO_PATH_PARAM_TOKEN {
-  SDLC_SERVER_KEY = 'sdlcServerKey',
   PROJECT_ID = 'projectId',
   WORKSPACE_ID = 'workspaceId',
   GROUP_WORKSPACE_ID = 'groupWorkspaceId',
@@ -47,10 +46,6 @@ export const LEGEND_STUDIO_ROUTE_PATTERN = Object.freeze({
   SETUP: `/setup/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.PROJECT_ID}?/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.WORKSPACE_ID}?`,
   SETUP_GROUP: `/setup/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.PROJECT_ID}/groupWorkspace/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.GROUP_WORKSPACE_ID}/`,
 });
-
-export interface SDLCServerKeyPathParams {
-  [LEGEND_STUDIO_PATH_PARAM_TOKEN.SDLC_SERVER_KEY]: string;
-}
 
 export interface ReviewPathParams {
   [LEGEND_STUDIO_PATH_PARAM_TOKEN.PROJECT_ID]: string;

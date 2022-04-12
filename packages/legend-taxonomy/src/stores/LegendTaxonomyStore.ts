@@ -69,7 +69,7 @@ import type { LegendTaxonomyConfig } from '../application/LegendTaxonomyConfig';
 import type { LegendTaxonomyPluginManager } from '../application/LegendTaxonomyPluginManager';
 import { LEGEND_TAXONOMY_APP_EVENT } from './LegendTaxonomyAppEvent';
 import {
-  generateViewTaxonomyRoute,
+  generateExploreTaxonomyTreeRoute,
   type LegendTaxonomyPathParams,
   type LegendTaxonomyStandaloneDataSpaceViewerParams,
 } from './LegendTaxonomyRouter';
@@ -458,8 +458,8 @@ export class LegendTaxonomyStore {
         this.initialDataSpaceId = `${gav}${DATA_SPACE_ID_DELIMITER}${dataSpacePath}`;
       }
       this.applicationStore.navigator.goTo(
-        generateViewTaxonomyRoute(
-          this.applicationStore.config.currentTaxonomyServerOption,
+        generateExploreTaxonomyTreeRoute(
+          this.applicationStore.config.currentTaxonomyTreeOption.key,
         ),
       );
     }
