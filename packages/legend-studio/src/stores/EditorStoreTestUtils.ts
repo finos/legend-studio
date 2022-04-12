@@ -35,7 +35,7 @@ export const TEST_DATA__studioConfig = {
     url: 'https://testEngineUrl',
   },
   depot: {
-    url: 'https://testMetadataUrl',
+    url: 'https://testManagementUrl',
   },
   documentation: {
     url: 'https://testDocUrl',

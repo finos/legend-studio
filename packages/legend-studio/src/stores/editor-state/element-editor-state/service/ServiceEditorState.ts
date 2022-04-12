@@ -32,7 +32,10 @@ import {
 export enum SERVICE_TAB {
   GENERAL = 'GENERAL',
   EXECUTION = 'EXECUTION',
+  REGISTRATION = 'REGISTRATION',
 }
+
+export const MINIMUM_SERVICE_OWNERS = 2;
 export class ServiceEditorState extends ElementEditorState {
   executionState: ServiceExecutionState;
   registrationState: ServiceRegistrationState;

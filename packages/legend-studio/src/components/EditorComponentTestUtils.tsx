@@ -69,6 +69,7 @@ import {
   TEST__provideMockedWebApplicationNavigator,
   TEST__ApplicationStoreProvider,
   TEST__getTestApplicationStore,
+  LegendApplicationComponentFrameworkProvider,
   WebApplicationNavigator,
 } from '@finos/legend-application';
 import { TEST__getTestStudioConfig } from '../stores/EditorStoreTestUtils';
@@ -357,7 +358,9 @@ export const TEST__setUpEditor = async (
           <TEST__DepotServerClientProvider>
             <TEST__GraphManagerStateProvider>
               <TEST__LegendStudioStoreProvider>
-                <Editor />
+                <LegendApplicationComponentFrameworkProvider>
+                  <Editor />
+                </LegendApplicationComponentFrameworkProvider>
               </TEST__LegendStudioStoreProvider>
             </TEST__GraphManagerStateProvider>
           </TEST__DepotServerClientProvider>
