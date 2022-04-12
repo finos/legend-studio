@@ -632,7 +632,6 @@ export abstract class BasicModel {
 
   /**
    * TODO: this will be removed once we fully support section index in SDLC flow
-   * @deprecated
    */
   TEMPORARY__deleteOwnSectionIndex(): void {
     this.sectionIndicesIndex.forEach((sectionIndex) => {

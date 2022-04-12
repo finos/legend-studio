@@ -58,10 +58,10 @@ export const ContextMenu: React.FC<{
       const containerRect = contextMenuRoot.current.getBoundingClientRect();
       const containerLeft =
         containerRect.left +
-        (window.pageXOffset || document.documentElement.scrollLeft);
+        (window.scrollX || document.documentElement.scrollLeft);
       const containerTop =
         containerRect.top +
-        (window.pageYOffset || document.documentElement.scrollTop);
+        (window.scrollY || document.documentElement.scrollTop);
       const { clientX, clientY, target } = event;
       const eventTarget = target as HTMLElement;
       if (anchorEl !== eventTarget) {
