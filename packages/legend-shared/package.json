@@ -41,7 +41,6 @@
   "dependencies": {
     "@types/lodash-es": "4.17.6",
     "@types/lossless-json": "1.0.1",
-    "@types/markdown-it": "12.2.3",
     "@types/object-hash": "2.2.1",
     "@types/pako": "1.0.3",
     "@types/seedrandom": "3.0.2",
@@ -50,7 +49,6 @@
     "http-status-codes": "2.2.0",
     "lodash-es": "4.17.21",
     "lossless-json": "1.0.5",
-    "markdown-it": "12.3.2",
     "mobx": "6.5.0",
     "object-hash": "3.0.0",
     "pako": "2.0.4",

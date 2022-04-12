@@ -14,20 +14,19 @@
  * limitations under the License.
  */
 
-import { type MarkdownText, renderMarkdownToHTML } from '@finos/legend-shared';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import type { MarkdownText } from '@finos/legend-shared';
+import clsx from 'clsx';
 
 export const MarkdownTextViewer: React.FC<{
   value: MarkdownText;
-}> = (props) => {
-  const { value } = props;
-  const markdownHTMLText = renderMarkdownToHTML(value.value);
-
-  return (
-    <div
-      className="markdown-content"
-      dangerouslySetInnerHTML={{
-        __html: markdownHTMLText,
-      }}
-    ></div>
-  );
-};
+  className?: string | undefined;
+}> = (props) => (
+  <ReactMarkdown
+    className={clsx('markdown-content', props.className)}
+    remarkPlugins={[remarkGfm]}
+  >
+    {props.value.value}
+  </ReactMarkdown>
+);

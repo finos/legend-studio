@@ -96,7 +96,10 @@ const LegendStudioNotFoundRouteScreen = observer(() => {
           </div>
           {documentation?.markdownText && (
             <div className="not-found-screen__documentation">
-              <MarkdownTextViewer value={documentation.markdownText} />
+              <MarkdownTextViewer
+                value={documentation.markdownText}
+                className="markdown-content--page"
+              />
             </div>
           )}
         </div>
@@ -184,20 +187,6 @@ export const LegendStudioApplicationRoot = observer(() => {
               component={entry.component as React.ComponentType<unknown>}
             />
           ))}
-          {/* <Route
-            exact={true}
-            path={[LEGEND_STUDIO_ROUTE_PATTERN.NOT_FOUND]}
-            component={LegendStudioNotFoundRouteScreen}
-          /> */}
-          {/* <Redirect
-            to={{
-              pathname: generateNotFoundRoute(),
-              state: {
-                from: applicationStore.navigator.getCurrentLocationPath(),
-              },
-            }}
-            push={false}
-          /> */}
           <Route>
             <LegendStudioNotFoundRouteScreen />
           </Route>

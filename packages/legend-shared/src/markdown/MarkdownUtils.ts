@@ -14,11 +14,8 @@
  * limitations under the License.
  */
 
-import MarkdownIt from 'markdown-it';
 import type { PlainObject } from '../CommonUtils';
 import { guaranteeNonNullable } from '../error/AssertionUtils';
-
-const genericMarkdownItEngine = new MarkdownIt();
 
 export interface MarkdownText {
   value: string;
@@ -30,6 +27,3 @@ export const deserializeMarkdownText = (
   guaranteeNonNullable(val.value);
   return val as unknown as MarkdownText;
 };
-
-export const renderMarkdownToHTML = (val: string): string =>
-  genericMarkdownItEngine.render(val);

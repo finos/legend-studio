@@ -23,6 +23,10 @@
   word-wrap: break-word;
   height: 100%;
   width: 100%;
+  padding: 2rem;
+}
+
+.markdown-content--page {
   padding: 4rem;
 }
 
@@ -241,6 +245,52 @@
 .markdown-content ol ul ol,
 .markdown-content ol ol ol {
   list-style-type: lower-alpha;
+}
+
+.markdown-content ul.contains-task-list,
+.markdown-content ol.contains-task-list {
+  list-style: none;
+}
+
+.markdown-content ul.contains-task-list li:not(.task-list-item) {
+  list-style: disc;
+}
+
+// .markdown-content ul.contains-task-list li::marker {
+//   margin-left: 1.7rem;
+// }
+
+.markdown-content .task-list-item {
+  list-style-type: none;
+}
+
+.markdown-content .task-list-item label {
+  font-weight: 400;
+}
+
+.markdown-content .task-list-item.enabled label {
+  cursor: pointer;
+}
+
+.markdown-content .task-list-item + .task-list-item {
+  margin-top: 3px;
+}
+
+.markdown-content .task-list-item .handle {
+  display: none;
+}
+
+.markdown-content .task-list-item-checkbox {
+  margin: 0 0.2em 0.25em -1.6em;
+  vertical-align: middle;
+}
+
+.markdown-content .contains-task-list:dir(rtl) .task-list-item-checkbox {
+  margin: 0 -1.6em 0.25em 0.2em;
+}
+
+.markdown-content ul.contains-task-list li.task-list-item > input {
+  margin-left: -1.6rem;
 }
 
 .markdown-content ::placeholder {

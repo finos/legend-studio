@@ -31,7 +31,6 @@ export enum LEGEND_STUDIO_PATH_PARAM_TOKEN {
 }
 
 export const LEGEND_STUDIO_ROUTE_PATTERN = Object.freeze({
-  NOT_FOUND: `/notfound`,
   VIEW: `/view/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.PROJECT_ID}`,
   VIEW_BY_GAV: `/view/archive/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.GAV}`,
   VIEW_BY_GAV_ENTITY: `/view/archive/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.GAV}/entity/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.ENTITY_PATH}`,
@@ -76,9 +75,6 @@ export interface SetupPathParams {
   [LEGEND_STUDIO_PATH_PARAM_TOKEN.WORKSPACE_ID]?: string;
   [LEGEND_STUDIO_PATH_PARAM_TOKEN.GROUP_WORKSPACE_ID]?: string;
 }
-
-export const generateNotFoundRoute = (): string =>
-  generatePath(LEGEND_STUDIO_ROUTE_PATTERN.NOT_FOUND);
 
 const generateGroupWorkspaceSetupRoute = (
   projectId: string | undefined,
