@@ -23,7 +23,6 @@ import {
   AbstractPropertyExpression,
   SimpleFunctionExpression,
   TYPICAL_MULTIPLICITY_TYPE,
-  observe_ValueSpecification,
 } from '@finos/legend-graph';
 import {
   guaranteeType,
@@ -493,12 +492,6 @@ export const buildFilterConditionState = (
   // Post-build check: make sure the simple filter condition LHS, RHS, and operator are compatible
   // and set the value of the condition in the state accordingly.
   if (filterConditionState && mainExpressionWithOperator) {
-    // observe the LHS expression
-    observe_ValueSpecification(
-      mainExpressionWithOperator,
-      filterState.queryBuilderState.observableContext,
-    );
-
     assertTrue(
       operator.isCompatibleWithFilterConditionProperty(filterConditionState),
       `Can't process ${extractElementNameFromPath(

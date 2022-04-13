@@ -22,7 +22,6 @@ import {
   matchFunctionName,
   VariableExpression,
   FunctionExpression,
-  observe_ValueSpecification,
 } from '@finos/legend-graph';
 import {
   assertTrue,
@@ -153,14 +152,10 @@ export const buildPostFilterConditionState = (
       tdsColumnPropertyExpression,
       postFilterState,
     );
+
     // get operation value specification
-    const value = expression.parametersValues[1]
-      ? observe_ValueSpecification(
-          expression.parametersValues[1],
-          postFilterState.queryBuilderState.observableContext,
-        )
-      : expression.parametersValues[1];
-    // create state
+    const value = expression.parametersValues[1];
+
     postConditionState = new PostFilterConditionState(
       postFilterState,
       columnState,

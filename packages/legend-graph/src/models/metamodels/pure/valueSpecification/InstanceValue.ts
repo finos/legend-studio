@@ -82,7 +82,7 @@ export class RuntimeInstanceValue extends InstanceValue {
 }
 
 export class PairInstanceValue extends InstanceValue {
-  override values: Pair<unknown, unknown>[] = [];
+  override values: Pair<unknown, unknown>[] = []; // TODO: both of these entries might be ValueSpecification
 
   override accept_ValueSpecificationVisitor<T>(
     visitor: ValueSpecificationVisitor<T>,
@@ -107,7 +107,7 @@ export class PureListInstanceValue extends InstanceValue {
   override accept_ValueSpecificationVisitor<T>(
     visitor: ValueSpecificationVisitor<T>,
   ): T {
-    return visitor.visit_PureListInsanceValue(this);
+    return visitor.visit_PureListInstanceValue(this);
   }
 }
 

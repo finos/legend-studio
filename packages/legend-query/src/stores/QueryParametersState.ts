@@ -30,9 +30,7 @@ import {
   PRIMITIVE_TYPE,
   VariableExpression,
   observe_VariableExpression,
-  observe_CollectionInstanceValue,
-  observe_PrimitiveInstanceValue,
-  observe_EnumValueInstanceValue,
+  observe_ValueSpecification,
 } from '@finos/legend-graph';
 import {
   addUniqueEntry,
@@ -117,31 +115,33 @@ export class QueryParameterState {
       setValue: action,
       mockParameterValue: action,
     });
+
     this.queryParameterState = queryParameterState;
     this.parameter = variableExpression;
   }
 
   mockParameterValue(): void {
-    this.setValue(
-      this.generateMockValues(
-        this.parameter.genericType?.value.rawType,
-        this.parameter.multiplicity,
-      ),
+    const mockValue = this.generateMockValues(
+      this.parameter.genericType?.value.rawType,
+      this.parameter.multiplicity,
     );
+    if (mockValue) {
+      observe_ValueSpecification(
+        mockValue,
+        this.queryParameterState.queryBuilderState.observableContext,
+      );
+    }
+    this.setValue(mockValue);
   }
 
-  generateMockValues(
+  private generateMockValues(
     varType: Type | undefined,
     multiplicity: Multiplicity,
   ): InstanceValue | undefined {
     if ((!multiplicity.upperBound || multiplicity.upperBound > 1) && varType) {
-      const collectionInst = new CollectionInstanceValue(
+      return new CollectionInstanceValue(
         multiplicity,
         GenericTypeExplicitReference.create(new GenericType(varType)),
-      );
-      return observe_CollectionInstanceValue(
-        collectionInst,
-        this.queryParameterState.queryBuilderState.observableContext,
       );
     }
     if (varType instanceof PrimitiveType) {
@@ -155,7 +155,7 @@ export class QueryParameterState {
           this.parameter.name === '' ? 'myVar' : this.parameter.name,
         ),
       ];
-      return observe_PrimitiveInstanceValue(primitiveInst);
+      return primitiveInst;
     } else if (varType instanceof Enumeration) {
       const enumValueInstance = new EnumValueInstanceValue(
         GenericTypeExplicitReference.create(new GenericType(varType)),
@@ -167,7 +167,7 @@ export class QueryParameterState {
           EnumValueExplicitReference.create(varType.getValue(mock)),
         ];
       }
-      return observe_EnumValueInstanceValue(enumValueInstance);
+      return enumValueInstance;
     }
     return undefined;
   }

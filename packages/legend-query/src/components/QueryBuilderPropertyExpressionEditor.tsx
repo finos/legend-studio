@@ -82,10 +82,12 @@ const DerivedPropertyParameterEditor = observer(
       }),
       [handleDrop],
     );
+    // FIXME: VALUE SPEC
     const resetParameterValue = (): void => {
       const genericType = guaranteeNonNullable(variable.genericType);
       const primitiveInstanceValue = observe_PrimitiveInstanceValue(
         new PrimitiveInstanceValue(genericType, variable.multiplicity),
+        derivedPropertyExpressionState.queryBuilderState.observableContext,
       );
       if (genericType.value.rawType.name !== PRIMITIVE_TYPE.LATESTDATE) {
         primitiveInstanceValue.values = [
