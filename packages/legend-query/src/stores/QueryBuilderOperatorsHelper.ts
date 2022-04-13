@@ -30,7 +30,6 @@ import {
   PrimitiveInstanceValue,
   EnumValueInstanceValue,
   VariableExpression,
-  observe_PrimitiveInstanceValue,
 } from '@finos/legend-graph';
 import {
   addUniqueEntry,
@@ -153,7 +152,7 @@ export const buildPrimitiveInstanceValue = (
     multiplicityOne,
   );
   instance.values = [value];
-  return observe_PrimitiveInstanceValue(instance);
+  return instance;
 };
 
 export const unwrapNotExpression = (

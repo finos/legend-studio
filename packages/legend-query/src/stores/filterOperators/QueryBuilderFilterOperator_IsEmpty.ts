@@ -64,7 +64,7 @@ export class QueryBuilderFilterOperator_IsEmpty extends QueryBuilderFilterOperat
     return filterConditionState.value === undefined;
   }
 
-  getDefaultFilterConditionValue(
+  protected getUnobservedDefaultFilterConditionValue(
     filterConditionState: FilterConditionState,
   ): ValueSpecification | undefined {
     return undefined;

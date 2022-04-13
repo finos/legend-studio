@@ -43,6 +43,7 @@ import {
   extractElementNameFromPath,
   SimpleFunctionExpression,
   TYPICAL_MULTIPLICITY_TYPE,
+  observe_ValueSpecification,
 } from '@finos/legend-graph';
 import {
   DEFAULT_LAMBDA_VARIABLE_NAME,
@@ -67,9 +68,23 @@ export abstract class QueryBuilderFilterOperator {
     filterConditionState: FilterConditionState,
   ): boolean;
 
-  abstract getDefaultFilterConditionValue(
+  protected abstract getUnobservedDefaultFilterConditionValue(
     filterConditionState: FilterConditionState,
   ): ValueSpecification | undefined;
+
+  getDefaultFilterConditionValue(
+    filterConditionState: FilterConditionState,
+  ): ValueSpecification | undefined {
+    const value =
+      this.getUnobservedDefaultFilterConditionValue(filterConditionState);
+    if (value) {
+      return observe_ValueSpecification(
+        value,
+        filterConditionState.filterState.queryBuilderState.observableContext,
+      );
+    }
+    return undefined;
+  }
 
   abstract buildFilterConditionExpression(
     filterConditionState: FilterConditionState,

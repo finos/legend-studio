@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-import type {
-  FunctionExpression,
-  Type,
-  ValueSpecification,
+import {
+  type FunctionExpression,
+  type Type,
+  type ValueSpecification,
+  observe_ValueSpecification,
 } from '@finos/legend-graph';
 import { uuid } from '@finos/legend-shared';
 import type { SUPPORTED_FUNCTIONS } from '../QueryBuilder_Const';
@@ -46,9 +47,24 @@ export abstract class QueryBuilderPostFilterOperator {
     postFilterConditionState: PostFilterConditionState,
   ): boolean;
 
-  abstract getDefaultFilterConditionValue(
-    postFilterConditionState: PostFilterConditionState,
+  protected abstract getUnobservedDefaultFilterConditionValue(
+    filterConditionState: PostFilterConditionState,
   ): ValueSpecification | undefined;
+
+  getDefaultFilterConditionValue(
+    filterConditionState: PostFilterConditionState,
+  ): ValueSpecification | undefined {
+    const value =
+      this.getUnobservedDefaultFilterConditionValue(filterConditionState);
+    if (value) {
+      return observe_ValueSpecification(
+        value,
+        filterConditionState.postFilterState.queryBuilderState
+          .observableContext,
+      );
+    }
+    return undefined;
+  }
 
   isCompatibleWithPostFilterColumn(
     postFilterState: PostFilterConditionState,

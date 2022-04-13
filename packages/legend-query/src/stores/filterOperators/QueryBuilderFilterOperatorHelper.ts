@@ -493,6 +493,12 @@ export const buildFilterConditionState = (
   // Post-build check: make sure the simple filter condition LHS, RHS, and operator are compatible
   // and set the value of the condition in the state accordingly.
   if (filterConditionState && mainExpressionWithOperator) {
+    // observe the LHS expression
+    observe_ValueSpecification(
+      mainExpressionWithOperator,
+      filterState.queryBuilderState.observableContext,
+    );
+
     assertTrue(
       operator.isCompatibleWithFilterConditionProperty(filterConditionState),
       `Can't process ${extractElementNameFromPath(
@@ -501,14 +507,7 @@ export const buildFilterConditionState = (
     );
     filterConditionState.setOperator(operator);
     filterConditionState.setValue(
-      hasNoValue
-        ? undefined
-        : mainExpressionWithOperator.parametersValues[1]
-        ? observe_ValueSpecification(
-            mainExpressionWithOperator.parametersValues[1],
-            filterState.queryBuilderState.observableContext,
-          )
-        : mainExpressionWithOperator.parametersValues[1],
+      hasNoValue ? undefined : mainExpressionWithOperator.parametersValues[1],
     );
     if (!operator.isCompatibleWithFilterConditionValue(filterConditionState)) {
       filterConditionState.setValue(

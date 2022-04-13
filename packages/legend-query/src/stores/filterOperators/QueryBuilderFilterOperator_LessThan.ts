@@ -82,7 +82,7 @@ export class QueryBuilderFilterOperator_LessThan extends QueryBuilderFilterOpera
     );
   }
 
-  getDefaultFilterConditionValue(
+  protected getUnobservedDefaultFilterConditionValue(
     filterConditionState: FilterConditionState,
   ): ValueSpecification | undefined {
     const propertyType =

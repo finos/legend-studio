@@ -61,7 +61,7 @@ export class QueryBuilderFilterOperator_Contain extends QueryBuilderFilterOperat
     return PRIMITIVE_TYPE.STRING === type?.path;
   }
 
-  getDefaultFilterConditionValue(
+  protected getUnobservedDefaultFilterConditionValue(
     filterConditionState: FilterConditionState,
   ): ValueSpecification | undefined {
     const propertyType =

@@ -70,7 +70,7 @@ export class QueryBuilderPostFilterOperator_GreaterThan extends QueryBuilderPost
       ).includes(type.path)
     );
   }
-  getDefaultFilterConditionValue(
+  protected getUnobservedDefaultFilterConditionValue(
     postFilterConditionState: PostFilterConditionState,
   ): ValueSpecification {
     const propertyType = postFilterConditionState.columnState.getReturnType();

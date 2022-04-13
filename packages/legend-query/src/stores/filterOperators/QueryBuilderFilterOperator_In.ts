@@ -29,7 +29,6 @@ import {
   TYPICAL_MULTIPLICITY_TYPE,
   Enumeration,
   PRIMITIVE_TYPE,
-  observe_CollectionInstanceValue,
 } from '@finos/legend-graph';
 import {
   buildFilterConditionState,
@@ -117,7 +116,7 @@ export class QueryBuilderFilterOperator_In extends QueryBuilderFilterOperator {
     return false;
   }
 
-  getDefaultFilterConditionValue(
+  protected getUnobservedDefaultFilterConditionValue(
     filterConditionState: FilterConditionState,
   ): ValueSpecification | undefined {
     const multiplicityOne =
@@ -127,12 +126,9 @@ export class QueryBuilderFilterOperator_In extends QueryBuilderFilterOperator {
     const propertyType =
       filterConditionState.propertyExpressionState.propertyExpression.func
         .genericType.value.rawType;
-    return observe_CollectionInstanceValue(
-      new CollectionInstanceValue(
-        multiplicityOne,
-        GenericTypeExplicitReference.create(new GenericType(propertyType)),
-      ),
-      filterConditionState.filterState.queryBuilderState.observableContext,
+    return new CollectionInstanceValue(
+      multiplicityOne,
+      GenericTypeExplicitReference.create(new GenericType(propertyType)),
     );
   }
 

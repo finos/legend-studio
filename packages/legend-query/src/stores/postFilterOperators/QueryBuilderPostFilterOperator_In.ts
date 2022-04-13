@@ -25,7 +25,6 @@ import {
   GenericTypeExplicitReference,
   GenericType,
   TYPICAL_MULTIPLICITY_TYPE,
-  observe_CollectionInstanceValue,
 } from '@finos/legend-graph';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
@@ -113,7 +112,7 @@ export class QueryBuilderPostFilterOperator_In extends QueryBuilderPostFilterOpe
     return false;
   }
 
-  getDefaultFilterConditionValue(
+  protected getUnobservedDefaultFilterConditionValue(
     postFilterConditionState: PostFilterConditionState,
   ): ValueSpecification {
     const multiplicityOne =
@@ -123,13 +122,9 @@ export class QueryBuilderPostFilterOperator_In extends QueryBuilderPostFilterOpe
     const propertyType = guaranteeNonNullable(
       postFilterConditionState.columnState.getReturnType(),
     );
-    return observe_CollectionInstanceValue(
-      new CollectionInstanceValue(
-        multiplicityOne,
-        GenericTypeExplicitReference.create(new GenericType(propertyType)),
-      ),
-      postFilterConditionState.postFilterState.queryBuilderState
-        .observableContext,
+    return new CollectionInstanceValue(
+      multiplicityOne,
+      GenericTypeExplicitReference.create(new GenericType(propertyType)),
     );
   }
 }

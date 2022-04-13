@@ -70,7 +70,7 @@ export class QueryBuilderPostFilterOperator_LessThan extends QueryBuilderPostFil
       ).includes(type.path)
     );
   }
-  getDefaultFilterConditionValue(
+  protected getUnobservedDefaultFilterConditionValue(
     postFilterConditionState: PostFilterConditionState,
   ): ValueSpecification {
     const propertyType = postFilterConditionState.columnState.getReturnType();
