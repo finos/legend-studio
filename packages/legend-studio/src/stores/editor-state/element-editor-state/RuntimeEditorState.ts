@@ -60,6 +60,7 @@ import {
   RelationalDatabaseConnection,
   StaticDatasourceSpecification,
   DefaultH2AuthenticationStrategy,
+  ModelChainConnection,
 } from '@finos/legend-graph';
 import type { DSLMapping_LegendStudioPlugin_Extension } from '../../DSLMapping_LegendStudioPlugin_Extension';
 import { packageableElementReference_setValue } from '../../graphModifier/DomainGraphModifierHelper';
@@ -201,6 +202,12 @@ export const isConnectionForModelStoreWithClass = (
     connectionValue instanceof XmlModelConnection
   ) {
     return connectionValue.class.value === _class;
+  } else if (connectionValue instanceof ModelChainConnection) {
+    return connectionValue.mappings.some((mapping) =>
+      mapping.value.classMappings.some(
+        (classMapping) => classMapping.class.value === _class,
+      ),
+    );
   }
   return false;
 };
@@ -280,12 +287,12 @@ export const getRuntimeExplorerTreeData = (
               ) {
                 return connectionValue.class.value;
               }
-              throw new UnsupportedOperationError();
+              return undefined;
             })
             .concat(allSourceClassesFromMappings),
         ); // make sure we add classes (from mappings) that we expect to have connections for
         // classes (2nd level) - only for `ModelStore`
-        classes.forEach((_class) => {
+        classes.filter(isNonNullable).forEach((_class) => {
           const classNode = {
             data: _class,
             id: _class.path,

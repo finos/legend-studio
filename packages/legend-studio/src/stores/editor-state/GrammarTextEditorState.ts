@@ -39,6 +39,7 @@ import {
   Measure,
   Database,
   RelationalDatabaseConnection,
+  ModelChainConnection,
 } from '@finos/legend-graph';
 import { GRAMMAR_ELEMENT_TYPE_LABEL } from '@finos/legend-application';
 
@@ -124,6 +125,8 @@ export class GrammarTextEditorState {
         typeLabel = GRAMMAR_ELEMENT_TYPE_LABEL.XML_MODEL_CONNECTION;
       } else if (element.connectionValue instanceof FlatDataConnection) {
         typeLabel = GRAMMAR_ELEMENT_TYPE_LABEL.FLAT_DATA_CONNECTION;
+      } else if (element.connectionValue instanceof ModelChainConnection) {
+        typeLabel = GRAMMAR_ELEMENT_TYPE_LABEL.MODEL_CHAIN_CONNECTION;
       } else if (
         element.connectionValue instanceof RelationalDatabaseConnection
       ) {
