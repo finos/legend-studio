@@ -47,6 +47,7 @@ import {
 } from '@finos/legend-graph';
 import { StudioLambdaEditor } from '../../../../shared/StudioLambdaEditor';
 import { relationalPropertyMapping_setTransformer } from '../../../../../stores/graphModifier/StoreRelational_GraphModifierHelper';
+import { expectedReturnType } from '../PropertyMappingsEditor';
 
 const SimplePropertyMappingEditor = observer(
   (props: {
@@ -191,6 +192,17 @@ const ClassPropertyMappingEditor = observer(
     ) : (
       ''
     );
+    const expectedType = expectedReturnType(
+      propertyMapping.targetSetImplementation,
+    );
+    const onExpectedTypeLabelSelect = (): void =>
+      propertyMappingState.instanceSetImplementationState.setSelectedType(
+        expectedType,
+      );
+    const matchedExpectedTypeLabel = (): boolean =>
+      Boolean(expectedType) &&
+      propertyMappingState.instanceSetImplementationState.selectedType ===
+        expectedType;
 
     // Walker
     const visit = (): void => {
@@ -227,6 +239,9 @@ const ClassPropertyMappingEditor = observer(
             disabled={transformProps.disableTransform}
             lambdaEditorState={propertyMappingState}
             forceBackdrop={transformProps.forceBackdrop}
+            expectedType={expectedType}
+            onExpectedTypeLabelSelect={onExpectedTypeLabelSelect}
+            matchedExpectedType={matchedExpectedTypeLabel}
           />
         </div>
       </div>

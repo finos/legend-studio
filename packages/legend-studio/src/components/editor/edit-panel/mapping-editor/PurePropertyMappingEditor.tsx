@@ -41,12 +41,12 @@ import {
   CLASS_PROPERTY_TYPE,
   getClassPropertyType,
   EnumerationMapping,
-  PureInstanceSetImplementation,
   DerivedProperty,
   getEnumerationMappingsByEnumeration,
 } from '@finos/legend-graph';
 import { StudioLambdaEditor } from '../../../shared/StudioLambdaEditor';
 import { purePropertyMapping_setTransformer } from '../../../../stores/graphModifier/DSLMapping_GraphModifierHelper';
+import { expectedReturnType } from './PropertyMappingsEditor';
 
 const SimplePropertyMappingEditor = observer(
   (props: {
@@ -236,11 +236,9 @@ const ClassPropertyMappingEditor = observer(
     ) : (
       ''
     );
-    const expectedType =
-      propertyMapping.targetSetImplementation instanceof
-      PureInstanceSetImplementation
-        ? propertyMapping.targetSetImplementation.srcClass.value
-        : undefined;
+    const expectedType = expectedReturnType(
+      propertyMapping.targetSetImplementation,
+    );
     const onExpectedTypeLabelSelect = (): void =>
       propertyMappingState.instanceSetImplementationState.setSelectedType(
         expectedType,

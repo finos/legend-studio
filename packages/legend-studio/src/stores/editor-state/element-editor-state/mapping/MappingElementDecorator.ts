@@ -253,26 +253,45 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
         });
         return enumerationPropertyMapping;
       } else if (propertyType instanceof Class) {
-        const rootSetImp = getRootSetImplementation(
-          setImplementation.parent,
-          property.genericType.value.getRawType(Class),
-        );
+        const resolvedLeafSetImps =
+          // TODO: should we try to get leaf implementation here from the root
+          // or should we just simply find all class mappings for the target class
+          // as we should not try to `understand` operation class mapping union?
+          getLeafSetImplementations(
+            setImplementation.parent,
+            property.genericType.value.getRawType(Class),
+          );
         // if there are no root-resolved set implementations for the class, return empty array
-        if (!rootSetImp) {
+        if (!resolvedLeafSetImps) {
           return [];
         }
-        const propertyMapping =
-          existingPropertyMappings.find(
-            (pm) => pm.targetSetImplementation === rootSetImp,
-          ) ??
-          new PurePropertyMapping(
-            setImplementation,
-            PropertyExplicitReference.create(property),
-            RawLambda.createStub(),
-            setImplementation,
-            rootSetImp,
-          );
-        return [propertyMapping];
+        return (
+          resolvedLeafSetImps
+            // from root of the class property, resolve leaf set implementations and add property mappings for them
+            // NOTE: here we actually remove existing property mapping if it no longer part of resolved
+            // leaf set implementation of the class property
+            .map(
+              (setImp) =>
+                existingPropertyMappings.find(
+                  (pm) => pm.targetSetImplementation === setImp,
+                ) ??
+                new PurePropertyMapping(
+                  setImplementation,
+                  PropertyExplicitReference.create(property),
+                  RawLambda.createStub(),
+                  setImplementation,
+                  setImp,
+                ),
+            )
+            // sort these property mappings by id of their set implementations
+            .sort((a, b) =>
+              (
+                a.targetSetImplementation as SetImplementation
+              ).id.value.localeCompare(
+                (b.targetSetImplementation as SetImplementation).id.value,
+              ),
+            )
+        );
       }
       return [];
     };

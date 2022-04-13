@@ -42,6 +42,7 @@ import type {
 import { useEditorStore } from '../../EditorStoreProvider';
 import {
   type Property,
+  type Type,
   getRootSetImplementation,
   Class,
   CLASS_PROPERTY_TYPE,
@@ -51,12 +52,25 @@ import {
   PrimitiveType,
   PureInstanceSetImplementation,
   EmbeddedFlatDataPropertyMapping,
+  OperationSetImplementation,
 } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
 import {
   setImpl_nominateRoot,
   setImpl_setRoot,
 } from '../../../../stores/graphModifier/DSLMapping_GraphModifierHelper';
+
+export const expectedReturnType = (
+  targetSetImplementation: SetImplementation | undefined,
+): Type | undefined => {
+  if (targetSetImplementation instanceof PureInstanceSetImplementation) {
+    return targetSetImplementation.srcClass.value;
+  } else if (targetSetImplementation instanceof OperationSetImplementation) {
+    return targetSetImplementation.class.value;
+  } else {
+    return undefined;
+  }
+};
 
 export const PropertyMappingsEditor = observer(
   (props: {
