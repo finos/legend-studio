@@ -1,5 +1,13 @@
 # @finos/legend-query
 
+## 1.3.7
+
+### Patch Changes
+
+- [#1058](https://github.com/finos/legend-studio/pull/1058) [`df06ed15`](https://github.com/finos/legend-studio/commit/df06ed1587252592cf9e783fbdcde8e53dc2f9c7) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Support result set modifier after post filter.
+
+* [#1061](https://github.com/finos/legend-studio/pull/1061) [`b6628128`](https://github.com/finos/legend-studio/commit/b6628128eafba97c7f12b5f2910b681421b254b6) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix property expression compatibility for `isEmpty` and `isNotEmpty` ([#1060](https://github.com/finos/legend-studio/issues/1060)).
+
 ## 1.3.6
 
 ### Patch Changes
