@@ -23,6 +23,7 @@ import {
   AbstractPropertyExpression,
   SimpleFunctionExpression,
   TYPICAL_MULTIPLICITY_TYPE,
+  observe_ValueSpecification,
 } from '@finos/legend-graph';
 import {
   guaranteeType,
@@ -500,7 +501,14 @@ export const buildFilterConditionState = (
     );
     filterConditionState.setOperator(operator);
     filterConditionState.setValue(
-      hasNoValue ? undefined : mainExpressionWithOperator.parametersValues[1],
+      hasNoValue
+        ? undefined
+        : mainExpressionWithOperator.parametersValues[1]
+        ? observe_ValueSpecification(
+            mainExpressionWithOperator.parametersValues[1],
+            filterState.queryBuilderState.observableContext,
+          )
+        : mainExpressionWithOperator.parametersValues[1],
     );
     if (!operator.isCompatibleWithFilterConditionValue(filterConditionState)) {
       filterConditionState.setValue(

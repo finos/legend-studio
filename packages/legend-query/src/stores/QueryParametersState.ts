@@ -29,6 +29,10 @@ import {
   Multiplicity,
   PRIMITIVE_TYPE,
   VariableExpression,
+  observe_VariableExpression,
+  observe_CollectionInstanceValue,
+  observe_PrimitiveInstanceValue,
+  observe_EnumValueInstanceValue,
 } from '@finos/legend-graph';
 import {
   addUniqueEntry,
@@ -135,7 +139,10 @@ export class QueryParameterState {
         multiplicity,
         GenericTypeExplicitReference.create(new GenericType(varType)),
       );
-      return collectionInst;
+      return observe_CollectionInstanceValue(
+        collectionInst,
+        this.queryParameterState.queryBuilderState.observableContext,
+      );
     }
     if (varType instanceof PrimitiveType) {
       const primitiveInst = new PrimitiveInstanceValue(
@@ -148,7 +155,7 @@ export class QueryParameterState {
           this.parameter.name === '' ? 'myVar' : this.parameter.name,
         ),
       ];
-      return primitiveInst;
+      return observe_PrimitiveInstanceValue(primitiveInst);
     } else if (varType instanceof Enumeration) {
       const enumValueInstance = new EnumValueInstanceValue(
         GenericTypeExplicitReference.create(new GenericType(varType)),
@@ -160,7 +167,7 @@ export class QueryParameterState {
           EnumValueExplicitReference.create(varType.getValue(mock)),
         ];
       }
-      return enumValueInstance;
+      return observe_EnumValueInstanceValue(enumValueInstance);
     }
     return undefined;
   }
@@ -174,13 +181,15 @@ export class QueryParameterState {
   ): QueryParameterState {
     return new QueryParameterState(
       queryParameterState,
-      new VariableExpression(
-        '',
-        new Multiplicity(1, 1),
-        GenericTypeExplicitReference.create(
-          new GenericType(
-            queryParameterState.queryBuilderState.graphManagerState.graph.getPrimitiveType(
-              PRIMITIVE_TYPE.STRING,
+      observe_VariableExpression(
+        new VariableExpression(
+          '',
+          new Multiplicity(1, 1),
+          GenericTypeExplicitReference.create(
+            new GenericType(
+              queryParameterState.queryBuilderState.graphManagerState.graph.getPrimitiveType(
+                PRIMITIVE_TYPE.STRING,
+              ),
             ),
           ),
         ),

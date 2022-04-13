@@ -26,6 +26,7 @@ import {
   GenericTypeExplicitReference,
   PRIMITIVE_TYPE,
   TYPICAL_MULTIPLICITY_TYPE,
+  observe_EnumValueInstanceValue,
 } from '@finos/legend-graph';
 import {
   guaranteeNonNullable,
@@ -140,7 +141,7 @@ export class QueryBuilderPostFilterOperator_Equal extends QueryBuilderPostFilter
             enumValueInstanceValue.values = [
               EnumValueExplicitReference.create(propertyType.values[0] as Enum),
             ];
-            return enumValueInstanceValue;
+            return observe_EnumValueInstanceValue(enumValueInstanceValue);
           }
           throw new UnsupportedOperationError(
             `Can't get default value for post-filter operator '${this.getLabel()}' since enumeration '${

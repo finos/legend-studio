@@ -50,6 +50,7 @@ import {
   skipObservedWithContext,
   skipObserved,
   observe_OptionalPackageableElementReference,
+  observe_Multiplicity,
 } from './CoreObserverHelper';
 import {
   observe_EnumValueReference,
@@ -60,6 +61,7 @@ import {
 const observe_Abstract_ValueSpecification = (
   metamodel: ValueSpecification,
 ): void => {
+  observe_Multiplicity(metamodel.multiplicity);
   makeObservable<ValueSpecification>(metamodel, {
     multiplicity: observable,
   });
@@ -68,6 +70,9 @@ const observe_Abstract_ValueSpecification = (
 export const observe_VariableExpression = skipObserved(
   (metamodel: VariableExpression): VariableExpression => {
     observe_Abstract_ValueSpecification(metamodel);
+    if (metamodel.genericType) {
+      observe_GenericTypeReference(metamodel.genericType);
+    }
 
     makeObservable<VariableExpression>(metamodel, {
       name: observable,

@@ -41,7 +41,7 @@ import {
   SimpleFunctionExpression,
   matchFunctionName,
   TYPE_CAST_TOKEN,
-  ObserverContext,
+  observe_AbstractPropertyExpression,
 } from '@finos/legend-graph';
 import { generateDefaultValueForPrimitiveType } from './QueryBuilderValueSpecificationBuilderHelper';
 import type { QueryBuilderState } from './QueryBuilderState';
@@ -185,9 +185,7 @@ const fillDerivedPropertyArguments = (
       ),
       ...propertyArguments,
     ],
-    new ObserverContext(
-      queryBuilderState.graphManagerState.pluginManager.getPureGraphManagerPlugins(),
-    ),
+    queryBuilderState.observableContext,
   );
 };
 
@@ -319,6 +317,10 @@ export class QueryBuilderPropertyExpressionState {
       }
       // Create states to hold derived properties' parameters and arguments for editing
       if (currentExpression.func instanceof DerivedProperty) {
+        observe_AbstractPropertyExpression(
+          currentExpression,
+          this.queryBuilderState.observableContext,
+        );
         const derivedPropertyExpressionState =
           new QueryBuilderDerivedPropertyExpressionState(
             this.queryBuilderState,

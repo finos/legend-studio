@@ -45,6 +45,7 @@ import {
   PrimitiveType,
   PrimitiveInstanceValue,
   PRIMITIVE_TYPE,
+  observe_PrimitiveInstanceValue,
 } from '@finos/legend-graph';
 
 const DerivedPropertyParameterEditor = observer(
@@ -83,9 +84,8 @@ const DerivedPropertyParameterEditor = observer(
     );
     const resetParameterValue = (): void => {
       const genericType = guaranteeNonNullable(variable.genericType);
-      const primitiveInstanceValue = new PrimitiveInstanceValue(
-        genericType,
-        variable.multiplicity,
+      const primitiveInstanceValue = observe_PrimitiveInstanceValue(
+        new PrimitiveInstanceValue(genericType, variable.multiplicity),
       );
       if (genericType.value.rawType.name !== PRIMITIVE_TYPE.LATESTDATE) {
         primitiveInstanceValue.values = [

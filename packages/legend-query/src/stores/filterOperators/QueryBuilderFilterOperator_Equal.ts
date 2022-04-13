@@ -30,6 +30,7 @@ import {
   EnumValueExplicitReference,
   Enumeration,
   PRIMITIVE_TYPE,
+  observe_EnumValueInstanceValue,
 } from '@finos/legend-graph';
 import { UnsupportedOperationError } from '@finos/legend-shared';
 import {
@@ -141,7 +142,7 @@ export class QueryBuilderFilterOperator_Equal extends QueryBuilderFilterOperator
             enumValueInstanceValue.values = [
               EnumValueExplicitReference.create(propertyType.values[0] as Enum),
             ];
-            return enumValueInstanceValue;
+            return observe_EnumValueInstanceValue(enumValueInstanceValue);
           }
           throw new UnsupportedOperationError(
             `Can't get default value for filter operator '${this.getLabel(
