@@ -1,5 +1,13 @@
 # @finos/legend-graph
 
+## 4.0.0
+
+### Major Changes
+
+- [#1054](https://github.com/finos/legend-studio/pull/1054) [`d0f81bc8`](https://github.com/finos/legend-studio/commit/d0f81bc82d56f913f12b720c265d6ca1b0c515af) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** All setters methods are now moved out of metamodels. These are now branded as `graph modifier helpers` and will be put in places where we need to modify them (e.g. in the apps such as `Legend Studio`, `Legend Query`). Also, all `mobx` `makeObservable()` logic inside of metamodels' constructors are now removed. These are now branded as `observer helpers`.
+
+  > As of now, we are putting these in `@finos/legend-graph`, but ideally they should be moved to the app (similar to what we do with the `graph modifier observers`).
+
 ## 3.0.0
 
 ### Major Changes
