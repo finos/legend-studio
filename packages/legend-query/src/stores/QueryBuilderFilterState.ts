@@ -68,23 +68,9 @@ export abstract class QueryBuilderFilterOperator {
     filterConditionState: FilterConditionState,
   ): boolean;
 
-  protected abstract getUnobservedDefaultFilterConditionValue(
+  abstract getDefaultFilterConditionValue(
     filterConditionState: FilterConditionState,
   ): ValueSpecification | undefined;
-
-  getDefaultFilterConditionValue(
-    filterConditionState: FilterConditionState,
-  ): ValueSpecification | undefined {
-    const value =
-      this.getUnobservedDefaultFilterConditionValue(filterConditionState);
-    if (value) {
-      return observe_ValueSpecification(
-        value,
-        filterConditionState.filterState.queryBuilderState.observableContext,
-      );
-    }
-    return undefined;
-  }
 
   abstract buildFilterConditionExpression(
     filterConditionState: FilterConditionState,
@@ -145,7 +131,7 @@ export class FilterConditionState {
       `Can't find an operator for property '${this.propertyExpressionState.path}': no operators registered`,
     );
     this.operator = this.operators[0] as QueryBuilderFilterOperator;
-    this.value = this.operator.getDefaultFilterConditionValue(this);
+    this.setValue(this.operator.getDefaultFilterConditionValue(this));
   }
 
   get operators(): QueryBuilderFilterOperator[] {
@@ -163,6 +149,12 @@ export class FilterConditionState {
       this.filterState.queryBuilderState.applicationStore.notifyError(error);
       return;
     }
+
+    // observe the property expression
+    observe_ValueSpecification(
+      propertyExpression,
+      this.filterState.queryBuilderState.observableContext,
+    );
 
     this.propertyExpressionState = new QueryBuilderPropertyExpressionState(
       this.filterState.queryBuilderState,
@@ -195,7 +187,12 @@ export class FilterConditionState {
   }
 
   setValue(val: ValueSpecification | undefined): void {
-    this.value = val;
+    this.value = val
+      ? observe_ValueSpecification(
+          val,
+          this.filterState.queryBuilderState.observableContext,
+        )
+      : undefined;
   }
 
   addExistsLambdaParamNames(val: string): void {

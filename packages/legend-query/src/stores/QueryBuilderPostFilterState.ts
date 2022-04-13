@@ -21,6 +21,7 @@ import {
   type ValueSpecification,
   Enumeration,
   PRIMITIVE_TYPE,
+  observe_ValueSpecification,
 } from '@finos/legend-graph';
 import {
   type GeneratorFn,
@@ -260,6 +261,7 @@ export class PostFilterConditionState {
     | QueryBuilderAggregateColumnState;
   value?: ValueSpecification | undefined;
   operator: QueryBuilderPostFilterOperator;
+
   constructor(
     postFilterState: QueryBuilderPostFilterState,
     colState:
@@ -270,11 +272,16 @@ export class PostFilterConditionState {
   ) {
     makeAutoObservable(this, {
       columnState: observable,
+      changeOperator: action,
+      setColumnState: action,
+      setValue: action,
+      setOperator: action,
       changeColumn: flow,
     });
+
     this.postFilterState = postFilterState;
     this.columnState = colState;
-    this.value = value;
+    this.setValue(value);
     if (operator) {
       this.operator = operator;
     } else {
@@ -285,12 +292,31 @@ export class PostFilterConditionState {
       this.operator = guaranteeNonNullable(this.operators[0]);
     }
   }
+
   get columnName(): string {
     return this.columnState.columnName;
   }
 
+  get operators(): QueryBuilderPostFilterOperator[] {
+    return this.postFilterState.operators.filter((op) =>
+      op.isCompatibleWithPostFilterColumn(this),
+    );
+  }
+
+  changeOperator(val: QueryBuilderPostFilterOperator): void {
+    this.setOperator(val);
+    if (!this.operator.isCompatibleWithConditionValue(this)) {
+      this.setValue(this.operator.getDefaultFilterConditionValue(this));
+    }
+  }
+
   setValue(val: ValueSpecification | undefined): void {
-    this.value = val;
+    this.value = val
+      ? observe_ValueSpecification(
+          val,
+          this.postFilterState.queryBuilderState.observableContext,
+        )
+      : undefined;
   }
 
   setColumnState(
@@ -315,12 +341,15 @@ export class PostFilterConditionState {
       if (colState instanceof QueryBuilderDerivationProjectionColumnState) {
         yield flowResult(colState.fetchDerivationLambdaReturnType());
       }
+
       //column
       this.setColumnState(colState);
+
       //operator
       if (!this.operator.isCompatibleWithPostFilterColumn(this)) {
         this.setOperator(guaranteeNonNullable(this.operators[0]));
       }
+
       // value
       if (!this.operator.isCompatibleWithConditionValue(this)) {
         this.setValue(this.operator.getDefaultFilterConditionValue(this));
@@ -330,18 +359,6 @@ export class PostFilterConditionState {
       this.postFilterState.queryBuilderState.applicationStore.notifyError(
         `Can't drag column '${columnState.columnName}' due to: ${error.message}`,
       );
-    }
-  }
-
-  get operators(): QueryBuilderPostFilterOperator[] {
-    return this.postFilterState.operators.filter((op) =>
-      op.isCompatibleWithPostFilterColumn(this),
-    );
-  }
-  changeOperator(val: QueryBuilderPostFilterOperator): void {
-    this.setOperator(val);
-    if (!this.operator.isCompatibleWithConditionValue(this)) {
-      this.setValue(this.operator.getDefaultFilterConditionValue(this));
     }
   }
 }

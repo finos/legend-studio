@@ -82,7 +82,7 @@ export class QueryBuilderFilterOperator_GreaterThan extends QueryBuilderFilterOp
     );
   }
 
-  protected getUnobservedDefaultFilterConditionValue(
+  getDefaultFilterConditionValue(
     filterConditionState: FilterConditionState,
   ): ValueSpecification | undefined {
     const propertyType =

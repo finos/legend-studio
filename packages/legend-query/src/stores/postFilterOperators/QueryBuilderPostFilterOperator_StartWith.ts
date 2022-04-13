@@ -56,7 +56,7 @@ export class QueryBuilderPostFilterOperator_StartWith extends QueryBuilderPostFi
       : undefined;
     return PRIMITIVE_TYPE.STRING === type?.path;
   }
-  protected getUnobservedDefaultFilterConditionValue(
+  getDefaultFilterConditionValue(
     postFilterConditionState: PostFilterConditionState,
   ): ValueSpecification {
     const propertyType = postFilterConditionState.columnState.getReturnType();

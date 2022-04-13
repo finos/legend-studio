@@ -24,6 +24,7 @@ import {
   type VariableExpression,
   type InstanceValue,
   type GraphFetchTree,
+  type AbstractPropertyExpression,
   observe_ValueSpecification,
 } from '@finos/legend-graph';
 import { addUniqueEntry, deleteEntry } from '@finos/legend-shared';
@@ -85,5 +86,19 @@ export const graphFetchTree_addSubTree = action(
 export const graphFetchTree_removeSubTree = action(
   (tree: GraphFetchTree, val: GraphFetchTree): void => {
     deleteEntry(tree.subTrees, val);
+  },
+);
+
+export const propertyExpression_setParametersValue = action(
+  (
+    propertyExpression: AbstractPropertyExpression,
+    idx: number,
+    val: ValueSpecification,
+    context: ObserverContext,
+  ): void => {
+    propertyExpression.parametersValues[idx] = observe_ValueSpecification(
+      val,
+      context,
+    );
   },
 );

@@ -103,7 +103,7 @@ export class QueryBuilderFilterOperator_Equal extends QueryBuilderFilterOperator
     );
   }
 
-  protected getUnobservedDefaultFilterConditionValue(
+  getDefaultFilterConditionValue(
     filterConditionState: FilterConditionState,
   ): ValueSpecification | undefined {
     const propertyType =

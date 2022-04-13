@@ -74,7 +74,7 @@ export class QueryBuilderPostFilterOperator_IsEmpty extends QueryBuilderPostFilt
     return false;
   }
 
-  protected getUnobservedDefaultFilterConditionValue(
+  getDefaultFilterConditionValue(
     postFilterConditionState: PostFilterConditionState,
   ): ValueSpecification | undefined {
     return undefined;

@@ -60,7 +60,7 @@ export class QueryBuilderPostFilterOperator_Contain extends QueryBuilderPostFilt
       : undefined;
     return PRIMITIVE_TYPE.STRING === type?.path;
   }
-  protected getUnobservedDefaultFilterConditionValue(
+  getDefaultFilterConditionValue(
     postFilterConditionState: PostFilterConditionState,
   ): ValueSpecification {
     const propertyType = guaranteeNonNullable(

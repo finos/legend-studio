@@ -116,7 +116,7 @@ export class QueryBuilderFilterOperator_In extends QueryBuilderFilterOperator {
     return false;
   }
 
-  protected getUnobservedDefaultFilterConditionValue(
+  getDefaultFilterConditionValue(
     filterConditionState: FilterConditionState,
   ): ValueSpecification | undefined {
     const multiplicityOne =

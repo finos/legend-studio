@@ -102,7 +102,7 @@ export class QueryBuilderPostFilterOperator_Equal extends QueryBuilderPostFilter
     return false;
   }
 
-  protected getUnobservedDefaultFilterConditionValue(
+  getDefaultFilterConditionValue(
     postFilterConditionState: PostFilterConditionState,
   ): ValueSpecification {
     const propertyType = guaranteeNonNullable(

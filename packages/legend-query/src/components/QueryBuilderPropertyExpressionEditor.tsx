@@ -45,9 +45,8 @@ import {
   PrimitiveType,
   PrimitiveInstanceValue,
   PRIMITIVE_TYPE,
-  observe_PrimitiveInstanceValue,
 } from '@finos/legend-graph';
-import { runInAction } from 'mobx';
+import { propertyExpression_setParametersValue } from '../stores/QueryBuilderValueSpecificationModifierHelper';
 
 const DerivedPropertyParameterEditor = observer(
   (props: {
@@ -83,12 +82,11 @@ const DerivedPropertyParameterEditor = observer(
       }),
       [handleDrop],
     );
-    // FIXME: VALUE SPEC
     const resetParameterValue = (): void => {
       const genericType = guaranteeNonNullable(variable.genericType);
-      const primitiveInstanceValue = observe_PrimitiveInstanceValue(
-        new PrimitiveInstanceValue(genericType, variable.multiplicity),
-        derivedPropertyExpressionState.queryBuilderState.observableContext,
+      const primitiveInstanceValue = new PrimitiveInstanceValue(
+        genericType,
+        variable.multiplicity,
       );
       if (genericType.value.rawType.name !== PRIMITIVE_TYPE.LATESTDATE) {
         primitiveInstanceValue.values = [
@@ -97,11 +95,12 @@ const DerivedPropertyParameterEditor = observer(
           ),
         ];
       }
-      runInAction(() => {
-        derivedPropertyExpressionState.propertyExpression.parametersValues[
-          idx + 1
-        ] = primitiveInstanceValue;
-      });
+      propertyExpression_setParametersValue(
+        derivedPropertyExpressionState.propertyExpression,
+        idx + 1,
+        primitiveInstanceValue,
+        derivedPropertyExpressionState.queryBuilderState.observableContext,
+      );
     };
 
     return (
