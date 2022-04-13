@@ -403,7 +403,7 @@ export class QueryBuilderLambdaProcessor
           assertTrue(
             valueSpecification.parametersValues.length ===
               acceptedNoOfParameters,
-            `Can't process getAll() expression: when used with a bitemporal milestoned class getAll() expects two parameters of type 'Date'`,
+            `Can't process getAll() expression: when used with a bitemporal milestoned class getAll() expects two parameters`,
           );
           this.queryBuilderState.querySetupState.setProcessingDate(
             valueSpecification.parametersValues[1],
@@ -416,7 +416,7 @@ export class QueryBuilderLambdaProcessor
           assertTrue(
             valueSpecification.parametersValues.length ===
               acceptedNoOfParameters,
-            `Can't process getAll() expression: when used with a milestoned class getAll() expects a parameter of type 'Date'`,
+            `Can't process getAll() expression: when used with a milestoned class getAll() expects a parameter`,
           );
           this.queryBuilderState.querySetupState.setProcessingDate(
             valueSpecification.parametersValues[1],
@@ -426,7 +426,7 @@ export class QueryBuilderLambdaProcessor
           assertTrue(
             valueSpecification.parametersValues.length ===
               acceptedNoOfParameters,
-            `Can't process getAll() expression: when used with a milestoned class getAll() expects a parameter of type 'Date'`,
+            `Can't process getAll() expression: when used with a milestoned class getAll() expects a parameter'`,
           );
           this.queryBuilderState.querySetupState.setBusinessDate(
             valueSpecification.parametersValues[1],

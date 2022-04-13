@@ -52,7 +52,7 @@ import { SUPPORTED_FUNCTIONS } from '../QueryBuilder_Const';
 import {
   fillMilestonedDerivedPropertyArguments,
   getSourceTemporalStereotype,
-  isDatePropagationSupported,
+  isDefaultDatePropagationSupported,
   removePropagatedDates,
 } from './QueryBuilderMilestoningHelper';
 
@@ -172,7 +172,7 @@ export const fillDerivedPropertyArguments = (
     }
     if (temporalTarget) {
       if (
-        !isDatePropagationSupported(
+        !isDefaultDatePropagationSupported(
           derivedPropertyExpressionState,
           derivedPropertyExpressionState.queryBuilderState.graphManagerState
             .graph,

@@ -325,3 +325,11 @@ export enum DEFAULT_MILESTONING_PARAMETERS {
   PROCESSING_DATE = 'processingDate',
   BUSINESS_DATE = 'businessDate',
 }
+
+export enum MilestoneVersionPropertySufixes {
+  ALL_VERSIONS = 'AllVersions',
+  ALL_VERSIONS_IN_RANGE = 'AllVersionsInRange',
+}
+
+export const START_DATE = 'start';
+export const END_DATE = 'end';

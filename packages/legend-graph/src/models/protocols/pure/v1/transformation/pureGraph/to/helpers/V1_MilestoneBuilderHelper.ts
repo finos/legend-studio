@@ -19,8 +19,11 @@ import type { PureModel } from '../../../../../../../../graph/PureModel';
 import { getMilestoneTemporalStereotype } from '../../../../../../../../helpers/DomainHelper';
 import {
   DEFAULT_MILESTONING_PARAMETERS,
+  END_DATE,
+  MilestoneVersionPropertySufixes,
   MILESTONING_STEROTYPES,
   PRIMITIVE_TYPE,
+  START_DATE,
   TYPICAL_MULTIPLICITY_TYPE,
 } from '../../../../../../../../MetaModelConst';
 import type { PropertyOwner } from '../../../../../../../metamodels/pure/packageableElements/domain/AbstractProperty';
@@ -79,7 +82,7 @@ export const V1_ProcessMilestoningProperties = (
             ),
           ];
           const milestonedAllVersions = new Property(
-            `${property.name}AllVersions`,
+            `${property.name}${MilestoneVersionPropertySufixes.ALL_VERSIONS}`,
             new Multiplicity(property.multiplicity.lowerBound, undefined),
             GenericTypeExplicitReference.create(
               new GenericType(property.genericType.value.rawType),
@@ -87,7 +90,7 @@ export const V1_ProcessMilestoningProperties = (
             property.owner,
           );
           const milestonedAllVersionsInRange = new DerivedProperty(
-            `${property.name}AllVersionsInRange`,
+            `${property.name}${MilestoneVersionPropertySufixes.ALL_VERSIONS_IN_RANGE}`,
             property.multiplicity,
             GenericTypeExplicitReference.create(
               new GenericType(property.genericType.value.rawType),
@@ -95,8 +98,8 @@ export const V1_ProcessMilestoningProperties = (
             property.owner,
           );
           milestonedAllVersionsInRange.parameters = [
-            buildMilestoningParameter('start', graph),
-            buildMilestoningParameter('end', graph),
+            buildMilestoningParameter(START_DATE, graph),
+            buildMilestoningParameter(END_DATE, graph),
           ];
           propertyOwner._generatedMilestonedProperties.push(dateProperty);
           propertyOwner._generatedMilestonedProperties.push(
@@ -123,7 +126,7 @@ export const V1_ProcessMilestoningProperties = (
             ),
           ];
           const milestonedAllVersions = new Property(
-            `${property.name}AllVersions`,
+            `${property.name}${MilestoneVersionPropertySufixes.ALL_VERSIONS}`,
             new Multiplicity(property.multiplicity.lowerBound, undefined),
             GenericTypeExplicitReference.create(
               new GenericType(property.genericType.value.rawType),
@@ -131,7 +134,7 @@ export const V1_ProcessMilestoningProperties = (
             property.owner,
           );
           const milestonedAllVersionsInRange = new DerivedProperty(
-            `${property.name}AllVersionsInRange`,
+            `${property.name}${MilestoneVersionPropertySufixes.ALL_VERSIONS_IN_RANGE}`,
             property.multiplicity,
             GenericTypeExplicitReference.create(
               new GenericType(property.genericType.value.rawType),
@@ -139,8 +142,8 @@ export const V1_ProcessMilestoningProperties = (
             property.owner,
           );
           milestonedAllVersionsInRange.parameters = [
-            buildMilestoningParameter('start', graph),
-            buildMilestoningParameter('end', graph),
+            buildMilestoningParameter(START_DATE, graph),
+            buildMilestoningParameter(END_DATE, graph),
           ];
           propertyOwner._generatedMilestonedProperties.push(dateProperty);
           propertyOwner._generatedMilestonedProperties.push(
@@ -171,7 +174,7 @@ export const V1_ProcessMilestoningProperties = (
             ),
           ];
           const milestonedAllVersions = new Property(
-            `${property.name}AllVersions`,
+            `${property.name}${MilestoneVersionPropertySufixes.ALL_VERSIONS}`,
             new Multiplicity(property.multiplicity.lowerBound, undefined),
             GenericTypeExplicitReference.create(
               new GenericType(property.genericType.value.rawType),

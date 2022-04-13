@@ -53,7 +53,7 @@ import {
   fromGroupOperation,
   QUERY_BUILDER_GROUP_OPERATION,
 } from './QueryBuilderOperatorsHelper';
-import { getPropertyExpressionState } from './QueryBuilderMilestoningHelper';
+import { updatePropertyExpressionStateWithDefaultMilestoningDates } from './QueryBuilderMilestoningHelper';
 
 export abstract class QueryBuilderFilterOperator {
   uuid = uuid();
@@ -141,7 +141,9 @@ export class FilterConditionState {
   }
 
   get propertyExpression(): QueryBuilderPropertyExpressionState {
-    return getPropertyExpressionState(this.propertyExpressionState);
+    return updatePropertyExpressionStateWithDefaultMilestoningDates(
+      this.propertyExpressionState,
+    );
   }
 
   changeProperty(propertyExpression: AbstractPropertyExpression): void {

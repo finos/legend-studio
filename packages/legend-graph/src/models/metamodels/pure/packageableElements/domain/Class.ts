@@ -65,8 +65,6 @@ export class Class extends Type implements Hashable, Stubable {
   /**
    * To store the properties generated while processing the milestoning properties. The properties
    * generated are `allVersions`, `allVersionsInRange` and derived property with date parameter.
-   * We are not doing how engine does that here to easy the process of
-   * handling milestoning properties in query builder.
    */
   _generatedMilestonedProperties: Property[] = [];
 

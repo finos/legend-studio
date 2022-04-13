@@ -223,10 +223,9 @@ export const QueryBuilderSetupPanel = observer(
     const close = (): void => {
       setIsMilestoneEditorOpened(false);
     };
-    const isMilestonedQuery =
-      querySetupState.businessDate || querySetupState.processingDate
-        ? true
-        : false;
+    const isMilestonedQuery = Boolean(
+      querySetupState.businessDate || querySetupState.processingDate,
+    );
 
     return (
       <div

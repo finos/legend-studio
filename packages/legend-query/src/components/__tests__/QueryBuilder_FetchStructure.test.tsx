@@ -26,8 +26,10 @@ import {
   TEST_DATA__simpleGraphFetch,
   TEST_DATA__simpleProjectionWithSubtype,
 } from '../../stores/__tests__/TEST_DATA__QueryBuilder_Generic';
+import { TEST_DATA__simpleProjectionWithBiTemporalSourceAndBiTemporalTarget, TEST_DATA__simpleProjectionWithBiTemporalSourceAndBusinessTemporalTarget, TEST_DATA__simpleProjectionWithBiTemporalSourceAndProcessingTemporalTarget, TEST_DATA__simpleProjectionWithBusinessTemporalSourceAndBiTemporalTarget, TEST_DATA__simpleProjectionWithBusinessTemporalSourceAndBusinessTemporalTarget, TEST_DATA__simpleProjectionWithBusinessTemporalSourceAndProcessingTemporalTarget, TEST_DATA__simpleProjectionWithNonTemporalSourceAndBiTemporalTarget, TEST_DATA__simpleProjectionWithNonTemporalSourceAndBusinessTemporalTarget, TEST_DATA__simpleProjectionWithNonTemporalSourceAndProcessingTemporalTarget, TEST_DATA__simpleProjectionWithProcessingTemporalSourceAndBiTemporalTarget, TEST_DATA__simpleProjectionWithProcessingTemporalSourceAndBusinessTemporalTarget, TEST_DATA__simpleProjectionWithProcessingTemporalSourceAndProcessingTemporalTarget } from '../../stores/__tests__/TEST_DATA__QueryBuilder_Milestoning';
 import TEST_DATA__ComplexRelationalModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_ComplexRelational.json';
 import TEST_DATA__ComplexM2MModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_ComplexM2M.json';
+import TEST_MilestoningModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_Milestoning.json';
 import {
   integrationTest,
   guaranteeNonNullable,
@@ -486,4 +488,592 @@ test(
     expect(firmGraphFetchTreeNode.class.value).toBe(_firmClass);
   },
   // TODO: add more test when we rework the graph fetch tree
+);
+
+test(
+  integrationTest(
+    'Query builder state is properly set after processing a lambda with businesstemporal source processingtemporal target',
+  ),
+  async () => {
+    const pluginManager = LegendQueryPluginManager.create();
+    pluginManager.usePresets([new Query_GraphPreset()]).install();
+    const mockedQueryStore = TEST__provideMockedLegendQueryStore({
+      pluginManager,
+    });
+    const renderResult = await TEST__setUpQueryEditor(
+      mockedQueryStore,
+      TEST_MilestoningModel,
+      RawLambda.createStub(),
+      'my::map',
+      'my::runtime',
+    );
+    const queryBuilderState = mockedQueryStore.queryBuilderState;
+
+    const _personClass =
+      mockedQueryStore.graphManagerState.graph.getClass('my::Person');
+    queryBuilderState.changeClass(_personClass);
+    const queryBuilderSetup = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
+    );
+    await waitFor(() => getByText(queryBuilderSetup, 'Person'));
+    await waitFor(() => getByText(queryBuilderSetup, 'map'));
+    await waitFor(() => getByText(queryBuilderSetup, 'runtime'));
+
+    queryBuilderState.initialize(
+      getRawLambda(
+        TEST_DATA__simpleProjectionWithBusinessTemporalSourceAndProcessingTemporalTarget,
+      ),
+    );
+    const projectionColumnState = guaranteeType(
+      queryBuilderState.fetchStructureState.projectionState.columns[0],
+      QueryBuilderSimpleProjectionColumnState,
+    );
+    const derivedPropertyExpressionStates = projectionColumnState.propertyExpressionState.derivedPropertyExpressionStates;
+
+    //property replaced with derived property as it is milestoned
+    expect(derivedPropertyExpressionStates.length).toBe(1);
+    const parameterValues = guaranteeNonNullable(derivedPropertyExpressionStates[0]?.propertyExpression.parametersValues);
+
+    //default milestoning date is propagated as date propagation is not supported.
+    expect(parameterValues.length).toBe(2);
+  },
+);
+
+test(
+  integrationTest(
+    'Query builder state is properly set after processing a lambda with businesstemporal source businesstemporal target',
+  ),
+  async () => {
+    const pluginManager = LegendQueryPluginManager.create();
+    pluginManager.usePresets([new Query_GraphPreset()]).install();
+    const mockedQueryStore = TEST__provideMockedLegendQueryStore({
+      pluginManager,
+    });
+    const renderResult = await TEST__setUpQueryEditor(
+      mockedQueryStore,
+      TEST_MilestoningModel,
+      RawLambda.createStub(),
+      'my::map',
+      'my::runtime',
+    );
+    const queryBuilderState = mockedQueryStore.queryBuilderState;
+
+    const _personClass =
+      mockedQueryStore.graphManagerState.graph.getClass('my::Person');
+    queryBuilderState.changeClass(_personClass);
+    const queryBuilderSetup = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
+    );
+    await waitFor(() => getByText(queryBuilderSetup, 'Person'));
+    await waitFor(() => getByText(queryBuilderSetup, 'map'));
+    await waitFor(() => getByText(queryBuilderSetup, 'runtime'));
+
+    queryBuilderState.initialize(
+      getRawLambda(
+        TEST_DATA__simpleProjectionWithBusinessTemporalSourceAndBusinessTemporalTarget,
+      ),
+    );
+    const projectionColumnState = guaranteeType(
+      queryBuilderState.fetchStructureState.projectionState.columns[0],
+      QueryBuilderSimpleProjectionColumnState,
+    );
+    const derivedPropertyExpressionStates = projectionColumnState.propertyExpressionState.derivedPropertyExpressionStates;
+
+    //property replaced with derived property as it is milestoned
+    expect(derivedPropertyExpressionStates.length).toBe(1);
+    const parameterValues = guaranteeNonNullable(derivedPropertyExpressionStates[0]?.propertyExpression.parametersValues);
+
+    //default milestoning date is not propagated as date propagation is supported.
+    expect(parameterValues.length).toBe(1);
+  },
+);
+
+test(
+  integrationTest(
+    'Query builder state is properly set after processing a lambda with businesstemporal source bitemporal target',
+  ),
+  async () => {
+    const pluginManager = LegendQueryPluginManager.create();
+    pluginManager.usePresets([new Query_GraphPreset()]).install();
+    const mockedQueryStore = TEST__provideMockedLegendQueryStore({
+      pluginManager,
+    });
+    const renderResult = await TEST__setUpQueryEditor(
+      mockedQueryStore,
+      TEST_MilestoningModel,
+      RawLambda.createStub(),
+      'my::map',
+      'my::runtime',
+    );
+    const queryBuilderState = mockedQueryStore.queryBuilderState;
+
+    const _personClass =
+      mockedQueryStore.graphManagerState.graph.getClass('my::Person');
+    queryBuilderState.changeClass(_personClass);
+    const queryBuilderSetup = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
+    );
+    await waitFor(() => getByText(queryBuilderSetup, 'Person'));
+    await waitFor(() => getByText(queryBuilderSetup, 'map'));
+    await waitFor(() => getByText(queryBuilderSetup, 'runtime'));
+
+    queryBuilderState.initialize(
+      getRawLambda(
+        TEST_DATA__simpleProjectionWithBusinessTemporalSourceAndBiTemporalTarget,
+      ),
+    );
+    const projectionColumnState = guaranteeType(
+      queryBuilderState.fetchStructureState.projectionState.columns[0],
+      QueryBuilderSimpleProjectionColumnState,
+    );
+    const derivedPropertyExpressionStates = projectionColumnState.propertyExpressionState.derivedPropertyExpressionStates;
+
+    //property replaced with derived property as it is milestoned
+    expect(derivedPropertyExpressionStates.length).toBe(1);
+    const parameterValues = guaranteeNonNullable(derivedPropertyExpressionStates[0]?.propertyExpression.parametersValues);
+
+    //default milestoning date is propagated as date propagation is not supported.
+    expect(parameterValues.length).toBe(3);
+  },
+);
+
+test(
+  integrationTest(
+    'Query builder state is properly set after processing a lambda with bitemporal source bitemporal target',
+  ),
+  async () => {
+    const pluginManager = LegendQueryPluginManager.create();
+    pluginManager.usePresets([new Query_GraphPreset()]).install();
+    const mockedQueryStore = TEST__provideMockedLegendQueryStore({
+      pluginManager,
+    });
+    const renderResult = await TEST__setUpQueryEditor(
+      mockedQueryStore,
+      TEST_MilestoningModel,
+      RawLambda.createStub(),
+      'my::map',
+      'my::runtime',
+    );
+    const queryBuilderState = mockedQueryStore.queryBuilderState;
+
+    const _personClass =
+      mockedQueryStore.graphManagerState.graph.getClass('my::Person1');
+    queryBuilderState.changeClass(_personClass);
+    const queryBuilderSetup = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
+    );
+    await waitFor(() => getByText(queryBuilderSetup, 'Person1'));
+    await waitFor(() => getByText(queryBuilderSetup, 'map'));
+    await waitFor(() => getByText(queryBuilderSetup, 'runtime'));
+
+    queryBuilderState.initialize(
+      getRawLambda(
+        TEST_DATA__simpleProjectionWithBiTemporalSourceAndBiTemporalTarget,
+      ),
+    );
+    const projectionColumnState = guaranteeType(
+      queryBuilderState.fetchStructureState.projectionState.columns[0],
+      QueryBuilderSimpleProjectionColumnState,
+    );
+    const derivedPropertyExpressionStates = projectionColumnState.propertyExpressionState.derivedPropertyExpressionStates;
+
+    //property replaced with derived property as it is milestoned
+    expect(derivedPropertyExpressionStates.length).toBe(1);
+    const parameterValues = guaranteeNonNullable(derivedPropertyExpressionStates[0]?.propertyExpression.parametersValues);
+
+    //default milestoning date is not propagated as date propagation is supported.
+    expect(parameterValues.length).toBe(1);
+  },
+);
+
+test(
+  integrationTest(
+    'Query builder state is properly set after processing a lambda with bitemporal source businesstemporal target',
+  ),
+  async () => {
+    const pluginManager = LegendQueryPluginManager.create();
+    pluginManager.usePresets([new Query_GraphPreset()]).install();
+    const mockedQueryStore = TEST__provideMockedLegendQueryStore({
+      pluginManager,
+    });
+    const renderResult = await TEST__setUpQueryEditor(
+      mockedQueryStore,
+      TEST_MilestoningModel,
+      RawLambda.createStub(),
+      'my::map',
+      'my::runtime',
+    );
+    const queryBuilderState = mockedQueryStore.queryBuilderState;
+
+    const _personClass =
+      mockedQueryStore.graphManagerState.graph.getClass('my::Person1');
+    queryBuilderState.changeClass(_personClass);
+    const queryBuilderSetup = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
+    );
+    await waitFor(() => getByText(queryBuilderSetup, 'Person1'));
+    await waitFor(() => getByText(queryBuilderSetup, 'map'));
+    await waitFor(() => getByText(queryBuilderSetup, 'runtime'));
+
+    queryBuilderState.initialize(
+      getRawLambda(
+        TEST_DATA__simpleProjectionWithBiTemporalSourceAndBusinessTemporalTarget,
+      ),
+    );
+    const projectionColumnState = guaranteeType(
+      queryBuilderState.fetchStructureState.projectionState.columns[0],
+      QueryBuilderSimpleProjectionColumnState,
+    );
+    const derivedPropertyExpressionStates = projectionColumnState.propertyExpressionState.derivedPropertyExpressionStates;
+
+    //property replaced with derived property as it is milestoned
+    expect(derivedPropertyExpressionStates.length).toBe(1);
+    const parameterValues = guaranteeNonNullable(derivedPropertyExpressionStates[0]?.propertyExpression.parametersValues);
+
+    //default milestoning date is not propagated as date propagation is supported.
+    expect(parameterValues.length).toBe(1);
+  },
+);
+
+test(
+  integrationTest(
+    'Query builder state is properly set after processing a lambda with bitemporal source bitemporal target',
+  ),
+  async () => {
+    const pluginManager = LegendQueryPluginManager.create();
+    pluginManager.usePresets([new Query_GraphPreset()]).install();
+    const mockedQueryStore = TEST__provideMockedLegendQueryStore({
+      pluginManager,
+    });
+    const renderResult = await TEST__setUpQueryEditor(
+      mockedQueryStore,
+      TEST_MilestoningModel,
+      RawLambda.createStub(),
+      'my::map',
+      'my::runtime',
+    );
+    const queryBuilderState = mockedQueryStore.queryBuilderState;
+
+    const _personClass =
+      mockedQueryStore.graphManagerState.graph.getClass('my::Person1');
+    queryBuilderState.changeClass(_personClass);
+    const queryBuilderSetup = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
+    );
+    await waitFor(() => getByText(queryBuilderSetup, 'Person1'));
+    await waitFor(() => getByText(queryBuilderSetup, 'map'));
+    await waitFor(() => getByText(queryBuilderSetup, 'runtime'));
+
+    queryBuilderState.initialize(
+      getRawLambda(
+        TEST_DATA__simpleProjectionWithBiTemporalSourceAndBiTemporalTarget,
+      ),
+    );
+    const projectionColumnState = guaranteeType(
+      queryBuilderState.fetchStructureState.projectionState.columns[0],
+      QueryBuilderSimpleProjectionColumnState,
+    );
+    const derivedPropertyExpressionStates = projectionColumnState.propertyExpressionState.derivedPropertyExpressionStates;
+
+    //property replaced with derived property as it is milestoned
+    expect(derivedPropertyExpressionStates.length).toBe(1);
+    const parameterValues = guaranteeNonNullable(derivedPropertyExpressionStates[0]?.propertyExpression.parametersValues);
+
+    //default milestoning date is not propagated as date propagation is supported.
+    expect(parameterValues.length).toBe(1);
+  },
+);
+
+test(
+  integrationTest(
+    'Query builder state is properly set after processing a lambda with processingtemporal source bitemporal target',
+  ),
+  async () => {
+    const pluginManager = LegendQueryPluginManager.create();
+    pluginManager.usePresets([new Query_GraphPreset()]).install();
+    const mockedQueryStore = TEST__provideMockedLegendQueryStore({
+      pluginManager,
+    });
+    const renderResult = await TEST__setUpQueryEditor(
+      mockedQueryStore,
+      TEST_MilestoningModel,
+      RawLambda.createStub(),
+      'my::map',
+      'my::runtime',
+    );
+    const queryBuilderState = mockedQueryStore.queryBuilderState;
+
+    const _personClass =
+      mockedQueryStore.graphManagerState.graph.getClass('my::Person2');
+    queryBuilderState.changeClass(_personClass);
+    const queryBuilderSetup = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
+    );
+    await waitFor(() => getByText(queryBuilderSetup, 'Person2'));
+    await waitFor(() => getByText(queryBuilderSetup, 'map'));
+    await waitFor(() => getByText(queryBuilderSetup, 'runtime'));
+
+    queryBuilderState.initialize(
+      getRawLambda(
+        TEST_DATA__simpleProjectionWithProcessingTemporalSourceAndBiTemporalTarget,
+      ),
+    );
+    const projectionColumnState = guaranteeType(
+      queryBuilderState.fetchStructureState.projectionState.columns[0],
+      QueryBuilderSimpleProjectionColumnState,
+    );
+    const derivedPropertyExpressionStates = projectionColumnState.propertyExpressionState.derivedPropertyExpressionStates;
+
+    //property replaced with derived property as it is milestoned
+    expect(derivedPropertyExpressionStates.length).toBe(1);
+    const parameterValues = guaranteeNonNullable(derivedPropertyExpressionStates[0]?.propertyExpression.parametersValues);
+
+    //default milestoning date is propagated as date propagation is not supported.
+    expect(parameterValues.length).toBe(3);
+  },
+);
+
+test(
+  integrationTest(
+    'Query builder state is properly set after processing a lambda with processingtemporal source businesstemporal target',
+  ),
+  async () => {
+    const pluginManager = LegendQueryPluginManager.create();
+    pluginManager.usePresets([new Query_GraphPreset()]).install();
+    const mockedQueryStore = TEST__provideMockedLegendQueryStore({
+      pluginManager,
+    });
+    const renderResult = await TEST__setUpQueryEditor(
+      mockedQueryStore,
+      TEST_MilestoningModel,
+      RawLambda.createStub(),
+      'my::map',
+      'my::runtime',
+    );
+    const queryBuilderState = mockedQueryStore.queryBuilderState;
+
+    const _personClass =
+      mockedQueryStore.graphManagerState.graph.getClass('my::Person2');
+    queryBuilderState.changeClass(_personClass);
+    const queryBuilderSetup = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
+    );
+    await waitFor(() => getByText(queryBuilderSetup, 'Person2'));
+    await waitFor(() => getByText(queryBuilderSetup, 'map'));
+    await waitFor(() => getByText(queryBuilderSetup, 'runtime'));
+
+    queryBuilderState.initialize(
+      getRawLambda(
+        TEST_DATA__simpleProjectionWithProcessingTemporalSourceAndBusinessTemporalTarget,
+      ),
+    );
+    const projectionColumnState = guaranteeType(
+      queryBuilderState.fetchStructureState.projectionState.columns[0],
+      QueryBuilderSimpleProjectionColumnState,
+    );
+    const derivedPropertyExpressionStates = projectionColumnState.propertyExpressionState.derivedPropertyExpressionStates;
+
+    //property replaced with derived property as it is milestoned
+    expect(derivedPropertyExpressionStates.length).toBe(1);
+    const parameterValues = guaranteeNonNullable(derivedPropertyExpressionStates[0]?.propertyExpression.parametersValues);
+
+    //default milestoning date is propagated as date propagation is not supported.
+    expect(parameterValues.length).toBe(2);
+  },
+);
+
+test(
+  integrationTest(
+    'Query builder state is properly set after processing a lambda with processingtemporal source processingtemporal target',
+  ),
+  async () => {
+    const pluginManager = LegendQueryPluginManager.create();
+    pluginManager.usePresets([new Query_GraphPreset()]).install();
+    const mockedQueryStore = TEST__provideMockedLegendQueryStore({
+      pluginManager,
+    });
+    const renderResult = await TEST__setUpQueryEditor(
+      mockedQueryStore,
+      TEST_MilestoningModel,
+      RawLambda.createStub(),
+      'my::map',
+      'my::runtime',
+    );
+    const queryBuilderState = mockedQueryStore.queryBuilderState;
+
+    const _personClass =
+      mockedQueryStore.graphManagerState.graph.getClass('my::Person2');
+    queryBuilderState.changeClass(_personClass);
+    const queryBuilderSetup = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
+    );
+    await waitFor(() => getByText(queryBuilderSetup, 'Person2'));
+    await waitFor(() => getByText(queryBuilderSetup, 'map'));
+    await waitFor(() => getByText(queryBuilderSetup, 'runtime'));
+
+    queryBuilderState.initialize(
+      getRawLambda(
+        TEST_DATA__simpleProjectionWithProcessingTemporalSourceAndProcessingTemporalTarget,
+      ),
+    );
+    const projectionColumnState = guaranteeType(
+      queryBuilderState.fetchStructureState.projectionState.columns[0],
+      QueryBuilderSimpleProjectionColumnState,
+    );
+    const derivedPropertyExpressionStates = projectionColumnState.propertyExpressionState.derivedPropertyExpressionStates;
+
+    //property replaced with derived property as it is milestoned
+    expect(derivedPropertyExpressionStates.length).toBe(1);
+    const parameterValues = guaranteeNonNullable(derivedPropertyExpressionStates[0]?.propertyExpression.parametersValues);
+
+    //default milestoning date is not propagated as date propagation is supported.
+    expect(parameterValues.length).toBe(1);
+  },
+);
+
+test(
+  integrationTest(
+    'Query builder state is properly set after processing a lambda with non-temporal source processingtemporal target',
+  ),
+  async () => {
+    const pluginManager = LegendQueryPluginManager.create();
+    pluginManager.usePresets([new Query_GraphPreset()]).install();
+    const mockedQueryStore = TEST__provideMockedLegendQueryStore({
+      pluginManager,
+    });
+    const renderResult = await TEST__setUpQueryEditor(
+      mockedQueryStore,
+      TEST_MilestoningModel,
+      RawLambda.createStub(),
+      'my::map',
+      'my::runtime',
+    );
+    const queryBuilderState = mockedQueryStore.queryBuilderState;
+
+    const _personClass =
+      mockedQueryStore.graphManagerState.graph.getClass('my::Firm');
+    queryBuilderState.changeClass(_personClass);
+    const queryBuilderSetup = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
+    );
+    await waitFor(() => getByText(queryBuilderSetup, 'Firm'));
+    await waitFor(() => getByText(queryBuilderSetup, 'map'));
+    await waitFor(() => getByText(queryBuilderSetup, 'runtime'));
+
+    queryBuilderState.initialize(
+      getRawLambda(
+        TEST_DATA__simpleProjectionWithNonTemporalSourceAndProcessingTemporalTarget,
+      ),
+    );
+    const projectionColumnState = guaranteeType(
+      queryBuilderState.fetchStructureState.projectionState.columns[0],
+      QueryBuilderSimpleProjectionColumnState,
+    );
+    const derivedPropertyExpressionStates = projectionColumnState.propertyExpressionState.derivedPropertyExpressionStates;
+
+    //property replaced with derived property as it is milestoned
+    expect(derivedPropertyExpressionStates.length).toBe(1);
+    const parameterValues = guaranteeNonNullable(derivedPropertyExpressionStates[0]?.propertyExpression.parametersValues);
+
+    //default milestoning date is propagated as date propagation is not supported.
+    expect(parameterValues.length).toBe(2);
+  },
+);
+
+test(
+  integrationTest(
+    'Query builder state is properly set after processing a lambda with non-temporal source businesstemporal target',
+  ),
+  async () => {
+    const pluginManager = LegendQueryPluginManager.create();
+    pluginManager.usePresets([new Query_GraphPreset()]).install();
+    const mockedQueryStore = TEST__provideMockedLegendQueryStore({
+      pluginManager,
+    });
+    const renderResult = await TEST__setUpQueryEditor(
+      mockedQueryStore,
+      TEST_MilestoningModel,
+      RawLambda.createStub(),
+      'my::map',
+      'my::runtime',
+    );
+    const queryBuilderState = mockedQueryStore.queryBuilderState;
+
+    const _personClass =
+      mockedQueryStore.graphManagerState.graph.getClass('my::Firm');
+    queryBuilderState.changeClass(_personClass);
+    const queryBuilderSetup = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
+    );
+    await waitFor(() => getByText(queryBuilderSetup, 'Firm'));
+    await waitFor(() => getByText(queryBuilderSetup, 'map'));
+    await waitFor(() => getByText(queryBuilderSetup, 'runtime'));
+
+    queryBuilderState.initialize(
+      getRawLambda(
+        TEST_DATA__simpleProjectionWithNonTemporalSourceAndBusinessTemporalTarget,
+      ),
+    );
+    const projectionColumnState = guaranteeType(
+      queryBuilderState.fetchStructureState.projectionState.columns[0],
+      QueryBuilderSimpleProjectionColumnState,
+    );
+    const derivedPropertyExpressionStates = projectionColumnState.propertyExpressionState.derivedPropertyExpressionStates;
+
+    //property replaced with derived property as it is milestoned
+    expect(derivedPropertyExpressionStates.length).toBe(1);
+    const parameterValues = guaranteeNonNullable(derivedPropertyExpressionStates[0]?.propertyExpression.parametersValues);
+
+    //default milestoning date is propagated as date propagation is not supported.
+    expect(parameterValues.length).toBe(2);
+  },
+);
+
+test(
+  integrationTest(
+    'Query builder state is properly set after processing a lambda with non-temporal source bitemporal target',
+  ),
+  async () => {
+    const pluginManager = LegendQueryPluginManager.create();
+    pluginManager.usePresets([new Query_GraphPreset()]).install();
+    const mockedQueryStore = TEST__provideMockedLegendQueryStore({
+      pluginManager,
+    });
+    const renderResult = await TEST__setUpQueryEditor(
+      mockedQueryStore,
+      TEST_MilestoningModel,
+      RawLambda.createStub(),
+      'my::map',
+      'my::runtime',
+    );
+    const queryBuilderState = mockedQueryStore.queryBuilderState;
+
+    const _personClass =
+      mockedQueryStore.graphManagerState.graph.getClass('my::Firm');
+    queryBuilderState.changeClass(_personClass);
+    const queryBuilderSetup = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
+    );
+    await waitFor(() => getByText(queryBuilderSetup, 'Firm'));
+    await waitFor(() => getByText(queryBuilderSetup, 'map'));
+    await waitFor(() => getByText(queryBuilderSetup, 'runtime'));
+
+    queryBuilderState.initialize(
+      getRawLambda(
+        TEST_DATA__simpleProjectionWithNonTemporalSourceAndBiTemporalTarget,
+      ),
+    );
+    const projectionColumnState = guaranteeType(
+      queryBuilderState.fetchStructureState.projectionState.columns[0],
+      QueryBuilderSimpleProjectionColumnState,
+    );
+    const derivedPropertyExpressionStates = projectionColumnState.propertyExpressionState.derivedPropertyExpressionStates;
+
+    //property replaced with derived property as it is milestoned
+    expect(derivedPropertyExpressionStates.length).toBe(1);
+    const parameterValues = guaranteeNonNullable(derivedPropertyExpressionStates[0]?.propertyExpression.parametersValues);
+
+    //default milestoning date is propagated as date propagation is not supported.
+    expect(parameterValues.length).toBe(3);
+  },
 );

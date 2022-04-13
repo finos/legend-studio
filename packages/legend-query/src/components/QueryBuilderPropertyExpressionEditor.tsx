@@ -37,7 +37,7 @@ import {
   QUERY_BUILDER_PARAMETER_TREE_DND_TYPE,
 } from '../stores/QueryParametersState';
 import { generateDefaultValueForPrimitiveType } from '../stores/QueryBuilderValueSpecificationBuilderHelper';
-import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 import {
   type ValueSpecification,
   type VariableExpression,
@@ -46,12 +46,10 @@ import {
   PrimitiveType,
   PrimitiveInstanceValue,
   PRIMITIVE_TYPE,
-  getMilestoneTemporalStereotype,
-  MILESTONING_STEROTYPES,
 } from '@finos/legend-graph';
 import {
   getPropagatedDate,
-  isDatePropagationSupported,
+  isDefaultDatePropagationSupported,
 } from '../stores/QueryBuilderMilestoningHelper';
 
 const DerivedPropertyParameterEditor = observer(
@@ -108,7 +106,7 @@ const DerivedPropertyParameterEditor = observer(
         ];
       }
       if (
-        isDatePropagationSupported(
+        isDefaultDatePropagationSupported(
           derivedPropertyExpressionState,
           derivedPropertyExpressionState.queryBuilderState.graphManagerState
             .graph,
@@ -117,26 +115,27 @@ const DerivedPropertyParameterEditor = observer(
         const graph =
           derivedPropertyExpressionState.queryBuilderState.graphManagerState
             .graph;
-        const targetStereotype = getMilestoneTemporalStereotype(
-          guaranteeType(
-            derivedPropertyExpressionState.derivedProperty.genericType.value
-              .rawType,
-            Class,
-          ),
+        fillDerivedPropertyArguments(
+          derivedPropertyExpressionState,
           graph,
+          true,
         );
-        if (targetStereotype === MILESTONING_STEROTYPES.BITEMPORAL) {
-          fillDerivedPropertyArguments(
-            derivedPropertyExpressionState,
-            graph,
-            true,
-          );
-        }
       }
       derivedPropertyExpressionState.propertyExpression.parametersValues[
         idx + 1
       ] = primitiveInstanceValue;
     };
+    // Gets the value of milestoning date that needs to be shown in DerivedPropertyEditor when date propagation is supported
+    // otherwise gets the actual parameter value.
+    const parameterValue = (
+      isDefaultDatePropagationSupported(
+        derivedPropertyExpressionState,
+        derivedPropertyExpressionState.queryBuilderState.graphManagerState
+          .graph,
+      ) && derivedPropertyExpressionState.parameterValues.length === 0
+        ? getPropagatedDate(derivedPropertyExpressionState, idx)
+        : derivedPropertyExpressionState.parameterValues[idx]
+    ) as ValueSpecification;
 
     return (
       <div key={variable.name} className="panel__content__form__section">
@@ -156,17 +155,7 @@ const DerivedPropertyParameterEditor = observer(
             </div>
           )}
           <QueryBuilderValueSpecificationEditor
-            valueSpecification={
-              (isDatePropagationSupported(
-                derivedPropertyExpressionState,
-                derivedPropertyExpressionState.queryBuilderState
-                  .graphManagerState.graph,
-              ) && derivedPropertyExpressionState.parameterValues.length === 0
-                ? getPropagatedDate(derivedPropertyExpressionState, idx)
-                : derivedPropertyExpressionState.parameterValues[
-                    idx
-                  ]) as ValueSpecification
-            }
+            valueSpecification={parameterValue}
             graph={
               derivedPropertyExpressionState.queryBuilderState.graphManagerState
                 .graph
@@ -208,7 +197,7 @@ const DerivedPropertyExpressionEditor = observer(
         <div className="panel__content__form__section__header__label">
           {derivedPropertyExpressionState.title}
         </div>
-        {(isDatePropagationSupported(
+        {(isDefaultDatePropagationSupported(
           derivedPropertyExpressionState,
           derivedPropertyExpressionState.queryBuilderState.graphManagerState
             .graph,
