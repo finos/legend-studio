@@ -705,6 +705,12 @@ export class NewElementState {
           this.editorStore.changeDetectionState.observerContext,
         );
         service_initNewService(service);
+        const currentUserId =
+          this.editorStore.graphManagerState.graphManager.TEMPORARY__getEngineConfig()
+            .currentUserId;
+        if (currentUserId) {
+          service.owners = [currentUserId];
+        }
         element = service;
         break;
       }

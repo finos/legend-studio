@@ -40,13 +40,15 @@ import {
 
 export class ServiceRegistrationEnvInfo {
   env!: string;
-  url!: string;
+  executionUrl!: string;
   modes: string[] = [];
+  managementUrl!: string;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(ServiceRegistrationEnvInfo, {
       env: primitive(),
-      url: primitive(),
+      executionUrl: primitive(),
+      managementUrl: primitive(),
       modes: list(primitive()),
     }),
   );
@@ -84,14 +86,6 @@ class ApplicationCoreOptions {
    */
   TEMPORARY__disableRawLambdaResolver = false;
   /**
-   * Allows disabling service registration as the Legend service operational infrastructure
-   * has not been open-sourced yet.
-   *
-   * NOTE: when we open source Legend Services, we can remove this flag.
-   * TODO: when we modularize service, we can move this flag to DSL service preset.
-   */
-  TEMPORARY__disableServiceRegistration = false;
-  /**
    * Provides service registration environment configs.
    *
    * TODO: when we modularize service, we can move this config to DSL Service preset. Then, we can remove
@@ -104,7 +98,6 @@ class ApplicationCoreOptions {
       TEMPORARY__disableSDLCProjectCreation: optional(primitive()),
       TEMPORARY__useSDLCProductionProjectsOnly: optional(primitive()),
       EXPERIMENTAL__enableFullGrammarImportSupport: optional(primitive()),
-      TEMPORARY__disableServiceRegistration: optional(primitive()),
       TEMPORARY__disableRawLambdaResolver: optional(primitive()),
       TEMPORARY__serviceRegistrationConfig: list(
         custom(

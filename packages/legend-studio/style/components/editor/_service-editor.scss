@@ -223,7 +223,6 @@
       @include flexVCenter;
 
       height: 2.2rem;
-      width: 10rem;
       background: var(--color-blue-200);
       padding: 1rem;
       border-radius: 0.2rem 0 0 0.2rem;
@@ -306,6 +305,23 @@
       font-size: 1.2rem;
       color: var(--color-light-grey-400);
     }
+  }
+
+  &__owner__validation {
+    display: flex;
+    align-items: center;
+    cursor: help;
+
+    svg {
+      color: var(--color-red-100);
+      stroke-width: 0.4;
+      stroke: var(--color-red-100);
+    }
+  }
+
+  &__owner__validation-label {
+    color: var(--color-red-100);
+    margin-left: 0.5rem;
   }
 }
 
@@ -852,19 +868,55 @@
   }
 }
 
-.service-registration-modal {
-  width: 75rem;
-  border: 0.1rem solid var(--color-blue-200);
-  padding: 2rem;
-  overflow: auto;
+.service-registration-editor {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 
-  &__heading {
-    display: flex;
-    margin-bottom: 1rem;
+  .panel {
+    height: 100%;
+    width: 100%;
 
-    &__label {
-      font-size: 2rem;
+    &__header {
+      padding-left: 0.5rem;
+      color: var(--color-light-grey-300);
       font-weight: bold;
+      background: var(--color-dark-grey-50);
+      border-bottom: 0.1rem solid var(--color-dark-grey-200);
+    }
+
+    &__header__action {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgb(0 0 0 / 0%);
+      cursor: pointer;
+      width: 10rem;
+      color: var(--color-light-grey-400);
+    }
+
+    &__header__title__label {
+      background: var(--color-dark-grey-250);
+    }
+
+    &__header__action[disabled] svg {
+      color: var(--color-dark-grey-400) !important;
+    }
+
+    &__content {
+      height: calc(100% - 2.8rem);
+      background: var(--color-dark-grey-50);
+    }
+
+    &__content > div:first-child {
+      margin-top: 0;
+    }
+
+    &__content__lists {
+      height: 100%;
+      width: 100%;
+      padding: 1rem;
+      overflow: overlay;
     }
   }
 
@@ -882,6 +934,14 @@
 
   &__submit-btn {
     height: 3.6rem;
+  }
+
+  &__progress-msg {
+    line-height: 2rem;
+    color: var(--color-dark-grey-500);
+    font-family: 'Roboto Mono', monospace;
+    font-size: 1.2rem;
+    user-select: none;
   }
 }
 
