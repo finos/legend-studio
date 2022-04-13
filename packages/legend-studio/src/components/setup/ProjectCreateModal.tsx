@@ -339,13 +339,15 @@ const CreateNewProjectTab = observer(() => {
           )}
         </div>
       </div>
-      <button
-        disabled={disableSubmit}
-        className="btn btn--dark setup__create-project-modal__submit-btn u-pull-right"
-        onClick={handleSubmit}
-      >
-        Create
-      </button>
+      <div className="panel__content__form__actions">
+        <button
+          disabled={disableSubmit}
+          className="btn btn--dark setup__create-project-modal__submit-btn"
+          onClick={handleSubmit}
+        >
+          Create
+        </button>
+      </div>
     </form>
   );
 });
@@ -656,13 +658,15 @@ const ImportProjectTab = observer(() => {
           </div>
         )}
       </div>
-      <button
-        disabled={disableSubmit}
-        className="btn btn--dark setup__create-project-modal__submit-btn u-pull-right"
-        onClick={handleSubmit}
-      >
-        {importProjectSuccessReport ? 'Review' : 'Import'}
-      </button>
+      <div className="panel__content__form__actions">
+        <button
+          disabled={disableSubmit}
+          className="btn btn--dark setup__create-project-modal__submit-btn"
+          onClick={handleSubmit}
+        >
+          {importProjectSuccessReport ? 'Review' : 'Import'}
+        </button>
+      </div>
     </form>
   );
 });

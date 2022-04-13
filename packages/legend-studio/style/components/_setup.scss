@@ -46,6 +46,12 @@
     }
   }
 
+  &__actions {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+  }
+
   &__next-btn {
     padding: 1rem;
   }

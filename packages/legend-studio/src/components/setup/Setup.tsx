@@ -149,7 +149,7 @@ const CreateWorkspaceModal = observer(() => {
           <PanelLoadingIndicator
             isLoading={setupStore.createWorkspaceState.isInProgress}
           />
-          <div className="setup__create-workspace-modal__form setup__create-workspace-modal__form__workspace">
+          <div className="panel__content__form setup__create-workspace-modal__form setup__create-workspace-modal__form__workspace">
             <div className="panel__content__form__section">
               <div className="panel__content__form__section__header__label">
                 Project Name
@@ -181,7 +181,7 @@ const CreateWorkspaceModal = observer(() => {
                 ref={workspaceNameInputRef}
                 spellCheck={false}
                 disabled={dispatchingActions}
-                placeholder={'MyWorkspace'}
+                placeholder="MyWorkspace"
                 value={workspaceName}
                 onChange={changeWorkspaceName}
               />
@@ -212,12 +212,16 @@ const CreateWorkspaceModal = observer(() => {
               </div>
             </div>
           </div>
-          <button
-            disabled={dispatchingActions || !workspaceName || !currentProjectId}
-            className="btn btn--dark u-pull-right"
-          >
-            Create
-          </button>
+          <div className="panel__content__form__actions">
+            <button
+              disabled={
+                dispatchingActions || !workspaceName || !currentProjectId
+              }
+              className="btn btn--dark"
+            >
+              Create
+            </button>
+          </div>
         </form>
       </div>
     </Dialog>
@@ -317,14 +321,16 @@ const SetupSelection = observer(() => {
                 onChange={onWorkspaceChange}
                 create={handleCreateWorkspaceModal}
               />
-              <button
-                ref={proceedButtonRef}
-                className="setup__next-btn btn--dark u-pull-right"
-                onClick={handleProceed}
-                disabled={disableProceedButton}
-              >
-                Edit Workspace
-              </button>
+              <div className="setup__actions">
+                <button
+                  ref={proceedButtonRef}
+                  className="setup__next-btn btn--dark"
+                  onClick={handleProceed}
+                  disabled={disableProceedButton}
+                >
+                  Edit Workspace
+                </button>
+              </div>
             </div>
           </div>
           {/* We do this to reset the initial state of the modals */}

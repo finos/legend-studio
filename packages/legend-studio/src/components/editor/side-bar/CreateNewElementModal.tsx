@@ -390,7 +390,7 @@ export const CreateNewElementModal = observer(() => {
       <form
         data-testid={LEGEND_STUDIO_TEST_ID.NEW_ELEMENT_MODAL}
         onSubmit={handleSubmit}
-        className="modal search-modal"
+        className="modal modal--dark search-modal"
       >
         <div className="modal__title">
           Create a New{' '}
@@ -407,7 +407,7 @@ export const CreateNewElementModal = observer(() => {
             />
           )}
           <input
-            className="input explorer__new-element-modal__name-input"
+            className="input--dark explorer__new-element-modal__name-input"
             ref={elementNameInputRef}
             spellCheck={false}
             value={name}
@@ -419,12 +419,14 @@ export const CreateNewElementModal = observer(() => {
           />
           {renderNewElementDriver(newElementState.type, editorStore)}
         </div>
-        <button type="button" className="btn u-pull-right" onClick={closeModal}>
-          Cancel
-        </button>
-        <button className="btn btn--primary u-pull-right" disabled={isDisabled}>
-          Create
-        </button>
+        <div className="search-modal__actions">
+          <button type="button" className="btn btn--dark" onClick={closeModal}>
+            Cancel
+          </button>
+          <button className="btn btn--dark" disabled={isDisabled}>
+            Create
+          </button>
+        </div>
       </form>
     </Dialog>
   );

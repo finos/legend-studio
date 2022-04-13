@@ -210,13 +210,15 @@ const ServiceExecutionQueryImporter = observer(
               <BlankPanelContent>No query to preview</BlankPanelContent>
             )}
           </div>
-          <button
-            className="btn btn--dark u-pull-right"
-            disabled={!queryState.selectedQueryInfo}
-            onClick={importQuery}
-          >
-            Import
-          </button>
+          <div className="search-modal__actions">
+            <button
+              className="btn btn--dark"
+              disabled={!queryState.selectedQueryInfo}
+              onClick={importQuery}
+            >
+              Import
+            </button>
+          </div>
         </div>
       </Dialog>
     );

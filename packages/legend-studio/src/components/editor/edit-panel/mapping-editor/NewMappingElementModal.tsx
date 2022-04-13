@@ -232,7 +232,7 @@ export const NewMappingElementModal = observer(() => {
               filterOption={filterOption}
               onChange={handleTargetChange}
               value={selectedOption}
-              placeholder={`Choose a target`}
+              placeholder="Choose a target"
               isClearable={true}
             />
           )}
@@ -245,7 +245,7 @@ export const NewMappingElementModal = observer(() => {
                 spellCheck={false}
                 value={id}
                 onChange={handleIdChange}
-                placeholder={`Mapping element ID`}
+                placeholder="Mapping element ID"
               />
             </div>
           )}
@@ -255,16 +255,18 @@ export const NewMappingElementModal = observer(() => {
               options={classMappingTypeOptions}
               onChange={changeClassMappingType}
               value={classMappingType}
-              placeholder={`Choose a class mapping type`}
+              placeholder="Choose a class mapping type"
             />
           )}
-          <button
-            className="btn btn--primary u-pull-right"
-            disabled={disableCreateButton}
-            color="primary"
-          >
-            Create
-          </button>
+          <div className="search-modal__actions">
+            <button
+              className="btn btn--primary"
+              disabled={disableCreateButton}
+              color="primary"
+            >
+              Create
+            </button>
+          </div>
         </form>
       )}
       {!spec && <div />}
