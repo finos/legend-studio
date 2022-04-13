@@ -234,7 +234,7 @@ const SetupSelection = observer(() => {
   const projectSelectorRef = useRef<SelectComponent>(null);
   const workspaceSelectorRef = useRef<SelectComponent>(null);
   const proceedButtonRef = useRef<HTMLButtonElement>(null);
-  const setupWorkspaceDocumentation = applicationStore.docRegistry.getEntry(
+  const documentation = applicationStore.docRegistry.getEntry(
     LEGEND_STUDIO_DOCUMENTATION_KEY.SETUP_WORKSPACE,
   );
   const isCreatingWorkspace = setupStore.createWorkspaceState.isInProgress;
@@ -301,14 +301,11 @@ const SetupSelection = observer(() => {
                   }
                 />
               </div>
-              {setupWorkspaceDocumentation &&
-                setupWorkspaceDocumentation.markdownText && (
-                  <div className="setup__title__documentation">
-                    <MarkdownTextViewer
-                      value={setupWorkspaceDocumentation.markdownText}
-                    />
-                  </div>
-                )}
+              {documentation?.markdownText && (
+                <div className="setup__title__documentation">
+                  <MarkdownTextViewer value={documentation.markdownText} />
+                </div>
+              )}
             </div>
             <div>
               <ProjectSelector

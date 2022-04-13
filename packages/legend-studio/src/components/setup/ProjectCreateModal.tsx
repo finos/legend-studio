@@ -148,7 +148,7 @@ const CreateNewProjectTab = observer(() => {
         <div className="panel__content__form__section setup__create-project-modal__form__unsupported">
           SDLC server does not support creating new projects
         </div>
-        {documentation && documentation.markdownText && (
+        {documentation?.markdownText && (
           <div className="panel__content__form__section">
             <MarkdownTextViewer value={documentation.markdownText} />
           </div>
@@ -162,7 +162,7 @@ const CreateNewProjectTab = observer(() => {
         isLoading={setupStore.createOrImportProjectState.isInProgress}
       />
       <div className="setup__create-project-modal__form panel__content__form">
-        {documentation && documentation.markdownText && (
+        {documentation?.markdownText && (
           <div className="panel__content__form__section">
             <MarkdownTextViewer value={documentation.markdownText} />
           </div>
@@ -457,7 +457,7 @@ const ImportProjectTab = observer(() => {
         isLoading={setupStore.createOrImportProjectState.isInProgress}
       />
       <div className="setup__create-project-modal__form panel__content__form">
-        {documentation && documentation.markdownText && (
+        {documentation?.markdownText && (
           <div className="panel__content__form__section">
             <MarkdownTextViewer value={documentation.markdownText} />
           </div>
