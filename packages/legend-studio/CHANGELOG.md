@@ -1,5 +1,17 @@
 # @finos/legend-studio
 
+## 6.0.0
+
+### Major Changes
+
+- [#1034](https://github.com/finos/legend-studio/pull/1034) [`1d80ad07`](https://github.com/finos/legend-studio/commit/1d80ad07ef1f93add3cb4102ecabd4a2b6d73479) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - **BREAKING CHANGE:** Service registration improvements including owner validation and open service UI upon successful registration.
+  Change service config `url` to `executionUrl`.
+  Remove `TEMPORARY__disableServiceRegistration` from core config.
+
+### Patch Changes
+
+- [#1029](https://github.com/finos/legend-studio/pull/1029) [`018131c3`](https://github.com/finos/legend-studio/commit/018131c39d6d5517cfeddf541890db23892005e7) ([@gayathrir11](https://github.com/gayathrir11)) - Fix runtime editor not opening when it has `ModelChainConnection` ([#1019](https://github.com/finos/legend-studio/issues/1019)).
+
 ## 5.1.5
 
 ## 5.1.4

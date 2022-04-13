@@ -1,5 +1,7 @@
 # @finos/legend-extension-external-format-json-schema
 
+## 0.0.45
+
 ## 0.0.44
 
 ## 0.0.43
