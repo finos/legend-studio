@@ -47,6 +47,7 @@ import {
   PRIMITIVE_TYPE,
   observe_PrimitiveInstanceValue,
 } from '@finos/legend-graph';
+import { runInAction } from 'mobx';
 
 const DerivedPropertyParameterEditor = observer(
   (props: {
@@ -96,9 +97,11 @@ const DerivedPropertyParameterEditor = observer(
           ),
         ];
       }
-      derivedPropertyExpressionState.propertyExpression.parametersValues[
-        idx + 1
-      ] = primitiveInstanceValue;
+      runInAction(() => {
+        derivedPropertyExpressionState.propertyExpression.parametersValues[
+          idx + 1
+        ] = primitiveInstanceValue;
+      });
     };
 
     return (

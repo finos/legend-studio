@@ -75,6 +75,7 @@ import {
   QUERY_BUILDER_PARAMETER_TREE_DND_TYPE,
 } from '../stores/QueryParametersState';
 import { QUERY_BUILDER_GROUP_OPERATION } from '../stores/QueryBuilderOperatorsHelper';
+import { runInAction } from 'mobx';
 
 const FilterConditionDragLayer: React.FC = () => {
   const { itemType, item, isDragging, currentPosition } = useDragLayer(
@@ -369,10 +370,12 @@ const QueryBuilderFilterTreeNodeContainer = observer(
     const toggleExpandNode = (): void => node.setIsOpen(!node.isOpen);
     const resetNode = (): void => {
       if (node instanceof QueryBuilderFilterTreeConditionNodeData) {
-        node.condition.value =
-          node.condition.operator.getDefaultFilterConditionValue(
-            node.condition,
-          );
+        runInAction(() => {
+          node.condition.value =
+            node.condition.operator.getDefaultFilterConditionValue(
+              node.condition,
+            );
+        });
       }
     };
     const removeNode = (): void => filterState.removeNodeAndPruneBranch(node);

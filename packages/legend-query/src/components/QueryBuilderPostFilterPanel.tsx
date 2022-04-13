@@ -58,7 +58,7 @@ import {
   guaranteeNonNullable,
   returnUndefOnError,
 } from '@finos/legend-shared';
-import { flowResult } from 'mobx';
+import { flowResult, runInAction } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { forwardRef, useCallback, useEffect, useRef, useState } from 'react';
 import {
@@ -554,10 +554,12 @@ const QueryBuilderPostFilterTreeNodeContainer = observer(
     const toggleExpandNode = (): void => node.setIsOpen(!node.isOpen);
     const resetNode = (): void => {
       if (node instanceof QueryBuilderPostFilterTreeConditionNodeData) {
-        node.condition.value =
-          node.condition.operator.getDefaultFilterConditionValue(
-            node.condition,
-          );
+        runInAction(() => {
+          node.condition.value =
+            node.condition.operator.getDefaultFilterConditionValue(
+              node.condition,
+            );
+        });
       }
     };
     const removeNode = (): void =>
