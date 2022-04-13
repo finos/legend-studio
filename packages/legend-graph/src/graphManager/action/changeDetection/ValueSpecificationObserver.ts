@@ -569,3 +569,13 @@ function _observe_PairInstanceValue(
 
   return metamodel;
 }
+
+export const observe_adaptive_ValueSpecification = <
+  T extends ValueSpecification,
+>(
+  metamodel: T,
+  context: ObserverContext,
+): T => {
+  observe_ValueSpecification(metamodel, context);
+  return metamodel;
+};

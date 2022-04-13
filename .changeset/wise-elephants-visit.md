@@ -2,4 +2,4 @@
 '@finos/legend-query': patch
 ---
 
-Fix not rendering 'false' boolean value in query builder result panel.([#1008](https://github.com/finos/legend-studio/issues/1008)).
+Fix boolean value `false` being rendered as empty cell in query builder result panel ([#1008](https://github.com/finos/legend-studio/issues/1008)).

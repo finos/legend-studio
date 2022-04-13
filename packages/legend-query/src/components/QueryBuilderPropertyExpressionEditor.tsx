@@ -48,7 +48,7 @@ import {
 } from '@finos/legend-graph';
 import { propertyExpression_setParametersValue } from '../stores/QueryBuilderValueSpecificationModifierHelper';
 
-const DerivedPropertyParameterEditor = observer(
+const DerivedPropertyParameterValueEditor = observer(
   (props: {
     derivedPropertyExpressionState: QueryBuilderDerivedPropertyExpressionState;
     variable: VariableExpression;
@@ -57,9 +57,12 @@ const DerivedPropertyParameterEditor = observer(
     const { derivedPropertyExpressionState, variable, idx } = props;
     const handleDrop = useCallback(
       (item: QueryBuilderParameterDragSource): void => {
-        derivedPropertyExpressionState.propertyExpression.parametersValues[
-          idx + 1
-        ] = item.variable.parameter;
+        propertyExpression_setParametersValue(
+          derivedPropertyExpressionState.propertyExpression,
+          idx + 1,
+          item.variable.parameter,
+          derivedPropertyExpressionState.queryBuilderState.observableContext,
+        );
       },
       [derivedPropertyExpressionState, idx],
     );
@@ -149,6 +152,7 @@ const DerivedPropertyParameterEditor = observer(
     );
   },
 );
+
 const DerivedPropertyExpressionEditor = observer(
   (props: {
     derivedPropertyExpressionState: QueryBuilderDerivedPropertyExpressionState;
@@ -168,7 +172,7 @@ const DerivedPropertyExpressionEditor = observer(
           </div>
         )}
         {parameters.map((variable, idx) => (
-          <DerivedPropertyParameterEditor
+          <DerivedPropertyParameterValueEditor
             key={variable.name}
             derivedPropertyExpressionState={derivedPropertyExpressionState}
             variable={variable}

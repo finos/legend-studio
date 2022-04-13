@@ -30,7 +30,7 @@ import {
   PRIMITIVE_TYPE,
   VariableExpression,
   observe_VariableExpression,
-  observe_ValueSpecification,
+  observe_adaptive_ValueSpecification,
 } from '@finos/legend-graph';
 import {
   addUniqueEntry,
@@ -100,9 +100,9 @@ const createMockPrimitiveProperty = (
 };
 
 export class QueryParameterState {
-  uuid = uuid();
-  queryParameterState: QueryParametersState;
-  parameter: VariableExpression;
+  readonly uuid = uuid();
+  readonly queryParameterState: QueryParametersState;
+  readonly parameter: VariableExpression;
   value: InstanceValue | undefined;
 
   constructor(
@@ -110,28 +110,22 @@ export class QueryParameterState {
     variableExpression: VariableExpression,
   ) {
     makeObservable(this, {
-      parameter: observable,
       value: observable,
       setValue: action,
       mockParameterValue: action,
     });
 
     this.queryParameterState = queryParameterState;
-    this.parameter = variableExpression;
+    this.parameter = observe_VariableExpression(variableExpression);
   }
 
   mockParameterValue(): void {
-    const mockValue = this.generateMockValues(
-      this.parameter.genericType?.value.rawType,
-      this.parameter.multiplicity,
+    this.setValue(
+      this.generateMockValues(
+        this.parameter.genericType?.value.rawType,
+        this.parameter.multiplicity,
+      ),
     );
-    if (mockValue) {
-      observe_ValueSpecification(
-        mockValue,
-        this.queryParameterState.queryBuilderState.observableContext,
-      );
-    }
-    this.setValue(mockValue);
   }
 
   private generateMockValues(
@@ -173,7 +167,12 @@ export class QueryParameterState {
   }
 
   setValue(value: InstanceValue | undefined): void {
-    this.value = value;
+    this.value = value
+      ? observe_adaptive_ValueSpecification(
+          value,
+          this.queryParameterState.queryBuilderState.observableContext,
+        )
+      : undefined;
   }
 
   static createDefault(
@@ -181,15 +180,13 @@ export class QueryParameterState {
   ): QueryParameterState {
     return new QueryParameterState(
       queryParameterState,
-      observe_VariableExpression(
-        new VariableExpression(
-          '',
-          new Multiplicity(1, 1),
-          GenericTypeExplicitReference.create(
-            new GenericType(
-              queryParameterState.queryBuilderState.graphManagerState.graph.getPrimitiveType(
-                PRIMITIVE_TYPE.STRING,
-              ),
+      new VariableExpression(
+        '',
+        new Multiplicity(1, 1),
+        GenericTypeExplicitReference.create(
+          new GenericType(
+            queryParameterState.queryBuilderState.graphManagerState.graph.getPrimitiveType(
+              PRIMITIVE_TYPE.STRING,
             ),
           ),
         ),

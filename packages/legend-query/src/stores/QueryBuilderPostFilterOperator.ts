@@ -47,7 +47,7 @@ export abstract class QueryBuilderPostFilterOperator {
   ): boolean;
 
   abstract getDefaultFilterConditionValue(
-    filterConditionState: PostFilterConditionState,
+    postFilterConditionState: PostFilterConditionState,
   ): ValueSpecification | undefined;
 
   isCompatibleWithPostFilterColumn(

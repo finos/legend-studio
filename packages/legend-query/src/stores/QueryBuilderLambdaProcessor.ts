@@ -69,7 +69,6 @@ import {
   V1_deserializeRawValueSpecification,
   V1_RawLambda,
   getMilestoneTemporalStereotype,
-  observe_VariableExpression,
 } from '@finos/legend-graph';
 import {
   type QueryBuilderProjectionColumnState,
@@ -1043,7 +1042,7 @@ export const processQueryParameters = (
   parameters.forEach((parameter) => {
     const variableState = new QueryParameterState(
       queryParameterState,
-      observe_VariableExpression(parameter),
+      parameter,
     );
     variableState.mockParameterValue();
     queryParameterState.addParameter(variableState);

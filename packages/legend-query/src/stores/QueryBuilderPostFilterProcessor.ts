@@ -155,7 +155,7 @@ export const buildPostFilterConditionState = (
 
     // get operation value specification
     const value = expression.parametersValues[1];
-
+    // create state
     postConditionState = new PostFilterConditionState(
       postFilterState,
       columnState,

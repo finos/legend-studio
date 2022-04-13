@@ -193,9 +193,9 @@ export class QueryBuilderDerivedPropertyExpressionState {
   queryBuilderState: QueryBuilderState;
   path: string;
   title: string;
-  propertyExpression: AbstractPropertyExpression;
-  derivedProperty: DerivedProperty;
-  parameters: VariableExpression[] = [];
+  readonly derivedProperty: DerivedProperty;
+  readonly propertyExpression!: AbstractPropertyExpression;
+  readonly parameters: VariableExpression[] = [];
 
   constructor(
     queryBuilderState: QueryBuilderState,
@@ -203,7 +203,10 @@ export class QueryBuilderDerivedPropertyExpressionState {
   ) {
     this.path = getPropertyPath(propertyExpression);
     this.title = getPropertyChainName(propertyExpression, true);
-    this.propertyExpression = propertyExpression;
+    this.propertyExpression = observe_AbstractPropertyExpression(
+      propertyExpression,
+      queryBuilderState.observableContext,
+    );
     this.queryBuilderState = queryBuilderState;
     this.derivedProperty = guaranteeType(
       propertyExpression.func,
@@ -258,7 +261,7 @@ export class QueryBuilderPropertyExpressionState {
   queryBuilderState: QueryBuilderState;
   path: string;
   title: string;
-  propertyExpression: AbstractPropertyExpression;
+  readonly propertyExpression: AbstractPropertyExpression;
 
   isEditingDerivedPropertyExpression = false;
   // Since this property is a chain expression, some link of the chain can be
@@ -288,7 +291,10 @@ export class QueryBuilderPropertyExpressionState {
     });
 
     this.queryBuilderState = queryBuilderState;
-    this.propertyExpression = propertyExpression;
+    this.propertyExpression = observe_AbstractPropertyExpression(
+      propertyExpression,
+      queryBuilderState.observableContext,
+    );
     this.path = getPropertyPath(propertyExpression);
     this.title = getPropertyChainName(propertyExpression, true);
     this.initDerivedPropertyExpressionStates();
@@ -317,10 +323,6 @@ export class QueryBuilderPropertyExpressionState {
       }
       // Create states to hold derived properties' parameters and arguments for editing
       if (currentExpression.func instanceof DerivedProperty) {
-        observe_AbstractPropertyExpression(
-          currentExpression,
-          this.queryBuilderState.observableContext,
-        );
         const derivedPropertyExpressionState =
           new QueryBuilderDerivedPropertyExpressionState(
             this.queryBuilderState,
