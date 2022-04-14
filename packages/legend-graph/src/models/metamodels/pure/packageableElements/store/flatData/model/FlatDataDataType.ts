@@ -133,7 +133,7 @@ export class FlatDataRecordField implements Hashable {
 }
 
 /**
- * FIXME: the fact that we have `fields` in `FlatDataRecordType` like this is misleading. What we should have and what Dave
+ * NOTE: the fact that we have `fields` in `FlatDataRecordType` like this is misleading. What we should have and what Dave
  * also agreed on is that we will have another class `X` that is the super type of `RootFlatDataRecordType` and contains `fields`
  * instead of `FlatDataRecordType` as `FlatDataRecordType` is just a normal type like `FlatDataBoolean` that signals the driver
  * to look for a record type.

@@ -118,13 +118,15 @@ const NewFileGenerationModal = observer(
               </div>
             )}
           </div>
-          <button
-            className="modal--simple__btn btn btn--dark btn--primary u-pull-right"
-            disabled={isReadOnly || elementAlreadyExists}
-            color="primary"
-          >
-            Create
-          </button>
+          <div className="search-modal__actions">
+            <button
+              className="modal--simple__btn btn btn--dark btn--primary"
+              disabled={isReadOnly || elementAlreadyExists}
+              color="primary"
+            >
+              Create
+            </button>
+          </div>
         </form>
       </Dialog>
     );

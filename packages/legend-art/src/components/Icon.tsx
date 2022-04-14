@@ -15,6 +15,7 @@
  */
 
 export {
+  FaGhost as GhostIcon,
   FaLock as LockIcon,
   FaFile as FileIcon,
   FaLongArrowAltRight as LongArrowRightIcon,

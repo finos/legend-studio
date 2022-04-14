@@ -191,6 +191,12 @@
     margin-bottom: 0;
   }
 
+  &__actions {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+  }
+
   &__section {
     cursor: default;
     margin: 0.5rem 0 3rem;

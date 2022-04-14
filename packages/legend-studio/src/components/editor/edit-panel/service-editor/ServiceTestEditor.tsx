@@ -499,11 +499,10 @@ export const ServiceTestEditorEditPanel = observer(
                     )}
                     {!expectedResult && (
                       <div className="panel__content">
-                        {' '}
                         <UnsupportedEditorPanel
                           text={`Can't display assertion in form-mode`}
                           isReadOnly={isReadOnly}
-                        />{' '}
+                        />
                       </div>
                     )}
                   </div>

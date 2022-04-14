@@ -101,7 +101,7 @@ const AssociationPropertyBasicEditor = observer(
     };
     // Generic Type
     const [isEditingType, setIsEditingType] = useState(false);
-    // FIXME: make this so that association can only refer to classes from the same space
+    // TODO: make this so that association can only refer to classes from the same graph space
     const propertyTypeOptions = editorStore.classOptions.filter(
       (classOption) =>
         classOption.value !==

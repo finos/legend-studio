@@ -59,11 +59,10 @@ export const observe_FlatDataDataType = (
       falseString: observable,
       hashCode: computed,
     });
-  } else if (metamodel instanceof FlatDataString) {
-    return makeObservable(metamodel, {
-      hashCode: computed,
-    });
-  } else if (metamodel instanceof FlatDataNumber) {
+  } else if (
+    metamodel instanceof FlatDataString ||
+    metamodel instanceof FlatDataNumber
+  ) {
     return makeObservable(metamodel, {
       hashCode: computed,
     });

@@ -14,8 +14,17 @@
  * limitations under the License.
  */
 
-export enum LEGEND_STUDIO_DOCUMENTATION_KEY {
-  SETUP_WORKSPACE = 'setup-workspace',
-  CREATE_PROJECT = 'create-project',
-  CREATE_WORKSPACE = 'create-workspace',
+import { SerializationFactory } from '@finos/legend-shared';
+import { createModelSchema, primitive } from 'serializr';
+
+export class SDLCServerFeaturesConfiguration {
+  canCreateProject!: boolean;
+  canCreateVersion!: boolean;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(SDLCServerFeaturesConfiguration, {
+      canCreateProject: primitive(),
+      canCreateVersion: primitive(),
+    }),
+  );
 }

@@ -19,12 +19,14 @@ export * from './CommonUtils';
 export * from './error/AssertionUtils';
 export * from './error/ErrorUtils';
 
-export * from './format/FormatterUtils';
-export * from './format/ValidatorUtils';
-
 export * from './network/NetworkUtils';
 export * from './network/AbstractServerClient';
 export * from './network/TracerService';
+
+export * from './format/FormatterUtils';
+export * from './format/ValidatorUtils';
+
+export * from './markdown/MarkdownUtils';
 
 export * from './communication/EventNotifierService';
 export * from './communication/IframeEventNotifierPlugin';

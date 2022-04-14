@@ -17,6 +17,9 @@
 import {
   guaranteeNonEmptyString,
   guaranteeNonNullable,
+  type PlainObject,
+  type MarkdownText,
+  deserializeMarkdownText,
 } from '@finos/legend-shared';
 import { LegendApplicationDocumentationRegistry } from './LegendApplicationDocumentationRegistry';
 
@@ -26,12 +29,32 @@ export interface LegendApplicationVersionData {
   commitSHA: string;
 }
 
+export interface LegendApplicationDocumentationEntry {
+  markdownText?: MarkdownText | undefined;
+  title?: string | undefined;
+  text?: string | undefined;
+  url?: string | undefined;
+}
+
+const deserializeDocumentationEntry = (
+  val: PlainObject<LegendApplicationDocumentationEntry>,
+): LegendApplicationDocumentationEntry => {
+  let markdownText: MarkdownText | undefined;
+  if (val.markdownText) {
+    markdownText = deserializeMarkdownText(
+      val.markdownText as PlainObject<MarkdownText>,
+    );
+  }
+
+  return { ...val, markdownText };
+};
+
 export interface LegendApplicationConfigurationData {
   appName: string;
   env: string;
   documentation?: {
     url: string;
-    entries?: Record<string, string>;
+    entries?: Record<string, PlainObject<LegendApplicationDocumentationEntry>>;
   };
   // TODO: when we support vault-like settings
   // See https://github.com/finos/legend-studio/issues/407
@@ -69,7 +92,10 @@ export abstract class LegendApplicationConfig {
     this.docRegistry = new LegendApplicationDocumentationRegistry();
     this.docRegistry.url = configData.documentation?.url;
     Object.entries(configData.documentation?.entries ?? []).forEach((entry) =>
-      this.docRegistry.registerEntry(entry[0], entry[1]),
+      this.docRegistry.registerEntry(
+        entry[0],
+        deserializeDocumentationEntry(entry[1]),
+      ),
     );
 
     // Version

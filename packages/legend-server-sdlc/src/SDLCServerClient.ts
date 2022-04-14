@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { Project, SDLCMode, ProjectType } from './models/project/Project';
+import type { Project } from './models/project/Project';
 import type { ImportReport } from './models/project/ImportReport';
 import { type Workspace, WorkspaceType } from './models/workspace/Workspace';
 import type { Revision, RevisionAlias } from './models/revision/Revision';
@@ -32,6 +32,7 @@ import {
   type RequestHeaders,
   AbstractServerClient,
   ContentType,
+  guaranteeNonNullable,
 } from '@finos/legend-shared';
 import type { Entity } from '@finos/legend-model-storage';
 import type {
@@ -49,6 +50,7 @@ import type {
   CreateReviewCommand,
 } from './models/review/ReviewCommands';
 import type { WorkflowJob } from './models/workflow/WorkflowJob';
+import type { SDLCServerFeaturesConfiguration } from './models/server/SDLCServerFeaturesConfiguration';
 
 enum SDLC_TRACER_SPAN {
   IMPORT_PROJECT = 'import project',
@@ -73,6 +75,7 @@ export interface SDLCServerClientConfig {
 
 export class SDLCServerClient extends AbstractServerClient {
   currentUser?: User;
+  private _features: SDLCServerFeaturesConfiguration | undefined;
   private env: string;
 
   constructor(config: SDLCServerClientConfig) {
@@ -87,6 +90,20 @@ export class SDLCServerClient extends AbstractServerClient {
     this.currentUser = value;
   };
 
+  /**
+   * NOTE: Should only be used for test
+   */
+  _setFeatures(val: SDLCServerFeaturesConfiguration): void {
+    this._features = val;
+  }
+
+  get features(): SDLCServerFeaturesConfiguration {
+    return guaranteeNonNullable(
+      this._features,
+      `SDLC server client features configuration has not been fetched`,
+    );
+  }
+
   private getTraceData = (
     spanName: SDLC_TRACER_SPAN,
     tracingTags?: Record<PropertyKey, unknown>,
@@ -99,13 +116,25 @@ export class SDLCServerClient extends AbstractServerClient {
     },
   });
 
-  // ------------------------------------------- Authentication -------------------------------------------
+  // ------------------------------------------- Server -------------------------------------------
+
+  private _server = (): string => `${this.baseUrl}/server`;
+  fetchServerFeaturesConfiguration = async (): Promise<void> => {
+    this._features = await this.get(`${this._server()}/features`);
+  };
+
+  // ------------------------------------------- Authorization -------------------------------------------
 
   static authorizeCallbackUrl = (
     authenticationServerUrl: string,
     callbackURI: string,
   ): string =>
     `${authenticationServerUrl}/auth/authorize?redirect_uri=${callbackURI}`;
+
+  private _auth = (): string => `${this.baseUrl}/auth`;
+  isAuthorized = (): Promise<boolean> => this.get(`${this._auth()}/authorized`);
+  hasAcceptedTermsOfService = (): Promise<string[]> =>
+    this.get(`${this._auth()}/termsOfServiceAcceptance`);
 
   // ------------------------------------------- User -------------------------------------------
 
@@ -118,14 +147,6 @@ export class SDLCServerClient extends AbstractServerClient {
   getCurrentUser = (): Promise<PlainObject<User>> =>
     this.get(this.currentUserUrl);
 
-  // ------------------------------------------- Authorization -------------------------------------------
-
-  private _auth = (): string => `${this.baseUrl}/auth`;
-  isAuthorized = (mode: SDLCMode): Promise<boolean> =>
-    this.get(`${this._auth()}/authorized?mode=${mode}`);
-  hasAcceptedTermsOfService = (): Promise<string[]> =>
-    this.get(`${this._auth()}/termsOfServiceAcceptance`);
-
   // ------------------------------------------- Project -------------------------------------------
 
   private _projects = (): string => `${this.baseUrl}/projects`;
@@ -135,16 +156,16 @@ export class SDLCServerClient extends AbstractServerClient {
   getProject = (projectId: string): Promise<PlainObject<Project>> =>
     this.get(this._project(projectId));
   getProjects = (
-    type: ProjectType | undefined,
     user: boolean | undefined,
     search: string | undefined,
     tag: string[] | undefined,
+    limit: number | undefined,
   ): Promise<PlainObject<Project>[]> =>
     this.get(this._projects(), undefined, undefined, {
-      type,
       user,
       search,
       tag,
+      limit,
     });
   createProject = (
     command: PlainObject<CreateProjectCommand>,

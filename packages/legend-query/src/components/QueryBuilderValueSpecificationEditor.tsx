@@ -306,7 +306,7 @@ const EnumValueInstanceValueEditor = observer(
     return (
       <div className={clsx('query-builder-value-spec-editor', className)}>
         <CustomSelectorInput
-          className="u-full-width"
+          className="query-builder-value-spec-editor__enum-selector"
           options={options}
           onChange={changeValue}
           value={{ value: enumValue, label: enumValue.name }}

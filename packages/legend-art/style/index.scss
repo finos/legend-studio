@@ -17,7 +17,6 @@
 @forward 'base/variables';
 @forward 'base/normalize';
 @forward 'base/fonts';
-@forward 'base/utils';
 @forward 'base/common';
 @forward 'base/button';
 @forward 'base/input';
@@ -30,6 +29,7 @@
 @forward 'components/blank-panel-placeholder';
 @forward 'components/selector-input';
 @forward 'components/tree-view';
+@forward 'components/markdown-viewer';
 
 // Reset (override library styles)
 @forward 'reset/mui';

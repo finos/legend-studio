@@ -98,14 +98,16 @@ export const NewServiceModal = observer(
               </div>
             )}
           </div>
-          <button
-            className="modal--simple__btn btn btn--dark btn--primary u-pull-right"
-            disabled={Boolean(isReadOnly) || elementAlreadyExists}
-            color="primary"
-            onClick={create}
-          >
-            Create
-          </button>
+          <div className="search-modal__actions">
+            <button
+              className="modal--simple__btn btn btn--dark btn--primary"
+              disabled={Boolean(isReadOnly) || elementAlreadyExists}
+              color="primary"
+              onClick={create}
+            >
+              Create
+            </button>
+          </div>
         </form>
       </Dialog>
     );

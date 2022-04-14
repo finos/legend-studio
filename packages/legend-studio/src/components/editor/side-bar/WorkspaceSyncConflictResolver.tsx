@@ -251,11 +251,10 @@ export const WorkspaceSyncConflictResolver = observer(() => {
             </ResizablePanel>
           </ResizablePanelGroup>
         </div>
-
         <div className="modal__footer">
           <button
             type="button"
-            className="btn btn--primary u-pull-right btn--dark"
+            className="btn btn--primary btn--dark"
             disabled={Boolean(conflicts.length)}
             title="Apply Resolutions"
             onClick={applyResolutions}
@@ -265,7 +264,7 @@ export const WorkspaceSyncConflictResolver = observer(() => {
           <button
             type="button"
             title="Aborts"
-            className="btn u-pull-right btn--dark"
+            className="btn btn--dark"
             onClick={abort}
           >
             Abort
