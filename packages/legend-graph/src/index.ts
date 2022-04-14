@@ -223,6 +223,7 @@ export * from './models/protocols/pure/PureProtocolProcessorPlugin';
 
 // --------------------------------------------- TRANSFORMATION --------------------------------------------------
 
+export { V1_transformConnection } from './models/protocols/pure/v1/transformation/pureGraph/from/V1_ConnectionTransformer';
 export {
   V1_transformStereotype,
   V1_transformTaggedValue,
@@ -233,6 +234,7 @@ export * from './models/protocols/pure/v1/transformation/pureGraph/to/V1_GraphBu
 export * from './models/protocols/pure/v1/transformation/pureGraph/to/V1_ElementBuilder';
 export { V1_RawLambda } from './models/protocols/pure/v1/model/rawValueSpecification/V1_RawLambda';
 export { V1_ProcessingContext } from './models/protocols/pure/v1/transformation/pureGraph/to/helpers/V1_ProcessingContext';
+export { V1_ProtocolToMetaModelConnectionBuilder } from './models/protocols/pure/v1/transformation/pureGraph/to/V1_ProtocolToMetaModelConnectionBuilder';
 export * from './models/protocols/pure/v1/transformation/pureGraph/from/V1_GraphTransformerContext';
 export {
   V1_initPackageableElement,
@@ -242,6 +244,10 @@ export {
   V1_RawValueSpecificationTransformer,
   V1_transformRawLambda,
 } from './models/protocols/pure/v1/transformation/pureGraph/from/V1_RawValueSpecificationTransformer';
+export {
+  V1_deserializeConnectionValue,
+  V1_serializeConnectionValue,
+} from './models/protocols/pure/v1/transformation/pureProtocol/serializationHelpers/V1_ConnectionSerializationHelper';
 export {
   V1_rawLambdaModelSchema,
   V1_deserializeRawValueSpecification,
