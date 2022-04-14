@@ -575,6 +575,7 @@ export const V1_transformNotifier = (
   );
   return notifier;
 };
+
 /**********
  * persistence
  **********/

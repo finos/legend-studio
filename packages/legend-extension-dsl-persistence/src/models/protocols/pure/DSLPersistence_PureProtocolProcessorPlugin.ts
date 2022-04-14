@@ -25,16 +25,16 @@ import {
 import { V1_buildPersistence } from './v1/transformation/pureGraph/to/V1_PersistenceBuilder';
 import { V1_transformPersistence } from './v1/transformation/pureGraph/from/V1_PersistenceTransformer';
 import {
-  PackageableElement,
+  type PackageableElement,
   PureProtocolProcessorPlugin,
   V1_ElementBuilder,
-  V1_ElementProtocolClassifierPathGetter,
-  V1_ElementProtocolDeserializer,
-  V1_ElementProtocolSerializer,
-  V1_ElementTransformer,
-  V1_GraphBuilderContext,
-  V1_GraphTransformerContext,
-  V1_PackageableElement,
+  type V1_ElementProtocolClassifierPathGetter,
+  type V1_ElementProtocolDeserializer,
+  type V1_ElementProtocolSerializer,
+  type V1_ElementTransformer,
+  type V1_GraphBuilderContext,
+  type V1_GraphTransformerContext,
+  type V1_PackageableElement,
 } from '@finos/legend-graph';
 import { assertType, type PlainObject } from '@finos/legend-shared';
 import { deserialize, serialize } from 'serializr';

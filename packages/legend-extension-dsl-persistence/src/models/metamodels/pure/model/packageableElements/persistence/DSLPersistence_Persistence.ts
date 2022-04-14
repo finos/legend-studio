@@ -20,9 +20,9 @@ import type { Trigger } from './DSLPersistence_Trigger';
 import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../DSLPersistence_ModelUtils';
 import {
   PackageableElement,
-  PackageableElementReference,
-  PackageableElementVisitor,
-  Service,
+  type PackageableElementReference,
+  type PackageableElementVisitor,
+  type Service,
 } from '@finos/legend-graph';
 import { type Hashable, hashArray } from '@finos/legend-shared';
 

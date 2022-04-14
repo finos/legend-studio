@@ -21,8 +21,8 @@ import {
   PureGraphManagerPlugin,
   type PackageableElement,
   type PureGrammarElementLabeler,
-  ElementObserver,
-  ObserverContext,
+  type ElementObserver,
+  type ObserverContext,
 } from '@finos/legend-graph';
 
 const PURE_GRAMMAR_PERSISTENCE_PARSER_NAME = 'Persistence';
