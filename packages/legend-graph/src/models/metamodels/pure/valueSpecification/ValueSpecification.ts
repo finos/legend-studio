@@ -55,7 +55,7 @@ export interface ValueSpecificationVisitor<T> {
   visit_RuntimeInstanceValue(valueSpecification: RuntimeInstanceValue): T;
   visit_PairInstanceValue(valueSpecification: PairInstanceValue): T;
   visit_MappingInstanceValue(valueSpecification: MappingInstanceValue): T;
-  visit_PureListInsanceValue(valueSpecification: PureListInstanceValue): T;
+  visit_PureListInstanceValue(valueSpecification: PureListInstanceValue): T;
   visit_CollectionInstanceValue(valueSpecification: CollectionInstanceValue): T;
   visit_FunctionExpression(valueSpecification: FunctionExpression): T;
   visit_SimpleFunctionExpression(

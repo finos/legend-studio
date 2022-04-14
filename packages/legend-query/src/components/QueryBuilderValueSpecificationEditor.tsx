@@ -609,6 +609,12 @@ export const DateInstanceValueEditor = observer(
   },
 );
 
+/**
+ * TODO we should pass in the props `setValueSpecification` and `resetValueSpecification`. Reset
+ * should be part of this editor. Also through here we can call `observe_` accordingly.
+ *
+ * See https://github.com/finos/legend-studio/pull/1021
+ */
 export const QueryBuilderValueSpecificationEditor: React.FC<{
   valueSpecification: ValueSpecification;
   graph: PureModel;

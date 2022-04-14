@@ -354,7 +354,7 @@ export class QueryBuilderLambdaProcessor
     throw new UnsupportedOperationError();
   }
 
-  visit_PureListInsanceValue(valueSpecification: PureListInstanceValue): void {
+  visit_PureListInstanceValue(valueSpecification: PureListInstanceValue): void {
     throw new UnsupportedOperationError();
   }
 

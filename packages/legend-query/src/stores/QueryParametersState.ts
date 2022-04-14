@@ -29,6 +29,8 @@ import {
   Multiplicity,
   PRIMITIVE_TYPE,
   VariableExpression,
+  observe_VariableExpression,
+  observe_adaptive_ValueSpecification,
 } from '@finos/legend-graph';
 import {
   addUniqueEntry,
@@ -98,9 +100,9 @@ const createMockPrimitiveProperty = (
 };
 
 export class QueryParameterState {
-  uuid = uuid();
-  queryParameterState: QueryParametersState;
-  parameter: VariableExpression;
+  readonly uuid = uuid();
+  readonly queryParameterState: QueryParametersState;
+  readonly parameter: VariableExpression;
   value: InstanceValue | undefined;
 
   constructor(
@@ -108,13 +110,13 @@ export class QueryParameterState {
     variableExpression: VariableExpression,
   ) {
     makeObservable(this, {
-      parameter: observable,
       value: observable,
       setValue: action,
       mockParameterValue: action,
     });
+
     this.queryParameterState = queryParameterState;
-    this.parameter = variableExpression;
+    this.parameter = observe_VariableExpression(variableExpression);
   }
 
   mockParameterValue(): void {
@@ -126,16 +128,15 @@ export class QueryParameterState {
     );
   }
 
-  generateMockValues(
+  private generateMockValues(
     varType: Type | undefined,
     multiplicity: Multiplicity,
   ): InstanceValue | undefined {
     if ((!multiplicity.upperBound || multiplicity.upperBound > 1) && varType) {
-      const collectionInst = new CollectionInstanceValue(
+      return new CollectionInstanceValue(
         multiplicity,
         GenericTypeExplicitReference.create(new GenericType(varType)),
       );
-      return collectionInst;
     }
     if (varType instanceof PrimitiveType) {
       const primitiveInst = new PrimitiveInstanceValue(
@@ -166,7 +167,12 @@ export class QueryParameterState {
   }
 
   setValue(value: InstanceValue | undefined): void {
-    this.value = value;
+    this.value = value
+      ? observe_adaptive_ValueSpecification(
+          value,
+          this.queryParameterState.queryBuilderState.observableContext,
+        )
+      : undefined;
   }
 
   static createDefault(

@@ -158,6 +158,14 @@ export const observe_TaggedValue = skipObserved(
   },
 );
 
+export const observe_GenericType = skipObserved(
+  (metamodel: GenericType): GenericType =>
+    makeObservable(metamodel, {
+      rawType: observable,
+      isStub: computed,
+    }),
+);
+
 export const observe_GenericTypeReference = skipObserved(
   (metamodel: GenericTypeReference): GenericTypeReference => {
     makeObservable(metamodel, {
@@ -165,6 +173,7 @@ export const observe_GenericTypeReference = skipObserved(
       isStub: computed,
     });
 
+    observe_GenericType(metamodel.value);
     observe_PackageableElementReference(metamodel.ownerReference);
 
     return metamodel;
@@ -508,12 +517,4 @@ export const observe_DataType = skipObserved(
     }
     return metamodel;
   },
-);
-
-export const observe_GenericType = skipObserved(
-  (metamodel: GenericType): GenericType =>
-    makeObservable(metamodel, {
-      rawType: observable,
-      isStub: computed,
-    }),
 );

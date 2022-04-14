@@ -26,6 +26,7 @@ import { prettyCONSTName } from '@finos/legend-shared';
 import { QueryBuilderProjectionPanel } from './QueryBuilderProjectionPanel';
 import { QueryBuilderGraphFetchTreePanel } from './QueryBuilderGraphFetchTreePanel';
 import { FETCH_STRUCTURE_MODE } from '../stores/QueryBuilderFetchStructureState';
+import { QueryBuilderPostFilterState } from '../stores/QueryBuilderPostFilterState';
 
 const QueryBuilderUnsupportedFetchStructure = observer(
   (props: { mode: FETCH_STRUCTURE_MODE }) => {
@@ -84,6 +85,10 @@ export const QueryBuilderFetchStructurePanel = observer(
           fetchStructureState.setFetchStructureMode(fetchMode);
           // TODO: might want to add alert modal to alert user changing fetch structure resets state
           queryBuilderState.changeFetchStructure();
+          queryBuilderState.postFilterState = new QueryBuilderPostFilterState(
+            queryBuilderState,
+            queryBuilderState.postFilterOperators,
+          );
         }
       };
 
