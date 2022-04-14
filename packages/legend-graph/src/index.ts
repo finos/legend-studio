@@ -18,6 +18,7 @@
 
 // metamodels
 export * from './models/metamodels/pure/Reference';
+export * from './models/metamodels/pure/packageableElements/connection/Connection';
 export * from './models/metamodels/pure/packageableElements/PackageableElement';
 export * from './models/metamodels/pure/packageableElements/PackageableElementReference';
 export { SectionIndex } from './models/metamodels/pure/packageableElements/section/SectionIndex';
@@ -85,6 +86,8 @@ export { DSLExternalFormat_GraphPreset } from './graph/DSLExternalFormat_Extensi
 export { BindingTransformer } from './models/metamodels/pure/packageableElements/externalFormat/store/DSLExternalFormat_BindingTransformer';
 // V1 protocols
 export * from './models/protocols/pure/v1/model/packageableElements/V1_PackageableElement';
+export * from './models/protocols/pure/v1/model/packageableElements/connection/V1_Connection';
+export * from './models/protocols/pure/v1/model/packageableElements/connection/V1_ConnectionPointer';
 export { V1_StereotypePtr } from './models/protocols/pure/v1/model/packageableElements/domain/V1_StereotypePtr';
 export { V1_TaggedValue } from './models/protocols/pure/v1/model/packageableElements/domain/V1_TaggedValue';
 export { V1_PropertyPointer } from './models/protocols/pure/v1/model/packageableElements/domain/V1_PropertyPointer';
