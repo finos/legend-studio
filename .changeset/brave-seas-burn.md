@@ -2,4 +2,4 @@
 "@finos/legend-studio": patch
 ---
 
-Encode service registration pattern when lanching management url page.
+Encode service pattern when launching management URL page post registration.
