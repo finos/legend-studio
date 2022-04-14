@@ -165,7 +165,7 @@ const checkGrammarRoundtripMismatch = async (
     JSON.stringify(transformGrammarToJsonResult.data.modelDataContext),
   );
   await TEST__buildGraphWithEntities(graphManagerState, entities, {
-    TEMPORARY__keepSectionIndex: false,
+    TEMPORARY__preserveSectionIndex: false,
   });
   const transformedEntities = graphManagerState.graph.allOwnElements.map(
     (element) => graphManagerState.graphManager.elementToEntity(element),

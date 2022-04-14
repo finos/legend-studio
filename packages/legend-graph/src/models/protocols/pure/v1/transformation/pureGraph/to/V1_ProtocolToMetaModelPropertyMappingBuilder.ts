@@ -75,7 +75,7 @@ import { MappingClass } from '../../../../../../metamodels/pure/packageableEleme
 import { LocalMappingPropertyInfo } from '../../../../../../metamodels/pure/packageableElements/mapping/LocalMappingPropertyInfo';
 import type { AggregationAwareSetImplementation } from '../../../../../../metamodels/pure/packageableElements/mapping/aggregationAware/AggregationAwareSetImplementation';
 import { AggregationAwarePropertyMapping } from '../../../../../../metamodels/pure/packageableElements/mapping/aggregationAware/AggregationAwarePropertyMapping';
-import { V1_resolvePathsInRawLambda } from './helpers/V1_ValueSpecificationPathResolver';
+import { V1_buildRawLambdaWithResolvedPaths } from './helpers/V1_ValueSpecificationPathResolver';
 import {
   V1_deserializeRelationalOperationElement,
   V1_serializeRelationalOperationElement,
@@ -241,7 +241,11 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
     const purePropertyMapping = new PurePropertyMapping(
       topParent,
       property,
-      V1_resolvePathsInRawLambda(this.context, [], protocol.transform.body),
+      V1_buildRawLambdaWithResolvedPaths(
+        [],
+        protocol.transform.body,
+        this.context,
+      ),
       sourceSetImplementation ?? topParent,
       targetSetImplementation,
       protocol.explodeProperty,
@@ -322,7 +326,11 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
         ),
         property,
       ),
-      V1_resolvePathsInRawLambda(this.context, [], protocol.transform.body),
+      V1_buildRawLambdaWithResolvedPaths(
+        [],
+        protocol.transform.body,
+        this.context,
+      ),
       sourceSetImplementation,
       targetSetImplementation,
     );
@@ -834,10 +842,10 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
       guaranteeNonNullable(sourceSetImplementation),
       targetSetImplementation,
     );
-    xStorePropertyMapping.crossExpression = V1_resolvePathsInRawLambda(
-      this.context,
+    xStorePropertyMapping.crossExpression = V1_buildRawLambdaWithResolvedPaths(
       protocol.crossExpression.parameters,
       protocol.crossExpression.body,
+      this.context,
     );
     return xStorePropertyMapping;
   }

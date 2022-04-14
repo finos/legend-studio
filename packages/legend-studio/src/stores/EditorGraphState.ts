@@ -232,12 +232,9 @@ export class EditorGraphState {
           this.editorStore.graphManagerState.graph,
           entities,
           {
-            TEMPORARY__keepSectionIndex:
+            TEMPORARY__preserveSectionIndex:
               this.editorStore.applicationStore.config.options
-                .EXPERIMENTAL__enableFullGrammarImportSupport,
-            TEMPORARY__disableRawLambdaResolver:
-              this.editorStore.applicationStore.config.options
-                .TEMPORARY__disableRawLambdaResolver,
+                .TEMPORARY__preserveSectionIndex,
           },
         )) as GraphBuilderReport;
 
@@ -819,12 +816,9 @@ export class EditorGraphState {
         newGraph,
         entities,
         {
-          TEMPORARY__keepSectionIndex:
+          TEMPORARY__preserveSectionIndex:
             this.editorStore.applicationStore.config.options
-              .EXPERIMENTAL__enableFullGrammarImportSupport,
-          TEMPORARY__disableRawLambdaResolver:
-            this.editorStore.applicationStore.config.options
-              .TEMPORARY__disableRawLambdaResolver,
+              .TEMPORARY__preserveSectionIndex,
         },
       );
 

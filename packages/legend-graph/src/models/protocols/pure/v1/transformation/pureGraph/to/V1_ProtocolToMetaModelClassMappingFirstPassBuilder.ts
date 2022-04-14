@@ -44,7 +44,7 @@ import { V1_getInferredClassMappingId } from '../../../transformation/pureGraph/
 import { AggregationAwareSetImplementation } from '../../../../../../metamodels/pure/packageableElements/mapping/aggregationAware/AggregationAwareSetImplementation';
 import type { InstanceSetImplementation } from '../../../../../../metamodels/pure/packageableElements/mapping/InstanceSetImplementation';
 import { V1_buildAggregateContainer } from './helpers/V1_AggregationAwareClassMappingBuilderHelper';
-import { V1_resolvePathsInRawLambda } from './helpers/V1_ValueSpecificationPathResolver';
+import { V1_buildRawLambdaWithResolvedPaths } from './helpers/V1_ValueSpecificationPathResolver';
 import { V1_buildRelationalMappingFilter } from './helpers/V1_RelationalClassMappingBuilderHelper';
 import { toOptionalPackageableElementReference } from '../../../../../../metamodels/pure/packageableElements/PackageableElementReference';
 import type { DSLMapping_PureProtocolProcessorPlugin_Extension } from '../../../../DSLMapping_PureProtocolProcessorPlugin_Extension';
@@ -132,10 +132,10 @@ export class V1_ProtocolToMetaModelClassMappingFirstPassBuilder
       targetClass,
       InferableMappingElementRootExplicitValue.create(classMapping.root),
       getClassMappingOperationType(classMapping.operation),
-      V1_resolvePathsInRawLambda(
-        this.context,
+      V1_buildRawLambdaWithResolvedPaths(
         classMapping.validationFunction.parameters,
         classMapping.validationFunction.body,
+        this.context,
       ),
     );
   }
@@ -163,7 +163,11 @@ export class V1_ProtocolToMetaModelClassMappingFirstPassBuilder
       toOptionalPackageableElementReference(srcClassReference),
     );
     pureInstanceSetImplementation.filter = classMapping.filter
-      ? V1_resolvePathsInRawLambda(this.context, [], classMapping.filter.body)
+      ? V1_buildRawLambdaWithResolvedPaths(
+          [],
+          classMapping.filter.body,
+          this.context,
+        )
       : undefined;
     return pureInstanceSetImplementation;
   }
@@ -191,7 +195,11 @@ export class V1_ProtocolToMetaModelClassMappingFirstPassBuilder
         sourceRootRecordType,
       );
     flatDataInstanceSetImplementation.filter = classMapping.filter
-      ? V1_resolvePathsInRawLambda(this.context, [], classMapping.filter.body)
+      ? V1_buildRawLambdaWithResolvedPaths(
+          [],
+          classMapping.filter.body,
+          this.context,
+        )
       : undefined;
     return flatDataInstanceSetImplementation;
   }

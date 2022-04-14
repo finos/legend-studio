@@ -210,7 +210,7 @@ export const TEST__checkBuildingElementsRoundtrip = async (
 ): Promise<void> => {
   const graphManagerState = TEST__getTestGraphManagerState(pluginManager);
   await TEST__buildGraphWithEntities(graphManagerState, entities, {
-    TEMPORARY__keepSectionIndex: true,
+    TEMPORARY__preserveSectionIndex: true,
   });
 
   const transformedEntities = graphManagerState.graph.allOwnElements.map(

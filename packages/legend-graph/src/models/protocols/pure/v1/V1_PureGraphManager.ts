@@ -663,7 +663,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
        * but when we write (serialize) we write only resolved paths. In the future once the issue with dependency is solved we will
        * perserve the element path both resolved and unresolved
        */
-      if (!options?.TEMPORARY__keepSectionIndex) {
+      if (!options?.TEMPORARY__preserveSectionIndex) {
         graph.TEMPORARY__deleteOwnSectionIndex();
       }
 

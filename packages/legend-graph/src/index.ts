@@ -232,6 +232,7 @@ export {
 export { V1_buildTaggedValue } from './models/protocols/pure/v1/transformation/pureGraph/to/helpers/V1_DomainBuilderHelper';
 export { V1_PureModelContextData } from './models/protocols/pure/v1/model/context/V1_PureModelContextData';
 export * from './models/protocols/pure/v1/transformation/pureGraph/to/V1_GraphBuilderContext';
+export * from './models/protocols/pure/v1/transformation/pureGraph/to/helpers/V1_ValueSpecificationPathResolver';
 export * from './models/protocols/pure/v1/transformation/pureGraph/to/V1_ElementBuilder';
 export { V1_RawLambda } from './models/protocols/pure/v1/model/rawValueSpecification/V1_RawLambda';
 export { V1_ProcessingContext } from './models/protocols/pure/v1/transformation/pureGraph/to/helpers/V1_ProcessingContext';

@@ -195,7 +195,7 @@ test(unitTest('Milestoned class'), async () => {
   const graphManagerState = TEST__getTestGraphManagerState();
   const data = TEST_DATA__MilestonedClassRoundtrip as Entity[];
   await TEST__buildGraphWithEntities(graphManagerState, data, {
-    TEMPORARY__keepSectionIndex: true,
+    TEMPORARY__preserveSectionIndex: true,
   });
   expect(
     getMilestoneTemporalStereotype(

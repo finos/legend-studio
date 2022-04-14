@@ -45,7 +45,7 @@ import type { V1_Property } from '../../../../model/packageableElements/domain/V
 import type { V1_DerivedProperty } from '../../../../model/packageableElements/domain/V1_DerivedProperty';
 import type { V1_Unit } from '../../../../model/packageableElements/domain/V1_Measure';
 import type { V1_TaggedValue } from '../../../../model/packageableElements/domain/V1_TaggedValue';
-import { V1_resolvePathsInRawLambda } from './V1_ValueSpecificationPathResolver';
+import { V1_buildRawLambdaWithResolvedPaths } from './V1_ValueSpecificationPathResolver';
 import { _package_addElement } from '../../../../../../../../helpers/DomainHelper';
 
 export const V1_buildTaggedValue = (
@@ -75,19 +75,19 @@ export const V1_buildConstraint = (
   const pureConstraint = new Constraint(
     constraint.name,
     _class,
-    V1_resolvePathsInRawLambda(
-      context,
+    V1_buildRawLambdaWithResolvedPaths(
       constraint.functionDefinition.parameters,
       constraint.functionDefinition.body,
+      context,
     ),
   );
   pureConstraint.enforcementLevel = constraint.enforcementLevel;
   pureConstraint.externalId = constraint.externalId;
   pureConstraint.messageFunction = constraint.messageFunction
-    ? V1_resolvePathsInRawLambda(
-        context,
+    ? V1_buildRawLambdaWithResolvedPaths(
         constraint.messageFunction.parameters,
         constraint.messageFunction.body,
+        context,
       )
     : constraint.messageFunction;
   return pureConstraint;
@@ -133,10 +133,10 @@ export const V1_buildUnit = (
     unit.name,
     parentMeasure,
     unit.conversionFunction
-      ? V1_resolvePathsInRawLambda(
-          context,
+      ? V1_buildRawLambdaWithResolvedPaths(
           unit.conversionFunction.parameters,
           unit.conversionFunction.body,
+          context,
         )
       : undefined,
   );
@@ -218,10 +218,10 @@ export const V1_buildDerivedProperty = (
   derivedProperty.taggedValues = property.taggedValues
     .map((taggedValue) => V1_buildTaggedValue(taggedValue, context))
     .filter(isNonNullable);
-  const rawLambda = V1_resolvePathsInRawLambda(
-    context,
+  const rawLambda = V1_buildRawLambdaWithResolvedPaths(
     property.parameters,
     property.body,
+    context,
   );
   derivedProperty.body = rawLambda.body;
   derivedProperty.parameters = rawLambda.parameters;

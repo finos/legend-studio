@@ -52,21 +52,13 @@ export class ServiceRegistrationEnvInfo {
 
 class LegendStudioApplicationCoreOptions {
   /**
-   * Allows enabling support for section index.
+   * Indicates if we should keep section index and do not rewrite/flatten the paths shortened by section
+   * imports.
    *
    * NOTE: Grammar import using section index is currently not supported as we are still trying
    * to figure out how we want to store this element in SDLC.
    */
-  EXPERIMENTAL__enableFullGrammarImportSupport = false;
-  /**
-   * Allows disabling of resolving element paths inside a RawLambda
-   *
-   * NOTE: when we move to save imports as part of the user's project, this feature
-   * will no longer be needed and can be removed. This flag will only be relevant if
-   * `EXPERIMENTAL__enableFullGrammarImportSupport` is set to false since full grammar import support
-   * will not require a lambda resolver.
-   */
-  TEMPORARY__disableRawLambdaResolver = false;
+  TEMPORARY__preserveSectionIndex = false;
   /**
    * Provides service registration environment configs.
    *
@@ -77,9 +69,7 @@ class LegendStudioApplicationCoreOptions {
 
   private static readonly serialization = new SerializationFactory(
     createModelSchema(LegendStudioApplicationCoreOptions, {
-      EXPERIMENTAL__enableFullGrammarImportSupport: optional(primitive()),
-      TEMPORARY__disableRawLambdaResolver: optional(primitive()),
-      TEMPORARY__disableServiceRegistration: optional(primitive()),
+      TEMPORARY__preserveSectionIndex: optional(primitive()),
       TEMPORARY__serviceRegistrationConfig: list(
         object(ServiceRegistrationEnvInfo),
       ),

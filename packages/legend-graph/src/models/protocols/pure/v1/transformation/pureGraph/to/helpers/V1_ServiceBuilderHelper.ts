@@ -64,7 +64,7 @@ import {
   V1_PackageableElementPointer,
   V1_PackageableElementPointerType,
 } from '../../../../model/packageableElements/V1_PackageableElement';
-import { V1_resolvePathsInRawLambda } from './V1_ValueSpecificationPathResolver';
+import { V1_buildRawLambdaWithResolvedPaths } from './V1_ValueSpecificationPathResolver';
 import { GraphBuilderError } from '../../../../../../../../graphManager/GraphManagerUtils';
 
 export const V1_buildServiceTest = (
@@ -81,10 +81,10 @@ export const V1_buildServiceTest = (
     const singleTest = new SingleExecutionTest(parentService, serviceTest.data);
     singleTest.asserts = serviceTest.asserts.map((assert) => {
       const testContainer = new TestContainer(
-        V1_resolvePathsInRawLambda(
-          context,
+        V1_buildRawLambdaWithResolvedPaths(
           assert.assert.parameters,
           assert.assert.body,
+          context,
         ),
         singleTest,
       );
@@ -129,10 +129,10 @@ export const V1_buildServiceTest = (
       );
       keyedTest.asserts = test.asserts.map((assert) => {
         const testContaier = new TestContainer(
-          V1_resolvePathsInRawLambda(
-            context,
+          V1_buildRawLambdaWithResolvedPaths(
             assert.assert.parameters,
             assert.assert.body,
+            context,
           ),
           keyedTest,
         );
@@ -248,10 +248,10 @@ export const V1_buildServiceExecution = (
       `Service Pure execution 'func' field is missing`,
     );
     return new PureSingleExecution(
-      V1_resolvePathsInRawLambda(
-        context,
+      V1_buildRawLambdaWithResolvedPaths(
         serviceExecution.func.parameters,
         serviceExecution.func.body,
+        context,
       ),
       parentService,
       context.resolveMapping(serviceExecution.mapping),
@@ -275,10 +275,10 @@ export const V1_buildServiceExecution = (
     );
     const execution = new PureMultiExecution(
       serviceExecution.executionKey,
-      V1_resolvePathsInRawLambda(
-        context,
+      V1_buildRawLambdaWithResolvedPaths(
         serviceExecution.func.parameters,
         serviceExecution.func.body,
+        context,
       ),
       parentService,
     );

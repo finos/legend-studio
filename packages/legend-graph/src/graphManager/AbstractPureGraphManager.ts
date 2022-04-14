@@ -72,10 +72,8 @@ export interface TEMPORARY__EngineSetupConfig {
 }
 
 export interface GraphBuilderOptions {
-  // the `keepSectionIndex` flag is kept until we have stable support and enable usage of section index.
-  TEMPORARY__keepSectionIndex?: boolean;
-  // when we change our handling of section index, we should be able to get rid of this flag.
-  TEMPORARY__disableRawLambdaResolver?: boolean;
+  // This flag will be kept until we have stable support and enable usage of section index.
+  TEMPORARY__preserveSectionIndex?: boolean;
 }
 
 export interface ExecutionOptions {

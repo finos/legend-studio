@@ -17,7 +17,7 @@
 import { getServiceStore } from '../../../../../../graphManager/ESService_GraphManagerHelper';
 import type { ServiceStore } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/model/ESService_ServiceStore';
 import {
-  RawLambda,
+  V1_buildRawLambdaWithResolvedPaths,
   V1_resolveBinding,
   type PackageableElementImplicitReference,
   type V1_GraphBuilderContext,
@@ -194,6 +194,7 @@ export const V1_buildServiceParameter = (
 export const V1_buildServiceParameterMapping = (
   protocol: V1_ServiceParameterMapping,
   service: ServiceStoreService,
+  context: V1_GraphBuilderContext,
 ): ServiceRequestParameterBuildInfo => {
   if (protocol instanceof V1_ParameterIndexedParameterMapping) {
     const requestParameterBuildInfo = new ServiceRequestParameterBuildInfo();
@@ -201,9 +202,10 @@ export const V1_buildServiceParameterMapping = (
       protocol.serviceParameter,
       service.parameters,
     );
-    requestParameterBuildInfo.transform = new RawLambda(
+    requestParameterBuildInfo.transform = V1_buildRawLambdaWithResolvedPaths(
       protocol.transform.parameters,
       protocol.transform.body,
+      context,
     );
     return requestParameterBuildInfo;
   }
@@ -216,14 +218,16 @@ export const V1_buildServiceParameterMapping = (
 export const V1_buildServiceRequestBuildInfo = (
   protocol: V1_ServiceRequestBuildInfo,
   service: ServiceStoreService,
+  context: V1_GraphBuilderContext,
 ): ServiceRequestBuildInfo => {
   const requestBuildInfo = new ServiceRequestBuildInfo();
 
   if (protocol.requestBodyBuildInfo) {
     const requestBodyBuildInfo = new ServiceRequestBodyBuildInfo();
-    requestBodyBuildInfo.transform = new RawLambda(
+    requestBodyBuildInfo.transform = V1_buildRawLambdaWithResolvedPaths(
       protocol.requestBodyBuildInfo.transform.parameters,
       protocol.requestBodyBuildInfo.transform.body,
+      context,
     );
     requestBuildInfo.requestBodyBuildInfo = requestBodyBuildInfo;
   }
@@ -239,10 +243,12 @@ export const V1_buildServiceRequestBuildInfo = (
             parameterBuildInfo.serviceParameter,
             service.parameters,
           );
-          requestParameterBuildInfo.transform = new RawLambda(
-            parameterBuildInfo.transform.parameters,
-            parameterBuildInfo.transform.body,
-          );
+          requestParameterBuildInfo.transform =
+            V1_buildRawLambdaWithResolvedPaths(
+              parameterBuildInfo.transform.parameters,
+              parameterBuildInfo.transform.body,
+              context,
+            );
           return requestParameterBuildInfo;
         },
       );
