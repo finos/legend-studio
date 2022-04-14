@@ -61,6 +61,8 @@ const getServiceExecutionMode = (mode: string): ServiceExecutionMode => {
   }
 };
 
+const URL_SEPARATOR = '/';
+
 interface ServiceVersionOption {
   label: string;
   value: Version | string;
@@ -233,9 +235,20 @@ export class ServiceRegistrationState {
           serviceRegistrationResult.serviceInstanceId,
         );
       }
+      assertNonEmptyString(
+        serviceRegistrationResult.pattern,
+        'Service registration pattern is missing',
+      );
       const message = `Service with patten ${
         serviceRegistrationResult.pattern
       } registered ${this.activatePostRegistration ? 'and activated ' : ''}`;
+      const encodedServicePattern =
+        URL_SEPARATOR +
+        encodeURIComponent(
+          serviceRegistrationResult.pattern[0] === URL_SEPARATOR
+            ? serviceRegistrationResult.pattern.substring(1)
+            : serviceRegistrationResult.pattern,
+        );
       this.editorStore.setActionAltertInfo({
         message,
         prompt: 'You can now launch and monitor the operation of your service',
@@ -248,7 +261,7 @@ export class ServiceRegistrationState {
             type: ActionAlertActionType.PROCEED,
             handler: (): void => {
               this.editorStore.applicationStore.navigator.openNewWindow(
-                `${config.managementUrl}${serviceRegistrationResult.pattern}`,
+                `${config.managementUrl}${encodedServicePattern}`,
               );
             },
             default: true,
