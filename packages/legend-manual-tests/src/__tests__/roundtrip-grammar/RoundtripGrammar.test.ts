@@ -63,6 +63,7 @@ import {
 import { DSLText_GraphPreset } from '@finos/legend-extension-dsl-text';
 import { DSLDiagram_GraphPreset } from '@finos/legend-extension-dsl-diagram';
 import { DSLDataSpace_GraphPreset } from '@finos/legend-extension-dsl-data-space';
+import { DSLPersistence_GraphPreset } from '@finos/legend-extension-dsl-persistence';
 import { ESService_GraphPreset } from '@finos/legend-extension-external-store-service';
 
 const engineConfig = JSON.parse(
@@ -172,6 +173,7 @@ const checkGrammarRoundtrip = async (
       new DSLDiagram_GraphPreset(),
       new DSLExternalFormat_GraphPreset(),
       new DSLDataSpace_GraphPreset(),
+      new DSLPersistence_GraphPreset(),
       new ESService_GraphPreset(),
     ])
     .usePlugins([new WebConsole()]);
