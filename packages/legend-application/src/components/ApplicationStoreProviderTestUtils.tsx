@@ -20,7 +20,6 @@ import { WebApplicationNavigator } from '../stores/WebApplicationNavigator';
 import type { LegendApplicationConfig } from '../stores/LegendApplicationConfig';
 import { ApplicationStoreProvider } from './ApplicationStoreProvider';
 import type { LegendApplicationPluginManager } from '../application/LegendApplicationPluginManager';
-import { NotificationManager } from './NotificationManager';
 
 export const TEST__ApplicationStoreProvider: React.FC<{
   children: React.ReactNode;
@@ -28,7 +27,6 @@ export const TEST__ApplicationStoreProvider: React.FC<{
   pluginManager: LegendApplicationPluginManager;
 }> = ({ children, config, pluginManager }) => (
   <ApplicationStoreProvider config={config} pluginManager={pluginManager}>
-    <NotificationManager />
     {children}
   </ApplicationStoreProvider>
 );
