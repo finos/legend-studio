@@ -37,6 +37,7 @@ import {
   type ActionState,
   StopWatch,
   assertNonEmptyString,
+  filterByType,
 } from '@finos/legend-shared';
 import type { TEMPORARY__AbstractEngineConfig } from '../../../../graphManager/action/TEMPORARY__AbstractEngineConfig';
 import {
@@ -1854,10 +1855,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     const protocolGraph = this.getFullGraphModelData(graph);
     const targetService = guaranteeNonNullable(
       protocolGraph.elements
-        .filter(
-          (element: V1_PackageableElement): element is V1_Service =>
-            element instanceof V1_Service,
-        )
+        .filter(filterByType(V1_Service))
         .find((element) => element.path === service.path),
       `Can't run service test: service '${service.path}' not found`,
     );
@@ -2088,12 +2086,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         ...graph.dependencyManager.mappings,
       ];
       const v1Mappings = graphBuilderInput
-        .map((e) =>
-          e.data.elements.filter(
-            (type: V1_PackageableElement): type is V1_Mapping =>
-              type instanceof V1_Mapping,
-          ),
-        )
+        .map((e) => e.data.elements.filter(filterByType(V1_Mapping)))
         .flat();
       const context = new V1_GraphBuilderContextBuilder(
         graph,
@@ -2123,12 +2116,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         ...graph.dependencyManager.runtimes,
       ];
       const v1Runtimes = graphBuilderInput
-        .map((e) =>
-          e.data.elements.filter(
-            (type: V1_PackageableElement): type is V1_PackageableRuntime =>
-              type instanceof V1_PackageableRuntime,
-          ),
-        )
+        .map((e) => e.data.elements.filter(filterByType(V1_PackageableRuntime)))
         .flat();
       v1Runtimes.forEach((element) => {
         const runtime = runtimes.find((e) => e.path === element.path);
@@ -2176,12 +2164,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         ...graph.dependencyManager.services,
       ];
       const v1Services = graphBuilderInput
-        .map((e) =>
-          e.data.elements.filter(
-            (type: V1_PackageableElement): type is V1_Service =>
-              type instanceof V1_Service,
-          ),
-        )
+        .map((e) => e.data.elements.filter(filterByType(V1_Service)))
         .flat();
       // build service multi execution keys
       v1Services.forEach((element) => {

@@ -24,6 +24,7 @@ import {
   uniq,
   addUniqueEntry,
   assertErrorThrown,
+  filterByType,
 } from '@finos/legend-shared';
 import { ElementEditorState } from './ElementEditorState';
 import type { RuntimeExplorerTreeNodeData } from '../../shared/TreeUtil';
@@ -134,9 +135,7 @@ export const decorateRuntimeWithNewMapping = (
         editorStore.pluginManager.getStudioPlugins(),
       ),
     )
-    .filter(
-      (sourceElement): sourceElement is Class => sourceElement instanceof Class,
-    );
+    .filter(filterByType(Class));
   let classesSpecifiedInModelConnections: Class[] = [];
   runtimeValue.connections.forEach((storeConnections) => {
     if (storeConnections.store.value instanceof ModelStore) {
@@ -244,7 +243,7 @@ export const getRuntimeExplorerTreeData = (
             editorStore.pluginManager.getStudioPlugins(),
           ),
         )
-        .filter((source): source is Class => source instanceof Class),
+        .filter(filterByType(Class)),
     ),
   );
   // runtime (root)
@@ -603,7 +602,7 @@ export class IdentifiedConnectionsPerClassEditorTabState extends IdentifiedConne
                 this.editorStore.pluginManager.getStudioPlugins(),
               ),
             )
-            .filter((source): source is Class => source instanceof Class),
+            .filter(filterByType(Class)),
         ),
       );
       if (!allSourceClassesFromMappings.includes(this.class)) {

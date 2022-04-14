@@ -157,9 +157,6 @@ export class DependencyManager {
   get measures(): Measure[] {
     return this.models.map((dep) => Array.from(dep.ownMeasures)).flat();
   }
-  get units(): Unit[] {
-    return this.models.map((dep) => Array.from(dep.ownUnits)).flat();
-  }
   get classes(): Class[] {
     return this.models.map((dep) => Array.from(dep.ownClasses)).flat();
   }

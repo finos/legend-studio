@@ -87,7 +87,11 @@ test(unitTest('Change detection works properly'), async () => {
 
   // add
   const newClass = new Class('ClassB');
-  graph_addElement(editorStore.graphManagerState.graph, newClass);
+  graph_addElement(
+    editorStore.graphManagerState.graph,
+    newClass,
+    editorStore.changeDetectionState.observerContext,
+  );
 
   await flowResult(editorStore.changeDetectionState.computeLocalChanges(true));
   expect(

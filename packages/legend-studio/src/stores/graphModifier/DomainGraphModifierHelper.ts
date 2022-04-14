@@ -52,7 +52,7 @@ import {
   _package_addElement,
   _package_deleteElement,
   observe_Enum,
-  observe_PackageabElement,
+  observe_PackageableElement,
   observe_DerivedProperty,
   observe_GenericTypeReference,
   observe_Property,
@@ -280,7 +280,7 @@ export const function_setReturnType = action(
     packageableElementReference_setValue(_func.returnType, observe_Type(val));
   },
 );
-export const functio_setReturnMultiplicity = action(
+export const function_setReturnMultiplicity = action(
   (_func: ConcreteFunctionDefinition, val: Multiplicity): void => {
     _func.returnMultiplicity = observe_Multiplicity(val);
   },
@@ -359,7 +359,7 @@ export const package_addElement = action(
     element: PackageableElement,
     context: ObserverContext,
   ): void => {
-    _package_addElement(parent, observe_PackageabElement(element, context));
+    _package_addElement(parent, observe_PackageableElement(element, context));
   },
 );
 

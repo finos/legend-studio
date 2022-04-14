@@ -21,6 +21,7 @@ import {
   assertErrorThrown,
   guaranteeNonNullable,
   guaranteeType,
+  filterByType,
 } from '@finos/legend-shared';
 import {
   type QueryBuilderFilterOperator,
@@ -48,7 +49,6 @@ import {
   type Mapping,
   type PackageableRuntime,
   type Service,
-  type ValueSpecification,
   PrimitiveInstanceValue,
   GenericTypeExplicitReference,
   GenericType,
@@ -346,10 +346,7 @@ export class QueryBuilderState {
           ),
       );
       processQueryParameters(
-        parameters.filter(
-          (parameter: ValueSpecification): parameter is VariableExpression =>
-            parameter instanceof VariableExpression,
-        ),
+        parameters.filter(filterByType(VariableExpression)),
         this,
       );
       if (options?.notifyError) {

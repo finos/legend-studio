@@ -24,6 +24,7 @@ import {
   IllegalStateError,
   returnUndefOnError,
   promisify,
+  filterByType,
 } from '@finos/legend-shared';
 import {
   type ROOT_PACKAGE_NAME,
@@ -155,23 +156,14 @@ export abstract class BasicModel {
   }
   get ownEnumerations(): Enumeration[] {
     return Array.from(this.typesIndex.values()).filter(
-      (type: Type): type is Enumeration => type instanceof Enumeration,
+      filterByType(Enumeration),
     );
   }
   get ownMeasures(): Measure[] {
-    return Array.from(this.typesIndex.values()).filter(
-      (type: Type): type is Measure => type instanceof Measure,
-    );
-  }
-  get ownUnits(): Unit[] {
-    return Array.from(this.typesIndex.values()).filter(
-      (type: Type): type is Unit => type instanceof Unit,
-    );
+    return Array.from(this.typesIndex.values()).filter(filterByType(Measure));
   }
   get ownClasses(): Class[] {
-    return Array.from(this.typesIndex.values()).filter(
-      (type: Type): type is Class => type instanceof Class,
-    );
+    return Array.from(this.typesIndex.values()).filter(filterByType(Class));
   }
   get ownTypes(): Type[] {
     return Array.from(this.typesIndex.values());
@@ -186,14 +178,10 @@ export abstract class BasicModel {
     return Array.from(this.storesIndex.values());
   }
   get ownFlatDatas(): FlatData[] {
-    return Array.from(this.storesIndex.values()).filter(
-      (store: Store): store is FlatData => store instanceof FlatData,
-    );
+    return Array.from(this.storesIndex.values()).filter(filterByType(FlatData));
   }
   get ownDatabases(): Database[] {
-    return Array.from(this.storesIndex.values()).filter(
-      (store: Store): store is Database => store instanceof Database,
-    );
+    return Array.from(this.storesIndex.values()).filter(filterByType(Database));
   }
   get ownMappings(): Mapping[] {
     return Array.from(this.mappingsIndex.values());

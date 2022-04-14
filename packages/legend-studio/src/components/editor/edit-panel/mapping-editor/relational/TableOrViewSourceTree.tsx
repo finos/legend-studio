@@ -28,6 +28,7 @@ import {
 import {
   addUniqueEntry,
   assertTrue,
+  filterByType,
   guaranteeType,
   isNonNullable,
 } from '@finos/legend-shared';
@@ -173,7 +174,7 @@ const getJoinTreeNodeData = (
   // columns
   relation.columns
     .slice()
-    .filter((col): col is Column => col instanceof Column)
+    .filter(filterByType(Column))
     .sort((a, b) => a.name.toString().localeCompare(b.name.toString()))
     .forEach((col) => {
       addUniqueEntry(
@@ -208,7 +209,7 @@ const getRelationTreeData = (
   // columns
   relation.columns
     .slice()
-    .filter((col): col is Column => col instanceof Column)
+    .filter(filterByType(Column))
     .sort((a, b) => a.name.toString().localeCompare(b.name.toString()))
     .forEach((col) => {
       const columnNode = getColumnTreeNodeData(col, relation, undefined);
@@ -324,12 +325,10 @@ export const TableOrViewSourceTree: React.FC<{
     if (node.childrenIds?.length) {
       node.isOpen = !node.isOpen;
       // columns
-      node.relation.columns
-        .filter((col): col is Column => col instanceof Column)
-        .forEach((col) => {
-          const columnNode = getColumnTreeNodeData(col, node.relation, node);
-          treeData.nodes.set(columnNode.id, columnNode);
-        });
+      node.relation.columns.filter(filterByType(Column)).forEach((col) => {
+        const columnNode = getColumnTreeNodeData(col, node.relation, node);
+        treeData.nodes.set(columnNode.id, columnNode);
+      });
       // joins
       node.relation.schema.owner.joins
         .filter(

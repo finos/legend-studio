@@ -37,6 +37,7 @@ import {
   findLast,
   assertTrue,
   assertNonEmptyString,
+  filterByType,
 } from '@finos/legend-shared';
 import {
   type QueryBuilderExplorerTreePropertyNodeData,
@@ -643,11 +644,7 @@ export class QueryBuilderProjectionState {
 
   get derivations(): QueryBuilderDerivationProjectionColumnState[] {
     return this.columns.filter(
-      (
-        projectionColumnState,
-      ): projectionColumnState is QueryBuilderDerivationProjectionColumnState =>
-        projectionColumnState instanceof
-        QueryBuilderDerivationProjectionColumnState,
+      filterByType(QueryBuilderDerivationProjectionColumnState),
     );
   }
 

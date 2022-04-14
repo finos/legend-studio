@@ -14,10 +14,12 @@
  * limitations under the License.
  */
 
-import type {
-  BasicModel,
-  PackageableElement,
-  PureModel,
+import {
+  type BasicModel,
+  type ObserverContext,
+  type PackageableElement,
+  type PureModel,
+  observe_PackageableElement,
 } from '@finos/legend-graph';
 import type { GeneratorFn } from '@finos/legend-shared';
 import { action, flow } from 'mobx';
@@ -35,8 +37,12 @@ export const graph_deleteOwnElement = action(
 );
 
 export const graph_addElement = action(
-  (graph: PureModel, element: PackageableElement): void => {
-    graph.addElement(element);
+  (
+    graph: PureModel,
+    element: PackageableElement,
+    context: ObserverContext,
+  ): void => {
+    graph.addElement(observe_PackageableElement(element, context));
   },
 );
 

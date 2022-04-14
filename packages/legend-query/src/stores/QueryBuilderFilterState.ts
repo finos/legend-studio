@@ -33,6 +33,7 @@ import {
   addUniqueEntry,
   deleteEntry,
   assertErrorThrown,
+  filterByType,
 } from '@finos/legend-shared';
 import type { QueryBuilderExplorerTreeDragSource } from './QueryBuilderExplorerState';
 import { QueryBuilderPropertyExpressionState } from './QueryBuilderPropertyEditorState';
@@ -618,10 +619,7 @@ export class QueryBuilderFilterState
   private pruneChildlessGroupNodes(): void {
     const getChildlessGroupNodes = (): QueryBuilderFilterTreeGroupNodeData[] =>
       Array.from(this.nodes.values())
-        .filter(
-          (node): node is QueryBuilderFilterTreeGroupNodeData =>
-            node instanceof QueryBuilderFilterTreeGroupNodeData,
-        )
+        .filter(filterByType(QueryBuilderFilterTreeGroupNodeData))
         .filter((node) => !node.childrenIds.length);
     let nodesToProcess = getChildlessGroupNodes();
     while (nodesToProcess.length) {
@@ -709,10 +707,7 @@ export class QueryBuilderFilterState
     // it will be group node with exactly 1 non-blank condition
     const getSquashableGroupNodes = (): QueryBuilderFilterTreeGroupNodeData[] =>
       Array.from(this.nodes.values())
-        .filter(
-          (node): node is QueryBuilderFilterTreeGroupNodeData =>
-            node instanceof QueryBuilderFilterTreeGroupNodeData,
-        )
+        .filter(filterByType(QueryBuilderFilterTreeGroupNodeData))
         .filter((node) => node.childrenIds.length < 2)
         .filter((node) => {
           if (!node.childrenIds.length) {
@@ -752,10 +747,7 @@ export class QueryBuilderFilterState
     this.setSelectedNode(undefined);
     const getUnnecessaryNodes = (): QueryBuilderFilterTreeGroupNodeData[] =>
       Array.from(this.nodes.values())
-        .filter(
-          (node): node is QueryBuilderFilterTreeGroupNodeData =>
-            node instanceof QueryBuilderFilterTreeGroupNodeData,
-        )
+        .filter(filterByType(QueryBuilderFilterTreeGroupNodeData))
         .filter((node) => {
           if (!node.parentId || !this.nodes.has(node.parentId)) {
             return false;

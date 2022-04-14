@@ -34,16 +34,6 @@ export const RESERVERD_PACKAGE_NAMES = ['$implicit'];
 export class Package extends PackageableElement implements Hashable {
   children: PackageableElement[] = [];
 
-  static createPackageFromParent(name: string, parent: Package): Package {
-    assertTrue(
-      !RESERVERD_PACKAGE_NAMES.includes(name),
-      `Can't create package with reserved name '${name}'`,
-    );
-    const newPackage = new Package(name);
-    newPackage.package = parent;
-    return newPackage;
-  }
-
   get fullPath(): string {
     if (!this.package) {
       return '';
@@ -52,6 +42,16 @@ export class Package extends PackageableElement implements Hashable {
     return !parentPackageName
       ? this.name
       : `${parentPackageName}${ELEMENT_PATH_DELIMITER}${this.name}`;
+  }
+
+  static createPackageFromParent(name: string, parent: Package): Package {
+    assertTrue(
+      !RESERVERD_PACKAGE_NAMES.includes(name),
+      `Can't create package with reserved name '${name}'`,
+    );
+    const newPackage = new Package(name);
+    newPackage.package = parent;
+    return newPackage;
   }
 
   /**

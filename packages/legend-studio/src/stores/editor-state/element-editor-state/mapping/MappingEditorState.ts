@@ -49,6 +49,7 @@ import {
   UnsupportedOperationError,
   assertTrue,
   addUniqueEntry,
+  filterByType,
 } from '@finos/legend-shared';
 import { MappingExecutionState } from './MappingExecutionState';
 import {
@@ -61,7 +62,6 @@ import { RootRelationalInstanceSetImplementationState } from './relational/Relat
 import {
   type CompilationError,
   type PackageableElement,
-  type AbstractFlatDataPropertyMapping,
   type InputData,
   type Type,
   getAllClassMappings,
@@ -323,10 +323,7 @@ const getEmbeddedSetImplmentations = (
   mapping: Mapping,
 ): InstanceSetImplementation[] =>
   mapping.allOwnClassMappings
-    .filter(
-      (setImpl): setImpl is InstanceSetImplementation =>
-        setImpl instanceof InstanceSetImplementation,
-    )
+    .filter(filterByType(InstanceSetImplementation))
     .map((setImpl) => setImpl.getEmbeddedSetImplmentations())
     .flat();
 
@@ -351,12 +348,7 @@ const getMappingElementByTypeAndId = (
           (classMapping) => classMapping.id.value === id,
         ) ??
         getEmbeddedSetImplmentations(mapping)
-          .filter(
-            (
-              a: InstanceSetImplementation,
-            ): a is EmbeddedFlatDataPropertyMapping =>
-              a instanceof EmbeddedFlatDataPropertyMapping,
-          )
+          .filter(filterByType(EmbeddedFlatDataPropertyMapping))
           .find((me) => me.id.value === id)
       );
     case MAPPING_ELEMENT_SOURCE_ID_LABEL.RELATIONAL_CLASS_MAPPING:
@@ -365,12 +357,7 @@ const getMappingElementByTypeAndId = (
           (classMapping) => classMapping.id.value === id,
         ) ??
         getEmbeddedSetImplmentations(mapping)
-          .filter(
-            (
-              a: InstanceSetImplementation,
-            ): a is EmbeddedRelationalInstanceSetImplementation =>
-              a instanceof EmbeddedRelationalInstanceSetImplementation,
-          )
+          .filter(filterByType(EmbeddedRelationalInstanceSetImplementation))
           .find((me) => me.id.value === id)
       );
     case MAPPING_ELEMENT_TYPE.ASSOCIATION:
@@ -413,10 +400,7 @@ const getMappingElementTreeNodeData = (
     mappingElement instanceof EmbeddedFlatDataPropertyMapping
   ) {
     const embedded = mappingElement.propertyMappings.filter(
-      (
-        me: AbstractFlatDataPropertyMapping,
-      ): me is EmbeddedFlatDataPropertyMapping =>
-        me instanceof EmbeddedFlatDataPropertyMapping,
+      filterByType(EmbeddedFlatDataPropertyMapping),
     );
     nodeData.childrenIds = embedded.map(
       (e) => `${nodeData.id}.${e.property.value.name}`,
@@ -461,10 +445,7 @@ const reprocessMappingElement = (
     mappingElement instanceof EmbeddedFlatDataPropertyMapping
   ) {
     const embedded = mappingElement.propertyMappings.filter(
-      (
-        me: AbstractFlatDataPropertyMapping,
-      ): me is AbstractFlatDataPropertyMapping =>
-        me instanceof EmbeddedFlatDataPropertyMapping,
+      filterByType(EmbeddedFlatDataPropertyMapping),
     );
     nodeData.childrenIds = embedded.map(
       (e) => `${nodeData.id}.${e.property.value.name}`,
@@ -689,12 +670,7 @@ export class MappingEditorState extends ElementEditorState {
         mappingElement instanceof EmbeddedFlatDataPropertyMapping
       ) {
         mappingElement.propertyMappings
-          .filter(
-            (
-              me: AbstractFlatDataPropertyMapping,
-            ): me is EmbeddedFlatDataPropertyMapping =>
-              me instanceof EmbeddedFlatDataPropertyMapping,
-          )
+          .filter(filterByType(EmbeddedFlatDataPropertyMapping))
           .forEach((embeddedPM) => {
             const embeddedPropertyNode =
               getMappingElementTreeNodeData(embeddedPM);
@@ -1182,10 +1158,7 @@ export class MappingEditorState extends ElementEditorState {
                 const propertyMappingState: LambdaEditorState | undefined = (
                   this.currentTabState.propertyMappingStates as unknown[]
                 )
-                  .filter(
-                    (state): state is LambdaEditorState =>
-                      state instanceof LambdaEditorState,
-                  )
+                  .filter(filterByType(LambdaEditorState))
                   .find((state) => state.lambdaId === sourceId);
                 if (propertyMappingState) {
                   propertyMappingState.setCompilationError(compilationError);
@@ -1213,10 +1186,7 @@ export class MappingEditorState extends ElementEditorState {
 
   override get hasCompilationError(): boolean {
     return this.openedTabStates
-      .filter(
-        (tabState): tabState is InstanceSetImplementationState =>
-          tabState instanceof InstanceSetImplementationState,
-      )
+      .filter(filterByType(InstanceSetImplementationState))
       .some((tabState) =>
         tabState.propertyMappingStates.some((pmState) =>
           Boolean(pmState.compilationError),
@@ -1226,10 +1196,7 @@ export class MappingEditorState extends ElementEditorState {
 
   override clearCompilationError(): void {
     this.openedTabStates
-      .filter(
-        (tabState): tabState is InstanceSetImplementationState =>
-          tabState instanceof InstanceSetImplementationState,
-      )
+      .filter(filterByType(InstanceSetImplementationState))
       .forEach((tabState) => {
         tabState.propertyMappingStates.forEach((pmState) =>
           pmState.setCompilationError(undefined),
@@ -1240,22 +1207,17 @@ export class MappingEditorState extends ElementEditorState {
   // -------------------------------------- Execution ---------------------------------------
 
   *buildExecution(setImpl: SetImplementation): GeneratorFn<void> {
+    const executionTabStates = this.openedTabStates.filter(
+      filterByType(MappingExecutionState),
+    );
     const executionStateName = generateEnumerableNameFromToken(
-      this.openedTabStates
-        .filter(
-          (tabState): tabState is MappingExecutionState =>
-            tabState instanceof MappingExecutionState,
-        )
-        .map((tabState) => tabState.name),
+      executionTabStates.map((tabState) => tabState.name),
       'execution',
     );
     assertTrue(
-      !this.openedTabStates
-        .filter(
-          (tabState): tabState is MappingExecutionState =>
-            tabState instanceof MappingExecutionState,
-        )
-        .find((tabState) => tabState.name === executionStateName),
+      !executionTabStates.find(
+        (tabState) => tabState.name === executionStateName,
+      ),
       `Can't auto-generate execution name for value '${executionStateName}'`,
     );
     const executionState = new MappingExecutionState(

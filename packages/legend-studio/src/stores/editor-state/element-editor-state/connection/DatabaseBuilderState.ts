@@ -25,6 +25,7 @@ import {
   assertTrue,
   guaranteeNonNullable,
   isNonNullable,
+  filterByType,
 } from '@finos/legend-shared';
 import { observable, action, makeObservable, flow, flowResult } from 'mobx';
 import { LEGEND_STUDIO_APP_EVENT } from '../../../LegendStudioAppEvent';
@@ -359,9 +360,7 @@ export class DatabaseBuilderState {
     enrichedTable: Table,
     treeData: DatabaseBuilderTreeData,
   ): void {
-    const columns = enrichedTable.columns.filter(
-      (column): column is Column => column instanceof Column,
-    );
+    const columns = enrichedTable.columns.filter(filterByType(Column));
     tableNode.table.columns = columns;
     this.removeChildren(tableNode, treeData);
     const childrenIds: string[] = [];

@@ -60,7 +60,7 @@ import {
   skipObservedWithContext,
   type ObserverContext,
 } from './CoreObserverHelper';
-import { observe_PackageabElement } from './PackageableElementObserver';
+import { observe_PackageableElement } from './PackageableElementObserver';
 import {
   observe_RawLambda,
   observe_RawVariableExpression,
@@ -87,7 +87,7 @@ export const observe_Package = skipObservedWithContext(
       if (child instanceof Package) {
         observe_Package(child, context);
       } else {
-        observe_PackageabElement(child, context);
+        observe_PackageableElement(child, context);
       }
     });
 
@@ -110,7 +110,7 @@ export const observe_PackageTree = async (
       if (child instanceof Package) {
         await observe_PackageTree(child, context);
       } else {
-        observe_PackageabElement(child, context);
+        observe_PackageableElement(child, context);
       }
     }),
   );

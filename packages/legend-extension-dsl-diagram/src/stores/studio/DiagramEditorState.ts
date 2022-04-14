@@ -18,6 +18,7 @@ import { computed, action, makeObservable, observable } from 'mobx';
 import {
   guaranteeNonNullable,
   guaranteeType,
+  isType,
   uuid,
 } from '@finos/legend-shared';
 import {
@@ -108,8 +109,8 @@ export class DiagramEditorClassViewEditorSidePanelState extends DiagramEditorSid
     this.classView = classView;
     this.classEditorState = guaranteeType(
       this.editorStore.openedEditorStates.find(
-        (elementState): elementState is ClassEditorState =>
-          elementState instanceof ClassEditorState &&
+        (elementState) =>
+          isType(elementState, ClassEditorState) &&
           elementState.element === classView.class.value,
       ) ?? this.editorStore.createElementState(classView.class.value),
       ClassEditorState,

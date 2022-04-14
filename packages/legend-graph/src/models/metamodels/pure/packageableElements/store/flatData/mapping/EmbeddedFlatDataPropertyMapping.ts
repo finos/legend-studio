@@ -15,6 +15,7 @@
  */
 
 import {
+  filterByType,
   hashArray,
   UnsupportedOperationError,
   type Hashable,
@@ -119,8 +120,7 @@ export class EmbeddedFlatDataPropertyMapping
 
   getEmbeddedSetImplmentations(): InstanceSetImplementation[] {
     const embeddedPropertyMappings = this.propertyMappings.filter(
-      (propertyMapping): propertyMapping is EmbeddedFlatDataPropertyMapping =>
-        propertyMapping instanceof EmbeddedFlatDataPropertyMapping,
+      filterByType(EmbeddedFlatDataPropertyMapping),
     );
     return embeddedPropertyMappings
       .map((embeddedPropertyMapping) =>

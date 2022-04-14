@@ -26,7 +26,11 @@ import {
   TimesIcon,
   LockIcon,
 } from '@finos/legend-art';
-import { guaranteeNonNullable, prettyCONSTName } from '@finos/legend-shared';
+import {
+  filterByType,
+  guaranteeNonNullable,
+  prettyCONSTName,
+} from '@finos/legend-shared';
 import {
   BINDING_TAB_TYPE,
   BindingEditorState,
@@ -182,10 +186,7 @@ const BindingGeneralEditor = observer(
     const binding = editorState.binding;
     const schemaSets = Array.from(
       editorStore.graphManagerState.graph.allOwnElements,
-    ).filter(
-      (element: PackageableElement): element is SchemaSet =>
-        element instanceof SchemaSet,
-    );
+    ).filter(filterByType(SchemaSet));
     const schemaSetOptions = schemaSets.map((e) => ({
       value: e,
       label: e.path,
