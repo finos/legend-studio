@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { DSLPersistence_GraphPreset } from '@finos/legend-extension-dsl-persistence';
+import { DSLPersistence_GraphPreset } from '../../DSLPersistence_Extension';
 import { TEST_DATA__roundtrip } from './TEST_DATA__DSLPersistence_Roundtrip';
 import {
   DSLExternalFormat_GraphPreset,
