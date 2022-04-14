@@ -86,8 +86,6 @@ export { DSLExternalFormat_GraphPreset } from './graph/DSLExternalFormat_Extensi
 export { BindingTransformer } from './models/metamodels/pure/packageableElements/externalFormat/store/DSLExternalFormat_BindingTransformer';
 // V1 protocols
 export * from './models/protocols/pure/v1/model/packageableElements/V1_PackageableElement';
-export * from './models/protocols/pure/v1/model/packageableElements/connection/V1_Connection';
-export * from './models/protocols/pure/v1/model/packageableElements/connection/V1_ConnectionPointer';
 export { V1_StereotypePtr } from './models/protocols/pure/v1/model/packageableElements/domain/V1_StereotypePtr';
 export { V1_TaggedValue } from './models/protocols/pure/v1/model/packageableElements/domain/V1_TaggedValue';
 export { V1_PropertyPointer } from './models/protocols/pure/v1/model/packageableElements/domain/V1_PropertyPointer';
