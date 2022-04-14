@@ -1,5 +1,21 @@
 # @finos/legend-studio
 
+## 7.0.0
+
+### Major Changes
+
+- [#1041](https://github.com/finos/legend-studio/pull/1041) [`5a76b228`](https://github.com/finos/legend-studio/commit/5a76b2289cb88569e9a1acb2287960de3e593d25) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Remove support for multi SDLC instances, `Studio` config for `SDLC` are now simplified to `{ url: string }`. To facilitate migration, we have added a `Not Found` page for the app so that we could communicate about route pattern changes using documentation which can be set in the app config.
+
+* [#1041](https://github.com/finos/legend-studio/pull/1041) [`5a76b228`](https://github.com/finos/legend-studio/commit/5a76b2289cb88569e9a1acb2287960de3e593d25) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Remove support for SDLC mode-specific handling: there is no longer special handlings for `prototype` and `production` projects, these are now driven by the SDLC features config. As such, flags like `TEMPORARY__useSDLCProductionProjectsOnly` and `TEMPORARY__useSDLCProductionProjectsOnly` are also removed.
+
+### Minor Changes
+
+- [#1041](https://github.com/finos/legend-studio/pull/1041) [`5a76b228`](https://github.com/finos/legend-studio/commit/5a76b2289cb88569e9a1acb2287960de3e593d25) ([@akphi](https://github.com/akphi)) - Add documentation key `import-project` for `Studio` import project modal dialog. If markdown text is specified, it would be shown when the SDLC server does not support project creation, otherwise, only the documentation `url` will be shown.
+
+### Patch Changes
+
+- [#1066](https://github.com/finos/legend-studio/pull/1066) [`a65b76d9`](https://github.com/finos/legend-studio/commit/a65b76d9ef610afdb78125d3c8b290a8c4454711) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Encode service pattern when launching management URL page post registration.
+
 ## 6.0.0
 
 ### Major Changes

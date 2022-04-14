@@ -1,5 +1,13 @@
 # @finos/legend-query
 
+## 1.3.8
+
+### Patch Changes
+
+- [#1049](https://github.com/finos/legend-studio/pull/1049) [`5de91968`](https://github.com/finos/legend-studio/commit/5de91968ae3ec1c4d42dc1412e452d000dfc8b3e) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Reset post-filter when switching fetch structure.
+
+* [#1049](https://github.com/finos/legend-studio/pull/1049) [`5de91968`](https://github.com/finos/legend-studio/commit/5de91968ae3ec1c4d42dc1412e452d000dfc8b3e) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Fix boolean value `false` being rendered as empty cell in query builder result panel ([#1008](https://github.com/finos/legend-studio/issues/1008)).
+
 ## 1.3.7
 
 ### Patch Changes

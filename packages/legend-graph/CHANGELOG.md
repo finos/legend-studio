@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 4.0.2
+
+### Patch Changes
+
+- [#1049](https://github.com/finos/legend-studio/pull/1049) [`5de91968`](https://github.com/finos/legend-studio/commit/5de91968ae3ec1c4d42dc1412e452d000dfc8b3e) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Complete `ValueSpecificationObserver`, it will now probably propagate the value specification tree.
+
 ## 4.0.1
 
 ## 4.0.0
