@@ -481,6 +481,14 @@ export const V1_buildTransactionScope = (
 ): TransactionScope => {
   if (protocol === V1_TransactionScope.SINGLE_TARGET) {
     return TransactionScope.SINGLE_TARGET;
+  } else {
+    return TransactionScope.ALL_TARGETS;
+  }
+
+  //note: ledav -- would prefer to write the below to be defensive when a new
+  //      enum member is added, but lint complains
+
+  /*
   } else if (protocol === V1_TransactionScope.ALL_TARGETS) {
     return TransactionScope.ALL_TARGETS;
   }
@@ -488,6 +496,7 @@ export const V1_buildTransactionScope = (
     `Can't build transaction scope`,
     protocol,
   );
+  */
 };
 
 export const V1_buildMultiFlatTargetPart = (

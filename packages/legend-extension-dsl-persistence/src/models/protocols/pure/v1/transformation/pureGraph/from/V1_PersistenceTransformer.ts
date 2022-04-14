@@ -467,12 +467,21 @@ export const V1_transformTransactionScope = (
 ): V1_TransactionScope => {
   if (element === TransactionScope.SINGLE_TARGET) {
     return V1_TransactionScope.SINGLE_TARGET;
+  } else {
+    return V1_TransactionScope.ALL_TARGETS;
+  }
+
+  //note: ledav -- would prefer to write the below to be defensive when a new
+  //      enum member is added, but lint complains
+
+  /*
   } else if (element === TransactionScope.ALL_TARGETS) {
     return V1_TransactionScope.ALL_TARGETS;
   }
   throw new UnsupportedOperationError(
     `Can't transform transaction scope '${element}'`,
   );
+ */
 };
 
 export const V1_transformMultiFlatTargetPart = (
