@@ -151,9 +151,9 @@ import {
 import {
   type V1_GraphTransformerContext,
   V1_initPackageableElement,
+  V1_transformConnection,
   V1_transformElementReference,
 } from '@finos/legend-graph';
-import { V1_transformConnection } from '@finos/legend-graph/lib/models/protocols/pure/v1/transformation/pureGraph/from/V1_ConnectionTransformer';
 import { UnsupportedOperationError } from '@finos/legend-shared';
 
 /**********

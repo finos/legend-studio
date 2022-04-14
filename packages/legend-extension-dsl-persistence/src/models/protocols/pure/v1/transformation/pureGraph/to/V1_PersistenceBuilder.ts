@@ -148,14 +148,14 @@ import {
   type Trigger,
 } from '../../../../../../metamodels/pure/model/packageableElements/persistence/DSLPersistence_Trigger';
 import { getPersistence } from '../../../../../../../graphManager/DSLPersistence_GraphManagerHelper';
-import type {
-  Binding,
-  Connection,
-  PackageableElementImplicitReference,
-  V1_Connection,
-  V1_GraphBuilderContext,
+import {
+  type Binding,
+  type Connection,
+  type PackageableElementImplicitReference,
+  type V1_Connection,
+  type V1_GraphBuilderContext,
+  V1_ProtocolToMetaModelConnectionBuilder,
 } from '@finos/legend-graph';
-import { V1_ProtocolToMetaModelConnectionBuilder } from '@finos/legend-graph/lib/models/protocols/pure/v1/transformation/pureGraph/to/V1_ProtocolToMetaModelConnectionBuilder';
 import {
   guaranteeNonEmptyString,
   UnsupportedOperationError,

@@ -15,11 +15,11 @@
  */
 
 import { V1_Persistence } from '../../model/packageableElements/persistence/V1_DSLPersistence_Persistence';
-import type { PureProtocolProcessorPlugin } from '@finos/legend-graph';
 import {
+  type PureProtocolProcessorPlugin,
   V1_deserializeConnectionValue,
   V1_serializeConnectionValue,
-} from '@finos/legend-graph/lib/models/protocols/pure/v1/transformation/pureProtocol/serializationHelpers/V1_ConnectionSerializationHelper';
+} from '@finos/legend-graph';
 import {
   deserializeArray,
   type PlainObject,
