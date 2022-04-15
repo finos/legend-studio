@@ -145,6 +145,10 @@ import {
 } from './graphModifier/GraphModifierHelper';
 
 export abstract class EditorExtensionState {
+  /**
+   * This helps to better type-checking for this empty abtract type
+   * See https://github.com/finos/legend-studio/blob/master/docs/technical/typescript-usage.md#understand-typescript-structual-type-system
+   */
   private readonly _$nominalTypeBrand!: 'EditorExtensionState';
 }
 

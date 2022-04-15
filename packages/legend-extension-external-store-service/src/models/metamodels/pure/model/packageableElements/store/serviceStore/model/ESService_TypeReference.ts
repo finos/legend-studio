@@ -23,7 +23,6 @@ import type {
 } from '@finos/legend-graph';
 
 export abstract class TypeReference implements Hashable {
-  private readonly _$nominalTypeBrand!: 'TypeReference';
   list!: boolean;
 
   abstract get hashCode(): string;

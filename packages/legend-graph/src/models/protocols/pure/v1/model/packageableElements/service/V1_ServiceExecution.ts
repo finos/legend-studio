@@ -25,8 +25,6 @@ export enum V1_ServiceExecutionType {
 }
 
 export abstract class V1_ServiceExecution implements Hashable {
-  private readonly _$nominalTypeBrand!: 'V1_ServiceExecution';
-
   abstract get hashCode(): string;
 }
 

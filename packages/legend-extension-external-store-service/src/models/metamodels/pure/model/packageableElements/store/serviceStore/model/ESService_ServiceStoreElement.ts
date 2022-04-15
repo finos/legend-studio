@@ -19,7 +19,6 @@ import type { ServiceStore } from './ESService_ServiceStore';
 import type { ServiceGroup } from './ESService_ServiceGroup';
 
 export abstract class ServiceStoreElement implements Hashable {
-  private readonly _$nominalTypeBrand!: 'ServiceStoreElement';
   owner!: ServiceStore;
   parent?: ServiceGroup | undefined;
   id!: string;

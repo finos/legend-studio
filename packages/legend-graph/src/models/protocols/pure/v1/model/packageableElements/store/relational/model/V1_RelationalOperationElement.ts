@@ -20,8 +20,6 @@ import type { V1_JoinPointer } from './V1_JoinPointer';
 import type { V1_TablePtr } from './V1_TablePtr';
 
 export abstract class V1_RelationalOperationElement implements Hashable {
-  private readonly _$nominalTypeBrand!: 'V1_RelationalOperationElement';
-
   abstract get hashCode(): string;
 }
 

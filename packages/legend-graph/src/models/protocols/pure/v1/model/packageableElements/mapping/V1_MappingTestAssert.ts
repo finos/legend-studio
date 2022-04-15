@@ -17,7 +17,5 @@
 import type { Hashable } from '@finos/legend-shared';
 
 export abstract class V1_MappingTestAssert implements Hashable {
-  private readonly _$nominalTypeBrand!: 'V1_MappingTestAssert';
-
   abstract get hashCode(): string;
 }

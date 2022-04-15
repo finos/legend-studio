@@ -28,8 +28,6 @@ export enum V1_DatasourceSpecificationType {
 }
 
 export abstract class V1_DatasourceSpecification implements Hashable {
-  private readonly _$nominalTypeBrand!: 'V1_DatasourceSpecification';
-
   abstract get hashCode(): string;
 }
 

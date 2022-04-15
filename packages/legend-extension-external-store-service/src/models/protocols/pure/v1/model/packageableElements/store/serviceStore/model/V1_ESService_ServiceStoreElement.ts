@@ -17,7 +17,6 @@
 import type { Hashable } from '@finos/legend-shared';
 
 export abstract class V1_ServiceStoreElement implements Hashable {
-  private readonly _$nominalTypeBrand!: 'V1_ServiceStoreElement';
   id!: string;
   path!: string;
 
