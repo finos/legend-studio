@@ -55,8 +55,8 @@ class LegendStudioApplicationCoreOptions {
    * Indicates if we should keep section index and do not rewrite/flatten the paths shortened by section
    * imports.
    *
-   * NOTE: Grammar import using section index is currently not supported as we are still trying
-   * to figure out how we want to store this element in SDLC.
+   * This flag will be kept until we have full support for section index
+   * See See https://github.com/finos/legend-studio/issues/1067
    */
   TEMPORARY__preserveSectionIndex = false;
   /**

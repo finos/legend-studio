@@ -72,7 +72,10 @@ export interface TEMPORARY__EngineSetupConfig {
 }
 
 export interface GraphBuilderOptions {
-  // This flag will be kept until we have stable support and enable usage of section index.
+  /**
+   * This flag will be kept until we have full support for section index
+   * See https://github.com/finos/legend-studio/issues/1067
+   */
   TEMPORARY__preserveSectionIndex?: boolean;
 }
 

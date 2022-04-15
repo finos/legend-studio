@@ -197,7 +197,7 @@ export class PureModel extends BasicModel {
     return this.coreModel.modelStore;
   }
 
-  get sectionAutoImports(): Package[] {
+  get autoImports(): Package[] {
     return this.systemModel.autoImports;
   }
 

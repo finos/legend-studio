@@ -381,8 +381,13 @@ const V1_resolveLambdaElementPaths = (
 
 /**
  * This method will traverse through the lambda protocol model tree
- * and **with best effort** try to flatten/resolve the path shortened
- * with imports
+ * and **with best effort** try to rewrite the lambda so all shortened
+ * paths inside the lambda are fully resolved.
+ *
+ * This is needed since apps like `Studio` leave value specifications raw/unprocessed
+ * when building the graph, hence any modification to section index or imports
+ * will not apply to the raw value specification (for the contrast, see the
+ * behavior of references)
  */
 export const V1_buildRawLambdaWithResolvedPaths = (
   parameters: object | undefined,
@@ -392,9 +397,8 @@ export const V1_buildRawLambdaWithResolvedPaths = (
   const rawLambda = new V1_RawLambda();
   rawLambda.parameters = parameters ?? [];
   rawLambda.body = body ?? [];
-  const enableResolver = !context.options?.TEMPORARY__preserveSectionIndex;
   let resolved = rawLambda;
-  if (enableResolver) {
+  if (context.enableRawLambdaAutoPathResolution) {
     resolved = V1_resolveLambdaElementPaths(rawLambda, context);
   }
   return new RawLambda(resolved.parameters, resolved.body);

@@ -266,6 +266,7 @@ export class ESService_PureProtocolProcessorPlugin
                 mapping.requestBuildInfo = V1_buildServiceRequestBuildInfo(
                   serviceMapping.requestBuildInfo,
                   mapping.service,
+                  context,
                 );
               }
               if (
@@ -277,7 +278,11 @@ export class ESService_PureProtocolProcessorPlugin
                   new ServiceRequestParametersBuildInfo();
                 requestBuildInfo.requestParametersBuildInfo.parameterBuildInfoList =
                   serviceMapping.parameterMappings.map((parameter) =>
-                    V1_buildServiceParameterMapping(parameter, mapping.service),
+                    V1_buildServiceParameterMapping(
+                      parameter,
+                      mapping.service,
+                      context,
+                    ),
                   );
                 mapping.requestBuildInfo = requestBuildInfo;
               }
