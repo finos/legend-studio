@@ -857,7 +857,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     await Promise.all(
       inputs.flatMap((input) =>
         input.data.nativeElements.map((element) =>
-          this.visitWithErrorHandling(
+          this.visitWithGraphBuilderErrorHandling(
             element,
             new V1_ProtocolToMetaModelGraphFirstPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
@@ -872,7 +872,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           inputs.flatMap((input) =>
             (input.data.otherElementsByBuilder.get(builder) ?? []).map(
               (element) =>
-                this.visitWithErrorHandling(
+                this.visitWithGraphBuilderErrorHandling(
                   element,
                   new V1_ProtocolToMetaModelGraphFirstPassBuilder(
                     this.getBuilderContext(
@@ -899,7 +899,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     await Promise.all(
       inputs.flatMap((input) =>
         input.data.profiles.map((element) =>
-          this.visitWithErrorHandling(
+          this.visitWithGraphBuilderErrorHandling(
             element,
             new V1_ProtocolToMetaModelGraphSecondPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
@@ -911,7 +911,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     await Promise.all(
       inputs.flatMap((input) =>
         input.data.classes.map((element) =>
-          this.visitWithErrorHandling(
+          this.visitWithGraphBuilderErrorHandling(
             element,
             new V1_ProtocolToMetaModelGraphSecondPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
@@ -923,7 +923,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     await Promise.all(
       inputs.flatMap((input) =>
         input.data.enumerations.map((element) =>
-          this.visitWithErrorHandling(
+          this.visitWithGraphBuilderErrorHandling(
             element,
             new V1_ProtocolToMetaModelGraphSecondPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
@@ -935,7 +935,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     await Promise.all(
       inputs.flatMap((input) =>
         input.data.measures.map((element) =>
-          this.visitWithErrorHandling(
+          this.visitWithGraphBuilderErrorHandling(
             element,
             new V1_ProtocolToMetaModelGraphSecondPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
@@ -947,7 +947,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     await Promise.all(
       inputs.flatMap((input) =>
         input.data.functions.map((element) =>
-          this.visitWithErrorHandling(
+          this.visitWithGraphBuilderErrorHandling(
             element,
             new V1_ProtocolToMetaModelGraphSecondPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
@@ -960,7 +960,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     await Promise.all(
       inputs.flatMap((input) =>
         input.data.classes.map((element) =>
-          this.visitWithErrorHandling(
+          this.visitWithGraphBuilderErrorHandling(
             element,
             new V1_ProtocolToMetaModelGraphThirdPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
@@ -972,7 +972,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     await Promise.all(
       inputs.flatMap((input) =>
         input.data.associations.map((element) =>
-          this.visitWithErrorHandling(
+          this.visitWithGraphBuilderErrorHandling(
             element,
             new V1_ProtocolToMetaModelGraphThirdPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
@@ -985,7 +985,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     await Promise.all(
       inputs.flatMap((input) =>
         input.data.classes.map((element) =>
-          this.visitWithErrorHandling(
+          this.visitWithGraphBuilderErrorHandling(
             element,
             new V1_ProtocolToMetaModelGraphFifthPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
@@ -1004,7 +1004,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     await Promise.all(
       inputs.flatMap((input) =>
         input.data.stores.map((element) =>
-          this.visitWithErrorHandling(
+          this.visitWithGraphBuilderErrorHandling(
             element,
             new V1_ProtocolToMetaModelGraphSecondPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
@@ -1016,7 +1016,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     await Promise.all(
       inputs.flatMap((input) =>
         input.data.stores.map((element) =>
-          this.visitWithErrorHandling(
+          this.visitWithGraphBuilderErrorHandling(
             element,
             new V1_ProtocolToMetaModelGraphThirdPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
@@ -1028,7 +1028,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     await Promise.all(
       inputs.flatMap((input) =>
         input.data.stores.map((element) =>
-          this.visitWithErrorHandling(
+          this.visitWithGraphBuilderErrorHandling(
             element,
             new V1_ProtocolToMetaModelGraphFourthPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
@@ -1040,7 +1040,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     await Promise.all(
       inputs.flatMap((input) =>
         input.data.stores.map((element) =>
-          this.visitWithErrorHandling(
+          this.visitWithGraphBuilderErrorHandling(
             element,
             new V1_ProtocolToMetaModelGraphFifthPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
@@ -1059,7 +1059,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     await Promise.all(
       inputs.flatMap((input) =>
         input.data.mappings.map((element) =>
-          this.visitWithErrorHandling(
+          this.visitWithGraphBuilderErrorHandling(
             element,
             new V1_ProtocolToMetaModelGraphSecondPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
@@ -1071,7 +1071,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     await Promise.all(
       inputs.flatMap((input) =>
         input.data.mappings.map((element) =>
-          this.visitWithErrorHandling(
+          this.visitWithGraphBuilderErrorHandling(
             element,
             new V1_ProtocolToMetaModelGraphThirdPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
@@ -1083,7 +1083,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     await Promise.all(
       inputs.flatMap((input) =>
         input.data.mappings.map((element) =>
-          this.visitWithErrorHandling(
+          this.visitWithGraphBuilderErrorHandling(
             element,
             new V1_ProtocolToMetaModelGraphFourthPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
@@ -1103,7 +1103,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     await Promise.all(
       inputs.flatMap((input) =>
         input.data.connections.map((element) =>
-          this.visitWithErrorHandling(
+          this.visitWithGraphBuilderErrorHandling(
             element,
             new V1_ProtocolToMetaModelGraphSecondPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
@@ -1115,7 +1115,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     await Promise.all(
       inputs.flatMap((input) =>
         input.data.runtimes.map((element) =>
-          this.visitWithErrorHandling(
+          this.visitWithGraphBuilderErrorHandling(
             element,
             new V1_ProtocolToMetaModelGraphSecondPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
@@ -1134,7 +1134,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     await Promise.all(
       inputs.flatMap((input) =>
         input.data.services.map((element) =>
-          this.visitWithErrorHandling(
+          this.visitWithGraphBuilderErrorHandling(
             element,
             new V1_ProtocolToMetaModelGraphSecondPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
@@ -1153,7 +1153,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     await Promise.all(
       inputs.flatMap((input) =>
         input.data.fileGenerations.map((element) =>
-          this.visitWithErrorHandling(
+          this.visitWithGraphBuilderErrorHandling(
             element,
             new V1_ProtocolToMetaModelGraphSecondPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
@@ -1172,7 +1172,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     await Promise.all(
       inputs.flatMap((input) =>
         input.data.generationSpecifications.map((element) =>
-          this.visitWithErrorHandling(
+          this.visitWithGraphBuilderErrorHandling(
             element,
             new V1_ProtocolToMetaModelGraphSecondPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
@@ -1191,7 +1191,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     await Promise.all(
       inputs.flatMap((input) =>
         input.data.sectionIndices.map((element) =>
-          this.visitWithErrorHandling(
+          this.visitWithGraphBuilderErrorHandling(
             element,
             new V1_ProtocolToMetaModelGraphSecondPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
@@ -1213,7 +1213,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           inputs.flatMap((input) =>
             (input.data.otherElementsByBuilder.get(builder) ?? []).map(
               (element) =>
-                this.visitWithErrorHandling(
+                this.visitWithGraphBuilderErrorHandling(
                   element,
                   new V1_ProtocolToMetaModelGraphSecondPassBuilder(
                     this.getBuilderContext(
@@ -1231,7 +1231,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           inputs.flatMap((input) =>
             (input.data.otherElementsByBuilder.get(builder) ?? []).map(
               (element) =>
-                this.visitWithErrorHandling(
+                this.visitWithGraphBuilderErrorHandling(
                   element,
                   new V1_ProtocolToMetaModelGraphThirdPassBuilder(
                     this.getBuilderContext(
@@ -1249,7 +1249,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           inputs.flatMap((input) =>
             (input.data.otherElementsByBuilder.get(builder) ?? []).map(
               (element) =>
-                this.visitWithErrorHandling(
+                this.visitWithGraphBuilderErrorHandling(
                   element,
                   new V1_ProtocolToMetaModelGraphFourthPassBuilder(
                     this.getBuilderContext(
@@ -1267,7 +1267,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           inputs.flatMap((input) =>
             (input.data.otherElementsByBuilder.get(builder) ?? []).map(
               (element) =>
-                this.visitWithErrorHandling(
+                this.visitWithGraphBuilderErrorHandling(
                   element,
                   new V1_ProtocolToMetaModelGraphFifthPassBuilder(
                     this.getBuilderContext(
@@ -1285,7 +1285,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
-  private visitWithErrorHandling<T>(
+  private visitWithGraphBuilderErrorHandling<T>(
     element: V1_PackageableElement,
     visitor: V1_PackageableElementVisitor<T>,
   ): Promise<T> {
@@ -1295,7 +1295,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       assertErrorThrown(err);
       const error =
         err instanceof GraphBuilderError ? err : new GraphBuilderError(err);
-      error.message = `Error processing element '${element.path}': ${err.message}`;
+      error.message = `Can't build element '${element.path}': ${err.message}`;
       throw error;
     }
   }

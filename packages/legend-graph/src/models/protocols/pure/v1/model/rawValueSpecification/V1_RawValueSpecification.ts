@@ -16,12 +16,14 @@
 
 import type { V1_RawVariable } from '../../model/rawValueSpecification/V1_RawVariable';
 import type { V1_RawLambda } from '../../model/rawValueSpecification/V1_RawLambda';
-import type { V1_RawInstanceValue } from './V1_RawInstanceValue';
+import type { V1_RawPrimitiveInstanceValue } from './V1_RawPrimitiveInstanceValue';
 
 export interface V1_RawValueSpecificationVisitor<T> {
   visit_Lambda(valueSpecification: V1_RawLambda): T;
   visit_Variable(valueSpecification: V1_RawVariable): T;
-  visit_InstanceValue(valueSpecification: V1_RawInstanceValue): T;
+  visit_PrimitiveInstanceValue(
+    valueSpecification: V1_RawPrimitiveInstanceValue,
+  ): T;
 }
 
 export abstract class V1_RawValueSpecification {

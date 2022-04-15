@@ -15,7 +15,7 @@
  */
 
 import { computed, makeObservable, observable } from 'mobx';
-import type { RawInstanceValue } from '../../../models/metamodels/pure/rawValueSpecification/RawInstanceValue';
+import type { RawPrimitiveInstanceValue } from '../../../models/metamodels/pure/rawValueSpecification/RawPrimitiveInstanceValue';
 import type { RawLambda } from '../../../models/metamodels/pure/rawValueSpecification/RawLambda';
 import type {
   RawValueSpecification,
@@ -30,12 +30,13 @@ import {
   type ObserverContext,
 } from './CoreObserverHelper';
 
-export const observe_RawInstanceValue = skipObserved(
-  (metamodel: RawInstanceValue): RawInstanceValue => {
+export const observe_RawPrimitiveInstanceValue = skipObserved(
+  (metamodel: RawPrimitiveInstanceValue): RawPrimitiveInstanceValue => {
     makeObservable(metamodel, {
       multiplicity: observable,
-      // TODO: check if we need this
-      // values: observable.ref,
+      // NOTE: we're being defensive here, technically, since the values
+      // are all of primitive types, it's safe to just use `observable`
+      values: observable.shallow,
       hashCode: computed,
     });
 
@@ -89,8 +90,10 @@ class RawValueSpecificationObserver
     observe_RawVariableExpression(valueSpecification);
   }
 
-  visit_RawInstanceValue(valueSpecification: RawInstanceValue): void {
-    observe_RawInstanceValue(valueSpecification);
+  visit_RawPrimitiveInstanceValue(
+    valueSpecification: RawPrimitiveInstanceValue,
+  ): void {
+    observe_RawPrimitiveInstanceValue(valueSpecification);
   }
 }
 
