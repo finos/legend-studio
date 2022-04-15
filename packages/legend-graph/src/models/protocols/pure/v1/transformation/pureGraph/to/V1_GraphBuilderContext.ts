@@ -175,7 +175,7 @@ export class V1_GraphBuilderContext {
         if (element) {
           results.set(fullPath, {
             element,
-            resolvedUsingSectionImports: true,
+            resolvedUsingSectionImports: false,
           });
         }
       } catch {
@@ -191,7 +191,7 @@ export class V1_GraphBuilderContext {
           if (element) {
             results.set(fullPath, {
               element,
-              resolvedUsingSectionImports: false,
+              resolvedUsingSectionImports: true,
             });
           }
         } catch {

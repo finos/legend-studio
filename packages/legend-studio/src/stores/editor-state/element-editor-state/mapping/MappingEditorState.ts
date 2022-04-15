@@ -452,13 +452,7 @@ const reprocessMappingElement = (
     );
     if (openNodes.includes(mappingElement.id.value)) {
       nodeData.isOpen = true;
-      embedded.forEach((e) =>
-        reprocessMappingElement(
-          e as EmbeddedFlatDataPropertyMapping,
-          treeNodes,
-          openNodes,
-        ),
-      );
+      embedded.forEach((e) => reprocessMappingElement(e, treeNodes, openNodes));
     }
   }
   treeNodes.set(nodeData.id, nodeData);
