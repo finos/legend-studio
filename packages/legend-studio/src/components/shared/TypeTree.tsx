@@ -44,6 +44,7 @@ import {
   CLASS_PROPERTY_TYPE,
   getClassPropertyType,
   DEFAULT_SOURCE_PARAMETER_NAME,
+  VARIABLE_REFERENCE_TOKEN,
 } from '@finos/legend-graph';
 
 const getEnumTypeTreeNodeData = (
@@ -115,7 +116,7 @@ const getTypeTreeData = (type: Type): TreeData<TypeTreeNodeData> => {
       )
       .forEach((property) => {
         const propertyTreeNodeData = getPropertyTypeTreeNodeData(property, {
-          id: `$${DEFAULT_SOURCE_PARAMETER_NAME}`,
+          id: `${VARIABLE_REFERENCE_TOKEN}${DEFAULT_SOURCE_PARAMETER_NAME}`,
           label: '',
           parent: type,
           dndType: CORE_DND_TYPE.TYPE_TREE_CLASS,
@@ -127,7 +128,7 @@ const getTypeTreeData = (type: Type): TreeData<TypeTreeNodeData> => {
   } else if (type instanceof Enumeration) {
     type.values.forEach((enumValue) => {
       const propertyTreeNodeData = getEnumTypeTreeNodeData(enumValue, {
-        id: `$${DEFAULT_SOURCE_PARAMETER_NAME}`,
+        id: `${VARIABLE_REFERENCE_TOKEN}${DEFAULT_SOURCE_PARAMETER_NAME}`,
         label: '',
         parent: type,
         dndType: CORE_DND_TYPE.TYPE_TREE_ENUMERATION,

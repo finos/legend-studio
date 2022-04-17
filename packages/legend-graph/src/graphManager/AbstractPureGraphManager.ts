@@ -394,9 +394,10 @@ export abstract class AbstractPureGraphManager {
   // As the name suggested, these methods are temporary hacks since we don't handle value-specification
   // structurally in Studio
 
-  abstract HACKY_createGetAllLambda(_class: Class): RawLambda;
-  abstract HACKY_createServiceTestAssertLambda(assertData: string): RawLambda;
-  abstract HACKY_extractServiceTestAssertionData(
+  abstract HACKY__createGetAllLambda(_class: Class): RawLambda;
+  abstract HACKY__createServiceTestAssertLambda(assertData: string): RawLambda;
+  abstract HACKY__extractServiceTestAssertionData(
     query: RawLambda,
   ): string | undefined;
+  abstract HACKY__createDefaultBlankLambda(): RawLambda;
 }

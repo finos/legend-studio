@@ -64,13 +64,15 @@ import {
 } from '../stores/QueryParametersState';
 import {
   type ConcreteFunctionDefinition,
-  RawLambda,
   generateFunctionCallString,
+  LAMBDA_PIPE,
+  VARIABLE_REFERENCE_TOKEN,
 } from '@finos/legend-graph';
 import {
   type QueryBuilderFunctionsExplorerDragSource,
   QUERY_BUILDER_FUNCTIONS_EXPLORER_TREE_DND_TYPE,
 } from '../stores/QueryFunctionsExplorerState';
+import { DEFAULT_LAMBDA_VARIABLE_NAME } from '../QueryBuilder_Const';
 
 const ProjectionColumnDragLayer: React.FC = () => {
   const { itemType, item, isDragging, currentPosition } = useDragLayer(
@@ -191,7 +193,7 @@ const QueryBuilderDerivationProjectionColumnEditor = observer(
           projectionColumnState.derivationLambdaEditorState.setLambdaString(
             `${
               projectionColumnState.derivationLambdaEditorState.lambdaString
-            }$${
+            }${VARIABLE_REFERENCE_TOKEN}${
               (item as QueryBuilderParameterDragSource).variable.variableName
             }`,
           );
@@ -536,19 +538,10 @@ export const QueryBuilderProjectionPanel = observer(
             const derivationProjectionColumn =
               new QueryBuilderDerivationProjectionColumnState(
                 projectionState,
-                new RawLambda(
-                  [{ _type: 'var', name: 'x' }],
-                  [
-                    {
-                      _type: 'string',
-                      multiplicity: { lowerBound: 1, upperBound: 1 },
-                      values: [''],
-                    },
-                  ],
-                ),
+                queryBuilderState.graphManagerState.graphManager.HACKY__createDefaultBlankLambda(),
               );
             derivationProjectionColumn.derivationLambdaEditorState.setLambdaString(
-              `x|${generateFunctionCallString(
+              `${DEFAULT_LAMBDA_VARIABLE_NAME}${LAMBDA_PIPE}${generateFunctionCallString(
                 (item as QueryBuilderFunctionsExplorerDragSource).node
                   .packageableElement as ConcreteFunctionDefinition,
               )}`,

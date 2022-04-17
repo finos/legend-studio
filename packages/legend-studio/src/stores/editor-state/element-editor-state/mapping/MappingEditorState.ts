@@ -1432,7 +1432,7 @@ export class MappingEditorState extends ElementEditorState {
 
   *createNewTest(setImplementation: SetImplementation): GeneratorFn<void> {
     const query =
-      this.editorStore.graphManagerState.graphManager.HACKY_createGetAllLambda(
+      this.editorStore.graphManagerState.graphManager.HACKY__createGetAllLambda(
         setImplementation.class.value,
       );
     const source = getMappingElementSource(

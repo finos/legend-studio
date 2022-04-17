@@ -121,7 +121,7 @@ const MappingTestQueryEditor = observer(
         flowResult(
           queryState.updateLamba(
             setImplementation
-              ? editorStore.graphManagerState.graphManager.HACKY_createGetAllLambda(
+              ? editorStore.graphManagerState.graphManager.HACKY__createGetAllLambda(
                   guaranteeType(
                     getMappingElementTarget(setImplementation),
                     Class,

@@ -2528,7 +2528,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   // --------------------------------------------- HACKY ---------------------------------------------
 
-  HACKY_createGetAllLambda(_class: Class): RawLambda {
+  HACKY__createGetAllLambda(_class: Class): RawLambda {
     return new RawLambda(
       [],
       [
@@ -2546,7 +2546,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
-  HACKY_createServiceTestAssertLambda(assertData: string): RawLambda {
+  HACKY__createServiceTestAssertLambda(assertData: string): RawLambda {
     return new RawLambda(
       [
         {
@@ -2597,7 +2597,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
-  HACKY_extractServiceTestAssertionData(query: RawLambda): string | undefined {
+  HACKY__extractServiceTestAssertionData(query: RawLambda): string | undefined {
     let json: string | undefined;
     try {
       json = (
@@ -2621,5 +2621,18 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       /* Add other assertion cases if we read others */
     }
     return json;
+  }
+
+  HACKY__createDefaultBlankLambda(): RawLambda {
+    return new RawLambda(
+      [{ _type: 'var', name: 'x' }],
+      [
+        {
+          _type: 'string',
+          multiplicity: { lowerBound: 1, upperBound: 1 },
+          values: [''],
+        },
+      ],
+    );
   }
 }

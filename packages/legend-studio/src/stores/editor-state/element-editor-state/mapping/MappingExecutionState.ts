@@ -639,7 +639,7 @@ export class MappingExecutionState {
             tryToMinifyJSONString(this.inputDataState.inputData.data),
           );
           const testContainer = new TestContainer(
-            this.editorStore.graphManagerState.graphManager.HACKY_createServiceTestAssertLambda(
+            this.editorStore.graphManagerState.graphManager.HACKY__createServiceTestAssertLambda(
               this.executionResultText,
             ),
             singleExecutionTest,
@@ -779,7 +779,7 @@ export class MappingExecutionState {
     yield flowResult(
       this.queryState.updateLamba(
         setImplementation
-          ? this.editorStore.graphManagerState.graphManager.HACKY_createGetAllLambda(
+          ? this.editorStore.graphManagerState.graphManager.HACKY__createGetAllLambda(
               guaranteeType(getMappingElementTarget(setImplementation), Class),
             )
           : RawLambda.createStub(),
