@@ -92,7 +92,7 @@ import {
   V1_deserializeValueSpecification,
 } from './transformation/pureProtocol/serializationHelpers/V1_ValueSpecificationSerializer';
 import V1_CORE_SYSTEM_MODELS from './V1_Core_SystemModels.json';
-import { V1_PackageableElementSerializer } from './transformation/pureProtocol/V1_PackageableElementSerialization';
+import { V1_serializePackageableElement } from './transformation/pureProtocol/V1_PackageableElementSerialization';
 import {
   V1_entitiesToPureModelContextData,
   V1_serializePureModelContext,
@@ -119,7 +119,7 @@ import {
 } from './transformation/pureGraph/to/V1_GraphBuilderContext';
 import { V1_PureModelContextPointer } from './model/context/V1_PureModelContextPointer';
 import { V1_Engine } from './engine/V1_Engine';
-import { V1_PackageableElementTransformer } from './transformation/pureGraph/from/V1_PackageableElementTransformer';
+import { V1_transformPackageableElement } from './transformation/pureGraph/from/V1_PackageableElementTransformer';
 import {
   V1_transformRawLambda,
   V1_RawValueSpecificationTransformer,
@@ -2351,17 +2351,14 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     element: PackageableElement,
     options?: { keepSourceInformation?: boolean | undefined } | undefined,
   ): T =>
-    element.accept_PackageableElementVisitor(
-      new V1_PackageableElementTransformer(
+    V1_transformPackageableElement(
+      element,
+      this.pluginManager.getPureProtocolProcessorPlugins(),
+      new V1_GraphTransformerContextBuilder(
         this.pluginManager.getPureProtocolProcessorPlugins(),
-        new V1_GraphTransformerContextBuilder(
-          this.pluginManager.getPureProtocolProcessorPlugins(),
-        )
-          .withKeepSourceInformationFlag(
-            Boolean(options?.keepSourceInformation),
-          )
-          .build(),
-      ),
+      )
+        .withKeepSourceInformationFlag(Boolean(options?.keepSourceInformation))
+        .build(),
     ) as T;
 
   private pureModelContextDataToEntities = (
@@ -2375,10 +2372,9 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     elementProtocol: V1_PackageableElement,
   ): Entity => ({
     path: this.getElementPath(elementProtocol),
-    content: elementProtocol.accept_PackageableElementVisitor(
-      new V1_PackageableElementSerializer(
-        this.pluginManager.getPureProtocolProcessorPlugins(),
-      ),
+    content: V1_serializePackageableElement(
+      elementProtocol,
+      this.pluginManager.getPureProtocolProcessorPlugins(),
     ),
     classifierPath: this.getElementClassiferPath(elementProtocol),
   });
