@@ -21,11 +21,6 @@ import type { Package } from '../domain/Package';
 import type { SectionIndex } from './SectionIndex';
 import type { PackageableElementExplicitReference } from '../PackageableElementReference';
 
-export enum SectionType {
-  IMPORT_AWARE = 'importAware',
-  DEFAULT = 'default',
-}
-
 export abstract class Section implements Hashable {
   parent: SectionIndex;
   parserName: string;

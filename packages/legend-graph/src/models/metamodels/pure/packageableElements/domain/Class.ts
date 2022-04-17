@@ -228,6 +228,7 @@ export class Class extends Type implements Hashable, Stubable {
   }
 }
 
+// TODO: to be moved out of metamodel
 export enum CLASS_PROPERTY_TYPE {
   CLASS = 'CLASS',
   ENUMERATION = 'ENUMERATION',
@@ -236,6 +237,7 @@ export enum CLASS_PROPERTY_TYPE {
   PRIMITIVE = 'PRIMITIVE',
 }
 
+// TODO: to be moved out of metamodel
 export const getClassPropertyType = (type: Type): CLASS_PROPERTY_TYPE => {
   if (type instanceof PrimitiveType) {
     return CLASS_PROPERTY_TYPE.PRIMITIVE;

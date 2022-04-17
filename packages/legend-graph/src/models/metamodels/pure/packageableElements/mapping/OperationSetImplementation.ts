@@ -39,6 +39,7 @@ export enum OperationType {
   MERGE = 'MERGE',
 }
 
+// TODO: to be moved out of metamodel
 export const getClassMappingOperationType = (value: string): OperationType =>
   guaranteeNonNullable(
     Object.values(OperationType).find((type) => type === value),

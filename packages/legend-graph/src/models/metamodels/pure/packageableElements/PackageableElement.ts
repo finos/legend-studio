@@ -141,6 +141,7 @@ export abstract class PackageableElement implements Hashable, Stubable {
   ): T;
 }
 
+// TODO: to be moved out of metamodel
 export enum PACKAGEABLE_ELEMENT_TYPE {
   PRIMITIVE = 'PRIMITIVE',
   PACKAGE = 'PACKAGE',
@@ -163,6 +164,7 @@ export enum PACKAGEABLE_ELEMENT_TYPE {
   SECTION_INDEX = 'SECTION_INDEX',
 }
 
+// TODO: to be moved out of metamodel
 export enum PACKAGEABLE_ELEMENT_POINTER_TYPE {
   STORE = 'STORE',
   MAPPING = 'MAPPING',
@@ -171,7 +173,7 @@ export enum PACKAGEABLE_ELEMENT_POINTER_TYPE {
 }
 
 export const getElementPointerHashCode = (
-  pointerType: PACKAGEABLE_ELEMENT_POINTER_TYPE,
+  pointerType: string,
   path: string,
 ): string =>
   [CORE_HASH_STRUCTURE.PACKAGEABLE_ELEMENT_POINTER, pointerType, path]

@@ -105,11 +105,13 @@ export abstract class SetImplementation
   ): T;
 }
 
+// TODO: to be moved out of metamodel
 export enum BASIC_SET_IMPLEMENTATION_TYPE {
   OPERATION = 'operation',
   INSTANCE = 'instance',
 }
 
+// TODO: to be moved out of metamodel
 export enum SET_IMPLEMENTATION_TYPE {
   OPERATION = 'operation',
   MERGE_OPERATION = 'mergeOperation',

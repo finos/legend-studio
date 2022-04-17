@@ -72,6 +72,7 @@ export abstract class V1_PackageableElement implements Hashable {
   ): T;
 }
 
+// TODO: to be moved out of metamodel
 export enum V1_PackageableElementPointerType {
   STORE = 'STORE',
   MAPPING = 'MAPPING',
