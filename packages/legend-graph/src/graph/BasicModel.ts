@@ -58,8 +58,8 @@ import {
   resolvePackagePathAndElementName,
 } from '../MetaModelUtils';
 import {
-  _package_addElement,
-  _package_deleteElement,
+  addElementToPackage,
+  deleteElementFromPackage,
 } from '../helpers/DomainHelper';
 
 const FORBIDDEN_EXTENSION_ELEMENT_CLASS = new Set([
@@ -406,7 +406,7 @@ export abstract class BasicModel {
 
   deleteOwnElement(element: PackageableElement): void {
     if (element.package) {
-      _package_deleteElement(element.package, element);
+      deleteElementFromPackage(element.package, element);
     }
     if (element instanceof Mapping) {
       this.mappingsIndex.delete(element.path);
@@ -499,9 +499,9 @@ export abstract class BasicModel {
       // update element package if needed
       if (element.package !== parentPackage) {
         if (element.package) {
-          _package_deleteElement(element.package, element);
+          deleteElementFromPackage(element.package, element);
         }
-        _package_addElement(parentPackage, element);
+        addElementToPackage(parentPackage, element);
       }
     }
 
@@ -578,10 +578,10 @@ export abstract class BasicModel {
        */
       const currentParentPackage = element.package;
       if (currentParentPackage !== this.getNullablePackage(packagePath)) {
-        _package_deleteElement(currentParentPackage, element);
+        deleteElementFromPackage(currentParentPackage, element);
         const newParentPackage =
           packagePath !== '' ? this.getOrCreatePackage(packagePath) : this.root;
-        _package_addElement(newParentPackage, element);
+        addElementToPackage(newParentPackage, element);
       }
       childElements.forEach((childElement, childElementOriginalPath) => {
         this.renameOwnElement(

@@ -86,15 +86,6 @@ export abstract class PackageableElement implements Hashable, Stubable {
     this._isDeleted = value;
   }
 
-  /**
-   * TODO: move this out to `DomainHelper` and make this method return `Package` instead of `PackageableElement`.
-   * Get root element. In the ideal case, this method is important for finding the root package, but
-   * if we do something like `this instanceof Package` that would case circular dependency.
-   */
-  getRoot(): PackageableElement {
-    return !this.package ? this : this.package.getRoot();
-  }
-
   get path(): string {
     if (!this.package) {
       return this.name;

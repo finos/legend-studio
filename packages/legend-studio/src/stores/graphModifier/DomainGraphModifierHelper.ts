@@ -49,8 +49,8 @@ import {
   type ObserverContext,
   type Association,
   Class,
-  _package_addElement,
-  _package_deleteElement,
+  addElementToPackage,
+  deleteElementFromPackage,
   observe_Enum,
   observe_PackageableElement,
   observe_DerivedProperty,
@@ -359,8 +359,8 @@ export const package_addElement = action(
     element: PackageableElement,
     context: ObserverContext,
   ): void => {
-    _package_addElement(parent, observe_PackageableElement(element, context));
+    addElementToPackage(parent, observe_PackageableElement(element, context));
   },
 );
 
-export const package_deleteElement = action(_package_deleteElement);
+export const package_deleteElement = action(deleteElementFromPackage);

@@ -24,20 +24,20 @@ import { Stereotype } from '../models/metamodels/pure/packageableElements/domain
 import { TaggedValue } from '../models/metamodels/pure/packageableElements/domain/TaggedValue';
 import { TagExplicitReference } from '../models/metamodels/pure/packageableElements/domain/TagReference';
 import type { Enumeration } from '../models/metamodels/pure/packageableElements/domain/Enumeration';
-import type { Package } from '../models/metamodels/pure/packageableElements/domain/Package';
+import { Package } from '../models/metamodels/pure/packageableElements/domain/Package';
 import type { PackageableElement } from '../models/metamodels/pure/packageableElements/PackageableElement';
+import { guaranteeType } from '@finos/legend-shared';
 
-export const _package_addElement = (
+export const addElementToPackage = (
   parent: Package,
   element: PackageableElement,
 ): void => {
-  // NOTE: here we directly push the element to the children array without any checks rather than use `addUniqueEntry` to improve performance.
-  // Duplication checks should be handled separately
+  // To improve performance we won't do duplication check here
   parent.children.push(element);
   element.package = parent;
 };
 
-export const _package_deleteElement = (
+export const deleteElementFromPackage = (
   parent: Package,
   packageableElement: PackageableElement,
 ): void => {
@@ -45,6 +45,11 @@ export const _package_deleteElement = (
     (child) => child !== packageableElement,
   );
 };
+
+export const getElementRootPackage = (element: PackageableElement): Package =>
+  !element.package
+    ? guaranteeType(element, Package)
+    : getElementRootPackage(element.package);
 
 export const createStubTag = (profile: Profile): Tag => new Tag(profile, '');
 export const createStubTaggedValue = (tag: Tag): TaggedValue =>

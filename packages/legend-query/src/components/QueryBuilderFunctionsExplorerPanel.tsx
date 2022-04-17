@@ -49,6 +49,7 @@ import { useDrag, useDragLayer } from 'react-dnd';
 import {
   ConcreteFunctionDefinition,
   generateFunctionSignature,
+  getElementRootPackage,
   Package,
   ROOT_PACKAGE_NAME,
 } from '@finos/legend-graph';
@@ -60,7 +61,7 @@ import { getMultiplicityDescription } from './shared/QueryBuilderUtils';
 const isDependencyTreeNode = (
   node: QueryBuilderFunctionsExplorerTreeNodeData,
 ): boolean =>
-  node.packageableElement.getRoot().path ===
+  getElementRootPackage(node.packageableElement).path ===
   ROOT_PACKAGE_NAME.PROJECT_DEPENDENCY_ROOT;
 
 const QueryBuilderFunctionInfoTooltip: React.FC<{
