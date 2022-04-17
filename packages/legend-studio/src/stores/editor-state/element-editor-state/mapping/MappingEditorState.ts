@@ -102,7 +102,10 @@ import {
   InferableMappingElementRootExplicitValue,
 } from '@finos/legend-graph';
 import { LambdaEditorState } from '@finos/legend-application';
-import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../DSLMapping_LegendStudioPlugin_Extension';
+import type {
+  DSLMapping_LegendStudioPlugin_Extension,
+  MappingElementLabel,
+} from '../../../DSLMapping_LegendStudioPlugin_Extension';
 import type { LegendStudioPlugin } from '../../../LegendStudioPlugin';
 import { flatData_setSourceRootRecordType } from '../../../graphModifier/StoreFlatData_GraphModifierHelper';
 import {
@@ -180,6 +183,77 @@ export const getMappingElementTarget = (
   }
   throw new UnsupportedOperationError(
     `Can't derive target of mapping element`,
+    mappingElement,
+  );
+};
+
+export const getMappingElementLabel = (
+  mappingElement: MappingElement,
+  editorStore: EditorStore,
+): MappingElementLabel => {
+  if (mappingElement instanceof EnumerationMapping) {
+    return {
+      value: `${
+        fromElementPathToMappingElementId(
+          mappingElement.enumeration.value.path,
+        ) === mappingElement.id.value
+          ? mappingElement.enumeration.value.name
+          : `${mappingElement.enumeration.value.name} [${mappingElement.id.value}]`
+      }`,
+      root: false,
+      tooltip: mappingElement.enumeration.value.path,
+    };
+  } else if (mappingElement instanceof AssociationImplementation) {
+    return {
+      value: `${
+        fromElementPathToMappingElementId(
+          mappingElement.association.value.path,
+        ) === mappingElement.id.value
+          ? mappingElement.association.value.name
+          : `${mappingElement.association.value.name} [${mappingElement.id.value}]`
+      }`,
+      root: false,
+      tooltip: mappingElement.association.value.path,
+    };
+  } else if (mappingElement instanceof SetImplementation) {
+    if (mappingElement instanceof EmbeddedFlatDataPropertyMapping) {
+      return {
+        value: `${mappingElement.class.value.name} [${mappingElement.property.value.name}]`,
+        root: mappingElement.root.value,
+        tooltip: mappingElement.class.value.path,
+      };
+    }
+    const extraSetImplementationMappingElementLabelInfoBuilders =
+      editorStore.pluginManager
+        .getStudioPlugins()
+        .flatMap(
+          (plugin) =>
+            (
+              plugin as DSLMapping_LegendStudioPlugin_Extension
+            ).getExtraSetImplementationMappingElementLabelInfoBuilders?.() ??
+            [],
+        );
+    for (const labelInfoBuilder of extraSetImplementationMappingElementLabelInfoBuilders) {
+      const labelInfo = labelInfoBuilder(mappingElement);
+      if (labelInfo) {
+        return labelInfo;
+      }
+    }
+    return {
+      value: `${
+        fromElementPathToMappingElementId(mappingElement.class.value.path) ===
+        mappingElement.id.value
+          ? mappingElement.root.value
+            ? mappingElement.class.value.name
+            : `${mappingElement.class.value.name} [default]`
+          : `${mappingElement.class.value.name} [${mappingElement.id.value}]`
+      }`,
+      root: mappingElement.root.value,
+      tooltip: mappingElement.class.value.path,
+    };
+  }
+  throw new UnsupportedOperationError(
+    `Can't build label info for mapping element`,
     mappingElement,
   );
 };
@@ -384,17 +458,21 @@ export const getAllMappingElements = (mapping: Mapping): MappingElement[] => [
 
 const constructMappingElementNodeData = (
   mappingElement: MappingElement,
+  editorStore: EditorStore,
 ): MappingExplorerTreeNodeData => ({
   id: `${mappingElement.id.value}`,
   mappingElement: mappingElement,
-  label: mappingElement.label.value,
+  label: getMappingElementLabel(mappingElement, editorStore).value,
 });
 
 const getMappingElementTreeNodeData = (
   mappingElement: MappingElement,
+  editorStore: EditorStore,
 ): MappingExplorerTreeNodeData => {
-  const nodeData: MappingExplorerTreeNodeData =
-    constructMappingElementNodeData(mappingElement);
+  const nodeData: MappingExplorerTreeNodeData = constructMappingElementNodeData(
+    mappingElement,
+    editorStore,
+  );
   if (
     mappingElement instanceof FlatDataInstanceSetImplementation ||
     mappingElement instanceof EmbeddedFlatDataPropertyMapping
@@ -416,6 +494,7 @@ const getMappingIdentitySortString = (
 
 const getMappingElementTreeData = (
   mapping: Mapping,
+  editorStore: EditorStore,
 ): TreeData<MappingExplorerTreeNodeData> => {
   const rootIds: string[] = [];
   const nodes = new Map<string, MappingExplorerTreeNodeData>();
@@ -425,8 +504,10 @@ const getMappingElementTreeData = (
     ),
   );
   rootMappingElements.forEach((mappingElement) => {
-    const mappingElementTreeNodeData =
-      getMappingElementTreeNodeData(mappingElement);
+    const mappingElementTreeNodeData = getMappingElementTreeNodeData(
+      mappingElement,
+      editorStore,
+    );
     addUniqueEntry(rootIds, mappingElementTreeNodeData.id);
     nodes.set(mappingElementTreeNodeData.id, mappingElementTreeNodeData);
   });
@@ -437,9 +518,12 @@ const reprocessMappingElement = (
   mappingElement: MappingElement,
   treeNodes: Map<string, MappingExplorerTreeNodeData>,
   openNodes: string[],
+  editorStore: EditorStore,
 ): MappingExplorerTreeNodeData => {
-  const nodeData: MappingExplorerTreeNodeData =
-    constructMappingElementNodeData(mappingElement);
+  const nodeData: MappingExplorerTreeNodeData = constructMappingElementNodeData(
+    mappingElement,
+    editorStore,
+  );
   if (
     mappingElement instanceof FlatDataInstanceSetImplementation ||
     mappingElement instanceof EmbeddedFlatDataPropertyMapping
@@ -452,7 +536,9 @@ const reprocessMappingElement = (
     );
     if (openNodes.includes(mappingElement.id.value)) {
       nodeData.isOpen = true;
-      embedded.forEach((e) => reprocessMappingElement(e, treeNodes, openNodes));
+      embedded.forEach((e) =>
+        reprocessMappingElement(e, treeNodes, openNodes, editorStore),
+      );
     }
   }
   treeNodes.set(nodeData.id, nodeData);
@@ -462,6 +548,7 @@ const reprocessMappingElement = (
 const reprocessMappingElementNodes = (
   mapping: Mapping,
   openNodes: string[],
+  editorStore: EditorStore,
 ): TreeData<MappingExplorerTreeNodeData> => {
   const rootIds: string[] = [];
   const nodes = new Map<string, MappingExplorerTreeNodeData>();
@@ -475,6 +562,7 @@ const reprocessMappingElementNodes = (
       mappingElement,
       nodes,
       openNodes,
+      editorStore,
     );
     addUniqueEntry(rootIds, mappingElementTreeNodeData.id);
   });
@@ -545,7 +633,10 @@ export class MappingEditorState extends ElementEditorState {
     this.mappingTestStates = this.mapping.tests.map(
       (test) => new MappingTestState(editorStore, test, this),
     );
-    this.mappingExplorerTreeData = getMappingElementTreeData(this.mapping);
+    this.mappingExplorerTreeData = getMappingElementTreeData(
+      this.mapping,
+      editorStore,
+    );
   }
 
   get mapping(): Mapping {
@@ -666,8 +757,10 @@ export class MappingEditorState extends ElementEditorState {
         mappingElement.propertyMappings
           .filter(filterByType(EmbeddedFlatDataPropertyMapping))
           .forEach((embeddedPM) => {
-            const embeddedPropertyNode =
-              getMappingElementTreeNodeData(embeddedPM);
+            const embeddedPropertyNode = getMappingElementTreeNodeData(
+              embeddedPM,
+              this.editorStore,
+            );
             treeData.nodes.set(embeddedPropertyNode.id, embeddedPropertyNode);
           });
       }
@@ -702,7 +795,11 @@ export class MappingEditorState extends ElementEditorState {
       .filter((node) => node.isOpen)
       .map((node) => node.id);
     this.setMappingExplorerTreeNodeData(
-      reprocessMappingElementNodes(this.mapping, openedTreeNodeIds),
+      reprocessMappingElementNodes(
+        this.mapping,
+        openedTreeNodeIds,
+        this.editorStore,
+      ),
     );
     if (openNodeFoCurrentTab) {
       // TODO: we should follow the example of project explorer where we maintain the currentlySelectedNode

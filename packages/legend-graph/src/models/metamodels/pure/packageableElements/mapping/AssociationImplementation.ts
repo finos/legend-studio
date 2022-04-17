@@ -15,7 +15,6 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { fromElementPathToMappingElementId } from '../../../../../MetaModelUtils';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import type {
   PackageableElementExplicitReference,
@@ -23,7 +22,7 @@ import type {
 } from '../PackageableElementReference';
 import type { PropertyMappingsImplementation } from './PropertyMappingsImplementation';
 import type { Association } from '../domain/Association';
-import type { Mapping, MappingElementLabel } from './Mapping';
+import type { Mapping } from './Mapping';
 import type { Store } from '../store/Store';
 import type { PropertyMapping } from './PropertyMapping';
 import type { InferableMappingElementIdValue } from './InferableMappingElementId';
@@ -45,19 +44,6 @@ export abstract class AssociationImplementation
     this.id = id;
     this.parent = parent;
     this.association = association;
-  }
-
-  get label(): MappingElementLabel {
-    return {
-      value: `${
-        fromElementPathToMappingElementId(this.association.value.path) ===
-        this.id.value
-          ? this.association.value.name
-          : `${this.association.value.name} [${this.id.value}]`
-      }`,
-      root: false,
-      tooltip: this.association.value.path,
-    };
   }
 
   get isStub(): boolean {

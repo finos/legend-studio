@@ -17,16 +17,6 @@
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../../../MetaModelConst';
 
-export enum V1_DatasourceSpecificationType {
-  STATIC = 'static',
-  H2_EMBEDDED = 'h2Embedded',
-  SNOWFLAKE = 'snowflake',
-  BIGQUERY = 'bigQuery',
-  H2_LOCAL = 'h2Local',
-  REDSHIFT = 'redshift',
-  DATABRICKS = 'databricks',
-}
-
 export abstract class V1_DatasourceSpecification implements Hashable {
   abstract get hashCode(): string;
 }

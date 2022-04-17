@@ -43,6 +43,7 @@ import {
   type MappingEditorState,
   getMappingElementSource,
   getMappingElementTarget,
+  getMappingElementLabel,
 } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import { useDrop } from 'react-dnd';
 import { NewServiceModal } from '../service-editor/NewServiceModal';
@@ -103,6 +104,7 @@ export const ClassMappingSelectorModal = observer(
       hideClassMappingSelectorModal,
       classMappingFilterFn,
     } = props;
+    const editorStore = useEditorStore();
 
     // Class mapping selector
     const classMappingSelectorRef = useRef<SelectComponent>(null);
@@ -110,7 +112,7 @@ export const ClassMappingSelectorModal = observer(
       ignoreCase: true,
       ignoreAccents: false,
       stringify: (option: ClassMappingSelectOption): string =>
-        option.value.label.value,
+        getMappingElementLabel(option.value, editorStore).value,
     });
     const classMappingOptions = uniq(
       getAllClassMappings(mappingEditorState.mapping)
@@ -119,7 +121,7 @@ export const ClassMappingSelectorModal = observer(
             !classMappingFilterFn || classMappingFilterFn(classMapping),
         )
         .map((classMapping) => ({
-          label: classMapping.label.value,
+          label: getMappingElementLabel(classMapping, editorStore).value,
           value: classMapping,
         }))
         .sort(compareLabelFn),

@@ -31,10 +31,7 @@ import type { PropertyMappingsImplementation } from '../../../../../../metamodel
 import { EmbeddedFlatDataPropertyMapping } from '../../../../../../metamodels/pure/packageableElements/store/flatData/mapping/EmbeddedFlatDataPropertyMapping';
 import { FlatDataPropertyMapping } from '../../../../../../metamodels/pure/packageableElements/store/flatData/mapping/FlatDataPropertyMapping';
 import type { EnumerationMapping } from '../../../../../../metamodels/pure/packageableElements/mapping/EnumerationMapping';
-import {
-  TEMPORARY__UnresolvedSetImplementation,
-  type SetImplementation,
-} from '../../../../../../metamodels/pure/packageableElements/mapping/SetImplementation';
+import type { SetImplementation } from '../../../../../../metamodels/pure/packageableElements/mapping/SetImplementation';
 import { Class } from '../../../../../../metamodels/pure/packageableElements/domain/Class';
 import type { Association } from '../../../../../../metamodels/pure/packageableElements/domain/Association';
 import type { TableAlias } from '../../../../../../metamodels/pure/packageableElements/store/relational/model/RelationalOperationElement';
@@ -92,6 +89,7 @@ import type { AbstractProperty } from '../../../../../../metamodels/pure/package
 import { BindingTransformer } from '../../../../../../metamodels/pure/packageableElements/externalFormat/store/DSLExternalFormat_BindingTransformer';
 import type { Mapping } from '../../../../../../metamodels/pure/packageableElements/mapping/Mapping';
 import { V1_resolveBinding } from './V1_DSLExternalFormat_GraphBuilderHelper';
+import { TEMPORARY__UnresolvedSetImplementation } from '../../../../../../metamodels/pure/packageableElements/mapping/TEMPORARY__UnresolvedSetImplementation';
 
 /* @MARKER: RELAXED GRAPH CHECK - See https://github.com/finos/legend-studio/issues/880 */
 const TEMPORARY__getClassMappingByIdOrReturnUnresolved = (

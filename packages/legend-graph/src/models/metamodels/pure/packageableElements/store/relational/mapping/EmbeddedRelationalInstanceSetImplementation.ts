@@ -23,7 +23,7 @@ import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import type { RelationalOperationElement } from '../model/RelationalOperationElement';
 import type { EmbeddedSetImplementation } from '../../../mapping/EmbeddedSetImplementation';
 import type { Class } from '../../../domain/Class';
-import type { Mapping, MappingElementLabel } from '../../../mapping/Mapping';
+import type { Mapping } from '../../../mapping/Mapping';
 import type {
   SetImplementationVisitor,
   SetImplementation,
@@ -75,10 +75,6 @@ export class EmbeddedRelationalInstanceSetImplementation
     this.parent = rootInstanceSetImplementation.parent;
   }
 
-  setRoot(value: boolean): void {
-    throw new UnsupportedOperationError();
-  }
-
   getEmbeddedSetImplmentations(): InstanceSetImplementation[] {
     throw new UnsupportedOperationError();
   }
@@ -99,10 +95,6 @@ export class EmbeddedRelationalInstanceSetImplementation
         propertyMapping.targetSetImplementation &&
         propertyMapping.targetSetImplementation.id.value === targetId,
     );
-  }
-
-  get label(): MappingElementLabel {
-    throw new UnsupportedOperationError();
   }
 
   override get isStub(): boolean {

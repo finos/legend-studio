@@ -14,14 +14,9 @@
  * limitations under the License.
  */
 
-import {
-  filterByType,
-  hashArray,
-  UnsupportedOperationError,
-  type Hashable,
-} from '@finos/legend-shared';
+import { filterByType, hashArray, type Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
-import type { Mapping, MappingElementLabel } from '../../../mapping/Mapping';
+import type { Mapping } from '../../../mapping/Mapping';
 import { AbstractFlatDataPropertyMapping } from './AbstractFlatDataPropertyMapping';
 import type {
   PropertyMapping,
@@ -76,18 +71,6 @@ export class EmbeddedFlatDataPropertyMapping
     this.id = id;
     this.rootInstanceSetImplementation = rootInstanceSetImplementation;
     this.parent = rootInstanceSetImplementation.parent;
-  }
-
-  setRoot(value: boolean): void {
-    throw new UnsupportedOperationError();
-  }
-
-  get label(): MappingElementLabel {
-    return {
-      value: `${this.class.value.name} [${this.property.value.name}]`,
-      root: this.root.value,
-      tooltip: this.class.value.path,
-    };
   }
 
   // As of now, there is no stub cases of Embedded Flat Property Mapping since they are created with an existing property mapping

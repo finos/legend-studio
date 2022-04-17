@@ -47,6 +47,7 @@ import {
   getMappingElementTarget,
   getMappingElementType,
   MappingEditorState,
+  getMappingElementLabel,
 } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID';
 import { getElementIcon } from '../../../shared/ElementIconUtils';
@@ -296,7 +297,7 @@ export const MappingElementExplorer = observer(
               {getElementIcon(editorStore, mappingElementTarget)}
             </div>
             <div className="mapping-explorer__item__label__text">
-              {mappingElement.label.value}
+              {getMappingElementLabel(mappingElement, editorStore).value}
             </div>
           </button>
         </div>
@@ -401,7 +402,7 @@ const MappingElementTreeNodeContainer = observer(
               {getElementIcon(editorStore, mappingElementTarget)}
             </div>
             <div className="mapping-explorer__item__label__text">
-              {mappingElement.label.value}
+              {getMappingElementLabel(mappingElement, editorStore).value}
             </div>
             {mappingElement instanceof PureInstanceSetImplementation &&
               !!mappingElement.filter && (

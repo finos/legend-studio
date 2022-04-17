@@ -590,7 +590,7 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
     return;
   }
 
-  visit_SetImplementation(setImplementation: InstanceSetImplementation): void {
+  visit_SetImplementation(setImplementation: SetImplementation): void {
     const extraSetImplementationDecorators = this.editorStore.pluginManager
       .getStudioPlugins()
       .flatMap(
@@ -724,7 +724,7 @@ export class MappingElementDecorationCleaner
     return;
   }
 
-  visit_SetImplementation(setImplementation: InstanceSetImplementation): void {
+  visit_SetImplementation(setImplementation: SetImplementation): void {
     const extraSetImplementationDecorationCleaners =
       this.editorStore.pluginManager
         .getStudioPlugins()

@@ -18,6 +18,10 @@ import { action, makeObservable, observable } from 'mobx';
 
 const DEFAULT_TAB_SIZE = 2;
 
+/**
+ * When we make application config generic, we can probably remove this
+ * See https://github.com/finos/legend-studio/issues/407
+ */
 export class TEMPORARY__AbstractEngineConfig {
   env?: string | undefined;
   tabSize = DEFAULT_TAB_SIZE;

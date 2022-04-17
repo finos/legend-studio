@@ -19,11 +19,6 @@ import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import type { V1_Runtime } from '../../../model/packageableElements/runtime/V1_Runtime';
 import type { V1_RawLambda } from '../../../model/rawValueSpecification/V1_RawLambda';
 
-export enum V1_ServiceExecutionType {
-  PURE_SINGLE_EXECUTION = 'pureSingleExecution',
-  PURE_MULTI_EXECUTION = 'pureMultiExecution',
-}
-
 export abstract class V1_ServiceExecution implements Hashable {
   abstract get hashCode(): string;
 }
