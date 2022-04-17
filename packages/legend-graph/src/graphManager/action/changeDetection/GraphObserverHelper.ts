@@ -107,7 +107,7 @@ export const observe_DependencyManager = skipObserved(
       root: observable,
       projectDependencyModelsIndex: observable,
       allElements: computed,
-      models: computed,
+      dependencyGraphs: computed,
       profiles: computed,
       enumerations: computed,
       measures: computed,

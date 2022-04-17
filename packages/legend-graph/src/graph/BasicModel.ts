@@ -241,10 +241,6 @@ export abstract class BasicModel {
     const el = this.getOwnType(path);
     return el instanceof Measure ? el : undefined;
   };
-  getOwnUnit = (path: string): Unit | undefined => {
-    const el = this.getOwnType(path);
-    return el instanceof Unit ? el : undefined;
-  };
   getOwnAssociation = (path: string): Association | undefined =>
     this.associationsIndex.get(path);
   getOwnFunction = (path: string): ConcreteFunctionDefinition | undefined =>
