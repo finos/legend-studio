@@ -68,6 +68,7 @@ import {
   V1_ElementBuilder,
   V1_initPackageableElement,
   V1_StereotypePtr,
+  V1_buildFullPath,
 } from '@finos/legend-graph';
 import {
   Diagram,
@@ -96,7 +97,7 @@ export class DSLDataSpace_PureProtocolProcessorPlugin extends PureProtocolProces
         ): PackageableElement => {
           assertType(elementProtocol, V1_DataSpace);
           const element = new DataSpace(elementProtocol.name);
-          const path = context.currentSubGraph.buildPath(
+          const path = V1_buildFullPath(
             elementProtocol.package,
             elementProtocol.name,
           );
@@ -112,7 +113,7 @@ export class DSLDataSpace_PureProtocolProcessorPlugin extends PureProtocolProces
           context: V1_GraphBuilderContext,
         ): void => {
           assertType(elementProtocol, V1_DataSpace);
-          const path = context.graph.buildPath(
+          const path = V1_buildFullPath(
             elementProtocol.package,
             elementProtocol.name,
           );

@@ -33,6 +33,7 @@ import {
   type V1_PackageableElement,
   PureProtocolProcessorPlugin,
   V1_ElementBuilder,
+  V1_buildFullPath,
 } from '@finos/legend-graph';
 import { V1_transformDiagram } from './v1/transformation/pureGraph/V1_DSLDiagram_TransformerHelper';
 import { Diagram } from '../../metamodels/pure/packageableElements/diagram/DSLDiagram_Diagram';
@@ -67,7 +68,7 @@ export class DSLDiagram_PureProtocolProcessorPlugin extends PureProtocolProcesso
         ): PackageableElement => {
           assertType(elementProtocol, V1_Diagram);
           const element = new Diagram(elementProtocol.name);
-          const path = context.currentSubGraph.buildPath(
+          const path = V1_buildFullPath(
             elementProtocol.package,
             elementProtocol.name,
           );
@@ -83,7 +84,7 @@ export class DSLDiagram_PureProtocolProcessorPlugin extends PureProtocolProcesso
           context: V1_GraphBuilderContext,
         ): void => {
           assertType(elementProtocol, V1_Diagram);
-          const path = context.graph.buildPath(
+          const path = V1_buildFullPath(
             elementProtocol.package,
             elementProtocol.name,
           );

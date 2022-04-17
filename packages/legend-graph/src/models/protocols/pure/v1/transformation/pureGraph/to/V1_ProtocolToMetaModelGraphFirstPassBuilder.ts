@@ -36,7 +36,10 @@ import { PackageableConnection } from '../../../../../../metamodels/pure/package
 import { GenerationSpecification } from '../../../../../../metamodels/pure/packageableElements/generationSpecification/GenerationSpecification';
 import { SectionIndex } from '../../../../../../metamodels/pure/packageableElements/section/SectionIndex';
 import { PackageableElementImplicitReference } from '../../../../../../metamodels/pure/packageableElements/PackageableElementReference';
-import type { V1_GraphBuilderContext } from './V1_GraphBuilderContext';
+import {
+  V1_buildFullPath,
+  type V1_GraphBuilderContext,
+} from './V1_GraphBuilderContext';
 import type {
   V1_PackageableElement,
   V1_PackageableElementVisitor,
@@ -83,10 +86,7 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
       `Section index 'name' field is missing or empty`,
     );
     const sectionIndex = new SectionIndex(element.name);
-    const path = this.context.currentSubGraph.buildPath(
-      element.package,
-      element.name,
-    );
+    const path = V1_buildFullPath(element.package, element.name);
     assertTrue(
       !this.context.graph.getNullableElement(path),
       `Element '${path}' already exists`,
@@ -105,10 +105,7 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
       `Profile 'name' field is missing or empty`,
     );
     const profile = new Profile(element.name);
-    const path = this.context.currentSubGraph.buildPath(
-      element.package,
-      element.name,
-    );
+    const path = V1_buildFullPath(element.package, element.name);
     assertTrue(
       !this.context.graph.getNullableElement(path),
       `Element '${path}' already exists`,
@@ -131,10 +128,7 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
       `Enumeration 'name' field is missing or empty`,
     );
     const pureEnumeration = new Enumeration(element.name);
-    const path = this.context.currentSubGraph.buildPath(
-      element.package,
-      element.name,
-    );
+    const path = V1_buildFullPath(element.package, element.name);
     assertTrue(
       !this.context.graph.getNullableElement(path),
       `Element '${path}' already exists`,
@@ -157,10 +151,7 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
       `Measure 'name' field is missing or empty`,
     );
     const pureMeasure = new Measure(element.name);
-    const path = this.context.currentSubGraph.buildPath(
-      element.package,
-      element.name,
-    );
+    const path = V1_buildFullPath(element.package, element.name);
     assertTrue(
       !this.context.graph.getNullableElement(path),
       `Element '${path}' already exists`,
@@ -183,10 +174,7 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
       `Class 'name' field is missing or empty`,
     );
     const _class = new Class(element.name);
-    const path = this.context.currentSubGraph.buildPath(
-      element.package,
-      element.name,
-    );
+    const path = V1_buildFullPath(element.package, element.name);
     assertTrue(
       !this.context.graph.getNullableElement(path),
       `Element '${path}' already exists`,
@@ -209,10 +197,7 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
       `Association 'name' field is missing or empty`,
     );
     const association = new Association(element.name);
-    const path = this.context.currentSubGraph.buildPath(
-      element.package,
-      element.name,
-    );
+    const path = V1_buildFullPath(element.package, element.name);
     assertTrue(
       !this.context.graph.getNullableElement(path),
       `Element '${path}' already exists`,
@@ -247,10 +232,7 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
         TYPICAL_MULTIPLICITY_TYPE.ZEROMANY,
       ),
     );
-    const path = this.context.currentSubGraph.buildPath(
-      element.package,
-      element.name,
-    );
+    const path = V1_buildFullPath(element.package, element.name);
     assertTrue(
       !this.context.graph.getNullableElement(path),
       `Element '${path}' already exists`,
@@ -273,10 +255,7 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
       `Flat data store 'name' field is missing or empty`,
     );
     const flatData = new FlatData(element.name);
-    const path = this.context.currentSubGraph.buildPath(
-      element.package,
-      element.name,
-    );
+    const path = V1_buildFullPath(element.package, element.name);
     assertTrue(
       !this.context.graph.getNullableElement(path),
       `Element '${path}' already exists`,
@@ -299,10 +278,7 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
       `Database store 'name' field is missing or empty`,
     );
     const database = new Database(element.name);
-    const path = this.context.currentSubGraph.buildPath(
-      element.package,
-      element.name,
-    );
+    const path = V1_buildFullPath(element.package, element.name);
     assertTrue(
       !this.context.graph.getNullableElement(path),
       `Element '${path}' already exists`,
@@ -325,10 +301,7 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
       `Mapping 'name' field is missing or empty`,
     );
     const pureMapping = new Mapping(element.name);
-    const path = this.context.currentSubGraph.buildPath(
-      element.package,
-      element.name,
-    );
+    const path = V1_buildFullPath(element.package, element.name);
     assertTrue(
       !this.context.graph.getNullableElement(path),
       `Element '${path}' already exists`,
@@ -351,10 +324,7 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
       `Service 'name' field is missing or empty`,
     );
     const service = new Service(element.name);
-    const path = this.context.currentSubGraph.buildPath(
-      element.package,
-      element.name,
-    );
+    const path = V1_buildFullPath(element.package, element.name);
     assertTrue(
       !this.context.graph.getNullableElement(path),
       `Element '${path}' already exists`,
@@ -379,10 +349,7 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
       'File generation element name is missing',
     );
     const fileGeneration = new FileGenerationSpecification(element.name);
-    const path = this.context.currentSubGraph.buildPath(
-      element.package,
-      element.name,
-    );
+    const path = V1_buildFullPath(element.package, element.name);
     assertTrue(
       !this.context.graph.getNullableElement(path),
       `Element '${path}' already exists`,
@@ -408,10 +375,7 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
       'Generation tree element name is missing',
     );
     const generationSpec = new GenerationSpecification(element.name);
-    const path = this.context.currentSubGraph.buildPath(
-      element.package,
-      element.name,
-    );
+    const path = V1_buildFullPath(element.package, element.name);
     assertTrue(
       !this.context.graph.getNullableElement(path),
       `Element '${path}' already exists`,
@@ -437,10 +401,7 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
       `Runtime 'name' field is missing or empty`,
     );
     const runtime = new PackageableRuntime(element.name);
-    const path = this.context.currentSubGraph.buildPath(
-      element.package,
-      element.name,
-    );
+    const path = V1_buildFullPath(element.package, element.name);
     assertTrue(
       !this.context.graph.getNullableElement(path),
       `Element '${path}' already exists`,
@@ -465,10 +426,7 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
       `Connection 'name' field is missing or empty`,
     );
     const connection = new PackageableConnection(element.name);
-    const path = this.context.currentSubGraph.buildPath(
-      element.package,
-      element.name,
-    );
+    const path = V1_buildFullPath(element.package, element.name);
     assertTrue(
       !this.context.graph.getNullableElement(path),
       `Element '${path}' already exists`,

@@ -22,7 +22,10 @@ import {
 import { _package_addElement } from '../../../../../../../helpers/DomainHelper';
 import type { PackageableElement } from '../../../../../../metamodels/pure/packageableElements/PackageableElement';
 import type { V1_PackageableElement } from '../../../model/packageableElements/V1_PackageableElement';
-import type { V1_GraphBuilderContext } from './V1_GraphBuilderContext';
+import {
+  V1_buildFullPath,
+  type V1_GraphBuilderContext,
+} from './V1_GraphBuilderContext';
 
 export type V1_ElementBuilderPass = (
   elementProtocol: V1_PackageableElement,
@@ -113,7 +116,7 @@ export class V1_ElementBuilder<T extends V1_PackageableElement> {
       elementProtocol.name,
       `Element 'name' field is missing or empty`,
     );
-    const path = context.currentSubGraph.buildPath(
+    const path = V1_buildFullPath(
       elementProtocol.package,
       elementProtocol.name,
     );

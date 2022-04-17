@@ -15,7 +15,10 @@
  */
 
 import { UnsupportedOperationError } from '@finos/legend-shared';
-import type { V1_GraphBuilderContext } from './V1_GraphBuilderContext';
+import {
+  V1_buildFullPath,
+  type V1_GraphBuilderContext,
+} from './V1_GraphBuilderContext';
 import type {
   V1_PackageableElement,
   V1_PackageableElementVisitor,
@@ -70,7 +73,7 @@ export class V1_ProtocolToMetaModelGraphFifthPassBuilder
 
   visit_Class(element: V1_Class): void {
     const _class = this.context.graph.getClass(
-      this.context.graph.buildPath(element.package, element.name),
+      V1_buildFullPath(element.package, element.name),
     );
     _class.derivedProperties = element.derivedProperties.map(
       (derivedProperty) =>
@@ -93,13 +96,13 @@ export class V1_ProtocolToMetaModelGraphFifthPassBuilder
 
   visit_FlatData(element: V1_FlatData): void {
     this.context.graph.getFlatDataStore(
-      this.context.graph.buildPath(element.package, element.name),
+      V1_buildFullPath(element.package, element.name),
     );
   }
 
   visit_Database(element: V1_Database): void {
     const database = this.context.graph.getDatabase(
-      this.context.graph.buildPath(element.package, element.name),
+      V1_buildFullPath(element.package, element.name),
     );
     element.schemas.forEach((schema) =>
       V1_buildDatabaseSchemaViewsSecondPass(schema, this.context, database),

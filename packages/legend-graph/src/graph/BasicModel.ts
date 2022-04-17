@@ -20,16 +20,12 @@ import {
   assertNonEmptyString,
   UnsupportedOperationError,
   getClass,
-  guaranteeNonNullable,
   IllegalStateError,
   returnUndefOnError,
   promisify,
   filterByType,
 } from '@finos/legend-shared';
-import {
-  type ROOT_PACKAGE_NAME,
-  ELEMENT_PATH_DELIMITER,
-} from '../MetaModelConst';
+import type { ROOT_PACKAGE_NAME } from '../MetaModelConst';
 import { Package } from '../models/metamodels/pure/packageableElements/domain/Package';
 import { Type } from '../models/metamodels/pure/packageableElements/domain/Type';
 import { Association } from '../models/metamodels/pure/packageableElements/domain/Association';
@@ -367,19 +363,6 @@ export abstract class BasicModel {
       );
     }
   }
-
-  // TODO
-  buildPath = (
-    packagePath: string | undefined,
-    name: string | undefined,
-  ): string =>
-    `${guaranteeNonNullable(
-      packagePath,
-      'Package path is required',
-    )}${ELEMENT_PATH_DELIMITER}${guaranteeNonNullable(
-      name,
-      'Name is required',
-    )}`;
 
   getOrCreatePackage = (packagePath: string | undefined): Package => {
     assertNonEmptyString(packagePath, 'Package path is required');

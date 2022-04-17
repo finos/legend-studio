@@ -43,6 +43,7 @@ import {
   PureProtocolProcessorPlugin,
   V1_ElementBuilder,
   V1_initPackageableElement,
+  V1_buildFullPath,
 } from '@finos/legend-graph';
 
 const TEXT_ELEMENT_CLASSIFIER_PATH = 'meta::pure::metamodel::text::Text';
@@ -66,7 +67,7 @@ export class DSLText_PureProtocolProcessorPlugin extends PureProtocolProcessorPl
         ): PackageableElement => {
           assertType(elementProtocol, V1_Text);
           const element = new Text(elementProtocol.name);
-          const path = context.currentSubGraph.buildPath(
+          const path = V1_buildFullPath(
             elementProtocol.package,
             elementProtocol.name,
           );
@@ -78,7 +79,7 @@ export class DSLText_PureProtocolProcessorPlugin extends PureProtocolProcessorPl
           context: V1_GraphBuilderContext,
         ): void => {
           assertType(elementProtocol, V1_Text);
-          const path = context.graph.buildPath(
+          const path = V1_buildFullPath(
             elementProtocol.package,
             elementProtocol.name,
           );

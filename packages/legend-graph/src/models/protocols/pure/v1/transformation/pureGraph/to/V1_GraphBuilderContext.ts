@@ -80,6 +80,15 @@ import type { GraphBuilderOptions } from '../../../../../../../graphManager/Abst
 import { DataType } from '../../../../../../metamodels/pure/packageableElements/domain/DataType';
 import { GraphBuilderError } from '../../../../../../../graphManager/GraphManagerUtils';
 
+export const V1_buildFullPath = (
+  packagePath: string | undefined,
+  name: string | undefined,
+): string =>
+  `${guaranteeNonNullable(
+    packagePath,
+    'Package path is required',
+  )}${ELEMENT_PATH_DELIMITER}${guaranteeNonNullable(name, 'Name is required')}`;
+
 interface ResolutionResult<T> {
   /**
    * The resolved element.

@@ -38,7 +38,10 @@ import type {
   PropertyOwner,
 } from '../../../../../../../metamodels/pure/packageableElements/domain/AbstractProperty';
 import type { V1_ValueSpecification } from '../../../../model/valueSpecification/V1_ValueSpecification';
-import type { V1_GraphBuilderContext } from '../../../../transformation/pureGraph/to/V1_GraphBuilderContext';
+import {
+  V1_buildFullPath,
+  type V1_GraphBuilderContext,
+} from '../../../../transformation/pureGraph/to/V1_GraphBuilderContext';
 import type { V1_Constraint } from '../../../../model/packageableElements/domain/V1_Constraint';
 import type { V1_RawVariable } from '../../../../model/rawValueSpecification/V1_RawVariable';
 import type { V1_Property } from '../../../../model/packageableElements/domain/V1_Property';
@@ -140,7 +143,7 @@ export const V1_buildUnit = (
         )
       : undefined,
   );
-  const path = currentGraph.buildPath(unit.package, unit.name);
+  const path = V1_buildFullPath(unit.package, unit.name);
   assertTrue(
     !currentGraph.getOwnNullableElement(path),
     `Element '${path}' already exists`,

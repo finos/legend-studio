@@ -67,6 +67,7 @@ import {
   V1_ElementBuilder,
   V1_initPackageableElement,
   V1_transformElementReference,
+  V1_buildFullPath,
 } from '@finos/legend-graph';
 import { V1_RootServiceStoreClassMapping } from './v1/model/packageableElements/store/serviceStore/mapping/V1_ESService_RootServiceStoreClassMapping';
 import { RootServiceInstanceSetImplementation } from '../../metamodels/pure/model/packageableElements/store/serviceStore/mapping/ESService_RootServiceInstanceSetImplementation';
@@ -115,7 +116,7 @@ export class ESService_PureProtocolProcessorPlugin
         ): PackageableElement => {
           assertType(elementProtocol, V1_ServiceStore);
           const element = new ServiceStore(elementProtocol.name);
-          const path = context.currentSubGraph.buildPath(
+          const path = V1_buildFullPath(
             elementProtocol.package,
             elementProtocol.name,
           );
@@ -127,7 +128,7 @@ export class ESService_PureProtocolProcessorPlugin
           context: V1_GraphBuilderContext,
         ): void => {
           assertType(elementProtocol, V1_ServiceStore);
-          const path = context.graph.buildPath(
+          const path = V1_buildFullPath(
             elementProtocol.package,
             elementProtocol.name,
           );
