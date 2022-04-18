@@ -158,7 +158,8 @@ const QueryBuilderSimpleProjectionColumnEditor = observer(
         projectionColumnState.projectionState.queryBuilderState.explorerState
           .humanizePropertyName,
       );
-    const propertyExpressionState = projectionColumnState.propertyExpression;
+    const propertyExpressionState =
+      projectionColumnState.propertyExpressionStateWithMilestoningDates;
 
     return (
       <div className="query-builder__projection__column__value__property">

@@ -203,7 +203,8 @@ const QueryBuilderFilterConditionEditor = observer(
       }),
       [handleDrop],
     );
-    const propertyExpressionState = node.condition.propertyExpression;
+    const propertyExpressionState =
+      node.condition.propertyExpressionStateWithMilestoningDates;
 
     return (
       <div className="query-builder-filter-tree__node__label__content dnd__overlay__container">

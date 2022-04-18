@@ -182,7 +182,7 @@ export class QueryBuilderSimpleProjectionColumnState extends QueryBuilderProject
     );
   }
 
-  get propertyExpression(): QueryBuilderPropertyExpressionState {
+  get propertyExpressionStateWithMilestoningDates(): QueryBuilderPropertyExpressionState {
     return updatePropertyExpressionStateWithDefaultMilestoningDates(
       this.propertyExpressionState,
     );

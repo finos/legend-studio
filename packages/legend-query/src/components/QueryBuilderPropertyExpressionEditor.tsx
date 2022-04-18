@@ -17,7 +17,6 @@
 import { useCallback } from 'react';
 import { clsx, Dialog, InfoCircleIcon, RefreshIcon } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
-import { QueryBuilderValueSpecificationEditor } from './QueryBuilderValueSpecificationEditor';
 import {
   fillDerivedPropertyArguments,
   getPropertyPath,
@@ -52,6 +51,7 @@ import {
   isDefaultDatePropagationSupported,
 } from '../stores/QueryBuilderMilestoningHelper';
 import { propertyExpression_setParametersValue } from '../stores/QueryBuilderValueSpecificationModifierHelper';
+import { QueryBuilderMilestoningValueSpecificationEditor } from '../stores/QueryBuilderMilestoningValueSpecificationEditor';
 
 const DerivedPropertyParameterValueEditor = observer(
   (props: {
@@ -161,7 +161,7 @@ const DerivedPropertyParameterValueEditor = observer(
               Change Parameter Value
             </div>
           )}
-          <QueryBuilderValueSpecificationEditor
+          <QueryBuilderMilestoningValueSpecificationEditor
             valueSpecification={parameterValue}
             graph={
               derivedPropertyExpressionState.queryBuilderState.graphManagerState

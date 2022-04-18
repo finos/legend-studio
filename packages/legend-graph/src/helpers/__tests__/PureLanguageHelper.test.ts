@@ -36,8 +36,8 @@ afterEach(() => {
 
 test(unitTest('Generate default parameter value for type'), async () => {
   const graphManagerState = TEST__getTestGraphManagerState();
-  await graphManagerState.graphManager.buildGraph(
-    graphManagerState.graph,
+  await TEST__buildGraphWithEntities(
+    graphManagerState,
     TEST_DATA__simpleGraphEntities as Entity[],
   );
   // NOTE: this will leak

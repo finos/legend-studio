@@ -62,11 +62,6 @@ import {
 } from '@finos/legend-application';
 import format from 'date-fns/format/index';
 import { addDays } from 'date-fns';
-import type { QueryBuilderDerivedPropertyExpressionState } from '../stores/QueryBuilderPropertyEditorState';
-import {
-  propagateDefaultDates,
-  removePropagatedDates,
-} from '../stores/QueryBuilderMilestoningHelper';
 import {
   genericType_setRawType,
   instanceValue_changeValue,
@@ -157,7 +152,7 @@ export const VariableExpressionParameterEditor = observer(
   },
 );
 
-const StringPrimitiveInstanceValueEditor = observer(
+export const StringPrimitiveInstanceValueEditor = observer(
   (props: {
     valueSpecification: PrimitiveInstanceValue;
     className?: string | undefined;
@@ -181,7 +176,7 @@ const StringPrimitiveInstanceValueEditor = observer(
   },
 );
 
-const BooleanPrimitiveInstanceValueEditor = observer(
+export const BooleanPrimitiveInstanceValueEditor = observer(
   (props: {
     valueSpecification: PrimitiveInstanceValue;
     className?: string | undefined;
@@ -206,7 +201,7 @@ const BooleanPrimitiveInstanceValueEditor = observer(
   },
 );
 
-const NumberPrimitiveInstanceValueEditor = observer(
+export const NumberPrimitiveInstanceValueEditor = observer(
   (props: {
     valueSpecification: PrimitiveInstanceValue;
     isInteger: boolean;
@@ -288,7 +283,7 @@ export const DateTimePrimitiveInstanceValueEditor = observer(
   },
 );
 
-const EnumValueInstanceValueEditor = observer(
+export const EnumValueInstanceValueEditor = observer(
   (props: {
     valueSpecification: EnumValueInstanceValue;
     className?: string | undefined;
@@ -445,7 +440,7 @@ const setCollectionValue = (
 
 const COLLECTION_PREVIEW_CHAR_LIMIT = 50;
 
-const CollectionValueInstanceValueEditor = observer(
+export const CollectionValueInstanceValueEditor = observer(
   (props: {
     valueSpecification: CollectionInstanceValue;
     graph: PureModel;
@@ -625,23 +620,8 @@ export const QueryBuilderValueSpecificationEditor: React.FC<{
   graph: PureModel;
   expectedType: Type;
   className?: string | undefined;
-  idx?: number | undefined;
-  derivedPropertyExpressionState?:
-    | QueryBuilderDerivedPropertyExpressionState
-    | undefined;
-  derivedPropertyExpressionStates?:
-    | QueryBuilderDerivedPropertyExpressionState[]
-    | undefined;
 }> = (props) => {
-  const {
-    valueSpecification,
-    graph,
-    expectedType,
-    className,
-    idx,
-    derivedPropertyExpressionState,
-    derivedPropertyExpressionStates,
-  } = props;
+  const { valueSpecification, graph, expectedType, className } = props;
   if (valueSpecification instanceof PrimitiveInstanceValue) {
     const _type = valueSpecification.genericType.value.rawType;
     switch (_type.path) {
@@ -674,17 +654,6 @@ export const QueryBuilderValueSpecificationEditor: React.FC<{
       case PRIMITIVE_TYPE.STRICTDATE:
       case PRIMITIVE_TYPE.DATETIME:
       case PRIMITIVE_TYPE.LATESTDATE:
-        if (
-          derivedPropertyExpressionState &&
-          idx !== undefined &&
-          derivedPropertyExpressionStates
-        ) {
-          propagateDefaultDates(
-            derivedPropertyExpressionStates,
-            derivedPropertyExpressionState,
-            idx,
-          );
-        }
         return (
           <DateInstanceValueEditor
             valueSpecification={valueSpecification}
@@ -721,9 +690,6 @@ export const QueryBuilderValueSpecificationEditor: React.FC<{
   }
   // property expression
   else if (valueSpecification instanceof VariableExpression) {
-    if (derivedPropertyExpressionStates?.length) {
-      removePropagatedDates(derivedPropertyExpressionStates);
-    }
     return (
       <VariableExpressionParameterEditor
         valueSpecification={valueSpecification}

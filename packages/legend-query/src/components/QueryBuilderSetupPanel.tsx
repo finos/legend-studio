@@ -224,7 +224,7 @@ export const QueryBuilderSetupPanel = observer(
       setIsMilestoneEditorOpened(false);
     };
     const isMilestonedQuery = Boolean(
-      querySetupState.businessDate || querySetupState.processingDate,
+      querySetupState.businessDate ?? querySetupState.processingDate,
     );
 
     return (

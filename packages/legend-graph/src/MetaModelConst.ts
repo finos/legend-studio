@@ -327,5 +327,6 @@ export enum MilestoneVersionPropertySufixes {
 
 export const MILESTONING_START_DATE_PARAMETER_NAME = 'start';
 export const MILESTONING_END_DATE_PARAMETER_NAME = 'end';
-export const DEFAULT_PROCESSING_DATE_MILESTONING_PARAMETER_NAME = 'processingDate';
+export const DEFAULT_PROCESSING_DATE_MILESTONING_PARAMETER_NAME =
+  'processingDate';
 export const DEFAULT_BUSINESS_DATE_MILESTONING_PARAMETER_NAME = 'businessDate';

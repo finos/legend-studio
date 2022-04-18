@@ -141,7 +141,7 @@ export class FilterConditionState {
     );
   }
 
-  get propertyExpression(): QueryBuilderPropertyExpressionState {
+  get propertyExpressionStateWithMilestoningDates(): QueryBuilderPropertyExpressionState {
     return updatePropertyExpressionStateWithDefaultMilestoningDates(
       this.propertyExpressionState,
     );
