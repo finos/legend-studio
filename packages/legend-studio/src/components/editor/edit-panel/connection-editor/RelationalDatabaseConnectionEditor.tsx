@@ -822,6 +822,7 @@ const BigQueryDatasourceSpecificationEditor = observer(
           isReadOnly={isReadOnly}
           value={sourceSpec.proxyHost}
           propertyName="proxy host"
+          description="Specifies proxy host for connection to GCP BigQuery"
           update={(value: string | undefined): void =>
             bigQueryDatasourceSpecification_setProxyHost(
               sourceSpec,
@@ -833,6 +834,7 @@ const BigQueryDatasourceSpecificationEditor = observer(
           isReadOnly={isReadOnly}
           value={sourceSpec.proxyPort}
           propertyName="proxy port"
+          description="Specifies proxy port for connection to GCP BigQuery"
           update={(value: string | undefined): void =>
             bigQueryDatasourceSpecification_setProxyPort(
               sourceSpec,
