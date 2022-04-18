@@ -46,11 +46,8 @@ import {
   TEST__buildGraphWithEntities,
   TEST__getTestGraphManagerState,
   TEST__GraphPluginManager,
-  DSLExternalFormat_GraphPreset,
 } from '@finos/legend-graph';
-import { DSLText_GraphPreset } from '@finos/legend-extension-dsl-text';
-import { DSLDiagram_GraphPreset } from '@finos/legend-extension-dsl-diagram';
-import { DSLDataSpace_GraphPreset } from '@finos/legend-extension-dsl-data-space';
+import { getLegendGraphExtensionCollection } from '@finos/legend-graph-extension-collection';
 
 const engineConfig = JSON.parse(
   fs.readFileSync(resolve(__dirname, '../../../engine-config.json'), {
@@ -109,12 +106,7 @@ const checkGrammarRoundtripMismatch = async (
   options?: GrammarRoundtripOptions,
 ): Promise<void> => {
   const pluginManager = new TEST__GraphPluginManager();
-  pluginManager.usePresets([
-    new DSLText_GraphPreset(),
-    new DSLDiagram_GraphPreset(),
-    new DSLExternalFormat_GraphPreset(),
-    new DSLDataSpace_GraphPreset(),
-  ]);
+  pluginManager.usePresets(getLegendGraphExtensionCollection());
   pluginManager.install();
   const graphManagerState = TEST__getTestGraphManagerState(pluginManager);
 

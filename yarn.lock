@@ -2233,19 +2233,15 @@ __metadata:
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-studio": "workspace:*"
     "@types/react": 17.0.43
-    "@types/react-router-dom": 5.3.2
     cross-env: 7.0.3
     eslint: 8.13.0
     jest: 27.5.1
     mobx: 6.5.0
     mobx-react-lite: 3.3.0
-    monaco-editor: 0.33.0
     npm-run-all: 4.1.5
     react: 17.0.2
     react-dom: 17.0.2
     react-resize-detector: 7.0.0
-    react-router: 5.2.1
-    react-router-dom: 5.3.0
     rimraf: 3.0.2
     sass: 1.50.0
     serializr: 2.0.5
@@ -2303,7 +2299,6 @@ __metadata:
     eslint: 8.13.0
     jest: 27.5.1
     mobx: 6.5.0
-    monaco-editor: 0.33.0
     npm-run-all: 4.1.5
     react: 17.0.2
     rimraf: 3.0.2
@@ -2332,7 +2327,6 @@ __metadata:
     jest: 27.5.1
     mobx: 6.5.0
     mobx-react-lite: 3.3.0
-    monaco-editor: 0.33.0
     npm-run-all: 4.1.5
     react: 17.0.2
     rimraf: 3.0.2
@@ -2399,7 +2393,6 @@ __metadata:
     jest: 27.5.1
     mobx: 6.5.0
     mobx-react-lite: 3.3.0
-    monaco-editor: 0.33.0
     npm-run-all: 4.1.5
     react: 17.0.2
     rimraf: 3.0.2
@@ -2512,12 +2505,8 @@ __metadata:
   dependencies:
     "@finos/legend-art": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
-    "@finos/legend-extension-dsl-data-space": "workspace:*"
-    "@finos/legend-extension-dsl-diagram": "workspace:*"
-    "@finos/legend-extension-dsl-persistence": "workspace:*"
-    "@finos/legend-extension-dsl-text": "workspace:*"
-    "@finos/legend-extension-external-store-service": "workspace:*"
     "@finos/legend-graph": "workspace:*"
+    "@finos/legend-graph-extension-collection": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     axios: 0.26.1
     cross-env: 7.0.3

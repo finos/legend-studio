@@ -150,11 +150,10 @@ import {
 import { getPersistence } from '../../../../../../../graphManager/DSLPersistence_GraphManagerHelper';
 import {
   type Binding,
-  type Connection,
   type PackageableElementImplicitReference,
-  type V1_Connection,
   type V1_GraphBuilderContext,
   V1_ProtocolToMetaModelConnectionBuilder,
+  V1_buildFullPath,
 } from '@finos/legend-graph';
 import {
   guaranteeNonEmptyString,
@@ -184,18 +183,6 @@ export const V1_buildTrigger = (
 };
 
 /**********
- * connection
- **********/
-
-export const V1_buildConnection = (
-  protocol: V1_Connection,
-  context: V1_GraphBuilderContext,
-): Connection =>
-  protocol.accept_ConnectionVisitor(
-    new V1_ProtocolToMetaModelConnectionBuilder(context),
-  );
-
-/**********
  * sink
  **********/
 
@@ -205,7 +192,9 @@ export const V1_buildRelationalSink = (
 ): RelationalSink => {
   const sink = new RelationalSink();
   if (protocol.connection) {
-    sink.connection = V1_buildConnection(protocol.connection, context);
+    sink.connection = protocol.connection.accept_ConnectionVisitor(
+      new V1_ProtocolToMetaModelConnectionBuilder(context),
+    );
   }
   return sink;
 };
@@ -215,7 +204,9 @@ export const V1_buildObjectStorageSink = (
   context: V1_GraphBuilderContext,
 ): ObjectStorageSink => {
   const sink = new ObjectStorageSink();
-  sink.connection = V1_buildConnection(protocol.connection, context);
+  sink.connection = protocol.connection.accept_ConnectionVisitor(
+    new V1_ProtocolToMetaModelConnectionBuilder(context),
+  );
   sink.binding = context.resolveElement(
     protocol.binding,
     false,
@@ -485,7 +476,7 @@ export const V1_buildTransactionScope = (
     return TransactionScope.ALL_TARGETS;
   }
 
-  //note: ledav -- would prefer to write the below to be defensive when a new
+  // NOTE: ledav -- would prefer to write the below to be defensive when a new
   //      enum member is added, but lint complains
 
   /*
@@ -603,7 +594,7 @@ export const V1_buildPersistence = (
   protocol: V1_Persistence,
   context: V1_GraphBuilderContext,
 ): void => {
-  const path = context.graph.buildPath(protocol.package, protocol.name);
+  const path = V1_buildFullPath(protocol.package, protocol.name);
   const persistence = getPersistence(path, context.graph);
   persistence.documentation = guaranteeNonEmptyString(
     protocol.documentation,

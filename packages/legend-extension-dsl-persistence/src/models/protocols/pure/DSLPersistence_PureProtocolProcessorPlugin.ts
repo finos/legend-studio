@@ -15,7 +15,6 @@
  */
 
 import packageJson from '../../../../package.json';
-
 import { Persistence } from '../../metamodels/pure/model/packageableElements/persistence/DSLPersistence_Persistence';
 import { V1_Persistence } from './v1/model/packageableElements/persistence/V1_DSLPersistence_Persistence';
 import {
@@ -35,6 +34,7 @@ import {
   type V1_GraphBuilderContext,
   type V1_GraphTransformerContext,
   type V1_PackageableElement,
+  V1_buildFullPath,
 } from '@finos/legend-graph';
 import { assertType, type PlainObject } from '@finos/legend-shared';
 import { deserialize, serialize } from 'serializr';
@@ -61,7 +61,7 @@ export class DSLPersistence_PureProtocolProcessorPlugin extends PureProtocolProc
         ): PackageableElement => {
           assertType(elementProtocol, V1_Persistence);
           const element = new Persistence(elementProtocol.name);
-          const path = context.currentSubGraph.buildPath(
+          const path = V1_buildFullPath(
             elementProtocol.package,
             elementProtocol.name,
           );
