@@ -21,6 +21,9 @@
       "path": "../legend-extension-dsl-data-space"
     },
     {
+      "path": "../legend-extension-dsl-persistence"
+    },
+    {
       "path": "../legend-extension-external-store-service"
     }
   ]
