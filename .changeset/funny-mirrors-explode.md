@@ -5,4 +5,4 @@
 '@finos/legend-studio-app': minor
 ---
 
-Support persistence DSL in text mode in Studio
+Add Persistence DSL
