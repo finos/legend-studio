@@ -1901,6 +1901,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         data.origin = new V1_PureModelContextPointer(protocol);
         data.elements = [this.elementToProtocol<V1_Service>(service)];
         // SDLC info
+        // TODO: We may need to add `runtime` pointers if the runtime defned in the service is a packageable runtime
+        // and not embedded.
         const execution = service.execution;
         if (execution instanceof PureSingleExecution) {
           sdlcInfo.packageableElementPointers = [
@@ -1909,6 +1911,15 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
               execution.mapping.value.path,
             ),
           ];
+        } else if (execution instanceof PureMultiExecution) {
+          sdlcInfo.packageableElementPointers =
+            execution.executionParameters.map(
+              (e) =>
+                new V1_PackageableElementPointer(
+                  V1_PackageableElementPointerType.MAPPING,
+                  e.mapping.value.path,
+                ),
+            );
         } else {
           throw new UnsupportedOperationError(
             `Can't register service with the specified execution`,
