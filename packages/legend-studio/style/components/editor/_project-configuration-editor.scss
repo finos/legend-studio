@@ -249,11 +249,8 @@
       font-size: 1rem;
       margin-right: 1rem;
       cursor: default;
-
-      &--production {
-        color: var(--color-light-grey-100);
-        background: var(--color-magenta-100);
-      }
+      color: var(--color-light-grey-100);
+      background: var(--color-magenta-100);
     }
 
     &__name {

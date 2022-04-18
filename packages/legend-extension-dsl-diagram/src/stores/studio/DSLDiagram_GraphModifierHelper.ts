@@ -31,15 +31,21 @@ import type { RelationshipView } from '../../models/metamodels/pure/packageableE
 import type { Point } from '../../models/metamodels/pure/packageableElements/diagram/geometry/DSLDiagram_Point';
 import type { PositionedRectangle } from '../../models/metamodels/pure/packageableElements/diagram/geometry/DSLDiagram_PositionedRectangle';
 import type { Rectangle } from '../../models/metamodels/pure/packageableElements/diagram/geometry/DSLDiagram_Rectangle';
+import {
+  observe_AssociationView,
+  observe_ClassView,
+  observe_GeneralizationView,
+  observe_PropertyView,
+} from '../../graphManager/action/changeDetection/DSLDiagram_ObserverHelper';
 
 export const diagram_setClassViews = action(
   (diagram: Diagram, val: ClassView[]): void => {
-    diagram.classViews = val;
+    diagram.classViews = val.map(observe_ClassView);
   },
 );
 export const diagram_addClassView = action(
   (diagram: Diagram, val: ClassView): void => {
-    addUniqueEntry(diagram.classViews, val);
+    addUniqueEntry(diagram.classViews, observe_ClassView(val));
   },
 );
 export const diagram_deleteClassView = action(
@@ -49,7 +55,7 @@ export const diagram_deleteClassView = action(
 );
 export const diagram_setAssociationViews = action(
   (diagram: Diagram, val: AssociationView[]): void => {
-    diagram.associationViews = val;
+    diagram.associationViews = val.map(observe_AssociationView);
   },
 );
 export const diagram_deleteAssociationView = action(
@@ -59,12 +65,15 @@ export const diagram_deleteAssociationView = action(
 );
 export const diagram_setGeneralizationViews = action(
   (diagram: Diagram, val: GeneralizationView[]): void => {
-    diagram.generalizationViews = val;
+    diagram.generalizationViews = val.map(observe_GeneralizationView);
   },
 );
 export const diagram_addGeneralizationView = action(
   (diagram: Diagram, val: GeneralizationView): void => {
-    addUniqueEntry(diagram.generalizationViews, val);
+    addUniqueEntry(
+      diagram.generalizationViews,
+      observe_GeneralizationView(val),
+    );
   },
 );
 export const diagram_deleteGeneralizationView = action(
@@ -74,12 +83,12 @@ export const diagram_deleteGeneralizationView = action(
 );
 export const diagram_setPropertyViews = action(
   (diagram: Diagram, val: PropertyView[]): void => {
-    diagram.propertyViews = val;
+    diagram.propertyViews = val.map(observe_PropertyView);
   },
 );
 export const diagram_addPropertyView = action(
   (diagram: Diagram, val: PropertyView): void => {
-    addUniqueEntry(diagram.propertyViews, val);
+    addUniqueEntry(diagram.propertyViews, observe_PropertyView(val));
   },
 );
 export const diagram_deletePropertyView = action(
@@ -114,6 +123,7 @@ export const relationshipEdgeView_setOffsetY = action(
   },
 );
 
+// To optimize performance we will not observe point (path)
 export const relationshipView_changePoint = action(
   (v: RelationshipView, val: Point, newVal: Point): void => {
     changeEntry(v.path, val, newVal);
@@ -126,11 +136,14 @@ export const relationshipView_simplifyPath = action(
 export const findOrBuildPoint = action(_findOrBuildPoint);
 export const relationshipView_setPath = action(_relationshipView_setPath);
 
+// To optimize performance we will not observe rectangle
 export const positionedRectangle_setRectangle = action(
   (pR: PositionedRectangle, value: Rectangle): void => {
     pR.rectangle = value;
   },
 );
+
+// To optimize performance we will not observe point (path)
 export const positionedRectangle_setPosition = action(
   (pR: PositionedRectangle, value: Point): void => {
     pR.position = value;
@@ -140,6 +153,9 @@ export const positionedRectangle_setPosition = action(
  * NOTE: Having `position` and `rectangle` as observables compromises the performance of diagram
  * so we want to have a way to refresh the hash for change detection to pick up new hash when we resize
  * the class view box or move it.
+ *
+ * We should re-consider the usefulness of this method, maybe it's more worthwhile to recompute hash
+ * for the whole diagram instead?
  */
 export const positionedRectangle_forceRefreshHash = action(
   (pR: PositionedRectangle): void => {

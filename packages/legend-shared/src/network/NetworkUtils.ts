@@ -163,7 +163,7 @@ export class NetworkClientError extends Error {
     const summary = `Received response with status ${status} (${statusText}) for ${url}`;
     this.message =
       (payload
-        ? extractMessage(payload).substr(0, MAX_ERROR_MESSAGE_LENGTH)
+        ? extractMessage(payload).substring(0, MAX_ERROR_MESSAGE_LENGTH)
         : '') || summary;
     this.payload = payload;
   }
@@ -501,9 +501,10 @@ export const createUrlStringFromData = (
   base64: boolean,
 ): string =>
   base64
-    ? `data:${contentType};base64,${btoa(data)}`
+    ? `data:${contentType};base64,${window.btoa(data)}`
     : `data:${contentType},${encodeURIComponent(data)}`;
 
+// Buffer.from(str, 'base64')` and`buf.toString('base64')
 // NOTE: we can potentially use the native `URLSearchParams` as it provides
 // fairly good API and structured output, but it does not support duplicated query
 // such as `?foo=1&foo=2`, only the first value of `foo` will be recorded

@@ -92,7 +92,8 @@ export class PureSingleExecution extends PureExecution implements Hashable {
 }
 
 export class KeyedExecutionParameter implements Hashable {
-  uuid = uuid();
+  readonly uuid = uuid();
+
   key: string;
   mapping: PackageableElementReference<Mapping>;
   runtime: Runtime;

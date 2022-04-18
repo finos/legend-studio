@@ -1,5 +1,13 @@
 # @finos/legend-studio-extension-query-builder
 
+## 0.2.30
+
+## 0.2.29
+
+## 0.2.28
+
+## 0.2.27
+
 ## 0.2.26
 
 ## 0.2.25

@@ -249,6 +249,7 @@ export class MappingTestObjectInputDataState extends MappingTestInputDataState {
         runtime.generateIdentifiedConnectionId(),
         connection,
       ),
+      this.editorStore.changeDetectionState.observerContext,
     );
     return runtime;
   }
@@ -281,6 +282,7 @@ export class MappingTestFlatDataInputDataState extends MappingTestInputDataState
         runtime.generateIdentifiedConnectionId(),
         connection,
       ),
+      this.editorStore.changeDetectionState.observerContext,
     );
     return runtime;
   }
@@ -325,6 +327,7 @@ export class MappingTestRelationalInputDataState extends MappingTestInputDataSta
         runtime.generateIdentifiedConnectionId(),
         connection,
       ),
+      this.editorStore.changeDetectionState.observerContext,
     );
     return runtime;
   }
@@ -727,7 +730,11 @@ export class MappingTestState {
   }
 
   updateAssertion(): void {
-    mappingTest_setAssert(this.test, this.assertionState.assert);
+    mappingTest_setAssert(
+      this.test,
+      this.assertionState.assert,
+      this.editorStore.changeDetectionState.observerContext,
+    );
   }
 
   *generatePlan(debug: boolean): GeneratorFn<void> {

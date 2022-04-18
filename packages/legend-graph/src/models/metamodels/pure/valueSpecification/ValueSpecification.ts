@@ -55,7 +55,7 @@ export interface ValueSpecificationVisitor<T> {
   visit_RuntimeInstanceValue(valueSpecification: RuntimeInstanceValue): T;
   visit_PairInstanceValue(valueSpecification: PairInstanceValue): T;
   visit_MappingInstanceValue(valueSpecification: MappingInstanceValue): T;
-  visit_PureListInsanceValue(valueSpecification: PureListInstanceValue): T;
+  visit_PureListInstanceValue(valueSpecification: PureListInstanceValue): T;
   visit_CollectionInstanceValue(valueSpecification: CollectionInstanceValue): T;
   visit_FunctionExpression(valueSpecification: FunctionExpression): T;
   visit_SimpleFunctionExpression(
@@ -85,10 +85,6 @@ export abstract class ValueSpecification {
   ) {
     this.multiplicity = multiplicity;
     this.genericType = genericTypeReference;
-  }
-
-  setMultiplicity(val: Multiplicity): void {
-    this.multiplicity = val;
   }
 
   abstract accept_ValueSpecificationVisitor<T>(

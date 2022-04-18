@@ -37,7 +37,6 @@ import {
   type WorkspaceType,
   Workflow,
   Project,
-  ProjectType,
   Revision,
   RevisionAlias,
   Version,
@@ -74,10 +73,6 @@ export class EditorSDLCState {
     });
 
     this.editorStore = editorStore;
-  }
-
-  get isCurrentProjectInProduction(): boolean {
-    return this.currentProject?.projectType === ProjectType.PRODUCTION;
   }
 
   get activeProject(): Project {
@@ -193,7 +188,7 @@ export class EditorSDLCState {
         (yield this.editorStore.sdlcServerClient.getVersions(
           this.activeProject.projectId,
         )) as PlainObject<Version>[]
-      ).map((version) => Version.serialization.fromJson(version));
+      ).map(Version.serialization.fromJson);
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
@@ -435,7 +430,7 @@ export class EditorSDLCState {
           this.activeWorkspace,
           RevisionAlias.CURRENT,
         )) as PlainObject<Workflow>[]
-      ).map((workflow) => Workflow.serialization.fromJson(workflow));
+      ).map(Workflow.serialization.fromJson);
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(

@@ -26,7 +26,6 @@ import {
 import {
   type AbstractProperty,
   type Enum,
-  type PureModel,
   type ValueSpecification,
   TYPICAL_MULTIPLICITY_TYPE,
   CollectionInstanceValue,
@@ -42,10 +41,12 @@ import {
   SimpleFunctionExpression,
   matchFunctionName,
   TYPE_CAST_TOKEN,
+  observe_AbstractPropertyExpression,
 } from '@finos/legend-graph';
 import { generateDefaultValueForPrimitiveType } from './QueryBuilderValueSpecificationBuilderHelper';
 import type { QueryBuilderState } from './QueryBuilderState';
 import { SUPPORTED_FUNCTIONS } from '../QueryBuilder_Const';
+import { functionExpression_setParametersValues } from './QueryBuilderValueSpecificationModifierHelper';
 
 export const prettyPropertyName = (value: string): string =>
   isCamelCase(value) ? prettyCamelCase(value) : prettyCONSTName(value);
@@ -116,7 +117,7 @@ export const getPropertyPath = (
 
 const fillDerivedPropertyArguments = (
   derivedPropertyExpressionState: QueryBuilderDerivedPropertyExpressionState,
-  graph: PureModel,
+  queryBuilderState: QueryBuilderState,
 ): void => {
   const propertyArguments: ValueSpecification[] =
     derivedPropertyExpressionState.parameterValues;
@@ -170,25 +171,31 @@ const fillDerivedPropertyArguments = (
     propertyArguments.push(
       argument ??
         new CollectionInstanceValue(
-          graph.getTypicalMultiplicity(TYPICAL_MULTIPLICITY_TYPE.ZERO),
+          queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
+            TYPICAL_MULTIPLICITY_TYPE.ZERO,
+          ),
         ),
     );
   });
-  derivedPropertyExpressionState.propertyExpression.setParametersValues([
-    guaranteeNonNullable(
-      derivedPropertyExpressionState.propertyExpression.parametersValues[0],
-    ),
-    ...propertyArguments,
-  ]);
+  functionExpression_setParametersValues(
+    derivedPropertyExpressionState.propertyExpression,
+    [
+      guaranteeNonNullable(
+        derivedPropertyExpressionState.propertyExpression.parametersValues[0],
+      ),
+      ...propertyArguments,
+    ],
+    queryBuilderState.observableContext,
+  );
 };
 
 export class QueryBuilderDerivedPropertyExpressionState {
   queryBuilderState: QueryBuilderState;
   path: string;
   title: string;
-  propertyExpression: AbstractPropertyExpression;
-  derivedProperty: DerivedProperty;
-  parameters: VariableExpression[] = [];
+  readonly derivedProperty: DerivedProperty;
+  readonly propertyExpression!: AbstractPropertyExpression;
+  readonly parameters: VariableExpression[] = [];
 
   constructor(
     queryBuilderState: QueryBuilderState,
@@ -196,7 +203,10 @@ export class QueryBuilderDerivedPropertyExpressionState {
   ) {
     this.path = getPropertyPath(propertyExpression);
     this.title = getPropertyChainName(propertyExpression, true);
-    this.propertyExpression = propertyExpression;
+    this.propertyExpression = observe_AbstractPropertyExpression(
+      propertyExpression,
+      queryBuilderState.observableContext,
+    );
     this.queryBuilderState = queryBuilderState;
     this.derivedProperty = guaranteeType(
       propertyExpression.func,
@@ -214,10 +224,7 @@ export class QueryBuilderDerivedPropertyExpressionState {
         ),
       );
     }
-    fillDerivedPropertyArguments(
-      this,
-      queryBuilderState.graphManagerState.graph,
-    );
+    fillDerivedPropertyArguments(this, queryBuilderState);
   }
 
   get property(): AbstractProperty {
@@ -254,7 +261,7 @@ export class QueryBuilderPropertyExpressionState {
   queryBuilderState: QueryBuilderState;
   path: string;
   title: string;
-  propertyExpression: AbstractPropertyExpression;
+  readonly propertyExpression: AbstractPropertyExpression;
 
   isEditingDerivedPropertyExpression = false;
   // Since this property is a chain expression, some link of the chain can be
@@ -284,7 +291,10 @@ export class QueryBuilderPropertyExpressionState {
     });
 
     this.queryBuilderState = queryBuilderState;
-    this.propertyExpression = propertyExpression;
+    this.propertyExpression = observe_AbstractPropertyExpression(
+      propertyExpression,
+      queryBuilderState.observableContext,
+    );
     this.path = getPropertyPath(propertyExpression);
     this.title = getPropertyChainName(propertyExpression, true);
     this.initDerivedPropertyExpressionStates();

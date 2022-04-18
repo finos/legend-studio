@@ -156,10 +156,6 @@ export abstract class OptionalPackageableElementReference<
     this.value = value;
   }
 
-  setValue(value: T | undefined): void {
-    this.value = value;
-  }
-
   abstract get valueForSerialization(): string | undefined;
 }
 

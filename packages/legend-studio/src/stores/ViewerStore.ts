@@ -108,24 +108,10 @@ export class ViewerStore {
       if (projectId) {
         this.editorStore.applicationStore.navigator.goTo(
           versionId
-            ? generateViewVersionRoute(
-                this.editorStore.applicationStore.config
-                  .currentSDLCServerOption,
-                projectId,
-                versionId,
-              )
+            ? generateViewVersionRoute(projectId, versionId)
             : revisionId
-            ? generateViewRevisionRoute(
-                this.editorStore.applicationStore.config
-                  .currentSDLCServerOption,
-                projectId,
-                revisionId,
-              )
-            : generateViewProjectRoute(
-                this.editorStore.applicationStore.config
-                  .currentSDLCServerOption,
-                projectId,
-              ),
+            ? generateViewRevisionRoute(projectId, revisionId)
+            : generateViewProjectRoute(projectId),
         );
       } else if (gav) {
         const {
@@ -315,9 +301,8 @@ export class ViewerStore {
     // build dependencies
     const dependencyManager =
       this.editorStore.graphManagerState.createEmptyDependencyManager();
-    this.editorStore.graphManagerState.graph.setDependencyManager(
-      dependencyManager,
-    );
+    this.editorStore.graphManagerState.graph.dependencyManager =
+      dependencyManager;
     const dependency_buildReport =
       (yield this.editorStore.graphManagerState.graphManager.buildDependencies(
         this.editorStore.graphManagerState.coreModel,
@@ -444,7 +429,7 @@ export class ViewerStore {
           false,
         )) as PlainObject<ProjectVersionEntities>[])
     )
-      .map((e) => ProjectVersionEntities.serialization.fromJson(e))
+      .map(ProjectVersionEntities.serialization.fromJson)
       .forEach((dependencyInfo) => {
         dependencyEntitiesMap.set(dependencyInfo.id, dependencyInfo.entities);
       });
@@ -458,9 +443,8 @@ export class ViewerStore {
 
     const dependencyManager =
       this.editorStore.graphManagerState.createEmptyDependencyManager();
-    this.editorStore.graphManagerState.graph.setDependencyManager(
-      dependencyManager,
-    );
+    this.editorStore.graphManagerState.graph.dependencyManager =
+      dependencyManager;
 
     // build dependencies
     const dependency_buildReport =

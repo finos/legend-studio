@@ -296,6 +296,7 @@ export class RootRelationalInstanceSetImplementationState extends RelationalInst
     mapping_setPropertyMappings(
       this.mappingElement,
       propertyMappingsBeforeDecoration,
+      this.editorStore.changeDetectionState.observerContext,
     );
     propertyMappingstatesAfterDecoration.forEach((propertyMappingState) => {
       const existingPropertyMappingState = this.propertyMappingStates.find(

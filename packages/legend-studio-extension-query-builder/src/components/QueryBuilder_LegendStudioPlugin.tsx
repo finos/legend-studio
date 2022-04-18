@@ -93,12 +93,16 @@ const promoteQueryToService = async (
         PackageableElementExplicitReference.create(mapping),
         runtime,
       ),
+      editorStore.changeDetectionState.observerContext,
     );
     const servicePackage =
       editorStore.graphManagerState.graph.getOrCreatePackage(packageName);
-    package_addElement(servicePackage, service);
-    editorStore.graphManagerState.graph.addElement(service);
-    editorStore.openElement(service);
+    package_addElement(
+      servicePackage,
+      service,
+      editorStore.changeDetectionState.observerContext,
+    );
+    await flowResult(editorStore.addElement(service, true));
     await flowResult(
       queryBuilderExtension.setEmbeddedQueryBuilderMode(undefined),
     ).catch(applicationStore.alertUnhandledError);

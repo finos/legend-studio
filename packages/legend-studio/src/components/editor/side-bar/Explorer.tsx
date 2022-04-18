@@ -220,11 +220,7 @@ const ExplorerContextMenu = observer(
       if (node && projectId) {
         applicationStore.navigator.openNewWindow(
           applicationStore.navigator.generateLocation(
-            generateViewEntityRoute(
-              applicationStore.config.currentSDLCServerOption,
-              projectId,
-              node.packageableElement.path,
-            ),
+            generateViewEntityRoute(projectId, node.packageableElement.path),
           ),
         );
       }

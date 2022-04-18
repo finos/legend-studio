@@ -45,6 +45,8 @@ import {
   TimesCircleIcon,
   CircleNotchIcon,
   InfoCircleIcon,
+  MenuContentItem,
+  MenuContent,
 } from '@finos/legend-art';
 import {
   type TestContainerState,
@@ -77,24 +79,16 @@ const TestContainerContextMenu = observer(
     const remove = (): void => deleteTestContainer?.();
 
     return (
-      <div ref={ref} className="flat-data-editor__explorer__context-menu">
+      <MenuContent ref={ref}>
         {testContainer && (
-          <div
-            className="flat-data-editor__explorer__context-menu__item"
-            onClick={remove}
-          >
-            Delete
-          </div>
+          <MenuContentItem onClick={remove}>Delete</MenuContentItem>
         )}
         {!testContainer && (
-          <div
-            className="flat-data-editor__explorer__context-menu__item"
-            onClick={createTestContainer}
-          >
+          <MenuContentItem onClick={createTestContainer}>
             Create a new assert
-          </div>
+          </MenuContentItem>
         )}
-      </div>
+      </MenuContent>
     );
   }),
 );
@@ -505,11 +499,10 @@ export const ServiceTestEditorEditPanel = observer(
                     )}
                     {!expectedResult && (
                       <div className="panel__content">
-                        {' '}
                         <UnsupportedEditorPanel
                           text={`Can't display assertion in form-mode`}
                           isReadOnly={isReadOnly}
-                        />{' '}
+                        />
                       </div>
                     )}
                   </div>

@@ -35,7 +35,7 @@ export const LegendTaxonomyStoreProvider: React.FC<{
 }> = ({ children, pluginManager }) => {
   const applicationStore = useApplicationStore<LegendTaxonomyConfig>();
   const taxonomyServerClient = new TaxonomyServerClient(
-    applicationStore.config.currentTaxonomyServerOption.url,
+    applicationStore.config.currentTaxonomyTreeOption.url,
   );
   const depotServerClient = useDepotServerClient();
   const graphManagerState = useGraphManagerState();

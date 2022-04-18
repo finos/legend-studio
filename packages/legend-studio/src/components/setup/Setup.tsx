@@ -23,457 +23,31 @@ import {
   clsx,
   Dialog,
   SquareIcon,
-  TimesIcon,
   compareLabelFn,
   CustomSelectorInput,
   PanelLoadingIndicator,
   CheckSquareIcon,
-  PencilIcon,
+  MarkdownTextViewer,
 } from '@finos/legend-art';
 import type { ProjectOption } from '../../stores/SetupStore';
 import { SetupStoreProvider, useSetupStore } from './SetupStoreProvider';
 import { useParams } from 'react-router';
 import { LEGEND_STUDIO_TEST_ID } from '../LegendStudioTestID';
-import { isNumber } from '@finos/legend-shared';
 import {
   type SetupPathParams,
   generateEditorRoute,
 } from '../../stores/LegendStudioRouter';
 import { LegendStudioAppHeaderMenu } from '../editor/header/LegendStudioAppHeaderMenu';
 import { flowResult } from 'mobx';
-import { ProjectType, WorkspaceType } from '@finos/legend-server-sdlc';
+import { WorkspaceType } from '@finos/legend-server-sdlc';
 import {
   useApplicationStore,
   AppHeader,
   DocumentationLink,
 } from '@finos/legend-application';
 import type { LegendStudioConfig } from '../../application/LegendStudioConfig';
-import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../stores/LegendStudioDocumentationKey';
-
-const CreateProjectModal = observer(() => {
-  const setupStore = useSetupStore();
-  const applicationStore = useApplicationStore<LegendStudioConfig>();
-  const importProjectSuccessReport = setupStore.importProjectSuccessReport;
-  const projectNameInputRef = useRef<HTMLInputElement>(null);
-  const defaultType = applicationStore.config.options
-    .TEMPORARY__useSDLCProductionProjectsOnly
-    ? ProjectType.PRODUCTION
-    : ProjectType.PROTOTYPE;
-  const [projectType, setProjectType] = useState<ProjectType>(defaultType);
-  const currentOption = { label: projectType, value: projectType };
-  const onSelectionChange = (
-    val: { label: ProjectType; value: ProjectType } | null,
-  ): void => {
-    if (val?.value) {
-      setProjectType(val.value);
-    }
-  };
-  const options = Object.values(ProjectType).map((option) => ({
-    value: option,
-    label: option,
-  }));
-  const [projectIdentifier, setProjectIdentifier] = useState('');
-  const [groupId, setGroupId] = useState('');
-  const [artifactId, setArtifactId] = useState('');
-  const [description, setDescription] = useState('');
-  const [itemValue, setItemValue] = useState<string>('');
-  const [tagsArray, setTagsArray] = useState<Array<string>>([]);
-  const dispatchingActions =
-    setupStore.createOrImportProjectState.isInProgress ||
-    setupStore.createWorkspaceState.isInProgress;
-  const closeModal = (): void => {
-    setupStore.setShowCreateProjectModal(false);
-    setupStore.setImportProjectSuccessReport(undefined);
-  };
-  const createProject = applicationStore.guardUnhandledError(() =>
-    flowResult(
-      setupStore.createProject(
-        projectIdentifier,
-        description,
-        groupId,
-        artifactId,
-        tagsArray,
-      ),
-    ),
-  );
-  const importProject = applicationStore.guardUnhandledError(() =>
-    flowResult(
-      setupStore.importProject(projectIdentifier, groupId, artifactId),
-    ),
-  );
-  const handleSubmit = (
-    event: React.FormEvent<HTMLFormElement | HTMLButtonElement>,
-  ): void => {
-    event.preventDefault();
-    if (importProjectSuccessReport) {
-      applicationStore.navigator.openNewWindow(
-        importProjectSuccessReport.reviewUrl,
-      );
-    } else {
-      if (projectIdentifier && groupId && artifactId) {
-        if (projectType === ProjectType.PROTOTYPE) {
-          createProject();
-        } else {
-          importProject();
-        }
-      }
-    }
-  };
-  const handleEnter = (): void => {
-    setProjectIdentifier('');
-    projectNameInputRef.current?.focus();
-  };
-  const modalTitle =
-    projectType === ProjectType.PROTOTYPE ? 'Create Project' : 'Import Project';
-  const changeDescription: React.ChangeEventHandler<HTMLTextAreaElement> = (
-    event,
-  ) => {
-    setDescription(event.target.value);
-  };
-  const changeGroupId: React.ChangeEventHandler<HTMLInputElement> = (event) => {
-    setGroupId(event.target.value);
-  };
-  const changeProjectIdentifier: React.ChangeEventHandler<HTMLInputElement> = (
-    event,
-  ) => setProjectIdentifier(event.target.value);
-  const changeArtifactId: React.ChangeEventHandler<HTMLInputElement> = (
-    event,
-  ) => {
-    setArtifactId(event.target.value);
-  };
-  const disableSubmit =
-    (dispatchingActions || !projectIdentifier || !artifactId || !groupId) &&
-    !importProjectSuccessReport;
-  const submitLabel = importProjectSuccessReport
-    ? 'Review'
-    : projectType === ProjectType.PROTOTYPE
-    ? 'Create'
-    : 'Import';
-
-  // NOTE: `showEditInput` is either boolean (to hide/show the add value button) or a number (index of the item being edited)
-  const [showEditInput, setShowEditInput] = useState<boolean | number>(false);
-  const showAddItemInput = (): void => setShowEditInput(true);
-  const showEditItemInput =
-    (value: string, idx: number): (() => void) =>
-    (): void => {
-      setItemValue(value);
-      setShowEditInput(idx);
-    };
-  const hideAddOrEditItemInput = (): void => {
-    setShowEditInput(false);
-    setItemValue('');
-  };
-  const changeItemInputValue: React.ChangeEventHandler<HTMLInputElement> = (
-    event,
-  ) => setItemValue(event.target.value);
-  const addValue = (): void => {
-    if (itemValue && !tagsArray.includes(itemValue)) {
-      setTagsArray([...tagsArray, itemValue]);
-    }
-    hideAddOrEditItemInput();
-  };
-  const updateValue =
-    (idx: number): (() => void) =>
-    (): void => {
-      if (itemValue && !tagsArray.includes(itemValue)) {
-        tagsArray[idx] = itemValue;
-        setTagsArray(tagsArray);
-        hideAddOrEditItemInput();
-      }
-    };
-  const deleteValue =
-    (idx: number): (() => void) =>
-    (): void => {
-      const tags = [...tagsArray];
-      tags.splice(idx, 1);
-      setTagsArray(tags);
-      // Since we keep track of the value currently being edited using the index, we have to account for it as we delete entry
-      if (isNumber(showEditInput) && showEditInput > idx) {
-        setShowEditInput(showEditInput - 1);
-      }
-    };
-
-  return (
-    <Dialog
-      open={setupStore.showCreateProjectModal}
-      onClose={closeModal}
-      TransitionProps={{
-        onEnter: handleEnter,
-      }}
-      classes={{ container: 'search-modal__container' }}
-      PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
-    >
-      <div className="modal modal--dark setup-create__modal">
-        <div className="setup-create__modal__heading">
-          <div className="setup-create__modal__heading__label">
-            {modalTitle}
-            <DocumentationLink
-              className="setup__doc__create-project"
-              documentationKey={LEGEND_STUDIO_DOCUMENTATION_KEY.CREATE_PROJECT}
-            />
-          </div>
-        </div>
-        <form onSubmit={handleSubmit}>
-          <PanelLoadingIndicator
-            isLoading={setupStore.createOrImportProjectState.isInProgress}
-          />
-          <div className="setup-create__form">
-            <div className="panel__content__form">
-              <div className="panel__content__form__section">
-                <div className="panel__content__form__section__header__label setup-create__modal__project__type">
-                  Project Type
-                </div>
-                <div className="panel__content__form__section__header__prompt">
-                  Any project intended for use in production must be a
-                  production project. Prototype projects should only be used as
-                  playgrounds or proofs-of-concept.
-                </div>
-                {applicationStore.config.options
-                  .TEMPORARY__useSDLCProductionProjectsOnly ||
-                Boolean(importProjectSuccessReport) ? (
-                  <input
-                    className="panel__content__form__section__input"
-                    spellCheck={false}
-                    value={projectType}
-                    disabled={true}
-                    onChange={changeProjectIdentifier}
-                  />
-                ) : (
-                  <CustomSelectorInput
-                    options={options}
-                    onChange={onSelectionChange}
-                    value={currentOption}
-                    darkMode={true}
-                  />
-                )}
-              </div>
-            </div>
-            <div className="panel__content__form">
-              <div className="panel__content__form__section">
-                <div className="panel__content__form__section__header__label">
-                  {projectType === ProjectType.PROTOTYPE
-                    ? 'Project Name'
-                    : 'Import Project ID'}
-                </div>
-                {projectType === ProjectType.PRODUCTION && (
-                  <div className="panel__content__form__section__header__prompt">
-                    The ID of the project in the underlying version-control
-                    system
-                  </div>
-                )}
-                <input
-                  className="panel__content__form__section__input"
-                  spellCheck={false}
-                  placeholder={
-                    projectType === ProjectType.PROTOTYPE ? 'MyProject' : '1234'
-                  }
-                  value={projectIdentifier}
-                  disabled={Boolean(importProjectSuccessReport)}
-                  onChange={changeProjectIdentifier}
-                />
-              </div>
-            </div>
-            <div className="panel__content__form">
-              <div className="panel__content__form__section">
-                <div className="panel__content__form__section__header__label">
-                  Description
-                </div>
-                <textarea
-                  className="panel__content__form__section__textarea"
-                  spellCheck={false}
-                  value={description}
-                  onChange={changeDescription}
-                />
-              </div>
-            </div>
-            <div className="panel__content__form">
-              <div className="panel__content__form__section">
-                <div className="panel__content__form__section__header__label">
-                  Group ID
-                </div>
-                <div className="panel__content__form__section__header__prompt">
-                  The domain for artifacts generated as part of the project
-                  build pipeline and published to an artifact repository
-                </div>
-                <input
-                  className="panel__content__form__section__input"
-                  spellCheck={false}
-                  placeholder="org.finos.legend.*"
-                  value={groupId}
-                  disabled={Boolean(importProjectSuccessReport)}
-                  onChange={changeGroupId}
-                />
-              </div>
-            </div>
-            <div className="panel__content__form">
-              <div className="panel__content__form__section">
-                <div className="panel__content__form__section__header__label">
-                  Artifact ID
-                </div>
-                <div className="panel__content__form__section__header__prompt">
-                  The identifier (within the domain specified by group ID) for
-                  artifacts generated as part of the project build pipeline and
-                  published to an artifact repository
-                </div>
-                <input
-                  className="panel__content__form__section__input"
-                  placeholder="my-project"
-                  spellCheck={false}
-                  value={artifactId}
-                  disabled={Boolean(importProjectSuccessReport)}
-                  onChange={changeArtifactId}
-                />
-              </div>
-            </div>
-            <div className="panel__content__form">
-              <div className="panel__content__form__section">
-                <div className="panel__content__form__section__header__label">
-                  Tags
-                </div>
-                <div className="panel__content__form__section__header__prompt">
-                  List of annotations to categorize projects
-                </div>
-                <div className="panel__content__form__section__list"></div>
-                <div
-                  className="panel__content__form__section__list__items"
-                  data-testid={
-                    LEGEND_STUDIO_TEST_ID.PANEL_CONTENT_FORM_SECTION_LIST_ITEMS
-                  }
-                >
-                  {tagsArray.map((value, idx) => (
-                    // NOTE: since the value must be unique, we will use it as the key
-                    <div
-                      key={value}
-                      className={
-                        showEditInput === idx
-                          ? 'panel__content__form__section__list__new-item'
-                          : 'panel__content__form__section__list__item'
-                      }
-                    >
-                      {showEditInput === idx ? (
-                        <>
-                          <input
-                            className="panel__content__form__section__input panel__content__form__section__list__new-item__input"
-                            spellCheck={false}
-                            value={itemValue}
-                            onChange={changeItemInputValue}
-                          />
-                          <div className="panel__content__form__section__list__new-item__actions">
-                            <button
-                              className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
-                              disabled={tagsArray.includes(itemValue)}
-                              onClick={updateValue(idx)}
-                              tabIndex={-1}
-                            >
-                              Save
-                            </button>
-                            <button
-                              className="panel__content__form__section__list__new-item__cancel-btn btn btn--dark"
-                              onClick={hideAddOrEditItemInput}
-                              tabIndex={-1}
-                            >
-                              Cancel
-                            </button>
-                          </div>
-                        </>
-                      ) : (
-                        <>
-                          <div className="panel__content__form__section__list__item__value">
-                            {value}
-                          </div>
-                          <div className="panel__content__form__section__list__item__actions">
-                            <button
-                              className="panel__content__form__section__list__item__edit-btn"
-                              onClick={showEditItemInput(value, idx)}
-                              tabIndex={-1}
-                            >
-                              <PencilIcon />
-                            </button>
-                            <button
-                              className="panel__content__form__section__list__item__remove-btn"
-                              onClick={deleteValue(idx)}
-                              tabIndex={-1}
-                            >
-                              <TimesIcon />
-                            </button>
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  ))}
-                  {/* ADD NEW VALUE */}
-                  {showEditInput === true && (
-                    <div className="panel__content__form__section__list__new-item">
-                      <input
-                        className="panel__content__form__section__input panel__content__form__section__list__new-item__input"
-                        spellCheck={false}
-                        value={itemValue}
-                        onChange={changeItemInputValue}
-                      />
-                      <div className="panel__content__form__section__list__new-item__actions">
-                        <button
-                          className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
-                          disabled={tagsArray.includes(itemValue)}
-                          onClick={addValue}
-                          tabIndex={-1}
-                        >
-                          Save
-                        </button>
-                        <button
-                          className="panel__content__form__section__list__new-item__cancel-btn btn btn--dark"
-                          onClick={hideAddOrEditItemInput}
-                          tabIndex={-1}
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-                {showEditInput !== true && (
-                  <div className="panel__content__form__section__list__new-item__add">
-                    <button
-                      className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
-                      onClick={showAddItemInput}
-                      tabIndex={-1}
-                    >
-                      Add Value
-                    </button>
-                  </div>
-                )}
-              </div>
-              {Boolean(importProjectSuccessReport) && (
-                <div className="setup-create__modal__success">
-                  <div className="setup-create__modal__success__label">
-                    <span className="setup-create__modal__success__label__text">
-                      The SDLC server has successfully registered your project.
-                      To complete the import, please commit the following
-                    </span>
-                    <a
-                      className="setup-create__modal__success__label__link"
-                      href={importProjectSuccessReport?.reviewUrl}
-                      rel="noopener noreferrer"
-                      target="_blank"
-                    >
-                      review.
-                    </a>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-          <button
-            disabled={disableSubmit}
-            className="btn btn--dark setup-create__modal__submit-btn u-pull-right"
-            onClick={handleSubmit}
-          >
-            {submitLabel}
-          </button>
-        </form>
-      </div>
-    </Dialog>
-  );
-});
+import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../stores/LegendStudioDocumentation';
+import { CreateProjectModal } from './ProjectCreateModal';
 
 const CreateWorkspaceModal = observer(() => {
   const setupStore = useSetupStore();
@@ -563,11 +137,11 @@ const CreateWorkspaceModal = observer(() => {
       classes={{ container: 'search-modal__container' }}
       PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
     >
-      <div className="modal modal--dark setup-create__modal">
+      <div className="modal modal--dark setup__create-workspace-modal">
         <div className="modal__title">
           Create Workspace
           <DocumentationLink
-            className="setup__doc__create-workspace"
+            className="setup__create-workspace-modal__doc__create-workspace"
             documentationKey={LEGEND_STUDIO_DOCUMENTATION_KEY.CREATE_WORKSPACE}
           />
         </div>
@@ -575,7 +149,7 @@ const CreateWorkspaceModal = observer(() => {
           <PanelLoadingIndicator
             isLoading={setupStore.createWorkspaceState.isInProgress}
           />
-          <div className="setup-create__form setup-create__form__workspace">
+          <div className="panel__content__form setup__create-workspace-modal__form setup__create-workspace-modal__form__workspace">
             <div className="panel__content__form__section">
               <div className="panel__content__form__section__header__label">
                 Project Name
@@ -603,11 +177,11 @@ const CreateWorkspaceModal = observer(() => {
                 Workspace Name
               </div>
               <input
-                className="setup-create__form__workspace-name__input"
+                className="setup__create-workspace-modal__form__workspace-name__input"
                 ref={workspaceNameInputRef}
                 spellCheck={false}
                 disabled={dispatchingActions}
-                placeholder={'MyWorkspace'}
+                placeholder="MyWorkspace"
                 value={workspaceName}
                 onChange={changeWorkspaceName}
               />
@@ -638,12 +212,16 @@ const CreateWorkspaceModal = observer(() => {
               </div>
             </div>
           </div>
-          <button
-            disabled={dispatchingActions || !workspaceName || !currentProjectId}
-            className="btn btn--dark u-pull-right"
-          >
-            Create
-          </button>
+          <div className="panel__content__form__actions">
+            <button
+              disabled={
+                dispatchingActions || !workspaceName || !currentProjectId
+              }
+              className="btn btn--dark"
+            >
+              Create
+            </button>
+          </div>
         </form>
       </div>
     </Dialog>
@@ -653,10 +231,12 @@ const CreateWorkspaceModal = observer(() => {
 const SetupSelection = observer(() => {
   const setupStore = useSetupStore();
   const applicationStore = useApplicationStore<LegendStudioConfig>();
-  const config = applicationStore.config;
   const projectSelectorRef = useRef<SelectComponent>(null);
   const workspaceSelectorRef = useRef<SelectComponent>(null);
   const proceedButtonRef = useRef<HTMLButtonElement>(null);
+  const documentation = applicationStore.docRegistry.getEntry(
+    LEGEND_STUDIO_DOCUMENTATION_KEY.SETUP_WORKSPACE,
+  );
   const isCreatingWorkspace = setupStore.createWorkspaceState.isInProgress;
   const isCreatingOrImportingProject =
     setupStore.createOrImportProjectState.isInProgress;
@@ -686,7 +266,6 @@ const SetupSelection = observer(() => {
     ) {
       applicationStore.navigator.goTo(
         generateEditorRoute(
-          applicationStore.config.currentSDLCServerOption,
           setupStore.currentProjectId,
           setupStore.currentWorkspace.workspaceId,
           setupStore.currentWorkspace.workspaceType,
@@ -713,13 +292,20 @@ const SetupSelection = observer(() => {
             data-testid={LEGEND_STUDIO_TEST_ID.SETUP__CONTENT}
           >
             <div className="setup__title">
-              Setup Workspace
-              <DocumentationLink
-                className="setup__doc__setup-workspace"
-                documentationKey={
-                  LEGEND_STUDIO_DOCUMENTATION_KEY.SETUP_WORKSPACE
-                }
-              />
+              <div className="setup__title__header">
+                Setup Workspace
+                <DocumentationLink
+                  className="setup__doc__setup-workspace"
+                  documentationKey={
+                    LEGEND_STUDIO_DOCUMENTATION_KEY.SETUP_WORKSPACE
+                  }
+                />
+              </div>
+              {documentation?.markdownText && (
+                <div className="setup__title__documentation">
+                  <MarkdownTextViewer value={documentation.markdownText} />
+                </div>
+              )}
             </div>
             <div>
               <ProjectSelector
@@ -732,26 +318,17 @@ const SetupSelection = observer(() => {
                 onChange={onWorkspaceChange}
                 create={handleCreateWorkspaceModal}
               />
-              <button
-                ref={proceedButtonRef}
-                className="setup__next-btn btn--dark u-pull-right"
-                onClick={handleProceed}
-                disabled={disableProceedButton}
-              >
-                Edit Workspace
-              </button>
-            </div>
-            {config.options.TEMPORARY__useSDLCProductionProjectsOnly && (
-              <div className="setup__view-project-btn__error">
-                <div className="setup__view-project-btn__error__label">
-                  <span className="setup__view-project-btn__error__label__text">
-                    Prototype projects are temporary unavailable due to issues
-                    with UAT environment. Please create and use Production
-                    projects instead
-                  </span>
-                </div>
+              <div className="setup__actions">
+                <button
+                  ref={proceedButtonRef}
+                  className="setup__next-btn btn--dark"
+                  onClick={handleProceed}
+                  disabled={disableProceedButton}
+                >
+                  Edit Workspace
+                </button>
               </div>
-            )}
+            </div>
           </div>
           {/* We do this to reset the initial state of the modals */}
           {setupStore.showCreateProjectModal && <CreateProjectModal />}

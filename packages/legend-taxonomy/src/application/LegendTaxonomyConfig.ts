@@ -30,14 +30,14 @@ import {
 import { createModelSchema, optional, primitive } from 'serializr';
 import { action, computed, makeObservable, observable } from 'mobx';
 
-export class TaxonomyServerOption {
+export class TaxonomyTreeOption {
   label!: string;
   key!: string;
   url!: string;
   default?: boolean;
 
   static readonly serialization = new SerializationFactory(
-    createModelSchema(TaxonomyServerOption, {
+    createModelSchema(TaxonomyTreeOption, {
       default: optional(primitive()),
       label: primitive(),
       key: primitive(),
@@ -62,7 +62,7 @@ export interface LegendTaxonomyConfigurationData
   engine: { url: string; queryUrl?: string };
   query: { url: string };
   studio: { url: string };
-  taxonomy: PlainObject<TaxonomyServerOption>[];
+  taxonomy: PlainObject<TaxonomyTreeOption>[];
   extensions?: Record<PropertyKey, unknown>;
 }
 
@@ -74,8 +74,8 @@ export class LegendTaxonomyConfig extends LegendApplicationConfig {
   readonly studioUrl: string;
   readonly TEMPORARY__useLegacyDepotServerAPIRoutes?: boolean | undefined;
 
-  currentTaxonomyServerOption!: TaxonomyServerOption;
-  taxonomyServerOptions: TaxonomyServerOption[] = [];
+  currentTaxonomyTreeOption!: TaxonomyTreeOption;
+  taxonomyTreeOptions: TaxonomyTreeOption[] = [];
 
   constructor(
     configData: LegendTaxonomyConfigurationData,
@@ -85,9 +85,9 @@ export class LegendTaxonomyConfig extends LegendApplicationConfig {
     super(configData, versionData, baseUrl);
 
     makeObservable(this, {
-      currentTaxonomyServerOption: observable,
-      defaultTaxonomyServerOption: computed,
-      setCurrentTaxonomyServerOption: action,
+      currentTaxonomyTreeOption: observable,
+      defaultTaxonomyTreeOption: computed,
+      setCurrentTaxonomyTreeOption: action,
     });
 
     assertNonNullable(
@@ -96,7 +96,7 @@ export class LegendTaxonomyConfig extends LegendApplicationConfig {
     );
     if (Array.isArray(configData.taxonomy)) {
       const options = configData.taxonomy.map((optionData) =>
-        TaxonomyServerOption.serialization.fromJson(optionData),
+        TaxonomyTreeOption.serialization.fromJson(optionData),
       );
       if (options.length === 0) {
         throw new AssertionError(
@@ -122,13 +122,13 @@ export class LegendTaxonomyConfig extends LegendApplicationConfig {
           `Can't configure application: 'taxonomy' field consists of multiple default entries`,
         );
       }
-      this.taxonomyServerOptions = options;
+      this.taxonomyTreeOptions = options;
     } else {
       throw new AssertionError(
         `Can't configure application: 'taxonomy' field is not a list`,
       );
     }
-    this.currentTaxonomyServerOption = this.defaultTaxonomyServerOption;
+    this.currentTaxonomyTreeOption = this.defaultTaxonomyTreeOption;
 
     assertNonNullable(
       configData.engine,
@@ -160,14 +160,14 @@ export class LegendTaxonomyConfig extends LegendApplicationConfig {
       configData.depot.TEMPORARY__useLegacyDepotServerAPIRoutes;
   }
 
-  get defaultTaxonomyServerOption(): TaxonomyServerOption {
+  get defaultTaxonomyTreeOption(): TaxonomyTreeOption {
     return guaranteeNonNullable(
-      this.taxonomyServerOptions.find((option) => option.default),
-      `Can't find a default taxonomy server option`,
+      this.taxonomyTreeOptions.find((option) => option.default),
+      `Can't find a default taxonomy tree option`,
     );
   }
 
-  setCurrentTaxonomyServerOption(val: TaxonomyServerOption): void {
-    this.currentTaxonomyServerOption = val;
+  setCurrentTaxonomyTreeOption(val: TaxonomyTreeOption): void {
+    this.currentTaxonomyTreeOption = val;
   }
 }

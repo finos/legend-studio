@@ -21,7 +21,8 @@ import type { Stubable } from '../../../../../helpers/Stubable';
 import { type TagReference, TagExplicitReference } from './TagReference';
 
 export class TaggedValue implements Hashable, Stubable {
-  uuid = uuid();
+  readonly uuid = uuid();
+
   tag: TagReference;
   value: string;
 

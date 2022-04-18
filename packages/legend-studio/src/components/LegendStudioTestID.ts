@@ -49,7 +49,7 @@ export enum LEGEND_STUDIO_TEST_ID {
 
   NEW_ELEMENT_MODAL = 'new-element-modal', // TODO: revise
 
-  SERVICE_REGISTRATION_MODAL = 'service_registration_modal', // TODO: revise
+  SERVICE_REGISTRATION_EDITOR = 'service_registration_editor', // TODO: revise
 
   MAPPING_EXPLORER = 'mapping-explorer', // TODO: revise
   SOURCE_PANEL = 'source-panel', // TODO: revise

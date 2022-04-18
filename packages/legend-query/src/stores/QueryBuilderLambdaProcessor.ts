@@ -354,7 +354,7 @@ export class QueryBuilderLambdaProcessor
     throw new UnsupportedOperationError();
   }
 
-  visit_PureListInsanceValue(valueSpecification: PureListInstanceValue): void {
+  visit_PureListInstanceValue(valueSpecification: PureListInstanceValue): void {
     throw new UnsupportedOperationError();
   }
 
@@ -618,6 +618,7 @@ export class QueryBuilderLambdaProcessor
           SUPPORTED_FUNCTIONS.TDS_SORT,
           SUPPORTED_FUNCTIONS.TDS_PROJECT,
           SUPPORTED_FUNCTIONS.TDS_GROUP_BY,
+          SUPPORTED_FUNCTIONS.TDS_FILTER,
         ].some((fn) => matchFunctionName(precedingExpression.functionName, fn)),
         `Can't process distinct() expression: only support distinct() in TDS expression`,
       );
@@ -648,6 +649,7 @@ export class QueryBuilderLambdaProcessor
           SUPPORTED_FUNCTIONS.TDS_SORT,
           SUPPORTED_FUNCTIONS.TDS_PROJECT,
           SUPPORTED_FUNCTIONS.TDS_GROUP_BY,
+          SUPPORTED_FUNCTIONS.TDS_FILTER,
         ].some((fn) => matchFunctionName(precedingExpression.functionName, fn)),
         `Can't process sort() expression: only support sort() in TDS expression`,
       );

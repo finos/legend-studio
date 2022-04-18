@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-tracer-extension-zipkin",
-  "version": "0.0.24",
+  "version": "0.0.27",
   "description": "Legend application extension for tracer using Zipkin and OpenTracing",
   "keywords": [
     "legend",
@@ -50,7 +50,7 @@
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",
     "cross-env": "7.0.3",
-    "eslint": "8.12.0",
+    "eslint": "8.13.0",
     "jest": "27.5.1",
     "npm-run-all": "4.1.5",
     "rimraf": "3.0.2",

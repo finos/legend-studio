@@ -369,10 +369,11 @@ const QueryBuilderFilterTreeNodeContainer = observer(
     const toggleExpandNode = (): void => node.setIsOpen(!node.isOpen);
     const resetNode = (): void => {
       if (node instanceof QueryBuilderFilterTreeConditionNodeData) {
-        node.condition.value =
+        node.condition.setValue(
           node.condition.operator.getDefaultFilterConditionValue(
             node.condition,
-          );
+          ),
+        );
       }
     };
     const removeNode = (): void => filterState.removeNodeAndPruneBranch(node);

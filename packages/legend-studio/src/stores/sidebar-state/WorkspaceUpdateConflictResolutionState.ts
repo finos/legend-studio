@@ -360,9 +360,7 @@ export class WorkspaceUpdateConflictResolutionState extends AbstractConflictReso
 
       // ======= (RE)START CHANGE DETECTION =======
       this.editorStore.changeDetectionState.stop();
-      yield flowResult(
-        this.editorStore.changeDetectionState.precomputeHashes(),
-      );
+      yield this.editorStore.changeDetectionState.preComputeGraphElementHashes();
       this.editorStore.changeDetectionState.start();
       yield flowResult(
         this.editorStore.changeDetectionState.computeLocalChanges(true),

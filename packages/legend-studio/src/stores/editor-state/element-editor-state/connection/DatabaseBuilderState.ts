@@ -551,10 +551,13 @@ export class DatabaseBuilderState {
           this.editorStore.graphManagerState.graph.getOrCreatePackage(
             PackagePath,
           );
-        package_addElement(databasePackage, newDatabase);
-        this.editorStore.graphManagerState.graph.addElement(newDatabase);
+        package_addElement(
+          databasePackage,
+          newDatabase,
+          this.editorStore.changeDetectionState.observerContext,
+        );
+        yield flowResult(this.editorStore.addElement(newDatabase, false));
         currentDatabase = newDatabase;
-        this.editorStore.explorerTreeState.reprocess();
       } else {
         currentDatabase = this.currentDatabase;
       }

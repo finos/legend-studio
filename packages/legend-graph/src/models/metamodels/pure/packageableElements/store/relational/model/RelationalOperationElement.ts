@@ -104,8 +104,7 @@ export const getJoinType = (type: string): JoinType => {
 
 // TODO: create RelationalTreeNode like in PURE?
 export class JoinTreeNode {
-  // FIXME: required in PURE
-  alias?: TableAlias | undefined;
+  alias?: TableAlias | undefined; // required in PURE
   children: JoinTreeNode[] = [];
   join: JoinReference;
   joinType?: JoinType | undefined;

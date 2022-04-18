@@ -54,7 +54,7 @@ export class EmbeddedFlatDataPropertyMapping
   implements InstanceSetImplementation, Hashable
 {
   root = InferableMappingElementRootExplicitValue.create(false);
-  override isEmbedded = true;
+  override readonly isEmbedded = true;
   class: PackageableElementReference<Class>;
   id: InferableMappingElementIdValue;
   propertyMappings: PropertyMapping[] = [];

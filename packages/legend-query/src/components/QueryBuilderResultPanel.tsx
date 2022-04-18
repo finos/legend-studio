@@ -58,7 +58,11 @@ const QueryBuilderResultValues = observer(
         const row: Record<PropertyKey, unknown> = {};
         const cols = executionResult.result.columns;
         _row.values.forEach((value, idx) => {
-          row[cols[idx] as string] = value;
+          // `ag-grid` shows `false` value as empty string so we have
+          // call `.toString()` to avoid this behavior. We leave number as-is though.
+          // See https://github.com/finos/legend-studio/issues/1008
+          row[cols[idx] as string] =
+            typeof value === 'number' ? value : value.toString();
         });
         return row;
       });

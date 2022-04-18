@@ -105,12 +105,7 @@ const ViewerStatusBar = observer(() => {
               <CodeBranchIcon />
             </div>
             <div className="editor__status-bar__workspace__project">
-              <Link
-                to={generateSetupRoute(
-                  applicationStore.config.currentSDLCServerOption,
-                  projectId,
-                )}
-              >
+              <Link to={generateSetupRoute(projectId)}>
                 {currentProject.name}
               </Link>
             </div>

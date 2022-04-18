@@ -287,6 +287,7 @@ export class PureInstanceSetImplementationState extends InstanceSetImplementatio
     pureInstanceSetImpl_setPropertyMappings(
       this.mappingElement,
       propertyMappingsBeforeDecoration,
+      this.editorStore.changeDetectionState.observerContext,
     );
     propertyMappingstatesAfterDecoration.forEach((propertyMappingState) => {
       const existingPropertyMappingState = this.propertyMappingStates.find(

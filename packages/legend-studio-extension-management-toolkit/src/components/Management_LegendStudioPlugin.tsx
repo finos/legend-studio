@@ -17,7 +17,6 @@
 import packageJson from '../../package.json';
 import {
   type ApplicationPageRenderEntry,
-  generateRoutePatternWithSDLCServerKey,
   LegendStudioPlugin,
 } from '@finos/legend-studio';
 import { PATH_PARAM_TOKEN_REDIRECT_URL, URLRedirector } from './URLRedirector';
@@ -32,9 +31,9 @@ export class Management_LegendStudioPlugin extends LegendStudioPlugin {
       // URL redirector
       {
         key: 'url-redirect-application-page',
-        urlPatterns: generateRoutePatternWithSDLCServerKey(
-          `/redirect/-/:${PATH_PARAM_TOKEN_REDIRECT_URL}+/-/`,
-        ),
+        urlPatterns: [
+          `/utility/redirect/-/:${PATH_PARAM_TOKEN_REDIRECT_URL}+/-/`,
+        ],
         component: URLRedirector,
       },
     ];

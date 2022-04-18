@@ -136,6 +136,12 @@ import type { LegendStudioConfig } from '../application/LegendStudioConfig';
 import type { EditorMode } from './editor/EditorMode';
 import { StandardEditorMode } from './editor/StandardEditorMode';
 import { WorkspaceUpdateConflictResolutionState } from './sidebar-state/WorkspaceUpdateConflictResolutionState';
+import {
+  graph_addElement,
+  graph_deleteElement,
+  graph_deleteOwnElement,
+  graph_renameElement,
+} from './graphModifier/GraphModifierHelper';
 
 export abstract class EditorExtensionState {
   private readonly _$nominalTypeBrand!: 'EditorExtensionState';
@@ -586,10 +592,7 @@ export class EditorStore {
             type: ActionAlertActionType.STANDARD,
             handler: (): void => {
               this.applicationStore.navigator.goTo(
-                generateSetupRoute(
-                  this.applicationStore.config.currentSDLCServerOption,
-                  undefined,
-                ),
+                generateSetupRoute(undefined),
               );
             },
           },
@@ -653,10 +656,7 @@ export class EditorStore {
             type: ActionAlertActionType.STANDARD,
             handler: (): void => {
               this.applicationStore.navigator.goTo(
-                generateViewProjectRoute(
-                  this.applicationStore.config.currentSDLCServerOption,
-                  projectId,
-                ),
+                generateViewProjectRoute(projectId),
               );
             },
           },
@@ -674,12 +674,7 @@ export class EditorStore {
             type: ActionAlertActionType.STANDARD,
             handler: (): void => {
               this.applicationStore.navigator.goTo(
-                generateSetupRoute(
-                  this.applicationStore.config.currentSDLCServerOption,
-                  projectId,
-                  workspaceId,
-                  workspaceType,
-                ),
+                generateSetupRoute(projectId, workspaceId, workspaceType),
               );
             },
           },
@@ -851,15 +846,16 @@ export class EditorStore {
 
       // ======= (RE)START CHANGE DETECTION =======
       this.changeDetectionState.stop();
-      this.changeDetectionState.observeGraph();
+      yield this.changeDetectionState.observeGraph();
       yield Promise.all([
-        yield this.changeDetectionState.precomputeHashes(), // for local changes detection
+        this.changeDetectionState.preComputeGraphElementHashes(), // for local changes detection
         this.changeDetectionState.workspaceLocalLatestRevisionState.buildEntityHashesIndex(
           entities,
           LogEvent.create(
             CHANGE_DETECTION_EVENT.CHANGE_DETECTION_LOCAL_HASHES_INDEX_BUILT,
           ),
         ),
+
         this.sdlcState.buildWorkspaceBaseRevisionEntityHashesIndex(),
         this.sdlcState.buildProjectLatestRevisionEntityHashesIndex(),
       ]);
@@ -874,7 +870,12 @@ export class EditorStore {
         '[ASNYC]',
       );
       // ======= FINISHED (RE)START CHANGE DETECTION =======
-    } catch {
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.log.error(
+        LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_FAILURE),
+        error,
+      );
       // since errors have been handled accordingly, we don't need to do anything here
       return;
     }
@@ -1086,18 +1087,32 @@ export class EditorStore {
       // the cheap way to do this is to search by element label text, e.g. `Mapping some::package::someMapping`
       this.grammarTextEditorState.setCurrentElementLabelRegexString(element);
     } else {
-      const existingElementState = this.openedEditorStates.find(
-        (state) =>
-          state instanceof ElementEditorState && state.element === element,
-      );
-      const elementState =
-        existingElementState ?? this.createElementState(element);
-      if (elementState && !existingElementState) {
-        this.openedEditorStates.push(elementState);
+      if (!(element instanceof Package)) {
+        const existingElementState = this.openedEditorStates.find(
+          (state) =>
+            state instanceof ElementEditorState && state.element === element,
+        );
+        const elementState =
+          existingElementState ?? this.createElementState(element);
+        if (elementState && !existingElementState) {
+          this.openedEditorStates.push(elementState);
+        }
+        this.setCurrentEditorState(elementState);
       }
-      this.setCurrentEditorState(elementState);
       // expand tree node
       this.explorerTreeState.openNode(element);
+    }
+  }
+
+  *addElement(
+    element: PackageableElement,
+    openAfterCreate: boolean,
+  ): GeneratorFn<void> {
+    graph_addElement(this.graphManagerState.graph, element);
+    this.explorerTreeState.reprocess();
+
+    if (openAfterCreate) {
+      this.openElement(element);
     }
   }
 
@@ -1120,6 +1135,7 @@ export class EditorStore {
       )
       .filter(isNonNullable);
     const elementsToDelete = [element, ...generatedChildrenElements];
+
     if (
       this.currentEditorState &&
       this.currentEditorState instanceof ElementEditorState &&
@@ -1134,9 +1150,9 @@ export class EditorStore {
     );
     // remove/retire the element's generated children before remove the element itself
     generatedChildrenElements.forEach((el) =>
-      this.graphManagerState.graph.generationModel.deleteOwnElement(el),
+      graph_deleteOwnElement(this.graphManagerState.graph.generationModel, el),
     );
-    this.graphManagerState.graph.deleteElement(element);
+    graph_deleteElement(this.graphManagerState.graph, element);
 
     const extraElementEditorPostDeleteActions = this.pluginManager
       .getStudioPlugins()
@@ -1167,7 +1183,7 @@ export class EditorStore {
     if (this.graphManagerState.isElementReadOnly(element)) {
       return;
     }
-    this.graphManagerState.graph.renameOwnElement(element, newPath);
+    graph_renameElement(this.graphManagerState.graph, element, newPath);
 
     const extraElementEditorPostRenameActions = this.pluginManager
       .getStudioPlugins()
@@ -1196,7 +1212,7 @@ export class EditorStore {
     );
   }
 
-  // FIXME: to be removed when we process editor states properly
+  // TODO: to be removed when we process editor states properly
   reprocessElementEditorState = (
     editorState: EditorState,
   ): EditorState | undefined => {
@@ -1216,7 +1232,7 @@ export class EditorStore {
     return undefined;
   };
 
-  // FIXME: to be removed when we process editor states properly
+  // TODO: to be removed when we process editor states properly
   findCurrentEditorState = (
     editor: EditorState | undefined,
   ): EditorState | undefined => {
@@ -1256,7 +1272,7 @@ export class EditorStore {
       if (preventDefault) {
         event?.preventDefault();
       }
-      // FIXME: maybe we should come up with a better way to block global hot keys, this seems highly restrictive.
+      // TODO: maybe we should come up with a better way to block global hot keys, this seems highly restrictive.
       const isResolvingConflicts =
         this.isInConflictResolutionMode &&
         !this.conflictResolutionState.hasResolvedAllConflicts;

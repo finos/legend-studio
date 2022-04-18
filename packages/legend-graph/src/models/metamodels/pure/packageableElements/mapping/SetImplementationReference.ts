@@ -35,11 +35,6 @@ export abstract class SetImplementationReference extends ReferenceWithOwner {
     this.ownerReference = ownerReference;
     this.value = value;
   }
-
-  setValue(value: SetImplementation): void {
-    this.value = value;
-    this.ownerReference.value = value.parent;
-  }
 }
 
 export class SetImplementationExplicitReference extends SetImplementationReference {

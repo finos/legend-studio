@@ -444,7 +444,7 @@ const SchemaSetModelGenerationEditor = observer(
                         property={abstractGenerationProperty}
                       />
                     ),
-                  )}{' '}
+                  )}
                 </div>
               </div>
             </div>

@@ -171,21 +171,13 @@ export class Class extends Type implements Hashable, Stubable {
   }
 
   /**
-   * @MARKER MEMORY-SENSITIVE
-   * Since `keepAlive` can cause memory-leak, we need to dispose it manually when we are about to discard the graph
-   * in order to avoid leaking.
-   * See https://mobx.js.org/best/pitfalls.html#computed-values-run-more-often-than-expected
-   * See https://medium.com/terria/when-and-why-does-mobxs-keepalive-cause-a-memory-leak-8c29feb9ff55
+   * Make sure to remove the disposed class from being referenced in other elements
+   * e.g. subclass analytics is great, but it causes the class being referred to by classes
+   * coming from system or dependencies
    */
   override dispose(): void {
+    super.dispose();
     this.subclasses = []; // call this before setting `disposed` flag to avoid triggering errors if something is using this during disposal
-    this._isDisposed = true;
-    // dispose hash computation
-    try {
-      this.hashCode;
-    } catch {
-      /* do nothing */
-    } // trigger recomputation on `hashCode` so it removes itself from all observables it previously observed
     // cleanup subclasses analytics on superclasses
     this.allSuperclasses.forEach((superclass) => {
       if (!superclass._isDisposed) {

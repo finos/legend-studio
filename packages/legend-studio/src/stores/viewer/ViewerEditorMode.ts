@@ -41,23 +41,17 @@ export class ViewerEditorMode extends EditorMode {
         )
       : this.viewerStore.version
       ? generateViewVersionRoute(
-          this.viewerStore.editorStore.applicationStore.config
-            .currentSDLCServerOption,
           this.viewerStore.editorStore.sdlcState.activeProject.projectId,
           this.viewerStore.version.id.id,
           elementPath,
         )
       : this.viewerStore.revision
       ? generateViewRevisionRoute(
-          this.viewerStore.editorStore.applicationStore.config
-            .currentSDLCServerOption,
           this.viewerStore.editorStore.sdlcState.activeProject.projectId,
           this.viewerStore.revision.id,
           elementPath,
         )
       : generateViewEntityRoute(
-          this.viewerStore.editorStore.applicationStore.config
-            .currentSDLCServerOption,
           this.viewerStore.editorStore.sdlcState.activeProject.projectId,
           elementPath,
         );

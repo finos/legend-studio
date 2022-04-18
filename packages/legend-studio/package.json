@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-studio",
-  "version": "5.1.3",
+  "version": "7.0.0",
   "description": "Legend Studio core",
   "keywords": [
     "legend",
@@ -55,6 +55,7 @@
     "history": "5.3.0",
     "mobx": "6.5.0",
     "mobx-react-lite": "3.3.0",
+    "mobx-utils": "6.0.5",
     "monaco-editor": "0.33.0",
     "node-diff3": "3.1.0",
     "react": "17.0.2",
@@ -72,11 +73,11 @@
     "@finos/legend-dev-utils": "workspace:*",
     "@testing-library/dom": "8.12.0",
     "cross-env": "7.0.3",
-    "eslint": "8.12.0",
+    "eslint": "8.13.0",
     "jest": "27.5.1",
     "npm-run-all": "4.1.5",
     "rimraf": "3.0.2",
-    "sass": "1.49.11",
+    "sass": "1.50.0",
     "typescript": "4.6.3"
   },
   "peerDependencies": {

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { deleteEntry, addUniqueEntry, type Pair } from '@finos/legend-shared';
+import type { Pair } from '@finos/legend-shared';
 import {
   type ValueSpecificationVisitor,
   ValueSpecification,
@@ -35,22 +35,6 @@ import type { Mapping } from '../packageableElements/mapping/Mapping';
 export class InstanceValue extends ValueSpecification {
   values: unknown[] = [];
 
-  deleteValue(val: unknown): void {
-    deleteEntry(this.values, val);
-  }
-
-  addValue(val: unknown): void {
-    addUniqueEntry(this.values, val);
-  }
-
-  changeValue(val: unknown, idx: number): void {
-    this.values[idx] = val;
-  }
-
-  changeValues(val: unknown[]): void {
-    this.values = val;
-  }
-
   accept_ValueSpecificationVisitor<T>(
     visitor: ValueSpecificationVisitor<T>,
   ): T {
@@ -62,7 +46,7 @@ export class PrimitiveInstanceValue extends InstanceValue {
   override genericType: GenericTypeReference;
 
   constructor(genericType: GenericTypeReference, multiplicity: Multiplicity) {
-    super(multiplicity, undefined);
+    super(multiplicity, genericType);
     this.genericType = genericType;
   }
 
@@ -77,8 +61,7 @@ export class EnumValueInstanceValue extends InstanceValue {
   override values: EnumValueReference[] = [];
 
   constructor(genericType: GenericTypeReference, multiplicity: Multiplicity) {
-    super(multiplicity, undefined);
-    this.genericType = genericType;
+    super(multiplicity, genericType);
   }
 
   override accept_ValueSpecificationVisitor<T>(
@@ -99,7 +82,7 @@ export class RuntimeInstanceValue extends InstanceValue {
 }
 
 export class PairInstanceValue extends InstanceValue {
-  override values: Pair<unknown, unknown>[] = [];
+  override values: Pair<unknown, unknown>[] = []; // TODO: both of these entries might be ValueSpecification
 
   override accept_ValueSpecificationVisitor<T>(
     visitor: ValueSpecificationVisitor<T>,
@@ -124,7 +107,7 @@ export class PureListInstanceValue extends InstanceValue {
   override accept_ValueSpecificationVisitor<T>(
     visitor: ValueSpecificationVisitor<T>,
   ): T {
-    return visitor.visit_PureListInsanceValue(this);
+    return visitor.visit_PureListInstanceValue(this);
   }
 }
 

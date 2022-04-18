@@ -14,13 +14,15 @@
  * limitations under the License.
  */
 
-import type {
-  FlatDataInstanceSetImplementation,
-  RootFlatDataRecordType,
-  FlatDataInputData,
-  FlatDataPropertyMapping,
-  EnumerationMapping,
-  FlatDataConnection,
+import {
+  type FlatDataInstanceSetImplementation,
+  type RootFlatDataRecordType,
+  type FlatDataInputData,
+  type FlatDataPropertyMapping,
+  type EnumerationMapping,
+  type FlatDataConnection,
+  observe_EnumerationMapping,
+  observe_RootFlatDataRecordType,
 } from '@finos/legend-graph';
 import { action } from 'mobx';
 
@@ -29,6 +31,7 @@ export const flatData_setSourceRootRecordType = action(
     fl: FlatDataInstanceSetImplementation,
     value: RootFlatDataRecordType,
   ): void => {
+    observe_RootFlatDataRecordType(value);
     fl.sourceRootRecordType.value = value;
   },
 );
@@ -44,7 +47,7 @@ export const flatDataPropertyMapping_setTransformer = (
   val: FlatDataPropertyMapping,
   value: EnumerationMapping | undefined,
 ): void => {
-  val.transformer = value;
+  val.transformer = value ? observe_EnumerationMapping(value) : value;
 };
 
 export const flatDataConnection_setUrl = action(

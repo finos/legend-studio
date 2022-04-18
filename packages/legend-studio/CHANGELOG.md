@@ -1,5 +1,41 @@
 # @finos/legend-studio
 
+## 7.0.0
+
+### Major Changes
+
+- [#1041](https://github.com/finos/legend-studio/pull/1041) [`5a76b228`](https://github.com/finos/legend-studio/commit/5a76b2289cb88569e9a1acb2287960de3e593d25) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Remove support for multi SDLC instances, `Studio` config for `SDLC` are now simplified to `{ url: string }`. To facilitate migration, we have added a `Not Found` page for the app so that we could communicate about route pattern changes using documentation which can be set in the app config.
+
+* [#1041](https://github.com/finos/legend-studio/pull/1041) [`5a76b228`](https://github.com/finos/legend-studio/commit/5a76b2289cb88569e9a1acb2287960de3e593d25) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Remove support for SDLC mode-specific handling: there is no longer special handlings for `prototype` and `production` projects, these are now driven by the SDLC features config. As such, flags like `TEMPORARY__useSDLCProductionProjectsOnly` and `TEMPORARY__useSDLCProductionProjectsOnly` are also removed.
+
+### Minor Changes
+
+- [#1041](https://github.com/finos/legend-studio/pull/1041) [`5a76b228`](https://github.com/finos/legend-studio/commit/5a76b2289cb88569e9a1acb2287960de3e593d25) ([@akphi](https://github.com/akphi)) - Add documentation key `import-project` for `Studio` import project modal dialog. If markdown text is specified, it would be shown when the SDLC server does not support project creation, otherwise, only the documentation `url` will be shown.
+
+### Patch Changes
+
+- [#1066](https://github.com/finos/legend-studio/pull/1066) [`a65b76d9`](https://github.com/finos/legend-studio/commit/a65b76d9ef610afdb78125d3c8b290a8c4454711) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Encode service pattern when launching management URL page post registration.
+
+## 6.0.0
+
+### Major Changes
+
+- [#1034](https://github.com/finos/legend-studio/pull/1034) [`1d80ad07`](https://github.com/finos/legend-studio/commit/1d80ad07ef1f93add3cb4102ecabd4a2b6d73479) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - **BREAKING CHANGE:** Service registration improvements including owner validation and open service UI upon successful registration.
+  Change service config `url` to `executionUrl`.
+  Remove `TEMPORARY__disableServiceRegistration` from core config.
+
+### Patch Changes
+
+- [#1029](https://github.com/finos/legend-studio/pull/1029) [`018131c3`](https://github.com/finos/legend-studio/commit/018131c39d6d5517cfeddf541890db23892005e7) ([@gayathrir11](https://github.com/gayathrir11)) - Fix runtime editor not opening when it has `ModelChainConnection` ([#1019](https://github.com/finos/legend-studio/issues/1019)).
+
+## 5.1.5
+
+## 5.1.4
+
+### Patch Changes
+
+- [#1036](https://github.com/finos/legend-studio/pull/1036) [`19996230`](https://github.com/finos/legend-studio/commit/19996230eeada8a8c1b7fd638b8ff1c45102a0ff) ([@akphi](https://github.com/akphi)) - Turn off `keepAlive` for element `hashCode` computed value to avoid potential memory leak.
+
 ## 5.1.3
 
 ### Patch Changes

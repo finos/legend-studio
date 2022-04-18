@@ -21,7 +21,7 @@ import { guaranteeNonNullable } from '@finos/legend-shared';
  * This is an initial attempt to try to generalize the application
  * to other platforms. But regardless, this is more convenient for testing.
  *
- * FIXME: this is not the right way to do this. Our intention here is to make
+ * NOTE: this is **NOT** the right way to do this. Our intention here is to make
  * app navigator something generic enough so we are somewhat platform-agnostic
  * i.e. browser, electron, PC, UNIX, etc.
  *

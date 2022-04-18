@@ -116,7 +116,7 @@ export const observe_ExternalFormatConnection = skipObserved(
 
 // ------------------------------------- Element -------------------------------------
 
-export const observe_Schema = skipObserved(
+export const observe_ExternalFormatSchema = skipObserved(
   (metamodel: Schema): Schema =>
     makeObservable(metamodel, {
       id: observable,
@@ -136,7 +136,7 @@ export const observe_SchemaSet = skipObserved(
       _elementHashCode: override,
     });
 
-    metamodel.schemas.forEach(observe_Schema);
+    metamodel.schemas.forEach(observe_ExternalFormatSchema);
 
     return metamodel;
   },

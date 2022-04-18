@@ -38,7 +38,13 @@ import {
   type SnowflakePublicAuthenticationStrategy,
   type StaticDatasourceSpecification,
   type UsernamePasswordAuthenticationStrategy,
+  type ObserverContext,
   getRelationalInputType,
+  observe_DatasourceSpecification,
+  observe_AuthenticationStrategy,
+  observe_BindingTransformer,
+  observe_EnumerationMapping,
+  observe_PropertyMapping,
 } from '@finos/legend-graph';
 import { action } from 'mobx';
 
@@ -57,14 +63,22 @@ export const dBConnection_setQuoteIdentifiers = action(
 );
 
 export const relationDbConnection_setDatasourceSpecification = action(
-  (con: RelationalDatabaseConnection, val: DatasourceSpecification): void => {
-    con.datasourceSpecification = val;
+  (
+    con: RelationalDatabaseConnection,
+    val: DatasourceSpecification,
+    context: ObserverContext,
+  ): void => {
+    con.datasourceSpecification = observe_DatasourceSpecification(val, context);
   },
 );
 
-export const relationDbConnection_setAuthenticationStrategy = action(
-  (con: RelationalDatabaseConnection, val: AuthenticationStrategy): void => {
-    con.authenticationStrategy = val;
+export const relationDbConnection_setNewAuthenticationStrategy = action(
+  (
+    con: RelationalDatabaseConnection,
+    val: AuthenticationStrategy,
+    context: ObserverContext,
+  ): void => {
+    con.authenticationStrategy = observe_AuthenticationStrategy(val, context);
   },
 );
 
@@ -331,7 +345,7 @@ export const relationalPropertyMapping_setTransformer = action(
     v: RelationalPropertyMapping,
     value: EnumerationMapping | undefined,
   ): void => {
-    v.transformer = value;
+    v.transformer = value ? observe_EnumerationMapping(value) : undefined;
   },
 );
 export const relationalPropertyMapping_setBindingTransformer = action(
@@ -339,7 +353,9 @@ export const relationalPropertyMapping_setBindingTransformer = action(
     v: RelationalPropertyMapping,
     value: BindingTransformer | undefined,
   ): void => {
-    v.bindingTransformer = value;
+    v.bindingTransformer = value
+      ? observe_BindingTransformer(value)
+      : undefined;
   },
 );
 
@@ -347,7 +363,10 @@ export const rootRelationalSetImp_setPropertyMappings = action(
   (
     v: RootRelationalInstanceSetImplementation,
     value: PropertyMapping[],
+    observeContext: ObserverContext,
   ): void => {
-    v.propertyMappings = value;
+    v.propertyMappings = value.map((pm) =>
+      observe_PropertyMapping(pm, observeContext),
+    );
   },
 );

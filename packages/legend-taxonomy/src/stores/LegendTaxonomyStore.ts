@@ -69,7 +69,7 @@ import type { LegendTaxonomyConfig } from '../application/LegendTaxonomyConfig';
 import type { LegendTaxonomyPluginManager } from '../application/LegendTaxonomyPluginManager';
 import { LEGEND_TAXONOMY_APP_EVENT } from './LegendTaxonomyAppEvent';
 import {
-  generateViewTaxonomyRoute,
+  generateExploreTaxonomyTreeRoute,
   type LegendTaxonomyPathParams,
   type LegendTaxonomyStandaloneDataSpaceViewerParams,
 } from './LegendTaxonomyRouter';
@@ -236,9 +236,8 @@ export class TaxonomyNodeViewerState {
       stopWatch.record();
       const dependencyManager =
         this.taxonomyStore.graphManagerState.createEmptyDependencyManager();
-      this.taxonomyStore.graphManagerState.graph.setDependencyManager(
-        dependencyManager,
-      );
+      this.taxonomyStore.graphManagerState.graph.dependencyManager =
+        dependencyManager;
       dependencyManager.buildState.setMessage(`Fetching dependencies...`);
       const dependencyEntitiesMap = new Map<string, Entity[]>();
       (
@@ -250,7 +249,7 @@ export class TaxonomyNodeViewerState {
           false,
         )) as PlainObject<ProjectVersionEntities>[]
       )
-        .map((e) => ProjectVersionEntities.serialization.fromJson(e))
+        .map(ProjectVersionEntities.serialization.fromJson)
         .forEach((dependencyInfo) => {
           dependencyEntitiesMap.set(dependencyInfo.id, dependencyInfo.entities);
         });
@@ -319,7 +318,7 @@ export class TaxonomyNodeViewerState {
             this.taxonomyStore.applicationStore.navigator.openNewWindow(
               `${
                 this.taxonomyStore.applicationStore.config.studioUrl
-              }/view/${generateGAVCoordinates(
+              }/view/archive/${generateGAVCoordinates(
                 _groupId,
                 _artifactId,
                 _versionId,
@@ -459,8 +458,8 @@ export class LegendTaxonomyStore {
         this.initialDataSpaceId = `${gav}${DATA_SPACE_ID_DELIMITER}${dataSpacePath}`;
       }
       this.applicationStore.navigator.goTo(
-        generateViewTaxonomyRoute(
-          this.applicationStore.config.currentTaxonomyServerOption,
+        generateExploreTaxonomyTreeRoute(
+          this.applicationStore.config.currentTaxonomyTreeOption.key,
         ),
       );
     }
@@ -803,7 +802,7 @@ export class LegendTaxonomyStore {
       stopWatch.record();
       const dependencyManager =
         this.graphManagerState.createEmptyDependencyManager();
-      this.graphManagerState.graph.setDependencyManager(dependencyManager);
+      this.graphManagerState.graph.dependencyManager = dependencyManager;
       dependencyManager.buildState.setMessage(`Fetching dependencies...`);
       const dependencyEntitiesMap = new Map<string, Entity[]>();
       (
@@ -815,7 +814,7 @@ export class LegendTaxonomyStore {
           false,
         )) as PlainObject<ProjectVersionEntities>[]
       )
-        .map((e) => ProjectVersionEntities.serialization.fromJson(e))
+        .map(ProjectVersionEntities.serialization.fromJson)
         .forEach((dependencyInfo) => {
           dependencyEntitiesMap.set(dependencyInfo.id, dependencyInfo.entities);
         });
@@ -884,7 +883,7 @@ export class LegendTaxonomyStore {
             this.applicationStore.navigator.openNewWindow(
               `${
                 this.applicationStore.config.studioUrl
-              }/view/${generateGAVCoordinates(
+              }/view/archive/${generateGAVCoordinates(
                 _groupId,
                 _artifactId,
                 _versionId,

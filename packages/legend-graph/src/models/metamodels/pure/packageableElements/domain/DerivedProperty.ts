@@ -34,8 +34,9 @@ import {
 export class DerivedProperty
   implements AbstractProperty, AnnotatedElement, Hashable, Stubable
 {
-  uuid = uuid();
+  readonly uuid = uuid();
   owner: PropertyOwner; // readonly
+
   name: string;
   genericType: GenericTypeReference;
   multiplicity: Multiplicity;

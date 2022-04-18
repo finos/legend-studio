@@ -14,7 +14,13 @@
  * limitations under the License.
  */
 
-import { computed, makeObservable, observable, override } from 'mobx';
+import {
+  computed,
+  isObservable,
+  makeObservable,
+  observable,
+  override,
+} from 'mobx';
 import type { Association } from '../../../models/metamodels/pure/packageableElements/domain/Association';
 import { Class } from '../../../models/metamodels/pure/packageableElements/domain/Class';
 import type { ConcreteFunctionDefinition } from '../../../models/metamodels/pure/packageableElements/domain/ConcreteFunctionDefinition';
@@ -52,6 +58,7 @@ import {
   observe_PackageableElementReference,
   skipObserved,
   skipObservedWithContext,
+  type ObserverContext,
 } from './CoreObserverHelper';
 import { observe_PackageabElement } from './PackageableElementObserver';
 import {
@@ -59,18 +66,22 @@ import {
   observe_RawVariableExpression,
 } from './RawValueSpecificationObserver';
 
+const _observe_Abstract_Package = (metamodel: Package): void => {
+  observe_Abstract_PackageableElement(metamodel);
+
+  makeObservable(metamodel, {
+    children: observable,
+    hashCode: override,
+  });
+};
+
 /**
  * NOTE: here we try to be consistent by recrusively going down the package tree
  * and observe all descendents.
  */
 export const observe_Package = skipObservedWithContext(
   (metamodel: Package, context): Package => {
-    observe_Abstract_PackageableElement(metamodel);
-
-    makeObservable(metamodel, {
-      children: observable,
-      hashCode: override,
-    });
+    _observe_Abstract_Package(metamodel);
 
     metamodel.children.forEach((child) => {
       if (child instanceof Package) {
@@ -83,6 +94,29 @@ export const observe_Package = skipObservedWithContext(
     return metamodel;
   },
 );
+
+export const observe_PackageTree = async (
+  metamodel: Package,
+  context: ObserverContext,
+): Promise<Package> => {
+  if (isObservable(metamodel)) {
+    return metamodel;
+  }
+
+  _observe_Abstract_Package(metamodel);
+
+  await Promise.all(
+    metamodel.children.map(async (child) => {
+      if (child instanceof Package) {
+        await observe_PackageTree(child, context);
+      } else {
+        observe_PackageabElement(child, context);
+      }
+    }),
+  );
+
+  return metamodel;
+};
 
 export const observe_StereotypeReference = skipObserved(
   (metamodel: StereotypeReference): StereotypeReference => {
@@ -124,6 +158,14 @@ export const observe_TaggedValue = skipObserved(
   },
 );
 
+export const observe_GenericType = skipObserved(
+  (metamodel: GenericType): GenericType =>
+    makeObservable(metamodel, {
+      rawType: observable,
+      isStub: computed,
+    }),
+);
+
 export const observe_GenericTypeReference = skipObserved(
   (metamodel: GenericTypeReference): GenericTypeReference => {
     makeObservable(metamodel, {
@@ -131,6 +173,7 @@ export const observe_GenericTypeReference = skipObserved(
       isStub: computed,
     });
 
+    observe_GenericType(metamodel.value);
     observe_PackageableElementReference(metamodel.ownerReference);
 
     return metamodel;
@@ -320,8 +363,8 @@ export const observe_DerivedProperty = skipObserved(
       multiplicity: observable,
       stereotypes: observable,
       taggedValues: observable,
-      body: observable.ref,
-      parameters: observable.ref,
+      body: observable.ref, // only observe the reference, the object itself is not observed
+      parameters: observable.ref, // only observe the reference, the object itself is not observed
       isStub: computed,
       hashCode: computed,
     });
@@ -384,7 +427,7 @@ export const observe_Class = skipObserved((metamodel: Class): Class => {
     stereotypes: observable,
     taggedValues: observable,
     allSuperclasses: computed,
-    allSubclasses: computed({ keepAlive: true }),
+    allSubclasses: computed,
     dispose: override,
     isStub: computed,
     _elementHashCode: override,
@@ -433,8 +476,8 @@ export const observe_ConcreteFunctionDefinition = skipObserved(
 
     makeObservable<ConcreteFunctionDefinition, '_elementHashCode'>(metamodel, {
       returnMultiplicity: observable,
-      parameters: observable.shallow,
-      body: observable.ref,
+      parameters: observable.shallow, // only observe the list structure, each object itself is not observed
+      body: observable.ref, // only observe the reference, the object itself is not observed
       stereotypes: observable,
       taggedValues: observable,
       _elementHashCode: override,
@@ -474,12 +517,4 @@ export const observe_DataType = skipObserved(
     }
     return metamodel;
   },
-);
-
-export const observe_GenericType = skipObserved(
-  (metamodel: GenericType): GenericType =>
-    makeObservable(metamodel, {
-      rawType: observable,
-      isStub: computed,
-    }),
 );

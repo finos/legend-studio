@@ -27,7 +27,15 @@ import {
   type ServiceTest,
   type SingleExecutionTest,
   type TestContainer,
+  type ObserverContext,
   DEFAULT_SERVICE_PATTERN,
+  observe_ServiceExecution,
+  observe_KeyedExecutionParameter,
+  observe_TestContainer,
+  observe_Mapping,
+  observe_RawLambda,
+  observe_ServiceTest,
+  observe_Runtime,
 } from '@finos/legend-graph';
 import { addUniqueEntry, deleteEntry, uuid } from '@finos/legend-shared';
 import { action } from 'mobx';
@@ -41,13 +49,17 @@ export const service_initNewService = action(
   },
 );
 export const service_setExecution = action(
-  (service: Service, value: ServiceExecution): void => {
-    service.execution = value;
+  (
+    service: Service,
+    value: ServiceExecution,
+    observerContext: ObserverContext,
+  ): void => {
+    service.execution = observe_ServiceExecution(value, observerContext);
   },
 );
 export const service_setTest = action(
   (service: Service, value: ServiceTest): void => {
-    service.test = value;
+    service.test = observe_ServiceTest(value);
   },
 );
 export const service_setPattern = action(
@@ -90,17 +102,25 @@ export const service_removePatternParameter = action(
 );
 export const pureExecution_setFunction = action(
   (pe: PureExecution, value: RawLambda): void => {
-    pe.func = value;
+    pe.func = observe_RawLambda(value);
   },
 );
 export const pureSingleExecution_setMapping = action(
-  (pe: PureSingleExecution | KeyedExecutionParameter, value: Mapping): void => {
-    pe.mapping.value = value;
+  (
+    pe: PureSingleExecution | KeyedExecutionParameter,
+    value: Mapping,
+    observerContext: ObserverContext,
+  ): void => {
+    pe.mapping.value = observe_Mapping(value, observerContext);
   },
 );
 export const pureSingleExecution_setRuntime = action(
-  (pe: PureSingleExecution | KeyedExecutionParameter, value: Runtime): void => {
-    pe.runtime = value;
+  (
+    pe: PureSingleExecution | KeyedExecutionParameter,
+    value: Runtime,
+    observerContext: ObserverContext,
+  ): void => {
+    pe.runtime = observe_Runtime(value, observerContext);
   },
 );
 export const keyedExecutionParameter_setKey = action(
@@ -114,8 +134,15 @@ export const pureMultiExecution_setExecutionKey = action(
   },
 );
 export const pureMultiExecution_addExecutionParameter = action(
-  (pe: PureMultiExecution, value: KeyedExecutionParameter): void => {
-    addUniqueEntry(pe.executionParameters, value);
+  (
+    pe: PureMultiExecution,
+    value: KeyedExecutionParameter,
+    context: ObserverContext,
+  ): void => {
+    addUniqueEntry(
+      pe.executionParameters,
+      observe_KeyedExecutionParameter(value, context),
+    );
   },
 );
 export const singleExecTest_setData = action(
@@ -126,12 +153,12 @@ export const singleExecTest_setData = action(
 
 export const singleExecTest_addAssert = action(
   (val: SingleExecutionTest, value: TestContainer): void => {
-    addUniqueEntry(val.asserts, value);
+    addUniqueEntry(val.asserts, observe_TestContainer(value));
   },
 );
 
 export const singleExecTest_deleteAssert = action(
   (val: SingleExecutionTest, value: TestContainer): void => {
-    deleteEntry(val.asserts, value);
+    deleteEntry(val.asserts, observe_TestContainer(value));
   },
 );

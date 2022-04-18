@@ -581,7 +581,7 @@ const GenerationStringPropertyEditor = observer(
     getConfigValue: (name: string) => unknown | undefined;
   }) => {
     const { property, getConfigValue, isReadOnly, update } = props;
-    // FIXME: If there is no default value the string will be 'null'. We will treat it as an empty string
+    // If there is no default value the string will be 'null'. We will treat it as an empty string
     const defaultValue =
       property.defaultValue === 'null' ? '' : property.defaultValue;
     const value =
@@ -765,7 +765,7 @@ const GenerationArrayPropertyEditor = observer(
   }) => {
     const { property, getConfigValue, isReadOnly, update } = props;
     let defaultValue: string[] = [];
-    // FIXME: hacking this because the backend send corrupted array string
+    // NOTE: hacking this because the backend send corrupted array string
     if (property.defaultValue !== '' && property.defaultValue !== '[]') {
       defaultValue = property.defaultValue
         .substring(1, property.defaultValue.length - 1)
@@ -812,7 +812,7 @@ const GenerationArrayPropertyEditor = observer(
       (): void => {
         if (!isReadOnly) {
           runInAction(() => arrayValues.splice(idx, 1));
-          update(property, arrayValues);
+          update(property, [...arrayValues]);
           // Since we keep track of the value currently being edited using the index, we have to account for it as we delete entry
           if (typeof showEditInput === 'number' && showEditInput > idx) {
             setShowEditInput(showEditInput - 1);
@@ -1422,7 +1422,7 @@ export const FileGenerationConfigurationEditor = observer(
                 getConfigValue={getConfigValue}
                 property={abstractGenerationProperty}
               />
-            ))}{' '}
+            ))}
           </div>
         </div>
       </div>

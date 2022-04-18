@@ -14,14 +14,10 @@
  * limitations under the License.
  */
 
-import { useEffect } from 'react';
-import { Switch, Route, Redirect, useRouteMatch } from 'react-router-dom';
+import { Switch, Route, Redirect } from 'react-router-dom';
 import { observer } from 'mobx-react-lite';
 import {
-  type LegendTaxonomyPathParams,
-  URL_PATH_PLACEHOLDER,
-  generateRoutePatternWithTaxonomyServerKey,
-  generateViewTaxonomyRoute,
+  generateExploreTaxonomyTreeRoute,
   LEGEND_TAXONOMY_ROUTE_PATTERN,
 } from '../stores/LegendTaxonomyRouter';
 import type { LegendTaxonomyPluginManager } from '../application/LegendTaxonomyPluginManager';
@@ -45,9 +41,9 @@ export const LegendTaxonomyApplicationRoot = observer(() => {
         <Route
           exact={true}
           path={[
-            ...LEGEND_TAXONOMY_ROUTE_PATTERN.VIEW,
-            ...LEGEND_TAXONOMY_ROUTE_PATTERN.VIEW_BY_TAXONOMY_NODE,
-            ...LEGEND_TAXONOMY_ROUTE_PATTERN.VIEW_BY_DATA_SPACE,
+            LEGEND_TAXONOMY_ROUTE_PATTERN.EXPLORE_TAXONOMY_TREE,
+            LEGEND_TAXONOMY_ROUTE_PATTERN.EXPLORE_TAXONOMY_TREE_NODE,
+            LEGEND_TAXONOMY_ROUTE_PATTERN.EXPLORE_TAXONOMY_TREE_NODE_DATA_SPACE,
           ]}
           component={TaxonomyViewer}
         />
@@ -57,8 +53,8 @@ export const LegendTaxonomyApplicationRoot = observer(() => {
           component={StandaloneDataSpaceViewer}
         />
         <Redirect
-          to={generateViewTaxonomyRoute(
-            applicationStore.config.defaultTaxonomyServerOption,
+          to={generateExploreTaxonomyTreeRoute(
+            applicationStore.config.defaultTaxonomyTreeOption.key,
           )}
         />
       </Switch>
@@ -73,59 +69,7 @@ export const LegendTaxonomyApplication = observer(
   }) => {
     const { config, pluginManager } = props;
     const applicationStore = useApplicationStore();
-    const routeMatch = useRouteMatch<LegendTaxonomyPathParams>(
-      generateRoutePatternWithTaxonomyServerKey('/*'),
-    );
-    const matchedTaxonomyServerKey = routeMatch?.params.taxonomyPath;
-    const matchingTaxonomyServerOption = config.taxonomyServerOptions.find(
-      (option) => {
-        if (matchedTaxonomyServerKey === URL_PATH_PLACEHOLDER) {
-          return config.defaultTaxonomyServerOption;
-        }
-        return option.key === matchedTaxonomyServerKey;
-      },
-    );
 
-    /**
-     * NOTE: here we handle 3 cases:
-     * 1. When the URL matches specific server pattern, and the key is found: if the key doesn't match
-     *    the current server option, update the current server option.
-     * 2. When the URL matches specific server pattern, and the key is NOT found: auto-fix the URL by
-     *    redirecting users to the setup page with the default server option.
-     * 3. When the URL DOES NOT match specific server pattern: do nothing here, let the app flows through
-     *    because this might represent a sub-application that does not need to specify a server option
-     *    (i.e. use the default server option)
-     */
-    useEffect(() => {
-      if (matchedTaxonomyServerKey) {
-        // auto-fix the URL by using the default server option
-        if (!matchingTaxonomyServerOption) {
-          applicationStore.navigator.goTo(
-            generateViewTaxonomyRoute(config.defaultTaxonomyServerOption),
-          );
-        } else if (
-          matchingTaxonomyServerOption !== config.currentTaxonomyServerOption
-        ) {
-          config.setCurrentTaxonomyServerOption(matchingTaxonomyServerOption);
-        }
-      }
-    }, [
-      config,
-      applicationStore,
-      matchedTaxonomyServerKey,
-      matchingTaxonomyServerOption,
-    ]);
-
-    if (
-      // See the note above, we will only pass when the either the server option is properly set
-      // or the URL does not match the specific server pattern at all (i.e. some sub applications that just
-      // uses the default server option)
-      matchedTaxonomyServerKey &&
-      (!matchingTaxonomyServerOption ||
-        matchingTaxonomyServerOption !== config.currentTaxonomyServerOption)
-    ) {
-      return null;
-    }
     return (
       <DepotServerClientProvider
         config={{

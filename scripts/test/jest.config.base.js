@@ -27,6 +27,7 @@ const baseConfig = getBaseConfig({
 export default {
   ...baseConfig,
   setupFiles: [
+    '@finos/legend-art/jest/mockESM.jsx',
     '@finos/legend-dev-utils/jest/disallowConsoleError',
     '@finos/legend-dev-utils/jest/blockFetch',
     '@finos/legend-dev-utils/jest/handleUnhandledRejection',

@@ -1,5 +1,31 @@
 # @finos/legend-graph
 
+## 4.0.2
+
+### Patch Changes
+
+- [#1049](https://github.com/finos/legend-studio/pull/1049) [`5de91968`](https://github.com/finos/legend-studio/commit/5de91968ae3ec1c4d42dc1412e452d000dfc8b3e) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Complete `ValueSpecificationObserver`, it will now probably propagate the value specification tree.
+
+## 4.0.1
+
+## 4.0.0
+
+### Major Changes
+
+- [#1054](https://github.com/finos/legend-studio/pull/1054) [`d0f81bc8`](https://github.com/finos/legend-studio/commit/d0f81bc82d56f913f12b720c265d6ca1b0c515af) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** All setters methods are now moved out of metamodels. These are now branded as `graph modifier helpers` and will be put in places where we need to modify them (e.g. in the apps such as `Legend Studio`, `Legend Query`). Also, all `mobx` `makeObservable()` logic inside of metamodels' constructors are now removed. These are now branded as `observer helpers`.
+
+  > As of now, we are putting these in `@finos/legend-graph`, but ideally they should be moved to the app (similar to what we do with the `graph modifier observers`).
+
+## 3.0.0
+
+### Major Changes
+
+- [#1000](https://github.com/finos/legend-studio/pull/1000) [`4f7d04c`](https://github.com/finos/legend-studio/commit/4f7d04c52fc8d52b87251bcf04ec971afe8d3218) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** All graph meta models are no longer observable by default, instead, to activate observability, one would need to call observers specifically.
+
+* [#1000](https://github.com/finos/legend-studio/pull/1000) [`4f7d04c`](https://github.com/finos/legend-studio/commit/4f7d04c52fc8d52b87251bcf04ec971afe8d3218) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Moved `GraphManagerState.precomputeHashes` to `ChangeDetectionState`.
+
+- [#1000](https://github.com/finos/legend-studio/pull/1000) [`4f7d04c`](https://github.com/finos/legend-studio/commit/4f7d04c52fc8d52b87251bcf04ec971afe8d3218) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Remove `TEMPORARY_skipGraphBuilderPostProcessing` flag. Graph builder nolonger needs post-processing anymore.
+
 ## 2.1.3
 
 ## 2.1.2

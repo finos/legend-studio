@@ -306,6 +306,12 @@ const cases: RoundtripTestCase[] = [
     TEST_DATA__lambda_derivationPostFilter,
     undefined,
   ],
+  [
+    'Post-filter with result set modifier',
+    postFilterCtx,
+    TEST_DATA__lambda_derivationPostFilter,
+    undefined,
+  ],
 ];
 
 describe(

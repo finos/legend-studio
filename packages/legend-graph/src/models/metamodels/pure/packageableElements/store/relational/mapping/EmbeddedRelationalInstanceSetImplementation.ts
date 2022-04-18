@@ -49,7 +49,7 @@ export class EmbeddedRelationalInstanceSetImplementation
     Hashable
 {
   root = InferableMappingElementRootExplicitValue.create(false);
-  override isEmbedded = true;
+  override readonly isEmbedded = true;
   id: InferableMappingElementIdValue;
   propertyMappings: PropertyMapping[] = [];
   class: PackageableElementReference<Class>;

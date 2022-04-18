@@ -1051,3 +1051,171 @@ export const TEST_DATA__lambda_derivationPostFilter = {
   ],
   parameters: [],
 };
+
+export const TEST_DATA__lambda_postFilterWithResultSetModifier = {
+  _type: 'lambda',
+  body: [
+    {
+      _type: 'func',
+      function: 'take',
+      parameters: [
+        {
+          _type: 'func',
+          function: 'sort',
+          parameters: [
+            {
+              _type: 'func',
+              function: 'distinct',
+              parameters: [
+                {
+                  _type: 'func',
+                  function: 'filter',
+                  parameters: [
+                    {
+                      _type: 'func',
+                      function: 'project',
+                      parameters: [
+                        {
+                          _type: 'func',
+                          function: 'getAll',
+                          parameters: [
+                            {
+                              _type: 'packageableElementPtr',
+                              fullPath: 'model::postFilter::Person',
+                            },
+                          ],
+                        },
+                        {
+                          _type: 'collection',
+                          values: [
+                            {
+                              _type: 'lambda',
+                              body: [
+                                {
+                                  _type: 'property',
+                                  parameters: [
+                                    {
+                                      _type: 'var',
+                                      name: 'x',
+                                    },
+                                  ],
+                                  property: 'fullName',
+                                },
+                              ],
+                              parameters: [
+                                {
+                                  _type: 'var',
+                                  name: 'x',
+                                },
+                              ],
+                            },
+                          ],
+                          multiplicity: {
+                            lowerBound: 1,
+                            upperBound: 1,
+                          },
+                        },
+                        {
+                          _type: 'collection',
+                          values: [
+                            {
+                              _type: 'string',
+                              values: ['Full Name'],
+                              multiplicity: {
+                                lowerBound: 1,
+                                upperBound: 1,
+                              },
+                            },
+                          ],
+                          multiplicity: {
+                            lowerBound: 1,
+                            upperBound: 1,
+                          },
+                        },
+                      ],
+                    },
+                    {
+                      _type: 'lambda',
+                      body: [
+                        {
+                          _type: 'func',
+                          function: 'equal',
+                          parameters: [
+                            {
+                              _type: 'property',
+                              parameters: [
+                                {
+                                  _type: 'var',
+                                  name: 'row',
+                                },
+                                {
+                                  _type: 'string',
+                                  values: ['Full Name'],
+                                  multiplicity: {
+                                    lowerBound: 1,
+                                    upperBound: 1,
+                                  },
+                                },
+                              ],
+                              property: 'getString',
+                            },
+                            {
+                              _type: 'string',
+                              values: ['Bob'],
+                              multiplicity: {
+                                lowerBound: 1,
+                                upperBound: 1,
+                              },
+                            },
+                          ],
+                        },
+                      ],
+                      parameters: [
+                        {
+                          _type: 'var',
+                          name: 'row',
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              _type: 'collection',
+              values: [
+                {
+                  _type: 'func',
+                  function: 'asc',
+                  parameters: [
+                    {
+                      _type: 'string',
+                      values: ['Full Name'],
+                      multiplicity: {
+                        lowerBound: 1,
+                        upperBound: 1,
+                      },
+                    },
+                  ],
+                },
+              ],
+              multiplicity: {
+                lowerBound: 1,
+                upperBound: 1,
+              },
+            },
+          ],
+        },
+        {
+          _type: 'integer',
+          values: [10],
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+        },
+      ],
+    },
+  ],
+  parameters: [],
+};

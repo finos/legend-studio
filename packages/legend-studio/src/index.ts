@@ -20,10 +20,6 @@ export * from './application/LegendStudio';
 export * from './application/LegendStudioConfig';
 export * from './application/LegendStudioPluginManager';
 export * from './stores/shared/PackageableElementOptionUtil';
-export {
-  LEGEND_STUDIO_PATH_PARAM_TOKEN,
-  generateRoutePatternWithSDLCServerKey,
-} from './stores/LegendStudioRouter';
 export * from './stores/LegendStudioAppEvent';
 
 // stores
@@ -46,9 +42,10 @@ export {
   type TransformDropTarget,
 } from './stores/shared/DnDUtil';
 export { ExplorerTreeRootPackageLabel } from './stores/ExplorerTreeState';
+export * from './stores/graphModifier/GraphModifierHelper';
+export * from './stores/graphModifier/DomainGraphModifierHelper';
 export * from './stores/DSLMapping_LegendStudioPlugin_Extension';
 export * from './stores/DSLService_LegendStudioPlugin_Extension';
-export * from './stores/graphModifier/DomainGraphModifierHelper';
 export * from './stores/graphModifier/DSLGeneration_GraphModifierHelper';
 export * from './stores/graphModifier/DSLService_GraphModifierHelper';
 

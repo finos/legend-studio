@@ -37,7 +37,7 @@ import {
   makeObservable,
   observable,
 } from 'mobx';
-import { User, SDLCMode, SDLCServerClient } from '@finos/legend-server-sdlc';
+import { User, SDLCServerClient } from '@finos/legend-server-sdlc';
 import { LEGEND_STUDIO_APP_EVENT } from './LegendStudioAppEvent';
 import type { DepotServerClient } from '@finos/legend-server-depot';
 import type { LegendStudioPluginManager } from '../application/LegendStudioPluginManager';
@@ -62,12 +62,12 @@ export class LegendStudioStore {
     depotServerClient: DepotServerClient,
     pluginManager: LegendStudioPluginManager,
   ) {
-    makeObservable<LegendStudioStore, 'checkSDLCAuthorization'>(this, {
+    makeObservable<LegendStudioStore, 'initializeSDLCServerClient'>(this, {
       isSDLCAuthorized: observable,
       SDLCServerTermsOfServicesUrlsToView: observable,
       needsToAcceptSDLCServerTermsOfServices: computed,
       initialize: flow,
-      checkSDLCAuthorization: flow,
+      initializeSDLCServerClient: flow,
       dismissSDLCServerTermsOfServicesAlert: action,
     });
 
@@ -94,7 +94,7 @@ export class LegendStudioStore {
     this.initState.inProgress();
 
     // setup SDLC server client
-    yield flowResult(this.checkSDLCAuthorization());
+    yield flowResult(this.initializeSDLCServerClient());
 
     let currentUserID = UNKNOWN_USER_ID;
     try {
@@ -131,28 +131,10 @@ export class LegendStudioStore {
     this.initState.complete();
   }
 
-  private *checkSDLCAuthorization(): GeneratorFn<void> {
+  private *initializeSDLCServerClient(): GeneratorFn<void> {
     try {
-      this.isSDLCAuthorized = (
-        (yield Promise.all(
-          Object.values(SDLCMode).map((mode) =>
-            this.sdlcServerClient.isAuthorized(mode).catch((error) => {
-              if (mode !== SDLCMode.PROD) {
-                // if there is an issue with an endpoint in a non prod env, we return authorized as true
-                // but notify the user of the error
-                this.applicationStore.log.error(
-                  LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
-                  error,
-                );
-                this.applicationStore.notifyError(error);
-                return true;
-              }
-              throw error;
-            }),
-          ),
-        )) as boolean[]
-      ).every(Boolean);
-
+      this.isSDLCAuthorized =
+        (yield this.sdlcServerClient.isAuthorized()) as boolean;
       if (!this.isSDLCAuthorized) {
         this.applicationStore.navigator.jumpTo(
           SDLCServerClient.authorizeCallbackUrl(
@@ -161,7 +143,9 @@ export class LegendStudioStore {
           ),
         );
       } else {
-        // Only proceed to check terms of service agreement status after the passing authorization check
+        // Only proceed intialization after passing authorization check
+
+        // check terms of service agreement status
         this.SDLCServerTermsOfServicesUrlsToView =
           (yield this.sdlcServerClient.hasAcceptedTermsOfService()) as string[];
         if (this.SDLCServerTermsOfServicesUrlsToView.length) {
@@ -190,6 +174,9 @@ export class LegendStudioStore {
             ],
           });
         }
+
+        // fetch server features config
+        yield this.sdlcServerClient.fetchServerFeaturesConfiguration();
       }
     } catch (error) {
       assertErrorThrown(error);

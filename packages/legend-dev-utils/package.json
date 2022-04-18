@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-dev-utils",
-  "version": "0.3.17",
+  "version": "0.3.20",
   "description": "Legend Studio development utilities, helpers, and scripts",
   "keywords": [
     "legend",
@@ -83,14 +83,14 @@
     "postcss-loader": "6.2.1",
     "react-refresh": "0.11.0",
     "resolve": "1.22.0",
-    "sass": "1.49.11",
+    "sass": "1.50.0",
     "sass-loader": "12.6.0",
     "typescript": "4.6.3",
-    "webpack": "5.71.0"
+    "webpack": "5.72.0"
   },
   "devDependencies": {
     "cross-env": "7.0.3",
-    "eslint": "8.12.0",
+    "eslint": "8.13.0",
     "rimraf": "3.0.2"
   },
   "publishConfig": {

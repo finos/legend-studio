@@ -105,7 +105,11 @@ const PureSingleExecutionConfigurationEditor = observer(
       val: PackageableElementOption<Mapping>,
     ): void => {
       if (val.value !== mapping) {
-        pureSingleExecution_setMapping(selectedExecution, val.value);
+        pureSingleExecution_setMapping(
+          selectedExecution,
+          val.value,
+          editorStore.changeDetectionState.observerContext,
+        );
         executionState.autoSelectRuntimeOnMappingChange(val.value);
         flowResult(selectedTestState.generateTestData()).catch(
           applicationStore.alertUnhandledError,
@@ -186,7 +190,11 @@ const PureSingleExecutionConfigurationEditor = observer(
       if (val.value === undefined) {
         executionState.useCustomRuntime();
       } else if (val.value !== runtime) {
-        pureSingleExecution_setRuntime(selectedExecution, val.value);
+        pureSingleExecution_setRuntime(
+          selectedExecution,
+          val.value,
+          editorStore.changeDetectionState.observerContext,
+        );
       }
     };
     const visitRuntime = (): void => {
@@ -201,7 +209,11 @@ const PureSingleExecutionConfigurationEditor = observer(
         const element = item.data.packageableElement;
         if (!isReadOnly) {
           if (element instanceof Mapping) {
-            pureSingleExecution_setMapping(selectedExecution, element);
+            pureSingleExecution_setMapping(
+              selectedExecution,
+              element,
+              editorStore.changeDetectionState.observerContext,
+            );
             flowResult(selectedTestState.generateTestData()).catch(
               applicationStore.alertUnhandledError,
             );
@@ -215,12 +227,14 @@ const PureSingleExecutionConfigurationEditor = observer(
               new RuntimePointer(
                 PackageableElementExplicitReference.create(element),
               ),
+              editorStore.changeDetectionState.observerContext,
             );
           }
         }
       },
       [
         applicationStore.alertUnhandledError,
+        editorStore.changeDetectionState.observerContext,
         executionState,
         isReadOnly,
         mapping,

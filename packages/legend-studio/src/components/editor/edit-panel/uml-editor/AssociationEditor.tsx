@@ -74,6 +74,7 @@ import {
   annotatedElement_addTaggedValue,
   annotatedElement_addStereotype,
   annotatedElement_deleteTaggedValue,
+  association_changePropertyType,
 } from '../../../../stores/graphModifier/DomainGraphModifierHelper';
 
 const AssociationPropertyBasicEditor = observer(
@@ -100,7 +101,7 @@ const AssociationPropertyBasicEditor = observer(
     };
     // Generic Type
     const [isEditingType, setIsEditingType] = useState(false);
-    // FIXME: make this so that association can only refer to classes from the same space
+    // TODO: make this so that association can only refer to classes from the same graph space
     const propertyTypeOptions = editorStore.classOptions.filter(
       (classOption) =>
         classOption.value !==
@@ -119,7 +120,8 @@ const AssociationPropertyBasicEditor = observer(
       label: propertyType.name,
     };
     const changePropertyType = (val: PackageableElementOption<Class>): void => {
-      association.changePropertyType(
+      association_changePropertyType(
+        association,
         property,
         guaranteeType(
           val.value,

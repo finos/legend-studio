@@ -98,7 +98,7 @@ test(
     const dependencyEntitiesMap = new Map<string, Entity[]>();
     dependencyEntitiesMap.set(firstDependencyKey, firstDependencyEntities);
     dependencyEntitiesMap.set(secondDependencyKey, secondDependencyEntities);
-    graphManagerState.graph.setDependencyManager(dependencyManager);
+    graphManagerState.graph.dependencyManager = dependencyManager;
     await graphManagerState.graphManager.buildDependencies(
       graphManagerState.coreModel,
       graphManagerState.systemModel,
@@ -141,7 +141,7 @@ test(
     const dependencyManager = new DependencyManager([]);
     const dependencyEntitiesMap = new Map<string, Entity[]>();
     dependencyEntitiesMap.set('dep', firstDependencyEntities);
-    graphManagerState.graph.setDependencyManager(dependencyManager);
+    graphManagerState.graph.dependencyManager = dependencyManager;
     await graphManagerState.graphManager.buildDependencies(
       graphManagerState.coreModel,
       graphManagerState.systemModel,
