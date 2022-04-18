@@ -49,15 +49,10 @@ import {
   TEST__GraphPluginManager,
   TEST__buildGraphWithEntities,
   TEST__getTestGraphManagerState,
-  DSLExternalFormat_GraphPreset,
   GRAPH_MANAGER_EVENT,
   V1_ENGINE_EVENT,
 } from '@finos/legend-graph';
-import { DSLText_GraphPreset } from '@finos/legend-extension-dsl-text';
-import { DSLDiagram_GraphPreset } from '@finos/legend-extension-dsl-diagram';
-import { DSLDataSpace_GraphPreset } from '@finos/legend-extension-dsl-data-space';
-import { DSLPersistence_GraphPreset } from '@finos/legend-extension-dsl-persistence';
-import { ESService_GraphPreset } from '@finos/legend-extension-external-store-service';
+import { getLegendGraphExtensionCollection } from '@finos/legend-graph-extension-collection';
 
 const engineConfig = JSON.parse(
   fs.readFileSync(resolve(__dirname, '../../../engine-config.json'), {
@@ -173,14 +168,7 @@ const profileRoundtrip = async (
 ): Promise<void> => {
   const pluginManager = new TEST__GraphPluginManager();
   pluginManager
-    .usePresets([
-      new DSLText_GraphPreset(),
-      new DSLDiagram_GraphPreset(),
-      new DSLExternalFormat_GraphPreset(),
-      new DSLDataSpace_GraphPreset(),
-      new DSLPersistence_GraphPreset(),
-      new ESService_GraphPreset(),
-    ])
+    .usePresets(getLegendGraphExtensionCollection())
     .usePlugins([new WebConsole()]);
   pluginManager.install();
   const log = new Log();

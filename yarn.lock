@@ -2458,6 +2458,7 @@ __metadata:
     "@finos/legend-extension-dsl-text": "workspace:*"
     "@finos/legend-extension-external-format-json-schema": "workspace:*"
     "@finos/legend-extension-external-store-service": "workspace:*"
+    "@finos/legend-graph": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     cross-env: 7.0.3
     eslint: 8.13.0

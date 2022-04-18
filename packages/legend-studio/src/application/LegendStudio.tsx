@@ -28,16 +28,12 @@ import {
   setupLegendApplicationUILibrary,
   WebApplicationNavigatorProvider,
 } from '@finos/legend-application';
-import {
-  CorePureGraphManagerPlugin,
-  DSLExternalFormat_GraphPreset,
-} from '@finos/legend-graph';
+import { CorePureGraphManagerPlugin } from '@finos/legend-graph';
 import { getRootElement } from '@finos/legend-art';
 import {
   type LegendStudioConfigurationData,
   LegendStudioConfig,
 } from './LegendStudioConfig';
-import { DSLExternalFormat_LegendStudioPlugin } from '../components/editor/edit-panel/externalFormat-editor/DSLExternalFormat_LegendStudioPlugin';
 
 const setupLegendStudioUILibrary = async (
   pluginManager: LegendStudioPluginManager,
@@ -66,15 +62,7 @@ export class LegendStudio extends LegendApplication {
 
   static create(): LegendStudio {
     const application = new LegendStudio(LegendStudioPluginManager.create());
-    application.withBasePlugins([
-      new CorePureGraphManagerPlugin(),
-      // NOTE: This makes it easier to eventually modularize `DSL External Format`,
-      // but it makes the layering a bit strange since core graph has DSLs depending on
-      // `DSL External Format` like generation and relational, which ideally we could move out later
-      // See https://github.com/finos/legend-studio/issues/65
-      new DSLExternalFormat_LegendStudioPlugin(),
-    ]);
-    application.withBasePresets([new DSLExternalFormat_GraphPreset()]);
+    application.withBasePlugins([new CorePureGraphManagerPlugin()]);
     return application;
   }
 
