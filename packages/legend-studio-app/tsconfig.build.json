@@ -22,6 +22,7 @@
     },
     { "path": "../legend-extension-dsl-text/tsconfig.build.json" },
     { "path": "../legend-extension-dsl-data-space/tsconfig.build.json" },
+    { "path": "../legend-extension-dsl-persistence/tsconfig.build.json" },
     { "path": "../legend-studio-extension-query-builder/tsconfig.build.json" },
     {
       "path": "../legend-extension-external-language-morphir/tsconfig.build.json"

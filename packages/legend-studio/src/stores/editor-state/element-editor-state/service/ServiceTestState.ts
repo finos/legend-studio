@@ -17,7 +17,7 @@
 import { observable, action, flow, computed, makeObservable } from 'mobx';
 import type { ServiceEditorState } from '../../../editor-state/element-editor-state/service/ServiceEditorState';
 import { TEST_RESULT } from '../../../editor-state/element-editor-state/mapping/MappingTestState';
-import { LEGEND_STUDIO_LOG_EVENT_TYPE } from '../../../LegendStudioLogEvent';
+import { LEGEND_STUDIO_APP_EVENT } from '../../../LegendStudioAppEvent';
 import {
   type GeneratorFn,
   assertErrorThrown,
@@ -30,6 +30,7 @@ import {
   tryToFormatLosslessJSONString,
   tryToFormatJSONString,
   createUrlStringFromData,
+  ContentType,
 } from '@finos/legend-shared';
 import type { EditorStore } from '../../../EditorStore';
 import {
@@ -39,7 +40,7 @@ import {
   type ExecutionResult,
   type Connection,
   extractExecutionResultValues,
-  GRAPH_MANAGER_LOG_EVENT,
+  GRAPH_MANAGER_EVENT,
   TestContainer,
   SingleExecutionTest,
   PureSingleExecution,
@@ -59,6 +60,12 @@ import {
 } from '@finos/legend-graph';
 import { TAB_SIZE } from '@finos/legend-application';
 import type { DSLService_LegendStudioPlugin_Extension } from '../../../DSLService_LegendStudioPlugin_Extension';
+import { runtime_addIdentifiedConnection } from '../../../graphModifier/DSLMapping_GraphModifierHelper';
+import {
+  singleExecTest_addAssert,
+  singleExecTest_deleteAssert,
+  singleExecTest_setData,
+} from '../../../graphModifier/DSLService_GraphModifierHelper';
 
 interface ServiceTestExecutionResult {
   expected: string;
@@ -177,7 +184,8 @@ export class TestContainerState {
           this.editorStore.graphManagerState.graphManager.TEMPORARY__getEngineConfig();
 
         if (connection instanceof JsonModelConnection) {
-          newRuntime.addIdentifiedConnection(
+          runtime_addIdentifiedConnection(
+            newRuntime,
             new IdentifiedConnection(
               newRuntime.generateIdentifiedConnectionId(),
               new JsonModelConnection(
@@ -188,14 +196,16 @@ export class TestContainerState {
                 createUrlStringFromData(
                   /* @MARKER: Workaround for https://github.com/finos/legend-studio/issues/68 */
                   tryToMinifyLosslessJSONString(testData),
-                  JsonModelConnection.CONTENT_TYPE,
+                  ContentType.APPLICATION_JSON,
                   engineConfig.useBase64ForAdhocConnectionDataUrls,
                 ),
               ),
             ),
+            this.editorStore.changeDetectionState.observerContext,
           );
         } else if (connection instanceof XmlModelConnection) {
-          newRuntime.addIdentifiedConnection(
+          runtime_addIdentifiedConnection(
+            newRuntime,
             new IdentifiedConnection(
               newRuntime.generateIdentifiedConnectionId(),
               new XmlModelConnection(
@@ -205,40 +215,47 @@ export class TestContainerState {
                 connection.class,
                 createUrlStringFromData(
                   testData,
-                  XmlModelConnection.CONTENT_TYPE,
+                  ContentType.APPLICATION_XML,
                   engineConfig.useBase64ForAdhocConnectionDataUrls,
                 ),
               ),
             ),
+            this.editorStore.changeDetectionState.observerContext,
           );
         } else if (connection instanceof FlatDataConnection) {
-          newRuntime.addIdentifiedConnection(
+          runtime_addIdentifiedConnection(
+            newRuntime,
             new IdentifiedConnection(
               newRuntime.generateIdentifiedConnectionId(),
               new FlatDataConnection(
                 PackageableElementExplicitReference.create(
-                  connection.flatDataStore,
+                  connection.store.value,
                 ),
                 createUrlStringFromData(
                   testData,
-                  FlatDataConnection.CONTENT_TYPE,
+                  ContentType.TEXT_PLAIN,
                   engineConfig.useBase64ForAdhocConnectionDataUrls,
                 ),
               ),
             ),
+            this.editorStore.changeDetectionState.observerContext,
           );
         } else if (connection instanceof RelationalDatabaseConnection) {
-          newRuntime.addIdentifiedConnection(
+          runtime_addIdentifiedConnection(
+            newRuntime,
             new IdentifiedConnection(
               newRuntime.generateIdentifiedConnectionId(),
               new RelationalDatabaseConnection(
-                PackageableElementExplicitReference.create(connection.database),
+                PackageableElementExplicitReference.create(
+                  connection.store.value,
+                ),
                 // TODO: hard-coded this combination for now, we might want to change to something that makes more sense?
                 DatabaseType.H2,
                 new StaticDatasourceSpecification('dummyHost', 80, 'myDb'),
                 new DefaultH2AuthenticationStrategy(),
               ),
             ),
+            this.editorStore.changeDetectionState.observerContext,
           );
         } else {
           let testConnection: Connection | undefined;
@@ -258,11 +275,13 @@ export class TestContainerState {
             }
           }
           if (testConnection) {
-            newRuntime.addIdentifiedConnection(
+            runtime_addIdentifiedConnection(
+              newRuntime,
               new IdentifiedConnection(
                 newRuntime.generateIdentifiedConnectionId(),
                 testConnection,
               ),
+              this.editorStore.changeDetectionState.observerContext,
             );
           } else {
             throw new UnsupportedOperationError(
@@ -319,9 +338,7 @@ export class TestContainerState {
       assertErrorThrown(error);
       this.setAssertionData(tryToFormatJSONString('{}'));
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(
-          LEGEND_STUDIO_LOG_EVENT_TYPE.SERVICE_TEST_RUNNER_FAILURE,
-        ),
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.SERVICE_TEST_RUNNER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -369,9 +386,7 @@ export class TestContainerState {
       assertErrorThrown(error);
       this.setTestExecutionResultText(undefined);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(
-          LEGEND_STUDIO_LOG_EVENT_TYPE.SERVICE_TEST_RUNNER_FAILURE,
-        ),
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.SERVICE_TEST_RUNNER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -444,7 +459,7 @@ export class SingleExecutionTestState {
       ),
       this.test,
     );
-    this.test.addAssert(testContainer);
+    singleExecTest_addAssert(this.test, testContainer);
     this.openTestContainer(testContainer);
     this.allTestRunTime = 0;
   }
@@ -452,7 +467,7 @@ export class SingleExecutionTestState {
   deleteTestContainerState(val: TestContainer): void {
     const idx = this.test.asserts.findIndex((assert) => assert === val);
     if (idx !== -1) {
-      this.test.deleteAssert(val);
+      singleExecTest_deleteAssert(this.test, val);
       this.testResults.splice(idx, 1);
       this.allTestRunTime = 0;
     }
@@ -501,15 +516,15 @@ export class SingleExecutionTestState {
       } catch (error) {
         assertErrorThrown(error);
         this.editorStore.applicationStore.log.error(
-          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.EXECUTION_FAILURE),
+          LogEvent.create(GRAPH_MANAGER_EVENT.EXECUTION_FAILURE),
           error,
         );
       }
     }
     if (generatedTestData) {
-      this.test.setData(generatedTestData);
+      singleExecTest_setData(this.test, generatedTestData);
     } else {
-      this.test.setData('');
+      singleExecTest_setData(this.test, '');
       this.editorStore.applicationStore.notifyError(
         `Can't auto-generate test data for service`,
       );
@@ -540,9 +555,7 @@ export class SingleExecutionTestState {
         })),
       );
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(
-          LEGEND_STUDIO_LOG_EVENT_TYPE.SERVICE_TEST_RUNNER_FAILURE,
-        ),
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.SERVICE_TEST_RUNNER_FAILURE),
         error,
       );
     } finally {

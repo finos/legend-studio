@@ -21,6 +21,7 @@ import {
   assertErrorThrown,
   guaranteeNonNullable,
   LogEvent,
+  addUniqueEntry,
 } from '@finos/legend-shared';
 import { CORE_PURE_PATH } from '../../../../../../../MetaModelConst';
 import { Class } from '../../../../../../metamodels/pure/packageableElements/domain/Class';
@@ -90,9 +91,12 @@ export class V1_ProtocolToMetaModelGraphThirdPassBuilder
       if (type !== CORE_PURE_PATH.ANY) {
         try {
           const genricTypeReference = this.context.resolveGenericType(type);
-          _class.addSuperType(genricTypeReference);
+          addUniqueEntry(_class.generalizations, genricTypeReference);
           if (genricTypeReference.ownerReference.value instanceof Class) {
-            genricTypeReference.ownerReference.value.addSubclass(_class);
+            addUniqueEntry(
+              genricTypeReference.ownerReference.value.subclasses,
+              _class,
+            );
           }
         } catch (error) {
           assertErrorThrown(error);
@@ -139,10 +143,10 @@ export class V1_ProtocolToMetaModelGraphThirdPassBuilder
         ),
       );
     }
-    association.setProperties([
+    association.properties = [
       V1_buildAssociationProperty(first, second, this.context, association),
       V1_buildAssociationProperty(second, first, this.context, association),
-    ]);
+    ];
     association.stereotypes = element.stereotypes
       .map((stereotype) => this.context.resolveStereotype(stereotype))
       .filter(isNonNullable);

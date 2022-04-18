@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+export * from './models/server/SDLCServerFeaturesConfiguration';
+
 export * from './models/entity/EntityChange';
 export * from './models/entity/EntityChangeConflict';
 export * from './models/entity/EntityChangeUtils';

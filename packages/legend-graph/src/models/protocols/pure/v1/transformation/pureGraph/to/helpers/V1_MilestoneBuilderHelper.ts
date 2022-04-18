@@ -18,13 +18,14 @@ import type { PlainObject } from '@finos/legend-shared';
 import type { PureModel } from '../../../../../../../../graph/PureModel';
 import { getMilestoneTemporalStereotype } from '../../../../../../../../helpers/DomainHelper';
 import {
-  DEFAULT_MILESTONING_PARAMETERS,
-  END_DATE,
+  DEFAULT_PROCESSING_DATE_MILESTONING_PARAMETER_NAME,
+  MILESTONING_END_DATE_PARAMETER_NAME,
   MilestoneVersionPropertySufixes,
-  MILESTONING_STEROTYPES,
+  MILESTONING_STEROTYPE,
   PRIMITIVE_TYPE,
-  START_DATE,
+  MILESTONING_START_DATE_PARAMETER_NAME,
   TYPICAL_MULTIPLICITY_TYPE,
+  DEFAULT_BUSINESS_DATE_MILESTONING_PARAMETER_NAME,
 } from '../../../../../../../../MetaModelConst';
 import type { PropertyOwner } from '../../../../../../../metamodels/pure/packageableElements/domain/AbstractProperty';
 import { Class } from '../../../../../../../metamodels/pure/packageableElements/domain/Class';
@@ -66,7 +67,7 @@ export const V1_ProcessMilestoningProperties = (
         graph,
       );
       switch (milestonedStereotype) {
-        case MILESTONING_STEROTYPES.BUSINESS_TEMPORAL: {
+        case MILESTONING_STEROTYPE.BUSINESS_TEMPORAL: {
           const dateProperty = new DerivedProperty(
             property.name,
             property.multiplicity,
@@ -77,7 +78,7 @@ export const V1_ProcessMilestoningProperties = (
           );
           dateProperty.parameters = [
             buildMilestoningParameter(
-              DEFAULT_MILESTONING_PARAMETERS.BUSINESS_DATE,
+              DEFAULT_BUSINESS_DATE_MILESTONING_PARAMETER_NAME,
               graph,
             ),
           ];
@@ -98,8 +99,14 @@ export const V1_ProcessMilestoningProperties = (
             property.owner,
           );
           milestonedAllVersionsInRange.parameters = [
-            buildMilestoningParameter(START_DATE, graph),
-            buildMilestoningParameter(END_DATE, graph),
+            buildMilestoningParameter(
+              MILESTONING_START_DATE_PARAMETER_NAME,
+              graph,
+            ),
+            buildMilestoningParameter(
+              MILESTONING_END_DATE_PARAMETER_NAME,
+              graph,
+            ),
           ];
           propertyOwner._generatedMilestonedProperties.push(dateProperty);
           propertyOwner._generatedMilestonedProperties.push(
@@ -110,9 +117,9 @@ export const V1_ProcessMilestoningProperties = (
           );
           break;
         }
-        case MILESTONING_STEROTYPES.PROCESSING_TEMPORAL: {
+        case MILESTONING_STEROTYPE.PROCESSING_TEMPORAL: {
           const dateProperty = new DerivedProperty(
-            `${property.name}`,
+            property.name,
             property.multiplicity,
             GenericTypeExplicitReference.create(
               new GenericType(property.genericType.value.rawType),
@@ -121,7 +128,7 @@ export const V1_ProcessMilestoningProperties = (
           );
           dateProperty.parameters = [
             buildMilestoningParameter(
-              DEFAULT_MILESTONING_PARAMETERS.PROCESSING_DATE,
+              DEFAULT_PROCESSING_DATE_MILESTONING_PARAMETER_NAME,
               graph,
             ),
           ];
@@ -142,8 +149,14 @@ export const V1_ProcessMilestoningProperties = (
             property.owner,
           );
           milestonedAllVersionsInRange.parameters = [
-            buildMilestoningParameter(START_DATE, graph),
-            buildMilestoningParameter(END_DATE, graph),
+            buildMilestoningParameter(
+              MILESTONING_START_DATE_PARAMETER_NAME,
+              graph,
+            ),
+            buildMilestoningParameter(
+              MILESTONING_END_DATE_PARAMETER_NAME,
+              graph,
+            ),
           ];
           propertyOwner._generatedMilestonedProperties.push(dateProperty);
           propertyOwner._generatedMilestonedProperties.push(
@@ -154,9 +167,9 @@ export const V1_ProcessMilestoningProperties = (
           );
           break;
         }
-        case MILESTONING_STEROTYPES.BITEMPORAL: {
+        case MILESTONING_STEROTYPE.BITEMPORAL: {
           const dateProperty = new DerivedProperty(
-            `${property.name}`,
+            property.name,
             property.multiplicity,
             GenericTypeExplicitReference.create(
               new GenericType(property.genericType.value.rawType),
@@ -165,11 +178,11 @@ export const V1_ProcessMilestoningProperties = (
           );
           dateProperty.parameters = [
             buildMilestoningParameter(
-              DEFAULT_MILESTONING_PARAMETERS.PROCESSING_DATE,
+              DEFAULT_PROCESSING_DATE_MILESTONING_PARAMETER_NAME,
               graph,
             ),
             buildMilestoningParameter(
-              DEFAULT_MILESTONING_PARAMETERS.BUSINESS_DATE,
+              DEFAULT_BUSINESS_DATE_MILESTONING_PARAMETER_NAME,
               graph,
             ),
           ];

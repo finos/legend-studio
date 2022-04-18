@@ -23,7 +23,6 @@ import {
 } from '../roundtripTestData/TEST_DATA__GenericRoundtrip';
 import TEST_DATA__m2mGraphEntities from './TEST_DATA__M2MGraphEntities.json';
 import { TEST_DATA__SimpleGraph } from './TEST_DATA__Core';
-import { flowResult } from 'mobx';
 import type { Entity } from '@finos/legend-model-storage';
 import {
   TEST__buildGraphWithEntities,
@@ -62,18 +61,13 @@ const testGeneratedElements = async (
   // build generation graph
   const generatedEntitiesMap = new Map<string, Entity[]>();
   generatedEntitiesMap.set(PARENT_ELEMENT_PATH, generatedEntities);
-  await flowResult(
-    graphManagerState.graphManager.buildGenerations(
-      graphManagerState.graph,
-      generatedEntitiesMap,
-    ),
+  await graphManagerState.graphManager.buildGenerations(
+    graphManagerState.graph,
+    generatedEntitiesMap,
   );
 
   expect(graphManagerState.graph.generationModel.allOwnElements.length).toBe(
     generatedElementPaths.length,
-  );
-  const parentElement = guaranteeNonNullable(
-    graphManagerState.graph.getElement(PARENT_ELEMENT_PATH),
   );
   generatedElementPaths.forEach((e) => {
     const element =
@@ -92,8 +86,7 @@ const testGeneratedElements = async (
     );
     expect(elementInMainGraph).toBeUndefined();
     expect(elementInGraph).toBe(element);
-    expect(elementInGraph.isReadOnly).toBe(true);
-    expect(elementInGraph.generationParentElement).toBe(parentElement);
+    expect(graphManagerState.isElementReadOnly(elementInGraph)).toBe(true);
   });
 
   const transformedEntities = graphManagerState.graph.allOwnElements.map((el) =>

@@ -68,6 +68,10 @@ import type { ElementEditorState } from '../../../../stores/editor-state/element
 import { SchemaSetEditorState } from '../../../../stores/editor-state/element-editor-state/externalFormat/SchemaSetEditorState';
 import { BindingEditorState } from '../../../../stores/editor-state/element-editor-state/externalFormat/BindingEditorState';
 import type { ConnectionValueState } from '../../../../stores/editor-state/element-editor-state/connection/ConnectionEditorState';
+import {
+  externalFormat_Binding_setContentType,
+  externalFormat_urlStream_setUrl,
+} from '../../../../stores/graphModifier/DSLExternalFormat_GraphModifierHelper';
 
 const SCHEMA_SET_ELEMENT_TYPE = 'SCHEMASET';
 const SCHEMA_SET_ELEMENT_PROJECT_EXPLORER_DND_TYPE =
@@ -152,7 +156,8 @@ export class DSLExternalFormat_LegendStudioPlugin
           return schemaSet;
         } else if (type === BINDING_ELEMENT_TYPE) {
           const binding = new Binding(name);
-          binding.setContentType(
+          externalFormat_Binding_setContentType(
+            binding,
             guaranteeNonNullable(externalFormatState.formatContentTypes[0]),
           );
           binding.schemaSet =
@@ -247,7 +252,7 @@ export class DSLExternalFormat_LegendStudioPlugin
             PackageableElementExplicitReference.create(store),
           );
           const urlStream = new UrlStream();
-          urlStream.setUrl('');
+          externalFormat_urlStream_setUrl(urlStream, '');
           externalFormatConnection.externalSource = urlStream;
           return externalFormatConnection;
         }

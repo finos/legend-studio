@@ -50,12 +50,13 @@ import {
   TEST__buildGraphWithEntities,
   TEST__getTestGraphManagerState,
   DSLExternalFormat_GraphPreset,
-  GRAPH_MANAGER_LOG_EVENT,
-  V1_ENGINE_LOG_EVENT,
+  GRAPH_MANAGER_EVENT,
+  V1_ENGINE_EVENT,
 } from '@finos/legend-graph';
 import { DSLText_GraphPreset } from '@finos/legend-extension-dsl-text';
 import { DSLDiagram_GraphPreset } from '@finos/legend-extension-dsl-diagram';
 import { DSLDataSpace_GraphPreset } from '@finos/legend-extension-dsl-data-space';
+import { DSLPersistence_GraphPreset } from '@finos/legend-extension-dsl-persistence';
 import { ESService_GraphPreset } from '@finos/legend-extension-external-store-service';
 
 const engineConfig = JSON.parse(
@@ -177,6 +178,7 @@ const profileRoundtrip = async (
       new DSLDiagram_GraphPreset(),
       new DSLExternalFormat_GraphPreset(),
       new DSLDataSpace_GraphPreset(),
+      new DSLPersistence_GraphPreset(),
       new ESService_GraphPreset(),
     ])
     .usePlugins([new WebConsole()]);
@@ -211,29 +213,31 @@ const profileRoundtrip = async (
   );
   if (options.debug) {
     log.info(
-      LogEvent.create(V1_ENGINE_LOG_EVENT.GRAMMAR_TO_JSON),
+      LogEvent.create(V1_ENGINE_EVENT.GRAMMAR_TO_JSON),
       Date.now() - startTime,
       'ms',
     );
   }
-  const entities = graphManagerState.graphManager.pureProtocolToEntities(
+  const entities = graphManagerState.graphManager.pureProtocolTextToEntities(
     JSON.stringify(transformGrammarToJsonResult.data.modelDataContext),
   );
   if (options.debug) {
     log.info(
-      LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_ENTITIES_FETCHED),
+      LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_ENTITIES_FETCHED),
       `[entities: ${entities.length}]`,
     );
   }
+
   // Phase 2: Build Graph
   phase = Profile_TEST_PHASE.GRAPH_BUILDING;
+  logPhase(phase, log, options.debug);
   startTime = Date.now();
   await TEST__buildGraphWithEntities(graphManagerState, entities, {
     TEMPORARY__keepSectionIndex: true,
   });
   if (options.debug) {
     log.info(
-      LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_INITIALIZED),
+      LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_INITIALIZED),
       Date.now() - startTime,
       'ms',
     );
@@ -246,7 +250,7 @@ const profileRoundtrip = async (
   );
   if (options.debug) {
     log.info(
-      LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_PROTOCOL_SERIALIZED),
+      LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_PROTOCOL_SERIALIZED),
       Date.now() - startTime,
       'ms',
     );
@@ -281,7 +285,7 @@ const profileRoundtrip = async (
   );
   if (options.debug) {
     log.info(
-      LogEvent.create(V1_ENGINE_LOG_EVENT.JSON_TO_GRAMMAR),
+      LogEvent.create(V1_ENGINE_EVENT.JSON_TO_GRAMMAR),
       Date.now() - startTime,
       'ms',
     );
@@ -298,7 +302,7 @@ const profileRoundtrip = async (
   >(`${ENGINE_SERVER_URL}/pure/v1/compilation/compile`, modelDataContext);
   if (options.debug) {
     log.info(
-      LogEvent.create(V1_ENGINE_LOG_EVENT.COMPILATION),
+      LogEvent.create(V1_ENGINE_EVENT.COMPILATION),
       Date.now() - startTime,
       'ms',
     );

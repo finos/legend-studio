@@ -15,15 +15,15 @@
  */
 
 import { observable, action, flow, makeObservable } from 'mobx';
-import { EditorState } from '../editor-state/EditorState';
+import { EditorState } from './EditorState';
 import {
   type GeneratorFn,
   assertErrorThrown,
   LogEvent,
   UnsupportedOperationError,
-  guaranteeNonNullable,
+  isNonNullable,
 } from '@finos/legend-shared';
-import { LEGEND_STUDIO_LOG_EVENT_TYPE } from '../LegendStudioLogEvent';
+import { LEGEND_STUDIO_APP_EVENT } from '../LegendStudioAppEvent';
 import type { EditorStore } from '../EditorStore';
 import type { Entity } from '@finos/legend-model-storage';
 import {
@@ -31,6 +31,10 @@ import {
   ImportMode,
 } from '@finos/legend-graph';
 import { TAB_SIZE } from '@finos/legend-application';
+import type {
+  ModelLoaderExtensionConfiguration,
+  LegendStudioPlugin,
+} from '../LegendStudioPlugin';
 
 export enum MODEL_UPDATER_INPUT_TYPE {
   ENTITIES = 'ENTITIES',
@@ -39,9 +43,11 @@ export enum MODEL_UPDATER_INPUT_TYPE {
 
 export class ModelLoaderState extends EditorState {
   modelText = this.getExampleEntitiesInputText();
-  currentInputType = MODEL_UPDATER_INPUT_TYPE.ENTITIES;
-  currentExternalInputType?: string | undefined;
+  currentModelLoadType: MODEL_UPDATER_INPUT_TYPE | string =
+    MODEL_UPDATER_INPUT_TYPE.ENTITIES;
+  // TODO: remove model import in favor of external formats
   modelImportDescriptions: ImportConfigurationDescription[] = [];
+  modelLoaderExtensionConfigurations: ModelLoaderExtensionConfiguration[] = [];
   replace = true;
   isLoadingModel = false;
 
@@ -50,66 +56,75 @@ export class ModelLoaderState extends EditorState {
 
     makeObservable(this, {
       modelText: observable,
-      currentInputType: observable,
-      currentExternalInputType: observable,
+      currentModelLoadType: observable,
       modelImportDescriptions: observable,
+      modelLoaderExtensionConfigurations: observable,
       replace: observable,
       isLoadingModel: observable,
       setReplaceFlag: action,
       setModelText: action,
-      setCurrentInputType: action,
-      setCurrentExternalFormatInputType: action,
       loadCurrentProjectEntities: flow,
       loadModel: flow,
       fetchAvailableModelImportDescriptions: flow,
     });
+
+    //extensions
+    this.modelLoaderExtensionConfigurations = this.editorStore.pluginManager
+      .getStudioPlugins()
+      .flatMap(
+        (plugin: LegendStudioPlugin) =>
+          plugin.getExtraModelLoaderExtensionConfigurations?.() ?? [],
+      )
+      .filter(isNonNullable);
   }
 
   get headerName(): string {
     return 'Model Loader';
   }
 
+  getImportConfigurationDescription(
+    key: string,
+  ): ImportConfigurationDescription | undefined {
+    return this.modelImportDescriptions.find((i) => i.key === key);
+  }
+  getLoaderExtensionConfiguration(
+    key: string,
+  ): ModelLoaderExtensionConfiguration | undefined {
+    return this.modelLoaderExtensionConfigurations.find(
+      (i) => i.modelGenerationConfig.key === key,
+    );
+  }
   setReplaceFlag(val: boolean): void {
     this.replace = val;
   }
   setModelText(modelText: string): void {
     this.modelText = modelText;
   }
-
-  setCurrentInputType(inputType: MODEL_UPDATER_INPUT_TYPE): void {
-    this.currentInputType = inputType;
-    this.setCurrentExternalFormatInputType(undefined);
-    switch (inputType) {
-      case MODEL_UPDATER_INPUT_TYPE.PURE_PROTOCOL: {
-        this.modelText = this.getExamplePureProtocolInputText();
-        break;
-      }
-      case MODEL_UPDATER_INPUT_TYPE.ENTITIES: {
-        this.modelText = this.getExampleEntitiesInputText();
-        break;
-      }
-      default:
-        throw new UnsupportedOperationError(
-          `Can't use model loader with input of type '${inputType}'`,
-        );
-    }
-  }
-
-  setCurrentExternalFormatInputType(
-    inputType: ImportConfigurationDescription | undefined,
+  setCurrentModelLoadType(
+    modelLoadType: MODEL_UPDATER_INPUT_TYPE | string,
   ): void {
-    this.currentExternalInputType = inputType?.key;
-    if (this.currentExternalInputType) {
-      this.modelText = this.getExampleExternalFormatInputText();
+    if (modelLoadType !== this.currentModelLoadType) {
+      this.currentModelLoadType = modelLoadType;
+      this.modelText = this.getExampleText(modelLoadType);
     }
   }
 
+  getExampleText(inputType: MODEL_UPDATER_INPUT_TYPE | string): string {
+    if (inputType === MODEL_UPDATER_INPUT_TYPE.PURE_PROTOCOL) {
+      return this.getExamplePureProtocolInputText();
+    } else if (inputType === MODEL_UPDATER_INPUT_TYPE.ENTITIES) {
+      return this.getExampleEntitiesInputText();
+    } else if (this.getImportConfigurationDescription(inputType)) {
+      return this.getExampleExternalFormatInputText();
+    }
+    return '';
+  }
   /**
    * Current project entities will be taken from the current graph
    * If graph is not parsable, we will fall back to model loader
    */
   *loadCurrentProjectEntities(): GeneratorFn<void> {
-    switch (this.currentInputType) {
+    switch (this.currentModelLoadType) {
       case MODEL_UPDATER_INPUT_TYPE.PURE_PROTOCOL: {
         const graphEntities = this.editorStore.graphManagerState.graph
           .buildState.hasSucceeded
@@ -143,7 +158,7 @@ export class ModelLoaderState extends EditorState {
       }
       default:
         throw new UnsupportedOperationError(
-          `Can't load current project entities for input type of type '${this.currentInputType}'`,
+          `Can't load current project entities for input type of type '${this.currentModelLoadType}'`,
         );
     }
   }
@@ -157,18 +172,21 @@ export class ModelLoaderState extends EditorState {
         showLoading: true,
       });
       let entities: Entity[];
-      if (this.currentExternalInputType) {
+      const externalConfigType = this.getImportConfigurationDescription(
+        this.currentModelLoadType,
+      );
+      if (externalConfigType) {
         entities =
           (yield this.editorStore.graphManagerState.graphManager.externalFormatTextToEntities(
             this.modelText,
-            this.currentExternalInputType,
+            externalConfigType.key,
             ImportMode.SCHEMA_IMPORT,
           )) as Entity[];
       } else {
-        switch (this.currentInputType) {
+        switch (this.currentModelLoadType) {
           case MODEL_UPDATER_INPUT_TYPE.PURE_PROTOCOL: {
             entities =
-              this.editorStore.graphManagerState.graphManager.pureProtocolToEntities(
+              this.editorStore.graphManagerState.graphManager.pureProtocolTextToEntities(
                 this.modelText,
               );
             break;
@@ -179,7 +197,7 @@ export class ModelLoaderState extends EditorState {
           }
           default:
             throw new UnsupportedOperationError(
-              `Can't load model for input of type '${this.currentInputType}'`,
+              `Can't load model for input of type '${this.currentModelLoadType}'`,
             );
         }
       }
@@ -197,7 +215,7 @@ export class ModelLoaderState extends EditorState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.MODEL_LOADER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.MODEL_LOADER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -207,13 +225,6 @@ export class ModelLoaderState extends EditorState {
     }
   }
 
-  getImportConfiguration(key: string): ImportConfigurationDescription {
-    return guaranteeNonNullable(
-      this.modelImportDescriptions.find((config) => config.key === key),
-      `Can't find configuration description for import type '${key}'`,
-    );
-  }
-
   *fetchAvailableModelImportDescriptions(): GeneratorFn<void> {
     try {
       this.modelImportDescriptions =
@@ -221,7 +232,7 @@ export class ModelLoaderState extends EditorState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.MODEL_LOADER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.MODEL_LOADER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);

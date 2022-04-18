@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { makeObservable, observable, action } from 'mobx';
 import type { GenericTypeReference } from '../packageableElements/domain/GenericTypeReference';
 import type { Multiplicity } from '../packageableElements/domain/Multiplicity';
 import {
@@ -30,18 +29,8 @@ export class VariableExpression extends ValueSpecification {
     multiplicity: Multiplicity,
     genericType?: GenericTypeReference | undefined,
   ) {
-    super(multiplicity);
-    makeObservable<VariableExpression>(this, {
-      name: observable,
-      genericType: observable,
-      setName: action,
-    });
+    super(multiplicity, genericType);
     this.name = name;
-    this.genericType = genericType;
-  }
-
-  setName(val: string): void {
-    this.name = val;
   }
 
   accept_ValueSpecificationVisitor<T>(

@@ -22,7 +22,7 @@ import {
   guaranteeNonNullable,
   returnUndefOnError,
 } from '@finos/legend-shared';
-import { GRAPH_MANAGER_LOG_EVENT } from '../../../../../../../graphManager/GraphManagerLogEvent';
+import { GRAPH_MANAGER_EVENT } from '../../../../../../../graphManager/GraphManagerEvent';
 import type { PropertyMapping } from '../../../../../../metamodels/pure/packageableElements/mapping/PropertyMapping';
 import { PurePropertyMapping } from '../../../../../../metamodels/pure/packageableElements/store/modelToModel/mapping/PurePropertyMapping';
 import { RelationalPropertyMapping } from '../../../../../../metamodels/pure/packageableElements/store/relational/mapping/RelationalPropertyMapping';
@@ -89,7 +89,7 @@ import {
 } from '../../../../../../../helpers/MappingHelper';
 import { GraphBuilderError } from '../../../../../../../graphManager/GraphManagerUtils';
 import type { AbstractProperty } from '../../../../../../metamodels/pure/packageableElements/domain/AbstractProperty';
-import { BindingTransformer } from '../../../../../../metamodels/pure/packageableElements/externalFormat/store/BindingTransformer';
+import { BindingTransformer } from '../../../../../../metamodels/pure/packageableElements/externalFormat/store/DSLExternalFormat_BindingTransformer';
 import type { Mapping } from '../../../../../../metamodels/pure/packageableElements/mapping/Mapping';
 import { V1_resolveBinding } from './V1_DSLExternalFormat_GraphBuilderHelper';
 
@@ -253,7 +253,7 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
       if (!enumerationMapping) {
         // TODO: Since we don't support includedMappings, this will throw errors, but right now we can just make it undefined.
         this.context.log.debug(
-          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE),
+          LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_FAILURE),
           `Can't find enumeration mapping with ID '${protocol.enumMappingId}' in mapping '${topParent.parent.path}' (perhaps because we haven't supported included mappings)`,
         );
       }
@@ -333,7 +333,7 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
       if (!enumerationMapping) {
         // TODO: Since we don't support includedMappings, this will throw errors, but right now we can just make it undefined.
         this.context.log.debug(
-          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE),
+          LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_FAILURE),
           `Can't find enumeration mapping with ID '${protocol.enumMappingId}' in mapping '${this.topParent?.parent.path} (perhaps because we haven't supported included mappings)`,
         );
       }
@@ -584,7 +584,7 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
       if (!enumerationMapping) {
         // TODO: Since we don't support includedMappings, this will throw errors, but right now we can just make it undefined.
         this.context.log.debug(
-          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE),
+          LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_FAILURE),
           `Can't find enumeration mapping with ID '${protocol.enumMappingId}' in mapping '${this.topParent?.parent.path}' (perhaps because we haven't supported included mappings)`,
         );
       }

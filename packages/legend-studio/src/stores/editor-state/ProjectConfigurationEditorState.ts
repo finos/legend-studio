@@ -37,7 +37,7 @@ import {
   ProjectStructureVersion,
   UpdateProjectConfigurationCommand,
 } from '@finos/legend-server-sdlc';
-import { LEGEND_STUDIO_LOG_EVENT_TYPE } from '../LegendStudioLogEvent';
+import { LEGEND_STUDIO_APP_EVENT } from '../LegendStudioAppEvent';
 import { ProjectData } from '@finos/legend-server-depot';
 
 export enum CONFIGURATION_EDITOR_TAB {
@@ -128,7 +128,7 @@ export class ProjectConfigurationEditorState extends EditorState {
       (
         (yield this.editorStore.depotServerClient.getProjects()) as PlainObject<ProjectData>[]
       )
-        .map((project) => ProjectData.serialization.fromJson(project))
+        .map(ProjectData.serialization.fromJson)
         // filter out non versioned projects
         .filter((p) => Boolean(p.versions.length))
         .forEach((project) => this.projects.set(project.coordinates, project));
@@ -152,7 +152,7 @@ export class ProjectConfigurationEditorState extends EditorState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.SDLC_MANAGER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(
@@ -197,7 +197,7 @@ export class ProjectConfigurationEditorState extends EditorState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.SDLC_MANAGER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -219,7 +219,7 @@ export class ProjectConfigurationEditorState extends EditorState {
       } catch (error) {
         assertErrorThrown(error);
         this.editorStore.applicationStore.log.error(
-          LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.SDLC_MANAGER_FAILURE),
+          LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
           error,
         );
         this.editorStore.applicationStore.notifyError(error);
@@ -227,7 +227,8 @@ export class ProjectConfigurationEditorState extends EditorState {
     }
   }
 
-  // FIXME: we will probably need to remove this in the future when we have a better strategy for change detection and persistence of project config
+  // TODO: we will probably need to remove this in the future when we have a better strategy for change detection and persistence of project config
+  // See https://github.com/finos/legend-studio/issues/952
   *updateConfigs(): GeneratorFn<void> {
     this.isUpdatingConfiguration = true;
     try {
@@ -258,7 +259,7 @@ export class ProjectConfigurationEditorState extends EditorState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.SDLC_MANAGER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -276,7 +277,7 @@ export class ProjectConfigurationEditorState extends EditorState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.SDLC_MANAGER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);

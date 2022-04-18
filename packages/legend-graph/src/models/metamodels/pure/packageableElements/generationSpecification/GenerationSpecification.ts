@@ -14,52 +14,29 @@
  * limitations under the License.
  */
 
-import { computed, observable, action, makeObservable, override } from 'mobx';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
-import {
-  type Hashable,
-  UnsupportedOperationError,
-  hashArray,
-  addUniqueEntry,
-  deleteEntry,
-} from '@finos/legend-shared';
-import { FileGenerationSpecification } from '../fileGeneration/FileGenerationSpecification';
+import { type Hashable, hashArray } from '@finos/legend-shared';
 import {
   type PackageableElementVisitor,
   PackageableElement,
   PACKAGEABLE_ELEMENT_POINTER_TYPE,
   getElementPointerHashCode,
 } from '../PackageableElement';
-import {
-  type PackageableElementReference,
-  PackageableElementExplicitReference,
-} from '../PackageableElementReference';
-import { ModelGenerationSpecification } from './ModelGenerationSpecification';
+import type { PackageableElementReference } from '../PackageableElementReference';
+import type { FileGenerationSpecification } from '../fileGeneration/FileGenerationSpecification';
 
 // NOTE: As of now the tree only supports a linear order of generation. This is because the only use case is linear,
 // but the shape has been left as a tree to support 'branching' off in the future.
 export class GenerationTreeNode implements Hashable {
   generationElement: PackageableElementReference<PackageableElement>;
   id: string;
-  parent?: GenerationTreeNode | undefined;
 
   constructor(
     generationElement: PackageableElementReference<PackageableElement>,
     id?: string,
   ) {
-    makeObservable(this, {
-      id: observable,
-      parent: observable,
-      hashCode: computed,
-      setId: action,
-    });
-
     this.generationElement = generationElement;
     this.id = id ?? generationElement.value.path;
-  }
-
-  setId(val: string): void {
-    this.id = val;
   }
 
   get hashCode(): string {
@@ -78,64 +55,6 @@ export class GenerationSpecification
   generationNodes: GenerationTreeNode[] = [];
   fileGenerations: PackageableElementReference<FileGenerationSpecification>[] =
     [];
-
-  constructor(name: string) {
-    super(name);
-
-    makeObservable<GenerationSpecification, '_elementHashCode'>(this, {
-      generationNodes: observable,
-      fileGenerations: observable,
-      deleteFileGeneration: action,
-      addGenerationElement: action,
-      deleteGenerationNode: action,
-      addNode: action,
-      addFileGeneration: action,
-      findGenerationElementById: action,
-      _elementHashCode: override,
-    });
-  }
-
-  // NOTE as of now the generation specification only supports model generation elements i.e elements that generate another graph compatabile with the current graph.
-  addGenerationElement(element: PackageableElement): void {
-    if (
-      !(
-        element instanceof ModelGenerationSpecification ||
-        element instanceof FileGenerationSpecification
-      )
-    ) {
-      throw new UnsupportedOperationError(
-        `Can't add generation element: only model generation elements can be added to the generation specification`,
-        element,
-      );
-    }
-    if (element instanceof FileGenerationSpecification) {
-      this.addFileGeneration(element);
-    } else {
-      this.addNode(
-        new GenerationTreeNode(
-          PackageableElementExplicitReference.create(element),
-        ),
-      );
-    }
-  }
-
-  addNode(value: GenerationTreeNode): void {
-    addUniqueEntry(this.generationNodes, value);
-  }
-  addFileGeneration(value: FileGenerationSpecification): void {
-    addUniqueEntry(
-      this.fileGenerations,
-      PackageableElementExplicitReference.create(value),
-    );
-  }
-  deleteFileGeneration(
-    value: PackageableElementReference<FileGenerationSpecification>,
-  ): void {
-    deleteEntry(this.fileGenerations, value);
-  }
-  deleteGenerationNode(value: GenerationTreeNode): void {
-    deleteEntry(this.generationNodes, value);
-  }
 
   findGenerationElementById(id: string): PackageableElement | undefined {
     return this.generationNodes.find((node) => node.id === id)

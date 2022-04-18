@@ -50,7 +50,6 @@ import type {
 } from '../models/metamodels/pure/executionPlan/ExecutionPlan';
 import type { ExecutionNode } from '../models/metamodels/pure/executionPlan/nodes/ExecutionNode';
 import type {
-  GeneratorFn,
   Log,
   ServerClientConfig,
   TracerService,
@@ -62,6 +61,7 @@ import type { QuerySearchSpecification } from './action/query/QuerySearchSpecifi
 import type { ExternalFormatDescription } from './action/externalFormat/ExternalFormatDescription';
 import type { ConfigurationProperty } from '../models/metamodels/pure/packageableElements/fileGeneration/ConfigurationProperty';
 import type { GraphBuilderReport } from './GraphBuilderReport';
+import type { ModelGenerationConfiguration } from '../models/ModelGenerationConfiguration';
 
 export interface TEMPORARY__EngineSetupConfig {
   env: string;
@@ -111,7 +111,7 @@ export abstract class AbstractPureGraphManager {
     options?: {
       tracerService?: TracerService | undefined;
     },
-  ): GeneratorFn<void>;
+  ): Promise<void>;
 
   // --------------------------------------------- Graph Builder ---------------------------------------------
 
@@ -125,7 +125,7 @@ export abstract class AbstractPureGraphManager {
     coreModel: CoreModel,
     systemModel: SystemModel,
     options?: GraphBuilderOptions,
-  ): GeneratorFn<GraphBuilderReport>;
+  ): Promise<GraphBuilderReport>;
 
   /**
    * Process entities and build the main graph.
@@ -134,7 +134,7 @@ export abstract class AbstractPureGraphManager {
     graph: PureModel,
     entities: Entity[],
     options?: GraphBuilderOptions,
-  ): GeneratorFn<GraphBuilderReport>;
+  ): Promise<GraphBuilderReport>;
 
   /**
    * Build immutable models which holds dependencies.
@@ -150,13 +150,13 @@ export abstract class AbstractPureGraphManager {
     dependencyManager: DependencyManager,
     dependencyEntitiesMap: Map<string, Entity[]>,
     options?: GraphBuilderOptions,
-  ): GeneratorFn<GraphBuilderReport>;
+  ): Promise<GraphBuilderReport>;
 
   abstract buildGenerations(
     graph: PureModel,
     generationEntities: Map<string, Entity[]>,
     options?: GraphBuilderOptions,
-  ): GeneratorFn<GraphBuilderReport>;
+  ): Promise<GraphBuilderReport>;
 
   // ------------------------------------------- Grammar -------------------------------------------
 
@@ -239,6 +239,10 @@ export abstract class AbstractPureGraphManager {
     generationElement: PackageableElement,
     graph: PureModel,
   ): Promise<Entity[]>;
+  abstract generateModelFromConfiguration(
+    config: ModelGenerationConfiguration,
+    graph: PureModel,
+  ): Promise<Entity[]>;
 
   // ------------------------------------------- External Format ----------------------------------
 
@@ -264,7 +268,7 @@ export abstract class AbstractPureGraphManager {
   abstract getExamplePureProtocolText(): string;
   abstract getExampleExternalFormatImportText(): string;
   abstract entitiesToPureProtocolText(entities: Entity[]): Promise<string>;
-  abstract pureProtocolToEntities(protocol: string): Entity[];
+  abstract pureProtocolTextToEntities(protocol: string): Entity[];
 
   // ------------------------------------------- Execute -------------------------------------------
 
@@ -277,14 +281,6 @@ export abstract class AbstractPureGraphManager {
     options?: ExecutionOptions,
   ): Promise<ExecutionResult>;
 
-  abstract generateMappingTestData(
-    graph: PureModel,
-    mapping: Mapping,
-    lambda: RawLambda,
-    runtime: Runtime,
-    clientVersion: string,
-  ): Promise<string>;
-
   abstract generateExecutionPlan(
     graph: PureModel,
     mapping: Mapping,
@@ -292,6 +288,14 @@ export abstract class AbstractPureGraphManager {
     runtime: Runtime,
     clientVersion: string,
   ): Promise<RawExecutionPlan>;
+
+  abstract debugExecutionPlanGeneration(
+    graph: PureModel,
+    mapping: Mapping,
+    lambda: RawLambda,
+    runtime: Runtime,
+    clientVersion: string,
+  ): Promise<{ plan: RawExecutionPlan; debug: string }>;
 
   abstract buildExecutionPlan(
     executionPlanJson: RawExecutionPlan,
@@ -303,6 +307,14 @@ export abstract class AbstractPureGraphManager {
   ): RawExecutionPlan;
 
   abstract serializeExecutionNode(executionNode: ExecutionNode): object;
+
+  abstract generateMappingTestData(
+    graph: PureModel,
+    mapping: Mapping,
+    lambda: RawLambda,
+    runtime: Runtime,
+    clientVersion: string,
+  ): Promise<string>;
 
   // ------------------------------------------- Service -------------------------------------------
 
@@ -335,6 +347,19 @@ export abstract class AbstractPureGraphManager {
   abstract createQuery(query: Query, graph: PureModel): Promise<Query>;
   abstract updateQuery(query: Query, graph: PureModel): Promise<Query>;
   abstract deleteQuery(queryId: string): Promise<void>;
+
+  // ------------------------------------------- Legend Query -------------------------------------
+  abstract buildGraphForCreateQuerySetup(
+    graph: PureModel,
+    entities: Entity[],
+    dependencyEntitiesMap: Map<string, Entity[]>,
+  ): Promise<void>;
+
+  abstract buildGraphForServiceQuerySetup(
+    graph: PureModel,
+    entities: Entity[],
+    dependencyEntitiesMap: Map<string, Entity[]>,
+  ): Promise<void>;
 
   // ------------------------------------------- Utilities -------------------------------------------
 

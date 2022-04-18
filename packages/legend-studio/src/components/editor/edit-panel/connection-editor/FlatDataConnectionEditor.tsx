@@ -16,6 +16,7 @@
 
 import { observer } from 'mobx-react-lite';
 import type { FlatDataConnectionValueState } from '../../../../stores/editor-state/element-editor-state/connection/ConnectionEditorState';
+import { flatDataConnection_setUrl } from '../../../../stores/graphModifier/StoreFlatData_GraphModifierHelper';
 
 export const FlatDataConnectionEditor = observer(
   (props: {
@@ -26,7 +27,7 @@ export const FlatDataConnectionEditor = observer(
     const connection = connectionValueState.connection;
     // url
     const changeUrl: React.ChangeEventHandler<HTMLTextAreaElement> = (event) =>
-      connection.setUrl(event.target.value);
+      flatDataConnection_setUrl(connection, event.target.value);
     return (
       <div className="panel__content__form">
         <div className="panel__content__form__section">

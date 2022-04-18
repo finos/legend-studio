@@ -82,6 +82,12 @@ import {
 import { useApplicationStore } from '@finos/legend-application';
 import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor';
 import type { DSLGenerationSpecification_LegendStudioPlugin_Extension } from '../../../../stores/DSLGenerationSpecification_LegendStudioPlugin_Extension';
+import {
+  fileGeneration_addScopeElement,
+  fileGeneration_changeScopeElement,
+  fileGeneration_deleteScopeElement,
+  fileGeneration_setGenerationOutputPath,
+} from '../../../../stores/graphModifier/DSLGeneration_GraphModifierHelper';
 
 export const FileGenerationTreeNodeContainer: React.FC<
   TreeNodeContainerProps<
@@ -362,7 +368,7 @@ const FileGenerationScopeEditor = observer(
     const deleteScopeElement = (
       scopeElement: PackageableElementReference<PackageableElement> | string,
     ): void => {
-      fileGeneration.deleteScopeElement(scopeElement);
+      fileGeneration_deleteScopeElement(fileGeneration, scopeElement);
       regenerate()?.catch(applicationStore.alertUnhandledError);
     };
     const changeItemInputValue: React.ChangeEventHandler<HTMLInputElement> = (
@@ -406,7 +412,8 @@ const FileGenerationScopeEditor = observer(
             );
           if (element) {
             regenerate.cancel();
-            fileGeneration.changeScopeElement(
+            fileGeneration_changeScopeElement(
+              fileGeneration,
               value,
               PackageableElementExplicitReference.create(element),
             );
@@ -574,7 +581,7 @@ const GenerationStringPropertyEditor = observer(
     getConfigValue: (name: string) => unknown | undefined;
   }) => {
     const { property, getConfigValue, isReadOnly, update } = props;
-    // FIXME: If there is no default value the string will be 'null'. We will treat it as an empty string
+    // If there is no default value the string will be 'null'. We will treat it as an empty string
     const defaultValue =
       property.defaultValue === 'null' ? '' : property.defaultValue;
     const value =
@@ -758,7 +765,7 @@ const GenerationArrayPropertyEditor = observer(
   }) => {
     const { property, getConfigValue, isReadOnly, update } = props;
     let defaultValue: string[] = [];
-    // FIXME: hacking this because the backend send corrupted array string
+    // NOTE: hacking this because the backend send corrupted array string
     if (property.defaultValue !== '' && property.defaultValue !== '[]') {
       defaultValue = property.defaultValue
         .substring(1, property.defaultValue.length - 1)
@@ -805,7 +812,7 @@ const GenerationArrayPropertyEditor = observer(
       (): void => {
         if (!isReadOnly) {
           runInAction(() => arrayValues.splice(idx, 1));
-          update(property, arrayValues);
+          update(property, [...arrayValues]);
           // Since we keep track of the value currently being edited using the index, we have to account for it as we delete entry
           if (typeof showEditInput === 'number' && showEditInput > idx) {
             setShowEditInput(showEditInput - 1);
@@ -1295,7 +1302,7 @@ export const FileGenerationConfigurationEditor = observer(
 
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
       const val = event.target.value;
-      fileGeneration.setGenerationOutputPath(val || undefined);
+      fileGeneration_setGenerationOutputPath(fileGeneration, val || undefined);
     };
 
     // Drag and Drop
@@ -1308,7 +1315,8 @@ export const FileGenerationConfigurationEditor = observer(
           !fileGenerationState.getScopeElement(element)
         ) {
           debouncedRegenerate.cancel();
-          fileGeneration.addScopeElement(
+          fileGeneration_addScopeElement(
+            fileGeneration,
             PackageableElementExplicitReference.create(element),
           );
           debouncedRegenerate()?.catch(applicationStore.alertUnhandledError);
@@ -1414,7 +1422,7 @@ export const FileGenerationConfigurationEditor = observer(
                 getConfigValue={getConfigValue}
                 property={abstractGenerationProperty}
               />
-            ))}{' '}
+            ))}
           </div>
         </div>
       </div>

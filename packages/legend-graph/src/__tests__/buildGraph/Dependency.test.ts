@@ -15,7 +15,6 @@
  */
 
 import { unitTest } from '@finos/legend-shared';
-import { flowResult } from 'mobx';
 import { TEST__getTestGraphManagerState } from '../../GraphManagerTestUtils';
 import { DependencyManager } from '../../graph/DependencyManager';
 import type { Entity } from '@finos/legend-model-storage';
@@ -94,29 +93,25 @@ test(
     const secondDependencyKey = 'dep2';
     const graphManagerState = TEST__getTestGraphManagerState();
 
-    await flowResult(graphManagerState.initializeSystem());
+    await graphManagerState.initializeSystem();
     const dependencyManager = new DependencyManager([]);
     const dependencyEntitiesMap = new Map<string, Entity[]>();
     dependencyEntitiesMap.set(firstDependencyKey, firstDependencyEntities);
     dependencyEntitiesMap.set(secondDependencyKey, secondDependencyEntities);
-    graphManagerState.graph.setDependencyManager(dependencyManager);
-    await flowResult(
-      graphManagerState.graphManager.buildDependencies(
-        graphManagerState.coreModel,
-        graphManagerState.systemModel,
-        dependencyManager,
-        dependencyEntitiesMap,
-      ),
+    graphManagerState.graph.dependencyManager = dependencyManager;
+    await graphManagerState.graphManager.buildDependencies(
+      graphManagerState.coreModel,
+      graphManagerState.systemModel,
+      dependencyManager,
+      dependencyEntitiesMap,
     );
     expect(
       graphManagerState.graph.dependencyManager.buildState.hasSucceeded,
     ).toBe(true);
 
-    await flowResult(
-      graphManagerState.graphManager.buildGraph(
-        graphManagerState.graph,
-        entities,
-      ),
+    await graphManagerState.graphManager.buildGraph(
+      graphManagerState.graph,
+      entities,
     );
     expect(graphManagerState.graph.buildState.hasSucceeded).toBe(true);
     Array.from(dependencyEntitiesMap.keys()).forEach((k) =>
@@ -142,32 +137,26 @@ test(
   async () => {
     const graphManagerState = TEST__getTestGraphManagerState();
 
-    await flowResult(graphManagerState.initializeSystem());
+    await graphManagerState.initializeSystem();
     const dependencyManager = new DependencyManager([]);
     const dependencyEntitiesMap = new Map<string, Entity[]>();
     dependencyEntitiesMap.set('dep', firstDependencyEntities);
-    graphManagerState.graph.setDependencyManager(dependencyManager);
-    await flowResult(
-      graphManagerState.graphManager.buildDependencies(
-        graphManagerState.coreModel,
-        graphManagerState.systemModel,
-        dependencyManager,
-        dependencyEntitiesMap,
-      ),
+    graphManagerState.graph.dependencyManager = dependencyManager;
+    await graphManagerState.graphManager.buildDependencies(
+      graphManagerState.coreModel,
+      graphManagerState.systemModel,
+      dependencyManager,
+      dependencyEntitiesMap,
     );
     expect(
       graphManagerState.graph.dependencyManager.buildState.hasSucceeded,
     ).toBe(true);
 
-    const buildGraphPromise = flowResult(
+    await expect(() =>
       graphManagerState.graphManager.buildGraph(
         graphManagerState.graph,
         firstDependencyEntities,
       ),
-    );
-
-    await expect(buildGraphPromise).rejects.toThrowError(
-      `Element 'model::ClassB' already exists`,
-    );
+    ).rejects.toThrowError(`Element 'model::ClassB' already exists`);
   },
 );

@@ -132,6 +132,16 @@
           background: var(--color-pink-300);
           color: var(--color-light-grey-50);
         }
+
+        &--extension {
+          background: var(--color-yellow-300);
+          border: 0.1rem solid var(--color-yellow-300);
+        }
+
+        &--extension &__name {
+          background: var(--color-yellow-300);
+          color: var(--color-light-grey-50);
+        }
       }
 
       &__type-option__group__separator {

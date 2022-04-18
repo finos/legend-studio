@@ -42,6 +42,9 @@
       "path": "packages/legend-extension-dsl-data-space"
     },
     {
+      "path": "packages/legend-extension-dsl-persistence"
+    },
+    {
       "path": "packages/legend-extension-external-format-json-schema"
     },
     {
@@ -49,6 +52,9 @@
     },
     {
       "path": "packages/legend-extension-external-language-morphir"
+    },
+    {
+      "path": "packages/legend-extension-mapping-generation"
     },
     // fixtures
     {

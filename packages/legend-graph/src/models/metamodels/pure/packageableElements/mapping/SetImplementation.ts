@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { observable, action, computed, makeObservable } from 'mobx';
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import { fromElementPathToMappingElementId } from '../../../../../MetaModelUtils';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
@@ -79,7 +78,7 @@ export interface SetImplementationVisitor<T> {
 export abstract class SetImplementation
   implements PropertyOwnerImplementation, Hashable, Stubable
 {
-  isEmbedded = false;
+  readonly isEmbedded: boolean = false;
   id: InferableMappingElementIdValue;
   class: PackageableElementReference<Class>;
   root: InferableMappingElementRoot;
@@ -91,25 +90,10 @@ export abstract class SetImplementation
     _class: PackageableElementReference<Class>,
     root: InferableMappingElementRoot,
   ) {
-    makeObservable(this, {
-      root: observable,
-      parent: observable,
-      setId: action,
-      setRoot: action,
-      label: computed,
-    });
-
     this.id = id;
     this.parent = parent;
     this.class = _class;
     this.root = root;
-  }
-
-  setId(value: string): void {
-    this.id.setValue(value);
-  }
-  setRoot(value: boolean): void {
-    this.root.setValue(value);
   }
 
   get label(): MappingElementLabel {
@@ -161,7 +145,7 @@ export enum SET_IMPLEMENTATION_TYPE {
   AGGREGATION_AWARE = 'aggregationAware',
 }
 
-/* @MARKER: RELAXED GRAPH CHECK - See https://github.com/finos/legend-studio/issues/880 */
+/* @MARKER: RELAXED GRAPH CHECK - See https://github.com/finos/legend-studio/issues/941 */
 /**
  * When set implementation cannot be resolved by ID,
  * we try to avoid failing graph building for now
@@ -170,6 +154,7 @@ export enum SET_IMPLEMENTATION_TYPE {
  * NOTE: this is just a temporary solutions until we make this a hard-fail post migration.
  *
  * See https://github.com/finos/legend-studio/issues/880
+ * See https://github.com/finos/legend-studio/issues/941
  */
 export class TEMPORARY__UnresolvedSetImplementation extends SetImplementation {
   constructor(id: string, parent: Mapping) {

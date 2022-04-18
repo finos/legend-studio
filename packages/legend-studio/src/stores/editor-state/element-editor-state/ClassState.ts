@@ -27,12 +27,17 @@ import {
   type Constraint,
   type DerivedProperty,
   LAMBDA_PIPE,
-  GRAPH_MANAGER_LOG_EVENT,
+  GRAPH_MANAGER_EVENT,
   ParserError,
   RawLambda,
   buildSourceInformationSourceId,
 } from '@finos/legend-graph';
 import { LambdaEditorState } from '@finos/legend-application';
+import {
+  constraint_setFunctionDefinition,
+  derivedProperty_setBody,
+  derivedProperty_setParameters,
+} from '../../graphModifier/DomainGraphModifierHelper';
 
 export const CONSTRAINT_SOURCE_ID_LABEL = 'constraint';
 export const DERIVED_PROPERTY_SOURCE_ID_LABEL = 'derivedProperty';
@@ -64,8 +69,8 @@ export class DerivedPropertyState extends LambdaEditorState {
   }
 
   setBodyAndParameters(lambda: RawLambda): void {
-    this.derivedProperty.setBody(lambda.body);
-    this.derivedProperty.setParameters(lambda.parameters);
+    derivedProperty_setBody(this.derivedProperty, lambda.body);
+    derivedProperty_setParameters(this.derivedProperty, lambda.parameters);
   }
 
   *convertLambdaGrammarStringToObject(): GeneratorFn<void> {
@@ -85,7 +90,7 @@ export class DerivedPropertyState extends LambdaEditorState {
           this.setParserError(error);
         }
         this.editorStore.applicationStore.log.error(
-          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
+          LogEvent.create(GRAPH_MANAGER_EVENT.PARSING_FAILURE),
           error,
         );
       }
@@ -121,7 +126,7 @@ export class DerivedPropertyState extends LambdaEditorState {
       } catch (error) {
         assertErrorThrown(error);
         this.editorStore.applicationStore.log.error(
-          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
+          LogEvent.create(GRAPH_MANAGER_EVENT.PARSING_FAILURE),
           error,
         );
       }
@@ -167,20 +172,26 @@ export class ConstraintState extends LambdaEditorState {
             this.lambdaId,
           )) as RawLambda | undefined;
         this.setParserError(undefined);
-        this.constraint.functionDefinition = lambda ?? emptyFunctionDefinition;
+        constraint_setFunctionDefinition(
+          this.constraint,
+          lambda ?? emptyFunctionDefinition,
+        );
       } catch (error) {
         assertErrorThrown(error);
         if (error instanceof ParserError) {
           this.setParserError(error);
         }
         this.editorStore.applicationStore.log.error(
-          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
+          LogEvent.create(GRAPH_MANAGER_EVENT.PARSING_FAILURE),
           error,
         );
       }
     } else {
       this.clearErrors();
-      this.constraint.functionDefinition = emptyFunctionDefinition;
+      constraint_setFunctionDefinition(
+        this.constraint,
+        emptyFunctionDefinition,
+      );
     }
   }
 
@@ -204,7 +215,7 @@ export class ConstraintState extends LambdaEditorState {
       } catch (error) {
         assertErrorThrown(error);
         this.editorStore.applicationStore.log.error(
-          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
+          LogEvent.create(GRAPH_MANAGER_EVENT.PARSING_FAILURE),
           error,
         );
       }
@@ -345,7 +356,7 @@ export class ClassState {
       } catch (error) {
         assertErrorThrown(error);
         this.editorStore.applicationStore.log.error(
-          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
+          LogEvent.create(GRAPH_MANAGER_EVENT.PARSING_FAILURE),
           error,
         );
       } finally {
@@ -383,7 +394,7 @@ export class ClassState {
       } catch (error) {
         assertErrorThrown(error);
         this.editorStore.applicationStore.log.error(
-          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
+          LogEvent.create(GRAPH_MANAGER_EVENT.PARSING_FAILURE),
           error,
         );
       } finally {

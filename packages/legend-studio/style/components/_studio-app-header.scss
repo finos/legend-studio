@@ -16,61 +16,6 @@
 
 @use 'mixins' as *;
 
-.studio-app__header__server-dropdown {
-  &__menu {
-    width: 15rem;
-    max-width: 15rem;
-  }
-
-  &__menu__item {
-    @include ellipsisTextOverflow;
-
-    display: block;
-    text-align: right;
-    max-width: 15rem;
-    height: 2.8rem;
-    line-height: 2.8rem;
-    justify-content: flex-end;
-    padding-right: 3.8rem;
-    padding-left: 1rem;
-
-    &--active {
-      background: var(--color-dark-grey-250);
-    }
-  }
-
-  &__label {
-    @include flexVCenter;
-
-    justify-content: flex-end;
-    background: var(--color-dark-grey-280);
-    width: 15rem;
-    height: 2.8rem;
-    font-weight: 500;
-  }
-
-  &__label__text {
-    @include ellipsisTextOverflow;
-
-    color: var(--color-light-grey-300);
-    font-weight: 500;
-    padding: 0 1rem;
-  }
-
-  &__label__icon {
-    @include flexCenter;
-    @include flexConstantDimension;
-
-    height: 100%;
-    width: 2.8rem;
-    border-left: 0.1rem solid var(--color-dark-grey-100);
-
-    svg {
-      color: var(--color-light-grey-300);
-    }
-  }
-}
-
 .about-modal {
   &__info-entry {
     display: flex;

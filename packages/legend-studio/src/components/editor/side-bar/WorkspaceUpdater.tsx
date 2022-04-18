@@ -257,11 +257,7 @@ export const WorkspaceUpdater = observer(() => {
                     className="side-bar__panel__item workspace-updater__review__link"
                     rel="noopener noreferrer"
                     target="_blank"
-                    to={generateReviewRoute(
-                      applicationStore.config.currentSDLCServerOption,
-                      review.projectId,
-                      review.id,
-                    )}
+                    to={generateReviewRoute(review.projectId, review.id)}
                     title={'See review detail'}
                   >
                     <div className="workspace-updater__review">

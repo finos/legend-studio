@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { observable, computed, makeObservable } from 'mobx';
 import { ROOT_PACKAGE_NAME } from '../MetaModelConst';
 import {
   type Clazz,
@@ -60,36 +59,12 @@ export class DependencyManager {
   root = new Package(ROOT_PACKAGE_NAME.PROJECT_DEPENDENCY_ROOT);
   projectDependencyModelsIndex = new Map<string, BasicModel>();
 
-  // FIXME: to be moved, this is graph-manager logic and should be moved elsewhere
+  // TODO: to be moved, this is graph-manager logic and should be moved elsewhere
   buildState = ActionState.create();
 
   private readonly extensionElementClasses: Clazz<PackageableElement>[];
 
   constructor(extensionElementClasses: Clazz<PackageableElement>[]) {
-    makeObservable(this, {
-      root: observable,
-      projectDependencyModelsIndex: observable,
-      allElements: computed,
-      models: computed,
-      profiles: computed,
-      enumerations: computed,
-      measures: computed,
-      units: computed,
-      classes: computed,
-      types: computed,
-      associations: computed,
-      functions: computed,
-      stores: computed,
-      databases: computed,
-      mappings: computed,
-      services: computed,
-      runtimes: computed,
-      connections: computed,
-      fileGenerations: computed,
-      generationSpecifications: computed,
-      sectionIndices: computed,
-    });
-
     this.extensionElementClasses = extensionElementClasses;
     this.buildState.setMessageFormatter(
       (message: string) => `[dependency] ${message}`,

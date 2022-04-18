@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { observable, computed, makeObservable } from 'mobx';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import {
   type Hashable,
@@ -33,14 +32,6 @@ export class FlatDataSection implements Hashable {
   recordType?: RootFlatDataRecordType | undefined;
 
   constructor(driverId: string, name: string, owner: FlatData) {
-    makeObservable(this, {
-      driverId: observable,
-      name: observable,
-      sectionProperties: observable,
-      recordType: observable,
-      hashCode: computed,
-    });
-
     this.name = name;
     this.driverId = driverId;
     this.owner = owner;

@@ -14,52 +14,29 @@
  * limitations under the License.
  */
 
-import { observable, computed, action, makeObservable } from 'mobx';
 import {
   type Hashable,
   hashArray,
   ContentType,
-  guaranteeType,
   createUrlStringFromData,
 } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
-import { FlatData } from '../model/FlatData';
 import {
   type ConnectionVisitor,
   Connection,
 } from '../../../connection/Connection';
 import type { PackageableElementReference } from '../../../PackageableElementReference';
+import type { FlatData } from '../model/FlatData';
 
 export class FlatDataConnection extends Connection implements Hashable {
-  static readonly CONTENT_TYPE = ContentType.TEXT_PLAIN;
-
+  declare store: PackageableElementReference<FlatData>;
   url: string;
 
   constructor(
-    flatData: PackageableElementReference<FlatData>,
-    url = createUrlStringFromData('', FlatDataConnection.CONTENT_TYPE, false),
+    store: PackageableElementReference<FlatData>,
+    url = createUrlStringFromData('', ContentType.TEXT_PLAIN, false),
   ) {
-    super(flatData);
-
-    makeObservable(this, {
-      url: observable,
-      flatDataStore: computed,
-      setUrl: action,
-      hashCode: computed,
-    });
-
-    this.url = url;
-  }
-
-  get flatDataStore(): FlatData {
-    return guaranteeType(
-      this.store.value,
-      FlatData,
-      'Flat-data connection must have a flat-data store',
-    );
-  }
-
-  setUrl(url: string): void {
+    super(store);
     this.url = url;
   }
 

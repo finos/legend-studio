@@ -14,16 +14,22 @@
  * limitations under the License.
  */
 
+import type { LegendApplicationDocumentationEntry } from './LegendApplicationConfig';
+
 export class LegendApplicationDocumentationRegistry {
   url?: string | undefined;
 
-  private registry = new Map<string, string>();
+  private registry = new Map<string, LegendApplicationDocumentationEntry>();
 
-  registerEntry(key: string, value: string): void {
+  registerEntry(key: string, value: LegendApplicationDocumentationEntry): void {
     this.registry.set(key, value);
   }
 
-  getEntry(key: string): string | undefined {
+  getEntry(key: string): LegendApplicationDocumentationEntry | undefined {
     return this.registry.get(key);
+  }
+
+  hasEntry(key: string): boolean {
+    return this.registry.has(key);
   }
 }

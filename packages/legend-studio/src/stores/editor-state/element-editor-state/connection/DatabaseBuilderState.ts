@@ -27,7 +27,7 @@ import {
   isNonNullable,
 } from '@finos/legend-shared';
 import { observable, action, makeObservable, flow, flowResult } from 'mobx';
-import { LEGEND_STUDIO_LOG_EVENT_TYPE } from '../../../LegendStudioLogEvent';
+import { LEGEND_STUDIO_APP_EVENT } from '../../../LegendStudioAppEvent';
 import type { EditorStore } from '../../../EditorStore';
 import {
   type RelationalDatabaseConnection,
@@ -43,6 +43,8 @@ import {
   isValidFullPath,
   resolvePackagePathAndElementName,
 } from '@finos/legend-graph';
+import { package_addElement } from '../../../graphModifier/DomainGraphModifierHelper';
+import { connection_setStore } from '../../../graphModifier/DSLMapping_GraphModifierHelper';
 
 export abstract class DatabaseBuilderTreeNodeData implements TreeNodeData {
   isOpen?: boolean | undefined;
@@ -253,7 +255,7 @@ export class DatabaseBuilderState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.DATABASE_BUILDER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.DATABASE_BUILDER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -302,7 +304,7 @@ export class DatabaseBuilderState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.DATABASE_BUILDER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.DATABASE_BUILDER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -343,7 +345,7 @@ export class DatabaseBuilderState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.DATABASE_BUILDER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.DATABASE_BUILDER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -467,7 +469,7 @@ export class DatabaseBuilderState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.DATABASE_BUILDER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.DATABASE_BUILDER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -493,11 +495,9 @@ export class DatabaseBuilderState {
         grammar,
       )) as Entity[];
     const dbGraph = this.editorStore.graphManagerState.createEmptyGraph();
-    (yield flowResult(
-      this.editorStore.graphManagerState.graphManager.buildGraph(
-        dbGraph,
-        entities,
-      ),
+    (yield this.editorStore.graphManagerState.graphManager.buildGraph(
+      dbGraph,
+      entities,
     )) as Entity[];
     assertTrue(
       dbGraph.ownDatabases.length === 1,
@@ -514,11 +514,9 @@ export class DatabaseBuilderState {
         databaseBuilderInput,
       )) as Entity[];
     const dbGraph = this.editorStore.graphManagerState.createEmptyGraph();
-    (yield flowResult(
-      this.editorStore.graphManagerState.graphManager.buildGraph(
-        dbGraph,
-        entities,
-      ),
+    (yield this.editorStore.graphManagerState.graphManager.buildGraph(
+      dbGraph,
+      entities,
     )) as Entity[];
     assertTrue(
       dbGraph.ownDatabases.length === 1,
@@ -541,7 +539,8 @@ export class DatabaseBuilderState {
       const isUpdating = Boolean(this.currentDatabase);
       if (!this.currentDatabase) {
         const newDatabase = new Database(database.name);
-        this.connection.setStore(
+        connection_setStore(
+          this.connection,
           PackageableElementExplicitReference.create(newDatabase),
         );
         const PackagePath = guaranteeNonNullable(
@@ -552,10 +551,13 @@ export class DatabaseBuilderState {
           this.editorStore.graphManagerState.graph.getOrCreatePackage(
             PackagePath,
           );
-        databasePackage.addElement(newDatabase);
-        this.editorStore.graphManagerState.graph.addElement(newDatabase);
+        package_addElement(
+          databasePackage,
+          newDatabase,
+          this.editorStore.changeDetectionState.observerContext,
+        );
+        yield flowResult(this.editorStore.addElement(newDatabase, false));
         currentDatabase = newDatabase;
-        this.editorStore.explorerTreeState.reprocess();
       } else {
         currentDatabase = this.currentDatabase;
       }
@@ -579,7 +581,7 @@ export class DatabaseBuilderState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.DATABASE_BUILDER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.DATABASE_BUILDER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);

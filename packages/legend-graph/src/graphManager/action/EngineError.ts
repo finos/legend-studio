@@ -24,6 +24,7 @@ export class EngineError extends ApplicationError {
   constructor(message: string | undefined) {
     super(message);
 
+    // TODO: check if we need this to be observable or not?
     makeObservable(this, {
       message: observable,
       sourceInformation: observable,

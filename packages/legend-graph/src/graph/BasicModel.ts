@@ -14,10 +14,8 @@
  * limitations under the License.
  */
 
-import { observable, computed, action, flow, makeObservable } from 'mobx';
 import {
   type Clazz,
-  type GeneratorFn,
   ActionState,
   assertNonEmptyString,
   UnsupportedOperationError,
@@ -25,6 +23,7 @@ import {
   guaranteeNonNullable,
   IllegalStateError,
   returnUndefOnError,
+  promisify,
 } from '@finos/legend-shared';
 import {
   type ROOT_PACKAGE_NAME,
@@ -61,6 +60,10 @@ import {
   isValidPath,
   resolvePackagePathAndElementName,
 } from '../MetaModelUtils';
+import {
+  _package_addElement,
+  _package_deleteElement,
+} from '../helpers/DomainHelper';
 
 const FORBIDDEN_EXTENSION_ELEMENT_CLASS = new Set([
   PackageableElement,
@@ -94,11 +97,11 @@ const FORBIDDEN_EXTENSION_ELEMENT_CLASS = new Set([
  */
 export abstract class BasicModel {
   root: Package;
+  readonly extensions: PureGraphExtension<PackageableElement>[] = [];
 
-  // FIXME: to be moved, this is graph-manager logic and should be moved elsewhere
+  // TODO: to be moved, this is graph-manager logic and should be moved elsewhere
   buildState = ActionState.create();
 
-  private readonly extensions: PureGraphExtension<PackageableElement>[] = [];
   private elementSectionMap = new Map<string, Section>();
 
   private sectionIndicesIndex = new Map<string, SectionIndex>();
@@ -127,78 +130,6 @@ export abstract class BasicModel {
     rootPackageName: ROOT_PACKAGE_NAME,
     extensionElementClasses: Clazz<PackageableElement>[],
   ) {
-    makeObservable<
-      BasicModel,
-      | 'elementSectionMap'
-      | 'sectionIndicesIndex'
-      | 'profilesIndex'
-      | 'typesIndex'
-      | 'associationsIndex'
-      | 'functionsIndex'
-      | 'storesIndex'
-      | 'mappingsIndex'
-      | 'connectionsIndex'
-      | 'runtimesIndex'
-      | 'servicesIndex'
-      | 'generationSpecificationsIndex'
-      | 'fileGenerationsIndex'
-      | 'extensions'
-    >(this, {
-      elementSectionMap: observable,
-      sectionIndicesIndex: observable,
-      profilesIndex: observable,
-      typesIndex: observable,
-      associationsIndex: observable,
-      functionsIndex: observable,
-      storesIndex: observable,
-      mappingsIndex: observable,
-      connectionsIndex: observable,
-      runtimesIndex: observable,
-      servicesIndex: observable,
-      generationSpecificationsIndex: observable,
-      fileGenerationsIndex: observable,
-      extensions: observable,
-
-      ownSectionIndices: computed,
-      ownProfiles: computed,
-      ownEnumerations: computed,
-      ownMeasures: computed,
-      ownUnits: computed,
-      ownClasses: computed,
-      ownTypes: computed,
-      ownAssociations: computed,
-      ownFunctions: computed,
-      ownStores: computed,
-      ownFlatDatas: computed,
-      ownDatabases: computed,
-      ownMappings: computed,
-      ownServices: computed,
-      ownRuntimes: computed,
-      ownConnections: computed,
-      ownFileGenerations: computed,
-      ownGenerationSpecifications: computed,
-      allOwnElements: computed,
-
-      dispose: flow,
-
-      setOwnSection: action,
-      setOwnSectionIndex: action,
-      setOwnProfile: action,
-      setOwnType: action,
-      setOwnAssociation: action,
-      setOwnFunction: action,
-      setOwnStore: action,
-      setOwnMapping: action,
-      setOwnConnection: action,
-      setOwnRuntime: action,
-      setOwnService: action,
-      setOwnGenerationSpecification: action,
-      setOwnFileGeneration: action,
-      deleteOwnElement: action,
-      renameOwnElement: action,
-      TEMPORARY__deleteOwnSectionIndex: action,
-    });
-
     this.root = new Package(rootPackageName);
     this.extensions = this.createGraphExtensions(extensionElementClasses);
   }
@@ -434,24 +365,22 @@ export abstract class BasicModel {
 
   /**
    * Dispose the current graph and any potential reference from parts outside of the graph to the graph
-   * This is a MUST to prevent memory-leak as we use referneces to link between objects instead of string pointers
+   * This is a MUST to prevent memory-leak as we might have references between metamodels from this graph
+   * and other graphs
    */
-  *dispose(): GeneratorFn<void> {
+  async dispose(): Promise<void> {
     if (this.allOwnElements.length) {
-      yield Promise.all<void>(
-        this.allOwnElements.map(
-          (element) =>
-            new Promise((resolve) =>
-              setTimeout(() => {
-                element.dispose();
-                resolve();
-              }, 0),
-            ),
+      await Promise.all<void>(
+        this.allOwnElements.map((element) =>
+          promisify(() => {
+            element.dispose();
+          }),
         ),
       );
     }
   }
 
+  // TODO
   buildPath = (
     packagePath: string | undefined,
     name: string | undefined,
@@ -510,7 +439,7 @@ export abstract class BasicModel {
 
   deleteOwnElement(element: PackageableElement): void {
     if (element.package) {
-      element.package.deleteElement(element);
+      _package_deleteElement(element.package, element);
     }
     if (element instanceof Mapping) {
       this.mappingsIndex.delete(element.path);
@@ -543,7 +472,7 @@ export abstract class BasicModel {
     } else if (element instanceof GenerationSpecification) {
       this.generationSpecificationsIndex.delete(element.path);
     } else if (element instanceof Package) {
-      element.children.forEach((el) => this.deleteOwnElement(el));
+      element.children.forEach(this.deleteOwnElement);
     } else {
       const extension = this.getExtensionForElementClass(
         getClass<PackageableElement>(element),
@@ -552,7 +481,17 @@ export abstract class BasicModel {
     }
   }
 
-  renameOwnElement(element: PackageableElement, newPath: string): void {
+  /**
+   * NOTE: this method has to do with graph modification
+   * and as of the current set up, we should not allow it to be called
+   * on any immutable graphs. As such, we protect it and let the main graph
+   * expose it. The other benefit of exposing this in the main graph is that we could
+   * do better duplicated path check
+   */
+  protected renameOwnElement(
+    element: PackageableElement,
+    newPath: string,
+  ): void {
     const elementCurrentPath = element.path;
     // validation before renaming
     if (elementCurrentPath === newPath) {
@@ -574,7 +513,7 @@ export abstract class BasicModel {
     const existingElement = this.getOwnNullableElement(newPath, true);
     if (existingElement) {
       throw new UnsupportedOperationError(
-        `Can't rename element '${elementCurrentPath} to '${newPath}': element with the same path already existed'`,
+        `Can't rename element '${elementCurrentPath} to '${newPath}': another element with the same path already existed'`,
       );
     }
     const [packagePath, elementName] =
@@ -589,12 +528,13 @@ export abstract class BasicModel {
         this.getNullablePackage(packagePath) ??
         (packagePath !== '' ? this.getOrCreatePackage(packagePath) : this.root);
       // update element name
-      element.setName(elementName);
+      element.name = elementName;
       // update element package if needed
       if (element.package !== parentPackage) {
-        element.package?.deleteElement(element);
-        element.setPackage(parentPackage);
-        parentPackage.addChild(element);
+        if (element.package) {
+          _package_deleteElement(element.package, element);
+        }
+        _package_addElement(parentPackage, element);
       }
     }
 
@@ -656,7 +596,7 @@ export abstract class BasicModel {
         childElements.set(childElement.path, childElement);
       });
       // update element name
-      element.setName(elementName);
+      element.name = elementName;
       if (!element.package) {
         throw new IllegalStateError(`Can't rename root package`);
       }
@@ -671,11 +611,10 @@ export abstract class BasicModel {
        */
       const currentParentPackage = element.package;
       if (currentParentPackage !== this.getNullablePackage(packagePath)) {
-        currentParentPackage.deleteElement(element);
+        _package_deleteElement(currentParentPackage, element);
         const newParentPackage =
           packagePath !== '' ? this.getOrCreatePackage(packagePath) : this.root;
-        element.setPackage(newParentPackage);
-        newParentPackage.addChild(element);
+        _package_addElement(newParentPackage, element);
       }
       childElements.forEach((childElement, childElementOriginalPath) => {
         this.renameOwnElement(
@@ -693,7 +632,6 @@ export abstract class BasicModel {
 
   /**
    * TODO: this will be removed once we fully support section index in SDLC flow
-   * @deprecated
    */
   TEMPORARY__deleteOwnSectionIndex(): void {
     this.sectionIndicesIndex.forEach((sectionIndex) => {

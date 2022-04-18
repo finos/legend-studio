@@ -15,6 +15,7 @@
  */
 
 export {
+  FaGhost as GhostIcon,
   FaLock as LockIcon,
   FaFile as FileIcon,
   FaLongArrowAltRight as LongArrowRightIcon,
@@ -49,7 +50,6 @@ export {
   FaArrowCircleRight as StickArrowCircleRightIcon,
   FaUser as UserIcon,
   FaShapes as ShapesIcon,
-  FaScroll as PaperScrollIcon,
   FaEnvelope as EnvelopIcon,
   FaSkull as SkullIcon,
   FaDollarSign as DollarIcon,
@@ -110,6 +110,7 @@ export {
   FaWindowMaximize as FilledWindowMaximizeIcon, // to be reviewed/merged
   FaLongArrowAltDown as LongArrowAltDownIcon, // to be reviewed/merged
   FaLongArrowAltUp as LongArrowAltUpIcon, // to be reviewed/merged
+  FaMeteor as MeteorIcon, // to be reviewed/merged
 } from 'react-icons/fa';
 export { GiWaterDrop as WaterDropIcon } from 'react-icons/gi';
 export {

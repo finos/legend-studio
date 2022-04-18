@@ -16,7 +16,7 @@
 
 import type { EditorStore } from '../EditorStore';
 import { observable, action, makeAutoObservable } from 'mobx';
-import { LEGEND_STUDIO_LOG_EVENT_TYPE } from '../LegendStudioLogEvent';
+import { LEGEND_STUDIO_APP_EVENT } from '../LegendStudioAppEvent';
 import type { TreeData } from '@finos/legend-art';
 import {
   type GenerationTreeNodeData,
@@ -33,7 +33,6 @@ import {
 import {
   type GeneratorFn,
   assertErrorThrown,
-  addUniqueEntry,
   deepEqual,
   isEmpty,
   LogEvent,
@@ -49,6 +48,12 @@ import {
   PackageableElementExplicitReference,
   ELEMENT_PATH_DELIMITER,
 } from '@finos/legend-graph';
+import {
+  configurationProperty_setValue,
+  fileGeneration_addConfigurationProperty,
+  fileGeneration_addScopeElement,
+  fileGeneration_deleteScopeElement,
+} from '../graphModifier/DSLGeneration_GraphModifierHelper';
 
 export class FileGenerationState {
   editorStore: EditorStore;
@@ -124,7 +129,7 @@ export class FileGenerationState {
       this.selectedNode = undefined;
       this.processGenerationResult([]);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.GENERATION_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.GENERATION_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -149,7 +154,7 @@ export class FileGenerationState {
       entry.cleanFileName(rootFolder);
       if (generationResultMap.has(entry.fileName)) {
         this.editorStore.applicationStore.log.warn(
-          LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.GENERATION_FAILURE),
+          LogEvent.create(LEGEND_STUDIO_APP_EVENT.GENERATION_FAILURE),
           'Found 2 generation outputs with same path',
         );
       }
@@ -232,7 +237,8 @@ export class FileGenerationState {
   addScopeElement(element: PackageableElement | string): void {
     const el = this.getScopeElement(element);
     if (!el) {
-      this.fileGeneration.addScopeElement(
+      fileGeneration_addScopeElement(
+        this.fileGeneration,
         element instanceof PackageableElement
           ? PackageableElementExplicitReference.create(element)
           : element,
@@ -243,7 +249,7 @@ export class FileGenerationState {
   deleteScopeElement(element: PackageableElement | string): void {
     const el = this.getScopeElement(element);
     if (el) {
-      this.fileGeneration.deleteScopeElement(el);
+      fileGeneration_deleteScopeElement(this.fileGeneration, el);
     }
   }
 
@@ -267,13 +273,15 @@ export class FileGenerationState {
           generationProperty.name,
         );
         if (configProperty) {
-          configProperty.setValue({ ...(newValue as object) });
+          configurationProperty_setValue(configProperty, {
+            ...(newValue as object),
+          });
         } else {
           const newItem = new ConfigurationProperty(
             generationProperty.name,
             newValue,
           );
-          addUniqueEntry(fileGeneration.configurationProperties, newItem);
+          fileGeneration_addConfigurationProperty(fileGeneration, newItem);
         }
       }
     } else {
@@ -287,13 +295,13 @@ export class FileGenerationState {
       const newConfigValue = useDefaultValue ? undefined : newValue;
       if (newConfigValue !== undefined) {
         if (configProperty) {
-          configProperty.setValue(newConfigValue);
+          configurationProperty_setValue(configProperty, newConfigValue);
         } else {
           const newItem = new ConfigurationProperty(
             generationProperty.name,
             newConfigValue,
           );
-          addUniqueEntry(fileGeneration.configurationProperties, newItem);
+          fileGeneration_addConfigurationProperty(fileGeneration, newItem);
         }
       } else {
         fileGeneration.configurationProperties =

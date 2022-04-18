@@ -14,13 +14,7 @@
  * limitations under the License.
  */
 
-import { observable, computed, action, makeObservable } from 'mobx';
-import {
-  hashArray,
-  uuid,
-  addUniqueEntry,
-  type Hashable,
-} from '@finos/legend-shared';
+import { hashArray, uuid, type Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import type { Mapping } from '../mapping/Mapping';
 import type { RawLambda } from '../../rawValueSpecification/RawLambda';
@@ -44,13 +38,6 @@ export class PureExecution extends ServiceExecution implements Hashable {
 
   constructor(func: RawLambda, owner: Service) {
     super();
-
-    makeObservable(this, {
-      func: observable,
-      queryValidationResult: computed,
-      setFunction: action,
-    });
-
     this.func = func;
     this.owner = owner;
   }
@@ -66,10 +53,6 @@ export class PureExecution extends ServiceExecution implements Hashable {
     //   return createValidationError(['Non-empty graph fetch tree is required']);
     // }
     return undefined;
-  }
-
-  setFunction(value: RawLambda): void {
-    this.func = value;
   }
 
   get hashCode(): string {
@@ -88,24 +71,8 @@ export class PureSingleExecution extends PureExecution implements Hashable {
     runtime: Runtime,
   ) {
     super(func, owner);
-
-    makeObservable(this, {
-      runtime: observable,
-      setMapping: action,
-      setRuntime: action,
-      mappingValidationResult: computed,
-      hashCode: computed,
-    });
-
     this.mapping = mapping;
     this.runtime = runtime;
-  }
-
-  setMapping(value: Mapping): void {
-    this.mapping.setValue(value);
-  }
-  setRuntime(value: Runtime): void {
-    this.runtime = value;
   }
 
   get mappingValidationResult(): ValidationIssue | undefined {
@@ -125,7 +92,8 @@ export class PureSingleExecution extends PureExecution implements Hashable {
 }
 
 export class KeyedExecutionParameter implements Hashable {
-  uuid = uuid();
+  readonly uuid = uuid();
+
   key: string;
   mapping: PackageableElementReference<Mapping>;
   runtime: Runtime;
@@ -135,16 +103,6 @@ export class KeyedExecutionParameter implements Hashable {
     mapping: PackageableElementReference<Mapping>,
     runtime: Runtime,
   ) {
-    makeObservable(this, {
-      key: observable,
-      runtime: observable,
-      mappingValidationResult: computed,
-      setKey: action,
-      setMapping: action,
-      setRuntime: action,
-      hashCode: computed,
-    });
-
     this.key = key;
     this.mapping = mapping;
     this.runtime = runtime;
@@ -154,16 +112,6 @@ export class KeyedExecutionParameter implements Hashable {
     return this.mapping.value.isStub
       ? createValidationError(['Service execution mapping cannot be empty'])
       : undefined;
-  }
-
-  setKey(value: string): void {
-    this.key = value;
-  }
-  setMapping(value: Mapping): void {
-    this.mapping.setValue(value);
-  }
-  setRuntime(value: Runtime): void {
-    this.runtime = value;
   }
 
   get hashCode(): string {
@@ -182,23 +130,7 @@ export class PureMultiExecution extends PureExecution implements Hashable {
 
   constructor(executionKey: string, func: RawLambda, parentService: Service) {
     super(func, parentService);
-
-    makeObservable(this, {
-      executionKey: observable,
-      executionParameters: observable,
-      setExecutionKey: action,
-      addExecutionParameter: action,
-      hashCode: computed,
-    });
-
     this.executionKey = executionKey;
-  }
-
-  setExecutionKey(value: string): void {
-    this.executionKey = value;
-  }
-  addExecutionParameter(value: KeyedExecutionParameter): void {
-    addUniqueEntry(this.executionParameters, value);
   }
 
   override get hashCode(): string {

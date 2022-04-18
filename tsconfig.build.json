@@ -39,6 +39,9 @@
       "path": "packages/legend-extension-dsl-data-space/tsconfig.build.json"
     },
     {
+      "path": "packages/legend-extension-dsl-persistence/tsconfig.build.json"
+    },
+    {
       "path": "packages/legend-extension-external-format-json-schema/tsconfig.build.json"
     },
     {
@@ -46,6 +49,9 @@
     },
     {
       "path": "packages/legend-extension-external-language-morphir/tsconfig.build.json"
+    },
+    {
+      "path": "packages/legend-extension-mapping-generation/tsconfig.build.json"
     },
     // fixtures
     {

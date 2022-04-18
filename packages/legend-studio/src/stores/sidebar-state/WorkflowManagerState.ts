@@ -23,7 +23,7 @@ import {
   makeObservable,
   flow,
 } from 'mobx';
-import { LEGEND_STUDIO_LOG_EVENT_TYPE } from '../LegendStudioLogEvent';
+import { LEGEND_STUDIO_APP_EVENT } from '../LegendStudioAppEvent';
 import type { EditorStore } from '../EditorStore';
 import type { EditorSDLCState } from '../EditorSDLCState';
 import {
@@ -155,7 +155,7 @@ export class WorkflowLogState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.SDLC_MANAGER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -175,7 +175,7 @@ export class WorkflowLogState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.SDLC_MANAGER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -245,7 +245,7 @@ export class WorkflowState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.SDLC_MANAGER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -280,7 +280,7 @@ export class WorkflowState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.SDLC_MANAGER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -314,7 +314,7 @@ export class WorkflowState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.SDLC_MANAGER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -417,7 +417,7 @@ export abstract class WorkflowManagerState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.SDLC_MANAGER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -437,7 +437,7 @@ export class WorkspaceWorkflowManagerState extends WorkflowManagerState {
         undefined,
         undefined,
       )) as PlainObject<WorkflowJob>[]
-    ).map((job) => WorkflowJob.serialization.fromJson(job));
+    ).map(WorkflowJob.serialization.fromJson);
   }
 
   override *getJob(job: WorkflowJob): GeneratorFn<WorkflowJob[]> {
@@ -447,7 +447,7 @@ export class WorkspaceWorkflowManagerState extends WorkflowManagerState {
         this.sdlcState.activeWorkspace,
         job,
       )) as PlainObject<WorkflowJob>[]
-    ).map((j) => WorkflowJob.serialization.fromJson(j));
+    ).map(WorkflowJob.serialization.fromJson);
   }
 
   override *getWorkflows(): GeneratorFn<Workflow[]> {
@@ -459,7 +459,7 @@ export class WorkspaceWorkflowManagerState extends WorkflowManagerState {
         undefined,
         undefined,
       )) as PlainObject<Workflow>[]
-    ).map((workflow) => Workflow.serialization.fromJson(workflow));
+    ).map(Workflow.serialization.fromJson);
   }
 
   override *getWorkflow(workflowId: string): GeneratorFn<Workflow> {
@@ -518,7 +518,7 @@ export class ProjectVersionWorkflowManagerState extends WorkflowManagerState {
         undefined,
         undefined,
       )) as PlainObject<WorkflowJob>[]
-    ).map((job) => WorkflowJob.serialization.fromJson(job));
+    ).map(WorkflowJob.serialization.fromJson);
   }
 
   override *getJob(job: WorkflowJob): GeneratorFn<WorkflowJob[]> {
@@ -528,7 +528,7 @@ export class ProjectVersionWorkflowManagerState extends WorkflowManagerState {
         this.version.id.id,
         job,
       )) as PlainObject<WorkflowJob>[]
-    ).map((j) => WorkflowJob.serialization.fromJson(j));
+    ).map(WorkflowJob.serialization.fromJson);
   }
 
   override *getWorkflows(): GeneratorFn<Workflow[]> {
@@ -540,7 +540,7 @@ export class ProjectVersionWorkflowManagerState extends WorkflowManagerState {
         undefined,
         undefined,
       )) as PlainObject<Workflow>[]
-    ).map((workflow) => Workflow.serialization.fromJson(workflow));
+    ).map(Workflow.serialization.fromJson);
   }
 
   override *getWorkflow(workflowId: string): GeneratorFn<Workflow> {
@@ -589,7 +589,7 @@ export class ProjectWorkflowManagerState extends WorkflowManagerState {
         undefined,
         undefined,
       )) as PlainObject<WorkflowJob>[]
-    ).map((job) => WorkflowJob.serialization.fromJson(job));
+    ).map(WorkflowJob.serialization.fromJson);
   }
 
   override *getJob(job: WorkflowJob): GeneratorFn<WorkflowJob[]> {
@@ -599,7 +599,7 @@ export class ProjectWorkflowManagerState extends WorkflowManagerState {
         undefined,
         job,
       )) as PlainObject<WorkflowJob>[]
-    ).map((j) => WorkflowJob.serialization.fromJson(j));
+    ).map(WorkflowJob.serialization.fromJson);
   }
 
   override *getWorkflows(): GeneratorFn<Workflow[]> {
@@ -611,7 +611,7 @@ export class ProjectWorkflowManagerState extends WorkflowManagerState {
         undefined,
         undefined,
       )) as PlainObject<Workflow>[]
-    ).map((workflow) => Workflow.serialization.fromJson(workflow));
+    ).map(Workflow.serialization.fromJson);
   }
 
   override *getWorkflow(workflowId: string): GeneratorFn<Workflow> {

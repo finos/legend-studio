@@ -14,15 +14,7 @@
  * limitations under the License.
  */
 
-import { observable, action, computed, makeObservable } from 'mobx';
-import {
-  type Hashable,
-  hashArray,
-  uuid,
-  deleteEntry,
-  addUniqueEntry,
-  changeEntry,
-} from '@finos/legend-shared';
+import { type Hashable, hashArray, uuid } from '@finos/legend-shared';
 import { hashLambda } from '../../../../../MetaModelUtils';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import { Multiplicity } from './Multiplicity';
@@ -42,8 +34,9 @@ import {
 export class DerivedProperty
   implements AbstractProperty, AnnotatedElement, Hashable, Stubable
 {
-  uuid = uuid();
+  readonly uuid = uuid();
   owner: PropertyOwner; // readonly
+
   name: string;
   genericType: GenericTypeReference;
   multiplicity: Multiplicity;
@@ -58,67 +51,11 @@ export class DerivedProperty
     genericType: GenericTypeReference,
     owner: PropertyOwner,
   ) {
-    makeObservable(this, {
-      name: observable,
-      multiplicity: observable,
-      stereotypes: observable,
-      taggedValues: observable,
-      body: observable.ref,
-      parameters: observable.ref,
-      setName: action,
-      setGenericType: action,
-      setMultiplicity: action,
-      deleteTaggedValue: action,
-      addTaggedValue: action,
-      deleteStereotype: action,
-      changeStereotype: action,
-      addStereotype: action,
-      setBody: action,
-      setParameters: action,
-      isStub: computed,
-      hashCode: computed,
-    });
-
     this.name = name;
     this.multiplicity = multiplicity;
     this.genericType = genericType;
     this.owner = owner;
   }
-
-  setName(value: string): void {
-    this.name = value;
-  }
-  setGenericType(value: GenericType): void {
-    this.genericType.setValue(value);
-  }
-  setMultiplicity(value: Multiplicity): void {
-    this.multiplicity = value;
-  }
-  deleteTaggedValue(value: TaggedValue): void {
-    deleteEntry(this.taggedValues, value);
-  }
-  addTaggedValue(value: TaggedValue): void {
-    addUniqueEntry(this.taggedValues, value);
-  }
-  deleteStereotype(value: StereotypeReference): void {
-    deleteEntry(this.stereotypes, value);
-  }
-  changeStereotype(
-    oldValue: StereotypeReference,
-    newValue: StereotypeReference,
-  ): void {
-    changeEntry(this.stereotypes, oldValue, newValue);
-  }
-  addStereotype(value: StereotypeReference): void {
-    addUniqueEntry(this.stereotypes, value);
-  }
-  setBody(value: object | undefined): void {
-    this.body = value;
-  }
-  setParameters(value: object | undefined): void {
-    this.parameters = value;
-  }
-
   static createStub = (type: Type, _class: Class): DerivedProperty =>
     new DerivedProperty(
       '',

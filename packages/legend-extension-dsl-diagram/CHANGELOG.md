@@ -1,5 +1,35 @@
 # @finos/legend-extension-dsl-diagram
 
+## 1.0.33
+
+## 1.0.32
+
+## 1.0.31
+
+## 1.0.30
+
+### Patch Changes
+
+- [#1000](https://github.com/finos/legend-studio/pull/1000) [`4f7d04c5`](https://github.com/finos/legend-studio/commit/4f7d04c52fc8d52b87251bcf04ec971afe8d3218) ([@akphi](https://github.com/akphi)) - Improve document around the logic of diagram relationship views' path management.
+
+## 1.0.29
+
+## 1.0.28
+
+## 1.0.27
+
+## 1.0.26
+
+## 1.0.25
+
+## 1.0.24
+
+## 1.0.23
+
+## 1.0.22
+
+## 1.0.21
+
 ## 1.0.20
 
 ## 1.0.19

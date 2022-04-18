@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { observable, action, computed, makeObservable, override } from 'mobx';
 import {
   type Hashable,
   hashArray,
@@ -22,9 +21,6 @@ import {
   IllegalStateError,
   guaranteeNonNullable,
   UnsupportedOperationError,
-  addUniqueEntry,
-  deleteEntry,
-  changeEntry,
 } from '@finos/legend-shared';
 import {
   CORE_HASH_STRUCTURE,
@@ -63,98 +59,10 @@ export class Class extends Type implements Hashable, Stubable {
   taggedValues: TaggedValue[] = [];
 
   /**
-   * To store the properties generated while processing the milestoning properties. The properties
+   * To store the abstract properties generated while processing the milestoning properties. The properties
    * generated are `allVersions`, `allVersionsInRange` and derived property with date parameter.
    */
-  _generatedMilestonedProperties: Property[] = [];
-
-  constructor(name: string) {
-    super(name);
-
-    makeObservable<Class, '_elementHashCode'>(this, {
-      properties: observable,
-      propertiesFromAssociations: observable,
-      derivedProperties: observable,
-      generalizations: observable,
-      subclasses: observable,
-      constraints: observable,
-      stereotypes: observable,
-      taggedValues: observable,
-      deleteProperty: action,
-      addProperty: action,
-      deleteDerivedProperty: action,
-      addDerivedProperty: action,
-      addConstraint: action,
-      deleteConstraint: action,
-      changeConstraint: action,
-      addSuperType: action,
-      deleteSuperType: action,
-      addSubclass: action,
-      deleteSubclass: action,
-      deleteTaggedValue: action,
-      addTaggedValue: action,
-      deleteStereotype: action,
-      changeStereotype: action,
-      addStereotype: action,
-      allSuperclasses: computed,
-      allSubclasses: computed({ keepAlive: true }),
-      dispose: override,
-      isStub: computed,
-      _elementHashCode: override,
-    });
-  }
-
-  deleteProperty(val: Property): void {
-    deleteEntry(this.properties, val);
-  }
-  addProperty(val: Property): void {
-    addUniqueEntry(this.properties, val);
-  }
-  deleteDerivedProperty(val: DerivedProperty): void {
-    deleteEntry(this.derivedProperties, val);
-  }
-  addDerivedProperty(val: DerivedProperty): void {
-    addUniqueEntry(this.derivedProperties, val);
-  }
-  addConstraint(val: Constraint): void {
-    addUniqueEntry(this.constraints, val);
-  }
-  deleteConstraint(val: Constraint): void {
-    deleteEntry(this.constraints, val);
-  }
-  changeConstraint(val: Constraint, newVal: Constraint): void {
-    changeEntry(this.constraints, val, newVal);
-  }
-  addSuperType(val: GenericTypeReference): void {
-    addUniqueEntry(this.generalizations, val);
-  }
-  deleteSuperType(val: GenericTypeReference): void {
-    deleteEntry(this.generalizations, val);
-  }
-  addSubclass(val: Class): void {
-    addUniqueEntry(this.subclasses, val);
-  }
-  deleteSubclass(val: Class): void {
-    deleteEntry(this.subclasses, val);
-  }
-  deleteTaggedValue(val: TaggedValue): void {
-    deleteEntry(this.taggedValues, val);
-  }
-  addTaggedValue(val: TaggedValue): void {
-    addUniqueEntry(this.taggedValues, val);
-  }
-  deleteStereotype(val: StereotypeReference): void {
-    deleteEntry(this.stereotypes, val);
-  }
-  changeStereotype(
-    oldVal: StereotypeReference,
-    newVal: StereotypeReference,
-  ): void {
-    changeEntry(this.stereotypes, oldVal, newVal);
-  }
-  addStereotype(val: StereotypeReference): void {
-    addUniqueEntry(this.stereotypes, val);
-  }
+  _generatedMilestonedProperties: AbstractProperty[] = [];
 
   /**
    * Get class and its supertypes' properties recursively, duplications and loops are handled (Which should be caught by compiler)
@@ -269,21 +177,13 @@ export class Class extends Type implements Hashable, Stubable {
   }
 
   /**
-   * @MARKER MEMORY-SENSITIVE
-   * Since `keepAlive` can cause memory-leak, we need to dispose it manually when we are about to discard the graph
-   * in order to avoid leaking.
-   * See https://mobx.js.org/best/pitfalls.html#computed-values-run-more-often-than-expected
-   * See https://medium.com/terria/when-and-why-does-mobxs-keepalive-cause-a-memory-leak-8c29feb9ff55
+   * Make sure to remove the disposed class from being referenced in other elements
+   * e.g. subclass analytics is great, but it causes the class being referred to by classes
+   * coming from system or dependencies
    */
   override dispose(): void {
+    super.dispose();
     this.subclasses = []; // call this before setting `disposed` flag to avoid triggering errors if something is using this during disposal
-    this._isDisposed = true;
-    // dispose hash computation
-    try {
-      this.hashCode;
-    } catch {
-      /* do nothing */
-    } // trigger recomputation on `hashCode` so it removes itself from all observables it previously observed
     // cleanup subclasses analytics on superclasses
     this.allSuperclasses.forEach((superclass) => {
       if (!superclass._isDisposed) {

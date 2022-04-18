@@ -14,13 +14,7 @@
  * limitations under the License.
  */
 
-import { observable, action, makeObservable, override } from 'mobx';
-import {
-  hashArray,
-  addUniqueEntry,
-  deleteEntry,
-  type Hashable,
-} from '@finos/legend-shared';
+import { hashArray, type Hashable } from '@finos/legend-shared';
 import type { Schema } from './DSLExternalFormat_Schema';
 import {
   type PackageableElementVisitor,
@@ -31,31 +25,6 @@ import { DSL_EXTERNAL_FORMAT_HASH_STRUCTURE } from '../../../../../DSLExternalFo
 export class SchemaSet extends PackageableElement implements Hashable {
   format!: string;
   schemas: Schema[] = [];
-
-  constructor(name: string) {
-    super(name);
-
-    makeObservable<SchemaSet, '_elementHashCode'>(this, {
-      format: observable,
-      schemas: observable,
-      setFormat: action,
-      addSchema: action,
-      deleteSchema: action,
-      _elementHashCode: override,
-    });
-  }
-
-  setFormat(value: string): void {
-    this.format = value;
-  }
-
-  addSchema(value: Schema): void {
-    addUniqueEntry(this.schemas, value);
-  }
-
-  deleteSchema(value: Schema): void {
-    deleteEntry(this.schemas, value);
-  }
 
   protected override get _elementHashCode(): string {
     return hashArray([

@@ -17,8 +17,8 @@
 import type { Point } from './DSLDiagram_Point';
 
 export class Vector {
-  x: number;
-  y: number;
+  readonly x: number;
+  readonly y: number;
 
   constructor(x: number, y: number) {
     this.x = x;
@@ -29,7 +29,7 @@ export class Vector {
     return new Vector(b.x - a.x, b.y - a.y);
   }
 
-  norm(): Vector {
+  unit(): Vector {
     const norm = Math.sqrt(this.x * this.x + this.y * this.y);
     return new Vector(this.x / norm, this.y / norm);
   }

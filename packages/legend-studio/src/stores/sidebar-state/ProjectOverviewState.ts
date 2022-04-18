@@ -36,7 +36,7 @@ import {
   Review,
   areWorkspacesEquivalent,
 } from '@finos/legend-server-sdlc';
-import { LEGEND_STUDIO_LOG_EVENT_TYPE } from '../LegendStudioLogEvent';
+import { LEGEND_STUDIO_APP_EVENT } from '../LegendStudioAppEvent';
 
 export enum PROJECT_OVERVIEW_ACTIVITY_MODE {
   RELEASE = 'RELEASE',
@@ -85,11 +85,11 @@ export class ProjectOverviewState {
         (yield this.editorStore.sdlcServerClient.getWorkspaces(
           this.sdlcState.activeProject.projectId,
         )) as PlainObject<Workspace>[]
-      ).map((workspace) => Workspace.serialization.fromJson(workspace));
+      ).map(Workspace.serialization.fromJson);
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.SDLC_MANAGER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
     } finally {
@@ -120,7 +120,6 @@ export class ProjectOverviewState {
         this.editorStore.setIgnoreNavigationBlocking(true);
         this.editorStore.applicationStore.navigator.goTo(
           generateSetupRoute(
-            this.editorStore.applicationStore.config.currentSDLCServerOption,
             this.editorStore.sdlcState.activeProject.projectId,
           ),
         );
@@ -128,7 +127,7 @@ export class ProjectOverviewState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.SDLC_MANAGER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
     } finally {
@@ -197,8 +196,8 @@ export class ProjectOverviewState {
           )) as PlainObject<Revision>,
         );
         // we find the review associated with the latest version revision, this usually exist, except in 2 cases:
-        // 1. the revision is somehow directly added to the branch by the user (in the case of git, user unprotected master and directly pushed to master)
-        // 2. the revision is the merged/comitted review revision (this usually happens for prototype projects where fast forwarding merging is not default)
+        // 1. the revision is somehow directly added to the branch by the user (in the case of `git`, user directly pushed to unprotected default branch)
+        // 2. the revision is the merged/comitted review revision (this usually happens for projects where fast forwarding merging is not default)
         // in those case, we will get the time from the revision
         const latestProjectVersionRevisionReviewObj = getNullableFirstElement(
           (yield this.editorStore.sdlcServerClient.getReviews(
@@ -227,7 +226,7 @@ export class ProjectOverviewState {
             undefined,
           )) as PlainObject<Review>[]
         )
-          .map((review) => Review.serialization.fromJson(review))
+          .map(Review.serialization.fromJson)
           .filter(
             (review) =>
               !latestProjectVersionRevisionReview ||
@@ -243,12 +242,12 @@ export class ProjectOverviewState {
             undefined,
             undefined,
           )) as PlainObject<Review>[]
-        ).map((review) => Review.serialization.fromJson(review));
+        ).map(Review.serialization.fromJson);
       }
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.SDLC_MANAGER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
     } finally {
@@ -257,6 +256,12 @@ export class ProjectOverviewState {
   }
 
   *createVersion(versionType: NewVersionType): GeneratorFn<void> {
+    if (!this.editorStore.sdlcServerClient.features.canCreateVersion) {
+      this.editorStore.applicationStore.notifyError(
+        `Can't create version: not supported by SDLC server`,
+      );
+      return;
+    }
     this.isCreatingVersion = true;
     try {
       this.releaseVersion.versionType = versionType;
@@ -271,7 +276,7 @@ export class ProjectOverviewState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.SDLC_MANAGER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);

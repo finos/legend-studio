@@ -39,6 +39,9 @@ import {
   NewServiceModal,
   useEditorStore,
   LegendStudioPlugin,
+  package_addElement,
+  service_initNewService,
+  service_setExecution,
 } from '@finos/legend-studio';
 import { MenuContentItem } from '@finos/legend-art';
 import { QueryBuilderDialog } from './QueryBuilderDialog';
@@ -81,20 +84,25 @@ const promoteQueryToService = async (
     );
     const query = queryBuilderState.getQuery();
     const service = new Service(serviceName);
-    service.initNewService();
-    service.setExecution(
+    service_initNewService(service);
+    service_setExecution(
+      service,
       new PureSingleExecution(
         query,
         service,
         PackageableElementExplicitReference.create(mapping),
         runtime,
       ),
+      editorStore.changeDetectionState.observerContext,
     );
     const servicePackage =
       editorStore.graphManagerState.graph.getOrCreatePackage(packageName);
-    servicePackage.addElement(service);
-    editorStore.graphManagerState.graph.addElement(service);
-    editorStore.openElement(service);
+    package_addElement(
+      servicePackage,
+      service,
+      editorStore.changeDetectionState.observerContext,
+    );
+    await flowResult(editorStore.addElement(service, true));
     await flowResult(
       queryBuilderExtension.setEmbeddedQueryBuilderMode(undefined),
     ).catch(applicationStore.alertUnhandledError);

@@ -15,11 +15,11 @@
  */
 
 /// <reference types="jest-extended" />
-import { flowResult } from 'mobx';
 import {
   type LoggerPlugin,
   Log,
   AbstractPluginManager,
+  promisify,
 } from '@finos/legend-shared';
 import type { PureGraphManagerPlugin } from './graphManager/PureGraphManagerPlugin';
 import { GraphManagerState } from './GraphManagerState';
@@ -171,13 +171,11 @@ export const TEST__buildGraphWithEntities = async (
   entities: Entity[],
   options?: GraphBuilderOptions,
 ): Promise<void> => {
-  await flowResult(graphManagerState.initializeSystem(options));
-  await flowResult(
-    graphManagerState.graphManager.buildGraph(
-      graphManagerState.graph,
-      entities,
-      options,
-    ),
+  await graphManagerState.initializeSystem(options);
+  await graphManagerState.graphManager.buildGraph(
+    graphManagerState.graph,
+    entities,
+    options,
   );
 };
 
@@ -185,19 +183,14 @@ export const TEST__checkGraphHashUnchanged = async (
   graphManagerState: GraphManagerState,
   entities: Entity[],
 ): Promise<void> => {
-  await flowResult(graphManagerState.precomputeHashes());
   const originalHashesIndex =
     await graphManagerState.graphManager.buildHashesIndex(entities);
   const graphHashesIndex = new Map<string, string>();
   await Promise.all<void>(
-    graphManagerState.graph.allOwnElements.map(
-      (element) =>
-        new Promise((resolve) =>
-          setTimeout(() => {
-            graphHashesIndex.set(element.path, element.hashCode);
-            resolve();
-          }, 0),
-        ),
+    graphManagerState.graph.allOwnElements.map((element) =>
+      promisify(() => {
+        graphHashesIndex.set(element.path, element.hashCode);
+      }),
     ),
   );
   expect(
@@ -239,12 +232,10 @@ export const TEST__checkBuildingResolvedElements = async (
   resolvedEntities: Entity[],
 ): Promise<void> => {
   const graphManagerState = TEST__getTestGraphManagerState();
-  await flowResult(graphManagerState.initializeSystem());
-  await flowResult(
-    graphManagerState.graphManager.buildGraph(
-      graphManagerState.graph,
-      entities,
-    ),
+  await graphManagerState.initializeSystem();
+  await graphManagerState.graphManager.buildGraph(
+    graphManagerState.graph,
+    entities,
   );
   const transformedEntities = graphManagerState.graph.allOwnElements.map(
     (element) => graphManagerState.graphManager.elementToEntity(element),

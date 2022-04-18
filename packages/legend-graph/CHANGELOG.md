@@ -1,5 +1,83 @@
 # @finos/legend-graph
 
+## 4.0.2
+
+### Patch Changes
+
+- [#1049](https://github.com/finos/legend-studio/pull/1049) [`5de91968`](https://github.com/finos/legend-studio/commit/5de91968ae3ec1c4d42dc1412e452d000dfc8b3e) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Complete `ValueSpecificationObserver`, it will now probably propagate the value specification tree.
+
+## 4.0.1
+
+## 4.0.0
+
+### Major Changes
+
+- [#1054](https://github.com/finos/legend-studio/pull/1054) [`d0f81bc8`](https://github.com/finos/legend-studio/commit/d0f81bc82d56f913f12b720c265d6ca1b0c515af) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** All setters methods are now moved out of metamodels. These are now branded as `graph modifier helpers` and will be put in places where we need to modify them (e.g. in the apps such as `Legend Studio`, `Legend Query`). Also, all `mobx` `makeObservable()` logic inside of metamodels' constructors are now removed. These are now branded as `observer helpers`.
+
+  > As of now, we are putting these in `@finos/legend-graph`, but ideally they should be moved to the app (similar to what we do with the `graph modifier observers`).
+
+## 3.0.0
+
+### Major Changes
+
+- [#1000](https://github.com/finos/legend-studio/pull/1000) [`4f7d04c`](https://github.com/finos/legend-studio/commit/4f7d04c52fc8d52b87251bcf04ec971afe8d3218) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** All graph meta models are no longer observable by default, instead, to activate observability, one would need to call observers specifically.
+
+* [#1000](https://github.com/finos/legend-studio/pull/1000) [`4f7d04c`](https://github.com/finos/legend-studio/commit/4f7d04c52fc8d52b87251bcf04ec971afe8d3218) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Moved `GraphManagerState.precomputeHashes` to `ChangeDetectionState`.
+
+- [#1000](https://github.com/finos/legend-studio/pull/1000) [`4f7d04c`](https://github.com/finos/legend-studio/commit/4f7d04c52fc8d52b87251bcf04ec971afe8d3218) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Remove `TEMPORARY_skipGraphBuilderPostProcessing` flag. Graph builder nolonger needs post-processing anymore.
+
+## 2.1.3
+
+## 2.1.2
+
+### Patch Changes
+
+- [#1017](https://github.com/finos/legend-studio/pull/1017) [`0dd7cc2e`](https://github.com/finos/legend-studio/commit/0dd7cc2ebf1ee068b394d052003c3442e298ff63) ([@gayathrir11](https://github.com/gayathrir11)) - Fix `Binding` element appearing multiple times in explorer tree.
+
+## 2.1.1
+
+### Patch Changes
+
+- [#980](https://github.com/finos/legend-studio/pull/980) [`f95f5b42`](https://github.com/finos/legend-studio/commit/f95f5b429a017ecdac55f436e974d4f8f53d5f7c) ([@emilia-sokol-gs](https://github.com/emilia-sokol-gs)) - Add extension mechanism for loading models with model loader.
+
+## 2.1.0
+
+### Minor Changes
+
+- [#1004](https://github.com/finos/legend-studio/pull/1004) [`99c19279`](https://github.com/finos/legend-studio/commit/99c19279b19c15fa01cab5cf3389a20c036d62e3) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Rework the logic of resolving the generation parent for generated elements
+
+## 2.0.4
+
+## 2.0.3
+
+### Patch Changes
+
+- [#992](https://github.com/finos/legend-studio/pull/992) [`a8693108`](https://github.com/finos/legend-studio/commit/a869310843265cf10a7595a3f53fb5b11ecf64aa) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add `TEMPORARY_skipGraphBuilderPostProcessing` flag to allow skipping post-processing in graph builder to boost performance.
+
+## 2.0.2
+
+### Patch Changes
+
+- [#991](https://github.com/finos/legend-studio/pull/991) [`0787fcec`](https://github.com/finos/legend-studio/commit/0787fcec7b074342d26d295623fcbcb863ef9dee) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Initialize `DependencyManager` when creating light query graphs.
+
+## 2.0.1
+
+### Patch Changes
+
+- [#983](https://github.com/finos/legend-studio/pull/983) [`872c37a8`](https://github.com/finos/legend-studio/commit/872c37a804a47c9a86ec646ad3668728c482aeca) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Build light graphs for several exploration workflows to improve load time for `Legend Query`.
+
+## 2.0.0
+
+### Major Changes
+
+- [#981](https://github.com/finos/legend-studio/pull/981) [`e3efb96f`](https://github.com/finos/legend-studio/commit/e3efb96feb2bcd5e0b9578bafd90a586ad65ed7e) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Renamed `GRAPH_MANAGER_LOG_EVENT` to `GRAPH_MANAGER_EVENT` and `V1_ENGINE_LOG_EVENT` to `V1_ENGINE_EVENT` which are meant to be used for more than just logging.
+
+* [#981](https://github.com/finos/legend-studio/pull/981) [`e3efb96f`](https://github.com/finos/legend-studio/commit/e3efb96feb2bcd5e0b9578bafd90a586ad65ed7e) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Renamed `AbstractPureGraphManager.pureProtocolToEntities()` to `pureProtocolTextToEntities()`.
+
+### Minor Changes
+
+- [#977](https://github.com/finos/legend-studio/pull/977) [`37490b13`](https://github.com/finos/legend-studio/commit/37490b13d6156ad610bba2799e5621632885163d) ([@akphi](https://github.com/akphi)) - Graph builder methods will now output a report when completed.
+
 ## 1.3.0
 
 ### Minor Changes

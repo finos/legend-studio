@@ -27,7 +27,7 @@ import {
   ApplicationError,
 } from '@finos/legend-shared';
 import { makeAutoObservable, action } from 'mobx';
-import { APPLICATION_LOG_EVENT } from './ApplicationLogEvent';
+import { APPLICATION_EVENT } from './ApplicationEvent';
 import type { LegendApplicationConfig } from './LegendApplicationConfig';
 import type { WebApplicationNavigator } from './WebApplicationNavigator';
 import type { LegendApplicationPluginManager } from '../application/LegendApplicationPluginManager';
@@ -278,7 +278,7 @@ export class ApplicationStore<T extends LegendApplicationConfig> {
    */
   alertUnhandledError = (error: Error): void => {
     this.log.error(
-      LogEvent.create(APPLICATION_LOG_EVENT.ILLEGAL_APPLICATION_STATE_OCCURRED),
+      LogEvent.create(APPLICATION_EVENT.ILLEGAL_APPLICATION_STATE_OCCURRED),
       'Encountered unhandled error in component tree',
       error,
     );
@@ -301,24 +301,6 @@ export class ApplicationStore<T extends LegendApplicationConfig> {
       await navigator.clipboard.writeText(text).catch((error) => {
         this.notifyError(error);
       });
-      return;
-    }
-    // See https://hackernoon.com/copying-text-to-clipboard-with-javascript-df4d4988697f
-    if (document.queryCommandSupported('copy')) {
-      const element = document.createElement('textarea');
-      element.style.display = 'fixed';
-      element.style.opacity = '0';
-      document.documentElement.appendChild(element);
-      element.value = text;
-      element.select();
-      try {
-        document.execCommand('copy');
-      } catch (error) {
-        assertErrorThrown(error);
-        this.notifyError(error);
-      } finally {
-        element.remove();
-      }
       return;
     }
     this.notifyError('Browser does not support clipboard functionality');

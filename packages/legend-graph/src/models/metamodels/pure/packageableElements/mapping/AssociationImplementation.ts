@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { observable, computed, makeObservable } from 'mobx';
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import { fromElementPathToMappingElementId } from '../../../../../MetaModelUtils';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
@@ -43,15 +42,6 @@ export abstract class AssociationImplementation
     parent: Mapping,
     association: PackageableElementExplicitReference<Association>,
   ) {
-    makeObservable(this, {
-      id: observable,
-      parent: observable,
-      stores: observable,
-      propertyMappings: observable,
-      label: computed,
-      hashCode: computed,
-    });
-
     this.id = id;
     this.parent = parent;
     this.association = association;

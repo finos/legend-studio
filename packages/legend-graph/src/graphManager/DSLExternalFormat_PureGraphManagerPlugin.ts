@@ -15,15 +15,25 @@
  */
 
 import packageJson from '../../package.json';
+import type { Connection } from '../DSLMapping_Exports';
 import { ExternalFormatConnection } from '../models/metamodels/pure/packageableElements/externalFormat/connection/DSLExternalFormat_ExternalFormatConnection';
 import { SchemaSet } from '../models/metamodels/pure/packageableElements/externalFormat/schemaSet/DSLExternalFormat_SchemaSet';
 import { Binding } from '../models/metamodels/pure/packageableElements/externalFormat/store/DSLExternalFormat_Binding';
+import type { PackageableElement } from '../models/metamodels/pure/packageableElements/PackageableElement';
+import type { ObserverContext } from './action/changeDetection/CoreObserverHelper';
+import {
+  observe_Binding,
+  observe_ExternalFormatConnection,
+  observe_SchemaSet,
+} from './action/changeDetection/DSLExternalFormat_ObserverHelper';
 import type {
+  ConnectionObserver,
   DSLMapping_PureGraphManagerPlugin_Extension,
   PureGrammarConnectionLabeler,
 } from './DSLMapping_PureGraphManagerPlugin_Extension';
 import {
   type PureGrammarElementLabeler,
+  type ElementObserver,
   PureGraphManagerPlugin,
 } from './PureGraphManagerPlugin';
 
@@ -73,11 +83,41 @@ export class DSLExternalFormat_PureGraphManagerPlugin
     ];
   }
 
+  override getExtraElementObservers(): ElementObserver[] {
+    return [
+      (
+        element: PackageableElement,
+        context: ObserverContext,
+      ): PackageableElement | undefined => {
+        if (element instanceof Binding) {
+          return observe_Binding(element);
+        } else if (element instanceof SchemaSet) {
+          return observe_SchemaSet(element);
+        }
+        return undefined;
+      },
+    ];
+  }
+
   getExtraPureGrammarConnectionLabelers(): PureGrammarConnectionLabeler[] {
     return [
       (connection): string | undefined => {
         if (connection instanceof ExternalFormatConnection) {
           return PURE_GRAMMAR_EXTERNAL_FORMAT_CONNECTION_TYPE_LABEL;
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  getExtraConnectionObservers(): ConnectionObserver[] {
+    return [
+      (
+        connection: Connection,
+        context: ObserverContext,
+      ): Connection | undefined => {
+        if (connection instanceof ExternalFormatConnection) {
+          return observe_ExternalFormatConnection(connection);
         }
         return undefined;
       },

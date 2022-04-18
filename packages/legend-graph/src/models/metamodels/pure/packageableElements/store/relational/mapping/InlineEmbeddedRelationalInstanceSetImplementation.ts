@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { observable, makeObservable } from 'mobx';
 import { EmbeddedRelationalInstanceSetImplementation } from './EmbeddedRelationalInstanceSetImplementation';
 import type { InlineEmbeddedSetImplementation } from '../../../mapping/EmbeddedSetImplementation';
 import type {
@@ -22,12 +21,6 @@ import type {
   SetImplementationVisitor,
 } from '../../../mapping/SetImplementation';
 import type { PropertyMappingVisitor } from '../../../mapping/PropertyMapping';
-import type { PropertyMappingsImplementation } from '../../../mapping/PropertyMappingsImplementation';
-import type { PropertyReference } from '../../../domain/PropertyReference';
-import type { RootRelationalInstanceSetImplementation } from './RootRelationalInstanceSetImplementation';
-import type { PackageableElementReference } from '../../../PackageableElementReference';
-import type { Class } from '../../../domain/Class';
-import type { InferableMappingElementIdValue } from '../../../mapping/InferableMappingElementId';
 import { hashArray, UnsupportedOperationError } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 
@@ -36,30 +29,6 @@ export class InlineEmbeddedRelationalInstanceSetImplementation
   implements InlineEmbeddedSetImplementation
 {
   inlineSetImplementation!: SetImplementation;
-
-  constructor(
-    owner: PropertyMappingsImplementation,
-    property: PropertyReference,
-    rootInstanceSetImplementation: RootRelationalInstanceSetImplementation,
-    source: SetImplementation,
-    _class: PackageableElementReference<Class>,
-    id: InferableMappingElementIdValue,
-    target?: SetImplementation,
-  ) {
-    super(
-      owner,
-      property,
-      rootInstanceSetImplementation,
-      source,
-      _class,
-      id,
-      target,
-    );
-
-    makeObservable(this, {
-      inlineSetImplementation: observable,
-    });
-  }
 
   override accept_PropertyMappingVisitor<T>(
     visitor: PropertyMappingVisitor<T>,

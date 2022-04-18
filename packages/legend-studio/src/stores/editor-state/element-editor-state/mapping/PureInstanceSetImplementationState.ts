@@ -32,12 +32,13 @@ import {
   type PurePropertyMapping,
   type PureInstanceSetImplementation,
   LAMBDA_PIPE,
-  GRAPH_MANAGER_LOG_EVENT,
+  GRAPH_MANAGER_EVENT,
   ParserError,
   RawLambda,
   buildSourceInformationSourceId,
 } from '@finos/legend-graph';
 import { LambdaEditorState } from '@finos/legend-application';
+import { pureInstanceSetImpl_setMappingFilter } from '../../../graphModifier/DSLMapping_GraphModifierHelper';
 
 export const FILTER_SOURCE_ID_LABEL = 'filter';
 
@@ -86,7 +87,7 @@ export class PurePropertyMappingState extends PropertyMappingState {
           this.setParserError(error);
         }
         this.editorStore.applicationStore.log.error(
-          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
+          LogEvent.create(GRAPH_MANAGER_EVENT.PARSING_FAILURE),
           error,
         );
       }
@@ -116,7 +117,7 @@ export class PurePropertyMappingState extends PropertyMappingState {
       } catch (error) {
         assertErrorThrown(error);
         this.editorStore.applicationStore.log.error(
-          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
+          LogEvent.create(GRAPH_MANAGER_EVENT.PARSING_FAILURE),
           error,
         );
       }
@@ -163,7 +164,8 @@ export class PureInstanceSetImplementationFilterState extends LambdaEditorState 
             this.lambdaId,
           )) as RawLambda | undefined;
         this.setParserError(undefined);
-        this.instanceSetImplementation.setMappingFilter(
+        pureInstanceSetImpl_setMappingFilter(
+          this.instanceSetImplementation,
           lambda ?? emptyFunctionDefinition,
         );
       } catch (error) {
@@ -172,14 +174,16 @@ export class PureInstanceSetImplementationFilterState extends LambdaEditorState 
           this.setParserError(error);
         }
         this.editorStore.applicationStore.log.error(
-          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
+          LogEvent.create(GRAPH_MANAGER_EVENT.PARSING_FAILURE),
           error,
         );
+        GRAPH_MANAGER_EVENT;
       }
     } else {
       this.clearErrors();
       if (this.instanceSetImplementation.filter?.isStub) {
-        this.instanceSetImplementation.setMappingFilter(
+        pureInstanceSetImpl_setMappingFilter(
+          this.instanceSetImplementation,
           emptyFunctionDefinition,
         );
       }
@@ -203,9 +207,10 @@ export class PureInstanceSetImplementationFilterState extends LambdaEditorState 
       } catch (error) {
         assertErrorThrown(error);
         this.editorStore.applicationStore.log.error(
-          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
+          LogEvent.create(GRAPH_MANAGER_EVENT.PARSING_FAILURE),
           error,
         );
+        GRAPH_MANAGER_EVENT;
       }
     } else {
       this.clearErrors();
@@ -310,9 +315,10 @@ export class PureInstanceSetImplementationState extends InstanceSetImplementatio
       } catch (error) {
         assertErrorThrown(error);
         this.editorStore.applicationStore.log.error(
-          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
+          LogEvent.create(GRAPH_MANAGER_EVENT.PARSING_FAILURE),
           error,
         );
+        GRAPH_MANAGER_EVENT;
       } finally {
         this.isConvertingTransformLambdaObjects = false;
       }
@@ -334,9 +340,10 @@ export class PureInstanceSetImplementationState extends InstanceSetImplementatio
       } catch (error) {
         assertErrorThrown(error);
         this.editorStore.applicationStore.log.error(
-          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
+          LogEvent.create(GRAPH_MANAGER_EVENT.PARSING_FAILURE),
           error,
         );
+        GRAPH_MANAGER_EVENT;
       } finally {
         this.isConvertingTransformLambdaObjects = false;
       }

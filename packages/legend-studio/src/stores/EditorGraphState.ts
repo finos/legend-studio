@@ -15,7 +15,7 @@
  */
 
 import { action, computed, flowResult, makeAutoObservable } from 'mobx';
-import { CHANGE_DETECTION_LOG_EVENT } from './ChangeDetectionLogEvent';
+import { CHANGE_DETECTION_EVENT } from './ChangeDetectionEvent';
 import { GRAPH_EDITOR_MODE, AUX_PANEL_MODE } from './EditorConfig';
 import {
   type GeneratorFn,
@@ -52,7 +52,7 @@ import {
 import {
   type SetImplementation,
   type PackageableElement,
-  GRAPH_MANAGER_LOG_EVENT,
+  GRAPH_MANAGER_EVENT,
   CompilationError,
   EngineError,
   extractSourceInformationCoordinates,
@@ -96,6 +96,7 @@ import {
 } from '@finos/legend-application';
 import { CONFIGURATION_EDITOR_TAB } from './editor-state/ProjectConfigurationEditorState';
 import type { DSLMapping_LegendStudioPlugin_Extension } from './DSLMapping_LegendStudioPlugin_Extension';
+import { graph_dispose } from './graphModifier/GraphModifierHelper';
 
 export enum GraphBuilderStatus {
   SUCCEEDED = 'SUCCEEDED',
@@ -210,33 +211,29 @@ export class EditorGraphState {
       stopWatch.record();
       const dependencyManager =
         this.editorStore.graphManagerState.createEmptyDependencyManager();
+      this.editorStore.graphManagerState.graph.dependencyManager =
+        dependencyManager;
       dependencyManager.buildState.setMessage(`Fetching dependencies...`);
       const dependencyEntitiesMap = (yield flowResult(
         this.getConfigurationProjectDependencyEntities(),
       )) as Map<string, Entity[]>;
-      stopWatch.record(GRAPH_MANAGER_LOG_EVENT.GRAPH_DEPENDENCIES_FETCHED);
+      stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED);
 
       // build dependencies
-      const dependency_buildReport = (yield flowResult(
-        this.editorStore.graphManagerState.graphManager.buildDependencies(
+      const dependency_buildReport =
+        (yield this.editorStore.graphManagerState.graphManager.buildDependencies(
           this.editorStore.graphManagerState.coreModel,
           this.editorStore.graphManagerState.systemModel,
           dependencyManager,
           dependencyEntitiesMap,
-        ),
-      )) as GraphBuilderReport;
-      this.editorStore.graphManagerState.graph.setDependencyManager(
-        dependencyManager,
-      );
+        )) as GraphBuilderReport;
       dependency_buildReport.timings[
-        GRAPH_MANAGER_LOG_EVENT.GRAPH_DEPENDENCIES_FETCHED
-      ] = stopWatch.getRecord(
-        GRAPH_MANAGER_LOG_EVENT.GRAPH_DEPENDENCIES_FETCHED,
-      );
+        GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED
+      ] = stopWatch.getRecord(GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED);
 
       // build graph
-      const graph_buildReport = (yield flowResult(
-        this.editorStore.graphManagerState.graphManager.buildGraph(
+      const graph_buildReport =
+        (yield this.editorStore.graphManagerState.graphManager.buildGraph(
           this.editorStore.graphManagerState.graph,
           entities,
           {
@@ -247,29 +244,29 @@ export class EditorGraphState {
               this.editorStore.applicationStore.config.options
                 .TEMPORARY__disableRawLambdaResolver,
           },
-        ),
-      )) as GraphBuilderReport;
+        )) as GraphBuilderReport;
 
       // build generations
-      const generation_buildReport = (yield flowResult(
-        this.editorStore.graphManagerState.graphManager.buildGenerations(
+      const generation_buildReport =
+        (yield this.editorStore.graphManagerState.graphManager.buildGenerations(
           this.editorStore.graphManagerState.graph,
           this.graphGenerationState.generatedEntities,
-        ),
-      )) as GraphBuilderReport;
+        )) as GraphBuilderReport;
 
       // report
-      stopWatch.record();
+      stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_INITIALIZED);
       const graphBuilderReportData = {
         timings: {
-          [GRAPH_MANAGER_LOG_EVENT.GRAPH_INITIALIZED]: stopWatch.elapsed,
+          [GRAPH_MANAGER_EVENT.GRAPH_INITIALIZED]: stopWatch.getRecord(
+            GRAPH_MANAGER_EVENT.GRAPH_INITIALIZED,
+          ),
         },
         dependencies: dependency_buildReport,
         graph: graph_buildReport,
         generations: generation_buildReport,
       };
       this.editorStore.applicationStore.log.info(
-        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_INITIALIZED),
+        LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_INITIALIZED),
         graphBuilderReportData,
       );
       GraphManagerTelemetry.logEvent_GraphInitialized(
@@ -278,7 +275,9 @@ export class EditorGraphState {
       );
 
       // add generation specification if model generation elements exists in graph and no generation specification
-      this.graphGenerationState.possiblyAddMissingGenerationSpecifications();
+      yield flowResult(
+        this.graphGenerationState.possiblyAddMissingGenerationSpecifications(),
+      );
 
       return {
         status: GraphBuilderStatus.SUCCEEDED,
@@ -286,7 +285,7 @@ export class EditorGraphState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE),
+        LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_FAILURE),
         error,
       );
       if (error instanceof DependencyGraphBuilderError) {
@@ -311,7 +310,7 @@ export class EditorGraphState {
           `Can't build graph. Error: ${error.message}`,
         );
       } else {
-        // FIXME: we should split this into 2 notifications when we support multiple notifications
+        // TODO: we should split this into 2 notifications when we support multiple notifications
         this.editorStore.applicationStore.notifyError(
           `Can't build graph. Redirected to text mode for debugging. Error: ${error.message}`,
         );
@@ -328,7 +327,7 @@ export class EditorGraphState {
         } catch (error2) {
           assertErrorThrown(error2);
           this.editorStore.applicationStore.log.error(
-            LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE),
+            LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_FAILURE),
             error2,
           );
           if (error2 instanceof NetworkClientError) {
@@ -372,7 +371,7 @@ export class EditorGraphState {
     this.editorStore.applicationStore.notifyWarning(
       `Can't de-serialize graph model from entities. Redirected to model loader for debugging. Error: ${error.message}`,
     );
-    this.editorStore.modelLoaderState.setCurrentInputType(
+    this.editorStore.modelLoaderState.setCurrentModelLoadType(
       MODEL_UPDATER_INPUT_TYPE.ENTITIES,
     );
     // Making an async call
@@ -451,7 +450,7 @@ export class EditorGraphState {
     }
   }
 
-  // FIXME: when we support showing multiple notifications, we can take this options out as the only users of this
+  // TODO: when we support showing multiple notifications, we can take this options out as the only users of this
   // is delete element flow, where we want to say `re-compiling graph after deletion`, but because compilation
   // sometimes is so fast, the message flashes, so we want to combine with the message in this method
   *globalCompileInFormMode(options?: {
@@ -493,7 +492,7 @@ export class EditorGraphState {
       // i.e. there should be a catch-all handler (we can use if-else construct to check error types)
       assertType(error, EngineError, `Unhandled exception:\n${error}`);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.COMPILATION_FAILURE),
+        LogEvent.create(GRAPH_MANAGER_EVENT.COMPILATION_FAILURE),
         error,
       );
       let fallbackToTextModeForDebugging = true;
@@ -529,7 +528,7 @@ export class EditorGraphState {
 
       // decide if we need to fall back to text mode for debugging
       if (fallbackToTextModeForDebugging) {
-        // FIXME: when we support showing multiple notifications, we can split this into 2
+        // TODO: when we support showing multiple notifications, we can split this into 2
         this.editorStore.applicationStore.notifyWarning(
           options?.message ??
             'Compilation failed and error cannot be located in form mode. Redirected to text mode for debugging.',
@@ -564,7 +563,7 @@ export class EditorGraphState {
     }
   }
 
-  // FIXME: when we support showing multiple notifications, we can take this `suppressCompilationFailureMessage` out as
+  // TODO: when we support showing multiple notifications, we can take this `suppressCompilationFailureMessage` out as
   // we can show the transition between form mode and text mode warning and the compilation failure warning at the same time
   *globalCompileInTextMode(options?: {
     ignoreBlocking?: boolean;
@@ -600,7 +599,7 @@ export class EditorGraphState {
         this.editorStore.grammarTextEditorState.setError(error);
       }
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.COMPILATION_FAILURE),
+        LogEvent.create(GRAPH_MANAGER_EVENT.COMPILATION_FAILURE),
         'Compilation failed:',
         error,
       );
@@ -659,12 +658,12 @@ export class EditorGraphState {
           this.editorStore.grammarTextEditorState.setError(error);
         }
         this.editorStore.applicationStore.log.error(
-          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.COMPILATION_FAILURE),
+          LogEvent.create(GRAPH_MANAGER_EVENT.COMPILATION_FAILURE),
           'Compilation failed:',
           error,
         );
         if (this.editorStore.graphManagerState.graph.buildState.hasFailed) {
-          // FIXME when we support showing multiple notification, we can split this into 2 messages
+          // TODO: when we support showing multiple notification, we can split this into 2 messages
           this.editorStore.applicationStore.notifyWarning(
             `Can't build graph, please resolve compilation error before leaving text mode. Compilation failed with error: ${error.message}`,
           );
@@ -698,7 +697,7 @@ export class EditorGraphState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.COMPILATION_FAILURE),
+        LogEvent.create(GRAPH_MANAGER_EVENT.COMPILATION_FAILURE),
         error,
       );
     } finally {
@@ -744,8 +743,7 @@ export class EditorGraphState {
    * 1. State management Mobx allows references, as such, it is sometimes hard to trace down which references can cause problem
    *    We have to understand that the behind this updater is very simple (replace), yet to do it cleanly is not easy, since
    *    so far it is tempting to refer to elements in the graph from various editor state. On top of that, change detection
-   *    sometimes obfuscate the investigation but we have cleared it out with explicit disposing of reaction and `keepAlive`
-   *    computations (e.g. hash)
+   *    sometimes obfuscate the investigation but we have cleared it out with explicit disposing of reaction
    * 2. Reusable models, at this point in time, we haven't completed stabilize the logic for handling generated models, as well
    *    as depdendencies, we intended to save computation time by reusing these while updating the graph. This can pose potential
    *    danger as well. Beware the way when we start to make system/project dependencies references elements of current graph
@@ -778,9 +776,8 @@ export class EditorGraphState {
         this.editorStore.graphManagerState.graph.dependencyManager.buildState
           .hasSucceeded
       ) {
-        newGraph.setDependencyManager(
-          this.editorStore.graphManagerState.graph.dependencyManager,
-        );
+        newGraph.dependencyManager =
+          this.editorStore.graphManagerState.graph.dependencyManager;
       } else {
         this.editorStore.projectConfigurationEditorState.setProjectConfiguration(
           ProjectConfiguration.serialization.fromJson(
@@ -792,17 +789,15 @@ export class EditorGraphState {
         );
         const dependencyManager =
           this.editorStore.graphManagerState.createEmptyDependencyManager();
-        yield flowResult(
-          this.editorStore.graphManagerState.graphManager.buildDependencies(
-            this.editorStore.graphManagerState.coreModel,
-            this.editorStore.graphManagerState.systemModel,
-            dependencyManager,
-            (yield flowResult(
-              this.getConfigurationProjectDependencyEntities(),
-            )) as Map<string, Entity[]>,
-          ),
+        newGraph.dependencyManager = dependencyManager;
+        yield this.editorStore.graphManagerState.graphManager.buildDependencies(
+          this.editorStore.graphManagerState.coreModel,
+          this.editorStore.graphManagerState.systemModel,
+          dependencyManager,
+          (yield flowResult(
+            this.getConfigurationProjectDependencyEntities(),
+          )) as Map<string, Entity[]>,
         );
-        newGraph.setDependencyManager(dependencyManager);
       }
 
       /* @MARKER: MEMORY-SENSITIVE */
@@ -823,29 +818,25 @@ export class EditorGraphState {
 
       /* @MARKER: MEMORY-SENSITIVE */
       this.editorStore.changeDetectionState.stop(); // stop change detection before disposing hash
-      yield flowResult(this.editorStore.graphManagerState.graph.dispose());
+      yield flowResult(graph_dispose(this.editorStore.graphManagerState.graph));
 
-      yield flowResult(
-        this.editorStore.graphManagerState.graphManager.buildGraph(
-          newGraph,
-          entities,
-          {
-            TEMPORARY__keepSectionIndex:
-              this.editorStore.applicationStore.config.options
-                .EXPERIMENTAL__enableFullGrammarImportSupport,
-            TEMPORARY__disableRawLambdaResolver:
-              this.editorStore.applicationStore.config.options
-                .TEMPORARY__disableRawLambdaResolver,
-          },
-        ),
+      yield this.editorStore.graphManagerState.graphManager.buildGraph(
+        newGraph,
+        entities,
+        {
+          TEMPORARY__keepSectionIndex:
+            this.editorStore.applicationStore.config.options
+              .EXPERIMENTAL__enableFullGrammarImportSupport,
+          TEMPORARY__disableRawLambdaResolver:
+            this.editorStore.applicationStore.config.options
+              .TEMPORARY__disableRawLambdaResolver,
+        },
       );
 
       // NOTE: build model generation entities every-time we rebuild the graph - should we do this?
-      yield flowResult(
-        this.editorStore.graphManagerState.graphManager.buildGenerations(
-          newGraph,
-          this.graphGenerationState.generatedEntities,
-        ),
+      yield this.editorStore.graphManagerState.graphManager.buildGenerations(
+        newGraph,
+        this.graphGenerationState.generatedEntities,
       );
       this.editorStore.graphManagerState.graph = newGraph;
       /* @MARKER: MEMORY-SENSITIVE */
@@ -854,11 +845,12 @@ export class EditorGraphState {
       // this.editorStore.explorerTreeState.buildImmutableModelTrees();
       // this.editorStore.explorerTreeState.build();
 
-      // FIXME: we allow this so the UX stays the same but this causes memory leak
+      // FIXME: we allow this so the UX stays the same but this can cause memory leak
       // do this properly using node IDs -> this causes mem-leak right now
       this.editorStore.explorerTreeState.reprocess();
+
       // Reprocess editor states
-      // FIXME: we allow this so the UX stays the same but this causes memory leak
+      // FIXME: we allow this so the UX stays the same but this can cause memory leak
       // we should change `reprocess` model to do something like having source information on the form to navigate to it properly
 
       /* @MARKER: MEMORY-SENSITIVE */
@@ -873,7 +865,7 @@ export class EditorGraphState {
       );
 
       this.editorStore.applicationStore.log.info(
-        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_UPDATED_AND_REBUILT),
+        LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_UPDATED_AND_REBUILT),
         '[TOTAL]',
         Date.now() - startTime,
         'ms',
@@ -882,20 +874,21 @@ export class EditorGraphState {
 
       // ======= (RE)START CHANGE DETECTION =======
       /* @MARKER: MEMORY-SENSITIVE */
-      yield flowResult(this.editorStore.graphManagerState.precomputeHashes());
+      yield this.editorStore.changeDetectionState.observeGraph();
+      yield this.editorStore.changeDetectionState.preComputeGraphElementHashes();
       this.editorStore.changeDetectionState.start();
       yield flowResult(
         this.editorStore.changeDetectionState.computeLocalChanges(true),
       );
       this.editorStore.applicationStore.log.info(
-        LogEvent.create(CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_RESTARTED),
+        LogEvent.create(CHANGE_DETECTION_EVENT.CHANGE_DETECTION_RESTARTED),
         '[ASYNC]',
       );
       // ======= FINISHED (RE)START CHANGE DETECTION =======
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE),
+        LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_FAILURE),
         error,
       );
       this.editorStore.changeDetectionState.stop(true); // force stop change detection
@@ -950,16 +943,14 @@ export class EditorGraphState {
       // we reset the generation model
       this.editorStore.graphManagerState.graph.generationModel =
         this.editorStore.graphManagerState.createEmptyGenerationModel();
-      yield flowResult(
-        this.editorStore.graphManagerState.graphManager.buildGenerations(
-          this.editorStore.graphManagerState.graph,
-          this.graphGenerationState.generatedEntities,
-        ),
+      yield this.editorStore.graphManagerState.graphManager.buildGenerations(
+        this.editorStore.graphManagerState.graph,
+        this.graphGenerationState.generatedEntities,
       );
 
       /* @MARKER: MEMORY-SENSITIVE */
       // Reprocess explorer tree
-      // FIXME: we allow this so the UX stays the same but this causes memory leak
+      // FIXME: we allow this so the UX stays the same but this can cause memory leak
       // we should change `reprocess` model to do something like having source information on the form to navigate to it properly
       this.editorStore.explorerTreeState.reprocess();
 
@@ -976,7 +967,7 @@ export class EditorGraphState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE),
+        LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(
@@ -1044,7 +1035,7 @@ export class EditorGraphState {
       assertErrorThrown(error);
       const message = `Can't acquire dependency entitites. Error: ${error.message}`;
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_FAILURE),
+        LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_FAILURE),
         message,
       );
       this.editorStore.applicationStore.notifyError(error);

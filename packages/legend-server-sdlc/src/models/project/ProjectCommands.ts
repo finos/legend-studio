@@ -14,11 +14,8 @@
  * limitations under the License.
  */
 
-import type { ProjectType } from './Project';
-
 export interface ImportProjectCommand {
   id: string;
-  type: ProjectType;
   groupId: string;
   artifactId: string;
 }
@@ -26,7 +23,6 @@ export interface ImportProjectCommand {
 export interface CreateProjectCommand {
   name: string;
   description: string;
-  type: ProjectType;
   groupId: string;
   artifactId: string;
   tags: string[];

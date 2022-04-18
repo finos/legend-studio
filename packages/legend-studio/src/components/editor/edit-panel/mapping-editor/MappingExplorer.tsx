@@ -67,6 +67,7 @@ import {
   PureInstanceSetImplementationFilterState,
   PureInstanceSetImplementationState,
 } from '../../../../stores/editor-state/element-editor-state/mapping/PureInstanceSetImplementationState';
+import { pureInstanceSetImpl_setMappingFilter } from '../../../../stores/graphModifier/DSLMapping_GraphModifierHelper';
 
 export const MappingExplorerContextMenu = observer(
   forwardRef<
@@ -125,7 +126,7 @@ export const MappingExplorerContextMenu = observer(
       if (mappingElement instanceof PureInstanceSetImplementation) {
         if (!mappingElement.filter) {
           const stubLambda = RawLambda.createStub();
-          mappingElement.setMappingFilter(stubLambda);
+          pureInstanceSetImpl_setMappingFilter(mappingElement, stubLambda);
         }
         if (
           mappingEditorState.currentTabState instanceof
@@ -152,7 +153,7 @@ export const MappingExplorerContextMenu = observer(
           );
           mappingEditorState.currentTabState.mappingFilterState = undefined;
           if (mappingElement instanceof PureInstanceSetImplementation) {
-            mappingElement.setMappingFilter(undefined);
+            pureInstanceSetImpl_setMappingFilter(mappingElement, undefined);
           }
         }
       },
@@ -463,9 +464,18 @@ export const MappingExplorer = observer((props: { isReadOnly: boolean }) => {
     [handleDrop],
   );
   // Generation
+  const generationParentElementPath =
+    editorStore.graphState.graphGenerationState.findGenerationParentPath(
+      mapping.path,
+    );
+  const generationParentElement = generationParentElementPath
+    ? editorStore.graphManagerState.graph.getNullableElement(
+        generationParentElementPath,
+      )
+    : undefined;
   const visitGenerationParentElement = (): void => {
-    if (mapping.generationParentElement) {
-      editorStore.openElement(mapping.generationParentElement);
+    if (generationParentElement) {
+      editorStore.openElement(generationParentElement);
     }
   };
   // explorer tree data
@@ -488,7 +498,7 @@ export const MappingExplorer = observer((props: { isReadOnly: boolean }) => {
         <div
           className={clsx('panel__header__title', {
             'panel__header__title--with-generation-origin':
-              mapping.generationParentElement,
+              generationParentElement,
           })}
         >
           {isReadOnly && (
@@ -500,7 +510,7 @@ export const MappingExplorer = observer((props: { isReadOnly: boolean }) => {
           <div className="panel__header__title__content">{mapping.name}</div>
         </div>
         <div className="panel__header__actions">
-          {!mapping.generationParentElement && (
+          {!generationParentElement && (
             <button
               className="panel__header__action"
               onClick={openNewMapingModal}
@@ -511,18 +521,18 @@ export const MappingExplorer = observer((props: { isReadOnly: boolean }) => {
               <PlusIcon />
             </button>
           )}
-          {mapping.generationParentElement && (
+          {generationParentElement && (
             <button
               className="mapping-explorer__header__generation-origin"
               onClick={visitGenerationParentElement}
               tabIndex={-1}
-              title={`Visit generation parent '${mapping.generationParentElement.path}'`}
+              title={`Visit generation parent '${generationParentElement.path}'`}
             >
               <div className="mapping-explorer__header__generation-origin__label">
                 <FireIcon />
               </div>
               <div className="mapping-explorer__header__generation-origin__parent-name">
-                {mapping.generationParentElement.name}
+                {generationParentElement.name}
               </div>
               <div className="mapping-explorer__header__generation-origin__visit-btn">
                 <StickArrowCircleRightIcon />

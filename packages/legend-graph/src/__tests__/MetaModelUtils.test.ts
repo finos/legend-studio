@@ -30,7 +30,7 @@ import {
   losslessStringify,
   unitTest,
 } from '@finos/legend-shared';
-import { ROOT_PACKAGE_NAME, MILESTONING_STEROTYPES } from '../MetaModelConst';
+import { ROOT_PACKAGE_NAME, MILESTONING_STEROTYPE } from '../MetaModelConst';
 import { Package } from '../models/metamodels/pure/packageableElements/domain/Package';
 import {
   ObjectInputData,
@@ -202,11 +202,11 @@ test(unitTest('Milestoned class'), async () => {
       graphManagerState.graph.getClass('test::C'),
       graphManagerState.graph,
     ),
-  ).toBe(MILESTONING_STEROTYPES.BUSINESS_TEMPORAL);
+  ).toBe(MILESTONING_STEROTYPE.BUSINESS_TEMPORAL);
   expect(
     getMilestoneTemporalStereotype(
       graphManagerState.graph.getClass('test::D'),
       graphManagerState.graph,
     ),
-  ).toBe(MILESTONING_STEROTYPES.BUSINESS_TEMPORAL);
+  ).toBe(MILESTONING_STEROTYPE.BUSINESS_TEMPORAL);
 });

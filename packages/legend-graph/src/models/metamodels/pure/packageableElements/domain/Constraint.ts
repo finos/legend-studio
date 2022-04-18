@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { observable, action, computed, makeObservable } from 'mobx';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import { hashArray, uuid, type Hashable } from '@finos/legend-shared';
 import { RawLambda } from '../../rawValueSpecification/RawLambda';
@@ -22,37 +21,19 @@ import type { Class } from './Class';
 import type { Stubable } from '../../../../../helpers/Stubable';
 
 export class Constraint implements Hashable, Stubable {
-  uuid = uuid();
-  name: string;
+  readonly uuid = uuid();
   owner: Class;
+
+  name: string;
   functionDefinition: RawLambda; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
   externalId?: string | undefined;
   enforcementLevel?: string | undefined;
   messageFunction?: RawLambda | undefined; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
 
   constructor(name: string, owner: Class, functionDefinition: RawLambda) {
-    makeObservable(this, {
-      name: observable,
-      functionDefinition: observable,
-      externalId: observable,
-      enforcementLevel: observable,
-      messageFunction: observable,
-      setName: action,
-      setFunctionDefinition: action,
-      isStub: computed,
-      hashCode: computed,
-    });
-
     this.name = name;
     this.owner = owner;
     this.functionDefinition = functionDefinition;
-  }
-
-  setName(name: string): void {
-    this.name = name;
-  }
-  setFunctionDefinition(lambda: RawLambda): void {
-    this.functionDefinition = lambda;
   }
 
   static createStub = (_class: Class): Constraint =>

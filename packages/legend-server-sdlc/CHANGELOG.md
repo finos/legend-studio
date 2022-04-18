@@ -1,5 +1,23 @@
 # @finos/legend-server-sdlc
 
+## 1.0.0
+
+### Major Changes
+
+- [#1041](https://github.com/finos/legend-studio/pull/1041) [`5a76b228`](https://github.com/finos/legend-studio/commit/5a76b2289cb88569e9a1acb2287960de3e593d25) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Allow fetching `SDLC` server features configuration. Also, remove `project type` from `Project` model.
+
+## 0.2.8
+
+## 0.2.7
+
+## 0.2.6
+
+## 0.2.5
+
+## 0.2.4
+
+## 0.2.3
+
 ## 0.2.2
 
 ## 0.2.1

@@ -100,10 +100,19 @@ import {
   CORE_DND_TYPE,
   ElementDragSource,
   useEditorStore,
+  property_setName,
+  property_setGenericType,
+  property_setMultiplicity,
+  package_addElement,
 } from '@finos/legend-studio';
 import { cleanUpDeadReferencesInDiagram } from '../../helpers/DiagramHelper';
 import { Point } from '../../models/metamodels/pure/packageableElements/diagram/geometry/DSLDiagram_Point';
 import type { DSLDiagram_LegendStudioPlugin_Extension } from './DSLDiagram_LegendStudioPlugin_Extension';
+import {
+  classView_setHideProperties,
+  classView_setHideStereotypes,
+  classView_setHideTaggedValues,
+} from '../../stores/studio/DSLDiagram_GraphModifierHelper';
 
 const DiagramEditorContextMenu = observer(
   forwardRef<
@@ -515,21 +524,21 @@ const DiagramEditorClassViewEditor = observer(
       if (isReadOnly) {
         return;
       }
-      classView.setHideProperties(!classView.hideProperties);
+      classView_setHideProperties(classView, !classView.hideProperties);
       diagramEditorState.renderer.render();
     };
     const toggleHideTaggedValues = (): void => {
       if (isReadOnly) {
         return;
       }
-      classView.setHideTaggedValues(!classView.hideTaggedValues);
+      classView_setHideTaggedValues(classView, !classView.hideTaggedValues);
       diagramEditorState.renderer.render();
     };
     const toggleHideStereotypes = (): void => {
       if (isReadOnly) {
         return;
       }
-      classView.setHideStereotypes(!classView.hideStereotypes);
+      classView_setHideStereotypes(classView, !classView.hideStereotypes);
       diagramEditorState.renderer.render();
     };
 
@@ -821,6 +830,7 @@ const DiagramEditorInlineClassCreatorInner = observer(
   }) => {
     const { inlineClassCreatorState } = props;
     const editorStore = useEditorStore();
+    const applicationStore = useApplicationStore();
     const diagramEditorState = inlineClassCreatorState.diagramEditorState;
     const isReadOnly = diagramEditorState.isReadOnly;
     const [path, setPath] = useState(
@@ -847,22 +857,28 @@ const DiagramEditorInlineClassCreatorInner = observer(
     const canCreateClass =
       isClassPathNonEmpty && isNotTopLevelClass && isValidPath && isClassUnique;
 
-    const close = (event: React.MouseEvent<HTMLButtonElement>): void => {
+    const createClass = async (
+      event: React.MouseEvent<HTMLButtonElement>,
+    ): Promise<void> => {
       event.preventDefault();
       if (canCreateClass) {
         diagramEditorState.setInlineClassCreatorState(undefined);
         const [packagePath, name] = resolvePackagePathAndElementName(path);
         const _class = new Class(name);
-        editorStore.graphManagerState.graph
-          .getOrCreatePackage(packagePath)
-          .addElement(_class);
-        editorStore.graphManagerState.graph.addElement(_class);
-        editorStore.explorerTreeState.reprocess();
+        package_addElement(
+          editorStore.graphManagerState.graph.getOrCreatePackage(packagePath),
+          _class,
+          editorStore.changeDetectionState.observerContext,
+        );
+        await flowResult(editorStore.addElement(_class, false));
         diagramEditorState.renderer.addClassView(
           _class,
           inlineClassCreatorState.point,
         );
       }
+    };
+    const close = (event: React.MouseEvent<HTMLButtonElement>): void => {
+      createClass(event).catch(applicationStore.alertUnhandledError);
     };
     const pathInputRef = useRef<HTMLInputElement>(null);
 
@@ -1027,14 +1043,14 @@ const DiagramEditorInlinePropertyEditorInner = observer(
       event,
     ) => {
       if (property instanceof DerivedProperty || property instanceof Property) {
-        property.setName(event.target.value);
+        property_setName(property, event.target.value);
         diagramEditorState.renderer.render();
       }
     };
 
     const changeMultiplicity = (val: Multiplicity): void => {
       if (property instanceof DerivedProperty || property instanceof Property) {
-        property.setMultiplicity(val);
+        property_setMultiplicity(property, val);
         diagramEditorState.renderer.render();
       }
     };
@@ -1054,7 +1070,7 @@ const DiagramEditorInlinePropertyEditorInner = observer(
     };
     const changePropertyType = (val: PackageableElementOption<Type>): void => {
       if (property instanceof Property || property instanceof DerivedProperty) {
-        property.setGenericType(new GenericType(val.value));
+        property_setGenericType(property, new GenericType(val.value));
       }
     };
 

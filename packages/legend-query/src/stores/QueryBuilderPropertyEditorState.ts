@@ -27,7 +27,6 @@ import {
   Class,
   type AbstractProperty,
   type Enum,
-  type PureModel,
   type ValueSpecification,
   TYPICAL_MULTIPLICITY_TYPE,
   CollectionInstanceValue,
@@ -41,10 +40,12 @@ import {
   PRIMITIVE_TYPE,
   VariableExpression,
   getMilestoneTemporalStereotype,
-  MILESTONING_STEROTYPES,
+  MILESTONING_STEROTYPE,
   SimpleFunctionExpression,
   matchFunctionName,
   TYPE_CAST_TOKEN,
+  observe_AbstractPropertyExpression,
+  type PureModel,
 } from '@finos/legend-graph';
 import { generateDefaultValueForPrimitiveType } from './QueryBuilderValueSpecificationBuilderHelper';
 import type { QueryBuilderState } from './QueryBuilderState';
@@ -55,6 +56,7 @@ import {
   isDefaultDatePropagationSupported,
   removePropagatedDates,
 } from './QueryBuilderMilestoningHelper';
+import { functionExpression_setParametersValues } from './QueryBuilderValueSpecificationModifierHelper';
 
 export const prettyPropertyName = (value: string): string =>
   isCamelCase(value) ? prettyCamelCase(value) : prettyCONSTName(value);
@@ -131,7 +133,7 @@ export const fillDerivedPropertyArguments = (
   let propertyArguments: ValueSpecification[] =
     derivedPropertyExpressionState.parameterValues;
   let parameterValues: ValueSpecification[] = [];
-  let temporalTarget: MILESTONING_STEROTYPES | undefined;
+  let temporalTarget: MILESTONING_STEROTYPE | undefined;
   if (
     derivedPropertyExpressionState.propertyExpression.func.genericType.value
       .rawType instanceof Class &&
@@ -149,8 +151,8 @@ export const fillDerivedPropertyArguments = (
     derivedPropertyExpressionState.queryBuilderState.graphManagerState.graph,
   );
   if (
-    temporalSource === MILESTONING_STEROTYPES.PROCESSING_TEMPORAL &&
-    temporalTarget === MILESTONING_STEROTYPES.BITEMPORAL &&
+    temporalSource === MILESTONING_STEROTYPE.PROCESSING_TEMPORAL &&
+    temporalTarget === MILESTONING_STEROTYPE.BITEMPORAL &&
     propertyArguments.length === 1
   ) {
     parameterValues = propertyArguments;
@@ -246,8 +248,8 @@ export const fillDerivedPropertyArguments = (
     }
   });
   if (
-    temporalSource === MILESTONING_STEROTYPES.PROCESSING_TEMPORAL &&
-    temporalTarget === MILESTONING_STEROTYPES.BITEMPORAL &&
+    temporalSource === MILESTONING_STEROTYPE.PROCESSING_TEMPORAL &&
+    temporalTarget === MILESTONING_STEROTYPE.BITEMPORAL &&
     parameterValues.length
   ) {
     propertyArguments = [
@@ -258,12 +260,16 @@ export const fillDerivedPropertyArguments = (
       guaranteeNonNullable(parameterValues[0]),
     ];
   }
-  derivedPropertyExpressionState.propertyExpression.setParametersValues([
-    guaranteeNonNullable(
-      derivedPropertyExpressionState.propertyExpression.parametersValues[0],
-    ),
-    ...propertyArguments,
-  ]);
+  functionExpression_setParametersValues(
+    derivedPropertyExpressionState.propertyExpression,
+    [
+      guaranteeNonNullable(
+        derivedPropertyExpressionState.propertyExpression.parametersValues[0],
+      ),
+      ...propertyArguments,
+    ],
+    derivedPropertyExpressionState.queryBuilderState.observableContext,
+  );
 };
 
 export class QueryBuilderDerivedPropertyExpressionState {
@@ -282,7 +288,10 @@ export class QueryBuilderDerivedPropertyExpressionState {
   ) {
     this.path = getPropertyPath(propertyExpression);
     this.title = getPropertyChainName(propertyExpression, true);
-    this.propertyExpression = propertyExpression;
+    this.propertyExpression = observe_AbstractPropertyExpression(
+      propertyExpression,
+      queryBuilderState.observableContext,
+    );
     this.queryBuilderState = queryBuilderState;
     this.derivedProperty = guaranteeType(
       propertyExpression.func,
@@ -345,7 +354,7 @@ export class QueryBuilderPropertyExpressionState {
   queryBuilderState: QueryBuilderState;
   path: string;
   title: string;
-  propertyExpression: AbstractPropertyExpression;
+  readonly propertyExpression: AbstractPropertyExpression;
 
   isEditingDerivedPropertyExpression = false;
   // Since this property is a chain expression, some link of the chain can be
@@ -375,7 +384,10 @@ export class QueryBuilderPropertyExpressionState {
     });
 
     this.queryBuilderState = queryBuilderState;
-    this.propertyExpression = propertyExpression;
+    this.propertyExpression = observe_AbstractPropertyExpression(
+      propertyExpression,
+      queryBuilderState.observableContext,
+    );
     this.path = getPropertyPath(propertyExpression);
     this.title = getPropertyChainName(propertyExpression, true);
     this.initDerivedPropertyExpressionStates();

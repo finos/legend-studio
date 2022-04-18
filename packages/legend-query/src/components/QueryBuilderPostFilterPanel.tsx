@@ -554,10 +554,11 @@ const QueryBuilderPostFilterTreeNodeContainer = observer(
     const toggleExpandNode = (): void => node.setIsOpen(!node.isOpen);
     const resetNode = (): void => {
       if (node instanceof QueryBuilderPostFilterTreeConditionNodeData) {
-        node.condition.value =
+        node.condition.setValue(
           node.condition.operator.getDefaultFilterConditionValue(
             node.condition,
-          );
+          ),
+        );
       }
     };
     const removeNode = (): void =>

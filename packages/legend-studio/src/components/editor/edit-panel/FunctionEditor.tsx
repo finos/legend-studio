@@ -66,6 +66,21 @@ import {
 import { useApplicationStore } from '@finos/legend-application';
 import { StudioLambdaEditor } from '../../shared/StudioLambdaEditor';
 import { getElementIcon } from '../../shared/ElementIconUtils';
+import {
+  function_setReturnType,
+  functio_setReturnMultiplicity,
+  function_addParameter,
+  function_deleteParameter,
+  annotatedElement_addTaggedValue,
+  annotatedElement_addStereotype,
+  annotatedElement_deleteStereotype,
+  annotatedElement_deleteTaggedValue,
+} from '../../../stores/graphModifier/DomainGraphModifierHelper';
+import {
+  rawVariableExpression_setMultiplicity,
+  rawVariableExpression_setName,
+  rawVariableExpression_setType,
+} from '../../../stores/graphModifier/ValueSpecificationGraphModifierHelper';
 
 enum FUNCTION_PARAMETER_TYPE {
   CLASS = 'CLASS',
@@ -99,7 +114,7 @@ const ParameterBasicEditor = observer(
     const editorStore = useEditorStore();
     // Name
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) =>
-      parameter.setName(event.target.value);
+      rawVariableExpression_setName(parameter, event.target.value);
     // Type
     const [isEditingType, setIsEditingType] = useState(false);
     const typeOptions = editorStore.classPropertyGenericTypeOptions;
@@ -113,7 +128,7 @@ const ParameterBasicEditor = observer(
     });
     const selectedType = { value: paramType, label: paramType.name };
     const changeType = (val: PackageableElementOption<Type>): void => {
-      parameter.setType(val.value);
+      rawVariableExpression_setType(parameter, val.value);
       setIsEditingType(false);
     };
     const openElement = (): void => {
@@ -142,7 +157,10 @@ const ParameterBasicEditor = observer(
           ? upper
           : parseInt(upper, 10);
       if (!isNaN(lBound) && (uBound === undefined || !isNaN(uBound))) {
-        parameter.setMultiplicity(new Multiplicity(lBound, uBound));
+        rawVariableExpression_setMultiplicity(
+          parameter,
+          new Multiplicity(lBound, uBound),
+        );
       }
     };
     const changeLowerBound: React.ChangeEventHandler<HTMLInputElement> = (
@@ -306,7 +324,7 @@ const ReturnTypeEditor = observer(
     });
     const selectedType = { value: returnType, label: returnType.value.name };
     const changeType = (val: PackageableElementOption<Type>): void => {
-      functionElement.setReturnType(val.value);
+      function_setReturnType(functionElement, val.value);
       setIsEditingType(false);
     };
 
@@ -338,7 +356,10 @@ const ReturnTypeEditor = observer(
           ? upper
           : parseInt(upper, 10);
       if (!isNaN(lBound) && (uBound === undefined || !isNaN(uBound))) {
-        functionElement.setReturnMultiplicity(new Multiplicity(lBound, uBound));
+        functio_setReturnMultiplicity(
+          functionElement,
+          new Multiplicity(lBound, uBound),
+        );
       }
     };
     const changeLowerBound: React.ChangeEventHandler<HTMLInputElement> = (
@@ -479,19 +500,21 @@ export const FunctionMainEditor = observer(
     const lambdaEditorState = functionEditorState.functionBodyEditorState;
     // Parameters
     const addParameter = (): void => {
-      functionElement.addParameter(
+      function_addParameter(
+        functionElement,
         RawVariableExpression.createStub(defaultType),
       );
     };
     const deleteParameter =
       (val: RawVariableExpression): (() => void) =>
       (): void => {
-        functionElement.deleteParameter(val);
+        function_deleteParameter(functionElement, val);
       };
     const handleDropParameter = useCallback(
       (item: UMLEditorElementDropTarget): void => {
         if (!isReadOnly && item.data.packageableElement instanceof Type) {
-          functionElement.addParameter(
+          function_addParameter(
+            functionElement,
             RawVariableExpression.createStub(item.data.packageableElement),
           );
         }
@@ -510,6 +533,27 @@ export const FunctionMainEditor = observer(
         }),
       }),
       [handleDropParameter],
+    );
+    const handleDropReturnType = useCallback(
+      (item: UMLEditorElementDropTarget): void => {
+        if (!isReadOnly && item.data.packageableElement instanceof Type) {
+          function_setReturnType(functionElement, item.data.packageableElement);
+        }
+      },
+      [functionElement, isReadOnly],
+    );
+    const [{ isReturnTypeDragOver }, dropReturnTypeRef] = useDrop(
+      () => ({
+        accept: [
+          CORE_DND_TYPE.PROJECT_EXPLORER_CLASS,
+          CORE_DND_TYPE.PROJECT_EXPLORER_ENUMERATION,
+        ],
+        drop: (item: ElementDragSource): void => handleDropReturnType(item),
+        collect: (monitor): { isReturnTypeDragOver: boolean } => ({
+          isReturnTypeDragOver: monitor.isOver({ shallow: true }),
+        }),
+      }),
+      [handleDropReturnType],
     );
 
     return (
@@ -551,10 +595,18 @@ export const FunctionMainEditor = observer(
             <div className="function-editor__element__item__header__title">
               LAMBDA
             </div>
-            <ReturnTypeEditor
-              functionElement={functionElement}
-              isReadOnly={isReadOnly}
-            />
+            <div
+              ref={dropReturnTypeRef}
+              className={clsx('function-editor__element__item__content', {
+                'panel__content__lists--dnd-over':
+                  isReturnTypeDragOver && !isReadOnly,
+              })}
+            >
+              <ReturnTypeEditor
+                functionElement={functionElement}
+                isReadOnly={isReadOnly}
+              />
+            </div>
           </div>
           <div
             className={clsx('function-editor__element__item__content', {
@@ -572,7 +624,6 @@ export const FunctionMainEditor = observer(
               expectedType={functionElement.returnType.value}
               forceBackdrop={false}
               forceExpansion={true}
-              disablePopUp={true}
             />
           </div>
         </div>
@@ -604,11 +655,13 @@ export const FunctionEditor = observer(() => {
   const add = (): void => {
     if (!isReadOnly) {
       if (selectedTab === FUNCTION_SPEC_TAB.TAGGED_VALUES) {
-        functionElement.addTaggedValue(
+        annotatedElement_addTaggedValue(
+          functionElement,
           TaggedValue.createStub(Tag.createStub(Profile.createStub())),
         );
       } else if (selectedTab === FUNCTION_SPEC_TAB.STEREOTYPES) {
-        functionElement.addStereotype(
+        annotatedElement_addStereotype(
+          functionElement,
           StereotypeExplicitReference.create(
             Stereotype.createStub(Profile.createStub()),
           ),
@@ -619,7 +672,8 @@ export const FunctionEditor = observer(() => {
   const handleDropTaggedValue = useCallback(
     (item: UMLEditorElementDropTarget): void => {
       if (!isReadOnly && item.data.packageableElement instanceof Profile) {
-        functionElement.addTaggedValue(
+        annotatedElement_addTaggedValue(
+          functionElement,
           TaggedValue.createStub(Tag.createStub(item.data.packageableElement)),
         );
       }
@@ -639,7 +693,8 @@ export const FunctionEditor = observer(() => {
   const handleDropStereotype = useCallback(
     (item: UMLEditorElementDropTarget): void => {
       if (!isReadOnly && item.data.packageableElement instanceof Profile) {
-        functionElement.addStereotype(
+        annotatedElement_addStereotype(
+          functionElement,
           StereotypeExplicitReference.create(
             Stereotype.createStub(item.data.packageableElement),
           ),
@@ -658,14 +713,14 @@ export const FunctionEditor = observer(() => {
     }),
     [handleDropStereotype],
   );
-  const deleteStereotype =
+  const _deleteStereotype =
     (val: StereotypeReference): (() => void) =>
     (): void =>
-      functionElement.deleteStereotype(val);
-  const deleteTaggedValue =
+      annotatedElement_deleteStereotype(functionElement, val);
+  const _deleteTaggedValue =
     (val: TaggedValue): (() => void) =>
     (): void =>
-      functionElement.deleteTaggedValue(val);
+      annotatedElement_deleteTaggedValue(functionElement, val);
   const changeTab =
     (tab: FUNCTION_SPEC_TAB): (() => void) =>
     (): void =>
@@ -742,7 +797,7 @@ export const FunctionEditor = observer(() => {
                   <TaggedValueEditor
                     key={taggedValue.uuid}
                     taggedValue={taggedValue}
-                    deleteValue={deleteTaggedValue(taggedValue)}
+                    deleteValue={_deleteTaggedValue(taggedValue)}
                     isReadOnly={isReadOnly}
                   />
                 ))}
@@ -760,7 +815,7 @@ export const FunctionEditor = observer(() => {
                   <StereotypeSelector
                     key={stereotype.value.uuid}
                     stereotype={stereotype}
-                    deleteStereotype={deleteStereotype(stereotype)}
+                    deleteStereotype={_deleteStereotype(stereotype)}
                     isReadOnly={isReadOnly}
                   />
                 ))}

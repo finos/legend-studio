@@ -45,6 +45,7 @@ import { useDrag, useDragLayer } from 'react-dnd';
 import { getEmptyImage } from 'react-dnd-html5-backend';
 import { QueryBuilderValueSpecificationEditor } from './QueryBuilderValueSpecificationEditor';
 import { prettyCONSTName } from '@finos/legend-shared';
+import { variableExpression_setName } from '../stores/QueryBuilderValueSpecificationModifierHelper';
 
 const ParameterValuesEditor = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
@@ -143,7 +144,7 @@ const VariableExpressionEditor = observer(
     const changeVariableName: React.ChangeEventHandler<HTMLInputElement> = (
       event,
     ) => {
-      varState.setName(event.target.value);
+      variableExpression_setName(varState, event.target.value);
     };
     // type
     const stringType =

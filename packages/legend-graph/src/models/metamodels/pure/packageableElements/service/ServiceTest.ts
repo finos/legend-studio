@@ -14,14 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  type Hashable,
-  uuid,
-  hashArray,
-  addUniqueEntry,
-  deleteEntry,
-} from '@finos/legend-shared';
-import { observable, computed, action, makeObservable } from 'mobx';
+import { type Hashable, uuid, hashArray } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import type { RawLambda } from '../../rawValueSpecification/RawLambda';
 import type { Service } from './Service';
@@ -37,19 +30,13 @@ export abstract class ServiceTest implements Hashable {
 }
 
 export class TestContainer implements Hashable {
-  uuid = uuid();
+  readonly uuid = uuid();
+
   parametersValues: unknown[] = []; // Any[*]; // ValueSpecification?
   assert: RawLambda; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
   singleExecutionTestParent: SingleExecutionTest;
 
   constructor(assert: RawLambda, parent: SingleExecutionTest) {
-    makeObservable(this, {
-      parametersValues: observable,
-      assert: observable,
-      singleExecutionTestParent: observable,
-      hashCode: computed,
-    });
-
     this.assert = assert;
     this.singleExecutionTestParent = parent;
   }
@@ -69,27 +56,7 @@ export class SingleExecutionTest extends ServiceTest implements Hashable {
 
   constructor(owner: Service, data: string) {
     super(owner);
-
-    makeObservable(this, {
-      data: observable,
-      asserts: observable,
-      setData: action,
-      addAssert: action,
-      deleteAssert: action,
-      hashCode: computed,
-    });
-
     this.data = data;
-  }
-
-  setData(value: string): void {
-    this.data = value;
-  }
-  addAssert(value: TestContainer): void {
-    addUniqueEntry(this.asserts, value);
-  }
-  deleteAssert(value: TestContainer): void {
-    deleteEntry(this.asserts, value);
   }
 
   get hashCode(): string {
@@ -109,17 +76,7 @@ export class KeyedSingleExecutionTest
 
   constructor(key: string, parentService: Service, data: string) {
     super(parentService, data);
-
-    makeObservable(this, {
-      key: observable,
-      setKey: action,
-    });
-
     this.key = key;
-  }
-
-  setKey(value: string): void {
-    this.key = value;
   }
 
   override get hashCode(): string {
@@ -134,24 +91,6 @@ export class KeyedSingleExecutionTest
 
 export class MultiExecutionTest extends ServiceTest implements Hashable {
   tests: KeyedSingleExecutionTest[] = [];
-
-  constructor(owner: Service) {
-    super(owner);
-
-    makeObservable(this, {
-      tests: observable,
-      addTest: action,
-      deleteTest: action,
-      hashCode: computed,
-    });
-  }
-
-  addTest(value: KeyedSingleExecutionTest): void {
-    addUniqueEntry(this.tests, value);
-  }
-  deleteTest(value: KeyedSingleExecutionTest): void {
-    deleteEntry(this.tests, value);
-  }
 
   get hashCode(): string {
     return hashArray([

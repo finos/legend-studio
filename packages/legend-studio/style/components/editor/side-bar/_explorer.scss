@@ -71,6 +71,7 @@
     color: var(--color-dark-grey-500);
     font-family: 'Roboto Mono', monospace;
     font-size: 1.2rem;
+    user-select: none;
   }
 
   &__content__failure-notice {
@@ -128,6 +129,7 @@
   }
 
   &__new-element-modal__name-input {
+    height: 2.8rem;
     width: 100%;
     margin-bottom: 1rem;
   }

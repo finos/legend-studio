@@ -29,6 +29,7 @@ import type {
   StereotypeReference,
   Stereotype,
 } from '@finos/legend-graph';
+import { stereotypeReference_setValue } from '../../../../stores/graphModifier/DomainGraphModifierHelper';
 
 interface StereotypeOption {
   label: string;
@@ -59,7 +60,10 @@ export const StereotypeSelector = observer(
     const changeProfile = (val: PackageableElementOption<Profile>): void => {
       if (val.value.stereotypes.length) {
         setSelectedProfile(val);
-        stereotype.setValue(val.value.stereotypes[0] as Stereotype);
+        stereotypeReference_setValue(
+          stereotype,
+          val.value.stereotypes[0] as Stereotype,
+        );
       }
     };
     const visitProfile = (): void =>
@@ -79,7 +83,7 @@ export const StereotypeSelector = observer(
       label: stereotype.value.value,
     };
     const updateStereotype = (val: StereotypeOption): void =>
-      stereotype.setValue(val.value);
+      stereotypeReference_setValue(stereotype, val.value);
     return (
       <div className="stereotype-selector">
         <div className="stereotype-selector__profile">

@@ -1,5 +1,99 @@
 # @finos/legend-studio
 
+## 7.0.0
+
+### Major Changes
+
+- [#1041](https://github.com/finos/legend-studio/pull/1041) [`5a76b228`](https://github.com/finos/legend-studio/commit/5a76b2289cb88569e9a1acb2287960de3e593d25) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Remove support for multi SDLC instances, `Studio` config for `SDLC` are now simplified to `{ url: string }`. To facilitate migration, we have added a `Not Found` page for the app so that we could communicate about route pattern changes using documentation which can be set in the app config.
+
+* [#1041](https://github.com/finos/legend-studio/pull/1041) [`5a76b228`](https://github.com/finos/legend-studio/commit/5a76b2289cb88569e9a1acb2287960de3e593d25) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Remove support for SDLC mode-specific handling: there is no longer special handlings for `prototype` and `production` projects, these are now driven by the SDLC features config. As such, flags like `TEMPORARY__useSDLCProductionProjectsOnly` and `TEMPORARY__useSDLCProductionProjectsOnly` are also removed.
+
+### Minor Changes
+
+- [#1041](https://github.com/finos/legend-studio/pull/1041) [`5a76b228`](https://github.com/finos/legend-studio/commit/5a76b2289cb88569e9a1acb2287960de3e593d25) ([@akphi](https://github.com/akphi)) - Add documentation key `import-project` for `Studio` import project modal dialog. If markdown text is specified, it would be shown when the SDLC server does not support project creation, otherwise, only the documentation `url` will be shown.
+
+### Patch Changes
+
+- [#1066](https://github.com/finos/legend-studio/pull/1066) [`a65b76d9`](https://github.com/finos/legend-studio/commit/a65b76d9ef610afdb78125d3c8b290a8c4454711) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Encode service pattern when launching management URL page post registration.
+
+## 6.0.0
+
+### Major Changes
+
+- [#1034](https://github.com/finos/legend-studio/pull/1034) [`1d80ad07`](https://github.com/finos/legend-studio/commit/1d80ad07ef1f93add3cb4102ecabd4a2b6d73479) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - **BREAKING CHANGE:** Service registration improvements including owner validation and open service UI upon successful registration.
+  Change service config `url` to `executionUrl`.
+  Remove `TEMPORARY__disableServiceRegistration` from core config.
+
+### Patch Changes
+
+- [#1029](https://github.com/finos/legend-studio/pull/1029) [`018131c3`](https://github.com/finos/legend-studio/commit/018131c39d6d5517cfeddf541890db23892005e7) ([@gayathrir11](https://github.com/gayathrir11)) - Fix runtime editor not opening when it has `ModelChainConnection` ([#1019](https://github.com/finos/legend-studio/issues/1019)).
+
+## 5.1.5
+
+## 5.1.4
+
+### Patch Changes
+
+- [#1036](https://github.com/finos/legend-studio/pull/1036) [`19996230`](https://github.com/finos/legend-studio/commit/19996230eeada8a8c1b7fd638b8ff1c45102a0ff) ([@akphi](https://github.com/akphi)) - Turn off `keepAlive` for element `hashCode` computed value to avoid potential memory leak.
+
+## 5.1.3
+
+### Patch Changes
+
+- [#1030](https://github.com/finos/legend-studio/pull/1030) [`36a575ee`](https://github.com/finos/legend-studio/commit/36a575ee93f170178771937878e64d0edda8691a) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix model loader not be able to select import config type.
+
+## 5.1.2
+
+## 5.1.1
+
+### Patch Changes
+
+- [#980](https://github.com/finos/legend-studio/pull/980) [`f95f5b42`](https://github.com/finos/legend-studio/commit/f95f5b429a017ecdac55f436e974d4f8f53d5f7c) ([@emilia-sokol-gs](https://github.com/emilia-sokol-gs)) - Add extension mechanism for loading models with model loader.
+
+## 5.1.0
+
+### Minor Changes
+
+- [#1004](https://github.com/finos/legend-studio/pull/1004) [`99c19279`](https://github.com/finos/legend-studio/commit/99c19279b19c15fa01cab5cf3389a20c036d62e3) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Rework the logic of resolving the generation parent for generated elements
+
+## 5.0.0
+
+### Major Changes
+
+- [#995](https://github.com/finos/legend-studio/pull/995) [`5b78a3fd`](https://github.com/finos/legend-studio/commit/5b78a3fdb48d28037ba93f7e27cb724d8d02d7a1) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Remove `DEV__enableStrictRuntimeChecks` config flag.
+
+### Minor Changes
+
+- [#995](https://github.com/finos/legend-studio/pull/995) [`5b78a3fd`](https://github.com/finos/legend-studio/commit/5b78a3fdb48d28037ba93f7e27cb724d8d02d7a1) ([@akphi](https://github.com/akphi)) - Support debugging execution plan generation.
+
+## 4.1.1
+
+### Patch Changes
+
+- [#992](https://github.com/finos/legend-studio/pull/992) [`a8693108`](https://github.com/finos/legend-studio/commit/a869310843265cf10a7595a3f53fb5b11ecf64aa) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add `TEMPORARY_skipGraphBuilderPostProcessing` flag to allow skipping post-processing in graph builder to boost performance.
+
+## 4.1.0
+
+### Minor Changes
+
+- [#988](https://github.com/finos/legend-studio/pull/988) [`3c135896`](https://github.com/finos/legend-studio/commit/3c135896a938da82f9a52583f1209514c9f0803c) ([@akphi](https://github.com/akphi)) - Show progress message and report metrics for graph builder process in viewer mode.
+
+## 4.0.1
+
+## 4.0.0
+
+### Major Changes
+
+- [#981](https://github.com/finos/legend-studio/pull/981) [`e3efb96f`](https://github.com/finos/legend-studio/commit/e3efb96feb2bcd5e0b9578bafd90a586ad65ed7e) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Renamed `LEGEND_STUDIO_LOG_EVENT_TYPE` to `LEGEND_STUDIO_APP_EVENT` which is meant to be used for more than just logging.
+
+### Minor Changes
+
+- [#977](https://github.com/finos/legend-studio/pull/977) [`37490b13`](https://github.com/finos/legend-studio/commit/37490b13d6156ad610bba2799e5621632885163d) ([@akphi](https://github.com/akphi)) - Show progress message and report metrics for graph builder process.
+
+### Patch Changes
+
+- [#982](https://github.com/finos/legend-studio/pull/982) [`4b0d8c67`](https://github.com/finos/legend-studio/commit/4b0d8c670d7621440ecde8b6406487b008be2153) ([@gayathrir11](https://github.com/gayathrir11)) - Enable `lambdaEditor` and allow DnD for returnType in FunctionEditor
+
 ## 3.1.0
 
 ### Minor Changes

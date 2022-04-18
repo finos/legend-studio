@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { toJS } from 'mobx';
 import type { DerivedProperty } from '../../../../../../metamodels/pure/packageableElements/domain/DerivedProperty';
 import type { Constraint } from '../../../../../../metamodels/pure/packageableElements/domain/Constraint';
 import type {
@@ -166,14 +165,14 @@ const transformProperty = (element: Property): V1_Property => {
   return property;
 };
 
-const transformDerviedProperty = (
+const transformDerivedProperty = (
   element: DerivedProperty,
   context: V1_GraphTransformerContext,
 ): V1_DerivedProperty => {
   const derivedProperty = new V1_DerivedProperty();
   derivedProperty.name = element.name;
-  derivedProperty.body = toJS(element.body);
-  derivedProperty.parameters = toJS(element.parameters);
+  derivedProperty.body = element.body;
+  derivedProperty.parameters = element.parameters;
   derivedProperty.returnMultiplicity = V1_transformMultiplicity(
     element.multiplicity,
   );
@@ -202,7 +201,7 @@ export const V1_transformClass = (
     (e) => e.ownerReference.valueForSerialization ?? '',
   );
   _class.derivedProperties = element.derivedProperties.map((dp) =>
-    transformDerviedProperty(dp, context),
+    transformDerivedProperty(dp, context),
   );
   return _class;
 };
@@ -215,7 +214,7 @@ export const V1_transformAssociation = (
   V1_initPackageableElement(association, element);
   association.properties = element.properties.map(transformProperty);
   association.derivedProperties = element.derivedProperties.map((dp) =>
-    transformDerviedProperty(dp, context),
+    transformDerivedProperty(dp, context),
   );
   association.stereotypes = element.stereotypes.map(V1_transformStereotype);
   association.taggedValues = element.taggedValues.map(V1_transformTaggedValue);
@@ -228,13 +227,12 @@ export const V1_transformFunction = (
 ): V1_ConcreteFunctionDefinition => {
   const _function = new V1_ConcreteFunctionDefinition();
   V1_initPackageableElement(_function, element);
-  _function.body = toJS(element.body);
-  _function.parameters = element.parameters.map((v) =>
-    toJS(
+  _function.body = element.body;
+  _function.parameters = element.parameters.map(
+    (v) =>
       v.accept_RawValueSpecificationVisitor(
         new V1_RawValueSpecificationTransformer(context),
       ) as V1_RawVariable,
-    ),
   );
   _function.returnType = V1_transformElementReference(element.returnType);
   _function.stereotypes = element.stereotypes.map(V1_transformStereotype);

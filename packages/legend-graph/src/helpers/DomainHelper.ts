@@ -16,18 +16,55 @@
 
 import type { PureModel } from '../graph/PureModel';
 import { Class } from '../models/metamodels/pure/packageableElements/domain/Class';
-import { CORE_PURE_PATH, MILESTONING_STEROTYPES } from '../MetaModelConst';
+import { CORE_PURE_PATH, MILESTONING_STEROTYPE } from '../MetaModelConst';
+import { Profile } from '../models/metamodels/pure/packageableElements/domain/Profile';
+import { Tag } from '../models/metamodels/pure/packageableElements/domain/Tag';
+import { Enum } from '../models/metamodels/pure/packageableElements/domain/Enum';
+import { Stereotype } from '../models/metamodels/pure/packageableElements/domain/Stereotype';
+import { TaggedValue } from '../models/metamodels/pure/packageableElements/domain/TaggedValue';
+import { TagExplicitReference } from '../models/metamodels/pure/packageableElements/domain/TagReference';
+import type { Enumeration } from '../models/metamodels/pure/packageableElements/domain/Enumeration';
+import type { Package } from '../models/metamodels/pure/packageableElements/domain/Package';
+import type { PackageableElement } from '../models/metamodels/pure/packageableElements/PackageableElement';
+
+export const _package_addElement = (
+  parent: Package,
+  element: PackageableElement,
+): void => {
+  // NOTE: here we directly push the element to the children array without any checks rather than use `addUniqueEntry` to improve performance.
+  // Duplication checks should be handled separately
+  parent.children.push(element);
+  element.package = parent;
+};
+
+export const _package_deleteElement = (
+  parent: Package,
+  packageableElement: PackageableElement,
+): void => {
+  parent.children = parent.children.filter(
+    (child) => child !== packageableElement,
+  );
+};
+
+export const createStubTag = (profile: Profile): Tag => new Tag(profile, '');
+export const createStubTaggedValue = (tag: Tag): TaggedValue =>
+  new TaggedValue(TagExplicitReference.create(tag), '');
+export const createStubStereotype = (profile: Profile): Stereotype =>
+  new Stereotype(profile, '');
+export const createStubProfile = (): Profile => new Profile('');
+export const createStubEnum = (enumeration: Enumeration): Enum =>
+  new Enum('', enumeration);
 
 export const getMilestoneTemporalStereotype = (
   val: Class,
   graph: PureModel,
-): MILESTONING_STEROTYPES | undefined => {
+): MILESTONING_STEROTYPE | undefined => {
   const milestonedProfile = graph.getProfile(CORE_PURE_PATH.PROFILE_TEMPORAL);
   let stereotype;
   const profile = val.stereotypes.find(
     (st) => st.ownerReference.value === milestonedProfile,
   );
-  stereotype = Object.values(MILESTONING_STEROTYPES).find(
+  stereotype = Object.values(MILESTONING_STEROTYPE).find(
     (value) => value === profile?.value.value,
   );
   if (stereotype !== undefined) {
@@ -41,7 +78,7 @@ export const getMilestoneTemporalStereotype = (
         graph,
       );
       if (milestonedStereotype !== undefined) {
-        stereotype = Object.values(MILESTONING_STEROTYPES).find(
+        stereotype = Object.values(MILESTONING_STEROTYPE).find(
           (value) => value === milestonedStereotype,
         );
       }

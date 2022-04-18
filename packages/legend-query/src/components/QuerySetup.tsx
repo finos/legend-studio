@@ -292,6 +292,7 @@ const ServiceQuerySetup = observer(
       setupStore.setSetupState(undefined);
       querySetupState.setCurrentVersionId(undefined);
       querySetupState.setCurrentProject(undefined);
+      queryStore.setQueryInfoState(undefined);
       setupStore.queryStore.graphManagerState.resetGraph();
     };
     const next = (): void => {
@@ -372,7 +373,7 @@ const ServiceQuerySetup = observer(
           querySetupState.currentVersionId
         ) {
           flowResult(
-            queryStore.buildGraph(
+            queryStore.buildGraphForServiceQuerySetup(
               querySetupState.currentProject,
               querySetupState.currentVersionId,
             ),
@@ -547,6 +548,7 @@ const CreateQuerySetup = observer(
       setupStore.setSetupState(undefined);
       querySetupState.setCurrentVersionId(undefined);
       querySetupState.setCurrentProject(undefined);
+      queryStore.setQueryInfoState(undefined);
       setupStore.queryStore.graphManagerState.resetGraph();
     };
     const next = (): void => {
@@ -635,7 +637,7 @@ const CreateQuerySetup = observer(
           querySetupState.currentVersionId
         ) {
           flowResult(
-            queryStore.buildGraph(
+            queryStore.buildGraphForCreateQuerySetup(
               querySetupState.currentProject,
               querySetupState.currentVersionId,
             ),

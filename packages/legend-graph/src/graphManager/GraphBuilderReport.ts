@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-import { GRAPH_MANAGER_LOG_EVENT } from './GraphManagerLogEvent';
+import { GRAPH_MANAGER_EVENT } from './GraphManagerEvent';
 
 export class GraphBuilderReport {
   timings: {
-    [GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_COMPLETED]: number;
+    [GRAPH_MANAGER_EVENT.GRAPH_BUILDER_COMPLETED]: number;
     [key: string]: number;
-  } = { [GRAPH_MANAGER_LOG_EVENT.GRAPH_BUILDER_COMPLETED]: 0 };
+  } = { [GRAPH_MANAGER_EVENT.GRAPH_BUILDER_COMPLETED]: 0 };
   elementCount: {
     total: number;
     [key: string]: number;

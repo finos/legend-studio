@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { action, observable, makeObservable } from 'mobx';
 import {
   PRIMITIVE_TYPE,
   ROOT_PACKAGE_NAME,
@@ -187,14 +186,6 @@ export class PureModel extends BasicModel {
       (plugin) => plugin.getExtraPureGraphExtensionClasses?.() ?? [],
     );
     super(ROOT_PACKAGE_NAME.MAIN, extensionElementClasses);
-
-    makeObservable(this, {
-      generationModel: observable,
-      dependencyManager: observable,
-      setDependencyManager: action,
-      addElement: action,
-    });
-
     this.graphPlugins = graphPlugins;
     this.coreModel = coreModel;
     this.systemModel = systemModel;
@@ -213,10 +204,6 @@ export class PureModel extends BasicModel {
   get primitiveTypes(): PrimitiveType[] {
     return this.coreModel.primitiveTypes;
   }
-
-  setDependencyManager = (dependencyManager: DependencyManager): void => {
-    this.dependencyManager = dependencyManager;
-  };
 
   getPrimitiveType = (type: PRIMITIVE_TYPE): PrimitiveType =>
     guaranteeNonNullable(
@@ -486,5 +473,16 @@ export class PureModel extends BasicModel {
     for (const cleaner of deadReferencesCleaners) {
       cleaner(this);
     }
+  }
+
+  renameElement(element: PackageableElement, newPath: string): void {
+    const existingElement = this.getNullableElement(newPath);
+    if (existingElement) {
+      throw new IllegalStateError(
+        `Can't rename element '${element.path}' to '${newPath}': another element with the same path already existed`,
+      );
+    }
+
+    super.renameOwnElement(element, newPath);
   }
 }

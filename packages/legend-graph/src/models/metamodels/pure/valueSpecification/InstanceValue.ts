@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-import { observable, makeObservable, action } from 'mobx';
-import { deleteEntry, addUniqueEntry, type Pair } from '@finos/legend-shared';
+import type { Pair } from '@finos/legend-shared';
 import {
   type ValueSpecificationVisitor,
   ValueSpecification,
@@ -36,22 +35,6 @@ import type { Mapping } from '../packageableElements/mapping/Mapping';
 export class InstanceValue extends ValueSpecification {
   values: unknown[] = [];
 
-  deleteValue(val: unknown): void {
-    deleteEntry(this.values, val);
-  }
-
-  addValue(val: unknown): void {
-    addUniqueEntry(this.values, val);
-  }
-
-  changeValue(val: unknown, idx: number): void {
-    this.values[idx] = val;
-  }
-
-  changeValues(val: unknown[]): void {
-    this.values = val;
-  }
-
   accept_ValueSpecificationVisitor<T>(
     visitor: ValueSpecificationVisitor<T>,
   ): T {
@@ -62,18 +45,9 @@ export class InstanceValue extends ValueSpecification {
 export class PrimitiveInstanceValue extends InstanceValue {
   override genericType: GenericTypeReference;
 
-  // NOTE: when we support editing more types, we should move observability to fields like `values` to parent class
   constructor(genericType: GenericTypeReference, multiplicity: Multiplicity) {
-    super(multiplicity, undefined);
+    super(multiplicity, genericType);
     this.genericType = genericType;
-
-    makeObservable<PrimitiveInstanceValue>(this, {
-      genericType: observable,
-      values: observable,
-      deleteValue: action,
-      addValue: action,
-      changeValue: action,
-    });
   }
 
   override accept_ValueSpecificationVisitor<T>(
@@ -87,16 +61,7 @@ export class EnumValueInstanceValue extends InstanceValue {
   override values: EnumValueReference[] = [];
 
   constructor(genericType: GenericTypeReference, multiplicity: Multiplicity) {
-    super(multiplicity, undefined);
-    this.genericType = genericType;
-
-    makeObservable<EnumValueInstanceValue>(this, {
-      genericType: observable,
-      values: observable,
-      deleteValue: action,
-      addValue: action,
-      changeValue: action,
-    });
+    super(multiplicity, genericType);
   }
 
   override accept_ValueSpecificationVisitor<T>(
@@ -117,7 +82,7 @@ export class RuntimeInstanceValue extends InstanceValue {
 }
 
 export class PairInstanceValue extends InstanceValue {
-  override values: Pair<unknown, unknown>[] = [];
+  override values: Pair<unknown, unknown>[] = []; // TODO: both of these entries might be ValueSpecification
 
   override accept_ValueSpecificationVisitor<T>(
     visitor: ValueSpecificationVisitor<T>,
@@ -142,25 +107,12 @@ export class PureListInstanceValue extends InstanceValue {
   override accept_ValueSpecificationVisitor<T>(
     visitor: ValueSpecificationVisitor<T>,
   ): T {
-    return visitor.visit_PureListInsanceValue(this);
+    return visitor.visit_PureListInstanceValue(this);
   }
 }
 
 export class CollectionInstanceValue extends InstanceValue {
   override values: ValueSpecification[] = [];
-
-  constructor(
-    multiplicity: Multiplicity,
-    genericTypeReference?: GenericTypeReference,
-  ) {
-    super(multiplicity, genericTypeReference);
-
-    makeObservable<CollectionInstanceValue>(this, {
-      genericType: observable,
-      values: observable,
-      changeValues: action,
-    });
-  }
 
   override accept_ValueSpecificationVisitor<T>(
     visitor: ValueSpecificationVisitor<T>,

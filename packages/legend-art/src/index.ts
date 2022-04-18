@@ -53,4 +53,6 @@ export * from './components/ClickAwayListener';
 
 export * from './components/LegendStyleProvider';
 
+export * from './components/markdown/MarkdownTextViewer';
+
 export * from './testMocks/MonacoEditorMockUtils';

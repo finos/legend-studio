@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { observable, action, computed, makeObservable } from 'mobx';
 import { uuid, hashArray, type Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import type { MappingTestAssert } from './MappingTestAssert';
@@ -26,7 +25,8 @@ import {
 } from '../../../../../helpers/ValidationHelper';
 
 export class MappingTest implements Hashable {
-  uuid = uuid();
+  readonly uuid = uuid();
+
   name: string;
   query: RawLambda; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
   inputData: InputData[] = [];
@@ -38,39 +38,10 @@ export class MappingTest implements Hashable {
     inputData: InputData[],
     assert: MappingTestAssert,
   ) {
-    makeObservable(this, {
-      name: observable,
-      query: observable,
-      inputData: observable,
-      assert: observable,
-      setName: action,
-      setInputData: action,
-      setQuery: action,
-      setAssert: action,
-      validationResult: computed,
-      hashCode: computed,
-    });
-
     this.name = name;
     this.query = query;
     this.inputData = inputData;
     this.assert = assert;
-  }
-
-  setName(value: string): void {
-    this.name = value;
-  }
-
-  setInputData(value: InputData[]): void {
-    this.inputData = value;
-  }
-
-  setQuery(value: RawLambda): void {
-    this.query = value;
-  }
-
-  setAssert(value: MappingTestAssert): void {
-    this.assert = value;
   }
 
   get validationResult(): ValidationIssue[] | undefined {

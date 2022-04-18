@@ -17,6 +17,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
+  MINIMUM_SERVICE_OWNERS,
   ServiceEditorState,
   SERVICE_TAB,
 } from '../../../../stores/editor-state/element-editor-state/service/ServiceEditorState';
@@ -29,16 +30,23 @@ import {
   TimesIcon,
   SaveIcon,
   InfoCircleIcon,
-  RocketIcon,
+  ErrorIcon,
 } from '@finos/legend-art';
 import { prettyCONSTName } from '@finos/legend-shared';
 import { ServiceExecutionEditor } from './ServiceExecutionEditor';
 import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID';
-import { ServiceRegistrationModalEditor } from '../../../editor/edit-panel/service-editor/ServiceRegistrationModalEditor';
+import { ServiceRegistrationEditor } from './ServiceRegistrationEditor';
 import { useEditorStore } from '../../EditorStoreProvider';
-import { useApplicationStore } from '@finos/legend-application';
 import { validateServicePattern } from '@finos/legend-graph';
-import type { LegendStudioConfig } from '../../../../application/LegendStudioConfig';
+import {
+  service_addOwner,
+  service_deleteOwner,
+  service_removePatternParameter,
+  service_setAutoActivateUpdates,
+  service_setDocumentation,
+  service_setPattern,
+  service_updateOwner,
+} from '../../../../stores/graphModifier/DSLService_GraphModifierHelper';
 
 const ServiceGeneralEditor = observer(() => {
   const editorStore = useEditorStore();
@@ -52,7 +60,7 @@ const ServiceGeneralEditor = observer(() => {
     setPattern(event.target.value);
   const updatePattern = (): void => {
     if (!isReadOnly) {
-      service.setPattern(pattern);
+      service_setPattern(service, pattern);
     }
   };
   const patternValidationResult = validateServicePattern(pattern);
@@ -61,7 +69,7 @@ const ServiceGeneralEditor = observer(() => {
   const removePatternParameter =
     (val: string): (() => void) =>
     (): void => {
-      service.removePatternParameter(val);
+      service_removePatternParameter(service, val);
       setPattern(service.pattern);
     };
   // Owners
@@ -86,7 +94,7 @@ const ServiceGeneralEditor = observer(() => {
   ) => setOwnerInputValue(event.target.value);
   const addOwner = (): void => {
     if (ownerInputValue && !isReadOnly && !owners.includes(ownerInputValue)) {
-      service.addOwner(ownerInputValue);
+      service_addOwner(service, ownerInputValue);
     }
     hideAddOrEditOwnerInput();
   };
@@ -94,14 +102,14 @@ const ServiceGeneralEditor = observer(() => {
     (idx: number): (() => void) =>
     (): void => {
       if (ownerInputValue && !isReadOnly && !owners.includes(ownerInputValue)) {
-        service.updateOwner(ownerInputValue, idx);
+        service_updateOwner(service, ownerInputValue, idx);
       }
     };
   const deleteOwner =
     (idx: number): (() => void) =>
     (): void => {
       if (!isReadOnly) {
-        service.deleteOwner(idx);
+        service_deleteOwner(service, idx);
         // Since we keep track of the value currently being edited using the index, we have to account for it as we delete entry
         if (
           typeof showOwnerEditInput === 'number' &&
@@ -116,11 +124,11 @@ const ServiceGeneralEditor = observer(() => {
     event,
   ) => {
     if (!isReadOnly) {
-      service.setDocumentation(event.target.value);
+      service_setDocumentation(service, event.target.value);
     }
   };
   const toggleAutoActivateUpdates = (): void => {
-    service.setAutoActivateUpdates(!service.autoActivateUpdates);
+    service_setAutoActivateUpdates(service, !service.autoActivateUpdates);
   };
 
   useEffect(() => {
@@ -264,7 +272,8 @@ const ServiceGeneralEditor = observer(() => {
           Owners
         </div>
         <div className="panel__content__form__section__header__prompt">
-          Specifies who can manage and operate the service
+          {`Specifies who can manage and operate the service (requires minimum ${MINIMUM_SERVICE_OWNERS}
+          owners).`}
         </div>
         <div className="panel__content__form__section__list">
           <div
@@ -370,6 +379,18 @@ const ServiceGeneralEditor = observer(() => {
               </div>
             )}
           </div>
+          {owners.length < MINIMUM_SERVICE_OWNERS &&
+            showOwnerEditInput !== true && (
+              <div
+                className="service-editor__owner__validation"
+                title={`${MINIMUM_SERVICE_OWNERS} owners required`}
+              >
+                <ErrorIcon />
+                <div className="service-editor__owner__validation-label">
+                  Service requires at least {MINIMUM_SERVICE_OWNERS} owners
+                </div>
+              </div>
+            )}
           {showOwnerEditInput !== true && (
             <div className="panel__content__form__section__list__new-item__add">
               <button
@@ -391,7 +412,6 @@ const ServiceGeneralEditor = observer(() => {
 
 export const ServiceEditor = observer(() => {
   const editorStore = useEditorStore();
-  const applicationStore = useApplicationStore<LegendStudioConfig>();
   const serviceState = editorStore.getCurrentEditorState(ServiceEditorState);
   const service = serviceState.service;
   const isReadOnly = serviceState.isReadOnly;
@@ -401,8 +421,10 @@ export const ServiceEditor = observer(() => {
     (tab: SERVICE_TAB): (() => void) =>
     (): void =>
       serviceState.setSelectedTab(tab);
-  // actions
-  const serviceModal = (): void => serviceState.registrationState.openModal();
+  const canRegisterService = Boolean(
+    editorStore.applicationStore.config.options
+      .TEMPORARY__serviceRegistrationConfig.length,
+  );
 
   return (
     <div className="service-editor">
@@ -417,43 +439,31 @@ export const ServiceEditor = observer(() => {
             <div className="panel__header__title__label">service</div>
             <div className="panel__header__title__content">{service.name}</div>
           </div>
-          {!applicationStore.config.options
-            .TEMPORARY__disableServiceRegistration && (
-            <div className="panel__header__actions">
-              <button
-                className="panel__header__action"
-                disabled={
-                  serviceState.registrationState.registrationState.isInProgress
-                }
-                tabIndex={-1}
-                onClick={serviceModal}
-                title={'Register service...'}
-              >
-                <RocketIcon />
-              </button>
-            </div>
-          )}
         </div>
         <div className="panel__header service-editor__header--with-tabs">
           <div className="uml-element-editor__tabs">
-            {Object.values(SERVICE_TAB).map((tab) => (
-              <div
-                key={tab}
-                onClick={changeTab(tab)}
-                className={clsx('service-editor__tab', {
-                  'service-editor__tab--active': tab === selectedTab,
-                })}
-              >
-                {prettyCONSTName(tab)}
-              </div>
-            ))}
+            {Object.values(SERVICE_TAB)
+              .filter(
+                (tab) => tab !== SERVICE_TAB.REGISTRATION || canRegisterService,
+              )
+              .map((tab) => (
+                <div
+                  key={tab}
+                  onClick={changeTab(tab)}
+                  className={clsx('service-editor__tab', {
+                    'service-editor__tab--active': tab === selectedTab,
+                  })}
+                >
+                  {prettyCONSTName(tab)}
+                </div>
+              ))}
           </div>
         </div>
         <div className="panel__content service-editor__content">
           {selectedTab === SERVICE_TAB.GENERAL && <ServiceGeneralEditor />}
           {selectedTab === SERVICE_TAB.EXECUTION && <ServiceExecutionEditor />}
-          {serviceState.registrationState.showModal && (
-            <ServiceRegistrationModalEditor />
+          {selectedTab === SERVICE_TAB.REGISTRATION && (
+            <ServiceRegistrationEditor />
           )}
         </div>
       </div>

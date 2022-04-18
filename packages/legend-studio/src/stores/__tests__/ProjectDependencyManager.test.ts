@@ -116,7 +116,6 @@ const TEST_DEPENDENCY_PROJECT_ID = 'UAT-TEST_DEPENDENCY';
 const PROJECT_CONFIG = {
   projectStructureVersion: { version: 6, extensionVersion: 1 },
   projectId: TEST_DEPENDENCY_PROJECT_ID,
-  projectType: 'PROTOTYPE',
   groupId: 'com.test',
   artifactId: 'string',
   projectDependencies: [
@@ -227,30 +226,26 @@ const testDependencyElements = async (
       )
       .mockResolvedValue(projectsData);
   }
-  await flowResult(editorStore.graphManagerState.initializeSystem());
+  await editorStore.graphManagerState.initializeSystem();
   const dependencyManager = new DependencyManager([]);
   const dependencyEntitiesMap = await flowResult(
     editorStore.graphState.getConfigurationProjectDependencyEntities(),
   );
-  editorStore.graphManagerState.graph.setDependencyManager(dependencyManager);
-  await flowResult(
-    editorStore.graphManagerState.graphManager.buildDependencies(
-      editorStore.graphManagerState.coreModel,
-      editorStore.graphManagerState.systemModel,
-      dependencyManager,
-      dependencyEntitiesMap,
-    ),
+  editorStore.graphManagerState.graph.dependencyManager = dependencyManager;
+  await editorStore.graphManagerState.graphManager.buildDependencies(
+    editorStore.graphManagerState.coreModel,
+    editorStore.graphManagerState.systemModel,
+    dependencyManager,
+    dependencyEntitiesMap,
   );
   expect(
     editorStore.graphManagerState.graph.dependencyManager.buildState
       .hasSucceeded,
   ).toBe(true);
 
-  await flowResult(
-    editorStore.graphManagerState.graphManager.buildGraph(
-      editorStore.graphManagerState.graph,
-      entities,
-    ),
+  await editorStore.graphManagerState.graphManager.buildGraph(
+    editorStore.graphManagerState.graph,
+    entities,
   );
   expect(editorStore.graphManagerState.graph.buildState.hasSucceeded).toBe(
     true,
@@ -284,7 +279,9 @@ const testDependencyElements = async (
       );
     expect(elementInMainGraph).toBeUndefined();
     expect(elementInGraph).toBe(element);
-    expect(elementInGraph.isReadOnly).toBe(true);
+    expect(
+      editorStore.graphManagerState.isElementReadOnly(elementInGraph),
+    ).toBe(true);
   });
   if (includeDependencyInFileGenerationScopeElements) {
     const fileGeneration = guaranteeNonNullable(

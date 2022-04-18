@@ -1,5 +1,67 @@
 # @finos/legend-query
 
+## 1.3.8
+
+### Patch Changes
+
+- [#1049](https://github.com/finos/legend-studio/pull/1049) [`5de91968`](https://github.com/finos/legend-studio/commit/5de91968ae3ec1c4d42dc1412e452d000dfc8b3e) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Reset post-filter when switching fetch structure.
+
+* [#1049](https://github.com/finos/legend-studio/pull/1049) [`5de91968`](https://github.com/finos/legend-studio/commit/5de91968ae3ec1c4d42dc1412e452d000dfc8b3e) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Fix boolean value `false` being rendered as empty cell in query builder result panel ([#1008](https://github.com/finos/legend-studio/issues/1008)).
+
+## 1.3.7
+
+### Patch Changes
+
+- [#1058](https://github.com/finos/legend-studio/pull/1058) [`df06ed15`](https://github.com/finos/legend-studio/commit/df06ed1587252592cf9e783fbdcde8e53dc2f9c7) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Support result set modifier after post filter.
+
+* [#1061](https://github.com/finos/legend-studio/pull/1061) [`b6628128`](https://github.com/finos/legend-studio/commit/b6628128eafba97c7f12b5f2910b681421b254b6) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix property expression compatibility for `isEmpty` and `isNotEmpty` ([#1060](https://github.com/finos/legend-studio/issues/1060)).
+
+## 1.3.6
+
+### Patch Changes
+
+- [#1051](https://github.com/finos/legend-studio/pull/1051) [`c79e8723`](https://github.com/finos/legend-studio/commit/c79e872303ecbd3d13e1b6a4a4f994b7b810142c) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Observe `ValueSpecification` when initializing query builder.
+
+## 1.3.5
+
+## 1.3.4
+
+## 1.3.3
+
+## 1.3.2
+
+## 1.3.1
+
+## 1.3.0
+
+### Minor Changes
+
+- [#995](https://github.com/finos/legend-studio/pull/995) [`5b78a3fd`](https://github.com/finos/legend-studio/commit/5b78a3fdb48d28037ba93f7e27cb724d8d02d7a1) ([@akphi](https://github.com/akphi)) - Allow toggling to enable/disable network request payload compression for better debugging experience.
+
+* [#995](https://github.com/finos/legend-studio/pull/995) [`5b78a3fd`](https://github.com/finos/legend-studio/commit/5b78a3fdb48d28037ba93f7e27cb724d8d02d7a1) ([@akphi](https://github.com/akphi)) - Allow toggling network request payload compression to improve debugging experience.
+
+- [#995](https://github.com/finos/legend-studio/pull/995) [`5b78a3fd`](https://github.com/finos/legend-studio/commit/5b78a3fdb48d28037ba93f7e27cb724d8d02d7a1) ([@akphi](https://github.com/akphi)) - Support debugging execution plan generation.
+
+## 1.2.3
+
+### Patch Changes
+
+- [#992](https://github.com/finos/legend-studio/pull/992) [`a8693108`](https://github.com/finos/legend-studio/commit/a869310843265cf10a7595a3f53fb5b11ecf64aa) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add `TEMPORARY_skipGraphBuilderPostProcessing` flag to allow skipping post-processing in graph builder to boost performance.
+
+## 1.2.2
+
+## 1.2.1
+
+### Patch Changes
+
+- [#983](https://github.com/finos/legend-studio/pull/983) [`872c37a8`](https://github.com/finos/legend-studio/commit/872c37a804a47c9a86ec646ad3668728c482aeca) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Take included mappings into account when finding compatible runtimes in query setup.
+
+## 1.2.0
+
+### Minor Changes
+
+- [#977](https://github.com/finos/legend-studio/pull/977) [`37490b13`](https://github.com/finos/legend-studio/commit/37490b13d6156ad610bba2799e5621632885163d) ([@akphi](https://github.com/akphi)) - Show progress message and report metrics for graph builder process.
+
 ## 1.1.0
 
 ### Minor Changes

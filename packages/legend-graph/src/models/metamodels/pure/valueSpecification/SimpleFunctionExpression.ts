@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { observable, makeObservable, action } from 'mobx';
 import type { GenericTypeReference } from '../packageableElements/domain/GenericTypeReference';
 import type { Multiplicity } from '../packageableElements/domain/Multiplicity';
 import type { PackageableElementReference } from '../packageableElements/PackageableElementReference';
@@ -43,17 +42,6 @@ export class FunctionExpression extends Expression {
   constructor(functionName: string, multiplicity: Multiplicity) {
     super(multiplicity, undefined);
     this.functionName = functionName;
-
-    makeObservable(this, {
-      functionName: observable,
-      parametersValues: observable,
-      classifierGenericType: observable,
-      setParametersValues: action,
-    });
-  }
-
-  setParametersValues(val: ValueSpecification[]): void {
-    this.parametersValues = val;
   }
 
   override accept_ValueSpecificationVisitor<T>(

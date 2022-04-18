@@ -87,7 +87,7 @@ const buildFlatDataDataType = (
       buildFlatDataDataType(field.flatDataDataType, parentSection, context),
       field.optional,
     );
-    recordField.setAddress(field.address);
+    recordField.address = field.address;
     return recordField;
   };
   if (type instanceof V1_FlatDataString) {

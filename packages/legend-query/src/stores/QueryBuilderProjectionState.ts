@@ -54,7 +54,7 @@ import {
   type Type,
   type VariableExpression,
   PackageableElementExplicitReference,
-  GRAPH_MANAGER_LOG_EVENT,
+  GRAPH_MANAGER_EVENT,
   TdsExecutionResult,
   PureClientVersion,
   PRIMITIVE_TYPE,
@@ -241,7 +241,7 @@ class QueryBuilderDerivationProjectionLambdaState extends LambdaEditorState {
           this.setParserError(error);
         }
         this.queryBuilderState.applicationStore.log.error(
-          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
+          LogEvent.create(GRAPH_MANAGER_EVENT.PARSING_FAILURE),
           error,
         );
       }
@@ -277,7 +277,7 @@ class QueryBuilderDerivationProjectionLambdaState extends LambdaEditorState {
       } catch (error) {
         assertErrorThrown(error);
         this.queryBuilderState.applicationStore.log.error(
-          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
+          LogEvent.create(GRAPH_MANAGER_EVENT.PARSING_FAILURE),
           error,
         );
       }
@@ -440,7 +440,7 @@ export class QueryBuilderProjectionState {
       } catch (error) {
         assertErrorThrown(error);
         this.queryBuilderState.applicationStore.log.error(
-          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
+          LogEvent.create(GRAPH_MANAGER_EVENT.PARSING_FAILURE),
           error,
         );
       } finally {

@@ -21,6 +21,7 @@ import { QueryBuilder_LegendStudioPreset } from '@finos/legend-studio-extension-
 import { DSLText_LegendStudioPlugin } from '@finos/legend-extension-dsl-text';
 import { DSLDiagram_LegendStudioPlugin } from '@finos/legend-extension-dsl-diagram';
 import { DSLDataSpace_LegendStudioPlugin } from '@finos/legend-extension-dsl-data-space';
+import { DSLPersistence_LegendStudioPlugin } from '@finos/legend-extension-dsl-persistence';
 import { ESService_LegendStudioPlugin } from '@finos/legend-extension-external-store-service';
 import { ELMorphir_LegendStudioPlugin } from '@finos/legend-extension-external-language-morphir';
 
@@ -36,6 +37,7 @@ export class LegendStudioWebApplication {
         new DSLText_LegendStudioPlugin(),
         new DSLDiagram_LegendStudioPlugin(),
         new DSLDataSpace_LegendStudioPlugin(),
+        new DSLPersistence_LegendStudioPlugin(),
         new ESService_LegendStudioPlugin(),
         new ELMorphir_LegendStudioPlugin(),
         // loggers

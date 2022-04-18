@@ -38,6 +38,12 @@ import {
   Stereotype,
   StereotypeExplicitReference,
 } from '@finos/legend-graph';
+import {
+  annotatedElement_deleteTaggedValue,
+  annotatedElement_addTaggedValue,
+  annotatedElement_addStereotype,
+  annotatedElement_deleteStereotype,
+} from '../../../../stores/graphModifier/DomainGraphModifierHelper';
 
 export const PropertyEditor = observer(
   (props: {
@@ -70,11 +76,13 @@ export const PropertyEditor = observer(
     const addValue = (): void => {
       if (!isReadOnly) {
         if (selectedTab === UML_EDITOR_TAB.TAGGED_VALUES) {
-          property.addTaggedValue(
+          annotatedElement_addTaggedValue(
+            property,
             TaggedValue.createStub(Tag.createStub(Profile.createStub())),
           );
         } else if (selectedTab === UML_EDITOR_TAB.STEREOTYPES) {
-          property.addStereotype(
+          annotatedElement_addStereotype(
+            property,
             StereotypeExplicitReference.create(
               Stereotype.createStub(Profile.createStub()),
             ),
@@ -82,19 +90,20 @@ export const PropertyEditor = observer(
         }
       }
     };
-    const deleteStereotype =
+    const _deleteStereotype =
       (val: StereotypeReference): (() => void) =>
       (): void =>
-        property.deleteStereotype(val);
-    const deleteTaggedValue =
+        annotatedElement_deleteStereotype(property, val);
+    const _deleteTaggedValue =
       (val: TaggedValue): (() => void) =>
       (): void =>
-        property.deleteTaggedValue(val);
+        annotatedElement_deleteTaggedValue(property, val);
     // Drag and Drop
     const handleDropTaggedValue = useCallback(
       (item: UMLEditorElementDropTarget): void => {
         if (!isReadOnly && item.data.packageableElement instanceof Profile) {
-          property.addTaggedValue(
+          annotatedElement_addTaggedValue(
+            property,
             TaggedValue.createStub(
               Tag.createStub(item.data.packageableElement),
             ),
@@ -116,7 +125,8 @@ export const PropertyEditor = observer(
     const handleDropStereotype = useCallback(
       (item: UMLEditorElementDropTarget): void => {
         if (!isReadOnly && item.data.packageableElement instanceof Profile) {
-          property.addStereotype(
+          annotatedElement_addStereotype(
+            property,
             StereotypeExplicitReference.create(
               Stereotype.createStub(item.data.packageableElement),
             ),
@@ -200,7 +210,7 @@ export const PropertyEditor = observer(
                   <TaggedValueEditor
                     key={taggedValue.uuid}
                     taggedValue={taggedValue}
-                    deleteValue={deleteTaggedValue(taggedValue)}
+                    deleteValue={_deleteTaggedValue(taggedValue)}
                     isReadOnly={isReadOnly}
                   />
                 ))}
@@ -218,7 +228,7 @@ export const PropertyEditor = observer(
                   <StereotypeSelector
                     key={stereotype.value.uuid}
                     stereotype={stereotype}
-                    deleteStereotype={deleteStereotype(stereotype)}
+                    deleteStereotype={_deleteStereotype(stereotype)}
                     isReadOnly={isReadOnly}
                   />
                 ))}

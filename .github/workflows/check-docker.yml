@@ -23,6 +23,11 @@ concurrency:
 jobs:
   check-docker-image:
     name: Run Docker Image Checks
+    # NOTE: all of our Docker images are built fairly simply, we rely on https://hub.docker.com/r/finos/legend-shared-server
+    # to serve the web application statically
+    # However, this suffers from the fact that the image is often flagged for CVEs from underlying OS images (i.e. debian)
+    # As such, to lessen the noise, **sometimes** we could turn off these pipelines for forks
+    if: github.ref == 'refs/heads/master' && github.repository == 'finos/legend-studio'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -56,7 +61,7 @@ jobs:
       - name: Build image
         run: yarn workspace ${{ matrix.package }} build-dry:docker ${{ github.sha }}
       - name: Scan image for security issues
-        uses: aquasecurity/trivy-action@0.2.2
+        uses: aquasecurity/trivy-action@0.2.3
         with:
           # TODO: we should probably also setup misconfiguration scanning
           # See https://github.com/aquasecurity/trivy-action#using-trivy-to-scan-infrastucture-as-code

@@ -279,7 +279,7 @@ class V1_ValueSpecificationTransformer
     throw new UnsupportedOperationError();
   }
 
-  visit_PureListInsanceValue(
+  visit_PureListInstanceValue(
     valueSpecification: PureListInstanceValue,
   ): V1_ValueSpecification {
     throw new UnsupportedOperationError();

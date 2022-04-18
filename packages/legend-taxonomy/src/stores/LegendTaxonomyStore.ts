@@ -33,7 +33,7 @@ import {
   type GraphBuilderReport,
   type GraphManagerState,
   GraphManagerTelemetry,
-  GRAPH_MANAGER_LOG_EVENT,
+  GRAPH_MANAGER_EVENT,
 } from '@finos/legend-graph';
 import type { Entity } from '@finos/legend-model-storage';
 import {
@@ -67,9 +67,9 @@ import {
 } from 'mobx';
 import type { LegendTaxonomyConfig } from '../application/LegendTaxonomyConfig';
 import type { LegendTaxonomyPluginManager } from '../application/LegendTaxonomyPluginManager';
-import { LEGEND_TAXONOMY_LOG_EVENT } from './LegendTaxonomyLogEvent';
+import { LEGEND_TAXONOMY_APP_EVENT } from './LegendTaxonomyAppEvent';
 import {
-  generateViewTaxonomyRoute,
+  generateExploreTaxonomyTreeRoute,
   type LegendTaxonomyPathParams,
   type LegendTaxonomyStandaloneDataSpaceViewerParams,
 } from './LegendTaxonomyRouter';
@@ -230,12 +230,14 @@ export class TaxonomyNodeViewerState {
           resolvedVersionId,
         )) as Entity[];
       this.initDataSpaceViewerState.setMessage(undefined);
-      stopWatch.record(GRAPH_MANAGER_LOG_EVENT.GRAPH_ENTITIES_FETCHED);
+      stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_ENTITIES_FETCHED);
 
       // fetch dependencies
       stopWatch.record();
       const dependencyManager =
         this.taxonomyStore.graphManagerState.createEmptyDependencyManager();
+      this.taxonomyStore.graphManagerState.graph.dependencyManager =
+        dependencyManager;
       dependencyManager.buildState.setMessage(`Fetching dependencies...`);
       const dependencyEntitiesMap = new Map<string, Entity[]>();
       (
@@ -247,52 +249,46 @@ export class TaxonomyNodeViewerState {
           false,
         )) as PlainObject<ProjectVersionEntities>[]
       )
-        .map((e) => ProjectVersionEntities.serialization.fromJson(e))
+        .map(ProjectVersionEntities.serialization.fromJson)
         .forEach((dependencyInfo) => {
           dependencyEntitiesMap.set(dependencyInfo.id, dependencyInfo.entities);
         });
-      stopWatch.record(GRAPH_MANAGER_LOG_EVENT.GRAPH_DEPENDENCIES_FETCHED);
+      stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED);
 
       // build dependencies
-      const dependency_buildReport = (yield flowResult(
-        this.taxonomyStore.graphManagerState.graphManager.buildDependencies(
+      const dependency_buildReport =
+        (yield this.taxonomyStore.graphManagerState.graphManager.buildDependencies(
           this.taxonomyStore.graphManagerState.coreModel,
           this.taxonomyStore.graphManagerState.systemModel,
           dependencyManager,
           dependencyEntitiesMap,
-        ),
-      )) as GraphBuilderReport;
-      this.taxonomyStore.graphManagerState.graph.setDependencyManager(
-        dependencyManager,
-      );
+        )) as GraphBuilderReport;
       dependency_buildReport.timings[
-        GRAPH_MANAGER_LOG_EVENT.GRAPH_DEPENDENCIES_FETCHED
-      ] = stopWatch.getRecord(
-        GRAPH_MANAGER_LOG_EVENT.GRAPH_DEPENDENCIES_FETCHED,
-      );
+        GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED
+      ] = stopWatch.getRecord(GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED);
 
       // build graph
-      const graph_buildReport = (yield flowResult(
-        this.taxonomyStore.graphManagerState.graphManager.buildGraph(
+      const graph_buildReport =
+        (yield this.taxonomyStore.graphManagerState.graphManager.buildGraph(
           this.taxonomyStore.graphManagerState.graph,
           entities,
-        ),
-      )) as GraphBuilderReport;
-      graph_buildReport.timings[
-        GRAPH_MANAGER_LOG_EVENT.GRAPH_ENTITIES_FETCHED
-      ] = stopWatch.getRecord(GRAPH_MANAGER_LOG_EVENT.GRAPH_ENTITIES_FETCHED);
+        )) as GraphBuilderReport;
+      graph_buildReport.timings[GRAPH_MANAGER_EVENT.GRAPH_ENTITIES_FETCHED] =
+        stopWatch.getRecord(GRAPH_MANAGER_EVENT.GRAPH_ENTITIES_FETCHED);
 
       // report
-      stopWatch.record();
+      stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_INITIALIZED);
       const graphBuilderReportData = {
         timings: {
-          [GRAPH_MANAGER_LOG_EVENT.GRAPH_INITIALIZED]: stopWatch.elapsed,
+          [GRAPH_MANAGER_EVENT.GRAPH_INITIALIZED]: stopWatch.getRecord(
+            GRAPH_MANAGER_EVENT.GRAPH_INITIALIZED,
+          ),
         },
         dependencies: dependency_buildReport,
         graph: graph_buildReport,
       };
       this.taxonomyStore.applicationStore.log.info(
-        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_INITIALIZED),
+        LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_INITIALIZED),
         graphBuilderReportData,
       );
       GraphManagerTelemetry.logEvent_GraphInitialized(
@@ -322,7 +318,7 @@ export class TaxonomyNodeViewerState {
             this.taxonomyStore.applicationStore.navigator.openNewWindow(
               `${
                 this.taxonomyStore.applicationStore.config.studioUrl
-              }/view/${generateGAVCoordinates(
+              }/view/archive/${generateGAVCoordinates(
                 _groupId,
                 _artifactId,
                 _versionId,
@@ -462,8 +458,8 @@ export class LegendTaxonomyStore {
         this.initialDataSpaceId = `${gav}${DATA_SPACE_ID_DELIMITER}${dataSpacePath}`;
       }
       this.applicationStore.navigator.goTo(
-        generateViewTaxonomyRoute(
-          this.applicationStore.config.currentTaxonomyServerOption,
+        generateExploreTaxonomyTreeRoute(
+          this.applicationStore.config.currentTaxonomyTreeOption.key,
         ),
       );
     }
@@ -522,7 +518,7 @@ export class LegendTaxonomyStore {
         isTaxonomyTreeDataValid = false;
         this.applicationStore.log.warn(
           LogEvent.create(
-            LEGEND_TAXONOMY_LOG_EVENT.TAXONOMY_DATA_CHECK_FAILURE,
+            LEGEND_TAXONOMY_APP_EVENT.TAXONOMY_DATA_CHECK_FAILURE,
           ),
           `Found duplicated taxonomy node with ID '${taxonomyNodeData.guid}'`,
         );
@@ -532,7 +528,7 @@ export class LegendTaxonomyStore {
         isTaxonomyTreeDataValid = false;
         this.applicationStore.log.warn(
           LogEvent.create(
-            LEGEND_TAXONOMY_LOG_EVENT.TAXONOMY_DATA_CHECK_FAILURE,
+            LEGEND_TAXONOMY_APP_EVENT.TAXONOMY_DATA_CHECK_FAILURE,
           ),
           `Found duplicated taxonomy node with package '${taxonomyNodeData.package}'`,
         );
@@ -647,24 +643,22 @@ export class LegendTaxonomyStore {
           this.dataSpaceIndex.set(rawDataSpace.id, rawDataSpace);
         });
 
-      yield flowResult(
-        this.graphManagerState.graphManager.initialize(
-          {
-            env: this.applicationStore.config.env,
-            tabSize: TAB_SIZE,
-            clientConfig: {
-              baseUrl: this.applicationStore.config.engineServerUrl,
-              queryBaseUrl: this.applicationStore.config.engineQueryServerUrl,
-              enableCompression: true,
-            },
+      yield this.graphManagerState.graphManager.initialize(
+        {
+          env: this.applicationStore.config.env,
+          tabSize: TAB_SIZE,
+          clientConfig: {
+            baseUrl: this.applicationStore.config.engineServerUrl,
+            queryBaseUrl: this.applicationStore.config.engineQueryServerUrl,
+            enableCompression: true,
           },
-          {
-            tracerService: this.applicationStore.tracerService,
-          },
-        ),
+        },
+        {
+          tracerService: this.applicationStore.tracerService,
+        },
       );
 
-      yield flowResult(this.graphManagerState.initializeSystem());
+      yield this.graphManagerState.initializeSystem();
 
       // NOTE: here we build the full tree, which might be expensive when we have a big
       // tree in the future, we might have to come up with a better algorithm then
@@ -722,24 +716,22 @@ export class LegendTaxonomyStore {
     const stopWatch = new StopWatch();
 
     try {
-      yield flowResult(
-        this.graphManagerState.graphManager.initialize(
-          {
-            env: this.applicationStore.config.env,
-            tabSize: TAB_SIZE,
-            clientConfig: {
-              baseUrl: this.applicationStore.config.engineServerUrl,
-              queryBaseUrl: this.applicationStore.config.engineQueryServerUrl,
-              enableCompression: true,
-            },
+      yield this.graphManagerState.graphManager.initialize(
+        {
+          env: this.applicationStore.config.env,
+          tabSize: TAB_SIZE,
+          clientConfig: {
+            baseUrl: this.applicationStore.config.engineServerUrl,
+            queryBaseUrl: this.applicationStore.config.engineQueryServerUrl,
+            enableCompression: true,
           },
-          {
-            tracerService: this.applicationStore.tracerService,
-          },
-        ),
+        },
+        {
+          tracerService: this.applicationStore.tracerService,
+        },
       );
 
-      yield flowResult(this.graphManagerState.initializeSystem());
+      yield this.graphManagerState.initializeSystem();
 
       // reset
       this.graphManagerState.resetGraph();
@@ -804,12 +796,13 @@ export class LegendTaxonomyStore {
         resolvedVersionId,
       )) as Entity[];
       this.initStandaloneDataSpaceViewerState.setMessage(undefined);
-      stopWatch.record(GRAPH_MANAGER_LOG_EVENT.GRAPH_ENTITIES_FETCHED);
+      stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_ENTITIES_FETCHED);
 
       // build dependencies
       stopWatch.record();
       const dependencyManager =
         this.graphManagerState.createEmptyDependencyManager();
+      this.graphManagerState.graph.dependencyManager = dependencyManager;
       dependencyManager.buildState.setMessage(`Fetching dependencies...`);
       const dependencyEntitiesMap = new Map<string, Entity[]>();
       (
@@ -821,49 +814,43 @@ export class LegendTaxonomyStore {
           false,
         )) as PlainObject<ProjectVersionEntities>[]
       )
-        .map((e) => ProjectVersionEntities.serialization.fromJson(e))
+        .map(ProjectVersionEntities.serialization.fromJson)
         .forEach((dependencyInfo) => {
           dependencyEntitiesMap.set(dependencyInfo.id, dependencyInfo.entities);
         });
-      stopWatch.record(GRAPH_MANAGER_LOG_EVENT.GRAPH_DEPENDENCIES_FETCHED);
+      stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED);
 
-      const dependency_buildReport = (yield flowResult(
-        this.graphManagerState.graphManager.buildDependencies(
+      const dependency_buildReport =
+        (yield this.graphManagerState.graphManager.buildDependencies(
           this.graphManagerState.coreModel,
           this.graphManagerState.systemModel,
           dependencyManager,
           dependencyEntitiesMap,
-        ),
-      )) as GraphBuilderReport;
-      this.graphManagerState.graph.setDependencyManager(dependencyManager);
+        )) as GraphBuilderReport;
       dependency_buildReport.timings[
-        GRAPH_MANAGER_LOG_EVENT.GRAPH_DEPENDENCIES_FETCHED
-      ] = stopWatch.getRecord(
-        GRAPH_MANAGER_LOG_EVENT.GRAPH_DEPENDENCIES_FETCHED,
-      );
+        GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED
+      ] = stopWatch.getRecord(GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED);
 
       // build graph
-      const graph_buildReport = (yield flowResult(
-        this.graphManagerState.graphManager.buildGraph(
+      const graph_buildReport =
+        (yield this.graphManagerState.graphManager.buildGraph(
           this.graphManagerState.graph,
           entities,
-        ),
-      )) as GraphBuilderReport;
-      graph_buildReport.timings[
-        GRAPH_MANAGER_LOG_EVENT.GRAPH_ENTITIES_FETCHED
-      ] = stopWatch.getRecord(GRAPH_MANAGER_LOG_EVENT.GRAPH_ENTITIES_FETCHED);
+        )) as GraphBuilderReport;
+      graph_buildReport.timings[GRAPH_MANAGER_EVENT.GRAPH_ENTITIES_FETCHED] =
+        stopWatch.getRecord(GRAPH_MANAGER_EVENT.GRAPH_ENTITIES_FETCHED);
 
       // report
       stopWatch.record();
       const graphBuilderReportData = {
         timings: {
-          [GRAPH_MANAGER_LOG_EVENT.GRAPH_INITIALIZED]: stopWatch.elapsed,
+          [GRAPH_MANAGER_EVENT.GRAPH_INITIALIZED]: stopWatch.elapsed,
         },
         dependencies: dependency_buildReport,
         graph: graph_buildReport,
       };
       this.applicationStore.log.info(
-        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_INITIALIZED),
+        LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_INITIALIZED),
         graphBuilderReportData,
       );
       GraphManagerTelemetry.logEvent_GraphInitialized(
@@ -896,7 +883,7 @@ export class LegendTaxonomyStore {
             this.applicationStore.navigator.openNewWindow(
               `${
                 this.applicationStore.config.studioUrl
-              }/view/${generateGAVCoordinates(
+              }/view/archive/${generateGAVCoordinates(
                 _groupId,
                 _artifactId,
                 _versionId,

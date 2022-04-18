@@ -23,15 +23,15 @@ export const DocumentationLink: React.FC<{
 }> = (props) => {
   const { documentationKey, className } = props;
   const applicationStore = useApplicationStore();
-  const documentationLink =
+  const documentationEntry =
     applicationStore.docRegistry.getEntry(documentationKey);
   const openDocLink = (): void => {
-    if (documentationLink) {
-      applicationStore.navigator.openNewWindow(documentationLink);
+    if (documentationEntry?.url) {
+      applicationStore.navigator.openNewWindow(documentationEntry.url);
     }
   };
 
-  if (!documentationLink) {
+  if (!documentationEntry?.url) {
     return null;
   }
   return (

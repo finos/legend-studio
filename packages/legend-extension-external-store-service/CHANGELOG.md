@@ -1,5 +1,41 @@
 # @finos/legend-extension-external-store-service
 
+## 1.2.7
+
+## 1.2.6
+
+## 1.2.5
+
+## 1.2.4
+
+## 1.2.3
+
+## 1.2.2
+
+### Patch Changes
+
+- [#1017](https://github.com/finos/legend-studio/pull/1017) [`0dd7cc2e`](https://github.com/finos/legend-studio/commit/0dd7cc2ebf1ee068b394d052003c3442e298ff63) ([@gayathrir11](https://github.com/gayathrir11)) - Fix `ServiceStore` element appearing multiple times in explorer tree.
+
+## 1.2.1
+
+## 1.2.0
+
+### Minor Changes
+
+- [#998](https://github.com/finos/legend-studio/pull/998) [`d6423ea6`](https://github.com/finos/legend-studio/commit/d6423ea69e00ddbba91cc57a427ef583762c211e) ([@akphi](https://github.com/akphi)) - Add support for header parameters in service store.
+
+* [#900](https://github.com/finos/legend-studio/pull/900) [`906b102`](https://github.com/finos/legend-studio/commit/906b102d361be7bba43f8755e6e5d467e1584b99) ([@hardikmaheshwari](https://github.com/hardikmaheshwari)) - Add support for `POST` requests and refactor service store mapping. Deprecated `PropertyIndexedParameterMapping`, `ParameterIndexedParameterMapping`, `ServiceParameterMapping` and the field `parameterMappings` of `ServiceMapping`. They will be removed in a future release.
+
+## 1.1.7
+
+## 1.1.6
+
+## 1.1.5
+
+## 1.1.4
+
+## 1.1.3
+
 ## 1.1.2
 
 ## 1.1.1

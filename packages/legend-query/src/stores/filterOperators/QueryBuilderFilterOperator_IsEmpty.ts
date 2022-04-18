@@ -23,6 +23,7 @@ import {
   PRIMITIVE_TYPE,
   type ValueSpecification,
   type SimpleFunctionExpression,
+  Enumeration,
 } from '@finos/legend-graph';
 import {
   buildFilterConditionState,
@@ -45,17 +46,19 @@ export class QueryBuilderFilterOperator_IsEmpty extends QueryBuilderFilterOperat
     const propertyType =
       filterConditionState.propertyExpressionState.propertyExpression.func
         .genericType.value.rawType;
-    return (
-      [
-        PRIMITIVE_TYPE.STRING,
-        PRIMITIVE_TYPE.BOOLEAN,
-        PRIMITIVE_TYPE.NUMBER,
-        PRIMITIVE_TYPE.INTEGER,
-        PRIMITIVE_TYPE.DECIMAL,
-        PRIMITIVE_TYPE.FLOAT,
-        PRIMITIVE_TYPE.DATE,
-      ] as string[]
-    ).includes(propertyType.path);
+    const multiplicity =
+      filterConditionState.propertyExpressionState.propertyExpression.func
+        .multiplicity;
+    // First check if property is optional
+    if (multiplicity.lowerBound !== 0) {
+      return false;
+    }
+    if (propertyType instanceof Enumeration) {
+      return true;
+    }
+    return (Object.values(PRIMITIVE_TYPE) as string[]).includes(
+      propertyType.path,
+    );
   }
 
   isCompatibleWithFilterConditionValue(

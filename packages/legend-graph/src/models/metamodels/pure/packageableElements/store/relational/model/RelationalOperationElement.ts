@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { observable, computed, makeObservable } from 'mobx';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import {
   hashArray,
@@ -36,51 +35,26 @@ export abstract class RelationalOperationElement {
   abstract get hashCode(): string;
 }
 
-export class Relation extends RelationalOperationElement {
+export abstract class Relation extends RelationalOperationElement {
   columns: RelationalOperationElement[] = [];
-
-  constructor() {
-    super();
-
-    makeObservable(this, {
-      columns: observable,
-    });
-  }
 
   get hashCode(): string {
     throw new UnsupportedOperationError();
   }
 }
 
-export class NamedRelation extends Relation {
+export abstract class NamedRelation extends Relation {
   name: string;
 
   constructor(name: string) {
     super();
-
-    makeObservable(this, {
-      name: observable,
-    });
-
     this.name = name;
   }
 }
 
-export class Function extends RelationalOperationElement {
-  constructor() {
-    super();
+abstract class Function extends RelationalOperationElement {}
 
-    makeObservable(this, {
-      hashCode: computed,
-    });
-  }
-
-  get hashCode(): string {
-    return hashArray([CORE_HASH_STRUCTURE.RELATIONAL_OPERATION_FUNCTION]);
-  }
-}
-
-export class Operation extends Function {}
+export abstract class Operation extends Function {}
 
 export class DynaFunction extends Operation {
   name: string;
@@ -88,12 +62,6 @@ export class DynaFunction extends Operation {
 
   constructor(name: string) {
     super();
-
-    makeObservable(this, {
-      name: observable,
-      parameters: observable,
-    });
-
     this.name = name;
   }
 
@@ -136,20 +104,12 @@ export const getJoinType = (type: string): JoinType => {
 
 // TODO: create RelationalTreeNode like in PURE?
 export class JoinTreeNode {
-  // FIXME: required in PURE
-  alias?: TableAlias | undefined;
+  alias?: TableAlias | undefined; // required in PURE
   children: JoinTreeNode[] = [];
   join: JoinReference;
   joinType?: JoinType | undefined;
 
   constructor(join: JoinReference, joinType?: JoinType, alias?: TableAlias) {
-    makeObservable(this, {
-      alias: observable,
-      children: observable,
-      joinType: observable,
-      hashCode: computed,
-    });
-
     this.alias = alias;
     this.joinType = joinType;
     this.join = join;
@@ -179,16 +139,6 @@ export class RelationalOperationElementWithJoin extends RelationalOperationEleme
   relationalOperationElement?: RelationalOperationElement | undefined;
   joinTreeNode?: JoinTreeNode | undefined;
 
-  constructor() {
-    super();
-
-    makeObservable(this, {
-      relationalOperationElement: observable,
-      joinTreeNode: observable,
-      hashCode: computed,
-    });
-  }
-
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.RELATIONAL_OPERATION_ELEMENTS_WITH_JOINS,
@@ -205,17 +155,6 @@ export class TableAlias extends RelationalOperationElement implements Hashable {
   database?: Database | undefined;
   isSelfJoinTarget = false;
 
-  constructor() {
-    super();
-
-    makeObservable(this, {
-      relation: observable,
-      name: observable,
-      database: observable,
-      isSelfJoinTarget: observable,
-    });
-  }
-
   get hashCode(): string {
     throw new UnsupportedOperationError();
   }
@@ -226,17 +165,6 @@ export class TableAliasColumn extends RelationalOperationElement {
   alias!: TableAlias;
   column!: ColumnReference;
   columnName?: string | undefined;
-
-  constructor() {
-    super();
-
-    makeObservable(this, {
-      alias: observable,
-      column: observable,
-      columnName: observable,
-      hashCode: computed,
-    });
-  }
 
   get hashCode(): string {
     return hashArray([
@@ -255,12 +183,6 @@ export class Literal extends RelationalOperationElement {
 
   constructor(value: string | number | RelationalOperationElement) {
     super();
-
-    makeObservable(this, {
-      value: observable,
-      hashCode: computed,
-    });
-
     this.value = value;
   }
 
@@ -274,15 +196,6 @@ export class Literal extends RelationalOperationElement {
 
 export class LiteralList extends RelationalOperationElement {
   values: Literal[] = [];
-
-  constructor() {
-    super();
-
-    makeObservable(this, {
-      values: observable,
-      hashCode: computed,
-    });
-  }
 
   get hashCode(): string {
     return hashArray([

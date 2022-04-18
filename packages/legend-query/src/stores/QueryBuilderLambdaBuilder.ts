@@ -43,7 +43,7 @@ import {
   RootGraphFetchTreeInstanceValue,
   SimpleFunctionExpression,
   TYPICAL_MULTIPLICITY_TYPE,
-  MILESTONING_STEROTYPES,
+  MILESTONING_STEROTYPE,
 } from '@finos/legend-graph';
 import { isGraphFetchTreeDataEmpty } from './QueryBuilderGraphFetchTreeUtil';
 import type { QueryBuilderState } from './QueryBuilderState';
@@ -241,13 +241,15 @@ export const buildLambdaFunction = (
 
   // build getAll()
   const getAllFunction = buildGetAllFunction(_class, multiplicityOne);
-  const stereotype = getMilestoneTemporalStereotype(
+
+  // build milestoning parameter(s) for getAll()
+  const milestoningStereotype = getMilestoneTemporalStereotype(
     _class,
     queryBuilderState.graphManagerState.graph,
   );
-  if (stereotype) {
-    switch (stereotype) {
-      case MILESTONING_STEROTYPES.BUSINESS_TEMPORAL: {
+  if (milestoningStereotype) {
+    switch (milestoningStereotype) {
+      case MILESTONING_STEROTYPE.BUSINESS_TEMPORAL: {
         getAllFunction.parametersValues.push(
           guaranteeNonNullable(
             queryBuilderState.querySetupState.businessDate,
@@ -256,7 +258,7 @@ export const buildLambdaFunction = (
         );
         break;
       }
-      case MILESTONING_STEROTYPES.PROCESSING_TEMPORAL: {
+      case MILESTONING_STEROTYPE.PROCESSING_TEMPORAL: {
         getAllFunction.parametersValues.push(
           guaranteeNonNullable(
             queryBuilderState.querySetupState.processingDate,
@@ -265,7 +267,7 @@ export const buildLambdaFunction = (
         );
         break;
       }
-      case MILESTONING_STEROTYPES.BITEMPORAL: {
+      case MILESTONING_STEROTYPE.BITEMPORAL: {
         getAllFunction.parametersValues.push(
           guaranteeNonNullable(
             queryBuilderState.querySetupState.processingDate,
@@ -526,7 +528,7 @@ export const buildLambdaFunction = (
   // build post-filter
   processPostFilterOnLambda(queryBuilderState.postFilterState, lambdaFunction);
   // build result set modifiers
-  queryBuilderState.resultSetModifierState.processModifiersOnLambda(
+  queryBuilderState.resultSetModifierState.buildResultSetModifiers(
     lambdaFunction,
     {
       overridingLimit: options?.isBuildingExecutionQuery

@@ -35,6 +35,10 @@ import {
   type GenerationTreeNode,
   type PackageableElement,
 } from '@finos/legend-graph';
+import {
+  generationSpecification_addNode,
+  generationSpecification_deleteGenerationNode,
+} from '../graphModifier/DSLGeneration_GraphModifierHelper';
 
 export interface GenerationSpecNodeDragSource {
   nodeState: GenerationTreeNodeState;
@@ -87,7 +91,7 @@ export class GenerationSpecificationEditorState extends ElementEditorState {
   }
 
   deleteGenerationTreeNode(node: GenerationTreeNode): void {
-    this.spec.deleteGenerationNode(node);
+    generationSpecification_deleteGenerationNode(this.spec, node);
     const nodeState = this.generationTreeNodeStates.find(
       (g) => g.node === node,
     );
@@ -97,7 +101,7 @@ export class GenerationSpecificationEditorState extends ElementEditorState {
   }
 
   addGenerationTreeNode(node: GenerationTreeNode): void {
-    this.spec.addNode(node);
+    generationSpecification_addNode(this.spec, node);
     addUniqueEntry(
       this.generationTreeNodeStates,
       new GenerationTreeNodeState(node),

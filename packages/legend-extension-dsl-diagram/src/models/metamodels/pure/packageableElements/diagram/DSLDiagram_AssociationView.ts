@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { computed, makeObservable } from 'mobx';
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import { PropertyHolderView } from './DSLDiagram_PropertyHolderView';
 import type { ClassView } from './DSLDiagram_ClassView';
@@ -37,11 +36,6 @@ export class AssociationView extends PropertyHolderView implements Hashable {
     to: ClassView,
   ) {
     super(owner, property, from, to);
-
-    makeObservable(this, {
-      hashCode: computed,
-    });
-
     this.association = association;
   }
 

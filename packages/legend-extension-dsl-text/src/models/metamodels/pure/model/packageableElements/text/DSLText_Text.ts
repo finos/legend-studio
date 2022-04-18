@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { observable, action, makeObservable, override } from 'mobx';
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import { TEXT_HASH_STRUCTURE } from '../../../../../DSLText_ModelUtils';
 import {
@@ -33,24 +32,8 @@ export class Text extends PackageableElement implements Hashable {
 
   constructor(name: string) {
     super(name);
-
-    makeObservable<Text, '_elementHashCode'>(this, {
-      type: observable,
-      content: observable,
-      setType: action,
-      setContent: action,
-      _elementHashCode: override,
-    });
-
     this.type = TEXT_TYPE.PLAIN_TEXT;
     this.content = '';
-  }
-
-  setType(type: TEXT_TYPE): void {
-    this.type = type;
-  }
-  setContent(content: string): void {
-    this.content = content;
   }
 
   protected override get _elementHashCode(): string {

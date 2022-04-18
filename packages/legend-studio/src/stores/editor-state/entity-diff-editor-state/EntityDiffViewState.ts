@@ -32,7 +32,7 @@ import {
   type Entity,
   extractEntityNameFromPath,
 } from '@finos/legend-model-storage';
-import { LEGEND_STUDIO_LOG_EVENT_TYPE } from '../../LegendStudioLogEvent';
+import { LEGEND_STUDIO_APP_EVENT } from '../../LegendStudioAppEvent';
 import type { PackageableElement } from '@finos/legend-graph';
 
 /**
@@ -197,7 +197,7 @@ export class EntityDiffViewState extends EntityDiffEditorState {
           '/* Failed to transform grammar text, see JSON diff instead */',
         );
         this.editorStore.applicationStore.log.error(
-          LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.SDLC_MANAGER_FAILURE),
+          LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
           error,
         );
       }
@@ -220,7 +220,7 @@ export class EntityDiffViewState extends EntityDiffEditorState {
           '/* Failed to transform grammar text, see JSON diff instead */',
         );
         this.editorStore.applicationStore.log.error(
-          LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.SDLC_MANAGER_FAILURE),
+          LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
           error,
         );
       }

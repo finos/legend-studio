@@ -31,7 +31,7 @@ import {
   openNodes,
   populatePackageTreeNodeChildren,
 } from './shared/PackageTreeUtil';
-import { LEGEND_STUDIO_LOG_EVENT_TYPE } from './LegendStudioLogEvent';
+import { LEGEND_STUDIO_APP_EVENT } from './LegendStudioAppEvent';
 import type { PackageTreeNodeData } from './shared/TreeUtil';
 import type { TreeData } from '@finos/legend-art';
 import {
@@ -45,7 +45,7 @@ import {
   Unit,
   PrimitiveType,
 } from '@finos/legend-graph';
-import { APPLICATION_LOG_EVENT } from '@finos/legend-application';
+import { APPLICATION_EVENT } from '@finos/legend-application';
 
 export enum ExplorerTreeRootPackageLabel {
   FILE_GENERATION = 'generated-files',
@@ -113,9 +113,7 @@ export class ExplorerTreeState {
     }
     if (!treeData || !this.buildState.hasCompleted) {
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(
-          APPLICATION_LOG_EVENT.ILLEGAL_APPLICATION_STATE_OCCURRED,
-        ),
+        LogEvent.create(APPLICATION_EVENT.ILLEGAL_APPLICATION_STATE_OCCURRED),
         `Can't get explorer tree data for root package '${rootPackageName}' as it hasn't been initialized`,
       );
       throw new IllegalStateError(
@@ -200,15 +198,13 @@ export class ExplorerTreeState {
     );
   }
 
-  // FIXME: to be removed when we process project explorer tree properly
-  // FIXME: also we need to do this properly, but should we reveal current element when we switch tab and such?
-  // right now we screw that up pretty badly and we would need to think of a good strategy to make that happen
   /**
+   * @MARKER: MEMORY-SENSITIVE
+   *
    * FIXME: this method should be replaced altogether as this could potentially cause memory leak when we `replace` the graph
    * When we refresh the graph (after compilation in text mode for example), we want to reprocess the app to
    * preserve the status of the explorer tree (opening nodes, selected nodes, etc.)
    */
-  /* @MARKER: MEMORY-SENSITIVE */
   reprocess(): void {
     this.buildState.reset();
     if (!this.systemTreeData) {
@@ -401,9 +397,7 @@ export class ExplorerTreeState {
     }
     if (!opened) {
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(
-          LEGEND_STUDIO_LOG_EVENT_TYPE.PACKAGE_TREE_BUILDER_FAILURE,
-        ),
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.PACKAGE_TREE_BUILDER_FAILURE),
         `Can't open package tree node for element '${element.path}' with package root '${packagePath}'`,
       );
     }

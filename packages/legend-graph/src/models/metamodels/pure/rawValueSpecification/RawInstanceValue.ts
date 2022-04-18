@@ -22,7 +22,6 @@ import {
   type RawValueSpecificationVisitor,
   RawValueSpecification,
 } from './RawValueSpecification';
-import { computed, makeObservable, observable } from 'mobx';
 import { CORE_HASH_STRUCTURE } from '../../../../MetaModelConst';
 
 export class RawInstanceValue
@@ -39,12 +38,6 @@ export class RawInstanceValue
     values: (string | number)[] | undefined,
   ) {
     super();
-
-    makeObservable(this, {
-      multiplicity: observable,
-      hashCode: computed,
-    });
-
     this.type = type;
     this.multiplicity = multiplicity;
     this.values = values;

@@ -14,14 +14,13 @@
  * limitations under the License.
  */
 
-import { observable, computed, action, makeObservable } from 'mobx';
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import type { FlatDataSection } from './FlatDataSection';
 import type { PrimitiveType } from '../../../domain/PrimitiveType';
 
 export abstract class FlatDataDataType {
-  correspondingPrimitiveType?: PrimitiveType | undefined;
+  readonly correspondingPrimitiveType?: PrimitiveType | undefined;
 
   constructor(correspondingPrimitiveType?: PrimitiveType) {
     this.correspondingPrimitiveType = correspondingPrimitiveType;
@@ -34,16 +33,6 @@ export class FlatDataBoolean extends FlatDataDataType implements Hashable {
   trueString?: string | undefined;
   falseString?: string | undefined;
 
-  constructor(correspondingPrimitiveType?: PrimitiveType) {
-    super(correspondingPrimitiveType);
-
-    makeObservable(this, {
-      trueString: observable,
-      falseString: observable,
-      hashCode: computed,
-    });
-  }
-
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.FLAT_DATA_BOOLEAN,
@@ -54,28 +43,12 @@ export class FlatDataBoolean extends FlatDataDataType implements Hashable {
 }
 
 export class FlatDataString extends FlatDataDataType implements Hashable {
-  constructor(correspondingPrimitiveType?: PrimitiveType) {
-    super(correspondingPrimitiveType);
-
-    makeObservable(this, {
-      hashCode: computed,
-    });
-  }
-
   get hashCode(): string {
     return hashArray([CORE_HASH_STRUCTURE.FLAT_DATA_STRING]);
   }
 }
 
 export class FlatDataNumber extends FlatDataDataType implements Hashable {
-  constructor(correspondingPrimitiveType?: PrimitiveType) {
-    super(correspondingPrimitiveType);
-
-    makeObservable(this, {
-      hashCode: computed,
-    });
-  }
-
   get hashCode(): string {
     return hashArray([CORE_HASH_STRUCTURE.FLAT_DATA_NUMBER]);
   }
@@ -102,25 +75,6 @@ export class FlatDataDecimal extends FlatDataNumber implements Hashable {
 export class FlatDataDate extends FlatDataDataType implements Hashable {
   dateFormat?: string | undefined;
   timeZone?: string | undefined;
-
-  constructor(correspondingPrimitiveType?: PrimitiveType) {
-    super(correspondingPrimitiveType);
-
-    makeObservable(this, {
-      dateFormat: observable,
-      timeZone: observable,
-      setDateFormat: action,
-      setTimeZone: action,
-      hashCode: computed,
-    });
-  }
-
-  setDateFormat(value: string | undefined): void {
-    this.dateFormat = value;
-  }
-  setTimeZone(value: string | undefined): void {
-    this.timeZone = value;
-  }
 
   get hashCode(): string {
     return hashArray([
@@ -162,22 +116,9 @@ export class FlatDataRecordField implements Hashable {
     flatDataDataType: FlatDataDataType,
     optional: boolean,
   ) {
-    makeObservable(this, {
-      label: observable,
-      flatDataDataType: observable,
-      optional: observable,
-      address: observable,
-      setAddress: action,
-      hashCode: computed,
-    });
-
     this.label = label;
     this.flatDataDataType = flatDataDataType;
     this.optional = optional;
-  }
-
-  setAddress(value: string | undefined): void {
-    this.address = value;
   }
 
   get hashCode(): string {
@@ -192,7 +133,7 @@ export class FlatDataRecordField implements Hashable {
 }
 
 /**
- * FIXME: the fact that we have `fields` in `FlatDataRecordType` like this is misleading. What we should have and what Dave
+ * NOTE: the fact that we have `fields` in `FlatDataRecordType` like this is misleading. What we should have and what Dave
  * also agreed on is that we will have another class `X` that is the super type of `RootFlatDataRecordType` and contains `fields`
  * instead of `FlatDataRecordType` as `FlatDataRecordType` is just a normal type like `FlatDataBoolean` that signals the driver
  * to look for a record type.
@@ -202,15 +143,6 @@ export class FlatDataRecordField implements Hashable {
  */
 export class FlatDataRecordType extends FlatDataDataType implements Hashable {
   fields: FlatDataRecordField[] = [];
-
-  constructor(correspondingPrimitiveType?: PrimitiveType) {
-    super(correspondingPrimitiveType);
-
-    makeObservable(this, {
-      fields: observable,
-      hashCode: computed,
-    });
-  }
 
   get hashCode(): string {
     return hashArray([

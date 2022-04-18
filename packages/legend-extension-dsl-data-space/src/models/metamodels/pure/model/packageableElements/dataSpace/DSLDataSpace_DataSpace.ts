@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { makeObservable, override } from 'mobx';
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import {
   PackageableElement,
@@ -70,14 +69,6 @@ export class DataSpace extends PackageableElement implements Hashable {
   featuredDiagrams: string[] = [];
   description?: string | undefined;
   supportInfo?: DataSpaceSupportInfo | undefined;
-
-  constructor(name: string) {
-    super(name);
-
-    makeObservable<DataSpace, '_elementHashCode'>(this, {
-      _elementHashCode: override,
-    });
-  }
 
   protected override get _elementHashCode(): string {
     return hashArray([

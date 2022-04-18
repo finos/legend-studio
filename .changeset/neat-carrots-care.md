@@ -1,5 +1,5 @@
 ---
-"@finos/legend-graph": patch
+"@finos/legend-graph": minor
 ---
 
 Support processing of milestoning properties in `class` and `association`.

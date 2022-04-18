@@ -135,6 +135,12 @@
   .selector-input__menu {
     z-index: 1;
   }
+
+  &__actions {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+  }
 }
 
 .editor-modal {

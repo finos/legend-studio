@@ -65,7 +65,7 @@ import {
   type InputData,
   type Type,
   getAllClassMappings,
-  GRAPH_MANAGER_LOG_EVENT,
+  GRAPH_MANAGER_EVENT,
   PRIMITIVE_TYPE,
   fromElementPathToMappingElementId,
   extractSourceInformationCoordinates,
@@ -100,12 +100,23 @@ import {
   AssociationImplementation,
   InferableMappingElementIdExplicitValue,
   InferableMappingElementRootExplicitValue,
-  updateRootSetImplementationOnCreate,
-  updateRootSetImplementationOnDelete,
 } from '@finos/legend-graph';
 import { LambdaEditorState } from '@finos/legend-application';
 import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../DSLMapping_LegendStudioPlugin_Extension';
 import type { LegendStudioPlugin } from '../../../LegendStudioPlugin';
+import { flatData_setSourceRootRecordType } from '../../../graphModifier/StoreFlatData_GraphModifierHelper';
+import {
+  pureInstanceSetImpl_setSrcClass,
+  mapping_addClassMapping,
+  mapping_addEnumerationMapping,
+  mapping_addTest,
+  mapping_deleteAssociationMapping,
+  mapping_deleteClassMapping,
+  mapping_deleteEnumerationMapping,
+  mapping_deleteTest,
+  setImpl_updateRootOnCreate,
+  setImpl_updateRootOnDelete,
+} from '../../../graphModifier/DSLMapping_GraphModifierHelper';
 
 export interface MappingExplorerTreeNodeData extends TreeNodeData {
   mappingElement: MappingElement;
@@ -253,6 +264,7 @@ export const createClassMapping = (
   id: string,
   _class: Class,
   setImpType: BASIC_SET_IMPLEMENTATION_TYPE,
+  editorStore: EditorStore,
 ): SetImplementation | undefined => {
   let setImp: SetImplementation;
   // NOTE: by default when we create a new instance set implementation, we will create PURE instance set implementation
@@ -280,8 +292,12 @@ export const createClassMapping = (
     default:
       return undefined;
   }
-  updateRootSetImplementationOnCreate(setImp);
-  mapping.addClassMapping(setImp);
+  setImpl_updateRootOnCreate(setImp);
+  mapping_addClassMapping(
+    mapping,
+    setImp,
+    editorStore.changeDetectionState.observerContext,
+  );
   return setImp;
 };
 
@@ -297,7 +313,7 @@ export const createEnumerationMapping = (
     mapping,
     OptionalPackageableElementExplicitReference.create(sourceType),
   );
-  mapping.addEnumerationMapping(enumMapping);
+  mapping_addEnumerationMapping(mapping, enumMapping);
   return enumMapping;
 };
 
@@ -719,7 +735,7 @@ export class MappingEditorState extends ElementEditorState {
       reprocessMappingElementNodes(this.mapping, openedTreeNodeIds),
     );
     if (openNodeFoCurrentTab) {
-      // FIXME: we should follow the example of project explorer where we maintain the currentlySelectedNode
+      // TODO: we should follow the example of project explorer where we maintain the currentlySelectedNode
       // instead of adaptively show the `selectedNode` based on current tab state. This is bad
       // this.setMappingElementTreeNodeData(openNode(openElement, this.mappingElementsTreeData));
       // const openNode = (element: EmbeddedFlatDataPropertyMapping, treeData: TreeData<MappingElementTreeNodeData>): MappingElementTreeNodeData => {
@@ -824,13 +840,13 @@ export class MappingEditorState extends ElementEditorState {
         setImplementation instanceof PureInstanceSetImplementation &&
         (newSource instanceof Class || newSource === undefined)
       ) {
-        setImplementation.setSrcClass(newSource);
+        pureInstanceSetImpl_setSrcClass(setImplementation, newSource);
       } else if (
         setImplementation instanceof FlatDataInstanceSetImplementation &&
         newSource instanceof RootFlatDataRecordType &&
         !setImplementation.getEmbeddedSetImplmentations().length
       ) {
-        setImplementation.setSourceRootRecordType(newSource);
+        flatData_setSourceRootRecordType(setImplementation, newSource);
       } else {
         // here we require a change of set implementation as the source type does not match the what the current class mapping supports
         let newSetImp: InstanceSetImplementation;
@@ -931,9 +947,9 @@ export class MappingEditorState extends ElementEditorState {
   *deleteMappingElement(mappingElement: MappingElement): GeneratorFn<void> {
     /* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
     if (mappingElement instanceof EnumerationMapping) {
-      this.mapping.deleteEnumerationMapping(mappingElement);
+      mapping_deleteEnumerationMapping(this.mapping, mappingElement);
     } else if (mappingElement instanceof AssociationImplementation) {
-      this.mapping.deleteAssociationMapping(mappingElement);
+      mapping_deleteAssociationMapping(this.mapping, mappingElement);
     } else if (mappingElement instanceof EmbeddedFlatDataPropertyMapping) {
       deleteEntry(mappingElement.owner.propertyMappings, mappingElement);
     } else if (
@@ -941,10 +957,10 @@ export class MappingEditorState extends ElementEditorState {
     ) {
       deleteEntry(mappingElement.owner.propertyMappings, mappingElement);
     } else if (mappingElement instanceof SetImplementation) {
-      this.mapping.deleteClassMapping(mappingElement);
+      mapping_deleteClassMapping(this.mapping, mappingElement);
     }
     if (mappingElement instanceof SetImplementation) {
-      updateRootSetImplementationOnDelete(mappingElement);
+      setImpl_updateRootOnDelete(mappingElement);
     }
     yield flowResult(this.closeMappingElementTabState(mappingElement));
     this.reprocessMappingExplorerTree();
@@ -1187,7 +1203,7 @@ export class MappingEditorState extends ElementEditorState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.warn(
-        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.COMPILATION_FAILURE),
+        LogEvent.create(GRAPH_MANAGER_EVENT.COMPILATION_FAILURE),
         `Can't locate error, redirecting to text mode`,
         error,
       );
@@ -1336,7 +1352,11 @@ export class MappingEditorState extends ElementEditorState {
     this.mappingTestStates.push(
       new MappingTestState(this.editorStore, test, this),
     );
-    this.mapping.addTest(test);
+    mapping_addTest(
+      this.mapping,
+      test,
+      this.editorStore.changeDetectionState.observerContext,
+    );
     yield flowResult(this.openTest(test));
   }
 
@@ -1345,7 +1365,7 @@ export class MappingEditorState extends ElementEditorState {
       tabState: MappingEditorTabState | undefined,
     ): boolean =>
       tabState instanceof MappingTestState && tabState.test === test;
-    this.mapping.deleteTest(test);
+    mapping_deleteTest(this.mapping, test);
     if (this.currentTabState && matchMappingTestState(this.currentTabState)) {
       yield flowResult(this.closeTab(this.currentTabState));
     }
@@ -1407,7 +1427,11 @@ export class MappingEditorState extends ElementEditorState {
       [inputData],
       new ExpectedOutputMappingTestAssert('{}'),
     );
-    this.mapping.addTest(newTest);
+    mapping_addTest(
+      this.mapping,
+      newTest,
+      this.editorStore.changeDetectionState.observerContext,
+    );
     // open the test
     this.mappingTestStates.push(
       new MappingTestState(this.editorStore, newTest, this),

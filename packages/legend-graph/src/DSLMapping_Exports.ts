@@ -39,6 +39,7 @@ export { PackageableConnection } from './models/metamodels/pure/packageableEleme
 export { ModelStore } from './models/metamodels/pure/packageableElements/store/modelToModel/model/ModelStore';
 export { PureModelConnection } from './models/metamodels/pure/packageableElements/store/modelToModel/connection/PureModelConnection';
 export { JsonModelConnection } from './models/metamodels/pure/packageableElements/store/modelToModel/connection/JsonModelConnection';
+export { ModelChainConnection } from './models/metamodels/pure/packageableElements/store/modelToModel/connection/ModelChainConnection';
 export { XmlModelConnection } from './models/metamodels/pure/packageableElements/store/modelToModel/connection/XmlModelConnection';
 export * from './models/metamodels/pure/packageableElements/mapping/SetImplementation';
 export { PurePropertyMapping } from './models/metamodels/pure/packageableElements/store/modelToModel/mapping/PurePropertyMapping';

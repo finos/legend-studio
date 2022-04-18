@@ -1,5 +1,21 @@
 # @finos/legend-shared
 
+## 1.3.0
+
+### Minor Changes
+
+- [#1041](https://github.com/finos/legend-studio/pull/1041) [`5a76b228`](https://github.com/finos/legend-studio/commit/5a76b2289cb88569e9a1acb2287960de3e593d25) ([@akphi](https://github.com/akphi)) - Expose utilities to render `MarkdownText`. This will make documentation in our app more convenient.
+
+## 1.2.9
+
+## 1.2.8
+
+## 1.2.7
+
+## 1.2.6
+
+## 1.2.5
+
 ## 1.2.4
 
 ## 1.2.3

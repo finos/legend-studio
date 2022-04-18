@@ -53,7 +53,7 @@ import {
   type InstanceValue,
   type INTERNAL__UnknownValueSpecification,
   type LambdaFunction,
-  MILESTONING_STEROTYPES,
+  MILESTONING_STEROTYPE,
   DerivedProperty,
   RawLambda,
   matchFunctionName,
@@ -78,7 +78,7 @@ import {
 import { SUPPORTED_FUNCTIONS } from '../QueryBuilder_Const';
 import type { QueryBuilderAggregationState } from './QueryBuilderAggregationState';
 import { QueryParameterState } from './QueryParametersState';
-import { isValidMilestoningLambda } from './QueryBuilderMilestoningHelper';
+import { processMilestoningPropertyExpression } from './QueryBuilderMilestoningHelper';
 import { toGroupOperation } from './QueryBuilderOperatorsHelper';
 import { processPostFilterLambda } from './QueryBuilderPostFilterProcessor';
 
@@ -114,8 +114,8 @@ const processFilterExpression = (
   const propertyExpression = expression.parametersValues[0];
   if (propertyExpression instanceof AbstractPropertyExpression) {
     const currentPropertyExpression = propertyExpression.parametersValues[0];
-    if (currentPropertyExpression) {
-      isValidMilestoningLambda(
+    if (currentPropertyExpression instanceof AbstractPropertyExpression) {
+      processMilestoningPropertyExpression(
         currentPropertyExpression,
         filterState.queryBuilderState.graphManagerState.graph,
       );
@@ -365,7 +365,7 @@ export class QueryBuilderLambdaProcessor
     throw new UnsupportedOperationError();
   }
 
-  visit_PureListInsanceValue(valueSpecification: PureListInstanceValue): void {
+  visit_PureListInstanceValue(valueSpecification: PureListInstanceValue): void {
     throw new UnsupportedOperationError();
   }
 
@@ -398,7 +398,7 @@ export class QueryBuilderLambdaProcessor
         this.queryBuilderState.graphManagerState.graph,
       );
       if (stereotype) {
-        if (stereotype === MILESTONING_STEROTYPES.BITEMPORAL) {
+        if (stereotype === MILESTONING_STEROTYPE.BITEMPORAL) {
           acceptedNoOfParameters = 3;
           assertTrue(
             valueSpecification.parametersValues.length ===
@@ -411,7 +411,7 @@ export class QueryBuilderLambdaProcessor
           this.queryBuilderState.querySetupState.setBusinessDate(
             valueSpecification.parametersValues[2],
           );
-        } else if (stereotype === MILESTONING_STEROTYPES.PROCESSING_TEMPORAL) {
+        } else if (stereotype === MILESTONING_STEROTYPE.PROCESSING_TEMPORAL) {
           acceptedNoOfParameters = 2;
           assertTrue(
             valueSpecification.parametersValues.length ===
@@ -634,6 +634,7 @@ export class QueryBuilderLambdaProcessor
           SUPPORTED_FUNCTIONS.TDS_SORT,
           SUPPORTED_FUNCTIONS.TDS_PROJECT,
           SUPPORTED_FUNCTIONS.TDS_GROUP_BY,
+          SUPPORTED_FUNCTIONS.TDS_FILTER,
         ].some((fn) => matchFunctionName(precedingExpression.functionName, fn)),
         `Can't process distinct() expression: only support distinct() in TDS expression`,
       );
@@ -664,6 +665,7 @@ export class QueryBuilderLambdaProcessor
           SUPPORTED_FUNCTIONS.TDS_SORT,
           SUPPORTED_FUNCTIONS.TDS_PROJECT,
           SUPPORTED_FUNCTIONS.TDS_GROUP_BY,
+          SUPPORTED_FUNCTIONS.TDS_FILTER,
         ].some((fn) => matchFunctionName(precedingExpression.functionName, fn)),
         `Can't process sort() expression: only support sort() in TDS expression`,
       );
@@ -987,7 +989,7 @@ export class QueryBuilderLambdaProcessor
       let currentPropertyExpression: ValueSpecification = valueSpecification;
       while (currentPropertyExpression instanceof AbstractPropertyExpression) {
         const propertyExpression = currentPropertyExpression;
-        isValidMilestoningLambda(
+        processMilestoningPropertyExpression(
           currentPropertyExpression,
           this.queryBuilderState.graphManagerState.graph,
         );

@@ -26,7 +26,7 @@ import {
 import {
   type CompilationError,
   type PackageableElement,
-  GRAPH_MANAGER_LOG_EVENT,
+  GRAPH_MANAGER_EVENT,
 } from '@finos/legend-graph';
 import { TAB_SIZE } from '@finos/legend-application';
 
@@ -61,7 +61,9 @@ export abstract class ElementEditorState extends EditorState {
     });
 
     this.element = element;
-    this.isReadOnly = element.isReadOnly || editorStore.isInViewerMode;
+    this.isReadOnly =
+      editorStore.graphManagerState.isElementReadOnly(element) ||
+      editorStore.isInViewerMode;
   }
 
   get headerName(): string {
@@ -100,7 +102,7 @@ export abstract class ElementEditorState extends EditorState {
         ),
       );
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
+        LogEvent.create(GRAPH_MANAGER_EVENT.PARSING_FAILURE),
         error,
       );
     }
@@ -127,7 +129,7 @@ export abstract class ElementEditorState extends EditorState {
         ),
       );
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(GRAPH_MANAGER_LOG_EVENT.PARSING_FAILURE),
+        LogEvent.create(GRAPH_MANAGER_EVENT.PARSING_FAILURE),
         error,
       );
     }

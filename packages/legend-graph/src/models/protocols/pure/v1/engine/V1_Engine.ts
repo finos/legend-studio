@@ -27,7 +27,6 @@ import {
   NetworkClientError,
   returnUndefOnError,
 } from '@finos/legend-shared';
-import { GRAPH_MANAGER_LOG_EVENT } from '../../../../../graphManager/GraphManagerLogEvent';
 import {
   type ImportConfigurationDescription,
   ImportMode,
@@ -96,6 +95,7 @@ import type { ExecutionOptions } from '../../../../../graphManager/AbstractPureG
 import type { ExternalFormatDescription } from '../../../../../graphManager/action/externalFormat/ExternalFormatDescription';
 import { V1_ExternalFormatDescription } from './externalFormat/V1_ExternalFormatDescription';
 import { V1_ExternalFormatModelGenerationInput } from './externalFormat/V1_ExternalFormatModelGeneration';
+import { GRAPH_MANAGER_EVENT } from '../../../../../graphManager/GraphManagerEvent';
 
 class V1_EngineConfig extends TEMPORARY__AbstractEngineConfig {
   private engine: V1_Engine;
@@ -160,7 +160,7 @@ export class V1_Engine {
     const startTime = Date.now();
     const serializedGraph = V1_serializePureModelContextData(graph);
     this.log.info(
-      LogEvent.create(GRAPH_MANAGER_LOG_EVENT.GRAPH_PROTOCOL_SERIALIZED),
+      LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_PROTOCOL_SERIALIZED),
       Date.now() - startTime,
       'ms',
     );
@@ -448,6 +448,14 @@ export class V1_Engine {
     );
   }
 
+  debugExecutionPlanGeneration(
+    input: V1_ExecuteInput,
+  ): Promise<{ plan: PlainObject<V1_ExecutionPlan>; debug: string[] }> {
+    return this.engineServerClient.debugPlanGeneration(
+      V1_ExecuteInput.serialization.toJson(input),
+    );
+  }
+
   generateMappingTestData(input: V1_ExecuteInput): Promise<string> {
     return this.engineServerClient.generateTestDataWithDefaultSeed(
       V1_ExecuteInput.serialization.toJson(input),
@@ -502,7 +510,7 @@ export class V1_Engine {
           new V1_GenerateFileInput(textModel, configs),
         ),
       )
-    ).map((output) => V1_GenerationOutput.serialization.fromJson(output));
+    ).map(V1_GenerationOutput.serialization.fromJson);
   }
   // ------------------------------------------- External Format -----------------------------------------
 
@@ -579,7 +587,7 @@ export class V1_Engine {
       await this.engineServerClient.runServiceTests(
         V1_serializePureModelContextData(model),
       )
-    ).map((result) => V1_ServiceTestResult.serialization.fromJson(result));
+    ).map(V1_ServiceTestResult.serialization.fromJson);
   }
 
   async registerService(
@@ -631,7 +639,7 @@ export class V1_Engine {
       await this.engineServerClient.searchQueries(
         V1_QuerySearchSpecification.serialization.toJson(searchSpecification),
       )
-    ).map((query) => V1_LightQuery.serialization.fromJson(query));
+    ).map(V1_LightQuery.serialization.fromJson);
   }
 
   async getQuery(queryId: string): Promise<V1_Query> {

@@ -35,7 +35,7 @@ import {
   type ValueSpecification,
   PRIMITIVE_TYPE,
   LATEST_DATE,
-  MILESTONING_STEROTYPES,
+  MILESTONING_STEROTYPE,
   PrimitiveInstanceValue,
   VariableExpression,
   getMilestoneTemporalStereotype,
@@ -79,17 +79,17 @@ const generateClassLabel = (
   if (milestoneStereotype) {
     let milestoningParameterValues;
     switch (milestoneStereotype) {
-      case MILESTONING_STEROTYPES.BUSINESS_TEMPORAL:
+      case MILESTONING_STEROTYPE.BUSINESS_TEMPORAL:
         milestoningParameterValues = `Business Date: ${getParameterValue(
           queryBuilderState.querySetupState.businessDate,
         )}`;
         break;
-      case MILESTONING_STEROTYPES.PROCESSING_TEMPORAL:
+      case MILESTONING_STEROTYPE.PROCESSING_TEMPORAL:
         milestoningParameterValues = `Processing Date: ${getParameterValue(
           queryBuilderState.querySetupState.processingDate,
         )}`;
         break;
-      case MILESTONING_STEROTYPES.BITEMPORAL:
+      case MILESTONING_STEROTYPE.BITEMPORAL:
         milestoningParameterValues = `Processing Date: ${getParameterValue(
           queryBuilderState.querySetupState.processingDate,
         )}, Business Date: ${getParameterValue(

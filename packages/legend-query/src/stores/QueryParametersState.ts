@@ -29,6 +29,8 @@ import {
   Multiplicity,
   PRIMITIVE_TYPE,
   VariableExpression,
+  observe_VariableExpression,
+  observe_adaptive_ValueSpecification,
 } from '@finos/legend-graph';
 import {
   addUniqueEntry,
@@ -39,6 +41,11 @@ import {
 import { observable, makeObservable, action } from 'mobx';
 import type { QueryBuilderState } from './QueryBuilderState';
 import { DATE_FORMAT, DATE_TIME_FORMAT } from '@finos/legend-application';
+import {
+  multiplicity_setLowerBound,
+  multiplicity_setUpperBound,
+  genericType_setRawType,
+} from './QueryBuilderValueSpecificationModifierHelper';
 
 export enum QUERY_BUILDER_PARAMETER_TREE_DND_TYPE {
   VARIABLE = 'VARIABLE',
@@ -93,9 +100,9 @@ const createMockPrimitiveProperty = (
 };
 
 export class QueryParameterState {
-  uuid = uuid();
-  queryParameterState: QueryParametersState;
-  parameter: VariableExpression;
+  readonly uuid = uuid();
+  readonly queryParameterState: QueryParametersState;
+  readonly parameter: VariableExpression;
   value: InstanceValue | undefined;
 
   constructor(
@@ -103,13 +110,13 @@ export class QueryParameterState {
     variableExpression: VariableExpression,
   ) {
     makeObservable(this, {
-      parameter: observable,
       value: observable,
       setValue: action,
       mockParameterValue: action,
     });
+
     this.queryParameterState = queryParameterState;
-    this.parameter = variableExpression;
+    this.parameter = observe_VariableExpression(variableExpression);
   }
 
   mockParameterValue(): void {
@@ -121,16 +128,15 @@ export class QueryParameterState {
     );
   }
 
-  generateMockValues(
+  private generateMockValues(
     varType: Type | undefined,
     multiplicity: Multiplicity,
   ): InstanceValue | undefined {
     if ((!multiplicity.upperBound || multiplicity.upperBound > 1) && varType) {
-      const collectionInst = new CollectionInstanceValue(
+      return new CollectionInstanceValue(
         multiplicity,
         GenericTypeExplicitReference.create(new GenericType(varType)),
       );
-      return collectionInst;
     }
     if (varType instanceof PrimitiveType) {
       const primitiveInst = new PrimitiveInstanceValue(
@@ -161,7 +167,12 @@ export class QueryParameterState {
   }
 
   setValue(value: InstanceValue | undefined): void {
-    this.value = value;
+    this.value = value
+      ? observe_adaptive_ValueSpecification(
+          value,
+          this.queryParameterState.queryBuilderState.observableContext,
+        )
+      : undefined;
   }
 
   static createDefault(
@@ -185,7 +196,10 @@ export class QueryParameterState {
 
   changeVariableType(type: Type): void {
     if (type !== this.variableType) {
-      this.parameter.genericType?.value.setRawType(type);
+      const genricType = this.parameter.genericType?.value;
+      if (genricType) {
+        genericType_setRawType(genricType, type);
+      }
       this.mockParameterValue();
     }
   }
@@ -199,8 +213,8 @@ export class QueryParameterState {
       current.lowerBound !== lowerBound ||
       current.upperBound !== uppderBound
     ) {
-      current.setLowerBound(lowerBound);
-      current.setUpperBound(uppderBound);
+      multiplicity_setLowerBound(current, lowerBound);
+      multiplicity_setUpperBound(current, uppderBound);
       this.mockParameterValue();
     }
   }

@@ -51,8 +51,9 @@ import {
   getPropagatedDate,
   isDefaultDatePropagationSupported,
 } from '../stores/QueryBuilderMilestoningHelper';
+import { propertyExpression_setParametersValue } from '../stores/QueryBuilderValueSpecificationModifierHelper';
 
-const DerivedPropertyParameterEditor = observer(
+const DerivedPropertyParameterValueEditor = observer(
   (props: {
     derivedPropertyExpressionState: QueryBuilderDerivedPropertyExpressionState;
     derivedPropertyExpressionStates: QueryBuilderDerivedPropertyExpressionState[];
@@ -67,9 +68,12 @@ const DerivedPropertyParameterEditor = observer(
     } = props;
     const handleDrop = useCallback(
       (item: QueryBuilderParameterDragSource): void => {
-        derivedPropertyExpressionState.propertyExpression.parametersValues[
-          idx + 1
-        ] = item.variable.parameter;
+        propertyExpression_setParametersValue(
+          derivedPropertyExpressionState.propertyExpression,
+          idx + 1,
+          item.variable.parameter,
+          derivedPropertyExpressionState.queryBuilderState.observableContext,
+        );
       },
       [derivedPropertyExpressionState, idx],
     );
@@ -121,9 +125,12 @@ const DerivedPropertyParameterEditor = observer(
           true,
         );
       }
-      derivedPropertyExpressionState.propertyExpression.parametersValues[
-        idx + 1
-      ] = primitiveInstanceValue;
+      propertyExpression_setParametersValue(
+        derivedPropertyExpressionState.propertyExpression,
+        idx + 1,
+        primitiveInstanceValue,
+        derivedPropertyExpressionState.queryBuilderState.observableContext,
+      );
     };
     // Gets the value of milestoning date that needs to be shown in DerivedPropertyEditor when date propagation is supported
     // otherwise gets the actual parameter value.
@@ -182,6 +189,7 @@ const DerivedPropertyParameterEditor = observer(
     );
   },
 );
+
 const DerivedPropertyExpressionEditor = observer(
   (props: {
     derivedPropertyExpressionState: QueryBuilderDerivedPropertyExpressionState;
@@ -209,7 +217,7 @@ const DerivedPropertyExpressionEditor = observer(
           </div>
         )}
         {parameters.map((variable, idx) => (
-          <DerivedPropertyParameterEditor
+          <DerivedPropertyParameterValueEditor
             key={variable.name}
             derivedPropertyExpressionState={derivedPropertyExpressionState}
             derivedPropertyExpressionStates={derivedPropertyExpressionStates}

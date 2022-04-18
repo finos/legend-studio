@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { observable, computed, action, makeObservable, override } from 'mobx';
 import {
   type Hashable,
   guaranteeNonNullable,
@@ -22,9 +21,6 @@ import {
   assertTrue,
   UnsupportedOperationError,
   hashArray,
-  addUniqueEntry,
-  deleteEntry,
-  changeEntry,
 } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import {
@@ -33,7 +29,6 @@ import {
 } from '../PackageableElement';
 import { Property } from './Property';
 import { type Stubable, isStubArray } from '../../../../../helpers/Stubable';
-import { GenericType } from './GenericType';
 import { Class } from './Class';
 import type { AnnotatedElement } from './AnnotatedElement';
 import type { TaggedValue } from './TaggedValue';
@@ -66,9 +61,9 @@ const initAssociationProperties = (
  * of dependency between project. Imagine we create association between classes in project and system
  * or project dependencies. As such, in the app, we have to make it very clear that we prohibits this.
  *
- * TODO: we must change backend to do compilation check whether association refers to a class from a different
- * project
- * FIXME: we can make use of the root package to verify this in the UI and make this a validation error in a way.
+ * TODO: We probably should change backend to do compilation check whether association refers
+ * to a class from a different project. Here, while building the graph, we can make use of the
+ * root package to verify this in the UI and make this a validation error in a way.
  */
 export class Association
   extends PackageableElement
@@ -80,29 +75,10 @@ export class Association
   derivedProperties: DerivedProperty[] = [];
 
   /**
-   * To store the properties generated while processing the milestoning properties. The properties
+   * To store the abstract properties generated while processing the milestoning properties. The properties
    * generated are `allVersions`, `allVersionsInRange` and derived property with date parameter.
    */
-  _generatedMilestonedProperties: Property[] = [];
-
-  constructor(name: string) {
-    super(name);
-
-    makeObservable<Association, '_elementHashCode'>(this, {
-      properties: observable,
-      stereotypes: observable,
-      taggedValues: observable,
-      derivedProperties: observable,
-      setProperties: action,
-      deleteTaggedValue: action,
-      addTaggedValue: action,
-      deleteStereotype: action,
-      changeStereotype: action,
-      addStereotype: action,
-      isStub: computed,
-      _elementHashCode: override,
-    });
-  }
+  _generatedMilestonedProperties: AbstractProperty[] = [];
 
   getFirstProperty = (): Property => guaranteeNonNullable(this.properties[0]);
   getSecondProperty = (): Property => guaranteeNonNullable(this.properties[1]);
@@ -137,52 +113,6 @@ export class Association
       this.properties.find((p) => p.name === name),
       `Can't find property '${name}' in class '${this.path}'`,
     );
-
-  changePropertyType = (property: Property, type: Class): void => {
-    const otherProperty = this.getOtherProperty(property);
-    // remove other property from current parent class of the to-be-changed property
-    const otherPropertyAssociatedClass = guaranteeType(
-      property.genericType.ownerReference.value,
-      Class,
-      `Association property '${property.name}' must be of type 'class'`,
-    );
-    // don't invoke deletion if the class is a stub (otherProperty is not present)
-    if (!otherPropertyAssociatedClass.isStub) {
-      assertTrue(
-        deleteEntry(
-          otherPropertyAssociatedClass.propertiesFromAssociations,
-          otherProperty,
-        ),
-        `Can't find property '${otherProperty.name}' from association '${this.path}' in associated class '${otherPropertyAssociatedClass.path}'`,
-      );
-    }
-    // set up the relationship between the other property and the new class
-    addUniqueEntry(type.propertiesFromAssociations, otherProperty);
-    // set new type for the property
-    property.genericType.setValue(new GenericType(type));
-  };
-
-  setProperties(val: [Property, Property]): void {
-    this.properties = val;
-  }
-  deleteTaggedValue(val: TaggedValue): void {
-    deleteEntry(this.taggedValues, val);
-  }
-  addTaggedValue(val: TaggedValue): void {
-    addUniqueEntry(this.taggedValues, val);
-  }
-  deleteStereotype(val: StereotypeReference): void {
-    deleteEntry(this.stereotypes, val);
-  }
-  changeStereotype(
-    oldVal: StereotypeReference,
-    newVal: StereotypeReference,
-  ): void {
-    changeEntry(this.stereotypes, oldVal, newVal);
-  }
-  addStereotype(val: StereotypeReference): void {
-    addUniqueEntry(this.stereotypes, val);
-  }
 
   override get isStub(): boolean {
     return super.isStub && isStubArray(this.properties);

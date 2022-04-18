@@ -67,6 +67,15 @@ import {
   Unit,
   StereotypeExplicitReference,
 } from '@finos/legend-graph';
+import {
+  property_setName,
+  property_setMultiplicity,
+  annotatedElement_deleteStereotype,
+  annotatedElement_addTaggedValue,
+  annotatedElement_addStereotype,
+  annotatedElement_deleteTaggedValue,
+  association_changePropertyType,
+} from '../../../../stores/graphModifier/DomainGraphModifierHelper';
 
 const AssociationPropertyBasicEditor = observer(
   (props: {
@@ -88,11 +97,11 @@ const AssociationPropertyBasicEditor = observer(
     };
     // Name
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
-      property.setName(event.target.value);
+      property_setName(property, event.target.value);
     };
     // Generic Type
     const [isEditingType, setIsEditingType] = useState(false);
-    // FIXME: make this so that association can only refer to classes from the same space
+    // TODO: make this so that association can only refer to classes from the same graph space
     const propertyTypeOptions = editorStore.classOptions.filter(
       (classOption) =>
         classOption.value !==
@@ -111,7 +120,8 @@ const AssociationPropertyBasicEditor = observer(
       label: propertyType.name,
     };
     const changePropertyType = (val: PackageableElementOption<Class>): void => {
-      association.changePropertyType(
+      association_changePropertyType(
+        association,
         property,
         guaranteeType(
           val.value,
@@ -140,7 +150,7 @@ const AssociationPropertyBasicEditor = observer(
           ? upper
           : parseInt(upper, 10);
       if (!isNaN(lBound) && (uBound === undefined || !isNaN(uBound))) {
-        property.setMultiplicity(new Multiplicity(lBound, uBound));
+        property_setMultiplicity(property, new Multiplicity(lBound, uBound));
       }
     };
     const changeLowerBound: React.ChangeEventHandler<HTMLInputElement> = (
@@ -331,11 +341,13 @@ export const AssociationEditor = observer(
     const add = (): void => {
       if (!isReadOnly) {
         if (selectedTab === UML_EDITOR_TAB.TAGGED_VALUES) {
-          association.addTaggedValue(
+          annotatedElement_addTaggedValue(
+            association,
             TaggedValue.createStub(Tag.createStub(Profile.createStub())),
           );
         } else if (selectedTab === UML_EDITOR_TAB.STEREOTYPES) {
-          association.addStereotype(
+          annotatedElement_addStereotype(
+            association,
             StereotypeExplicitReference.create(
               Stereotype.createStub(Profile.createStub()),
             ),
@@ -344,21 +356,22 @@ export const AssociationEditor = observer(
       }
     };
     // Tagged value and Stereotype
-    const deleteStereotype =
+    const _deleteStereotype =
       (val: StereotypeReference): (() => void) =>
       (): void =>
-        association.deleteStereotype(val);
-    const deleteTaggedValue =
+        annotatedElement_deleteStereotype(association, val);
+    const _deleteTaggedValue =
       (val: TaggedValue): (() => void) =>
       (): void =>
-        association.deleteTaggedValue(val);
+        annotatedElement_deleteTaggedValue(association, val);
     // Property
     const deselectProperty = (): void => setSelectedProperty(undefined);
     // Drag and Drop
     const handleDropTaggedValue = useCallback(
       (item: UMLEditorElementDropTarget): void => {
         if (!isReadOnly && item.data.packageableElement instanceof Profile) {
-          association.addTaggedValue(
+          annotatedElement_addTaggedValue(
+            association,
             TaggedValue.createStub(
               Tag.createStub(item.data.packageableElement),
             ),
@@ -380,7 +393,8 @@ export const AssociationEditor = observer(
     const handleDropStereotype = useCallback(
       (item: UMLEditorElementDropTarget): void => {
         if (!isReadOnly && item.data.packageableElement instanceof Profile) {
-          association.addStereotype(
+          annotatedElement_addStereotype(
+            association,
             StereotypeExplicitReference.create(
               Stereotype.createStub(item.data.packageableElement),
             ),
@@ -487,7 +501,7 @@ export const AssociationEditor = observer(
                       <TaggedValueEditor
                         key={taggedValue.uuid}
                         taggedValue={taggedValue}
-                        deleteValue={deleteTaggedValue(taggedValue)}
+                        deleteValue={_deleteTaggedValue(taggedValue)}
                         isReadOnly={isReadOnly}
                       />
                     ))}
@@ -505,7 +519,7 @@ export const AssociationEditor = observer(
                       <StereotypeSelector
                         key={stereotype.value.uuid}
                         stereotype={stereotype}
-                        deleteStereotype={deleteStereotype(stereotype)}
+                        deleteStereotype={_deleteStereotype(stereotype)}
                         isReadOnly={isReadOnly}
                       />
                     ))}

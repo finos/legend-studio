@@ -152,6 +152,7 @@ export const buildPostFilterConditionState = (
       tdsColumnPropertyExpression,
       postFilterState,
     );
+
     // get operation value specification
     const value = expression.parametersValues[1];
     // create state

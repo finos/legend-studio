@@ -39,10 +39,7 @@ import {
 import { LEGEND_STUDIO_TEST_ID } from '../../../../LegendStudioTestID';
 import type { EditorStore } from '../../../../../stores/EditorStore';
 import { ServiceEditorState } from '../../../../../stores/editor-state/element-editor-state/service/ServiceEditorState';
-import {
-  NOTIFCATION_SEVERITY,
-  TEST__provideMockedApplicationStore,
-} from '@finos/legend-application';
+import { TEST__provideMockedApplicationStore } from '@finos/legend-application';
 import { LATEST_PROJECT_REVISION } from '../../../../../stores/editor-state/element-editor-state/service/ServiceRegistrationState';
 import { flowResult } from 'mobx';
 import type { Project, Version, Workspace } from '@finos/legend-server-sdlc';
@@ -52,6 +49,7 @@ import {
 } from '@finos/legend-graph';
 import { TEST__getTestStudioConfig } from '../../../../../stores/EditorStoreTestUtils';
 import { LegendStudioPluginManager } from '../../../../../application/LegendStudioPluginManager';
+import { service_deleteOwner } from '../../../../../stores/graphModifier/DSLService_GraphModifierHelper';
 
 let renderResult: RenderResult;
 
@@ -68,7 +66,8 @@ const setup = async (
             TEMPORARY__serviceRegistrationConfig: [
               {
                 env: 'int',
-                url: 'int.dummyUrl.com',
+                executionUrl: 'int.dummyUrl.com',
+                managementUrl: 'int.services.com',
                 modes: [
                   ServiceExecutionMode.FULL_INTERACTIVE,
                   ServiceExecutionMode.SEMI_INTERACTIVE,
@@ -77,7 +76,8 @@ const setup = async (
               },
               {
                 env: 'dev',
-                url: 'dev.dummyUrl.com',
+                executionUrl: 'dev.dummyUrl.com',
+                managementUrl: 'dev.services.com',
                 modes: [
                   ServiceExecutionMode.FULL_INTERACTIVE,
                   ServiceExecutionMode.SEMI_INTERACTIVE,
@@ -86,7 +86,8 @@ const setup = async (
               },
               {
                 env: 'prod',
-                url: 'exec.dummyUrl.com',
+                executionUrl: 'exec.dummyUrl.com',
+                managementUrl: 'services.com',
                 modes: [ServiceExecutionMode.PROD],
               },
             ],
@@ -122,7 +123,7 @@ const setup = async (
 
 test(
   integrationTest(
-    'Service Editor basic registration functionality for PRODUCTION projects',
+    'Service Editor basic registration functionality for projects with versions',
   ),
   async () => {
     const mockedEditorStore = await setup(
@@ -130,7 +131,6 @@ test(
         projectId: 'PROD-19481',
         description: 'sdlcTesting',
         tags: [],
-        projectType: 'PRODUCTION',
         name: 'TEST_SDLC',
       },
       {
@@ -155,8 +155,8 @@ test(
     );
     await flowResult(mockedEditorStore.sdlcState.fetchProjectVersions());
     const result = new ServiceRegistrationResult(
-      '/example/myTestUrl/testing',
-      'myURL',
+      'https://legend.org/exec',
+      '/myservice',
       'id1',
     );
     MOBX__enableSpyOrMock();
@@ -181,23 +181,23 @@ test(
     const editPanel = await waitFor(() =>
       renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.EDIT_PANEL),
     );
-    fireEvent.click(getByTitle(editPanel, 'Register service...'));
+    fireEvent.click(getByText(editPanel, 'Registration'));
     const serviceEditorState =
       mockedEditorStore.getCurrentEditorState(ServiceEditorState);
-    const registrationModal = await waitFor(() =>
+    const registrationEditor = await waitFor(() =>
       renderResult.getByTestId(
-        LEGEND_STUDIO_TEST_ID.SERVICE_REGISTRATION_MODAL,
+        LEGEND_STUDIO_TEST_ID.SERVICE_REGISTRATION_EDITOR,
       ),
     );
     await waitFor(() =>
       getByText(
-        registrationModal,
+        registrationEditor,
         'Only valid for Semi Interactive and Prod service types',
       ),
     );
-    await waitFor(() => getByText(registrationModal, 'Alloy Server'));
-    await waitFor(() => getByText(registrationModal, 'Service Type'));
-    await waitFor(() => getByText(registrationModal, 'Project Version'));
+    await waitFor(() => getByText(registrationEditor, 'Execution Server'));
+    await waitFor(() => getByText(registrationEditor, 'Service Type'));
+    await waitFor(() => getByText(registrationEditor, 'Project Version'));
     const registrationState = serviceEditorState.registrationState;
     expect(registrationState.executionModes).toHaveLength(3);
     const versions = mockedEditorStore.sdlcState.projectVersions;
@@ -205,11 +205,11 @@ test(
     // TODO: rewrite how we test 'dropdown', once the issue of the dropdown options not showing is resolved
     // since `int` is the first env in the config list, it is expected to be selected by default
     // we will then change env from `int` to `prod`
-    await waitFor(() => getByText(registrationModal, 'INT'));
+    await waitFor(() => getByText(registrationEditor, 'INT'));
     registrationState.updateEnv('prod');
-    await waitFor(() => getByText(registrationModal, 'PROD'));
+    await waitFor(() => getByText(registrationEditor, 'PROD'));
     // select version
-    await waitFor(() => getByText(registrationModal, 'Select...'));
+    await waitFor(() => getByText(registrationEditor, 'Select...'));
     registrationState.setProjectVersion(
       versions.find((v) => v.id.id === '1.0.1'),
     );
@@ -221,25 +221,25 @@ test(
     // change from full to semi
     await waitFor(() =>
       getByText(
-        registrationModal,
+        registrationEditor,
         prettyCONSTName(ServiceExecutionMode.FULL_INTERACTIVE),
       ),
     );
     registrationState.updateType(ServiceExecutionMode.SEMI_INTERACTIVE);
     await waitFor(() =>
       getByText(
-        registrationModal,
+        registrationEditor,
         prettyCONSTName(ServiceExecutionMode.SEMI_INTERACTIVE),
       ),
     );
-    await waitFor(() => getByText(registrationModal, LATEST_PROJECT_REVISION));
+    await waitFor(() => getByText(registrationEditor, LATEST_PROJECT_REVISION));
     expect(registrationState.versionOptions).toHaveLength(3);
   },
 );
 
 test(
   integrationTest(
-    'Service Editor basic general and registration functionality for PROTOTYPE projects',
+    'Service Editor basic general and registration functionality for projects without versions',
   ),
   async () => {
     const mockedEditorStore = await setup(
@@ -247,8 +247,8 @@ test(
       TEST_DATA__DefaultSDLCInfo.workspace,
     );
     const result = new ServiceRegistrationResult(
-      '/example/myTestUrl/testing',
-      'myURL',
+      'https://legend.org/exec',
+      '/myservice',
       'id1',
     );
     MOBX__enableSpyOrMock();
@@ -301,34 +301,41 @@ test(
     await waitFor(() => getByText(editPanel, 'owner3'));
     expect(service.owners).toHaveLength(3);
     // registration
-    fireEvent.click(getByTitle(editPanel, 'Register service...'));
-    const registrationModal = await waitFor(() =>
+    fireEvent.click(getByText(editPanel, 'Registration'));
+    const registrationEditor = await waitFor(() =>
       renderResult.getByTestId(
-        LEGEND_STUDIO_TEST_ID.SERVICE_REGISTRATION_MODAL,
+        LEGEND_STUDIO_TEST_ID.SERVICE_REGISTRATION_EDITOR,
       ),
     );
     await waitFor(() =>
       getByText(
-        registrationModal,
+        registrationEditor,
         'Only valid for Semi Interactive and Prod service types',
       ),
     );
-    await waitFor(() => getByText(registrationModal, 'Alloy Server'));
-    await waitFor(() => getByText(registrationModal, 'Service Type'));
-    await waitFor(() => getByText(registrationModal, 'Project Version'));
-    const registrationState = serviceEditorState.registrationState;
+    await waitFor(() => getByText(registrationEditor, 'Execution Server'));
+    await waitFor(() => getByText(registrationEditor, 'Service Type'));
+    await waitFor(() => getByText(registrationEditor, 'Project Version'));
     // register
-    await flowResult(registrationState.registerService());
-    expect(mockedEditorStore.applicationStore.notification?.severity).toBe(
-      NOTIFCATION_SEVERITY.SUCCESS,
+    fireEvent.click(getByTitle(registrationEditor, 'Register Service'));
+    const actionAlertDialog = await waitFor(() =>
+      renderResult.getByRole('dialog'),
     );
+    await waitFor(() => getByText(actionAlertDialog, 'Launch Service'));
+    getByText(
+      actionAlertDialog,
+      'Service with patten /myservice registered and activated',
+    );
+    fireEvent.click(renderResult.getByText('Close'));
     // check no owners check
-    serviceEditorState.service.deleteOwner(0);
-    serviceEditorState.service.deleteOwner(0);
-    serviceEditorState.service.deleteOwner(0);
-    await flowResult(registrationState.registerService());
-    expect(mockedEditorStore.applicationStore.notification?.severity).toBe(
-      NOTIFCATION_SEVERITY.ERROR,
+    service_deleteOwner(serviceEditorState.service, 0);
+    service_deleteOwner(serviceEditorState.service, 0);
+    service_deleteOwner(serviceEditorState.service, 0);
+    fireEvent.click(getByTitle(registrationEditor, 'Register Service'));
+    await waitFor(() =>
+      renderResult.getByText(
+        'Service needs to have at least 2 owners in order to be registered',
+      ),
     );
   },
 );

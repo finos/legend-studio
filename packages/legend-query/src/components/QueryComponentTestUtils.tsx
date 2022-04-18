@@ -48,7 +48,6 @@ import { LegendQueryStoreProvider } from './LegendQueryStoreProvider';
 import { LegendQueryPluginManager } from '../application/LegendQueryPluginManager';
 import { ExistingQueryLoader } from './QueryEditor';
 import { generateExistingQueryRoute } from '../stores/LegendQueryRouter';
-import { flowResult } from 'mobx';
 import { QUERY_BUILDER_TEST_ID } from './QueryBuilder_TestID';
 import type { LegendQueryConfig } from '../application/LegendQueryConfig';
 import type { Entity } from '@finos/legend-model-storage';
@@ -114,12 +113,10 @@ export const TEST__setUpQueryEditor = async (
   lightQuery.owner = 'test-artifact';
   lightQuery.isCurrentUserQuery = true;
 
-  await flowResult(mockedQueryStore.graphManagerState.initializeSystem());
-  await flowResult(
-    mockedQueryStore.graphManagerState.graphManager.buildGraph(
-      mockedQueryStore.graphManagerState.graph,
-      entities,
-    ),
+  await mockedQueryStore.graphManagerState.initializeSystem();
+  await mockedQueryStore.graphManagerState.graphManager.buildGraph(
+    mockedQueryStore.graphManagerState.graph,
+    entities,
   );
 
   const query = new Query();

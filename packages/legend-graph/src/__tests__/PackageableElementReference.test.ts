@@ -15,6 +15,7 @@
  */
 
 import { unitTest } from '@finos/legend-shared';
+import { _package_addElement } from '../helpers/DomainHelper';
 import { Class } from '../models/metamodels/pure/packageableElements/domain/Class';
 import { Package } from '../models/metamodels/pure/packageableElements/domain/Package';
 import { PrimitiveType } from '../models/metamodels/pure/packageableElements/domain/PrimitiveType';
@@ -32,11 +33,11 @@ test(
   () => {
     const rootPackage = new Package('testRoot');
     const _package = new Package('model');
-    rootPackage.addElement(_package);
+    _package_addElement(rootPackage, _package);
     const class1 = new Class('Class1');
     const class2 = new Class('Class2');
     const primitiveType1 = new PrimitiveType('PrimitiveType1');
-    _package.addElement(class1);
+    _package_addElement(_package, class1);
 
     // test explicit reference
     expect(
@@ -48,7 +49,7 @@ test(
     expect(explicitReference.valueForSerialization).toEqual(
       primitiveType1.path,
     );
-    explicitReference.setValue(class1);
+    explicitReference.value = class1;
     expect(explicitReference.valueForSerialization).toEqual(class1.path);
 
     // test implicit reference that skips section check
@@ -61,9 +62,9 @@ test(
       'something',
     );
     expect(implicitReference1.valueForSerialization).toEqual('something');
-    implicitReference1.setValue(class2);
+    implicitReference1.value = class2;
     expect(implicitReference1.valueForSerialization).toEqual(class2.path);
-    implicitReference1.setValue(class1);
+    implicitReference1.value = class1;
     expect(implicitReference1.valueForSerialization).toEqual('something');
 
     // test implicit reference resolved from section imports when section info is not provided
@@ -74,9 +75,9 @@ test(
         undefined,
       );
     expect(implicitReference2.valueForSerialization).toEqual(class1.path);
-    implicitReference2.setValue(class2);
+    implicitReference2.value = class2;
     expect(implicitReference2.valueForSerialization).toEqual(class2.path);
-    implicitReference2.setValue(class1);
+    implicitReference2.value = class1;
     expect(implicitReference2.valueForSerialization).toEqual(class1.path);
 
     // test implicit reference resolved from section imports when section info is provided
@@ -89,16 +90,16 @@ test(
         parentSection,
       );
     expect(implicitReference3.valueForSerialization).toEqual('something');
-    implicitReference3.setValue(class2);
+    implicitReference3.value = class2;
     expect(implicitReference3.valueForSerialization).toEqual(class2.path);
-    implicitReference3.setValue(class1);
+    implicitReference3.value = class1;
     expect(implicitReference3.valueForSerialization).toEqual('something');
     // test when we delete the parent section
     sectionIndex.setIsDeleted(true);
     expect(implicitReference3.valueForSerialization).toEqual(class1.path);
-    implicitReference3.setValue(class2);
+    implicitReference3.value = class2;
     expect(implicitReference3.valueForSerialization).toEqual(class2.path);
-    implicitReference3.setValue(class1);
+    implicitReference3.value = class1;
     expect(implicitReference3.valueForSerialization).toEqual(class1.path);
   },
 );

@@ -39,7 +39,7 @@ import type {
 } from '../stores/LegendTaxonomyStore';
 import {
   generateStandaloneDataSpaceViewerRoute,
-  generateViewTaxonomyByDataSpaceRoute,
+  generateExploreTaxonomyTreeNodeDataSpaceRoute,
 } from '../stores/LegendTaxonomyRouter';
 import type { LegendTaxonomyConfig } from '../application/LegendTaxonomyConfig';
 import {
@@ -86,8 +86,8 @@ const TaxonomyNodeDataSpaceItem = observer(
       applicationStore
         .copyTextToClipboard(
           applicationStore.navigator.generateLocation(
-            generateViewTaxonomyByDataSpaceRoute(
-              applicationStore.config.currentTaxonomyServerOption,
+            generateExploreTaxonomyTreeNodeDataSpaceRoute(
+              applicationStore.config.currentTaxonomyTreeOption.key,
               taxonomyNodeViewerState.taxonomyNode.id,
               generateGAVCoordinates(
                 rawDataSpace.groupId,

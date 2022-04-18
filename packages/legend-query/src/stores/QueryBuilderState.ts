@@ -52,15 +52,18 @@ import {
   GenericTypeExplicitReference,
   GenericType,
   PRIMITIVE_TYPE,
-  GRAPH_MANAGER_LOG_EVENT,
+  GRAPH_MANAGER_EVENT,
   CompilationError,
   extractSourceInformationCoordinates,
   LambdaFunctionInstanceValue,
   RawLambda,
   TYPICAL_MULTIPLICITY_TYPE,
-  MILESTONING_STEROTYPES,
+  MILESTONING_STEROTYPE,
   VariableExpression,
-  DEFAULT_MILESTONING_PARAMETERS,
+  DEFAULT_PROCESSING_DATE_MILESTONING_PARAMETER_NAME,
+  observe_ValueSpecification,
+  ObserverContext,
+  DEFAULT_BUSINESS_DATE_MILESTONING_PARAMETER_NAME,
 } from '@finos/legend-graph';
 import {
   QueryBuilderFilterOperator_Equal,
@@ -165,6 +168,7 @@ export class QueryBuilderState {
   resultState: QueryBuilderResultState;
   queryTextEditorState: QueryTextEditorState;
   queryUnsupportedState: QueryBuilderUnsupportedState;
+  observableContext: ObserverContext;
   filterOperators: QueryBuilderFilterOperator[] = [
     new QueryBuilderFilterOperator_Equal(),
     new QueryBuilderFilterOperator_NotEqual(),
@@ -263,6 +267,9 @@ export class QueryBuilderState {
     this.queryTextEditorState = new QueryTextEditorState(this);
     this.queryUnsupportedState = new QueryBuilderUnsupportedState(this);
     this.mode = queryBuilderMode;
+    this.observableContext = new ObserverContext(
+      this.graphManagerState.pluginManager.getPureGraphManagerPlugins(),
+    );
   }
 
   setMode(val: QueryBuilderMode): void {
@@ -338,9 +345,12 @@ export class QueryBuilderState {
       this.changeClass(undefined, true);
       const parameters = ((rawLambda.parameters ?? []) as object[]).map(
         (param) =>
-          this.graphManagerState.graphManager.buildValueSpecification(
-            param as Record<PropertyKey, unknown>,
-            this.graphManagerState.graph,
+          observe_ValueSpecification(
+            this.graphManagerState.graphManager.buildValueSpecification(
+              param as Record<PropertyKey, unknown>,
+              this.graphManagerState.graph,
+            ),
+            this.observableContext,
           ),
       );
       processQueryParameters(
@@ -370,13 +380,15 @@ export class QueryBuilderState {
     this.resetQueryBuilder();
     this.resetQuerySetup();
     if (!rawLambda.isStub) {
-      const valueSpec =
+      const valueSpec = observe_ValueSpecification(
         this.graphManagerState.graphManager.buildValueSpecification(
           this.graphManagerState.graphManager.serializeRawValueSpecification(
             rawLambda,
           ),
           this.graphManagerState.graph,
-        );
+        ),
+        this.observableContext,
+      );
       const compiledValueSpecification = guaranteeType(
         valueSpec,
         LambdaFunctionInstanceValue,
@@ -437,31 +449,31 @@ export class QueryBuilderState {
 
   buildClassMilestoningTemporalValue(stereotype: string): void {
     switch (stereotype) {
-      case MILESTONING_STEROTYPES.BUSINESS_TEMPORAL: {
+      case MILESTONING_STEROTYPE.BUSINESS_TEMPORAL: {
         this.querySetupState.setBusinessDate(
           this.buildMilestoningParameter(
-            DEFAULT_MILESTONING_PARAMETERS.BUSINESS_DATE,
+            DEFAULT_BUSINESS_DATE_MILESTONING_PARAMETER_NAME,
           ),
         );
         break;
       }
-      case MILESTONING_STEROTYPES.PROCESSING_TEMPORAL: {
+      case MILESTONING_STEROTYPE.PROCESSING_TEMPORAL: {
         this.querySetupState.setProcessingDate(
           this.buildMilestoningParameter(
-            DEFAULT_MILESTONING_PARAMETERS.PROCESSING_DATE,
+            DEFAULT_PROCESSING_DATE_MILESTONING_PARAMETER_NAME,
           ),
         );
         break;
       }
-      case MILESTONING_STEROTYPES.BITEMPORAL: {
+      case MILESTONING_STEROTYPE.BITEMPORAL: {
         this.querySetupState.setProcessingDate(
           this.buildMilestoningParameter(
-            DEFAULT_MILESTONING_PARAMETERS.PROCESSING_DATE,
+            DEFAULT_PROCESSING_DATE_MILESTONING_PARAMETER_NAME,
           ),
         );
         this.querySetupState.setBusinessDate(
           this.buildMilestoningParameter(
-            DEFAULT_MILESTONING_PARAMETERS.BUSINESS_DATE,
+            DEFAULT_BUSINESS_DATE_MILESTONING_PARAMETER_NAME,
           ),
         );
         break;
@@ -508,7 +520,7 @@ export class QueryBuilderState {
       } catch (error) {
         assertErrorThrown(error);
         this.applicationStore.log.error(
-          LogEvent.create(GRAPH_MANAGER_LOG_EVENT.COMPILATION_FAILURE),
+          LogEvent.create(GRAPH_MANAGER_EVENT.COMPILATION_FAILURE),
           error,
         );
         let fallbackToTextModeForDebugging = true;
@@ -555,7 +567,7 @@ export class QueryBuilderState {
         assertErrorThrown(error);
         if (error instanceof CompilationError) {
           this.applicationStore.log.error(
-            LogEvent.create(GRAPH_MANAGER_LOG_EVENT.COMPILATION_FAILURE),
+            LogEvent.create(GRAPH_MANAGER_EVENT.COMPILATION_FAILURE),
             error,
           );
           this.applicationStore.notifyWarning(

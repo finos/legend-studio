@@ -14,14 +14,7 @@
  * limitations under the License.
  */
 
-import { observable, action, computed, makeObservable, override } from 'mobx';
-import {
-  hashArray,
-  uniq,
-  uuid,
-  addUniqueEntry,
-  type Hashable,
-} from '@finos/legend-shared';
+import { hashArray, uniq, type Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import type { ServiceExecution } from './ServiceExecution';
 import { type ServiceTest, SingleExecutionTest } from './ServiceTest';
@@ -46,77 +39,8 @@ export class Service extends PackageableElement implements Hashable {
 
   constructor(name: string) {
     super(name);
-
-    makeObservable<Service, '_elementHashCode'>(this, {
-      pattern: observable,
-      owners: observable,
-      documentation: observable,
-      autoActivateUpdates: observable,
-      execution: observable,
-      test: observable,
-      initNewService: action,
-      setExecution: action,
-      setTest: action,
-      setPattern: action,
-      setDocumentation: action,
-      setAutoActivateUpdates: action,
-      addOwner: action,
-      updateOwner: action,
-      deleteOwner: action,
-      removePatternParameter: action,
-      patternParameters: computed,
-      _elementHashCode: override,
-    });
-
     this.test = new SingleExecutionTest(this, '');
   }
-
-  initNewService(userId?: string): void {
-    this.pattern = `/${uuid()}`; // initialize the service pattern with an UUID to avoid people leaving the pattern as /
-    if (userId) {
-      this.owners.push(userId);
-    } // this is used to add the current user as the first owner by default
-  }
-
-  setExecution(value: ServiceExecution): void {
-    this.execution = value;
-  }
-
-  setTest(value: ServiceTest): void {
-    this.test = value;
-  }
-
-  setPattern(value: string): void {
-    this.pattern = value;
-  }
-
-  setDocumentation(value: string): void {
-    this.documentation = value;
-  }
-
-  setAutoActivateUpdates(value: boolean): void {
-    this.autoActivateUpdates = value;
-  }
-
-  addOwner(value: string): void {
-    addUniqueEntry(this.owners, value);
-  }
-
-  updateOwner(value: string, idx: number): void {
-    this.owners[idx] = value;
-  }
-
-  deleteOwner(idx: number): void {
-    this.owners.splice(idx, 1);
-  }
-
-  removePatternParameter(value: string): void {
-    const newPattern = this.pattern
-      .replace(new RegExp(`\\/\\{${value}\\}`, 'ug'), '')
-      .replace(/\/{2,}/gu, '/');
-    this.pattern = newPattern !== '' ? newPattern : DEFAULT_SERVICE_PATTERN;
-  }
-
   get patternParameters(): string[] {
     return uniq(
       (this.pattern.match(/\{\w+\}/gu) ?? []).map((parameter) =>

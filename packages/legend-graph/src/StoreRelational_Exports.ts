@@ -42,6 +42,7 @@ export * from './models/metamodels/pure/packageableElements/store/relational/mod
 export {
   RelationalInputData,
   RelationalInputType,
+  getRelationalInputType,
 } from './models/metamodels/pure/packageableElements/store/relational/mapping/RelationalInputData';
 export { RelationalPropertyMapping } from './models/metamodels/pure/packageableElements/store/relational/mapping/RelationalPropertyMapping';
 export { RelationalInstanceSetImplementation } from './models/metamodels/pure/packageableElements/store/relational/mapping/RelationalInstanceSetImplementation';
@@ -76,3 +77,4 @@ export {
   V1_serializeMapper,
   V1_deserializeMapper,
 } from './models/protocols/pure/v1/transformation/pureProtocol/serializationHelpers/V1_PostProcessorSerializationHelper';
+export * from './graphManager/StoreRelational_PureGraphManagerPlugin_Extension';

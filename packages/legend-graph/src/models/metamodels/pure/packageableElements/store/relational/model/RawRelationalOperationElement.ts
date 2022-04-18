@@ -20,6 +20,7 @@ export type RawRelationalOperationElement = object; // @MARKER GENERATED MODEL D
 
 export const createStubRelationalOperationElement =
   (): RawRelationalOperationElement => ({});
+
 export const isStubRelationalOperationElement = (
   operation: RawRelationalOperationElement,
 ): boolean => isEmpty(operation);

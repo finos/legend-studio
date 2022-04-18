@@ -232,7 +232,6 @@ export const MappingEditor = observer(() => {
         </ResizablePanel>
         <ResizablePanelSplitter />
         <ResizablePanel>
-          {' '}
           <div className="panel">
             <ContextMenu
               className="panel__header mapping-editor__header"

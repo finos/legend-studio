@@ -91,9 +91,14 @@ import {
   FlatDataConnection,
   RelationalDatabaseConnection,
   PackageableElementExplicitReference,
+  ModelChainConnection,
 } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
 import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../stores/DSLMapping_LegendStudioPlugin_Extension';
+import {
+  runtime_addIdentifiedConnection,
+  runtime_deleteIdentifiedConnection,
+} from '../../../stores/graphModifier/DSLMapping_GraphModifierHelper';
 
 const getConnectionTooltipText = (
   connection: Connection,
@@ -111,6 +116,8 @@ const getConnectionTooltipText = (
     return `Flat-data connection \u2022 Flat-data store ${connectionValue.store.value.path}`;
   } else if (connectionValue instanceof RelationalDatabaseConnection) {
     return `Relational database connection \u2020 database store ${connectionValue.store.value.path}`;
+  } else if (connectionValue instanceof ModelChainConnection) {
+    return `Model chain connection \u2022`;
   }
   const extraConnectionToolTipTexts = editorStore.pluginManager
     .getStudioPlugins()
@@ -524,8 +531,12 @@ const IdentifiedConnectionEditor = observer(
           runtimeValue.generateIdentifiedConnectionId(),
           customConnection,
         );
-        runtimeValue.addIdentifiedConnection(newIdentifiedConnection);
-        runtimeValue.deleteIdentifiedConnection(identifiedConnection);
+        runtime_addIdentifiedConnection(
+          runtimeValue,
+          newIdentifiedConnection,
+          editorStore.changeDetectionState.observerContext,
+        );
+        runtime_deleteIdentifiedConnection(runtimeValue, identifiedConnection);
         currentRuntimeEditorTabState.openIdentifiedConnection(
           newIdentifiedConnection,
         );
@@ -542,8 +553,12 @@ const IdentifiedConnectionEditor = observer(
           runtimeValue.generateIdentifiedConnectionId(),
           connectionPointer,
         );
-        runtimeValue.addIdentifiedConnection(newIdentifiedConnection);
-        runtimeValue.deleteIdentifiedConnection(identifiedConnection);
+        runtime_addIdentifiedConnection(
+          runtimeValue,
+          newIdentifiedConnection,
+          editorStore.changeDetectionState.observerContext,
+        );
+        runtime_deleteIdentifiedConnection(runtimeValue, identifiedConnection);
         currentRuntimeEditorTabState.openIdentifiedConnection(
           newIdentifiedConnection,
         );

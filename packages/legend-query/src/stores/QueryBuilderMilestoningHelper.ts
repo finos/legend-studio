@@ -25,9 +25,9 @@ import {
   type ValueSpecification,
   DerivedProperty,
   getMilestoneTemporalStereotype,
-  MILESTONING_STEROTYPES,
-  DEFAULT_MILESTONING_PARAMETERS,
-  AbstractPropertyExpression,
+  MILESTONING_STEROTYPE,
+  DEFAULT_PROCESSING_DATE_MILESTONING_PARAMETER_NAME,
+  type AbstractPropertyExpression,
   Association,
   VariableExpression,
   PrimitiveInstanceValue,
@@ -36,12 +36,14 @@ import {
   GenericTypeExplicitReference,
   GenericType,
   MilestoneVersionPropertySufixes,
+  DEFAULT_BUSINESS_DATE_MILESTONING_PARAMETER_NAME,
 } from '@finos/legend-graph';
 import {
   fillDerivedPropertyArguments,
   type QueryBuilderPropertyExpressionState,
   type QueryBuilderDerivedPropertyExpressionState,
 } from './QueryBuilderPropertyEditorState';
+import { functionExpression_setParametersValues } from './QueryBuilderValueSpecificationModifierHelper';
 
 export const valueSpecifiation_isEqual = (
   param1: ValueSpecification | undefined,
@@ -75,7 +77,7 @@ export const valueSpecifiation_isEqual = (
 export const getSourceTemporalStereotype = (
   property: DerivedProperty,
   graph: PureModel,
-): MILESTONING_STEROTYPES | undefined => {
+): MILESTONING_STEROTYPE | undefined => {
   const owner = property.owner;
   if (owner instanceof Class) {
     return getMilestoneTemporalStereotype(owner, graph);
@@ -108,7 +110,7 @@ export const isDefaultDatePropagationSupported = (
   }
   if (property.genericType.value.rawType instanceof Class) {
     const sourceStereotype = getSourceTemporalStereotype(property, graph);
-    if (sourceStereotype === MILESTONING_STEROTYPES.BITEMPORAL) {
+    if (sourceStereotype === MILESTONING_STEROTYPE.BITEMPORAL) {
       return true;
     }
     const targetStereotype = getMilestoneTemporalStereotype(
@@ -136,9 +138,13 @@ export const removePropagatedDates = (
     currentExpression.derivedProperty,
     graph,
   );
+
+  // Remove the propagated milestoning dates in current property expression if the milestoning dates of
+  // current expression are changed back to `businessDate` and `processingDate`. In that scenario we
+  // don't need propagated dates because engine will handle that.
   if (isDefaultDatePropagationSupported(currentExpression, graph)) {
     switch (stereotype) {
-      case MILESTONING_STEROTYPES.BITEMPORAL: {
+      case MILESTONING_STEROTYPE.BITEMPORAL: {
         if (
           currentExpression.propertyExpression.parametersValues.length === 3
         ) {
@@ -154,7 +160,7 @@ export const removePropagatedDates = (
         }
         break;
       }
-      case MILESTONING_STEROTYPES.PROCESSING_TEMPORAL: {
+      case MILESTONING_STEROTYPE.PROCESSING_TEMPORAL: {
         if (
           currentExpression.propertyExpression.parametersValues.length === 2
         ) {
@@ -167,7 +173,7 @@ export const removePropagatedDates = (
         }
         break;
       }
-      case MILESTONING_STEROTYPES.BUSINESS_TEMPORAL: {
+      case MILESTONING_STEROTYPE.BUSINESS_TEMPORAL: {
         if (
           currentExpression.propertyExpression.parametersValues.length === 2
         ) {
@@ -184,7 +190,7 @@ export const removePropagatedDates = (
     }
   }
 
-  //Remove the propagated milestoning dates in current property expression if the milestoning dates of
+  // Remove the propagated milestoning dates in current property expression if the milestoning dates of
   // previous expression are changed back to `businessDate` and `processingDate`. In that scenario we
   // don't need propagated dates because engine will handle that.
   prevExpression = currentExpression;
@@ -214,19 +220,20 @@ export const removePropagatedDates = (
   }
 };
 
+// Propagates default dates for milestoned properties when date propagation is not supported by engine.
 export const fillMilestonedDerivedPropertyArguments = (
   derivedPropertyExpressionState: QueryBuilderDerivedPropertyExpressionState,
-  temporalTarget: MILESTONING_STEROTYPES,
+  temporalTarget: MILESTONING_STEROTYPE,
   idx: number,
 ): ValueSpecification | undefined => {
   const querySetupState =
     derivedPropertyExpressionState.queryBuilderState.querySetupState;
   switch (temporalTarget) {
-    case MILESTONING_STEROTYPES.BUSINESS_TEMPORAL: {
+    case MILESTONING_STEROTYPE.BUSINESS_TEMPORAL: {
       if (!querySetupState.businessDate) {
         querySetupState.setBusinessDate(
           derivedPropertyExpressionState.queryBuilderState.buildMilestoningParameter(
-            DEFAULT_MILESTONING_PARAMETERS.BUSINESS_DATE,
+            DEFAULT_BUSINESS_DATE_MILESTONING_PARAMETER_NAME,
           ),
         );
       }
@@ -235,18 +242,18 @@ export const fillMilestonedDerivedPropertyArguments = (
         querySetupState.BusinessDate;
       return parameter;
     }
-    case MILESTONING_STEROTYPES.BITEMPORAL: {
+    case MILESTONING_STEROTYPE.BITEMPORAL: {
       if (!querySetupState.processingDate) {
         querySetupState.setProcessingDate(
           derivedPropertyExpressionState.queryBuilderState.buildMilestoningParameter(
-            DEFAULT_MILESTONING_PARAMETERS.PROCESSING_DATE,
+            DEFAULT_PROCESSING_DATE_MILESTONING_PARAMETER_NAME,
           ),
         );
       }
       if (!querySetupState.businessDate) {
         querySetupState.setBusinessDate(
           derivedPropertyExpressionState.queryBuilderState.buildMilestoningParameter(
-            DEFAULT_MILESTONING_PARAMETERS.BUSINESS_DATE,
+            DEFAULT_BUSINESS_DATE_MILESTONING_PARAMETER_NAME,
           ),
         );
       }
@@ -260,11 +267,11 @@ export const fillMilestonedDerivedPropertyArguments = (
         return querySetupState.businessDate;
       }
     }
-    case MILESTONING_STEROTYPES.PROCESSING_TEMPORAL: {
+    case MILESTONING_STEROTYPE.PROCESSING_TEMPORAL: {
       if (!querySetupState.processingDate) {
         querySetupState.setProcessingDate(
           derivedPropertyExpressionState.queryBuilderState.buildMilestoningParameter(
-            DEFAULT_MILESTONING_PARAMETERS.PROCESSING_DATE,
+            DEFAULT_PROCESSING_DATE_MILESTONING_PARAMETER_NAME,
           ),
         );
       }
@@ -278,12 +285,13 @@ export const fillMilestonedDerivedPropertyArguments = (
   }
 };
 
-export const isValidMilestoningLambda = (
-  propertyExpression: ValueSpecification,
+// Checks if the milestoning property expression is valid in terms of number of parameters passed to it and throws
+// unsupported mode if the number of parameters passed is not valid for a particular temporal type.
+export const processMilestoningPropertyExpression = (
+  propertyExpression: AbstractPropertyExpression,
   graph: PureModel,
 ): void => {
   if (
-    propertyExpression instanceof AbstractPropertyExpression &&
     propertyExpression.func.genericType.value.rawType instanceof Class &&
     propertyExpression.func.owner._generatedMilestonedProperties.length !== 0
   ) {
@@ -304,10 +312,10 @@ export const isValidMilestoningLambda = (
           graph,
         );
         if (
-          sourceStereotype !== MILESTONING_STEROTYPES.BITEMPORAL &&
+          sourceStereotype !== MILESTONING_STEROTYPE.BITEMPORAL &&
           targetStereotype !== sourceStereotype
         ) {
-          if (targetStereotype === MILESTONING_STEROTYPES.BITEMPORAL) {
+          if (targetStereotype === MILESTONING_STEROTYPE.BITEMPORAL) {
             if (
               propertyExpression.parametersValues.length !== 3 &&
               !sourceStereotype
@@ -318,6 +326,10 @@ export const isValidMilestoningLambda = (
             } else if (propertyExpression.parametersValues.length < 2) {
               throw new UnsupportedOperationError(
                 "Property of milestoning sterotype 'Bitemporal' should have atleast one parameter",
+              );
+            } else if (propertyExpression.parametersValues.length > 3) {
+              throw new UnsupportedOperationError(
+                "Property of milestoning sterotype 'Bitemporal' should not have more than two parameters",
               );
             }
           } else if (propertyExpression.parametersValues.length !== 2) {
@@ -331,6 +343,7 @@ export const isValidMilestoningLambda = (
   }
 };
 
+// Gets the value of milestoning date that needs to be shown in DerivedPropertyEditor when date propagation is supported
 export const getPropagatedDate = (
   derivedPropertyExpressionState: QueryBuilderDerivedPropertyExpressionState,
   idx: number,
@@ -344,15 +357,15 @@ export const getPropagatedDate = (
     queryBuilderState.graphManagerState.graph,
   );
   switch (targetStereotype) {
-    case MILESTONING_STEROTYPES.BITEMPORAL:
+    case MILESTONING_STEROTYPE.BITEMPORAL:
       if (idx === 0) {
         return queryBuilderState.querySetupState.ProcessingDate;
       } else {
         return queryBuilderState.querySetupState.businessDate;
       }
-    case MILESTONING_STEROTYPES.BUSINESS_TEMPORAL:
+    case MILESTONING_STEROTYPE.BUSINESS_TEMPORAL:
       return queryBuilderState.querySetupState.BusinessDate;
-    case MILESTONING_STEROTYPES.PROCESSING_TEMPORAL:
+    case MILESTONING_STEROTYPE.PROCESSING_TEMPORAL:
       return queryBuilderState.querySetupState.processingDate;
     default:
       return undefined;
@@ -408,6 +421,9 @@ export const propagateDefaultDates = (
   }
 };
 
+// Creates a new `valueSpecification` for the given milestoning parameter. These new `valueSpecification` created are
+// passed as parameters to the milestoned properties where default dates need to be propagated so that the mobx
+// states are not connected to the actual milestoning parameter.
 export const getMilestoningDate = (
   milestoningParameter: ValueSpecification,
   graph: PureModel,
@@ -435,7 +451,7 @@ export const getMilestoningDate = (
       ),
       multiplicity,
     );
-    parameter.addValue(value);
+    parameter.values.push(value);
     return parameter;
   } else if (type === graph.getPrimitiveType(PRIMITIVE_TYPE.DATETIME)) {
     const parameter = new PrimitiveInstanceValue(
@@ -444,7 +460,7 @@ export const getMilestoningDate = (
       ),
       multiplicity,
     );
-    parameter.addValue(value);
+    parameter.values.push(value);
     return parameter;
   } else if (milestoningParameter instanceof VariableExpression) {
     const parameter = new VariableExpression(
@@ -456,6 +472,7 @@ export const getMilestoningDate = (
   return undefined;
 };
 
+//updates the property expression for milestoned properties when the milestoning parameters are changed.
 export const updatePropertyExpressionStateWithDefaultMilestoningDates = (
   propertyExpressionState: QueryBuilderPropertyExpressionState,
 ): QueryBuilderPropertyExpressionState => {
@@ -482,7 +499,7 @@ export const updatePropertyExpressionStateWithDefaultMilestoningDates = (
         derivedPropertyExpressionState.propertyExpression.parametersValues
           .length;
       switch (temporalTarget) {
-        case MILESTONING_STEROTYPES.BITEMPORAL:
+        case MILESTONING_STEROTYPE.BITEMPORAL:
           if (paramLength === 3) {
             let businessDate,
               processingDate,
@@ -534,7 +551,8 @@ export const updatePropertyExpressionStateWithDefaultMilestoningDates = (
                   .parametersValues[1];
             }
             if (isParameterChanged) {
-              derivedPropertyExpressionState.propertyExpression.setParametersValues(
+              functionExpression_setParametersValues(
+                derivedPropertyExpressionState.propertyExpression,
                 [
                   guaranteeNonNullable(
                     derivedPropertyExpressionState.propertyExpression
@@ -543,11 +561,13 @@ export const updatePropertyExpressionStateWithDefaultMilestoningDates = (
                   guaranteeNonNullable(processingDate),
                   guaranteeNonNullable(businessDate),
                 ],
+                derivedPropertyExpressionState.queryBuilderState
+                  .observableContext,
               );
             }
           }
           break;
-        case MILESTONING_STEROTYPES.BUSINESS_TEMPORAL:
+        case MILESTONING_STEROTYPE.BUSINESS_TEMPORAL:
           if (
             paramLength === 2 &&
             valueSpecifiation_isEqual(
@@ -565,7 +585,8 @@ export const updatePropertyExpressionStateWithDefaultMilestoningDates = (
               derivedPropertyExpressionState.queryBuilderState.querySetupState
                 .BusinessDate,
             );
-            derivedPropertyExpressionState.propertyExpression.setParametersValues(
+            functionExpression_setParametersValues(
+              derivedPropertyExpressionState.propertyExpression,
               [
                 guaranteeNonNullable(
                   derivedPropertyExpressionState.propertyExpression
@@ -573,11 +594,13 @@ export const updatePropertyExpressionStateWithDefaultMilestoningDates = (
                 ),
                 businessDate,
               ],
+              derivedPropertyExpressionState.queryBuilderState
+                .observableContext,
             );
             derivedPropertyExpressionState.businessDate = businessDate;
           }
           break;
-        case MILESTONING_STEROTYPES.PROCESSING_TEMPORAL:
+        case MILESTONING_STEROTYPE.PROCESSING_TEMPORAL:
           if (
             paramLength === 2 &&
             valueSpecifiation_isEqual(
@@ -595,7 +618,8 @@ export const updatePropertyExpressionStateWithDefaultMilestoningDates = (
               derivedPropertyExpressionState.queryBuilderState.querySetupState
                 .ProcessingDate,
             );
-            derivedPropertyExpressionState.propertyExpression.setParametersValues(
+            functionExpression_setParametersValues(
+              derivedPropertyExpressionState.propertyExpression,
               [
                 guaranteeNonNullable(
                   derivedPropertyExpressionState.propertyExpression
@@ -603,6 +627,8 @@ export const updatePropertyExpressionStateWithDefaultMilestoningDates = (
                 ),
                 processingDate,
               ],
+              derivedPropertyExpressionState.queryBuilderState
+                .observableContext,
             );
             derivedPropertyExpressionState.processingDate = processingDate;
           }

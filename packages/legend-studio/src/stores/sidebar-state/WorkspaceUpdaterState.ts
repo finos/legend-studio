@@ -17,7 +17,7 @@
 import type { EditorStore } from '../EditorStore';
 import type { EditorSDLCState } from '../EditorSDLCState';
 import { action, makeAutoObservable, flowResult } from 'mobx';
-import { CHANGE_DETECTION_LOG_EVENT } from '../ChangeDetectionLogEvent';
+import { CHANGE_DETECTION_EVENT } from '../ChangeDetectionEvent';
 import {
   type GeneratorFn,
   type PlainObject,
@@ -42,7 +42,7 @@ import {
   Revision,
   RevisionAlias,
 } from '@finos/legend-server-sdlc';
-import { LEGEND_STUDIO_LOG_EVENT_TYPE } from '../LegendStudioLogEvent';
+import { LEGEND_STUDIO_APP_EVENT } from '../LegendStudioAppEvent';
 
 export class WorkspaceUpdaterState {
   editorStore: EditorStore;
@@ -218,7 +218,7 @@ export class WorkspaceUpdaterState {
         ),
       ]);
       this.editorStore.applicationStore.log.info(
-        LogEvent.create(CHANGE_DETECTION_LOG_EVENT.CHANGE_DETECTION_RESTARTED),
+        LogEvent.create(CHANGE_DETECTION_EVENT.CHANGE_DETECTION_RESTARTED),
         Date.now() - restartChangeDetectionStartTime,
         'ms',
       );
@@ -226,7 +226,7 @@ export class WorkspaceUpdaterState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.SDLC_MANAGER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -276,7 +276,7 @@ export class WorkspaceUpdaterState {
           this.sdlcState.activeWorkspace,
         )) as WorkspaceUpdateReport;
       this.editorStore.applicationStore.log.info(
-        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.WORKSPACE_UPDATED),
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.WORKSPACE_UPDATED),
         Date.now() - startTime,
         'ms',
       );
@@ -294,7 +294,7 @@ export class WorkspaceUpdaterState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.SDLC_MANAGER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -310,8 +310,8 @@ export class WorkspaceUpdaterState {
   *fetchLatestCommittedReviews(): GeneratorFn<void> {
     try {
       // we find the review associated with the workspace base, this usually exist, except in 2 cases:
-      // 1. the revision is somehow directly added to the branch by the user (in the case of git, user unprotected master and directly pushed to master)
-      // 2. the revision is the merged/comitted review revision (this usually happens for prototype projects where fast forwarding merging is not default)
+      // 1. the revision is somehow directly added to the branch by the user (in the case of `git`, user directly pushed to unprotected default branch)
+      // 2. the revision is the merged/comitted review revision (this usually happens for projects where fast forwarding merging is not default)
       // in those case, we will get the time from the base revision
       const workspaceBaseRevision = Revision.serialization.fromJson(
         (yield this.editorStore.sdlcServerClient.getRevision(
@@ -345,12 +345,12 @@ export class WorkspaceUpdaterState {
           undefined,
         )) as PlainObject<Review>[]
       )
-        .map((review) => Review.serialization.fromJson(review))
+        .map(Review.serialization.fromJson)
         .filter((review) => !baseReview || review.id !== baseReview.id); // make sure to exclude the base review
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(LEGEND_STUDIO_LOG_EVENT_TYPE.SDLC_MANAGER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
