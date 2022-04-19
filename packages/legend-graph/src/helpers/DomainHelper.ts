@@ -16,7 +16,11 @@
 
 import type { PureModel } from '../graph/PureModel';
 import { Class } from '../models/metamodels/pure/packageableElements/domain/Class';
-import { CORE_PURE_PATH, MILESTONING_STEROTYPES } from '../MetaModelConst';
+import {
+  CORE_PURE_PATH,
+  ELEMENT_PATH_DELIMITER,
+  MILESTONING_STEROTYPES,
+} from '../MetaModelConst';
 import { Profile } from '../models/metamodels/pure/packageableElements/domain/Profile';
 import { Tag } from '../models/metamodels/pure/packageableElements/domain/Tag';
 import { Enum } from '../models/metamodels/pure/packageableElements/domain/Enum';
@@ -24,9 +28,17 @@ import { Stereotype } from '../models/metamodels/pure/packageableElements/domain
 import { TaggedValue } from '../models/metamodels/pure/packageableElements/domain/TaggedValue';
 import { TagExplicitReference } from '../models/metamodels/pure/packageableElements/domain/TagReference';
 import type { Enumeration } from '../models/metamodels/pure/packageableElements/domain/Enumeration';
-import { Package } from '../models/metamodels/pure/packageableElements/domain/Package';
+import {
+  Package,
+  RESERVERD_PACKAGE_NAMES,
+} from '../models/metamodels/pure/packageableElements/domain/Package';
 import type { PackageableElement } from '../models/metamodels/pure/packageableElements/PackageableElement';
-import { guaranteeType } from '@finos/legend-shared';
+import {
+  AssertionError,
+  assertTrue,
+  guaranteeType,
+} from '@finos/legend-shared';
+import { createPath } from '../MetaModelUtils';
 
 export const addElementToPackage = (
   parent: Package,
@@ -50,6 +62,77 @@ export const getElementRootPackage = (element: PackageableElement): Package =>
   !element.package
     ? guaranteeType(element, Package)
     : getElementRootPackage(element.package);
+
+/**
+ * If package name is a path, continue to recursively
+ * traverse the package chain to find the leaf package
+ *
+ * NOTE: if we do not allow create new packages, errorcould be
+ * thrown if a package with the specified path is not found
+ */
+export const getOrCreatePackage = (
+  parentPackage: Package,
+  relativePackagePath: string,
+  createNewPackageIfNotFound: boolean,
+  cache: Map<string, Package> | undefined,
+): Package => {
+  const index = relativePackagePath.indexOf(ELEMENT_PATH_DELIMITER);
+  const packageName =
+    index === -1
+      ? relativePackagePath
+      : relativePackagePath.substring(0, index);
+  const packagePath = createPath(parentPackage.fullPath, packageName);
+
+  // check cache to find the package
+  // NOTE: we only return from cache if there is no child package to further traverse
+  if (cache && index === -1) {
+    const cachedPackage = cache.get(packagePath);
+    if (cachedPackage) {
+      return cachedPackage;
+    }
+  }
+
+  // try to resolve when there is a cache miss
+  let pkg: Package | undefined;
+  pkg = parentPackage.children.find(
+    (child: PackageableElement): child is Package =>
+      child instanceof Package && child.name === packageName,
+  );
+  if (!pkg) {
+    if (!createNewPackageIfNotFound) {
+      throw new AssertionError(
+        `Can't find child package '${packageName}' in package '${parentPackage.path}'`,
+      );
+    }
+    // create the node if it is not in parent package
+    assertTrue(
+      !RESERVERD_PACKAGE_NAMES.includes(packageName),
+      `Can't create package with reserved name '${packageName}'`,
+    );
+    pkg = new Package(packageName);
+    pkg.package = parentPackage;
+    // NOTE: here we directly push the element to the children array without any checks rather than use `addUniqueEntry` to improve performance.
+    // Duplication checks should be handled separately for speed
+    parentPackage.children.push(pkg);
+  }
+
+  // populate cache after resolving the package
+  if (cache) {
+    cache.set(packagePath, pkg);
+  }
+
+  // traverse the package chain
+  if (index !== -1) {
+    return getOrCreatePackage(
+      pkg,
+      relativePackagePath.substring(index + ELEMENT_PATH_DELIMITER.length),
+      createNewPackageIfNotFound,
+      cache,
+    );
+  }
+
+  return pkg;
+};
 
 export const createStubTag = (profile: Profile): Tag => new Tag(profile, '');
 export const createStubTaggedValue = (tag: Tag): TaggedValue =>

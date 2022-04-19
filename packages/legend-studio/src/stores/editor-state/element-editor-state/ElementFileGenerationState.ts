@@ -63,7 +63,10 @@ export class ElementFileGenerationState {
     name: string,
   ): GeneratorFn<void> {
     const fileGenerationPackage =
-      this.editorStore.graphManagerState.graph.getOrCreatePackage(packagePath);
+      this.editorStore.graphManagerState.graph.getOrCreatePackage(
+        packagePath,
+        undefined,
+      );
     const fileGeneration = this.fileGenerationState.fileGeneration;
     fileGeneration.name = name;
     package_addElement(

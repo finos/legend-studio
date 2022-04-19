@@ -44,12 +44,15 @@ import {
 } from '../GraphManagerTestUtils';
 import { TEST_DATA__MilestonedClassRoundtrip } from './roundtripTestData/TEST_DATA__DomainRoundtrip';
 import type { Entity } from '@finos/legend-model-storage';
-import { getMilestoneTemporalStereotype } from '../helpers/DomainHelper';
+import {
+  getMilestoneTemporalStereotype,
+  getOrCreatePackage,
+} from '../helpers/DomainHelper';
 
 test(unitTest('Create valid and invalid packages on a root package'), () => {
   const _root = new Package(ROOT_PACKAGE_NAME.MAIN);
   const createPackage = (packagePath: string): void => {
-    Package.getOrCreatePackage(_root, packagePath, true);
+    getOrCreatePackage(_root, packagePath, true, undefined);
   };
   const validPackage = 'model::myPackage';
   createPackage(validPackage);

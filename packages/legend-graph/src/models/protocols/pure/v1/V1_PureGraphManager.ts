@@ -234,6 +234,7 @@ import { V1_SERVICE_ELEMENT_PROTOCOL_TYPE } from './transformation/pureProtocol/
 import { MappingInclude } from '../../../metamodels/pure/packageableElements/mapping/MappingInclude';
 import type { ModelGenerationConfiguration } from '../../../ModelGenerationConfiguration';
 import type { MappingGeneration_PureProtocolProcessorPlugin_Extension } from '../MappingGeneration_PureProtocolProcessorPlugin_Extension';
+import type { Package } from '../../../metamodels/pure/packageableElements/domain/Package';
 
 const V1_FUNCTION_SUFFIX_MULTIPLICITY_INFINITE = 'MANY';
 
@@ -855,21 +856,23 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     options?: GraphBuilderOptions,
   ): Promise<void> {
     await Promise.all(
-      inputs.flatMap((input) =>
-        input.data.nativeElements.map((element) =>
-          this.visitWithGraphBuilderErrorHandling(
-            element,
-            new V1_ProtocolToMetaModelGraphFirstPassBuilder(
-              this.getBuilderContext(graph, input.model, element, options),
+      inputs.flatMap(async (input) => {
+        // create the package cache
+        const packageCache = new Map<string, Package>();
+
+        await Promise.all(
+          input.data.nativeElements.map((element) =>
+            this.visitWithGraphBuilderErrorHandling(
+              element,
+              new V1_ProtocolToMetaModelGraphFirstPassBuilder(
+                this.getBuilderContext(graph, input.model, element, options),
+                packageCache,
+              ),
             ),
           ),
-        ),
-      ),
-    );
-    await Promise.all(
-      this.extensions.sortedExtraElementBuilders.map(async (builder) => {
+        );
         await Promise.all(
-          inputs.flatMap((input) =>
+          this.extensions.sortedExtraElementBuilders.flatMap(async (builder) =>
             (input.data.otherElementsByBuilder.get(builder) ?? []).map(
               (element) =>
                 this.visitWithGraphBuilderErrorHandling(
@@ -881,6 +884,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
                       element,
                       options,
                     ),
+                    packageCache,
                   ),
                 ),
             ),

@@ -96,7 +96,10 @@ const promoteQueryToService = async (
       editorStore.changeDetectionState.observerContext,
     );
     const servicePackage =
-      editorStore.graphManagerState.graph.getOrCreatePackage(packageName);
+      editorStore.graphManagerState.graph.getOrCreatePackage(
+        packageName,
+        undefined,
+      );
     package_addElement(
       servicePackage,
       service,

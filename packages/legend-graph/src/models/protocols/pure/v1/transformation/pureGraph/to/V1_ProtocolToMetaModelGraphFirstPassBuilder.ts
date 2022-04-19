@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { assertNonEmptyString, assertTrue } from '@finos/legend-shared';
+import { assertNonEmptyString } from '@finos/legend-shared';
 import {
   PRIMITIVE_TYPE,
   TYPICAL_MULTIPLICITY_TYPE,
@@ -60,20 +60,27 @@ import type { V1_FileGenerationSpecification } from '../../../model/packageableE
 import type { V1_Measure } from '../../../model/packageableElements/domain/V1_Measure';
 import type { V1_SectionIndex } from '../../../model/packageableElements/section/V1_SectionIndex';
 import { addElementToPackage } from '../../../../../../../helpers/DomainHelper';
+import { V1_checkDuplicatedElement } from './V1_ElementBuilder';
+import type { Package } from '../../../../../../metamodels/pure/packageableElements/domain/Package';
 
 export class V1_ProtocolToMetaModelGraphFirstPassBuilder
   implements V1_PackageableElementVisitor<PackageableElement>
 {
   context: V1_GraphBuilderContext;
+  packageCache: Map<string, Package>;
 
-  constructor(context: V1_GraphBuilderContext) {
+  constructor(
+    context: V1_GraphBuilderContext,
+    packageCache: Map<string, Package>,
+  ) {
     this.context = context;
+    this.packageCache = packageCache;
   }
 
   visit_PackageableElement(element: V1_PackageableElement): PackageableElement {
     return this.context.extensions
       .getExtraBuilderOrThrow(element)
-      .runFirstPass(element, this.context);
+      .runFirstPass(element, this.context, this.packageCache);
   }
 
   visit_SectionIndex(element: V1_SectionIndex): PackageableElement {
@@ -87,10 +94,7 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
     );
     const sectionIndex = new SectionIndex(element.name);
     const path = V1_buildFullPath(element.package, element.name);
-    assertTrue(
-      !this.context.graph.getNullableElement(path),
-      `Element '${path}' already exists`,
-    );
+    V1_checkDuplicatedElement(path, this.context);
     this.context.currentSubGraph.setOwnSectionIndex(path, sectionIndex);
     return sectionIndex;
   }
@@ -106,12 +110,12 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
     );
     const profile = new Profile(element.name);
     const path = V1_buildFullPath(element.package, element.name);
-    assertTrue(
-      !this.context.graph.getNullableElement(path),
-      `Element '${path}' already exists`,
-    );
+    V1_checkDuplicatedElement(path, this.context);
     addElementToPackage(
-      this.context.currentSubGraph.getOrCreatePackage(element.package),
+      this.context.currentSubGraph.getOrCreatePackage(
+        element.package,
+        this.packageCache,
+      ),
       profile,
     );
     this.context.currentSubGraph.setOwnProfile(path, profile);
@@ -129,12 +133,12 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
     );
     const pureEnumeration = new Enumeration(element.name);
     const path = V1_buildFullPath(element.package, element.name);
-    assertTrue(
-      !this.context.graph.getNullableElement(path),
-      `Element '${path}' already exists`,
-    );
+    V1_checkDuplicatedElement(path, this.context);
     addElementToPackage(
-      this.context.currentSubGraph.getOrCreatePackage(element.package),
+      this.context.currentSubGraph.getOrCreatePackage(
+        element.package,
+        this.packageCache,
+      ),
       pureEnumeration,
     );
     this.context.currentSubGraph.setOwnType(path, pureEnumeration);
@@ -152,12 +156,12 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
     );
     const pureMeasure = new Measure(element.name);
     const path = V1_buildFullPath(element.package, element.name);
-    assertTrue(
-      !this.context.graph.getNullableElement(path),
-      `Element '${path}' already exists`,
-    );
+    V1_checkDuplicatedElement(path, this.context);
     addElementToPackage(
-      this.context.currentSubGraph.getOrCreatePackage(element.package),
+      this.context.currentSubGraph.getOrCreatePackage(
+        element.package,
+        this.packageCache,
+      ),
       pureMeasure,
     );
     this.context.currentSubGraph.setOwnType(path, pureMeasure);
@@ -175,12 +179,12 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
     );
     const _class = new Class(element.name);
     const path = V1_buildFullPath(element.package, element.name);
-    assertTrue(
-      !this.context.graph.getNullableElement(path),
-      `Element '${path}' already exists`,
-    );
+    V1_checkDuplicatedElement(path, this.context);
     addElementToPackage(
-      this.context.currentSubGraph.getOrCreatePackage(element.package),
+      this.context.currentSubGraph.getOrCreatePackage(
+        element.package,
+        this.packageCache,
+      ),
       _class,
     );
     this.context.currentSubGraph.setOwnType(path, _class);
@@ -198,12 +202,12 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
     );
     const association = new Association(element.name);
     const path = V1_buildFullPath(element.package, element.name);
-    assertTrue(
-      !this.context.graph.getNullableElement(path),
-      `Element '${path}' already exists`,
-    );
+    V1_checkDuplicatedElement(path, this.context);
     addElementToPackage(
-      this.context.currentSubGraph.getOrCreatePackage(element.package),
+      this.context.currentSubGraph.getOrCreatePackage(
+        element.package,
+        this.packageCache,
+      ),
       association,
     );
     this.context.currentSubGraph.setOwnAssociation(path, association);
@@ -233,12 +237,12 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
       ),
     );
     const path = V1_buildFullPath(element.package, element.name);
-    assertTrue(
-      !this.context.graph.getNullableElement(path),
-      `Element '${path}' already exists`,
-    );
+    V1_checkDuplicatedElement(path, this.context);
     addElementToPackage(
-      this.context.currentSubGraph.getOrCreatePackage(element.package),
+      this.context.currentSubGraph.getOrCreatePackage(
+        element.package,
+        this.packageCache,
+      ),
       func,
     );
     this.context.currentSubGraph.setOwnFunction(path, func);
@@ -256,12 +260,12 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
     );
     const flatData = new FlatData(element.name);
     const path = V1_buildFullPath(element.package, element.name);
-    assertTrue(
-      !this.context.graph.getNullableElement(path),
-      `Element '${path}' already exists`,
-    );
+    V1_checkDuplicatedElement(path, this.context);
     addElementToPackage(
-      this.context.currentSubGraph.getOrCreatePackage(element.package),
+      this.context.currentSubGraph.getOrCreatePackage(
+        element.package,
+        this.packageCache,
+      ),
       flatData,
     );
     this.context.currentSubGraph.setOwnStore(path, flatData);
@@ -279,12 +283,12 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
     );
     const database = new Database(element.name);
     const path = V1_buildFullPath(element.package, element.name);
-    assertTrue(
-      !this.context.graph.getNullableElement(path),
-      `Element '${path}' already exists`,
-    );
+    V1_checkDuplicatedElement(path, this.context);
     addElementToPackage(
-      this.context.currentSubGraph.getOrCreatePackage(element.package),
+      this.context.currentSubGraph.getOrCreatePackage(
+        element.package,
+        this.packageCache,
+      ),
       database,
     );
     this.context.currentSubGraph.setOwnStore(path, database);
@@ -302,12 +306,12 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
     );
     const pureMapping = new Mapping(element.name);
     const path = V1_buildFullPath(element.package, element.name);
-    assertTrue(
-      !this.context.graph.getNullableElement(path),
-      `Element '${path}' already exists`,
-    );
+    V1_checkDuplicatedElement(path, this.context);
     addElementToPackage(
-      this.context.currentSubGraph.getOrCreatePackage(element.package),
+      this.context.currentSubGraph.getOrCreatePackage(
+        element.package,
+        this.packageCache,
+      ),
       pureMapping,
     );
     this.context.currentSubGraph.setOwnMapping(path, pureMapping);
@@ -325,12 +329,12 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
     );
     const service = new Service(element.name);
     const path = V1_buildFullPath(element.package, element.name);
-    assertTrue(
-      !this.context.graph.getNullableElement(path),
-      `Element '${path}' already exists`,
-    );
+    V1_checkDuplicatedElement(path, this.context);
     addElementToPackage(
-      this.context.currentSubGraph.getOrCreatePackage(element.package),
+      this.context.currentSubGraph.getOrCreatePackage(
+        element.package,
+        this.packageCache,
+      ),
       service,
     );
     this.context.currentSubGraph.setOwnService(path, service);
@@ -350,12 +354,12 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
     );
     const fileGeneration = new FileGenerationSpecification(element.name);
     const path = V1_buildFullPath(element.package, element.name);
-    assertTrue(
-      !this.context.graph.getNullableElement(path),
-      `Element '${path}' already exists`,
-    );
+    V1_checkDuplicatedElement(path, this.context);
     addElementToPackage(
-      this.context.currentSubGraph.getOrCreatePackage(element.package),
+      this.context.currentSubGraph.getOrCreatePackage(
+        element.package,
+        this.packageCache,
+      ),
       fileGeneration,
     );
     this.context.currentSubGraph.setOwnFileGeneration(path, fileGeneration);
@@ -376,12 +380,12 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
     );
     const generationSpec = new GenerationSpecification(element.name);
     const path = V1_buildFullPath(element.package, element.name);
-    assertTrue(
-      !this.context.graph.getNullableElement(path),
-      `Element '${path}' already exists`,
-    );
+    V1_checkDuplicatedElement(path, this.context);
     addElementToPackage(
-      this.context.currentSubGraph.getOrCreatePackage(element.package),
+      this.context.currentSubGraph.getOrCreatePackage(
+        element.package,
+        this.packageCache,
+      ),
       generationSpec,
     );
     this.context.currentSubGraph.setOwnGenerationSpecification(
@@ -402,12 +406,12 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
     );
     const runtime = new PackageableRuntime(element.name);
     const path = V1_buildFullPath(element.package, element.name);
-    assertTrue(
-      !this.context.graph.getNullableElement(path),
-      `Element '${path}' already exists`,
-    );
+    V1_checkDuplicatedElement(path, this.context);
     addElementToPackage(
-      this.context.currentSubGraph.getOrCreatePackage(element.package),
+      this.context.currentSubGraph.getOrCreatePackage(
+        element.package,
+        this.packageCache,
+      ),
       runtime,
     );
     this.context.currentSubGraph.setOwnRuntime(path, runtime);
@@ -427,12 +431,12 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
     );
     const connection = new PackageableConnection(element.name);
     const path = V1_buildFullPath(element.package, element.name);
-    assertTrue(
-      !this.context.graph.getNullableElement(path),
-      `Element '${path}' already exists`,
-    );
+    V1_checkDuplicatedElement(path, this.context);
     addElementToPackage(
-      this.context.currentSubGraph.getOrCreatePackage(element.package),
+      this.context.currentSubGraph.getOrCreatePackage(
+        element.package,
+        this.packageCache,
+      ),
       connection,
     );
     this.context.currentSubGraph.setOwnConnection(path, connection);

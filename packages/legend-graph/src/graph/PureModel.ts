@@ -431,6 +431,19 @@ export class PureModel extends BasicModel {
         `Can't create element '${element.path}': another element with the same path already existed`,
       );
     }
+
+    // addElementToPackage(
+    //   this.getOrCreatePackage(packagePath),
+    //   // observe_PackageableElement(element, context),
+    //   element,
+    // );
+
+    // this.package_addElement(
+    //   graph.getOrCreatePackage(packagePath),
+    //   _class,
+    //   editorStore.changeDetectionState.observerContext,
+    // );
+
     if (element instanceof Mapping) {
       this.setOwnMapping(element.path, element);
     } else if (element instanceof Store) {

@@ -60,6 +60,7 @@ import {
 import {
   addElementToPackage,
   deleteElementFromPackage,
+  getOrCreatePackage,
 } from '../helpers/DomainHelper';
 
 const FORBIDDEN_EXTENSION_ELEMENT_CLASS = new Set([
@@ -360,16 +361,19 @@ export abstract class BasicModel {
     }
   }
 
-  getOrCreatePackage = (packagePath: string | undefined): Package => {
+  getOrCreatePackage = (
+    packagePath: string | undefined,
+    cache: Map<string, Package> | undefined,
+  ): Package => {
     assertNonEmptyString(packagePath, 'Package path is required');
-    return Package.getOrCreatePackage(this.root, packagePath, true);
+    return getOrCreatePackage(this.root, packagePath, true, cache);
   };
 
   getNullablePackage = (path: string): Package | undefined =>
     !path
       ? this.root
       : returnUndefOnError(() =>
-          Package.getOrCreatePackage(this.root, path, false),
+          getOrCreatePackage(this.root, path, false, undefined),
         );
 
   getOwnNullableElement(
@@ -493,7 +497,9 @@ export abstract class BasicModel {
     if (!(element instanceof Package)) {
       const parentPackage =
         this.getNullablePackage(packagePath) ??
-        (packagePath !== '' ? this.getOrCreatePackage(packagePath) : this.root);
+        (packagePath !== ''
+          ? this.getOrCreatePackage(packagePath, undefined)
+          : this.root);
       // update element name
       element.name = elementName;
       // update element package if needed
@@ -580,7 +586,9 @@ export abstract class BasicModel {
       if (currentParentPackage !== this.getNullablePackage(packagePath)) {
         deleteElementFromPackage(currentParentPackage, element);
         const newParentPackage =
-          packagePath !== '' ? this.getOrCreatePackage(packagePath) : this.root;
+          packagePath !== ''
+            ? this.getOrCreatePackage(packagePath, undefined)
+            : this.root;
         addElementToPackage(newParentPackage, element);
       }
       childElements.forEach((childElement, childElementOriginalPath) => {

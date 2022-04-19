@@ -20,6 +20,7 @@ import {
   assertTrue,
 } from '@finos/legend-shared';
 import { addElementToPackage } from '../../../../../../../helpers/DomainHelper';
+import type { Package } from '../../../../../../metamodels/pure/packageableElements/domain/Package';
 import type { PackageableElement } from '../../../../../../metamodels/pure/packageableElements/PackageableElement';
 import type { V1_PackageableElement } from '../../../model/packageableElements/V1_PackageableElement';
 import {
@@ -41,6 +42,16 @@ export type V1_ElementThirdPassBuilder = V1_ElementBuilderPass;
 export type V1_ElementFourthPassBuilder = V1_ElementBuilderPass;
 export type V1_ElementFifthPassBuilder = V1_ElementBuilderPass;
 
+export const V1_checkDuplicatedElement = (
+  path: string,
+  context: V1_GraphBuilderContext,
+): void => {
+  assertTrue(
+    !context.graph.getNullableElement(path),
+    `Element '${path}' already exists`,
+  );
+};
+
 /**
  * Element builder is a mechanism to handling the building process of
  * element.
@@ -58,8 +69,8 @@ export type V1_ElementFifthPassBuilder = V1_ElementBuilderPass;
  *
  * Also note that as of right now we will run build pass 2-5 of each element
  * consecutively so there is no opportunity to `interleave` build passes of
- * different elements. This is definitely more flexible, but also a complexity
- * we don't see the need for right now.
+ * different elements. That definitely seems more flexible, but also incur
+ * a fair amount of complexity we don't see the need for right now.
  */
 export class V1_ElementBuilder<T extends V1_PackageableElement> {
   readonly elementClassName: string;
@@ -107,6 +118,7 @@ export class V1_ElementBuilder<T extends V1_PackageableElement> {
   runFirstPass(
     elementProtocol: T,
     context: V1_GraphBuilderContext,
+    packageCache: Map<string, Package>,
   ): PackageableElement {
     assertNonEmptyString(
       elementProtocol.package,
@@ -120,13 +132,13 @@ export class V1_ElementBuilder<T extends V1_PackageableElement> {
       elementProtocol.package,
       elementProtocol.name,
     );
-    assertTrue(
-      !context.graph.getNullableElement(path),
-      `Element '${path}' already exists`,
-    );
+    V1_checkDuplicatedElement(path, context);
     const element = this.firstPass(elementProtocol, context);
     addElementToPackage(
-      context.currentSubGraph.getOrCreatePackage(elementProtocol.package),
+      context.currentSubGraph.getOrCreatePackage(
+        elementProtocol.package,
+        packageCache,
+      ),
       element,
     );
     return element;

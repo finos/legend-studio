@@ -648,6 +648,7 @@ export class MappingExecutionState {
           const servicePackage =
             this.editorStore.graphManagerState.graph.getOrCreatePackage(
               packagePath,
+              undefined,
             );
           service.test = singleExecutionTest;
           package_addElement(

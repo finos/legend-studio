@@ -43,6 +43,7 @@ export const graph_addElement = action(
     context: ObserverContext,
   ): void => {
     graph.addElement(observe_PackageableElement(element, context));
+    // FIXME: recurse the packages and observe them
   },
 );
 
@@ -55,5 +56,6 @@ export const graph_deleteElement = action(
 export const graph_renameElement = action(
   (graph: PureModel, element: PackageableElement, newPath: string): void => {
     graph.renameElement(element, newPath);
+    // FIXME: recurse the packages and observe them
   },
 );

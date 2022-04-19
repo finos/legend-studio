@@ -148,7 +148,10 @@ export const V1_buildUnit = (
     !currentGraph.getOwnNullableElement(path),
     `Element '${path}' already exists`,
   );
-  addElementToPackage(currentGraph.getOrCreatePackage(unit.package), pureUnit);
+  addElementToPackage(
+    currentGraph.getOrCreatePackage(unit.package, undefined),
+    pureUnit,
+  );
   currentGraph.setOwnType(path, pureUnit);
   return pureUnit;
 };

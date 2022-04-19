@@ -542,13 +542,14 @@ export class DatabaseBuilderState {
           this.connection,
           PackageableElementExplicitReference.create(newDatabase),
         );
-        const PackagePath = guaranteeNonNullable(
+        const packagePath = guaranteeNonNullable(
           database.package?.name,
           'Database package is missing',
         );
         const databasePackage =
           this.editorStore.graphManagerState.graph.getOrCreatePackage(
-            PackagePath,
+            packagePath,
+            undefined,
           );
         package_addElement(
           databasePackage,

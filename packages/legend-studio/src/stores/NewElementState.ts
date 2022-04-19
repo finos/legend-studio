@@ -574,6 +574,7 @@ export class NewElementState {
           packagePath
             ? this.editorStore.graphManagerState.graph.getOrCreatePackage(
                 packagePath,
+                undefined,
               )
             : this.editorStore.graphManagerState.graph.root,
           element,

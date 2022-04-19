@@ -866,7 +866,10 @@ const DiagramEditorInlineClassCreatorInner = observer(
         const [packagePath, name] = resolvePackagePathAndElementName(path);
         const _class = new Class(name);
         package_addElement(
-          editorStore.graphManagerState.graph.getOrCreatePackage(packagePath),
+          editorStore.graphManagerState.graph.getOrCreatePackage(
+            packagePath,
+            undefined,
+          ),
           _class,
           editorStore.changeDetectionState.observerContext,
         );

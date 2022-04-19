@@ -378,6 +378,7 @@ export class SchemaSetEditorState extends ElementEditorState {
       const newGraph = this.editorStore.graphManagerState.createEmptyGraph();
       _schemaSet.package = newGraph.getOrCreatePackage(
         this.schemaSet.package?.path ?? '',
+        undefined,
       );
       newGraph.addElement(_schemaSet);
       yield this.editorStore.graphManagerState.graphManager.compileGraph(
