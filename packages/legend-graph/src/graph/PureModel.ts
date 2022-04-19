@@ -425,7 +425,7 @@ export class PureModel extends BasicModel {
   }
 
   addElement(element: PackageableElement): void {
-    const existingElement = this.getNullableElement(element.path);
+    const existingElement = this.getNullableElement(element.path, true);
     if (existingElement) {
       throw new IllegalStateError(
         `Can't create element '${element.path}': another element with the same path already existed`,
@@ -489,7 +489,7 @@ export class PureModel extends BasicModel {
   }
 
   renameElement(element: PackageableElement, newPath: string): void {
-    const existingElement = this.getNullableElement(newPath);
+    const existingElement = this.getNullableElement(newPath, true);
     if (existingElement) {
       throw new IllegalStateError(
         `Can't rename element '${element.path}' to '${newPath}': another element with the same path already existed`,
