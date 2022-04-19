@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { action, flow, observable, makeObservable, computed } from 'mobx';
+import { action, flow, observable, makeObservable } from 'mobx';
 import {
   type GeneratorFn,
   LogEvent,
@@ -228,10 +228,6 @@ export class QueryBuilderState {
       mode: observable,
       showFunctionPanel: observable,
       showParameterPanel: observable,
-      classOptions: computed,
-      mappingOptions: computed,
-      runtimeOptions: computed,
-      serviceOptions: computed,
       setMode: action,
       resetQueryBuilder: action,
       resetQuerySetup: action,
@@ -599,7 +595,7 @@ export class QueryBuilderState {
       );
   }
 
-  get mappingOptions(): PackageableElementOption<Mapping>[] {
+  getMappingOptions(): PackageableElementOption<Mapping>[] {
     return this.mappings.map(
       (e) => buildElementOption(e) as PackageableElementOption<Mapping>,
     );
@@ -611,7 +607,7 @@ export class QueryBuilderState {
     );
   }
 
-  get runtimeOptions(): PackageableElementOption<PackageableRuntime>[] {
+  getRuntimeOptions(): PackageableElementOption<PackageableRuntime>[] {
     return this.runtimes.map(
       (e) =>
         buildElementOption(e) as PackageableElementOption<PackageableRuntime>,
@@ -624,7 +620,7 @@ export class QueryBuilderState {
     );
   }
 
-  get serviceOptions(): PackageableElementOption<Service>[] {
+  getServiceOptions(): PackageableElementOption<Service>[] {
     return this.graphManagerState.graph.ownServices
       .concat(this.graphManagerState.graph.dependencyManager.services)
       .map((e) => buildElementOption(e) as PackageableElementOption<Service>);

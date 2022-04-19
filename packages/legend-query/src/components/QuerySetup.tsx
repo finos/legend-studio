@@ -647,7 +647,7 @@ const CreateQuerySetup = observer(
     };
 
     // mapping
-    const mappingOptions = queryStore.queryBuilderState.mappingOptions;
+    const mappingOptions = queryStore.queryBuilderState.getMappingOptions();
     const selectedMappingOption = querySetupState.currentMapping
       ? {
           label: querySetupState.currentMapping.name,
