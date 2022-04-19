@@ -1,5 +1,13 @@
 # @finos/legend-graph
 
+## 4.0.3
+
+### Patch Changes
+
+- [#1086](https://github.com/finos/legend-studio/pull/1086) [`fdd8a327`](https://github.com/finos/legend-studio/commit/fdd8a3277f7bb8839587856e48daff23e31d4d34) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Fix the regression where `mobx` fails to observe `EmbeddedRelationalInstanceSetImplementation`.
+
+* [#1082](https://github.com/finos/legend-studio/pull/1082) [`4294e10d`](https://github.com/finos/legend-studio/commit/4294e10d0f0238ad67fa615c7fd955a8cacbae04) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Support Pure `multi-execution` when registering service in `semi-interactive` mode ([#1059](https://github.com/finos/legend-studio/issues/1059))
+
 ## 4.0.2
 
 ### Patch Changes
