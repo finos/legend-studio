@@ -25,33 +25,32 @@ import {
   guaranteeNonNullable,
   guaranteeType,
   returnUndefOnError,
-  getClass,
   IllegalStateError,
 } from '@finos/legend-shared';
 import { PrimitiveType } from '../models/metamodels/pure/packageableElements/domain/PrimitiveType';
 import { Enumeration } from '../models/metamodels/pure/packageableElements/domain/Enumeration';
 import { Multiplicity } from '../models/metamodels/pure/packageableElements/domain/Multiplicity';
-import { Association } from '../models/metamodels/pure/packageableElements/domain/Association';
+import type { Association } from '../models/metamodels/pure/packageableElements/domain/Association';
 import { Package } from '../models/metamodels/pure/packageableElements/domain/Package';
-import { Type } from '../models/metamodels/pure/packageableElements/domain/Type';
+import type { Type } from '../models/metamodels/pure/packageableElements/domain/Type';
 import { Class } from '../models/metamodels/pure/packageableElements/domain/Class';
-import { Mapping } from '../models/metamodels/pure/packageableElements/mapping/Mapping';
-import { Profile } from '../models/metamodels/pure/packageableElements/domain/Profile';
+import type { Mapping } from '../models/metamodels/pure/packageableElements/mapping/Mapping';
+import type { Profile } from '../models/metamodels/pure/packageableElements/domain/Profile';
 import type { Stereotype } from '../models/metamodels/pure/packageableElements/domain/Stereotype';
 import type { Tag } from '../models/metamodels/pure/packageableElements/domain/Tag';
 import type { PackageableElement } from '../models/metamodels/pure/packageableElements/PackageableElement';
-import { Store } from '../models/metamodels/pure/packageableElements/store/Store';
+import type { Store } from '../models/metamodels/pure/packageableElements/store/Store';
 import { DependencyManager } from '../graph/DependencyManager';
 import { ConcreteFunctionDefinition } from '../models/metamodels/pure/packageableElements/domain/ConcreteFunctionDefinition';
-import { Service } from '../models/metamodels/pure/packageableElements/service/Service';
+import type { Service } from '../models/metamodels/pure/packageableElements/service/Service';
 import { BasicModel } from './BasicModel';
 import { FlatData } from '../models/metamodels/pure/packageableElements/store/flatData/model/FlatData';
 import { Database } from '../models/metamodels/pure/packageableElements/store/relational/model/Database';
-import { PackageableConnection } from '../models/metamodels/pure/packageableElements/connection/PackageableConnection';
-import { PackageableRuntime } from '../models/metamodels/pure/packageableElements/runtime/PackageableRuntime';
-import { FileGenerationSpecification } from '../models/metamodels/pure/packageableElements/fileGeneration/FileGenerationSpecification';
+import type { PackageableConnection } from '../models/metamodels/pure/packageableElements/connection/PackageableConnection';
+import type { PackageableRuntime } from '../models/metamodels/pure/packageableElements/runtime/PackageableRuntime';
+import type { FileGenerationSpecification } from '../models/metamodels/pure/packageableElements/fileGeneration/FileGenerationSpecification';
 import { ModelStore } from '../models/metamodels/pure/packageableElements/store/modelToModel/model/ModelStore';
-import { GenerationSpecification } from '../models/metamodels/pure/packageableElements/generationSpecification/GenerationSpecification';
+import type { GenerationSpecification } from '../models/metamodels/pure/packageableElements/generationSpecification/GenerationSpecification';
 import {
   Measure,
   Unit,
@@ -175,8 +174,8 @@ export class GenerationModel extends BasicModel {
  * The model of Pure, a.k.a the Pure graph
  */
 export class PureModel extends BasicModel {
-  coreModel: CoreModel;
-  systemModel: SystemModel;
+  private readonly coreModel: CoreModel;
+  readonly systemModel: SystemModel;
   generationModel: GenerationModel;
   dependencyManager: DependencyManager; // used to manage the elements from dependency projects
   graphPlugins: PureGraphPlugin[] = [];
@@ -207,6 +206,16 @@ export class PureModel extends BasicModel {
 
   get primitiveTypes(): PrimitiveType[] {
     return this.coreModel.primitiveTypes;
+  }
+
+  get allElements(): PackageableElement[] {
+    return [
+      ...this.coreModel.allOwnElements,
+      ...this.systemModel.allOwnElements,
+      ...this.dependencyManager.allOwnElements,
+      ...this.allOwnElements,
+      ...this.generationModel.allOwnElements,
+    ];
   }
 
   getPrimitiveType = (type: PRIMITIVE_TYPE): PrimitiveType =>
@@ -436,48 +445,7 @@ export class PureModel extends BasicModel {
       );
     }
 
-    // addElementToPackage(
-    //   this.getOrCreatePackage(packagePath),
-    //   // observe_PackageableElement(element, context),
-    //   element,
-    // );
-
-    // this.package_addElement(
-    //   graph.getOrCreatePackage(packagePath),
-    //   _class,
-    //   editorStore.changeDetectionState.observerContext,
-    // );
-
-    if (element instanceof Mapping) {
-      this.setOwnMapping(element.path, element);
-    } else if (element instanceof Store) {
-      this.setOwnStore(element.path, element);
-    } else if (element instanceof Type) {
-      this.setOwnType(element.path, element);
-    } else if (element instanceof Association) {
-      this.setOwnAssociation(element.path, element);
-    } else if (element instanceof Profile) {
-      this.setOwnProfile(element.path, element);
-    } else if (element instanceof ConcreteFunctionDefinition) {
-      this.setOwnFunction(element.path, element);
-    } else if (element instanceof Service) {
-      this.setOwnService(element.path, element);
-    } else if (element instanceof PackageableConnection) {
-      this.setOwnConnection(element.path, element);
-    } else if (element instanceof PackageableRuntime) {
-      this.setOwnRuntime(element.path, element);
-    } else if (element instanceof FileGenerationSpecification) {
-      this.setOwnFileGeneration(element.path, element);
-    } else if (element instanceof GenerationSpecification) {
-      this.setOwnGenerationSpecification(element.path, element);
-    } else if (element instanceof Package) {
-      // do nothing
-    } else {
-      const extension = this.getExtensionForElementClass(
-        getClass<PackageableElement>(element),
-      );
-      extension.setElement(element.path, element);
-    }
+    super.addOwnElement(element);
   }
 
   deleteElement(element: PackageableElement): void {

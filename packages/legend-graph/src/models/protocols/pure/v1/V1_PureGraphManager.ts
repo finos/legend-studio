@@ -861,13 +861,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     // this way, as we build the a graph, we know the next step's duplication check
     // has path cache consisting of all element from its base graphs
     const elementPathCache = new Set<string>(
-      [
-        ...graph.coreModel.allOwnElements,
-        ...graph.systemModel.allOwnElements,
-        ...graph.dependencyManager.allOwnElements,
-        ...graph.allOwnElements,
-        ...graph.generationModel.allOwnElements,
-      ].map((el) => el.path),
+      graph.allElements.map((el) => el.path),
     );
 
     await Promise.all(

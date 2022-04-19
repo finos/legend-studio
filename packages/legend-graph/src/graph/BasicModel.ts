@@ -408,6 +408,51 @@ export abstract class BasicModel {
     return element;
   }
 
+  protected addOwnElement(element: PackageableElement): void {
+    // addElementToPackage(
+    //   this.getOrCreatePackage(packagePath),
+    //   // observe_PackageableElement(element, context),
+    //   element,
+    // );
+
+    // this.package_addElement(
+    //   graph.getOrCreatePackage(packagePath),
+    //   _class,
+    //   editorStore.changeDetectionState.observerContext,
+    // );
+
+    if (element instanceof Mapping) {
+      this.setOwnMapping(element.path, element);
+    } else if (element instanceof Store) {
+      this.setOwnStore(element.path, element);
+    } else if (element instanceof Type) {
+      this.setOwnType(element.path, element);
+    } else if (element instanceof Association) {
+      this.setOwnAssociation(element.path, element);
+    } else if (element instanceof Profile) {
+      this.setOwnProfile(element.path, element);
+    } else if (element instanceof ConcreteFunctionDefinition) {
+      this.setOwnFunction(element.path, element);
+    } else if (element instanceof Service) {
+      this.setOwnService(element.path, element);
+    } else if (element instanceof PackageableConnection) {
+      this.setOwnConnection(element.path, element);
+    } else if (element instanceof PackageableRuntime) {
+      this.setOwnRuntime(element.path, element);
+    } else if (element instanceof FileGenerationSpecification) {
+      this.setOwnFileGeneration(element.path, element);
+    } else if (element instanceof GenerationSpecification) {
+      this.setOwnGenerationSpecification(element.path, element);
+    } else if (element instanceof Package) {
+      // do nothing
+    } else {
+      const extension = this.getExtensionForElementClass(
+        getClass<PackageableElement>(element),
+      );
+      extension.setElement(element.path, element);
+    }
+  }
+
   deleteOwnElement(element: PackageableElement): void {
     if (element.package) {
       deleteElementFromPackage(element.package, element);
