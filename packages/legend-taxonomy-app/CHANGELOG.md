@@ -1,5 +1,7 @@
 # @finos/legend-taxonomy-app
 
+## 4.16.0
+
 ## 4.15.0
 
 ## 4.14.0

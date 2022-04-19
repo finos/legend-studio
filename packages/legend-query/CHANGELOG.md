@@ -1,5 +1,11 @@
 # @finos/legend-query
 
+## 1.3.9
+
+### Patch Changes
+
+- [`94a9c645`](https://github.com/finos/legend-studio/commit/94a9c6453f5dde92ab383c889f772e46114ceabb) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Remove mobx `computed` on query setup element options.
+
 ## 1.3.8
 
 ### Patch Changes

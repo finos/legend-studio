@@ -1,5 +1,11 @@
 # @finos/legend-graph-extension-collection
 
+## 0.0.35
+
+### Patch Changes
+
+- [#990](https://github.com/finos/legend-studio/pull/990) [`76988b92`](https://github.com/finos/legend-studio/commit/76988b9265426843cae68aa6262b229e8cd7e362) ([@davidsunglee](https://github.com/davidsunglee)) - Add Persistence DSL
+
 ## 0.0.34
 
 ## 0.0.33
