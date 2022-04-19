@@ -106,7 +106,7 @@ export const observe_DependencyManager = skipObserved(
     makeObservable(metamodel, {
       root: observable,
       projectDependencyModelsIndex: observable,
-      allElements: computed,
+      allOwnElements: computed,
       dependencyGraphs: computed,
       profiles: computed,
       enumerations: computed,

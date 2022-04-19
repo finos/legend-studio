@@ -18,6 +18,7 @@ import {
   type GenericClazz,
   assertNonEmptyString,
   assertTrue,
+  AssertionError,
 } from '@finos/legend-shared';
 import { addElementToPackage } from '../../../../../../../helpers/DomainHelper';
 import type { Package } from '../../../../../../metamodels/pure/packageableElements/domain/Package';
@@ -45,11 +46,20 @@ export type V1_ElementFifthPassBuilder = V1_ElementBuilderPass;
 export const V1_checkDuplicatedElement = (
   path: string,
   context: V1_GraphBuilderContext,
+  cache: Set<string> | undefined,
 ): void => {
-  assertTrue(
-    !context.graph.getNullableElement(path),
-    `Element '${path}' already exists`,
-  );
+  if (cache) {
+    if (cache.has(path)) {
+      throw new AssertionError(`Element '${path}' already exists`);
+    } else {
+      cache.add(path);
+    }
+  } else {
+    assertTrue(
+      !context.graph.getNullableElement(path),
+      `Element '${path}' already exists`,
+    );
+  }
 };
 
 /**
@@ -118,7 +128,8 @@ export class V1_ElementBuilder<T extends V1_PackageableElement> {
   runFirstPass(
     elementProtocol: T,
     context: V1_GraphBuilderContext,
-    packageCache: Map<string, Package>,
+    packageCache: Map<string, Package> | undefined,
+    elementPathCache: Set<string> | undefined,
   ): PackageableElement {
     assertNonEmptyString(
       elementProtocol.package,
@@ -132,7 +143,7 @@ export class V1_ElementBuilder<T extends V1_PackageableElement> {
       elementProtocol.package,
       elementProtocol.name,
     );
-    V1_checkDuplicatedElement(path, context);
+    V1_checkDuplicatedElement(path, context, elementPathCache);
     const element = this.firstPass(elementProtocol, context);
     addElementToPackage(
       context.currentSubGraph.getOrCreatePackage(

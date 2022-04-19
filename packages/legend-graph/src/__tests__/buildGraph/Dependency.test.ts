@@ -121,7 +121,7 @@ test(
     // check dependency manager
     expect(dependencyManager.getModel(firstDependencyKey)).toBeDefined();
     expect(dependencyManager.getModel(secondDependencyKey)).toBeDefined();
-    expect(dependencyManager.allElements.length).toBe(2);
+    expect(dependencyManager.allOwnElements.length).toBe(2);
 
     // make sure dependency entities are not mingled with main graph entities
     expect(graphManagerState.graph.allOwnElements.length).toBe(1);

@@ -103,7 +103,7 @@ export class DependencyManager {
     return Array.from(this.projectDependencyModelsIndex.values());
   }
 
-  get allElements(): PackageableElement[] {
+  get allOwnElements(): PackageableElement[] {
     return this.dependencyGraphs.flatMap((dep) => dep.allOwnElements);
   }
 

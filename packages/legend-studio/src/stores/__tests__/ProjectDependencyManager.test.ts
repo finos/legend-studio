@@ -258,7 +258,7 @@ const testDependencyElements = async (
     expect(dependencyManager.getModel(k)).toBeDefined(),
   );
 
-  expect(dependencyManager.allElements.length).toBe(
+  expect(dependencyManager.allOwnElements.length).toBe(
     dependencyElementPaths.length,
   );
 

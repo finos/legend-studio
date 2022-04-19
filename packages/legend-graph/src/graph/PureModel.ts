@@ -89,6 +89,10 @@ export class CoreModel extends BasicModel {
     this.setOwnStore(this.modelStore.path, this.modelStore);
   }
 
+  override get allOwnElements(): PackageableElement[] {
+    return [...super.allOwnElements, ...this.primitiveTypes];
+  }
+
   /**
    * NOTE: primitive types are special, they are not put in any package (i.e. they are not linked to `Root` package at all)
    */
@@ -171,7 +175,7 @@ export class GenerationModel extends BasicModel {
  * The model of Pure, a.k.a the Pure graph
  */
 export class PureModel extends BasicModel {
-  private coreModel: CoreModel;
+  coreModel: CoreModel;
   systemModel: SystemModel;
   generationModel: GenerationModel;
   dependencyManager: DependencyManager; // used to manage the elements from dependency projects

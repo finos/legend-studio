@@ -855,6 +855,21 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     inputs: V1_GraphBuilderInput[],
     options?: GraphBuilderOptions,
   ): Promise<void> {
+    // create the element path cache for faster duplication check
+    // NOTE: We base on the assumption here that our graph building is cascading, i.e.
+    // it first builds core, system, dependencies, graph, and generation.
+    // this way, as we build the a graph, we know the next step's duplication check
+    // has path cache consisting of all element from its base graphs
+    const elementPathCache = new Set<string>(
+      [
+        ...graph.coreModel.allOwnElements,
+        ...graph.systemModel.allOwnElements,
+        ...graph.dependencyManager.allOwnElements,
+        ...graph.allOwnElements,
+        ...graph.generationModel.allOwnElements,
+      ].map((el) => el.path),
+    );
+
     await Promise.all(
       inputs.flatMap(async (input) => {
         // create the package cache
@@ -867,6 +882,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
               new V1_ProtocolToMetaModelGraphFirstPassBuilder(
                 this.getBuilderContext(graph, input.model, element, options),
                 packageCache,
+                elementPathCache,
               ),
             ),
           ),
@@ -885,6 +901,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
                       options,
                     ),
                     packageCache,
+                    elementPathCache,
                   ),
                 ),
             ),
@@ -2480,7 +2497,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     const dependencyManager = graph.dependencyManager;
     const generatedModel = graph.generationModel;
     graphData.elements = [
-      ...dependencyManager.allElements,
+      ...dependencyManager.allOwnElements,
       ...generatedModel.allOwnElements,
     ].map((element) => this.elementToProtocol(element));
     this.log.info(
