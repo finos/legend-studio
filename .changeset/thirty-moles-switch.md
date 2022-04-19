@@ -2,4 +2,4 @@
 "@finos/legend-graph": patch
 ---
 
-Fix semi interactive service registration with a pure multi execution.
+Support Pure `multi-execution` when registering service in `semi-interactive` mode ([#1059](https://github.com/finos/legend-studio/issues/1059))
