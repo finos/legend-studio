@@ -604,9 +604,7 @@ export const observe_Abstract_EmbeddedRelationalInstanceSetImplementation = (
 
   makeObservable(metamodel, {
     id: observable,
-    propertyMappings: observable,
     rootInstanceSetImplementation: observable,
-    parent: observable,
     primaryKey: observable,
   });
 

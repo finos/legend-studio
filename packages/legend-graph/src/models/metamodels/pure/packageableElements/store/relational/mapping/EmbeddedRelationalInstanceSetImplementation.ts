@@ -40,6 +40,7 @@ import type { PackageableElementReference } from '../../../PackageableElementRef
 import type { PropertyReference } from '../../../domain/PropertyReference';
 import type { RelationalInstanceSetImplementation } from './RelationalInstanceSetImplementation';
 import { InferableMappingElementRootExplicitValue } from '../../../mapping/InferableMappingElementRoot';
+import type { MappingClass } from '../../../mapping/MappingClass';
 
 export class EmbeddedRelationalInstanceSetImplementation
   extends PropertyMapping
@@ -56,6 +57,7 @@ export class EmbeddedRelationalInstanceSetImplementation
   rootInstanceSetImplementation: RootRelationalInstanceSetImplementation; // in Pure we call this `setMappingOwner`
   parent: Mapping;
   primaryKey: RelationalOperationElement[] = [];
+  mappingClass?: MappingClass | undefined;
 
   constructor(
     owner: PropertyMappingsImplementation,
