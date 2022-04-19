@@ -88,7 +88,7 @@ export class DSLDiagram_PureProtocolProcessorPlugin extends PureProtocolProcesso
             elementProtocol.package,
             elementProtocol.name,
           );
-          const element = getOwnDiagram(path, context.graph);
+          const element = getOwnDiagram(path, context.currentSubGraph);
           element.classViews = elementProtocol.classViews.map((classView) =>
             V1_buildClassView(classView, context, element),
           );

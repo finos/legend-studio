@@ -595,7 +595,7 @@ export const V1_buildPersistence = (
   context: V1_GraphBuilderContext,
 ): void => {
   const path = V1_buildFullPath(protocol.package, protocol.name);
-  const persistence = getOwnPersistence(path, context.graph);
+  const persistence = getOwnPersistence(path, context.currentSubGraph);
   persistence.documentation = guaranteeNonEmptyString(
     protocol.documentation,
     `Persistence 'documentation' field is missing or empty`,

@@ -72,7 +72,7 @@ export class V1_ProtocolToMetaModelGraphFifthPassBuilder
   }
 
   visit_Class(element: V1_Class): void {
-    const _class = this.context.graph.getOwnClass(
+    const _class = this.context.currentSubGraph.getOwnClass(
       V1_buildFullPath(element.package, element.name),
     );
     _class.derivedProperties = element.derivedProperties.map(
@@ -99,7 +99,7 @@ export class V1_ProtocolToMetaModelGraphFifthPassBuilder
   }
 
   visit_Database(element: V1_Database): void {
-    const database = this.context.graph.getOwnDatabase(
+    const database = this.context.currentSubGraph.getOwnDatabase(
       V1_buildFullPath(element.package, element.name),
     );
     element.schemas.forEach((schema) =>

@@ -86,7 +86,7 @@ export class V1_ProtocolToMetaModelGraphThirdPassBuilder
   }
 
   visit_Class(element: V1_Class): void {
-    const _class = this.context.graph.getOwnClass(
+    const _class = this.context.currentSubGraph.getOwnClass(
       V1_buildFullPath(element.package, element.name),
     );
     element.superTypes.forEach((type) => {
@@ -129,7 +129,7 @@ export class V1_ProtocolToMetaModelGraphThirdPassBuilder
   }
 
   visit_Association(element: V1_Association): void {
-    const association = this.context.graph.getOwnAssociation(
+    const association = this.context.currentSubGraph.getOwnAssociation(
       V1_buildFullPath(element.package, element.name),
     );
     assertTrue(
@@ -173,7 +173,7 @@ export class V1_ProtocolToMetaModelGraphThirdPassBuilder
   }
 
   visit_Database(element: V1_Database): void {
-    const database = this.context.graph.getOwnDatabase(
+    const database = this.context.currentSubGraph.getOwnDatabase(
       V1_buildFullPath(element.package, element.name),
     );
     element.schemas.forEach((schema) =>
@@ -182,7 +182,7 @@ export class V1_ProtocolToMetaModelGraphThirdPassBuilder
   }
 
   visit_Mapping(element: V1_Mapping): void {
-    const mapping = this.context.graph.getOwnMapping(
+    const mapping = this.context.currentSubGraph.getOwnMapping(
       V1_buildFullPath(element.package, element.name),
     );
     mapping.classMappings = element.classMappings.map((classMapping) =>

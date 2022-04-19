@@ -83,7 +83,7 @@ export class DSLText_PureProtocolProcessorPlugin extends PureProtocolProcessorPl
             elementProtocol.package,
             elementProtocol.name,
           );
-          const element = getOwnText(path, context.graph);
+          const element = getOwnText(path, context.currentSubGraph);
           element.type =
             Object.values(TEXT_TYPE).find(
               (type) => type === elementProtocol.type,

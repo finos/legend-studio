@@ -132,7 +132,7 @@ export class ESService_PureProtocolProcessorPlugin
             elementProtocol.package,
             elementProtocol.name,
           );
-          const element = getOwnServiceStore(path, context.graph);
+          const element = getOwnServiceStore(path, context.currentSubGraph);
           element.description = elementProtocol.description;
           element.elements = elementProtocol.elements.map(
             (serviceStoreElement) =>

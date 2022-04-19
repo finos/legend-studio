@@ -133,7 +133,7 @@ export class DSLExternalFormat_PureProtocolProcessorPlugin
             elementProtocol.package,
             elementProtocol.name,
           );
-          const element = getOwnBinding(path, context.graph);
+          const element = getOwnBinding(path, context.currentSubGraph);
           const schemaSet = elementProtocol.schemaSet
             ? V1_resolveSchemaSet(elementProtocol.schemaSet, context)
             : undefined;
@@ -189,7 +189,7 @@ export class DSLExternalFormat_PureProtocolProcessorPlugin
             elementProtocol.package,
             elementProtocol.name,
           );
-          const element = getOwnSchemaSet(path, context.graph);
+          const element = getOwnSchemaSet(path, context.currentSubGraph);
           element.format = guaranteeNonEmptyString(elementProtocol.format);
           element.schemas = elementProtocol.schemas.map((schema) => {
             const schemaElement = new Schema();

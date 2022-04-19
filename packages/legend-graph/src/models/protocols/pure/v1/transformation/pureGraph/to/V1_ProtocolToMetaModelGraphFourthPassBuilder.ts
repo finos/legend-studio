@@ -97,7 +97,7 @@ export class V1_ProtocolToMetaModelGraphFourthPassBuilder
   }
 
   visit_Database(element: V1_Database): void {
-    const database = this.context.graph.getOwnDatabase(
+    const database = this.context.currentSubGraph.getOwnDatabase(
       V1_buildFullPath(element.package, element.name),
     );
     database.joins = element.joins.map((join) =>
@@ -110,7 +110,7 @@ export class V1_ProtocolToMetaModelGraphFourthPassBuilder
 
   visit_Mapping(element: V1_Mapping): void {
     const path = V1_buildFullPath(element.package, element.name);
-    const mapping = this.context.graph.getOwnMapping(path);
+    const mapping = this.context.currentSubGraph.getOwnMapping(path);
     mapping.associationMappings = element.associationMappings.map(
       (_associationMapping) =>
         V1_buildAssociationMapping(_associationMapping, mapping, this.context),

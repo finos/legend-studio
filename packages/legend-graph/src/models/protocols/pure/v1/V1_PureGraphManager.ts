@@ -583,12 +583,12 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       const buildInputs: V1_GraphBuilderInput[] = Array.from(
         dependencyDataMap.entries(),
       ).map(([dependencyKey, dependencyData]) => ({
+        model: graph.dependencyManager.getModel(dependencyKey),
         data: indexPureModelContextData(
           report,
           dependencyData,
           this.extensions,
         ),
-        model: graph.dependencyManager.getModel(dependencyKey),
       }));
 
       // build
@@ -723,17 +723,12 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_ELEMENTS_DESERIALIZED);
 
       // prepare build inputs
-      const buildInputs = Array.from(generatedDataMap.entries()).map(
-        ([generationParentPath, generatedData]) => ({
-          parentElementPath: generationParentPath,
-          data: indexPureModelContextData(
-            report,
-            generatedData,
-            this.extensions,
-          ),
-          model: generatedModel,
-        }),
-      );
+      const buildInputs: V1_GraphBuilderInput[] = Array.from(
+        generatedDataMap.entries(),
+      ).map(([generationParentPath, generatedData]) => ({
+        model: generatedModel,
+        data: indexPureModelContextData(report, generatedData, this.extensions),
+      }));
 
       // build
       await this.buildGraphFromInputs(

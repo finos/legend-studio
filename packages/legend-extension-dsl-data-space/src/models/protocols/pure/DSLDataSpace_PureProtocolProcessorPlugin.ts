@@ -118,7 +118,7 @@ export class DSLDataSpace_PureProtocolProcessorPlugin extends PureProtocolProces
             elementProtocol.package,
             elementProtocol.name,
           );
-          const element = getOwnDataSpace(path, context.graph);
+          const element = getOwnDataSpace(path, context.currentSubGraph);
           element.stereotypes = elementProtocol.stereotypes
             .map((stereotype) => context.resolveStereotype(stereotype))
             .filter(isNonNullable);
