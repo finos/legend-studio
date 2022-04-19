@@ -84,6 +84,9 @@ import {
   V1_DateTimeValidityMilestoning,
   V1_SourceSpecifiesFromAndThruDateTime,
   V1_SourceSpecifiesFromDateTime,
+  V1_SourceSpecifiesInAndOutDateTime,
+  V1_SourceSpecifiesInDateTime,
+  V1_TransactionDerivation,
   type V1_TransactionMilestoning,
   type V1_ValidityDerivation,
   type V1_ValidityMilestoning,
@@ -269,6 +272,65 @@ const V1_deserializeMergeStrategy = (
 };
 
 /**********
+ * transaction derivation
+ **********/
+
+enum V1_TransactionDerivationType {
+  SOURCE_SPECIFIES_IN_DATE_TIME = 'sourceSpecifiesInDateTime',
+  SOURCE_SPECIFIES_IN_AND_OUT_DATE_TIME = 'sourceSpecifiesInAndOutDateTime',
+}
+
+const V1_sourceSpecifiesInDateTimeModelSchema = createModelSchema(
+  V1_SourceSpecifiesInDateTime,
+  {
+    _type: usingConstantValueSchema(
+      V1_TransactionDerivationType.SOURCE_SPECIFIES_IN_DATE_TIME,
+    ),
+    sourceDateTimeInField: primitive(),
+  },
+);
+
+const V1_sourceSpecifiesInAndOutDateTimeModelSchema = createModelSchema(
+  V1_SourceSpecifiesInAndOutDateTime,
+  {
+    _type: usingConstantValueSchema(
+      V1_TransactionDerivationType.SOURCE_SPECIFIES_IN_AND_OUT_DATE_TIME,
+    ),
+    sourceDateTimeInField: primitive(),
+    sourceDateTimeOutField: primitive(),
+  },
+);
+
+const V1_serializeTransactionDerivation = (
+  protocol: V1_TransactionDerivation,
+): PlainObject<V1_TransactionDerivation> => {
+  if (protocol instanceof V1_SourceSpecifiesInDateTime) {
+    return serialize(V1_sourceSpecifiesInDateTimeModelSchema, protocol);
+  } else if (protocol instanceof V1_SourceSpecifiesInAndOutDateTime) {
+    return serialize(V1_sourceSpecifiesInAndOutDateTimeModelSchema, protocol);
+  }
+  throw new UnsupportedOperationError(
+    `Can't serialize transaction derivation`,
+    protocol,
+  );
+};
+
+const V1_deserializeTransactionDerivation = (
+  json: PlainObject<V1_TransactionDerivation>,
+): V1_ValidityDerivation => {
+  switch (json._type) {
+    case V1_TransactionDerivationType.SOURCE_SPECIFIES_IN_DATE_TIME:
+      return deserialize(V1_sourceSpecifiesInDateTimeModelSchema, json);
+    case V1_TransactionDerivationType.SOURCE_SPECIFIES_IN_AND_OUT_DATE_TIME:
+      return deserialize(V1_sourceSpecifiesInAndOutDateTimeModelSchema, json);
+    default:
+      throw new UnsupportedOperationError(
+        `Can't deserialize transaction derivation '${json._type}'`,
+      );
+  }
+};
+
+/**********
  * transaction milestoning
  **********/
 
@@ -297,6 +359,10 @@ const V1_dateTimeTransactionMilestoningModelSchema = createModelSchema(
     ),
     dateTimeInName: primitive(),
     dateTimeOutName: primitive(),
+    derivation: custom(
+      (val) => V1_serializeTransactionDerivation(val),
+      (val) => V1_deserializeTransactionDerivation(val),
+    ),
   },
 );
 
@@ -309,6 +375,10 @@ const V1_batchIdAndDateTimeTransactionMilestoningModelSchema =
     batchIdOutName: primitive(),
     dateTimeInName: primitive(),
     dateTimeOutName: primitive(),
+    derivation: custom(
+      (val) => V1_serializeTransactionDerivation(val),
+      (val) => V1_deserializeTransactionDerivation(val),
+    ),
   });
 
 const V1_serializeTransactionMilestoning = (

@@ -48,6 +48,9 @@ import {
   V1_DateTimeValidityMilestoning,
   V1_SourceSpecifiesFromAndThruDateTime,
   V1_SourceSpecifiesFromDateTime,
+  V1_SourceSpecifiesInAndOutDateTime,
+  V1_SourceSpecifiesInDateTime,
+  type V1_TransactionDerivation,
   type V1_TransactionMilestoning,
   type V1_ValidityDerivation,
   type V1_ValidityMilestoning,
@@ -115,6 +118,7 @@ import {
   DateTimeValidityMilestoning,
   SourceSpecifiesFromAndThruDateTime,
   SourceSpecifiesFromDateTime,
+  SourceSpecifiesInDateTime,
   type TransactionMilestoning,
   type ValidityDerivation,
   type ValidityMilestoning,
@@ -264,6 +268,30 @@ export const V1_buildMergeStrategy = (
 };
 
 /**********
+ * transaction derivation
+ **********/
+
+export const V1_buildTransactionDerivation = (
+  protocol: V1_TransactionDerivation,
+  context: V1_GraphBuilderContext,
+): ValidityDerivation => {
+  if (protocol instanceof V1_SourceSpecifiesInDateTime) {
+    const derivation = new SourceSpecifiesInDateTime();
+    derivation.sourceDateTimeInField = protocol.sourceDateTimeInField;
+    return derivation;
+  } else if (protocol instanceof V1_SourceSpecifiesInAndOutDateTime) {
+    const derivation = new V1_SourceSpecifiesInAndOutDateTime();
+    derivation.sourceDateTimeInField = protocol.sourceDateTimeInField;
+    derivation.sourceDateTimeOutField = protocol.sourceDateTimeOutField;
+    return derivation;
+  }
+  throw new UnsupportedOperationError(
+    `Can't build transaction derivation mode`,
+    protocol,
+  );
+};
+
+/**********
  * transaction milestoning
  **********/
 
@@ -280,6 +308,10 @@ export const V1_buildTransactionMilestoning = (
     const milestoning = new DateTimeTransactionMilestoning();
     milestoning.dateTimeInName = protocol.dateTimeInName;
     milestoning.dateTimeOutName = protocol.dateTimeOutName;
+    milestoning.derivation = V1_buildTransactionDerivation(
+      protocol.derivation,
+      context,
+    );
     return milestoning;
   } else if (protocol instanceof V1_BatchIdAndDateTimeTransactionMilestoning) {
     const milestoning = new BatchIdAndDateTimeTransactionMilestoning();
@@ -287,6 +319,10 @@ export const V1_buildTransactionMilestoning = (
     milestoning.batchIdOutName = protocol.batchIdOutName;
     milestoning.dateTimeInName = protocol.dateTimeInName;
     milestoning.dateTimeOutName = protocol.dateTimeOutName;
+    milestoning.derivation = V1_buildTransactionDerivation(
+      protocol.derivation,
+      context,
+    );
     return milestoning;
   }
   throw new UnsupportedOperationError(

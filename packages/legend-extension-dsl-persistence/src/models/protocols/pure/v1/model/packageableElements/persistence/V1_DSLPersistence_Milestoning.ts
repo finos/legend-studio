@@ -45,12 +45,14 @@ export class V1_DateTimeTransactionMilestoning
 {
   dateTimeInName!: string;
   dateTimeOutName!: string;
+  derivation!: V1_TransactionDerivation;
 
   override get hashCode(): string {
     return hashArray([
       PERSISTENCE_HASH_STRUCTURE.DATE_TIME_TRANSACTION_MILESTONING,
       this.dateTimeInName,
       this.dateTimeOutName,
+      this.derivation,
     ]);
   }
 }
@@ -63,6 +65,7 @@ export class V1_BatchIdAndDateTimeTransactionMilestoning
   batchIdOutName!: string;
   dateTimeInName!: string;
   dateTimeOutName!: string;
+  derivation!: V1_TransactionDerivation;
 
   override get hashCode(): string {
     return hashArray([
@@ -71,6 +74,43 @@ export class V1_BatchIdAndDateTimeTransactionMilestoning
       this.batchIdOutName,
       this.dateTimeInName,
       this.dateTimeOutName,
+      this.derivation,
+    ]);
+  }
+}
+
+// transaction derivation
+
+export abstract class V1_TransactionDerivation implements Hashable {
+  abstract get hashCode(): string;
+}
+
+export class V1_SourceSpecifiesInDateTime
+  extends V1_TransactionDerivation
+  implements Hashable
+{
+  sourceDateTimeInField!: string;
+
+  override get hashCode(): string {
+    return hashArray([
+      PERSISTENCE_HASH_STRUCTURE.SOURCE_SPECIFIES_IN_DATE_TIME,
+      this.sourceDateTimeInField,
+    ]);
+  }
+}
+
+export class V1_SourceSpecifiesInAndOutDateTime
+  extends V1_TransactionDerivation
+  implements Hashable
+{
+  sourceDateTimeInField!: string;
+  sourceDateTimeOutField!: string;
+
+  override get hashCode(): string {
+    return hashArray([
+      PERSISTENCE_HASH_STRUCTURE.SOURCE_SPECIFIES_IN_AND_OUT_DATE_TIME,
+      this.sourceDateTimeInField,
+      this.sourceDateTimeOutField,
     ]);
   }
 }

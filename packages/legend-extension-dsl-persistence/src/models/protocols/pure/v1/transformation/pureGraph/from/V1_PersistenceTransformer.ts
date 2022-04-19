@@ -48,6 +48,9 @@ import {
   DateTimeValidityMilestoning,
   SourceSpecifiesFromAndThruDateTime,
   SourceSpecifiesFromDateTime,
+  SourceSpecifiesInAndOutDateTime,
+  SourceSpecifiesInDateTime,
+  type TransactionDerivation,
   type TransactionMilestoning,
   type ValidityDerivation,
   type ValidityMilestoning,
@@ -115,6 +118,7 @@ import {
   V1_DateTimeValidityMilestoning,
   V1_SourceSpecifiesFromAndThruDateTime,
   V1_SourceSpecifiesFromDateTime,
+  V1_SourceSpecifiesInDateTime,
   type V1_TransactionMilestoning,
   type V1_ValidityDerivation,
   type V1_ValidityMilestoning,
@@ -263,6 +267,29 @@ export const V1_transformMergeStrategy = (
 };
 
 /**********
+ * transaction derivation
+ **********/
+
+export const V1_transformTransactionDerivation = (
+  element: TransactionDerivation,
+  context: V1_GraphTransformerContext,
+): V1_ValidityDerivation => {
+  if (element instanceof SourceSpecifiesInDateTime) {
+    const protocol = new V1_SourceSpecifiesInDateTime();
+    protocol.sourceDateTimeInField = element.sourceDateTimeInField;
+    return protocol;
+  } else if (element instanceof SourceSpecifiesInAndOutDateTime) {
+    const protocol = new SourceSpecifiesInAndOutDateTime();
+    protocol.sourceDateTimeInField = element.sourceDateTimeInField;
+    protocol.sourceDateTimeOutField = element.sourceDateTimeOutField;
+    return protocol;
+  }
+  throw new UnsupportedOperationError(
+    `Can't transform transaction derivation '${element}'`,
+  );
+};
+
+/**********
  * transaction milestoning
  **********/
 
@@ -279,6 +306,7 @@ export const V1_transformTransactionMilestoning = (
     const protocol = new V1_DateTimeTransactionMilestoning();
     protocol.dateTimeInName = element.dateTimeInName;
     protocol.dateTimeOutName = element.dateTimeOutName;
+    protocol.derivation = element.derivation;
     return protocol;
   } else if (element instanceof BatchIdAndDateTimeTransactionMilestoning) {
     const protocol = new V1_BatchIdAndDateTimeTransactionMilestoning();
@@ -286,6 +314,7 @@ export const V1_transformTransactionMilestoning = (
     protocol.batchIdOutName = element.batchIdOutName;
     protocol.dateTimeInName = element.dateTimeInName;
     protocol.dateTimeOutName = element.dateTimeOutName;
+    protocol.derivation = element.derivation;
     return protocol;
   }
   throw new UnsupportedOperationError(
