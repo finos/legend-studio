@@ -308,10 +308,12 @@ export const V1_buildTransactionMilestoning = (
     const milestoning = new DateTimeTransactionMilestoning();
     milestoning.dateTimeInName = protocol.dateTimeInName;
     milestoning.dateTimeOutName = protocol.dateTimeOutName;
-    milestoning.derivation = V1_buildTransactionDerivation(
-      protocol.derivation,
-      context,
-    );
+    if (protocol.derivation) {
+      milestoning.derivation = V1_buildTransactionDerivation(
+        protocol.derivation,
+        context,
+      );
+    }
     return milestoning;
   } else if (protocol instanceof V1_BatchIdAndDateTimeTransactionMilestoning) {
     const milestoning = new BatchIdAndDateTimeTransactionMilestoning();
@@ -319,10 +321,12 @@ export const V1_buildTransactionMilestoning = (
     milestoning.batchIdOutName = protocol.batchIdOutName;
     milestoning.dateTimeInName = protocol.dateTimeInName;
     milestoning.dateTimeOutName = protocol.dateTimeOutName;
-    milestoning.derivation = V1_buildTransactionDerivation(
-      protocol.derivation,
-      context,
-    );
+    if (protocol.derivation) {
+      milestoning.derivation = V1_buildTransactionDerivation(
+        protocol.derivation,
+        context,
+      );
+    }
     return milestoning;
   }
   throw new UnsupportedOperationError(

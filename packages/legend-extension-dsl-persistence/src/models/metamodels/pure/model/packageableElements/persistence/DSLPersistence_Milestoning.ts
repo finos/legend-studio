@@ -45,14 +45,14 @@ export class DateTimeTransactionMilestoning
 {
   dateTimeInName!: string;
   dateTimeOutName!: string;
-  derivation!: TransactionDerivation;
+  derivation?: TransactionDerivation;
 
   override get hashCode(): string {
     return hashArray([
       PERSISTENCE_HASH_STRUCTURE.DATE_TIME_TRANSACTION_MILESTONING,
       this.dateTimeInName,
       this.dateTimeOutName,
-      this.derivation,
+      this.derivation ?? '',
     ]);
   }
 }
@@ -65,7 +65,7 @@ export class BatchIdAndDateTimeTransactionMilestoning
   batchIdOutName!: string;
   dateTimeInName!: string;
   dateTimeOutName!: string;
-  derivation!: TransactionDerivation;
+  derivation?: TransactionDerivation;
 
   override get hashCode(): string {
     return hashArray([
@@ -74,7 +74,7 @@ export class BatchIdAndDateTimeTransactionMilestoning
       this.batchIdOutName,
       this.dateTimeInName,
       this.dateTimeOutName,
-      this.derivation,
+      this.derivation ?? '',
     ]);
   }
 }

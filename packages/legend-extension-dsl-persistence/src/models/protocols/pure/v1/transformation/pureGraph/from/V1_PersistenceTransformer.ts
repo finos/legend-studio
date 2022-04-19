@@ -306,7 +306,9 @@ export const V1_transformTransactionMilestoning = (
     const protocol = new V1_DateTimeTransactionMilestoning();
     protocol.dateTimeInName = element.dateTimeInName;
     protocol.dateTimeOutName = element.dateTimeOutName;
-    protocol.derivation = element.derivation;
+    if (element.derivation) {
+      protocol.derivation = element.derivation;
+    }
     return protocol;
   } else if (element instanceof BatchIdAndDateTimeTransactionMilestoning) {
     const protocol = new V1_BatchIdAndDateTimeTransactionMilestoning();
@@ -314,7 +316,9 @@ export const V1_transformTransactionMilestoning = (
     protocol.batchIdOutName = element.batchIdOutName;
     protocol.dateTimeInName = element.dateTimeInName;
     protocol.dateTimeOutName = element.dateTimeOutName;
-    protocol.derivation = element.derivation;
+    if (element.derivation) {
+      protocol.derivation = element.derivation;
+    }
     return protocol;
   }
   throw new UnsupportedOperationError(
