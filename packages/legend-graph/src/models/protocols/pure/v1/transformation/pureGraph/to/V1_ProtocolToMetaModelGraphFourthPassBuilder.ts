@@ -93,13 +93,11 @@ export class V1_ProtocolToMetaModelGraphFourthPassBuilder
   }
 
   visit_FlatData(element: V1_FlatData): void {
-    this.context.graph.getFlatDataStore(
-      V1_buildFullPath(element.package, element.name),
-    );
+    return;
   }
 
   visit_Database(element: V1_Database): void {
-    const database = this.context.graph.getDatabase(
+    const database = this.context.graph.getOwnDatabase(
       V1_buildFullPath(element.package, element.name),
     );
     database.joins = element.joins.map((join) =>
@@ -112,7 +110,7 @@ export class V1_ProtocolToMetaModelGraphFourthPassBuilder
 
   visit_Mapping(element: V1_Mapping): void {
     const path = V1_buildFullPath(element.package, element.name);
-    const mapping = this.context.graph.getMapping(path);
+    const mapping = this.context.graph.getOwnMapping(path);
     mapping.associationMappings = element.associationMappings.map(
       (_associationMapping) =>
         V1_buildAssociationMapping(_associationMapping, mapping, this.context),

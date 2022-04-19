@@ -24,6 +24,8 @@ import {
   returnUndefOnError,
   promisify,
   filterByType,
+  guaranteeNonNullable,
+  guaranteeType,
 } from '@finos/legend-shared';
 import type { ROOT_PACKAGE_NAME } from '../MetaModelConst';
 import { Package } from '../models/metamodels/pure/packageableElements/domain/Package';
@@ -223,48 +225,141 @@ export abstract class BasicModel {
     return extensions[0] as PureGraphExtension<T>;
   }
 
-  getOwnSection = (path: string): Section | undefined =>
+  getOwnNullableSection = (path: string): Section | undefined =>
     this.elementSectionMap.get(path);
-  getOwnSectionIndex = (path: string): SectionIndex | undefined =>
+
+  getOwnNullableSectionIndex = (path: string): SectionIndex | undefined =>
     this.sectionIndicesIndex.get(path);
-  getOwnProfile = (path: string): Profile | undefined =>
+  getOwnNullableProfile = (path: string): Profile | undefined =>
     this.profilesIndex.get(path);
-  getOwnType = (path: string): Type | undefined => this.typesIndex.get(path);
-  getOwnClass = (path: string): Class | undefined => {
-    const el = this.getOwnType(path);
+  getOwnNullableType = (path: string): Type | undefined =>
+    this.typesIndex.get(path);
+  getOwnNullableClass = (path: string): Class | undefined => {
+    const el = this.getOwnNullableType(path);
     return el instanceof Class ? el : undefined;
   };
-  getOwnEnumeration = (path: string): Enumeration | undefined => {
-    const el = this.getOwnType(path);
+  getOwnNullableEnumeration = (path: string): Enumeration | undefined => {
+    const el = this.getOwnNullableType(path);
     return el instanceof Enumeration ? el : undefined;
   };
-  getOwnMeasure = (path: string): Measure | undefined => {
-    const el = this.getOwnType(path);
+  getOwnNullableMeasure = (path: string): Measure | undefined => {
+    const el = this.getOwnNullableType(path);
     return el instanceof Measure ? el : undefined;
   };
-  getOwnAssociation = (path: string): Association | undefined =>
+  getOwnNullableAssociation = (path: string): Association | undefined =>
     this.associationsIndex.get(path);
-  getOwnFunction = (path: string): ConcreteFunctionDefinition | undefined =>
-    this.functionsIndex.get(path);
-  getOwnStore = (path: string): Store | undefined => this.storesIndex.get(path);
-  getOwnMapping = (path: string): Mapping | undefined =>
+  getOwnNullableFunction = (
+    path: string,
+  ): ConcreteFunctionDefinition | undefined => this.functionsIndex.get(path);
+  getOwnNullableStore = (path: string): Store | undefined =>
+    this.storesIndex.get(path);
+  getOwnNullableMapping = (path: string): Mapping | undefined =>
     this.mappingsIndex.get(path);
-  getOwnConnection = (path: string): PackageableConnection | undefined =>
-    this.connectionsIndex.get(path);
-  getOwnRuntime = (path: string): PackageableRuntime | undefined =>
+  getOwnNullableConnection = (
+    path: string,
+  ): PackageableConnection | undefined => this.connectionsIndex.get(path);
+  getOwnNullableRuntime = (path: string): PackageableRuntime | undefined =>
     this.runtimesIndex.get(path);
-  getOwnService = (path: string): Service | undefined =>
+  getOwnNullableService = (path: string): Service | undefined =>
     this.servicesIndex.get(path);
-  getOwnGenerationSpecification = (
+  getOwnNullableGenerationSpecification = (
     path: string,
   ): GenerationSpecification | undefined =>
     this.generationSpecificationsIndex.get(path);
-  getOwnFileGeneration = (
+  getOwnNullableFileGeneration = (
     path: string,
   ): FileGenerationSpecification | undefined =>
     this.fileGenerationsIndex.get(path);
 
-  getOwnExtensionElement<T extends PackageableElement>(
+  getOwnSectionIndex = (path: string): SectionIndex =>
+    guaranteeNonNullable(
+      this.getOwnNullableSectionIndex(path),
+      `Can't find section index '${path}'`,
+    );
+  getOwnProfile = (path: string): Profile =>
+    guaranteeNonNullable(
+      this.getOwnNullableProfile(path),
+      `Can't find profile '${path}'`,
+    );
+  getOwnType = (path: string): Type =>
+    guaranteeNonNullable(
+      this.getOwnNullableType(path),
+      `Can't find type '${path}'`,
+    );
+  getOwnClass = (path: string): Class =>
+    guaranteeNonNullable(
+      this.getOwnNullableClass(path),
+      `Can't find class '${path}'`,
+    );
+  getOwnEnumeration = (path: string): Enumeration =>
+    guaranteeNonNullable(
+      this.getOwnNullableEnumeration(path),
+      `Can't find enumeration '${path}'`,
+    );
+  getOwnMeasure = (path: string): Measure =>
+    guaranteeNonNullable(
+      this.getOwnNullableMeasure(path),
+      `Can't find measure '${path}'`,
+    );
+  getOwnAssociation = (path: string): Association =>
+    guaranteeNonNullable(
+      this.getOwnNullableAssociation(path),
+      `Can't find association '${path}'`,
+    );
+  getOwnFunction = (path: string): ConcreteFunctionDefinition =>
+    guaranteeNonNullable(
+      this.getOwnNullableFunction(path),
+      `Can't find function '${path}'`,
+    );
+  getOwnStore = (path: string): Store =>
+    guaranteeNonNullable(
+      this.getOwnNullableStore(path),
+      `Can't find store '${path}'`,
+    );
+  getOwnDatabase = (path: string): Database =>
+    guaranteeType(
+      this.getOwnNullableStore(path),
+      Database,
+      `Can't find database '${path}'`,
+    );
+  getOwnFlatDataStore = (path: string): FlatData =>
+    guaranteeType(
+      this.getOwnNullableStore(path),
+      FlatData,
+      `Can't find flat-data store '${path}'`,
+    );
+  getOwnMapping = (path: string): Mapping =>
+    guaranteeNonNullable(
+      this.getOwnNullableMapping(path),
+      `Can't find mapping '${path}'`,
+    );
+  getOwnConnection = (path: string): PackageableConnection =>
+    guaranteeNonNullable(
+      this.getOwnNullableConnection(path),
+      `Can't find connection '${path}'`,
+    );
+  getOwnRuntime = (path: string): PackageableRuntime =>
+    guaranteeNonNullable(
+      this.getOwnNullableRuntime(path),
+      `Can't find runtime '${path}'`,
+    );
+  getOwnService = (path: string): Service =>
+    guaranteeNonNullable(
+      this.getOwnNullableService(path),
+      `Can't find service '${path}'`,
+    );
+  getOwnGenerationSpecification = (path: string): GenerationSpecification =>
+    guaranteeNonNullable(
+      this.getOwnNullableGenerationSpecification(path),
+      `Can't find generation specification '${path}'`,
+    );
+  getOwnFileGeneration = (path: string): FileGenerationSpecification =>
+    guaranteeNonNullable(
+      this.getOwnNullableFileGeneration(path),
+      `Can't find file generation '${path}'`,
+    );
+
+  getOwnNullableExtensionElement<T extends PackageableElement>(
     path: string,
     extensionElementClass: Clazz<T>,
   ): T | undefined {

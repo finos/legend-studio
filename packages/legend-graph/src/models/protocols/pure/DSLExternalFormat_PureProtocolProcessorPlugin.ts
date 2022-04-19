@@ -25,8 +25,8 @@ import {
 import { deserialize, serialize } from 'serializr';
 import type { PureModel } from '../../../graph/PureModel';
 import {
-  getBinding,
-  getSchemaSet,
+  getOwnBinding,
+  getOwnSchemaSet,
 } from '../../../graphManager/DSLExternalFormat_GraphManagerHelper';
 import type { Connection } from '../../metamodels/pure/packageableElements/connection/Connection';
 import type { Mapping } from '../../metamodels/pure/packageableElements/mapping/Mapping';
@@ -133,7 +133,7 @@ export class DSLExternalFormat_PureProtocolProcessorPlugin
             elementProtocol.package,
             elementProtocol.name,
           );
-          const element = getBinding(path, context.graph);
+          const element = getOwnBinding(path, context.graph);
           const schemaSet = elementProtocol.schemaSet
             ? V1_resolveSchemaSet(elementProtocol.schemaSet, context)
             : undefined;
@@ -189,7 +189,7 @@ export class DSLExternalFormat_PureProtocolProcessorPlugin
             elementProtocol.package,
             elementProtocol.name,
           );
-          const element = getSchemaSet(path, context.graph);
+          const element = getOwnSchemaSet(path, context.graph);
           element.format = guaranteeNonEmptyString(elementProtocol.format);
           element.schemas = elementProtocol.schemas.map((schema) => {
             const schemaElement = new Schema();

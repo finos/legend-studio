@@ -37,7 +37,7 @@ import {
 } from '@finos/legend-graph';
 import { V1_transformDiagram } from './v1/transformation/pureGraph/V1_DSLDiagram_TransformerHelper';
 import { Diagram } from '../../metamodels/pure/packageableElements/diagram/DSLDiagram_Diagram';
-import { getDiagram } from '../../../graphManager/DSLDiagram_GraphManagerHelper';
+import { getOwnDiagram } from '../../../graphManager/DSLDiagram_GraphManagerHelper';
 import {
   V1_buildClassView,
   V1_buildGeneralizationView,
@@ -88,7 +88,7 @@ export class DSLDiagram_PureProtocolProcessorPlugin extends PureProtocolProcesso
             elementProtocol.package,
             elementProtocol.name,
           );
-          const element = getDiagram(path, context.graph);
+          const element = getOwnDiagram(path, context.graph);
           element.classViews = elementProtocol.classViews.map((classView) =>
             V1_buildClassView(classView, context, element),
           );

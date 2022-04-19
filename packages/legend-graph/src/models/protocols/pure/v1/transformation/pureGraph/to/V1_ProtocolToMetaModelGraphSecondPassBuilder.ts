@@ -20,7 +20,6 @@ import {
   UnsupportedOperationError,
   IllegalStateError,
   assertNonNullable,
-  guaranteeNonNullable,
   assertTrue,
   LogEvent,
 } from '@finos/legend-shared';
@@ -94,7 +93,7 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
   }
 
   visit_Profile(element: V1_Profile): void {
-    const profile = this.context.graph.getProfile(
+    const profile = this.context.graph.getOwnProfile(
       V1_buildFullPath(element.package, element.name),
     );
     const uniqueStereotypes = new Set<string>();
@@ -126,8 +125,9 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
   }
 
   visit_Enumeration(element: V1_Enumeration): void {
-    const path = V1_buildFullPath(element.package, element.name);
-    const enumeration = this.context.graph.getEnumeration(path);
+    const enumeration = this.context.graph.getOwnEnumeration(
+      V1_buildFullPath(element.package, element.name),
+    );
     enumeration.stereotypes = element.stereotypes
       .map((stereotype) => this.context.resolveStereotype(stereotype))
       .filter(isNonNullable);
@@ -165,7 +165,7 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
       element.canonicalUnit,
       `Measure 'canonicalUnit' field is missing`,
     );
-    const measure = this.context.graph.getMeasure(
+    const measure = this.context.graph.getOwnMeasure(
       V1_buildFullPath(element.package, element.name),
     );
     measure.canonicalUnit = V1_buildUnit(
@@ -180,7 +180,7 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
   }
 
   visit_Class(element: V1_Class): void {
-    const _class = this.context.graph.getClass(
+    const _class = this.context.graph.getOwnClass(
       V1_buildFullPath(element.package, element.name),
     );
     _class.stereotypes = element.stereotypes
@@ -208,7 +208,7 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
       protocol.returnMultiplicity,
       `Function 'returnMultiplicity' field is missing`,
     );
-    const func = this.context.graph.getFunction(
+    const func = this.context.graph.getOwnFunction(
       V1_buildFullPath(protocol.package, protocol.name),
     );
     func.returnType = this.context.resolveType(protocol.returnType);
@@ -229,7 +229,7 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
   }
 
   visit_FlatData(element: V1_FlatData): void {
-    const flatData = this.context.graph.getFlatDataStore(
+    const flatData = this.context.graph.getOwnFlatDataStore(
       V1_buildFullPath(element.package, element.name),
     );
     flatData.sections = element.sections.map((section) =>
@@ -238,7 +238,7 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
   }
 
   visit_Database(element: V1_Database): void {
-    const database = this.context.graph.getDatabase(
+    const database = this.context.graph.getOwnDatabase(
       V1_buildFullPath(element.package, element.name),
     );
     database.includes = element.includedStores.map((includedStore) =>
@@ -250,7 +250,7 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
   }
 
   visit_Mapping(element: V1_Mapping): void {
-    const mapping = this.context.graph.getMapping(
+    const mapping = this.context.graph.getOwnMapping(
       V1_buildFullPath(element.package, element.name),
     );
     const mappingIncludesSet = new Set<string>();
@@ -277,7 +277,7 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
       element.pattern,
       `Service 'pattern' field is missing or empty`,
     );
-    const service = this.context.graph.getService(
+    const service = this.context.graph.getOwnService(
       V1_buildFullPath(element.package, element.name),
     );
     service.stereotypes = element.stereotypes
@@ -300,9 +300,7 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
   }
 
   visit_SectionIndex(element: V1_SectionIndex): void {
-    const sectionIndex = guaranteeNonNullable(
-      this.context.graph.getOwnSectionIndex(element.path),
-    );
+    const sectionIndex = this.context.graph.getOwnSectionIndex(element.path);
     sectionIndex.sections = element.sections.map((section) =>
       V1_buildSection(section, this.context, sectionIndex),
     );
@@ -313,7 +311,7 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
       element.type,
       `File generation 'type' field is missing or empty`,
     );
-    const fileGeneration = this.context.graph.getFileGeneration(
+    const fileGeneration = this.context.graph.getOwnFileGeneration(
       V1_buildFullPath(element.package, element.name),
     );
     fileGeneration.type = element.type;
@@ -326,7 +324,7 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
   }
 
   visit_GenerationSpecification(element: V1_GenerationSpecification): void {
-    const generationSpec = this.context.graph.getGenerationSpecification(
+    const generationSpec = this.context.graph.getOwnGenerationSpecification(
       V1_buildFullPath(element.package, element.name),
     );
     generationSpec.generationNodes = element.generationNodes.map((node) =>
@@ -338,7 +336,7 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
   }
 
   visit_PackageableRuntime(element: V1_PackageableRuntime): void {
-    const runtime = this.context.graph.getRuntime(
+    const runtime = this.context.graph.getOwnRuntime(
       V1_buildFullPath(element.package, element.name),
     );
     runtime.runtimeValue = V1_buildEngineRuntime(
@@ -348,7 +346,7 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
   }
 
   visit_PackageableConnection(element: V1_PackageableConnection): void {
-    const connection = this.context.graph.getConnection(
+    const connection = this.context.graph.getOwnConnection(
       V1_buildFullPath(element.package, element.name),
     );
     if (element.connectionValue instanceof V1_ConnectionPointer) {

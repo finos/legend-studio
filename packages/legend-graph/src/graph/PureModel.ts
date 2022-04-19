@@ -218,16 +218,6 @@ export class PureModel extends BasicModel {
     ];
   }
 
-  getPrimitiveType = (type: PRIMITIVE_TYPE): PrimitiveType =>
-    guaranteeNonNullable(
-      this.coreModel.primitiveTypesIndex.get(type),
-      `Can't find primitive type '${type}'`,
-    );
-  getElement = (path: string, includePackage?: boolean): PackageableElement =>
-    guaranteeNonNullable(
-      this.getNullableElement(path, includePackage),
-      `Can't find element '${path}'`,
-    );
   getProfileStereotype = (
     path: string,
     value: string,
@@ -242,21 +232,27 @@ export class PureModel extends BasicModel {
     path: string,
   ): FileGenerationSpecification | undefined =>
     returnUndefOnError(() => this.getFileGeneration(path));
+
+  getPrimitiveType = (type: PRIMITIVE_TYPE): PrimitiveType =>
+    guaranteeNonNullable(
+      this.coreModel.primitiveTypesIndex.get(type),
+      `Can't find primitive type '${type}'`,
+    );
   getType = (path: string): Type =>
     guaranteeNonNullable(
-      this.getOwnType(path) ??
-        this.generationModel.getOwnType(path) ??
-        this.dependencyManager.getOwnType(path) ??
-        this.systemModel.getOwnType(path) ??
-        this.coreModel.getOwnType(path),
+      this.getOwnNullableType(path) ??
+        this.generationModel.getOwnNullableType(path) ??
+        this.dependencyManager.getOwnNullableType(path) ??
+        this.systemModel.getOwnNullableType(path) ??
+        this.coreModel.getOwnNullableType(path),
       `Can't find type '${path}'`,
     );
   getProfile = (path: string): Profile =>
     guaranteeNonNullable(
-      this.getOwnProfile(path) ??
-        this.generationModel.getOwnProfile(path) ??
-        this.dependencyManager.getOwnProfile(path) ??
-        this.systemModel.getOwnProfile(path),
+      this.getOwnNullableProfile(path) ??
+        this.generationModel.getOwnNullableProfile(path) ??
+        this.dependencyManager.getOwnNullableProfile(path) ??
+        this.systemModel.getOwnNullableProfile(path),
       `Can't find profile '${path}'`,
     );
   getEnumeration = (path: string): Enumeration =>
@@ -273,28 +269,28 @@ export class PureModel extends BasicModel {
     guaranteeType(this.getType(path), Class, `Can't find class '${path}'`);
   getAssociation = (path: string): Association =>
     guaranteeNonNullable(
-      this.getOwnAssociation(path) ??
-        this.generationModel.getOwnAssociation(path) ??
-        this.dependencyManager.getOwnAssociation(path) ??
-        this.systemModel.getOwnAssociation(path),
+      this.getOwnNullableAssociation(path) ??
+        this.generationModel.getOwnNullableAssociation(path) ??
+        this.dependencyManager.getOwnNullableAssociation(path) ??
+        this.systemModel.getOwnNullableAssociation(path),
       `Can't find association '${path}'`,
     );
   getFunction = (path: string): ConcreteFunctionDefinition =>
     guaranteeType(
-      this.getOwnFunction(path) ??
-        this.generationModel.getOwnFunction(path) ??
-        this.dependencyManager.getOwnFunction(path) ??
-        this.systemModel.getOwnFunction(path),
+      this.getOwnNullableFunction(path) ??
+        this.generationModel.getOwnNullableFunction(path) ??
+        this.dependencyManager.getOwnNullableFunction(path) ??
+        this.systemModel.getOwnNullableFunction(path),
       ConcreteFunctionDefinition,
       `Can't find function '${path}'`,
     );
   getStore = (path: string): Store =>
     guaranteeNonNullable(
-      this.getOwnStore(path) ??
-        this.generationModel.getOwnStore(path) ??
-        this.dependencyManager.getOwnStore(path) ??
-        this.systemModel.getOwnStore(path) ??
-        this.coreModel.getOwnStore(path),
+      this.getOwnNullableStore(path) ??
+        this.generationModel.getOwnNullableStore(path) ??
+        this.dependencyManager.getOwnNullableStore(path) ??
+        this.systemModel.getOwnNullableStore(path) ??
+        this.coreModel.getOwnNullableStore(path),
       `Can't find store '${path}'`,
     );
   getFlatDataStore = (path: string): FlatData =>
@@ -311,50 +307,50 @@ export class PureModel extends BasicModel {
     );
   getMapping = (path: string): Mapping =>
     guaranteeNonNullable(
-      this.getOwnMapping(path) ??
-        this.generationModel.getOwnMapping(path) ??
-        this.dependencyManager.getOwnMapping(path) ??
-        this.systemModel.getOwnMapping(path),
+      this.getOwnNullableMapping(path) ??
+        this.generationModel.getOwnNullableMapping(path) ??
+        this.dependencyManager.getOwnNullableMapping(path) ??
+        this.systemModel.getOwnNullableMapping(path),
       `Can't find mapping '${path}'`,
     );
   getService = (path: string): Service =>
     guaranteeNonNullable(
-      this.getOwnService(path) ??
-        this.generationModel.getOwnService(path) ??
-        this.dependencyManager.getOwnService(path) ??
-        this.systemModel.getOwnService(path),
+      this.getOwnNullableService(path) ??
+        this.generationModel.getOwnNullableService(path) ??
+        this.dependencyManager.getOwnNullableService(path) ??
+        this.systemModel.getOwnNullableService(path),
       `Can't find service '${path}'`,
     );
   getConnection = (path: string): PackageableConnection =>
     guaranteeNonNullable(
-      this.getOwnConnection(path) ??
-        this.generationModel.getOwnConnection(path) ??
-        this.dependencyManager.getOwnConnection(path) ??
-        this.systemModel.getOwnConnection(path),
+      this.getOwnNullableConnection(path) ??
+        this.generationModel.getOwnNullableConnection(path) ??
+        this.dependencyManager.getOwnNullableConnection(path) ??
+        this.systemModel.getOwnNullableConnection(path),
       `Can't find connection '${path}'`,
     );
   getRuntime = (path: string): PackageableRuntime =>
     guaranteeNonNullable(
-      this.getOwnRuntime(path) ??
-        this.generationModel.getOwnRuntime(path) ??
-        this.dependencyManager.getOwnRuntime(path) ??
-        this.systemModel.getOwnRuntime(path),
+      this.getOwnNullableRuntime(path) ??
+        this.generationModel.getOwnNullableRuntime(path) ??
+        this.dependencyManager.getOwnNullableRuntime(path) ??
+        this.systemModel.getOwnNullableRuntime(path),
       `Can't find runtime '${path}'`,
     );
   getGenerationSpecification = (path: string): GenerationSpecification =>
     guaranteeNonNullable(
-      this.getOwnGenerationSpecification(path) ??
-        this.generationModel.getOwnGenerationSpecification(path) ??
-        this.dependencyManager.getOwnGenerationSpecification(path) ??
-        this.systemModel.getOwnGenerationSpecification(path),
+      this.getOwnNullableGenerationSpecification(path) ??
+        this.generationModel.getOwnNullableGenerationSpecification(path) ??
+        this.dependencyManager.getOwnNullableGenerationSpecification(path) ??
+        this.systemModel.getOwnNullableGenerationSpecification(path),
       `Can't find generation specification '${path}'`,
     );
   getFileGeneration = (path: string): FileGenerationSpecification =>
     guaranteeNonNullable(
-      this.getOwnFileGeneration(path) ??
-        this.generationModel.getOwnFileGeneration(path) ??
-        this.dependencyManager.getOwnFileGeneration(path) ??
-        this.systemModel.getOwnFileGeneration(path),
+      this.getOwnNullableFileGeneration(path) ??
+        this.generationModel.getOwnNullableFileGeneration(path) ??
+        this.dependencyManager.getOwnNullableFileGeneration(path) ??
+        this.systemModel.getOwnNullableFileGeneration(path),
       `Can't find file generation '${path}'`,
     );
 
@@ -365,19 +361,27 @@ export class PureModel extends BasicModel {
   ): T {
     // NOTE: beware that this method will favor main graph elements over those of subgraphs when resolving
     return guaranteeNonNullable(
-      this.getOwnExtensionElement(path, extensionElementClass) ??
-        this.generationModel.getOwnExtensionElement(
+      this.getOwnNullableExtensionElement(path, extensionElementClass) ??
+        this.generationModel.getOwnNullableExtensionElement(
           path,
           extensionElementClass,
         ) ??
-        this.dependencyManager.getOwnExtensionElement(
+        this.dependencyManager.getOwnNullableExtensionElement(
           path,
           extensionElementClass,
         ) ??
-        this.systemModel.getOwnExtensionElement(path, extensionElementClass),
+        this.systemModel.getOwnNullableExtensionElement(
+          path,
+          extensionElementClass,
+        ),
       notFoundErrorMessage ?? `Can't find element '${path}'`,
     );
   }
+  getElement = (path: string, includePackage?: boolean): PackageableElement =>
+    guaranteeNonNullable(
+      this.getNullableElement(path, includePackage),
+      `Can't find element '${path}'`,
+    );
 
   getNullableElement(
     path: string,
@@ -438,7 +442,8 @@ export class PureModel extends BasicModel {
   }
 
   addElement(element: PackageableElement): void {
-    const existingElement = this.getNullableElement(element.path);
+    // check for duplication first, but skip package
+    const existingElement = this.getNullableElement(element.path, false);
     if (existingElement) {
       throw new IllegalStateError(
         `Can't create element '${element.path}': another element with the same path already existed`,
@@ -461,7 +466,8 @@ export class PureModel extends BasicModel {
   }
 
   renameElement(element: PackageableElement, newPath: string): void {
-    const existingElement = this.getNullableElement(newPath);
+    // check for duplication first, but skip package
+    const existingElement = this.getNullableElement(newPath, false);
     if (existingElement) {
       throw new IllegalStateError(
         `Can't rename element '${element.path}' to '${newPath}': another element with the same path already existed`,

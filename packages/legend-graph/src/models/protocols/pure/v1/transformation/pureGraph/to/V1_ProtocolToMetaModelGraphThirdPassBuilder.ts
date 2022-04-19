@@ -86,7 +86,7 @@ export class V1_ProtocolToMetaModelGraphThirdPassBuilder
   }
 
   visit_Class(element: V1_Class): void {
-    const _class = this.context.graph.getClass(
+    const _class = this.context.graph.getOwnClass(
       V1_buildFullPath(element.package, element.name),
     );
     element.superTypes.forEach((type) => {
@@ -129,12 +129,12 @@ export class V1_ProtocolToMetaModelGraphThirdPassBuilder
   }
 
   visit_Association(element: V1_Association): void {
+    const association = this.context.graph.getOwnAssociation(
+      V1_buildFullPath(element.package, element.name),
+    );
     assertTrue(
       element.properties.length === 2,
       'Association must have exactly 2 properties',
-    );
-    const association = this.context.graph.getAssociation(
-      V1_buildFullPath(element.package, element.name),
     );
     const first = guaranteeNonNullable(element.properties[0]);
     const second = guaranteeNonNullable(element.properties[1]);
@@ -169,13 +169,11 @@ export class V1_ProtocolToMetaModelGraphThirdPassBuilder
   }
 
   visit_FlatData(element: V1_FlatData): void {
-    this.context.graph.getFlatDataStore(
-      V1_buildFullPath(element.package, element.name),
-    );
+    return;
   }
 
   visit_Database(element: V1_Database): void {
-    const database = this.context.graph.getDatabase(
+    const database = this.context.graph.getOwnDatabase(
       V1_buildFullPath(element.package, element.name),
     );
     element.schemas.forEach((schema) =>
@@ -184,8 +182,9 @@ export class V1_ProtocolToMetaModelGraphThirdPassBuilder
   }
 
   visit_Mapping(element: V1_Mapping): void {
-    const path = V1_buildFullPath(element.package, element.name);
-    const mapping = this.context.graph.getMapping(path);
+    const mapping = this.context.graph.getOwnMapping(
+      V1_buildFullPath(element.package, element.name),
+    );
     mapping.classMappings = element.classMappings.map((classMapping) =>
       classMapping.accept_ClassMappingVisitor(
         new V1_ProtocolToMetaModelClassMappingFirstPassBuilder(

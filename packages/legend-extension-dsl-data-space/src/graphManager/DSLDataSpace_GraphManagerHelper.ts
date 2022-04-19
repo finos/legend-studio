@@ -14,8 +14,15 @@
  * limitations under the License.
  */
 
-import type { PureModel } from '@finos/legend-graph';
+import type { BasicModel, PureModel } from '@finos/legend-graph';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 import { DataSpace } from '../models/metamodels/pure/model/packageableElements/dataSpace/DSLDataSpace_DataSpace';
 
 export const getDataSpace = (path: string, graph: PureModel): DataSpace =>
   graph.getExtensionElement(path, DataSpace, `Can't find data space '${path}'`);
+
+export const getOwnDataSpace = (path: string, graph: BasicModel): DataSpace =>
+  guaranteeNonNullable(
+    graph.getOwnNullableExtensionElement(path, DataSpace),
+    `Can't find data space '${path}'`,
+  );

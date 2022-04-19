@@ -32,7 +32,7 @@ import {
   V1_serviceStoreConnectionModelSchema,
   V1_SERVICE_STORE_CONNECTION_PROTOCOL_TYPE,
 } from './v1/transformation/pureProtocol/V1_ESService_ProtocolHelper';
-import { getServiceStore } from '../../../graphManager/ESService_GraphManagerHelper';
+import { getOwnServiceStore } from '../../../graphManager/ESService_GraphManagerHelper';
 import { ServiceStore } from '../../metamodels/pure/model/packageableElements/store/serviceStore/model/ESService_ServiceStore';
 import {
   type PackageableElement,
@@ -132,7 +132,7 @@ export class ESService_PureProtocolProcessorPlugin
             elementProtocol.package,
             elementProtocol.name,
           );
-          const element = getServiceStore(path, context.graph);
+          const element = getOwnServiceStore(path, context.graph);
           element.description = elementProtocol.description;
           element.elements = elementProtocol.elements.map(
             (serviceStoreElement) =>

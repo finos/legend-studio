@@ -14,13 +14,23 @@
  * limitations under the License.
  */
 
-import type { PureModel } from '@finos/legend-graph';
+import type { BasicModel, PureModel } from '@finos/legend-graph';
 import { guaranteeType } from '@finos/legend-shared';
 import { ServiceStore } from '../models/metamodels/pure/model/packageableElements/store/serviceStore/model/ESService_ServiceStore';
 
 export const getServiceStore = (path: string, graph: PureModel): ServiceStore =>
   guaranteeType(
     graph.getStore(path),
+    ServiceStore,
+    `Can't find service store '${path}'`,
+  );
+
+export const getOwnServiceStore = (
+  path: string,
+  graph: BasicModel,
+): ServiceStore =>
+  guaranteeType(
+    graph.getOwnNullableStore(path),
     ServiceStore,
     `Can't find service store '${path}'`,
   );

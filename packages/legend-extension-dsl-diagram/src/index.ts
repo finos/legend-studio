@@ -34,4 +34,5 @@ export { Rectangle } from './models/metamodels/pure/packageableElements/diagram/
 export { PositionedRectangle } from './models/metamodels/pure/packageableElements/diagram/geometry/DSLDiagram_PositionedRectangle';
 
 export * from './helpers/DiagramHelper';
+export * from './graphManager/DSLDiagram_GraphManagerHelper';
 export { V1_DSLDiagram_PackageableElementPointerType } from './models/protocols/pure/DSLDiagram_PureProtocolProcessorPlugin';

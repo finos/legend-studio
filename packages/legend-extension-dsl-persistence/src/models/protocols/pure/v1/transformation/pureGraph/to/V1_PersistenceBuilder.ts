@@ -147,7 +147,7 @@ import {
   ManualTrigger,
   type Trigger,
 } from '../../../../../../metamodels/pure/model/packageableElements/persistence/DSLPersistence_Trigger';
-import { getPersistence } from '../../../../../../../graphManager/DSLPersistence_GraphManagerHelper';
+import { getOwnPersistence } from '../../../../../../../graphManager/DSLPersistence_GraphManagerHelper';
 import {
   type Binding,
   type PackageableElementImplicitReference,
@@ -595,7 +595,7 @@ export const V1_buildPersistence = (
   context: V1_GraphBuilderContext,
 ): void => {
   const path = V1_buildFullPath(protocol.package, protocol.name);
-  const persistence = getPersistence(path, context.graph);
+  const persistence = getOwnPersistence(path, context.graph);
   persistence.documentation = guaranteeNonEmptyString(
     protocol.documentation,
     `Persistence 'documentation' field is missing or empty`,

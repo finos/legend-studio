@@ -26,7 +26,7 @@ import {
   V1_textModelSchema,
   V1_TEXT_ELEMENT_PROTOCOL_TYPE,
 } from './v1/transformation/pureProtocol/V1_DSLText_ProtocolHelper';
-import { getText } from '../../../graphManager/DSLText_GraphManagerHelper';
+import { getOwnText } from '../../../graphManager/DSLText_GraphManagerHelper';
 import {
   Text,
   TEXT_TYPE,
@@ -83,7 +83,7 @@ export class DSLText_PureProtocolProcessorPlugin extends PureProtocolProcessorPl
             elementProtocol.package,
             elementProtocol.name,
           );
-          const element = getText(path, context.graph);
+          const element = getOwnText(path, context.graph);
           element.type =
             Object.values(TEXT_TYPE).find(
               (type) => type === elementProtocol.type,

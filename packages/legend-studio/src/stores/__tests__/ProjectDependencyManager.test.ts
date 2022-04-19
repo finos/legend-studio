@@ -285,7 +285,7 @@ const testDependencyElements = async (
   });
   if (includeDependencyInFileGenerationScopeElements) {
     const fileGeneration = guaranteeNonNullable(
-      editorStore.graphManagerState.graph.getOwnFileGeneration(
+      editorStore.graphManagerState.graph.getOwnNullableFileGeneration(
         FILE_GENERATION_PATH,
       ),
     );

@@ -107,67 +107,68 @@ export class DependencyManager {
     return this.dependencyGraphs.flatMap((dep) => dep.allOwnElements);
   }
 
-  getOwnProfile = buildDependencyElementGetter(
+  getOwnNullableSectionIndex = buildDependencyElementGetter(
     this,
-    (dep: BasicModel, path: string) => dep.getOwnProfile(path),
+    (dep: BasicModel, path: string) => dep.getOwnNullableSectionIndex(path),
   );
-  getOwnType = buildDependencyElementGetter(
+  getOwnNullableProfile = buildDependencyElementGetter(
     this,
-    (dep: BasicModel, path: string) => dep.getOwnType(path),
+    (dep: BasicModel, path: string) => dep.getOwnNullableProfile(path),
   );
-  getOwnClass = buildDependencyElementGetter(
+  getOwnNullableType = buildDependencyElementGetter(
     this,
-    (dep: BasicModel, path: string) => dep.getOwnClass(path),
+    (dep: BasicModel, path: string) => dep.getOwnNullableType(path),
   );
-  getOwnEnumeration = buildDependencyElementGetter(
+  getOwnNullableClass = buildDependencyElementGetter(
     this,
-    (dep: BasicModel, path: string) => dep.getOwnEnumeration(path),
+    (dep: BasicModel, path: string) => dep.getOwnNullableClass(path),
   );
-  getOwnMeasure = buildDependencyElementGetter(
+  getOwnNullableEnumeration = buildDependencyElementGetter(
     this,
-    (dep: BasicModel, path: string) => dep.getOwnMeasure(path),
+    (dep: BasicModel, path: string) => dep.getOwnNullableEnumeration(path),
   );
-  getOwnAssociation = buildDependencyElementGetter(
+  getOwnNullableMeasure = buildDependencyElementGetter(
     this,
-    (dep: BasicModel, path: string) => dep.getOwnAssociation(path),
+    (dep: BasicModel, path: string) => dep.getOwnNullableMeasure(path),
   );
-  getOwnFunction = buildDependencyElementGetter(
+  getOwnNullableAssociation = buildDependencyElementGetter(
     this,
-    (dep: BasicModel, path: string) => dep.getOwnFunction(path),
+    (dep: BasicModel, path: string) => dep.getOwnNullableAssociation(path),
   );
-  getOwnStore = buildDependencyElementGetter(
+  getOwnNullableFunction = buildDependencyElementGetter(
     this,
-    (dep: BasicModel, path: string) => dep.getOwnStore(path),
+    (dep: BasicModel, path: string) => dep.getOwnNullableFunction(path),
   );
-  getOwnMapping = buildDependencyElementGetter(
+  getOwnNullableStore = buildDependencyElementGetter(
     this,
-    (dep: BasicModel, path: string) => dep.getOwnMapping(path),
+    (dep: BasicModel, path: string) => dep.getOwnNullableStore(path),
   );
-  getOwnConnection = buildDependencyElementGetter(
+  getOwnNullableMapping = buildDependencyElementGetter(
     this,
-    (dep: BasicModel, path: string) => dep.getOwnConnection(path),
+    (dep: BasicModel, path: string) => dep.getOwnNullableMapping(path),
   );
-  getOwnRuntime = buildDependencyElementGetter(
+  getOwnNullableConnection = buildDependencyElementGetter(
     this,
-    (dep: BasicModel, path: string) => dep.getOwnRuntime(path),
+    (dep: BasicModel, path: string) => dep.getOwnNullableConnection(path),
   );
-  getOwnService = buildDependencyElementGetter(
+  getOwnNullableRuntime = buildDependencyElementGetter(
     this,
-    (dep: BasicModel, path: string) => dep.getOwnService(path),
+    (dep: BasicModel, path: string) => dep.getOwnNullableRuntime(path),
   );
-  getOwnGenerationSpecification = buildDependencyElementGetter(
+  getOwnNullableService = buildDependencyElementGetter(
     this,
-    (dep: BasicModel, path: string) => dep.getOwnGenerationSpecification(path),
+    (dep: BasicModel, path: string) => dep.getOwnNullableService(path),
   );
-  getOwnFileGeneration = buildDependencyElementGetter(
+  getOwnNullableGenerationSpecification = buildDependencyElementGetter(
     this,
-    (dep: BasicModel, path: string) => dep.getOwnFileGeneration(path),
+    (dep: BasicModel, path: string) =>
+      dep.getOwnNullableGenerationSpecification(path),
   );
-  getOwnSectionIndex = buildDependencyElementGetter(
+  getOwnNullableFileGeneration = buildDependencyElementGetter(
     this,
-    (dep: BasicModel, path: string) => dep.getOwnSectionIndex(path),
+    (dep: BasicModel, path: string) => dep.getOwnNullableFileGeneration(path),
   );
-  getOwnExtensionElement<T extends PackageableElement>(
+  getOwnNullableExtensionElement<T extends PackageableElement>(
     path: string,
     extensionElementClass: Clazz<T>,
   ): T | undefined {
@@ -182,6 +183,11 @@ export class DependencyManager {
     return undefined;
   }
 
+  get sectionIndices(): SectionIndex[] {
+    return this.dependencyGraphs
+      .map((dep) => Array.from(dep.ownSectionIndices))
+      .flat();
+  }
   get profiles(): Profile[] {
     return this.dependencyGraphs
       .map((dep) => Array.from(dep.ownProfiles))
@@ -243,21 +249,17 @@ export class DependencyManager {
       .map((dep) => Array.from(dep.ownConnections))
       .flat();
   }
-  get fileGenerations(): FileGenerationSpecification[] {
-    return this.dependencyGraphs
-      .map((dep) => Array.from(dep.ownFileGenerations))
-      .flat();
-  }
   get generationSpecifications(): GenerationSpecification[] {
     return this.dependencyGraphs
       .map((dep) => Array.from(dep.ownGenerationSpecifications))
       .flat();
   }
-  get sectionIndices(): SectionIndex[] {
+  get fileGenerations(): FileGenerationSpecification[] {
     return this.dependencyGraphs
-      .map((dep) => Array.from(dep.ownSectionIndices))
+      .map((dep) => Array.from(dep.ownFileGenerations))
       .flat();
   }
+
   getExtensionElements<T extends PackageableElement>(
     extensionElementClass: Clazz<T>,
   ): T[] {
