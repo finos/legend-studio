@@ -127,7 +127,7 @@ export const observe_DependencyManager = skipObserved(
     }),
 );
 
-export const observe_PureModel = async (
+export const observe_Graph = async (
   metamodel: PureModel,
   context: ObserverContext,
 ): Promise<PureModel> => {

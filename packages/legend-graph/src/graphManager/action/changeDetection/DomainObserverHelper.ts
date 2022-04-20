@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { promisify } from '@finos/legend-shared';
 import {
   computed,
   isObservable,
@@ -110,7 +111,7 @@ export const observe_PackageTree = async (
       if (child instanceof Package) {
         await observe_PackageTree(child, context);
       } else {
-        observe_PackageableElement(child, context);
+        await promisify(() => observe_PackageableElement(child, context));
       }
     }),
   );
