@@ -55,8 +55,8 @@ export class EmbeddedRelationalInstanceSetImplementation
   propertyMappings: PropertyMapping[] = [];
   class: PackageableElementReference<Class>;
   rootInstanceSetImplementation: RootRelationalInstanceSetImplementation; // in Pure we call this `setMappingOwner`
-  parent: Mapping;
   primaryKey: RelationalOperationElement[] = [];
+  readonly parent: Mapping;
   mappingClass?: MappingClass | undefined;
 
   constructor(

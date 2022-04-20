@@ -33,7 +33,7 @@ import {
 } from './InferableMappingElementId';
 
 export class EnumerationMapping implements Hashable, Stubable {
-  parent: Mapping;
+  readonly parent: Mapping;
   enumeration: PackageableElementReference<Enumeration>;
   id: InferableMappingElementIdValue;
   sourceType: OptionalPackageableElementReference<Type>;

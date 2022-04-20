@@ -22,7 +22,7 @@ import type { SectionIndex } from './SectionIndex';
 import type { PackageableElementExplicitReference } from '../PackageableElementReference';
 
 export abstract class Section implements Hashable {
-  parent: SectionIndex;
+  readonly parent: SectionIndex;
   parserName: string;
   elements: PackageableElementExplicitReference<PackageableElement>[] = [];
 

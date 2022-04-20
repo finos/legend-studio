@@ -280,7 +280,6 @@ const observe_Abstract_SetImplementation = (
 ): void => {
   makeObservable(metamodel, {
     root: observable,
-    parent: observable,
   });
 
   observe_PackageableElementReference(metamodel.class);
@@ -584,7 +583,6 @@ export const observe_AssociationImplementation = skipObservedWithContext(
   ): AssociationImplementation => {
     makeObservable(metamodel, {
       id: observable,
-      parent: observable,
       stores: observable,
       propertyMappings: observable,
       hashCode: computed,

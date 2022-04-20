@@ -184,7 +184,6 @@ export const observe_GenericTypeReference = skipObserved(
 
 export const observe_Section = skipObserved((metamodel: Section): Section => {
   makeObservable(metamodel, {
-    parent: observable,
     parserName: observable,
     elements: observable,
   });

@@ -33,6 +33,7 @@ import type { PropertyReference } from '../../../domain/PropertyReference';
 import type { InferableMappingElementIdValue } from '../../../mapping/InferableMappingElementId';
 import type { PackageableElementReference } from '../../../PackageableElementReference';
 import { InferableMappingElementRootExplicitValue } from '../../../mapping/InferableMappingElementRoot';
+import type { MappingClass } from '../../../mapping/MappingClass';
 
 /**
  * We can think of embedded property mappings as a 'gateway' from one set of property mappings to another. They are in a sense
@@ -55,7 +56,8 @@ export class EmbeddedFlatDataPropertyMapping
   id: InferableMappingElementIdValue;
   propertyMappings: PropertyMapping[] = [];
   rootInstanceSetImplementation: InstanceSetImplementation; // in Pure we call this `setMappingOwner`
-  parent: Mapping;
+  readonly parent: Mapping;
+  mappingClass?: MappingClass | undefined;
 
   constructor(
     owner: PropertyMappingsImplementation,
