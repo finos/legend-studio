@@ -45,14 +45,9 @@ import {
   type Measure,
   type Unit,
   type RawLambda,
-  type Package,
-  type ObserverContext,
   type Association,
   Class,
-  addElementToPackage,
-  deleteElementFromPackage,
   observe_Enum,
-  observe_PackageableElement,
   observe_DerivedProperty,
   observe_GenericTypeReference,
   observe_Property,
@@ -350,17 +345,3 @@ export const unit_setConversionFunction = action(
     unit.conversionFunction = observe_RawLambda(lambda);
   },
 );
-
-// ------------------------------------------ Package -------------------------------------
-
-export const package_addElement = action(
-  (
-    parent: Package,
-    element: PackageableElement,
-    context: ObserverContext,
-  ): void => {
-    addElementToPackage(parent, observe_PackageableElement(element, context));
-  },
-);
-
-export const package_deleteElement = action(deleteElementFromPackage);

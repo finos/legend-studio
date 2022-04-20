@@ -44,9 +44,7 @@ import {
   isValidFullPath,
   resolvePackagePathAndElementName,
 } from '@finos/legend-graph';
-import { package_addElement } from '../../../graphModifier/DomainGraphModifierHelper';
 import { connection_setStore } from '../../../graphModifier/DSLMapping_GraphModifierHelper';
-import { graph_getOrCreatePackage } from '../../../graphModifier/GraphModifierHelper';
 
 export abstract class DatabaseBuilderTreeNodeData implements TreeNodeData {
   isOpen?: boolean | undefined;
@@ -547,15 +545,9 @@ export class DatabaseBuilderState {
           database.package?.name,
           'Database package is missing',
         );
-        package_addElement(
-          graph_getOrCreatePackage(
-            this.editorStore.graphManagerState.graph,
-            packagePath,
-          ),
-          newDatabase,
-          this.editorStore.changeDetectionState.observerContext,
+        yield flowResult(
+          this.editorStore.addElement(newDatabase, packagePath, false),
         );
-        yield flowResult(this.editorStore.addElement(newDatabase, false));
         currentDatabase = newDatabase;
       } else {
         currentDatabase = this.currentDatabase;

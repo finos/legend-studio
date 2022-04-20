@@ -1109,11 +1109,13 @@ export class EditorStore {
 
   *addElement(
     element: PackageableElement,
+    packagePath: string | undefined,
     openAfterCreate: boolean,
   ): GeneratorFn<void> {
     graph_addElement(
       this.graphManagerState.graph,
       element,
+      packagePath,
       this.changeDetectionState.observerContext,
     );
     this.explorerTreeState.reprocess();
@@ -1190,7 +1192,12 @@ export class EditorStore {
     if (this.graphManagerState.isElementReadOnly(element)) {
       return;
     }
-    graph_renameElement(this.graphManagerState.graph, element, newPath);
+    graph_renameElement(
+      this.graphManagerState.graph,
+      element,
+      newPath,
+      this.changeDetectionState.observerContext,
+    );
 
     const extraElementEditorPostRenameActions = this.pluginManager
       .getStudioPlugins()

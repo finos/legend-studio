@@ -495,19 +495,16 @@ export abstract class BasicModel {
     return element;
   }
 
-  protected addOwnElement(element: PackageableElement): void {
-    // addElementToPackage(
-    //   this.getOrCreatePackage(packagePath),
-    //   // observe_PackageableElement(element, context),
-    //   element,
-    // );
-
-    // this.package_addElement(
-    //   graph.getOrCreatePackage(packagePath),
-    //   _class,
-    //   editorStore.changeDetectionState.observerContext,
-    // );
-
+  protected addOwnElement(
+    element: PackageableElement,
+    packagePath: string | undefined,
+  ): void {
+    addElementToPackage(
+      packagePath
+        ? getOrCreateGraphPackage(this, packagePath, undefined)
+        : this.root,
+      element,
+    );
     if (element instanceof Mapping) {
       this.setOwnMapping(element.path, element);
     } else if (element instanceof Store) {
@@ -738,7 +735,8 @@ export abstract class BasicModel {
   }
 
   /**
-   * TODO: this will be removed once we fully support section index in SDLC flow
+   * TODO: this will be removed once we have full support for section index
+   * See https://github.com/finos/legend-studio/issues/1067
    */
   TEMPORARY__deleteOwnSectionIndex(): void {
     this.sectionIndicesIndex.forEach((sectionIndex) => {
@@ -746,7 +744,8 @@ export abstract class BasicModel {
       this.sectionIndicesIndex.delete(sectionIndex.path);
     });
     // NOTE: we have to do this because right now we don't add section index to the package tree
-    // as such `this.sectionIndicesIndex.delete(sectionIndex.path)` won't work because the path is without the package
+    // as such `this.sectionIndicesIndex.delete(sectionIndex.path)` won't work because the path
+    // is without the package
     this.sectionIndicesIndex = new Map<string, SectionIndex>();
     this.elementSectionMap = new Map<string, Section>();
   }

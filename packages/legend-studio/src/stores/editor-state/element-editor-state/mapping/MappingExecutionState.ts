@@ -97,7 +97,6 @@ import {
   LambdaEditorState,
   TAB_SIZE,
 } from '@finos/legend-application';
-import { package_addElement } from '../../../graphModifier/DomainGraphModifierHelper';
 import {
   objectInputData_setData,
   runtime_addIdentifiedConnection,
@@ -113,7 +112,6 @@ import {
   localH2DatasourceSpecification_setTestDataSetupSqls,
   relationalInputData_setData,
 } from '../../../graphModifier/StoreRelational_GraphModifierHelper';
-import { graph_getOrCreatePackage } from '../../../graphModifier/GraphModifierHelper';
 
 export class MappingExecutionQueryState extends LambdaEditorState {
   editorStore: EditorStore;
@@ -647,15 +645,9 @@ export class MappingExecutionState {
           );
           singleExecutionTest.asserts.push(testContainer);
           service.test = singleExecutionTest;
-          package_addElement(
-            graph_getOrCreatePackage(
-              this.editorStore.graphManagerState.graph,
-              packagePath,
-            ),
-            service,
-            this.editorStore.changeDetectionState.observerContext,
+          yield flowResult(
+            this.editorStore.addElement(service, packagePath, true),
           );
-          yield flowResult(this.editorStore.addElement(service, true));
         } else {
           throw new UnsupportedOperationError(
             `Can't build service from input data state`,

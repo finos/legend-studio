@@ -63,7 +63,6 @@ import {
 } from '@finos/legend-graph';
 import type { DSLGenerationSpecification_LegendStudioPlugin_Extension } from '../DSLGenerationSpecification_LegendStudioPlugin_Extension';
 import { ExternalFormatState } from './ExternalFormatState';
-import { package_addElement } from '../graphModifier/DomainGraphModifierHelper';
 import {
   generationSpecification_addFileGeneration,
   generationSpecification_addGenerationElement,
@@ -392,12 +391,9 @@ export class GraphGenerationState {
         const specPackage = guaranteeNonNullable(
           [...modelGenerationElements, ...fileGenerations][0]?.package,
         );
-        package_addElement(
-          specPackage,
-          generationSpec,
-          this.editorStore.changeDetectionState.observerContext,
+        yield flowResult(
+          this.editorStore.addElement(generationSpec, specPackage.path, false),
         );
-        yield flowResult(this.editorStore.addElement(generationSpec, false));
       }
     }
   }

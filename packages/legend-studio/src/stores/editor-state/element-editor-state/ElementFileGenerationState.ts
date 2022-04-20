@@ -23,12 +23,10 @@ import {
   FileGenerationSpecification,
   PackageableElementExplicitReference,
 } from '@finos/legend-graph';
-import { package_addElement } from '../../graphModifier/DomainGraphModifierHelper';
 import {
   createObservableFileGeneration,
   fileGeneration_setType,
 } from '../../graphModifier/DSLGeneration_GraphModifierHelper';
-import { graph_getOrCreatePackage } from '../../graphModifier/GraphModifierHelper';
 
 export class ElementFileGenerationState {
   uuid = uuid();
@@ -65,15 +63,9 @@ export class ElementFileGenerationState {
   ): GeneratorFn<void> {
     const fileGeneration = this.fileGenerationState.fileGeneration;
     fileGeneration.name = name;
-    package_addElement(
-      graph_getOrCreatePackage(
-        this.editorStore.graphManagerState.graph,
-        packagePath,
-      ),
-      fileGeneration,
-      this.editorStore.changeDetectionState.observerContext,
+    yield flowResult(
+      this.editorStore.addElement(fileGeneration, packagePath, true),
     );
-    yield flowResult(this.editorStore.addElement(fileGeneration, true));
     // reset file generation state so since the current file generation is promoted to a packageable element in the graph
     // otherwise if we keep this reference, editing this element generation state will also modify the packageable element
     const newFileGeneration = new FileGenerationSpecification('');

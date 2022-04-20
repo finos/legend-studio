@@ -90,6 +90,7 @@ test(unitTest('Change detection works properly'), async () => {
   graph_addElement(
     editorStore.graphManagerState.graph,
     newClass,
+    undefined,
     editorStore.changeDetectionState.observerContext,
   );
 

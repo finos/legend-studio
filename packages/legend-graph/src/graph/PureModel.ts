@@ -56,6 +56,7 @@ import {
   Unit,
 } from '../models/metamodels/pure/packageableElements/domain/Measure';
 import type { PureGraphPlugin } from './PureGraphPlugin';
+import { createPath } from '../MetaModelUtils';
 
 /**
  * CoreModel holds meta models which are constant and basic building block of the graph. Since throughout the lifetime
@@ -441,16 +442,21 @@ export class PureModel extends BasicModel {
     return multiplicity ?? new Multiplicity(lowerBound, upperBound);
   }
 
-  addElement(element: PackageableElement): void {
+  addElement(
+    element: PackageableElement,
+    packagePath: string | undefined,
+  ): void {
+    const fullPath = createPath(packagePath ?? '', element.name);
+
     // check for duplication first, but skip package
-    const existingElement = this.getNullableElement(element.path, false);
+    const existingElement = this.getNullableElement(fullPath, false);
     if (existingElement) {
       throw new IllegalStateError(
-        `Can't create element '${element.path}': another element with the same path already existed`,
+        `Can't create element '${fullPath}': another element with the same path already existed`,
       );
     }
 
-    super.addOwnElement(element);
+    super.addOwnElement(element, packagePath);
   }
 
   deleteElement(element: PackageableElement): void {

@@ -19,9 +19,8 @@ import {
   type ObserverContext,
   type PackageableElement,
   type PureModel,
-  type Package,
   observe_PackageableElement,
-  getOrCreateGraphPackage,
+  observe_Package,
 } from '@finos/legend-graph';
 import type { GeneratorFn } from '@finos/legend-shared';
 import { action, flow } from 'mobx';
@@ -31,11 +30,6 @@ export const graph_dispose = flow(function* (
 ): GeneratorFn<void> {
   yield graph.dispose();
 });
-
-export const graph_getOrCreatePackage = action(
-  (graph: BasicModel, packagePath: string | undefined): Package =>
-    getOrCreateGraphPackage(graph, packagePath, undefined),
-);
 
 export const graph_deleteOwnElement = action(
   (graph: BasicModel, element: PackageableElement): void => {
@@ -47,10 +41,17 @@ export const graph_addElement = action(
   (
     graph: PureModel,
     element: PackageableElement,
+    packagePath: string | undefined,
     context: ObserverContext,
   ): void => {
-    graph.addElement(observe_PackageableElement(element, context));
-    // FIXME: recurse the packages and observe them
+    graph.addElement(observe_PackageableElement(element, context), packagePath);
+
+    // recursively go up the chain of packages and observe them
+    let currentPackage = element.package;
+    while (currentPackage) {
+      observe_Package(currentPackage, context);
+      currentPackage = currentPackage.package;
+    }
   },
 );
 
@@ -61,8 +62,19 @@ export const graph_deleteElement = action(
 );
 
 export const graph_renameElement = action(
-  (graph: PureModel, element: PackageableElement, newPath: string): void => {
+  (
+    graph: PureModel,
+    element: PackageableElement,
+    newPath: string,
+    context: ObserverContext,
+  ): void => {
     graph.renameElement(element, newPath);
-    // FIXME: recurse the packages and observe them
+
+    // recursively go up the chain of packages and observe them
+    let currentPackage = element.package;
+    while (currentPackage) {
+      observe_Package(currentPackage, context);
+      currentPackage = currentPackage.package;
+    }
   },
 );
