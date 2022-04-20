@@ -33,7 +33,8 @@ export const getBinding = (path: string, graph: PureModel): Binding =>
   guaranteeType(graph.getStore(path), Binding, `Can't find binding '${path}'`);
 
 export const getOwnBinding = (path: string, graph: BasicModel): Binding =>
-  guaranteeNonNullable(
-    graph.getOwnNullableExtensionElement(path, Binding),
+  guaranteeType(
+    graph.getOwnNullableStore(path),
+    Binding,
     `Can't find binding '${path}'`,
   );
