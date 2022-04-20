@@ -529,6 +529,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       graphBuilderState.fail();
       this.log.error(
         LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_FAILURE),
+        error,
       );
       throw new SystemGraphBuilderError(error);
     } finally {
@@ -612,6 +613,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       assertErrorThrown(error);
       this.log.error(
         LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_FAILURE),
+        error,
       );
       graphBuilderState.fail();
       throw new DependencyGraphBuilderError(error);
@@ -678,6 +680,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       assertErrorThrown(error);
       this.log.error(
         LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_FAILURE),
+        error,
       );
       graphBuilderState.fail();
       /**
@@ -751,6 +754,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       assertErrorThrown(error);
       this.log.error(
         LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_FAILURE),
+        error,
       );
       graphBuilderState.fail();
       /**
