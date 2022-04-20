@@ -48,6 +48,7 @@ import {
   useApplicationStore,
 } from '@finos/legend-application';
 import { PARAMETER_SUBMIT_ACTION } from '../stores/QueryParametersState';
+import { isBoolean } from '@finos/legend-shared';
 
 const QueryBuilderResultValues = observer(
   (props: { executionResult: ExecutionResult }) => {
@@ -59,10 +60,9 @@ const QueryBuilderResultValues = observer(
         const cols = executionResult.result.columns;
         _row.values.forEach((value, idx) => {
           // `ag-grid` shows `false` value as empty string so we have
-          // call `.toString()` to avoid this behavior. We leave number as-is though.
+          // call `.toString()` to avoid this behavior.
           // See https://github.com/finos/legend-studio/issues/1008
-          row[cols[idx] as string] =
-            typeof value === 'number' ? value : value.toString();
+          row[cols[idx] as string] = isBoolean(value) ? String(value) : value;
         });
         return row;
       });
