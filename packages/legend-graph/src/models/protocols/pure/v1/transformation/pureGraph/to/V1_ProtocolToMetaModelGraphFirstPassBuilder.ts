@@ -59,7 +59,10 @@ import type { V1_PackageableConnection } from '../../../model/packageableElement
 import type { V1_FileGenerationSpecification } from '../../../model/packageableElements/fileGeneration/V1_FileGenerationSpecification';
 import type { V1_Measure } from '../../../model/packageableElements/domain/V1_Measure';
 import type { V1_SectionIndex } from '../../../model/packageableElements/section/V1_SectionIndex';
-import { addElementToPackage } from '../../../../../../../helpers/DomainHelper';
+import {
+  addElementToPackage,
+  getOrCreateGraphPackage,
+} from '../../../../../../../helpers/DomainHelper';
 import { V1_checkDuplicatedElement } from './V1_ElementBuilder';
 import type { Package } from '../../../../../../metamodels/pure/packageableElements/domain/Package';
 
@@ -120,7 +123,8 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
     const path = V1_buildFullPath(element.package, element.name);
     V1_checkDuplicatedElement(path, this.context, this.elementPathCache);
     addElementToPackage(
-      this.context.currentSubGraph.getOrCreatePackage(
+      getOrCreateGraphPackage(
+        this.context.currentSubGraph,
         element.package,
         this.packageCache,
       ),
@@ -143,7 +147,8 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
     const path = V1_buildFullPath(element.package, element.name);
     V1_checkDuplicatedElement(path, this.context, this.elementPathCache);
     addElementToPackage(
-      this.context.currentSubGraph.getOrCreatePackage(
+      getOrCreateGraphPackage(
+        this.context.currentSubGraph,
         element.package,
         this.packageCache,
       ),
@@ -166,7 +171,8 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
     const path = V1_buildFullPath(element.package, element.name);
     V1_checkDuplicatedElement(path, this.context, this.elementPathCache);
     addElementToPackage(
-      this.context.currentSubGraph.getOrCreatePackage(
+      getOrCreateGraphPackage(
+        this.context.currentSubGraph,
         element.package,
         this.packageCache,
       ),
@@ -189,7 +195,8 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
     const path = V1_buildFullPath(element.package, element.name);
     V1_checkDuplicatedElement(path, this.context, this.elementPathCache);
     addElementToPackage(
-      this.context.currentSubGraph.getOrCreatePackage(
+      getOrCreateGraphPackage(
+        this.context.currentSubGraph,
         element.package,
         this.packageCache,
       ),
@@ -212,7 +219,8 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
     const path = V1_buildFullPath(element.package, element.name);
     V1_checkDuplicatedElement(path, this.context, this.elementPathCache);
     addElementToPackage(
-      this.context.currentSubGraph.getOrCreatePackage(
+      getOrCreateGraphPackage(
+        this.context.currentSubGraph,
         element.package,
         this.packageCache,
       ),
@@ -247,7 +255,8 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
     const path = V1_buildFullPath(element.package, element.name);
     V1_checkDuplicatedElement(path, this.context, this.elementPathCache);
     addElementToPackage(
-      this.context.currentSubGraph.getOrCreatePackage(
+      getOrCreateGraphPackage(
+        this.context.currentSubGraph,
         element.package,
         this.packageCache,
       ),
@@ -270,7 +279,8 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
     const path = V1_buildFullPath(element.package, element.name);
     V1_checkDuplicatedElement(path, this.context, this.elementPathCache);
     addElementToPackage(
-      this.context.currentSubGraph.getOrCreatePackage(
+      getOrCreateGraphPackage(
+        this.context.currentSubGraph,
         element.package,
         this.packageCache,
       ),
@@ -293,7 +303,8 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
     const path = V1_buildFullPath(element.package, element.name);
     V1_checkDuplicatedElement(path, this.context, this.elementPathCache);
     addElementToPackage(
-      this.context.currentSubGraph.getOrCreatePackage(
+      getOrCreateGraphPackage(
+        this.context.currentSubGraph,
         element.package,
         this.packageCache,
       ),
@@ -316,7 +327,8 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
     const path = V1_buildFullPath(element.package, element.name);
     V1_checkDuplicatedElement(path, this.context, this.elementPathCache);
     addElementToPackage(
-      this.context.currentSubGraph.getOrCreatePackage(
+      getOrCreateGraphPackage(
+        this.context.currentSubGraph,
         element.package,
         this.packageCache,
       ),
@@ -339,7 +351,8 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
     const path = V1_buildFullPath(element.package, element.name);
     V1_checkDuplicatedElement(path, this.context, this.elementPathCache);
     addElementToPackage(
-      this.context.currentSubGraph.getOrCreatePackage(
+      getOrCreateGraphPackage(
+        this.context.currentSubGraph,
         element.package,
         this.packageCache,
       ),
@@ -364,7 +377,8 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
     const path = V1_buildFullPath(element.package, element.name);
     V1_checkDuplicatedElement(path, this.context, this.elementPathCache);
     addElementToPackage(
-      this.context.currentSubGraph.getOrCreatePackage(
+      getOrCreateGraphPackage(
+        this.context.currentSubGraph,
         element.package,
         this.packageCache,
       ),
@@ -390,7 +404,8 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
     const path = V1_buildFullPath(element.package, element.name);
     V1_checkDuplicatedElement(path, this.context, this.elementPathCache);
     addElementToPackage(
-      this.context.currentSubGraph.getOrCreatePackage(
+      getOrCreateGraphPackage(
+        this.context.currentSubGraph,
         element.package,
         this.packageCache,
       ),
@@ -416,7 +431,8 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
     const path = V1_buildFullPath(element.package, element.name);
     V1_checkDuplicatedElement(path, this.context, this.elementPathCache);
     addElementToPackage(
-      this.context.currentSubGraph.getOrCreatePackage(
+      getOrCreateGraphPackage(
+        this.context.currentSubGraph,
         element.package,
         this.packageCache,
       ),
@@ -441,7 +457,8 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
     const path = V1_buildFullPath(element.package, element.name);
     V1_checkDuplicatedElement(path, this.context, this.elementPathCache);
     addElementToPackage(
-      this.context.currentSubGraph.getOrCreatePackage(
+      getOrCreateGraphPackage(
+        this.context.currentSubGraph,
         element.package,
         this.packageCache,
       ),

@@ -42,6 +42,7 @@ import {
   package_addElement,
   service_initNewService,
   service_setExecution,
+  graph_getOrCreatePackage,
 } from '@finos/legend-studio';
 import { MenuContentItem } from '@finos/legend-art';
 import { QueryBuilderDialog } from './QueryBuilderDialog';
@@ -95,13 +96,11 @@ const promoteQueryToService = async (
       ),
       editorStore.changeDetectionState.observerContext,
     );
-    const servicePackage =
-      editorStore.graphManagerState.graph.getOrCreatePackage(
-        packageName,
-        undefined,
-      );
     package_addElement(
-      servicePackage,
+      graph_getOrCreatePackage(
+        editorStore.graphManagerState.graph,
+        packageName,
+      ),
       service,
       editorStore.changeDetectionState.observerContext,
     );

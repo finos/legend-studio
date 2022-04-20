@@ -113,6 +113,7 @@ import {
   localH2DatasourceSpecification_setTestDataSetupSqls,
   relationalInputData_setData,
 } from '../../../graphModifier/StoreRelational_GraphModifierHelper';
+import { graph_getOrCreatePackage } from '../../../graphModifier/GraphModifierHelper';
 
 export class MappingExecutionQueryState extends LambdaEditorState {
   editorStore: EditorStore;
@@ -645,14 +646,12 @@ export class MappingExecutionState {
             singleExecutionTest,
           );
           singleExecutionTest.asserts.push(testContainer);
-          const servicePackage =
-            this.editorStore.graphManagerState.graph.getOrCreatePackage(
-              packagePath,
-              undefined,
-            );
           service.test = singleExecutionTest;
           package_addElement(
-            servicePackage,
+            graph_getOrCreatePackage(
+              this.editorStore.graphManagerState.graph,
+              packagePath,
+            ),
             service,
             this.editorStore.changeDetectionState.observerContext,
           );

@@ -24,8 +24,6 @@ import {
   PackageableElement,
 } from '../PackageableElement';
 
-export const RESERVERD_PACKAGE_NAMES = ['$implicit'];
-
 export class Package extends PackageableElement implements Hashable {
   children: PackageableElement[] = [];
 

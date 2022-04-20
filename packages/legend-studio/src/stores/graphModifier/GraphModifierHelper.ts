@@ -19,7 +19,9 @@ import {
   type ObserverContext,
   type PackageableElement,
   type PureModel,
+  type Package,
   observe_PackageableElement,
+  getOrCreateGraphPackage,
 } from '@finos/legend-graph';
 import type { GeneratorFn } from '@finos/legend-shared';
 import { action, flow } from 'mobx';
@@ -29,6 +31,11 @@ export const graph_dispose = flow(function* (
 ): GeneratorFn<void> {
   yield graph.dispose();
 });
+
+export const graph_getOrCreatePackage = action(
+  (graph: BasicModel, packagePath: string | undefined): Package =>
+    getOrCreateGraphPackage(graph, packagePath, undefined),
+);
 
 export const graph_deleteOwnElement = action(
   (graph: BasicModel, element: PackageableElement): void => {

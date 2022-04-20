@@ -17,7 +17,6 @@
 import {
   type Clazz,
   ActionState,
-  assertNonEmptyString,
   UnsupportedOperationError,
   getClass,
   IllegalStateError,
@@ -62,6 +61,7 @@ import {
 import {
   addElementToPackage,
   deleteElementFromPackage,
+  getOrCreateGraphPackage,
   getOrCreatePackage,
 } from '../helpers/DomainHelper';
 
@@ -456,14 +456,6 @@ export abstract class BasicModel {
     }
   }
 
-  getOrCreatePackage = (
-    packagePath: string | undefined,
-    cache: Map<string, Package> | undefined,
-  ): Package => {
-    assertNonEmptyString(packagePath, 'Package path is required');
-    return getOrCreatePackage(this.root, packagePath, true, cache);
-  };
-
   getNullablePackage = (path: string): Package | undefined =>
     !path
       ? this.root
@@ -638,7 +630,7 @@ export abstract class BasicModel {
       const parentPackage =
         this.getNullablePackage(packagePath) ??
         (packagePath !== ''
-          ? this.getOrCreatePackage(packagePath, undefined)
+          ? getOrCreateGraphPackage(this, packagePath, undefined)
           : this.root);
       // update element name
       element.name = elementName;
@@ -727,7 +719,7 @@ export abstract class BasicModel {
         deleteElementFromPackage(currentParentPackage, element);
         const newParentPackage =
           packagePath !== ''
-            ? this.getOrCreatePackage(packagePath, undefined)
+            ? getOrCreateGraphPackage(this, packagePath, undefined)
             : this.root;
         addElementToPackage(newParentPackage, element);
       }

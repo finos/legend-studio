@@ -46,6 +46,7 @@ import {
 } from '@finos/legend-graph';
 import { package_addElement } from '../../../graphModifier/DomainGraphModifierHelper';
 import { connection_setStore } from '../../../graphModifier/DSLMapping_GraphModifierHelper';
+import { graph_getOrCreatePackage } from '../../../graphModifier/GraphModifierHelper';
 
 export abstract class DatabaseBuilderTreeNodeData implements TreeNodeData {
   isOpen?: boolean | undefined;
@@ -546,13 +547,11 @@ export class DatabaseBuilderState {
           database.package?.name,
           'Database package is missing',
         );
-        const databasePackage =
-          this.editorStore.graphManagerState.graph.getOrCreatePackage(
-            packagePath,
-            undefined,
-          );
         package_addElement(
-          databasePackage,
+          graph_getOrCreatePackage(
+            this.editorStore.graphManagerState.graph,
+            packagePath,
+          ),
           newDatabase,
           this.editorStore.changeDetectionState.observerContext,
         );

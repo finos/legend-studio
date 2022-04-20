@@ -89,6 +89,7 @@ import {
   service_initNewService,
   service_setExecution,
 } from './graphModifier/DSLService_GraphModifierHelper';
+import { graph_getOrCreatePackage } from './graphModifier/GraphModifierHelper';
 
 export const resolvePackageAndElementName = (
   _package: Package,
@@ -572,9 +573,9 @@ export class NewElementState {
         const element = this.createElement(elementName);
         package_addElement(
           packagePath
-            ? this.editorStore.graphManagerState.graph.getOrCreatePackage(
+            ? graph_getOrCreatePackage(
+                this.editorStore.graphManagerState.graph,
                 packagePath,
-                undefined,
               )
             : this.editorStore.graphManagerState.graph.root,
           element,

@@ -25,6 +25,9 @@ export const SECTION_INDEX_ELEMENT_PATH = '__internal__::SectionIndex';
 export const VARIABLE_REFERENCE_TOKEN = '$';
 export const TYPE_CAST_TOKEN = '@';
 export const ARROW_FUNCTION_TOKEN = '->';
+export const LATEST_DATE = '%latest';
+
+export const RESERVERD_PACKAGE_NAMES = ['$implicit'];
 
 export enum ROOT_PACKAGE_NAME {
   CORE = 'CORE',
@@ -62,8 +65,9 @@ export enum TYPICAL_MULTIPLICITY_TYPE {
   ZERO = 'zero',
 }
 
-// NOTE: the list of auto-import are kept in m3.pure, this includes a more extensive list of packges
-// which contain native functions, classes, etc.
+// NOTE: the list of auto-import are kept in `m3.pure` file in `finos/legend-pure`,
+// this includes a more extensive list of packges which contain native functions, classes, etc.
+// See https://github.com/finos/legend-pure/blob/master/legend-pure-m3-core/src/main/resources/platform/pure/m3.pure
 export const AUTO_IMPORTS = [
   // 'meta::pure::metamodel',
   'meta::pure::metamodel::type',
@@ -317,5 +321,3 @@ export enum MILESTONING_STEROTYPES {
   PROCESSING_TEMPORAL = 'processingtemporal',
   BITEMPORAL = 'bitemporal',
 }
-
-export const LATEST_DATE = '%latest';

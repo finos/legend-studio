@@ -19,6 +19,7 @@ import { Class } from '../models/metamodels/pure/packageableElements/domain/Clas
 import {
   CORE_PURE_PATH,
   ELEMENT_PATH_DELIMITER,
+  RESERVERD_PACKAGE_NAMES,
   MILESTONING_STEROTYPES,
 } from '../MetaModelConst';
 import { Profile } from '../models/metamodels/pure/packageableElements/domain/Profile';
@@ -28,17 +29,16 @@ import { Stereotype } from '../models/metamodels/pure/packageableElements/domain
 import { TaggedValue } from '../models/metamodels/pure/packageableElements/domain/TaggedValue';
 import { TagExplicitReference } from '../models/metamodels/pure/packageableElements/domain/TagReference';
 import type { Enumeration } from '../models/metamodels/pure/packageableElements/domain/Enumeration';
-import {
-  Package,
-  RESERVERD_PACKAGE_NAMES,
-} from '../models/metamodels/pure/packageableElements/domain/Package';
+import { Package } from '../models/metamodels/pure/packageableElements/domain/Package';
 import type { PackageableElement } from '../models/metamodels/pure/packageableElements/PackageableElement';
 import {
   AssertionError,
+  assertNonEmptyString,
   assertTrue,
   guaranteeType,
 } from '@finos/legend-shared';
 import { createPath } from '../MetaModelUtils';
+import type { BasicModel } from '../graph/BasicModel';
 
 export const addElementToPackage = (
   parent: Package,
@@ -132,6 +132,15 @@ export const getOrCreatePackage = (
   }
 
   return pkg;
+};
+
+export const getOrCreateGraphPackage = (
+  graph: BasicModel,
+  packagePath: string | undefined,
+  cache: Map<string, Package> | undefined,
+): Package => {
+  assertNonEmptyString(packagePath, 'Package path is required');
+  return getOrCreatePackage(graph.root, packagePath, true, cache);
 };
 
 export const createStubTag = (profile: Profile): Tag => new Tag(profile, '');

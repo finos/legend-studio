@@ -43,6 +43,7 @@ import {
   GenerationPropertyItemType,
   ExternalFormatSchema as Schema,
   SchemaSet,
+  getOrCreateGraphPackage,
 } from '@finos/legend-graph';
 import type { Entity } from '@finos/legend-model-storage';
 import { type EntityChange, EntityChangeType } from '@finos/legend-server-sdlc';
@@ -376,7 +377,8 @@ export class SchemaSetEditorState extends ElementEditorState {
       _schemaSet.format = this.schemaSet.format;
       _schemaSet.schemas = [currentSchema];
       const newGraph = this.editorStore.graphManagerState.createEmptyGraph();
-      _schemaSet.package = newGraph.getOrCreatePackage(
+      _schemaSet.package = getOrCreateGraphPackage(
+        newGraph,
         this.schemaSet.package?.path ?? '',
         undefined,
       );

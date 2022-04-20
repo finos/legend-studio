@@ -20,7 +20,10 @@ import {
   assertTrue,
   AssertionError,
 } from '@finos/legend-shared';
-import { addElementToPackage } from '../../../../../../../helpers/DomainHelper';
+import {
+  addElementToPackage,
+  getOrCreateGraphPackage,
+} from '../../../../../../../helpers/DomainHelper';
 import type { Package } from '../../../../../../metamodels/pure/packageableElements/domain/Package';
 import type { PackageableElement } from '../../../../../../metamodels/pure/packageableElements/PackageableElement';
 import type { V1_PackageableElement } from '../../../model/packageableElements/V1_PackageableElement';
@@ -146,7 +149,8 @@ export class V1_ElementBuilder<T extends V1_PackageableElement> {
     V1_checkDuplicatedElement(path, context, elementPathCache);
     const element = this.firstPass(elementProtocol, context);
     addElementToPackage(
-      context.currentSubGraph.getOrCreatePackage(
+      getOrCreateGraphPackage(
+        context.currentSubGraph,
         elementProtocol.package,
         packageCache,
       ),

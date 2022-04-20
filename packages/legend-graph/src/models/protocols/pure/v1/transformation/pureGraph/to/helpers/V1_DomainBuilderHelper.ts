@@ -49,7 +49,10 @@ import type { V1_DerivedProperty } from '../../../../model/packageableElements/d
 import type { V1_Unit } from '../../../../model/packageableElements/domain/V1_Measure';
 import type { V1_TaggedValue } from '../../../../model/packageableElements/domain/V1_TaggedValue';
 import { V1_buildRawLambdaWithResolvedPaths } from './V1_ValueSpecificationPathResolver';
-import { addElementToPackage } from '../../../../../../../../helpers/DomainHelper';
+import {
+  addElementToPackage,
+  getOrCreateGraphPackage,
+} from '../../../../../../../../helpers/DomainHelper';
 
 export const V1_buildTaggedValue = (
   taggedValue: V1_TaggedValue,
@@ -149,7 +152,7 @@ export const V1_buildUnit = (
     `Element '${path}' already exists`,
   );
   addElementToPackage(
-    currentGraph.getOrCreatePackage(unit.package, undefined),
+    getOrCreateGraphPackage(currentGraph, unit.package, undefined),
     pureUnit,
   );
   currentGraph.setOwnType(path, pureUnit);

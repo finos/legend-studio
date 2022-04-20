@@ -28,6 +28,7 @@ import {
   createObservableFileGeneration,
   fileGeneration_setType,
 } from '../../graphModifier/DSLGeneration_GraphModifierHelper';
+import { graph_getOrCreatePackage } from '../../graphModifier/GraphModifierHelper';
 
 export class ElementFileGenerationState {
   uuid = uuid();
@@ -62,15 +63,13 @@ export class ElementFileGenerationState {
     packagePath: string,
     name: string,
   ): GeneratorFn<void> {
-    const fileGenerationPackage =
-      this.editorStore.graphManagerState.graph.getOrCreatePackage(
-        packagePath,
-        undefined,
-      );
     const fileGeneration = this.fileGenerationState.fileGeneration;
     fileGeneration.name = name;
     package_addElement(
-      fileGenerationPackage,
+      graph_getOrCreatePackage(
+        this.editorStore.graphManagerState.graph,
+        packagePath,
+      ),
       fileGeneration,
       this.editorStore.changeDetectionState.observerContext,
     );
