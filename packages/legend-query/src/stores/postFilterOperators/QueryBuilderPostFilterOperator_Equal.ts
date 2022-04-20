@@ -77,26 +77,27 @@ export class QueryBuilderPostFilterOperator_Equal extends QueryBuilderPostFilter
   isCompatibleWithConditionValue(
     postFilterConditionState: PostFilterConditionState,
   ): boolean {
-    const lhsType = postFilterConditionState.columnState.getReturnType();
+    const lhsType = guaranteeNonNullable(
+      postFilterConditionState.columnState.getReturnType(),
+    );
     const valueSpecification = postFilterConditionState.value;
     if (valueSpecification) {
       const type = getNonCollectionValueSpecificationType(valueSpecification);
+      const numericPrimitiveTypes = [
+        PRIMITIVE_TYPE.NUMBER,
+        PRIMITIVE_TYPE.INTEGER,
+        PRIMITIVE_TYPE.DECIMAL,
+        PRIMITIVE_TYPE.FLOAT,
+      ] as string[];
+
+      // When changing the return type for LHS, the RHS value should be adjusted accordingly.
+      // Numeric value is handled loosely because execution still works if a float (RHS) is assigned to an Integer property(LHS), etc.
       return (
         type !== undefined &&
-        ((
-          [
-            PRIMITIVE_TYPE.STRING,
-            PRIMITIVE_TYPE.BOOLEAN,
-            PRIMITIVE_TYPE.NUMBER,
-            PRIMITIVE_TYPE.INTEGER,
-            PRIMITIVE_TYPE.DECIMAL,
-            PRIMITIVE_TYPE.FLOAT,
-            PRIMITIVE_TYPE.DATE,
-            PRIMITIVE_TYPE.STRICTDATE,
-            PRIMITIVE_TYPE.DATETIME,
-          ] as string[]
-        ).includes(type.path) ||
-          type === lhsType)
+        ((numericPrimitiveTypes.includes(type.path) &&
+          numericPrimitiveTypes.includes(lhsType.path)) ||
+          type === lhsType ||
+          lhsType.isSuperType(type))
       );
     }
     return false;
