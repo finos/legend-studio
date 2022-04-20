@@ -111,7 +111,7 @@ import {
 import {
   localH2DatasourceSpecification_setTestDataSetupCsv,
   localH2DatasourceSpecification_setTestDataSetupSqls,
-  relationalInputData_setInputType,
+  relationalInputData_setData,
 } from '../../../graphModifier/StoreRelational_GraphModifierHelper';
 
 export class MappingExecutionQueryState extends LambdaEditorState {
@@ -549,7 +549,7 @@ export class MappingExecutionState {
         source.relation.value,
       );
       if (populateWithMockData) {
-        relationalInputData_setInputType(
+        relationalInputData_setData(
           newRuntimeState.inputData,
           createMockDataForMappingElementSource(source, this.editorStore),
         );
