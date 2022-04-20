@@ -572,7 +572,7 @@ export abstract class BasicModel {
     } else if (element instanceof GenerationSpecification) {
       this.generationSpecificationsIndex.delete(element.path);
     } else if (element instanceof Package) {
-      element.children.forEach(this.deleteOwnElement);
+      element.children.forEach((child) => this.deleteOwnElement(child));
     } else {
       const extension = this.getExtensionForElementClass(
         getClass<PackageableElement>(element),
