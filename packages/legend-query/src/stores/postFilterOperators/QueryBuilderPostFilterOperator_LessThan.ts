@@ -19,7 +19,10 @@ import {
   type ValueSpecification,
   PRIMITIVE_TYPE,
 } from '@finos/legend-graph';
-import { UnsupportedOperationError } from '@finos/legend-shared';
+import {
+  guaranteeNonNullable,
+  UnsupportedOperationError,
+} from '@finos/legend-shared';
 import { SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
 import {
   buildPrimitiveInstanceValue,
@@ -52,22 +55,27 @@ export class QueryBuilderPostFilterOperator_LessThan extends QueryBuilderPostFil
   isCompatibleWithConditionValue(
     postFilterConditionState: PostFilterConditionState,
   ): boolean {
+    const lhsType = guaranteeNonNullable(
+      postFilterConditionState.columnState.getReturnType(),
+    );
     const type = postFilterConditionState.value
       ? getNonCollectionValueSpecificationType(postFilterConditionState.value)
       : undefined;
+    const numericPrimitiveTypes = [
+      PRIMITIVE_TYPE.NUMBER,
+      PRIMITIVE_TYPE.INTEGER,
+      PRIMITIVE_TYPE.DECIMAL,
+      PRIMITIVE_TYPE.FLOAT,
+    ] as string[];
+
+    // When changing the return type for LHS, the RHS value should be adjusted accordingly.
+    // Numeric value is handled loosely because execution still works if a float (RHS) is assigned to an Integer property(LHS), etc.
     return (
       type !== undefined &&
-      (
-        [
-          PRIMITIVE_TYPE.NUMBER,
-          PRIMITIVE_TYPE.INTEGER,
-          PRIMITIVE_TYPE.DECIMAL,
-          PRIMITIVE_TYPE.FLOAT,
-          PRIMITIVE_TYPE.DATE,
-          PRIMITIVE_TYPE.STRICTDATE,
-          PRIMITIVE_TYPE.DATETIME,
-        ] as string[]
-      ).includes(type.path)
+      ((numericPrimitiveTypes.includes(type.path) &&
+        numericPrimitiveTypes.includes(lhsType.path)) ||
+        type === lhsType ||
+        lhsType.isSuperType(type))
     );
   }
   getDefaultFilterConditionValue(

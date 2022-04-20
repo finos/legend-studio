@@ -543,8 +543,8 @@ export const TEST_DATA__lambda_simpleConditionPostFilter = {
                                       property: 'getDateTime',
                                     },
                                     {
-                                      _type: 'strictDate',
-                                      values: ['2022-03-03'],
+                                      _type: 'dateTime',
+                                      values: ['2022-03-03T12:08'],
                                       multiplicity: {
                                         lowerBound: 1,
                                         upperBound: 1,
