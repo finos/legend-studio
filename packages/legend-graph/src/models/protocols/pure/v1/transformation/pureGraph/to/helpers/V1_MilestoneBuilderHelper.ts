@@ -20,7 +20,7 @@ import { getMilestoneTemporalStereotype } from '../../../../../../../../helpers/
 import {
   DEFAULT_PROCESSING_DATE_MILESTONING_PARAMETER_NAME,
   MILESTONING_END_DATE_PARAMETER_NAME,
-  MilestoneVersionPropertySufixes,
+  MILESTONING_VERSION_PROPERTY_SUFFIX,
   MILESTONING_STEROTYPE,
   PRIMITIVE_TYPE,
   MILESTONING_START_DATE_PARAMETER_NAME,
@@ -56,7 +56,7 @@ const buildMilestoningParameter = (
   return json;
 };
 
-export const V1_ProcessMilestoningProperties = (
+export const V1_buildMilestoningProperties = (
   propertyOwner: PropertyOwner,
   graph: PureModel,
 ): void => {
@@ -83,7 +83,7 @@ export const V1_ProcessMilestoningProperties = (
             ),
           ];
           const milestonedAllVersions = new Property(
-            `${property.name}${MilestoneVersionPropertySufixes.ALL_VERSIONS}`,
+            `${property.name}${MILESTONING_VERSION_PROPERTY_SUFFIX.ALL_VERSIONS}`,
             new Multiplicity(property.multiplicity.lowerBound, undefined),
             GenericTypeExplicitReference.create(
               new GenericType(property.genericType.value.rawType),
@@ -91,7 +91,7 @@ export const V1_ProcessMilestoningProperties = (
             property.owner,
           );
           const milestonedAllVersionsInRange = new DerivedProperty(
-            `${property.name}${MilestoneVersionPropertySufixes.ALL_VERSIONS_IN_RANGE}`,
+            `${property.name}${MILESTONING_VERSION_PROPERTY_SUFFIX.ALL_VERSIONS_IN_RANGE}`,
             property.multiplicity,
             GenericTypeExplicitReference.create(
               new GenericType(property.genericType.value.rawType),
@@ -133,7 +133,7 @@ export const V1_ProcessMilestoningProperties = (
             ),
           ];
           const milestonedAllVersions = new Property(
-            `${property.name}${MilestoneVersionPropertySufixes.ALL_VERSIONS}`,
+            `${property.name}${MILESTONING_VERSION_PROPERTY_SUFFIX.ALL_VERSIONS}`,
             new Multiplicity(property.multiplicity.lowerBound, undefined),
             GenericTypeExplicitReference.create(
               new GenericType(property.genericType.value.rawType),
@@ -141,7 +141,7 @@ export const V1_ProcessMilestoningProperties = (
             property.owner,
           );
           const milestonedAllVersionsInRange = new DerivedProperty(
-            `${property.name}${MilestoneVersionPropertySufixes.ALL_VERSIONS_IN_RANGE}`,
+            `${property.name}${MILESTONING_VERSION_PROPERTY_SUFFIX.ALL_VERSIONS_IN_RANGE}`,
             property.multiplicity,
             GenericTypeExplicitReference.create(
               new GenericType(property.genericType.value.rawType),
@@ -187,7 +187,7 @@ export const V1_ProcessMilestoningProperties = (
             ),
           ];
           const milestonedAllVersions = new Property(
-            `${property.name}${MilestoneVersionPropertySufixes.ALL_VERSIONS}`,
+            `${property.name}${MILESTONING_VERSION_PROPERTY_SUFFIX.ALL_VERSIONS}`,
             new Multiplicity(property.multiplicity.lowerBound, undefined),
             GenericTypeExplicitReference.create(
               new GenericType(property.genericType.value.rawType),

@@ -61,6 +61,7 @@ import {
   QueryBuilderPostFilterTreeGroupNodeData,
 } from './QueryBuilderPostFilterState';
 import { fromGroupOperation } from './QueryBuilderOperatorsHelper';
+import { decoratePropertyExpressionStatesForMilestonedProperties } from './QueryBuilderMilestoningHelper';
 
 export const buildGetAllFunction = (
   _class: Class,
@@ -252,7 +253,7 @@ export const buildLambdaFunction = (
       case MILESTONING_STEROTYPE.BUSINESS_TEMPORAL: {
         getAllFunction.parametersValues.push(
           guaranteeNonNullable(
-            queryBuilderState.querySetupState.businessDate,
+            queryBuilderState.querySetupState._businessDate,
             `Milestoning class should have a parameter of type 'Date'`,
           ),
         );
@@ -261,7 +262,7 @@ export const buildLambdaFunction = (
       case MILESTONING_STEROTYPE.PROCESSING_TEMPORAL: {
         getAllFunction.parametersValues.push(
           guaranteeNonNullable(
-            queryBuilderState.querySetupState.processingDate,
+            queryBuilderState.querySetupState._processingDate,
             `Milestoning class should have a parameter of type 'Date'`,
           ),
         );
@@ -270,13 +271,13 @@ export const buildLambdaFunction = (
       case MILESTONING_STEROTYPE.BITEMPORAL: {
         getAllFunction.parametersValues.push(
           guaranteeNonNullable(
-            queryBuilderState.querySetupState.processingDate,
+            queryBuilderState.querySetupState._processingDate,
             `Milestoning class should have a parameter of type 'Date'`,
           ),
         );
         getAllFunction.parametersValues.push(
           guaranteeNonNullable(
-            queryBuilderState.querySetupState.businessDate,
+            queryBuilderState.querySetupState._businessDate,
             `Milestoning class should have a parameter of type 'Date'`,
           ),
         );
@@ -352,6 +353,10 @@ export const buildLambdaFunction = (
             projectionColumnState instanceof
             QueryBuilderSimpleProjectionColumnState
           ) {
+            decoratePropertyExpressionStatesForMilestonedProperties(
+              projectionColumnState.propertyExpressionState
+                .derivedPropertyExpressionStates,
+            );
             columnLambda = buildGenericLambdaFunctionInstanceValue(
               projectionColumnState.lambdaParameterName,
               [
@@ -457,6 +462,10 @@ export const buildLambdaFunction = (
             projectionColumnState instanceof
             QueryBuilderSimpleProjectionColumnState
           ) {
+            decoratePropertyExpressionStatesForMilestonedProperties(
+              projectionColumnState.propertyExpressionState
+                .derivedPropertyExpressionStates,
+            );
             columnLambda = buildGenericLambdaFunctionInstanceValue(
               projectionColumnState.lambdaParameterName,
               [

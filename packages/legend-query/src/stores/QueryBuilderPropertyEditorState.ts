@@ -51,10 +51,10 @@ import { generateDefaultValueForPrimitiveType } from './QueryBuilderValueSpecifi
 import type { QueryBuilderState } from './QueryBuilderState';
 import { SUPPORTED_FUNCTIONS } from '../QueryBuilder_Const';
 import {
+  checkForMilestoningParameterEquality,
   fillMilestonedDerivedPropertyArguments,
   getSourceTemporalStereotype,
   isDefaultDatePropagationSupported,
-  removePropagatedDates,
 } from './QueryBuilderMilestoningHelper';
 import { functionExpression_setParametersValues } from './QueryBuilderValueSpecificationModifierHelper';
 
@@ -160,19 +160,47 @@ export const fillDerivedPropertyArguments = (
   }
   derivedPropertyExpressionState.parameters.forEach((parameter, idx) => {
     if (idx < derivedPropertyExpressionState.parameterValues.length) {
-      //Helps in building the milestoningParameters state when you toggle between text mode and form mode. Gets the information
+      // Helps in building the milestoningParameters state when you toggle between text mode and form mode. Gets the information
       // about the processingDate and businessDate from the getAll function. If the top level class is not temporal then
       // the processingDate and businessDate is set to default values while building the QueryBuilderState again.
       if (temporalTarget) {
-        fillMilestonedDerivedPropertyArguments(
+        let isDatePropagationSupported;
+        if (
+          !isDefaultDatePropagationSupported(
+            derivedPropertyExpressionState,
+            derivedPropertyExpressionState.queryBuilderState.graphManagerState
+              .graph,
+          ) ||
+          fillMilestonedProperties
+        ) {
+          isDatePropagationSupported = false;
+        } else {
+          isDatePropagationSupported = true;
+        }
+        const milestoningParameter = fillMilestonedDerivedPropertyArguments(
           derivedPropertyExpressionState,
           temporalTarget,
           idx,
+          isDatePropagationSupported,
         );
+        // Changes the `valueSpecification` to `INTERNAL__PropagatedValue` only if the parameter value
+        // matches with the corresponding `businessDate` or `processingDate`
+        if (
+          milestoningParameter &&
+          checkForMilestoningParameterEquality(
+            temporalTarget,
+            idx,
+            guaranteeNonNullable(propertyArguments[idx]),
+            derivedPropertyExpressionState.queryBuilderState.querySetupState,
+          )
+        ) {
+          propertyArguments[idx] = milestoningParameter;
+        }
       }
       return;
     }
     if (temporalTarget) {
+      let isDatePropagationSupported;
       if (
         !isDefaultDatePropagationSupported(
           derivedPropertyExpressionState,
@@ -181,14 +209,18 @@ export const fillDerivedPropertyArguments = (
         ) ||
         fillMilestonedProperties
       ) {
-        const milestoningParameter = fillMilestonedDerivedPropertyArguments(
-          derivedPropertyExpressionState,
-          temporalTarget,
-          idx,
-        );
-        if (milestoningParameter) {
-          propertyArguments.push(milestoningParameter);
-        }
+        isDatePropagationSupported = false;
+      } else {
+        isDatePropagationSupported = true;
+      }
+      const milestoningParameter = fillMilestonedDerivedPropertyArguments(
+        derivedPropertyExpressionState,
+        temporalTarget,
+        idx,
+        isDatePropagationSupported,
+      );
+      if (milestoningParameter) {
+        propertyArguments.push(milestoningParameter);
       }
     } else {
       let argument: ValueSpecification | undefined;
@@ -255,7 +287,7 @@ export const fillDerivedPropertyArguments = (
     propertyArguments = [
       guaranteeNonNullable(
         derivedPropertyExpressionState.queryBuilderState.querySetupState
-          .processingDate,
+          ._processingDate,
       ),
       guaranteeNonNullable(parameterValues[0]),
     ];
@@ -276,11 +308,9 @@ export class QueryBuilderDerivedPropertyExpressionState {
   queryBuilderState: QueryBuilderState;
   path: string;
   title: string;
-  propertyExpression: AbstractPropertyExpression;
-  derivedProperty: DerivedProperty;
-  parameters: VariableExpression[] = [];
-  processingDate: ValueSpecification | undefined;
-  businessDate: ValueSpecification | undefined;
+  readonly propertyExpression: AbstractPropertyExpression;
+  readonly derivedProperty: DerivedProperty;
+  readonly parameters: VariableExpression[] = [];
 
   constructor(
     queryBuilderState: QueryBuilderState,
@@ -456,8 +486,5 @@ export class QueryBuilderPropertyExpressionState {
     }
     this.requiresExistsHandling = requiresExistsHandling;
     this.derivedPropertyExpressionStates = result.slice().reverse();
-    if (this.derivedPropertyExpressionStates.length) {
-      removePropagatedDates(this.derivedPropertyExpressionStates);
-    }
   }
 }

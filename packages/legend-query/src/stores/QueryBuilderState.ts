@@ -58,12 +58,9 @@ import {
   LambdaFunctionInstanceValue,
   RawLambda,
   TYPICAL_MULTIPLICITY_TYPE,
-  MILESTONING_STEROTYPE,
   VariableExpression,
-  DEFAULT_PROCESSING_DATE_MILESTONING_PARAMETER_NAME,
   observe_ValueSpecification,
   ObserverContext,
-  DEFAULT_BUSINESS_DATE_MILESTONING_PARAMETER_NAME,
 } from '@finos/legend-graph';
 import {
   QueryBuilderFilterOperator_Equal,
@@ -445,41 +442,6 @@ export class QueryBuilderState {
       this.queryParametersState.addParameter(variableState);
     }
     return milestoningParameter;
-  }
-
-  buildClassMilestoningTemporalValue(stereotype: string): void {
-    switch (stereotype) {
-      case MILESTONING_STEROTYPE.BUSINESS_TEMPORAL: {
-        this.querySetupState.setBusinessDate(
-          this.buildMilestoningParameter(
-            DEFAULT_BUSINESS_DATE_MILESTONING_PARAMETER_NAME,
-          ),
-        );
-        break;
-      }
-      case MILESTONING_STEROTYPE.PROCESSING_TEMPORAL: {
-        this.querySetupState.setProcessingDate(
-          this.buildMilestoningParameter(
-            DEFAULT_PROCESSING_DATE_MILESTONING_PARAMETER_NAME,
-          ),
-        );
-        break;
-      }
-      case MILESTONING_STEROTYPE.BITEMPORAL: {
-        this.querySetupState.setProcessingDate(
-          this.buildMilestoningParameter(
-            DEFAULT_PROCESSING_DATE_MILESTONING_PARAMETER_NAME,
-          ),
-        );
-        this.querySetupState.setBusinessDate(
-          this.buildMilestoningParameter(
-            DEFAULT_BUSINESS_DATE_MILESTONING_PARAMETER_NAME,
-          ),
-        );
-        break;
-      }
-      default:
-    }
   }
 
   async saveQuery(

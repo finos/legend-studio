@@ -119,6 +119,7 @@ export {
   CollectionInstanceValue,
   PrimitiveInstanceValue,
 } from './models/metamodels/pure/valueSpecification/InstanceValue';
+export { INTERNAL__PropagatedValue } from './models/metamodels/pure/valueSpecification/INTERNAL__PropagatedValue';
 export {
   ValueSpecification,
   type ValueSpecificationVisitor,

@@ -54,7 +54,7 @@ import {
   fromGroupOperation,
   QUERY_BUILDER_GROUP_OPERATION,
 } from './QueryBuilderOperatorsHelper';
-import { updatePropertyExpressionStateWithDefaultMilestoningDates } from './QueryBuilderMilestoningHelper';
+import { decoratePropertyExpressionStatesForMilestonedProperties } from './QueryBuilderMilestoningHelper';
 
 export abstract class QueryBuilderFilterOperator {
   uuid = uuid();
@@ -138,12 +138,6 @@ export class FilterConditionState {
   get operators(): QueryBuilderFilterOperator[] {
     return this.filterState.operators.filter((op) =>
       op.isCompatibleWithFilterConditionProperty(this),
-    );
-  }
-
-  get propertyExpressionStateWithMilestoningDates(): QueryBuilderPropertyExpressionState {
-    return updatePropertyExpressionStateWithDefaultMilestoningDates(
-      this.propertyExpressionState,
     );
   }
 
@@ -319,6 +313,9 @@ const buildFilterConditionExpression = (
   node: QueryBuilderFilterTreeNodeData,
 ): ValueSpecification | undefined => {
   if (node instanceof QueryBuilderFilterTreeConditionNodeData) {
+    decoratePropertyExpressionStatesForMilestonedProperties(
+      node.condition.propertyExpressionState.derivedPropertyExpressionStates,
+    );
     return node.condition.operator.buildFilterConditionExpression(
       node.condition,
     );

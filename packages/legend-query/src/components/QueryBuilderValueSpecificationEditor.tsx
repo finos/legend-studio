@@ -53,6 +53,7 @@ import {
   PRIMITIVE_TYPE,
   TYPICAL_MULTIPLICITY_TYPE,
   VariableExpression,
+  INTERNAL__PropagatedValue,
 } from '@finos/legend-graph';
 import { getMultiplicityDescription } from './shared/QueryBuilderUtils';
 import {
@@ -152,7 +153,7 @@ export const VariableExpressionParameterEditor = observer(
   },
 );
 
-export const StringPrimitiveInstanceValueEditor = observer(
+const StringPrimitiveInstanceValueEditor = observer(
   (props: {
     valueSpecification: PrimitiveInstanceValue;
     className?: string | undefined;
@@ -176,7 +177,7 @@ export const StringPrimitiveInstanceValueEditor = observer(
   },
 );
 
-export const BooleanPrimitiveInstanceValueEditor = observer(
+const BooleanPrimitiveInstanceValueEditor = observer(
   (props: {
     valueSpecification: PrimitiveInstanceValue;
     className?: string | undefined;
@@ -201,7 +202,7 @@ export const BooleanPrimitiveInstanceValueEditor = observer(
   },
 );
 
-export const NumberPrimitiveInstanceValueEditor = observer(
+const NumberPrimitiveInstanceValueEditor = observer(
   (props: {
     valueSpecification: PrimitiveInstanceValue;
     isInteger: boolean;
@@ -283,7 +284,7 @@ export const DateTimePrimitiveInstanceValueEditor = observer(
   },
 );
 
-export const EnumValueInstanceValueEditor = observer(
+const EnumValueInstanceValueEditor = observer(
   (props: {
     valueSpecification: EnumValueInstanceValue;
     className?: string | undefined;
@@ -440,7 +441,7 @@ const setCollectionValue = (
 
 const COLLECTION_PREVIEW_CHAR_LIMIT = 50;
 
-export const CollectionValueInstanceValueEditor = observer(
+const CollectionValueInstanceValueEditor = observer(
   (props: {
     valueSpecification: CollectionInstanceValue;
     graph: PureModel;
@@ -694,6 +695,16 @@ export const QueryBuilderValueSpecificationEditor: React.FC<{
       <VariableExpressionParameterEditor
         valueSpecification={valueSpecification}
         className={className}
+      />
+    );
+  } else if (
+    valueSpecification instanceof INTERNAL__PropagatedValue
+  ) {
+    return (
+      <QueryBuilderValueSpecificationEditor
+        valueSpecification={valueSpecification.getValue()}
+        graph={graph}
+        expectedType={expectedType}
       />
     );
   }

@@ -81,19 +81,19 @@ const generateClassLabel = (
     switch (milestoneStereotype) {
       case MILESTONING_STEROTYPE.BUSINESS_TEMPORAL:
         milestoningParameterValues = `Business Date: ${getParameterValue(
-          queryBuilderState.querySetupState.businessDate,
+          queryBuilderState.querySetupState._businessDate,
         )}`;
         break;
       case MILESTONING_STEROTYPE.PROCESSING_TEMPORAL:
         milestoningParameterValues = `Processing Date: ${getParameterValue(
-          queryBuilderState.querySetupState.processingDate,
+          queryBuilderState.querySetupState._processingDate,
         )}`;
         break;
       case MILESTONING_STEROTYPE.BITEMPORAL:
         milestoningParameterValues = `Processing Date: ${getParameterValue(
-          queryBuilderState.querySetupState.processingDate,
+          queryBuilderState.querySetupState._processingDate,
         )}, Business Date: ${getParameterValue(
-          queryBuilderState.querySetupState.businessDate,
+          queryBuilderState.querySetupState._businessDate,
         )}`;
         break;
       default:
@@ -224,7 +224,7 @@ export const QueryBuilderSetupPanel = observer(
       setIsMilestoneEditorOpened(false);
     };
     const isMilestonedQuery = Boolean(
-      querySetupState.businessDate ?? querySetupState.processingDate,
+      querySetupState._businessDate ?? querySetupState._processingDate,
     );
 
     return (

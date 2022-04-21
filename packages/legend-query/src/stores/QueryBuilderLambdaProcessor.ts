@@ -69,6 +69,7 @@ import {
   V1_deserializeRawValueSpecification,
   V1_RawLambda,
   getMilestoneTemporalStereotype,
+  type INTERNAL__PropagatedValue,
 } from '@finos/legend-graph';
 import {
   type QueryBuilderProjectionColumnState,
@@ -111,16 +112,6 @@ const processFilterExpression = (
   filterState: QueryBuilderFilterState,
   parentFilterNodeId: string | undefined,
 ): void => {
-  const propertyExpression = expression.parametersValues[0];
-  if (propertyExpression instanceof AbstractPropertyExpression) {
-    const currentPropertyExpression = propertyExpression.parametersValues[0];
-    if (currentPropertyExpression instanceof AbstractPropertyExpression) {
-      processMilestoningPropertyExpression(
-        currentPropertyExpression,
-        filterState.queryBuilderState.graphManagerState.graph,
-      );
-    }
-  }
   const parentNode = parentFilterNodeId
     ? filterState.getNode(parentFilterNodeId)
     : undefined;
@@ -147,6 +138,16 @@ const processFilterExpression = (
     );
     filterState.addNodeFromNode(groupNode, parentNode);
   } else {
+    const propertyExpression = expression.parametersValues[0];
+    if (propertyExpression instanceof AbstractPropertyExpression) {
+      const currentPropertyExpression = propertyExpression.parametersValues[0];
+      if (currentPropertyExpression instanceof AbstractPropertyExpression) {
+        processMilestoningPropertyExpression(
+          currentPropertyExpression,
+          filterState.queryBuilderState.graphManagerState.graph,
+        );
+      }
+    }
     for (const operator of filterState.operators) {
       // NOTE: this allow plugin author to either return `undefined` or throw error
       // if there is a problem with building the lambda. Either case, the plugin is
@@ -379,6 +380,12 @@ export class QueryBuilderLambdaProcessor
     throw new UnsupportedOperationError();
   }
 
+  visit_INTERNAL__PropagatedValue(
+    valueSpecification: INTERNAL__PropagatedValue,
+  ): void {
+    throw new UnsupportedOperationError();
+  }
+
   visit_SimpleFunctionExpression(
     valueSpecification: SimpleFunctionExpression,
   ): void {
@@ -421,7 +428,7 @@ export class QueryBuilderLambdaProcessor
           this.queryBuilderState.querySetupState.setProcessingDate(
             valueSpecification.parametersValues[1],
           );
-        } else {
+        } else if (stereotype === MILESTONING_STEROTYPE.BUSINESS_TEMPORAL) {
           acceptedNoOfParameters = 2;
           assertTrue(
             valueSpecification.parametersValues.length ===

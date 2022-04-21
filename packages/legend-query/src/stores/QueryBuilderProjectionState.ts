@@ -88,7 +88,6 @@ import {
 } from './QueryBuilderPreviewDataHelper';
 import { buildGenericLambdaFunctionInstanceValue } from './QueryBuilderValueSpecificationBuilderHelper';
 import { LambdaEditorState } from '@finos/legend-application';
-import { updatePropertyExpressionStateWithDefaultMilestoningDates } from './QueryBuilderMilestoningHelper';
 
 export enum QUERY_BUILDER_PROJECTION_DND_TYPE {
   PROJECTION_COLUMN = 'PROJECTION_COLUMN',
@@ -179,12 +178,6 @@ export class QueryBuilderSimpleProjectionColumnState extends QueryBuilderProject
     this.columnName = getPropertyChainName(
       this.propertyExpressionState.propertyExpression,
       humanizePropertyName,
-    );
-  }
-
-  get propertyExpressionStateWithMilestoningDates(): QueryBuilderPropertyExpressionState {
-    return updatePropertyExpressionStateWithDefaultMilestoningDates(
-      this.propertyExpressionState,
     );
   }
 

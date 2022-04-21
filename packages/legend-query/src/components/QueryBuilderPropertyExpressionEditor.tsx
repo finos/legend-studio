@@ -46,26 +46,17 @@ import {
   PrimitiveInstanceValue,
   PRIMITIVE_TYPE,
 } from '@finos/legend-graph';
-import {
-  getPropagatedDate,
-  isDefaultDatePropagationSupported,
-} from '../stores/QueryBuilderMilestoningHelper';
+import { isDefaultDatePropagationSupported } from '../stores/QueryBuilderMilestoningHelper';
 import { propertyExpression_setParametersValue } from '../stores/QueryBuilderValueSpecificationModifierHelper';
-import { QueryBuilderMilestoningValueSpecificationEditor } from '../stores/QueryBuilderMilestoningValueSpecificationEditor';
+import { QueryBuilderValueSpecificationEditor } from './QueryBuilderValueSpecificationEditor';
 
 const DerivedPropertyParameterValueEditor = observer(
   (props: {
     derivedPropertyExpressionState: QueryBuilderDerivedPropertyExpressionState;
-    derivedPropertyExpressionStates: QueryBuilderDerivedPropertyExpressionState[];
     variable: VariableExpression;
     idx: number;
   }) => {
-    const {
-      derivedPropertyExpressionState,
-      derivedPropertyExpressionStates,
-      variable,
-      idx,
-    } = props;
+    const { derivedPropertyExpressionState, variable, idx } = props;
     const handleDrop = useCallback(
       (item: QueryBuilderParameterDragSource): void => {
         propertyExpression_setParametersValue(
@@ -132,17 +123,6 @@ const DerivedPropertyParameterValueEditor = observer(
         derivedPropertyExpressionState.queryBuilderState.observableContext,
       );
     };
-    // Gets the value of milestoning date that needs to be shown in DerivedPropertyEditor when date propagation is supported
-    // otherwise gets the actual parameter value.
-    const parameterValue = (
-      isDefaultDatePropagationSupported(
-        derivedPropertyExpressionState,
-        derivedPropertyExpressionState.queryBuilderState.graphManagerState
-          .graph,
-      ) && derivedPropertyExpressionState.parameterValues.length === 0
-        ? getPropagatedDate(derivedPropertyExpressionState, idx)
-        : derivedPropertyExpressionState.parameterValues[idx]
-    ) as ValueSpecification;
 
     return (
       <div key={variable.name} className="panel__content__form__section">
@@ -161,8 +141,12 @@ const DerivedPropertyParameterValueEditor = observer(
               Change Parameter Value
             </div>
           )}
-          <QueryBuilderMilestoningValueSpecificationEditor
-            valueSpecification={parameterValue}
+          <QueryBuilderValueSpecificationEditor
+            valueSpecification={
+              derivedPropertyExpressionState.parameterValues[
+                idx
+              ] as ValueSpecification
+            }
             graph={
               derivedPropertyExpressionState.queryBuilderState.graphManagerState
                 .graph
@@ -171,9 +155,6 @@ const DerivedPropertyParameterValueEditor = observer(
               derivedPropertyExpressionState.parameters[idx]?.genericType
                 ?.ownerReference.value,
             )}
-            idx={idx}
-            derivedPropertyExpressionState={derivedPropertyExpressionState}
-            derivedPropertyExpressionStates={derivedPropertyExpressionStates}
           />
           <button
             className="query-builder-filter-tree__node__action"
@@ -193,10 +174,8 @@ const DerivedPropertyParameterValueEditor = observer(
 const DerivedPropertyExpressionEditor = observer(
   (props: {
     derivedPropertyExpressionState: QueryBuilderDerivedPropertyExpressionState;
-    derivedPropertyExpressionStates: QueryBuilderDerivedPropertyExpressionState[];
   }) => {
-    const { derivedPropertyExpressionState, derivedPropertyExpressionStates } =
-      props;
+    const { derivedPropertyExpressionState } = props;
     const parameterValues = derivedPropertyExpressionState.parameterValues;
     const parameters = derivedPropertyExpressionState.parameters;
 
@@ -220,7 +199,6 @@ const DerivedPropertyExpressionEditor = observer(
           <DerivedPropertyParameterValueEditor
             key={variable.name}
             derivedPropertyExpressionState={derivedPropertyExpressionState}
-            derivedPropertyExpressionStates={derivedPropertyExpressionStates}
             variable={variable}
             idx={idx}
           />
@@ -258,9 +236,6 @@ export const QueryBuilderPropertyExpressionEditor = observer(
                 <DerivedPropertyExpressionEditor
                   key={pe.path}
                   derivedPropertyExpressionState={pe}
-                  derivedPropertyExpressionStates={
-                    propertyExpressionState.derivedPropertyExpressionStates
-                  }
                 />
               ),
             )}

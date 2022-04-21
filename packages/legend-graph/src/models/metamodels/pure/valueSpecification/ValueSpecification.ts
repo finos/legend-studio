@@ -39,10 +39,14 @@ import type {
 } from './SimpleFunctionExpression';
 import type { INTERNAL__UnknownValueSpecification } from './INTERNAL__UnknownValueSpecification';
 import type { VariableExpression } from './VariableExpression';
+import type { INTERNAL__PropagatedValue } from './INTERNAL__PropagatedValue';
 
 export interface ValueSpecificationVisitor<T> {
   visit_RootGraphFetchTreeInstanceValue(
     valueSpecification: RootGraphFetchTreeInstanceValue,
+  ): T;
+  visit_INTERNAL__PropagatedValue(
+    valueSpecification: INTERNAL__PropagatedValue,
   ): T;
   visit_PropertyGraphFetchTreeInstanceValue(
     valueSpecification: PropertyGraphFetchTreeInstanceValue,

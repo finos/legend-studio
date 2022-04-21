@@ -320,7 +320,7 @@ export enum MILESTONING_STEROTYPE {
 
 export const LATEST_DATE = '%latest';
 
-export enum MilestoneVersionPropertySufixes {
+export enum MILESTONING_VERSION_PROPERTY_SUFFIX {
   ALL_VERSIONS = 'AllVersions',
   ALL_VERSIONS_IN_RANGE = 'AllVersionsInRange',
 }

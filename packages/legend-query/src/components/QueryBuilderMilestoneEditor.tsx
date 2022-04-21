@@ -25,17 +25,17 @@ import {
   GenericType,
   GenericTypeExplicitReference,
   MILESTONING_STEROTYPE,
+  observe_PrimitiveInstanceValue,
   PrimitiveInstanceValue,
   PRIMITIVE_TYPE,
   TYPICAL_MULTIPLICITY_TYPE,
 } from '@finos/legend-graph';
 import { QueryBuilderValueSpecificationEditor } from './QueryBuilderValueSpecificationEditor';
-import { guaranteeNonNullable, Randomizer } from '@finos/legend-shared';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 import { type DropTargetMonitor, useDrop } from 'react-dnd';
 import { VariableExpressionViewer } from './QueryBuilderParameterPanel';
 import { Dialog, RefreshIcon } from '@finos/legend-art';
-import { addDays, format } from 'date-fns';
-import { DATE_FORMAT } from '@finos/legend-application';
+import { generateDefaultValueForPrimitiveType } from '../stores/QueryBuilderValueSpecificationBuilderHelper';
 
 const MilestoningParameterEditor = observer(
   (props: {
@@ -81,34 +81,31 @@ const MilestoningParameterEditor = observer(
     let milestoningParameter;
     if (stereotype === MILESTONING_STEROTYPE.BUSINESS_TEMPORAL) {
       milestoningParameter = guaranteeNonNullable(
-        queryBuilderState.querySetupState.businessDate,
+        queryBuilderState.querySetupState._businessDate,
       );
     } else {
       milestoningParameter = guaranteeNonNullable(
-        queryBuilderState.querySetupState.processingDate,
+        queryBuilderState.querySetupState._processingDate,
       );
     }
     const resetMilestoningParameter = (): void => {
-      const parameter = new PrimitiveInstanceValue(
-        GenericTypeExplicitReference.create(
-          new GenericType(
-            queryBuilderState.graphManagerState.graph.getPrimitiveType(
-              PRIMITIVE_TYPE.STRICTDATE,
+      const parameter = observe_PrimitiveInstanceValue(
+        new PrimitiveInstanceValue(
+          GenericTypeExplicitReference.create(
+            new GenericType(
+              queryBuilderState.graphManagerState.graph.getPrimitiveType(
+                PRIMITIVE_TYPE.STRICTDATE,
+              ),
             ),
           ),
+          queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
+            TYPICAL_MULTIPLICITY_TYPE.ONE,
+          ),
         ),
-        queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
-          TYPICAL_MULTIPLICITY_TYPE.ONE,
-        ),
+        queryBuilderState.observableContext,
       );
       parameter.values = [
-        format(
-          new Randomizer().getRandomDate(
-            new Date(Date.now()),
-            addDays(Date.now(), 100),
-          ),
-          DATE_FORMAT,
-        ),
+        generateDefaultValueForPrimitiveType(PRIMITIVE_TYPE.STRICTDATE),
       ];
       if (stereotype === MILESTONING_STEROTYPE.BUSINESS_TEMPORAL) {
         queryBuilderState.querySetupState.setBusinessDate(parameter);
@@ -216,15 +213,15 @@ const TemporalMilestoneEditor: React.FC<{
   const { queryBuilderState } = props;
 
   if (
-    queryBuilderState.querySetupState.processingDate &&
-    queryBuilderState.querySetupState.businessDate
+    queryBuilderState.querySetupState._processingDate &&
+    queryBuilderState.querySetupState._businessDate
   ) {
     return <BiTemporalMilestoneEditor queryBuilderState={queryBuilderState} />;
-  } else if (queryBuilderState.querySetupState.businessDate) {
+  } else if (queryBuilderState.querySetupState._businessDate) {
     return (
       <BusinessTemporalMilestoneEditor queryBuilderState={queryBuilderState} />
     );
-  } else if (queryBuilderState.querySetupState.processingDate) {
+  } else if (queryBuilderState.querySetupState._processingDate) {
     return (
       <ProcessingTemporalMilestoneEditor
         queryBuilderState={queryBuilderState}

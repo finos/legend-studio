@@ -158,13 +158,13 @@ const QueryBuilderSimpleProjectionColumnEditor = observer(
         projectionColumnState.projectionState.queryBuilderState.explorerState
           .humanizePropertyName,
       );
-    const propertyExpressionState =
-      projectionColumnState.propertyExpressionStateWithMilestoningDates;
 
     return (
       <div className="query-builder__projection__column__value__property">
         <QueryBuilderPropertyExpressionBadge
-          propertyExpressionState={propertyExpressionState}
+          propertyExpressionState={
+            projectionColumnState.propertyExpressionState
+          }
           onPropertyExpressionChange={onPropertyExpressionChange}
         />
       </div>

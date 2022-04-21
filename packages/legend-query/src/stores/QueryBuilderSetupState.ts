@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-import { action, computed, makeAutoObservable, observable } from 'mobx';
+import { action, makeAutoObservable, observable } from 'mobx';
 import {
   getNullableFirstElement,
-  guaranteeNonNullable,
   isNonNullable,
   uniq,
 } from '@finos/legend-shared';
@@ -31,14 +30,17 @@ import {
   getMilestoneTemporalStereotype,
   PackageableElementExplicitReference,
   RuntimePointer,
+  DEFAULT_BUSINESS_DATE_MILESTONING_PARAMETER_NAME,
+  DEFAULT_PROCESSING_DATE_MILESTONING_PARAMETER_NAME,
+  MILESTONING_STEROTYPE,
+  observe_ValueSpecification,
 } from '@finos/legend-graph';
-import { getMilestoningDate } from './QueryBuilderMilestoningHelper';
 
 export class QueryBuilderSetupState {
   queryBuilderState: QueryBuilderState;
   _class?: Class | undefined;
-  businessDate: ValueSpecification | undefined;
-  processingDate: ValueSpecification | undefined;
+  _businessDate: ValueSpecification | undefined;
+  _processingDate: ValueSpecification | undefined;
   mapping?: Mapping | undefined;
   runtime?: Runtime | undefined;
   mappingIsReadOnly = false;
@@ -48,10 +50,8 @@ export class QueryBuilderSetupState {
   constructor(queryBuilderState: QueryBuilderState) {
     makeAutoObservable(this, {
       queryBuilderState: false,
-      processingDate: observable,
-      businessDate: observable,
-      ProcessingDate: computed,
-      BusinessDate: computed,
+      _processingDate: observable,
+      _businessDate: observable,
       setQueryBuilderState: action,
       setClass: action,
       setMapping: action,
@@ -62,6 +62,41 @@ export class QueryBuilderSetupState {
     });
 
     this.queryBuilderState = queryBuilderState;
+  }
+
+  private initializeQueryMilestoningParameters(stereotype: string): void {
+    switch (stereotype) {
+      case MILESTONING_STEROTYPE.BUSINESS_TEMPORAL: {
+        this.setBusinessDate(
+          this.queryBuilderState.buildMilestoningParameter(
+            DEFAULT_BUSINESS_DATE_MILESTONING_PARAMETER_NAME,
+          ),
+        );
+        break;
+      }
+      case MILESTONING_STEROTYPE.PROCESSING_TEMPORAL: {
+        this.setProcessingDate(
+          this.queryBuilderState.buildMilestoningParameter(
+            DEFAULT_PROCESSING_DATE_MILESTONING_PARAMETER_NAME,
+          ),
+        );
+        break;
+      }
+      case MILESTONING_STEROTYPE.BITEMPORAL: {
+        this.setProcessingDate(
+          this.queryBuilderState.buildMilestoningParameter(
+            DEFAULT_PROCESSING_DATE_MILESTONING_PARAMETER_NAME,
+          ),
+        );
+        this.setBusinessDate(
+          this.queryBuilderState.buildMilestoningParameter(
+            DEFAULT_BUSINESS_DATE_MILESTONING_PARAMETER_NAME,
+          ),
+        );
+        break;
+      }
+      default:
+    }
   }
 
   get possibleMappings(): Mapping[] {
@@ -101,20 +136,6 @@ export class QueryBuilderSetupState {
     return false;
   }
 
-  get ProcessingDate(): ValueSpecification | undefined {
-    return getMilestoningDate(
-      guaranteeNonNullable(this.processingDate),
-      this.queryBuilderState.graphManagerState.graph,
-    );
-  }
-
-  get BusinessDate(): ValueSpecification | undefined {
-    return getMilestoningDate(
-      guaranteeNonNullable(this.businessDate),
-      this.queryBuilderState.graphManagerState.graph,
-    );
-  }
-
   setQueryBuilderState(queryBuilderState: QueryBuilderState): void {
     this.queryBuilderState = queryBuilderState;
   }
@@ -150,7 +171,7 @@ export class QueryBuilderSetupState {
       this.setBusinessDate(undefined);
       this.setProcessingDate(undefined);
       if (stereotype) {
-        this.queryBuilderState.buildClassMilestoningTemporalValue(stereotype);
+        this.initializeQueryMilestoningParameters(stereotype);
       }
     }
   }
@@ -171,10 +192,20 @@ export class QueryBuilderSetupState {
   }
 
   setProcessingDate(val: ValueSpecification | undefined): void {
-    this.processingDate = val;
+    this._processingDate = val
+      ? observe_ValueSpecification(
+          val,
+          this.queryBuilderState.observableContext,
+        )
+      : val;
   }
 
   setBusinessDate(val: ValueSpecification | undefined): void {
-    this.businessDate = val;
+    this._businessDate = val
+      ? observe_ValueSpecification(
+          val,
+          this.queryBuilderState.observableContext,
+        )
+      : val;
   }
 }
