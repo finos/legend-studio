@@ -43,7 +43,6 @@ import {
   EmbeddedRelationalInstanceSetImplementation,
   buildSourceInformationSourceId,
 } from '@finos/legend-graph';
-import { mapping_setPropertyMappings } from '../../../../graphModifier/DSLMapping_GraphModifierHelper';
 
 export class RelationalPropertyMappingState extends PropertyMappingState {
   editorStore: EditorStore;
@@ -284,19 +283,12 @@ export class RootRelationalInstanceSetImplementationState extends RelationalInst
    * so here we make sure that we reuse existing state and only add new decorated ones
    */
   decorate(): void {
-    const propertyMappingsBeforeDecoration =
-      this.mappingElement.propertyMappings;
     this.mappingElement.accept_SetImplementationVisitor(
       new MappingElementDecorator(this.editorStore),
     );
     const newPropertyMappingStates: RelationalPropertyMappingState[] = [];
     const propertyMappingstatesAfterDecoration = this.getPropertyMappingStates(
       this.mappingElement.propertyMappings,
-    );
-    mapping_setPropertyMappings(
-      this.mappingElement,
-      propertyMappingsBeforeDecoration,
-      this.editorStore.changeDetectionState.observerContext,
     );
     propertyMappingstatesAfterDecoration.forEach((propertyMappingState) => {
       const existingPropertyMappingState = this.propertyMappingStates.find(

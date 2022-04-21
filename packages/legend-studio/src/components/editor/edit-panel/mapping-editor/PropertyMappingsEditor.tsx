@@ -60,7 +60,7 @@ import {
   setImpl_setRoot,
 } from '../../../../stores/graphModifier/DSLMapping_GraphModifierHelper';
 
-export const expectedReturnType = (
+export const getExpectedReturnType = (
   targetSetImplementation: SetImplementation | undefined,
 ): Type | undefined => {
   if (targetSetImplementation instanceof PureInstanceSetImplementation) {

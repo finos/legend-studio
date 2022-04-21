@@ -38,10 +38,7 @@ import {
   buildSourceInformationSourceId,
 } from '@finos/legend-graph';
 import { LambdaEditorState } from '@finos/legend-application';
-import {
-  pureInstanceSetImpl_setMappingFilter,
-  pureInstanceSetImpl_setPropertyMappings,
-} from '../../../graphModifier/DSLMapping_GraphModifierHelper';
+import { pureInstanceSetImpl_setMappingFilter } from '../../../graphModifier/DSLMapping_GraphModifierHelper';
 
 export const FILTER_SOURCE_ID_LABEL = 'filter';
 
@@ -274,8 +271,6 @@ export class PureInstanceSetImplementationState extends InstanceSetImplementatio
    * so here we make sure that we reuse existing state and only add new decorated ones
    */
   decorate(): void {
-    const propertyMappingsBeforeDecoration =
-      this.mappingElement.propertyMappings;
     this.mappingElement.accept_SetImplementationVisitor(
       new MappingElementDecorator(this.editorStore),
     );
@@ -284,11 +279,6 @@ export class PureInstanceSetImplementationState extends InstanceSetImplementatio
       this.mappingElement.propertyMappings.map(
         (pm) => new PurePropertyMappingState(this.editorStore, this, pm),
       );
-    pureInstanceSetImpl_setPropertyMappings(
-      this.mappingElement,
-      propertyMappingsBeforeDecoration,
-      this.editorStore.changeDetectionState.observerContext,
-    );
     propertyMappingstatesAfterDecoration.forEach((propertyMappingState) => {
       const existingPropertyMappingState = this.propertyMappingStates.find(
         (p) => p.propertyMapping === propertyMappingState.propertyMapping,

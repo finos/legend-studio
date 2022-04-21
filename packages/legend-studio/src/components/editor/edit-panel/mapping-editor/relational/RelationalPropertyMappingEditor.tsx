@@ -47,7 +47,7 @@ import {
 } from '@finos/legend-graph';
 import { StudioLambdaEditor } from '../../../../shared/StudioLambdaEditor';
 import { relationalPropertyMapping_setTransformer } from '../../../../../stores/graphModifier/StoreRelational_GraphModifierHelper';
-import { expectedReturnType } from '../PropertyMappingsEditor';
+import { getExpectedReturnType } from '../PropertyMappingsEditor';
 
 const SimplePropertyMappingEditor = observer(
   (props: {
@@ -192,7 +192,7 @@ const ClassPropertyMappingEditor = observer(
     ) : (
       ''
     );
-    const expectedType = expectedReturnType(
+    const expectedType = getExpectedReturnType(
       propertyMapping.targetSetImplementation,
     );
     const onExpectedTypeLabelSelect = (): void =>

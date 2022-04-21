@@ -295,12 +295,20 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
       }
       return [];
     };
-    pureInstanceSetImpl_setPropertyMappings(
-      setImplementation,
+    const propertyMappingsBeforeDecoration = setImplementation.propertyMappings;
+    let propertyMappings =
       getDecoratedSetImplementationPropertyMappings<PurePropertyMapping>(
         setImplementation,
         decoratePropertyMapping,
+      );
+    propertyMappings = propertyMappings.concat(
+      propertyMappingsBeforeDecoration.filter(
+        (propertyMapping) => !propertyMappings.includes(propertyMapping),
       ),
+    );
+    pureInstanceSetImpl_setPropertyMappings(
+      setImplementation,
+      propertyMappings,
       this.editorStore.changeDetectionState.observerContext,
     );
   }
@@ -395,12 +403,20 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
       }
       return [];
     };
-    mapping_setPropertyMappings(
-      setImplementation,
+    const propertyMappingsBeforeDecoration = setImplementation.propertyMappings;
+    let propertyMappings =
       getDecoratedSetImplementationPropertyMappings<AbstractFlatDataPropertyMapping>(
         setImplementation,
         decoratePropertyMapping,
+      );
+    propertyMappings = propertyMappings.concat(
+      propertyMappingsBeforeDecoration.filter(
+        (propertyMapping) => !propertyMappings.includes(propertyMapping),
       ),
+    );
+    mapping_setPropertyMappings(
+      setImplementation,
+      propertyMappings,
       this.editorStore.changeDetectionState.observerContext,
     );
   }
@@ -550,12 +566,20 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
       }
       return [];
     };
-    mapping_setPropertyMappings(
-      setImplementation,
+    const propertyMappingsBeforeDecoration = setImplementation.propertyMappings;
+    let propertyMappings =
       getDecoratedSetImplementationPropertyMappings<PropertyMapping>(
         setImplementation,
         decoratePropertyMapping,
+      );
+    propertyMappings = propertyMappings.concat(
+      propertyMappingsBeforeDecoration.filter(
+        (propertyMapping) => !propertyMappings.includes(propertyMapping),
       ),
+    );
+    mapping_setPropertyMappings(
+      setImplementation,
+      propertyMappings,
       this.editorStore.changeDetectionState.observerContext,
     );
   }
