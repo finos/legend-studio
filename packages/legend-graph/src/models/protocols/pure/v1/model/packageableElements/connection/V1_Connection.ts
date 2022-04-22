@@ -22,16 +22,6 @@ import type { V1_XmlModelConnection } from '../../../model/packageableElements/s
 import type { V1_FlatDataConnection } from '../../../model/packageableElements/store/flatData/connection/V1_FlatDataConnection';
 import type { V1_ConnectionPointer } from './V1_ConnectionPointer';
 
-export enum V1_ConnectionType {
-  CONNECTION_POINTER = 'connectionPointer',
-  MODEL_CONNECTION = 'ModelConnection',
-  MODEL_CHAIN_CONNECTION = 'ModelChainConnection',
-  JSON_MODEL_CONNECTION = 'JsonModelConnection',
-  XML_MODEL_CONNECTION = 'XmlModelConnection',
-  FLAT_DATA_CONNECTION = 'FlatDataConnection',
-  RELATIONAL_DATABASE_CONNECTION = 'RelationalDatabaseConnection',
-}
-
 export interface V1_ConnectionVisitor<T> {
   visit_Connection(connection: V1_Connection): T;
   visit_ConnectionPointer(connection: V1_ConnectionPointer): T;

@@ -28,10 +28,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { LegendTaxonomyApplication } from '../components/LegendTaxonomyApplication';
 import { LegendTaxonomyPluginManager } from './LegendTaxonomyPluginManager';
 import { getRootElement } from '@finos/legend-art';
-import {
-  CorePureGraphManagerPlugin,
-  DSLExternalFormat_GraphPreset,
-} from '@finos/legend-graph';
+import { CorePureGraphManagerPlugin } from '@finos/legend-graph';
 import {
   type LegendTaxonomyConfigurationData,
   LegendTaxonomyConfig,
@@ -55,13 +52,6 @@ export class LegendTaxonomy extends LegendApplication {
       LegendTaxonomyPluginManager.create(),
     );
     application.withBasePlugins([new CorePureGraphManagerPlugin()]);
-    application.withBasePresets([
-      // NOTE: This makes it easier to eventually modularize `DSL External Format`,
-      // but it makes the layering a bit strange since core graph has DSLs depending on
-      // `DSL External Format` like generation and relational, which ideally we could move out later
-      // See https://github.com/finos/legend-studio/issues/65
-      new DSLExternalFormat_GraphPreset(),
-    ]);
     return application;
   }
 

@@ -26,6 +26,8 @@ import type { Database } from '../model/Database';
 import type { PackageableElementReference } from '../../../PackageableElementReference';
 import type { PostProcessor } from './postprocessor/PostProcessor';
 
+// TODO: to be modularized or handled differently
+// See https://github.com/finos/legend-studio/issues/946
 export enum DatabaseType {
   DB2 = 'DB2',
   H2 = 'H2',

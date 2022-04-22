@@ -15,6 +15,7 @@
  */
 
 import {
+  filterByType,
   guaranteeNonNullable,
   guaranteeType,
   UnsupportedOperationError,
@@ -295,10 +296,7 @@ class V1_ValueSpecificationTransformer
     collection.multiplicity.upperBound =
       valueSpecification.multiplicity.upperBound;
     collection.values = valueSpecification.values
-      .filter(
-        (type: unknown): type is ValueSpecification =>
-          type instanceof ValueSpecification,
-      )
+      .filter(filterByType(ValueSpecification))
       .map((e) =>
         e.accept_ValueSpecificationVisitor(
           new V1_ValueSpecificationTransformer(

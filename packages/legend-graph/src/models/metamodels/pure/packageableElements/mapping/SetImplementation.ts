@@ -15,15 +15,10 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { fromElementPathToMappingElementId } from '../../../../../MetaModelUtils';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
-import {
-  PackageableElementExplicitReference,
-  type PackageableElementReference,
-} from '../PackageableElementReference';
+import type { PackageableElementReference } from '../PackageableElementReference';
 import type { PropertyOwnerImplementation } from './PropertyOwnerImplementation';
-import { Class } from '../domain/Class';
-import type { Mapping, MappingElementLabel } from './Mapping';
+import type { Mapping } from './Mapping';
 import type { Stubable } from '../../../../../helpers/Stubable';
 import type { OperationSetImplementation } from './OperationSetImplementation';
 import type { PureInstanceSetImplementation } from '../store/modelToModel/mapping/PureInstanceSetImplementation';
@@ -31,17 +26,13 @@ import type { FlatDataInstanceSetImplementation } from '../store/flatData/mappin
 import type { EmbeddedFlatDataPropertyMapping } from '../store/flatData/mapping/EmbeddedFlatDataPropertyMapping';
 import type { RelationalInstanceSetImplementation } from '../store/relational/mapping/RelationalInstanceSetImplementation';
 import type { RootRelationalInstanceSetImplementation } from '../store/relational/mapping/RootRelationalInstanceSetImplementation';
-import {
-  InferableMappingElementIdExplicitValue,
-  type InferableMappingElementIdValue,
-} from './InferableMappingElementId';
-import {
-  InferableMappingElementRootExplicitValue,
-  type InferableMappingElementRoot,
-} from './InferableMappingElementRoot';
+import type { InferableMappingElementIdValue } from './InferableMappingElementId';
+import type { InferableMappingElementRoot } from './InferableMappingElementRoot';
 import type { AggregationAwareSetImplementation } from './aggregationAware/AggregationAwareSetImplementation';
 import type { InstanceSetImplementation } from './InstanceSetImplementation';
 import type { MergeOperationSetImplementation } from './MergeOperationSetImplementation';
+import type { TEMPORARY__UnresolvedSetImplementation } from './TEMPORARY__UnresolvedSetImplementation';
+import type { Class } from '../domain/Class';
 
 export interface SetImplementationVisitor<T> {
   visit_SetImplementation(setImplementation: InstanceSetImplementation): T;
@@ -78,11 +69,11 @@ export interface SetImplementationVisitor<T> {
 export abstract class SetImplementation
   implements PropertyOwnerImplementation, Hashable, Stubable
 {
+  readonly parent: Mapping;
   readonly isEmbedded: boolean = false;
   id: InferableMappingElementIdValue;
   class: PackageableElementReference<Class>;
   root: InferableMappingElementRoot;
-  parent: Mapping;
 
   constructor(
     id: InferableMappingElementIdValue,
@@ -94,21 +85,6 @@ export abstract class SetImplementation
     this.parent = parent;
     this.class = _class;
     this.root = root;
-  }
-
-  get label(): MappingElementLabel {
-    return {
-      value: `${
-        fromElementPathToMappingElementId(this.class.value.path) ===
-        this.id.value
-          ? this.root.value
-            ? this.class.value.name
-            : `${this.class.value.name} [default]`
-          : `${this.class.value.name} [${this.id.value}]`
-      }`,
-      root: this.root.value,
-      tooltip: this.class.value.path,
-    };
   }
 
   get isStub(): boolean {
@@ -129,11 +105,13 @@ export abstract class SetImplementation
   ): T;
 }
 
+// TODO: to be moved out of metamodel
 export enum BASIC_SET_IMPLEMENTATION_TYPE {
   OPERATION = 'operation',
   INSTANCE = 'instance',
 }
 
+// TODO: to be moved out of metamodel
 export enum SET_IMPLEMENTATION_TYPE {
   OPERATION = 'operation',
   MERGE_OPERATION = 'mergeOperation',
@@ -143,30 +121,4 @@ export enum SET_IMPLEMENTATION_TYPE {
   RELATIONAL = 'relational',
   EMBEDDED_RELATIONAL = 'embeddedRelational',
   AGGREGATION_AWARE = 'aggregationAware',
-}
-
-/* @MARKER: RELAXED GRAPH CHECK - See https://github.com/finos/legend-studio/issues/941 */
-/**
- * When set implementation cannot be resolved by ID,
- * we try to avoid failing graph building for now
- * instead, we will leave this loose end unresolved.
- *
- * NOTE: this is just a temporary solutions until we make this a hard-fail post migration.
- *
- * See https://github.com/finos/legend-studio/issues/880
- * See https://github.com/finos/legend-studio/issues/941
- */
-export class TEMPORARY__UnresolvedSetImplementation extends SetImplementation {
-  constructor(id: string, parent: Mapping) {
-    super(
-      InferableMappingElementIdExplicitValue.create(id, ''),
-      parent,
-      PackageableElementExplicitReference.create(new Class('')),
-      InferableMappingElementRootExplicitValue.create(false),
-    );
-  }
-
-  accept_SetImplementationVisitor<T>(visitor: SetImplementationVisitor<T>): T {
-    return visitor.visit_TEMPORARY__UnresolvedSetImplementation(this);
-  }
 }

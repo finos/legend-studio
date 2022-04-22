@@ -27,8 +27,6 @@ import {
 import type { PackageableElementReference } from '../PackageableElementReference';
 
 export abstract class ServiceExecution implements Hashable {
-  private readonly _$nominalTypeBrand!: 'ServiceExecution';
-
   abstract get hashCode(): string;
 }
 

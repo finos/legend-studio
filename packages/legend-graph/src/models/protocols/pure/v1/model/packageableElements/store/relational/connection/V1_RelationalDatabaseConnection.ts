@@ -24,6 +24,8 @@ import type { V1_DatasourceSpecification } from './V1_DatasourceSpecification';
 import type { V1_AuthenticationStrategy } from './V1_AuthenticationStrategy';
 import type { V1_PostProcessor } from './postprocessor/V1_PostProcessor';
 
+// TODO: to be modularized or handled differently
+// See https://github.com/finos/legend-studio/issues/946
 export enum V1_DatabaseType {
   DB2 = 'DB2',
   H2 = 'H2',

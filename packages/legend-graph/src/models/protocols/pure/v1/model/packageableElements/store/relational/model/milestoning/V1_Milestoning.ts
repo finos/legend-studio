@@ -15,9 +15,9 @@
  */
 
 import type { Hashable } from '@finos/legend-shared';
-import type { V1_RawInstanceValue } from '../../../../../rawValueSpecification/V1_RawInstanceValue';
+import type { V1_RawPrimitiveInstanceValue } from '../../../../../rawValueSpecification/V1_RawPrimitiveInstanceValue';
 
 export abstract class V1_Milestoning implements Hashable {
-  infinityDate?: V1_RawInstanceValue | undefined;
+  infinityDate?: V1_RawPrimitiveInstanceValue | undefined;
   abstract get hashCode(): string;
 }

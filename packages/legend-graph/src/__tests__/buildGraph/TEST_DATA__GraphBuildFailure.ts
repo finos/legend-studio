@@ -198,6 +198,31 @@ export const TEST_DATA__MissingTagValue = [
   },
 ];
 
+export const TEST_DATA__DuplicatedElement = [
+  {
+    classifierPath: 'meta::pure::metamodel::type::Class',
+    path: 'ui::test1::Animal',
+    content: {
+      _type: 'class',
+      name: 'Animal',
+      package: 'ui::test1',
+      properties: [],
+      superTypes: [],
+    },
+  },
+  {
+    classifierPath: 'meta::pure::metamodel::type::Class',
+    path: 'ui::test1::Animal',
+    content: {
+      _type: 'class',
+      name: 'Animal',
+      package: 'ui::test1',
+      properties: [],
+      superTypes: [],
+    },
+  },
+];
+
 export const TEST_DATA__MissingProperty = [
   {
     classifierPath: 'meta::pure::metamodel::type::Class',

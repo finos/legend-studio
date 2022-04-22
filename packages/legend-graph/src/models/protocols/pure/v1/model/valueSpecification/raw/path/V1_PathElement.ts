@@ -14,6 +14,4 @@
  * limitations under the License.
  */
 
-export abstract class V1_PathElement {
-  private readonly _$nominalTypeBrand!: 'V1_PathElement';
-}
+export abstract class V1_PathElement {}

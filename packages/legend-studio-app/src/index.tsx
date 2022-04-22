@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-import { LegendStudio, type LegendStudioPlugin } from '@finos/legend-studio';
+import {
+  LegendStudio,
+  type LegendStudioPlugin,
+  DSLExternalFormat_LegendStudioPlugin,
+} from '@finos/legend-studio';
 import { WebConsole } from '@finos/legend-shared';
 import { getLegendGraphExtensionCollection } from '@finos/legend-graph-extension-collection';
 import { QueryBuilder_LegendStudioPreset } from '@finos/legend-studio-extension-query-builder';
@@ -29,6 +33,7 @@ export const getLegendStudioPluginCollection = (): LegendStudioPlugin[] => [
   new DSLText_LegendStudioPlugin(),
   new DSLDiagram_LegendStudioPlugin(),
   new DSLDataSpace_LegendStudioPlugin(),
+  new DSLExternalFormat_LegendStudioPlugin(),
   new DSLPersistence_LegendStudioPlugin(),
   new ESService_LegendStudioPlugin(),
   new ELMorphir_LegendStudioPlugin(),

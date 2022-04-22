@@ -137,7 +137,7 @@ export class TestContainerState {
   updateTestAssert(): void {
     if (this.assertionData) {
       this.testContainer.assert =
-        this.editorStore.graphManagerState.graphManager.HACKY_createServiceTestAssertLambda(
+        this.editorStore.graphManagerState.graphManager.HACKY__createServiceTestAssertLambda(
           /* @MARKER: Workaround for https://github.com/finos/legend-studio/issues/68 */
           // NOTE: due to discrepancies in the test runners for mapping and service, we have don't need
           // to do any (un)escaping here like what we do for mapping test assertion data. For better context:
@@ -150,7 +150,7 @@ export class TestContainerState {
 
   private initializeAssertionData(testContainter: TestContainer): void {
     const expectedResultAssertionString =
-      this.editorStore.graphManagerState.graphManager.HACKY_extractServiceTestAssertionData(
+      this.editorStore.graphManagerState.graphManager.HACKY__extractServiceTestAssertionData(
         testContainter.assert,
       );
     this.assertionData = expectedResultAssertionString
@@ -454,7 +454,7 @@ export class SingleExecutionTestState {
 
   addNewTestContainer(): void {
     const testContainer = new TestContainer(
-      this.editorStore.graphManagerState.graphManager.HACKY_createServiceTestAssertLambda(
+      this.editorStore.graphManagerState.graphManager.HACKY__createServiceTestAssertLambda(
         '{}',
       ),
       this.test,

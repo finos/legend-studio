@@ -58,7 +58,6 @@ export interface V1_PackageableElementVisitor<T> {
 export abstract class V1_PackageableElement implements Hashable {
   package!: string;
   name!: string;
-  parentSection?: string | undefined;
 
   get path(): string {
     return `${this.package}${ELEMENT_PATH_DELIMITER}${this.name}`;
@@ -73,6 +72,7 @@ export abstract class V1_PackageableElement implements Hashable {
   ): T;
 }
 
+// TODO: to be moved out of metamodel
 export enum V1_PackageableElementPointerType {
   STORE = 'STORE',
   MAPPING = 'MAPPING',

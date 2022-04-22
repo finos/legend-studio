@@ -91,9 +91,3 @@ export class Mapping extends PackageableElement implements Hashable, Stubable {
     return visitor.visit_Mapping(this);
   }
 }
-
-export interface MappingElementLabel {
-  value: string;
-  root: boolean;
-  tooltip: string;
-}

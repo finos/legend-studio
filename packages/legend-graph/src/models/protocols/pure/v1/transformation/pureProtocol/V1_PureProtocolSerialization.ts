@@ -36,8 +36,8 @@ import { V1_PureModelContextData } from '../../model/context/V1_PureModelContext
 import { V1_PureModelContextPointer } from '../../model/context/V1_PureModelContextPointer';
 import type { V1_PackageableElement } from '../../model/packageableElements/V1_PackageableElement';
 import {
+  V1_serializePackageableElement,
   V1_deserializePackageableElement,
-  V1_PackageableElementSerializer,
 } from '../../transformation/pureProtocol/V1_PackageableElementSerialization';
 import { V1_PureModelContextComposite } from '../../model/context/V1_PureModelContextComposite';
 import { V1_Protocol } from '../../model/V1_Protocol';
@@ -149,9 +149,7 @@ export const V1_setupPureModelContextDataSerialization = (
     elements: list(
       custom(
         (element: V1_PackageableElement) =>
-          element.accept_PackageableElementVisitor(
-            new V1_PackageableElementSerializer(plugins),
-          ),
+          V1_serializePackageableElement(element, plugins),
         (element: PlainObject<V1_PackageableElement>) =>
           V1_deserializePackageableElement(element, plugins),
       ),

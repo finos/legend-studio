@@ -26,7 +26,7 @@ import {
   V1_textModelSchema,
   V1_TEXT_ELEMENT_PROTOCOL_TYPE,
 } from './v1/transformation/pureProtocol/V1_DSLText_ProtocolHelper';
-import { getText } from '../../../graphManager/DSLText_GraphManagerHelper';
+import { getOwnText } from '../../../graphManager/DSLText_GraphManagerHelper';
 import {
   Text,
   TEXT_TYPE,
@@ -43,6 +43,7 @@ import {
   PureProtocolProcessorPlugin,
   V1_ElementBuilder,
   V1_initPackageableElement,
+  V1_buildFullPath,
 } from '@finos/legend-graph';
 
 const TEXT_ELEMENT_CLASSIFIER_PATH = 'meta::pure::metamodel::text::Text';
@@ -66,7 +67,7 @@ export class DSLText_PureProtocolProcessorPlugin extends PureProtocolProcessorPl
         ): PackageableElement => {
           assertType(elementProtocol, V1_Text);
           const element = new Text(elementProtocol.name);
-          const path = context.currentSubGraph.buildPath(
+          const path = V1_buildFullPath(
             elementProtocol.package,
             elementProtocol.name,
           );
@@ -78,11 +79,11 @@ export class DSLText_PureProtocolProcessorPlugin extends PureProtocolProcessorPl
           context: V1_GraphBuilderContext,
         ): void => {
           assertType(elementProtocol, V1_Text);
-          const path = context.graph.buildPath(
+          const path = V1_buildFullPath(
             elementProtocol.package,
             elementProtocol.name,
           );
-          const element = getText(path, context.graph);
+          const element = getOwnText(path, context.currentSubGraph);
           element.type =
             Object.values(TEXT_TYPE).find(
               (type) => type === elementProtocol.type,

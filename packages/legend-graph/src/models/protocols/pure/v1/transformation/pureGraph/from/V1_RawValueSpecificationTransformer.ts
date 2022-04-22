@@ -27,8 +27,8 @@ import { SOURCE_INFORMATION_KEY } from '../../../../../../../MetaModelConst';
 import { recursiveOmit } from '@finos/legend-shared';
 import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext';
 import type { V1_RawValueSpecification } from '../../../model/rawValueSpecification/V1_RawValueSpecification';
-import { V1_RawInstanceValue } from '../../../model/rawValueSpecification/V1_RawInstanceValue';
-import type { RawInstanceValue } from '../../../../../../metamodels/pure/rawValueSpecification/RawInstanceValue';
+import { V1_RawPrimitiveInstanceValue } from '../../../model/rawValueSpecification/V1_RawPrimitiveInstanceValue';
+import type { RawPrimitiveInstanceValue } from '../../../../../../metamodels/pure/rawValueSpecification/RawPrimitiveInstanceValue';
 
 export class V1_RawValueSpecificationTransformer
   implements RawValueSpecificationVisitor<V1_RawValueSpecification>
@@ -78,18 +78,16 @@ export class V1_RawValueSpecificationTransformer
     return rawVariable;
   }
 
-  visit_RawInstanceValue(
-    rawValueSpecification: RawInstanceValue,
+  visit_RawPrimitiveInstanceValue(
+    rawValueSpecification: RawPrimitiveInstanceValue,
   ): V1_RawValueSpecification {
-    const rawInstanceValue = new V1_RawInstanceValue();
-    rawInstanceValue.type = V1_transformElementReference(
-      rawValueSpecification.type,
-    );
-    rawInstanceValue.multiplicity = V1_transformMultiplicity(
+    const protocol = new V1_RawPrimitiveInstanceValue();
+    protocol.type = V1_transformElementReference(rawValueSpecification.type);
+    protocol.multiplicity = V1_transformMultiplicity(
       rawValueSpecification.multiplicity,
     );
-    rawInstanceValue.values = rawValueSpecification.values;
-    return rawInstanceValue;
+    protocol.values = rawValueSpecification.values;
+    return protocol;
   }
 }
 

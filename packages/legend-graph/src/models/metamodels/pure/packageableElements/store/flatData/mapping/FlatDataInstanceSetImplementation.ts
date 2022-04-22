@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { hashArray, type Hashable } from '@finos/legend-shared';
+import { filterByType, hashArray, type Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import { InstanceSetImplementation } from '../../../mapping/InstanceSetImplementation';
 import type { AbstractFlatDataPropertyMapping } from './AbstractFlatDataPropertyMapping';
@@ -67,10 +67,7 @@ export class FlatDataInstanceSetImplementation
 
   getEmbeddedSetImplmentations(): InstanceSetImplementation[] {
     const embeddedPropertyMappings = this.propertyMappings.filter(
-      (
-        propertyMapping: AbstractFlatDataPropertyMapping,
-      ): propertyMapping is EmbeddedFlatDataPropertyMapping =>
-        propertyMapping instanceof EmbeddedFlatDataPropertyMapping,
+      filterByType(EmbeddedFlatDataPropertyMapping),
     );
     return embeddedPropertyMappings
       .map((propertyMapping) => propertyMapping.getEmbeddedSetImplmentations())

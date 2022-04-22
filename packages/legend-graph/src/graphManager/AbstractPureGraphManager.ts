@@ -72,10 +72,11 @@ export interface TEMPORARY__EngineSetupConfig {
 }
 
 export interface GraphBuilderOptions {
-  // the `keepSectionIndex` flag is kept until we have stable support and enable usage of section index.
-  TEMPORARY__keepSectionIndex?: boolean;
-  // when we change our handling of section index, we should be able to get rid of this flag.
-  TEMPORARY__disableRawLambdaResolver?: boolean;
+  /**
+   * This flag will be kept until we have full support for section index
+   * See https://github.com/finos/legend-studio/issues/1067
+   */
+  TEMPORARY__preserveSectionIndex?: boolean;
 }
 
 export interface ExecutionOptions {
@@ -393,9 +394,10 @@ export abstract class AbstractPureGraphManager {
   // As the name suggested, these methods are temporary hacks since we don't handle value-specification
   // structurally in Studio
 
-  abstract HACKY_createGetAllLambda(_class: Class): RawLambda;
-  abstract HACKY_createServiceTestAssertLambda(assertData: string): RawLambda;
-  abstract HACKY_extractServiceTestAssertionData(
+  abstract HACKY__createGetAllLambda(_class: Class): RawLambda;
+  abstract HACKY__createServiceTestAssertLambda(assertData: string): RawLambda;
+  abstract HACKY__extractServiceTestAssertionData(
     query: RawLambda,
   ): string | undefined;
+  abstract HACKY__createDefaultBlankLambda(): RawLambda;
 }

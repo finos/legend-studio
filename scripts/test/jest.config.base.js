@@ -24,13 +24,15 @@ const baseConfig = getBaseConfig({
   babelConfigPath: resolve(__dirname, '../../babel.config.cjs'),
 });
 
-export default {
+export const baseJestConfig = {
   ...baseConfig,
   setupFiles: [
     '@finos/legend-art/jest/mockESM.jsx',
     '@finos/legend-dev-utils/jest/disallowConsoleError',
-    '@finos/legend-dev-utils/jest/blockFetch',
     '@finos/legend-dev-utils/jest/handleUnhandledRejection',
+    // TODO: remove this when we no longer need to mock `Window.fetch()` for tests
+    // See https://github.com/finos/legend-studio/issues/758
+    '@finos/legend-dev-utils/jest/blockFetch',
   ],
   // Setup to run immediately after the test framework has been installed in the environment
   // before each test file in the suite is executed
@@ -42,8 +44,8 @@ export default {
   ],
   moduleNameMapper: {
     ...baseConfig.moduleNameMapper,
-    // mock since Jest@26 does not support ESM
     // TODO: remove this and `lodash` dependency when we upgrade to Jest@27 and use ESM for Jest
+    // See https://github.com/finos/legend-studio/issues/502
     '^lodash-es$': 'lodash',
   },
   modulePathIgnorePatterns: ['packages/.*/lib'],
@@ -80,4 +82,35 @@ export default {
     '<rootDir>/docs',
     '<rootDir>/temp',
   ],
+};
+
+export const getBaseJestProjectConfig = (projectName, packageDir) => ({
+  ...baseJestConfig,
+  displayName: projectName,
+  name: projectName,
+  rootDir: '../..',
+  testMatch: [`<rootDir>/${packageDir}/**/__tests__/**/*(*.)test.[jt]s?(x)`],
+});
+
+export const getBaseJestDOMProjectConfig = (projectName, packageDir) => {
+  const base = getBaseJestProjectConfig(projectName, packageDir);
+
+  return {
+    ...base,
+    testEnvironment: 'jsdom',
+    setupFiles: [
+      ...base.setupFiles,
+      '@finos/legend-dev-utils/jest/setupDOMPolyfills',
+    ],
+    moduleNameMapper: {
+      ...base.moduleNameMapper,
+      '^monaco-editor$':
+        '@finos/legend-art/lib/testMocks/MockedMonacoEditor.js',
+      // Mock for testing `react-dnd`
+      // See http://react-dnd.github.io/react-dnd/docs/testing
+      '^dnd-core$': 'dnd-core/dist/cjs',
+      '^react-dnd$': 'react-dnd/dist/cjs',
+      '^react-dnd-html5-backend$': 'react-dnd-html5-backend/dist/cjs',
+    },
+  };
 };

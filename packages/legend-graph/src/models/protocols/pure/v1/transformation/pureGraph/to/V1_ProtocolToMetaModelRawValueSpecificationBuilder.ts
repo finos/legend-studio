@@ -21,8 +21,8 @@ import type { V1_GraphBuilderContext } from '../../../transformation/pureGraph/t
 import type { V1_RawValueSpecificationVisitor } from '../../../model/rawValueSpecification/V1_RawValueSpecification';
 import type { V1_RawLambda } from '../../../model/rawValueSpecification/V1_RawLambda';
 import type { V1_RawVariable } from '../../../model/rawValueSpecification/V1_RawVariable';
-import type { V1_RawInstanceValue } from '../../../model/rawValueSpecification/V1_RawInstanceValue';
-import { RawInstanceValue } from '../../../../../../metamodels/pure/rawValueSpecification/RawInstanceValue';
+import type { V1_RawPrimitiveInstanceValue } from '../../../model/rawValueSpecification/V1_RawPrimitiveInstanceValue';
+import { RawPrimitiveInstanceValue } from '../../../../../../metamodels/pure/rawValueSpecification/RawPrimitiveInstanceValue';
 
 export class V1_ProtocolToMetaModelRawValueSpecificationBuilder
   implements V1_RawValueSpecificationVisitor<RawValueSpecification>
@@ -53,14 +53,18 @@ export class V1_ProtocolToMetaModelRawValueSpecificationBuilder
     );
   }
 
-  visit_InstanceValue(
-    valueSpecification: V1_RawInstanceValue,
+  visit_PrimitiveInstanceValue(
+    valueSpecification: V1_RawPrimitiveInstanceValue,
   ): RawValueSpecification {
     const multiplicity = this.context.graph.getMultiplicity(
       valueSpecification.multiplicity.lowerBound,
       valueSpecification.multiplicity.upperBound,
     );
     const type = this.context.resolveType(valueSpecification.type);
-    return new RawInstanceValue(type, multiplicity, valueSpecification.values);
+    return new RawPrimitiveInstanceValue(
+      type,
+      multiplicity,
+      valueSpecification.values,
+    );
   }
 }

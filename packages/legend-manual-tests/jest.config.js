@@ -14,15 +14,17 @@
  * limitations under the License.
  */
 
-import base from '../../scripts/test/jest.config.base.js';
+import { getBaseJestProjectConfig } from '../../scripts/test/jest.config.base.js';
 import { loadJSON } from '@finos/legend-dev-utils/DevUtils';
 
 const packageJson = loadJSON('./package.json');
-
+const base = getBaseJestProjectConfig(
+  packageJson.name,
+  'packages/legend-manual-tests',
+);
 export default {
   ...base,
-  displayName: packageJson.name,
-  name: packageJson.name,
-  rootDir: '../..',
+  // NOTE: skip manual tests
+
   testMatch: ['<rootDir>/packages/legend-manual-tests'],
 };

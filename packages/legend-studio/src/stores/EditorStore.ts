@@ -54,6 +54,7 @@ import {
   assertNonNullable,
   assertTrue,
   ActionState,
+  filterByType,
 } from '@finos/legend-shared';
 import { UMLEditorState } from './editor-state/element-editor-state/UMLEditorState';
 import { ServiceEditorState } from './editor-state/element-editor-state/service/ServiceEditorState';
@@ -144,6 +145,10 @@ import {
 } from './graphModifier/GraphModifierHelper';
 
 export abstract class EditorExtensionState {
+  /**
+   * This helps to better type-checking for this empty abtract type
+   * See https://github.com/finos/legend-studio/blob/master/docs/technical/typescript-usage.md#understand-typescript-structual-type-system
+   */
   private readonly _$nominalTypeBrand!: 'EditorExtensionState';
 }
 
@@ -891,9 +896,7 @@ export class EditorStore {
 
   getEditorExtensionState<T extends EditorExtensionState>(clazz: Clazz<T>): T {
     return guaranteeNonNullable(
-      this.editorExtensionStates.find(
-        (extenionState): extenionState is T => extenionState instanceof clazz,
-      ),
+      this.editorExtensionStates.find(filterByType(clazz)),
       `Can't find extension editor state of the specified type: no built extension editor state available from plugins`,
     );
   }
@@ -1106,9 +1109,15 @@ export class EditorStore {
 
   *addElement(
     element: PackageableElement,
+    packagePath: string | undefined,
     openAfterCreate: boolean,
   ): GeneratorFn<void> {
-    graph_addElement(this.graphManagerState.graph, element);
+    graph_addElement(
+      this.graphManagerState.graph,
+      element,
+      packagePath,
+      this.changeDetectionState.observerContext,
+    );
     this.explorerTreeState.reprocess();
 
     if (openAfterCreate) {
@@ -1183,7 +1192,12 @@ export class EditorStore {
     if (this.graphManagerState.isElementReadOnly(element)) {
       return;
     }
-    graph_renameElement(this.graphManagerState.graph, element, newPath);
+    graph_renameElement(
+      this.graphManagerState.graph,
+      element,
+      newPath,
+      this.changeDetectionState.observerContext,
+    );
 
     const extraElementEditorPostRenameActions = this.pluginManager
       .getStudioPlugins()

@@ -45,14 +45,9 @@ import {
   type Measure,
   type Unit,
   type RawLambda,
-  type Package,
-  type ObserverContext,
   type Association,
   Class,
-  _package_addElement,
-  _package_deleteElement,
   observe_Enum,
-  observe_PackageabElement,
   observe_DerivedProperty,
   observe_GenericTypeReference,
   observe_Property,
@@ -280,7 +275,7 @@ export const function_setReturnType = action(
     packageableElementReference_setValue(_func.returnType, observe_Type(val));
   },
 );
-export const functio_setReturnMultiplicity = action(
+export const function_setReturnMultiplicity = action(
   (_func: ConcreteFunctionDefinition, val: Multiplicity): void => {
     _func.returnMultiplicity = observe_Multiplicity(val);
   },
@@ -350,17 +345,3 @@ export const unit_setConversionFunction = action(
     unit.conversionFunction = observe_RawLambda(lambda);
   },
 );
-
-// ------------------------------------------ Package -------------------------------------
-
-export const package_addElement = action(
-  (
-    parent: Package,
-    element: PackageableElement,
-    context: ObserverContext,
-  ): void => {
-    _package_addElement(parent, observe_PackageabElement(element, context));
-  },
-);
-
-export const package_deleteElement = action(_package_deleteElement);

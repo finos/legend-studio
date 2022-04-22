@@ -15,38 +15,25 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import type { Multiplicity } from '../packageableElements/domain/Multiplicity';
-import type { PackageableElementReference } from '../packageableElements/PackageableElementReference';
-import type { Type } from '../packageableElements/domain/Type';
+import { CORE_HASH_STRUCTURE } from '../../../../../../MetaModelConst';
 import {
-  type RawValueSpecificationVisitor,
-  RawValueSpecification,
-} from './RawValueSpecification';
-import { CORE_HASH_STRUCTURE } from '../../../../MetaModelConst';
+  type V1_RawValueSpecificationVisitor,
+  V1_RawValueSpecification,
+} from './V1_RawValueSpecification';
+import type { V1_Multiplicity } from '../packageableElements/domain/V1_Multiplicity';
 
-export class RawInstanceValue
-  extends RawValueSpecification
+export class V1_RawPrimitiveInstanceValue
+  extends V1_RawValueSpecification
   implements Hashable
 {
-  type: PackageableElementReference<Type>;
-  multiplicity: Multiplicity;
-  values?: (string | number)[] | undefined;
-
-  constructor(
-    type: PackageableElementReference<Type>,
-    multiplicity: Multiplicity,
-    values: (string | number)[] | undefined,
-  ) {
-    super();
-    this.type = type;
-    this.multiplicity = multiplicity;
-    this.values = values;
-  }
+  type!: string;
+  multiplicity!: V1_Multiplicity;
+  values?: (string | number)[] | undefined; // to be revised?
 
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.RAW_INSTANCE_VALUE,
-      this.type.hashValue,
+      this.type,
       this.multiplicity,
       this.values
         ? hashArray(this.values.map((value) => value.toString()))
@@ -55,8 +42,8 @@ export class RawInstanceValue
   }
 
   accept_RawValueSpecificationVisitor<T>(
-    visitor: RawValueSpecificationVisitor<T>,
+    visitor: V1_RawValueSpecificationVisitor<T>,
   ): T {
-    return visitor.visit_RawInstanceValue(this);
+    return visitor.visit_PrimitiveInstanceValue(this);
   }
 }

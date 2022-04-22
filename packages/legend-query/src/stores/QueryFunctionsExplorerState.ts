@@ -286,17 +286,14 @@ export class QueryFunctionsExplorerState {
     this.queryBuilderState.graphManagerState.graph.ownFunctions
       .map((f) => getAllPackagesFromElement(f))
       .flat()
-      .forEach(this.displayablePackagesSet.add, this.displayablePackagesSet);
+      .forEach((pkg) => this.displayablePackagesSet.add(pkg));
   }
 
   async initializeDependencyDisplayablePackagesSet(): Promise<void> {
     this.queryBuilderState.graphManagerState.graph.dependencyManager.functions
       .map((f) => getAllPackagesFromElement(f))
       .flat()
-      .forEach(
-        this.dependencyDisplayablePackagesSet.add,
-        this.dependencyDisplayablePackagesSet,
-      );
+      .forEach((pkg) => this.dependencyDisplayablePackagesSet.add(pkg));
   }
 
   setTreeData(

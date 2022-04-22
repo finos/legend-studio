@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { type Hashable, hashArray } from '@finos/legend-shared';
+import { type Hashable, hashArray, filterByType } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import { InstanceSetImplementation } from '../../../mapping/InstanceSetImplementation';
 import type { SetImplementationVisitor } from '../../../mapping/SetImplementation';
@@ -30,10 +30,7 @@ export class RelationalInstanceSetImplementation
 
   getEmbeddedSetImplmentations(): InstanceSetImplementation[] {
     const embeddedPropertyMappings = this.propertyMappings.filter(
-      (
-        propertyMapping: PropertyMapping,
-      ): propertyMapping is EmbeddedRelationalInstanceSetImplementation =>
-        propertyMapping instanceof EmbeddedRelationalInstanceSetImplementation,
+      filterByType(EmbeddedRelationalInstanceSetImplementation),
     );
     return embeddedPropertyMappings
       .map((propertyMapping) => propertyMapping.getEmbeddedSetImplmentations())

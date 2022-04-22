@@ -29,6 +29,7 @@ import {
   TEST_DATA__DuplicateProfileStereotypes,
   TEST_DATA__DuplicateClassProperties,
   TEST_DATA__DuplicateAssociationProperties,
+  TEST_DATA__DuplicatedElement,
 } from './TEST_DATA__GraphBuildFailure';
 import { unitTest } from '@finos/legend-shared';
 import type { Entity } from '@finos/legend-model-storage';
@@ -59,6 +60,15 @@ test(unitTest('Missing profile'), async () => {
       TEST_DATA__MissingProfile as Entity[],
     ),
   ).rejects.toThrowError(`Can't find profile 'ui::test1::ProfileTest'`);
+});
+
+test(unitTest('Duplicated element'), async () => {
+  await expect(() =>
+    graphManagerState.graphManager.buildGraph(
+      graphManagerState.graph,
+      TEST_DATA__DuplicatedElement as Entity[],
+    ),
+  ).rejects.toThrowError(`Element 'ui::test1::Animal' already exists`);
 });
 
 test(unitTest('Missing class property'), async () => {

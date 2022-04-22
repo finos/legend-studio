@@ -19,8 +19,6 @@ import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import type { V1_RawLambda } from '../../../model/rawValueSpecification/V1_RawLambda';
 
 export abstract class V1_ServiceTest implements Hashable {
-  private readonly _$nominalTypeBrand!: 'V1_ServiceTest';
-
   abstract get hashCode(): string;
 }
 

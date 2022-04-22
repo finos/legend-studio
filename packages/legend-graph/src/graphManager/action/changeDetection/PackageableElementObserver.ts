@@ -152,7 +152,7 @@ class PackageableElementObserver implements PackageableElementVisitor<void> {
   }
 }
 
-export const observe_PackageabElement = skipObservedWithContext(
+export const observe_PackageableElement = skipObservedWithContext(
   (
     packageableElement: PackageableElement,
     context: ObserverContext,

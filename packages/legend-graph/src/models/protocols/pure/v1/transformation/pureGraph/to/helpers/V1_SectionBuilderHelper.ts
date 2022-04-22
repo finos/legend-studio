@@ -27,7 +27,6 @@ import {
   DefaultCodeSection,
 } from '../../../../../../../metamodels/pure/packageableElements/section/Section';
 import type { SectionIndex } from '../../../../../../../metamodels/pure/packageableElements/section/SectionIndex';
-import { Package } from '../../../../../../../metamodels/pure/packageableElements/domain/Package';
 import { PackageableElementExplicitReference } from '../../../../../../../metamodels/pure/packageableElements/PackageableElementReference';
 import type { V1_GraphBuilderContext } from '../../../../transformation/pureGraph/to/V1_GraphBuilderContext';
 import {
@@ -37,42 +36,43 @@ import {
 } from '../../../../model/packageableElements/section/V1_Section';
 
 export const V1_buildSection = (
-  section: V1_Section,
+  protocol: V1_Section,
   context: V1_GraphBuilderContext,
   parentSectionIndex: SectionIndex,
 ): Section => {
-  let sec: Section;
-  if (section instanceof V1_ImportAwareCodeSection) {
+  let section: Section;
+
+  if (protocol instanceof V1_ImportAwareCodeSection) {
     const importAwareSection = new ImportAwareCodeSection(
-      section.parserName,
+      protocol.parserName,
       parentSectionIndex,
     );
-    importAwareSection.imports = uniq(section.imports)
+    importAwareSection.imports = uniq(protocol.imports)
       .map((_package) => {
-        const element = context.graph.getNullableElement(_package, true);
-        if (!(element instanceof Package)) {
+        const pkg = context.graph.getNullablePackage(_package);
+        if (!pkg) {
           context.log.warn(
             LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_FAILURE),
             `Can't find section import package '${_package}'`,
           );
+          return undefined;
         }
-        return element instanceof Package
-          ? // NOTE: here we use explicit because this information from section
-            // must always be the package full path
-            PackageableElementExplicitReference.create(element)
-          : undefined;
+        // NOTE: here we use explicit because this information from section
+        // must always be the package full path
+        return PackageableElementExplicitReference.create(pkg);
       })
       .filter(isNonNullable);
-    sec = importAwareSection;
-  } else if (section instanceof V1_DefaultCodeSection) {
-    sec = new DefaultCodeSection(section.parserName, parentSectionIndex);
+    section = importAwareSection;
+  } else if (protocol instanceof V1_DefaultCodeSection) {
+    section = new DefaultCodeSection(protocol.parserName, parentSectionIndex);
   } else {
-    throw new UnsupportedOperationError(`Can't build section`, section);
+    throw new UnsupportedOperationError(`Can't build section`, protocol);
   }
+
   // NOTE: we ignore not-found element path and duplicated import packages, but we will prune them as well
-  sec.elements = uniq(section.elements)
+  section.elements = uniq(protocol.elements)
     .map((elementPath) => {
-      const element = context.graph.getNullableElement(elementPath);
+      const element = context.graph.getOwnNullableElement(elementPath);
       if (!element) {
         context.log.warn(
           LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_FAILURE),
@@ -80,18 +80,18 @@ export const V1_buildSection = (
         );
         return element;
       }
-      if (context.graph.getOwnSection(element.path)) {
+      if (context.graph.getOwnNullableSection(element.path)) {
         context.log.warn(
           LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_FAILURE),
           `Found duplicated section element '${elementPath}'`,
         );
       } else {
-        context.graph.setOwnSection(element.path, sec);
+        context.graph.setOwnSection(element.path, section);
       }
       // NOTE: here we use explicit because this information from section
       // must always be the full element path
       return PackageableElementExplicitReference.create(element);
     })
     .filter(isNonNullable);
-  return sec;
+  return section;
 };

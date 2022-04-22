@@ -29,6 +29,7 @@ import {
   NetworkClientError,
   guaranteeNonNullable,
   StopWatch,
+  filterByType,
 } from '@finos/legend-shared';
 import type { EditorStore } from './EditorStore';
 import { ElementEditorState } from './editor-state/element-editor-state/ElementEditorState';
@@ -137,10 +138,7 @@ export class EditorGraphState {
     return (
       Boolean(this.editorStore.grammarTextEditorState.error) ||
       this.editorStore.openedEditorStates
-        .filter(
-          (editorState): editorState is ElementEditorState =>
-            editorState instanceof ElementEditorState,
-        )
+        .filter(filterByType(ElementEditorState))
         .some((editorState) => editorState.hasCompilationError)
     );
   }
@@ -148,10 +146,7 @@ export class EditorGraphState {
   clearCompilationError(): void {
     this.editorStore.grammarTextEditorState.setError(undefined);
     this.editorStore.openedEditorStates
-      .filter(
-        (editorState): editorState is ElementEditorState =>
-          editorState instanceof ElementEditorState,
-      )
+      .filter(filterByType(ElementEditorState))
       .forEach((editorState) => editorState.clearCompilationError());
   }
 
@@ -237,12 +232,9 @@ export class EditorGraphState {
           this.editorStore.graphManagerState.graph,
           entities,
           {
-            TEMPORARY__keepSectionIndex:
+            TEMPORARY__preserveSectionIndex:
               this.editorStore.applicationStore.config.options
-                .EXPERIMENTAL__enableFullGrammarImportSupport,
-            TEMPORARY__disableRawLambdaResolver:
-              this.editorStore.applicationStore.config.options
-                .TEMPORARY__disableRawLambdaResolver,
+                .TEMPORARY__preserveSectionIndex,
           },
         )) as GraphBuilderReport;
 
@@ -824,12 +816,9 @@ export class EditorGraphState {
         newGraph,
         entities,
         {
-          TEMPORARY__keepSectionIndex:
+          TEMPORARY__preserveSectionIndex:
             this.editorStore.applicationStore.config.options
-              .EXPERIMENTAL__enableFullGrammarImportSupport,
-          TEMPORARY__disableRawLambdaResolver:
-            this.editorStore.applicationStore.config.options
-              .TEMPORARY__disableRawLambdaResolver,
+              .TEMPORARY__preserveSectionIndex,
         },
       );
 

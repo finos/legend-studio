@@ -73,7 +73,6 @@ const observe_Abstract_BasicModel = async (
     ownProfiles: computed,
     ownEnumerations: computed,
     ownMeasures: computed,
-    ownUnits: computed,
     ownClasses: computed,
     ownTypes: computed,
     ownAssociations: computed,
@@ -107,12 +106,11 @@ export const observe_DependencyManager = skipObserved(
     makeObservable(metamodel, {
       root: observable,
       projectDependencyModelsIndex: observable,
-      allElements: computed,
-      models: computed,
+      allOwnElements: computed,
+      dependencyGraphs: computed,
       profiles: computed,
       enumerations: computed,
       measures: computed,
-      units: computed,
       classes: computed,
       types: computed,
       associations: computed,
@@ -129,7 +127,7 @@ export const observe_DependencyManager = skipObserved(
     }),
 );
 
-export const observe_PureModel = async (
+export const observe_Graph = async (
   metamodel: PureModel,
   context: ObserverContext,
 ): Promise<PureModel> => {

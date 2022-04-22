@@ -15,25 +15,38 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../MetaModelConst';
+import type { Multiplicity } from '../packageableElements/domain/Multiplicity';
+import type { PackageableElementReference } from '../packageableElements/PackageableElementReference';
+import type { Type } from '../packageableElements/domain/Type';
 import {
-  type V1_RawValueSpecificationVisitor,
-  V1_RawValueSpecification,
-} from '../../model/rawValueSpecification/V1_RawValueSpecification';
-import type { V1_Multiplicity } from '../../model/packageableElements/domain/V1_Multiplicity';
+  type RawValueSpecificationVisitor,
+  RawValueSpecification,
+} from './RawValueSpecification';
+import { CORE_HASH_STRUCTURE } from '../../../../MetaModelConst';
 
-export class V1_RawInstanceValue
-  extends V1_RawValueSpecification
+export class RawPrimitiveInstanceValue
+  extends RawValueSpecification
   implements Hashable
 {
-  type!: string;
-  multiplicity!: V1_Multiplicity;
-  values?: (string | number)[] | undefined; // to be revised?
+  type: PackageableElementReference<Type>;
+  multiplicity: Multiplicity;
+  values?: (string | number)[] | undefined;
+
+  constructor(
+    type: PackageableElementReference<Type>,
+    multiplicity: Multiplicity,
+    values: (string | number)[] | undefined,
+  ) {
+    super();
+    this.type = type;
+    this.multiplicity = multiplicity;
+    this.values = values;
+  }
 
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.RAW_INSTANCE_VALUE,
-      this.type,
+      this.type.hashValue,
       this.multiplicity,
       this.values
         ? hashArray(this.values.map((value) => value.toString()))
@@ -42,8 +55,8 @@ export class V1_RawInstanceValue
   }
 
   accept_RawValueSpecificationVisitor<T>(
-    visitor: V1_RawValueSpecificationVisitor<T>,
+    visitor: RawValueSpecificationVisitor<T>,
   ): T {
-    return visitor.visit_InstanceValue(this);
+    return visitor.visit_RawPrimitiveInstanceValue(this);
   }
 }

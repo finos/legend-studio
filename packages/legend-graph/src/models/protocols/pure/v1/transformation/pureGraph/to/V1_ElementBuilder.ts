@@ -18,11 +18,19 @@ import {
   type GenericClazz,
   assertNonEmptyString,
   assertTrue,
+  AssertionError,
 } from '@finos/legend-shared';
-import { _package_addElement } from '../../../../../../../helpers/DomainHelper';
+import {
+  addElementToPackage,
+  getOrCreateGraphPackage,
+} from '../../../../../../../helpers/DomainHelper';
+import type { Package } from '../../../../../../metamodels/pure/packageableElements/domain/Package';
 import type { PackageableElement } from '../../../../../../metamodels/pure/packageableElements/PackageableElement';
 import type { V1_PackageableElement } from '../../../model/packageableElements/V1_PackageableElement';
-import type { V1_GraphBuilderContext } from './V1_GraphBuilderContext';
+import {
+  V1_buildFullPath,
+  type V1_GraphBuilderContext,
+} from './V1_GraphBuilderContext';
 
 export type V1_ElementBuilderPass = (
   elementProtocol: V1_PackageableElement,
@@ -37,6 +45,25 @@ export type V1_ElementSecondPassBuilder = V1_ElementBuilderPass;
 export type V1_ElementThirdPassBuilder = V1_ElementBuilderPass;
 export type V1_ElementFourthPassBuilder = V1_ElementBuilderPass;
 export type V1_ElementFifthPassBuilder = V1_ElementBuilderPass;
+
+export const V1_checkDuplicatedElement = (
+  path: string,
+  context: V1_GraphBuilderContext,
+  cache: Set<string> | undefined,
+): void => {
+  if (cache) {
+    if (cache.has(path)) {
+      throw new AssertionError(`Element '${path}' already exists`);
+    } else {
+      cache.add(path);
+    }
+  } else {
+    assertTrue(
+      !context.graph.getNullableElement(path),
+      `Element '${path}' already exists`,
+    );
+  }
+};
 
 /**
  * Element builder is a mechanism to handling the building process of
@@ -55,8 +82,8 @@ export type V1_ElementFifthPassBuilder = V1_ElementBuilderPass;
  *
  * Also note that as of right now we will run build pass 2-5 of each element
  * consecutively so there is no opportunity to `interleave` build passes of
- * different elements. This is definitely more flexible, but also a complexity
- * we don't see the need for right now.
+ * different elements. That definitely seems more flexible, but also incur
+ * a fair amount of complexity we don't see the need for right now.
  */
 export class V1_ElementBuilder<T extends V1_PackageableElement> {
   readonly elementClassName: string;
@@ -104,6 +131,8 @@ export class V1_ElementBuilder<T extends V1_PackageableElement> {
   runFirstPass(
     elementProtocol: T,
     context: V1_GraphBuilderContext,
+    packageCache: Map<string, Package> | undefined,
+    elementPathCache: Set<string> | undefined,
   ): PackageableElement {
     assertNonEmptyString(
       elementProtocol.package,
@@ -113,17 +142,18 @@ export class V1_ElementBuilder<T extends V1_PackageableElement> {
       elementProtocol.name,
       `Element 'name' field is missing or empty`,
     );
-    const path = context.currentSubGraph.buildPath(
+    const path = V1_buildFullPath(
       elementProtocol.package,
       elementProtocol.name,
     );
-    assertTrue(
-      !context.graph.getNullableElement(path),
-      `Element '${path}' already exists`,
-    );
+    V1_checkDuplicatedElement(path, context, elementPathCache);
     const element = this.firstPass(elementProtocol, context);
-    _package_addElement(
-      context.currentSubGraph.getOrCreatePackage(elementProtocol.package),
+    addElementToPackage(
+      getOrCreateGraphPackage(
+        context.currentSubGraph,
+        elementProtocol.package,
+        packageCache,
+      ),
       element,
     );
     return element;

@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { promisify } from '@finos/legend-shared';
 import {
   computed,
   isObservable,
@@ -60,7 +61,7 @@ import {
   skipObservedWithContext,
   type ObserverContext,
 } from './CoreObserverHelper';
-import { observe_PackageabElement } from './PackageableElementObserver';
+import { observe_PackageableElement } from './PackageableElementObserver';
 import {
   observe_RawLambda,
   observe_RawVariableExpression,
@@ -87,7 +88,7 @@ export const observe_Package = skipObservedWithContext(
       if (child instanceof Package) {
         observe_Package(child, context);
       } else {
-        observe_PackageabElement(child, context);
+        observe_PackageableElement(child, context);
       }
     });
 
@@ -110,7 +111,7 @@ export const observe_PackageTree = async (
       if (child instanceof Package) {
         await observe_PackageTree(child, context);
       } else {
-        observe_PackageabElement(child, context);
+        await promisify(() => observe_PackageableElement(child, context));
       }
     }),
   );
@@ -184,7 +185,6 @@ export const observe_GenericTypeReference = skipObserved(
 
 export const observe_Section = skipObserved((metamodel: Section): Section => {
   makeObservable(metamodel, {
-    parent: observable,
     parserName: observable,
     elements: observable,
   });

@@ -29,7 +29,7 @@ import { V1_ProcessingMilestoning } from '../../../../model/packageableElements/
 import { ProcessingMilestoning } from '../../../../../../../metamodels/pure/packageableElements/store/relational/model/milestoning/ProcessingMilestoning';
 import type { V1_GraphBuilderContext } from '../V1_GraphBuilderContext';
 import type { StoreRelational_PureProtocolProcessorPlugin_Extension } from '../../../../../StoreRelational_PureProtocolProcessorPlugin_Extension';
-import { RawInstanceValue } from '../../../../../../../metamodels/pure/rawValueSpecification/RawInstanceValue';
+import { RawPrimitiveInstanceValue } from '../../../../../../../metamodels/pure/rawValueSpecification/RawPrimitiveInstanceValue';
 import { V1_ProtocolToMetaModelRawValueSpecificationBuilder } from '../V1_ProtocolToMetaModelRawValueSpecificationBuilder';
 
 const buildBusinessMilesoning = (
@@ -54,7 +54,7 @@ const buildBusinessMilesoning = (
       protocol.infinityDate.accept_RawValueSpecificationVisitor(
         new V1_ProtocolToMetaModelRawValueSpecificationBuilder(context),
       ),
-      RawInstanceValue,
+      RawPrimitiveInstanceValue,
     );
   }
   return metamodel;
@@ -74,7 +74,7 @@ const buildBusinessSnapshotMilestoning = (
       protocol.infinityDate.accept_RawValueSpecificationVisitor(
         new V1_ProtocolToMetaModelRawValueSpecificationBuilder(context),
       ),
-      RawInstanceValue,
+      RawPrimitiveInstanceValue,
     );
   }
   return metamodel;
@@ -102,7 +102,7 @@ const buildProcessingMilestoning = (
       protocol.infinityDate.accept_RawValueSpecificationVisitor(
         new V1_ProtocolToMetaModelRawValueSpecificationBuilder(context),
       ),
-      RawInstanceValue,
+      RawPrimitiveInstanceValue,
     );
   }
   return metamodel;

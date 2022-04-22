@@ -15,7 +15,10 @@
  */
 
 import { UnsupportedOperationError } from '@finos/legend-shared';
-import type { V1_GraphBuilderContext } from './V1_GraphBuilderContext';
+import {
+  V1_buildFullPath,
+  type V1_GraphBuilderContext,
+} from './V1_GraphBuilderContext';
 import type {
   V1_PackageableElement,
   V1_PackageableElementVisitor,
@@ -90,14 +93,12 @@ export class V1_ProtocolToMetaModelGraphFourthPassBuilder
   }
 
   visit_FlatData(element: V1_FlatData): void {
-    this.context.graph.getFlatDataStore(
-      this.context.graph.buildPath(element.package, element.name),
-    );
+    return;
   }
 
   visit_Database(element: V1_Database): void {
-    const database = this.context.graph.getDatabase(
-      this.context.graph.buildPath(element.package, element.name),
+    const database = this.context.currentSubGraph.getOwnDatabase(
+      V1_buildFullPath(element.package, element.name),
     );
     database.joins = element.joins.map((join) =>
       V1_buildDatabaseJoin(join, this.context, database),
@@ -108,8 +109,8 @@ export class V1_ProtocolToMetaModelGraphFourthPassBuilder
   }
 
   visit_Mapping(element: V1_Mapping): void {
-    const path = this.context.graph.buildPath(element.package, element.name);
-    const mapping = this.context.graph.getMapping(path);
+    const path = V1_buildFullPath(element.package, element.name);
+    const mapping = this.context.currentSubGraph.getOwnMapping(path);
     mapping.associationMappings = element.associationMappings.map(
       (_associationMapping) =>
         V1_buildAssociationMapping(_associationMapping, mapping, this.context),

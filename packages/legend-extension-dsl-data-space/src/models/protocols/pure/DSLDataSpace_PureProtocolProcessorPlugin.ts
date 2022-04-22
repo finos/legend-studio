@@ -35,7 +35,7 @@ import {
   V1_dataSpaceModelSchema,
   V1_DATA_SPACE_ELEMENT_PROTOCOL_TYPE,
 } from './v1/transformation/pureProtocol/V1_DSLDataSpace_ProtocolHelper';
-import { getDataSpace } from '../../../graphManager/DSLDataSpace_GraphManagerHelper';
+import { getOwnDataSpace } from '../../../graphManager/DSLDataSpace_GraphManagerHelper';
 import {
   type DataSpaceSupportInfo,
   DataSpace,
@@ -68,10 +68,12 @@ import {
   V1_ElementBuilder,
   V1_initPackageableElement,
   V1_StereotypePtr,
+  V1_buildFullPath,
 } from '@finos/legend-graph';
 import {
-  Diagram,
+  type Diagram,
   V1_DSLDiagram_PackageableElementPointerType,
+  getDiagram,
 } from '@finos/legend-extension-dsl-diagram';
 
 export const DATA_SPACE_ELEMENT_CLASSIFIER_PATH =
@@ -96,7 +98,7 @@ export class DSLDataSpace_PureProtocolProcessorPlugin extends PureProtocolProces
         ): PackageableElement => {
           assertType(elementProtocol, V1_DataSpace);
           const element = new DataSpace(elementProtocol.name);
-          const path = context.currentSubGraph.buildPath(
+          const path = V1_buildFullPath(
             elementProtocol.package,
             elementProtocol.name,
           );
@@ -112,11 +114,11 @@ export class DSLDataSpace_PureProtocolProcessorPlugin extends PureProtocolProces
           context: V1_GraphBuilderContext,
         ): void => {
           assertType(elementProtocol, V1_DataSpace);
-          const path = context.graph.buildPath(
+          const path = V1_buildFullPath(
             elementProtocol.package,
             elementProtocol.name,
           );
-          const element = getDataSpace(path, context.graph);
+          const element = getOwnDataSpace(path, context.currentSubGraph);
           element.stereotypes = elementProtocol.stereotypes
             .map((stereotype) => context.resolveStereotype(stereotype))
             .filter(isNonNullable);
@@ -411,7 +413,7 @@ export const getResolvedDataSpace = (
     if (protocol.featuredDiagrams) {
       dataSpace.featuredDiagrams = protocol.featuredDiagrams.map((pointer) =>
         PackageableElementExplicitReference.create(
-          graph.getExtensionElement(pointer.path, Diagram),
+          getDiagram(pointer.path, graph),
         ),
       );
     }

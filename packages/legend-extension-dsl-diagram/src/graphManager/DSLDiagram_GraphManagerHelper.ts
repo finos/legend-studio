@@ -14,8 +14,15 @@
  * limitations under the License.
  */
 
-import type { PureModel } from '@finos/legend-graph';
+import type { BasicModel, PureModel } from '@finos/legend-graph';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 import { Diagram } from '../models/metamodels/pure/packageableElements/diagram/DSLDiagram_Diagram';
 
 export const getDiagram = (path: string, graph: PureModel): Diagram =>
   graph.getExtensionElement(path, Diagram, `Can't find diagram '${path}'`);
+
+export const getOwnDiagram = (path: string, graph: BasicModel): Diagram =>
+  guaranteeNonNullable(
+    graph.getOwnNullableExtensionElement(path, Diagram),
+    `Can't find diagram '${path}'`,
+  );

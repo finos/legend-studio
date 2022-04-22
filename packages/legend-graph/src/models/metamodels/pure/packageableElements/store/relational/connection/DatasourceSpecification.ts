@@ -18,8 +18,6 @@ import { type Hashable, hashArray } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 
 export abstract class DatasourceSpecification implements Hashable {
-  private readonly _$nominalTypeBrand!: 'DatasourceSpecification';
-
   abstract get hashCode(): string;
 }
 

@@ -43,6 +43,10 @@ export const guaranteeNonNullable = <T>(
 
 export const isType = <T>(value: unknown, clazz: GenericClazz<T>): value is T =>
   value instanceof clazz;
+export const filterByType =
+  <T>(clazz: GenericClazz<T>): ((value: unknown) => value is T) =>
+  (value: unknown): value is T =>
+    isType(value, clazz);
 // Aserts typing doesn't work with all arrow function type declaration form
 // So we can use this: export const assertType: <T>(value: unknown, clazz: Clazz<T>, message: string) => asserts value is T = (value, clazz, message = '') => {
 // or the normal function form
