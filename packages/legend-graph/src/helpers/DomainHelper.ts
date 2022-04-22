@@ -70,7 +70,7 @@ export const getElementRootPackage = (element: PackageableElement): Package =>
  * NOTE: if we do not allow create new packages, errorcould be
  * thrown if a package with the specified path is not found
  */
-export const getOrCreatePackage = (
+const _getOrCreatePackage = (
   parentPackage: Package,
   relativePackagePath: string,
   createNewPackageIfNotFound: boolean,
@@ -81,16 +81,6 @@ export const getOrCreatePackage = (
     index === -1
       ? relativePackagePath
       : relativePackagePath.substring(0, index);
-  const packagePath = createPath(parentPackage.fullPath, packageName);
-
-  // check cache to find the package
-  // NOTE: we only return from cache if there is no child package to further traverse
-  if (cache && index === -1) {
-    const cachedPackage = cache.get(packagePath);
-    if (cachedPackage) {
-      return cachedPackage;
-    }
-  }
 
   // try to resolve when there is a cache miss
   let pkg: Package | undefined;
@@ -118,12 +108,12 @@ export const getOrCreatePackage = (
 
   // populate cache after resolving the package
   if (cache) {
-    cache.set(packagePath, pkg);
+    cache.set(createPath(parentPackage.fullPath, packageName), pkg);
   }
 
   // traverse the package chain
   if (index !== -1) {
-    return getOrCreatePackage(
+    return _getOrCreatePackage(
       pkg,
       relativePackagePath.substring(index + ELEMENT_PATH_DELIMITER.length),
       createNewPackageIfNotFound,
@@ -132,6 +122,61 @@ export const getOrCreatePackage = (
   }
 
   return pkg;
+};
+
+export const getOrCreatePackage = (
+  parentPackage: Package,
+  relativePackagePath: string,
+  createNewPackageIfNotFound: boolean,
+  cache: Map<string, Package> | undefined,
+): Package => {
+  // check cache to find the shortest chain of packages to find/build
+  if (cache) {
+    // short-circuit
+    const cachedPackage = cache.get(
+      createPath(parentPackage.fullPath, relativePackagePath),
+    );
+    if (cachedPackage) {
+      return cachedPackage;
+    }
+
+    // NOTE: to check the cache, we need to traverse from the full package path
+    // up its ancestor chain till we find a cache hit
+    let immediateParentPackageRelativePath = relativePackagePath;
+    while (immediateParentPackageRelativePath !== '') {
+      const fullPath = createPath(
+        parentPackage.fullPath,
+        immediateParentPackageRelativePath,
+      );
+      const cachedParentPackage = cache.get(fullPath);
+      if (cachedParentPackage) {
+        return _getOrCreatePackage(
+          cachedParentPackage,
+          relativePackagePath.substring(
+            immediateParentPackageRelativePath.length +
+              ELEMENT_PATH_DELIMITER.length,
+            relativePackagePath.length,
+          ),
+          createNewPackageIfNotFound,
+          cache,
+        );
+      }
+      const index = immediateParentPackageRelativePath.lastIndexOf(
+        ELEMENT_PATH_DELIMITER,
+      );
+      immediateParentPackageRelativePath =
+        index !== -1
+          ? immediateParentPackageRelativePath.substring(0, index)
+          : '';
+    }
+  }
+
+  return _getOrCreatePackage(
+    parentPackage,
+    relativePackagePath,
+    createNewPackageIfNotFound,
+    cache,
+  );
 };
 
 export const getOrCreateGraphPackage = (
