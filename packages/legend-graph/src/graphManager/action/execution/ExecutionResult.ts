@@ -76,7 +76,7 @@ export class TdsBuilder extends ResultBuilder {
 }
 
 export class TdsRow {
-  values: (string | number)[] = [];
+  values: (string | number | boolean | null)[] = [];
 }
 
 export class TabularDataSet {
