@@ -399,10 +399,15 @@ export abstract class AbstractPureGraphManager {
   // As the name suggested, these methods are temporary hacks since we don't handle value-specification
   // structurally in Studio
 
+  // Eventually, we could remove these method by building them in metamodel form and convert to raw form
+  // as these are relatively simple lambda to construct
   abstract HACKY__createGetAllLambda(_class: Class): RawLambda;
+  abstract HACKY__createDefaultBlankLambda(): RawLambda;
+
+  // NOTE: after we refactor service, we probably can remove these methods
+  // See https://github.com/finos/legend-studio/issues/1077
   abstract HACKY__createServiceTestAssertLambda(assertData: string): RawLambda;
   abstract HACKY__extractServiceTestAssertionData(
     query: RawLambda,
   ): string | undefined;
-  abstract HACKY__createDefaultBlankLambda(): RawLambda;
 }

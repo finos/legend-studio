@@ -138,7 +138,7 @@ export class DSLDiagram_LegendStudioPlugin
     ];
   }
 
-  getExtraGrammarTextEditorDnDTypes(): string[] {
+  getExtraPureGrammarTextEditorDnDTypes(): string[] {
     return [DIAGRAM_ELEMENT_PROJECT_EXPLORER_DND_TYPE];
   }
 

@@ -134,7 +134,7 @@ export class ESService_LegendStudioPlugin
     ];
   }
 
-  getExtraGrammarTextEditorDnDTypes(): string[] {
+  getExtraPureGrammarTextEditorDnDTypes(): string[] {
     return [SERVICE_STORE_ELEMENT_PROJECT_EXPLORER_DND_TYPE];
   }
 

@@ -130,7 +130,7 @@ export class DSLDataSpace_LegendStudioPlugin
     ];
   }
 
-  getExtraGrammarTextEditorDnDTypes(): string[] {
+  getExtraPureGrammarTextEditorDnDTypes(): string[] {
     return [DATA_SPACE_ELEMENT_PROJECT_EXPLORER_DND_TYPE];
   }
 }
