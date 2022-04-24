@@ -57,7 +57,7 @@
   },
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",
-    "@testing-library/react": "12.1.4",
+    "@testing-library/react": "12.1.5",
     "cross-env": "7.0.3",
     "eslint": "8.13.0",
     "jest": "27.5.1",
