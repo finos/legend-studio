@@ -15,10 +15,12 @@
  */
 
 /* eslint-disable prefer-named-capture-group */
-import type {
+import type { GraphPluginManager } from '@finos/legend-graph';
+import {
   editor as monacoEditorAPI,
   languages as monacoLanguagesAPI,
 } from 'monaco-editor';
+import { EDITOR_LANGUAGE, EDITOR_THEME } from '../const';
 
 export enum GRAMMAR_ELEMENT_TYPE_LABEL {
   PROFILE = 'Profile',
@@ -29,7 +31,6 @@ export enum GRAMMAR_ELEMENT_TYPE_LABEL {
   FLAT_DATA = 'FlatData',
   MAPPING = 'Mapping',
   DATABASE = 'Database',
-  SERVICE_STORE = 'ServiceStore',
   FUNCTION = 'function',
   SERVICE = 'Service',
   RUNTIME = 'Runtime',
@@ -41,11 +42,24 @@ export enum GRAMMAR_ELEMENT_TYPE_LABEL {
   JSON_MODEL_CONNECTION = 'JsonModelConnection',
   XML_MODEL_CONNECTION = 'XmlModelConnection',
   MODEL_CHAIN_CONNECTION = 'ModelChainConnection',
-  FLAT_DATA_CONNECTION = 'FlatDataConnection',
   RELATIONAL_DATABASE_CONNECTION = 'RelationalDatabaseConnection',
+  FLAT_DATA_CONNECTION = 'FlatDataConnection',
 }
 
-export const theme: monacoEditorAPI.IStandaloneThemeData = {
+export enum GRAMMAR_PARSER {
+  PURE = 'Pure',
+  CONNECTION = 'Connection',
+  RUNTIME = 'Runtime',
+  MAPPING = 'Mapping',
+  SERVICE = 'Service',
+  FLATDATA = 'FlatData',
+  RELATIONAL = 'Relational',
+  GENERATION_SPECIFICATION = 'GenerationSpecification',
+  FILE_GENERATION = 'FileGeneration',
+  DATA = 'Data',
+}
+
+const theme: monacoEditorAPI.IStandaloneThemeData = {
   base: 'vs-dark', // can also be vs-dark or hc-black
   inherit: true, // can also be false to completely replace the builtin rules
   colors: {},
@@ -63,9 +77,7 @@ export const theme: monacoEditorAPI.IStandaloneThemeData = {
 
 // Taken from `monaco-languages` configuration for Java in order to do propert brace matching
 // See https://github.com/microsoft/monaco-languages/blob/master/src/java/java.ts
-export const configuration: monacoLanguagesAPI.LanguageConfiguration = {
-  // the default separators except `@$`
-  wordPattern: /(-?\d*\.\d\w*)|([^`~!#%^&*()-=+[{]}\\\|;:'",\.<>\/\?\s]+)/g,
+const configuration: monacoLanguagesAPI.LanguageConfiguration = {
   comments: {
     lineComment: '//',
     blockComment: ['/*', '*/'],
@@ -105,7 +117,7 @@ export const configuration: monacoLanguagesAPI.LanguageConfiguration = {
  * The way SQL monarch definition is organized is good and worth learning from
  * See https://github.com/microsoft/monaco-languages/blob/master/src/sql/sql.ts
  */
-export const generateLanguageMonarch = (
+const generateLanguageMonarch = (
   extraKeywords: string[],
   extraParsers: string[],
 ): monacoLanguagesAPI.IMonarchLanguage =>
@@ -128,7 +140,6 @@ export const generateLanguageMonarch = (
       GRAMMAR_ELEMENT_TYPE_LABEL.PROFILE,
       GRAMMAR_ELEMENT_TYPE_LABEL.FLAT_DATA,
       GRAMMAR_ELEMENT_TYPE_LABEL.DATABASE,
-      GRAMMAR_ELEMENT_TYPE_LABEL.SERVICE_STORE,
       GRAMMAR_ELEMENT_TYPE_LABEL.MAPPING,
       GRAMMAR_ELEMENT_TYPE_LABEL.SERVICE,
       GRAMMAR_ELEMENT_TYPE_LABEL.RUNTIME,
@@ -172,21 +183,22 @@ export const generateLanguageMonarch = (
 
     languageStructs: ['import', 'native', 'if', 'fold'],
 
-    parsers: [
-      ...extraParsers.map((parser) => `###${parser}`),
-      '###Pure',
-      '###Connection',
-      '###Runtime',
-      '###Mapping',
-
-      '###Service',
-      '###FlatData',
-      '###Relational',
-      '###ServiceStore',
-      '###GenerationSpecification',
-      '###FileGeneration',
-      '###Data',
-    ],
+    parsers: (
+      [
+        GRAMMAR_PARSER.PURE,
+        GRAMMAR_PARSER.CONNECTION,
+        GRAMMAR_PARSER.RUNTIME,
+        GRAMMAR_PARSER.MAPPING,
+        GRAMMAR_PARSER.SERVICE,
+        GRAMMAR_PARSER.FLATDATA,
+        GRAMMAR_PARSER.RELATIONAL,
+        GRAMMAR_PARSER.GENERATION_SPECIFICATION,
+        GRAMMAR_PARSER.FILE_GENERATION,
+        GRAMMAR_PARSER.DATA,
+      ] as string[]
+    )
+      .concat(extraParsers)
+      .map((parser) => `###${parser}`),
 
     // common regular expressions to be used in tokenizer
     symbols: /[=><!~?:&|+\-*/^%]+/,
@@ -341,3 +353,26 @@ export const generateLanguageMonarch = (
       ],
     },
   } as monacoLanguagesAPI.IMonarchLanguage);
+
+export const setupPureLanguageService = (
+  pluginManager: GraphPluginManager,
+): void => {
+  // register Pure language in `monaco-editor`
+  monacoEditorAPI.defineTheme(EDITOR_THEME.LEGEND, theme);
+  monacoLanguagesAPI.register({ id: EDITOR_LANGUAGE.PURE });
+  monacoLanguagesAPI.setLanguageConfiguration(
+    EDITOR_LANGUAGE.PURE,
+    configuration,
+  );
+  monacoLanguagesAPI.setMonarchTokensProvider(
+    EDITOR_LANGUAGE.PURE,
+    generateLanguageMonarch(
+      pluginManager
+        .getPureGraphManagerPlugins()
+        .flatMap((plugin) => plugin.getExtraPureGrammarKeywords?.() ?? []),
+      pluginManager
+        .getPureGraphManagerPlugins()
+        .flatMap((plugin) => plugin.getExtraPureGrammarParserNames?.() ?? []),
+    ),
+  );
+};
