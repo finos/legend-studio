@@ -1,5 +1,37 @@
 # @finos/legend-graph
 
+## 5.0.0
+
+### Major Changes
+
+- [#1068](https://github.com/finos/legend-studio/pull/1068) [`e8ee77dc`](https://github.com/finos/legend-studio/commit/e8ee77dcde909bdffd31fd65eea2cb8577b9c49d) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Move `BasicModel.getOrCreatePackage()` to `DomainHelper` as an utility.
+
+* [#1068](https://github.com/finos/legend-studio/pull/1068) [`e8ee77dc`](https://github.com/finos/legend-studio/commit/e8ee77dcde909bdffd31fd65eea2cb8577b9c49d) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Rename `RawInstanceValue` to `RawPrimitiveInstanceValue` to more accurately reflect what it is.
+
+- [#1068](https://github.com/finos/legend-studio/pull/1068) [`e8ee77dc`](https://github.com/finos/legend-studio/commit/e8ee77dcde909bdffd31fd65eea2cb8577b9c49d) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** `BasicModel.addOwnElemnet()` and `PureModel.addElement()` will now take the package path for the new element, the creation of the element package chain and setting the element package will be handled here as well, consumer of the function `PureModel.addElement()` will no longer need to manually create the package.
+
+* [#1068](https://github.com/finos/legend-studio/pull/1068) [`e8ee77dc`](https://github.com/finos/legend-studio/commit/e8ee77dcde909bdffd31fd65eea2cb8577b9c49d) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** `DependencyManager.allElements` are now renamed to `DependencyManager.allOwnElements` for consistency.
+
+- [#1068](https://github.com/finos/legend-studio/pull/1068) [`e8ee77dc`](https://github.com/finos/legend-studio/commit/e8ee77dcde909bdffd31fd65eea2cb8577b9c49d) ([@akphi](https://github.com/akphi)) - Renamed graph builder option `TEMPORARY__keepSectionIndex` to `TEMPORARY__preserveSectionIndex` and remove option `TEMPORARY__disableRawLambdaResolver` as this is now controlled by `TEMPORARY__preserveSectionIndex` flag. Also, renamed to `V1_resolvePathsInRawLambda` to `V1_buildRawLambdaWithResolvedPaths`.
+
+* [#1068](https://github.com/finos/legend-studio/pull/1068) [`e8ee77dc`](https://github.com/finos/legend-studio/commit/e8ee77dcde909bdffd31fd65eea2cb8577b9c49d) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** `BasicModel.getOwn{X}()` set of methods will now throw if element is not found, the previous behavior now will manifest via `BasicModel.getOwnNullable{x}()` set of methods.
+
+- [#1068](https://github.com/finos/legend-studio/pull/1068) [`e8ee77dc`](https://github.com/finos/legend-studio/commit/e8ee77dcde909bdffd31fd65eea2cb8577b9c49d) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** `getOrCreatePackage` logic has been moved from `Package` to `DomainHelper`. This method now will also make use of caching to speed up graph building.
+
+* [#1068](https://github.com/finos/legend-studio/pull/1068) [`e8ee77dc`](https://github.com/finos/legend-studio/commit/e8ee77dcde909bdffd31fd65eea2cb8577b9c49d) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Rename graph manager method prefix `HACKY_` with `HACKY__` to be consistent. Create a new method `HACKY__createDefaultBlankLambda()` to return the raw form of the lambda `x|''` which is used as the default in a lot cases.
+
+- [#1068](https://github.com/finos/legend-studio/pull/1068) [`e8ee77dc`](https://github.com/finos/legend-studio/commit/e8ee77dcde909bdffd31fd65eea2cb8577b9c49d) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Remove `MappingElementLabel` type and `get label(): MappingElementLabel` on all mapping element metamodels.
+
+* [#1068](https://github.com/finos/legend-studio/pull/1068) [`e8ee77dc`](https://github.com/finos/legend-studio/commit/e8ee77dcde909bdffd31fd65eea2cb8577b9c49d) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Move `getRoot()` out of `PackageableElement` and make it an utility instead.
+
+### Patch Changes
+
+- [#1068](https://github.com/finos/legend-studio/pull/1068) [`e8ee77dc`](https://github.com/finos/legend-studio/commit/e8ee77dcde909bdffd31fd65eea2cb8577b9c49d) ([@akphi](https://github.com/akphi)) - Fix a problem with deleting non-empty packages.
+
+* [#1068](https://github.com/finos/legend-studio/pull/1068) [`e8ee77dc`](https://github.com/finos/legend-studio/commit/e8ee77dcde909bdffd31fd65eea2cb8577b9c49d) ([@akphi](https://github.com/akphi)) - Make `observe_Graph` non-blocking so it doesn't jank the main thread during observation.
+
+- [#1068](https://github.com/finos/legend-studio/pull/1068) [`e8ee77dc`](https://github.com/finos/legend-studio/commit/e8ee77dcde909bdffd31fd65eea2cb8577b9c49d) ([@akphi](https://github.com/akphi)) - When building the graphs, raw lambdas' shortened paths will no-longer be auto-resolved when the graph is immutable (i.e. when building `dependencies`, `generation`, and `system` graphs). This would help improve the overall graph building performance.
+
 ## 4.0.3
 
 ### Patch Changes

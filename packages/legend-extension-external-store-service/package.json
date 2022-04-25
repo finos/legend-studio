@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-extension-external-store-service",
-  "version": "1.2.9",
+  "version": "1.2.10",
   "description": "Legend extension for Service Store",
   "keywords": [
     "legend",

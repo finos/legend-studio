@@ -1,5 +1,7 @@
 # @finos/legend-graph-extension-collection
 
+## 0.0.38
+
 ## 0.0.37
 
 ## 0.0.36

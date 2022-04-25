@@ -1,6 +1,6 @@
 {
   "name": "@finos/eslint-plugin-legend-studio",
-  "version": "0.2.9",
+  "version": "0.2.10",
   "description": "ESLint rules for Legend Studio",
   "keywords": [
     "legend",
