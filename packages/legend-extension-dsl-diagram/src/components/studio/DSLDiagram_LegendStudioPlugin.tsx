@@ -30,6 +30,8 @@ import {
   type ElementEditorPostDeleteAction,
   type ElementEditorPostRenameAction,
   type ClassPreviewRenderer,
+  type PureGrammarParserDocumentationGetter,
+  type PureGrammarParserElementDocumentationGetter,
 } from '@finos/legend-studio';
 import { ShapesIcon } from '@finos/legend-art';
 import type { Class, PackageableElement } from '@finos/legend-graph';
@@ -37,6 +39,19 @@ import { Diagram } from '../../models/metamodels/pure/packageableElements/diagra
 import { DiagramEditorState } from '../../stores/studio/DiagramEditorState';
 import { DiagramEditor } from './DiagramEditor';
 import { ClassDiagramPreview } from './ClassDiagramPreview';
+import {
+  type LegendApplicationDocumentationEntry,
+  type LegendApplicationKeyedDocumentationEntry,
+  collectKeyedDocumnetationEntriesFromConfig,
+} from '@finos/legend-application';
+import {
+  PURE_GRAMMAR_DIAGRAM_ELEMENT_TYPE_LABEL,
+  PURE_GRAMMAR_DIAGRAM_PARSER_NAME,
+} from '../../graphManager/DSLDiagram_PureGraphManagerPlugin';
+import {
+  DSL_DIAGRAM_DOCUMENTATION_ENTRIES,
+  DSL_DIAGRAM_LEGEND_STUDIO_DOCUMENTATION_KEY,
+} from './DSLDiagram_LegendStudioDocumentation';
 
 const DIAGRAM_ELEMENT_TYPE = 'DIAGRAM';
 const DIAGRAM_ELEMENT_PROJECT_EXPLORER_DND_TYPE = 'PROJECT_EXPLORER_DIAGRAM';
@@ -47,6 +62,12 @@ export class DSLDiagram_LegendStudioPlugin
 {
   constructor() {
     super(packageJson.extensions.studioPlugin, packageJson.version);
+  }
+
+  override getExtraKeyedDocumentationEntries(): LegendApplicationKeyedDocumentationEntry[] {
+    return collectKeyedDocumnetationEntriesFromConfig(
+      DSL_DIAGRAM_DOCUMENTATION_ENTRIES,
+    );
   }
 
   override getExtraClassPreviewRenderers(): ClassPreviewRenderer[] {
@@ -160,6 +181,41 @@ export class DSLDiagram_LegendStudioPlugin
         if (editorStore.currentEditorState instanceof DiagramEditorState) {
           editorStore.currentEditorState.renderer.render();
         }
+      },
+    ];
+  }
+
+  getExtraPureGrammarParserElementDocumentationGetters(): PureGrammarParserElementDocumentationGetter[] {
+    return [
+      (
+        editorStore: EditorStore,
+        parserKeyword: string,
+        elementKeyword: string,
+      ): LegendApplicationDocumentationEntry | undefined => {
+        if (parserKeyword === PURE_GRAMMAR_DIAGRAM_PARSER_NAME) {
+          if (elementKeyword === PURE_GRAMMAR_DIAGRAM_ELEMENT_TYPE_LABEL) {
+            return editorStore.applicationStore.docRegistry.getEntry(
+              DSL_DIAGRAM_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_DIAGRAM_ELEMENT,
+            );
+          }
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  getExtraPureGrammarParserDocumentationGetters(): PureGrammarParserDocumentationGetter[] {
+    return [
+      (
+        editorStore: EditorStore,
+        parserKeyword: string,
+      ): LegendApplicationDocumentationEntry | undefined => {
+        if (parserKeyword === PURE_GRAMMAR_DIAGRAM_PARSER_NAME) {
+          return editorStore.applicationStore.docRegistry.getEntry(
+            DSL_DIAGRAM_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER,
+          );
+        }
+        return undefined;
       },
     ];
   }

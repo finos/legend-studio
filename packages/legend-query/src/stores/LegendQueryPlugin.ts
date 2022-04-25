@@ -35,6 +35,7 @@ export abstract class LegendQueryPlugin extends AbstractPlugin {
   private readonly _$nominalTypeBrand!: 'LegendQueryPlugin';
 
   install(pluginManager: LegendQueryPluginManager): void {
+    pluginManager.registerApplicationPlugin(this);
     pluginManager.registerQueryPlugin(this);
   }
 

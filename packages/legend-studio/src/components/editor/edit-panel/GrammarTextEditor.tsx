@@ -16,7 +16,12 @@
 
 import { useEffect, useState, useRef, useCallback, forwardRef } from 'react';
 import { observer } from 'mobx-react-lite';
-import { editor as monacoEditorAPI, KeyCode } from 'monaco-editor';
+import {
+  type IDisposable,
+  editor as monacoEditorAPI,
+  languages as monacoLanguagesAPI,
+  KeyCode,
+} from 'monaco-editor';
 import {
   ContextMenu,
   revealError,
@@ -47,7 +52,22 @@ import { type DropTargetMonitor, useDrop } from 'react-dnd';
 import type { DSL_LegendStudioPlugin_Extension } from '../../../stores/LegendStudioPlugin';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../EditorStoreProvider';
-import { guaranteeNonNullable } from '@finos/legend-shared';
+import {
+  guaranteeNonNullable,
+  hasWhiteSpace,
+  isNonNullable,
+} from '@finos/legend-shared';
+import { PARSER_SECTION_MARKER, PURE_PARSER } from '@finos/legend-graph';
+
+const getSectionParserNameFromLineText = (
+  lineText: string,
+): string | undefined => {
+  if (lineText.startsWith(PARSER_SECTION_MARKER)) {
+    return lineText.substring(PARSER_SECTION_MARKER.length).split(' ')[0];
+  }
+  // NOTE: since leading whitespace to parser name is considered invalid, we will return `undefined`
+  return undefined;
+};
 
 export const GrammarTextEditorHeaderTabContextMenu = observer(
   forwardRef<HTMLDivElement, { children?: React.ReactNode }>(
@@ -83,6 +103,8 @@ export const GrammarTextEditor = observer(() => {
     grammarTextEditorState.currentElementLabelRegexString;
   const error = grammarTextEditorState.error;
   const value = normalizeLineEnding(grammarTextEditorState.graphGrammarText);
+  // const completionProviderDisposer = useRef<IDisposable | undefined>(undefined);
+  const hoverProviderDisposer = useRef<IDisposable | undefined>(undefined);
   const textEditorRef = useRef<HTMLDivElement>(null);
 
   const leaveTextMode = applicationStore.guardUnhandledError(() =>
@@ -143,7 +165,7 @@ export const GrammarTextEditor = observer(() => {
       (plugin) =>
         (
           plugin as DSL_LegendStudioPlugin_Extension
-        ).getExtraGrammarTextEditorDnDTypes?.() ?? [],
+        ).getExtraPureGrammarTextEditorDnDTypes?.() ?? [],
     );
   const handleDrop = useCallback(
     (item: ElementDragSource, monitor: DropTargetMonitor): void => {
@@ -168,7 +190,6 @@ export const GrammarTextEditor = observer(() => {
         CORE_DND_TYPE.PROJECT_EXPLORER_FUNCTION,
         CORE_DND_TYPE.PROJECT_EXPLORER_FLAT_DATA,
         CORE_DND_TYPE.PROJECT_EXPLORER_DATABASE,
-        CORE_DND_TYPE.PROJECT_EXPLORER_SERVICE_STORE,
         CORE_DND_TYPE.PROJECT_EXPLORER_MAPPING,
         CORE_DND_TYPE.PROJECT_EXPLORER_SERVICE,
         CORE_DND_TYPE.PROJECT_EXPLORER_CONNECTION,
@@ -214,6 +235,127 @@ export const GrammarTextEditor = observer(() => {
     // Disable editing if user is in viewer mode
     editor.updateOptions({ readOnly: editorStore.isInViewerMode });
   }
+
+  // TODO: suggestion
+
+  // hover
+  const parserDocumentationGetters = editorStore.pluginManager
+    .getStudioPlugins()
+    .flatMap(
+      (plugin) =>
+        (
+          plugin as DSL_LegendStudioPlugin_Extension
+        ).getExtraPureGrammarParserDocumentationGetters?.() ?? [],
+    );
+  const parserElementDocumentationGetters = editorStore.pluginManager
+    .getStudioPlugins()
+    .flatMap(
+      (plugin) =>
+        (
+          plugin as DSL_LegendStudioPlugin_Extension
+        ).getExtraPureGrammarParserElementDocumentationGetters?.() ?? [],
+    );
+  hoverProviderDisposer.current?.dispose();
+  hoverProviderDisposer.current = monacoLanguagesAPI.registerHoverProvider(
+    EDITOR_LANGUAGE.PURE,
+    {
+      provideHover: (model, position) => {
+        const currentWord = model.getWordAtPosition(position);
+        if (!currentWord) {
+          return { contents: [] };
+        }
+
+        // show documention for parser section
+        const lineTextIncludingWordRange = {
+          startLineNumber: position.lineNumber,
+          startColumn: 1,
+          endLineNumber: position.lineNumber,
+          endColumn: currentWord.endColumn,
+        };
+        const lineTextIncludingWord = model.getValueInRange(
+          lineTextIncludingWordRange,
+        );
+        // NOTE: we don't need to trim here since the leading whitespace in front of
+        // the section header is considered invalid syntax in the grammar
+        if (
+          !hasWhiteSpace(lineTextIncludingWord) &&
+          lineTextIncludingWord.startsWith(PARSER_SECTION_MARKER)
+        ) {
+          const parserKeyword = lineTextIncludingWord.substring(
+            PARSER_SECTION_MARKER.length,
+          );
+          for (const docGetter of parserDocumentationGetters) {
+            const doc = docGetter(editorStore, parserKeyword);
+            if (doc) {
+              return {
+                range: lineTextIncludingWordRange,
+                contents: [
+                  doc.markdownText
+                    ? {
+                        value: doc.markdownText.value,
+                      }
+                    : undefined,
+                  doc.url
+                    ? {
+                        value: `[See documentation](${doc.url})`,
+                      }
+                    : undefined,
+                ].filter(isNonNullable),
+              };
+            }
+          }
+        }
+
+        // show documentation for parser element
+        const textUntilPosition = model.getValueInRange({
+          startLineNumber: 1,
+          startColumn: 1,
+          endLineNumber: position.lineNumber,
+          endColumn: position.column,
+        });
+        const allParserSectionHeaders =
+          `${PARSER_SECTION_MARKER}${PURE_PARSER.PURE}\n${textUntilPosition}`
+            .split('\n')
+            .filter((line) => line.startsWith(PARSER_SECTION_MARKER));
+        const currentSectionParserKeyword = getSectionParserNameFromLineText(
+          allParserSectionHeaders[allParserSectionHeaders.length - 1] ?? '',
+        );
+        if (currentSectionParserKeyword) {
+          for (const docGetter of parserElementDocumentationGetters) {
+            const doc = docGetter(
+              editorStore,
+              currentSectionParserKeyword ?? '',
+              currentWord.word,
+            );
+            if (doc) {
+              return {
+                range: {
+                  startLineNumber: position.lineNumber,
+                  startColumn: currentWord.startColumn,
+                  endLineNumber: position.lineNumber,
+                  endColumn: currentWord.endColumn,
+                },
+                contents: [
+                  doc.markdownText
+                    ? {
+                        value: doc.markdownText.value,
+                      }
+                    : undefined,
+                  doc.url
+                    ? {
+                        value: `[See documentation](${doc.url})`,
+                      }
+                    : undefined,
+                ].filter(isNonNullable),
+              };
+            }
+          }
+        }
+
+        return { contents: [] };
+      },
+    },
+  );
 
   /**
    * Reveal error has to be in an effect like this because, we want to reveal the error.

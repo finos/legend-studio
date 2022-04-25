@@ -31,7 +31,7 @@ import { APPLICATION_EVENT } from './ApplicationEvent';
 import type { LegendApplicationConfig } from './LegendApplicationConfig';
 import type { WebApplicationNavigator } from './WebApplicationNavigator';
 import type { LegendApplicationPluginManager } from '../application/LegendApplicationPluginManager';
-import type { LegendApplicationDocumentationRegistry } from './LegendApplicationDocumentationRegistry';
+import { LegendApplicationDocumentationRegistry } from './LegendApplicationDocumentationRegistry';
 
 export enum ActionAlertType {
   STANDARD = 'STANDARD',
@@ -131,8 +131,21 @@ export class ApplicationStore<T extends LegendApplicationConfig> {
     });
 
     this.config = config;
-    this.docRegistry = config.docRegistry;
     this.navigator = navigator;
+
+    // Documentation
+    this.docRegistry = new LegendApplicationDocumentationRegistry();
+    [
+      ...pluginManager
+        .getApplicationPlugins()
+        .flatMap(
+          (plugin) => plugin.getExtraKeyedDocumentationEntries?.() ?? [],
+        ),
+      // entries from config will override entries specified natively
+      ...config.documentationKeyedEntries,
+    ].forEach((entry) =>
+      this.docRegistry.registerEntry(entry.key, entry.content),
+    );
 
     // Register plugins
     this.log.registerPlugins(pluginManager.getLoggerPlugins());

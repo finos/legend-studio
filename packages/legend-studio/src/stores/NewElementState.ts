@@ -529,7 +529,7 @@ export class NewElementState {
                 ).getExtraNewElementDriverCreators?.() ?? [],
             );
           for (const creator of extraNewElementDriverCreators) {
-            const _driver = creator(newType, this.editorStore);
+            const _driver = creator(this.editorStore, newType);
             if (_driver) {
               driver = _driver;
               break;

@@ -389,6 +389,8 @@ export const getWebAppBaseWebpackConfig = (
           'gotoLine',
           'hover',
           'multicursor',
+          'snippet',
+          'suggest',
         ],
       }),
     ].filter(Boolean),

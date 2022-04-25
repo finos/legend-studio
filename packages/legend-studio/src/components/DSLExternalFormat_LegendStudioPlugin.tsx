@@ -196,8 +196,8 @@ export class DSLExternalFormat_LegendStudioPlugin
   getExtraNewElementDriverCreators(): NewElementDriverCreator[] {
     return [
       (
-        type: string,
         editorStore: EditorStore,
+        type: string,
       ): NewElementDriver<PackageableElement> | undefined => {
         if (type === SCHEMA_SET_ELEMENT_TYPE) {
           return new NewSchemaSetDriver(editorStore);
