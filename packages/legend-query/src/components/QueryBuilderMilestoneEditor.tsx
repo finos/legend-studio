@@ -30,6 +30,7 @@ import {
   PRIMITIVE_TYPE,
   TYPICAL_MULTIPLICITY_TYPE,
   VariableExpression,
+  observe_PrimitiveInstanceValue,
 } from '@finos/legend-graph';
 import {
   DatePrimitiveInstanceValueEditor,
@@ -92,17 +93,20 @@ const MilestoningParameterEditor = observer(
     const resetMilestoningParameter = (): void => {
       queryBuilderState.querySetupState.classMilestoningTemporalValues[
         parameterIndex
-      ] = new PrimitiveInstanceValue(
-        GenericTypeExplicitReference.create(
-          new GenericType(
-            queryBuilderState.graphManagerState.graph.getPrimitiveType(
-              PRIMITIVE_TYPE.LATESTDATE,
+      ] = observe_PrimitiveInstanceValue(
+        new PrimitiveInstanceValue(
+          GenericTypeExplicitReference.create(
+            new GenericType(
+              queryBuilderState.graphManagerState.graph.getPrimitiveType(
+                PRIMITIVE_TYPE.LATESTDATE,
+              ),
             ),
           ),
+          queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
+            TYPICAL_MULTIPLICITY_TYPE.ONE,
+          ),
         ),
-        queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
-          TYPICAL_MULTIPLICITY_TYPE.ONE,
-        ),
+        queryBuilderState.observableContext,
       );
     };
     const latestType =

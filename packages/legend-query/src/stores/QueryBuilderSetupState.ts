@@ -31,6 +31,7 @@ import {
   getMilestoneTemporalStereotype,
   PackageableElementExplicitReference,
   RuntimePointer,
+  observe_ValueSpecification,
 } from '@finos/legend-graph';
 
 export class QueryBuilderSetupState {
@@ -96,7 +97,10 @@ export class QueryBuilderSetupState {
   }
 
   addClassMilestoningTemporalValues(val: ValueSpecification): void {
-    addUniqueEntry(this.classMilestoningTemporalValues, val);
+    addUniqueEntry(
+      this.classMilestoningTemporalValues,
+      observe_ValueSpecification(val, this.queryBuilderState.observableContext),
+    );
   }
 
   setQueryBuilderState(queryBuilderState: QueryBuilderState): void {
@@ -154,6 +158,8 @@ export class QueryBuilderSetupState {
   }
 
   setClassMilestoningTemporalValues(val: ValueSpecification[]): void {
-    this.classMilestoningTemporalValues = val;
+    this.classMilestoningTemporalValues = val.map((v) =>
+      observe_ValueSpecification(v, this.queryBuilderState.observableContext),
+    );
   }
 }
