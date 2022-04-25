@@ -76,6 +76,9 @@ export { V1_Store } from './models/protocols/pure/v1/model/packageableElements/s
 export {
   V1_EngineRuntime,
   V1_Runtime,
+  V1_IdentifiedConnection,
+  V1_StoreConnections,
+  V1_RuntimePointer,
 } from './models/protocols/pure/v1/model/packageableElements/runtime/V1_Runtime';
 export {
   V1_ClassMapping,

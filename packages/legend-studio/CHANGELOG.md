@@ -2,10 +2,6 @@
 
 ## 8.0.0
 
-### Major Changes
-
-- [#1068](https://github.com/finos/legend-studio/pull/1068) [`e8ee77dc`](https://github.com/finos/legend-studio/commit/e8ee77dcde909bdffd31fd65eea2cb8577b9c49d) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Move `BasicModel.buildPath()` out as the separate utility `V1_buildFullPath()`.
-
 ### Patch Changes
 
 - [#1068](https://github.com/finos/legend-studio/pull/1068) [`e8ee77dc`](https://github.com/finos/legend-studio/commit/e8ee77dcde909bdffd31fd65eea2cb8577b9c49d) ([@akphi](https://github.com/akphi)) - Remove config option `TEMPORARY__disableRawLambdaResolver` and renamed `EXPERIMENTAL__enableFullGrammarImportSupport` to `TEMPORARY__preserveSectionIndex`.
