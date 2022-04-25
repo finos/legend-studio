@@ -15,61 +15,31 @@
  */
 
 /* eslint-disable prefer-named-capture-group */
-import type { GraphPluginManager } from '@finos/legend-graph';
+import {
+  type GraphPluginManager,
+  PARSER_SECTION_MARKER,
+  PURE_ELEMENT_NAME,
+  PURE_CONNECTION_NAME,
+  PURE_PARSER,
+} from '@finos/legend-graph';
 import {
   editor as monacoEditorAPI,
   languages as monacoLanguagesAPI,
 } from 'monaco-editor';
 import { EDITOR_LANGUAGE, EDITOR_THEME } from '../const';
 
-export enum GRAMMAR_ELEMENT_TYPE_LABEL {
-  PROFILE = 'Profile',
-  CLASS = 'Class',
-  ENUMERATION = 'Enum',
-  MEASURE = 'Measure',
-  ASSOCIATION = 'Association',
-  FLAT_DATA = 'FlatData',
-  MAPPING = 'Mapping',
-  DATABASE = 'Database',
-  FUNCTION = 'function',
-  SERVICE = 'Service',
-  RUNTIME = 'Runtime',
-  CONNECTION = 'Connection',
-  FILE_GENERATION = 'FileGeneration',
-  GENERATION_SPECIFICATION = 'GenerationSpecification',
-  DATA_ELEMENT = 'Data',
-
-  JSON_MODEL_CONNECTION = 'JsonModelConnection',
-  XML_MODEL_CONNECTION = 'XmlModelConnection',
-  MODEL_CHAIN_CONNECTION = 'ModelChainConnection',
-  RELATIONAL_DATABASE_CONNECTION = 'RelationalDatabaseConnection',
-  FLAT_DATA_CONNECTION = 'FlatDataConnection',
-}
-
-export enum GRAMMAR_PARSER {
-  PURE = 'Pure',
-  CONNECTION = 'Connection',
-  RUNTIME = 'Runtime',
-  MAPPING = 'Mapping',
-  SERVICE = 'Service',
-  FLATDATA = 'FlatData',
-  RELATIONAL = 'Relational',
-  GENERATION_SPECIFICATION = 'GenerationSpecification',
-  FILE_GENERATION = 'FileGeneration',
-  DATA = 'Data',
-}
-
 const theme: monacoEditorAPI.IStandaloneThemeData = {
   base: 'vs-dark', // can also be vs-dark or hc-black
   inherit: true, // can also be false to completely replace the builtin rules
   colors: {},
   rules: [
+    // NOTE: unfortunately, `monaco-editor` only accepts HEX values, not CSS variables
     { token: 'package', foreground: '808080' },
     { token: 'parser-marker', foreground: 'c586c0' },
     { token: 'property', foreground: 'dcdcaa' },
     { token: 'function', foreground: 'dcdcaa' },
     { token: 'language-struct', foreground: 'c586c0' },
-    // { token: 'multiplicity', foreground: '2d796b' },
+    { token: 'multiplicity', foreground: '2d796b' },
     { token: 'attribute', foreground: '9cdcfe' },
     { token: 'cast', foreground: 'f98a00' },
   ],
@@ -132,27 +102,26 @@ const generateLanguageMonarch = (
       'extends',
       'function',
       'projects',
+      PURE_ELEMENT_NAME.CLASS,
+      PURE_ELEMENT_NAME.ASSOCIATION,
+      PURE_ELEMENT_NAME.ENUMERATION,
+      PURE_ELEMENT_NAME.MEASURE,
+      PURE_ELEMENT_NAME.PROFILE,
+      PURE_ELEMENT_NAME.FLAT_DATA,
+      PURE_ELEMENT_NAME.DATABASE,
+      PURE_ELEMENT_NAME.MAPPING,
+      PURE_ELEMENT_NAME.SERVICE,
+      PURE_ELEMENT_NAME.RUNTIME,
+      PURE_ELEMENT_NAME.CONNECTION,
+      PURE_ELEMENT_NAME.FILE_GENERATION,
+      PURE_ELEMENT_NAME.GENERATION_SPECIFICATION,
+      PURE_ELEMENT_NAME.DATA_ELEMENT,
 
-      GRAMMAR_ELEMENT_TYPE_LABEL.CLASS,
-      GRAMMAR_ELEMENT_TYPE_LABEL.ASSOCIATION,
-      GRAMMAR_ELEMENT_TYPE_LABEL.ENUMERATION,
-      GRAMMAR_ELEMENT_TYPE_LABEL.MEASURE,
-      GRAMMAR_ELEMENT_TYPE_LABEL.PROFILE,
-      GRAMMAR_ELEMENT_TYPE_LABEL.FLAT_DATA,
-      GRAMMAR_ELEMENT_TYPE_LABEL.DATABASE,
-      GRAMMAR_ELEMENT_TYPE_LABEL.MAPPING,
-      GRAMMAR_ELEMENT_TYPE_LABEL.SERVICE,
-      GRAMMAR_ELEMENT_TYPE_LABEL.RUNTIME,
-      GRAMMAR_ELEMENT_TYPE_LABEL.CONNECTION,
-      GRAMMAR_ELEMENT_TYPE_LABEL.FILE_GENERATION,
-      GRAMMAR_ELEMENT_TYPE_LABEL.GENERATION_SPECIFICATION,
-      GRAMMAR_ELEMENT_TYPE_LABEL.DATA_ELEMENT,
-
-      GRAMMAR_ELEMENT_TYPE_LABEL.JSON_MODEL_CONNECTION,
-      GRAMMAR_ELEMENT_TYPE_LABEL.MODEL_CHAIN_CONNECTION,
-      GRAMMAR_ELEMENT_TYPE_LABEL.XML_MODEL_CONNECTION,
-      GRAMMAR_ELEMENT_TYPE_LABEL.FLAT_DATA_CONNECTION,
-      GRAMMAR_ELEMENT_TYPE_LABEL.RELATIONAL_DATABASE_CONNECTION,
+      PURE_CONNECTION_NAME.JSON_MODEL_CONNECTION,
+      PURE_CONNECTION_NAME.MODEL_CHAIN_CONNECTION,
+      PURE_CONNECTION_NAME.XML_MODEL_CONNECTION,
+      PURE_CONNECTION_NAME.FLAT_DATA_CONNECTION,
+      PURE_CONNECTION_NAME.RELATIONAL_DATABASE_CONNECTION,
     ],
 
     operators: [
@@ -185,20 +154,20 @@ const generateLanguageMonarch = (
 
     parsers: (
       [
-        GRAMMAR_PARSER.PURE,
-        GRAMMAR_PARSER.CONNECTION,
-        GRAMMAR_PARSER.RUNTIME,
-        GRAMMAR_PARSER.MAPPING,
-        GRAMMAR_PARSER.SERVICE,
-        GRAMMAR_PARSER.FLATDATA,
-        GRAMMAR_PARSER.RELATIONAL,
-        GRAMMAR_PARSER.GENERATION_SPECIFICATION,
-        GRAMMAR_PARSER.FILE_GENERATION,
-        GRAMMAR_PARSER.DATA,
+        PURE_PARSER.PURE,
+        PURE_PARSER.CONNECTION,
+        PURE_PARSER.RUNTIME,
+        PURE_PARSER.MAPPING,
+        PURE_PARSER.SERVICE,
+        PURE_PARSER.FLATDATA,
+        PURE_PARSER.RELATIONAL,
+        PURE_PARSER.GENERATION_SPECIFICATION,
+        PURE_PARSER.FILE_GENERATION,
+        PURE_PARSER.DATA,
       ] as string[]
     )
       .concat(extraParsers)
-      .map((parser) => `###${parser}`),
+      .map((parser) => `${PARSER_SECTION_MARKER}${parser}`),
 
     // common regular expressions to be used in tokenizer
     symbols: /[=><!~?:&|+\-*/^%]+/,
@@ -213,10 +182,6 @@ const generateLanguageMonarch = (
 
     tokenizer: {
       root: [
-        // multiplicity
-        // TODO: this as it can clash with array of numbers
-        [/@multiplicity/, 'multiplicity'],
-
         // packages
         { include: '@package' },
 
@@ -228,7 +193,8 @@ const generateLanguageMonarch = (
 
         // parser markers
         [
-          /^###[\w]+/,
+          // NOTE: any leading whitespace to the section header is considered invalid syntax
+          /^\s*###[\w]+/,
           {
             cases: {
               '@parsers': 'parser-marker',
@@ -302,16 +268,16 @@ const generateLanguageMonarch = (
         [/(@package)(\*)/, ['package', 'tag']],
         [/(@package)([\w_]+)/, ['package', 'type']],
         [
-          /(@package)([\w_]+)(@multiplicity)/,
-          ['package', 'type', 'multiplicity'],
+          /(@package)([\w_]+)(\s*)(@multiplicity)/,
+          ['package', 'type', '', 'multiplicity'],
         ],
         [
-          /([\w_]+)(\s*:\s*)(@package)([\w_]+)(@multiplicity)/,
-          ['attribute', '', 'package', 'type', 'multiplicity'],
+          /([\w_]+)(\s*:\s*)(@package)([\w_]+)(\s*)(@multiplicity)/,
+          ['attribute', '', 'package', 'type', '', 'multiplicity'],
         ],
         [
-          /([\w_]+)(\s*:\s*)([\w_]+)(@multiplicity)/,
-          ['attribute', '', 'type', 'multiplicity'],
+          /([\w_]+)(\s*:\s*)([\w_]+)(\s*)(@multiplicity)/,
+          ['attribute', '', 'type', '', 'multiplicity'],
         ],
       ],
 

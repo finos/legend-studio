@@ -27,7 +27,6 @@ import type { ObserverContext } from './action/changeDetection/CoreObserverHelpe
 export type PureGrammarElementLabeler = (
   metamodel: PackageableElement,
 ) => string | undefined;
-
 export type ElementObserver = (
   metamodel: PackageableElement,
   context: ObserverContext,
@@ -45,21 +44,6 @@ export abstract class PureGraphManagerPlugin extends AbstractPlugin {
   }
 
   /**
-   * Get the list of supported Pure grammar parsers.
-   */
-  getExtraPureGrammarParserNames?(): string[];
-
-  /**
-   * Get the list of supported Pure grammar keywords.
-   */
-  getExtraPureGrammarKeywords?(): string[];
-
-  /**
-   * Get the list of Pure grammar type labelers for packageable elements.
-   */
-  getExtraPureGrammarElementLabelers?(): PureGrammarElementLabeler[];
-
-  /**
    * Get the list of system element qualified paths to be exposed for common usages.
    *
    * Many system elements are included when building the graph, but only a few should
@@ -74,4 +58,19 @@ export abstract class PureGraphManagerPlugin extends AbstractPlugin {
    * become observable by change detection engine.
    */
   getExtraElementObservers?(): ElementObserver[];
+
+  /**
+   * Get the list of supported Pure grammar parsers.
+   */
+  getExtraPureGrammarParserNames?(): string[];
+
+  /**
+   * Get the list of supported Pure grammar keywords.
+   */
+  getExtraPureGrammarKeywords?(): string[];
+
+  /**
+   * Get the list of Pure grammar element labelers.
+   */
+  getExtraPureGrammarElementLabelers?(): PureGrammarElementLabeler[];
 }

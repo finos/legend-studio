@@ -39,7 +39,6 @@ export { WebApplicationNavigator } from './stores/WebApplicationNavigator';
 export { LambdaEditorState } from './stores/LambdaEditorState';
 export * from './stores/PackageableElementOption';
 export * from './stores/LegendApplicationDocumentationRegistry';
-
-export { GRAMMAR_ELEMENT_TYPE_LABEL } from './stores/PureLanguageSupport';
+export * from './stores/LegendApplicationPlugin';
 
 export * from './stores/ApplicationStoreTestUtils';
