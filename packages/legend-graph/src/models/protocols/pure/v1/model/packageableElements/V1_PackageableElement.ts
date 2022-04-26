@@ -34,6 +34,7 @@ import type { V1_FileGenerationSpecification } from './fileGeneration/V1_FileGen
 import type { V1_GenerationSpecification } from './generationSpecification/V1_GenerationSpecification';
 import type { V1_Measure } from './domain/V1_Measure';
 import type { V1_SectionIndex } from './section/V1_SectionIndex';
+import type { V1_DataElement } from './data/V1_DataElement';
 
 export interface V1_PackageableElementVisitor<T> {
   visit_PackageableElement(element: V1_PackageableElement): T;
@@ -53,6 +54,7 @@ export interface V1_PackageableElementVisitor<T> {
   visit_Service(element: V1_Service): T;
   visit_GenerationSpecification(element: V1_GenerationSpecification): T;
   visit_FileGeneration(element: V1_FileGenerationSpecification): T;
+  visit_DataElement(element: V1_DataElement): T;
 }
 
 export abstract class V1_PackageableElement implements Hashable {

@@ -64,6 +64,7 @@ import {
   getOrCreateGraphPackage,
   getOrCreatePackage,
 } from '../helpers/DomainHelper';
+import { DataElement } from '../models/metamodels/pure/packageableElements/data/DataElement';
 
 const FORBIDDEN_EXTENSION_ELEMENT_CLASS = new Set([
   PackageableElement,
@@ -85,6 +86,7 @@ const FORBIDDEN_EXTENSION_ELEMENT_CLASS = new Set([
   Service,
   GenerationSpecification,
   FileGenerationSpecification,
+  DataElement,
 ]);
 
 /**
@@ -125,6 +127,7 @@ export abstract class BasicModel {
     string,
     FileGenerationSpecification
   >();
+  private readonly dataElementsIndex = new Map<string, DataElement>();
 
   constructor(
     rootPackageName: ROOT_PACKAGE_NAME,
@@ -196,6 +199,9 @@ export abstract class BasicModel {
   }
   get ownFileGenerations(): FileGenerationSpecification[] {
     return Array.from(this.fileGenerationsIndex.values());
+  }
+  get ownDataElements(): DataElement[] {
+    return Array.from(this.dataElementsIndex.values());
   }
   get ownGenerationSpecifications(): GenerationSpecification[] {
     return Array.from(this.generationSpecificationsIndex.values());
@@ -270,7 +276,8 @@ export abstract class BasicModel {
     path: string,
   ): FileGenerationSpecification | undefined =>
     this.fileGenerationsIndex.get(path);
-
+  getOwnNullableDataElement = (path: string): DataElement | undefined =>
+    this.dataElementsIndex.get(path);
   getOwnSectionIndex = (path: string): SectionIndex =>
     guaranteeNonNullable(
       this.getOwnNullableSectionIndex(path),
@@ -358,6 +365,11 @@ export abstract class BasicModel {
       this.getOwnNullableFileGeneration(path),
       `Can't find file generation '${path}'`,
     );
+  getOwnDataElement = (path: string): DataElement =>
+    guaranteeNonNullable(
+      this.getOwnNullableDataElement(path),
+      `Can't find data element '${path}'`,
+    );
 
   getOwnNullableExtensionElement<T extends PackageableElement>(
     path: string,
@@ -410,6 +422,10 @@ export abstract class BasicModel {
     this.fileGenerationsIndex.set(path, val);
   }
 
+  setOwnDataElement(path: string, val: DataElement): void {
+    this.dataElementsIndex.set(path, val);
+  }
+
   setOwnElementInExtension<T extends PackageableElement>(
     path: string,
     val: T,
@@ -435,6 +451,7 @@ export abstract class BasicModel {
       ...this.ownConnections,
       ...this.ownGenerationSpecifications,
       ...this.ownFileGenerations,
+      ...this.ownDataElements,
       ...this.extensions.flatMap((extension) => extension.elements),
     ];
   }
@@ -479,6 +496,7 @@ export abstract class BasicModel {
       this.runtimesIndex.get(path) ??
       this.connectionsIndex.get(path) ??
       this.fileGenerationsIndex.get(path) ??
+      this.dataElementsIndex.get(path) ??
       this.generationSpecificationsIndex.get(path);
     if (!element) {
       for (const extension of this.extensions) {
@@ -527,6 +545,8 @@ export abstract class BasicModel {
       this.setOwnFileGeneration(element.path, element);
     } else if (element instanceof GenerationSpecification) {
       this.setOwnGenerationSpecification(element.path, element);
+    } else if (element instanceof DataElement) {
+      this.setOwnDataElement(element.path, element);
     } else if (element instanceof Package) {
       // do nothing
     } else {
@@ -571,6 +591,8 @@ export abstract class BasicModel {
       this.fileGenerationsIndex.delete(element.path);
     } else if (element instanceof GenerationSpecification) {
       this.generationSpecificationsIndex.delete(element.path);
+    } else if (element instanceof DataElement) {
+      this.dataElementsIndex.delete(element.path);
     } else if (element instanceof Package) {
       element.children.forEach((child) => this.deleteOwnElement(child));
     } else {
@@ -687,6 +709,9 @@ export abstract class BasicModel {
     } else if (element instanceof FileGenerationSpecification) {
       this.fileGenerationsIndex.delete(elementCurrentPath);
       this.fileGenerationsIndex.set(newPath, element);
+    } else if (element instanceof DataElement) {
+      this.dataElementsIndex.delete(elementCurrentPath);
+      this.dataElementsIndex.set(newPath, element);
     } else if (element instanceof GenerationSpecification) {
       this.generationSpecificationsIndex.delete(elementCurrentPath);
       this.generationSpecificationsIndex.set(newPath, element);

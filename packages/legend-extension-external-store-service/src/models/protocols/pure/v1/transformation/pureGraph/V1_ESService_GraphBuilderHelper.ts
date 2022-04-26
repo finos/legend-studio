@@ -18,9 +18,11 @@ import { getServiceStore } from '../../../../../../graphManager/ESService_GraphM
 import type { ServiceStore } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/model/ESService_ServiceStore';
 import {
   V1_buildRawLambdaWithResolvedPaths,
+  ExternalFormatData,
   V1_resolveBinding,
   type PackageableElementImplicitReference,
   type V1_GraphBuilderContext,
+  V1_ProtocolToMetaModelEmbeddedDataBuilder,
 } from '@finos/legend-graph';
 import type { V1_ServiceStoreServicePtr } from '../../model/packageableElements/store/serviceStore/model/V1_ESService_ServiceStoreServicePtr';
 import {
@@ -49,6 +51,7 @@ import {
   assertNonNullable,
   guaranteeNonEmptyString,
   guaranteeNonNullable,
+  guaranteeType,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
 import type { V1_ServiceParameter } from '../../model/packageableElements/store/serviceStore/model/V1_ESService_ServiceParameter';
@@ -77,6 +80,20 @@ import type { V1_ServiceRequestBuildInfo } from '../../model/packageableElements
 import { ServiceRequestBodyBuildInfo } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/mapping/ESService_ServiceRequestBodyBuildInfo';
 import { ServiceRequestParametersBuildInfo } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/mapping/ESService_ServiceRequestParametersBuildInfo';
 import { ServiceRequestParameterBuildInfo } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/mapping/ESService_ServiceRequestParameterBuildInfo';
+import { EqualToJsonPattern } from '../../../../../metamodels/pure/model/data/contentPattern/ESService_EqualToJsonPattern';
+import { V1_EqualToJsonPattern } from '../../model/data/contentPattern/V1_ESService_EqualToJsonPattern';
+import { EqualToPattern } from '../../../../../metamodels/pure/model/data/contentPattern/ESService_EqualToPattern';
+import { V1_EqualToPattern } from '../../model/data/contentPattern/V1_ESService_EqualToPattern';
+import type { V1_StringValuePattern } from '../../model/data/contentPattern/V1_ESService_StringValuePattern';
+import type { StringValuePattern } from '../../../../../metamodels/pure/model/data/contentPattern/ESService_StringValuePattern';
+import { ServiceRequestPattern } from '../../../../../metamodels/pure/model/data/ESService_ServiceRequestPattern';
+import type { V1_ServiceRequestPattern } from '../../model/data/V1_ESService_ServiceRequestPattern';
+import { ServiceResponseDefinition } from '../../../../../metamodels/pure/model/data/ESService_ServiceResponseDefinition';
+import type { V1_ServiceResponseDefinition } from '../../model/data/V1_ESService_ServiceResponseDefinition';
+import { ServiceStubMapping } from '../../../../../metamodels/pure/model/data/ESService_ServiceStubMapping';
+import type { V1_ServiceStubMapping } from '../../model/data/V1_ESService_ServiceStubMapping';
+import type { V1_ServiceStoreEmbeddedData } from '../../model/data/V1_ESService_ServiceStoreEmbeddedData';
+import { ServiceStoreEmbeddedData } from '../../../../../metamodels/pure/model/data/ESService_ServiceStoreEmbeddedData';
 
 export const V1_resolveServiceStore = (
   path: string,
@@ -354,4 +371,107 @@ export const V1_buildServiceStoreElement = (
     `Can't build service store element`,
     protocol,
   );
+};
+
+const V1_buildEqualToJsonPattern = (
+  protocol: V1_EqualToJsonPattern,
+): EqualToJsonPattern => {
+  const equalToJsonPattern = new EqualToJsonPattern();
+  equalToJsonPattern.expectedValue = protocol.expectedValue;
+  return equalToJsonPattern;
+};
+
+const V1_buildEqualToPattern = (
+  protocol: V1_EqualToPattern,
+): EqualToPattern => {
+  const equalToPattern = new EqualToPattern();
+  equalToPattern.expectedValue = protocol.expectedValue;
+  return equalToPattern;
+};
+
+export const V1_buildStringValuePattern = (
+  protocol: V1_StringValuePattern,
+): StringValuePattern => {
+  if (protocol instanceof V1_EqualToJsonPattern) {
+    return V1_buildEqualToJsonPattern(protocol);
+  } else if (protocol instanceof V1_EqualToPattern) {
+    return V1_buildEqualToPattern(protocol);
+  }
+  throw new UnsupportedOperationError(
+    `Can't build string value pattern`,
+    protocol,
+  );
+};
+
+const V1_buildServiceRequestPattern = (
+  protocol: V1_ServiceRequestPattern,
+): ServiceRequestPattern => {
+  const serviceRequestPattern = new ServiceRequestPattern();
+  serviceRequestPattern.url = protocol.url;
+  serviceRequestPattern.urlPath = protocol.urlPath;
+  serviceRequestPattern.method = protocol.method;
+  if (protocol.headerParams) {
+    serviceRequestPattern.headerParams = new Map<string, StringValuePattern>();
+    protocol.headerParams.forEach((v: V1_StringValuePattern, key: string) => {
+      serviceRequestPattern.headerParams?.set(
+        key,
+        V1_buildStringValuePattern(v),
+      );
+    });
+  }
+  if (protocol.queryParams) {
+    serviceRequestPattern.queryParams = new Map<string, StringValuePattern>();
+    protocol.queryParams.forEach((v: V1_StringValuePattern, key: string) => {
+      serviceRequestPattern.queryParams?.set(
+        key,
+        V1_buildStringValuePattern(v),
+      );
+    });
+  }
+  serviceRequestPattern.bodyPatterns = protocol.bodyPatterns.map(
+    (bodyPattern) => V1_buildStringValuePattern(bodyPattern),
+  );
+  return serviceRequestPattern;
+};
+
+const V1_buildServiceResponseDefinition = (
+  protocol: V1_ServiceResponseDefinition,
+  context: V1_GraphBuilderContext,
+): ServiceResponseDefinition => {
+  const serviceResponseDefinition = new ServiceResponseDefinition();
+  serviceResponseDefinition.body = guaranteeType(
+    protocol.body.accept_EmbeddedDataVisitor(
+      new V1_ProtocolToMetaModelEmbeddedDataBuilder(context),
+    ),
+    ExternalFormatData,
+    'Service response definition body must be external format data',
+  );
+  return serviceResponseDefinition;
+};
+
+const V1_buildServiceStubMapping = (
+  protocol: V1_ServiceStubMapping,
+  context: V1_GraphBuilderContext,
+): ServiceStubMapping => {
+  const serviceStubMapping = new ServiceStubMapping();
+  serviceStubMapping.requestPattern = V1_buildServiceRequestPattern(
+    protocol.requestPattern,
+  );
+  serviceStubMapping.responseDefinition = V1_buildServiceResponseDefinition(
+    protocol.responseDefinition,
+    context,
+  );
+  return serviceStubMapping;
+};
+
+export const V1_buildServiceStoreEmbeddedData = (
+  protocol: V1_ServiceStoreEmbeddedData,
+  context: V1_GraphBuilderContext,
+): ServiceStoreEmbeddedData => {
+  const serviceStoreEmbeddedData = new ServiceStoreEmbeddedData();
+  serviceStoreEmbeddedData.serviceStubMappings =
+    protocol.serviceStubMappings.map((serviceStubMapping) =>
+      V1_buildServiceStubMapping(serviceStubMapping, context),
+    );
+  return serviceStoreEmbeddedData;
 };

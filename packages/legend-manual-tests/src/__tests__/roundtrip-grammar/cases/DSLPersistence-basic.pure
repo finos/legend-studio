@@ -105,6 +105,10 @@ Service org::legend::ZooService
       ];
     }#;
   }
+  testSuites:
+  [
+
+  ]
   test: Single
   {
     data: 'test';

@@ -22,6 +22,7 @@ import {
   assertNonNullable,
   assertTrue,
   LogEvent,
+  guaranteeType,
 } from '@finos/legend-shared';
 import { Stereotype } from '../../../../../../metamodels/pure/packageableElements/domain/Stereotype';
 import { Tag } from '../../../../../../metamodels/pure/packageableElements/domain/Tag';
@@ -50,8 +51,8 @@ import {
   V1_buildTaggedValue,
 } from '../../../transformation/pureGraph/to/helpers/V1_DomainBuilderHelper';
 import {
-  V1_buildServiceTest,
   V1_buildServiceExecution,
+  V1_buildLegacyServiceTest,
 } from '../../../transformation/pureGraph/to/helpers/V1_ServiceBuilderHelper';
 import {
   V1_buildEnumerationMapping,
@@ -76,6 +77,10 @@ import {
 import type { V1_Measure } from '../../../model/packageableElements/domain/V1_Measure';
 import type { V1_SectionIndex } from '../../../model/packageableElements/section/V1_SectionIndex';
 import { V1_buildSection } from '../../../transformation/pureGraph/to/helpers/V1_SectionBuilderHelper';
+import type { V1_DataElement } from '../../../model/packageableElements/data/V1_DataElement';
+import { V1_ProtocolToMetaModelEmbeddedDataBuilder } from './helpers/V1_DataElementBuilderHelper';
+import { V1_buildTestSuite } from './helpers/V1_TestBuilderHelper';
+import { ServiceTestSuite } from '../../../../../../metamodels/pure/packageableElements/service/ServiceTestSuite';
 
 export class V1_ProtocolToMetaModelGraphSecondPassBuilder
   implements V1_PackageableElementVisitor<void>
@@ -296,7 +301,16 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
       this.context,
       service,
     );
-    service.test = V1_buildServiceTest(element.test, this.context, service);
+    if (element.test) {
+      service.test = V1_buildLegacyServiceTest(
+        element.test,
+        this.context,
+        service,
+      );
+    }
+    service.tests = element.testSuites
+      .map((testSuite) => V1_buildTestSuite(testSuite, this.context))
+      .map((e) => guaranteeType(e, ServiceTestSuite));
   }
 
   visit_SectionIndex(element: V1_SectionIndex): void {
@@ -361,5 +375,20 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
       element.connectionValue.accept_ConnectionVisitor(
         new V1_ProtocolToMetaModelConnectionBuilder(this.context),
       );
+  }
+
+  visit_DataElement(element: V1_DataElement): void {
+    const dataElement = this.context.currentSubGraph.getOwnDataElement(
+      V1_buildFullPath(element.package, element.name),
+    );
+    dataElement.stereotypes = element.stereotypes
+      .map((stereotype) => this.context.resolveStereotype(stereotype))
+      .filter(isNonNullable);
+    dataElement.taggedValues = element.taggedValues
+      .map((taggedValue) => V1_buildTaggedValue(taggedValue, this.context))
+      .filter(isNonNullable);
+    dataElement.data = element.data.accept_EmbeddedDataVisitor(
+      new V1_ProtocolToMetaModelEmbeddedDataBuilder(this.context),
+    );
   }
 }

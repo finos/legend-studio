@@ -89,6 +89,7 @@ import {
   GraphBuilderError,
   type GraphBuilderReport,
   GraphManagerTelemetry,
+  DataElement,
 } from '@finos/legend-graph';
 import {
   type LambdaEditorState,
@@ -1134,6 +1135,8 @@ export class EditorGraphState {
       return PACKAGEABLE_ELEMENT_TYPE.GENERATION_SPECIFICATION;
     } else if (element instanceof SectionIndex) {
       return PACKAGEABLE_ELEMENT_TYPE.SECTION_INDEX;
+    } else if (element instanceof DataElement) {
+      return PACKAGEABLE_ELEMENT_TYPE.DATA;
     }
     const extraElementTypeLabelGetters = this.editorStore.pluginManager
       .getStudioPlugins()

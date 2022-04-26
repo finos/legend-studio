@@ -21,6 +21,8 @@ import {
   custom,
   list,
   serialize,
+  raw,
+  type ModelSchema,
 } from 'serializr';
 import {
   type PlainObject,
@@ -29,6 +31,7 @@ import {
   UnsupportedOperationError,
   serializeArray,
   usingModelSchema,
+  optionalCustom,
 } from '@finos/legend-shared';
 import {
   type V1_ServiceExecution,
@@ -48,18 +51,38 @@ import {
   V1_runtimePointerModelSchema,
   V1_RuntimeType,
 } from './V1_RuntimeSerializationHelper';
-import {
-  type V1_ServiceTest,
-  V1_KeyedSingleExecutionTest,
-  V1_MultiExecutionTest,
-  V1_SingleExecutionTest,
-  V1_TestContainer,
-} from '../../../model/packageableElements/service/V1_ServiceTest';
+import { V1_ServiceTest } from '../../../model/packageableElements/service/V1_ServiceTest';
 import {
   V1_stereotypePtrSchema,
   V1_taggedValueSchema,
 } from './V1_DomainSerializationHelper';
 import type { V1_StereotypePtr } from '../../../model/packageableElements/domain/V1_StereotypePtr';
+import { V1_ConnectionTestData } from '../../../model/packageableElements/service/V1_ConnectionTestData';
+import {
+  V1_deserializeEmbeddedDataType,
+  V1_serializeEmbeddedDataType,
+} from './V1_DataElementSerializationHelper';
+import { V1_ParameterValue } from '../../../model/packageableElements/service/V1_ParameterValue';
+import { V1_TestData } from '../../../model/packageableElements/service/V1_TestData';
+import {
+  V1_AtomicTestType,
+  V1_deserializeAtomicTest,
+  V1_deserializeTestAssertion,
+  V1_deserializeTestSuite,
+  V1_serializeAtomicTest,
+  V1_serializeTestAssertion,
+  V1_serializeTestSuite,
+  V1_TestSuiteType,
+} from './V1_TestSerializationHelper';
+import { V1_ServiceTestSuite } from '../../../model/packageableElements/service/V1_ServiceTestSuite';
+import {
+  type V1_DEPRECATED__ServiceTest,
+  V1_DEPRECATED__KeyedSingleExecutionTest,
+  V1_DEPRECATED__MultiExecutionTest,
+  V1_DEPRECATED__SingleExecutionTest,
+  V1_DEPRECATED__TestContainer,
+} from '../../../model/packageableElements/service/V1_DEPRECATED__ServiceTest';
+import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin';
 
 export const V1_SERVICE_ELEMENT_PROTOCOL_TYPE = 'service';
 
@@ -72,6 +95,61 @@ enum V1_ServiceExecutionType {
   PURE_SINGLE_EXECUTION = 'pureSingleExecution',
   PURE_MULTI_EXECUTION = 'pureMultiExecution',
 }
+
+export const V1_connectionTestDataModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_ConnectionTestData> =>
+  createModelSchema(V1_ConnectionTestData, {
+    data: custom(
+      (val) => V1_serializeEmbeddedDataType(val, plugins),
+      (val) => V1_deserializeEmbeddedDataType(val, plugins),
+    ),
+    id: primitive(),
+  });
+
+export const V1_parameterValueModelSchema = createModelSchema(
+  V1_ParameterValue,
+  {
+    name: primitive(),
+    value: raw(),
+  },
+);
+
+export const V1_testDataModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_TestData> =>
+  createModelSchema(V1_TestData, {
+    connectionsTestData: list(
+      usingModelSchema(V1_connectionTestDataModelSchema(plugins)),
+    ),
+  });
+
+export const V1_serviceTestModelSchema = createModelSchema(V1_ServiceTest, {
+  _type: usingConstantValueSchema(V1_AtomicTestType.SERVICE_TEST),
+  assertions: list(
+    custom(
+      (val) => V1_serializeTestAssertion(val),
+      (val) => V1_deserializeTestAssertion(val),
+    ),
+  ),
+  id: primitive(),
+  parameters: list(usingModelSchema(V1_parameterValueModelSchema)),
+});
+
+export const V1_serviceTestSuiteModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_ServiceTestSuite> =>
+  createModelSchema(V1_ServiceTestSuite, {
+    _type: usingConstantValueSchema(V1_TestSuiteType.SERVICE_TEST_SUITE),
+    id: primitive(),
+    testData: usingModelSchema(V1_testDataModelSchema(plugins)),
+    tests: list(
+      custom(
+        (val) => V1_serializeAtomicTest(val),
+        (val) => V1_deserializeAtomicTest(val),
+      ),
+    ),
+  });
 
 const V1_serializeRuntimeValue = (
   protocol: V1_Runtime,
@@ -172,16 +250,19 @@ const V1_deserializeServiceExecution = (
   }
 };
 
-const testContainerModelSchema = createModelSchema(V1_TestContainer, {
-  assert: usingModelSchema(V1_rawLambdaModelSchema),
-  parametersValues: custom(
-    (values) => serializeArray(values, (value) => value, true),
-    (values) => deserializeArray(values, (v) => v, false),
-  ),
-});
+const testContainerModelSchema = createModelSchema(
+  V1_DEPRECATED__TestContainer,
+  {
+    assert: usingModelSchema(V1_rawLambdaModelSchema),
+    parametersValues: custom(
+      (values) => serializeArray(values, (value) => value, true),
+      (values) => deserializeArray(values, (v) => v, false),
+    ),
+  },
+);
 
 const singleExecutionTestModelSchema = createModelSchema(
-  V1_SingleExecutionTest,
+  V1_DEPRECATED__SingleExecutionTest,
   {
     _type: usingConstantValueSchema(V1_ServiceTestType.SINGLE_EXECUTION_TEST),
     asserts: list(usingModelSchema(testContainerModelSchema)),
@@ -190,7 +271,7 @@ const singleExecutionTestModelSchema = createModelSchema(
 );
 
 const keyedSingleExecutionTestModelSchema = createModelSchema(
-  V1_KeyedSingleExecutionTest,
+  V1_DEPRECATED__KeyedSingleExecutionTest,
   {
     asserts: list(usingModelSchema(testContainerModelSchema)),
     data: primitive(),
@@ -198,25 +279,28 @@ const keyedSingleExecutionTestModelSchema = createModelSchema(
   },
 );
 
-const multiExecutionTestModelSchema = createModelSchema(V1_MultiExecutionTest, {
-  _type: usingConstantValueSchema(V1_ServiceTestType.MULTI_EXECUTION_TEST),
-  tests: list(usingModelSchema(keyedSingleExecutionTestModelSchema)),
-});
+const multiExecutionTestModelSchema = createModelSchema(
+  V1_DEPRECATED__MultiExecutionTest,
+  {
+    _type: usingConstantValueSchema(V1_ServiceTestType.MULTI_EXECUTION_TEST),
+    tests: list(usingModelSchema(keyedSingleExecutionTestModelSchema)),
+  },
+);
 
-const V1_serializeServiceTest = (
-  protocol: V1_ServiceTest,
-): PlainObject<V1_ServiceTest> => {
-  if (protocol instanceof V1_SingleExecutionTest) {
+const V1_serializeLegacyServiceTest = (
+  protocol: V1_DEPRECATED__ServiceTest,
+): PlainObject<V1_DEPRECATED__ServiceTest> => {
+  if (protocol instanceof V1_DEPRECATED__SingleExecutionTest) {
     return serialize(singleExecutionTestModelSchema, protocol);
-  } else if (protocol instanceof V1_MultiExecutionTest) {
+  } else if (protocol instanceof V1_DEPRECATED__MultiExecutionTest) {
     return serialize(multiExecutionTestModelSchema, protocol);
   }
   throw new UnsupportedOperationError(`Can't serialize service test`, protocol);
 };
 
-const V1_deserializeServiceTest = (
-  json: PlainObject<V1_ServiceTest>,
-): V1_ServiceTest => {
+const V1_deserializeLegacyServiceTest = (
+  json: PlainObject<V1_DEPRECATED__ServiceTest>,
+): V1_DEPRECATED__ServiceTest => {
   switch (json._type) {
     case V1_ServiceTestType.SINGLE_EXECUTION_TEST:
       return deserialize(singleExecutionTestModelSchema, json);
@@ -229,48 +313,66 @@ const V1_deserializeServiceTest = (
   }
 };
 
-export const V1_servicedModelSchema = createModelSchema(V1_Service, {
-  _type: usingConstantValueSchema(V1_SERVICE_ELEMENT_PROTOCOL_TYPE),
-  autoActivateUpdates: primitive(),
-  documentation: primitive(),
-  execution: custom(
-    (val) => V1_serializeServiceExecution(val),
-    (val) => V1_deserializeServiceExecution(val),
-  ),
-  name: primitive(),
-  owners: list(primitive()),
-  package: primitive(),
-  pattern: primitive(),
-  stereotypes: custom(
-    (values) =>
-      serializeArray(
-        values,
-        (value) => serialize(V1_stereotypePtrSchema, value),
-        true,
-      ),
-    (values) =>
-      deserializeArray(
-        values,
-        (v: V1_StereotypePtr) => deserialize(V1_stereotypePtrSchema, v),
-        false,
-      ),
-  ),
-  taggedValues: custom(
-    (values) =>
-      serializeArray(
-        values,
-        (value) => serialize(V1_taggedValueSchema, value),
-        true,
-      ),
-    (values) =>
-      deserializeArray(
-        values,
-        (v: V1_StereotypePtr) => deserialize(V1_taggedValueSchema, v),
-        false,
-      ),
-  ),
-  test: custom(
-    (val) => V1_serializeServiceTest(val),
-    (val) => V1_deserializeServiceTest(val),
-  ),
-});
+export const V1_servicedModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_Service> =>
+  createModelSchema(V1_Service, {
+    _type: usingConstantValueSchema(V1_SERVICE_ELEMENT_PROTOCOL_TYPE),
+    autoActivateUpdates: primitive(),
+    documentation: primitive(),
+    execution: custom(
+      (val) => V1_serializeServiceExecution(val),
+      (val) => V1_deserializeServiceExecution(val),
+    ),
+    name: primitive(),
+    owners: list(primitive()),
+    package: primitive(),
+    pattern: primitive(),
+    stereotypes: custom(
+      (values) =>
+        serializeArray(
+          values,
+          (value) => serialize(V1_stereotypePtrSchema, value),
+          true,
+        ),
+      (values) =>
+        deserializeArray(
+          values,
+          (v: V1_StereotypePtr) => deserialize(V1_stereotypePtrSchema, v),
+          false,
+        ),
+    ),
+    taggedValues: custom(
+      (values) =>
+        serializeArray(
+          values,
+          (value) => serialize(V1_taggedValueSchema, value),
+          true,
+        ),
+      (values) =>
+        deserializeArray(
+          values,
+          (v: V1_StereotypePtr) => deserialize(V1_taggedValueSchema, v),
+          false,
+        ),
+    ),
+    test: optionalCustom(
+      V1_serializeLegacyServiceTest,
+      V1_deserializeLegacyServiceTest,
+    ),
+    testSuites: custom(
+      (values) =>
+        serializeArray(
+          values,
+          (value) => V1_serializeTestSuite(value, plugins),
+          true,
+        ),
+      (values) =>
+        deserializeArray(
+          values,
+          (v: PlainObject<V1_ServiceTestSuite>) =>
+            V1_deserializeTestSuite(v, plugins),
+          true,
+        ),
+    ),
+  });

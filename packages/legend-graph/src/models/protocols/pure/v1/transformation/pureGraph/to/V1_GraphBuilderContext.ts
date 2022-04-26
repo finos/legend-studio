@@ -79,6 +79,7 @@ import type { V1_GraphBuilderExtensions } from './V1_GraphBuilderExtensions';
 import type { GraphBuilderOptions } from '../../../../../../../graphManager/AbstractPureGraphManager';
 import { DataType } from '../../../../../../metamodels/pure/packageableElements/domain/DataType';
 import { GraphBuilderError } from '../../../../../../../graphManager/GraphManagerUtils';
+import type { DataElement } from '../../../../../../../DSLData_Exports';
 
 export const V1_buildFullPath = (
   packagePath: string | undefined,
@@ -512,6 +513,13 @@ export class V1_GraphBuilderContext {
     this.createImplicitPackageableElementReference(
       path,
       this.graph.getFileGeneration,
+    );
+  resolveDataElement = (
+    path: string,
+  ): PackageableElementImplicitReference<DataElement> =>
+    this.createImplicitPackageableElementReference(
+      path,
+      this.graph.getDataElement,
     );
 }
 

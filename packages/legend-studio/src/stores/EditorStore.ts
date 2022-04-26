@@ -120,6 +120,7 @@ import {
   GenerationSpecification,
   PRIMITIVE_TYPE,
   Package,
+  DataElement,
 } from '@finos/legend-graph';
 import type { DepotServerClient } from '@finos/legend-server-depot';
 import type { LegendStudioPluginManager } from '../application/LegendStudioPluginManager';
@@ -1048,7 +1049,8 @@ export class EditorStore {
     } else if (
       element instanceof Measure ||
       element instanceof Database ||
-      element instanceof FlatData
+      element instanceof FlatData ||
+      element instanceof DataElement
     ) {
       return new UnsupportedElementEditorState(this, element);
     } else if (element instanceof PackageableRuntime) {
@@ -1450,6 +1452,7 @@ export class EditorStore {
         PACKAGEABLE_ELEMENT_TYPE.FILE_GENERATION,
         PACKAGEABLE_ELEMENT_TYPE.FLAT_DATA_STORE,
         PACKAGEABLE_ELEMENT_TYPE.DATABASE,
+        PACKAGEABLE_ELEMENT_TYPE.DATA,
       ] as string[]
     ).concat(
       this.pluginManager

@@ -87,6 +87,14 @@ const EXCLUSIONS: { [key: string]: ROUNTRIP_TEST_PHASES[] | typeof SKIP } = {
     ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP,
   ],
 
+  // Mismatch between engine(undefined) vs studio ([]) for properties
+  // `bodyPatterns` in ServiceStoreData
+  // `parameters` in ServiceTest
+  // TODO: Test should pass with a refactor of roundtrip grammar to not override the array serialization as engine
+  // correctly doesn't return the property for that array.
+  'ESService-dataElement.pure': [ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP],
+  'DSLService-basic.pure': [ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP],
+
   // TODO: remove these when we can properly handle relational mapping `mainTable` and `primaryKey` in transformers.
   // See https://github.com/finos/legend-studio/issues/295
   // See https://github.com/finos/legend-studio/issues/294

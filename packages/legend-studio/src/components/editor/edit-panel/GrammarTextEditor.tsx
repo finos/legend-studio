@@ -175,6 +175,7 @@ export const GrammarTextEditor = observer(() => {
         CORE_DND_TYPE.PROJECT_EXPLORER_RUNTIME,
         CORE_DND_TYPE.PROJECT_EXPLORER_FILE_GENERATION,
         CORE_DND_TYPE.PROJECT_EXPLORER_GENERATION_TREE,
+        CORE_DND_TYPE.PROJECT_EXPLORER_DATA,
       ],
 
       drop: (item: ElementDragSource, monitor): void =>

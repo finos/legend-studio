@@ -31,6 +31,8 @@ import {
   V1_SERVICE_STORE_MAPPING_PROTOCOL_TYPE,
   V1_serviceStoreConnectionModelSchema,
   V1_SERVICE_STORE_CONNECTION_PROTOCOL_TYPE,
+  V1_serviceStoreEmbeddedDataModelSchema,
+  V1_SERVICE_STORE_EMBEDDED_DATA_PROTOCOL_TYPE,
 } from './v1/transformation/pureProtocol/V1_ESService_ProtocolHelper';
 import { getOwnServiceStore } from '../../../graphManager/ESService_GraphManagerHelper';
 import { ServiceStore } from '../../metamodels/pure/model/packageableElements/store/serviceStore/model/ESService_ServiceStore';
@@ -59,6 +61,13 @@ import {
   type V1_ConnectionProtocolSerializer,
   type V1_ConnectionTransformer,
   type DSLMapping_PureProtocolProcessorPlugin_Extension,
+  type DSLData_PureProtocolProcessorPlugin_Extension,
+  type V1_EmbeddedDataBuilder,
+  type V1_EmbeddedDataProtocolDeserializer,
+  type V1_EmbeddedDataProtocolSerializer,
+  type V1_EmbeddedDataTransformer,
+  type EmbeddedData,
+  type V1_EmbeddedData,
   PureProtocolProcessorPlugin,
   fromElementPathToMappingElementId,
   InferableMappingElementIdImplicitValue,
@@ -78,6 +87,7 @@ import {
   V1_buildServiceParameterMapping,
   V1_buildServiceRequestBuildInfo,
   V1_buildServiceStoreElement,
+  V1_buildServiceStoreEmbeddedData,
   V1_resolveService,
   V1_resolveServiceStore,
 } from './v1/transformation/pureGraph/V1_ESService_GraphBuilderHelper';
@@ -86,17 +96,22 @@ import { V1_ServiceMapping } from './v1/model/packageableElements/store/serviceS
 import {
   V1_transformServiceRequestBuildInfo,
   V1_transformServiceStoreElement,
+  V1_transformServiceStoreEmbeddedData,
   V1_transformServiceToServicePtr,
 } from './v1/transformation/pureGraph/V1_ESService_TransformerHelper';
 import { ServiceRequestBuildInfo } from '../../metamodels/pure/model/packageableElements/store/serviceStore/mapping/ESService_ServiceRequestBuildInfo';
 import { ServiceRequestParametersBuildInfo } from '../../metamodels/pure/model/packageableElements/store/serviceStore/mapping/ESService_ServiceRequestParametersBuildInfo';
+import { ServiceStoreEmbeddedData } from '../../metamodels/pure/model/data/ESService_ServiceStoreEmbeddedData';
+import { V1_ServiceStoreEmbeddedData } from './v1/model/data/V1_ESService_ServiceStoreEmbeddedData';
 
 const SERVICE_STORE_ELEMENT_CLASSIFIER_PATH =
   'meta::external::store::service::metamodel::ServiceStore';
 
 export class ESService_PureProtocolProcessorPlugin
   extends PureProtocolProcessorPlugin
-  implements DSLMapping_PureProtocolProcessorPlugin_Extension
+  implements
+    DSLMapping_PureProtocolProcessorPlugin_Extension,
+    DSLData_PureProtocolProcessorPlugin_Extension
 {
   constructor() {
     super(
@@ -428,6 +443,61 @@ export class ESService_PureProtocolProcessorPlugin
       (json: PlainObject<V1_Connection>): V1_Connection | undefined => {
         if (json._type === V1_SERVICE_STORE_CONNECTION_PROTOCOL_TYPE) {
           return deserialize(V1_serviceStoreConnectionModelSchema, json);
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  V1_getExtraEmbeddedDataBuilders(): V1_EmbeddedDataBuilder[] {
+    return [
+      (
+        embeddedData: V1_EmbeddedData,
+        context: V1_GraphBuilderContext,
+      ): EmbeddedData | undefined => {
+        if (embeddedData instanceof V1_ServiceStoreEmbeddedData) {
+          return V1_buildServiceStoreEmbeddedData(embeddedData, context);
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  V1_getExtraEmbeddedDataTransformers(): V1_EmbeddedDataTransformer[] {
+    return [
+      (
+        metamodel: EmbeddedData,
+        context: V1_GraphTransformerContext,
+      ): V1_EmbeddedData | undefined => {
+        if (metamodel instanceof ServiceStoreEmbeddedData) {
+          return V1_transformServiceStoreEmbeddedData(metamodel);
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  V1_getExtraEmbeddedDataProtocolSerializers(): V1_EmbeddedDataProtocolSerializer[] {
+    return [
+      (
+        embeddedDataProtocol: V1_EmbeddedData,
+      ): PlainObject<V1_EmbeddedData> | undefined => {
+        if (embeddedDataProtocol instanceof V1_ServiceStoreEmbeddedData) {
+          return serialize(
+            V1_serviceStoreEmbeddedDataModelSchema,
+            embeddedDataProtocol,
+          );
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  V1_getExtraEmbeddedDataProtocolDeserializers(): V1_EmbeddedDataProtocolDeserializer[] {
+    return [
+      (json: PlainObject<V1_EmbeddedData>): V1_EmbeddedData | undefined => {
+        if (json._type === V1_SERVICE_STORE_EMBEDDED_DATA_PROTOCOL_TYPE) {
+          return deserialize(V1_serviceStoreEmbeddedDataModelSchema, json);
         }
         return undefined;
       },

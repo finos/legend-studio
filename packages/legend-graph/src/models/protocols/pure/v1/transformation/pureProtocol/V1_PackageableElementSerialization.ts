@@ -95,6 +95,11 @@ import type {
   V1_ElementProtocolSerializer,
 } from '../../../PureProtocolProcessorPlugin';
 import { createPath } from '../../../../../../MetaModelUtils';
+import type { V1_DataElement } from '../../model/packageableElements/data/V1_DataElement';
+import {
+  V1_dataElementModelSchema,
+  V1_DATA_ELEMENT_PROTOCOL_TYPE,
+} from './serializationHelpers/V1_DataElementSerializationHelper';
 
 class V1_PackageableElementSerializer
   implements V1_PackageableElementVisitor<PlainObject<V1_PackageableElement>>
@@ -166,7 +171,7 @@ class V1_PackageableElementSerializer
   }
 
   visit_Service(element: V1_Service): PlainObject<V1_PackageableElement> {
-    return serialize(V1_servicedModelSchema, element);
+    return serialize(V1_servicedModelSchema(this.plugins), element);
   }
 
   visit_PackageableRuntime(
@@ -200,6 +205,12 @@ class V1_PackageableElementSerializer
     element: V1_SectionIndex,
   ): PlainObject<V1_PackageableElement> {
     return serialize(V1_sectionIndexModelSchema, element);
+  }
+
+  visit_DataElement(
+    element: V1_DataElement,
+  ): PlainObject<V1_PackageableElement> {
+    return serialize(V1_dataElementModelSchema(this.plugins), element);
   }
 }
 
@@ -256,7 +267,7 @@ export const V1_deserializePackageableElement = (
       case V1_MAPPING_ELEMENT_PROTOCOL_TYPE:
         return deserialize(V1_mappingModelSchema(plugins), json);
       case V1_SERVICE_ELEMENT_PROTOCOL_TYPE:
-        return deserialize(V1_servicedModelSchema, json);
+        return deserialize(V1_servicedModelSchema(plugins), json);
       case V1_PACKAGEABLE_CONNECTION_ELEMENT_PROTOCOL_TYPE:
         return deserialize(V1_packageableConnectionModelSchema(plugins), json);
       case V1_PACKAGEABLE_RUNTIME_ELEMENT_PROTOCOL_TYPE:
@@ -267,6 +278,8 @@ export const V1_deserializePackageableElement = (
         return deserialize(V1_generationSpecificationsModelSchema, json);
       case V1_SECTION_INDEX_ELEMENT_PROTOCOL_TYPE:
         return deserialize(V1_sectionIndexModelSchema, json);
+      case V1_DATA_ELEMENT_PROTOCOL_TYPE:
+        return deserialize(V1_dataElementModelSchema(plugins), json);
       default: {
         for (const deserializer of extraElementProtocolDeserializers) {
           const elementProtocol = deserializer(json, plugins);

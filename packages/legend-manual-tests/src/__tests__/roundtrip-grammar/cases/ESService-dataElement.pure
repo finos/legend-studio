@@ -1,0 +1,142 @@
+###Data
+Data my::MyData
+{
+  ServiceStore
+  #{
+    [
+      {
+        request:
+        {
+          method: GET;
+          url: '/employees';
+        };
+        response:
+        {
+          body:
+            ExternalFormat
+            #{
+              contentType: 'application/json';
+              data: 'data';
+            }#;
+        };
+      }
+    ]
+  }#
+}
+
+Data my::MyDataWithHeaderParams
+{
+  ServiceStore
+  #{
+    [
+      {
+        request:
+        {
+          method: GET;
+          url: '/employees';
+          headerParameters:
+          {
+            id:
+              EqualTo
+              #{
+                expected: '123';
+              }#,
+            name:
+              EqualTo
+              #{
+                expected: 'FirstName A';
+              }#
+          };
+        };
+        response:
+        {
+          body:
+            ExternalFormat
+            #{
+              contentType: 'application/json';
+              data: 'data';
+            }#;
+        };
+      }
+    ]
+  }#
+}
+
+Data my::MyDataWithMultipleStubMappings
+{
+  ServiceStore
+  #{
+    [
+      {
+        request:
+        {
+          method: GET;
+          url: '/employees';
+        };
+        response:
+        {
+          body:
+            ExternalFormat
+            #{
+              contentType: 'application/json';
+              data: 'data';
+            }#;
+        };
+      },
+      {
+        request:
+        {
+          method: GET;
+          url: '/employees';
+        };
+        response:
+        {
+          body:
+            ExternalFormat
+            #{
+              contentType: 'application/json';
+              data: 'data';
+            }#;
+        };
+      }
+    ]
+  }#
+}
+
+Data my::MyDataWithQueryParams
+{
+  ServiceStore
+  #{
+    [
+      {
+        request:
+        {
+          method: GET;
+          urlPath: '/employees';
+          queryParameters:
+          {
+            id:
+              EqualTo
+              #{
+                expected: '123';
+              }#,
+            name:
+              EqualTo
+              #{
+                expected: 'FirstName A';
+              }#
+          };
+        };
+        response:
+        {
+          body:
+            ExternalFormat
+            #{
+              contentType: 'application/json';
+              data: 'data';
+            }#;
+        };
+      }
+    ]
+  }#
+}
