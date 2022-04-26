@@ -24,7 +24,7 @@ import {
   type Runtime,
   type Service,
   type ServiceExecution,
-  type ServiceTest,
+  type ServiceTest_Legacy,
   type SingleExecutionTest,
   type TestContainer,
   type ObserverContext,
@@ -34,8 +34,8 @@ import {
   observe_TestContainer,
   observe_Mapping,
   observe_RawLambda,
-  observe_ServiceTest,
   observe_Runtime,
+  observe_ServiceTest_Legacy,
 } from '@finos/legend-graph';
 import { addUniqueEntry, deleteEntry, uuid } from '@finos/legend-shared';
 import { action } from 'mobx';
@@ -58,8 +58,8 @@ export const service_setExecution = action(
   },
 );
 export const service_setTest = action(
-  (service: Service, value: ServiceTest): void => {
-    service.test = observe_ServiceTest(value);
+  (service: Service, value: ServiceTest_Legacy): void => {
+    service.test = observe_ServiceTest_Legacy(value);
   },
 );
 export const service_setPattern = action(

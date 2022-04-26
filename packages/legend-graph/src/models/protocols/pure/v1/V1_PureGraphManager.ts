@@ -235,6 +235,7 @@ import { MappingInclude } from '../../../metamodels/pure/packageableElements/map
 import type { ModelGenerationConfiguration } from '../../../ModelGenerationConfiguration';
 import type { MappingGeneration_PureProtocolProcessorPlugin_Extension } from '../MappingGeneration_PureProtocolProcessorPlugin_Extension';
 import type { Package } from '../../../metamodels/pure/packageableElements/domain/Package';
+import { V1_DataElement } from './model/packageableElements/data/V1_DataElement';
 
 const V1_FUNCTION_SUFFIX_MULTIPLICITY_INFINITE = 'MANY';
 
@@ -284,6 +285,8 @@ class V1_PureModelContextDataIndex {
 
   fileGenerations: V1_FileGenerationSpecification[] = [];
   generationSpecifications: V1_GenerationSpecification[] = [];
+
+  dataElements: V1_DataElement[] = [];
 
   otherElementsByBuilder: Map<
     V1_ElementBuilder<V1_PackageableElement>,
@@ -347,6 +350,8 @@ const indexPureModelContextData = (
       index.fileGenerations.push(el);
     } else if (el instanceof V1_GenerationSpecification) {
       index.generationSpecifications.push(el);
+    } else if (el instanceof V1_DataElement) {
+      index.dataElements.push(el);
     } else {
       const clazz = getClass<V1_PackageableElement>(el);
       if (otherElementsByClass.has(clazz)) {
@@ -816,6 +821,11 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     await this.buildServices(graph, inputs, options);
     stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_SERVICES_BUILT);
 
+    //build data elements
+    graphBuilderState.setMessage(`Building data elements...`);
+    await this.buildDataElements(graph, inputs, options);
+    stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_DATA_ELEMENTS_BUILT);
+
     // build other elements
     graphBuilderState.setMessage(`Building other elements...`);
     await this.buildFileGenerations(graph, inputs, options);
@@ -1148,6 +1158,25 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     await Promise.all(
       inputs.flatMap((input) =>
         input.data.services.map((element) =>
+          this.visitWithGraphBuilderErrorHandling(
+            element,
+            new V1_ProtocolToMetaModelGraphSecondPassBuilder(
+              this.getBuilderContext(graph, input.model, element, options),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  private async buildDataElements(
+    graph: PureModel,
+    inputs: V1_GraphBuilderInput[],
+    options?: GraphBuilderOptions,
+  ): Promise<void> {
+    await Promise.all(
+      inputs.flatMap((input) =>
+        input.data.dataElements.map((element) =>
           this.visitWithGraphBuilderErrorHandling(
             element,
             new V1_ProtocolToMetaModelGraphSecondPassBuilder(
@@ -2442,6 +2471,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       return CORE_PURE_PATH.SERVICE;
     } else if (protocol instanceof V1_FileGenerationSpecification) {
       return CORE_PURE_PATH.FILE_GENERATION;
+    } else if (protocol instanceof V1_DataElement) {
+      return CORE_PURE_PATH.DATA_ELEMENT;
     } else if (protocol instanceof V1_GenerationSpecification) {
       return CORE_PURE_PATH.GENERATION_SPECIFICATION;
     }

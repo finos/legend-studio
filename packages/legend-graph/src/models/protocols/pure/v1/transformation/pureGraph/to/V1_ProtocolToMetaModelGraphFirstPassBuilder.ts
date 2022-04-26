@@ -65,6 +65,8 @@ import {
 } from '../../../../../../../helpers/DomainHelper';
 import { V1_checkDuplicatedElement } from './V1_ElementBuilder';
 import type { Package } from '../../../../../../metamodels/pure/packageableElements/domain/Package';
+import type { V1_DataElement } from '../../../model/packageableElements/data/V1_DataElement';
+import { DataElement } from '../../../../../../metamodels/pure/packageableElements/data/DataElement';
 
 export class V1_ProtocolToMetaModelGraphFirstPassBuilder
   implements V1_PackageableElementVisitor<PackageableElement>
@@ -466,5 +468,29 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
     );
     this.context.currentSubGraph.setOwnConnection(path, connection);
     return connection;
+  }
+
+  visit_DataElement(element: V1_DataElement): PackageableElement {
+    assertNonEmptyString(
+      element.package,
+      `Data element 'package' field is missing or empty`,
+    );
+    assertNonEmptyString(
+      element.name,
+      `Data element 'name' field is missing or empty`,
+    );
+    const dataElement = new DataElement(element.name);
+    const path = V1_buildFullPath(element.package, element.name);
+    V1_checkDuplicatedElement(path, this.context, this.elementPathCache);
+    addElementToPackage(
+      getOrCreateGraphPackage(
+        this.context.currentSubGraph,
+        element.package,
+        this.packageCache,
+      ),
+      dataElement,
+    );
+    this.context.currentSubGraph.setOwnDataElement(path, dataElement);
+    return dataElement;
   }
 }

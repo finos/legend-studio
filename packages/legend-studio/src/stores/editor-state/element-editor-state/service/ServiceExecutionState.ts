@@ -37,7 +37,6 @@ import {
   type ServiceExecution,
   type KeyedExecutionParameter,
   type PureExecution,
-  type ServiceTest,
   type Mapping,
   type Runtime,
   type ExecutionResult,
@@ -81,7 +80,6 @@ export abstract class ServiceExecutionState {
     editorStore: EditorStore,
     serviceEditorState: ServiceEditorState,
     execution: ServiceExecution,
-    test: ServiceTest,
   ) {
     makeObservable(this, {
       execution: observable,
@@ -93,10 +91,8 @@ export abstract class ServiceExecutionState {
     this.editorStore = editorStore;
     this.execution = execution;
     this.serviceEditorState = serviceEditorState;
-    this.selectedSingeExecutionTestState = this.getInitiallySelectedTestState(
-      execution,
-      test,
-    );
+    this.selectedSingeExecutionTestState =
+      this.getInitiallySelectedTestState(execution);
     // TODO: format to other format when we support other connections in the future
     if (this.selectedSingeExecutionTestState?.test) {
       singleExecTest_setData(
@@ -115,7 +111,6 @@ export abstract class ServiceExecutionState {
 
   getInitiallySelectedTestState(
     execution: ServiceExecution,
-    test: ServiceTest,
   ): SingleExecutionTestState | undefined {
     if (execution instanceof PureSingleExecution) {
       return new SingleExecutionTestState(
@@ -357,9 +352,8 @@ export class ServicePureExecutionState extends ServiceExecutionState {
     editorStore: EditorStore,
     serviceEditorState: ServiceEditorState,
     execution: PureExecution,
-    test: ServiceTest,
   ) {
-    super(editorStore, serviceEditorState, execution, test);
+    super(editorStore, serviceEditorState, execution);
 
     makeObservable(this, {
       queryState: observable,

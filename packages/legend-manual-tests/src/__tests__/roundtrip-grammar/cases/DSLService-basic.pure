@@ -1,0 +1,300 @@
+###Service
+Service my::serviceWithEmptyTestSuite
+{
+  pattern: '/e2a5e5a9-aac2-49c6-a539-fcdd61f69e9d';
+  documentation: '';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |my::Person.all()->project([x|$x.givenNames], ['Given Names']);
+    mapping: my::map;
+    runtime:
+    #{
+      mappings:
+      [
+        my::map
+      ];
+    }#;
+  }
+  testSuites:
+  [
+
+  ]
+}
+
+Service my::serviceWithMultipleConnectionsData
+{
+  pattern: '/e2a5e5a9-aac2-49c6-a539-fcdd61f69e9d';
+  documentation: '';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |my::Person.all()->project([x|$x.givenNames], ['Given Names']);
+    mapping: my::map;
+    runtime:
+    #{
+      mappings:
+      [
+        my::map
+      ];
+    }#;
+  }
+  testSuites:
+  [
+    testSuite1:
+    {
+      data:
+      [
+        connections:
+        [
+          connection1:
+            ModelStore
+            #{
+              my::Person:
+                [
+                  ^my::Person(givenNames = ['Fred', 'William'])
+                ]
+            }#,
+          connection2:
+            ExternalFormat
+            #{
+              contentType: 'application/json';
+              data: '[{"employees":[{"firstName":"firstName 36","lastName":"lastName 77"}],"legalName":"legalName 19"}, {"employees":[{"firstName":"firstName 37","lastName":"lastName 78"}],"legalName":"legalName 20"}]';
+            }#
+        ]
+      ]
+      tests:
+      [
+        test1:
+        {
+          asserts:
+          [
+            assert1:
+              EqualToJson
+              #{
+                expected : 
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"employees":[{"firstName":"firstName 36","lastName":"lastName 77"}],"legalName":"legalName 19"}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service my::serviceWithTestSuite
+{
+  pattern: '/e2a5e5a9-aac2-49c6-a539-fcdd61f69e9d';
+  documentation: '';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |my::Person.all()->project([x|$x.givenNames], ['Given Names']);
+    mapping: my::map;
+    runtime:
+    #{
+      mappings:
+      [
+        my::map
+      ];
+    }#;
+  }
+  testSuites:
+  [
+    testSuite1:
+    {
+      data:
+      [
+        connections:
+        [
+          connection1:
+            ExternalFormat
+            #{
+              contentType: 'application/json';
+              data: '[{"employees":[{"firstName":"firstName 36","lastName":"lastName 77"}],"legalName":"legalName 19"}, {"employees":[{"firstName":"firstName 37","lastName":"lastName 78"}],"legalName":"legalName 20"}]';
+            }#
+        ]
+      ]
+      tests:
+      [
+        test1:
+        {
+          asserts:
+          [
+            assert1:
+              EqualToJson
+              #{
+                expected : 
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"employees":[{"firstName":"firstName 36","lastName":"lastName 77"}],"legalName":"legalName 19"}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service my::serviceWithTestSuiteWithMultipleTests
+{
+  pattern: '/e2a5e5a9-aac2-49c6-a539-fcdd61f69e9d';
+  documentation: '';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |my::Person.all()->project([x|$x.givenNames], ['Given Names']);
+    mapping: my::map;
+    runtime:
+    #{
+      mappings:
+      [
+        my::map
+      ];
+    }#;
+  }
+  testSuites:
+  [
+    testSuite1:
+    {
+      data:
+      [
+        connections:
+        [
+          connection1:
+            ExternalFormat
+            #{
+              contentType: 'application/json';
+              data: '[{"employees":[{"firstName":"firstName 36","lastName":"lastName 77"}],"legalName":"legalName 19"}, {"employees":[{"firstName":"firstName 37","lastName":"lastName 78"}],"legalName":"legalName 20"}]';
+            }#
+        ]
+      ]
+      tests:
+      [
+        test1:
+        {
+          asserts:
+          [
+            assert1:
+              EqualToJson
+              #{
+                expected : 
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"employees":[{"firstName":"firstName 36","lastName":"lastName 77"}],"legalName":"legalName 19"}';
+                  }#;
+              }#
+          ]
+        },
+        test2:
+        {
+          asserts:
+          [
+            assert1:
+              EqualToJson
+              #{
+                expected : 
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: 'data';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+  test: Single
+  {
+    data: '';
+    asserts:
+    [
+    ];
+  }
+}
+
+Service my::serviceWithTestSuiteWithParams
+{
+  pattern: '/e2a5e5a9-aac2-49c6-a539-fcdd61f69e9d';
+  documentation: '';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |my::Person.all()->project([x|$x.givenNames], ['Given Names']);
+    mapping: my::map;
+    runtime:
+    #{
+      mappings:
+      [
+        my::map
+      ];
+    }#;
+  }
+  testSuites:
+  [
+    testSuite1:
+    {
+      data:
+      [
+        connections:
+        [
+          connection1:
+            ExternalFormat
+            #{
+              contentType: 'application/json';
+              data: '[{"employees":[{"firstName":"firstName 36","lastName":"lastName 77"}],"legalName":"legalName 19"}, {"employees":[{"firstName":"firstName 37","lastName":"lastName 78"}],"legalName":"legalName 20"}]';
+            }#
+        ]
+      ]
+      tests:
+      [
+        test1:
+        {
+          parameters:
+          [
+            stringParam = 'dummy',
+            stringOptionalParam = 'dummy'
+          ]
+          asserts:
+          [
+            assert1:
+              EqualToJson
+              #{
+                expected : 
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"employees":[{"firstName":"firstName 36","lastName":"lastName 77"}],"legalName":"legalName 19"}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+
+###Pure
+Class my::Person
+{
+  givenNames: String[*];
+}
+
+
+###Mapping
+Mapping my::map
+(
+  *my::Person: Pure
+  {
+    givenNames: 'name'
+  }
+)

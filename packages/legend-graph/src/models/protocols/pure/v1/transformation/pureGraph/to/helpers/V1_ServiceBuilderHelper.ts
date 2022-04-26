@@ -28,7 +28,7 @@ import {
 } from '../../../../../../../metamodels/pure/packageableElements/runtime/Runtime';
 import type { Service } from '../../../../../../../metamodels/pure/packageableElements/service/Service';
 import {
-  type ServiceTest,
+  ServiceTest,
   SingleExecutionTest,
   MultiExecutionTest,
   TestContainer,
@@ -66,12 +66,86 @@ import {
 } from '../../../../model/packageableElements/V1_PackageableElement';
 import { V1_buildRawLambdaWithResolvedPaths } from './V1_ValueSpecificationPathResolver';
 import { GraphBuilderError } from '../../../../../../../../graphManager/GraphManagerUtils';
+import type { V1_ServiceTest_Legacy } from '../../../../model/packageableElements/service/V1_ServiceTest_Legacy';
+import type { ServiceTest_Legacy } from '../../../../../../../metamodels/pure/packageableElements/service/ServiceTest_Legacy';
+import { ConnectionTestData } from '../../../../../../../metamodels/pure/packageableElements/service/ConnectionTestData';
+import { ParameterValue } from '../../../../../../../metamodels/pure/packageableElements/service/ParameterValue';
+import { ServiceTestSuite } from '../../../../../../../metamodels/pure/packageableElements/service/ServiceTestSuite';
+import { TestData } from '../../../../../../../metamodels/pure/packageableElements/service/TestData';
+import type { V1_ConnectionTestData } from '../../../../model/packageableElements/service/V1_ConnectionTestData';
+import type { V1_ParameterValue } from '../../../../model/packageableElements/service/V1_ParameterValue';
+import type { V1_ServiceTestSuite } from '../../../../model/packageableElements/service/V1_ServiceTestSuite';
+import type { V1_TestData } from '../../../../model/packageableElements/service/V1_TestData';
+import {
+  V1_buildTestAssertion,
+  V1_buildAtomicTest,
+} from './V1_TestBuilderHelper';
+import { V1_ProtocolToMetaModelEmbeddedDataBuilder } from './V1_DataElementBuilderHelper';
+
+const buildConnectionTestData = (
+  element: V1_ConnectionTestData,
+  context: V1_GraphBuilderContext,
+): ConnectionTestData => {
+  const connectionTestData = new ConnectionTestData();
+  connectionTestData.id = element.id;
+  connectionTestData.data = element.data.accept_EmbeddedDataVisitor(
+    new V1_ProtocolToMetaModelEmbeddedDataBuilder(context),
+  );
+  return connectionTestData;
+};
+
+const buildParameterValue = (element: V1_ParameterValue): ParameterValue => {
+  const parameterValue = new ParameterValue();
+  parameterValue.name = element.name;
+  parameterValue.value = element.value;
+  return parameterValue;
+};
+
+const buildTestData = (
+  element: V1_TestData,
+  context: V1_GraphBuilderContext,
+): TestData => {
+  const testData = new TestData();
+  testData.connectionsTestData = element.connectionsTestData.map(
+    (connectionTestData) =>
+      buildConnectionTestData(connectionTestData, context),
+  );
+  return testData;
+};
 
 export const V1_buildServiceTest = (
-  serviceTest: V1_ServiceTest,
+  element: V1_ServiceTest,
+  context: V1_GraphBuilderContext,
+): ServiceTest => {
+  const serviceTest = new ServiceTest();
+  serviceTest.id = element.id;
+  serviceTest.parameters = element.parameters.map((parameter) =>
+    buildParameterValue(parameter),
+  );
+  serviceTest.assertions = element.assertions.map((assertion) =>
+    V1_buildTestAssertion(assertion, context),
+  );
+  return serviceTest;
+};
+
+export const V1_buildServiceTestSuite = (
+  element: V1_ServiceTestSuite,
+  context: V1_GraphBuilderContext,
+): ServiceTestSuite => {
+  const serviceTestSuite = new ServiceTestSuite();
+  serviceTestSuite.id = element.id;
+  serviceTestSuite.testData = buildTestData(element.testData, context);
+  serviceTestSuite.tests = element.tests.map((test) =>
+    V1_buildAtomicTest(test, context),
+  );
+  return serviceTestSuite;
+};
+
+export const V1_buildServiceTest_Legacy = (
+  serviceTest: V1_ServiceTest_Legacy,
   context: V1_GraphBuilderContext,
   parentService: Service,
-): ServiceTest => {
+): ServiceTest_Legacy => {
   if (serviceTest instanceof V1_SingleExecutionTest) {
     assertType(
       parentService.execution,

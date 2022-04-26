@@ -43,6 +43,93 @@ import {
 } from './DomainObserverHelper';
 import { observe_RawLambda } from './RawValueSpecificationObserver';
 import { observe_Runtime } from './DSLMapping_ObserverHelper';
+import type { ConnectionTestData } from '../../../models/metamodels/pure/packageableElements/service/ConnectionTestData';
+import { observe_EmbeddedData } from './DataObserverHelper';
+import type { ParameterValue } from '../../../models/metamodels/pure/packageableElements/service/ParameterValue';
+import type { ServiceTest_Legacy } from '../../../models/metamodels/pure/packageableElements/service/ServiceTest_Legacy';
+import type { ServiceTestSuite } from '../../../models/metamodels/pure/packageableElements/service/ServiceTestSuite';
+import type { TestData } from '../../../models/metamodels/pure/packageableElements/service/TestData';
+import {
+  observe_AtomicTest,
+  observe_TestAssertion,
+  observe_TestSuite,
+} from './TestObserverHelper';
+
+export const observe_ConnectionTestData = skipObservedWithContext(
+  (
+    metamodel: ConnectionTestData,
+    context: ObserverContext,
+  ): ConnectionTestData => {
+    makeObservable(metamodel, {
+      id: observable,
+      data: observable,
+      hashCode: computed,
+    });
+
+    observe_EmbeddedData(metamodel.data, context);
+
+    return metamodel;
+  },
+);
+
+export const observe_ParameterValue = skipObserved(
+  (metamodel: ParameterValue): ParameterValue => {
+    makeObservable(metamodel, {
+      name: observable,
+      value: observable,
+      hashCode: computed,
+    });
+
+    return metamodel;
+  },
+);
+
+export const observe_TestData = skipObservedWithContext(
+  (metamodel: TestData, context: ObserverContext): TestData => {
+    makeObservable(metamodel, {
+      connectionsTestData: observable,
+      hashCode: computed,
+    });
+
+    metamodel.connectionsTestData.forEach((connectionTestData) =>
+      observe_ConnectionTestData(connectionTestData, context),
+    );
+
+    return metamodel;
+  },
+);
+
+export const observe_ServiceTest = skipObserved(
+  (metamodel: ServiceTest): ServiceTest => {
+    makeObservable(metamodel, {
+      id: observable,
+      assertions: observable,
+      parameters: observable,
+      hashCode: computed,
+    });
+
+    metamodel.parameters.forEach(observe_ParameterValue);
+    metamodel.assertions.forEach(observe_TestAssertion);
+
+    return metamodel;
+  },
+);
+
+export const observe_ServiceTestSuite = skipObservedWithContext(
+  (metamodel: ServiceTestSuite, context: ObserverContext): ServiceTestSuite => {
+    makeObservable(metamodel, {
+      id: observable,
+      tests: observable,
+      testData: observable,
+      hashCode: computed,
+    });
+
+    metamodel.tests.forEach(observe_AtomicTest);
+    observe_TestData(metamodel.testData, context);
+
+    return metamodel;
+  },
+);
 
 export const observe_TestContainer = skipObserved(
   (metamodel: TestContainer): TestContainer => {
@@ -98,7 +185,9 @@ export const observe_MultiExecutionTest = skipObserved(
   },
 );
 
-export const observe_ServiceTest = (metamodel: ServiceTest): ServiceTest => {
+export const observe_ServiceTest_Legacy = (
+  metamodel: ServiceTest_Legacy,
+): ServiceTest_Legacy => {
   if (metamodel instanceof SingleExecutionTest) {
     return observe_SingleExecutionTest(metamodel);
   } else if (metamodel instanceof MultiExecutionTest) {
@@ -190,6 +279,7 @@ export const observe_Service = skipObservedWithContext(
       autoActivateUpdates: observable,
       execution: observable,
       test: observable,
+      testSuites: observable,
       patternParameters: computed,
       _elementHashCode: override,
     });
@@ -197,7 +287,12 @@ export const observe_Service = skipObservedWithContext(
     metamodel.stereotypes.forEach(observe_StereotypeReference);
     metamodel.taggedValues.forEach(observe_TaggedValue);
     observe_ServiceExecution(metamodel.execution, context);
-    observe_ServiceTest(metamodel.test);
+    if (metamodel.test) {
+      observe_ServiceTest_Legacy(metamodel.test);
+    }
+    metamodel.testSuites.forEach((testSuite) =>
+      observe_TestSuite(testSuite, context),
+    );
 
     return metamodel;
   },

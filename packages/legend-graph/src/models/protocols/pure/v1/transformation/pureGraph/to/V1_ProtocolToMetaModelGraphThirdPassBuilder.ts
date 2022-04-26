@@ -57,6 +57,7 @@ import type { V1_Measure } from '../../../model/packageableElements/domain/V1_Me
 import { V1_buildDatabaseSchemaViewsFirstPass } from '../../../transformation/pureGraph/to/helpers/V1_DatabaseBuilderHelper';
 import type { V1_SectionIndex } from '../../../model/packageableElements/section/V1_SectionIndex';
 import { GraphBuilderError } from '../../../../../../../graphManager/GraphManagerUtils';
+import type { V1_DataElement } from '../../../model/packageableElements/data/V1_DataElement';
 
 export class V1_ProtocolToMetaModelGraphThirdPassBuilder
   implements V1_PackageableElementVisitor<void>
@@ -216,6 +217,10 @@ export class V1_ProtocolToMetaModelGraphThirdPassBuilder
   }
 
   visit_PackageableConnection(element: V1_PackageableConnection): void {
+    throw new UnsupportedOperationError();
+  }
+
+  visit_DataElement(element: V1_DataElement): void {
     throw new UnsupportedOperationError();
   }
 }

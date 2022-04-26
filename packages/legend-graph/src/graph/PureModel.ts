@@ -57,6 +57,7 @@ import {
 } from '../models/metamodels/pure/packageableElements/domain/Measure';
 import type { PureGraphPlugin } from './PureGraphPlugin';
 import { createPath } from '../MetaModelUtils';
+import type { DataElement } from '../models/metamodels/pure/packageableElements/data/DataElement';
 
 /**
  * CoreModel holds meta models which are constant and basic building block of the graph. Since throughout the lifetime
@@ -353,6 +354,14 @@ export class PureModel extends BasicModel {
         this.dependencyManager.getOwnNullableFileGeneration(path) ??
         this.systemModel.getOwnNullableFileGeneration(path),
       `Can't find file generation '${path}'`,
+    );
+  getDataElement = (path: string): DataElement =>
+    guaranteeNonNullable(
+      this.getOwnNullableDataElement(path) ??
+        this.generationModel.getOwnNullableDataElement(path) ??
+        this.dependencyManager.getOwnNullableDataElement(path) ??
+        this.systemModel.getOwnNullableDataElement(path),
+      `Can't find data element '${path}'`,
     );
 
   getExtensionElement<T extends PackageableElement>(

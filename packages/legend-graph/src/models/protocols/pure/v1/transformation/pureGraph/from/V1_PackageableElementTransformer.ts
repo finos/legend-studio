@@ -64,6 +64,8 @@ import type {
   PureProtocolProcessorPlugin,
 } from '../../../../PureProtocolProcessorPlugin';
 import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext';
+import type { DataElement } from '../../../../../../metamodels/pure/packageableElements/data/DataElement';
+import { V1_transformDataElement } from './V1_DataElementTransformer';
 
 class V1_PackageableElementTransformer
   implements PackageableElementVisitor<V1_PackageableElement>
@@ -168,6 +170,10 @@ class V1_PackageableElementTransformer
     element: GenerationSpecification,
   ): V1_PackageableElement {
     return V1_transformGenerationSpecification(element);
+  }
+
+  visit_DataElement(element: DataElement): V1_PackageableElement {
+    return V1_transformDataElement(element, this.context);
   }
 }
 

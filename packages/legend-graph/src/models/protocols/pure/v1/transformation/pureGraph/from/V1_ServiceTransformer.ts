@@ -41,7 +41,7 @@ import {
   V1_KeyedExecutionParameter,
 } from '../../../model/packageableElements/service/V1_ServiceExecution';
 import {
-  type V1_ServiceTest,
+  V1_ServiceTest,
   V1_MultiExecutionTest,
   V1_TestContainer,
   V1_SingleExecutionTest,
@@ -55,6 +55,80 @@ import {
   V1_transformStereotype,
   V1_transformTaggedValue,
 } from './V1_DomainTransformer';
+import type { ServiceTest_Legacy } from '../../../../../../metamodels/pure/packageableElements/service/ServiceTest_Legacy';
+import type { V1_ServiceTest_Legacy } from '../../../model/packageableElements/service/V1_ServiceTest_Legacy';
+import type { ConnectionTestData } from '../../../../../../metamodels/pure/packageableElements/service/ConnectionTestData';
+import { V1_ConnectionTestData } from '../../../model/packageableElements/service/V1_ConnectionTestData';
+import { V1_transformEmbeddedData } from './V1_DataElementTransformer';
+import { V1_ParameterValue } from '../../../model/packageableElements/service/V1_ParameterValue';
+import type { ParameterValue } from '../../../../../../metamodels/pure/packageableElements/service/ParameterValue';
+import type { TestData } from '../../../../../../metamodels/pure/packageableElements/service/TestData';
+import { V1_TestData } from '../../../model/packageableElements/service/V1_TestData';
+import { V1_ServiceTestSuite } from '../../../model/packageableElements/service/V1_ServiceTestSuite';
+import type { ServiceTestSuite } from '../../../../../../metamodels/pure/packageableElements/service/ServiceTestSuite';
+import {
+  V1_transformAtomicTest,
+  V1_transformTestAssertion,
+  V1_transformTestSuite,
+} from './V1_TestTransformer';
+
+const transformConnectionTestData = (
+  element: ConnectionTestData,
+  context: V1_GraphTransformerContext,
+): V1_ConnectionTestData => {
+  const connectionTestData = new V1_ConnectionTestData();
+  connectionTestData.id = element.id;
+  connectionTestData.data = V1_transformEmbeddedData(element.data, context);
+  return connectionTestData;
+};
+
+const transformParameterValue = (
+  element: ParameterValue,
+): V1_ParameterValue => {
+  const parameterValue = new V1_ParameterValue();
+  parameterValue.name = element.name;
+  parameterValue.value = element.value;
+  return parameterValue;
+};
+
+const transformTestData = (
+  element: TestData,
+  context: V1_GraphTransformerContext,
+): V1_TestData => {
+  const testData = new V1_TestData();
+  testData.connectionsTestData = element.connectionsTestData.map(
+    (connectionTestData) =>
+      transformConnectionTestData(connectionTestData, context),
+  );
+  return testData;
+};
+
+export const V1_transformServiceTest = (
+  element: ServiceTest,
+): V1_ServiceTest => {
+  const serviceTest = new V1_ServiceTest();
+  serviceTest.id = element.id;
+  serviceTest.parameters = element.parameters.map((parameter) =>
+    transformParameterValue(parameter),
+  );
+  serviceTest.assertions = element.assertions.map((assertion) =>
+    V1_transformTestAssertion(assertion),
+  );
+  return serviceTest;
+};
+
+export const V1_transformServiceTestSuite = (
+  element: ServiceTestSuite,
+  context: V1_GraphTransformerContext,
+): V1_ServiceTestSuite => {
+  const serviceTestSuite = new V1_ServiceTestSuite();
+  serviceTestSuite.id = element.id;
+  serviceTestSuite.testData = transformTestData(element.testData, context);
+  serviceTestSuite.tests = element.tests.map((test) =>
+    V1_transformAtomicTest(test),
+  );
+  return serviceTestSuite;
+};
 
 const transformSingleExecution = (
   element: PureSingleExecution,
@@ -158,10 +232,10 @@ const transformMultiExecutiontest = (
   return multi;
 };
 
-const transformServiceTest = (
-  value: ServiceTest,
+const transformServiceTest_Legacy = (
+  value: ServiceTest_Legacy,
   context: V1_GraphTransformerContext,
-): V1_ServiceTest => {
+): V1_ServiceTest_Legacy => {
   if (value instanceof SingleExecutionTest) {
     return transformSingleExecutionTest(value, context);
   } else if (value instanceof MultiExecutionTest) {
@@ -183,6 +257,11 @@ export const V1_transformService = (
   service.execution = transformServiceExecution(element.execution, context);
   service.owners = element.owners;
   service.pattern = element.pattern;
-  service.test = transformServiceTest(element.test, context);
+  if (element.test) {
+    service.test = transformServiceTest_Legacy(element.test, context);
+  }
+  service.testSuites = element.testSuites.map((testSuite) =>
+    V1_transformTestSuite(testSuite, context),
+  );
   return service;
 };

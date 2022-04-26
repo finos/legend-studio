@@ -39,6 +39,7 @@ import {
   Measure,
   Database,
   RelationalDatabaseConnection,
+  DataElement,
   ModelChainConnection,
 } from '@finos/legend-graph';
 import { GRAMMAR_ELEMENT_TYPE_LABEL } from '@finos/legend-application';
@@ -149,6 +150,8 @@ export class GrammarTextEditorState {
       }
     } else if (element instanceof PackageableRuntime) {
       typeLabel = GRAMMAR_ELEMENT_TYPE_LABEL.RUNTIME;
+    } else if (element instanceof DataElement) {
+      typeLabel = GRAMMAR_ELEMENT_TYPE_LABEL.DATA_ELEMENT;
     } else {
       const extraPureGrammarElementLabelers = this.editorStore.pluginManager
         .getPureGraphManagerPlugins()

@@ -73,6 +73,7 @@ import {
   StaticDatasourceSpecification,
   DefaultH2AuthenticationStrategy,
   ModelGenerationSpecification,
+  DataElement,
 } from '@finos/legend-graph';
 import type { DSLMapping_LegendStudioPlugin_Extension } from './DSLMapping_LegendStudioPlugin_Extension';
 import {
@@ -721,6 +722,9 @@ export class NewElementState {
         break;
       case PACKAGEABLE_ELEMENT_TYPE.GENERATION_SPECIFICATION:
         element = new GenerationSpecification(name);
+        break;
+      case PACKAGEABLE_ELEMENT_TYPE.DATA:
+        element = new DataElement(name);
         break;
       default: {
         const extraNewElementFromStateCreators = this.editorStore.pluginManager

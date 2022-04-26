@@ -40,6 +40,7 @@ import type { Measure } from '../models/metamodels/pure/packageableElements/doma
 import type { SectionIndex } from '../models/metamodels/pure/packageableElements/section/SectionIndex';
 import type { Entity } from '@finos/legend-model-storage';
 import type { Database } from '../models/metamodels/pure/packageableElements/store/relational/model/Database';
+import type { DataElement } from '../models/metamodels/pure/packageableElements/data/DataElement';
 
 class DependencyModel extends BasicModel {
   constructor(
@@ -168,6 +169,10 @@ export class DependencyManager {
     this,
     (dep: BasicModel, path: string) => dep.getOwnNullableFileGeneration(path),
   );
+  getOwnNullableDataElement = buildDependencyElementGetter(
+    this,
+    (dep: BasicModel, path: string) => dep.getOwnDataElement(path),
+  );
   getOwnNullableExtensionElement<T extends PackageableElement>(
     path: string,
     extensionElementClass: Clazz<T>,
@@ -247,6 +252,11 @@ export class DependencyManager {
   get connections(): PackageableConnection[] {
     return this.dependencyGraphs
       .map((dep) => Array.from(dep.ownConnections))
+      .flat();
+  }
+  get dataElements(): DataElement[] {
+    return this.dependencyGraphs
+      .map((dep) => Array.from(dep.ownDataElements))
       .flat();
   }
   get generationSpecifications(): GenerationSpecification[] {

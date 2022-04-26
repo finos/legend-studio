@@ -483,6 +483,180 @@ export const roundtripTestData = [
     classifierPath: 'meta::pure::runtime::PackageableConnection',
   },
   {
+    path: 'my::MyDataWithBodyPatterns',
+    content: {
+      _type: 'dataElement',
+      name: 'MyDataWithBodyPatterns',
+      data: {
+        _type: 'serviceStore',
+        serviceStubMappings: [
+          {
+            requestPattern: {
+              bodyPatterns: [
+                {
+                  _type: 'equalToJson',
+                  expectedValue: '{\\"name\\": \\"FirstName A\\"}',
+                },
+              ],
+              method: 'POST',
+              url: '/employees',
+            },
+            responseDefinition: {
+              body: {
+                _type: 'externalFormat',
+                contentType: 'application/json',
+                data: 'data',
+              },
+            },
+          },
+        ],
+      },
+      package: 'my',
+    },
+    classifierPath: 'meta::pure::data::DataElement',
+  },
+  {
+    path: 'my::MyDataWithHeaderParams',
+    content: {
+      _type: 'dataElement',
+      name: 'MyDataWithHeaderParams',
+      data: {
+        _type: 'serviceStore',
+        serviceStubMappings: [
+          {
+            requestPattern: {
+              headerParams: {
+                id: {
+                  _type: 'equalTo',
+                  expectedValue: '123',
+                },
+                name: {
+                  _type: 'equalTo',
+                  expectedValue: 'FirstName A',
+                },
+              },
+              method: 'GET',
+              url: '/employees',
+            },
+            responseDefinition: {
+              body: {
+                _type: 'externalFormat',
+                contentType: 'application/json',
+                data: 'data',
+              },
+            },
+          },
+        ],
+      },
+      package: 'my',
+    },
+    classifierPath: 'meta::pure::data::DataElement',
+  },
+  {
+    path: 'my::MyDataWithMultipleStubMappings',
+    content: {
+      _type: 'dataElement',
+      name: 'MyDataWithMultipleStubMappings',
+      data: {
+        _type: 'serviceStore',
+        serviceStubMappings: [
+          {
+            requestPattern: {
+              method: 'GET',
+              url: '/employees',
+            },
+            responseDefinition: {
+              body: {
+                _type: 'externalFormat',
+                contentType: 'application/json',
+                data: 'data',
+              },
+            },
+          },
+          {
+            requestPattern: {
+              method: 'GET',
+              url: '/employees',
+            },
+            responseDefinition: {
+              body: {
+                _type: 'externalFormat',
+                contentType: 'application/json',
+                data: 'data',
+              },
+            },
+          },
+        ],
+      },
+      package: 'my',
+    },
+    classifierPath: 'meta::pure::data::DataElement',
+  },
+  {
+    path: 'my::MyDataWithQueryParams',
+    content: {
+      _type: 'dataElement',
+      name: 'MyDataWithQueryParams',
+      data: {
+        _type: 'serviceStore',
+        serviceStubMappings: [
+          {
+            requestPattern: {
+              method: 'GET',
+              queryParams: {
+                id: {
+                  _type: 'equalTo',
+                  expectedValue: '123',
+                },
+                name: {
+                  _type: 'equalTo',
+                  expectedValue: 'FirstName A',
+                },
+              },
+              urlPath: '/employees',
+            },
+            responseDefinition: {
+              body: {
+                _type: 'externalFormat',
+                contentType: 'application/json',
+                data: 'data',
+              },
+            },
+          },
+        ],
+      },
+      package: 'my',
+    },
+    classifierPath: 'meta::pure::data::DataElement',
+  },
+  {
+    path: 'my::MyData',
+    content: {
+      _type: 'dataElement',
+      name: 'MyData',
+      data: {
+        _type: 'serviceStore',
+        serviceStubMappings: [
+          {
+            requestPattern: {
+              method: 'GET',
+              url: '/employees',
+            },
+            responseDefinition: {
+              body: {
+                _type: 'externalFormat',
+                contentType: 'application/json',
+                data: 'data',
+              },
+            },
+          },
+        ],
+      },
+      package: 'my',
+    },
+    classifierPath: 'meta::pure::data::DataElement',
+  },
+  {
     path: '__internal__::SectionIndex',
     content: {
       _type: 'sectionIndex',

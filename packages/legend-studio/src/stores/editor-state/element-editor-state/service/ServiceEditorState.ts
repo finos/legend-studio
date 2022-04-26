@@ -67,7 +67,6 @@ export class ServiceEditorState extends ElementEditorState {
         this.editorStore,
         this,
         this.service.execution,
-        this.service.test,
       );
     }
     throw new UnsupportedOperationError();

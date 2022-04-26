@@ -21,9 +21,10 @@ import {
   V1_PackageableElement,
 } from '../../../model/packageableElements/V1_PackageableElement';
 import type { V1_ServiceExecution } from './V1_ServiceExecution';
-import type { V1_ServiceTest } from './V1_ServiceTest';
 import type { V1_StereotypePtr } from '../../../model/packageableElements/domain/V1_StereotypePtr';
 import type { V1_TaggedValue } from '../../../model/packageableElements/domain/V1_TaggedValue';
+import type { V1_ServiceTest_Legacy } from './V1_ServiceTest_Legacy';
+import type { V1_TestSuite } from '../../test/V1_TestSuite';
 
 export class V1_Service extends V1_PackageableElement implements Hashable {
   stereotypes: V1_StereotypePtr[] = [];
@@ -33,7 +34,8 @@ export class V1_Service extends V1_PackageableElement implements Hashable {
   documentation!: string;
   autoActivateUpdates = true;
   execution!: V1_ServiceExecution;
-  test!: V1_ServiceTest;
+  test?: V1_ServiceTest_Legacy | undefined;
+  testSuites: V1_TestSuite[] = [];
 
   override get hashCode(): string {
     return hashArray([
@@ -46,7 +48,8 @@ export class V1_Service extends V1_PackageableElement implements Hashable {
       this.documentation,
       this.autoActivateUpdates.toString(),
       this.execution,
-      this.test,
+      this.test ?? '',
+      hashArray(this.testSuites),
     ]);
   }
 

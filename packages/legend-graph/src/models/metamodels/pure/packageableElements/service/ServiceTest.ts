@@ -17,16 +17,22 @@
 import { type Hashable, uuid, hashArray } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import type { RawLambda } from '../../rawValueSpecification/RawLambda';
+import { AtomicTest } from '../../test/AtomicTest';
+import type { ParameterValue } from './ParameterValue';
 import type { Service } from './Service';
+import { ServiceTest_Legacy } from './ServiceTest_Legacy';
 
-export abstract class ServiceTest implements Hashable {
-  owner: Service;
+export class ServiceTest extends AtomicTest implements Hashable {
+  parameters: ParameterValue[] = [];
 
-  constructor(owner: Service) {
-    this.owner = owner;
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.SERVICE_TEST,
+      this.id,
+      hashArray(this.assertions),
+      hashArray(this.parameters),
+    ]);
   }
-
-  abstract get hashCode(): string;
 }
 
 export class TestContainer implements Hashable {
@@ -50,7 +56,10 @@ export class TestContainer implements Hashable {
   }
 }
 
-export class SingleExecutionTest extends ServiceTest implements Hashable {
+export class SingleExecutionTest
+  extends ServiceTest_Legacy
+  implements Hashable
+{
   data: string;
   asserts: TestContainer[] = [];
 
@@ -89,7 +98,7 @@ export class KeyedSingleExecutionTest
   }
 }
 
-export class MultiExecutionTest extends ServiceTest implements Hashable {
+export class MultiExecutionTest extends ServiceTest_Legacy implements Hashable {
   tests: KeyedSingleExecutionTest[] = [];
 
   get hashCode(): string {
