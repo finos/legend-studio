@@ -203,7 +203,7 @@ export class EditorGraphState {
       // reset
       this.editorStore.graphManagerState.resetGraph();
 
-      // fetch dependencies
+      // fetch and build dependencies
       stopWatch.record();
       const dependencyManager =
         this.editorStore.graphManagerState.createEmptyDependencyManager();
@@ -215,7 +215,6 @@ export class EditorGraphState {
       )) as Map<string, Entity[]>;
       stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED);
 
-      // build dependencies
       const dependency_buildReport =
         (yield this.editorStore.graphManagerState.graphManager.buildDependencies(
           this.editorStore.graphManagerState.coreModel,
