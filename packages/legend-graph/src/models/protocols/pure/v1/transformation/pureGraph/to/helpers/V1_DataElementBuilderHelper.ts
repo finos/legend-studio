@@ -21,6 +21,7 @@ import {
   ExternalFormatData,
   ModelStoreData,
 } from '../../../../../../../metamodels/pure/data/EmbeddedData';
+import type { Class } from '../../../../../../../metamodels/pure/packageableElements/domain/Class';
 import type { EmbeddedData_PureProtocolProcessorPlugin_Extension } from '../../../../../EmbeddedData_PureProtocolProcessorPlugin_Extension';
 import type {
   V1_DataElementReference,
@@ -72,7 +73,11 @@ export class V1_ProtocolToMetaModelEmbeddedDataBuilder
 
   visit_ModelStoreData(modelStoreData: V1_ModelStoreData): EmbeddedData {
     const metamodel = new ModelStoreData();
-    metamodel.instances = modelStoreData.instances;
+    const instances = new Map<Class, object>();
+    Array.from(modelStoreData.instances.entries()).forEach((e) =>
+      instances.set(this.context.graph.getClass(e[0]), e[1]),
+    );
+    metamodel.instances = instances;
     return metamodel;
   }
 
@@ -80,7 +85,9 @@ export class V1_ProtocolToMetaModelEmbeddedDataBuilder
     dataElementReference: V1_DataElementReference,
   ): EmbeddedData {
     const metamodel = new DataElementReference();
-    metamodel.dataElement = dataElementReference.dataElement;
+    metamodel.dataElement = this.context.resolveDataElement(
+      dataElementReference.dataElement,
+    );
     return metamodel;
   }
 }

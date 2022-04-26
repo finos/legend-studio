@@ -20,6 +20,8 @@ import {
   serializeArray,
   UnsupportedOperationError,
   usingConstantValueSchema,
+  serializeMap,
+  deseralizeMap,
 } from '@finos/legend-shared';
 import {
   createModelSchema,
@@ -27,7 +29,6 @@ import {
   deserialize,
   type ModelSchema,
   primitive,
-  raw,
   serialize,
 } from 'serializr';
 import type { EmbeddedData_PureProtocolProcessorPlugin_Extension } from '../../../../EmbeddedData_PureProtocolProcessorPlugin_Extension';
@@ -57,7 +58,10 @@ export const V1_modelStoreDataModelSchema = createModelSchema(
   V1_ModelStoreData,
   {
     _type: usingConstantValueSchema(V1_EmbeddedDataType.MODEL_STORE_DATA),
-    instances: raw(),
+    instances: custom(
+      (val) => serializeMap(val),
+      (val) => deseralizeMap(val),
+    ),
   },
 );
 

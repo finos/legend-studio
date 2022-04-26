@@ -17,6 +17,9 @@
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../MetaModelConst';
 import { hashObjectWithoutSourceInformation } from '../../../../MetaModelUtils';
+import type { DataElement } from '../packageableElements/data/DataElement';
+import type { Class } from '../packageableElements/domain/Class';
+import type { PackageableElementReference } from '../packageableElements/PackageableElementReference';
 
 export interface EmbeddedDataVisitor<T> {
   visit_EmbeddedData(embeddedData: EmbeddedData): T;
@@ -31,12 +34,12 @@ export abstract class EmbeddedData implements Hashable {
 }
 
 export class DataElementReference extends EmbeddedData implements Hashable {
-  dataElement!: string;
+  dataElement!: PackageableElementReference<DataElement>;
 
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.DATA_ELEMENT_REFERENCE,
-      this.dataElement,
+      this.dataElement.hashValue,
     ]);
   }
   accept_EmbeddedDataVisitor<T>(visitor: EmbeddedDataVisitor<T>): T {
@@ -62,12 +65,14 @@ export class ExternalFormatData extends EmbeddedData implements Hashable {
 }
 
 export class ModelStoreData extends EmbeddedData implements Hashable {
-  instances!: object;
+  // TODO: we may want to build out the instance `objects` once we build out the form
+  instances!: Map<Class, object>; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
 
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.MODEL_STORE_DATA,
-      hashObjectWithoutSourceInformation(this.instances),
+      hashArray(Array.from(this.instances.keys()).map((e) => e.path)),
+      hashObjectWithoutSourceInformation(Array.from(this.instances.values())),
     ]);
   }
 

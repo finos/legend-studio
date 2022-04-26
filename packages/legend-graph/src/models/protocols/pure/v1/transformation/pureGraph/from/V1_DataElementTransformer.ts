@@ -43,7 +43,11 @@ export const V1_transformModelStoreData = (
   element: ModelStoreData,
 ): V1_ModelStoreData => {
   const modelStoreDataElement = new V1_ModelStoreData();
-  modelStoreDataElement.instances = element.instances;
+  const v1Instances = new Map<string, object>();
+  Array.from(element.instances.entries()).forEach((e) =>
+    v1Instances.set(e[0].path, e[1]),
+  );
+  modelStoreDataElement.instances = v1Instances;
   return modelStoreDataElement;
 };
 
@@ -60,7 +64,7 @@ export const V1_transformDataElementReference = (
   element: DataElementReference,
 ): V1_DataElementReference => {
   const dataElementReference = new V1_DataElementReference();
-  dataElementReference.dataElement = element.dataElement;
+  dataElementReference.dataElement = element.dataElement.valueForSerialization ?? '';
   return dataElementReference;
 };
 

@@ -65,12 +65,13 @@ export class V1_ExternalFormatData extends V1_EmbeddedData implements Hashable {
 }
 
 export class V1_ModelStoreData extends V1_EmbeddedData implements Hashable {
-  instances!: object;
+  instances!: Map<string, object>;
 
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.MODEL_STORE_DATA,
-      hashObjectWithoutSourceInformation(this.instances),
+      hashArray(Array.from(this.instances.keys())),
+      hashObjectWithoutSourceInformation(Array.from(this.instances.values())),
     ]);
   }
 
