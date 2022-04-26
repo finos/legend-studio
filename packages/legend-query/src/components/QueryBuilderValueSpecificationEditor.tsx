@@ -564,7 +564,7 @@ export const DateInstanceValueEditor = observer(
         valueSpecification.genericType.value.rawType.name !==
         PRIMITIVE_TYPE.LATESTDATE
       ) {
-        valueSpecification.values = [
+        instanceValue_changeValues(valueSpecification, [
           format(
             new Randomizer().getRandomDate(
               new Date(Date.now()),
@@ -572,7 +572,7 @@ export const DateInstanceValueEditor = observer(
             ),
             DATE_FORMAT,
           ),
-        ];
+        ]);
       }
     };
 
