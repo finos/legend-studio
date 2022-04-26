@@ -32,6 +32,9 @@ import {
   type ClassPreviewRenderer,
   type PureGrammarParserDocumentationGetter,
   type PureGrammarParserElementDocumentationGetter,
+  type PureGrammarParserKeywordSuggestionGetter,
+  type PureGrammarTextSuggestion,
+  type PureGrammarParserElementSnippetSuggestionsGetter,
 } from '@finos/legend-studio';
 import { ShapesIcon } from '@finos/legend-art';
 import type { Class, PackageableElement } from '@finos/legend-graph';
@@ -52,6 +55,12 @@ import {
   DSL_DIAGRAM_DOCUMENTATION_ENTRIES,
   DSL_DIAGRAM_LEGEND_STUDIO_DOCUMENTATION_KEY,
 } from './DSLDiagram_LegendStudioDocumentation';
+import {
+  EMPTY_DIAGRAM_SNIPPET,
+  getDiagramSnippetWithGeneralizationView,
+  getDiagramSnippetWithOneClassView,
+  getDiagramSnippetWithPropertyView,
+} from './DSLDiagram_CodeSnippets';
 
 const DIAGRAM_ELEMENT_TYPE = 'DIAGRAM';
 const DIAGRAM_ELEMENT_PROJECT_EXPLORER_DND_TYPE = 'PROJECT_EXPLORER_DIAGRAM';
@@ -217,6 +226,54 @@ export class DSLDiagram_LegendStudioPlugin
         }
         return undefined;
       },
+    ];
+  }
+
+  getExtraPureGrammarParserKeywordSuggestionGetters(): PureGrammarParserKeywordSuggestionGetter[] {
+    return [
+      (editorStore: EditorStore): PureGrammarTextSuggestion[] => [
+        {
+          text: PURE_GRAMMAR_DIAGRAM_PARSER_NAME,
+          description: `DSL Diagram`,
+          documentation: editorStore.applicationStore.docRegistry.getEntry(
+            DSL_DIAGRAM_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER,
+          ),
+          insertText: PURE_GRAMMAR_DIAGRAM_PARSER_NAME,
+        },
+      ],
+    ];
+  }
+
+  getExtraPureGrammarParserElementSnippetSuggestionsGetters(): PureGrammarParserElementSnippetSuggestionsGetter[] {
+    return [
+      (
+        editorStore: EditorStore,
+        parserKeyword: string,
+      ): PureGrammarTextSuggestion[] =>
+        parserKeyword === PURE_GRAMMAR_DIAGRAM_PARSER_NAME
+          ? [
+              {
+                text: PURE_GRAMMAR_DIAGRAM_ELEMENT_TYPE_LABEL,
+                description: '(blank)',
+                insertText: EMPTY_DIAGRAM_SNIPPET,
+              },
+              {
+                text: PURE_GRAMMAR_DIAGRAM_ELEMENT_TYPE_LABEL,
+                description: 'with class',
+                insertText: getDiagramSnippetWithOneClassView(),
+              },
+              {
+                text: PURE_GRAMMAR_DIAGRAM_ELEMENT_TYPE_LABEL,
+                description: 'with inheritance',
+                insertText: getDiagramSnippetWithGeneralizationView(),
+              },
+              {
+                text: PURE_GRAMMAR_DIAGRAM_ELEMENT_TYPE_LABEL,
+                description: 'with composition',
+                insertText: getDiagramSnippetWithPropertyView(),
+              },
+            ]
+          : [],
     ];
   }
 }

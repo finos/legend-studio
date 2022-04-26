@@ -21,16 +21,13 @@ export enum DSL_DIAGRAM_LEGEND_STUDIO_DOCUMENTATION_KEY {
 
 export const DSL_DIAGRAM_DOCUMENTATION_ENTRIES = {
   [DSL_DIAGRAM_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER]: {
-    url: 'http://www.example.org/',
     markdownText: {
-      value:
-        '[link](http://www.example.org) Lorem markdownum quae! Convivia possedit, fuit cruentae; clavam iners cycno\naequora *siccis*.\n\n> Spemque manu abdidit aliae et scopulum lata! Fusus natas sed collo nocti!\n> Multorum sedem, occasus aristas ambiguum dedit oculis glomerata, tuae mecum\n> tiliae coeperunt ignorat, modo gemina, quaerite.\n\nEssent litore suspicor [passis](http://www.nec.org/amissumammon.aspx) vultus!\nVestigia pariter submissaeque fugit certamen, di silvae, pro erroribus. Inde\nmuneris, querulas ab *fortiter*, lectus en erat legi. Septem armis amor, enim\nunco conceperat moriens stratis hoc, parat\n[Erysicthonis](http://www.tutela.org/sedagris.html) audaci. Accepere expulsi\nnudaque per postquam a pater miserum.',
+      value: `A DSL concerning with specifications to visualize data models and their relationship`,
     },
   },
   [DSL_DIAGRAM_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_DIAGRAM_ELEMENT]: {
-    url: 'http://www.example.org/',
     markdownText: {
-      value: '[link](http://www.example.org) Lorem markdownum quae!',
+      value: `A diagram can be used to visualize data models and their relationship`,
     },
   },
 };

@@ -181,11 +181,41 @@ export type PureGrammarParserElementDocumentationGetter = (
   elementKeyword: string,
 ) => LegendApplicationDocumentationEntry | undefined;
 
-export type PureGrammarParserElementSuggestionSnippetGetter = (
+/**
+ * This mirrors `monaco-editor` completion item structure
+ * See https://microsoft.github.io/monaco-editor/api/interfaces/monaco.languages.CompletionItem.html
+ */
+export interface PureGrammarTextSuggestion {
+  /**
+   * The text label of the suggestion.
+   */
+  text: string;
+  /**
+   * Brief description about the suggestion item to enable the users to quickly
+   * differentiate between one suggestions from another
+   */
+  description?: string | undefined;
+  /**
+   * Detailed documentation that explains/elaborates the suggestion item.
+   */
+  documentation?: LegendApplicationDocumentationEntry | undefined;
+  /**
+   * A string or snippet that should be inserted when selecting this suggestion.
+   *
+   * NOTE: The snippet syntax follows that of `monaco-editor`
+   * See https://code.visualstudio.com/docs/editor/userdefinedsnippets#_create-your-own-snippets
+   */
+  insertText: string;
+}
+
+export type PureGrammarParserKeywordSuggestionGetter = (
+  editorStore: EditorStore,
+) => PureGrammarTextSuggestion[];
+
+export type PureGrammarParserElementSnippetSuggestionsGetter = (
   editorStore: EditorStore,
   parserKeyword: string,
-  elementKeyword: string,
-) => string | undefined;
+) => PureGrammarTextSuggestion[] | undefined;
 
 /**
  * Studio plugins for new DSL extension.
@@ -274,11 +304,13 @@ export interface DSL_LegendStudioPlugin_Extension extends LegendStudioPlugin {
   getExtraPureGrammarParserElementDocumentationGetters?(): PureGrammarParserElementDocumentationGetter[];
 
   /**
-   * Get the list of Pure grammar element suggestion snippet getters based on the value of the
-   * element and the parser keywords (e.g. Class, Enum in ###Pure)
-   *
-   * NOTE: The snippet syntax follows that of `monaco-editor`
-   * See https://code.visualstudio.com/docs/editor/userdefinedsnippets#_create-your-own-snippets
+   * Get the list of Pure grammar parser keyword suggestion getters (e.g. ###Pure, ###Mapping)
    */
-  getExtraPureGrammarParserElementSuggestionSnippetGetters?(): PureGrammarParserElementSuggestionSnippetGetter[];
+  getExtraPureGrammarParserKeywordSuggestionGetters?(): PureGrammarParserKeywordSuggestionGetter[];
+
+  /**
+   * Get the list of Pure grammar element suggestion snippet getters based on the parser section
+   * (e.g. Class, Enum in ###Pure)
+   */
+  getExtraPureGrammarParserElementSnippetSuggestionsGetters?(): PureGrammarParserElementSnippetSuggestionsGetter[];
 }

@@ -103,9 +103,9 @@ export const GrammarTextEditor = observer(() => {
     grammarTextEditorState.currentElementLabelRegexString;
   const error = grammarTextEditorState.error;
   const value = normalizeLineEnding(grammarTextEditorState.graphGrammarText);
-  // const completionProviderDisposer = useRef<IDisposable | undefined>(undefined);
-  const hoverProviderDisposer = useRef<IDisposable | undefined>(undefined);
   const textEditorRef = useRef<HTMLDivElement>(null);
+  const hoverProviderDisposer = useRef<IDisposable | undefined>(undefined);
+  const suggestionProviderDisposer = useRef<IDisposable | undefined>(undefined);
 
   const leaveTextMode = applicationStore.guardUnhandledError(() =>
     flowResult(editorStore.toggleTextMode()),
@@ -236,8 +236,6 @@ export const GrammarTextEditor = observer(() => {
     editor.updateOptions({ readOnly: editorStore.isInViewerMode });
   }
 
-  // TODO: suggestion
-
   // hover
   const parserDocumentationGetters = editorStore.pluginManager
     .getStudioPlugins()
@@ -314,6 +312,7 @@ export const GrammarTextEditor = observer(() => {
           endColumn: position.column,
         });
         const allParserSectionHeaders =
+          // NOTE: since `###Pure` is implicitly considered as the first section, we prepend it to the text
           `${PARSER_SECTION_MARKER}${PURE_PARSER.PURE}\n${textUntilPosition}`
             .split('\n')
             .filter((line) => line.startsWith(PARSER_SECTION_MARKER));
@@ -324,7 +323,7 @@ export const GrammarTextEditor = observer(() => {
           for (const docGetter of parserElementDocumentationGetters) {
             const doc = docGetter(
               editorStore,
-              currentSectionParserKeyword ?? '',
+              currentSectionParserKeyword,
               currentWord.word,
             );
             if (doc) {
@@ -356,6 +355,127 @@ export const GrammarTextEditor = observer(() => {
       },
     },
   );
+
+  // suggestion
+  const parserKeywordSuggestions = editorStore.pluginManager
+    .getStudioPlugins()
+    .flatMap(
+      (plugin) =>
+        (
+          plugin as DSL_LegendStudioPlugin_Extension
+        ).getExtraPureGrammarParserKeywordSuggestionGetters?.() ?? [],
+    )
+    .flatMap((suggestionGetter) => suggestionGetter(editorStore));
+  const parserElementSnippetSuggestionsGetters = editorStore.pluginManager
+    .getStudioPlugins()
+    .flatMap(
+      (plugin) =>
+        (
+          plugin as DSL_LegendStudioPlugin_Extension
+        ).getExtraPureGrammarParserElementSnippetSuggestionsGetters?.() ?? [],
+    );
+  suggestionProviderDisposer.current?.dispose();
+  suggestionProviderDisposer.current =
+    monacoLanguagesAPI.registerCompletionItemProvider(EDITOR_LANGUAGE.PURE, {
+      // NOTE: we need to specify this to show suggestions for section
+      // because by default, only alphanumeric characters trigger completion item provider
+      // See https://microsoft.github.io/monaco-editor/api/interfaces/monaco.languages.CompletionContext.html#triggerCharacter
+      // See https://github.com/microsoft/monaco-editor/issues/2530#issuecomment-861757198
+      triggerCharacters: ['#'],
+      provideCompletionItems: (model, position) => {
+        const suggestions: monacoLanguagesAPI.CompletionItem[] = [];
+        const currentWord = model.getWordUntilPosition(position);
+
+        // suggestions for parser keyword
+        const lineTextIncludingWordRange = {
+          startLineNumber: position.lineNumber,
+          startColumn: 1,
+          endLineNumber: position.lineNumber,
+          endColumn: currentWord.endColumn,
+        };
+        const lineTextIncludingWord = model.getValueInRange(
+          lineTextIncludingWordRange,
+        );
+        // NOTE: make sure parser keyword suggestions only show up when the current word is the
+        // the first word of the line since parser section header must not be preceded by anything
+        if (!hasWhiteSpace(lineTextIncludingWord.trim())) {
+          parserKeywordSuggestions.forEach((suggestion) => {
+            suggestions.push({
+              label: {
+                label: `${PARSER_SECTION_MARKER}${suggestion.text}`,
+                description: suggestion.description,
+              },
+              kind: monacoLanguagesAPI.CompletionItemKind.Keyword,
+              insertText: `${PARSER_SECTION_MARKER}${suggestion.insertText}\n`,
+              range: lineTextIncludingWordRange,
+              documentation: suggestion.documentation
+                ? suggestion.documentation.markdownText
+                  ? {
+                      value: suggestion.documentation.markdownText.value,
+                    }
+                  : suggestion.documentation.text
+                : undefined,
+            } as monacoLanguagesAPI.CompletionItem);
+          });
+        }
+
+        // suggestions for parser element snippets
+        const textUntilPosition = model.getValueInRange({
+          startLineNumber: 1,
+          startColumn: 1,
+          endLineNumber: position.lineNumber,
+          endColumn: position.column,
+        });
+        const allParserSectionHeaders =
+          // NOTE: since `###Pure` is implicitly considered as the first section, we prepend it to the text
+          `${PARSER_SECTION_MARKER}${PURE_PARSER.PURE}\n${textUntilPosition}`
+            .split('\n')
+            .filter((line) => line.startsWith(PARSER_SECTION_MARKER));
+        const currentSectionParserKeyword = getSectionParserNameFromLineText(
+          allParserSectionHeaders[allParserSectionHeaders.length - 1] ?? '',
+        );
+        if (currentSectionParserKeyword) {
+          for (const snippetSuggestionsGetter of parserElementSnippetSuggestionsGetters) {
+            const snippetSuggestions = snippetSuggestionsGetter(
+              editorStore,
+              currentSectionParserKeyword,
+            );
+            if (snippetSuggestions) {
+              snippetSuggestions.forEach((snippetSuggestion) => {
+                suggestions.push({
+                  label: {
+                    label: snippetSuggestion.text,
+                    description: snippetSuggestion.description,
+                  },
+                  kind: monacoLanguagesAPI.CompletionItemKind.Snippet,
+                  insertTextRules:
+                    monacoLanguagesAPI.CompletionItemInsertTextRule
+                      .InsertAsSnippet,
+                  insertText: `${snippetSuggestion.insertText}\n`,
+                  range: {
+                    startLineNumber: position.lineNumber,
+                    startColumn: currentWord.startColumn,
+                    endLineNumber: position.lineNumber,
+                    endColumn: currentWord.endColumn,
+                  },
+                  documentation: snippetSuggestion.documentation
+                    ? snippetSuggestion.documentation.markdownText
+                      ? {
+                          value:
+                            snippetSuggestion.documentation.markdownText.value,
+                        }
+                      : snippetSuggestion.documentation.text
+                    : undefined,
+                } as monacoLanguagesAPI.CompletionItem);
+              });
+              break;
+            }
+          }
+        }
+
+        return { suggestions };
+      },
+    });
 
   /**
    * Reveal error has to be in an effect like this because, we want to reveal the error.
