@@ -27,6 +27,7 @@ import {
   type AbstractProperty,
   type Enum,
   type ValueSpecification,
+  type PureModel,
   TYPICAL_MULTIPLICITY_TYPE,
   CollectionInstanceValue,
   AbstractPropertyExpression,
@@ -42,6 +43,8 @@ import {
   matchFunctionName,
   TYPE_CAST_TOKEN,
   observe_AbstractPropertyExpression,
+  GenericTypeExplicitReference,
+  GenericType,
 } from '@finos/legend-graph';
 import { generateDefaultValueForPrimitiveType } from './QueryBuilderValueSpecificationBuilderHelper';
 import type { QueryBuilderState } from './QueryBuilderState';
@@ -115,6 +118,66 @@ export const getPropertyPath = (
   return propertyNameChain.join('.');
 };
 
+export const generateValueSpecificationForParameter = (
+  parameter: VariableExpression,
+  graph: PureModel,
+): ValueSpecification => {
+  const genericType = parameter.genericType;
+  if (genericType) {
+    const type = genericType.value.rawType;
+    // Clone the generic type reference and avoid directly using the
+    // reference of the parameter so when we edit the value specification
+    // we don't accidentally modify the type of the parameter which is constant
+    // See https://github.com/finos/legend-studio/issues/1099
+    const genericTypeExplicitReference = GenericTypeExplicitReference.create(
+      new GenericType(type),
+    );
+    if (
+      (
+        [
+          PRIMITIVE_TYPE.STRING,
+          PRIMITIVE_TYPE.BOOLEAN,
+          PRIMITIVE_TYPE.NUMBER,
+          PRIMITIVE_TYPE.FLOAT,
+          PRIMITIVE_TYPE.DECIMAL,
+          PRIMITIVE_TYPE.INTEGER,
+          PRIMITIVE_TYPE.DATE,
+          PRIMITIVE_TYPE.STRICTDATE,
+          PRIMITIVE_TYPE.DATETIME,
+        ] as string[]
+      ).includes(type.name)
+    ) {
+      const primitiveInstanceValue = new PrimitiveInstanceValue(
+        genericTypeExplicitReference,
+        parameter.multiplicity,
+      );
+      if (type.name !== PRIMITIVE_TYPE.LATESTDATE) {
+        primitiveInstanceValue.values = [
+          generateDefaultValueForPrimitiveType(type.name as PRIMITIVE_TYPE),
+        ];
+      }
+      return primitiveInstanceValue;
+    } else if (type instanceof Enumeration) {
+      const enumValueInstanceValue = new EnumValueInstanceValue(
+        genericTypeExplicitReference,
+        parameter.multiplicity,
+      );
+      if (type.values.length) {
+        const enumValueRef = EnumValueExplicitReference.create(
+          type.values[0] as Enum,
+        );
+        enumValueInstanceValue.values = [enumValueRef];
+      }
+      return enumValueInstanceValue;
+    }
+  }
+  // for arguments of types we don't support, we will fill them with `[]`
+  // which in Pure is equivalent to `null` in other languages
+  return new CollectionInstanceValue(
+    graph.getTypicalMultiplicity(TYPICAL_MULTIPLICITY_TYPE.ZERO),
+  );
+};
+
 const fillDerivedPropertyArguments = (
   derivedPropertyExpressionState: QueryBuilderDerivedPropertyExpressionState,
   queryBuilderState: QueryBuilderState,
@@ -125,56 +188,11 @@ const fillDerivedPropertyArguments = (
     if (idx < derivedPropertyExpressionState.parameterValues.length) {
       return;
     }
-    let argument: ValueSpecification | undefined;
-    const genericType = parameter.genericType;
-    if (genericType) {
-      const _type = genericType.value.rawType;
-      if (
-        (
-          [
-            PRIMITIVE_TYPE.STRING,
-            PRIMITIVE_TYPE.BOOLEAN,
-            PRIMITIVE_TYPE.NUMBER,
-            PRIMITIVE_TYPE.FLOAT,
-            PRIMITIVE_TYPE.DECIMAL,
-            PRIMITIVE_TYPE.INTEGER,
-            PRIMITIVE_TYPE.DATE,
-            PRIMITIVE_TYPE.STRICTDATE,
-            PRIMITIVE_TYPE.DATETIME,
-          ] as string[]
-        ).includes(_type.name)
-      ) {
-        const primitiveInstanceValue = new PrimitiveInstanceValue(
-          genericType,
-          parameter.multiplicity,
-        );
-        primitiveInstanceValue.values = [
-          generateDefaultValueForPrimitiveType(_type.name as PRIMITIVE_TYPE),
-        ];
-        argument = primitiveInstanceValue;
-      } else if (_type instanceof Enumeration) {
-        const enumValueInstanceValue = new EnumValueInstanceValue(
-          genericType,
-          parameter.multiplicity,
-        );
-        if (_type.values.length) {
-          const enumValueRef = EnumValueExplicitReference.create(
-            _type.values[0] as Enum,
-          );
-          enumValueInstanceValue.values = [enumValueRef];
-        }
-        argument = enumValueInstanceValue;
-      }
-    }
-    // for arguments of types we don't support, we will fill them with `[]`
-    // which in Pure is equivalent to `null` in other languages
     propertyArguments.push(
-      argument ??
-        new CollectionInstanceValue(
-          queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
-            TYPICAL_MULTIPLICITY_TYPE.ZERO,
-          ),
-        ),
+      generateValueSpecificationForParameter(
+        parameter,
+        queryBuilderState.graphManagerState.graph,
+      ),
     );
   });
   functionExpression_setParametersValues(
