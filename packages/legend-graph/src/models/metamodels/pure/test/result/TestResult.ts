@@ -16,10 +16,10 @@
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
-import type { AtomicTestId } from '../AtomicTestId';
+import type { AtomicTestId } from './AtomicTestId';
 
 export class TestResult implements Hashable {
-  testable!: string;
+  testable!: string; // should be `testable`
   atomicTestId!: AtomicTestId;
 
   get hashCode(): string {

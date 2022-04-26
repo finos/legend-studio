@@ -35,14 +35,14 @@ import {
 import type { EditorStore } from '../../../EditorStore';
 import {
   type ServiceTestResult,
-  type KeyedSingleExecutionTest,
+  type DEPRECATED__KeyedSingleExecutionTest,
   type Runtime,
   type ExecutionResult,
   type Connection,
   extractExecutionResultValues,
   GRAPH_MANAGER_EVENT,
-  TestContainer,
-  SingleExecutionTest,
+  DEPRECATED__TestContainer,
+  DEPRECATED__SingleExecutionTest,
   PureSingleExecution,
   IdentifiedConnection,
   EngineRuntime,
@@ -77,7 +77,7 @@ export class TestContainerState {
   editorStore: EditorStore;
   serviceEditorState: ServiceEditorState;
   testState: SingleExecutionTestState;
-  testContainer: TestContainer;
+  testContainer: DEPRECATED__TestContainer;
   assertionData?: string | undefined;
   testPassed?: boolean | undefined;
   textExecutionTextResult?: ServiceTestExecutionResult | undefined; // NOTE: this is lossless JSON strings
@@ -86,7 +86,7 @@ export class TestContainerState {
 
   constructor(
     editorStore: EditorStore,
-    testContainter: TestContainer,
+    testContainter: DEPRECATED__TestContainer,
     serviceEditorState: ServiceEditorState,
     testState: SingleExecutionTestState,
   ) {
@@ -148,7 +148,9 @@ export class TestContainerState {
     }
   }
 
-  private initializeAssertionData(testContainter: TestContainer): void {
+  private initializeAssertionData(
+    testContainter: DEPRECATED__TestContainer,
+  ): void {
     const expectedResultAssertionString =
       this.editorStore.graphManagerState.graphManager.HACKY__extractServiceTestAssertionData(
         testContainter.assert,
@@ -302,7 +304,7 @@ export class TestContainerState {
       const test = this.serviceEditorState.service.test;
       if (
         execution instanceof PureSingleExecution &&
-        test instanceof SingleExecutionTest
+        test instanceof DEPRECATED__SingleExecutionTest
       ) {
         const decoratedRuntime =
           this.decorateRuntimeIdentifiedConnectionsWithTestData(
@@ -354,7 +356,7 @@ export class TestContainerState {
       const test = this.serviceEditorState.service.test;
       if (
         execution instanceof PureSingleExecution &&
-        test instanceof SingleExecutionTest
+        test instanceof DEPRECATED__SingleExecutionTest
       ) {
         const decoratedRuntime =
           this.decorateRuntimeIdentifiedConnectionsWithTestData(
@@ -399,7 +401,7 @@ export class TestContainerState {
 export class SingleExecutionTestState {
   editorStore: EditorStore;
   serviceEditorState: ServiceEditorState;
-  test: SingleExecutionTest;
+  test: DEPRECATED__SingleExecutionTest;
   selectedTestContainerState?: TestContainerState | undefined;
   isRunningAllTests = false;
   isGeneratingTestData = false;
@@ -433,12 +435,12 @@ export class SingleExecutionTestState {
     this.serviceEditorState = serviceEditorState;
     this.test = guaranteeType(
       serviceEditorState.service.test,
-      SingleExecutionTest,
+      DEPRECATED__SingleExecutionTest,
     );
     this.selectedTestContainerState = this.test.asserts.length
       ? new TestContainerState(
           editorStore,
-          this.test.asserts[0] as TestContainer,
+          this.test.asserts[0] as DEPRECATED__TestContainer,
           serviceEditorState,
           this,
         )
@@ -453,7 +455,7 @@ export class SingleExecutionTestState {
   }
 
   addNewTestContainer(): void {
-    const testContainer = new TestContainer(
+    const testContainer = new DEPRECATED__TestContainer(
       this.editorStore.graphManagerState.graphManager.HACKY__createServiceTestAssertLambda(
         '{}',
       ),
@@ -464,7 +466,7 @@ export class SingleExecutionTestState {
     this.allTestRunTime = 0;
   }
 
-  deleteTestContainerState(val: TestContainer): void {
+  deleteTestContainerState(val: DEPRECATED__TestContainer): void {
     const idx = this.test.asserts.findIndex((assert) => assert === val);
     if (idx !== -1) {
       singleExecTest_deleteAssert(this.test, val);
@@ -476,7 +478,7 @@ export class SingleExecutionTestState {
     }
   }
 
-  openTestContainer(testContainter: TestContainer): void {
+  openTestContainer(testContainter: DEPRECATED__TestContainer): void {
     this.selectedTestContainerState = new TestContainerState(
       this.editorStore,
       testContainter,
@@ -575,11 +577,11 @@ export class SingleExecutionTestState {
 
 export class KeyedSingleExecutionState extends SingleExecutionTestState {
   uuid = uuid();
-  declare test: KeyedSingleExecutionTest;
+  declare test: DEPRECATED__KeyedSingleExecutionTest;
 
   constructor(
     editorStore: EditorStore,
-    keyedSingleExecution: KeyedSingleExecutionTest,
+    keyedSingleExecution: DEPRECATED__KeyedSingleExecutionTest,
     serviceEditorState: ServiceEditorState,
   ) {
     super(editorStore, serviceEditorState);

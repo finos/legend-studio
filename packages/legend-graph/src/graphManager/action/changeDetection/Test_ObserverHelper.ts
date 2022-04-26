@@ -24,15 +24,17 @@ import type { AssertionStatus } from '../../../models/metamodels/pure/test/asser
 import { AssertPass } from '../../../models/metamodels/pure/test/assertion/status/AssertPass';
 import { EqualToJsonAssertFail } from '../../../models/metamodels/pure/test/assertion/status/EqualToJsonAssertFail';
 import type { TestAssertion } from '../../../models/metamodels/pure/test/assertion/TestAssertion';
-import type { AtomicTest } from '../../../models/metamodels/pure/test/AtomicTest';
-import type { AtomicTestId } from '../../../models/metamodels/pure/test/AtomicTestId';
+import type { AtomicTestId } from '../../../models/metamodels/pure/test/result/AtomicTestId';
 import type { TestError } from '../../../models/metamodels/pure/test/result/TestError';
 import type { TestFailed } from '../../../models/metamodels/pure/test/result/TestFailed';
 import type { TestPassed } from '../../../models/metamodels/pure/test/result/TestPassed';
 import type { TestResult } from '../../../models/metamodels/pure/test/result/TestResult';
-import type { TestSuite } from '../../../models/metamodels/pure/test/TestSuite';
+import type {
+  AtomicTest,
+  TestSuite,
+} from '../../../models/metamodels/pure/test/Test';
 import { type ObserverContext, skipObserved } from './CoreObserverHelper';
-import { observe_ExternalFormatData } from './DataObserverHelper';
+import { observe_ExternalFormatData } from './Data_ObserverHelper';
 import {
   observe_ServiceTest,
   observe_ServiceTestSuite,

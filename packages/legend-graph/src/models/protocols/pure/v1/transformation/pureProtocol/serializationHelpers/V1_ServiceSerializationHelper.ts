@@ -51,13 +51,7 @@ import {
   V1_runtimePointerModelSchema,
   V1_RuntimeType,
 } from './V1_RuntimeSerializationHelper';
-import {
-  V1_ServiceTest,
-  V1_KeyedSingleExecutionTest,
-  V1_MultiExecutionTest,
-  V1_SingleExecutionTest,
-  V1_TestContainer,
-} from '../../../model/packageableElements/service/V1_ServiceTest';
+import { V1_ServiceTest } from '../../../model/packageableElements/service/V1_ServiceTest';
 import {
   V1_stereotypePtrSchema,
   V1_taggedValueSchema,
@@ -81,7 +75,13 @@ import {
   V1_TestSuiteType,
 } from './V1_TestSerializationHelper';
 import { V1_ServiceTestSuite } from '../../../model/packageableElements/service/V1_ServiceTestSuite';
-import type { V1_ServiceTest_Legacy } from '../../../model/packageableElements/service/V1_ServiceTest_Legacy';
+import {
+  type V1_DEPRECATED__ServiceTest,
+  V1_DEPRECATED__KeyedSingleExecutionTest,
+  V1_DEPRECATED__MultiExecutionTest,
+  V1_DEPRECATED__SingleExecutionTest,
+  V1_DEPRECATED__TestContainer,
+} from '../../../model/packageableElements/service/V1_DEPRECATED__ServiceTest';
 import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin';
 
 export const V1_SERVICE_ELEMENT_PROTOCOL_TYPE = 'service';
@@ -250,16 +250,19 @@ const V1_deserializeServiceExecution = (
   }
 };
 
-const testContainerModelSchema = createModelSchema(V1_TestContainer, {
-  assert: usingModelSchema(V1_rawLambdaModelSchema),
-  parametersValues: custom(
-    (values) => serializeArray(values, (value) => value, true),
-    (values) => deserializeArray(values, (v) => v, false),
-  ),
-});
+const testContainerModelSchema = createModelSchema(
+  V1_DEPRECATED__TestContainer,
+  {
+    assert: usingModelSchema(V1_rawLambdaModelSchema),
+    parametersValues: custom(
+      (values) => serializeArray(values, (value) => value, true),
+      (values) => deserializeArray(values, (v) => v, false),
+    ),
+  },
+);
 
 const singleExecutionTestModelSchema = createModelSchema(
-  V1_SingleExecutionTest,
+  V1_DEPRECATED__SingleExecutionTest,
   {
     _type: usingConstantValueSchema(V1_ServiceTestType.SINGLE_EXECUTION_TEST),
     asserts: list(usingModelSchema(testContainerModelSchema)),
@@ -268,7 +271,7 @@ const singleExecutionTestModelSchema = createModelSchema(
 );
 
 const keyedSingleExecutionTestModelSchema = createModelSchema(
-  V1_KeyedSingleExecutionTest,
+  V1_DEPRECATED__KeyedSingleExecutionTest,
   {
     asserts: list(usingModelSchema(testContainerModelSchema)),
     data: primitive(),
@@ -276,25 +279,28 @@ const keyedSingleExecutionTestModelSchema = createModelSchema(
   },
 );
 
-const multiExecutionTestModelSchema = createModelSchema(V1_MultiExecutionTest, {
-  _type: usingConstantValueSchema(V1_ServiceTestType.MULTI_EXECUTION_TEST),
-  tests: list(usingModelSchema(keyedSingleExecutionTestModelSchema)),
-});
+const multiExecutionTestModelSchema = createModelSchema(
+  V1_DEPRECATED__MultiExecutionTest,
+  {
+    _type: usingConstantValueSchema(V1_ServiceTestType.MULTI_EXECUTION_TEST),
+    tests: list(usingModelSchema(keyedSingleExecutionTestModelSchema)),
+  },
+);
 
-const V1_serializeServiceTest_Legacy = (
-  protocol: V1_ServiceTest_Legacy,
-): PlainObject<V1_ServiceTest_Legacy> => {
-  if (protocol instanceof V1_SingleExecutionTest) {
+const V1_serializeLegacyServiceTest = (
+  protocol: V1_DEPRECATED__ServiceTest,
+): PlainObject<V1_DEPRECATED__ServiceTest> => {
+  if (protocol instanceof V1_DEPRECATED__SingleExecutionTest) {
     return serialize(singleExecutionTestModelSchema, protocol);
-  } else if (protocol instanceof V1_MultiExecutionTest) {
+  } else if (protocol instanceof V1_DEPRECATED__MultiExecutionTest) {
     return serialize(multiExecutionTestModelSchema, protocol);
   }
   throw new UnsupportedOperationError(`Can't serialize service test`, protocol);
 };
 
-const V1_deserializeServiceTest_Legacy = (
-  json: PlainObject<V1_ServiceTest_Legacy>,
-): V1_ServiceTest_Legacy => {
+const V1_deserializeLegacyServiceTest = (
+  json: PlainObject<V1_DEPRECATED__ServiceTest>,
+): V1_DEPRECATED__ServiceTest => {
   switch (json._type) {
     case V1_ServiceTestType.SINGLE_EXECUTION_TEST:
       return deserialize(singleExecutionTestModelSchema, json);
@@ -351,8 +357,8 @@ export const V1_servicedModelSchema = (
         ),
     ),
     test: optionalCustom(
-      V1_serializeServiceTest_Legacy,
-      V1_deserializeServiceTest_Legacy,
+      V1_serializeLegacyServiceTest,
+      V1_deserializeLegacyServiceTest,
     ),
     testSuites: custom(
       (values) =>

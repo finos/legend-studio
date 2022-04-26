@@ -27,13 +27,7 @@ import {
   RuntimePointer,
 } from '../../../../../../../metamodels/pure/packageableElements/runtime/Runtime';
 import type { Service } from '../../../../../../../metamodels/pure/packageableElements/service/Service';
-import {
-  ServiceTest,
-  SingleExecutionTest,
-  MultiExecutionTest,
-  TestContainer,
-  KeyedSingleExecutionTest,
-} from '../../../../../../../metamodels/pure/packageableElements/service/ServiceTest';
+import { ServiceTest } from '../../../../../../../metamodels/pure/packageableElements/service/ServiceTest';
 import {
   type ServiceExecution,
   PureSingleExecution,
@@ -41,11 +35,7 @@ import {
   KeyedExecutionParameter,
 } from '../../../../../../../metamodels/pure/packageableElements/service/ServiceExecution';
 import type { V1_GraphBuilderContext } from '../../../../transformation/pureGraph/to/V1_GraphBuilderContext';
-import {
-  type V1_ServiceTest,
-  V1_SingleExecutionTest,
-  V1_MultiExecutionTest,
-} from '../../../../model/packageableElements/service/V1_ServiceTest';
+import type { V1_ServiceTest } from '../../../../model/packageableElements/service/V1_ServiceTest';
 import {
   type V1_ServiceExecution,
   V1_PureSingleExecution,
@@ -66,12 +56,17 @@ import {
 } from '../../../../model/packageableElements/V1_PackageableElement';
 import { V1_buildRawLambdaWithResolvedPaths } from './V1_ValueSpecificationPathResolver';
 import { GraphBuilderError } from '../../../../../../../../graphManager/GraphManagerUtils';
-import type { V1_ServiceTest_Legacy } from '../../../../model/packageableElements/service/V1_ServiceTest_Legacy';
-import type { ServiceTest_Legacy } from '../../../../../../../metamodels/pure/packageableElements/service/ServiceTest_Legacy';
+import {
+  type DEPRECATED__ServiceTest,
+  DEPRECATED__KeyedSingleExecutionTest,
+  DEPRECATED__MultiExecutionTest,
+  DEPRECATED__SingleExecutionTest,
+  DEPRECATED__TestContainer,
+} from '../../../../../../../metamodels/pure/packageableElements/service/DEPRECATED__ServiceTest';
 import { ConnectionTestData } from '../../../../../../../metamodels/pure/packageableElements/service/ConnectionTestData';
 import { ParameterValue } from '../../../../../../../metamodels/pure/packageableElements/service/ParameterValue';
 import { ServiceTestSuite } from '../../../../../../../metamodels/pure/packageableElements/service/ServiceTestSuite';
-import { TestData } from '../../../../../../../metamodels/pure/packageableElements/service/TestData';
+import { TestData } from '../../../../../../../metamodels/pure/packageableElements/service/ServiceTestData';
 import type { V1_ConnectionTestData } from '../../../../model/packageableElements/service/V1_ConnectionTestData';
 import type { V1_ParameterValue } from '../../../../model/packageableElements/service/V1_ParameterValue';
 import type { V1_ServiceTestSuite } from '../../../../model/packageableElements/service/V1_ServiceTestSuite';
@@ -81,14 +76,19 @@ import {
   V1_buildAtomicTest,
 } from './V1_TestBuilderHelper';
 import { V1_ProtocolToMetaModelEmbeddedDataBuilder } from './V1_DataElementBuilderHelper';
+import {
+  type V1_DEPRECATED__ServiceTest,
+  V1_DEPRECATED__SingleExecutionTest,
+  V1_DEPRECATED__MultiExecutionTest,
+} from '../../../../model/packageableElements/service/V1_DEPRECATED__ServiceTest';
 
 const buildConnectionTestData = (
   element: V1_ConnectionTestData,
   context: V1_GraphBuilderContext,
 ): ConnectionTestData => {
   const connectionTestData = new ConnectionTestData();
-  connectionTestData.id = element.id;
-  connectionTestData.data = element.data.accept_EmbeddedDataVisitor(
+  connectionTestData.connectionId = element.id;
+  connectionTestData.testData = element.data.accept_EmbeddedDataVisitor(
     new V1_ProtocolToMetaModelEmbeddedDataBuilder(context),
   );
   return connectionTestData;
@@ -141,20 +141,23 @@ export const V1_buildServiceTestSuite = (
   return serviceTestSuite;
 };
 
-export const V1_buildServiceTest_Legacy = (
-  serviceTest: V1_ServiceTest_Legacy,
+export const V1_buildLegacyServiceTest = (
+  serviceTest: V1_DEPRECATED__ServiceTest,
   context: V1_GraphBuilderContext,
   parentService: Service,
-): ServiceTest_Legacy => {
-  if (serviceTest instanceof V1_SingleExecutionTest) {
+): DEPRECATED__ServiceTest => {
+  if (serviceTest instanceof V1_DEPRECATED__SingleExecutionTest) {
     assertType(
       parentService.execution,
       PureSingleExecution,
       'Service with single-execution requires a single-execution test',
     );
-    const singleTest = new SingleExecutionTest(parentService, serviceTest.data);
+    const singleTest = new DEPRECATED__SingleExecutionTest(
+      parentService,
+      serviceTest.data,
+    );
     singleTest.asserts = serviceTest.asserts.map((assert) => {
-      const testContainer = new TestContainer(
+      const testContainer = new DEPRECATED__TestContainer(
         V1_buildRawLambdaWithResolvedPaths(
           assert.assert.parameters,
           assert.assert.body,
@@ -166,13 +169,13 @@ export const V1_buildServiceTest_Legacy = (
       return testContainer;
     });
     return singleTest;
-  } else if (serviceTest instanceof V1_MultiExecutionTest) {
+  } else if (serviceTest instanceof V1_DEPRECATED__MultiExecutionTest) {
     assertType(
       parentService.execution,
       PureMultiExecution,
       'Service with multi-execution requires a multi-execution test',
     );
-    const multiTest = new MultiExecutionTest(parentService);
+    const multiTest = new DEPRECATED__MultiExecutionTest(parentService);
     if (!serviceTest.tests.length) {
       throw new GraphBuilderError(
         'Service multi-execution test must not be empty',
@@ -196,13 +199,13 @@ export const V1_buildServiceTest_Legacy = (
         );
       }
       uniqueKeys.add(test.key);
-      const keyedTest = new KeyedSingleExecutionTest(
+      const keyedTest = new DEPRECATED__KeyedSingleExecutionTest(
         test.key,
         parentService,
         test.data,
       );
       keyedTest.asserts = test.asserts.map((assert) => {
-        const testContaier = new TestContainer(
+        const testContaier = new DEPRECATED__TestContainer(
           V1_buildRawLambdaWithResolvedPaths(
             assert.assert.parameters,
             assert.assert.body,
@@ -243,7 +246,11 @@ export const V1_buildServiceTest_Legacy = (
       multiTest.tests = parentService.execution.executionParameters.map(
         (execution) =>
           multiTest.tests.find((test) => test.key === execution.key) ??
-          new KeyedSingleExecutionTest(execution.key, parentService, ''),
+          new DEPRECATED__KeyedSingleExecutionTest(
+            execution.key,
+            parentService,
+            '',
+          ),
       );
     } else if (testWithoutExecutionKeys.size) {
       throw new GraphBuilderError(

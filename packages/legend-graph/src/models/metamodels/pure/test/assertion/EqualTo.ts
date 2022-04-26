@@ -27,6 +27,6 @@ export class EqualTo extends TestAssertion implements Hashable {
       CORE_HASH_STRUCTURE.EQUAL_TO,
       this.id,
       hashObjectWithoutSourceInformation(this.expected),
-    ]); //add this.expected
+    ]);
   }
 }

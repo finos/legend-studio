@@ -278,12 +278,6 @@ export abstract class BasicModel {
     this.fileGenerationsIndex.get(path);
   getOwnNullableDataElement = (path: string): DataElement | undefined =>
     this.dataElementsIndex.get(path);
-
-  getOwnDataElement = (path: string): DataElement =>
-    guaranteeNonNullable(
-      this.getOwnNullableDataElement(path),
-      `Can't find data element '${path}'`,
-    );
   getOwnSectionIndex = (path: string): SectionIndex =>
     guaranteeNonNullable(
       this.getOwnNullableSectionIndex(path),
@@ -370,6 +364,11 @@ export abstract class BasicModel {
     guaranteeNonNullable(
       this.getOwnNullableFileGeneration(path),
       `Can't find file generation '${path}'`,
+    );
+  getOwnDataElement = (path: string): DataElement =>
+    guaranteeNonNullable(
+      this.getOwnNullableDataElement(path),
+      `Can't find data element '${path}'`,
     );
 
   getOwnNullableExtensionElement<T extends PackageableElement>(
@@ -546,6 +545,8 @@ export abstract class BasicModel {
       this.setOwnFileGeneration(element.path, element);
     } else if (element instanceof GenerationSpecification) {
       this.setOwnGenerationSpecification(element.path, element);
+    } else if (element instanceof DataElement) {
+      this.setOwnDataElement(element.path, element);
     } else if (element instanceof Package) {
       // do nothing
     } else {

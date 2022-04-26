@@ -1049,7 +1049,8 @@ export class EditorStore {
     } else if (
       element instanceof Measure ||
       element instanceof Database ||
-      element instanceof FlatData
+      element instanceof FlatData ||
+      element instanceof DataElement
     ) {
       return new UnsupportedElementEditorState(this, element);
     } else if (element instanceof PackageableRuntime) {
@@ -1064,8 +1065,6 @@ export class EditorStore {
       return new GenerationSpecificationEditorState(this, element);
     } else if (element instanceof FileGenerationSpecification) {
       return new FileGenerationEditorState(this, element);
-    } else if (element instanceof DataElement) {
-      return new UnsupportedElementEditorState(this, element);
     }
     const extraElementEditorStateCreators = this.pluginManager
       .getStudioPlugins()

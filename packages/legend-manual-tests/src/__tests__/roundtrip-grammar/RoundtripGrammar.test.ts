@@ -92,7 +92,7 @@ const EXCLUSIONS: { [key: string]: ROUNTRIP_TEST_PHASES[] | typeof SKIP } = {
   // `parameters` in ServiceTest
   // TODO: Test should pass with a refactor of roundtrip grammar to not override the array serialization as engine
   // correctly doesn't return the property for that array.
-  'dataElement-serviceStore.pure': [ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP],
+  'ESService-dataElement.pure': [ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP],
   'DSLService-basic.pure': [ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP],
 
   // TODO: remove these when we can properly handle relational mapping `mainTable` and `primaryKey` in transformers.

@@ -20,7 +20,7 @@ import { hashObjectWithoutSourceInformation } from '../../../../../MetaModelUtil
 
 export class ParameterValue implements Hashable {
   name!: string;
-  value!: object;
+  value!: object; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
 
   get hashCode(): string {
     return hashArray([

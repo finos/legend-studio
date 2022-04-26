@@ -23,7 +23,7 @@ import {
 import type { V1_ServiceExecution } from './V1_ServiceExecution';
 import type { V1_StereotypePtr } from '../../../model/packageableElements/domain/V1_StereotypePtr';
 import type { V1_TaggedValue } from '../../../model/packageableElements/domain/V1_TaggedValue';
-import type { V1_ServiceTest_Legacy } from './V1_ServiceTest_Legacy';
+import type { V1_DEPRECATED__ServiceTest } from './V1_DEPRECATED__ServiceTest';
 import type { V1_TestSuite } from '../../test/V1_TestSuite';
 
 export class V1_Service extends V1_PackageableElement implements Hashable {
@@ -34,7 +34,7 @@ export class V1_Service extends V1_PackageableElement implements Hashable {
   documentation!: string;
   autoActivateUpdates = true;
   execution!: V1_ServiceExecution;
-  test?: V1_ServiceTest_Legacy | undefined;
+  test?: V1_DEPRECATED__ServiceTest | undefined;
   testSuites: V1_TestSuite[] = [];
 
   override get hashCode(): string {

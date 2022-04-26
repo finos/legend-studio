@@ -22,7 +22,7 @@ import {
   ModelStoreData,
 } from '../../../../../../metamodels/pure/data/EmbeddedData';
 import type { DataElement } from '../../../../../../metamodels/pure/packageableElements/data/DataElement';
-import type { EmbeddedData_PureProtocolProcessorPlugin_Extension } from '../../../../EmbeddedData_PureProtocolProcessorPlugin_Extension';
+import type { DSLData_PureProtocolProcessorPlugin_Extension } from '../../../../DSLData_PureProtocolProcessorPlugin_Extension';
 import {
   type V1_EmbeddedData,
   V1_DataElementReference,
@@ -64,7 +64,8 @@ export const V1_transformDataElementReference = (
   element: DataElementReference,
 ): V1_DataElementReference => {
   const dataElementReference = new V1_DataElementReference();
-  dataElementReference.dataElement = element.dataElement.valueForSerialization ?? '';
+  dataElementReference.dataElement =
+    element.dataElement.valueForSerialization ?? '';
   return dataElementReference;
 };
 
@@ -82,7 +83,7 @@ export const V1_transformEmbeddedData = (
   const extraEmbeddedDataTransformers = context.plugins.flatMap(
     (plugin) =>
       (
-        plugin as EmbeddedData_PureProtocolProcessorPlugin_Extension
+        plugin as DSLData_PureProtocolProcessorPlugin_Extension
       ).V1_getExtraEmbeddedDataTransformers?.() ?? [],
   );
   for (const transformer of extraEmbeddedDataTransformers) {

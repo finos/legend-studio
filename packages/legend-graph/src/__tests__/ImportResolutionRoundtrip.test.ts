@@ -64,7 +64,7 @@ import {
 } from './roundtripTestData/TEST_DATA__MappingRoundtrip';
 import { TEST_DATA__RuntimeRoundtrip } from './roundtripTestData/TEST_DATA__RuntimeRoundtrip';
 import { TEST__checkBuildingElementsRoundtrip } from '../GraphManagerTestUtils';
-import { TEST_DATA__DataRoundtrip } from './roundtripTestData/TEST_DATA_DataRoundtrp';
+import { TEST_DATA__DataRoundtrip } from './roundtripTestData/TEST_DATA_DataRoundtrip';
 
 describe(unitTest('M2M graph roundtrip'), () => {
   test.each([

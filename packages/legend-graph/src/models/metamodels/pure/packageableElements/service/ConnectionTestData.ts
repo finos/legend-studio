@@ -19,14 +19,14 @@ import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import type { EmbeddedData } from '../../data/EmbeddedData';
 
 export class ConnectionTestData implements Hashable {
-  id!: string;
-  data!: EmbeddedData;
+  connectionId!: string;
+  testData!: EmbeddedData;
 
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.SERVICE_CONNECTION_TEST_DATA,
-      this.id,
-      this.data,
+      this.connectionId,
+      this.testData,
     ]);
   }
 }

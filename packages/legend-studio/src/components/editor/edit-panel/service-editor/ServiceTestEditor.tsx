@@ -62,15 +62,15 @@ import {
   EDITOR_LANGUAGE,
   useApplicationStore,
 } from '@finos/legend-application';
-import type { TestContainer } from '@finos/legend-graph';
 import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor';
 import { singleExecTest_setData } from '../../../../stores/graphModifier/DSLService_GraphModifierHelper';
+import type { DEPRECATED__TestContainer } from '@finos/legend-graph';
 
 const TestContainerContextMenu = observer(
   forwardRef<
     HTMLDivElement,
     {
-      testContainer?: TestContainer;
+      testContainer?: DEPRECATED__TestContainer;
       createTestContainer: () => void;
       deleteTestContainer?: () => void;
     }
@@ -96,7 +96,7 @@ const TestContainerContextMenu = observer(
 export const TestContainerItem = observer(
   (props: {
     testState: SingleExecutionTestState;
-    testContainer: TestContainer;
+    testContainer: DEPRECATED__TestContainer;
     isReadOnly: boolean;
     testIdx: number;
   }) => {

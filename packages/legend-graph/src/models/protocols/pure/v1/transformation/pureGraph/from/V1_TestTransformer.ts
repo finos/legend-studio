@@ -19,7 +19,6 @@ import { AssertFail } from '../../../../../../metamodels/pure/test/assertion/sta
 import type { AssertionStatus } from '../../../../../../metamodels/pure/test/assertion/status/AssertionStatus';
 import { AssertPass } from '../../../../../../metamodels/pure/test/assertion/status/AssertPass';
 import { EqualToJsonAssertFail } from '../../../../../../metamodels/pure/test/assertion/status/EqualToJsonAssertFail';
-import type { AtomicTestId } from '../../../../../../metamodels/pure/test/AtomicTestId';
 import { V1_AssertFail } from '../../../model/test/assertion/status/V1_AssertFail';
 import type { V1_AssertionStatus } from '../../../model/test/assertion/status/V1_AssertionStatus';
 import { V1_AssertPass } from '../../../model/test/assertion/status/V1_AssertPass';
@@ -31,11 +30,9 @@ import { EqualTo } from '../../../../../../metamodels/pure/test/assertion/EqualT
 import { EqualToJson } from '../../../../../../metamodels/pure/test/assertion/EqualToJson';
 import { V1_transformExternalFormatData } from './V1_DataElementTransformer';
 import type { V1_AtomicTest } from '../../../model/test/V1_AtomicTest';
-import type { AtomicTest } from '../../../../../../metamodels/pure/test/AtomicTest';
 import { ServiceTest } from '../../../../../../metamodels/pure/packageableElements/service/ServiceTest';
 import type { V1_TestAssertion } from '../../../model/test/assertion/V1_TestAssertion';
 import type { TestAssertion } from '../../../../../../metamodels/pure/test/assertion/TestAssertion';
-import type { TestSuite } from '../../../../../../metamodels/pure/test/TestSuite';
 import type { V1_TestSuite } from '../../../model/test/V1_TestSuite';
 import { V1_TestResult } from '../../../model/test/result/V1_TestResult';
 import { V1_TestPassed } from '../../../model/test/result/V1_TestPassed';
@@ -51,6 +48,11 @@ import {
 } from './V1_ServiceTransformer';
 import { ServiceTestSuite } from '../../../../../../metamodels/pure/packageableElements/service/ServiceTestSuite';
 import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext';
+import type { AtomicTestId } from '../../../../../../metamodels/pure/test/result/AtomicTestId';
+import type {
+  AtomicTest,
+  TestSuite,
+} from '../../../../../../metamodels/pure/test/Test';
 
 const transformAtomicTestId = (element: AtomicTestId): V1_AtomicTestId => {
   const atomicTestId = new V1_AtomicTestId();

@@ -23,13 +23,15 @@ import type { AssertionStatus } from '../../../../../../../metamodels/pure/test/
 import { AssertPass } from '../../../../../../../metamodels/pure/test/assertion/status/AssertPass';
 import { EqualToJsonAssertFail } from '../../../../../../../metamodels/pure/test/assertion/status/EqualToJsonAssertFail';
 import type { TestAssertion } from '../../../../../../../metamodels/pure/test/assertion/TestAssertion';
-import type { AtomicTest } from '../../../../../../../metamodels/pure/test/AtomicTest';
-import { AtomicTestId } from '../../../../../../../metamodels/pure/test/AtomicTestId';
+import { AtomicTestId } from '../../../../../../../metamodels/pure/test/result/AtomicTestId';
 import { TestError } from '../../../../../../../metamodels/pure/test/result/TestError';
 import { TestFailed } from '../../../../../../../metamodels/pure/test/result/TestFailed';
 import { TestPassed } from '../../../../../../../metamodels/pure/test/result/TestPassed';
 import { TestResult } from '../../../../../../../metamodels/pure/test/result/TestResult';
-import type { TestSuite } from '../../../../../../../metamodels/pure/test/TestSuite';
+import type {
+  AtomicTest,
+  TestSuite,
+} from '../../../../../../../metamodels/pure/test/Test';
 import { V1_ServiceTest } from '../../../../model/packageableElements/service/V1_ServiceTest';
 import { V1_ServiceTestSuite } from '../../../../model/packageableElements/service/V1_ServiceTestSuite';
 import { V1_AssertFail } from '../../../../model/test/assertion/status/V1_AssertFail';

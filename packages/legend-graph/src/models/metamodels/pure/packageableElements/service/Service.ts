@@ -23,8 +23,8 @@ import {
 } from '../PackageableElement';
 import type { StereotypeReference } from '../domain/StereotypeReference';
 import type { TaggedValue } from '../domain/TaggedValue';
-import type { ServiceTest_Legacy } from './ServiceTest_Legacy';
-import type { TestSuite } from '../../test/TestSuite';
+import type { DEPRECATED__ServiceTest } from './DEPRECATED__ServiceTest';
+import type { ServiceTestSuite } from './ServiceTestSuite';
 
 export const DEFAULT_SERVICE_PATTERN = '/';
 
@@ -36,8 +36,8 @@ export class Service extends PackageableElement implements Hashable {
   documentation = '';
   autoActivateUpdates = true;
   execution!: ServiceExecution;
-  test?: ServiceTest_Legacy | undefined;
-  testSuites: TestSuite[] = [];
+  test?: DEPRECATED__ServiceTest | undefined;
+  tests: ServiceTestSuite[] = [];
 
   get patternParameters(): string[] {
     return uniq(
@@ -61,7 +61,7 @@ export class Service extends PackageableElement implements Hashable {
       this.autoActivateUpdates.toString(),
       this.execution,
       this.test ?? '',
-      hashArray(this.testSuites),
+      hashArray(this.tests),
     ]);
   }
 

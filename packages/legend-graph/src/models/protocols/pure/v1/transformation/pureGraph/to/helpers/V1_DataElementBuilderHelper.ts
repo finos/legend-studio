@@ -22,7 +22,7 @@ import {
   ModelStoreData,
 } from '../../../../../../../metamodels/pure/data/EmbeddedData';
 import type { Class } from '../../../../../../../metamodels/pure/packageableElements/domain/Class';
-import type { EmbeddedData_PureProtocolProcessorPlugin_Extension } from '../../../../../EmbeddedData_PureProtocolProcessorPlugin_Extension';
+import type { DSLData_PureProtocolProcessorPlugin_Extension } from '../../../../../DSLData_PureProtocolProcessorPlugin_Extension';
 import type {
   V1_DataElementReference,
   V1_EmbeddedData,
@@ -46,7 +46,7 @@ export class V1_ProtocolToMetaModelEmbeddedDataBuilder
     const extraEmbeddedDataBuilders = this.context.extensions.plugins.flatMap(
       (plugin) =>
         (
-          plugin as EmbeddedData_PureProtocolProcessorPlugin_Extension
+          plugin as DSLData_PureProtocolProcessorPlugin_Extension
         ).V1_getExtraEmbeddedDataBuilders?.() ?? [],
     );
     for (const builder of extraEmbeddedDataBuilders) {

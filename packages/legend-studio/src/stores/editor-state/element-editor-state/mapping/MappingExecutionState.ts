@@ -74,8 +74,8 @@ import {
   FlatDataConnection,
   FlatDataInputData,
   Service,
-  SingleExecutionTest,
-  TestContainer,
+  DEPRECATED__SingleExecutionTest,
+  DEPRECATED__TestContainer,
   PureSingleExecution,
   RootFlatDataRecordType,
   PackageableElementExplicitReference,
@@ -633,11 +633,11 @@ export class MappingExecutionState {
             pureSingleExecution,
             this.editorStore.changeDetectionState.observerContext,
           );
-          const singleExecutionTest = new SingleExecutionTest(
+          const singleExecutionTest = new DEPRECATED__SingleExecutionTest(
             service,
             tryToMinifyJSONString(this.inputDataState.inputData.data),
           );
-          const testContainer = new TestContainer(
+          const testContainer = new DEPRECATED__TestContainer(
             this.editorStore.graphManagerState.graphManager.HACKY__createServiceTestAssertLambda(
               this.executionResultText,
             ),

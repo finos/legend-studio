@@ -28,29 +28,15 @@ export class ServiceRequestPattern implements Hashable {
   bodyPatterns: StringValuePattern[] = [];
 
   get hashCode(): string {
-    const headerParams: StringValuePattern[] = [];
-    const headerParamIds: string[] = [];
-    this.headerParams?.forEach((v: StringValuePattern, key: string) => {
-      headerParams.push(v);
-      headerParamIds.push(key);
-    });
-    const queryParams: StringValuePattern[] = [];
-    const queryParamIds: string[] = [];
-    this.queryParams?.forEach((v: StringValuePattern, key: string) => {
-      queryParams.push(v);
-      queryParamIds.push(key);
-    });
     return hashArray([
       SERVICE_STORE_HASH_STRUCTURE.SERVICE_REQUEST_PATTERN,
       this.url ?? '',
       this.urlPath ?? '',
       this.method,
-      hashArray(headerParamIds),
-      hashArray(headerParams),
-      hashArray(queryParamIds),
-      hashArray(queryParams),
-      // this.headerParams ? this.headerParams.entries.toString() : '',
-      // this.queryParams ? this.queryParams.entries.toString() : '',
+      hashArray(Array.from(this.headerParams?.keys() ?? [])),
+      hashArray(Array.from(this.headerParams?.values() ?? [])),
+      hashArray(Array.from(this.queryParams?.keys() ?? [])),
+      hashArray(Array.from(this.queryParams?.values() ?? [])),
       hashArray(this.bodyPatterns),
     ]);
   }

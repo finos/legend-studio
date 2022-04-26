@@ -16,16 +16,8 @@
 
 import type { Hashable } from '@finos/legend-shared';
 
-// export interface V1_TestVisitor<T> {
-//   visit_Test(test: V1_Test): T;
-// }
-
 export abstract class V1_Test implements Hashable {
   id!: string;
 
   abstract get hashCode(): string;
-
-  // accept_TestAssertionVisitor<T>(visitor: V1_TestVisitor<T>): T {
-  //   return visitor.visit_Test(this);
-  // }
 }

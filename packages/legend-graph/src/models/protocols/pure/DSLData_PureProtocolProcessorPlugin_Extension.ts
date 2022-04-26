@@ -39,7 +39,7 @@ export type V1_EmbeddedDataProtocolDeserializer = (
   json: PlainObject<V1_EmbeddedData>,
 ) => V1_EmbeddedData | undefined;
 
-export interface EmbeddedData_PureProtocolProcessorPlugin_Extension
+export interface DSLData_PureProtocolProcessorPlugin_Extension
   extends PureProtocolProcessorPlugin {
   V1_getExtraEmbeddedDataBuilders?(): V1_EmbeddedDataBuilder[];
 

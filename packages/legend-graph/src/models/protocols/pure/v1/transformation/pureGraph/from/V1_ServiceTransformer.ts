@@ -16,13 +16,7 @@
 
 import { UnsupportedOperationError } from '@finos/legend-shared';
 import type { Service } from '../../../../../../metamodels/pure/packageableElements/service/Service';
-import {
-  type KeyedSingleExecutionTest,
-  type ServiceTest,
-  type TestContainer,
-  MultiExecutionTest,
-  SingleExecutionTest,
-} from '../../../../../../metamodels/pure/packageableElements/service/ServiceTest';
+import type { ServiceTest } from '../../../../../../metamodels/pure/packageableElements/service/ServiceTest';
 import {
   type KeyedExecutionParameter,
   type ServiceExecution,
@@ -40,13 +34,7 @@ import {
   V1_PureMultiExecution,
   V1_KeyedExecutionParameter,
 } from '../../../model/packageableElements/service/V1_ServiceExecution';
-import {
-  V1_ServiceTest,
-  V1_MultiExecutionTest,
-  V1_TestContainer,
-  V1_SingleExecutionTest,
-  V1_KeyedSingleExecutionTest,
-} from '../../../model/packageableElements/service/V1_ServiceTest';
+import { V1_ServiceTest } from '../../../model/packageableElements/service/V1_ServiceTest';
 import { V1_RawValueSpecificationTransformer } from './V1_RawValueSpecificationTransformer';
 import type { V1_RawLambda } from '../../../model/rawValueSpecification/V1_RawLambda';
 import { V1_transformRuntime } from './V1_RuntimeTransformer';
@@ -55,14 +43,26 @@ import {
   V1_transformStereotype,
   V1_transformTaggedValue,
 } from './V1_DomainTransformer';
-import type { ServiceTest_Legacy } from '../../../../../../metamodels/pure/packageableElements/service/ServiceTest_Legacy';
-import type { V1_ServiceTest_Legacy } from '../../../model/packageableElements/service/V1_ServiceTest_Legacy';
+import {
+  type DEPRECATED__ServiceTest,
+  type DEPRECATED__KeyedSingleExecutionTest,
+  type DEPRECATED__TestContainer,
+  DEPRECATED__MultiExecutionTest,
+  DEPRECATED__SingleExecutionTest,
+} from '../../../../../../metamodels/pure/packageableElements/service/DEPRECATED__ServiceTest';
+import {
+  type V1_DEPRECATED__ServiceTest,
+  V1_DEPRECATED__KeyedSingleExecutionTest,
+  V1_DEPRECATED__MultiExecutionTest,
+  V1_DEPRECATED__SingleExecutionTest,
+  V1_DEPRECATED__TestContainer,
+} from '../../../model/packageableElements/service/V1_DEPRECATED__ServiceTest';
 import type { ConnectionTestData } from '../../../../../../metamodels/pure/packageableElements/service/ConnectionTestData';
 import { V1_ConnectionTestData } from '../../../model/packageableElements/service/V1_ConnectionTestData';
 import { V1_transformEmbeddedData } from './V1_DataElementTransformer';
 import { V1_ParameterValue } from '../../../model/packageableElements/service/V1_ParameterValue';
 import type { ParameterValue } from '../../../../../../metamodels/pure/packageableElements/service/ParameterValue';
-import type { TestData } from '../../../../../../metamodels/pure/packageableElements/service/TestData';
+import type { TestData } from '../../../../../../metamodels/pure/packageableElements/service/ServiceTestData';
 import { V1_TestData } from '../../../model/packageableElements/service/V1_TestData';
 import { V1_ServiceTestSuite } from '../../../model/packageableElements/service/V1_ServiceTestSuite';
 import type { ServiceTestSuite } from '../../../../../../metamodels/pure/packageableElements/service/ServiceTestSuite';
@@ -77,8 +77,8 @@ const transformConnectionTestData = (
   context: V1_GraphTransformerContext,
 ): V1_ConnectionTestData => {
   const connectionTestData = new V1_ConnectionTestData();
-  connectionTestData.id = element.id;
-  connectionTestData.data = V1_transformEmbeddedData(element.data, context);
+  connectionTestData.id = element.connectionId;
+  connectionTestData.data = V1_transformEmbeddedData(element.testData, context);
   return connectionTestData;
 };
 
@@ -185,10 +185,10 @@ const transformServiceExecution = (
 };
 
 const transformTestContainer = (
-  element: TestContainer,
+  element: DEPRECATED__TestContainer,
   context: V1_GraphTransformerContext,
-): V1_TestContainer => {
-  const container = new V1_TestContainer();
+): V1_DEPRECATED__TestContainer => {
+  const container = new V1_DEPRECATED__TestContainer();
   container.assert = element.assert.accept_RawValueSpecificationVisitor(
     new V1_RawValueSpecificationTransformer(context),
   ) as V1_RawLambda;
@@ -197,10 +197,10 @@ const transformTestContainer = (
 };
 
 const transformSingleExecutionTest = (
-  element: SingleExecutionTest,
+  element: DEPRECATED__SingleExecutionTest,
   context: V1_GraphTransformerContext,
-): V1_SingleExecutionTest => {
-  const single = new V1_SingleExecutionTest();
+): V1_DEPRECATED__SingleExecutionTest => {
+  const single = new V1_DEPRECATED__SingleExecutionTest();
   single.asserts = element.asserts
     .filter((testContainer) => testContainer.assert.body !== undefined)
     .map((testContainer) => transformTestContainer(testContainer, context));
@@ -209,10 +209,10 @@ const transformSingleExecutionTest = (
 };
 
 const transformKeyedSingleExecutionTest = (
-  element: KeyedSingleExecutionTest,
+  element: DEPRECATED__KeyedSingleExecutionTest,
   context: V1_GraphTransformerContext,
-): V1_KeyedSingleExecutionTest => {
-  const keyedTest = new V1_KeyedSingleExecutionTest();
+): V1_DEPRECATED__KeyedSingleExecutionTest => {
+  const keyedTest = new V1_DEPRECATED__KeyedSingleExecutionTest();
   keyedTest.asserts = element.asserts
     .filter((testContainer) => testContainer.assert.body !== undefined)
     .map((testContainer) => transformTestContainer(testContainer, context));
@@ -222,23 +222,23 @@ const transformKeyedSingleExecutionTest = (
 };
 
 const transformMultiExecutiontest = (
-  element: MultiExecutionTest,
+  element: DEPRECATED__MultiExecutionTest,
   context: V1_GraphTransformerContext,
-): V1_MultiExecutionTest => {
-  const multi = new V1_MultiExecutionTest();
+): V1_DEPRECATED__MultiExecutionTest => {
+  const multi = new V1_DEPRECATED__MultiExecutionTest();
   multi.tests = element.tests.map((test) =>
     transformKeyedSingleExecutionTest(test, context),
   );
   return multi;
 };
 
-const transformServiceTest_Legacy = (
-  value: ServiceTest_Legacy,
+const transformLegacyServiceTest = (
+  value: DEPRECATED__ServiceTest,
   context: V1_GraphTransformerContext,
-): V1_ServiceTest_Legacy => {
-  if (value instanceof SingleExecutionTest) {
+): V1_DEPRECATED__ServiceTest => {
+  if (value instanceof DEPRECATED__SingleExecutionTest) {
     return transformSingleExecutionTest(value, context);
-  } else if (value instanceof MultiExecutionTest) {
+  } else if (value instanceof DEPRECATED__MultiExecutionTest) {
     return transformMultiExecutiontest(value, context);
   }
   throw new UnsupportedOperationError(`Can't transform service test`, value);
@@ -258,9 +258,9 @@ export const V1_transformService = (
   service.owners = element.owners;
   service.pattern = element.pattern;
   if (element.test) {
-    service.test = transformServiceTest_Legacy(element.test, context);
+    service.test = transformLegacyServiceTest(element.test, context);
   }
-  service.testSuites = element.testSuites.map((testSuite) =>
+  service.testSuites = element.tests.map((testSuite) =>
     V1_transformTestSuite(testSuite, context),
   );
   return service;

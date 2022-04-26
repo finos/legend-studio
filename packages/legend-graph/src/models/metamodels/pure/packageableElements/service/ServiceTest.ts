@@ -14,13 +14,10 @@
  * limitations under the License.
  */
 
-import { type Hashable, uuid, hashArray } from '@finos/legend-shared';
+import { type Hashable, hashArray } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
-import type { RawLambda } from '../../rawValueSpecification/RawLambda';
-import { AtomicTest } from '../../test/AtomicTest';
+import { AtomicTest } from '../../test/Test';
 import type { ParameterValue } from './ParameterValue';
-import type { Service } from './Service';
-import { ServiceTest_Legacy } from './ServiceTest_Legacy';
 
 export class ServiceTest extends AtomicTest implements Hashable {
   parameters: ParameterValue[] = [];
@@ -31,80 +28,6 @@ export class ServiceTest extends AtomicTest implements Hashable {
       this.id,
       hashArray(this.assertions),
       hashArray(this.parameters),
-    ]);
-  }
-}
-
-export class TestContainer implements Hashable {
-  readonly uuid = uuid();
-
-  parametersValues: unknown[] = []; // Any[*]; // ValueSpecification?
-  assert: RawLambda; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
-  singleExecutionTestParent: SingleExecutionTest;
-
-  constructor(assert: RawLambda, parent: SingleExecutionTest) {
-    this.assert = assert;
-    this.singleExecutionTestParent = parent;
-  }
-
-  get hashCode(): string {
-    return hashArray([
-      CORE_HASH_STRUCTURE.SERVICE_TEST_CONTAINER,
-      // this.parameterValues,
-      this.assert,
-    ]);
-  }
-}
-
-export class SingleExecutionTest
-  extends ServiceTest_Legacy
-  implements Hashable
-{
-  data: string;
-  asserts: TestContainer[] = [];
-
-  constructor(owner: Service, data: string) {
-    super(owner);
-    this.data = data;
-  }
-
-  get hashCode(): string {
-    return hashArray([
-      CORE_HASH_STRUCTURE.SERVICE_SINGLE_EXECUTION_TEST,
-      this.data,
-      hashArray(this.asserts),
-    ]);
-  }
-}
-
-export class KeyedSingleExecutionTest
-  extends SingleExecutionTest
-  implements Hashable
-{
-  key: string;
-
-  constructor(key: string, parentService: Service, data: string) {
-    super(parentService, data);
-    this.key = key;
-  }
-
-  override get hashCode(): string {
-    return hashArray([
-      CORE_HASH_STRUCTURE.SERVICE_KEYED_SINGLE_EXECUTION_TEST,
-      this.key,
-      this.data,
-      hashArray(this.asserts),
-    ]);
-  }
-}
-
-export class MultiExecutionTest extends ServiceTest_Legacy implements Hashable {
-  tests: KeyedSingleExecutionTest[] = [];
-
-  get hashCode(): string {
-    return hashArray([
-      CORE_HASH_STRUCTURE.SERVICE_MULTI_EXECUTION_TEST,
-      hashArray(this.tests),
     ]);
   }
 }

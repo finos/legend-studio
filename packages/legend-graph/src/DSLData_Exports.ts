@@ -26,9 +26,9 @@ export {
   V1_ExternalFormatData,
   type V1_EmbeddedDataVisitor,
 } from './models/protocols/pure/v1/model/data/V1_EmbeddedData';
-export * from './models/protocols/pure/EmbeddedData_PureProtocolProcessorPlugin_Extension';
+export * from './models/protocols/pure/DSLData_PureProtocolProcessorPlugin_Extension';
 export * from './graphManager/EmbeddedData_PureGraphManagerPlugin_Extension';
 export { V1_ProtocolToMetaModelEmbeddedDataBuilder } from './models/protocols/pure/v1/transformation/pureGraph/to/helpers/V1_DataElementBuilderHelper';
-export { observe_ExternalFormatData } from './graphManager/action/changeDetection/DataObserverHelper';
+export { observe_ExternalFormatData } from './graphManager/action/changeDetection/Data_ObserverHelper';
 export { V1_transformExternalFormatData } from './models/protocols/pure/v1/transformation/pureGraph/from/V1_DataElementTransformer';
 export { V1_externalFormatDataModelSchema } from './models/protocols/pure/v1/transformation/pureProtocol/serializationHelpers/V1_DataElementSerializationHelper';

@@ -14,14 +14,18 @@
  * limitations under the License.
  */
 
-import type { Hashable } from '@finos/legend-shared';
-import type { Service } from './Service';
+import { type Hashable, hashArray } from '@finos/legend-shared';
+import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 
-export abstract class ServiceTest_Legacy implements Hashable {
-  owner: Service;
+export class AtomicTestId implements Hashable {
+  testSuiteId!: string;
+  atomicTestId!: string;
 
-  constructor(owner: Service) {
-    this.owner = owner;
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.ATOMIC_TEST_ID,
+      this.testSuiteId,
+      this.atomicTestId,
+    ]);
   }
-  abstract get hashCode(): string;
 }

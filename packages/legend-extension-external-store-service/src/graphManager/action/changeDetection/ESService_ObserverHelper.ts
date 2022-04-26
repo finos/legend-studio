@@ -433,6 +433,16 @@ export const observe_ServiceRequestPattern = skipObserved(
       bodyPatterns: observable,
       hashCode: computed,
     });
+    if (metamodel.headerParams) {
+      Array.from(metamodel.headerParams.values()).forEach(
+        observe_StringValuePattern,
+      );
+    }
+    if (metamodel.queryParams) {
+      Array.from(metamodel.queryParams.values()).forEach(
+        observe_StringValuePattern,
+      );
+    }
     metamodel.bodyPatterns.forEach(observe_StringValuePattern);
     return metamodel;
   },

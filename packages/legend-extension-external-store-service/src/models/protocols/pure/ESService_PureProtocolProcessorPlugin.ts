@@ -61,7 +61,7 @@ import {
   type V1_ConnectionProtocolSerializer,
   type V1_ConnectionTransformer,
   type DSLMapping_PureProtocolProcessorPlugin_Extension,
-  type EmbeddedData_PureProtocolProcessorPlugin_Extension,
+  type DSLData_PureProtocolProcessorPlugin_Extension,
   type V1_EmbeddedDataBuilder,
   type V1_EmbeddedDataProtocolDeserializer,
   type V1_EmbeddedDataProtocolSerializer,
@@ -111,7 +111,7 @@ export class ESService_PureProtocolProcessorPlugin
   extends PureProtocolProcessorPlugin
   implements
     DSLMapping_PureProtocolProcessorPlugin_Extension,
-    EmbeddedData_PureProtocolProcessorPlugin_Extension
+    DSLData_PureProtocolProcessorPlugin_Extension
 {
   constructor() {
     super(

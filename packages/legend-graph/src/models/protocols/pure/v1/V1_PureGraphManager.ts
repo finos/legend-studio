@@ -821,7 +821,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     await this.buildServices(graph, inputs, options);
     stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_SERVICES_BUILT);
 
-    //build data elements
+    // build data elements
     graphBuilderState.setMessage(`Building data elements...`);
     await this.buildDataElements(graph, inputs, options);
     stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_DATA_ELEMENTS_BUILT);
