@@ -325,7 +325,7 @@ const ProjectDependencyEditor = observer(
           <ExternalLinkSquareIcon />
         </button>
         <button
-          className="project-dependency-editor__remove-btn"
+          className="project-dependency-editor__remove-btn btn--dark btn--caution"
           disabled={isReadOnly}
           onClick={deleteValue}
           tabIndex={-1}
@@ -454,6 +454,7 @@ export const ProjectConfigurationEditor = observer(() => {
             className="project-configuration-editor__update-btn"
             disabled={
               isReadOnly ||
+              configState.isUpdatingConfiguration ||
               currentProjectConfiguration.hashCode ===
                 configState.originalConfig.hashCode
             }

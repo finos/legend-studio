@@ -111,7 +111,6 @@
     background: var(--color-yellow-200);
   }
 
-  /* TODO: to be removed */
   &__update-btn {
     background: var(--color-blue-200);
     color: var(--color-light-grey-0);
@@ -119,6 +118,7 @@
     width: 10rem;
     cursor: pointer;
     height: 2rem;
+    font-size: 1.2rem;
     margin-right: 0.3rem;
 
     &:hover {
@@ -242,15 +242,15 @@
     &__tag {
       @include flexCenter;
 
-      width: 8rem;
+      width: 10rem;
       height: 1.8rem;
       border-radius: 0.2rem;
-      padding: 0 0.5rem;
       font-size: 1rem;
       margin-right: 1rem;
       cursor: default;
-      color: var(--color-light-grey-100);
-      background: var(--color-magenta-100);
+      color: var(--color-dark-grey-250);
+      background: var(--color-light-grey-400);
+      font-weight: 500;
     }
 
     &__name {
