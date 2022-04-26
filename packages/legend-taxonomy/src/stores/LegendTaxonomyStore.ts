@@ -191,6 +191,7 @@ export class TaxonomyNodeViewerState {
   }
 
   *initializeDataSpaceViewer(rawDataSpace: RawDataSpace): GeneratorFn<void> {
+    this.clearDataSpaceViewerState();
     try {
       this.initDataSpaceViewerState.inProgress();
       const stopWatch = new StopWatch();
