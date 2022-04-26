@@ -19,7 +19,7 @@ import {
   type LegendStudioPlugin,
   DSLExternalFormat_LegendStudioPlugin,
 } from '@finos/legend-studio';
-import { WebConsole } from '@finos/legend-shared';
+import { type AbstractPreset, WebConsole } from '@finos/legend-shared';
 import { getLegendGraphExtensionCollection } from '@finos/legend-graph-extension-collection';
 import { QueryBuilder_LegendStudioPreset } from '@finos/legend-studio-extension-query-builder';
 import { DSLText_LegendStudioPlugin } from '@finos/legend-extension-dsl-text';
@@ -28,6 +28,11 @@ import { DSLDataSpace_LegendStudioPlugin } from '@finos/legend-extension-dsl-dat
 import { DSLPersistence_LegendStudioPlugin } from '@finos/legend-extension-dsl-persistence';
 import { ESService_LegendStudioPlugin } from '@finos/legend-extension-external-store-service';
 import { ELMorphir_LegendStudioPlugin } from '@finos/legend-extension-external-language-morphir';
+
+export const getLegendStudioPresetCollection = (): AbstractPreset[] => [
+  ...getLegendGraphExtensionCollection(),
+  new QueryBuilder_LegendStudioPreset(),
+];
 
 export const getLegendStudioPluginCollection = (): LegendStudioPlugin[] => [
   new DSLText_LegendStudioPlugin(),
@@ -43,10 +48,7 @@ export class LegendStudioWebApplication {
   static run(baseUrl: string): void {
     LegendStudio.create()
       .setup({ baseUrl })
-      .withPresets([
-        ...getLegendGraphExtensionCollection(),
-        new QueryBuilder_LegendStudioPreset(),
-      ])
+      .withPresets([...getLegendStudioPresetCollection()])
       .withPlugins([
         ...getLegendStudioPluginCollection(),
         // loggers
