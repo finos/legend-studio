@@ -54,6 +54,7 @@ export class QueryBuilderAggregateOperator_JoinString extends QueryBuilderAggreg
       const propertyType =
         projectionColumnState.propertyExpressionState.propertyExpression.func
           .genericType.value.rawType;
+      // Note: Engine does not support Enumerations at the moment.
       return PRIMITIVE_TYPE.STRING === propertyType.path;
     }
     return true;
