@@ -27,7 +27,6 @@
     "./jest/blockFetch": "./jest/blockFetch.js",
     "./jest/handleUnhandledRejection": "./jest/handleUnhandledRejection.js",
     "./jest/setupDOMPolyfills": "./jest/setupDOMPolyfills.js",
-    "./jest/customResolver": "./jest/customResolver.cjs",
     "./mocks/fileMock": "./mocks/fileMock.js",
     "./ChangesetUtils": "./ChangesetUtils.js",
     "./ChangesetChangelogUtils": "./ChangesetChangelogUtils.cjs",

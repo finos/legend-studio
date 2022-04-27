@@ -32,9 +32,6 @@ export const getBaseConfig = ({ babelConfigPath }) => ({
     // See https://jestjs.io/docs/configuration#transformignorepatterns-arraystring
     '/node_modules/(?!(@finos/legend))',
   ],
-  // NOTE: due to a problem with `uuid` interaction with `jest@28` resolver, we need this custom resolver
-  // See https://github.com/uuidjs/uuid/pull/616
-  resolver: '@finos/legend-dev-utils/jest/customResolver',
   // Setup to run immediately after the test framework has been installed in the environment
   // before each test file in the suite is executed
   // See https://jestjs.io/docs/en/configuration#setupfilesafterenv-array
