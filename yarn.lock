@@ -4004,17 +4004,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:*":
+"@types/node@npm:*, @types/node@npm:17.0.29":
   version: 17.0.29
   resolution: "@types/node@npm:17.0.29"
   checksum: bb9d7bce9d6d3882efd9d63b773b548dce98df4bd57eff8ceaa316aa2f3346e36d3618764cc93da84bbff92005174a35eec3465cde91ee973ef1c351ffa40074
-  languageName: node
-  linkType: hard
-
-"@types/node@npm:17.0.27":
-  version: 17.0.27
-  resolution: "@types/node@npm:17.0.27"
-  checksum: 6645ca813c24dcb9893729ed6f87a9e415d6df03cb3e1ececa3a03ca845d3324c3808b4dc79c08a4b3c7d1ccd515e6d7e004db9c9123c9333e963675238e39fc
   languageName: node
   linkType: hard
 
@@ -8795,9 +8788,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"inquirer@npm:8.2.2":
-  version: 8.2.2
-  resolution: "inquirer@npm:8.2.2"
+"inquirer@npm:8.2.3":
+  version: 8.2.3
+  resolution: "inquirer@npm:8.2.3"
   dependencies:
     ansi-escapes: ^4.2.1
     chalk: ^4.1.1
@@ -8813,7 +8806,8 @@ __metadata:
     string-width: ^4.1.0
     strip-ansi: ^6.0.0
     through: ^2.3.6
-  checksum: 69a2cf32f51af0e94dd66c597fdca42b890ff521b537dbfe1fd532c19a751d54893b7896523691ec30357f6212a80a2417fec7bf34411f369bbf151bdbc95ae9
+    wrap-ansi: ^7.0.0
+  checksum: 5ad4910940e8d9f8fb62e9f340c210aeadd2159e6eb56819a6b23ad25f1677590399d05a8e15a5a6b2da3fbad095aaf7e16c9d08a3d917e026c37eb1a95620d8
   languageName: node
   linkType: hard
 
@@ -10128,14 +10122,14 @@ __metadata:
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/stylelint-config-legend-studio": "workspace:*"
     "@types/jest": 27.4.1
-    "@types/node": 17.0.27
+    "@types/node": 17.0.29
     chalk: 5.0.1
     cross-env: 7.0.3
     envinfo: 7.8.1
     eslint: 8.14.0
     fs-extra: 10.1.0
     husky: 7.0.4
-    inquirer: 8.2.2
+    inquirer: 8.2.3
     jest: 28.0.1
     lint-staged: 12.4.1
     micromatch: 4.0.5
