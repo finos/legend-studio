@@ -446,8 +446,10 @@ const QueryBuilderProjectionColumnEditor = observer(
                     )}
                   </div>
                 )}
+
                 <DropdownMenu
                   className="query-builder__projection__column__aggregate__operator__dropdown"
+                  disabled={!aggreateOperators.length}
                   content={
                     <MenuContent>
                       {aggregateColumnState && (
