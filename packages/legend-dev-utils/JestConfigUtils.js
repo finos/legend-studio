@@ -58,6 +58,11 @@ export const getBaseConfig = ({ babelConfigPath }) => ({
     'jest-watch-typeahead/filename',
     'jest-watch-typeahead/testname',
   ],
+  reporters: [
+    'default',
+    // the built-in GitHub Actions Reporter will annotate changed files with test failure messages
+    'github-actions',
+  ],
 });
 
 export const unitTest = (testName) => `[UNIT] ${testName}`;
