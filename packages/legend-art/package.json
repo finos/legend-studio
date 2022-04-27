@@ -25,7 +25,8 @@
   "exports": {
     ".": "./lib/index.js",
     "./jest/mockESM.jsx": "./jest/mockESM.jsx",
-    "./lib/testMocks/MockedMonacoEditor.js": "./lib/testMocks/MockedMonacoEditor.js"
+    "./lib/testMocks/MockedMonacoEditor.js": "./lib/testMocks/MockedMonacoEditor.js",
+    "./lib/index.css": "./lib/index.css"
   },
   "module": "lib/index.js",
   "types": "lib/index.d.ts",

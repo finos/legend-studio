@@ -20,7 +20,10 @@
   "license": "Apache-2.0",
   "sideEffects": false,
   "type": "module",
-  "exports": "./lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./lib/index.css": "./lib/index.css"
+  },
   "module": "lib/index.js",
   "types": "lib/index.d.ts",
   "scripts": {
