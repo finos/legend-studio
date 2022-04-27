@@ -44,8 +44,9 @@ export const baseJestConfig = {
   ],
   moduleNameMapper: {
     ...baseConfig.moduleNameMapper,
-    // TODO: remove this and `lodash` dependency when we upgrade to Jest@27 and use ESM for Jest
-    // See https://github.com/finos/legend-studio/issues/502
+    // TODO: remove this and `lodash` dependency when `lodash`
+    // natively support ESM and hence, work well with `jest-resolve`
+    // See https://github.com/lodash/lodash/issues/5107
     '^lodash-es$': 'lodash',
   },
   modulePathIgnorePatterns: ['packages/.*/lib'],

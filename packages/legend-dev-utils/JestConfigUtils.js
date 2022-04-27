@@ -22,7 +22,9 @@ export const getBaseConfig = ({ babelConfigPath }) => ({
     // See https://jestjs.io/docs/en/getting-started#using-typescript
     '^.+\\.[jt]sx?$': [
       'babel-jest',
-      { configFile: babelConfigPath, root: undefined },
+      {
+        configFile: babelConfigPath,
+      },
     ],
   },
   transformIgnorePatterns: [

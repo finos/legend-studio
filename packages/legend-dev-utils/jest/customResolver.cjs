@@ -18,7 +18,7 @@ module.exports = (path, options) =>
       // "export" syntax.
       //
       // This workaround prevents Jest from considering uuid's module-based exports at all;
-      // it falls back to uuid's CommonJS + node "main" property
+      // it falls back to uuid's CommonJS and "main" field in package.json
       //
       // See https://github.com/uuidjs/uuid/pull/616#issuecomment-1110380182
       if (pkg.name === 'uuid') {
