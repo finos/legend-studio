@@ -51,7 +51,7 @@
     "@finos/legend-server-depot": "workspace:*",
     "@finos/legend-shared": "workspace:*",
     "@finos/legend-studio": "workspace:*",
-    "@types/react": "17.0.43",
+    "@types/react": "17.0.44",
     "mobx": "6.5.0",
     "mobx-react-lite": "3.3.0",
     "react": "17.0.2",
@@ -62,11 +62,11 @@
     "@testing-library/dom": "8.13.0",
     "@testing-library/react": "12.1.5",
     "cross-env": "7.0.3",
-    "eslint": "8.13.0",
-    "jest": "27.5.1",
+    "eslint": "8.14.0",
+    "jest": "28.0.1",
     "npm-run-all": "4.1.5",
     "rimraf": "3.0.2",
-    "sass": "1.50.1",
+    "sass": "1.51.0",
     "typescript": "4.6.3"
   },
   "peerDependencies": {
