@@ -87,7 +87,6 @@ export const baseJestConfig = {
 export const getBaseJestProjectConfig = (projectName, packageDir) => ({
   ...baseJestConfig,
   displayName: projectName,
-  name: projectName,
   rootDir: '../..',
   testMatch: [`<rootDir>/${packageDir}/**/__tests__/**/*(*.)test.[jt]s?(x)`],
 });
@@ -106,11 +105,6 @@ export const getBaseJestDOMProjectConfig = (projectName, packageDir) => {
       ...base.moduleNameMapper,
       '^monaco-editor$':
         '@finos/legend-art/lib/testMocks/MockedMonacoEditor.js',
-      // Mock for testing `react-dnd`
-      // See http://react-dnd.github.io/react-dnd/docs/testing
-      '^dnd-core$': 'dnd-core/dist/cjs',
-      '^react-dnd$': 'react-dnd/dist/cjs',
-      '^react-dnd-html5-backend$': 'react-dnd-html5-backend/dist/cjs',
     },
   };
 };
