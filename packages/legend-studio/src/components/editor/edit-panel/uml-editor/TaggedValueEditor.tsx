@@ -43,8 +43,9 @@ export const TaggedValueEditor = observer(
     taggedValue: TaggedValue;
     deleteValue: () => void;
     isReadOnly: boolean;
+    darkTheme?: boolean;
   }) => {
-    const { taggedValue, deleteValue, isReadOnly } = props;
+    const { taggedValue, deleteValue, isReadOnly, darkTheme } = props;
     const editorStore = useEditorStore();
     // Name
     const changeValue: React.ChangeEventHandler<
@@ -97,7 +98,11 @@ export const TaggedValueEditor = observer(
 
     return (
       <div className="tagged-value-editor">
-        <div className="tagged-value-editor__profile">
+        <div
+          className={`tagged-value-editor__profile ${
+            darkTheme ? 'tagged-value-editor-dark-theme' : ''
+          }`}
+        >
           <CustomSelectorInput
             className="tagged-value-editor__profile__selector"
             disabled={isReadOnly}
@@ -106,9 +111,12 @@ export const TaggedValueEditor = observer(
             value={selectedProfile}
             placeholder={'Choose a profile'}
             filterOption={profileFilterOption}
+            darkMode={darkTheme ?? false}
           />
           <button
-            className="tagged-value-editor__profile__visit-btn"
+            className={`tagged-value-editor__profile__visit-btn ${
+              darkTheme ? 'tagged-value-editor-dark-theme' : ''
+            }`}
             disabled={taggedValue.tag.value.owner.isStub}
             onClick={visitProfile}
             tabIndex={-1}
@@ -125,6 +133,7 @@ export const TaggedValueEditor = observer(
           value={selectedTag}
           placeholder={'Choose a tag'}
           filterOption={tagFilterOption}
+          darkMode={darkTheme ?? false}
         />
         {!isReadOnly && (
           <button
@@ -144,7 +153,9 @@ export const TaggedValueEditor = observer(
         >
           {isExpanded && (
             <textarea
-              className="tagged-value-editor__value__input"
+              className={`tagged-value-editor__value__input ${
+                darkTheme ? 'tagged-value-editor-dark-theme' : ''
+              }`}
               spellCheck={false}
               disabled={isReadOnly}
               value={taggedValue.value}
@@ -154,7 +165,9 @@ export const TaggedValueEditor = observer(
           )}
           {!isExpanded && (
             <input
-              className="tagged-value-editor__value__input"
+              className={`tagged-value-editor__value__input ${
+                darkTheme ? 'tagged-value-editor-dark-theme' : ''
+              }`}
               spellCheck={false}
               disabled={isReadOnly}
               value={taggedValue.value}
@@ -163,7 +176,9 @@ export const TaggedValueEditor = observer(
             />
           )}
           <button
-            className="tagged-value-editor__value__expand-btn"
+            className={`tagged-value-editor__value__expand-btn ${
+              darkTheme ? 'tagged-value-editor-dark-theme' : ''
+            }`}
             onClick={toggleExpandedMode}
             tabIndex={-1}
             title={'Expand/Collapse'}

@@ -35,6 +35,8 @@ import {
   type MappingElementSourceGetter,
   type MappingElementSource,
   type ElementIconGetter,
+  type DSLData_LegendStudioPlugin_Extension,
+  type EmbeddedDataTypeOption,
 } from '@finos/legend-studio';
 import { SwaggerIcon } from '@finos/legend-art';
 import type {
@@ -53,7 +55,9 @@ const SERVICE_STORE_MAPPING_TYPE = 'serviceStore';
 
 export class ESService_LegendStudioPlugin
   extends LegendStudioPlugin
-  implements DSLMapping_LegendStudioPlugin_Extension
+  implements
+    DSLMapping_LegendStudioPlugin_Extension,
+    DSLData_LegendStudioPlugin_Extension
 {
   constructor() {
     super(packageJson.extensions.studioPlugin, packageJson.version);
@@ -187,6 +191,15 @@ export class ESService_LegendStudioPlugin
           return `Service store connection \u2022 store ${connection.store.value.path}`;
         }
         return undefined;
+      },
+    ];
+  }
+
+  getExtraEmbeddedDataTypeOptions(): EmbeddedDataTypeOption[] {
+    return [
+      {
+        value: 'ServiceStore',
+        label: 'ServiceStore',
       },
     ];
   }

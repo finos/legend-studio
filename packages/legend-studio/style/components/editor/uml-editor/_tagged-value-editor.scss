@@ -102,3 +102,9 @@
     cursor: pointer;
   }
 }
+
+.tagged-value-editor-dark-theme {
+  color: var(--color-light-grey-50);
+  background: var(--color-dark-grey-100);
+  border: 0.1rem solid var(--color-dark-grey-400);
+}

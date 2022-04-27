@@ -68,6 +68,8 @@ import { FileGenerationViewerState } from '../../../stores/editor-state/FileGene
 import { FileGenerationViewer } from '../../editor/edit-panel/FileGenerationViewer';
 import type { DSL_LegendStudioPlugin_Extension } from '../../../stores/LegendStudioPlugin';
 import { useEditorStore } from '../EditorStoreProvider';
+import { PackageableDataEditorState } from '../../../stores/editor-state/element-editor-state/data/DataEditorState';
+import { PackageableDataEditor } from './data-editor/DataElementEditor';
 
 export const ViewerEditPanelSplashScreen: React.FC = () => {
   const commandListWidth = 300;
@@ -263,6 +265,8 @@ export const EditPanel = observer(() => {
             );
           } else if (currentEditorState instanceof FileGenerationEditorState) {
             return <FileGenerationEditor key={currentEditorState.uuid} />;
+          } else if (currentEditorState instanceof PackageableDataEditorState) {
+            return <PackageableDataEditor key={currentEditorState.uuid} />;
           } else if (
             currentEditorState instanceof GenerationSpecificationEditorState
           ) {

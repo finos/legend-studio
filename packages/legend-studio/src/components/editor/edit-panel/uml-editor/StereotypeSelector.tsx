@@ -41,8 +41,9 @@ export const StereotypeSelector = observer(
     stereotype: StereotypeReference;
     deleteStereotype: () => void;
     isReadOnly: boolean;
+    darkTheme?: boolean;
   }) => {
-    const { stereotype, deleteStereotype, isReadOnly } = props;
+    const { stereotype, deleteStereotype, isReadOnly, darkTheme } = props;
     const editorStore = useEditorStore();
     // Profile
     const profileOptions = editorStore.profileOptions.filter(
@@ -86,7 +87,11 @@ export const StereotypeSelector = observer(
       stereotypeReference_setValue(stereotype, val.value);
     return (
       <div className="stereotype-selector">
-        <div className="stereotype-selector__profile">
+        <div
+          className={`stereotype-selector__profile ${
+            darkTheme ? 'stereotype-selector-dark-theme' : ''
+          }`}
+        >
           <CustomSelectorInput
             className="stereotype-selector__profile__selector"
             disabled={isReadOnly}
@@ -95,9 +100,12 @@ export const StereotypeSelector = observer(
             value={selectedProfile}
             placeholder={'Choose a profile'}
             filterOption={filterOption}
+            darkMode={darkTheme ?? false}
           />
           <button
-            className="stereotype-selector__profile__visit-btn"
+            className={`stereotype-selector__profile__visit-btn ${
+              darkTheme ? 'stereotype-selector-dark-theme' : ''
+            }`}
             disabled={stereotype.value.owner.isStub}
             onClick={visitProfile}
             tabIndex={-1}
@@ -114,6 +122,7 @@ export const StereotypeSelector = observer(
           value={selectedStereotype}
           placeholder={'Choose a stereotype'}
           filterOption={stereotypeFilterOption}
+          darkMode={darkTheme ?? false}
         />
         {!isReadOnly && (
           <button
