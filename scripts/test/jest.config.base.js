@@ -16,8 +16,10 @@
 
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { createRequire } from 'module';
 import { getBaseConfig } from '@finos/legend-dev-utils/JestConfigUtils';
 
+const require = createRequire(import.meta.url);
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const baseConfig = getBaseConfig({
@@ -44,9 +46,13 @@ export const baseJestConfig = {
   ],
   moduleNameMapper: {
     ...baseConfig.moduleNameMapper,
-    // TODO: remove this and `lodash` dependency when we upgrade to Jest@27 and use ESM for Jest
-    // See https://github.com/finos/legend-studio/issues/502
+    // TODO: remove this and `lodash` dependency when `lodash`
+    // natively support ESM and hence, work well with `jest-resolve`
+    // See https://github.com/lodash/lodash/issues/5107
     '^lodash-es$': 'lodash',
+    // NOTE: due to a problem with `uuid` interaction with `jest@28` resolver, we need this custom resolver
+    // See https://github.com/uuidjs/uuid/pull/616
+    '^uuid$': require.resolve('uuid'),
   },
   modulePathIgnorePatterns: ['packages/.*/lib'],
   testPathIgnorePatterns: [
@@ -87,7 +93,6 @@ export const baseJestConfig = {
 export const getBaseJestProjectConfig = (projectName, packageDir) => ({
   ...baseJestConfig,
   displayName: projectName,
-  name: projectName,
   rootDir: '../..',
   testMatch: [`<rootDir>/${packageDir}/**/__tests__/**/*(*.)test.[jt]s?(x)`],
 });
@@ -106,11 +111,6 @@ export const getBaseJestDOMProjectConfig = (projectName, packageDir) => {
       ...base.moduleNameMapper,
       '^monaco-editor$':
         '@finos/legend-art/lib/testMocks/MockedMonacoEditor.js',
-      // Mock for testing `react-dnd`
-      // See http://react-dnd.github.io/react-dnd/docs/testing
-      '^dnd-core$': 'dnd-core/dist/cjs',
-      '^react-dnd$': 'react-dnd/dist/cjs',
-      '^react-dnd-html5-backend$': 'react-dnd-html5-backend/dist/cjs',
     },
   };
 };

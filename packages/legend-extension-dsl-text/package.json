@@ -20,7 +20,10 @@
   "license": "Apache-2.0",
   "sideEffects": false,
   "type": "module",
-  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./lib/index.css": "./lib/index.css"
+  },
   "module": "lib/index.js",
   "types": "lib/index.d.ts",
   "scripts": {
@@ -46,7 +49,7 @@
     "@finos/legend-model-storage": "workspace:*",
     "@finos/legend-shared": "workspace:*",
     "@finos/legend-studio": "workspace:*",
-    "@types/react": "17.0.43",
+    "@types/react": "17.0.44",
     "mobx": "6.5.0",
     "mobx-react-lite": "3.3.0",
     "react": "17.0.2",
@@ -55,11 +58,11 @@
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",
     "cross-env": "7.0.3",
-    "eslint": "8.13.0",
-    "jest": "27.5.1",
+    "eslint": "8.14.0",
+    "jest": "28.0.2",
     "npm-run-all": "4.1.5",
     "rimraf": "3.0.2",
-    "sass": "1.50.1",
+    "sass": "1.51.0",
     "typescript": "4.6.3"
   },
   "peerDependencies": {
