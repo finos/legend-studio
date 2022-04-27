@@ -177,7 +177,6 @@ export const CustomSelectorInput = forwardRef<
   //
   // NOTE: since we're using an outdated version of `react-select`, we would get type issue
   // See https://github.com/finos/legend-studio/issues/615
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const SelectComponent: React.ElementType = allowCreating
     ? CreatableSelect
     : Select;
