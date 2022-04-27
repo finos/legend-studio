@@ -34,4 +34,4 @@
 '@finos/stylelint-config-legend-studio': major
 ---
 
-Adopt `ESM` styled exports: i.e. we now make use of `exports` field (and removed `main` field) in `package.json`.
+**BREAKING CHANGE:** Adopt `ESM` styled exports: i.e. we now make use of `exports` field (and removed `main` field) in `package.json`.
