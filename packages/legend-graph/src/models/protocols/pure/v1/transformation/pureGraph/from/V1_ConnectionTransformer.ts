@@ -280,6 +280,7 @@ export const V1_transformRelationalDatabaseConnection = (
     context,
   );
   connection.type = metamodel.type as unknown as V1_DatabaseType;
+  connection.databaseType = connection.type;
   connection.timeZone = metamodel.timeZone;
   connection.quoteIdentifiers = metamodel.quoteIdentifiers;
   if (metamodel.postProcessors.length) {

@@ -14,31 +14,7 @@
  * limitations under the License.
  */
 
-// NOTE: mock these methods to make sure we rule out false positive. The grammar parser for any List type field,
-// will generate empty array, however, in Studio, we avoid that to lessen the size of the serialized graph
-// to save bandwidth, as such the best action is just to mock these methods so in the scope of this test, Studio
-// serializers return empty array for these fields just like the parser's
-jest.mock('@finos/legend-shared', () => ({
-  ...jest.requireActual('@finos/legend-shared'),
-  /* eslint-disable @typescript-eslint/no-explicit-any */
-  serializeArray: (
-    values: any,
-    itemSerializer: (val: any) => any,
-    skipIfEmpty: boolean,
-  ): any[] =>
-    Array.isArray(values)
-      ? values.length
-        ? values.map((value) => itemSerializer(value))
-        : []
-      : [],
-  deserializeArray: (
-    values: any,
-    itemDeserializer: (val: any) => any,
-    skipIfEmpty: boolean,
-  ): any[] => (Array.isArray(values) ? values.map(itemDeserializer) : []),
-  /* eslint-enable @typescript-eslint/no-explicit-any */
-}));
-
+/// <reference types="jest-extended" />
 import { resolve, basename } from 'path';
 import fs from 'fs';
 import axios, { type AxiosResponse } from 'axios';

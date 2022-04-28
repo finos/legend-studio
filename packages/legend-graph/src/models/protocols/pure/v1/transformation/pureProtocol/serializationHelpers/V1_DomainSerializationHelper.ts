@@ -24,7 +24,6 @@ import {
   custom,
   deserialize,
   optional,
-  SKIP,
 } from 'serializr';
 import {
   deserializeArray,
@@ -104,28 +103,30 @@ export const V1_enumValueSchema = createModelSchema(V1_EnumValue, {
       serializeArray(
         values,
         (value) => serialize(V1_stereotypePtrSchema, value),
-        true,
+        {
+          skipIfEmpty: true,
+          INTERNAL__forceReturnEmptyInTest: true,
+        },
       ),
     (values) =>
-      deserializeArray(
-        values,
-        (v: V1_StereotypePtr) => deserialize(V1_stereotypePtrSchema, v),
-        false,
-      ),
+      deserializeArray(values, (v) => deserialize(V1_stereotypePtrSchema, v), {
+        skipIfEmpty: false,
+      }),
   ),
   taggedValues: custom(
     (values) =>
       serializeArray(
         values,
         (value) => serialize(V1_taggedValueSchema, value),
-        true,
+        {
+          skipIfEmpty: true,
+          INTERNAL__forceReturnEmptyInTest: true,
+        },
       ),
     (values) =>
-      deserializeArray(
-        values,
-        (v: V1_StereotypePtr) => deserialize(V1_taggedValueSchema, v),
-        false,
-      ),
+      deserializeArray(values, (v) => deserialize(V1_taggedValueSchema, v), {
+        skipIfEmpty: false,
+      }),
   ),
   value: primitive(),
 });
@@ -139,28 +140,30 @@ export const V1_enumerationSchema = createModelSchema(V1_Enumeration, {
       serializeArray(
         values,
         (value) => serialize(V1_stereotypePtrSchema, value),
-        true,
+        {
+          skipIfEmpty: true,
+          INTERNAL__forceReturnEmptyInTest: true,
+        },
       ),
     (values) =>
-      deserializeArray(
-        values,
-        (v: V1_StereotypePtr) => deserialize(V1_stereotypePtrSchema, v),
-        false,
-      ),
+      deserializeArray(values, (v) => deserialize(V1_stereotypePtrSchema, v), {
+        skipIfEmpty: false,
+      }),
   ),
   taggedValues: custom(
     (values) =>
       serializeArray(
         values,
         (value) => serialize(V1_taggedValueSchema, value),
-        true,
+        {
+          skipIfEmpty: true,
+          INTERNAL__forceReturnEmptyInTest: true,
+        },
       ),
     (values) =>
-      deserializeArray(
-        values,
-        (v: V1_StereotypePtr) => deserialize(V1_taggedValueSchema, v),
-        false,
-      ),
+      deserializeArray(values, (v) => deserialize(V1_taggedValueSchema, v), {
+        skipIfEmpty: false,
+      }),
   ),
   values: list(usingModelSchema(V1_enumValueSchema)),
 });
@@ -193,28 +196,30 @@ export const V1_propertySchema = createModelSchema(V1_Property, {
       serializeArray(
         values,
         (value) => serialize(V1_stereotypePtrSchema, value),
-        true,
+        {
+          skipIfEmpty: true,
+          INTERNAL__forceReturnEmptyInTest: true,
+        },
       ),
     (values) =>
-      deserializeArray(
-        values,
-        (v: V1_StereotypePtr) => deserialize(V1_stereotypePtrSchema, v),
-        false,
-      ),
+      deserializeArray(values, (v) => deserialize(V1_stereotypePtrSchema, v), {
+        skipIfEmpty: false,
+      }),
   ),
   taggedValues: custom(
     (values) =>
       serializeArray(
         values,
         (value) => serialize(V1_taggedValueSchema, value),
-        true,
+        {
+          skipIfEmpty: true,
+          INTERNAL__forceReturnEmptyInTest: true,
+        },
       ),
     (values) =>
-      deserializeArray(
-        values,
-        (v: V1_StereotypePtr) => deserialize(V1_taggedValueSchema, v),
-        false,
-      ),
+      deserializeArray(values, (v) => deserialize(V1_taggedValueSchema, v), {
+        skipIfEmpty: false,
+      }),
   ),
   type: primitive(),
 });
@@ -230,28 +235,30 @@ export const V1_derivedPropertySchema = createModelSchema(V1_DerivedProperty, {
       serializeArray(
         values,
         (value) => serialize(V1_stereotypePtrSchema, value),
-        true,
+        {
+          skipIfEmpty: true,
+          INTERNAL__forceReturnEmptyInTest: true,
+        },
       ),
     (values) =>
-      deserializeArray(
-        values,
-        (v: V1_StereotypePtr) => deserialize(V1_stereotypePtrSchema, v),
-        false,
-      ),
+      deserializeArray(values, (v) => deserialize(V1_stereotypePtrSchema, v), {
+        skipIfEmpty: false,
+      }),
   ),
   taggedValues: custom(
     (values) =>
       serializeArray(
         values,
         (value) => serialize(V1_taggedValueSchema, value),
-        true,
+        {
+          skipIfEmpty: true,
+          INTERNAL__forceReturnEmptyInTest: true,
+        },
       ),
     (values) =>
-      deserializeArray(
-        values,
-        (v: V1_StereotypePtr) => deserialize(V1_taggedValueSchema, v),
-        false,
-      ),
+      deserializeArray(values, (v) => deserialize(V1_taggedValueSchema, v), {
+        skipIfEmpty: false,
+      }),
   ),
 });
 
@@ -267,37 +274,29 @@ export const V1_classSchema = createModelSchema(V1_Class, {
   _type: usingConstantValueSchema(V1_CLASS_ELEMENT_PROTOCOL_TYPE),
   constraints: custom(
     (values) =>
-      serializeArray(
-        values,
-        (value) => serialize(V1_constraintSchema, value),
-        true,
-      ),
+      serializeArray(values, (value) => serialize(V1_constraintSchema, value), {
+        skipIfEmpty: true,
+        INTERNAL__forceReturnEmptyInTest: true,
+      }),
     (values) =>
-      deserializeArray(
-        values,
-        (v: V1_StereotypePtr) => deserialize(V1_constraintSchema, v),
-        false,
-      ),
+      deserializeArray(values, (v) => deserialize(V1_constraintSchema, v), {
+        skipIfEmpty: false,
+      }),
   ),
   name: primitive(),
-  originalMilestonedProperties: custom(
-    (values) => serializeArray([], () => SKIP, true),
-    (values) => deserializeArray([], () => SKIP, false),
-  ), // @MARKER: GRAMMAR ROUNDTRIP --- omit this information during protocol transformation as it can be interpreted while building the graph
+  // @MARKER: GRAMMAR ROUNDTRIP --- omit this information during protocol transformation as it can be interpreted while building the graph
+  originalMilestonedProperties: usingConstantValueSchema([]),
   package: primitive(),
   properties: custom(
     (values) =>
-      serializeArray(
-        values,
-        (value) => serialize(V1_propertySchema, value),
-        true,
-      ),
+      serializeArray(values, (value) => serialize(V1_propertySchema, value), {
+        skipIfEmpty: true,
+        INTERNAL__forceReturnEmptyInTest: true,
+      }),
     (values) =>
-      deserializeArray(
-        values,
-        (v: V1_StereotypePtr) => deserialize(V1_propertySchema, v),
-        false,
-      ),
+      deserializeArray(values, (v) => deserialize(V1_propertySchema, v), {
+        skipIfEmpty: false,
+      }),
   ),
   derivedProperties: alias(
     'qualifiedProperties', // 'derived properties' used to be called 'qualified properties'
@@ -306,13 +305,18 @@ export const V1_classSchema = createModelSchema(V1_Class, {
         serializeArray(
           values,
           (value) => serialize(V1_derivedPropertySchema, value),
-          true,
+          {
+            skipIfEmpty: true,
+            INTERNAL__forceReturnEmptyInTest: true,
+          },
         ),
       (values) =>
         deserializeArray(
           values,
-          (v: V1_StereotypePtr) => deserialize(V1_derivedPropertySchema, v),
-          false,
+          (v) => deserialize(V1_derivedPropertySchema, v),
+          {
+            skipIfEmpty: false,
+          },
         ),
     ),
   ),
@@ -321,32 +325,41 @@ export const V1_classSchema = createModelSchema(V1_Class, {
       serializeArray(
         values,
         (value) => serialize(V1_stereotypePtrSchema, value),
-        true,
+        {
+          skipIfEmpty: true,
+          INTERNAL__forceReturnEmptyInTest: true,
+        },
       ),
     (values) =>
-      deserializeArray(
-        values,
-        (v: V1_StereotypePtr) => deserialize(V1_stereotypePtrSchema, v),
-        false,
-      ),
+      deserializeArray(values, (v) => deserialize(V1_stereotypePtrSchema, v), {
+        skipIfEmpty: false,
+      }),
   ),
   superTypes: custom(
-    (values) => serializeArray(values, (value) => value, true),
-    (values) => deserializeArray(values, (v: string) => v, false),
+    (values) =>
+      serializeArray(values, (value: string) => value, {
+        skipIfEmpty: true,
+        INTERNAL__forceReturnEmptyInTest: true,
+      }),
+    (values) =>
+      deserializeArray(values, (v) => v, {
+        skipIfEmpty: false,
+      }),
   ),
   taggedValues: custom(
     (values) =>
       serializeArray(
         values,
         (value) => serialize(V1_taggedValueSchema, value),
-        true,
+        {
+          skipIfEmpty: true,
+          INTERNAL__forceReturnEmptyInTest: true,
+        },
       ),
     (values) =>
-      deserializeArray(
-        values,
-        (v: V1_StereotypePtr) => deserialize(V1_taggedValueSchema, v),
-        false,
-      ),
+      deserializeArray(values, (v) => deserialize(V1_taggedValueSchema, v), {
+        skipIfEmpty: false,
+      }),
   ),
 });
 
@@ -357,10 +370,8 @@ export const V1_associationSchema = createModelSchema(V1_Association, {
   name: primitive(),
   package: primitive(),
   properties: list(usingModelSchema(V1_propertySchema)),
-  originalMilestonedProperties: custom(
-    (values) => serializeArray([], () => SKIP, true),
-    (values) => deserializeArray([], () => SKIP, false),
-  ), // @MARKER: GRAMMAR ROUNDTRIP --- omit this information during protocol transformation as it can be interpreted while building the graph
+  // @MARKER: GRAMMAR ROUNDTRIP --- omit this information during protocol transformation as it can be interpreted while building the graph
+  originalMilestonedProperties: usingConstantValueSchema([]),
   derivedProperties: alias(
     'qualifiedProperties', // 'derived properties' used to be called 'qualified properties'
     custom(
@@ -368,13 +379,18 @@ export const V1_associationSchema = createModelSchema(V1_Association, {
         serializeArray(
           values,
           (value) => serialize(V1_derivedPropertySchema, value),
-          true,
+          {
+            skipIfEmpty: true,
+            INTERNAL__forceReturnEmptyInTest: true,
+          },
         ),
       (values) =>
         deserializeArray(
           values,
-          (v: V1_StereotypePtr) => deserialize(V1_derivedPropertySchema, v),
-          false,
+          (v) => deserialize(V1_derivedPropertySchema, v),
+          {
+            skipIfEmpty: false,
+          },
         ),
     ),
   ),
@@ -383,28 +399,30 @@ export const V1_associationSchema = createModelSchema(V1_Association, {
       serializeArray(
         values,
         (value) => serialize(V1_stereotypePtrSchema, value),
-        true,
+        {
+          skipIfEmpty: true,
+          INTERNAL__forceReturnEmptyInTest: true,
+        },
       ),
     (values) =>
-      deserializeArray(
-        values,
-        (v: V1_StereotypePtr) => deserialize(V1_stereotypePtrSchema, v),
-        false,
-      ),
+      deserializeArray(values, (v) => deserialize(V1_stereotypePtrSchema, v), {
+        skipIfEmpty: false,
+      }),
   ),
   taggedValues: custom(
     (values) =>
       serializeArray(
         values,
         (value) => serialize(V1_taggedValueSchema, value),
-        true,
+        {
+          skipIfEmpty: true,
+          INTERNAL__forceReturnEmptyInTest: true,
+        },
       ),
     (values) =>
-      deserializeArray(
-        values,
-        (v: V1_StereotypePtr) => deserialize(V1_taggedValueSchema, v),
-        false,
-      ),
+      deserializeArray(values, (v) => deserialize(V1_taggedValueSchema, v), {
+        skipIfEmpty: false,
+      }),
   ),
 });
 
@@ -425,13 +443,18 @@ export const V1_functionSchema = createModelSchema(
         serializeArray(
           values,
           (value) => serialize(V1_stereotypePtrSchema, value),
-          true,
+          {
+            skipIfEmpty: true,
+            INTERNAL__forceReturnEmptyInTest: true,
+          },
         ),
       (values) =>
         deserializeArray(
           values,
-          (v: V1_StereotypePtr) => deserialize(V1_stereotypePtrSchema, v),
-          false,
+          (v) => deserialize(V1_stereotypePtrSchema, v),
+          {
+            skipIfEmpty: false,
+          },
         ),
     ),
     taggedValues: custom(
@@ -439,14 +462,15 @@ export const V1_functionSchema = createModelSchema(
         serializeArray(
           values,
           (value) => serialize(V1_taggedValueSchema, value),
-          true,
+          {
+            skipIfEmpty: true,
+            INTERNAL__forceReturnEmptyInTest: true,
+          },
         ),
       (values) =>
-        deserializeArray(
-          values,
-          (v: V1_StereotypePtr) => deserialize(V1_taggedValueSchema, v),
-          false,
-        ),
+        deserializeArray(values, (v) => deserialize(V1_taggedValueSchema, v), {
+          skipIfEmpty: false,
+        }),
     ),
   },
 );

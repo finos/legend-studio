@@ -22,6 +22,8 @@ import {
   usingModelSchema,
   serializeArray,
   deserializeArray,
+  serializeMap,
+  deserializeMap,
 } from '@finos/legend-shared';
 import {
   type ModelSchema,
@@ -35,7 +37,6 @@ import {
   deserialize,
   object,
   raw,
-  SKIP,
 } from 'serializr';
 import { V1_ServiceStore } from '../../model/packageableElements/store/serviceStore/model/V1_ESService_ServiceStore';
 import { V1_ServiceStoreService } from '../../model/packageableElements/store/serviceStore/model/V1_ESService_ServiceStoreService';
@@ -569,69 +570,25 @@ export const V1_serviceRequestPatternModelSchema = createModelSchema(
       (values) =>
         serializeArray(
           values,
-          (value) => V1_serializeStringValuePattern(value),
-          true,
+          (value: V1_StringValuePattern) =>
+            V1_serializeStringValuePattern(value),
+          {
+            skipIfEmpty: true,
+          },
         ),
       (values) =>
-        deserializeArray(
-          values,
-          (v: PlainObject<V1_StringValuePattern>) =>
-            V1_deserializeStringValuePattern(v),
-          true,
-        ),
+        deserializeArray(values, (v) => V1_deserializeStringValuePattern(v), {
+          skipIfEmpty: false,
+        }),
     ),
-    headerParams: optional(
-      custom(
-        (val) => {
-          if (val) {
-            const result: Record<PropertyKey, unknown> = {};
-            val.forEach((v: V1_StringValuePattern, key: string | number) => {
-              result[key] = V1_serializeStringValuePattern(v);
-            });
-            return result;
-          } else {
-            return SKIP;
-          }
-        },
-        (val) => {
-          if (val) {
-            const result = new Map<string, V1_StringValuePattern>();
-            Object.keys(val).forEach((key: string) =>
-              result.set(key, V1_deserializeStringValuePattern(val[key])),
-            );
-            return result;
-          } else {
-            return SKIP;
-          }
-        },
-      ),
+    headerParams: optionalCustom(
+      (val) => serializeMap(val, V1_serializeStringValuePattern),
+      (val) => deserializeMap(val, V1_deserializeStringValuePattern),
     ),
     method: primitive(),
-    queryParams: optional(
-      custom(
-        (val) => {
-          if (val) {
-            const result: Record<PropertyKey, unknown> = {};
-            val.forEach((v: V1_StringValuePattern, key: string | number) => {
-              result[key] = V1_serializeStringValuePattern(v);
-            });
-            return result;
-          } else {
-            return SKIP;
-          }
-        },
-        (val) => {
-          if (val) {
-            const result = new Map<string, V1_StringValuePattern>();
-            Object.keys(val).forEach((key: string) =>
-              result.set(key, V1_deserializeStringValuePattern(val[key])),
-            );
-            return result;
-          } else {
-            return SKIP;
-          }
-        },
-      ),
+    queryParams: optionalCustom(
+      (val) => serializeMap(val, V1_serializeStringValuePattern),
+      (val) => deserializeMap(val, V1_deserializeStringValuePattern),
     ),
     url: optional(primitive()),
     urlPath: optional(primitive()),
