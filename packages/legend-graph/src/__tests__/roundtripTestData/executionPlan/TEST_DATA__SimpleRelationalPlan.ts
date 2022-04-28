@@ -83,6 +83,7 @@ export const TEST_DATA__simpleRelationalPlan = {
               _type: 'h2Default',
             },
             type: 'H2',
+            databaseType: 'H2',
             _type: 'RelationalDatabaseConnection',
             element: 'model::Test',
           },

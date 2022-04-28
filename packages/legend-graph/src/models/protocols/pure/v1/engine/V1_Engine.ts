@@ -463,7 +463,7 @@ export class V1_Engine {
     input: V1_TestDataGenerationExecutionInput,
   ): Promise<string> {
     return this.engineServerClient.generateTestDataWithDefaultSeed(
-      V1_TestDataGenerationExecutionInput._serialization.toJson(input),
+      V1_TestDataGenerationExecutionInput.serialization.toJson(input),
     );
   }
 
@@ -515,7 +515,7 @@ export class V1_Engine {
           new V1_GenerateFileInput(textModel, configs),
         ),
       )
-    ).map(V1_GenerationOutput.serialization.fromJson);
+    ).map((v) => V1_GenerationOutput.serialization.fromJson(v));
   }
   // ------------------------------------------- External Format -----------------------------------------
 
@@ -592,7 +592,7 @@ export class V1_Engine {
       await this.engineServerClient.runServiceTests(
         V1_serializePureModelContextData(model),
       )
-    ).map(V1_ServiceTestResult.serialization.fromJson);
+    ).map((v) => V1_ServiceTestResult.serialization.fromJson(v));
   }
 
   async registerService(
@@ -644,7 +644,7 @@ export class V1_Engine {
       await this.engineServerClient.searchQueries(
         V1_QuerySearchSpecification.serialization.toJson(searchSpecification),
       )
-    ).map(V1_LightQuery.serialization.fromJson);
+    ).map((v) => V1_LightQuery.serialization.fromJson(v));
   }
 
   async getQuery(queryId: string): Promise<V1_Query> {

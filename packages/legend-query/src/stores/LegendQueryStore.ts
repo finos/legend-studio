@@ -989,7 +989,7 @@ export class LegendQueryStore {
         );
       }
       dependencyEntitiesJson
-        .map(ProjectVersionEntities.serialization.fromJson)
+        .map((v) => ProjectVersionEntities.serialization.fromJson(v))
         .forEach((dependencyInfo) => {
           dependencyEntitiesMap.set(dependencyInfo.id, dependencyInfo.entities);
         });

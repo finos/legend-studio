@@ -421,7 +421,7 @@ export class WorkspaceSyncState {
           this.sdlcState.activeRevision.committedAt,
           this.sdlcState.activeRemoteWorkspaceRevision.committedAt,
         )) as PlainObject<Revision>[]
-      ).map(Revision.serialization.fromJson);
+      ).map((v) => Revision.serialization.fromJson(v));
       this.setIncomingRevisions(
         revisions.filter((r) => r.id !== this.sdlcState.activeRevision.id),
       );

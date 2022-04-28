@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+/// <reference types="jest-extended" />
 import { unitTest } from '@finos/legend-shared';
 import {
   TEST_DATA__InferenceDefaultMappingElementID,

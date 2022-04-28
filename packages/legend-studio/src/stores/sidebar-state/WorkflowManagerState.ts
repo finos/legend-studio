@@ -435,7 +435,7 @@ export class WorkspaceWorkflowManagerState extends WorkflowManagerState {
         undefined,
         undefined,
       )) as PlainObject<WorkflowJob>[]
-    ).map(WorkflowJob.serialization.fromJson);
+    ).map((v) => WorkflowJob.serialization.fromJson(v));
   }
 
   override *getJob(job: WorkflowJob): GeneratorFn<WorkflowJob[]> {
@@ -445,7 +445,7 @@ export class WorkspaceWorkflowManagerState extends WorkflowManagerState {
         this.sdlcState.activeWorkspace,
         job,
       )) as PlainObject<WorkflowJob>[]
-    ).map(WorkflowJob.serialization.fromJson);
+    ).map((v) => WorkflowJob.serialization.fromJson(v));
   }
 
   override *getWorkflows(): GeneratorFn<Workflow[]> {
@@ -457,7 +457,7 @@ export class WorkspaceWorkflowManagerState extends WorkflowManagerState {
         undefined,
         undefined,
       )) as PlainObject<Workflow>[]
-    ).map(Workflow.serialization.fromJson);
+    ).map((v) => Workflow.serialization.fromJson(v));
   }
 
   override *getWorkflow(workflowId: string): GeneratorFn<Workflow> {
@@ -516,7 +516,7 @@ export class ProjectVersionWorkflowManagerState extends WorkflowManagerState {
         undefined,
         undefined,
       )) as PlainObject<WorkflowJob>[]
-    ).map(WorkflowJob.serialization.fromJson);
+    ).map((v) => WorkflowJob.serialization.fromJson(v));
   }
 
   override *getJob(job: WorkflowJob): GeneratorFn<WorkflowJob[]> {
@@ -526,7 +526,7 @@ export class ProjectVersionWorkflowManagerState extends WorkflowManagerState {
         this.version.id.id,
         job,
       )) as PlainObject<WorkflowJob>[]
-    ).map(WorkflowJob.serialization.fromJson);
+    ).map((v) => WorkflowJob.serialization.fromJson(v));
   }
 
   override *getWorkflows(): GeneratorFn<Workflow[]> {
@@ -538,7 +538,7 @@ export class ProjectVersionWorkflowManagerState extends WorkflowManagerState {
         undefined,
         undefined,
       )) as PlainObject<Workflow>[]
-    ).map(Workflow.serialization.fromJson);
+    ).map((v) => Workflow.serialization.fromJson(v));
   }
 
   override *getWorkflow(workflowId: string): GeneratorFn<Workflow> {
@@ -587,7 +587,7 @@ export class ProjectWorkflowManagerState extends WorkflowManagerState {
         undefined,
         undefined,
       )) as PlainObject<WorkflowJob>[]
-    ).map(WorkflowJob.serialization.fromJson);
+    ).map((v) => WorkflowJob.serialization.fromJson(v));
   }
 
   override *getJob(job: WorkflowJob): GeneratorFn<WorkflowJob[]> {
@@ -597,7 +597,7 @@ export class ProjectWorkflowManagerState extends WorkflowManagerState {
         undefined,
         job,
       )) as PlainObject<WorkflowJob>[]
-    ).map(WorkflowJob.serialization.fromJson);
+    ).map((v) => WorkflowJob.serialization.fromJson(v));
   }
 
   override *getWorkflows(): GeneratorFn<Workflow[]> {
@@ -609,7 +609,7 @@ export class ProjectWorkflowManagerState extends WorkflowManagerState {
         undefined,
         undefined,
       )) as PlainObject<Workflow>[]
-    ).map(Workflow.serialization.fromJson);
+    ).map((v) => Workflow.serialization.fromJson(v));
   }
 
   override *getWorkflow(workflowId: string): GeneratorFn<Workflow> {

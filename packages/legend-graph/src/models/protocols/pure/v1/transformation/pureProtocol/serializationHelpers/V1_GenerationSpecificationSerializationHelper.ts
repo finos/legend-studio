@@ -34,8 +34,15 @@ export const V1_generationTreeNodeModelSchema = createModelSchema(
   V1_GenerationTreeNode,
   {
     children: custom(
-      (values) => serializeArray(values, (value) => value, true),
-      (values) => deserializeArray(values, (value) => value, false),
+      (values) =>
+        serializeArray(values, (value) => value, {
+          skipIfEmpty: true,
+          INTERNAL__forceReturnEmptyInTest: true,
+        }),
+      (values) =>
+        deserializeArray(values, (value) => value, {
+          skipIfEmpty: false,
+        }),
     ),
     generationElement: primitive(),
     id: primitive(),

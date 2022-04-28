@@ -49,7 +49,7 @@ import {
   V1_MAPPING_ELEMENT_PROTOCOL_TYPE,
 } from './serializationHelpers/V1_MappingSerializationHelper';
 import {
-  V1_servicedModelSchema,
+  V1_serviceModelSchema,
   V1_SERVICE_ELEMENT_PROTOCOL_TYPE,
 } from './serializationHelpers/V1_ServiceSerializationHelper';
 import {
@@ -171,7 +171,7 @@ class V1_PackageableElementSerializer
   }
 
   visit_Service(element: V1_Service): PlainObject<V1_PackageableElement> {
-    return serialize(V1_servicedModelSchema(this.plugins), element);
+    return serialize(V1_serviceModelSchema(this.plugins), element);
   }
 
   visit_PackageableRuntime(
@@ -267,7 +267,7 @@ export const V1_deserializePackageableElement = (
       case V1_MAPPING_ELEMENT_PROTOCOL_TYPE:
         return deserialize(V1_mappingModelSchema(plugins), json);
       case V1_SERVICE_ELEMENT_PROTOCOL_TYPE:
-        return deserialize(V1_servicedModelSchema(plugins), json);
+        return deserialize(V1_serviceModelSchema(plugins), json);
       case V1_PACKAGEABLE_CONNECTION_ELEMENT_PROTOCOL_TYPE:
         return deserialize(V1_packageableConnectionModelSchema(plugins), json);
       case V1_PACKAGEABLE_RUNTIME_ELEMENT_PROTOCOL_TYPE:

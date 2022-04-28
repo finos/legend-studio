@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import { createModelSchema, custom } from 'serializr';
+import { createModelSchema, custom, deserialize, serialize } from 'serializr';
 import {
-  deseralizeMap,
+  deserializeMap,
   SerializationFactory,
   serializeMap,
 } from '@finos/legend-shared';
@@ -31,12 +31,12 @@ export class V1_RelationalOperationElementJsonToGrammarInput {
   static readonly serialization = new SerializationFactory(
     createModelSchema(V1_RelationalOperationElementJsonToGrammarInput, {
       operations: custom(
-        (val) => serializeMap(val),
-        (val) => deseralizeMap(val),
+        (val) => serializeMap(val, (v) => v),
+        (val) => deserializeMap(val, (v) => v),
       ),
       operationErrors: custom(
-        (val) => serializeMap(val, V1_ParserError),
-        (val) => deseralizeMap(val, V1_ParserError),
+        (val) => serializeMap(val, (v) => serialize(V1_ParserError, v)),
+        (val) => deserializeMap(val, (v) => deserialize(V1_ParserError, v)),
       ),
     }),
   );

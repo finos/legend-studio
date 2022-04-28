@@ -154,8 +154,15 @@ const V1_deserializeNotifyee = (
 
 const V1_notifierModelSchema = createModelSchema(V1_Notifier, {
   notifyees: custom(
-    (val) => serializeArray(val, (v) => V1_serializeNotifyee(v), true),
-    (val) => deserializeArray(val, (v) => V1_deserializeNotifyee(v), false),
+    (val) =>
+      serializeArray(val, (v: V1_Notifyee) => V1_serializeNotifyee(v), {
+        skipIfEmpty: true,
+        INTERNAL__forceReturnEmptyInTest: true,
+      }),
+    (val) =>
+      deserializeArray(val, (v) => V1_deserializeNotifyee(v), {
+        skipIfEmpty: false,
+      }),
   ),
 });
 
@@ -789,16 +796,17 @@ const V1_multiFlatTargetModelSchema = createModelSchema(V1_MultiFlatTarget, {
   modelClass: primitive(),
   parts: custom(
     (val) =>
-      serializeArray(
-        val,
-        (v) => serialize(V1_multiFlatTargetPartSchema, v),
-        true,
-      ),
+      serializeArray(val, (v) => serialize(V1_multiFlatTargetPartSchema, v), {
+        skipIfEmpty: true,
+        INTERNAL__forceReturnEmptyInTest: true,
+      }),
     (val) =>
       deserializeArray(
         val,
         (v) => deserialize(V1_multiFlatTargetPartSchema, v),
-        false,
+        {
+          skipIfEmpty: false,
+        },
       ),
   ),
   transactionScope: primitive(),

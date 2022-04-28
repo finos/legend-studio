@@ -64,7 +64,7 @@ import {
 } from './roundtripTestData/TEST_DATA__MappingRoundtrip';
 import { TEST_DATA__RuntimeRoundtrip } from './roundtripTestData/TEST_DATA__RuntimeRoundtrip';
 import { TEST__checkBuildingElementsRoundtrip } from '../GraphManagerTestUtils';
-import { TEST_DATA__DataRoundtrip } from './roundtripTestData/TEST_DATA_DataRoundtrip';
+import { TEST_DATA__DataRoundtrip } from './roundtripTestData/TEST_DATA__DataRoundtrip';
 
 describe(unitTest('M2M graph roundtrip'), () => {
   test.each([
@@ -212,7 +212,7 @@ describe(unitTest('Service import resolution roundtrip'), () => {
   );
 });
 
-describe(unitTest('Data import resolution roundtrip'), () => {
+describe(unitTest('DSL Data import resolution roundtrip'), () => {
   test.each([['Simple data', TEST_DATA__DataRoundtrip]])(
     '%s',
     async (testName, entities) => {
