@@ -15,7 +15,7 @@
  */
 
 import { createModelSchema, optional, primitive } from 'serializr';
-import { NullphobicSerializationFactory } from '@finos/legend-shared';
+import { SerializationFactory } from '@finos/legend-shared';
 
 export enum WorkspaceAccessType {
   WORKSPACE = 'WORKSPACE',
@@ -34,12 +34,15 @@ export class Workspace {
 
   accessType = WorkspaceAccessType.WORKSPACE;
 
-  static readonly serialization = new NullphobicSerializationFactory(
+  static readonly serialization = new SerializationFactory(
     createModelSchema(Workspace, {
       projectId: primitive(),
       userId: optional(primitive()),
       workspaceId: primitive(),
     }),
+    {
+      deserializeNullAsUndefined: true,
+    },
   );
 
   get workspaceType(): WorkspaceType {

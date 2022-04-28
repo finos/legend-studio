@@ -52,48 +52,46 @@ export const serializeMap = <T>(
   return result;
 };
 
-export class BasicSerializationFactory<T> {
+export class SerializationFactory<T> {
   readonly schema: ModelSchema<T>;
+  readonly deserializeNullAsUndefined: boolean;
 
-  constructor(schema: ModelSchema<T>) {
+  constructor(
+    schema: ModelSchema<T>,
+    options?: {
+      /**
+       * Sometimes, entities coming from server which returns values which have not been set to `null`
+       * instead of `undefined`. This will cause `serializr` to throw.
+       *
+       * e.g.
+       * // in Server (Java + Jackson):
+       * Person person; // this will be serialized to `null` by Jackson
+       * (depending on the setting of the server)
+       *
+       * // in our code (TS + serializr):
+       * person: optional(object(Person))
+       *
+       * --> error thrown
+       */
+      deserializeNullAsUndefined?: boolean | undefined;
+    },
+  ) {
     this.schema = schema;
-  }
-}
-
-// NOTE: due to contra-variance and variance, this class will not work for polymorphism
-// hence, use `BasicSerializationFactory`
-export class SerializationFactory<T> extends BasicSerializationFactory<T> {
-  toJson = (val: T): PlainObject<T> => serialize(this.schema, val);
-  fromJson = (val: PlainObject<T>): T => deserialize(this.schema, val);
-}
-
-/**
- * Similar to {@link SerializationFactory} but used for entities coming from server which returns
- * values which have not been set to `null` instead of `undefined`. This will cause `serializr` to
- * throw.
- *
- * e.g.
- * // in Server (Java + Jackson):
- * Person person; // this will be serialized to `null` by Jackson (depending on the setting of the server)
- *
- * // in our code (TS + serializr):
- * person: optional(object(Person))
- *
- * --> error thrown
- */
-export class NullphobicSerializationFactory<T> {
-  /**
-   * Since we customize the behavior of the deserializer, we must not expose the schema
-   */
-  private readonly schema: ModelSchema<T>;
-
-  constructor(schema: ModelSchema<T>) {
-    this.schema = schema;
+    this.deserializeNullAsUndefined = Boolean(
+      options?.deserializeNullAsUndefined,
+    );
   }
 
-  toJson = (val: T): PlainObject<T> => serialize(this.schema, val);
-  fromJson = (val: PlainObject<T>): T =>
-    deserialize(this.schema, pruneNullValues(val));
+  toJson(val: T): PlainObject<T> {
+    return serialize(this.schema, val);
+  }
+
+  fromJson(val: PlainObject<T>): T {
+    return deserialize(
+      this.schema,
+      this.deserializeNullAsUndefined ? pruneNullValues(val) : val,
+    );
+  }
 }
 
 export const usingModelSchema = <T>(schema: ModelSchema<T>): PropSchema =>

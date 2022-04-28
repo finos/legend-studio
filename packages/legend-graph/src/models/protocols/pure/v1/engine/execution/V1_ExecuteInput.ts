@@ -61,8 +61,7 @@ export class V1_TestDataGenerationExecutionInput extends V1_ExecuteInput {
   parameters: (string | number | boolean)[] = [];
   hashStrings = false;
 
-  // TODO: rename to serialization once `SerializationFactory` is rewritten to handle polymorphism
-  static _serialization = new SerializationFactory(
+  static override readonly serialization = new SerializationFactory(
     createModelSchema(V1_TestDataGenerationExecutionInput, {
       clientVersion: optional(primitive()),
       function: usingModelSchema(V1_rawLambdaModelSchema),

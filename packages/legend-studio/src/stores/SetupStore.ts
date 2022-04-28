@@ -174,7 +174,7 @@ export class SetupStore {
           undefined,
           undefined,
         )) as PlainObject<Project>[]
-      ).map(Project.serialization.fromJson);
+      ).map((v) => Project.serialization.fromJson(v));
       const projectMap = observable<string, Project>(new Map());
       projects.forEach((project) => projectMap.set(project.projectId, project));
       this.projects = projectMap;
@@ -290,7 +290,7 @@ export class SetupStore {
           projectId,
         )) as PlainObject<Workspace>[]
       )
-        .map(Workspace.serialization.fromJson)
+        .map((v) => Workspace.serialization.fromJson(v))
         .forEach((workspace) => {
           // NOTE we don't handle workspaces that only have conflict resolution but no standard workspace
           // since that indicates bad state of the SDLC server
