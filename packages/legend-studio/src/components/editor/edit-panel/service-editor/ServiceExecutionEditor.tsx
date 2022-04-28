@@ -383,7 +383,7 @@ const PureSingleExecutionEditor = observer(
             </div>
           </div>
           <div className="panel__content service-editor__content">
-            {selectedTab === SERVICE_EXECUTION_TAB.MAPPING_AND_RUNTIME && (
+            {selectedTab === SERVICE_EXECUTION_TAB.EXECUTION_CONTEXT && (
               <PureSingleExecutionConfigurationEditor
                 executionState={executionState}
                 selectedExecution={selectedExecution}

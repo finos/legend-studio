@@ -249,7 +249,7 @@ export class DSLDiagram_LegendStudioPlugin
       (
         editorStore: EditorStore,
         parserKeyword: string,
-      ): PureGrammarTextSuggestion[] =>
+      ): PureGrammarTextSuggestion[] | undefined =>
         parserKeyword === PURE_GRAMMAR_DIAGRAM_PARSER_NAME
           ? [
               {
@@ -273,7 +273,7 @@ export class DSLDiagram_LegendStudioPlugin
                 insertText: getDiagramSnippetWithPropertyView(),
               },
             ]
-          : [],
+          : undefined,
     ];
   }
 }
