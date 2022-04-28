@@ -110,7 +110,7 @@ export const serializeArray = <T>(
   const forceReturnEmptyInTest =
     options?.INTERNAL__forceReturnEmptyInTest &&
     // eslint-disable-next-line no-process-env
-    process.env.NODE_ENV === 'test';
+    process.env.TEST_MODE === 'grammar';
   if (Array.isArray(values)) {
     return values.length
       ? values.map((value) => itemSerializer(value))

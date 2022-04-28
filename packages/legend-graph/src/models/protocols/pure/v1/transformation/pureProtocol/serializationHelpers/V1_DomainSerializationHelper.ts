@@ -24,6 +24,7 @@ import {
   custom,
   deserialize,
   optional,
+  SKIP,
 } from 'serializr';
 import {
   deserializeArray,
@@ -285,7 +286,17 @@ export const V1_classSchema = createModelSchema(V1_Class, {
   ),
   name: primitive(),
   // @MARKER: GRAMMAR ROUNDTRIP --- omit this information during protocol transformation as it can be interpreted while building the graph
-  originalMilestonedProperties: usingConstantValueSchema([]),
+  originalMilestonedProperties: custom(
+    (values) =>
+      serializeArray(values, (value) => SKIP, {
+        skipIfEmpty: true,
+        INTERNAL__forceReturnEmptyInTest: true,
+      }),
+    (values) =>
+      deserializeArray(values, (v) => SKIP, {
+        skipIfEmpty: false,
+      }),
+  ),
   package: primitive(),
   properties: custom(
     (values) =>
@@ -371,7 +382,17 @@ export const V1_associationSchema = createModelSchema(V1_Association, {
   package: primitive(),
   properties: list(usingModelSchema(V1_propertySchema)),
   // @MARKER: GRAMMAR ROUNDTRIP --- omit this information during protocol transformation as it can be interpreted while building the graph
-  originalMilestonedProperties: usingConstantValueSchema([]),
+  originalMilestonedProperties: custom(
+    (values) =>
+      serializeArray(values, (value) => SKIP, {
+        skipIfEmpty: true,
+        INTERNAL__forceReturnEmptyInTest: true,
+      }),
+    (values) =>
+      deserializeArray(values, (v) => SKIP, {
+        skipIfEmpty: false,
+      }),
+  ),
   derivedProperties: alias(
     'qualifiedProperties', // 'derived properties' used to be called 'qualified properties'
     custom(
