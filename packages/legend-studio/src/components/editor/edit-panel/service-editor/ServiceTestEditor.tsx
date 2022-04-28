@@ -697,7 +697,7 @@ export const ServiceTestEditor = observer(
                   >
                     <button
                       className={clsx(
-                        'service-execution-editor__test-data__anonymize-btn',
+                        'btn--sm service-execution-editor__test-data__anonymize-btn',
                         {
                           'service-execution-editor__test-data__anonymize-btn--active':
                             anonymizeGeneratedData,
