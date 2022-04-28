@@ -15,8 +15,8 @@
  */
 
 import { observable, action, flow, computed, makeObservable } from 'mobx';
-import type { ServiceEditorState } from '../../../editor-state/element-editor-state/service/ServiceEditorState';
-import { TEST_RESULT } from '../../../editor-state/element-editor-state/mapping/MappingTestState';
+import type { ServiceEditorState } from './ServiceEditorState';
+import { TEST_RESULT } from '../mapping/MappingTestState';
 import { LEGEND_STUDIO_APP_EVENT } from '../../../LegendStudioAppEvent';
 import {
   type GeneratorFn,
@@ -86,7 +86,7 @@ export class TestContainerState {
   uuid = uuid();
   editorStore: EditorStore;
   serviceEditorState: ServiceEditorState;
-  testState: SingleExecutionTestState;
+  testState: LegacySingleExecutionTestState;
   testContainer: DEPRECATED__TestContainer;
   assertionData?: string | undefined;
   testPassed?: boolean | undefined;
@@ -98,7 +98,7 @@ export class TestContainerState {
     editorStore: EditorStore,
     testContainter: DEPRECATED__TestContainer,
     serviceEditorState: ServiceEditorState,
-    testState: SingleExecutionTestState,
+    testState: LegacySingleExecutionTestState,
   ) {
     makeObservable(this, {
       testContainer: observable,
@@ -436,7 +436,7 @@ const buildTestDataParameters = (
     })
     .filter(isNonNullable);
 };
-export class SingleExecutionTestState {
+export class LegacySingleExecutionTestState {
   editorStore: EditorStore;
   serviceEditorState: ServiceEditorState;
   test: DEPRECATED__SingleExecutionTest;
@@ -451,6 +451,7 @@ export class SingleExecutionTestState {
   constructor(
     editorStore: EditorStore,
     serviceEditorState: ServiceEditorState,
+    test: DEPRECATED__SingleExecutionTest,
   ) {
     makeObservable(this, {
       test: observable,
@@ -474,10 +475,7 @@ export class SingleExecutionTestState {
 
     this.editorStore = editorStore;
     this.serviceEditorState = serviceEditorState;
-    this.test = guaranteeType(
-      serviceEditorState.service.test,
-      DEPRECATED__SingleExecutionTest,
-    );
+    this.test = test;
     this.selectedTestContainerState = this.test.asserts.length
       ? new TestContainerState(
           editorStore,
@@ -614,7 +612,7 @@ export class SingleExecutionTestState {
   }
 }
 
-export class KeyedSingleExecutionState extends SingleExecutionTestState {
+export class KeyedSingleExecutionState extends LegacySingleExecutionTestState {
   uuid = uuid();
   declare test: DEPRECATED__KeyedSingleExecutionTest;
 
@@ -623,8 +621,14 @@ export class KeyedSingleExecutionState extends SingleExecutionTestState {
     keyedSingleExecution: DEPRECATED__KeyedSingleExecutionTest,
     serviceEditorState: ServiceEditorState,
   ) {
-    super(editorStore, serviceEditorState);
-
+    super(
+      editorStore,
+      serviceEditorState,
+      guaranteeType(
+        serviceEditorState.service.test,
+        DEPRECATED__SingleExecutionTest,
+      ),
+    );
     this.test = keyedSingleExecution;
   }
 }

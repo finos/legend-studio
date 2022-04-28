@@ -25,7 +25,7 @@ import {
   prettyCONSTName,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
-import type { SingleExecutionTestState } from '../../../../stores/editor-state/element-editor-state/service/ServiceTestState';
+import { LegacySingleExecutionTestState } from '../../../../stores/editor-state/element-editor-state/service/LegacyServiceTestState';
 import { EmbeddedRuntimeEditor } from '../../../editor/edit-panel/RuntimeEditor';
 import { useDrop } from 'react-dnd';
 import {
@@ -70,12 +70,13 @@ import {
   pureSingleExecution_setMapping,
   pureSingleExecution_setRuntime,
 } from '../../../../stores/graphModifier/DSLService_GraphModifierHelper';
+import { ServiceTestSuiteState } from '../../../../stores/editor-state/element-editor-state/service/ServiceTestSuiteState';
 
 const PureSingleExecutionConfigurationEditor = observer(
   (props: {
     executionState: ServicePureExecutionState;
     selectedExecution: PureSingleExecution | KeyedExecutionParameter;
-    selectedTestState: SingleExecutionTestState;
+    selectedTestState: LegacySingleExecutionTestState | ServiceTestSuiteState;
   }) => {
     const { executionState, selectedExecution, selectedTestState } = props;
     const editorStore = useEditorStore();
@@ -111,9 +112,11 @@ const PureSingleExecutionConfigurationEditor = observer(
           editorStore.changeDetectionState.observerContext,
         );
         executionState.autoSelectRuntimeOnMappingChange(val.value);
-        flowResult(selectedTestState.generateTestData()).catch(
-          applicationStore.alertUnhandledError,
-        );
+        if (selectedTestState instanceof LegacySingleExecutionTestState) {
+          flowResult(selectedTestState.generateTestData()).catch(
+            applicationStore.alertUnhandledError,
+          );
+        }
       }
     };
     const visitMapping = (): void => editorStore.openElement(mapping);
@@ -214,9 +217,11 @@ const PureSingleExecutionConfigurationEditor = observer(
               element,
               editorStore.changeDetectionState.observerContext,
             );
-            flowResult(selectedTestState.generateTestData()).catch(
-              applicationStore.alertUnhandledError,
-            );
+            if (selectedTestState instanceof LegacySingleExecutionTestState) {
+              flowResult(selectedTestState.generateTestData()).catch(
+                applicationStore.alertUnhandledError,
+              );
+            }
             executionState.autoSelectRuntimeOnMappingChange(element);
           } else if (
             element instanceof PackageableRuntime &&
@@ -344,7 +349,7 @@ const PureSingleExecutionEditor = observer(
   (props: {
     executionState: ServicePureExecutionState;
     selectedExecution: PureSingleExecution | KeyedExecutionParameter;
-    selectedTestState: SingleExecutionTestState;
+    selectedTestState: LegacySingleExecutionTestState | ServiceTestSuiteState;
   }) => {
     const { executionState, selectedExecution, selectedTestState } = props;
     // tab
@@ -385,12 +390,20 @@ const PureSingleExecutionEditor = observer(
                 selectedTestState={selectedTestState}
               />
             )}
-            {selectedTab === SERVICE_EXECUTION_TAB.TESTS && (
-              <ServiceTestEditor
-                executionState={executionState}
-                selectedTestState={selectedTestState}
-              />
-            )}
+            {selectedTab === SERVICE_EXECUTION_TAB.TESTS &&
+              selectedTestState instanceof LegacySingleExecutionTestState && (
+                <ServiceTestEditor
+                  executionState={executionState}
+                  selectedTestState={selectedTestState}
+                />
+              )}
+            {selectedTab === SERVICE_EXECUTION_TAB.TESTS &&
+              selectedTestState instanceof ServiceTestSuiteState && (
+                <UnsupportedEditorPanel
+                  text={`Can't display this element in form-mode`}
+                  isReadOnly={selectedTestState.serviceEditorState.isReadOnly}
+                />
+              )}
           </div>
         </div>
       </div>
