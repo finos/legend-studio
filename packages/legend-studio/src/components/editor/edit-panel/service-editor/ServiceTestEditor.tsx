@@ -51,8 +51,8 @@ import {
 } from '@finos/legend-art';
 import {
   type TestContainerState,
-  SingleExecutionTestState,
-} from '../../../../stores/editor-state/element-editor-state/service/ServiceTestState';
+  LegacySingleExecutionTestState,
+} from '../../../../stores/editor-state/element-editor-state/service/LegacyServiceTestState';
 import { TEST_RESULT } from '../../../../stores/editor-state/element-editor-state/mapping/MappingTestState';
 import { JsonDiffView } from '../../../shared/DiffView';
 import { UnsupportedEditorPanel } from '../../../editor/edit-panel/UnsupportedElementEditor';
@@ -96,7 +96,7 @@ const TestContainerContextMenu = observer(
 
 export const TestContainerItem = observer(
   (props: {
-    testState: SingleExecutionTestState;
+    testState: LegacySingleExecutionTestState;
     testContainer: DEPRECATED__TestContainer;
     isReadOnly: boolean;
     testIdx: number;
@@ -193,11 +193,11 @@ export const TestContainerItem = observer(
 );
 
 export const TestContainerStateExplorer = observer(
-  (props: { testState: SingleExecutionTestState }) => {
+  (props: { testState: LegacySingleExecutionTestState }) => {
     const { testState } = props;
     const addNewTestContainer = (): void => testState.addNewTestContainer();
     const isReadOnly = testState.serviceEditorState.isReadOnly;
-    if (testState instanceof SingleExecutionTestState) {
+    if (testState instanceof LegacySingleExecutionTestState) {
       return (
         <ContextMenu
           className="panel__content"
@@ -249,7 +249,7 @@ enum SERVICE_TEST_TAB {
 export const ServiceTestEditorEditPanel = observer(
   (props: {
     executionState: ServiceExecutionState;
-    testState: SingleExecutionTestState;
+    testState: LegacySingleExecutionTestState;
     selectedTestContainerState: TestContainerState;
   }) => {
     const { executionState, testState, selectedTestContainerState } = props;
@@ -520,7 +520,7 @@ export const ServiceTestEditorEditPanel = observer(
 export const ServiceTestAssertEditor = observer(
   (props: {
     executionState: ServiceExecutionState;
-    testState: SingleExecutionTestState;
+    testState: LegacySingleExecutionTestState;
   }) => {
     const { executionState, testState } = props;
     const applicationStore = useApplicationStore();
@@ -648,7 +648,7 @@ export const ServiceTestAssertEditor = observer(
 export const ServiceTestEditor = observer(
   (props: {
     executionState: ServiceExecutionState;
-    selectedTestState: SingleExecutionTestState;
+    selectedTestState: LegacySingleExecutionTestState;
   }) => {
     const { executionState, selectedTestState } = props;
     const selectedTest = selectedTestState.test;

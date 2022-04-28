@@ -74,6 +74,7 @@ import {
   DefaultH2AuthenticationStrategy,
   ModelGenerationSpecification,
   DataElement,
+  DEPRECATED__SingleExecutionTest,
 } from '@finos/legend-graph';
 import type { DSLMapping_LegendStudioPlugin_Extension } from './DSLMapping_LegendStudioPlugin_Extension';
 import {
@@ -88,6 +89,7 @@ import {
 import {
   service_initNewService,
   service_setExecution,
+  service_setLegacyTest,
 } from './graphModifier/DSLService_GraphModifierHelper';
 
 export const resolvePackageAndElementName = (
@@ -685,6 +687,10 @@ export class NewElementState {
             this.editorStore,
           );
         }
+        service_setLegacyTest(
+          service,
+          new DEPRECATED__SingleExecutionTest(service, ''),
+        );
         service_setExecution(
           service,
           new PureSingleExecution(
