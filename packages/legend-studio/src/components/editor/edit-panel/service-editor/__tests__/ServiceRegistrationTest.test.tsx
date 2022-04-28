@@ -97,6 +97,7 @@ const setup = async (
       LegendStudioPluginManager.create(),
     ),
   });
+
   renderResult = await TEST__setUpEditor(mockedEditorStore, {
     project: project,
     workspace: workspace,

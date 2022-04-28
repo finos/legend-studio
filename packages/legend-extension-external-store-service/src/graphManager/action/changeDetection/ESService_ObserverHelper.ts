@@ -24,8 +24,16 @@ import {
   observe_Multiplicity,
   observe_Abstract_InstanceSetImplementation,
   observe_RawLambda,
+  observe_ExternalFormatData,
 } from '@finos/legend-graph';
 import { computed, makeObservable, observable, override } from 'mobx';
+import { EqualToJsonPattern } from '../../../models/metamodels/pure/model/data/contentPattern/ESService_EqualToJsonPattern';
+import { EqualToPattern } from '../../../models/metamodels/pure/model/data/contentPattern/ESService_EqualToPattern';
+import type { StringValuePattern } from '../../../models/metamodels/pure/model/data/contentPattern/ESService_StringValuePattern';
+import type { ServiceRequestPattern } from '../../../models/metamodels/pure/model/data/ESService_ServiceRequestPattern';
+import type { ServiceResponseDefinition } from '../../../models/metamodels/pure/model/data/ESService_ServiceResponseDefinition';
+import type { ServiceStoreEmbeddedData } from '../../../models/metamodels/pure/model/data/ESService_ServiceStoreEmbeddedData';
+import type { ServiceStubMapping } from '../../../models/metamodels/pure/model/data/ESService_ServiceStubMapping';
 import type { ServiceStoreConnection } from '../../../models/metamodels/pure/model/packageableElements/store/serviceStore/connection/ESService_ServiceStoreConnection';
 import type { LocalMappingProperty } from '../../../models/metamodels/pure/model/packageableElements/store/serviceStore/mapping/ESService_LocalMappingProperty';
 import type { RootServiceInstanceSetImplementation } from '../../../models/metamodels/pure/model/packageableElements/store/serviceStore/mapping/ESService_RootServiceInstanceSetImplementation';
@@ -380,3 +388,100 @@ export const observe_RootServiceInstanceSetImplementation =
       return metamodel;
     },
   );
+
+// ------------------------------------- Data -------------------------------------
+
+export const observe_EqualToJsonPattern = skipObserved(
+  (metamodel: EqualToJsonPattern): EqualToJsonPattern => {
+    makeObservable(metamodel, {
+      expectedValue: observable,
+      hashCode: computed,
+    });
+    return metamodel;
+  },
+);
+
+export const observe_EqualToPattern = skipObserved(
+  (metamodel: EqualToPattern): EqualToPattern => {
+    makeObservable(metamodel, {
+      expectedValue: observable,
+      hashCode: computed,
+    });
+    return metamodel;
+  },
+);
+
+function observe_StringValuePattern(
+  metamodel: StringValuePattern,
+): StringValuePattern {
+  if (metamodel instanceof EqualToJsonPattern) {
+    return observe_EqualToJsonPattern(metamodel);
+  } else if (metamodel instanceof EqualToPattern) {
+    return observe_EqualToPattern(metamodel);
+  }
+  return metamodel;
+}
+
+export const observe_ServiceRequestPattern = skipObserved(
+  (metamodel: ServiceRequestPattern): ServiceRequestPattern => {
+    makeObservable(metamodel, {
+      url: observable,
+      urlPath: observable,
+      method: observable,
+      headerParams: observable,
+      queryParams: observable,
+      bodyPatterns: observable,
+      hashCode: computed,
+    });
+    if (metamodel.headerParams) {
+      Array.from(metamodel.headerParams.values()).forEach(
+        observe_StringValuePattern,
+      );
+    }
+    if (metamodel.queryParams) {
+      Array.from(metamodel.queryParams.values()).forEach(
+        observe_StringValuePattern,
+      );
+    }
+    metamodel.bodyPatterns.forEach(observe_StringValuePattern);
+    return metamodel;
+  },
+);
+
+export const observe_ServiceResponseDefinition = skipObserved(
+  (metamodel: ServiceResponseDefinition): ServiceResponseDefinition => {
+    makeObservable(metamodel, {
+      body: observable,
+      hashCode: computed,
+    });
+
+    observe_ExternalFormatData(metamodel.body);
+
+    return metamodel;
+  },
+);
+
+export const observe_ServiceStubMapping = skipObserved(
+  (metamodel: ServiceStubMapping): ServiceStubMapping => {
+    makeObservable(metamodel, {
+      requestPattern: observable,
+      responseDefinition: observable,
+      hashCode: computed,
+    });
+
+    observe_ServiceRequestPattern(metamodel.requestPattern);
+    observe_ServiceResponseDefinition(metamodel.responseDefinition);
+    return metamodel;
+  },
+);
+
+export const observe_ServiceStoreEmbeddedData = skipObserved(
+  (metamodel: ServiceStoreEmbeddedData): ServiceStoreEmbeddedData => {
+    makeObservable(metamodel, {
+      serviceStubMappings: observable,
+      hashCode: computed,
+    });
+    metamodel.serviceStubMappings.forEach(observe_ServiceStubMapping);
+    return metamodel;
+  },
+);

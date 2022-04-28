@@ -64,7 +64,7 @@ import { V1_ObjectInputData } from '../../../../model/packageableElements/store/
 import { V1_FlatDataInputData } from '../../../../model/packageableElements/store/flatData/mapping/V1_FlatDataInputData';
 import type { V1_ClassMapping } from '../../../../model/packageableElements/mapping/V1_ClassMapping';
 import type { V1_MappingInclude } from '../../../../model/packageableElements/mapping/V1_MappingInclude';
-import { V1_resolvePathsInRawLambda } from './V1_ValueSpecificationPathResolver';
+import { V1_buildRawLambdaWithResolvedPaths } from './V1_ValueSpecificationPathResolver';
 import { V1_RelationalInputData } from '../../../../model/packageableElements/store/relational/mapping/V1_RelationalInputData';
 import {
   getRelationalInputType,
@@ -269,10 +269,10 @@ export const V1_buildMappingTest = (
     `Mapping test 'name' field is missing or empty`,
   );
   assertNonNullable(mappingTest.query, `Mapping test 'query' field is missing`);
-  const query = V1_resolvePathsInRawLambda(
-    context,
+  const query = V1_buildRawLambdaWithResolvedPaths(
     mappingTest.query.parameters,
     mappingTest.query.body,
+    context,
   );
   // TODO: fix this when we support another mapping test type
   assertType(

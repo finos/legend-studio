@@ -16,34 +16,16 @@
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../MetaModelConst';
-import {
-  type V1_RawValueSpecificationVisitor,
-  V1_RawValueSpecification,
-} from '../../model/rawValueSpecification/V1_RawValueSpecification';
-import type { V1_Multiplicity } from '../../model/packageableElements/domain/V1_Multiplicity';
 
-export class V1_RawInstanceValue
-  extends V1_RawValueSpecification
-  implements Hashable
-{
-  type!: string;
-  multiplicity!: V1_Multiplicity;
-  values?: (string | number)[] | undefined; // to be revised?
+export class V1_AtomicTestId implements Hashable {
+  testSuiteId!: string;
+  atomicTestId!: string;
 
   get hashCode(): string {
     return hashArray([
-      CORE_HASH_STRUCTURE.RAW_INSTANCE_VALUE,
-      this.type,
-      this.multiplicity,
-      this.values
-        ? hashArray(this.values.map((value) => value.toString()))
-        : '',
+      CORE_HASH_STRUCTURE.ATOMIC_TEST_ID,
+      this.testSuiteId,
+      this.atomicTestId,
     ]);
-  }
-
-  accept_RawValueSpecificationVisitor<T>(
-    visitor: V1_RawValueSpecificationVisitor<T>,
-  ): T {
-    return visitor.visit_InstanceValue(this);
   }
 }

@@ -1,5 +1,17 @@
 # @finos/legend-studio-app
 
+## 4.19.0
+
+## 4.18.0
+
+### Minor Changes
+
+- [#1095](https://github.com/finos/legend-studio/pull/1095) [`2c382cec`](https://github.com/finos/legend-studio/commit/2c382cec5fdb17bd1861a9f9792cf60229843543) ([@akphi](https://github.com/akphi)) - Expose the set of plugins Legend Studio uses to make it easier to extend the app.
+
+## 4.17.0
+
+## 4.16.0
+
 ## 4.15.0
 
 ## 4.14.0

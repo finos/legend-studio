@@ -1,5 +1,21 @@
 # @finos/legend-query
 
+## 1.3.12
+
+## 1.3.11
+
+### Patch Changes
+
+- [#1065](https://github.com/finos/legend-studio/pull/1065) [`797c9ae4`](https://github.com/finos/legend-studio/commit/797c9ae47a55f4a336f8ec53fa58618be46f5267) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Fix a problem with adjusting (post) filter's RHS value when changing type for LHS
+
+## 1.3.10
+
+## 1.3.9
+
+### Patch Changes
+
+- [`94a9c645`](https://github.com/finos/legend-studio/commit/94a9c6453f5dde92ab383c889f772e46114ceabb) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Remove mobx `computed` on query setup element options.
+
 ## 1.3.8
 
 ### Patch Changes

@@ -33,6 +33,7 @@ import type {
   GraphBuilderOptions,
 } from './graphManager/AbstractPureGraphManager';
 import type { GraphPluginManager } from './GraphPluginManager';
+import { getElementRootPackage } from './helpers/DomainHelper';
 import { ROOT_PACKAGE_NAME } from './MetaModelConst';
 import { AssociationImplementation } from './models/metamodels/pure/packageableElements/mapping/AssociationImplementation';
 import type { EnumerationMapping } from './models/metamodels/pure/packageableElements/mapping/EnumerationMapping';
@@ -229,6 +230,6 @@ export class GraphManagerState {
   }
 
   isElementReadOnly(element: PackageableElement): boolean {
-    return element.getRoot().path !== ROOT_PACKAGE_NAME.MAIN;
+    return getElementRootPackage(element).path !== ROOT_PACKAGE_NAME.MAIN;
   }
 }

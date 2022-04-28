@@ -28,6 +28,7 @@ import {
   type AbstractProperty,
   type Enum,
   type ValueSpecification,
+  type PureModel,
   TYPICAL_MULTIPLICITY_TYPE,
   CollectionInstanceValue,
   AbstractPropertyExpression,
@@ -40,12 +41,13 @@ import {
   PRIMITIVE_TYPE,
   VariableExpression,
   getMilestoneTemporalStereotype,
-  MILESTONING_STEROTYPE,
+  MILESTONING_STEREOTYPE,
   SimpleFunctionExpression,
   matchFunctionName,
   TYPE_CAST_TOKEN,
   observe_AbstractPropertyExpression,
-  type PureModel,
+  GenericTypeExplicitReference,
+  GenericType,
 } from '@finos/legend-graph';
 import { generateDefaultValueForPrimitiveType } from './QueryBuilderValueSpecificationBuilderHelper';
 import type { QueryBuilderState } from './QueryBuilderState';
@@ -54,7 +56,6 @@ import {
   checkForMilestoningParameterEquality,
   fillMilestonedDerivedPropertyArguments,
   getSourceTemporalStereotype,
-  isDefaultDatePropagationSupported,
 } from './QueryBuilderMilestoningHelper';
 import { functionExpression_setParametersValues } from './QueryBuilderValueSpecificationModifierHelper';
 
@@ -125,15 +126,76 @@ export const getPropertyPath = (
   return propertyNameChain.join('.');
 };
 
+export const generateValueSpecificationForParameter = (
+  parameter: VariableExpression,
+  graph: PureModel,
+): ValueSpecification => {
+  const genericType = parameter.genericType;
+  if (genericType) {
+    const type = genericType.value.rawType;
+    // Clone the generic type reference and avoid directly using the
+    // reference of the parameter so when we edit the value specification
+    // we don't accidentally modify the type of the parameter which is constant
+    // See https://github.com/finos/legend-studio/issues/1099
+    const genericTypeExplicitReference = GenericTypeExplicitReference.create(
+      new GenericType(type),
+    );
+    if (
+      (
+        [
+          PRIMITIVE_TYPE.STRING,
+          PRIMITIVE_TYPE.BOOLEAN,
+          PRIMITIVE_TYPE.NUMBER,
+          PRIMITIVE_TYPE.FLOAT,
+          PRIMITIVE_TYPE.DECIMAL,
+          PRIMITIVE_TYPE.INTEGER,
+          PRIMITIVE_TYPE.DATE,
+          PRIMITIVE_TYPE.STRICTDATE,
+          PRIMITIVE_TYPE.DATETIME,
+          PRIMITIVE_TYPE.LATESTDATE,
+        ] as string[]
+      ).includes(type.name)
+    ) {
+      const primitiveInstanceValue = new PrimitiveInstanceValue(
+        genericTypeExplicitReference,
+        parameter.multiplicity,
+      );
+      if (type.name !== PRIMITIVE_TYPE.LATESTDATE) {
+        primitiveInstanceValue.values = [
+          generateDefaultValueForPrimitiveType(type.name as PRIMITIVE_TYPE),
+        ];
+      }
+      return primitiveInstanceValue;
+    } else if (type instanceof Enumeration) {
+      const enumValueInstanceValue = new EnumValueInstanceValue(
+        genericTypeExplicitReference,
+        parameter.multiplicity,
+      );
+      if (type.values.length) {
+        const enumValueRef = EnumValueExplicitReference.create(
+          type.values[0] as Enum,
+        );
+        enumValueInstanceValue.values = [enumValueRef];
+      }
+      return enumValueInstanceValue;
+    }
+  }
+  // for arguments of types we don't support, we will fill them with `[]`
+  // which in Pure is equivalent to `null` in other languages
+  return new CollectionInstanceValue(
+    graph.getTypicalMultiplicity(TYPICAL_MULTIPLICITY_TYPE.ZERO),
+  );
+};
+
+
 export const fillDerivedPropertyArguments = (
   derivedPropertyExpressionState: QueryBuilderDerivedPropertyExpressionState,
   graph: PureModel,
-  fillMilestonedProperties?: boolean | undefined,
 ): void => {
   let propertyArguments: ValueSpecification[] =
     derivedPropertyExpressionState.parameterValues;
   let parameterValues: ValueSpecification[] = [];
-  let temporalTarget: MILESTONING_STEROTYPE | undefined;
+  let temporalTarget: MILESTONING_STEREOTYPE | undefined;
   if (
     derivedPropertyExpressionState.propertyExpression.func.genericType.value
       .rawType instanceof Class &&
@@ -151,8 +213,8 @@ export const fillDerivedPropertyArguments = (
     derivedPropertyExpressionState.queryBuilderState.graphManagerState.graph,
   );
   if (
-    temporalSource === MILESTONING_STEROTYPE.PROCESSING_TEMPORAL &&
-    temporalTarget === MILESTONING_STEROTYPE.BITEMPORAL &&
+    temporalSource === MILESTONING_STEREOTYPE.PROCESSING_TEMPORAL &&
+    temporalTarget === MILESTONING_STEREOTYPE.BITEMPORAL &&
     propertyArguments.length === 1
   ) {
     parameterValues = propertyArguments;
@@ -160,28 +222,11 @@ export const fillDerivedPropertyArguments = (
   }
   derivedPropertyExpressionState.parameters.forEach((parameter, idx) => {
     if (idx < derivedPropertyExpressionState.parameterValues.length) {
-      // Helps in building the milestoningParameters state when you toggle between text mode and form mode. Gets the information
-      // about the processingDate and businessDate from the getAll function. If the top level class is not temporal then
-      // the processingDate and businessDate is set to default values while building the QueryBuilderState again.
       if (temporalTarget) {
-        let isDatePropagationSupported;
-        if (
-          !isDefaultDatePropagationSupported(
-            derivedPropertyExpressionState,
-            derivedPropertyExpressionState.queryBuilderState.graphManagerState
-              .graph,
-          ) ||
-          fillMilestonedProperties
-        ) {
-          isDatePropagationSupported = false;
-        } else {
-          isDatePropagationSupported = true;
-        }
         const milestoningParameter = fillMilestonedDerivedPropertyArguments(
           derivedPropertyExpressionState,
           temporalTarget,
           idx,
-          isDatePropagationSupported,
         );
         // Changes the `valueSpecification` to `INTERNAL__PropagatedValue` only if the parameter value
         // matches with the corresponding `businessDate` or `processingDate`
@@ -200,88 +245,26 @@ export const fillDerivedPropertyArguments = (
       return;
     }
     if (temporalTarget) {
-      let isDatePropagationSupported;
-      if (
-        !isDefaultDatePropagationSupported(
-          derivedPropertyExpressionState,
-          derivedPropertyExpressionState.queryBuilderState.graphManagerState
-            .graph,
-        ) ||
-        fillMilestonedProperties
-      ) {
-        isDatePropagationSupported = false;
-      } else {
-        isDatePropagationSupported = true;
-      }
       const milestoningParameter = fillMilestonedDerivedPropertyArguments(
         derivedPropertyExpressionState,
         temporalTarget,
         idx,
-        isDatePropagationSupported,
       );
       if (milestoningParameter) {
         propertyArguments.push(milestoningParameter);
       }
     } else {
-      let argument: ValueSpecification | undefined;
-      const genericType = parameter.genericType;
-      if (genericType) {
-        const _type = genericType.value.rawType;
-        if (
-          (
-            [
-              PRIMITIVE_TYPE.STRING,
-              PRIMITIVE_TYPE.BOOLEAN,
-              PRIMITIVE_TYPE.NUMBER,
-              PRIMITIVE_TYPE.FLOAT,
-              PRIMITIVE_TYPE.DECIMAL,
-              PRIMITIVE_TYPE.INTEGER,
-              PRIMITIVE_TYPE.DATE,
-              PRIMITIVE_TYPE.STRICTDATE,
-              PRIMITIVE_TYPE.DATETIME,
-              PRIMITIVE_TYPE.LATESTDATE,
-            ] as string[]
-          ).includes(_type.name)
-        ) {
-          const primitiveInstanceValue = new PrimitiveInstanceValue(
-            genericType,
-            parameter.multiplicity,
-          );
-          if (_type.name !== PRIMITIVE_TYPE.LATESTDATE) {
-            primitiveInstanceValue.values = [
-              generateDefaultValueForPrimitiveType(
-                _type.name as PRIMITIVE_TYPE,
-              ),
-            ];
-          }
-          argument = primitiveInstanceValue;
-        } else if (_type instanceof Enumeration) {
-          const enumValueInstanceValue = new EnumValueInstanceValue(
-            genericType,
-            parameter.multiplicity,
-          );
-          if (_type.values.length) {
-            const enumValueRef = EnumValueExplicitReference.create(
-              _type.values[0] as Enum,
-            );
-            enumValueInstanceValue.values = [enumValueRef];
-          }
-          argument = enumValueInstanceValue;
-        }
-      }
-      // for arguments of types we don't support, we will fill them with `[]`
-      // which in Pure is equivalent to `null` in other languages
       propertyArguments.push(
-        argument ??
-          new CollectionInstanceValue(
-            graph.getTypicalMultiplicity(TYPICAL_MULTIPLICITY_TYPE.ZERO),
-          ),
+        generateValueSpecificationForParameter(
+          parameter,
+          derivedPropertyExpressionState.queryBuilderState.graphManagerState.graph,
+        ),
       );
     }
   });
   if (
-    temporalSource === MILESTONING_STEROTYPE.PROCESSING_TEMPORAL &&
-    temporalTarget === MILESTONING_STEROTYPE.BITEMPORAL &&
+    temporalSource === MILESTONING_STEREOTYPE.PROCESSING_TEMPORAL &&
+    temporalTarget === MILESTONING_STEREOTYPE.BITEMPORAL &&
     parameterValues.length
   ) {
     propertyArguments = [
@@ -358,7 +341,7 @@ export class QueryBuilderDerivedPropertyExpressionState {
     return this.parameterValues.every((paramValue) => {
       if (paramValue instanceof InstanceValue) {
         const isRequired = paramValue.multiplicity.lowerBound >= 1;
-        // required and no values provided
+        // required and no values provided. LatestDate doesn't have any values so we skip that check for it.
         if (
           isRequired &&
           paramValue.genericType?.value.rawType.name !==
@@ -444,6 +427,7 @@ export class QueryBuilderPropertyExpressionState {
       ) {
         requiresExistsHandling = true;
       }
+      // check if the property is milestoned
       if (
         currentExpression.func.genericType.value.rawType instanceof Class &&
         currentExpression.func.owner._generatedMilestonedProperties.length !== 0

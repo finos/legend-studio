@@ -53,6 +53,14 @@ export const resolvePackagePathAndElementName = (
   ];
 };
 
+export const buildPath = (
+  packagePath: string | undefined,
+  name: string | undefined,
+): string =>
+  `${guaranteeNonNullable(
+    packagePath,
+    'Package path is required',
+  )}${ELEMENT_PATH_DELIMITER}${guaranteeNonNullable(name, 'Name is required')}`;
 export const createPath = (packagePath: string, name: string): string =>
   `${packagePath ? `${packagePath}${ELEMENT_PATH_DELIMITER}` : ''}${name}`;
 // TODO: we might need to support quoted identifier in the future

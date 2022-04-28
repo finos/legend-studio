@@ -15,7 +15,6 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { fromElementPathToMappingElementId } from '../../../../../MetaModelUtils';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import {
   type PackageableElementReference,
@@ -23,7 +22,7 @@ import {
   PackageableElementExplicitReference,
   OptionalPackageableElementExplicitReference,
 } from '../PackageableElementReference';
-import type { Mapping, MappingElementLabel } from './Mapping';
+import type { Mapping } from './Mapping';
 import type { Enumeration } from '../domain/Enumeration';
 import type { EnumValueMapping } from './EnumValueMapping';
 import type { Type } from '../domain/Type';
@@ -34,7 +33,7 @@ import {
 } from './InferableMappingElementId';
 
 export class EnumerationMapping implements Hashable, Stubable {
-  parent: Mapping;
+  readonly parent: Mapping;
   enumeration: PackageableElementReference<Enumeration>;
   id: InferableMappingElementIdValue;
   sourceType: OptionalPackageableElementReference<Type>;
@@ -50,19 +49,6 @@ export class EnumerationMapping implements Hashable, Stubable {
     this.enumeration = enumeration;
     this.parent = parent;
     this.sourceType = sourceType;
-  }
-
-  get label(): MappingElementLabel {
-    return {
-      value: `${
-        fromElementPathToMappingElementId(this.enumeration.value.path) ===
-        this.id.value
-          ? this.enumeration.value.name
-          : `${this.enumeration.value.name} [${this.id.value}]`
-      }`,
-      root: false,
-      tooltip: this.enumeration.value.path,
-    };
   }
 
   static createStub = (

@@ -38,6 +38,24 @@ export const TEST_DATA__ServiceRoundtrip = [
     classifierPath: 'meta::pure::metamodel::type::Class',
   },
   {
+    path: 'my::Person',
+    content: {
+      _type: 'class',
+      name: 'Person',
+      package: 'my',
+      properties: [
+        {
+          multiplicity: {
+            lowerBound: 0,
+          },
+          name: 'givenNames',
+          type: 'String',
+        },
+      ],
+    },
+    classifierPath: 'meta::pure::metamodel::type::Class',
+  },
+  {
     path: 'test::tMapping',
     content: {
       _type: 'mapping',
@@ -46,6 +64,50 @@ export const TEST_DATA__ServiceRoundtrip = [
       includedMappings: [],
       name: 'tMapping',
       package: 'test',
+      tests: [],
+    },
+    classifierPath: 'meta::pure::mapping::Mapping',
+  },
+  {
+    path: 'my::map',
+    content: {
+      _type: 'mapping',
+      classMappings: [
+        {
+          _type: 'pureInstance',
+          class: 'my::Person',
+          propertyMappings: [
+            {
+              _type: 'purePropertyMapping',
+              explodeProperty: false,
+              property: {
+                class: 'my::Person',
+                property: 'givenNames',
+              },
+              source: '',
+              transform: {
+                _type: 'lambda',
+                body: [
+                  {
+                    _type: 'string',
+                    multiplicity: {
+                      lowerBound: 1,
+                      upperBound: 1,
+                    },
+                    values: ['name'],
+                  },
+                ],
+                parameters: [],
+              },
+            },
+          ],
+          root: true,
+        },
+      ],
+      enumerationMappings: [],
+      includedMappings: [],
+      name: 'map',
+      package: 'my',
       tests: [],
     },
     classifierPath: 'meta::pure::mapping::Mapping',
@@ -349,6 +411,102 @@ export const TEST_DATA__ServiceRoundtrip = [
     classifierPath: 'meta::legend::service::metamodel::Service',
   },
   {
+    path: 'my::serviceWithEmptyTestSuite',
+    content: {
+      _type: 'service',
+      autoActivateUpdates: true,
+      documentation: '',
+      execution: {
+        _type: 'pureSingleExecution',
+        func: {
+          _type: 'lambda',
+          body: [
+            {
+              _type: 'func',
+              function: 'project',
+              parameters: [
+                {
+                  _type: 'func',
+                  function: 'getAll',
+                  parameters: [
+                    {
+                      _type: 'packageableElementPtr',
+                      fullPath: 'my::Person',
+                    },
+                  ],
+                },
+                {
+                  _type: 'collection',
+                  multiplicity: {
+                    lowerBound: 1,
+                    upperBound: 1,
+                  },
+                  values: [
+                    {
+                      _type: 'lambda',
+                      body: [
+                        {
+                          _type: 'property',
+                          parameters: [
+                            {
+                              _type: 'var',
+                              name: 'x',
+                            },
+                          ],
+                          property: 'givenNames',
+                        },
+                      ],
+                      parameters: [
+                        {
+                          _type: 'var',
+                          name: 'x',
+                        },
+                      ],
+                    },
+                  ],
+                },
+                {
+                  _type: 'collection',
+                  multiplicity: {
+                    lowerBound: 1,
+                    upperBound: 1,
+                  },
+                  values: [
+                    {
+                      _type: 'string',
+                      multiplicity: {
+                        lowerBound: 1,
+                        upperBound: 1,
+                      },
+                      values: ['Given Names'],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+          parameters: [],
+        },
+        mapping: 'my::map',
+        runtime: {
+          _type: 'engineRuntime',
+          connections: [],
+          mappings: [
+            {
+              path: 'my::map',
+              type: 'MAPPING',
+            },
+          ],
+        },
+      },
+      name: 'serviceWithEmptyTestSuite',
+      owners: [],
+      package: 'my',
+      pattern: '/e2a5e5a9-aac2-49c6-a539-fcdd61f69e9d',
+    },
+    classifierPath: 'meta::legend::service::metamodel::Service',
+  },
+  {
     path: 'test::myConnection',
     content: {
       _type: 'connection',
@@ -380,6 +538,654 @@ export const TEST_DATA__ServiceRoundtrip = [
       },
     },
     classifierPath: 'meta::pure::runtime::PackageableRuntime',
+  },
+  {
+    path: 'my::serviceWithTestSuite',
+    content: {
+      _type: 'service',
+      autoActivateUpdates: true,
+      documentation: '',
+      execution: {
+        _type: 'pureSingleExecution',
+        func: {
+          _type: 'lambda',
+          body: [
+            {
+              _type: 'func',
+              function: 'project',
+              parameters: [
+                {
+                  _type: 'func',
+                  function: 'getAll',
+                  parameters: [
+                    {
+                      _type: 'packageableElementPtr',
+                      fullPath: 'my::Person',
+                    },
+                  ],
+                },
+                {
+                  _type: 'collection',
+                  multiplicity: {
+                    lowerBound: 1,
+                    upperBound: 1,
+                  },
+                  values: [
+                    {
+                      _type: 'lambda',
+                      body: [
+                        {
+                          _type: 'property',
+                          parameters: [
+                            {
+                              _type: 'var',
+                              name: 'x',
+                            },
+                          ],
+                          property: 'givenNames',
+                        },
+                      ],
+                      parameters: [
+                        {
+                          _type: 'var',
+                          name: 'x',
+                        },
+                      ],
+                    },
+                  ],
+                },
+                {
+                  _type: 'collection',
+                  multiplicity: {
+                    lowerBound: 1,
+                    upperBound: 1,
+                  },
+                  values: [
+                    {
+                      _type: 'string',
+                      multiplicity: {
+                        lowerBound: 1,
+                        upperBound: 1,
+                      },
+                      values: ['Given Names'],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+          parameters: [],
+        },
+        mapping: 'my::map',
+        runtime: {
+          _type: 'engineRuntime',
+          connections: [],
+          mappings: [
+            {
+              path: 'my::map',
+              type: 'MAPPING',
+            },
+          ],
+        },
+      },
+      name: 'serviceWithTestSuite',
+      owners: [],
+      package: 'my',
+      pattern: '/e2a5e5a9-aac2-49c6-a539-fcdd61f69e9d',
+      testSuites: [
+        {
+          _type: 'serviceTestSuite',
+          id: 'testSuite1',
+          testData: {
+            connectionsTestData: [
+              {
+                data: {
+                  _type: 'externalFormat',
+                  contentType: 'application/json',
+                  data: '[{"employees":[{"firstName":"firstName 36","lastName":"lastName 77"}],"legalName":"legalName 19"}, {"employees":[{"firstName":"firstName 37","lastName":"lastName 78"}],"legalName":"legalName 20"}]',
+                },
+                id: 'connection1',
+              },
+            ],
+          },
+          tests: [
+            {
+              _type: 'serviceTest',
+              assertions: [
+                {
+                  _type: 'equalToJson',
+                  expected: {
+                    _type: 'externalFormat',
+                    contentType: 'application/json',
+                    data: '{"employees":[{"firstName":"firstName 36","lastName":"lastName 77"}],"legalName":"legalName 19"}',
+                  },
+                  id: 'assert1',
+                },
+              ],
+              id: 'test1',
+              parameters: [],
+            },
+          ],
+        },
+      ],
+    },
+    classifierPath: 'meta::legend::service::metamodel::Service',
+  },
+  {
+    path: 'my::serviceWithTestSuiteWithMultipleTests',
+    content: {
+      _type: 'service',
+      autoActivateUpdates: true,
+      documentation: '',
+      execution: {
+        _type: 'pureSingleExecution',
+        func: {
+          _type: 'lambda',
+          body: [
+            {
+              _type: 'func',
+              function: 'project',
+              parameters: [
+                {
+                  _type: 'func',
+                  function: 'getAll',
+                  parameters: [
+                    {
+                      _type: 'packageableElementPtr',
+                      fullPath: 'my::Person',
+                    },
+                  ],
+                },
+                {
+                  _type: 'collection',
+                  multiplicity: {
+                    lowerBound: 1,
+                    upperBound: 1,
+                  },
+                  values: [
+                    {
+                      _type: 'lambda',
+                      body: [
+                        {
+                          _type: 'property',
+                          parameters: [
+                            {
+                              _type: 'var',
+                              name: 'x',
+                            },
+                          ],
+                          property: 'givenNames',
+                        },
+                      ],
+                      parameters: [
+                        {
+                          _type: 'var',
+                          name: 'x',
+                        },
+                      ],
+                    },
+                  ],
+                },
+                {
+                  _type: 'collection',
+                  multiplicity: {
+                    lowerBound: 1,
+                    upperBound: 1,
+                  },
+                  values: [
+                    {
+                      _type: 'string',
+                      multiplicity: {
+                        lowerBound: 1,
+                        upperBound: 1,
+                      },
+                      values: ['Given Names'],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+          parameters: [],
+        },
+        mapping: 'my::map',
+        runtime: {
+          _type: 'engineRuntime',
+          connections: [],
+          mappings: [
+            {
+              path: 'my::map',
+              type: 'MAPPING',
+            },
+          ],
+        },
+      },
+      name: 'serviceWithTestSuiteWithMultipleTests',
+      owners: [],
+      package: 'my',
+      pattern: '/e2a5e5a9-aac2-49c6-a539-fcdd61f69e9d',
+      testSuites: [
+        {
+          _type: 'serviceTestSuite',
+          id: 'testSuite1',
+          testData: {
+            connectionsTestData: [
+              {
+                data: {
+                  _type: 'externalFormat',
+                  contentType: 'application/json',
+                  data: '[{"employees":[{"firstName":"firstName 36","lastName":"lastName 77"}],"legalName":"legalName 19"}, {"employees":[{"firstName":"firstName 37","lastName":"lastName 78"}],"legalName":"legalName 20"}]',
+                },
+                id: 'connection1',
+              },
+            ],
+          },
+          tests: [
+            {
+              _type: 'serviceTest',
+              assertions: [
+                {
+                  _type: 'equalToJson',
+                  expected: {
+                    _type: 'externalFormat',
+                    contentType: 'application/json',
+                    data: '{"employees":[{"firstName":"firstName 36","lastName":"lastName 77"}],"legalName":"legalName 19"}',
+                  },
+                  id: 'assert1',
+                },
+              ],
+              id: 'test1',
+              parameters: [],
+            },
+            {
+              _type: 'serviceTest',
+              assertions: [
+                {
+                  _type: 'equalToJson',
+                  expected: {
+                    _type: 'externalFormat',
+                    contentType: 'application/json',
+                    data: 'data',
+                  },
+                  id: 'assert1',
+                },
+              ],
+              id: 'test2',
+              parameters: [],
+            },
+          ],
+        },
+      ],
+    },
+    classifierPath: 'meta::legend::service::metamodel::Service',
+  },
+  {
+    path: 'my::serviceWithMultipleConnectionsData',
+    content: {
+      _type: 'service',
+      autoActivateUpdates: true,
+      documentation: '',
+      execution: {
+        _type: 'pureSingleExecution',
+        func: {
+          _type: 'lambda',
+          body: [
+            {
+              _type: 'func',
+              function: 'project',
+              parameters: [
+                {
+                  _type: 'func',
+                  function: 'getAll',
+                  parameters: [
+                    {
+                      _type: 'packageableElementPtr',
+                      fullPath: 'my::Person',
+                    },
+                  ],
+                },
+                {
+                  _type: 'collection',
+                  multiplicity: {
+                    lowerBound: 1,
+                    upperBound: 1,
+                  },
+                  values: [
+                    {
+                      _type: 'lambda',
+                      body: [
+                        {
+                          _type: 'property',
+                          parameters: [
+                            {
+                              _type: 'var',
+                              name: 'x',
+                            },
+                          ],
+                          property: 'givenNames',
+                        },
+                      ],
+                      parameters: [
+                        {
+                          _type: 'var',
+                          name: 'x',
+                        },
+                      ],
+                    },
+                  ],
+                },
+                {
+                  _type: 'collection',
+                  multiplicity: {
+                    lowerBound: 1,
+                    upperBound: 1,
+                  },
+                  values: [
+                    {
+                      _type: 'string',
+                      multiplicity: {
+                        lowerBound: 1,
+                        upperBound: 1,
+                      },
+                      values: ['Given Names'],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+          parameters: [],
+        },
+        mapping: 'my::map',
+        runtime: {
+          _type: 'engineRuntime',
+          connections: [],
+          mappings: [
+            {
+              path: 'my::map',
+              type: 'MAPPING',
+            },
+          ],
+        },
+      },
+      name: 'serviceWithMultipleConnectionsData',
+      owners: [],
+      package: 'my',
+      pattern: '/e2a5e5a9-aac2-49c6-a539-fcdd61f69e9d',
+      testSuites: [
+        {
+          _type: 'serviceTestSuite',
+          id: 'testSuite1',
+          testData: {
+            connectionsTestData: [
+              {
+                data: {
+                  _type: 'modelStore',
+                  instances: {
+                    'my::Person': {
+                      _type: 'collection',
+                      multiplicity: {
+                        lowerBound: 1,
+                        upperBound: 1,
+                      },
+                      values: [
+                        {
+                          _type: 'func',
+                          function: 'new',
+                          parameters: [
+                            {
+                              _type: 'packageableElementPtr',
+                              fullPath: 'my::Person',
+                            },
+                            {
+                              _type: 'string',
+                              multiplicity: {
+                                lowerBound: 1,
+                                upperBound: 1,
+                              },
+                              values: ['dummy'],
+                            },
+                            {
+                              _type: 'collection',
+                              multiplicity: {
+                                lowerBound: 1,
+                                upperBound: 1,
+                              },
+                              values: [
+                                {
+                                  _type: 'keyExpression',
+                                  add: false,
+                                  expression: {
+                                    _type: 'collection',
+                                    multiplicity: {
+                                      lowerBound: 2,
+                                      upperBound: 2,
+                                    },
+                                    values: [
+                                      {
+                                        _type: 'string',
+                                        multiplicity: {
+                                          lowerBound: 1,
+                                          upperBound: 1,
+                                        },
+                                        values: ['Fred'],
+                                      },
+                                      {
+                                        _type: 'string',
+                                        multiplicity: {
+                                          lowerBound: 1,
+                                          upperBound: 1,
+                                        },
+                                        values: ['William'],
+                                      },
+                                    ],
+                                  },
+                                  key: {
+                                    _type: 'string',
+                                    multiplicity: {
+                                      lowerBound: 1,
+                                      upperBound: 1,
+                                    },
+                                    values: ['givenNames'],
+                                  },
+                                },
+                              ],
+                            },
+                          ],
+                        },
+                      ],
+                    },
+                  },
+                },
+                id: 'connection1',
+              },
+              {
+                data: {
+                  _type: 'externalFormat',
+                  contentType: 'application/json',
+                  data: '[{"employees":[{"firstName":"firstName 36","lastName":"lastName 77"}],"legalName":"legalName 19"}, {"employees":[{"firstName":"firstName 37","lastName":"lastName 78"}],"legalName":"legalName 20"}]',
+                },
+                id: 'connection2',
+              },
+            ],
+          },
+          tests: [
+            {
+              _type: 'serviceTest',
+              assertions: [
+                {
+                  _type: 'equalToJson',
+                  expected: {
+                    _type: 'externalFormat',
+                    contentType: 'application/json',
+                    data: '{"employees":[{"firstName":"firstName 36","lastName":"lastName 77"}],"legalName":"legalName 19"}',
+                  },
+                  id: 'assert1',
+                },
+              ],
+              id: 'test1',
+              parameters: [],
+            },
+          ],
+        },
+      ],
+    },
+    classifierPath: 'meta::legend::service::metamodel::Service',
+  },
+  {
+    path: 'my::serviceWithTestSuiteWithParams',
+    content: {
+      _type: 'service',
+      autoActivateUpdates: true,
+      documentation: '',
+      execution: {
+        _type: 'pureSingleExecution',
+        func: {
+          _type: 'lambda',
+          body: [
+            {
+              _type: 'func',
+              function: 'project',
+              parameters: [
+                {
+                  _type: 'func',
+                  function: 'getAll',
+                  parameters: [
+                    {
+                      _type: 'packageableElementPtr',
+                      fullPath: 'my::Person',
+                    },
+                  ],
+                },
+                {
+                  _type: 'collection',
+                  multiplicity: {
+                    lowerBound: 1,
+                    upperBound: 1,
+                  },
+                  values: [
+                    {
+                      _type: 'lambda',
+                      body: [
+                        {
+                          _type: 'property',
+                          parameters: [
+                            {
+                              _type: 'var',
+                              name: 'x',
+                            },
+                          ],
+                          property: 'givenNames',
+                        },
+                      ],
+                      parameters: [
+                        {
+                          _type: 'var',
+                          name: 'x',
+                        },
+                      ],
+                    },
+                  ],
+                },
+                {
+                  _type: 'collection',
+                  multiplicity: {
+                    lowerBound: 1,
+                    upperBound: 1,
+                  },
+                  values: [
+                    {
+                      _type: 'string',
+                      multiplicity: {
+                        lowerBound: 1,
+                        upperBound: 1,
+                      },
+                      values: ['Given Names'],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+          parameters: [],
+        },
+        mapping: 'my::map',
+        runtime: {
+          _type: 'engineRuntime',
+          connections: [],
+          mappings: [
+            {
+              path: 'my::map',
+              type: 'MAPPING',
+            },
+          ],
+        },
+      },
+      name: 'serviceWithTestSuiteWithParams',
+      owners: [],
+      package: 'my',
+      pattern: '/e2a5e5a9-aac2-49c6-a539-fcdd61f69e9d',
+      testSuites: [
+        {
+          _type: 'serviceTestSuite',
+          id: 'testSuite1',
+          testData: {
+            connectionsTestData: [
+              {
+                data: {
+                  _type: 'externalFormat',
+                  contentType: 'application/json',
+                  data: '[{"employees":[{"firstName":"firstName 36","lastName":"lastName 77"}],"legalName":"legalName 19"}, {"employees":[{"firstName":"firstName 37","lastName":"lastName 78"}],"legalName":"legalName 20"}]',
+                },
+                id: 'connection1',
+              },
+            ],
+          },
+          tests: [
+            {
+              _type: 'serviceTest',
+              assertions: [
+                {
+                  _type: 'equalToJson',
+                  expected: {
+                    _type: 'externalFormat',
+                    contentType: 'application/json',
+                    data: '{"employees":[{"firstName":"firstName 36","lastName":"lastName 77"}],"legalName":"legalName 19"}',
+                  },
+                  id: 'assert1',
+                },
+              ],
+              id: 'test1',
+              parameters: [
+                {
+                  name: 'stringParam',
+                  value: {
+                    _type: 'string',
+                    multiplicity: {
+                      lowerBound: 1,
+                      upperBound: 1,
+                    },
+                    values: ['dummy'],
+                  },
+                },
+                {
+                  name: 'stringOptionalParam',
+                  value: {
+                    _type: 'string',
+                    multiplicity: {
+                      lowerBound: 1,
+                      upperBound: 1,
+                    },
+                    values: ['dummy'],
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+    classifierPath: 'meta::legend::service::metamodel::Service',
   },
   {
     path: '__internal__::SectionIndex',

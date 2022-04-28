@@ -17,13 +17,14 @@
 import { hashArray, uniq, type Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import type { ServiceExecution } from './ServiceExecution';
-import { type ServiceTest, SingleExecutionTest } from './ServiceTest';
 import {
   type PackageableElementVisitor,
   PackageableElement,
 } from '../PackageableElement';
 import type { StereotypeReference } from '../domain/StereotypeReference';
 import type { TaggedValue } from '../domain/TaggedValue';
+import type { DEPRECATED__ServiceTest } from './DEPRECATED__ServiceTest';
+import type { ServiceTestSuite } from './ServiceTestSuite';
 
 export const DEFAULT_SERVICE_PATTERN = '/';
 
@@ -35,12 +36,9 @@ export class Service extends PackageableElement implements Hashable {
   documentation = '';
   autoActivateUpdates = true;
   execution!: ServiceExecution;
-  test: ServiceTest;
+  test?: DEPRECATED__ServiceTest | undefined;
+  tests: ServiceTestSuite[] = [];
 
-  constructor(name: string) {
-    super(name);
-    this.test = new SingleExecutionTest(this, '');
-  }
   get patternParameters(): string[] {
     return uniq(
       (this.pattern.match(/\{\w+\}/gu) ?? []).map((parameter) =>
@@ -62,7 +60,8 @@ export class Service extends PackageableElement implements Hashable {
       this.documentation,
       this.autoActivateUpdates.toString(),
       this.execution,
-      this.test,
+      this.test ?? '',
+      hashArray(this.tests),
     ]);
   }
 

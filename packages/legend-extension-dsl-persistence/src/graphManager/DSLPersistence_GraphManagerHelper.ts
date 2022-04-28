@@ -15,11 +15,21 @@
  */
 
 import { Persistence } from '../models/metamodels/pure/model/packageableElements/persistence/DSLPersistence_Persistence';
-import type { PureModel } from '@finos/legend-graph';
+import type { BasicModel, PureModel } from '@finos/legend-graph';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 
 export const getPersistence = (path: string, graph: PureModel): Persistence =>
   graph.getExtensionElement(
     path,
     Persistence,
+    `Can't find persistence '${path}'`,
+  );
+
+export const getOwnPersistence = (
+  path: string,
+  graph: BasicModel,
+): Persistence =>
+  guaranteeNonNullable(
+    graph.getOwnNullableExtensionElement(path, Persistence),
     `Can't find persistence '${path}'`,
   );

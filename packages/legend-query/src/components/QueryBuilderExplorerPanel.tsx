@@ -77,7 +77,7 @@ import { useApplicationStore } from '@finos/legend-application';
 import { getClassPropertyIcon } from './shared/ElementIconUtils';
 import { QUERY_BUILDER_TEST_ID } from './QueryBuilder_TestID';
 import { getMultiplicityDescription } from './shared/QueryBuilderUtils';
-import { guaranteeNonNullable } from '@finos/legend-shared';
+import { filterByType, guaranteeNonNullable } from '@finos/legend-shared';
 
 const QueryBuilderSubclassInfoTooltip: React.FC<{
   subclass: Class;
@@ -294,11 +294,9 @@ const QueryBuilderExplorerContextMenu = observer(
               childId,
             ),
           )
+          .filter(filterByType(QueryBuilderExplorerTreePropertyNodeData))
           .filter(
-            (
-              childNode,
-            ): childNode is QueryBuilderExplorerTreePropertyNodeData =>
-              childNode instanceof QueryBuilderExplorerTreePropertyNodeData &&
+            (childNode) =>
               !(childNode.type instanceof Class) &&
               childNode.mappingData.mapped,
           );

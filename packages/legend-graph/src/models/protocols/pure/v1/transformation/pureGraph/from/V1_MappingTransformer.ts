@@ -25,7 +25,6 @@ import type { Mapping } from '../../../../../../metamodels/pure/packageableEleme
 import type {
   SetImplementationVisitor,
   SetImplementation,
-  TEMPORARY__UnresolvedSetImplementation,
 } from '../../../../../../metamodels/pure/packageableElements/mapping/SetImplementation';
 import type {
   PropertyMappingVisitor,
@@ -149,6 +148,7 @@ import type { SubstituteStore } from '../../../../../../metamodels/pure/packagea
 import { V1_BindingTransformer } from '../../../model/packageableElements/externalFormat/store/V1_BindingTransformer';
 import { V1_MergeOperationClassMapping } from '../../../model/packageableElements/mapping/V1_MergeOperationClassMapping';
 import { MergeOperationSetImplementation } from '../../../../../../metamodels/pure/packageableElements/mapping/MergeOperationSetImplementation';
+import type { TEMPORARY__UnresolvedSetImplementation } from '../../../../../../metamodels/pure/packageableElements/mapping/TEMPORARY__UnresolvedSetImplementation';
 
 export const V1_transformPropertyReference = (
   element: PropertyReference,

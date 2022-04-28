@@ -14,17 +14,17 @@
  * limitations under the License.
  */
 
-import base from '../../scripts/test/jest.config.base.js';
+import { getBaseJestProjectConfig } from '../../scripts/test/jest.config.base.js';
 import { loadJSON } from './DevUtils.js';
 
-const packageJson = loadJSON('./package.json');
+import { resolve, dirname } from 'path';
+import { fileURLToPath } from 'url';
 
-export default {
-  ...base,
-  displayName: packageJson.name,
-  name: packageJson.name,
-  rootDir: '../..',
-  testMatch: [
-    '<rootDir>/packages/legend-dev-utils/**/__tests__/**/*(*.)test.[jt]s?(x)',
-  ],
-};
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+const packageJson = loadJSON(resolve(__dirname, './package.json'));
+
+export default getBaseJestProjectConfig(
+  packageJson.name,
+  'packages/legend-dev-utils',
+);

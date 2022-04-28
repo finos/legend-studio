@@ -37,6 +37,7 @@ import {
   type ActionState,
   StopWatch,
   assertNonEmptyString,
+  filterByType,
 } from '@finos/legend-shared';
 import type { TEMPORARY__AbstractEngineConfig } from '../../../../graphManager/action/TEMPORARY__AbstractEngineConfig';
 import {
@@ -91,7 +92,7 @@ import {
   V1_deserializeValueSpecification,
 } from './transformation/pureProtocol/serializationHelpers/V1_ValueSpecificationSerializer';
 import V1_CORE_SYSTEM_MODELS from './V1_Core_SystemModels.json';
-import { V1_PackageableElementSerializer } from './transformation/pureProtocol/V1_PackageableElementSerialization';
+import { V1_serializePackageableElement } from './transformation/pureProtocol/V1_PackageableElementSerialization';
 import {
   V1_entitiesToPureModelContextData,
   V1_serializePureModelContext,
@@ -118,14 +119,17 @@ import {
 } from './transformation/pureGraph/to/V1_GraphBuilderContext';
 import { V1_PureModelContextPointer } from './model/context/V1_PureModelContextPointer';
 import { V1_Engine } from './engine/V1_Engine';
-import { V1_PackageableElementTransformer } from './transformation/pureGraph/from/V1_PackageableElementTransformer';
+import { V1_transformPackageableElement } from './transformation/pureGraph/from/V1_PackageableElementTransformer';
 import {
   V1_transformRawLambda,
   V1_RawValueSpecificationTransformer,
 } from './transformation/pureGraph/from/V1_RawValueSpecificationTransformer';
 import { V1_transformRuntime } from './transformation/pureGraph/from/V1_RuntimeTransformer';
 import type { V1_RawLambda } from './model/rawValueSpecification/V1_RawLambda';
-import { V1_ExecuteInput } from './engine/execution/V1_ExecuteInput';
+import {
+  V1_ExecuteInput,
+  V1_TestDataGenerationExecutionInput,
+} from './engine/execution/V1_ExecuteInput';
 import type { V1_PureModelContextGenerationInput } from './engine/import/V1_PureModelContextGenerationInput';
 import { V1_buildValueSpecification } from './transformation/pureGraph/to/helpers/V1_ValueSpecificationBuilderHelper';
 import { V1_transformRootValueSpecification } from './transformation/pureGraph/from/V1_ValueSpecificationTransformer';
@@ -233,6 +237,8 @@ import { V1_SERVICE_ELEMENT_PROTOCOL_TYPE } from './transformation/pureProtocol/
 import { MappingInclude } from '../../../metamodels/pure/packageableElements/mapping/MappingInclude';
 import type { ModelGenerationConfiguration } from '../../../ModelGenerationConfiguration';
 import type { MappingGeneration_PureProtocolProcessorPlugin_Extension } from '../MappingGeneration_PureProtocolProcessorPlugin_Extension';
+import type { Package } from '../../../metamodels/pure/packageableElements/domain/Package';
+import { V1_DataElement } from './model/packageableElements/data/V1_DataElement';
 
 const V1_FUNCTION_SUFFIX_MULTIPLICITY_INFINITE = 'MANY';
 
@@ -282,6 +288,8 @@ class V1_PureModelContextDataIndex {
 
   fileGenerations: V1_FileGenerationSpecification[] = [];
   generationSpecifications: V1_GenerationSpecification[] = [];
+
+  dataElements: V1_DataElement[] = [];
 
   otherElementsByBuilder: Map<
     V1_ElementBuilder<V1_PackageableElement>,
@@ -345,6 +353,8 @@ const indexPureModelContextData = (
       index.fileGenerations.push(el);
     } else if (el instanceof V1_GenerationSpecification) {
       index.generationSpecifications.push(el);
+    } else if (el instanceof V1_DataElement) {
+      index.dataElements.push(el);
     } else {
       const clazz = getClass<V1_PackageableElement>(el);
       if (otherElementsByClass.has(clazz)) {
@@ -527,6 +537,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       graphBuilderState.fail();
       this.log.error(
         LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_FAILURE),
+        error,
       );
       throw new SystemGraphBuilderError(error);
     } finally {
@@ -581,12 +592,12 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       const buildInputs: V1_GraphBuilderInput[] = Array.from(
         dependencyDataMap.entries(),
       ).map(([dependencyKey, dependencyData]) => ({
+        model: graph.dependencyManager.getModel(dependencyKey),
         data: indexPureModelContextData(
           report,
           dependencyData,
           this.extensions,
         ),
-        model: graph.dependencyManager.getModel(dependencyKey),
       }));
 
       // build
@@ -610,6 +621,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       assertErrorThrown(error);
       this.log.error(
         LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_FAILURE),
+        error,
       );
       graphBuilderState.fail();
       throw new DependencyGraphBuilderError(error);
@@ -662,7 +674,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
        * but when we write (serialize) we write only resolved paths. In the future once the issue with dependency is solved we will
        * perserve the element path both resolved and unresolved
        */
-      if (!options?.TEMPORARY__keepSectionIndex) {
+      if (!options?.TEMPORARY__preserveSectionIndex) {
         graph.TEMPORARY__deleteOwnSectionIndex();
       }
 
@@ -676,6 +688,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       assertErrorThrown(error);
       this.log.error(
         LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_FAILURE),
+        error,
       );
       graphBuilderState.fail();
       /**
@@ -721,17 +734,12 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_ELEMENTS_DESERIALIZED);
 
       // prepare build inputs
-      const buildInputs = Array.from(generatedDataMap.entries()).map(
-        ([generationParentPath, generatedData]) => ({
-          parentElementPath: generationParentPath,
-          data: indexPureModelContextData(
-            report,
-            generatedData,
-            this.extensions,
-          ),
-          model: generatedModel,
-        }),
-      );
+      const buildInputs: V1_GraphBuilderInput[] = Array.from(
+        generatedDataMap.entries(),
+      ).map(([generationParentPath, generatedData]) => ({
+        model: generatedModel,
+        data: indexPureModelContextData(report, generatedData, this.extensions),
+      }));
 
       // build
       await this.buildGraphFromInputs(
@@ -754,6 +762,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       assertErrorThrown(error);
       this.log.error(
         LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_FAILURE),
+        error,
       );
       graphBuilderState.fail();
       /**
@@ -815,6 +824,11 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     await this.buildServices(graph, inputs, options);
     stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_SERVICES_BUILT);
 
+    // build data elements
+    graphBuilderState.setMessage(`Building data elements...`);
+    await this.buildDataElements(graph, inputs, options);
+    stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_DATA_ELEMENTS_BUILT);
+
     // build other elements
     graphBuilderState.setMessage(`Building other elements...`);
     await this.buildFileGenerations(graph, inputs, options);
@@ -853,25 +867,37 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     inputs: V1_GraphBuilderInput[],
     options?: GraphBuilderOptions,
   ): Promise<void> {
+    // create the element path cache for faster duplication check
+    // NOTE: We base on the assumption here that our graph building is cascading, i.e.
+    // it first builds core, system, dependencies, graph, and generation.
+    // this way, as we build the a graph, we know the next step's duplication check
+    // has path cache consisting of all element from its base graphs
+    const elementPathCache = new Set<string>(
+      graph.allElements.map((el) => el.path),
+    );
+
     await Promise.all(
-      inputs.flatMap((input) =>
-        input.data.nativeElements.map((element) =>
-          this.visitWithErrorHandling(
-            element,
-            new V1_ProtocolToMetaModelGraphFirstPassBuilder(
-              this.getBuilderContext(graph, input.model, element, options),
+      inputs.flatMap(async (input) => {
+        // create the package cache
+        const packageCache = new Map<string, Package>();
+
+        await Promise.all(
+          input.data.nativeElements.map((element) =>
+            this.visitWithGraphBuilderErrorHandling(
+              element,
+              new V1_ProtocolToMetaModelGraphFirstPassBuilder(
+                this.getBuilderContext(graph, input.model, element, options),
+                packageCache,
+                elementPathCache,
+              ),
             ),
           ),
-        ),
-      ),
-    );
-    await Promise.all(
-      this.extensions.sortedExtraElementBuilders.map(async (builder) => {
+        );
         await Promise.all(
-          inputs.flatMap((input) =>
+          this.extensions.sortedExtraElementBuilders.flatMap(async (builder) =>
             (input.data.otherElementsByBuilder.get(builder) ?? []).map(
               (element) =>
-                this.visitWithErrorHandling(
+                this.visitWithGraphBuilderErrorHandling(
                   element,
                   new V1_ProtocolToMetaModelGraphFirstPassBuilder(
                     this.getBuilderContext(
@@ -880,6 +906,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
                       element,
                       options,
                     ),
+                    packageCache,
+                    elementPathCache,
                   ),
                 ),
             ),
@@ -898,7 +926,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     await Promise.all(
       inputs.flatMap((input) =>
         input.data.profiles.map((element) =>
-          this.visitWithErrorHandling(
+          this.visitWithGraphBuilderErrorHandling(
             element,
             new V1_ProtocolToMetaModelGraphSecondPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
@@ -910,7 +938,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     await Promise.all(
       inputs.flatMap((input) =>
         input.data.classes.map((element) =>
-          this.visitWithErrorHandling(
+          this.visitWithGraphBuilderErrorHandling(
             element,
             new V1_ProtocolToMetaModelGraphSecondPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
@@ -922,7 +950,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     await Promise.all(
       inputs.flatMap((input) =>
         input.data.enumerations.map((element) =>
-          this.visitWithErrorHandling(
+          this.visitWithGraphBuilderErrorHandling(
             element,
             new V1_ProtocolToMetaModelGraphSecondPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
@@ -934,7 +962,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     await Promise.all(
       inputs.flatMap((input) =>
         input.data.measures.map((element) =>
-          this.visitWithErrorHandling(
+          this.visitWithGraphBuilderErrorHandling(
             element,
             new V1_ProtocolToMetaModelGraphSecondPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
@@ -946,7 +974,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     await Promise.all(
       inputs.flatMap((input) =>
         input.data.functions.map((element) =>
-          this.visitWithErrorHandling(
+          this.visitWithGraphBuilderErrorHandling(
             element,
             new V1_ProtocolToMetaModelGraphSecondPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
@@ -959,7 +987,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     await Promise.all(
       inputs.flatMap((input) =>
         input.data.classes.map((element) =>
-          this.visitWithErrorHandling(
+          this.visitWithGraphBuilderErrorHandling(
             element,
             new V1_ProtocolToMetaModelGraphThirdPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
@@ -971,7 +999,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     await Promise.all(
       inputs.flatMap((input) =>
         input.data.associations.map((element) =>
-          this.visitWithErrorHandling(
+          this.visitWithGraphBuilderErrorHandling(
             element,
             new V1_ProtocolToMetaModelGraphThirdPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
@@ -984,7 +1012,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     await Promise.all(
       inputs.flatMap((input) =>
         input.data.classes.map((element) =>
-          this.visitWithErrorHandling(
+          this.visitWithGraphBuilderErrorHandling(
             element,
             new V1_ProtocolToMetaModelGraphFourthPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
@@ -996,7 +1024,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     await Promise.all(
       inputs.flatMap((input) =>
         input.data.associations.map((element) =>
-          this.visitWithErrorHandling(
+          this.visitWithGraphBuilderErrorHandling(
             element,
             new V1_ProtocolToMetaModelGraphFourthPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
@@ -1009,7 +1037,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     await Promise.all(
       inputs.flatMap((input) =>
         input.data.classes.map((element) =>
-          this.visitWithErrorHandling(
+          this.visitWithGraphBuilderErrorHandling(
             element,
             new V1_ProtocolToMetaModelGraphFifthPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
@@ -1028,7 +1056,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     await Promise.all(
       inputs.flatMap((input) =>
         input.data.stores.map((element) =>
-          this.visitWithErrorHandling(
+          this.visitWithGraphBuilderErrorHandling(
             element,
             new V1_ProtocolToMetaModelGraphSecondPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
@@ -1040,7 +1068,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     await Promise.all(
       inputs.flatMap((input) =>
         input.data.stores.map((element) =>
-          this.visitWithErrorHandling(
+          this.visitWithGraphBuilderErrorHandling(
             element,
             new V1_ProtocolToMetaModelGraphThirdPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
@@ -1052,7 +1080,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     await Promise.all(
       inputs.flatMap((input) =>
         input.data.stores.map((element) =>
-          this.visitWithErrorHandling(
+          this.visitWithGraphBuilderErrorHandling(
             element,
             new V1_ProtocolToMetaModelGraphFourthPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
@@ -1064,7 +1092,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     await Promise.all(
       inputs.flatMap((input) =>
         input.data.stores.map((element) =>
-          this.visitWithErrorHandling(
+          this.visitWithGraphBuilderErrorHandling(
             element,
             new V1_ProtocolToMetaModelGraphFifthPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
@@ -1083,7 +1111,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     await Promise.all(
       inputs.flatMap((input) =>
         input.data.mappings.map((element) =>
-          this.visitWithErrorHandling(
+          this.visitWithGraphBuilderErrorHandling(
             element,
             new V1_ProtocolToMetaModelGraphSecondPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
@@ -1095,7 +1123,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     await Promise.all(
       inputs.flatMap((input) =>
         input.data.mappings.map((element) =>
-          this.visitWithErrorHandling(
+          this.visitWithGraphBuilderErrorHandling(
             element,
             new V1_ProtocolToMetaModelGraphThirdPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
@@ -1107,7 +1135,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     await Promise.all(
       inputs.flatMap((input) =>
         input.data.mappings.map((element) =>
-          this.visitWithErrorHandling(
+          this.visitWithGraphBuilderErrorHandling(
             element,
             new V1_ProtocolToMetaModelGraphFourthPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
@@ -1127,7 +1155,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     await Promise.all(
       inputs.flatMap((input) =>
         input.data.connections.map((element) =>
-          this.visitWithErrorHandling(
+          this.visitWithGraphBuilderErrorHandling(
             element,
             new V1_ProtocolToMetaModelGraphSecondPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
@@ -1139,7 +1167,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     await Promise.all(
       inputs.flatMap((input) =>
         input.data.runtimes.map((element) =>
-          this.visitWithErrorHandling(
+          this.visitWithGraphBuilderErrorHandling(
             element,
             new V1_ProtocolToMetaModelGraphSecondPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
@@ -1158,7 +1186,26 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     await Promise.all(
       inputs.flatMap((input) =>
         input.data.services.map((element) =>
-          this.visitWithErrorHandling(
+          this.visitWithGraphBuilderErrorHandling(
+            element,
+            new V1_ProtocolToMetaModelGraphSecondPassBuilder(
+              this.getBuilderContext(graph, input.model, element, options),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  private async buildDataElements(
+    graph: PureModel,
+    inputs: V1_GraphBuilderInput[],
+    options?: GraphBuilderOptions,
+  ): Promise<void> {
+    await Promise.all(
+      inputs.flatMap((input) =>
+        input.data.dataElements.map((element) =>
+          this.visitWithGraphBuilderErrorHandling(
             element,
             new V1_ProtocolToMetaModelGraphSecondPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
@@ -1177,7 +1224,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     await Promise.all(
       inputs.flatMap((input) =>
         input.data.fileGenerations.map((element) =>
-          this.visitWithErrorHandling(
+          this.visitWithGraphBuilderErrorHandling(
             element,
             new V1_ProtocolToMetaModelGraphSecondPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
@@ -1196,7 +1243,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     await Promise.all(
       inputs.flatMap((input) =>
         input.data.generationSpecifications.map((element) =>
-          this.visitWithErrorHandling(
+          this.visitWithGraphBuilderErrorHandling(
             element,
             new V1_ProtocolToMetaModelGraphSecondPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
@@ -1215,7 +1262,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     await Promise.all(
       inputs.flatMap((input) =>
         input.data.sectionIndices.map((element) =>
-          this.visitWithErrorHandling(
+          this.visitWithGraphBuilderErrorHandling(
             element,
             new V1_ProtocolToMetaModelGraphSecondPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
@@ -1237,7 +1284,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           inputs.flatMap((input) =>
             (input.data.otherElementsByBuilder.get(builder) ?? []).map(
               (element) =>
-                this.visitWithErrorHandling(
+                this.visitWithGraphBuilderErrorHandling(
                   element,
                   new V1_ProtocolToMetaModelGraphSecondPassBuilder(
                     this.getBuilderContext(
@@ -1255,7 +1302,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           inputs.flatMap((input) =>
             (input.data.otherElementsByBuilder.get(builder) ?? []).map(
               (element) =>
-                this.visitWithErrorHandling(
+                this.visitWithGraphBuilderErrorHandling(
                   element,
                   new V1_ProtocolToMetaModelGraphThirdPassBuilder(
                     this.getBuilderContext(
@@ -1273,7 +1320,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           inputs.flatMap((input) =>
             (input.data.otherElementsByBuilder.get(builder) ?? []).map(
               (element) =>
-                this.visitWithErrorHandling(
+                this.visitWithGraphBuilderErrorHandling(
                   element,
                   new V1_ProtocolToMetaModelGraphFourthPassBuilder(
                     this.getBuilderContext(
@@ -1291,7 +1338,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           inputs.flatMap((input) =>
             (input.data.otherElementsByBuilder.get(builder) ?? []).map(
               (element) =>
-                this.visitWithErrorHandling(
+                this.visitWithGraphBuilderErrorHandling(
                   element,
                   new V1_ProtocolToMetaModelGraphFifthPassBuilder(
                     this.getBuilderContext(
@@ -1309,7 +1356,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
-  private visitWithErrorHandling<T>(
+  private visitWithGraphBuilderErrorHandling<T>(
     element: V1_PackageableElement,
     visitor: V1_PackageableElementVisitor<T>,
   ): Promise<T> {
@@ -1319,7 +1366,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       assertErrorThrown(err);
       const error =
         err instanceof GraphBuilderError ? err : new GraphBuilderError(err);
-      error.message = `Error processing element '${element.path}': ${err.message}`;
+      error.message = `Can't build element '${element.path}': ${err.message}`;
       throw error;
     }
   }
@@ -1709,6 +1756,23 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     lambda: RawLambda,
     runtime: Runtime,
     clientVersion: string,
+  ): V1_ExecuteInput =>
+    this.buildExecutionInput(
+      graph,
+      mapping,
+      lambda,
+      runtime,
+      clientVersion,
+      new V1_ExecuteInput(),
+    );
+
+  private buildExecutionInput = (
+    graph: PureModel,
+    mapping: Mapping,
+    lambda: RawLambda,
+    runtime: Runtime,
+    clientVersion: string,
+    executeInput: V1_ExecuteInput,
   ): V1_ExecuteInput => {
     /**
      * NOTE: to lessen network load, we might need to think of a way to only include relevant part of the pure model context data here
@@ -1747,7 +1811,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       .concat(extraExecutionElements);
     // NOTE: for execution, we usually will just assume that we send the connections embedded in the runtime value, since we don't want the user to have to create
     // packageable runtime and connection just to play with execution.
-    const executeInput = new V1_ExecuteInput();
     executeInput.clientVersion = clientVersion;
     executeInput.function = V1_transformRawLambda(
       lambda,
@@ -1795,10 +1858,26 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     lambda: RawLambda,
     runtime: Runtime,
     clientVersion: string,
+    parameters: (string | number | boolean)[],
+    options?: {
+      anonymizeGeneratedData?: boolean;
+    },
   ): Promise<string> {
-    return this.engine.generateMappingTestData(
-      this.createExecutionInput(graph, mapping, lambda, runtime, clientVersion),
+    const testDataGenerationExecuteInput =
+      new V1_TestDataGenerationExecutionInput();
+    this.buildExecutionInput(
+      graph,
+      mapping,
+      lambda,
+      runtime,
+      clientVersion,
+      testDataGenerationExecuteInput,
     );
+    testDataGenerationExecuteInput.parameters = parameters;
+    testDataGenerationExecuteInput.hashStrings = Boolean(
+      options?.anonymizeGeneratedData,
+    );
+    return this.engine.generateMappingTestData(testDataGenerationExecuteInput);
   }
 
   generateExecutionPlan(
@@ -1879,10 +1958,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     const protocolGraph = this.getFullGraphModelData(graph);
     const targetService = guaranteeNonNullable(
       protocolGraph.elements
-        .filter(
-          (element: V1_PackageableElement): element is V1_Service =>
-            element instanceof V1_Service,
-        )
+        .filter(filterByType(V1_Service))
         .find((element) => element.path === service.path),
       `Can't run service test: service '${service.path}' not found`,
     );
@@ -1926,6 +2002,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         data.origin = new V1_PureModelContextPointer(protocol);
         data.elements = [this.elementToProtocol<V1_Service>(service)];
         // SDLC info
+        // TODO: We may need to add `runtime` pointers if the runtime defned in the service is a packageable runtime
+        // and not embedded.
         const execution = service.execution;
         if (execution instanceof PureSingleExecution) {
           sdlcInfo.packageableElementPointers = [
@@ -1934,6 +2012,15 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
               execution.mapping.value.path,
             ),
           ];
+        } else if (execution instanceof PureMultiExecution) {
+          sdlcInfo.packageableElementPointers =
+            execution.executionParameters.map(
+              (e) =>
+                new V1_PackageableElementPointer(
+                  V1_PackageableElementPointerType.MAPPING,
+                  e.mapping.value.path,
+                ),
+            );
         } else {
           throw new UnsupportedOperationError(
             `Can't register service with the specified execution`,
@@ -2102,12 +2189,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         ...graph.dependencyManager.mappings,
       ];
       const v1Mappings = graphBuilderInput
-        .map((e) =>
-          e.data.elements.filter(
-            (type: V1_PackageableElement): type is V1_Mapping =>
-              type instanceof V1_Mapping,
-          ),
-        )
+        .map((e) => e.data.elements.filter(filterByType(V1_Mapping)))
         .flat();
       const context = new V1_GraphBuilderContextBuilder(
         graph,
@@ -2137,12 +2219,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         ...graph.dependencyManager.runtimes,
       ];
       const v1Runtimes = graphBuilderInput
-        .map((e) =>
-          e.data.elements.filter(
-            (type: V1_PackageableElement): type is V1_PackageableRuntime =>
-              type instanceof V1_PackageableRuntime,
-          ),
-        )
+        .map((e) => e.data.elements.filter(filterByType(V1_PackageableRuntime)))
         .flat();
       v1Runtimes.forEach((element) => {
         const runtime = runtimes.find((e) => e.path === element.path);
@@ -2190,12 +2267,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         ...graph.dependencyManager.services,
       ];
       const v1Services = graphBuilderInput
-        .map((e) =>
-          e.data.elements.filter(
-            (type: V1_PackageableElement): type is V1_Service =>
-              type instanceof V1_Service,
-          ),
-        )
+        .map((e) => e.data.elements.filter(filterByType(V1_Service)))
         .flat();
       // build service multi execution keys
       v1Services.forEach((element) => {
@@ -2382,17 +2454,14 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     element: PackageableElement,
     options?: { keepSourceInformation?: boolean | undefined } | undefined,
   ): T =>
-    element.accept_PackageableElementVisitor(
-      new V1_PackageableElementTransformer(
+    V1_transformPackageableElement(
+      element,
+      this.pluginManager.getPureProtocolProcessorPlugins(),
+      new V1_GraphTransformerContextBuilder(
         this.pluginManager.getPureProtocolProcessorPlugins(),
-        new V1_GraphTransformerContextBuilder(
-          this.pluginManager.getPureProtocolProcessorPlugins(),
-        )
-          .withKeepSourceInformationFlag(
-            Boolean(options?.keepSourceInformation),
-          )
-          .build(),
-      ),
+      )
+        .withKeepSourceInformationFlag(Boolean(options?.keepSourceInformation))
+        .build(),
     ) as T;
 
   private pureModelContextDataToEntities = (
@@ -2406,10 +2475,9 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     elementProtocol: V1_PackageableElement,
   ): Entity => ({
     path: this.getElementPath(elementProtocol),
-    content: elementProtocol.accept_PackageableElementVisitor(
-      new V1_PackageableElementSerializer(
-        this.pluginManager.getPureProtocolProcessorPlugins(),
-      ),
+    content: V1_serializePackageableElement(
+      elementProtocol,
+      this.pluginManager.getPureProtocolProcessorPlugins(),
     ),
     classifierPath: this.getElementClassiferPath(elementProtocol),
   });
@@ -2463,6 +2531,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       return CORE_PURE_PATH.SERVICE;
     } else if (protocol instanceof V1_FileGenerationSpecification) {
       return CORE_PURE_PATH.FILE_GENERATION;
+    } else if (protocol instanceof V1_DataElement) {
+      return CORE_PURE_PATH.DATA_ELEMENT;
     } else if (protocol instanceof V1_GenerationSpecification) {
       return CORE_PURE_PATH.GENERATION_SPECIFICATION;
     }
@@ -2511,7 +2581,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     const dependencyManager = graph.dependencyManager;
     const generatedModel = graph.generationModel;
     graphData.elements = [
-      ...dependencyManager.allElements,
+      ...dependencyManager.allOwnElements,
       ...generatedModel.allOwnElements,
     ].map((element) => this.elementToProtocol(element));
     this.log.info(
@@ -2559,7 +2629,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   // --------------------------------------------- HACKY ---------------------------------------------
 
-  HACKY_createGetAllLambda(_class: Class): RawLambda {
+  HACKY__createGetAllLambda(_class: Class): RawLambda {
     return new RawLambda(
       [],
       [
@@ -2577,7 +2647,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
-  HACKY_createServiceTestAssertLambda(assertData: string): RawLambda {
+  HACKY__createServiceTestAssertLambda(assertData: string): RawLambda {
     return new RawLambda(
       [
         {
@@ -2628,7 +2698,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
-  HACKY_extractServiceTestAssertionData(query: RawLambda): string | undefined {
+  HACKY__extractServiceTestAssertionData(query: RawLambda): string | undefined {
     let json: string | undefined;
     try {
       json = (
@@ -2652,5 +2722,18 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       /* Add other assertion cases if we read others */
     }
     return json;
+  }
+
+  HACKY__createDefaultBlankLambda(): RawLambda {
+    return new RawLambda(
+      [{ _type: 'var', name: 'x' }],
+      [
+        {
+          _type: 'string',
+          multiplicity: { lowerBound: 1, upperBound: 1 },
+          values: [''],
+        },
+      ],
+    );
   }
 }

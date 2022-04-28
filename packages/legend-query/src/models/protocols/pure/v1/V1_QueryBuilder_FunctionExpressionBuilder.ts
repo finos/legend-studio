@@ -18,6 +18,7 @@ import {
   assertNonNullable,
   assertTrue,
   assertType,
+  filterByType,
   guaranteeType,
   returnUndefOnError,
 } from '@finos/legend-shared';
@@ -419,10 +420,7 @@ export const V1_buildProjectFunctionExpression = (
     `Can't build project() expression: project() expects argument #1 to be a collection`,
   );
   topLevelLambdaParameters = columnExpressions.values
-    .filter(
-      (value: V1_ValueSpecification): value is V1_Lambda =>
-        value instanceof V1_Lambda,
-    )
+    .filter(filterByType(V1_Lambda))
     .map((lambda) => lambda.parameters)
     .flat();
 
@@ -518,10 +516,7 @@ export const V1_buildGroupByFunctionExpression = (
     `Can't build groupBy() expression: groupBy() expects argument #1 to be a collection`,
   );
   topLevelLambdaParameters = columnExpressions.values
-    .filter(
-      (value: V1_ValueSpecification): value is V1_Lambda =>
-        value instanceof V1_Lambda,
-    )
+    .filter(filterByType(V1_Lambda))
     .map((lambda) => lambda.parameters)
     .flat();
 
@@ -541,10 +536,7 @@ export const V1_buildGroupByFunctionExpression = (
       )
       .map((value) => value.parameters)
       .flat()
-      .filter(
-        (value: V1_ValueSpecification): value is V1_Lambda =>
-          value instanceof V1_Lambda,
-      )
+      .filter(filterByType(V1_Lambda))
       .map((lambda) => lambda.parameters)
       .flat(),
   );

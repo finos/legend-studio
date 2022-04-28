@@ -53,7 +53,7 @@ import {
   type InstanceValue,
   type INTERNAL__UnknownValueSpecification,
   type LambdaFunction,
-  MILESTONING_STEROTYPE,
+  MILESTONING_STEREOTYPE,
   DerivedProperty,
   RawLambda,
   matchFunctionName,
@@ -79,7 +79,7 @@ import {
 import { SUPPORTED_FUNCTIONS } from '../QueryBuilder_Const';
 import type { QueryBuilderAggregationState } from './QueryBuilderAggregationState';
 import { QueryParameterState } from './QueryParametersState';
-import { processMilestoningPropertyExpression } from './QueryBuilderMilestoningHelper';
+import { validateMilestoningPropertyExpression } from './QueryBuilderMilestoningHelper';
 import { toGroupOperation } from './QueryBuilderOperatorsHelper';
 import { processPostFilterLambda } from './QueryBuilderPostFilterProcessor';
 
@@ -142,7 +142,7 @@ const processFilterExpression = (
     if (propertyExpression instanceof AbstractPropertyExpression) {
       const currentPropertyExpression = propertyExpression.parametersValues[0];
       if (currentPropertyExpression instanceof AbstractPropertyExpression) {
-        processMilestoningPropertyExpression(
+        validateMilestoningPropertyExpression(
           currentPropertyExpression,
           filterState.queryBuilderState.graphManagerState.graph,
         );
@@ -405,7 +405,7 @@ export class QueryBuilderLambdaProcessor
         this.queryBuilderState.graphManagerState.graph,
       );
       if (stereotype) {
-        if (stereotype === MILESTONING_STEROTYPE.BITEMPORAL) {
+        if (stereotype === MILESTONING_STEREOTYPE.BITEMPORAL) {
           acceptedNoOfParameters = 3;
           assertTrue(
             valueSpecification.parametersValues.length ===
@@ -418,7 +418,7 @@ export class QueryBuilderLambdaProcessor
           this.queryBuilderState.querySetupState.setBusinessDate(
             valueSpecification.parametersValues[2],
           );
-        } else if (stereotype === MILESTONING_STEROTYPE.PROCESSING_TEMPORAL) {
+        } else if (stereotype === MILESTONING_STEREOTYPE.PROCESSING_TEMPORAL) {
           acceptedNoOfParameters = 2;
           assertTrue(
             valueSpecification.parametersValues.length ===
@@ -428,7 +428,7 @@ export class QueryBuilderLambdaProcessor
           this.queryBuilderState.querySetupState.setProcessingDate(
             valueSpecification.parametersValues[1],
           );
-        } else if (stereotype === MILESTONING_STEROTYPE.BUSINESS_TEMPORAL) {
+        } else if (stereotype === MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL) {
           acceptedNoOfParameters = 2;
           assertTrue(
             valueSpecification.parametersValues.length ===
@@ -996,7 +996,7 @@ export class QueryBuilderLambdaProcessor
       let currentPropertyExpression: ValueSpecification = valueSpecification;
       while (currentPropertyExpression instanceof AbstractPropertyExpression) {
         const propertyExpression = currentPropertyExpression;
-        processMilestoningPropertyExpression(
+        validateMilestoningPropertyExpression(
           currentPropertyExpression,
           this.queryBuilderState.graphManagerState.graph,
         );

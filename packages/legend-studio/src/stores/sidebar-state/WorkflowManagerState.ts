@@ -33,6 +33,7 @@ import {
   assertErrorThrown,
   LogEvent,
   ActionState,
+  filterByType,
 } from '@finos/legend-shared';
 import { type Version, WorkflowJob, Workflow } from '@finos/legend-server-sdlc';
 
@@ -380,10 +381,7 @@ export abstract class WorkflowManagerState {
           Array.from(workflowState.treeData.nodes.values()),
         )
         .flat()
-        .filter(
-          (node: WorkflowExplorerTreeNodeData): node is WorkflowTreeNodeData =>
-            node instanceof WorkflowTreeNodeData,
-        )
+        .filter(filterByType(WorkflowTreeNodeData))
         .filter((node) => node.isOpen)
         .map((node) => node.workflow.id);
       const workflowToJobsMap = new Map<string, WorkflowJob[]>();

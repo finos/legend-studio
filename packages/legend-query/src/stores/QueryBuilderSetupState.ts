@@ -32,20 +32,22 @@ import {
   RuntimePointer,
   DEFAULT_BUSINESS_DATE_MILESTONING_PARAMETER_NAME,
   DEFAULT_PROCESSING_DATE_MILESTONING_PARAMETER_NAME,
-  MILESTONING_STEROTYPE,
+  MILESTONING_STEREOTYPE,
   observe_ValueSpecification,
 } from '@finos/legend-graph';
 
 export class QueryBuilderSetupState {
   queryBuilderState: QueryBuilderState;
   _class?: Class | undefined;
-  _businessDate: ValueSpecification | undefined;
-  _processingDate: ValueSpecification | undefined;
   mapping?: Mapping | undefined;
   runtime?: Runtime | undefined;
   mappingIsReadOnly = false;
   runtimeIsReadOnly = false;
   showSetupPanel = true;
+
+  // TODO: Change this when we modify how we deal with milestoning.
+  _businessDate: ValueSpecification | undefined;
+  _processingDate: ValueSpecification | undefined;
 
   constructor(queryBuilderState: QueryBuilderState) {
     makeAutoObservable(this, {
@@ -66,7 +68,7 @@ export class QueryBuilderSetupState {
 
   private initializeQueryMilestoningParameters(stereotype: string): void {
     switch (stereotype) {
-      case MILESTONING_STEROTYPE.BUSINESS_TEMPORAL: {
+      case MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL: {
         this.setBusinessDate(
           this.queryBuilderState.buildMilestoningParameter(
             DEFAULT_BUSINESS_DATE_MILESTONING_PARAMETER_NAME,
@@ -74,7 +76,7 @@ export class QueryBuilderSetupState {
         );
         break;
       }
-      case MILESTONING_STEROTYPE.PROCESSING_TEMPORAL: {
+      case MILESTONING_STEREOTYPE.PROCESSING_TEMPORAL: {
         this.setProcessingDate(
           this.queryBuilderState.buildMilestoningParameter(
             DEFAULT_PROCESSING_DATE_MILESTONING_PARAMETER_NAME,
@@ -82,7 +84,7 @@ export class QueryBuilderSetupState {
         );
         break;
       }
-      case MILESTONING_STEROTYPE.BITEMPORAL: {
+      case MILESTONING_STEREOTYPE.BITEMPORAL: {
         this.setProcessingDate(
           this.queryBuilderState.buildMilestoningParameter(
             DEFAULT_PROCESSING_DATE_MILESTONING_PARAMETER_NAME,

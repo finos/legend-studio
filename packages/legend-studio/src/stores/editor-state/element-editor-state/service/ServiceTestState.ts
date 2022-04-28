@@ -31,18 +31,24 @@ import {
   tryToFormatJSONString,
   createUrlStringFromData,
   ContentType,
+  isNonNullable,
+  guaranteeNonNullable,
 } from '@finos/legend-shared';
 import type { EditorStore } from '../../../EditorStore';
 import {
   type ServiceTestResult,
-  type KeyedSingleExecutionTest,
+  type DEPRECATED__KeyedSingleExecutionTest,
   type Runtime,
   type ExecutionResult,
   type Connection,
+  type RawLambda,
+  type ValueSpecification,
+  VariableExpression,
+  Enumeration,
+  PrimitiveType,
   extractExecutionResultValues,
-  GRAPH_MANAGER_EVENT,
-  TestContainer,
-  SingleExecutionTest,
+  DEPRECATED__TestContainer,
+  DEPRECATED__SingleExecutionTest,
   PureSingleExecution,
   IdentifiedConnection,
   EngineRuntime,
@@ -66,6 +72,10 @@ import {
   singleExecTest_deleteAssert,
   singleExecTest_setData,
 } from '../../../graphModifier/DSLService_GraphModifierHelper';
+import {
+  createMockEnumerationProperty,
+  createMockPrimitiveProperty,
+} from '../../../shared/MockDataUtil';
 
 interface ServiceTestExecutionResult {
   expected: string;
@@ -77,7 +87,7 @@ export class TestContainerState {
   editorStore: EditorStore;
   serviceEditorState: ServiceEditorState;
   testState: SingleExecutionTestState;
-  testContainer: TestContainer;
+  testContainer: DEPRECATED__TestContainer;
   assertionData?: string | undefined;
   testPassed?: boolean | undefined;
   textExecutionTextResult?: ServiceTestExecutionResult | undefined; // NOTE: this is lossless JSON strings
@@ -86,7 +96,7 @@ export class TestContainerState {
 
   constructor(
     editorStore: EditorStore,
-    testContainter: TestContainer,
+    testContainter: DEPRECATED__TestContainer,
     serviceEditorState: ServiceEditorState,
     testState: SingleExecutionTestState,
   ) {
@@ -137,7 +147,7 @@ export class TestContainerState {
   updateTestAssert(): void {
     if (this.assertionData) {
       this.testContainer.assert =
-        this.editorStore.graphManagerState.graphManager.HACKY_createServiceTestAssertLambda(
+        this.editorStore.graphManagerState.graphManager.HACKY__createServiceTestAssertLambda(
           /* @MARKER: Workaround for https://github.com/finos/legend-studio/issues/68 */
           // NOTE: due to discrepancies in the test runners for mapping and service, we have don't need
           // to do any (un)escaping here like what we do for mapping test assertion data. For better context:
@@ -148,9 +158,11 @@ export class TestContainerState {
     }
   }
 
-  private initializeAssertionData(testContainter: TestContainer): void {
+  private initializeAssertionData(
+    testContainter: DEPRECATED__TestContainer,
+  ): void {
     const expectedResultAssertionString =
-      this.editorStore.graphManagerState.graphManager.HACKY_extractServiceTestAssertionData(
+      this.editorStore.graphManagerState.graphManager.HACKY__extractServiceTestAssertionData(
         testContainter.assert,
       );
     this.assertionData = expectedResultAssertionString
@@ -302,7 +314,7 @@ export class TestContainerState {
       const test = this.serviceEditorState.service.test;
       if (
         execution instanceof PureSingleExecution &&
-        test instanceof SingleExecutionTest
+        test instanceof DEPRECATED__SingleExecutionTest
       ) {
         const decoratedRuntime =
           this.decorateRuntimeIdentifiedConnectionsWithTestData(
@@ -354,7 +366,7 @@ export class TestContainerState {
       const test = this.serviceEditorState.service.test;
       if (
         execution instanceof PureSingleExecution &&
-        test instanceof SingleExecutionTest
+        test instanceof DEPRECATED__SingleExecutionTest
       ) {
         const decoratedRuntime =
           this.decorateRuntimeIdentifiedConnectionsWithTestData(
@@ -396,13 +408,42 @@ export class TestContainerState {
   }
 }
 
+const buildTestDataParameters = (
+  rawLambda: RawLambda,
+  editorStore: EditorStore,
+): (string | number | boolean)[] => {
+  const parameters = ((rawLambda.parameters ?? []) as object[]).map((param) =>
+    editorStore.graphManagerState.graphManager.buildValueSpecification(
+      param as Record<PropertyKey, unknown>,
+      editorStore.graphManagerState.graph,
+    ),
+  );
+  return parameters
+    .filter(
+      (parameter: ValueSpecification): parameter is VariableExpression =>
+        parameter instanceof VariableExpression,
+    )
+    .map((varExpression) => {
+      if (varExpression.multiplicity.lowerBound !== 0) {
+        const type = varExpression.genericType?.value.rawType;
+        if (type instanceof PrimitiveType) {
+          return createMockPrimitiveProperty(type, varExpression.name);
+        } else if (type instanceof Enumeration) {
+          return createMockEnumerationProperty(type);
+        }
+      }
+      return undefined;
+    })
+    .filter(isNonNullable);
+};
 export class SingleExecutionTestState {
   editorStore: EditorStore;
   serviceEditorState: ServiceEditorState;
-  test: SingleExecutionTest;
+  test: DEPRECATED__SingleExecutionTest;
   selectedTestContainerState?: TestContainerState | undefined;
   isRunningAllTests = false;
   isGeneratingTestData = false;
+  anonymizeGeneratedData = true;
   testSuiteRunError?: Error | undefined;
   testResults: ServiceTestResult[] = [];
   allTestRunTime = 0;
@@ -419,8 +460,10 @@ export class SingleExecutionTestState {
       testSuiteRunError: observable,
       testResults: observable,
       allTestRunTime: observable,
+      anonymizeGeneratedData: observable,
       testSuiteResult: computed,
       setSelectedTestContainerState: action,
+      setAnonymizeGeneratedData: action,
       setTestResults: action,
       addNewTestContainer: action,
       deleteTestContainerState: action,
@@ -433,12 +476,12 @@ export class SingleExecutionTestState {
     this.serviceEditorState = serviceEditorState;
     this.test = guaranteeType(
       serviceEditorState.service.test,
-      SingleExecutionTest,
+      DEPRECATED__SingleExecutionTest,
     );
     this.selectedTestContainerState = this.test.asserts.length
       ? new TestContainerState(
           editorStore,
-          this.test.asserts[0] as TestContainer,
+          this.test.asserts[0] as DEPRECATED__TestContainer,
           serviceEditorState,
           this,
         )
@@ -451,10 +494,13 @@ export class SingleExecutionTestState {
   setTestResults(assertResults: ServiceTestResult[]): void {
     this.testResults = assertResults;
   }
+  setAnonymizeGeneratedData(val: boolean): void {
+    this.anonymizeGeneratedData = val;
+  }
 
   addNewTestContainer(): void {
-    const testContainer = new TestContainer(
-      this.editorStore.graphManagerState.graphManager.HACKY_createServiceTestAssertLambda(
+    const testContainer = new DEPRECATED__TestContainer(
+      this.editorStore.graphManagerState.graphManager.HACKY__createServiceTestAssertLambda(
         '{}',
       ),
       this.test,
@@ -464,7 +510,7 @@ export class SingleExecutionTestState {
     this.allTestRunTime = 0;
   }
 
-  deleteTestContainerState(val: TestContainer): void {
+  deleteTestContainerState(val: DEPRECATED__TestContainer): void {
     const idx = this.test.asserts.findIndex((assert) => assert === val);
     if (idx !== -1) {
       singleExecTest_deleteAssert(this.test, val);
@@ -476,7 +522,7 @@ export class SingleExecutionTestState {
     }
   }
 
-  openTestContainer(testContainter: TestContainer): void {
+  openTestContainer(testContainter: DEPRECATED__TestContainer): void {
     this.selectedTestContainerState = new TestContainerState(
       this.editorStore,
       testContainter,
@@ -497,39 +543,34 @@ export class SingleExecutionTestState {
   }
 
   *generateTestData(): GeneratorFn<void> {
-    this.isGeneratingTestData = true;
-    // NOTE: here, we attempt to use engine to generate test data.
-    // Once all types of generate data are supported we will move to just using engine
-    let generatedTestData: string | undefined = undefined;
-    const executionInput =
-      this.serviceEditorState.executionState.serviceExecutionParameters;
-    if (executionInput) {
-      try {
-        generatedTestData =
-          (yield this.editorStore.graphManagerState.graphManager.generateMappingTestData(
-            this.editorStore.graphManagerState.graph,
-            executionInput.mapping,
-            executionInput.query,
-            executionInput.runtime,
-            PureClientVersion.VX_X_X,
-          )) as string;
-      } catch (error) {
-        assertErrorThrown(error);
-        this.editorStore.applicationStore.log.error(
-          LogEvent.create(GRAPH_MANAGER_EVENT.EXECUTION_FAILURE),
-          error,
-        );
-      }
-    }
-    if (generatedTestData) {
-      singleExecTest_setData(this.test, generatedTestData);
-    } else {
-      singleExecTest_setData(this.test, '');
-      this.editorStore.applicationStore.notifyError(
-        `Can't auto-generate test data for service`,
+    try {
+      this.isGeneratingTestData = true;
+      // NOTE: here, we attempt to use engine to generate test data.
+      // Once all types of generate data are supported we will move to just using engine
+      const executionInput = guaranteeNonNullable(
+        this.serviceEditorState.executionState.serviceExecutionParameters,
+        'Service execution context (query, mapping, runtime) is needed to generate test data',
       );
+      const generatedTestData =
+        (yield this.editorStore.graphManagerState.graphManager.generateMappingTestData(
+          this.editorStore.graphManagerState.graph,
+          executionInput.mapping,
+          executionInput.query,
+          executionInput.runtime,
+          PureClientVersion.VX_X_X,
+          buildTestDataParameters(executionInput.query, this.editorStore),
+          {
+            anonymizeGeneratedData: this.anonymizeGeneratedData,
+          },
+        )) as string;
+      singleExecTest_setData(this.test, generatedTestData);
+    } catch (error) {
+      assertErrorThrown(error);
+      singleExecTest_setData(this.test, '');
+      this.editorStore.applicationStore.notifyError(error);
+    } finally {
+      this.isGeneratingTestData = false;
     }
-    this.isGeneratingTestData = false;
   }
 
   *runTestSuite(): GeneratorFn<void> {
@@ -575,11 +616,11 @@ export class SingleExecutionTestState {
 
 export class KeyedSingleExecutionState extends SingleExecutionTestState {
   uuid = uuid();
-  declare test: KeyedSingleExecutionTest;
+  declare test: DEPRECATED__KeyedSingleExecutionTest;
 
   constructor(
     editorStore: EditorStore,
-    keyedSingleExecution: KeyedSingleExecutionTest,
+    keyedSingleExecution: DEPRECATED__KeyedSingleExecutionTest,
     serviceEditorState: ServiceEditorState,
   ) {
     super(editorStore, serviceEditorState);

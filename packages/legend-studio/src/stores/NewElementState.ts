@@ -73,9 +73,9 @@ import {
   StaticDatasourceSpecification,
   DefaultH2AuthenticationStrategy,
   ModelGenerationSpecification,
+  DataElement,
 } from '@finos/legend-graph';
 import type { DSLMapping_LegendStudioPlugin_Extension } from './DSLMapping_LegendStudioPlugin_Extension';
-import { package_addElement } from './graphModifier/DomainGraphModifierHelper';
 import {
   packageableConnection_setConnectionValue,
   runtime_addMapping,
@@ -570,17 +570,9 @@ export class NewElementState {
         );
       } else {
         const element = this.createElement(elementName);
-        package_addElement(
-          packagePath
-            ? this.editorStore.graphManagerState.graph.getOrCreatePackage(
-                packagePath,
-              )
-            : this.editorStore.graphManagerState.graph.root,
-          element,
-          this.editorStore.changeDetectionState.observerContext,
+        yield flowResult(
+          this.editorStore.addElement(element, packagePath, true),
         );
-
-        yield flowResult(this.editorStore.addElement(element, true));
 
         // post creation handling
         if (
@@ -600,13 +592,12 @@ export class NewElementState {
             generationSpec = new GenerationSpecification(
               DEFAULT_GENERATION_SPECIFICATION_NAME,
             );
-            package_addElement(
-              guaranteeNonNullable(generationElement.package),
-              generationSpec,
-              this.editorStore.changeDetectionState.observerContext,
-            );
             yield flowResult(
-              this.editorStore.addElement(generationSpec, false),
+              this.editorStore.addElement(
+                generationSpec,
+                guaranteeNonNullable(generationElement.package).path,
+                false,
+              ),
             );
           }
           generationSpecification_addGenerationElement(
@@ -731,6 +722,9 @@ export class NewElementState {
         break;
       case PACKAGEABLE_ELEMENT_TYPE.GENERATION_SPECIFICATION:
         element = new GenerationSpecification(name);
+        break;
+      case PACKAGEABLE_ELEMENT_TYPE.DATA:
+        element = new DataElement(name);
         break;
       default: {
         const extraNewElementFromStateCreators = this.editorStore.pluginManager

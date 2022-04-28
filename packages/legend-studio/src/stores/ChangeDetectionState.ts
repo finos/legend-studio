@@ -44,7 +44,7 @@ import {
   EntityChangeType,
   EntityDiff,
 } from '@finos/legend-server-sdlc';
-import { ObserverContext, observe_PureModel } from '@finos/legend-graph';
+import { ObserverContext, observe_Graph } from '@finos/legend-graph';
 import { type IDisposer, keepAlive } from 'mobx-utils';
 
 class RevisionChangeDetectionState {
@@ -754,7 +754,7 @@ export class ChangeDetectionState {
    */
   async observeGraph(): Promise<void> {
     const startTime = Date.now();
-    await observe_PureModel(
+    await observe_Graph(
       this.editorStore.graphManagerState.graph,
       this.editorStore.changeDetectionState.observerContext,
     );

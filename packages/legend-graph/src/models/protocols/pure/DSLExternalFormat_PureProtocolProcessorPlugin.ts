@@ -25,8 +25,8 @@ import {
 import { deserialize, serialize } from 'serializr';
 import type { PureModel } from '../../../graph/PureModel';
 import {
-  getBinding,
-  getSchemaSet,
+  getOwnBinding,
+  getOwnSchemaSet,
 } from '../../../graphManager/DSLExternalFormat_GraphManagerHelper';
 import type { Connection } from '../../metamodels/pure/packageableElements/connection/Connection';
 import type { Mapping } from '../../metamodels/pure/packageableElements/mapping/Mapping';
@@ -77,7 +77,10 @@ import {
   V1_resolveSchemaSet,
 } from './v1/transformation/pureGraph/to/V1_DSLExternalFormat_GraphBuilderHelper';
 import { V1_ElementBuilder } from './v1/transformation/pureGraph/to/V1_ElementBuilder';
-import type { V1_GraphBuilderContext } from './v1/transformation/pureGraph/to/V1_GraphBuilderContext';
+import {
+  V1_buildFullPath,
+  type V1_GraphBuilderContext,
+} from './v1/transformation/pureGraph/to/V1_GraphBuilderContext';
 import {
   V1_bindingModelSchema,
   V1_BINDING_ELEMENT_PROTOCOL_TYPE,
@@ -114,7 +117,7 @@ export class DSLExternalFormat_PureProtocolProcessorPlugin
         ): PackageableElement => {
           assertType(elementProtocol, V1_Binding);
           const element = new Binding(elementProtocol.name);
-          const path = context.currentSubGraph.buildPath(
+          const path = V1_buildFullPath(
             elementProtocol.package,
             elementProtocol.name,
           );
@@ -126,11 +129,11 @@ export class DSLExternalFormat_PureProtocolProcessorPlugin
           context: V1_GraphBuilderContext,
         ): void => {
           assertType(elementProtocol, V1_Binding);
-          const path = context.graph.buildPath(
+          const path = V1_buildFullPath(
             elementProtocol.package,
             elementProtocol.name,
           );
-          const element = getBinding(path, context.graph);
+          const element = getOwnBinding(path, context.currentSubGraph);
           const schemaSet = elementProtocol.schemaSet
             ? V1_resolveSchemaSet(elementProtocol.schemaSet, context)
             : undefined;
@@ -166,7 +169,7 @@ export class DSLExternalFormat_PureProtocolProcessorPlugin
         ): PackageableElement => {
           assertType(elementProtocol, V1_SchemaSet);
           const element = new SchemaSet(elementProtocol.name);
-          const path = context.currentSubGraph.buildPath(
+          const path = V1_buildFullPath(
             elementProtocol.package,
             elementProtocol.name,
           );
@@ -182,11 +185,11 @@ export class DSLExternalFormat_PureProtocolProcessorPlugin
           context: V1_GraphBuilderContext,
         ): void => {
           assertType(elementProtocol, V1_SchemaSet);
-          const path = context.graph.buildPath(
+          const path = V1_buildFullPath(
             elementProtocol.package,
             elementProtocol.name,
           );
-          const element = getSchemaSet(path, context.graph);
+          const element = getOwnSchemaSet(path, context.currentSubGraph);
           element.format = guaranteeNonEmptyString(elementProtocol.format);
           element.schemas = elementProtocol.schemas.map((schema) => {
             const schemaElement = new Schema();

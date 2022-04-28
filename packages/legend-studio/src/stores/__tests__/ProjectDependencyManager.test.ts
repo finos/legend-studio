@@ -258,7 +258,7 @@ const testDependencyElements = async (
     expect(dependencyManager.getModel(k)).toBeDefined(),
   );
 
-  expect(dependencyManager.allElements.length).toBe(
+  expect(dependencyManager.allOwnElements.length).toBe(
     dependencyElementPaths.length,
   );
 
@@ -285,7 +285,7 @@ const testDependencyElements = async (
   });
   if (includeDependencyInFileGenerationScopeElements) {
     const fileGeneration = guaranteeNonNullable(
-      editorStore.graphManagerState.graph.getOwnFileGeneration(
+      editorStore.graphManagerState.graph.getOwnNullableFileGeneration(
         FILE_GENERATION_PATH,
       ),
     );

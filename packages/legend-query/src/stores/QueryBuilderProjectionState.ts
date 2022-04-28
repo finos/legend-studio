@@ -37,6 +37,7 @@ import {
   findLast,
   assertTrue,
   assertNonEmptyString,
+  filterByType,
 } from '@finos/legend-shared';
 import {
   type QueryBuilderExplorerTreePropertyNodeData,
@@ -65,6 +66,7 @@ import {
   TYPICAL_MULTIPLICITY_TYPE,
   RawVariableExpression,
   Enumeration,
+  LAMBDA_PIPE,
 } from '@finos/legend-graph';
 import {
   DEFAULT_LAMBDA_VARIABLE_NAME,
@@ -598,20 +600,12 @@ export class QueryBuilderProjectionState {
   addNewBlankDerivation(): void {
     const derivation = new QueryBuilderDerivationProjectionColumnState(
       this,
-      // default lambda for derivation is `x|''`
-      new RawLambda(
-        [{ _type: 'var', name: 'x' }],
-        [
-          {
-            _type: 'string',
-            multiplicity: { lowerBound: 1, upperBound: 1 },
-            values: [''],
-          },
-        ],
-      ),
+      this.queryBuilderState.graphManagerState.graphManager.HACKY__createDefaultBlankLambda(),
     );
     this.addColumn(derivation);
-    derivation.derivationLambdaEditorState.setLambdaString(`x|''`);
+    derivation.derivationLambdaEditorState.setLambdaString(
+      `${DEFAULT_LAMBDA_VARIABLE_NAME}${LAMBDA_PIPE}''`,
+    );
   }
 
   revealCompilationError(compilationError: CompilationError): boolean {
@@ -643,11 +637,7 @@ export class QueryBuilderProjectionState {
 
   get derivations(): QueryBuilderDerivationProjectionColumnState[] {
     return this.columns.filter(
-      (
-        projectionColumnState,
-      ): projectionColumnState is QueryBuilderDerivationProjectionColumnState =>
-        projectionColumnState instanceof
-        QueryBuilderDerivationProjectionColumnState,
+      filterByType(QueryBuilderDerivationProjectionColumnState),
     );
   }
 

@@ -16,62 +16,18 @@
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
-import type { V1_RawLambda } from '../../../model/rawValueSpecification/V1_RawLambda';
+import { V1_AtomicTest } from '../../test/V1_AtomicTest';
+import type { V1_ParameterValue } from './V1_ParameterValue';
 
-export abstract class V1_ServiceTest implements Hashable {
-  private readonly _$nominalTypeBrand!: 'V1_ServiceTest';
-
-  abstract get hashCode(): string;
-}
-
-export class V1_TestContainer implements Hashable {
-  parametersValues: unknown[] = []; // ValueSpecification?
-  assert!: V1_RawLambda; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
+export class V1_ServiceTest extends V1_AtomicTest implements Hashable {
+  parameters: V1_ParameterValue[] = [];
 
   get hashCode(): string {
     return hashArray([
-      CORE_HASH_STRUCTURE.SERVICE_TEST_CONTAINER,
-      // this.parameterValues,
-      this.assert,
-    ]);
-  }
-}
-
-export class V1_SingleExecutionTest extends V1_ServiceTest implements Hashable {
-  data!: string;
-  asserts: V1_TestContainer[] = [];
-
-  get hashCode(): string {
-    return hashArray([
-      CORE_HASH_STRUCTURE.SERVICE_SINGLE_EXECUTION_TEST,
-      this.data,
-      hashArray(this.asserts),
-    ]);
-  }
-}
-
-export class V1_KeyedSingleExecutionTest implements Hashable {
-  key!: string;
-  data!: string;
-  asserts: V1_TestContainer[] = [];
-
-  get hashCode(): string {
-    return hashArray([
-      CORE_HASH_STRUCTURE.SERVICE_KEYED_SINGLE_EXECUTION_TEST,
-      this.key,
-      this.data,
-      hashArray(this.asserts),
-    ]);
-  }
-}
-
-export class V1_MultiExecutionTest extends V1_ServiceTest implements Hashable {
-  tests: V1_KeyedSingleExecutionTest[] = [];
-
-  get hashCode(): string {
-    return hashArray([
-      CORE_HASH_STRUCTURE.SERVICE_MULTI_EXECUTION_TEST,
-      hashArray(this.tests),
+      CORE_HASH_STRUCTURE.SERVICE_TEST,
+      this.id,
+      hashArray(this.assertions),
+      hashArray(this.parameters),
     ]);
   }
 }

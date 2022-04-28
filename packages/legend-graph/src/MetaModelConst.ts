@@ -25,6 +25,9 @@ export const SECTION_INDEX_ELEMENT_PATH = '__internal__::SectionIndex';
 export const VARIABLE_REFERENCE_TOKEN = '$';
 export const TYPE_CAST_TOKEN = '@';
 export const ARROW_FUNCTION_TOKEN = '->';
+export const LATEST_DATE = '%latest';
+
+export const RESERVERD_PACKAGE_NAMES = ['$implicit'];
 
 export enum ROOT_PACKAGE_NAME {
   CORE = 'CORE',
@@ -62,8 +65,9 @@ export enum TYPICAL_MULTIPLICITY_TYPE {
   ZERO = 'zero',
 }
 
-// NOTE: the list of auto-import are kept in m3.pure, this includes a more extensive list of packges
-// which contain native functions, classes, etc.
+// NOTE: the list of auto-import are kept in `m3.pure` file in `finos/legend-pure`,
+// this includes a more extensive list of packges which contain native functions, classes, etc.
+// See https://github.com/finos/legend-pure/blob/master/legend-pure-m3-core/src/main/resources/platform/pure/m3.pure
 export const AUTO_IMPORTS = [
   // 'meta::pure::metamodel',
   'meta::pure::metamodel::type',
@@ -117,6 +121,7 @@ export enum CORE_PURE_PATH {
   FILE_GENERATION = 'meta::pure::generation::metamodel::GenerationConfiguration',
   GENERATION_SPECIFICATION = 'meta::pure::generation::metamodel::GenerationSpecification',
   SECTION_INDEX = 'meta::pure::metamodel::section::SectionIndex',
+  DATA_ELEMENT = 'meta::pure::data::DataElement',
 }
 
 /**
@@ -291,9 +296,14 @@ export enum CORE_HASH_STRUCTURE {
   SERVICE_KEYED_EXECUTION_PARAMETER = 'SERVICE_KEYED_EXECUTION_PARAMETER',
   SERVICE_PURE_MULTI_EXECUTION = 'SERVICE_PURE_MULTI_EXECUTION',
   SERVICE_TEST_CONTAINER = 'SERVICE_TEST_CONTAINER',
-  SERVICE_SINGLE_EXECUTION_TEST = 'SERVICE_SINGLE_EXECUTION_TEST',
-  SERVICE_KEYED_SINGLE_EXECUTION_TEST = 'SERVICE_KEYED_SINGLE_EXECUTION_TEST',
-  SERVICE_MULTI_EXECUTION_TEST = 'SERVICE_MULTI_EXECUTION_TEST',
+  SERVICE_LEGACY_SINGLE_EXECUTION_TEST = 'SERVICE_LEGACY_SINGLE_EXECUTION_TEST',
+  SERVICE_LEGACY_KEYED_SINGLE_EXECUTION_TEST = 'SERVICE_LEGACY_KEYED_SINGLE_EXECUTION_TEST',
+  SERVICE_LEGACY_MULTI_EXECUTION_TEST = 'SERVICE_LEGACY_MULTI_EXECUTION_TEST',
+  SERVICE_CONNECTION_TEST_DATA = 'SERVICE_CONNECTION_TEST_DATA',
+  SERVICE_TEST_DATA = 'SERVICE_TEST_DATA',
+  SERVICE_TEST_SUITE = 'SERVICE_TEST_SUITE',
+  SERVICE_TEST = 'SERVICE_TEST',
+  SERVICE_PARAMETER_VALUE = 'SERVICE_PARAMETER_VALUE',
   // generation specification
   GENERATION_TREE = 'GENERATION_TREE',
   GENERATION_TREE_NODE = 'GENERATION_TREE_NODE',
@@ -310,15 +320,29 @@ export enum CORE_HASH_STRUCTURE {
   RAW_VARIABLE = 'RAW_VARIABLE',
   RAW_INSTANCE_VALUE = 'RAW_INSTANCE_VALUE',
   BINDING_TRANSFORMER = 'BINDING_TRANSFORMER',
+  // test
+  ASSERT_FAIL = 'ASSERT_FAIL',
+  ASSERT_PASS = 'ASSERT_PASS',
+  EQUAL_TO_JSON_ASSERT_FAIL = 'EQUAL_TO_JSON_ASSERT_FAIL',
+  EQUAL_TO = 'EQUAL_TO',
+  EQUAL_TO_JSON = 'EQUAL_TO_JSON',
+  TEST_RESULT = 'TEST_RESULT',
+  TEST_ERROR = 'TEST_ERROR',
+  TEST_FAILED = 'TEST_FAILED',
+  TEST_PASSED = 'TEST_PASSED',
+  ATOMIC_TEST_ID = 'ATOMIC_TEST_ID',
+  // data
+  EXTERNAL_FORMAT_DATA = 'EXTERNAL_FORMAT_DATA',
+  MODEL_STORE_DATA = 'MODEL_STORE_DATA',
+  DATA_ELEMENT_REFERENCE = 'DATA_ELEMENT_REFERENCE',
+  DATA_ELEMENT = 'DATA_ELEMENT',
 }
 
-export enum MILESTONING_STEROTYPE {
+export enum MILESTONING_STEREOTYPE {
   BUSINESS_TEMPORAL = 'businesstemporal',
   PROCESSING_TEMPORAL = 'processingtemporal',
   BITEMPORAL = 'bitemporal',
 }
-
-export const LATEST_DATE = '%latest';
 
 export enum MILESTONING_VERSION_PROPERTY_SUFFIX {
   ALL_VERSIONS = 'AllVersions',

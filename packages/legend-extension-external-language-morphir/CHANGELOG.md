@@ -1,5 +1,11 @@
 # @finos/legend-extension-external-language-morphir
 
+## 0.0.35
+
+## 0.0.34
+
+## 0.0.33
+
 ## 0.0.32
 
 ## 0.0.31

@@ -25,6 +25,7 @@ import {
   assertTrue,
   guaranteeNonNullable,
   isNonNullable,
+  filterByType,
 } from '@finos/legend-shared';
 import { observable, action, makeObservable, flow, flowResult } from 'mobx';
 import { LEGEND_STUDIO_APP_EVENT } from '../../../LegendStudioAppEvent';
@@ -43,7 +44,6 @@ import {
   isValidFullPath,
   resolvePackagePathAndElementName,
 } from '@finos/legend-graph';
-import { package_addElement } from '../../../graphModifier/DomainGraphModifierHelper';
 import { connection_setStore } from '../../../graphModifier/DSLMapping_GraphModifierHelper';
 
 export abstract class DatabaseBuilderTreeNodeData implements TreeNodeData {
@@ -359,9 +359,7 @@ export class DatabaseBuilderState {
     enrichedTable: Table,
     treeData: DatabaseBuilderTreeData,
   ): void {
-    const columns = enrichedTable.columns.filter(
-      (column): column is Column => column instanceof Column,
-    );
+    const columns = enrichedTable.columns.filter(filterByType(Column));
     tableNode.table.columns = columns;
     this.removeChildren(tableNode, treeData);
     const childrenIds: string[] = [];
@@ -543,20 +541,13 @@ export class DatabaseBuilderState {
           this.connection,
           PackageableElementExplicitReference.create(newDatabase),
         );
-        const PackagePath = guaranteeNonNullable(
+        const packagePath = guaranteeNonNullable(
           database.package?.name,
           'Database package is missing',
         );
-        const databasePackage =
-          this.editorStore.graphManagerState.graph.getOrCreatePackage(
-            PackagePath,
-          );
-        package_addElement(
-          databasePackage,
-          newDatabase,
-          this.editorStore.changeDetectionState.observerContext,
+        yield flowResult(
+          this.editorStore.addElement(newDatabase, packagePath, false),
         );
-        yield flowResult(this.editorStore.addElement(newDatabase, false));
         currentDatabase = newDatabase;
       } else {
         currentDatabase = this.currentDatabase;

@@ -14,10 +14,14 @@
  * limitations under the License.
  */
 
-import { LegendQuery } from '@finos/legend-query';
+import { LegendQuery, type LegendQueryPlugin } from '@finos/legend-query';
 import { WebConsole } from '@finos/legend-shared';
 import { getLegendGraphExtensionCollection } from '@finos/legend-graph-extension-collection';
 import { DSLDataSpace_LegendQueryPlugin } from '@finos/legend-extension-dsl-data-space';
+
+export const getLegendQueryPluginCollection = (): LegendQueryPlugin[] => [
+  new DSLDataSpace_LegendQueryPlugin(),
+];
 
 export class LegendQueryWebApplication {
   static run(baseUrl: string): void {
@@ -25,7 +29,7 @@ export class LegendQueryWebApplication {
       .setup({ baseUrl })
       .withPresets(getLegendGraphExtensionCollection())
       .withPlugins([
-        new DSLDataSpace_LegendQueryPlugin(),
+        ...getLegendQueryPluginCollection(),
         // loggers
         new WebConsole(),
       ])

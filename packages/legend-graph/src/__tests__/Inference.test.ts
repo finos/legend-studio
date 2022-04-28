@@ -87,7 +87,7 @@ test(
     await TEST__buildGraphWithEntities(
       graphManagerState,
       TEST_DATA__ReferenceModification.original as Entity[],
-      { TEMPORARY__keepSectionIndex: true },
+      { TEMPORARY__preserveSectionIndex: true },
     );
     let enumeration = graphManagerState.graph.getEnumeration('test::tEnum');
     const tagValue = enumeration.taggedValues[0];

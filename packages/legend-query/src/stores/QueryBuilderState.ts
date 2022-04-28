@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-import { action, flow, observable, makeObservable, computed } from 'mobx';
+import { action, flow, observable, makeObservable } from 'mobx';
 import {
   type GeneratorFn,
   LogEvent,
   assertErrorThrown,
   guaranteeNonNullable,
   guaranteeType,
+  filterByType,
 } from '@finos/legend-shared';
 import {
   type QueryBuilderFilterOperator,
@@ -229,10 +230,6 @@ export class QueryBuilderState {
       mode: observable,
       showFunctionPanel: observable,
       showParameterPanel: observable,
-      classOptions: computed,
-      mappingOptions: computed,
-      runtimeOptions: computed,
-      serviceOptions: computed,
       setMode: action,
       resetQueryBuilder: action,
       resetQuerySetup: action,
@@ -351,10 +348,7 @@ export class QueryBuilderState {
           ),
       );
       processQueryParameters(
-        parameters.filter(
-          (parameter: ValueSpecification): parameter is VariableExpression =>
-            parameter instanceof VariableExpression,
-        ),
+        parameters.filter(filterByType(VariableExpression)),
         this,
       );
       if (options?.notifyError) {
@@ -582,7 +576,7 @@ export class QueryBuilderState {
       );
   }
 
-  get mappingOptions(): PackageableElementOption<Mapping>[] {
+  getMappingOptions(): PackageableElementOption<Mapping>[] {
     return this.mappings.map(
       (e) => buildElementOption(e) as PackageableElementOption<Mapping>,
     );
@@ -594,7 +588,7 @@ export class QueryBuilderState {
     );
   }
 
-  get runtimeOptions(): PackageableElementOption<PackageableRuntime>[] {
+  getRuntimeOptions(): PackageableElementOption<PackageableRuntime>[] {
     return this.runtimes.map(
       (e) =>
         buildElementOption(e) as PackageableElementOption<PackageableRuntime>,
@@ -607,7 +601,7 @@ export class QueryBuilderState {
     );
   }
 
-  get serviceOptions(): PackageableElementOption<Service>[] {
+  getServiceOptions(): PackageableElementOption<Service>[] {
     return this.graphManagerState.graph.ownServices
       .concat(this.graphManagerState.graph.dependencyManager.services)
       .map((e) => buildElementOption(e) as PackageableElementOption<Service>);

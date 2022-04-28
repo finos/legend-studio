@@ -25,6 +25,7 @@ import {
   matchFunctionName,
   PRIMITIVE_TYPE,
   type Type,
+  Enumeration,
 } from '@finos/legend-graph';
 import { assertTrue, guaranteeType } from '@finos/legend-shared';
 import { SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
@@ -52,18 +53,20 @@ export class QueryBuilderAggregateOperator_DistinctCount extends QueryBuilderAgg
         projectionColumnState.propertyExpressionState.propertyExpression.func
           .genericType.value.rawType;
       return (
-        [
-          PRIMITIVE_TYPE.STRING,
-          PRIMITIVE_TYPE.BOOLEAN,
-          PRIMITIVE_TYPE.NUMBER,
-          PRIMITIVE_TYPE.INTEGER,
-          PRIMITIVE_TYPE.DECIMAL,
-          PRIMITIVE_TYPE.FLOAT,
-          PRIMITIVE_TYPE.DATE,
-          PRIMITIVE_TYPE.STRICTDATE,
-          PRIMITIVE_TYPE.DATETIME,
-        ] as string[]
-      ).includes(propertyType.path);
+        (
+          [
+            PRIMITIVE_TYPE.STRING,
+            PRIMITIVE_TYPE.BOOLEAN,
+            PRIMITIVE_TYPE.NUMBER,
+            PRIMITIVE_TYPE.INTEGER,
+            PRIMITIVE_TYPE.DECIMAL,
+            PRIMITIVE_TYPE.FLOAT,
+            PRIMITIVE_TYPE.DATE,
+            PRIMITIVE_TYPE.STRICTDATE,
+            PRIMITIVE_TYPE.DATETIME,
+          ] as string[]
+        ).includes(propertyType.path) || propertyType instanceof Enumeration
+      );
     }
     return true;
   }

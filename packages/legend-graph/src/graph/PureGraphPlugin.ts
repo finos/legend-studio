@@ -28,6 +28,10 @@ export type DeadReferencesCleaner = (graph: PureModel) => void;
  * placed in this class.
  */
 export abstract class PureGraphPlugin extends AbstractPlugin {
+  /**
+   * This helps to better type-checking for this empty abtract type
+   * See https://github.com/finos/legend-studio/blob/master/docs/technical/typescript-usage.md#understand-typescript-structual-type-system
+   */
   private readonly _$nominalTypeBrand!: 'PureGraphPlugin';
 
   install(pluginManager: GraphPluginManager): void {

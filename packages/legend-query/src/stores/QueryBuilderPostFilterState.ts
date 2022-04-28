@@ -35,6 +35,7 @@ import {
   IllegalStateError,
   UnsupportedOperationError,
   uuid,
+  filterByType,
 } from '@finos/legend-shared';
 import {
   action,
@@ -619,10 +620,7 @@ export class QueryBuilderPostFilterState
     this.setSelectedNode(undefined);
     const getUnnecessaryNodes = (): QueryBuilderPostFilterTreeGroupNodeData[] =>
       Array.from(this.nodes.values())
-        .filter(
-          (node): node is QueryBuilderPostFilterTreeGroupNodeData =>
-            node instanceof QueryBuilderPostFilterTreeGroupNodeData,
-        )
+        .filter(filterByType(QueryBuilderPostFilterTreeGroupNodeData))
         .filter((node) => {
           if (!node.parentId || !this.nodes.has(node.parentId)) {
             return false;
@@ -671,10 +669,7 @@ export class QueryBuilderPostFilterState
     const getChildlessGroupNodes =
       (): QueryBuilderPostFilterTreeGroupNodeData[] =>
         Array.from(this.nodes.values())
-          .filter(
-            (node): node is QueryBuilderPostFilterTreeGroupNodeData =>
-              node instanceof QueryBuilderPostFilterTreeGroupNodeData,
-          )
+          .filter(filterByType(QueryBuilderPostFilterTreeGroupNodeData))
           .filter((node) => !node.childrenIds.length);
     let nodesToProcess = getChildlessGroupNodes();
     while (nodesToProcess.length) {
@@ -701,10 +696,7 @@ export class QueryBuilderPostFilterState
     const getSquashableGroupNodes =
       (): QueryBuilderPostFilterTreeGroupNodeData[] =>
         Array.from(this.nodes.values())
-          .filter(
-            (node): node is QueryBuilderPostFilterTreeGroupNodeData =>
-              node instanceof QueryBuilderPostFilterTreeGroupNodeData,
-          )
+          .filter(filterByType(QueryBuilderPostFilterTreeGroupNodeData))
           .filter((node) => node.childrenIds.length < 2)
           .filter((node) => {
             if (!node.childrenIds.length) {

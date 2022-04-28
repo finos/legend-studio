@@ -14,7 +14,12 @@
  * limitations under the License.
  */
 
-import { findLast, guaranteeNonNullable, uniq } from '@finos/legend-shared';
+import {
+  filterByType,
+  findLast,
+  guaranteeNonNullable,
+  uniq,
+} from '@finos/legend-shared';
 import type { EnumerationMapping } from '../models/metamodels/pure/packageableElements/mapping/EnumerationMapping';
 import type { SetImplementation } from '../models/metamodels/pure/packageableElements/mapping/SetImplementation';
 import type { Class } from '../models/metamodels/pure/packageableElements/domain/Class';
@@ -45,10 +50,7 @@ export const extractClassMappingsFromAggregationAwareClassMappings = (
   mapping: Mapping,
 ): SetImplementation[] => {
   const aggregationAwareClassMappings = mapping.classMappings.filter(
-    (
-      classMapping: SetImplementation,
-    ): classMapping is AggregationAwareSetImplementation =>
-      classMapping instanceof AggregationAwareSetImplementation,
+    filterByType(AggregationAwareSetImplementation),
   );
   return [
     ...aggregationAwareClassMappings.map(

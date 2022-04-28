@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import { BufferIcon, SitemapIcon } from '@finos/legend-art';
-import { SchemaSetEditor } from './SchemaSetElementEditor';
+import { SchemaSetEditor } from './editor/edit-panel/externalFormat-editor/SchemaSetElementEditor';
 import {
   type Connection,
   type PackageableElement,
@@ -31,8 +31,8 @@ import {
   ExternalFormatConnectionEditor,
   ExternalFormatConnectionValueState,
   NewExternalFormatConnectionDriver,
-} from './ExternalFormatConnectionEditor';
-import { BindingEditor } from './BindingElementEditor';
+} from './editor/edit-panel/externalFormat-editor/ExternalFormatConnectionEditor';
+import { BindingEditor } from './editor/edit-panel/externalFormat-editor/BindingElementEditor';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import type { ReactNode } from 'react';
 import {
@@ -45,7 +45,7 @@ import {
   type NewElementDriverEditorRenderer,
   type NewElementFromStateCreator,
   LegendStudioPlugin,
-} from '../../../../stores/LegendStudioPlugin';
+} from '../stores/LegendStudioPlugin';
 import type {
   ConnectionEditorRenderer,
   ConnectionValueEditorStateBuilder,
@@ -53,25 +53,25 @@ import type {
   DSLMapping_LegendStudioPlugin_Extension,
   NewConnectionDriverCreator,
   RuntimeConnectionTooltipTextBuilder,
-} from '../../../../stores/DSLMapping_LegendStudioPlugin_Extension';
+} from '../stores/DSLMapping_LegendStudioPlugin_Extension';
 import type {
   NewConnectionValueDriver,
   NewElementDriver,
   NewElementState,
-} from '../../../../stores/NewElementState';
+} from '../stores/NewElementState';
 import {
   NewSchemaSetDriver,
   NewSchemaSetDriverEditor,
-} from '../../../../stores/editor-state/element-editor-state/externalFormat/NewSchemaSetDriver';
-import type { EditorStore } from '../../../../stores/EditorStore';
-import type { ElementEditorState } from '../../../../stores/editor-state/element-editor-state/ElementEditorState';
-import { SchemaSetEditorState } from '../../../../stores/editor-state/element-editor-state/externalFormat/SchemaSetEditorState';
-import { BindingEditorState } from '../../../../stores/editor-state/element-editor-state/externalFormat/BindingEditorState';
-import type { ConnectionValueState } from '../../../../stores/editor-state/element-editor-state/connection/ConnectionEditorState';
+} from '../stores/editor-state/element-editor-state/externalFormat/NewSchemaSetDriver';
+import type { EditorStore } from '../stores/EditorStore';
+import type { ElementEditorState } from '../stores/editor-state/element-editor-state/ElementEditorState';
+import { SchemaSetEditorState } from '../stores/editor-state/element-editor-state/externalFormat/SchemaSetEditorState';
+import { BindingEditorState } from '../stores/editor-state/element-editor-state/externalFormat/BindingEditorState';
+import type { ConnectionValueState } from '../stores/editor-state/element-editor-state/connection/ConnectionEditorState';
 import {
   externalFormat_Binding_setContentType,
   externalFormat_urlStream_setUrl,
-} from '../../../../stores/graphModifier/DSLExternalFormat_GraphModifierHelper';
+} from '../stores/graphModifier/DSLExternalFormat_GraphModifierHelper';
 
 const SCHEMA_SET_ELEMENT_TYPE = 'SCHEMASET';
 const SCHEMA_SET_ELEMENT_PROJECT_EXPLORER_DND_TYPE =

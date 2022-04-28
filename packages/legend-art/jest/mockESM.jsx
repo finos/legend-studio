@@ -28,4 +28,6 @@ jest.mock('react-markdown', () => (props) => {
   return <>{props.children}</>;
 });
 
-jest.mock('remark-gfm', () => () => {});
+jest.mock('remark-gfm', () => () => {
+  // do nothing
+});

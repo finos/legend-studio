@@ -44,6 +44,7 @@ import {
   Package,
   Unit,
   PrimitiveType,
+  getElementRootPackage,
 } from '@finos/legend-graph';
 import { APPLICATION_EVENT } from '@finos/legend-application';
 
@@ -355,7 +356,7 @@ export class ExplorerTreeState {
         element,
       );
     }
-    const packagePath = element.getRoot().path;
+    const packagePath = getElementRootPackage(element).path;
     let opened = false;
     if (packagePath === ROOT_PACKAGE_NAME.MAIN && this.treeData) {
       const openingNode = openNode(this.editorStore, element, this.treeData);

@@ -20,7 +20,6 @@ import {
 } from './ValueSpecification';
 
 export class INTERNAL__PropagatedValue extends ValueSpecification {
-  isDefaultDatePropagationSupported!: boolean;
   getValue!: () => ValueSpecification;
 
   accept_ValueSpecificationVisitor<T>(

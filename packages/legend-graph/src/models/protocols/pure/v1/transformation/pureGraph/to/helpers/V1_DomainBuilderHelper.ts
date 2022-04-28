@@ -38,15 +38,21 @@ import type {
   PropertyOwner,
 } from '../../../../../../../metamodels/pure/packageableElements/domain/AbstractProperty';
 import type { V1_ValueSpecification } from '../../../../model/valueSpecification/V1_ValueSpecification';
-import type { V1_GraphBuilderContext } from '../../../../transformation/pureGraph/to/V1_GraphBuilderContext';
+import {
+  V1_buildFullPath,
+  type V1_GraphBuilderContext,
+} from '../../../../transformation/pureGraph/to/V1_GraphBuilderContext';
 import type { V1_Constraint } from '../../../../model/packageableElements/domain/V1_Constraint';
 import type { V1_RawVariable } from '../../../../model/rawValueSpecification/V1_RawVariable';
 import type { V1_Property } from '../../../../model/packageableElements/domain/V1_Property';
 import type { V1_DerivedProperty } from '../../../../model/packageableElements/domain/V1_DerivedProperty';
 import type { V1_Unit } from '../../../../model/packageableElements/domain/V1_Measure';
 import type { V1_TaggedValue } from '../../../../model/packageableElements/domain/V1_TaggedValue';
-import { V1_resolvePathsInRawLambda } from './V1_ValueSpecificationPathResolver';
-import { _package_addElement } from '../../../../../../../../helpers/DomainHelper';
+import { V1_buildRawLambdaWithResolvedPaths } from './V1_ValueSpecificationPathResolver';
+import {
+  addElementToPackage,
+  getOrCreateGraphPackage,
+} from '../../../../../../../../helpers/DomainHelper';
 
 export const V1_buildTaggedValue = (
   taggedValue: V1_TaggedValue,
@@ -75,19 +81,19 @@ export const V1_buildConstraint = (
   const pureConstraint = new Constraint(
     constraint.name,
     _class,
-    V1_resolvePathsInRawLambda(
-      context,
+    V1_buildRawLambdaWithResolvedPaths(
       constraint.functionDefinition.parameters,
       constraint.functionDefinition.body,
+      context,
     ),
   );
   pureConstraint.enforcementLevel = constraint.enforcementLevel;
   pureConstraint.externalId = constraint.externalId;
   pureConstraint.messageFunction = constraint.messageFunction
-    ? V1_resolvePathsInRawLambda(
-        context,
+    ? V1_buildRawLambdaWithResolvedPaths(
         constraint.messageFunction.parameters,
         constraint.messageFunction.body,
+        context,
       )
     : constraint.messageFunction;
   return pureConstraint;
@@ -133,19 +139,22 @@ export const V1_buildUnit = (
     unit.name,
     parentMeasure,
     unit.conversionFunction
-      ? V1_resolvePathsInRawLambda(
-          context,
+      ? V1_buildRawLambdaWithResolvedPaths(
           unit.conversionFunction.parameters,
           unit.conversionFunction.body,
+          context,
         )
       : undefined,
   );
-  const path = currentGraph.buildPath(unit.package, unit.name);
+  const path = V1_buildFullPath(unit.package, unit.name);
   assertTrue(
     !currentGraph.getOwnNullableElement(path),
     `Element '${path}' already exists`,
   );
-  _package_addElement(currentGraph.getOrCreatePackage(unit.package), pureUnit);
+  addElementToPackage(
+    getOrCreateGraphPackage(currentGraph, unit.package, undefined),
+    pureUnit,
+  );
   currentGraph.setOwnType(path, pureUnit);
   return pureUnit;
 };
@@ -218,10 +227,10 @@ export const V1_buildDerivedProperty = (
   derivedProperty.taggedValues = property.taggedValues
     .map((taggedValue) => V1_buildTaggedValue(taggedValue, context))
     .filter(isNonNullable);
-  const rawLambda = V1_resolvePathsInRawLambda(
-    context,
+  const rawLambda = V1_buildRawLambdaWithResolvedPaths(
     property.parameters,
     property.body,
+    context,
   );
   derivedProperty.body = rawLambda.body;
   derivedProperty.parameters = rawLambda.parameters;

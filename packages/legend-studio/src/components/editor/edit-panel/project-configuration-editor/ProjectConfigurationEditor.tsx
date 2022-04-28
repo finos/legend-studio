@@ -264,7 +264,9 @@ const ProjectDependencyEditor = observer(
     const openProject = (): void => {
       if (!projectDependency.isLegacyDependency) {
         applicationStore.navigator.openNewWindow(
-          `${applicationStore.config.baseUrl}view/${generateGAVCoordinates(
+          `${
+            applicationStore.config.baseUrl
+          }view/archive/${generateGAVCoordinates(
             guaranteeNonNullable(projectDependency.groupId),
             guaranteeNonNullable(projectDependency.artifactId),
             projectDependency.versionId.id,

@@ -43,7 +43,7 @@ import {
   RootGraphFetchTreeInstanceValue,
   SimpleFunctionExpression,
   TYPICAL_MULTIPLICITY_TYPE,
-  MILESTONING_STEROTYPE,
+  MILESTONING_STEREOTYPE,
 } from '@finos/legend-graph';
 import { isGraphFetchTreeDataEmpty } from './QueryBuilderGraphFetchTreeUtil';
 import type { QueryBuilderState } from './QueryBuilderState';
@@ -250,7 +250,7 @@ export const buildLambdaFunction = (
   );
   if (milestoningStereotype) {
     switch (milestoningStereotype) {
-      case MILESTONING_STEROTYPE.BUSINESS_TEMPORAL: {
+      case MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL: {
         getAllFunction.parametersValues.push(
           guaranteeNonNullable(
             queryBuilderState.querySetupState._businessDate,
@@ -259,7 +259,7 @@ export const buildLambdaFunction = (
         );
         break;
       }
-      case MILESTONING_STEROTYPE.PROCESSING_TEMPORAL: {
+      case MILESTONING_STEREOTYPE.PROCESSING_TEMPORAL: {
         getAllFunction.parametersValues.push(
           guaranteeNonNullable(
             queryBuilderState.querySetupState._processingDate,
@@ -268,7 +268,7 @@ export const buildLambdaFunction = (
         );
         break;
       }
-      case MILESTONING_STEROTYPE.BITEMPORAL: {
+      case MILESTONING_STEREOTYPE.BITEMPORAL: {
         getAllFunction.parametersValues.push(
           guaranteeNonNullable(
             queryBuilderState.querySetupState._processingDate,

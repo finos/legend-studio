@@ -31,14 +31,14 @@
   },
   "dependencies": {
     "postcss": "8.4.12",
-    "postcss-scss": "4.0.3",
+    "postcss-scss": "4.0.4",
     "stylelint-config-prettier": "9.0.3",
     "stylelint-config-standard": "25.0.0",
     "stylelint-scss": "4.2.0"
   },
   "devDependencies": {
     "cross-env": "7.0.3",
-    "eslint": "8.13.0",
+    "eslint": "8.14.0",
     "rimraf": "3.0.2"
   },
   "peerDependencies": {

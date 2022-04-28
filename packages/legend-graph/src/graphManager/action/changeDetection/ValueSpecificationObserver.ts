@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { isType, Pair } from '@finos/legend-shared';
+import { filterByType, Pair } from '@finos/legend-shared';
 import { computed, makeObservable, observable } from 'mobx';
 import { PackageableElementReference } from '../../../models/metamodels/pure/packageableElements/PackageableElementReference';
 import { Runtime } from '../../../models/metamodels/pure/packageableElements/runtime/Runtime';
@@ -173,7 +173,7 @@ export const observe_PropertyGraphFetchTreeInstanceValue =
       observe_Abstract_InstanceValue(metamodel, context);
 
       metamodel.values
-        .filter((value) => isType(value, PropertyGraphFetchTree))
+        .filter(filterByType(PropertyGraphFetchTree))
         .forEach((value) => observe_PropertyGraphFetchTree(value, context));
 
       return metamodel;
@@ -219,7 +219,7 @@ const observe_AlloySerializationConfigInstanceValue = skipObservedWithContext(
     observe_Abstract_InstanceValue(metamodel, context);
 
     metamodel.values
-      .filter((value) => isType(value, AlloySerializationConfig))
+      .filter(filterByType(AlloySerializationConfig))
       .forEach((value) => observe_AlloySerializationConfig(value));
     return metamodel;
   },
@@ -235,7 +235,7 @@ const observe_LambdaFunctionInstanceValue = skipObservedWithContext(
     observe_Abstract_InstanceValue(metamodel, context);
 
     metamodel.values
-      .filter((value) => isType(value, LambdaFunction))
+      .filter(filterByType(LambdaFunction))
       .forEach((value) => observe_LambdaFunction(value, context));
 
     return metamodel;
@@ -279,7 +279,7 @@ const observe_RuntimeInstanceValue = skipObservedWithContext(
     observe_Abstract_InstanceValue(metamodel, context);
 
     metamodel.values
-      .filter((value) => isType(value, Runtime))
+      .filter(filterByType(Runtime))
       .forEach((value) => observe_Runtime(value, context));
 
     return metamodel;
@@ -295,7 +295,7 @@ const observe_MappingInstanceValue = skipObservedWithContext(
     observe_Abstract_InstanceValue(metamodel, context);
 
     metamodel.values
-      .filter((value) => isType(value, PackageableElementReference))
+      .filter(filterByType(PackageableElementReference))
       .forEach(observe_PackageableElementReference);
 
     return metamodel;
@@ -527,10 +527,7 @@ function observe_Abstract_InstanceValue(
   });
 
   metamodel.values
-    .filter(
-      (value): value is ValueSpecification =>
-        value instanceof ValueSpecification,
-    )
+    .filter(filterByType(ValueSpecification))
     .forEach((value) => observe_ValueSpecification(value, context));
 }
 
@@ -558,21 +555,19 @@ function _observe_PairInstanceValue(
 ): PairInstanceValue {
   observe_Abstract_InstanceValue(metamodel, context);
 
-  metamodel.values
-    .filter((value) => isType(value, Pair))
-    .forEach((value) => {
-      makeObservable(value, {
-        first: observable,
-        second: observable,
-      });
-
-      if (value.first instanceof ValueSpecification) {
-        observe_ValueSpecification(value.first, context);
-      }
-      if (value.second instanceof ValueSpecification) {
-        observe_ValueSpecification(value.second, context);
-      }
+  metamodel.values.filter(filterByType(Pair)).forEach((value) => {
+    makeObservable(value, {
+      first: observable,
+      second: observable,
     });
+
+    if (value.first instanceof ValueSpecification) {
+      observe_ValueSpecification(value.first, context);
+    }
+    if (value.second instanceof ValueSpecification) {
+      observe_ValueSpecification(value.second, context);
+    }
+  });
 
   return metamodel;
 }

@@ -39,7 +39,6 @@ import {
   NewServiceModal,
   useEditorStore,
   LegendStudioPlugin,
-  package_addElement,
   service_initNewService,
   service_setExecution,
 } from '@finos/legend-studio';
@@ -66,7 +65,7 @@ import { useState } from 'react';
 import { observer } from 'mobx-react-lite';
 
 const promoteQueryToService = async (
-  packageName: string,
+  packagePath: string,
   serviceName: string,
   queryBuilderExtension: QueryBuilder_EditorExtensionState,
 ): Promise<void> => {
@@ -95,14 +94,7 @@ const promoteQueryToService = async (
       ),
       editorStore.changeDetectionState.observerContext,
     );
-    const servicePackage =
-      editorStore.graphManagerState.graph.getOrCreatePackage(packageName);
-    package_addElement(
-      servicePackage,
-      service,
-      editorStore.changeDetectionState.observerContext,
-    );
-    await flowResult(editorStore.addElement(service, true));
+    await flowResult(editorStore.addElement(service, packagePath, true));
     await flowResult(
       queryBuilderExtension.setEmbeddedQueryBuilderMode(undefined),
     ).catch(applicationStore.alertUnhandledError);

@@ -103,7 +103,6 @@ import {
   property_setName,
   property_setGenericType,
   property_setMultiplicity,
-  package_addElement,
 } from '@finos/legend-studio';
 import { cleanUpDeadReferencesInDiagram } from '../../helpers/DiagramHelper';
 import { Point } from '../../models/metamodels/pure/packageableElements/diagram/geometry/DSLDiagram_Point';
@@ -865,12 +864,7 @@ const DiagramEditorInlineClassCreatorInner = observer(
         diagramEditorState.setInlineClassCreatorState(undefined);
         const [packagePath, name] = resolvePackagePathAndElementName(path);
         const _class = new Class(name);
-        package_addElement(
-          editorStore.graphManagerState.graph.getOrCreatePackage(packagePath),
-          _class,
-          editorStore.changeDetectionState.observerContext,
-        );
-        await flowResult(editorStore.addElement(_class, false));
+        await flowResult(editorStore.addElement(_class, packagePath, false));
         diagramEditorState.renderer.addClassView(
           _class,
           inlineClassCreatorState.point,

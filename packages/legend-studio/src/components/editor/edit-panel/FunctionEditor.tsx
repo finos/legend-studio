@@ -68,7 +68,7 @@ import { StudioLambdaEditor } from '../../shared/StudioLambdaEditor';
 import { getElementIcon } from '../../shared/ElementIconUtils';
 import {
   function_setReturnType,
-  functio_setReturnMultiplicity,
+  function_setReturnMultiplicity,
   function_addParameter,
   function_deleteParameter,
   annotatedElement_addTaggedValue,
@@ -356,7 +356,7 @@ const ReturnTypeEditor = observer(
           ? upper
           : parseInt(upper, 10);
       if (!isNaN(lBound) && (uBound === undefined || !isNaN(uBound))) {
-        functio_setReturnMultiplicity(
+        function_setReturnMultiplicity(
           functionElement,
           new Multiplicity(lBound, uBound),
         );

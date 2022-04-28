@@ -26,17 +26,17 @@ import { GroupByFunctionSpecification } from '../../../../../../../metamodels/pu
 import { AggregationFunctionSpecification } from '../../../../../../../metamodels/pure/packageableElements/mapping/aggregationAware/AggregationFunctionSpecification';
 import type { V1_AggregateFunction } from '../../../../model/packageableElements/store/relational/mapping/aggregationAware/V1_AggregateFunction';
 import { V1_ProtocolToMetaModelClassMappingFirstPassBuilder } from '../V1_ProtocolToMetaModelClassMappingFirstPassBuilder';
-import { V1_resolvePathsInRawLambda } from './V1_ValueSpecificationPathResolver';
+import { V1_buildRawLambdaWithResolvedPaths } from './V1_ValueSpecificationPathResolver';
 
 const buildGroupByFunction = (
   groupByFunction: V1_GroupByFunction,
   context: V1_GraphBuilderContext,
 ): GroupByFunctionSpecification => {
   const groupByFunctionSpecification = new GroupByFunctionSpecification(
-    V1_resolvePathsInRawLambda(
-      context,
+    V1_buildRawLambdaWithResolvedPaths(
       groupByFunction.groupByFn.parameters,
       groupByFunction.groupByFn.body,
+      context,
     ),
   );
 
@@ -47,15 +47,15 @@ const buildAggregateFunction = (
   aggregationFunction: V1_AggregateFunction,
   context: V1_GraphBuilderContext,
 ): AggregationFunctionSpecification => {
-  const mapFn = V1_resolvePathsInRawLambda(
-    context,
+  const mapFn = V1_buildRawLambdaWithResolvedPaths(
     aggregationFunction.mapFn.parameters,
     aggregationFunction.mapFn.body,
-  );
-  const aggregateFn = V1_resolvePathsInRawLambda(
     context,
+  );
+  const aggregateFn = V1_buildRawLambdaWithResolvedPaths(
     aggregationFunction.aggregateFn.parameters,
     aggregationFunction.aggregateFn.body,
+    context,
   );
   return new AggregationFunctionSpecification(mapFn, aggregateFn);
 };

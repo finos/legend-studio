@@ -14,17 +14,16 @@
  * limitations under the License.
  */
 
-import base from '../../scripts/test/jest.config.base.js';
+import { getBaseJestProjectConfig } from '../../scripts/test/jest.config.base.js';
 import { loadJSON } from '@finos/legend-dev-utils/DevUtils';
+import { resolve, dirname } from 'path';
+import { fileURLToPath } from 'url';
 
-const packageJson = loadJSON('./package.json');
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
-export default {
-  ...base,
-  displayName: packageJson.name,
-  name: packageJson.name,
-  rootDir: '../..',
-  testMatch: [
-    '<rootDir>/packages/legend-graph-extension-collection/src/**/__tests__/**/*(*.)test.[jt]s?(x)',
-  ],
-};
+const packageJson = loadJSON(resolve(__dirname, './package.json'));
+
+export default getBaseJestProjectConfig(
+  packageJson.name,
+  'packages/legend-graph-extension-collection',
+);

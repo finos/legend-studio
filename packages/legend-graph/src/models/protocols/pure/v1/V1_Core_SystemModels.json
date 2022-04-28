@@ -1539,7 +1539,7 @@
               "value": "Key"
             }
           ],
-          "type": "metamodel::type::Nil"
+          "type": "meta::pure::metamodel::type::Nil"
         }
       ],
       "qualifiedProperties": [
@@ -1567,7 +1567,7 @@
     {
       "_type": "class",
       "name": "Nil",
-      "package": "metamodel::type"
+      "package": "meta::pure::metamodel::type"
     },
     {
       "_type": "class",

@@ -14,17 +14,27 @@
  * limitations under the License.
  */
 
-import { guaranteeType } from '@finos/legend-shared';
+import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
+import type { BasicModel } from '../graph/BasicModel';
 import type { PureModel } from '../graph/PureModel';
 import { SchemaSet } from '../models/metamodels/pure/packageableElements/externalFormat/schemaSet/DSLExternalFormat_SchemaSet';
 import { Binding } from '../models/metamodels/pure/packageableElements/externalFormat/store/DSLExternalFormat_Binding';
 
 export const getSchemaSet = (path: string, graph: PureModel): SchemaSet =>
-  graph.getExtensionElement(
-    path,
-    SchemaSet,
-    `Can't find schema set element '${path}'`,
+  graph.getExtensionElement(path, SchemaSet, `Can't find schema set '${path}'`);
+
+export const getOwnSchemaSet = (path: string, graph: BasicModel): SchemaSet =>
+  guaranteeNonNullable(
+    graph.getOwnNullableExtensionElement(path, SchemaSet),
+    `Can't find schema set '${path}'`,
   );
 
 export const getBinding = (path: string, graph: PureModel): Binding =>
   guaranteeType(graph.getStore(path), Binding, `Can't find binding '${path}'`);
+
+export const getOwnBinding = (path: string, graph: BasicModel): Binding =>
+  guaranteeType(
+    graph.getOwnNullableStore(path),
+    Binding,
+    `Can't find binding '${path}'`,
+  );

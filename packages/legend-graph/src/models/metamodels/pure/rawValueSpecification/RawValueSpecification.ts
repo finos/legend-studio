@@ -16,12 +16,14 @@
 
 import type { RawVariableExpression } from './RawVariableExpression';
 import type { RawLambda } from './RawLambda';
-import type { RawInstanceValue } from './RawInstanceValue';
+import type { RawPrimitiveInstanceValue } from './RawPrimitiveInstanceValue';
 
 export interface RawValueSpecificationVisitor<T> {
   visit_RawLambda(valueSpecification: RawLambda): T;
   visit_RawVariableExpression(valueSpecification: RawVariableExpression): T;
-  visit_RawInstanceValue(valueSpecification: RawInstanceValue): T;
+  visit_RawPrimitiveInstanceValue(
+    valueSpecification: RawPrimitiveInstanceValue,
+  ): T;
 }
 
 export abstract class RawValueSpecification {

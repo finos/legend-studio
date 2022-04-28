@@ -36,6 +36,7 @@ export enum GRAMMAR_ELEMENT_TYPE_LABEL {
   CONNECTION = 'Connection',
   FILE_GENERATION = 'FileGeneration',
   GENERATION_SPECIFICATION = 'GenerationSpecification',
+  DATA_ELEMENT = 'Data',
 
   JSON_MODEL_CONNECTION = 'JsonModelConnection',
   XML_MODEL_CONNECTION = 'XmlModelConnection',
@@ -134,6 +135,7 @@ export const generateLanguageMonarch = (
       GRAMMAR_ELEMENT_TYPE_LABEL.CONNECTION,
       GRAMMAR_ELEMENT_TYPE_LABEL.FILE_GENERATION,
       GRAMMAR_ELEMENT_TYPE_LABEL.GENERATION_SPECIFICATION,
+      GRAMMAR_ELEMENT_TYPE_LABEL.DATA_ELEMENT,
 
       GRAMMAR_ELEMENT_TYPE_LABEL.JSON_MODEL_CONNECTION,
       GRAMMAR_ELEMENT_TYPE_LABEL.MODEL_CHAIN_CONNECTION,
@@ -183,6 +185,7 @@ export const generateLanguageMonarch = (
       '###ServiceStore',
       '###GenerationSpecification',
       '###FileGeneration',
+      '###Data',
     ],
 
     // common regular expressions to be used in tokenizer

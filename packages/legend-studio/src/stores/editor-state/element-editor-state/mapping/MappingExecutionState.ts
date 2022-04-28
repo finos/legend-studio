@@ -74,8 +74,8 @@ import {
   FlatDataConnection,
   FlatDataInputData,
   Service,
-  SingleExecutionTest,
-  TestContainer,
+  DEPRECATED__SingleExecutionTest,
+  DEPRECATED__TestContainer,
   PureSingleExecution,
   RootFlatDataRecordType,
   PackageableElementExplicitReference,
@@ -97,7 +97,6 @@ import {
   LambdaEditorState,
   TAB_SIZE,
 } from '@finos/legend-application';
-import { package_addElement } from '../../../graphModifier/DomainGraphModifierHelper';
 import {
   objectInputData_setData,
   runtime_addIdentifiedConnection,
@@ -111,7 +110,7 @@ import {
 import {
   localH2DatasourceSpecification_setTestDataSetupCsv,
   localH2DatasourceSpecification_setTestDataSetupSqls,
-  relationalInputData_setInputType,
+  relationalInputData_setData,
 } from '../../../graphModifier/StoreRelational_GraphModifierHelper';
 
 export class MappingExecutionQueryState extends LambdaEditorState {
@@ -549,7 +548,7 @@ export class MappingExecutionState {
         source.relation.value,
       );
       if (populateWithMockData) {
-        relationalInputData_setInputType(
+        relationalInputData_setData(
           newRuntimeState.inputData,
           createMockDataForMappingElementSource(source, this.editorStore),
         );
@@ -634,28 +633,21 @@ export class MappingExecutionState {
             pureSingleExecution,
             this.editorStore.changeDetectionState.observerContext,
           );
-          const singleExecutionTest = new SingleExecutionTest(
+          const singleExecutionTest = new DEPRECATED__SingleExecutionTest(
             service,
             tryToMinifyJSONString(this.inputDataState.inputData.data),
           );
-          const testContainer = new TestContainer(
-            this.editorStore.graphManagerState.graphManager.HACKY_createServiceTestAssertLambda(
+          const testContainer = new DEPRECATED__TestContainer(
+            this.editorStore.graphManagerState.graphManager.HACKY__createServiceTestAssertLambda(
               this.executionResultText,
             ),
             singleExecutionTest,
           );
           singleExecutionTest.asserts.push(testContainer);
-          const servicePackage =
-            this.editorStore.graphManagerState.graph.getOrCreatePackage(
-              packagePath,
-            );
           service.test = singleExecutionTest;
-          package_addElement(
-            servicePackage,
-            service,
-            this.editorStore.changeDetectionState.observerContext,
+          yield flowResult(
+            this.editorStore.addElement(service, packagePath, true),
           );
-          yield flowResult(this.editorStore.addElement(service, true));
         } else {
           throw new UnsupportedOperationError(
             `Can't build service from input data state`,
@@ -779,7 +771,7 @@ export class MappingExecutionState {
     yield flowResult(
       this.queryState.updateLamba(
         setImplementation
-          ? this.editorStore.graphManagerState.graphManager.HACKY_createGetAllLambda(
+          ? this.editorStore.graphManagerState.graphManager.HACKY__createGetAllLambda(
               guaranteeType(getMappingElementTarget(setImplementation), Class),
             )
           : RawLambda.createStub(),

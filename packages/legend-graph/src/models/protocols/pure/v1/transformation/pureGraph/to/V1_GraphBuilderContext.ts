@@ -17,6 +17,7 @@
 import {
   PRIMITIVE_TYPE,
   ELEMENT_PATH_DELIMITER,
+  ROOT_PACKAGE_NAME,
 } from '../../../../../../../MetaModelConst';
 import {
   type Log,
@@ -78,6 +79,16 @@ import type { V1_GraphBuilderExtensions } from './V1_GraphBuilderExtensions';
 import type { GraphBuilderOptions } from '../../../../../../../graphManager/AbstractPureGraphManager';
 import { DataType } from '../../../../../../metamodels/pure/packageableElements/domain/DataType';
 import { GraphBuilderError } from '../../../../../../../graphManager/GraphManagerUtils';
+import type { DataElement } from '../../../../../../../DSLData_Exports';
+
+export const V1_buildFullPath = (
+  packagePath: string | undefined,
+  name: string | undefined,
+): string =>
+  `${guaranteeNonNullable(
+    packagePath,
+    'Package path is required',
+  )}${ELEMENT_PATH_DELIMITER}${guaranteeNonNullable(name, 'Name is required')}`;
 
 interface ResolutionResult<T> {
   /**
@@ -95,22 +106,55 @@ interface ResolutionResult<T> {
 }
 
 export class V1_GraphBuilderContext {
+  private readonly autoImports: Package[];
+  private readonly sectionImports: Package[] = [];
   readonly log: Log;
   readonly currentSubGraph: BasicModel;
   readonly extensions: V1_GraphBuilderExtensions;
   readonly graph: PureModel;
-  readonly imports: Package[] = [];
   readonly section?: Section | undefined;
   readonly options?: GraphBuilderOptions | undefined;
 
   constructor(builder: V1_GraphBuilderContextBuilder) {
     this.log = builder.log;
     this.graph = builder.graph;
+    this.autoImports = this.graph.autoImports;
     this.currentSubGraph = builder.currentSubGraph;
     this.extensions = builder.extensions;
-    this.imports = builder.imports;
+    this.sectionImports = builder.sectionImports;
     this.section = builder.section;
     this.options = builder.options;
+  }
+
+  /**
+   * Since we haven't fully supported section index, shortened paths
+   * using imports in the graph might need to be fully resolved.
+   *
+   * To handle this need, we make use of references. References can auto
+   * resolve full paths when the section index is deleted. But, when
+   * building the graph, we leave the value specifications
+   * raw/unprocessed. Hence, we cannot make use of references to do full
+   * path resolution, as such, we make a best effort traversal in the model
+   * of raw value specifications to resolve path automatically.
+   *
+   * We create this flag to control the behavior of lambda auto path-resolution.
+   * This rewriting behavior should not be done for immutable graphs, such as
+   * system, depdendencies, and generation. However, in overall, it would be controlled
+   * also by the `TEMPORARY__preserveSectionIndex` flag.
+   *
+   * NOTE: When we fully support section index, we would certainly need to
+   * revise the usefullness of this flag, perhaps, we don't auto-resolve anymore,
+   * but this mechanism would still be beneficial as we can keep it as an utility
+   * to resolve raw lambdas' paths when the user deliberately delete the section
+   * index, for example.
+   *
+   * https://github.com/finos/legend-studio/issues/1067
+   */
+  get enableRawLambdaAutoPathResolution(): boolean {
+    return (
+      this.graph.root.path === ROOT_PACKAGE_NAME.MAIN &&
+      !this.options?.TEMPORARY__preserveSectionIndex
+    );
   }
 
   resolve<T>(
@@ -134,21 +178,37 @@ export class V1_GraphBuilderContext {
     // NOTE: here we make the assumption that we have populated the indices properly so the same element
     // is not referred using 2 different paths in the same element index
     const results = new Map<string, ResolutionResult<T>>();
-    uniq(this.imports).forEach((importPackage) => {
+    this.autoImports.forEach((importPackage) => {
       try {
         const fullPath = importPackage.path + ELEMENT_PATH_DELIMITER + path;
         const element = resolverFn(fullPath);
         if (element) {
           results.set(fullPath, {
             element,
-            resolvedUsingSectionImports:
-              !this.graph.sectionAutoImports.includes(importPackage),
+            resolvedUsingSectionImports: false,
           });
         }
       } catch {
         // do nothing
       }
     });
+    // only resolve section imports if there is a section
+    if (this.section) {
+      this.sectionImports.forEach((importPackage) => {
+        try {
+          const fullPath = importPackage.path + ELEMENT_PATH_DELIMITER + path;
+          const element = resolverFn(fullPath);
+          if (element) {
+            results.set(fullPath, {
+              element,
+              resolvedUsingSectionImports: true,
+            });
+          }
+        } catch {
+          // do nothing
+        }
+      });
+    }
     switch (results.size) {
       /**
        * NOTE: if nothing is found then we will try to find user-defined elements at root package (i.e. no package)
@@ -454,6 +514,13 @@ export class V1_GraphBuilderContext {
       path,
       this.graph.getFileGeneration,
     );
+  resolveDataElement = (
+    path: string,
+  ): PackageableElementImplicitReference<DataElement> =>
+    this.createImplicitPackageableElementReference(
+      path,
+      this.graph.getDataElement,
+    );
 }
 
 export class V1_GraphBuilderContextBuilder {
@@ -468,7 +535,7 @@ export class V1_GraphBuilderContextBuilder {
   currentSubGraph: BasicModel;
   extensions: V1_GraphBuilderExtensions;
   graph: PureModel;
-  imports: Package[] = [];
+  sectionImports: Package[] = [];
   section?: Section | undefined;
   options?: GraphBuilderOptions | undefined;
 
@@ -487,19 +554,18 @@ export class V1_GraphBuilderContextBuilder {
   }
 
   withElement(element: V1_PackageableElement): V1_GraphBuilderContextBuilder {
-    const section = this.graph.getOwnSection(element.path);
+    const section = this.graph.getOwnNullableSection(element.path);
     return this.withSection(section);
   }
 
   withSection(section: Section | undefined): V1_GraphBuilderContextBuilder {
     this.section = section;
-    // NOTE: we add auto-imports regardless the type of the section or whether if there is any section at all
-    // so system elements will always be resolved no matter what.
-    this.imports = this.graph.sectionAutoImports;
     if (section instanceof ImportAwareCodeSection) {
-      this.imports = this.imports.concat(section.imports.map((i) => i.value));
+      this.sectionImports = this.sectionImports.concat(
+        section.imports.map((i) => i.value),
+      );
     }
-    this.imports = uniq(this.imports); // remove duplicates
+    this.sectionImports = uniq(this.sectionImports); // remove duplicates
     return this;
   }
 

@@ -56,15 +56,10 @@ import {
   TEST__buildGraphWithEntities,
   TEST__checkGraphHashUnchanged,
   TEST__getTestGraphManagerState,
-  DSLExternalFormat_GraphPreset,
   GRAPH_MANAGER_EVENT,
   V1_ENGINE_EVENT,
 } from '@finos/legend-graph';
-import { DSLText_GraphPreset } from '@finos/legend-extension-dsl-text';
-import { DSLDiagram_GraphPreset } from '@finos/legend-extension-dsl-diagram';
-import { DSLDataSpace_GraphPreset } from '@finos/legend-extension-dsl-data-space';
-import { DSLPersistence_GraphPreset } from '@finos/legend-extension-dsl-persistence';
-import { ESService_GraphPreset } from '@finos/legend-extension-external-store-service';
+import { getLegendGraphExtensionCollection } from '@finos/legend-graph-extension-collection';
 
 const engineConfig = JSON.parse(
   fs.readFileSync(resolve(__dirname, '../../../engine-config.json'), {
@@ -91,6 +86,14 @@ const EXCLUSIONS: { [key: string]: ROUNTRIP_TEST_PHASES[] | typeof SKIP } = {
   'relational-connection-databricks.pure': [
     ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP,
   ],
+
+  // Mismatch between engine(undefined) vs studio ([]) for properties
+  // `bodyPatterns` in ServiceStoreData
+  // `parameters` in ServiceTest
+  // TODO: Test should pass with a refactor of roundtrip grammar to not override the array serialization as engine
+  // correctly doesn't return the property for that array.
+  'ESService-dataElement.pure': [ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP],
+  'DSLService-basic.pure': [ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP],
 
   // TODO: remove these when we can properly handle relational mapping `mainTable` and `primaryKey` in transformers.
   // See https://github.com/finos/legend-studio/issues/295
@@ -168,14 +171,7 @@ const checkGrammarRoundtrip = async (
 ): Promise<void> => {
   const pluginManager = new TEST__GraphPluginManager();
   pluginManager
-    .usePresets([
-      new DSLText_GraphPreset(),
-      new DSLDiagram_GraphPreset(),
-      new DSLExternalFormat_GraphPreset(),
-      new DSLDataSpace_GraphPreset(),
-      new DSLPersistence_GraphPreset(),
-      new ESService_GraphPreset(),
-    ])
+    .usePresets(getLegendGraphExtensionCollection())
     .usePlugins([new WebConsole()]);
   pluginManager.install();
   const log = new Log();
@@ -225,7 +221,7 @@ const checkGrammarRoundtrip = async (
   GRAPH_MANAGER_EVENT;
   startTime = Date.now();
   await TEST__buildGraphWithEntities(graphManagerState, entities, {
-    TEMPORARY__keepSectionIndex: true,
+    TEMPORARY__preserveSectionIndex: true,
   });
   if (options?.debug) {
     log.info(

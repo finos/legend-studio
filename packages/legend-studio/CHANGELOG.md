@@ -1,5 +1,23 @@
 # @finos/legend-studio
 
+## 8.0.0
+
+### Major Changes
+
+- [#1068](https://github.com/finos/legend-studio/pull/1068) [`e8ee77dc`](https://github.com/finos/legend-studio/commit/e8ee77dcde909bdffd31fd65eea2cb8577b9c49d) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Move `BasicModel.buildPath()` out as the separate utility `V1_buildFullPath()`.
+
+### Patch Changes
+
+- [#1068](https://github.com/finos/legend-studio/pull/1068) [`e8ee77dc`](https://github.com/finos/legend-studio/commit/e8ee77dcde909bdffd31fd65eea2cb8577b9c49d) ([@akphi](https://github.com/akphi)) - Remove config option `TEMPORARY__disableRawLambdaResolver` and renamed `EXPERIMENTAL__enableFullGrammarImportSupport` to `TEMPORARY__preserveSectionIndex`.
+
+## 7.0.2
+
+### Patch Changes
+
+- [#1025](https://github.com/finos/legend-studio/pull/1025) [`0f96e2c3`](https://github.com/finos/legend-studio/commit/0f96e2c34b1eaa9d5065d9d9da6adb5edac850e2) ([@gayathrir11](https://github.com/gayathrir11)) - Fix properties getting lost in mapping editor when target set implementation is an `OperationSetImplementation` ([#1012](https://github.com/finos/legend-studio/issues/1012)).
+
+## 7.0.1
+
 ## 7.0.0
 
 ### Major Changes

@@ -24,9 +24,9 @@ import {
   type Runtime,
   type Service,
   type ServiceExecution,
-  type ServiceTest,
-  type SingleExecutionTest,
-  type TestContainer,
+  type DEPRECATED__ServiceTest,
+  type DEPRECATED__SingleExecutionTest,
+  type DEPRECATED__TestContainer,
   type ObserverContext,
   DEFAULT_SERVICE_PATTERN,
   observe_ServiceExecution,
@@ -34,8 +34,8 @@ import {
   observe_TestContainer,
   observe_Mapping,
   observe_RawLambda,
-  observe_ServiceTest,
   observe_Runtime,
+  observe_ServiceTest_Legacy,
 } from '@finos/legend-graph';
 import { addUniqueEntry, deleteEntry, uuid } from '@finos/legend-shared';
 import { action } from 'mobx';
@@ -57,9 +57,9 @@ export const service_setExecution = action(
     service.execution = observe_ServiceExecution(value, observerContext);
   },
 );
-export const service_setTest = action(
-  (service: Service, value: ServiceTest): void => {
-    service.test = observe_ServiceTest(value);
+export const service_setLegacyTest = action(
+  (service: Service, value: DEPRECATED__ServiceTest): void => {
+    service.test = observe_ServiceTest_Legacy(value);
   },
 );
 export const service_setPattern = action(
@@ -146,19 +146,25 @@ export const pureMultiExecution_addExecutionParameter = action(
   },
 );
 export const singleExecTest_setData = action(
-  (val: SingleExecutionTest, value: string): void => {
+  (val: DEPRECATED__SingleExecutionTest, value: string): void => {
     val.data = value;
   },
 );
 
 export const singleExecTest_addAssert = action(
-  (val: SingleExecutionTest, value: TestContainer): void => {
+  (
+    val: DEPRECATED__SingleExecutionTest,
+    value: DEPRECATED__TestContainer,
+  ): void => {
     addUniqueEntry(val.asserts, observe_TestContainer(value));
   },
 );
 
 export const singleExecTest_deleteAssert = action(
-  (val: SingleExecutionTest, value: TestContainer): void => {
+  (
+    val: DEPRECATED__SingleExecutionTest,
+    value: DEPRECATED__TestContainer,
+  ): void => {
     deleteEntry(val.asserts, observe_TestContainer(value));
   },
 );

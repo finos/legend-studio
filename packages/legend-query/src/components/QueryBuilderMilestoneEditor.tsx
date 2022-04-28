@@ -24,7 +24,7 @@ import { useCallback } from 'react';
 import {
   GenericType,
   GenericTypeExplicitReference,
-  MILESTONING_STEROTYPE,
+  MILESTONING_STEREOTYPE,
   observe_PrimitiveInstanceValue,
   PrimitiveInstanceValue,
   PRIMITIVE_TYPE,
@@ -40,12 +40,12 @@ import { generateDefaultValueForPrimitiveType } from '../stores/QueryBuilderValu
 const MilestoningParameterEditor = observer(
   (props: {
     queryBuilderState: QueryBuilderState;
-    stereotype: MILESTONING_STEROTYPE;
+    stereotype: MILESTONING_STEREOTYPE;
   }) => {
     const { queryBuilderState, stereotype } = props;
     const handleDrop = useCallback(
       (item: QueryBuilderParameterDragSource): void => {
-        if (stereotype === MILESTONING_STEROTYPE.BUSINESS_TEMPORAL) {
+        if (stereotype === MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL) {
           queryBuilderState.querySetupState.setBusinessDate(
             item.variable.parameter,
           );
@@ -79,7 +79,7 @@ const MilestoningParameterEditor = observer(
       [handleDrop],
     );
     let milestoningParameter;
-    if (stereotype === MILESTONING_STEROTYPE.BUSINESS_TEMPORAL) {
+    if (stereotype === MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL) {
       milestoningParameter = guaranteeNonNullable(
         queryBuilderState.querySetupState._businessDate,
       );
@@ -107,7 +107,7 @@ const MilestoningParameterEditor = observer(
       parameter.values = [
         generateDefaultValueForPrimitiveType(PRIMITIVE_TYPE.STRICTDATE),
       ];
-      if (stereotype === MILESTONING_STEROTYPE.BUSINESS_TEMPORAL) {
+      if (stereotype === MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL) {
         queryBuilderState.querySetupState.setBusinessDate(parameter);
       } else {
         queryBuilderState.querySetupState.setProcessingDate(parameter);
@@ -154,7 +154,7 @@ const BiTemporalMilestoneEditor = observer(
           </div>
           <MilestoningParameterEditor
             queryBuilderState={queryBuilderState}
-            stereotype={MILESTONING_STEROTYPE.PROCESSING_TEMPORAL}
+            stereotype={MILESTONING_STEREOTYPE.PROCESSING_TEMPORAL}
           />
         </div>
         <div className="panel__content__form__section">
@@ -163,7 +163,7 @@ const BiTemporalMilestoneEditor = observer(
           </div>
           <MilestoningParameterEditor
             queryBuilderState={queryBuilderState}
-            stereotype={MILESTONING_STEROTYPE.BUSINESS_TEMPORAL}
+            stereotype={MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL}
           />
         </div>
       </>
@@ -182,7 +182,7 @@ const BusinessTemporalMilestoneEditor = observer(
         <MilestoningParameterEditor
           key="BusinessDate"
           queryBuilderState={queryBuilderState}
-          stereotype={MILESTONING_STEROTYPE.BUSINESS_TEMPORAL}
+          stereotype={MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL}
         />
       </div>
     );
@@ -200,7 +200,7 @@ const ProcessingTemporalMilestoneEditor = observer(
         <MilestoningParameterEditor
           key="BusinessDate"
           queryBuilderState={queryBuilderState}
-          stereotype={MILESTONING_STEROTYPE.PROCESSING_TEMPORAL}
+          stereotype={MILESTONING_STEREOTYPE.PROCESSING_TEMPORAL}
         />
       </div>
     );

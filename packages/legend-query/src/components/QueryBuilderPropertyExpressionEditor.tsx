@@ -19,6 +19,7 @@ import { clsx, Dialog, InfoCircleIcon, RefreshIcon } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import {
   fillDerivedPropertyArguments,
+  generateValueSpecificationForParameter,
   getPropertyPath,
   type QueryBuilderDerivedPropertyExpressionState,
   type QueryBuilderPropertyExpressionState,
@@ -35,16 +36,12 @@ import {
   type QueryBuilderParameterDragSource,
   QUERY_BUILDER_PARAMETER_TREE_DND_TYPE,
 } from '../stores/QueryParametersState';
-import { generateDefaultValueForPrimitiveType } from '../stores/QueryBuilderValueSpecificationBuilderHelper';
-import { guaranteeNonNullable } from '@finos/legend-shared';
 import {
   type ValueSpecification,
   type VariableExpression,
   Class,
   Enumeration,
   PrimitiveType,
-  PrimitiveInstanceValue,
-  PRIMITIVE_TYPE,
 } from '@finos/legend-graph';
 import { isDefaultDatePropagationSupported } from '../stores/QueryBuilderMilestoningHelper';
 import { propertyExpression_setParametersValue } from '../stores/QueryBuilderValueSpecificationModifierHelper';
@@ -57,6 +54,7 @@ const DerivedPropertyParameterValueEditor = observer(
     idx: number;
   }) => {
     const { derivedPropertyExpressionState, variable, idx } = props;
+    const parameterValue = derivedPropertyExpressionState.parameterValues[idx];
     const handleDrop = useCallback(
       (item: QueryBuilderParameterDragSource): void => {
         propertyExpression_setParametersValue(
@@ -88,18 +86,6 @@ const DerivedPropertyParameterValueEditor = observer(
       [handleDrop],
     );
     const resetParameterValue = (): void => {
-      const genericType = guaranteeNonNullable(variable.genericType);
-      const primitiveInstanceValue = new PrimitiveInstanceValue(
-        genericType,
-        variable.multiplicity,
-      );
-      if (genericType.value.rawType.name !== PRIMITIVE_TYPE.LATESTDATE) {
-        primitiveInstanceValue.values = [
-          generateDefaultValueForPrimitiveType(
-            genericType.value.rawType.name as PRIMITIVE_TYPE,
-          ),
-        ];
-      }
       if (
         isDefaultDatePropagationSupported(
           derivedPropertyExpressionState,
@@ -110,16 +96,16 @@ const DerivedPropertyParameterValueEditor = observer(
         const graph =
           derivedPropertyExpressionState.queryBuilderState.graphManagerState
             .graph;
-        fillDerivedPropertyArguments(
-          derivedPropertyExpressionState,
-          graph,
-          true,
-        );
+        fillDerivedPropertyArguments(derivedPropertyExpressionState, graph);
       }
       propertyExpression_setParametersValue(
         derivedPropertyExpressionState.propertyExpression,
         idx + 1,
-        primitiveInstanceValue,
+        generateValueSpecificationForParameter(
+          variable,
+          derivedPropertyExpressionState.queryBuilderState.graphManagerState
+            .graph,
+        ),
         derivedPropertyExpressionState.queryBuilderState.observableContext,
       );
     };
@@ -142,19 +128,16 @@ const DerivedPropertyParameterValueEditor = observer(
             </div>
           )}
           <QueryBuilderValueSpecificationEditor
-            valueSpecification={
-              derivedPropertyExpressionState.parameterValues[
-                idx
-              ] as ValueSpecification
-            }
+            valueSpecification={parameterValue as ValueSpecification}
             graph={
               derivedPropertyExpressionState.queryBuilderState.graphManagerState
                 .graph
             }
-            expectedType={guaranteeNonNullable(
-              derivedPropertyExpressionState.parameters[idx]?.genericType
-                ?.ownerReference.value,
-            )}
+            expectedType={
+              parameterValue?.genericType?.value.rawType ??
+              derivedPropertyExpressionState.propertyExpression.func.genericType
+                .value.rawType
+            }
           />
           <button
             className="query-builder-filter-tree__node__action"
@@ -184,13 +167,7 @@ const DerivedPropertyExpressionEditor = observer(
         <div className="panel__content__form__section__header__label">
           {derivedPropertyExpressionState.title}
         </div>
-        {(isDefaultDatePropagationSupported(
-          derivedPropertyExpressionState,
-          derivedPropertyExpressionState.queryBuilderState.graphManagerState
-            .graph,
-        )
-          ? !derivedPropertyExpressionState.parameters.length
-          : !parameterValues.length) && (
+        {!parameterValues.length && (
           <div className="query-builder-property-editor__section__content--empty">
             No parameter
           </div>
