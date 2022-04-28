@@ -77,7 +77,10 @@ import {
 import { V1_LightQuery, V1_Query } from './query/V1_Query';
 import { V1_DatabaseBuilderInput } from './generation/V1_DatabaseBuilderInput';
 import type { V1_ServiceConfigurationInfo } from './service/V1_ServiceConfiguration';
-import { V1_ExecuteInput } from './execution/V1_ExecuteInput';
+import {
+  V1_ExecuteInput,
+  V1_TestDataGenerationExecutionInput,
+} from './execution/V1_ExecuteInput';
 import type { V1_ExecutionPlan } from '../model/executionPlan/V1_ExecutionPlan';
 import {
   type V1_ExecutionResult,
@@ -456,9 +459,11 @@ export class V1_Engine {
     );
   }
 
-  generateMappingTestData(input: V1_ExecuteInput): Promise<string> {
+  generateMappingTestData(
+    input: V1_TestDataGenerationExecutionInput,
+  ): Promise<string> {
     return this.engineServerClient.generateTestDataWithDefaultSeed(
-      V1_ExecuteInput.serialization.toJson(input),
+      V1_TestDataGenerationExecutionInput._serialization.toJson(input),
     );
   }
 

@@ -17,6 +17,7 @@
 import {
   createModelSchema,
   custom,
+  list,
   object,
   optional,
   primitive,
@@ -52,6 +53,28 @@ export class V1_ExecuteInput {
         () => SKIP,
       ),
       context: usingModelSchema(V1_rawBaseExecutionContextModelSchema),
+    }),
+  );
+}
+
+export class V1_TestDataGenerationExecutionInput extends V1_ExecuteInput {
+  parameters: (string | number | boolean)[] = [];
+  hashStrings = false;
+
+  // TODO: rename to serialization once `SerializationFactory` is rewritten to handle polymorphism
+  static _serialization = new SerializationFactory(
+    createModelSchema(V1_TestDataGenerationExecutionInput, {
+      clientVersion: optional(primitive()),
+      function: usingModelSchema(V1_rawLambdaModelSchema),
+      mapping: primitive(),
+      model: object(V1_PureModelContextData),
+      runtime: custom(
+        (val) => V1_serializeRuntime(val),
+        () => SKIP,
+      ),
+      context: usingModelSchema(V1_rawBaseExecutionContextModelSchema),
+      hashStrings: primitive(),
+      parameters: list(primitive()),
     }),
   );
 }

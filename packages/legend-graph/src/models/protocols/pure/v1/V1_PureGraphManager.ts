@@ -126,7 +126,10 @@ import {
 } from './transformation/pureGraph/from/V1_RawValueSpecificationTransformer';
 import { V1_transformRuntime } from './transformation/pureGraph/from/V1_RuntimeTransformer';
 import type { V1_RawLambda } from './model/rawValueSpecification/V1_RawLambda';
-import { V1_ExecuteInput } from './engine/execution/V1_ExecuteInput';
+import {
+  V1_ExecuteInput,
+  V1_TestDataGenerationExecutionInput,
+} from './engine/execution/V1_ExecuteInput';
 import type { V1_PureModelContextGenerationInput } from './engine/import/V1_PureModelContextGenerationInput';
 import { V1_buildValueSpecification } from './transformation/pureGraph/to/helpers/V1_ValueSpecificationBuilderHelper';
 import { V1_transformRootValueSpecification } from './transformation/pureGraph/from/V1_ValueSpecificationTransformer';
@@ -1728,6 +1731,23 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     lambda: RawLambda,
     runtime: Runtime,
     clientVersion: string,
+  ): V1_ExecuteInput =>
+    this.buildExecutionInput(
+      graph,
+      mapping,
+      lambda,
+      runtime,
+      clientVersion,
+      new V1_ExecuteInput(),
+    );
+
+  private buildExecutionInput = (
+    graph: PureModel,
+    mapping: Mapping,
+    lambda: RawLambda,
+    runtime: Runtime,
+    clientVersion: string,
+    executeInput: V1_ExecuteInput,
   ): V1_ExecuteInput => {
     /**
      * NOTE: to lessen network load, we might need to think of a way to only include relevant part of the pure model context data here
@@ -1766,7 +1786,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       .concat(extraExecutionElements);
     // NOTE: for execution, we usually will just assume that we send the connections embedded in the runtime value, since we don't want the user to have to create
     // packageable runtime and connection just to play with execution.
-    const executeInput = new V1_ExecuteInput();
     executeInput.clientVersion = clientVersion;
     executeInput.function = V1_transformRawLambda(
       lambda,
@@ -1814,10 +1833,26 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     lambda: RawLambda,
     runtime: Runtime,
     clientVersion: string,
+    parameters: (string | number | boolean)[],
+    options?: {
+      anonymizeGeneratedData?: boolean;
+    },
   ): Promise<string> {
-    return this.engine.generateMappingTestData(
-      this.createExecutionInput(graph, mapping, lambda, runtime, clientVersion),
+    const testDataGenerationExecuteInput =
+      new V1_TestDataGenerationExecutionInput();
+    this.buildExecutionInput(
+      graph,
+      mapping,
+      lambda,
+      runtime,
+      clientVersion,
+      testDataGenerationExecuteInput,
     );
+    testDataGenerationExecuteInput.parameters = parameters;
+    testDataGenerationExecuteInput.hashStrings = Boolean(
+      options?.anonymizeGeneratedData,
+    );
+    return this.engine.generateMappingTestData(testDataGenerationExecuteInput);
   }
 
   generateExecutionPlan(

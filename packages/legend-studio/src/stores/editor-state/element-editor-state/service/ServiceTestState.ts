@@ -31,6 +31,8 @@ import {
   tryToFormatJSONString,
   createUrlStringFromData,
   ContentType,
+  isNonNullable,
+  guaranteeNonNullable,
 } from '@finos/legend-shared';
 import type { EditorStore } from '../../../EditorStore';
 import {
@@ -39,8 +41,12 @@ import {
   type Runtime,
   type ExecutionResult,
   type Connection,
+  type RawLambda,
+  type ValueSpecification,
+  VariableExpression,
+  Enumeration,
+  PrimitiveType,
   extractExecutionResultValues,
-  GRAPH_MANAGER_EVENT,
   DEPRECATED__TestContainer,
   DEPRECATED__SingleExecutionTest,
   PureSingleExecution,
@@ -66,6 +72,10 @@ import {
   singleExecTest_deleteAssert,
   singleExecTest_setData,
 } from '../../../graphModifier/DSLService_GraphModifierHelper';
+import {
+  createMockEnumerationProperty,
+  createMockPrimitiveProperty,
+} from '../../../shared/MockDataUtil';
 
 interface ServiceTestExecutionResult {
   expected: string;
@@ -398,6 +408,34 @@ export class TestContainerState {
   }
 }
 
+const buildTestDataParameters = (
+  rawLambda: RawLambda,
+  editorStore: EditorStore,
+): (string | number | boolean)[] => {
+  const parameters = ((rawLambda.parameters ?? []) as object[]).map((param) =>
+    editorStore.graphManagerState.graphManager.buildValueSpecification(
+      param as Record<PropertyKey, unknown>,
+      editorStore.graphManagerState.graph,
+    ),
+  );
+  return parameters
+    .filter(
+      (parameter: ValueSpecification): parameter is VariableExpression =>
+        parameter instanceof VariableExpression,
+    )
+    .map((varExpression) => {
+      if (varExpression.multiplicity.lowerBound !== 0) {
+        const type = varExpression.genericType?.value.rawType;
+        if (type instanceof PrimitiveType) {
+          return createMockPrimitiveProperty(type, varExpression.name);
+        } else if (type instanceof Enumeration) {
+          return createMockEnumerationProperty(type);
+        }
+      }
+      return undefined;
+    })
+    .filter(isNonNullable);
+};
 export class SingleExecutionTestState {
   editorStore: EditorStore;
   serviceEditorState: ServiceEditorState;
@@ -405,6 +443,7 @@ export class SingleExecutionTestState {
   selectedTestContainerState?: TestContainerState | undefined;
   isRunningAllTests = false;
   isGeneratingTestData = false;
+  anonymizeGeneratedData = true;
   testSuiteRunError?: Error | undefined;
   testResults: ServiceTestResult[] = [];
   allTestRunTime = 0;
@@ -421,8 +460,10 @@ export class SingleExecutionTestState {
       testSuiteRunError: observable,
       testResults: observable,
       allTestRunTime: observable,
+      anonymizeGeneratedData: observable,
       testSuiteResult: computed,
       setSelectedTestContainerState: action,
+      setAnonymizeGeneratedData: action,
       setTestResults: action,
       addNewTestContainer: action,
       deleteTestContainerState: action,
@@ -452,6 +493,9 @@ export class SingleExecutionTestState {
   }
   setTestResults(assertResults: ServiceTestResult[]): void {
     this.testResults = assertResults;
+  }
+  setAnonymizeGeneratedData(val: boolean): void {
+    this.anonymizeGeneratedData = val;
   }
 
   addNewTestContainer(): void {
@@ -499,39 +543,34 @@ export class SingleExecutionTestState {
   }
 
   *generateTestData(): GeneratorFn<void> {
-    this.isGeneratingTestData = true;
-    // NOTE: here, we attempt to use engine to generate test data.
-    // Once all types of generate data are supported we will move to just using engine
-    let generatedTestData: string | undefined = undefined;
-    const executionInput =
-      this.serviceEditorState.executionState.serviceExecutionParameters;
-    if (executionInput) {
-      try {
-        generatedTestData =
-          (yield this.editorStore.graphManagerState.graphManager.generateMappingTestData(
-            this.editorStore.graphManagerState.graph,
-            executionInput.mapping,
-            executionInput.query,
-            executionInput.runtime,
-            PureClientVersion.VX_X_X,
-          )) as string;
-      } catch (error) {
-        assertErrorThrown(error);
-        this.editorStore.applicationStore.log.error(
-          LogEvent.create(GRAPH_MANAGER_EVENT.EXECUTION_FAILURE),
-          error,
-        );
-      }
-    }
-    if (generatedTestData) {
-      singleExecTest_setData(this.test, generatedTestData);
-    } else {
-      singleExecTest_setData(this.test, '');
-      this.editorStore.applicationStore.notifyError(
-        `Can't auto-generate test data for service`,
+    try {
+      this.isGeneratingTestData = true;
+      // NOTE: here, we attempt to use engine to generate test data.
+      // Once all types of generate data are supported we will move to just using engine
+      const executionInput = guaranteeNonNullable(
+        this.serviceEditorState.executionState.serviceExecutionParameters,
+        'Service execution context (query, mapping, runtime) is needed to generate test data',
       );
+      const generatedTestData =
+        (yield this.editorStore.graphManagerState.graphManager.generateMappingTestData(
+          this.editorStore.graphManagerState.graph,
+          executionInput.mapping,
+          executionInput.query,
+          executionInput.runtime,
+          PureClientVersion.VX_X_X,
+          buildTestDataParameters(executionInput.query, this.editorStore),
+          {
+            anonymizeGeneratedData: this.anonymizeGeneratedData,
+          },
+        )) as string;
+      singleExecTest_setData(this.test, generatedTestData);
+    } catch (error) {
+      assertErrorThrown(error);
+      singleExecTest_setData(this.test, '');
+      this.editorStore.applicationStore.notifyError(error);
+    } finally {
+      this.isGeneratingTestData = false;
     }
-    this.isGeneratingTestData = false;
   }
 
   *runTestSuite(): GeneratorFn<void> {

@@ -17,6 +17,7 @@
 export {
   FaGhost as GhostIcon,
   FaLock as LockIcon,
+  FaMask as MaskIcon,
   FaFile as FileIcon,
   FaLongArrowAltRight as LongArrowRightIcon,
   FaTimes as TimesIcon,

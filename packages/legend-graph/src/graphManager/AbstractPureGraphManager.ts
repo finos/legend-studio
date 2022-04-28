@@ -315,6 +315,11 @@ export abstract class AbstractPureGraphManager {
     lambda: RawLambda,
     runtime: Runtime,
     clientVersion: string,
+    parameters: (string | number | boolean)[],
+    options?: {
+      // Anonymizes data by hashing any string values in the generated data
+      anonymizeGeneratedData?: boolean;
+    },
   ): Promise<string>;
 
   // ------------------------------------------- Service -------------------------------------------

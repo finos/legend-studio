@@ -47,6 +47,7 @@ import {
   InfoCircleIcon,
   MenuContentItem,
   MenuContent,
+  MaskIcon,
 } from '@finos/legend-art';
 import {
   type TestContainerState,
@@ -656,6 +657,10 @@ export const ServiceTestEditor = observer(
     const serviceState = editorStore.getCurrentEditorState(ServiceEditorState);
     const isReadOnly = serviceState.isReadOnly;
     // test data
+    const anonymizeGeneratedData = selectedTestState.anonymizeGeneratedData;
+    const toggleAnonymizeGeneratedData = (): void => {
+      selectedTestState.setAnonymizeGeneratedData(!anonymizeGeneratedData);
+    };
     const updateTestData = (val: string): void =>
       singleExecTest_setData(selectedTest, val);
     const generateTestData = (): void => {
@@ -683,13 +688,42 @@ export const ServiceTestEditor = observer(
                   </div>
                 </div>
                 <div className="panel__header__actions">
+                  <div
+                    className={clsx('panel__content__form__section__toggler', {
+                      'panel__content__form__section__toggler--disabled':
+                        isReadOnly,
+                    })}
+                    onClick={toggleAnonymizeGeneratedData}
+                  >
+                    <button
+                      className={clsx(
+                        'service-execution-editor__test-data__anonymize-btn',
+                        {
+                          'service-execution-editor__test-data__anonymize-btn--active':
+                            anonymizeGeneratedData,
+                        },
+                      )}
+                      disabled={isReadOnly}
+                      tabIndex={-1}
+                      title={`[${
+                        anonymizeGeneratedData ? 'on' : 'off'
+                      }] Anonymize Test Data`}
+                    >
+                      <MaskIcon />
+                    </button>
+                  </div>
                   <button
                     className="panel__header__action service-execution-editor__test-data__generate-btn"
                     onClick={generateTestData}
+                    disabled={selectedTestState.isGeneratingTestData}
                     tabIndex={-1}
-                    title={'Generate test data'}
                   >
-                    <RefreshIcon />
+                    <div className="service-execution-editor__test-data__generate-btn__label">
+                      <RefreshIcon className="service-execution-editor__test-data__generate-btn__label__icon" />
+                      <div className="service-execution-editor__test-data__generate-btn__label__title">
+                        Generate
+                      </div>
+                    </div>
                   </button>
                 </div>
               </div>
