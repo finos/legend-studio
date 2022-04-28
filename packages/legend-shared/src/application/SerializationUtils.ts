@@ -107,10 +107,17 @@ export const serializeArray = <T>(
     INTERNAL__forceReturnEmptyInTest?: boolean;
   },
 ): (T extends object ? PlainObject<T> : T)[] | typeof SKIP => {
-  const forceReturnEmptyInTest =
-    options?.INTERNAL__forceReturnEmptyInTest &&
-    // eslint-disable-next-line no-process-env
-    process.env.TEST_MODE === 'grammar';
+  let forceReturnEmptyInTest = false;
+  // NOTE: this block is meant for test, `webpack` will tree-shake it
+  // so we never reach inside, else we would get error about `process is not defined` as we're
+  // in browser environment
+  // eslint-disable-next-line no-process-env
+  if (process.env.NODE_ENV === 'test') {
+    forceReturnEmptyInTest =
+      Boolean(options?.INTERNAL__forceReturnEmptyInTest) &&
+      // eslint-disable-next-line no-process-env
+      process.env.TEST_MODE === 'grammar';
+  }
   if (Array.isArray(values)) {
     return values.length
       ? values.map((value) => itemSerializer(value))
