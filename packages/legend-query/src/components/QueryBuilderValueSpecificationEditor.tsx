@@ -697,9 +697,7 @@ export const QueryBuilderValueSpecificationEditor: React.FC<{
         className={className}
       />
     );
-  } else if (
-    valueSpecification instanceof INTERNAL__PropagatedValue
-  ) {
+  } else if (valueSpecification instanceof INTERNAL__PropagatedValue) {
     return (
       <QueryBuilderValueSpecificationEditor
         valueSpecification={valueSpecification.getValue()}

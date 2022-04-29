@@ -48,19 +48,330 @@ import {
   observe_AbstractPropertyExpression,
   GenericTypeExplicitReference,
   GenericType,
+  DEFAULT_BUSINESS_DATE_MILESTONING_PARAMETER_NAME,
+  DEFAULT_PROCESSING_DATE_MILESTONING_PARAMETER_NAME,
+  INTERNAL__PropagatedValue,
+  Association,
 } from '@finos/legend-graph';
 import { generateDefaultValueForPrimitiveType } from './QueryBuilderValueSpecificationBuilderHelper';
 import type { QueryBuilderState } from './QueryBuilderState';
 import { SUPPORTED_FUNCTIONS } from '../QueryBuilder_Const';
-import {
-  checkForMilestoningParameterEquality,
-  fillMilestonedDerivedPropertyArguments,
-  getSourceTemporalStereotype,
-} from './QueryBuilderMilestoningHelper';
 import { functionExpression_setParametersValues } from './QueryBuilderValueSpecificationModifierHelper';
+import type { QueryBuilderSetupState } from './QueryBuilderSetupState';
+
+export const getDerivedPropertyMilestoningSteoreotype = (
+  property: DerivedProperty,
+  graph: PureModel,
+): MILESTONING_STEREOTYPE | undefined => {
+  const owner = property.owner;
+  if (owner instanceof Class) {
+    return getMilestoneTemporalStereotype(owner, graph);
+  } else if (owner instanceof Association) {
+    if (owner._generatedMilestonedProperties.length) {
+      const ownerClass =
+        owner._generatedMilestonedProperties[0]?.genericType.value.rawType;
+      return getMilestoneTemporalStereotype(
+        guaranteeType(ownerClass, Class),
+        graph,
+      );
+    }
+  }
+  return undefined;
+};
+
+/**
+ * Checks if the given milestoning needs to overriden or not. We would need to rewrite the query if the user
+ * passes single parameter to the `bitemporal` property expression with `processingtempral` source.
+ */
+const checkForOverridingMilestoningQuery = (
+  derivedPropertyExpressionState: QueryBuilderDerivedPropertyExpressionState,
+  targetStereotype: MILESTONING_STEREOTYPE,
+): boolean => {
+  const sourceStereotype = getDerivedPropertyMilestoningSteoreotype(
+    derivedPropertyExpressionState.derivedProperty,
+    derivedPropertyExpressionState.queryBuilderState.graphManagerState.graph,
+  );
+  if (
+    sourceStereotype === MILESTONING_STEREOTYPE.PROCESSING_TEMPORAL &&
+    targetStereotype === MILESTONING_STEREOTYPE.BITEMPORAL &&
+    derivedPropertyExpressionState.parameterValues.length === 1
+  ) {
+    return true;
+  } else {
+    return false;
+  }
+};
+
+/**
+ * Check if the parameter value of the milestoned property is
+ * the same as those specified in global scope, so that we can
+ * potentially replace them with propgated value.
+ */
+const checkForMilestoningParameterEquality = (
+  stereotype: MILESTONING_STEREOTYPE,
+  idx: number,
+  milestoningParameter: ValueSpecification,
+  querySetupState: QueryBuilderSetupState,
+): boolean => {
+  const checkIfEquivalent = (
+    param1: ValueSpecification | undefined,
+    param2: ValueSpecification | undefined,
+  ): boolean => {
+    if (
+      param1 instanceof VariableExpression &&
+      param2 instanceof VariableExpression
+    ) {
+      return param1.name === param2.name;
+    } else if (
+      param1 instanceof PrimitiveInstanceValue &&
+      param2 instanceof PrimitiveInstanceValue
+    ) {
+      if (
+        param1.genericType.value.rawType.name === PRIMITIVE_TYPE.LATESTDATE &&
+        param2.genericType.value.rawType.name === PRIMITIVE_TYPE.LATESTDATE
+      ) {
+        return true;
+      } else if (
+        param1.genericType.value.rawType.name ===
+        param2.genericType.value.rawType.name
+      ) {
+        return param1.values[0] === param2.values[0];
+      }
+      return false;
+    }
+    return false;
+  };
+  switch (stereotype) {
+    case MILESTONING_STEREOTYPE.BITEMPORAL:
+      if (
+        idx === 0 &&
+        checkIfEquivalent(milestoningParameter, querySetupState.processingDate)
+      ) {
+        return true;
+      } else if (
+        idx === 1 &&
+        checkIfEquivalent(milestoningParameter, querySetupState.businessDate)
+      ) {
+        return true;
+      } else {
+        return false;
+      }
+    case MILESTONING_STEREOTYPE.PROCESSING_TEMPORAL:
+      if (
+        checkIfEquivalent(milestoningParameter, querySetupState.processingDate)
+      ) {
+        return true;
+      } else {
+        return false;
+      }
+    case MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL:
+      if (
+        checkIfEquivalent(milestoningParameter, querySetupState.businessDate)
+      ) {
+        return true;
+      } else {
+        return false;
+      }
+    default:
+  }
+  return false;
+};
+
+export const isDefaultDatePropagationSupported = (
+  currentPropertyExpression: AbstractPropertyExpression,
+  queryBuilderState: QueryBuilderState,
+  prevPropertyExpression?: AbstractPropertyExpression | undefined,
+): boolean => {
+  const property = currentPropertyExpression.func;
+  const graph = queryBuilderState.graphManagerState.graph;
+  if (
+    prevPropertyExpression &&
+    prevPropertyExpression.func.genericType.value.rawType instanceof Class
+  ) {
+    const milestoningStereotype = getMilestoneTemporalStereotype(
+      prevPropertyExpression.func.genericType.value.rawType,
+      graph,
+    );
+    if (
+      milestoningStereotype &&
+      !prevPropertyExpression.parametersValues
+        .slice(1)
+        .every(
+          (parameterValue) =>
+            parameterValue instanceof INTERNAL__PropagatedValue,
+        )
+    ) {
+      return false;
+    }
+  }
+  if (property.genericType.value.rawType instanceof Class) {
+    // sourceStereotype: Stereotype of source class of current property expression.
+    const sourceStereotype =
+      property instanceof DerivedProperty
+        ? getDerivedPropertyMilestoningSteoreotype(property, graph)
+        : undefined;
+    if (sourceStereotype === MILESTONING_STEREOTYPE.BITEMPORAL) {
+      return true;
+    }
+
+    // targetStereotype: Stereotype (if exists) of genericType of current property expression.
+    const targetStereotype = getMilestoneTemporalStereotype(
+      property.genericType.value.rawType,
+      graph,
+    );
+    return sourceStereotype === targetStereotype;
+  }
+  return false;
+};
 
 export const prettyPropertyName = (value: string): string =>
   isCamelCase(value) ? prettyCamelCase(value) : prettyCONSTName(value);
+
+/**
+ * Propagates default dates for milestoned properties when date propagation is not supported by engine.
+ */
+const generateMilestonedPropertyParameterValue = (
+  derivedPropertyExpressionState: QueryBuilderDerivedPropertyExpressionState,
+  idx: number,
+): ValueSpecification | undefined => {
+  const querySetupState =
+    derivedPropertyExpressionState.queryBuilderState.querySetupState;
+  const temporalSource = getDerivedPropertyMilestoningSteoreotype(
+    derivedPropertyExpressionState.derivedProperty,
+    derivedPropertyExpressionState.queryBuilderState.graphManagerState.graph,
+  );
+  let temporalTarget: MILESTONING_STEREOTYPE | undefined;
+  if (
+    derivedPropertyExpressionState.propertyExpression.func.genericType.value
+      .rawType instanceof Class &&
+    derivedPropertyExpressionState.propertyExpression.func.owner
+      ._generatedMilestonedProperties.length !== 0
+  ) {
+    temporalTarget = getMilestoneTemporalStereotype(
+      derivedPropertyExpressionState.propertyExpression.func.genericType.value
+        .rawType,
+      derivedPropertyExpressionState.queryBuilderState.graphManagerState.graph,
+    );
+  }
+  const checkForReturningMilestoningParameter = (): boolean => {
+    if (
+      temporalTarget &&
+      ((idx < derivedPropertyExpressionState.parameterValues.length &&
+        (checkForMilestoningParameterEquality(
+          temporalTarget,
+          idx,
+          guaranteeNonNullable(
+            derivedPropertyExpressionState.parameterValues[idx],
+          ),
+          derivedPropertyExpressionState.queryBuilderState.querySetupState,
+        ) ||
+          checkForOverridingMilestoningQuery(
+            derivedPropertyExpressionState,
+            temporalTarget,
+          ))) ||
+        idx >= derivedPropertyExpressionState.parameterValues.length)
+    ) {
+      return true;
+    } else {
+      return false;
+    }
+  };
+  switch (temporalTarget) {
+    case MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL: {
+      if (!querySetupState.businessDate) {
+        querySetupState.setBusinessDate(
+          derivedPropertyExpressionState.queryBuilderState.buildMilestoningParameter(
+            DEFAULT_BUSINESS_DATE_MILESTONING_PARAMETER_NAME,
+          ),
+        );
+      }
+      const parameter = new INTERNAL__PropagatedValue(
+        derivedPropertyExpressionState.queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
+          TYPICAL_MULTIPLICITY_TYPE.ONE,
+        ),
+      );
+      parameter.getValue = (): ValueSpecification =>
+        guaranteeNonNullable(querySetupState.businessDate);
+      if (checkForReturningMilestoningParameter()) {
+        return parameter;
+      } else {
+        return undefined;
+      }
+    }
+    case MILESTONING_STEREOTYPE.BITEMPORAL: {
+      if (!querySetupState.processingDate) {
+        querySetupState.setProcessingDate(
+          derivedPropertyExpressionState.queryBuilderState.buildMilestoningParameter(
+            DEFAULT_PROCESSING_DATE_MILESTONING_PARAMETER_NAME,
+          ),
+        );
+      }
+      if (!querySetupState.businessDate) {
+        querySetupState.setBusinessDate(
+          derivedPropertyExpressionState.queryBuilderState.buildMilestoningParameter(
+            DEFAULT_BUSINESS_DATE_MILESTONING_PARAMETER_NAME,
+          ),
+        );
+      }
+      if (idx === 0) {
+        const parameter = new INTERNAL__PropagatedValue(
+          derivedPropertyExpressionState.queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
+            TYPICAL_MULTIPLICITY_TYPE.ONE,
+          ),
+        );
+        parameter.getValue = (): ValueSpecification =>
+          guaranteeNonNullable(querySetupState.processingDate);
+        if (checkForReturningMilestoningParameter()) {
+          return parameter;
+        } else {
+          return undefined;
+        }
+      } else {
+        if (
+          temporalSource === MILESTONING_STEREOTYPE.PROCESSING_TEMPORAL &&
+          derivedPropertyExpressionState.parameterValues.length === 1
+        ) {
+          return derivedPropertyExpressionState.parameterValues[0];
+        }
+        const parameter = new INTERNAL__PropagatedValue(
+          derivedPropertyExpressionState.queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
+            TYPICAL_MULTIPLICITY_TYPE.ONE,
+          ),
+        );
+        parameter.getValue = (): ValueSpecification =>
+          guaranteeNonNullable(querySetupState.businessDate);
+        if (checkForReturningMilestoningParameter()) {
+          return parameter;
+        } else {
+          return undefined;
+        }
+      }
+    }
+    case MILESTONING_STEREOTYPE.PROCESSING_TEMPORAL: {
+      if (!querySetupState.processingDate) {
+        querySetupState.setProcessingDate(
+          derivedPropertyExpressionState.queryBuilderState.buildMilestoningParameter(
+            DEFAULT_PROCESSING_DATE_MILESTONING_PARAMETER_NAME,
+          ),
+        );
+      }
+      const parameter = new INTERNAL__PropagatedValue(
+        derivedPropertyExpressionState.queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
+          TYPICAL_MULTIPLICITY_TYPE.ONE,
+        ),
+      );
+      parameter.getValue = (): ValueSpecification =>
+        guaranteeNonNullable(querySetupState.processingDate);
+      if (checkForReturningMilestoningParameter()) {
+        return parameter;
+      } else {
+        return undefined;
+      }
+    }
+    default:
+      return undefined;
+  }
+};
 
 export const getPropertyChainName = (
   propertyExpression: AbstractPropertyExpression,
@@ -187,101 +498,45 @@ export const generateValueSpecificationForParameter = (
   );
 };
 
-
-export const fillDerivedPropertyArguments = (
+export const fillDerivedPropertyParameterValues = (
   derivedPropertyExpressionState: QueryBuilderDerivedPropertyExpressionState,
-  graph: PureModel,
 ): void => {
-  let propertyArguments: ValueSpecification[] =
+  const parameterValues: ValueSpecification[] =
     derivedPropertyExpressionState.parameterValues;
-  let parameterValues: ValueSpecification[] = [];
-  let temporalTarget: MILESTONING_STEREOTYPE | undefined;
-  if (
-    derivedPropertyExpressionState.propertyExpression.func.genericType.value
-      .rawType instanceof Class &&
-    derivedPropertyExpressionState.propertyExpression.func.owner
-      ._generatedMilestonedProperties.length !== 0
-  ) {
-    temporalTarget = getMilestoneTemporalStereotype(
-      derivedPropertyExpressionState.propertyExpression.func.genericType.value
-        .rawType,
-      derivedPropertyExpressionState.queryBuilderState.graphManagerState.graph,
-    );
-  }
-  const temporalSource = getSourceTemporalStereotype(
-    derivedPropertyExpressionState.derivedProperty,
-    derivedPropertyExpressionState.queryBuilderState.graphManagerState.graph,
-  );
-  if (
-    temporalSource === MILESTONING_STEREOTYPE.PROCESSING_TEMPORAL &&
-    temporalTarget === MILESTONING_STEREOTYPE.BITEMPORAL &&
-    propertyArguments.length === 1
-  ) {
-    parameterValues = propertyArguments;
-    propertyArguments = [];
-  }
   derivedPropertyExpressionState.parameters.forEach((parameter, idx) => {
     if (idx < derivedPropertyExpressionState.parameterValues.length) {
-      if (temporalTarget) {
-        const milestoningParameter = fillMilestonedDerivedPropertyArguments(
-          derivedPropertyExpressionState,
-          temporalTarget,
-          idx,
-        );
-        // Changes the `valueSpecification` to `INTERNAL__PropagatedValue` only if the parameter value
-        // matches with the corresponding `businessDate` or `processingDate`
-        if (
-          milestoningParameter &&
-          checkForMilestoningParameterEquality(
-            temporalTarget,
-            idx,
-            guaranteeNonNullable(propertyArguments[idx]),
-            derivedPropertyExpressionState.queryBuilderState.querySetupState,
-          )
-        ) {
-          propertyArguments[idx] = milestoningParameter;
-        }
+      const milestoningParameter = generateMilestonedPropertyParameterValue(
+        derivedPropertyExpressionState,
+        idx,
+      );
+      // Changes the `valueSpecification` to `INTERNAL__PropagatedValue` only if the parameter value
+      // matches with the corresponding `businessDate` or `processingDate`
+      // NOTE: This will rewrite provided query as in if people explicitly specify the values, we will remove them.
+      if (milestoningParameter) {
+        parameterValues[idx] = milestoningParameter;
       }
       return;
     }
-    if (temporalTarget) {
-      const milestoningParameter = fillMilestonedDerivedPropertyArguments(
+    const parameterValue =
+      generateMilestonedPropertyParameterValue(
         derivedPropertyExpressionState,
-        temporalTarget,
         idx,
+      ) ??
+      generateValueSpecificationForParameter(
+        parameter,
+        derivedPropertyExpressionState.queryBuilderState.graphManagerState
+          .graph,
       );
-      if (milestoningParameter) {
-        propertyArguments.push(milestoningParameter);
-      }
-    } else {
-      propertyArguments.push(
-        generateValueSpecificationForParameter(
-          parameter,
-          derivedPropertyExpressionState.queryBuilderState.graphManagerState.graph,
-        ),
-      );
-    }
+
+    parameterValues.push(parameterValue);
   });
-  if (
-    temporalSource === MILESTONING_STEREOTYPE.PROCESSING_TEMPORAL &&
-    temporalTarget === MILESTONING_STEREOTYPE.BITEMPORAL &&
-    parameterValues.length
-  ) {
-    propertyArguments = [
-      guaranteeNonNullable(
-        derivedPropertyExpressionState.queryBuilderState.querySetupState
-          ._processingDate,
-      ),
-      guaranteeNonNullable(parameterValues[0]),
-    ];
-  }
   functionExpression_setParametersValues(
     derivedPropertyExpressionState.propertyExpression,
     [
       guaranteeNonNullable(
         derivedPropertyExpressionState.propertyExpression.parametersValues[0],
       ),
-      ...propertyArguments,
+      ...parameterValues,
     ],
     derivedPropertyExpressionState.queryBuilderState.observableContext,
   );
@@ -322,10 +577,7 @@ export class QueryBuilderDerivedPropertyExpressionState {
         ),
       );
     }
-    fillDerivedPropertyArguments(
-      this,
-      queryBuilderState.graphManagerState.graph,
-    );
+    fillDerivedPropertyParameterValues(this);
   }
 
   get property(): AbstractProperty {

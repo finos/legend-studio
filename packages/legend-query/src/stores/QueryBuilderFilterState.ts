@@ -55,7 +55,6 @@ import {
   fromGroupOperation,
   QUERY_BUILDER_GROUP_OPERATION,
 } from './QueryBuilderOperatorsHelper';
-import { decoratePropertyExpressionStatesForMilestonedProperties } from './QueryBuilderMilestoningHelper';
 
 export abstract class QueryBuilderFilterOperator {
   uuid = uuid();
@@ -314,9 +313,6 @@ const buildFilterConditionExpression = (
   node: QueryBuilderFilterTreeNodeData,
 ): ValueSpecification | undefined => {
   if (node instanceof QueryBuilderFilterTreeConditionNodeData) {
-    decoratePropertyExpressionStatesForMilestonedProperties(
-      node.condition.propertyExpressionState.derivedPropertyExpressionStates,
-    );
     return node.condition.operator.buildFilterConditionExpression(
       node.condition,
     );

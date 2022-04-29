@@ -37,6 +37,7 @@ import {
 } from '../QueryBuilderFilterState';
 import { SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
 import { buildGenericLambdaFunctionInstanceValue } from '../QueryBuilderValueSpecificationBuilderHelper';
+import { buildPropertyExpressionChain } from '../QueryBuilderLambdaBuilder';
 
 const getPropertyExpressionChainVariable = (
   propertyExpression: AbstractPropertyExpression,
@@ -230,9 +231,11 @@ export const buildFilterConditionExpression = (
     extractElementNameFromPath(operatorFunctionFullPath),
     multiplicityOne,
   );
-  expression.parametersValues.push(
+  const propertyExpression = buildPropertyExpressionChain(
     filterConditionState.propertyExpressionState.propertyExpression,
+    filterConditionState.propertyExpressionState.queryBuilderState,
   );
+  expression.parametersValues.push(guaranteeNonNullable(propertyExpression));
   // NOTE: there are simple operators which do not require any params (e.g. isEmpty)
   if (filterConditionState.value) {
     expression.parametersValues.push(filterConditionState.value);

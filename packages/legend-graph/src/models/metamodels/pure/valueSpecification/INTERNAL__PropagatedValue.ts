@@ -19,6 +19,11 @@ import {
   type ValueSpecificationVisitor,
 } from './ValueSpecification';
 
+/**
+ * This value specification maintains a reference to another value specification
+ *
+ * @internal This type is specific to Studio only, not a standard, recognizeable in Pure/engine.
+ */
 export class INTERNAL__PropagatedValue extends ValueSpecification {
   getValue!: () => ValueSpecification;
 

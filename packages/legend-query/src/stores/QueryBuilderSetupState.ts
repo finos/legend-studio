@@ -46,14 +46,14 @@ export class QueryBuilderSetupState {
   showSetupPanel = true;
 
   // TODO: Change this when we modify how we deal with milestoning.
-  _businessDate: ValueSpecification | undefined;
-  _processingDate: ValueSpecification | undefined;
+  businessDate?: ValueSpecification | undefined;
+  processingDate?: ValueSpecification | undefined;
 
   constructor(queryBuilderState: QueryBuilderState) {
     makeAutoObservable(this, {
       queryBuilderState: false,
-      _processingDate: observable,
-      _businessDate: observable,
+      processingDate: observable,
+      businessDate: observable,
       setQueryBuilderState: action,
       setClass: action,
       setMapping: action,
@@ -194,7 +194,7 @@ export class QueryBuilderSetupState {
   }
 
   setProcessingDate(val: ValueSpecification | undefined): void {
-    this._processingDate = val
+    this.processingDate = val
       ? observe_ValueSpecification(
           val,
           this.queryBuilderState.observableContext,
@@ -203,7 +203,7 @@ export class QueryBuilderSetupState {
   }
 
   setBusinessDate(val: ValueSpecification | undefined): void {
-    this._businessDate = val
+    this.businessDate = val
       ? observe_ValueSpecification(
           val,
           this.queryBuilderState.observableContext,

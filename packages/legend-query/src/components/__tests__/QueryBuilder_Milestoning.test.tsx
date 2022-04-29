@@ -93,13 +93,13 @@ test(
       projectionColumnState.propertyExpressionState
         .derivedPropertyExpressionStates;
 
-    //property replaced with derived property as it is milestoned
+    // property replaced with derived property as it is milestoned
     expect(derivedPropertyExpressionStates.length).toBe(1);
     const parameterValues = guaranteeNonNullable(
       derivedPropertyExpressionStates[0]?.propertyExpression.parametersValues,
     );
 
-    //default milestoning date is propagated as date propagation is not supported.
+    // default milestoning date is propagated as date propagation is not supported.
     expect(parameterValues.length).toBe(2);
   },
 );
@@ -146,14 +146,14 @@ test(
       projectionColumnState.propertyExpressionState
         .derivedPropertyExpressionStates;
 
-    //property replaced with derived property as it is milestoned
+    // property replaced with derived property as it is milestoned
     expect(derivedPropertyExpressionStates.length).toBe(1);
     const parameterValues = guaranteeNonNullable(
       derivedPropertyExpressionStates[0]?.propertyExpression.parametersValues,
     );
 
-    //default milestoning date is not propagated as date propagation is supported.
-    expect(parameterValues.length).toBe(1);
+    // default milestoning date is propagated.
+    expect(parameterValues.length).toBe(2);
   },
 );
 
@@ -199,13 +199,13 @@ test(
       projectionColumnState.propertyExpressionState
         .derivedPropertyExpressionStates;
 
-    //property replaced with derived property as it is milestoned
+    // property replaced with derived property as it is milestoned
     expect(derivedPropertyExpressionStates.length).toBe(1);
     const parameterValues = guaranteeNonNullable(
       derivedPropertyExpressionStates[0]?.propertyExpression.parametersValues,
     );
 
-    //default milestoning date is propagated as date propagation is not supported.
+    // default milestoning date is propagated as date propagation is not supported.
     expect(parameterValues.length).toBe(3);
   },
 );
@@ -252,14 +252,14 @@ test(
       projectionColumnState.propertyExpressionState
         .derivedPropertyExpressionStates;
 
-    //property replaced with derived property as it is milestoned
+    // property replaced with derived property as it is milestoned
     expect(derivedPropertyExpressionStates.length).toBe(1);
     const parameterValues = guaranteeNonNullable(
       derivedPropertyExpressionStates[0]?.propertyExpression.parametersValues,
     );
 
-    //default milestoning date is not propagated as date propagation is supported.
-    expect(parameterValues.length).toBe(1);
+    // default milestoning date is propagated.
+    expect(parameterValues.length).toBe(3);
   },
 );
 
@@ -305,14 +305,14 @@ test(
       projectionColumnState.propertyExpressionState
         .derivedPropertyExpressionStates;
 
-    //property replaced with derived property as it is milestoned
+    // property replaced with derived property as it is milestoned
     expect(derivedPropertyExpressionStates.length).toBe(1);
     const parameterValues = guaranteeNonNullable(
       derivedPropertyExpressionStates[0]?.propertyExpression.parametersValues,
     );
 
-    //default milestoning date is not propagated as date propagation is supported.
-    expect(parameterValues.length).toBe(1);
+    //default milestoning date is propagated.
+    expect(parameterValues.length).toBe(2);
   },
 );
 
@@ -358,14 +358,14 @@ test(
       projectionColumnState.propertyExpressionState
         .derivedPropertyExpressionStates;
 
-    //property replaced with derived property as it is milestoned
+    // property replaced with derived property as it is milestoned
     expect(derivedPropertyExpressionStates.length).toBe(1);
     const parameterValues = guaranteeNonNullable(
       derivedPropertyExpressionStates[0]?.propertyExpression.parametersValues,
     );
 
-    //default milestoning date is not propagated as date propagation is supported.
-    expect(parameterValues.length).toBe(1);
+    //default milestoning date is propagated.
+    expect(parameterValues.length).toBe(2);
   },
 );
 
@@ -411,13 +411,13 @@ test(
       projectionColumnState.propertyExpressionState
         .derivedPropertyExpressionStates;
 
-    //property replaced with derived property as it is milestoned
+    // property replaced with derived property as it is milestoned
     expect(derivedPropertyExpressionStates.length).toBe(1);
     const parameterValues = guaranteeNonNullable(
       derivedPropertyExpressionStates[0]?.propertyExpression.parametersValues,
     );
 
-    //default milestoning date is propagated as date propagation is not supported.
+    // default milestoning date is propagated as date propagation is not supported.
     expect(parameterValues.length).toBe(3);
   },
 );
@@ -464,13 +464,13 @@ test(
       projectionColumnState.propertyExpressionState
         .derivedPropertyExpressionStates;
 
-    //property replaced with derived property as it is milestoned
+    // property replaced with derived property as it is milestoned
     expect(derivedPropertyExpressionStates.length).toBe(1);
     const parameterValues = guaranteeNonNullable(
       derivedPropertyExpressionStates[0]?.propertyExpression.parametersValues,
     );
 
-    //default milestoning date is propagated as date propagation is not supported.
+    // default milestoning date is propagated as date propagation is not supported.
     expect(parameterValues.length).toBe(2);
   },
 );
@@ -517,14 +517,14 @@ test(
       projectionColumnState.propertyExpressionState
         .derivedPropertyExpressionStates;
 
-    //property replaced with derived property as it is milestoned
+    // property replaced with derived property as it is milestoned
     expect(derivedPropertyExpressionStates.length).toBe(1);
     const parameterValues = guaranteeNonNullable(
       derivedPropertyExpressionStates[0]?.propertyExpression.parametersValues,
     );
 
-    //default milestoning date is not propagated as date propagation is supported.
-    expect(parameterValues.length).toBe(1);
+    // default milestoning date is not propagated as date propagation is supported.
+    expect(parameterValues.length).toBe(2);
   },
 );
 
@@ -570,13 +570,13 @@ test(
       projectionColumnState.propertyExpressionState
         .derivedPropertyExpressionStates;
 
-    //property replaced with derived property as it is milestoned
+    // property replaced with derived property as it is milestoned
     expect(derivedPropertyExpressionStates.length).toBe(1);
     const parameterValues = guaranteeNonNullable(
       derivedPropertyExpressionStates[0]?.propertyExpression.parametersValues,
     );
 
-    //default milestoning date is propagated as date propagation is not supported.
+    // default milestoning date is propagated as date propagation is not supported.
     expect(parameterValues.length).toBe(2);
   },
 );
@@ -623,13 +623,13 @@ test(
       projectionColumnState.propertyExpressionState
         .derivedPropertyExpressionStates;
 
-    //property replaced with derived property as it is milestoned
+    // property replaced with derived property as it is milestoned
     expect(derivedPropertyExpressionStates.length).toBe(1);
     const parameterValues = guaranteeNonNullable(
       derivedPropertyExpressionStates[0]?.propertyExpression.parametersValues,
     );
 
-    //default milestoning date is propagated as date propagation is not supported.
+    // default milestoning date is propagated as date propagation is not supported.
     expect(parameterValues.length).toBe(2);
   },
 );
@@ -676,13 +676,13 @@ test(
       projectionColumnState.propertyExpressionState
         .derivedPropertyExpressionStates;
 
-    //property replaced with derived property as it is milestoned
+    // property replaced with derived property as it is milestoned
     expect(derivedPropertyExpressionStates.length).toBe(1);
     const parameterValues = guaranteeNonNullable(
       derivedPropertyExpressionStates[0]?.propertyExpression.parametersValues,
     );
 
-    //default milestoning date is propagated as date propagation is not supported.
+    // default milestoning date is propagated as date propagation is not supported.
     expect(parameterValues.length).toBe(3);
   },
 );

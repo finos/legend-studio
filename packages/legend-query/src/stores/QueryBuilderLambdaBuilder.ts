@@ -16,7 +16,9 @@
 
 import {
   assertTrue,
+  getNullableFirstElement,
   guaranteeNonNullable,
+  guaranteeType,
   isNonNullable,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
@@ -44,6 +46,10 @@ import {
   SimpleFunctionExpression,
   TYPICAL_MULTIPLICITY_TYPE,
   MILESTONING_STEREOTYPE,
+  AbstractPropertyExpression,
+  DerivedProperty,
+  INTERNAL__PropagatedValue,
+  matchFunctionName,
 } from '@finos/legend-graph';
 import { isGraphFetchTreeDataEmpty } from './QueryBuilderGraphFetchTreeUtil';
 import type { QueryBuilderState } from './QueryBuilderState';
@@ -61,7 +67,11 @@ import {
   QueryBuilderPostFilterTreeGroupNodeData,
 } from './QueryBuilderPostFilterState';
 import { fromGroupOperation } from './QueryBuilderOperatorsHelper';
-import { decoratePropertyExpressionStatesForMilestonedProperties } from './QueryBuilderMilestoningHelper';
+import {
+  functionExpression_setParametersValues,
+  propertyExpression_setParametersValue,
+} from './QueryBuilderValueSpecificationModifierHelper';
+import { isDefaultDatePropagationSupported } from './QueryBuilderPropertyEditorState';
 
 export const buildGetAllFunction = (
   _class: Class,
@@ -211,6 +221,86 @@ export const processPostFilterOnLambda = (
   return lambda;
 };
 
+export const buildPropertyExpressionChain = (
+  propertyExpression: AbstractPropertyExpression,
+  queryBuilderState: QueryBuilderState,
+): ValueSpecification => {
+  const graph = queryBuilderState.graphManagerState.graph;
+  const newPropertyExpression = new AbstractPropertyExpression(
+    '',
+    graph.getTypicalMultiplicity(TYPICAL_MULTIPLICITY_TYPE.ONE),
+  );
+  newPropertyExpression.func = propertyExpression.func;
+  newPropertyExpression.parametersValues = propertyExpression.parametersValues;
+
+  let nextExpression: ValueSpecification | undefined;
+  let currentExpression: ValueSpecification | undefined = newPropertyExpression;
+  while (currentExpression instanceof AbstractPropertyExpression) {
+    nextExpression = getNullableFirstElement(
+      currentExpression.parametersValues,
+    );
+    if (nextExpression instanceof AbstractPropertyExpression) {
+      const parameterValue = new AbstractPropertyExpression(
+        '',
+        graph.getTypicalMultiplicity(TYPICAL_MULTIPLICITY_TYPE.ONE),
+      );
+      parameterValue.func = nextExpression.func;
+      parameterValue.parametersValues = nextExpression.parametersValues;
+      nextExpression = parameterValue;
+      currentExpression.parametersValues[0] = parameterValue;
+    }
+    if (currentExpression.func instanceof DerivedProperty) {
+      const parameterValues = currentExpression.parametersValues.slice(1);
+      parameterValues.forEach((parameterValue, index) => {
+        if (parameterValue instanceof INTERNAL__PropagatedValue) {
+          if (
+            isDefaultDatePropagationSupported(
+              guaranteeType(currentExpression, AbstractPropertyExpression),
+              queryBuilderState,
+              nextExpression instanceof AbstractPropertyExpression
+                ? nextExpression
+                : undefined,
+            )
+          ) {
+            functionExpression_setParametersValues(
+              guaranteeType(currentExpression, AbstractPropertyExpression),
+              [
+                guaranteeNonNullable(
+                  guaranteeType(currentExpression, AbstractPropertyExpression)
+                    .parametersValues[0],
+                ),
+              ],
+              queryBuilderState.observableContext,
+            );
+          } else {
+            propertyExpression_setParametersValue(
+              guaranteeType(currentExpression, AbstractPropertyExpression),
+              index + 1,
+              parameterValue.getValue(),
+              queryBuilderState.observableContext,
+            );
+          }
+        }
+      });
+    }
+    currentExpression = nextExpression;
+    // Take care of chains of subtype (a pattern that is not useful, but we want to support and rectify)
+    // $x.employees->subType(@Person)->subType(@Staff)
+    while (
+      currentExpression instanceof SimpleFunctionExpression &&
+      matchFunctionName(
+        currentExpression.functionName,
+        SUPPORTED_FUNCTIONS.SUBTYPE,
+      )
+    ) {
+      currentExpression = getNullableFirstElement(
+        currentExpression.parametersValues,
+      );
+    }
+  }
+  return newPropertyExpression;
+};
+
 export const buildLambdaFunction = (
   queryBuilderState: QueryBuilderState,
   options?: {
@@ -253,7 +343,7 @@ export const buildLambdaFunction = (
       case MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL: {
         getAllFunction.parametersValues.push(
           guaranteeNonNullable(
-            queryBuilderState.querySetupState._businessDate,
+            queryBuilderState.querySetupState.businessDate,
             `Milestoning class should have a parameter of type 'Date'`,
           ),
         );
@@ -262,7 +352,7 @@ export const buildLambdaFunction = (
       case MILESTONING_STEREOTYPE.PROCESSING_TEMPORAL: {
         getAllFunction.parametersValues.push(
           guaranteeNonNullable(
-            queryBuilderState.querySetupState._processingDate,
+            queryBuilderState.querySetupState.processingDate,
             `Milestoning class should have a parameter of type 'Date'`,
           ),
         );
@@ -271,13 +361,13 @@ export const buildLambdaFunction = (
       case MILESTONING_STEREOTYPE.BITEMPORAL: {
         getAllFunction.parametersValues.push(
           guaranteeNonNullable(
-            queryBuilderState.querySetupState._processingDate,
+            queryBuilderState.querySetupState.processingDate,
             `Milestoning class should have a parameter of type 'Date'`,
           ),
         );
         getAllFunction.parametersValues.push(
           guaranteeNonNullable(
-            queryBuilderState.querySetupState._businessDate,
+            queryBuilderState.querySetupState.businessDate,
             `Milestoning class should have a parameter of type 'Date'`,
           ),
         );
@@ -353,16 +443,13 @@ export const buildLambdaFunction = (
             projectionColumnState instanceof
             QueryBuilderSimpleProjectionColumnState
           ) {
-            decoratePropertyExpressionStatesForMilestonedProperties(
-              projectionColumnState.propertyExpressionState
-                .derivedPropertyExpressionStates,
+            const propertyExpression = buildPropertyExpressionChain(
+              projectionColumnState.propertyExpressionState.propertyExpression,
+              projectionColumnState.propertyExpressionState.queryBuilderState,
             );
             columnLambda = buildGenericLambdaFunctionInstanceValue(
               projectionColumnState.lambdaParameterName,
-              [
-                projectionColumnState.propertyExpressionState
-                  .propertyExpression,
-              ],
+              [guaranteeNonNullable(propertyExpression)],
               queryBuilderState.graphManagerState.graph,
             );
           } else if (
@@ -462,16 +549,13 @@ export const buildLambdaFunction = (
             projectionColumnState instanceof
             QueryBuilderSimpleProjectionColumnState
           ) {
-            decoratePropertyExpressionStatesForMilestonedProperties(
-              projectionColumnState.propertyExpressionState
-                .derivedPropertyExpressionStates,
+            const propertyExpression = buildPropertyExpressionChain(
+              projectionColumnState.propertyExpressionState.propertyExpression,
+              projectionColumnState.propertyExpressionState.queryBuilderState,
             );
             columnLambda = buildGenericLambdaFunctionInstanceValue(
               projectionColumnState.lambdaParameterName,
-              [
-                projectionColumnState.propertyExpressionState
-                  .propertyExpression,
-              ],
+              [guaranteeNonNullable(propertyExpression)],
               queryBuilderState.graphManagerState.graph,
             );
           } else if (

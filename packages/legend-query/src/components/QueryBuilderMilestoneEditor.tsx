@@ -81,11 +81,11 @@ const MilestoningParameterEditor = observer(
     let milestoningParameter;
     if (stereotype === MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL) {
       milestoningParameter = guaranteeNonNullable(
-        queryBuilderState.querySetupState._businessDate,
+        queryBuilderState.querySetupState.businessDate,
       );
     } else {
       milestoningParameter = guaranteeNonNullable(
-        queryBuilderState.querySetupState._processingDate,
+        queryBuilderState.querySetupState.processingDate,
       );
     }
     const resetMilestoningParameter = (): void => {
@@ -213,15 +213,15 @@ const TemporalMilestoneEditor: React.FC<{
   const { queryBuilderState } = props;
 
   if (
-    queryBuilderState.querySetupState._processingDate &&
-    queryBuilderState.querySetupState._businessDate
+    queryBuilderState.querySetupState.processingDate &&
+    queryBuilderState.querySetupState.businessDate
   ) {
     return <BiTemporalMilestoneEditor queryBuilderState={queryBuilderState} />;
-  } else if (queryBuilderState.querySetupState._businessDate) {
+  } else if (queryBuilderState.querySetupState.businessDate) {
     return (
       <BusinessTemporalMilestoneEditor queryBuilderState={queryBuilderState} />
     );
-  } else if (queryBuilderState.querySetupState._processingDate) {
+  } else if (queryBuilderState.querySetupState.processingDate) {
     return (
       <ProcessingTemporalMilestoneEditor
         queryBuilderState={queryBuilderState}

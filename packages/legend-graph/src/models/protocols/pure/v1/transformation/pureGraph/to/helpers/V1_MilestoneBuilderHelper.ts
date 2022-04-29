@@ -52,8 +52,10 @@ const buildMilestoningParameter = (
   return json;
 };
 
-// Builds abstract properties `allVersions`, `allVersionsInRange` and derived property with date parameter
-// while processing the milestoning properties of a class or association.
+/**
+ * Builds abstract properties `allVersions`, `allVersionsInRange` and derived property with date parameter
+ * while processing the milestoning properties of a class or association.
+ */
 export const V1_buildMilestoningProperties = (
   propertyOwner: PropertyOwner,
   graph: PureModel,
