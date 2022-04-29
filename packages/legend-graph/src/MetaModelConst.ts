@@ -26,6 +26,7 @@ export const VARIABLE_REFERENCE_TOKEN = '$';
 export const TYPE_CAST_TOKEN = '@';
 export const ARROW_FUNCTION_TOKEN = '->';
 export const LATEST_DATE = '%latest';
+export const PARSER_SECTION_MARKER = '###';
 
 export const RESERVERD_PACKAGE_NAMES = ['$implicit'];
 

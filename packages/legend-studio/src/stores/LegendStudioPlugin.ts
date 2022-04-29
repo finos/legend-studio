@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { AbstractPlugin } from '@finos/legend-shared';
 import type { LegendStudioPluginManager } from '../application/LegendStudioPluginManager';
 import type { ElementEditorState } from './editor-state/element-editor-state/ElementEditorState';
 import type { EditorExtensionState, EditorStore } from './EditorStore';
@@ -24,6 +23,10 @@ import type {
   PackageableElement,
   ModelGenerationConfiguration,
 } from '@finos/legend-graph';
+import {
+  type LegendApplicationDocumentationEntry,
+  LegendApplicationPlugin,
+} from '@finos/legend-application';
 
 export type ApplicationSetup = (
   pluginManager: LegendStudioPluginManager,
@@ -63,7 +66,7 @@ export type ModelLoaderExtensionConfiguration = {
   renderer: (editorStore: EditorStore) => React.ReactNode | undefined;
 };
 
-export abstract class LegendStudioPlugin extends AbstractPlugin {
+export abstract class LegendStudioPlugin extends LegendApplicationPlugin {
   /**
    * This helps to better type-checking for this empty abtract type
    * See https://github.com/finos/legend-studio/blob/master/docs/technical/typescript-usage.md#understand-typescript-structual-type-system
@@ -71,6 +74,7 @@ export abstract class LegendStudioPlugin extends AbstractPlugin {
   private readonly _$nominalTypeBrand!: 'LegendStudioPlugin';
 
   install(pluginManager: LegendStudioPluginManager): void {
+    pluginManager.registerApplicationPlugin(this);
     pluginManager.registerStudioPlugin(this);
   }
 
@@ -129,8 +133,8 @@ export type NewElementFromStateCreator = (
 ) => PackageableElement | undefined;
 
 export type NewElementDriverCreator = (
-  type: string,
   editorStore: EditorStore,
+  type: string,
 ) => NewElementDriver<PackageableElement> | undefined;
 
 export type NewElementDriverEditorRenderer = (
@@ -145,12 +149,12 @@ export type ElementEditorPostCreateAction = (
 export type ElementEditorPostRenameAction = (
   editorStore: EditorStore,
   element: PackageableElement,
+  // newPath?
 ) => void;
 
 export type ElementEditorPostDeleteAction = (
   editorStore: EditorStore,
   element: PackageableElement,
-  // newPath?
 ) => void;
 
 export type ElementEditorRenderer = (
@@ -165,6 +169,53 @@ export type ElementEditorStateCreator = (
 export type ElementProjectExplorerDnDTypeGetter = (
   element: PackageableElement,
 ) => string | undefined;
+
+export type PureGrammarParserDocumentationGetter = (
+  editorStore: EditorStore,
+  parserKeyword: string,
+) => LegendApplicationDocumentationEntry | undefined;
+
+export type PureGrammarParserElementDocumentationGetter = (
+  editorStore: EditorStore,
+  parserKeyword: string,
+  elementKeyword: string,
+) => LegendApplicationDocumentationEntry | undefined;
+
+/**
+ * This mirrors `monaco-editor` completion item structure
+ * See https://microsoft.github.io/monaco-editor/api/interfaces/monaco.languages.CompletionItem.html
+ */
+export interface PureGrammarTextSuggestion {
+  /**
+   * The text label of the suggestion.
+   */
+  text: string;
+  /**
+   * Brief description about the suggestion item to enable the users to quickly
+   * differentiate between one suggestions from another
+   */
+  description?: string | undefined;
+  /**
+   * Detailed documentation that explains/elaborates the suggestion item.
+   */
+  documentation?: LegendApplicationDocumentationEntry | undefined;
+  /**
+   * A string or snippet that should be inserted when selecting this suggestion.
+   *
+   * NOTE: The snippet syntax follows that of `monaco-editor`
+   * See https://code.visualstudio.com/docs/editor/userdefinedsnippets#_create-your-own-snippets
+   */
+  insertText: string;
+}
+
+export type PureGrammarParserKeywordSuggestionGetter = (
+  editorStore: EditorStore,
+) => PureGrammarTextSuggestion[];
+
+export type PureGrammarParserElementSnippetSuggestionsGetter = (
+  editorStore: EditorStore,
+  parserKeyword: string,
+) => PureGrammarTextSuggestion[] | undefined;
 
 /**
  * Studio plugins for new DSL extension.
@@ -236,7 +287,30 @@ export interface DSL_LegendStudioPlugin_Extension extends LegendStudioPlugin {
   getExtraElementProjectExplorerDnDTypeGetters?(): ElementProjectExplorerDnDTypeGetter[];
 
   /**
-   * Get the list of the supported drag-and-drop type speficiers for grammar text editor.
+   * Get the list of the supported drag-and-drop type speficiers for Pure grammar text editor.
    */
-  getExtraGrammarTextEditorDnDTypes?(): string[];
+  getExtraPureGrammarTextEditorDnDTypes?(): string[];
+
+  /**
+   * Get the list of Pure grammar parser description getters based on parser section keyword
+   * (e.g. ###Pure, ###Mapping, etc.)
+   */
+  getExtraPureGrammarParserDocumentationGetters?(): PureGrammarParserDocumentationGetter[];
+
+  /**
+   * Get the list of Pure grammar element documentation getters based on the value of the
+   * element and the parser keywords (e.g. Class, Enum in ###Pure section)
+   */
+  getExtraPureGrammarParserElementDocumentationGetters?(): PureGrammarParserElementDocumentationGetter[];
+
+  /**
+   * Get the list of Pure grammar parser keyword suggestion getters (e.g. ###Pure, ###Mapping)
+   */
+  getExtraPureGrammarParserKeywordSuggestionGetters?(): PureGrammarParserKeywordSuggestionGetter[];
+
+  /**
+   * Get the list of Pure grammar element suggestion snippet getters based on the parser section
+   * (e.g. Class, Enum in ###Pure)
+   */
+  getExtraPureGrammarParserElementSnippetSuggestionsGetters?(): PureGrammarParserElementSnippetSuggestionsGetter[];
 }

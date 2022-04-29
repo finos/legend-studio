@@ -19,6 +19,7 @@
     "clean:cache": "rimraf \"build\"",
     "lint:js": "cross-env NODE_ENV=production eslint --cache --cache-location ./build/.eslintcache --report-unused-disable-directives --parser-options=project:\"./tsconfig.json\",requireConfigFile:false \"./src/**/*.{js,ts,tsx}\"",
     "test:manual": "cross-env TEST_MODE=grammar jest --config jest.config.manual.js",
+    "test:manual:ci": "cross-env TEST_MODE=grammar jest --config jest.config.manual.js --maxWorkers=100%",
     "test:watch": "cross-env TEST_MODE=grammar jest --config jest.config.manual.js --watch"
   },
   "dependencies": {

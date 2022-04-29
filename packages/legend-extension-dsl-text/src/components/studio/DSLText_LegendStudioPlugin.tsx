@@ -126,7 +126,7 @@ export class DSLText_LegendStudioPlugin
     ];
   }
 
-  getExtraGrammarTextEditorDnDTypes(): string[] {
+  getExtraPureGrammarTextEditorDnDTypes(): string[] {
     return [TEXT_ELEMENT_PROJECT_EXPLORER_DND_TYPE];
   }
 }

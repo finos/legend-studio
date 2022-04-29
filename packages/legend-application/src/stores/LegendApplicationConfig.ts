@@ -18,36 +18,18 @@ import {
   guaranteeNonEmptyString,
   guaranteeNonNullable,
   type PlainObject,
-  type MarkdownText,
-  deserializeMarkdownText,
 } from '@finos/legend-shared';
-import { LegendApplicationDocumentationRegistry } from './LegendApplicationDocumentationRegistry';
+import {
+  type LegendApplicationKeyedDocumentationEntry,
+  type LegendApplicationDocumentationEntry,
+  collectKeyedDocumnetationEntriesFromConfig,
+} from './LegendApplicationDocumentationRegistry';
 
 export interface LegendApplicationVersionData {
   buildTime: string;
   version: string;
   commitSHA: string;
 }
-
-export interface LegendApplicationDocumentationEntry {
-  markdownText?: MarkdownText | undefined;
-  title?: string | undefined;
-  text?: string | undefined;
-  url?: string | undefined;
-}
-
-const deserializeDocumentationEntry = (
-  val: PlainObject<LegendApplicationDocumentationEntry>,
-): LegendApplicationDocumentationEntry => {
-  let markdownText: MarkdownText | undefined;
-  if (val.markdownText) {
-    markdownText = deserializeMarkdownText(
-      val.markdownText as PlainObject<MarkdownText>,
-    );
-  }
-
-  return { ...val, markdownText };
-};
 
 export interface LegendApplicationConfigurationData {
   appName: string;
@@ -67,7 +49,9 @@ export abstract class LegendApplicationConfig {
   readonly baseUrl: string;
   readonly env: string;
 
-  readonly docRegistry: LegendApplicationDocumentationRegistry;
+  readonly documentationUrl: string | undefined;
+  readonly documentationKeyedEntries: LegendApplicationKeyedDocumentationEntry[] =
+    [];
 
   readonly appVersion: string;
   readonly appVersionBuildTime: string;
@@ -89,13 +73,9 @@ export abstract class LegendApplicationConfig {
     );
 
     // Documentation
-    this.docRegistry = new LegendApplicationDocumentationRegistry();
-    this.docRegistry.url = configData.documentation?.url;
-    Object.entries(configData.documentation?.entries ?? []).forEach((entry) =>
-      this.docRegistry.registerEntry(
-        entry[0],
-        deserializeDocumentationEntry(entry[1]),
-      ),
+    this.documentationUrl = configData.documentation?.url;
+    this.documentationKeyedEntries = collectKeyedDocumnetationEntriesFromConfig(
+      configData.documentation?.entries ?? {},
     );
 
     // Version

@@ -21,6 +21,45 @@ import { PrimitiveType } from '../models/metamodels/pure/packageableElements/dom
 import { Enumeration } from '../models/metamodels/pure/packageableElements/domain/Enumeration';
 import format from 'date-fns/format';
 
+export enum PURE_ELEMENT_NAME {
+  PROFILE = 'Profile',
+  CLASS = 'Class',
+  ENUMERATION = 'Enum',
+  MEASURE = 'Measure',
+  ASSOCIATION = 'Association',
+  FLAT_DATA = 'FlatData',
+  MAPPING = 'Mapping',
+  DATABASE = 'Database',
+  FUNCTION = 'function',
+  SERVICE = 'Service',
+  RUNTIME = 'Runtime',
+  CONNECTION = 'Connection',
+  FILE_GENERATION = 'FileGeneration',
+  GENERATION_SPECIFICATION = 'GenerationSpecification',
+  DATA_ELEMENT = 'Data',
+}
+
+export enum PURE_CONNECTION_NAME {
+  JSON_MODEL_CONNECTION = 'JsonModelConnection',
+  XML_MODEL_CONNECTION = 'XmlModelConnection',
+  MODEL_CHAIN_CONNECTION = 'ModelChainConnection',
+  RELATIONAL_DATABASE_CONNECTION = 'RelationalDatabaseConnection',
+  FLAT_DATA_CONNECTION = 'FlatDataConnection',
+}
+
+export enum PURE_PARSER {
+  PURE = 'Pure',
+  CONNECTION = 'Connection',
+  RUNTIME = 'Runtime',
+  MAPPING = 'Mapping',
+  SERVICE = 'Service',
+  FLATDATA = 'FlatData',
+  RELATIONAL = 'Relational',
+  GENERATION_SPECIFICATION = 'GenerationSpecification',
+  FILE_GENERATION = 'FileGeneration',
+  DATA = 'Data',
+}
+
 export const generateDefaultParameterValueForType = (
   type: Type | undefined,
   index: number,

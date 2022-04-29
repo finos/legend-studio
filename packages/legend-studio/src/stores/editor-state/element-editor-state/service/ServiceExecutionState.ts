@@ -68,7 +68,7 @@ import {
 import { ServiceTestSuiteState } from './ServiceTestSuiteState';
 
 export enum SERVICE_EXECUTION_TAB {
-  MAPPING_AND_RUNTIME = 'MAPPING_&_Runtime',
+  EXECUTION_CONTEXT = 'EXECUTION_CONTEXT',
   TESTS = 'TESTS',
 }
 
@@ -80,7 +80,7 @@ export abstract class ServiceExecutionState {
     | LegacySingleExecutionTestState
     | ServiceTestSuiteState
     | undefined;
-  selectedTab = SERVICE_EXECUTION_TAB.MAPPING_AND_RUNTIME;
+  selectedTab = SERVICE_EXECUTION_TAB.EXECUTION_CONTEXT;
 
   constructor(
     editorStore: EditorStore,

@@ -29,6 +29,8 @@ const baseConfig = getBaseConfig({
 export const baseJestConfig = {
   ...baseConfig,
   setupFiles: [
+    // TODO: problem with ESM - remove when we run Jest with ESM
+    // See https://github.com/finos/legend-studio/issues/502
     '@finos/legend-art/jest/mockESM.jsx',
     '@finos/legend-dev-utils/jest/disallowConsoleError',
     '@finos/legend-dev-utils/jest/handleUnhandledRejection',
@@ -46,12 +48,14 @@ export const baseJestConfig = {
   ],
   moduleNameMapper: {
     ...baseConfig.moduleNameMapper,
-    // TODO: remove this and `lodash` dependency when `lodash`
+    // TODO: problem with ESM - remove this and `lodash` dependency when `lodash`
     // natively support ESM and hence, work well with `jest-resolve`
     // See https://github.com/lodash/lodash/issues/5107
+    // See https://github.com/finos/legend-studio/issues/502
     '^lodash-es$': 'lodash',
-    // NOTE: due to a problem with `uuid` interaction with `jest@28` resolver, we need this custom resolver
+    // TODO: problem with ESM - due to a conflict between `uuid` and `jest-resolve@28` we need this workaround
     // See https://github.com/uuidjs/uuid/pull/616
+    // See https://github.com/finos/legend-studio/issues/502
     '^uuid$': require.resolve('uuid'),
   },
   modulePathIgnorePatterns: ['packages/.*/lib'],

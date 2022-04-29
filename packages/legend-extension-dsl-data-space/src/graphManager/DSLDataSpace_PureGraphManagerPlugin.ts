@@ -25,8 +25,8 @@ import {
 } from '@finos/legend-graph';
 import { observe_DataSpace } from './action/changeDetection/DSLDataSpace_ObserverHelper';
 
-const PURE_GRAMMAR_DATA_SPACE_PARSER_NAME = 'DataSpace';
-const PURE_GRAMMAR_DATA_SPACE_ELEMENT_TYPE_LABEL = 'DataSpace';
+export const PURE_GRAMMAR_DATA_SPACE_PARSER_NAME = 'DataSpace';
+export const PURE_GRAMMAR_DATA_SPACE_ELEMENT_TYPE_LABEL = 'DataSpace';
 
 export class DSLDataSpace_PureGraphManagerPlugin extends PureGraphManagerPlugin {
   constructor() {

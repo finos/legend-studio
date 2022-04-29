@@ -191,6 +191,7 @@ export class TaxonomyNodeViewerState {
   }
 
   *initializeDataSpaceViewer(rawDataSpace: RawDataSpace): GeneratorFn<void> {
+    this.clearDataSpaceViewerState();
     try {
       this.initDataSpaceViewerState.inProgress();
       const stopWatch = new StopWatch();
@@ -658,6 +659,7 @@ export class LegendTaxonomyStore {
         },
       );
 
+      // initialize system
       yield this.graphManagerState.initializeSystem();
 
       // NOTE: here we build the full tree, which might be expensive when we have a big
@@ -731,6 +733,7 @@ export class LegendTaxonomyStore {
         },
       );
 
+      // initialize system
       yield this.graphManagerState.initializeSystem();
 
       // reset

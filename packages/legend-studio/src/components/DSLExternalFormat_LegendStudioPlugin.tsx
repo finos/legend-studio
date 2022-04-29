@@ -13,8 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+import packageJson from '../../package.json';
 import { BufferIcon, SitemapIcon } from '@finos/legend-art';
-import { SchemaSetEditor } from './editor/edit-panel/externalFormat-editor/SchemaSetElementEditor';
+import { SchemaSetEditor } from './editor/edit-panel/external-format-editor/SchemaSetElementEditor';
 import {
   type Connection,
   type PackageableElement,
@@ -31,8 +33,8 @@ import {
   ExternalFormatConnectionEditor,
   ExternalFormatConnectionValueState,
   NewExternalFormatConnectionDriver,
-} from './editor/edit-panel/externalFormat-editor/ExternalFormatConnectionEditor';
-import { BindingEditor } from './editor/edit-panel/externalFormat-editor/BindingElementEditor';
+} from './editor/edit-panel/external-format-editor/ExternalFormatConnectionEditor';
+import { BindingEditor } from './editor/edit-panel/external-format-editor/BindingElementEditor';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import type { ReactNode } from 'react';
 import {
@@ -84,8 +86,10 @@ export class DSLExternalFormat_LegendStudioPlugin
   implements DSLMapping_LegendStudioPlugin_Extension
 {
   constructor() {
-    // TODO: when we move this out to its own module, we will move this to `package.json`
-    super('@finos/legend-studio-plugin-dsl-external-format', '0.0.0');
+    super(
+      packageJson.extensions.dsl_external_format_studioPlugin,
+      packageJson.version,
+    );
   }
 
   getExtraSupportedElementTypes(): string[] {
@@ -192,8 +196,8 @@ export class DSLExternalFormat_LegendStudioPlugin
   getExtraNewElementDriverCreators(): NewElementDriverCreator[] {
     return [
       (
-        type: string,
         editorStore: EditorStore,
+        type: string,
       ): NewElementDriver<PackageableElement> | undefined => {
         if (type === SCHEMA_SET_ELEMENT_TYPE) {
           return new NewSchemaSetDriver(editorStore);
@@ -226,7 +230,7 @@ export class DSLExternalFormat_LegendStudioPlugin
       },
     ];
   }
-  getExtraGrammarTextEditorDnDTypes(): string[] {
+  getExtraPureGrammarTextEditorDnDTypes(): string[] {
     return [
       SCHEMA_SET_ELEMENT_PROJECT_EXPLORER_DND_TYPE,
       BINDING_ELEMENT_PROJECT_EXPLORER_DND_TYPE,
