@@ -18,10 +18,9 @@ import { useCallback } from 'react';
 import { clsx, Dialog, InfoCircleIcon, RefreshIcon } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import {
-  fillDerivedPropertyParameterValues,
+  generateMilestonedPropertyParameterValue,
   generateValueSpecificationForParameter,
   getPropertyPath,
-  isDefaultDatePropagationSupported,
   type QueryBuilderDerivedPropertyExpressionState,
   type QueryBuilderPropertyExpressionState,
 } from '../stores/QueryBuilderPropertyEditorState';
@@ -86,22 +85,18 @@ const DerivedPropertyParameterValueEditor = observer(
       [handleDrop],
     );
     const resetParameterValue = (): void => {
-      if (
-        isDefaultDatePropagationSupported(
-          derivedPropertyExpressionState.propertyExpression,
-          derivedPropertyExpressionState.queryBuilderState,
-        )
-      ) {
-        fillDerivedPropertyParameterValues(derivedPropertyExpressionState);
-      }
       propertyExpression_setParametersValue(
         derivedPropertyExpressionState.propertyExpression,
         idx + 1,
-        generateValueSpecificationForParameter(
-          variable,
-          derivedPropertyExpressionState.queryBuilderState.graphManagerState
-            .graph,
-        ),
+        generateMilestonedPropertyParameterValue(
+          derivedPropertyExpressionState,
+          idx,
+        ) ??
+          generateValueSpecificationForParameter(
+            variable,
+            derivedPropertyExpressionState.queryBuilderState.graphManagerState
+              .graph,
+          ),
         derivedPropertyExpressionState.queryBuilderState.observableContext,
       );
     };

@@ -43,6 +43,7 @@ export class QueryBuilderPostFilterOperator_In extends QueryBuilderPostFilterOpe
   getLabel(): string {
     return 'is in';
   }
+
   getPureFunction(): SUPPORTED_FUNCTIONS {
     return SUPPORTED_FUNCTIONS.IN;
   }

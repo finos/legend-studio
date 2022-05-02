@@ -38,9 +38,11 @@ export class QueryBuilderPostFilterOperator_EndWith extends QueryBuilderPostFilt
   getLabel(): string {
     return 'ends with';
   }
+
   getPureFunction(): SUPPORTED_FUNCTIONS {
     return SUPPORTED_FUNCTIONS.ENDS_WITH;
   }
+
   isCompatibleWithType(type: Type): boolean {
     if (type.path === PRIMITIVE_TYPE.STRING) {
       return true;
@@ -56,6 +58,7 @@ export class QueryBuilderPostFilterOperator_EndWith extends QueryBuilderPostFilt
       : undefined;
     return PRIMITIVE_TYPE.STRING === type?.path;
   }
+
   getDefaultFilterConditionValue(
     postFilterConditionState: PostFilterConditionState,
   ): ValueSpecification {

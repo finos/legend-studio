@@ -35,9 +35,11 @@ export class QueryBuilderPostFilterOperator_GreaterThan extends QueryBuilderPost
   getLabel(): string {
     return '>';
   }
+
   getPureFunction(): SUPPORTED_FUNCTIONS {
     return SUPPORTED_FUNCTIONS.GREATER_THAN;
   }
+
   isCompatibleWithType(type: Type): boolean {
     return (
       [
@@ -61,7 +63,7 @@ export class QueryBuilderPostFilterOperator_GreaterThan extends QueryBuilderPost
     const type = postFilterConditionState.value
       ? getNonCollectionValueSpecificationType(postFilterConditionState.value)
       : undefined;
-    const numericPrimitiveTypes = [
+    const NUMERIC_PRIMITIVE_TYPES = [
       PRIMITIVE_TYPE.NUMBER,
       PRIMITIVE_TYPE.INTEGER,
       PRIMITIVE_TYPE.DECIMAL,
@@ -72,12 +74,13 @@ export class QueryBuilderPostFilterOperator_GreaterThan extends QueryBuilderPost
     // Numeric value is handled loosely because execution still works if a float (RHS) is assigned to an Integer property(LHS), etc.
     return (
       type !== undefined &&
-      ((numericPrimitiveTypes.includes(type.path) &&
-        numericPrimitiveTypes.includes(lhsType.path)) ||
+      ((NUMERIC_PRIMITIVE_TYPES.includes(type.path) &&
+        NUMERIC_PRIMITIVE_TYPES.includes(lhsType.path)) ||
         type === lhsType ||
         lhsType.isSuperType(type))
     );
   }
+
   getDefaultFilterConditionValue(
     postFilterConditionState: PostFilterConditionState,
   ): ValueSpecification {
