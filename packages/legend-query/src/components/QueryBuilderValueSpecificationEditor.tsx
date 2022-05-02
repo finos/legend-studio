@@ -53,6 +53,7 @@ import {
   PRIMITIVE_TYPE,
   TYPICAL_MULTIPLICITY_TYPE,
   VariableExpression,
+  INTERNAL__PropagatedValue,
 } from '@finos/legend-graph';
 import { getMultiplicityDescription } from './shared/QueryBuilderUtils';
 import {
@@ -694,6 +695,14 @@ export const QueryBuilderValueSpecificationEditor: React.FC<{
       <VariableExpressionParameterEditor
         valueSpecification={valueSpecification}
         className={className}
+      />
+    );
+  } else if (valueSpecification instanceof INTERNAL__PropagatedValue) {
+    return (
+      <QueryBuilderValueSpecificationEditor
+        valueSpecification={valueSpecification.getValue()}
+        graph={graph}
+        expectedType={expectedType}
       />
     );
   }

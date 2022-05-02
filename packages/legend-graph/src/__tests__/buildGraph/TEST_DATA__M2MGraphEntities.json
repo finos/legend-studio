@@ -1440,5 +1440,76 @@
       "tests": []
     },
     "classifierPath": "meta::pure::mapping::Mapping"
+  },
+  {
+    "path": "ui::testA",
+    "content": {
+      "_type": "class",
+      "name": "testA",
+      "package": "ui",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "z",
+          "type": "String"
+        }
+      ],
+      "stereotypes": [
+        {
+          "profile": "temporal",
+          "value": "businesstemporal"
+        }
+      ]
+    },
+    "classifierPath": "meta::pure::metamodel::type::Class"
+  },
+  {
+    "path": "ui::testB",
+    "content": {
+      "_type": "class",
+      "name": "testB",
+      "package": "ui",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "test",
+          "type": "ui::testA"
+        }
+      ]
+    },
+    "classifierPath": "meta::pure::metamodel::type::Class"
+  },
+  {
+    "path": "ui::testC",
+    "content": {
+      "_type": "association",
+      "name": "testC",
+      "package": "ui",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "testClass1",
+          "type": "ui::testA"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "testClass2",
+          "type": "ui::testB"
+        }
+      ]
+    },
+    "classifierPath": "meta::pure::metamodel::relationship::Association"
   }
 ]

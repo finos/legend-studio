@@ -45,6 +45,7 @@ import {
   type FunctionType,
   LambdaFunction,
 } from '../../../models/metamodels/pure/valueSpecification/LambdaFunction';
+import type { INTERNAL__PropagatedValue } from '../../../models/metamodels/pure/valueSpecification/INTERNAL__PropagatedValue';
 import type {
   FunctionExpression,
   SimpleFunctionExpression,
@@ -425,6 +426,12 @@ class ValueSpecificationObserver implements ValueSpecificationVisitor<void> {
     valueSpecification: INTERNAL__UnknownValueSpecification,
   ): void {
     observe_INTERNAL__UnknownValueSpecification(valueSpecification);
+  }
+
+  visit_INTERNAL__PropagatedValue(
+    valueSpecification: INTERNAL__PropagatedValue,
+  ): void {
+    observe_Abstract_ValueSpecification(valueSpecification);
   }
 }
 

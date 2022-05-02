@@ -17,7 +17,10 @@
 import TEST_DATA__simpleGraphEntities from './TEST_DATA__FunctionSignatureGeneration.json';
 import { unitTest } from '@finos/legend-shared';
 import type { Entity } from '@finos/legend-model-storage';
-import { TEST__getTestGraphManagerState } from '../../GraphManagerTestUtils';
+import {
+  TEST__buildGraphWithEntities,
+  TEST__getTestGraphManagerState,
+} from '../../GraphManagerTestUtils';
 import {
   generateFunctionCallString,
   generateFunctionSignature,
@@ -33,8 +36,8 @@ afterEach(() => {
 
 test(unitTest('Generate default parameter value for type'), async () => {
   const graphManagerState = TEST__getTestGraphManagerState();
-  await graphManagerState.graphManager.buildGraph(
-    graphManagerState.graph,
+  await TEST__buildGraphWithEntities(
+    graphManagerState,
     TEST_DATA__simpleGraphEntities as Entity[],
   );
   // NOTE: this will leak

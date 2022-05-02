@@ -59,6 +59,12 @@ export class Class extends Type implements Hashable, Stubable {
   taggedValues: TaggedValue[] = [];
 
   /**
+   * To store the abstract properties generated while processing the milestoning properties. The properties
+   * generated are `allVersions`, `allVersionsInRange` and derived property with date parameter.
+   */
+  _generatedMilestonedProperties: AbstractProperty[] = [];
+
+  /**
    * Get class and its supertypes' properties recursively, duplications and loops are handled (Which should be caught by compiler)
    */
   getAllProperties = (): Property[] =>

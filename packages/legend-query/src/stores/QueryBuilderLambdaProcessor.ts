@@ -53,7 +53,7 @@ import {
   type InstanceValue,
   type INTERNAL__UnknownValueSpecification,
   type LambdaFunction,
-  MILESTONING_STEROTYPES,
+  MILESTONING_STEREOTYPE,
   DerivedProperty,
   RawLambda,
   matchFunctionName,
@@ -69,6 +69,8 @@ import {
   V1_deserializeRawValueSpecification,
   V1_RawLambda,
   getMilestoneTemporalStereotype,
+  type INTERNAL__PropagatedValue,
+  type PureModel,
 } from '@finos/legend-graph';
 import {
   type QueryBuilderProjectionColumnState,
@@ -80,6 +82,7 @@ import type { QueryBuilderAggregationState } from './QueryBuilderAggregationStat
 import { QueryParameterState } from './QueryParametersState';
 import { toGroupOperation } from './QueryBuilderOperatorsHelper';
 import { processPostFilterLambda } from './QueryBuilderPostFilterProcessor';
+import { getDerivedPropertyMilestoningSteoreotype } from './QueryBuilderPropertyEditorState';
 
 const getNullableStringValueFromValueSpec = (
   valueSpec: ValueSpecification,
@@ -103,6 +106,66 @@ const getNullableNumberValueFromValueSpec = (
     return valueSpec.values[0];
   }
   return undefined;
+};
+
+/**
+ * Checks if the milestoning property expression is valid in terms of number of parameters passed to it and throws
+ * unsupported mode if the number of parameters passed is not valid for a particular temporal type.
+ */
+const validatePropertyExpressionChain = (
+  propertyExpression: AbstractPropertyExpression,
+  graph: PureModel,
+): void => {
+  if (
+    propertyExpression.func.genericType.value.rawType instanceof Class &&
+    propertyExpression.func.owner._generatedMilestonedProperties.length !== 0
+  ) {
+    const name = propertyExpression.func.name;
+    const func =
+      propertyExpression.func.owner._generatedMilestonedProperties.find(
+        (e) => e.name === name,
+      );
+    if (func) {
+      const targetStereotype = getMilestoneTemporalStereotype(
+        propertyExpression.func.genericType.value.rawType,
+        graph,
+      );
+
+      if (targetStereotype) {
+        const sourceStereotype = getDerivedPropertyMilestoningSteoreotype(
+          guaranteeType(func, DerivedProperty),
+          graph,
+        );
+        if (
+          sourceStereotype !== MILESTONING_STEREOTYPE.BITEMPORAL &&
+          targetStereotype !== sourceStereotype
+        ) {
+          if (targetStereotype === MILESTONING_STEREOTYPE.BITEMPORAL) {
+            if (
+              propertyExpression.parametersValues.length !== 3 &&
+              !sourceStereotype
+            ) {
+              throw new UnsupportedOperationError(
+                "Property of milestoning sterotype 'bi-temporal' should have two parameters",
+              );
+            } else if (propertyExpression.parametersValues.length < 2) {
+              throw new UnsupportedOperationError(
+                "Property of milestoning sterotype 'bi-temporal' should have atleast one parameter",
+              );
+            } else if (propertyExpression.parametersValues.length > 3) {
+              throw new UnsupportedOperationError(
+                "Property of milestoning sterotype 'bi-temporal' should not have more than two parameters",
+              );
+            }
+          } else if (propertyExpression.parametersValues.length !== 2) {
+            throw new UnsupportedOperationError(
+              `Property of milestoning sterotype '${targetStereotype}' should have one parameters`,
+            );
+          }
+        }
+      }
+    }
+  }
 };
 
 const processFilterExpression = (
@@ -136,6 +199,16 @@ const processFilterExpression = (
     );
     filterState.addNodeFromNode(groupNode, parentNode);
   } else {
+    const propertyExpression = expression.parametersValues[0];
+    if (propertyExpression instanceof AbstractPropertyExpression) {
+      const currentPropertyExpression = propertyExpression.parametersValues[0];
+      if (currentPropertyExpression instanceof AbstractPropertyExpression) {
+        validatePropertyExpressionChain(
+          currentPropertyExpression,
+          filterState.queryBuilderState.graphManagerState.graph,
+        );
+      }
+    }
     for (const operator of filterState.operators) {
       // NOTE: this allow plugin author to either return `undefined` or throw error
       // if there is a problem with building the lambda. Either case, the plugin is
@@ -368,6 +441,12 @@ export class QueryBuilderLambdaProcessor
     throw new UnsupportedOperationError();
   }
 
+  visit_INTERNAL__PropagatedValue(
+    valueSpecification: INTERNAL__PropagatedValue,
+  ): void {
+    throw new UnsupportedOperationError();
+  }
+
   visit_SimpleFunctionExpression(
     valueSpecification: SimpleFunctionExpression,
   ): void {
@@ -386,43 +465,50 @@ export class QueryBuilderLambdaProcessor
         _class,
         this.queryBuilderState.graphManagerState.graph,
       );
-      if (stereotype) {
-        let milestoningParameters;
-        if (stereotype === MILESTONING_STEROTYPES.BITEMPORAL) {
+      switch (stereotype) {
+        case MILESTONING_STEREOTYPE.BITEMPORAL:
           acceptedNoOfParameters = 3;
           assertTrue(
             valueSpecification.parametersValues.length ===
               acceptedNoOfParameters,
-            `Can't process getAll() expression: when used with a bitemporal milestoned class getAll() expects two parameters of type 'Date'`,
+            `Can't process getAll() expression: when used with a bitemporal milestoned class getAll() expects two parameters`,
           );
-          milestoningParameters = [
-            guaranteeNonNullable(valueSpecification.parametersValues[1]),
-            guaranteeNonNullable(valueSpecification.parametersValues[2]),
-          ];
-          this.queryBuilderState.querySetupState.setClassMilestoningTemporalValues(
-            milestoningParameters,
+          this.queryBuilderState.querySetupState.setProcessingDate(
+            valueSpecification.parametersValues[1],
           );
-        } else {
+          this.queryBuilderState.querySetupState.setBusinessDate(
+            valueSpecification.parametersValues[2],
+          );
+          break;
+        case MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL:
           acceptedNoOfParameters = 2;
           assertTrue(
             valueSpecification.parametersValues.length ===
               acceptedNoOfParameters,
-            `Can't process getAll() expression: when used with a milestoned class getAll() expects a parameter of type 'Date'`,
+            `Can't process getAll() expression: when used with a milestoned class getAll() expects a parameter`,
           );
-          milestoningParameters = [
-            guaranteeNonNullable(valueSpecification.parametersValues[1]),
-          ];
-          this.queryBuilderState.querySetupState.setClassMilestoningTemporalValues(
-            milestoningParameters,
+          this.queryBuilderState.querySetupState.setBusinessDate(
+            valueSpecification.parametersValues[1],
           );
-        }
-      } else {
-        assertTrue(
-          valueSpecification.parametersValues.length === acceptedNoOfParameters,
-          `Can't process getAll() expression: getAll() expects no arguments`,
-        );
+          break;
+        case MILESTONING_STEREOTYPE.PROCESSING_TEMPORAL:
+          acceptedNoOfParameters = 2;
+          assertTrue(
+            valueSpecification.parametersValues.length ===
+              acceptedNoOfParameters,
+            `Can't process getAll() expression: when used with a milestoned class getAll() expects a parameter`,
+          );
+          this.queryBuilderState.querySetupState.setProcessingDate(
+            valueSpecification.parametersValues[1],
+          );
+          break;
+        default:
+          assertTrue(
+            valueSpecification.parametersValues.length ===
+              acceptedNoOfParameters,
+            `Can't process getAll() expression: getAll() expects no arguments`,
+          );
       }
-
       return;
     } else if (
       matchFunctionName(functionName, SUPPORTED_FUNCTIONS.FILTER) ||
@@ -973,6 +1059,10 @@ export class QueryBuilderLambdaProcessor
       let currentPropertyExpression: ValueSpecification = valueSpecification;
       while (currentPropertyExpression instanceof AbstractPropertyExpression) {
         const propertyExpression = currentPropertyExpression;
+        validatePropertyExpressionChain(
+          currentPropertyExpression,
+          this.queryBuilderState.graphManagerState.graph,
+        );
         currentPropertyExpression = guaranteeNonNullable(
           currentPropertyExpression.parametersValues[0],
         );

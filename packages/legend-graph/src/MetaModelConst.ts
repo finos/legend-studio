@@ -339,8 +339,19 @@ export enum CORE_HASH_STRUCTURE {
   DATA_ELEMENT = 'DATA_ELEMENT',
 }
 
-export enum MILESTONING_STEROTYPES {
+export enum MILESTONING_STEREOTYPE {
   BUSINESS_TEMPORAL = 'businesstemporal',
   PROCESSING_TEMPORAL = 'processingtemporal',
   BITEMPORAL = 'bitemporal',
 }
+
+export enum MILESTONING_VERSION_PROPERTY_SUFFIX {
+  ALL_VERSIONS = 'AllVersions',
+  ALL_VERSIONS_IN_RANGE = 'AllVersionsInRange',
+}
+
+export const MILESTONING_START_DATE_PARAMETER_NAME = 'start';
+export const MILESTONING_END_DATE_PARAMETER_NAME = 'end';
+export const DEFAULT_PROCESSING_DATE_MILESTONING_PARAMETER_NAME =
+  'processingDate';
+export const DEFAULT_BUSINESS_DATE_MILESTONING_PARAMETER_NAME = 'businessDate';

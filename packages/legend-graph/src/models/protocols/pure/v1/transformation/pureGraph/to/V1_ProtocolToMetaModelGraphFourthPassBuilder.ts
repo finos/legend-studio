@@ -48,6 +48,7 @@ import {
 } from './helpers/V1_DatabaseBuilderHelper';
 import type { V1_SectionIndex } from '../../../model/packageableElements/section/V1_SectionIndex';
 import { V1_buildAssociationMapping } from './helpers/V1_AssociationMappingHelper';
+import { V1_buildMilestoningProperties } from './helpers/V1_MilestoneBuilderHelper';
 import type { V1_DataElement } from '../../../model/packageableElements/data/V1_DataElement';
 
 export class V1_ProtocolToMetaModelGraphFourthPassBuilder
@@ -78,13 +79,17 @@ export class V1_ProtocolToMetaModelGraphFourthPassBuilder
   }
 
   visit_Class(element: V1_Class): void {
-    // TODO?: milestoning (process properties and class)
-    throw new UnsupportedOperationError();
+    const _class = this.context.currentSubGraph.getOwnClass(
+      V1_buildFullPath(element.package, element.name),
+    );
+    V1_buildMilestoningProperties(_class, this.context.graph);
   }
 
   visit_Association(element: V1_Association): void {
-    // TODO?: milestoning (process properties)
-    throw new UnsupportedOperationError();
+    const association = this.context.currentSubGraph.getOwnAssociation(
+      V1_buildFullPath(element.package, element.name),
+    );
+    V1_buildMilestoningProperties(association, this.context.graph);
   }
 
   visit_ConcreteFunctionDefinition(

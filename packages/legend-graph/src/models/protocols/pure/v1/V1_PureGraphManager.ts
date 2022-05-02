@@ -1008,6 +1008,31 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         ),
       ),
     );
+    // Fourth Pass
+    await Promise.all(
+      inputs.flatMap((input) =>
+        input.data.classes.map((element) =>
+          this.visitWithGraphBuilderErrorHandling(
+            element,
+            new V1_ProtocolToMetaModelGraphFourthPassBuilder(
+              this.getBuilderContext(graph, input.model, element, options),
+            ),
+          ),
+        ),
+      ),
+    );
+    await Promise.all(
+      inputs.flatMap((input) =>
+        input.data.associations.map((element) =>
+          this.visitWithGraphBuilderErrorHandling(
+            element,
+            new V1_ProtocolToMetaModelGraphFourthPassBuilder(
+              this.getBuilderContext(graph, input.model, element, options),
+            ),
+          ),
+        ),
+      ),
+    );
     // Fifth pass
     await Promise.all(
       inputs.flatMap((input) =>

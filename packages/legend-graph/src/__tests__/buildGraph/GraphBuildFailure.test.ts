@@ -34,7 +34,10 @@ import {
 import { unitTest } from '@finos/legend-shared';
 import type { Entity } from '@finos/legend-model-storage';
 import type { GraphManagerState } from '../../GraphManagerState';
-import { TEST__getTestGraphManagerState } from '../../GraphManagerTestUtils';
+import {
+  TEST__buildGraphWithEntities,
+  TEST__getTestGraphManagerState,
+} from '../../GraphManagerTestUtils';
 
 let graphManagerState: GraphManagerState;
 
@@ -113,8 +116,8 @@ test(unitTest('Missing class in Pure Instance class mapping'), async () => {
 
 test(unitTest('Missing class mapping'), async () => {
   await expect(() =>
-    graphManagerState.graphManager.buildGraph(
-      graphManagerState.graph,
+    TEST__buildGraphWithEntities(
+      graphManagerState,
       TEST_DATA__MissingClassMapping as Entity[],
     ),
   ).rejects.toThrowError(
