@@ -118,6 +118,7 @@ import {
   DateTimeValidityMilestoning,
   SourceSpecifiesFromAndThruDateTime,
   SourceSpecifiesFromDateTime,
+  SourceSpecifiesInAndOutDateTime,
   SourceSpecifiesInDateTime,
   type TransactionMilestoning,
   type ValidityDerivation,
@@ -280,7 +281,7 @@ export const V1_buildTransactionDerivation = (
     derivation.sourceDateTimeInField = protocol.sourceDateTimeInField;
     return derivation;
   } else if (protocol instanceof V1_SourceSpecifiesInAndOutDateTime) {
-    const derivation = new V1_SourceSpecifiesInAndOutDateTime();
+    const derivation = new SourceSpecifiesInAndOutDateTime();
     derivation.sourceDateTimeInField = protocol.sourceDateTimeInField;
     derivation.sourceDateTimeOutField = protocol.sourceDateTimeOutField;
     return derivation;
