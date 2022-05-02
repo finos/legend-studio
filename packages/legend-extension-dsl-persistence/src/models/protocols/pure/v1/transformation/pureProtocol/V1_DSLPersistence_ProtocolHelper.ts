@@ -320,7 +320,7 @@ export const V1_serializeTransactionDerivation = (
 
 export const V1_deserializeTransactionDerivation = (
   json: PlainObject<V1_TransactionDerivation>,
-): V1_ValidityDerivation => {
+): V1_TransactionDerivation => {
   switch (json._type) {
     case V1_TransactionDerivationType.SOURCE_SPECIFIES_IN_DATE_TIME:
       return deserialize(V1_sourceSpecifiesInDateTimeModelSchema, json);

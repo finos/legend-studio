@@ -120,6 +120,7 @@ import {
   SourceSpecifiesFromDateTime,
   SourceSpecifiesInAndOutDateTime,
   SourceSpecifiesInDateTime,
+  type TransactionDerivation,
   type TransactionMilestoning,
   type ValidityDerivation,
   type ValidityMilestoning,
@@ -275,7 +276,7 @@ export const V1_buildMergeStrategy = (
 export const V1_buildTransactionDerivation = (
   protocol: V1_TransactionDerivation,
   context: V1_GraphBuilderContext,
-): ValidityDerivation => {
+): TransactionDerivation => {
   if (protocol instanceof V1_SourceSpecifiesInDateTime) {
     const derivation = new SourceSpecifiesInDateTime();
     derivation.sourceDateTimeInField = protocol.sourceDateTimeInField;
