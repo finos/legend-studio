@@ -118,7 +118,9 @@ import {
   V1_DateTimeValidityMilestoning,
   V1_SourceSpecifiesFromAndThruDateTime,
   V1_SourceSpecifiesFromDateTime,
+  V1_SourceSpecifiesInAndOutDateTime,
   V1_SourceSpecifiesInDateTime,
+  type V1_TransactionDerivation,
   type V1_TransactionMilestoning,
   type V1_ValidityDerivation,
   type V1_ValidityMilestoning,
@@ -273,13 +275,13 @@ export const V1_transformMergeStrategy = (
 export const V1_transformTransactionDerivation = (
   element: TransactionDerivation,
   context: V1_GraphTransformerContext,
-): V1_ValidityDerivation => {
+): V1_TransactionDerivation => {
   if (element instanceof SourceSpecifiesInDateTime) {
     const protocol = new V1_SourceSpecifiesInDateTime();
     protocol.sourceDateTimeInField = element.sourceDateTimeInField;
     return protocol;
   } else if (element instanceof SourceSpecifiesInAndOutDateTime) {
-    const protocol = new SourceSpecifiesInAndOutDateTime();
+    const protocol = new V1_SourceSpecifiesInAndOutDateTime();
     protocol.sourceDateTimeInField = element.sourceDateTimeInField;
     protocol.sourceDateTimeOutField = element.sourceDateTimeOutField;
     return protocol;
@@ -307,7 +309,10 @@ export const V1_transformTransactionMilestoning = (
     protocol.dateTimeInName = element.dateTimeInName;
     protocol.dateTimeOutName = element.dateTimeOutName;
     if (element.derivation) {
-      protocol.derivation = element.derivation;
+      protocol.derivation = V1_transformTransactionDerivation(
+        element.derivation,
+        context,
+      );
     }
     return protocol;
   } else if (element instanceof BatchIdAndDateTimeTransactionMilestoning) {
@@ -317,7 +322,10 @@ export const V1_transformTransactionMilestoning = (
     protocol.dateTimeInName = element.dateTimeInName;
     protocol.dateTimeOutName = element.dateTimeOutName;
     if (element.derivation) {
-      protocol.derivation = element.derivation;
+      protocol.derivation = V1_transformTransactionDerivation(
+        element.derivation,
+        context,
+      );
     }
     return protocol;
   }

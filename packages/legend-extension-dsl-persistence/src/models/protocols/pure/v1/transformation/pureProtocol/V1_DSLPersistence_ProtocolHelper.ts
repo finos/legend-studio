@@ -86,7 +86,7 @@ import {
   V1_SourceSpecifiesFromDateTime,
   V1_SourceSpecifiesInAndOutDateTime,
   V1_SourceSpecifiesInDateTime,
-  V1_TransactionDerivation,
+  type V1_TransactionDerivation,
   type V1_TransactionMilestoning,
   type V1_ValidityDerivation,
   type V1_ValidityMilestoning,
@@ -874,26 +874,29 @@ export const V1_multiFlatTargetPartSchema = createModelSchema(
   },
 );
 
-export const V1_multiFlatTargetModelSchema = createModelSchema(V1_MultiFlatTarget, {
-  _type: usingConstantValueSchema(V1_TargetShapeType.MULTI_FLAT_TARGET),
-  modelClass: primitive(),
-  parts: custom(
-    (val) =>
-      serializeArray(val, (v) => serialize(V1_multiFlatTargetPartSchema, v), {
-        skipIfEmpty: true,
-        INTERNAL__forceReturnEmptyInTest: true,
-      }),
-    (val) =>
-      deserializeArray(
-        val,
-        (v) => deserialize(V1_multiFlatTargetPartSchema, v),
-        {
-          skipIfEmpty: false,
-        },
-      ),
-  ),
-  transactionScope: primitive(),
-});
+export const V1_multiFlatTargetModelSchema = createModelSchema(
+  V1_MultiFlatTarget,
+  {
+    _type: usingConstantValueSchema(V1_TargetShapeType.MULTI_FLAT_TARGET),
+    modelClass: primitive(),
+    parts: custom(
+      (val) =>
+        serializeArray(val, (v) => serialize(V1_multiFlatTargetPartSchema, v), {
+          skipIfEmpty: true,
+          INTERNAL__forceReturnEmptyInTest: true,
+        }),
+      (val) =>
+        deserializeArray(
+          val,
+          (v) => deserialize(V1_multiFlatTargetPartSchema, v),
+          {
+            skipIfEmpty: false,
+          },
+        ),
+    ),
+    transactionScope: primitive(),
+  },
+);
 
 export const V1_serializeTargetShape = (
   protocol: V1_TargetShape,
