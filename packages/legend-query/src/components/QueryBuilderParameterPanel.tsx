@@ -33,6 +33,8 @@ import {
 import { useEffect, useState } from 'react';
 import {
   type Type,
+  type ValueSpecification,
+  InstanceValue,
   MULTIPLICITY_INFINITE,
   PRIMITIVE_TYPE,
 } from '@finos/legend-graph';
@@ -54,6 +56,7 @@ const ParameterValuesEditor = observer(
     const parameterState = queryBuilderState.queryParametersState;
     const parameterValuesEditorState =
       parameterState.parameterValuesEditorState;
+    const graph = queryBuilderState.graphManagerState.graph;
     const close = (): void => parameterValuesEditorState.close();
     const submitAction = parameterValuesEditorState.submitAction;
     const submit = applicationStore.guardUnhandledError(async () => {
@@ -98,8 +101,20 @@ const ParameterValuesEditor = observer(
                   {paramState.value && (
                     <QueryBuilderValueSpecificationEditor
                       valueSpecification={paramState.value}
-                      graph={queryBuilderState.graphManagerState.graph}
-                      expectedType={variableType}
+                      updateValueSpecification={(
+                        val: ValueSpecification,
+                      ): void => {
+                        if (val instanceof InstanceValue) {
+                          paramState.setValue(val);
+                        }
+                      }}
+                      graph={graph}
+                      typeCheckOption={{
+                        expectedType: variableType,
+                        match:
+                          variableType ===
+                          graph.getPrimitiveType(PRIMITIVE_TYPE.DATETIME),
+                      }}
                       className="query-builder__parameters__value__editor"
                     />
                   )}

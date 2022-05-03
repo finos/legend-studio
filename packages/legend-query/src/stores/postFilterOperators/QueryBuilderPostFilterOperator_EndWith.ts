@@ -17,6 +17,7 @@ import {
   type SimpleFunctionExpression,
   type Type,
   type ValueSpecification,
+  type FunctionExpression,
   PRIMITIVE_TYPE,
 } from '@finos/legend-graph';
 import { UnsupportedOperationError } from '@finos/legend-shared';
@@ -28,19 +29,39 @@ import {
   unwrapNotExpression,
 } from '../QueryBuilderOperatorsHelper';
 import { QueryBuilderPostFilterOperator } from '../QueryBuilderPostFilterOperator';
+import { buildPostFilterConditionState } from '../QueryBuilderPostFilterProcessor';
 import type {
   PostFilterConditionState,
   QueryBuilderPostFilterState,
 } from '../QueryBuilderPostFilterState';
 import { generateDefaultValueForPrimitiveType } from '../QueryBuilderValueSpecificationBuilderHelper';
+import { buildPostFilterConditionExpression } from './QueryBuilderPostFilterOperatorHelper';
 
 export class QueryBuilderPostFilterOperator_EndWith extends QueryBuilderPostFilterOperator {
   getLabel(): string {
     return 'ends with';
   }
 
-  getPureFunction(): SUPPORTED_FUNCTIONS {
-    return SUPPORTED_FUNCTIONS.ENDS_WITH;
+  buildPostFilterConditionExpression(
+    postFilterConditionState: PostFilterConditionState,
+  ): ValueSpecification | undefined {
+    return buildPostFilterConditionExpression(
+      postFilterConditionState,
+      this,
+      SUPPORTED_FUNCTIONS.ENDS_WITH,
+    );
+  }
+
+  buildPostFilterConditionState(
+    postFilterState: QueryBuilderPostFilterState,
+    expression: FunctionExpression,
+  ): PostFilterConditionState | undefined {
+    return buildPostFilterConditionState(
+      postFilterState,
+      expression,
+      SUPPORTED_FUNCTIONS.ENDS_WITH,
+      this,
+    );
   }
 
   isCompatibleWithType(type: Type): boolean {
@@ -66,7 +87,8 @@ export class QueryBuilderPostFilterOperator_EndWith extends QueryBuilderPostFilt
     switch (propertyType?.path) {
       case PRIMITIVE_TYPE.STRING: {
         return buildPrimitiveInstanceValue(
-          postFilterConditionState.postFilterState.queryBuilderState,
+          postFilterConditionState.postFilterState.queryBuilderState
+            .graphManagerState.graph,
           propertyType.path,
           generateDefaultValueForPrimitiveType(propertyType.path),
         );

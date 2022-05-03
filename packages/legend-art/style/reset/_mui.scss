@@ -64,3 +64,24 @@
 .MuiTooltip-tooltipPlacementTop {
   margin: 0.5rem 0;
 }
+
+.mui-radio-group {
+  min-width: 26rem;
+
+  &__group {
+    color: var(--color-light-grey-200);
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+
+    &__form-control-label {
+      width: 50%;
+      margin-left: 0;
+      margin-right: 0;
+
+      &__radio {
+        margin-left: 1rem;
+        color: var(--color-dark-grey-300);
+      }
+    }
+  }
+}

@@ -42,9 +42,14 @@ import {
   Class,
   Enumeration,
   PrimitiveType,
+  PRIMITIVE_TYPE,
 } from '@finos/legend-graph';
-import { propertyExpression_setParametersValue } from '../stores/QueryBuilderValueSpecificationModifierHelper';
 import { QueryBuilderValueSpecificationEditor } from './QueryBuilderValueSpecificationEditor';
+import {
+  functionExpression_setParametersValues,
+  propertyExpression_setParametersValue,
+} from '../stores/QueryBuilderValueSpecificationModifierHelper';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 
 const DerivedPropertyParameterValueEditor = observer(
   (props: {
@@ -53,7 +58,11 @@ const DerivedPropertyParameterValueEditor = observer(
     idx: number;
   }) => {
     const { derivedPropertyExpressionState, variable, idx } = props;
-    const parameterValue = derivedPropertyExpressionState.parameterValues[idx];
+    const graph =
+      derivedPropertyExpressionState.queryBuilderState.graphManagerState.graph;
+    const parameterType = guaranteeNonNullable(
+      derivedPropertyExpressionState.parameters[idx]?.genericType,
+    ).value.rawType;
     const handleDrop = useCallback(
       (item: QueryBuilderParameterDragSource): void => {
         propertyExpression_setParametersValue(
@@ -72,7 +81,14 @@ const DerivedPropertyParameterValueEditor = observer(
           item: QueryBuilderParameterDragSource,
           monitor: DropTargetMonitor,
         ): void => {
-          if (!monitor.didDrop()) {
+          const itemType = item.variable.parameter.genericType?.value.rawType;
+          if (
+            !monitor.didDrop() &&
+            // Doing a type check, which only allows dragging and dropping parameters of the same type or of child types
+            itemType &&
+            (parameterType.isSuperType(itemType) ||
+              parameterType.name === itemType.name)
+          ) {
             handleDrop(item);
           }
         },
@@ -101,6 +117,23 @@ const DerivedPropertyParameterValueEditor = observer(
       );
     };
 
+    const updateValueSpecification = (val: ValueSpecification): void => {
+      functionExpression_setParametersValues(
+        derivedPropertyExpressionState.propertyExpression,
+        [
+          ...derivedPropertyExpressionState.propertyExpression.parametersValues.slice(
+            0,
+            idx + 1,
+          ),
+          val,
+          ...derivedPropertyExpressionState.propertyExpression.parametersValues.slice(
+            idx + 2,
+          ),
+        ],
+        derivedPropertyExpressionState.queryBuilderState.observableContext,
+      );
+    };
+
     return (
       <div key={variable.name} className="panel__content__form__section">
         <div className="panel__content__form__section__header__label">
@@ -119,16 +152,19 @@ const DerivedPropertyParameterValueEditor = observer(
             </div>
           )}
           <QueryBuilderValueSpecificationEditor
-            valueSpecification={parameterValue as ValueSpecification}
-            graph={
-              derivedPropertyExpressionState.queryBuilderState.graphManagerState
-                .graph
+            valueSpecification={
+              derivedPropertyExpressionState.parameterValues[
+                idx
+              ] as ValueSpecification
             }
-            expectedType={
-              parameterValue?.genericType?.value.rawType ??
-              derivedPropertyExpressionState.propertyExpression.func.genericType
-                .value.rawType
-            }
+            updateValueSpecification={updateValueSpecification}
+            graph={graph}
+            typeCheckOption={{
+              expectedType: parameterType,
+              match:
+                parameterType ===
+                graph.getPrimitiveType(PRIMITIVE_TYPE.DATETIME),
+            }}
           />
           <button
             className="query-builder-filter-tree__node__action"

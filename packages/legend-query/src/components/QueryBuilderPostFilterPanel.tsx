@@ -48,6 +48,7 @@ import {
 } from '@finos/legend-art';
 import {
   type Type,
+  type ValueSpecification,
   Class,
   Enumeration,
   PrimitiveType,
@@ -401,6 +402,8 @@ const QueryBuilderPostFilterConditionEditor = observer(
     isPropertyDragOver: boolean;
   }) => {
     const { node, isPropertyDragOver } = props;
+    const graph =
+      node.condition.postFilterState.queryBuilderState.graphManagerState.graph;
     const changeOperator = (val: QueryBuilderPostFilterOperator) => (): void =>
       node.condition.changeOperator(val);
     const changeColumn = async (
@@ -497,13 +500,15 @@ const QueryBuilderPostFilterConditionEditor = observer(
               )}
               <QueryBuilderValueSpecificationEditor
                 valueSpecification={node.condition.value}
-                graph={
-                  node.condition.postFilterState.queryBuilderState
-                    .graphManagerState.graph
+                updateValueSpecification={(val: ValueSpecification): void =>
+                  node.condition.setValue(val)
                 }
-                expectedType={guaranteeNonNullable(
-                  node.condition.columnState.getReturnType(),
-                )}
+                graph={graph}
+                typeCheckOption={{
+                  expectedType: guaranteeNonNullable(
+                    node.condition.columnState.getReturnType(),
+                  ),
+                }}
               />
             </div>
           )}

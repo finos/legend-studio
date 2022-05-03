@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { DATE_FORMAT } from '@finos/legend-application';
+import { DATE_FORMAT, DATE_TIME_FORMAT } from '@finos/legend-application';
 import {
   type PureModel,
   type ValueSpecification,
@@ -43,9 +43,10 @@ export const generateDefaultValueForPrimitiveType = (
     case PRIMITIVE_TYPE.INTEGER:
       return 0;
     case PRIMITIVE_TYPE.DATE:
-    case PRIMITIVE_TYPE.DATETIME:
     case PRIMITIVE_TYPE.STRICTDATE:
       return format(new Date(Date.now()), DATE_FORMAT);
+    case PRIMITIVE_TYPE.DATETIME:
+      return format(new Date(Date.now()), DATE_TIME_FORMAT);
     default:
       throw new UnsupportedOperationError(
         `Can't generate default value for primitive type '${type}'`,

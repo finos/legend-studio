@@ -23,6 +23,7 @@ import {
   PRIMITIVE_TYPE,
   type ValueSpecification,
   type SimpleFunctionExpression,
+  type AbstractPropertyExpression,
 } from '@finos/legend-graph';
 import { UnsupportedOperationError } from '@finos/legend-shared';
 import {
@@ -76,8 +77,24 @@ export class QueryBuilderFilterOperator_LessThan extends QueryBuilderFilterOpera
       PRIMITIVE_TYPE.FLOAT,
     ] as string[];
 
+    const DATE_PRIMITIVE_TYPES = [
+      PRIMITIVE_TYPE.DATE,
+      PRIMITIVE_TYPE.DATETIME,
+      PRIMITIVE_TYPE.STRICTDATE,
+      PRIMITIVE_TYPE.LATESTDATE,
+    ] as string[];
+
     // When changing the return type for LHS, the RHS value should be adjusted accordingly.
     // Numeric value is handled loosely because execution still works if a float (RHS) is assigned to an Integer property(LHS), etc.
+    // When LHS is of type DateTime, RHS is handled loosely since the operator could be changed to another pure function.
+    // e.g. is -> isOnDay()
+    if (
+      propertyType.path === PRIMITIVE_TYPE.DATETIME &&
+      type !== undefined &&
+      DATE_PRIMITIVE_TYPES.includes(type.path)
+    ) {
+      return true;
+    }
     return (
       type !== undefined &&
       ((NUMERIC_PRIMITIVE_TYPES.includes(type.path) &&
@@ -102,7 +119,8 @@ export class QueryBuilderFilterOperator_LessThan extends QueryBuilderFilterOpera
       case PRIMITIVE_TYPE.STRICTDATE:
       case PRIMITIVE_TYPE.DATETIME: {
         return buildPrimitiveInstanceValue(
-          filterConditionState.filterState.queryBuilderState,
+          filterConditionState.filterState.queryBuilderState.graphManagerState
+            .graph,
           propertyType.path,
           generateDefaultValueForPrimitiveType(propertyType.path),
         );
@@ -121,7 +139,12 @@ export class QueryBuilderFilterOperator_LessThan extends QueryBuilderFilterOpera
   ): ValueSpecification {
     return buildFilterConditionExpression(
       filterConditionState,
-      SUPPORTED_FUNCTIONS.LESS_THAN,
+      filterConditionState.propertyExpressionState.propertyExpression.func
+        .genericType.value.rawType.path === PRIMITIVE_TYPE.DATETIME &&
+        filterConditionState.value?.genericType?.value.rawType.path !==
+          PRIMITIVE_TYPE.DATETIME
+        ? SUPPORTED_FUNCTIONS.IS_BEFORE_DAY
+        : SUPPORTED_FUNCTIONS.LESS_THAN,
     );
   }
 
@@ -132,7 +155,12 @@ export class QueryBuilderFilterOperator_LessThan extends QueryBuilderFilterOpera
     return buildFilterConditionState(
       filterState,
       expression,
-      SUPPORTED_FUNCTIONS.LESS_THAN,
+      (expression.parametersValues[0] as AbstractPropertyExpression).func
+        .genericType.value.rawType.path === PRIMITIVE_TYPE.DATETIME &&
+        expression.parametersValues[1]?.genericType?.value.rawType.path !==
+          PRIMITIVE_TYPE.DATETIME
+        ? SUPPORTED_FUNCTIONS.IS_BEFORE_DAY
+        : SUPPORTED_FUNCTIONS.LESS_THAN,
       this,
     );
   }

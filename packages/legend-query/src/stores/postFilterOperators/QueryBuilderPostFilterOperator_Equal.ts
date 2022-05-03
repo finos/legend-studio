@@ -19,6 +19,8 @@ import {
   type ValueSpecification,
   type Enum,
   type SimpleFunctionExpression,
+  type FunctionExpression,
+  AbstractPropertyExpression,
   Enumeration,
   EnumValueExplicitReference,
   EnumValueInstanceValue,
@@ -39,19 +41,50 @@ import {
   unwrapNotExpression,
 } from '../QueryBuilderOperatorsHelper';
 import { QueryBuilderPostFilterOperator } from '../QueryBuilderPostFilterOperator';
+import { buildPostFilterConditionState } from '../QueryBuilderPostFilterProcessor';
 import type {
   PostFilterConditionState,
   QueryBuilderPostFilterState,
 } from '../QueryBuilderPostFilterState';
 import { generateDefaultValueForPrimitiveType } from '../QueryBuilderValueSpecificationBuilderHelper';
+import { buildPostFilterConditionExpression } from './QueryBuilderPostFilterOperatorHelper';
 
 export class QueryBuilderPostFilterOperator_Equal extends QueryBuilderPostFilterOperator {
   getLabel(): string {
     return 'is';
   }
 
-  getPureFunction(): SUPPORTED_FUNCTIONS {
-    return SUPPORTED_FUNCTIONS.EQUAL;
+  buildPostFilterConditionExpression(
+    postFilterConditionState: PostFilterConditionState,
+  ): ValueSpecification | undefined {
+    return buildPostFilterConditionExpression(
+      postFilterConditionState,
+      this,
+      postFilterConditionState.columnState.getReturnType()?.path ===
+        PRIMITIVE_TYPE.DATETIME &&
+        postFilterConditionState.value?.genericType?.value.rawType.path !==
+          PRIMITIVE_TYPE.DATETIME
+        ? SUPPORTED_FUNCTIONS.IS_ON_DAY
+        : SUPPORTED_FUNCTIONS.EQUAL,
+    );
+  }
+
+  buildPostFilterConditionState(
+    postFilterState: QueryBuilderPostFilterState,
+    expression: FunctionExpression,
+  ): PostFilterConditionState | undefined {
+    return buildPostFilterConditionState(
+      postFilterState,
+      expression,
+      expression.parametersValues[0] instanceof AbstractPropertyExpression &&
+        expression.parametersValues[0].func.genericType.value.rawType.path ===
+          PRIMITIVE_TYPE.DATETIME &&
+        expression.parametersValues[1]?.genericType?.value.rawType.path !==
+          PRIMITIVE_TYPE.DATETIME
+        ? SUPPORTED_FUNCTIONS.IS_ON_DAY
+        : SUPPORTED_FUNCTIONS.EQUAL,
+      this,
+    );
   }
 
   isCompatibleWithType(type: Type): boolean {
@@ -90,8 +123,24 @@ export class QueryBuilderPostFilterOperator_Equal extends QueryBuilderPostFilter
         PRIMITIVE_TYPE.FLOAT,
       ] as string[];
 
+      const DATE_PRIMITIVE_TYPES = [
+        PRIMITIVE_TYPE.DATE,
+        PRIMITIVE_TYPE.DATETIME,
+        PRIMITIVE_TYPE.STRICTDATE,
+        PRIMITIVE_TYPE.LATESTDATE,
+      ] as string[];
+
       // When changing the return type for LHS, the RHS value should be adjusted accordingly.
       // Numeric value is handled loosely because execution still works if a float (RHS) is assigned to an Integer property(LHS), etc.
+      // When LHS is of type DateTime, RHS is handled loosely since the operator could be changed to another pure function.
+      // e.g. is -> isOnDay()
+      if (
+        lhsType.path === PRIMITIVE_TYPE.DATETIME &&
+        type !== undefined &&
+        DATE_PRIMITIVE_TYPES.includes(type.path)
+      ) {
+        return true;
+      }
       return (
         type !== undefined &&
         ((NUMERIC_PRIMITIVE_TYPES.includes(type.path) &&
@@ -120,7 +169,8 @@ export class QueryBuilderPostFilterOperator_Equal extends QueryBuilderPostFilter
       case PRIMITIVE_TYPE.FLOAT:
       case PRIMITIVE_TYPE.INTEGER: {
         return buildPrimitiveInstanceValue(
-          postFilterConditionState.postFilterState.queryBuilderState,
+          postFilterConditionState.postFilterState.queryBuilderState
+            .graphManagerState.graph,
           propertyType.path,
           generateDefaultValueForPrimitiveType(propertyType.path),
         );

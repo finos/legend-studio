@@ -18,6 +18,7 @@ import {
   type Type,
   type ValueSpecification,
   type SimpleFunctionExpression,
+  type FunctionExpression,
   CollectionInstanceValue,
   Enumeration,
   PRIMITIVE_TYPE,
@@ -34,18 +35,38 @@ import {
   unwrapNotExpression,
 } from '../QueryBuilderOperatorsHelper';
 import { QueryBuilderPostFilterOperator } from '../QueryBuilderPostFilterOperator';
+import { buildPostFilterConditionState } from '../QueryBuilderPostFilterProcessor';
 import type {
   PostFilterConditionState,
   QueryBuilderPostFilterState,
 } from '../QueryBuilderPostFilterState';
+import { buildPostFilterConditionExpression } from './QueryBuilderPostFilterOperatorHelper';
 
 export class QueryBuilderPostFilterOperator_In extends QueryBuilderPostFilterOperator {
   getLabel(): string {
     return 'is in';
   }
 
-  getPureFunction(): SUPPORTED_FUNCTIONS {
-    return SUPPORTED_FUNCTIONS.IN;
+  buildPostFilterConditionExpression(
+    postFilterConditionState: PostFilterConditionState,
+  ): ValueSpecification | undefined {
+    return buildPostFilterConditionExpression(
+      postFilterConditionState,
+      this,
+      SUPPORTED_FUNCTIONS.IN,
+    );
+  }
+
+  buildPostFilterConditionState(
+    postFilterState: QueryBuilderPostFilterState,
+    expression: FunctionExpression,
+  ): PostFilterConditionState | undefined {
+    return buildPostFilterConditionState(
+      postFilterState,
+      expression,
+      SUPPORTED_FUNCTIONS.IN,
+      this,
+    );
   }
 
   isCompatibleWithType(type: Type): boolean {

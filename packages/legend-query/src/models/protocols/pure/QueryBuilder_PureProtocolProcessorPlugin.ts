@@ -36,6 +36,9 @@ import {
   matchFunctionName,
   SimpleFunctionExpression,
   extractElementNameFromPath,
+  GenericTypeExplicitReference,
+  PRIMITIVE_TYPE,
+  GenericType,
 } from '@finos/legend-graph';
 import { V1_buildSubTypePropertyExpressionTypeInference } from './v1/V1_QueryBuilder_PropertyExpressionTypeInferenceBuilder';
 
@@ -105,6 +108,69 @@ export class QueryBuilder_PureProtocolProcessorPlugin extends PureProtocolProces
             compileContext,
             processingContext,
           );
+        } else if (
+          matchFunctionName(functionName, SUPPORTED_FUNCTIONS.TODAY) ||
+          matchFunctionName(
+            functionName,
+            SUPPORTED_FUNCTIONS.FIRST_DAY_OF_QUARTER,
+          )
+        ) {
+          const SFEWithValueSpecifications = V1_buildGenericFunctionExpression(
+            functionName,
+            parameters,
+            openVariables,
+            compileContext,
+            processingContext,
+          );
+          SFEWithValueSpecifications[0].genericType =
+            GenericTypeExplicitReference.create(
+              new GenericType(
+                compileContext.graph.getPrimitiveType(
+                  PRIMITIVE_TYPE.STRICTDATE,
+                ),
+              ),
+            );
+          return SFEWithValueSpecifications;
+        } else if (matchFunctionName(functionName, SUPPORTED_FUNCTIONS.NOW)) {
+          const SFEWithValueSpecifications = V1_buildGenericFunctionExpression(
+            functionName,
+            parameters,
+            openVariables,
+            compileContext,
+            processingContext,
+          );
+          SFEWithValueSpecifications[0].genericType =
+            GenericTypeExplicitReference.create(
+              new GenericType(
+                compileContext.graph.getPrimitiveType(PRIMITIVE_TYPE.DATETIME),
+              ),
+            );
+          return SFEWithValueSpecifications;
+        } else if (
+          (
+            [
+              SUPPORTED_FUNCTIONS.FIRST_DAY_OF_YEAR,
+              SUPPORTED_FUNCTIONS.FIRST_DAY_OF_MONTH,
+              SUPPORTED_FUNCTIONS.FIRST_DAY_OF_WEEK,
+              SUPPORTED_FUNCTIONS.PREVIOUS_DAY_OF_WEEK,
+              SUPPORTED_FUNCTIONS.ADJUST,
+            ] as string[]
+          ).some((fn) => matchFunctionName(functionName, fn))
+        ) {
+          const SFEWithValueSpecifications = V1_buildGenericFunctionExpression(
+            functionName,
+            parameters,
+            openVariables,
+            compileContext,
+            processingContext,
+          );
+          SFEWithValueSpecifications[0].genericType =
+            GenericTypeExplicitReference.create(
+              new GenericType(
+                compileContext.graph.getPrimitiveType(PRIMITIVE_TYPE.DATE),
+              ),
+            );
+          return SFEWithValueSpecifications;
         } else if (
           Object.values(SUPPORTED_FUNCTIONS).some((fn) =>
             matchFunctionName(functionName, fn),
