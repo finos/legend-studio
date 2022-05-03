@@ -16,7 +16,7 @@
 
 import {
   collectKeyedDocumnetationEntriesFromConfig,
-  LegendApplicationKeyedDocumentationEntry,
+  type LegendApplicationKeyedDocumentationEntry,
 } from '@finos/legend-application';
 import packageJson from '../../package.json';
 import { CORE_DOCUMENTATION_ENTRIES } from '../stores/LegendStudioDocumentation';
