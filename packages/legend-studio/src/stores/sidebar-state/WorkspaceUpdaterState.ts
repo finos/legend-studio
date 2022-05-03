@@ -209,7 +209,6 @@ export class WorkspaceUpdaterState {
       ]);
       this.editorStore.changeDetectionState.start();
       yield Promise.all([
-        this.editorStore.changeDetectionState.computeLocalChanges(true),
         this.editorStore.changeDetectionState.computeAggregatedProjectLatestChanges(
           true,
         ),

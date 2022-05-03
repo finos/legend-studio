@@ -73,6 +73,38 @@ import {
 } from './QueryBuilderValueSpecificationModifierHelper';
 import { getDerivedPropertyMilestoningSteoreotype } from './QueryBuilderPropertyEditorState';
 
+/**
+ * TODO: @gayathrir11 let's add more doc to this
+ *
+ * NOTE: this takes date propgation into account. See the table below for all
+ * the combination:
+ *
+ *             | [source] |          |          |          |          |
+ * ----------------------------------------------------------------------
+ *   [target]  |          |   NONE   |  PR_TMP  |  BI_TMP  |  BU_TMP  |
+ * ----------------------------------------------------------------------
+ *             |   NONE   |   N.A.   |   PRD    | PRD,BUD  |    BUD   |
+ * ----------------------------------------------------------------------
+ *             |  PR_TMP  |   N.A.   |    X     | PRD,BUD  |    BUD   |
+ * ----------------------------------------------------------------------
+ *             |  BI_TMP  |   N.A.   |    X     |    X     |    X     |
+ * ----------------------------------------------------------------------
+ *             |  BU_TMP  |   N.A.   |   PRD    | PRD,BUD  |    X     |
+ * ----------------------------------------------------------------------
+ *
+ * Annotations:
+ *
+ * [source]: source temporal type
+ * [target]: target temporal type
+ *
+ * PR_TMP  : processing temporal
+ * BI_TMP  : bitemporal
+ * BU_TMP  : business temporal
+ *
+ * X       : no default date propagated
+ * PRD     : default processing date is propagated
+ * BUD     : default business date is propgated
+ */
 const isDefaultDatePropagationSupported = (
   currentPropertyExpression: AbstractPropertyExpression,
   queryBuilderState: QueryBuilderState,

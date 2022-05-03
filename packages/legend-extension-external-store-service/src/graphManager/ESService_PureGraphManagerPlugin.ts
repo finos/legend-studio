@@ -39,8 +39,8 @@ import {
 import { RootServiceInstanceSetImplementation } from '../models/metamodels/pure/model/packageableElements/store/serviceStore/mapping/ESService_RootServiceInstanceSetImplementation';
 import { ServiceStoreEmbeddedData } from '../models/metamodels/pure/model/data/ESService_ServiceStoreEmbeddedData';
 
-const PURE_GRAMMAR_SERVICE_STORE_PARSER_NAME = 'ServiceStore';
-const PURE_GRAMMAR_SERVICE_STORE_ELEMENT_TYPE_LABEL = 'ServiceStore';
+export const PURE_GRAMMAR_SERVICE_STORE_PARSER_NAME = 'ServiceStore';
+export const PURE_GRAMMAR_SERVICE_STORE_ELEMENT_TYPE_LABEL = 'ServiceStore';
 const PURE_GRAMMAR_SERVICE_STORE_CONNECTION_TYPE_LABEL =
   'ServiceStoreConnection';
 const PURE_GRAMMAR_SERVICE_STORE_SERVICE_GROUP_LABEL = 'ServiceGroup';

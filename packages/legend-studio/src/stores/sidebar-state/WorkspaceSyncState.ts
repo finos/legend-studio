@@ -444,10 +444,6 @@ export class WorkspaceSyncState {
           .changes;
       let conflicts: EntityChangeConflict[] = [];
       if (changes.length) {
-        // Base revision <-> Local
-        yield flowResult(
-          this.editorStore.changeDetectionState.computeLocalChanges(),
-        );
         yield flowResult(
           this.editorStore.changeDetectionState.computeAggregatedWorkspaceRemoteChanges(),
         );

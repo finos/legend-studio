@@ -866,7 +866,6 @@ export class EditorStore {
       ]);
       this.changeDetectionState.start();
       yield Promise.all([
-        this.changeDetectionState.computeLocalChanges(true),
         this.changeDetectionState.computeAggregatedWorkspaceChanges(true),
         this.changeDetectionState.computeAggregatedProjectLatestChanges(true),
       ]);

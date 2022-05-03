@@ -2262,6 +2262,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@finos/legend-extension-dsl-persistence@workspace:packages/legend-extension-dsl-persistence"
   dependencies:
+    "@finos/legend-application": "workspace:*"
     "@finos/legend-art": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-graph": "workspace:*"
@@ -2355,6 +2356,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@finos/legend-extension-external-store-service@workspace:packages/legend-extension-external-store-service"
   dependencies:
+    "@finos/legend-application": "workspace:*"
     "@finos/legend-art": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-graph": "workspace:*"
