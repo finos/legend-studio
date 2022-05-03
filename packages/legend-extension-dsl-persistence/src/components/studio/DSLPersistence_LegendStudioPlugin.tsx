@@ -18,6 +18,8 @@ import packageJson from '../../../package.json';
 import { MeteorIcon } from '@finos/legend-art';
 import type { PackageableElement } from '@finos/legend-graph';
 import {
+  LegendStudioPlugin,
+  UnsupportedElementEditorState,
   type DSL_LegendStudioPlugin_Extension,
   type EditorStore,
   type ElementEditorState,
@@ -27,10 +29,27 @@ import {
   type ElementTypeGetter,
   type NewElementFromStateCreator,
   type NewElementState,
-  LegendStudioPlugin,
-  UnsupportedElementEditorState,
+  type PureGrammarParserElementSnippetSuggestionsGetter,
+  type PureGrammarParserKeywordSuggestionGetter,
+  type PureGrammarTextSuggestion,
+  type PureGrammarParserElementDocumentationGetter,
+  type PureGrammarParserDocumentationGetter,
 } from '@finos/legend-studio';
 import { Persistence } from '../../models/metamodels/pure/model/packageableElements/persistence/DSLPersistence_Persistence';
+import {
+  PURE_GRAMMAR_PERSISTENCE_ELEMENT_TYPE_LABEL,
+  PURE_GRAMMAR_PERSISTENCE_PARSER_NAME,
+} from '../../graphManager/DSLPersistence_PureGraphManagerPlugin';
+import {
+  DSL_PERSISTENCE_DOCUMENTATION_ENTRIES,
+  DSL_PERSISTENCE_LEGEND_STUDIO_DOCUMENTATION_KEY,
+} from './DSLPersistence_LegendStudioDocumentation';
+import {
+  collectKeyedDocumnetationEntriesFromConfig,
+  type LegendApplicationDocumentationEntry,
+  type LegendApplicationKeyedDocumentationEntry,
+} from '@finos/legend-application';
+import { BLANK_PERSISTENCE_SNIPPET } from './DSLPersistence_CodeSnippets';
 
 const PERSISTENCE_ELEMENT_TYPE = 'PERSISTENCE';
 const PERSISTENCE_ELEMENT_PROJECT_EXPLORER_DND_TYPE =
@@ -42,6 +61,12 @@ export class DSLPersistence_LegendStudioPlugin
 {
   constructor() {
     super(packageJson.extensions.studioPlugin, packageJson.version);
+  }
+
+  override getExtraKeyedDocumentationEntries(): LegendApplicationKeyedDocumentationEntry[] {
+    return collectKeyedDocumnetationEntriesFromConfig(
+      DSL_PERSISTENCE_DOCUMENTATION_ENTRIES,
+    );
   }
 
   getExtraSupportedElementTypes(): string[] {
@@ -116,5 +141,73 @@ export class DSLPersistence_LegendStudioPlugin
 
   getExtraGrammarTextEditorDnDTypes(): string[] {
     return [PERSISTENCE_ELEMENT_PROJECT_EXPLORER_DND_TYPE];
+  }
+
+  getExtraPureGrammarParserElementDocumentationGetters(): PureGrammarParserElementDocumentationGetter[] {
+    return [
+      (
+        editorStore: EditorStore,
+        parserKeyword: string,
+        elementKeyword: string,
+      ): LegendApplicationDocumentationEntry | undefined => {
+        if (parserKeyword === PURE_GRAMMAR_PERSISTENCE_PARSER_NAME) {
+          if (elementKeyword === PURE_GRAMMAR_PERSISTENCE_ELEMENT_TYPE_LABEL) {
+            return editorStore.applicationStore.docRegistry.getEntry(
+              DSL_PERSISTENCE_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PERSISTENCE_ELEMENT,
+            );
+          }
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  getExtraPureGrammarParserDocumentationGetters(): PureGrammarParserDocumentationGetter[] {
+    return [
+      (
+        editorStore: EditorStore,
+        parserKeyword: string,
+      ): LegendApplicationDocumentationEntry | undefined => {
+        if (parserKeyword === PURE_GRAMMAR_PERSISTENCE_PARSER_NAME) {
+          return editorStore.applicationStore.docRegistry.getEntry(
+            DSL_PERSISTENCE_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER,
+          );
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  getExtraPureGrammarParserKeywordSuggestionGetters(): PureGrammarParserKeywordSuggestionGetter[] {
+    return [
+      (editorStore: EditorStore): PureGrammarTextSuggestion[] => [
+        {
+          text: PURE_GRAMMAR_PERSISTENCE_PARSER_NAME,
+          description: `DSL Persistence`,
+          documentation: editorStore.applicationStore.docRegistry.getEntry(
+            DSL_PERSISTENCE_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER,
+          ),
+          insertText: PURE_GRAMMAR_PERSISTENCE_PARSER_NAME,
+        },
+      ],
+    ];
+  }
+
+  getExtraPureGrammarParserElementSnippetSuggestionsGetters(): PureGrammarParserElementSnippetSuggestionsGetter[] {
+    return [
+      (
+        editorStore: EditorStore,
+        parserKeyword: string,
+      ): PureGrammarTextSuggestion[] | undefined =>
+        parserKeyword === PURE_GRAMMAR_PERSISTENCE_PARSER_NAME
+          ? [
+              {
+                text: PURE_GRAMMAR_PERSISTENCE_ELEMENT_TYPE_LABEL,
+                description: '(blank)',
+                insertText: BLANK_PERSISTENCE_SNIPPET,
+              },
+            ]
+          : undefined,
+    ];
   }
 }
