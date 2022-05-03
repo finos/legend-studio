@@ -21,7 +21,6 @@ import {
   TEST_DATA__MissingStereoType,
   TEST_DATA__MissingTagValue,
   TEST_DATA__MissingTargetClassinMapping,
-  TEST_DATA__MissingSetImp,
   TEST_DATA__MissingClassMapping,
   TEST_DATA__MissingClassMappingWithTargetId,
   TEST_DATA__DuplicateEnumerationValues,
@@ -141,15 +140,6 @@ test.skip(unitTest('Missing class mapping with ID'), async () => {
   ).rejects.toThrowError(
     `Can't find class mapping with ID 'notFound' in mapping 'ui::myMap'`,
   );
-});
-
-test(unitTest('Missing set implementation'), async () => {
-  await expect(() =>
-    graphManagerState.graphManager.buildGraph(
-      graphManagerState.graph,
-      TEST_DATA__MissingSetImp as Entity[],
-    ),
-  ).rejects.toThrowError(`Can't find set implementation 'targetClassAMissing'`);
 });
 
 /**
