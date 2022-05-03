@@ -422,13 +422,11 @@ export class ChangeDetectionState {
         flowResult(this.computeLocalChanges(true)).catch(noop());
       },
       {
+        // fire reaction immediately to compute the first changeset
+        fireImmediately: true,
         // throttle the call
         delay: throttleDuration,
       },
-      /**
-       * NOTE: this reaction will not be fired immediately so we have to manually call the first local changes computation
-       * See https://mobx.js.org/refguide/reaction.html#options
-       */
     );
     this.isChangeDetectionRunning = true;
     this.hasChangeDetectionStarted = true;
