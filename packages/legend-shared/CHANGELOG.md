@@ -1,5 +1,15 @@
 # @finos/legend-shared
 
+## 2.0.0
+
+### Major Changes
+
+- [#1115](https://github.com/finos/legend-studio/pull/1115) [`4623d5c1`](https://github.com/finos/legend-studio/commit/4623d5c1970823151de2f820d79662b560641c67) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Rework `serializeArray` and `deserializeArray`: these methods now take an `options` object instead of just the `skipIfEmpty: boolean` flag. This options object has the original `skipIfEmpty?: boolean | undefined` and a new flag called `INTERNAL__forceReturnEmptyInTest?: boolean | undefined` to make exception for grammar roundtrip test.
+
+* [#1115](https://github.com/finos/legend-studio/pull/1115) [`4623d5c1`](https://github.com/finos/legend-studio/commit/4623d5c1970823151de2f820d79662b560641c67) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Remove `BasicSerializationFactory` as now `SerializationFactory` allows overriding. `NullphobicSerializationFactory` has also been removed in favor of the new options `deserializeNullAsUndefined` one can pass when constructing `SerializationFactory`.
+
+- [#1113](https://github.com/finos/legend-studio/pull/1113) [`e35042ba`](https://github.com/finos/legend-studio/commit/e35042bacf7999e8a5d9836fa6b31cf89cc66237) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Adopt `ESM` styled exports: i.e. we now make use of `exports` field (and removed `main` field) in `package.json`.
+
 ## 1.3.1
 
 ## 1.3.0

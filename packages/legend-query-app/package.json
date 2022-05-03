@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-query-app",
-  "version": "4.19.0",
+  "version": "5.0.0",
   "description": "Legend Query web application",
   "keywords": [
     "legend",
