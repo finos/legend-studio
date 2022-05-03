@@ -85,7 +85,7 @@ export class QueryBuilderFilterOperator_Equal extends QueryBuilderFilterOperator
       ? getNonCollectionValueSpecificationType(filterConditionState.value)
       : undefined;
 
-    const numericPrimitiveTypes = [
+    const NUMERIC_PRIMITIVE_TYPES = [
       PRIMITIVE_TYPE.NUMBER,
       PRIMITIVE_TYPE.INTEGER,
       PRIMITIVE_TYPE.DECIMAL,
@@ -96,8 +96,8 @@ export class QueryBuilderFilterOperator_Equal extends QueryBuilderFilterOperator
     // Numeric value is handled loosely because execution still works if a float (RHS) is assigned to an Integer property(LHS), etc.
     return (
       type !== undefined &&
-      ((numericPrimitiveTypes.includes(type.path) &&
-        numericPrimitiveTypes.includes(propertyType.path)) ||
+      ((NUMERIC_PRIMITIVE_TYPES.includes(type.path) &&
+        NUMERIC_PRIMITIVE_TYPES.includes(propertyType.path)) ||
         type === propertyType ||
         propertyType.isSuperType(type))
     );

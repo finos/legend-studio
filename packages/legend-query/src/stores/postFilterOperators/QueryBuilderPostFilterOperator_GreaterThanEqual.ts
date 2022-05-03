@@ -20,6 +20,7 @@ export class QueryBuilderPostFilterOperator_GreaterThanEqual extends QueryBuilde
   override getLabel(): string {
     return '>=';
   }
+
   override getPureFunction(): SUPPORTED_FUNCTIONS {
     return SUPPORTED_FUNCTIONS.GREATER_THAN_EQUAL;
   }

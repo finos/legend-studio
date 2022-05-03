@@ -42,9 +42,11 @@ export class QueryBuilderPostFilterOperator_Contain extends QueryBuilderPostFilt
   getLabel(): string {
     return 'contains';
   }
+
   getPureFunction(): SUPPORTED_FUNCTIONS {
     return SUPPORTED_FUNCTIONS.CONTAINS;
   }
+
   isCompatibleWithType(type: Type): boolean {
     if (type.path === PRIMITIVE_TYPE.STRING) {
       return true;
@@ -60,6 +62,7 @@ export class QueryBuilderPostFilterOperator_Contain extends QueryBuilderPostFilt
       : undefined;
     return PRIMITIVE_TYPE.STRING === type?.path;
   }
+
   getDefaultFilterConditionValue(
     postFilterConditionState: PostFilterConditionState,
   ): ValueSpecification {

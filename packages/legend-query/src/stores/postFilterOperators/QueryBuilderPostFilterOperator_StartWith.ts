@@ -39,15 +39,18 @@ export class QueryBuilderPostFilterOperator_StartWith extends QueryBuilderPostFi
   getLabel(): string {
     return 'starts with';
   }
+
   getPureFunction(): SUPPORTED_FUNCTIONS {
     return SUPPORTED_FUNCTIONS.STARTS_WITH;
   }
+
   isCompatibleWithType(type: Type): boolean {
     if (type.path === PRIMITIVE_TYPE.STRING) {
       return true;
     }
     return false;
   }
+
   isCompatibleWithConditionValue(
     postFilterConditionState: PostFilterConditionState,
   ): boolean {
@@ -56,6 +59,7 @@ export class QueryBuilderPostFilterOperator_StartWith extends QueryBuilderPostFi
       : undefined;
     return PRIMITIVE_TYPE.STRING === type?.path;
   }
+
   getDefaultFilterConditionValue(
     postFilterConditionState: PostFilterConditionState,
   ): ValueSpecification {

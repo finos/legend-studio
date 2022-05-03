@@ -148,11 +148,13 @@ export class TestContainerState {
     if (this.assertionData) {
       this.testContainer.assert =
         this.editorStore.graphManagerState.graphManager.HACKY__createServiceTestAssertLambda(
-          /* @MARKER: Workaround for https://github.com/finos/legend-studio/issues/68 */
           // NOTE: due to discrepancies in the test runners for mapping and service, we have don't need
           // to do any (un)escaping here like what we do for mapping test assertion data. For better context:
           // See https://github.com/finos/legend-studio/issues/586
           // See https://github.com/finos/legend-engine/issues/429
+          /**
+           * @workaround https://github.com/finos/legend-studio/issues/68
+           */
           tryToMinifyLosslessJSONString(this.assertionData),
         );
     }
@@ -166,11 +168,13 @@ export class TestContainerState {
         testContainter.assert,
       );
     this.assertionData = expectedResultAssertionString
-      ? /* @MARKER: Workaround for https://github.com/finos/legend-studio/issues/68 */
-        // NOTE: due to discrepancies in the test runners for mapping and service, we have don't need
+      ? // NOTE: due to discrepancies in the test runners for mapping and service, we have don't need
         // to do any (un)escaping here like what we do for mapping test assertion data. For better context:
         // See https://github.com/finos/legend-studio/issues/586
         // See https://github.com/finos/legend-engine/issues/429
+        /**
+         * @workaround https://github.com/finos/legend-studio/issues/68
+         */
         tryToFormatLosslessJSONString(expectedResultAssertionString)
       : undefined;
   }
@@ -206,7 +210,9 @@ export class TestContainerState {
                 ),
                 connection.class,
                 createUrlStringFromData(
-                  /* @MARKER: Workaround for https://github.com/finos/legend-studio/issues/68 */
+                  /**
+                   * @workaround https://github.com/finos/legend-studio/issues/68
+                   */
                   tryToMinifyLosslessJSONString(testData),
                   ContentType.APPLICATION_JSON,
                   engineConfig.useBase64ForAdhocConnectionDataUrls,
@@ -333,7 +339,9 @@ export class TestContainerState {
             },
           )) as ExecutionResult;
         this.setAssertionData(
-          /* @MARKER: Workaround for https://github.com/finos/legend-studio/issues/68 */
+          /**
+           * @workaround https://github.com/finos/legend-studio/issues/68
+           */
           tryToFormatLosslessJSONString(
             losslessStringify(
               extractExecutionResultValues(result),
@@ -386,7 +394,9 @@ export class TestContainerState {
           )) as ExecutionResult;
         this.setTestExecutionResultText({
           expected: this.assertionData ?? '',
-          /* @MARKER: Workaround for https://github.com/finos/legend-studio/issues/68 */
+          /**
+           * @workaround https://github.com/finos/legend-studio/issues/68
+           */
           actual: tryToFormatLosslessJSONString(
             losslessStringify(extractExecutionResultValues(result)),
           ),

@@ -117,7 +117,13 @@ export class V1_ProtocolToMetaModelGraphThirdPassBuilder
     const uniqueProperties = new Set<string>();
     element.properties.forEach((property) => {
       if (uniqueProperties.has(property.name)) {
-        /* @MARKER: RELAXED GRAPH CHECK - See https://github.com/finos/legend-studio/issues/660 */
+        /**
+         * This test is skipped because we want to temporarily relax graph building algorithm
+         * to ease Pure -> Legend migration push.
+         * See https://github.com/finos/legend-studio/issues/660
+         *
+         * @discrepancy graph-building
+         */
         this.context.log.warn(
           LogEvent.create(
             `Found duplicated property '${property.name}' in class '${_class.path}'`,
@@ -140,7 +146,13 @@ export class V1_ProtocolToMetaModelGraphThirdPassBuilder
     const first = guaranteeNonNullable(element.properties[0]);
     const second = guaranteeNonNullable(element.properties[1]);
     if (first.name === second.name) {
-      /* @MARKER: RELAXED GRAPH CHECK - See https://github.com/finos/legend-studio/issues/660 */
+      /**
+       * This test is skipped because we want to temporarily relax graph building algorithm
+       * to ease Pure -> Legend migration push.
+       * See https://github.com/finos/legend-studio/issues/660
+       *
+       * @discrepancy graph-building
+       */
       this.context.log.warn(
         LogEvent.create(
           `Found duplicated property '${element.properties[0]?.name}' in association '${element.name}'`,

@@ -727,9 +727,13 @@ export class EditorGraphState {
    * built from the new model context data, it resets the graph properly. The bane here is that resetting the graph properly is
    * not trivial, for example, in the cleanup phase, there are things we want to re-use, such as the one-time processed system
    * metamodels or the `reusable` metamodels from project dependencies. There are also explorer states like the package tree,
-   * opened tabs, change detection, etc. to take care of. There are a lot of potential pitfalls. For these, we will add a marker
-   *    @MARKER: MEMORY-SENSITIVE
-   * to indicate we should check carefully these pieces when we detect memory issue as it might still be referring to the old graph
+   * opened tabs, change detection, etc. to take care of. There are a lot of potential pitfalls. For these, we will add the
+   * marker:
+   *
+   * @risk memory-leak
+   *
+   * to indicate we should check carefully these pieces when we detect memory issue as it might still
+   * be referring to the old graph
    *
    * In the past, we have found that there are a few potential root causes for memory leak:
    * 1. State management Mobx allows references, as such, it is sometimes hard to trace down which references can cause problem
@@ -741,7 +745,7 @@ export class EditorGraphState {
    *    danger as well. Beware the way when we start to make system/project dependencies references elements of current graph
    *    e.g. when we have a computed value in a immutable class that get all subclasses, etc.
    * 3. We reprocess editor states to ensure good UX, e.g. find tabs to keep open, find tree nodes to expand, etc.
-   *    after updating the graph. These in our experience is the MOST COMMON source of memory leak. It is actually
+   *    after updating the graph. These in our experience is the **MOST COMMON** source of memory leak. It is actually
    *    quite predictable since structures like tabs and tree node embeds graph data, which are references to the old graph
    *
    * NOTE: One big obfuscating factor is overlapping graph refresh. Sometimes, we observed that calling this update graph
@@ -761,9 +765,12 @@ export class EditorGraphState {
     this.isUpdatingGraph = true;
     try {
       const newGraph = this.editorStore.graphManagerState.createEmptyGraph();
-      /* @MARKER: MEMORY-SENSITIVE */
-      // NOTE: this can post memory-leak issue if we start having immutable elements referencing current graph elements:
-      // e.g. subclass analytics on the immutable class, etc.
+      /**
+       * NOTE: this can post memory-leak issue if we start having immutable elements referencing current graph elements:
+       * e.g. subclass analytics on the immutable class, etc.
+       *
+       * @risk memory-leak
+       */
       if (
         this.editorStore.graphManagerState.graph.dependencyManager.buildState
           .hasSucceeded
@@ -792,8 +799,11 @@ export class EditorGraphState {
         );
       }
 
-      /* @MARKER: MEMORY-SENSITIVE */
-      // Backup and reset editor states info
+      /**
+       * Backup and editor states info before resetting
+       *
+       * @risk memory-leak
+       */
       const openedEditorStates = this.editorStore.openedEditorStates;
       const currentEditorState = this.editorStore.currentEditorState;
       /**
@@ -807,7 +817,6 @@ export class EditorGraphState {
        */
       this.editorStore.closeAllEditorTabs();
 
-      /* @MARKER: MEMORY-SENSITIVE */
       this.editorStore.changeDetectionState.stop(); // stop change detection before disposing hash
       yield flowResult(graph_dispose(this.editorStore.graphManagerState.graph));
 
@@ -827,22 +836,30 @@ export class EditorGraphState {
         this.graphGenerationState.generatedEntities,
       );
       this.editorStore.graphManagerState.graph = newGraph;
-      /* @MARKER: MEMORY-SENSITIVE */
-      // Reprocess explorer tree
+
+      /**
+       * Reprocess explorer tree which might still hold references to old graph
+       *
+       * FIXME: we allow this so the UX stays the same but this can cause memory leak
+       * we could consider doing this properly using node IDs
+       *
+       * @risk memory-leak
+       */
+      this.editorStore.explorerTreeState.reprocess();
       // this.editorStore.explorerTreeState = new ExplorerTreeState(this.applicationStore, this.editorStore);
       // this.editorStore.explorerTreeState.buildImmutableModelTrees();
       // this.editorStore.explorerTreeState.build();
 
-      // FIXME: we allow this so the UX stays the same but this can cause memory leak
-      // do this properly using node IDs -> this causes mem-leak right now
-      this.editorStore.explorerTreeState.reprocess();
-
-      // Reprocess editor states
-      // FIXME: we allow this so the UX stays the same but this can cause memory leak
-      // we should change `reprocess` model to do something like having source information on the form to navigate to it properly
-
-      /* @MARKER: MEMORY-SENSITIVE */
-      // so that information is not dependent on the graph, but on the component itself, with IDs and such.
+      /**
+       * Reprocess editor states which might still hold references to old graph
+       *
+       * FIXME: we allow this so the UX stays the same but this can cause memory leak
+       * we should change `reprocess` model to do something like having source information
+       * on the form to navigate to it properly so that information is not dependent on the
+       * graph, but on the component itself, with IDs and such.
+       *
+       * @risk memory-leak
+       */
       this.editorStore.openedEditorStates = openedEditorStates
         .map((editorState) =>
           this.editorStore.reprocessElementEditorState(editorState),
@@ -861,8 +878,7 @@ export class EditorGraphState {
       this.isUpdatingGraph = false;
 
       // ======= (RE)START CHANGE DETECTION =======
-      /* @MARKER: MEMORY-SENSITIVE */
-      yield this.editorStore.changeDetectionState.observeGraph();
+      yield flowResult(this.editorStore.changeDetectionState.observeGraph());
       yield this.editorStore.changeDetectionState.preComputeGraphElementHashes();
       this.editorStore.changeDetectionState.start();
       yield flowResult(
@@ -886,7 +902,7 @@ export class EditorGraphState {
       if (error instanceof GraphBuilderError && this.editorStore.isInFormMode) {
         this.editorStore.applicationStore.setBlockingAlert({
           message: `Can't build graph: ${error.message}`,
-          prompt: 'Refreshing full application',
+          prompt: 'Refreshing full application...',
           showLoading: true,
         });
         this.editorStore.closeAllEditorTabs();
@@ -916,13 +932,15 @@ export class EditorGraphState {
     );
     this.isUpdatingApplication = true;
     try {
-      /* @MARKER: MEMORY-SENSITIVE */
-      // Backup and reset editor states info
+      /**
+       * Backup and editor states info before resetting
+       *
+       * @risk memory-leak
+       */
       const openedEditorStates = this.editorStore.openedEditorStates;
       const currentEditorState = this.editorStore.currentEditorState;
       this.editorStore.closeAllEditorTabs();
 
-      /* @MARKER: MEMORY-SENSITIVE */
       yield flowResult(
         this.editorStore.graphManagerState.graph.generationModel.dispose(),
       );
@@ -934,13 +952,16 @@ export class EditorGraphState {
         this.graphGenerationState.generatedEntities,
       );
 
-      /* @MARKER: MEMORY-SENSITIVE */
-      // Reprocess explorer tree
-      // FIXME: we allow this so the UX stays the same but this can cause memory leak
-      // we should change `reprocess` model to do something like having source information on the form to navigate to it properly
+      /**
+       * Reprocess explorer tree which might still hold references to old graph
+       *
+       * FIXME: we allow this so the UX stays the same but this can cause memory leak
+       * we could consider doing this properly using node IDs
+       *
+       * @risk memory-leak
+       */
       this.editorStore.explorerTreeState.reprocess();
 
-      /* @MARKER: MEMORY-SENSITIVE */
       // so that information is not dependent on the graph, but on the component itself, with IDs and such.
       this.editorStore.openedEditorStates = openedEditorStates
         .map((editorState) =>

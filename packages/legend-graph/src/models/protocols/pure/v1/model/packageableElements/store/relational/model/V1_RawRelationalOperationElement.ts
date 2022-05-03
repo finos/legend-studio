@@ -17,5 +17,10 @@
 import type { PlainObject } from '@finos/legend-shared';
 import type { V1_RelationalOperationElement } from './V1_RelationalOperationElement';
 
+/**
+ * Studio does not process value specification, they are left in raw JSON form
+ *
+ * @discrepancy model
+ */
 export type V1_RawRelationalOperationElement =
-  PlainObject<V1_RelationalOperationElement>; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process relational operation element
+  PlainObject<V1_RelationalOperationElement>;

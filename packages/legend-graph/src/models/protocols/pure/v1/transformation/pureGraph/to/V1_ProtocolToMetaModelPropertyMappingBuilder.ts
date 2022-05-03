@@ -91,7 +91,13 @@ import type { Mapping } from '../../../../../../metamodels/pure/packageableEleme
 import { V1_resolveBinding } from './V1_DSLExternalFormat_GraphBuilderHelper';
 import { TEMPORARY__UnresolvedSetImplementation } from '../../../../../../metamodels/pure/packageableElements/mapping/TEMPORARY__UnresolvedSetImplementation';
 
-/* @MARKER: RELAXED GRAPH CHECK - See https://github.com/finos/legend-studio/issues/880 */
+/**
+ * This test is skipped because we want to temporarily relax graph building algorithm
+ * to ease Pure -> Legend migration push.
+ * See https://github.com/finos/legend-studio/issues/880
+ *
+ * @discrepancy graph-building
+ */
 const TEMPORARY__getClassMappingByIdOrReturnUnresolved = (
   mapping: Mapping,
   id: string,
@@ -218,7 +224,6 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
             protocol.target,
           );
       } else {
-        /* @MARKER: ACTION ANALYTICS */
         // NOTE: if no there is one non-root class mapping, auto-nominate that as the target set implementation
         const setImplementation = getClassMappingsByClass(
           topParent.parent,

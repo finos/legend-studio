@@ -24,7 +24,7 @@ import {
 } from '@finos/legend-shared';
 import {
   type ValueSpecification,
-  type Class,
+  Class,
   Multiplicity,
   getMilestoneTemporalStereotype,
   INTERNAL__UnknownValueSpecification,
@@ -71,7 +71,53 @@ import {
   functionExpression_setParametersValues,
   propertyExpression_setParametersValue,
 } from './QueryBuilderValueSpecificationModifierHelper';
-import { isDefaultDatePropagationSupported } from './QueryBuilderPropertyEditorState';
+import { getDerivedPropertyMilestoningSteoreotype } from './QueryBuilderPropertyEditorState';
+
+const isDefaultDatePropagationSupported = (
+  currentPropertyExpression: AbstractPropertyExpression,
+  queryBuilderState: QueryBuilderState,
+  prevPropertyExpression?: AbstractPropertyExpression | undefined,
+): boolean => {
+  const property = currentPropertyExpression.func;
+  const graph = queryBuilderState.graphManagerState.graph;
+  if (
+    prevPropertyExpression &&
+    prevPropertyExpression.func.genericType.value.rawType instanceof Class
+  ) {
+    const milestoningStereotype = getMilestoneTemporalStereotype(
+      prevPropertyExpression.func.genericType.value.rawType,
+      graph,
+    );
+    if (
+      milestoningStereotype &&
+      !prevPropertyExpression.parametersValues
+        .slice(1)
+        .every(
+          (parameterValue) =>
+            parameterValue instanceof INTERNAL__PropagatedValue,
+        )
+    ) {
+      return false;
+    }
+  }
+  if (property.genericType.value.rawType instanceof Class) {
+    // the stereotype of source class of current property expression.
+    const sourceStereotype =
+      property instanceof DerivedProperty
+        ? getDerivedPropertyMilestoningSteoreotype(property, graph)
+        : undefined;
+    if (sourceStereotype === MILESTONING_STEREOTYPE.BITEMPORAL) {
+      return true;
+    }
+    // the stereotype (if exists) of the generic type of current property expression.
+    const targetStereotype = getMilestoneTemporalStereotype(
+      property.genericType.value.rawType,
+      graph,
+    );
+    return sourceStereotype === targetStereotype;
+  }
+  return false;
+};
 
 export const buildGetAllFunction = (
   _class: Class,
@@ -443,13 +489,16 @@ export const buildLambdaFunction = (
             projectionColumnState instanceof
             QueryBuilderSimpleProjectionColumnState
           ) {
-            const propertyExpression = buildPropertyExpressionChain(
-              projectionColumnState.propertyExpressionState.propertyExpression,
-              projectionColumnState.propertyExpressionState.queryBuilderState,
-            );
             columnLambda = buildGenericLambdaFunctionInstanceValue(
               projectionColumnState.lambdaParameterName,
-              [guaranteeNonNullable(propertyExpression)],
+              [
+                buildPropertyExpressionChain(
+                  projectionColumnState.propertyExpressionState
+                    .propertyExpression,
+                  projectionColumnState.propertyExpressionState
+                    .queryBuilderState,
+                ),
+              ],
               queryBuilderState.graphManagerState.graph,
             );
           } else if (
@@ -549,13 +598,16 @@ export const buildLambdaFunction = (
             projectionColumnState instanceof
             QueryBuilderSimpleProjectionColumnState
           ) {
-            const propertyExpression = buildPropertyExpressionChain(
-              projectionColumnState.propertyExpressionState.propertyExpression,
-              projectionColumnState.propertyExpressionState.queryBuilderState,
-            );
             columnLambda = buildGenericLambdaFunctionInstanceValue(
               projectionColumnState.lambdaParameterName,
-              [guaranteeNonNullable(propertyExpression)],
+              [
+                buildPropertyExpressionChain(
+                  projectionColumnState.propertyExpressionState
+                    .propertyExpression,
+                  projectionColumnState.propertyExpressionState
+                    .queryBuilderState,
+                ),
+              ],
               queryBuilderState.graphManagerState.graph,
             );
           } else if (

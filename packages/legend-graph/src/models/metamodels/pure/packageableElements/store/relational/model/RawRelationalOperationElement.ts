@@ -16,7 +16,12 @@
 
 import { isEmpty } from '@finos/legend-shared';
 
-export type RawRelationalOperationElement = object; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process relational operation element
+/**
+ * Studio does not process value specification, they are left in raw JSON form
+ *
+ * @discrepancy model
+ */
+export type RawRelationalOperationElement = object;
 
 export const createStubRelationalOperationElement =
   (): RawRelationalOperationElement => ({});

@@ -36,7 +36,9 @@ export class ExpectedOutputMappingTestAssert
 
   constructor(expectedOutput: string) {
     super();
-    /* @MARKER: Workaround for https://github.com/finos/legend-studio/issues/68 */
+    /**
+     * @workaround https://github.com/finos/legend-studio/issues/68
+     */
     this.expectedOutput = tryToMinifyLosslessJSONString(expectedOutput);
   }
 

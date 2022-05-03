@@ -285,7 +285,14 @@ export const V1_classSchema = createModelSchema(V1_Class, {
       }),
   ),
   name: primitive(),
-  // @MARKER: GRAMMAR ROUNDTRIP --- omit this information during protocol transformation as it can be interpreted while building the graph
+  /**
+   * Omit this information during protocol transformation as it can be
+   * interpreted while building the graph; and will help grammar-roundtrip
+   * tests (involving engine) to pass. Ideally, this requires grammar parser
+   * and composer in engine to be more consistent.
+   *
+   * @discrepancy grammar-roundtrip
+   */
   originalMilestonedProperties: custom(
     (values) =>
       serializeArray(values, (value) => SKIP, {
@@ -381,7 +388,14 @@ export const V1_associationSchema = createModelSchema(V1_Association, {
   name: primitive(),
   package: primitive(),
   properties: list(usingModelSchema(V1_propertySchema)),
-  // @MARKER: GRAMMAR ROUNDTRIP --- omit this information during protocol transformation as it can be interpreted while building the graph
+  /**
+   * Omit this information during protocol transformation as it can be
+   * interpreted while building the graph; and will help grammar-roundtrip
+   * tests (involving engine) to pass. Ideally, this requires grammar parser
+   * and composer in engine to be more consistent.
+   *
+   * @discrepancy grammar-roundtrip
+   */
   originalMilestonedProperties: custom(
     (values) =>
       serializeArray(values, (value) => SKIP, {

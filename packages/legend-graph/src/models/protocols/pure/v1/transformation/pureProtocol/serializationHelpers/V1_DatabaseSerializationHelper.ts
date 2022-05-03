@@ -324,7 +324,15 @@ const columnModelSchema = createModelSchema(V1_Column, {
 export const V1_tablePtrModelSchema = createModelSchema(V1_TablePtr, {
   _type: usingConstantValueSchema(V1_TABLE_POINTER_TYPE),
   database: primitive(),
-  mainTableDb: primitive(), // @MARKER: GRAMMAR ROUNDTRIP --- omit this information during protocol transformation as it can be interpreted while building the graph
+  /**
+   * Omit this information during protocol transformation as it can be
+   * interpreted while building the graph; and will help grammar-roundtrip
+   * tests (involving engine) to pass. Ideally, this requires grammar parser
+   * and composer in engine to be more consistent.
+   *
+   * @discrepancy grammar-roundtrip
+   */
+  mainTableDb: primitive(),
   schema: primitive(),
   table: primitive(),
 });

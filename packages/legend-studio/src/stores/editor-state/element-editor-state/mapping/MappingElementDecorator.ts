@@ -113,7 +113,6 @@ export const getLeafSetImplementations = (
   return [setImp];
 };
 
-/* @MARKER: ACTION ANALYTICS */
 /**
  * This logic helps making the mapping editor smart.
  * Its first purpose is to prepoluate empty property mapping so as to allow user
@@ -296,19 +295,19 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
       return [];
     };
     const propertyMappingsBeforeDecoration = setImplementation.propertyMappings;
-    let propertyMappings =
+    const decoratedPropertyMappings =
       getDecoratedSetImplementationPropertyMappings<PurePropertyMapping>(
         setImplementation,
         decoratePropertyMapping,
       );
-    propertyMappings = propertyMappings.concat(
-      propertyMappingsBeforeDecoration.filter(
-        (propertyMapping) => !propertyMappings.includes(propertyMapping),
-      ),
-    );
     pureInstanceSetImpl_setPropertyMappings(
       setImplementation,
-      propertyMappings,
+      decoratedPropertyMappings.concat(
+        propertyMappingsBeforeDecoration.filter(
+          (propertyMapping) =>
+            !decoratedPropertyMappings.includes(propertyMapping),
+        ),
+      ),
       this.editorStore.changeDetectionState.observerContext,
     );
   }
@@ -404,19 +403,19 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
       return [];
     };
     const propertyMappingsBeforeDecoration = setImplementation.propertyMappings;
-    let propertyMappings =
+    const decoratedPropertyMappings =
       getDecoratedSetImplementationPropertyMappings<AbstractFlatDataPropertyMapping>(
         setImplementation,
         decoratePropertyMapping,
       );
-    propertyMappings = propertyMappings.concat(
-      propertyMappingsBeforeDecoration.filter(
-        (propertyMapping) => !propertyMappings.includes(propertyMapping),
-      ),
-    );
     mapping_setPropertyMappings(
       setImplementation,
-      propertyMappings,
+      decoratedPropertyMappings.concat(
+        propertyMappingsBeforeDecoration.filter(
+          (propertyMapping) =>
+            !decoratedPropertyMappings.includes(propertyMapping),
+        ),
+      ),
       this.editorStore.changeDetectionState.observerContext,
     );
   }
@@ -567,19 +566,19 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
       return [];
     };
     const propertyMappingsBeforeDecoration = setImplementation.propertyMappings;
-    let propertyMappings =
+    const decoratedPropertyMappings =
       getDecoratedSetImplementationPropertyMappings<PropertyMapping>(
         setImplementation,
         decoratePropertyMapping,
       );
-    propertyMappings = propertyMappings.concat(
-      propertyMappingsBeforeDecoration.filter(
-        (propertyMapping) => !propertyMappings.includes(propertyMapping),
-      ),
-    );
     mapping_setPropertyMappings(
       setImplementation,
-      propertyMappings,
+      decoratedPropertyMappings.concat(
+        propertyMappingsBeforeDecoration.filter(
+          (propertyMapping) =>
+            !decoratedPropertyMappings.includes(propertyMapping),
+        ),
+      ),
       this.editorStore.changeDetectionState.observerContext,
     );
   }
@@ -611,7 +610,6 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
   }
 }
 
-/* @MARKER: ACTION ANALYTICS */
 /**
  * This is the cleanup for mapping elements decorated by {@link MappingElementDecorator}.
  */

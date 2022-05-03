@@ -20,8 +20,18 @@ import { CORE_HASH_STRUCTURE } from '../../../../../../MetaModelConst';
 import { hashLambda } from '../../../../../../MetaModelUtils';
 
 export class AggregationFunctionSpecification implements Hashable {
-  mapFn: RawLambda; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
-  aggregateFn: RawLambda; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
+  /**
+   * Studio does not process value specification, they are left in raw JSON form
+   *
+   * @discrepancy model
+   */
+  mapFn: RawLambda;
+  /**
+   * Studio does not process value specification, they are left in raw JSON form
+   *
+   * @discrepancy model
+   */
+  aggregateFn: RawLambda;
 
   constructor(mapFn: RawLambda, aggregateFn: RawLambda) {
     this.mapFn = mapFn;

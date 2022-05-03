@@ -436,7 +436,6 @@ export abstract class BasicModel {
   }
 
   get allOwnElements(): PackageableElement[] {
-    this.extensions.flatMap((extension) => extension.elements);
     return [
       ...this.ownProfiles,
       ...this.ownEnumerations,

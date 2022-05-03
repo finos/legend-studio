@@ -29,7 +29,12 @@ export class V1_RelationalPropertyMapping
   implements Hashable
 {
   enumMappingId?: string | undefined;
-  relationalOperation!: V1_RawRelationalOperationElement; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process relational operation element
+  /**
+   * Studio does not process value specification, they are left in raw JSON form
+   *
+   * @discrepancy model
+   */
+  relationalOperation!: V1_RawRelationalOperationElement;
   bindingTransformer?: V1_BindingTransformer | undefined;
 
   accept_PropertyMappingVisitor<T>(visitor: V1_PropertyMappingVisitor<T>): T {

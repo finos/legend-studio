@@ -49,9 +49,10 @@ export class Class extends Type implements Hashable, Stubable {
   /**
    * We can also call this `specifications` (i.e. vs. `generalizations`)
    *
-   * @MARKER MEMORY-SENSITIVE
-   * if this belongs to immutable elements: i.e. in system, project dependency, etc.
+   * If this belongs to immutable elements: i.e. in system, project dependency, etc.
    * we have to make sure to remove of disposed classes from this when we reprocess the graph
+   *
+   * @risk memory-leak
    */
   subclasses: Class[] = [];
   constraints: Constraint[] = [];
@@ -150,9 +151,10 @@ export class Class extends Type implements Hashable, Stubable {
    * Get all subclasses of a class, accounted for loop and duplication (which should be caught by compiler)
    * NOTE: we intentionally leave out `Any`
    *
-   * @MARKER MEMORY-SENSITIVE
    * When this is an immutable class such as project dependency or system we need to remember to remove the classes from the sub-types array.
    * And rerun this computation to avoid potenial memory leak
+   *
+   * @risk memory-leak
    */
   get allSubclasses(): Class[] {
     if (this._isDisposed) {
