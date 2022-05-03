@@ -881,9 +881,6 @@ export class EditorGraphState {
       yield flowResult(this.editorStore.changeDetectionState.observeGraph());
       yield this.editorStore.changeDetectionState.preComputeGraphElementHashes();
       this.editorStore.changeDetectionState.start();
-      yield flowResult(
-        this.editorStore.changeDetectionState.computeLocalChanges(true),
-      );
       this.editorStore.applicationStore.log.info(
         LogEvent.create(CHANGE_DETECTION_EVENT.CHANGE_DETECTION_RESTARTED),
         '[ASYNC]',

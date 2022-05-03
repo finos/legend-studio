@@ -90,6 +90,7 @@
     "directory": "build/publishContent"
   },
   "extensions": {
+    "core_studioPlugin": "@finos/legend-studio-plugin-core",
     "dsl_external_format_studioPlugin": "@finos/legend-studio-plugin-dsl-external-format"
   }
 }

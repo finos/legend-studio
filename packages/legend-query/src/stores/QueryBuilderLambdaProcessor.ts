@@ -109,8 +109,39 @@ const getNullableNumberValueFromValueSpec = (
 };
 
 /**
- * Checks if the milestoning property expression is valid in terms of number of parameters passed to it and throws
- * unsupported mode if the number of parameters passed is not valid for a particular temporal type.
+ * Checks if the milestoning property expression is valid in terms of number of parameter values provided
+ * in relation to its milestoning type.
+ *
+ * TODO: @gayathrir11 let's add more doc to this
+ *
+ * NOTE: this takes date propgation into account. See the table below for all
+ * the combination:
+ *
+ *             | [source] |          |          |          |          |
+ * ----------------------------------------------------------------------
+ *   [target]  |          |   NONE   |  PR_TMP  |  BI_TMP  |  BU_TMP  |
+ * ----------------------------------------------------------------------
+ *             |   NONE   |   N.A.   |   PRD    | PRD,BUD  |    BUD   |
+ * ----------------------------------------------------------------------
+ *             |  PR_TMP  |   N.A.   |    X     | PRD,BUD  |    BUD   |
+ * ----------------------------------------------------------------------
+ *             |  BI_TMP  |   N.A.   |    X     |    X     |    X     |
+ * ----------------------------------------------------------------------
+ *             |  BU_TMP  |   N.A.   |   PRD    | PRD,BUD  |    X     |
+ * ----------------------------------------------------------------------
+ *
+ * Annotations:
+ *
+ * [source]: source temporal type
+ * [target]: target temporal type
+ *
+ * PR_TMP  : processing temporal
+ * BI_TMP  : bitemporal
+ * BU_TMP  : business temporal
+ *
+ * X       : no default date propagated
+ * PRD     : default processing date is propagated
+ * BUD     : default business date is propgated
  */
 const validatePropertyExpressionChain = (
   propertyExpression: AbstractPropertyExpression,
@@ -146,20 +177,20 @@ const validatePropertyExpressionChain = (
               !sourceStereotype
             ) {
               throw new UnsupportedOperationError(
-                "Property of milestoning sterotype 'bi-temporal' should have two parameters",
+                `Property of milestoning sterotype '${MILESTONING_STEREOTYPE.BITEMPORAL}' should have exactly two parameters`,
               );
             } else if (propertyExpression.parametersValues.length < 2) {
               throw new UnsupportedOperationError(
-                "Property of milestoning sterotype 'bi-temporal' should have atleast one parameter",
+                `Property of milestoning sterotype '${MILESTONING_STEREOTYPE.BITEMPORAL}' should have at least one parameter`,
               );
             } else if (propertyExpression.parametersValues.length > 3) {
               throw new UnsupportedOperationError(
-                "Property of milestoning sterotype 'bi-temporal' should not have more than two parameters",
+                `Property of milestoning sterotype '${MILESTONING_STEREOTYPE.BITEMPORAL}' should not have more than two parameters`,
               );
             }
           } else if (propertyExpression.parametersValues.length !== 2) {
             throw new UnsupportedOperationError(
-              `Property of milestoning sterotype '${targetStereotype}' should have one parameters`,
+              `Property of milestoning sterotype '${targetStereotype}' should have exactly one parameter`,
             );
           }
         }
