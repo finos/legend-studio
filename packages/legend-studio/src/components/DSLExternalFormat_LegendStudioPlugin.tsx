@@ -28,6 +28,9 @@ import {
   ModelUnit,
   ExternalFormatConnection,
   UrlStream,
+  PURE_GRAMMAR_BINDING_ELEMENT_TYPE_LABEL,
+  PURE_GRAMMAR_EXTERNAL_FORMAT_PARSER_NAME,
+  PURE_GRAMMAR_SCHEMA_SET_ELEMENT_TYPE_LABEL,
 } from '@finos/legend-graph';
 import {
   ExternalFormatConnectionEditor,
@@ -46,6 +49,11 @@ import {
   type NewElementDriverCreator,
   type NewElementDriverEditorRenderer,
   type NewElementFromStateCreator,
+  type PureGrammarParserElementSnippetSuggestionsGetter,
+  type PureGrammarParserElementDocumentationGetter,
+  type PureGrammarParserDocumentationGetter,
+  type PureGrammarParserKeywordSuggestionGetter,
+  type PureGrammarTextSuggestion,
   LegendStudioPlugin,
 } from '../stores/LegendStudioPlugin';
 import type {
@@ -74,6 +82,16 @@ import {
   externalFormat_Binding_setContentType,
   externalFormat_urlStream_setUrl,
 } from '../stores/graphModifier/DSLExternalFormat_GraphModifierHelper';
+import type { LegendApplicationDocumentationEntry } from '@finos/legend-application';
+import { DSL_EXTERNAL_FORAMT_LEGEND_STUDIO_DOCUMENTATION_KEY } from './DSLExternalFormat_LegendStudioDocumentation';
+import {
+  EMPTY_BINDING_SNIPPET,
+  EMPTY_SCHEMASET_SNIPPET,
+  getBindingSnipperWithOneModelIncludes,
+  getSchemaSetWithFlatDataSschema,
+  getSchemaSetWithJSONSchema,
+  getSchemaSetWithXMLSchema,
+} from './DSLExternalFormat_CodeSnippets';
 
 const SCHEMA_SET_ELEMENT_TYPE = 'SCHEMASET';
 const SCHEMA_SET_ELEMENT_PROJECT_EXPLORER_DND_TYPE =
@@ -314,6 +332,107 @@ export class DSLExternalFormat_LegendStudioPlugin
         }
         return undefined;
       },
+    ];
+  }
+
+  getExtraPureGrammarParserElementDocumentationGetters(): PureGrammarParserElementDocumentationGetter[] {
+    return [
+      (
+        editorStore: EditorStore,
+        parserKeyword: string,
+        elementKeyword: string,
+      ): LegendApplicationDocumentationEntry | undefined => {
+        if (parserKeyword === PURE_GRAMMAR_EXTERNAL_FORMAT_PARSER_NAME) {
+          if (elementKeyword === PURE_GRAMMAR_BINDING_ELEMENT_TYPE_LABEL) {
+            return editorStore.applicationStore.docRegistry.getEntry(
+              DSL_EXTERNAL_FORAMT_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_BINDING_ELEMENT,
+            );
+          } else if (
+            elementKeyword === PURE_GRAMMAR_SCHEMA_SET_ELEMENT_TYPE_LABEL
+          ) {
+            return editorStore.applicationStore.docRegistry.getEntry(
+              DSL_EXTERNAL_FORAMT_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_SCHEMASET_ELEMENT,
+            );
+          }
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  getExtraPureGrammarParserDocumentationGetters(): PureGrammarParserDocumentationGetter[] {
+    return [
+      (
+        editorStore: EditorStore,
+        parserKeyword: string,
+      ): LegendApplicationDocumentationEntry | undefined => {
+        if (parserKeyword === PURE_GRAMMAR_EXTERNAL_FORMAT_PARSER_NAME) {
+          return editorStore.applicationStore.docRegistry.getEntry(
+            DSL_EXTERNAL_FORAMT_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER,
+          );
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  getExtraPureGrammarParserKeywordSuggestionGetters(): PureGrammarParserKeywordSuggestionGetter[] {
+    return [
+      (editorStore: EditorStore): PureGrammarTextSuggestion[] => [
+        {
+          text: PURE_GRAMMAR_EXTERNAL_FORMAT_PARSER_NAME,
+          description: `DSL ExternalFormat`,
+          documentation: editorStore.applicationStore.docRegistry.getEntry(
+            DSL_EXTERNAL_FORAMT_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER,
+          ),
+          insertText: PURE_GRAMMAR_EXTERNAL_FORMAT_PARSER_NAME,
+        },
+      ],
+    ];
+  }
+
+  getExtraPureGrammarParserElementSnippetSuggestionsGetters(): PureGrammarParserElementSnippetSuggestionsGetter[] {
+    return [
+      (
+        editorStore: EditorStore,
+        parserKeyword: string,
+      ): PureGrammarTextSuggestion[] | undefined =>
+        parserKeyword === PURE_GRAMMAR_EXTERNAL_FORMAT_PARSER_NAME
+          ? [
+              // binding
+              {
+                text: PURE_GRAMMAR_BINDING_ELEMENT_TYPE_LABEL,
+                description: '(blank)',
+                insertText: EMPTY_BINDING_SNIPPET,
+              },
+              {
+                text: PURE_GRAMMAR_BINDING_ELEMENT_TYPE_LABEL,
+                description: 'with class',
+                insertText: getBindingSnipperWithOneModelIncludes(),
+              },
+              // schema set
+              {
+                text: PURE_GRAMMAR_SCHEMA_SET_ELEMENT_TYPE_LABEL,
+                description: '(blank)',
+                insertText: EMPTY_SCHEMASET_SNIPPET,
+              },
+              {
+                text: PURE_GRAMMAR_SCHEMA_SET_ELEMENT_TYPE_LABEL,
+                description: 'with flat-data',
+                insertText: getSchemaSetWithFlatDataSschema(),
+              },
+              {
+                text: PURE_GRAMMAR_SCHEMA_SET_ELEMENT_TYPE_LABEL,
+                description: 'with JSON shema',
+                insertText: getSchemaSetWithJSONSchema(),
+              },
+              {
+                text: PURE_GRAMMAR_SCHEMA_SET_ELEMENT_TYPE_LABEL,
+                description: 'with XML shema',
+                insertText: getSchemaSetWithXMLSchema(),
+              },
+            ]
+          : undefined,
     ];
   }
 }
