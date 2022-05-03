@@ -108,43 +108,27 @@ const matchMilestoningParameterValue = (
         param2.genericType.value.rawType.name === PRIMITIVE_TYPE.LATESTDATE
       ) {
         return true;
-      } else if (
-        param1.genericType.value.rawType.name ===
-        param2.genericType.value.rawType.name
-      ) {
-        return param1.values[0] === param2.values[0];
       }
-      return false;
+      return (
+        param1.genericType.value.rawType.name ===
+          param2.genericType.value.rawType.name &&
+        param1.values[0] === param2.values[0]
+      );
     }
     return false;
   };
   switch (stereotype) {
     case MILESTONING_STEREOTYPE.BITEMPORAL:
-      if (
-        idx === 0 &&
-        checkIfEquivalent(parameterValue, querySetupState.processingDate)
-      ) {
-        return true;
-      } else if (
-        idx === 1 &&
-        checkIfEquivalent(parameterValue, querySetupState.businessDate)
-      ) {
-        return true;
-      } else {
-        return false;
-      }
+      return (
+        (idx === 0 &&
+          checkIfEquivalent(parameterValue, querySetupState.processingDate)) ||
+        (idx === 1 &&
+          checkIfEquivalent(parameterValue, querySetupState.businessDate))
+      );
     case MILESTONING_STEREOTYPE.PROCESSING_TEMPORAL:
-      if (checkIfEquivalent(parameterValue, querySetupState.processingDate)) {
-        return true;
-      } else {
-        return false;
-      }
+      return checkIfEquivalent(parameterValue, querySetupState.processingDate);
     case MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL:
-      if (checkIfEquivalent(parameterValue, querySetupState.businessDate)) {
-        return true;
-      } else {
-        return false;
-      }
+      return checkIfEquivalent(parameterValue, querySetupState.businessDate);
     default:
   }
   return false;
