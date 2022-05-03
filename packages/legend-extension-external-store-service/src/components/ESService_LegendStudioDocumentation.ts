@@ -14,21 +14,21 @@
  * limitations under the License.
  */
 
-export enum DSL_PERSISTENCE_LEGEND_STUDIO_DOCUMENTATION_KEY {
-  GRAMMAR_PARSER = 'dsl-persistence__grammar-parser',
-  GRAMMAR_PERSISTENCE_ELEMENT = 'dsl-persistence__grammar-persistence-element',
+export enum EXTERNAL_STORE_SERVICE_LEGEND_STUDIO_DOCUMENTATION_KEY {
+  GRAMMAR_PARSER = 'es-service__grammar-parser',
+  GRAMMAR_SERVICE_STORE_ELEMENT = 'es-service__grammar--element',
 }
 
-export const DSL_PERSISTENCE_DOCUMENTATION_ENTRIES = {
-  [DSL_PERSISTENCE_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER]: {
+export const EXTERNAL_STORE_SERVICE_DOCUMENTATION_ENTRIES = {
+  [EXTERNAL_STORE_SERVICE_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER]: {
     markdownText: {
-      value: `A DSL concerning with the specifications of how data can be persisted`,
+      value: `A external store DSL concerning with specification to access data from API endpoints`,
     },
   },
-  [DSL_PERSISTENCE_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PERSISTENCE_ELEMENT]:
+  [EXTERNAL_STORE_SERVICE_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_SERVICE_STORE_ELEMENT]:
     {
       markdownText: {
-        value: `A persistence element can be used to specify a data pipeline`,
+        value: `A service store element can be used to specify API endpoints as source of data`,
       },
     },
 };

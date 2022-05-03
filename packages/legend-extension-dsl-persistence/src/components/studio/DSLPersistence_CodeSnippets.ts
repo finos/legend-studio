@@ -16,28 +16,29 @@
 
 // TODO: we should add more example snippet
 //
-//  Persistence test::TestPersistence
-//  {
-//    doc: 'This is test documentation.';
-//    trigger: Manual;
-//    service: test::Service;
-//    persister: Batch
-//    {
-//      sink: Relational
-//      {
-//      }
-//      targetShape: Flat
-//      {
-//        targetName: 'TestDataset1';
-//        modelClass: test::ModelClass;
-//      }
-//      ingestMode: AppendOnly
-//      {
-//        auditing: None;
-//        filterDuplicates: false;
-//      }
-//    }
-//  }
+// ###Persistence
+// Persistence test::TestPersistence
+// {
+//   doc: 'This is test documentation.';
+//   trigger: Manual;
+//   service: test::Service;
+//   persister: Batch
+//   {
+//     sink: Relational
+//     {
+//     }
+//     targetShape: Flat
+//     {
+//       targetName: 'TestDataset1';
+//       modelClass: test::ModelClass;
+//     }
+//     ingestMode: AppendOnly
+//     {
+//       auditing: None;
+//       filterDuplicates: false;
+//     }
+//   }
+// }
 
 export const BLANK_PERSISTENCE_SNIPPET = `Persistence \${1:model::NewPersistence}
 {
