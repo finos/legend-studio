@@ -21,4 +21,20 @@ export enum LEGEND_STUDIO_DOCUMENTATION_KEY {
   CREATE_PROJECT = 'create-project',
   IMPORT_PROJECT = 'import-project',
   CREATE_WORKSPACE = 'create-workspace',
+
+  GRAMMAR_PURE_PARSER = 'grammar-pure-parser',
+  GRAMMAR_CLASS_ELEMENT = 'grammar-class-element',
 }
+
+export const CORE_DOCUMENTATION_ENTRIES = {
+  [LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PURE_PARSER]: {
+    markdownText: {
+      value: `This section include specifications of fundamental Pure concepts: classes, enumerations, associations, etc.`,
+    },
+  },
+  [LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_CLASS_ELEMENT]: {
+    markdownText: {
+      value: `A class element can be used to describe a data model structure, inheritance, and constraints`,
+    },
+  },
+};
