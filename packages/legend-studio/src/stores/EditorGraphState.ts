@@ -745,7 +745,7 @@ export class EditorGraphState {
    *    danger as well. Beware the way when we start to make system/project dependencies references elements of current graph
    *    e.g. when we have a computed value in a immutable class that get all subclasses, etc.
    * 3. We reprocess editor states to ensure good UX, e.g. find tabs to keep open, find tree nodes to expand, etc.
-   *    after updating the graph. These in our experience is the MOST COMMON source of memory leak. It is actually
+   *    after updating the graph. These in our experience is the **MOST COMMON** source of memory leak. It is actually
    *    quite predictable since structures like tabs and tree node embeds graph data, which are references to the old graph
    *
    * NOTE: One big obfuscating factor is overlapping graph refresh. Sometimes, we observed that calling this update graph
@@ -878,7 +878,7 @@ export class EditorGraphState {
       this.isUpdatingGraph = false;
 
       // ======= (RE)START CHANGE DETECTION =======
-      yield this.editorStore.changeDetectionState.observeGraph();
+      yield flowResult(this.editorStore.changeDetectionState.observeGraph());
       yield this.editorStore.changeDetectionState.preComputeGraphElementHashes();
       this.editorStore.changeDetectionState.start();
       yield flowResult(
@@ -902,7 +902,7 @@ export class EditorGraphState {
       if (error instanceof GraphBuilderError && this.editorStore.isInFormMode) {
         this.editorStore.applicationStore.setBlockingAlert({
           message: `Can't build graph: ${error.message}`,
-          prompt: 'Refreshing full application',
+          prompt: 'Refreshing full application...',
           showLoading: true,
         });
         this.editorStore.closeAllEditorTabs();
