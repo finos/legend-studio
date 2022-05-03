@@ -1,53 +1,6 @@
 {
   "elements": [
     {
-      "_type": "Enumeration",
-      "name": "DurationUnit",
-      "package": "meta::pure::functions::date",
-      "values": [
-        {
-          "value": "DAYS"
-        },
-        {
-          "value": "WEEKS"
-        },
-        {
-          "value": "MONTHS"
-        },
-        {
-          "value": "YEARS"
-        }
-      ]
-    },
-    {
-      "_type": "Enumeration",
-      "name": "DayOfWeek",
-      "package": "meta::pure::functions::date",
-      "values": [
-        {
-          "value": "Monday"
-        },
-        {
-          "value": "Tuesday"
-        },
-        {
-          "value": "Wednesday"
-        },
-        {
-          "value": "Thursday"
-        },
-        {
-          "value": "Friday"
-        },
-        {
-          "value": "Saturday"
-        },
-        {
-          "value": "Sunday"
-        }
-      ]
-    },
-    {
       "stereotypes": ["public", "protected", "private", "externalizable"],
       "package": "meta::pure::profiles",
       "_type": "profile",

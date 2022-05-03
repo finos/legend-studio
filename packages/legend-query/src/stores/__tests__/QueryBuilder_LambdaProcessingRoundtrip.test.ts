@@ -35,9 +35,7 @@ import {
   TEST_DATA__graphFetchWithDerivedPropertyWithParameter,
   TEST_DATA__temporalModel,
   TEST_DATA__personWithSubType,
-  TEST_DATA_dateCompabilityForFilterAndPostFilter,
 } from './TEST_DATA__QueryBuilder_LambdaProcessingRoundtrip';
-import TEST_DATA__PostFilterModel from './TEST_DATA__QueryBuilder_Model_PostFilter.json';
 import {
   simpleDerivationProjection,
   groupByWithDerivationProjection,
@@ -71,10 +69,6 @@ const temporalCtx = {
 
 const m2mCtx = {
   entities: TEST_DATA__M2MModel,
-};
-
-const postFilterCtx = {
-  entities: TEST_DATA__PostFilterModel,
 };
 
 const cases: RoundtripTestCase[] = [
@@ -143,11 +137,6 @@ const cases: RoundtripTestCase[] = [
     'Simple project() and filter() with parameter',
     relationalCtx,
     TEST_DATA__personWithParameter,
-  ],
-  [
-    'Date compability for Filter and Post-filter',
-    postFilterCtx,
-    TEST_DATA_dateCompabilityForFilterAndPostFilter,
   ],
 ];
 

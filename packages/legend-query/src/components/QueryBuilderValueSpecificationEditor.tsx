@@ -14,13 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  type Dispatch,
-  type SetStateAction,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   clsx,
@@ -33,19 +27,18 @@ import {
   CheckSquareIcon,
   SquareIcon,
   SaveIcon,
-  BasePopover,
-  BaseRadioGroup,
 } from '@finos/legend-art';
 import {
   guaranteeNonNullable,
   isNonNullable,
+  Randomizer,
   returnUndefOnError,
   uniq,
 } from '@finos/legend-shared';
 import CSVParser from 'papaparse';
 import {
-  type PureModel,
   type Enum,
+  type PureModel,
   type Type,
   type ValueSpecification,
   LATEST_DATE,
@@ -61,78 +54,20 @@ import {
   TYPICAL_MULTIPLICITY_TYPE,
   VariableExpression,
   INTERNAL__PropagatedValue,
-  SimpleFunctionExpression,
 } from '@finos/legend-graph';
 import { getMultiplicityDescription } from './shared/QueryBuilderUtils';
-import { buildPrimitiveInstanceValue } from '../stores/QueryBuilderOperatorsHelper';
+import {
+  type PackageableElementOption,
+  DATE_FORMAT,
+  buildElementOption,
+} from '@finos/legend-application';
+import format from 'date-fns/format/index';
+import { addDays } from 'date-fns';
 import {
   genericType_setRawType,
   instanceValue_changeValue,
   instanceValue_changeValues,
 } from '../stores/QueryBuilderValueSpecificationModifierHelper';
-import {
-  type CustomDateOption,
-  QUERY_BUILDER_DATE_DURATION_UNIT_LABEL,
-  generateDateFunctionExpression,
-  QUERY_BUILDER_CUSTOM_DATE_START_DATE_OPTION,
-  QUERY_BUILDER_DATE_ADJUSTMENT,
-  QUERY_BUILDER_DATE_OPTION,
-  generateCustomAjustDateOption,
-  generateDateOption,
-  reservedCustomDates,
-  generateDateOptionForStartDayOfDateOption,
-  QUERY_BUILDER_DATE_DURATION_UNIT,
-  generateDateAdjustFunctionFromDateOption,
-  QUERY_BUILDER_DAY_OF_WEEK,
-} from '../stores/QueryBuilderDateTimeHelper';
-
-type TypeCheckOption = {
-  expectedType: Type;
-  // The match flag represents if a strict type match is forced or not.
-  // If match is true, it means that options in the date-capability-dropdown
-  // that are not of the same type or of child types will be filtered out or not.
-  match?: boolean;
-};
-
-type CustomDateInputOption = {
-  label: string;
-  value: string;
-};
-
-const QueryBuilderDateOptionsInfoTooltip: React.FC<{
-  children: React.ReactElement;
-  placement?: TooltipPlacement | undefined;
-}> = (props) => {
-  const { children, placement } = props;
-  return (
-    <Tooltip
-      arrow={true}
-      {...(placement !== undefined ? { placement } : {})}
-      classes={{
-        tooltip: 'query-builder__tooltip',
-        arrow: 'query-builder__tooltip__arrow',
-        tooltipPlacementRight: 'query-builder__tooltip--right',
-      }}
-      TransitionProps={{
-        // disable transition
-        // NOTE: somehow, this is the only workaround we have, if for example
-        // we set `appear = true`, the tooltip will jump out of position
-        timeout: 0,
-      }}
-      title={
-        <div className="query-builder__tooltip__content">
-          <div className="query-builder__tooltip__item">
-            <div className="query-builder__tooltip__item__value">
-              More date options will be available by clicking the left button
-            </div>
-          </div>
-        </div>
-      }
-    >
-      {children}
-    </Tooltip>
-  );
-};
 
 const QueryBuilderParameterInfoTooltip: React.FC<{
   variable: VariableExpression;
@@ -599,601 +534,75 @@ export const LatestDatePrimitiveInstanceValueEditor: React.FC = () => (
   </div>
 );
 
-export const AbsoluteDateValueSpecificationEditor: React.FC<{
-  graph: PureModel;
-  valueSpecification: SimpleFunctionExpression | PrimitiveInstanceValue;
-  updateValueSpecification: (val: ValueSpecification) => void;
-  setDateOptionValue: Dispatch<SetStateAction<CustomDateOption>>;
-}> = (props) => {
-  const {
-    graph,
-    valueSpecification,
-    updateValueSpecification,
-    setDateOptionValue,
-  } = props;
-  const absoluteDateValue =
-    valueSpecification instanceof SimpleFunctionExpression
-      ? ''
-      : (valueSpecification.values[0] as string);
-  const updateAbsoluteDateValue: React.ChangeEventHandler<HTMLInputElement> = (
-    event,
-  ) => {
-    if (valueSpecification instanceof SimpleFunctionExpression) {
-      updateValueSpecification(
-        buildPrimitiveInstanceValue(
-          graph,
-          PRIMITIVE_TYPE.STRICTDATE,
-          event.target.value,
-        ),
-      );
-    } else {
-      instanceValue_changeValue(valueSpecification, event.target.value, 0);
-      if (
-        valueSpecification.genericType.value.rawType.path !==
-        PRIMITIVE_TYPE.STRICTDATE
-      ) {
-        genericType_setRawType(
-          valueSpecification.genericType.value,
-          graph.getPrimitiveType(PRIMITIVE_TYPE.STRICTDATE),
-        );
-      }
-    }
-    setDateOptionValue({
-      label: event.target.value,
-      value: QUERY_BUILDER_DATE_OPTION.ABSOLUTE_DATE,
-    });
-  };
-  return (
-    <div className="query-builder-value-spec-editor__date-option-dropdown__absolute-date">
-      <div className="query-builder-value-spec-editor__date-option-dropdown__absolute-date__label">
-        Date
-      </div>
-      <input
-        className="panel__content__form__section__input query-builder-value-spec-editor__input"
-        type="date"
-        spellCheck={false}
-        value={absoluteDateValue}
-        onChange={updateAbsoluteDateValue}
-      />
-    </div>
-  );
-};
-
-export const AbsoluteTimeValueSpecificationEditor: React.FC<{
-  graph: PureModel;
-  valueSpecification: SimpleFunctionExpression | PrimitiveInstanceValue;
-  updateValueSpecification: (val: ValueSpecification) => void;
-  setDateOptionValue: Dispatch<SetStateAction<CustomDateOption>>;
-}> = (props) => {
-  const {
-    graph,
-    valueSpecification,
-    updateValueSpecification,
-    setDateOptionValue,
-  } = props;
-  const absoluteTimeValue =
-    valueSpecification instanceof SimpleFunctionExpression
-      ? ''
-      : (valueSpecification.values[0] as string);
-  const updateAbsoluteTimeValue: React.ChangeEventHandler<HTMLInputElement> = (
-    event,
-  ) => {
-    if (valueSpecification instanceof SimpleFunctionExpression) {
-      updateValueSpecification(
-        buildPrimitiveInstanceValue(
-          graph,
-          PRIMITIVE_TYPE.DATETIME,
-          event.target.value,
-        ),
-      );
-    } else {
-      instanceValue_changeValue(valueSpecification, event.target.value, 0);
-      if (
-        valueSpecification.genericType.value.rawType.path !==
-        PRIMITIVE_TYPE.DATETIME
-      ) {
-        genericType_setRawType(
-          valueSpecification.genericType.value,
-          graph.getPrimitiveType(PRIMITIVE_TYPE.DATETIME),
-        );
-      }
-    }
-    setDateOptionValue({
-      label: event.target.value,
-      value: QUERY_BUILDER_DATE_OPTION.ABSOLUTE_TIME,
-    });
-  };
-  return (
-    <div className="query-builder-value-spec-editor__date-option-dropdown__absolute-date">
-      <div className="query-builder-value-spec-editor__date-option-dropdown__absolute-date__label">
-        DateTime
-      </div>
-      <input
-        className="panel__content__form__section__input query-builder-value-spec-editor__input"
-        // Despite its name this would actually allow us to register time in UTC
-        // See https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/datetime-local#setting_timezones
-        type="datetime-local"
-        spellCheck={false}
-        value={absoluteTimeValue}
-        onChange={updateAbsoluteTimeValue}
-      />
-    </div>
-  );
-};
-
-export const CustomDateInstanceValueEditor: React.FC<{
-  graph: PureModel;
-  customAdjustDateOptionValue: CustomDateOption;
-  updateValueSpecification: (val: ValueSpecification) => void;
-  setDateOptionValue: Dispatch<SetStateAction<CustomDateOption>>;
-}> = (props) => {
-  const {
-    graph,
-    customAdjustDateOptionValue,
-    updateValueSpecification,
-    setDateOptionValue,
-  } = props;
-
-  const [durationRangeValue, setDurationRangeValue] = useState(
-    customAdjustDateOptionValue.durationRange ?? '',
-  );
-  const [durationUnitValue, setDurationUnitValue] = useState(
-    customAdjustDateOptionValue.unit ?? '',
-  );
-  const [adjustmentValue, setAdjustmentValue] = useState(
-    customAdjustDateOptionValue.adjustment ?? '',
-  );
-  const [startDateValue, setStartDateValue] = useState(
-    customAdjustDateOptionValue.startDate ?? '',
-  );
-  const updateValue = (
-    latestDurationRangeValue: string,
-    latestDurationUnitValue: string,
-    latestAdjustmentValue: string,
-    latestStartDateValue: string,
-  ): void => {
-    if (
-      latestDurationRangeValue !== '' &&
-      latestDurationUnitValue !== '' &&
-      latestAdjustmentValue !== '' &&
-      latestStartDateValue !== ''
-    ) {
-      const dateOption: CustomDateOption = {
-        label: QUERY_BUILDER_DATE_OPTION.CUSTOM_DATE,
-        value: QUERY_BUILDER_DATE_OPTION.CUSTOM_DATE,
-        durationRange: latestDurationRangeValue,
-        unit: latestDurationUnitValue,
-        adjustment: latestAdjustmentValue,
-        startDate: latestStartDateValue,
-      };
-      updateValueSpecification(
-        generateDateAdjustFunctionFromDateOption(dateOption, graph),
-      );
-      const matchedPreservedCustomAdjustDates = reservedCustomDates.filter(
-        (t) =>
-          guaranteeNonNullable(t.adjustment) +
-            guaranteeNonNullable(t.durationRange) +
-            guaranteeNonNullable(t.startDate) +
-            guaranteeNonNullable(t.unit) ===
-          (dateOption.adjustment ?? '') +
-            dateOption.durationRange +
-            dateOption.startDate +
-            dateOption.unit,
-      );
-      if (matchedPreservedCustomAdjustDates.length > 0) {
-        dateOption.label = guaranteeNonNullable(
-          matchedPreservedCustomAdjustDates[0]?.label,
-        );
-        dateOption.value = guaranteeNonNullable(
-          matchedPreservedCustomAdjustDates[0]?.value,
-        );
-      } else {
-        dateOption.label = [
-          latestDurationRangeValue,
-          latestDurationUnitValue,
-          latestAdjustmentValue,
-          latestStartDateValue,
-        ].join(' ');
-      }
-      setDateOptionValue({ ...dateOption });
-    }
-  };
-  const changeDurationNumberValue: React.ChangeEventHandler<
-    HTMLInputElement
-  > = (event) => {
-    setDurationRangeValue(event.target.value);
-    updateValue(
-      event.target.value,
-      durationUnitValue,
-      adjustmentValue,
-      startDateValue,
-    );
-  };
-
-  return (
-    <div className="query-builder-value-spec-editor__date-option-dropdown__custom-date">
-      <div className="query-builder-value-spec-editor__date-option-dropdown__custom-date__input">
-        <div className="query-builder-value-spec-editor__date-option-dropdown__custom-date__input-label">
-          Number
-        </div>
-        <input
-          className="query-builder-value-spec-editor__date-option-dropdown__custom-date__input-text-editor"
-          spellCheck={false}
-          value={durationRangeValue}
-          type="number"
-          onChange={changeDurationNumberValue}
-        />
-      </div>
-      <div className="query-builder-value-spec-editor__date-option-dropdown__custom-date__input">
-        <div className="query-builder-value-spec-editor__date-option-dropdown__custom-date__input-label">
-          Unit
-        </div>
-        <CustomSelectorInput
-          className="query-builder-value-spec-editor__date-option-dropdown__custom-date__input-dropdown"
-          options={Object.values(QUERY_BUILDER_DATE_DURATION_UNIT_LABEL).map(
-            (t) => ({ value: t.toString(), label: t.toString() }),
-          )}
-          onChange={(durationUnit: CustomDateInputOption): void => {
-            setDurationUnitValue(durationUnit.value);
-            updateValue(
-              durationRangeValue,
-              durationUnit.value,
-              adjustmentValue,
-              startDateValue,
-            );
-          }}
-          value={{ value: durationUnitValue, label: durationUnitValue }}
-          darkMode={true}
-        />
-      </div>
-      <div className="query-builder-value-spec-editor__date-option-dropdown__custom-date__input">
-        <div className="query-builder-value-spec-editor__date-option-dropdown__custom-date__input-label">
-          Before/After
-        </div>
-        <CustomSelectorInput
-          className="query-builder-value-spec-editor__date-option-dropdown__custom-date__input-dropdown"
-          options={Object.values(QUERY_BUILDER_DATE_ADJUSTMENT).map((t) => ({
-            value: t.toString(),
-            label: t.toString(),
-          }))}
-          onChange={(adjustment: CustomDateInputOption): void => {
-            setAdjustmentValue(adjustment.value);
-            updateValue(
-              durationRangeValue,
-              durationUnitValue,
-              adjustment.value,
-              startDateValue,
-            );
-          }}
-          value={{ value: adjustmentValue, label: adjustmentValue }}
-          darkMode={true}
-        />
-      </div>
-      <div className="query-builder-value-spec-editor__date-option-dropdown__custom-date__input">
-        <div className="query-builder-value-spec-editor__date-option-dropdown__custom-date__input-label">
-          When
-        </div>
-        <CustomSelectorInput
-          className="query-builder-value-spec-editor__date-option-dropdown__custom-date__input-dropdown"
-          options={Object.values(
-            QUERY_BUILDER_CUSTOM_DATE_START_DATE_OPTION,
-          ).map((t) => ({
-            value: t.toString(),
-            label: t.toString(),
-          }))}
-          onChange={(startDate: CustomDateInputOption): void => {
-            setStartDateValue(startDate.value);
-            updateValue(
-              durationRangeValue,
-              durationUnitValue,
-              adjustmentValue,
-              startDate.value,
-            );
-          }}
-          value={{ value: startDateValue, label: startDateValue }}
-          darkMode={true}
-        />
-      </div>
-    </div>
-  );
-};
-
-export const CustomStartDayOfDateValueSpecificationEditor: React.FC<{
-  graph: PureModel;
-  customDateAdjustOptionValue: CustomDateOption;
-  updateValueSpecification: (val: ValueSpecification) => void;
-  setDateOptionValue: Dispatch<SetStateAction<CustomDateOption>>;
-}> = (props) => {
-  const {
-    graph,
-    customDateAdjustOptionValue,
-    updateValueSpecification,
-    setDateOptionValue,
-  } = props;
-
-  const [durationUnitValue, setDurationUnitValue] = useState(
-    customDateAdjustOptionValue.unit &&
-      Object.values(QUERY_BUILDER_DATE_DURATION_UNIT).filter(
-        (c) => c.toString() === customDateAdjustOptionValue.unit,
-      ).length > 0
-      ? customDateAdjustOptionValue.unit
-      : '',
-  );
-  const updateValue = (latestDurationUnitValue: string): void => {
-    if (latestDurationUnitValue !== '') {
-      const startDayOfDateOption = generateDateOptionForStartDayOfDateOption(
-        latestDurationUnitValue,
-      );
-      updateValueSpecification(
-        generateDateFunctionExpression(graph, startDayOfDateOption),
-      );
-      setDateOptionValue({
-        label: startDayOfDateOption.label,
-        value: QUERY_BUILDER_DATE_OPTION.START_DAY_OF_DATE,
-        unit: latestDurationUnitValue,
-      });
-    }
-  };
-
-  return (
-    <div className="query-builder-value-spec-editor__date-option-dropdown__custom-date">
-      <div className="query-builder-value-spec-editor__date-option-dropdown__custom-date__input">
-        <div className="query-builder-value-spec-editor__date-option-dropdown__custom-date__input-label">
-          When
-        </div>
-        <CustomSelectorInput
-          className="query-builder-value-spec-editor__date-option-dropdown__custom-date__input-dropdown"
-          options={Object.values(QUERY_BUILDER_DATE_DURATION_UNIT).map((t) => ({
-            value: t.toString(),
-            label: t.toString(),
-          }))}
-          onChange={(durationUnit: CustomDateInputOption): void => {
-            setDurationUnitValue(durationUnit.value);
-            updateValue(durationUnit.value);
-          }}
-          value={{ value: durationUnitValue, label: durationUnitValue }}
-          darkMode={true}
-        />
-      </div>
-    </div>
-  );
-};
-
-export const CustomPreviousDayOfWeekValueSpecificationEditor: React.FC<{
-  graph: PureModel;
-  customDateAdjustOptionValue: CustomDateOption;
-  updateValueSpecification: (val: ValueSpecification) => void;
-  setDateOptionValue: Dispatch<SetStateAction<CustomDateOption>>;
-}> = (props) => {
-  const {
-    graph,
-    customDateAdjustOptionValue,
-    updateValueSpecification,
-    setDateOptionValue,
-  } = props;
-
-  const [dayOfWeekValue, setDayOfWeekValue] = useState(
-    customDateAdjustOptionValue.unit &&
-      Object.values(QUERY_BUILDER_DAY_OF_WEEK).filter(
-        (c) => c.toString() === customDateAdjustOptionValue.unit,
-      ).length > 0
-      ? customDateAdjustOptionValue.unit
-      : '',
-  );
-  const updateValue = (latestDurationUnitValue: string): void => {
-    if (latestDurationUnitValue !== '') {
-      const previousDayOfWeekDateOption = {
-        label: `Previous ${latestDurationUnitValue}`,
-        value: QUERY_BUILDER_DATE_OPTION.PREVIOUS_DAY_OF_WEEK,
-        unit: latestDurationUnitValue,
-      };
-      updateValueSpecification(
-        generateDateFunctionExpression(graph, previousDayOfWeekDateOption),
-      );
-      setDateOptionValue({ ...previousDayOfWeekDateOption });
-    }
-  };
-
-  return (
-    <div className="query-builder-value-spec-editor__date-option-dropdown__custom-date">
-      <div className="query-builder-value-spec-editor__date-option-dropdown__custom-date__input">
-        <div className="query-builder-value-spec-editor__date-option-dropdown__custom-date__input-label">
-          Day of Week
-        </div>
-        <CustomSelectorInput
-          className="query-builder-value-spec-editor__date-option-dropdown__custom-date__input-dropdown"
-          options={Object.values(QUERY_BUILDER_DAY_OF_WEEK).map((t) => ({
-            value: t.toString(),
-            label: t.toString(),
-          }))}
-          onChange={(durationUnit: CustomDateInputOption): void => {
-            setDayOfWeekValue(durationUnit.value);
-            updateValue(durationUnit.value);
-          }}
-          value={{ value: dayOfWeekValue, label: dayOfWeekValue }}
-          darkMode={true}
-        />
-      </div>
-    </div>
-  );
-};
-
 export const DateInstanceValueEditor = observer(
   (props: {
-    valueSpecification: PrimitiveInstanceValue | SimpleFunctionExpression;
+    valueSpecification: PrimitiveInstanceValue;
     graph: PureModel;
-    typeCheckOption: TypeCheckOption;
+    expectedType: Type;
     className?: string | undefined;
-    updateValueSpecification: (val: ValueSpecification) => void;
   }) => {
-    const {
-      valueSpecification,
-      updateValueSpecification,
-      graph,
-      typeCheckOption,
-      className,
-    } = props;
+    const { valueSpecification, graph, expectedType, className } = props;
+    const variableType = valueSpecification.genericType.value.rawType;
+    const selectedType = buildElementOption(variableType);
+    const typeOptions: PackageableElementOption<Type>[] = graph.primitiveTypes
+      .filter(
+        (p) =>
+          p.name === PRIMITIVE_TYPE.STRICTDATE ||
+          p.name === PRIMITIVE_TYPE.DATETIME ||
+          p.name === PRIMITIVE_TYPE.LATESTDATE,
+      )
+      .map((p) => buildElementOption(p) as PackageableElementOption<Type>);
+
     const strictDate = graph.getPrimitiveType(PRIMITIVE_TYPE.STRICTDATE);
     const date = graph.getPrimitiveType(PRIMITIVE_TYPE.DATE);
     const dateTime = graph.getPrimitiveType(PRIMITIVE_TYPE.DATETIME);
     const latestDate = graph.getPrimitiveType(PRIMITIVE_TYPE.LATESTDATE);
-    // For some cases where types need to be matched strictly.
-    // Some options need to be filtered out for DateTime.
-    const targetQueryBuilderDateOptionsEnum = typeCheckOption.match
-      ? Object.values([
-          QUERY_BUILDER_DATE_OPTION.ABSOLUTE_TIME,
-          QUERY_BUILDER_DATE_OPTION.NOW,
-        ])
-      : Object.values(QUERY_BUILDER_DATE_OPTION);
-    const [dateOptionValue, setDateOptionValue] = useState(
-      generateDateOption(valueSpecification),
-    );
-    const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
-    const openDateOptionsPopover = (
-      event: React.MouseEvent<HTMLButtonElement>,
-    ): void => {
-      setAnchorEl(event.currentTarget);
-    };
-    const handleCloseDateOptionsPopover = (): void => {
-      setAnchorEl(null);
-    };
-    const handleDateOptionChange = (
-      event: React.ChangeEvent<HTMLInputElement>,
-    ): void => {
-      const currentDateOptionValue = (event.target as HTMLInputElement).value;
-      dateOptionValue.label = currentDateOptionValue;
-      dateOptionValue.value = currentDateOptionValue;
-      if (
-        currentDateOptionValue !== QUERY_BUILDER_DATE_OPTION.ABSOLUTE_DATE &&
-        currentDateOptionValue !== QUERY_BUILDER_DATE_OPTION.ABSOLUTE_TIME &&
-        currentDateOptionValue !== QUERY_BUILDER_DATE_OPTION.CUSTOM_DATE &&
-        currentDateOptionValue !==
-          QUERY_BUILDER_DATE_OPTION.START_DAY_OF_DATE &&
-        currentDateOptionValue !==
-          QUERY_BUILDER_DATE_OPTION.PREVIOUS_DAY_OF_WEEK
-      ) {
-        const theReservedCustomDate = reservedCustomDates.filter(
-          (d) => d.value === currentDateOptionValue,
-        );
-        theReservedCustomDate.length > 0
-          ? updateValueSpecification(
-              generateDateAdjustFunctionFromDateOption(
-                guaranteeNonNullable(theReservedCustomDate[0]),
-                graph,
-              ),
-            )
-          : updateValueSpecification(
-              generateDateFunctionExpression(graph, dateOptionValue),
-            );
+    const changeType = (val: PackageableElementOption<Type>): void => {
+      if (variableType !== val.value) {
+        genericType_setRawType(valueSpecification.genericType.value, val.value);
       }
-      setDateOptionValue({ ...dateOptionValue });
-    };
-    const renderMoreDateComponents = (): JSX.Element => {
-      switch (dateOptionValue.value) {
-        case QUERY_BUILDER_DATE_OPTION.CUSTOM_DATE:
-          return (
-            <CustomDateInstanceValueEditor
-              graph={graph}
-              customAdjustDateOptionValue={generateCustomAjustDateOption(
-                valueSpecification,
-              )}
-              updateValueSpecification={updateValueSpecification}
-              setDateOptionValue={setDateOptionValue}
-            />
-          );
-        case QUERY_BUILDER_DATE_OPTION.ABSOLUTE_DATE:
-          return (
-            <AbsoluteDateValueSpecificationEditor
-              graph={graph}
-              valueSpecification={valueSpecification}
-              updateValueSpecification={updateValueSpecification}
-              setDateOptionValue={setDateOptionValue}
-            />
-          );
-        case QUERY_BUILDER_DATE_OPTION.ABSOLUTE_TIME:
-          return (
-            <AbsoluteTimeValueSpecificationEditor
-              graph={graph}
-              valueSpecification={valueSpecification}
-              updateValueSpecification={updateValueSpecification}
-              setDateOptionValue={setDateOptionValue}
-            />
-          );
-        case QUERY_BUILDER_DATE_OPTION.START_DAY_OF_DATE:
-          return (
-            <CustomStartDayOfDateValueSpecificationEditor
-              graph={graph}
-              customDateAdjustOptionValue={generateDateOption(
-                valueSpecification,
-              )}
-              updateValueSpecification={updateValueSpecification}
-              setDateOptionValue={setDateOptionValue}
-            />
-          );
-        case QUERY_BUILDER_DATE_OPTION.PREVIOUS_DAY_OF_WEEK:
-          return (
-            <CustomPreviousDayOfWeekValueSpecificationEditor
-              graph={graph}
-              customDateAdjustOptionValue={generateDateOption(
-                valueSpecification,
-              )}
-              updateValueSpecification={updateValueSpecification}
-              setDateOptionValue={setDateOptionValue}
-            />
-          );
-        default:
-          return <></>;
+      if (
+        valueSpecification.genericType.value.rawType.name !==
+        PRIMITIVE_TYPE.LATESTDATE
+      ) {
+        instanceValue_changeValues(valueSpecification, [
+          format(
+            new Randomizer().getRandomDate(
+              new Date(Date.now()),
+              addDays(Date.now(), 100),
+            ),
+            DATE_FORMAT,
+          ),
+        ]);
       }
     };
 
     return (
       <div className="query-builder-value-spec-editor__date">
-        {typeCheckOption.expectedType === strictDate && (
+        {valueSpecification.genericType.value.rawType === strictDate && (
           <DatePrimitiveInstanceValueEditor
-            valueSpecification={valueSpecification as PrimitiveInstanceValue}
+            valueSpecification={valueSpecification}
             className={className}
           />
         )}
-        {typeCheckOption.expectedType === latestDate && (
+        {valueSpecification.genericType.value.rawType === dateTime && (
+          <DateTimePrimitiveInstanceValueEditor
+            valueSpecification={valueSpecification}
+            className={className}
+          />
+        )}
+        {valueSpecification.genericType.value.rawType === latestDate && (
           <LatestDatePrimitiveInstanceValueEditor />
         )}
-        {(typeCheckOption.expectedType === date ||
-          typeCheckOption.expectedType === dateTime) && (
-          <div className="query-builder-value-spec-editor__date-option-dropdown">
-            <button
-              className="query-builder-value-spec-editor__date-option-dropdown__button"
-              onClick={openDateOptionsPopover}
-            >
-              {/* for the reset icon to work*/}
-              {generateDateOption(valueSpecification).label}
-            </button>
-            <QueryBuilderDateOptionsInfoTooltip>
-              <div className="query-builder-value-spec-editor__date-option-dropdown__info-icon">
-                <InfoCircleIcon />
-              </div>
-            </QueryBuilderDateOptionsInfoTooltip>
-            <BasePopover
-              open={Boolean(anchorEl)}
-              anchorEl={anchorEl}
-              onClose={handleCloseDateOptionsPopover}
-              anchorOrigin={{
-                vertical: 'bottom',
-                horizontal: 'center',
-              }}
-              transformOrigin={{
-                vertical: 'top',
-                horizontal: 'center',
-              }}
-            >
-              <BaseRadioGroup
-                value={dateOptionValue.value}
-                onChange={handleDateOptionChange}
-                row={true}
-                options={targetQueryBuilderDateOptionsEnum}
-                size={2}
-              />
-              {renderMoreDateComponents()}
-            </BasePopover>
+        {expectedType === date && (
+          <div className="query-builder-value-spec-editor__dropdown">
+            <CustomSelectorInput
+              placeholder="Choose a type..."
+              options={typeOptions}
+              onChange={changeType}
+              value={selectedType}
+              darkMode={true}
+            />
           </div>
         )}
       </div>
@@ -1210,17 +619,10 @@ export const DateInstanceValueEditor = observer(
 export const QueryBuilderValueSpecificationEditor: React.FC<{
   valueSpecification: ValueSpecification;
   graph: PureModel;
-  typeCheckOption: TypeCheckOption;
+  expectedType: Type;
   className?: string | undefined;
-  updateValueSpecification: (val: ValueSpecification) => void;
 }> = (props) => {
-  const {
-    valueSpecification,
-    updateValueSpecification,
-    graph,
-    typeCheckOption,
-    className,
-  } = props;
+  const { valueSpecification, graph, expectedType, className } = props;
   if (valueSpecification instanceof PrimitiveInstanceValue) {
     const _type = valueSpecification.genericType.value.rawType;
     switch (_type.path) {
@@ -1257,9 +659,8 @@ export const QueryBuilderValueSpecificationEditor: React.FC<{
           <DateInstanceValueEditor
             valueSpecification={valueSpecification}
             graph={graph}
-            typeCheckOption={typeCheckOption}
+            expectedType={expectedType}
             className={className}
-            updateValueSpecification={updateValueSpecification}
           />
         );
       default:
@@ -1283,7 +684,7 @@ export const QueryBuilderValueSpecificationEditor: React.FC<{
       <CollectionValueInstanceValueEditor
         valueSpecification={valueSpecification}
         graph={graph}
-        expectedType={typeCheckOption.expectedType}
+        expectedType={expectedType}
         className={className}
       />
     );
@@ -1301,22 +702,7 @@ export const QueryBuilderValueSpecificationEditor: React.FC<{
       <QueryBuilderValueSpecificationEditor
         valueSpecification={valueSpecification.getValue()}
         graph={graph}
-        typeCheckOption={typeCheckOption}
-        updateValueSpecification={updateValueSpecification}
-      />
-    );
-  } else if (
-    valueSpecification instanceof SimpleFunctionExpression &&
-    (typeCheckOption.expectedType.path === PRIMITIVE_TYPE.DATE ||
-      typeCheckOption.expectedType.path === PRIMITIVE_TYPE.DATETIME)
-  ) {
-    return (
-      <DateInstanceValueEditor
-        valueSpecification={valueSpecification}
-        graph={graph}
-        typeCheckOption={typeCheckOption}
-        className={className}
-        updateValueSpecification={updateValueSpecification}
+        expectedType={expectedType}
       />
     );
   }

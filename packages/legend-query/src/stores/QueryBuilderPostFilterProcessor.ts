@@ -40,7 +40,7 @@ import {
   PostFilterConditionState,
   QueryBuilderPostFilterTreeConditionNodeData,
   QueryBuilderPostFilterTreeGroupNodeData,
-  TDS_COLUMN_GETTER,
+  TDS_COLUMN_GETTERS,
   getTypeFromDerivedProperty,
 } from './QueryBuilderPostFilterState';
 import {
@@ -56,14 +56,14 @@ export const findTdsColumnState = (
     postFilterState.queryBuilderState.fetchStructureState;
   const properyExpressionName = propertyExpression.func.name;
   assertTrue(
-    Object.values(TDS_COLUMN_GETTER).includes(
-      properyExpressionName as TDS_COLUMN_GETTER,
+    Object.values(TDS_COLUMN_GETTERS).includes(
+      properyExpressionName as TDS_COLUMN_GETTERS,
     ),
     `Can't process TDS column expression: TDS column property '${properyExpressionName}' not supported. Supported types are ${Object.values(
-      TDS_COLUMN_GETTER,
+      TDS_COLUMN_GETTERS,
     ).join(',')}`,
   );
-  const tdsColumnGetter = properyExpressionName as TDS_COLUMN_GETTER;
+  const tdsColumnGetter = properyExpressionName as TDS_COLUMN_GETTERS;
   const columnNameExpression = propertyExpression.parametersValues[1];
   const columnName = guaranteeIsString(
     guaranteeType(
@@ -81,8 +81,8 @@ export const findTdsColumnState = (
     columnStates.find((c) => c.columnName === columnName),
   );
   if (
-    tdsColumnGetter !== TDS_COLUMN_GETTER.IS_NULL &&
-    tdsColumnGetter !== TDS_COLUMN_GETTER.IS_NOT_NULL
+    tdsColumnGetter !== TDS_COLUMN_GETTERS.IS_NULL &&
+    tdsColumnGetter !== TDS_COLUMN_GETTERS.IS_NOT_NULL
   ) {
     if (columnState instanceof QueryBuilderDerivationProjectionColumnState) {
       const type = getTypeFromDerivedProperty(

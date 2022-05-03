@@ -75,7 +75,6 @@ import {
   QUERY_BUILDER_PARAMETER_TREE_DND_TYPE,
 } from '../stores/QueryParametersState';
 import { QUERY_BUILDER_GROUP_OPERATION } from '../stores/QueryBuilderOperatorsHelper';
-import type { ValueSpecification } from '@finos/legend-graph';
 
 const FilterConditionDragLayer: React.FC = () => {
   const { itemType, item, isDragging, currentPosition } = useDragLayer(
@@ -167,8 +166,6 @@ const QueryBuilderFilterConditionEditor = observer(
     isPropertyDragOver: boolean;
   }) => {
     const { node, isPropertyDragOver } = props;
-    const graph =
-      node.condition.filterState.queryBuilderState.graphManagerState.graph;
     const changeOperator = (val: QueryBuilderFilterOperator) => (): void =>
       node.condition.changeOperator(val);
     const changeProperty = (
@@ -179,7 +176,7 @@ const QueryBuilderFilterConditionEditor = observer(
           node.condition.filterState.queryBuilderState.explorerState
             .nonNullableTreeData,
           propertyNode,
-          graph,
+          node.condition.filterState.queryBuilderState.graphManagerState.graph,
         ),
       );
     // Drag and Drop on filter condition value
@@ -265,15 +262,14 @@ const QueryBuilderFilterConditionEditor = observer(
               )}
               <QueryBuilderValueSpecificationEditor
                 valueSpecification={node.condition.value}
-                updateValueSpecification={(val: ValueSpecification): void =>
-                  node.condition.setValue(val)
+                graph={
+                  node.condition.filterState.queryBuilderState.graphManagerState
+                    .graph
                 }
-                graph={graph}
-                typeCheckOption={{
-                  expectedType:
-                    node.condition.propertyExpressionState.propertyExpression
-                      .func.genericType.value.rawType,
-                }}
+                expectedType={
+                  node.condition.propertyExpressionState.propertyExpression.func
+                    .genericType.value.rawType
+                }
               />
             </div>
           )}

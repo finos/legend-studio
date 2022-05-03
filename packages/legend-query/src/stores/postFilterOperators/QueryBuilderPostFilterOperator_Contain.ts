@@ -18,7 +18,6 @@ import {
   type SimpleFunctionExpression,
   type Type,
   type ValueSpecification,
-  type FunctionExpression,
   PRIMITIVE_TYPE,
 } from '@finos/legend-graph';
 import {
@@ -33,39 +32,19 @@ import {
   unwrapNotExpression,
 } from '../QueryBuilderOperatorsHelper';
 import { QueryBuilderPostFilterOperator } from '../QueryBuilderPostFilterOperator';
-import { buildPostFilterConditionState } from '../QueryBuilderPostFilterProcessor';
 import type {
   PostFilterConditionState,
   QueryBuilderPostFilterState,
 } from '../QueryBuilderPostFilterState';
 import { generateDefaultValueForPrimitiveType } from '../QueryBuilderValueSpecificationBuilderHelper';
-import { buildPostFilterConditionExpression } from './QueryBuilderPostFilterOperatorHelper';
 
 export class QueryBuilderPostFilterOperator_Contain extends QueryBuilderPostFilterOperator {
   getLabel(): string {
     return 'contains';
   }
 
-  buildPostFilterConditionExpression(
-    postFilterConditionState: PostFilterConditionState,
-  ): ValueSpecification | undefined {
-    return buildPostFilterConditionExpression(
-      postFilterConditionState,
-      this,
-      SUPPORTED_FUNCTIONS.CONTAINS,
-    );
-  }
-
-  buildPostFilterConditionState(
-    postFilterState: QueryBuilderPostFilterState,
-    expression: FunctionExpression,
-  ): PostFilterConditionState | undefined {
-    return buildPostFilterConditionState(
-      postFilterState,
-      expression,
-      SUPPORTED_FUNCTIONS.CONTAINS,
-      this,
-    );
+  getPureFunction(): SUPPORTED_FUNCTIONS {
+    return SUPPORTED_FUNCTIONS.CONTAINS;
   }
 
   isCompatibleWithType(type: Type): boolean {
@@ -93,8 +72,7 @@ export class QueryBuilderPostFilterOperator_Contain extends QueryBuilderPostFilt
     switch (propertyType.path) {
       case PRIMITIVE_TYPE.STRING: {
         return buildPrimitiveInstanceValue(
-          postFilterConditionState.postFilterState.queryBuilderState
-            .graphManagerState.graph,
+          postFilterConditionState.postFilterState.queryBuilderState,
           propertyType.path,
           generateDefaultValueForPrimitiveType(propertyType.path),
         );

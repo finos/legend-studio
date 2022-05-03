@@ -63,7 +63,7 @@ export enum QUERY_BUILDER_POST_FILTER_DND_TYPE {
   BLANK_CONDITION = 'BLANK_CONDITION',
 }
 
-export enum TDS_COLUMN_GETTER {
+export enum TDS_COLUMN_GETTERS {
   GET_STRING = 'getString',
   GET_NUMBER = 'getNumber',
   GET_INTEGER = 'getInteger',
@@ -80,29 +80,29 @@ export enum TDS_COLUMN_GETTER {
 
 export const getTDSColumnDerivedProperyFromType = (
   type: Type,
-): TDS_COLUMN_GETTER => {
+): TDS_COLUMN_GETTERS => {
   if (type instanceof Enumeration) {
-    return TDS_COLUMN_GETTER.GET_ENUM;
+    return TDS_COLUMN_GETTERS.GET_ENUM;
   }
   switch (type.path) {
     case PRIMITIVE_TYPE.STRING:
-      return TDS_COLUMN_GETTER.GET_STRING;
+      return TDS_COLUMN_GETTERS.GET_STRING;
     case PRIMITIVE_TYPE.NUMBER:
-      return TDS_COLUMN_GETTER.GET_NUMBER;
+      return TDS_COLUMN_GETTERS.GET_NUMBER;
     case PRIMITIVE_TYPE.INTEGER:
-      return TDS_COLUMN_GETTER.GET_INTEGER;
+      return TDS_COLUMN_GETTERS.GET_INTEGER;
     case PRIMITIVE_TYPE.FLOAT:
-      return TDS_COLUMN_GETTER.GET_FLOAT;
+      return TDS_COLUMN_GETTERS.GET_FLOAT;
     case PRIMITIVE_TYPE.DECIMAL:
-      return TDS_COLUMN_GETTER.GET_DECIMAL;
+      return TDS_COLUMN_GETTERS.GET_DECIMAL;
     case PRIMITIVE_TYPE.DATE:
-      return TDS_COLUMN_GETTER.GET_DATE;
+      return TDS_COLUMN_GETTERS.GET_DATE;
     case PRIMITIVE_TYPE.DATETIME:
-      return TDS_COLUMN_GETTER.GET_DATETIME;
+      return TDS_COLUMN_GETTERS.GET_DATETIME;
     case PRIMITIVE_TYPE.STRICTDATE:
-      return TDS_COLUMN_GETTER.GET_STRICTDATE;
+      return TDS_COLUMN_GETTERS.GET_STRICTDATE;
     case PRIMITIVE_TYPE.BOOLEAN:
-      return TDS_COLUMN_GETTER.GET_BOOLEAN;
+      return TDS_COLUMN_GETTERS.GET_BOOLEAN;
     default:
       throw new UnsupportedOperationError(
         `Can't find TDS column derived property name for type: '${type.path}'`,
@@ -111,27 +111,27 @@ export const getTDSColumnDerivedProperyFromType = (
 };
 
 export const getTypeFromDerivedProperty = (
-  derivedProperty: TDS_COLUMN_GETTER,
+  derivedProperty: TDS_COLUMN_GETTERS,
   graph: PureModel,
 ): Type | undefined => {
   switch (derivedProperty) {
-    case TDS_COLUMN_GETTER.GET_STRING:
+    case TDS_COLUMN_GETTERS.GET_STRING:
       return graph.getPrimitiveType(PRIMITIVE_TYPE.STRING);
-    case TDS_COLUMN_GETTER.GET_NUMBER:
+    case TDS_COLUMN_GETTERS.GET_NUMBER:
       return graph.getPrimitiveType(PRIMITIVE_TYPE.NUMBER);
-    case TDS_COLUMN_GETTER.GET_INTEGER:
+    case TDS_COLUMN_GETTERS.GET_INTEGER:
       return graph.getPrimitiveType(PRIMITIVE_TYPE.INTEGER);
-    case TDS_COLUMN_GETTER.GET_FLOAT:
+    case TDS_COLUMN_GETTERS.GET_FLOAT:
       return graph.getPrimitiveType(PRIMITIVE_TYPE.FLOAT);
-    case TDS_COLUMN_GETTER.GET_DECIMAL:
+    case TDS_COLUMN_GETTERS.GET_DECIMAL:
       return graph.getPrimitiveType(PRIMITIVE_TYPE.DECIMAL);
-    case TDS_COLUMN_GETTER.GET_DATE:
+    case TDS_COLUMN_GETTERS.GET_DATE:
       return graph.getPrimitiveType(PRIMITIVE_TYPE.DATE);
-    case TDS_COLUMN_GETTER.GET_DATETIME:
+    case TDS_COLUMN_GETTERS.GET_DATETIME:
       return graph.getPrimitiveType(PRIMITIVE_TYPE.DATETIME);
-    case TDS_COLUMN_GETTER.GET_STRICTDATE:
+    case TDS_COLUMN_GETTERS.GET_STRICTDATE:
       return graph.getPrimitiveType(PRIMITIVE_TYPE.STRICTDATE);
-    case TDS_COLUMN_GETTER.GET_BOOLEAN:
+    case TDS_COLUMN_GETTERS.GET_BOOLEAN:
       return graph.getPrimitiveType(PRIMITIVE_TYPE.BOOLEAN);
     default:
       return undefined;

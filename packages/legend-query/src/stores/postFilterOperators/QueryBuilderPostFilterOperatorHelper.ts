@@ -36,7 +36,7 @@ import { QueryBuilderAggregateColumnState } from '../QueryBuilderAggregationStat
 import type { QueryBuilderPostFilterOperator } from '../QueryBuilderPostFilterOperator';
 import {
   type PostFilterConditionState,
-  type TDS_COLUMN_GETTER,
+  type TDS_COLUMN_GETTERS,
   getTDSColumnDerivedProperyFromType,
 } from '../QueryBuilderPostFilterState';
 import {
@@ -66,7 +66,6 @@ export const getColumnMultiplicity = (
 export const buildPostFilterConditionExpression = (
   filterConditionState: PostFilterConditionState,
   operator: QueryBuilderPostFilterOperator,
-  operatorFunctionFullPath?: string,
 ): FunctionExpression => {
   // primitives
   const graph =
@@ -82,7 +81,7 @@ export const buildPostFilterConditionExpression = (
     '',
     multiplicityOne,
   );
-  let tdsDerivedPropertyName: TDS_COLUMN_GETTER;
+  let tdsDerivedPropertyName: TDS_COLUMN_GETTERS;
   const correspondingTdsDerivedProperty = operator.getTdsColumnGetter();
   if (correspondingTdsDerivedProperty) {
     tdsDerivedPropertyName = correspondingTdsDerivedProperty;
@@ -107,9 +106,10 @@ export const buildPostFilterConditionExpression = (
   colInstanceValue.values = [colState.columnName];
   tdsPropertyExpression.parametersValues = [variableName, colInstanceValue];
 
-  if (operatorFunctionFullPath) {
+  const pureFunction = operator.getPureFunction();
+  if (pureFunction) {
     const expression = new SimpleFunctionExpression(
-      extractElementNameFromPath(operatorFunctionFullPath),
+      extractElementNameFromPath(pureFunction),
       multiplicityOne,
     );
     expression.parametersValues.push(tdsPropertyExpression);

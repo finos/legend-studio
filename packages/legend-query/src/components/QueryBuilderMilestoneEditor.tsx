@@ -22,7 +22,6 @@ import {
 } from '../stores/QueryParametersState';
 import { useCallback } from 'react';
 import {
-  type ValueSpecification,
   GenericType,
   GenericTypeExplicitReference,
   MILESTONING_STEREOTYPE,
@@ -127,17 +126,9 @@ const MilestoningParameterEditor = observer(
         <QueryBuilderValueSpecificationEditor
           valueSpecification={milestoningParameter}
           graph={queryBuilderState.graphManagerState.graph}
-          updateValueSpecification={(val: ValueSpecification): void =>
-            stereotype === MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL
-              ? queryBuilderState.querySetupState.setBusinessDate(val)
-              : queryBuilderState.querySetupState.setProcessingDate(val)
-          }
-          typeCheckOption={{
-            expectedType:
-              queryBuilderState.graphManagerState.graph.getPrimitiveType(
-                PRIMITIVE_TYPE.DATE,
-              ),
-          }}
+          expectedType={queryBuilderState.graphManagerState.graph.getPrimitiveType(
+            PRIMITIVE_TYPE.DATE,
+          )}
         />
         <button
           className="query-builder__parameter-editor__node__action"

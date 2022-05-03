@@ -21,10 +21,8 @@ import {
   TEST_DATA__misplacedTakeFunction,
   TEST_DATA__unsupportedFunctionWithFullPath,
   TEST_DATA_malformedFilterExpressionWithSubtype,
-  TEST_DATA__malformedTodayFunction,
 } from './TEST_DATA__QueryBuilder_Failure';
 import TEST_DATA__ComplexRelationalModel from './TEST_DATA__QueryBuilder_Model_ComplexRelational.json';
-import TEST_DATA__PostFilterModel from './TEST_DATA__QueryBuilder_Model_PostFilter.json';
 import { integrationTest } from '@finos/legend-shared';
 import type { Entity } from '@finos/legend-model-storage';
 import {
@@ -57,10 +55,6 @@ type TestCase = [
 
 const relationalCtx = {
   entities: TEST_DATA__ComplexRelationalModel,
-};
-
-const postFilterCtx = {
-  entities: TEST_DATA__PostFilterModel,
 };
 
 const cases: TestCase[] = [
@@ -99,12 +93,6 @@ const cases: TestCase[] = [
     relationalCtx,
     TEST_DATA_malformedFilterExpressionWithSubtype,
     `Can't find expression builder for function 'subTypes': no compatible function expression builder available from plugins`,
-  ],
-  [
-    'Malformed filter with today',
-    postFilterCtx,
-    TEST_DATA__malformedTodayFunction,
-    `Can't find expression builder for function 'meta::pure::functions::date::todayyy': no compatible function expression builder available from plugins`,
   ],
 ];
 
