@@ -24,7 +24,6 @@ import {
   type SetImplementationVisitor,
 } from './SetImplementation';
 
-/* @MARKER: RELAXED GRAPH CHECK - See https://github.com/finos/legend-studio/issues/941 */
 /**
  * When set implementation cannot be resolved by ID,
  * we try to avoid failing graph building for now
@@ -34,6 +33,8 @@ import {
  *
  * See https://github.com/finos/legend-studio/issues/880
  * See https://github.com/finos/legend-studio/issues/941
+ *
+ * @discrepancy graph-building
  */
 export class TEMPORARY__UnresolvedSetImplementation extends SetImplementation {
   constructor(id: string, parent: Mapping) {

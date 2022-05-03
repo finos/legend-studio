@@ -774,7 +774,6 @@ export class ChangeDetectionState {
    * We also want to take advantage of `mobx computed` here so we save time when starting change detection. However,
    * since `mobx computed` does not track async contexts, we have to use the `keepAlive` option for `computed`
    *
-   * @MARKER MEMORY-SENSITIVE
    * To avoid memory leak potentially caused by `keepAlive`, we use `keepAlive` utility from `mobx-utils`
    * so we could manually dispose `keepAlive` later after we already done with starting change detection.
    */

@@ -113,7 +113,6 @@ export const getLeafSetImplementations = (
   return [setImp];
 };
 
-/* @MARKER: ACTION ANALYTICS */
 /**
  * This logic helps making the mapping editor smart.
  * Its first purpose is to prepoluate empty property mapping so as to allow user
@@ -611,7 +610,6 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
   }
 }
 
-/* @MARKER: ACTION ANALYTICS */
 /**
  * This is the cleanup for mapping elements decorated by {@link MappingElementDecorator}.
  */

@@ -106,7 +106,9 @@ export abstract class ServiceExecutionState {
     ) {
       singleExecTest_setData(
         this.selectedSingeExecutionTestState.test,
-        /* @MARKER: Workaround for https://github.com/finos/legend-studio/issues/68 */
+        /**
+         * @workaround https://github.com/finos/legend-studio/issues/68
+         */
         tryToFormatLosslessJSONString(
           this.selectedSingeExecutionTestState.test.data,
         ),

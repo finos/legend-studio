@@ -23,9 +23,13 @@ import type { V1_ServiceRequestBuildInfo } from './V1_ESService_ServiceRequestBu
 
 export class V1_ServiceMapping implements Hashable {
   service!: V1_ServiceStoreServicePtr;
-  pathOffset?: object | undefined; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
+  /**
+   * Studio does not process value specification, they are left in raw JSON form
+   *
+   * @discrepancy model
+   */
+  pathOffset?: object | undefined;
   requestBuildInfo?: V1_ServiceRequestBuildInfo | undefined;
-
   /**
    * TODO: this will be removed in upcoming releases
    * @deprecated

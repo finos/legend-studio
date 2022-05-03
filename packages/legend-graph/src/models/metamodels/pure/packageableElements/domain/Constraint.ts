@@ -25,10 +25,20 @@ export class Constraint implements Hashable, Stubable {
   owner: Class;
 
   name: string;
-  functionDefinition: RawLambda; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
+  /**
+   * Studio does not process value specification, they are left in raw JSON form
+   *
+   * @discrepancy model
+   */
+  functionDefinition: RawLambda;
   externalId?: string | undefined;
   enforcementLevel?: string | undefined;
-  messageFunction?: RawLambda | undefined; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
+  /**
+   * Studio does not process value specification, they are left in raw JSON form
+   *
+   * @discrepancy model
+   */
+  messageFunction?: RawLambda | undefined;
 
   constructor(name: string, owner: Class, functionDefinition: RawLambda) {
     this.name = name;

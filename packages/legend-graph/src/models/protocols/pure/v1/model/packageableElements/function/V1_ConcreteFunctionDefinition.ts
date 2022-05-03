@@ -27,8 +27,18 @@ import {
 } from '../../../model/packageableElements/V1_PackageableElement';
 
 export class V1_ConcreteFunctionDefinition extends V1_PackageableElement {
-  parameters: V1_RawVariable[] = []; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
-  body: object[] = []; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
+  /**
+   * Studio does not process value specification, they are left in raw JSON form
+   *
+   * @discrepancy model
+   */
+  parameters: V1_RawVariable[] = [];
+  /**
+   * Studio does not process value specification, they are left in raw JSON form
+   *
+   * @discrepancy model
+   */
+  body: object[] = [];
   returnType!: string;
   returnMultiplicity!: V1_Multiplicity;
   taggedValues: V1_TaggedValue[] = [];

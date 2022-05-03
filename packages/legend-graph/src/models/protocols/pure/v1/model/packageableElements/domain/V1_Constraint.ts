@@ -20,10 +20,20 @@ import type { V1_RawLambda } from '../../../model/rawValueSpecification/V1_RawLa
 
 export class V1_Constraint implements Hashable {
   name!: string;
-  functionDefinition!: V1_RawLambda; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
+  /**
+   * Studio does not process value specification, they are left in raw JSON form
+   *
+   * @discrepancy model
+   */
+  functionDefinition!: V1_RawLambda;
   externalId?: string | undefined;
   enforcementLevel?: string | undefined;
-  messageFunction?: V1_RawLambda | undefined; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
+  /**
+   * Studio does not process value specification, they are left in raw JSON form
+   *
+   * @discrepancy model
+   */
+  messageFunction?: V1_RawLambda | undefined;
 
   get hashCode(): string {
     return hashArray([

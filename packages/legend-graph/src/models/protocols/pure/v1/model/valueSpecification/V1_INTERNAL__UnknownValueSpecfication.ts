@@ -19,7 +19,7 @@ import {
   type V1_ValueSpecificationVisitor,
 } from './V1_ValueSpecification';
 
-export class V1_INTERNAL__UnknownValueSpecfication extends V1_ValueSpecification {
+export class V1_INTERNAL__UnknownValueSpecification extends V1_ValueSpecification {
   content!: object;
 
   accept_ValueSpecificationVisitor<T>(

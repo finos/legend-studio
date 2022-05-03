@@ -27,7 +27,12 @@ import type { RawLambda } from '../../rawValueSpecification/RawLambda';
 
 export class Unit extends DataType implements Hashable {
   measure: Measure;
-  conversionFunction?: RawLambda | undefined; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
+  /**
+   * Studio does not process value specification, they are left in raw JSON form
+   *
+   * @discrepancy model
+   */
+  conversionFunction?: RawLambda | undefined;
 
   constructor(
     name: string,

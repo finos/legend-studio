@@ -322,7 +322,15 @@ const embeddedRelationalPropertyMappingModelSchema = createModelSchema(
       V1_localMappingPropertyInfoModelSchema,
     ),
     property: usingModelSchema(V1_propertyPointerModelSchema),
-    source: optional(primitive()), // @MARKER: GRAMMAR ROUNDTRIP --- omit this information during protocol transformation as it can be interpreted while building the graph
+    /**
+     * Omit this information during protocol transformation as it can be
+     * interpreted while building the graph; and will help grammar-roundtrip
+     * tests (involving engine) to pass. Ideally, this requires grammar parser
+     * and composer in engine to be more consistent.
+     *
+     * @discrepancy grammar-roundtrip
+     */
+    source: optional(primitive()),
     target: optional(primitive()),
   },
 );
@@ -338,7 +346,15 @@ const otherwiseEmbeddedRelationalPropertyMappingModelSchgema =
       (val) => V1_deserializeRelationalPropertyMapping(val),
     ),
     property: usingModelSchema(V1_propertyPointerModelSchema),
-    source: optional(primitive()), // @MARKER: GRAMMAR ROUNDTRIP --- omit this information during protocol transformation as it can be interpreted while building the graph
+    /**
+     * Omit this information during protocol transformation as it can be
+     * interpreted while building the graph; and will help grammar-roundtrip
+     * tests (involving engine) to pass. Ideally, this requires grammar parser
+     * and composer in engine to be more consistent.
+     *
+     * @discrepancy grammar-roundtrip
+     */
+    source: optional(primitive()),
     target: optional(primitive()),
     localMappingProperty: usingModelSchema(
       V1_localMappingPropertyInfoModelSchema,
@@ -356,7 +372,15 @@ const inlineEmbeddedPropertyMappingModelSchema = createModelSchema(
       V1_localMappingPropertyInfoModelSchema,
     ),
     property: usingModelSchema(V1_propertyPointerModelSchema),
-    source: optional(primitive()), // @MARKER: GRAMMAR ROUNDTRIP --- omit this information during protocol transformation as it can be interpreted while building the graph
+    /**
+     * Omit this information during protocol transformation as it can be
+     * interpreted while building the graph; and will help grammar-roundtrip
+     * tests (involving engine) to pass. Ideally, this requires grammar parser
+     * and composer in engine to be more consistent.
+     *
+     * @discrepancy grammar-roundtrip
+     */
+    source: optional(primitive()),
     setImplementationId: primitive(),
     target: optional(primitive()),
   },

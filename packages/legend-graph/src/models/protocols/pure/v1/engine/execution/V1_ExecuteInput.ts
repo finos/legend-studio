@@ -36,7 +36,12 @@ import {
 
 export class V1_ExecuteInput {
   clientVersion!: string;
-  function!: V1_RawLambda; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
+  /**
+   * Studio does not process value specification, they are left in raw JSON form
+   *
+   * @discrepancy model
+   */
+  function!: V1_RawLambda;
   mapping!: string;
   model!: V1_PureModelContextData;
   runtime!: V1_Runtime;
