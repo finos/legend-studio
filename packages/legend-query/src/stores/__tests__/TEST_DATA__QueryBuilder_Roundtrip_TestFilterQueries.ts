@@ -979,3 +979,136 @@ export const TEST_DATA__lambda_simpleSingleConditionFilterWithParameter = {
     },
   ],
 };
+
+export const TEST_DATA_lambda_dateTimeCapabilityFilterWithYesterday = {
+  _type: 'lambda',
+  body: [
+    {
+      _type: 'func',
+      function: 'project',
+      parameters: [
+        {
+          _type: 'func',
+          function: 'filter',
+          parameters: [
+            {
+              _type: 'func',
+              function: 'getAll',
+              parameters: [
+                {
+                  _type: 'packageableElementPtr',
+                  fullPath: 'model::postFilter::Person',
+                },
+              ],
+            },
+            {
+              _type: 'lambda',
+              body: [
+                {
+                  _type: 'func',
+                  function: 'isOnDay',
+                  parameters: [
+                    {
+                      _type: 'property',
+                      parameters: [
+                        {
+                          _type: 'var',
+                          name: 'x',
+                        },
+                      ],
+                      property: 'myDateTime',
+                    },
+                    {
+                      _type: 'func',
+                      function: 'meta::pure::functions::date::adjust',
+                      parameters: [
+                        {
+                          _type: 'func',
+                          function: 'meta::pure::functions::date::today',
+                          parameters: [],
+                        },
+                        {
+                          _type: 'func',
+                          function: 'meta::pure::functions::math::minus',
+                          parameters: [
+                            {
+                              _type: 'integer',
+                              values: [1],
+                              multiplicity: {
+                                lowerBound: 1,
+                                upperBound: 1,
+                              },
+                            },
+                          ],
+                        },
+                        {
+                          _type: 'enumValue',
+                          fullPath: 'meta::pure::functions::date::DurationUnit',
+                          value: 'DAYS',
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+              parameters: [
+                {
+                  _type: 'var',
+                  name: 'x',
+                },
+              ],
+            },
+          ],
+        },
+        {
+          _type: 'collection',
+          values: [
+            {
+              _type: 'lambda',
+              body: [
+                {
+                  _type: 'property',
+                  parameters: [
+                    {
+                      _type: 'var',
+                      name: 'x',
+                    },
+                  ],
+                  property: 'age',
+                },
+              ],
+              parameters: [
+                {
+                  _type: 'var',
+                  name: 'x',
+                },
+              ],
+            },
+          ],
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+        },
+        {
+          _type: 'collection',
+          values: [
+            {
+              _type: 'string',
+              values: ['Age'],
+              multiplicity: {
+                lowerBound: 1,
+                upperBound: 1,
+              },
+            },
+          ],
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+        },
+      ],
+    },
+  ],
+  parameters: [],
+};

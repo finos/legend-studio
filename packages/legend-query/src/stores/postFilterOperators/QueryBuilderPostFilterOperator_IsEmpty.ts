@@ -15,33 +15,32 @@
  */
 
 import {
-  Enumeration,
-  PRIMITIVE_TYPE,
-  type SimpleFunctionExpression,
   type Type,
   type ValueSpecification,
+  type FunctionExpression,
+  Enumeration,
+  PRIMITIVE_TYPE,
 } from '@finos/legend-graph';
 import { returnUndefOnError } from '@finos/legend-shared';
-import type { SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
 import { QueryBuilderPostFilterOperator } from '../QueryBuilderPostFilterOperator';
 import { buildPostFilterConditionState } from '../QueryBuilderPostFilterProcessor';
 import {
   type PostFilterConditionState,
   type QueryBuilderPostFilterState,
-  TDS_COLUMN_GETTERS,
+  TDS_COLUMN_GETTER,
 } from '../QueryBuilderPostFilterState';
-import { getColumnMultiplicity } from './QueryBuilderPostFilterOperatorHelper';
+import {
+  buildPostFilterConditionExpression,
+  getColumnMultiplicity,
+} from './QueryBuilderPostFilterOperatorHelper';
 
 export class QueryBuilderPostFilterOperator_IsEmpty extends QueryBuilderPostFilterOperator {
   getLabel(): string {
     return 'is empty';
   }
-  getPureFunction(): SUPPORTED_FUNCTIONS | undefined {
-    return undefined;
-  }
 
-  override getTdsColumnGetter(): TDS_COLUMN_GETTERS | undefined {
-    return TDS_COLUMN_GETTERS.IS_NULL;
+  override getTdsColumnGetter(): TDS_COLUMN_GETTER | undefined {
+    return TDS_COLUMN_GETTER.IS_NULL;
   }
 
   isCompatibleWithType(type: Type): boolean {
@@ -80,14 +79,24 @@ export class QueryBuilderPostFilterOperator_IsEmpty extends QueryBuilderPostFilt
     return undefined;
   }
 
-  override buildPostFilterConditionState(
+  buildPostFilterConditionExpression(
+    postFilterConditionState: PostFilterConditionState,
+  ): ValueSpecification | undefined {
+    return buildPostFilterConditionExpression(
+      postFilterConditionState,
+      this,
+      undefined,
+    );
+  }
+
+  buildPostFilterConditionState(
     postFilterState: QueryBuilderPostFilterState,
-    expression: SimpleFunctionExpression,
+    expression: FunctionExpression,
   ): PostFilterConditionState | undefined {
     return buildPostFilterConditionState(
       postFilterState,
       expression,
-      this.getPureFunction(),
+      undefined,
       this,
     );
   }
@@ -98,7 +107,7 @@ export class QueryBuilderPostFilterOperator_IsNotEmpty extends QueryBuilderPostF
     return `is not empty`;
   }
 
-  override getTdsColumnGetter(): TDS_COLUMN_GETTERS | undefined {
-    return TDS_COLUMN_GETTERS.IS_NOT_NULL;
+  override getTdsColumnGetter(): TDS_COLUMN_GETTER | undefined {
+    return TDS_COLUMN_GETTER.IS_NOT_NULL;
   }
 }

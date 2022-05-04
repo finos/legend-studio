@@ -70,7 +70,8 @@ export class QueryBuilderFilterOperator_Contain extends QueryBuilderFilterOperat
     switch (propertyType.path) {
       case PRIMITIVE_TYPE.STRING: {
         return buildPrimitiveInstanceValue(
-          filterConditionState.filterState.queryBuilderState,
+          filterConditionState.filterState.queryBuilderState.graphManagerState
+            .graph,
           propertyType.path,
           generateDefaultValueForPrimitiveType(propertyType.path),
         );

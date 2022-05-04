@@ -38,7 +38,6 @@ import {
   UnsupportedOperationError,
 } from '@finos/legend-shared';
 import { SUPPORTED_FUNCTIONS } from '../QueryBuilder_Const';
-import type { QueryBuilderState } from './QueryBuilderState';
 
 export enum QUERY_BUILDER_GROUP_OPERATION {
   AND = 'and',
@@ -81,6 +80,8 @@ export const getNonCollectionValueSpecificationType = (
   } else if (valueSpecification instanceof EnumValueInstanceValue) {
     return guaranteeNonNullable(valueSpecification.values[0]).value.owner;
   } else if (valueSpecification instanceof VariableExpression) {
+    return valueSpecification.genericType?.value.rawType;
+  } else if (valueSpecification instanceof SimpleFunctionExpression) {
     return valueSpecification.genericType?.value.rawType;
   }
   return undefined;
@@ -135,19 +136,16 @@ export const getCollectionValueSpecificationType = (
   return undefined;
 };
 export const buildPrimitiveInstanceValue = (
-  queryBuilderState: QueryBuilderState,
+  graph: PureModel,
   type: PRIMITIVE_TYPE,
   value: unknown,
 ): PrimitiveInstanceValue => {
-  const multiplicityOne =
-    queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
-      TYPICAL_MULTIPLICITY_TYPE.ONE,
-    );
+  const multiplicityOne = graph.getTypicalMultiplicity(
+    TYPICAL_MULTIPLICITY_TYPE.ONE,
+  );
   const instance = new PrimitiveInstanceValue(
     GenericTypeExplicitReference.create(
-      new GenericType(
-        queryBuilderState.graphManagerState.graph.getPrimitiveType(type),
-      ),
+      new GenericType(graph.getPrimitiveType(type)),
     ),
     multiplicityOne,
   );
