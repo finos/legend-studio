@@ -75,9 +75,9 @@ import {
   CLASS_WITH_PROPERTY_SNIPPET,
   DATA_WITH_EXTERNAL_FORMAT_SNIPPET,
   DATA_WITH_MODEL_STORE_SNIPPET,
-  DATA_WITH_STEREOTYPES_SNIPPET,
-  DATA_WITH_TAGGED_VALUES_SNIPPET,
+  createDataElementSnippetWithEmbeddedDataSuggestionSnippet,
 } from '../../../stores/LegendStudioCodeSnippets';
+import type { DSLData_LegendStudioPlugin_Extension } from '../../../stores/DSLData_LegendStudioPlugin_Extension';
 
 const getSectionParserNameFromLineText = (
   lineText: string,
@@ -385,44 +385,32 @@ const getParserElementSnippetSuggestions = (
       return [];
     }
     case PURE_PARSER.DATA: {
-      let extraDataElementSnippets: PureGrammarTextSuggestion[] = [];
-      const dataElementSnippetSuggestionsGetters = editorStore.pluginManager
+      const embeddedDateSnippetSuggestions = editorStore.pluginManager
         .getStudioPlugins()
         .flatMap(
           (plugin) =>
             (
-              plugin as DSL_LegendStudioPlugin_Extension
-            ).getExtraDataElementSnippetSuggestionsGetters?.() ?? [],
+              plugin as DSLData_LegendStudioPlugin_Extension
+            ).getExtraEmbeddedDataSnippetSuggestions?.() ?? [],
         );
-      for (const snippetSuggestionsGetter of dataElementSnippetSuggestionsGetters) {
-        const snippetSuggestions = snippetSuggestionsGetter(
-          editorStore,
-          PURE_ELEMENT_NAME.DATA_ELEMENT,
-        );
-        extraDataElementSnippets = snippetSuggestions;
-      }
       return [
         {
           text: PURE_ELEMENT_NAME.DATA_ELEMENT,
-          description: 'with external format embedded data',
+          description: 'with external format',
           insertText: DATA_WITH_EXTERNAL_FORMAT_SNIPPET,
         },
         {
           text: PURE_ELEMENT_NAME.DATA_ELEMENT,
-          description: 'with model store embedded data',
+          description: 'using model store',
           insertText: DATA_WITH_MODEL_STORE_SNIPPET,
         },
-        {
+        ...embeddedDateSnippetSuggestions.map((suggestion) => ({
           text: PURE_ELEMENT_NAME.DATA_ELEMENT,
-          description: 'with stereotypes',
-          insertText: DATA_WITH_STEREOTYPES_SNIPPET,
-        },
-        {
-          text: PURE_ELEMENT_NAME.DATA_ELEMENT,
-          description: 'with tagged values',
-          insertText: DATA_WITH_TAGGED_VALUES_SNIPPET,
-        },
-        ...extraDataElementSnippets,
+          description: suggestion.description,
+          insertText: createDataElementSnippetWithEmbeddedDataSuggestionSnippet(
+            suggestion.text,
+          ),
+        })),
       ];
     }
     default: {
@@ -448,6 +436,91 @@ const getParserElementSnippetSuggestions = (
   }
   return [];
 };
+
+const getInlineSnippetSuggestions = (
+  editorStore: EditorStore,
+): PureGrammarTextSuggestion[] => [
+  {
+    text: 'let',
+    description: 'Let statement',
+    insertText: `let \${1:} = \${2:};`,
+  },
+  {
+    text: 'let',
+    description: 'new collection',
+    insertText: `let \${1:} = [\${2:}];`,
+  },
+  // conditionals
+  {
+    text: 'if',
+    description: 'If statement',
+    insertText: `if(\${1:'true'}, | \${2:/* if true do this */}, | \${3:/* if false do this */})`,
+  },
+  {
+    text: 'case',
+    description: 'Case statement',
+    insertText: `case(\${1:}, \${2:'true'}, \${3:'false'})`,
+  },
+  {
+    text: 'match',
+    description: 'Match statement',
+    insertText: `match([x:\${1:String[1]}, \${2:''}])`,
+  },
+  // collection
+  {
+    text: 'map',
+    description: 'Map statement',
+    insertText: `map(x|\${1:})`,
+  },
+  {
+    text: 'filter',
+    description: 'Filter statement',
+    insertText: `filter(x|\${1:})`,
+  },
+  {
+    text: 'fold',
+    description: 'Fold statement',
+    insertText: `fold({a, b| \${1:$a + $b}}, \${2:0})`,
+  },
+  {
+    text: 'filter',
+    description: 'Filter statement',
+    insertText: `filter(x|\${1:})`,
+  },
+  {
+    text: 'sort',
+    insertText: `sort()`,
+  },
+  {
+    text: 'in',
+    insertText: `in()`,
+  },
+  {
+    text: 'slice',
+    insertText: `slice(\${1:1},$\{2:2})`,
+  },
+  {
+    text: 'removeDuplicates',
+    insertText: `removeDuplicates()`,
+  },
+  {
+    text: 'toOne',
+    insertText: `toOne()`,
+  },
+  {
+    text: 'isEmpty',
+    insertText: `isEmpty()`,
+  },
+  // string ops
+  {
+    text: 'endsWith',
+    insertText: `endsWith()`,
+  },
+  {
+    text: 'startsWith',
+    insertText: `startsWith()`,
+  },
+];
 
 export const GrammarTextEditor = observer(() => {
   const [editor, setEditor] = useState<
@@ -785,6 +858,34 @@ export const GrammarTextEditor = observer(() => {
             } as monacoLanguagesAPI.CompletionItem);
           });
         }
+
+        getInlineSnippetSuggestions(editorStore).forEach(
+          (snippetSuggestion) => {
+            suggestions.push({
+              label: {
+                label: snippetSuggestion.text,
+                description: snippetSuggestion.description,
+              },
+              kind: monacoLanguagesAPI.CompletionItemKind.Snippet,
+              insertTextRules:
+                monacoLanguagesAPI.CompletionItemInsertTextRule.InsertAsSnippet,
+              insertText: snippetSuggestion.insertText,
+              range: {
+                startLineNumber: position.lineNumber,
+                startColumn: currentWord.startColumn,
+                endLineNumber: position.lineNumber,
+                endColumn: currentWord.endColumn,
+              },
+              documentation: snippetSuggestion.documentation
+                ? snippetSuggestion.documentation.markdownText
+                  ? {
+                      value: snippetSuggestion.documentation.markdownText.value,
+                    }
+                  : snippetSuggestion.documentation.text
+                : undefined,
+            } as monacoLanguagesAPI.CompletionItem);
+          },
+        );
 
         return { suggestions };
       },

@@ -112,8 +112,6 @@ const getNullableNumberValueFromValueSpec = (
  * Checks if the milestoning property expression is valid in terms of number of parameter values provided
  * in relation to its milestoning type.
  *
- * TODO: @gayathrir11 let's add more doc to this
- *
  * NOTE: this takes date propgation into account. See the table below for all
  * the combination:
  *

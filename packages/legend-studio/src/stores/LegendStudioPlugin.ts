@@ -182,6 +182,28 @@ export type PureGrammarParserElementDocumentationGetter = (
 ) => LegendApplicationDocumentationEntry | undefined;
 
 /**
+ * This snippet suggestion is meant for an embedded content of an element
+ * In other words, it is used to construct element snippet suggestions
+ *
+ * Because of that, it is expected that there are text content wrapping around
+ * this snippet, so the first suggestion might not start from index 1.
+ */
+export interface ElementEmbeddedContentSnippetSuggestion {
+  /**
+   * Brief description about the suggestion item to enable the users to quickly
+   * differentiate between one suggestions from another
+   */
+  description?: string | undefined;
+  /**
+   * The snippet text to be embedded in the full snippet suggestion text for the element
+   *
+   * NOTE: The snippet syntax follows that of `monaco-editor`
+   * See https://code.visualstudio.com/docs/editor/userdefinedsnippets#_create-your-own-snippets
+   */
+  text: string;
+}
+
+/**
  * This mirrors `monaco-editor` completion item structure
  * See https://microsoft.github.io/monaco-editor/api/interfaces/monaco.languages.CompletionItem.html
  */
@@ -216,11 +238,6 @@ export type PureGrammarParserElementSnippetSuggestionsGetter = (
   editorStore: EditorStore,
   parserKeyword: string,
 ) => PureGrammarTextSuggestion[] | undefined;
-
-export type DataElementSnippetSuggestionsGetter = (
-  editorStore: EditorStore,
-  elementName: string,
-) => PureGrammarTextSuggestion[];
 
 /**
  * Studio plugins for new DSL extension.
@@ -318,9 +335,4 @@ export interface DSL_LegendStudioPlugin_Extension extends LegendStudioPlugin {
    * (e.g. Class, Enum in ###Pure)
    */
   getExtraPureGrammarParserElementSnippetSuggestionsGetters?(): PureGrammarParserElementSnippetSuggestionsGetter[];
-
-  /**
-   * Get the list of Pure grammar element suggestion snippet getters for data element
-   */
-  getExtraDataElementSnippetSuggestionsGetters?(): DataElementSnippetSuggestionsGetter[];
 }

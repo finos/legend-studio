@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
+import { TAB_SIZE } from '@finos/legend-application';
+import { indent } from '@finos/legend-shared';
+
 export const BLANK_CLASS_SNIPPET = `Class \${1:model::NewClass}
 // example of a constraint
 // [
@@ -29,7 +32,7 @@ export const BLANK_CLASS_SNIPPET = `Class \${1:model::NewClass}
 
 export const CLASS_WITH_PROPERTY_SNIPPET = `Class \${1:model::NewClass}
 {
-  \${2:prop1}:\${3:String[1]};
+  \${2:prop1}: \${3:String[1]};
 }`;
 
 export const CLASS_WITH_INHERITANCE_SNIPPET = `Class \${1:model::NewClass} extends \${2:model::ParentClass}
@@ -49,8 +52,8 @@ export const DATA_WITH_EXTERNAL_FORMAT_SNIPPET = `Data \${1:model::NewData}
 {
   ExternalFormat
   #{
-    contentType: \${2:'application/x.flatdata';}
-    data: \${3:'sample data';}
+    contentType: '\${2:application/x.flatdata}';
+    data: '\${3:data}';
   }#
 }`;
 
@@ -60,28 +63,11 @@ export const DATA_WITH_MODEL_STORE_SNIPPET = `Data \${1:model::NewData}
   #{
     \${2:model::SomeClass:}
       [
-        \${3:^model::SomeClass(
-        )
       ]
   }#
 }`;
 
-export const DATA_WITH_STEREOTYPES_SNIPPET = `Data \${1:<<meta::pure::profiles::typemodifiers.abstract>> model::NewData}
-// example of stereotype: meta::pure::profiles::typemodifiers.abstract
-{
-  ExternalFormat
-  #{
-    contentType: \${2:'application/json';}
-    data: \${3:'{"some":"data"}';}
-  }#
-}`;
-
-export const DATA_WITH_TAGGED_VALUES_SNIPPET = `Data \${1:{doc.doc = 'something'} model::NewData}
-// example of tagged value: {doc.doc = 'something'}
-{
-  ExternalFormat}
-  #{
-    contentType: \${2:'application/json';}
-    data: \${3:'{"some":"data"}';}
-  }#
-}`;
+export const createDataElementSnippetWithEmbeddedDataSuggestionSnippet = (
+  snippetText: string,
+): string =>
+  `Data \${1:model::NewData}\n${indent(snippetText, ' '.repeat(TAB_SIZE))}\n}`;
