@@ -112,6 +112,8 @@ const isDefaultDatePropagationSupported = (
 ): boolean => {
   const property = currentPropertyExpression.func;
   const graph = queryBuilderState.graphManagerState.graph;
+  // Default date propagation is not supported for current expression when the milestonedParameterValues of
+  // previous property expression doesn't match with the global milestonedParameterValues
   if (
     prevPropertyExpression &&
     prevPropertyExpression.func.genericType.value.rawType instanceof Class
@@ -138,6 +140,7 @@ const isDefaultDatePropagationSupported = (
       property instanceof DerivedProperty
         ? getDerivedPropertyMilestoningSteoreotype(property, graph)
         : undefined;
+    // Default date propagation is always supported if the source is `bitemporal`
     if (sourceStereotype === MILESTONING_STEREOTYPE.BITEMPORAL) {
       return true;
     }
@@ -146,7 +149,10 @@ const isDefaultDatePropagationSupported = (
       property.genericType.value.rawType,
       graph,
     );
-    return sourceStereotype === targetStereotype;
+    // Default date propagation is supported when stereotype of both source and target matches
+    if (sourceStereotype && targetStereotype) {
+      return sourceStereotype === targetStereotype;
+    }
   }
   return false;
 };
@@ -331,6 +337,9 @@ export const buildPropertyExpressionChain = (
       const parameterValues = currentExpression.parametersValues.slice(1);
       parameterValues.forEach((parameterValue, index) => {
         if (parameterValue instanceof INTERNAL__PropagatedValue) {
+          // Replace with No-Arg derived property expression only when default date propagation is supported and
+          // for `bitemporal` property check if the property expression has parameters which are not instanceof
+          // INTERNAL_PropagatedValue then pass the parameters as user explicitly changed values of one of the parameters.
           if (
             isDefaultDatePropagationSupported(
               guaranteeType(currentExpression, AbstractPropertyExpression),
@@ -340,16 +349,36 @@ export const buildPropertyExpressionChain = (
                 : undefined,
             )
           ) {
-            functionExpression_setParametersValues(
-              guaranteeType(currentExpression, AbstractPropertyExpression),
-              [
-                guaranteeNonNullable(
+            if (
+              (index === 1 &&
+                guaranteeType(currentExpression, AbstractPropertyExpression)
+                  .parametersValues.length === 3) ||
+              (index === 0 &&
+                guaranteeType(currentExpression, AbstractPropertyExpression)
+                  .parametersValues.length === 3 &&
+                !(
                   guaranteeType(currentExpression, AbstractPropertyExpression)
-                    .parametersValues[0],
-                ),
-              ],
-              queryBuilderState.observableContext,
-            );
+                    .parametersValues[2] instanceof INTERNAL__PropagatedValue
+                ))
+            ) {
+              propertyExpression_setParametersValue(
+                guaranteeType(currentExpression, AbstractPropertyExpression),
+                index + 1,
+                parameterValue.getValue(),
+                queryBuilderState.observableContext,
+              );
+            } else {
+              functionExpression_setParametersValues(
+                guaranteeType(currentExpression, AbstractPropertyExpression),
+                [
+                  guaranteeNonNullable(
+                    guaranteeType(currentExpression, AbstractPropertyExpression)
+                      .parametersValues[0],
+                  ),
+                ],
+                queryBuilderState.observableContext,
+              );
+            }
           } else {
             propertyExpression_setParametersValue(
               guaranteeType(currentExpression, AbstractPropertyExpression),
