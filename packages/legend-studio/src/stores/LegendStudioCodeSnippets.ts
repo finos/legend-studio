@@ -44,3 +44,44 @@ export const CLASS_WITH_CONSTRAINT_SNIPPET = `Class \${1:model::NewClass}
 {
   \${2:// class content}
 }`;
+
+export const DATA_WITH_EXTERNAL_FORMAT_SNIPPET = `Data \${1:model::NewData}
+{
+  ExternalFormat
+  #{
+    contentType: \${2:'application/x.flatdata';}
+    data: \${3:'sample data';}
+  }#
+}`;
+
+export const DATA_WITH_MODEL_STORE_SNIPPET = `Data \${1:model::NewData}
+{
+  ModelStore
+  #{
+    \${2:model::SomeClass:}
+      [
+        \${3:^model::SomeClass(
+        )
+      ]
+  }#
+}`;
+
+export const DATA_WITH_STEREOTYPES_SNIPPET = `Data \${1:<<meta::pure::profiles::typemodifiers.abstract>> model::NewData}
+// example of stereotype: meta::pure::profiles::typemodifiers.abstract
+{
+  ExternalFormat
+  #{
+    contentType: \${2:'application/json';}
+    data: \${3:'{"some":"data"}';}
+  }#
+}`;
+
+export const DATA_WITH_TAGGED_VALUES_SNIPPET = `Data \${1:{doc.doc = 'something'} model::NewData}
+// example of tagged value: {doc.doc = 'something'}
+{
+  ExternalFormat}
+  #{
+    contentType: \${2:'application/json';}
+    data: \${3:'{"some":"data"}';}
+  }#
+}`;
