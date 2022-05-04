@@ -71,7 +71,7 @@ const getParameterValue = (
 const generateClassLabel = (
   val: Class,
   queryBuilderState: QueryBuilderState,
-): string | JSX.Element => {
+): string | React.ReactNode => {
   const milestoneStereotype = getMilestoneTemporalStereotype(
     val,
     queryBuilderState.graphManagerState.graph,

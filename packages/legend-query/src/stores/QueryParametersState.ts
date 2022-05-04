@@ -18,6 +18,7 @@ import addDays from 'date-fns/addDays';
 import {
   type InstanceValue,
   type Type,
+  type ValueSpecification,
   EnumValueExplicitReference,
   EnumValueInstanceValue,
   Enumeration,
@@ -30,11 +31,12 @@ import {
   PRIMITIVE_TYPE,
   VariableExpression,
   observe_VariableExpression,
-  observe_adaptive_ValueSpecification,
+  observe_ValueSpecification,
 } from '@finos/legend-graph';
 import {
   addUniqueEntry,
   deleteEntry,
+  IllegalStateError,
   Randomizer,
   uuid,
 } from '@finos/legend-shared';
@@ -103,7 +105,7 @@ export class QueryParameterState {
   readonly uuid = uuid();
   readonly queryParameterState: QueryParametersState;
   readonly parameter: VariableExpression;
-  value: InstanceValue | undefined;
+  value: ValueSpecification | undefined;
 
   constructor(
     queryParameterState: QueryParametersState,
@@ -166,9 +168,14 @@ export class QueryParameterState {
     return undefined;
   }
 
-  setValue(value: InstanceValue | undefined): void {
+  setValue(value: ValueSpecification | undefined): void {
+    if (value instanceof VariableExpression) {
+      throw new IllegalStateError(
+        'Can not assign a parameter to another parameter',
+      );
+    }
     this.value = value
-      ? observe_adaptive_ValueSpecification(
+      ? observe_ValueSpecification(
           value,
           this.queryParameterState.queryBuilderState.observableContext,
         )
