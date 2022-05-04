@@ -40,6 +40,7 @@ import {
   type PureGrammarParserKeywordSuggestionGetter,
   type PureGrammarParserDocumentationGetter,
   type PureGrammarParserElementDocumentationGetter,
+  type DataElementSnippetSuggestionsGetter,
 } from '@finos/legend-studio';
 import { SwaggerIcon } from '@finos/legend-art';
 import type {
@@ -63,7 +64,16 @@ import {
   EXTERNAL_STORE_SERVICE_DOCUMENTATION_ENTRIES,
   EXTERNAL_STORE_SERVICE_LEGEND_STUDIO_DOCUMENTATION_KEY,
 } from './ESService_LegendStudioDocumentation';
-import { BLANK_SERVICE_STORE_SNIPPET } from './ESService_CodeSnippets';
+import {
+  BLANK_SERVICE_STORE_SNIPPET,
+  DATA_ELEMENT_WITH_SERVICE_STORE_DATA,
+  DATA_ELEMENT_WITH_SERVICE_STORE_DATA_WITH_BODY_PATTERNS,
+  DATA_ELEMENT_WITH_SERVICE_STORE_DATA_WITH_HEADER_PARAMS,
+  DATA_ELEMENT_WITH_SERVICE_STORE_DATA_WITH_QUERY_PARAMS,
+  SERVICE_STORE_WITH_DESCRIPTION,
+  SERVICE_STORE_WITH_SERVICE,
+  SERVICE_STORE_WITH_SERVICE_GROUP,
+} from './ESService_CodeSnippets';
 
 const SERVICE_STORE_ELEMENT_TYPE = 'SERVICE_STORE';
 const SERVICE_STORE_ELEMENT_PROJECT_EXPLORER_DND_TYPE =
@@ -281,8 +291,53 @@ export class ESService_LegendStudioPlugin
                 description: '(blank)',
                 insertText: BLANK_SERVICE_STORE_SNIPPET,
               },
+              {
+                text: PURE_GRAMMAR_SERVICE_STORE_ELEMENT_TYPE_LABEL,
+                description: 'with service',
+                insertText: SERVICE_STORE_WITH_SERVICE,
+              },
+              {
+                text: PURE_GRAMMAR_SERVICE_STORE_ELEMENT_TYPE_LABEL,
+                description: 'with service group',
+                insertText: SERVICE_STORE_WITH_SERVICE_GROUP,
+              },
+              {
+                text: PURE_GRAMMAR_SERVICE_STORE_ELEMENT_TYPE_LABEL,
+                description: 'with description',
+                insertText: SERVICE_STORE_WITH_DESCRIPTION,
+              },
             ]
           : undefined,
+    ];
+  }
+
+  getExtraDataElementSnippetSuggestionsGetters(): DataElementSnippetSuggestionsGetter[] {
+    return [
+      (
+        editorStore: EditorStore,
+        elementName: string,
+      ): PureGrammarTextSuggestion[] => [
+        {
+          text: elementName,
+          description: 'with service store embedded data',
+          insertText: DATA_ELEMENT_WITH_SERVICE_STORE_DATA,
+        },
+        {
+          text: elementName,
+          description: 'with service store embedded data with body patterns',
+          insertText: DATA_ELEMENT_WITH_SERVICE_STORE_DATA_WITH_BODY_PATTERNS,
+        },
+        {
+          text: elementName,
+          description: 'with service store embedded data with header paramters',
+          insertText: DATA_ELEMENT_WITH_SERVICE_STORE_DATA_WITH_HEADER_PARAMS,
+        },
+        {
+          text: elementName,
+          description: 'with service store embedded data with query paramters',
+          insertText: DATA_ELEMENT_WITH_SERVICE_STORE_DATA_WITH_QUERY_PARAMS,
+        },
+      ],
     ];
   }
 }
