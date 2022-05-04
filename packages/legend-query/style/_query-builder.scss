@@ -648,6 +648,60 @@
     width: 100%;
   }
 
+  &__date-option-dropdown {
+    @include flexVCenter;
+
+    &__button {
+      @include flexCenter;
+
+      height: 2.1rem;
+      width: 100%;
+      margin: 1rem 0 1.2rem;
+      color: var(--color-light-grey-200);
+      border: 0.05rem solid var(--color-dark-grey-300);
+      font-size: 1rem;
+    }
+
+    &__absolute-date {
+      margin: 2rem;
+
+      &__label {
+        margin-bottom: 0.3rem;
+        color: var(--color-light-grey-200);
+      }
+    }
+
+    &__custom-date {
+      @include flexCenter;
+
+      margin: 2rem;
+
+      &__input-label {
+        color: var(--color-light-grey-200);
+        margin-bottom: 1rem;
+      }
+
+      &__input-text-editor {
+        @include flexVCenter;
+
+        height: 2.9rem;
+        width: 6rem;
+        border: 0.15rem solid var(--color-dark-grey-300);
+        color: var(--color-light-grey-200);
+        background: var(--color-dark-grey-100);
+        margin-right: 0%;
+        text-align: center;
+      }
+
+      &__input-dropdown {
+        border: 0.05rem solid var(--color-dark-grey-300);
+        color: var(--color-light-grey-200);
+        width: 14rem;
+        font-size: 0.2rem;
+      }
+    }
+  }
+
   &__dropdown {
     margin-top: 0.5rem;
   }

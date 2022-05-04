@@ -14,7 +14,19 @@
  * limitations under the License.
  */
 
+import {
+  type FunctionExpression,
+  type ValueSpecification,
+  AbstractPropertyExpression,
+  PRIMITIVE_TYPE,
+} from '@finos/legend-graph';
 import { SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
+import { buildPostFilterConditionState } from '../QueryBuilderPostFilterProcessor';
+import type {
+  PostFilterConditionState,
+  QueryBuilderPostFilterState,
+} from '../QueryBuilderPostFilterState';
+import { buildPostFilterConditionExpression } from './QueryBuilderPostFilterOperatorHelper';
 import { QueryBuilderPostFilterOperator_LessThan } from './QueryBuilderPostFilterOperator_LessThan';
 
 export class QueryBuilderPostFilterOperator_LessThanEqual extends QueryBuilderPostFilterOperator_LessThan {
@@ -22,7 +34,36 @@ export class QueryBuilderPostFilterOperator_LessThanEqual extends QueryBuilderPo
     return '<=';
   }
 
-  override getPureFunction(): SUPPORTED_FUNCTIONS {
-    return SUPPORTED_FUNCTIONS.LESS_THAN_EQUAL;
+  override buildPostFilterConditionExpression(
+    postFilterConditionState: PostFilterConditionState,
+  ): ValueSpecification | undefined {
+    return buildPostFilterConditionExpression(
+      postFilterConditionState,
+      this,
+      postFilterConditionState.columnState.getReturnType()?.path ===
+        PRIMITIVE_TYPE.DATETIME &&
+        postFilterConditionState.value?.genericType?.value.rawType.path !==
+          PRIMITIVE_TYPE.DATETIME
+        ? SUPPORTED_FUNCTIONS.IS_ON_OR_BEFORE_DAY
+        : SUPPORTED_FUNCTIONS.LESS_THAN_EQUAL,
+    );
+  }
+
+  override buildPostFilterConditionState(
+    postFilterState: QueryBuilderPostFilterState,
+    expression: FunctionExpression,
+  ): PostFilterConditionState | undefined {
+    return buildPostFilterConditionState(
+      postFilterState,
+      expression,
+      expression.parametersValues[0] instanceof AbstractPropertyExpression &&
+        expression.parametersValues[0].func.genericType.value.rawType.path ===
+          PRIMITIVE_TYPE.DATETIME &&
+        expression.parametersValues[1]?.genericType?.value.rawType.path !==
+          PRIMITIVE_TYPE.DATETIME
+        ? SUPPORTED_FUNCTIONS.IS_ON_OR_BEFORE_DAY
+        : SUPPORTED_FUNCTIONS.LESS_THAN_EQUAL,
+      this,
+    );
   }
 }
