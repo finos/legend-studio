@@ -22,12 +22,12 @@ export enum DSL_DATA_SPACE_LEGEND_STUDIO_DOCUMENTATION_KEY {
 export const DSL_DATA_SPACE_DOCUMENTATION_ENTRIES = {
   [DSL_DATA_SPACE_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER]: {
     markdownText: {
-      value: `A DSL concerning with providing information, documentation about the taxonomy of data models`,
+      value: `DSL DataSpace (\`###DataSpace\`) concerns with providing information and documentation about the taxonomy of data models`,
     },
   },
   [DSL_DATA_SPACE_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_DATA_SPACE_ELEMENT]: {
     markdownText: {
-      value: `A data-space can be used to communicate about the _meaning_, _usage_, and relationships of data models by providing model diagrams, execution context (mapping, runtime), test data, and so on, to help users quickly explore and understand the models`,
+      value: `A data-space element specifies a grouping of model diagrams, execution context (mapping, runtime), test data, and so on to help communicate about the _meaning_, _usage_, and relationships of data models and to help users quickly explore and understand the models`,
     },
   },
 };

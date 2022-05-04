@@ -22,13 +22,13 @@ export enum DSL_PERSISTENCE_LEGEND_STUDIO_DOCUMENTATION_KEY {
 export const DSL_PERSISTENCE_DOCUMENTATION_ENTRIES = {
   [DSL_PERSISTENCE_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER]: {
     markdownText: {
-      value: `A DSL concerning with the specifications of how data can be persisted`,
+      value: `DSL Persistence (\`###Persistence\`) concerns with data pipelines which enable writing/persisting data`,
     },
   },
   [DSL_PERSISTENCE_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PERSISTENCE_ELEMENT]:
     {
       markdownText: {
-        value: `A persistence element can be used to specify a data pipeline`,
+        value: `A persistence element specifies a data pipeline`,
       },
     },
 };
