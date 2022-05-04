@@ -22,12 +22,12 @@ export enum DSL_DIAGRAM_LEGEND_STUDIO_DOCUMENTATION_KEY {
 export const DSL_DIAGRAM_DOCUMENTATION_ENTRIES = {
   [DSL_DIAGRAM_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER]: {
     markdownText: {
-      value: `A DSL concerning with specifications to visualize data models and their relationship`,
+      value: `DSL Diagram (\`###Diagram\`) concerns with visualizing data models and their relationship`,
     },
   },
   [DSL_DIAGRAM_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_DIAGRAM_ELEMENT]: {
     markdownText: {
-      value: `A diagram can be used to visualize data models and their relationship`,
+      value: `A diagram element specifies the visualization/rendering of data models and their relationship`,
     },
   },
 };

@@ -14,28 +14,28 @@
  * limitations under the License.
  */
 
-export enum DSL_EXTERNAL_FORAMT_LEGEND_STUDIO_DOCUMENTATION_KEY {
+export enum DSL_EXTERNAL_FORMAT_LEGEND_STUDIO_DOCUMENTATION_KEY {
   GRAMMAR_PARSER = 'dsl-externalFormat__grammar-parser',
   GRAMMAR_BINDING_ELEMENT = 'dsl-externalFormat__grammar-binding-element',
   GRAMMAR_SCHEMASET_ELEMENT = 'dsl-externalFormat__grammar-schemaSet-element',
 }
 
-export const DSL_EXTERNAL_FORAMT_DOCUMENTATION_ENTRIES = {
-  [DSL_EXTERNAL_FORAMT_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER]: {
+export const DSL_EXTERNAL_FORMAT_DOCUMENTATION_ENTRIES = {
+  [DSL_EXTERNAL_FORMAT_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER]: {
     markdownText: {
-      value: `A DSL concerning with specifications related to external format and schema definitions for these external formats`,
+      value: `DSL External-Format (\`###ExternalFormat\`) concerns with the serialization between data models and external formats like CSV, JSON, etc.`,
     },
   },
-  [DSL_EXTERNAL_FORAMT_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_BINDING_ELEMENT]:
+  [DSL_EXTERNAL_FORMAT_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_BINDING_ELEMENT]:
     {
       markdownText: {
-        value: `A binding is a specification used to map a relationalship between a class and an external format`,
+        value: `A binding element specifies the mapping between data models and schemas of the data sources in external formats (e.g. JSON, CSV, etc.) as well as the serialization driver to use for data transformation`,
       },
     },
-  [DSL_EXTERNAL_FORAMT_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_SCHEMASET_ELEMENT]:
+  [DSL_EXTERNAL_FORMAT_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_SCHEMASET_ELEMENT]:
     {
       markdownText: {
-        value: `A SchemaSet is a specification used to hold external formats.`,
+        value: `A schema-set element specifies schemas of the data sources in external formats (e.g. JSON, CSV, etc.)`,
       },
     },
 };
