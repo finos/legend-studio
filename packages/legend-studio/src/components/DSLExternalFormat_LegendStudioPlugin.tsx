@@ -83,14 +83,13 @@ import {
   externalFormat_urlStream_setUrl,
 } from '../stores/graphModifier/DSLExternalFormat_GraphModifierHelper';
 import type { LegendApplicationDocumentationEntry } from '@finos/legend-application';
-import { DSL_EXTERNAL_FORAMT_LEGEND_STUDIO_DOCUMENTATION_KEY } from './DSLExternalFormat_LegendStudioDocumentation';
+import { DSL_EXTERNAL_FORMAT_LEGEND_STUDIO_DOCUMENTATION_KEY } from './DSLExternalFormat_LegendStudioDocumentation';
 import {
-  EMPTY_BINDING_SNIPPET,
-  EMPTY_SCHEMASET_SNIPPET,
-  getBindingSnipperWithOneModelIncludes,
-  getSchemaSetWithFlatDataSschema,
-  getSchemaSetWithJSONSchema,
-  getSchemaSetWithXMLSchema,
+  BASIC_BINDING_SNIPPET,
+  BASIC_SCHEMASET_SNIPPET,
+  SCHEMASET_WITH_JSON_SCHEMA_SNIPPET,
+  SCHEMASET_WITH_XML_SCHEMA_SNIPPET,
+  SCHEMASET_WITH_FLAT_DATA_SCHEMA_SNIPPET,
 } from './DSLExternalFormat_CodeSnippets';
 
 const SCHEMA_SET_ELEMENT_TYPE = 'SCHEMASET';
@@ -345,13 +344,13 @@ export class DSLExternalFormat_LegendStudioPlugin
         if (parserKeyword === PURE_GRAMMAR_EXTERNAL_FORMAT_PARSER_NAME) {
           if (elementKeyword === PURE_GRAMMAR_BINDING_ELEMENT_TYPE_LABEL) {
             return editorStore.applicationStore.docRegistry.getEntry(
-              DSL_EXTERNAL_FORAMT_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_BINDING_ELEMENT,
+              DSL_EXTERNAL_FORMAT_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_BINDING_ELEMENT,
             );
           } else if (
             elementKeyword === PURE_GRAMMAR_SCHEMA_SET_ELEMENT_TYPE_LABEL
           ) {
             return editorStore.applicationStore.docRegistry.getEntry(
-              DSL_EXTERNAL_FORAMT_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_SCHEMASET_ELEMENT,
+              DSL_EXTERNAL_FORMAT_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_SCHEMASET_ELEMENT,
             );
           }
         }
@@ -368,7 +367,7 @@ export class DSLExternalFormat_LegendStudioPlugin
       ): LegendApplicationDocumentationEntry | undefined => {
         if (parserKeyword === PURE_GRAMMAR_EXTERNAL_FORMAT_PARSER_NAME) {
           return editorStore.applicationStore.docRegistry.getEntry(
-            DSL_EXTERNAL_FORAMT_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER,
+            DSL_EXTERNAL_FORMAT_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER,
           );
         }
         return undefined;
@@ -381,9 +380,9 @@ export class DSLExternalFormat_LegendStudioPlugin
       (editorStore: EditorStore): PureGrammarTextSuggestion[] => [
         {
           text: PURE_GRAMMAR_EXTERNAL_FORMAT_PARSER_NAME,
-          description: `DSL ExternalFormat`,
+          description: `DSL External Format`,
           documentation: editorStore.applicationStore.docRegistry.getEntry(
-            DSL_EXTERNAL_FORAMT_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER,
+            DSL_EXTERNAL_FORMAT_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER,
           ),
           insertText: PURE_GRAMMAR_EXTERNAL_FORMAT_PARSER_NAME,
         },
@@ -403,33 +402,28 @@ export class DSLExternalFormat_LegendStudioPlugin
               {
                 text: PURE_GRAMMAR_BINDING_ELEMENT_TYPE_LABEL,
                 description: '(blank)',
-                insertText: EMPTY_BINDING_SNIPPET,
-              },
-              {
-                text: PURE_GRAMMAR_BINDING_ELEMENT_TYPE_LABEL,
-                description: 'with class',
-                insertText: getBindingSnipperWithOneModelIncludes(),
+                insertText: BASIC_BINDING_SNIPPET,
               },
               // schema set
               {
                 text: PURE_GRAMMAR_SCHEMA_SET_ELEMENT_TYPE_LABEL,
                 description: '(blank)',
-                insertText: EMPTY_SCHEMASET_SNIPPET,
+                insertText: BASIC_SCHEMASET_SNIPPET,
               },
               {
                 text: PURE_GRAMMAR_SCHEMA_SET_ELEMENT_TYPE_LABEL,
                 description: 'with flat-data',
-                insertText: getSchemaSetWithFlatDataSschema(),
+                insertText: SCHEMASET_WITH_FLAT_DATA_SCHEMA_SNIPPET,
               },
               {
                 text: PURE_GRAMMAR_SCHEMA_SET_ELEMENT_TYPE_LABEL,
                 description: 'with JSON shema',
-                insertText: getSchemaSetWithJSONSchema(),
+                insertText: SCHEMASET_WITH_JSON_SCHEMA_SNIPPET,
               },
               {
                 text: PURE_GRAMMAR_SCHEMA_SET_ELEMENT_TYPE_LABEL,
                 description: 'with XML shema',
-                insertText: getSchemaSetWithXMLSchema(),
+                insertText: SCHEMASET_WITH_XML_SCHEMA_SNIPPET,
               },
             ]
           : undefined,

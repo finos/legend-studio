@@ -22,12 +22,12 @@ export enum DSL_TEXT_LEGEND_STUDIO_DOCUMENTATION_KEY {
 export const DSL_TEXT_DOCUMENTATION_ENTRIES = {
   [DSL_TEXT_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER]: {
     markdownText: {
-      value: `A DSL concerning with storing data in plain text`,
+      value: `DSL Text (\`###Text\`) concerns with storing data in plain-text`,
     },
   },
   [DSL_TEXT_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_TEXT_ELEMENT]: {
     markdownText: {
-      value: `A text element can be used to store some text content with a specified type, which can be used for formatting, syntax-highlighting`,
+      value: `A text element stores plain-text content with a specified content-type, which can be used for formatting, syntax-highlighting`,
     },
   },
 };

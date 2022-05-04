@@ -118,6 +118,46 @@ const getParserDocumetation = (
         LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PURE_PARSER,
       );
     }
+    case PURE_PARSER.MAPPING: {
+      return editorStore.applicationStore.docRegistry.getEntry(
+        LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_MAPPING_PARSER,
+      );
+    }
+    case PURE_PARSER.CONNECTION: {
+      return editorStore.applicationStore.docRegistry.getEntry(
+        LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_CONNECTION_PARSER,
+      );
+    }
+    case PURE_PARSER.RUNTIME: {
+      return editorStore.applicationStore.docRegistry.getEntry(
+        LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_RUNTIME_PARSER,
+      );
+    }
+    case PURE_PARSER.SERVICE: {
+      return editorStore.applicationStore.docRegistry.getEntry(
+        LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_SERVICE_PARSER,
+      );
+    }
+    case PURE_PARSER.RELATIONAL: {
+      return editorStore.applicationStore.docRegistry.getEntry(
+        LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_RELATIONAL_PARSER,
+      );
+    }
+    case PURE_PARSER.FILE_GENERATION: {
+      return editorStore.applicationStore.docRegistry.getEntry(
+        LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_FILE_GENERATION_PARSER,
+      );
+    }
+    case PURE_PARSER.GENERATION_SPECIFICATION: {
+      return editorStore.applicationStore.docRegistry.getEntry(
+        LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_GENERATION_SPECIFICATION_PARSER,
+      );
+    }
+    case PURE_PARSER.DATA: {
+      return editorStore.applicationStore.docRegistry.getEntry(
+        LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_DATA_PARSER,
+      );
+    }
     default: {
       const parserDocumentationGetters = editorStore.pluginManager
         .getStudioPlugins()
@@ -150,6 +190,30 @@ const getParserElementDocumentation = (
           LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_CLASS_ELEMENT,
         );
       }
+      return undefined;
+    }
+    case PURE_PARSER.MAPPING: {
+      return undefined;
+    }
+    case PURE_PARSER.CONNECTION: {
+      return undefined;
+    }
+    case PURE_PARSER.RUNTIME: {
+      return undefined;
+    }
+    case PURE_PARSER.SERVICE: {
+      return undefined;
+    }
+    case PURE_PARSER.RELATIONAL: {
+      return undefined;
+    }
+    case PURE_PARSER.FILE_GENERATION: {
+      return undefined;
+    }
+    case PURE_PARSER.GENERATION_SPECIFICATION: {
+      return undefined;
+    }
+    case PURE_PARSER.DATA: {
       return undefined;
     }
     default: {
@@ -193,15 +257,70 @@ const getParserKeywordSuggestions = (
       ),
       insertText: PURE_PARSER.PURE,
     },
-    // PURE_PARSER.CONNECTION,
-    // PURE_PARSER.RUNTIME,
-    // PURE_PARSER.MAPPING,
-    // PURE_PARSER.SERVICE,
-    // PURE_PARSER.FLATDATA,
-    // PURE_PARSER.RELATIONAL,
-    // PURE_PARSER.GENERATION_SPECIFICATION,
-    // PURE_PARSER.FILE_GENERATION,
-    // PURE_PARSER.DATA,
+    {
+      text: PURE_PARSER.MAPPING,
+      description: `DSL Mapping`,
+      documentation: editorStore.applicationStore.docRegistry.getEntry(
+        LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_MAPPING_PARSER,
+      ),
+      insertText: PURE_PARSER.MAPPING,
+    },
+    {
+      text: PURE_PARSER.CONNECTION,
+      description: `DSL Connection`,
+      documentation: editorStore.applicationStore.docRegistry.getEntry(
+        LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_CONNECTION_PARSER,
+      ),
+      insertText: PURE_PARSER.CONNECTION,
+    },
+    {
+      text: PURE_PARSER.RUNTIME,
+      description: `DSL Runtime`,
+      documentation: editorStore.applicationStore.docRegistry.getEntry(
+        LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_RUNTIME_PARSER,
+      ),
+      insertText: PURE_PARSER.RUNTIME,
+    },
+    {
+      text: PURE_PARSER.RELATIONAL,
+      description: `External Store Relational`,
+      documentation: editorStore.applicationStore.docRegistry.getEntry(
+        LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_RELATIONAL_PARSER,
+      ),
+      insertText: PURE_PARSER.RELATIONAL,
+    },
+    {
+      text: PURE_PARSER.SERVICE,
+      description: `DSL Service`,
+      documentation: editorStore.applicationStore.docRegistry.getEntry(
+        LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_SERVICE_PARSER,
+      ),
+      insertText: PURE_PARSER.SERVICE,
+    },
+    {
+      text: PURE_PARSER.GENERATION_SPECIFICATION,
+      description: `DSL Generation Specification`,
+      documentation: editorStore.applicationStore.docRegistry.getEntry(
+        LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_GENERATION_SPECIFICATION_PARSER,
+      ),
+      insertText: PURE_PARSER.GENERATION_SPECIFICATION,
+    },
+    {
+      text: PURE_PARSER.FILE_GENERATION,
+      description: `DSL File Generation`,
+      documentation: editorStore.applicationStore.docRegistry.getEntry(
+        LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_FILE_GENERATION_PARSER,
+      ),
+      insertText: PURE_PARSER.FILE_GENERATION,
+    },
+    {
+      text: PURE_PARSER.DATA,
+      description: `DSL Data`,
+      documentation: editorStore.applicationStore.docRegistry.getEntry(
+        LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_DATA_PARSER,
+      ),
+      insertText: PURE_PARSER.DATA,
+    },
     ...parserKeywordSuggestions,
   ];
 };
@@ -234,6 +353,30 @@ const getParserElementSnippetSuggestions = (
           insertText: CLASS_WITH_CONSTRAINT_SNIPPET,
         },
       ];
+    }
+    case PURE_PARSER.MAPPING: {
+      return [];
+    }
+    case PURE_PARSER.CONNECTION: {
+      return [];
+    }
+    case PURE_PARSER.RUNTIME: {
+      return [];
+    }
+    case PURE_PARSER.SERVICE: {
+      return [];
+    }
+    case PURE_PARSER.RELATIONAL: {
+      return [];
+    }
+    case PURE_PARSER.FILE_GENERATION: {
+      return [];
+    }
+    case PURE_PARSER.GENERATION_SPECIFICATION: {
+      return [];
+    }
+    case PURE_PARSER.DATA: {
+      return [];
     }
     default: {
       const parserElementSnippetSuggestionsGetters = editorStore.pluginManager

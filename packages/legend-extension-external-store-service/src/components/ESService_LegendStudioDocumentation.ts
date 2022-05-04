@@ -22,13 +22,13 @@ export enum EXTERNAL_STORE_SERVICE_LEGEND_STUDIO_DOCUMENTATION_KEY {
 export const EXTERNAL_STORE_SERVICE_DOCUMENTATION_ENTRIES = {
   [EXTERNAL_STORE_SERVICE_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER]: {
     markdownText: {
-      value: `A external store DSL concerning with specification to access data from API endpoints`,
+      value: `External store DSL Service (\`###ServiceStore\`) concerns with data store specifications which enable accessing  data from API endpoints`,
     },
   },
   [EXTERNAL_STORE_SERVICE_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_SERVICE_STORE_ELEMENT]:
     {
       markdownText: {
-        value: `A service store element can be used to specify API endpoints as source of data`,
+        value: `A service-store element specifies API endpoints as data source`,
       },
     },
 };
