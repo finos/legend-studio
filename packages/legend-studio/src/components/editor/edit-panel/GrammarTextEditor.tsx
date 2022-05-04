@@ -73,6 +73,10 @@ import {
   CLASS_WITH_CONSTRAINT_SNIPPET,
   CLASS_WITH_INHERITANCE_SNIPPET,
   CLASS_WITH_PROPERTY_SNIPPET,
+  DATA_WITH_EXTERNAL_FORMAT_SNIPPET,
+  DATA_WITH_MODEL_STORE_SNIPPET,
+  DATA_WITH_STEREOTYPES_SNIPPET,
+  DATA_WITH_TAGGED_VALUES_SNIPPET,
 } from '../../../stores/LegendStudioCodeSnippets';
 
 const getSectionParserNameFromLineText = (
@@ -214,6 +218,11 @@ const getParserElementDocumentation = (
       return undefined;
     }
     case PURE_PARSER.DATA: {
+      if (elementKeyword === PURE_ELEMENT_NAME.DATA_ELEMENT) {
+        return editorStore.applicationStore.docRegistry.getEntry(
+          LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_DATA_PARSER,
+        );
+      }
       return undefined;
     }
     default: {
@@ -376,7 +385,45 @@ const getParserElementSnippetSuggestions = (
       return [];
     }
     case PURE_PARSER.DATA: {
-      return [];
+      let extraDataElementSnippets: PureGrammarTextSuggestion[] = [];
+      const dataElementSnippetSuggestionsGetters = editorStore.pluginManager
+        .getStudioPlugins()
+        .flatMap(
+          (plugin) =>
+            (
+              plugin as DSL_LegendStudioPlugin_Extension
+            ).getExtraDataElementSnippetSuggestionsGetters?.() ?? [],
+        );
+      for (const snippetSuggestionsGetter of dataElementSnippetSuggestionsGetters) {
+        const snippetSuggestions = snippetSuggestionsGetter(
+          editorStore,
+          PURE_ELEMENT_NAME.DATA_ELEMENT,
+        );
+        extraDataElementSnippets = snippetSuggestions;
+      }
+      return [
+        {
+          text: PURE_ELEMENT_NAME.DATA_ELEMENT,
+          description: 'with external format embedded data',
+          insertText: DATA_WITH_EXTERNAL_FORMAT_SNIPPET,
+        },
+        {
+          text: PURE_ELEMENT_NAME.DATA_ELEMENT,
+          description: 'with model store embedded data',
+          insertText: DATA_WITH_MODEL_STORE_SNIPPET,
+        },
+        {
+          text: PURE_ELEMENT_NAME.DATA_ELEMENT,
+          description: 'with stereotypes',
+          insertText: DATA_WITH_STEREOTYPES_SNIPPET,
+        },
+        {
+          text: PURE_ELEMENT_NAME.DATA_ELEMENT,
+          description: 'with tagged values',
+          insertText: DATA_WITH_TAGGED_VALUES_SNIPPET,
+        },
+        ...extraDataElementSnippets,
+      ];
     }
     default: {
       const parserElementSnippetSuggestionsGetters = editorStore.pluginManager

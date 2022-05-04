@@ -217,6 +217,11 @@ export type PureGrammarParserElementSnippetSuggestionsGetter = (
   parserKeyword: string,
 ) => PureGrammarTextSuggestion[] | undefined;
 
+export type DataElementSnippetSuggestionsGetter = (
+  editorStore: EditorStore,
+  elementName: string,
+) => PureGrammarTextSuggestion[];
+
 /**
  * Studio plugins for new DSL extension.
  */
@@ -313,4 +318,9 @@ export interface DSL_LegendStudioPlugin_Extension extends LegendStudioPlugin {
    * (e.g. Class, Enum in ###Pure)
    */
   getExtraPureGrammarParserElementSnippetSuggestionsGetters?(): PureGrammarParserElementSnippetSuggestionsGetter[];
+
+  /**
+   * Get the list of Pure grammar element suggestion snippet getters for data element
+   */
+  getExtraDataElementSnippetSuggestionsGetters?(): DataElementSnippetSuggestionsGetter[];
 }
