@@ -37,10 +37,9 @@ import {
   PureGraphManagerPlugin,
 } from './PureGraphManagerPlugin';
 
-const PURE_GRAMMAR_BINDING_PARSER_NAME = 'ExternalFormat';
-const PURE_GRAMMAR_BINDING_ELEMENT_TYPE_LABEL = 'Binding';
-const PURE_GRAMMAR_SCHEMA_SET_PARSER_NAME = 'ExternalFormat';
-const PURE_GRAMMAR_SCHEMA_SET_ELEMENT_TYPE_LABEL = 'SchemaSet';
+export const PURE_GRAMMAR_EXTERNAL_FORMAT_PARSER_NAME = 'ExternalFormat';
+export const PURE_GRAMMAR_BINDING_ELEMENT_TYPE_LABEL = 'Binding';
+export const PURE_GRAMMAR_SCHEMA_SET_ELEMENT_TYPE_LABEL = 'SchemaSet';
 const PURE_GRAMMAR_EXTERNAL_FORMAT_CONNECTION_TYPE_LABEL =
   'ExternalFormatConnection';
 
@@ -56,10 +55,7 @@ export class DSLExternalFormat_PureGraphManagerPlugin
   }
 
   override getExtraPureGrammarParserNames(): string[] {
-    return [
-      PURE_GRAMMAR_BINDING_PARSER_NAME,
-      PURE_GRAMMAR_SCHEMA_SET_PARSER_NAME,
-    ];
+    return [PURE_GRAMMAR_EXTERNAL_FORMAT_PARSER_NAME];
   }
 
   override getExtraPureGrammarKeywords(): string[] {

@@ -84,6 +84,7 @@ export { ExternalFormatConnection } from './models/metamodels/pure/packageableEl
 export { UrlStream } from './models/metamodels/pure/packageableElements/externalFormat/connection/DSLExternalFormat_UrlStream';
 export { DSLExternalFormat_GraphPreset } from './graph/DSLExternalFormat_Extension';
 export { BindingTransformer } from './models/metamodels/pure/packageableElements/externalFormat/store/DSLExternalFormat_BindingTransformer';
+export * from './graphManager/DSLExternalFormat_PureGraphManagerPlugin';
 // V1 protocols
 export * from './models/protocols/pure/v1/model/packageableElements/V1_PackageableElement';
 export { V1_StereotypePtr } from './models/protocols/pure/v1/model/packageableElements/domain/V1_StereotypePtr';
