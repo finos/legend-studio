@@ -442,7 +442,7 @@ const getInlineSnippetSuggestions = (
 ): PureGrammarTextSuggestion[] => [
   {
     text: 'let',
-    description: 'Let statement',
+    description: 'new variable',
     insertText: `let \${1:} = \${2:};`,
   },
   {
@@ -453,71 +453,79 @@ const getInlineSnippetSuggestions = (
   // conditionals
   {
     text: 'if',
-    description: 'If statement',
+    description: '(conditional)',
     insertText: `if(\${1:'true'}, | \${2:/* if true do this */}, | \${3:/* if false do this */})`,
   },
   {
     text: 'case',
-    description: 'Case statement',
+    description: '(conditional)',
     insertText: `case(\${1:}, \${2:'true'}, \${3:'false'})`,
   },
   {
     text: 'match',
-    description: 'Match statement',
+    description: '(conditional)',
     insertText: `match([x:\${1:String[1]}, \${2:''}])`,
   },
   // collection
   {
     text: 'map',
-    description: 'Map statement',
+    description: '(collection)',
     insertText: `map(x|\${1:})`,
   },
   {
     text: 'filter',
-    description: 'Filter statement',
+    description: '(collection)',
     insertText: `filter(x|\${1:})`,
   },
   {
     text: 'fold',
-    description: 'Fold statement',
+    description: '(collection)',
     insertText: `fold({a, b| \${1:$a + $b}}, \${2:0})`,
   },
   {
     text: 'filter',
-    description: 'Filter statement',
+    description: '(collection)',
     insertText: `filter(x|\${1:})`,
   },
   {
     text: 'sort',
+    description: '(collection)',
     insertText: `sort()`,
   },
   {
     text: 'in',
+    description: '(collection)',
     insertText: `in()`,
   },
   {
     text: 'slice',
+    description: '(collection)',
     insertText: `slice(\${1:1},$\{2:2})`,
   },
   {
     text: 'removeDuplicates',
+    description: '(collection)',
     insertText: `removeDuplicates()`,
   },
   {
     text: 'toOne',
+    description: '(collection)',
     insertText: `toOne()`,
   },
   {
     text: 'isEmpty',
+    description: '(collection)',
     insertText: `isEmpty()`,
   },
-  // string ops
+  // string
   {
     text: 'endsWith',
+    description: '(string)',
     insertText: `endsWith()`,
   },
   {
     text: 'startsWith',
+    description: '(string)',
     insertText: `startsWith()`,
   },
 ];

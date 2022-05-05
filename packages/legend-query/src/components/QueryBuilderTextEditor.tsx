@@ -35,8 +35,11 @@ export const QueryBuilderTextEditor = observer(
     const close = applicationStore.guardUnhandledError(() =>
       flowResult(queryBuilderState.queryTextEditorState.closeModal()),
     );
-    const discardChanges = (): void =>
+    const discardChanges = (): void => {
       queryBuilderState.queryTextEditorState.setMode(undefined);
+      // force close the backdrop just in case changes are discarded when there are grammar issues
+      queryBuilderState.setBackdrop(false);
+    };
     const mode = queryTextEditorState.mode;
     useEffect(() => {
       flowResult(
