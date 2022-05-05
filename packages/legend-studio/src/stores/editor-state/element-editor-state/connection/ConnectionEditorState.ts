@@ -307,11 +307,11 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
         break;
       }
       case CORE_AUTHENTICATION_STRATEGY_TYPE.GCP_WORKLOAD_IDENTITY_FEDERATION: {
-        relationDbConnection_setAuthenticationStrategy(
-          this.connection,
-          new GCPWorkloadIdentityFederationAuthenticationStrategy('', []),
+        authStrategy = new GCPWorkloadIdentityFederationAuthenticationStrategy(
+          '',
+          [],
         );
-        return;
+        break;
       }
       case CORE_AUTHENTICATION_STRATEGY_TYPE.H2_DEFAULT: {
         authStrategy = new DefaultH2AuthenticationStrategy();
