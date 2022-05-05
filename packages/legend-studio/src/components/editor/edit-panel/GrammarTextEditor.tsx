@@ -1175,6 +1175,10 @@ export const GrammarTextEditor = observer(() => {
       if (editor) {
         disposeEditor(editor);
       }
+      // NOTE: make sure the call the disposer again after leaving this editor
+      // else we would end up with duplicated suggestions and hover infos
+      hoverProviderDisposer.current?.dispose();
+      suggestionProviderDisposer.current?.dispose();
     },
     [editor],
   );
