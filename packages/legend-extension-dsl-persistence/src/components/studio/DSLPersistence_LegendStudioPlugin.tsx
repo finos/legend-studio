@@ -183,7 +183,7 @@ export class DSLPersistence_LegendStudioPlugin
       (editorStore: EditorStore): PureGrammarTextSuggestion[] => [
         {
           text: PURE_GRAMMAR_PERSISTENCE_PARSER_NAME,
-          description: `DSL Persistence`,
+          description: `(dsl)`,
           documentation: editorStore.applicationStore.docRegistry.getEntry(
             DSL_PERSISTENCE_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER,
           ),

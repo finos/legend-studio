@@ -234,7 +234,7 @@ export class DSLDiagram_LegendStudioPlugin
       (editorStore: EditorStore): PureGrammarTextSuggestion[] => [
         {
           text: PURE_GRAMMAR_DIAGRAM_PARSER_NAME,
-          description: `DSL Diagram`,
+          description: `(dsl)`,
           documentation: editorStore.applicationStore.docRegistry.getEntry(
             DSL_DIAGRAM_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER,
           ),

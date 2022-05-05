@@ -268,7 +268,7 @@ export class ESService_LegendStudioPlugin
       (editorStore: EditorStore): PureGrammarTextSuggestion[] => [
         {
           text: PURE_GRAMMAR_SERVICE_STORE_PARSER_NAME,
-          description: `External Store Service`,
+          description: `(external store)`,
           documentation: editorStore.applicationStore.docRegistry.getEntry(
             EXTERNAL_STORE_SERVICE_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER,
           ),

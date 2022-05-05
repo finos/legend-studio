@@ -198,7 +198,7 @@ export class DSLText_LegendStudioPlugin
       (editorStore: EditorStore): PureGrammarTextSuggestion[] => [
         {
           text: PURE_GRAMMAR_TEXT_PARSER_NAME,
-          description: `DSL Text`,
+          description: `(dsl)`,
           documentation: editorStore.applicationStore.docRegistry.getEntry(
             DSL_TEXT_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER,
           ),

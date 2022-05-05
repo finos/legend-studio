@@ -333,7 +333,7 @@ const getParserKeywordSuggestions = (
   return [
     {
       text: PURE_PARSER.PURE,
-      description: `Core PURE`,
+      description: `(core Pure)`,
       documentation: editorStore.applicationStore.docRegistry.getEntry(
         LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PURE_PARSER,
       ),
@@ -341,7 +341,7 @@ const getParserKeywordSuggestions = (
     },
     {
       text: PURE_PARSER.MAPPING,
-      description: `DSL Mapping`,
+      description: `(dsl)`,
       documentation: editorStore.applicationStore.docRegistry.getEntry(
         LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_MAPPING_PARSER,
       ),
@@ -349,7 +349,7 @@ const getParserKeywordSuggestions = (
     },
     {
       text: PURE_PARSER.CONNECTION,
-      description: `DSL Connection`,
+      description: `(dsl)`,
       documentation: editorStore.applicationStore.docRegistry.getEntry(
         LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_CONNECTION_PARSER,
       ),
@@ -357,7 +357,7 @@ const getParserKeywordSuggestions = (
     },
     {
       text: PURE_PARSER.RUNTIME,
-      description: `DSL Runtime`,
+      description: `(dsl)`,
       documentation: editorStore.applicationStore.docRegistry.getEntry(
         LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_RUNTIME_PARSER,
       ),
@@ -365,7 +365,7 @@ const getParserKeywordSuggestions = (
     },
     {
       text: PURE_PARSER.RELATIONAL,
-      description: `External Store Relational`,
+      description: `(external store)`,
       documentation: editorStore.applicationStore.docRegistry.getEntry(
         LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_RELATIONAL_PARSER,
       ),
@@ -373,7 +373,7 @@ const getParserKeywordSuggestions = (
     },
     {
       text: PURE_PARSER.SERVICE,
-      description: `DSL Service`,
+      description: `(dsl)`,
       documentation: editorStore.applicationStore.docRegistry.getEntry(
         LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_SERVICE_PARSER,
       ),
@@ -381,7 +381,7 @@ const getParserKeywordSuggestions = (
     },
     {
       text: PURE_PARSER.GENERATION_SPECIFICATION,
-      description: `DSL Generation Specification`,
+      description: `(dsl)`,
       documentation: editorStore.applicationStore.docRegistry.getEntry(
         LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_GENERATION_SPECIFICATION_PARSER,
       ),
@@ -389,7 +389,7 @@ const getParserKeywordSuggestions = (
     },
     {
       text: PURE_PARSER.FILE_GENERATION,
-      description: `DSL File Generation`,
+      description: `(dsl)`,
       documentation: editorStore.applicationStore.docRegistry.getEntry(
         LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_FILE_GENERATION_PARSER,
       ),
@@ -397,7 +397,7 @@ const getParserKeywordSuggestions = (
     },
     {
       text: PURE_PARSER.DATA,
-      description: `DSL Data`,
+      description: `(dsl)`,
       documentation: editorStore.applicationStore.docRegistry.getEntry(
         LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_DATA_PARSER,
       ),

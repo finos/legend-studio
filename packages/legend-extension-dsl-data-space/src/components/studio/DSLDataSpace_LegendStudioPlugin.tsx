@@ -199,7 +199,7 @@ export class DSLDataSpace_LegendStudioPlugin
       (editorStore: EditorStore): PureGrammarTextSuggestion[] => [
         {
           text: PURE_GRAMMAR_DATA_SPACE_PARSER_NAME,
-          description: `DSL Dataspace`,
+          description: `(dsl)`,
           documentation: editorStore.applicationStore.docRegistry.getEntry(
             DSL_DATA_SPACE_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER,
           ),
