@@ -156,11 +156,6 @@ export const CORE_DOCUMENTATION_ENTRIES = {
       value: `A generation specification provides the pipeline for all generations`,
     },
   },
-  [LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_FILE_GENERATION_ELEMENT]: {
-    markdownText: {
-      value: `A file generation specification provides configuration to generate external format models`,
-    },
-  },
   [LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_DATA_ELEMENT]: {
     markdownText: {
       value: `A data element stores data which can be used for various purposes, including testing`,
@@ -179,7 +174,7 @@ export const CORE_DOCUMENTATION_ENTRIES = {
   },
   [LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_MODEL_CHAIN_CONNECTION]: {
     markdownText: {
-      value: `A model chain connection provides a mechanism to sequence mappings (data transformations) on top of access to a data store`,
+      value: `A model chain connection provides a mechanism to sequence mappings (data transformations) and simulate a data store`,
     },
   },
   [LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_RELATIONAL_DATABASE_CONNECTION]: {

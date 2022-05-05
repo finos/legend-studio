@@ -77,6 +77,26 @@ import {
   DATA_WITH_EXTERNAL_FORMAT_SNIPPET,
   DATA_WITH_MODEL_STORE_SNIPPET,
   createDataElementSnippetWithEmbeddedDataSuggestionSnippet,
+  SIMPLE_PROFILE_SNIPPET,
+  SIMPLE_ENUMERATION_SNIPPET,
+  SIMPLE_ASSOCIATION_SNIPPET,
+  SIMPLE_MEASURE_SNIPPET,
+  BLANK_FUNCTION_SNIPPET,
+  SIMPLE_FUNCTION_SNIPPET,
+  SIMPLE_RUNTIME_SNIPPET,
+  JSON_MODEL_CONNECTION_SNIPPET,
+  XML_MODEL_CONNECTION_SNIPPET,
+  MODEL_CHAIN_CONNECTION_SNIPPET,
+  RELATIONAL_DATABASE_CONNECTION_SNIPPET,
+  BLANK_RELATIONAL_DATABASE_SNIPPET,
+  SIMPLE_GENERATION_SPECIFICATION_SNIPPET,
+  BLANK_SERVICE_SNIPPET,
+  SERVICE_WITH_SINGLE_EXECUTION_SNIPPET,
+  SERVICE_WITH_MULTI_EXECUTION_SNIPPET,
+  BLANK_MAPPING_SNIPPET,
+  MAPPING_WITH_M2M_CLASS_MAPPING_SNIPPET,
+  MAPPING_WITH_ENUMERATION_MAPPING_SNIPPET,
+  MAPPING_WITH_RELATIONAL_CLASS_MAPPING_SNIPPET,
 } from '../../../stores/LegendStudioCodeSnippets';
 import type { DSLData_LegendStudioPlugin_Extension } from '../../../stores/DSLData_LegendStudioPlugin_Extension';
 
@@ -414,6 +434,7 @@ const getParserElementSnippetSuggestions = (
   switch (parserKeyword) {
     case PURE_PARSER.PURE: {
       return [
+        // class
         {
           text: PURE_ELEMENT_NAME.CLASS,
           description: '(blank)',
@@ -434,28 +455,142 @@ const getParserElementSnippetSuggestions = (
           description: 'with constraint',
           insertText: CLASS_WITH_CONSTRAINT_SNIPPET,
         },
+        // profile
+        {
+          text: PURE_ELEMENT_NAME.PROFILE,
+          description: 'simple',
+          insertText: SIMPLE_PROFILE_SNIPPET,
+        },
+        // enumeration
+        {
+          text: PURE_ELEMENT_NAME.ENUMERATION,
+          description: 'simple',
+          insertText: SIMPLE_ENUMERATION_SNIPPET,
+        },
+        // association
+        {
+          text: PURE_ELEMENT_NAME.ASSOCIATION,
+          description: 'simple',
+          insertText: SIMPLE_ASSOCIATION_SNIPPET,
+        },
+        // measure
+        {
+          text: PURE_ELEMENT_NAME.MEASURE,
+          description: 'simple',
+          insertText: SIMPLE_MEASURE_SNIPPET,
+        },
+        // function
+        {
+          text: PURE_ELEMENT_NAME.FUNCTION,
+          description: '(blank)',
+          insertText: BLANK_FUNCTION_SNIPPET,
+        },
+        {
+          text: PURE_ELEMENT_NAME.FUNCTION,
+          description: 'simple',
+          insertText: SIMPLE_FUNCTION_SNIPPET,
+        },
       ];
     }
     case PURE_PARSER.MAPPING: {
-      return [];
+      return [
+        {
+          text: PURE_ELEMENT_NAME.MAPPING,
+          description: '(blank)',
+          insertText: BLANK_MAPPING_SNIPPET,
+        },
+        {
+          text: PURE_ELEMENT_NAME.MAPPING,
+          description: 'with model-to-model mapping',
+          insertText: MAPPING_WITH_M2M_CLASS_MAPPING_SNIPPET,
+        },
+        {
+          text: PURE_ELEMENT_NAME.MAPPING,
+          description: 'with relational mapping',
+          insertText: MAPPING_WITH_RELATIONAL_CLASS_MAPPING_SNIPPET,
+        },
+        {
+          text: PURE_ELEMENT_NAME.MAPPING,
+          description: 'with enumeration mapping',
+          insertText: MAPPING_WITH_ENUMERATION_MAPPING_SNIPPET,
+        },
+      ];
     }
     case PURE_PARSER.CONNECTION: {
-      return [];
+      return [
+        {
+          text: PURE_CONNECTION_NAME.JSON_MODEL_CONNECTION,
+          description: 'JSON model connection',
+          insertText: JSON_MODEL_CONNECTION_SNIPPET,
+        },
+        {
+          text: PURE_CONNECTION_NAME.XML_MODEL_CONNECTION,
+          description: 'XML model connection',
+          insertText: XML_MODEL_CONNECTION_SNIPPET,
+        },
+        {
+          text: PURE_CONNECTION_NAME.MODEL_CHAIN_CONNECTION,
+          description: 'model chain connection',
+          insertText: MODEL_CHAIN_CONNECTION_SNIPPET,
+        },
+        {
+          text: PURE_CONNECTION_NAME.RELATIONAL_DATABASE_CONNECTION,
+          description: 'relational database connection',
+          insertText: RELATIONAL_DATABASE_CONNECTION_SNIPPET,
+        },
+        // TODO: extension mehcanism for connection and relational database connection
+      ];
     }
     case PURE_PARSER.RUNTIME: {
-      return [];
+      return [
+        {
+          text: PURE_ELEMENT_NAME.RUNTIME,
+          description: 'simple',
+          insertText: SIMPLE_RUNTIME_SNIPPET,
+        },
+      ];
     }
     case PURE_PARSER.SERVICE: {
-      return [];
+      return [
+        {
+          text: PURE_ELEMENT_NAME.SERVICE,
+          description: '(blank)',
+          insertText: BLANK_SERVICE_SNIPPET,
+        },
+        {
+          text: PURE_ELEMENT_NAME.SERVICE,
+          description: 'with single execution',
+          insertText: SERVICE_WITH_SINGLE_EXECUTION_SNIPPET,
+        },
+        {
+          text: PURE_ELEMENT_NAME.SERVICE,
+          description: 'with multi execution',
+          insertText: SERVICE_WITH_MULTI_EXECUTION_SNIPPET,
+        },
+      ];
     }
     case PURE_PARSER.RELATIONAL: {
-      return [];
+      return [
+        {
+          text: PURE_ELEMENT_NAME.DATABASE,
+          description: '(blank)',
+          insertText: BLANK_RELATIONAL_DATABASE_SNIPPET,
+        },
+      ];
     }
     case PURE_PARSER.FILE_GENERATION: {
-      return [];
+      return [
+        // TODO?: add extension mechanism for suggestion for different file generations
+      ];
     }
     case PURE_PARSER.GENERATION_SPECIFICATION: {
-      return [];
+      return [
+        {
+          text: PURE_ELEMENT_NAME.GENERATION_SPECIFICATION,
+          description: '(blank)',
+          insertText: SIMPLE_GENERATION_SPECIFICATION_SNIPPET,
+        },
+      ];
     }
     case PURE_PARSER.DATA: {
       const embeddedDateSnippetSuggestions = editorStore.pluginManager
