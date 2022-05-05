@@ -806,15 +806,14 @@ const CustomDateInstanceValueEditor: React.FC<{
     customDateOptionValue.duration,
   );
   const [unitValue, setUnitValue] = useState(
-    (customDateOptionValue.unit as string) ??
-      QUERY_BUILDER_CUSTOM_DATE_OPTION_UNIT.DAYS,
+    customDateOptionValue.unit ?? QUERY_BUILDER_CUSTOM_DATE_OPTION_UNIT.DAYS,
   );
   const [directionValue, setDirectionValue] = useState(
-    (customDateOptionValue.direction as string) ??
+    customDateOptionValue.direction ??
       QUERY_BUILDER_CUSTOM_DATE_OPTION_DIRECTION.BEFORE,
   );
   const [referenceMomentValue, setReferenceMomentValueValue] = useState(
-    (customDateOptionValue.referenceMoment as string) ??
+    customDateOptionValue.referenceMoment ??
       QUERY_BUILDER_CUSTOM_DATE_OPTION_REFERENCE_MOMENT.TODAY,
   );
   const changeValue = (
@@ -885,7 +884,10 @@ const CustomDateInstanceValueEditor: React.FC<{
               label: t.toString(),
             }),
           )}
-          onChange={(val: { label: string; value: string }): void => {
+          onChange={(val: {
+            label: string;
+            value: QUERY_BUILDER_CUSTOM_DATE_OPTION_UNIT;
+          }): void => {
             setUnitValue(val.value);
             changeValue(
               durationValue,
@@ -907,7 +909,10 @@ const CustomDateInstanceValueEditor: React.FC<{
             value: t.toString(),
             label: t.toString(),
           }))}
-          onChange={(val: { label: string; value: string }): void => {
+          onChange={(val: {
+            label: string;
+            value: QUERY_BUILDER_CUSTOM_DATE_OPTION_DIRECTION;
+          }): void => {
             setDirectionValue(val.value);
             changeValue(
               durationValue,
@@ -929,7 +934,10 @@ const CustomDateInstanceValueEditor: React.FC<{
             value: t.toString(),
             label: t.toString(),
           }))}
-          onChange={(val: { label: string; value: string }): void => {
+          onChange={(val: {
+            label: string;
+            value: QUERY_BUILDER_CUSTOM_DATE_OPTION_REFERENCE_MOMENT;
+          }): void => {
             setReferenceMomentValueValue(val.value);
             changeValue(durationValue, unitValue, directionValue, val.value);
           }}

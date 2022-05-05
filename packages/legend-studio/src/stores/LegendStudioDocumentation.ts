@@ -36,9 +36,10 @@ export enum LEGEND_STUDIO_DOCUMENTATION_KEY {
 }
 
 export const CORE_DOCUMENTATION_ENTRIES = {
+  // parsers
   [LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PURE_PARSER]: {
     markdownText: {
-      value: `Core Pure (\`###Pure\`) concerns with fundamental concepts: classes (data models), enumerations, associations, functions, etc.`,
+      value: `Core Pure (\`###Pure\`) concerns with fundamental concepts, such as, classes (data models), enumerations, associations, functions, etc.`,
     },
   },
   [LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_MAPPING_PARSER]: {
@@ -56,6 +57,32 @@ export const CORE_DOCUMENTATION_ENTRIES = {
       value: `Runtime DSL (\`###Runtime\`) concerns with the organization/grouping and contextual usage of connections`,
     },
   },
+  [LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_RELATIONAL_PARSER]: {
+    markdownText: {
+      value: `External Store Relational DSL (\`###Relational\`) concerns with mappings, connections, and specifications for relational databases`,
+    },
+  },
+  [LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_SERVICE_PARSER]: {
+    markdownText: {
+      value: `Service DSL (\`###Service\`) concerns with generation and deployment of Pure query to productionize data extraction and exploration`,
+    },
+  },
+  [LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_GENERATION_SPECIFICATION_PARSER]: {
+    markdownText: {
+      value: `Generation Specification DSL (\`###GenerationSpecification\`) concerns with organization of generation pipeline`,
+    },
+  },
+  [LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_FILE_GENERATION_PARSER]: {
+    markdownText: {
+      value: `File Generation DSL (\`###FileGeneration\`) concerns with generating models in external formats (e.g. Avro, Protobuf, JSON Schema, etc.)`,
+    },
+  },
+  [LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_DATA_PARSER]: {
+    markdownText: {
+      value: `Data DSL (\`###Data\`) concerns with storing data`,
+    },
+  },
+  // elements
   [LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_CLASS_ELEMENT]: {
     markdownText: {
       value: `A class element specifies a data model's structure, inheritance, and constraints`,

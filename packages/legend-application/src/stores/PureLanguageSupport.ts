@@ -99,14 +99,15 @@ const generateLanguageMonarch = (
 
     keywords: [
       ...extraKeywords,
+      'let',
       'extends',
-      'function',
       'projects',
       PURE_ELEMENT_NAME.CLASS,
       PURE_ELEMENT_NAME.ASSOCIATION,
       PURE_ELEMENT_NAME.ENUMERATION,
       PURE_ELEMENT_NAME.MEASURE,
       PURE_ELEMENT_NAME.PROFILE,
+      PURE_ELEMENT_NAME.FUNCTION,
       PURE_ELEMENT_NAME.FLAT_DATA,
       PURE_ELEMENT_NAME.DATABASE,
       PURE_ELEMENT_NAME.MAPPING,
@@ -148,6 +149,8 @@ const generateLanguageMonarch = (
       '^',
       '%',
       '->',
+      '#{',
+      '}#',
     ],
 
     languageStructs: ['import', 'native', 'if', 'fold'],
@@ -225,7 +228,7 @@ const generateLanguageMonarch = (
           /@symbols/,
           {
             cases: {
-              '@operators': 'delimiter',
+              '@operators': 'operator',
               '@default': '',
             },
           },
