@@ -1,5 +1,7 @@
 # @finos/legend-studio-extension-management-toolkit
 
+## 1.0.1
+
 ## 1.0.0
 
 ### Major Changes
