@@ -63,6 +63,7 @@ import {
 } from '@finos/legend-shared';
 import {
   PARSER_SECTION_MARKER,
+  PURE_CONNECTION_NAME,
   PURE_ELEMENT_NAME,
   PURE_PARSER,
 } from '@finos/legend-graph';
@@ -193,28 +194,100 @@ const getParserElementDocumentation = (
         return editorStore.applicationStore.docRegistry.getEntry(
           LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_CLASS_ELEMENT,
         );
+      } else if (elementKeyword === PURE_ELEMENT_NAME.PROFILE) {
+        return editorStore.applicationStore.docRegistry.getEntry(
+          LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PROFILE_ELEMENT,
+        );
+      } else if (elementKeyword === PURE_ELEMENT_NAME.ENUMERATION) {
+        return editorStore.applicationStore.docRegistry.getEntry(
+          LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_ENUMERATION_ELEMENT,
+        );
+      } else if (elementKeyword === PURE_ELEMENT_NAME.MEASURE) {
+        return editorStore.applicationStore.docRegistry.getEntry(
+          LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_MEASURE_ELEMENT,
+        );
+      } else if (elementKeyword === PURE_ELEMENT_NAME.ASSOCIATION) {
+        return editorStore.applicationStore.docRegistry.getEntry(
+          LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_ASSOCIATION_ELEMENT,
+        );
+      } else if (elementKeyword === PURE_ELEMENT_NAME.FUNCTION) {
+        return editorStore.applicationStore.docRegistry.getEntry(
+          LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_FUNCTION_ELEMENT,
+        );
       }
       return undefined;
     }
     case PURE_PARSER.MAPPING: {
+      if (elementKeyword === PURE_ELEMENT_NAME.MAPPING) {
+        return editorStore.applicationStore.docRegistry.getEntry(
+          LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_MAPPING_ELEMENT,
+        );
+      }
       return undefined;
     }
     case PURE_PARSER.CONNECTION: {
+      if (elementKeyword === PURE_CONNECTION_NAME.JSON_MODEL_CONNECTION) {
+        return editorStore.applicationStore.docRegistry.getEntry(
+          LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_JSON_MODEL_CONNECTION,
+        );
+      } else if (elementKeyword === PURE_CONNECTION_NAME.XML_MODEL_CONNECTION) {
+        return editorStore.applicationStore.docRegistry.getEntry(
+          LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_XML_MODEL_CONNECTION,
+        );
+      } else if (
+        elementKeyword === PURE_CONNECTION_NAME.MODEL_CHAIN_CONNECTION
+      ) {
+        return editorStore.applicationStore.docRegistry.getEntry(
+          LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_MODEL_CHAIN_CONNECTION,
+        );
+      } else if (
+        elementKeyword === PURE_CONNECTION_NAME.RELATIONAL_DATABASE_CONNECTION
+      ) {
+        return editorStore.applicationStore.docRegistry.getEntry(
+          LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_RELATIONAL_DATABASE_CONNECTION,
+        );
+      }
+      // TODO: introduce extension mechanism
       return undefined;
     }
     case PURE_PARSER.RUNTIME: {
+      if (elementKeyword === PURE_ELEMENT_NAME.RUNTIME) {
+        return editorStore.applicationStore.docRegistry.getEntry(
+          LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_RUNTIME_ELEMENT,
+        );
+      }
       return undefined;
     }
     case PURE_PARSER.SERVICE: {
+      if (elementKeyword === PURE_ELEMENT_NAME.SERVICE) {
+        return editorStore.applicationStore.docRegistry.getEntry(
+          LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_SERVICE_ELEMENT,
+        );
+      }
       return undefined;
     }
     case PURE_PARSER.RELATIONAL: {
+      if (elementKeyword === PURE_ELEMENT_NAME.DATABASE) {
+        return editorStore.applicationStore.docRegistry.getEntry(
+          LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_DATABASE_ELEMENT,
+        );
+      }
       return undefined;
     }
     case PURE_PARSER.FILE_GENERATION: {
+      if (elementKeyword === PURE_ELEMENT_NAME.FILE_GENERATION) {
+        return editorStore.applicationStore.docRegistry.getEntry(
+          LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_FILE_GENERATION_ELEMENT,
+        );
+      }
       return undefined;
     }
     case PURE_PARSER.GENERATION_SPECIFICATION: {
+      if (elementKeyword === PURE_ELEMENT_NAME.GENERATION_SPECIFICATION) {
+        return editorStore.applicationStore.docRegistry.getEntry(
+          LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_GENERATION_SPECIFICATION_ELEMENT,
+        );
+      }
       return undefined;
     }
     case PURE_PARSER.DATA: {
