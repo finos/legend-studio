@@ -41,7 +41,7 @@ const theme: monacoEditorAPI.IStandaloneThemeData = {
     { token: 'language-struct', foreground: 'c586c0' },
     { token: 'multiplicity', foreground: '2d796b' },
     { token: 'attribute', foreground: '9cdcfe' },
-    { token: 'cast', foreground: 'f98a00' },
+    { token: 'cast', foreground: '569cd6' },
   ],
 };
 
@@ -99,9 +99,20 @@ const generateLanguageMonarch = (
 
     keywords: [
       ...extraKeywords,
+      // relational
+      'Schema',
+      'Table',
+      'Join',
+      'View',
+      'Relational', // class mapping
+      'primaryKey',
+      'groupBy',
+      'mainTable',
+      // native
       'let',
       'extends',
       'projects',
+      'Pure',
       PURE_ELEMENT_NAME.CLASS,
       PURE_ELEMENT_NAME.ASSOCIATION,
       PURE_ELEMENT_NAME.ENUMERATION,
@@ -151,6 +162,7 @@ const generateLanguageMonarch = (
       '->',
       '#{',
       '}#',
+      '@',
     ],
 
     languageStructs: ['import', 'native', 'if', 'fold'],
@@ -173,7 +185,7 @@ const generateLanguageMonarch = (
       .map((parser) => `${PARSER_SECTION_MARKER}${parser}`),
 
     // common regular expressions to be used in tokenizer
-    symbols: /[=><!~?:&|+\-*/^%]+/,
+    symbols: /[=><!~?:&|+\-*/^%#@]+/,
     escapes:
       /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
     digits: /\d+(_+\d+)*/,

@@ -450,6 +450,11 @@ const getInlineSnippetSuggestions = (
     description: 'new collection',
     insertText: `let \${1:} = [\${2:}];`,
   },
+  {
+    text: 'cast',
+    description: 'type casting',
+    insertText: `cast(@\${1:model::SomeClass})`,
+  },
   // conditionals
   {
     text: 'if',
