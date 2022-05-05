@@ -1,5 +1,17 @@
 # @finos/legend-taxonomy
 
+## 3.0.0
+
+### Major Changes
+
+- [#1113](https://github.com/finos/legend-studio/pull/1113) [`e35042ba`](https://github.com/finos/legend-studio/commit/e35042bacf7999e8a5d9836fa6b31cf89cc66237) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Adopt `ESM` styled exports: i.e. we now make use of `exports` field (and removed `main` field) in `package.json`.
+
+### Patch Changes
+
+- [#962](https://github.com/finos/legend-studio/pull/962) [`9ba53bc7`](https://github.com/finos/legend-studio/commit/9ba53bc7f2fead23efb1fe061dff94d4f4c73beb) ([@akphi](https://github.com/akphi)) - Properly reset the current dataspace tab when switching between dataspaces to avoid app freeze/jank.
+
+* [#962](https://github.com/finos/legend-studio/pull/962) [`9ba53bc7`](https://github.com/finos/legend-studio/commit/9ba53bc7f2fead23efb1fe061dff94d4f4c73beb) ([@akphi](https://github.com/akphi)) - Fix a regression where the app does not fetch the right taxonomy data after switching tree.
+
 ## 2.0.4
 
 ## 2.0.3
