@@ -75,6 +75,14 @@ export { MappingElementState } from './stores/editor-state/element-editor-state/
 export { UnsupportedInstanceSetImplementationState } from './stores/editor-state/element-editor-state/mapping/UnsupportedInstanceSetImplementationState';
 export { getElementIcon } from './components/shared/ElementIconUtils';
 
+// TO BE REMOVED: this is currently needed for project dependency dashboard
+export {
+  SetupStoreProvider,
+  useSetupStore,
+} from './components/setup/SetupStoreProvider';
+export { SetupStore } from './stores/SetupStore';
+export { ProjectSelector } from './components/setup/ProjectSelector';
+
 // --------------------------------------------- TO BE MODULARIZED --------------------------------------------------
 
 export {

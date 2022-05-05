@@ -16,3 +16,5 @@
 
 export * from './DSLPersistence_Extension';
 export { DSLPersistence_LegendStudioPlugin } from './components/studio/DSLPersistence_LegendStudioPlugin';
+export { Persistence } from './models/metamodels/pure/model/packageableElements/persistence/DSLPersistence_Persistence';
+export { V1_Persistence } from './models/protocols/pure/v1/model/packageableElements/persistence/V1_DSLPersistence_Persistence';
