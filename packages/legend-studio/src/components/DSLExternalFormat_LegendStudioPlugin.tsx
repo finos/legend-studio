@@ -380,7 +380,7 @@ export class DSLExternalFormat_LegendStudioPlugin
       (editorStore: EditorStore): PureGrammarTextSuggestion[] => [
         {
           text: PURE_GRAMMAR_EXTERNAL_FORMAT_PARSER_NAME,
-          description: `DSL External Format`,
+          description: `(dsl)`,
           documentation: editorStore.applicationStore.docRegistry.getEntry(
             DSL_EXTERNAL_FORMAT_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER,
           ),

@@ -40,22 +40,26 @@
 }
 
 .mui-radio-group {
-  min-width: 26rem;
+  padding: 1rem 1.5rem;
 
   &__group {
     color: var(--color-light-grey-200);
-    font-size: 1.2rem;
-    margin-bottom: 1rem;
+    height: 3.6rem;
 
-    &__form-control-label {
+    &__column {
       width: 50%;
       margin-left: 0;
       margin-right: 0;
+    }
 
-      &__radio {
-        margin-left: 1rem;
-        color: var(--color-dark-grey-300);
-      }
+    &__item__radio-btn {
+      color: var(--color-dark-grey-300);
+    }
+
+    &__item__label {
+      margin: 0;
+      font-size: 1.1rem;
+      line-height: 1.5;
     }
   }
 }

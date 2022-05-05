@@ -31,7 +31,6 @@ import {
   MenuContent,
   MenuContentItem,
   TimesIcon,
-  RefreshIcon,
   PlusIcon,
   ExpandIcon,
   CompressIcon,
@@ -441,6 +440,11 @@ const QueryBuilderPostFilterConditionEditor = observer(
       }),
       [handleDrop],
     );
+    const resetNode = (): void => {
+      node.condition.setValue(
+        node.condition.operator.getDefaultFilterConditionValue(node.condition),
+      );
+    };
 
     return (
       <div className="query-builder-post-filter-tree__node__label__content dnd__overlay__container">
@@ -500,7 +504,7 @@ const QueryBuilderPostFilterConditionEditor = observer(
               )}
               <QueryBuilderValueSpecificationEditor
                 valueSpecification={node.condition.value}
-                updateValueSpecification={(val: ValueSpecification): void =>
+                updateValue={(val: ValueSpecification): void =>
                   node.condition.setValue(val)
                 }
                 graph={graph}
@@ -509,6 +513,7 @@ const QueryBuilderPostFilterConditionEditor = observer(
                     node.condition.columnState.getReturnType(),
                   ),
                 }}
+                resetValue={resetNode}
               />
             </div>
           )}
@@ -557,15 +562,6 @@ const QueryBuilderPostFilterTreeNodeContainer = observer(
       node instanceof QueryBuilderPostFilterTreeGroupNodeData;
     const selectNode = (): void => onNodeSelect?.(node);
     const toggleExpandNode = (): void => node.setIsOpen(!node.isOpen);
-    const resetNode = (): void => {
-      if (node instanceof QueryBuilderPostFilterTreeConditionNodeData) {
-        node.condition.setValue(
-          node.condition.operator.getDefaultFilterConditionValue(
-            node.condition,
-          ),
-        );
-      }
-    };
     const removeNode = (): void =>
       postFilterState.removeNodeAndPruneBranch(node);
     const handleDrop = useCallback(
@@ -741,16 +737,6 @@ const QueryBuilderPostFilterTreeNodeContainer = observer(
             </div>
           </div>
           <div className="query-builder-post-filter-tree__node__actions">
-            {node instanceof QueryBuilderPostFilterTreeConditionNodeData && (
-              <button
-                className="query-builder-post-filter-tree__node__action"
-                tabIndex={-1}
-                title="Reset Filter Value"
-                onClick={resetNode}
-              >
-                <RefreshIcon style={{ fontSize: '1.6rem' }} />
-              </button>
-            )}
             <button
               className="query-builder-post-filter-tree__node__action"
               tabIndex={-1}

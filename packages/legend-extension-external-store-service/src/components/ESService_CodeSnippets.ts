@@ -14,70 +14,35 @@
  * limitations under the License.
  */
 
-// TODO: we should add more example snippet
-//
-// ###ServiceStore
-// ServiceStore meta::external::store::service::showcase::store::TradeProductServiceStore
-// (
-//    description : 'Showcase Service Store';
-//    ServiceGroup TradeServices
-//    (
-//       path : '/trades';
-//       Service TradeByTraderDetailsService
-//       (
-//          path : '/traderDetails';
-//          method : GET;
-//          parameters :
-//          (
-//             "trader.details" : String (location = query, allowReserved = true)
-//          );
-//          security : [];
-//          response : [meta::external::store::service::showcase::domain::S_Trade <- meta::external::store::service::showcase::store::tradeServiceStoreSchemaBinding];
-//       )
-//       Service TradesByRegionService
-//       (
-//          path : '/allTradesByRegion';
-//          method : GET;
-//          parameters :
-//          (
-//             region : String (location = query),
-//             requiredParam : String (location = query, required = true)
-//          );
-//          security : [];
-//          response : [meta::external::store::service::showcase::domain::S_Trade <- meta::external::store::service::showcase::store::tradeServiceStoreSchemaBinding];
-//       )
-//    )
-// )
-
-export const BLANK_SERVICE_STORE_SNIPPET = `ServiceStore \${1:model::ServiceStore}
+export const BLANK_SERVICE_STORE_SNIPPET = `ServiceStore \${1:model::NewServiceStore}
 {
   \${2:// service store content}
 }`;
 
-export const SERVICE_STORE_WITH_SERVICE = `ServiceStore \${1:model::ServiceStore}
+export const SERVICE_STORE_WITH_SERVICE = `ServiceStore \${1:model::NewServiceStore}
 (
   Service \${2:someService}
   (
-    path : \${3:'/someService';}
-    method : \${4:GET;}
-    //example parameters
+    path : '\${3:/someService}';
+    method : \${4:GET};
+    // example parameters
     // parameters :
     // (
-    //   serializationFormat : String ( location = query )
+    //   serializationFormat : String(location = query)
     // );
-    response : \${5:[model::someClass <- model::someBinding];}
+    response : [\${5:model::someClass <- model::someBinding}];
     security : [];
   )
 )`;
 
-export const SERVICE_STORE_WITH_SERVICE_GROUP = `ServiceStore \${1:model::ServiceStore}
+export const SERVICE_STORE_WITH_SERVICE_GROUP = `ServiceStore \${1:model::NewServiceStore}
 (
   ServiceGroup \${2:TestServiceGroup}
   (
     path : \${3:'/testServices';}
-    Service \${4:TestService}
+    Service \${4:SomeService}
     (
-      path : \${5:'/testService';}
+      path : '\${5:/someService}';
       method : \${GET;}
       response : \${model::someClass <- model::someBinding;}
       security : [];
@@ -85,150 +50,60 @@ export const SERVICE_STORE_WITH_SERVICE_GROUP = `ServiceStore \${1:model::Servic
   )
 )`;
 
-export const SERVICE_STORE_WITH_DESCRIPTION = `ServiceStore \${1:model::ServiceStore}
+export const SERVICE_STORE_WITH_DESCRIPTION = `ServiceStore \${1:model::NewServiceStore}
 (
-  description: \${2:'some description';}
+  description: '\${2:some description}';
   Service \${3:someService}
   (
-    path : \${4:'/someService';}
-    method : \${5:GET;}
-    //example parameters
-    response : \${6:[model::someClass <- model::someBinding];}
+    path : '\${4:/someService}';
+    method : \${5:GET};
+    // example parameters
+    response : [\${6:model::someClass <- model::someBinding}];
     security : [];
   )
 )`;
 
-export const DATA_ELEMENT_WITH_SERVICE_STORE_DATA = `Data \${1:model::NewData}
-{
-  ServiceStore
-  #{
-    [
+export const SERVICE_STORE_EMBEDDED_DATA = `ServiceStore
+#{
+  [
+    {
+      request:
       {
-        request:
+        method: \${2|POST,GET|};
+        url: '\${3:/someUrlPattern}';
+        headerParameters:
         {
-          method: \${2:GET;}
-          url: \${3:'/employees';}
-        };
-        response:
-        {
-          body:
-            ExternalFormat
+          id:
+            EqualTo
             #{
-              contentType: \${4:'application/json';}
-              data: \${5:'data';}
-            }#;
-        };
-      }
-    ]
-  }#
-}`;
-
-export const DATA_ELEMENT_WITH_SERVICE_STORE_DATA_WITH_BODY_PATTERNS = `Data \${1:model::NewData}
-{
-  ServiceStore
-  #{
-    [
-      {
-        request:
-        {
-          method: \${2:POST;}
-          url: \${3:'/employees';}
-          bodyPatterns:
-          [
-            EqualToJson
-            #{
-              // example expected data
-              // expected: '{\\"name\\": \\"FirstName A\\"}';
-              expected: \${4:'';}
+              expected: 'someValue';
             }#
-          ];
         };
-        response:
+        queryParameters:
         {
-          body:
-            ExternalFormat
+          id:
+            EqualTo
             #{
-              contentType: \${5:'application/json';}
-              data: \${6:'data';}
-            }#;
+              expected: 'someValue';
+            }#
         };
-      }
-    ]
-  }#
-}`;
-
-export const DATA_ELEMENT_WITH_SERVICE_STORE_DATA_WITH_HEADER_PARAMS = `Data \${1:model::NewData}
-{
-  ServiceStore
-  #{
-    [
+        bodyPatterns:
+        [
+          EqualToJson
+          #{
+            expected: '{\\"id\\": \\"someValue\\"}';
+          }#
+        ];
+      };
+      response:
       {
-        request:
-        {
-          method: \${2:GET;}
-          url: \${3:'/employees';}
-          headerParameters:
-          {
-            \${4:id:}
-              EqualTo
-              #{
-                expected: \${5:'123';}
-              }#,
-            \${6:name:}
-              EqualTo
-              #{
-                expected: \${6:'FirstName A';}
-              }#
-          };
-        };
-        response:
-        {
-          body:
-            ExternalFormat
-            #{
-              contentType: \${7:'application/json';}
-              data: \${8:'data';}
-            }#;
-        };
-      }
-    ]
-  }#
-}`;
-
-export const DATA_ELEMENT_WITH_SERVICE_STORE_DATA_WITH_QUERY_PARAMS = `Data \${1:model::NewData}
-{
-  ServiceStore
-  #{
-    [
-      {
-        request:
-        {
-          method: \${2:GET;}
-          urlPath: \${3:'/employees';}
-          queryParameters:
-          {
-            \${4:id:}
-              EqualTo
-              #{
-                expected: \${4:'123';}
-              }#,
-            name:
-              EqualTo
-              #{
-                expected: \${5:'FirstName A';}
-              }#
-          };
-        };
-        response:
-        {
-          body:
-            ExternalFormat
-            #{
-              contentType: \${6:'application/json';}
-              data: \${7:'data';}
-            }#;
-        };
-      }
-    ]
-  }#
-}`;
+        body:
+          ExternalFormat
+          #{
+            contentType: '\${4:application/json}';
+            data: '\${5:someData}';
+          }#;
+      };
+    }
+  ]
+}#`;

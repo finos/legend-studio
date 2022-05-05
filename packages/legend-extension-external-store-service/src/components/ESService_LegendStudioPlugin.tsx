@@ -40,7 +40,8 @@ import {
   type PureGrammarParserKeywordSuggestionGetter,
   type PureGrammarParserDocumentationGetter,
   type PureGrammarParserElementDocumentationGetter,
-  type DataElementSnippetSuggestionsGetter,
+  type DSLData_LegendStudioPlugin_Extension,
+  type EmbeddedDataSnippetSuggestion,
 } from '@finos/legend-studio';
 import { SwaggerIcon } from '@finos/legend-art';
 import type {
@@ -66,10 +67,7 @@ import {
 } from './ESService_LegendStudioDocumentation';
 import {
   BLANK_SERVICE_STORE_SNIPPET,
-  DATA_ELEMENT_WITH_SERVICE_STORE_DATA,
-  DATA_ELEMENT_WITH_SERVICE_STORE_DATA_WITH_BODY_PATTERNS,
-  DATA_ELEMENT_WITH_SERVICE_STORE_DATA_WITH_HEADER_PARAMS,
-  DATA_ELEMENT_WITH_SERVICE_STORE_DATA_WITH_QUERY_PARAMS,
+  SERVICE_STORE_EMBEDDED_DATA,
   SERVICE_STORE_WITH_DESCRIPTION,
   SERVICE_STORE_WITH_SERVICE,
   SERVICE_STORE_WITH_SERVICE_GROUP,
@@ -82,7 +80,9 @@ const SERVICE_STORE_MAPPING_TYPE = 'serviceStore';
 
 export class ESService_LegendStudioPlugin
   extends LegendStudioPlugin
-  implements DSLMapping_LegendStudioPlugin_Extension
+  implements
+    DSLMapping_LegendStudioPlugin_Extension,
+    DSLData_LegendStudioPlugin_Extension
 {
   constructor() {
     super(packageJson.extensions.studioPlugin, packageJson.version);
@@ -268,7 +268,7 @@ export class ESService_LegendStudioPlugin
       (editorStore: EditorStore): PureGrammarTextSuggestion[] => [
         {
           text: PURE_GRAMMAR_SERVICE_STORE_PARSER_NAME,
-          description: `External Store Service`,
+          description: `(external store)`,
           documentation: editorStore.applicationStore.docRegistry.getEntry(
             EXTERNAL_STORE_SERVICE_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER,
           ),
@@ -311,33 +311,12 @@ export class ESService_LegendStudioPlugin
     ];
   }
 
-  getExtraDataElementSnippetSuggestionsGetters(): DataElementSnippetSuggestionsGetter[] {
+  getExtraEmbeddedDataSnippetSuggestions(): EmbeddedDataSnippetSuggestion[] {
     return [
-      (
-        editorStore: EditorStore,
-        elementName: string,
-      ): PureGrammarTextSuggestion[] => [
-        {
-          text: elementName,
-          description: 'with service store embedded data',
-          insertText: DATA_ELEMENT_WITH_SERVICE_STORE_DATA,
-        },
-        {
-          text: elementName,
-          description: 'with service store embedded data with body patterns',
-          insertText: DATA_ELEMENT_WITH_SERVICE_STORE_DATA_WITH_BODY_PATTERNS,
-        },
-        {
-          text: elementName,
-          description: 'with service store embedded data with header paramters',
-          insertText: DATA_ELEMENT_WITH_SERVICE_STORE_DATA_WITH_HEADER_PARAMS,
-        },
-        {
-          text: elementName,
-          description: 'with service store embedded data with query paramters',
-          insertText: DATA_ELEMENT_WITH_SERVICE_STORE_DATA_WITH_QUERY_PARAMS,
-        },
-      ],
+      {
+        description: 'using service store',
+        text: SERVICE_STORE_EMBEDDED_DATA,
+      },
     ];
   }
 }

@@ -35,7 +35,7 @@ import { QueryBuilderValueSpecificationEditor } from './QueryBuilderValueSpecifi
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { type DropTargetMonitor, useDrop } from 'react-dnd';
 import { VariableExpressionViewer } from './QueryBuilderParameterPanel';
-import { Dialog, RefreshIcon } from '@finos/legend-art';
+import { Dialog } from '@finos/legend-art';
 import { generateDefaultValueForPrimitiveType } from '../stores/QueryBuilderValueSpecificationBuilderHelper';
 
 const MilestoningParameterEditor = observer(
@@ -127,7 +127,7 @@ const MilestoningParameterEditor = observer(
         <QueryBuilderValueSpecificationEditor
           valueSpecification={milestoningParameter}
           graph={queryBuilderState.graphManagerState.graph}
-          updateValueSpecification={(val: ValueSpecification): void =>
+          updateValue={(val: ValueSpecification): void =>
             stereotype === MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL
               ? queryBuilderState.querySetupState.setBusinessDate(val)
               : queryBuilderState.querySetupState.setProcessingDate(val)
@@ -138,15 +138,8 @@ const MilestoningParameterEditor = observer(
                 PRIMITIVE_TYPE.DATE,
               ),
           }}
+          resetValue={resetMilestoningParameter}
         />
-        <button
-          className="query-builder__parameter-editor__node__action"
-          tabIndex={-1}
-          title="Reset Milestoning Parameter Value"
-          onClick={resetMilestoningParameter}
-        >
-          <RefreshIcon style={{ fontSize: '1.6rem' }} />
-        </button>
       </div>
     );
   },
