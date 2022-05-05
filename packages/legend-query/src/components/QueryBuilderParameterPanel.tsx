@@ -100,9 +100,7 @@ const ParameterValuesEditor = observer(
                   {paramState.value && (
                     <QueryBuilderValueSpecificationEditor
                       valueSpecification={paramState.value}
-                      updateValueSpecification={(
-                        val: ValueSpecification,
-                      ): void => {
+                      updateValue={(val: ValueSpecification): void => {
                         paramState.setValue(val);
                       }}
                       graph={graph}
@@ -113,6 +111,7 @@ const ParameterValuesEditor = observer(
                           graph.getPrimitiveType(PRIMITIVE_TYPE.DATETIME),
                       }}
                       className="query-builder__parameters__value__editor"
+                      resetValue={(): void => paramState.mockParameterValue()}
                     />
                   )}
                 </div>
