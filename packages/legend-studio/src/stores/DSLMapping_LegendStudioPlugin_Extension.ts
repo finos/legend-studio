@@ -17,28 +17,33 @@
 import type { DSL_LegendStudioPlugin_Extension } from './LegendStudioPlugin';
 import type { ConnectionValueState } from './editor-state/element-editor-state/connection/ConnectionEditorState';
 import type { EditorStore } from './EditorStore';
-import type {
-  Store,
-  Connection,
-  SetImplementation,
-  InstanceSetImplementation,
-} from '@finos/legend-graph';
+import type { Store, Connection, SetImplementation } from '@finos/legend-graph';
 import type { MappingTestState } from './editor-state/element-editor-state/mapping/MappingTestState';
 import type { MappingExecutionState } from './editor-state/element-editor-state/mapping/MappingExecutionState';
 import type { NewConnectionValueDriver } from './NewElementState';
 import type {
   MappingElement,
   MappingElementSource,
-} from './editor-state/element-editor-state/mapping/MappingEditorState';
-import type { MappingElementState } from './editor-state/element-editor-state/mapping/MappingElementState';
+} from '../stores/editor-state/element-editor-state/mapping/MappingEditorState';
+import type { MappingElementState } from '../stores/editor-state/element-editor-state/mapping/MappingElementState';
 
 export type SetImplementationDecorator = (
-  setImplementation: InstanceSetImplementation,
+  setImplementation: SetImplementation,
 ) => void;
 
 export type SetImplementationDecorationCleaner = (
-  setImplementation: InstanceSetImplementation,
+  setImplementation: SetImplementation,
 ) => void;
+
+export interface MappingElementLabel {
+  value: string;
+  root: boolean;
+  tooltip: string;
+}
+
+export type SetImplementationMappingElementLabelInfoBuilder = (
+  setImplementation: SetImplementation,
+) => MappingElementLabel | undefined;
 
 export type MappingElementSourceGetter = (
   mappingElement: MappingElement,
@@ -102,6 +107,11 @@ export interface DSLMapping_LegendStudioPlugin_Extension
    * Get the list of extra set implementation decorators.
    */
   getExtraSetImplementationDecorators?(): SetImplementationDecorator[];
+
+  /**
+   * Get the list of extra mapping element info builders for set implemenetation.
+   */
+  getExtraSetImplementationMappingElementLabelInfoBuilders?(): SetImplementationMappingElementLabelInfoBuilder[];
 
   /**
    * Get the list of extra set implementation classifiers.

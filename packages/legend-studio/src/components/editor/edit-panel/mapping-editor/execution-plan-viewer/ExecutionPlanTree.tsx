@@ -24,7 +24,11 @@ import {
   ChevronDownIcon,
   ChevronRightIcon,
 } from '@finos/legend-art';
-import { addUniqueEntry, isNonNullable } from '@finos/legend-shared';
+import {
+  addUniqueEntry,
+  filterByType,
+  isNonNullable,
+} from '@finos/legend-shared';
 import type { ExecutionPlanState } from '../../../../../stores/ExecutionPlanState';
 import {
   type ExecutionPlan,
@@ -120,7 +124,7 @@ const generateExecutionNodeTreeNodeData = (
 
   executionNode.executionNodes
     .slice()
-    .filter((exen): exen is ExecutionNode => exen instanceof ExecutionNode)
+    .filter(filterByType(ExecutionNode))
     .forEach((exen) => {
       addUniqueEntry(
         childrenIds,

@@ -16,22 +16,18 @@
 
 import {
   createModelSchema,
-  custom,
   list,
+  object,
   optional,
   primitive,
-  SKIP,
 } from 'serializr';
 import {
   type PlainObject,
   type RequestHeaders,
-  AssertionError,
   assertNonNullable,
   guaranteeNonEmptyString,
-  guaranteeNonNullable,
   SerializationFactory,
 } from '@finos/legend-shared';
-import { makeObservable, observable, action, computed } from 'mobx';
 import {
   LegendApplicationConfig,
   type LegendApplicationConfigurationData,
@@ -40,57 +36,29 @@ import {
 
 export class ServiceRegistrationEnvInfo {
   env!: string;
-  url!: string;
+  executionUrl!: string;
   modes: string[] = [];
+  managementUrl!: string;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(ServiceRegistrationEnvInfo, {
       env: primitive(),
-      url: primitive(),
+      executionUrl: primitive(),
+      managementUrl: primitive(),
       modes: list(primitive()),
     }),
   );
 }
 
-class ApplicationCoreOptions {
+class LegendStudioApplicationCoreOptions {
   /**
-   * Allows disabling support for project creation.
+   * Indicates if we should keep section index and do not rewrite/flatten the paths shortened by section
+   * imports.
    *
-   * NOTE: when we properly partition Production and Prototype projects, we can remove this flag.
+   * This flag will be kept until we have full support for section index
+   * See https://github.com/finos/legend-studio/issues/1067
    */
-  TEMPORARY__disableSDLCProjectCreation = false;
-  /**
-   * Allows disabling support for prototype projects as the UAT/QA env for SDLC is sometimes
-   * rather unstable
-   *
-   * NOTE: this flag will potentially be removed when we partition the projects by SDLC instance
-   * e.g. prototype projects only show up in UAT/QA environments, and PROD projects only shows up in PROD
-   */
-  TEMPORARY__useSDLCProductionProjectsOnly = false;
-  /**
-   * Allows enabling support for section index.
-   *
-   * NOTE: Grammar import using section index is currently not supported as we are still trying
-   * to figure out how we want to store this element in SDLC.
-   */
-  EXPERIMENTAL__enableFullGrammarImportSupport = false;
-  /**
-   * Allows disabling of resolving element paths inside a RawLambda
-   *
-   * NOTE: when we move to save imports as part of the user's project, this feature
-   * will no longer be needed and can be removed. This flag will only be relevant if
-   * `EXPERIMENTAL__enableFullGrammarImportSupport` is set to false since full grammar import support
-   * will not require a lambda resolver.
-   */
-  TEMPORARY__disableRawLambdaResolver = false;
-  /**
-   * Allows disabling service registration as the Legend service operational infrastructure
-   * has not been open-sourced yet.
-   *
-   * NOTE: when we open source Legend Services, we can remove this flag.
-   * TODO: when we modularize service, we can move this flag to DSL service preset.
-   */
-  TEMPORARY__disableServiceRegistration = false;
+  TEMPORARY__preserveSectionIndex = false;
   /**
    * Provides service registration environment configs.
    *
@@ -100,65 +68,40 @@ class ApplicationCoreOptions {
   TEMPORARY__serviceRegistrationConfig: ServiceRegistrationEnvInfo[] = [];
 
   private static readonly serialization = new SerializationFactory(
-    createModelSchema(ApplicationCoreOptions, {
-      TEMPORARY__disableSDLCProjectCreation: optional(primitive()),
-      TEMPORARY__useSDLCProductionProjectsOnly: optional(primitive()),
-      EXPERIMENTAL__enableFullGrammarImportSupport: optional(primitive()),
-      TEMPORARY__disableServiceRegistration: optional(primitive()),
-      TEMPORARY__disableRawLambdaResolver: optional(primitive()),
+    createModelSchema(LegendStudioApplicationCoreOptions, {
+      TEMPORARY__preserveSectionIndex: optional(primitive()),
       TEMPORARY__serviceRegistrationConfig: list(
-        custom(
-          (value) => SKIP,
-          (value) => ServiceRegistrationEnvInfo.serialization.fromJson(value),
-        ),
+        object(ServiceRegistrationEnvInfo),
       ),
     }),
   );
 
   static create(
-    configData: PlainObject<ApplicationCoreOptions>,
-  ): ApplicationCoreOptions {
-    return ApplicationCoreOptions.serialization.fromJson(configData);
+    configData: PlainObject<LegendStudioApplicationCoreOptions>,
+  ): LegendStudioApplicationCoreOptions {
+    return LegendStudioApplicationCoreOptions.serialization.fromJson(
+      configData,
+    );
   }
-}
-
-export class SDLCServerOption {
-  label!: string;
-  key!: string;
-  url!: string;
-  default?: boolean;
-
-  static readonly serialization = new SerializationFactory(
-    createModelSchema(SDLCServerOption, {
-      default: optional(primitive()),
-      label: primitive(),
-      key: primitive(),
-      url: primitive(),
-    }),
-  );
 }
 
 export interface LegendStudioConfigurationData
   extends LegendApplicationConfigurationData {
   appName: string;
   env: string;
-  sdlc:
-    | { url: string; baseHeaders?: RequestHeaders }
-    | PlainObject<SDLCServerOption>[];
+  sdlc: { url: string; baseHeaders?: RequestHeaders };
   depot: { url: string };
   engine: { url: string; queryUrl?: string };
 }
 
 export class LegendStudioConfig extends LegendApplicationConfig {
-  readonly options = new ApplicationCoreOptions();
+  readonly options = new LegendStudioApplicationCoreOptions();
 
   readonly engineServerUrl: string;
   readonly engineQueryServerUrl?: string | undefined;
   readonly depotServerUrl: string;
-
-  currentSDLCServerOption!: SDLCServerOption;
-  SDLCServerOptions: SDLCServerOption[] = [];
-  SDLCServerBaseHeaders?: RequestHeaders | undefined;
+  readonly sdlcServerUrl: string;
+  readonly SDLCServerBaseHeaders?: RequestHeaders | undefined;
 
   constructor(
     configData: LegendStudioConfigurationData,
@@ -167,60 +110,6 @@ export class LegendStudioConfig extends LegendApplicationConfig {
   ) {
     super(configData, versionData, baseUrl);
 
-    makeObservable(this, {
-      currentSDLCServerOption: observable,
-      defaultSDLCServerOption: computed,
-      sdlcServerUrl: computed,
-      setCurrentSDLCServerOption: action,
-    });
-    assertNonNullable(
-      configData.sdlc,
-      `Can't configure application: 'sdlc' field is missing`,
-    );
-    if (Array.isArray(configData.sdlc)) {
-      const options = configData.sdlc.map((optionData) =>
-        SDLCServerOption.serialization.fromJson(optionData),
-      );
-      if (options.length === 0) {
-        throw new AssertionError(
-          `Can't configure application: 'sdlc' field configured in list form but has no entry`,
-        );
-      }
-      // Make sure the specified instances are unique by key
-      if (
-        new Set(options.map((instance) => instance.key)).size !== options.length
-      ) {
-        throw new AssertionError(
-          `Can't configure application: 'sdlc' field consists of entries with duplicated keys`,
-        );
-      }
-      // Make sure default option is set properly
-      if (options.filter((instance) => instance.default).length === 0) {
-        throw new AssertionError(
-          `Can't configure application: 'sdlc' field consists of no default entry`,
-        );
-      }
-      if (options.filter((instance) => instance.default).length > 1) {
-        throw new AssertionError(
-          `Can't configure application: 'sdlc' field consists of multiple default entries`,
-        );
-      }
-      this.SDLCServerOptions = options;
-    } else {
-      this.SDLCServerBaseHeaders = configData.sdlc.baseHeaders;
-      this.SDLCServerOptions = [
-        SDLCServerOption.serialization.fromJson({
-          key: 'default',
-          url: guaranteeNonEmptyString(
-            configData.sdlc.url,
-            `Can't configure application: 'sdlc.url' field is missing`,
-          ),
-          label: '(default)',
-          default: true,
-        }),
-      ];
-    }
-    this.currentSDLCServerOption = this.defaultSDLCServerOption;
     assertNonNullable(
       configData.engine,
       `Can't configure application: 'engine' field is missing`,
@@ -229,6 +118,7 @@ export class LegendStudioConfig extends LegendApplicationConfig {
       configData.engine.url,
       `Can't configure application: 'engine.url' field is missing or empty`,
     );
+
     this.engineQueryServerUrl = configData.engine.queryUrl;
     assertNonNullable(
       configData.depot,
@@ -238,24 +128,20 @@ export class LegendStudioConfig extends LegendApplicationConfig {
       configData.depot.url,
       `Can't configure application: 'depot.url' field is missing or empty`,
     );
-    this.options = ApplicationCoreOptions.create(
+
+    assertNonNullable(
+      configData.sdlc,
+      `Can't configure application: 'sdlc' field is missing`,
+    );
+    this.sdlcServerUrl = guaranteeNonEmptyString(
+      configData.sdlc.url,
+      `Can't configure application: 'sdlc.url' field is missing or empty`,
+    );
+    this.SDLCServerBaseHeaders = configData.sdlc.baseHeaders;
+
+    this.options = LegendStudioApplicationCoreOptions.create(
       (configData.extensions?.core ??
-        {}) as PlainObject<ApplicationCoreOptions>,
+        {}) as PlainObject<LegendStudioApplicationCoreOptions>,
     );
-  }
-
-  get defaultSDLCServerOption(): SDLCServerOption {
-    return guaranteeNonNullable(
-      this.SDLCServerOptions.find((option) => option.default),
-      `Can't find a default SDLC server option`,
-    );
-  }
-
-  get sdlcServerUrl(): string {
-    return this.currentSDLCServerOption.url;
-  }
-
-  setCurrentSDLCServerOption(val: SDLCServerOption): void {
-    this.currentSDLCServerOption = val;
   }
 }

@@ -23,15 +23,9 @@ import {
   PureMultiExecution,
   PureSingleExecution,
 } from '../../../models/metamodels/pure/packageableElements/service/ServiceExecution';
+import type { ServiceTest } from '../../../models/metamodels/pure/packageableElements/service/ServiceTest';
 import {
-  type ServiceTest,
-  type KeyedSingleExecutionTest,
-  type TestContainer,
-  MultiExecutionTest,
-  SingleExecutionTest,
-} from '../../../models/metamodels/pure/packageableElements/service/ServiceTest';
-import { observe_PackageabElement } from './PackageableElementObserver';
-import {
+  observe_Abstract_PackageableElement,
   observe_PackageableElementReference,
   skipObserved,
   skipObservedWithContext,
@@ -43,9 +37,102 @@ import {
 } from './DomainObserverHelper';
 import { observe_RawLambda } from './RawValueSpecificationObserver';
 import { observe_Runtime } from './DSLMapping_ObserverHelper';
+import type { ConnectionTestData } from '../../../models/metamodels/pure/packageableElements/service/ConnectionTestData';
+import { observe_EmbeddedData } from './Data_ObserverHelper';
+import type { ParameterValue } from '../../../models/metamodels/pure/packageableElements/service/ParameterValue';
+import {
+  type DEPRECATED__ServiceTest,
+  type DEPRECATED__KeyedSingleExecutionTest,
+  type DEPRECATED__TestContainer,
+  DEPRECATED__MultiExecutionTest,
+  DEPRECATED__SingleExecutionTest,
+} from '../../../models/metamodels/pure/packageableElements/service/DEPRECATED__ServiceTest';
+import type { ServiceTestSuite } from '../../../models/metamodels/pure/packageableElements/service/ServiceTestSuite';
+import type { TestData } from '../../../models/metamodels/pure/packageableElements/service/ServiceTestData';
+import {
+  observe_AtomicTest,
+  observe_TestAssertion,
+  observe_TestSuite,
+} from './Test_ObserverHelper';
+
+export const observe_ConnectionTestData = skipObservedWithContext(
+  (
+    metamodel: ConnectionTestData,
+    context: ObserverContext,
+  ): ConnectionTestData => {
+    makeObservable(metamodel, {
+      connectionId: observable,
+      testData: observable,
+      hashCode: computed,
+    });
+
+    observe_EmbeddedData(metamodel.testData, context);
+
+    return metamodel;
+  },
+);
+
+export const observe_ParameterValue = skipObserved(
+  (metamodel: ParameterValue): ParameterValue => {
+    makeObservable(metamodel, {
+      name: observable,
+      value: observable,
+      hashCode: computed,
+    });
+
+    return metamodel;
+  },
+);
+
+export const observe_TestData = skipObservedWithContext(
+  (metamodel: TestData, context: ObserverContext): TestData => {
+    makeObservable(metamodel, {
+      connectionsTestData: observable,
+      hashCode: computed,
+    });
+
+    metamodel.connectionsTestData.forEach((connectionTestData) =>
+      observe_ConnectionTestData(connectionTestData, context),
+    );
+
+    return metamodel;
+  },
+);
+
+export const observe_ServiceTest = skipObserved(
+  (metamodel: ServiceTest): ServiceTest => {
+    makeObservable(metamodel, {
+      id: observable,
+      assertions: observable,
+      parameters: observable,
+      hashCode: computed,
+    });
+
+    metamodel.parameters.forEach(observe_ParameterValue);
+    metamodel.assertions.forEach(observe_TestAssertion);
+
+    return metamodel;
+  },
+);
+
+export const observe_ServiceTestSuite = skipObservedWithContext(
+  (metamodel: ServiceTestSuite, context: ObserverContext): ServiceTestSuite => {
+    makeObservable(metamodel, {
+      id: observable,
+      tests: observable,
+      testData: observable,
+      hashCode: computed,
+    });
+
+    metamodel.tests.forEach(observe_AtomicTest);
+    observe_TestData(metamodel.testData, context);
+
+    return metamodel;
+  },
+);
 
 export const observe_TestContainer = skipObserved(
-  (metamodel: TestContainer): TestContainer => {
+  (metamodel: DEPRECATED__TestContainer): DEPRECATED__TestContainer => {
     makeObservable(metamodel, {
       parametersValues: observable,
       assert: observable,
@@ -60,7 +147,9 @@ export const observe_TestContainer = skipObserved(
 );
 
 export const observe_SingleExecutionTest = skipObserved(
-  (metamodel: SingleExecutionTest): SingleExecutionTest => {
+  (
+    metamodel: DEPRECATED__SingleExecutionTest,
+  ): DEPRECATED__SingleExecutionTest => {
     makeObservable(metamodel, {
       data: observable,
       asserts: observable,
@@ -74,7 +163,9 @@ export const observe_SingleExecutionTest = skipObserved(
 );
 
 export const observe_KeyedSingleExecutionTest = skipObserved(
-  (metamodel: KeyedSingleExecutionTest): KeyedSingleExecutionTest => {
+  (
+    metamodel: DEPRECATED__KeyedSingleExecutionTest,
+  ): DEPRECATED__KeyedSingleExecutionTest => {
     observe_SingleExecutionTest(metamodel);
 
     makeObservable(metamodel, {
@@ -86,7 +177,9 @@ export const observe_KeyedSingleExecutionTest = skipObserved(
 );
 
 export const observe_MultiExecutionTest = skipObserved(
-  (metamodel: MultiExecutionTest): MultiExecutionTest => {
+  (
+    metamodel: DEPRECATED__MultiExecutionTest,
+  ): DEPRECATED__MultiExecutionTest => {
     makeObservable(metamodel, {
       tests: observable,
       hashCode: computed,
@@ -98,10 +191,12 @@ export const observe_MultiExecutionTest = skipObserved(
   },
 );
 
-export const observe_ServiceTest = (metamodel: ServiceTest): ServiceTest => {
-  if (metamodel instanceof SingleExecutionTest) {
+export const observe_ServiceTest_Legacy = (
+  metamodel: DEPRECATED__ServiceTest,
+): DEPRECATED__ServiceTest => {
+  if (metamodel instanceof DEPRECATED__SingleExecutionTest) {
     return observe_SingleExecutionTest(metamodel);
-  } else if (metamodel instanceof MultiExecutionTest) {
+  } else if (metamodel instanceof DEPRECATED__MultiExecutionTest) {
     return observe_MultiExecutionTest(metamodel);
   }
   return metamodel;
@@ -181,7 +276,7 @@ export const observe_ServiceExecution = (
 
 export const observe_Service = skipObservedWithContext(
   (metamodel: Service, context): Service => {
-    observe_PackageabElement(metamodel, context);
+    observe_Abstract_PackageableElement(metamodel);
 
     makeObservable<Service, '_elementHashCode'>(metamodel, {
       pattern: observable,
@@ -190,6 +285,7 @@ export const observe_Service = skipObservedWithContext(
       autoActivateUpdates: observable,
       execution: observable,
       test: observable,
+      tests: observable,
       patternParameters: computed,
       _elementHashCode: override,
     });
@@ -197,7 +293,12 @@ export const observe_Service = skipObservedWithContext(
     metamodel.stereotypes.forEach(observe_StereotypeReference);
     metamodel.taggedValues.forEach(observe_TaggedValue);
     observe_ServiceExecution(metamodel.execution, context);
-    observe_ServiceTest(metamodel.test);
+    if (metamodel.test) {
+      observe_ServiceTest_Legacy(metamodel.test);
+    }
+    metamodel.tests.forEach((testSuite) =>
+      observe_TestSuite(testSuite, context),
+    );
 
     return metamodel;
   },

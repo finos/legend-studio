@@ -61,7 +61,7 @@ export interface PropertyMappingVisitor<T> {
 }
 
 export abstract class PropertyMapping implements Hashable, Stubable {
-  isEmbedded = false;
+  readonly isEmbedded: boolean = false;
   property: PropertyReference;
   owner: PropertyMappingsImplementation; // the immediate parent instance set implementation that holds the property mappings
   // NOTE: in case the holder of this property mapping is an embedded property mapping, that embedded property mapping is considered the source

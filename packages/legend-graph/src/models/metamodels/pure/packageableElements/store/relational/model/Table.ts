@@ -19,6 +19,7 @@ import {
   type Hashable,
   hashArray,
   guaranteeNonNullable,
+  filterByType,
 } from '@finos/legend-shared';
 import { NamedRelation } from './RelationalOperationElement';
 import type { Schema } from './Schema';
@@ -38,10 +39,9 @@ export class Table extends NamedRelation implements Hashable {
 
   getColumn = (name: string): Column =>
     guaranteeNonNullable(
-      this.columns.find(
-        (column): column is Column =>
-          column instanceof Column && column.name === name,
-      ),
+      this.columns
+        .filter(filterByType(Column))
+        .find((column) => column.name === name),
       `Can't find column '${name}' in table '${this.name}'`,
     );
 

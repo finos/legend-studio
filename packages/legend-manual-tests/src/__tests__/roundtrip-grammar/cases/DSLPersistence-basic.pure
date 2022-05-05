@@ -1,0 +1,166 @@
+###Persistence
+Persistence org::legend::ZooPersistence
+{
+  doc: 'A persistence specification for Zoos.';
+  trigger: Manual;
+  service: org::legend::ZooService;
+  persister: Batch
+  {
+    sink: ObjectStorage
+    {
+      binding: org::legend::ZooBinding;
+      connection:
+      #{
+        JsonModelConnection
+        {
+          class: org::legend::Animal;
+          url: 'my_url2';
+        }
+      }#
+    }
+    ingestMode: BitemporalDelta
+    {
+      mergeStrategy: DeleteIndicator
+      {
+        deleteField: deleted;
+        deleteValues: ['T', 'TRUE'];
+      }
+      transactionMilestoning: BatchIdAndDateTime
+      {
+        batchIdInName: 'batchIdIn';
+        batchIdOutName: 'batchIdOut';
+        dateTimeInName: 'IN_Z';
+        dateTimeOutName: 'OUT_Z';
+      }
+      validityMilestoning: DateTime
+      {
+        dateTimeFromName: 'FROM_Z';
+        dateTimeThruName: 'THRU_Z';
+        derivation: SourceSpecifiesFromAndThruDateTime
+        {
+          sourceDateTimeFromField: effectiveFrom;
+          sourceDateTimeThruField: effectiveThru;
+        }
+      }
+    }
+    targetShape: MultiFlat
+    {
+      modelClass: org::legend::Zoo;
+      transactionScope: ALL_TARGETS;
+      parts:
+      [
+        {
+          modelProperty: zookeeper;
+          targetName: 'PersonDataset_1';
+          deduplicationStrategy: None;
+        },
+        {
+          modelProperty: admin;
+          targetName: 'PersonDataset_2';
+          deduplicationStrategy: MaxVersion
+          {
+            versionField: version;
+          }
+        },
+        {
+          modelProperty: owner;
+          targetName: 'PersonDataset_3';
+          deduplicationStrategy: None;
+        }
+      ];
+    }
+  }
+  notifier:
+  {
+    notifyees:
+    [
+      PagerDuty
+      {
+        url: 'http://xyz.com';
+      },
+      Email
+      {
+        address: 'http://xyz.com';
+      }
+    ]
+  }
+}
+
+
+###Service
+Service org::legend::ZooService
+{
+  pattern: 'test';
+  documentation: 'test';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: src: org::legend::Zoo[1]|$src.name;
+    mapping: org::legend::Mapping;
+    runtime:
+    #{
+      mappings:
+      [
+        org::legend::Mapping
+      ];
+    }#;
+  }
+  testSuites:
+  [
+
+  ]
+  test: Single
+  {
+    data: 'test';
+    asserts:
+    [
+    ];
+  }
+}
+
+
+###ExternalFormat
+Binding org::legend::ZooBinding
+{
+  contentType: 'application/json';
+  modelIncludes: [
+    org::legend::Person
+  ];
+}
+
+
+###Pure
+Class org::legend::Zoo
+{
+  name: String[1];
+  zookeeper: org::legend::Person[1];
+  admin: org::legend::Person[1];
+  owner: org::legend::Person[1];
+  version: Integer[1];
+}
+
+Class org::legend::Person
+{
+  name: String[1];
+  effectiveFrom: DateTime[1];
+  effectiveThru: DateTime[1];
+  version: Integer[1];
+  deleted: Boolean[1];
+}
+
+Class org::legend::Animal
+{
+  name: String[1];
+}
+
+Association org::legend::ZooAnimal
+{
+  zoo: org::legend::Zoo[1];
+  animals: org::legend::Animal[*];
+}
+
+
+###Mapping
+Mapping org::legend::Mapping
+(
+)

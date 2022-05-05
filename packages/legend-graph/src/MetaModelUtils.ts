@@ -14,6 +14,15 @@
  * limitations under the License.
  */
 
+/**
+ * NOTE: this file holds the most basic utilties to deal with the graph and
+ * metamodels. Any methods which requires importing some metamodel or graph
+ * are meant to be put into helpers method, e.g. `DomainHelper`.
+ *
+ * This is to avoid circular dependencies and also to keep things in the
+ * right layer
+ */
+
 import {
   SOURCE_INFORMATION_KEY,
   ELEMENT_PATH_DELIMITER,
@@ -53,6 +62,14 @@ export const resolvePackagePathAndElementName = (
   ];
 };
 
+export const buildPath = (
+  packagePath: string | undefined,
+  name: string | undefined,
+): string =>
+  `${guaranteeNonNullable(
+    packagePath,
+    'Package path is required',
+  )}${ELEMENT_PATH_DELIMITER}${guaranteeNonNullable(name, 'Name is required')}`;
 export const createPath = (packagePath: string, name: string): string =>
   `${packagePath ? `${packagePath}${ELEMENT_PATH_DELIMITER}` : ''}${name}`;
 // TODO: we might need to support quoted identifier in the future

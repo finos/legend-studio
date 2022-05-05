@@ -421,7 +421,7 @@ export class WorkspaceSyncState {
           this.sdlcState.activeRevision.committedAt,
           this.sdlcState.activeRemoteWorkspaceRevision.committedAt,
         )) as PlainObject<Revision>[]
-      ).map((e) => Revision.serialization.fromJson(e));
+      ).map((v) => Revision.serialization.fromJson(v));
       this.setIncomingRevisions(
         revisions.filter((r) => r.id !== this.sdlcState.activeRevision.id),
       );
@@ -444,10 +444,6 @@ export class WorkspaceSyncState {
           .changes;
       let conflicts: EntityChangeConflict[] = [];
       if (changes.length) {
-        // Base revision <-> Local
-        yield flowResult(
-          this.editorStore.changeDetectionState.computeLocalChanges(),
-        );
         yield flowResult(
           this.editorStore.changeDetectionState.computeAggregatedWorkspaceRemoteChanges(),
         );

@@ -18,8 +18,6 @@ import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import { type Hashable, hashArray } from '@finos/legend-shared';
 
 export abstract class AuthenticationStrategy implements Hashable {
-  private readonly _$nominalTypeBrand!: 'AuthenticationStrategy';
-
   abstract get hashCode(): string;
 }
 

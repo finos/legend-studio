@@ -21,7 +21,8 @@ import { observer } from 'mobx-react-lite';
 import { useParams } from 'react-router-dom';
 import {
   type LegendTaxonomyPathParams,
-  updateRouteWithNewTaxonomyServerOption,
+  generateExploreTaxonomyTreeRoute,
+  LEGEND_TAXONOMY_PARAM_TOKEN,
 } from '../stores/LegendTaxonomyRouter';
 import { useLegendTaxonomyStore } from './LegendTaxonomyStoreProvider';
 import { flowResult } from 'mobx';
@@ -55,7 +56,7 @@ import { TaxonomyTree } from './TaxonomyTree';
 import { TaxonomyNodeViewer } from './TaxonomyNodeViewer';
 import type {
   LegendTaxonomyConfig,
-  TaxonomyServerOption,
+  TaxonomyTreeOption,
 } from '../application/LegendTaxonomyConfig';
 import { useResizeDetector } from 'react-resize-detector';
 import type { TaxonomyNodeViewerState } from '../stores/LegendTaxonomyStore';
@@ -106,6 +107,7 @@ const TaxonomyViewerActivityBar = observer(() => (
 
 const TaxonomyViewerSideBar = observer(() => {
   const taxonomyStore = useLegendTaxonomyStore();
+  const applicationStore = useApplicationStore<LegendTaxonomyConfig>();
   const showSearchModal = (): void =>
     taxonomyStore.searchTaxonomyNodeCommandState.open();
   const collapseTree = (): void => {
@@ -133,7 +135,9 @@ const TaxonomyViewerSideBar = observer(() => {
             <div className="panel">
               <div className="panel__header taxonomy-viewer__explorer__header">
                 <div className="panel__header__title">
-                  <div className="panel__header__title__content">Taxonomy</div>
+                  <div className="panel__header__title__content">
+                    {applicationStore.config.currentTaxonomyTreeOption.label}
+                  </div>
                 </div>
                 <div className="panel__header__actions">
                   <button
@@ -273,40 +277,36 @@ const TaxonomyViewerMainPanel = observer(
 
 const LegendTaxonomyAppHeaderMenu: React.FC = () => {
   const applicationStore = useApplicationStore<LegendTaxonomyConfig>();
+  const taxonomyStore = useLegendTaxonomyStore();
 
-  const [openTaxonomyServerDropdown, setOpenTaxonomyServerDropdown] =
+  const [openTaxonomyTreeDropdown, setOpenTaxonomyTreeDropdown] =
     useState(false);
-  const showTaxonomyServerDropdown = (): void =>
-    setOpenTaxonomyServerDropdown(true);
-  const hideTaxonomyServerDropdown = (): void =>
-    setOpenTaxonomyServerDropdown(false);
-  const selectTaxonomyServer =
-    (option: TaxonomyServerOption): (() => void) =>
+  const showTaxonomyTreeDropdown = (): void =>
+    setOpenTaxonomyTreeDropdown(true);
+  const hideTaxonomyTreeDropdown = (): void =>
+    setOpenTaxonomyTreeDropdown(false);
+  const selectTaxonomyTree =
+    (option: TaxonomyTreeOption): (() => void) =>
     (): void => {
-      if (option !== applicationStore.config.currentTaxonomyServerOption) {
-        const updatedURL = updateRouteWithNewTaxonomyServerOption(
-          applicationStore.navigator.getCurrentLocationPath(),
-          option,
-        );
-        if (updatedURL) {
-          applicationStore.navigator.jumpTo(
-            applicationStore.navigator.generateLocation(updatedURL),
-          );
-        }
-      }
+      taxonomyStore.taxonomyServerClient.setBaseUrl(option.url);
+      applicationStore.navigator.jumpTo(
+        applicationStore.navigator.generateLocation(
+          generateExploreTaxonomyTreeRoute(option.key),
+        ),
+      );
     };
 
-  if (applicationStore.config.taxonomyServerOptions.length <= 1) {
+  if (applicationStore.config.taxonomyTreeOptions.length <= 1) {
     return null;
   }
   return (
     <DropdownMenu
       className={clsx('taxonomy-app__header__server-dropdown')}
-      onClose={hideTaxonomyServerDropdown}
+      onClose={hideTaxonomyTreeDropdown}
       menuProps={{ elevation: 7 }}
       content={
         <MenuContent className="taxonomy-app__header__server-dropdown__menu">
-          {applicationStore.config.taxonomyServerOptions.map((option) => (
+          {applicationStore.config.taxonomyTreeOptions.map((option) => (
             <MenuContentItem
               key={option.key}
               className={clsx(
@@ -314,10 +314,10 @@ const LegendTaxonomyAppHeaderMenu: React.FC = () => {
                 {
                   'taxonomy-app__header__server-dropdown__menu__item--active':
                     option ===
-                    applicationStore.config.currentTaxonomyServerOption,
+                    applicationStore.config.currentTaxonomyTreeOption,
                 },
               )}
-              onClick={selectTaxonomyServer(option)}
+              onClick={selectTaxonomyTree(option)}
             >
               {option.label}
             </MenuContentItem>
@@ -328,14 +328,14 @@ const LegendTaxonomyAppHeaderMenu: React.FC = () => {
       <button
         className="taxonomy-app__header__server-dropdown__label"
         tabIndex={-1}
-        onClick={showTaxonomyServerDropdown}
-        title="Choose a taxonomy server..."
+        onClick={showTaxonomyTreeDropdown}
+        title="Choose a taxonomy tree..."
       >
         <div className="taxonomy-app__header__server-dropdown__label__text">
-          {applicationStore.config.currentTaxonomyServerOption.label}
+          {applicationStore.config.currentTaxonomyTreeOption.label}
         </div>
         <div className="taxonomy-app__header__server-dropdown__label__icon">
-          {openTaxonomyServerDropdown ? <ChevronUpIcon /> : <ChevronDownIcon />}
+          {openTaxonomyTreeDropdown ? <ChevronUpIcon /> : <ChevronDownIcon />}
         </div>
       </button>
     </DropdownMenu>
@@ -398,8 +398,10 @@ export const TaxonomySearchCommand = observer(() => {
 
 export const TaxonomyViewer = observer(() => {
   const params = useParams<LegendTaxonomyPathParams>();
-  const applicationStore = useApplicationStore();
+  const applicationStore = useApplicationStore<LegendTaxonomyConfig>();
   const taxonomyStore = useLegendTaxonomyStore();
+
+  const taxonomyTreeKey = params[LEGEND_TAXONOMY_PARAM_TOKEN.TAXONOMY_TREE_KEY];
 
   // Hotkeys
   const [hotkeyMapping, hotkeyHandlers] = buildReactHotkeysConfiguration(
@@ -412,17 +414,48 @@ export const TaxonomyViewer = observer(() => {
     );
 
   useEffect(() => {
+    if (taxonomyTreeKey) {
+      const matchingTaxonomyTreeOption =
+        applicationStore.config.taxonomyTreeOptions.find(
+          (option) => taxonomyTreeKey === option.key,
+        );
+      if (!matchingTaxonomyTreeOption) {
+        applicationStore.notifyWarning(
+          `Can't find taxonomy tree with key '${taxonomyTreeKey}'. Redirected to default tree '${applicationStore.config.defaultTaxonomyTreeOption.key}'`,
+        );
+        applicationStore.navigator.goTo(
+          generateExploreTaxonomyTreeRoute(
+            applicationStore.config.defaultTaxonomyTreeOption.key,
+          ),
+        );
+      } else {
+        applicationStore.config.setCurrentTaxonomyTreeOption(
+          matchingTaxonomyTreeOption,
+        );
+        taxonomyStore.taxonomyServerClient.setBaseUrl(
+          matchingTaxonomyTreeOption.url,
+        );
+        // NOTE: since we internalize the data space path in the route, we should not re-initialize the graph
+        // on the second call when we remove path from the route
+        flowResult(taxonomyStore.initialize()).catch(
+          applicationStore.alertUnhandledError,
+        );
+      }
+    }
+  }, [applicationStore, taxonomyStore, taxonomyTreeKey]);
+
+  useEffect(() => {
     taxonomyStore.internalizeDataSpacePath(params);
   }, [taxonomyStore, params]);
 
-  // NOTE: since we internalize the data space path in the route, we should not re-initialize the graph
-  // on the second call when we remove path from the route
-  useEffect(() => {
-    flowResult(taxonomyStore.initialize()).catch(
-      applicationStore.alertUnhandledError,
-    );
-  }, [applicationStore, taxonomyStore]);
-
+  if (
+    taxonomyTreeKey &&
+    !applicationStore.config.taxonomyTreeOptions.find(
+      (option) => taxonomyTreeKey === option.key,
+    )
+  ) {
+    return null;
+  }
   return (
     <div className="app__page">
       <AppHeader>

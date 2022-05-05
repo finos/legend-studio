@@ -22,6 +22,7 @@ import {
   type VariableExpression,
   type PureModel,
   type AbstractPropertyExpression,
+  Enumeration,
 } from '@finos/legend-graph';
 import { SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
 import {
@@ -52,18 +53,20 @@ export class QueryBuilderAggregateOperator_Count extends QueryBuilderAggregateOp
         projectionColumnState.propertyExpressionState.propertyExpression.func
           .genericType.value.rawType;
       return (
-        [
-          PRIMITIVE_TYPE.STRING,
-          PRIMITIVE_TYPE.BOOLEAN,
-          PRIMITIVE_TYPE.NUMBER,
-          PRIMITIVE_TYPE.INTEGER,
-          PRIMITIVE_TYPE.DECIMAL,
-          PRIMITIVE_TYPE.FLOAT,
-          PRIMITIVE_TYPE.DATE,
-          PRIMITIVE_TYPE.STRICTDATE,
-          PRIMITIVE_TYPE.DATETIME,
-        ] as string[]
-      ).includes(propertyType.path);
+        (
+          [
+            PRIMITIVE_TYPE.STRING,
+            PRIMITIVE_TYPE.BOOLEAN,
+            PRIMITIVE_TYPE.NUMBER,
+            PRIMITIVE_TYPE.INTEGER,
+            PRIMITIVE_TYPE.DECIMAL,
+            PRIMITIVE_TYPE.FLOAT,
+            PRIMITIVE_TYPE.DATE,
+            PRIMITIVE_TYPE.STRICTDATE,
+            PRIMITIVE_TYPE.DATETIME,
+          ] as string[]
+        ).includes(propertyType.path) || propertyType instanceof Enumeration
+      );
     }
     return true;
   }

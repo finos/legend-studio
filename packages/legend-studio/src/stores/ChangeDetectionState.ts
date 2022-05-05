@@ -22,6 +22,7 @@ import {
   reaction,
   flow,
   makeObservable,
+  isComputedProp,
 } from 'mobx';
 import { CHANGE_DETECTION_EVENT } from './ChangeDetectionEvent';
 import {
@@ -32,6 +33,7 @@ import {
   noop,
   assertErrorThrown,
   hashObject,
+  promisify,
 } from '@finos/legend-shared';
 import type { EditorStore } from './EditorStore';
 import type { EditorGraphState } from './EditorGraphState';
@@ -42,7 +44,12 @@ import {
   EntityChangeType,
   EntityDiff,
 } from '@finos/legend-server-sdlc';
-import { ObserverContext, observe_PureModel } from '@finos/legend-graph';
+import {
+  ObserverContext,
+  observe_Graph,
+  observe_GraphElements,
+} from '@finos/legend-graph';
+import { type IDisposer, keepAlive } from 'mobx-utils';
 
 class RevisionChangeDetectionState {
   editorStore: EditorStore;
@@ -88,32 +95,29 @@ class RevisionChangeDetectionState {
         yield Promise.all<void>(
           this.editorStore.graphManagerState.graph.allOwnElements.map(
             (element) =>
-              new Promise((resolve) =>
-                setTimeout(() => {
-                  const elementPath = element.path;
-                  const originalElementHash =
-                    this.entityHashesIndex.get(elementPath);
-                  if (!originalElementHash) {
-                    changes.push(
-                      new EntityDiff(
-                        undefined,
-                        elementPath,
-                        EntityChangeType.CREATE,
-                      ),
-                    );
-                  } else if (originalElementHash !== element.hashCode) {
-                    changes.push(
-                      new EntityDiff(
-                        elementPath,
-                        elementPath,
-                        EntityChangeType.MODIFY,
-                      ),
-                    );
-                  }
-                  originalPaths.delete(elementPath);
-                  resolve();
-                }, 0),
-              ),
+              promisify(() => {
+                const elementPath = element.path;
+                const originalElementHash =
+                  this.entityHashesIndex.get(elementPath);
+                if (!originalElementHash) {
+                  changes.push(
+                    new EntityDiff(
+                      undefined,
+                      elementPath,
+                      EntityChangeType.CREATE,
+                    ),
+                  );
+                } else if (originalElementHash !== element.hashCode) {
+                  changes.push(
+                    new EntityDiff(
+                      elementPath,
+                      elementPath,
+                      EntityChangeType.MODIFY,
+                    ),
+                  );
+                }
+                originalPaths.delete(elementPath);
+              }),
           ),
         );
       }
@@ -200,9 +204,15 @@ class RevisionChangeDetectionState {
 export class ChangeDetectionState {
   editorStore: EditorStore;
   graphState: EditorGraphState;
+  // TODO: use ActionState for this
   isChangeDetectionRunning = false;
   hasChangeDetectionStarted = false;
   forcedStop = false;
+  /**
+   * Keep the list of disposers to deactivate `keepAlive` for computed value of element hash code.
+   * See {@link preComputeGraphElementHashes} for more details
+   */
+  private graphElementHashCodeKeepAliveComputationDisposers: IDisposer[] = [];
   changeDetectionReaction?: IReactionDisposer | undefined;
   /**
    * [1. PJL] Store the entities from project HEAD (i.e. project latest revision)
@@ -263,6 +273,8 @@ export class ChangeDetectionState {
   conflicts: EntityChangeConflict[] = []; // conflicts in conflict resolution mode (derived from aggregated workspace changes and conflict resolution changes)
   resolutions: EntityChangeConflictResolution[] = [];
 
+  observerContext: ObserverContext;
+
   constructor(editorStore: EditorStore, graphState: EditorGraphState) {
     makeObservable(this, {
       isChangeDetectionRunning: observable,
@@ -294,6 +306,7 @@ export class ChangeDetectionState {
       computeEntityChangeConflicts: flow,
       computeLocalChanges: flow,
       computeAggregatedWorkspaceRemoteChanges: flow,
+      observeGraph: flow,
     });
 
     this.editorStore = editorStore;
@@ -322,6 +335,9 @@ export class ChangeDetectionState {
     this.conflictResolutionBaseRevisionState = new RevisionChangeDetectionState(
       editorStore,
       graphState,
+    );
+    this.observerContext = new ObserverContext(
+      this.editorStore.pluginManager.getPureGraphManagerPlugins(),
     );
   }
 
@@ -374,45 +390,53 @@ export class ChangeDetectionState {
     // eslint-disable-next-line no-process-env
     const throttleDuration = process.env.NODE_ENV === 'test' ? 0 : 1000;
     /**
-     * For the reaction, the data we observe is the snapshot of the current hashes, note that we can also use the hashCode
-     * of the root package although this might get interesting in the future when we introduce project dependency or
-     * auto-gen elements...
-     *
-     * Whichever form of this, it will have to loop through all elements' and compute the hashCode for the first time
-     * so in subsequent calls this could be fast. This is heavy and the only technique to make this happen is to break
-     * it down into small promises, but this is not possible in mobx as mobx only tracks dependency synchronously.
+     * For the reaction, the data we observe is the snapshot of the current graph's hash index.
+     * This will loop through all elements' and compute the hashCode for the first time
+     * so in subsequent calls this could be fast. This is expensive and the optimization we choose is
+     * to parallelize using promises, but since `mobx` only tracks dependency synchronously,
+     * we would lose the benefit of `mobx` computation
      * See https://github.com/danielearwicker/computed-async-mobx#gotchas
      * See https://github.com/mobxjs/mobx/issues/668
      * See https://github.com/mobxjs/mobx/issues/872
-     * SO, we have 2 options here:
-     * 1. We can let the UI freezes up for a short while, like this:
-     *    this.snapshotCurrentHashesIndex(true);
-     * OR
+     *
+     * So now, we have 2 options:
+     * 1. We can let the UI freezes up for a short while by calling `this.snapshotCurrentHashesIndex(true)`
      * 2. We will use `keepAlive` for elements that we care about for building the hashes index, i.e. class, mapping, diagram, etc.
      *
-     * NOTE: IMPORTANT: Although we have to note the caveat of `keepAlive` is that it can cause memory leak, which requires us
-     * to dispose them properly, see `disposeComputedHash` in `PackageableElement`
+     * We will go with (2) but we have to note that `keepAlive` can cause memory leak. As such, activating `keepAlive` is
+     * a fairly non-trivial step, see {@link preComputeGraphElementHashes} for more details
+     *
+     * See https://mobx.js.org/computeds.html#keepalive
+     * See https://medium.com/terria/when-and-why-does-mobxs-keepalive-cause-a-memory-leak-8c29feb9ff55
      */
     this.changeDetectionReaction = reaction(
       // to be safe, rather than just giving the reaction the hash index snapshot to watch, we hash the snapshot content
       () =>
         hashObject(
           Array.from(this.snapshotLocalEntityHashesIndex(true).entries())
-            .sort((a, b) => a[0].localeCompare(b[0])) // sort to ensure this array order does not affect change detection status
+            // sort to ensure this array order does not affect change detection status
+            .sort((a, b) => a[0].localeCompare(b[0]))
             .map(([key, value]) => `${key}@${value}`),
         ),
       () => {
         flowResult(this.computeLocalChanges(true)).catch(noop());
       },
-      { delay: throttleDuration }, // throttle the call
-      /**
-       * NOTE: this reaction will not be fired immediately so we have to manually call the first local changes computation
-       * See https://mobx.js.org/refguide/reaction.html#options
-       */
+      {
+        // fire reaction immediately to compute the first changeset
+        fireImmediately: true,
+        // throttle the call
+        delay: throttleDuration,
+      },
     );
     this.isChangeDetectionRunning = true;
     this.hasChangeDetectionStarted = true;
     this.forcedStop = false;
+
+    // dispose and remove the disposers for `keepAlive` computations for elements' hash code
+    this.graphElementHashCodeKeepAliveComputationDisposers.forEach((disposer) =>
+      disposer(),
+    );
+    this.graphElementHashCodeKeepAliveComputationDisposers = [];
   }
 
   snapshotLocalEntityHashesIndex(quiet?: boolean): Map<string, string> {
@@ -450,31 +474,28 @@ export class ChangeDetectionState {
       await Promise.all<void>(
         Array.from(toState.entityHashesIndex.entries()).map(
           ([elementPath, hashCode]) =>
-            new Promise((resolve) =>
-              setTimeout(() => {
-                const originalElementHashCode =
-                  fromState.entityHashesIndex.get(elementPath);
-                if (!originalElementHashCode) {
-                  changes.push(
-                    new EntityDiff(
-                      undefined,
-                      elementPath,
-                      EntityChangeType.CREATE,
-                    ),
-                  );
-                } else if (originalElementHashCode !== hashCode) {
-                  changes.push(
-                    new EntityDiff(
-                      elementPath,
-                      elementPath,
-                      EntityChangeType.MODIFY,
-                    ),
-                  );
-                }
-                originalPaths.delete(elementPath);
-                resolve();
-              }, 0),
-            ),
+            promisify(() => {
+              const originalElementHashCode =
+                fromState.entityHashesIndex.get(elementPath);
+              if (!originalElementHashCode) {
+                changes.push(
+                  new EntityDiff(
+                    undefined,
+                    elementPath,
+                    EntityChangeType.CREATE,
+                  ),
+                );
+              } else if (originalElementHashCode !== hashCode) {
+                changes.push(
+                  new EntityDiff(
+                    elementPath,
+                    elementPath,
+                    EntityChangeType.MODIFY,
+                  ),
+                );
+              }
+              originalPaths.delete(elementPath);
+            }),
         ),
       );
       changes = changes.concat(
@@ -655,38 +676,22 @@ export class ChangeDetectionState {
     yield Promise.all<void>(
       Array.from(incomingChangesMap.entries()).map(
         ([entityPath, incomingChange]: [string, EntityDiff]) =>
-          new Promise((resolve) =>
-            setTimeout(() => {
-              const currentChange = currentChangesMap.get(entityPath); // find the change on the same entity in the set of current changes
-              if (currentChange) {
+          promisify(() => {
+            const currentChange = currentChangesMap.get(entityPath); // find the change on the same entity in the set of current changes
+            if (currentChange) {
+              if (
+                (currentChange.entityChangeType === EntityChangeType.CREATE &&
+                  incomingChange.entityChangeType ===
+                    EntityChangeType.CREATE) ||
+                (currentChange.entityChangeType === EntityChangeType.MODIFY &&
+                  incomingChange.entityChangeType === EntityChangeType.MODIFY)
+              ) {
+                // if the two entities are identical, we can guarantee no conflict happens, otherwise, depending on the SDLC server, we might get a conflict.
+                // NOTE: we actually want the potential conflict to be a real conflict in this case because SDLC server while attempting to merge the protocol JSON
+                // might actually mess up the entity, which is very bad
                 if (
-                  (currentChange.entityChangeType === EntityChangeType.CREATE &&
-                    incomingChange.entityChangeType ===
-                      EntityChangeType.CREATE) ||
-                  (currentChange.entityChangeType === EntityChangeType.MODIFY &&
-                    incomingChange.entityChangeType === EntityChangeType.MODIFY)
-                ) {
-                  // if the two entities are identical, we can guarantee no conflict happens, otherwise, depending on the SDLC server, we might get a conflict.
-                  // NOTE: we actually want the potential conflict to be a real conflict in this case because SDLC server while attempting to merge the protocol JSON
-                  // might actually mess up the entity, which is very bad
-                  if (
-                    currentChangeEntityHashesIndex.get(entityPath) !==
-                    incomingChangeEntityHashesIndex.get(entityPath)
-                  ) {
-                    conflicts.push(
-                      new EntityChangeConflict(
-                        entityPath,
-                        incomingChange,
-                        currentChange,
-                      ),
-                    );
-                  }
-                } else if (
-                  (currentChange.entityChangeType === EntityChangeType.DELETE &&
-                    incomingChange.entityChangeType ===
-                      EntityChangeType.MODIFY) ||
-                  (currentChange.entityChangeType === EntityChangeType.MODIFY &&
-                    incomingChange.entityChangeType === EntityChangeType.DELETE)
+                  currentChangeEntityHashesIndex.get(entityPath) !==
+                  incomingChangeEntityHashesIndex.get(entityPath)
                 ) {
                   conflicts.push(
                     new EntityChangeConflict(
@@ -695,24 +700,35 @@ export class ChangeDetectionState {
                       currentChange,
                     ),
                   );
-                } else if (
-                  currentChange.entityChangeType === EntityChangeType.DELETE &&
-                  incomingChange.entityChangeType === EntityChangeType.DELETE
-                ) {
-                  // do nothing
-                } else {
-                  throw new IllegalStateError(
-                    `Detected unfeasible state while computing entity change conflict for entity '${entityPath}', with current change: ${shallowStringify(
-                      currentChange,
-                    )}, and incoming change: ${shallowStringify(
-                      incomingChange,
-                    )}`,
-                  );
                 }
+              } else if (
+                (currentChange.entityChangeType === EntityChangeType.DELETE &&
+                  incomingChange.entityChangeType ===
+                    EntityChangeType.MODIFY) ||
+                (currentChange.entityChangeType === EntityChangeType.MODIFY &&
+                  incomingChange.entityChangeType === EntityChangeType.DELETE)
+              ) {
+                conflicts.push(
+                  new EntityChangeConflict(
+                    entityPath,
+                    incomingChange,
+                    currentChange,
+                  ),
+                );
+              } else if (
+                currentChange.entityChangeType === EntityChangeType.DELETE &&
+                incomingChange.entityChangeType === EntityChangeType.DELETE
+              ) {
+                // do nothing
+              } else {
+                throw new IllegalStateError(
+                  `Detected unfeasible state while computing entity change conflict for entity '${entityPath}', with current change: ${shallowStringify(
+                    currentChange,
+                  )}, and incoming change: ${shallowStringify(incomingChange)}`,
+                );
               }
-              resolve();
-            }, 0),
-          ),
+            }
+          }),
       ),
     );
     return conflicts;
@@ -739,17 +755,15 @@ export class ChangeDetectionState {
     }
   }
 
-  /**
-   * NOTE: right now we rely on `observe_PackageTree` method to observe all elements in the graph
-   * but potentially, we could improve this by observe all elements in parallel
-   */
-  observeGraph(): void {
+  *observeGraph(): GeneratorFn<void> {
     const startTime = Date.now();
-    observe_PureModel(
+    // NOTE: this method has to be done synchronously in `action` context
+    // to make sure `mobx` react to observables from the graph, such as its element indices
+    observe_Graph(this.editorStore.graphManagerState.graph);
+    // this will be done asynchronously to improve performance
+    yield observe_GraphElements(
       this.editorStore.graphManagerState.graph,
-      new ObserverContext(
-        this.editorStore.pluginManager.getPureGraphManagerPlugins(),
-      ),
+      this.editorStore.changeDetectionState.observerContext,
     );
     this.editorStore.applicationStore.log.info(
       LogEvent.create(CHANGE_DETECTION_EVENT.CHANGE_DETECTION_GRAPH_OBSERVED),
@@ -761,25 +775,34 @@ export class ChangeDetectionState {
 
   /**
    * Call `get hashCode()` on each element once so we trigger the first time we compute the hash for that element.
-   * This plays well with `keepAlive` flag on each of the element `get hashCode()` function. This is due to
-   * the fact that we want to get hashCode inside a `setTimeout()` to make this non-blocking, but that way `mobx` will
-   * not trigger memoization on computed so we need to enable `keepAlive`
+   * Notice that we do this in asynchronous manner to not block the main execution thread, as this is quiet an expensive
+   * task.
+   *
+   * We also want to take advantage of `mobx computed` here so we save time when starting change detection. However,
+   * since `mobx computed` does not track async contexts, we have to use the `keepAlive` option for `computed`
+   *
+   * To avoid memory leak potentially caused by `keepAlive`, we use `keepAlive` utility from `mobx-utils`
+   * so we could manually dispose `keepAlive` later after we already done with starting change detection.
    */
-  async precomputeHashes(): Promise<void> {
+  async preComputeGraphElementHashes(): Promise<void> {
     const startTime = Date.now();
+    const disposers: IDisposer[] = [];
     if (this.editorStore.graphManagerState.graph.allOwnElements.length) {
       await Promise.all<void>(
-        this.editorStore.graphManagerState.graph.allOwnElements.map(
-          (element) =>
-            new Promise((resolve) =>
-              setTimeout(() => {
-                element.hashCode; // manually trigger hash code recomputation
-                resolve();
-              }, 0),
-            ),
+        this.editorStore.graphManagerState.graph.allOwnElements.map((element) =>
+          promisify(() => {
+            if (isComputedProp(element, 'hashCode')) {
+              disposers.push(keepAlive(element, 'hashCode'));
+            }
+            // manually trigger hash code computation
+            element.hashCode;
+          }),
         ),
       );
     }
+    // save the `keepAlive` computation disposers to dispose after we start change detection
+    // so the first call of change detection still get the benefit of computed value
+    this.graphElementHashCodeKeepAliveComputationDisposers = disposers;
     this.editorStore.applicationStore.log.info(
       LogEvent.create(
         CHANGE_DETECTION_EVENT.CHANGE_DETECTION_GRAPH_HASHES_PRECOMPUTED,

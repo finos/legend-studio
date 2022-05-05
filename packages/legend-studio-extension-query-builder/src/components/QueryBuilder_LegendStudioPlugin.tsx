@@ -39,9 +39,9 @@ import {
   NewServiceModal,
   useEditorStore,
   LegendStudioPlugin,
-  package_addElement,
   service_initNewService,
   service_setExecution,
+  service_setLegacyTest,
 } from '@finos/legend-studio';
 import { MenuContentItem } from '@finos/legend-art';
 import { QueryBuilderDialog } from './QueryBuilderDialog';
@@ -55,6 +55,7 @@ import {
   PackageableElementExplicitReference,
   PureSingleExecution,
   Service,
+  DEPRECATED__SingleExecutionTest,
 } from '@finos/legend-graph';
 import { QueryBuilder_EditorExtensionState } from '../stores/QueryBuilder_EditorExtensionState';
 import {
@@ -66,7 +67,7 @@ import { useState } from 'react';
 import { observer } from 'mobx-react-lite';
 
 const promoteQueryToService = async (
-  packageName: string,
+  packagePath: string,
   serviceName: string,
   queryBuilderExtension: QueryBuilder_EditorExtensionState,
 ): Promise<void> => {
@@ -85,6 +86,10 @@ const promoteQueryToService = async (
     const query = queryBuilderState.getQuery();
     const service = new Service(serviceName);
     service_initNewService(service);
+    service_setLegacyTest(
+      service,
+      new DEPRECATED__SingleExecutionTest(service, ''),
+    );
     service_setExecution(
       service,
       new PureSingleExecution(
@@ -93,12 +98,9 @@ const promoteQueryToService = async (
         PackageableElementExplicitReference.create(mapping),
         runtime,
       ),
+      editorStore.changeDetectionState.observerContext,
     );
-    const servicePackage =
-      editorStore.graphManagerState.graph.getOrCreatePackage(packageName);
-    package_addElement(servicePackage, service);
-    editorStore.graphManagerState.graph.addElement(service);
-    editorStore.openElement(service);
+    await flowResult(editorStore.addElement(service, packagePath, true));
     await flowResult(
       queryBuilderExtension.setEmbeddedQueryBuilderMode(undefined),
     ).catch(applicationStore.alertUnhandledError);

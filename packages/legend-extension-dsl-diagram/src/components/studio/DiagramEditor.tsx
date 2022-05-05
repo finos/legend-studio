@@ -103,7 +103,6 @@ import {
   property_setName,
   property_setGenericType,
   property_setMultiplicity,
-  package_addElement,
 } from '@finos/legend-studio';
 import { cleanUpDeadReferencesInDiagram } from '../../helpers/DiagramHelper';
 import { Point } from '../../models/metamodels/pure/packageableElements/diagram/geometry/DSLDiagram_Point';
@@ -830,6 +829,7 @@ const DiagramEditorInlineClassCreatorInner = observer(
   }) => {
     const { inlineClassCreatorState } = props;
     const editorStore = useEditorStore();
+    const applicationStore = useApplicationStore();
     const diagramEditorState = inlineClassCreatorState.diagramEditorState;
     const isReadOnly = diagramEditorState.isReadOnly;
     const [path, setPath] = useState(
@@ -856,23 +856,23 @@ const DiagramEditorInlineClassCreatorInner = observer(
     const canCreateClass =
       isClassPathNonEmpty && isNotTopLevelClass && isValidPath && isClassUnique;
 
-    const close = (event: React.MouseEvent<HTMLButtonElement>): void => {
+    const createClass = async (
+      event: React.MouseEvent<HTMLButtonElement>,
+    ): Promise<void> => {
       event.preventDefault();
       if (canCreateClass) {
         diagramEditorState.setInlineClassCreatorState(undefined);
         const [packagePath, name] = resolvePackagePathAndElementName(path);
         const _class = new Class(name);
-        package_addElement(
-          editorStore.graphManagerState.graph.getOrCreatePackage(packagePath),
-          _class,
-        );
-        editorStore.graphManagerState.graph.addElement(_class);
-        editorStore.explorerTreeState.reprocess();
+        await flowResult(editorStore.addElement(_class, packagePath, false));
         diagramEditorState.renderer.addClassView(
           _class,
           inlineClassCreatorState.point,
         );
       }
+    };
+    const close = (event: React.MouseEvent<HTMLButtonElement>): void => {
+      createClass(event).catch(applicationStore.alertUnhandledError);
     };
     const pathInputRef = useRef<HTMLInputElement>(null);
 

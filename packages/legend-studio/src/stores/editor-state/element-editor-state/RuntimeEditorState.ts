@@ -24,6 +24,7 @@ import {
   uniq,
   addUniqueEntry,
   assertErrorThrown,
+  filterByType,
 } from '@finos/legend-shared';
 import { ElementEditorState } from './ElementEditorState';
 import type { RuntimeExplorerTreeNodeData } from '../../shared/TreeUtil';
@@ -60,6 +61,7 @@ import {
   RelationalDatabaseConnection,
   StaticDatasourceSpecification,
   DefaultH2AuthenticationStrategy,
+  ModelChainConnection,
 } from '@finos/legend-graph';
 import type { DSLMapping_LegendStudioPlugin_Extension } from '../../DSLMapping_LegendStudioPlugin_Extension';
 import { packageableElementReference_setValue } from '../../graphModifier/DomainGraphModifierHelper';
@@ -120,7 +122,11 @@ export const decorateRuntimeWithNewMapping = (
       ? runtime.packageableRuntime.value.runtimeValue
       : guaranteeType(runtime, EngineRuntime);
   getStoresFromMappings([mapping], editorStore).forEach((store) =>
-    runtime_addUniqueStoreConnectionsForStore(runtimeValue, store),
+    runtime_addUniqueStoreConnectionsForStore(
+      runtimeValue,
+      store,
+      editorStore.changeDetectionState.observerContext,
+    ),
   );
   const sourceClasses = mapping.classMappings
     .map((classMapping) =>
@@ -129,9 +135,7 @@ export const decorateRuntimeWithNewMapping = (
         editorStore.pluginManager.getStudioPlugins(),
       ),
     )
-    .filter(
-      (sourceElement): sourceElement is Class => sourceElement instanceof Class,
-    );
+    .filter(filterByType(Class));
   let classesSpecifiedInModelConnections: Class[] = [];
   runtimeValue.connections.forEach((storeConnections) => {
     if (storeConnections.store.value instanceof ModelStore) {
@@ -165,6 +169,7 @@ export const decorateRuntimeWithNewMapping = (
             PackageableElementExplicitReference.create(_class),
           ),
         ),
+        editorStore.changeDetectionState.observerContext,
       ),
     );
 };
@@ -196,6 +201,12 @@ export const isConnectionForModelStoreWithClass = (
     connectionValue instanceof XmlModelConnection
   ) {
     return connectionValue.class.value === _class;
+  } else if (connectionValue instanceof ModelChainConnection) {
+    return connectionValue.mappings.some((mapping) =>
+      mapping.value.classMappings.some(
+        (classMapping) => classMapping.class.value === _class,
+      ),
+    );
   }
   return false;
 };
@@ -232,7 +243,7 @@ export const getRuntimeExplorerTreeData = (
             editorStore.pluginManager.getStudioPlugins(),
           ),
         )
-        .filter((source): source is Class => source instanceof Class),
+        .filter(filterByType(Class)),
     ),
   );
   // runtime (root)
@@ -275,12 +286,12 @@ export const getRuntimeExplorerTreeData = (
               ) {
                 return connectionValue.class.value;
               }
-              throw new UnsupportedOperationError();
+              return undefined;
             })
             .concat(allSourceClassesFromMappings),
         ); // make sure we add classes (from mappings) that we expect to have connections for
         // classes (2nd level) - only for `ModelStore`
-        classes.forEach((_class) => {
+        classes.filter(isNonNullable).forEach((_class) => {
           const classNode = {
             data: _class,
             id: _class.path,
@@ -389,6 +400,7 @@ export abstract class IdentifiedConnectionsEditorTabState extends RuntimeEditorT
     runtime_addIdentifiedConnection(
       this.runtimeEditorState.runtimeValue,
       newIdentifiedConnection,
+      this.editorStore.changeDetectionState.observerContext,
     );
     this.openIdentifiedConnection(newIdentifiedConnection);
   }
@@ -590,7 +602,7 @@ export class IdentifiedConnectionsPerClassEditorTabState extends IdentifiedConne
                 this.editorStore.pluginManager.getStudioPlugins(),
               ),
             )
-            .filter((source): source is Class => source instanceof Class),
+            .filter(filterByType(Class)),
         ),
       );
       if (!allSourceClassesFromMappings.includes(this.class)) {
@@ -681,7 +693,11 @@ export class RuntimeEditorState {
   }
 
   addIdentifiedConnection(identifiedConnection: IdentifiedConnection): void {
-    runtime_addIdentifiedConnection(this.runtimeValue, identifiedConnection);
+    runtime_addIdentifiedConnection(
+      this.runtimeValue,
+      identifiedConnection,
+      this.editorStore.changeDetectionState.observerContext,
+    );
     const connectionValue =
       identifiedConnection.connection instanceof ConnectionPointer
         ? identifiedConnection.connection.packageableConnection.value
@@ -745,7 +761,11 @@ export class RuntimeEditorState {
       this.runtimeValue.mappings.map((mapping) => mapping.value),
       this.editorStore,
     ).forEach((store) =>
-      runtime_addUniqueStoreConnectionsForStore(this.runtimeValue, store),
+      runtime_addUniqueStoreConnectionsForStore(
+        this.runtimeValue,
+        store,
+        this.editorStore.changeDetectionState.observerContext,
+      ),
     );
   }
 

@@ -26,7 +26,12 @@ export class V1_XStorePropertyMapping
   extends V1_PropertyMapping
   implements Hashable
 {
-  crossExpression!: V1_RawLambda; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
+  /**
+   * Studio does not process value specification, they are left in raw JSON form
+   *
+   * @discrepancy model
+   */
+  crossExpression!: V1_RawLambda;
 
   override get hashCode(): string {
     return hashArray([

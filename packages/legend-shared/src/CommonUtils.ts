@@ -305,3 +305,5 @@ export const printObject = (
       )
   );
 };
+
+export const hasWhiteSpace = (val: string): boolean => Boolean(val.match(/\s/));

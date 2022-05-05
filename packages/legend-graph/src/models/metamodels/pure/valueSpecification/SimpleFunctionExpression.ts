@@ -44,10 +44,6 @@ export class FunctionExpression extends Expression {
     this.functionName = functionName;
   }
 
-  setParametersValues(val: ValueSpecification[]): void {
-    this.parametersValues = val;
-  }
-
   override accept_ValueSpecificationVisitor<T>(
     visitor: ValueSpecificationVisitor<T>,
   ): T {

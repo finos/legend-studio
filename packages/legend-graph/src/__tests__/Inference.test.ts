@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+/// <reference types="jest-extended" />
 import { unitTest } from '@finos/legend-shared';
 import {
   TEST_DATA__InferenceDefaultMappingElementID,
@@ -87,7 +88,7 @@ test(
     await TEST__buildGraphWithEntities(
       graphManagerState,
       TEST_DATA__ReferenceModification.original as Entity[],
-      { TEMPORARY__keepSectionIndex: true },
+      { TEMPORARY__preserveSectionIndex: true },
     );
     let enumeration = graphManagerState.graph.getEnumeration('test::tEnum');
     const tagValue = enumeration.taggedValues[0];

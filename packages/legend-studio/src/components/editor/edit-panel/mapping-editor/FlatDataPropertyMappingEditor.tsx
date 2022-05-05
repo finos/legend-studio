@@ -286,7 +286,7 @@ export const FlatDataPropertyMappingEditor = observer(
           />
         );
       case CLASS_PROPERTY_TYPE.CLASS:
-        // FIXME: fix this when we know what we are to do with property mapping for complex property
+        // TODO: fix this when we know what we are to do with property mapping for complex property
         // return (
         //   <div className="property-mapping-editor__entry--embedded">
         //     Click

@@ -20,6 +20,12 @@ import {
   ValueSpecification,
 } from './ValueSpecification';
 
+/**
+ * This value specification is used to hold a value specification type that we can't yet handle
+ * It wraps the protocol JSON of the unknown value specification.
+ *
+ * @internal This type is specific to Studio only, not a standard, recognizeable in Pure/engine.
+ */
 export class INTERNAL__UnknownValueSpecification extends ValueSpecification {
   content: object;
 

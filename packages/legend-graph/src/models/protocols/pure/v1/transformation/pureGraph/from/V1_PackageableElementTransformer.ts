@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-import { UnsupportedOperationError } from '@finos/legend-shared';
+import {
+  assertErrorThrown,
+  UnsupportedOperationError,
+} from '@finos/legend-shared';
 import type {
   PackageableElement,
   PackageableElementVisitor,
@@ -61,8 +64,10 @@ import type {
   PureProtocolProcessorPlugin,
 } from '../../../../PureProtocolProcessorPlugin';
 import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext';
+import type { DataElement } from '../../../../../../metamodels/pure/packageableElements/data/DataElement';
+import { V1_transformDataElement } from './V1_DataElementTransformer';
 
-export class V1_PackageableElementTransformer
+class V1_PackageableElementTransformer
   implements PackageableElementVisitor<V1_PackageableElement>
 {
   context: V1_GraphTransformerContext;
@@ -166,4 +171,25 @@ export class V1_PackageableElementTransformer
   ): V1_PackageableElement {
     return V1_transformGenerationSpecification(element);
   }
+
+  visit_DataElement(element: DataElement): V1_PackageableElement {
+    return V1_transformDataElement(element, this.context);
+  }
 }
+
+export const V1_transformPackageableElement = (
+  element: PackageableElement,
+  plugins: PureProtocolProcessorPlugin[],
+  context: V1_GraphTransformerContext,
+): V1_PackageableElement => {
+  try {
+    return element.accept_PackageableElementVisitor(
+      new V1_PackageableElementTransformer(plugins, context),
+    );
+  } catch (error) {
+    assertErrorThrown(error);
+    // TODO?: should we wrap this in GraphTransformerError?
+    error.message = `Can't transform element '${element.path}': ${error.message}`;
+    throw error;
+  }
+};

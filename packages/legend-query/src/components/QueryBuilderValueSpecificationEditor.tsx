@@ -31,17 +31,15 @@ import {
 import {
   guaranteeNonNullable,
   isNonNullable,
-  Randomizer,
   returnUndefOnError,
   uniq,
 } from '@finos/legend-shared';
 import CSVParser from 'papaparse';
 import {
-  type Enum,
   type PureModel,
+  type Enum,
   type Type,
   type ValueSpecification,
-  LATEST_DATE,
   Enumeration,
   GenericType,
   GenericTypeExplicitReference,
@@ -53,16 +51,18 @@ import {
   PRIMITIVE_TYPE,
   TYPICAL_MULTIPLICITY_TYPE,
   VariableExpression,
+  INTERNAL__PropagatedValue,
+  SimpleFunctionExpression,
 } from '@finos/legend-graph';
 import { getMultiplicityDescription } from './shared/QueryBuilderUtils';
 import {
-  type PackageableElementOption,
-  DATE_FORMAT,
-  buildElementOption,
-} from '@finos/legend-application';
-import format from 'date-fns/format/index';
-import { addDays } from 'date-fns';
-import { genericType_setRawType } from '../stores/QueryBuilderGraphModifierHelper';
+  instanceValue_changeValue,
+  instanceValue_changeValues,
+} from '../stores/QueryBuilderValueSpecificationModifierHelper';
+import {
+  type TypeCheckOption,
+  QueryBuilderCustomDatePicker,
+} from './QueryBuilderCustomDatePicker';
 
 const QueryBuilderParameterInfoTooltip: React.FC<{
   variable: VariableExpression;
@@ -116,7 +116,7 @@ const QueryBuilderParameterInfoTooltip: React.FC<{
   );
 };
 
-export const VariableExpressionParameterEditor = observer(
+const VariableExpressionParameterEditor = observer(
   (props: {
     valueSpecification: VariableExpression;
     className?: string | undefined;
@@ -156,7 +156,7 @@ const StringPrimitiveInstanceValueEditor = observer(
     const { valueSpecification, className } = props;
     const value = valueSpecification.values[0] as string;
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) =>
-      valueSpecification.changeValue(event.target.value, 0);
+      instanceValue_changeValue(valueSpecification, event.target.value, 0);
 
     return (
       <div className={clsx('query-builder-value-spec-editor', className)}>
@@ -179,7 +179,8 @@ const BooleanPrimitiveInstanceValueEditor = observer(
   }) => {
     const { valueSpecification, className } = props;
     const value = valueSpecification.values[0] as boolean;
-    const toggleValue = (): void => valueSpecification.changeValue(!value, 0);
+    const toggleValue = (): void =>
+      instanceValue_changeValue(valueSpecification, !value, 0);
 
     return (
       <div className={clsx('query-builder-value-spec-editor', className)}>
@@ -209,7 +210,7 @@ const NumberPrimitiveInstanceValueEditor = observer(
         ? parseInt(event.target.value, 10)
         : parseFloat(event.target.value);
       inputVal = isNaN(inputVal) ? 0 : inputVal;
-      valueSpecification.changeValue(inputVal, 0);
+      instanceValue_changeValue(valueSpecification, inputVal, 0);
     };
 
     return (
@@ -218,58 +219,6 @@ const NumberPrimitiveInstanceValueEditor = observer(
           className="panel__content__form__section__input query-builder-value-spec-editor__input"
           spellCheck={false}
           type="number"
-          value={value}
-          onChange={changeValue}
-        />
-      </div>
-    );
-  },
-);
-
-export const DatePrimitiveInstanceValueEditor = observer(
-  (props: {
-    valueSpecification: PrimitiveInstanceValue;
-    className?: string | undefined;
-  }) => {
-    const { valueSpecification, className } = props;
-    const value = valueSpecification.values[0] as string;
-    const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
-      valueSpecification.changeValue(event.target.value, 0);
-    };
-
-    return (
-      <div className={clsx('query-builder-value-spec-editor', className)}>
-        <input
-          className="panel__content__form__section__input query-builder-value-spec-editor__input"
-          type="date"
-          spellCheck={false}
-          value={value}
-          onChange={changeValue}
-        />
-      </div>
-    );
-  },
-);
-
-export const DateTimePrimitiveInstanceValueEditor = observer(
-  (props: {
-    valueSpecification: PrimitiveInstanceValue;
-    className?: string | undefined;
-  }) => {
-    const { valueSpecification, className } = props;
-    const value = valueSpecification.values[0] as string;
-    const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
-      valueSpecification.changeValue(event.target.value, 0);
-    };
-
-    return (
-      <div className={clsx('query-builder-value-spec-editor', className)}>
-        <input
-          className="panel__content__form__section__input query-builder-value-spec-editor__input"
-          // Despite its name this would actually allow us to register time in UTC
-          // See https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/datetime-local#setting_timezones
-          type="datetime-local"
-          spellCheck={false}
           value={value}
           onChange={changeValue}
         />
@@ -291,7 +240,8 @@ const EnumValueInstanceValueEditor = observer(
       value: value,
     }));
     const changeValue = (val: { value: Enum; label: string }): void => {
-      valueSpecification.changeValue(
+      instanceValue_changeValue(
+        valueSpecification,
         EnumValueExplicitReference.create(val.value),
         0,
       );
@@ -300,7 +250,7 @@ const EnumValueInstanceValueEditor = observer(
     return (
       <div className={clsx('query-builder-value-spec-editor', className)}>
         <CustomSelectorInput
-          className="u-full-width"
+          className="query-builder-value-spec-editor__enum-selector"
           options={options}
           onChange={changeValue}
           value={{ value: enumValue, label: enumValue.name }}
@@ -342,7 +292,7 @@ const setCollectionValue = (
   value: string,
 ): void => {
   if (value.trim().length === 0) {
-    valueSpecification.changeValues([]);
+    instanceValue_changeValues(valueSpecification, []);
     return;
   }
   const multiplicityOne = graph.getTypicalMultiplicity(
@@ -429,7 +379,7 @@ const setCollectionValue = (
       })
       .filter(isNonNullable);
   }
-  valueSpecification.changeValues(result);
+  instanceValue_changeValues(valueSpecification, result);
 };
 
 const COLLECTION_PREVIEW_CHAR_LIMIT = 50;
@@ -515,101 +465,60 @@ const CollectionValueInstanceValueEditor = observer(
   },
 );
 
-export const QueryBuilderUnsupportedValueSpecificationEditor: React.FC = () => (
+const QueryBuilderUnsupportedValueSpecificationEditor: React.FC = () => (
   <div className="query-builder-value-spec-editor--unsupported">
     unsupported
   </div>
 );
 
-export const LatestDatePrimitiveInstanceValueEditor: React.FC = () => (
-  <div className="query-builder-value-spec-editor__latest-date">
-    {LATEST_DATE}
-  </div>
-);
-
-export const DateInstanceValueEditor = observer(
+const DateInstanceValueEditor = observer(
   (props: {
-    valueSpecification: PrimitiveInstanceValue;
+    valueSpecification: PrimitiveInstanceValue | SimpleFunctionExpression;
     graph: PureModel;
-    expectedType: Type;
+    typeCheckOption: TypeCheckOption;
     className?: string | undefined;
+    updateValueSpecification: (val: ValueSpecification) => void;
   }) => {
-    const { valueSpecification, graph, expectedType, className } = props;
-    const variableType = valueSpecification.genericType.value.rawType;
-    const selectedType = buildElementOption(variableType);
-    const typeOptions: PackageableElementOption<Type>[] = graph.primitiveTypes
-      .filter(
-        (p) =>
-          p.name === PRIMITIVE_TYPE.STRICTDATE ||
-          p.name === PRIMITIVE_TYPE.DATETIME ||
-          p.name === PRIMITIVE_TYPE.LATESTDATE,
-      )
-      .map((p) => buildElementOption(p) as PackageableElementOption<Type>);
-
-    const strictDate = graph.getPrimitiveType(PRIMITIVE_TYPE.STRICTDATE);
-    const date = graph.getPrimitiveType(PRIMITIVE_TYPE.DATE);
-    const dateTime = graph.getPrimitiveType(PRIMITIVE_TYPE.DATETIME);
-    const latestDate = graph.getPrimitiveType(PRIMITIVE_TYPE.LATESTDATE);
-    const changeType = (val: PackageableElementOption<Type>): void => {
-      if (variableType !== val.value) {
-        genericType_setRawType(valueSpecification.genericType.value, val.value);
-      }
-      if (
-        valueSpecification.genericType.value.rawType.name !==
-        PRIMITIVE_TYPE.LATESTDATE
-      ) {
-        valueSpecification.values = [
-          format(
-            new Randomizer().getRandomDate(
-              new Date(Date.now()),
-              addDays(Date.now(), 100),
-            ),
-            DATE_FORMAT,
-          ),
-        ];
-      }
-    };
+    const {
+      valueSpecification,
+      updateValueSpecification,
+      graph,
+      typeCheckOption,
+    } = props;
 
     return (
       <div className="query-builder-value-spec-editor__date">
-        {valueSpecification.genericType.value.rawType === strictDate && (
-          <DatePrimitiveInstanceValueEditor
-            valueSpecification={valueSpecification}
-            className={className}
-          />
-        )}
-        {valueSpecification.genericType.value.rawType === dateTime && (
-          <DateTimePrimitiveInstanceValueEditor
-            valueSpecification={valueSpecification}
-            className={className}
-          />
-        )}
-        {valueSpecification.genericType.value.rawType === latestDate && (
-          <LatestDatePrimitiveInstanceValueEditor />
-        )}
-        {expectedType === date && (
-          <div className="query-builder-value-spec-editor__dropdown">
-            <CustomSelectorInput
-              placeholder="Choose a type..."
-              options={typeOptions}
-              onChange={changeType}
-              value={selectedType}
-              darkMode={true}
-            />
-          </div>
-        )}
+        <QueryBuilderCustomDatePicker
+          valueSpecification={valueSpecification}
+          graph={graph}
+          typeCheckOption={typeCheckOption}
+          updateValueSpecification={updateValueSpecification}
+        />
       </div>
     );
   },
 );
 
+/**
+ * TODO we should pass in the props `setValueSpecification` and `resetValueSpecification`. Reset
+ * should be part of this editor. Also through here we can call `observe_` accordingly.
+ *
+ * See https://github.com/finos/legend-studio/pull/1021
+ */
 export const QueryBuilderValueSpecificationEditor: React.FC<{
   valueSpecification: ValueSpecification;
   graph: PureModel;
-  expectedType: Type;
+  typeCheckOption: TypeCheckOption;
   className?: string | undefined;
+  updateValueSpecification: (val: ValueSpecification) => void;
 }> = (props) => {
-  const { valueSpecification, graph, expectedType, className } = props;
+  const {
+    valueSpecification,
+    updateValueSpecification,
+    graph,
+    typeCheckOption,
+    className,
+  } = props;
   if (valueSpecification instanceof PrimitiveInstanceValue) {
     const _type = valueSpecification.genericType.value.rawType;
     switch (_type.path) {
@@ -646,8 +555,9 @@ export const QueryBuilderValueSpecificationEditor: React.FC<{
           <DateInstanceValueEditor
             valueSpecification={valueSpecification}
             graph={graph}
-            expectedType={expectedType}
+            typeCheckOption={typeCheckOption}
             className={className}
+            updateValueSpecification={updateValueSpecification}
           />
         );
       default:
@@ -671,7 +581,7 @@ export const QueryBuilderValueSpecificationEditor: React.FC<{
       <CollectionValueInstanceValueEditor
         valueSpecification={valueSpecification}
         graph={graph}
-        expectedType={expectedType}
+        expectedType={typeCheckOption.expectedType}
         className={className}
       />
     );
@@ -682,6 +592,33 @@ export const QueryBuilderValueSpecificationEditor: React.FC<{
       <VariableExpressionParameterEditor
         valueSpecification={valueSpecification}
         className={className}
+      />
+    );
+  } else if (valueSpecification instanceof INTERNAL__PropagatedValue) {
+    return (
+      <QueryBuilderValueSpecificationEditor
+        valueSpecification={valueSpecification.getValue()}
+        graph={graph}
+        typeCheckOption={typeCheckOption}
+        updateValueSpecification={updateValueSpecification}
+      />
+    );
+  } else if (
+    valueSpecification instanceof SimpleFunctionExpression &&
+    [
+      PRIMITIVE_TYPE.DATE.toString(),
+      PRIMITIVE_TYPE.STRICTDATE.toString(),
+      PRIMITIVE_TYPE.DATETIME.toString(),
+      PRIMITIVE_TYPE.LATESTDATE.toString(),
+    ].includes(typeCheckOption.expectedType.path)
+  ) {
+    return (
+      <DateInstanceValueEditor
+        valueSpecification={valueSpecification}
+        graph={graph}
+        typeCheckOption={typeCheckOption}
+        className={className}
+        updateValueSpecification={updateValueSpecification}
       />
     );
   }

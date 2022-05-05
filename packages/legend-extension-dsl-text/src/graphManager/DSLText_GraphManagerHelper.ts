@@ -14,8 +14,15 @@
  * limitations under the License.
  */
 
-import type { PureModel } from '@finos/legend-graph';
+import type { BasicModel, PureModel } from '@finos/legend-graph';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 import { Text } from '../models/metamodels/pure/model/packageableElements/text/DSLText_Text';
 
 export const getText = (path: string, graph: PureModel): Text =>
   graph.getExtensionElement(path, Text, `Can't find text element '${path}'`);
+
+export const getOwnText = (path: string, graph: BasicModel): Text =>
+  guaranteeNonNullable(
+    graph.getOwnNullableExtensionElement(path, Text),
+    `Can't find text '${path}'`,
+  );

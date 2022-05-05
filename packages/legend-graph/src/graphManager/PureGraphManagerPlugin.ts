@@ -27,33 +27,21 @@ import type { ObserverContext } from './action/changeDetection/CoreObserverHelpe
 export type PureGrammarElementLabeler = (
   metamodel: PackageableElement,
 ) => string | undefined;
-
 export type ElementObserver = (
   metamodel: PackageableElement,
   context: ObserverContext,
 ) => PackageableElement | undefined;
 
 export abstract class PureGraphManagerPlugin extends AbstractPlugin {
+  /**
+   * This helps to better type-checking for this empty abtract type
+   * See https://github.com/finos/legend-studio/blob/master/docs/technical/typescript-usage.md#understand-typescript-structual-type-system
+   */
   private readonly _$nominalTypeBrand!: 'PureGraphManagerPlugin';
 
   install(pluginManager: GraphPluginManager): void {
     pluginManager.registerPureGraphManagerPlugin(this);
   }
-
-  /**
-   * Get the list of supported Pure grammar parsers.
-   */
-  getExtraPureGrammarParserNames?(): string[];
-
-  /**
-   * Get the list of supported Pure grammar keywords.
-   */
-  getExtraPureGrammarKeywords?(): string[];
-
-  /**
-   * Get the list of Pure grammar type labelers for packageable elements.
-   */
-  getExtraPureGrammarElementLabelers?(): PureGrammarElementLabeler[];
 
   /**
    * Get the list of system element qualified paths to be exposed for common usages.
@@ -70,4 +58,19 @@ export abstract class PureGraphManagerPlugin extends AbstractPlugin {
    * become observable by change detection engine.
    */
   getExtraElementObservers?(): ElementObserver[];
+
+  /**
+   * Get the list of supported Pure grammar parsers.
+   */
+  getExtraPureGrammarParserNames?(): string[];
+
+  /**
+   * Get the list of supported Pure grammar keywords.
+   */
+  getExtraPureGrammarKeywords?(): string[];
+
+  /**
+   * Get the list of Pure grammar element labelers.
+   */
+  getExtraPureGrammarElementLabelers?(): PureGrammarElementLabeler[];
 }

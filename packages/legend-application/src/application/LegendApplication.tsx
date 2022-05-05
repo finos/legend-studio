@@ -15,20 +15,8 @@
  */
 
 import { configure as configureMobx } from 'mobx';
-import {
-  editor as monacoEditorAPI,
-  languages as monacoLanguagesAPI,
-} from 'monaco-editor';
-import {
-  configuration,
-  generateLanguageMonarch,
-  theme,
-} from '../stores/PureLanguageSupport';
-import {
-  EDITOR_THEME,
-  EDITOR_LANGUAGE,
-  MONOSPACED_FONT_FAMILY,
-} from '../const';
+import { editor as monacoEditorAPI } from 'monaco-editor';
+import { MONOSPACED_FONT_FAMILY } from '../const';
 import type {
   LegendApplicationConfig,
   LegendApplicationConfigurationData,
@@ -47,6 +35,7 @@ import { APPLICATION_EVENT } from '../stores/ApplicationEvent';
 import { configureComponents } from '@finos/legend-art';
 import type { GraphPluginManager } from '@finos/legend-graph';
 import type { LegendApplicationPluginManager } from './LegendApplicationPluginManager';
+import { setupPureLanguageService } from '../stores/PureLanguageSupport';
 
 export abstract class LegendApplicationLogger {
   abstract debug(event: LogEvent, ...data: unknown[]): void;
@@ -89,27 +78,6 @@ export class LegendApplicationWebConsole extends LegendApplicationLogger {
   }
 }
 
-export const setupTextEdtiorAPI = (pluginManager: GraphPluginManager): void => {
-  // Register Pure as a language in `monaco-editor`
-  monacoEditorAPI.defineTheme(EDITOR_THEME.LEGEND, theme);
-  monacoLanguagesAPI.register({ id: EDITOR_LANGUAGE.PURE });
-  monacoLanguagesAPI.setLanguageConfiguration(
-    EDITOR_LANGUAGE.PURE,
-    configuration,
-  );
-  monacoLanguagesAPI.setMonarchTokensProvider(
-    EDITOR_LANGUAGE.PURE,
-    generateLanguageMonarch(
-      pluginManager
-        .getPureGraphManagerPlugins()
-        .flatMap((plugin) => plugin.getExtraPureGrammarKeywords?.() ?? []),
-      pluginManager
-        .getPureGraphManagerPlugins()
-        .flatMap((plugin) => plugin.getExtraPureGrammarParserNames?.() ?? []),
-    ),
-  );
-};
-
 // This is not considered side-effect that hinders tree-shaking because the effectful calls
 // are embedded in the function
 // See https://sgom.es/posts/2020-06-15-everything-you-never-wanted-to-know-about-side-effects/
@@ -117,7 +85,7 @@ export const setupLegendApplicationUILibrary = async (
   pluginManager: GraphPluginManager,
   logger: LegendApplicationLogger,
 ): Promise<void> => {
-  setupTextEdtiorAPI(pluginManager);
+  setupPureLanguageService(pluginManager);
 
   /**
    * Since we use a custom fonts for text-editor, we want to make sure the font is loaded before any text-editor is opened
@@ -149,7 +117,9 @@ export const setupLegendApplicationUILibrary = async (
 
   configureMobx({
     // Force state modification to be done via actions
-    // See https://github.com/mobxjs/mobx/blob/gh-pages/docs/refguide/api.md#enforceactions
+    // Otherwise, warning will be shown in development mode
+    // However, no warning will shown in production mode
+    // See https://mobx.js.org/configuration.html#enforceactions
     enforceActions: 'observed',
   });
 

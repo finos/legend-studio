@@ -198,6 +198,31 @@ export const TEST_DATA__MissingTagValue = [
   },
 ];
 
+export const TEST_DATA__DuplicatedElement = [
+  {
+    classifierPath: 'meta::pure::metamodel::type::Class',
+    path: 'ui::test1::Animal',
+    content: {
+      _type: 'class',
+      name: 'Animal',
+      package: 'ui::test1',
+      properties: [],
+      superTypes: [],
+    },
+  },
+  {
+    classifierPath: 'meta::pure::metamodel::type::Class',
+    path: 'ui::test1::Animal',
+    content: {
+      _type: 'class',
+      name: 'Animal',
+      package: 'ui::test1',
+      properties: [],
+      superTypes: [],
+    },
+  },
+];
+
 export const TEST_DATA__MissingProperty = [
   {
     classifierPath: 'meta::pure::metamodel::type::Class',
@@ -434,282 +459,6 @@ export const TEST_DATA__MissingTargetClassinMapping = [
             'ui_mapping_editor_domain_Target_Something',
             'targetSomething',
           ],
-          root: true,
-        },
-      ],
-      enumerationMappings: [],
-      name: 'testMapping',
-      package: 'ui::mapping',
-    },
-  },
-];
-
-export const TEST_DATA__MissingSetImp = [
-  {
-    classifierPath: 'meta::pure::metamodel::type::Class',
-    path: 'ui::test1::SourceClass',
-    content: {
-      _type: 'class',
-      name: 'SourceClass',
-      package: 'ui::test1',
-      properties: [
-        {
-          multiplicity: {
-            lowerBound: 0,
-          },
-          name: 'name',
-          type: 'String',
-        },
-        {
-          multiplicity: {
-            lowerBound: 0,
-          },
-          name: 'lastName',
-          type: 'String',
-        },
-        {
-          multiplicity: {
-            lowerBound: 0,
-          },
-          name: 'age',
-          type: 'Integer',
-        },
-      ],
-    },
-  },
-  {
-    classifierPath: 'meta::pure::metamodel::type::Class',
-    path: 'ui::test1::TagetClass',
-    content: {
-      _type: 'class',
-      name: 'TagetClass',
-      package: 'ui::test1',
-      properties: [
-        {
-          multiplicity: {
-            lowerBound: 0,
-          },
-          name: 'fullName',
-          type: 'String',
-        },
-        {
-          multiplicity: {
-            lowerBound: 0,
-          },
-          name: 'age',
-          type: 'Integer',
-        },
-        {
-          multiplicity: {
-            lowerBound: 0,
-          },
-          name: 'description',
-          type: 'String',
-        },
-      ],
-    },
-  },
-  {
-    classifierPath: 'meta::pure::mapping::Mapping',
-    path: 'ui::mapping::testMapping',
-    content: {
-      _type: 'mapping',
-      classMappings: [
-        {
-          _type: 'pureInstance',
-          class: 'ui::test1::TagetClass',
-          id: 'targetClassA',
-          propertyMappings: [
-            {
-              _type: 'purePropertyMapping',
-              property: {
-                class: 'ui::test1::TagetClass',
-                property: 'fullName',
-              },
-              source: 'targetClassA',
-              target: '',
-              transform: {
-                _type: 'lambda',
-                body: [
-                  {
-                    _type: 'property',
-                    parameters: [
-                      {
-                        _type: 'var',
-                        name: 'src',
-                      },
-                    ],
-                    property: 'name',
-                  },
-                ],
-                parameters: [
-                  {
-                    _type: 'var',
-                    class: 'ui::test1::SourceClass',
-                    multiplicity: {
-                      lowerBound: 1,
-                      upperBound: 1,
-                    },
-                    name: 'src',
-                  },
-                ],
-              },
-            },
-            {
-              _type: 'purePropertyMapping',
-              property: {
-                class: 'ui::test1::TagetClass',
-                property: 'age',
-              },
-              source: 'targetClassA',
-              target: '',
-              transform: {
-                _type: 'lambda',
-                body: [
-                  {
-                    _type: 'integer',
-                    multiplicity: {
-                      lowerBound: 1,
-                      upperBound: 1,
-                    },
-                    values: [25],
-                  },
-                ],
-                parameters: [
-                  {
-                    _type: 'var',
-                    class: 'ui::test1::SourceClass',
-                    multiplicity: {
-                      lowerBound: 1,
-                      upperBound: 1,
-                    },
-                    name: 'src',
-                  },
-                ],
-              },
-            },
-            {
-              _type: 'purePropertyMapping',
-              property: {
-                class: 'ui::test1::TagetClass',
-                property: 'description',
-              },
-              source: 'targetClassA',
-              target: '',
-              transform: {
-                _type: 'lambda',
-                body: [
-                  {
-                    _type: 'property',
-                    parameters: [
-                      {
-                        _type: 'var',
-                        name: 'src',
-                      },
-                    ],
-                    property: 'lastName',
-                  },
-                ],
-                parameters: [
-                  {
-                    _type: 'var',
-                    class: 'ui::test1::SourceClass',
-                    multiplicity: {
-                      lowerBound: 1,
-                      upperBound: 1,
-                    },
-                    name: 'src',
-                  },
-                ],
-              },
-            },
-          ],
-          root: false,
-          srcClass: 'ui::test1::SourceClass',
-        },
-        {
-          _type: 'pureInstance',
-          class: 'ui::test1::TagetClass',
-          id: 'targetClassB',
-          propertyMappings: [
-            {
-              _type: 'purePropertyMapping',
-              property: {
-                class: 'ui::test1::TagetClass',
-                property: 'fullName',
-              },
-              source: 'targetClassB',
-              target: '',
-              transform: {
-                _type: 'lambda',
-                body: [
-                  {
-                    _type: 'string',
-                    multiplicity: {
-                      lowerBound: 1,
-                      upperBound: 1,
-                    },
-                    values: ['bye'],
-                  },
-                ],
-                parameters: [],
-              },
-            },
-            {
-              _type: 'purePropertyMapping',
-              property: {
-                class: 'ui::test1::TagetClass',
-                property: 'age',
-              },
-              source: 'targetClassB',
-              target: '',
-              transform: {
-                _type: 'lambda',
-                body: [
-                  {
-                    _type: 'integer',
-                    multiplicity: {
-                      lowerBound: 1,
-                      upperBound: 1,
-                    },
-                    values: [11],
-                  },
-                ],
-                parameters: [],
-              },
-            },
-            {
-              _type: 'purePropertyMapping',
-              property: {
-                class: 'ui::test1::TagetClass',
-                property: 'description',
-              },
-              source: 'targetClassB',
-              target: '',
-              transform: {
-                _type: 'lambda',
-                body: [
-                  {
-                    _type: 'string',
-                    multiplicity: {
-                      lowerBound: 1,
-                      upperBound: 1,
-                    },
-                    values: ['hello'],
-                  },
-                ],
-                parameters: [],
-              },
-            },
-          ],
-          root: false,
-        },
-        {
-          _type: 'operation',
-          class: 'ui::test1::TagetClass',
-          id: 'unionOfSomething',
-          operation: 'STORE_UNION',
-          parameters: ['targetClassAMissing', 'targetClassB'],
           root: true,
         },
       ],

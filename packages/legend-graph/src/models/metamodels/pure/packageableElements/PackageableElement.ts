@@ -43,6 +43,7 @@ import type { FileGenerationSpecification } from './fileGeneration/FileGeneratio
 import type { GenerationSpecification } from './generationSpecification/GenerationSpecification';
 import type { Measure } from './domain/Measure';
 import type { SectionIndex } from './section/SectionIndex';
+import type { DataElement } from './data/DataElement';
 
 export interface PackageableElementVisitor<T> {
   visit_PackageableElement(element: PackageableElement): T;
@@ -64,10 +65,12 @@ export interface PackageableElementVisitor<T> {
   visit_Service(element: Service): T;
   visit_FileGenerationSpecification(element: FileGenerationSpecification): T;
   visit_GenerationSpecification(element: GenerationSpecification): T;
+  visit_DataElement(element: DataElement): T;
 }
 
 export abstract class PackageableElement implements Hashable, Stubable {
-  uuid = uuid();
+  readonly uuid = uuid();
+
   protected _isDeleted = false;
   protected _isDisposed = false;
   name: string;
@@ -85,14 +88,6 @@ export abstract class PackageableElement implements Hashable, Stubable {
     this._isDeleted = value;
   }
 
-  /**
-   * Get root element. In the ideal case, this method is important for finding the root package, but
-   * if we do something like `this instanceof Package` that would case circular dependency.
-   */
-  getRoot(): PackageableElement {
-    return !this.package ? this : this.package.getRoot();
-  }
-
   get path(): string {
     if (!this.package) {
       return this.name;
@@ -108,14 +103,23 @@ export abstract class PackageableElement implements Hashable, Stubable {
   }
 
   /**
-   * Since `keepAlive` can cause memory-leak, we need to dispose it manually when we are about to discard the graph
-   * in order to avoid leaking.
-   * See https://mobx.js.org/best/pitfalls.html#computed-values-run-more-often-than-expected
-   * See https://medium.com/terria/when-and-why-does-mobxs-keepalive-cause-a-memory-leak-8c29feb9ff55
+   * Dispose the element and its references to avoid memory leaks
    */
   dispose(): void {
     this._isDisposed = true;
-    // trigger recomputation on `hashCode` so it removes itself from all observables it previously observed
+    /**
+     * Trigger recomputation on `hashCode` so if the element is observed, hash code computation will now
+     * remove itself from all observables it previously observed
+     *
+     * NOTE: we used to do this since we decorate `hashCode` with `computed({ keepAlive: true })` which
+     * poses a memory-leak threat
+     *
+     * See https://mobx.js.org/computeds.html#keepalive
+     *
+     * However, since we're calling `keepAlive` actively now and dispose it right away to return `hashCode` to
+     * a normal computed value, we might not need this step anymore. But we're being extremely defensive here
+     * to avoid memory leak.
+     */
     try {
       this.hashCode;
     } catch {
@@ -139,6 +143,7 @@ export abstract class PackageableElement implements Hashable, Stubable {
   ): T;
 }
 
+// TODO: to be moved out of metamodel
 export enum PACKAGEABLE_ELEMENT_TYPE {
   PRIMITIVE = 'PRIMITIVE',
   PACKAGE = 'PACKAGE',
@@ -159,8 +164,10 @@ export enum PACKAGEABLE_ELEMENT_TYPE {
   FILE_GENERATION = 'FILE_GENERATION',
   GENERATION_SPECIFICATION = 'GENERATION_SPECIFICATION',
   SECTION_INDEX = 'SECTION_INDEX',
+  DATA = 'Data',
 }
 
+// TODO: to be moved out of metamodel
 export enum PACKAGEABLE_ELEMENT_POINTER_TYPE {
   STORE = 'STORE',
   MAPPING = 'MAPPING',
@@ -169,7 +176,7 @@ export enum PACKAGEABLE_ELEMENT_POINTER_TYPE {
 }
 
 export const getElementPointerHashCode = (
-  pointerType: PACKAGEABLE_ELEMENT_POINTER_TYPE,
+  pointerType: string,
   path: string,
 ): string =>
   [CORE_HASH_STRUCTURE.PACKAGEABLE_ELEMENT_POINTER, pointerType, path]

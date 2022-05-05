@@ -1,5 +1,25 @@
 # @finos/legend-taxonomy
 
+## 2.0.4
+
+## 2.0.3
+
+## 2.0.2
+
+## 2.0.1
+
+## 2.0.0
+
+### Major Changes
+
+- [#1041](https://github.com/finos/legend-studio/pull/1041) [`5a76b228`](https://github.com/finos/legend-studio/commit/5a76b2289cb88569e9a1acb2287960de3e593d25) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Change the route pattern for taxonomy tree explorer from `/taxonomy/taxonomy-*/...`. to `/taxonomy/tree/{taxonomyTreeKey}/...`.
+
+## 1.1.11
+
+## 1.1.10
+
+## 1.1.9
+
 ## 1.1.8
 
 ## 1.1.7

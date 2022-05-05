@@ -2123,3 +2123,213 @@ export const TEST_DATA__simpleGroupBy = {
   ],
   parameters: [],
 };
+
+export const TEST_DATA_dateCompabilityForFilterAndPostFilter = {
+  _type: 'lambda',
+  body: [
+    {
+      _type: 'func',
+      function: 'filter',
+      parameters: [
+        {
+          _type: 'func',
+          function: 'project',
+          parameters: [
+            {
+              _type: 'func',
+              function: 'filter',
+              parameters: [
+                {
+                  _type: 'func',
+                  function: 'getAll',
+                  parameters: [
+                    {
+                      _type: 'packageableElementPtr',
+                      fullPath: 'model::postFilter::Person',
+                    },
+                  ],
+                },
+                {
+                  _type: 'lambda',
+                  body: [
+                    {
+                      _type: 'func',
+                      function: 'isOnDay',
+                      parameters: [
+                        {
+                          _type: 'property',
+                          parameters: [
+                            {
+                              _type: 'var',
+                              name: 'x',
+                            },
+                          ],
+                          property: 'myDateTime',
+                        },
+                        {
+                          _type: 'func',
+                          function: 'meta::pure::functions::date::adjust',
+                          parameters: [
+                            {
+                              _type: 'func',
+                              function:
+                                'meta::pure::functions::date::firstDayOfThisYear',
+                              parameters: [],
+                            },
+                            {
+                              _type: 'integer',
+                              values: [7],
+                              multiplicity: {
+                                lowerBound: 1,
+                                upperBound: 1,
+                              },
+                            },
+                            {
+                              _type: 'enumValue',
+                              fullPath:
+                                'meta::pure::functions::date::DurationUnit',
+                              value: 'WEEKS',
+                            },
+                          ],
+                        },
+                      ],
+                    },
+                  ],
+                  parameters: [
+                    {
+                      _type: 'var',
+                      name: 'x',
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              _type: 'collection',
+              values: [
+                {
+                  _type: 'lambda',
+                  body: [
+                    {
+                      _type: 'property',
+                      parameters: [
+                        {
+                          _type: 'var',
+                          name: 'x',
+                        },
+                      ],
+                      property: 'age',
+                    },
+                  ],
+                  parameters: [
+                    {
+                      _type: 'var',
+                      name: 'x',
+                    },
+                  ],
+                },
+                {
+                  _type: 'lambda',
+                  body: [
+                    {
+                      _type: 'property',
+                      parameters: [
+                        {
+                          _type: 'var',
+                          name: 'x',
+                        },
+                      ],
+                      property: 'myDateTime',
+                    },
+                  ],
+                  parameters: [
+                    {
+                      _type: 'var',
+                      name: 'x',
+                    },
+                  ],
+                },
+              ],
+              multiplicity: {
+                lowerBound: 2,
+                upperBound: 2,
+              },
+            },
+            {
+              _type: 'collection',
+              values: [
+                {
+                  _type: 'string',
+                  values: ['Age'],
+                  multiplicity: {
+                    lowerBound: 1,
+                    upperBound: 1,
+                  },
+                },
+                {
+                  _type: 'string',
+                  values: ['My Date Time'],
+                  multiplicity: {
+                    lowerBound: 1,
+                    upperBound: 1,
+                  },
+                },
+              ],
+              multiplicity: {
+                lowerBound: 2,
+                upperBound: 2,
+              },
+            },
+          ],
+        },
+        {
+          _type: 'lambda',
+          body: [
+            {
+              _type: 'func',
+              function: 'isAfterDay',
+              parameters: [
+                {
+                  _type: 'property',
+                  parameters: [
+                    {
+                      _type: 'var',
+                      name: 'row',
+                    },
+                    {
+                      _type: 'string',
+                      values: ['My Date Time'],
+                      multiplicity: {
+                        lowerBound: 1,
+                        upperBound: 1,
+                      },
+                    },
+                  ],
+                  property: 'getDateTime',
+                },
+                {
+                  _type: 'func',
+                  function: 'meta::pure::functions::date::previousDayOfWeek',
+                  parameters: [
+                    {
+                      _type: 'enumValue',
+                      fullPath: 'meta::pure::functions::date::DayOfWeek',
+                      value: 'Thursday',
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+          parameters: [
+            {
+              _type: 'var',
+              name: 'row',
+            },
+          ],
+        },
+      ],
+    },
+  ],
+  parameters: [],
+};

@@ -58,16 +58,15 @@ export const observe_Abstract_PackageableElement = (
     '_isDeleted' | '_isDisposed' | '_elementHashCode'
   >(metamodel, {
     _isDeleted: observable,
-    _isDisposed: observable, // TO BE REMOVED
+    _isDisposed: observable,
     name: observable,
     package: observable,
     isDeleted: computed,
     path: computed,
     _elementHashCode: computed,
-    // NOTE: we need to enable `keepAlive` to facillitate precomputation of element hash code
-    hashCode: computed({ keepAlive: true }),
+    hashCode: computed,
     setIsDeleted: action,
-    dispose: action, // TO BE REMOVED
+    dispose: action,
   });
 };
 
@@ -87,7 +86,6 @@ export const observe_OptionalPackageableElementReference = skipObserved(
   ): OptionalPackageableElementReference<T> =>
     makeObservable(metamodel, {
       value: observable,
-      setValue: action,
       valueForSerialization: computed,
     }),
 );

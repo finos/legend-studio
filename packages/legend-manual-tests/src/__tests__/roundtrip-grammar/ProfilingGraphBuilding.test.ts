@@ -16,31 +16,6 @@
 
 /// <reference types="jest-extended" />
 
-// NOTE: mock these methods to make sure we rule out false positive. The grammar parser for any List type field,
-// will generate empty array, however, in Studio, we avoid that to lessen the size of the serialized graph
-// to save bandwidth, as such the best action is just to mock these methods so in the scope of this test, Studio
-// serializers return empty array for these fields just like the parser's
-jest.mock('@finos/legend-shared', () => ({
-  ...jest.requireActual('@finos/legend-shared'),
-  /* eslint-disable @typescript-eslint/no-explicit-any */
-  serializeArray: (
-    values: any,
-    itemSerializer: (val: any) => any,
-    skipIfEmpty: boolean,
-  ): any[] =>
-    Array.isArray(values)
-      ? values.length
-        ? values.map((value) => itemSerializer(value))
-        : []
-      : [],
-  deserializeArray: (
-    values: any,
-    itemDeserializer: (val: any) => any,
-    skipIfEmpty: boolean,
-  ): any[] => (Array.isArray(values) ? values.map(itemDeserializer) : []),
-  /* eslint-enable @typescript-eslint/no-explicit-any */
-}));
-
 import { resolve } from 'path';
 import fs from 'fs';
 import axios, { type AxiosResponse } from 'axios';
@@ -49,14 +24,10 @@ import {
   TEST__GraphPluginManager,
   TEST__buildGraphWithEntities,
   TEST__getTestGraphManagerState,
-  DSLExternalFormat_GraphPreset,
   GRAPH_MANAGER_EVENT,
   V1_ENGINE_EVENT,
 } from '@finos/legend-graph';
-import { DSLText_GraphPreset } from '@finos/legend-extension-dsl-text';
-import { DSLDiagram_GraphPreset } from '@finos/legend-extension-dsl-diagram';
-import { DSLDataSpace_GraphPreset } from '@finos/legend-extension-dsl-data-space';
-import { ESService_GraphPreset } from '@finos/legend-extension-external-store-service';
+import { getLegendGraphExtensionCollection } from '@finos/legend-graph-extension-collection';
 
 const engineConfig = JSON.parse(
   fs.readFileSync(resolve(__dirname, '../../../engine-config.json'), {
@@ -130,6 +101,7 @@ function generatePureCode(options: ProfileRoundtripOptions): string {
   )}`;
   return pureCode;
 }
+
 const logPhase = (
   phase: Profile_TEST_PHASE,
   log: Log,
@@ -172,13 +144,7 @@ const profileRoundtrip = async (
 ): Promise<void> => {
   const pluginManager = new TEST__GraphPluginManager();
   pluginManager
-    .usePresets([
-      new DSLText_GraphPreset(),
-      new DSLDiagram_GraphPreset(),
-      new DSLExternalFormat_GraphPreset(),
-      new DSLDataSpace_GraphPreset(),
-      new ESService_GraphPreset(),
-    ])
+    .usePresets(getLegendGraphExtensionCollection())
     .usePlugins([new WebConsole()]);
   pluginManager.install();
   const log = new Log();
@@ -231,7 +197,7 @@ const profileRoundtrip = async (
   logPhase(phase, log, options.debug);
   startTime = Date.now();
   await TEST__buildGraphWithEntities(graphManagerState, entities, {
-    TEMPORARY__keepSectionIndex: true,
+    TEMPORARY__preserveSectionIndex: true,
   });
   if (options.debug) {
     log.info(

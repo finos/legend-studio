@@ -23,8 +23,9 @@ import {
   losslessStringify,
   tryToFormatLosslessJSONString,
   UnsupportedOperationError,
+  guaranteeType,
 } from '@finos/legend-shared';
-import { SingleExecutionTestState } from './ServiceTestState';
+import { LegacySingleExecutionTestState } from './LegacyServiceTestState';
 import type { EditorStore } from '../../../EditorStore';
 import type { ServiceEditorState } from './ServiceEditorState';
 import {
@@ -37,7 +38,6 @@ import {
   type ServiceExecution,
   type KeyedExecutionParameter,
   type PureExecution,
-  type ServiceTest,
   type Mapping,
   type Runtime,
   type ExecutionResult,
@@ -55,6 +55,7 @@ import {
   QueryProjectCoordinates,
   QuerySearchSpecification,
   type RawExecutionPlan,
+  DEPRECATED__SingleExecutionTest,
 } from '@finos/legend-graph';
 import type { Entity } from '@finos/legend-model-storage';
 import { parseGACoordinates } from '@finos/legend-server-depot';
@@ -64,9 +65,10 @@ import {
   pureSingleExecution_setRuntime,
   singleExecTest_setData,
 } from '../../../graphModifier/DSLService_GraphModifierHelper';
+import { ServiceTestSuiteState } from './ServiceTestSuiteState';
 
 export enum SERVICE_EXECUTION_TAB {
-  MAPPING_AND_RUNTIME = 'MAPPING_&_Runtime',
+  EXECUTION_CONTEXT = 'EXECUTION_CONTEXT',
   TESTS = 'TESTS',
 }
 
@@ -74,14 +76,16 @@ export abstract class ServiceExecutionState {
   editorStore: EditorStore;
   serviceEditorState: ServiceEditorState;
   execution: ServiceExecution;
-  selectedSingeExecutionTestState?: SingleExecutionTestState | undefined;
-  selectedTab = SERVICE_EXECUTION_TAB.MAPPING_AND_RUNTIME;
+  selectedSingeExecutionTestState?:
+    | LegacySingleExecutionTestState
+    | ServiceTestSuiteState
+    | undefined;
+  selectedTab = SERVICE_EXECUTION_TAB.EXECUTION_CONTEXT;
 
   constructor(
     editorStore: EditorStore,
     serviceEditorState: ServiceEditorState,
     execution: ServiceExecution,
-    test: ServiceTest,
   ) {
     makeObservable(this, {
       execution: observable,
@@ -93,15 +97,18 @@ export abstract class ServiceExecutionState {
     this.editorStore = editorStore;
     this.execution = execution;
     this.serviceEditorState = serviceEditorState;
-    this.selectedSingeExecutionTestState = this.getInitiallySelectedTestState(
-      execution,
-      test,
-    );
+    this.selectedSingeExecutionTestState =
+      this.getInitiallySelectedTestState(execution);
     // TODO: format to other format when we support other connections in the future
-    if (this.selectedSingeExecutionTestState?.test) {
+    if (
+      this.selectedSingeExecutionTestState instanceof
+      LegacySingleExecutionTestState
+    ) {
       singleExecTest_setData(
         this.selectedSingeExecutionTestState.test,
-        /* @MARKER: Workaround for https://github.com/finos/legend-studio/issues/68 */
+        /**
+         * @workaround https://github.com/finos/legend-studio/issues/68
+         */
         tryToFormatLosslessJSONString(
           this.selectedSingeExecutionTestState.test.data,
         ),
@@ -115,19 +122,21 @@ export abstract class ServiceExecutionState {
 
   getInitiallySelectedTestState(
     execution: ServiceExecution,
-    test: ServiceTest,
-  ): SingleExecutionTestState | undefined {
+  ): LegacySingleExecutionTestState | ServiceTestSuiteState | undefined {
     if (execution instanceof PureSingleExecution) {
-      return new SingleExecutionTestState(
+      const _legacyTest = this.serviceEditorState.service.test;
+      if (_legacyTest) {
+        return new LegacySingleExecutionTestState(
+          this.editorStore,
+          this.serviceEditorState,
+          guaranteeType(_legacyTest, DEPRECATED__SingleExecutionTest),
+        );
+      }
+      return new ServiceTestSuiteState(
         this.editorStore,
         this.serviceEditorState,
       );
     } else if (execution instanceof PureMultiExecution) {
-      // TODO: handle this properly
-      // const multiTest = guaranteeType(test, MultiExecutionTest);
-      // if (multiTest.tests.length) {
-      //   return new KeyedSingleExecutionState(this.editorStore, multiTest.tests[0], this.serviceEditorState);
-      // }
       return undefined;
     }
     throw new UnsupportedOperationError();
@@ -357,9 +366,8 @@ export class ServicePureExecutionState extends ServiceExecutionState {
     editorStore: EditorStore,
     serviceEditorState: ServiceEditorState,
     execution: PureExecution,
-    test: ServiceTest,
   ) {
-    super(editorStore, serviceEditorState, execution, test);
+    super(editorStore, serviceEditorState, execution);
 
     makeObservable(this, {
       queryState: observable,
@@ -534,6 +542,7 @@ export class ServicePureExecutionState extends ServiceExecutionState {
       pureSingleExecution_setRuntime(
         this.selectedExecutionConfiguration,
         customRuntime,
+        this.editorStore.changeDetectionState.observerContext,
       );
     }
   }
@@ -548,6 +557,7 @@ export class ServicePureExecutionState extends ServiceExecutionState {
         pureSingleExecution_setRuntime(
           this.selectedExecutionConfiguration,
           (runtimes[0] as PackageableRuntime).runtimeValue,
+          this.editorStore.changeDetectionState.observerContext,
         );
       } else {
         this.useCustomRuntime();

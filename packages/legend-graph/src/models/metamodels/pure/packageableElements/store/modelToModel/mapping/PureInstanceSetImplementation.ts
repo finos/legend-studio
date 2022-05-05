@@ -39,7 +39,12 @@ export class PureInstanceSetImplementation
 {
   declare propertyMappings: PurePropertyMapping[];
   srcClass: OptionalPackageableElementReference<Class>;
-  filter?: RawLambda | undefined; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
+  /**
+   * Studio does not process value specification, they are left in raw JSON form
+   *
+   * @discrepancy model
+   */
+  filter?: RawLambda | undefined;
 
   constructor(
     id: InferableMappingElementIdValue,

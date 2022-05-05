@@ -78,7 +78,7 @@ import type { V1_GraphFetchTree } from '../../../model/valueSpecification/raw/gr
 import { V1_PackageableElementPtr } from '../../../model/valueSpecification/raw/V1_PackageableElementPtr';
 import { V1_HackedClass } from '../../../model/valueSpecification/raw/V1_HackedClass';
 import { V1_HackedUnit } from '../../../model/valueSpecification/raw/V1_HackedUnit';
-import type { V1_INTERNAL__UnknownValueSpecfication } from '../../../model/valueSpecification/V1_INTERNAL__UnknownValueSpecfication';
+import type { V1_INTERNAL__UnknownValueSpecification } from '../../../model/valueSpecification/V1_INTERNAL__UnknownValueSpecfication';
 import { V1_EngineRuntime } from '../../../model/packageableElements/runtime/V1_Runtime';
 
 enum V1_PathElementType {
@@ -496,7 +496,7 @@ class V1_ValueSpecificationSerializer
   implements V1_ValueSpecificationVisitor<PlainObject<V1_ValueSpecification>>
 {
   visit_INTERNAL__UnknownValueSpecfication(
-    valueSpecification: V1_INTERNAL__UnknownValueSpecfication,
+    valueSpecification: V1_INTERNAL__UnknownValueSpecification,
   ): PlainObject<V1_ValueSpecification> {
     return valueSpecification.content as PlainObject<V1_ValueSpecification>;
   }

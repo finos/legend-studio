@@ -151,7 +151,7 @@ export class QueryResultSetModifierState {
   /**
    * Build result set modifiers into the lambda.
    */
-  processModifiersOnLambda(
+  buildResultSetModifiers(
     lambda: LambdaFunction,
     options?:
       | {
@@ -171,7 +171,11 @@ export class QueryResultSetModifierState {
             func.functionName,
             SUPPORTED_FUNCTIONS.TDS_PROJECT,
           ) ||
-          matchFunctionName(func.functionName, SUPPORTED_FUNCTIONS.TDS_GROUP_BY)
+          matchFunctionName(
+            func.functionName,
+            SUPPORTED_FUNCTIONS.TDS_GROUP_BY,
+          ) ||
+          matchFunctionName(func.functionName, SUPPORTED_FUNCTIONS.TDS_FILTER)
         ) {
           let currentExpression = func;
 

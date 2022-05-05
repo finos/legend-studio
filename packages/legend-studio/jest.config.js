@@ -14,31 +14,16 @@
  * limitations under the License.
  */
 
+import { getBaseJestDOMProjectConfig } from '../../scripts/test/jest.config.base.js';
 import { loadJSON } from '@finos/legend-dev-utils/DevUtils';
-import base from '../../scripts/test/jest.config.base.js';
+import { resolve, dirname } from 'path';
+import { fileURLToPath } from 'url';
 
-const packageJson = loadJSON('./package.json');
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
-export default {
-  ...base,
-  displayName: packageJson.name,
-  name: packageJson.name,
-  rootDir: '../..',
-  testEnvironment: 'jsdom',
-  setupFiles: [
-    ...base.setupFiles,
-    '@finos/legend-dev-utils/jest/setupDOMPolyfills',
-  ],
-  moduleNameMapper: {
-    ...base.moduleNameMapper,
-    // Mock for testing `react-dnd`
-    // See http://react-dnd.github.io/react-dnd/docs/testing
-    '^dnd-core$': 'dnd-core/dist/cjs',
-    '^react-dnd$': 'react-dnd/dist/cjs',
-    '^react-dnd-html5-backend$': 'react-dnd-html5-backend/dist/cjs',
-    '^monaco-editor$': '@finos/legend-art/lib/testMocks/MockedMonacoEditor.js',
-  },
-  testMatch: [
-    '<rootDir>/packages/legend-studio/src/**/__tests__/**/*(*.)test.[jt]s?(x)',
-  ],
-};
+const packageJson = loadJSON(resolve(__dirname, './package.json'));
+
+export default getBaseJestDOMProjectConfig(
+  packageJson.name,
+  'packages/legend-studio',
+);

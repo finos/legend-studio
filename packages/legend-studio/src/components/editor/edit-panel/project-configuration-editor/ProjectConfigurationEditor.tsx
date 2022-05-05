@@ -181,11 +181,7 @@ const ProjectStructureEditor = observer(
 
 const formatOptionLabel = (option: ProjectOption): React.ReactNode => (
   <div className="project-dependency-editor__label">
-    <div
-      className={clsx([
-        `project-dependency-editor__label__tag project-dependency-editor__label__tag--production`,
-      ])}
-    >
+    <div className="project-dependency-editor__label__tag">
       {option.value.projectId}
     </div>
     <div className="project-dependency-editor__label__name">
@@ -268,7 +264,9 @@ const ProjectDependencyEditor = observer(
     const openProject = (): void => {
       if (!projectDependency.isLegacyDependency) {
         applicationStore.navigator.openNewWindow(
-          `${applicationStore.config.baseUrl}view/${generateGAVCoordinates(
+          `${
+            applicationStore.config.baseUrl
+          }view/archive/${generateGAVCoordinates(
             guaranteeNonNullable(projectDependency.groupId),
             guaranteeNonNullable(projectDependency.artifactId),
             projectDependency.versionId.id,
@@ -327,7 +325,7 @@ const ProjectDependencyEditor = observer(
           <ExternalLinkSquareIcon />
         </button>
         <button
-          className="project-dependency-editor__remove-btn"
+          className="project-dependency-editor__remove-btn btn--dark btn--caution"
           disabled={isReadOnly}
           onClick={deleteValue}
           tabIndex={-1}
@@ -456,6 +454,7 @@ export const ProjectConfigurationEditor = observer(() => {
             className="project-configuration-editor__update-btn"
             disabled={
               isReadOnly ||
+              configState.isUpdatingConfiguration ||
               currentProjectConfiguration.hashCode ===
                 configState.originalConfig.hashCode
             }

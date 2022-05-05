@@ -28,6 +28,8 @@ import {
   type PackageableElement,
   type Connection,
   type ValidationIssue,
+  type AuthenticationStrategy,
+  type DatasourceSpecification,
   PackageableConnection,
   JsonModelConnection,
   FlatDataConnection,
@@ -51,7 +53,7 @@ import {
 } from '@finos/legend-graph';
 import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../DSLMapping_LegendStudioPlugin_Extension';
 import {
-  relationDbConnection_setAuthenticationStrategy,
+  relationDbConnection_setNewAuthenticationStrategy,
   relationDbConnection_setDatasourceSpecification,
 } from '../../../graphModifier/StoreRelational_GraphModifierHelper';
 
@@ -168,55 +170,44 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
   }
 
   changeDatasourceSpec(type: string): void {
+    const observerContext =
+      this.editorStore.changeDetectionState.observerContext;
+    let dataSpec: DatasourceSpecification | undefined;
     switch (type) {
       case CORE_DATASOURCE_SPEC_TYPE.STATIC: {
-        relationDbConnection_setDatasourceSpecification(
-          this.connection,
-          new StaticDatasourceSpecification('', 80, ''),
-        );
-        return;
+        dataSpec = new StaticDatasourceSpecification('', 80, '');
+        break;
       }
       case CORE_DATASOURCE_SPEC_TYPE.H2_LOCAL: {
-        relationDbConnection_setDatasourceSpecification(
-          this.connection,
-          new LocalH2DatasourceSpecification(),
-        );
-        return;
+        dataSpec = new LocalH2DatasourceSpecification();
+        break;
       }
       case CORE_DATASOURCE_SPEC_TYPE.H2_EMBEDDED: {
-        relationDbConnection_setDatasourceSpecification(
-          this.connection,
-          new EmbeddedH2DatasourceSpecification('', '', false),
-        );
-        return;
+        dataSpec = new EmbeddedH2DatasourceSpecification('', '', false);
+        break;
       }
       case CORE_DATASOURCE_SPEC_TYPE.DATABRICKS: {
-        relationDbConnection_setDatasourceSpecification(
-          this.connection,
-          new DatabricksDatasourceSpecification('', '', '', ''),
-        );
-        return;
+        dataSpec = new DatabricksDatasourceSpecification('', '', '', '');
+        break;
       }
       case CORE_DATASOURCE_SPEC_TYPE.SNOWFLAKE: {
-        relationDbConnection_setDatasourceSpecification(
-          this.connection,
-          new SnowflakeDatasourceSpecification('', '', '', ''),
-        );
-        return;
+        dataSpec = new SnowflakeDatasourceSpecification('', '', '', '');
+        break;
       }
       case CORE_DATASOURCE_SPEC_TYPE.REDSHIFT: {
-        relationDbConnection_setDatasourceSpecification(
-          this.connection,
-          new RedshiftDatasourceSpecification('', '', 5439, '', '', ''),
+        dataSpec = new RedshiftDatasourceSpecification(
+          '',
+          '',
+          5439,
+          '',
+          '',
+          '',
         );
-        return;
+        break;
       }
       case CORE_DATASOURCE_SPEC_TYPE.BIGQUERY: {
-        relationDbConnection_setDatasourceSpecification(
-          this.connection,
-          new BigQueryDatasourceSpecification('', ''),
-        );
-        return;
+        dataSpec = new BigQueryDatasourceSpecification('', '');
+        break;
       }
       default: {
         const extraDatasourceSpecificationCreators =
@@ -231,18 +222,22 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
         for (const creator of extraDatasourceSpecificationCreators) {
           const spec = creator(type);
           if (spec) {
-            relationDbConnection_setDatasourceSpecification(
-              this.connection,
-              spec,
-            );
-            return;
+            dataSpec = spec;
+            break;
           }
         }
-        throw new UnsupportedOperationError(
-          `Can't create datasource specification of type '${type}': no compatible creator available from plugins`,
-        );
       }
     }
+    if (!dataSpec) {
+      throw new UnsupportedOperationError(
+        `Can't create datasource specification of type '${type}': no compatible creator available from plugins`,
+      );
+    }
+    relationDbConnection_setDatasourceSpecification(
+      this.connection,
+      dataSpec,
+      observerContext,
+    );
   }
   get selectedAuth(): string {
     const auth = this.connection.authenticationStrategy;
@@ -290,34 +285,26 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
   }
 
   changeAuthenticationStrategy(type: string): void {
+    const observerContext =
+      this.editorStore.changeDetectionState.observerContext;
+    let authStrategy: AuthenticationStrategy | undefined;
     switch (type) {
       case CORE_AUTHENTICATION_STRATEGY_TYPE.DELEGATED_KERBEROS: {
-        relationDbConnection_setAuthenticationStrategy(
-          this.connection,
-          new DelegatedKerberosAuthenticationStrategy(),
-        );
-        return;
+        authStrategy = new DelegatedKerberosAuthenticationStrategy();
+        break;
       }
       case CORE_AUTHENTICATION_STRATEGY_TYPE.API_TOKEN: {
-        relationDbConnection_setAuthenticationStrategy(
-          this.connection,
-          new ApiTokenAuthenticationStrategy(''),
-        );
-        return;
+        authStrategy = new ApiTokenAuthenticationStrategy('');
+        break;
       }
       case CORE_AUTHENTICATION_STRATEGY_TYPE.SNOWFLAKE_PUBLIC: {
-        relationDbConnection_setAuthenticationStrategy(
-          this.connection,
-          new SnowflakePublicAuthenticationStrategy('', '', ''),
-        );
-        return;
+        authStrategy = new SnowflakePublicAuthenticationStrategy('', '', '');
+        break;
       }
       case CORE_AUTHENTICATION_STRATEGY_TYPE.GCP_APPLICATION_DEFAULT_CREDENTIALS: {
-        relationDbConnection_setAuthenticationStrategy(
-          this.connection,
-          new GCPApplicationDefaultCredentialsAuthenticationStrategy(),
-        );
-        return;
+        authStrategy =
+          new GCPApplicationDefaultCredentialsAuthenticationStrategy();
+        break;
       }
       case CORE_AUTHENTICATION_STRATEGY_TYPE.GCP_WORKLOAD_IDENTITY_FEDERATION: {
         relationDbConnection_setAuthenticationStrategy(
@@ -327,25 +314,17 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
         return;
       }
       case CORE_AUTHENTICATION_STRATEGY_TYPE.H2_DEFAULT: {
-        relationDbConnection_setAuthenticationStrategy(
-          this.connection,
-          new DefaultH2AuthenticationStrategy(),
-        );
-        return;
+        authStrategy = new DefaultH2AuthenticationStrategy();
+        break;
       }
       case CORE_AUTHENTICATION_STRATEGY_TYPE.USERNAME_PASSWORD: {
-        relationDbConnection_setAuthenticationStrategy(
-          this.connection,
-          new UsernamePasswordAuthenticationStrategy('', ''),
-        );
-        return;
+        authStrategy = new UsernamePasswordAuthenticationStrategy('', '');
+        break;
       }
-      case CORE_AUTHENTICATION_STRATEGY_TYPE.OAUTH:
-        relationDbConnection_setAuthenticationStrategy(
-          this.connection,
-          new OAuthAuthenticationStrategy('', ''),
-        );
-        return;
+      case CORE_AUTHENTICATION_STRATEGY_TYPE.OAUTH: {
+        authStrategy = new OAuthAuthenticationStrategy('', '');
+        break;
+      }
       default: {
         const extraAuthenticationStrategyCreators =
           this.editorStore.pluginManager
@@ -359,18 +338,22 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
         for (const creator of extraAuthenticationStrategyCreators) {
           const auth = creator(type);
           if (auth) {
-            relationDbConnection_setAuthenticationStrategy(
-              this.connection,
-              auth,
-            );
-            return;
+            authStrategy = auth;
+            break;
           }
         }
-        throw new UnsupportedOperationError(
-          `Can't create authentication strategy of type '${type}': no compatible creator available from plugins`,
-        );
       }
     }
+    if (!authStrategy) {
+      throw new UnsupportedOperationError(
+        `Can't create authentication strategy of type '${type}': no compatible creator available from plugins`,
+      );
+    }
+    relationDbConnection_setNewAuthenticationStrategy(
+      this.connection,
+      authStrategy,
+      observerContext,
+    );
   }
 }
 

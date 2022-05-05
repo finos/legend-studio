@@ -15,32 +15,6 @@
  */
 
 /// <reference types="jest-extended" />
-
-// NOTE: mock these methods to make sure we rule out false positive. The grammar parser for any List type field,
-// will generate empty array, however, in Studio, we avoid that to lessen the size of the serialized graph
-// to save bandwidth, as such the best action is just to mock these methods so in the scope of this test, Studio
-// serializers return empty array for these fields just like the parser's
-jest.mock('@finos/legend-shared', () => ({
-  ...jest.requireActual('@finos/legend-shared'),
-  /* eslint-disable @typescript-eslint/no-explicit-any */
-  serializeArray: (
-    values: any,
-    itemSerializer: (val: any) => any,
-    skipIfEmpty: boolean,
-  ): any[] =>
-    Array.isArray(values)
-      ? values.length
-        ? values.map((value) => itemSerializer(value))
-        : []
-      : [],
-  deserializeArray: (
-    values: any,
-    itemDeserializer: (val: any) => any,
-    skipIfEmpty: boolean,
-  ): any[] => (Array.isArray(values) ? values.map(itemDeserializer) : []),
-  /* eslint-enable @typescript-eslint/no-explicit-any */
-}));
-
 import { resolve, basename } from 'path';
 import fs from 'fs';
 import axios, { type AxiosResponse } from 'axios';
@@ -56,14 +30,10 @@ import {
   TEST__buildGraphWithEntities,
   TEST__checkGraphHashUnchanged,
   TEST__getTestGraphManagerState,
-  DSLExternalFormat_GraphPreset,
   GRAPH_MANAGER_EVENT,
   V1_ENGINE_EVENT,
 } from '@finos/legend-graph';
-import { DSLText_GraphPreset } from '@finos/legend-extension-dsl-text';
-import { DSLDiagram_GraphPreset } from '@finos/legend-extension-dsl-diagram';
-import { DSLDataSpace_GraphPreset } from '@finos/legend-extension-dsl-data-space';
-import { ESService_GraphPreset } from '@finos/legend-extension-external-store-service';
+import { getLegendGraphExtensionCollection } from '@finos/legend-graph-extension-collection';
 
 const engineConfig = JSON.parse(
   fs.readFileSync(resolve(__dirname, '../../../engine-config.json'), {
@@ -77,7 +47,7 @@ const TEST_CASE_DIR = resolve(__dirname, 'cases');
 
 enum ROUNTRIP_TEST_PHASES {
   PROTOCOL_ROUNDTRIP = 'PROTOCOL_ROUNDTRIP',
-  HASH = 'HASH',
+  CHECK_HASH = 'CHECK_HASH',
   GRAMMAR_ROUNDTRIP = 'GRAMMAR_ROUNDTRIP',
   COMPILATION = 'COMPILATION',
 }
@@ -85,12 +55,6 @@ enum ROUNTRIP_TEST_PHASES {
 const SKIP = Symbol('SKIP GRAMMAR ROUNDTRIP TEST');
 
 const EXCLUSIONS: { [key: string]: ROUNTRIP_TEST_PHASES[] | typeof SKIP } = {
-  // post processor mismatch between engine (undefined) vs studio ([])
-  'relational-connection.pure': [ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP],
-  'relational-connection-databricks.pure': [
-    ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP,
-  ],
-
   // TODO: remove these when we can properly handle relational mapping `mainTable` and `primaryKey` in transformers.
   // See https://github.com/finos/legend-studio/issues/295
   // See https://github.com/finos/legend-studio/issues/294
@@ -98,7 +62,7 @@ const EXCLUSIONS: { [key: string]: ROUNTRIP_TEST_PHASES[] | typeof SKIP } = {
   'nested-embedded-relational-mapping.pure': SKIP,
   'relational-mapping-filter.pure': SKIP,
 
-  // Needs a fix on engine. Engine shouldn't produce `source` for pure property mapping and
+  // TODO: Needs a fix on engine. Engine shouldn't produce `source` for pure property mapping and
   // relational property mapping beacuse they can be resolved at compilation.
   'pure-property-mapping-local-property.pure': [
     ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP,
@@ -109,7 +73,7 @@ const EXCLUSIONS: { [key: string]: ROUNTRIP_TEST_PHASES[] | typeof SKIP } = {
   'merge-operation-mapping.pure': [ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP],
 
   // TODO: remove these when the issue of source ID in relational property mapping is resolved.
-  // Engine is removing these sources when the owner is the parent class mapping and studio is not
+  // Engine is removing the `source` when the owner is the parent class mapping.
   'basic-class-mapping-extends.pure': [ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP],
   'basic-inline-embedded-mapping.pure': [
     ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP,
@@ -121,9 +85,6 @@ const EXCLUSIONS: { [key: string]: ROUNTRIP_TEST_PHASES[] | typeof SKIP } = {
   'mapping-include-enum-mapping.pure': [
     ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP,
   ],
-  // Used to test graph building performance. Test passes but will SKIP as to not increase build time
-  // Current time to complete test is 6576 ms
-  'profiling-model-cdm.pure': SKIP,
 };
 
 type GrammarRoundtripOptions = {
@@ -167,13 +128,7 @@ const checkGrammarRoundtrip = async (
 ): Promise<void> => {
   const pluginManager = new TEST__GraphPluginManager();
   pluginManager
-    .usePresets([
-      new DSLText_GraphPreset(),
-      new DSLDiagram_GraphPreset(),
-      new DSLExternalFormat_GraphPreset(),
-      new DSLDataSpace_GraphPreset(),
-      new ESService_GraphPreset(),
-    ])
+    .usePresets(getLegendGraphExtensionCollection())
     .usePlugins([new WebConsole()]);
   pluginManager.install();
   const log = new Log();
@@ -223,7 +178,7 @@ const checkGrammarRoundtrip = async (
   GRAPH_MANAGER_EVENT;
   startTime = Date.now();
   await TEST__buildGraphWithEntities(graphManagerState, entities, {
-    TEMPORARY__keepSectionIndex: true,
+    TEMPORARY__preserveSectionIndex: true,
   });
   if (options?.debug) {
     log.info(
@@ -266,7 +221,7 @@ const checkGrammarRoundtrip = async (
   }
 
   // Phase 2: hash and local changes check
-  phase = ROUNTRIP_TEST_PHASES.HASH;
+  phase = ROUNTRIP_TEST_PHASES.CHECK_HASH;
   logPhase(phase, excludes, log, options?.debug);
   // check hash computation
 

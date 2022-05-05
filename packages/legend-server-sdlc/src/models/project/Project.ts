@@ -17,23 +17,10 @@
 import { list, primitive, createModelSchema } from 'serializr';
 import { SerializationFactory } from '@finos/legend-shared';
 
-// TODO: consider removing this when SDLC finally get rid of project type and environment flags
-export enum ProjectType {
-  PROTOTYPE = 'PROTOTYPE',
-  PRODUCTION = 'PRODUCTION',
-}
-
-// TODO: consider removing this when SDLC finally get rid of project type and environment flags
-export enum SDLCMode {
-  PROD = 'prod',
-  UAT = 'uat',
-}
-
 export class Project {
   description!: string;
   name!: string;
   projectId!: string;
-  projectType!: ProjectType;
   webUrl!: string;
   tags: string[] = [];
 
@@ -42,7 +29,6 @@ export class Project {
       description: primitive(),
       name: primitive(),
       projectId: primitive(),
-      projectType: primitive(),
       tags: list(primitive()),
       webUrl: primitive(),
     }),

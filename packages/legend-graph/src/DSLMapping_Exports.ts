@@ -39,8 +39,10 @@ export { PackageableConnection } from './models/metamodels/pure/packageableEleme
 export { ModelStore } from './models/metamodels/pure/packageableElements/store/modelToModel/model/ModelStore';
 export { PureModelConnection } from './models/metamodels/pure/packageableElements/store/modelToModel/connection/PureModelConnection';
 export { JsonModelConnection } from './models/metamodels/pure/packageableElements/store/modelToModel/connection/JsonModelConnection';
+export { ModelChainConnection } from './models/metamodels/pure/packageableElements/store/modelToModel/connection/ModelChainConnection';
 export { XmlModelConnection } from './models/metamodels/pure/packageableElements/store/modelToModel/connection/XmlModelConnection';
 export * from './models/metamodels/pure/packageableElements/mapping/SetImplementation';
+export * from './models/metamodels/pure/packageableElements/mapping/TEMPORARY__UnresolvedSetImplementation';
 export { PurePropertyMapping } from './models/metamodels/pure/packageableElements/store/modelToModel/mapping/PurePropertyMapping';
 export { InstanceSetImplementation } from './models/metamodels/pure/packageableElements/mapping/InstanceSetImplementation';
 export { EnumerationMapping } from './models/metamodels/pure/packageableElements/mapping/EnumerationMapping';
@@ -74,6 +76,9 @@ export { V1_Store } from './models/protocols/pure/v1/model/packageableElements/s
 export {
   V1_EngineRuntime,
   V1_Runtime,
+  V1_IdentifiedConnection,
+  V1_StoreConnections,
+  V1_RuntimePointer,
 } from './models/protocols/pure/v1/model/packageableElements/runtime/V1_Runtime';
 export {
   V1_ClassMapping,

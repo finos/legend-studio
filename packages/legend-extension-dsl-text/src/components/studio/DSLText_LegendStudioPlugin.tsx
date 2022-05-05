@@ -27,12 +27,34 @@ import {
   type ElementEditorRenderer,
   type DSL_LegendStudioPlugin_Extension,
   type NewElementState,
+  type PureGrammarParserDocumentationGetter,
+  type PureGrammarParserKeywordSuggestionGetter,
+  type PureGrammarTextSuggestion,
+  type PureGrammarParserElementSnippetSuggestionsGetter,
+  type PureGrammarParserElementDocumentationGetter,
 } from '@finos/legend-studio';
 import { FileIcon } from '@finos/legend-art';
 import { TextEditorState } from '../../stores/studio/TextEditorState';
 import { TextElementEditor } from './TextElementEditor';
 import type { PackageableElement } from '@finos/legend-graph';
 import { Text } from '../../models/metamodels/pure/model/packageableElements/text/DSLText_Text';
+import {
+  collectKeyedDocumnetationEntriesFromConfig,
+  type LegendApplicationDocumentationEntry,
+  type LegendApplicationKeyedDocumentationEntry,
+} from '@finos/legend-application';
+import {
+  DSL_TEXT_DOCUMENTATION_ENTRIES,
+  DSL_TEXT_LEGEND_STUDIO_DOCUMENTATION_KEY,
+} from './DSLText_LegendStudioDocumentation';
+import {
+  PURE_GRAMMAR_TEXT_ELEMENT_TYPE_LABEL,
+  PURE_GRAMMAR_TEXT_PARSER_NAME,
+} from '../../graphManager/DSLText_PureGraphManagerPlugin';
+import {
+  MARKDOWN_TEXT_SNIPPET,
+  PLAIN_TEXT_SNIPPET,
+} from './DSLText_CodeSnippets';
 
 const TEXT_ELEMENT_TYPE = 'TEXT';
 const TEXT_ELEMENT_PROJECT_EXPLORER_DND_TYPE = 'PROJECT_EXPLORER_TEXT';
@@ -43,6 +65,12 @@ export class DSLText_LegendStudioPlugin
 {
   constructor() {
     super(packageJson.extensions.studioPlugin, packageJson.version);
+  }
+
+  override getExtraKeyedDocumentationEntries(): LegendApplicationKeyedDocumentationEntry[] {
+    return collectKeyedDocumnetationEntriesFromConfig(
+      DSL_TEXT_DOCUMENTATION_ENTRIES,
+    );
   }
 
   getExtraSupportedElementTypes(): string[] {
@@ -126,7 +154,80 @@ export class DSLText_LegendStudioPlugin
     ];
   }
 
-  getExtraGrammarTextEditorDnDTypes(): string[] {
+  getExtraPureGrammarTextEditorDnDTypes(): string[] {
     return [TEXT_ELEMENT_PROJECT_EXPLORER_DND_TYPE];
+  }
+
+  getExtraPureGrammarParserElementDocumentationGetters(): PureGrammarParserElementDocumentationGetter[] {
+    return [
+      (
+        editorStore: EditorStore,
+        parserKeyword: string,
+        elementKeyword: string,
+      ): LegendApplicationDocumentationEntry | undefined => {
+        if (parserKeyword === PURE_GRAMMAR_TEXT_PARSER_NAME) {
+          if (elementKeyword === PURE_GRAMMAR_TEXT_ELEMENT_TYPE_LABEL) {
+            return editorStore.applicationStore.docRegistry.getEntry(
+              DSL_TEXT_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_TEXT_ELEMENT,
+            );
+          }
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  getExtraPureGrammarParserDocumentationGetters(): PureGrammarParserDocumentationGetter[] {
+    return [
+      (
+        editorStore: EditorStore,
+        parserKeyword: string,
+      ): LegendApplicationDocumentationEntry | undefined => {
+        if (parserKeyword === PURE_GRAMMAR_TEXT_PARSER_NAME) {
+          return editorStore.applicationStore.docRegistry.getEntry(
+            DSL_TEXT_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER,
+          );
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  getExtraPureGrammarParserKeywordSuggestionGetters(): PureGrammarParserKeywordSuggestionGetter[] {
+    return [
+      (editorStore: EditorStore): PureGrammarTextSuggestion[] => [
+        {
+          text: PURE_GRAMMAR_TEXT_PARSER_NAME,
+          description: `DSL Text`,
+          documentation: editorStore.applicationStore.docRegistry.getEntry(
+            DSL_TEXT_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER,
+          ),
+          insertText: PURE_GRAMMAR_TEXT_PARSER_NAME,
+        },
+      ],
+    ];
+  }
+
+  getExtraPureGrammarParserElementSnippetSuggestionsGetters(): PureGrammarParserElementSnippetSuggestionsGetter[] {
+    return [
+      (
+        editorStore: EditorStore,
+        parserKeyword: string,
+      ): PureGrammarTextSuggestion[] | undefined =>
+        parserKeyword === PURE_GRAMMAR_TEXT_PARSER_NAME
+          ? [
+              {
+                text: PURE_GRAMMAR_TEXT_ELEMENT_TYPE_LABEL,
+                description: 'plain text',
+                insertText: PLAIN_TEXT_SNIPPET,
+              },
+              {
+                text: PURE_GRAMMAR_TEXT_ELEMENT_TYPE_LABEL,
+                description: 'markdown',
+                insertText: MARKDOWN_TEXT_SNIPPET,
+              },
+            ]
+          : undefined,
+    ];
   }
 }

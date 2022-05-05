@@ -48,12 +48,10 @@ import {
   useEditorStore,
 } from '../editor/EditorStoreProvider';
 import { AppHeader, useApplicationStore } from '@finos/legend-application';
-import type { LegendStudioConfig } from '../../application/LegendStudioConfig';
 
 const ReviewStatusBar = observer(() => {
   const reviewStore = useReviewStore();
   const editorStore = useEditorStore();
-  const applicationStore = useApplicationStore<LegendStudioConfig>();
   const currentUserId =
     editorStore.sdlcServerClient.currentUser?.userId ?? '(unknown)';
   const currentProject = reviewStore.currentProject
@@ -83,12 +81,7 @@ const ReviewStatusBar = observer(() => {
             <CodeBranchIcon />
           </div>
           <div className="review__status-bar__workspace__project">
-            <Link
-              to={generateViewProjectRoute(
-                applicationStore.config.currentSDLCServerOption,
-                reviewStore.projectId,
-              )}
-            >
+            <Link to={generateViewProjectRoute(reviewStore.projectId)}>
               {currentProject}
             </Link>
           </div>
@@ -96,7 +89,6 @@ const ReviewStatusBar = observer(() => {
           <div className="review__status-bar__workspace__workspace">
             <Link
               to={generateEditorRoute(
-                applicationStore.config.currentSDLCServerOption,
                 reviewStore.projectId,
                 review.workspaceId,
                 review.workspaceType,

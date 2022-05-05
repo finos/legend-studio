@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import { custom, createModelSchema } from 'serializr';
+import { custom, createModelSchema, serialize, deserialize } from 'serializr';
 import {
-  deseralizeMap,
+  deserializeMap,
   SerializationFactory,
   serializeMap,
   usingModelSchema,
@@ -35,12 +35,14 @@ export class V1_LambdaInput {
     createModelSchema(V1_LambdaInput, {
       serializer: usingModelSchema(V1_Protocol.serialization.schema),
       lambdas: custom(
-        (val) => serializeMap(val, V1_rawLambdaModelSchema),
-        (val) => deseralizeMap(val, V1_rawLambdaModelSchema),
+        (val) =>
+          serializeMap(val, (v) => serialize(V1_rawLambdaModelSchema, v)),
+        (val) =>
+          deserializeMap(val, (v) => deserialize(V1_rawLambdaModelSchema, v)),
       ),
       lambdaErrors: custom(
-        (val) => serializeMap(val, V1_ParserError),
-        (val) => deseralizeMap(val, V1_ParserError),
+        (val) => serializeMap(val, (v) => serialize(V1_ParserError, v)),
+        (val) => deserializeMap(val, (v) => deserialize(V1_ParserError, v)),
       ),
     }),
   );

@@ -23,8 +23,9 @@ import type { Stubable } from '../../../../../helpers/Stubable';
 import type { StereotypeReference } from './StereotypeReference';
 
 export class Enum implements AnnotatedElement, Hashable, Stubable {
-  uuid = uuid();
+  readonly uuid = uuid();
   owner: Enumeration;
+
   name: string;
   stereotypes: StereotypeReference[] = [];
   taggedValues: TaggedValue[] = [];

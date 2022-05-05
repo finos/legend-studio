@@ -197,7 +197,9 @@ abstract class MappingTestInputDataState {
 
 export class MappingTestObjectInputDataState extends MappingTestInputDataState {
   declare inputData: ObjectInputData;
-  /* @MARKER: Workaround for https://github.com/finos/legend-studio/issues/68 */
+  /**
+   * @workaround https://github.com/finos/legend-studio/issues/68
+   */
   data: string;
 
   constructor(
@@ -212,13 +214,17 @@ export class MappingTestObjectInputDataState extends MappingTestInputDataState {
       setData: action,
     });
 
-    /* @MARKER: Workaround for https://github.com/finos/legend-studio/issues/68 */
+    /**
+     * @workaround https://github.com/finos/legend-studio/issues/68
+     */
     this.data = tryToFormatLosslessJSONString(inputData.data);
   }
 
   setData(val: string): void {
     this.data = val;
-    /* @MARKER: Workaround for https://github.com/finos/legend-studio/issues/68 */
+    /**
+     * @workaround https://github.com/finos/legend-studio/issues/68
+     */
     objectInputData_setData(this.inputData, tryToMinifyLosslessJSONString(val));
   }
 
@@ -249,6 +255,7 @@ export class MappingTestObjectInputDataState extends MappingTestInputDataState {
         runtime.generateIdentifiedConnectionId(),
         connection,
       ),
+      this.editorStore.changeDetectionState.observerContext,
     );
     return runtime;
   }
@@ -281,6 +288,7 @@ export class MappingTestFlatDataInputDataState extends MappingTestInputDataState
         runtime.generateIdentifiedConnectionId(),
         connection,
       ),
+      this.editorStore.changeDetectionState.observerContext,
     );
     return runtime;
   }
@@ -325,6 +333,7 @@ export class MappingTestRelationalInputDataState extends MappingTestInputDataSta
         runtime.generateIdentifiedConnectionId(),
         connection,
       ),
+      this.editorStore.changeDetectionState.observerContext,
     );
     return runtime;
   }
@@ -341,7 +350,9 @@ abstract class MappingTestAssertionState {
 
 export class MappingTestExpectedOutputAssertionState extends MappingTestAssertionState {
   declare assert: ExpectedOutputMappingTestAssert;
-  /* @MARKER: Workaround for https://github.com/finos/legend-studio/issues/68 */
+  /**
+   * @workaround https://github.com/finos/legend-studio/issues/68
+   */
   expectedResult: string;
 
   constructor(assert: ExpectedOutputMappingTestAssert) {
@@ -353,7 +364,9 @@ export class MappingTestExpectedOutputAssertionState extends MappingTestAssertio
     });
 
     this.expectedResult = fromGrammarString(
-      /* @MARKER: Workaround for https://github.com/finos/legend-studio/issues/68 */
+      /**
+       * @workaround https://github.com/finos/legend-studio/issues/68
+       */
       tryToFormatLosslessJSONString(assert.expectedOutput),
     );
   }
@@ -362,7 +375,9 @@ export class MappingTestExpectedOutputAssertionState extends MappingTestAssertio
     this.expectedResult = val;
     expectedOutputMappingTestAssert_setExpectedOutput(
       this.assert,
-      /* @MARKER: Workaround for https://github.com/finos/legend-studio/issues/68 */
+      /**
+       * @workaround https://github.com/finos/legend-studio/issues/68
+       */
       toGrammarString(tryToMinifyLosslessJSONString(this.expectedResult)),
     );
   }
@@ -727,7 +742,11 @@ export class MappingTestState {
   }
 
   updateAssertion(): void {
-    mappingTest_setAssert(this.test, this.assertionState.assert);
+    mappingTest_setAssert(
+      this.test,
+      this.assertionState.assert,
+      this.editorStore.changeDetectionState.observerContext,
+    );
   }
 
   *generatePlan(debug: boolean): GeneratorFn<void> {

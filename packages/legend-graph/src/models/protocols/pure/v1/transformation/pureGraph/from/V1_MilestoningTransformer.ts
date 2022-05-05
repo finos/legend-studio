@@ -25,7 +25,7 @@ import { V1_ProcessingMilestoning } from '../../../model/packageableElements/sto
 import { ProcessingMilestoning } from '../../../../../../metamodels/pure/packageableElements/store/relational/model/milestoning/ProcessingMilestoning';
 import type { StoreRelational_PureProtocolProcessorPlugin_Extension } from '../../../../StoreRelational_PureProtocolProcessorPlugin_Extension';
 import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext';
-import { V1_RawInstanceValue } from '../../../model/rawValueSpecification/V1_RawInstanceValue';
+import { V1_RawPrimitiveInstanceValue } from '../../../model/rawValueSpecification/V1_RawPrimitiveInstanceValue';
 import { V1_RawValueSpecificationTransformer } from './V1_RawValueSpecificationTransformer';
 
 const transformBusinessMilesoning = (
@@ -41,7 +41,7 @@ const transformBusinessMilesoning = (
       metamodel.infinityDate.accept_RawValueSpecificationVisitor(
         new V1_RawValueSpecificationTransformer(context),
       ),
-      V1_RawInstanceValue,
+      V1_RawPrimitiveInstanceValue,
     );
   }
   return protocol;
@@ -68,7 +68,7 @@ const transformProcessingMilestoning = (
       metamodel.infinityDate.accept_RawValueSpecificationVisitor(
         new V1_RawValueSpecificationTransformer(context),
       ),
-      V1_RawInstanceValue,
+      V1_RawPrimitiveInstanceValue,
     );
   }
   return protocol;

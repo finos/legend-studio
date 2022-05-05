@@ -19,7 +19,6 @@ import {
   type Clazz,
   ActionState,
   guaranteeNonNullable,
-  isNonNullable,
 } from '@finos/legend-shared';
 import type { PackageableElement } from '../models/metamodels/pure/packageableElements/PackageableElement';
 import type { Enumeration } from '../models/metamodels/pure/packageableElements/domain/Enumeration';
@@ -37,13 +36,11 @@ import type { PackageableRuntime } from '../models/metamodels/pure/packageableEl
 import type { PackageableConnection } from '../models/metamodels/pure/packageableElements/connection/PackageableConnection';
 import type { FileGenerationSpecification } from '../models/metamodels/pure/packageableElements/fileGeneration/FileGenerationSpecification';
 import type { GenerationSpecification } from '../models/metamodels/pure/packageableElements/generationSpecification/GenerationSpecification';
-import type {
-  Measure,
-  Unit,
-} from '../models/metamodels/pure/packageableElements/domain/Measure';
+import type { Measure } from '../models/metamodels/pure/packageableElements/domain/Measure';
 import type { SectionIndex } from '../models/metamodels/pure/packageableElements/section/SectionIndex';
 import type { Entity } from '@finos/legend-model-storage';
 import type { Database } from '../models/metamodels/pure/packageableElements/store/relational/model/Database';
+import type { DataElement } from '../models/metamodels/pure/packageableElements/data/DataElement';
 
 class DependencyModel extends BasicModel {
   constructor(
@@ -55,11 +52,26 @@ class DependencyModel extends BasicModel {
   }
 }
 
+const buildDependencyElementGetter =
+  <T extends PackageableElement>(
+    dependencyManager: DependencyManager,
+    elementGetter: (dependencyGraph: BasicModel, path: string) => T | undefined,
+  ): ((path: string) => T | undefined) =>
+  (path: string): T | undefined => {
+    for (const dependencyGraph of dependencyManager.dependencyGraphs) {
+      const element = elementGetter(dependencyGraph, path);
+      if (element) {
+        return element;
+      }
+    }
+    return undefined;
+  };
+
 export class DependencyManager {
   root = new Package(ROOT_PACKAGE_NAME.PROJECT_DEPENDENCY_ROOT);
   projectDependencyModelsIndex = new Map<string, BasicModel>();
 
-  // FIXME: to be moved, this is graph-manager logic and should be moved elsewhere
+  // TODO: to be moved, this is graph-manager logic and should be moved elsewhere
   buildState = ActionState.create();
 
   private readonly extensionElementClasses: Clazz<PackageableElement>[];
@@ -72,7 +84,7 @@ export class DependencyManager {
   }
 
   /**
-   * Here we initialize a Dependency Pure Model for each Dependent project
+   * Here we create and index a graph for each dependency
    */
   initialize(dependencyEntitiesMap: Map<string, Entity[]>): void {
     Array.from(dependencyEntitiesMap.keys()).forEach((dependencyKey) => {
@@ -88,123 +100,180 @@ export class DependencyManager {
     return Boolean(this.projectDependencyModelsIndex.size);
   }
 
-  get allElements(): PackageableElement[] {
-    return this.models.flatMap((dep) => dep.allOwnElements);
-  }
-
-  get models(): BasicModel[] {
+  get dependencyGraphs(): BasicModel[] {
     return Array.from(this.projectDependencyModelsIndex.values());
   }
 
-  getOwnProfile = (path: string): Profile | undefined =>
-    this.models.map((dep) => dep.getOwnProfile(path)).find(isNonNullable);
-  getOwnType = (path: string): Type | undefined =>
-    this.models.map((dep) => dep.getOwnType(path)).find(isNonNullable);
-  getOwnClass = (path: string): Class | undefined =>
-    this.models.map((dep) => dep.getOwnClass(path)).find(isNonNullable);
-  getOwnEnumeration = (path: string): Enumeration | undefined =>
-    this.models.map((dep) => dep.getOwnEnumeration(path)).find(isNonNullable);
-  getOwnMeasure = (path: string): Measure | undefined =>
-    this.models.map((dep) => dep.getOwnMeasure(path)).find(isNonNullable);
-  getOwnUnit = (path: string): Unit | undefined =>
-    this.models.map((dep) => dep.getOwnUnit(path)).find(isNonNullable);
-  getOwnAssociation = (path: string): Association | undefined =>
-    this.models.map((dep) => dep.getOwnAssociation(path)).find(isNonNullable);
-  getOwnFunction = (path: string): ConcreteFunctionDefinition | undefined =>
-    this.models.map((dep) => dep.getOwnFunction(path)).find(isNonNullable);
-  getOwnStore = (path: string): Store | undefined =>
-    this.models.map((dep) => dep.getOwnStore(path)).find(isNonNullable);
-  getOwnMapping = (path: string): Mapping | undefined =>
-    this.models.map((dep) => dep.getOwnMapping(path)).find(isNonNullable);
-  getOwnConnection = (path: string): PackageableConnection | undefined =>
-    this.models.map((dep) => dep.getOwnConnection(path)).find(isNonNullable);
-  getOwnRuntime = (path: string): PackageableRuntime | undefined =>
-    this.models.map((dep) => dep.getOwnRuntime(path)).find(isNonNullable);
-  getOwnService = (path: string): Service | undefined =>
-    this.models.map((dep) => dep.getOwnService(path)).find(isNonNullable);
-  getOwnGenerationSpecification = (
-    path: string,
-  ): GenerationSpecification | undefined =>
-    this.models
-      .map((dep) => dep.getOwnGenerationSpecification(path))
-      .find(isNonNullable);
-  getOwnFileGeneration = (
-    path: string,
-  ): FileGenerationSpecification | undefined =>
-    this.models
-      .map((dep) => dep.getOwnFileGeneration(path))
-      .find(isNonNullable);
-  getOwnSectionIndex = (path: string): SectionIndex | undefined =>
-    this.models.map((dep) => dep.getOwnSectionIndex(path)).find(isNonNullable);
+  get allOwnElements(): PackageableElement[] {
+    return this.dependencyGraphs.flatMap((dep) => dep.allOwnElements);
+  }
 
-  getOwnExtensionElement<T extends PackageableElement>(
+  getOwnNullableSectionIndex = buildDependencyElementGetter(
+    this,
+    (dep: BasicModel, path: string) => dep.getOwnNullableSectionIndex(path),
+  );
+  getOwnNullableProfile = buildDependencyElementGetter(
+    this,
+    (dep: BasicModel, path: string) => dep.getOwnNullableProfile(path),
+  );
+  getOwnNullableType = buildDependencyElementGetter(
+    this,
+    (dep: BasicModel, path: string) => dep.getOwnNullableType(path),
+  );
+  getOwnNullableClass = buildDependencyElementGetter(
+    this,
+    (dep: BasicModel, path: string) => dep.getOwnNullableClass(path),
+  );
+  getOwnNullableEnumeration = buildDependencyElementGetter(
+    this,
+    (dep: BasicModel, path: string) => dep.getOwnNullableEnumeration(path),
+  );
+  getOwnNullableMeasure = buildDependencyElementGetter(
+    this,
+    (dep: BasicModel, path: string) => dep.getOwnNullableMeasure(path),
+  );
+  getOwnNullableAssociation = buildDependencyElementGetter(
+    this,
+    (dep: BasicModel, path: string) => dep.getOwnNullableAssociation(path),
+  );
+  getOwnNullableFunction = buildDependencyElementGetter(
+    this,
+    (dep: BasicModel, path: string) => dep.getOwnNullableFunction(path),
+  );
+  getOwnNullableStore = buildDependencyElementGetter(
+    this,
+    (dep: BasicModel, path: string) => dep.getOwnNullableStore(path),
+  );
+  getOwnNullableMapping = buildDependencyElementGetter(
+    this,
+    (dep: BasicModel, path: string) => dep.getOwnNullableMapping(path),
+  );
+  getOwnNullableConnection = buildDependencyElementGetter(
+    this,
+    (dep: BasicModel, path: string) => dep.getOwnNullableConnection(path),
+  );
+  getOwnNullableRuntime = buildDependencyElementGetter(
+    this,
+    (dep: BasicModel, path: string) => dep.getOwnNullableRuntime(path),
+  );
+  getOwnNullableService = buildDependencyElementGetter(
+    this,
+    (dep: BasicModel, path: string) => dep.getOwnNullableService(path),
+  );
+  getOwnNullableGenerationSpecification = buildDependencyElementGetter(
+    this,
+    (dep: BasicModel, path: string) =>
+      dep.getOwnNullableGenerationSpecification(path),
+  );
+  getOwnNullableFileGeneration = buildDependencyElementGetter(
+    this,
+    (dep: BasicModel, path: string) => dep.getOwnNullableFileGeneration(path),
+  );
+  getOwnNullableDataElement = buildDependencyElementGetter(
+    this,
+    (dep: BasicModel, path: string) => dep.getOwnDataElement(path),
+  );
+  getOwnNullableExtensionElement<T extends PackageableElement>(
     path: string,
     extensionElementClass: Clazz<T>,
   ): T | undefined {
-    return this.models
-      .map((dep) =>
-        dep.getExtensionForElementClass(extensionElementClass).getElement(path),
-      )
-      .find(isNonNullable);
+    for (const dependencyGraph of this.dependencyGraphs) {
+      const element = dependencyGraph
+        .getExtensionForElementClass(extensionElementClass)
+        .getElement(path);
+      if (element) {
+        return element;
+      }
+    }
+    return undefined;
   }
 
+  get sectionIndices(): SectionIndex[] {
+    return this.dependencyGraphs
+      .map((dep) => Array.from(dep.ownSectionIndices))
+      .flat();
+  }
   get profiles(): Profile[] {
-    return this.models.map((dep) => Array.from(dep.ownProfiles)).flat();
+    return this.dependencyGraphs
+      .map((dep) => Array.from(dep.ownProfiles))
+      .flat();
   }
   get enumerations(): Enumeration[] {
-    return this.models.map((dep) => Array.from(dep.ownEnumerations)).flat();
+    return this.dependencyGraphs
+      .map((dep) => Array.from(dep.ownEnumerations))
+      .flat();
   }
   get measures(): Measure[] {
-    return this.models.map((dep) => Array.from(dep.ownMeasures)).flat();
-  }
-  get units(): Unit[] {
-    return this.models.map((dep) => Array.from(dep.ownUnits)).flat();
+    return this.dependencyGraphs
+      .map((dep) => Array.from(dep.ownMeasures))
+      .flat();
   }
   get classes(): Class[] {
-    return this.models.map((dep) => Array.from(dep.ownClasses)).flat();
+    return this.dependencyGraphs
+      .map((dep) => Array.from(dep.ownClasses))
+      .flat();
   }
   get types(): Type[] {
-    return this.models.map((dep) => Array.from(dep.ownTypes)).flat();
+    return this.dependencyGraphs.map((dep) => Array.from(dep.ownTypes)).flat();
   }
   get associations(): Association[] {
-    return this.models.map((dep) => Array.from(dep.ownAssociations)).flat();
+    return this.dependencyGraphs
+      .map((dep) => Array.from(dep.ownAssociations))
+      .flat();
   }
   get functions(): ConcreteFunctionDefinition[] {
-    return this.models.map((dep) => Array.from(dep.ownFunctions)).flat();
+    return this.dependencyGraphs
+      .map((dep) => Array.from(dep.ownFunctions))
+      .flat();
   }
   get stores(): Store[] {
-    return this.models.map((dep) => Array.from(dep.ownStores)).flat();
+    return this.dependencyGraphs.map((dep) => Array.from(dep.ownStores)).flat();
   }
   get databases(): Database[] {
-    return this.models.map((dep) => Array.from(dep.ownDatabases)).flat();
+    return this.dependencyGraphs
+      .map((dep) => Array.from(dep.ownDatabases))
+      .flat();
   }
   get mappings(): Mapping[] {
-    return this.models.map((dep) => Array.from(dep.ownMappings)).flat();
+    return this.dependencyGraphs
+      .map((dep) => Array.from(dep.ownMappings))
+      .flat();
   }
   get services(): Service[] {
-    return this.models.map((dep) => Array.from(dep.ownServices)).flat();
+    return this.dependencyGraphs
+      .map((dep) => Array.from(dep.ownServices))
+      .flat();
   }
   get runtimes(): PackageableRuntime[] {
-    return this.models.map((dep) => Array.from(dep.ownRuntimes)).flat();
+    return this.dependencyGraphs
+      .map((dep) => Array.from(dep.ownRuntimes))
+      .flat();
   }
   get connections(): PackageableConnection[] {
-    return this.models.map((dep) => Array.from(dep.ownConnections)).flat();
+    return this.dependencyGraphs
+      .map((dep) => Array.from(dep.ownConnections))
+      .flat();
   }
-  get fileGenerations(): FileGenerationSpecification[] {
-    return this.models.map((dep) => Array.from(dep.ownFileGenerations)).flat();
+  get dataElements(): DataElement[] {
+    return this.dependencyGraphs
+      .map((dep) => Array.from(dep.ownDataElements))
+      .flat();
   }
   get generationSpecifications(): GenerationSpecification[] {
-    return this.models
+    return this.dependencyGraphs
       .map((dep) => Array.from(dep.ownGenerationSpecifications))
       .flat();
   }
-  get sectionIndices(): SectionIndex[] {
-    return this.models.map((dep) => Array.from(dep.ownSectionIndices)).flat();
+  get fileGenerations(): FileGenerationSpecification[] {
+    return this.dependencyGraphs
+      .map((dep) => Array.from(dep.ownFileGenerations))
+      .flat();
   }
+
   getExtensionElements<T extends PackageableElement>(
     extensionElementClass: Clazz<T>,
   ): T[] {
-    return this.models
+    return this.dependencyGraphs
       .map((dep) => dep.getExtensionElements(extensionElementClass))
       .flat();
   }
@@ -220,7 +289,7 @@ export class DependencyManager {
     path: string,
     includePackage?: boolean,
   ): PackageableElement | undefined {
-    const model = this.models.find((dep) =>
+    const model = this.dependencyGraphs.find((dep) =>
       Boolean(dep.getOwnNullableElement(path, includePackage)),
     );
     return model?.getOwnNullableElement(path, includePackage);

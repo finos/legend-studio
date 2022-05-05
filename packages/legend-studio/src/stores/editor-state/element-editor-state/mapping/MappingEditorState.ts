@@ -49,6 +49,7 @@ import {
   UnsupportedOperationError,
   assertTrue,
   addUniqueEntry,
+  filterByType,
 } from '@finos/legend-shared';
 import { MappingExecutionState } from './MappingExecutionState';
 import {
@@ -61,7 +62,6 @@ import { RootRelationalInstanceSetImplementationState } from './relational/Relat
 import {
   type CompilationError,
   type PackageableElement,
-  type AbstractFlatDataPropertyMapping,
   type InputData,
   type Type,
   getAllClassMappings,
@@ -102,7 +102,10 @@ import {
   InferableMappingElementRootExplicitValue,
 } from '@finos/legend-graph';
 import { LambdaEditorState } from '@finos/legend-application';
-import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../DSLMapping_LegendStudioPlugin_Extension';
+import type {
+  DSLMapping_LegendStudioPlugin_Extension,
+  MappingElementLabel,
+} from '../../../DSLMapping_LegendStudioPlugin_Extension';
 import type { LegendStudioPlugin } from '../../../LegendStudioPlugin';
 import { flatData_setSourceRootRecordType } from '../../../graphModifier/StoreFlatData_GraphModifierHelper';
 import {
@@ -180,6 +183,77 @@ export const getMappingElementTarget = (
   }
   throw new UnsupportedOperationError(
     `Can't derive target of mapping element`,
+    mappingElement,
+  );
+};
+
+export const getMappingElementLabel = (
+  mappingElement: MappingElement,
+  editorStore: EditorStore,
+): MappingElementLabel => {
+  if (mappingElement instanceof EnumerationMapping) {
+    return {
+      value: `${
+        fromElementPathToMappingElementId(
+          mappingElement.enumeration.value.path,
+        ) === mappingElement.id.value
+          ? mappingElement.enumeration.value.name
+          : `${mappingElement.enumeration.value.name} [${mappingElement.id.value}]`
+      }`,
+      root: false,
+      tooltip: mappingElement.enumeration.value.path,
+    };
+  } else if (mappingElement instanceof AssociationImplementation) {
+    return {
+      value: `${
+        fromElementPathToMappingElementId(
+          mappingElement.association.value.path,
+        ) === mappingElement.id.value
+          ? mappingElement.association.value.name
+          : `${mappingElement.association.value.name} [${mappingElement.id.value}]`
+      }`,
+      root: false,
+      tooltip: mappingElement.association.value.path,
+    };
+  } else if (mappingElement instanceof SetImplementation) {
+    if (mappingElement instanceof EmbeddedFlatDataPropertyMapping) {
+      return {
+        value: `${mappingElement.class.value.name} [${mappingElement.property.value.name}]`,
+        root: mappingElement.root.value,
+        tooltip: mappingElement.class.value.path,
+      };
+    }
+    const extraSetImplementationMappingElementLabelInfoBuilders =
+      editorStore.pluginManager
+        .getStudioPlugins()
+        .flatMap(
+          (plugin) =>
+            (
+              plugin as DSLMapping_LegendStudioPlugin_Extension
+            ).getExtraSetImplementationMappingElementLabelInfoBuilders?.() ??
+            [],
+        );
+    for (const labelInfoBuilder of extraSetImplementationMappingElementLabelInfoBuilders) {
+      const labelInfo = labelInfoBuilder(mappingElement);
+      if (labelInfo) {
+        return labelInfo;
+      }
+    }
+    return {
+      value: `${
+        fromElementPathToMappingElementId(mappingElement.class.value.path) ===
+        mappingElement.id.value
+          ? mappingElement.root.value
+            ? mappingElement.class.value.name
+            : `${mappingElement.class.value.name} [default]`
+          : `${mappingElement.class.value.name} [${mappingElement.id.value}]`
+      }`,
+      root: mappingElement.root.value,
+      tooltip: mappingElement.class.value.path,
+    };
+  }
+  throw new UnsupportedOperationError(
+    `Can't build label info for mapping element`,
     mappingElement,
   );
 };
@@ -264,6 +338,7 @@ export const createClassMapping = (
   id: string,
   _class: Class,
   setImpType: BASIC_SET_IMPLEMENTATION_TYPE,
+  editorStore: EditorStore,
 ): SetImplementation | undefined => {
   let setImp: SetImplementation;
   // NOTE: by default when we create a new instance set implementation, we will create PURE instance set implementation
@@ -292,7 +367,11 @@ export const createClassMapping = (
       return undefined;
   }
   setImpl_updateRootOnCreate(setImp);
-  mapping_addClassMapping(mapping, setImp);
+  mapping_addClassMapping(
+    mapping,
+    setImp,
+    editorStore.changeDetectionState.observerContext,
+  );
   return setImp;
 };
 
@@ -318,10 +397,7 @@ const getEmbeddedSetImplmentations = (
   mapping: Mapping,
 ): InstanceSetImplementation[] =>
   mapping.allOwnClassMappings
-    .filter(
-      (setImpl): setImpl is InstanceSetImplementation =>
-        setImpl instanceof InstanceSetImplementation,
-    )
+    .filter(filterByType(InstanceSetImplementation))
     .map((setImpl) => setImpl.getEmbeddedSetImplmentations())
     .flat();
 
@@ -346,12 +422,7 @@ const getMappingElementByTypeAndId = (
           (classMapping) => classMapping.id.value === id,
         ) ??
         getEmbeddedSetImplmentations(mapping)
-          .filter(
-            (
-              a: InstanceSetImplementation,
-            ): a is EmbeddedFlatDataPropertyMapping =>
-              a instanceof EmbeddedFlatDataPropertyMapping,
-          )
+          .filter(filterByType(EmbeddedFlatDataPropertyMapping))
           .find((me) => me.id.value === id)
       );
     case MAPPING_ELEMENT_SOURCE_ID_LABEL.RELATIONAL_CLASS_MAPPING:
@@ -360,12 +431,7 @@ const getMappingElementByTypeAndId = (
           (classMapping) => classMapping.id.value === id,
         ) ??
         getEmbeddedSetImplmentations(mapping)
-          .filter(
-            (
-              a: InstanceSetImplementation,
-            ): a is EmbeddedRelationalInstanceSetImplementation =>
-              a instanceof EmbeddedRelationalInstanceSetImplementation,
-          )
+          .filter(filterByType(EmbeddedRelationalInstanceSetImplementation))
           .find((me) => me.id.value === id)
       );
     case MAPPING_ELEMENT_TYPE.ASSOCIATION:
@@ -392,26 +458,27 @@ export const getAllMappingElements = (mapping: Mapping): MappingElement[] => [
 
 const constructMappingElementNodeData = (
   mappingElement: MappingElement,
+  editorStore: EditorStore,
 ): MappingExplorerTreeNodeData => ({
   id: `${mappingElement.id.value}`,
   mappingElement: mappingElement,
-  label: mappingElement.label.value,
+  label: getMappingElementLabel(mappingElement, editorStore).value,
 });
 
 const getMappingElementTreeNodeData = (
   mappingElement: MappingElement,
+  editorStore: EditorStore,
 ): MappingExplorerTreeNodeData => {
-  const nodeData: MappingExplorerTreeNodeData =
-    constructMappingElementNodeData(mappingElement);
+  const nodeData: MappingExplorerTreeNodeData = constructMappingElementNodeData(
+    mappingElement,
+    editorStore,
+  );
   if (
     mappingElement instanceof FlatDataInstanceSetImplementation ||
     mappingElement instanceof EmbeddedFlatDataPropertyMapping
   ) {
     const embedded = mappingElement.propertyMappings.filter(
-      (
-        me: AbstractFlatDataPropertyMapping,
-      ): me is EmbeddedFlatDataPropertyMapping =>
-        me instanceof EmbeddedFlatDataPropertyMapping,
+      filterByType(EmbeddedFlatDataPropertyMapping),
     );
     nodeData.childrenIds = embedded.map(
       (e) => `${nodeData.id}.${e.property.value.name}`,
@@ -427,6 +494,7 @@ const getMappingIdentitySortString = (
 
 const getMappingElementTreeData = (
   mapping: Mapping,
+  editorStore: EditorStore,
 ): TreeData<MappingExplorerTreeNodeData> => {
   const rootIds: string[] = [];
   const nodes = new Map<string, MappingExplorerTreeNodeData>();
@@ -436,8 +504,10 @@ const getMappingElementTreeData = (
     ),
   );
   rootMappingElements.forEach((mappingElement) => {
-    const mappingElementTreeNodeData =
-      getMappingElementTreeNodeData(mappingElement);
+    const mappingElementTreeNodeData = getMappingElementTreeNodeData(
+      mappingElement,
+      editorStore,
+    );
     addUniqueEntry(rootIds, mappingElementTreeNodeData.id);
     nodes.set(mappingElementTreeNodeData.id, mappingElementTreeNodeData);
   });
@@ -448,18 +518,18 @@ const reprocessMappingElement = (
   mappingElement: MappingElement,
   treeNodes: Map<string, MappingExplorerTreeNodeData>,
   openNodes: string[],
+  editorStore: EditorStore,
 ): MappingExplorerTreeNodeData => {
-  const nodeData: MappingExplorerTreeNodeData =
-    constructMappingElementNodeData(mappingElement);
+  const nodeData: MappingExplorerTreeNodeData = constructMappingElementNodeData(
+    mappingElement,
+    editorStore,
+  );
   if (
     mappingElement instanceof FlatDataInstanceSetImplementation ||
     mappingElement instanceof EmbeddedFlatDataPropertyMapping
   ) {
     const embedded = mappingElement.propertyMappings.filter(
-      (
-        me: AbstractFlatDataPropertyMapping,
-      ): me is AbstractFlatDataPropertyMapping =>
-        me instanceof EmbeddedFlatDataPropertyMapping,
+      filterByType(EmbeddedFlatDataPropertyMapping),
     );
     nodeData.childrenIds = embedded.map(
       (e) => `${nodeData.id}.${e.property.value.name}`,
@@ -467,11 +537,7 @@ const reprocessMappingElement = (
     if (openNodes.includes(mappingElement.id.value)) {
       nodeData.isOpen = true;
       embedded.forEach((e) =>
-        reprocessMappingElement(
-          e as EmbeddedFlatDataPropertyMapping,
-          treeNodes,
-          openNodes,
-        ),
+        reprocessMappingElement(e, treeNodes, openNodes, editorStore),
       );
     }
   }
@@ -482,6 +548,7 @@ const reprocessMappingElement = (
 const reprocessMappingElementNodes = (
   mapping: Mapping,
   openNodes: string[],
+  editorStore: EditorStore,
 ): TreeData<MappingExplorerTreeNodeData> => {
   const rootIds: string[] = [];
   const nodes = new Map<string, MappingExplorerTreeNodeData>();
@@ -495,6 +562,7 @@ const reprocessMappingElementNodes = (
       mappingElement,
       nodes,
       openNodes,
+      editorStore,
     );
     addUniqueEntry(rootIds, mappingElementTreeNodeData.id);
   });
@@ -565,7 +633,10 @@ export class MappingEditorState extends ElementEditorState {
     this.mappingTestStates = this.mapping.tests.map(
       (test) => new MappingTestState(editorStore, test, this),
     );
-    this.mappingExplorerTreeData = getMappingElementTreeData(this.mapping);
+    this.mappingExplorerTreeData = getMappingElementTreeData(
+      this.mapping,
+      editorStore,
+    );
   }
 
   get mapping(): Mapping {
@@ -684,15 +755,12 @@ export class MappingEditorState extends ElementEditorState {
         mappingElement instanceof EmbeddedFlatDataPropertyMapping
       ) {
         mappingElement.propertyMappings
-          .filter(
-            (
-              me: AbstractFlatDataPropertyMapping,
-            ): me is EmbeddedFlatDataPropertyMapping =>
-              me instanceof EmbeddedFlatDataPropertyMapping,
-          )
+          .filter(filterByType(EmbeddedFlatDataPropertyMapping))
           .forEach((embeddedPM) => {
-            const embeddedPropertyNode =
-              getMappingElementTreeNodeData(embeddedPM);
+            const embeddedPropertyNode = getMappingElementTreeNodeData(
+              embeddedPM,
+              this.editorStore,
+            );
             treeData.nodes.set(embeddedPropertyNode.id, embeddedPropertyNode);
           });
       }
@@ -727,10 +795,14 @@ export class MappingEditorState extends ElementEditorState {
       .filter((node) => node.isOpen)
       .map((node) => node.id);
     this.setMappingExplorerTreeNodeData(
-      reprocessMappingElementNodes(this.mapping, openedTreeNodeIds),
+      reprocessMappingElementNodes(
+        this.mapping,
+        openedTreeNodeIds,
+        this.editorStore,
+      ),
     );
     if (openNodeFoCurrentTab) {
-      // FIXME: we should follow the example of project explorer where we maintain the currentlySelectedNode
+      // TODO: we should follow the example of project explorer where we maintain the currentlySelectedNode
       // instead of adaptively show the `selectedNode` based on current tab state. This is bad
       // this.setMappingElementTreeNodeData(openNode(openElement, this.mappingElementsTreeData));
       // const openNode = (element: EmbeddedFlatDataPropertyMapping, treeData: TreeData<MappingElementTreeNodeData>): MappingElementTreeNodeData => {
@@ -1177,10 +1249,7 @@ export class MappingEditorState extends ElementEditorState {
                 const propertyMappingState: LambdaEditorState | undefined = (
                   this.currentTabState.propertyMappingStates as unknown[]
                 )
-                  .filter(
-                    (state): state is LambdaEditorState =>
-                      state instanceof LambdaEditorState,
-                  )
+                  .filter(filterByType(LambdaEditorState))
                   .find((state) => state.lambdaId === sourceId);
                 if (propertyMappingState) {
                   propertyMappingState.setCompilationError(compilationError);
@@ -1208,10 +1277,7 @@ export class MappingEditorState extends ElementEditorState {
 
   override get hasCompilationError(): boolean {
     return this.openedTabStates
-      .filter(
-        (tabState): tabState is InstanceSetImplementationState =>
-          tabState instanceof InstanceSetImplementationState,
-      )
+      .filter(filterByType(InstanceSetImplementationState))
       .some((tabState) =>
         tabState.propertyMappingStates.some((pmState) =>
           Boolean(pmState.compilationError),
@@ -1221,10 +1287,7 @@ export class MappingEditorState extends ElementEditorState {
 
   override clearCompilationError(): void {
     this.openedTabStates
-      .filter(
-        (tabState): tabState is InstanceSetImplementationState =>
-          tabState instanceof InstanceSetImplementationState,
-      )
+      .filter(filterByType(InstanceSetImplementationState))
       .forEach((tabState) => {
         tabState.propertyMappingStates.forEach((pmState) =>
           pmState.setCompilationError(undefined),
@@ -1235,22 +1298,17 @@ export class MappingEditorState extends ElementEditorState {
   // -------------------------------------- Execution ---------------------------------------
 
   *buildExecution(setImpl: SetImplementation): GeneratorFn<void> {
+    const executionTabStates = this.openedTabStates.filter(
+      filterByType(MappingExecutionState),
+    );
     const executionStateName = generateEnumerableNameFromToken(
-      this.openedTabStates
-        .filter(
-          (tabState): tabState is MappingExecutionState =>
-            tabState instanceof MappingExecutionState,
-        )
-        .map((tabState) => tabState.name),
+      executionTabStates.map((tabState) => tabState.name),
       'execution',
     );
     assertTrue(
-      !this.openedTabStates
-        .filter(
-          (tabState): tabState is MappingExecutionState =>
-            tabState instanceof MappingExecutionState,
-        )
-        .find((tabState) => tabState.name === executionStateName),
+      !executionTabStates.find(
+        (tabState) => tabState.name === executionStateName,
+      ),
       `Can't auto-generate execution name for value '${executionStateName}'`,
     );
     const executionState = new MappingExecutionState(
@@ -1347,7 +1405,11 @@ export class MappingEditorState extends ElementEditorState {
     this.mappingTestStates.push(
       new MappingTestState(this.editorStore, test, this),
     );
-    mapping_addTest(this.mapping, test);
+    mapping_addTest(
+      this.mapping,
+      test,
+      this.editorStore.changeDetectionState.observerContext,
+    );
     yield flowResult(this.openTest(test));
   }
 
@@ -1370,7 +1432,7 @@ export class MappingEditorState extends ElementEditorState {
 
   *createNewTest(setImplementation: SetImplementation): GeneratorFn<void> {
     const query =
-      this.editorStore.graphManagerState.graphManager.HACKY_createGetAllLambda(
+      this.editorStore.graphManagerState.graphManager.HACKY__createGetAllLambda(
         setImplementation.class.value,
       );
     const source = getMappingElementSource(
@@ -1418,7 +1480,11 @@ export class MappingEditorState extends ElementEditorState {
       [inputData],
       new ExpectedOutputMappingTestAssert('{}'),
     );
-    mapping_addTest(this.mapping, newTest);
+    mapping_addTest(
+      this.mapping,
+      newTest,
+      this.editorStore.changeDetectionState.observerContext,
+    );
     // open the test
     this.mappingTestStates.push(
       new MappingTestState(this.editorStore, newTest, this),

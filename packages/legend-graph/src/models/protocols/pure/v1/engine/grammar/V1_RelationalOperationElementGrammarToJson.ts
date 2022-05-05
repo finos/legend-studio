@@ -16,7 +16,7 @@
 
 import { custom, createModelSchema } from 'serializr';
 import {
-  deseralizeMap,
+  deserializeMap,
   SerializationFactory,
   serializeMap,
 } from '@finos/legend-shared';
@@ -27,8 +27,8 @@ export class V1_RelationalOperationElementGrammarToJsonInput {
   static readonly serialization = new SerializationFactory(
     createModelSchema(V1_RelationalOperationElementGrammarToJsonInput, {
       operations: custom(
-        (val) => serializeMap<string>(val),
-        (val) => deseralizeMap<string>(val),
+        (val) => serializeMap(val, (v) => v),
+        (val) => deserializeMap(val, (v) => v),
       ),
     }),
   );

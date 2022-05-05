@@ -39,10 +39,14 @@ import type {
 } from './SimpleFunctionExpression';
 import type { INTERNAL__UnknownValueSpecification } from './INTERNAL__UnknownValueSpecification';
 import type { VariableExpression } from './VariableExpression';
+import type { INTERNAL__PropagatedValue } from './INTERNAL__PropagatedValue';
 
 export interface ValueSpecificationVisitor<T> {
   visit_RootGraphFetchTreeInstanceValue(
     valueSpecification: RootGraphFetchTreeInstanceValue,
+  ): T;
+  visit_INTERNAL__PropagatedValue(
+    valueSpecification: INTERNAL__PropagatedValue,
   ): T;
   visit_PropertyGraphFetchTreeInstanceValue(
     valueSpecification: PropertyGraphFetchTreeInstanceValue,
@@ -55,7 +59,7 @@ export interface ValueSpecificationVisitor<T> {
   visit_RuntimeInstanceValue(valueSpecification: RuntimeInstanceValue): T;
   visit_PairInstanceValue(valueSpecification: PairInstanceValue): T;
   visit_MappingInstanceValue(valueSpecification: MappingInstanceValue): T;
-  visit_PureListInsanceValue(valueSpecification: PureListInstanceValue): T;
+  visit_PureListInstanceValue(valueSpecification: PureListInstanceValue): T;
   visit_CollectionInstanceValue(valueSpecification: CollectionInstanceValue): T;
   visit_FunctionExpression(valueSpecification: FunctionExpression): T;
   visit_SimpleFunctionExpression(
@@ -85,10 +89,6 @@ export abstract class ValueSpecification {
   ) {
     this.multiplicity = multiplicity;
     this.genericType = genericTypeReference;
-  }
-
-  setMultiplicity(val: Multiplicity): void {
-    this.multiplicity = val;
   }
 
   abstract accept_ValueSpecificationVisitor<T>(

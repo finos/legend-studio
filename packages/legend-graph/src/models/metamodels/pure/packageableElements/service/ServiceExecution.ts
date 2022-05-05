@@ -27,14 +27,17 @@ import {
 import type { PackageableElementReference } from '../PackageableElementReference';
 
 export abstract class ServiceExecution implements Hashable {
-  private readonly _$nominalTypeBrand!: 'ServiceExecution';
-
   abstract get hashCode(): string;
 }
 
 export class PureExecution extends ServiceExecution implements Hashable {
   owner: Service;
-  func: RawLambda; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
+  /**
+   * Studio does not process value specification, they are left in raw JSON form
+   *
+   * @discrepancy model
+   */
+  func: RawLambda;
 
   constructor(func: RawLambda, owner: Service) {
     super();
@@ -92,7 +95,8 @@ export class PureSingleExecution extends PureExecution implements Hashable {
 }
 
 export class KeyedExecutionParameter implements Hashable {
-  uuid = uuid();
+  readonly uuid = uuid();
+
   key: string;
   mapping: PackageableElementReference<Mapping>;
   runtime: Runtime;

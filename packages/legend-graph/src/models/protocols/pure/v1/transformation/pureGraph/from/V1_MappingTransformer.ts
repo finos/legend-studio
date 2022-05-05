@@ -25,7 +25,6 @@ import type { Mapping } from '../../../../../../metamodels/pure/packageableEleme
 import type {
   SetImplementationVisitor,
   SetImplementation,
-  TEMPORARY__UnresolvedSetImplementation,
 } from '../../../../../../metamodels/pure/packageableElements/mapping/SetImplementation';
 import type {
   PropertyMappingVisitor,
@@ -143,13 +142,13 @@ import { RelationalInputData } from '../../../../../../metamodels/pure/packageab
 import { V1_RelationalInputData } from '../../../model/packageableElements/store/relational/mapping/V1_RelationalInputData';
 import { SOURCE_INFORMATION_KEY } from '../../../../../../../MetaModelConst';
 import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext';
-import { toJS } from 'mobx';
 import type { DSLMapping_PureProtocolProcessorPlugin_Extension } from '../../../../DSLMapping_PureProtocolProcessorPlugin_Extension';
 import type { InstanceSetImplementation } from '../../../../../../metamodels/pure/packageableElements/mapping/InstanceSetImplementation';
 import type { SubstituteStore } from '../../../../../../metamodels/pure/packageableElements/mapping/SubstituteStore';
 import { V1_BindingTransformer } from '../../../model/packageableElements/externalFormat/store/V1_BindingTransformer';
 import { V1_MergeOperationClassMapping } from '../../../model/packageableElements/mapping/V1_MergeOperationClassMapping';
 import { MergeOperationSetImplementation } from '../../../../../../metamodels/pure/packageableElements/mapping/MergeOperationSetImplementation';
+import type { TEMPORARY__UnresolvedSetImplementation } from '../../../../../../metamodels/pure/packageableElements/mapping/TEMPORARY__UnresolvedSetImplementation';
 
 export const V1_transformPropertyReference = (
   element: PropertyReference,
@@ -439,7 +438,15 @@ const transformPurePropertyMapping = (
       isTransformingLocalPropertyMapping: Boolean(element.localMappingProperty),
     },
   );
-  purePropertyMapping.source = ''; // @MARKER: GRAMMAR ROUNDTRIP --- omit this information during protocol transformation as it can be interpreted while building the graph
+  /**
+   * Omit this information during protocol transformation as it can be
+   * interpreted while building the graph; and will help grammar-roundtrip
+   * tests (involving engine) to pass. Ideally, this requires grammar parser
+   * and composer in engine to be more consistent.
+   *
+   * @discrepancy grammar-roundtrip
+   */
+  purePropertyMapping.source = '';
   purePropertyMapping.target = transformPropertyMappingTarget(
     element.targetSetImplementation,
   );
@@ -477,18 +484,26 @@ const transformRelationalPropertyMapping = (
   // NOTE: if in the future, source information is stored under different key,
   // e.g. { "classPointerSourceInformation": ... }
   // we need to use the prune source information method from `V1_PureGraphManager`
-  propertyMapping.relationalOperation = toJS(
+  propertyMapping.relationalOperation = (
     context.keepSourceInformation
       ? element.relationalOperation
       : recursiveOmit(
           element.relationalOperation as Record<PropertyKey, unknown>,
           [SOURCE_INFORMATION_KEY],
-        ),
+        )
   ) as V1_RawRelationalOperationElement;
   // NOTE: isTransformingSourceId is needed for the roundtrip of association relational property mapping
   propertyMapping.source = isTransformingSourceId
     ? transformPropertyMappingSource(element.sourceSetImplementation)
-    : undefined; // @MARKER: GRAMMAR ROUNDTRIP --- omit this information during protocol transformation as it can be interpreted while building the graph
+    : /**
+       * Omit this information during protocol transformation as it can be
+       * interpreted while building the graph; and will help grammar-roundtrip
+       * tests (involving engine) to pass. Ideally, this requires grammar parser
+       * and composer in engine to be more consistent.
+       *
+       * @discrepancy grammar-roundtrip
+       */
+      undefined;
   propertyMapping.target = transformPropertyMappingTarget(
     element.targetSetImplementation,
   );
@@ -517,7 +532,15 @@ const transformEmbeddedRelationalPropertyMapping = (
     isTransformingEmbeddedPropertyMapping:
       isTransformingEmbeddedPropertyMapping,
   });
-  embedded.source = undefined; // @MARKER: GRAMMAR ROUNDTRIP --- omit this information during protocol transformation as it can be interpreted while building the graph
+  /**
+   * Omit this information during protocol transformation as it can be
+   * interpreted while building the graph; and will help grammar-roundtrip
+   * tests (involving engine) to pass. Ideally, this requires grammar parser
+   * and composer in engine to be more consistent.
+   *
+   * @discrepancy grammar-roundtrip
+   */
+  embedded.source = undefined;
   embedded.target = transformPropertyMappingTarget(
     element.targetSetImplementation,
   );
@@ -535,7 +558,15 @@ const transformEmbeddedRelationalPropertyMapping = (
   if (root !== undefined) {
     classMapping.root = root;
   }
-  classMapping.class = undefined; // @MARKER: GRAMMAR ROUNDTRIP --- omit this information during protocol transformation as it can be interpreted while building the graph
+  /**
+   * Omit this information during protocol transformation as it can be
+   * interpreted while building the graph; and will help grammar-roundtrip
+   * tests (involving engine) to pass. Ideally, this requires grammar parser
+   * and composer in engine to be more consistent.
+   *
+   * @discrepancy grammar-roundtrip
+   */
+  classMapping.class = undefined;
   embedded.classMapping = classMapping;
   if (element.localMappingProperty) {
     embedded.localMappingProperty = transformLocalPropertyInfo(
@@ -554,7 +585,15 @@ const transformInlineEmbeddedRelationalPropertyMapping = (
     isTransformingEmbeddedPropertyMapping:
       isTransformingEmbeddedPropertyMapping,
   });
-  embedded.source = undefined; // @MARKER: GRAMMAR ROUNDTRIP --- omit this information during protocol transformation as it can be interpreted while building the graph
+  /**
+   * Omit this information during protocol transformation as it can be
+   * interpreted while building the graph; and will help grammar-roundtrip
+   * tests (involving engine) to pass. Ideally, this requires grammar parser
+   * and composer in engine to be more consistent.
+   *
+   * @discrepancy grammar-roundtrip
+   */
+  embedded.source = undefined;
   embedded.target = transformPropertyMappingTarget(
     element.targetSetImplementation,
   );
@@ -577,7 +616,15 @@ const transformOtherwiseEmbeddedRelationalPropertyMapping = (
     isTransformingEmbeddedPropertyMapping:
       isTransformingEmbeddedPropertyMapping,
   });
-  embedded.source = undefined; // @MARKER: GRAMMAR ROUNDTRIP --- omit this information during protocol transformation as it can be interpreted while building the graph
+  /**
+   * Omit this information during protocol transformation as it can be
+   * interpreted while building the graph; and will help grammar-roundtrip
+   * tests (involving engine) to pass. Ideally, this requires grammar parser
+   * and composer in engine to be more consistent.
+   *
+   * @discrepancy grammar-roundtrip
+   */
+  embedded.source = undefined;
   embedded.target = transformPropertyMappingTarget(
     element.targetSetImplementation,
   );
@@ -595,7 +642,15 @@ const transformOtherwiseEmbeddedRelationalPropertyMapping = (
   if (root !== undefined) {
     classMapping.root = root;
   }
-  classMapping.class = undefined; // @MARKER: GRAMMAR ROUNDTRIP --- omit this information during protocol transformation as it can be interpreted while building the graph
+  /**
+   * Omit this information during protocol transformation as it can be
+   * interpreted while building the graph; and will help grammar-roundtrip
+   * tests (involving engine) to pass. Ideally, this requires grammar parser
+   * and composer in engine to be more consistent.
+   *
+   * @discrepancy grammar-roundtrip
+   */
+  classMapping.class = undefined;
   embedded.classMapping = classMapping;
   embedded.otherwisePropertyMapping = transformProperyMapping(
     element.otherwisePropertyMapping,
@@ -925,7 +980,15 @@ const transformRelationalInstanceSetImpl = (
   if (root !== undefined) {
     classMapping.root = root;
   }
-  classMapping.class = undefined; // @MARKER: GRAMMAR ROUNDTRIP --- omit this information during protocol transformation as it can be interpreted while building the graph
+  /**
+   * Omit this information during protocol transformation as it can be
+   * interpreted while building the graph; and will help grammar-roundtrip
+   * tests (involving engine) to pass. Ideally, this requires grammar parser
+   * and composer in engine to be more consistent.
+   *
+   * @discrepancy grammar-roundtrip
+   */
+  classMapping.class = undefined;
   return classMapping;
 };
 
@@ -1136,7 +1199,13 @@ export class V1_SetImplementationTransformer
     );
   }
 
-  /* @MARKER: RELAXED GRAPH CHECK - See https://github.com/finos/legend-studio/issues/880 */
+  /**
+   * This test is skipped because we want to temporarily relax graph building algorithm
+   * to ease Pure -> Legend migration push.
+   * See https://github.com/finos/legend-studio/issues/880
+   *
+   * @discrepancy graph-building
+   */
   visit_TEMPORARY__UnresolvedSetImplementation(
     setImplementation: TEMPORARY__UnresolvedSetImplementation,
   ): V1_ClassMapping | undefined {

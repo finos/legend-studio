@@ -16,6 +16,7 @@
 
 import { observer } from 'mobx-react-lite';
 import { clsx, DropdownMenu, ContextMenu, TimesIcon } from '@finos/legend-art';
+import { filterByType } from '@finos/legend-shared';
 import {
   EntityDiffViewState,
   DIFF_VIEW_MODE,
@@ -76,8 +77,7 @@ export const ReviewPanel = observer(() => {
       ? editorStore.currentEditorState
       : undefined;
   const openedEditorStates = editorStore.openedEditorStates.filter(
-    (editorState): editorState is EntityDiffViewState =>
-      editorState instanceof EntityDiffViewState,
+    filterByType(EntityDiffViewState),
   );
   const closeTab =
     (diffState: EditorState): React.MouseEventHandler =>

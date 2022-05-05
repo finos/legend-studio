@@ -33,6 +33,7 @@ import {
   addUniqueEntry,
   deleteEntry,
   assertErrorThrown,
+  filterByType,
 } from '@finos/legend-shared';
 import type { QueryBuilderExplorerTreeDragSource } from './QueryBuilderExplorerState';
 import { QueryBuilderPropertyExpressionState } from './QueryBuilderPropertyEditorState';
@@ -43,6 +44,7 @@ import {
   extractElementNameFromPath,
   SimpleFunctionExpression,
   TYPICAL_MULTIPLICITY_TYPE,
+  observe_ValueSpecification,
 } from '@finos/legend-graph';
 import {
   DEFAULT_LAMBDA_VARIABLE_NAME,
@@ -130,7 +132,7 @@ export class FilterConditionState {
       `Can't find an operator for property '${this.propertyExpressionState.path}': no operators registered`,
     );
     this.operator = this.operators[0] as QueryBuilderFilterOperator;
-    this.value = this.operator.getDefaultFilterConditionValue(this);
+    this.setValue(this.operator.getDefaultFilterConditionValue(this));
   }
 
   get operators(): QueryBuilderFilterOperator[] {
@@ -148,6 +150,12 @@ export class FilterConditionState {
       this.filterState.queryBuilderState.applicationStore.notifyError(error);
       return;
     }
+
+    // observe the property expression
+    observe_ValueSpecification(
+      propertyExpression,
+      this.filterState.queryBuilderState.observableContext,
+    );
 
     this.propertyExpressionState = new QueryBuilderPropertyExpressionState(
       this.filterState.queryBuilderState,
@@ -180,7 +188,12 @@ export class FilterConditionState {
   }
 
   setValue(val: ValueSpecification | undefined): void {
-    this.value = val;
+    this.value = val
+      ? observe_ValueSpecification(
+          val,
+          this.filterState.queryBuilderState.observableContext,
+        )
+      : undefined;
   }
 
   addExistsLambdaParamNames(val: string): void {
@@ -606,10 +619,7 @@ export class QueryBuilderFilterState
   private pruneChildlessGroupNodes(): void {
     const getChildlessGroupNodes = (): QueryBuilderFilterTreeGroupNodeData[] =>
       Array.from(this.nodes.values())
-        .filter(
-          (node): node is QueryBuilderFilterTreeGroupNodeData =>
-            node instanceof QueryBuilderFilterTreeGroupNodeData,
-        )
+        .filter(filterByType(QueryBuilderFilterTreeGroupNodeData))
         .filter((node) => !node.childrenIds.length);
     let nodesToProcess = getChildlessGroupNodes();
     while (nodesToProcess.length) {
@@ -697,10 +707,7 @@ export class QueryBuilderFilterState
     // it will be group node with exactly 1 non-blank condition
     const getSquashableGroupNodes = (): QueryBuilderFilterTreeGroupNodeData[] =>
       Array.from(this.nodes.values())
-        .filter(
-          (node): node is QueryBuilderFilterTreeGroupNodeData =>
-            node instanceof QueryBuilderFilterTreeGroupNodeData,
-        )
+        .filter(filterByType(QueryBuilderFilterTreeGroupNodeData))
         .filter((node) => node.childrenIds.length < 2)
         .filter((node) => {
           if (!node.childrenIds.length) {
@@ -740,10 +747,7 @@ export class QueryBuilderFilterState
     this.setSelectedNode(undefined);
     const getUnnecessaryNodes = (): QueryBuilderFilterTreeGroupNodeData[] =>
       Array.from(this.nodes.values())
-        .filter(
-          (node): node is QueryBuilderFilterTreeGroupNodeData =>
-            node instanceof QueryBuilderFilterTreeGroupNodeData,
-        )
+        .filter(filterByType(QueryBuilderFilterTreeGroupNodeData))
         .filter((node) => {
           if (!node.parentId || !this.nodes.has(node.parentId)) {
             return false;

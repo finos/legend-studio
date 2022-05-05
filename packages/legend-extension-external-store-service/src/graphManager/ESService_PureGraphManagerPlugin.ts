@@ -26,23 +26,30 @@ import {
   type ObserverContext,
   type SetImplementation,
   type SetImplementationObserver,
+  type EmbeddedData,
+  type EmbeddedDataObserver,
+  type EmbeddedData_PureGraphManagerPlugin_Extension,
 } from '@finos/legend-graph';
 import { ServiceStoreConnection } from '../models/metamodels/pure/model/packageableElements/store/serviceStore/connection/ESService_ServiceStoreConnection';
 import {
   observe_RootServiceInstanceSetImplementation,
   observe_ServiceStore,
+  observe_ServiceStoreEmbeddedData,
 } from './action/changeDetection/ESService_ObserverHelper';
 import { RootServiceInstanceSetImplementation } from '../models/metamodels/pure/model/packageableElements/store/serviceStore/mapping/ESService_RootServiceInstanceSetImplementation';
+import { ServiceStoreEmbeddedData } from '../models/metamodels/pure/model/data/ESService_ServiceStoreEmbeddedData';
 
-const PURE_GRAMMAR_SERVICE_STORE_PARSER_NAME = 'ServiceStore';
-const PURE_GRAMMAR_SERVICE_STORE_ELEMENT_TYPE_LABEL = 'ServiceStore';
+export const PURE_GRAMMAR_SERVICE_STORE_PARSER_NAME = 'ServiceStore';
+export const PURE_GRAMMAR_SERVICE_STORE_ELEMENT_TYPE_LABEL = 'ServiceStore';
 const PURE_GRAMMAR_SERVICE_STORE_CONNECTION_TYPE_LABEL =
   'ServiceStoreConnection';
 const PURE_GRAMMAR_SERVICE_STORE_SERVICE_GROUP_LABEL = 'ServiceGroup';
 
 export class ESService_PureGraphManagerPlugin
   extends PureGraphManagerPlugin
-  implements DSLMapping_PureGraphManagerPlugin_Extension
+  implements
+    DSLMapping_PureGraphManagerPlugin_Extension,
+    EmbeddedData_PureGraphManagerPlugin_Extension
 {
   constructor() {
     super(packageJson.extensions.pureGraphManagerPlugin, packageJson.version);
@@ -107,6 +114,20 @@ export class ESService_PureGraphManagerPlugin
             metamodel,
             context,
           );
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  getExtraEmbeddedDataObservers(): EmbeddedDataObserver[] {
+    return [
+      (
+        metamodel: EmbeddedData,
+        context: ObserverContext,
+      ): EmbeddedData | undefined => {
+        if (metamodel instanceof ServiceStoreEmbeddedData) {
+          return observe_ServiceStoreEmbeddedData(metamodel);
         }
         return undefined;
       },

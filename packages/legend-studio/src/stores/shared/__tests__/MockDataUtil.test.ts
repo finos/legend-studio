@@ -19,12 +19,13 @@ import { classHasCycle, createMockClassInstance } from '../MockDataUtil';
 import { unitTest } from '@finos/legend-shared';
 import { TEST__getTestEditorStore } from '../../EditorStoreTestUtils';
 import type { Entity } from '@finos/legend-model-storage';
+import { TEST__buildGraphWithEntities } from '@finos/legend-graph';
 
 const editorStore = TEST__getTestEditorStore();
 
 beforeAll(async () => {
-  await editorStore.graphManagerState.graphManager.buildGraph(
-    editorStore.graphManagerState.graph,
+  await TEST__buildGraphWithEntities(
+    editorStore.graphManagerState,
     TEST_DATA__completeGraphEntities as Entity[],
   );
 });

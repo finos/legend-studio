@@ -77,7 +77,6 @@ const WorkspaceViewerContextMenu = observer(
 const WorkspaceViewer = observer((props: { workspace: Workspace }) => {
   const { workspace } = props;
   const editorStore = useEditorStore();
-  const applicationStore = useApplicationStore<LegendStudioConfig>();
   const isActive = areWorkspacesEquivalent(
     editorStore.sdlcState.activeWorkspace,
     workspace,
@@ -105,7 +104,6 @@ const WorkspaceViewer = observer((props: { workspace: Workspace }) => {
         rel="noopener noreferrer"
         target="_blank"
         to={generateEditorRoute(
-          applicationStore.config.currentSDLCServerOption,
           workspace.projectId,
           workspace.workspaceId,
           workspace.workspaceType,
@@ -203,11 +201,15 @@ const ReleaseEditor = observer(() => {
   );
   const changeNotes: React.ChangeEventHandler<HTMLTextAreaElement> = (event) =>
     revisionInput.setNotes(event.target.value);
+  const notFetchedLatestVersionAndCurrentRevision =
+    latestProjectVersion === undefined || currentProjectRevision === undefined;
   const isCurrentProjectVersionLatest =
     Boolean(latestProjectVersion) &&
     latestProjectVersion?.revisionId === currentProjectRevision?.id;
-  const notFetchedLatestVersionAndCurrentRevision =
-    latestProjectVersion === undefined || currentProjectRevision === undefined;
+  const canCreateVersion =
+    !isCurrentProjectVersionLatest &&
+    !isDispatchingAction &&
+    editorStore.sdlcServerClient.features.canCreateVersion;
 
   // since this can be affected by other users, we refresh it more proactively
   useEffect(() => {
@@ -231,7 +233,7 @@ const ReleaseEditor = observer(() => {
           <textarea
             className="project-overview__release__editor__input input--dark"
             spellCheck={false}
-            disabled={isCurrentProjectVersionLatest || isDispatchingAction}
+            disabled={!canCreateVersion}
             value={revisionInput.notes}
             onChange={changeNotes}
             placeholder={'Release notes'}
@@ -240,7 +242,7 @@ const ReleaseEditor = observer(() => {
             <button
               className="project-overview__release__editor__action btn--dark btn--caution"
               onClick={createMajorRelease}
-              disabled={isCurrentProjectVersionLatest || isDispatchingAction}
+              disabled={!canCreateVersion}
               title={
                 'Create a major release which comes with backward-incompatible features'
               }
@@ -250,7 +252,7 @@ const ReleaseEditor = observer(() => {
             <button
               className="project-overview__release__editor__action btn--dark"
               onClick={createMinorRelease}
-              disabled={isCurrentProjectVersionLatest || isDispatchingAction}
+              disabled={!canCreateVersion}
               title={
                 'Create a minor release which comes with backward-compatible features'
               }
@@ -260,7 +262,7 @@ const ReleaseEditor = observer(() => {
             <button
               className="project-overview__release__editor__action btn--dark"
               onClick={createPatchRelease}
-              disabled={isCurrentProjectVersionLatest || isDispatchingAction}
+              disabled={!canCreateVersion}
               title={
                 'Create a patch release which comes with backward-compatible bug fixes'
               }
@@ -287,7 +289,6 @@ const ReleaseEditor = observer(() => {
                       rel="noopener noreferrer"
                       target="_blank"
                       to={generateViewVersionRoute(
-                        applicationStore.config.currentSDLCServerOption,
                         latestProjectVersion.projectId,
                         latestProjectVersion.id.id,
                       )}
@@ -341,11 +342,7 @@ const ReleaseEditor = observer(() => {
                     className="side-bar__panel__item workspace-updater__review__link"
                     rel="noopener noreferrer"
                     target="_blank"
-                    to={generateReviewRoute(
-                      applicationStore.config.currentSDLCServerOption,
-                      review.projectId,
-                      review.id,
-                    )}
+                    to={generateReviewRoute(review.projectId, review.id)}
                     title={'See review detail'}
                   >
                     <div className="workspace-updater__review">
@@ -406,11 +403,7 @@ const VersionsViewer = observer(() => {
               className="side-bar__panel__item project-overview__item__link"
               rel="noopener noreferrer"
               target="_blank"
-              to={generateViewVersionRoute(
-                applicationStore.config.currentSDLCServerOption,
-                version.projectId,
-                version.id.id,
-              )}
+              to={generateViewVersionRoute(version.projectId, version.id.id)}
               title={'See version detail'}
             >
               <div className="project-overview__item__link__content">

@@ -171,15 +171,17 @@ export class CreateQuerySetupState extends QuerySetupState {
     if (!currentMapping) {
       return [];
     }
-    return this.queryStore.queryBuilderState.runtimeOptions.filter((runtime) =>
-      runtime.value.runtimeValue.mappings
-        .map((mappingReference) => [
-          mappingReference.value,
-          ...mappingReference.value.allIncludedMappings,
-        ])
-        .flat()
-        .includes(currentMapping),
-    );
+    return this.queryStore.queryBuilderState
+      .getRuntimeOptions()
+      .filter((runtime) =>
+        runtime.value.runtimeValue.mappings
+          .map((mappingReference) => [
+            mappingReference.value,
+            ...mappingReference.value.allIncludedMappings,
+          ])
+          .flat()
+          .includes(currentMapping),
+      );
   }
 
   *loadProjects(): GeneratorFn<void> {
@@ -187,7 +189,7 @@ export class CreateQuerySetupState extends QuerySetupState {
     try {
       this.projects = (
         (yield this.queryStore.depotServerClient.getProjects()) as PlainObject<ProjectData>[]
-      ).map((project) => ProjectData.serialization.fromJson(project));
+      ).map((v) => ProjectData.serialization.fromJson(v));
       this.loadProjectsState.pass();
     } catch (error) {
       assertErrorThrown(error);
@@ -243,8 +245,9 @@ export class ServiceQuerySetupState extends QuerySetupState {
   }
 
   get serviceExecutionOptions(): ServiceExecutionOption[] {
-    return this.queryStore.queryBuilderState.serviceOptions.flatMap(
-      (option) => {
+    return this.queryStore.queryBuilderState
+      .getServiceOptions()
+      .flatMap((option) => {
         const service = option.value;
         const serviceExecution = service.execution;
         if (serviceExecution instanceof PureSingleExecution) {
@@ -264,8 +267,7 @@ export class ServiceQuerySetupState extends QuerySetupState {
           }));
         }
         return [];
-      },
-    );
+      });
   }
 
   *loadProjects(): GeneratorFn<void> {
@@ -273,7 +275,7 @@ export class ServiceQuerySetupState extends QuerySetupState {
     try {
       this.projects = (
         (yield this.queryStore.depotServerClient.getProjects()) as PlainObject<ProjectData>[]
-      ).map((project) => ProjectData.serialization.fromJson(project));
+      ).map((v) => ProjectData.serialization.fromJson(v));
       this.loadProjectsState.pass();
     } catch (error) {
       assertErrorThrown(error);

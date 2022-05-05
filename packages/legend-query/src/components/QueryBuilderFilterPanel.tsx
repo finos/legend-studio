@@ -75,6 +75,7 @@ import {
   QUERY_BUILDER_PARAMETER_TREE_DND_TYPE,
 } from '../stores/QueryParametersState';
 import { QUERY_BUILDER_GROUP_OPERATION } from '../stores/QueryBuilderOperatorsHelper';
+import type { ValueSpecification } from '@finos/legend-graph';
 
 const FilterConditionDragLayer: React.FC = () => {
   const { itemType, item, isDragging, currentPosition } = useDragLayer(
@@ -166,6 +167,8 @@ const QueryBuilderFilterConditionEditor = observer(
     isPropertyDragOver: boolean;
   }) => {
     const { node, isPropertyDragOver } = props;
+    const graph =
+      node.condition.filterState.queryBuilderState.graphManagerState.graph;
     const changeOperator = (val: QueryBuilderFilterOperator) => (): void =>
       node.condition.changeOperator(val);
     const changeProperty = (
@@ -176,7 +179,7 @@ const QueryBuilderFilterConditionEditor = observer(
           node.condition.filterState.queryBuilderState.explorerState
             .nonNullableTreeData,
           propertyNode,
-          node.condition.filterState.queryBuilderState.graphManagerState.graph,
+          graph,
         ),
       );
     // Drag and Drop on filter condition value
@@ -262,14 +265,15 @@ const QueryBuilderFilterConditionEditor = observer(
               )}
               <QueryBuilderValueSpecificationEditor
                 valueSpecification={node.condition.value}
-                graph={
-                  node.condition.filterState.queryBuilderState.graphManagerState
-                    .graph
+                updateValueSpecification={(val: ValueSpecification): void =>
+                  node.condition.setValue(val)
                 }
-                expectedType={
-                  node.condition.propertyExpressionState.propertyExpression.func
-                    .genericType.value.rawType
-                }
+                graph={graph}
+                typeCheckOption={{
+                  expectedType:
+                    node.condition.propertyExpressionState.propertyExpression
+                      .func.genericType.value.rawType,
+                }}
               />
             </div>
           )}
@@ -369,10 +373,11 @@ const QueryBuilderFilterTreeNodeContainer = observer(
     const toggleExpandNode = (): void => node.setIsOpen(!node.isOpen);
     const resetNode = (): void => {
       if (node instanceof QueryBuilderFilterTreeConditionNodeData) {
-        node.condition.value =
+        node.condition.setValue(
           node.condition.operator.getDefaultFilterConditionValue(
             node.condition,
-          );
+          ),
+        );
       }
     };
     const removeNode = (): void => filterState.removeNodeAndPruneBranch(node);

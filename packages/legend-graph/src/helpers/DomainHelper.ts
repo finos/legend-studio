@@ -16,7 +16,12 @@
 
 import type { PureModel } from '../graph/PureModel';
 import { Class } from '../models/metamodels/pure/packageableElements/domain/Class';
-import { CORE_PURE_PATH, MILESTONING_STEROTYPES } from '../MetaModelConst';
+import {
+  CORE_PURE_PATH,
+  ELEMENT_PATH_DELIMITER,
+  RESERVERD_PACKAGE_NAMES,
+  MILESTONING_STEREOTYPE,
+} from '../MetaModelConst';
 import { Profile } from '../models/metamodels/pure/packageableElements/domain/Profile';
 import { Tag } from '../models/metamodels/pure/packageableElements/domain/Tag';
 import { Enum } from '../models/metamodels/pure/packageableElements/domain/Enum';
@@ -24,26 +29,163 @@ import { Stereotype } from '../models/metamodels/pure/packageableElements/domain
 import { TaggedValue } from '../models/metamodels/pure/packageableElements/domain/TaggedValue';
 import { TagExplicitReference } from '../models/metamodels/pure/packageableElements/domain/TagReference';
 import type { Enumeration } from '../models/metamodels/pure/packageableElements/domain/Enumeration';
-import type { Package } from '../models/metamodels/pure/packageableElements/domain/Package';
+import { Package } from '../models/metamodels/pure/packageableElements/domain/Package';
 import type { PackageableElement } from '../models/metamodels/pure/packageableElements/PackageableElement';
+import {
+  AssertionError,
+  assertNonEmptyString,
+  assertTrue,
+  guaranteeType,
+} from '@finos/legend-shared';
+import { createPath } from '../MetaModelUtils';
+import type { BasicModel } from '../graph/BasicModel';
 
-export const _package_addElement = (
+export const addElementToPackage = (
   parent: Package,
   element: PackageableElement,
 ): void => {
-  // NOTE: here we directly push the element to the children array without any checks rather than use `addUniqueEntry` to improve performance.
-  // Duplication checks should be handled separately
+  // To improve performance we won't do duplication check here
   parent.children.push(element);
   element.package = parent;
 };
 
-export const _package_deleteElement = (
+export const deleteElementFromPackage = (
   parent: Package,
   packageableElement: PackageableElement,
 ): void => {
   parent.children = parent.children.filter(
     (child) => child !== packageableElement,
   );
+};
+
+export const getElementRootPackage = (element: PackageableElement): Package =>
+  !element.package
+    ? guaranteeType(element, Package)
+    : getElementRootPackage(element.package);
+
+/**
+ * If package name is a path, continue to recursively
+ * traverse the package chain to find the leaf package
+ *
+ * NOTE: if we do not allow create new packages, errorcould be
+ * thrown if a package with the specified path is not found
+ */
+const _getOrCreatePackage = (
+  parentPackage: Package,
+  relativePackagePath: string,
+  createNewPackageIfNotFound: boolean,
+  cache: Map<string, Package> | undefined,
+): Package => {
+  const index = relativePackagePath.indexOf(ELEMENT_PATH_DELIMITER);
+  const packageName =
+    index === -1
+      ? relativePackagePath
+      : relativePackagePath.substring(0, index);
+
+  // try to resolve when there is a cache miss
+  let pkg: Package | undefined;
+  pkg = parentPackage.children.find(
+    (child: PackageableElement): child is Package =>
+      child instanceof Package && child.name === packageName,
+  );
+  if (!pkg) {
+    if (!createNewPackageIfNotFound) {
+      throw new AssertionError(
+        `Can't find child package '${packageName}' in package '${parentPackage.path}'`,
+      );
+    }
+    // create the node if it is not in parent package
+    assertTrue(
+      !RESERVERD_PACKAGE_NAMES.includes(packageName),
+      `Can't create package with reserved name '${packageName}'`,
+    );
+    pkg = new Package(packageName);
+    pkg.package = parentPackage;
+    // NOTE: here we directly push the element to the children array without any checks rather than use `addUniqueEntry` to improve performance.
+    // Duplication checks should be handled separately for speed
+    parentPackage.children.push(pkg);
+  }
+
+  // populate cache after resolving the package
+  if (cache) {
+    cache.set(createPath(parentPackage.fullPath, packageName), pkg);
+  }
+
+  // traverse the package chain
+  if (index !== -1) {
+    return _getOrCreatePackage(
+      pkg,
+      relativePackagePath.substring(index + ELEMENT_PATH_DELIMITER.length),
+      createNewPackageIfNotFound,
+      cache,
+    );
+  }
+
+  return pkg;
+};
+
+export const getOrCreatePackage = (
+  parentPackage: Package,
+  relativePackagePath: string,
+  createNewPackageIfNotFound: boolean,
+  cache: Map<string, Package> | undefined,
+): Package => {
+  // check cache to find the shortest chain of packages to find/build
+  if (cache) {
+    // short-circuit
+    const cachedPackage = cache.get(
+      createPath(parentPackage.fullPath, relativePackagePath),
+    );
+    if (cachedPackage) {
+      return cachedPackage;
+    }
+
+    // NOTE: to check the cache, we need to traverse from the full package path
+    // up its ancestor chain till we find a cache hit
+    let immediateParentPackageRelativePath = relativePackagePath;
+    while (immediateParentPackageRelativePath !== '') {
+      const fullPath = createPath(
+        parentPackage.fullPath,
+        immediateParentPackageRelativePath,
+      );
+      const cachedParentPackage = cache.get(fullPath);
+      if (cachedParentPackage) {
+        return _getOrCreatePackage(
+          cachedParentPackage,
+          relativePackagePath.substring(
+            immediateParentPackageRelativePath.length +
+              ELEMENT_PATH_DELIMITER.length,
+            relativePackagePath.length,
+          ),
+          createNewPackageIfNotFound,
+          cache,
+        );
+      }
+      const index = immediateParentPackageRelativePath.lastIndexOf(
+        ELEMENT_PATH_DELIMITER,
+      );
+      immediateParentPackageRelativePath =
+        index !== -1
+          ? immediateParentPackageRelativePath.substring(0, index)
+          : '';
+    }
+  }
+
+  return _getOrCreatePackage(
+    parentPackage,
+    relativePackagePath,
+    createNewPackageIfNotFound,
+    cache,
+  );
+};
+
+export const getOrCreateGraphPackage = (
+  graph: BasicModel,
+  packagePath: string | undefined,
+  cache: Map<string, Package> | undefined,
+): Package => {
+  assertNonEmptyString(packagePath, 'Package path is required');
+  return getOrCreatePackage(graph.root, packagePath, true, cache);
 };
 
 export const createStubTag = (profile: Profile): Tag => new Tag(profile, '');
@@ -58,13 +200,13 @@ export const createStubEnum = (enumeration: Enumeration): Enum =>
 export const getMilestoneTemporalStereotype = (
   val: Class,
   graph: PureModel,
-): MILESTONING_STEROTYPES | undefined => {
+): MILESTONING_STEREOTYPE | undefined => {
   const milestonedProfile = graph.getProfile(CORE_PURE_PATH.PROFILE_TEMPORAL);
   let stereotype;
   const profile = val.stereotypes.find(
     (st) => st.ownerReference.value === milestonedProfile,
   );
-  stereotype = Object.values(MILESTONING_STEROTYPES).find(
+  stereotype = Object.values(MILESTONING_STEREOTYPE).find(
     (value) => value === profile?.value.value,
   );
   if (stereotype !== undefined) {
@@ -78,7 +220,7 @@ export const getMilestoneTemporalStereotype = (
         graph,
       );
       if (milestonedStereotype !== undefined) {
-        stereotype = Object.values(MILESTONING_STEROTYPES).find(
+        stereotype = Object.values(MILESTONING_STEREOTYPE).find(
           (value) => value === milestonedStereotype,
         );
       }

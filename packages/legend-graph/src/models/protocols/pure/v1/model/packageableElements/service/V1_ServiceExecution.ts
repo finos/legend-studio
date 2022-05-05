@@ -19,14 +19,7 @@ import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import type { V1_Runtime } from '../../../model/packageableElements/runtime/V1_Runtime';
 import type { V1_RawLambda } from '../../../model/rawValueSpecification/V1_RawLambda';
 
-export enum V1_ServiceExecutionType {
-  PURE_SINGLE_EXECUTION = 'pureSingleExecution',
-  PURE_MULTI_EXECUTION = 'pureMultiExecution',
-}
-
 export abstract class V1_ServiceExecution implements Hashable {
-  private readonly _$nominalTypeBrand!: 'V1_ServiceExecution';
-
   abstract get hashCode(): string;
 }
 
@@ -34,7 +27,12 @@ export abstract class V1_PureExecution
   extends V1_ServiceExecution
   implements Hashable
 {
-  func!: V1_RawLambda; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
+  /**
+   * Studio does not process value specification, they are left in raw JSON form
+   *
+   * @discrepancy model
+   */
+  func!: V1_RawLambda;
 
   get hashCode(): string {
     return hashArray([CORE_HASH_STRUCTURE.SERVICE_PURE_EXECUTION, this.func]);

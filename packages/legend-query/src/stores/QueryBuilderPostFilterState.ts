@@ -21,6 +21,7 @@ import {
   type ValueSpecification,
   Enumeration,
   PRIMITIVE_TYPE,
+  observe_ValueSpecification,
 } from '@finos/legend-graph';
 import {
   type GeneratorFn,
@@ -34,6 +35,7 @@ import {
   IllegalStateError,
   UnsupportedOperationError,
   uuid,
+  filterByType,
 } from '@finos/legend-shared';
 import {
   action,
@@ -61,7 +63,7 @@ export enum QUERY_BUILDER_POST_FILTER_DND_TYPE {
   BLANK_CONDITION = 'BLANK_CONDITION',
 }
 
-export enum TDS_COLUMN_GETTERS {
+export enum TDS_COLUMN_GETTER {
   GET_STRING = 'getString',
   GET_NUMBER = 'getNumber',
   GET_INTEGER = 'getInteger',
@@ -78,29 +80,29 @@ export enum TDS_COLUMN_GETTERS {
 
 export const getTDSColumnDerivedProperyFromType = (
   type: Type,
-): TDS_COLUMN_GETTERS => {
+): TDS_COLUMN_GETTER => {
   if (type instanceof Enumeration) {
-    return TDS_COLUMN_GETTERS.GET_ENUM;
+    return TDS_COLUMN_GETTER.GET_ENUM;
   }
   switch (type.path) {
     case PRIMITIVE_TYPE.STRING:
-      return TDS_COLUMN_GETTERS.GET_STRING;
+      return TDS_COLUMN_GETTER.GET_STRING;
     case PRIMITIVE_TYPE.NUMBER:
-      return TDS_COLUMN_GETTERS.GET_NUMBER;
+      return TDS_COLUMN_GETTER.GET_NUMBER;
     case PRIMITIVE_TYPE.INTEGER:
-      return TDS_COLUMN_GETTERS.GET_INTEGER;
+      return TDS_COLUMN_GETTER.GET_INTEGER;
     case PRIMITIVE_TYPE.FLOAT:
-      return TDS_COLUMN_GETTERS.GET_FLOAT;
+      return TDS_COLUMN_GETTER.GET_FLOAT;
     case PRIMITIVE_TYPE.DECIMAL:
-      return TDS_COLUMN_GETTERS.GET_DECIMAL;
+      return TDS_COLUMN_GETTER.GET_DECIMAL;
     case PRIMITIVE_TYPE.DATE:
-      return TDS_COLUMN_GETTERS.GET_DATE;
+      return TDS_COLUMN_GETTER.GET_DATE;
     case PRIMITIVE_TYPE.DATETIME:
-      return TDS_COLUMN_GETTERS.GET_DATETIME;
+      return TDS_COLUMN_GETTER.GET_DATETIME;
     case PRIMITIVE_TYPE.STRICTDATE:
-      return TDS_COLUMN_GETTERS.GET_STRICTDATE;
+      return TDS_COLUMN_GETTER.GET_STRICTDATE;
     case PRIMITIVE_TYPE.BOOLEAN:
-      return TDS_COLUMN_GETTERS.GET_BOOLEAN;
+      return TDS_COLUMN_GETTER.GET_BOOLEAN;
     default:
       throw new UnsupportedOperationError(
         `Can't find TDS column derived property name for type: '${type.path}'`,
@@ -109,27 +111,27 @@ export const getTDSColumnDerivedProperyFromType = (
 };
 
 export const getTypeFromDerivedProperty = (
-  derivedProperty: TDS_COLUMN_GETTERS,
+  derivedProperty: TDS_COLUMN_GETTER,
   graph: PureModel,
 ): Type | undefined => {
   switch (derivedProperty) {
-    case TDS_COLUMN_GETTERS.GET_STRING:
+    case TDS_COLUMN_GETTER.GET_STRING:
       return graph.getPrimitiveType(PRIMITIVE_TYPE.STRING);
-    case TDS_COLUMN_GETTERS.GET_NUMBER:
+    case TDS_COLUMN_GETTER.GET_NUMBER:
       return graph.getPrimitiveType(PRIMITIVE_TYPE.NUMBER);
-    case TDS_COLUMN_GETTERS.GET_INTEGER:
+    case TDS_COLUMN_GETTER.GET_INTEGER:
       return graph.getPrimitiveType(PRIMITIVE_TYPE.INTEGER);
-    case TDS_COLUMN_GETTERS.GET_FLOAT:
+    case TDS_COLUMN_GETTER.GET_FLOAT:
       return graph.getPrimitiveType(PRIMITIVE_TYPE.FLOAT);
-    case TDS_COLUMN_GETTERS.GET_DECIMAL:
+    case TDS_COLUMN_GETTER.GET_DECIMAL:
       return graph.getPrimitiveType(PRIMITIVE_TYPE.DECIMAL);
-    case TDS_COLUMN_GETTERS.GET_DATE:
+    case TDS_COLUMN_GETTER.GET_DATE:
       return graph.getPrimitiveType(PRIMITIVE_TYPE.DATE);
-    case TDS_COLUMN_GETTERS.GET_DATETIME:
+    case TDS_COLUMN_GETTER.GET_DATETIME:
       return graph.getPrimitiveType(PRIMITIVE_TYPE.DATETIME);
-    case TDS_COLUMN_GETTERS.GET_STRICTDATE:
+    case TDS_COLUMN_GETTER.GET_STRICTDATE:
       return graph.getPrimitiveType(PRIMITIVE_TYPE.STRICTDATE);
-    case TDS_COLUMN_GETTERS.GET_BOOLEAN:
+    case TDS_COLUMN_GETTER.GET_BOOLEAN:
       return graph.getPrimitiveType(PRIMITIVE_TYPE.BOOLEAN);
     default:
       return undefined;
@@ -260,6 +262,7 @@ export class PostFilterConditionState {
     | QueryBuilderAggregateColumnState;
   value?: ValueSpecification | undefined;
   operator: QueryBuilderPostFilterOperator;
+
   constructor(
     postFilterState: QueryBuilderPostFilterState,
     colState:
@@ -270,11 +273,16 @@ export class PostFilterConditionState {
   ) {
     makeAutoObservable(this, {
       columnState: observable,
+      changeOperator: action,
+      setColumnState: action,
+      setValue: action,
+      setOperator: action,
       changeColumn: flow,
     });
+
     this.postFilterState = postFilterState;
     this.columnState = colState;
-    this.value = value;
+    this.setValue(value);
     if (operator) {
       this.operator = operator;
     } else {
@@ -285,12 +293,31 @@ export class PostFilterConditionState {
       this.operator = guaranteeNonNullable(this.operators[0]);
     }
   }
+
   get columnName(): string {
     return this.columnState.columnName;
   }
 
+  get operators(): QueryBuilderPostFilterOperator[] {
+    return this.postFilterState.operators.filter((op) =>
+      op.isCompatibleWithPostFilterColumn(this),
+    );
+  }
+
+  changeOperator(val: QueryBuilderPostFilterOperator): void {
+    this.setOperator(val);
+    if (!this.operator.isCompatibleWithConditionValue(this)) {
+      this.setValue(this.operator.getDefaultFilterConditionValue(this));
+    }
+  }
+
   setValue(val: ValueSpecification | undefined): void {
-    this.value = val;
+    this.value = val
+      ? observe_ValueSpecification(
+          val,
+          this.postFilterState.queryBuilderState.observableContext,
+        )
+      : undefined;
   }
 
   setColumnState(
@@ -315,12 +342,15 @@ export class PostFilterConditionState {
       if (colState instanceof QueryBuilderDerivationProjectionColumnState) {
         yield flowResult(colState.fetchDerivationLambdaReturnType());
       }
+
       //column
       this.setColumnState(colState);
+
       //operator
       if (!this.operator.isCompatibleWithPostFilterColumn(this)) {
         this.setOperator(guaranteeNonNullable(this.operators[0]));
       }
+
       // value
       if (!this.operator.isCompatibleWithConditionValue(this)) {
         this.setValue(this.operator.getDefaultFilterConditionValue(this));
@@ -330,18 +360,6 @@ export class PostFilterConditionState {
       this.postFilterState.queryBuilderState.applicationStore.notifyError(
         `Can't drag column '${columnState.columnName}' due to: ${error.message}`,
       );
-    }
-  }
-
-  get operators(): QueryBuilderPostFilterOperator[] {
-    return this.postFilterState.operators.filter((op) =>
-      op.isCompatibleWithPostFilterColumn(this),
-    );
-  }
-  changeOperator(val: QueryBuilderPostFilterOperator): void {
-    this.setOperator(val);
-    if (!this.operator.isCompatibleWithConditionValue(this)) {
-      this.setValue(this.operator.getDefaultFilterConditionValue(this));
     }
   }
 }
@@ -602,10 +620,7 @@ export class QueryBuilderPostFilterState
     this.setSelectedNode(undefined);
     const getUnnecessaryNodes = (): QueryBuilderPostFilterTreeGroupNodeData[] =>
       Array.from(this.nodes.values())
-        .filter(
-          (node): node is QueryBuilderPostFilterTreeGroupNodeData =>
-            node instanceof QueryBuilderPostFilterTreeGroupNodeData,
-        )
+        .filter(filterByType(QueryBuilderPostFilterTreeGroupNodeData))
         .filter((node) => {
           if (!node.parentId || !this.nodes.has(node.parentId)) {
             return false;
@@ -654,10 +669,7 @@ export class QueryBuilderPostFilterState
     const getChildlessGroupNodes =
       (): QueryBuilderPostFilterTreeGroupNodeData[] =>
         Array.from(this.nodes.values())
-          .filter(
-            (node): node is QueryBuilderPostFilterTreeGroupNodeData =>
-              node instanceof QueryBuilderPostFilterTreeGroupNodeData,
-          )
+          .filter(filterByType(QueryBuilderPostFilterTreeGroupNodeData))
           .filter((node) => !node.childrenIds.length);
     let nodesToProcess = getChildlessGroupNodes();
     while (nodesToProcess.length) {
@@ -684,10 +696,7 @@ export class QueryBuilderPostFilterState
     const getSquashableGroupNodes =
       (): QueryBuilderPostFilterTreeGroupNodeData[] =>
         Array.from(this.nodes.values())
-          .filter(
-            (node): node is QueryBuilderPostFilterTreeGroupNodeData =>
-              node instanceof QueryBuilderPostFilterTreeGroupNodeData,
-          )
+          .filter(filterByType(QueryBuilderPostFilterTreeGroupNodeData))
           .filter((node) => node.childrenIds.length < 2)
           .filter((node) => {
             if (!node.childrenIds.length) {

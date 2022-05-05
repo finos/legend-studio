@@ -31,7 +31,7 @@ import { APPLICATION_EVENT } from './ApplicationEvent';
 import type { LegendApplicationConfig } from './LegendApplicationConfig';
 import type { WebApplicationNavigator } from './WebApplicationNavigator';
 import type { LegendApplicationPluginManager } from '../application/LegendApplicationPluginManager';
-import type { LegendApplicationDocumentationRegistry } from './LegendApplicationDocumentationRegistry';
+import { LegendApplicationDocumentationRegistry } from './LegendApplicationDocumentationRegistry';
 
 export enum ActionAlertType {
   STANDARD = 'STANDARD',
@@ -131,8 +131,21 @@ export class ApplicationStore<T extends LegendApplicationConfig> {
     });
 
     this.config = config;
-    this.docRegistry = config.docRegistry;
     this.navigator = navigator;
+
+    // Documentation
+    this.docRegistry = new LegendApplicationDocumentationRegistry();
+    [
+      ...pluginManager
+        .getApplicationPlugins()
+        .flatMap(
+          (plugin) => plugin.getExtraKeyedDocumentationEntries?.() ?? [],
+        ),
+      // entries from config will override entries specified natively
+      ...config.documentationKeyedEntries,
+    ].forEach((entry) =>
+      this.docRegistry.registerEntry(entry.key, entry.content),
+    );
 
     // Register plugins
     this.log.registerPlugins(pluginManager.getLoggerPlugins());
@@ -301,24 +314,6 @@ export class ApplicationStore<T extends LegendApplicationConfig> {
       await navigator.clipboard.writeText(text).catch((error) => {
         this.notifyError(error);
       });
-      return;
-    }
-    // See https://hackernoon.com/copying-text-to-clipboard-with-javascript-df4d4988697f
-    if (document.queryCommandSupported('copy')) {
-      const element = document.createElement('textarea');
-      element.style.display = 'fixed';
-      element.style.opacity = '0';
-      document.documentElement.appendChild(element);
-      element.value = text;
-      element.select();
-      try {
-        document.execCommand('copy');
-      } catch (error) {
-        assertErrorThrown(error);
-        this.notifyError(error);
-      } finally {
-        element.remove();
-      }
       return;
     }
     this.notifyError('Browser does not support clipboard functionality');

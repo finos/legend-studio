@@ -1,0 +1,213 @@
+###Data
+Data my::MyData
+{
+  ServiceStore
+  #{
+    [
+      {
+        request:
+        {
+          method: GET;
+          url: '/employees';
+        };
+        response:
+        {
+          body:
+            ExternalFormat
+            #{
+              contentType: 'application/json';
+              data: 'data';
+            }#;
+        };
+      }
+    ]
+  }#
+}
+
+Data my::MyDataWithHeaderParams
+{
+  ServiceStore
+  #{
+    [
+      {
+        request:
+        {
+          method: GET;
+          url: '/employees';
+          headerParameters:
+          {
+            id:
+              EqualTo
+              #{
+                expected: '123';
+              }#,
+            name:
+              EqualTo
+              #{
+                expected: 'FirstName A';
+              }#
+          };
+        };
+        response:
+        {
+          body:
+            ExternalFormat
+            #{
+              contentType: 'application/json';
+              data: 'data';
+            }#;
+        };
+      }
+    ]
+  }#
+}
+
+Data my::MyDataWithMultipleStubMappings
+{
+  ServiceStore
+  #{
+    [
+      {
+        request:
+        {
+          method: GET;
+          url: '/employees';
+        };
+        response:
+        {
+          body:
+            ExternalFormat
+            #{
+              contentType: 'application/json';
+              data: 'data';
+            }#;
+        };
+      },
+      {
+        request:
+        {
+          method: GET;
+          url: '/employees';
+        };
+        response:
+        {
+          body:
+            ExternalFormat
+            #{
+              contentType: 'application/json';
+              data: 'data';
+            }#;
+        };
+      }
+    ]
+  }#
+}
+
+Data my::MyDataWithQueryParams
+{
+  ServiceStore
+  #{
+    [
+      {
+        request:
+        {
+          method: GET;
+          urlPath: '/employees';
+          queryParameters:
+          {
+            id:
+              EqualTo
+              #{
+                expected: '123';
+              }#,
+            name:
+              EqualTo
+              #{
+                expected: 'FirstName A';
+              }#
+          };
+        };
+        response:
+        {
+          body:
+            ExternalFormat
+            #{
+              contentType: 'application/json';
+              data: 'data';
+            }#;
+        };
+      }
+    ]
+  }#
+}
+
+Data data::MyDataServiceStore
+{
+  ServiceStore
+  #{
+    [
+      {
+        request:
+        {
+          method: GET;
+          urlPath: '/employees';
+          queryParameters:
+          {
+            name:
+              EqualTo
+              #{
+                expected: 'FirstName A';
+              }#
+          };
+        };
+        response:
+        {
+          body:
+            ExternalFormat
+            #{
+              contentType: 'application/json';
+              data: '[\n                       {\n                           "firstName": "FirstName A",\n                           "lastName": "LastName A",\n                           "firmId": "A"\n                       }\n                     ]\n';
+            }#;
+        };
+      }
+    ]
+  }#
+}
+
+Data data::MyDataServiceStore2
+{
+  ServiceStore
+  #{
+    [
+      {
+        request:
+        {
+          method: GET;
+          urlPath: '/employees';
+          queryParameters:
+          {
+            id:
+              EqualTo
+              #{
+                expected: '123';
+              }#,
+            name:
+              EqualTo
+              #{
+                expected: 'FirstName A';
+              }#
+          };
+        };
+        response:
+        {
+          body:
+            ExternalFormat
+            #{
+              contentType: 'application/json';
+              data: '[\n                       {\n                           "firstName": "FirstName A",\n                           "lastName": "LastName A",\n                           "firmId": "A"\n                       }\n                     ]\n';
+            }#;
+        };
+      }
+    ]
+  }#
+}

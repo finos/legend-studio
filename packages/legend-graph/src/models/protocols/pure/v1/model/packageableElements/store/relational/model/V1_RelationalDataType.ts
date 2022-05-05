@@ -18,8 +18,6 @@ import { type Hashable, hashArray } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../../../MetaModelConst';
 
 export abstract class V1_RelationalDataType implements Hashable {
-  private readonly _$nominalTypeBrand!: 'V1_RelationalDataType';
-
   abstract get hashCode(): string;
 }
 

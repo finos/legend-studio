@@ -118,3 +118,15 @@ test(unitTest('Mapping is loaded properly'), () => {
     ),
   );
 });
+
+test(unitTest('Milestoning properties are generated for class'), () => {
+  const graph = graphManagerState.graph;
+  const testClass = graph.getClass('ui::testB');
+  expect(testClass._generatedMilestonedProperties).toHaveLength(3);
+});
+
+test(unitTest('Milestoning properties are generated for association'), () => {
+  const graph = graphManagerState.graph;
+  const testClass = graph.getAssociation('ui::testC');
+  expect(testClass._generatedMilestonedProperties).toHaveLength(3);
+});

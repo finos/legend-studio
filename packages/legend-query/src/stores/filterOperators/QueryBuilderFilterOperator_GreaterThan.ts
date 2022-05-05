@@ -20,9 +20,10 @@ import {
   type FilterConditionState,
 } from '../QueryBuilderFilterState';
 import {
-  PRIMITIVE_TYPE,
   type ValueSpecification,
   type SimpleFunctionExpression,
+  type AbstractPropertyExpression,
+  PRIMITIVE_TYPE,
 } from '@finos/legend-graph';
 import { UnsupportedOperationError } from '@finos/legend-shared';
 import {
@@ -63,22 +64,40 @@ export class QueryBuilderFilterOperator_GreaterThan extends QueryBuilderFilterOp
   isCompatibleWithFilterConditionValue(
     filterConditionState: FilterConditionState,
   ): boolean {
+    const propertyType =
+      filterConditionState.propertyExpressionState.propertyExpression.func
+        .genericType.value.rawType;
     const type = filterConditionState.value
       ? getNonCollectionValueSpecificationType(filterConditionState.value)
       : undefined;
+    const NUMERIC_PRIMITIVE_TYPES = [
+      PRIMITIVE_TYPE.NUMBER,
+      PRIMITIVE_TYPE.INTEGER,
+      PRIMITIVE_TYPE.DECIMAL,
+      PRIMITIVE_TYPE.FLOAT,
+    ] as string[];
+
+    const DATE_PRIMITIVE_TYPES = [
+      PRIMITIVE_TYPE.DATE,
+      PRIMITIVE_TYPE.DATETIME,
+      PRIMITIVE_TYPE.STRICTDATE,
+      PRIMITIVE_TYPE.LATESTDATE,
+    ] as string[];
+
+    // When changing the return type for LHS, the RHS value should be adjusted accordingly.
     return (
       type !== undefined &&
-      (
-        [
-          PRIMITIVE_TYPE.NUMBER,
-          PRIMITIVE_TYPE.INTEGER,
-          PRIMITIVE_TYPE.DECIMAL,
-          PRIMITIVE_TYPE.FLOAT,
-          PRIMITIVE_TYPE.DATE,
-          PRIMITIVE_TYPE.STRICTDATE,
-          PRIMITIVE_TYPE.DATETIME,
-        ] as string[]
-      ).includes(type.path)
+      // Numeric value is handled loosely because of autoboxing
+      // e.g. LHS (integer) = RHS (float) is acceptable
+      ((NUMERIC_PRIMITIVE_TYPES.includes(type.path) &&
+        NUMERIC_PRIMITIVE_TYPES.includes(propertyType.path)) ||
+        // Date value is handled loosely as well if the LHS is of type DateTime
+        // This is because we would simulate auto-boxing for date by altering the
+        // Pure function used for the operation
+        // e.g. LHS(DateTime) = RHS(Date) -> we use isOnDay() instead of is()
+        DATE_PRIMITIVE_TYPES.includes(type.path) ||
+        type === propertyType ||
+        propertyType.isSuperType(type))
     );
   }
 
@@ -97,7 +116,8 @@ export class QueryBuilderFilterOperator_GreaterThan extends QueryBuilderFilterOp
       case PRIMITIVE_TYPE.STRICTDATE:
       case PRIMITIVE_TYPE.DATETIME: {
         return buildPrimitiveInstanceValue(
-          filterConditionState.filterState.queryBuilderState,
+          filterConditionState.filterState.queryBuilderState.graphManagerState
+            .graph,
           propertyType.path,
           generateDefaultValueForPrimitiveType(propertyType.path),
         );
@@ -116,7 +136,12 @@ export class QueryBuilderFilterOperator_GreaterThan extends QueryBuilderFilterOp
   ): ValueSpecification {
     return buildFilterConditionExpression(
       filterConditionState,
-      SUPPORTED_FUNCTIONS.GREATER_THAN,
+      filterConditionState.propertyExpressionState.propertyExpression.func
+        .genericType.value.rawType.path === PRIMITIVE_TYPE.DATETIME &&
+        filterConditionState.value?.genericType?.value.rawType.path !==
+          PRIMITIVE_TYPE.DATETIME
+        ? SUPPORTED_FUNCTIONS.IS_AFTER_DAY
+        : SUPPORTED_FUNCTIONS.GREATER_THAN,
     );
   }
 
@@ -127,7 +152,12 @@ export class QueryBuilderFilterOperator_GreaterThan extends QueryBuilderFilterOp
     return buildFilterConditionState(
       filterState,
       expression,
-      SUPPORTED_FUNCTIONS.GREATER_THAN,
+      (expression.parametersValues[0] as AbstractPropertyExpression).func
+        .genericType.value.rawType.path === PRIMITIVE_TYPE.DATETIME &&
+        expression.parametersValues[1]?.genericType?.value.rawType.path !==
+          PRIMITIVE_TYPE.DATETIME
+        ? SUPPORTED_FUNCTIONS.IS_AFTER_DAY
+        : SUPPORTED_FUNCTIONS.GREATER_THAN,
       this,
     );
   }

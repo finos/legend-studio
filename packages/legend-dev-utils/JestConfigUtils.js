@@ -20,10 +20,18 @@ export const getBaseConfig = ({ babelConfigPath }) => ({
     // We need to manually run `tsc`. Another option is to use `jest-runner-tsc`
     // which currently has certain performance limitation
     // See https://jestjs.io/docs/en/getting-started#using-typescript
-    '^.+\\.[jt]sx?$': ['babel-jest', { configFile: babelConfigPath }],
+    '^.+\\.[jt]sx?$': [
+      'babel-jest',
+      {
+        configFile: babelConfigPath,
+      },
+    ],
   },
-  // Since we don't transpile our code, we need to allow `Jest` to be able to transform/transpile them
-  transformIgnorePatterns: ['/node_modules/(?!(@finos/legend))'],
+  transformIgnorePatterns: [
+    // Since we already transpiled our project code, we don't need `Jest` to transform/transpile them again
+    // See https://jestjs.io/docs/configuration#transformignorepatterns-arraystring
+    '/node_modules/(?!(@finos/legend))',
+  ],
   // Setup to run immediately after the test framework has been installed in the environment
   // before each test file in the suite is executed
   // See https://jestjs.io/docs/en/configuration#setupfilesafterenv-array
@@ -48,6 +56,11 @@ export const getBaseConfig = ({ babelConfigPath }) => ({
   watchPlugins: [
     'jest-watch-typeahead/filename',
     'jest-watch-typeahead/testname',
+  ],
+  reporters: [
+    'default',
+    // the built-in GitHub Actions Reporter will annotate changed files with test failure messages
+    'github-actions',
   ],
 });
 

@@ -72,16 +72,19 @@ import {
   PACKAGEABLE_ELEMENT_TYPE,
   isValidFullPath,
   isValidPath,
+  getElementRootPackage,
 } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
 import type { LegendStudioConfig } from '../../../application/LegendStudioConfig';
 
 const isGeneratedPackageTreeNode = (node: PackageTreeNodeData): boolean =>
-  node.packageableElement.getRoot().path === ROOT_PACKAGE_NAME.MODEL_GENERATION;
+  getElementRootPackage(node.packageableElement).path ===
+  ROOT_PACKAGE_NAME.MODEL_GENERATION;
 const isSystemPackageTreeNode = (node: PackageTreeNodeData): boolean =>
-  node.packageableElement.getRoot().path === ROOT_PACKAGE_NAME.SYSTEM;
+  getElementRootPackage(node.packageableElement).path ===
+  ROOT_PACKAGE_NAME.SYSTEM;
 const isDependencyTreeNode = (node: PackageTreeNodeData): boolean =>
-  node.packageableElement.getRoot().path ===
+  getElementRootPackage(node.packageableElement).path ===
   ROOT_PACKAGE_NAME.PROJECT_DEPENDENCY_ROOT;
 
 const ElementRenamer = observer(() => {
@@ -220,11 +223,7 @@ const ExplorerContextMenu = observer(
       if (node && projectId) {
         applicationStore.navigator.openNewWindow(
           applicationStore.navigator.generateLocation(
-            generateViewEntityRoute(
-              applicationStore.config.currentSDLCServerOption,
-              projectId,
-              node.packageableElement.path,
-            ),
+            generateViewEntityRoute(projectId, node.packageableElement.path),
           ),
         );
       }

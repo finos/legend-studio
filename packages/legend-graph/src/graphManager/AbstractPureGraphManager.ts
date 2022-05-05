@@ -72,10 +72,11 @@ export interface TEMPORARY__EngineSetupConfig {
 }
 
 export interface GraphBuilderOptions {
-  // the `keepSectionIndex` flag is kept until we have stable support and enable usage of section index.
-  TEMPORARY__keepSectionIndex?: boolean;
-  // when we change our handling of section index, we should be able to get rid of this flag.
-  TEMPORARY__disableRawLambdaResolver?: boolean;
+  /**
+   * This flag will be kept until we have full support for section index
+   * See https://github.com/finos/legend-studio/issues/1067
+   */
+  TEMPORARY__preserveSectionIndex?: boolean;
 }
 
 export interface ExecutionOptions {
@@ -314,6 +315,11 @@ export abstract class AbstractPureGraphManager {
     lambda: RawLambda,
     runtime: Runtime,
     clientVersion: string,
+    parameters: (string | number | boolean)[],
+    options?: {
+      // Anonymizes data by hashing any string values in the generated data
+      anonymizeGeneratedData?: boolean;
+    },
   ): Promise<string>;
 
   // ------------------------------------------- Service -------------------------------------------
@@ -393,9 +399,15 @@ export abstract class AbstractPureGraphManager {
   // As the name suggested, these methods are temporary hacks since we don't handle value-specification
   // structurally in Studio
 
-  abstract HACKY_createGetAllLambda(_class: Class): RawLambda;
-  abstract HACKY_createServiceTestAssertLambda(assertData: string): RawLambda;
-  abstract HACKY_extractServiceTestAssertionData(
+  // Eventually, we could remove these method by building them in metamodel form and convert to raw form
+  // as these are relatively simple lambda to construct
+  abstract HACKY__createGetAllLambda(_class: Class): RawLambda;
+  abstract HACKY__createDefaultBlankLambda(): RawLambda;
+
+  // NOTE: after we refactor service, we probably can remove these methods
+  // See https://github.com/finos/legend-studio/issues/1077
+  abstract HACKY__createServiceTestAssertLambda(assertData: string): RawLambda;
+  abstract HACKY__extractServiceTestAssertionData(
     query: RawLambda,
   ): string | undefined;
 }

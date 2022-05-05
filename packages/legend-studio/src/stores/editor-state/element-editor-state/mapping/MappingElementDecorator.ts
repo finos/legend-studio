@@ -113,7 +113,6 @@ export const getLeafSetImplementations = (
   return [setImp];
 };
 
-/* @MARKER: ACTION ANALYTICS */
 /**
  * This logic helps making the mapping editor smart.
  * Its first purpose is to prepoluate empty property mapping so as to allow user
@@ -295,12 +294,21 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
       }
       return [];
     };
-    pureInstanceSetImpl_setPropertyMappings(
-      setImplementation,
+    const propertyMappingsBeforeDecoration = setImplementation.propertyMappings;
+    const decoratedPropertyMappings =
       getDecoratedSetImplementationPropertyMappings<PurePropertyMapping>(
         setImplementation,
         decoratePropertyMapping,
+      );
+    pureInstanceSetImpl_setPropertyMappings(
+      setImplementation,
+      decoratedPropertyMappings.concat(
+        propertyMappingsBeforeDecoration.filter(
+          (propertyMapping) =>
+            !decoratedPropertyMappings.includes(propertyMapping),
+        ),
       ),
+      this.editorStore.changeDetectionState.observerContext,
     );
   }
 
@@ -384,7 +392,7 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
         });
         return ePropertyMapping;
       } else if (propertyType instanceof Class) {
-        // FIXME flat data property mapping for complex property might change to use union.
+        // NOTE: flat data property mapping for complex property might change to use union.
         // As such, for now we won't support it, and will hide this from the UI for now. Since the exact playout of this is not known
         // we cannot do decoration as well.
 
@@ -394,12 +402,21 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
       }
       return [];
     };
-    mapping_setPropertyMappings(
-      setImplementation,
+    const propertyMappingsBeforeDecoration = setImplementation.propertyMappings;
+    const decoratedPropertyMappings =
       getDecoratedSetImplementationPropertyMappings<AbstractFlatDataPropertyMapping>(
         setImplementation,
         decoratePropertyMapping,
+      );
+    mapping_setPropertyMappings(
+      setImplementation,
+      decoratedPropertyMappings.concat(
+        propertyMappingsBeforeDecoration.filter(
+          (propertyMapping) =>
+            !decoratedPropertyMappings.includes(propertyMapping),
+        ),
       ),
+      this.editorStore.changeDetectionState.observerContext,
     );
   }
 
@@ -548,12 +565,21 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
       }
       return [];
     };
-    mapping_setPropertyMappings(
-      setImplementation,
+    const propertyMappingsBeforeDecoration = setImplementation.propertyMappings;
+    const decoratedPropertyMappings =
       getDecoratedSetImplementationPropertyMappings<PropertyMapping>(
         setImplementation,
         decoratePropertyMapping,
+      );
+    mapping_setPropertyMappings(
+      setImplementation,
+      decoratedPropertyMappings.concat(
+        propertyMappingsBeforeDecoration.filter(
+          (propertyMapping) =>
+            !decoratedPropertyMappings.includes(propertyMapping),
+        ),
       ),
+      this.editorStore.changeDetectionState.observerContext,
     );
   }
 
@@ -563,7 +589,7 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
     return;
   }
 
-  visit_SetImplementation(setImplementation: InstanceSetImplementation): void {
+  visit_SetImplementation(setImplementation: SetImplementation): void {
     const extraSetImplementationDecorators = this.editorStore.pluginManager
       .getStudioPlugins()
       .flatMap(
@@ -584,7 +610,6 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
   }
 }
 
-/* @MARKER: ACTION ANALYTICS */
 /**
  * This is the cleanup for mapping elements decorated by {@link MappingElementDecorator}.
  */
@@ -641,6 +666,7 @@ export class MappingElementDecorationCleaner
       setImplementation.propertyMappings.filter(
         (propertyMapping) => !propertyMapping.transform.isStub,
       ),
+      this.editorStore.changeDetectionState.observerContext,
     );
   }
 
@@ -658,6 +684,7 @@ export class MappingElementDecorationCleaner
           (propertyMapping instanceof EmbeddedFlatDataPropertyMapping &&
             propertyMapping.property),
       ),
+      this.editorStore.changeDetectionState.observerContext,
     );
   }
 
@@ -685,6 +712,7 @@ export class MappingElementDecorationCleaner
           propertyMapping instanceof
             EmbeddedRelationalInstanceSetImplementation,
       ),
+      this.editorStore.changeDetectionState.observerContext,
     );
   }
 
@@ -694,7 +722,7 @@ export class MappingElementDecorationCleaner
     return;
   }
 
-  visit_SetImplementation(setImplementation: InstanceSetImplementation): void {
+  visit_SetImplementation(setImplementation: SetImplementation): void {
     const extraSetImplementationDecorationCleaners =
       this.editorStore.pluginManager
         .getStudioPlugins()

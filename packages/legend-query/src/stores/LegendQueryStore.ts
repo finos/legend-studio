@@ -754,18 +754,17 @@ export class LegendQueryStore {
       this.buildGraphState.setMessage(undefined);
       stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_ENTITIES_FETCHED);
 
-      // fetch dependencies
+      // fetch and build dependencies
       stopWatch.record();
       const dependencyManager =
         this.graphManagerState.createEmptyDependencyManager();
-      this.graphManagerState.graph.setDependencyManager(dependencyManager);
+      this.graphManagerState.graph.dependencyManager = dependencyManager;
       dependencyManager.buildState.setMessage(`Fetching dependencies...`);
       const dependencyEntitiesMap = (yield flowResult(
         this.getProjectDependencyEntities(project, versionId, options),
       )) as Map<string, Entity[]>;
       stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED);
 
-      // build dependencies
       const dependency_buildReport =
         (yield this.graphManagerState.graphManager.buildDependencies(
           this.graphManagerState.coreModel,
@@ -851,10 +850,8 @@ export class LegendQueryStore {
       this.buildGraphState.setMessage(undefined);
       stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_ENTITIES_FETCHED);
 
-      // fetch dependencies
+      // fetch and build dependencies
       stopWatch.record();
-      this.graphManagerState.resetGraph();
-      //build dependencies
       const dependencyManager =
         this.graphManagerState.createEmptyDependencyManager();
       dependencyManager.buildState.setMessage(`Fetching dependencies...`);
@@ -862,7 +859,8 @@ export class LegendQueryStore {
         this.getProjectDependencyEntities(project, versionId, options),
       )) as Map<string, Entity[]>;
       stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED);
-      this.graphManagerState.graph.setDependencyManager(dependencyManager);
+      this.graphManagerState.graph.dependencyManager = dependencyManager;
+
       // build light create query graph
       yield flowResult(
         this.graphManagerState.graphManager.buildGraphForCreateQuerySetup(
@@ -917,10 +915,8 @@ export class LegendQueryStore {
       this.buildGraphState.setMessage(undefined);
       stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_ENTITIES_FETCHED);
 
-      // fetch dependencies
+      // fetch and build dependencies
       stopWatch.record();
-      this.graphManagerState.resetGraph();
-      //build dependencies
       const dependencyManager =
         this.graphManagerState.createEmptyDependencyManager();
       dependencyManager.buildState.setMessage(`Fetching dependencies...`);
@@ -928,7 +924,8 @@ export class LegendQueryStore {
         this.getProjectDependencyEntities(project, versionId, options),
       )) as Map<string, Entity[]>;
       stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED);
-      this.graphManagerState.graph.setDependencyManager(dependencyManager);
+      this.graphManagerState.graph.dependencyManager = dependencyManager;
+
       // build light service query graph
       yield flowResult(
         this.graphManagerState.graphManager.buildGraphForServiceQuerySetup(
@@ -989,7 +986,7 @@ export class LegendQueryStore {
         );
       }
       dependencyEntitiesJson
-        .map((e) => ProjectVersionEntities.serialization.fromJson(e))
+        .map((v) => ProjectVersionEntities.serialization.fromJson(v))
         .forEach((dependencyInfo) => {
           dependencyEntitiesMap.set(dependencyInfo.id, dependencyInfo.entities);
         });
@@ -1012,11 +1009,11 @@ export class LegendQueryStore {
     entityPath: string | undefined,
   ): void {
     this.applicationStore.navigator.openNewWindow(
-      `${this.applicationStore.config.studioUrl}/view/${generateGAVCoordinates(
-        groupId,
-        artifactId,
-        versionId,
-      )}${entityPath ? `/entity/${entityPath}` : ''}`,
+      `${
+        this.applicationStore.config.studioUrl
+      }/view/archive/${generateGAVCoordinates(groupId, artifactId, versionId)}${
+        entityPath ? `/entity/${entityPath}` : ''
+      }`,
     );
   }
 }

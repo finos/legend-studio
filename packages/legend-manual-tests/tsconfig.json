@@ -10,18 +10,8 @@
     { "path": "../legend-art" },
     { "path": "../legend-shared" },
     { "path": "../legend-graph" },
-    // extensions
     {
-      "path": "../legend-extension-dsl-text"
-    },
-    {
-      "path": "../legend-extension-dsl-diagram"
-    },
-    {
-      "path": "../legend-extension-dsl-data-space"
-    },
-    {
-      "path": "../legend-extension-external-store-service"
+      "path": "../legend-graph-extension-collection"
     }
   ]
 }

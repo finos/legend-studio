@@ -25,13 +25,11 @@ import {
   resolvePackagePathAndElementName,
 } from '../MetaModelUtils';
 import {
-  guaranteeType,
   losslessParse,
   losslessStringify,
   unitTest,
 } from '@finos/legend-shared';
-import { ROOT_PACKAGE_NAME, MILESTONING_STEROTYPES } from '../MetaModelConst';
-import { Package } from '../models/metamodels/pure/packageableElements/domain/Package';
+import { MILESTONING_STEREOTYPE } from '../MetaModelConst';
 import {
   ObjectInputData,
   ObjectInputType,
@@ -46,34 +44,9 @@ import { TEST_DATA__MilestonedClassRoundtrip } from './roundtripTestData/TEST_DA
 import type { Entity } from '@finos/legend-model-storage';
 import { getMilestoneTemporalStereotype } from '../helpers/DomainHelper';
 
-test(unitTest('Create valid and invalid packages on a root package'), () => {
-  const _root = new Package(ROOT_PACKAGE_NAME.MAIN);
-  const createPackage = (packagePath: string): void => {
-    Package.getOrCreatePackage(_root, packagePath, true);
-  };
-  const validPackage = 'model::myPackage';
-  createPackage(validPackage);
-  const rootChildren = _root.children;
-  expect(rootChildren.length).toBe(1);
-  const modelPackage = rootChildren[0];
-  expect(modelPackage?.name).toBe('model');
-  expect(modelPackage instanceof Package).toBe(true);
-  expect(guaranteeType(modelPackage, Package).children.length).toBe(1);
-  const invalidPackages = [
-    '$implicit',
-    'model::$implicit::new',
-    'other::$implicit',
-  ];
-  invalidPackages.forEach((invalid) =>
-    expect(() => createPackage(invalid)).toThrowError(
-      `Can't create package with reserved name '$implicit'`,
-    ),
-  );
-});
-
 test(
   unitTest(
-    'Lambda hash should ignore sourceInformation and ignore object properties order',
+    'Lambda hash should ignore source information and ignore object properties order',
   ),
   () => {
     const lambda1 = {
@@ -195,18 +168,18 @@ test(unitTest('Milestoned class'), async () => {
   const graphManagerState = TEST__getTestGraphManagerState();
   const data = TEST_DATA__MilestonedClassRoundtrip as Entity[];
   await TEST__buildGraphWithEntities(graphManagerState, data, {
-    TEMPORARY__keepSectionIndex: true,
+    TEMPORARY__preserveSectionIndex: true,
   });
   expect(
     getMilestoneTemporalStereotype(
       graphManagerState.graph.getClass('test::C'),
       graphManagerState.graph,
     ),
-  ).toBe(MILESTONING_STEROTYPES.BUSINESS_TEMPORAL);
+  ).toBe(MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL);
   expect(
     getMilestoneTemporalStereotype(
       graphManagerState.graph.getClass('test::D'),
       graphManagerState.graph,
     ),
-  ).toBe(MILESTONING_STEROTYPES.BUSINESS_TEMPORAL);
+  ).toBe(MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL);
 });

@@ -21,10 +21,10 @@ import {
   primitive,
   deserialize,
   serialize,
-  SKIP,
   custom,
   optional,
   raw,
+  SKIP,
 } from 'serializr';
 import {
   type PlainObject,
@@ -101,6 +101,7 @@ import type { DSLMapping_PureProtocolProcessorPlugin_Extension } from '../../../
 import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin';
 import { V1_BindingTransformer } from '../../../model/packageableElements/externalFormat/store/V1_BindingTransformer';
 import { V1_MergeOperationClassMapping } from '../../../model/packageableElements/mapping/V1_MergeOperationClassMapping';
+import type { V1_RelationalOperationElement } from '../../../model/packageableElements/store/relational/model/V1_RelationalOperationElement';
 
 enum V1_ClassMappingType {
   OPERATION = 'operation',
@@ -231,14 +232,20 @@ const rootRelationalClassMappingModelSchema = createModelSchema(
       (values) =>
         serializeArray(
           values,
-          (value) => V1_serializeRelationalOperationElement(value),
-          true,
+          (value: V1_RelationalOperationElement) =>
+            V1_serializeRelationalOperationElement(value),
+          {
+            skipIfEmpty: true,
+            INTERNAL__forceReturnEmptyInTest: true,
+          },
         ),
       (values) =>
         deserializeArray(
           values,
           (val) => V1_deserializeRelationalOperationElement(val),
-          false,
+          {
+            skipIfEmpty: false,
+          },
         ),
     ),
     id: optional(primitive()),
@@ -315,7 +322,15 @@ const embeddedRelationalPropertyMappingModelSchema = createModelSchema(
       V1_localMappingPropertyInfoModelSchema,
     ),
     property: usingModelSchema(V1_propertyPointerModelSchema),
-    source: optional(primitive()), // @MARKER: GRAMMAR ROUNDTRIP --- omit this information during protocol transformation as it can be interpreted while building the graph
+    /**
+     * Omit this information during protocol transformation as it can be
+     * interpreted while building the graph; and will help grammar-roundtrip
+     * tests (involving engine) to pass. Ideally, this requires grammar parser
+     * and composer in engine to be more consistent.
+     *
+     * @discrepancy grammar-roundtrip
+     */
+    source: optional(primitive()),
     target: optional(primitive()),
   },
 );
@@ -331,7 +346,15 @@ const otherwiseEmbeddedRelationalPropertyMappingModelSchgema =
       (val) => V1_deserializeRelationalPropertyMapping(val),
     ),
     property: usingModelSchema(V1_propertyPointerModelSchema),
-    source: optional(primitive()), // @MARKER: GRAMMAR ROUNDTRIP --- omit this information during protocol transformation as it can be interpreted while building the graph
+    /**
+     * Omit this information during protocol transformation as it can be
+     * interpreted while building the graph; and will help grammar-roundtrip
+     * tests (involving engine) to pass. Ideally, this requires grammar parser
+     * and composer in engine to be more consistent.
+     *
+     * @discrepancy grammar-roundtrip
+     */
+    source: optional(primitive()),
     target: optional(primitive()),
     localMappingProperty: usingModelSchema(
       V1_localMappingPropertyInfoModelSchema,
@@ -349,7 +372,15 @@ const inlineEmbeddedPropertyMappingModelSchema = createModelSchema(
       V1_localMappingPropertyInfoModelSchema,
     ),
     property: usingModelSchema(V1_propertyPointerModelSchema),
-    source: optional(primitive()), // @MARKER: GRAMMAR ROUNDTRIP --- omit this information during protocol transformation as it can be interpreted while building the graph
+    /**
+     * Omit this information during protocol transformation as it can be
+     * interpreted while building the graph; and will help grammar-roundtrip
+     * tests (involving engine) to pass. Ideally, this requires grammar parser
+     * and composer in engine to be more consistent.
+     *
+     * @discrepancy grammar-roundtrip
+     */
+    source: optional(primitive()),
     setImplementationId: primitive(),
     target: optional(primitive()),
   },
@@ -711,7 +742,7 @@ const V1_expectedOutputMappingTestAssertModelSchema = createModelSchema(
 
 const V1_serializeInputData = (
   protocol: V1_InputData,
-): PlainObject<V1_InputData> | typeof SKIP => {
+): PlainObject<V1_InputData> => {
   if (protocol instanceof V1_ObjectInputData) {
     return serialize(V1_objectInputData, protocol);
   } else if (protocol instanceof V1_FlatDataInputData) {
@@ -719,12 +750,15 @@ const V1_serializeInputData = (
   } else if (protocol instanceof V1_RelationalInputData) {
     return serialize(V1_relationalInputData, protocol);
   }
-  return SKIP;
+  throw new UnsupportedOperationError(
+    `Can't serialize mapping test input data`,
+    protocol,
+  );
 };
 
 const V1_deserializeInputData = (
   json: PlainObject<V1_InputData>,
-): V1_InputData | typeof SKIP => {
+): V1_InputData => {
   switch (json._type) {
     case V1_InputDataType.OBJECT:
       return deserialize(V1_objectInputData, json);
@@ -733,27 +767,35 @@ const V1_deserializeInputData = (
     case V1_InputDataType.RELATIONAL:
       return deserialize(V1_relationalInputData, json);
     default:
-      return SKIP;
+      throw new UnsupportedOperationError(
+        `Can't deserialize mapping test input data of type '${json._type}'`,
+      );
   }
 };
 
 const V1_serializeTestAssert = (
   protocol: V1_MappingTestAssert,
-): PlainObject<V1_MappingTestAssert> | typeof SKIP => {
+): PlainObject<V1_MappingTestAssert> => {
   if (protocol instanceof V1_ExpectedOutputMappingTestAssert) {
     return serialize(V1_expectedOutputMappingTestAssertModelSchema, protocol);
   }
-  return SKIP;
+
+  throw new UnsupportedOperationError(
+    `Can't serialize mapping test assert`,
+    protocol,
+  );
 };
 
 const V1_deserializeTestAssert = (
   json: PlainObject<V1_MappingTestAssert>,
-): V1_MappingTestAssert | typeof SKIP => {
+): V1_MappingTestAssert => {
   switch (json._type) {
     case V1_MappingTestAssertType.EXPECTED_OUTPUT_MAPPING_TEST_ASSERT:
       return deserialize(V1_expectedOutputMappingTestAssertModelSchema, json);
     default:
-      return SKIP;
+      throw new UnsupportedOperationError(
+        `Can't deserialize mapping test assert of type '${json._type}'`,
+      );
   }
 };
 
@@ -837,25 +879,30 @@ const xStoreAssociationMappingModelschema = createModelSchema(
 
 const V1_serializeAssociationMapping = (
   protocol: V1_AssociationMapping,
-): PlainObject<V1_AssociationMapping> | typeof SKIP => {
+): PlainObject<V1_AssociationMapping> => {
   if (protocol instanceof V1_RelationalAssociationMapping) {
     return serialize(relationalAssociationMappingModelschema, protocol);
   } else if (protocol instanceof V1_XStoreAssociationMapping) {
     return serialize(xStoreAssociationMappingModelschema, protocol);
   }
-  return SKIP;
+  throw new UnsupportedOperationError(
+    `Can't serialize association mapping`,
+    protocol,
+  );
 };
 
 const V1_deserializeAssociationMapping = (
   json: PlainObject<V1_AssociationMapping>,
-): V1_AssociationMapping | typeof SKIP => {
+): V1_AssociationMapping => {
   switch (json._type) {
     case V1_AssociationMappingType.RELATIONAL:
       return deserialize(relationalAssociationMappingModelschema, json);
     case V1_AssociationMappingType.XSTORE:
       return deserialize(xStoreAssociationMappingModelschema, json);
     default:
-      return SKIP;
+      throw new UnsupportedOperationError(
+        `Can't deserialize association mapping of type '${json._type}'`,
+      );
   }
 };
 
@@ -1023,15 +1070,20 @@ export const V1_mappingModelSchema = (
       (values) =>
         serializeArray(
           values,
-          (value) => V1_serializeAssociationMapping(value),
-          true,
+          (value: V1_AssociationMapping) =>
+            V1_serializeAssociationMapping(value),
+          {
+            skipIfEmpty: true,
+            INTERNAL__forceReturnEmptyInTest: true,
+          },
         ),
       (values) =>
         deserializeArray(
           values,
-          (val: PlainObject<V1_AssociationMapping>) =>
-            V1_deserializeAssociationMapping(val),
-          false,
+          (val) => V1_deserializeAssociationMapping(val),
+          {
+            skipIfEmpty: false,
+          },
         ),
     ),
     classMappings: list(

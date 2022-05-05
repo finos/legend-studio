@@ -23,7 +23,7 @@ import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import type { RelationalOperationElement } from '../model/RelationalOperationElement';
 import type { EmbeddedSetImplementation } from '../../../mapping/EmbeddedSetImplementation';
 import type { Class } from '../../../domain/Class';
-import type { Mapping, MappingElementLabel } from '../../../mapping/Mapping';
+import type { Mapping } from '../../../mapping/Mapping';
 import type {
   SetImplementationVisitor,
   SetImplementation,
@@ -40,6 +40,7 @@ import type { PackageableElementReference } from '../../../PackageableElementRef
 import type { PropertyReference } from '../../../domain/PropertyReference';
 import type { RelationalInstanceSetImplementation } from './RelationalInstanceSetImplementation';
 import { InferableMappingElementRootExplicitValue } from '../../../mapping/InferableMappingElementRoot';
+import type { MappingClass } from '../../../mapping/MappingClass';
 
 export class EmbeddedRelationalInstanceSetImplementation
   extends PropertyMapping
@@ -49,13 +50,14 @@ export class EmbeddedRelationalInstanceSetImplementation
     Hashable
 {
   root = InferableMappingElementRootExplicitValue.create(false);
-  override isEmbedded = true;
+  override readonly isEmbedded = true;
   id: InferableMappingElementIdValue;
   propertyMappings: PropertyMapping[] = [];
   class: PackageableElementReference<Class>;
   rootInstanceSetImplementation: RootRelationalInstanceSetImplementation; // in Pure we call this `setMappingOwner`
-  parent: Mapping;
   primaryKey: RelationalOperationElement[] = [];
+  readonly parent: Mapping;
+  mappingClass?: MappingClass | undefined;
 
   constructor(
     owner: PropertyMappingsImplementation,
@@ -71,10 +73,6 @@ export class EmbeddedRelationalInstanceSetImplementation
     this.id = id;
     this.rootInstanceSetImplementation = rootInstanceSetImplementation;
     this.parent = rootInstanceSetImplementation.parent;
-  }
-
-  setRoot(value: boolean): void {
-    throw new UnsupportedOperationError();
   }
 
   getEmbeddedSetImplmentations(): InstanceSetImplementation[] {
@@ -97,10 +95,6 @@ export class EmbeddedRelationalInstanceSetImplementation
         propertyMapping.targetSetImplementation &&
         propertyMapping.targetSetImplementation.id.value === targetId,
     );
-  }
-
-  get label(): MappingElementLabel {
-    throw new UnsupportedOperationError();
   }
 
   override get isStub(): boolean {

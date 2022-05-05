@@ -139,6 +139,7 @@
   &__input-data-panel__type-selector {
     @include flexVCenter;
 
+    height: 2.2rem;
     padding: 0 1rem;
     cursor: pointer;
     color: var(--color-light-grey-400);

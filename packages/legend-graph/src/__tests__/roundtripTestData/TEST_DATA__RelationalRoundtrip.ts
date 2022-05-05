@@ -3816,6 +3816,7 @@ export const TEST_DATA__RelationalDatabaseConnectionRoundtrip = [
           oauthKey: 'dummy',
           scopeName: 'UserPass',
         },
+        databaseType: 'H2',
         datasourceSpecification: {
           _type: 'redshift',
           clusterID: 'cluster',
@@ -3844,6 +3845,7 @@ export const TEST_DATA__RelationalDatabaseConnectionRoundtrip = [
           oauthKey: 'dummy',
           scopeName: 'UserPass',
         },
+        databaseType: 'H2',
         datasourceSpecification: {
           _type: 'snowflake',
           accountName: 'dummy',
@@ -3870,6 +3872,7 @@ export const TEST_DATA__RelationalDatabaseConnectionRoundtrip = [
           oauthKey: 'dummy',
           scopeName: 'UserPass',
         },
+        databaseType: 'H2',
         datasourceSpecification: {
           _type: 'snowflake',
           accountName: 'dummy',
@@ -3897,6 +3900,7 @@ export const TEST_DATA__RelationalDatabaseConnectionRoundtrip = [
           oauthKey: 'dummy',
           scopeName: 'UserPass',
         },
+        databaseType: 'H2',
         datasourceSpecification: {
           _type: 'snowflake',
           accountName: 'dummy',
@@ -3924,6 +3928,7 @@ export const TEST_DATA__RelationalDatabaseConnectionRoundtrip = [
           oauthKey: 'dummy',
           scopeName: 'UserPass',
         },
+        databaseType: 'H2',
         datasourceSpecification: {
           _type: 'snowflake',
           accountName: 'dummy',
@@ -3949,6 +3954,7 @@ export const TEST_DATA__RelationalDatabaseConnectionRoundtrip = [
         authenticationStrategy: {
           _type: 'h2Default',
         },
+        databaseType: 'H2',
         datasourceSpecification: {
           _type: 'static',
           databaseName: 'myDb',
@@ -3972,6 +3978,7 @@ export const TEST_DATA__RelationalDatabaseConnectionRoundtrip = [
         authenticationStrategy: {
           _type: 'h2Default',
         },
+        databaseType: 'Snowflake',
         datasourceSpecification: {
           _type: 'snowflake',
           accountName: 'acct1',
@@ -3996,6 +4003,7 @@ export const TEST_DATA__RelationalDatabaseConnectionRoundtrip = [
         authenticationStrategy: {
           _type: 'h2Default',
         },
+        databaseType: 'H2',
         datasourceSpecification: {
           _type: 'static',
           databaseName: 'myDb',
@@ -4021,6 +4029,7 @@ export const TEST_DATA__RelationalDatabaseConnectionRoundtrip = [
         authenticationStrategy: {
           _type: 'h2Default',
         },
+        databaseType: 'H2',
         datasourceSpecification: {
           _type: 'static',
           databaseName: 'myDb',

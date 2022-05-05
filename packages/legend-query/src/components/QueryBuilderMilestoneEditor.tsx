@@ -22,47 +22,41 @@ import {
 } from '../stores/QueryParametersState';
 import { useCallback } from 'react';
 import {
-  type Type,
+  type ValueSpecification,
   GenericType,
   GenericTypeExplicitReference,
-  MILESTONING_STEROTYPES,
+  MILESTONING_STEREOTYPE,
+  observe_PrimitiveInstanceValue,
   PrimitiveInstanceValue,
   PRIMITIVE_TYPE,
   TYPICAL_MULTIPLICITY_TYPE,
-  VariableExpression,
 } from '@finos/legend-graph';
-import {
-  DatePrimitiveInstanceValueEditor,
-  LatestDatePrimitiveInstanceValueEditor,
-  VariableExpressionParameterEditor,
-} from './QueryBuilderValueSpecificationEditor';
-import {
-  guaranteeNonNullable,
-  guaranteeType,
-  Randomizer,
-} from '@finos/legend-shared';
+import { QueryBuilderValueSpecificationEditor } from './QueryBuilderValueSpecificationEditor';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 import { type DropTargetMonitor, useDrop } from 'react-dnd';
 import { VariableExpressionViewer } from './QueryBuilderParameterPanel';
-import {
-  type PackageableElementOption,
-  buildElementOption,
-  DATE_FORMAT,
-} from '@finos/legend-application';
-import { Dialog, CustomSelectorInput, RefreshIcon } from '@finos/legend-art';
-import format from 'date-fns/format/index';
-import { addDays } from 'date-fns';
-import { genericType_setRawType } from '../stores/QueryBuilderGraphModifierHelper';
+import { Dialog, RefreshIcon } from '@finos/legend-art';
+import { generateDefaultValueForPrimitiveType } from '../stores/QueryBuilderValueSpecificationBuilderHelper';
 
 const MilestoningParameterEditor = observer(
-  (props: { queryBuilderState: QueryBuilderState; parameterIndex: number }) => {
-    const { queryBuilderState, parameterIndex } = props;
+  (props: {
+    queryBuilderState: QueryBuilderState;
+    stereotype: MILESTONING_STEREOTYPE;
+  }) => {
+    const { queryBuilderState, stereotype } = props;
     const handleDrop = useCallback(
       (item: QueryBuilderParameterDragSource): void => {
-        queryBuilderState.querySetupState.classMilestoningTemporalValues[
-          parameterIndex
-        ] = item.variable.parameter;
+        if (stereotype === MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL) {
+          queryBuilderState.querySetupState.setBusinessDate(
+            item.variable.parameter,
+          );
+        } else {
+          queryBuilderState.querySetupState.setProcessingDate(
+            item.variable.parameter,
+          );
+        }
       },
-      [queryBuilderState, parameterIndex],
+      [queryBuilderState, stereotype],
     );
     const [{ isMilestoningParameterValueDragOver }, dropConnector] = useDrop(
       () => ({
@@ -85,63 +79,39 @@ const MilestoningParameterEditor = observer(
       }),
       [handleDrop],
     );
-    const milestoningParameter =
-      queryBuilderState.querySetupState.classMilestoningTemporalValues[
-        parameterIndex
-      ];
+    let milestoningParameter;
+    if (stereotype === MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL) {
+      milestoningParameter = guaranteeNonNullable(
+        queryBuilderState.querySetupState.businessDate,
+      );
+    } else {
+      milestoningParameter = guaranteeNonNullable(
+        queryBuilderState.querySetupState.processingDate,
+      );
+    }
     const resetMilestoningParameter = (): void => {
-      queryBuilderState.querySetupState.classMilestoningTemporalValues[
-        parameterIndex
-      ] = new PrimitiveInstanceValue(
-        GenericTypeExplicitReference.create(
-          new GenericType(
-            queryBuilderState.graphManagerState.graph.getPrimitiveType(
-              PRIMITIVE_TYPE.LATESTDATE,
+      const parameter = observe_PrimitiveInstanceValue(
+        new PrimitiveInstanceValue(
+          GenericTypeExplicitReference.create(
+            new GenericType(
+              queryBuilderState.graphManagerState.graph.getPrimitiveType(
+                PRIMITIVE_TYPE.STRICTDATE,
+              ),
             ),
           ),
-        ),
-        queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
-          TYPICAL_MULTIPLICITY_TYPE.ONE,
-        ),
-      );
-    };
-    const latestType =
-      queryBuilderState.graphManagerState.graph.getPrimitiveType(
-        PRIMITIVE_TYPE.LATESTDATE,
-      );
-    const variableType =
-      milestoningParameter?.genericType?.value.rawType ?? latestType;
-
-    const selectedType = buildElementOption(variableType);
-    const typeOptions: PackageableElementOption<Type>[] =
-      queryBuilderState.graphManagerState.graph.primitiveTypes
-        .filter(
-          (p) =>
-            p.name === PRIMITIVE_TYPE.STRICTDATE ||
-            p.name === PRIMITIVE_TYPE.LATESTDATE,
-        )
-        .map((p) => buildElementOption(p) as PackageableElementOption<Type>);
-    const changeType = (val: PackageableElementOption<Type>): void => {
-      if (variableType !== val.value) {
-        const genType = milestoningParameter?.genericType?.value;
-        if (genType) {
-          genericType_setRawType(genType, val.value);
-        }
-      }
-      if (
-        milestoningParameter instanceof PrimitiveInstanceValue &&
-        milestoningParameter.genericType.value.rawType.name ===
-          PRIMITIVE_TYPE.STRICTDATE
-      ) {
-        milestoningParameter.values = [
-          format(
-            new Randomizer().getRandomDate(
-              new Date(Date.now()),
-              addDays(Date.now(), 100),
-            ),
-            DATE_FORMAT,
+          queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
+            TYPICAL_MULTIPLICITY_TYPE.ONE,
           ),
-        ];
+        ),
+        queryBuilderState.observableContext,
+      );
+      parameter.values = [
+        generateDefaultValueForPrimitiveType(PRIMITIVE_TYPE.STRICTDATE),
+      ];
+      if (stereotype === MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL) {
+        queryBuilderState.querySetupState.setBusinessDate(parameter);
+      } else {
+        queryBuilderState.querySetupState.setProcessingDate(parameter);
       }
     };
     return (
@@ -154,44 +124,21 @@ const MilestoningParameterEditor = observer(
             Change Milestoning Parameter Value
           </div>
         )}
-        {milestoningParameter instanceof PrimitiveInstanceValue && (
-          <div className="query-builder__parameter-editor__parameter">
-            {milestoningParameter.genericType.value.rawType.name ===
-              PRIMITIVE_TYPE.STRICTDATE && (
-              <DatePrimitiveInstanceValueEditor
-                valueSpecification={milestoningParameter}
-              />
-            )}
-            {milestoningParameter.genericType.value.rawType.name ===
-              PRIMITIVE_TYPE.LATESTDATE && (
-              <LatestDatePrimitiveInstanceValueEditor />
-            )}
-            <div className="query-builder__parameter-editor__parameter">
-              <CustomSelectorInput
-                placeholder="Choose a type..."
-                options={typeOptions}
-                onChange={changeType}
-                value={selectedType}
-                darkMode={true}
-              />
-            </div>
-          </div>
-        )}
-        {queryBuilderState.querySetupState.classMilestoningTemporalValues[
-          parameterIndex
-        ] instanceof VariableExpression && (
-          <>
-            <VariableExpressionParameterEditor
-              valueSpecification={guaranteeType(
-                guaranteeNonNullable(
-                  queryBuilderState.querySetupState
-                    .classMilestoningTemporalValues[parameterIndex],
-                ),
-                VariableExpression,
-              )}
-            />
-          </>
-        )}
+        <QueryBuilderValueSpecificationEditor
+          valueSpecification={milestoningParameter}
+          graph={queryBuilderState.graphManagerState.graph}
+          updateValueSpecification={(val: ValueSpecification): void =>
+            stereotype === MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL
+              ? queryBuilderState.querySetupState.setBusinessDate(val)
+              : queryBuilderState.querySetupState.setProcessingDate(val)
+          }
+          typeCheckOption={{
+            expectedType:
+              queryBuilderState.graphManagerState.graph.getPrimitiveType(
+                PRIMITIVE_TYPE.DATE,
+              ),
+          }}
+        />
         <button
           className="query-builder__parameter-editor__node__action"
           tabIndex={-1}
@@ -216,7 +163,7 @@ const BiTemporalMilestoneEditor = observer(
           </div>
           <MilestoningParameterEditor
             queryBuilderState={queryBuilderState}
-            parameterIndex={0}
+            stereotype={MILESTONING_STEREOTYPE.PROCESSING_TEMPORAL}
           />
         </div>
         <div className="panel__content__form__section">
@@ -225,7 +172,7 @@ const BiTemporalMilestoneEditor = observer(
           </div>
           <MilestoningParameterEditor
             queryBuilderState={queryBuilderState}
-            parameterIndex={1}
+            stereotype={MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL}
           />
         </div>
       </>
@@ -244,7 +191,7 @@ const BusinessTemporalMilestoneEditor = observer(
         <MilestoningParameterEditor
           key="BusinessDate"
           queryBuilderState={queryBuilderState}
-          parameterIndex={0}
+          stereotype={MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL}
         />
       </div>
     );
@@ -262,7 +209,7 @@ const ProcessingTemporalMilestoneEditor = observer(
         <MilestoningParameterEditor
           key="BusinessDate"
           queryBuilderState={queryBuilderState}
-          parameterIndex={0}
+          stereotype={MILESTONING_STEREOTYPE.PROCESSING_TEMPORAL}
         />
       </div>
     );
@@ -271,42 +218,32 @@ const ProcessingTemporalMilestoneEditor = observer(
 
 const TemporalMilestoneEditor: React.FC<{
   queryBuilderState: QueryBuilderState;
-  stereotype: string;
 }> = (props) => {
-  const { queryBuilderState, stereotype } = props;
+  const { queryBuilderState } = props;
 
-  switch (stereotype) {
-    case MILESTONING_STEROTYPES.BUSINESS_TEMPORAL:
-      return (
-        <BusinessTemporalMilestoneEditor
-          queryBuilderState={queryBuilderState}
-        />
-      );
-
-    case MILESTONING_STEROTYPES.PROCESSING_TEMPORAL:
-      return (
-        <ProcessingTemporalMilestoneEditor
-          queryBuilderState={queryBuilderState}
-        />
-      );
-
-    case MILESTONING_STEROTYPES.BITEMPORAL:
-      return (
-        <BiTemporalMilestoneEditor queryBuilderState={queryBuilderState} />
-      );
-
-    default:
-      return null;
+  if (
+    queryBuilderState.querySetupState.processingDate &&
+    queryBuilderState.querySetupState.businessDate
+  ) {
+    return <BiTemporalMilestoneEditor queryBuilderState={queryBuilderState} />;
+  } else if (queryBuilderState.querySetupState.businessDate) {
+    return (
+      <BusinessTemporalMilestoneEditor queryBuilderState={queryBuilderState} />
+    );
+  } else if (queryBuilderState.querySetupState.processingDate) {
+    return (
+      <ProcessingTemporalMilestoneEditor
+        queryBuilderState={queryBuilderState}
+      />
+    );
+  } else {
+    return null;
   }
 };
 
 export const MilestoningParametersEditor = observer(
-  (props: {
-    queryBuilderState: QueryBuilderState;
-    close: () => void;
-    stereotype: string;
-  }) => {
-    const { queryBuilderState, close, stereotype } = props;
+  (props: { queryBuilderState: QueryBuilderState; close: () => void }) => {
+    const { queryBuilderState, close } = props;
 
     return (
       <Dialog
@@ -323,10 +260,7 @@ export const MilestoningParametersEditor = observer(
             <div className="modal__title">Milestoning Parameters</div>
           </div>
           <div className="modal__body query-builder__parameters__modal__body">
-            <TemporalMilestoneEditor
-              queryBuilderState={queryBuilderState}
-              stereotype={stereotype}
-            />
+            <TemporalMilestoneEditor queryBuilderState={queryBuilderState} />
             <div className="panel__content__form__section__header__label">
               List of compatible milestoning parameters
             </div>
@@ -337,7 +271,11 @@ export const MilestoningParametersEditor = observer(
                     parameter.parameter.genericType?.value.rawType.name ===
                       PRIMITIVE_TYPE.STRICTDATE ||
                     parameter.parameter.genericType?.value.rawType.name ===
-                      PRIMITIVE_TYPE.LATESTDATE,
+                      PRIMITIVE_TYPE.LATESTDATE ||
+                    parameter.parameter.genericType?.value.rawType.name ===
+                      PRIMITIVE_TYPE.DATE ||
+                    parameter.parameter.genericType?.value.rawType.name ===
+                      PRIMITIVE_TYPE.DATETIME,
                 )
                 .map((parameter) => (
                   <VariableExpressionViewer

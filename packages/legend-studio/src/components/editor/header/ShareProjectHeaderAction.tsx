@@ -45,17 +45,10 @@ const ShareModal = observer(
     const projectId = editorStore.sdlcState.activeProject.projectId;
     const projectLink = selectedVersion
       ? applicationStore.navigator.generateLocation(
-          generateViewVersionRoute(
-            applicationStore.config.currentSDLCServerOption,
-            projectId,
-            selectedVersion.id.id,
-          ),
+          generateViewVersionRoute(projectId, selectedVersion.id.id),
         )
       : applicationStore.navigator.generateLocation(
-          generateViewProjectRoute(
-            applicationStore.config.currentSDLCServerOption,
-            projectId,
-          ),
+          generateViewProjectRoute(projectId),
         );
     const copyProjectLink = (): void => {
       applicationStore

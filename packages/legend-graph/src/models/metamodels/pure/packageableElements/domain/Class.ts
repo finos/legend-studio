@@ -49,14 +49,21 @@ export class Class extends Type implements Hashable, Stubable {
   /**
    * We can also call this `specifications` (i.e. vs. `generalizations`)
    *
-   * @MARKER MEMORY-SENSITIVE
-   * if this belongs to immutable elements: i.e. in system, project dependency, etc.
+   * If this belongs to immutable elements: i.e. in system, project dependency, etc.
    * we have to make sure to remove of disposed classes from this when we reprocess the graph
+   *
+   * @risk memory-leak
    */
   subclasses: Class[] = [];
   constraints: Constraint[] = [];
   stereotypes: StereotypeReference[] = [];
   taggedValues: TaggedValue[] = [];
+
+  /**
+   * To store the abstract properties generated while processing the milestoning properties. The properties
+   * generated are `allVersions`, `allVersionsInRange` and derived property with date parameter.
+   */
+  _generatedMilestonedProperties: AbstractProperty[] = [];
 
   /**
    * Get class and its supertypes' properties recursively, duplications and loops are handled (Which should be caught by compiler)
@@ -144,9 +151,10 @@ export class Class extends Type implements Hashable, Stubable {
    * Get all subclasses of a class, accounted for loop and duplication (which should be caught by compiler)
    * NOTE: we intentionally leave out `Any`
    *
-   * @MARKER MEMORY-SENSITIVE
    * When this is an immutable class such as project dependency or system we need to remember to remove the classes from the sub-types array.
    * And rerun this computation to avoid potenial memory leak
+   *
+   * @risk memory-leak
    */
   get allSubclasses(): Class[] {
     if (this._isDisposed) {
@@ -171,21 +179,13 @@ export class Class extends Type implements Hashable, Stubable {
   }
 
   /**
-   * @MARKER MEMORY-SENSITIVE
-   * Since `keepAlive` can cause memory-leak, we need to dispose it manually when we are about to discard the graph
-   * in order to avoid leaking.
-   * See https://mobx.js.org/best/pitfalls.html#computed-values-run-more-often-than-expected
-   * See https://medium.com/terria/when-and-why-does-mobxs-keepalive-cause-a-memory-leak-8c29feb9ff55
+   * Make sure to remove the disposed class from being referenced in other elements
+   * e.g. subclass analytics is great, but it causes the class being referred to by classes
+   * coming from system or dependencies
    */
   override dispose(): void {
+    super.dispose();
     this.subclasses = []; // call this before setting `disposed` flag to avoid triggering errors if something is using this during disposal
-    this._isDisposed = true;
-    // dispose hash computation
-    try {
-      this.hashCode;
-    } catch {
-      /* do nothing */
-    } // trigger recomputation on `hashCode` so it removes itself from all observables it previously observed
     // cleanup subclasses analytics on superclasses
     this.allSuperclasses.forEach((superclass) => {
       if (!superclass._isDisposed) {
@@ -236,6 +236,7 @@ export class Class extends Type implements Hashable, Stubable {
   }
 }
 
+// TODO: to be moved out of metamodel
 export enum CLASS_PROPERTY_TYPE {
   CLASS = 'CLASS',
   ENUMERATION = 'ENUMERATION',
@@ -244,6 +245,7 @@ export enum CLASS_PROPERTY_TYPE {
   PRIMITIVE = 'PRIMITIVE',
 }
 
+// TODO: to be moved out of metamodel
 export const getClassPropertyType = (type: Type): CLASS_PROPERTY_TYPE => {
   if (type instanceof PrimitiveType) {
     return CLASS_PROPERTY_TYPE.PRIMITIVE;

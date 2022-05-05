@@ -29,6 +29,7 @@ import {
   NetworkClientError,
   guaranteeNonNullable,
   StopWatch,
+  filterByType,
 } from '@finos/legend-shared';
 import type { EditorStore } from './EditorStore';
 import { ElementEditorState } from './editor-state/element-editor-state/ElementEditorState';
@@ -88,6 +89,7 @@ import {
   GraphBuilderError,
   type GraphBuilderReport,
   GraphManagerTelemetry,
+  DataElement,
 } from '@finos/legend-graph';
 import {
   type LambdaEditorState,
@@ -96,6 +98,7 @@ import {
 } from '@finos/legend-application';
 import { CONFIGURATION_EDITOR_TAB } from './editor-state/ProjectConfigurationEditorState';
 import type { DSLMapping_LegendStudioPlugin_Extension } from './DSLMapping_LegendStudioPlugin_Extension';
+import { graph_dispose } from './graphModifier/GraphModifierHelper';
 
 export enum GraphBuilderStatus {
   SUCCEEDED = 'SUCCEEDED',
@@ -136,10 +139,7 @@ export class EditorGraphState {
     return (
       Boolean(this.editorStore.grammarTextEditorState.error) ||
       this.editorStore.openedEditorStates
-        .filter(
-          (editorState): editorState is ElementEditorState =>
-            editorState instanceof ElementEditorState,
-        )
+        .filter(filterByType(ElementEditorState))
         .some((editorState) => editorState.hasCompilationError)
     );
   }
@@ -147,10 +147,7 @@ export class EditorGraphState {
   clearCompilationError(): void {
     this.editorStore.grammarTextEditorState.setError(undefined);
     this.editorStore.openedEditorStates
-      .filter(
-        (editorState): editorState is ElementEditorState =>
-          editorState instanceof ElementEditorState,
-      )
+      .filter(filterByType(ElementEditorState))
       .forEach((editorState) => editorState.clearCompilationError());
   }
 
@@ -206,20 +203,18 @@ export class EditorGraphState {
       // reset
       this.editorStore.graphManagerState.resetGraph();
 
-      // fetch dependencies
+      // fetch and build dependencies
       stopWatch.record();
       const dependencyManager =
         this.editorStore.graphManagerState.createEmptyDependencyManager();
-      this.editorStore.graphManagerState.graph.setDependencyManager(
-        dependencyManager,
-      );
+      this.editorStore.graphManagerState.graph.dependencyManager =
+        dependencyManager;
       dependencyManager.buildState.setMessage(`Fetching dependencies...`);
       const dependencyEntitiesMap = (yield flowResult(
         this.getConfigurationProjectDependencyEntities(),
       )) as Map<string, Entity[]>;
       stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED);
 
-      // build dependencies
       const dependency_buildReport =
         (yield this.editorStore.graphManagerState.graphManager.buildDependencies(
           this.editorStore.graphManagerState.coreModel,
@@ -237,12 +232,9 @@ export class EditorGraphState {
           this.editorStore.graphManagerState.graph,
           entities,
           {
-            TEMPORARY__keepSectionIndex:
+            TEMPORARY__preserveSectionIndex:
               this.editorStore.applicationStore.config.options
-                .EXPERIMENTAL__enableFullGrammarImportSupport,
-            TEMPORARY__disableRawLambdaResolver:
-              this.editorStore.applicationStore.config.options
-                .TEMPORARY__disableRawLambdaResolver,
+                .TEMPORARY__preserveSectionIndex,
           },
         )) as GraphBuilderReport;
 
@@ -275,7 +267,9 @@ export class EditorGraphState {
       );
 
       // add generation specification if model generation elements exists in graph and no generation specification
-      this.graphGenerationState.possiblyAddMissingGenerationSpecifications();
+      yield flowResult(
+        this.graphGenerationState.possiblyAddMissingGenerationSpecifications(),
+      );
 
       return {
         status: GraphBuilderStatus.SUCCEEDED,
@@ -308,7 +302,7 @@ export class EditorGraphState {
           `Can't build graph. Error: ${error.message}`,
         );
       } else {
-        // FIXME: we should split this into 2 notifications when we support multiple notifications
+        // TODO: we should split this into 2 notifications when we support multiple notifications
         this.editorStore.applicationStore.notifyError(
           `Can't build graph. Redirected to text mode for debugging. Error: ${error.message}`,
         );
@@ -448,7 +442,7 @@ export class EditorGraphState {
     }
   }
 
-  // FIXME: when we support showing multiple notifications, we can take this options out as the only users of this
+  // TODO: when we support showing multiple notifications, we can take this options out as the only users of this
   // is delete element flow, where we want to say `re-compiling graph after deletion`, but because compilation
   // sometimes is so fast, the message flashes, so we want to combine with the message in this method
   *globalCompileInFormMode(options?: {
@@ -526,7 +520,7 @@ export class EditorGraphState {
 
       // decide if we need to fall back to text mode for debugging
       if (fallbackToTextModeForDebugging) {
-        // FIXME: when we support showing multiple notifications, we can split this into 2
+        // TODO: when we support showing multiple notifications, we can split this into 2
         this.editorStore.applicationStore.notifyWarning(
           options?.message ??
             'Compilation failed and error cannot be located in form mode. Redirected to text mode for debugging.',
@@ -561,7 +555,7 @@ export class EditorGraphState {
     }
   }
 
-  // FIXME: when we support showing multiple notifications, we can take this `suppressCompilationFailureMessage` out as
+  // TODO: when we support showing multiple notifications, we can take this `suppressCompilationFailureMessage` out as
   // we can show the transition between form mode and text mode warning and the compilation failure warning at the same time
   *globalCompileInTextMode(options?: {
     ignoreBlocking?: boolean;
@@ -661,7 +655,7 @@ export class EditorGraphState {
           error,
         );
         if (this.editorStore.graphManagerState.graph.buildState.hasFailed) {
-          // FIXME when we support showing multiple notification, we can split this into 2 messages
+          // TODO: when we support showing multiple notification, we can split this into 2 messages
           this.editorStore.applicationStore.notifyWarning(
             `Can't build graph, please resolve compilation error before leaving text mode. Compilation failed with error: ${error.message}`,
           );
@@ -733,22 +727,25 @@ export class EditorGraphState {
    * built from the new model context data, it resets the graph properly. The bane here is that resetting the graph properly is
    * not trivial, for example, in the cleanup phase, there are things we want to re-use, such as the one-time processed system
    * metamodels or the `reusable` metamodels from project dependencies. There are also explorer states like the package tree,
-   * opened tabs, change detection, etc. to take care of. There are a lot of potential pitfalls. For these, we will add a marker
-   *    @MARKER: MEMORY-SENSITIVE
-   * to indicate we should check carefully these pieces when we detect memory issue as it might still be referring to the old graph
+   * opened tabs, change detection, etc. to take care of. There are a lot of potential pitfalls. For these, we will add the
+   * marker:
+   *
+   * @risk memory-leak
+   *
+   * to indicate we should check carefully these pieces when we detect memory issue as it might still
+   * be referring to the old graph
    *
    * In the past, we have found that there are a few potential root causes for memory leak:
    * 1. State management Mobx allows references, as such, it is sometimes hard to trace down which references can cause problem
    *    We have to understand that the behind this updater is very simple (replace), yet to do it cleanly is not easy, since
    *    so far it is tempting to refer to elements in the graph from various editor state. On top of that, change detection
-   *    sometimes obfuscate the investigation but we have cleared it out with explicit disposing of reaction and `keepAlive`
-   *    computations (e.g. hash)
+   *    sometimes obfuscate the investigation but we have cleared it out with explicit disposing of reaction
    * 2. Reusable models, at this point in time, we haven't completed stabilize the logic for handling generated models, as well
    *    as depdendencies, we intended to save computation time by reusing these while updating the graph. This can pose potential
    *    danger as well. Beware the way when we start to make system/project dependencies references elements of current graph
    *    e.g. when we have a computed value in a immutable class that get all subclasses, etc.
    * 3. We reprocess editor states to ensure good UX, e.g. find tabs to keep open, find tree nodes to expand, etc.
-   *    after updating the graph. These in our experience is the MOST COMMON source of memory leak. It is actually
+   *    after updating the graph. These in our experience is the **MOST COMMON** source of memory leak. It is actually
    *    quite predictable since structures like tabs and tree node embeds graph data, which are references to the old graph
    *
    * NOTE: One big obfuscating factor is overlapping graph refresh. Sometimes, we observed that calling this update graph
@@ -768,16 +765,18 @@ export class EditorGraphState {
     this.isUpdatingGraph = true;
     try {
       const newGraph = this.editorStore.graphManagerState.createEmptyGraph();
-      /* @MARKER: MEMORY-SENSITIVE */
-      // NOTE: this can post memory-leak issue if we start having immutable elements referencing current graph elements:
-      // e.g. subclass analytics on the immutable class, etc.
+      /**
+       * NOTE: this can post memory-leak issue if we start having immutable elements referencing current graph elements:
+       * e.g. subclass analytics on the immutable class, etc.
+       *
+       * @risk memory-leak
+       */
       if (
         this.editorStore.graphManagerState.graph.dependencyManager.buildState
           .hasSucceeded
       ) {
-        newGraph.setDependencyManager(
-          this.editorStore.graphManagerState.graph.dependencyManager,
-        );
+        newGraph.dependencyManager =
+          this.editorStore.graphManagerState.graph.dependencyManager;
       } else {
         this.editorStore.projectConfigurationEditorState.setProjectConfiguration(
           ProjectConfiguration.serialization.fromJson(
@@ -789,7 +788,7 @@ export class EditorGraphState {
         );
         const dependencyManager =
           this.editorStore.graphManagerState.createEmptyDependencyManager();
-        newGraph.setDependencyManager(dependencyManager);
+        newGraph.dependencyManager = dependencyManager;
         yield this.editorStore.graphManagerState.graphManager.buildDependencies(
           this.editorStore.graphManagerState.coreModel,
           this.editorStore.graphManagerState.systemModel,
@@ -800,11 +799,13 @@ export class EditorGraphState {
         );
       }
 
-      /* @MARKER: MEMORY-SENSITIVE */
-      // Backup and reset editor states info
+      /**
+       * Backup and editor states info before resetting
+       *
+       * @risk memory-leak
+       */
       const openedEditorStates = this.editorStore.openedEditorStates;
       const currentEditorState = this.editorStore.currentEditorState;
-      this.editorStore.openedEditorStates = [];
       /**
        * We remove the current editor state so that we no longer let React displays the element that belongs to the old graph
        * NOTE: this causes an UI flash, but this is in many way, acceptable since the user probably should know that we are
@@ -814,22 +815,18 @@ export class EditorGraphState {
        * e.g. if the current editor is a class, we stub the class, create a new class editor state around it and copy over
        * navigation information, etc.
        */
-      this.editorStore.setCurrentEditorState(undefined);
+      this.editorStore.closeAllEditorTabs();
 
-      /* @MARKER: MEMORY-SENSITIVE */
       this.editorStore.changeDetectionState.stop(); // stop change detection before disposing hash
-      yield flowResult(this.editorStore.graphManagerState.graph.dispose());
+      yield flowResult(graph_dispose(this.editorStore.graphManagerState.graph));
 
       yield this.editorStore.graphManagerState.graphManager.buildGraph(
         newGraph,
         entities,
         {
-          TEMPORARY__keepSectionIndex:
+          TEMPORARY__preserveSectionIndex:
             this.editorStore.applicationStore.config.options
-              .EXPERIMENTAL__enableFullGrammarImportSupport,
-          TEMPORARY__disableRawLambdaResolver:
-            this.editorStore.applicationStore.config.options
-              .TEMPORARY__disableRawLambdaResolver,
+              .TEMPORARY__preserveSectionIndex,
         },
       );
 
@@ -839,21 +836,30 @@ export class EditorGraphState {
         this.graphGenerationState.generatedEntities,
       );
       this.editorStore.graphManagerState.graph = newGraph;
-      /* @MARKER: MEMORY-SENSITIVE */
-      // Reprocess explorer tree
+
+      /**
+       * Reprocess explorer tree which might still hold references to old graph
+       *
+       * FIXME: we allow this so the UX stays the same but this can cause memory leak
+       * we could consider doing this properly using node IDs
+       *
+       * @risk memory-leak
+       */
+      this.editorStore.explorerTreeState.reprocess();
       // this.editorStore.explorerTreeState = new ExplorerTreeState(this.applicationStore, this.editorStore);
       // this.editorStore.explorerTreeState.buildImmutableModelTrees();
       // this.editorStore.explorerTreeState.build();
 
-      // FIXME: we allow this so the UX stays the same but this causes memory leak
-      // do this properly using node IDs -> this causes mem-leak right now
-      this.editorStore.explorerTreeState.reprocess();
-      // Reprocess editor states
-      // FIXME: we allow this so the UX stays the same but this causes memory leak
-      // we should change `reprocess` model to do something like having source information on the form to navigate to it properly
-
-      /* @MARKER: MEMORY-SENSITIVE */
-      // so that information is not dependent on the graph, but on the component itself, with IDs and such.
+      /**
+       * Reprocess editor states which might still hold references to old graph
+       *
+       * FIXME: we allow this so the UX stays the same but this can cause memory leak
+       * we should change `reprocess` model to do something like having source information
+       * on the form to navigate to it properly so that information is not dependent on the
+       * graph, but on the component itself, with IDs and such.
+       *
+       * @risk memory-leak
+       */
       this.editorStore.openedEditorStates = openedEditorStates
         .map((editorState) =>
           this.editorStore.reprocessElementEditorState(editorState),
@@ -872,12 +878,9 @@ export class EditorGraphState {
       this.isUpdatingGraph = false;
 
       // ======= (RE)START CHANGE DETECTION =======
-      /* @MARKER: MEMORY-SENSITIVE */
-      yield this.editorStore.changeDetectionState.precomputeHashes();
+      yield flowResult(this.editorStore.changeDetectionState.observeGraph());
+      yield this.editorStore.changeDetectionState.preComputeGraphElementHashes();
       this.editorStore.changeDetectionState.start();
-      yield flowResult(
-        this.editorStore.changeDetectionState.computeLocalChanges(true),
-      );
       this.editorStore.applicationStore.log.info(
         LogEvent.create(CHANGE_DETECTION_EVENT.CHANGE_DETECTION_RESTARTED),
         '[ASYNC]',
@@ -896,11 +899,10 @@ export class EditorGraphState {
       if (error instanceof GraphBuilderError && this.editorStore.isInFormMode) {
         this.editorStore.applicationStore.setBlockingAlert({
           message: `Can't build graph: ${error.message}`,
-          prompt: 'Refreshing full application',
+          prompt: 'Refreshing full application...',
           showLoading: true,
         });
-        this.editorStore.openedEditorStates = [];
-        this.editorStore.setCurrentEditorState(undefined);
+        this.editorStore.closeAllEditorTabs();
         this.editorStore.cleanUp();
         yield flowResult(this.editorStore.buildGraph(entities));
       } else {
@@ -927,14 +929,15 @@ export class EditorGraphState {
     );
     this.isUpdatingApplication = true;
     try {
-      /* @MARKER: MEMORY-SENSITIVE */
-      // Backup and reset editor states info
+      /**
+       * Backup and editor states info before resetting
+       *
+       * @risk memory-leak
+       */
       const openedEditorStates = this.editorStore.openedEditorStates;
       const currentEditorState = this.editorStore.currentEditorState;
-      this.editorStore.openedEditorStates = [];
-      this.editorStore.setCurrentEditorState(undefined);
+      this.editorStore.closeAllEditorTabs();
 
-      /* @MARKER: MEMORY-SENSITIVE */
       yield flowResult(
         this.editorStore.graphManagerState.graph.generationModel.dispose(),
       );
@@ -946,13 +949,16 @@ export class EditorGraphState {
         this.graphGenerationState.generatedEntities,
       );
 
-      /* @MARKER: MEMORY-SENSITIVE */
-      // Reprocess explorer tree
-      // FIXME: we allow this so the UX stays the same but this causes memory leak
-      // we should change `reprocess` model to do something like having source information on the form to navigate to it properly
+      /**
+       * Reprocess explorer tree which might still hold references to old graph
+       *
+       * FIXME: we allow this so the UX stays the same but this can cause memory leak
+       * we could consider doing this properly using node IDs
+       *
+       * @risk memory-leak
+       */
       this.editorStore.explorerTreeState.reprocess();
 
-      /* @MARKER: MEMORY-SENSITIVE */
       // so that information is not dependent on the graph, but on the component itself, with IDs and such.
       this.editorStore.openedEditorStates = openedEditorStates
         .map((editorState) =>
@@ -1143,6 +1149,8 @@ export class EditorGraphState {
       return PACKAGEABLE_ELEMENT_TYPE.GENERATION_SPECIFICATION;
     } else if (element instanceof SectionIndex) {
       return PACKAGEABLE_ELEMENT_TYPE.SECTION_INDEX;
+    } else if (element instanceof DataElement) {
+      return PACKAGEABLE_ELEMENT_TYPE.DATA;
     }
     const extraElementTypeLabelGetters = this.editorStore.pluginManager
       .getStudioPlugins()

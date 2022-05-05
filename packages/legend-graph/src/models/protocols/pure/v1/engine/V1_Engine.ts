@@ -77,7 +77,10 @@ import {
 import { V1_LightQuery, V1_Query } from './query/V1_Query';
 import { V1_DatabaseBuilderInput } from './generation/V1_DatabaseBuilderInput';
 import type { V1_ServiceConfigurationInfo } from './service/V1_ServiceConfiguration';
-import { V1_ExecuteInput } from './execution/V1_ExecuteInput';
+import {
+  V1_ExecuteInput,
+  V1_TestDataGenerationExecutionInput,
+} from './execution/V1_ExecuteInput';
 import type { V1_ExecutionPlan } from '../model/executionPlan/V1_ExecutionPlan';
 import {
   type V1_ExecutionResult,
@@ -456,9 +459,11 @@ export class V1_Engine {
     );
   }
 
-  generateMappingTestData(input: V1_ExecuteInput): Promise<string> {
+  generateMappingTestData(
+    input: V1_TestDataGenerationExecutionInput,
+  ): Promise<string> {
     return this.engineServerClient.generateTestDataWithDefaultSeed(
-      V1_ExecuteInput.serialization.toJson(input),
+      V1_TestDataGenerationExecutionInput.serialization.toJson(input),
     );
   }
 
@@ -510,7 +515,7 @@ export class V1_Engine {
           new V1_GenerateFileInput(textModel, configs),
         ),
       )
-    ).map((output) => V1_GenerationOutput.serialization.fromJson(output));
+    ).map((v) => V1_GenerationOutput.serialization.fromJson(v));
   }
   // ------------------------------------------- External Format -----------------------------------------
 
@@ -587,7 +592,7 @@ export class V1_Engine {
       await this.engineServerClient.runServiceTests(
         V1_serializePureModelContextData(model),
       )
-    ).map((result) => V1_ServiceTestResult.serialization.fromJson(result));
+    ).map((v) => V1_ServiceTestResult.serialization.fromJson(v));
   }
 
   async registerService(
@@ -639,7 +644,7 @@ export class V1_Engine {
       await this.engineServerClient.searchQueries(
         V1_QuerySearchSpecification.serialization.toJson(searchSpecification),
       )
-    ).map((query) => V1_LightQuery.serialization.fromJson(query));
+    ).map((v) => V1_LightQuery.serialization.fromJson(v));
   }
 
   async getQuery(queryId: string): Promise<V1_Query> {

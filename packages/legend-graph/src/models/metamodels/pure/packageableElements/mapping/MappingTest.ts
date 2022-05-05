@@ -25,9 +25,15 @@ import {
 } from '../../../../../helpers/ValidationHelper';
 
 export class MappingTest implements Hashable {
-  uuid = uuid();
+  readonly uuid = uuid();
+
   name: string;
-  query: RawLambda; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
+  /**
+   * Studio does not process value specification, they are left in raw JSON form
+   *
+   * @discrepancy model
+   */
+  query: RawLambda;
   inputData: InputData[] = [];
   assert: MappingTestAssert;
 

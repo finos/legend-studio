@@ -15,7 +15,10 @@
  */
 
 import { action, computed, makeAutoObservable } from 'mobx';
-import type { ServiceEditorState } from '../../../editor-state/element-editor-state/service/ServiceEditorState';
+import {
+  type ServiceEditorState,
+  MINIMUM_SERVICE_OWNERS,
+} from '../../../editor-state/element-editor-state/service/ServiceEditorState';
 import type { EditorStore } from '../../../EditorStore';
 import {
   type GeneratorFn,
@@ -36,6 +39,10 @@ import {
   ServiceExecutionMode,
 } from '@finos/legend-graph';
 import { ServiceRegistrationEnvInfo } from '../../../../application/LegendStudioConfig';
+import {
+  ActionAlertActionType,
+  ActionAlertType,
+} from '@finos/legend-application';
 
 export const LATEST_PROJECT_REVISION = 'Latest Project Revision';
 
@@ -54,15 +61,21 @@ const getServiceExecutionMode = (mode: string): ServiceExecutionMode => {
   }
 };
 
+const URL_SEPARATOR = '/';
+
 interface ServiceVersionOption {
   label: string;
   value: Version | string;
 }
 
+export enum SERVICE_REGISTRATION_PHASE {
+  REGISTRATING_SERVICE = 'REGISTRATING_SERVICE',
+  ACTIVATING_SERVICE = 'ACTIVATING_SERVICE',
+}
+
 export class ServiceRegistrationState {
   editorStore: EditorStore;
   serviceEditorState: ServiceEditorState;
-  showModal = false;
   registrationState = ActionState.create();
   serviceEnv?: string | undefined;
   serviceExecutionMode?: ServiceExecutionMode | undefined;
@@ -75,11 +88,9 @@ export class ServiceRegistrationState {
   ) {
     makeAutoObservable(this, {
       editorStore: false,
-      setShowModal: action,
       executionModes: computed,
       updateVersion: action,
       setProjectVersion: action,
-      openModal: action,
       initialize: action,
       updateType: action,
       updateEnv: action,
@@ -88,11 +99,10 @@ export class ServiceRegistrationState {
 
     this.editorStore = editorStore;
     this.serviceEditorState = serviceEditorState;
+    this.initialize();
+    this.registrationState.setMessageFormatter(prettyCONSTName);
   }
 
-  setShowModal(val: boolean): void {
-    this.showModal = val;
-  }
   setServiceEnv(val: string | undefined): void {
     this.serviceEnv = val;
   }
@@ -105,11 +115,6 @@ export class ServiceRegistrationState {
 
   setActivatePostRegistration(val: boolean): void {
     this.activatePostRegistration = val;
-  }
-
-  openModal(): void {
-    this.setShowModal(true);
-    this.initialize();
   }
 
   initialize(): void {
@@ -141,11 +146,8 @@ export class ServiceRegistrationState {
     this.setServiceExecutionMode(this.executionModes[0]);
   }
 
-  /**
-   * NOTE: For Prototype projects, only fully-interactive mode is supported
-   */
   get options(): ServiceRegistrationEnvInfo[] {
-    if (this.editorStore.sdlcState.isCurrentProjectInProduction) {
+    if (this.editorStore.sdlcServerClient.features.canCreateVersion) {
       return this.editorStore.applicationStore.config.options
         .TEMPORARY__serviceRegistrationConfig;
     }
@@ -153,7 +155,9 @@ export class ServiceRegistrationState {
       (_envConfig) => {
         const envConfig = new ServiceRegistrationEnvInfo();
         envConfig.env = _envConfig.env;
-        envConfig.url = _envConfig.url;
+        envConfig.executionUrl = _envConfig.executionUrl;
+        envConfig.managementUrl = _envConfig.managementUrl;
+        // NOTE: For projects that we cannot create a version for, only fully-interactive mode is supported
         envConfig.modes = _envConfig.modes.filter(
           (mode) => mode === ServiceExecutionMode.FULL_INTERACTIVE,
         );
@@ -170,7 +174,7 @@ export class ServiceRegistrationState {
 
   get versionOptions(): ServiceVersionOption[] | undefined {
     if (
-      this.editorStore.sdlcState.isCurrentProjectInProduction &&
+      this.editorStore.sdlcServerClient.features.canCreateVersion &&
       this.serviceExecutionMode !== ServiceExecutionMode.FULL_INTERACTIVE
     ) {
       const options: ServiceVersionOption[] =
@@ -196,15 +200,19 @@ export class ServiceRegistrationState {
     try {
       this.registrationState.inProgress();
       this.validateServiceForRegistration();
-      const serverUrl = guaranteeNonNullable(
+      const config = guaranteeNonNullable(
         this.options.find((info) => info.env === this.serviceEnv),
-      ).url;
+      );
+      const serverUrl = config.executionUrl;
       const versionInput =
         this.projectVersion instanceof Version
           ? this.projectVersion.id.id
           : undefined;
       const projectConfig = guaranteeNonNullable(
         this.editorStore.projectConfigurationEditorState.projectConfiguration,
+      );
+      this.registrationState.setMessage(
+        SERVICE_REGISTRATION_PHASE.REGISTRATING_SERVICE,
       );
       const serviceRegistrationResult =
         (yield this.editorStore.graphManagerState.graphManager.registerService(
@@ -217,19 +225,51 @@ export class ServiceRegistrationState {
           versionInput,
         )) as ServiceRegistrationResult;
       if (this.activatePostRegistration) {
+        this.registrationState.setMessage(
+          SERVICE_REGISTRATION_PHASE.ACTIVATING_SERVICE,
+        );
         yield this.editorStore.graphManagerState.graphManager.activateService(
           serverUrl,
           serviceRegistrationResult.serviceInstanceId,
         );
       }
-      this.setShowModal(false);
-      this.editorStore.applicationStore.notifySuccess(
-        `service with patten ${serviceRegistrationResult.pattern} registered ${
-          this.activatePostRegistration ? ' and activated ' : ''
-        } on ${serviceRegistrationResult.serverURL}`,
-        undefined,
-        null,
+      assertNonEmptyString(
+        serviceRegistrationResult.pattern,
+        'Service registration pattern is missing',
       );
+      const message = `Service with patten ${
+        serviceRegistrationResult.pattern
+      } registered ${this.activatePostRegistration ? 'and activated ' : ''}`;
+      const encodedServicePattern =
+        URL_SEPARATOR +
+        encodeURIComponent(
+          serviceRegistrationResult.pattern[0] === URL_SEPARATOR
+            ? serviceRegistrationResult.pattern.substring(1)
+            : serviceRegistrationResult.pattern,
+        );
+      this.editorStore.setActionAltertInfo({
+        message,
+        prompt: 'You can now launch and monitor the operation of your service',
+        type: ActionAlertType.STANDARD,
+        onEnter: (): void => this.editorStore.setBlockGlobalHotkeys(true),
+        onClose: (): void => this.editorStore.setBlockGlobalHotkeys(false),
+        actions: [
+          {
+            label: 'Launch Service',
+            type: ActionAlertActionType.PROCEED,
+            handler: (): void => {
+              this.editorStore.applicationStore.navigator.openNewWindow(
+                `${config.managementUrl}${encodedServicePattern}`,
+              );
+            },
+            default: true,
+          },
+          {
+            label: 'Close',
+            type: ActionAlertActionType.PROCEED_WITH_CAUTION,
+          },
+        ],
+      });
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
@@ -239,16 +279,17 @@ export class ServiceRegistrationState {
       this.editorStore.applicationStore.notifyError(error);
     } finally {
       this.registrationState.reset();
+      this.registrationState.setMessage(undefined);
     }
   }
 
   validateServiceForRegistration(): void {
-    assertTrue(
-      this.serviceEditorState.service.owners.length !== 0,
-      `Service needs to have an owner in order to be registered`,
-    );
     this.serviceEditorState.service.owners.forEach((owner) =>
       assertNonEmptyString(owner, `Service can't have an empty owner name`),
+    );
+    assertTrue(
+      this.serviceEditorState.service.owners.length >= MINIMUM_SERVICE_OWNERS,
+      `Service needs to have at least 2 owners in order to be registered`,
     );
     guaranteeNonNullable(
       this.serviceEnv,

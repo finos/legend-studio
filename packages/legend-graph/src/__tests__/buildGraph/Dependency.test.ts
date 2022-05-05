@@ -98,7 +98,7 @@ test(
     const dependencyEntitiesMap = new Map<string, Entity[]>();
     dependencyEntitiesMap.set(firstDependencyKey, firstDependencyEntities);
     dependencyEntitiesMap.set(secondDependencyKey, secondDependencyEntities);
-    graphManagerState.graph.setDependencyManager(dependencyManager);
+    graphManagerState.graph.dependencyManager = dependencyManager;
     await graphManagerState.graphManager.buildDependencies(
       graphManagerState.coreModel,
       graphManagerState.systemModel,
@@ -121,7 +121,7 @@ test(
     // check dependency manager
     expect(dependencyManager.getModel(firstDependencyKey)).toBeDefined();
     expect(dependencyManager.getModel(secondDependencyKey)).toBeDefined();
-    expect(dependencyManager.allElements.length).toBe(2);
+    expect(dependencyManager.allOwnElements.length).toBe(2);
 
     // make sure dependency entities are not mingled with main graph entities
     expect(graphManagerState.graph.allOwnElements.length).toBe(1);
@@ -141,7 +141,7 @@ test(
     const dependencyManager = new DependencyManager([]);
     const dependencyEntitiesMap = new Map<string, Entity[]>();
     dependencyEntitiesMap.set('dep', firstDependencyEntities);
-    graphManagerState.graph.setDependencyManager(dependencyManager);
+    graphManagerState.graph.dependencyManager = dependencyManager;
     await graphManagerState.graphManager.buildDependencies(
       graphManagerState.coreModel,
       graphManagerState.systemModel,

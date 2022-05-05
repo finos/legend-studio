@@ -29,13 +29,8 @@ export class VariableExpression extends ValueSpecification {
     multiplicity: Multiplicity,
     genericType?: GenericTypeReference | undefined,
   ) {
-    super(multiplicity);
+    super(multiplicity, genericType);
     this.name = name;
-    this.genericType = genericType;
-  }
-
-  setName(val: string): void {
-    this.name = val;
   }
 
   accept_ValueSpecificationVisitor<T>(

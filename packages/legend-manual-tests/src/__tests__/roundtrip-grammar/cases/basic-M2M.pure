@@ -30,6 +30,10 @@ Service model::ModelToModelMappingService
       ];
     }#;
   }
+  testSuites:
+  [
+
+  ]
   test: Single
   {
     data: '';

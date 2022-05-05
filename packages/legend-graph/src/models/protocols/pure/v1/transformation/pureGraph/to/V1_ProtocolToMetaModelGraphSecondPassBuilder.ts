@@ -20,14 +20,17 @@ import {
   UnsupportedOperationError,
   IllegalStateError,
   assertNonNullable,
-  guaranteeNonNullable,
   assertTrue,
   LogEvent,
+  guaranteeType,
 } from '@finos/legend-shared';
 import { Stereotype } from '../../../../../../metamodels/pure/packageableElements/domain/Stereotype';
 import { Tag } from '../../../../../../metamodels/pure/packageableElements/domain/Tag';
 import { Enum } from '../../../../../../metamodels/pure/packageableElements/domain/Enum';
-import type { V1_GraphBuilderContext } from '../../../transformation/pureGraph/to/V1_GraphBuilderContext';
+import {
+  V1_buildFullPath,
+  type V1_GraphBuilderContext,
+} from '../../../transformation/pureGraph/to/V1_GraphBuilderContext';
 import type { V1_GenerationSpecification } from '../../../model/packageableElements/generationSpecification/V1_GenerationSpecification';
 import type {
   V1_PackageableElement,
@@ -48,8 +51,8 @@ import {
   V1_buildTaggedValue,
 } from '../../../transformation/pureGraph/to/helpers/V1_DomainBuilderHelper';
 import {
-  V1_buildServiceTest,
   V1_buildServiceExecution,
+  V1_buildLegacyServiceTest,
 } from '../../../transformation/pureGraph/to/helpers/V1_ServiceBuilderHelper';
 import {
   V1_buildEnumerationMapping,
@@ -74,6 +77,10 @@ import {
 import type { V1_Measure } from '../../../model/packageableElements/domain/V1_Measure';
 import type { V1_SectionIndex } from '../../../model/packageableElements/section/V1_SectionIndex';
 import { V1_buildSection } from '../../../transformation/pureGraph/to/helpers/V1_SectionBuilderHelper';
+import type { V1_DataElement } from '../../../model/packageableElements/data/V1_DataElement';
+import { V1_ProtocolToMetaModelEmbeddedDataBuilder } from './helpers/V1_DataElementBuilderHelper';
+import { V1_buildTestSuite } from './helpers/V1_TestBuilderHelper';
+import { ServiceTestSuite } from '../../../../../../metamodels/pure/packageableElements/service/ServiceTestSuite';
 
 export class V1_ProtocolToMetaModelGraphSecondPassBuilder
   implements V1_PackageableElementVisitor<void>
@@ -91,13 +98,19 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
   }
 
   visit_Profile(element: V1_Profile): void {
-    const profile = this.context.graph.getProfile(
-      this.context.graph.buildPath(element.package, element.name),
+    const profile = this.context.currentSubGraph.getOwnProfile(
+      V1_buildFullPath(element.package, element.name),
     );
     const uniqueStereotypes = new Set<string>();
     profile.stereotypes = element.stereotypes.map((stereotype) => {
       if (uniqueStereotypes.has(stereotype)) {
-        /* @MARKER: RELAXED GRAPH CHECK - See https://github.com/finos/legend-studio/issues/660 */
+        /**
+         * This test is skipped because we want to temporarily relax graph building algorithm
+         * to ease Pure -> Legend migration push.
+         * See https://github.com/finos/legend-studio/issues/660
+         *
+         * @discrepancy graph-building
+         */
         this.context.log.warn(
           LogEvent.create(
             `Found duplicated stereotype '${stereotype}' in profile '${element.path}'`,
@@ -110,7 +123,13 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
     const uniqueTags = new Set<string>();
     profile.tags = element.tags.map((tag) => {
       if (uniqueTags.has(tag)) {
-        /* @MARKER: RELAXED GRAPH CHECK - See https://github.com/finos/legend-studio/issues/660 */
+        /**
+         * This test is skipped because we want to temporarily relax graph building algorithm
+         * to ease Pure -> Legend migration push.
+         * See https://github.com/finos/legend-studio/issues/660
+         *
+         * @discrepancy graph-building
+         */
         this.context.log.warn(
           LogEvent.create(
             `Found duplicated tag '${tag}' in profile '${element.path}'`,
@@ -123,8 +142,9 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
   }
 
   visit_Enumeration(element: V1_Enumeration): void {
-    const path = this.context.graph.buildPath(element.package, element.name);
-    const enumeration = this.context.graph.getEnumeration(path);
+    const enumeration = this.context.currentSubGraph.getOwnEnumeration(
+      V1_buildFullPath(element.package, element.name),
+    );
     enumeration.stereotypes = element.stereotypes
       .map((stereotype) => this.context.resolveStereotype(stereotype))
       .filter(isNonNullable);
@@ -138,7 +158,13 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
         `Enum value 'value' field is missing or empty`,
       );
       if (uniqueEnumValues.has(enumValue.value)) {
-        /* @MARKER: RELAXED GRAPH CHECK - See https://github.com/finos/legend-studio/issues/660 */
+        /**
+         * This test is skipped because we want to temporarily relax graph building algorithm
+         * to ease Pure -> Legend migration push.
+         * See https://github.com/finos/legend-studio/issues/660
+         *
+         * @discrepancy graph-building
+         */
         this.context.log.warn(
           LogEvent.create(
             `Found duplicated value '${enumValue.value}' in enumeration '${enumeration.path}'`,
@@ -162,8 +188,8 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
       element.canonicalUnit,
       `Measure 'canonicalUnit' field is missing`,
     );
-    const measure = this.context.graph.getMeasure(
-      this.context.graph.buildPath(element.package, element.name),
+    const measure = this.context.currentSubGraph.getOwnMeasure(
+      V1_buildFullPath(element.package, element.name),
     );
     measure.canonicalUnit = V1_buildUnit(
       element.canonicalUnit,
@@ -177,8 +203,8 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
   }
 
   visit_Class(element: V1_Class): void {
-    const _class = this.context.graph.getClass(
-      this.context.graph.buildPath(element.package, element.name),
+    const _class = this.context.currentSubGraph.getOwnClass(
+      V1_buildFullPath(element.package, element.name),
     );
     _class.stereotypes = element.stereotypes
       .map((stereotype) => this.context.resolveStereotype(stereotype))
@@ -205,8 +231,8 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
       protocol.returnMultiplicity,
       `Function 'returnMultiplicity' field is missing`,
     );
-    const func = this.context.graph.getFunction(
-      this.context.graph.buildPath(protocol.package, protocol.name),
+    const func = this.context.currentSubGraph.getOwnFunction(
+      V1_buildFullPath(protocol.package, protocol.name),
     );
     func.returnType = this.context.resolveType(protocol.returnType);
     func.returnMultiplicity = this.context.graph.getMultiplicity(
@@ -226,8 +252,8 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
   }
 
   visit_FlatData(element: V1_FlatData): void {
-    const flatData = this.context.graph.getFlatDataStore(
-      this.context.graph.buildPath(element.package, element.name),
+    const flatData = this.context.currentSubGraph.getOwnFlatDataStore(
+      V1_buildFullPath(element.package, element.name),
     );
     flatData.sections = element.sections.map((section) =>
       V1_buildFlatDataSection(section, flatData, this.context),
@@ -235,8 +261,8 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
   }
 
   visit_Database(element: V1_Database): void {
-    const database = this.context.graph.getDatabase(
-      this.context.graph.buildPath(element.package, element.name),
+    const database = this.context.currentSubGraph.getOwnDatabase(
+      V1_buildFullPath(element.package, element.name),
     );
     database.includes = element.includedStores.map((includedStore) =>
       this.context.resolveDatabase(includedStore),
@@ -247,8 +273,8 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
   }
 
   visit_Mapping(element: V1_Mapping): void {
-    const mapping = this.context.graph.getMapping(
-      this.context.graph.buildPath(element.package, element.name),
+    const mapping = this.context.currentSubGraph.getOwnMapping(
+      V1_buildFullPath(element.package, element.name),
     );
     const mappingIncludesSet = new Set<string>();
     mapping.includes = element.includedMappings.map((i) => {
@@ -274,8 +300,8 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
       element.pattern,
       `Service 'pattern' field is missing or empty`,
     );
-    const service = this.context.graph.getService(
-      this.context.graph.buildPath(element.package, element.name),
+    const service = this.context.currentSubGraph.getOwnService(
+      V1_buildFullPath(element.package, element.name),
     );
     service.stereotypes = element.stereotypes
       .map((stereotype) => this.context.resolveStereotype(stereotype))
@@ -293,12 +319,21 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
       this.context,
       service,
     );
-    service.test = V1_buildServiceTest(element.test, this.context, service);
+    if (element.test) {
+      service.test = V1_buildLegacyServiceTest(
+        element.test,
+        this.context,
+        service,
+      );
+    }
+    service.tests = element.testSuites
+      .map((testSuite) => V1_buildTestSuite(testSuite, this.context))
+      .map((e) => guaranteeType(e, ServiceTestSuite));
   }
 
   visit_SectionIndex(element: V1_SectionIndex): void {
-    const sectionIndex = guaranteeNonNullable(
-      this.context.graph.getOwnSectionIndex(element.path),
+    const sectionIndex = this.context.currentSubGraph.getOwnSectionIndex(
+      element.path,
     );
     sectionIndex.sections = element.sections.map((section) =>
       V1_buildSection(section, this.context, sectionIndex),
@@ -310,8 +345,8 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
       element.type,
       `File generation 'type' field is missing or empty`,
     );
-    const fileGeneration = this.context.graph.getFileGeneration(
-      this.context.graph.buildPath(element.package, element.name),
+    const fileGeneration = this.context.currentSubGraph.getOwnFileGeneration(
+      V1_buildFullPath(element.package, element.name),
     );
     fileGeneration.type = element.type;
     fileGeneration.configurationProperties =
@@ -323,9 +358,10 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
   }
 
   visit_GenerationSpecification(element: V1_GenerationSpecification): void {
-    const generationSpec = this.context.graph.getGenerationSpecification(
-      this.context.graph.buildPath(element.package, element.name),
-    );
+    const generationSpec =
+      this.context.currentSubGraph.getOwnGenerationSpecification(
+        V1_buildFullPath(element.package, element.name),
+      );
     generationSpec.generationNodes = element.generationNodes.map((node) =>
       V1_buildGenerationTreeNode(node, this.context),
     );
@@ -335,8 +371,8 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
   }
 
   visit_PackageableRuntime(element: V1_PackageableRuntime): void {
-    const runtime = this.context.graph.getRuntime(
-      this.context.graph.buildPath(element.package, element.name),
+    const runtime = this.context.currentSubGraph.getOwnRuntime(
+      V1_buildFullPath(element.package, element.name),
     );
     runtime.runtimeValue = V1_buildEngineRuntime(
       element.runtimeValue,
@@ -345,8 +381,8 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
   }
 
   visit_PackageableConnection(element: V1_PackageableConnection): void {
-    const connection = this.context.graph.getConnection(
-      this.context.graph.buildPath(element.package, element.name),
+    const connection = this.context.currentSubGraph.getOwnConnection(
+      V1_buildFullPath(element.package, element.name),
     );
     if (element.connectionValue instanceof V1_ConnectionPointer) {
       throw new IllegalStateError(
@@ -357,5 +393,20 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
       element.connectionValue.accept_ConnectionVisitor(
         new V1_ProtocolToMetaModelConnectionBuilder(this.context),
       );
+  }
+
+  visit_DataElement(element: V1_DataElement): void {
+    const dataElement = this.context.currentSubGraph.getOwnDataElement(
+      V1_buildFullPath(element.package, element.name),
+    );
+    dataElement.stereotypes = element.stereotypes
+      .map((stereotype) => this.context.resolveStereotype(stereotype))
+      .filter(isNonNullable);
+    dataElement.taggedValues = element.taggedValues
+      .map((taggedValue) => V1_buildTaggedValue(taggedValue, this.context))
+      .filter(isNonNullable);
+    dataElement.data = element.data.accept_EmbeddedDataVisitor(
+      new V1_ProtocolToMetaModelEmbeddedDataBuilder(this.context),
+    );
   }
 }

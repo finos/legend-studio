@@ -18,6 +18,8 @@ import { serialize, deserialize } from 'serializr';
 import {
   type PlainObject,
   UnsupportedOperationError,
+  assertErrorThrown,
+  guaranteeIsString,
 } from '@finos/legend-shared';
 import type { V1_PackageableConnection } from '../../model/packageableElements/connection/V1_PackageableConnection';
 import type { V1_Association } from '../../model/packageableElements/domain/V1_Association';
@@ -47,7 +49,7 @@ import {
   V1_MAPPING_ELEMENT_PROTOCOL_TYPE,
 } from './serializationHelpers/V1_MappingSerializationHelper';
 import {
-  V1_servicedModelSchema,
+  V1_serviceModelSchema,
   V1_SERVICE_ELEMENT_PROTOCOL_TYPE,
 } from './serializationHelpers/V1_ServiceSerializationHelper';
 import {
@@ -92,8 +94,14 @@ import type {
   PureProtocolProcessorPlugin,
   V1_ElementProtocolSerializer,
 } from '../../../PureProtocolProcessorPlugin';
+import { createPath } from '../../../../../../MetaModelUtils';
+import type { V1_DataElement } from '../../model/packageableElements/data/V1_DataElement';
+import {
+  V1_dataElementModelSchema,
+  V1_DATA_ELEMENT_PROTOCOL_TYPE,
+} from './serializationHelpers/V1_DataElementSerializationHelper';
 
-export class V1_PackageableElementSerializer
+class V1_PackageableElementSerializer
   implements V1_PackageableElementVisitor<PlainObject<V1_PackageableElement>>
 {
   extraElementProtocolSerializers: V1_ElementProtocolSerializer[] = [];
@@ -163,7 +171,7 @@ export class V1_PackageableElementSerializer
   }
 
   visit_Service(element: V1_Service): PlainObject<V1_PackageableElement> {
-    return serialize(V1_servicedModelSchema, element);
+    return serialize(V1_serviceModelSchema(this.plugins), element);
   }
 
   visit_PackageableRuntime(
@@ -198,56 +206,95 @@ export class V1_PackageableElementSerializer
   ): PlainObject<V1_PackageableElement> {
     return serialize(V1_sectionIndexModelSchema, element);
   }
+
+  visit_DataElement(
+    element: V1_DataElement,
+  ): PlainObject<V1_PackageableElement> {
+    return serialize(V1_dataElementModelSchema(this.plugins), element);
+  }
 }
+
+export const V1_serializePackageableElement = (
+  element: V1_PackageableElement,
+  plugins: PureProtocolProcessorPlugin[],
+): PlainObject<V1_PackageableElement> => {
+  try {
+    return element.accept_PackageableElementVisitor(
+      new V1_PackageableElementSerializer(plugins),
+    );
+  } catch (error) {
+    assertErrorThrown(error);
+    error.message = `Can't serialize element '${element.path}': ${error.message}`;
+    throw error;
+  }
+};
 
 export const V1_deserializePackageableElement = (
   json: PlainObject<V1_PackageableElement>,
   plugins: PureProtocolProcessorPlugin[],
 ): V1_PackageableElement => {
-  const extraElementProtocolDeserializers = plugins.flatMap(
-    (plugin) => plugin.V1_getExtraElementProtocolDeserializers?.() ?? [],
+  const packagePath = guaranteeIsString(
+    json.package,
+    `Can't deserialize element: element package is not a string`,
   );
-  switch (json._type) {
-    case V1_PROFILE_ELEMENT_PROTOCOL_TYPE:
-      return deserialize(V1_profileSchema, json);
-    case V1_ENUMERATION_ELEMENT_PROTOCOL_TYPE:
-      return deserialize(V1_enumerationSchema, json);
-    case V1_MEASURE_ELEMENT_PROTOCOL_TYPE:
-      return deserialize(V1_measureSchema, json);
-    case V1_CLASS_ELEMENT_PROTOCOL_TYPE:
-      return deserialize(V1_classSchema, json);
-    case V1_ASSOCIATION_ELEMENT_PROTOCOL_TYPE:
-      return deserialize(V1_associationSchema, json);
-    case V1_FUNCTION_ELEMENT_PROTOCOL_TYPE:
-      return deserialize(V1_functionSchema, json);
-    case V1_FLAT_DATA_ELEMENT_PROTOCOL_TYPE:
-      return deserialize(V1_flatDataModelSchema, json);
-    case V1_DATABASE_ELEMENT_PROTOCOL_TYPE:
-      return deserialize(V1_databaseModelSchema, json);
-    case V1_MAPPING_ELEMENT_PROTOCOL_TYPE:
-      return deserialize(V1_mappingModelSchema(plugins), json);
-    case V1_SERVICE_ELEMENT_PROTOCOL_TYPE:
-      return deserialize(V1_servicedModelSchema, json);
-    case V1_PACKAGEABLE_CONNECTION_ELEMENT_PROTOCOL_TYPE:
-      return deserialize(V1_packageableConnectionModelSchema(plugins), json);
-    case V1_PACKAGEABLE_RUNTIME_ELEMENT_PROTOCOL_TYPE:
-      return deserialize(V1_packageableRuntimeModelSchema, json);
-    case V1_FILE_GENERATION_ELEMENT_PROTOCOL_TYPE:
-      return deserialize(V1_fileGenerationModelSchema, json);
-    case V1_GENERATION_SPECIFICATION_ELEMENT_PROTOCOL_TYPE:
-      return deserialize(V1_generationSpecificationsModelSchema, json);
-    case V1_SECTION_INDEX_ELEMENT_PROTOCOL_TYPE:
-      return deserialize(V1_sectionIndexModelSchema, json);
-    default: {
-      for (const deserializer of extraElementProtocolDeserializers) {
-        const elementProtocol = deserializer(json, plugins);
-        if (elementProtocol) {
-          return elementProtocol;
+  const name = guaranteeIsString(
+    json.name,
+    `Can't deserialize element: element name is not a string`,
+  );
+  const elementPath = createPath(packagePath, name);
+
+  try {
+    const extraElementProtocolDeserializers = plugins.flatMap(
+      (plugin) => plugin.V1_getExtraElementProtocolDeserializers?.() ?? [],
+    );
+    switch (json._type) {
+      case V1_PROFILE_ELEMENT_PROTOCOL_TYPE:
+        return deserialize(V1_profileSchema, json);
+      case V1_ENUMERATION_ELEMENT_PROTOCOL_TYPE:
+        return deserialize(V1_enumerationSchema, json);
+      case V1_MEASURE_ELEMENT_PROTOCOL_TYPE:
+        return deserialize(V1_measureSchema, json);
+      case V1_CLASS_ELEMENT_PROTOCOL_TYPE:
+        return deserialize(V1_classSchema, json);
+      case V1_ASSOCIATION_ELEMENT_PROTOCOL_TYPE:
+        return deserialize(V1_associationSchema, json);
+      case V1_FUNCTION_ELEMENT_PROTOCOL_TYPE:
+        return deserialize(V1_functionSchema, json);
+      case V1_FLAT_DATA_ELEMENT_PROTOCOL_TYPE:
+        return deserialize(V1_flatDataModelSchema, json);
+      case V1_DATABASE_ELEMENT_PROTOCOL_TYPE:
+        return deserialize(V1_databaseModelSchema, json);
+      case V1_MAPPING_ELEMENT_PROTOCOL_TYPE:
+        return deserialize(V1_mappingModelSchema(plugins), json);
+      case V1_SERVICE_ELEMENT_PROTOCOL_TYPE:
+        return deserialize(V1_serviceModelSchema(plugins), json);
+      case V1_PACKAGEABLE_CONNECTION_ELEMENT_PROTOCOL_TYPE:
+        return deserialize(V1_packageableConnectionModelSchema(plugins), json);
+      case V1_PACKAGEABLE_RUNTIME_ELEMENT_PROTOCOL_TYPE:
+        return deserialize(V1_packageableRuntimeModelSchema, json);
+      case V1_FILE_GENERATION_ELEMENT_PROTOCOL_TYPE:
+        return deserialize(V1_fileGenerationModelSchema, json);
+      case V1_GENERATION_SPECIFICATION_ELEMENT_PROTOCOL_TYPE:
+        return deserialize(V1_generationSpecificationsModelSchema, json);
+      case V1_SECTION_INDEX_ELEMENT_PROTOCOL_TYPE:
+        return deserialize(V1_sectionIndexModelSchema, json);
+      case V1_DATA_ELEMENT_PROTOCOL_TYPE:
+        return deserialize(V1_dataElementModelSchema(plugins), json);
+      default: {
+        for (const deserializer of extraElementProtocolDeserializers) {
+          const elementProtocol = deserializer(json, plugins);
+          if (elementProtocol) {
+            return elementProtocol;
+          }
         }
+        throw new UnsupportedOperationError(
+          `Can't deserialize element of type '${json._type}': no compatible deserializer available from plugins`,
+        );
       }
-      throw new UnsupportedOperationError(
-        `Can't deserialize element of type '${json._type}': no compatible deserializer available from plugins`,
-      );
     }
+  } catch (error) {
+    assertErrorThrown(error);
+    error.message = `Can't deserialize element '${elementPath}': ${error.message}`;
+    throw error;
   }
 };

@@ -33,7 +33,6 @@ import {
 import {
   type GeneratorFn,
   assertErrorThrown,
-  addUniqueEntry,
   deepEqual,
   isEmpty,
   LogEvent,
@@ -51,6 +50,7 @@ import {
 } from '@finos/legend-graph';
 import {
   configurationProperty_setValue,
+  fileGeneration_addConfigurationProperty,
   fileGeneration_addScopeElement,
   fileGeneration_deleteScopeElement,
 } from '../graphModifier/DSLGeneration_GraphModifierHelper';
@@ -281,7 +281,7 @@ export class FileGenerationState {
             generationProperty.name,
             newValue,
           );
-          addUniqueEntry(fileGeneration.configurationProperties, newItem);
+          fileGeneration_addConfigurationProperty(fileGeneration, newItem);
         }
       }
     } else {
@@ -301,7 +301,7 @@ export class FileGenerationState {
             generationProperty.name,
             newConfigValue,
           );
-          addUniqueEntry(fileGeneration.configurationProperties, newItem);
+          fileGeneration_addConfigurationProperty(fileGeneration, newItem);
         }
       } else {
         fileGeneration.configurationProperties =

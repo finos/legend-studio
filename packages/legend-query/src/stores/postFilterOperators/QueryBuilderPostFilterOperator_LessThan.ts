@@ -17,25 +17,33 @@
 import {
   type Type,
   type ValueSpecification,
+  AbstractPropertyExpression,
+  type FunctionExpression,
   PRIMITIVE_TYPE,
 } from '@finos/legend-graph';
-import { UnsupportedOperationError } from '@finos/legend-shared';
+import {
+  guaranteeNonNullable,
+  UnsupportedOperationError,
+} from '@finos/legend-shared';
 import { SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
 import {
   buildPrimitiveInstanceValue,
   getNonCollectionValueSpecificationType,
 } from '../QueryBuilderOperatorsHelper';
 import { QueryBuilderPostFilterOperator } from '../QueryBuilderPostFilterOperator';
-import type { PostFilterConditionState } from '../QueryBuilderPostFilterState';
+import { buildPostFilterConditionState } from '../QueryBuilderPostFilterProcessor';
+import type {
+  PostFilterConditionState,
+  QueryBuilderPostFilterState,
+} from '../QueryBuilderPostFilterState';
 import { generateDefaultValueForPrimitiveType } from '../QueryBuilderValueSpecificationBuilderHelper';
+import { buildPostFilterConditionExpression } from './QueryBuilderPostFilterOperatorHelper';
 
 export class QueryBuilderPostFilterOperator_LessThan extends QueryBuilderPostFilterOperator {
   getLabel(): string {
     return '<';
   }
-  getPureFunction(): SUPPORTED_FUNCTIONS {
-    return SUPPORTED_FUNCTIONS.LESS_THAN;
-  }
+
   isCompatibleWithType(type: Type): boolean {
     return (
       [
@@ -49,27 +57,47 @@ export class QueryBuilderPostFilterOperator_LessThan extends QueryBuilderPostFil
       ] as string[]
     ).includes(type.path);
   }
+
   isCompatibleWithConditionValue(
     postFilterConditionState: PostFilterConditionState,
   ): boolean {
+    const lhsType = guaranteeNonNullable(
+      postFilterConditionState.columnState.getReturnType(),
+    );
     const type = postFilterConditionState.value
       ? getNonCollectionValueSpecificationType(postFilterConditionState.value)
       : undefined;
+    const NUMERIC_PRIMITIVE_TYPES = [
+      PRIMITIVE_TYPE.NUMBER,
+      PRIMITIVE_TYPE.INTEGER,
+      PRIMITIVE_TYPE.DECIMAL,
+      PRIMITIVE_TYPE.FLOAT,
+    ] as string[];
+
+    const DATE_PRIMITIVE_TYPES = [
+      PRIMITIVE_TYPE.DATE,
+      PRIMITIVE_TYPE.DATETIME,
+      PRIMITIVE_TYPE.STRICTDATE,
+      PRIMITIVE_TYPE.LATESTDATE,
+    ] as string[];
+
+    // When changing the return type for LHS, the RHS value should be adjusted accordingly.
     return (
       type !== undefined &&
-      (
-        [
-          PRIMITIVE_TYPE.NUMBER,
-          PRIMITIVE_TYPE.INTEGER,
-          PRIMITIVE_TYPE.DECIMAL,
-          PRIMITIVE_TYPE.FLOAT,
-          PRIMITIVE_TYPE.DATE,
-          PRIMITIVE_TYPE.STRICTDATE,
-          PRIMITIVE_TYPE.DATETIME,
-        ] as string[]
-      ).includes(type.path)
+      // Numeric value is handled loosely because of autoboxing
+      // e.g. LHS (integer) = RHS (float) is acceptable
+      ((NUMERIC_PRIMITIVE_TYPES.includes(type.path) &&
+        NUMERIC_PRIMITIVE_TYPES.includes(lhsType.path)) ||
+        // Date value is handled loosely as well if the LHS is of type DateTime
+        // This is because we would simulate auto-boxing for date by altering the
+        // Pure function used for the operation
+        // e.g. LHS(DateTime) = RHS(Date) -> we use isOnDay() instead of is()
+        DATE_PRIMITIVE_TYPES.includes(type.path) ||
+        type === lhsType ||
+        lhsType.isSuperType(type))
     );
   }
+
   getDefaultFilterConditionValue(
     postFilterConditionState: PostFilterConditionState,
   ): ValueSpecification {
@@ -83,7 +111,8 @@ export class QueryBuilderPostFilterOperator_LessThan extends QueryBuilderPostFil
       case PRIMITIVE_TYPE.STRICTDATE:
       case PRIMITIVE_TYPE.DATETIME: {
         return buildPrimitiveInstanceValue(
-          postFilterConditionState.postFilterState.queryBuilderState,
+          postFilterConditionState.postFilterState.queryBuilderState
+            .graphManagerState.graph,
           propertyType.path,
           generateDefaultValueForPrimitiveType(propertyType.path),
         );
@@ -95,5 +124,38 @@ export class QueryBuilderPostFilterOperator_LessThan extends QueryBuilderPostFil
           }'`,
         );
     }
+  }
+
+  buildPostFilterConditionExpression(
+    postFilterConditionState: PostFilterConditionState,
+  ): ValueSpecification | undefined {
+    return buildPostFilterConditionExpression(
+      postFilterConditionState,
+      this,
+      postFilterConditionState.columnState.getReturnType()?.path ===
+        PRIMITIVE_TYPE.DATETIME &&
+        postFilterConditionState.value?.genericType?.value.rawType.path !==
+          PRIMITIVE_TYPE.DATETIME
+        ? SUPPORTED_FUNCTIONS.IS_BEFORE_DAY
+        : SUPPORTED_FUNCTIONS.LESS_THAN,
+    );
+  }
+
+  buildPostFilterConditionState(
+    postFilterState: QueryBuilderPostFilterState,
+    expression: FunctionExpression,
+  ): PostFilterConditionState | undefined {
+    return buildPostFilterConditionState(
+      postFilterState,
+      expression,
+      expression.parametersValues[0] instanceof AbstractPropertyExpression &&
+        expression.parametersValues[0].func.genericType.value.rawType.path ===
+          PRIMITIVE_TYPE.DATETIME &&
+        expression.parametersValues[1]?.genericType?.value.rawType.path !==
+          PRIMITIVE_TYPE.DATETIME
+        ? SUPPORTED_FUNCTIONS.IS_BEFORE_DAY
+        : SUPPORTED_FUNCTIONS.LESS_THAN,
+      this,
+    );
   }
 }

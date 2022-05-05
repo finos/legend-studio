@@ -17,8 +17,8 @@
 import type { Point } from './DSLDiagram_Point';
 
 export class Vector {
-  x: number;
-  y: number;
+  readonly x: number;
+  readonly y: number;
 
   constructor(x: number, y: number) {
     this.x = x;

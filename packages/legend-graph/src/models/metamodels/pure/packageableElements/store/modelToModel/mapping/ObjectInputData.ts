@@ -61,7 +61,9 @@ export class ObjectInputData extends InputData implements Hashable {
     super();
     this.sourceClass = sourceClass;
     this.inputType = inputType;
-    /* @MARKER: Workaround for https://github.com/finos/legend-studio/issues/66 */
+    /**
+     * @workaround https://github.com/finos/legend-studio/issues/68
+     */
     this.data =
       inputType === ObjectInputType.JSON
         ? tryToMinifyLosslessJSONString(data)

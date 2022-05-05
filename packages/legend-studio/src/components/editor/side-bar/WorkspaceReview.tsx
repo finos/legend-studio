@@ -282,7 +282,6 @@ export const WorkspaceReview = observer(() => {
                       rel="noopener noreferrer"
                       target="_blank"
                       to={generateReviewRoute(
-                        applicationStore.config.currentSDLCServerOption,
                         workspaceReview.projectId,
                         workspaceReview.id,
                       )}

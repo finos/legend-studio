@@ -54,6 +54,7 @@ import {
   assertNonNullable,
   assertTrue,
   ActionState,
+  filterByType,
 } from '@finos/legend-shared';
 import { UMLEditorState } from './editor-state/element-editor-state/UMLEditorState';
 import { ServiceEditorState } from './editor-state/element-editor-state/service/ServiceEditorState';
@@ -119,6 +120,7 @@ import {
   GenerationSpecification,
   PRIMITIVE_TYPE,
   Package,
+  DataElement,
 } from '@finos/legend-graph';
 import type { DepotServerClient } from '@finos/legend-server-depot';
 import type { LegendStudioPluginManager } from '../application/LegendStudioPluginManager';
@@ -136,8 +138,18 @@ import type { LegendStudioConfig } from '../application/LegendStudioConfig';
 import type { EditorMode } from './editor/EditorMode';
 import { StandardEditorMode } from './editor/StandardEditorMode';
 import { WorkspaceUpdateConflictResolutionState } from './sidebar-state/WorkspaceUpdateConflictResolutionState';
+import {
+  graph_addElement,
+  graph_deleteElement,
+  graph_deleteOwnElement,
+  graph_renameElement,
+} from './graphModifier/GraphModifierHelper';
 
 export abstract class EditorExtensionState {
+  /**
+   * This helps to better type-checking for this empty abtract type
+   * See https://github.com/finos/legend-studio/blob/master/docs/technical/typescript-usage.md#understand-typescript-structual-type-system
+   */
   private readonly _$nominalTypeBrand!: 'EditorExtensionState';
 }
 
@@ -507,8 +519,7 @@ export class EditorStore {
   }
 
   reset(): void {
-    this.setCurrentEditorState(undefined);
-    this.openedEditorStates = [];
+    this.closeAllEditorTabs();
     this.projectConfigurationEditorState = new ProjectConfigurationEditorState(
       this,
       this.sdlcState,
@@ -586,10 +597,7 @@ export class EditorStore {
             type: ActionAlertActionType.STANDARD,
             handler: (): void => {
               this.applicationStore.navigator.goTo(
-                generateSetupRoute(
-                  this.applicationStore.config.currentSDLCServerOption,
-                  undefined,
-                ),
+                generateSetupRoute(undefined),
               );
             },
           },
@@ -653,10 +661,7 @@ export class EditorStore {
             type: ActionAlertActionType.STANDARD,
             handler: (): void => {
               this.applicationStore.navigator.goTo(
-                generateViewProjectRoute(
-                  this.applicationStore.config.currentSDLCServerOption,
-                  projectId,
-                ),
+                generateViewProjectRoute(projectId),
               );
             },
           },
@@ -674,12 +679,7 @@ export class EditorStore {
             type: ActionAlertActionType.STANDARD,
             handler: (): void => {
               this.applicationStore.navigator.goTo(
-                generateSetupRoute(
-                  this.applicationStore.config.currentSDLCServerOption,
-                  projectId,
-                  workspaceId,
-                  workspaceType,
-                ),
+                generateSetupRoute(projectId, workspaceId, workspaceType),
               );
             },
           },
@@ -851,21 +851,21 @@ export class EditorStore {
 
       // ======= (RE)START CHANGE DETECTION =======
       this.changeDetectionState.stop();
-      this.changeDetectionState.observeGraph();
+      yield flowResult(this.changeDetectionState.observeGraph());
       yield Promise.all([
-        yield this.changeDetectionState.precomputeHashes(), // for local changes detection
+        this.changeDetectionState.preComputeGraphElementHashes(), // for local changes detection
         this.changeDetectionState.workspaceLocalLatestRevisionState.buildEntityHashesIndex(
           entities,
           LogEvent.create(
             CHANGE_DETECTION_EVENT.CHANGE_DETECTION_LOCAL_HASHES_INDEX_BUILT,
           ),
         ),
+
         this.sdlcState.buildWorkspaceBaseRevisionEntityHashesIndex(),
         this.sdlcState.buildProjectLatestRevisionEntityHashesIndex(),
       ]);
       this.changeDetectionState.start();
       yield Promise.all([
-        this.changeDetectionState.computeLocalChanges(true),
         this.changeDetectionState.computeAggregatedWorkspaceChanges(true),
         this.changeDetectionState.computeAggregatedProjectLatestChanges(true),
       ]);
@@ -874,7 +874,12 @@ export class EditorStore {
         '[ASNYC]',
       );
       // ======= FINISHED (RE)START CHANGE DETECTION =======
-    } catch {
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.log.error(
+        LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_FAILURE),
+        error,
+      );
       // since errors have been handled accordingly, we don't need to do anything here
       return;
     }
@@ -890,9 +895,7 @@ export class EditorStore {
 
   getEditorExtensionState<T extends EditorExtensionState>(clazz: Clazz<T>): T {
     return guaranteeNonNullable(
-      this.editorExtensionStates.find(
-        (extenionState): extenionState is T => extenionState instanceof clazz,
-      ),
+      this.editorExtensionStates.find(filterByType(clazz)),
       `Can't find extension editor state of the specified type: no built extension editor state available from plugins`,
     );
   }
@@ -949,8 +952,7 @@ export class EditorStore {
   }
 
   closeAllStates(): void {
-    this.currentEditorState = undefined;
-    this.openedEditorStates = [];
+    this.closeAllEditorTabs();
     this.explorerTreeState.reprocess();
   }
 
@@ -1044,7 +1046,8 @@ export class EditorStore {
     } else if (
       element instanceof Measure ||
       element instanceof Database ||
-      element instanceof FlatData
+      element instanceof FlatData ||
+      element instanceof DataElement
     ) {
       return new UnsupportedElementEditorState(this, element);
     } else if (element instanceof PackageableRuntime) {
@@ -1086,18 +1089,38 @@ export class EditorStore {
       // the cheap way to do this is to search by element label text, e.g. `Mapping some::package::someMapping`
       this.grammarTextEditorState.setCurrentElementLabelRegexString(element);
     } else {
-      const existingElementState = this.openedEditorStates.find(
-        (state) =>
-          state instanceof ElementEditorState && state.element === element,
-      );
-      const elementState =
-        existingElementState ?? this.createElementState(element);
-      if (elementState && !existingElementState) {
-        this.openedEditorStates.push(elementState);
+      if (!(element instanceof Package)) {
+        const existingElementState = this.openedEditorStates.find(
+          (state) =>
+            state instanceof ElementEditorState && state.element === element,
+        );
+        const elementState =
+          existingElementState ?? this.createElementState(element);
+        if (elementState && !existingElementState) {
+          this.openedEditorStates.push(elementState);
+        }
+        this.setCurrentEditorState(elementState);
       }
-      this.setCurrentEditorState(elementState);
       // expand tree node
       this.explorerTreeState.openNode(element);
+    }
+  }
+
+  *addElement(
+    element: PackageableElement,
+    packagePath: string | undefined,
+    openAfterCreate: boolean,
+  ): GeneratorFn<void> {
+    graph_addElement(
+      this.graphManagerState.graph,
+      element,
+      packagePath,
+      this.changeDetectionState.observerContext,
+    );
+    this.explorerTreeState.reprocess();
+
+    if (openAfterCreate) {
+      this.openElement(element);
     }
   }
 
@@ -1120,6 +1143,17 @@ export class EditorStore {
       )
       .filter(isNonNullable);
     const elementsToDelete = [element, ...generatedChildrenElements];
+    this.openedEditorStates = this.openedEditorStates.filter((elementState) => {
+      if (elementState instanceof ElementEditorState) {
+        if (elementState === this.currentEditorState) {
+          // avoid closing the current editor state as this will be taken care of
+          // by the `closeState()` call later
+          return true;
+        }
+        return !generatedChildrenElements.includes(elementState.element);
+      }
+      return true;
+    });
     if (
       this.currentEditorState &&
       this.currentEditorState instanceof ElementEditorState &&
@@ -1127,16 +1161,11 @@ export class EditorStore {
     ) {
       this.closeState(this.currentEditorState);
     }
-    this.openedEditorStates = this.openedEditorStates.filter(
-      (elementState) =>
-        elementState instanceof ElementEditorState &&
-        !generatedChildrenElements.includes(elementState.element),
-    );
     // remove/retire the element's generated children before remove the element itself
     generatedChildrenElements.forEach((el) =>
-      this.graphManagerState.graph.generationModel.deleteOwnElement(el),
+      graph_deleteOwnElement(this.graphManagerState.graph.generationModel, el),
     );
-    this.graphManagerState.graph.deleteElement(element);
+    graph_deleteElement(this.graphManagerState.graph, element);
 
     const extraElementEditorPostDeleteActions = this.pluginManager
       .getStudioPlugins()
@@ -1167,7 +1196,12 @@ export class EditorStore {
     if (this.graphManagerState.isElementReadOnly(element)) {
       return;
     }
-    this.graphManagerState.graph.renameOwnElement(element, newPath);
+    graph_renameElement(
+      this.graphManagerState.graph,
+      element,
+      newPath,
+      this.changeDetectionState.observerContext,
+    );
 
     const extraElementEditorPostRenameActions = this.pluginManager
       .getStudioPlugins()
@@ -1196,7 +1230,7 @@ export class EditorStore {
     );
   }
 
-  // FIXME: to be removed when we process editor states properly
+  // TODO: to be removed when we process editor states properly
   reprocessElementEditorState = (
     editorState: EditorState,
   ): EditorState | undefined => {
@@ -1216,7 +1250,7 @@ export class EditorStore {
     return undefined;
   };
 
-  // FIXME: to be removed when we process editor states properly
+  // TODO: to be removed when we process editor states properly
   findCurrentEditorState = (
     editor: EditorState | undefined,
   ): EditorState | undefined => {
@@ -1256,7 +1290,7 @@ export class EditorStore {
       if (preventDefault) {
         event?.preventDefault();
       }
-      // FIXME: maybe we should come up with a better way to block global hot keys, this seems highly restrictive.
+      // TODO: maybe we should come up with a better way to block global hot keys, this seems highly restrictive.
       const isResolvingConflicts =
         this.isInConflictResolutionMode &&
         !this.conflictResolutionState.hasResolvedAllConflicts;
@@ -1420,6 +1454,7 @@ export class EditorStore {
         PACKAGEABLE_ELEMENT_TYPE.FILE_GENERATION,
         PACKAGEABLE_ELEMENT_TYPE.FLAT_DATA_STORE,
         PACKAGEABLE_ELEMENT_TYPE.DATABASE,
+        PACKAGEABLE_ELEMENT_TYPE.DATA,
       ] as string[]
     ).concat(
       this.pluginManager

@@ -49,6 +49,7 @@ import {
   TEST_DATA__lambda_notOperatorFilter,
   TEST_DATA__lambda_setOperatorFilter,
   TEST_DATA__lambda_simpleSingleConditionFilter,
+  TEST_DATA_lambda_dateTimeCapabilityFilterWithYesterday,
 } from './TEST_DATA__QueryBuilder_Roundtrip_TestFilterQueries';
 import {
   TEST_DATA__lambda_input_filterWithExists,
@@ -81,6 +82,7 @@ import {
   TEST_DATA__lambda_simpleConditionPostFilter,
   TEST_DATA__lambda_aggregationPostFilter,
   TEST_DATA__lambda_derivationPostFilter,
+  TEST_DATA_lambda_dateTimeCapabilityPostFilterWithToday,
 } from './TEST_DATA__QueryBuilder_Roundtrip_TestPostFilterQueries';
 
 type RoundtripTestCase = [
@@ -304,6 +306,25 @@ const cases: RoundtripTestCase[] = [
     'Post-filter on derivation column',
     postFilterCtx,
     TEST_DATA__lambda_derivationPostFilter,
+    undefined,
+  ],
+  [
+    'Post-filter with result set modifier',
+    postFilterCtx,
+    TEST_DATA__lambda_derivationPostFilter,
+    undefined,
+  ],
+  // date compabilty, today(), yesterday() etc
+  [
+    'Filter with yesterday()',
+    postFilterCtx,
+    TEST_DATA_lambda_dateTimeCapabilityFilterWithYesterday,
+    undefined,
+  ],
+  [
+    'Post-filter with today()',
+    postFilterCtx,
+    TEST_DATA_lambda_dateTimeCapabilityPostFilterWithToday,
     undefined,
   ],
 ];

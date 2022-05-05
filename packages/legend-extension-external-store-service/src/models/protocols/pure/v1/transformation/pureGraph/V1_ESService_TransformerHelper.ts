@@ -34,6 +34,7 @@ import { UnsupportedOperationError } from '@finos/legend-shared';
 import {
   type V1_GraphTransformerContext,
   V1_RawLambda,
+  V1_transformExternalFormatData,
 } from '@finos/legend-graph';
 import type { ServiceParameter } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/model/ESService_ServiceParameter';
 import { V1_ServiceParameter } from '../../model/packageableElements/store/serviceStore/model/V1_ESService_ServiceParameter';
@@ -53,6 +54,20 @@ import { V1_ServiceRequestBuildInfo } from '../../model/packageableElements/stor
 import { V1_ServiceRequestParametersBuildInfo } from '../../model/packageableElements/store/serviceStore/mapping/V1_ESService_ServiceRequestParametersBuildInfo';
 import { V1_ServiceRequestBodyBuildInfo } from '../../model/packageableElements/store/serviceStore/mapping/V1_ESService_ServiceRequestBodyBuildInfo';
 import { V1_ServiceRequestParameterBuildInfo } from '../../model/packageableElements/store/serviceStore/mapping/V1_ESService_ServiceRequestParameterBuildInfo';
+import { EqualToJsonPattern } from '../../../../../metamodels/pure/model/data/contentPattern/ESService_EqualToJsonPattern';
+import { EqualToPattern } from '../../../../../metamodels/pure/model/data/contentPattern/ESService_EqualToPattern';
+import type { StringValuePattern } from '../../../../../metamodels/pure/model/data/contentPattern/ESService_StringValuePattern';
+import type { ServiceRequestPattern } from '../../../../../metamodels/pure/model/data/ESService_ServiceRequestPattern';
+import type { ServiceResponseDefinition } from '../../../../../metamodels/pure/model/data/ESService_ServiceResponseDefinition';
+import type { ServiceStoreEmbeddedData } from '../../../../../metamodels/pure/model/data/ESService_ServiceStoreEmbeddedData';
+import type { ServiceStubMapping } from '../../../../../metamodels/pure/model/data/ESService_ServiceStubMapping';
+import { V1_EqualToJsonPattern } from '../../model/data/contentPattern/V1_ESService_EqualToJsonPattern';
+import { V1_EqualToPattern } from '../../model/data/contentPattern/V1_ESService_EqualToPattern';
+import type { V1_StringValuePattern } from '../../model/data/contentPattern/V1_ESService_StringValuePattern';
+import { V1_ServiceRequestPattern } from '../../model/data/V1_ESService_ServiceRequestPattern';
+import { V1_ServiceResponseDefinition } from '../../model/data/V1_ESService_ServiceResponseDefinition';
+import { V1_ServiceStoreEmbeddedData } from '../../model/data/V1_ESService_ServiceStoreEmbeddedData';
+import { V1_ServiceStubMapping } from '../../model/data/V1_ESService_ServiceStubMapping';
 
 export const V1_transformStringTypeReference = (
   metamodel: StringTypeReference,
@@ -258,4 +273,105 @@ export const V1_transformServiceStoreElement = (
     `Can't transform service store element`,
     metamodel,
   );
+};
+
+const V1_transformEqualToJsonPattern = (
+  metamodel: EqualToJsonPattern,
+): V1_EqualToJsonPattern => {
+  const equalToJsonPattern = new V1_EqualToJsonPattern();
+  equalToJsonPattern.expectedValue = metamodel.expectedValue;
+  return equalToJsonPattern;
+};
+
+const V1_transformEqualToPattern = (
+  metamodel: EqualToPattern,
+): V1_EqualToPattern => {
+  const equalToPattern = new V1_EqualToPattern();
+  equalToPattern.expectedValue = metamodel.expectedValue;
+  return equalToPattern;
+};
+
+export const V1_transformStringValuePattern = (
+  metamodel: StringValuePattern,
+): V1_StringValuePattern => {
+  if (metamodel instanceof EqualToJsonPattern) {
+    return V1_transformEqualToJsonPattern(metamodel);
+  } else if (metamodel instanceof EqualToPattern) {
+    return V1_transformEqualToPattern(metamodel);
+  }
+  throw new UnsupportedOperationError(
+    `Can't transform string value pattern`,
+    metamodel,
+  );
+};
+
+const V1_transformServiceRequestPattern = (
+  metamodel: ServiceRequestPattern,
+): V1_ServiceRequestPattern => {
+  const serviceRequestPattern = new V1_ServiceRequestPattern();
+  serviceRequestPattern.url = metamodel.url;
+  serviceRequestPattern.urlPath = metamodel.urlPath;
+  serviceRequestPattern.method = metamodel.method;
+  if (metamodel.headerParams) {
+    serviceRequestPattern.headerParams = new Map<
+      string,
+      V1_StringValuePattern
+    >();
+    metamodel.headerParams.forEach((v: StringValuePattern, key: string) => {
+      serviceRequestPattern.headerParams?.set(
+        key,
+        V1_transformStringValuePattern(v),
+      );
+    });
+  }
+  if (metamodel.queryParams) {
+    serviceRequestPattern.queryParams = new Map<
+      string,
+      V1_StringValuePattern
+    >();
+    metamodel.queryParams.forEach((v: StringValuePattern, key: string) => {
+      serviceRequestPattern.queryParams?.set(
+        key,
+        V1_transformStringValuePattern(v),
+      );
+    });
+  }
+  serviceRequestPattern.bodyPatterns = metamodel.bodyPatterns.map(
+    (bodyPattern) => V1_transformStringValuePattern(bodyPattern),
+  );
+  return serviceRequestPattern;
+};
+
+const V1_transformServiceResponseDefinition = (
+  metamodel: ServiceResponseDefinition,
+): V1_ServiceResponseDefinition => {
+  const serviceResponseDefinition = new V1_ServiceResponseDefinition();
+  serviceResponseDefinition.body = V1_transformExternalFormatData(
+    metamodel.body,
+  );
+  return serviceResponseDefinition;
+};
+
+const V1_transformServiceStubMapping = (
+  metamodel: ServiceStubMapping,
+): V1_ServiceStubMapping => {
+  const serviceStubMapping = new V1_ServiceStubMapping();
+  serviceStubMapping.requestPattern = V1_transformServiceRequestPattern(
+    metamodel.requestPattern,
+  );
+  serviceStubMapping.responseDefinition = V1_transformServiceResponseDefinition(
+    metamodel.responseDefinition,
+  );
+  return serviceStubMapping;
+};
+
+export const V1_transformServiceStoreEmbeddedData = (
+  metamodel: ServiceStoreEmbeddedData,
+): V1_ServiceStoreEmbeddedData => {
+  const serviceStoreEmbeddedData = new V1_ServiceStoreEmbeddedData();
+  serviceStoreEmbeddedData.serviceStubMappings =
+    metamodel.serviceStubMappings.map((serviceStubMapping) =>
+      V1_transformServiceStubMapping(serviceStubMapping),
+    );
+  return serviceStoreEmbeddedData;
 };

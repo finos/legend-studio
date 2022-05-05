@@ -33,6 +33,7 @@ import {
 import { useEffect, useState } from 'react';
 import {
   type Type,
+  type ValueSpecification,
   MULTIPLICITY_INFINITE,
   PRIMITIVE_TYPE,
 } from '@finos/legend-graph';
@@ -45,6 +46,7 @@ import { useDrag, useDragLayer } from 'react-dnd';
 import { getEmptyImage } from 'react-dnd-html5-backend';
 import { QueryBuilderValueSpecificationEditor } from './QueryBuilderValueSpecificationEditor';
 import { prettyCONSTName } from '@finos/legend-shared';
+import { variableExpression_setName } from '../stores/QueryBuilderValueSpecificationModifierHelper';
 
 const ParameterValuesEditor = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
@@ -53,6 +55,7 @@ const ParameterValuesEditor = observer(
     const parameterState = queryBuilderState.queryParametersState;
     const parameterValuesEditorState =
       parameterState.parameterValuesEditorState;
+    const graph = queryBuilderState.graphManagerState.graph;
     const close = (): void => parameterValuesEditorState.close();
     const submitAction = parameterValuesEditorState.submitAction;
     const submit = applicationStore.guardUnhandledError(async () => {
@@ -97,8 +100,18 @@ const ParameterValuesEditor = observer(
                   {paramState.value && (
                     <QueryBuilderValueSpecificationEditor
                       valueSpecification={paramState.value}
-                      graph={queryBuilderState.graphManagerState.graph}
-                      expectedType={variableType}
+                      updateValueSpecification={(
+                        val: ValueSpecification,
+                      ): void => {
+                        paramState.setValue(val);
+                      }}
+                      graph={graph}
+                      typeCheckOption={{
+                        expectedType: variableType,
+                        match:
+                          variableType ===
+                          graph.getPrimitiveType(PRIMITIVE_TYPE.DATETIME),
+                      }}
                       className="query-builder__parameters__value__editor"
                     />
                   )}
@@ -143,7 +156,7 @@ const VariableExpressionEditor = observer(
     const changeVariableName: React.ChangeEventHandler<HTMLInputElement> = (
       event,
     ) => {
-      varState.setName(event.target.value);
+      variableExpression_setName(varState, event.target.value);
     };
     // type
     const stringType =

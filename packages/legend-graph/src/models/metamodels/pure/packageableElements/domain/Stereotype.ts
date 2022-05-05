@@ -19,8 +19,9 @@ import type { Profile } from './Profile';
 import type { Stubable } from '../../../../../helpers/Stubable';
 
 export class Stereotype implements Stubable {
-  uuid = uuid();
+  readonly uuid = uuid();
   owner: Profile;
+
   value: string;
 
   constructor(owner: Profile, value: string) {

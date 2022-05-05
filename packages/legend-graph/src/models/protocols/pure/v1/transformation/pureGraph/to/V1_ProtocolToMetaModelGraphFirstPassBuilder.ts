@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { assertNonEmptyString, assertTrue } from '@finos/legend-shared';
+import { assertNonEmptyString } from '@finos/legend-shared';
 import {
   PRIMITIVE_TYPE,
   TYPICAL_MULTIPLICITY_TYPE,
@@ -36,7 +36,10 @@ import { PackageableConnection } from '../../../../../../metamodels/pure/package
 import { GenerationSpecification } from '../../../../../../metamodels/pure/packageableElements/generationSpecification/GenerationSpecification';
 import { SectionIndex } from '../../../../../../metamodels/pure/packageableElements/section/SectionIndex';
 import { PackageableElementImplicitReference } from '../../../../../../metamodels/pure/packageableElements/PackageableElementReference';
-import type { V1_GraphBuilderContext } from './V1_GraphBuilderContext';
+import {
+  V1_buildFullPath,
+  type V1_GraphBuilderContext,
+} from './V1_GraphBuilderContext';
 import type {
   V1_PackageableElement,
   V1_PackageableElementVisitor,
@@ -56,21 +59,41 @@ import type { V1_PackageableConnection } from '../../../model/packageableElement
 import type { V1_FileGenerationSpecification } from '../../../model/packageableElements/fileGeneration/V1_FileGenerationSpecification';
 import type { V1_Measure } from '../../../model/packageableElements/domain/V1_Measure';
 import type { V1_SectionIndex } from '../../../model/packageableElements/section/V1_SectionIndex';
-import { _package_addElement } from '../../../../../../../helpers/DomainHelper';
+import {
+  addElementToPackage,
+  getOrCreateGraphPackage,
+} from '../../../../../../../helpers/DomainHelper';
+import { V1_checkDuplicatedElement } from './V1_ElementBuilder';
+import type { Package } from '../../../../../../metamodels/pure/packageableElements/domain/Package';
+import type { V1_DataElement } from '../../../model/packageableElements/data/V1_DataElement';
+import { DataElement } from '../../../../../../metamodels/pure/packageableElements/data/DataElement';
 
 export class V1_ProtocolToMetaModelGraphFirstPassBuilder
   implements V1_PackageableElementVisitor<PackageableElement>
 {
   context: V1_GraphBuilderContext;
+  packageCache: Map<string, Package> | undefined;
+  elementPathCache: Set<string> | undefined;
 
-  constructor(context: V1_GraphBuilderContext) {
+  constructor(
+    context: V1_GraphBuilderContext,
+    packageCache: Map<string, Package> | undefined,
+    elementPathCache: Set<string> | undefined,
+  ) {
     this.context = context;
+    this.packageCache = packageCache;
+    this.elementPathCache = elementPathCache;
   }
 
   visit_PackageableElement(element: V1_PackageableElement): PackageableElement {
     return this.context.extensions
       .getExtraBuilderOrThrow(element)
-      .runFirstPass(element, this.context);
+      .runFirstPass(
+        element,
+        this.context,
+        this.packageCache,
+        this.elementPathCache,
+      );
   }
 
   visit_SectionIndex(element: V1_SectionIndex): PackageableElement {
@@ -83,14 +106,8 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
       `Section index 'name' field is missing or empty`,
     );
     const sectionIndex = new SectionIndex(element.name);
-    const path = this.context.currentSubGraph.buildPath(
-      element.package,
-      element.name,
-    );
-    assertTrue(
-      !this.context.graph.getNullableElement(path),
-      `Element '${path}' already exists`,
-    );
+    const path = V1_buildFullPath(element.package, element.name);
+    V1_checkDuplicatedElement(path, this.context, this.elementPathCache);
     this.context.currentSubGraph.setOwnSectionIndex(path, sectionIndex);
     return sectionIndex;
   }
@@ -105,16 +122,14 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
       `Profile 'name' field is missing or empty`,
     );
     const profile = new Profile(element.name);
-    const path = this.context.currentSubGraph.buildPath(
-      element.package,
-      element.name,
-    );
-    assertTrue(
-      !this.context.graph.getNullableElement(path),
-      `Element '${path}' already exists`,
-    );
-    _package_addElement(
-      this.context.currentSubGraph.getOrCreatePackage(element.package),
+    const path = V1_buildFullPath(element.package, element.name);
+    V1_checkDuplicatedElement(path, this.context, this.elementPathCache);
+    addElementToPackage(
+      getOrCreateGraphPackage(
+        this.context.currentSubGraph,
+        element.package,
+        this.packageCache,
+      ),
       profile,
     );
     this.context.currentSubGraph.setOwnProfile(path, profile);
@@ -131,16 +146,14 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
       `Enumeration 'name' field is missing or empty`,
     );
     const pureEnumeration = new Enumeration(element.name);
-    const path = this.context.currentSubGraph.buildPath(
-      element.package,
-      element.name,
-    );
-    assertTrue(
-      !this.context.graph.getNullableElement(path),
-      `Element '${path}' already exists`,
-    );
-    _package_addElement(
-      this.context.currentSubGraph.getOrCreatePackage(element.package),
+    const path = V1_buildFullPath(element.package, element.name);
+    V1_checkDuplicatedElement(path, this.context, this.elementPathCache);
+    addElementToPackage(
+      getOrCreateGraphPackage(
+        this.context.currentSubGraph,
+        element.package,
+        this.packageCache,
+      ),
       pureEnumeration,
     );
     this.context.currentSubGraph.setOwnType(path, pureEnumeration);
@@ -157,16 +170,14 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
       `Measure 'name' field is missing or empty`,
     );
     const pureMeasure = new Measure(element.name);
-    const path = this.context.currentSubGraph.buildPath(
-      element.package,
-      element.name,
-    );
-    assertTrue(
-      !this.context.graph.getNullableElement(path),
-      `Element '${path}' already exists`,
-    );
-    _package_addElement(
-      this.context.currentSubGraph.getOrCreatePackage(element.package),
+    const path = V1_buildFullPath(element.package, element.name);
+    V1_checkDuplicatedElement(path, this.context, this.elementPathCache);
+    addElementToPackage(
+      getOrCreateGraphPackage(
+        this.context.currentSubGraph,
+        element.package,
+        this.packageCache,
+      ),
       pureMeasure,
     );
     this.context.currentSubGraph.setOwnType(path, pureMeasure);
@@ -183,16 +194,14 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
       `Class 'name' field is missing or empty`,
     );
     const _class = new Class(element.name);
-    const path = this.context.currentSubGraph.buildPath(
-      element.package,
-      element.name,
-    );
-    assertTrue(
-      !this.context.graph.getNullableElement(path),
-      `Element '${path}' already exists`,
-    );
-    _package_addElement(
-      this.context.currentSubGraph.getOrCreatePackage(element.package),
+    const path = V1_buildFullPath(element.package, element.name);
+    V1_checkDuplicatedElement(path, this.context, this.elementPathCache);
+    addElementToPackage(
+      getOrCreateGraphPackage(
+        this.context.currentSubGraph,
+        element.package,
+        this.packageCache,
+      ),
       _class,
     );
     this.context.currentSubGraph.setOwnType(path, _class);
@@ -209,16 +218,14 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
       `Association 'name' field is missing or empty`,
     );
     const association = new Association(element.name);
-    const path = this.context.currentSubGraph.buildPath(
-      element.package,
-      element.name,
-    );
-    assertTrue(
-      !this.context.graph.getNullableElement(path),
-      `Element '${path}' already exists`,
-    );
-    _package_addElement(
-      this.context.currentSubGraph.getOrCreatePackage(element.package),
+    const path = V1_buildFullPath(element.package, element.name);
+    V1_checkDuplicatedElement(path, this.context, this.elementPathCache);
+    addElementToPackage(
+      getOrCreateGraphPackage(
+        this.context.currentSubGraph,
+        element.package,
+        this.packageCache,
+      ),
       association,
     );
     this.context.currentSubGraph.setOwnAssociation(path, association);
@@ -247,16 +254,14 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
         TYPICAL_MULTIPLICITY_TYPE.ZEROMANY,
       ),
     );
-    const path = this.context.currentSubGraph.buildPath(
-      element.package,
-      element.name,
-    );
-    assertTrue(
-      !this.context.graph.getNullableElement(path),
-      `Element '${path}' already exists`,
-    );
-    _package_addElement(
-      this.context.currentSubGraph.getOrCreatePackage(element.package),
+    const path = V1_buildFullPath(element.package, element.name);
+    V1_checkDuplicatedElement(path, this.context, this.elementPathCache);
+    addElementToPackage(
+      getOrCreateGraphPackage(
+        this.context.currentSubGraph,
+        element.package,
+        this.packageCache,
+      ),
       func,
     );
     this.context.currentSubGraph.setOwnFunction(path, func);
@@ -273,16 +278,14 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
       `Flat data store 'name' field is missing or empty`,
     );
     const flatData = new FlatData(element.name);
-    const path = this.context.currentSubGraph.buildPath(
-      element.package,
-      element.name,
-    );
-    assertTrue(
-      !this.context.graph.getNullableElement(path),
-      `Element '${path}' already exists`,
-    );
-    _package_addElement(
-      this.context.currentSubGraph.getOrCreatePackage(element.package),
+    const path = V1_buildFullPath(element.package, element.name);
+    V1_checkDuplicatedElement(path, this.context, this.elementPathCache);
+    addElementToPackage(
+      getOrCreateGraphPackage(
+        this.context.currentSubGraph,
+        element.package,
+        this.packageCache,
+      ),
       flatData,
     );
     this.context.currentSubGraph.setOwnStore(path, flatData);
@@ -299,16 +302,14 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
       `Database store 'name' field is missing or empty`,
     );
     const database = new Database(element.name);
-    const path = this.context.currentSubGraph.buildPath(
-      element.package,
-      element.name,
-    );
-    assertTrue(
-      !this.context.graph.getNullableElement(path),
-      `Element '${path}' already exists`,
-    );
-    _package_addElement(
-      this.context.currentSubGraph.getOrCreatePackage(element.package),
+    const path = V1_buildFullPath(element.package, element.name);
+    V1_checkDuplicatedElement(path, this.context, this.elementPathCache);
+    addElementToPackage(
+      getOrCreateGraphPackage(
+        this.context.currentSubGraph,
+        element.package,
+        this.packageCache,
+      ),
       database,
     );
     this.context.currentSubGraph.setOwnStore(path, database);
@@ -325,16 +326,14 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
       `Mapping 'name' field is missing or empty`,
     );
     const pureMapping = new Mapping(element.name);
-    const path = this.context.currentSubGraph.buildPath(
-      element.package,
-      element.name,
-    );
-    assertTrue(
-      !this.context.graph.getNullableElement(path),
-      `Element '${path}' already exists`,
-    );
-    _package_addElement(
-      this.context.currentSubGraph.getOrCreatePackage(element.package),
+    const path = V1_buildFullPath(element.package, element.name);
+    V1_checkDuplicatedElement(path, this.context, this.elementPathCache);
+    addElementToPackage(
+      getOrCreateGraphPackage(
+        this.context.currentSubGraph,
+        element.package,
+        this.packageCache,
+      ),
       pureMapping,
     );
     this.context.currentSubGraph.setOwnMapping(path, pureMapping);
@@ -351,16 +350,14 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
       `Service 'name' field is missing or empty`,
     );
     const service = new Service(element.name);
-    const path = this.context.currentSubGraph.buildPath(
-      element.package,
-      element.name,
-    );
-    assertTrue(
-      !this.context.graph.getNullableElement(path),
-      `Element '${path}' already exists`,
-    );
-    _package_addElement(
-      this.context.currentSubGraph.getOrCreatePackage(element.package),
+    const path = V1_buildFullPath(element.package, element.name);
+    V1_checkDuplicatedElement(path, this.context, this.elementPathCache);
+    addElementToPackage(
+      getOrCreateGraphPackage(
+        this.context.currentSubGraph,
+        element.package,
+        this.packageCache,
+      ),
       service,
     );
     this.context.currentSubGraph.setOwnService(path, service);
@@ -379,16 +376,14 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
       'File generation element name is missing',
     );
     const fileGeneration = new FileGenerationSpecification(element.name);
-    const path = this.context.currentSubGraph.buildPath(
-      element.package,
-      element.name,
-    );
-    assertTrue(
-      !this.context.graph.getNullableElement(path),
-      `Element '${path}' already exists`,
-    );
-    _package_addElement(
-      this.context.currentSubGraph.getOrCreatePackage(element.package),
+    const path = V1_buildFullPath(element.package, element.name);
+    V1_checkDuplicatedElement(path, this.context, this.elementPathCache);
+    addElementToPackage(
+      getOrCreateGraphPackage(
+        this.context.currentSubGraph,
+        element.package,
+        this.packageCache,
+      ),
       fileGeneration,
     );
     this.context.currentSubGraph.setOwnFileGeneration(path, fileGeneration);
@@ -408,16 +403,14 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
       'Generation tree element name is missing',
     );
     const generationSpec = new GenerationSpecification(element.name);
-    const path = this.context.currentSubGraph.buildPath(
-      element.package,
-      element.name,
-    );
-    assertTrue(
-      !this.context.graph.getNullableElement(path),
-      `Element '${path}' already exists`,
-    );
-    _package_addElement(
-      this.context.currentSubGraph.getOrCreatePackage(element.package),
+    const path = V1_buildFullPath(element.package, element.name);
+    V1_checkDuplicatedElement(path, this.context, this.elementPathCache);
+    addElementToPackage(
+      getOrCreateGraphPackage(
+        this.context.currentSubGraph,
+        element.package,
+        this.packageCache,
+      ),
       generationSpec,
     );
     this.context.currentSubGraph.setOwnGenerationSpecification(
@@ -437,16 +430,14 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
       `Runtime 'name' field is missing or empty`,
     );
     const runtime = new PackageableRuntime(element.name);
-    const path = this.context.currentSubGraph.buildPath(
-      element.package,
-      element.name,
-    );
-    assertTrue(
-      !this.context.graph.getNullableElement(path),
-      `Element '${path}' already exists`,
-    );
-    _package_addElement(
-      this.context.currentSubGraph.getOrCreatePackage(element.package),
+    const path = V1_buildFullPath(element.package, element.name);
+    V1_checkDuplicatedElement(path, this.context, this.elementPathCache);
+    addElementToPackage(
+      getOrCreateGraphPackage(
+        this.context.currentSubGraph,
+        element.package,
+        this.packageCache,
+      ),
       runtime,
     );
     this.context.currentSubGraph.setOwnRuntime(path, runtime);
@@ -465,19 +456,41 @@ export class V1_ProtocolToMetaModelGraphFirstPassBuilder
       `Connection 'name' field is missing or empty`,
     );
     const connection = new PackageableConnection(element.name);
-    const path = this.context.currentSubGraph.buildPath(
-      element.package,
-      element.name,
-    );
-    assertTrue(
-      !this.context.graph.getNullableElement(path),
-      `Element '${path}' already exists`,
-    );
-    _package_addElement(
-      this.context.currentSubGraph.getOrCreatePackage(element.package),
+    const path = V1_buildFullPath(element.package, element.name);
+    V1_checkDuplicatedElement(path, this.context, this.elementPathCache);
+    addElementToPackage(
+      getOrCreateGraphPackage(
+        this.context.currentSubGraph,
+        element.package,
+        this.packageCache,
+      ),
       connection,
     );
     this.context.currentSubGraph.setOwnConnection(path, connection);
     return connection;
+  }
+
+  visit_DataElement(element: V1_DataElement): PackageableElement {
+    assertNonEmptyString(
+      element.package,
+      `Data element 'package' field is missing or empty`,
+    );
+    assertNonEmptyString(
+      element.name,
+      `Data element 'name' field is missing or empty`,
+    );
+    const dataElement = new DataElement(element.name);
+    const path = V1_buildFullPath(element.package, element.name);
+    V1_checkDuplicatedElement(path, this.context, this.elementPathCache);
+    addElementToPackage(
+      getOrCreateGraphPackage(
+        this.context.currentSubGraph,
+        element.package,
+        this.packageCache,
+      ),
+      dataElement,
+    );
+    this.context.currentSubGraph.setOwnDataElement(path, dataElement);
+    return dataElement;
   }
 }

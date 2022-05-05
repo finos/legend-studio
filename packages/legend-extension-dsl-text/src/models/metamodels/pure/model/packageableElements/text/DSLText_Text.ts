@@ -21,6 +21,7 @@ import {
   PackageableElement,
 } from '@finos/legend-graph';
 
+// TODO: to be moved out of metamodel
 export enum TEXT_TYPE {
   PLAIN_TEXT = 'plainText',
   MARKDOWN = 'markdown',

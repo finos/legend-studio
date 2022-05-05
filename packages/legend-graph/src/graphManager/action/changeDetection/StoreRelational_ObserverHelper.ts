@@ -582,7 +582,7 @@ export const observe_RelationalPropertyMapping = skipObservedWithContext(
 
     makeObservable(metamodel, {
       transformer: observable,
-      relationalOperation: observable.ref,
+      relationalOperation: observable.ref, // only observe the reference, the object itself is not observed
       bindingTransformer: observable,
       hashCode: computed,
     });
@@ -605,9 +605,7 @@ export const observe_Abstract_EmbeddedRelationalInstanceSetImplementation = (
 
   makeObservable(metamodel, {
     id: observable,
-    propertyMappings: observable,
     rootInstanceSetImplementation: observable,
-    parent: observable,
     primaryKey: observable,
   });
 

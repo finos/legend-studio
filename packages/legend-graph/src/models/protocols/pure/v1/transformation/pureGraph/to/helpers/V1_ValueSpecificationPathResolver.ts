@@ -60,7 +60,7 @@ import type { V1_TdsOlapRank } from '../../../../model/valueSpecification/raw/V1
 import type { V1_TDSSortInformation } from '../../../../model/valueSpecification/raw/V1_TDSSortInformation';
 import type { V1_UnitInstance } from '../../../../model/valueSpecification/raw/V1_UnitInstance';
 import type { V1_UnitType } from '../../../../model/valueSpecification/raw/V1_UnitType';
-import type { V1_INTERNAL__UnknownValueSpecfication } from '../../../../model/valueSpecification/V1_INTERNAL__UnknownValueSpecfication';
+import type { V1_INTERNAL__UnknownValueSpecification } from '../../../../model/valueSpecification/V1_INTERNAL__UnknownValueSpecfication';
 import type {
   V1_ValueSpecification,
   V1_ValueSpecificationVisitor,
@@ -80,13 +80,18 @@ class V1_ValueSpecificationPathResolver
   implements V1_ValueSpecificationVisitor<V1_ValueSpecification>
 {
   context: V1_GraphBuilderContext;
-  hasModifiedLambda = false;
+  /**
+   * This flag is an optimization we do so the consumer can tell if any modification to the protocol
+   * models happened as part of path resolution.
+   */
+  hasModified = false;
+
   constructor(context: V1_GraphBuilderContext) {
     this.context = context;
   }
 
   visit_INTERNAL__UnknownValueSpecfication(
-    spec: V1_INTERNAL__UnknownValueSpecfication,
+    spec: V1_INTERNAL__UnknownValueSpecification,
   ): V1_ValueSpecification {
     return spec;
   }
@@ -323,47 +328,50 @@ function V1_resolveElementPath(
   resolver: V1_ValueSpecificationPathResolver,
 ): string {
   const resolvedPath = resolverFunc(path).value.path;
-  // Note: this handles any system elements + primitive types already resolved. i.e String, ModelStore
   if (resolvedPath !== path) {
-    resolver.hasModifiedLambda = true;
+    resolver.hasModified = true;
   }
   return resolvedPath;
 }
 
 /**
- * Method resolves element paths inside RawLambda
+ * Method resolves element paths inside raw lambda.
+ *
  * To do this we take RawLamba (body: object, parameters: obect) convert it to Lambda and
- * resolve where possible (where an element path is defined as part of the value specification flow.
- * When completed we convert it back to RawLambda.
- * This method ignores any function matching therefore if any time we encounter an error resolving an element path
- * inside the value specification, we continue on the graph unchanging the value spec.
- * We use this new resolved lamba if we have changed any element path (noted by the hasModifiedLambda flag)
- * The whole flow is wrapper around a try/catch and we use the orginal lambda if any errors arise from this flow.
+ * resolve paths using section index where possible (wherever an element path is defined as
+ * part of the value specification flow. When completed we convert it back to raw lambda.
+ *
+ * This method ignores any function matching therefore if any time we encounter an error resolving an
+ * element path inside the value specification, we continue on the graph unchanging the value spec.
+ * We use this new resolved lambda if we have changed any element path.
+ *
+ * NOTE: Here we fail silently, and we would use the orginal lambda if any errors arise from this procedure.
  */
 const V1_resolveLambdaElementPaths = (
-  _context: V1_GraphBuilderContext,
   rawLambdaProtocol: V1_RawLambda,
+  context: V1_GraphBuilderContext,
 ): V1_RawLambda => {
   try {
-    // Convert raw lambda to lambda
+    // Convert raw lambda to V1 lambda
     const lambdaProtocol = V1_deserializeValueSpecification(
       V1_serializeRawValueSpecification(rawLambdaProtocol),
     );
-    // Resolve paths in lambda
-    const resolver = new V1_ValueSpecificationPathResolver(_context);
+    // Resolve paths in V1 lambda
+    const resolver = new V1_ValueSpecificationPathResolver(context);
     lambdaProtocol.accept_ValueSpecificationVisitor(resolver);
-    // if the resolver has modified lambda then convert lambda back to raw lambda and return
-    // else return orginal lambda
-    return resolver.hasModifiedLambda
+    // if the resolver has modified the lambda then convert lambda back to raw lambda and return
+    // else return orginal lambda (this check saves us the work to convert between
+    // raw protocol and protocol forms)
+    return resolver.hasModified
       ? (V1_deserializeRawValueSpecification(
           V1_serializeValueSpecification(lambdaProtocol),
         ) as V1_RawLambda)
       : rawLambdaProtocol;
   } catch (error) {
     assertErrorThrown(error);
-    // return orginal lambda if anything goes wrong
+    // silently return orginal lambda if anything goes wrong
     error.message = `Can't resolve element paths for lambda:\n${error.message}`;
-    _context.log.warn(
+    context.log.warn(
       LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_FAILURE),
       error,
     );
@@ -371,20 +379,27 @@ const V1_resolveLambdaElementPaths = (
   }
 };
 
-export const V1_resolvePathsInRawLambda = (
-  _context: V1_GraphBuilderContext,
-  parameters?: object,
-  body?: object,
+/**
+ * This method will traverse through the lambda protocol model tree
+ * and **with best effort** try to rewrite the lambda so all shortened
+ * paths inside the lambda are fully resolved.
+ *
+ * This is needed since apps like `Studio` leave value specifications raw/unprocessed
+ * when building the graph, hence any modification to section index or imports
+ * will not apply to the raw value specification (for the contrast, see the
+ * behavior of references)
+ */
+export const V1_buildRawLambdaWithResolvedPaths = (
+  parameters: object | undefined,
+  body: object | undefined,
+  context: V1_GraphBuilderContext,
 ): RawLambda => {
   const rawLambda = new V1_RawLambda();
   rawLambda.parameters = parameters ?? [];
   rawLambda.body = body ?? [];
-  const resolverEnabled =
-    !_context.options?.TEMPORARY__disableRawLambdaResolver &&
-    !_context.options?.TEMPORARY__keepSectionIndex;
   let resolved = rawLambda;
-  if (resolverEnabled) {
-    resolved = V1_resolveLambdaElementPaths(_context, rawLambda);
+  if (context.enableRawLambdaAutoPathResolution) {
+    resolved = V1_resolveLambdaElementPaths(rawLambda, context);
   }
   return new RawLambda(resolved.parameters, resolved.body);
 };

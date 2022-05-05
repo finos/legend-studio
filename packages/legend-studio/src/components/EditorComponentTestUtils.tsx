@@ -45,6 +45,7 @@ import {
   WorkspaceType,
   TEST__SDLCServerClientProvider,
   TEST__getTestSDLCServerClient,
+  SDLCServerFeaturesConfiguration,
 } from '@finos/legend-server-sdlc';
 import {
   type ImportConfigurationDescription,
@@ -69,6 +70,7 @@ import {
   TEST__provideMockedWebApplicationNavigator,
   TEST__ApplicationStoreProvider,
   TEST__getTestApplicationStore,
+  LegendApplicationComponentFrameworkProvider,
   WebApplicationNavigator,
 } from '@finos/legend-application';
 import { TEST__getTestStudioConfig } from '../stores/EditorStoreTestUtils';
@@ -79,7 +81,6 @@ export const TEST_DATA__DefaultSDLCInfo = {
     projectId: 'UAT-2689',
     description: 'sdlcTesting',
     tags: [],
-    projectType: 'PROTOTYPE',
     name: 'TEST_SDLC',
   },
   workspace: {
@@ -98,7 +99,6 @@ export const TEST_DATA__DefaultSDLCInfo = {
   projectConfig: {
     projectStructureVersion: { version: 6, extensionVersion: 1 },
     projectId: 'UAT-2689',
-    projectType: 'PROTOTYPE',
     groupId: 'com.test',
     artifactId: 'string',
     projectDependencies: [],
@@ -257,6 +257,8 @@ export const TEST__setUpEditor = async (
   // mock editor initialization data
 
   MOBX__enableSpyOrMock();
+
+  // SDLC
   jest
     .spyOn(mockedEditorStore.sdlcServerClient, 'getProject')
     .mockResolvedValue(project);
@@ -290,6 +292,12 @@ export const TEST__setUpEditor = async (
       'getLatestProjectStructureVersion',
     )
     .mockResolvedValue(latestProjectStructureVersion);
+  mockedEditorStore.sdlcServerClient._setFeatures(
+    SDLCServerFeaturesConfiguration.serialization.fromJson({
+      canCreateProject: true,
+      canCreateVersion: true,
+    }),
+  );
 
   // depot
   jest
@@ -336,7 +344,6 @@ export const TEST__setUpEditor = async (
   const history = createMemoryHistory({
     initialEntries: [
       generateEditorRoute(
-        mockedEditorStore.applicationStore.config.currentSDLCServerOption,
         (workspace as unknown as Workspace).projectId,
         (workspace as unknown as Workspace).workspaceId,
         WorkspaceType.USER,
@@ -357,7 +364,9 @@ export const TEST__setUpEditor = async (
           <TEST__DepotServerClientProvider>
             <TEST__GraphManagerStateProvider>
               <TEST__LegendStudioStoreProvider>
-                <Editor />
+                <LegendApplicationComponentFrameworkProvider>
+                  <Editor />
+                </LegendApplicationComponentFrameworkProvider>
               </TEST__LegendStudioStoreProvider>
             </TEST__GraphManagerStateProvider>
           </TEST__DepotServerClientProvider>

@@ -16,20 +16,27 @@
 
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { createRequire } from 'module';
 import { getBaseConfig } from '@finos/legend-dev-utils/JestConfigUtils';
 
+const require = createRequire(import.meta.url);
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const baseConfig = getBaseConfig({
   babelConfigPath: resolve(__dirname, '../../babel.config.cjs'),
 });
 
-export default {
+export const baseJestConfig = {
   ...baseConfig,
   setupFiles: [
+    // TODO: problem with ESM - remove when we run Jest with ESM
+    // See https://github.com/finos/legend-studio/issues/502
+    '@finos/legend-art/jest/mockESM.jsx',
     '@finos/legend-dev-utils/jest/disallowConsoleError',
-    '@finos/legend-dev-utils/jest/blockFetch',
     '@finos/legend-dev-utils/jest/handleUnhandledRejection',
+    // TODO: remove this when we no longer need to mock `Window.fetch()` for tests
+    // See https://github.com/finos/legend-studio/issues/758
+    '@finos/legend-dev-utils/jest/blockFetch',
   ],
   // Setup to run immediately after the test framework has been installed in the environment
   // before each test file in the suite is executed
@@ -41,9 +48,15 @@ export default {
   ],
   moduleNameMapper: {
     ...baseConfig.moduleNameMapper,
-    // mock since Jest@26 does not support ESM
-    // TODO: remove this and `lodash` dependency when we upgrade to Jest@27 and use ESM for Jest
+    // TODO: problem with ESM - remove this and `lodash` dependency when `lodash`
+    // natively support ESM and hence, work well with `jest-resolve`
+    // See https://github.com/lodash/lodash/issues/5107
+    // See https://github.com/finos/legend-studio/issues/502
     '^lodash-es$': 'lodash',
+    // TODO: problem with ESM - due to a conflict between `uuid` and `jest-resolve@28` we need this workaround
+    // See https://github.com/uuidjs/uuid/pull/616
+    // See https://github.com/finos/legend-studio/issues/502
+    '^uuid$': require.resolve('uuid'),
   },
   modulePathIgnorePatterns: ['packages/.*/lib'],
   testPathIgnorePatterns: [
@@ -79,4 +92,29 @@ export default {
     '<rootDir>/docs',
     '<rootDir>/temp',
   ],
+};
+
+export const getBaseJestProjectConfig = (projectName, packageDir) => ({
+  ...baseJestConfig,
+  displayName: projectName,
+  rootDir: '../..',
+  testMatch: [`<rootDir>/${packageDir}/**/__tests__/**/*(*.)test.[jt]s?(x)`],
+});
+
+export const getBaseJestDOMProjectConfig = (projectName, packageDir) => {
+  const base = getBaseJestProjectConfig(projectName, packageDir);
+
+  return {
+    ...base,
+    testEnvironment: 'jsdom',
+    setupFiles: [
+      ...base.setupFiles,
+      '@finos/legend-dev-utils/jest/setupDOMPolyfills',
+    ],
+    moduleNameMapper: {
+      ...base.moduleNameMapper,
+      '^monaco-editor$':
+        '@finos/legend-art/lib/testMocks/MockedMonacoEditor.js',
+    },
+  };
 };

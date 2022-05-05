@@ -18,6 +18,7 @@ import addDays from 'date-fns/addDays';
 import {
   type InstanceValue,
   type Type,
+  type ValueSpecification,
   EnumValueExplicitReference,
   EnumValueInstanceValue,
   Enumeration,
@@ -29,10 +30,13 @@ import {
   Multiplicity,
   PRIMITIVE_TYPE,
   VariableExpression,
+  observe_VariableExpression,
+  observe_ValueSpecification,
 } from '@finos/legend-graph';
 import {
   addUniqueEntry,
   deleteEntry,
+  IllegalStateError,
   Randomizer,
   uuid,
 } from '@finos/legend-shared';
@@ -43,7 +47,7 @@ import {
   multiplicity_setLowerBound,
   multiplicity_setUpperBound,
   genericType_setRawType,
-} from './QueryBuilderGraphModifierHelper';
+} from './QueryBuilderValueSpecificationModifierHelper';
 
 export enum QUERY_BUILDER_PARAMETER_TREE_DND_TYPE {
   VARIABLE = 'VARIABLE',
@@ -98,23 +102,23 @@ const createMockPrimitiveProperty = (
 };
 
 export class QueryParameterState {
-  uuid = uuid();
-  queryParameterState: QueryParametersState;
-  parameter: VariableExpression;
-  value: InstanceValue | undefined;
+  readonly uuid = uuid();
+  readonly queryParameterState: QueryParametersState;
+  readonly parameter: VariableExpression;
+  value: ValueSpecification | undefined;
 
   constructor(
     queryParameterState: QueryParametersState,
     variableExpression: VariableExpression,
   ) {
     makeObservable(this, {
-      parameter: observable,
       value: observable,
       setValue: action,
       mockParameterValue: action,
     });
+
     this.queryParameterState = queryParameterState;
-    this.parameter = variableExpression;
+    this.parameter = observe_VariableExpression(variableExpression);
   }
 
   mockParameterValue(): void {
@@ -126,16 +130,15 @@ export class QueryParameterState {
     );
   }
 
-  generateMockValues(
+  private generateMockValues(
     varType: Type | undefined,
     multiplicity: Multiplicity,
   ): InstanceValue | undefined {
     if ((!multiplicity.upperBound || multiplicity.upperBound > 1) && varType) {
-      const collectionInst = new CollectionInstanceValue(
+      return new CollectionInstanceValue(
         multiplicity,
         GenericTypeExplicitReference.create(new GenericType(varType)),
       );
-      return collectionInst;
     }
     if (varType instanceof PrimitiveType) {
       const primitiveInst = new PrimitiveInstanceValue(
@@ -165,8 +168,18 @@ export class QueryParameterState {
     return undefined;
   }
 
-  setValue(value: InstanceValue | undefined): void {
-    this.value = value;
+  setValue(value: ValueSpecification | undefined): void {
+    if (value instanceof VariableExpression) {
+      throw new IllegalStateError(
+        'Can not assign a parameter to another parameter',
+      );
+    }
+    this.value = value
+      ? observe_ValueSpecification(
+          value,
+          this.queryParameterState.queryBuilderState.observableContext,
+        )
+      : undefined;
   }
 
   static createDefault(

@@ -108,24 +108,10 @@ export class ViewerStore {
       if (projectId) {
         this.editorStore.applicationStore.navigator.goTo(
           versionId
-            ? generateViewVersionRoute(
-                this.editorStore.applicationStore.config
-                  .currentSDLCServerOption,
-                projectId,
-                versionId,
-              )
+            ? generateViewVersionRoute(projectId, versionId)
             : revisionId
-            ? generateViewRevisionRoute(
-                this.editorStore.applicationStore.config
-                  .currentSDLCServerOption,
-                projectId,
-                revisionId,
-              )
-            : generateViewProjectRoute(
-                this.editorStore.applicationStore.config
-                  .currentSDLCServerOption,
-                projectId,
-              ),
+            ? generateViewRevisionRoute(projectId, revisionId)
+            : generateViewProjectRoute(projectId),
         );
       } else if (gav) {
         const {
@@ -298,26 +284,24 @@ export class ViewerStore {
     );
     this.editorStore.changeDetectionState.stop();
 
-    // fetch dependencies
-    stopWatch.record();
-    this.editorStore.initState.setMessage(`Fetching dependencies...`);
-    const dependencyEntitiesMap = (yield flowResult(
-      this.editorStore.graphState.getConfigurationProjectDependencyEntities(),
-    )) as Map<string, Entity[]>;
-    this.editorStore.initState.setMessage(undefined);
-    stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED);
+    // initialize system
+    yield flowResult(this.initializeGraphManagerState());
 
     // reset
     this.editorStore.graphManagerState.resetGraph();
-    yield flowResult(this.initializeGraphManagerState());
-    stopWatch.record();
 
-    // build dependencies
+    // fetch and build dependencies
+    stopWatch.record();
     const dependencyManager =
       this.editorStore.graphManagerState.createEmptyDependencyManager();
-    this.editorStore.graphManagerState.graph.setDependencyManager(
-      dependencyManager,
-    );
+    this.editorStore.graphManagerState.graph.dependencyManager =
+      dependencyManager;
+    dependencyManager.buildState.setMessage(`Fetching dependencies...`);
+    const dependencyEntitiesMap = (yield flowResult(
+      this.editorStore.graphState.getConfigurationProjectDependencyEntities(),
+    )) as Map<string, Entity[]>;
+    stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED);
+
     const dependency_buildReport =
       (yield this.editorStore.graphManagerState.graphManager.buildDependencies(
         this.editorStore.graphManagerState.coreModel,
@@ -423,9 +407,19 @@ export class ViewerStore {
     this.editorStore.initState.setMessage(undefined);
     stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_ENTITIES_FETCHED);
 
-    // fetch dependencies
+    // initialize system
+    yield flowResult(this.initializeGraphManagerState());
+
+    // reset
+    this.editorStore.graphManagerState.resetGraph();
+
+    // fetch and build dependencies
     stopWatch.record();
-    this.editorStore.initState.setMessage(`Fetching dependencies...`);
+    const dependencyManager =
+      this.editorStore.graphManagerState.createEmptyDependencyManager();
+    this.editorStore.graphManagerState.graph.dependencyManager =
+      dependencyManager;
+    dependencyManager.buildState.setMessage(`Fetching dependencies...`);
     const dependencyEntitiesMap = new Map<string, Entity[]>();
     (versionId === SNAPSHOT_VERSION_ALIAS
       ? ((yield this.editorStore.depotServerClient.getLatestDependencyEntities(
@@ -444,25 +438,12 @@ export class ViewerStore {
           false,
         )) as PlainObject<ProjectVersionEntities>[])
     )
-      .map((e) => ProjectVersionEntities.serialization.fromJson(e))
+      .map((v) => ProjectVersionEntities.serialization.fromJson(v))
       .forEach((dependencyInfo) => {
         dependencyEntitiesMap.set(dependencyInfo.id, dependencyInfo.entities);
       });
-    this.editorStore.initState.setMessage(undefined);
     stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED);
 
-    // reset
-    this.editorStore.graphManagerState.resetGraph();
-    yield flowResult(this.initializeGraphManagerState());
-    stopWatch.record();
-
-    const dependencyManager =
-      this.editorStore.graphManagerState.createEmptyDependencyManager();
-    this.editorStore.graphManagerState.graph.setDependencyManager(
-      dependencyManager,
-    );
-
-    // build dependencies
     const dependency_buildReport =
       (yield this.editorStore.graphManagerState.graphManager.buildDependencies(
         this.editorStore.graphManagerState.coreModel,

@@ -1,5 +1,73 @@
 # @finos/legend-graph
 
+## 5.0.0
+
+### Major Changes
+
+- [#1068](https://github.com/finos/legend-studio/pull/1068) [`e8ee77dc`](https://github.com/finos/legend-studio/commit/e8ee77dcde909bdffd31fd65eea2cb8577b9c49d) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Move `BasicModel.buildPath()` out as the separate utility `V1_buildFullPath()`.
+
+- [#1068](https://github.com/finos/legend-studio/pull/1068) [`e8ee77dc`](https://github.com/finos/legend-studio/commit/e8ee77dcde909bdffd31fd65eea2cb8577b9c49d) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Move `BasicModel.getOrCreatePackage()` to `DomainHelper` as an utility.
+
+* [#1068](https://github.com/finos/legend-studio/pull/1068) [`e8ee77dc`](https://github.com/finos/legend-studio/commit/e8ee77dcde909bdffd31fd65eea2cb8577b9c49d) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Rename `RawInstanceValue` to `RawPrimitiveInstanceValue` to more accurately reflect what it is.
+
+- [#1068](https://github.com/finos/legend-studio/pull/1068) [`e8ee77dc`](https://github.com/finos/legend-studio/commit/e8ee77dcde909bdffd31fd65eea2cb8577b9c49d) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** `BasicModel.addOwnElement()` and `PureModel.addElement()` will now take the package path for the new element, the creation of the element package chain and setting the element package will be handled here as well, consumer of the function `PureModel.addElement()` will no longer need to manually create the package.
+
+* [#1068](https://github.com/finos/legend-studio/pull/1068) [`e8ee77dc`](https://github.com/finos/legend-studio/commit/e8ee77dcde909bdffd31fd65eea2cb8577b9c49d) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** `DependencyManager.allElements` are now renamed to `DependencyManager.allOwnElements` for consistency.
+
+- [#1068](https://github.com/finos/legend-studio/pull/1068) [`e8ee77dc`](https://github.com/finos/legend-studio/commit/e8ee77dcde909bdffd31fd65eea2cb8577b9c49d) ([@akphi](https://github.com/akphi)) - Renamed graph builder option `TEMPORARY__keepSectionIndex` to `TEMPORARY__preserveSectionIndex` and remove option `TEMPORARY__disableRawLambdaResolver` as this is now controlled by `TEMPORARY__preserveSectionIndex` flag. Also, renamed to `V1_resolvePathsInRawLambda` to `V1_buildRawLambdaWithResolvedPaths`.
+
+* [#1068](https://github.com/finos/legend-studio/pull/1068) [`e8ee77dc`](https://github.com/finos/legend-studio/commit/e8ee77dcde909bdffd31fd65eea2cb8577b9c49d) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** `BasicModel.getOwn{X}()` set of methods will now throw if element is not found, the previous behavior now will manifest via `BasicModel.getOwnNullable{x}()` set of methods.
+
+- [#1068](https://github.com/finos/legend-studio/pull/1068) [`e8ee77dc`](https://github.com/finos/legend-studio/commit/e8ee77dcde909bdffd31fd65eea2cb8577b9c49d) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** `getOrCreatePackage` logic has been moved from `Package` to `DomainHelper`. This method now will also make use of caching to speed up graph building.
+
+* [#1068](https://github.com/finos/legend-studio/pull/1068) [`e8ee77dc`](https://github.com/finos/legend-studio/commit/e8ee77dcde909bdffd31fd65eea2cb8577b9c49d) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Rename graph manager method prefix `HACKY_` with `HACKY__` to be consistent. Create a new method `HACKY__createDefaultBlankLambda()` to return the raw form of the lambda `x|''` which is used as the default in a lot cases.
+
+- [#1068](https://github.com/finos/legend-studio/pull/1068) [`e8ee77dc`](https://github.com/finos/legend-studio/commit/e8ee77dcde909bdffd31fd65eea2cb8577b9c49d) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Remove `MappingElementLabel` type and `get label(): MappingElementLabel` on all mapping element metamodels.
+
+* [#1068](https://github.com/finos/legend-studio/pull/1068) [`e8ee77dc`](https://github.com/finos/legend-studio/commit/e8ee77dcde909bdffd31fd65eea2cb8577b9c49d) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Move `getRoot()` out of `PackageableElement` and make it an utility instead.
+
+### Patch Changes
+
+- [#1068](https://github.com/finos/legend-studio/pull/1068) [`e8ee77dc`](https://github.com/finos/legend-studio/commit/e8ee77dcde909bdffd31fd65eea2cb8577b9c49d) ([@akphi](https://github.com/akphi)) - Fix a problem with deleting non-empty packages.
+
+* [#1068](https://github.com/finos/legend-studio/pull/1068) [`e8ee77dc`](https://github.com/finos/legend-studio/commit/e8ee77dcde909bdffd31fd65eea2cb8577b9c49d) ([@akphi](https://github.com/akphi)) - Make `observe_Graph` non-blocking so it doesn't jank the main thread during observation.
+
+- [#1068](https://github.com/finos/legend-studio/pull/1068) [`e8ee77dc`](https://github.com/finos/legend-studio/commit/e8ee77dcde909bdffd31fd65eea2cb8577b9c49d) ([@akphi](https://github.com/akphi)) - When building the graphs, raw lambdas' shortened paths will no-longer be auto-resolved when the graph is immutable (i.e. when building `dependencies`, `generation`, and `system` graphs). This would help improve the overall graph building performance.
+
+## 4.0.3
+
+### Patch Changes
+
+- [#1086](https://github.com/finos/legend-studio/pull/1086) [`fdd8a327`](https://github.com/finos/legend-studio/commit/fdd8a3277f7bb8839587856e48daff23e31d4d34) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Fix the regression where `mobx` fails to observe `EmbeddedRelationalInstanceSetImplementation`.
+
+* [#1082](https://github.com/finos/legend-studio/pull/1082) [`4294e10d`](https://github.com/finos/legend-studio/commit/4294e10d0f0238ad67fa615c7fd955a8cacbae04) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Support Pure `multi-execution` when registering service in `semi-interactive` mode ([#1059](https://github.com/finos/legend-studio/issues/1059))
+
+## 4.0.2
+
+### Patch Changes
+
+- [#1049](https://github.com/finos/legend-studio/pull/1049) [`5de91968`](https://github.com/finos/legend-studio/commit/5de91968ae3ec1c4d42dc1412e452d000dfc8b3e) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Complete `ValueSpecificationObserver`, it will now probably propagate the value specification tree.
+
+## 4.0.1
+
+## 4.0.0
+
+### Major Changes
+
+- [#1054](https://github.com/finos/legend-studio/pull/1054) [`d0f81bc8`](https://github.com/finos/legend-studio/commit/d0f81bc82d56f913f12b720c265d6ca1b0c515af) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** All setters methods are now moved out of metamodels. These are now branded as `graph modifier helpers` and will be put in places where we need to modify them (e.g. in the apps such as `Legend Studio`, `Legend Query`). Also, all `mobx` `makeObservable()` logic inside of metamodels' constructors are now removed. These are now branded as `observer helpers`.
+
+  > As of now, we are putting these in `@finos/legend-graph`, but ideally they should be moved to the app (similar to what we do with the `graph modifier observers`).
+
+## 3.0.0
+
+### Major Changes
+
+- [#1000](https://github.com/finos/legend-studio/pull/1000) [`4f7d04c`](https://github.com/finos/legend-studio/commit/4f7d04c52fc8d52b87251bcf04ec971afe8d3218) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** All graph meta models are no longer observable by default, instead, to activate observability, one would need to call observers specifically.
+
+* [#1000](https://github.com/finos/legend-studio/pull/1000) [`4f7d04c`](https://github.com/finos/legend-studio/commit/4f7d04c52fc8d52b87251bcf04ec971afe8d3218) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Moved `GraphManagerState.precomputeHashes` to `ChangeDetectionState`.
+
+- [#1000](https://github.com/finos/legend-studio/pull/1000) [`4f7d04c`](https://github.com/finos/legend-studio/commit/4f7d04c52fc8d52b87251bcf04ec971afe8d3218) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Remove `TEMPORARY_skipGraphBuilderPostProcessing` flag. Graph builder nolonger needs post-processing anymore.
+
 ## 2.1.3
 
 ## 2.1.2

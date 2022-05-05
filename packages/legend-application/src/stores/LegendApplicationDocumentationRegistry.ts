@@ -14,16 +14,68 @@
  * limitations under the License.
  */
 
+import {
+  type MarkdownText,
+  type PlainObject,
+  deserializeMarkdownText,
+  SerializationFactory,
+} from '@finos/legend-shared';
+import {
+  createModelSchema,
+  custom,
+  optional,
+  primitive,
+  SKIP,
+} from 'serializr';
+
+export class LegendApplicationDocumentationEntry {
+  markdownText?: MarkdownText | undefined;
+  title?: string | undefined;
+  text?: string | undefined;
+  url?: string | undefined;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(LegendApplicationDocumentationEntry, {
+      markdownText: custom(
+        () => SKIP,
+        (val) => deserializeMarkdownText(val),
+      ),
+      title: optional(primitive()),
+      text: optional(primitive()),
+      url: optional(primitive()),
+    }),
+  );
+}
+
+export interface LegendApplicationKeyedDocumentationEntry {
+  key: string;
+  content: LegendApplicationDocumentationEntry;
+}
+
+export const collectKeyedDocumnetationEntriesFromConfig = (
+  rawEntries: Record<string, PlainObject<LegendApplicationDocumentationEntry>>,
+): LegendApplicationKeyedDocumentationEntry[] =>
+  Object.entries(rawEntries).map((entry) => ({
+    key: entry[0],
+    content: LegendApplicationDocumentationEntry.serialization.fromJson(
+      entry[1],
+    ),
+  }));
+
 export class LegendApplicationDocumentationRegistry {
   url?: string | undefined;
 
-  private registry = new Map<string, string>();
+  private registry = new Map<string, LegendApplicationDocumentationEntry>();
 
-  registerEntry(key: string, value: string): void {
+  registerEntry(key: string, value: LegendApplicationDocumentationEntry): void {
     this.registry.set(key, value);
   }
 
-  getEntry(key: string): string | undefined {
+  getEntry(key: string): LegendApplicationDocumentationEntry | undefined {
     return this.registry.get(key);
+  }
+
+  hasEntry(key: string): boolean {
+    return this.registry.has(key);
   }
 }

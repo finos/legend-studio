@@ -39,7 +39,7 @@ import type {
 import { V1_RawVariable } from '../../../model/rawValueSpecification/V1_RawVariable';
 import { V1_multiplicitySchema } from '../../../transformation/pureProtocol/serializationHelpers/V1_CoreSerializationHelper';
 import { V1_RawBaseExecutionContext } from '../../../model/rawValueSpecification/V1_RawExecutionContext';
-import { V1_RawInstanceValue } from '../../../model/rawValueSpecification/V1_RawInstanceValue';
+import { V1_RawPrimitiveInstanceValue } from '../../../model/rawValueSpecification/V1_RawPrimitiveInstanceValue';
 import { PRIMITIVE_TYPE } from '../../../../../../../MetaModelConst';
 
 enum V1_RawExecutionContextType {
@@ -85,8 +85,8 @@ export const V1_rawVariableModelSchema = createModelSchema(V1_RawVariable, {
   name: primitive(),
 });
 
-export const V1_rawInstanceValueSchema = createModelSchema(
-  V1_RawInstanceValue,
+export const V1_rawPrimitiveInstanceValueSchema = createModelSchema(
+  V1_RawPrimitiveInstanceValue,
   {
     type: alias(
       '_type',
@@ -164,10 +164,10 @@ class V1_RawValueSpecificationSerializer
   ): PlainObject<V1_RawValueSpecification> {
     return serialize(V1_rawVariableModelSchema, rawValueSpecification);
   }
-  visit_InstanceValue(
-    rawValueSpecification: V1_RawInstanceValue,
+  visit_PrimitiveInstanceValue(
+    rawValueSpecification: V1_RawPrimitiveInstanceValue,
   ): PlainObject<V1_RawValueSpecification> {
-    return serialize(V1_rawInstanceValueSchema, rawValueSpecification);
+    return serialize(V1_rawPrimitiveInstanceValueSchema, rawValueSpecification);
   }
 }
 
@@ -196,7 +196,7 @@ export function V1_deserializeRawValueSpecification(
     case V1_RawValueSpecificationType.CSTRICTDATE:
     case V1_RawValueSpecificationType.CSTRICTTIME:
     case V1_RawValueSpecificationType.CLATESTDATE:
-      return deserialize(V1_rawInstanceValueSchema, json);
+      return deserialize(V1_rawPrimitiveInstanceValueSchema, json);
     default:
       throw new UnsupportedOperationError(
         `Can't deserialize raw value specification of type '${json._type}'`,

@@ -14,18 +14,14 @@
  * limitations under the License.
  */
 
-import { action, computed, flow, makeObservable, observable } from 'mobx';
+import { computed, isObservable, makeObservable, observable } from 'mobx';
 import type { BasicModel } from '../../../graph/BasicModel';
 import type { DependencyManager } from '../../../graph/DependencyManager';
 import type { PureGraphExtension } from '../../../graph/PureGraphExtension';
 import type { PureModel } from '../../../graph/PureModel';
 import type { PackageableElement } from '../../../models/metamodels/pure/packageableElements/PackageableElement';
-import {
-  type ObserverContext,
-  skipObserved,
-  skipObservedWithContext,
-} from './CoreObserverHelper';
-import { observe_Package } from './DomainObserverHelper';
+import { type ObserverContext, skipObserved } from './CoreObserverHelper';
+import { observe_PackageTree } from './DomainObserverHelper';
 
 const observe_PureGraphExtension = skipObserved(
   <T extends PackageableElement>(
@@ -34,15 +30,10 @@ const observe_PureGraphExtension = skipObserved(
     makeObservable<PureGraphExtension<T>, 'index'>(metamodel, {
       index: observable,
       elements: computed,
-      setElement: action,
-      deleteElement: action,
     }),
 );
 
-export const observe_Abstract_BasicModel = (
-  metamodel: BasicModel,
-  context: ObserverContext,
-): void => {
+const observe_Abstract_BasicModel = (metamodel: BasicModel): void => {
   makeObservable<
     BasicModel,
     | 'elementSectionMap'
@@ -58,7 +49,7 @@ export const observe_Abstract_BasicModel = (
     | 'servicesIndex'
     | 'generationSpecificationsIndex'
     | 'fileGenerationsIndex'
-    | 'extensions'
+    | 'dataElementsIndex'
   >(metamodel, {
     elementSectionMap: observable,
     sectionIndicesIndex: observable,
@@ -73,13 +64,14 @@ export const observe_Abstract_BasicModel = (
     servicesIndex: observable,
     generationSpecificationsIndex: observable,
     fileGenerationsIndex: observable,
+    dataElementsIndex: observable,
     extensions: observable,
 
+    allOwnElements: computed,
     ownSectionIndices: computed,
     ownProfiles: computed,
     ownEnumerations: computed,
     ownMeasures: computed,
-    ownUnits: computed,
     ownClasses: computed,
     ownTypes: computed,
     ownAssociations: computed,
@@ -93,29 +85,9 @@ export const observe_Abstract_BasicModel = (
     ownConnections: computed,
     ownFileGenerations: computed,
     ownGenerationSpecifications: computed,
-    allOwnElements: computed,
-
-    dispose: flow,
-
-    setOwnSection: action,
-    setOwnSectionIndex: action,
-    setOwnProfile: action,
-    setOwnType: action,
-    setOwnAssociation: action,
-    setOwnFunction: action,
-    setOwnStore: action,
-    setOwnMapping: action,
-    setOwnConnection: action,
-    setOwnRuntime: action,
-    setOwnService: action,
-    setOwnGenerationSpecification: action,
-    setOwnFileGeneration: action,
-    deleteOwnElement: action,
-    renameOwnElement: action,
-    TEMPORARY__deleteOwnSectionIndex: action,
+    ownDataElements: computed,
   });
 
-  observe_Package(metamodel.root, context);
   metamodel.extensions.forEach(observe_PureGraphExtension);
 };
 
@@ -124,12 +96,12 @@ export const observe_DependencyManager = skipObserved(
     makeObservable(metamodel, {
       root: observable,
       projectDependencyModelsIndex: observable,
-      allElements: computed,
-      models: computed,
+      allOwnElements: computed,
+      dependencyGraphs: computed,
+      sectionIndices: computed,
       profiles: computed,
       enumerations: computed,
       measures: computed,
-      units: computed,
       classes: computed,
       types: computed,
       associations: computed,
@@ -140,25 +112,56 @@ export const observe_DependencyManager = skipObserved(
       services: computed,
       runtimes: computed,
       connections: computed,
-      fileGenerations: computed,
       generationSpecifications: computed,
-      sectionIndices: computed,
+      fileGenerations: computed,
+      dataElements: computed,
     }),
 );
 
-export const observe_PureModel = skipObservedWithContext(
-  (metamodel: PureModel, context): PureModel => {
-    observe_Abstract_BasicModel(metamodel, context);
-
-    makeObservable(metamodel, {
-      generationModel: observable,
-      dependencyManager: observable,
-      setDependencyManager: action,
-      addElement: action,
-    });
-
-    observe_DependencyManager(metamodel.dependencyManager);
-
+/**
+ * NOTE: when we observe the graph, it is important to do this synchronously
+ * to not mess with `mobx`. Since most of the indices of the graph are computed values
+ * we have seen cases where asynchronousity hurts us and causes really ellusive bugs
+ * since `mobx` observabilty does not track in asynchronous context and `makeObservable`
+ * is sort of equivalent to triggering observability.
+ *
+ * See https://mobx.js.org/understanding-reactivity.html#understanding-reactivity
+ * See https://github.com/finos/legend-studio/issues/1121
+ *
+ * On the other hand, for performance purpose, we would need to observe all of graph
+ * elements asynchronously, as such, we would do that separately in the method
+ * {@link observe_GraphElements}
+ */
+export const observe_Graph = (metamodel: PureModel): PureModel => {
+  if (isObservable(metamodel)) {
     return metamodel;
-  },
-);
+  }
+  observe_Abstract_BasicModel(metamodel);
+
+  makeObservable(metamodel, {
+    generationModel: observable,
+    dependencyManager: observable,
+  });
+
+  observe_DependencyManager(metamodel.dependencyManager);
+
+  return metamodel;
+};
+
+/**
+ * This method is designed for performance purpose.
+ *
+ * NOTE: this might have some impact on `mobx` observability, see the note
+ * of {@link observe_Graph}
+ */
+export const observe_GraphElements = async (
+  metamodel: PureModel,
+  context: ObserverContext,
+): Promise<void> => {
+  /**
+   * A note on performance here. We could observe the package tree recursively synchronously
+   * we have tried before and it does not take a long time, but at the risk of
+   * blocking the main thread, we parallize this anyway, hence we must make this method asynchronous.
+   */
+  await observe_PackageTree(metamodel.root, context);
+};

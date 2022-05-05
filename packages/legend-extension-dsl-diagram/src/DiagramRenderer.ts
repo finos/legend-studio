@@ -2620,7 +2620,6 @@ export class DiagramRenderer {
 
       switch (this.interactionMode) {
         case DIAGRAM_INTERACTION_MODE.PAN: {
-          e.returnValue = false;
           this.positionBeforeLastMove = new Point(e.x, e.y);
           return;
         }
@@ -2809,14 +2808,12 @@ export class DiagramRenderer {
     }
     // middle click
     else if (e.button === 1) {
-      e.returnValue = false;
       this.setMiddleClick(true);
       this.positionBeforeLastMove = new Point(e.x, e.y);
       return;
     }
     // right click
     else if (e.button === 2) {
-      e.returnValue = false;
       this.setRightClick(true);
       this.positionBeforeLastMove = new Point(e.x, e.y);
       if (this.mouseOverClassView) {
@@ -2836,7 +2833,6 @@ export class DiagramRenderer {
     // scroll down to zoom in and up to zoom out
     const newZoomLevel = this.zoom - (e.deltaY / 120) * 0.05;
     this.executeZoom(newZoomLevel, new Point(e.x, e.y));
-    e.returnValue = false;
   }
 
   mousemove(e: MouseEvent): void {

@@ -17,8 +17,13 @@
 import {
   guaranteeNonEmptyString,
   guaranteeNonNullable,
+  type PlainObject,
 } from '@finos/legend-shared';
-import { LegendApplicationDocumentationRegistry } from './LegendApplicationDocumentationRegistry';
+import {
+  type LegendApplicationKeyedDocumentationEntry,
+  type LegendApplicationDocumentationEntry,
+  collectKeyedDocumnetationEntriesFromConfig,
+} from './LegendApplicationDocumentationRegistry';
 
 export interface LegendApplicationVersionData {
   buildTime: string;
@@ -31,7 +36,7 @@ export interface LegendApplicationConfigurationData {
   env: string;
   documentation?: {
     url: string;
-    entries?: Record<string, string>;
+    entries?: Record<string, PlainObject<LegendApplicationDocumentationEntry>>;
   };
   // TODO: when we support vault-like settings
   // See https://github.com/finos/legend-studio/issues/407
@@ -44,7 +49,9 @@ export abstract class LegendApplicationConfig {
   readonly baseUrl: string;
   readonly env: string;
 
-  readonly docRegistry: LegendApplicationDocumentationRegistry;
+  readonly documentationUrl: string | undefined;
+  readonly documentationKeyedEntries: LegendApplicationKeyedDocumentationEntry[] =
+    [];
 
   readonly appVersion: string;
   readonly appVersionBuildTime: string;
@@ -66,10 +73,9 @@ export abstract class LegendApplicationConfig {
     );
 
     // Documentation
-    this.docRegistry = new LegendApplicationDocumentationRegistry();
-    this.docRegistry.url = configData.documentation?.url;
-    Object.entries(configData.documentation?.entries ?? []).forEach((entry) =>
-      this.docRegistry.registerEntry(entry[0], entry[1]),
+    this.documentationUrl = configData.documentation?.url;
+    this.documentationKeyedEntries = collectKeyedDocumnetationEntriesFromConfig(
+      configData.documentation?.entries ?? {},
     );
 
     // Version

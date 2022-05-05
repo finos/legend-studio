@@ -14,13 +14,9 @@
  * limitations under the License.
  */
 
-import {
-  hashArray,
-  UnsupportedOperationError,
-  type Hashable,
-} from '@finos/legend-shared';
+import { filterByType, hashArray, type Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
-import type { Mapping, MappingElementLabel } from '../../../mapping/Mapping';
+import type { Mapping } from '../../../mapping/Mapping';
 import { AbstractFlatDataPropertyMapping } from './AbstractFlatDataPropertyMapping';
 import type {
   PropertyMapping,
@@ -37,6 +33,7 @@ import type { PropertyReference } from '../../../domain/PropertyReference';
 import type { InferableMappingElementIdValue } from '../../../mapping/InferableMappingElementId';
 import type { PackageableElementReference } from '../../../PackageableElementReference';
 import { InferableMappingElementRootExplicitValue } from '../../../mapping/InferableMappingElementRoot';
+import type { MappingClass } from '../../../mapping/MappingClass';
 
 /**
  * We can think of embedded property mappings as a 'gateway' from one set of property mappings to another. They are in a sense
@@ -54,12 +51,13 @@ export class EmbeddedFlatDataPropertyMapping
   implements InstanceSetImplementation, Hashable
 {
   root = InferableMappingElementRootExplicitValue.create(false);
-  override isEmbedded = true;
+  override readonly isEmbedded = true;
   class: PackageableElementReference<Class>;
   id: InferableMappingElementIdValue;
   propertyMappings: PropertyMapping[] = [];
   rootInstanceSetImplementation: InstanceSetImplementation; // in Pure we call this `setMappingOwner`
-  parent: Mapping;
+  readonly parent: Mapping;
+  mappingClass?: MappingClass | undefined;
 
   constructor(
     owner: PropertyMappingsImplementation,
@@ -75,18 +73,6 @@ export class EmbeddedFlatDataPropertyMapping
     this.id = id;
     this.rootInstanceSetImplementation = rootInstanceSetImplementation;
     this.parent = rootInstanceSetImplementation.parent;
-  }
-
-  setRoot(value: boolean): void {
-    throw new UnsupportedOperationError();
-  }
-
-  get label(): MappingElementLabel {
-    return {
-      value: `${this.class.value.name} [${this.property.value.name}]`,
-      root: this.root.value,
-      tooltip: this.class.value.path,
-    };
   }
 
   // As of now, there is no stub cases of Embedded Flat Property Mapping since they are created with an existing property mapping
@@ -119,8 +105,7 @@ export class EmbeddedFlatDataPropertyMapping
 
   getEmbeddedSetImplmentations(): InstanceSetImplementation[] {
     const embeddedPropertyMappings = this.propertyMappings.filter(
-      (propertyMapping): propertyMapping is EmbeddedFlatDataPropertyMapping =>
-        propertyMapping instanceof EmbeddedFlatDataPropertyMapping,
+      filterByType(EmbeddedFlatDataPropertyMapping),
     );
     return embeddedPropertyMappings
       .map((embeddedPropertyMapping) =>

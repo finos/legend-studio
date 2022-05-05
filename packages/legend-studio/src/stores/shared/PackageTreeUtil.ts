@@ -39,6 +39,7 @@ import {
   PackageableConnection,
   FileGenerationSpecification,
   GenerationSpecification,
+  DataElement,
 } from '@finos/legend-graph';
 
 const getElementProjectExplorerDnDType = (
@@ -75,6 +76,8 @@ const getElementProjectExplorerDnDType = (
     return CORE_DND_TYPE.PROJECT_EXPLORER_GENERATION_TREE;
   } else if (element instanceof FileGenerationSpecification) {
     return CORE_DND_TYPE.PROJECT_EXPLORER_FILE_GENERATION;
+  } else if (element instanceof DataElement) {
+    return CORE_DND_TYPE.PROJECT_EXPLORER_DATA;
   }
   const extraElementProjectExplorerDnDTypeGetters = editorStore.pluginManager
     .getStudioPlugins()

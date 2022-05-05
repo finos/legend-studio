@@ -17,8 +17,9 @@
 import { useCallback } from 'react';
 import { clsx, Dialog, InfoCircleIcon, RefreshIcon } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
-import { QueryBuilderValueSpecificationEditor } from './QueryBuilderValueSpecificationEditor';
 import {
+  generateMilestonedPropertyParameterValue,
+  generateValueSpecificationForParameter,
   getPropertyPath,
   type QueryBuilderDerivedPropertyExpressionState,
   type QueryBuilderPropertyExpressionState,
@@ -35,30 +36,38 @@ import {
   type QueryBuilderParameterDragSource,
   QUERY_BUILDER_PARAMETER_TREE_DND_TYPE,
 } from '../stores/QueryParametersState';
-import { generateDefaultValueForPrimitiveType } from '../stores/QueryBuilderValueSpecificationBuilderHelper';
-import { guaranteeNonNullable } from '@finos/legend-shared';
 import {
   type ValueSpecification,
   type VariableExpression,
   Class,
   Enumeration,
   PrimitiveType,
-  PrimitiveInstanceValue,
   PRIMITIVE_TYPE,
 } from '@finos/legend-graph';
+import { QueryBuilderValueSpecificationEditor } from './QueryBuilderValueSpecificationEditor';
+import { propertyExpression_setParametersValue } from '../stores/QueryBuilderValueSpecificationModifierHelper';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 
-const DerivedPropertyParameterEditor = observer(
+const DerivedPropertyParameterValueEditor = observer(
   (props: {
     derivedPropertyExpressionState: QueryBuilderDerivedPropertyExpressionState;
     variable: VariableExpression;
     idx: number;
   }) => {
     const { derivedPropertyExpressionState, variable, idx } = props;
+    const graph =
+      derivedPropertyExpressionState.queryBuilderState.graphManagerState.graph;
+    const parameterType = guaranteeNonNullable(
+      derivedPropertyExpressionState.parameters[idx]?.genericType,
+    ).value.rawType;
     const handleDrop = useCallback(
       (item: QueryBuilderParameterDragSource): void => {
-        derivedPropertyExpressionState.propertyExpression.parametersValues[
-          idx + 1
-        ] = item.variable.parameter;
+        propertyExpression_setParametersValue(
+          derivedPropertyExpressionState.propertyExpression,
+          idx + 1,
+          item.variable.parameter,
+          derivedPropertyExpressionState.queryBuilderState.observableContext,
+        );
       },
       [derivedPropertyExpressionState, idx],
     );
@@ -69,7 +78,14 @@ const DerivedPropertyParameterEditor = observer(
           item: QueryBuilderParameterDragSource,
           monitor: DropTargetMonitor,
         ): void => {
-          if (!monitor.didDrop()) {
+          const itemType = item.variable.parameter.genericType?.value.rawType;
+          if (
+            !monitor.didDrop() &&
+            // Doing a type check, which only allows dragging and dropping parameters of the same type or of child types
+            itemType &&
+            (parameterType.isSuperType(itemType) ||
+              parameterType.name === itemType.name)
+          ) {
             handleDrop(item);
           }
         },
@@ -82,21 +98,20 @@ const DerivedPropertyParameterEditor = observer(
       [handleDrop],
     );
     const resetParameterValue = (): void => {
-      const genericType = guaranteeNonNullable(variable.genericType);
-      const primitiveInstanceValue = new PrimitiveInstanceValue(
-        genericType,
-        variable.multiplicity,
-      );
-      if (genericType.value.rawType.name !== PRIMITIVE_TYPE.LATESTDATE) {
-        primitiveInstanceValue.values = [
-          generateDefaultValueForPrimitiveType(
-            genericType.value.rawType.name as PRIMITIVE_TYPE,
+      propertyExpression_setParametersValue(
+        derivedPropertyExpressionState.propertyExpression,
+        idx + 1,
+        generateMilestonedPropertyParameterValue(
+          derivedPropertyExpressionState,
+          idx,
+        ) ??
+          generateValueSpecificationForParameter(
+            variable,
+            derivedPropertyExpressionState.queryBuilderState.graphManagerState
+              .graph,
           ),
-        ];
-      }
-      derivedPropertyExpressionState.propertyExpression.parametersValues[
-        idx + 1
-      ] = primitiveInstanceValue;
+        derivedPropertyExpressionState.queryBuilderState.observableContext,
+      );
     };
 
     return (
@@ -117,19 +132,25 @@ const DerivedPropertyParameterEditor = observer(
             </div>
           )}
           <QueryBuilderValueSpecificationEditor
-            valueSpecification={
-              derivedPropertyExpressionState.parameterValues[
-                idx
-              ] as ValueSpecification
-            }
-            graph={
-              derivedPropertyExpressionState.queryBuilderState.graphManagerState
-                .graph
-            }
-            expectedType={
-              derivedPropertyExpressionState.propertyExpression.func.genericType
-                .value.rawType
-            }
+            valueSpecification={guaranteeNonNullable(
+              derivedPropertyExpressionState.parameterValues[idx],
+            )}
+            updateValueSpecification={(val: ValueSpecification): void => {
+              propertyExpression_setParametersValue(
+                derivedPropertyExpressionState.propertyExpression,
+                idx + 1,
+                val,
+                derivedPropertyExpressionState.queryBuilderState
+                  .observableContext,
+              );
+            }}
+            graph={graph}
+            typeCheckOption={{
+              expectedType: parameterType,
+              match:
+                parameterType ===
+                graph.getPrimitiveType(PRIMITIVE_TYPE.DATETIME),
+            }}
           />
           <button
             className="query-builder-filter-tree__node__action"
@@ -145,6 +166,7 @@ const DerivedPropertyParameterEditor = observer(
     );
   },
 );
+
 const DerivedPropertyExpressionEditor = observer(
   (props: {
     derivedPropertyExpressionState: QueryBuilderDerivedPropertyExpressionState;
@@ -164,7 +186,7 @@ const DerivedPropertyExpressionEditor = observer(
           </div>
         )}
         {parameters.map((variable, idx) => (
-          <DerivedPropertyParameterEditor
+          <DerivedPropertyParameterValueEditor
             key={variable.name}
             derivedPropertyExpressionState={derivedPropertyExpressionState}
             variable={variable}

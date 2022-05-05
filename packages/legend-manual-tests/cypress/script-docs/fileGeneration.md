@@ -18,7 +18,7 @@
 3. open Firm
    check namespace is present in the avro
    uncheck namespace-> check namespace is not there
-   check and ensure you see see LegalEntity properties incType,name,id
+   check and ensure you see LegalEntity properties incType,name,id
    uncheck includeSuperTypes
    check and ensure you no longer see LegalEntity properties incType,name,id
 

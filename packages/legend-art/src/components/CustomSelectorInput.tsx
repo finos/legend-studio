@@ -174,6 +174,10 @@ export const CustomSelectorInput = forwardRef<
   // See https://github.com/microsoft/TypeScript/issues/28795
   // And the root problem as mentioned
   // See https://github.com/microsoft/TypeScript/issues/7294
+  //
+  // NOTE: since we're using an outdated version of `react-select`, we would get type issue
+  // when we update to `react@18`
+  // See https://github.com/finos/legend-studio/issues/615
   const SelectComponent: React.ElementType = allowCreating
     ? CreatableSelect
     : Select;

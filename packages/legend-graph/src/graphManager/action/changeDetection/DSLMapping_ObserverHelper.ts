@@ -49,11 +49,11 @@ import type {
 import type {
   SetImplementation,
   SetImplementationVisitor,
-  TEMPORARY__UnresolvedSetImplementation,
 } from '../../../models/metamodels/pure/packageableElements/mapping/SetImplementation';
 import type { SetImplementationContainer } from '../../../models/metamodels/pure/packageableElements/mapping/SetImplementationContainer';
 import type { SetImplementationReference } from '../../../models/metamodels/pure/packageableElements/mapping/SetImplementationReference';
 import type { SubstituteStore } from '../../../models/metamodels/pure/packageableElements/mapping/SubstituteStore';
+import type { TEMPORARY__UnresolvedSetImplementation } from '../../../models/metamodels/pure/packageableElements/mapping/TEMPORARY__UnresolvedSetImplementation';
 import type { XStorePropertyMapping } from '../../../models/metamodels/pure/packageableElements/mapping/xStore/XStorePropertyMapping';
 import type { PackageableRuntime } from '../../../models/metamodels/pure/packageableElements/runtime/PackageableRuntime';
 import {
@@ -280,8 +280,6 @@ const observe_Abstract_SetImplementation = (
 ): void => {
   makeObservable(metamodel, {
     root: observable,
-    parent: observable,
-    label: computed,
   });
 
   observe_PackageableElementReference(metamodel.class);
@@ -565,7 +563,6 @@ export const observe_EnumerationMapping = skipObserved(
     makeObservable(metamodel, {
       sourceType: observable,
       enumValueMappings: observable,
-      label: computed,
       isStub: computed,
       hashCode: computed,
     });
@@ -586,10 +583,8 @@ export const observe_AssociationImplementation = skipObservedWithContext(
   ): AssociationImplementation => {
     makeObservable(metamodel, {
       id: observable,
-      parent: observable,
       stores: observable,
       propertyMappings: observable,
-      label: computed,
       hashCode: computed,
     });
 

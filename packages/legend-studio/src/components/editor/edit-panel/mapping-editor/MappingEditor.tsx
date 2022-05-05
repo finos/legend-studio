@@ -43,6 +43,7 @@ import {
   getMappingElementTarget,
   getMappingElementType,
   MAPPING_ELEMENT_TYPE,
+  getMappingElementLabel,
 } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import { MappingElementState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementState';
 import { MappingExplorer } from './MappingExplorer';
@@ -232,7 +233,6 @@ export const MappingEditor = observer(() => {
         </ResizablePanel>
         <ResizablePanelSplitter />
         <ResizablePanel>
-          {' '}
           <div className="panel">
             <ContextMenu
               className="panel__header mapping-editor__header"
@@ -295,7 +295,12 @@ export const MappingEditor = observer(() => {
                                 .name
                             }'`}
                           >
-                            {tabState.mappingElement.label.value}
+                            {
+                              getMappingElementLabel(
+                                tabState.mappingElement,
+                                editorStore,
+                              ).value
+                            }
                           </button>
                         </>
                       )}

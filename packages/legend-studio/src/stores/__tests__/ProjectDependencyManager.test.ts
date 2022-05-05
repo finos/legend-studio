@@ -116,7 +116,6 @@ const TEST_DEPENDENCY_PROJECT_ID = 'UAT-TEST_DEPENDENCY';
 const PROJECT_CONFIG = {
   projectStructureVersion: { version: 6, extensionVersion: 1 },
   projectId: TEST_DEPENDENCY_PROJECT_ID,
-  projectType: 'PROTOTYPE',
   groupId: 'com.test',
   artifactId: 'string',
   projectDependencies: [
@@ -232,7 +231,7 @@ const testDependencyElements = async (
   const dependencyEntitiesMap = await flowResult(
     editorStore.graphState.getConfigurationProjectDependencyEntities(),
   );
-  editorStore.graphManagerState.graph.setDependencyManager(dependencyManager);
+  editorStore.graphManagerState.graph.dependencyManager = dependencyManager;
   await editorStore.graphManagerState.graphManager.buildDependencies(
     editorStore.graphManagerState.coreModel,
     editorStore.graphManagerState.systemModel,
@@ -259,7 +258,7 @@ const testDependencyElements = async (
     expect(dependencyManager.getModel(k)).toBeDefined(),
   );
 
-  expect(dependencyManager.allElements.length).toBe(
+  expect(dependencyManager.allOwnElements.length).toBe(
     dependencyElementPaths.length,
   );
 
@@ -286,7 +285,7 @@ const testDependencyElements = async (
   });
   if (includeDependencyInFileGenerationScopeElements) {
     const fileGeneration = guaranteeNonNullable(
-      editorStore.graphManagerState.graph.getOwnFileGeneration(
+      editorStore.graphManagerState.graph.getOwnNullableFileGeneration(
         FILE_GENERATION_PATH,
       ),
     );

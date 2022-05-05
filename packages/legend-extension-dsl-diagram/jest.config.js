@@ -14,27 +14,20 @@
  * limitations under the License.
  */
 
-import base from '../../scripts/test/jest.config.base.js';
+import { getBaseJestDOMProjectConfig } from '../../scripts/test/jest.config.base.js';
 import { loadJSON } from '@finos/legend-dev-utils/DevUtils';
+import { resolve, dirname } from 'path';
+import { fileURLToPath } from 'url';
 
-const packageJson = loadJSON('./package.json');
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+const packageJson = loadJSON(resolve(__dirname, './package.json'));
+const base = getBaseJestDOMProjectConfig(
+  packageJson.name,
+  'packages/legend-extension-dsl-diagram',
+);
 
 export default {
   ...base,
-  displayName: packageJson.name,
-  name: packageJson.name,
-  rootDir: '../..',
-  testEnvironment: 'jsdom',
-  setupFiles: [
-    ...base.setupFiles,
-    '@finos/legend-dev-utils/jest/setupDOMPolyfills',
-    'jest-canvas-mock',
-  ],
-  moduleNameMapper: {
-    ...base.moduleNameMapper,
-    '^monaco-editor$': '@finos/legend-art/lib/testMocks/MockedMonacoEditor.js',
-  },
-  testMatch: [
-    '<rootDir>/packages/legend-extension-dsl-diagram/src/**/__tests__/**/*(*.)test.[jt]s?(x)',
-  ],
+  setupFiles: [...base.setupFiles, 'jest-canvas-mock'],
 };

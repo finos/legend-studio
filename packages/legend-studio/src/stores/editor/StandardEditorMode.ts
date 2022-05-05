@@ -28,7 +28,6 @@ export class StandardEditorMode extends EditorMode {
 
   generateElementLink(elementPath: string): string {
     return generateViewEntityRoute(
-      this.editorStore.applicationStore.config.currentSDLCServerOption,
       this.editorStore.sdlcState.activeProject.projectId,
       elementPath,
     );

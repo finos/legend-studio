@@ -25,7 +25,7 @@ import {
   prettyCONSTName,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
-import type { SingleExecutionTestState } from '../../../../stores/editor-state/element-editor-state/service/ServiceTestState';
+import { LegacySingleExecutionTestState } from '../../../../stores/editor-state/element-editor-state/service/LegacyServiceTestState';
 import { EmbeddedRuntimeEditor } from '../../../editor/edit-panel/RuntimeEditor';
 import { useDrop } from 'react-dnd';
 import {
@@ -70,12 +70,13 @@ import {
   pureSingleExecution_setMapping,
   pureSingleExecution_setRuntime,
 } from '../../../../stores/graphModifier/DSLService_GraphModifierHelper';
+import { ServiceTestSuiteState } from '../../../../stores/editor-state/element-editor-state/service/ServiceTestSuiteState';
 
 const PureSingleExecutionConfigurationEditor = observer(
   (props: {
     executionState: ServicePureExecutionState;
     selectedExecution: PureSingleExecution | KeyedExecutionParameter;
-    selectedTestState: SingleExecutionTestState;
+    selectedTestState: LegacySingleExecutionTestState | ServiceTestSuiteState;
   }) => {
     const { executionState, selectedExecution, selectedTestState } = props;
     const editorStore = useEditorStore();
@@ -105,11 +106,17 @@ const PureSingleExecutionConfigurationEditor = observer(
       val: PackageableElementOption<Mapping>,
     ): void => {
       if (val.value !== mapping) {
-        pureSingleExecution_setMapping(selectedExecution, val.value);
-        executionState.autoSelectRuntimeOnMappingChange(val.value);
-        flowResult(selectedTestState.generateTestData()).catch(
-          applicationStore.alertUnhandledError,
+        pureSingleExecution_setMapping(
+          selectedExecution,
+          val.value,
+          editorStore.changeDetectionState.observerContext,
         );
+        executionState.autoSelectRuntimeOnMappingChange(val.value);
+        if (selectedTestState instanceof LegacySingleExecutionTestState) {
+          flowResult(selectedTestState.generateTestData()).catch(
+            applicationStore.alertUnhandledError,
+          );
+        }
       }
     };
     const visitMapping = (): void => editorStore.openElement(mapping);
@@ -186,7 +193,11 @@ const PureSingleExecutionConfigurationEditor = observer(
       if (val.value === undefined) {
         executionState.useCustomRuntime();
       } else if (val.value !== runtime) {
-        pureSingleExecution_setRuntime(selectedExecution, val.value);
+        pureSingleExecution_setRuntime(
+          selectedExecution,
+          val.value,
+          editorStore.changeDetectionState.observerContext,
+        );
       }
     };
     const visitRuntime = (): void => {
@@ -201,10 +212,16 @@ const PureSingleExecutionConfigurationEditor = observer(
         const element = item.data.packageableElement;
         if (!isReadOnly) {
           if (element instanceof Mapping) {
-            pureSingleExecution_setMapping(selectedExecution, element);
-            flowResult(selectedTestState.generateTestData()).catch(
-              applicationStore.alertUnhandledError,
+            pureSingleExecution_setMapping(
+              selectedExecution,
+              element,
+              editorStore.changeDetectionState.observerContext,
             );
+            if (selectedTestState instanceof LegacySingleExecutionTestState) {
+              flowResult(selectedTestState.generateTestData()).catch(
+                applicationStore.alertUnhandledError,
+              );
+            }
             executionState.autoSelectRuntimeOnMappingChange(element);
           } else if (
             element instanceof PackageableRuntime &&
@@ -215,12 +232,14 @@ const PureSingleExecutionConfigurationEditor = observer(
               new RuntimePointer(
                 PackageableElementExplicitReference.create(element),
               ),
+              editorStore.changeDetectionState.observerContext,
             );
           }
         }
       },
       [
         applicationStore.alertUnhandledError,
+        editorStore.changeDetectionState.observerContext,
         executionState,
         isReadOnly,
         mapping,
@@ -330,7 +349,7 @@ const PureSingleExecutionEditor = observer(
   (props: {
     executionState: ServicePureExecutionState;
     selectedExecution: PureSingleExecution | KeyedExecutionParameter;
-    selectedTestState: SingleExecutionTestState;
+    selectedTestState: LegacySingleExecutionTestState | ServiceTestSuiteState;
   }) => {
     const { executionState, selectedExecution, selectedTestState } = props;
     // tab
@@ -364,19 +383,27 @@ const PureSingleExecutionEditor = observer(
             </div>
           </div>
           <div className="panel__content service-editor__content">
-            {selectedTab === SERVICE_EXECUTION_TAB.MAPPING_AND_RUNTIME && (
+            {selectedTab === SERVICE_EXECUTION_TAB.EXECUTION_CONTEXT && (
               <PureSingleExecutionConfigurationEditor
                 executionState={executionState}
                 selectedExecution={selectedExecution}
                 selectedTestState={selectedTestState}
               />
             )}
-            {selectedTab === SERVICE_EXECUTION_TAB.TESTS && (
-              <ServiceTestEditor
-                executionState={executionState}
-                selectedTestState={selectedTestState}
-              />
-            )}
+            {selectedTab === SERVICE_EXECUTION_TAB.TESTS &&
+              selectedTestState instanceof LegacySingleExecutionTestState && (
+                <ServiceTestEditor
+                  executionState={executionState}
+                  selectedTestState={selectedTestState}
+                />
+              )}
+            {selectedTab === SERVICE_EXECUTION_TAB.TESTS &&
+              selectedTestState instanceof ServiceTestSuiteState && (
+                <UnsupportedEditorPanel
+                  text={`Can't display this element in form-mode`}
+                  isReadOnly={selectedTestState.serviceEditorState.isReadOnly}
+                />
+              )}
           </div>
         </div>
       </div>

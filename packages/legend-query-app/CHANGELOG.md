@@ -1,5 +1,25 @@
 # @finos/legend-query-app
 
+## 4.19.0
+
+## 4.18.0
+
+### Patch Changes
+
+- [#1095](https://github.com/finos/legend-studio/pull/1095) [`2c382cec`](https://github.com/finos/legend-studio/commit/2c382cec5fdb17bd1861a9f9792cf60229843543) ([@akphi](https://github.com/akphi)) - Expose the set of plugins Legend Query uses to make it easier to extend the app.
+
+## 4.17.0
+
+## 4.16.0
+
+## 4.15.0
+
+## 4.14.0
+
+## 4.13.0
+
+## 4.12.0
+
 ## 4.11.0
 
 ## 4.10.0

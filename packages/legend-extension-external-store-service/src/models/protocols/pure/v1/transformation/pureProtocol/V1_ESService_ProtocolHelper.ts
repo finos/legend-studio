@@ -20,6 +20,10 @@ import {
   UnsupportedOperationError,
   usingConstantValueSchema,
   usingModelSchema,
+  serializeArray,
+  deserializeArray,
+  serializeMap,
+  deserializeMap,
 } from '@finos/legend-shared';
 import {
   type ModelSchema,
@@ -58,6 +62,7 @@ import type { V1_ServiceParameterMapping } from '../../model/packageableElements
 import {
   type PureProtocolProcessorPlugin,
   V1_Multiplicity,
+  V1_externalFormatDataModelSchema,
   V1_rawLambdaModelSchema,
 } from '@finos/legend-graph';
 import { V1_ParameterIndexedParameterMapping } from '../../model/packageableElements/store/serviceStore/mapping/V1_ESService_ParameterIndexedParameterMapping';
@@ -68,14 +73,27 @@ import { V1_ServiceRequestBuildInfo } from '../../model/packageableElements/stor
 import { V1_ServiceRequestParametersBuildInfo } from '../../model/packageableElements/store/serviceStore/mapping/V1_ESService_ServiceRequestParametersBuildInfo';
 import { V1_ServiceRequestParameterBuildInfo } from '../../model/packageableElements/store/serviceStore/mapping/V1_ESService_ServiceRequestParameterBuildInfo';
 import { V1_ServiceRequestBodyBuildInfo } from '../../model/packageableElements/store/serviceStore/mapping/V1_ESService_ServiceRequestBodyBuildInfo';
+import { V1_EqualToJsonPattern } from '../../model/data/contentPattern/V1_ESService_EqualToJsonPattern';
+import { V1_EqualToPattern } from '../../model/data/contentPattern/V1_ESService_EqualToPattern';
+import type { V1_StringValuePattern } from '../../model/data/contentPattern/V1_ESService_StringValuePattern';
+import { V1_ServiceRequestPattern } from '../../model/data/V1_ESService_ServiceRequestPattern';
+import { V1_ServiceResponseDefinition } from '../../model/data/V1_ESService_ServiceResponseDefinition';
+import { V1_ServiceStubMapping } from '../../model/data/V1_ESService_ServiceStubMapping';
+import { V1_ServiceStoreEmbeddedData } from '../../model/data/V1_ESService_ServiceStoreEmbeddedData';
 
 export const V1_SERVICE_STORE_ELEMENT_PROTOCOL_TYPE = 'serviceStore';
 export const V1_SERVICE_STORE_MAPPING_PROTOCOL_TYPE = 'serviceStore';
 export const V1_SERVICE_STORE_CONNECTION_PROTOCOL_TYPE = 'serviceStore';
+export const V1_SERVICE_STORE_EMBEDDED_DATA_PROTOCOL_TYPE = 'serviceStore';
 
 enum V1_ServiceStoreElementType {
   SERVICE = 'service',
   SERVICE_GROUP = 'serviceGroup',
+}
+
+enum V1_StringValuePatternType {
+  EQUAL_TO_PATTERN = 'equalTo',
+  EQUAL_TO_JSON_PATTERN = 'equalToJson',
 }
 
 enum V1_ReferenceType {
@@ -494,5 +512,114 @@ export const V1_serviceStoreConnectionModelSchema = createModelSchema(
     store: alias('element', optional(primitive())),
     name: primitive(),
     package: primitive(),
+  },
+);
+
+export const V1_equalToJsonPatternModelSchema = createModelSchema(
+  V1_EqualToJsonPattern,
+  {
+    _type: usingConstantValueSchema(
+      V1_StringValuePatternType.EQUAL_TO_JSON_PATTERN,
+    ),
+    expectedValue: primitive(),
+  },
+);
+
+export const V1_equalToPatternModelSchema = createModelSchema(
+  V1_EqualToPattern,
+  {
+    _type: usingConstantValueSchema(V1_StringValuePatternType.EQUAL_TO_PATTERN),
+    expectedValue: primitive(),
+  },
+);
+
+const V1_serializeStringValuePattern = (
+  protocol: V1_StringValuePattern,
+): PlainObject<V1_StringValuePattern> => {
+  if (protocol instanceof V1_EqualToJsonPattern) {
+    return serialize(V1_equalToJsonPatternModelSchema, protocol);
+  } else if (protocol instanceof V1_EqualToPattern) {
+    return serialize(V1_equalToPatternModelSchema, protocol);
+  }
+  throw new UnsupportedOperationError(
+    `Can't serialize string value pattern`,
+    protocol,
+  );
+};
+
+const V1_deserializeStringValuePattern = (
+  json: PlainObject<V1_StringValuePattern>,
+): V1_StringValuePattern => {
+  switch (json._type) {
+    case V1_StringValuePatternType.EQUAL_TO_JSON_PATTERN:
+      return deserialize(V1_equalToJsonPatternModelSchema, json);
+    case V1_StringValuePatternType.EQUAL_TO_PATTERN:
+      return deserialize(V1_equalToPatternModelSchema, json);
+    default: {
+      throw new UnsupportedOperationError(
+        `Can't deserialize string value pattern of type '${json._type}'`,
+      );
+    }
+  }
+};
+
+export const V1_serviceRequestPatternModelSchema = createModelSchema(
+  V1_ServiceRequestPattern,
+  {
+    bodyPatterns: custom(
+      (values) =>
+        serializeArray(
+          values,
+          (value: V1_StringValuePattern) =>
+            V1_serializeStringValuePattern(value),
+          {
+            skipIfEmpty: true,
+          },
+        ),
+      (values) =>
+        deserializeArray(values, (v) => V1_deserializeStringValuePattern(v), {
+          skipIfEmpty: false,
+        }),
+    ),
+    headerParams: optionalCustom(
+      (val) => serializeMap(val, V1_serializeStringValuePattern),
+      (val) => deserializeMap(val, V1_deserializeStringValuePattern),
+    ),
+    method: primitive(),
+    queryParams: optionalCustom(
+      (val) => serializeMap(val, V1_serializeStringValuePattern),
+      (val) => deserializeMap(val, V1_deserializeStringValuePattern),
+    ),
+    url: optional(primitive()),
+    urlPath: optional(primitive()),
+  },
+);
+
+export const V1_serviceResponseDefinitionModelSchema = createModelSchema(
+  V1_ServiceResponseDefinition,
+  {
+    body: usingModelSchema(V1_externalFormatDataModelSchema),
+  },
+);
+
+export const V1_serviceStubMappingModelSchema = createModelSchema(
+  V1_ServiceStubMapping,
+  {
+    requestPattern: usingModelSchema(V1_serviceRequestPatternModelSchema),
+    responseDefinition: usingModelSchema(
+      V1_serviceResponseDefinitionModelSchema,
+    ),
+  },
+);
+
+export const V1_serviceStoreEmbeddedDataModelSchema = createModelSchema(
+  V1_ServiceStoreEmbeddedData,
+  {
+    _type: usingConstantValueSchema(
+      V1_SERVICE_STORE_EMBEDDED_DATA_PROTOCOL_TYPE,
+    ),
+    serviceStubMappings: list(
+      usingModelSchema(V1_serviceStubMappingModelSchema),
+    ),
   },
 );

@@ -15,7 +15,10 @@
  */
 
 import { UnsupportedOperationError } from '@finos/legend-shared';
-import type { V1_GraphBuilderContext } from './V1_GraphBuilderContext';
+import {
+  V1_buildFullPath,
+  type V1_GraphBuilderContext,
+} from './V1_GraphBuilderContext';
 import type {
   V1_PackageableElement,
   V1_PackageableElementVisitor,
@@ -45,6 +48,8 @@ import {
 } from './helpers/V1_DatabaseBuilderHelper';
 import type { V1_SectionIndex } from '../../../model/packageableElements/section/V1_SectionIndex';
 import { V1_buildAssociationMapping } from './helpers/V1_AssociationMappingHelper';
+import { V1_buildMilestoningProperties } from './helpers/V1_MilestoneBuilderHelper';
+import type { V1_DataElement } from '../../../model/packageableElements/data/V1_DataElement';
 
 export class V1_ProtocolToMetaModelGraphFourthPassBuilder
   implements V1_PackageableElementVisitor<void>
@@ -74,13 +79,17 @@ export class V1_ProtocolToMetaModelGraphFourthPassBuilder
   }
 
   visit_Class(element: V1_Class): void {
-    // TODO?: milestoning (process properties and class)
-    throw new UnsupportedOperationError();
+    const _class = this.context.currentSubGraph.getOwnClass(
+      V1_buildFullPath(element.package, element.name),
+    );
+    V1_buildMilestoningProperties(_class, this.context.graph);
   }
 
   visit_Association(element: V1_Association): void {
-    // TODO?: milestoning (process properties)
-    throw new UnsupportedOperationError();
+    const association = this.context.currentSubGraph.getOwnAssociation(
+      V1_buildFullPath(element.package, element.name),
+    );
+    V1_buildMilestoningProperties(association, this.context.graph);
   }
 
   visit_ConcreteFunctionDefinition(
@@ -90,14 +99,12 @@ export class V1_ProtocolToMetaModelGraphFourthPassBuilder
   }
 
   visit_FlatData(element: V1_FlatData): void {
-    this.context.graph.getFlatDataStore(
-      this.context.graph.buildPath(element.package, element.name),
-    );
+    return;
   }
 
   visit_Database(element: V1_Database): void {
-    const database = this.context.graph.getDatabase(
-      this.context.graph.buildPath(element.package, element.name),
+    const database = this.context.currentSubGraph.getOwnDatabase(
+      V1_buildFullPath(element.package, element.name),
     );
     database.joins = element.joins.map((join) =>
       V1_buildDatabaseJoin(join, this.context, database),
@@ -108,8 +115,8 @@ export class V1_ProtocolToMetaModelGraphFourthPassBuilder
   }
 
   visit_Mapping(element: V1_Mapping): void {
-    const path = this.context.graph.buildPath(element.package, element.name);
-    const mapping = this.context.graph.getMapping(path);
+    const path = V1_buildFullPath(element.package, element.name);
+    const mapping = this.context.currentSubGraph.getOwnMapping(path);
     mapping.associationMappings = element.associationMappings.map(
       (_associationMapping) =>
         V1_buildAssociationMapping(_associationMapping, mapping, this.context),
@@ -150,6 +157,10 @@ export class V1_ProtocolToMetaModelGraphFourthPassBuilder
   }
 
   visit_PackageableConnection(element: V1_PackageableConnection): void {
+    throw new UnsupportedOperationError();
+  }
+
+  visit_DataElement(element: V1_DataElement): void {
     throw new UnsupportedOperationError();
   }
 }

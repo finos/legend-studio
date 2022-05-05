@@ -18,8 +18,6 @@ import type { Hashable } from '@finos/legend-shared';
 import type { ValidationIssue } from '../../../../../helpers/ValidationHelper';
 
 export abstract class MappingTestAssert implements Hashable {
-  private readonly _$nominalTypeBrand!: 'MappingTestAssert';
-
   abstract get validationResult(): ValidationIssue | undefined;
   abstract get hashCode(): string;
 }

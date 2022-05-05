@@ -74,8 +74,8 @@ import {
   FlatDataConnection,
   FlatDataInputData,
   Service,
-  SingleExecutionTest,
-  TestContainer,
+  DEPRECATED__SingleExecutionTest,
+  DEPRECATED__TestContainer,
   PureSingleExecution,
   RootFlatDataRecordType,
   PackageableElementExplicitReference,
@@ -97,7 +97,6 @@ import {
   LambdaEditorState,
   TAB_SIZE,
 } from '@finos/legend-application';
-import { package_addElement } from '../../../graphModifier/DomainGraphModifierHelper';
 import {
   objectInputData_setData,
   runtime_addIdentifiedConnection,
@@ -111,7 +110,7 @@ import {
 import {
   localH2DatasourceSpecification_setTestDataSetupCsv,
   localH2DatasourceSpecification_setTestDataSetupSqls,
-  relationalInputData_setInputType,
+  relationalInputData_setData,
 } from '../../../graphModifier/StoreRelational_GraphModifierHelper';
 
 export class MappingExecutionQueryState extends LambdaEditorState {
@@ -206,6 +205,7 @@ abstract class MappingExecutionInputDataState {
 export const createRuntimeForExecution = (
   mapping: Mapping,
   connection: Connection,
+  editorStore: EditorStore,
 ): Runtime => {
   const runtime = new EngineRuntime();
   runtime_addMapping(
@@ -218,6 +218,7 @@ export const createRuntimeForExecution = (
       runtime.generateIdentifiedConnectionId(),
       connection,
     ),
+    editorStore.changeDetectionState.observerContext,
   );
   return runtime;
 };
@@ -288,6 +289,7 @@ export class MappingExecutionObjectInputDataState extends MappingExecutionInputD
           engineConfig.useBase64ForAdhocConnectionDataUrls,
         ),
       ),
+      this.editorStore,
     );
   }
 
@@ -345,6 +347,7 @@ export class MappingExecutionFlatDataInputDataState extends MappingExecutionInpu
           engineConfig.useBase64ForAdhocConnectionDataUrls,
         ),
       ),
+      this.editorStore,
     );
   }
 
@@ -416,6 +419,7 @@ export class MappingExecutionRelationalInputDataState extends MappingExecutionIn
         datasourceSpecification,
         new DefaultH2AuthenticationStrategy(),
       ),
+      this.editorStore,
     );
   }
 
@@ -544,7 +548,7 @@ export class MappingExecutionState {
         source.relation.value,
       );
       if (populateWithMockData) {
-        relationalInputData_setInputType(
+        relationalInputData_setData(
           newRuntimeState.inputData,
           createMockDataForMappingElementSource(source, this.editorStore),
         );
@@ -624,26 +628,26 @@ export class MappingExecutionState {
             ),
             this.inputDataState.runtime,
           );
-          service_setExecution(service, pureSingleExecution);
-          const singleExecutionTest = new SingleExecutionTest(
+          service_setExecution(
+            service,
+            pureSingleExecution,
+            this.editorStore.changeDetectionState.observerContext,
+          );
+          const singleExecutionTest = new DEPRECATED__SingleExecutionTest(
             service,
             tryToMinifyJSONString(this.inputDataState.inputData.data),
           );
-          const testContainer = new TestContainer(
-            this.editorStore.graphManagerState.graphManager.HACKY_createServiceTestAssertLambda(
+          const testContainer = new DEPRECATED__TestContainer(
+            this.editorStore.graphManagerState.graphManager.HACKY__createServiceTestAssertLambda(
               this.executionResultText,
             ),
             singleExecutionTest,
           );
           singleExecutionTest.asserts.push(testContainer);
-          const servicePackage =
-            this.editorStore.graphManagerState.graph.getOrCreatePackage(
-              packagePath,
-            );
           service.test = singleExecutionTest;
-          package_addElement(servicePackage, service);
-          this.editorStore.graphManagerState.graph.addElement(service);
-          this.editorStore.openElement(service);
+          yield flowResult(
+            this.editorStore.addElement(service, packagePath, true),
+          );
         } else {
           throw new UnsupportedOperationError(
             `Can't build service from input data state`,
@@ -767,7 +771,7 @@ export class MappingExecutionState {
     yield flowResult(
       this.queryState.updateLamba(
         setImplementation
-          ? this.editorStore.graphManagerState.graphManager.HACKY_createGetAllLambda(
+          ? this.editorStore.graphManagerState.graphManager.HACKY__createGetAllLambda(
               guaranteeType(getMappingElementTarget(setImplementation), Class),
             )
           : RawLambda.createStub(),
