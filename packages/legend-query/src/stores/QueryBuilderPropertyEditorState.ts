@@ -228,6 +228,16 @@ export const generateMilestonedPropertyParameterValue = (
         );
       }
       if (idx === 0) {
+        if (
+          temporalSource === MILESTONING_STEREOTYPE.PROCESSING_TEMPORAL &&
+          derivedPropertyExpressionState.parameterValues.length === 1
+        ) {
+          return guaranteeType(
+            derivedPropertyExpressionState.propertyExpression
+              .parametersValues[0],
+            AbstractPropertyExpression,
+          ).parametersValues[1];
+        }
         const parameter = new INTERNAL__PropagatedValue(
           derivedPropertyExpressionState.queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
             TYPICAL_MULTIPLICITY_TYPE.ONE,
@@ -242,6 +252,15 @@ export const generateMilestonedPropertyParameterValue = (
           derivedPropertyExpressionState.parameterValues.length === 1
         ) {
           return derivedPropertyExpressionState.parameterValues[0];
+        } else if (
+          temporalSource === MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL &&
+          derivedPropertyExpressionState.parameterValues.length === 1
+        ) {
+          return guaranteeType(
+            derivedPropertyExpressionState.propertyExpression
+              .parametersValues[0],
+            AbstractPropertyExpression,
+          ).parametersValues[1];
         }
         const parameter = new INTERNAL__PropagatedValue(
           derivedPropertyExpressionState.queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
