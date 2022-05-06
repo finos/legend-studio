@@ -26,7 +26,6 @@ import type {
 } from './action/generation/ImportConfigurationDescription';
 import type { FileGenerationSpecification } from '../models/metamodels/pure/packageableElements/fileGeneration/FileGenerationSpecification';
 import type { GenerationOutput } from './action/generation/GenerationOutput';
-import type { ServiceTestResult } from './action/service/ServiceTestResult';
 import type { PackageableElement } from '../models/metamodels/pure/packageableElements/PackageableElement';
 import type { PureModel, CoreModel, SystemModel } from '../graph/PureModel';
 import type { Mapping } from '../models/metamodels/pure/packageableElements/mapping/Mapping';
@@ -62,6 +61,9 @@ import type { ExternalFormatDescription } from './action/externalFormat/External
 import type { ConfigurationProperty } from '../models/metamodels/pure/packageableElements/fileGeneration/ConfigurationProperty';
 import type { GraphBuilderReport } from './GraphBuilderReport';
 import type { ModelGenerationConfiguration } from '../models/ModelGenerationConfiguration';
+import type { DEPRECATED__ServiceTestResult } from './action/service/DEPRECATED__ServiceTestResult';
+import type { RunTestsTestableInput } from '../models/metamodels/pure/test/result/RunTestsTestableInput';
+import type { TestResult } from '../models/metamodels/pure/test/result/TestResult';
 
 export interface TEMPORARY__EngineSetupConfig {
   env: string;
@@ -209,6 +211,12 @@ export abstract class AbstractPureGraphManager {
     options?: { keepSourceInformation?: boolean },
   ): Promise<string>;
 
+  // ------------------------------------------- Test  -------------------------------------------
+  abstract runTests(
+    graph: PureModel,
+    testableInputs: RunTestsTestableInput[],
+  ): Promise<TestResult[]>;
+
   // ------------------------------------------- ValueSpecification  -------------------------------------------
 
   abstract buildValueSpecification(
@@ -333,14 +341,18 @@ export abstract class AbstractPureGraphManager {
     executionMode: ServiceExecutionMode,
     version: string | undefined,
   ): Promise<ServiceRegistrationResult>;
-  abstract runServiceTests(
-    service: Service,
-    graph: PureModel,
-  ): Promise<ServiceTestResult[]>;
   abstract activateService(
     serviceUrl: string,
     serviceId: string,
   ): Promise<void>;
+
+  /**
+   * @deprecated
+   */
+  abstract runLegacyServiceTests(
+    service: Service,
+    graph: PureModel,
+  ): Promise<DEPRECATED__ServiceTestResult[]>;
 
   // ------------------------------------------- Query -------------------------------------------
 

@@ -16,14 +16,36 @@
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
-import { TestResult } from './TestResult';
+import type {
+  RelationalDataTableColumn,
+  RelationalDataTableRow,
+} from '../../data/RelationalData';
+import { type TestAssertionVisitor, TestAssertion } from './TestAssertion';
 
-export class TestPassed extends TestResult implements Hashable {
-  override get hashCode(): string {
+export class RelationalTDS implements Hashable {
+  columns: RelationalDataTableColumn[] = [];
+  rows: RelationalDataTableRow[] = [];
+  get hashCode(): string {
     return hashArray([
-      CORE_HASH_STRUCTURE.TEST_PASSED,
-      this.testable,
-      this.atomicTestId,
+      CORE_HASH_STRUCTURE.RELATIONAL_TDS,
+      hashArray(this.columns),
+      hashArray(this.rows),
     ]);
+  }
+}
+
+export class EqualToTDS extends TestAssertion {
+  expected!: RelationalTDS;
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.EQUAL_TO_TDS,
+      this.id,
+      this.expected,
+    ]);
+  }
+
+  accept_TestAssertionVisitor<T>(visitor: TestAssertionVisitor<T>): T {
+    return visitor.visit_EqualToTDS(this);
   }
 }

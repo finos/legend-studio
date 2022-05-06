@@ -65,6 +65,7 @@ import {
   getOrCreatePackage,
 } from '../helpers/DomainHelper';
 import { DataElement } from '../models/metamodels/pure/packageableElements/data/DataElement';
+import type { Testable } from '../models/metamodels/pure/test/Testable';
 
 const FORBIDDEN_EXTENSION_ELEMENT_CLASS = new Set([
   PackageableElement,
@@ -205,6 +206,14 @@ export abstract class BasicModel {
   }
   get ownGenerationSpecifications(): GenerationSpecification[] {
     return Array.from(this.generationSpecificationsIndex.values());
+  }
+
+  get ownTestables(): Testable[] {
+    return [
+      ...this.ownServices,
+      // TODO: add mappings once supported in the backend
+      // ...this.ownMappings,
+    ];
   }
 
   getExtensionElements<T extends PackageableElement>(

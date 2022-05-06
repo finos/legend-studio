@@ -52,7 +52,6 @@ import type { TestData } from '../../../models/metamodels/pure/packageableElemen
 import {
   observe_AtomicTest,
   observe_TestAssertion,
-  observe_TestSuite,
 } from './Test_ObserverHelper';
 
 export const observe_ConnectionTestData = skipObservedWithContext(
@@ -296,10 +295,7 @@ export const observe_Service = skipObservedWithContext(
     if (metamodel.test) {
       observe_ServiceTest_Legacy(metamodel.test);
     }
-    metamodel.tests.forEach((testSuite) =>
-      observe_TestSuite(testSuite, context),
-    );
-
+    metamodel.tests.forEach((m) => observe_ServiceTestSuite(m, context));
     return metamodel;
   },
 );

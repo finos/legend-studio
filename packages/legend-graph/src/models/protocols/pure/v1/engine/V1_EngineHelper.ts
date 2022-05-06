@@ -28,8 +28,8 @@ import {
 import { type V1_LightQuery, V1_Query } from './query/V1_Query';
 import type { PureModel } from '../../../../../graph/PureModel';
 import { PackageableElementExplicitReference } from '../../../../metamodels/pure/packageableElements/PackageableElementReference';
-import { ServiceTestResult } from '../../../../../graphManager/action/service/ServiceTestResult';
-import type { V1_ServiceTestResult } from './service/V1_ServiceTestResult';
+import { DEPRECATED__ServiceTestResult } from '../../../../../graphManager/action/service/DEPRECATED__ServiceTestResult';
+import type { V1_DEPRECATED__ServiceTestResult } from './service/V1_DEPRECATED__ServiceTestResult';
 import type { V1_ServiceRegistrationResult } from './service/V1_ServiceRegistrationResult';
 import { ServiceRegistrationResult } from '../../../../../graphManager/action/service/ServiceRegistrationResult';
 import {
@@ -247,10 +247,10 @@ export const V1_transformQuerySearchSpecification = (
   return protocol;
 };
 
-export const V1_buildServiceTestResult = (
-  protocol: V1_ServiceTestResult,
-): ServiceTestResult => {
-  const metamodel = new ServiceTestResult();
+export const V1_buildLegacyServiceTestResult = (
+  protocol: V1_DEPRECATED__ServiceTestResult,
+): DEPRECATED__ServiceTestResult => {
+  const metamodel = new DEPRECATED__ServiceTestResult();
   metamodel.name = guaranteeNonNullable(
     protocol.name,
     `Service test result 'name' field is missing`,

@@ -38,6 +38,7 @@ import {
   StopWatch,
   assertNonEmptyString,
   filterByType,
+  isNonNullable,
 } from '@finos/legend-shared';
 import type { TEMPORARY__AbstractEngineConfig } from '../../../../graphManager/action/TEMPORARY__AbstractEngineConfig';
 import {
@@ -66,13 +67,12 @@ import type { DependencyManager } from '../../../../graph/DependencyManager';
 import type { Class } from '../../../metamodels/pure/packageableElements/domain/Class';
 import { RawLambda } from '../../../metamodels/pure/rawValueSpecification/RawLambda';
 import type { RawValueSpecification } from '../../../metamodels/pure/rawValueSpecification/RawValueSpecification';
-import type { Service } from '../../../metamodels/pure/packageableElements/service/Service';
 import type { FileGenerationSpecification } from '../../../metamodels/pure/packageableElements/fileGeneration/FileGenerationSpecification';
 import type {
   GenerationConfigurationDescription,
   GenerationMode,
 } from '../../../../graphManager/action/generation/GenerationConfigurationDescription';
-import type { ServiceTestResult } from '../../../../graphManager/action/service/ServiceTestResult';
+import type { DEPRECATED__ServiceTestResult } from '../../../../graphManager/action/service/DEPRECATED__ServiceTestResult';
 import type { ServiceRegistrationResult } from '../../../../graphManager/action/service/ServiceRegistrationResult';
 import type { ExecutionResult } from '../../../../graphManager/action/execution/ExecutionResult';
 import type { GenerationOutput } from '../../../../graphManager/action/generation/GenerationOutput';
@@ -201,7 +201,7 @@ import type {
 } from '../../../../graphManager/action/query/Query';
 import {
   V1_buildQuery,
-  V1_buildServiceTestResult,
+  V1_buildLegacyServiceTestResult,
   V1_buildServiceRegistrationResult,
   V1_transformQuery,
   V1_buildGenerationOutput,
@@ -239,6 +239,16 @@ import type { ModelGenerationConfiguration } from '../../../ModelGenerationConfi
 import type { MappingGeneration_PureProtocolProcessorPlugin_Extension } from '../MappingGeneration_PureProtocolProcessorPlugin_Extension';
 import type { Package } from '../../../metamodels/pure/packageableElements/domain/Package';
 import { V1_DataElement } from './model/packageableElements/data/V1_DataElement';
+import {
+  V1_RunTestsInput,
+  V1_RunTestsTestableInput,
+} from './engine/test/V1_RunTestsInput';
+import { V1_AtomicTestId } from './model/test/V1_AtomicTestId';
+import type { RunTestsTestableInput } from '../../../metamodels/pure/test/result/RunTestsTestableInput';
+import { V1_buildTestsResult } from './engine/test/V1_RunTestsResult';
+import type { TestResult } from '../../../metamodels/pure/test/result/TestResult';
+import type { Service } from '../../../../DSLService_Exports';
+import { getNullableIdFromTestable } from '../../../metamodels/pure/test/Testable';
 
 const V1_FUNCTION_SUFFIX_MULTIPLICITY_INFINITE = 'MANY';
 
@@ -1612,6 +1622,35 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     return this.pureModelContextDataToEntities(generatedModel);
   }
 
+  // ------------------------------------------- Test  -------------------------------------------
+  async runTests(
+    graph: PureModel,
+    testableInputs: RunTestsTestableInput[],
+  ): Promise<TestResult[]> {
+    const runTestsInput = new V1_RunTestsInput();
+    runTestsInput.model = this.getFullGraphModelData(graph);
+    runTestsInput.testables = testableInputs
+      .map((input) => {
+        const testable = getNullableIdFromTestable(input.testable, graph);
+        if (!testable) {
+          return undefined;
+        }
+        const runTestableInput = new V1_RunTestsTestableInput();
+        runTestableInput.testable = testable;
+        runTestableInput.unitTestIds = input.unitTestIds.map((unit) => {
+          const unitAtomicTest = new V1_AtomicTestId();
+          unitAtomicTest.testSuiteId = unit.parentSuite?.id;
+          unitAtomicTest.atomicTestId = unit.atomicTest.id;
+          return unitAtomicTest;
+        });
+        return runTestableInput;
+      })
+      .filter(isNonNullable);
+    const runTestsResult = await this.engine.runTests(runTestsInput);
+    const result = V1_buildTestsResult(runTestsResult, graph);
+    return result;
+  }
+
   // ------------------------------------------- ValueSpecification -------------------------------------------
 
   buildValueSpecification(
@@ -1951,10 +1990,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   // --------------------------------------------- Service ---------------------------------------------
 
-  async runServiceTests(
+  async runLegacyServiceTests(
     service: Service,
     graph: PureModel,
-  ): Promise<ServiceTestResult[]> {
+  ): Promise<DEPRECATED__ServiceTestResult[]> {
     const protocolGraph = this.getFullGraphModelData(graph);
     const targetService = guaranteeNonNullable(
       protocolGraph.elements
@@ -1966,8 +2005,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       (element) => !(element instanceof V1_Service),
     );
     protocolGraph.elements.push(targetService);
-    return (await this.engine.runServiceTests(protocolGraph)).map(
-      V1_buildServiceTestResult,
+    return (await this.engine.runLegacyServiceTests(protocolGraph)).map(
+      V1_buildLegacyServiceTestResult,
     );
   }
 

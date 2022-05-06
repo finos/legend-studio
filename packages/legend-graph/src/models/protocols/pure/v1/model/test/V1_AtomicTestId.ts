@@ -14,18 +14,7 @@
  * limitations under the License.
  */
 
-import { hashArray, type Hashable } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../MetaModelConst';
-
-export class V1_AtomicTestId implements Hashable {
-  testSuiteId!: string;
+export class V1_AtomicTestId {
+  testSuiteId: string | undefined;
   atomicTestId!: string;
-
-  get hashCode(): string {
-    return hashArray([
-      CORE_HASH_STRUCTURE.ATOMIC_TEST_ID,
-      this.testSuiteId,
-      this.atomicTestId,
-    ]);
-  }
 }

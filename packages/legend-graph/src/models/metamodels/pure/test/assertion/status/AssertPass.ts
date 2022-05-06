@@ -14,12 +14,6 @@
  * limitations under the License.
  */
 
-import { hashArray, type Hashable } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../MetaModelConst';
 import { AssertionStatus } from './AssertionStatus';
 
-export class AssertPass extends AssertionStatus implements Hashable {
-  get hashCode(): string {
-    return hashArray([CORE_HASH_STRUCTURE.ASSERT_PASS, this.id]);
-  }
-}
+export class AssertPass extends AssertionStatus {}

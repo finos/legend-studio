@@ -14,20 +14,14 @@
  * limitations under the License.
  */
 
-import { hashArray, type Hashable } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
-import type { AssertionStatus } from '../assertion/status/AssertionStatus';
-import { TestResult } from './TestResult';
+import type { Testable } from '../Testable';
+import type { AtomicTestId } from './AtomicTestId';
 
-export class TestFailed extends TestResult implements Hashable {
-  assertStatuses: AssertionStatus[] = [];
+export class RunTestsTestableInput {
+  testable: Testable;
+  unitTestIds: AtomicTestId[] = [];
 
-  override get hashCode(): string {
-    return hashArray([
-      CORE_HASH_STRUCTURE.TEST_FAILED,
-      this.testable,
-      this.atomicTestId,
-      hashArray(this.assertStatuses),
-    ]);
+  constructor(testable: Testable) {
+    this.testable = testable;
   }
 }

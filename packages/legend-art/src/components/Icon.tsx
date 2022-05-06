@@ -129,6 +129,7 @@ export {
   MdEdit as EditIcon, // to be reviewed
   MdSubject as SubjectIcon,
   MdViewHeadline as ViewHeadlineIcon,
+  MdWarning as WarningIcon,
 } from 'react-icons/md';
 export {
   VscError as ErrorIcon,

@@ -25,7 +25,7 @@ import {
 import type { ImportMode } from '../../../../../graphManager/action/generation/ImportConfigurationDescription';
 import type { V1_PureModelContextData } from '../model/context/V1_PureModelContextData';
 import type { V1_LambdaReturnTypeResult } from './compilation/V1_LambdaReturnTypeResult';
-import type { V1_ServiceTestResult } from './service/V1_ServiceTestResult';
+import type { V1_DEPRECATED__ServiceTestResult } from './service/V1_DEPRECATED__ServiceTestResult';
 import type { V1_ServiceRegistrationResult } from './service/V1_ServiceRegistrationResult';
 import type { V1_ServiceConfigurationInfo } from './service/V1_ServiceConfiguration';
 import type { V1_CompileResult } from './compilation/V1_CompileResult';
@@ -50,6 +50,8 @@ import type { V1_QuerySearchSpecification } from './query/V1_QuerySearchSpecific
 import type { EXECUTION_SERIALIZATION_FORMAT } from '../../../../../graphManager/action/execution/ExecutionResult';
 import type { V1_ExternalFormatDescription } from './externalFormat/V1_ExternalFormatDescription';
 import type { V1_ExternalFormatModelGenerationInput } from './externalFormat/V1_ExternalFormatModelGeneration';
+import type { V1_RunTestsInput } from './test/V1_RunTestsInput';
+import type { V1_TestResult } from '../model/test/result/V1_TestResult';
 
 enum CORE_ENGINE_TRACER_SPAN {
   GRAMMAR_TO_JSON = 'transform Pure code to protocol',
@@ -70,6 +72,8 @@ enum CORE_ENGINE_TRACER_SPAN {
   ACTIVATE_SERVICE_GENERATION_ID = 'activate service generation id',
   RUN_SERVICE_TESTS = 'run service tests',
   GENERATE_TEST_DATA_WITH_DEFAULT_SEED = 'generate test data with default seed',
+
+  RUN_TESTS = 'run testable tests',
 
   CREATE_QUERY = 'create query',
   UPDATE_QUERY = 'update query',
@@ -180,6 +184,20 @@ export class V1_EngineServerClient extends AbstractServerClient {
     this.postWithTracing(
       this.getTraceData(CORE_ENGINE_TRACER_SPAN.JSON_TO_GRAMMAR),
       `${this._pure()}/grammar/transformRelationalOperationElementJsonToGrammar`,
+      input,
+      {},
+      undefined,
+      undefined,
+      { enableCompression: true },
+    );
+
+  // ------------------------------------------- Test ---------------------------------------
+  runTests = (
+    input: PlainObject<V1_RunTestsInput>,
+  ): Promise<PlainObject<V1_TestResult[]>> =>
+    this.postWithTracing(
+      this.getTraceData(CORE_ENGINE_TRACER_SPAN.RUN_TESTS),
+      `${this._pure()}/testable/runTests`,
       input,
       {},
       undefined,
@@ -415,7 +433,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
     );
   runServiceTests = (
     model: PlainObject<V1_PureModelContextData>,
-  ): Promise<PlainObject<V1_ServiceTestResult>[]> =>
+  ): Promise<PlainObject<V1_DEPRECATED__ServiceTestResult>[]> =>
     this.postWithTracing(
       this.getTraceData(CORE_ENGINE_TRACER_SPAN.RUN_SERVICE_TESTS),
       `${this._service()}/doTest`,

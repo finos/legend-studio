@@ -13,17 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import type { Testable } from '../models/metamodels/pure/test/Testable';
+import type { PureModel } from './PureModel';
 
-import { hashArray, type Hashable } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
-import { V1_TestResult } from './V1_TestResult';
-
-export class V1_TestPassed extends V1_TestResult implements Hashable {
-  override get hashCode(): string {
-    return hashArray([
-      CORE_HASH_STRUCTURE.TEST_PASSED,
-      this.testable,
-      this.atomicTestId,
-    ]);
-  }
-}
+export type TestableExtension = {
+  getExtraTestables?: (graph: PureModel) => Testable[];
+  getIdFromTestable?: (
+    testable: Testable,
+    graph: PureModel,
+  ) => string | undefined;
+  getTestableFromId?: (id: string, graph: PureModel) => Testable | undefined;
+};

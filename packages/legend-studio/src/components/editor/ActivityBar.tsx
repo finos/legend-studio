@@ -34,6 +34,7 @@ import {
   CodeBranchIcon,
   EmptyClockIcon,
   WrenchIcon,
+  FlaskIcon,
 } from '@finos/legend-art';
 import { useEditorStore } from './EditorStoreProvider';
 import { forwardRef } from 'react';
@@ -244,6 +245,11 @@ export const ActivityBar = observer(() => {
       mode: ACTIVITY_MODE.WORKFLOW_MANAGER,
       title: 'Workflow Manager',
       icon: <WrenchIcon />,
+    },
+    !editorStore.isInConflictResolutionMode && {
+      mode: ACTIVITY_MODE.TEST,
+      title: 'Test Manager',
+      icon: <FlaskIcon />,
     },
   ].filter((activity): activity is ActivityDisplay => Boolean(activity));
 

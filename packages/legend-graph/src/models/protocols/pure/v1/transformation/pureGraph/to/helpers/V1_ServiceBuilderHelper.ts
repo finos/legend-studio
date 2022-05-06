@@ -81,6 +81,7 @@ import {
   V1_DEPRECATED__SingleExecutionTest,
   V1_DEPRECATED__MultiExecutionTest,
 } from '../../../../model/packageableElements/service/V1_DEPRECATED__ServiceTest';
+import type { TestSuite } from '../../../../../../../metamodels/pure/test/Test';
 
 const buildConnectionTestData = (
   element: V1_ConnectionTestData,
@@ -115,15 +116,17 @@ const buildTestData = (
 
 export const V1_buildServiceTest = (
   element: V1_ServiceTest,
+  parentSuite: TestSuite | undefined,
   context: V1_GraphBuilderContext,
 ): ServiceTest => {
   const serviceTest = new ServiceTest();
   serviceTest.id = element.id;
+  serviceTest.parentSuite = parentSuite;
   serviceTest.parameters = element.parameters.map((parameter) =>
     buildParameterValue(parameter),
   );
   serviceTest.assertions = element.assertions.map((assertion) =>
-    V1_buildTestAssertion(assertion, context),
+    V1_buildTestAssertion(assertion, serviceTest, context),
   );
   return serviceTest;
 };
@@ -136,7 +139,7 @@ export const V1_buildServiceTestSuite = (
   serviceTestSuite.id = element.id;
   serviceTestSuite.testData = buildTestData(element.testData, context);
   serviceTestSuite.tests = element.tests.map((test) =>
-    V1_buildAtomicTest(test, context),
+    V1_buildAtomicTest(test, serviceTestSuite, context),
   );
   return serviceTestSuite;
 };

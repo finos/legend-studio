@@ -218,7 +218,7 @@ export * from './graphManager/action/generation/GenerationConfigurationDescripti
 export { GenerationOutput } from './graphManager/action/generation/GenerationOutput';
 export { ServiceExecutionMode } from './graphManager/action/service/ServiceExecutionMode';
 export { ServiceRegistrationResult } from './graphManager/action/service/ServiceRegistrationResult';
-export { ServiceTestResult } from './graphManager/action/service/ServiceTestResult';
+export { DEPRECATED__ServiceTestResult } from './graphManager/action/service/DEPRECATED__ServiceTestResult';
 export { SourceInformation } from './graphManager/action/SourceInformation';
 
 export { getGraphManager } from './models/protocols/pure/Pure';
@@ -280,6 +280,19 @@ export * from './models/protocols/pure/v1/transformation/pureProtocol/serializat
 export * from './models/protocols/pure/v1/transformation/pureGraph/to/V1_DSLExternalFormat_GraphBuilderHelper';
 export * from './models/ModelGenerationConfiguration';
 export * from './models/protocols/pure/MappingGeneration_PureProtocolProcessorPlugin_Extension';
+
+// --------------------------------------------- TESTING --------------------------------------------------
+
+export * from './models/metamodels/pure/test/Testable';
+export * from './models/metamodels/pure/test/result/RunTestsTestableInput';
+export * from './models/metamodels/pure/test/result/TestResult';
+export * from './models/metamodels/pure/test/assertion/status/AssertionStatus';
+export * from './models/metamodels/pure/test/assertion/status/AssertFail';
+export * from './models/metamodels/pure/test/assertion/status/AssertPass';
+export * from './models/metamodels/pure/test/assertion/status/EqualToJsonAssertFail';
+export * from './models/metamodels/pure/test/assertion/TestAssertion';
+export * from './models/metamodels/pure/test/Test';
+export * from './models/metamodels/pure/test/result/AtomicTestId';
 
 // --------------------------------------------- OBSERVER --------------------------------------------------
 

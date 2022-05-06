@@ -51,7 +51,7 @@ import {
   V1_serializePureModelContext,
   V1_serializePureModelContextData,
 } from '../transformation/pureProtocol/V1_PureProtocolSerialization';
-import { V1_ServiceTestResult } from '../engine/service/V1_ServiceTestResult';
+import { V1_DEPRECATED__ServiceTestResult } from './service/V1_DEPRECATED__ServiceTestResult';
 import { V1_serializeRawValueSpecification } from '../transformation/pureProtocol/serializationHelpers/V1_RawValueSpecificationSerializationHelper';
 import { V1_transformRawLambda } from '../transformation/pureGraph/from/V1_RawValueSpecificationTransformer';
 import { V1_GenerateFileInput } from '../engine/generation/V1_FileGenerationInput';
@@ -99,6 +99,8 @@ import type { ExternalFormatDescription } from '../../../../../graphManager/acti
 import { V1_ExternalFormatDescription } from './externalFormat/V1_ExternalFormatDescription';
 import { V1_ExternalFormatModelGenerationInput } from './externalFormat/V1_ExternalFormatModelGeneration';
 import { GRAPH_MANAGER_EVENT } from '../../../../../graphManager/GraphManagerEvent';
+import { V1_RunTestsInput } from './test/V1_RunTestsInput';
+import { V1_RunTestsResult } from './test/V1_RunTestsResult';
 
 class V1_EngineConfig extends TEMPORARY__AbstractEngineConfig {
   private engine: V1_Engine;
@@ -467,6 +469,15 @@ export class V1_Engine {
     );
   }
 
+  // --------------------------------------------- Test ---------------------------------------------
+
+  async runTests(input: V1_RunTestsInput): Promise<V1_RunTestsResult> {
+    const result = (await this.engineServerClient.runTests(
+      V1_RunTestsInput.serialization.toJson(input),
+    )) as unknown as PlainObject<V1_RunTestsResult>;
+    return V1_RunTestsResult.serialization.fromJson(result);
+  }
+
   // ------------------------------------------- File Generation -------------------------------------------
 
   async getAvailableGenerationConfigurationDescriptions(): Promise<
@@ -585,14 +596,14 @@ export class V1_Engine {
     return (await this.engineServerClient.getServerServiceInfo()) as unknown as V1_ServiceConfigurationInfo;
   }
 
-  async runServiceTests(
+  async runLegacyServiceTests(
     model: V1_PureModelContextData,
-  ): Promise<V1_ServiceTestResult[]> {
+  ): Promise<V1_DEPRECATED__ServiceTestResult[]> {
     return (
       await this.engineServerClient.runServiceTests(
         V1_serializePureModelContextData(model),
       )
-    ).map((v) => V1_ServiceTestResult.serialization.fromJson(v));
+    ).map((v) => V1_DEPRECATED__ServiceTestResult.serialization.fromJson(v));
   }
 
   async registerService(
