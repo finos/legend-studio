@@ -761,6 +761,16 @@
       height: 2rem;
       width: 2rem;
     }
+
+    &__reset-btn {
+      @include flexVCenter;
+
+      height: 2rem;
+      width: 2rem;
+      font-size: 2rem;
+      color: var(--color-light-grey-300);
+      font-weight: 700;
+    }
   }
 
   &__input {

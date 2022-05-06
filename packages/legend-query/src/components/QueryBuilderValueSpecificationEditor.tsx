@@ -132,7 +132,7 @@ const VariableExpressionParameterEditor = observer(
     className?: string | undefined;
     resetValue: () => void;
   }) => {
-    const { valueSpecification, className } = props;
+    const { valueSpecification, className, resetValue } = props;
     const varName = valueSpecification.name;
     return (
       <div
@@ -153,6 +153,13 @@ const VariableExpressionParameterEditor = observer(
               <InfoCircleIcon />
             </div>
           </QueryBuilderParameterInfoTooltip>
+          <button
+            className="query-builder-value-spec-editor__parameter__reset-btn"
+            title="Reset"
+            onClick={resetValue}
+          >
+            <RefreshIcon />
+          </button>
         </div>
       </div>
     );
