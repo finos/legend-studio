@@ -46,10 +46,10 @@
     "@finos/legend-model-storage": "workspace:*",
     "@finos/legend-shared": "workspace:*",
     "@finos/legend-studio": "workspace:*",
-    "@types/react": "17.0.44",
+    "@types/react": "18.0.8",
     "mobx": "6.5.0",
     "mobx-react-lite": "3.4.0",
-    "react": "17.0.2",
+    "react": "18.1.0",
     "serializr": "2.0.5"
   },
   "devDependencies": {
@@ -63,7 +63,7 @@
     "typescript": "4.6.4"
   },
   "peerDependencies": {
-    "react": "^17.0.0"
+    "react": "^18.0.0"
   },
   "publishConfig": {
     "directory": "build/publishContent"

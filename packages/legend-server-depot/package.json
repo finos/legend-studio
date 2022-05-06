@@ -41,7 +41,7 @@
     "@finos/legend-shared": "workspace:*",
     "mobx": "6.5.0",
     "mobx-react-lite": "3.4.0",
-    "react": "17.0.2",
+    "react": "18.1.0",
     "serializr": "2.0.5"
   },
   "devDependencies": {

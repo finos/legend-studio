@@ -14,7 +14,16 @@
  * limitations under the License.
  */
 
-export const getBaseConfig = ({ babelConfigPath }) => ({
+export const getBaseConfig = ({
+  /**
+   * Absolute path to the Babel config file
+   */
+  babelConfigPath,
+  /**
+   * ESM packages that need transformation to work with Jest
+   */
+  TEMPORARY__esmPackagesToTransform,
+}) => ({
   transform: {
     // Since `babel-jest` will not do type checking for the test code.
     // We need to manually run `tsc`. Another option is to use `jest-runner-tsc`
@@ -28,9 +37,19 @@ export const getBaseConfig = ({ babelConfigPath }) => ({
     ],
   },
   transformIgnorePatterns: [
-    // Since we already transpiled our project code, we don't need `Jest` to transform/transpile them again
+    // Since we're using ESM in our project code, we need `Jest `to transform them
+    // since files coming from `/node_modules/` are skipped by default
+    // So having more items un-ignored will make tests run slower
+    // See https://github.com/finos/legend-studio/issues/502
+    //
+    // NOTE: Providing regexp patterns that overlap with each other may result in files
+    // not being transformed that you expected to be transformed
     // See https://jestjs.io/docs/configuration#transformignorepatterns-arraystring
-    '/node_modules/(?!(@finos/legend))',
+    `/node_modules/(?!(@finos/legend)${
+      TEMPORARY__esmPackagesToTransform.length
+        ? `|${TEMPORARY__esmPackagesToTransform.join('|')}`
+        : ''
+    })`,
   ],
   // Setup to run immediately after the test framework has been installed in the environment
   // before each test file in the suite is executed

@@ -52,11 +52,11 @@
     "@finos/legend-server-depot": "workspace:*",
     "@finos/legend-shared": "workspace:*",
     "@finos/legend-studio": "workspace:*",
-    "@types/react": "17.0.44",
+    "@types/react": "18.0.8",
     "mobx": "6.5.0",
     "mobx-react-lite": "3.4.0",
-    "react": "17.0.2",
-    "react-dom": "17.0.2",
+    "react": "18.1.0",
+    "react-dom": "18.1.0",
     "react-resize-detector": "7.0.0",
     "serializr": "2.0.5"
   },
@@ -71,7 +71,7 @@
     "typescript": "4.6.4"
   },
   "peerDependencies": {
-    "react": "^17.0.0"
+    "react": "^18.0.0"
   },
   "publishConfig": {
     "directory": "build/publishContent"

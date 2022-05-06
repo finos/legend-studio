@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { createRoot } from 'react-dom/client';
 import {
   type LegendApplicationConfig,
   type LegendApplicationVersionData,
@@ -25,7 +26,6 @@ import {
 import { configure as configureReactHotkeys } from 'react-hotkeys';
 import { ModuleRegistry as agGrid_ModuleRegistry } from '@ag-grid-community/core';
 import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
-import ReactDOM from 'react-dom';
 import { BrowserRouter } from 'react-router-dom';
 import { LegendQueryApplication } from '../components/LegendQueryApplication';
 import { LegendQueryPluginManager } from './LegendQueryPluginManager';
@@ -74,7 +74,8 @@ export class LegendQuery extends LegendApplication {
     await setupLegendQueryUILibrary();
 
     // Render React application
-    ReactDOM.render(
+    const rootElement = createRoot(getRootElement());
+    rootElement.render(
       <BrowserRouter basename={this.baseUrl}>
         <WebApplicationNavigatorProvider>
           <ApplicationStoreProvider
@@ -88,7 +89,6 @@ export class LegendQuery extends LegendApplication {
           </ApplicationStoreProvider>
         </WebApplicationNavigatorProvider>
       </BrowserRouter>,
-      getRootElement(),
     );
   }
 }

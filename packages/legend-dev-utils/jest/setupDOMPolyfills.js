@@ -15,6 +15,9 @@
  */
 
 import { ResizeObserver } from '@juggle/resize-observer';
+import { TextEncoder, TextDecoder } from 'util';
 
 // Polyfills
 window.ResizeObserver = ResizeObserver;
+window.TextEncoder = TextEncoder;
+window.TextDecoder = TextDecoder;
