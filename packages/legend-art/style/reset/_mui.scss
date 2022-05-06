@@ -39,6 +39,31 @@
   pointer-events: auto;
 }
 
+.mui-radio-group {
+  padding: 1rem 1.5rem;
+
+  &__group {
+    color: var(--color-light-grey-200);
+    height: 3.6rem;
+
+    &__column {
+      width: 50%;
+      margin-left: 0;
+      margin-right: 0;
+    }
+
+    &__item__radio-btn {
+      color: var(--color-dark-grey-300);
+    }
+
+    &__item__label {
+      margin: 0;
+      font-size: 1.1rem;
+      line-height: 1.5;
+    }
+  }
+}
+
 // override global style
 
 .MuiDialog-root {

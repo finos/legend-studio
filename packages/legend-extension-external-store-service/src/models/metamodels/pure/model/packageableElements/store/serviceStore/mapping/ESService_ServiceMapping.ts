@@ -24,7 +24,12 @@ import type { ServiceRequestBuildInfo } from './ESService_ServiceRequestBuildInf
 export class ServiceMapping implements Hashable {
   owner!: RootServiceInstanceSetImplementation;
   service!: ServiceStoreService;
-  pathOffset?: object | undefined; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
+  /**
+   * Studio does not process value specification, they are left in raw JSON form
+   *
+   * @discrepancy model
+   */
+  pathOffset?: object | undefined;
   requestBuildInfo?: ServiceRequestBuildInfo | undefined;
 
   get hashCode(): string {

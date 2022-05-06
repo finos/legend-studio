@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-studio-extension-management-toolkit",
-  "version": "0.0.46",
+  "version": "1.0.1",
   "description": "Legend Studio extension for management/admin tooling",
   "keywords": [
     "legend",
@@ -22,7 +22,10 @@
   "license": "Apache-2.0",
   "sideEffects": false,
   "type": "module",
-  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./lib/index.css": "./lib/index.css"
+  },
   "module": "lib/index.js",
   "types": "lib/index.d.ts",
   "scripts": {
@@ -47,7 +50,7 @@
     "@finos/legend-server-sdlc": "workspace:*",
     "@finos/legend-shared": "workspace:*",
     "@finos/legend-studio": "workspace:*",
-    "@types/react": "17.0.43",
+    "@types/react": "17.0.44",
     "@types/react-router-dom": "5.3.2",
     "mobx": "6.5.0",
     "mobx-react-lite": "3.3.0",
@@ -57,12 +60,12 @@
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",
     "cross-env": "7.0.3",
-    "eslint": "8.13.0",
-    "jest": "27.5.1",
+    "eslint": "8.14.0",
+    "jest": "28.0.3",
     "npm-run-all": "4.1.5",
     "rimraf": "3.0.2",
-    "sass": "1.50.1",
-    "typescript": "4.6.3"
+    "sass": "1.51.0",
+    "typescript": "4.6.4"
   },
   "peerDependencies": {
     "react": "^17.0.0"

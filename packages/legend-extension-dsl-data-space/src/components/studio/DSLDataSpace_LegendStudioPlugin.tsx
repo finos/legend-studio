@@ -25,6 +25,11 @@ import {
   type ElementEditorStateCreator,
   type EditorStore,
   type ElementEditorState,
+  type PureGrammarParserElementDocumentationGetter,
+  type PureGrammarParserDocumentationGetter,
+  type PureGrammarParserKeywordSuggestionGetter,
+  type PureGrammarTextSuggestion,
+  type PureGrammarParserElementSnippetSuggestionsGetter,
   UnsupportedElementEditorState,
   LegendStudioPlugin,
 } from '@finos/legend-studio';
@@ -35,6 +40,20 @@ import {
   DataSpaceExecutionContext,
 } from '../../models/metamodels/pure/model/packageableElements/dataSpace/DSLDataSpace_DataSpace';
 import { LATEST_VERSION_ALIAS } from '@finos/legend-server-depot';
+import {
+  collectKeyedDocumnetationEntriesFromConfig,
+  type LegendApplicationDocumentationEntry,
+  type LegendApplicationKeyedDocumentationEntry,
+} from '@finos/legend-application';
+import {
+  DSL_DATA_SPACE_DOCUMENTATION_ENTRIES,
+  DSL_DATA_SPACE_LEGEND_STUDIO_DOCUMENTATION_KEY,
+} from './DSLDataSpace_LegendStudioDocumentation';
+import {
+  PURE_GRAMMAR_DATA_SPACE_ELEMENT_TYPE_LABEL,
+  PURE_GRAMMAR_DATA_SPACE_PARSER_NAME,
+} from '../../graphManager/DSLDataSpace_PureGraphManagerPlugin';
+import { SIMPLE_DATA_SPACE_SNIPPET } from './DSLDataSpace_CodeSnippets';
 
 const DATA_SPACE_ELEMENT_TYPE = 'DATA SPACE';
 const DATA_SPACE_ELEMENT_PROJECT_EXPLORER_DND_TYPE =
@@ -46,6 +65,12 @@ export class DSLDataSpace_LegendStudioPlugin
 {
   constructor() {
     super(packageJson.extensions.studioPlugin, packageJson.version);
+  }
+
+  override getExtraKeyedDocumentationEntries(): LegendApplicationKeyedDocumentationEntry[] {
+    return collectKeyedDocumnetationEntriesFromConfig(
+      DSL_DATA_SPACE_DOCUMENTATION_ENTRIES,
+    );
   }
 
   getExtraSupportedElementTypes(): string[] {
@@ -130,7 +155,75 @@ export class DSLDataSpace_LegendStudioPlugin
     ];
   }
 
-  getExtraGrammarTextEditorDnDTypes(): string[] {
+  getExtraPureGrammarTextEditorDnDTypes(): string[] {
     return [DATA_SPACE_ELEMENT_PROJECT_EXPLORER_DND_TYPE];
+  }
+
+  getExtraPureGrammarParserElementDocumentationGetters(): PureGrammarParserElementDocumentationGetter[] {
+    return [
+      (
+        editorStore: EditorStore,
+        parserKeyword: string,
+        elementKeyword: string,
+      ): LegendApplicationDocumentationEntry | undefined => {
+        if (parserKeyword === PURE_GRAMMAR_DATA_SPACE_PARSER_NAME) {
+          if (elementKeyword === PURE_GRAMMAR_DATA_SPACE_ELEMENT_TYPE_LABEL) {
+            return editorStore.applicationStore.docRegistry.getEntry(
+              DSL_DATA_SPACE_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_DATA_SPACE_ELEMENT,
+            );
+          }
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  getExtraPureGrammarParserDocumentationGetters(): PureGrammarParserDocumentationGetter[] {
+    return [
+      (
+        editorStore: EditorStore,
+        parserKeyword: string,
+      ): LegendApplicationDocumentationEntry | undefined => {
+        if (parserKeyword === PURE_GRAMMAR_DATA_SPACE_PARSER_NAME) {
+          return editorStore.applicationStore.docRegistry.getEntry(
+            DSL_DATA_SPACE_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER,
+          );
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  getExtraPureGrammarParserKeywordSuggestionGetters(): PureGrammarParserKeywordSuggestionGetter[] {
+    return [
+      (editorStore: EditorStore): PureGrammarTextSuggestion[] => [
+        {
+          text: PURE_GRAMMAR_DATA_SPACE_PARSER_NAME,
+          description: `(dsl)`,
+          documentation: editorStore.applicationStore.docRegistry.getEntry(
+            DSL_DATA_SPACE_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER,
+          ),
+          insertText: PURE_GRAMMAR_DATA_SPACE_PARSER_NAME,
+        },
+      ],
+    ];
+  }
+
+  getExtraPureGrammarParserElementSnippetSuggestionsGetters(): PureGrammarParserElementSnippetSuggestionsGetter[] {
+    return [
+      (
+        editorStore: EditorStore,
+        parserKeyword: string,
+      ): PureGrammarTextSuggestion[] | undefined =>
+        parserKeyword === PURE_GRAMMAR_DATA_SPACE_PARSER_NAME
+          ? [
+              {
+                text: PURE_GRAMMAR_DATA_SPACE_ELEMENT_TYPE_LABEL,
+                description: 'simple',
+                insertText: SIMPLE_DATA_SPACE_SNIPPET,
+              },
+            ]
+          : undefined,
+    ];
   }
 }

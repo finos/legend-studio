@@ -25,8 +25,8 @@ import {
 import { Diagram } from '../models/metamodels/pure/packageableElements/diagram/DSLDiagram_Diagram';
 import { observe_Diagram } from './action/changeDetection/DSLDiagram_ObserverHelper';
 
-const PURE_GRAMMAR_DIAGRAM_PARSER_NAME = 'Diagram';
-const PURE_GRAMMAR_DIAGRAM_ELEMENT_TYPE_LABEL = 'Diagram';
+export const PURE_GRAMMAR_DIAGRAM_PARSER_NAME = 'Diagram';
+export const PURE_GRAMMAR_DIAGRAM_ELEMENT_TYPE_LABEL = 'Diagram';
 
 export class DSLDiagram_PureGraphManagerPlugin extends PureGraphManagerPlugin {
   constructor() {

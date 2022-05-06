@@ -24,8 +24,8 @@ import type { NewConnectionValueDriver } from './NewElementState';
 import type {
   MappingElement,
   MappingElementSource,
-} from './editor-state/element-editor-state/mapping/MappingEditorState';
-import type { MappingElementState } from './editor-state/element-editor-state/mapping/MappingElementState';
+} from '../stores/editor-state/element-editor-state/mapping/MappingEditorState';
+import type { MappingElementState } from '../stores/editor-state/element-editor-state/mapping/MappingElementState';
 
 export type SetImplementationDecorator = (
   setImplementation: SetImplementation,

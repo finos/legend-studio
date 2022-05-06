@@ -81,7 +81,8 @@ import { V1_HackedUnit } from '../../../model/valueSpecification/raw/V1_HackedUn
 import { V1_HackedClass } from '../../../model/valueSpecification/raw/V1_HackedClass';
 import type { PackageableElement } from '../../../../../../metamodels/pure/packageableElements/PackageableElement';
 import type { INTERNAL__UnknownValueSpecification } from '../../../../../../metamodels/pure/valueSpecification/INTERNAL__UnknownValueSpecification';
-import { V1_INTERNAL__UnknownValueSpecfication } from '../../../model/valueSpecification/V1_INTERNAL__UnknownValueSpecfication';
+import { V1_INTERNAL__UnknownValueSpecification } from '../../../model/valueSpecification/V1_INTERNAL__UnknownValueSpecfication';
+import type { INTERNAL__PropagatedValue } from '../../../../../../metamodels/pure/valueSpecification/INTERNAL__PropagatedValue';
 
 class V1_ValueSpecificationTransformer
   implements ValueSpecificationVisitor<V1_ValueSpecification>
@@ -106,7 +107,7 @@ class V1_ValueSpecificationTransformer
   visit_INTERNAL__UnknownValueSpecification(
     valueSpecification: INTERNAL__UnknownValueSpecification,
   ): V1_ValueSpecification {
-    const protocol = new V1_INTERNAL__UnknownValueSpecfication();
+    const protocol = new V1_INTERNAL__UnknownValueSpecification();
     protocol.content = valueSpecification.content;
     return protocol;
   }
@@ -384,6 +385,12 @@ class V1_ValueSpecificationTransformer
       ),
     );
     return _property;
+  }
+
+  visit_INTERNAL__PropagatedValue(
+    valueSpecification: INTERNAL__PropagatedValue,
+  ): V1_ValueSpecification {
+    throw new UnsupportedOperationError();
   }
 }
 

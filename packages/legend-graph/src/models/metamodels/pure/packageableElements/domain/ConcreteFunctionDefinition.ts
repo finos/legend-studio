@@ -33,8 +33,18 @@ export class ConcreteFunctionDefinition
 {
   returnType: PackageableElementReference<Type>;
   returnMultiplicity: Multiplicity;
-  parameters: RawVariableExpression[] = []; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
-  body: object[] = []; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
+  /**
+   * Studio does not process value specification, they are left in raw JSON form
+   *
+   * @discrepancy model
+   */
+  parameters: RawVariableExpression[] = [];
+  /**
+   * Studio does not process value specification, they are left in raw JSON form
+   *
+   * @discrepancy model
+   */
+  body: object[] = [];
   stereotypes: StereotypeReference[] = [];
   taggedValues: TaggedValue[] = [];
 

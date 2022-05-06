@@ -128,7 +128,7 @@ export class ProjectConfigurationEditorState extends EditorState {
       (
         (yield this.editorStore.depotServerClient.getProjects()) as PlainObject<ProjectData>[]
       )
-        .map(ProjectData.serialization.fromJson)
+        .map((v) => ProjectData.serialization.fromJson(v))
         // filter out non versioned projects
         .filter((p) => Boolean(p.versions.length))
         .forEach((project) => this.projects.set(project.coordinates, project));
@@ -231,6 +231,11 @@ export class ProjectConfigurationEditorState extends EditorState {
   // See https://github.com/finos/legend-studio/issues/952
   *updateConfigs(): GeneratorFn<void> {
     this.isUpdatingConfiguration = true;
+    this.editorStore.setBlockingAlert({
+      message: `Updating project configuration...`,
+      prompt: `Please do not reload the application`,
+      showLoading: true,
+    });
     try {
       const updateProjectConfigurationCommand =
         new UpdateProjectConfigurationCommand(
@@ -265,6 +270,7 @@ export class ProjectConfigurationEditorState extends EditorState {
       this.editorStore.applicationStore.notifyError(error);
     } finally {
       this.isUpdatingConfiguration = false;
+      this.editorStore.setBlockingAlert(undefined);
     }
   }
 

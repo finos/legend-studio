@@ -1,5 +1,15 @@
 # @finos/legend-art
 
+## 1.0.0
+
+### Major Changes
+
+- [#1113](https://github.com/finos/legend-studio/pull/1113) [`e35042ba`](https://github.com/finos/legend-studio/commit/e35042bacf7999e8a5d9836fa6b31cf89cc66237) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Adopt `ESM` styled exports: i.e. we now make use of `exports` field (and removed `main` field) in `package.json`.
+
+### Minor Changes
+
+- [#1131](https://github.com/finos/legend-studio/pull/1131) [`d194cce7`](https://github.com/finos/legend-studio/commit/d194cce765ebc68d5494a9a645431a37bb88725e) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Introduced `radio group` component.
+
 ## 0.3.18
 
 ## 0.3.17

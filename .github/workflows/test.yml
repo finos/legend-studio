@@ -79,7 +79,7 @@ jobs:
         run: yarn
       - name: Test
         # TODO: we should consider building only relevant workspaces to reduce build time
-        run: yarn build && yarn workspace @finos/legend-manual-tests test:manual
+        run: yarn build && yarn workspace @finos/legend-manual-tests test:manual:ci
       - name: Shut down engine server
         working-directory: ./fixtures/legend-docker-setup/grammar-test-setup
         run: docker compose --file=grammar-test-setup-docker-compose.yml down

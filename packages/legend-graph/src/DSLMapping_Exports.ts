@@ -70,12 +70,17 @@ export {
   V1_Connection,
   type V1_ConnectionVisitor,
 } from './models/protocols/pure/v1/model/packageableElements/connection/V1_Connection';
+export { V1_ConnectionPointer } from './models/protocols/pure/v1/model/packageableElements/connection/V1_ConnectionPointer';
 export { V1_Mapping } from './models/protocols/pure/v1/model/packageableElements/mapping/V1_Mapping';
 export { V1_PackageableRuntime } from './models/protocols/pure/v1/model/packageableElements/runtime/V1_PackageableRuntime';
 export { V1_Store } from './models/protocols/pure/v1/model/packageableElements/store/V1_Store';
 export {
   V1_EngineRuntime,
+  V1_LegacyRuntime,
   V1_Runtime,
+  V1_IdentifiedConnection,
+  V1_StoreConnections,
+  V1_RuntimePointer,
 } from './models/protocols/pure/v1/model/packageableElements/runtime/V1_Runtime';
 export {
   V1_ClassMapping,

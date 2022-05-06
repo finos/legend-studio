@@ -1,10 +1,36 @@
 # @finos/legend-studio
 
-## 8.0.0
+## 9.0.1
+
+## 9.0.0
 
 ### Major Changes
 
-- [#1068](https://github.com/finos/legend-studio/pull/1068) [`e8ee77dc`](https://github.com/finos/legend-studio/commit/e8ee77dcde909bdffd31fd65eea2cb8577b9c49d) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Move `BasicModel.buildPath()` out as the separate utility `V1_buildFullPath()`.
+- [#962](https://github.com/finos/legend-studio/pull/962) [`9ba53bc7`](https://github.com/finos/legend-studio/commit/9ba53bc7f2fead23efb1fe061dff94d4f4c73beb) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Rename `getExtraGrammarTextEditorDnDTypes()` to `getExtraPureGrammarTextEditorDnDTypes()`.
+
+* [#1113](https://github.com/finos/legend-studio/pull/1113) [`e35042ba`](https://github.com/finos/legend-studio/commit/e35042bacf7999e8a5d9836fa6b31cf89cc66237) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Adopt `ESM` styled exports: i.e. we now make use of `exports` field (and removed `main` field) in `package.json`.
+
+### Minor Changes
+
+- [#962](https://github.com/finos/legend-studio/pull/962) [`9ba53bc7`](https://github.com/finos/legend-studio/commit/9ba53bc7f2fead23efb1fe061dff94d4f4c73beb) ([@akphi](https://github.com/akphi)) - Add extension mechanism to allow providing suggestion in forms of keywords/snippets when working in `text-mode` when user create a new element. For example, when users type `#` we would start by showing `###Pure`, `###Mapping`, etc., when we're within `###Pure` section, contextual suggestions should start showing when users try to create new `class`, `enumeration`, etc.
+
+* [#962](https://github.com/finos/legend-studio/pull/962) [`9ba53bc7`](https://github.com/finos/legend-studio/commit/9ba53bc7f2fead23efb1fe061dff94d4f4c73beb) ([@akphi](https://github.com/akphi)) - Add extension mechanism to allow providing documentation when hovering on grammar section parser and element keyword (e.g. `###Pure`, `###Mapping`, `Mapping`, `Class`, `Enum`, etc.) in text mode. Also allow providing suggestion snippet when creating new element in text mode.
+
+### Patch Changes
+
+- [#1123](https://github.com/finos/legend-studio/pull/1123) [`e56d7fdc`](https://github.com/finos/legend-studio/commit/e56d7fdc880ebb093bfc2ca432b2a7af72e7e7ef) ([@akphi](https://github.com/akphi)) - Fix a regression introduced in [`mobx` refactoring](https://github.com/finos/legend-studio/pull/1000) where after leaving text-mode, elements from extensions are not observed properly by change detection ([#1121](https://github.com/finos/legend-studio/issues/1121)).
+
+* [#962](https://github.com/finos/legend-studio/pull/962) [`9ba53bc7`](https://github.com/finos/legend-studio/commit/9ba53bc7f2fead23efb1fe061dff94d4f4c73beb) ([@akphi](https://github.com/akphi)) - Fix an issue with `Studio` editor tabs sometimes not being properly closed when element(s) are deleted.
+
+- [#962](https://github.com/finos/legend-studio/pull/962) [`9ba53bc7`](https://github.com/finos/legend-studio/commit/9ba53bc7f2fead23efb1fe061dff94d4f4c73beb) ([@akphi](https://github.com/akphi)) - Fix issue with merge-conflict editor [CodeLens](https://code.visualstudio.com/blogs/2017/02/12/code-lens-roundup) not showing up ([#814](https://github.com/finos/legend-studio/issues/814)).
+
+* [#962](https://github.com/finos/legend-studio/pull/962) [`9ba53bc7`](https://github.com/finos/legend-studio/commit/9ba53bc7f2fead23efb1fe061dff94d4f4c73beb) ([@akphi](https://github.com/akphi)) - Fix problem with merge-conflict editor not working properly when using `CodeLens` action which results in the content being empty.
+
+- [#1076](https://github.com/finos/legend-studio/pull/1076) [`c6d0c1da`](https://github.com/finos/legend-studio/commit/c6d0c1dae779973e932f18c70cba503ebcc1d3f3) ([@gayathrir11](https://github.com/gayathrir11)) - Deprecate `ServiceTest` in `Service` and rename to `DEPRECATED__ServiceTest`.
+
+* [#1076](https://github.com/finos/legend-studio/pull/1076) [`c6d0c1da`](https://github.com/finos/legend-studio/commit/c6d0c1dae779973e932f18c70cba503ebcc1d3f3) ([@gayathrir11](https://github.com/gayathrir11)) - Add text mode support for `DataElement`.
+
+## 8.0.0
 
 ### Patch Changes
 

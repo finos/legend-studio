@@ -56,7 +56,6 @@ import {
   V1_stereotypePtrSchema,
   V1_taggedValueSchema,
 } from './V1_DomainSerializationHelper';
-import type { V1_StereotypePtr } from '../../../model/packageableElements/domain/V1_StereotypePtr';
 import { V1_ConnectionTestData } from '../../../model/packageableElements/service/V1_ConnectionTestData';
 import {
   V1_deserializeEmbeddedDataType,
@@ -83,6 +82,7 @@ import {
   V1_DEPRECATED__TestContainer,
 } from '../../../model/packageableElements/service/V1_DEPRECATED__ServiceTest';
 import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin';
+import type { V1_TestSuite } from '../../../model/test/V1_TestSuite';
 
 export const V1_SERVICE_ELEMENT_PROTOCOL_TYPE = 'service';
 
@@ -133,7 +133,24 @@ export const V1_serviceTestModelSchema = createModelSchema(V1_ServiceTest, {
     ),
   ),
   id: primitive(),
-  parameters: list(usingModelSchema(V1_parameterValueModelSchema)),
+  parameters: custom(
+    (values) =>
+      serializeArray(
+        values,
+        (value) => serialize(V1_parameterValueModelSchema, value),
+        {
+          skipIfEmpty: true,
+        },
+      ),
+    (values) =>
+      deserializeArray(
+        values,
+        (v) => deserialize(V1_parameterValueModelSchema, v),
+        {
+          skipIfEmpty: false,
+        },
+      ),
+  ),
 });
 
 export const V1_serviceTestSuiteModelSchema = (
@@ -255,8 +272,15 @@ const testContainerModelSchema = createModelSchema(
   {
     assert: usingModelSchema(V1_rawLambdaModelSchema),
     parametersValues: custom(
-      (values) => serializeArray(values, (value) => value, true),
-      (values) => deserializeArray(values, (v) => v, false),
+      (values) =>
+        serializeArray(values, (value) => value, {
+          skipIfEmpty: true,
+          INTERNAL__forceReturnEmptyInTest: true,
+        }),
+      (values) =>
+        deserializeArray(values, (v) => v, {
+          skipIfEmpty: false,
+        }),
     ),
   },
 );
@@ -313,7 +337,7 @@ const V1_deserializeLegacyServiceTest = (
   }
 };
 
-export const V1_servicedModelSchema = (
+export const V1_serviceModelSchema = (
   plugins: PureProtocolProcessorPlugin[],
 ): ModelSchema<V1_Service> =>
   createModelSchema(V1_Service, {
@@ -333,13 +357,18 @@ export const V1_servicedModelSchema = (
         serializeArray(
           values,
           (value) => serialize(V1_stereotypePtrSchema, value),
-          true,
+          {
+            skipIfEmpty: true,
+            INTERNAL__forceReturnEmptyInTest: true,
+          },
         ),
       (values) =>
         deserializeArray(
           values,
-          (v: V1_StereotypePtr) => deserialize(V1_stereotypePtrSchema, v),
-          false,
+          (v) => deserialize(V1_stereotypePtrSchema, v),
+          {
+            skipIfEmpty: false,
+          },
         ),
     ),
     taggedValues: custom(
@@ -347,14 +376,15 @@ export const V1_servicedModelSchema = (
         serializeArray(
           values,
           (value) => serialize(V1_taggedValueSchema, value),
-          true,
+          {
+            skipIfEmpty: true,
+            INTERNAL__forceReturnEmptyInTest: true,
+          },
         ),
       (values) =>
-        deserializeArray(
-          values,
-          (v: V1_StereotypePtr) => deserialize(V1_taggedValueSchema, v),
-          false,
-        ),
+        deserializeArray(values, (v) => deserialize(V1_taggedValueSchema, v), {
+          skipIfEmpty: false,
+        }),
     ),
     test: optionalCustom(
       V1_serializeLegacyServiceTest,
@@ -364,15 +394,15 @@ export const V1_servicedModelSchema = (
       (values) =>
         serializeArray(
           values,
-          (value) => V1_serializeTestSuite(value, plugins),
-          true,
+          (value: V1_TestSuite) => V1_serializeTestSuite(value, plugins),
+          {
+            skipIfEmpty: true,
+            INTERNAL__forceReturnEmptyInTest: true,
+          },
         ),
       (values) =>
-        deserializeArray(
-          values,
-          (v: PlainObject<V1_ServiceTestSuite>) =>
-            V1_deserializeTestSuite(v, plugins),
-          true,
-        ),
+        deserializeArray(values, (v) => V1_deserializeTestSuite(v, plugins), {
+          skipIfEmpty: false,
+        }),
     ),
   });

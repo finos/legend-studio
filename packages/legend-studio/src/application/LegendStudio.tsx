@@ -34,6 +34,7 @@ import {
   type LegendStudioConfigurationData,
   LegendStudioConfig,
 } from './LegendStudioConfig';
+import { Core_LegendStudioPlugin } from '../components/Core_LegendStudioPlugin';
 
 const setupLegendStudioUILibrary = async (
   pluginManager: LegendStudioPluginManager,
@@ -62,7 +63,10 @@ export class LegendStudio extends LegendApplication {
 
   static create(): LegendStudio {
     const application = new LegendStudio(LegendStudioPluginManager.create());
-    application.withBasePlugins([new CorePureGraphManagerPlugin()]);
+    application.withBasePlugins([
+      new CorePureGraphManagerPlugin(),
+      new Core_LegendStudioPlugin(),
+    ]);
     return application;
   }
 

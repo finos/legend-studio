@@ -1,14 +1,36 @@
 # @finos/legend-graph
 
+## 6.0.1
+
+## 6.0.0
+
+### Major Changes
+
+- [#1113](https://github.com/finos/legend-studio/pull/1113) [`e35042ba`](https://github.com/finos/legend-studio/commit/e35042bacf7999e8a5d9836fa6b31cf89cc66237) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Adopt `ESM` styled exports: i.e. we now make use of `exports` field (and removed `main` field) in `package.json`.
+
+### Minor Changes
+
+- [#1076](https://github.com/finos/legend-studio/pull/1076) [`c6d0c1da`](https://github.com/finos/legend-studio/commit/c6d0c1dae779973e932f18c70cba503ebcc1d3f3) ([@gayathrir11](https://github.com/gayathrir11)) - Add graph support for strategic test models.
+
+* [#891](https://github.com/finos/legend-studio/pull/891) [`8192c5fe`](https://github.com/finos/legend-studio/commit/8192c5fe0066523822266155da2024cb4eac9c37) ([@gayathrir11](https://github.com/gayathrir11)) - Support processing of milestoning properties in `class` and `association`.
+
+### Patch Changes
+
+- [#1101](https://github.com/finos/legend-studio/pull/1101) [`4222615c`](https://github.com/finos/legend-studio/commit/4222615c051466282f6cc937353b74e4f66c052e) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix a problem with generating test data by properly including query parameter. Also, we now make use of the `test-data` generation's feature to `anonymize` sensitive data if needed.
+
+* [#1076](https://github.com/finos/legend-studio/pull/1076) [`c6d0c1da`](https://github.com/finos/legend-studio/commit/c6d0c1dae779973e932f18c70cba503ebcc1d3f3) ([@gayathrir11](https://github.com/gayathrir11)) - Deprecate `ServiceTest` in `Service` and rename to `DEPRECATED__ServiceTest`.
+
 ## 5.0.0
 
 ### Major Changes
+
+- [#1068](https://github.com/finos/legend-studio/pull/1068) [`e8ee77dc`](https://github.com/finos/legend-studio/commit/e8ee77dcde909bdffd31fd65eea2cb8577b9c49d) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Move `BasicModel.buildPath()` out as the separate utility `V1_buildFullPath()`.
 
 - [#1068](https://github.com/finos/legend-studio/pull/1068) [`e8ee77dc`](https://github.com/finos/legend-studio/commit/e8ee77dcde909bdffd31fd65eea2cb8577b9c49d) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Move `BasicModel.getOrCreatePackage()` to `DomainHelper` as an utility.
 
 * [#1068](https://github.com/finos/legend-studio/pull/1068) [`e8ee77dc`](https://github.com/finos/legend-studio/commit/e8ee77dcde909bdffd31fd65eea2cb8577b9c49d) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Rename `RawInstanceValue` to `RawPrimitiveInstanceValue` to more accurately reflect what it is.
 
-- [#1068](https://github.com/finos/legend-studio/pull/1068) [`e8ee77dc`](https://github.com/finos/legend-studio/commit/e8ee77dcde909bdffd31fd65eea2cb8577b9c49d) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** `BasicModel.addOwnElemnet()` and `PureModel.addElement()` will now take the package path for the new element, the creation of the element package chain and setting the element package will be handled here as well, consumer of the function `PureModel.addElement()` will no longer need to manually create the package.
+- [#1068](https://github.com/finos/legend-studio/pull/1068) [`e8ee77dc`](https://github.com/finos/legend-studio/commit/e8ee77dcde909bdffd31fd65eea2cb8577b9c49d) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** `BasicModel.addOwnElement()` and `PureModel.addElement()` will now take the package path for the new element, the creation of the element package chain and setting the element package will be handled here as well, consumer of the function `PureModel.addElement()` will no longer need to manually create the package.
 
 * [#1068](https://github.com/finos/legend-studio/pull/1068) [`e8ee77dc`](https://github.com/finos/legend-studio/commit/e8ee77dcde909bdffd31fd65eea2cb8577b9c49d) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** `DependencyManager.allElements` are now renamed to `DependencyManager.allOwnElements` for consistency.
 

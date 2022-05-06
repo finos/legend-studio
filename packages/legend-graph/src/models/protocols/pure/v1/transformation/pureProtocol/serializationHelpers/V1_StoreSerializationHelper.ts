@@ -265,8 +265,15 @@ function V1_flatDataSectionDeserializer(value: {
 export const V1_flatDataModelSchema = createModelSchema(V1_FlatData, {
   _type: usingConstantValueSchema(V1_FLAT_DATA_ELEMENT_PROTOCOL_TYPE),
   includedStores: custom(
-    (values) => serializeArray(values, (value) => value, true),
-    (values) => deserializeArray(values, (value) => value, false),
+    (values) =>
+      serializeArray(values, (value: string) => value, {
+        skipIfEmpty: true,
+        INTERNAL__forceReturnEmptyInTest: true,
+      }),
+    (values) =>
+      deserializeArray(values, (value) => value, {
+        skipIfEmpty: false,
+      }),
   ),
   name: primitive(),
   package: primitive(),

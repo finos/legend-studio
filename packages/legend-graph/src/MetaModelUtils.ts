@@ -14,6 +14,15 @@
  * limitations under the License.
  */
 
+/**
+ * NOTE: this file holds the most basic utilties to deal with the graph and
+ * metamodels. Any methods which requires importing some metamodel or graph
+ * are meant to be put into helpers method, e.g. `DomainHelper`.
+ *
+ * This is to avoid circular dependencies and also to keep things in the
+ * right layer
+ */
+
 import {
   SOURCE_INFORMATION_KEY,
   ELEMENT_PATH_DELIMITER,

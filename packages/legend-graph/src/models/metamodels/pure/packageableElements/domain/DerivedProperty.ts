@@ -42,8 +42,18 @@ export class DerivedProperty
   multiplicity: Multiplicity;
   stereotypes: StereotypeReference[] = [];
   taggedValues: TaggedValue[] = [];
-  body?: object | undefined; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
-  parameters?: object | undefined; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
+  /**
+   * Studio does not process value specification, they are left in raw JSON form
+   *
+   * @discrepancy model
+   */
+  body?: object | undefined;
+  /**
+   * Studio does not process value specification, they are left in raw JSON form
+   *
+   * @discrepancy model
+   */
+  parameters?: object | undefined;
 
   constructor(
     name: string,

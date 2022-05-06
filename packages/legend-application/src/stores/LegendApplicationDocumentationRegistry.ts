@@ -14,7 +14,53 @@
  * limitations under the License.
  */
 
-import type { LegendApplicationDocumentationEntry } from './LegendApplicationConfig';
+import {
+  type MarkdownText,
+  type PlainObject,
+  deserializeMarkdownText,
+  SerializationFactory,
+} from '@finos/legend-shared';
+import {
+  createModelSchema,
+  custom,
+  optional,
+  primitive,
+  SKIP,
+} from 'serializr';
+
+export class LegendApplicationDocumentationEntry {
+  markdownText?: MarkdownText | undefined;
+  title?: string | undefined;
+  text?: string | undefined;
+  url?: string | undefined;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(LegendApplicationDocumentationEntry, {
+      markdownText: custom(
+        () => SKIP,
+        (val) => deserializeMarkdownText(val),
+      ),
+      title: optional(primitive()),
+      text: optional(primitive()),
+      url: optional(primitive()),
+    }),
+  );
+}
+
+export interface LegendApplicationKeyedDocumentationEntry {
+  key: string;
+  content: LegendApplicationDocumentationEntry;
+}
+
+export const collectKeyedDocumnetationEntriesFromConfig = (
+  rawEntries: Record<string, PlainObject<LegendApplicationDocumentationEntry>>,
+): LegendApplicationKeyedDocumentationEntry[] =>
+  Object.entries(rawEntries).map((entry) => ({
+    key: entry[0],
+    content: LegendApplicationDocumentationEntry.serialization.fromJson(
+      entry[1],
+    ),
+  }));
 
 export class LegendApplicationDocumentationRegistry {
   url?: string | undefined;

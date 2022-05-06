@@ -16,7 +16,7 @@
 
 import type { DSL_LegendStudioPlugin_Extension } from './LegendStudioPlugin';
 import type { Connection, Runtime } from '@finos/legend-graph';
-import type { ServicePureExecutionState } from './editor-state/element-editor-state/service/ServiceExecutionState';
+import type { ServicePureExecutionState } from '../stores/editor-state/element-editor-state/service/ServiceExecutionState';
 
 export type ServiceQueryEditorActionConfiguration = {
   key: string;

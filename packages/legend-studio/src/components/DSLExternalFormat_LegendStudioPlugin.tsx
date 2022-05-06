@@ -13,8 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+import packageJson from '../../package.json';
 import { BufferIcon, SitemapIcon } from '@finos/legend-art';
-import { SchemaSetEditor } from './editor/edit-panel/externalFormat-editor/SchemaSetElementEditor';
+import { SchemaSetEditor } from './editor/edit-panel/external-format-editor/SchemaSetElementEditor';
 import {
   type Connection,
   type PackageableElement,
@@ -26,13 +28,16 @@ import {
   ModelUnit,
   ExternalFormatConnection,
   UrlStream,
+  PURE_GRAMMAR_BINDING_ELEMENT_TYPE_LABEL,
+  PURE_GRAMMAR_EXTERNAL_FORMAT_PARSER_NAME,
+  PURE_GRAMMAR_SCHEMA_SET_ELEMENT_TYPE_LABEL,
 } from '@finos/legend-graph';
 import {
   ExternalFormatConnectionEditor,
   ExternalFormatConnectionValueState,
   NewExternalFormatConnectionDriver,
-} from './editor/edit-panel/externalFormat-editor/ExternalFormatConnectionEditor';
-import { BindingEditor } from './editor/edit-panel/externalFormat-editor/BindingElementEditor';
+} from './editor/edit-panel/external-format-editor/ExternalFormatConnectionEditor';
+import { BindingEditor } from './editor/edit-panel/external-format-editor/BindingElementEditor';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import type { ReactNode } from 'react';
 import {
@@ -44,6 +49,11 @@ import {
   type NewElementDriverCreator,
   type NewElementDriverEditorRenderer,
   type NewElementFromStateCreator,
+  type PureGrammarParserElementSnippetSuggestionsGetter,
+  type PureGrammarParserElementDocumentationGetter,
+  type PureGrammarParserDocumentationGetter,
+  type PureGrammarParserKeywordSuggestionGetter,
+  type PureGrammarTextSuggestion,
   LegendStudioPlugin,
 } from '../stores/LegendStudioPlugin';
 import type {
@@ -72,6 +82,15 @@ import {
   externalFormat_Binding_setContentType,
   externalFormat_urlStream_setUrl,
 } from '../stores/graphModifier/DSLExternalFormat_GraphModifierHelper';
+import type { LegendApplicationDocumentationEntry } from '@finos/legend-application';
+import { DSL_EXTERNAL_FORMAT_LEGEND_STUDIO_DOCUMENTATION_KEY } from './DSLExternalFormat_LegendStudioDocumentation';
+import {
+  BASIC_BINDING_SNIPPET,
+  BASIC_SCHEMASET_SNIPPET,
+  SCHEMASET_WITH_JSON_SCHEMA_SNIPPET,
+  SCHEMASET_WITH_XML_SCHEMA_SNIPPET,
+  SCHEMASET_WITH_FLAT_DATA_SCHEMA_SNIPPET,
+} from './DSLExternalFormat_CodeSnippets';
 
 const SCHEMA_SET_ELEMENT_TYPE = 'SCHEMASET';
 const SCHEMA_SET_ELEMENT_PROJECT_EXPLORER_DND_TYPE =
@@ -84,8 +103,10 @@ export class DSLExternalFormat_LegendStudioPlugin
   implements DSLMapping_LegendStudioPlugin_Extension
 {
   constructor() {
-    // TODO: when we move this out to its own module, we will move this to `package.json`
-    super('@finos/legend-studio-plugin-dsl-external-format', '0.0.0');
+    super(
+      packageJson.extensions.dsl_external_format_studioPlugin,
+      packageJson.version,
+    );
   }
 
   getExtraSupportedElementTypes(): string[] {
@@ -192,8 +213,8 @@ export class DSLExternalFormat_LegendStudioPlugin
   getExtraNewElementDriverCreators(): NewElementDriverCreator[] {
     return [
       (
-        type: string,
         editorStore: EditorStore,
+        type: string,
       ): NewElementDriver<PackageableElement> | undefined => {
         if (type === SCHEMA_SET_ELEMENT_TYPE) {
           return new NewSchemaSetDriver(editorStore);
@@ -226,7 +247,7 @@ export class DSLExternalFormat_LegendStudioPlugin
       },
     ];
   }
-  getExtraGrammarTextEditorDnDTypes(): string[] {
+  getExtraPureGrammarTextEditorDnDTypes(): string[] {
     return [
       SCHEMA_SET_ELEMENT_PROJECT_EXPLORER_DND_TYPE,
       BINDING_ELEMENT_PROJECT_EXPLORER_DND_TYPE,
@@ -310,6 +331,102 @@ export class DSLExternalFormat_LegendStudioPlugin
         }
         return undefined;
       },
+    ];
+  }
+
+  getExtraPureGrammarParserElementDocumentationGetters(): PureGrammarParserElementDocumentationGetter[] {
+    return [
+      (
+        editorStore: EditorStore,
+        parserKeyword: string,
+        elementKeyword: string,
+      ): LegendApplicationDocumentationEntry | undefined => {
+        if (parserKeyword === PURE_GRAMMAR_EXTERNAL_FORMAT_PARSER_NAME) {
+          if (elementKeyword === PURE_GRAMMAR_BINDING_ELEMENT_TYPE_LABEL) {
+            return editorStore.applicationStore.docRegistry.getEntry(
+              DSL_EXTERNAL_FORMAT_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_BINDING_ELEMENT,
+            );
+          } else if (
+            elementKeyword === PURE_GRAMMAR_SCHEMA_SET_ELEMENT_TYPE_LABEL
+          ) {
+            return editorStore.applicationStore.docRegistry.getEntry(
+              DSL_EXTERNAL_FORMAT_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_SCHEMASET_ELEMENT,
+            );
+          }
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  getExtraPureGrammarParserDocumentationGetters(): PureGrammarParserDocumentationGetter[] {
+    return [
+      (
+        editorStore: EditorStore,
+        parserKeyword: string,
+      ): LegendApplicationDocumentationEntry | undefined => {
+        if (parserKeyword === PURE_GRAMMAR_EXTERNAL_FORMAT_PARSER_NAME) {
+          return editorStore.applicationStore.docRegistry.getEntry(
+            DSL_EXTERNAL_FORMAT_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER,
+          );
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  getExtraPureGrammarParserKeywordSuggestionGetters(): PureGrammarParserKeywordSuggestionGetter[] {
+    return [
+      (editorStore: EditorStore): PureGrammarTextSuggestion[] => [
+        {
+          text: PURE_GRAMMAR_EXTERNAL_FORMAT_PARSER_NAME,
+          description: `(dsl)`,
+          documentation: editorStore.applicationStore.docRegistry.getEntry(
+            DSL_EXTERNAL_FORMAT_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER,
+          ),
+          insertText: PURE_GRAMMAR_EXTERNAL_FORMAT_PARSER_NAME,
+        },
+      ],
+    ];
+  }
+
+  getExtraPureGrammarParserElementSnippetSuggestionsGetters(): PureGrammarParserElementSnippetSuggestionsGetter[] {
+    return [
+      (
+        editorStore: EditorStore,
+        parserKeyword: string,
+      ): PureGrammarTextSuggestion[] | undefined =>
+        parserKeyword === PURE_GRAMMAR_EXTERNAL_FORMAT_PARSER_NAME
+          ? [
+              // binding
+              {
+                text: PURE_GRAMMAR_BINDING_ELEMENT_TYPE_LABEL,
+                description: '(blank)',
+                insertText: BASIC_BINDING_SNIPPET,
+              },
+              // schema set
+              {
+                text: PURE_GRAMMAR_SCHEMA_SET_ELEMENT_TYPE_LABEL,
+                description: '(blank)',
+                insertText: BASIC_SCHEMASET_SNIPPET,
+              },
+              {
+                text: PURE_GRAMMAR_SCHEMA_SET_ELEMENT_TYPE_LABEL,
+                description: 'with flat-data',
+                insertText: SCHEMASET_WITH_FLAT_DATA_SCHEMA_SNIPPET,
+              },
+              {
+                text: PURE_GRAMMAR_SCHEMA_SET_ELEMENT_TYPE_LABEL,
+                description: 'with JSON shema',
+                insertText: SCHEMASET_WITH_JSON_SCHEMA_SNIPPET,
+              },
+              {
+                text: PURE_GRAMMAR_SCHEMA_SET_ELEMENT_TYPE_LABEL,
+                description: 'with XML shema',
+                insertText: SCHEMASET_WITH_XML_SCHEMA_SNIPPET,
+              },
+            ]
+          : undefined,
     ];
   }
 }

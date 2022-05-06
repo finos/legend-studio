@@ -20,13 +20,10 @@ import type {
   ValueSpecification,
 } from '@finos/legend-graph';
 import { uuid } from '@finos/legend-shared';
-import type { SUPPORTED_FUNCTIONS } from '../QueryBuilder_Const';
-import { buildPostFilterConditionExpression } from './postFilterOperators/QueryBuilderPostFilterOperatorHelper';
-import { buildPostFilterConditionState } from './QueryBuilderPostFilterProcessor';
 import type {
   PostFilterConditionState,
   QueryBuilderPostFilterState,
-  TDS_COLUMN_GETTERS,
+  TDS_COLUMN_GETTER,
 } from './QueryBuilderPostFilterState';
 
 export abstract class QueryBuilderPostFilterOperator {
@@ -34,9 +31,7 @@ export abstract class QueryBuilderPostFilterOperator {
 
   abstract getLabel(): string;
 
-  abstract getPureFunction(): SUPPORTED_FUNCTIONS | undefined;
-
-  getTdsColumnGetter(): TDS_COLUMN_GETTERS | undefined {
+  getTdsColumnGetter(): TDS_COLUMN_GETTER | undefined {
     return undefined;
   }
 
@@ -60,21 +55,12 @@ export abstract class QueryBuilderPostFilterOperator {
     return false;
   }
 
-  buildPostFilterConditionState(
+  abstract buildPostFilterConditionExpression(
+    postFilterConditionState: PostFilterConditionState,
+  ): ValueSpecification | undefined;
+
+  abstract buildPostFilterConditionState(
     postFilterState: QueryBuilderPostFilterState,
     expression: FunctionExpression,
-  ): PostFilterConditionState | undefined {
-    return buildPostFilterConditionState(
-      postFilterState,
-      expression,
-      this.getPureFunction(),
-      this,
-    );
-  }
-
-  buildPostFilterConditionExpression(
-    postFilterConditionState: PostFilterConditionState,
-  ): ValueSpecification | undefined {
-    return buildPostFilterConditionExpression(postFilterConditionState, this);
-  }
+  ): PostFilterConditionState | undefined;
 }

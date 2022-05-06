@@ -191,6 +191,7 @@ export class TaxonomyNodeViewerState {
   }
 
   *initializeDataSpaceViewer(rawDataSpace: RawDataSpace): GeneratorFn<void> {
+    this.clearDataSpaceViewerState();
     try {
       this.initDataSpaceViewerState.inProgress();
       const stopWatch = new StopWatch();
@@ -249,7 +250,7 @@ export class TaxonomyNodeViewerState {
           false,
         )) as PlainObject<ProjectVersionEntities>[]
       )
-        .map(ProjectVersionEntities.serialization.fromJson)
+        .map((v) => ProjectVersionEntities.serialization.fromJson(v))
         .forEach((dependencyInfo) => {
           dependencyEntitiesMap.set(dependencyInfo.id, dependencyInfo.entities);
         });
@@ -658,6 +659,7 @@ export class LegendTaxonomyStore {
         },
       );
 
+      // initialize system
       yield this.graphManagerState.initializeSystem();
 
       // NOTE: here we build the full tree, which might be expensive when we have a big
@@ -731,6 +733,7 @@ export class LegendTaxonomyStore {
         },
       );
 
+      // initialize system
       yield this.graphManagerState.initializeSystem();
 
       // reset
@@ -814,7 +817,7 @@ export class LegendTaxonomyStore {
           false,
         )) as PlainObject<ProjectVersionEntities>[]
       )
-        .map(ProjectVersionEntities.serialization.fromJson)
+        .map((v) => ProjectVersionEntities.serialization.fromJson(v))
         .forEach((dependencyInfo) => {
           dependencyEntitiesMap.set(dependencyInfo.id, dependencyInfo.entities);
         });

@@ -65,8 +65,13 @@ export class ExternalFormatData extends EmbeddedData implements Hashable {
 }
 
 export class ModelStoreData extends EmbeddedData implements Hashable {
-  // TODO: we may want to build out the instance `objects` once we build out the form
-  instances!: Map<Class, object>; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
+  /**
+   * Studio does not process value specification, they are left in raw JSON form
+   * TODO: we may want to build out the instance `objects` once we build out the form
+   *
+   * @discrepancy model
+   */
+  instances!: Map<Class, object>;
 
   get hashCode(): string {
     return hashArray([

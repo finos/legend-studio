@@ -15,57 +15,39 @@
  */
 
 /* eslint-disable prefer-named-capture-group */
-import type {
+import {
+  type GraphPluginManager,
+  PARSER_SECTION_MARKER,
+  PURE_ELEMENT_NAME,
+  PURE_CONNECTION_NAME,
+  PURE_PARSER,
+} from '@finos/legend-graph';
+import {
   editor as monacoEditorAPI,
   languages as monacoLanguagesAPI,
 } from 'monaco-editor';
+import { EDITOR_LANGUAGE, EDITOR_THEME } from '../const';
 
-export enum GRAMMAR_ELEMENT_TYPE_LABEL {
-  PROFILE = 'Profile',
-  CLASS = 'Class',
-  ENUMERATION = 'Enum',
-  MEASURE = 'Measure',
-  ASSOCIATION = 'Association',
-  FLAT_DATA = 'FlatData',
-  MAPPING = 'Mapping',
-  DATABASE = 'Database',
-  SERVICE_STORE = 'ServiceStore',
-  FUNCTION = 'function',
-  SERVICE = 'Service',
-  RUNTIME = 'Runtime',
-  CONNECTION = 'Connection',
-  FILE_GENERATION = 'FileGeneration',
-  GENERATION_SPECIFICATION = 'GenerationSpecification',
-  DATA_ELEMENT = 'Data',
-
-  JSON_MODEL_CONNECTION = 'JsonModelConnection',
-  XML_MODEL_CONNECTION = 'XmlModelConnection',
-  MODEL_CHAIN_CONNECTION = 'ModelChainConnection',
-  FLAT_DATA_CONNECTION = 'FlatDataConnection',
-  RELATIONAL_DATABASE_CONNECTION = 'RelationalDatabaseConnection',
-}
-
-export const theme: monacoEditorAPI.IStandaloneThemeData = {
+const theme: monacoEditorAPI.IStandaloneThemeData = {
   base: 'vs-dark', // can also be vs-dark or hc-black
   inherit: true, // can also be false to completely replace the builtin rules
   colors: {},
   rules: [
+    // NOTE: unfortunately, `monaco-editor` only accepts HEX values, not CSS variables
     { token: 'package', foreground: '808080' },
     { token: 'parser-marker', foreground: 'c586c0' },
     { token: 'property', foreground: 'dcdcaa' },
     { token: 'function', foreground: 'dcdcaa' },
     { token: 'language-struct', foreground: 'c586c0' },
-    // { token: 'multiplicity', foreground: '2d796b' },
+    { token: 'multiplicity', foreground: '2d796b' },
     { token: 'attribute', foreground: '9cdcfe' },
-    { token: 'cast', foreground: 'f98a00' },
+    { token: 'cast', foreground: '569cd6' },
   ],
 };
 
 // Taken from `monaco-languages` configuration for Java in order to do propert brace matching
 // See https://github.com/microsoft/monaco-languages/blob/master/src/java/java.ts
-export const configuration: monacoLanguagesAPI.LanguageConfiguration = {
-  // the default separators except `@$`
-  wordPattern: /(-?\d*\.\d\w*)|([^`~!#%^&*()-=+[{]}\\\|;:'",\.<>\/\?\s]+)/g,
+const configuration: monacoLanguagesAPI.LanguageConfiguration = {
   comments: {
     lineComment: '//',
     blockComment: ['/*', '*/'],
@@ -105,7 +87,7 @@ export const configuration: monacoLanguagesAPI.LanguageConfiguration = {
  * The way SQL monarch definition is organized is good and worth learning from
  * See https://github.com/microsoft/monaco-languages/blob/master/src/sql/sql.ts
  */
-export const generateLanguageMonarch = (
+const generateLanguageMonarch = (
   extraKeywords: string[],
   extraParsers: string[],
 ): monacoLanguagesAPI.IMonarchLanguage =>
@@ -117,31 +99,47 @@ export const generateLanguageMonarch = (
 
     keywords: [
       ...extraKeywords,
+      // relational
+      'Schema',
+      'Table',
+      'Join',
+      'View',
+      'primaryKey',
+      'groupBy',
+      'mainTable',
+      // native
+      'let',
       'extends',
-      'function',
       'projects',
-
-      GRAMMAR_ELEMENT_TYPE_LABEL.CLASS,
-      GRAMMAR_ELEMENT_TYPE_LABEL.ASSOCIATION,
-      GRAMMAR_ELEMENT_TYPE_LABEL.ENUMERATION,
-      GRAMMAR_ELEMENT_TYPE_LABEL.MEASURE,
-      GRAMMAR_ELEMENT_TYPE_LABEL.PROFILE,
-      GRAMMAR_ELEMENT_TYPE_LABEL.FLAT_DATA,
-      GRAMMAR_ELEMENT_TYPE_LABEL.DATABASE,
-      GRAMMAR_ELEMENT_TYPE_LABEL.SERVICE_STORE,
-      GRAMMAR_ELEMENT_TYPE_LABEL.MAPPING,
-      GRAMMAR_ELEMENT_TYPE_LABEL.SERVICE,
-      GRAMMAR_ELEMENT_TYPE_LABEL.RUNTIME,
-      GRAMMAR_ELEMENT_TYPE_LABEL.CONNECTION,
-      GRAMMAR_ELEMENT_TYPE_LABEL.FILE_GENERATION,
-      GRAMMAR_ELEMENT_TYPE_LABEL.GENERATION_SPECIFICATION,
-      GRAMMAR_ELEMENT_TYPE_LABEL.DATA_ELEMENT,
-
-      GRAMMAR_ELEMENT_TYPE_LABEL.JSON_MODEL_CONNECTION,
-      GRAMMAR_ELEMENT_TYPE_LABEL.MODEL_CHAIN_CONNECTION,
-      GRAMMAR_ELEMENT_TYPE_LABEL.XML_MODEL_CONNECTION,
-      GRAMMAR_ELEMENT_TYPE_LABEL.FLAT_DATA_CONNECTION,
-      GRAMMAR_ELEMENT_TYPE_LABEL.RELATIONAL_DATABASE_CONNECTION,
+      // elements
+      PURE_ELEMENT_NAME.CLASS,
+      PURE_ELEMENT_NAME.ASSOCIATION,
+      PURE_ELEMENT_NAME.ENUMERATION,
+      PURE_ELEMENT_NAME.MEASURE,
+      PURE_ELEMENT_NAME.PROFILE,
+      PURE_ELEMENT_NAME.FUNCTION,
+      PURE_ELEMENT_NAME.FLAT_DATA,
+      PURE_ELEMENT_NAME.DATABASE,
+      PURE_ELEMENT_NAME.MAPPING,
+      PURE_ELEMENT_NAME.SERVICE,
+      PURE_ELEMENT_NAME.RUNTIME,
+      PURE_ELEMENT_NAME.CONNECTION,
+      PURE_ELEMENT_NAME.FILE_GENERATION,
+      PURE_ELEMENT_NAME.GENERATION_SPECIFICATION,
+      PURE_ELEMENT_NAME.DATA_ELEMENT,
+      // connections
+      PURE_CONNECTION_NAME.JSON_MODEL_CONNECTION,
+      PURE_CONNECTION_NAME.MODEL_CHAIN_CONNECTION,
+      PURE_CONNECTION_NAME.XML_MODEL_CONNECTION,
+      PURE_CONNECTION_NAME.FLAT_DATA_CONNECTION,
+      PURE_CONNECTION_NAME.RELATIONAL_DATABASE_CONNECTION,
+      // mapping
+      'EnumerationMapping',
+      'Pure',
+      'Relational', // to be modularized
+      'AssociationMapping',
+      'XStore',
+      'AggregationAware',
     ],
 
     operators: [
@@ -168,28 +166,32 @@ export const generateLanguageMonarch = (
       '^',
       '%',
       '->',
+      '#{',
+      '}#',
+      '@',
     ],
 
     languageStructs: ['import', 'native', 'if', 'fold'],
 
-    parsers: [
-      ...extraParsers.map((parser) => `###${parser}`),
-      '###Pure',
-      '###Connection',
-      '###Runtime',
-      '###Mapping',
-
-      '###Service',
-      '###FlatData',
-      '###Relational',
-      '###ServiceStore',
-      '###GenerationSpecification',
-      '###FileGeneration',
-      '###Data',
-    ],
+    parsers: (
+      [
+        PURE_PARSER.PURE,
+        PURE_PARSER.CONNECTION,
+        PURE_PARSER.RUNTIME,
+        PURE_PARSER.MAPPING,
+        PURE_PARSER.SERVICE,
+        PURE_PARSER.FLATDATA,
+        PURE_PARSER.RELATIONAL,
+        PURE_PARSER.GENERATION_SPECIFICATION,
+        PURE_PARSER.FILE_GENERATION,
+        PURE_PARSER.DATA,
+      ] as string[]
+    )
+      .concat(extraParsers)
+      .map((parser) => `${PARSER_SECTION_MARKER}${parser}`),
 
     // common regular expressions to be used in tokenizer
-    symbols: /[=><!~?:&|+\-*/^%]+/,
+    symbols: /[=><!~?:&|+\-*/^%#@]+/,
     escapes:
       /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
     digits: /\d+(_+\d+)*/,
@@ -201,10 +203,6 @@ export const generateLanguageMonarch = (
 
     tokenizer: {
       root: [
-        // multiplicity
-        // TODO: this as it can clash with array of numbers
-        [/@multiplicity/, 'multiplicity'],
-
         // packages
         { include: '@package' },
 
@@ -216,7 +214,8 @@ export const generateLanguageMonarch = (
 
         // parser markers
         [
-          /^###[\w]+/,
+          // NOTE: any leading whitespace to the section header is considered invalid syntax
+          /^\s*###[\w]+/,
           {
             cases: {
               '@parsers': 'parser-marker',
@@ -247,7 +246,7 @@ export const generateLanguageMonarch = (
           /@symbols/,
           {
             cases: {
-              '@operators': 'delimiter',
+              '@operators': 'operator',
               '@default': '',
             },
           },
@@ -290,16 +289,16 @@ export const generateLanguageMonarch = (
         [/(@package)(\*)/, ['package', 'tag']],
         [/(@package)([\w_]+)/, ['package', 'type']],
         [
-          /(@package)([\w_]+)(@multiplicity)/,
-          ['package', 'type', 'multiplicity'],
+          /(@package)([\w_]+)(\s*)(@multiplicity)/,
+          ['package', 'type', '', 'multiplicity'],
         ],
         [
-          /([\w_]+)(\s*:\s*)(@package)([\w_]+)(@multiplicity)/,
-          ['attribute', '', 'package', 'type', 'multiplicity'],
+          /([\w_]+)(\s*:\s*)(@package)([\w_]+)(\s*)(@multiplicity)/,
+          ['attribute', '', 'package', 'type', '', 'multiplicity'],
         ],
         [
-          /([\w_]+)(\s*:\s*)([\w_]+)(@multiplicity)/,
-          ['attribute', '', 'type', 'multiplicity'],
+          /(:\s*)([\w_]+)(\s*)(@multiplicity)/,
+          ['', 'type', '', 'multiplicity'],
         ],
       ],
 
@@ -341,3 +340,26 @@ export const generateLanguageMonarch = (
       ],
     },
   } as monacoLanguagesAPI.IMonarchLanguage);
+
+export const setupPureLanguageService = (
+  pluginManager: GraphPluginManager,
+): void => {
+  // register Pure language in `monaco-editor`
+  monacoEditorAPI.defineTheme(EDITOR_THEME.LEGEND, theme);
+  monacoLanguagesAPI.register({ id: EDITOR_LANGUAGE.PURE });
+  monacoLanguagesAPI.setLanguageConfiguration(
+    EDITOR_LANGUAGE.PURE,
+    configuration,
+  );
+  monacoLanguagesAPI.setMonarchTokensProvider(
+    EDITOR_LANGUAGE.PURE,
+    generateLanguageMonarch(
+      pluginManager
+        .getPureGraphManagerPlugins()
+        .flatMap((plugin) => plugin.getExtraPureGrammarKeywords?.() ?? []),
+      pluginManager
+        .getPureGraphManagerPlugins()
+        .flatMap((plugin) => plugin.getExtraPureGrammarParserNames?.() ?? []),
+    ),
+  );
+};

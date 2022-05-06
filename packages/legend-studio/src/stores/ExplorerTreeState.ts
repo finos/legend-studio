@@ -200,11 +200,11 @@ export class ExplorerTreeState {
   }
 
   /**
-   * @MARKER: MEMORY-SENSITIVE
-   *
    * FIXME: this method should be replaced altogether as this could potentially cause memory leak when we `replace` the graph
    * When we refresh the graph (after compilation in text mode for example), we want to reprocess the app to
    * preserve the status of the explorer tree (opening nodes, selected nodes, etc.)
+   *
+   * @risk memory-leak
    */
   reprocess(): void {
     this.buildState.reset();

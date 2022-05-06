@@ -16,8 +16,10 @@
 
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { createRequire } from 'module';
 import { getBaseConfig } from '@finos/legend-dev-utils/JestConfigUtils';
 
+const require = createRequire(import.meta.url);
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const baseConfig = getBaseConfig({
@@ -27,6 +29,8 @@ const baseConfig = getBaseConfig({
 export const baseJestConfig = {
   ...baseConfig,
   setupFiles: [
+    // TODO: problem with ESM - remove when we run Jest with ESM
+    // See https://github.com/finos/legend-studio/issues/502
     '@finos/legend-art/jest/mockESM.jsx',
     '@finos/legend-dev-utils/jest/disallowConsoleError',
     '@finos/legend-dev-utils/jest/handleUnhandledRejection',
@@ -44,9 +48,15 @@ export const baseJestConfig = {
   ],
   moduleNameMapper: {
     ...baseConfig.moduleNameMapper,
-    // TODO: remove this and `lodash` dependency when we upgrade to Jest@27 and use ESM for Jest
+    // TODO: problem with ESM - remove this and `lodash` dependency when `lodash`
+    // natively support ESM and hence, work well with `jest-resolve`
+    // See https://github.com/lodash/lodash/issues/5107
     // See https://github.com/finos/legend-studio/issues/502
     '^lodash-es$': 'lodash',
+    // TODO: problem with ESM - due to a conflict between `uuid` and `jest-resolve@28` we need this workaround
+    // See https://github.com/uuidjs/uuid/pull/616
+    // See https://github.com/finos/legend-studio/issues/502
+    '^uuid$': require.resolve('uuid'),
   },
   modulePathIgnorePatterns: ['packages/.*/lib'],
   testPathIgnorePatterns: [
@@ -87,7 +97,6 @@ export const baseJestConfig = {
 export const getBaseJestProjectConfig = (projectName, packageDir) => ({
   ...baseJestConfig,
   displayName: projectName,
-  name: projectName,
   rootDir: '../..',
   testMatch: [`<rootDir>/${packageDir}/**/__tests__/**/*(*.)test.[jt]s?(x)`],
 });
@@ -106,11 +115,6 @@ export const getBaseJestDOMProjectConfig = (projectName, packageDir) => {
       ...base.moduleNameMapper,
       '^monaco-editor$':
         '@finos/legend-art/lib/testMocks/MockedMonacoEditor.js',
-      // Mock for testing `react-dnd`
-      // See http://react-dnd.github.io/react-dnd/docs/testing
-      '^dnd-core$': 'dnd-core/dist/cjs',
-      '^react-dnd$': 'react-dnd/dist/cjs',
-      '^react-dnd-html5-backend$': 'react-dnd-html5-backend/dist/cjs',
     },
   };
 };

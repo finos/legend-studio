@@ -26,7 +26,6 @@ import {
   SKIP,
 } from 'serializr';
 import {
-  type V1_StereotypePtr,
   V1_stereotypePtrSchema,
   V1_taggedValueSchema,
   V1_packageableElementPointerDeserializerSchema,
@@ -107,14 +106,19 @@ export const V1_dataSpaceModelSchema = createModelSchema(V1_DataSpace, {
         values,
         (value) =>
           serialize(V1_packageableElementPointerDeserializerSchema, value),
-        true,
+        {
+          skipIfEmpty: true,
+          INTERNAL__forceReturnEmptyInTest: true,
+        },
       ),
     (values) =>
       deserializeArray(
         values,
         (value) =>
           deserialize(V1_packageableElementPointerDeserializerSchema, value),
-        false,
+        {
+          skipIfEmpty: false,
+        },
       ),
   ),
   groupId: primitive(),
@@ -125,14 +129,15 @@ export const V1_dataSpaceModelSchema = createModelSchema(V1_DataSpace, {
       serializeArray(
         values,
         (value) => serialize(V1_stereotypePtrSchema, value),
-        true,
+        {
+          skipIfEmpty: true,
+          INTERNAL__forceReturnEmptyInTest: true,
+        },
       ),
     (values) =>
-      deserializeArray(
-        values,
-        (v: V1_StereotypePtr) => deserialize(V1_stereotypePtrSchema, v),
-        false,
-      ),
+      deserializeArray(values, (v) => deserialize(V1_stereotypePtrSchema, v), {
+        skipIfEmpty: false,
+      }),
   ),
   supportInfo: custom(
     (val) => V1_serializeSupportInfo(val),
@@ -143,14 +148,15 @@ export const V1_dataSpaceModelSchema = createModelSchema(V1_DataSpace, {
       serializeArray(
         values,
         (value) => serialize(V1_taggedValueSchema, value),
-        true,
+        {
+          skipIfEmpty: true,
+          INTERNAL__forceReturnEmptyInTest: true,
+        },
       ),
     (values) =>
-      deserializeArray(
-        values,
-        (v: V1_StereotypePtr) => deserialize(V1_taggedValueSchema, v),
-        false,
-      ),
+      deserializeArray(values, (v) => deserialize(V1_taggedValueSchema, v), {
+        skipIfEmpty: false,
+      }),
   ),
   versionId: primitive(),
 });

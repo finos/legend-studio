@@ -277,6 +277,7 @@ const TaxonomyViewerMainPanel = observer(
 
 const LegendTaxonomyAppHeaderMenu: React.FC = () => {
   const applicationStore = useApplicationStore<LegendTaxonomyConfig>();
+  const taxonomyStore = useLegendTaxonomyStore();
 
   const [openTaxonomyTreeDropdown, setOpenTaxonomyTreeDropdown] =
     useState(false);
@@ -287,6 +288,7 @@ const LegendTaxonomyAppHeaderMenu: React.FC = () => {
   const selectTaxonomyTree =
     (option: TaxonomyTreeOption): (() => void) =>
     (): void => {
+      taxonomyStore.taxonomyServerClient.setBaseUrl(option.url);
       applicationStore.navigator.jumpTo(
         applicationStore.navigator.generateLocation(
           generateExploreTaxonomyTreeRoute(option.key),
@@ -429,6 +431,9 @@ export const TaxonomyViewer = observer(() => {
       } else {
         applicationStore.config.setCurrentTaxonomyTreeOption(
           matchingTaxonomyTreeOption,
+        );
+        taxonomyStore.taxonomyServerClient.setBaseUrl(
+          matchingTaxonomyTreeOption.url,
         );
         // NOTE: since we internalize the data space path in the route, we should not re-initialize the graph
         // on the second call when we remove path from the route

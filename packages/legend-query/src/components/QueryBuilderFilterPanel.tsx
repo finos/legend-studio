@@ -27,7 +27,6 @@ import {
   MenuContentItem,
   BlankPanelPlaceholder,
   FilledTriangleIcon,
-  RefreshIcon,
   CompressIcon,
   ExpandIcon,
   BrushIcon,
@@ -75,6 +74,7 @@ import {
   QUERY_BUILDER_PARAMETER_TREE_DND_TYPE,
 } from '../stores/QueryParametersState';
 import { QUERY_BUILDER_GROUP_OPERATION } from '../stores/QueryBuilderOperatorsHelper';
+import type { ValueSpecification } from '@finos/legend-graph';
 
 const FilterConditionDragLayer: React.FC = () => {
   const { itemType, item, isDragging, currentPosition } = useDragLayer(
@@ -166,6 +166,8 @@ const QueryBuilderFilterConditionEditor = observer(
     isPropertyDragOver: boolean;
   }) => {
     const { node, isPropertyDragOver } = props;
+    const graph =
+      node.condition.filterState.queryBuilderState.graphManagerState.graph;
     const changeOperator = (val: QueryBuilderFilterOperator) => (): void =>
       node.condition.changeOperator(val);
     const changeProperty = (
@@ -176,7 +178,7 @@ const QueryBuilderFilterConditionEditor = observer(
           node.condition.filterState.queryBuilderState.explorerState
             .nonNullableTreeData,
           propertyNode,
-          node.condition.filterState.queryBuilderState.graphManagerState.graph,
+          graph,
         ),
       );
     // Drag and Drop on filter condition value
@@ -203,6 +205,11 @@ const QueryBuilderFilterConditionEditor = observer(
       }),
       [handleDrop],
     );
+    const resetNode = (): void => {
+      node.condition.setValue(
+        node.condition.operator.getDefaultFilterConditionValue(node.condition),
+      );
+    };
 
     return (
       <div className="query-builder-filter-tree__node__label__content dnd__overlay__container">
@@ -262,14 +269,16 @@ const QueryBuilderFilterConditionEditor = observer(
               )}
               <QueryBuilderValueSpecificationEditor
                 valueSpecification={node.condition.value}
-                graph={
-                  node.condition.filterState.queryBuilderState.graphManagerState
-                    .graph
+                updateValue={(val: ValueSpecification): void =>
+                  node.condition.setValue(val)
                 }
-                expectedType={
-                  node.condition.propertyExpressionState.propertyExpression.func
-                    .genericType.value.rawType
-                }
+                graph={graph}
+                typeCheckOption={{
+                  expectedType:
+                    node.condition.propertyExpressionState.propertyExpression
+                      .func.genericType.value.rawType,
+                }}
+                resetValue={resetNode}
               />
             </div>
           )}
@@ -367,15 +376,6 @@ const QueryBuilderFilterTreeNodeContainer = observer(
     const isExpandable = node instanceof QueryBuilderFilterTreeGroupNodeData;
     const selectNode = (): void => onNodeSelect?.(node);
     const toggleExpandNode = (): void => node.setIsOpen(!node.isOpen);
-    const resetNode = (): void => {
-      if (node instanceof QueryBuilderFilterTreeConditionNodeData) {
-        node.condition.setValue(
-          node.condition.operator.getDefaultFilterConditionValue(
-            node.condition,
-          ),
-        );
-      }
-    };
     const removeNode = (): void => filterState.removeNodeAndPruneBranch(node);
 
     // Drag and Drop
@@ -555,16 +555,6 @@ const QueryBuilderFilterTreeNodeContainer = observer(
             </div>
           </div>
           <div className="query-builder-filter-tree__node__actions">
-            {node instanceof QueryBuilderFilterTreeConditionNodeData && (
-              <button
-                className="query-builder-filter-tree__node__action"
-                tabIndex={-1}
-                title="Reset Filter Value"
-                onClick={resetNode}
-              >
-                <RefreshIcon style={{ fontSize: '1.6rem' }} />
-              </button>
-            )}
             <button
               className="query-builder-filter-tree__node__action"
               tabIndex={-1}

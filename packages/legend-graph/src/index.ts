@@ -84,6 +84,7 @@ export { ExternalFormatConnection } from './models/metamodels/pure/packageableEl
 export { UrlStream } from './models/metamodels/pure/packageableElements/externalFormat/connection/DSLExternalFormat_UrlStream';
 export { DSLExternalFormat_GraphPreset } from './graph/DSLExternalFormat_Extension';
 export { BindingTransformer } from './models/metamodels/pure/packageableElements/externalFormat/store/DSLExternalFormat_BindingTransformer';
+export * from './graphManager/DSLExternalFormat_PureGraphManagerPlugin';
 // V1 protocols
 export * from './models/protocols/pure/v1/model/packageableElements/V1_PackageableElement';
 export { V1_StereotypePtr } from './models/protocols/pure/v1/model/packageableElements/domain/V1_StereotypePtr';
@@ -119,6 +120,7 @@ export {
   CollectionInstanceValue,
   PrimitiveInstanceValue,
 } from './models/metamodels/pure/valueSpecification/InstanceValue';
+export { INTERNAL__PropagatedValue } from './models/metamodels/pure/valueSpecification/INTERNAL__PropagatedValue';
 export {
   ValueSpecification,
   type ValueSpecificationVisitor,
@@ -225,6 +227,8 @@ export * from './models/protocols/pure/PureProtocolProcessorPlugin';
 // --------------------------------------------- TRANSFORMATION --------------------------------------------------
 
 export { V1_transformConnection } from './models/protocols/pure/v1/transformation/pureGraph/from/V1_ConnectionTransformer';
+export { V1_transformRuntime } from './models/protocols/pure/v1/transformation/pureGraph/from/V1_RuntimeTransformer';
+export { V1_transformPackageableElement } from './models/protocols/pure/v1/transformation/pureGraph/from/V1_PackageableElementTransformer';
 export {
   V1_transformStereotype,
   V1_transformTaggedValue,
@@ -250,12 +254,14 @@ export {
   V1_deserializeConnectionValue,
   V1_serializeConnectionValue,
 } from './models/protocols/pure/v1/transformation/pureProtocol/serializationHelpers/V1_ConnectionSerializationHelper';
+export { V1_runtimePointerModelSchema } from './models/protocols/pure/v1/transformation/pureProtocol/serializationHelpers/V1_RuntimeSerializationHelper';
 export {
   V1_rawLambdaModelSchema,
   V1_deserializeRawValueSpecification,
   V1_serializeRawValueSpecification,
 } from './models/protocols/pure/v1/transformation/pureProtocol/serializationHelpers/V1_RawValueSpecificationSerializationHelper';
 export { V1_transformPropertyReference } from './models/protocols/pure/v1/transformation/pureGraph/from/V1_MappingTransformer';
+export { V1_buildEngineRuntime } from './models/protocols/pure/v1/transformation/pureGraph/to/helpers/V1_RuntimeBuilderHelper';
 export { V1_EngineServerClient } from './models/protocols/pure/v1/engine/V1_EngineServerClient';
 export { V1_Engine } from './models/protocols/pure/v1/engine/V1_Engine';
 export * from './models/protocols/pure/v1/engine/V1_EngineEvent';

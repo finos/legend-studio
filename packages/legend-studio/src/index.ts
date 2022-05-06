@@ -46,6 +46,7 @@ export * from './stores/graphModifier/GraphModifierHelper';
 export * from './stores/graphModifier/DomainGraphModifierHelper';
 export * from './stores/DSLMapping_LegendStudioPlugin_Extension';
 export * from './stores/DSLService_LegendStudioPlugin_Extension';
+export * from './stores/DSLData_LegendStudioPlugin_Extension';
 export * from './stores/graphModifier/DSLGeneration_GraphModifierHelper';
 export * from './stores/graphModifier/DSLService_GraphModifierHelper';
 
@@ -73,6 +74,14 @@ export * from './stores/editor-state/element-editor-state/mapping/MappingEditorS
 export { MappingElementState } from './stores/editor-state/element-editor-state/mapping/MappingElementState';
 export { UnsupportedInstanceSetImplementationState } from './stores/editor-state/element-editor-state/mapping/UnsupportedInstanceSetImplementationState';
 export { getElementIcon } from './components/shared/ElementIconUtils';
+
+// TO BE REMOVED: this is currently needed for project dependency dashboard
+export {
+  SetupStoreProvider,
+  useSetupStore,
+} from './components/setup/SetupStoreProvider';
+export { SetupStore } from './stores/SetupStore';
+export { ProjectSelector } from './components/setup/ProjectSelector';
 
 // --------------------------------------------- TO BE MODULARIZED --------------------------------------------------
 

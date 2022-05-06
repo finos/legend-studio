@@ -28,7 +28,7 @@ import {
   optionalCustom,
   deserializeArray,
   serializeArray,
-  deseralizeMap,
+  deserializeMap,
   serializeMap,
   usingModelSchema,
   usingConstantValueSchema,
@@ -65,8 +65,8 @@ const dataTypeResultTypeModelSchema = createModelSchema(V1_DataTypeResultType, {
 const TDSColumnModelSchema = createModelSchema(V1_TDSColumn, {
   doc: optional(primitive()),
   enumMapping: optionalCustom(
-    (val: Map<string, unknown>) => serializeMap(val),
-    deseralizeMap,
+    (val) => serializeMap(val, (v) => v),
+    (val) => deserializeMap(val, (v) => v),
   ),
   name: primitive(),
   relationalType: optional(primitive()),
@@ -147,13 +147,18 @@ const SQLExecutionNodeModelSchema = createModelSchema(V1_SQLExecutionNode, {
   ),
   executionNodes: custom(
     (values) =>
-      serializeArray(values, (value) => V1_serializeExecutionNode(value), true),
-    (values) =>
-      deserializeArray(
+      serializeArray(
         values,
-        (value) => V1_deserializeExecutionNode(value),
-        false,
+        (value: V1_ResultType) => V1_serializeExecutionNode(value),
+        {
+          skipIfEmpty: true,
+          INTERNAL__forceReturnEmptyInTest: true,
+        },
       ),
+    (values) =>
+      deserializeArray(values, (value) => V1_deserializeExecutionNode(value), {
+        skipIfEmpty: false,
+      }),
   ),
   onConnectionCloseCommitQuery: optional(primitive()),
   onConnectionCloseRollbackQuery: optional(primitive()),

@@ -16,7 +16,12 @@
 
 import { useEffect, useState, useRef, useCallback, forwardRef } from 'react';
 import { observer } from 'mobx-react-lite';
-import { editor as monacoEditorAPI, KeyCode } from 'monaco-editor';
+import {
+  type IDisposable,
+  editor as monacoEditorAPI,
+  languages as monacoLanguagesAPI,
+  KeyCode,
+} from 'monaco-editor';
 import {
   ContextMenu,
   revealError,
@@ -37,6 +42,7 @@ import {
   EDITOR_THEME,
   EDITOR_LANGUAGE,
   useApplicationStore,
+  type LegendApplicationDocumentationEntry,
 } from '@finos/legend-application';
 import { useResizeDetector } from 'react-resize-detector';
 import {
@@ -44,10 +50,65 @@ import {
   CORE_DND_TYPE,
 } from '../../../stores/shared/DnDUtil';
 import { type DropTargetMonitor, useDrop } from 'react-dnd';
-import type { DSL_LegendStudioPlugin_Extension } from '../../../stores/LegendStudioPlugin';
+import type {
+  DSL_LegendStudioPlugin_Extension,
+  PureGrammarTextSuggestion,
+} from '../../../stores/LegendStudioPlugin';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../EditorStoreProvider';
-import { guaranteeNonNullable } from '@finos/legend-shared';
+import {
+  guaranteeNonNullable,
+  hasWhiteSpace,
+  isNonNullable,
+} from '@finos/legend-shared';
+import {
+  PARSER_SECTION_MARKER,
+  PURE_CONNECTION_NAME,
+  PURE_ELEMENT_NAME,
+  PURE_PARSER,
+} from '@finos/legend-graph';
+import type { EditorStore } from '../../../stores/EditorStore';
+import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../../stores/LegendStudioDocumentation';
+import {
+  BLANK_CLASS_SNIPPET,
+  CLASS_WITH_CONSTRAINT_SNIPPET,
+  CLASS_WITH_INHERITANCE_SNIPPET,
+  CLASS_WITH_PROPERTY_SNIPPET,
+  DATA_WITH_EXTERNAL_FORMAT_SNIPPET,
+  DATA_WITH_MODEL_STORE_SNIPPET,
+  createDataElementSnippetWithEmbeddedDataSuggestionSnippet,
+  SIMPLE_PROFILE_SNIPPET,
+  SIMPLE_ENUMERATION_SNIPPET,
+  SIMPLE_ASSOCIATION_SNIPPET,
+  SIMPLE_MEASURE_SNIPPET,
+  BLANK_FUNCTION_SNIPPET,
+  SIMPLE_FUNCTION_SNIPPET,
+  SIMPLE_RUNTIME_SNIPPET,
+  JSON_MODEL_CONNECTION_SNIPPET,
+  XML_MODEL_CONNECTION_SNIPPET,
+  MODEL_CHAIN_CONNECTION_SNIPPET,
+  RELATIONAL_DATABASE_CONNECTION_SNIPPET,
+  BLANK_RELATIONAL_DATABASE_SNIPPET,
+  SIMPLE_GENERATION_SPECIFICATION_SNIPPET,
+  BLANK_SERVICE_SNIPPET,
+  SERVICE_WITH_SINGLE_EXECUTION_SNIPPET,
+  SERVICE_WITH_MULTI_EXECUTION_SNIPPET,
+  BLANK_MAPPING_SNIPPET,
+  MAPPING_WITH_M2M_CLASS_MAPPING_SNIPPET,
+  MAPPING_WITH_ENUMERATION_MAPPING_SNIPPET,
+  MAPPING_WITH_RELATIONAL_CLASS_MAPPING_SNIPPET,
+} from '../../../stores/LegendStudioCodeSnippets';
+import type { DSLData_LegendStudioPlugin_Extension } from '../../../stores/DSLData_LegendStudioPlugin_Extension';
+
+const getSectionParserNameFromLineText = (
+  lineText: string,
+): string | undefined => {
+  if (lineText.startsWith(PARSER_SECTION_MARKER)) {
+    return lineText.substring(PARSER_SECTION_MARKER.length).split(' ')[0];
+  }
+  // NOTE: since leading whitespace to parser name is considered invalid, we will return `undefined`
+  return undefined;
+};
 
 export const GrammarTextEditorHeaderTabContextMenu = observer(
   forwardRef<HTMLDivElement, { children?: React.ReactNode }>(
@@ -72,6 +133,616 @@ export const GrammarTextEditorHeaderTabContextMenu = observer(
   ),
 );
 
+const getParserDocumetation = (
+  editorStore: EditorStore,
+  parserKeyword: string,
+): LegendApplicationDocumentationEntry | undefined => {
+  switch (parserKeyword) {
+    case PURE_PARSER.PURE: {
+      return editorStore.applicationStore.docRegistry.getEntry(
+        LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PURE_PARSER,
+      );
+    }
+    case PURE_PARSER.MAPPING: {
+      return editorStore.applicationStore.docRegistry.getEntry(
+        LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_MAPPING_PARSER,
+      );
+    }
+    case PURE_PARSER.CONNECTION: {
+      return editorStore.applicationStore.docRegistry.getEntry(
+        LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_CONNECTION_PARSER,
+      );
+    }
+    case PURE_PARSER.RUNTIME: {
+      return editorStore.applicationStore.docRegistry.getEntry(
+        LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_RUNTIME_PARSER,
+      );
+    }
+    case PURE_PARSER.SERVICE: {
+      return editorStore.applicationStore.docRegistry.getEntry(
+        LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_SERVICE_PARSER,
+      );
+    }
+    case PURE_PARSER.RELATIONAL: {
+      return editorStore.applicationStore.docRegistry.getEntry(
+        LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_RELATIONAL_PARSER,
+      );
+    }
+    case PURE_PARSER.FILE_GENERATION: {
+      return editorStore.applicationStore.docRegistry.getEntry(
+        LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_FILE_GENERATION_PARSER,
+      );
+    }
+    case PURE_PARSER.GENERATION_SPECIFICATION: {
+      return editorStore.applicationStore.docRegistry.getEntry(
+        LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_GENERATION_SPECIFICATION_PARSER,
+      );
+    }
+    case PURE_PARSER.DATA: {
+      return editorStore.applicationStore.docRegistry.getEntry(
+        LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_DATA_PARSER,
+      );
+    }
+    default: {
+      const parserDocumentationGetters = editorStore.pluginManager
+        .getStudioPlugins()
+        .flatMap(
+          (plugin) =>
+            (
+              plugin as DSL_LegendStudioPlugin_Extension
+            ).getExtraPureGrammarParserDocumentationGetters?.() ?? [],
+        );
+      for (const docGetter of parserDocumentationGetters) {
+        const doc = docGetter(editorStore, parserKeyword);
+        if (doc) {
+          return doc;
+        }
+      }
+    }
+  }
+  return undefined;
+};
+
+const getParserElementDocumentation = (
+  editorStore: EditorStore,
+  parserKeyword: string,
+  elementKeyword: string,
+): LegendApplicationDocumentationEntry | undefined => {
+  switch (parserKeyword) {
+    case PURE_PARSER.PURE: {
+      if (elementKeyword === PURE_ELEMENT_NAME.CLASS) {
+        return editorStore.applicationStore.docRegistry.getEntry(
+          LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_CLASS_ELEMENT,
+        );
+      } else if (elementKeyword === PURE_ELEMENT_NAME.PROFILE) {
+        return editorStore.applicationStore.docRegistry.getEntry(
+          LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PROFILE_ELEMENT,
+        );
+      } else if (elementKeyword === PURE_ELEMENT_NAME.ENUMERATION) {
+        return editorStore.applicationStore.docRegistry.getEntry(
+          LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_ENUMERATION_ELEMENT,
+        );
+      } else if (elementKeyword === PURE_ELEMENT_NAME.MEASURE) {
+        return editorStore.applicationStore.docRegistry.getEntry(
+          LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_MEASURE_ELEMENT,
+        );
+      } else if (elementKeyword === PURE_ELEMENT_NAME.ASSOCIATION) {
+        return editorStore.applicationStore.docRegistry.getEntry(
+          LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_ASSOCIATION_ELEMENT,
+        );
+      } else if (elementKeyword === PURE_ELEMENT_NAME.FUNCTION) {
+        return editorStore.applicationStore.docRegistry.getEntry(
+          LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_FUNCTION_ELEMENT,
+        );
+      }
+      return undefined;
+    }
+    case PURE_PARSER.MAPPING: {
+      if (elementKeyword === PURE_ELEMENT_NAME.MAPPING) {
+        return editorStore.applicationStore.docRegistry.getEntry(
+          LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_MAPPING_ELEMENT,
+        );
+      }
+      return undefined;
+    }
+    case PURE_PARSER.CONNECTION: {
+      if (elementKeyword === PURE_CONNECTION_NAME.JSON_MODEL_CONNECTION) {
+        return editorStore.applicationStore.docRegistry.getEntry(
+          LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_JSON_MODEL_CONNECTION,
+        );
+      } else if (elementKeyword === PURE_CONNECTION_NAME.XML_MODEL_CONNECTION) {
+        return editorStore.applicationStore.docRegistry.getEntry(
+          LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_XML_MODEL_CONNECTION,
+        );
+      } else if (
+        elementKeyword === PURE_CONNECTION_NAME.MODEL_CHAIN_CONNECTION
+      ) {
+        return editorStore.applicationStore.docRegistry.getEntry(
+          LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_MODEL_CHAIN_CONNECTION,
+        );
+      } else if (
+        elementKeyword === PURE_CONNECTION_NAME.RELATIONAL_DATABASE_CONNECTION
+      ) {
+        return editorStore.applicationStore.docRegistry.getEntry(
+          LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_RELATIONAL_DATABASE_CONNECTION,
+        );
+      }
+      // TODO: introduce extension mechanism
+      return undefined;
+    }
+    case PURE_PARSER.RUNTIME: {
+      if (elementKeyword === PURE_ELEMENT_NAME.RUNTIME) {
+        return editorStore.applicationStore.docRegistry.getEntry(
+          LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_RUNTIME_ELEMENT,
+        );
+      }
+      return undefined;
+    }
+    case PURE_PARSER.SERVICE: {
+      if (elementKeyword === PURE_ELEMENT_NAME.SERVICE) {
+        return editorStore.applicationStore.docRegistry.getEntry(
+          LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_SERVICE_ELEMENT,
+        );
+      }
+      return undefined;
+    }
+    case PURE_PARSER.RELATIONAL: {
+      if (elementKeyword === PURE_ELEMENT_NAME.DATABASE) {
+        return editorStore.applicationStore.docRegistry.getEntry(
+          LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_DATABASE_ELEMENT,
+        );
+      }
+      return undefined;
+    }
+    case PURE_PARSER.FILE_GENERATION: {
+      if (elementKeyword === PURE_ELEMENT_NAME.FILE_GENERATION) {
+        return editorStore.applicationStore.docRegistry.getEntry(
+          LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_FILE_GENERATION_ELEMENT,
+        );
+      }
+      return undefined;
+    }
+    case PURE_PARSER.GENERATION_SPECIFICATION: {
+      if (elementKeyword === PURE_ELEMENT_NAME.GENERATION_SPECIFICATION) {
+        return editorStore.applicationStore.docRegistry.getEntry(
+          LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_GENERATION_SPECIFICATION_ELEMENT,
+        );
+      }
+      return undefined;
+    }
+    case PURE_PARSER.DATA: {
+      if (elementKeyword === PURE_ELEMENT_NAME.DATA_ELEMENT) {
+        return editorStore.applicationStore.docRegistry.getEntry(
+          LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_DATA_PARSER,
+        );
+      }
+      return undefined;
+    }
+    default: {
+      const parserElementDocumentationGetters = editorStore.pluginManager
+        .getStudioPlugins()
+        .flatMap(
+          (plugin) =>
+            (
+              plugin as DSL_LegendStudioPlugin_Extension
+            ).getExtraPureGrammarParserElementDocumentationGetters?.() ?? [],
+        );
+      for (const docGetter of parserElementDocumentationGetters) {
+        const doc = docGetter(editorStore, parserKeyword, elementKeyword);
+        if (doc) {
+          return doc;
+        }
+      }
+    }
+  }
+  return undefined;
+};
+
+const getParserKeywordSuggestions = (
+  editorStore: EditorStore,
+): PureGrammarTextSuggestion[] => {
+  const parserKeywordSuggestions = editorStore.pluginManager
+    .getStudioPlugins()
+    .flatMap(
+      (plugin) =>
+        (
+          plugin as DSL_LegendStudioPlugin_Extension
+        ).getExtraPureGrammarParserKeywordSuggestionGetters?.() ?? [],
+    )
+    .flatMap((suggestionGetter) => suggestionGetter(editorStore));
+  return [
+    {
+      text: PURE_PARSER.PURE,
+      description: `(core Pure)`,
+      documentation: editorStore.applicationStore.docRegistry.getEntry(
+        LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PURE_PARSER,
+      ),
+      insertText: PURE_PARSER.PURE,
+    },
+    {
+      text: PURE_PARSER.MAPPING,
+      description: `(dsl)`,
+      documentation: editorStore.applicationStore.docRegistry.getEntry(
+        LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_MAPPING_PARSER,
+      ),
+      insertText: PURE_PARSER.MAPPING,
+    },
+    {
+      text: PURE_PARSER.CONNECTION,
+      description: `(dsl)`,
+      documentation: editorStore.applicationStore.docRegistry.getEntry(
+        LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_CONNECTION_PARSER,
+      ),
+      insertText: PURE_PARSER.CONNECTION,
+    },
+    {
+      text: PURE_PARSER.RUNTIME,
+      description: `(dsl)`,
+      documentation: editorStore.applicationStore.docRegistry.getEntry(
+        LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_RUNTIME_PARSER,
+      ),
+      insertText: PURE_PARSER.RUNTIME,
+    },
+    {
+      text: PURE_PARSER.RELATIONAL,
+      description: `(external store)`,
+      documentation: editorStore.applicationStore.docRegistry.getEntry(
+        LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_RELATIONAL_PARSER,
+      ),
+      insertText: PURE_PARSER.RELATIONAL,
+    },
+    {
+      text: PURE_PARSER.SERVICE,
+      description: `(dsl)`,
+      documentation: editorStore.applicationStore.docRegistry.getEntry(
+        LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_SERVICE_PARSER,
+      ),
+      insertText: PURE_PARSER.SERVICE,
+    },
+    {
+      text: PURE_PARSER.GENERATION_SPECIFICATION,
+      description: `(dsl)`,
+      documentation: editorStore.applicationStore.docRegistry.getEntry(
+        LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_GENERATION_SPECIFICATION_PARSER,
+      ),
+      insertText: PURE_PARSER.GENERATION_SPECIFICATION,
+    },
+    {
+      text: PURE_PARSER.FILE_GENERATION,
+      description: `(dsl)`,
+      documentation: editorStore.applicationStore.docRegistry.getEntry(
+        LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_FILE_GENERATION_PARSER,
+      ),
+      insertText: PURE_PARSER.FILE_GENERATION,
+    },
+    {
+      text: PURE_PARSER.DATA,
+      description: `(dsl)`,
+      documentation: editorStore.applicationStore.docRegistry.getEntry(
+        LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_DATA_PARSER,
+      ),
+      insertText: PURE_PARSER.DATA,
+    },
+    ...parserKeywordSuggestions,
+  ];
+};
+
+const getParserElementSnippetSuggestions = (
+  editorStore: EditorStore,
+  parserKeyword: string,
+): PureGrammarTextSuggestion[] => {
+  switch (parserKeyword) {
+    case PURE_PARSER.PURE: {
+      return [
+        // class
+        {
+          text: PURE_ELEMENT_NAME.CLASS,
+          description: '(blank)',
+          insertText: BLANK_CLASS_SNIPPET,
+        },
+        {
+          text: PURE_ELEMENT_NAME.CLASS,
+          description: 'with property',
+          insertText: CLASS_WITH_PROPERTY_SNIPPET,
+        },
+        {
+          text: PURE_ELEMENT_NAME.CLASS,
+          description: 'with inheritance',
+          insertText: CLASS_WITH_INHERITANCE_SNIPPET,
+        },
+        {
+          text: PURE_ELEMENT_NAME.CLASS,
+          description: 'with constraint',
+          insertText: CLASS_WITH_CONSTRAINT_SNIPPET,
+        },
+        // profile
+        {
+          text: PURE_ELEMENT_NAME.PROFILE,
+          description: 'simple',
+          insertText: SIMPLE_PROFILE_SNIPPET,
+        },
+        // enumeration
+        {
+          text: PURE_ELEMENT_NAME.ENUMERATION,
+          description: 'simple',
+          insertText: SIMPLE_ENUMERATION_SNIPPET,
+        },
+        // association
+        {
+          text: PURE_ELEMENT_NAME.ASSOCIATION,
+          description: 'simple',
+          insertText: SIMPLE_ASSOCIATION_SNIPPET,
+        },
+        // measure
+        {
+          text: PURE_ELEMENT_NAME.MEASURE,
+          description: 'simple',
+          insertText: SIMPLE_MEASURE_SNIPPET,
+        },
+        // function
+        {
+          text: PURE_ELEMENT_NAME.FUNCTION,
+          description: '(blank)',
+          insertText: BLANK_FUNCTION_SNIPPET,
+        },
+        {
+          text: PURE_ELEMENT_NAME.FUNCTION,
+          description: 'simple',
+          insertText: SIMPLE_FUNCTION_SNIPPET,
+        },
+      ];
+    }
+    case PURE_PARSER.MAPPING: {
+      return [
+        {
+          text: PURE_ELEMENT_NAME.MAPPING,
+          description: '(blank)',
+          insertText: BLANK_MAPPING_SNIPPET,
+        },
+        {
+          text: PURE_ELEMENT_NAME.MAPPING,
+          description: 'with model-to-model mapping',
+          insertText: MAPPING_WITH_M2M_CLASS_MAPPING_SNIPPET,
+        },
+        {
+          text: PURE_ELEMENT_NAME.MAPPING,
+          description: 'with relational mapping',
+          insertText: MAPPING_WITH_RELATIONAL_CLASS_MAPPING_SNIPPET,
+        },
+        {
+          text: PURE_ELEMENT_NAME.MAPPING,
+          description: 'with enumeration mapping',
+          insertText: MAPPING_WITH_ENUMERATION_MAPPING_SNIPPET,
+        },
+      ];
+    }
+    case PURE_PARSER.CONNECTION: {
+      return [
+        {
+          text: PURE_CONNECTION_NAME.JSON_MODEL_CONNECTION,
+          description: 'JSON model connection',
+          insertText: JSON_MODEL_CONNECTION_SNIPPET,
+        },
+        {
+          text: PURE_CONNECTION_NAME.XML_MODEL_CONNECTION,
+          description: 'XML model connection',
+          insertText: XML_MODEL_CONNECTION_SNIPPET,
+        },
+        {
+          text: PURE_CONNECTION_NAME.MODEL_CHAIN_CONNECTION,
+          description: 'model chain connection',
+          insertText: MODEL_CHAIN_CONNECTION_SNIPPET,
+        },
+        {
+          text: PURE_CONNECTION_NAME.RELATIONAL_DATABASE_CONNECTION,
+          description: 'relational database connection',
+          insertText: RELATIONAL_DATABASE_CONNECTION_SNIPPET,
+        },
+        // TODO: extension mehcanism for connection and relational database connection
+      ];
+    }
+    case PURE_PARSER.RUNTIME: {
+      return [
+        {
+          text: PURE_ELEMENT_NAME.RUNTIME,
+          description: 'simple',
+          insertText: SIMPLE_RUNTIME_SNIPPET,
+        },
+      ];
+    }
+    case PURE_PARSER.SERVICE: {
+      return [
+        {
+          text: PURE_ELEMENT_NAME.SERVICE,
+          description: '(blank)',
+          insertText: BLANK_SERVICE_SNIPPET,
+        },
+        {
+          text: PURE_ELEMENT_NAME.SERVICE,
+          description: 'with single execution',
+          insertText: SERVICE_WITH_SINGLE_EXECUTION_SNIPPET,
+        },
+        {
+          text: PURE_ELEMENT_NAME.SERVICE,
+          description: 'with multi execution',
+          insertText: SERVICE_WITH_MULTI_EXECUTION_SNIPPET,
+        },
+      ];
+    }
+    case PURE_PARSER.RELATIONAL: {
+      return [
+        {
+          text: PURE_ELEMENT_NAME.DATABASE,
+          description: '(blank)',
+          insertText: BLANK_RELATIONAL_DATABASE_SNIPPET,
+        },
+      ];
+    }
+    case PURE_PARSER.FILE_GENERATION: {
+      return [
+        // TODO?: add extension mechanism for suggestion for different file generations
+      ];
+    }
+    case PURE_PARSER.GENERATION_SPECIFICATION: {
+      return [
+        {
+          text: PURE_ELEMENT_NAME.GENERATION_SPECIFICATION,
+          description: '(blank)',
+          insertText: SIMPLE_GENERATION_SPECIFICATION_SNIPPET,
+        },
+      ];
+    }
+    case PURE_PARSER.DATA: {
+      const embeddedDateSnippetSuggestions = editorStore.pluginManager
+        .getStudioPlugins()
+        .flatMap(
+          (plugin) =>
+            (
+              plugin as DSLData_LegendStudioPlugin_Extension
+            ).getExtraEmbeddedDataSnippetSuggestions?.() ?? [],
+        );
+      return [
+        {
+          text: PURE_ELEMENT_NAME.DATA_ELEMENT,
+          description: 'with external format',
+          insertText: DATA_WITH_EXTERNAL_FORMAT_SNIPPET,
+        },
+        {
+          text: PURE_ELEMENT_NAME.DATA_ELEMENT,
+          description: 'using model store',
+          insertText: DATA_WITH_MODEL_STORE_SNIPPET,
+        },
+        ...embeddedDateSnippetSuggestions.map((suggestion) => ({
+          text: PURE_ELEMENT_NAME.DATA_ELEMENT,
+          description: suggestion.description,
+          insertText: createDataElementSnippetWithEmbeddedDataSuggestionSnippet(
+            suggestion.text,
+          ),
+        })),
+      ];
+    }
+    default: {
+      const parserElementSnippetSuggestionsGetters = editorStore.pluginManager
+        .getStudioPlugins()
+        .flatMap(
+          (plugin) =>
+            (
+              plugin as DSL_LegendStudioPlugin_Extension
+            ).getExtraPureGrammarParserElementSnippetSuggestionsGetters?.() ??
+            [],
+        );
+      for (const snippetSuggestionsGetter of parserElementSnippetSuggestionsGetters) {
+        const snippetSuggestions = snippetSuggestionsGetter(
+          editorStore,
+          parserKeyword,
+        );
+        if (snippetSuggestions) {
+          return snippetSuggestions;
+        }
+      }
+    }
+  }
+  return [];
+};
+
+const getInlineSnippetSuggestions = (
+  editorStore: EditorStore,
+): PureGrammarTextSuggestion[] => [
+  {
+    text: 'let',
+    description: 'new variable',
+    insertText: `let \${1:} = \${2:};`,
+  },
+  {
+    text: 'let',
+    description: 'new collection',
+    insertText: `let \${1:} = [\${2:}];`,
+  },
+  {
+    text: 'cast',
+    description: 'type casting',
+    insertText: `cast(@\${1:model::SomeClass})`,
+  },
+  // conditionals
+  {
+    text: 'if',
+    description: '(conditional)',
+    insertText: `if(\${1:'true'}, | \${2:/* if true do this */}, | \${3:/* if false do this */})`,
+  },
+  {
+    text: 'case',
+    description: '(conditional)',
+    insertText: `case(\${1:}, \${2:'true'}, \${3:'false'})`,
+  },
+  {
+    text: 'match',
+    description: '(conditional)',
+    insertText: `match([x:\${1:String[1]}, \${2:''}])`,
+  },
+  // collection
+  {
+    text: 'map',
+    description: '(collection)',
+    insertText: `map(x|\${1:})`,
+  },
+  {
+    text: 'filter',
+    description: '(collection)',
+    insertText: `filter(x|\${1:})`,
+  },
+  {
+    text: 'fold',
+    description: '(collection)',
+    insertText: `fold({a, b| \${1:$a + $b}}, \${2:0})`,
+  },
+  {
+    text: 'filter',
+    description: '(collection)',
+    insertText: `filter(x|\${1:})`,
+  },
+  {
+    text: 'sort',
+    description: '(collection)',
+    insertText: `sort()`,
+  },
+  {
+    text: 'in',
+    description: '(collection)',
+    insertText: `in()`,
+  },
+  {
+    text: 'slice',
+    description: '(collection)',
+    insertText: `slice(\${1:1},$\{2:2})`,
+  },
+  {
+    text: 'removeDuplicates',
+    description: '(collection)',
+    insertText: `removeDuplicates()`,
+  },
+  {
+    text: 'toOne',
+    description: '(collection)',
+    insertText: `toOne()`,
+  },
+  {
+    text: 'isEmpty',
+    description: '(collection)',
+    insertText: `isEmpty()`,
+  },
+  // string
+  {
+    text: 'endsWith',
+    description: '(string)',
+    insertText: `endsWith()`,
+  },
+  {
+    text: 'startsWith',
+    description: '(string)',
+    insertText: `startsWith()`,
+  },
+];
+
 export const GrammarTextEditor = observer(() => {
   const [editor, setEditor] = useState<
     monacoEditorAPI.IStandaloneCodeEditor | undefined
@@ -84,6 +755,8 @@ export const GrammarTextEditor = observer(() => {
   const error = grammarTextEditorState.error;
   const value = normalizeLineEnding(grammarTextEditorState.graphGrammarText);
   const textEditorRef = useRef<HTMLDivElement>(null);
+  const hoverProviderDisposer = useRef<IDisposable | undefined>(undefined);
+  const suggestionProviderDisposer = useRef<IDisposable | undefined>(undefined);
 
   const leaveTextMode = applicationStore.guardUnhandledError(() =>
     flowResult(editorStore.toggleTextMode()),
@@ -143,7 +816,7 @@ export const GrammarTextEditor = observer(() => {
       (plugin) =>
         (
           plugin as DSL_LegendStudioPlugin_Extension
-        ).getExtraGrammarTextEditorDnDTypes?.() ?? [],
+        ).getExtraPureGrammarTextEditorDnDTypes?.() ?? [],
     );
   const handleDrop = useCallback(
     (item: ElementDragSource, monitor: DropTargetMonitor): void => {
@@ -168,7 +841,6 @@ export const GrammarTextEditor = observer(() => {
         CORE_DND_TYPE.PROJECT_EXPLORER_FUNCTION,
         CORE_DND_TYPE.PROJECT_EXPLORER_FLAT_DATA,
         CORE_DND_TYPE.PROJECT_EXPLORER_DATABASE,
-        CORE_DND_TYPE.PROJECT_EXPLORER_SERVICE_STORE,
         CORE_DND_TYPE.PROJECT_EXPLORER_MAPPING,
         CORE_DND_TYPE.PROJECT_EXPLORER_SERVICE,
         CORE_DND_TYPE.PROJECT_EXPLORER_CONNECTION,
@@ -214,6 +886,231 @@ export const GrammarTextEditor = observer(() => {
     // Disable editing if user is in viewer mode
     editor.updateOptions({ readOnly: editorStore.isInViewerMode });
   }
+
+  // hover
+  hoverProviderDisposer.current?.dispose();
+  hoverProviderDisposer.current = monacoLanguagesAPI.registerHoverProvider(
+    EDITOR_LANGUAGE.PURE,
+    {
+      provideHover: (model, position) => {
+        const currentWord = model.getWordAtPosition(position);
+        if (!currentWord) {
+          return { contents: [] };
+        }
+
+        // show documention for parser section
+        const lineTextIncludingWordRange = {
+          startLineNumber: position.lineNumber,
+          startColumn: 1,
+          endLineNumber: position.lineNumber,
+          endColumn: currentWord.endColumn,
+        };
+        const lineTextIncludingWord = model.getValueInRange(
+          lineTextIncludingWordRange,
+        );
+        // NOTE: we don't need to trim here since the leading whitespace in front of
+        // the section header is considered invalid syntax in the grammar
+        if (
+          !hasWhiteSpace(lineTextIncludingWord) &&
+          lineTextIncludingWord.startsWith(PARSER_SECTION_MARKER)
+        ) {
+          const parserKeyword = lineTextIncludingWord.substring(
+            PARSER_SECTION_MARKER.length,
+          );
+          const doc = getParserDocumetation(editorStore, parserKeyword);
+          if (doc) {
+            return {
+              range: lineTextIncludingWordRange,
+              contents: [
+                doc.markdownText
+                  ? {
+                      value: doc.markdownText.value,
+                    }
+                  : undefined,
+                doc.url
+                  ? {
+                      value: `[See documentation](${doc.url})`,
+                    }
+                  : undefined,
+              ].filter(isNonNullable),
+            };
+          }
+        }
+
+        // show documentation for parser element
+        const textUntilPosition = model.getValueInRange({
+          startLineNumber: 1,
+          startColumn: 1,
+          endLineNumber: position.lineNumber,
+          endColumn: position.column,
+        });
+        const allParserSectionHeaders =
+          // NOTE: since `###Pure` is implicitly considered as the first section, we prepend it to the text
+          `${PARSER_SECTION_MARKER}${PURE_PARSER.PURE}\n${textUntilPosition}`
+            .split('\n')
+            .filter((line) => line.startsWith(PARSER_SECTION_MARKER));
+        const currentSectionParserKeyword = getSectionParserNameFromLineText(
+          allParserSectionHeaders[allParserSectionHeaders.length - 1] ?? '',
+        );
+        if (currentSectionParserKeyword) {
+          const doc = getParserElementDocumentation(
+            editorStore,
+            currentSectionParserKeyword,
+            currentWord.word,
+          );
+          if (doc) {
+            return {
+              range: {
+                startLineNumber: position.lineNumber,
+                startColumn: currentWord.startColumn,
+                endLineNumber: position.lineNumber,
+                endColumn: currentWord.endColumn,
+              },
+              contents: [
+                doc.markdownText
+                  ? {
+                      value: doc.markdownText.value,
+                    }
+                  : undefined,
+                doc.url
+                  ? {
+                      value: `[See documentation](${doc.url})`,
+                    }
+                  : undefined,
+              ].filter(isNonNullable),
+            };
+          }
+        }
+
+        return { contents: [] };
+      },
+    },
+  );
+
+  // suggestion
+  const parserKeywordSuggestions = getParserKeywordSuggestions(editorStore);
+  suggestionProviderDisposer.current?.dispose();
+  suggestionProviderDisposer.current =
+    monacoLanguagesAPI.registerCompletionItemProvider(EDITOR_LANGUAGE.PURE, {
+      // NOTE: we need to specify this to show suggestions for section
+      // because by default, only alphanumeric characters trigger completion item provider
+      // See https://microsoft.github.io/monaco-editor/api/interfaces/monaco.languages.CompletionContext.html#triggerCharacter
+      // See https://github.com/microsoft/monaco-editor/issues/2530#issuecomment-861757198
+      triggerCharacters: ['#'],
+      provideCompletionItems: (model, position) => {
+        const suggestions: monacoLanguagesAPI.CompletionItem[] = [];
+        const currentWord = model.getWordUntilPosition(position);
+
+        // suggestions for parser keyword
+        const lineTextIncludingWordRange = {
+          startLineNumber: position.lineNumber,
+          startColumn: 1,
+          endLineNumber: position.lineNumber,
+          endColumn: currentWord.endColumn,
+        };
+        const lineTextIncludingWord = model.getValueInRange(
+          lineTextIncludingWordRange,
+        );
+        // NOTE: make sure parser keyword suggestions only show up when the current word is the
+        // the first word of the line since parser section header must not be preceded by anything
+        if (!hasWhiteSpace(lineTextIncludingWord.trim())) {
+          parserKeywordSuggestions.forEach((suggestion) => {
+            suggestions.push({
+              label: {
+                label: `${PARSER_SECTION_MARKER}${suggestion.text}`,
+                description: suggestion.description,
+              },
+              kind: monacoLanguagesAPI.CompletionItemKind.Keyword,
+              insertText: `${PARSER_SECTION_MARKER}${suggestion.insertText}\n`,
+              range: lineTextIncludingWordRange,
+              documentation: suggestion.documentation
+                ? suggestion.documentation.markdownText
+                  ? {
+                      value: suggestion.documentation.markdownText.value,
+                    }
+                  : suggestion.documentation.text
+                : undefined,
+            } as monacoLanguagesAPI.CompletionItem);
+          });
+        }
+
+        // suggestions for parser element snippets
+        const textUntilPosition = model.getValueInRange({
+          startLineNumber: 1,
+          startColumn: 1,
+          endLineNumber: position.lineNumber,
+          endColumn: position.column,
+        });
+        const allParserSectionHeaders =
+          // NOTE: since `###Pure` is implicitly considered as the first section, we prepend it to the text
+          `${PARSER_SECTION_MARKER}${PURE_PARSER.PURE}\n${textUntilPosition}`
+            .split('\n')
+            .filter((line) => line.startsWith(PARSER_SECTION_MARKER));
+        const currentSectionParserKeyword = getSectionParserNameFromLineText(
+          allParserSectionHeaders[allParserSectionHeaders.length - 1] ?? '',
+        );
+        if (currentSectionParserKeyword) {
+          getParserElementSnippetSuggestions(
+            editorStore,
+            currentSectionParserKeyword,
+          ).forEach((snippetSuggestion) => {
+            suggestions.push({
+              label: {
+                label: snippetSuggestion.text,
+                description: snippetSuggestion.description,
+              },
+              kind: monacoLanguagesAPI.CompletionItemKind.Snippet,
+              insertTextRules:
+                monacoLanguagesAPI.CompletionItemInsertTextRule.InsertAsSnippet,
+              insertText: `${snippetSuggestion.insertText}\n`,
+              range: {
+                startLineNumber: position.lineNumber,
+                startColumn: currentWord.startColumn,
+                endLineNumber: position.lineNumber,
+                endColumn: currentWord.endColumn,
+              },
+              documentation: snippetSuggestion.documentation
+                ? snippetSuggestion.documentation.markdownText
+                  ? {
+                      value: snippetSuggestion.documentation.markdownText.value,
+                    }
+                  : snippetSuggestion.documentation.text
+                : undefined,
+            } as monacoLanguagesAPI.CompletionItem);
+          });
+        }
+
+        getInlineSnippetSuggestions(editorStore).forEach(
+          (snippetSuggestion) => {
+            suggestions.push({
+              label: {
+                label: snippetSuggestion.text,
+                description: snippetSuggestion.description,
+              },
+              kind: monacoLanguagesAPI.CompletionItemKind.Snippet,
+              insertTextRules:
+                monacoLanguagesAPI.CompletionItemInsertTextRule.InsertAsSnippet,
+              insertText: snippetSuggestion.insertText,
+              range: {
+                startLineNumber: position.lineNumber,
+                startColumn: currentWord.startColumn,
+                endLineNumber: position.lineNumber,
+                endColumn: currentWord.endColumn,
+              },
+              documentation: snippetSuggestion.documentation
+                ? snippetSuggestion.documentation.markdownText
+                  ? {
+                      value: snippetSuggestion.documentation.markdownText.value,
+                    }
+                  : snippetSuggestion.documentation.text
+                : undefined,
+            } as monacoLanguagesAPI.CompletionItem);
+          },
+        );
+
+        return { suggestions };
+      },
+    });
 
   /**
    * Reveal error has to be in an effect like this because, we want to reveal the error.
@@ -278,6 +1175,10 @@ export const GrammarTextEditor = observer(() => {
       if (editor) {
         disposeEditor(editor);
       }
+      // NOTE: make sure the call the disposer again after leaving this editor
+      // else we would end up with duplicated suggestions and hover infos
+      hoverProviderDisposer.current?.dispose();
+      suggestionProviderDisposer.current?.dispose();
     },
     [editor],
   );

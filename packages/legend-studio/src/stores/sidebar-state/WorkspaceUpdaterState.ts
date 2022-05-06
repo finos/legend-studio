@@ -209,7 +209,6 @@ export class WorkspaceUpdaterState {
       ]);
       this.editorStore.changeDetectionState.start();
       yield Promise.all([
-        this.editorStore.changeDetectionState.computeLocalChanges(true),
         this.editorStore.changeDetectionState.computeAggregatedProjectLatestChanges(
           true,
         ),
@@ -345,7 +344,7 @@ export class WorkspaceUpdaterState {
           undefined,
         )) as PlainObject<Review>[]
       )
-        .map(Review.serialization.fromJson)
+        .map((v) => Review.serialization.fromJson(v))
         .filter((review) => !baseReview || review.id !== baseReview.id); // make sure to exclude the base review
     } catch (error) {
       assertErrorThrown(error);

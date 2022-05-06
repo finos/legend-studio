@@ -27,7 +27,12 @@ export abstract class V1_PureExecution
   extends V1_ServiceExecution
   implements Hashable
 {
-  func!: V1_RawLambda; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
+  /**
+   * Studio does not process value specification, they are left in raw JSON form
+   *
+   * @discrepancy model
+   */
+  func!: V1_RawLambda;
 
   get hashCode(): string {
     return hashArray([CORE_HASH_STRUCTURE.SERVICE_PURE_EXECUTION, this.func]);

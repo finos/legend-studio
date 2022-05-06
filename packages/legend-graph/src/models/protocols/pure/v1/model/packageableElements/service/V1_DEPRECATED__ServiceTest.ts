@@ -32,7 +32,12 @@ export abstract class V1_DEPRECATED__ServiceTest implements Hashable {
  */
 export class V1_DEPRECATED__TestContainer implements Hashable {
   parametersValues: unknown[] = []; // ValueSpecification?
-  assert!: V1_RawLambda; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process lambda
+  /**
+   * Studio does not process value specification, they are left in raw JSON form
+   *
+   * @discrepancy model
+   */
+  assert!: V1_RawLambda;
 
   get hashCode(): string {
     return hashArray([

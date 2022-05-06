@@ -45,6 +45,8 @@ export enum V1_DatabaseType {
 
 export abstract class V1_DatabaseConnection extends V1_Connection {
   type!: V1_DatabaseType;
+  // this mirrors `type` and probably should removed
+  databaseType!: string;
   timeZone?: string | undefined;
   quoteIdentifiers?: boolean | undefined;
   postProcessorWithParameter: unknown[] = [];

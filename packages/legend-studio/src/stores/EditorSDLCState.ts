@@ -188,7 +188,7 @@ export class EditorSDLCState {
         (yield this.editorStore.sdlcServerClient.getVersions(
           this.activeProject.projectId,
         )) as PlainObject<Version>[]
-      ).map(Version.serialization.fromJson);
+      ).map((v) => Version.serialization.fromJson(v));
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
@@ -430,7 +430,7 @@ export class EditorSDLCState {
           this.activeWorkspace,
           RevisionAlias.CURRENT,
         )) as PlainObject<Workflow>[]
-      ).map(Workflow.serialization.fromJson);
+      ).map((v) => Workflow.serialization.fromJson(v));
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(

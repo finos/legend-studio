@@ -15,10 +15,10 @@
  */
 
 import { useCallback } from 'react';
-import { clsx, Dialog, InfoCircleIcon, RefreshIcon } from '@finos/legend-art';
+import { clsx, Dialog, InfoCircleIcon } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
-import { QueryBuilderValueSpecificationEditor } from './QueryBuilderValueSpecificationEditor';
 import {
+  generateMilestonedPropertyParameterValue,
   generateValueSpecificationForParameter,
   getPropertyPath,
   type QueryBuilderDerivedPropertyExpressionState,
@@ -42,8 +42,11 @@ import {
   Class,
   Enumeration,
   PrimitiveType,
+  PRIMITIVE_TYPE,
 } from '@finos/legend-graph';
+import { QueryBuilderValueSpecificationEditor } from './QueryBuilderValueSpecificationEditor';
 import { propertyExpression_setParametersValue } from '../stores/QueryBuilderValueSpecificationModifierHelper';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 
 const DerivedPropertyParameterValueEditor = observer(
   (props: {
@@ -52,7 +55,11 @@ const DerivedPropertyParameterValueEditor = observer(
     idx: number;
   }) => {
     const { derivedPropertyExpressionState, variable, idx } = props;
-    const parameterValue = derivedPropertyExpressionState.parameterValues[idx];
+    const graph =
+      derivedPropertyExpressionState.queryBuilderState.graphManagerState.graph;
+    const parameterType = guaranteeNonNullable(
+      derivedPropertyExpressionState.parameters[idx]?.genericType,
+    ).value.rawType;
     const handleDrop = useCallback(
       (item: QueryBuilderParameterDragSource): void => {
         propertyExpression_setParametersValue(
@@ -71,7 +78,14 @@ const DerivedPropertyParameterValueEditor = observer(
           item: QueryBuilderParameterDragSource,
           monitor: DropTargetMonitor,
         ): void => {
-          if (!monitor.didDrop()) {
+          const itemType = item.variable.parameter.genericType?.value.rawType;
+          if (
+            !monitor.didDrop() &&
+            // Doing a type check, which only allows dragging and dropping parameters of the same type or of child types
+            itemType &&
+            (parameterType.isSuperType(itemType) ||
+              parameterType.name === itemType.name)
+          ) {
             handleDrop(item);
           }
         },
@@ -87,11 +101,15 @@ const DerivedPropertyParameterValueEditor = observer(
       propertyExpression_setParametersValue(
         derivedPropertyExpressionState.propertyExpression,
         idx + 1,
-        generateValueSpecificationForParameter(
-          variable,
-          derivedPropertyExpressionState.queryBuilderState.graphManagerState
-            .graph,
-        ),
+        generateMilestonedPropertyParameterValue(
+          derivedPropertyExpressionState,
+          idx,
+        ) ??
+          generateValueSpecificationForParameter(
+            variable,
+            derivedPropertyExpressionState.queryBuilderState.graphManagerState
+              .graph,
+          ),
         derivedPropertyExpressionState.queryBuilderState.observableContext,
       );
     };
@@ -114,25 +132,27 @@ const DerivedPropertyParameterValueEditor = observer(
             </div>
           )}
           <QueryBuilderValueSpecificationEditor
-            valueSpecification={parameterValue as ValueSpecification}
-            graph={
-              derivedPropertyExpressionState.queryBuilderState.graphManagerState
-                .graph
-            }
-            expectedType={
-              parameterValue?.genericType?.value.rawType ??
-              derivedPropertyExpressionState.propertyExpression.func.genericType
-                .value.rawType
-            }
+            valueSpecification={guaranteeNonNullable(
+              derivedPropertyExpressionState.parameterValues[idx],
+            )}
+            updateValue={(val: ValueSpecification): void => {
+              propertyExpression_setParametersValue(
+                derivedPropertyExpressionState.propertyExpression,
+                idx + 1,
+                val,
+                derivedPropertyExpressionState.queryBuilderState
+                  .observableContext,
+              );
+            }}
+            graph={graph}
+            typeCheckOption={{
+              expectedType: parameterType,
+              match:
+                parameterType ===
+                graph.getPrimitiveType(PRIMITIVE_TYPE.DATETIME),
+            }}
+            resetValue={resetParameterValue}
           />
-          <button
-            className="query-builder-filter-tree__node__action"
-            tabIndex={-1}
-            title="Reset Parameter Value"
-            onClick={resetParameterValue}
-          >
-            <RefreshIcon style={{ fontSize: '1.6rem' }} />
-          </button>
         </div>
         <div className="panel__content__form__section__list"></div>
       </div>

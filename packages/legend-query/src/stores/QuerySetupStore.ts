@@ -189,7 +189,7 @@ export class CreateQuerySetupState extends QuerySetupState {
     try {
       this.projects = (
         (yield this.queryStore.depotServerClient.getProjects()) as PlainObject<ProjectData>[]
-      ).map(ProjectData.serialization.fromJson);
+      ).map((v) => ProjectData.serialization.fromJson(v));
       this.loadProjectsState.pass();
     } catch (error) {
       assertErrorThrown(error);
@@ -275,7 +275,7 @@ export class ServiceQuerySetupState extends QuerySetupState {
     try {
       this.projects = (
         (yield this.queryStore.depotServerClient.getProjects()) as PlainObject<ProjectData>[]
-      ).map(ProjectData.serialization.fromJson);
+      ).map((v) => ProjectData.serialization.fromJson(v));
       this.loadProjectsState.pass();
     } catch (error) {
       assertErrorThrown(error);

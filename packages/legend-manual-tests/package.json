@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-manual-tests",
-  "version": "0.1.17",
+  "version": "1.0.2",
   "private": true,
   "description": "Legend manual tests",
   "keywords": [
@@ -18,8 +18,9 @@
     "clean": "yarn clean:cache",
     "clean:cache": "rimraf \"build\"",
     "lint:js": "cross-env NODE_ENV=production eslint --cache --cache-location ./build/.eslintcache --report-unused-disable-directives --parser-options=project:\"./tsconfig.json\",requireConfigFile:false \"./src/**/*.{js,ts,tsx}\"",
-    "test:manual": "jest --config jest.config.manual.js",
-    "test:watch": "jest --config jest.config.manual.js --watch"
+    "test:manual": "cross-env TEST_MODE=grammar jest --config jest.config.manual.js",
+    "test:manual:ci": "cross-env TEST_MODE=grammar jest --config jest.config.manual.js --maxWorkers=100%",
+    "test:watch": "cross-env TEST_MODE=grammar jest --config jest.config.manual.js --watch"
   },
   "dependencies": {
     "@finos/legend-art": "workspace:*",
@@ -29,12 +30,12 @@
   },
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",
-    "axios": "0.26.1",
+    "axios": "0.27.2",
     "cross-env": "7.0.3",
-    "eslint": "8.13.0",
-    "jest": "27.5.1",
+    "eslint": "8.14.0",
+    "jest": "28.0.3",
     "npm-run-all": "4.1.5",
     "rimraf": "3.0.2",
-    "typescript": "4.6.3"
+    "typescript": "4.6.4"
   }
 }

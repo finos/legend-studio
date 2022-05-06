@@ -56,7 +56,7 @@ class LegendStudioApplicationCoreOptions {
    * imports.
    *
    * This flag will be kept until we have full support for section index
-   * See See https://github.com/finos/legend-studio/issues/1067
+   * See https://github.com/finos/legend-studio/issues/1067
    */
   TEMPORARY__preserveSectionIndex = false;
   /**

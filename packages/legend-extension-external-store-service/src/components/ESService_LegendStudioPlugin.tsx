@@ -37,6 +37,12 @@ import {
   type ElementIconGetter,
   type DSLData_LegendStudioPlugin_Extension,
   type EmbeddedDataTypeOption,
+  type PureGrammarTextSuggestion,
+  type PureGrammarParserElementSnippetSuggestionsGetter,
+  type PureGrammarParserKeywordSuggestionGetter,
+  type PureGrammarParserDocumentationGetter,
+  type PureGrammarParserElementDocumentationGetter,
+  type EmbeddedDataSnippetSuggestion,
 } from '@finos/legend-studio';
 import { SwaggerIcon } from '@finos/legend-art';
 import type {
@@ -47,6 +53,26 @@ import type {
 import { ServiceStore } from '../models/metamodels/pure/model/packageableElements/store/serviceStore/model/ESService_ServiceStore';
 import { RootServiceInstanceSetImplementation } from '../models/metamodels/pure/model/packageableElements/store/serviceStore/mapping/ESService_RootServiceInstanceSetImplementation';
 import { ServiceStoreConnection } from '../models/metamodels/pure/model/packageableElements/store/serviceStore/connection/ESService_ServiceStoreConnection';
+import {
+  collectKeyedDocumnetationEntriesFromConfig,
+  type LegendApplicationDocumentationEntry,
+  type LegendApplicationKeyedDocumentationEntry,
+} from '@finos/legend-application';
+import {
+  PURE_GRAMMAR_SERVICE_STORE_ELEMENT_TYPE_LABEL,
+  PURE_GRAMMAR_SERVICE_STORE_PARSER_NAME,
+} from '../graphManager/ESService_PureGraphManagerPlugin';
+import {
+  EXTERNAL_STORE_SERVICE_DOCUMENTATION_ENTRIES,
+  EXTERNAL_STORE_SERVICE_LEGEND_STUDIO_DOCUMENTATION_KEY,
+} from './ESService_LegendStudioDocumentation';
+import {
+  BLANK_SERVICE_STORE_SNIPPET,
+  SERVICE_STORE_EMBEDDED_DATA,
+  SERVICE_STORE_WITH_DESCRIPTION,
+  SERVICE_STORE_WITH_SERVICE,
+  SERVICE_STORE_WITH_SERVICE_GROUP,
+} from './ESService_CodeSnippets';
 
 const SERVICE_STORE_ELEMENT_TYPE = 'SERVICE_STORE';
 const SERVICE_STORE_ELEMENT_PROJECT_EXPLORER_DND_TYPE =
@@ -61,6 +87,12 @@ export class ESService_LegendStudioPlugin
 {
   constructor() {
     super(packageJson.extensions.studioPlugin, packageJson.version);
+  }
+
+  override getExtraKeyedDocumentationEntries(): LegendApplicationKeyedDocumentationEntry[] {
+    return collectKeyedDocumnetationEntriesFromConfig(
+      EXTERNAL_STORE_SERVICE_DOCUMENTATION_ENTRIES,
+    );
   }
 
   getExtraSupportedElementTypes(): string[] {
@@ -138,7 +170,7 @@ export class ESService_LegendStudioPlugin
     ];
   }
 
-  getExtraGrammarTextEditorDnDTypes(): string[] {
+  getExtraPureGrammarTextEditorDnDTypes(): string[] {
     return [SERVICE_STORE_ELEMENT_PROJECT_EXPLORER_DND_TYPE];
   }
 
@@ -200,6 +232,100 @@ export class ESService_LegendStudioPlugin
       {
         value: 'ServiceStore',
         label: 'ServiceStore',
+      },
+    ];
+  }
+
+  getExtraPureGrammarParserElementDocumentationGetters(): PureGrammarParserElementDocumentationGetter[] {
+    return [
+      (
+        editorStore: EditorStore,
+        parserKeyword: string,
+        elementKeyword: string,
+      ): LegendApplicationDocumentationEntry | undefined => {
+        if (parserKeyword === PURE_GRAMMAR_SERVICE_STORE_PARSER_NAME) {
+          if (
+            elementKeyword === PURE_GRAMMAR_SERVICE_STORE_ELEMENT_TYPE_LABEL
+          ) {
+            return editorStore.applicationStore.docRegistry.getEntry(
+              EXTERNAL_STORE_SERVICE_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_SERVICE_STORE_ELEMENT,
+            );
+          }
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  getExtraPureGrammarParserDocumentationGetters(): PureGrammarParserDocumentationGetter[] {
+    return [
+      (
+        editorStore: EditorStore,
+        parserKeyword: string,
+      ): LegendApplicationDocumentationEntry | undefined => {
+        if (parserKeyword === PURE_GRAMMAR_SERVICE_STORE_PARSER_NAME) {
+          return editorStore.applicationStore.docRegistry.getEntry(
+            EXTERNAL_STORE_SERVICE_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER,
+          );
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  getExtraPureGrammarParserKeywordSuggestionGetters(): PureGrammarParserKeywordSuggestionGetter[] {
+    return [
+      (editorStore: EditorStore): PureGrammarTextSuggestion[] => [
+        {
+          text: PURE_GRAMMAR_SERVICE_STORE_PARSER_NAME,
+          description: `(external store)`,
+          documentation: editorStore.applicationStore.docRegistry.getEntry(
+            EXTERNAL_STORE_SERVICE_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER,
+          ),
+          insertText: PURE_GRAMMAR_SERVICE_STORE_PARSER_NAME,
+        },
+      ],
+    ];
+  }
+
+  getExtraPureGrammarParserElementSnippetSuggestionsGetters(): PureGrammarParserElementSnippetSuggestionsGetter[] {
+    return [
+      (
+        editorStore: EditorStore,
+        parserKeyword: string,
+      ): PureGrammarTextSuggestion[] | undefined =>
+        parserKeyword === PURE_GRAMMAR_SERVICE_STORE_PARSER_NAME
+          ? [
+              {
+                text: PURE_GRAMMAR_SERVICE_STORE_ELEMENT_TYPE_LABEL,
+                description: '(blank)',
+                insertText: BLANK_SERVICE_STORE_SNIPPET,
+              },
+              {
+                text: PURE_GRAMMAR_SERVICE_STORE_ELEMENT_TYPE_LABEL,
+                description: 'with service',
+                insertText: SERVICE_STORE_WITH_SERVICE,
+              },
+              {
+                text: PURE_GRAMMAR_SERVICE_STORE_ELEMENT_TYPE_LABEL,
+                description: 'with service group',
+                insertText: SERVICE_STORE_WITH_SERVICE_GROUP,
+              },
+              {
+                text: PURE_GRAMMAR_SERVICE_STORE_ELEMENT_TYPE_LABEL,
+                description: 'with description',
+                insertText: SERVICE_STORE_WITH_DESCRIPTION,
+              },
+            ]
+          : undefined,
+    ];
+  }
+
+  getExtraEmbeddedDataSnippetSuggestions(): EmbeddedDataSnippetSuggestion[] {
+    return [
+      {
+        description: 'using service store',
+        text: SERVICE_STORE_EMBEDDED_DATA,
       },
     ];
   }

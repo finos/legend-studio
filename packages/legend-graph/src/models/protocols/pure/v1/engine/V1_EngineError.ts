@@ -15,10 +15,7 @@
  */
 
 import { createModelSchema, optional, primitive } from 'serializr';
-import {
-  BasicSerializationFactory,
-  usingModelSchema,
-} from '@finos/legend-shared';
+import { SerializationFactory, usingModelSchema } from '@finos/legend-shared';
 import type { V1_SourceInformation } from '../model/V1_SourceInformation';
 import { V1_sourceInformationSerialization } from '../transformation/pureProtocol/serializationHelpers/V1_CoreSerializationHelper';
 
@@ -32,7 +29,7 @@ export class V1_EngineError {
   errorType?: V1_EngineErrorType | undefined;
   sourceInformation?: V1_SourceInformation | undefined;
 
-  static readonly serialization = new BasicSerializationFactory(
+  static readonly serialization = new SerializationFactory(
     createModelSchema(V1_EngineError, {
       errorType: optional(primitive()),
       message: primitive(),

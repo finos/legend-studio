@@ -21,7 +21,7 @@ import {
   UnsupportedOperationError,
   usingConstantValueSchema,
   serializeMap,
-  deseralizeMap,
+  deserializeMap,
 } from '@finos/legend-shared';
 import {
   createModelSchema,
@@ -40,7 +40,6 @@ import {
   V1_DataElementReference,
 } from '../../../model/data/V1_EmbeddedData';
 import { V1_DataElement } from '../../../model/packageableElements/data/V1_DataElement';
-import type { V1_StereotypePtr } from '../../../model/packageableElements/domain/V1_StereotypePtr';
 import {
   V1_stereotypePtrSchema,
   V1_taggedValueSchema,
@@ -59,8 +58,8 @@ export const V1_modelStoreDataModelSchema = createModelSchema(
   {
     _type: usingConstantValueSchema(V1_EmbeddedDataType.MODEL_STORE_DATA),
     instances: custom(
-      (val) => serializeMap(val),
-      (val) => deseralizeMap(val),
+      (val) => serializeMap(val, (v) => v),
+      (val) => deserializeMap(val, (v) => v),
     ),
   },
 );
@@ -160,13 +159,18 @@ export const V1_dataElementModelSchema = (
         serializeArray(
           values,
           (value) => serialize(V1_stereotypePtrSchema, value),
-          true,
+          {
+            skipIfEmpty: true,
+            INTERNAL__forceReturnEmptyInTest: true,
+          },
         ),
       (values) =>
         deserializeArray(
           values,
-          (v: V1_StereotypePtr) => deserialize(V1_stereotypePtrSchema, v),
-          false,
+          (v) => deserialize(V1_stereotypePtrSchema, v),
+          {
+            skipIfEmpty: false,
+          },
         ),
     ),
     taggedValues: custom(
@@ -174,13 +178,14 @@ export const V1_dataElementModelSchema = (
         serializeArray(
           values,
           (value) => serialize(V1_taggedValueSchema, value),
-          true,
+          {
+            skipIfEmpty: true,
+            INTERNAL__forceReturnEmptyInTest: true,
+          },
         ),
       (values) =>
-        deserializeArray(
-          values,
-          (v: V1_StereotypePtr) => deserialize(V1_taggedValueSchema, v),
-          false,
-        ),
+        deserializeArray(values, (v) => deserialize(V1_taggedValueSchema, v), {
+          skipIfEmpty: false,
+        }),
     ),
   });

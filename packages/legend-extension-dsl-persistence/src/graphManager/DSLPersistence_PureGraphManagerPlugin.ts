@@ -25,8 +25,8 @@ import {
   type ObserverContext,
 } from '@finos/legend-graph';
 
-const PURE_GRAMMAR_PERSISTENCE_PARSER_NAME = 'Persistence';
-const PURE_GRAMMAR_PERSISTENCE_ELEMENT_TYPE_LABEL = 'Persistence';
+export const PURE_GRAMMAR_PERSISTENCE_PARSER_NAME = 'Persistence';
+export const PURE_GRAMMAR_PERSISTENCE_ELEMENT_TYPE_LABEL = 'Persistence';
 
 export class DSLPersistence_PureGraphManagerPlugin extends PureGraphManagerPlugin {
   constructor() {

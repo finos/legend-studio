@@ -34,7 +34,12 @@ export class RelationalPropertyMapping
 {
   // TODO: convert to reference
   transformer?: EnumerationMapping | undefined;
-  relationalOperation!: RawRelationalOperationElement; // @MARKER GENERATED MODEL DISCREPANCY --- Studio does not process relational operation element
+  /**
+   * Studio does not process value specification, they are left in raw JSON form
+   *
+   * @discrepancy model
+   */
+  relationalOperation!: RawRelationalOperationElement;
   bindingTransformer?: BindingTransformer | undefined;
 
   accept_PropertyMappingVisitor<T>(visitor: PropertyMappingVisitor<T>): T {

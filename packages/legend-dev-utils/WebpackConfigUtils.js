@@ -373,14 +373,15 @@ export const getWebAppBaseWebpackConfig = (
         // Only include what we need to lessen the bundle loads
         // See https://github.com/microsoft/monaco-editor-webpack-plugin
         languages: ['json', 'java', 'markdown', 'sql'],
-        // Here we can choose to also exclude/include features but this really does not
-        // significantly affect the bundle size anyhow, but it's also strange that we
-        // need to turn off features in `monaco-editor` on creation anyway
-        // See https://github.com/microsoft/monaco-editor-webpack-plugin/issues/40
+        // Exclude/include features
+        // NOTE: the downside to this is that sometimes `monaco-editor` changes their
+        // bundling or list of features and we could end up with features suddenly not
+        // working as expected
         features: [
           'bracketMatching',
           'clipboard',
           'contextmenu',
+          'codelens',
           'coreCommands',
           'comment',
           'find',
@@ -388,6 +389,8 @@ export const getWebAppBaseWebpackConfig = (
           'gotoLine',
           'hover',
           'multicursor',
+          'snippet',
+          'suggest',
         ],
       }),
     ].filter(Boolean),

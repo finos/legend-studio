@@ -74,6 +74,12 @@ export class Association
   taggedValues: TaggedValue[] = [];
   derivedProperties: DerivedProperty[] = [];
 
+  /**
+   * To store the abstract properties generated while processing the milestoning properties. The properties
+   * generated are `allVersions`, `allVersionsInRange` and derived property with date parameter.
+   */
+  _generatedMilestonedProperties: AbstractProperty[] = [];
+
   getFirstProperty = (): Property => guaranteeNonNullable(this.properties[0]);
   getSecondProperty = (): Property => guaranteeNonNullable(this.properties[1]);
   getOtherProperty = (property: Property): Property => {

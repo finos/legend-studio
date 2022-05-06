@@ -20,7 +20,7 @@ import {
   CORE_PURE_PATH,
   ELEMENT_PATH_DELIMITER,
   RESERVERD_PACKAGE_NAMES,
-  MILESTONING_STEROTYPES,
+  MILESTONING_STEREOTYPE,
 } from '../MetaModelConst';
 import { Profile } from '../models/metamodels/pure/packageableElements/domain/Profile';
 import { Tag } from '../models/metamodels/pure/packageableElements/domain/Tag';
@@ -200,13 +200,13 @@ export const createStubEnum = (enumeration: Enumeration): Enum =>
 export const getMilestoneTemporalStereotype = (
   val: Class,
   graph: PureModel,
-): MILESTONING_STEROTYPES | undefined => {
+): MILESTONING_STEREOTYPE | undefined => {
   const milestonedProfile = graph.getProfile(CORE_PURE_PATH.PROFILE_TEMPORAL);
   let stereotype;
   const profile = val.stereotypes.find(
     (st) => st.ownerReference.value === milestonedProfile,
   );
-  stereotype = Object.values(MILESTONING_STEROTYPES).find(
+  stereotype = Object.values(MILESTONING_STEREOTYPE).find(
     (value) => value === profile?.value.value,
   );
   if (stereotype !== undefined) {
@@ -220,7 +220,7 @@ export const getMilestoneTemporalStereotype = (
         graph,
       );
       if (milestonedStereotype !== undefined) {
-        stereotype = Object.values(MILESTONING_STEROTYPES).find(
+        stereotype = Object.values(MILESTONING_STEREOTYPE).find(
           (value) => value === milestonedStereotype,
         );
       }

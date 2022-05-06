@@ -16,13 +16,15 @@
 
 import {
   assertTrue,
+  getNullableFirstElement,
   guaranteeNonNullable,
+  guaranteeType,
   isNonNullable,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
 import {
   type ValueSpecification,
-  type Class,
+  Class,
   Multiplicity,
   getMilestoneTemporalStereotype,
   INTERNAL__UnknownValueSpecification,
@@ -43,6 +45,11 @@ import {
   RootGraphFetchTreeInstanceValue,
   SimpleFunctionExpression,
   TYPICAL_MULTIPLICITY_TYPE,
+  MILESTONING_STEREOTYPE,
+  AbstractPropertyExpression,
+  DerivedProperty,
+  INTERNAL__PropagatedValue,
+  matchFunctionName,
 } from '@finos/legend-graph';
 import { isGraphFetchTreeDataEmpty } from './QueryBuilderGraphFetchTreeUtil';
 import type { QueryBuilderState } from './QueryBuilderState';
@@ -60,6 +67,93 @@ import {
   QueryBuilderPostFilterTreeGroupNodeData,
 } from './QueryBuilderPostFilterState';
 import { fromGroupOperation } from './QueryBuilderOperatorsHelper';
+import {
+  functionExpression_setParametersValues,
+  propertyExpression_setParametersValue,
+} from './QueryBuilderValueSpecificationModifierHelper';
+import { getDerivedPropertyMilestoningSteoreotype } from './QueryBuilderPropertyEditorState';
+
+/**
+ * NOTE: this takes date propgation into account. See the table below for all
+ * the combination:
+ *
+ *             | [source] |          |          |          |          |
+ * ----------------------------------------------------------------------
+ *   [target]  |          |   NONE   |  PR_TMP  |  BI_TMP  |  BU_TMP  |
+ * ----------------------------------------------------------------------
+ *             |   NONE   |   N.A.   |   PRD    | PRD,BUD  |    BUD   |
+ * ----------------------------------------------------------------------
+ *             |  PR_TMP  |   N.A.   |    X     | PRD,BUD  |    BUD   |
+ * ----------------------------------------------------------------------
+ *             |  BI_TMP  |   N.A.   |    X     |    X     |    X     |
+ * ----------------------------------------------------------------------
+ *             |  BU_TMP  |   N.A.   |   PRD    | PRD,BUD  |    X     |
+ * ----------------------------------------------------------------------
+ *
+ * Annotations:
+ *
+ * [source]: source temporal type
+ * [target]: target temporal type
+ *
+ * PR_TMP  : processing temporal
+ * BI_TMP  : bitemporal
+ * BU_TMP  : business temporal
+ *
+ * X       : no default date propagated
+ * PRD     : default processing date is propagated
+ * BUD     : default business date is propgated
+ */
+const isDefaultDatePropagationSupported = (
+  currentPropertyExpression: AbstractPropertyExpression,
+  queryBuilderState: QueryBuilderState,
+  prevPropertyExpression?: AbstractPropertyExpression | undefined,
+): boolean => {
+  const property = currentPropertyExpression.func;
+  const graph = queryBuilderState.graphManagerState.graph;
+  // Default date propagation is not supported for current expression when the milestonedParameterValues of
+  // the previous property expression doesn't match with the global milestonedParameterValues
+  if (
+    prevPropertyExpression &&
+    prevPropertyExpression.func.genericType.value.rawType instanceof Class
+  ) {
+    const milestoningStereotype = getMilestoneTemporalStereotype(
+      prevPropertyExpression.func.genericType.value.rawType,
+      graph,
+    );
+    if (
+      milestoningStereotype &&
+      !prevPropertyExpression.parametersValues
+        .slice(1)
+        .every(
+          (parameterValue) =>
+            parameterValue instanceof INTERNAL__PropagatedValue,
+        )
+    ) {
+      return false;
+    }
+  }
+  if (property.genericType.value.rawType instanceof Class) {
+    // the stereotype of source class of current property expression.
+    const sourceStereotype =
+      property instanceof DerivedProperty
+        ? getDerivedPropertyMilestoningSteoreotype(property, graph)
+        : undefined;
+    // Default date propagation is always supported if the source is `bitemporal`
+    if (sourceStereotype === MILESTONING_STEREOTYPE.BITEMPORAL) {
+      return true;
+    }
+    // the stereotype (if exists) of the generic type of current property expression.
+    const targetStereotype = getMilestoneTemporalStereotype(
+      property.genericType.value.rawType,
+      graph,
+    );
+    // Default date propagation is supported when stereotype of both source and target matches
+    if (sourceStereotype && targetStereotype) {
+      return sourceStereotype === targetStereotype;
+    }
+  }
+  return false;
+};
 
 export const buildGetAllFunction = (
   _class: Class,
@@ -209,6 +303,109 @@ export const processPostFilterOnLambda = (
   return lambda;
 };
 
+export const buildPropertyExpressionChain = (
+  propertyExpression: AbstractPropertyExpression,
+  queryBuilderState: QueryBuilderState,
+): ValueSpecification => {
+  const graph = queryBuilderState.graphManagerState.graph;
+  const newPropertyExpression = new AbstractPropertyExpression(
+    '',
+    graph.getTypicalMultiplicity(TYPICAL_MULTIPLICITY_TYPE.ONE),
+  );
+  newPropertyExpression.func = propertyExpression.func;
+  newPropertyExpression.parametersValues = propertyExpression.parametersValues;
+
+  let nextExpression: ValueSpecification | undefined;
+  let currentExpression: ValueSpecification | undefined = newPropertyExpression;
+  while (currentExpression instanceof AbstractPropertyExpression) {
+    nextExpression = getNullableFirstElement(
+      currentExpression.parametersValues,
+    );
+    if (nextExpression instanceof AbstractPropertyExpression) {
+      const parameterValue = new AbstractPropertyExpression(
+        '',
+        graph.getTypicalMultiplicity(TYPICAL_MULTIPLICITY_TYPE.ONE),
+      );
+      parameterValue.func = nextExpression.func;
+      parameterValue.parametersValues = nextExpression.parametersValues;
+      nextExpression = parameterValue;
+      currentExpression.parametersValues[0] = parameterValue;
+    }
+    if (currentExpression.func instanceof DerivedProperty) {
+      const parameterValues = currentExpression.parametersValues.slice(1);
+      parameterValues.forEach((parameterValue, index) => {
+        if (parameterValue instanceof INTERNAL__PropagatedValue) {
+          // Replace with argumentless derived property expression only when default date propagation is supported
+          if (
+            isDefaultDatePropagationSupported(
+              guaranteeType(currentExpression, AbstractPropertyExpression),
+              queryBuilderState,
+              nextExpression instanceof AbstractPropertyExpression
+                ? nextExpression
+                : undefined,
+            )
+          ) {
+            // NOTE: For `bitemporal` property check if the property expression has parameters which are not instance of
+            // `INTERNAL_PropagatedValue` then pass the parameters as user explicitly changed values of either of the parameters.
+            if (
+              (index === 1 &&
+                guaranteeType(currentExpression, AbstractPropertyExpression)
+                  .parametersValues.length === 3) ||
+              (index === 0 &&
+                guaranteeType(currentExpression, AbstractPropertyExpression)
+                  .parametersValues.length === 3 &&
+                !(
+                  guaranteeType(currentExpression, AbstractPropertyExpression)
+                    .parametersValues[2] instanceof INTERNAL__PropagatedValue
+                ))
+            ) {
+              propertyExpression_setParametersValue(
+                guaranteeType(currentExpression, AbstractPropertyExpression),
+                index + 1,
+                parameterValue.getValue(),
+                queryBuilderState.observableContext,
+              );
+            } else {
+              functionExpression_setParametersValues(
+                guaranteeType(currentExpression, AbstractPropertyExpression),
+                [
+                  guaranteeNonNullable(
+                    guaranteeType(currentExpression, AbstractPropertyExpression)
+                      .parametersValues[0],
+                  ),
+                ],
+                queryBuilderState.observableContext,
+              );
+            }
+          } else {
+            propertyExpression_setParametersValue(
+              guaranteeType(currentExpression, AbstractPropertyExpression),
+              index + 1,
+              parameterValue.getValue(),
+              queryBuilderState.observableContext,
+            );
+          }
+        }
+      });
+    }
+    currentExpression = nextExpression;
+    // Take care of chains of subtype (a pattern that is not useful, but we want to support and rectify)
+    // $x.employees->subType(@Person)->subType(@Staff)
+    while (
+      currentExpression instanceof SimpleFunctionExpression &&
+      matchFunctionName(
+        currentExpression.functionName,
+        SUPPORTED_FUNCTIONS.SUBTYPE,
+      )
+    ) {
+      currentExpression = getNullableFirstElement(
+        currentExpression.parametersValues,
+      );
+    }
+  }
+  return newPropertyExpression;
+};
+
 export const buildLambdaFunction = (
   queryBuilderState: QueryBuilderState,
   options?: {
@@ -240,21 +437,49 @@ export const buildLambdaFunction = (
 
   // build getAll()
   const getAllFunction = buildGetAllFunction(_class, multiplicityOne);
-  if (
-    getMilestoneTemporalStereotype(
-      _class,
-      queryBuilderState.graphManagerState.graph,
-    )
-  ) {
-    queryBuilderState.querySetupState.classMilestoningTemporalValues.forEach(
-      (parameter) =>
+
+  // build milestoning parameter(s) for getAll()
+  const milestoningStereotype = getMilestoneTemporalStereotype(
+    _class,
+    queryBuilderState.graphManagerState.graph,
+  );
+  if (milestoningStereotype) {
+    switch (milestoningStereotype) {
+      case MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL: {
         getAllFunction.parametersValues.push(
           guaranteeNonNullable(
-            parameter,
+            queryBuilderState.querySetupState.businessDate,
             `Milestoning class should have a parameter of type 'Date'`,
           ),
-        ),
-    );
+        );
+        break;
+      }
+      case MILESTONING_STEREOTYPE.PROCESSING_TEMPORAL: {
+        getAllFunction.parametersValues.push(
+          guaranteeNonNullable(
+            queryBuilderState.querySetupState.processingDate,
+            `Milestoning class should have a parameter of type 'Date'`,
+          ),
+        );
+        break;
+      }
+      case MILESTONING_STEREOTYPE.BITEMPORAL: {
+        getAllFunction.parametersValues.push(
+          guaranteeNonNullable(
+            queryBuilderState.querySetupState.processingDate,
+            `Milestoning class should have a parameter of type 'Date'`,
+          ),
+        );
+        getAllFunction.parametersValues.push(
+          guaranteeNonNullable(
+            queryBuilderState.querySetupState.businessDate,
+            `Milestoning class should have a parameter of type 'Date'`,
+          ),
+        );
+        break;
+      }
+      default:
+    }
   }
   lambdaFunction.expressionSequence[0] = getAllFunction;
 
@@ -326,8 +551,12 @@ export const buildLambdaFunction = (
             columnLambda = buildGenericLambdaFunctionInstanceValue(
               projectionColumnState.lambdaParameterName,
               [
-                projectionColumnState.propertyExpressionState
-                  .propertyExpression,
+                buildPropertyExpressionChain(
+                  projectionColumnState.propertyExpressionState
+                    .propertyExpression,
+                  projectionColumnState.propertyExpressionState
+                    .queryBuilderState,
+                ),
               ],
               queryBuilderState.graphManagerState.graph,
             );
@@ -431,8 +660,12 @@ export const buildLambdaFunction = (
             columnLambda = buildGenericLambdaFunctionInstanceValue(
               projectionColumnState.lambdaParameterName,
               [
-                projectionColumnState.propertyExpressionState
-                  .propertyExpression,
+                buildPropertyExpressionChain(
+                  projectionColumnState.propertyExpressionState
+                    .propertyExpression,
+                  projectionColumnState.propertyExpressionState
+                    .queryBuilderState,
+                ),
               ],
               queryBuilderState.graphManagerState.graph,
             );

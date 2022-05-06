@@ -77,6 +77,7 @@ import {
   DataElement,
   ExternalFormatData,
   ModelStoreData,
+  DEPRECATED__SingleExecutionTest,
 } from '@finos/legend-graph';
 import type { DSLMapping_LegendStudioPlugin_Extension } from './DSLMapping_LegendStudioPlugin_Extension';
 import {
@@ -91,6 +92,7 @@ import {
 import {
   service_initNewService,
   service_setExecution,
+  service_setLegacyTest,
 } from './graphModifier/DSLService_GraphModifierHelper';
 import type { EmbeddedDataTypeOption } from './editor-state/element-editor-state/data/DataEditorState';
 import {
@@ -603,7 +605,7 @@ export class NewElementState {
                 ).getExtraNewElementDriverCreators?.() ?? [],
             );
           for (const creator of extraNewElementDriverCreators) {
-            const _driver = creator(newType, this.editorStore);
+            const _driver = creator(this.editorStore, newType);
             if (_driver) {
               driver = _driver;
               break;
@@ -761,6 +763,10 @@ export class NewElementState {
             this.editorStore,
           );
         }
+        service_setLegacyTest(
+          service,
+          new DEPRECATED__SingleExecutionTest(service, ''),
+        );
         service_setExecution(
           service,
           new PureSingleExecution(

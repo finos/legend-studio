@@ -41,8 +41,9 @@ import {
   RelationalDatabaseConnection,
   DataElement,
   ModelChainConnection,
+  PURE_ELEMENT_NAME,
+  PURE_CONNECTION_NAME,
 } from '@finos/legend-graph';
-import { GRAMMAR_ELEMENT_TYPE_LABEL } from '@finos/legend-application';
 
 const getGrammarElementTypeLabelRegexString = (
   typeLabel: string,
@@ -96,42 +97,42 @@ export class GrammarTextEditorState {
   setCurrentElementLabelRegexString(element: PackageableElement): void {
     let typeLabel: string | undefined;
     if (element instanceof Class) {
-      typeLabel = GRAMMAR_ELEMENT_TYPE_LABEL.CLASS;
+      typeLabel = PURE_ELEMENT_NAME.CLASS;
     } else if (element instanceof Association) {
-      typeLabel = GRAMMAR_ELEMENT_TYPE_LABEL.ASSOCIATION;
+      typeLabel = PURE_ELEMENT_NAME.ASSOCIATION;
     } else if (element instanceof Enumeration) {
-      typeLabel = GRAMMAR_ELEMENT_TYPE_LABEL.ENUMERATION;
+      typeLabel = PURE_ELEMENT_NAME.ENUMERATION;
     } else if (element instanceof Measure) {
-      typeLabel = GRAMMAR_ELEMENT_TYPE_LABEL.MEASURE;
+      typeLabel = PURE_ELEMENT_NAME.MEASURE;
     } else if (element instanceof Profile) {
-      typeLabel = GRAMMAR_ELEMENT_TYPE_LABEL.PROFILE;
+      typeLabel = PURE_ELEMENT_NAME.PROFILE;
     } else if (element instanceof ConcreteFunctionDefinition) {
-      typeLabel = GRAMMAR_ELEMENT_TYPE_LABEL.FUNCTION;
+      typeLabel = PURE_ELEMENT_NAME.FUNCTION;
     } else if (element instanceof FlatData) {
-      typeLabel = GRAMMAR_ELEMENT_TYPE_LABEL.FLAT_DATA;
+      typeLabel = PURE_ELEMENT_NAME.FLAT_DATA;
     } else if (element instanceof Database) {
-      typeLabel = GRAMMAR_ELEMENT_TYPE_LABEL.DATABASE;
+      typeLabel = PURE_ELEMENT_NAME.DATABASE;
     } else if (element instanceof Mapping) {
-      typeLabel = GRAMMAR_ELEMENT_TYPE_LABEL.MAPPING;
+      typeLabel = PURE_ELEMENT_NAME.MAPPING;
     } else if (element instanceof Service) {
-      typeLabel = GRAMMAR_ELEMENT_TYPE_LABEL.SERVICE;
+      typeLabel = PURE_ELEMENT_NAME.SERVICE;
     } else if (element instanceof FileGenerationSpecification) {
-      typeLabel = GRAMMAR_ELEMENT_TYPE_LABEL.FILE_GENERATION;
+      typeLabel = PURE_ELEMENT_NAME.FILE_GENERATION;
     } else if (element instanceof GenerationSpecification) {
-      typeLabel = GRAMMAR_ELEMENT_TYPE_LABEL.GENERATION_SPECIFICATION;
+      typeLabel = PURE_ELEMENT_NAME.GENERATION_SPECIFICATION;
     } else if (element instanceof PackageableConnection) {
       if (element.connectionValue instanceof JsonModelConnection) {
-        typeLabel = GRAMMAR_ELEMENT_TYPE_LABEL.JSON_MODEL_CONNECTION;
+        typeLabel = PURE_CONNECTION_NAME.JSON_MODEL_CONNECTION;
       } else if (element.connectionValue instanceof XmlModelConnection) {
-        typeLabel = GRAMMAR_ELEMENT_TYPE_LABEL.XML_MODEL_CONNECTION;
+        typeLabel = PURE_CONNECTION_NAME.XML_MODEL_CONNECTION;
       } else if (element.connectionValue instanceof FlatDataConnection) {
-        typeLabel = GRAMMAR_ELEMENT_TYPE_LABEL.FLAT_DATA_CONNECTION;
+        typeLabel = PURE_CONNECTION_NAME.FLAT_DATA_CONNECTION;
       } else if (element.connectionValue instanceof ModelChainConnection) {
-        typeLabel = GRAMMAR_ELEMENT_TYPE_LABEL.MODEL_CHAIN_CONNECTION;
+        typeLabel = PURE_CONNECTION_NAME.MODEL_CHAIN_CONNECTION;
       } else if (
         element.connectionValue instanceof RelationalDatabaseConnection
       ) {
-        typeLabel = GRAMMAR_ELEMENT_TYPE_LABEL.RELATIONAL_DATABASE_CONNECTION;
+        typeLabel = PURE_CONNECTION_NAME.RELATIONAL_DATABASE_CONNECTION;
       }
       const extraPureGrammarConnectionLabelers = this.editorStore.pluginManager
         .getPureGraphManagerPlugins()
@@ -149,9 +150,9 @@ export class GrammarTextEditorState {
         }
       }
     } else if (element instanceof PackageableRuntime) {
-      typeLabel = GRAMMAR_ELEMENT_TYPE_LABEL.RUNTIME;
+      typeLabel = PURE_ELEMENT_NAME.RUNTIME;
     } else if (element instanceof DataElement) {
-      typeLabel = GRAMMAR_ELEMENT_TYPE_LABEL.DATA_ELEMENT;
+      typeLabel = PURE_ELEMENT_NAME.DATA_ELEMENT;
     } else {
       const extraPureGrammarElementLabelers = this.editorStore.pluginManager
         .getPureGraphManagerPlugins()

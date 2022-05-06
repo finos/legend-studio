@@ -159,7 +159,7 @@ const MergeConflictEditor = observer(
     const [hasInitializedTextValue, setInitializedTextValue] = useState(false);
     const value = conflictEditorState.mergedText
       ? normalizeLineEnding(conflictEditorState.mergedText)
-      : undefined;
+      : '';
     const error = conflictEditorState.mergeEditorParserError;
     const decorations = useRef<string[]>([]);
     const mergeConflictResolutionCodeLensDisposer = useRef<
@@ -525,7 +525,7 @@ const MergeConflictEditor = observer(
       if (editor) {
         const editorModel = editor.getModel();
         const currentValue = getEditorValue(editor);
-        if (editorModel && value !== undefined && currentValue !== value) {
+        if (editorModel && currentValue !== value) {
           if (!hasInitializedTextValue) {
             editor.setValue(value);
             setInitializedTextValue(true);

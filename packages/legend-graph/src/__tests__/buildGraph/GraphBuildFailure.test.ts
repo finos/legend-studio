@@ -21,7 +21,6 @@ import {
   TEST_DATA__MissingStereoType,
   TEST_DATA__MissingTagValue,
   TEST_DATA__MissingTargetClassinMapping,
-  TEST_DATA__MissingSetImp,
   TEST_DATA__MissingClassMapping,
   TEST_DATA__MissingClassMappingWithTargetId,
   TEST_DATA__DuplicateEnumerationValues,
@@ -34,7 +33,10 @@ import {
 import { unitTest } from '@finos/legend-shared';
 import type { Entity } from '@finos/legend-model-storage';
 import type { GraphManagerState } from '../../GraphManagerState';
-import { TEST__getTestGraphManagerState } from '../../GraphManagerTestUtils';
+import {
+  TEST__buildGraphWithEntities,
+  TEST__getTestGraphManagerState,
+} from '../../GraphManagerTestUtils';
 
 let graphManagerState: GraphManagerState;
 
@@ -113,8 +115,8 @@ test(unitTest('Missing class in Pure Instance class mapping'), async () => {
 
 test(unitTest('Missing class mapping'), async () => {
   await expect(() =>
-    graphManagerState.graphManager.buildGraph(
-      graphManagerState.graph,
+    TEST__buildGraphWithEntities(
+      graphManagerState,
       TEST_DATA__MissingClassMapping as Entity[],
     ),
   ).rejects.toThrowError(
@@ -122,9 +124,13 @@ test(unitTest('Missing class mapping'), async () => {
   );
 });
 
-// TODO: This test is skipped because we want to temporarily relax graph building algorithm
-// to ease Pure -> Legend migration push.
-/* @MARKER: RELAXED GRAPH CHECK - See https://github.com/finos/legend-studio/issues/880 */
+/**
+ * This test is skipped because we want to temporarily relax graph building algorithm
+ * to ease Pure -> Legend migration push.
+ * See https://github.com/finos/legend-studio/issues/880
+ *
+ * @discrepancy graph-building
+ */
 test.skip(unitTest('Missing class mapping with ID'), async () => {
   await expect(() =>
     graphManagerState.graphManager.buildGraph(
@@ -136,18 +142,13 @@ test.skip(unitTest('Missing class mapping with ID'), async () => {
   );
 });
 
-// TODO: This test is skipped because we don't support include mappings. We don't fail yet
-// Unskip when include mappings support is added
-test.skip(unitTest('Missing set implementation'), async () => {
-  await expect(() =>
-    graphManagerState.graphManager.buildGraph(
-      graphManagerState.graph,
-      TEST_DATA__MissingSetImp as Entity[],
-    ),
-  ).rejects.toThrowError(`Can't find set implementation 'targetClassAMissing'`);
-});
-
-/* @MARKER: RELAXED GRAPH CHECK - See https://github.com/finos/legend-studio/issues/660 */
+/**
+ * This test is skipped because we want to temporarily relax graph building algorithm
+ * to ease Pure -> Legend migration push.
+ * See https://github.com/finos/legend-studio/issues/660
+ *
+ * @discrepancy graph-building
+ */
 test.skip(unitTest('Duplicate enumeration values'), async () => {
   await expect(() =>
     graphManagerState.graphManager.buildGraph(
@@ -159,7 +160,13 @@ test.skip(unitTest('Duplicate enumeration values'), async () => {
   );
 });
 
-/* @MARKER: RELAXED GRAPH CHECK - See https://github.com/finos/legend-studio/issues/660 */
+/**
+ * This test is skipped because we want to temporarily relax graph building algorithm
+ * to ease Pure -> Legend migration push.
+ * See https://github.com/finos/legend-studio/issues/660
+ *
+ * @discrepancy graph-building
+ */
 test.skip(unitTest('Duplicate profile tags'), async () => {
   await expect(() =>
     graphManagerState.graphManager.buildGraph(
@@ -171,7 +178,13 @@ test.skip(unitTest('Duplicate profile tags'), async () => {
   );
 });
 
-/* @MARKER: RELAXED GRAPH CHECK - See https://github.com/finos/legend-studio/issues/660 */
+/**
+ * This test is skipped because we want to temporarily relax graph building algorithm
+ * to ease Pure -> Legend migration push.
+ * See https://github.com/finos/legend-studio/issues/660
+ *
+ * @discrepancy graph-building
+ */
 test.skip(unitTest('Duplicate profile stereotypes'), async () => {
   await expect(() =>
     graphManagerState.graphManager.buildGraph(
@@ -183,7 +196,13 @@ test.skip(unitTest('Duplicate profile stereotypes'), async () => {
   );
 });
 
-/* @MARKER: RELAXED GRAPH CHECK - See https://github.com/finos/legend-studio/issues/660 */
+/**
+ * This test is skipped because we want to temporarily relax graph building algorithm
+ * to ease Pure -> Legend migration push.
+ * See https://github.com/finos/legend-studio/issues/660
+ *
+ * @discrepancy graph-building
+ */
 test.skip(unitTest('Duplicate class properties'), async () => {
   await expect(() =>
     graphManagerState.graphManager.buildGraph(
@@ -195,7 +214,13 @@ test.skip(unitTest('Duplicate class properties'), async () => {
   );
 });
 
-/* @MARKER: RELAXED GRAPH CHECK - See https://github.com/finos/legend-studio/issues/660 */
+/**
+ * This test is skipped because we want to temporarily relax graph building algorithm
+ * to ease Pure -> Legend migration push.
+ * See https://github.com/finos/legend-studio/issues/660
+ *
+ * @discrepancy graph-building
+ */
 test.skip(unitTest('Duplicate association properties'), async () => {
   await expect(() =>
     graphManagerState.graphManager.buildGraph(

@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-dev-utils",
-  "version": "0.3.21",
+  "version": "1.0.0",
   "description": "Legend Studio development utilities, helpers, and scripts",
   "keywords": [
     "legend",
@@ -49,7 +49,7 @@
     "test:watch": "jest --watch"
   },
   "dependencies": {
-    "@babel/core": "7.17.9",
+    "@babel/core": "7.17.10",
     "@changesets/assemble-release-plan": "5.1.2",
     "@changesets/changelog-github": "0.4.4",
     "@changesets/config": "2.0.0",
@@ -61,9 +61,9 @@
     "@juggle/resize-observer": "3.3.1",
     "@manypkg/get-packages": "1.1.3",
     "@pmmmwh/react-refresh-webpack-plugin": "0.5.5",
-    "autoprefixer": "10.4.4",
-    "babel-jest": "27.5.1",
-    "babel-loader": "8.2.4",
+    "autoprefixer": "10.4.7",
+    "babel-jest": "28.0.3",
+    "babel-loader": "8.2.5",
     "chalk": "5.0.1",
     "circular-dependency-plugin": "5.2.2",
     "clean-webpack-plugin": "4.0.0",
@@ -71,26 +71,27 @@
     "cssnano": "5.1.7",
     "html-webpack-plugin": "5.5.0",
     "isbinaryfile": "5.0.0",
-    "jest": "27.5.1",
+    "jest": "28.0.3",
+    "jest-environment-jsdom": "28.0.2",
     "jest-extended": "2.0.0",
-    "jest-watch-typeahead": "1.0.0",
+    "jest-watch-typeahead": "1.1.0",
     "jsonc-parser": "3.0.0",
     "micromatch": "4.0.5",
     "mini-css-extract-plugin": "2.6.0",
     "monaco-editor": "0.33.0",
     "monaco-editor-webpack-plugin": "7.0.1",
-    "postcss": "8.4.12",
+    "postcss": "8.4.13",
     "postcss-loader": "6.2.1",
     "react-refresh": "0.11.0",
     "resolve": "1.22.0",
-    "sass": "1.50.1",
+    "sass": "1.51.0",
     "sass-loader": "12.6.0",
-    "typescript": "4.6.3",
+    "typescript": "4.6.4",
     "webpack": "5.72.0"
   },
   "devDependencies": {
     "cross-env": "7.0.3",
-    "eslint": "8.13.0",
+    "eslint": "8.14.0",
     "rimraf": "3.0.2"
   },
   "publishConfig": {

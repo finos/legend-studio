@@ -324,7 +324,15 @@ const columnModelSchema = createModelSchema(V1_Column, {
 export const V1_tablePtrModelSchema = createModelSchema(V1_TablePtr, {
   _type: usingConstantValueSchema(V1_TABLE_POINTER_TYPE),
   database: primitive(),
-  mainTableDb: primitive(), // @MARKER: GRAMMAR ROUNDTRIP --- omit this information during protocol transformation as it can be interpreted while building the graph
+  /**
+   * Omit this information during protocol transformation as it can be
+   * interpreted while building the graph; and will help grammar-roundtrip
+   * tests (involving engine) to pass. Ideally, this requires grammar parser
+   * and composer in engine to be more consistent.
+   *
+   * @discrepancy grammar-roundtrip
+   */
+  mainTableDb: primitive(),
   schema: primitive(),
   table: primitive(),
 });
@@ -498,15 +506,20 @@ const V1_setupTableSerialization = (
       (values) =>
         serializeArray(
           values,
-          (value) => V1_serializeMilestoning(value, plugins),
-          true,
+          (value: V1_Milestoning) => V1_serializeMilestoning(value, plugins),
+          {
+            skipIfEmpty: true,
+            INTERNAL__forceReturnEmptyInTest: true,
+          },
         ),
       (values) =>
         deserializeArray(
           values,
           (value: PlainObject<V1_Milestoning>) =>
             V1_deserializeMilestoning(value, plugins),
-          false,
+          {
+            skipIfEmpty: false,
+          },
         ),
     ),
     name: primitive(),
@@ -525,6 +538,7 @@ const V1_setupRelationalDatabaseConnectionModelSchema = (
       (val) => V1_serializeAuthenticationStrategy(val, plugins),
       (val) => V1_deserializeAuthenticationStrategy(val, plugins),
     ),
+    databaseType: primitive(),
     datasourceSpecification: custom(
       (val) => V1_serializeDatasourceSpecification(val, plugins),
       (val) => V1_deserializeDatasourceSpecification(val, plugins),
@@ -536,20 +550,31 @@ const V1_setupRelationalDatabaseConnectionModelSchema = (
       (values) =>
         serializeArray(
           values,
-          (value) => V1_serializePostProcessor(value, plugins),
-          true,
+          (value: V1_PostProcessor) =>
+            V1_serializePostProcessor(value, plugins),
+          {
+            skipIfEmpty: true,
+          },
         ),
       (values) =>
         deserializeArray(
           values,
-          (value: PlainObject<V1_PostProcessor>) =>
-            V1_deserializePostProcessor(value, plugins),
-          false,
+          (value) => V1_deserializePostProcessor(value, plugins),
+          {
+            skipIfEmpty: false,
+          },
         ),
     ),
     postProcessorWithParameter: custom(
-      (values) => serializeArray(values, (value) => value, true),
-      (values) => deserializeArray(values, (value: unknown) => value, false),
+      (values) =>
+        serializeArray(values, (value) => value, {
+          skipIfEmpty: true,
+          INTERNAL__forceReturnEmptyInTest: true,
+        }),
+      (values) =>
+        deserializeArray(values, (value) => value, {
+          skipIfEmpty: false,
+        }),
     ),
     type: primitive(),
   });

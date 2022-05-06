@@ -25,8 +25,8 @@ import {
 } from '@finos/legend-graph';
 import { observe_Text } from './action/changeDetection/DSLText_ObserverHelper';
 
-const PURE_GRAMMAR_TEXT_PARSER_NAME = 'Text';
-const PURE_GRAMMAR_TEXT_ELEMENT_TYPE_LABEL = 'Text';
+export const PURE_GRAMMAR_TEXT_PARSER_NAME = 'Text';
+export const PURE_GRAMMAR_TEXT_ELEMENT_TYPE_LABEL = 'Text';
 
 export class DSLText_PureGraphManagerPlugin extends PureGraphManagerPlugin {
   constructor() {

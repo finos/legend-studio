@@ -18,6 +18,7 @@ import {
   type Type,
   type ValueSpecification,
   type SimpleFunctionExpression,
+  type FunctionExpression,
   PRIMITIVE_TYPE,
 } from '@finos/legend-graph';
 import { UnsupportedOperationError } from '@finos/legend-shared';
@@ -29,25 +30,26 @@ import {
   unwrapNotExpression,
 } from '../QueryBuilderOperatorsHelper';
 import { QueryBuilderPostFilterOperator } from '../QueryBuilderPostFilterOperator';
+import { buildPostFilterConditionState } from '../QueryBuilderPostFilterProcessor';
 import type {
   PostFilterConditionState,
   QueryBuilderPostFilterState,
 } from '../QueryBuilderPostFilterState';
 import { generateDefaultValueForPrimitiveType } from '../QueryBuilderValueSpecificationBuilderHelper';
+import { buildPostFilterConditionExpression } from './QueryBuilderPostFilterOperatorHelper';
 
 export class QueryBuilderPostFilterOperator_StartWith extends QueryBuilderPostFilterOperator {
   getLabel(): string {
     return 'starts with';
   }
-  getPureFunction(): SUPPORTED_FUNCTIONS {
-    return SUPPORTED_FUNCTIONS.STARTS_WITH;
-  }
+
   isCompatibleWithType(type: Type): boolean {
     if (type.path === PRIMITIVE_TYPE.STRING) {
       return true;
     }
     return false;
   }
+
   isCompatibleWithConditionValue(
     postFilterConditionState: PostFilterConditionState,
   ): boolean {
@@ -56,6 +58,7 @@ export class QueryBuilderPostFilterOperator_StartWith extends QueryBuilderPostFi
       : undefined;
     return PRIMITIVE_TYPE.STRING === type?.path;
   }
+
   getDefaultFilterConditionValue(
     postFilterConditionState: PostFilterConditionState,
   ): ValueSpecification {
@@ -63,7 +66,8 @@ export class QueryBuilderPostFilterOperator_StartWith extends QueryBuilderPostFi
     switch (propertyType?.path) {
       case PRIMITIVE_TYPE.STRING: {
         return buildPrimitiveInstanceValue(
-          postFilterConditionState.postFilterState.queryBuilderState,
+          postFilterConditionState.postFilterState.queryBuilderState
+            .graphManagerState.graph,
           propertyType.path,
           generateDefaultValueForPrimitiveType(propertyType.path),
         );
@@ -75,6 +79,28 @@ export class QueryBuilderPostFilterOperator_StartWith extends QueryBuilderPostFi
           }'`,
         );
     }
+  }
+
+  buildPostFilterConditionExpression(
+    postFilterConditionState: PostFilterConditionState,
+  ): ValueSpecification | undefined {
+    return buildPostFilterConditionExpression(
+      postFilterConditionState,
+      this,
+      SUPPORTED_FUNCTIONS.STARTS_WITH,
+    );
+  }
+
+  buildPostFilterConditionState(
+    postFilterState: QueryBuilderPostFilterState,
+    expression: FunctionExpression,
+  ): PostFilterConditionState | undefined {
+    return buildPostFilterConditionState(
+      postFilterState,
+      expression,
+      SUPPORTED_FUNCTIONS.STARTS_WITH,
+      this,
+    );
   }
 }
 export class QueryBuilderPostFilterOperator_NotStartWith extends QueryBuilderPostFilterOperator_StartWith {

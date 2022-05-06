@@ -44,7 +44,11 @@ import {
   EntityChangeType,
   EntityDiff,
 } from '@finos/legend-server-sdlc';
-import { ObserverContext, observe_Graph } from '@finos/legend-graph';
+import {
+  ObserverContext,
+  observe_Graph,
+  observe_GraphElements,
+} from '@finos/legend-graph';
 import { type IDisposer, keepAlive } from 'mobx-utils';
 
 class RevisionChangeDetectionState {
@@ -200,6 +204,7 @@ class RevisionChangeDetectionState {
 export class ChangeDetectionState {
   editorStore: EditorStore;
   graphState: EditorGraphState;
+  // TODO: use ActionState for this
   isChangeDetectionRunning = false;
   hasChangeDetectionStarted = false;
   forcedStop = false;
@@ -301,6 +306,7 @@ export class ChangeDetectionState {
       computeEntityChangeConflicts: flow,
       computeLocalChanges: flow,
       computeAggregatedWorkspaceRemoteChanges: flow,
+      observeGraph: flow,
     });
 
     this.editorStore = editorStore;
@@ -415,11 +421,12 @@ export class ChangeDetectionState {
       () => {
         flowResult(this.computeLocalChanges(true)).catch(noop());
       },
-      { delay: throttleDuration }, // throttle the call
-      /**
-       * NOTE: this reaction will not be fired immediately so we have to manually call the first local changes computation
-       * See https://mobx.js.org/refguide/reaction.html#options
-       */
+      {
+        // fire reaction immediately to compute the first changeset
+        fireImmediately: true,
+        // throttle the call
+        delay: throttleDuration,
+      },
     );
     this.isChangeDetectionRunning = true;
     this.hasChangeDetectionStarted = true;
@@ -748,13 +755,13 @@ export class ChangeDetectionState {
     }
   }
 
-  /**
-   * NOTE: right now we rely on `observe_PackageTree` method to observe all elements in the graph
-   * but potentially, we could improve this by observe all elements in parallel
-   */
-  async observeGraph(): Promise<void> {
+  *observeGraph(): GeneratorFn<void> {
     const startTime = Date.now();
-    await observe_Graph(
+    // NOTE: this method has to be done synchronously in `action` context
+    // to make sure `mobx` react to observables from the graph, such as its element indices
+    observe_Graph(this.editorStore.graphManagerState.graph);
+    // this will be done asynchronously to improve performance
+    yield observe_GraphElements(
       this.editorStore.graphManagerState.graph,
       this.editorStore.changeDetectionState.observerContext,
     );
@@ -774,7 +781,6 @@ export class ChangeDetectionState {
    * We also want to take advantage of `mobx computed` here so we save time when starting change detection. However,
    * since `mobx computed` does not track async contexts, we have to use the `keepAlive` option for `computed`
    *
-   * @MARKER MEMORY-SENSITIVE
    * To avoid memory leak potentially caused by `keepAlive`, we use `keepAlive` utility from `mobx-utils`
    * so we could manually dispose `keepAlive` later after we already done with starting change detection.
    */

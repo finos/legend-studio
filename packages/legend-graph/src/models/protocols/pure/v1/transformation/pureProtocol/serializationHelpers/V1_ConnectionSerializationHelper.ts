@@ -30,6 +30,8 @@ import {
   usingConstantValueSchema,
   IllegalStateError,
   UnsupportedOperationError,
+  serializeArray,
+  deserializeArray,
 } from '@finos/legend-shared';
 import { V1_ModelChainConnection } from '../../../model/packageableElements/store/modelToModel/connection/V1_ModelChainConnection';
 import { V1_PackageableConnection } from '../../../model/packageableElements/connection/V1_PackageableConnection';
@@ -90,7 +92,15 @@ export const V1_modelChainConnectionModelSchema = createModelSchema(
   V1_ModelChainConnection,
   {
     _type: usingConstantValueSchema(V1_ConnectionType.MODEL_CHAIN_CONNECTION),
-    store: alias('element', optional(primitive())), // @MARKER: GRAMMAR ROUNDTRIP --- omit this information during protocol transformation as it can be interpreted while building the graph
+    /**
+     * Omit this information during protocol transformation as it can be
+     * interpreted while building the graph; and will help grammar-roundtrip
+     * tests (involving engine) to pass. Ideally, this requires grammar parser
+     * and composer in engine to be more consistent.
+     *
+     * @discrepancy grammar-roundtrip
+     */
+    store: alias('element', optional(primitive())),
     mappings: list(primitive()),
   },
 );
@@ -100,7 +110,15 @@ export const V1_jsonModelConnectionModelSchema = createModelSchema(
   {
     _type: usingConstantValueSchema(V1_ConnectionType.JSON_MODEL_CONNECTION),
     class: primitive(),
-    store: alias('element', optional(primitive())), // @MARKER: GRAMMAR ROUNDTRIP --- omit this information during protocol transformation as it can be interpreted while building the graph
+    /**
+     * Omit this information during protocol transformation as it can be
+     * interpreted while building the graph; and will help grammar-roundtrip
+     * tests (involving engine) to pass. Ideally, this requires grammar parser
+     * and composer in engine to be more consistent.
+     *
+     * @discrepancy grammar-roundtrip
+     */
+    store: alias('element', optional(primitive())),
     url: primitive(),
   },
 );
@@ -110,7 +128,15 @@ export const V1_xmlModelConnectionModelSchema = createModelSchema(
   {
     _type: usingConstantValueSchema(V1_ConnectionType.XML_MODEL_CONNECTION),
     class: primitive(),
-    store: alias('element', optional(primitive())), // @MARKER: GRAMMAR ROUNDTRIP --- omit this information during protocol transformation as it can be interpreted while building the graph
+    /**
+     * Omit this information during protocol transformation as it can be
+     * interpreted while building the graph; and will help grammar-roundtrip
+     * tests (involving engine) to pass. Ideally, this requires grammar parser
+     * and composer in engine to be more consistent.
+     *
+     * @discrepancy grammar-roundtrip
+     */
+    store: alias('element', optional(primitive())),
     url: primitive(),
   },
 );
@@ -161,7 +187,16 @@ const localH2DatasourceSpecificationModelSchema = createModelSchema(
   {
     _type: usingConstantValueSchema(V1_DatasourceSpecificationType.H2_LOCAL),
     testDataSetupCsv: optional(primitive()),
-    testDataSetupSqls: list(primitive()),
+    testDataSetupSqls: custom(
+      (values) =>
+        serializeArray(values, (value) => value, {
+          skipIfEmpty: true,
+        }),
+      (values) =>
+        deserializeArray(values, (v) => v, {
+          skipIfEmpty: false,
+        }),
+    ),
   },
 );
 

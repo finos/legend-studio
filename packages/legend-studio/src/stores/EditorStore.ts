@@ -520,8 +520,7 @@ export class EditorStore {
   }
 
   reset(): void {
-    this.setCurrentEditorState(undefined);
-    this.openedEditorStates = [];
+    this.closeAllEditorTabs();
     this.projectConfigurationEditorState = new ProjectConfigurationEditorState(
       this,
       this.sdlcState,
@@ -853,7 +852,7 @@ export class EditorStore {
 
       // ======= (RE)START CHANGE DETECTION =======
       this.changeDetectionState.stop();
-      yield this.changeDetectionState.observeGraph();
+      yield flowResult(this.changeDetectionState.observeGraph());
       yield Promise.all([
         this.changeDetectionState.preComputeGraphElementHashes(), // for local changes detection
         this.changeDetectionState.workspaceLocalLatestRevisionState.buildEntityHashesIndex(
@@ -868,7 +867,6 @@ export class EditorStore {
       ]);
       this.changeDetectionState.start();
       yield Promise.all([
-        this.changeDetectionState.computeLocalChanges(true),
         this.changeDetectionState.computeAggregatedWorkspaceChanges(true),
         this.changeDetectionState.computeAggregatedProjectLatestChanges(true),
       ]);
@@ -955,8 +953,7 @@ export class EditorStore {
   }
 
   closeAllStates(): void {
-    this.currentEditorState = undefined;
-    this.openedEditorStates = [];
+    this.closeAllEditorTabs();
     this.explorerTreeState.reprocess();
   }
 
@@ -1148,7 +1145,17 @@ export class EditorStore {
       )
       .filter(isNonNullable);
     const elementsToDelete = [element, ...generatedChildrenElements];
-
+    this.openedEditorStates = this.openedEditorStates.filter((elementState) => {
+      if (elementState instanceof ElementEditorState) {
+        if (elementState === this.currentEditorState) {
+          // avoid closing the current editor state as this will be taken care of
+          // by the `closeState()` call later
+          return true;
+        }
+        return !generatedChildrenElements.includes(elementState.element);
+      }
+      return true;
+    });
     if (
       this.currentEditorState &&
       this.currentEditorState instanceof ElementEditorState &&
@@ -1156,11 +1163,6 @@ export class EditorStore {
     ) {
       this.closeState(this.currentEditorState);
     }
-    this.openedEditorStates = this.openedEditorStates.filter(
-      (elementState) =>
-        elementState instanceof ElementEditorState &&
-        !generatedChildrenElements.includes(elementState.element),
-    );
     // remove/retire the element's generated children before remove the element itself
     generatedChildrenElements.forEach((el) =>
       graph_deleteOwnElement(this.graphManagerState.graph.generationModel, el),

@@ -19,6 +19,8 @@ import {
   type ValueSpecification,
   type Enum,
   type SimpleFunctionExpression,
+  type FunctionExpression,
+  AbstractPropertyExpression,
   Enumeration,
   EnumValueExplicitReference,
   EnumValueInstanceValue,
@@ -39,19 +41,17 @@ import {
   unwrapNotExpression,
 } from '../QueryBuilderOperatorsHelper';
 import { QueryBuilderPostFilterOperator } from '../QueryBuilderPostFilterOperator';
+import { buildPostFilterConditionState } from '../QueryBuilderPostFilterProcessor';
 import type {
   PostFilterConditionState,
   QueryBuilderPostFilterState,
 } from '../QueryBuilderPostFilterState';
 import { generateDefaultValueForPrimitiveType } from '../QueryBuilderValueSpecificationBuilderHelper';
+import { buildPostFilterConditionExpression } from './QueryBuilderPostFilterOperatorHelper';
 
 export class QueryBuilderPostFilterOperator_Equal extends QueryBuilderPostFilterOperator {
   getLabel(): string {
     return 'is';
-  }
-
-  getPureFunction(): SUPPORTED_FUNCTIONS {
-    return SUPPORTED_FUNCTIONS.EQUAL;
   }
 
   isCompatibleWithType(type: Type): boolean {
@@ -83,19 +83,32 @@ export class QueryBuilderPostFilterOperator_Equal extends QueryBuilderPostFilter
     const valueSpecification = postFilterConditionState.value;
     if (valueSpecification) {
       const type = getNonCollectionValueSpecificationType(valueSpecification);
-      const numericPrimitiveTypes = [
+      const NUMERIC_PRIMITIVE_TYPES = [
         PRIMITIVE_TYPE.NUMBER,
         PRIMITIVE_TYPE.INTEGER,
         PRIMITIVE_TYPE.DECIMAL,
         PRIMITIVE_TYPE.FLOAT,
       ] as string[];
 
+      const DATE_PRIMITIVE_TYPES = [
+        PRIMITIVE_TYPE.DATE,
+        PRIMITIVE_TYPE.DATETIME,
+        PRIMITIVE_TYPE.STRICTDATE,
+        PRIMITIVE_TYPE.LATESTDATE,
+      ] as string[];
+
       // When changing the return type for LHS, the RHS value should be adjusted accordingly.
-      // Numeric value is handled loosely because execution still works if a float (RHS) is assigned to an Integer property(LHS), etc.
       return (
         type !== undefined &&
-        ((numericPrimitiveTypes.includes(type.path) &&
-          numericPrimitiveTypes.includes(lhsType.path)) ||
+        // Numeric value is handled loosely because of autoboxing
+        // e.g. LHS (integer) = RHS (float) is acceptable
+        ((NUMERIC_PRIMITIVE_TYPES.includes(type.path) &&
+          NUMERIC_PRIMITIVE_TYPES.includes(lhsType.path)) ||
+          // Date value is handled loosely as well if the LHS is of type DateTime
+          // This is because we would simulate auto-boxing for date by altering the
+          // Pure function used for the operation
+          // e.g. LHS(DateTime) = RHS(Date) -> we use isOnDay() instead of is()
+          DATE_PRIMITIVE_TYPES.includes(type.path) ||
           type === lhsType ||
           lhsType.isSuperType(type))
       );
@@ -120,7 +133,8 @@ export class QueryBuilderPostFilterOperator_Equal extends QueryBuilderPostFilter
       case PRIMITIVE_TYPE.FLOAT:
       case PRIMITIVE_TYPE.INTEGER: {
         return buildPrimitiveInstanceValue(
-          postFilterConditionState.postFilterState.queryBuilderState,
+          postFilterConditionState.postFilterState.queryBuilderState
+            .graphManagerState.graph,
           propertyType.path,
           generateDefaultValueForPrimitiveType(propertyType.path),
         );
@@ -155,6 +169,39 @@ export class QueryBuilderPostFilterOperator_Equal extends QueryBuilderPostFilter
           }'`,
         );
     }
+  }
+
+  buildPostFilterConditionExpression(
+    postFilterConditionState: PostFilterConditionState,
+  ): ValueSpecification | undefined {
+    return buildPostFilterConditionExpression(
+      postFilterConditionState,
+      this,
+      postFilterConditionState.columnState.getReturnType()?.path ===
+        PRIMITIVE_TYPE.DATETIME &&
+        postFilterConditionState.value?.genericType?.value.rawType.path !==
+          PRIMITIVE_TYPE.DATETIME
+        ? SUPPORTED_FUNCTIONS.IS_ON_DAY
+        : SUPPORTED_FUNCTIONS.EQUAL,
+    );
+  }
+
+  buildPostFilterConditionState(
+    postFilterState: QueryBuilderPostFilterState,
+    expression: FunctionExpression,
+  ): PostFilterConditionState | undefined {
+    return buildPostFilterConditionState(
+      postFilterState,
+      expression,
+      expression.parametersValues[0] instanceof AbstractPropertyExpression &&
+        expression.parametersValues[0].func.genericType.value.rawType.path ===
+          PRIMITIVE_TYPE.DATETIME &&
+        expression.parametersValues[1]?.genericType?.value.rawType.path !==
+          PRIMITIVE_TYPE.DATETIME
+        ? SUPPORTED_FUNCTIONS.IS_ON_DAY
+        : SUPPORTED_FUNCTIONS.EQUAL,
+      this,
+    );
   }
 }
 export class QueryBuilderPostFilterOperator_NotEqual extends QueryBuilderPostFilterOperator_Equal {

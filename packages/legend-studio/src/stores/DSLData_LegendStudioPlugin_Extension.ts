@@ -20,7 +20,10 @@ import type {
   EmbeddedDataTypeOption,
 } from './editor-state/element-editor-state/data/DataEditorState';
 import type { EditorStore } from './EditorStore';
-import type { DSL_LegendStudioPlugin_Extension } from './LegendStudioPlugin';
+import type {
+  DSL_LegendStudioPlugin_Extension,
+  ElementEmbeddedContentSnippetSuggestion,
+} from './LegendStudioPlugin';
 
 export type EmbeddedDataEditorStateBuilder = (
   editorStore: EditorStore,
@@ -31,6 +34,12 @@ export type EmbeddedDataEditorRenderer = (
   connectionValueState: EmbeddedDataState,
   isReadOnly: boolean,
 ) => React.ReactNode | undefined;
+
+/**
+ * NOTE: The tab-stop index of the snippet must start from 2
+ */
+export type EmbeddedDataSnippetSuggestion =
+  ElementEmbeddedContentSnippetSuggestion;
 
 export interface DSLData_LegendStudioPlugin_Extension
   extends DSL_LegendStudioPlugin_Extension {
@@ -48,4 +57,9 @@ export interface DSLData_LegendStudioPlugin_Extension
    * Get the list extra embedded data type options.
    */
   getExtraEmbeddedDataTypeOptions?(): EmbeddedDataTypeOption[];
+
+  /**
+   * Get the list of Pure grammar suggestion snippet getters for embedded data
+   */
+  getExtraEmbeddedDataSnippetSuggestions?(): EmbeddedDataSnippetSuggestion[];
 }

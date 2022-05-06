@@ -47,11 +47,12 @@ import {
   InfoCircleIcon,
   MenuContentItem,
   MenuContent,
+  MaskIcon,
 } from '@finos/legend-art';
 import {
   type TestContainerState,
-  SingleExecutionTestState,
-} from '../../../../stores/editor-state/element-editor-state/service/ServiceTestState';
+  LegacySingleExecutionTestState,
+} from '../../../../stores/editor-state/element-editor-state/service/LegacyServiceTestState';
 import { TEST_RESULT } from '../../../../stores/editor-state/element-editor-state/mapping/MappingTestState';
 import { JsonDiffView } from '../../../shared/DiffView';
 import { UnsupportedEditorPanel } from '../../../editor/edit-panel/UnsupportedElementEditor';
@@ -95,7 +96,7 @@ const TestContainerContextMenu = observer(
 
 export const TestContainerItem = observer(
   (props: {
-    testState: SingleExecutionTestState;
+    testState: LegacySingleExecutionTestState;
     testContainer: DEPRECATED__TestContainer;
     isReadOnly: boolean;
     testIdx: number;
@@ -192,11 +193,11 @@ export const TestContainerItem = observer(
 );
 
 export const TestContainerStateExplorer = observer(
-  (props: { testState: SingleExecutionTestState }) => {
+  (props: { testState: LegacySingleExecutionTestState }) => {
     const { testState } = props;
     const addNewTestContainer = (): void => testState.addNewTestContainer();
     const isReadOnly = testState.serviceEditorState.isReadOnly;
-    if (testState instanceof SingleExecutionTestState) {
+    if (testState instanceof LegacySingleExecutionTestState) {
       return (
         <ContextMenu
           className="panel__content"
@@ -248,7 +249,7 @@ enum SERVICE_TEST_TAB {
 export const ServiceTestEditorEditPanel = observer(
   (props: {
     executionState: ServiceExecutionState;
-    testState: SingleExecutionTestState;
+    testState: LegacySingleExecutionTestState;
     selectedTestContainerState: TestContainerState;
   }) => {
     const { executionState, testState, selectedTestContainerState } = props;
@@ -519,7 +520,7 @@ export const ServiceTestEditorEditPanel = observer(
 export const ServiceTestAssertEditor = observer(
   (props: {
     executionState: ServiceExecutionState;
-    testState: SingleExecutionTestState;
+    testState: LegacySingleExecutionTestState;
   }) => {
     const { executionState, testState } = props;
     const applicationStore = useApplicationStore();
@@ -647,7 +648,7 @@ export const ServiceTestAssertEditor = observer(
 export const ServiceTestEditor = observer(
   (props: {
     executionState: ServiceExecutionState;
-    selectedTestState: SingleExecutionTestState;
+    selectedTestState: LegacySingleExecutionTestState;
   }) => {
     const { executionState, selectedTestState } = props;
     const selectedTest = selectedTestState.test;
@@ -656,6 +657,10 @@ export const ServiceTestEditor = observer(
     const serviceState = editorStore.getCurrentEditorState(ServiceEditorState);
     const isReadOnly = serviceState.isReadOnly;
     // test data
+    const anonymizeGeneratedData = selectedTestState.anonymizeGeneratedData;
+    const toggleAnonymizeGeneratedData = (): void => {
+      selectedTestState.setAnonymizeGeneratedData(!anonymizeGeneratedData);
+    };
     const updateTestData = (val: string): void =>
       singleExecTest_setData(selectedTest, val);
     const generateTestData = (): void => {
@@ -683,13 +688,42 @@ export const ServiceTestEditor = observer(
                   </div>
                 </div>
                 <div className="panel__header__actions">
+                  <div
+                    className={clsx('panel__content__form__section__toggler', {
+                      'panel__content__form__section__toggler--disabled':
+                        isReadOnly,
+                    })}
+                    onClick={toggleAnonymizeGeneratedData}
+                  >
+                    <button
+                      className={clsx(
+                        'btn--sm service-execution-editor__test-data__anonymize-btn',
+                        {
+                          'service-execution-editor__test-data__anonymize-btn--active':
+                            anonymizeGeneratedData,
+                        },
+                      )}
+                      disabled={isReadOnly}
+                      tabIndex={-1}
+                      title={`[${
+                        anonymizeGeneratedData ? 'on' : 'off'
+                      }] Anonymize Test Data`}
+                    >
+                      <MaskIcon />
+                    </button>
+                  </div>
                   <button
                     className="panel__header__action service-execution-editor__test-data__generate-btn"
                     onClick={generateTestData}
+                    disabled={selectedTestState.isGeneratingTestData}
                     tabIndex={-1}
-                    title={'Generate test data'}
                   >
-                    <RefreshIcon />
+                    <div className="service-execution-editor__test-data__generate-btn__label">
+                      <RefreshIcon className="service-execution-editor__test-data__generate-btn__label__icon" />
+                      <div className="service-execution-editor__test-data__generate-btn__label__title">
+                        Generate
+                      </div>
+                    </div>
                   </button>
                 </div>
               </div>

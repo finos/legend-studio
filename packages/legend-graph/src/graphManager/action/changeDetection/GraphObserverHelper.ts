@@ -33,10 +33,7 @@ const observe_PureGraphExtension = skipObserved(
     }),
 );
 
-const observe_Abstract_BasicModel = async (
-  metamodel: BasicModel,
-  context: ObserverContext,
-): Promise<void> => {
+const observe_Abstract_BasicModel = (metamodel: BasicModel): void => {
   makeObservable<
     BasicModel,
     | 'elementSectionMap'
@@ -52,7 +49,7 @@ const observe_Abstract_BasicModel = async (
     | 'servicesIndex'
     | 'generationSpecificationsIndex'
     | 'fileGenerationsIndex'
-    | 'extensions'
+    | 'dataElementsIndex'
   >(metamodel, {
     elementSectionMap: observable,
     sectionIndicesIndex: observable,
@@ -67,8 +64,10 @@ const observe_Abstract_BasicModel = async (
     servicesIndex: observable,
     generationSpecificationsIndex: observable,
     fileGenerationsIndex: observable,
+    dataElementsIndex: observable,
     extensions: observable,
 
+    allOwnElements: computed,
     ownSectionIndices: computed,
     ownProfiles: computed,
     ownEnumerations: computed,
@@ -86,18 +85,9 @@ const observe_Abstract_BasicModel = async (
     ownConnections: computed,
     ownFileGenerations: computed,
     ownGenerationSpecifications: computed,
-    allOwnElements: computed,
+    ownDataElements: computed,
   });
 
-  /**
-   * A note on performance here. We could observe the package tree recursively synchronously
-   * we have tried before and it does not take a long time, but at the risk of
-   * blocking the main thread, we parallize this anyway
-   *
-   * We have tried to traversed all the elements and observe them before, but that ends up
-   * being slower than just recursively going through the package tree.
-   */
-  await observe_PackageTree(metamodel.root, context);
   metamodel.extensions.forEach(observe_PureGraphExtension);
 };
 
@@ -108,6 +98,7 @@ export const observe_DependencyManager = skipObserved(
       projectDependencyModelsIndex: observable,
       allOwnElements: computed,
       dependencyGraphs: computed,
+      sectionIndices: computed,
       profiles: computed,
       enumerations: computed,
       measures: computed,
@@ -121,20 +112,31 @@ export const observe_DependencyManager = skipObserved(
       services: computed,
       runtimes: computed,
       connections: computed,
-      fileGenerations: computed,
       generationSpecifications: computed,
-      sectionIndices: computed,
+      fileGenerations: computed,
+      dataElements: computed,
     }),
 );
 
-export const observe_Graph = async (
-  metamodel: PureModel,
-  context: ObserverContext,
-): Promise<PureModel> => {
+/**
+ * NOTE: when we observe the graph, it is important to do this synchronously
+ * to not mess with `mobx`. Since most of the indices of the graph are computed values
+ * we have seen cases where asynchronousity hurts us and causes really ellusive bugs
+ * since `mobx` observabilty does not track in asynchronous context and `makeObservable`
+ * is sort of equivalent to triggering observability.
+ *
+ * See https://mobx.js.org/understanding-reactivity.html#understanding-reactivity
+ * See https://github.com/finos/legend-studio/issues/1121
+ *
+ * On the other hand, for performance purpose, we would need to observe all of graph
+ * elements asynchronously, as such, we would do that separately in the method
+ * {@link observe_GraphElements}
+ */
+export const observe_Graph = (metamodel: PureModel): PureModel => {
   if (isObservable(metamodel)) {
     return metamodel;
   }
-  await observe_Abstract_BasicModel(metamodel, context);
+  observe_Abstract_BasicModel(metamodel);
 
   makeObservable(metamodel, {
     generationModel: observable,
@@ -144,4 +146,22 @@ export const observe_Graph = async (
   observe_DependencyManager(metamodel.dependencyManager);
 
   return metamodel;
+};
+
+/**
+ * This method is designed for performance purpose.
+ *
+ * NOTE: this might have some impact on `mobx` observability, see the note
+ * of {@link observe_Graph}
+ */
+export const observe_GraphElements = async (
+  metamodel: PureModel,
+  context: ObserverContext,
+): Promise<void> => {
+  /**
+   * A note on performance here. We could observe the package tree recursively synchronously
+   * we have tried before and it does not take a long time, but at the risk of
+   * blocking the main thread, we parallize this anyway, hence we must make this method asynchronous.
+   */
+  await observe_PackageTree(metamodel.root, context);
 };
