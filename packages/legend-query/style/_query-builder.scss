@@ -763,13 +763,16 @@
     }
 
     &__reset-btn {
-      @include flexVCenter;
+      @include flexCenter;
 
       height: 2rem;
       width: 2rem;
-      font-size: 2rem;
-      color: var(--color-light-grey-300);
-      font-weight: 700;
+      margin-right: 0.5rem;
+
+      svg {
+        font-size: 1.8rem;
+        color: var(--color-light-grey-200);
+      }
     }
   }
 

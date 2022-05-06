@@ -146,6 +146,7 @@ export class ApplicationStore<T extends LegendApplicationConfig> {
     ].forEach((entry) =>
       this.docRegistry.registerEntry(entry.key, entry.content),
     );
+    this.docRegistry.url = this.config.documentationUrl;
 
     // Register plugins
     this.log.registerPlugins(pluginManager.getLoggerPlugins());
