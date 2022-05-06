@@ -1,5 +1,11 @@
 # @finos/legend-application
 
+## 3.0.2
+
+### Patch Changes
+
+- [#1145](https://github.com/finos/legend-studio/pull/1145) [`b5c835f7`](https://github.com/finos/legend-studio/commit/b5c835f7d4fa4b7b0aa98b5f3cb7f12cd110dfcb) ([@akphi](https://github.com/akphi)) - Fix a regression introduced in `5.0.0` where the link to the documentation page does not work.
+
 ## 3.0.1
 
 ## 3.0.0
