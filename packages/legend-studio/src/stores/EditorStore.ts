@@ -262,7 +262,7 @@ export class EditorStore {
       setIgnoreNavigationBlocking: action,
       refreshCurrentEntityDiffEditorState: action,
       setBlockingAlert: action,
-      setActionAltertInfo: action,
+      setActionAlertInfo: action,
       cleanUp: action,
       reset: action,
       setGraphEditMode: action,
@@ -499,11 +499,11 @@ export class EditorStore {
     this.applicationStore.setBlockingAlert(alertInfo);
   }
 
-  setActionAltertInfo(alertInfo: ActionAlertInfo | undefined): void {
+  setActionAlertInfo(alertInfo: ActionAlertInfo | undefined): void {
     if (this._isDisposed) {
       return;
     }
-    this.applicationStore.setActionAltertInfo(alertInfo);
+    this.applicationStore.setActionAlertInfo(alertInfo);
   }
 
   cleanUp(): void {
@@ -512,7 +512,7 @@ export class EditorStore {
     // e.g. trying going to an unknown workspace, we will be redirected to the home page
     // but the blocking alert for not-found workspace will still block the app
     this.setBlockingAlert(undefined);
-    this.setActionAltertInfo(undefined);
+    this.setActionAlertInfo(undefined);
     // stop change detection to avoid memory-leak
     this.changeDetectionState.stop();
     this._isDisposed = true;
@@ -577,7 +577,7 @@ export class EditorStore {
       // instead, we give them the option to:
       // - reload the page (in case they later gain access)
       // - back to the setup page
-      this.setActionAltertInfo({
+      this.setActionAlertInfo({
         message: `Project not found or inaccessible`,
         prompt: 'Please check that the project exists and request access to it',
         type: ActionAlertType.STANDARD,
@@ -648,7 +648,7 @@ export class EditorStore {
           this.applicationStore.notifyError(error);
         }
       };
-      this.setActionAltertInfo({
+      this.setActionAlertInfo({
         message: 'Workspace not found',
         prompt: `Please note that you can check out the project in viewer mode. Workspace is only required if you need to work on the project.`,
         type: ActionAlertType.STANDARD,
@@ -744,7 +744,7 @@ export class EditorStore {
   }
 
   private *initConflictResolutionMode(): GeneratorFn<void> {
-    this.setActionAltertInfo({
+    this.setActionAlertInfo({
       message: 'Failed to update workspace.',
       prompt:
         'You can discard all of your changes or review them, resolve all merge conflicts and fix any potential compilation issues as well as test failures',

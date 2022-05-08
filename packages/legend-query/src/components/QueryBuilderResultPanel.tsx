@@ -142,7 +142,7 @@ export const QueryBuilderResultPanel = observer(
     };
 
     const confirmExport = (format: EXECUTION_SERIALIZATION_FORMAT): void => {
-      applicationStore.setActionAltertInfo({
+      applicationStore.setActionAlertInfo({
         message: USER_ATTESTATION_MESSAGE,
         type: ActionAlertType.CAUTION,
         actions: [

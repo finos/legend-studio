@@ -187,7 +187,7 @@ export const EditorInner = observer(() => {
       !confirmedAllowNavigation &&
       showAlert
     ) {
-      editorStore.setActionAltertInfo({
+      editorStore.setActionAlertInfo({
         message: editorStore.isInConflictResolutionMode
           ? 'You have not accepted the conflict resolution, the current resolution will be discarded. Leave anyway?'
           : 'You have unpushed changes. Leave anyway?',

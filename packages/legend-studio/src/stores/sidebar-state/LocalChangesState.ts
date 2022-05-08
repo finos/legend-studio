@@ -507,7 +507,7 @@ export class LocalChangesState {
       yield flowResult(
         this.editorStore.changeDetectionState.computeAggregatedWorkspaceRemoteChanges(),
       );
-      this.editorStore.setActionAltertInfo({
+      this.editorStore.setActionAlertInfo({
         message: 'Local workspace is out-of-sync',
         prompt: 'Please pull remote changes before pushing your local changes',
         type: ActionAlertType.CAUTION,
@@ -612,7 +612,7 @@ export class LocalChangesState {
               error,
             );
           }
-          this.editorStore.setActionAltertInfo({
+          this.editorStore.setActionAlertInfo({
             message: `Change detection engine failed to build hashes index for workspace after syncing`,
             prompt:
               'To fix this, you can either try to keep refreshing local changes until success or trust and reuse current workspace hashes index',

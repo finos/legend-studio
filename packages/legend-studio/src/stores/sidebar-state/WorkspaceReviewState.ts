@@ -317,7 +317,7 @@ export class WorkspaceReviewState {
         review.id,
         { message: `${review.title} [review]` },
       );
-      this.editorStore.setActionAltertInfo({
+      this.editorStore.setActionAlertInfo({
         message: 'Committed review successfully',
         prompt:
           'You can create a new workspace with the same name or leave for the start page',

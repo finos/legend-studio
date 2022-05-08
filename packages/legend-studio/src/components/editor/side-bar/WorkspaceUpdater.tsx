@@ -57,7 +57,7 @@ export const WorkspaceUpdater = observer(() => {
   // Actions
   const updateWorkspace = (): void => {
     if (editorStore.hasUnpushedChanges) {
-      editorStore.setActionAltertInfo({
+      editorStore.setActionAlertInfo({
         message: 'You have unpushed changes',
         prompt:
           'This action will discard these changes and refresh the application',
