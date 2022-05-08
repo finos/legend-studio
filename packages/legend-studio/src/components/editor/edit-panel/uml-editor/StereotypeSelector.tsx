@@ -100,7 +100,7 @@ export const StereotypeSelector = observer(
             value={selectedProfile}
             placeholder={'Choose a profile'}
             filterOption={filterOption}
-            darkMode={darkTheme ?? false}
+            darkMode={Boolean(darkTheme)}
           />
           <button
             className={`stereotype-selector__profile__visit-btn ${

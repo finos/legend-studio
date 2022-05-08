@@ -133,7 +133,7 @@ export const TaggedValueEditor = observer(
           value={selectedTag}
           placeholder={'Choose a tag'}
           filterOption={tagFilterOption}
-          darkMode={darkTheme ?? false}
+          darkMode={Boolean(darkTheme)}
         />
         {!isReadOnly && (
           <button

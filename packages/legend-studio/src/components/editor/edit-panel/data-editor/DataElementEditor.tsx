@@ -61,8 +61,8 @@ import {
   externalFormatData_setData,
 } from '../../../../stores/graphModifier/DSLData_GraphModifierHelper';
 import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor';
-import { EDITOR_LANGUAGE } from '@finos/legend-application';
 import type { DSLData_LegendStudioPlugin_Extension } from '../../../../stores/DSLData_LegendStudioPlugin_Extension';
+import { getEditorLanguageFromFormat } from '../../../../stores/editor-state/FileGenerationViewerState';
 
 export const ExternalFormatDataEditor = observer(
   (props: {
@@ -87,6 +87,11 @@ export const ExternalFormatDataEditor = observer(
         externalFormatDataState.embeddedData,
         val,
       );
+    const language = getEditorLanguageFromFormat(
+      editorStore.graphState.graphGenerationState.externalFormatState.getFormatTypeForContentType(
+        externalFormatDataState.embeddedData.contentType,
+      ),
+    );
 
     return (
       <div className="panel external-format-data-editor">
@@ -136,7 +141,7 @@ export const ExternalFormatDataEditor = observer(
         <div className={clsx('external-format-data-editor__content')}>
           <div className="external-format-data-editor__content__input">
             <StudioTextInputEditor
-              language={EDITOR_LANGUAGE.TEXT}
+              language={language}
               inputValue={externalFormatDataState.embeddedData.data}
               updateInput={changeData}
               hideGutter={true}
@@ -210,7 +215,7 @@ export const EmbeddedDataEditor = observer(
   },
 );
 
-export const PackageableDataEditor = observer(() => {
+export const DataElementEditor = observer(() => {
   const editorStore = useEditorStore();
   const editorState = editorStore.getCurrentEditorState(
     PackageableDataEditorState,
