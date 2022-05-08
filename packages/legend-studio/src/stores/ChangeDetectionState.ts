@@ -34,6 +34,7 @@ import {
   assertErrorThrown,
   hashObject,
   promisify,
+  ActionState,
 } from '@finos/legend-shared';
 import type { EditorStore } from './EditorStore';
 import type { EditorGraphState } from './EditorGraphState';
@@ -204,6 +205,7 @@ class RevisionChangeDetectionState {
 export class ChangeDetectionState {
   editorStore: EditorStore;
   graphState: EditorGraphState;
+  graphObserveState = ActionState.create();
   // TODO: use ActionState for this
   isChangeDetectionRunning = false;
   hasChangeDetectionStarted = false;
@@ -360,6 +362,7 @@ export class ChangeDetectionState {
   }
 
   stop(force = false): void {
+    this.graphObserveState.reset();
     this.changeDetectionReaction?.();
     this.changeDetectionReaction = undefined;
     this.isChangeDetectionRunning = false;
@@ -756,6 +759,13 @@ export class ChangeDetectionState {
   }
 
   *observeGraph(): GeneratorFn<void> {
+    if (!this.graphObserveState.isInInitialState) {
+      throw new IllegalStateError(
+        `Can't observe graph: change detection must be stopped first`,
+      );
+    }
+    this.graphObserveState.inProgress();
+    this.graphObserveState.setMessage(`Observing graph...`);
     const startTime = Date.now();
     // NOTE: this method has to be done synchronously in `action` context
     // to make sure `mobx` react to observables from the graph, such as its element indices
@@ -771,6 +781,7 @@ export class ChangeDetectionState {
       Date.now() - startTime,
       'ms',
     );
+    this.graphObserveState.pass();
   }
 
   /**

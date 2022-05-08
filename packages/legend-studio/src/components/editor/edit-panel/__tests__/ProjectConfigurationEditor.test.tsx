@@ -128,7 +128,7 @@ beforeEach(async () => {
     projectDependency: TEST_DATA__DependencyEntities,
   });
   fireEvent.click(renderResult.getByText('config'));
-  const editPanel = renderResult.getByTestId(
+  const editPanel = await renderResult.findByTestId(
     LEGEND_STUDIO_TEST_ID.EDIT_PANEL_CONTENT,
   );
   const updateButton = getByText(editPanel, 'Update');
