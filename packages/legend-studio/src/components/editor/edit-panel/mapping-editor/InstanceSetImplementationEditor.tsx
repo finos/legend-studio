@@ -119,7 +119,7 @@ export const InstanceSetImplementationSourceExplorer = observer(
         if (!embeddedSetImpls.length) {
           setSourceElementForSourceSelectorModal(null);
         } else {
-          editorStore.setActionAltertInfo({
+          editorStore.setActionAlertInfo({
             message: CHANGING_SOURCE_ON_EMBEDDED,
             onEnter: (): void => editorStore.setBlockGlobalHotkeys(true),
             onClose: (): void => editorStore.setBlockGlobalHotkeys(false),
@@ -217,7 +217,7 @@ export const InstanceSetImplementationSourceExplorer = observer(
           if (!embeddedSetImpls.length) {
             changeClassMappingSourceDriver(droppedPackagableElement);
           } else {
-            editorStore.setActionAltertInfo({
+            editorStore.setActionAlertInfo({
               message: CHANGING_SOURCE_ON_EMBEDDED,
               onEnter: (): void => editorStore.setBlockGlobalHotkeys(true),
               onClose: (): void => editorStore.setBlockGlobalHotkeys(false),

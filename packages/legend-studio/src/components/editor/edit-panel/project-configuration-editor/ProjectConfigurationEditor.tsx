@@ -391,7 +391,7 @@ export const ProjectConfigurationEditor = observer(() => {
     selectedTab === CONFIGURATION_EDITOR_TAB.PROJECT_STRUCTURE || isReadOnly;
   const updateConfigs = (): void => {
     if (editorStore.hasUnpushedChanges) {
-      editorStore.setActionAltertInfo({
+      editorStore.setActionAlertInfo({
         message: 'You have unpushed changes',
         prompt:
           'This action will discard these changes and refresh the application',

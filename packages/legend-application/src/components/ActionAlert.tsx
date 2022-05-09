@@ -41,7 +41,7 @@ const ActionAlertInner = observer((props: { info: ActionAlertInfo }) => {
   const { title, message, prompt, type, onClose, onEnter, actions } = info;
   const handleClose = (): void => {
     onClose?.();
-    applicationStore.setActionAltertInfo(undefined);
+    applicationStore.setActionAlertInfo(undefined);
   };
   const handleEnter = (): void => onEnter?.();
   const handleSubmit = (): void => {

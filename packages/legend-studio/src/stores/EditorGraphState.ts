@@ -664,7 +664,7 @@ export class EditorGraphState {
           this.editorStore.applicationStore.notifyWarning(
             `Compilation failed: ${error.message}`,
           );
-          this.editorStore.setActionAltertInfo({
+          this.editorStore.setActionAlertInfo({
             message: 'Project is not in a compiled state',
             prompt:
               'All changes made since the last time the graph was built successfully will be lost',

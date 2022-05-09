@@ -18,6 +18,8 @@ import clsx, { type ClassValue } from 'clsx';
 import {
   type HandlerProps,
   type ReflexElementProps,
+  type ReflexSplitterProps,
+  type ReflexContainerProps,
   ReflexContainer,
   ReflexElement,
   ReflexSplitter,
@@ -37,16 +39,22 @@ import {
  * TODO: we should come back to the `moduleNameMaper` approach for mock when this issue is resolved
  * See https://github.com/microsoft/TypeScript/issues/33079
  */
-const MockedReactComponent: React.FC = (props) => {
+const MockedReactComponent: React.FC<{
+  children: React.ReactNode;
+}> = (props) => {
   const { children } = props;
   return <div>{children}</div>;
 };
 
 export const ResizablePanelGroup =
   // eslint-disable-next-line no-process-env
-  process.env.NODE_ENV === 'test'
+  (process.env.NODE_ENV === 'test'
     ? (MockedReactComponent as unknown as typeof ReflexContainer)
-    : ReflexContainer;
+    : ReflexContainer) as unknown as React.FC<
+    // Workaround until `react-reflex` fully support React 18
+    // https://github.com/leefsmp/Re-Flex/issues/158
+    ReflexContainerProps & { children: React.ReactNode }
+  >;
 
 const RESIZABLE_PANEL_MINIMIZED_CLASS_NAME = 'resizable-panel--minimized';
 /**
@@ -93,15 +101,23 @@ export const getControlledResizablePanelProps = (
 
 export const ResizablePanel =
   // eslint-disable-next-line no-process-env
-  process.env.NODE_ENV === 'test'
+  (process.env.NODE_ENV === 'test'
     ? (MockedReactComponent as unknown as typeof ReflexElement)
-    : ReflexElement;
+    : ReflexElement) as unknown as React.FC<
+    // Workaround until `react-reflex` fully support React 18
+    // https://github.com/leefsmp/Re-Flex/issues/158
+    ReflexElementProps & { children: React.ReactNode }
+  >;
 
 export const ResizablePanelSplitter =
   // eslint-disable-next-line no-process-env
-  process.env.NODE_ENV === 'test'
+  (process.env.NODE_ENV === 'test'
     ? (MockedReactComponent as unknown as typeof ReflexSplitter)
-    : ReflexSplitter;
+    : ReflexSplitter) as unknown as React.FC<
+    // Workaround until `react-reflex` fully support React 18
+    // https://github.com/leefsmp/Re-Flex/issues/158
+    ReflexSplitterProps & { children?: React.ReactNode }
+  >;
 
 export const ResizablePanelSplitterLine: React.FC<{ color: string }> = (
   props,

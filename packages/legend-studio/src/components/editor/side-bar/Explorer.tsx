@@ -773,7 +773,14 @@ export const Explorer = observer(() => {
     !editorStore.graphManagerState.graph.buildState.hasFailed;
   const showExplorerTrees =
     editorStore.graphManagerState.graph.buildState.hasSucceeded &&
-    editorStore.explorerTreeState.buildState.hasCompleted;
+    editorStore.explorerTreeState.buildState.hasCompleted &&
+    // NOTE: if not in viewer mode, we would only show the explorer tree
+    // when graph is properly observed to make sure edit after that can trigger
+    // change detection. Realistically, this doesn't not affect user as they
+    // don't edit elements that fast in form mode, but this could throw off
+    // test runner
+    (editorStore.isInViewerMode ||
+      editorStore.changeDetectionState.graphObserveState.hasSucceeded);
   // conflict resolution
   const showConflictResolutionContent =
     editorStore.isInConflictResolutionMode &&
@@ -879,7 +886,10 @@ export const Explorer = observer(() => {
                           .buildState.message ??
                         editorStore.graphManagerState.graph.generationModel
                           .buildState.message ??
-                        editorStore.graphManagerState.graph.buildState.message}
+                        editorStore.graphManagerState.graph.buildState
+                          .message ??
+                        editorStore.changeDetectionState.graphObserveState
+                          .message}
                     </div>
                   )}
                 {!showExplorerTrees &&

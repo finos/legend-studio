@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { createRoot } from 'react-dom/client';
 import {
   type LegendApplicationConfig,
   type LegendApplicationVersionData,
@@ -23,7 +24,6 @@ import {
   WebApplicationNavigatorProvider,
 } from '@finos/legend-application';
 import { configure as configureReactHotkeys } from 'react-hotkeys';
-import ReactDOM from 'react-dom';
 import { BrowserRouter } from 'react-router-dom';
 import { LegendTaxonomyApplication } from '../components/LegendTaxonomyApplication';
 import { LegendTaxonomyPluginManager } from './LegendTaxonomyPluginManager';
@@ -69,7 +69,8 @@ export class LegendTaxonomy extends LegendApplication {
     await setupLegendQueryUILibrary();
 
     // Render React application
-    ReactDOM.render(
+    const rootElement = createRoot(getRootElement());
+    rootElement.render(
       <BrowserRouter basename={this.baseUrl}>
         <WebApplicationNavigatorProvider>
           <ApplicationStoreProvider
@@ -83,7 +84,6 @@ export class LegendTaxonomy extends LegendApplication {
           </ApplicationStoreProvider>
         </WebApplicationNavigatorProvider>
       </BrowserRouter>,
-      getRootElement(),
     );
   }
 }

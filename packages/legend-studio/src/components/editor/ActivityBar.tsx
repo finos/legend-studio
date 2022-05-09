@@ -79,9 +79,9 @@ export const ActivityBar = observer(() => {
   const localChangesDisplayLabel = localChanges > 99 ? '99+' : localChanges;
   const localChangesIndicatorStatusIcon =
     editorStore.graphManagerState.graph.buildState.hasFailed ||
-    editorStore.changeDetectionState.forcedStop ? (
+    editorStore.changeDetectionState.initState.hasFailed ? (
       <div />
-    ) : !editorStore.changeDetectionState.isChangeDetectionRunning ||
+    ) : !editorStore.changeDetectionState.initState.hasSucceeded ||
       editorStore.changeDetectionState.workspaceLocalLatestRevisionState
         .isBuildingEntityHashesIndex ||
       editorStore.localChangesState.pushChangesState.isInProgress ? (
@@ -112,7 +112,7 @@ export const ActivityBar = observer(() => {
   const conflictResolutionChangesIndicatorStatusIcon =
     !editorStore.isInConflictResolutionMode ? (
       <div />
-    ) : !editorStore.changeDetectionState.isChangeDetectionRunning ||
+    ) : !editorStore.changeDetectionState.initState.hasSucceeded ||
       editorStore.changeDetectionState.workspaceBaseRevisionState
         .isBuildingEntityHashesIndex ? (
       <div
@@ -136,7 +136,7 @@ export const ActivityBar = observer(() => {
     editorStore.changeDetectionState.aggregatedWorkspaceChanges.length;
   const reviewChangesIndicatorStatusIcon = !reviewChanges ? (
     <div />
-  ) : !editorStore.changeDetectionState.isChangeDetectionRunning ||
+  ) : !editorStore.changeDetectionState.initState.hasSucceeded ||
     editorStore.changeDetectionState.workspaceBaseRevisionState
       .isBuildingEntityHashesIndex ||
     editorStore.changeDetectionState.workspaceLocalLatestRevisionState
@@ -155,7 +155,7 @@ export const ActivityBar = observer(() => {
     editorStore.changeDetectionState.potentialWorkspaceUpdateConflicts.length;
   const projectLatestChangesIndicatorStatusIcon = !workspaceUpdateChanges ? (
     <div />
-  ) : !editorStore.changeDetectionState.isChangeDetectionRunning ||
+  ) : !editorStore.changeDetectionState.initState.hasSucceeded ||
     editorStore.changeDetectionState.workspaceBaseRevisionState
       .isBuildingEntityHashesIndex ||
     editorStore.changeDetectionState.projectLatestRevisionState

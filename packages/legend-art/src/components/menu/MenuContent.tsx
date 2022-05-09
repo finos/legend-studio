@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { forwardRef } from 'react';
+import React, { forwardRef } from 'react';
 import clsx from 'clsx';
 
 export const MenuContent = forwardRef<
@@ -30,6 +30,7 @@ export const MenuContent = forwardRef<
 });
 
 export const MenuContentItem: React.FC<{
+  children: React.ReactNode;
   className?: string;
   disabled?: boolean;
   onClick?: () => void;
@@ -55,6 +56,7 @@ export const MenuContentDivider: React.FC<{
 };
 
 export const MenuContentItemIcon: React.FC<{
+  children: React.ReactNode;
   className?: string;
 }> = (props) => {
   const { className, children, ...otherProps } = props;
@@ -75,6 +77,7 @@ export const MenuContentItemBlankIcon: React.FC<{
 };
 
 export const MenuContentItemLabel: React.FC<{
+  children: React.ReactNode;
   className?: string;
 }> = (props) => {
   const { className, children, ...otherProps } = props;

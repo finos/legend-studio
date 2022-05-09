@@ -800,7 +800,7 @@ export class MappingExecutionState {
           );
         }
       } else {
-        this.editorStore.setActionAltertInfo({
+        this.editorStore.setActionAlertInfo({
           message: 'Mapping execution input data is already set',
           prompt: 'Do you want to regenerate the input data?',
           type: ActionAlertType.CAUTION,

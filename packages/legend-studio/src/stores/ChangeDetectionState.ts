@@ -34,6 +34,7 @@ import {
   assertErrorThrown,
   hashObject,
   promisify,
+  ActionState,
 } from '@finos/legend-shared';
 import type { EditorStore } from './EditorStore';
 import type { EditorGraphState } from './EditorGraphState';
@@ -204,10 +205,8 @@ class RevisionChangeDetectionState {
 export class ChangeDetectionState {
   editorStore: EditorStore;
   graphState: EditorGraphState;
-  // TODO: use ActionState for this
-  isChangeDetectionRunning = false;
-  hasChangeDetectionStarted = false;
-  forcedStop = false;
+  graphObserveState = ActionState.create();
+  initState = ActionState.create();
   /**
    * Keep the list of disposers to deactivate `keepAlive` for computed value of element hash code.
    * See {@link preComputeGraphElementHashes} for more details
@@ -277,9 +276,6 @@ export class ChangeDetectionState {
 
   constructor(editorStore: EditorStore, graphState: EditorGraphState) {
     makeObservable(this, {
-      isChangeDetectionRunning: observable,
-      hasChangeDetectionStarted: observable,
-      forcedStop: observable,
       resolutions: observable,
       projectLatestRevisionState: observable.ref,
       conflictResolutionBaseRevisionState: observable.ref,
@@ -360,11 +356,13 @@ export class ChangeDetectionState {
   }
 
   stop(force = false): void {
+    this.graphObserveState.reset();
     this.changeDetectionReaction?.();
     this.changeDetectionReaction = undefined;
-    this.isChangeDetectionRunning = false;
     if (force) {
-      this.forcedStop = true;
+      this.initState.fail();
+    } else {
+      this.initState.reset();
     }
   }
 
@@ -428,15 +426,13 @@ export class ChangeDetectionState {
         delay: throttleDuration,
       },
     );
-    this.isChangeDetectionRunning = true;
-    this.hasChangeDetectionStarted = true;
-    this.forcedStop = false;
 
     // dispose and remove the disposers for `keepAlive` computations for elements' hash code
     this.graphElementHashCodeKeepAliveComputationDisposers.forEach((disposer) =>
       disposer(),
     );
     this.graphElementHashCodeKeepAliveComputationDisposers = [];
+    this.initState.pass();
   }
 
   snapshotLocalEntityHashesIndex(quiet?: boolean): Map<string, string> {
@@ -756,6 +752,13 @@ export class ChangeDetectionState {
   }
 
   *observeGraph(): GeneratorFn<void> {
+    if (!this.graphObserveState.isInInitialState) {
+      throw new IllegalStateError(
+        `Can't observe graph: change detection must be stopped first`,
+      );
+    }
+    this.graphObserveState.inProgress();
+    this.graphObserveState.setMessage(`Observing graph...`);
     const startTime = Date.now();
     // NOTE: this method has to be done synchronously in `action` context
     // to make sure `mobx` react to observables from the graph, such as its element indices
@@ -771,6 +774,8 @@ export class ChangeDetectionState {
       Date.now() - startTime,
       'ms',
     );
+    this.graphObserveState.setMessage(undefined);
+    this.graphObserveState.pass();
   }
 
   /**

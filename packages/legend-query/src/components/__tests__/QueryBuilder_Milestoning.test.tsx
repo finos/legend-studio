@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { getByText } from '@testing-library/react';
+import { act, getByText } from '@testing-library/react';
 import {
   TEST_DATA__simpleProjectionWithBiTemporalSourceAndBiTemporalTarget,
   TEST_DATA__simpleProjectionWithBiTemporalSourceAndBusinessTemporalTarget,
@@ -72,7 +72,9 @@ test(
 
     const _personClass =
       mockedQueryStore.graphManagerState.graph.getClass('my::Person');
-    queryBuilderState.changeClass(_personClass);
+    act(() => {
+      queryBuilderState.changeClass(_personClass);
+    });
     const queryBuilderSetup = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
     );
@@ -80,11 +82,13 @@ test(
     await waitFor(() => getByText(queryBuilderSetup, 'map'));
     await waitFor(() => getByText(queryBuilderSetup, 'runtime'));
 
-    queryBuilderState.initialize(
-      getRawLambda(
-        TEST_DATA__simpleProjectionWithBusinessTemporalSourceAndProcessingTemporalTarget,
-      ),
-    );
+    act(() => {
+      queryBuilderState.initialize(
+        getRawLambda(
+          TEST_DATA__simpleProjectionWithBusinessTemporalSourceAndProcessingTemporalTarget,
+        ),
+      );
+    });
     const projectionColumnState = guaranteeType(
       queryBuilderState.fetchStructureState.projectionState.columns[0],
       QueryBuilderSimpleProjectionColumnState,
@@ -125,7 +129,9 @@ test(
 
     const _personClass =
       mockedQueryStore.graphManagerState.graph.getClass('my::Person');
-    queryBuilderState.changeClass(_personClass);
+    act(() => {
+      queryBuilderState.changeClass(_personClass);
+    });
     const queryBuilderSetup = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
     );
@@ -133,11 +139,13 @@ test(
     await waitFor(() => getByText(queryBuilderSetup, 'map'));
     await waitFor(() => getByText(queryBuilderSetup, 'runtime'));
 
-    queryBuilderState.initialize(
-      getRawLambda(
-        TEST_DATA__simpleProjectionWithBusinessTemporalSourceAndBusinessTemporalTarget,
-      ),
-    );
+    act(() => {
+      queryBuilderState.initialize(
+        getRawLambda(
+          TEST_DATA__simpleProjectionWithBusinessTemporalSourceAndBusinessTemporalTarget,
+        ),
+      );
+    });
     const projectionColumnState = guaranteeType(
       queryBuilderState.fetchStructureState.projectionState.columns[0],
       QueryBuilderSimpleProjectionColumnState,
@@ -178,7 +186,9 @@ test(
 
     const _personClass =
       mockedQueryStore.graphManagerState.graph.getClass('my::Person');
-    queryBuilderState.changeClass(_personClass);
+    act(() => {
+      queryBuilderState.changeClass(_personClass);
+    });
     const queryBuilderSetup = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
     );
@@ -186,11 +196,13 @@ test(
     await waitFor(() => getByText(queryBuilderSetup, 'map'));
     await waitFor(() => getByText(queryBuilderSetup, 'runtime'));
 
-    queryBuilderState.initialize(
-      getRawLambda(
-        TEST_DATA__simpleProjectionWithBusinessTemporalSourceAndBiTemporalTarget,
-      ),
-    );
+    act(() => {
+      queryBuilderState.initialize(
+        getRawLambda(
+          TEST_DATA__simpleProjectionWithBusinessTemporalSourceAndBiTemporalTarget,
+        ),
+      );
+    });
     const projectionColumnState = guaranteeType(
       queryBuilderState.fetchStructureState.projectionState.columns[0],
       QueryBuilderSimpleProjectionColumnState,
@@ -231,7 +243,9 @@ test(
 
     const _personClass =
       mockedQueryStore.graphManagerState.graph.getClass('my::Person1');
-    queryBuilderState.changeClass(_personClass);
+    act(() => {
+      queryBuilderState.changeClass(_personClass);
+    });
     const queryBuilderSetup = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
     );
@@ -239,11 +253,13 @@ test(
     await waitFor(() => getByText(queryBuilderSetup, 'map'));
     await waitFor(() => getByText(queryBuilderSetup, 'runtime'));
 
-    queryBuilderState.initialize(
-      getRawLambda(
-        TEST_DATA__simpleProjectionWithBiTemporalSourceAndBiTemporalTarget,
-      ),
-    );
+    act(() => {
+      queryBuilderState.initialize(
+        getRawLambda(
+          TEST_DATA__simpleProjectionWithBiTemporalSourceAndBiTemporalTarget,
+        ),
+      );
+    });
     const projectionColumnState = guaranteeType(
       queryBuilderState.fetchStructureState.projectionState.columns[0],
       QueryBuilderSimpleProjectionColumnState,
@@ -284,7 +300,9 @@ test(
 
     const _personClass =
       mockedQueryStore.graphManagerState.graph.getClass('my::Person1');
-    queryBuilderState.changeClass(_personClass);
+    act(() => {
+      queryBuilderState.changeClass(_personClass);
+    });
     const queryBuilderSetup = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
     );
@@ -292,11 +310,13 @@ test(
     await waitFor(() => getByText(queryBuilderSetup, 'map'));
     await waitFor(() => getByText(queryBuilderSetup, 'runtime'));
 
-    queryBuilderState.initialize(
-      getRawLambda(
-        TEST_DATA__simpleProjectionWithBiTemporalSourceAndBusinessTemporalTarget,
-      ),
-    );
+    act(() => {
+      queryBuilderState.initialize(
+        getRawLambda(
+          TEST_DATA__simpleProjectionWithBiTemporalSourceAndBusinessTemporalTarget,
+        ),
+      );
+    });
     const projectionColumnState = guaranteeType(
       queryBuilderState.fetchStructureState.projectionState.columns[0],
       QueryBuilderSimpleProjectionColumnState,
@@ -337,7 +357,9 @@ test(
 
     const _personClass =
       mockedQueryStore.graphManagerState.graph.getClass('my::Person1');
-    queryBuilderState.changeClass(_personClass);
+    act(() => {
+      queryBuilderState.changeClass(_personClass);
+    });
     const queryBuilderSetup = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
     );
@@ -345,11 +367,13 @@ test(
     await waitFor(() => getByText(queryBuilderSetup, 'map'));
     await waitFor(() => getByText(queryBuilderSetup, 'runtime'));
 
-    queryBuilderState.initialize(
-      getRawLambda(
-        TEST_DATA__simpleProjectionWithBiTemporalSourceAndProcessingTemporalTarget,
-      ),
-    );
+    act(() => {
+      queryBuilderState.initialize(
+        getRawLambda(
+          TEST_DATA__simpleProjectionWithBiTemporalSourceAndProcessingTemporalTarget,
+        ),
+      );
+    });
     const projectionColumnState = guaranteeType(
       queryBuilderState.fetchStructureState.projectionState.columns[0],
       QueryBuilderSimpleProjectionColumnState,
@@ -390,7 +414,9 @@ test(
 
     const _personClass =
       mockedQueryStore.graphManagerState.graph.getClass('my::Person2');
-    queryBuilderState.changeClass(_personClass);
+    act(() => {
+      queryBuilderState.changeClass(_personClass);
+    });
     const queryBuilderSetup = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
     );
@@ -398,11 +424,13 @@ test(
     await waitFor(() => getByText(queryBuilderSetup, 'map'));
     await waitFor(() => getByText(queryBuilderSetup, 'runtime'));
 
-    queryBuilderState.initialize(
-      getRawLambda(
-        TEST_DATA__simpleProjectionWithProcessingTemporalSourceAndBiTemporalTarget,
-      ),
-    );
+    act(() => {
+      queryBuilderState.initialize(
+        getRawLambda(
+          TEST_DATA__simpleProjectionWithProcessingTemporalSourceAndBiTemporalTarget,
+        ),
+      );
+    });
     const projectionColumnState = guaranteeType(
       queryBuilderState.fetchStructureState.projectionState.columns[0],
       QueryBuilderSimpleProjectionColumnState,
@@ -443,7 +471,9 @@ test(
 
     const _personClass =
       mockedQueryStore.graphManagerState.graph.getClass('my::Person2');
-    queryBuilderState.changeClass(_personClass);
+    act(() => {
+      queryBuilderState.changeClass(_personClass);
+    });
     const queryBuilderSetup = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
     );
@@ -451,11 +481,13 @@ test(
     await waitFor(() => getByText(queryBuilderSetup, 'map'));
     await waitFor(() => getByText(queryBuilderSetup, 'runtime'));
 
-    queryBuilderState.initialize(
-      getRawLambda(
-        TEST_DATA__simpleProjectionWithProcessingTemporalSourceAndBusinessTemporalTarget,
-      ),
-    );
+    act(() => {
+      queryBuilderState.initialize(
+        getRawLambda(
+          TEST_DATA__simpleProjectionWithProcessingTemporalSourceAndBusinessTemporalTarget,
+        ),
+      );
+    });
     const projectionColumnState = guaranteeType(
       queryBuilderState.fetchStructureState.projectionState.columns[0],
       QueryBuilderSimpleProjectionColumnState,
@@ -496,7 +528,9 @@ test(
 
     const _personClass =
       mockedQueryStore.graphManagerState.graph.getClass('my::Person2');
-    queryBuilderState.changeClass(_personClass);
+    act(() => {
+      queryBuilderState.changeClass(_personClass);
+    });
     const queryBuilderSetup = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
     );
@@ -504,11 +538,13 @@ test(
     await waitFor(() => getByText(queryBuilderSetup, 'map'));
     await waitFor(() => getByText(queryBuilderSetup, 'runtime'));
 
-    queryBuilderState.initialize(
-      getRawLambda(
-        TEST_DATA__simpleProjectionWithProcessingTemporalSourceAndProcessingTemporalTarget,
-      ),
-    );
+    act(() => {
+      queryBuilderState.initialize(
+        getRawLambda(
+          TEST_DATA__simpleProjectionWithProcessingTemporalSourceAndProcessingTemporalTarget,
+        ),
+      );
+    });
     const projectionColumnState = guaranteeType(
       queryBuilderState.fetchStructureState.projectionState.columns[0],
       QueryBuilderSimpleProjectionColumnState,
@@ -549,7 +585,9 @@ test(
 
     const _personClass =
       mockedQueryStore.graphManagerState.graph.getClass('my::Firm');
-    queryBuilderState.changeClass(_personClass);
+    act(() => {
+      queryBuilderState.changeClass(_personClass);
+    });
     const queryBuilderSetup = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
     );
@@ -557,11 +595,13 @@ test(
     await waitFor(() => getByText(queryBuilderSetup, 'map'));
     await waitFor(() => getByText(queryBuilderSetup, 'runtime'));
 
-    queryBuilderState.initialize(
-      getRawLambda(
-        TEST_DATA__simpleProjectionWithNonTemporalSourceAndProcessingTemporalTarget,
-      ),
-    );
+    act(() => {
+      queryBuilderState.initialize(
+        getRawLambda(
+          TEST_DATA__simpleProjectionWithNonTemporalSourceAndProcessingTemporalTarget,
+        ),
+      );
+    });
     const projectionColumnState = guaranteeType(
       queryBuilderState.fetchStructureState.projectionState.columns[0],
       QueryBuilderSimpleProjectionColumnState,
@@ -602,7 +642,9 @@ test(
 
     const _personClass =
       mockedQueryStore.graphManagerState.graph.getClass('my::Firm');
-    queryBuilderState.changeClass(_personClass);
+    act(() => {
+      queryBuilderState.changeClass(_personClass);
+    });
     const queryBuilderSetup = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
     );
@@ -610,11 +652,13 @@ test(
     await waitFor(() => getByText(queryBuilderSetup, 'map'));
     await waitFor(() => getByText(queryBuilderSetup, 'runtime'));
 
-    queryBuilderState.initialize(
-      getRawLambda(
-        TEST_DATA__simpleProjectionWithNonTemporalSourceAndBusinessTemporalTarget,
-      ),
-    );
+    act(() => {
+      queryBuilderState.initialize(
+        getRawLambda(
+          TEST_DATA__simpleProjectionWithNonTemporalSourceAndBusinessTemporalTarget,
+        ),
+      );
+    });
     const projectionColumnState = guaranteeType(
       queryBuilderState.fetchStructureState.projectionState.columns[0],
       QueryBuilderSimpleProjectionColumnState,
@@ -655,7 +699,9 @@ test(
 
     const _personClass =
       mockedQueryStore.graphManagerState.graph.getClass('my::Firm');
-    queryBuilderState.changeClass(_personClass);
+    act(() => {
+      queryBuilderState.changeClass(_personClass);
+    });
     const queryBuilderSetup = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
     );
@@ -663,11 +709,13 @@ test(
     await waitFor(() => getByText(queryBuilderSetup, 'map'));
     await waitFor(() => getByText(queryBuilderSetup, 'runtime'));
 
-    queryBuilderState.initialize(
-      getRawLambda(
-        TEST_DATA__simpleProjectionWithNonTemporalSourceAndBiTemporalTarget,
-      ),
-    );
+    act(() => {
+      queryBuilderState.initialize(
+        getRawLambda(
+          TEST_DATA__simpleProjectionWithNonTemporalSourceAndBiTemporalTarget,
+        ),
+      );
+    });
     const projectionColumnState = guaranteeType(
       queryBuilderState.fetchStructureState.projectionState.columns[0],
       QueryBuilderSimpleProjectionColumnState,

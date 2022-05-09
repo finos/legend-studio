@@ -247,7 +247,7 @@ export class ServiceRegistrationState {
             ? serviceRegistrationResult.pattern.substring(1)
             : serviceRegistrationResult.pattern,
         );
-      this.editorStore.setActionAltertInfo({
+      this.editorStore.setActionAlertInfo({
         message,
         prompt: 'You can now launch and monitor the operation of your service',
         type: ActionAlertType.STANDARD,

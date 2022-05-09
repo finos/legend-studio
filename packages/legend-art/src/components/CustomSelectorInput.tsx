@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {
+import React, {
   type CSSProperties,
   useRef,
   useEffect,
@@ -81,7 +81,7 @@ const CustomMenuList: React.FC<{
         initialScrollOffset={initialOffset}
       >
         {({ index, style }): React.ReactElement<ListChildComponentProps> => (
-          <div style={style}>{children[index]}</div>
+          <div style={style}>{children[index] as React.ReactNode}</div>
         )}
       </FixedSizeList>
     );
