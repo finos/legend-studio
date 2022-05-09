@@ -2,4 +2,5 @@
 "@finos/legend-studio": minor
 ---
 
-Add form support for `ExternalFormat embedded data`
+Add editor for `ExternalFormat` embedded data.
+
