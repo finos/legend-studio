@@ -14,21 +14,9 @@
  * limitations under the License.
  */
 
-import { hashArray, type Hashable } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../MetaModelConst';
 import { AssertFail } from './AssertFail';
 
-export class EqualToJsonAssertFail extends AssertFail implements Hashable {
+export class EqualToJsonAssertFail extends AssertFail {
   expected!: string;
   actual!: string;
-
-  override get hashCode(): string {
-    return hashArray([
-      CORE_HASH_STRUCTURE.EQUAL_TO_JSON_ASSERT_FAIL,
-      this.id,
-      this.message,
-      this.expected,
-      this.actual,
-    ]);
-  }
 }

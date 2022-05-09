@@ -15,9 +15,15 @@
  */
 
 import type { Hashable } from '@finos/legend-shared';
+import type { V1_EqualTo } from './V1_EqualTo';
+import type { V1_EqualToJson } from './V1_EqualToJson';
+import type { V1_EqualToTDS } from './V1_EqualToTDS';
 
 export interface V1_TestAssertionVisitor<T> {
   visit_TestAssertion(testAssertion: V1_TestAssertion): T;
+  visit_EqualToTDS(testAssertion: V1_EqualToTDS): T;
+  visit_EqualTo(testAssertion: V1_EqualTo): T;
+  visit_EqualToJSON(testAssertion: V1_EqualToJson): T;
 }
 
 export abstract class V1_TestAssertion implements Hashable {
@@ -25,7 +31,7 @@ export abstract class V1_TestAssertion implements Hashable {
 
   abstract get hashCode(): string;
 
-  accept_TestAssertionVisitor<T>(visitor: V1_TestAssertionVisitor<T>): T {
-    return visitor.visit_TestAssertion(this);
-  }
+  abstract accept_TestAssertionVisitor<T>(
+    visitor: V1_TestAssertionVisitor<T>,
+  ): T;
 }

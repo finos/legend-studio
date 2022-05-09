@@ -18,6 +18,7 @@ import { AbstractPlugin, type Clazz } from '@finos/legend-shared';
 import type { PackageableElement } from '../models/metamodels/pure/packageableElements/PackageableElement';
 import type { PureModel } from './PureModel';
 import type { GraphPluginManager } from '../GraphPluginManager';
+import type { TestableExtension } from './TestableExtension';
 
 export type DeadReferencesCleaner = (graph: PureModel) => void;
 
@@ -48,4 +49,6 @@ export abstract class PureGraphPlugin extends AbstractPlugin {
    * Get the list of procedures to be done to cleanup dead references in the graph.
    */
   getExtraDeadReferencesCleaners?(): DeadReferencesCleaner[];
+
+  getExtraTestables?(): TestableExtension[];
 }

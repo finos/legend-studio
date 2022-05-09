@@ -17,10 +17,6 @@
 import type { Hashable } from '@finos/legend-shared';
 import type { TestAssertion } from './assertion/TestAssertion';
 
-export interface Testable {
-  tests: Test[];
-}
-
 export abstract class Test implements Hashable {
   id!: string;
 
@@ -28,6 +24,7 @@ export abstract class Test implements Hashable {
 }
 
 export abstract class AtomicTest extends Test implements Hashable {
+  parentSuite: TestSuite | undefined;
   assertions: TestAssertion[] = [];
 
   abstract override get hashCode(): string;

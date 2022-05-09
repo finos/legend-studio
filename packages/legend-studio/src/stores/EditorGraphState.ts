@@ -99,6 +99,7 @@ import {
 import { CONFIGURATION_EDITOR_TAB } from './editor-state/ProjectConfigurationEditorState';
 import type { DSLMapping_LegendStudioPlugin_Extension } from './DSLMapping_LegendStudioPlugin_Extension';
 import { graph_dispose } from './graphModifier/GraphModifierHelper';
+import { TestableManagerState } from './sidebar-state/testable/TestableManagerState';
 
 export enum GraphBuilderStatus {
   SUCCEEDED = 'SUCCEEDED',
@@ -828,6 +829,12 @@ export class EditorGraphState {
             this.editorStore.applicationStore.config.options
               .TEMPORARY__preserveSectionIndex,
         },
+      );
+
+      // Activity States
+      this.editorStore.testableManagerState = new TestableManagerState(
+        this.editorStore,
+        this.editorStore.sdlcState,
       );
 
       // NOTE: build model generation entities every-time we rebuild the graph - should we do this?

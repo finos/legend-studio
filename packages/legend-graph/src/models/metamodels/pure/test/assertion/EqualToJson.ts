@@ -17,7 +17,7 @@
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import type { ExternalFormatData } from '../../data/EmbeddedData';
-import { TestAssertion } from './TestAssertion';
+import { TestAssertion, type TestAssertionVisitor } from './TestAssertion';
 
 export class EqualToJson extends TestAssertion implements Hashable {
   expected!: ExternalFormatData;
@@ -28,5 +28,9 @@ export class EqualToJson extends TestAssertion implements Hashable {
       this.id,
       this.expected,
     ]);
+  }
+
+  accept_TestAssertionVisitor<T>(visitor: TestAssertionVisitor<T>): T {
+    return visitor.visit_EqualToJSON(this);
   }
 }

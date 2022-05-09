@@ -15,15 +15,6 @@
  */
 
 import { UnsupportedOperationError } from '@finos/legend-shared';
-import { AssertFail } from '../../../../../../metamodels/pure/test/assertion/status/AssertFail';
-import type { AssertionStatus } from '../../../../../../metamodels/pure/test/assertion/status/AssertionStatus';
-import { AssertPass } from '../../../../../../metamodels/pure/test/assertion/status/AssertPass';
-import { EqualToJsonAssertFail } from '../../../../../../metamodels/pure/test/assertion/status/EqualToJsonAssertFail';
-import { V1_AssertFail } from '../../../model/test/assertion/status/V1_AssertFail';
-import type { V1_AssertionStatus } from '../../../model/test/assertion/status/V1_AssertionStatus';
-import { V1_AssertPass } from '../../../model/test/assertion/status/V1_AssertPass';
-import { V1_EqualToJsonAssertFail } from '../../../model/test/assertion/status/V1_EqualToJsonAssertFail';
-import { V1_AtomicTestId } from '../../../model/test/V1_AtomicTestId';
 import { V1_EqualTo } from '../../../model/test/assertion/V1_EqualTo';
 import { V1_EqualToJson } from '../../../model/test/assertion/V1_EqualToJson';
 import { EqualTo } from '../../../../../../metamodels/pure/test/assertion/EqualTo';
@@ -34,72 +25,21 @@ import { ServiceTest } from '../../../../../../metamodels/pure/packageableElemen
 import type { V1_TestAssertion } from '../../../model/test/assertion/V1_TestAssertion';
 import type { TestAssertion } from '../../../../../../metamodels/pure/test/assertion/TestAssertion';
 import type { V1_TestSuite } from '../../../model/test/V1_TestSuite';
-import { V1_TestResult } from '../../../model/test/result/V1_TestResult';
-import { V1_TestPassed } from '../../../model/test/result/V1_TestPassed';
-import { V1_TestFailed } from '../../../model/test/result/V1_TestFailed';
-import { V1_TestError } from '../../../model/test/result/V1_TestError';
-import type { TestResult } from '../../../../../../metamodels/pure/test/result/TestResult';
-import type { TestPassed } from '../../../../../../metamodels/pure/test/result/TestPassed';
-import type { TestFailed } from '../../../../../../metamodels/pure/test/result/TestFailed';
-import type { TestError } from '../../../../../../metamodels/pure/test/result/TestError';
 import {
   V1_transformServiceTest,
   V1_transformServiceTestSuite,
 } from './V1_ServiceTransformer';
 import { ServiceTestSuite } from '../../../../../../metamodels/pure/packageableElements/service/ServiceTestSuite';
 import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext';
-import type { AtomicTestId } from '../../../../../../metamodels/pure/test/result/AtomicTestId';
 import type {
   AtomicTest,
   TestSuite,
 } from '../../../../../../metamodels/pure/test/Test';
-
-const transformAtomicTestId = (element: AtomicTestId): V1_AtomicTestId => {
-  const atomicTestId = new V1_AtomicTestId();
-  atomicTestId.atomicTestId = element.atomicTestId;
-  atomicTestId.testSuiteId = element.testSuiteId;
-  return atomicTestId;
-};
-
-const transformAssertFail = (element: AssertFail): V1_AssertFail => {
-  const assertFail = new V1_AssertFail();
-  assertFail.id = element.id;
-  assertFail.message = element.message;
-  return assertFail;
-};
-
-const transformAssertPass = (element: AssertPass): V1_AssertPass => {
-  const assertPass = new V1_AssertPass();
-  assertPass.id = element.id;
-  return assertPass;
-};
-
-const transformEqualToJsonAssertFail = (
-  element: EqualToJsonAssertFail,
-): V1_EqualToJsonAssertFail => {
-  const equalToJsonAssertFail = new V1_EqualToJsonAssertFail();
-  equalToJsonAssertFail.id = element.id;
-  equalToJsonAssertFail.message = element.message;
-  equalToJsonAssertFail.actual = element.actual;
-  equalToJsonAssertFail.expected = element.expected;
-  return equalToJsonAssertFail;
-};
-
-const transformAssertionStatus = (
-  value: AssertionStatus,
-): V1_AssertionStatus => {
-  if (value instanceof EqualToJsonAssertFail) {
-    return transformEqualToJsonAssertFail(value);
-  } else if (value instanceof AssertFail) {
-    return transformAssertFail(value);
-  } else if (value instanceof AssertPass) {
-    return transformAssertPass(value);
-  }
-  throw new UnsupportedOperationError(
-    `Can't transform assertion status`,
-    value,
-  );
-};
+import { EqualToTDS } from '../../../../../../metamodels/pure/test/assertion/EqualToTDS';
+import {
+  V1_EqualToTDS,
+  V1_RelationalTDS,
+} from '../../../model/test/assertion/V1_EqualToTDS';
 
 const transformEqualTo = (element: EqualTo): V1_EqualTo => {
   const equalTo = new V1_EqualTo();
@@ -115,36 +55,13 @@ const transformEqualToJson = (element: EqualToJson): V1_EqualToJson => {
   return equalToJson;
 };
 
-export const V1_transformTestError = (element: TestError): V1_TestError => {
-  const testError = new V1_TestError();
-  testError.testable = element.testable;
-  testError.error = element.error;
-  testError.atomicTestId = transformAtomicTestId(element.atomicTestId);
-  return testError;
-};
-
-export const V1_transformTestFailed = (element: TestFailed): V1_TestFailed => {
-  const testFailed = new V1_TestFailed();
-  testFailed.testable = element.testable;
-  testFailed.atomicTestId = transformAtomicTestId(element.atomicTestId);
-  testFailed.assertStatuses = element.assertStatuses.map((assertStatus) =>
-    transformAssertionStatus(assertStatus),
-  );
-  return testFailed;
-};
-
-export const V1_transformTestPassed = (element: TestPassed): V1_TestPassed => {
-  const testPassed = new V1_TestPassed();
-  testPassed.testable = element.testable;
-  testPassed.atomicTestId = transformAtomicTestId(element.atomicTestId);
-  return testPassed;
-};
-
-export const V1_transformTestResult = (element: TestResult): V1_TestResult => {
-  const testResult = new V1_TestResult();
-  testResult.testable = element.testable;
-  testResult.atomicTestId = transformAtomicTestId(element.atomicTestId);
-  return testResult;
+const transformEqualToTDS = (element: EqualToTDS): V1_EqualToTDS => {
+  const equalToTDS = new V1_EqualToTDS();
+  equalToTDS.id = element.id;
+  equalToTDS.expected = new V1_RelationalTDS();
+  equalToTDS.expected.columns = element.expected.columns;
+  equalToTDS.expected.rows = element.expected.rows;
+  return equalToTDS;
 };
 
 export const V1_transformAtomicTest = (value: AtomicTest): V1_AtomicTest => {
@@ -161,6 +78,8 @@ export const V1_transformTestAssertion = (
     return transformEqualTo(value);
   } else if (value instanceof EqualToJson) {
     return transformEqualToJson(value);
+  } else if (value instanceof EqualToTDS) {
+    return transformEqualToTDS(value);
   }
   throw new UnsupportedOperationError(`Can't transform test assertion`, value);
 };

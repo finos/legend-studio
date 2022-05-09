@@ -25,10 +25,11 @@ import type { StereotypeReference } from '../domain/StereotypeReference';
 import type { TaggedValue } from '../domain/TaggedValue';
 import type { DEPRECATED__ServiceTest } from './DEPRECATED__ServiceTest';
 import type { ServiceTestSuite } from './ServiceTestSuite';
+import type { Testable } from '../../test/Testable';
 
 export const DEFAULT_SERVICE_PATTERN = '/';
 
-export class Service extends PackageableElement implements Hashable {
+export class Service extends PackageableElement implements Hashable, Testable {
   stereotypes: StereotypeReference[] = [];
   taggedValues: TaggedValue[] = [];
   pattern = '/';

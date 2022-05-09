@@ -144,6 +144,7 @@ import {
   graph_deleteOwnElement,
   graph_renameElement,
 } from './graphModifier/GraphModifierHelper';
+import { TestableManagerState } from './sidebar-state/testable/TestableManagerState';
 
 export abstract class EditorExtensionState {
   /**
@@ -190,6 +191,7 @@ export class EditorStore {
   projectConfigurationEditorState: ProjectConfigurationEditorState;
   projectOverviewState: ProjectOverviewState;
   workspaceWorkflowManagerState: WorkspaceWorkflowManagerState;
+  testableManagerState: TestableManagerState;
   workspaceUpdaterState: WorkspaceUpdaterState;
   workspaceReviewState: WorkspaceReviewState;
   localChangesState: LocalChangesState;
@@ -295,6 +297,7 @@ export class EditorStore {
     // side bar panels
     this.explorerTreeState = new ExplorerTreeState(this);
     this.projectOverviewState = new ProjectOverviewState(this, this.sdlcState);
+    this.testableManagerState = new TestableManagerState(this, this.sdlcState);
     this.workspaceWorkflowManagerState = new WorkspaceWorkflowManagerState(
       this,
       this.sdlcState,
@@ -710,7 +713,6 @@ export class EditorStore {
       ),
     ]);
     yield flowResult(this.initMode());
-
     onLeave(true);
   }
 

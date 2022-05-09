@@ -37,15 +37,25 @@ import { V1_AssertPass } from '../../../model/test/assertion/status/V1_AssertPas
 import { V1_EqualToJsonAssertFail } from '../../../model/test/assertion/status/V1_EqualToJsonAssertFail';
 import { V1_EqualTo } from '../../../model/test/assertion/V1_EqualTo';
 import { V1_EqualToJson } from '../../../model/test/assertion/V1_EqualToJson';
+import {
+  V1_EqualToTDS,
+  V1_RelationalTDS,
+} from '../../../model/test/assertion/V1_EqualToTDS';
 import type { V1_TestAssertion } from '../../../model/test/assertion/V1_TestAssertion';
-import { V1_TestError } from '../../../model/test/result/V1_TestError';
-import { V1_TestFailed } from '../../../model/test/result/V1_TestFailed';
-import { V1_TestPassed } from '../../../model/test/result/V1_TestPassed';
-import { V1_TestResult } from '../../../model/test/result/V1_TestResult';
+import {
+  type V1_TestResult,
+  V1_TestError,
+  V1_TestFailed,
+  V1_TestPassed,
+} from '../../../model/test/result/V1_TestResult';
 import type { V1_AtomicTest } from '../../../model/test/V1_AtomicTest';
 import { V1_AtomicTestId } from '../../../model/test/V1_AtomicTestId';
 import type { V1_TestSuite } from '../../../model/test/V1_TestSuite';
-import { V1_externalFormatDataModelSchema } from './V1_DataElementSerializationHelper';
+import {
+  V1_externalFormatDataModelSchema,
+  V1_relationalDataTableColumnSchema,
+  V1_relationalDataTableRowModelSchema,
+} from './V1_DataElementSerializationHelper';
 import {
   V1_serviceTestModelSchema,
   V1_serviceTestSuiteModelSchema,
@@ -64,6 +74,13 @@ export enum V1_AtomicTestType {
 enum V1_TestAssertionType {
   EQUAL_TO = 'equalTo',
   EQUAL_TO_JSON = 'equalToJson',
+  EQUAL_TO_TDS = 'equalToTDS',
+}
+
+enum V1_TestResultType {
+  TEST_ERROR = 'testError',
+  TEST_PASSED = 'testPassed',
+  TEST_FAILED = 'testFailed',
 }
 
 export enum V1_TestSuiteType {
@@ -72,7 +89,7 @@ export enum V1_TestSuiteType {
 
 export const V1_atomicTestIdModelSchema = createModelSchema(V1_AtomicTestId, {
   atomicTestId: primitive(),
-  key: primitive(),
+  testSuiteId: primitive(),
 });
 
 export const V1_assertFailModelSchema = createModelSchema(V1_AssertFail, {
@@ -144,6 +161,17 @@ export const V1_equalToJsonModelSchema = createModelSchema(V1_EqualToJson, {
   id: primitive(),
 });
 
+const V1_relationalTDSModelSchema = createModelSchema(V1_RelationalTDS, {
+  rows: list(usingModelSchema(V1_relationalDataTableRowModelSchema)),
+  columns: list(usingModelSchema(V1_relationalDataTableColumnSchema)),
+});
+
+const V1_equalToTDSModelSchema = createModelSchema(V1_EqualToTDS, {
+  _type: usingConstantValueSchema(V1_TestAssertionType.EQUAL_TO_TDS),
+  expected: usingModelSchema(V1_relationalTDSModelSchema),
+  id: primitive(),
+});
+
 export const V1_testErrorModelSchema = createModelSchema(V1_TestError, {
   atomicTestId: usingModelSchema(V1_atomicTestIdModelSchema),
   error: primitive(),
@@ -165,12 +193,22 @@ export const V1_testPassedModelSchema = createModelSchema(V1_TestPassed, {
   atomicTestId: usingModelSchema(V1_atomicTestIdModelSchema),
   testable: primitive(),
 });
-
-export const V1_testResultModelSchema = createModelSchema(V1_TestResult, {
-  atomicTestId: usingModelSchema(V1_atomicTestIdModelSchema),
-  testable: primitive(),
-});
-
+export const V1_deserializeTestResult = (
+  json: PlainObject<V1_TestResult>,
+): V1_TestResult => {
+  switch (json._type) {
+    case V1_TestResultType.TEST_ERROR:
+      return deserialize(V1_testErrorModelSchema, json);
+    case V1_TestResultType.TEST_FAILED:
+      return deserialize(V1_testFailedModelSchema, json);
+    case V1_TestResultType.TEST_PASSED:
+      return deserialize(V1_testPassedModelSchema, json);
+    default:
+      throw new UnsupportedOperationError(
+        `Can't deserialize atomic test of type '${json._type}'`,
+      );
+  }
+};
 export const V1_serializeAtomicTest = (
   protocol: V1_AtomicTest,
 ): PlainObject<V1_AtomicTest> => {
@@ -200,6 +238,8 @@ export const V1_serializeTestAssertion = (
     return serialize(V1_equalToModelSchema, protocol);
   } else if (protocol instanceof V1_EqualToJson) {
     return serialize(V1_equalToJsonModelSchema, protocol);
+  } else if (protocol instanceof V1_EqualToTDS) {
+    return serialize(V1_equalToTDSModelSchema, protocol);
   }
   throw new UnsupportedOperationError(
     `Can't serialize test assertion`,
@@ -215,6 +255,8 @@ export const V1_deserializeTestAssertion = (
       return deserialize(V1_equalToModelSchema, json);
     case V1_TestAssertionType.EQUAL_TO_JSON:
       return deserialize(V1_equalToJsonModelSchema, json);
+    case V1_TestAssertionType.EQUAL_TO_TDS:
+      return deserialize(V1_equalToTDSModelSchema, json);
     default:
       throw new UnsupportedOperationError(
         `Can't deserialize test assertion of type '${json._type}'`,

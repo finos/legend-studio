@@ -38,7 +38,6 @@ import type { Mapping } from '../models/metamodels/pure/packageableElements/mapp
 import type { Profile } from '../models/metamodels/pure/packageableElements/domain/Profile';
 import type { Stereotype } from '../models/metamodels/pure/packageableElements/domain/Stereotype';
 import type { Tag } from '../models/metamodels/pure/packageableElements/domain/Tag';
-import type { PackageableElement } from '../models/metamodels/pure/packageableElements/PackageableElement';
 import type { Store } from '../models/metamodels/pure/packageableElements/store/Store';
 import { DependencyManager } from '../graph/DependencyManager';
 import { ConcreteFunctionDefinition } from '../models/metamodels/pure/packageableElements/domain/ConcreteFunctionDefinition';
@@ -58,6 +57,9 @@ import {
 import type { PureGraphPlugin } from './PureGraphPlugin';
 import { createPath } from '../MetaModelUtils';
 import type { DataElement } from '../models/metamodels/pure/packageableElements/data/DataElement';
+import type { Testable } from '../models/metamodels/pure/test/Testable';
+import type { PackageableElement } from '../models/metamodels/pure/packageableElements/PackageableElement';
+import type { TestableExtension } from './TestableExtension';
 
 /**
  * CoreModel holds meta models which are constant and basic building block of the graph. Since throughout the lifetime
@@ -218,6 +220,19 @@ export class PureModel extends BasicModel {
       ...this.allOwnElements,
       ...this.generationModel.allOwnElements,
     ];
+  }
+
+  get testableExtensions(): TestableExtension[] {
+    return this.graphPlugins.flatMap(
+      (plugin) => plugin.getExtraTestables?.() ?? [],
+    );
+  }
+
+  get allOwnTestables(): Testable[] {
+    const extraTestables = this.testableExtensions.flatMap(
+      (plugin) => plugin.getExtraTestables?.(this) ?? [],
+    );
+    return [...this.ownTestables].concat(...extraTestables);
   }
 
   getProfileStereotype = (

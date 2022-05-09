@@ -14,19 +14,18 @@
  * limitations under the License.
  */
 
-import { hashArray, type Hashable } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
-import { TestResult } from './TestResult';
+import type { EditorStore } from '../../../EditorStore';
+import type { ServiceEditorState } from './ServiceEditorState';
 
-export class TestError extends TestResult implements Hashable {
-  error!: string;
+export class ServiceTestRunnerState {
+  editorStore: EditorStore;
+  serviceEditorState: ServiceEditorState;
 
-  override get hashCode(): string {
-    return hashArray([
-      CORE_HASH_STRUCTURE.TEST_ERROR,
-      this.testable,
-      this.atomicTestId,
-      this.error,
-    ]);
+  constructor(
+    editorStore: EditorStore,
+    serviceEditorState: ServiceEditorState,
+  ) {
+    this.editorStore = editorStore;
+    this.serviceEditorState = serviceEditorState;
   }
 }

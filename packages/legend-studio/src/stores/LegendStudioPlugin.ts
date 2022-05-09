@@ -22,11 +22,13 @@ import type {
   Class,
   PackageableElement,
   ModelGenerationConfiguration,
+  Testable,
 } from '@finos/legend-graph';
 import {
   type LegendApplicationDocumentationEntry,
   LegendApplicationPlugin,
 } from '@finos/legend-application';
+import type { TestableMetadata } from '../components/TestableStudio';
 
 export type ApplicationSetup = (
   pluginManager: LegendStudioPluginManager,
@@ -65,6 +67,11 @@ export type ModelLoaderExtensionConfiguration = {
   load: (editorStore: EditorStore) => Promise<void>;
   renderer: (editorStore: EditorStore) => React.ReactNode | undefined;
 };
+
+export type TestableMetadataGetter = (
+  testable: Testable,
+  editorStore: EditorStore,
+) => TestableMetadata | undefined;
 
 export abstract class LegendStudioPlugin extends LegendApplicationPlugin {
   /**
@@ -116,6 +123,11 @@ export abstract class LegendStudioPlugin extends LegendApplicationPlugin {
    * Get the list of extension configurations for model loader.
    */
   getExtraModelLoaderExtensionConfigurations?(): ModelLoaderExtensionConfiguration[];
+
+  /**
+   * Get the list of extension for testables
+   */
+  getExtraTestableMetadata?(): TestableMetadataGetter[];
 }
 
 export type ElementTypeGetter = (

@@ -36,7 +36,7 @@ import {
 } from '@finos/legend-shared';
 import type { EditorStore } from '../../../EditorStore';
 import {
-  type ServiceTestResult,
+  type DEPRECATED__ServiceTestResult,
   type DEPRECATED__KeyedSingleExecutionTest,
   type Runtime,
   type ExecutionResult,
@@ -123,7 +123,7 @@ export class TestContainerState {
     this.initializeAssertionData(testContainter);
   }
 
-  get testResult(): ServiceTestResult | undefined {
+  get testResult(): DEPRECATED__ServiceTestResult | undefined {
     const idx = this.testState.test.asserts.findIndex(
       (assert) => assert === this.testContainer,
     );
@@ -455,7 +455,7 @@ export class LegacySingleExecutionTestState {
   isGeneratingTestData = false;
   anonymizeGeneratedData = true;
   testSuiteRunError?: Error | undefined;
-  testResults: ServiceTestResult[] = [];
+  testResults: DEPRECATED__ServiceTestResult[] = [];
   allTestRunTime = 0;
 
   constructor(
@@ -499,7 +499,7 @@ export class LegacySingleExecutionTestState {
   setSelectedTestContainerState(testContainerState?: TestContainerState): void {
     this.selectedTestContainerState = testContainerState;
   }
-  setTestResults(assertResults: ServiceTestResult[]): void {
+  setTestResults(assertResults: DEPRECATED__ServiceTestResult[]): void {
     this.testResults = assertResults;
   }
   setAnonymizeGeneratedData(val: boolean): void {
@@ -589,10 +589,10 @@ export class LegacySingleExecutionTestState {
       this.isRunningAllTests = true;
       this.setTestResults([]);
       const results =
-        (yield this.editorStore.graphManagerState.graphManager.runServiceTests(
+        (yield this.editorStore.graphManagerState.graphManager.runLegacyServiceTests(
           this.serviceEditorState.service,
           this.serviceEditorState.editorStore.graphManagerState.graph,
-        )) as ServiceTestResult[];
+        )) as DEPRECATED__ServiceTestResult[];
       this.setTestResults(results);
     } catch (error) {
       assertErrorThrown(error);

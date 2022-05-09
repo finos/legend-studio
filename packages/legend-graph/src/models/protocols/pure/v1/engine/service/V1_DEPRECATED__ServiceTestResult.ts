@@ -14,20 +14,17 @@
  * limitations under the License.
  */
 
-import { hashArray, type Hashable } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
-import type { V1_AssertionStatus } from '../assertion/status/V1_AssertionStatus';
-import { V1_TestResult } from './V1_TestResult';
+import { createModelSchema, primitive } from 'serializr';
+import { SerializationFactory } from '@finos/legend-shared';
 
-export class V1_TestFailed extends V1_TestResult implements Hashable {
-  assertStatuses: V1_AssertionStatus[] = [];
+export class V1_DEPRECATED__ServiceTestResult {
+  name!: string;
+  result!: boolean;
 
-  override get hashCode(): string {
-    return hashArray([
-      CORE_HASH_STRUCTURE.TEST_FAILED,
-      this.testable,
-      this.atomicTestId,
-      hashArray(this.assertStatuses),
-    ]);
-  }
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(V1_DEPRECATED__ServiceTestResult, {
+      name: primitive(),
+      result: primitive(),
+    }),
+  );
 }

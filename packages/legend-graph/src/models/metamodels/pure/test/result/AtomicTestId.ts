@@ -13,19 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import type { AtomicTest, TestSuite } from '../Test';
 
-import { type Hashable, hashArray } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
+export class AtomicTestId {
+  parentSuite: TestSuite | undefined;
+  atomicTest: AtomicTest;
 
-export class AtomicTestId implements Hashable {
-  testSuiteId!: string;
-  atomicTestId!: string;
-
-  get hashCode(): string {
-    return hashArray([
-      CORE_HASH_STRUCTURE.ATOMIC_TEST_ID,
-      this.testSuiteId,
-      this.atomicTestId,
-    ]);
+  constructor(testSuite: TestSuite | undefined, atomicTestId: AtomicTest) {
+    this.parentSuite = testSuite;
+    this.atomicTest = atomicTestId;
   }
 }

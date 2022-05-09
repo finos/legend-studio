@@ -16,23 +16,39 @@
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
-import { hashObjectWithoutSourceInformation } from '../../../../../../../MetaModelUtils';
+import type {
+  V1_RelationalDataTableColumn,
+  V1_RelationalDataTableRow,
+} from '../../data/V1_RelationalData';
 import {
-  V1_TestAssertion,
   type V1_TestAssertionVisitor,
+  V1_TestAssertion,
 } from './V1_TestAssertion';
 
-export class V1_EqualTo extends V1_TestAssertion implements Hashable {
-  expected!: object;
+export class V1_RelationalTDS implements Hashable {
+  columns: V1_RelationalDataTableColumn[] = [];
+  rows: V1_RelationalDataTableRow[] = [];
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.RELATIONAL_TDS,
+      hashArray(this.columns),
+      hashArray(this.rows),
+    ]);
+  }
+}
+
+export class V1_EqualToTDS extends V1_TestAssertion {
+  expected!: V1_RelationalTDS;
 
   get hashCode(): string {
     return hashArray([
-      CORE_HASH_STRUCTURE.EQUAL_TO,
+      CORE_HASH_STRUCTURE.EQUAL_TO_TDS,
       this.id,
-      hashObjectWithoutSourceInformation(this.expected),
+      this.expected,
     ]);
   }
+
   accept_TestAssertionVisitor<T>(visitor: V1_TestAssertionVisitor<T>): T {
-    return visitor.visit_EqualTo(this);
+    return visitor.visit_EqualToTDS(this);
   }
 }

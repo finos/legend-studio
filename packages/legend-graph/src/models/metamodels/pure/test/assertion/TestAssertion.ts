@@ -15,17 +15,26 @@
  */
 
 import type { Hashable } from '@finos/legend-shared';
-
-export interface TestAssertionVisitor<T> {
-  visit_TestAssertion(testAssertion: TestAssertion): T;
-}
+import type { AtomicTest } from '../Test';
+import type { EqualTo } from './EqualTo';
+import type { EqualToJson } from './EqualToJson';
+import type { EqualToTDS } from './EqualToTDS';
 
 export abstract class TestAssertion implements Hashable {
   id!: string;
 
+  parentTest: AtomicTest | undefined;
+
   abstract get hashCode(): string;
 
-  accept_TestAssertionVisitor<T>(visitor: TestAssertionVisitor<T>): T {
-    return visitor.visit_TestAssertion(this);
-  }
+  abstract accept_TestAssertionVisitor<T>(visitor: TestAssertionVisitor<T>): T;
+}
+export interface TestAssertionVisitor<T> {
+  visit_TestAssertion(testAssertion: TestAssertion): T;
+
+  visit_EqualTo(equal: EqualTo): T;
+
+  visit_EqualToJSON(equal: EqualToJson): T;
+
+  visit_EqualToTDS(equal: EqualToTDS): T;
 }

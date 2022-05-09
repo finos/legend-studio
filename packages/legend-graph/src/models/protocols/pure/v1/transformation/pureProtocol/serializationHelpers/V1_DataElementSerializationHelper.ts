@@ -22,6 +22,7 @@ import {
   usingConstantValueSchema,
   serializeMap,
   deserializeMap,
+  usingModelSchema,
 } from '@finos/legend-shared';
 import {
   createModelSchema,
@@ -30,6 +31,8 @@ import {
   type ModelSchema,
   primitive,
   serialize,
+  optional,
+  list,
 } from 'serializr';
 import type { DSLData_PureProtocolProcessorPlugin_Extension } from '../../../../DSLData_PureProtocolProcessorPlugin_Extension';
 import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin';
@@ -39,6 +42,12 @@ import {
   V1_ModelStoreData,
   V1_DataElementReference,
 } from '../../../model/data/V1_EmbeddedData';
+import {
+  V1_RelationalData,
+  V1_RelationalDataTable,
+  V1_RelationalDataTableColumn,
+  V1_RelationalDataTableRow,
+} from '../../../model/data/V1_RelationalData';
 import { V1_DataElement } from '../../../model/packageableElements/data/V1_DataElement';
 import {
   V1_stereotypePtrSchema,
@@ -51,6 +60,7 @@ export enum V1_EmbeddedDataType {
   MODEL_STORE_DATA = 'modelStore',
   EXTERNAL_FORMAT_DATA = 'externalFormat',
   DATA_ELEMENT_REFERENCE = 'reference',
+  RELATIONAL_DATA = 'relationalData',
 }
 
 export const V1_modelStoreDataModelSchema = createModelSchema(
@@ -81,6 +91,35 @@ export const V1_dataElementReferenceModelSchema = createModelSchema(
   },
 );
 
+export const V1_relationalDataTableColumnSchema = createModelSchema(
+  V1_RelationalDataTableColumn,
+  {
+    value: primitive(),
+  },
+);
+
+export const V1_relationalDataTableRowModelSchema = createModelSchema(
+  V1_RelationalDataTableRow,
+  {
+    values: primitive(),
+  },
+);
+
+const V1_relationalDataTableModelSchema = createModelSchema(
+  V1_RelationalDataTable,
+  {
+    schemaName: optional(primitive()),
+    tableName: primitive(),
+    columns: list(usingModelSchema(V1_relationalDataTableColumnSchema)),
+    rows: list(usingModelSchema(V1_relationalDataTableRowModelSchema)),
+  },
+);
+
+const V1_relationalDataModelSchema = createModelSchema(V1_RelationalData, {
+  _type: usingConstantValueSchema(V1_EmbeddedDataType.RELATIONAL_DATA),
+  tables: list(usingModelSchema(V1_relationalDataTableModelSchema)),
+});
+
 export const V1_serializeEmbeddedDataType = (
   protocol: V1_EmbeddedData,
   plugins: PureProtocolProcessorPlugin[],
@@ -91,6 +130,8 @@ export const V1_serializeEmbeddedDataType = (
     return serialize(V1_modelStoreDataModelSchema, protocol);
   } else if (protocol instanceof V1_DataElementReference) {
     return serialize(V1_dataElementReferenceModelSchema, protocol);
+  } else if (protocol instanceof V1_RelationalData) {
+    return serialize(V1_relationalDataModelSchema, protocol);
   }
   const extraEmbeddedDataSerializers = plugins.flatMap(
     (plugin) =>
@@ -122,6 +163,8 @@ export const V1_deserializeEmbeddedDataType = (
       return deserialize(V1_modelStoreDataModelSchema, json);
     case V1_EmbeddedDataType.DATA_ELEMENT_REFERENCE:
       return deserialize(V1_dataElementReferenceModelSchema, json);
+    case V1_EmbeddedDataType.RELATIONAL_DATA:
+      return deserialize(V1_relationalDataModelSchema, json);
     default: {
       const extraEmbeddedDataProtocolDeserializers = plugins.flatMap(
         (plugin) =>

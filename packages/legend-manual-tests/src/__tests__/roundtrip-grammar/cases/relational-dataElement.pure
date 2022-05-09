@@ -1,0 +1,37 @@
+###Data
+Data my::RelationalData
+{
+  Relational
+  #{
+    MyTable:
+      {
+        schema: 'mySchema';
+        columns:
+        [
+          'id',
+          'firstName',
+          'lastName',
+          'age'
+        ];
+        rows:
+        [
+          '1,John,Doe',
+          '2,Nicole,Smith',
+          '3,Nick,Smith'
+        ];
+      }
+    MyTable2:
+      {
+        columns:
+        [
+          'id',
+          'name'
+        ];
+        rows:
+        [
+          '1,John',
+          '2,Jack'
+        ];
+      }
+  }#
+}

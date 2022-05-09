@@ -14,17 +14,11 @@
  * limitations under the License.
  */
 
-import { createModelSchema, primitive } from 'serializr';
-import { SerializationFactory } from '@finos/legend-shared';
-
-export class V1_ServiceTestResult {
+/**
+ * TODO: Remove once migration from `ServiceTest_Legacy` to `ServiceTest` is complete
+ * @deprecated
+ */
+export class DEPRECATED__ServiceTestResult {
   name!: string;
   result!: boolean;
-
-  static readonly serialization = new SerializationFactory(
-    createModelSchema(V1_ServiceTestResult, {
-      name: primitive(),
-      result: primitive(),
-    }),
-  );
 }
