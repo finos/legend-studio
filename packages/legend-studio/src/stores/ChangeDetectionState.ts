@@ -206,10 +206,7 @@ export class ChangeDetectionState {
   editorStore: EditorStore;
   graphState: EditorGraphState;
   graphObserveState = ActionState.create();
-  // TODO: use ActionState for this
-  isChangeDetectionRunning = false;
-  hasChangeDetectionStarted = false;
-  forcedStop = false;
+  initState = ActionState.create();
   /**
    * Keep the list of disposers to deactivate `keepAlive` for computed value of element hash code.
    * See {@link preComputeGraphElementHashes} for more details
@@ -279,9 +276,6 @@ export class ChangeDetectionState {
 
   constructor(editorStore: EditorStore, graphState: EditorGraphState) {
     makeObservable(this, {
-      isChangeDetectionRunning: observable,
-      hasChangeDetectionStarted: observable,
-      forcedStop: observable,
       resolutions: observable,
       projectLatestRevisionState: observable.ref,
       conflictResolutionBaseRevisionState: observable.ref,
@@ -365,9 +359,10 @@ export class ChangeDetectionState {
     this.graphObserveState.reset();
     this.changeDetectionReaction?.();
     this.changeDetectionReaction = undefined;
-    this.isChangeDetectionRunning = false;
     if (force) {
-      this.forcedStop = true;
+      this.initState.fail();
+    } else {
+      this.initState.reset();
     }
   }
 
@@ -431,15 +426,13 @@ export class ChangeDetectionState {
         delay: throttleDuration,
       },
     );
-    this.isChangeDetectionRunning = true;
-    this.hasChangeDetectionStarted = true;
-    this.forcedStop = false;
 
     // dispose and remove the disposers for `keepAlive` computations for elements' hash code
     this.graphElementHashCodeKeepAliveComputationDisposers.forEach((disposer) =>
       disposer(),
     );
     this.graphElementHashCodeKeepAliveComputationDisposers = [];
+    this.initState.pass();
   }
 
   snapshotLocalEntityHashesIndex(quiet?: boolean): Map<string, string> {
@@ -781,6 +774,7 @@ export class ChangeDetectionState {
       Date.now() - startTime,
       'ms',
     );
+    this.graphObserveState.setMessage(undefined);
     this.graphObserveState.pass();
   }
 
