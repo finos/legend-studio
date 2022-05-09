@@ -57,6 +57,13 @@ export class ExternalFormatState {
     }));
   }
 
+  getFormatTypeForContentType(contentType: string): string | undefined {
+    return this.externalFormatsDescriptions.find(
+      (externalFormatDescription) =>
+        externalFormatDescription.contentTypes[0] === contentType,
+    )?.name;
+  }
+
   get formatContentTypes(): string[] {
     return this.externalFormatsDescriptions.map((e) => e.contentTypes).flat();
   }

@@ -30,6 +30,7 @@ import {
   guaranteeType,
   UnsupportedOperationError,
   guaranteeNonNullable,
+  guaranteeNonEmptyString,
 } from '@finos/legend-shared';
 import { decorateRuntimeWithNewMapping } from './editor-state/element-editor-state/RuntimeEditorState';
 import type { DSL_LegendStudioPlugin_Extension } from './LegendStudioPlugin';
@@ -74,6 +75,8 @@ import {
   DefaultH2AuthenticationStrategy,
   ModelGenerationSpecification,
   DataElement,
+  ExternalFormatData,
+  ModelStoreData,
   DEPRECATED__SingleExecutionTest,
 } from '@finos/legend-graph';
 import type { DSLMapping_LegendStudioPlugin_Extension } from './DSLMapping_LegendStudioPlugin_Extension';
@@ -91,6 +94,13 @@ import {
   service_setExecution,
   service_setLegacyTest,
 } from './graphModifier/DSLService_GraphModifierHelper';
+import type { EmbeddedDataTypeOption } from './editor-state/element-editor-state/data/DataEditorState';
+import {
+  externalFormatData_setData,
+  externalFormatData_setContentType,
+  dataElement_setEmbeddedData,
+  modelStoreData_setInstance,
+} from './graphModifier/DSLData_GraphModifierHelper';
 
 export const resolvePackageAndElementName = (
   _package: Package,
@@ -432,6 +442,69 @@ export class NewGenerationSpecificationDriver extends NewElementDriver<Generatio
   }
 }
 
+export enum EmbeddedDataTypeOptions {
+  EXTERNAL_FORMAT_DATA = 'ExternalFormat',
+  MODEL_STORE_DATA = 'ModelStore',
+}
+
+export class NewDataElementDriver extends NewElementDriver<DataElement> {
+  embeddedDataOption?: EmbeddedDataTypeOption | undefined;
+
+  constructor(editorStore: EditorStore) {
+    super(editorStore);
+
+    makeObservable(this, {
+      embeddedDataOption: observable,
+      setEmbeddedDataOption: action,
+    });
+
+    this.embeddedDataOption = {
+      label: EmbeddedDataTypeOptions.EXTERNAL_FORMAT_DATA,
+      value: EmbeddedDataTypeOptions.EXTERNAL_FORMAT_DATA,
+    };
+  }
+
+  setEmbeddedDataOption(typeOption: EmbeddedDataTypeOption | undefined): void {
+    this.embeddedDataOption = typeOption;
+  }
+
+  createElement(name: string): DataElement {
+    const dataElement = new DataElement(name);
+    if (
+      this.embeddedDataOption?.value ===
+      EmbeddedDataTypeOptions.EXTERNAL_FORMAT_DATA
+    ) {
+      const externalFormatData = new ExternalFormatData();
+      externalFormatData_setData(externalFormatData, '');
+      externalFormatData_setContentType(
+        externalFormatData,
+        guaranteeNonEmptyString(
+          this.editorStore.graphState.graphGenerationState.externalFormatState
+            .formatContentTypes[0],
+        ),
+      );
+      dataElement_setEmbeddedData(
+        dataElement,
+        externalFormatData,
+        this.editorStore.changeDetectionState.observerContext,
+      );
+    } else {
+      const modelStoreData = new ModelStoreData();
+      modelStoreData_setInstance(modelStoreData, new Map<Class, object>());
+      dataElement_setEmbeddedData(
+        dataElement,
+        modelStoreData,
+        this.editorStore.changeDetectionState.observerContext,
+      );
+    }
+    return dataElement;
+  }
+
+  get isValid(): boolean {
+    return Boolean(this.embeddedDataOption);
+  }
+}
+
 export class NewElementState {
   editorStore: EditorStore;
   showModal = false;
@@ -518,6 +591,9 @@ export class NewElementState {
           break;
         case PACKAGEABLE_ELEMENT_TYPE.GENERATION_SPECIFICATION:
           driver = new NewGenerationSpecificationDriver(this.editorStore);
+          break;
+        case PACKAGEABLE_ELEMENT_TYPE.DATA:
+          driver = new NewDataElementDriver(this.editorStore);
           break;
         default: {
           const extraNewElementDriverCreators = this.editorStore.pluginManager
@@ -726,11 +802,12 @@ export class NewElementState {
           NewFileGenerationDriver,
         ).createElement(name);
         break;
+      case PACKAGEABLE_ELEMENT_TYPE.DATA:
+        element =
+          this.getNewElementDriver(NewDataElementDriver).createElement(name);
+        break;
       case PACKAGEABLE_ELEMENT_TYPE.GENERATION_SPECIFICATION:
         element = new GenerationSpecification(name);
-        break;
-      case PACKAGEABLE_ELEMENT_TYPE.DATA:
-        element = new DataElement(name);
         break;
       default: {
         const extraNewElementFromStateCreators = this.editorStore.pluginManager

@@ -99,3 +99,4 @@ export { NewServiceModal } from './components/editor/edit-panel/service-editor/N
 export { GenerationFile } from './stores/shared/FileGenerationTreeUtil';
 export { FileGenerationState } from './stores/editor-state/FileGenerationState';
 export { DSLExternalFormat_LegendStudioPlugin } from './components/DSLExternalFormat_LegendStudioPlugin';
+export type { EmbeddedDataTypeOption } from './stores/editor-state/element-editor-state/data/DataEditorState';

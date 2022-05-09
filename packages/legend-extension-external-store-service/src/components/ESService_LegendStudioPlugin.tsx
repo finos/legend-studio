@@ -35,12 +35,13 @@ import {
   type MappingElementSourceGetter,
   type MappingElementSource,
   type ElementIconGetter,
+  type DSLData_LegendStudioPlugin_Extension,
+  type EmbeddedDataTypeOption,
   type PureGrammarTextSuggestion,
   type PureGrammarParserElementSnippetSuggestionsGetter,
   type PureGrammarParserKeywordSuggestionGetter,
   type PureGrammarParserDocumentationGetter,
   type PureGrammarParserElementDocumentationGetter,
-  type DSLData_LegendStudioPlugin_Extension,
   type EmbeddedDataSnippetSuggestion,
 } from '@finos/legend-studio';
 import { SwaggerIcon } from '@finos/legend-art';
@@ -222,6 +223,15 @@ export class ESService_LegendStudioPlugin
           return `Service store connection \u2022 store ${connection.store.value.path}`;
         }
         return undefined;
+      },
+    ];
+  }
+
+  getExtraEmbeddedDataTypeOptions(): EmbeddedDataTypeOption[] {
+    return [
+      {
+        value: 'ServiceStore',
+        label: 'ServiceStore',
       },
     ];
   }

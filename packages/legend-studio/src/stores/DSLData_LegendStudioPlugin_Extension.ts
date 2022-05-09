@@ -14,10 +14,26 @@
  * limitations under the License.
  */
 
+import type { EmbeddedData } from '@finos/legend-graph';
+import type {
+  EmbeddedDataState,
+  EmbeddedDataTypeOption,
+} from './editor-state/element-editor-state/data/DataEditorState';
+import type { EditorStore } from './EditorStore';
 import type {
   DSL_LegendStudioPlugin_Extension,
   ElementEmbeddedContentSnippetSuggestion,
 } from './LegendStudioPlugin';
+
+export type EmbeddedDataEditorStateBuilder = (
+  editorStore: EditorStore,
+  connection: EmbeddedData,
+) => EmbeddedDataState | undefined;
+
+export type EmbeddedDataEditorRenderer = (
+  connectionValueState: EmbeddedDataState,
+  isReadOnly: boolean,
+) => React.ReactNode | undefined;
 
 /**
  * NOTE: The tab-stop index of the snippet must start from 2
@@ -27,6 +43,21 @@ export type EmbeddedDataSnippetSuggestion =
 
 export interface DSLData_LegendStudioPlugin_Extension
   extends DSL_LegendStudioPlugin_Extension {
+  /**
+   * Get the list of extra embedded data editor state builders.
+   */
+  getExtraEmbeddedDataEditorStateBuilders?(): EmbeddedDataEditorStateBuilder[];
+
+  /**
+   * Get the list extra renderers for a specified embedded data editor state.
+   */
+  getExtraEmbeddedDataEditorRenderers?(): EmbeddedDataEditorRenderer[];
+
+  /**
+   * Get the list extra embedded data type options.
+   */
+  getExtraEmbeddedDataTypeOptions?(): EmbeddedDataTypeOption[];
+
   /**
    * Get the list of Pure grammar suggestion snippet getters for embedded data
    */

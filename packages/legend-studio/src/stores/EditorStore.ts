@@ -66,6 +66,7 @@ import { FunctionEditorState } from './editor-state/element-editor-state/Functio
 import { ProjectConfigurationEditorState } from './editor-state/ProjectConfigurationEditorState';
 import { PackageableRuntimeEditorState } from './editor-state/element-editor-state/RuntimeEditorState';
 import { PackageableConnectionEditorState } from './editor-state/element-editor-state/connection/ConnectionEditorState';
+import { PackageableDataEditorState } from './editor-state/element-editor-state/data/DataEditorState';
 import { FileGenerationEditorState } from './editor-state/element-editor-state/FileGenerationEditorState';
 import { EntityDiffEditorState } from './editor-state/entity-diff-editor-state/EntityDiffEditorState';
 import { EntityChangeConflictEditorState } from './editor-state/entity-diff-editor-state/EntityChangeConflictEditorState';
@@ -1048,8 +1049,7 @@ export class EditorStore {
     } else if (
       element instanceof Measure ||
       element instanceof Database ||
-      element instanceof FlatData ||
-      element instanceof DataElement
+      element instanceof FlatData
     ) {
       return new UnsupportedElementEditorState(this, element);
     } else if (element instanceof PackageableRuntime) {
@@ -1064,6 +1064,8 @@ export class EditorStore {
       return new GenerationSpecificationEditorState(this, element);
     } else if (element instanceof FileGenerationSpecification) {
       return new FileGenerationEditorState(this, element);
+    } else if (element instanceof DataElement) {
+      return new PackageableDataEditorState(this, element);
     }
     const extraElementEditorStateCreators = this.pluginManager
       .getStudioPlugins()
