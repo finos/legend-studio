@@ -356,7 +356,6 @@ export class ChangeDetectionState {
   }
 
   stop(force = false): void {
-    this.graphObserveState.reset();
     this.changeDetectionReaction?.();
     this.changeDetectionReaction = undefined;
     if (force) {
@@ -752,7 +751,7 @@ export class ChangeDetectionState {
   }
 
   *observeGraph(): GeneratorFn<void> {
-    if (!this.graphObserveState.isInInitialState) {
+    if (this.initState.hasSucceeded) {
       throw new IllegalStateError(
         `Can't observe graph: change detection must be stopped first`,
       );
