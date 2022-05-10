@@ -309,6 +309,8 @@ export * from './graphManager/action/changeDetection/DSLExternalFormat_ObserverH
 export * from './graphManager/action/changeDetection/DSLService_ObserverHelper';
 export * from './graphManager/action/changeDetection/DSLGenerationSpecification_ObserverHelper';
 
+export * from './graphManager/action/changeDetection/EngineObserverHelper';
+
 // --------------------------------------------- TO BE MODULARIZED --------------------------------------------------
 
 export * from './DSLMapping_Exports';

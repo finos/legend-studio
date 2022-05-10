@@ -111,14 +111,12 @@ export abstract class PackageableElement implements Hashable, Stubable {
      * Trigger recomputation on `hashCode` so if the element is observed, hash code computation will now
      * remove itself from all observables it previously observed
      *
-     * NOTE: we used to do this since we decorate `hashCode` with `computed({ keepAlive: true })` which
-     * poses a memory-leak threat
-     *
-     * See https://mobx.js.org/computeds.html#keepalive
-     *
+     * NOTE: for example, we used to do this since we decorate `hashCode` with
+     * `computed({ keepAlive: true })` which poses a memory-leak threat.
      * However, since we're calling `keepAlive` actively now and dispose it right away to return `hashCode` to
      * a normal computed value, we might not need this step anymore. But we're being extremely defensive here
      * to avoid memory leak.
+     * See https://mobx.js.org/computeds.html#keepalive
      */
     try {
       this.hashCode;

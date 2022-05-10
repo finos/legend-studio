@@ -71,8 +71,8 @@ export abstract class LambdaEditorState {
   setCompilationError(compilationError: CompilationError | undefined): void {
     // account for the lambda prefix offset in source information
     if (compilationError?.sourceInformation) {
-      compilationError.setSourceInformation(
-        this.processSourceInformation(compilationError.sourceInformation),
+      compilationError.sourceInformation = this.processSourceInformation(
+        compilationError.sourceInformation,
       );
     }
     this.compilationError = compilationError;
@@ -81,8 +81,8 @@ export abstract class LambdaEditorState {
   setParserError(parserError: ParserError | undefined): void {
     // account for the lambda prefix offset in source information
     if (parserError?.sourceInformation) {
-      parserError.setSourceInformation(
-        this.processSourceInformation(parserError.sourceInformation),
+      parserError.sourceInformation = this.processSourceInformation(
+        parserError.sourceInformation,
       );
     }
     this.parserError = parserError;

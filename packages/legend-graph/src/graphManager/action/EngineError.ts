@@ -15,26 +15,10 @@
  */
 
 import { ApplicationError } from '@finos/legend-shared';
-import { observable, action, makeObservable } from 'mobx';
 import type { SourceInformation } from '../action/SourceInformation';
 
 export class EngineError extends ApplicationError {
   sourceInformation?: SourceInformation | undefined;
-
-  constructor(message: string | undefined) {
-    super(message);
-
-    // TODO: check if we need this to be observable or not?
-    makeObservable(this, {
-      message: observable,
-      sourceInformation: observable,
-      setSourceInformation: action,
-    });
-  }
-
-  setSourceInformation(sourceInformation: SourceInformation | undefined): void {
-    this.sourceInformation = sourceInformation;
-  }
 }
 
 export class ParserError extends EngineError {}
