@@ -221,7 +221,7 @@ const QueryEditorHeader = observer(() => {
 const QueryEditorInner = observer(() => {
   const queryStore = useLegendQueryStore();
   const isLoadingEditor =
-    !queryStore.graphManagerState.graph.buildState.hasCompleted ||
+    !queryStore.graphManagerState.graphBuildState.hasCompleted ||
     !queryStore.editorInitState.hasCompleted;
   return (
     <div className="query-editor">
@@ -235,13 +235,10 @@ const QueryEditorInner = observer(() => {
         {isLoadingEditor && (
           <BlankPanelContent>
             {queryStore.buildGraphState.message ??
-              queryStore.graphManagerState.graph.systemModel.buildState
-                .message ??
-              queryStore.graphManagerState.graph.dependencyManager.buildState
-                .message ??
-              queryStore.graphManagerState.graph.generationModel.buildState
-                .message ??
-              queryStore.graphManagerState.graph.buildState.message}
+              queryStore.graphManagerState.systemBuildState.message ??
+              queryStore.graphManagerState.dependenciesBuildState.message ??
+              queryStore.graphManagerState.generationsBuildState.message ??
+              queryStore.graphManagerState.graphBuildState.message}
           </BlankPanelContent>
         )}
       </div>

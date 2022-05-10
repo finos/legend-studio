@@ -30,6 +30,7 @@ import {
   guaranteeNonNullable,
   StopWatch,
   filterByType,
+  ActionState,
 } from '@finos/legend-shared';
 import type { EditorStore } from './EditorStore';
 import { ElementEditorState } from './editor-state/element-editor-state/ElementEditorState';
@@ -210,7 +211,9 @@ export class EditorGraphState {
         this.editorStore.graphManagerState.createEmptyDependencyManager();
       this.editorStore.graphManagerState.graph.dependencyManager =
         dependencyManager;
-      dependencyManager.buildState.setMessage(`Fetching dependencies...`);
+      this.editorStore.graphManagerState.dependenciesBuildState.setMessage(
+        `Fetching dependencies...`,
+      );
       const dependencyEntitiesMap = (yield flowResult(
         this.getConfigurationProjectDependencyEntities(),
       )) as Map<string, Entity[]>;
@@ -222,6 +225,7 @@ export class EditorGraphState {
           this.editorStore.graphManagerState.systemModel,
           dependencyManager,
           dependencyEntitiesMap,
+          this.editorStore.graphManagerState.dependenciesBuildState,
         )) as GraphBuilderReport;
       dependency_buildReport.timings[
         GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED
@@ -232,6 +236,7 @@ export class EditorGraphState {
         (yield this.editorStore.graphManagerState.graphManager.buildGraph(
           this.editorStore.graphManagerState.graph,
           entities,
+          this.editorStore.graphManagerState.graphBuildState,
           {
             TEMPORARY__preserveSectionIndex:
               this.editorStore.applicationStore.config.options
@@ -244,6 +249,7 @@ export class EditorGraphState {
         (yield this.editorStore.graphManagerState.graphManager.buildGenerations(
           this.editorStore.graphManagerState.graph,
           this.graphGenerationState.generatedEntities,
+          this.editorStore.graphManagerState.generationsBuildState,
         )) as GraphBuilderReport;
 
       // report
@@ -282,7 +288,7 @@ export class EditorGraphState {
         error,
       );
       if (error instanceof DependencyGraphBuilderError) {
-        this.editorStore.graphManagerState.graph.buildState.fail();
+        this.editorStore.graphManagerState.graphBuildState.fail();
         // no recovery if dependency models cannot be built, this makes assumption that all dependencies models are compiled successfully
         // TODO: we might want to handle this more gracefully when we can show people the dependency model element in the future
         this.editorStore.applicationStore.notifyError(
@@ -298,7 +304,7 @@ export class EditorGraphState {
         // if something goes wrong with de-serialization, redirect to model loader to fix
         this.redirectToModelLoaderForDebugging(error);
       } else if (error instanceof NetworkClientError) {
-        this.editorStore.graphManagerState.graph.buildState.fail();
+        this.editorStore.graphManagerState.graphBuildState.fail();
         this.editorStore.applicationStore.notifyWarning(
           `Can't build graph. Error: ${error.message}`,
         );
@@ -655,7 +661,7 @@ export class EditorGraphState {
           'Compilation failed:',
           error,
         );
-        if (this.editorStore.graphManagerState.graph.buildState.hasFailed) {
+        if (this.editorStore.graphManagerState.graphBuildState.hasFailed) {
           // TODO: when we support showing multiple notification, we can split this into 2 messages
           this.editorStore.applicationStore.notifyWarning(
             `Can't build graph, please resolve compilation error before leaving text mode. Compilation failed with error: ${error.message}`,
@@ -773,8 +779,7 @@ export class EditorGraphState {
        * @risk memory-leak
        */
       if (
-        this.editorStore.graphManagerState.graph.dependencyManager.buildState
-          .hasSucceeded
+        this.editorStore.graphManagerState.dependenciesBuildState.hasSucceeded
       ) {
         newGraph.dependencyManager =
           this.editorStore.graphManagerState.graph.dependencyManager;
@@ -797,6 +802,8 @@ export class EditorGraphState {
           (yield flowResult(
             this.getConfigurationProjectDependencyEntities(),
           )) as Map<string, Entity[]>,
+          // NOTE: since we want to rebuild the graph quietly in the background, we won't care about the build states
+          ActionState.create(),
         );
       }
 
@@ -824,6 +831,8 @@ export class EditorGraphState {
       yield this.editorStore.graphManagerState.graphManager.buildGraph(
         newGraph,
         entities,
+        // NOTE: since we want to rebuild the graph quietly in the background, we won't care about the build states
+        ActionState.create(),
         {
           TEMPORARY__preserveSectionIndex:
             this.editorStore.applicationStore.config.options
@@ -841,7 +850,10 @@ export class EditorGraphState {
       yield this.editorStore.graphManagerState.graphManager.buildGenerations(
         newGraph,
         this.graphGenerationState.generatedEntities,
+        // NOTE: since we want to rebuild the graph quietly in the background, we won't care about the build states
+        ActionState.create(),
       );
+
       this.editorStore.graphManagerState.graph = newGraph;
 
       /**
@@ -929,9 +941,8 @@ export class EditorGraphState {
    */
   *updateGenerationGraphAndApplication(): GeneratorFn<void> {
     assertTrue(
-      this.editorStore.graphManagerState.graph.buildState.hasSucceeded &&
-        this.editorStore.graphManagerState.graph.dependencyManager.buildState
-          .hasSucceeded,
+      this.editorStore.graphManagerState.graphBuildState.hasSucceeded &&
+        this.editorStore.graphManagerState.dependenciesBuildState.hasSucceeded,
       'Both main model and dependencies must be processed to built generation graph',
     );
     this.isUpdatingApplication = true;
@@ -954,6 +965,7 @@ export class EditorGraphState {
       yield this.editorStore.graphManagerState.graphManager.buildGenerations(
         this.editorStore.graphManagerState.graph,
         this.graphGenerationState.generatedEntities,
+        this.editorStore.graphManagerState.generationsBuildState,
       );
 
       /**

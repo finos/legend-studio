@@ -27,6 +27,7 @@ import {
   guaranteeNonNullable,
   isNonNullable,
   filterByType,
+  ActionState,
 } from '@finos/legend-shared';
 import { observable, action, makeObservable, flow, flowResult } from 'mobx';
 import { LEGEND_STUDIO_APP_EVENT } from '../../../LegendStudioAppEvent';
@@ -497,6 +498,7 @@ export class DatabaseBuilderState {
     (yield this.editorStore.graphManagerState.graphManager.buildGraph(
       dbGraph,
       entities,
+      ActionState.create(),
     )) as Entity[];
     assertTrue(
       dbGraph.ownDatabases.length === 1,
@@ -516,6 +518,7 @@ export class DatabaseBuilderState {
     (yield this.editorStore.graphManagerState.graphManager.buildGraph(
       dbGraph,
       entities,
+      ActionState.create(),
     )) as Entity[];
     assertTrue(
       dbGraph.ownDatabases.length === 1,

@@ -490,12 +490,12 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   async buildSystem(
     coreModel: CoreModel,
     systemModel: SystemModel,
+    buildState: ActionState,
     options?: GraphBuilderOptions,
   ): Promise<GraphBuilderReport> {
     const stopWatch = new StopWatch();
     const report = new GraphBuilderReport();
-    const graphBuilderState = systemModel.buildState;
-    graphBuilderState.reset();
+    buildState.reset();
 
     // Create a dummy graph for system processing. This is to ensure system model does not depend on the main graph
     const graph = new PureModel(
@@ -506,7 +506,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
     try {
       // deserialize
-      graphBuilderState.setMessage(`Collecting and deserializing elements...`);
+      buildState.setMessage(`Collecting and deserializing elements...`);
       const systemData = mergePureModelContextData(
         V1_deserializePureModelContextData(V1_CORE_SYSTEM_MODELS),
         ...this.pluginManager
@@ -532,11 +532,11 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         buildInputs,
         report,
         stopWatch,
-        graphBuilderState,
+        buildState,
         options,
       );
 
-      graphBuilderState.pass();
+      buildState.pass();
       report.timings = {
         ...Object.fromEntries(stopWatch.records),
         [GRAPH_MANAGER_EVENT.GRAPH_BUILDER_COMPLETED]: stopWatch.elapsed,
@@ -544,14 +544,14 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       return report;
     } catch (error) {
       assertErrorThrown(error);
-      graphBuilderState.fail();
+      buildState.fail();
       this.log.error(
         LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_FAILURE),
         error,
       );
       throw new SystemGraphBuilderError(error);
     } finally {
-      graphBuilderState.setMessage(undefined);
+      buildState.setMessage(undefined);
     }
   }
 
@@ -560,12 +560,12 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     systemModel: SystemModel,
     dependencyManager: DependencyManager,
     dependencyEntitiesMap: Map<string, Entity[]>,
+    buildState: ActionState,
     options?: GraphBuilderOptions,
   ): Promise<GraphBuilderReport> {
     const stopWatch = new StopWatch();
     const report = new GraphBuilderReport();
-    const graphBuilderState = dependencyManager.buildState;
-    graphBuilderState.reset();
+    buildState.reset();
 
     // Create a dummy graph for system processing. This is to ensure dependency models do not depend on the main graph
     const graph = new PureModel(
@@ -579,9 +579,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       dependencyManager.initialize(dependencyEntitiesMap);
 
       // deserialize
-      graphBuilderState.setMessage(
-        `Partitioning and deserializing elements...`,
-      );
+      buildState.setMessage(`Partitioning and deserializing elements...`);
       const dependencyDataMap = new Map<string, V1_PureModelContextData>();
       await Promise.all(
         Array.from(dependencyEntitiesMap.entries()).map(
@@ -616,11 +614,11 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         buildInputs,
         report,
         stopWatch,
-        graphBuilderState,
+        buildState,
         options,
       );
 
-      graphBuilderState.pass();
+      buildState.pass();
       report.otherStats.projectCount = dependencyEntitiesMap.size;
       report.timings = {
         ...Object.fromEntries(stopWatch.records),
@@ -633,26 +631,26 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_FAILURE),
         error,
       );
-      graphBuilderState.fail();
+      buildState.fail();
       throw new DependencyGraphBuilderError(error);
     } finally {
-      graphBuilderState.setMessage(undefined);
+      buildState.setMessage(undefined);
     }
   }
 
   async buildGraph(
     graph: PureModel,
     entities: Entity[],
+    buildState: ActionState,
     options?: GraphBuilderOptions,
   ): Promise<GraphBuilderReport> {
     const stopWatch = new StopWatch();
     const report = new GraphBuilderReport();
-    const graphBuilderState = graph.buildState;
-    graphBuilderState.reset();
+    buildState.reset();
 
     try {
       // deserialize
-      graphBuilderState.setMessage(`Deserializing elements...`);
+      buildState.setMessage(`Deserializing elements...`);
       const data = new V1_PureModelContextData();
       await V1_entitiesToPureModelContextData(
         entities,
@@ -675,7 +673,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         buildInputs,
         report,
         stopWatch,
-        graphBuilderState,
+        buildState,
         options,
       );
 
@@ -688,7 +686,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         graph.TEMPORARY__deleteOwnSectionIndex();
       }
 
-      graphBuilderState.pass();
+      buildState.pass();
       report.timings = {
         ...Object.fromEntries(stopWatch.records),
         [GRAPH_MANAGER_EVENT.GRAPH_BUILDER_COMPLETED]: stopWatch.elapsed,
@@ -700,7 +698,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_FAILURE),
         error,
       );
-      graphBuilderState.fail();
+      buildState.fail();
       /**
        * Wrap all error with `GraphBuilderError`, as we throw a lot of assertion error in the graph builder
        * But we might want to rethink this decision in the future and throw appropriate type of error
@@ -709,24 +707,24 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         ? error
         : new GraphBuilderError(error);
     } finally {
-      graphBuilderState.setMessage(undefined);
+      buildState.setMessage(undefined);
     }
   }
 
   async buildGenerations(
     graph: PureModel,
     generatedEntities: Map<string, Entity[]>,
+    buildState: ActionState,
     options?: GraphBuilderOptions,
   ): Promise<GraphBuilderReport> {
     const stopWatch = new StopWatch();
     const report = new GraphBuilderReport();
     const generatedModel = graph.generationModel;
-    const graphBuilderState = generatedModel.buildState;
-    graphBuilderState.reset();
+    buildState.reset();
 
     try {
       // deserialize
-      graphBuilderState.setMessage(`Deserializing elements...`);
+      buildState.setMessage(`Deserializing elements...`);
       const generatedDataMap = new Map<string, V1_PureModelContextData>();
       await Promise.all(
         Array.from(generatedEntities.entries()).map(
@@ -757,11 +755,11 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         buildInputs,
         report,
         stopWatch,
-        graphBuilderState,
+        buildState,
         options,
       );
 
-      graphBuilderState.pass();
+      buildState.pass();
       report.otherStats.generationCount = generatedDataMap.size;
       report.timings = {
         ...Object.fromEntries(stopWatch.records),
@@ -774,7 +772,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_FAILURE),
         error,
       );
-      graphBuilderState.fail();
+      buildState.fail();
       /**
        * Wrap all error with `GraphBuilderError`, as we throw a lot of assertion error in the graph builder
        * But we might want to rethink this decision in the future and throw appropriate type of error
@@ -783,7 +781,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         ? error
         : new GraphBuilderError(error);
     } finally {
-      graphBuilderState.setMessage(undefined);
+      buildState.setMessage(undefined);
     }
   }
 
@@ -2270,10 +2268,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           );
         }
       });
-      graph.buildState.pass();
     } catch (error) {
       assertErrorThrown(error);
-      graph.buildState.fail();
       /**
        * Wrap all error with `GraphBuilderError`, as we throw a lot of assertion error in the graph builder
        * But we might want to rethink this decision in the future and throw appropriate type of error
@@ -2339,10 +2335,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           }
         }
       });
-      graph.buildState.pass();
     } catch (error) {
       assertErrorThrown(error);
-      graph.buildState.fail();
       /**
        * Wrap all error with `GraphBuilderError`, as we throw a lot of assertion error in the graph builder
        * But we might want to rethink this decision in the future and throw appropriate type of error

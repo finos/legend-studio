@@ -78,13 +78,11 @@ export const StandaloneDataSpaceViewer = observer(() => {
           taxonomyStore.initStandaloneDataSpaceViewerState.isInProgress && (
             <BlankPanelContent>
               {taxonomyStore.initStandaloneDataSpaceViewerState.message ??
-                taxonomyStore.graphManagerState.graph.systemModel.buildState
+                taxonomyStore.graphManagerState.systemBuildState.message ??
+                taxonomyStore.graphManagerState.dependenciesBuildState
                   .message ??
-                taxonomyStore.graphManagerState.graph.dependencyManager
-                  .buildState.message ??
-                taxonomyStore.graphManagerState.graph.generationModel.buildState
-                  .message ??
-                taxonomyStore.graphManagerState.graph.buildState.message}
+                taxonomyStore.graphManagerState.generationsBuildState.message ??
+                taxonomyStore.graphManagerState.graphBuildState.message}
             </BlankPanelContent>
           )}
         {!taxonomyStore.standaloneDataSpaceViewerState &&

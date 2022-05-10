@@ -239,7 +239,9 @@ export class TaxonomyNodeViewerState {
         this.taxonomyStore.graphManagerState.createEmptyDependencyManager();
       this.taxonomyStore.graphManagerState.graph.dependencyManager =
         dependencyManager;
-      dependencyManager.buildState.setMessage(`Fetching dependencies...`);
+      this.taxonomyStore.graphManagerState.dependenciesBuildState.setMessage(
+        `Fetching dependencies...`,
+      );
       const dependencyEntitiesMap = new Map<string, Entity[]>();
       (
         (yield this.taxonomyStore.depotServerClient.getDependencyEntities(
@@ -263,6 +265,7 @@ export class TaxonomyNodeViewerState {
           this.taxonomyStore.graphManagerState.systemModel,
           dependencyManager,
           dependencyEntitiesMap,
+          this.taxonomyStore.graphManagerState.dependenciesBuildState,
         )) as GraphBuilderReport;
       dependency_buildReport.timings[
         GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED
@@ -273,6 +276,7 @@ export class TaxonomyNodeViewerState {
         (yield this.taxonomyStore.graphManagerState.graphManager.buildGraph(
           this.taxonomyStore.graphManagerState.graph,
           entities,
+          this.taxonomyStore.graphManagerState.graphBuildState,
         )) as GraphBuilderReport;
       graph_buildReport.timings[GRAPH_MANAGER_EVENT.GRAPH_ENTITIES_FETCHED] =
         stopWatch.getRecord(GRAPH_MANAGER_EVENT.GRAPH_ENTITIES_FETCHED);
@@ -806,7 +810,9 @@ export class LegendTaxonomyStore {
       const dependencyManager =
         this.graphManagerState.createEmptyDependencyManager();
       this.graphManagerState.graph.dependencyManager = dependencyManager;
-      dependencyManager.buildState.setMessage(`Fetching dependencies...`);
+      this.graphManagerState.dependenciesBuildState.setMessage(
+        `Fetching dependencies...`,
+      );
       const dependencyEntitiesMap = new Map<string, Entity[]>();
       (
         (yield this.depotServerClient.getDependencyEntities(
@@ -829,6 +835,7 @@ export class LegendTaxonomyStore {
           this.graphManagerState.systemModel,
           dependencyManager,
           dependencyEntitiesMap,
+          this.graphManagerState.dependenciesBuildState,
         )) as GraphBuilderReport;
       dependency_buildReport.timings[
         GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED
@@ -839,6 +846,7 @@ export class LegendTaxonomyStore {
         (yield this.graphManagerState.graphManager.buildGraph(
           this.graphManagerState.graph,
           entities,
+          this.graphManagerState.graphBuildState,
         )) as GraphBuilderReport;
       graph_buildReport.timings[GRAPH_MANAGER_EVENT.GRAPH_ENTITIES_FETCHED] =
         stopWatch.getRecord(GRAPH_MANAGER_EVENT.GRAPH_ENTITIES_FETCHED);

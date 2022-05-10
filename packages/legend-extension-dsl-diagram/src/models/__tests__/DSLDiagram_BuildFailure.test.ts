@@ -84,6 +84,7 @@ test(unitTest('Missing class in diagram class view'), async () => {
     graphManagerState.graphManager.buildGraph(
       graphManagerState.graph,
       TEST_DATA__MissingClassInDiagram as Entity[],
+      graphManagerState.graphBuildState,
     ),
   ).rejects.toThrowError(`Can't find type 'ui::test1::NotFound'`);
 });

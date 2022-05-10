@@ -16,7 +16,6 @@
 
 import {
   type Clazz,
-  ActionState,
   UnsupportedOperationError,
   getClass,
   IllegalStateError,
@@ -101,9 +100,6 @@ const FORBIDDEN_EXTENSION_ELEMENT_CLASS = new Set([
 export abstract class BasicModel {
   root: Package;
   readonly extensions: PureGraphExtension<PackageableElement>[] = [];
-
-  // TODO: to be moved, this is graph-manager logic and should be moved elsewhere
-  buildState = ActionState.create();
 
   private elementSectionMap = new Map<string, Section>();
 

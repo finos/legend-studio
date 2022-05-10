@@ -54,6 +54,7 @@ test(unitTest('Change detection works properly'), async () => {
   await editorStore.graphManagerState.graphManager.buildGraph(
     editorStore.graphManagerState.graph,
     entities,
+    editorStore.graphManagerState.graphBuildState,
   );
 
   // set original hash

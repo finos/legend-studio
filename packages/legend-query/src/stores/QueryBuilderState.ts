@@ -576,15 +576,21 @@ export class QueryBuilderState {
       );
   }
 
-  getMappingOptions(): PackageableElementOption<Mapping>[] {
-    return this.mappings.map(
-      (e) => buildElementOption(e) as PackageableElementOption<Mapping>,
-    );
-  }
-
   get mappings(): Mapping[] {
     return this.graphManagerState.graph.ownMappings.concat(
       this.graphManagerState.graph.dependencyManager.mappings,
+    );
+  }
+
+  get runtimes(): PackageableRuntime[] {
+    return this.graphManagerState.graph.ownRuntimes.concat(
+      this.graphManagerState.graph.dependencyManager.runtimes,
+    );
+  }
+
+  getMappingOptions(): PackageableElementOption<Mapping>[] {
+    return this.mappings.map(
+      (e) => buildElementOption(e) as PackageableElementOption<Mapping>,
     );
   }
 
@@ -592,12 +598,6 @@ export class QueryBuilderState {
     return this.runtimes.map(
       (e) =>
         buildElementOption(e) as PackageableElementOption<PackageableRuntime>,
-    );
-  }
-
-  get runtimes(): PackageableRuntime[] {
-    return this.graphManagerState.graph.ownRuntimes.concat(
-      this.graphManagerState.graph.dependencyManager.runtimes,
     );
   }
 

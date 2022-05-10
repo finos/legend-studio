@@ -49,6 +49,7 @@ import type {
 } from '../models/metamodels/pure/executionPlan/ExecutionPlan';
 import type { ExecutionNode } from '../models/metamodels/pure/executionPlan/nodes/ExecutionNode';
 import type {
+  ActionState,
   Log,
   ServerClientConfig,
   TracerService,
@@ -127,6 +128,7 @@ export abstract class AbstractPureGraphManager {
   abstract buildSystem(
     coreModel: CoreModel,
     systemModel: SystemModel,
+    buildState: ActionState,
     options?: GraphBuilderOptions,
   ): Promise<GraphBuilderReport>;
 
@@ -136,6 +138,7 @@ export abstract class AbstractPureGraphManager {
   abstract buildGraph(
     graph: PureModel,
     entities: Entity[],
+    buildState: ActionState,
     options?: GraphBuilderOptions,
   ): Promise<GraphBuilderReport>;
 
@@ -152,12 +155,14 @@ export abstract class AbstractPureGraphManager {
     systemModel: SystemModel,
     dependencyManager: DependencyManager,
     dependencyEntitiesMap: Map<string, Entity[]>,
+    buildState: ActionState,
     options?: GraphBuilderOptions,
   ): Promise<GraphBuilderReport>;
 
   abstract buildGenerations(
     graph: PureModel,
     generationEntities: Map<string, Entity[]>,
+    buildState: ActionState,
     options?: GraphBuilderOptions,
   ): Promise<GraphBuilderReport>;
 
@@ -367,6 +372,7 @@ export abstract class AbstractPureGraphManager {
   abstract deleteQuery(queryId: string): Promise<void>;
 
   // ------------------------------------------- Legend Query -------------------------------------
+
   abstract buildGraphForCreateQuerySetup(
     graph: PureModel,
     entities: Entity[],

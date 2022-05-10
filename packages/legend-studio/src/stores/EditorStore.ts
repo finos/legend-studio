@@ -433,7 +433,7 @@ export class EditorStore {
           this.sdlcState.currentWorkspace &&
           this.sdlcState.currentRevision &&
           this.sdlcState.remoteWorkspaceRevision,
-      ) && this.graphManagerState.systemModel.buildState.hasSucceeded
+      ) && this.graphManagerState.systemBuildState.hasSucceeded
     );
   }
   get isInGrammarTextMode(): boolean {

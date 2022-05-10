@@ -759,7 +759,9 @@ export class LegendQueryStore {
       const dependencyManager =
         this.graphManagerState.createEmptyDependencyManager();
       this.graphManagerState.graph.dependencyManager = dependencyManager;
-      dependencyManager.buildState.setMessage(`Fetching dependencies...`);
+      this.graphManagerState.dependenciesBuildState.setMessage(
+        `Fetching dependencies...`,
+      );
       const dependencyEntitiesMap = (yield flowResult(
         this.getProjectDependencyEntities(project, versionId, options),
       )) as Map<string, Entity[]>;
@@ -771,6 +773,7 @@ export class LegendQueryStore {
           this.graphManagerState.systemModel,
           dependencyManager,
           dependencyEntitiesMap,
+          this.graphManagerState.dependenciesBuildState,
         )) as GraphBuilderReport;
       dependency_buildReport.timings[
         GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED
@@ -781,6 +784,7 @@ export class LegendQueryStore {
         (yield this.graphManagerState.graphManager.buildGraph(
           this.graphManagerState.graph,
           entities,
+          this.graphManagerState.graphBuildState,
         )) as GraphBuilderReport;
       graph_buildReport.timings[GRAPH_MANAGER_EVENT.GRAPH_ENTITIES_FETCHED] =
         stopWatch.getRecord(GRAPH_MANAGER_EVENT.GRAPH_ENTITIES_FETCHED);
@@ -854,7 +858,9 @@ export class LegendQueryStore {
       stopWatch.record();
       const dependencyManager =
         this.graphManagerState.createEmptyDependencyManager();
-      dependencyManager.buildState.setMessage(`Fetching dependencies...`);
+      this.graphManagerState.dependenciesBuildState.setMessage(
+        `Fetching dependencies...`,
+      );
       const dependencyEntitiesMap = (yield flowResult(
         this.getProjectDependencyEntities(project, versionId, options),
       )) as Map<string, Entity[]>;
@@ -869,7 +875,6 @@ export class LegendQueryStore {
           dependencyEntitiesMap,
         ),
       );
-      this.graphManagerState.graph.buildState.pass();
       this.buildGraphState.pass();
     } catch (error) {
       assertErrorThrown(error);
@@ -919,7 +924,9 @@ export class LegendQueryStore {
       stopWatch.record();
       const dependencyManager =
         this.graphManagerState.createEmptyDependencyManager();
-      dependencyManager.buildState.setMessage(`Fetching dependencies...`);
+      this.graphManagerState.dependenciesBuildState.setMessage(
+        `Fetching dependencies...`,
+      );
       const dependencyEntitiesMap = (yield flowResult(
         this.getProjectDependencyEntities(project, versionId, options),
       )) as Map<string, Entity[]>;
@@ -934,7 +941,6 @@ export class LegendQueryStore {
           dependencyEntitiesMap,
         ),
       );
-      this.graphManagerState.graph.buildState.pass();
       this.buildGraphState.pass();
     } catch (error) {
       assertErrorThrown(error);

@@ -57,7 +57,10 @@ export class GraphManagerState {
   graph: PureModel;
   graphManager: AbstractPureGraphManager;
 
-  initSystemState = ActionState.create();
+  systemBuildState = ActionState.create();
+  dependenciesBuildState = ActionState.create();
+  graphBuildState = ActionState.create();
+  generationsBuildState = ActionState.create();
 
   constructor(pluginManager: GraphPluginManager, log: Log) {
     makeObservable(this, {
@@ -75,6 +78,16 @@ export class GraphManagerState {
     this.coreModel = new CoreModel(extensionElementClasses);
     this.graph = this.createEmptyGraph();
     this.graphManager = getGraphManager(this.pluginManager, log);
+
+    this.systemBuildState.setMessageFormatter(
+      (message: string) => `[system] ${message}`,
+    );
+    this.dependenciesBuildState.setMessageFormatter(
+      (message: string) => `[dependency] ${message}`,
+    );
+    this.generationsBuildState.setMessageFormatter(
+      (message: string) => `[generation] ${message}`,
+    );
   }
 
   /**
@@ -83,21 +96,20 @@ export class GraphManagerState {
    * We might add more system entities as needed until the system model project(s) are setup.
    */
   async initializeSystem(options?: GraphBuilderOptions): Promise<void> {
-    if (!this.initSystemState.isInInitialState) {
+    if (!this.systemBuildState.isInInitialState) {
+      // NOTE: we must not build system again
       return;
     }
     try {
-      this.initSystemState.inProgress();
       await this.graphManager.buildSystem(
         this.coreModel,
         this.systemModel,
+        this.systemBuildState,
         options,
       );
       this.systemModel.initializeAutoImports();
-      this.initSystemState.pass();
     } catch (error) {
       assertErrorThrown(error);
-      this.initSystemState.fail();
       throw error;
     }
   }
