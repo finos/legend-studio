@@ -42,7 +42,7 @@ export class RootFlatDataRecordTypeExplicitReference extends RootFlatDataRecordT
 
   private constructor(value: RootFlatDataRecordType) {
     const ownerReference = PackageableElementExplicitReference.create(
-      value.owner.owner,
+      value._OWNER._OWNER,
     );
     super(ownerReference, value);
     this.ownerReference = ownerReference;

@@ -62,7 +62,7 @@ export class TagExplicitReference extends TagReference {
 
   private constructor(value: Tag) {
     const ownerReference = PackageableElementExplicitReference.create(
-      value.owner,
+      value._OWNER,
     );
     super(ownerReference, value);
     this.ownerReference = ownerReference;

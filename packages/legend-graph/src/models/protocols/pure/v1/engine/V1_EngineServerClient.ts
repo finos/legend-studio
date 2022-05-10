@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { action, makeObservable, observable } from 'mobx';
 import {
   ContentType,
   AbstractServerClient,
@@ -99,14 +98,6 @@ export class V1_EngineServerClient extends AbstractServerClient {
     },
   ) {
     super(config);
-
-    makeObservable(this, {
-      baseUrl: observable,
-      enableCompression: observable,
-      setBaseUrl: action,
-      setCompression: action,
-    });
-
     this.queryBaseUrl = config.queryBaseUrl;
   }
 

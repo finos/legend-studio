@@ -42,7 +42,7 @@ export class ClassViewExplicitReference extends ClassViewReference {
 
   private constructor(value: ClassView) {
     const ownerReference = PackageableElementExplicitReference.create(
-      value.owner,
+      value._OWNER,
     );
     super(ownerReference, value);
     this.ownerReference = ownerReference;

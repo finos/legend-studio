@@ -229,7 +229,7 @@ const getAllPackagesFromElement = (element: PackageableElement): Package[] => {
 };
 
 export class QueryFunctionExplorerState {
-  uuid = uuid();
+  readonly uuid = uuid();
   queryFunctionsState: QueryFunctionsExplorerState;
   concreteFunctionDefinition: ConcreteFunctionDefinition;
 

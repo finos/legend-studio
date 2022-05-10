@@ -38,13 +38,13 @@ import {
   type Store,
   type Class,
   ELEMENT_PATH_DELIMITER,
-  PACKAGEABLE_ELEMENT_TYPE,
 } from '@finos/legend-graph';
 import type { FileGenerationTypeOption } from '../../../stores/editor-state/GraphGenerationState';
 import { flowResult } from 'mobx';
 import { useApplicationStore } from '@finos/legend-application';
 import type { EmbeddedDataTypeOption } from '../../../stores/editor-state/element-editor-state/data/DataEditorState';
 import type { DSLData_LegendStudioPlugin_Extension } from '../../../stores/DSLData_LegendStudioPlugin_Extension';
+import { PACKAGEABLE_ELEMENT_TYPE } from '../../../stores/shared/ModelUtil';
 
 export const getElementTypeLabel = (
   editorStore: EditorStore,

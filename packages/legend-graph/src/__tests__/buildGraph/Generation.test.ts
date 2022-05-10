@@ -57,13 +57,14 @@ const testGeneratedElements = async (
   const graphManagerState = TEST__getTestGraphManagerState();
   await TEST__buildGraphWithEntities(graphManagerState, entities);
 
-  expect(graphManagerState.graph.buildState.hasSucceeded).toBe(true);
+  expect(graphManagerState.graphBuildState.hasSucceeded).toBe(true);
   // build generation graph
   const generatedEntitiesMap = new Map<string, Entity[]>();
   generatedEntitiesMap.set(PARENT_ELEMENT_PATH, generatedEntities);
   await graphManagerState.graphManager.buildGenerations(
     graphManagerState.graph,
     generatedEntitiesMap,
+    graphManagerState.generationsBuildState,
   );
 
   expect(graphManagerState.graph.generationModel.allOwnElements.length).toBe(

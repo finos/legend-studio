@@ -177,7 +177,7 @@ export class MappingTestQueryState extends LambdaEditorState {
 }
 
 abstract class MappingTestInputDataState {
-  uuid = uuid();
+  readonly uuid = uuid();
   editorStore: EditorStore;
   mapping: Mapping;
   inputData: InputData;
@@ -340,7 +340,7 @@ export class MappingTestRelationalInputDataState extends MappingTestInputDataSta
 }
 
 abstract class MappingTestAssertionState {
-  uuid = uuid();
+  readonly uuid = uuid();
   assert: MappingTestAssert;
 
   constructor(assert: MappingTestAssert) {
@@ -389,7 +389,7 @@ export enum MAPPING_TEST_EDITOR_TAB_TYPE {
 }
 
 export class MappingTestState {
-  uuid = uuid();
+  readonly uuid = uuid();
   selectedTab = MAPPING_TEST_EDITOR_TAB_TYPE.SETUP;
   editorStore: EditorStore;
   mappingEditorState: MappingEditorState;
@@ -549,7 +549,7 @@ export class MappingTestState {
         this.mappingEditorState.mapping,
         new FlatDataInputData(
           PackageableElementExplicitReference.create(
-            guaranteeNonNullable(source.owner.owner),
+            guaranteeNonNullable(source._OWNER._OWNER),
           ),
           '',
         ),

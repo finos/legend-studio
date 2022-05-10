@@ -69,10 +69,10 @@ export interface PackageableElementVisitor<T> {
 }
 
 export abstract class PackageableElement implements Hashable, Stubable {
-  readonly uuid = uuid();
-
+  readonly _UUID = uuid();
   protected _isDeleted = false;
   protected _isDisposed = false;
+
   name: string;
   package?: Package | undefined;
 
@@ -111,14 +111,12 @@ export abstract class PackageableElement implements Hashable, Stubable {
      * Trigger recomputation on `hashCode` so if the element is observed, hash code computation will now
      * remove itself from all observables it previously observed
      *
-     * NOTE: we used to do this since we decorate `hashCode` with `computed({ keepAlive: true })` which
-     * poses a memory-leak threat
-     *
-     * See https://mobx.js.org/computeds.html#keepalive
-     *
+     * NOTE: for example, we used to do this since we decorate `hashCode` with
+     * `computed({ keepAlive: true })` which poses a memory-leak threat.
      * However, since we're calling `keepAlive` actively now and dispose it right away to return `hashCode` to
      * a normal computed value, we might not need this step anymore. But we're being extremely defensive here
      * to avoid memory leak.
+     * See https://mobx.js.org/computeds.html#keepalive
      */
     try {
       this.hashCode;
@@ -141,38 +139,6 @@ export abstract class PackageableElement implements Hashable, Stubable {
   abstract accept_PackageableElementVisitor<T>(
     visitor: PackageableElementVisitor<T>,
   ): T;
-}
-
-// TODO: to be moved out of metamodel
-export enum PACKAGEABLE_ELEMENT_TYPE {
-  PRIMITIVE = 'PRIMITIVE',
-  PACKAGE = 'PACKAGE',
-  PROFILE = 'PROFILE',
-  ENUMERATION = 'ENUMERATION',
-  CLASS = 'CLASS',
-  ASSOCIATION = 'ASSOCIATION',
-  FUNCTION = 'FUNCTION',
-  MEASURE = 'MEASURE',
-  UNIT = 'UNIT',
-  FLAT_DATA_STORE = 'FLAT_DATA_STORE',
-  DATABASE = 'DATABASE',
-  SERVICE_STORE = 'SERVICE_STORE',
-  MAPPING = 'MAPPING',
-  SERVICE = 'SERVICE',
-  CONNECTION = 'CONNECTION',
-  RUNTIME = 'RUNTIME',
-  FILE_GENERATION = 'FILE_GENERATION',
-  GENERATION_SPECIFICATION = 'GENERATION_SPECIFICATION',
-  SECTION_INDEX = 'SECTION_INDEX',
-  DATA = 'Data',
-}
-
-// TODO: to be moved out of metamodel
-export enum PACKAGEABLE_ELEMENT_POINTER_TYPE {
-  STORE = 'STORE',
-  MAPPING = 'MAPPING',
-  FILE_GENERATION = 'FILE_GENERATION',
-  SERVICE = 'SERVICE',
 }
 
 export const getElementPointerHashCode = (

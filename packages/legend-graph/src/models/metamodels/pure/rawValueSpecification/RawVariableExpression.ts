@@ -32,7 +32,8 @@ export class RawVariableExpression
   extends RawValueSpecification
   implements Hashable, Stubable
 {
-  readonly uuid = uuid();
+  readonly _UUID = uuid();
+
   name: string;
   type: PackageableElementReference<Type>;
   multiplicity: Multiplicity;

@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { PackageableElementPointerType } from '../../../../../../../MetaModelConst';
 import type { ConfigurationProperty } from '../../../../../../metamodels/pure/packageableElements/fileGeneration/ConfigurationProperty';
 import type { FileGenerationSpecification } from '../../../../../../metamodels/pure/packageableElements/fileGeneration/FileGenerationSpecification';
 import type {
@@ -27,7 +28,6 @@ import {
   V1_GenerationSpecification,
   V1_GenerationTreeNode,
 } from '../../../model/packageableElements/generationSpecification/V1_GenerationSpecification';
-import { V1_PackageableElementPointerType } from '../../../model/packageableElements/V1_PackageableElement';
 import {
   V1_transformElementReferencePointer,
   V1_initPackageableElement,
@@ -52,10 +52,10 @@ export const V1_transformGenerationSpecification = (
 ): V1_GenerationSpecification => {
   const spec = new V1_GenerationSpecification();
   V1_initPackageableElement(spec, element);
-  spec.fileGenerations = element.fileGenerations.map((f) =>
+  spec.fileGenerations = element.fileGenerations.map((fileGeneration) =>
     V1_transformElementReferencePointer(
-      V1_PackageableElementPointerType.FILE_GENERATION,
-      f,
+      PackageableElementPointerType.FILE_GENERATION,
+      fileGeneration,
     ),
   );
   spec.generationNodes = element.generationNodes.map(

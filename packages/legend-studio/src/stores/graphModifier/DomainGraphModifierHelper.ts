@@ -161,7 +161,7 @@ export const property_setMultiplicity = action(
 export const stereotypeReference_setValue = action(
   (sV: StereotypeReference, value: Stereotype): void => {
     sV.value = observe_Stereotype(value);
-    packageableElementReference_setValue(sV.ownerReference, value.owner);
+    packageableElementReference_setValue(sV.ownerReference, value._OWNER);
   },
 );
 
@@ -194,7 +194,7 @@ export const annotatedElement_deleteStereotype = action(
 export const taggedValue_setTag = action(
   (taggedValue: TaggedValue, value: Tag): void => {
     taggedValue.tag.value = observe_Tag(value);
-    taggedValue.tag.ownerReference.value = value.owner;
+    taggedValue.tag.ownerReference.value = value._OWNER;
   },
 );
 
@@ -299,7 +299,7 @@ export const enum_deleteValue = action(
 export const enumValueReference_setValue = action(
   (ref: EnumValueReference, value: Enum): void => {
     ref.value = observe_Enum(value);
-    packageableElementReference_setValue(ref.ownerReference, value.owner);
+    packageableElementReference_setValue(ref.ownerReference, value._OWNER);
   },
 );
 

@@ -85,7 +85,7 @@ export class FlatDataInstanceSetImplementation
       CORE_HASH_STRUCTURE.FLAT_DATA_INSTANCE_SET_IMPLEMENTATION,
       super.hashCode,
       this.sourceRootRecordType.ownerReference.hashValue,
-      this.sourceRootRecordType.value.owner.name,
+      this.sourceRootRecordType.value._OWNER.name,
       this.filter ?? '',
       hashArray(
         this.propertyMappings.filter(

@@ -69,13 +69,13 @@ import {
   ELEMENT_PATH_DELIMITER,
   ROOT_PACKAGE_NAME,
   Package,
-  PACKAGEABLE_ELEMENT_TYPE,
   isValidFullPath,
   isValidPath,
   getElementRootPackage,
 } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
 import type { LegendStudioConfig } from '../../../application/LegendStudioConfig';
+import { PACKAGEABLE_ELEMENT_TYPE } from '../../../stores/shared/ModelUtil';
 
 const isGeneratedPackageTreeNode = (node: PackageTreeNodeData): boolean =>
   getElementRootPackage(node.packageableElement).path ===
@@ -770,9 +770,9 @@ export const Explorer = observer(() => {
     ((!editorStore.explorerTreeState.buildState.hasCompleted &&
       !editorStore.isInGrammarTextMode) ||
       editorStore.graphState.isUpdatingGraph) &&
-    !editorStore.graphManagerState.graph.buildState.hasFailed;
+    !editorStore.graphManagerState.graphBuildState.hasFailed;
   const showExplorerTrees =
-    editorStore.graphManagerState.graph.buildState.hasSucceeded &&
+    editorStore.graphManagerState.graphBuildState.hasSucceeded &&
     editorStore.explorerTreeState.buildState.hasCompleted &&
     // NOTE: if not in viewer mode, we would only show the explorer tree
     // when graph is properly observed to make sure edit after that can trigger
@@ -877,23 +877,22 @@ export const Explorer = observer(() => {
                 <PanelLoadingIndicator isLoading={isLoading} />
                 {showExplorerTrees && <ExplorerTrees />}
                 {!showExplorerTrees &&
-                  !editorStore.graphManagerState.graph.buildState.hasFailed && (
+                  !editorStore.graphManagerState.graphBuildState.hasFailed && (
                     <div className="explorer__content__progress-msg">
                       {editorStore.initState.message ??
-                        editorStore.graphManagerState.graph.systemModel
-                          .buildState.message ??
-                        editorStore.graphManagerState.graph.dependencyManager
-                          .buildState.message ??
-                        editorStore.graphManagerState.graph.generationModel
-                          .buildState.message ??
-                        editorStore.graphManagerState.graph.buildState
+                        editorStore.graphManagerState.systemBuildState
                           .message ??
+                        editorStore.graphManagerState.dependenciesBuildState
+                          .message ??
+                        editorStore.graphManagerState.generationsBuildState
+                          .message ??
+                        editorStore.graphManagerState.graphBuildState.message ??
                         editorStore.changeDetectionState.graphObserveState
                           .message}
                     </div>
                   )}
                 {!showExplorerTrees &&
-                  editorStore.graphManagerState.graph.buildState.hasFailed && (
+                  editorStore.graphManagerState.graphBuildState.hasFailed && (
                     <BlankPanelContent>
                       <div className="explorer__content__failure-notice">
                         <div className="explorer__content__failure-notice__icon">

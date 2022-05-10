@@ -18,12 +18,14 @@ import { observer } from 'mobx-react-lite';
 import { clsx, CheckSquareIcon, SquareIcon } from '@finos/legend-art';
 import { isValidUrl } from '@finos/legend-shared';
 import { useEditorStore } from '../EditorStoreProvider';
+import { observe_TEMPORARY__AbstractEngineConfig } from '@finos/legend-graph';
 
 export const DevTool = observer(() => {
   const editorStore = useEditorStore();
   // Engine
-  const engineConfig =
-    editorStore.graphManagerState.graphManager.TEMPORARY__getEngineConfig();
+  const engineConfig = observe_TEMPORARY__AbstractEngineConfig(
+    editorStore.graphManagerState.graphManager.TEMPORARY__getEngineConfig(),
+  );
   const changeEngineClientBaseUrl: React.ChangeEventHandler<
     HTMLInputElement
   > = (event) =>

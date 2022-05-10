@@ -65,9 +65,9 @@ export class PropertyExplicitReference extends PropertyReference {
 
   private constructor(value: AbstractProperty) {
     const ownerReference = PackageableElementExplicitReference.create(
-      value.owner instanceof Association
-        ? value.owner.getPropertyAssociatedClass(value)
-        : value.owner,
+      value._OWNER instanceof Association
+        ? value._OWNER.getPropertyAssociatedClass(value)
+        : value._OWNER,
     );
     super(ownerReference, value);
     this.ownerReference = ownerReference;

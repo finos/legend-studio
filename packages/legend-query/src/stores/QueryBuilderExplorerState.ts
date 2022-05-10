@@ -235,7 +235,7 @@ export const buildPropertyExpressionFromExplorerTreeNodeData = (
 const resolveTargetSetImplementationForPropertyMapping = (
   propertyMapping: PropertyMapping,
 ): SetImplementation | undefined => {
-  if (propertyMapping.isEmbedded) {
+  if (propertyMapping._isEmbedded) {
     return propertyMapping as unknown as SetImplementation;
   } else if (propertyMapping.targetSetImplementation) {
     return propertyMapping.targetSetImplementation;

@@ -21,21 +21,9 @@ import {
   PackageableElement,
 } from '@finos/legend-graph';
 
-// TODO: to be moved out of metamodel
-export enum TEXT_TYPE {
-  PLAIN_TEXT = 'plainText',
-  MARKDOWN = 'markdown',
-}
-
 export class Text extends PackageableElement implements Hashable {
-  type: TEXT_TYPE;
-  content: string;
-
-  constructor(name: string) {
-    super(name);
-    this.type = TEXT_TYPE.PLAIN_TEXT;
-    this.content = '';
-  }
+  type!: string;
+  content!: string;
 
   protected override get _elementHashCode(): string {
     return hashArray([

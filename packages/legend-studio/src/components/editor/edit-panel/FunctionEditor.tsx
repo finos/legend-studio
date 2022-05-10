@@ -582,7 +582,7 @@ export const FunctionMainEditor = observer(
           >
             {functionElement.parameters.map((param) => (
               <ParameterBasicEditor
-                key={param.uuid}
+                key={param._UUID}
                 parameter={param}
                 deleteParameter={deleteParameter(param)}
                 isReadOnly={isReadOnly}
@@ -795,7 +795,7 @@ export const FunctionEditor = observer(() => {
               >
                 {functionElement.taggedValues.map((taggedValue) => (
                   <TaggedValueEditor
-                    key={taggedValue.uuid}
+                    key={taggedValue._UUID}
                     taggedValue={taggedValue}
                     deleteValue={_deleteTaggedValue(taggedValue)}
                     isReadOnly={isReadOnly}
@@ -813,7 +813,7 @@ export const FunctionEditor = observer(() => {
               >
                 {functionElement.stereotypes.map((stereotype) => (
                   <StereotypeSelector
-                    key={stereotype.value.uuid}
+                    key={stereotype.value._UUID}
                     stereotype={stereotype}
                     deleteStereotype={_deleteStereotype(stereotype)}
                     isReadOnly={isReadOnly}

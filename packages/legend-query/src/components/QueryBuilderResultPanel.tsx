@@ -72,7 +72,7 @@ const QueryBuilderResultValues = observer(
           // if we execute once then immediate add another column and execute again
           // the old columns rendering will be kept the same and the new column
           // will be pushed to last regardless of its type (aggregation or simple projection)
-          key={executionResult.uuid}
+          key={executionResult._UUID}
           className="ag-theme-balham-dark query-builder__result__tds-grid"
         >
           <AgGridReact rowData={rowData}>

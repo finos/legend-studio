@@ -384,19 +384,18 @@ export const TEST__setUpEditor = async (
   // assert immutable models have been model
   await waitFor(() =>
     expect(
-      mockedEditorStore.graphManagerState.systemModel.buildState.hasSucceeded,
+      mockedEditorStore.graphManagerState.systemBuildState.hasSucceeded,
     ).toBe(true),
   );
   await waitFor(() =>
     expect(
-      mockedEditorStore.graphManagerState.graph.dependencyManager.buildState
-        .hasSucceeded,
+      mockedEditorStore.graphManagerState.dependenciesBuildState.hasSucceeded,
     ).toBe(true),
   );
   // assert main model has been build
   await waitFor(() =>
     expect(
-      mockedEditorStore.graphManagerState.graph.buildState.hasSucceeded,
+      mockedEditorStore.graphManagerState.graphBuildState.hasSucceeded,
     ).toBe(true),
   );
   // assert explorer trees have been built and rendered

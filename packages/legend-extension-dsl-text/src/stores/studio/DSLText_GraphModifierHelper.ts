@@ -15,14 +15,12 @@
  */
 
 import { action } from 'mobx';
-import type {
-  TEXT_TYPE,
-  Text,
-} from '../../models/metamodels/pure/model/packageableElements/text/DSLText_Text';
+import type { Text } from '../../models/metamodels/pure/model/packageableElements/text/DSLText_Text';
 
-export const text_setType = action((text: Text, type: TEXT_TYPE): void => {
+export const text_setType = action((text: Text, type: string): void => {
   text.type = type;
 });
+
 export const text_setContent = action((text: Text, content: string): void => {
   text.content = content;
 });

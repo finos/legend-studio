@@ -335,7 +335,7 @@ export const operationMapping_deleteParameter = action(
 export const setImpl_updateRootOnCreate = action(
   (setImp: SetImplementation): void => {
     const classMappingsWithSimilarTarget = getOwnClassMappingsByClass(
-      setImp.parent,
+      setImp._PARENT,
       setImp.class.value,
     ).filter((si) => si !== setImp);
     if (classMappingsWithSimilarTarget.length) {
@@ -360,7 +360,7 @@ export const setImpl_updateRootOnCreate = action(
 export const setImpl_updateRootOnDelete = action(
   (setImp: SetImplementation): void => {
     const classMappingsWithSimilarTarget = getOwnClassMappingsByClass(
-      setImp.parent,
+      setImp._PARENT,
       setImp.class.value,
     ).filter((si) => si !== setImp);
     if (classMappingsWithSimilarTarget.length === 1) {
@@ -381,7 +381,7 @@ export const setImpl_updateRootOnDelete = action(
 export const setImpl_nominateRoot = action(
   (setImp: SetImplementation): void => {
     const classMappingsWithSimilarTarget = getOwnClassMappingsByClass(
-      setImp.parent,
+      setImp._PARENT,
       setImp.class.value,
     );
     classMappingsWithSimilarTarget.forEach((si) => {

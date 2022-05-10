@@ -54,7 +54,7 @@ export class FlatDataSectionExplicitReference extends FlatDataSectionReference {
 
   private constructor(value: FlatDataSection) {
     const ownerReference = PackageableElementExplicitReference.create(
-      value.owner,
+      value._OWNER,
     );
     super(ownerReference, value);
     this.ownerReference = ownerReference;

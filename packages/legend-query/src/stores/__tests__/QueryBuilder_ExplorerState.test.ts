@@ -218,6 +218,7 @@ describe(integrationTest('Build property mapping data'), () => {
     await graphManagerState.graphManager.buildGraph(
       graphManagerState.graph,
       entities,
+      graphManagerState.graphBuildState,
     );
     const _mapping = graphManagerState.graph.getMapping(mapping);
     const _class = graphManagerState.graph.getClass(rootClass);

@@ -19,13 +19,13 @@ import type { Profile } from './Profile';
 import type { Stubable } from '../../../../../helpers/Stubable';
 
 export class Stereotype implements Stubable {
-  readonly uuid = uuid();
-  owner: Profile;
+  readonly _UUID = uuid();
+  readonly _OWNER: Profile;
 
   value: string;
 
   constructor(owner: Profile, value: string) {
-    this.owner = owner;
+    this._OWNER = owner;
     this.value = value;
   }
 

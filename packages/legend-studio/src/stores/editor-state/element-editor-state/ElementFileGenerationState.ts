@@ -29,7 +29,7 @@ import {
 } from '../../graphModifier/DSLGeneration_GraphModifierHelper';
 
 export class ElementFileGenerationState {
-  uuid = uuid();
+  readonly uuid = uuid();
   editorStore: EditorStore;
   fileGenerationType: string;
   fileGenerationState: FileGenerationState;

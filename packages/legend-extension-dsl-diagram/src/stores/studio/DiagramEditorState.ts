@@ -71,7 +71,7 @@ const DIAGRAM_EDITOR_HOTKEY_MAP = Object.freeze({
 });
 
 export abstract class DiagramEditorSidePanelState {
-  uuid = uuid();
+  readonly uuid = uuid();
   editorStore: EditorStore;
   diagramEditorState: DiagramEditorState;
 
@@ -277,7 +277,7 @@ export class DiagramEditorState extends ElementEditorState {
         } else if (this.renderer.mouseOverClassProperty) {
           return this.isReadOnly ||
             this.editorStore.graphManagerState.isElementReadOnly(
-              this.renderer.mouseOverClassProperty.owner,
+              this.renderer.mouseOverClassProperty._OWNER,
             )
             ? 'diagram-editor__cursor--not-allowed'
             : 'diagram-editor__cursor--text';
@@ -285,7 +285,7 @@ export class DiagramEditorState extends ElementEditorState {
           return this.isReadOnly ||
             this.editorStore.graphManagerState.isElementReadOnly(
               this.renderer.mouseOverPropertyHolderViewLabel.property.value
-                .owner,
+                ._OWNER,
             )
             ? 'diagram-editor__cursor--not-allowed'
             : 'diagram-editor__cursor--text';
@@ -400,7 +400,7 @@ export class DiagramEditorState extends ElementEditorState {
     ): void => {
       if (
         !this.isReadOnly &&
-        !this.editorStore.graphManagerState.isElementReadOnly(property.owner)
+        !this.editorStore.graphManagerState.isElementReadOnly(property._OWNER)
       ) {
         this.setInlinePropertyEditorState(
           new DiagramEditorInlinePropertyEditorState(

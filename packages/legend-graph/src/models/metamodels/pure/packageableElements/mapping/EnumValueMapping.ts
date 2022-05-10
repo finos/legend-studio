@@ -21,7 +21,7 @@ import type { Stubable } from '../../../../../helpers/Stubable';
 import type { EnumValueReference } from '../domain/EnumValueReference';
 
 export class SourceValue implements Stubable {
-  readonly uuid = uuid();
+  readonly _UUID = uuid();
 
   value: Enum | string | number | undefined;
 
@@ -58,7 +58,7 @@ export class EnumValueMapping implements Hashable, Stubable {
             return isNumber(value)
               ? value.toString()
               : value instanceof Enum
-              ? `${value.owner.path}.${value.name}`
+              ? `${value._OWNER.path}.${value.name}`
               : value ?? '';
           }),
       ),

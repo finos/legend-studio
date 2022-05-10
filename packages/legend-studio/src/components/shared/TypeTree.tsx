@@ -41,11 +41,13 @@ import {
   type AbstractProperty,
   Enumeration,
   Class,
-  CLASS_PROPERTY_TYPE,
-  getClassPropertyType,
   DEFAULT_SOURCE_PARAMETER_NAME,
   VARIABLE_REFERENCE_TOKEN,
 } from '@finos/legend-graph';
+import {
+  CLASS_PROPERTY_TYPE,
+  getClassPropertyType,
+} from '../../stores/shared/ModelUtil';
 
 const getEnumTypeTreeNodeData = (
   _enum: Enum,

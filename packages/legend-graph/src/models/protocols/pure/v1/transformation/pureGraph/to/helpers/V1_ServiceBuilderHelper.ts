@@ -50,10 +50,7 @@ import {
   V1_IdentifiedConnection,
 } from '../../../../model/packageableElements/runtime/V1_Runtime';
 import { V1_buildEngineRuntime } from './V1_RuntimeBuilderHelper';
-import {
-  V1_PackageableElementPointer,
-  V1_PackageableElementPointerType,
-} from '../../../../model/packageableElements/V1_PackageableElement';
+import { V1_PackageableElementPointer } from '../../../../model/packageableElements/V1_PackageableElement';
 import { V1_buildRawLambdaWithResolvedPaths } from './V1_ValueSpecificationPathResolver';
 import { GraphBuilderError } from '../../../../../../../../graphManager/GraphManagerUtils';
 import {
@@ -82,6 +79,7 @@ import {
   V1_DEPRECATED__MultiExecutionTest,
 } from '../../../../model/packageableElements/service/V1_DEPRECATED__ServiceTest';
 import type { TestSuite } from '../../../../../../../metamodels/pure/test/Test';
+import { PackageableElementPointerType } from '../../../../../../../../MetaModelConst';
 
 const buildConnectionTestData = (
   element: V1_ConnectionTestData,
@@ -273,7 +271,7 @@ const buildServiceExecutionRuntime = (
   context: V1_GraphBuilderContext,
 ): Runtime => {
   const mappingPointer = new V1_PackageableElementPointer(
-    V1_PackageableElementPointerType.MAPPING,
+    PackageableElementPointerType.MAPPING,
     mapping,
   );
   if (runtime instanceof V1_RuntimePointer) {
@@ -309,7 +307,7 @@ const buildServiceExecutionRuntime = (
       if (!storeConnections) {
         const newStoreConnections = new V1_StoreConnections();
         newStoreConnections.store = new V1_PackageableElementPointer(
-          V1_PackageableElementPointerType.STORE,
+          PackageableElementPointerType.STORE,
           connection.store,
         );
         storeConnections = newStoreConnections;

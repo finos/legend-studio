@@ -60,9 +60,9 @@ export class PurePropertyMappingState extends PropertyMappingState {
   get lambdaId(): string {
     return buildSourceInformationSourceId(
       [
-        this.propertyMapping.owner.parent.path,
+        this.propertyMapping._OWNER._PARENT.path,
         MAPPING_ELEMENT_SOURCE_ID_LABEL.PURE_INSTANCE_CLASS_MAPPING,
-        this.propertyMapping.owner.id.value,
+        this.propertyMapping._OWNER.id.value,
         this.propertyMapping.property.value.name,
         this.propertyMapping.targetSetImplementation?.id.value,
         this.uuid, // in case of duplications
@@ -147,7 +147,7 @@ export class PureInstanceSetImplementationFilterState extends LambdaEditorState 
 
   get lambdaId(): string {
     return buildSourceInformationSourceId([
-      this.instanceSetImplementation.parent.path,
+      this.instanceSetImplementation._PARENT.path,
       MAPPING_ELEMENT_SOURCE_ID_LABEL.PURE_INSTANCE_CLASS_MAPPING,
       FILTER_SOURCE_ID_LABEL,
       this.uuid,

@@ -113,7 +113,7 @@ const resolveRelationalPropertyMappingSource = (
   if (immediateParent instanceof AssociationImplementation) {
     if (value.source) {
       return TEMPORARY__getClassMappingByIdOrReturnUnresolved(
-        immediateParent.parent,
+        immediateParent._PARENT,
         value.source,
       );
     }
@@ -122,7 +122,7 @@ const resolveRelationalPropertyMappingSource = (
     );
     const _class =
       immediateParent.association.value.getPropertyAssociatedClass(property);
-    const setImpls = getClassMappingsByClass(immediateParent.parent, _class);
+    const setImpls = getClassMappingsByClass(immediateParent._PARENT, _class);
     return setImpls.find((r) => r.root.value) ?? setImpls[0];
   }
   return topParent;
@@ -181,7 +181,7 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
     if (protocol.localMappingProperty) {
       const localMappingProperty = protocol.localMappingProperty;
       const mappingClass = new MappingClass(
-        `${this.topParent?.parent.path}_${this.topParent?.id}${protocol.property.property}`,
+        `${this.topParent?._PARENT.path}_${this.topParent?.id}${protocol.property.property}`,
       );
       const _multiplicity = this.context.graph.getMultiplicity(
         localMappingProperty.multiplicity.lowerBound,
@@ -205,7 +205,7 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
       localMapping.localMappingPropertyMultiplicity = _multiplicity;
       localMapping.localMappingPropertyType = this.context.resolveType(
         localMappingProperty.type,
-      ).value;
+      );
     } else {
       assertNonEmptyString(
         protocol.property.class,
@@ -220,24 +220,24 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
       if (protocol.target) {
         targetSetImplementation =
           TEMPORARY__getClassMappingByIdOrReturnUnresolved(
-            topParent.parent,
+            topParent._PARENT,
             protocol.target,
           );
       } else {
         // NOTE: if no there is one non-root class mapping, auto-nominate that as the target set implementation
         const setImplementation = getClassMappingsByClass(
-          topParent.parent,
+          topParent._PARENT,
           guaranteeType(propertyType, Class),
         )[0];
         targetSetImplementation = guaranteeNonNullable(
           setImplementation,
-          `Can't find any class mapping for class '${propertyType.path}' in mapping '${topParent.parent.path}'`,
+          `Can't find any class mapping for class '${propertyType.path}' in mapping '${topParent._PARENT.path}'`,
         );
       }
     }
     const sourceSetImplementation = protocol.source
       ? TEMPORARY__getClassMappingByIdOrReturnUnresolved(
-          topParent.parent,
+          topParent._PARENT,
           protocol.source,
         )
       : undefined;
@@ -261,7 +261,7 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
         // TODO: Since we don't support includedMappings, this will throw errors, but right now we can just make it undefined.
         this.context.log.debug(
           LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_FAILURE),
-          `Can't find enumeration mapping with ID '${protocol.enumMappingId}' in mapping '${topParent.parent.path}' (perhaps because we haven't supported included mappings)`,
+          `Can't find enumeration mapping with ID '${protocol.enumMappingId}' in mapping '${topParent._PARENT.path}' (perhaps because we haven't supported included mappings)`,
         );
       }
       purePropertyMapping.transformer = enumerationMapping;
@@ -315,7 +315,7 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
     if (propertyType instanceof Class && protocol.target) {
       targetSetImplementation = this.topParent
         ? TEMPORARY__getClassMappingByIdOrReturnUnresolved(
-            this.topParent.parent,
+            this.topParent._PARENT,
             protocol.target,
           )
         : undefined;
@@ -345,7 +345,7 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
         // TODO: Since we don't support includedMappings, this will throw errors, but right now we can just make it undefined.
         this.context.log.debug(
           LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_FAILURE),
-          `Can't find enumeration mapping with ID '${protocol.enumMappingId}' in mapping '${this.topParent?.parent.path} (perhaps because we haven't supported included mappings)`,
+          `Can't find enumeration mapping with ID '${protocol.enumMappingId}' in mapping '${this.topParent?._PARENT.path} (perhaps because we haven't supported included mappings)`,
         );
       }
       flatDataPropertyMapping.transformer = enumerationMapping;
@@ -454,7 +454,7 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
     if (protocol.localMappingProperty) {
       const localMappingProperty = protocol.localMappingProperty;
       const mappingClass = new MappingClass(
-        `${this.topParent?.parent.path}_${this.topParent?.id}${protocol.property.property}`,
+        `${this.topParent?._PARENT.path}_${this.topParent?.id}${protocol.property.property}`,
       );
       const _multiplicity = this.context.graph.getMultiplicity(
         localMappingProperty.multiplicity.lowerBound,
@@ -478,8 +478,8 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
       localMapping.localMappingPropertyMultiplicity = _multiplicity;
       localMapping.localMappingPropertyType = this.context.resolveType(
         localMappingProperty.type,
-      ).value;
-      propertyOwner = property.owner;
+      );
+      propertyOwner = property._OWNER;
     } else {
       if (this.immediateParent instanceof AssociationImplementation) {
         propertyOwner = this.immediateParent.association.value;
@@ -504,12 +504,12 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
     const propertyType = property.genericType.value.rawType;
     let targetSetImplementation: SetImplementation | undefined;
     if (propertyType instanceof Class) {
-      let parentMapping = this.topParent?.parent;
+      let parentMapping = this.topParent?._PARENT;
       if (
         !parentMapping &&
         this.immediateParent instanceof AssociationImplementation
       ) {
-        parentMapping = this.immediateParent.parent;
+        parentMapping = this.immediateParent._PARENT;
       }
       if (protocol.target) {
         targetSetImplementation = parentMapping
@@ -596,7 +596,7 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
         // TODO: Since we don't support includedMappings, this will throw errors, but right now we can just make it undefined.
         this.context.log.debug(
           LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_FAILURE),
-          `Can't find enumeration mapping with ID '${protocol.enumMappingId}' in mapping '${this.topParent?.parent.path}' (perhaps because we haven't supported included mappings)`,
+          `Can't find enumeration mapping with ID '${protocol.enumMappingId}' in mapping '${this.topParent?._PARENT.path}' (perhaps because we haven't supported included mappings)`,
         );
       }
       relationalPropertyMapping.transformer = enumerationMapping;
@@ -665,7 +665,7 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
     );
     inline.inlineSetImplementation =
       TEMPORARY__getClassMappingByIdOrReturnUnresolved(
-        topParent.parent,
+        topParent._PARENT,
         protocol.setImplementationId,
       );
     return inline;
@@ -717,8 +717,8 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
             this.context,
             embedded,
             this.topParent,
-            this.topParent?.parent
-              ? getAllEnumerationMappings(this.topParent.parent)
+            this.topParent?._PARENT
+              ? getAllEnumerationMappings(this.topParent._PARENT)
               : [],
             this.tableAliasMap,
           ),
@@ -777,8 +777,8 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
             this.context,
             otherwiseEmbedded,
             this.topParent,
-            this.topParent?.parent
-              ? getAllEnumerationMappings(this.topParent.parent)
+            this.topParent?._PARENT
+              ? getAllEnumerationMappings(this.topParent._PARENT)
               : [],
             this.tableAliasMap,
           ),
@@ -790,8 +790,8 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
           this.context,
           otherwiseEmbedded,
           this.topParent,
-          this.topParent?.parent
-            ? getAllEnumerationMappings(this.topParent.parent)
+          this.topParent?._PARENT
+            ? getAllEnumerationMappings(this.topParent._PARENT)
             : [],
           this.tableAliasMap,
         ),

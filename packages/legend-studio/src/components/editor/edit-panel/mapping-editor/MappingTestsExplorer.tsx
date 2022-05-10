@@ -473,7 +473,7 @@ export const MappingTestsExplorer = observer(
                 .sort((a, b) => a.test.name.localeCompare(b.test.name))
                 .map((testState) => (
                   <MappingTestExplorer
-                    key={testState.test.uuid}
+                    key={testState.test._UUID}
                     testState={testState}
                     isReadOnly={isReadOnly}
                   />

@@ -15,14 +15,14 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
+import {
+  CORE_HASH_STRUCTURE,
+  PackageableElementPointerType,
+} from '../../../../../../../MetaModelConst';
 import { InputData } from '../../../mapping/InputData';
 import type { FlatData } from '../model/FlatData';
 import type { PackageableElementReference } from '../../../PackageableElementReference';
-import {
-  PACKAGEABLE_ELEMENT_POINTER_TYPE,
-  getElementPointerHashCode,
-} from '../../../PackageableElement';
+import { getElementPointerHashCode } from '../../../PackageableElement';
 import {
   type ValidationIssue,
   createValidationError,
@@ -54,7 +54,7 @@ export class FlatDataInputData extends InputData implements Hashable {
     return hashArray([
       CORE_HASH_STRUCTURE.FLAT_DATA_INPUT_DATA,
       getElementPointerHashCode(
-        PACKAGEABLE_ELEMENT_POINTER_TYPE.STORE,
+        PackageableElementPointerType.STORE,
         this.sourceFlatData.hashValue,
       ),
       this.data,

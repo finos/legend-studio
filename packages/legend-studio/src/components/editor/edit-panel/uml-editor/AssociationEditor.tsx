@@ -61,8 +61,6 @@ import {
   Tag,
   Multiplicity,
   Class,
-  CLASS_PROPERTY_TYPE,
-  getClassPropertyType,
   PrimitiveType,
   Unit,
   StereotypeExplicitReference,
@@ -76,6 +74,10 @@ import {
   annotatedElement_deleteTaggedValue,
   association_changePropertyType,
 } from '../../../../stores/graphModifier/DomainGraphModifierHelper';
+import {
+  CLASS_PROPERTY_TYPE,
+  getClassPropertyType,
+} from '../../../../stores/shared/ModelUtil';
 
 const AssociationPropertyBasicEditor = observer(
   (props: {
@@ -499,7 +501,7 @@ export const AssociationEditor = observer(
                   >
                     {association.taggedValues.map((taggedValue) => (
                       <TaggedValueEditor
-                        key={taggedValue.uuid}
+                        key={taggedValue._UUID}
                         taggedValue={taggedValue}
                         deleteValue={_deleteTaggedValue(taggedValue)}
                         isReadOnly={isReadOnly}
@@ -517,7 +519,7 @@ export const AssociationEditor = observer(
                   >
                     {association.stereotypes.map((stereotype) => (
                       <StereotypeSelector
-                        key={stereotype.value.uuid}
+                        key={stereotype.value._UUID}
                         stereotype={stereotype}
                         deleteStereotype={_deleteStereotype(stereotype)}
                         isReadOnly={isReadOnly}

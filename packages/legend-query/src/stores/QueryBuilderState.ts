@@ -48,7 +48,6 @@ import {
   type LambdaFunction,
   type Mapping,
   type PackageableRuntime,
-  type Service,
   type ValueSpecification,
   GenericTypeExplicitReference,
   GenericType,
@@ -576,22 +575,9 @@ export class QueryBuilderState {
       );
   }
 
-  getMappingOptions(): PackageableElementOption<Mapping>[] {
-    return this.mappings.map(
-      (e) => buildElementOption(e) as PackageableElementOption<Mapping>,
-    );
-  }
-
   get mappings(): Mapping[] {
     return this.graphManagerState.graph.ownMappings.concat(
       this.graphManagerState.graph.dependencyManager.mappings,
-    );
-  }
-
-  getRuntimeOptions(): PackageableElementOption<PackageableRuntime>[] {
-    return this.runtimes.map(
-      (e) =>
-        buildElementOption(e) as PackageableElementOption<PackageableRuntime>,
     );
   }
 
@@ -599,11 +585,5 @@ export class QueryBuilderState {
     return this.graphManagerState.graph.ownRuntimes.concat(
       this.graphManagerState.graph.dependencyManager.runtimes,
     );
-  }
-
-  getServiceOptions(): PackageableElementOption<Service>[] {
-    return this.graphManagerState.graph.ownServices
-      .concat(this.graphManagerState.graph.dependencyManager.services)
-      .map((e) => buildElementOption(e) as PackageableElementOption<Service>);
   }
 }

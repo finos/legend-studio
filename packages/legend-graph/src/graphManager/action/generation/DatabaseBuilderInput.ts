@@ -14,36 +14,17 @@
  * limitations under the License.
  */
 
-import { makeObservable, observable, action } from 'mobx';
-import { uuid } from '@finos/legend-shared';
 import type { RelationalDatabaseConnection } from '../../../models/metamodels/pure/packageableElements/store/relational/connection/RelationalDatabaseConnection';
 
 export class DatabasePattern {
-  uuid = uuid();
   schemaPattern = '';
   tablePattern = '';
   escapeSchemaPattern?: boolean | undefined;
   escapeTablePattern?: boolean | undefined;
 
   constructor(schemaPattern: string, tablePattern: string) {
-    makeObservable(this, {
-      schemaPattern: observable,
-      tablePattern: observable,
-      escapeSchemaPattern: observable,
-      escapeTablePattern: observable,
-      setTablePattern: action,
-      setSchemaPattern: action,
-    });
     this.schemaPattern = schemaPattern;
     this.tablePattern = tablePattern;
-  }
-
-  setSchemaPattern(val: string): void {
-    this.schemaPattern = val;
-  }
-
-  setTablePattern(val: string): void {
-    this.tablePattern = val;
   }
 }
 
@@ -53,16 +34,6 @@ export class DatabaseBuilderConfig {
   enrichPrimaryKeys = false;
   enrichColumns = false;
   patterns: DatabasePattern[] = [];
-
-  constructor() {
-    makeObservable(this, {
-      maxTables: observable,
-      enrichTables: observable,
-      enrichPrimaryKeys: observable,
-      enrichColumns: observable,
-      patterns: observable,
-    });
-  }
 }
 
 export class TargetDatabase {
@@ -70,10 +41,6 @@ export class TargetDatabase {
   package: string;
 
   constructor(_package: string, name: string) {
-    makeObservable(this, {
-      name: observable,
-      package: observable,
-    });
     this.package = _package;
     this.name = name;
   }
@@ -85,11 +52,6 @@ export class DatabaseBuilderInput {
   connection: RelationalDatabaseConnection;
 
   constructor(connection: RelationalDatabaseConnection) {
-    makeObservable(this, {
-      targetDatabase: observable,
-      config: observable,
-      connection: observable,
-    });
     this.connection = connection;
     this.targetDatabase = new TargetDatabase('', '');
     this.config = new DatabaseBuilderConfig();

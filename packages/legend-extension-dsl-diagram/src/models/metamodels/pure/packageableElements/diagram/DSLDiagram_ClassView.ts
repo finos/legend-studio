@@ -23,7 +23,8 @@ import { DIAGRAM_HASH_STRUCTURE } from '../../../../DSLDiagram_ModelUtils';
 import type { Class, PackageableElementReference } from '@finos/legend-graph';
 
 export class ClassView extends PositionedRectangle implements Hashable {
-  owner: Diagram;
+  readonly _OWNER: Diagram;
+
   class: PackageableElementReference<Class>;
   id: string;
   hideProperties?: boolean | undefined;
@@ -36,7 +37,7 @@ export class ClassView extends PositionedRectangle implements Hashable {
     _class: PackageableElementReference<Class>,
   ) {
     super(new Point(0, 0), new Rectangle(0, 0));
-    this.owner = owner;
+    this._OWNER = owner;
     this.id = id;
     this.class = _class;
   }

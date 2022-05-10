@@ -50,7 +50,7 @@ export class EnumValueExplicitReference extends EnumValueReference {
 
   private constructor(value: Enum) {
     const ownerReference = PackageableElementExplicitReference.create(
-      value.owner,
+      value._OWNER,
     );
     super(ownerReference, value);
     this.ownerReference = ownerReference;

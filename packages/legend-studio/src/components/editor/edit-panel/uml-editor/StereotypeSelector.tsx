@@ -57,7 +57,7 @@ export const StereotypeSelector = observer(
     });
     const [selectedProfile, setSelectedProfile] = useState<
       PackageableElementOption<Profile>
-    >({ value: stereotype.value.owner, label: stereotype.value.owner.name });
+    >({ value: stereotype.value._OWNER, label: stereotype.value._OWNER.name });
     const changeProfile = (val: PackageableElementOption<Profile>): void => {
       if (val.value.stereotypes.length) {
         setSelectedProfile(val);
@@ -106,7 +106,7 @@ export const StereotypeSelector = observer(
             className={`stereotype-selector__profile__visit-btn ${
               darkTheme ? 'stereotype-selector-dark-theme' : ''
             }`}
-            disabled={stereotype.value.owner.isStub}
+            disabled={stereotype.value._OWNER.isStub}
             onClick={visitProfile}
             tabIndex={-1}
             title={'Visit profile'}

@@ -67,9 +67,9 @@ export class RelationalPropertyMappingState extends PropertyMappingState {
     // NOTE: Added the index here just in case but the order needs to be checked carefully as bugs may result from inaccurate orderings
     return buildSourceInformationSourceId(
       [
-        this.propertyMapping.owner.parent.path,
+        this.propertyMapping._OWNER._PARENT.path,
         MAPPING_ELEMENT_SOURCE_ID_LABEL.RELATIONAL_CLASS_MAPPING,
-        this.propertyMapping.owner.id.value,
+        this.propertyMapping._OWNER.id.value,
         this.propertyMapping.property.value.name,
         this.propertyMapping.targetSetImplementation?.id.value,
         this.uuid, // in case of duplications

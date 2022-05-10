@@ -278,7 +278,7 @@ const EnumValueInstanceValueEditor = observer(
     const { valueSpecification, className, resetValue } = props;
     const enumValueRef = guaranteeNonNullable(valueSpecification.values[0]);
     const enumValue = enumValueRef.value;
-    const options = enumValue.owner.values.map((value) => ({
+    const options = enumValue._OWNER.values.map((value) => ({
       label: value.name,
       value: value,
     }));

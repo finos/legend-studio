@@ -25,7 +25,8 @@ import type { FlatDataProperty } from './FlatDataProperty';
 import type { RootFlatDataRecordType } from './FlatDataDataType';
 
 export class FlatDataSection implements Hashable {
-  owner: FlatData;
+  readonly _OWNER: FlatData;
+
   driverId: string;
   name: string;
   sectionProperties: FlatDataProperty[] = [];
@@ -34,13 +35,13 @@ export class FlatDataSection implements Hashable {
   constructor(driverId: string, name: string, owner: FlatData) {
     this.name = name;
     this.driverId = driverId;
-    this.owner = owner;
+    this._OWNER = owner;
   }
 
   getRecordType = (): RootFlatDataRecordType =>
     guaranteeNonNullable(
       this.recordType,
-      `No record type defined in section '${this.name}' of flat-data store '${this.owner.path}'`,
+      `No record type defined in section '${this.name}' of flat-data store '${this._OWNER.path}'`,
     );
 
   get hashCode(): string {

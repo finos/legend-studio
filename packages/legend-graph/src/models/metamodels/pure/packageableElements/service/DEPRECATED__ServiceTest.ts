@@ -24,10 +24,10 @@ import type { Service } from './Service';
  * @deprecated
  */
 export abstract class DEPRECATED__ServiceTest implements Hashable {
-  owner: Service;
+  readonly _OWNER: Service;
 
   constructor(owner: Service) {
-    this.owner = owner;
+    this._OWNER = owner;
   }
 
   abstract get hashCode(): string;
@@ -38,7 +38,7 @@ export abstract class DEPRECATED__ServiceTest implements Hashable {
  * @deprecated
  */
 export class DEPRECATED__TestContainer implements Hashable {
-  readonly uuid = uuid();
+  readonly _UUID = uuid();
 
   parametersValues: unknown[] = []; // Any[*]; // ValueSpecification?
   /**

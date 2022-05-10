@@ -21,19 +21,19 @@ import {
   assertTrue,
   uuid,
 } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
+import {
+  CORE_HASH_STRUCTURE,
+  PackageableElementPointerType,
+} from '../../../../../MetaModelConst';
 import type { Connection } from '../connection/Connection';
 import type { PackageableRuntime } from './PackageableRuntime';
 import type { Mapping } from '../mapping/Mapping';
 import type { Store } from '../store/Store';
-import {
-  getElementPointerHashCode,
-  PACKAGEABLE_ELEMENT_POINTER_TYPE,
-} from '../PackageableElement';
+import { getElementPointerHashCode } from '../PackageableElement';
 import type { PackageableElementReference } from '../PackageableElementReference';
 
 export class IdentifiedConnection implements Hashable {
-  readonly uuid = uuid();
+  readonly _UUID = uuid();
 
   id: string;
   connection: Connection;
@@ -68,7 +68,7 @@ export class StoreConnections implements Hashable {
     return hashArray([
       CORE_HASH_STRUCTURE.STORE_CONNECTIONS,
       getElementPointerHashCode(
-        PACKAGEABLE_ELEMENT_POINTER_TYPE.STORE,
+        PackageableElementPointerType.STORE,
         this.store.hashValue,
       ),
       hashArray(this.storeConnections),
@@ -112,7 +112,7 @@ export class EngineRuntime extends Runtime implements Hashable {
       hashArray(
         this.mappings.map((mapping) =>
           getElementPointerHashCode(
-            PACKAGEABLE_ELEMENT_POINTER_TYPE.MAPPING,
+            PackageableElementPointerType.MAPPING,
             mapping.hashValue,
           ),
         ),

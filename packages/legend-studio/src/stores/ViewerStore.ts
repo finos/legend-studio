@@ -296,7 +296,9 @@ export class ViewerStore {
       this.editorStore.graphManagerState.createEmptyDependencyManager();
     this.editorStore.graphManagerState.graph.dependencyManager =
       dependencyManager;
-    dependencyManager.buildState.setMessage(`Fetching dependencies...`);
+    this.editorStore.graphManagerState.dependenciesBuildState.setMessage(
+      `Fetching dependencies...`,
+    );
     const dependencyEntitiesMap = (yield flowResult(
       this.editorStore.graphState.getConfigurationProjectDependencyEntities(),
     )) as Map<string, Entity[]>;
@@ -308,6 +310,7 @@ export class ViewerStore {
         this.editorStore.graphManagerState.systemModel,
         dependencyManager,
         dependencyEntitiesMap,
+        this.editorStore.graphManagerState.dependenciesBuildState,
       )) as GraphBuilderReport;
     dependency_buildReport.timings[
       GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED
@@ -318,6 +321,7 @@ export class ViewerStore {
       (yield this.editorStore.graphManagerState.graphManager.buildGraph(
         this.editorStore.graphManagerState.graph,
         entities,
+        this.editorStore.graphManagerState.graphBuildState,
       )) as GraphBuilderReport;
     graph_buildReport.timings[GRAPH_MANAGER_EVENT.GRAPH_ENTITIES_FETCHED] =
       stopWatch.getRecord(GRAPH_MANAGER_EVENT.GRAPH_ENTITIES_FETCHED);
@@ -419,7 +423,9 @@ export class ViewerStore {
       this.editorStore.graphManagerState.createEmptyDependencyManager();
     this.editorStore.graphManagerState.graph.dependencyManager =
       dependencyManager;
-    dependencyManager.buildState.setMessage(`Fetching dependencies...`);
+    this.editorStore.graphManagerState.dependenciesBuildState.setMessage(
+      `Fetching dependencies...`,
+    );
     const dependencyEntitiesMap = new Map<string, Entity[]>();
     (versionId === SNAPSHOT_VERSION_ALIAS
       ? ((yield this.editorStore.depotServerClient.getLatestDependencyEntities(
@@ -450,6 +456,7 @@ export class ViewerStore {
         this.editorStore.graphManagerState.systemModel,
         dependencyManager,
         dependencyEntitiesMap,
+        this.editorStore.graphManagerState.dependenciesBuildState,
       )) as GraphBuilderReport;
     dependency_buildReport.timings[
       GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED
@@ -460,6 +467,7 @@ export class ViewerStore {
       (yield this.editorStore.graphManagerState.graphManager.buildGraph(
         this.editorStore.graphManagerState.graph,
         entities,
+        this.editorStore.graphManagerState.graphBuildState,
       )) as GraphBuilderReport;
     graph_buildReport.timings[GRAPH_MANAGER_EVENT.GRAPH_ENTITIES_FETCHED] =
       stopWatch.getRecord(GRAPH_MANAGER_EVENT.GRAPH_ENTITIES_FETCHED);
@@ -523,7 +531,7 @@ export class ViewerStore {
 
       // open element if provided an element path
       if (
-        this.editorStore.graphManagerState.graph.buildState.hasSucceeded &&
+        this.editorStore.graphManagerState.graphBuildState.hasSucceeded &&
         this.editorStore.explorerTreeState.buildState.hasCompleted &&
         this.elementPath
       ) {

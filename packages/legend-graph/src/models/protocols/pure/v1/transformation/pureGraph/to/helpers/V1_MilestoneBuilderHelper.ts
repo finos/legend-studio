@@ -74,7 +74,7 @@ export const V1_buildMilestoningProperties = (
             GenericTypeExplicitReference.create(
               new GenericType(property.genericType.value.rawType),
             ),
-            property.owner,
+            property._OWNER,
           );
           dateProperty.parameters = [
             buildMilestoningParameter(
@@ -87,7 +87,7 @@ export const V1_buildMilestoningProperties = (
             GenericTypeExplicitReference.create(
               new GenericType(property.genericType.value.rawType),
             ),
-            property.owner,
+            property._OWNER,
           );
           const milestonedAllVersionsInRange = new DerivedProperty(
             `${property.name}${MILESTONING_VERSION_PROPERTY_SUFFIX.ALL_VERSIONS_IN_RANGE}`,
@@ -95,7 +95,7 @@ export const V1_buildMilestoningProperties = (
             GenericTypeExplicitReference.create(
               new GenericType(property.genericType.value.rawType),
             ),
-            property.owner,
+            property._OWNER,
           );
           milestonedAllVersionsInRange.parameters = [
             buildMilestoningParameter(MILESTONING_START_DATE_PARAMETER_NAME),
@@ -117,7 +117,7 @@ export const V1_buildMilestoningProperties = (
             GenericTypeExplicitReference.create(
               new GenericType(property.genericType.value.rawType),
             ),
-            property.owner,
+            property._OWNER,
           );
           dateProperty.parameters = [
             buildMilestoningParameter(
@@ -130,7 +130,7 @@ export const V1_buildMilestoningProperties = (
             GenericTypeExplicitReference.create(
               new GenericType(property.genericType.value.rawType),
             ),
-            property.owner,
+            property._OWNER,
           );
           const milestonedAllVersionsInRange = new DerivedProperty(
             `${property.name}${MILESTONING_VERSION_PROPERTY_SUFFIX.ALL_VERSIONS_IN_RANGE}`,
@@ -138,7 +138,7 @@ export const V1_buildMilestoningProperties = (
             GenericTypeExplicitReference.create(
               new GenericType(property.genericType.value.rawType),
             ),
-            property.owner,
+            property._OWNER,
           );
           milestonedAllVersionsInRange.parameters = [
             buildMilestoningParameter(MILESTONING_START_DATE_PARAMETER_NAME),
@@ -160,7 +160,7 @@ export const V1_buildMilestoningProperties = (
             GenericTypeExplicitReference.create(
               new GenericType(property.genericType.value.rawType),
             ),
-            property.owner,
+            property._OWNER,
           );
           dateProperty.parameters = [
             buildMilestoningParameter(
@@ -176,7 +176,7 @@ export const V1_buildMilestoningProperties = (
             GenericTypeExplicitReference.create(
               new GenericType(property.genericType.value.rawType),
             ),
-            property.owner,
+            property._OWNER,
           );
           propertyOwner._generatedMilestonedProperties.push(dateProperty);
           propertyOwner._generatedMilestonedProperties.push(

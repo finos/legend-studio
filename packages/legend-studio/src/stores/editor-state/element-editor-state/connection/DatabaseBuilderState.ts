@@ -18,6 +18,7 @@ import type { Entity } from '@finos/legend-model-storage';
 import type { TreeData, TreeNodeData } from '@finos/legend-art';
 import {
   type GeneratorFn,
+  type Writable,
   assertErrorThrown,
   LogEvent,
   addUniqueEntry,
@@ -26,6 +27,7 @@ import {
   guaranteeNonNullable,
   isNonNullable,
   filterByType,
+  ActionState,
 } from '@finos/legend-shared';
 import { observable, action, makeObservable, flow, flowResult } from 'mobx';
 import { LEGEND_STUDIO_APP_EVENT } from '../../../LegendStudioAppEvent';
@@ -496,6 +498,7 @@ export class DatabaseBuilderState {
     (yield this.editorStore.graphManagerState.graphManager.buildGraph(
       dbGraph,
       entities,
+      ActionState.create(),
     )) as Entity[];
     assertTrue(
       dbGraph.ownDatabases.length === 1,
@@ -515,6 +518,7 @@ export class DatabaseBuilderState {
     (yield this.editorStore.graphManagerState.graphManager.buildGraph(
       dbGraph,
       entities,
+      ActionState.create(),
     )) as Entity[];
     assertTrue(
       dbGraph.ownDatabases.length === 1,
@@ -598,7 +602,7 @@ export class DatabaseBuilderState {
     });
     // update existing schemas
     generatedDb.schemas.forEach((s) => {
-      s.owner = current;
+      (s as Writable<Schema>)._OWNER = current;
       const currentSchemaIndex = current.schemas.findIndex(
         (c) => c.name === s.name,
       );

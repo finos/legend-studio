@@ -43,8 +43,8 @@ import {
   Class,
   Enumeration,
   Association,
-  BASIC_SET_IMPLEMENTATION_TYPE,
 } from '@finos/legend-graph';
+import { BASIC_SET_IMPLEMENTATION_TYPE } from '../../../../stores/shared/ModelUtil';
 
 interface ClassMappingSubTypeOption {
   label: string;

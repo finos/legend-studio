@@ -15,11 +15,7 @@
  */
 
 import { ROOT_PACKAGE_NAME } from '../MetaModelConst';
-import {
-  type Clazz,
-  ActionState,
-  guaranteeNonNullable,
-} from '@finos/legend-shared';
+import { type Clazz, guaranteeNonNullable } from '@finos/legend-shared';
 import type { PackageableElement } from '../models/metamodels/pure/packageableElements/PackageableElement';
 import type { Enumeration } from '../models/metamodels/pure/packageableElements/domain/Enumeration';
 import type { Type } from '../models/metamodels/pure/packageableElements/domain/Type';
@@ -71,16 +67,10 @@ export class DependencyManager {
   root = new Package(ROOT_PACKAGE_NAME.PROJECT_DEPENDENCY_ROOT);
   projectDependencyModelsIndex = new Map<string, BasicModel>();
 
-  // TODO: to be moved, this is graph-manager logic and should be moved elsewhere
-  buildState = ActionState.create();
-
   private readonly extensionElementClasses: Clazz<PackageableElement>[];
 
   constructor(extensionElementClasses: Clazz<PackageableElement>[]) {
     this.extensionElementClasses = extensionElementClasses;
-    this.buildState.setMessageFormatter(
-      (message: string) => `[dependency] ${message}`,
-    );
   }
 
   /**

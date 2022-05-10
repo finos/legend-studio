@@ -302,7 +302,7 @@ const SchemaSetGeneralEditor = observer(
                 <MenuContent className="schema-set-panel__dropdown">
                   {schemaSet.schemas.map((schema: Schema, index: number) => (
                     <MenuContentItem
-                      key={schema.uuid}
+                      key={schema._UUID}
                       className={
                         currentSchema === schema
                           ? 'schema-set-panel__option schema-set-panel__option__active'
@@ -361,7 +361,7 @@ const SchemaSetGeneralEditor = observer(
                 )}
                 {currentSchema !== undefined && (
                   <SchemaBasicEditor
-                    key={currentSchema.uuid}
+                    key={currentSchema._UUID}
                     language={language}
                     schema={currentSchema}
                     isReadOnly={isReadOnly}

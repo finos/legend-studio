@@ -77,7 +77,7 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
   // TODO: we probably should refactor this, these messages are not that helpful and
   // meant for different purposes
   const pushStatusText =
-    editorStore.graphManagerState.graph.buildState.hasFailed ||
+    editorStore.graphManagerState.graphBuildState.hasFailed ||
     editorStore.changeDetectionState.initState.hasFailed
       ? 'change detection halted'
       : !editorStore.changeDetectionState.initState.hasSucceeded
@@ -102,7 +102,7 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
   // TODO: we probably should refactor this, these messages are not that helpful and
   // meant for different purposes
   const conflictResolutionStatusText =
-    editorStore.graphManagerState.graph.buildState.hasFailed ||
+    editorStore.graphManagerState.graphBuildState.hasFailed ||
     editorStore.changeDetectionState.initState.hasFailed
       ? 'change detection halted'
       : !editorStore.changeDetectionState.initState.hasSucceeded

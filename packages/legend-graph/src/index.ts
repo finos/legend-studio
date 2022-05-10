@@ -32,11 +32,7 @@ export {
   GenericTypeExplicitReference,
 } from './models/metamodels/pure/packageableElements/domain/GenericTypeReference';
 export { GenericType } from './models/metamodels/pure/packageableElements/domain/GenericType';
-export {
-  Class,
-  CLASS_PROPERTY_TYPE,
-  getClassPropertyType,
-} from './models/metamodels/pure/packageableElements/domain/Class';
+export { Class } from './models/metamodels/pure/packageableElements/domain/Class';
 export { type AnnotatedElement } from './models/metamodels/pure/packageableElements/domain/AnnotatedElement';
 export { Package } from './models/metamodels/pure/packageableElements/domain/Package';
 export { Constraint } from './models/metamodels/pure/packageableElements/domain/Constraint';
@@ -308,6 +304,8 @@ export * from './graphManager/action/changeDetection/GraphObserverHelper';
 export * from './graphManager/action/changeDetection/DSLExternalFormat_ObserverHelper';
 export * from './graphManager/action/changeDetection/DSLService_ObserverHelper';
 export * from './graphManager/action/changeDetection/DSLGenerationSpecification_ObserverHelper';
+
+export * from './graphManager/action/changeDetection/EngineObserverHelper';
 
 // --------------------------------------------- TO BE MODULARIZED --------------------------------------------------
 

@@ -74,7 +74,7 @@ export class TableExplicitReference extends TableReference {
 
   private constructor(value: Table) {
     const ownerReference = PackageableElementExplicitReference.create(
-      value.schema.owner,
+      value.schema._OWNER,
     );
     super(ownerReference, value);
     this.ownerReference = ownerReference;

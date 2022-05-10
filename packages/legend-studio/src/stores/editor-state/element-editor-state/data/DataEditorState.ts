@@ -83,7 +83,10 @@ export class UnSupportedDataState extends EmbeddedDataState {
 }
 
 export class EmbeddedDataEditorState {
-  uuid = uuid(); // NOTE: used to force component remount on state change
+  /**
+   * NOTE: used to force component remount on state change
+   */
+  readonly uuid = uuid();
   editorStore: EditorStore;
   embeddedData: EmbeddedData;
   embeddedDataState: EmbeddedDataState;

@@ -49,14 +49,15 @@ export class EmbeddedRelationalInstanceSetImplementation
     RelationalInstanceSetImplementation,
     Hashable
 {
+  readonly _PARENT: Mapping;
+  override readonly _isEmbedded = true;
+
   root = InferableMappingElementRootExplicitValue.create(false);
-  override readonly isEmbedded = true;
   id: InferableMappingElementIdValue;
   propertyMappings: PropertyMapping[] = [];
   class: PackageableElementReference<Class>;
   rootInstanceSetImplementation: RootRelationalInstanceSetImplementation; // in Pure we call this `setMappingOwner`
   primaryKey: RelationalOperationElement[] = [];
-  readonly parent: Mapping;
   mappingClass?: MappingClass | undefined;
 
   constructor(
@@ -72,7 +73,7 @@ export class EmbeddedRelationalInstanceSetImplementation
     this.class = _class;
     this.id = id;
     this.rootInstanceSetImplementation = rootInstanceSetImplementation;
-    this.parent = rootInstanceSetImplementation.parent;
+    this._PARENT = rootInstanceSetImplementation._PARENT;
   }
 
   getEmbeddedSetImplmentations(): InstanceSetImplementation[] {

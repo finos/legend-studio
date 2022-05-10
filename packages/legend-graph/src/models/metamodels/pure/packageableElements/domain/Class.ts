@@ -20,7 +20,6 @@ import {
   uniqBy,
   IllegalStateError,
   guaranteeNonNullable,
-  UnsupportedOperationError,
 } from '@finos/legend-shared';
 import {
   CORE_HASH_STRUCTURE,
@@ -33,9 +32,6 @@ import type { DerivedProperty } from './DerivedProperty';
 import type { AbstractProperty } from './AbstractProperty';
 import { type Stubable, isStubArray } from '../../../../../helpers/Stubable';
 import type { PackageableElementVisitor } from '../PackageableElement';
-import { PrimitiveType } from './PrimitiveType';
-import { Enumeration } from './Enumeration';
-import { Measure, Unit } from './Measure';
 import type { StereotypeReference } from './StereotypeReference';
 import type { TaggedValue } from './TaggedValue';
 import type { GenericTypeReference } from './GenericTypeReference';
@@ -235,28 +231,3 @@ export class Class extends Type implements Hashable, Stubable {
     return visitor.visit_Class(this);
   }
 }
-
-// TODO: to be moved out of metamodel
-export enum CLASS_PROPERTY_TYPE {
-  CLASS = 'CLASS',
-  ENUMERATION = 'ENUMERATION',
-  MEASURE = 'MEASURE',
-  UNIT = 'UNIT',
-  PRIMITIVE = 'PRIMITIVE',
-}
-
-// TODO: to be moved out of metamodel
-export const getClassPropertyType = (type: Type): CLASS_PROPERTY_TYPE => {
-  if (type instanceof PrimitiveType) {
-    return CLASS_PROPERTY_TYPE.PRIMITIVE;
-  } else if (type instanceof Enumeration) {
-    return CLASS_PROPERTY_TYPE.ENUMERATION;
-  } else if (type instanceof Class) {
-    return CLASS_PROPERTY_TYPE.CLASS;
-  } else if (type instanceof Unit) {
-    return CLASS_PROPERTY_TYPE.UNIT;
-  } else if (type instanceof Measure) {
-    return CLASS_PROPERTY_TYPE.MEASURE;
-  }
-  throw new UnsupportedOperationError(`Can't classify class property`, type);
-};

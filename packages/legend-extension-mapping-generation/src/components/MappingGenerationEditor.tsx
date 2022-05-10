@@ -172,7 +172,7 @@ const ArrayEditor = observer(
             {arrayValues.map((value, idx) => (
               // NOTE: since the value must be unique, we will use it as the key
               <div
-                key={value.value.uuid}
+                key={value.value._UUID}
                 className={
                   showEditInput === idx
                     ? 'mapping-generation-editor__configuration__item'

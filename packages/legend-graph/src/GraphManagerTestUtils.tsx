@@ -175,6 +175,7 @@ export const TEST__buildGraphWithEntities = async (
   await graphManagerState.graphManager.buildGraph(
     graphManagerState.graph,
     entities,
+    graphManagerState.graphBuildState,
     options,
   );
 };
@@ -236,6 +237,7 @@ export const TEST__checkBuildingResolvedElements = async (
   await graphManagerState.graphManager.buildGraph(
     graphManagerState.graph,
     entities,
+    graphManagerState.graphBuildState,
   );
   const transformedEntities = graphManagerState.graph.allOwnElements.map(
     (element) => graphManagerState.graphManager.elementToEntity(element),

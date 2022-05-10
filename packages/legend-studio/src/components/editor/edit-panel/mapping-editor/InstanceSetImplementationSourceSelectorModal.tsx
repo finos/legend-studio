@@ -52,7 +52,7 @@ export const getMappingElementSourceFilterText = (
   if (val instanceof Class) {
     return val.path;
   } else if (val instanceof RootFlatDataRecordType) {
-    return val.owner.name;
+    return val._OWNER.name;
   } else if (val instanceof TableAlias) {
     return `${val.relation.ownerReference.value.path}.${val.relation.value.schema.name}.${val.relation.value.name}`;
   }
@@ -72,7 +72,7 @@ export const getSourceElementLabel = (
   if (srcElement instanceof Class) {
     sourceLabel = srcElement.name;
   } else if (srcElement instanceof RootFlatDataRecordType) {
-    sourceLabel = srcElement.owner.name;
+    sourceLabel = srcElement._OWNER.name;
   } else if (srcElement instanceof TableAlias) {
     sourceLabel = `${srcElement.relation.ownerReference.value.name}.${
       srcElement.relation.value.schema.name === DEFAULT_DATABASE_SCHEMA_NAME
@@ -92,7 +92,7 @@ export const buildMappingElementSourceOption = (
     return buildElementOption(source) as MappingElementSourceSelectOption;
   } else if (source instanceof RootFlatDataRecordType) {
     return {
-      label: `${source.owner.owner.name}.${source.owner.name}`,
+      label: `${source._OWNER._OWNER.name}.${source._OWNER.name}`,
       value: source,
     };
   } else if (source instanceof TableAlias) {

@@ -61,7 +61,7 @@ export class DerivedPropertyState extends LambdaEditorState {
 
   get lambdaId(): string {
     return buildSourceInformationSourceId([
-      this.derivedProperty.owner.path,
+      this.derivedProperty._OWNER.path,
       DERIVED_PROPERTY_SOURCE_ID_LABEL,
       this.derivedProperty.name,
       this.uuid, // in case of duplications
@@ -155,7 +155,7 @@ export class ConstraintState extends LambdaEditorState {
 
   get lambdaId(): string {
     return buildSourceInformationSourceId([
-      this.constraint.owner.path,
+      this.constraint._OWNER.path,
       CONSTRAINT_SOURCE_ID_LABEL,
       this.constraint.name,
       this.uuid, // in case of duplications

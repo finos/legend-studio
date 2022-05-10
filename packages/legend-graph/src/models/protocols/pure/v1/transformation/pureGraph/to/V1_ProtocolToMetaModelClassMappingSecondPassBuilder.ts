@@ -265,7 +265,7 @@ export class V1_ProtocolToMetaModelClassMappingSecondPassBuilder
       );
       const dbs = new Set(
         Array.from(tableAliasMap.values()).map(
-          (e) => e.relation.value.schema.owner,
+          (e) => e.relation.value.schema._OWNER,
         ),
       );
       assertTrue(

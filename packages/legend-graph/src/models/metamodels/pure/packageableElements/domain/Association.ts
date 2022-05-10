@@ -16,6 +16,7 @@
 
 import {
   type Hashable,
+  type Writable,
   guaranteeNonNullable,
   guaranteeType,
   assertTrue,
@@ -35,19 +36,6 @@ import type { TaggedValue } from './TaggedValue';
 import type { StereotypeReference } from './StereotypeReference';
 import { DerivedProperty } from './DerivedProperty';
 import type { AbstractProperty } from './AbstractProperty';
-
-// NOTE: we might want to revisit this decision to initialize to association properties to stubs
-const initAssociationProperties = (
-  association: Association,
-): [Property, Property] => {
-  const properties: [Property, Property] = [
-    Property.createStub(Class.createStub(), Class.createStub()),
-    Property.createStub(Class.createStub(), Class.createStub()),
-  ];
-  properties[0].owner = association;
-  properties[1].owner = association;
-  return properties;
-};
 
 /**
  * Assocation needs exactly 2 properties (for 2 classes, not enumeration, not primitive), e.g.
@@ -69,16 +57,29 @@ export class Association
   extends PackageableElement
   implements AnnotatedElement, Hashable, Stubable
 {
-  properties: [Property, Property] = initAssociationProperties(this);
-  stereotypes: StereotypeReference[] = [];
-  taggedValues: TaggedValue[] = [];
-  derivedProperties: DerivedProperty[] = [];
-
   /**
    * To store the abstract properties generated while processing the milestoning properties. The properties
    * generated are `allVersions`, `allVersionsInRange` and derived property with date parameter.
    */
   _generatedMilestonedProperties: AbstractProperty[] = [];
+
+  properties!: [Property, Property];
+  stereotypes: StereotypeReference[] = [];
+  taggedValues: TaggedValue[] = [];
+  derivedProperties: DerivedProperty[] = [];
+
+  constructor(name: string) {
+    super(name);
+
+    // NOTE: we might want to revisit this decision to initialize to association properties to stubs
+    const properties: [Property, Property] = [
+      Property.createStub(Class.createStub(), Class.createStub()),
+      Property.createStub(Class.createStub(), Class.createStub()),
+    ];
+    (properties[0] as Writable<Property>)._OWNER = this;
+    (properties[1] as Writable<Property>)._OWNER = this;
+    this.properties = properties;
+  }
 
   getFirstProperty = (): Property => guaranteeNonNullable(this.properties[0]);
   getSecondProperty = (): Property => guaranteeNonNullable(this.properties[1]);

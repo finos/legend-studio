@@ -205,8 +205,15 @@ export const getNullableFirstElement = <T>(array: T[]): T | undefined =>
  * NOTE: This is useful in network client interface where we enforce that the input and output for the network call must be plain object,
  * so as to force proper handling (i.e. deserialize/serialize) but also signal from documentation perspective about the type/shape of the plain object
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export type PlainObject<T> = Record<PropertyKey, unknown>;
+export type PlainObject<T> = Record<PropertyKey, unknown>; // eslint-disable-line @typescript-eslint/no-unused-vars
+
+/**
+ * This type allows modification of `readonly` attributes for class/interface
+ * This is useful to set properties like `owner`, `parent` where we can't do so in the constructors
+ *
+ * See https://stackoverflow.com/questions/46634876/how-can-i-change-a-readonly-property-in-typescript
+ */
+export type Writable<T> = { -readonly [K in keyof T]: T[K] };
 
 /**
  * NOTE: This object mutates the input object (obj1)

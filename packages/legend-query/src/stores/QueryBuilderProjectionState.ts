@@ -100,7 +100,7 @@ export interface QueryBuilderProjectionColumnDragSource {
 }
 
 export abstract class QueryBuilderProjectionColumnState {
-  uuid = uuid();
+  readonly uuid = uuid();
   projectionState: QueryBuilderProjectionState;
   isBeingDragged = false;
   columnName: string;

@@ -159,7 +159,7 @@ export const OperationSetImplementationEditor = observer(
     const visit =
       (param: SetImplementationContainer): (() => void) =>
       (): void => {
-        const parent = param.setImplementation.value.parent;
+        const parent = param.setImplementation.value._PARENT;
         // TODO: think more about this flow. Right now we open the mapping element in the parent mapping
         if (parent !== mappingEditorState.element) {
           editorStore.openElement(parent);
@@ -219,7 +219,7 @@ export const OperationSetImplementationEditor = observer(
           >
             {setImplementation.parameters.map((param) => (
               <div
-                key={param.uuid}
+                key={param._UUID}
                 className="operation-mapping-editor__parameter"
               >
                 <div className="operation-mapping-editor__parameter__selector">

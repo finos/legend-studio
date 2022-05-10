@@ -18,12 +18,13 @@ import {
   UnsupportedOperationError,
   assertNonEmptyString,
   assertNonNullable,
+  guaranteeNonNullable,
 } from '@finos/legend-shared';
 import type { Mapping } from '../../../../../../metamodels/pure/packageableElements/mapping/Mapping';
 import type { SetImplementation } from '../../../../../../metamodels/pure/packageableElements/mapping/SetImplementation';
 import {
   OperationSetImplementation,
-  getClassMappingOperationType,
+  OperationType,
 } from '../../../../../../metamodels/pure/packageableElements/mapping/OperationSetImplementation';
 import { PureInstanceSetImplementation } from '../../../../../../metamodels/pure/packageableElements/store/modelToModel/mapping/PureInstanceSetImplementation';
 import { FlatDataInstanceSetImplementation } from '../../../../../../metamodels/pure/packageableElements/store/flatData/mapping/FlatDataInstanceSetImplementation';
@@ -50,6 +51,12 @@ import { toOptionalPackageableElementReference } from '../../../../../../metamod
 import type { DSLMapping_PureProtocolProcessorPlugin_Extension } from '../../../../DSLMapping_PureProtocolProcessorPlugin_Extension';
 import type { V1_MergeOperationClassMapping } from '../../../model/packageableElements/mapping/V1_MergeOperationClassMapping';
 import { MergeOperationSetImplementation } from '../../../../../../metamodels/pure/packageableElements/mapping/MergeOperationSetImplementation';
+
+const getClassMappingOperationType = (value: string): OperationType =>
+  guaranteeNonNullable(
+    Object.values(OperationType).find((type) => type === value),
+    `Encountered unsupproted class mapping operation type '${value}'`,
+  );
 
 export class V1_ProtocolToMetaModelClassMappingFirstPassBuilder
   implements V1_ClassMappingVisitor<SetImplementation>

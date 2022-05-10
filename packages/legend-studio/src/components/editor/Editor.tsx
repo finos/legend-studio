@@ -217,7 +217,7 @@ export const EditorInner = observer(() => {
     return true;
   };
   const editable =
-    editorStore.graphManagerState.graph.buildState.hasCompleted &&
+    editorStore.graphManagerState.graphBuildState.hasCompleted &&
     editorStore.isInitialized;
   const isResolvingConflicts =
     editorStore.isInConflictResolutionMode &&

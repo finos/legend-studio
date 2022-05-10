@@ -69,8 +69,9 @@ export interface SetImplementationVisitor<T> {
 export abstract class SetImplementation
   implements PropertyOwnerImplementation, Hashable, Stubable
 {
-  readonly parent: Mapping;
-  readonly isEmbedded: boolean = false;
+  readonly _PARENT: Mapping;
+  readonly _isEmbedded: boolean = false;
+
   id: InferableMappingElementIdValue;
   class: PackageableElementReference<Class>;
   root: InferableMappingElementRoot;
@@ -82,7 +83,7 @@ export abstract class SetImplementation
     root: InferableMappingElementRoot,
   ) {
     this.id = id;
-    this.parent = parent;
+    this._PARENT = parent;
     this.class = _class;
     this.root = root;
   }
@@ -103,22 +104,4 @@ export abstract class SetImplementation
   abstract accept_SetImplementationVisitor<T>(
     visitor: SetImplementationVisitor<T>,
   ): T;
-}
-
-// TODO: to be moved out of metamodel
-export enum BASIC_SET_IMPLEMENTATION_TYPE {
-  OPERATION = 'operation',
-  INSTANCE = 'instance',
-}
-
-// TODO: to be moved out of metamodel
-export enum SET_IMPLEMENTATION_TYPE {
-  OPERATION = 'operation',
-  MERGE_OPERATION = 'mergeOperation',
-  PUREINSTANCE = 'pureInstance',
-  FLAT_DATA = 'flatData',
-  EMBEDDED_FLAT_DATA = 'embeddedFlatData',
-  RELATIONAL = 'relational',
-  EMBEDDED_RELATIONAL = 'embeddedRelational',
-  AGGREGATION_AWARE = 'aggregationAware',
 }

@@ -742,7 +742,7 @@ const IdentifiedConnectionsPerStoreEditor = observer(
                         {currentRuntimeEditorTabState.identifiedConnections.map(
                           (rtConnection) => (
                             <IdentifiedConnectionsPerStoreExplorerItem
-                              key={rtConnection.uuid}
+                              key={rtConnection._UUID}
                               identifiedConnection={rtConnection}
                               currentRuntimeEditorTabState={
                                 currentRuntimeEditorTabState
@@ -949,7 +949,7 @@ const RuntimeGeneralEditor = observer(
               <div className="panel__content__form__section__list">
                 {runtimeValue.mappings.map((mappingRef) => (
                   <RuntimeMappingEditor
-                    key={mappingRef.value.uuid}
+                    key={mappingRef.value._UUID}
                     runtimeEditorState={runtimeEditorState}
                     mappingRef={mappingRef}
                     isReadOnly={isReadOnly || isRuntimeEmbedded}

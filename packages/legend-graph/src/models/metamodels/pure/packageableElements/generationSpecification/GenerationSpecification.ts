@@ -14,12 +14,14 @@
  * limitations under the License.
  */
 
-import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
+import {
+  CORE_HASH_STRUCTURE,
+  PackageableElementPointerType,
+} from '../../../../../MetaModelConst';
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import {
   type PackageableElementVisitor,
   PackageableElement,
-  PACKAGEABLE_ELEMENT_POINTER_TYPE,
   getElementPointerHashCode,
 } from '../PackageableElement';
 import type { PackageableElementReference } from '../PackageableElementReference';
@@ -69,7 +71,7 @@ export class GenerationSpecification
       hashArray(
         this.fileGenerations.map((fileGeneration) =>
           getElementPointerHashCode(
-            PACKAGEABLE_ELEMENT_POINTER_TYPE.FILE_GENERATION,
+            PackageableElementPointerType.FILE_GENERATION,
             fileGeneration.hashValue,
           ),
         ),
