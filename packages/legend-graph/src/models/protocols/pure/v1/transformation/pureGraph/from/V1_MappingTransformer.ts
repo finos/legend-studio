@@ -201,7 +201,7 @@ const transformEnumValueMapping = (
       } else if (value.value instanceof Enum) {
         const _enum = new V1_EnumValueMappingEnumSourceValue();
         _enum.value = value.value.name;
-        _enum.enumeration = value.value.owner.path;
+        _enum.enumeration = value.value._OWNER.path;
         return _enum;
       }
       throw new UnsupportedOperationError(
@@ -911,7 +911,7 @@ const transformFlatDataInstanceSetImpl = (
   if (root !== undefined) {
     classMapping.root = root;
   }
-  classMapping.sectionName = element.sourceRootRecordType.value.owner.name;
+  classMapping.sectionName = element.sourceRootRecordType.value._OWNER.name;
   return classMapping;
 };
 

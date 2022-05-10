@@ -78,7 +78,7 @@ export const getNonCollectionValueSpecificationType = (
   if (valueSpecification instanceof PrimitiveInstanceValue) {
     return valueSpecification.genericType.value.rawType;
   } else if (valueSpecification instanceof EnumValueInstanceValue) {
-    return guaranteeNonNullable(valueSpecification.values[0]).value.owner;
+    return guaranteeNonNullable(valueSpecification.values[0]).value._OWNER;
   } else if (valueSpecification instanceof VariableExpression) {
     return valueSpecification.genericType?.value.rawType;
   } else if (valueSpecification instanceof SimpleFunctionExpression) {
@@ -125,7 +125,7 @@ export const getCollectionValueSpecificationType = (
     (values as EnumValueInstanceValue[]).forEach((val) => {
       addUniqueEntry(
         valueEnumerationTypes,
-        guaranteeNonNullable(val.values[0]).value.owner,
+        guaranteeNonNullable(val.values[0]).value._OWNER,
       );
     });
     if (valueEnumerationTypes.length > 1) {

@@ -90,7 +90,7 @@ export const PropertyMappingsEditor = observer(
         instanceSetImplementationState.setImplementation,
       );
     const isEmbedded =
-      instanceSetImplementationState.setImplementation.isEmbedded;
+      instanceSetImplementationState.setImplementation._isEmbedded;
     // Parser Error
     const propertyMappingStates =
       instanceSetImplementationState.propertyMappingStates.filter(
@@ -122,7 +122,7 @@ export const PropertyMappingsEditor = observer(
             if (!rootMappingElement.root.value) {
               setImpl_setRoot(rootMappingElement, true);
             }
-            const parent = rootMappingElement.parent;
+            const parent = rootMappingElement._PARENT;
             if (parent !== mappingEditorState.element) {
               // TODO: think more about this flow. Right now we open the mapping element in the parent mapping
               editorStore.openElement(parent);

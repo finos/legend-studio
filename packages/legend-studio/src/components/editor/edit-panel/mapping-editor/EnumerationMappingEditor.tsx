@@ -289,7 +289,7 @@ const EnumValueMappingEditor = observer(
           <div>
             {matchingEnumValueMapping.sourceValues.map((sourceValue, idx) => (
               <SourceValueInput
-                key={sourceValue.uuid}
+                key={sourceValue._UUID}
                 isReadOnly={isReadOnly}
                 sourceValue={sourceValue}
                 expectedType={sourceType.value}

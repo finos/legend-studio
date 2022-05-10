@@ -377,7 +377,10 @@ export class UnsupportedConnectionValueState extends ConnectionValueState {
 }
 
 export class ConnectionEditorState {
-  uuid = uuid(); // NOTE: used to force component remount on state change
+  /**
+   * NOTE: used to force component remount on state change
+   */
+  readonly uuid = uuid();
   editorStore: EditorStore;
   connection: Connection;
   connectionValueState: ConnectionValueState;

@@ -37,7 +37,7 @@ import {
 } from './QueryBuilderProjectionState';
 
 export abstract class QueryBuilderAggregateOperator {
-  uuid = uuid();
+  readonly uuid = uuid();
 
   abstract getLabel(
     projectionColumnState: QueryBuilderProjectionColumnState,
@@ -86,7 +86,7 @@ export abstract class QueryBuilderAggregateOperator {
 }
 
 export class QueryBuilderAggregateColumnState {
-  uuid = uuid();
+  readonly uuid = uuid();
   aggregationState: QueryBuilderAggregationState;
   projectionColumnState: QueryBuilderProjectionColumnState;
   lambdaParameterName: string = DEFAULT_LAMBDA_VARIABLE_NAME;

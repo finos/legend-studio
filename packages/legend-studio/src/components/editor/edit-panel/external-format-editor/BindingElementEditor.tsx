@@ -153,7 +153,7 @@ const BindingScopeEditor = observer(
               <div className="binding-scope-editor__panel__content__form__section__list">
                 {elements.map((elementRef) => (
                   <BindingScopeEntryEditor
-                    key={elementRef.value.uuid}
+                    key={elementRef.value._UUID}
                     elementRef={elementRef}
                     removeElement={removeElement}
                     isReadOnly={isReadOnly}

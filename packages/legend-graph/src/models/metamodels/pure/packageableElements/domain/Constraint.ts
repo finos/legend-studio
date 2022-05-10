@@ -21,8 +21,8 @@ import type { Class } from './Class';
 import type { Stubable } from '../../../../../helpers/Stubable';
 
 export class Constraint implements Hashable, Stubable {
-  readonly uuid = uuid();
-  owner: Class;
+  readonly _UUID = uuid();
+  readonly _OWNER: Class;
 
   name: string;
   /**
@@ -42,7 +42,7 @@ export class Constraint implements Hashable, Stubable {
 
   constructor(name: string, owner: Class, functionDefinition: RawLambda) {
     this.name = name;
-    this.owner = owner;
+    this._OWNER = owner;
     this.functionDefinition = functionDefinition;
   }
 

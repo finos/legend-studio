@@ -134,7 +134,7 @@ export class PackageableElementImplicitReference<
     // when the parent section does not exist or has been deleted
     if (
       this.parentSection === undefined ||
-      this.parentSection.parent.isDeleted
+      this.parentSection._OWNER.isDeleted
     ) {
       return currentElementPath;
     }
@@ -240,7 +240,7 @@ export class OptionalPackageableElementImplicitReference<
     // when the parent section does not exist or has been deleted
     if (
       this.parentSection === undefined ||
-      this.parentSection.parent.isDeleted
+      this.parentSection._OWNER.isDeleted
     ) {
       return currentElementPath;
     }

@@ -210,7 +210,7 @@ export const InstanceSetImplementationSourceExplorer = observer(
     );
     const handleDrop = useCallback(
       (item: MappingElementSourceDropTarget): void => {
-        if (!setImplementation.isEmbedded && !isReadOnly) {
+        if (!setImplementation._isEmbedded && !isReadOnly) {
           const embeddedSetImpls =
             setImplementation.getEmbeddedSetImplmentations();
           const droppedPackagableElement = item.data.packageableElement;
@@ -290,7 +290,7 @@ export const InstanceSetImplementationSourceExplorer = observer(
               className="panel__header__action"
               onClick={showSourceSelectorModal}
               disabled={
-                isReadOnly || setImplementation.isEmbedded || isUnsupported
+                isReadOnly || setImplementation._isEmbedded || isUnsupported
               }
               tabIndex={-1}
               title="Select Source..."

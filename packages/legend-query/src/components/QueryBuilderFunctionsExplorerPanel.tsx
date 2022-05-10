@@ -113,7 +113,7 @@ const QueryBuilderFunctionInfoTooltip: React.FC<{
             </div>
             <div className="query-builder__tooltip__item__value">
               {element.taggedValues
-                .filter((t) => t.tag.value.owner.name === 'doc')
+                .filter((t) => t.tag.value._OWNER.name === 'doc')
                 .map((t) => t.value)
                 .join('; ')}
             </div>

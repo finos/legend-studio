@@ -63,7 +63,7 @@ export const getDerivedPropertyMilestoningSteoreotype = (
   property: DerivedProperty,
   graph: PureModel,
 ): MILESTONING_STEREOTYPE | undefined => {
-  const owner = property.owner;
+  const owner = property._OWNER;
   if (owner instanceof Class) {
     return getMilestoneTemporalStereotype(owner, graph);
   } else if (owner instanceof Association) {
@@ -156,7 +156,7 @@ export const generateMilestonedPropertyParameterValue = (
   const temporalTarget =
     derivedPropertyExpressionState.propertyExpression.func.genericType.value
       .rawType instanceof Class &&
-    derivedPropertyExpressionState.propertyExpression.func.owner
+    derivedPropertyExpressionState.propertyExpression.func._OWNER
       ._generatedMilestonedProperties.length !== 0
       ? getMilestoneTemporalStereotype(
           derivedPropertyExpressionState.propertyExpression.func.genericType
@@ -603,11 +603,12 @@ export class QueryBuilderPropertyExpressionState {
       // check if the property is milestoned
       if (
         currentExpression.func.genericType.value.rawType instanceof Class &&
-        currentExpression.func.owner._generatedMilestonedProperties.length !== 0
+        currentExpression.func._OWNER._generatedMilestonedProperties.length !==
+          0
       ) {
         const name = currentExpression.func.name;
         const func =
-          currentExpression.func.owner._generatedMilestonedProperties.find(
+          currentExpression.func._OWNER._generatedMilestonedProperties.find(
             (e) => e.name === name,
           );
         if (func) {

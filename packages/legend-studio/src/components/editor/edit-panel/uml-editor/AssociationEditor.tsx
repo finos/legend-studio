@@ -499,7 +499,7 @@ export const AssociationEditor = observer(
                   >
                     {association.taggedValues.map((taggedValue) => (
                       <TaggedValueEditor
-                        key={taggedValue.uuid}
+                        key={taggedValue._UUID}
                         taggedValue={taggedValue}
                         deleteValue={_deleteTaggedValue(taggedValue)}
                         isReadOnly={isReadOnly}
@@ -517,7 +517,7 @@ export const AssociationEditor = observer(
                   >
                     {association.stereotypes.map((stereotype) => (
                       <StereotypeSelector
-                        key={stereotype.value.uuid}
+                        key={stereotype.value._UUID}
                         stereotype={stereotype}
                         deleteStereotype={_deleteStereotype(stereotype)}
                         isReadOnly={isReadOnly}

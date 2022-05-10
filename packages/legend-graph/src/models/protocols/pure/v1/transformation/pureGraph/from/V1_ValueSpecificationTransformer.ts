@@ -259,7 +259,7 @@ class V1_ValueSpecificationTransformer
     const _enumValue = new V1_EnumValue();
     const _enum = guaranteeNonNullable(valueSpecification.values[0]).value;
     _enumValue.value = _enum.name;
-    _enumValue.fullPath = _enum.owner.path;
+    _enumValue.fullPath = _enum._OWNER.path;
     return _enumValue;
   }
 

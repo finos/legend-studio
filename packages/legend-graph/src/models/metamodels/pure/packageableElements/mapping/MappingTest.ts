@@ -25,7 +25,7 @@ import {
 } from '../../../../../helpers/ValidationHelper';
 
 export class MappingTest implements Hashable {
-  readonly uuid = uuid();
+  readonly _UUID = uuid();
 
   name: string;
   /**

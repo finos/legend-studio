@@ -64,8 +64,8 @@ export const TaggedValueEditor = observer(
     const [selectedProfile, setSelectedProfile] = useState<
       PackageableElementOption<Profile>
     >({
-      value: taggedValue.tag.value.owner,
-      label: taggedValue.tag.value.owner.name,
+      value: taggedValue.tag.value._OWNER,
+      label: taggedValue.tag.value._OWNER.name,
     });
     const changeProfile = (val: PackageableElementOption<Profile>): void => {
       if (val.value.tags.length) {
@@ -117,7 +117,7 @@ export const TaggedValueEditor = observer(
             className={`tagged-value-editor__profile__visit-btn ${
               darkTheme ? 'tagged-value-editor-dark-theme' : ''
             }`}
-            disabled={taggedValue.tag.value.owner.isStub}
+            disabled={taggedValue.tag.value._OWNER.isStub}
             onClick={visitProfile}
             tabIndex={-1}
             title={'Visit profile'}

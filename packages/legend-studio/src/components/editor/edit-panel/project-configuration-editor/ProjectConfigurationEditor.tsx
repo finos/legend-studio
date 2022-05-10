@@ -503,7 +503,7 @@ export const ProjectConfigurationEditor = observer(() => {
               {currentProjectConfiguration.projectDependencies.map(
                 (projectDependency) => (
                   <ProjectDependencyEditor
-                    key={projectDependency.uuid}
+                    key={projectDependency._UUID}
                     projectDependency={projectDependency}
                     deleteValue={deleteProjectDependency(projectDependency)}
                     isReadOnly={isReadOnly}

@@ -26,7 +26,7 @@ export type PropertyOwner = Class | Association;
 
 export interface AbstractProperty extends Hashable, Stubable {
   name: string;
-  owner: PropertyOwner;
+  _OWNER: PropertyOwner;
   genericType: GenericTypeReference;
   multiplicity: Multiplicity;
 }

@@ -270,7 +270,7 @@ export const getNodeTestableResult = (
 };
 
 export class TestableState {
-  uuid = uuid();
+  readonly uuid = uuid();
   managerState: TestableManagerState;
   editorStore: EditorStore;
   testableMetadata: TestableMetadata;

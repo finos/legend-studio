@@ -57,7 +57,7 @@ import {
 } from './QueryBuilderOperatorsHelper';
 
 export abstract class QueryBuilderFilterOperator {
-  uuid = uuid();
+  readonly uuid = uuid();
 
   abstract getLabel(filterConditionState: FilterConditionState): string;
 

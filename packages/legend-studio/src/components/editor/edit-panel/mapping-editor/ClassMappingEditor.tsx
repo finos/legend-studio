@@ -123,7 +123,7 @@ export const ClassMappingEditor = observer(
       case SET_IMPLEMENTATION_TYPE.FLAT_DATA: {
         sourceType = CLASS_MAPPING_SOURCE_TYPE.FLAT_DATA;
         sourceName = (setImplementation as FlatDataInstanceSetImplementation)
-          .sourceRootRecordType.value.owner.name;
+          .sourceRootRecordType.value._OWNER.name;
         break;
       }
       case SET_IMPLEMENTATION_TYPE.EMBEDDED_FLAT_DATA: {
@@ -132,7 +132,7 @@ export const ClassMappingEditor = observer(
           setImplementation as EmbeddedFlatDataPropertyMapping;
         sourceName = (
           flatDataInstanceSetImpl.rootInstanceSetImplementation as FlatDataInstanceSetImplementation
-        ).sourceRootRecordType.value.owner.name;
+        ).sourceRootRecordType.value._OWNER.name;
         break;
       }
       case SET_IMPLEMENTATION_TYPE.RELATIONAL: {

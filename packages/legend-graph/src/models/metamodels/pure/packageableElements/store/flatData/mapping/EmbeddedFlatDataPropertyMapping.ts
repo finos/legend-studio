@@ -50,13 +50,14 @@ export class EmbeddedFlatDataPropertyMapping
   extends AbstractFlatDataPropertyMapping
   implements InstanceSetImplementation, Hashable
 {
+  readonly _PARENT: Mapping;
+  override readonly _isEmbedded = true;
+
   root = InferableMappingElementRootExplicitValue.create(false);
-  override readonly isEmbedded = true;
   class: PackageableElementReference<Class>;
   id: InferableMappingElementIdValue;
   propertyMappings: PropertyMapping[] = [];
   rootInstanceSetImplementation: InstanceSetImplementation; // in Pure we call this `setMappingOwner`
-  readonly parent: Mapping;
   mappingClass?: MappingClass | undefined;
 
   constructor(
@@ -72,7 +73,7 @@ export class EmbeddedFlatDataPropertyMapping
     this.class = _class;
     this.id = id;
     this.rootInstanceSetImplementation = rootInstanceSetImplementation;
-    this.parent = rootInstanceSetImplementation.parent;
+    this._PARENT = rootInstanceSetImplementation._PARENT;
   }
 
   // As of now, there is no stub cases of Embedded Flat Property Mapping since they are created with an existing property mapping

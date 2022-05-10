@@ -14,11 +14,9 @@
  * limitations under the License.
  */
 
-import { uuid } from '@finos/legend-shared';
 import type { RelationalDatabaseConnection } from '../../../models/metamodels/pure/packageableElements/store/relational/connection/RelationalDatabaseConnection';
 
 export class DatabasePattern {
-  readonly uuid = uuid();
   schemaPattern = '';
   tablePattern = '';
   escapeSchemaPattern?: boolean | undefined;

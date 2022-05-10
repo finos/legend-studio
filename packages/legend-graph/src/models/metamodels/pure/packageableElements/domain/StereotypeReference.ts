@@ -62,7 +62,7 @@ export class StereotypeExplicitReference extends StereotypeReference {
 
   private constructor(value: Stereotype) {
     const ownerReference = PackageableElementExplicitReference.create(
-      value.owner,
+      value._OWNER,
     );
     super(ownerReference, value);
     this.ownerReference = ownerReference;

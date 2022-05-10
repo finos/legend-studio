@@ -23,7 +23,8 @@ import { ClassViewExplicitReference } from './DSLDiagram_ClassViewReference';
 import { DIAGRAM_HASH_STRUCTURE } from '../../../../DSLDiagram_ModelUtils';
 
 export class RelationshipView implements Hashable {
-  owner: Diagram;
+  readonly _OWNER: Diagram;
+
   from: RelationshipEdgeView;
   to: RelationshipEdgeView;
   /**
@@ -39,7 +40,7 @@ export class RelationshipView implements Hashable {
   path: Point[] = [];
 
   constructor(owner: Diagram, from: ClassView, to: ClassView) {
-    this.owner = owner;
+    this._OWNER = owner;
     this.from = new RelationshipEdgeView(
       ClassViewExplicitReference.create(from),
     );

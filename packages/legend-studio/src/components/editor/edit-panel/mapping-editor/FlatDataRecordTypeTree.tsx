@@ -85,7 +85,7 @@ const RecordFieldTreeNodeContainer: React.FC<
   );
   const nodeTypeIcon = <PURE_PrimitiveTypeIcon />;
   const selectNode = (): void => onNodeSelect?.(node);
-  const primitiveType = node.field.flatDataDataType.correspondingPrimitiveType;
+  const primitiveType = node.field.flatDataDataType._correspondingPrimitiveType;
 
   return (
     <div

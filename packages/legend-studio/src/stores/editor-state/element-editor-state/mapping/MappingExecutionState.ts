@@ -182,7 +182,7 @@ export class MappingExecutionQueryState extends LambdaEditorState {
 }
 
 abstract class MappingExecutionInputDataState {
-  uuid = uuid();
+  readonly uuid = uuid();
   editorStore: EditorStore;
   mapping: Mapping;
   inputData?: InputData | undefined;
@@ -317,7 +317,7 @@ export class MappingExecutionFlatDataInputDataState extends MappingExecutionInpu
       mapping,
       new FlatDataInputData(
         PackageableElementExplicitReference.create(
-          guaranteeNonNullable(rootFlatDataRecordType.owner.owner),
+          guaranteeNonNullable(rootFlatDataRecordType._OWNER._OWNER),
         ),
         '',
       ),
@@ -374,7 +374,7 @@ export class MappingExecutionRelationalInputDataState extends MappingExecutionIn
       mapping,
       new RelationalInputData(
         PackageableElementExplicitReference.create(
-          guaranteeNonNullable(tableOrView.schema.owner),
+          guaranteeNonNullable(tableOrView.schema._OWNER),
         ),
         '',
         RelationalInputType.SQL,
@@ -435,7 +435,7 @@ export class MappingExecutionRelationalInputDataState extends MappingExecutionIn
 }
 
 export class MappingExecutionState {
-  uuid = uuid();
+  readonly uuid = uuid();
   name: string;
   editorStore: EditorStore;
   mappingEditorState: MappingEditorState;

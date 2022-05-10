@@ -43,7 +43,7 @@ export class ColumnExplicitReference extends ColumnReference {
 
   private constructor(value: Column) {
     const ownerReference = PackageableElementExplicitReference.create(
-      getSchemaFromRelation(value.owner).owner,
+      getSchemaFromRelation(value.owner)._OWNER,
     );
     super(ownerReference, value);
     this.ownerReference = ownerReference;

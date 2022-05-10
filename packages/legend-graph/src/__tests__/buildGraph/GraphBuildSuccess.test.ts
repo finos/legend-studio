@@ -55,8 +55,8 @@ test(unitTest('Enumeration is loaded properly'), () => {
   const profile = graph.getProfile('ui::test1::ProfileTest');
   const taggedValue = guaranteeNonNullable(pureEnum.taggedValues[0]);
   expect(taggedValue.value).toEqual('Enumeration Tag');
-  expect(profile).toEqual(taggedValue.tag.value.owner);
-  expect(profile).toEqual(pureEnum.stereotypes[0]?.value.owner);
+  expect(profile).toEqual(taggedValue.tag.value._OWNER);
+  expect(profile).toEqual(pureEnum.stereotypes[0]?.value._OWNER);
 });
 
 test(unitTest('Class is loaded properly'), () => {
@@ -65,7 +65,7 @@ test(unitTest('Class is loaded properly'), () => {
   const stereotype = guaranteeNonNullable(testClass.stereotypes[0]).value;
   expect(
     graph
-      .getProfile(stereotype.owner.path)
+      .getProfile(stereotype._OWNER.path)
       .stereotypes.find((s) => s.value === stereotype.value),
   ).toBeDefined();
   const personClass = graph.getClass('ui::test2::Person');

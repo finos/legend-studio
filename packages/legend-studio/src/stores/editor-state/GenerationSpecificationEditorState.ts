@@ -46,7 +46,7 @@ export interface GenerationSpecNodeDragSource {
 
 export type GenerationSpecNodeDropTarget = GenerationSpecNodeDragSource;
 export class GenerationTreeNodeState {
-  uuid = uuid();
+  readonly uuid = uuid();
   node: GenerationTreeNode;
   isBeingDragged = false;
 

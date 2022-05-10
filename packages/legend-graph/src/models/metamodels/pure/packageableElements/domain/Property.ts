@@ -33,8 +33,8 @@ import type { StereotypeReference } from './StereotypeReference';
 export class Property
   implements AbstractProperty, AnnotatedElement, Hashable, Stubable
 {
-  readonly uuid = uuid();
-  owner: PropertyOwner; // readonly
+  readonly _UUID = uuid();
+  readonly _OWNER: PropertyOwner;
 
   name: string;
   multiplicity: Multiplicity;
@@ -51,7 +51,7 @@ export class Property
     this.name = name;
     this.multiplicity = multiplicity;
     this.genericType = genericType;
-    this.owner = owner;
+    this._OWNER = owner;
   }
 
   static createStub = (type: Type, _class: Class): Property =>

@@ -534,7 +534,7 @@ const buildViewSecondPass = (
     const filterPtr = srcView.filter.filter;
     const db = filterPtr.db
       ? context.resolveDatabase(filterPtr.db).value
-      : view.schema.owner;
+      : view.schema._OWNER;
     view.filter = processFilterMapping(srcView.filter, db, context);
   }
   if (groupByColumns.length) {

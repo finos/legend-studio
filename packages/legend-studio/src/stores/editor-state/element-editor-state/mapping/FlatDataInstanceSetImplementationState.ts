@@ -67,9 +67,9 @@ export class FlatDataPropertyMappingState extends PropertyMappingState {
 
   get lambdaId(): string {
     return buildSourceInformationSourceId([
-      this.propertyMapping.owner.parent.path,
+      this.propertyMapping._OWNER._PARENT.path,
       MAPPING_ELEMENT_SOURCE_ID_LABEL.FLAT_DATA_CLASS_MAPPING,
-      this.propertyMapping.owner.id.value,
+      this.propertyMapping._OWNER.id.value,
       this.propertyMapping.property.value.name,
       this.uuid, // in case of duplications
     ]);

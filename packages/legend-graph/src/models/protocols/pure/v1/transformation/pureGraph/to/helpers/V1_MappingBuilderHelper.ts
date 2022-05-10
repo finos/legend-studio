@@ -313,7 +313,7 @@ export const V1_resolveClassMappingRoot = (mapping: Mapping): void => {
       // ensure you are only altering current mapping
       if (
         classMapping.root.value === false &&
-        classMapping.parent === mapping
+        classMapping._PARENT === mapping
       ) {
         classMapping.root = InferableMappingElementRootImplicitValue.create(
           true,

@@ -85,7 +85,7 @@ export const getClassMappingStore = (
   if (sourceElement instanceof Class) {
     return editorStore.graphManagerState.graph.modelStore;
   } else if (sourceElement instanceof RootFlatDataRecordType) {
-    return sourceElement.owner.owner;
+    return sourceElement._OWNER._OWNER;
   } else if (sourceElement instanceof TableAlias) {
     return sourceElement.relation.ownerReference.value;
   }
@@ -315,7 +315,7 @@ export const getRuntimeExplorerTreeData = (
 };
 
 export abstract class RuntimeEditorTabState {
-  uuid = uuid();
+  readonly uuid = uuid();
   editorStore: EditorStore;
   runtimeEditorState: RuntimeEditorState;
 
@@ -617,7 +617,10 @@ export class IdentifiedConnectionsPerClassEditorTabState extends IdentifiedConne
 export class RuntimeEditorRuntimeTabState extends RuntimeEditorTabState {}
 
 export class RuntimeEditorState {
-  uuid = uuid(); // NOTE: used to force component remount on state change
+  /**
+   * NOTE: used to force component remount on state change
+   */
+  readonly uuid = uuid();
   editorStore: EditorStore;
   runtime: Runtime;
   runtimeValue: EngineRuntime;

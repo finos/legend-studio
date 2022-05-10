@@ -69,10 +69,10 @@ export interface PackageableElementVisitor<T> {
 }
 
 export abstract class PackageableElement implements Hashable, Stubable {
-  readonly uuid = uuid();
-
+  readonly _UUID = uuid();
   protected _isDeleted = false;
   protected _isDisposed = false;
+
   name: string;
   package?: Package | undefined;
 

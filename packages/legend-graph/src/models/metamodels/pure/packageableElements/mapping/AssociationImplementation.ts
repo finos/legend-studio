@@ -30,7 +30,8 @@ import type { InferableMappingElementIdValue } from './InferableMappingElementId
 export abstract class AssociationImplementation
   implements PropertyMappingsImplementation, Hashable
 {
-  readonly parent: Mapping;
+  readonly _PARENT: Mapping;
+
   association: PackageableElementReference<Association>;
   id: InferableMappingElementIdValue;
   stores: PackageableElementReference<Store>[] = [];
@@ -42,7 +43,7 @@ export abstract class AssociationImplementation
     association: PackageableElementExplicitReference<Association>,
   ) {
     this.id = id;
-    this.parent = parent;
+    this._PARENT = parent;
     this.association = association;
   }
 

@@ -65,7 +65,7 @@ const SimplePropertyMappingEditor = observer(
       propertyMapping.property.value.genericType.value.rawType;
     const canDrop =
       dragItem &&
-      dragItem.data.field.flatDataDataType.correspondingPrimitiveType ===
+      dragItem.data.field.flatDataDataType._correspondingPrimitiveType ===
         expectedType;
     const onExpectedTypeLabelSelect = (): void =>
       propertyMappingState.instanceSetImplementationState.setSelectedType(
@@ -165,8 +165,8 @@ const EnumerationPropertyMappingEditor = observer(
     };
     // Drag and Drop
     const canDrop =
-      dragItem?.data.field.flatDataDataType.correspondingPrimitiveType &&
-      dragItem.data.field.flatDataDataType.correspondingPrimitiveType ===
+      dragItem?.data.field.flatDataDataType._correspondingPrimitiveType &&
+      dragItem.data.field.flatDataDataType._correspondingPrimitiveType ===
         expectedType;
 
     return (

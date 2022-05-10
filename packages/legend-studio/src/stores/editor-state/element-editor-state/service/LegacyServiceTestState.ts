@@ -83,7 +83,7 @@ interface ServiceTestExecutionResult {
 }
 
 export class TestContainerState {
-  uuid = uuid();
+  readonly uuid = uuid();
   editorStore: EditorStore;
   serviceEditorState: ServiceEditorState;
   testState: LegacySingleExecutionTestState;
@@ -623,7 +623,7 @@ export class LegacySingleExecutionTestState {
 }
 
 export class KeyedSingleExecutionState extends LegacySingleExecutionTestState {
-  uuid = uuid();
+  readonly uuid = uuid();
   declare test: DEPRECATED__KeyedSingleExecutionTest;
 
   constructor(

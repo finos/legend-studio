@@ -113,8 +113,8 @@ const PropertyBasicEditor = observer(
       props;
     const editorStore = useEditorStore();
     const isInheritedProperty =
-      property.owner instanceof Class && property.owner !== _class;
-    const isPropertyFromAssociation = property.owner instanceof Association;
+      property._OWNER instanceof Class && property._OWNER !== _class;
+    const isPropertyFromAssociation = property._OWNER instanceof Association;
     const isIndirectProperty = isInheritedProperty || isPropertyFromAssociation;
     const isPropertyDuplicated = (val: Property): boolean =>
       _class.properties.filter((p) => p.name === val.name).length >= 2;
@@ -185,7 +185,7 @@ const PropertyBasicEditor = observer(
     };
     // NOTE: for now we do not allow directly modifying inherited and associated properties,
     // we would make the user go to the supertype or the association where the property comes from
-    const visitOwner = (): void => editorStore.openElement(property.owner);
+    const visitOwner = (): void => editorStore.openElement(property._OWNER);
 
     return (
       <div className="property-basic-editor">
@@ -334,7 +334,7 @@ const PropertyBasicEditor = observer(
             tabIndex={-1}
             title={`Visit ${
               isInheritedProperty ? 'super type class' : 'association'
-            } '${property.owner.path}'`}
+            } '${property._OWNER.path}'`}
           >
             <ArrowCircleRightIcon />
           </button>
@@ -383,7 +383,7 @@ const DerivedPropertyBasicEditor = observer(
     );
     const dpState =
       editorState.classState.getDerivedPropertyState(derivedProperty);
-    const isInheritedProperty = derivedProperty.owner !== _class;
+    const isInheritedProperty = derivedProperty._OWNER !== _class;
     // Name
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) =>
       property_setName(derivedProperty, event.target.value);
@@ -452,7 +452,7 @@ const DerivedPropertyBasicEditor = observer(
       }
     };
     const visitOwner = (): void =>
-      editorStore.openElement(derivedProperty.owner);
+      editorStore.openElement(derivedProperty._OWNER);
     const remove = applicationStore.guardUnhandledError(async () => {
       await flowResult(dpState.convertLambdaObjectToGrammarString(false));
       deleteDerivedProperty();
@@ -602,7 +602,7 @@ const DerivedPropertyBasicEditor = observer(
               className="uml-element-editor__visit-parent-element-btn"
               onClick={visitOwner}
               tabIndex={-1}
-              title={`Visit super type class ${derivedProperty.owner.path}`}
+              title={`Visit super type class ${derivedProperty._OWNER.path}`}
             >
               <ArrowCircleRightIcon />
             </button>
@@ -650,7 +650,7 @@ const ConstraintEditor = observer(
     const hasParserError = editorState.classState.constraintStates.some(
       (state) => state.parserError,
     );
-    const isInheritedConstraint = constraint.owner !== _class;
+    const isInheritedConstraint = constraint._OWNER !== _class;
     const constraintState =
       editorState.classState.getConstraintState(constraint);
     // Name
@@ -663,7 +663,7 @@ const ConstraintEditor = observer(
       );
       deleteConstraint();
     });
-    const visitOwner = (): void => editorStore.openElement(constraint.owner);
+    const visitOwner = (): void => editorStore.openElement(constraint._OWNER);
 
     return (
       <div
@@ -697,7 +697,7 @@ const ConstraintEditor = observer(
               className="uml-element-editor__visit-parent-element-btn"
               onClick={visitOwner}
               tabIndex={-1}
-              title={`Visit super type class ${constraint.owner.path}`}
+              title={`Visit super type class ${constraint._OWNER.path}`}
             >
               <ArrowCircleRightIcon />
             </button>
@@ -866,7 +866,7 @@ export const ClassFormEditor = observer(
       .sort((p1, p2) => p1.name.localeCompare(p2.name))
       .sort(
         (p1, p2) =>
-          (p1.owner === _class ? 1 : 0) - (p2.owner === _class ? 1 : 0),
+          (p1._OWNER === _class ? 1 : 0) - (p2._OWNER === _class ? 1 : 0),
       );
     const deselectProperty = (): void => setSelectedProperty(undefined);
     // Constraints
@@ -905,7 +905,7 @@ export const ClassFormEditor = observer(
       .sort((p1, p2) => p1.name.localeCompare(p2.name))
       .sort(
         (p1, p2) =>
-          (p1.owner === _class ? 1 : 0) - (p2.owner === _class ? 1 : 0),
+          (p1._OWNER === _class ? 1 : 0) - (p2._OWNER === _class ? 1 : 0),
       );
     const deleteDerivedProperty =
       (dp: DerivedProperty): (() => void) =>
@@ -1238,7 +1238,7 @@ export const ClassFormEditor = observer(
                       .concat(indirectProperties)
                       .map((property) => (
                         <PropertyBasicEditor
-                          key={property.uuid}
+                          key={property._UUID}
                           property={property}
                           _class={_class}
                           deleteProperty={deleteProperty(property)}
@@ -1263,7 +1263,7 @@ export const ClassFormEditor = observer(
                       )
                       .map((dp) => (
                         <DerivedPropertyBasicEditor
-                          key={dp.uuid}
+                          key={dp._UUID}
                           derivedProperty={dp}
                           _class={_class}
                           editorState={editorState}
@@ -1285,7 +1285,7 @@ export const ClassFormEditor = observer(
                       )
                       .map((constraint) => (
                         <ConstraintEditor
-                          key={constraint.uuid}
+                          key={constraint._UUID}
                           constraint={constraint}
                           _class={_class}
                           editorState={editorState}
@@ -1305,7 +1305,7 @@ export const ClassFormEditor = observer(
                   >
                     {_class.generalizations.map((superType) => (
                       <SuperTypeEditor
-                        key={superType.value.uuid}
+                        key={superType.value._UUID}
                         superType={superType}
                         _class={_class}
                         deleteSuperType={deleteSuperType(superType)}
@@ -1324,7 +1324,7 @@ export const ClassFormEditor = observer(
                   >
                     {_class.taggedValues.map((taggedValue) => (
                       <TaggedValueEditor
-                        key={taggedValue.uuid}
+                        key={taggedValue._UUID}
                         taggedValue={taggedValue}
                         deleteValue={_deleteTaggedValue(taggedValue)}
                         isReadOnly={isReadOnly}
@@ -1342,7 +1342,7 @@ export const ClassFormEditor = observer(
                   >
                     {_class.stereotypes.map((stereotype) => (
                       <StereotypeSelector
-                        key={stereotype.value.uuid}
+                        key={stereotype.value._UUID}
                         stereotype={stereotype}
                         deleteStereotype={_deleteStereotype(stereotype)}
                         isReadOnly={isReadOnly}

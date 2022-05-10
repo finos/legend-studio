@@ -31,7 +31,8 @@ export abstract class ServiceExecution implements Hashable {
 }
 
 export class PureExecution extends ServiceExecution implements Hashable {
-  owner: Service;
+  readonly _OWNER: Service;
+
   /**
    * Studio does not process value specification, they are left in raw JSON form
    *
@@ -42,7 +43,7 @@ export class PureExecution extends ServiceExecution implements Hashable {
   constructor(func: RawLambda, owner: Service) {
     super();
     this.func = func;
-    this.owner = owner;
+    this._OWNER = owner;
   }
 
   get queryValidationResult(): ValidationIssue | undefined {
@@ -95,7 +96,7 @@ export class PureSingleExecution extends PureExecution implements Hashable {
 }
 
 export class KeyedExecutionParameter implements Hashable {
-  readonly uuid = uuid();
+  readonly _UUID = uuid();
 
   key: string;
   mapping: PackageableElementReference<Mapping>;

@@ -19,7 +19,8 @@ import type { PackageableElementReference } from '../PackageableElementReference
 import type { MappingInclude } from './MappingInclude';
 
 export class SubstituteStore {
-  owner: MappingInclude;
+  readonly _OWNER: MappingInclude;
+
   original: PackageableElementReference<Store>;
   substitute: PackageableElementReference<Store>;
 
@@ -28,7 +29,7 @@ export class SubstituteStore {
     original: PackageableElementReference<Store>,
     substitue: PackageableElementReference<Store>,
   ) {
-    this.owner = owner;
+    this._OWNER = owner;
     this.original = original;
     this.substitute = substitue;
   }

@@ -79,7 +79,8 @@ const EnumBasicEditor = observer(
       enum_setName(_enum, event.target.value);
     };
     const isEnumValueDuplicated = (val: Enum): boolean =>
-      _enum.owner.values.filter((value) => value.name === val.name).length >= 2;
+      _enum._OWNER.values.filter((value) => value.name === val.name).length >=
+      2;
 
     return (
       <div className="enum-basic-editor">
@@ -279,7 +280,7 @@ const EnumEditor = observer(
               >
                 {_enum.taggedValues.map((taggedValue) => (
                   <TaggedValueEditor
-                    key={taggedValue.uuid}
+                    key={taggedValue._UUID}
                     taggedValue={taggedValue}
                     deleteValue={_deleteTaggedValue(taggedValue)}
                     isReadOnly={isReadOnly}
@@ -297,7 +298,7 @@ const EnumEditor = observer(
               >
                 {_enum.stereotypes.map((stereotype) => (
                   <StereotypeSelector
-                    key={stereotype.value.uuid}
+                    key={stereotype.value._UUID}
                     stereotype={stereotype}
                     deleteStereotype={_deleteStereotype(stereotype)}
                     isReadOnly={isReadOnly}
@@ -522,7 +523,7 @@ export const EnumerationEditor = observer(
                   <div className="panel__content__lists">
                     {enumeration.values.map((enumValue) => (
                       <EnumBasicEditor
-                        key={enumValue.uuid}
+                        key={enumValue._UUID}
                         _enum={enumValue}
                         deleteValue={deleteValue(enumValue)}
                         selectValue={selectValue(enumValue)}
@@ -541,7 +542,7 @@ export const EnumerationEditor = observer(
                   >
                     {enumeration.taggedValues.map((taggedValue) => (
                       <TaggedValueEditor
-                        key={taggedValue.uuid}
+                        key={taggedValue._UUID}
                         taggedValue={taggedValue}
                         deleteValue={_deleteTaggedValue(taggedValue)}
                         isReadOnly={isReadOnly}
@@ -559,7 +560,7 @@ export const EnumerationEditor = observer(
                   >
                     {enumeration.stereotypes.map((stereotype) => (
                       <StereotypeSelector
-                        key={stereotype.value.uuid}
+                        key={stereotype.value._UUID}
                         stereotype={stereotype}
                         deleteStereotype={_deleteStereotype(stereotype)}
                         isReadOnly={isReadOnly}

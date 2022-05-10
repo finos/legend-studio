@@ -23,8 +23,8 @@ import type { Stubable } from '../../../../../helpers/Stubable';
 import type { StereotypeReference } from './StereotypeReference';
 
 export class Enum implements AnnotatedElement, Hashable, Stubable {
-  readonly uuid = uuid();
-  owner: Enumeration;
+  readonly _UUID = uuid();
+  readonly _OWNER: Enumeration;
 
   name: string;
   stereotypes: StereotypeReference[] = [];
@@ -32,7 +32,7 @@ export class Enum implements AnnotatedElement, Hashable, Stubable {
 
   constructor(name: string, owner: Enumeration) {
     this.name = name;
-    this.owner = owner;
+    this._OWNER = owner;
   }
 
   static createStub = (parentEnumeration: Enumeration): Enum =>

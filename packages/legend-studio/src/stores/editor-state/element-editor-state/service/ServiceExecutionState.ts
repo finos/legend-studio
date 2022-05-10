@@ -188,7 +188,7 @@ export class ServicePureExecutionQueryState extends LambdaEditorState {
 
   get lambdaId(): string {
     return buildSourceInformationSourceId([
-      this.execution.owner.path,
+      this.execution._OWNER.path,
       'execution',
     ]);
   }

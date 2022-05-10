@@ -61,9 +61,13 @@ export interface PropertyMappingVisitor<T> {
 }
 
 export abstract class PropertyMapping implements Hashable, Stubable {
-  readonly isEmbedded: boolean = false;
+  /**
+   * the immediate parent instance set implementation that holds the property mappings
+   */
+  readonly _OWNER: PropertyMappingsImplementation;
+  readonly _isEmbedded: boolean = false;
+
   property: PropertyReference;
-  owner: PropertyMappingsImplementation; // the immediate parent instance set implementation that holds the property mappings
   // NOTE: in case the holder of this property mapping is an embedded property mapping, that embedded property mapping is considered the source
   // otherwise, it is always the top/root `InstanceSetImplementation` that is considered the source implementation
   // TODO: change this to use `SetImplemenetationReference`
@@ -81,7 +85,7 @@ export abstract class PropertyMapping implements Hashable, Stubable {
     source: SetImplementation,
     target?: SetImplementation,
   ) {
-    this.owner = owner;
+    this._OWNER = owner;
     this.sourceSetImplementation = source;
     this.targetSetImplementation = target;
     this.property = property;

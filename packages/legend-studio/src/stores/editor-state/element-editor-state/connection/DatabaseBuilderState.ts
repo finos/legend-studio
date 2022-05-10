@@ -18,6 +18,7 @@ import type { Entity } from '@finos/legend-model-storage';
 import type { TreeData, TreeNodeData } from '@finos/legend-art';
 import {
   type GeneratorFn,
+  type Writable,
   assertErrorThrown,
   LogEvent,
   addUniqueEntry,
@@ -598,7 +599,7 @@ export class DatabaseBuilderState {
     });
     // update existing schemas
     generatedDb.schemas.forEach((s) => {
-      s.owner = current;
+      (s as Writable<Schema>)._OWNER = current;
       const currentSchemaIndex = current.schemas.findIndex(
         (c) => c.name === s.name,
       );

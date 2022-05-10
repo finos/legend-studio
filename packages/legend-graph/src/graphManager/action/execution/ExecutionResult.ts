@@ -85,7 +85,7 @@ export class TabularDataSet {
 }
 
 export class TdsExecutionResult extends ExecutionResult {
-  uuid = uuid();
+  readonly _UUID = uuid();
   override builder = new TdsBuilder();
   result = new TabularDataSet();
 }

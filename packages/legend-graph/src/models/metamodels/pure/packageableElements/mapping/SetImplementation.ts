@@ -69,8 +69,9 @@ export interface SetImplementationVisitor<T> {
 export abstract class SetImplementation
   implements PropertyOwnerImplementation, Hashable, Stubable
 {
-  readonly parent: Mapping;
-  readonly isEmbedded: boolean = false;
+  readonly _PARENT: Mapping;
+  readonly _isEmbedded: boolean = false;
+
   id: InferableMappingElementIdValue;
   class: PackageableElementReference<Class>;
   root: InferableMappingElementRoot;
@@ -82,7 +83,7 @@ export abstract class SetImplementation
     root: InferableMappingElementRoot,
   ) {
     this.id = id;
-    this.parent = parent;
+    this._PARENT = parent;
     this.class = _class;
     this.root = root;
   }

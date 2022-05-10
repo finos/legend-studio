@@ -42,7 +42,7 @@ export class SetImplementationExplicitReference extends SetImplementationReferen
 
   private constructor(value: SetImplementation) {
     const ownerReference = PackageableElementExplicitReference.create(
-      value.parent,
+      value._PARENT,
     );
     super(ownerReference, value);
     this.ownerReference = ownerReference;

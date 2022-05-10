@@ -27,7 +27,7 @@ import {
  * editing _something_ but allows user to edit via text.
  */
 export abstract class LambdaEditorState {
-  uuid = uuid();
+  readonly uuid = uuid();
   lambdaPrefix: string;
   lambdaString: string; // value shown in lambda editor which can be edited
   parserError?: ParserError | undefined;

@@ -850,8 +850,8 @@ export class MappingEditorState extends ElementEditorState {
       return;
     }
     // Open mapping element from included mapping in another mapping editor tab
-    if (mappingElement.parent !== this.element) {
-      this.editorStore.openElement(mappingElement.parent);
+    if (mappingElement._PARENT !== this.element) {
+      this.editorStore.openElement(mappingElement._PARENT);
     }
     const currentMappingEditorState =
       this.editorStore.getCurrentEditorState(MappingEditorState);
@@ -1018,11 +1018,11 @@ export class MappingEditorState extends ElementEditorState {
     } else if (mappingElement instanceof AssociationImplementation) {
       mapping_deleteAssociationMapping(this.mapping, mappingElement);
     } else if (mappingElement instanceof EmbeddedFlatDataPropertyMapping) {
-      deleteEntry(mappingElement.owner.propertyMappings, mappingElement);
+      deleteEntry(mappingElement._OWNER.propertyMappings, mappingElement);
     } else if (
       mappingElement instanceof EmbeddedRelationalInstanceSetImplementation
     ) {
-      deleteEntry(mappingElement.owner.propertyMappings, mappingElement);
+      deleteEntry(mappingElement._OWNER.propertyMappings, mappingElement);
     } else if (mappingElement instanceof SetImplementation) {
       mapping_deleteClassMapping(this.mapping, mappingElement);
     }
@@ -1457,7 +1457,7 @@ export class MappingEditorState extends ElementEditorState {
       );
     } else if (source instanceof RootFlatDataRecordType) {
       inputData = new FlatDataInputData(
-        PackageableElementExplicitReference.create(source.owner.owner),
+        PackageableElementExplicitReference.create(source._OWNER._OWNER),
         createMockDataForMappingElementSource(source, this.editorStore),
       );
     } else if (source instanceof TableAlias) {

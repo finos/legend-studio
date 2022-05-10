@@ -45,7 +45,7 @@ const TagBasicEditor = observer(
       tagStereotype_setValue(tag, event.target.value);
     };
     const isTagDuplicated = (val: Tag): boolean =>
-      tag.owner.tags.filter((t) => t.value === val.value).length >= 2;
+      tag._OWNER.tags.filter((t) => t.value === val.value).length >= 2;
 
     return (
       <div className="tag-basic-editor">
@@ -87,7 +87,7 @@ const StereotypeBasicEditor = observer(
       tagStereotype_setValue(stereotype, event.target.value);
     };
     const isStereotypeDuplicated = (val: Stereotype): boolean =>
-      stereotype.owner.stereotypes.filter((s) => s.value === val.value)
+      stereotype._OWNER.stereotypes.filter((s) => s.value === val.value)
         .length >= 2;
 
     return (
@@ -210,7 +210,7 @@ export const ProfileEditor = observer((props: { profile: Profile }) => {
             <div className="panel__content__lists">
               {profile.tags.map((tag) => (
                 <TagBasicEditor
-                  key={tag.uuid}
+                  key={tag._UUID}
                   tag={tag}
                   deleteValue={deleteTag(tag)}
                   isReadOnly={isReadOnly}
@@ -222,7 +222,7 @@ export const ProfileEditor = observer((props: { profile: Profile }) => {
             <div className="panel__content__lists">
               {profile.stereotypes.map((stereotype) => (
                 <StereotypeBasicEditor
-                  key={stereotype.uuid}
+                  key={stereotype._UUID}
                   stereotype={stereotype}
                   deleteStereotype={deleteStereotype(stereotype)}
                   isReadOnly={isReadOnly}

@@ -128,7 +128,7 @@ export const getAllSuperSetImplementations = (
   ) {
     const superSetImpl = [
       getClassMappingById(
-        currentSetImpl.parent,
+        currentSetImpl._PARENT,
         currentSetImpl.superSetImplementationId,
       ),
     ];
