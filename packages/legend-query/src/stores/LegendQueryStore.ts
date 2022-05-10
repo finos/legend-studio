@@ -875,6 +875,7 @@ export class LegendQueryStore {
           dependencyEntitiesMap,
         ),
       );
+
       this.buildGraphState.pass();
     } catch (error) {
       assertErrorThrown(error);
@@ -941,6 +942,7 @@ export class LegendQueryStore {
           dependencyEntitiesMap,
         ),
       );
+
       this.buildGraphState.pass();
     } catch (error) {
       assertErrorThrown(error);
