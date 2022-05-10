@@ -24,7 +24,6 @@ import { V1_Multiplicity } from '../../../model/packageableElements/domain/V1_Mu
 import {
   V1_PackageableElementPointer,
   type V1_PackageableElement,
-  type V1_PackageableElementPointerType,
 } from '../../../model/packageableElements/V1_PackageableElement';
 
 export const V1_transformOptionalElementReference = <
@@ -40,7 +39,7 @@ export const V1_transformElementReference = <T extends PackageableElement>(
 export const V1_transformElementReferencePointer = <
   T extends PackageableElement,
 >(
-  pointerType: V1_PackageableElementPointerType,
+  pointerType: string,
   ref: PackageableElementReference<T>,
 ): V1_PackageableElementPointer =>
   new V1_PackageableElementPointer(

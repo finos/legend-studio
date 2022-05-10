@@ -61,8 +61,6 @@ import {
   Tag,
   Multiplicity,
   Class,
-  CLASS_PROPERTY_TYPE,
-  getClassPropertyType,
   PrimitiveType,
   Unit,
   StereotypeExplicitReference,
@@ -76,6 +74,10 @@ import {
   annotatedElement_deleteTaggedValue,
   association_changePropertyType,
 } from '../../../../stores/graphModifier/DomainGraphModifierHelper';
+import {
+  CLASS_PROPERTY_TYPE,
+  getClassPropertyType,
+} from '../../../../stores/shared/ModelUtil';
 
 const AssociationPropertyBasicEditor = observer(
   (props: {

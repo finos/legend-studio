@@ -14,11 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  type Hashable,
-  hashArray,
-  guaranteeNonNullable,
-} from '@finos/legend-shared';
+import { type Hashable, hashArray } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import type { PackageableElementReference } from '../PackageableElementReference';
 import {
@@ -38,13 +34,6 @@ export enum OperationType {
   INHERITANCE = 'INHERITANCE',
   MERGE = 'MERGE',
 }
-
-// TODO: to be moved out of metamodel
-export const getClassMappingOperationType = (value: string): OperationType =>
-  guaranteeNonNullable(
-    Object.values(OperationType).find((type) => type === value),
-    `Encountered unsupproted class mapping operation type '${value}'`,
-  );
 
 export class OperationSetImplementation
   extends SetImplementation

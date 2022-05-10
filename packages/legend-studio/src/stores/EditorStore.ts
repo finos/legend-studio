@@ -103,7 +103,6 @@ import {
   type Store,
   type GraphManagerState,
   GRAPH_MANAGER_EVENT,
-  PACKAGEABLE_ELEMENT_TYPE,
   PrimitiveType,
   Class,
   Enumeration,
@@ -146,6 +145,7 @@ import {
   graph_renameElement,
 } from './graphModifier/GraphModifierHelper';
 import { TestableManagerState } from './sidebar-state/testable/TestableManagerState';
+import { PACKAGEABLE_ELEMENT_TYPE } from './shared/ModelUtil';
 
 export abstract class EditorExtensionState {
   /**

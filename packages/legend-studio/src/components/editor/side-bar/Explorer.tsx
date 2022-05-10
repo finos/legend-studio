@@ -69,13 +69,13 @@ import {
   ELEMENT_PATH_DELIMITER,
   ROOT_PACKAGE_NAME,
   Package,
-  PACKAGEABLE_ELEMENT_TYPE,
   isValidFullPath,
   isValidPath,
   getElementRootPackage,
 } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
 import type { LegendStudioConfig } from '../../../application/LegendStudioConfig';
+import { PACKAGEABLE_ELEMENT_TYPE } from '../../../stores/shared/ModelUtil';
 
 const isGeneratedPackageTreeNode = (node: PackageTreeNodeData): boolean =>
   getElementRootPackage(node.packageableElement).path ===

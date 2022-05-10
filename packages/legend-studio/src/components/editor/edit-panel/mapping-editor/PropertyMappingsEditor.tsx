@@ -45,10 +45,7 @@ import {
   type Type,
   getRootSetImplementation,
   Class,
-  CLASS_PROPERTY_TYPE,
-  getClassPropertyType,
   SetImplementation,
-  SET_IMPLEMENTATION_TYPE,
   PrimitiveType,
   PureInstanceSetImplementation,
   EmbeddedFlatDataPropertyMapping,
@@ -59,6 +56,11 @@ import {
   setImpl_nominateRoot,
   setImpl_setRoot,
 } from '../../../../stores/graphModifier/DSLMapping_GraphModifierHelper';
+import {
+  CLASS_PROPERTY_TYPE,
+  getClassPropertyType,
+  SET_IMPLEMENTATION_TYPE,
+} from '../../../../stores/shared/ModelUtil';
 
 export const getExpectedReturnType = (
   targetSetImplementation: SetImplementation | undefined,

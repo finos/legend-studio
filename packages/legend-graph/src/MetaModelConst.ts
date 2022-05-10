@@ -361,3 +361,11 @@ export const MILESTONING_END_DATE_PARAMETER_NAME = 'end';
 export const DEFAULT_PROCESSING_DATE_MILESTONING_PARAMETER_NAME =
   'processingDate';
 export const DEFAULT_BUSINESS_DATE_MILESTONING_PARAMETER_NAME = 'businessDate';
+
+export enum PackageableElementPointerType {
+  STORE = 'STORE',
+  MAPPING = 'MAPPING',
+  RUNTIME = 'RUNTIME',
+  FILE_GENERATION = 'FILE_GENERATION',
+  SERVICE = 'SERVICE',
+}

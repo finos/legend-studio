@@ -141,38 +141,6 @@ export abstract class PackageableElement implements Hashable, Stubable {
   ): T;
 }
 
-// TODO: to be moved out of metamodel
-export enum PACKAGEABLE_ELEMENT_TYPE {
-  PRIMITIVE = 'PRIMITIVE',
-  PACKAGE = 'PACKAGE',
-  PROFILE = 'PROFILE',
-  ENUMERATION = 'ENUMERATION',
-  CLASS = 'CLASS',
-  ASSOCIATION = 'ASSOCIATION',
-  FUNCTION = 'FUNCTION',
-  MEASURE = 'MEASURE',
-  UNIT = 'UNIT',
-  FLAT_DATA_STORE = 'FLAT_DATA_STORE',
-  DATABASE = 'DATABASE',
-  SERVICE_STORE = 'SERVICE_STORE',
-  MAPPING = 'MAPPING',
-  SERVICE = 'SERVICE',
-  CONNECTION = 'CONNECTION',
-  RUNTIME = 'RUNTIME',
-  FILE_GENERATION = 'FILE_GENERATION',
-  GENERATION_SPECIFICATION = 'GENERATION_SPECIFICATION',
-  SECTION_INDEX = 'SECTION_INDEX',
-  DATA = 'Data',
-}
-
-// TODO: to be moved out of metamodel
-export enum PACKAGEABLE_ELEMENT_POINTER_TYPE {
-  STORE = 'STORE',
-  MAPPING = 'MAPPING',
-  FILE_GENERATION = 'FILE_GENERATION',
-  SERVICE = 'SERVICE',
-}
-
 export const getElementPointerHashCode = (
   pointerType: string,
   path: string,

@@ -38,8 +38,6 @@ import { type ConnectDropTarget, useDrop } from 'react-dnd';
 import { useEditorStore } from '../../EditorStoreProvider';
 import { guaranteeType } from '@finos/legend-shared';
 import {
-  CLASS_PROPERTY_TYPE,
-  getClassPropertyType,
   Enumeration,
   EnumerationMapping,
   FlatDataPropertyMapping,
@@ -47,6 +45,10 @@ import {
 } from '@finos/legend-graph';
 import { StudioLambdaEditor } from '../../../shared/StudioLambdaEditor';
 import { flatDataPropertyMapping_setTransformer } from '../../../../stores/graphModifier/StoreFlatData_GraphModifierHelper';
+import {
+  CLASS_PROPERTY_TYPE,
+  getClassPropertyType,
+} from '../../../../stores/shared/ModelUtil';
 
 const SimplePropertyMappingEditor = observer(
   (props: {

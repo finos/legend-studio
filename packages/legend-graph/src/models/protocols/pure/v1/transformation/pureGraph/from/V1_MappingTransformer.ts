@@ -86,7 +86,6 @@ import {
   V1_EnumValueMappingStringSourceValue,
 } from '../../../model/packageableElements/mapping/V1_EnumValueMapping';
 import type { V1_PropertyMapping } from '../../../model/packageableElements/mapping/V1_PropertyMapping';
-import { V1_PackageableElementPointerType } from '../../../model/packageableElements/V1_PackageableElement';
 import type { V1_ClassMapping } from '../../../model/packageableElements/mapping/V1_ClassMapping';
 import type { V1_InputData } from '../../../model/packageableElements/mapping/V1_InputData';
 import type { V1_AssociationMapping } from '../../../model/packageableElements/mapping/V1_AssociationMapping';
@@ -140,7 +139,10 @@ import { V1_JoinPointer } from '../../../model/packageableElements/store/relatio
 import type { V1_RawRelationalOperationElement } from '../../../model/packageableElements/store/relational/model/V1_RawRelationalOperationElement';
 import { RelationalInputData } from '../../../../../../metamodels/pure/packageableElements/store/relational/mapping/RelationalInputData';
 import { V1_RelationalInputData } from '../../../model/packageableElements/store/relational/mapping/V1_RelationalInputData';
-import { SOURCE_INFORMATION_KEY } from '../../../../../../../MetaModelConst';
+import {
+  SOURCE_INFORMATION_KEY,
+  PackageableElementPointerType,
+} from '../../../../../../../MetaModelConst';
 import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext';
 import type { DSLMapping_PureProtocolProcessorPlugin_Extension } from '../../../../DSLMapping_PureProtocolProcessorPlugin_Extension';
 import type { InstanceSetImplementation } from '../../../../../../metamodels/pure/packageableElements/mapping/InstanceSetImplementation';
@@ -257,7 +259,7 @@ const transformFlatDataInputData = (
   const inputData = new V1_FlatDataInputData();
   inputData.data = element.data;
   inputData.sourceFlatData = V1_transformElementReferencePointer(
-    V1_PackageableElementPointerType.STORE,
+    PackageableElementPointerType.STORE,
     element.sourceFlatData,
   );
   return inputData;

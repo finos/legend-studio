@@ -59,7 +59,6 @@ import {
   EngineError,
   extractSourceInformationCoordinates,
   Package,
-  SET_IMPLEMENTATION_TYPE,
   PureInstanceSetImplementation,
   Profile,
   OperationSetImplementation,
@@ -83,7 +82,6 @@ import {
   SectionIndex,
   RootRelationalInstanceSetImplementation,
   EmbeddedRelationalInstanceSetImplementation,
-  PACKAGEABLE_ELEMENT_TYPE,
   AggregationAwareSetImplementation,
   DependencyGraphBuilderError,
   GraphDataDeserializationError,
@@ -101,6 +99,10 @@ import { CONFIGURATION_EDITOR_TAB } from './editor-state/ProjectConfigurationEdi
 import type { DSLMapping_LegendStudioPlugin_Extension } from './DSLMapping_LegendStudioPlugin_Extension';
 import { graph_dispose } from './graphModifier/GraphModifierHelper';
 import { TestableManagerState } from './sidebar-state/testable/TestableManagerState';
+import {
+  PACKAGEABLE_ELEMENT_TYPE,
+  SET_IMPLEMENTATION_TYPE,
+} from './shared/ModelUtil';
 
 export enum GraphBuilderStatus {
   SUCCEEDED = 'SUCCEEDED',

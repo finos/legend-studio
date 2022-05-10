@@ -28,10 +28,9 @@ import {
   type Enumeration,
   PRIMITIVE_TYPE,
   Class,
-  CLASS_PROPERTY_TYPE,
-  getClassPropertyType,
 } from '@finos/legend-graph';
 import { DATE_FORMAT, DATE_TIME_FORMAT } from '@finos/legend-application';
+import { CLASS_PROPERTY_TYPE, getClassPropertyType } from './ModelUtil';
 
 export const createMockPrimitiveProperty = (
   primitiveType: PrimitiveType,

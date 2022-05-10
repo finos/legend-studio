@@ -38,8 +38,6 @@ import {
 } from './TableOrViewSourceTree';
 import { useEditorStore } from '../../../EditorStoreProvider';
 import {
-  CLASS_PROPERTY_TYPE,
-  getClassPropertyType,
   Enumeration,
   EnumerationMapping,
   RelationalPropertyMapping,
@@ -48,6 +46,10 @@ import {
 import { StudioLambdaEditor } from '../../../../shared/StudioLambdaEditor';
 import { relationalPropertyMapping_setTransformer } from '../../../../../stores/graphModifier/StoreRelational_GraphModifierHelper';
 import { getExpectedReturnType } from '../PropertyMappingsEditor';
+import {
+  CLASS_PROPERTY_TYPE,
+  getClassPropertyType,
+} from '../../../../../stores/shared/ModelUtil';
 
 const SimplePropertyMappingEditor = observer(
   (props: {

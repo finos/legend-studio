@@ -19,6 +19,7 @@ import {
   CORE_PURE_PATH,
   ELEMENT_PATH_DELIMITER,
   SOURCE_INFORMATION_KEY,
+  PackageableElementPointerType,
 } from '../../../../MetaModelConst';
 import {
   type Clazz,
@@ -103,7 +104,6 @@ import { V1_PureModelContextData } from './model/context/V1_PureModelContextData
 import {
   type V1_PackageableElement,
   type V1_PackageableElementVisitor,
-  V1_PackageableElementPointerType,
   V1_PackageableElementPointer,
 } from './model/packageableElements/V1_PackageableElement';
 import { V1_ProtocolToMetaModelGraphFirstPassBuilder } from './transformation/pureGraph/to/V1_ProtocolToMetaModelGraphFirstPassBuilder';
@@ -2045,7 +2045,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         if (execution instanceof PureSingleExecution) {
           sdlcInfo.packageableElementPointers = [
             new V1_PackageableElementPointer(
-              V1_PackageableElementPointerType.MAPPING,
+              PackageableElementPointerType.MAPPING,
               execution.mapping.value.path,
             ),
           ];
@@ -2054,7 +2054,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
             execution.executionParameters.map(
               (e) =>
                 new V1_PackageableElementPointer(
-                  V1_PackageableElementPointerType.MAPPING,
+                  PackageableElementPointerType.MAPPING,
                   e.mapping.value.path,
                 ),
             );
@@ -2073,7 +2073,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         const pointer = new V1_PureModelContextPointer(protocol, sdlcInfo);
         sdlcInfo.packageableElementPointers = [
           new V1_PackageableElementPointer(
-            V1_PackageableElementPointerType.SERVICE,
+            PackageableElementPointerType.SERVICE,
             service.path,
           ),
         ];

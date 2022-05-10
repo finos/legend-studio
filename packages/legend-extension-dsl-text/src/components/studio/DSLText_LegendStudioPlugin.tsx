@@ -55,6 +55,7 @@ import {
   MARKDOWN_TEXT_SNIPPET,
   PLAIN_TEXT_SNIPPET,
 } from './DSLText_CodeSnippets';
+import { create_TextElement } from '../../helper/DSLText_Helper';
 
 const TEXT_ELEMENT_TYPE = 'TEXT';
 const TEXT_ELEMENT_PROJECT_EXPLORER_DND_TYPE = 'PROJECT_EXPLORER_TEXT';
@@ -122,7 +123,7 @@ export class DSLText_LegendStudioPlugin
         state: NewElementState,
       ): PackageableElement | undefined => {
         if (type === TEXT_ELEMENT_TYPE) {
-          return new Text(name);
+          return create_TextElement(name);
         }
         return undefined;
       },

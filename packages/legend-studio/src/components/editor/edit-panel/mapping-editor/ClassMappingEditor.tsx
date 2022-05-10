@@ -34,7 +34,6 @@ import {
   type EmbeddedFlatDataPropertyMapping,
   type RootRelationalInstanceSetImplementation,
   fromElementPathToMappingElementId,
-  SET_IMPLEMENTATION_TYPE,
   OperationSetImplementation,
   OperationType,
 } from '@finos/legend-graph';
@@ -44,6 +43,7 @@ import {
   operationMapping_setParameters,
   setImpl_setRoot,
 } from '../../../../stores/graphModifier/DSLMapping_GraphModifierHelper';
+import { SET_IMPLEMENTATION_TYPE } from '../../../../stores/shared/ModelUtil';
 
 export const OperatorSelector = observer(
   (props: {

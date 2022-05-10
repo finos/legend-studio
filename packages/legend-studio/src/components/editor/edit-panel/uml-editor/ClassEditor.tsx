@@ -57,8 +57,6 @@ import {
   PRIMITIVE_TYPE,
   MULTIPLICITY_INFINITE,
   Class,
-  CLASS_PROPERTY_TYPE,
-  getClassPropertyType,
   Property,
   DerivedProperty,
   GenericType,
@@ -100,6 +98,10 @@ import {
   property_setMultiplicity,
   setGenericTypeReferenceValue,
 } from '../../../../stores/graphModifier/DomainGraphModifierHelper';
+import {
+  CLASS_PROPERTY_TYPE,
+  getClassPropertyType,
+} from '../../../../stores/shared/ModelUtil';
 
 const PropertyBasicEditor = observer(
   (props: {

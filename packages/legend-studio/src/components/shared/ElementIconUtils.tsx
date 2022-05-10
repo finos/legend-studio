@@ -25,7 +25,6 @@ import {
   Measure,
   Unit,
   PrimitiveType,
-  PACKAGEABLE_ELEMENT_TYPE,
 } from '@finos/legend-graph';
 import {
   PURE_ClassIcon,
@@ -47,6 +46,7 @@ import {
   PURE_UnitIcon,
   PURE_PackageIcon,
 } from '@finos/legend-art';
+import { PACKAGEABLE_ELEMENT_TYPE } from '../../stores/shared/ModelUtil';
 
 export const getClassPropertyIcon = (type: Type): React.ReactNode => {
   if (type instanceof PrimitiveType) {

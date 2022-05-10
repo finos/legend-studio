@@ -74,7 +74,6 @@ import {
   Enumeration,
   Mapping,
   EnumerationMapping,
-  BASIC_SET_IMPLEMENTATION_TYPE,
   SetImplementation,
   PureInstanceSetImplementation,
   MappingTest,
@@ -120,6 +119,7 @@ import {
   setImpl_updateRootOnCreate,
   setImpl_updateRootOnDelete,
 } from '../../../graphModifier/DSLMapping_GraphModifierHelper';
+import { BASIC_SET_IMPLEMENTATION_TYPE } from '../../../shared/ModelUtil';
 
 export interface MappingExplorerTreeNodeData extends TreeNodeData {
   mappingElement: MappingElement;

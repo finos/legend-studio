@@ -14,13 +14,17 @@
  * limitations under the License.
  */
 
-import { action } from 'mobx';
-import type { Text } from '../../models/metamodels/pure/model/packageableElements/text/DSLText_Text';
+import { Text } from '../models/metamodels/pure/model/packageableElements/text/DSLText_Text';
 
-export const text_setType = action((text: Text, type: string): void => {
-  text.type = type;
-});
+export enum TEXT_TYPE {
+  PLAIN_TEXT = 'plainText',
+  MARKDOWN = 'markdown',
+}
 
-export const text_setContent = action((text: Text, content: string): void => {
-  text.content = content;
-});
+export const create_TextElement = (name: string): Text => {
+  const metamodel = new Text(name);
+  metamodel.type = TEXT_TYPE.PLAIN_TEXT;
+  metamodel.content = '';
+
+  return metamodel;
+};

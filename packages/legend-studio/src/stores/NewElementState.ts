@@ -48,7 +48,6 @@ import {
   PRIMITIVE_TYPE,
   TYPICAL_MULTIPLICITY_TYPE,
   ELEMENT_PATH_DELIMITER,
-  PACKAGEABLE_ELEMENT_TYPE,
   Package,
   Class,
   Association,
@@ -101,6 +100,7 @@ import {
   dataElement_setEmbeddedData,
   modelStoreData_setInstance,
 } from './graphModifier/DSLData_GraphModifierHelper';
+import { PACKAGEABLE_ELEMENT_TYPE } from './shared/ModelUtil';
 
 export const resolvePackageAndElementName = (
   _package: Package,
