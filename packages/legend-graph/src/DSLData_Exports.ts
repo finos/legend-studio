@@ -34,6 +34,6 @@ export { V1_ProtocolToMetaModelEmbeddedDataBuilder } from './models/protocols/pu
 export {
   observe_ExternalFormatData,
   observe_EmbeddedData,
-} from './graphManager/action/changeDetection/Data_ObserverHelper';
+} from './graphManager/action/changeDetection/DSLData_ObserverHelper';
 export { V1_transformExternalFormatData } from './models/protocols/pure/v1/transformation/pureGraph/from/V1_DataElementTransformer';
 export { V1_externalFormatDataModelSchema } from './models/protocols/pure/v1/transformation/pureProtocol/serializationHelpers/V1_DataElementSerializationHelper';

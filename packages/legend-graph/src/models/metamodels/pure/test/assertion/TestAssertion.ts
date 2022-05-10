@@ -22,19 +22,15 @@ import type { EqualToTDS } from './EqualToTDS';
 
 export abstract class TestAssertion implements Hashable {
   id!: string;
-
   parentTest: AtomicTest | undefined;
 
   abstract get hashCode(): string;
-
   abstract accept_TestAssertionVisitor<T>(visitor: TestAssertionVisitor<T>): T;
 }
+
 export interface TestAssertionVisitor<T> {
   visit_TestAssertion(testAssertion: TestAssertion): T;
-
   visit_EqualTo(equal: EqualTo): T;
-
   visit_EqualToJSON(equal: EqualToJson): T;
-
   visit_EqualToTDS(equal: EqualToTDS): T;
 }

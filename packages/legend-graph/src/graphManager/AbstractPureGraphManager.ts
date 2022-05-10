@@ -65,6 +65,7 @@ import type { ModelGenerationConfiguration } from '../models/ModelGenerationConf
 import type { DEPRECATED__ServiceTestResult } from './action/service/DEPRECATED__ServiceTestResult';
 import type { RunTestsTestableInput } from '../models/metamodels/pure/test/result/RunTestsTestableInput';
 import type { TestResult } from '../models/metamodels/pure/test/result/TestResult';
+import type { GraphManagerState } from '../GraphManagerState';
 
 export interface TEMPORARY__EngineSetupConfig {
   env: string;
@@ -219,6 +220,7 @@ export abstract class AbstractPureGraphManager {
   // ------------------------------------------- Test  -------------------------------------------
   abstract runTests(
     graph: PureModel,
+    graphManagerState: GraphManagerState,
     testableInputs: RunTestsTestableInput[],
   ): Promise<TestResult[]>;
 

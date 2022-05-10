@@ -17,6 +17,10 @@
 import { AbstractPlugin } from '@finos/legend-shared';
 import type { GraphPluginManager } from '../GraphPluginManager';
 import type { PackageableElement } from '../models/metamodels/pure/packageableElements/PackageableElement';
+import type {
+  IdFromTestableGetter,
+  TestableFromIdGetter,
+} from '../models/metamodels/pure/test/Testable';
 import type { ObserverContext } from './action/changeDetection/CoreObserverHelper';
 
 /**
@@ -73,4 +77,8 @@ export abstract class PureGraphManagerPlugin extends AbstractPlugin {
    * Get the list of Pure grammar element labelers.
    */
   getExtraPureGrammarElementLabelers?(): PureGrammarElementLabeler[];
+
+  getExtraIdFromTestableGetters?(): IdFromTestableGetter[];
+
+  getEtxraTestableFromIdGetters?(): TestableFromIdGetter[];
 }

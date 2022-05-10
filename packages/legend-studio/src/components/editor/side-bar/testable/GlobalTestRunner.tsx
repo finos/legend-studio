@@ -33,6 +33,7 @@ import {
   MenuContentItem,
   Dialog,
   WarningIcon,
+  CircleNotchIcon,
 } from '@finos/legend-art';
 import {
   AssertFail,
@@ -44,7 +45,7 @@ import { observer } from 'mobx-react-lite';
 import { forwardRef, useEffect } from 'react';
 import {
   type TestableExplorerTreeNodeData,
-  type TestableManagerState,
+  type GlobalTestRunnerState,
   type TestableState,
   TESTABLE_RESULT,
   AtomicTestTreeNodeData,
@@ -54,7 +55,7 @@ import {
   getNodeTestableResult,
   getAtomicTest_TestResult,
   getAssertionStatus,
-} from '../../../../stores/sidebar-state/testable/TestableManagerState';
+} from '../../../../stores/sidebar-state/testable/GlobalTestRunnerState';
 import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID';
 import { TextDiffView } from '../../../shared/DiffView';
 import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor';
@@ -68,16 +69,25 @@ const getTestableResultIcon = (
       return (
         <div
           title="Test passed"
-          className="testable-manager__item__link__content__status__indicator testable-manager__item__link__content__status__indicator--succeeded"
+          className="global-test-runner__item__link__content__status__indicator global-test-runner__item__link__content__status__indicator--succeeded"
         >
           <CheckCircleIcon />
+        </div>
+      );
+    case TESTABLE_RESULT.IN_PROGRESS:
+      return (
+        <div
+          title="Pipeline is running"
+          className="workflow-manager__item__link__content__status__indicator workflow-manager__item__link__content__status__indicator--in-progress"
+        >
+          <CircleNotchIcon />
         </div>
       );
     case TESTABLE_RESULT.FAILED:
       return (
         <div
           title="Test Failed"
-          className="testable-manager__item__link__content__status__indicator testable-manager__item__link__content__status__indicator--failed"
+          className="global-test-runner__item__link__content__status__indicator global-test-runner__item__link__content__status__indicator--failed"
         >
           <TimesCircleIcon />
         </div>
@@ -86,7 +96,7 @@ const getTestableResultIcon = (
       return (
         <div
           title="Test has an error"
-          className="testable-manager__item__link__content__status__indicator testable-manager__item__link__content__status__indicator--failed"
+          className="global-test-runner__item__link__content__status__indicator global-test-runner__item__link__content__status__indicator--failed"
         >
           <WarningIcon />
         </div>
@@ -95,7 +105,7 @@ const getTestableResultIcon = (
       return (
         <div
           title="Test status is none"
-          className="testable-manager__item__link__content__status__indicator testable-manager__item__link__content__status__indicator--unknown"
+          className="global-test-runner__item__link__content__status__indicator global-test-runner__item__link__content__status__indicator--unknown"
         >
           <CircleIcon />
         </div>
@@ -125,20 +135,20 @@ const getOptionalError = (
 
 const TestFailViewer = observer(
   (props: {
-    testableManager: TestableManagerState;
+    globalTestRunnerState: GlobalTestRunnerState;
     failure: TestError | AssertFail;
   }) => {
-    const { testableManager, failure } = props;
+    const { globalTestRunnerState, failure } = props;
     const id =
       failure instanceof TestError
-        ? `${failure.atomicTestId.atomicTest.parentSuite ?? ''}.${
+        ? `${failure.atomicTestId.atomicTest.__parentSuite ?? ''}.${
             failure.atomicTestId.atomicTest.id
           }`
-        : `${failure.assertion.parentTest?.parentSuite?.id ?? ''}.${
+        : `${failure.assertion.parentTest?.__parentSuite?.id ?? ''}.${
             failure.assertion.parentTest?.id ?? ''
           }.${failure.assertion.id}`;
     const closeLogViewer = (): void =>
-      testableManager.setFailureViewing(undefined);
+      globalTestRunnerState.setFailureViewing(undefined);
 
     return (
       <Dialog
@@ -152,7 +162,7 @@ const TestFailViewer = observer(
       >
         <div className="modal modal--dark editor-modal">
           <PanelLoadingIndicator
-            isLoading={testableManager.isDispatchingAction}
+            isLoading={globalTestRunnerState.isDispatchingAction}
           />
           <div className="modal__header">
             <div className="modal__title">{id}</div>
@@ -200,31 +210,30 @@ const TestableExplorerContextMenu = observer(
   forwardRef<
     HTMLDivElement,
     {
-      testableManagerState: TestableManagerState;
+      globalTestRunnerState: GlobalTestRunnerState;
       testableState: TestableState;
       node: TestableExplorerTreeNodeData;
       treeData: TreeData<TestableExplorerTreeNodeData>;
       error?: TestError | AssertFail | undefined;
     }
   >(function TestableExplorerContextMenu(props, ref) {
-    const { node, error, testableManagerState, testableState } = props;
+    const { node, error, globalTestRunnerState, testableState } = props;
     const runTest = (): void => {
       testableState.run(node);
     };
-    const viewError = (): void => testableManagerState.setFailureViewing(error);
+    const viewError = (): void =>
+      globalTestRunnerState.setFailureViewing(error);
     return (
       <MenuContent data-testid={LEGEND_STUDIO_TEST_ID.EXPLORER_CONTEXT_MENU}>
         <MenuContentItem
-          disabled={testableManagerState.isDispatchingAction}
+          disabled={globalTestRunnerState.isDispatchingAction}
           onClick={runTest}
         >
           Run
         </MenuContentItem>
         {error && (
           <MenuContentItem onClick={viewError}>
-            {error instanceof TestError
-              ? 'View Error'
-              : 'Viewer assertion fail'}
+            {error instanceof TestError ? 'View Error' : 'View assert fail'}
           </MenuContentItem>
         )}
       </MenuContent>
@@ -236,14 +245,14 @@ const TestableTreeNodeContainer: React.FC<
   TreeNodeContainerProps<
     TestableExplorerTreeNodeData,
     {
-      testableManagerState: TestableManagerState;
+      globalTestRunnerState: GlobalTestRunnerState;
       testableState: TestableState;
       treeData: TreeData<TestableExplorerTreeNodeData>;
     }
   >
 > = (props) => {
   const { node, level, stepPaddingInRem, onNodeSelect } = props;
-  const { treeData, testableState, testableManagerState } = props.innerProps;
+  const { treeData, testableState, globalTestRunnerState } = props.innerProps;
   const results = testableState.results;
   const expandIcon =
     node instanceof AssertionTestTreeNodeData ? (
@@ -256,7 +265,11 @@ const TestableTreeNodeContainer: React.FC<
   const nodeIcon =
     node instanceof TestableTreeNodeData ? node.testableMetadata.icon : null;
   const resultIcon = getTestableResultIcon(
-    getNodeTestableResult(node, results),
+    getNodeTestableResult(
+      node,
+      testableState.globalTestRunnerState.isRunningTests.isInProgress,
+      results,
+    ),
   );
   const optionalError = getOptionalError(node, testableState);
   // );
@@ -266,7 +279,7 @@ const TestableTreeNodeContainer: React.FC<
     <ContextMenu
       content={
         <TestableExplorerContextMenu
-          testableManagerState={testableManagerState}
+          globalTestRunnerState={globalTestRunnerState}
           testableState={testableState}
           treeData={treeData}
           node={node}
@@ -277,7 +290,7 @@ const TestableTreeNodeContainer: React.FC<
     >
       <div
         className={clsx(
-          'tree-view__node__container testable-manager__explorer__testable-tree__node__container',
+          'tree-view__node__container global-test-runner__explorer__testable-tree__node__container',
         )}
         onClick={selectNode}
         style={{
@@ -285,43 +298,43 @@ const TestableTreeNodeContainer: React.FC<
           display: 'flex',
         }}
       >
-        <div className="tree-view__node__icon testable-manager__explorer__testable-tree__node__icon">
-          <div className="testable-manager__explorer__testable-tree__node__icon__expand">
+        <div className="tree-view__node__icon global-test-runner__explorer__testable-tree__node__icon">
+          <div className="global-test-runner__explorer__testable-tree__node__icon__expand">
             {expandIcon}
           </div>
-          <div className="testable-manager__explorer__testable-tree__node__icon__type">
+          <div className="global-test-runner__explorer__testable-tree__node__icon__type">
             {resultIcon}
           </div>
           {nodeIcon && (
-            <div className="testable-manager__explorer__testable-tree__node__result__icon__type">
+            <div className="global-test-runner__explorer__testable-tree__node__result__icon__type">
               {nodeIcon}
             </div>
           )}
         </div>
         {node instanceof TestableTreeNodeData && (
-          <div className="testable-manager__item__link__content">
-            <span className="testable-manager__item__link__content__id">
+          <div className="global-test-runner__item__link__content">
+            <span className="global-test-runner__item__link__content__id">
               {node.testableMetadata.name}
             </span>
           </div>
         )}
         {node instanceof TestSuiteTreeNodeData && (
-          <div className="testable-manager__item__link__content">
-            <span className="testable-manager__item__link__content__id">
+          <div className="global-test-runner__item__link__content">
+            <span className="global-test-runner__item__link__content__id">
               {node.label}
             </span>
           </div>
         )}
         {node instanceof AtomicTestTreeNodeData && (
-          <div className="testable-manager__item__link__content">
-            <span className="testable-manager__item__link__content__id">
+          <div className="global-test-runner__item__link__content">
+            <span className="global-test-runner__item__link__content__id">
               {node.label}
             </span>
           </div>
         )}
         {node instanceof AssertionTestTreeNodeData && (
-          <div className="testable-manager__item__link__content">
-            <span className="testable-manager__item__link__content__id">
+          <div className="global-test-runner__item__link__content">
+            <span className="global-test-runner__item__link__content__id">
               {node.label}
             </span>
           </div>
@@ -337,14 +350,14 @@ const TestableTreeNodeContainer: React.FC<
 // 2. Handle Multi Execution Test Results
 // 3. Find Icon for `TestError` (different than Test Fail)
 // 4. Add `Visit Test` to open test editors when Testable Editors are complete
-export const TestableManager = observer(
-  (props: { testableManagerState: TestableManagerState }) => {
+export const GlobalTestRunner = observer(
+  (props: { globalTestRunnerState: GlobalTestRunnerState }) => {
     const editorStore = useEditorStore();
-    const testableManagerState = props.testableManagerState;
-    const isDispatchingAction = testableManagerState.isDispatchingAction;
+    const globalTestRunnerState = props.globalTestRunnerState;
+    const isDispatchingAction = globalTestRunnerState.isDispatchingAction;
     const renderTestables = (): React.ReactNode => (
       <>
-        {(testableManagerState._testableStates ?? []).map((testableState) => {
+        {(globalTestRunnerState.testableStates ?? []).map((testableState) => {
           const onNodeSelect = (node: TestableExplorerTreeNodeData): void => {
             testableState.onTreeNodeSelect(node, testableState.treeData);
           };
@@ -368,7 +381,7 @@ export const TestableManager = observer(
               onNodeSelect={onNodeSelect}
               getChildNodes={getChildNodes}
               innerProps={{
-                testableManagerState,
+                globalTestRunnerState,
                 testableState,
                 treeData: testableState.treeData,
               }}
@@ -379,27 +392,28 @@ export const TestableManager = observer(
     );
 
     useEffect(() => {
-      editorStore.testableManagerState.init();
-    }, [editorStore.testableManagerState]);
+      editorStore.globalTestRunnerState.init();
+    }, [editorStore.globalTestRunnerState]);
 
     const runAllTests = (): GeneratorFn<void> =>
-      testableManagerState.runAllTests(undefined);
+      globalTestRunnerState.runAllTests(undefined);
 
-    const reset = (): void => testableManagerState.init(true);
+    const reset = (): void => globalTestRunnerState.init(true);
     return (
-      <div className="panel testable-manager">
+      <div className="panel global-test-runner">
         <div className="panel__header side-bar__header">
-          <div className="panel__header__title testable-manager__header__title">
+          <div className="panel__header__title global-test-runner__header__title">
             <div className="panel__header__title__content side-bar__header__title__content">
-              TESTABLE MANAGER
+              GLOBAL TEST RUNNER
             </div>
           </div>
           <div className="panel__header__actions side-bar__header__actions">
             <button
               className={clsx(
-                'panel__header__action side-bar__header__action testable-manager__refresh-btn',
+                'panel__header__action side-bar__header__action global-test-runner__refresh-btn',
                 {
-                  'testable-manager__refresh-btn--loading': isDispatchingAction,
+                  'global-test-runner__refresh-btn--loading':
+                    isDispatchingAction,
                 },
               )}
               disabled={isDispatchingAction}
@@ -410,12 +424,7 @@ export const TestableManager = observer(
               <RefreshIcon />
             </button>
             <button
-              className={clsx(
-                'panel__header__action side-bar__header__action testable-manager__refresh-btn',
-                {
-                  'testable-manager__refresh-btn--loading': isDispatchingAction,
-                },
-              )}
+              className="panel__header__action side-bar__header__action global-test-runner__refresh-btn"
               disabled={isDispatchingAction}
               onClick={runAllTests}
               tabIndex={-1}
@@ -442,10 +451,10 @@ export const TestableManager = observer(
               ></div>
             </div>
             <div className="panel__content">{renderTestables()}</div>
-            {testableManagerState.failureViewing && (
+            {globalTestRunnerState.failureViewing && (
               <TestFailViewer
-                testableManager={testableManagerState}
-                failure={testableManagerState.failureViewing}
+                globalTestRunnerState={globalTestRunnerState}
+                failure={globalTestRunnerState.failureViewing}
               />
             )}
           </div>

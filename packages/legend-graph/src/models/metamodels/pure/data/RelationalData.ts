@@ -44,6 +44,7 @@ export class RelationalDataTable implements Hashable {
   tableName!: string;
   columns: RelationalDataTableColumn[] = [];
   rows: RelationalDataTableRow[] = [];
+
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.RELATIONAL_DATA_TABLE,
@@ -56,9 +57,11 @@ export class RelationalDataTable implements Hashable {
 }
 export class RelationalData extends EmbeddedData implements Hashable {
   tables: RelationalDataTable[] = [];
+
   accept_EmbeddedDataVisitor<T>(visitor: EmbeddedDataVisitor<T>): T {
     return visitor.visit_RelationalData(this);
   }
+
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.RELATIONAL_DATA_TABLE,

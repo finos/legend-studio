@@ -62,6 +62,7 @@ export class V1_RelationalDataTable implements Hashable {
 
 export class V1_RelationalData extends V1_EmbeddedData implements Hashable {
   tables: V1_RelationalDataTable[] = [];
+
   accept_EmbeddedDataVisitor<T>(visitor: V1_EmbeddedDataVisitor<T>): T {
     return visitor.visit_RelationalData(this);
   }

@@ -59,7 +59,6 @@ import { createPath } from '../MetaModelUtils';
 import type { DataElement } from '../models/metamodels/pure/packageableElements/data/DataElement';
 import type { Testable } from '../models/metamodels/pure/test/Testable';
 import type { PackageableElement } from '../models/metamodels/pure/packageableElements/PackageableElement';
-import type { TestableExtension } from './TestableExtension';
 
 /**
  * CoreModel holds meta models which are constant and basic building block of the graph. Since throughout the lifetime
@@ -214,16 +213,10 @@ export class PureModel extends BasicModel {
     ];
   }
 
-  get testableExtensions(): TestableExtension[] {
-    return this.graphPlugins.flatMap(
-      (plugin) => plugin.getExtraTestables?.() ?? [],
-    );
-  }
-
   get allOwnTestables(): Testable[] {
-    const extraTestables = this.testableExtensions.flatMap(
-      (plugin) => plugin.getExtraTestables?.(this) ?? [],
-    );
+    const extraTestables = this.graphPlugins
+      .flatMap((plugin) => plugin.getExtraTestableCollectors?.() ?? [])
+      .map((collector) => collector(this));
     return [...this.ownTestables].concat(...extraTestables);
   }
 

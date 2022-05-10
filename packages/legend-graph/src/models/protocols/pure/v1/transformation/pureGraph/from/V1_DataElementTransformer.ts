@@ -78,6 +78,7 @@ const V1_transformDataElementReference = (
     element.dataElement.valueForSerialization ?? '';
   return dataElementReference;
 };
+
 const V1_transformRelationalDataTable = (
   element: RelationalDataTable,
 ): V1_RelationalDataTable => {

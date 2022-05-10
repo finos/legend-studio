@@ -98,11 +98,11 @@ import {
 import { CONFIGURATION_EDITOR_TAB } from './editor-state/ProjectConfigurationEditorState';
 import type { DSLMapping_LegendStudioPlugin_Extension } from './DSLMapping_LegendStudioPlugin_Extension';
 import { graph_dispose } from './graphModifier/GraphModifierHelper';
-import { TestableManagerState } from './sidebar-state/testable/TestableManagerState';
 import {
   PACKAGEABLE_ELEMENT_TYPE,
   SET_IMPLEMENTATION_TYPE,
 } from './shared/ModelUtil';
+import { GlobalTestRunnerState } from './sidebar-state/testable/GlobalTestRunnerState';
 
 export enum GraphBuilderStatus {
   SUCCEEDED = 'SUCCEEDED',
@@ -843,7 +843,7 @@ export class EditorGraphState {
       );
 
       // Activity States
-      this.editorStore.testableManagerState = new TestableManagerState(
+      this.editorStore.globalTestRunnerState = new GlobalTestRunnerState(
         this.editorStore,
         this.editorStore.sdlcState,
       );

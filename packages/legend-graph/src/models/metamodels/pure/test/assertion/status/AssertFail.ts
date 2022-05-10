@@ -18,7 +18,7 @@ import type { TestAssertion } from '../TestAssertion';
 import { AssertionStatus } from './AssertionStatus';
 
 export class AssertFail extends AssertionStatus {
-  message: string | undefined;
+  message?: string | undefined;
 
   constructor(assertion: TestAssertion, message: string | undefined) {
     super(assertion);

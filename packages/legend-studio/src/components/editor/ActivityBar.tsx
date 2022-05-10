@@ -247,7 +247,7 @@ export const ActivityBar = observer(() => {
       icon: <WrenchIcon />,
     },
     !editorStore.isInConflictResolutionMode && {
-      mode: ACTIVITY_MODE.TEST,
+      mode: ACTIVITY_MODE.TEST_RUNNER,
       title: 'Test Manager',
       icon: <FlaskIcon />,
     },

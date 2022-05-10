@@ -28,6 +28,7 @@ import {
 export class V1_RelationalTDS implements Hashable {
   columns: V1_RelationalDataTableColumn[] = [];
   rows: V1_RelationalDataTableRow[] = [];
+
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.RELATIONAL_TDS,

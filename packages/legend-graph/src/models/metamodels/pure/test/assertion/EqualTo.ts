@@ -20,6 +20,11 @@ import { hashObjectWithoutSourceInformation } from '../../../../../MetaModelUtil
 import { TestAssertion, type TestAssertionVisitor } from './TestAssertion';
 
 export class EqualTo extends TestAssertion implements Hashable {
+  /**
+   * Studio does not process value specification, they are left in raw JSON form
+   *
+   * @discrepancy model
+   */
   expected!: object;
 
   get hashCode(): string {

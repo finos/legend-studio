@@ -25,6 +25,7 @@ import { type TestAssertionVisitor, TestAssertion } from './TestAssertion';
 export class RelationalTDS implements Hashable {
   columns: RelationalDataTableColumn[] = [];
   rows: RelationalDataTableRow[] = [];
+
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.RELATIONAL_TDS,

@@ -24,7 +24,7 @@ export abstract class Test implements Hashable {
 }
 
 export abstract class AtomicTest extends Test implements Hashable {
-  parentSuite: TestSuite | undefined;
+  __parentSuite: TestSuite | undefined;
   assertions: TestAssertion[] = [];
 
   abstract override get hashCode(): string;

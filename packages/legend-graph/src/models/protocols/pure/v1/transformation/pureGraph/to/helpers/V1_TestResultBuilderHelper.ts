@@ -20,7 +20,6 @@ import {
   guaranteeType,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
-import type { PureModel } from '../../../../../../../../graph/PureModel';
 import { AssertFail } from '../../../../../../../metamodels/pure/test/assertion/status/AssertFail';
 import type { AssertionStatus } from '../../../../../../../metamodels/pure/test/assertion/status/AssertionStatus';
 import { AssertPass } from '../../../../../../../metamodels/pure/test/assertion/status/AssertPass';
@@ -36,10 +35,7 @@ import {
   AtomicTest,
   TestSuite,
 } from '../../../../../../../metamodels/pure/test/Test';
-import {
-  type Testable,
-  getNullableTestable,
-} from '../../../../../../../metamodels/pure/test/Testable';
+import type { Testable } from '../../../../../../../metamodels/pure/test/Testable';
 import { V1_AssertFail } from '../../../../model/test/assertion/status/V1_AssertFail';
 import type { V1_AssertionStatus } from '../../../../model/test/assertion/status/V1_AssertionStatus';
 import { V1_AssertPass } from '../../../../model/test/assertion/status/V1_AssertPass';
@@ -156,12 +152,8 @@ export const V1_buildTestPassed = (
 
 export const V1_buildTestResult = (
   element: V1_TestResult,
-  graph: PureModel,
+  testable: Testable,
 ): TestResult | undefined => {
-  const testable = getNullableTestable(element.testable, graph);
-  if (!testable) {
-    return undefined;
-  }
   if (element instanceof V1_TestPassed) {
     return V1_buildTestPassed(element, testable);
   } else if (element instanceof V1_TestFailed) {
