@@ -136,7 +136,7 @@ export const observe_LocalMappingPropertyInfo = skipObserved(
       localMappingProperty: observable,
       localMappingPropertyType: observable,
       localMappingPropertyMultiplicity: observable,
-      hashCode: observable,
+      hashCode: computed,
     });
 
     // TODO localMappingPropertyType!: Type;
