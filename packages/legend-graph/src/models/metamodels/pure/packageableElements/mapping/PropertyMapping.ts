@@ -68,13 +68,21 @@ export abstract class PropertyMapping implements Hashable, Stubable {
   readonly _isEmbedded: boolean = false;
 
   property: PropertyReference;
-  // NOTE: in case the holder of this property mapping is an embedded property mapping, that embedded property mapping is considered the source
-  // otherwise, it is always the top/root `InstanceSetImplementation` that is considered the source implementation
-  // TODO: change this to use `SetImplemenetationReference`
+  /**
+   * NOTE: in case the holder of this property mapping is an embedded property mapping,
+   * that embedded property mapping is considered the source otherwise, it is always
+   * the top/root `InstanceSetImplementation` that is considered the source implementation
+   *
+   * TODO: change this to use `SetImplemenetationReference`
+   */
   sourceSetImplementation: SetImplementation;
-  // NOTE: in Pure, we actually only store `targetId` and `sourceId` instead of the reference
-  // but for convenience and graph completeness validation purpose we will resolve to the actual set implementations here
-  // TODO: change this to use `OptionalSetImplemenetationReference`
+  /**
+   * NOTE: in Pure, we actually only store `targetId` and `sourceId` instead of the
+   * reference but for convenience and graph completeness validation purpose we will
+   * resolve to the actual set implementations here
+   *
+   * TODO: change this to use `OptionalSetImplemenetationReference`
+   */
   targetSetImplementation?: SetImplementation | undefined;
   localMappingProperty?: LocalMappingPropertyInfo | undefined;
   // store?: Store | undefined;

@@ -205,7 +205,7 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
       localMapping.localMappingPropertyMultiplicity = _multiplicity;
       localMapping.localMappingPropertyType = this.context.resolveType(
         localMappingProperty.type,
-      ).value;
+      );
     } else {
       assertNonEmptyString(
         protocol.property.class,
@@ -478,7 +478,7 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
       localMapping.localMappingPropertyMultiplicity = _multiplicity;
       localMapping.localMappingPropertyType = this.context.resolveType(
         localMappingProperty.type,
-      ).value;
+      );
       propertyOwner = property._OWNER;
     } else {
       if (this.immediateParent instanceof AssociationImplementation) {

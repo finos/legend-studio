@@ -139,7 +139,7 @@ export const observe_LocalMappingPropertyInfo = skipObserved(
       hashCode: computed,
     });
 
-    // TODO localMappingPropertyType!: Type;
+    observe_PackageableElementReference(metamodel.localMappingPropertyType);
     observe_Multiplicity(metamodel.localMappingPropertyMultiplicity);
 
     return metamodel;

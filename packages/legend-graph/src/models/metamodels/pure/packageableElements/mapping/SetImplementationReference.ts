@@ -15,13 +15,19 @@
  */
 
 import {
-  PackageableElementExplicitReference,
-  type PackageableElementReference,
   type PackageableElementImplicitReference,
+  type OptionalPackageableElementImplicitReference,
+  type PackageableElementReference,
+  type OptionalPackageableElementReference,
+  PackageableElementExplicitReference,
+  OptionalPackageableElementExplicitReference,
 } from '../PackageableElementReference';
 import type { Mapping } from './Mapping';
 import type { SetImplementation } from './SetImplementation';
-import { ReferenceWithOwner } from '../../Reference';
+import {
+  OptionalReferenceWithOwner,
+  ReferenceWithOwner,
+} from '../../Reference';
 
 export abstract class SetImplementationReference extends ReferenceWithOwner {
   override readonly ownerReference: PackageableElementReference<Mapping>;
@@ -69,5 +75,59 @@ export class SetImplementationImplicitReference extends SetImplementationReferen
     value: SetImplementation,
   ): SetImplementationImplicitReference {
     return new SetImplementationImplicitReference(ownerReference, value);
+  }
+}
+
+export abstract class OptionalSetImplementationReference extends OptionalReferenceWithOwner {
+  override readonly ownerReference: OptionalPackageableElementReference<Mapping>;
+  value?: SetImplementation | undefined;
+
+  protected constructor(
+    ownerReference: OptionalPackageableElementReference<Mapping>,
+    value: SetImplementation | undefined,
+  ) {
+    super(ownerReference);
+    this.ownerReference = ownerReference;
+    this.value = value;
+  }
+}
+
+export class OptionalSetImplementationExplicitReference extends OptionalSetImplementationReference {
+  override readonly ownerReference: OptionalPackageableElementReference<Mapping>;
+
+  private constructor(value: SetImplementation | undefined) {
+    const ownerReference = OptionalPackageableElementExplicitReference.create(
+      value?._PARENT,
+    );
+    super(ownerReference, value);
+    this.ownerReference = ownerReference;
+  }
+
+  static create(
+    value: SetImplementation,
+  ): OptionalSetImplementationExplicitReference {
+    return new OptionalSetImplementationExplicitReference(value);
+  }
+}
+
+export class OptionalSetImplementationImplicitReference extends OptionalSetImplementationReference {
+  override readonly ownerReference: OptionalPackageableElementReference<Mapping>;
+
+  private constructor(
+    ownerReference: OptionalPackageableElementImplicitReference<Mapping>,
+    value: SetImplementation | undefined,
+  ) {
+    super(ownerReference, value);
+    this.ownerReference = ownerReference;
+  }
+
+  static create(
+    ownerReference: PackageableElementImplicitReference<Mapping>,
+    value: SetImplementation,
+  ): OptionalSetImplementationImplicitReference {
+    return new OptionalSetImplementationImplicitReference(
+      ownerReference,
+      value,
+    );
   }
 }

@@ -177,7 +177,8 @@ const transformLocalPropertyInfo = (
   value: LocalMappingPropertyInfo,
 ): V1_LocalMappingPropertyInfo => {
   const localPropertyInfo = new V1_LocalMappingPropertyInfo();
-  localPropertyInfo.type = value.localMappingPropertyType.path;
+  localPropertyInfo.type =
+    value.localMappingPropertyType.valueForSerialization ?? '';
   localPropertyInfo.multiplicity = V1_transformMultiplicity(
     value.localMappingPropertyMultiplicity,
   );
