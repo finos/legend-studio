@@ -26,12 +26,14 @@
 import {
   SOURCE_INFORMATION_KEY,
   ELEMENT_PATH_DELIMITER,
+  CORE_HASH_STRUCTURE,
 } from './MetaModelConst';
 import {
   findLast,
   guaranteeNonNullable,
   hashArray,
   hashObject,
+  hashString,
 } from '@finos/legend-shared';
 
 export const extractElementNameFromPath = (fullPath: string): string =>
@@ -80,15 +82,17 @@ export const isValidFullPath = (fullPath: string): boolean =>
 export const isValidPath = (path: string): boolean =>
   Boolean(path.match(/^(?:\w[\w$_-]*)(?:::\w[\w$_-]*)*$/));
 
+export const fromElementPathToMappingElementId = (className: string): string =>
+  className.split(ELEMENT_PATH_DELIMITER).join('_');
+
+// -------------------------------- HASHING -------------------------------------
+// TODO: this should be moved after we refactor `hashing` out of metamodels
+
 // NOTE: this is over-simplification as there could be source information fields with other names
 export const hashObjectWithoutSourceInformation = (val: object): string =>
   hashObject(val, {
     excludeKeys: (key: string) => key === SOURCE_INFORMATION_KEY,
   });
-
-export const fromElementPathToMappingElementId = (className: string): string =>
-  className.split(ELEMENT_PATH_DELIMITER).join('_');
-
 export const hashLambda = (
   parameters: object | undefined,
   body: object | undefined,
@@ -97,3 +101,8 @@ export const hashLambda = (
     parameters ? hashObjectWithoutSourceInformation(parameters) : '',
     body ? hashObjectWithoutSourceInformation(body) : '',
   ]);
+
+export const hashElementPointer = (pointerType: string, path: string): string =>
+  [CORE_HASH_STRUCTURE.PACKAGEABLE_ELEMENT_POINTER, pointerType, path]
+    .map(hashString)
+    .join(',');

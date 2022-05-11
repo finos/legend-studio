@@ -83,7 +83,7 @@ import {
   getAllEnumerationMappings,
   getClassMappingById,
   getClassMappingsByClass,
-} from '../../../../../../../helpers/MappingHelper';
+} from '../../../../../../../helpers/DSLMapping_Helper';
 import { GraphBuilderError } from '../../../../../../../graphManager/GraphManagerUtils';
 import type { AbstractProperty } from '../../../../../../metamodels/pure/packageableElements/domain/AbstractProperty';
 import { BindingTransformer } from '../../../../../../metamodels/pure/packageableElements/externalFormat/store/DSLExternalFormat_BindingTransformer';

@@ -33,7 +33,7 @@ import { RootRelationalInstanceSetImplementation } from '../../../models/metamod
 import {
   findPropertyMapping,
   getOwnClassMappingsByClass,
-} from '../../../helpers/MappingHelper';
+} from '../../../helpers/DSLMapping_Helper';
 import { EmbeddedRelationalInstanceSetImplementation } from '../../../models/metamodels/pure/packageableElements/store/relational/mapping/EmbeddedRelationalInstanceSetImplementation';
 import { RelationalPropertyMapping } from '../../../models/metamodels/pure/packageableElements/store/relational/mapping/RelationalPropertyMapping';
 import { PRIMITIVE_TYPE } from '../../../MetaModelConst';

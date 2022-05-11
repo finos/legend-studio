@@ -14,13 +14,15 @@
  * limitations under the License.
  */
 
-import { guaranteeType } from '@finos/legend-shared';
+import { guaranteeType, UnsupportedOperationError } from '@finos/legend-shared';
+import { RelationalInputType } from '../models/metamodels/pure/packageableElements/store/relational/mapping/RelationalInputData';
 import { Database } from '../models/metamodels/pure/packageableElements/store/relational/model/Database';
 import type { Filter } from '../models/metamodels/pure/packageableElements/store/relational/model/Filter';
+import { JoinType } from '../models/metamodels/pure/packageableElements/store/relational/model/RelationalOperationElement';
 import type { Schema } from '../models/metamodels/pure/packageableElements/store/relational/model/Schema';
 import type { Table } from '../models/metamodels/pure/packageableElements/store/relational/model/Table';
 
-const collectIncludedDBs = (
+const collectIncludedDatabases = (
   results: Set<Database>,
   databases: Database[],
 ): void => {
@@ -28,7 +30,7 @@ const collectIncludedDBs = (
     const includedDb = guaranteeType(i, Database);
     if (!results.has(includedDb)) {
       results.add(includedDb);
-      collectIncludedDBs(
+      collectIncludedDatabases(
         results,
         includedDb.includes.map((s) => guaranteeType(s.value, Database)),
       );
@@ -36,14 +38,14 @@ const collectIncludedDBs = (
   });
 };
 
-export const getAllIncludedDbs = (db: Database): Set<Database> => {
+export const getAllIncludedDatabases = (db: Database): Set<Database> => {
   const includes = db.includes;
   const results = new Set<Database>();
   results.add(db);
   if (!includes.length) {
     return results;
   }
-  collectIncludedDBs(
+  collectIncludedDatabases(
     results,
     db.includes.map((includedStore) =>
       guaranteeType(includedStore.value, Database),
@@ -52,30 +54,58 @@ export const getAllIncludedDbs = (db: Database): Set<Database> => {
   return results;
 };
 
-export const getDbNullableSchema = (
+export const getNullableDatabaseSchema = (
   name: string,
   db: Database,
 ): Schema | undefined => db.schemas.find((schema) => schema.name === name);
 
-export const getSchemaNullableTable = (
+export const getNullableSchemaTable = (
   name: string,
   schema: Schema,
 ): Table | undefined => schema.tables.find((table) => table.name === name);
 
-export const getDatabaseNullableFilter = (
+export const getNullableDatabaseFilter = (
   filterName: string,
   db: Database,
 ): Filter | undefined =>
   db.filters.find((filter) => filter.name === filterName);
 
-export const getDbNullableTable = (
+export const getNullableDatabaseTable = (
   _table: string,
   _schema: string,
   db: Database,
 ): Table | undefined => {
-  const schema = getDbNullableSchema(_schema, db);
+  const schema = getNullableDatabaseSchema(_schema, db);
   if (schema) {
-    return getSchemaNullableTable(_table, schema);
+    return getNullableSchemaTable(_table, schema);
   }
   return undefined;
+};
+
+export const getJoinType = (type: string): JoinType => {
+  switch (type) {
+    case JoinType.INNER:
+      return JoinType.INNER;
+    case JoinType.LEFT_OUTER:
+      return JoinType.LEFT_OUTER;
+    case JoinType.RIGHT_OUTER:
+      return JoinType.RIGHT_OUTER;
+    default:
+      throw new UnsupportedOperationError(
+        `Encountered unsupported join type '${type}'`,
+      );
+  }
+};
+
+export const getRelationalInputType = (type: string): RelationalInputType => {
+  switch (type) {
+    case RelationalInputType.SQL:
+      return RelationalInputType.SQL;
+    case RelationalInputType.CSV:
+      return RelationalInputType.CSV;
+    default:
+      throw new UnsupportedOperationError(
+        `Encountered unsupported relational input type '${type}'`,
+      );
+  }
 };

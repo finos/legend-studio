@@ -25,7 +25,7 @@ import type { PackageableElementVisitor } from '../../../PackageableElement';
 import type { Schema } from './Schema';
 import type { Join } from './Join';
 import type { Filter } from './Filter';
-import { getAllIncludedDbs } from '../../../../../../../helpers/DatabaseHelper';
+import { getAllIncludedDatabases } from '../../../../../../../helpers/StoreRelational_Helper';
 
 export class Database extends Store implements Hashable {
   schemas: Schema[] = [];
@@ -40,7 +40,7 @@ export class Database extends Store implements Hashable {
 
   getJoin = (name: string): Join =>
     guaranteeNonNullable(
-      Array.from(getAllIncludedDbs(this))
+      Array.from(getAllIncludedDatabases(this))
         .flatMap((db) => db.joins)
         .find((join) => join.name === name),
       `Can't find join '${name}' in database '${this.path}'`,

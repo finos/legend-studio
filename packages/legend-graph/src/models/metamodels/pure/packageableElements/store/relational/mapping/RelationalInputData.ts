@@ -14,11 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  hashArray,
-  UnsupportedOperationError,
-  type Hashable,
-} from '@finos/legend-shared';
+import { hashArray, type Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import { InputData } from '../../../mapping/InputData';
 import {
@@ -32,19 +28,6 @@ export enum RelationalInputType {
   SQL = 'SQL',
   CSV = 'CSV',
 }
-
-export const getRelationalInputType = (type: string): RelationalInputType => {
-  switch (type) {
-    case RelationalInputType.SQL:
-      return RelationalInputType.SQL;
-    case RelationalInputType.CSV:
-      return RelationalInputType.CSV;
-    default:
-      throw new UnsupportedOperationError(
-        `Encountered unsupported relational input type '${type}'`,
-      );
-  }
-};
 
 export class RelationalInputData extends InputData implements Hashable {
   database: PackageableElementReference<Database>;

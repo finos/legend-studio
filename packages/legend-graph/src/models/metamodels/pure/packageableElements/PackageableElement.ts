@@ -17,7 +17,6 @@
 import {
   type Hashable,
   hashArray,
-  hashString,
   IllegalStateError,
   uuid,
 } from '@finos/legend-shared';
@@ -135,11 +134,3 @@ export abstract class PackageableElement implements Hashable {
     visitor: PackageableElementVisitor<T>,
   ): T;
 }
-
-export const getElementPointerHashCode = (
-  pointerType: string,
-  path: string,
-): string =>
-  [CORE_HASH_STRUCTURE.PACKAGEABLE_ELEMENT_POINTER, pointerType, path]
-    .map(hashString)
-    .join(',');

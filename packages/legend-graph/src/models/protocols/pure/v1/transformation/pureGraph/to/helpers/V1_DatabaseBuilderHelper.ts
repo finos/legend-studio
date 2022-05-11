@@ -25,9 +25,10 @@ import {
 } from '@finos/legend-shared';
 import { Database } from '../../../../../../../metamodels/pure/packageableElements/store/relational/model/Database';
 import {
-  getAllIncludedDbs,
-  getDatabaseNullableFilter,
-} from '../../../../../../../../helpers/DatabaseHelper';
+  getAllIncludedDatabases,
+  getJoinType,
+  getNullableDatabaseFilter,
+} from '../../../../../../../../helpers/StoreRelational_Helper';
 import { Schema } from '../../../../../../../metamodels/pure/packageableElements/store/relational/model/Schema';
 import { Table } from '../../../../../../../metamodels/pure/packageableElements/store/relational/model/Table';
 import { Column } from '../../../../../../../metamodels/pure/packageableElements/store/relational/model/Column';
@@ -49,7 +50,6 @@ import {
   TableAliasColumn,
   JoinTreeNode,
   RelationalOperationElementWithJoin,
-  getJoinType,
 } from '../../../../../../../metamodels/pure/packageableElements/store/relational/model/RelationalOperationElement';
 import {
   type RelationalDataType,
@@ -164,7 +164,7 @@ export const V1_findRelation = (
   tableName: string,
 ): Relation | undefined => {
   const relations: Relation[] = [];
-  getAllIncludedDbs(database).forEach((db) => {
+  getAllIncludedDatabases(database).forEach((db) => {
     const schema = db.schemas.find((_schema) => _schema.name === schemaName);
     if (schema) {
       let relation: Relation | undefined = schema.tables.find(
@@ -190,10 +190,10 @@ const V1_findFilter = (
   filterName: string,
 ): Filter | undefined => {
   let filter: Filter | undefined;
-  const dbs = getAllIncludedDbs(database).values();
+  const dbs = getAllIncludedDatabases(database).values();
   let db = dbs.next();
   while (!filter && !db.done) {
-    filter = getDatabaseNullableFilter(filterName, db.value);
+    filter = getNullableDatabaseFilter(filterName, db.value);
     db = dbs.next();
   }
   return filter;

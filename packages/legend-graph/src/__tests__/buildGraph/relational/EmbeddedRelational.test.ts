@@ -29,7 +29,7 @@ import type { GraphManagerState } from '../../../GraphManagerState';
 import {
   findPropertyMapping,
   getOwnClassMappingsByClass,
-} from '../../../helpers/MappingHelper';
+} from '../../../helpers/DSLMapping_Helper';
 import { RootRelationalInstanceSetImplementation } from '../../../models/metamodels/pure/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation';
 import { EmbeddedRelationalInstanceSetImplementation } from '../../../models/metamodels/pure/packageableElements/store/relational/mapping/EmbeddedRelationalInstanceSetImplementation';
 

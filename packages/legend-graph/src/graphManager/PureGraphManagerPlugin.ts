@@ -17,10 +17,6 @@
 import { AbstractPlugin } from '@finos/legend-shared';
 import type { GraphPluginManager } from '../GraphPluginManager';
 import type { PackageableElement } from '../models/metamodels/pure/packageableElements/PackageableElement';
-import type {
-  TestableIDBuilder,
-  TestableFinder,
-} from '../models/metamodels/pure/test/Testable';
 import type { ObserverContext } from './action/changeDetection/CoreObserverHelper';
 
 /**
@@ -31,10 +27,21 @@ import type { ObserverContext } from './action/changeDetection/CoreObserverHelpe
 export type PureGrammarElementLabeler = (
   metamodel: PackageableElement,
 ) => string | undefined;
+
 export type ElementObserver = (
   metamodel: PackageableElement,
   context: ObserverContext,
 ) => PackageableElement | undefined;
+
+export type TestableIDBuilder = (
+  testable: Testable,
+  graph: PureModel,
+) => string | undefined;
+
+export type TestableFinder = (
+  id: string,
+  graph: PureModel,
+) => Testable | undefined;
 
 export abstract class PureGraphManagerPlugin extends AbstractPlugin {
   /**

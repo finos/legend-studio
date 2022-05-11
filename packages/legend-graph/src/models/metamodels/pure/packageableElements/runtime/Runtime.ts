@@ -29,8 +29,8 @@ import type { Connection } from '../connection/Connection';
 import type { PackageableRuntime } from './PackageableRuntime';
 import type { Mapping } from '../mapping/Mapping';
 import type { Store } from '../store/Store';
-import { getElementPointerHashCode } from '../PackageableElement';
 import type { PackageableElementReference } from '../PackageableElementReference';
+import { hashElementPointer } from '../../../../../MetaModelUtils';
 
 export class IdentifiedConnection implements Hashable {
   readonly _UUID = uuid();
@@ -63,7 +63,7 @@ export class StoreConnections implements Hashable {
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.STORE_CONNECTIONS,
-      getElementPointerHashCode(
+      hashElementPointer(
         PackageableElementPointerType.STORE,
         this.store.hashValue,
       ),
@@ -107,7 +107,7 @@ export class EngineRuntime extends Runtime implements Hashable {
       CORE_HASH_STRUCTURE.ENGINE_RUNTIME,
       hashArray(
         this.mappings.map((mapping) =>
-          getElementPointerHashCode(
+          hashElementPointer(
             PackageableElementPointerType.MAPPING,
             mapping.hashValue,
           ),

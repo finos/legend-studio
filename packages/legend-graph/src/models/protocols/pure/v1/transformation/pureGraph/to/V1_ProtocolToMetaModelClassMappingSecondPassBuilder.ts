@@ -64,7 +64,7 @@ import {
   getAllClassMappings,
   getAllEnumerationMappings,
   getOwnClassMappingById,
-} from '../../../../../../../helpers/MappingHelper';
+} from '../../../../../../../helpers/DSLMapping_Helper';
 import type { DSLMapping_PureProtocolProcessorPlugin_Extension } from '../../../../DSLMapping_PureProtocolProcessorPlugin_Extension';
 import type { V1_MergeOperationClassMapping } from '../../../model/packageableElements/mapping/V1_MergeOperationClassMapping';
 

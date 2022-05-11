@@ -39,7 +39,7 @@ import {
   DatabaseBuilderInput,
   DatabasePattern,
   TargetDatabase,
-  getDbNullableTable,
+  getNullableDatabaseTable,
   PackageableElementExplicitReference,
   Column,
   Database,
@@ -297,7 +297,11 @@ export class DatabaseBuilderState {
 
           tableNode.isChecked = Boolean(
             this.currentDatabase &&
-              getDbNullableTable(e.name, schema.name, this.currentDatabase),
+              getNullableDatabaseTable(
+                e.name,
+                schema.name,
+                this.currentDatabase,
+              ),
           );
           treeData.nodes.set(tableId, tableNode);
           addUniqueEntry(childrenIds, tableId);

@@ -24,18 +24,7 @@ export interface Testable {
   tests: Test[];
 }
 
-export type TestableIDBuilder = (
-  testable: Testable,
-  graph: PureModel,
-) => string | undefined;
-
-export type TestableFinder = (
-  id: string,
-  graph: PureModel,
-) => Testable | undefined;
-
-export type TestablesCollector = (graph: PureModel) => Testable[];
-
+// TODO: to be moved to helper
 export const getNullableTestable = (
   id: string,
   graph: PureModel,
@@ -49,6 +38,7 @@ export const getNullableTestable = (
     .map((getter) => getter(id, graph))
     .filter(isNonNullable)[0];
 
+// TODO: to be moved to helper
 export const getNullableIdFromTestable = (
   testable: Testable,
   graph: PureModel,

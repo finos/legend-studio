@@ -66,11 +66,9 @@ import type { V1_ClassMapping } from '../../../../model/packageableElements/mapp
 import type { V1_MappingInclude } from '../../../../model/packageableElements/mapping/V1_MappingInclude';
 import { V1_buildRawLambdaWithResolvedPaths } from './V1_ValueSpecificationPathResolver';
 import { V1_RelationalInputData } from '../../../../model/packageableElements/store/relational/mapping/V1_RelationalInputData';
-import {
-  getRelationalInputType,
-  RelationalInputData,
-} from '../../../../../../../metamodels/pure/packageableElements/store/relational/mapping/RelationalInputData';
-import { getAllClassMappings } from '../../../../../../../../helpers/MappingHelper';
+import { RelationalInputData } from '../../../../../../../metamodels/pure/packageableElements/store/relational/mapping/RelationalInputData';
+import { getAllClassMappings } from '../../../../../../../../helpers/DSLMapping_Helper';
+import { getRelationalInputType } from '../../../../../../../../helpers/StoreRelational_Helper';
 
 export const V1_getInferredClassMappingId = (
   _class: Class,

@@ -22,11 +22,11 @@ import {
 import { InputData } from '../../../mapping/InputData';
 import type { FlatData } from '../model/FlatData';
 import type { PackageableElementReference } from '../../../PackageableElementReference';
-import { getElementPointerHashCode } from '../../../PackageableElement';
 import {
   type ValidationIssue,
   createValidationError,
 } from '../../../../../../../helpers/ValidationHelper';
+import { hashElementPointer } from '../../../../../../../MetaModelUtils';
 
 export class FlatDataInputData extends InputData implements Hashable {
   sourceFlatData: PackageableElementReference<FlatData>;
@@ -54,7 +54,7 @@ export class FlatDataInputData extends InputData implements Hashable {
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.FLAT_DATA_INPUT_DATA,
-      getElementPointerHashCode(
+      hashElementPointer(
         PackageableElementPointerType.STORE,
         this.sourceFlatData.hashValue,
       ),
