@@ -30,10 +30,6 @@ export class RootServiceInstanceSetImplementation
   localMappingProperties: LocalMappingProperty[] = [];
   servicesMapping: ServiceMapping[] = [];
 
-  getEmbeddedSetImplmentations(): InstanceSetImplementation[] {
-    return [];
-  }
-
   override get hashCode(): string {
     return hashArray([
       SERVICE_STORE_HASH_STRUCTURE.ROOT_SERVICE_STORE_CLASS_MAPPING,

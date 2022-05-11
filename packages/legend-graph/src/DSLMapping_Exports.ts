@@ -64,6 +64,7 @@ export {
   ObjectInputData,
   ObjectInputType,
 } from './models/metamodels/pure/packageableElements/store/modelToModel/mapping/ObjectInputData';
+export { type EmbeddedSetImplementation } from './models/metamodels/pure/packageableElements/mapping/EmbeddedSetImplementation';
 
 // protocols
 export {

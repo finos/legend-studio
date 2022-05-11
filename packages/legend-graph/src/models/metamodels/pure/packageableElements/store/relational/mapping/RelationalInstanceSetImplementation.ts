@@ -14,17 +14,11 @@
  * limitations under the License.
  */
 
-import {
-  type Hashable,
-  hashArray,
-  filterByType,
-  isEmpty,
-} from '@finos/legend-shared';
+import { type Hashable, hashArray, isEmpty } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import { InstanceSetImplementation } from '../../../mapping/InstanceSetImplementation';
 import type { SetImplementationVisitor } from '../../../mapping/SetImplementation';
 import type { RelationalOperationElement } from '../model/RelationalOperationElement';
-import { EmbeddedRelationalInstanceSetImplementation } from './EmbeddedRelationalInstanceSetImplementation';
 import { RelationalPropertyMapping } from './RelationalPropertyMapping';
 
 export class RelationalInstanceSetImplementation
@@ -32,16 +26,6 @@ export class RelationalInstanceSetImplementation
   implements Hashable
 {
   primaryKey: RelationalOperationElement[] = [];
-
-  getEmbeddedSetImplmentations(): InstanceSetImplementation[] {
-    const embeddedPropertyMappings = this.propertyMappings.filter(
-      filterByType(EmbeddedRelationalInstanceSetImplementation),
-    );
-    return embeddedPropertyMappings
-      .map((propertyMapping) => propertyMapping.getEmbeddedSetImplmentations())
-      .flat()
-      .concat(embeddedPropertyMappings);
-  }
 
   accept_SetImplementationVisitor<T>(visitor: SetImplementationVisitor<T>): T {
     return visitor.visit_RelationalInstanceSetImplementation(this);

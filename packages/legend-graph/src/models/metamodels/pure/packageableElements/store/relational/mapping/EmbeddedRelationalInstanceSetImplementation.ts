@@ -34,7 +34,6 @@ import {
   type PropertyMappingVisitor,
   PropertyMapping,
 } from '../../../mapping/PropertyMapping';
-import type { InstanceSetImplementation } from '../../../mapping/InstanceSetImplementation';
 import type { RootRelationalInstanceSetImplementation } from './RootRelationalInstanceSetImplementation';
 import type { InferableMappingElementIdValue } from '../../../mapping/InferableMappingElementId';
 import type { PackageableElementReference } from '../../../PackageableElementReference';
@@ -76,10 +75,6 @@ export class EmbeddedRelationalInstanceSetImplementation
     this.id = id;
     this.rootInstanceSetImplementation = rootInstanceSetImplementation;
     this._PARENT = rootInstanceSetImplementation._PARENT;
-  }
-
-  getEmbeddedSetImplmentations(): InstanceSetImplementation[] {
-    throw new UnsupportedOperationError();
   }
 
   accept_PropertyMappingVisitor<T>(visitor: PropertyMappingVisitor<T>): T {

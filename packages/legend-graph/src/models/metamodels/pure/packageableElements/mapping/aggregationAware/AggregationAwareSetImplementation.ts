@@ -40,10 +40,6 @@ export class AggregationAwareSetImplementation extends InstanceSetImplementation
     this.mainSetImplementation = mainSetImplementation;
   }
 
-  getEmbeddedSetImplmentations(): InstanceSetImplementation[] {
-    return [];
-  }
-
   override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.AGGREGATION_AWARE_MAPPING,

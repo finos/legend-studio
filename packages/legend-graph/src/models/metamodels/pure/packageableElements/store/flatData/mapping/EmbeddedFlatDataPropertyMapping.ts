@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { filterByType, hashArray, type Hashable } from '@finos/legend-shared';
+import { hashArray, type Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import type { Mapping } from '../../../mapping/Mapping';
 import { AbstractFlatDataPropertyMapping } from './AbstractFlatDataPropertyMapping';
@@ -75,18 +75,6 @@ export class EmbeddedFlatDataPropertyMapping
     this.id = id;
     this.rootInstanceSetImplementation = rootInstanceSetImplementation;
     this._PARENT = rootInstanceSetImplementation._PARENT;
-  }
-
-  getEmbeddedSetImplmentations(): InstanceSetImplementation[] {
-    const embeddedPropertyMappings = this.propertyMappings.filter(
-      filterByType(EmbeddedFlatDataPropertyMapping),
-    );
-    return embeddedPropertyMappings
-      .map((embeddedPropertyMapping) =>
-        embeddedPropertyMapping.getEmbeddedSetImplmentations(),
-      )
-      .flat()
-      .concat(embeddedPropertyMappings);
   }
 
   override get hashCode(): string {

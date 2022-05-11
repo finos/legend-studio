@@ -27,6 +27,4 @@ export abstract class InstanceSetImplementation
   mappingClass?: MappingClass | undefined;
   propertyMappings: PropertyMapping[] = [];
   // aggregateSpecification: AggregateSpecification[0..1];
-
-  abstract getEmbeddedSetImplmentations(): InstanceSetImplementation[];
 }

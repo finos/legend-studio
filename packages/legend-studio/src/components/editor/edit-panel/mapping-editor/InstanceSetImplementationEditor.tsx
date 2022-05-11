@@ -45,6 +45,7 @@ import {
   type MappingElementSource,
   getMappingElementSource,
   MappingEditorState,
+  getEmbeddedSetImplementations,
 } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import { TypeTree } from '../../../shared/TypeTree';
 import { FlatDataRecordTypeTree } from './FlatDataRecordTypeTree';
@@ -115,7 +116,7 @@ export const InstanceSetImplementationSourceExplorer = observer(
     const showSourceSelectorModal = (): void => {
       if (!isReadOnly) {
         const embeddedSetImpls =
-          setImplementation.getEmbeddedSetImplmentations();
+          getEmbeddedSetImplementations(setImplementation);
         if (!embeddedSetImpls.length) {
           setSourceElementForSourceSelectorModal(null);
         } else {
@@ -212,7 +213,7 @@ export const InstanceSetImplementationSourceExplorer = observer(
       (item: MappingElementSourceDropTarget): void => {
         if (!setImplementation._isEmbedded && !isReadOnly) {
           const embeddedSetImpls =
-            setImplementation.getEmbeddedSetImplmentations();
+            getEmbeddedSetImplementations(setImplementation);
           const droppedPackagableElement = item.data.packageableElement;
           if (!embeddedSetImpls.length) {
             changeClassMappingSourceDriver(droppedPackagableElement);

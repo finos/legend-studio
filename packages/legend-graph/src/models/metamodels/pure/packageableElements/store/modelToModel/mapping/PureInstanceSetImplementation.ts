@@ -53,10 +53,6 @@ export class PureInstanceSetImplementation
     this.srcClass = srcClass;
   }
 
-  getEmbeddedSetImplmentations(): InstanceSetImplementation[] {
-    return [];
-  }
-
   override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.PURE_INSTANCE_SET_IMPLEMENTATION,
