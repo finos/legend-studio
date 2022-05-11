@@ -22,10 +22,7 @@ import {
   PropertyMapping,
 } from '../../../mapping/PropertyMapping';
 import { hashObjectWithoutSourceInformation } from '../../../../../../../MetaModelUtils';
-import {
-  isStubRelationalOperationElement,
-  type RawRelationalOperationElement,
-} from '../model/RawRelationalOperationElement';
+import type { RawRelationalOperationElement } from '../model/RawRelationalOperationElement';
 import type { BindingTransformer } from '../../../externalFormat/store/DSLExternalFormat_BindingTransformer';
 
 export class RelationalPropertyMapping
@@ -44,10 +41,6 @@ export class RelationalPropertyMapping
 
   accept_PropertyMappingVisitor<T>(visitor: PropertyMappingVisitor<T>): T {
     return visitor.visit_RelationalPropertyMapping(this);
-  }
-
-  override get isStub(): boolean {
-    return isStubRelationalOperationElement(this.relationalOperation);
   }
 
   override get hashCode(): string {

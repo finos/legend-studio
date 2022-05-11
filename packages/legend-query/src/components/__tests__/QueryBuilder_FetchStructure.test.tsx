@@ -36,8 +36,9 @@ import {
 import { getAllByText, waitFor } from '@testing-library/dom';
 import {
   AbstractPropertyExpression,
+  create_RawLambda,
   getRootSetImplementation,
-  RawLambda,
+  stub_RawLambda,
 } from '@finos/legend-graph';
 import {
   TEST__provideMockedLegendQueryStore,
@@ -54,11 +55,6 @@ import { LegendQueryPluginManager } from '../../application/LegendQueryPluginMan
 import { Query_GraphPreset } from '../../models/Query_GraphPreset';
 import { FETCH_STRUCTURE_MODE } from '../../stores/QueryBuilderFetchStructureState';
 
-const getRawLambda = (jsonRawLambda: {
-  parameters?: object;
-  body?: object;
-}): RawLambda => new RawLambda(jsonRawLambda.parameters, jsonRawLambda.body);
-
 test(
   integrationTest(
     'Query builder state is properly set after processing a projection lambda',
@@ -72,7 +68,7 @@ test(
     const renderResult = await TEST__setUpQueryEditor(
       mockedQueryStore,
       TEST_DATA__ComplexRelationalModel,
-      RawLambda.createStub(),
+      stub_RawLambda(),
       'model::relational::tests::simpleRelationalMapping',
       'model::MyRuntime',
     );
@@ -114,7 +110,12 @@ test(
 
     // simpleProjection
     act(() => {
-      queryBuilderState.initialize(getRawLambda(TEST_DATA__simpleProjection));
+      queryBuilderState.initialize(
+        create_RawLambda(
+          TEST_DATA__simpleProjection.parameters,
+          TEST_DATA__simpleProjection.body,
+        ),
+      );
     });
     let projectionCols = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PROJECTION),
@@ -160,7 +161,10 @@ test(
     const CHAINED_PROPERTY_ALIAS = 'Firm/Legal Name';
     act(() => {
       queryBuilderState.initialize(
-        getRawLambda(TEST_DATA__projectionWithChainedProperty),
+        create_RawLambda(
+          TEST_DATA__projectionWithChainedProperty.parameters,
+          TEST_DATA__projectionWithChainedProperty.body,
+        ),
       );
     });
     const projectionWithChainedPropertyCols = await waitFor(() =>
@@ -198,7 +202,10 @@ test(
     const RESULT_LIMIT = 500;
     act(() => {
       queryBuilderState.initialize(
-        getRawLambda(TEST_DATA__projectionWithResultSetModifiers),
+        create_RawLambda(
+          TEST_DATA__projectionWithResultSetModifiers.parameters,
+          TEST_DATA__projectionWithResultSetModifiers.body,
+        ),
       );
     });
     projectionCols = await waitFor(() =>
@@ -273,7 +280,10 @@ test(
     await waitFor(() => renderResult.getByText('Add a filter condition'));
     act(() => {
       queryBuilderState.initialize(
-        getRawLambda(TEST_DATA__getAllWithOneConditionFilter),
+        create_RawLambda(
+          TEST_DATA__getAllWithOneConditionFilter.parameters,
+          TEST_DATA__getAllWithOneConditionFilter.body,
+        ),
       );
     });
     let filterValue = 'testFirstName';
@@ -301,7 +311,10 @@ test(
     await waitFor(() => renderResult.getByText('Add a filter condition'));
     act(() => {
       queryBuilderState.initialize(
-        getRawLambda(TEST_DATA__getAllWithGroupedFilter),
+        create_RawLambda(
+          TEST_DATA__getAllWithGroupedFilter.parameters,
+          TEST_DATA__getAllWithGroupedFilter.body,
+        ),
       );
     });
     filterPanel = await waitFor(() =>
@@ -338,7 +351,10 @@ test(
     await waitFor(() => renderResult.getByText('Add a filter condition'));
     act(() => {
       queryBuilderState.initialize(
-        getRawLambda(TEST_DATA__projectWithDerivedProperty),
+        create_RawLambda(
+          TEST_DATA__projectWithDerivedProperty.parameters,
+          TEST_DATA__projectWithDerivedProperty.body,
+        ),
       );
     });
     projectionCols = await waitFor(() =>
@@ -379,7 +395,7 @@ test(
     const renderResult = await TEST__setUpQueryEditor(
       mockedQueryStore,
       TEST_DATA__ComplexRelationalModel,
-      RawLambda.createStub(),
+      stub_RawLambda(),
       'model::relational::tests::simpleRelationalMapping',
       'model::MyRuntime',
     );
@@ -430,7 +446,10 @@ test(
     // simpleProjection with subType
     act(() => {
       queryBuilderState.initialize(
-        getRawLambda(TEST_DATA__simpleProjectionWithSubtype),
+        create_RawLambda(
+          TEST_DATA__simpleProjectionWithSubtype.parameters,
+          TEST_DATA__simpleProjectionWithSubtype.body,
+        ),
       );
     });
     const projectionColsWithSubType = await waitFor(() =>
@@ -472,7 +491,7 @@ test(
     const renderResult = await TEST__setUpQueryEditor(
       mockedQueryStore,
       TEST_DATA__ComplexM2MModel,
-      RawLambda.createStub(),
+      stub_RawLambda(),
       'model::MyMapping',
       'model::MyRuntime',
     );
@@ -496,14 +515,24 @@ test(
 
     // simple graph fetch
     act(() => {
-      queryBuilderState.initialize(getRawLambda(TEST_DATA__simpleGraphFetch));
+      queryBuilderState.initialize(
+        create_RawLambda(
+          TEST_DATA__simpleGraphFetch.parameters,
+          TEST_DATA__simpleGraphFetch.body,
+        ),
+      );
     });
     expect(queryBuilderState.fetchStructureState.fetchStructureMode).toBe(
       FETCH_STRUCTURE_MODE.GRAPH_FETCH,
     );
 
     act(() => {
-      queryBuilderState.initialize(getRawLambda(TEST_DATA__complexGraphFetch));
+      queryBuilderState.initialize(
+        create_RawLambda(
+          TEST_DATA__complexGraphFetch.parameters,
+          TEST_DATA__complexGraphFetch.body,
+        ),
+      );
     });
     expect(queryBuilderState.fetchStructureState.fetchStructureMode).toBe(
       FETCH_STRUCTURE_MODE.GRAPH_FETCH,

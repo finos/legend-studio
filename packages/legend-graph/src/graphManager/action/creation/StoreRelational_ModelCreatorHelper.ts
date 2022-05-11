@@ -14,7 +14,15 @@
  * limitations under the License.
  */
 
-import { RawLambda } from '../models/metamodels/pure/rawValueSpecification/RawLambda';
+import { isEmpty } from '@finos/legend-shared';
+import type { RawRelationalOperationElement } from '../../../models/metamodels/pure/packageableElements/store/relational/model/RawRelationalOperationElement';
+import { Database } from '../../../StoreRelational_Exports';
 
-export const createStubRawLambda = (): RawLambda =>
-  new RawLambda(undefined, undefined);
+export const stub_RawRelationalOperationElement =
+  (): RawRelationalOperationElement => ({});
+
+export const isStubbed_RawRelationalOperationElement = (
+  operation: RawRelationalOperationElement,
+): boolean => isEmpty(operation);
+
+export const stub_Database = (): Database => new Database('');

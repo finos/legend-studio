@@ -19,7 +19,6 @@ import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import type { PackageableElementReference } from '../PackageableElementReference';
 import type { PropertyOwnerImplementation } from './PropertyOwnerImplementation';
 import type { Mapping } from './Mapping';
-import type { Stubable } from '../../../../../helpers/Stubable';
 import type { OperationSetImplementation } from './OperationSetImplementation';
 import type { PureInstanceSetImplementation } from '../store/modelToModel/mapping/PureInstanceSetImplementation';
 import type { FlatDataInstanceSetImplementation } from '../store/flatData/mapping/FlatDataInstanceSetImplementation';
@@ -67,7 +66,7 @@ export interface SetImplementationVisitor<T> {
 }
 
 export abstract class SetImplementation
-  implements PropertyOwnerImplementation, Hashable, Stubable
+  implements PropertyOwnerImplementation, Hashable
 {
   readonly _PARENT: Mapping;
   readonly _isEmbedded: boolean = false;
@@ -86,10 +85,6 @@ export abstract class SetImplementation
     this._PARENT = parent;
     this.class = _class;
     this.root = root;
-  }
-
-  get isStub(): boolean {
-    return !this.id.value;
   }
 
   get hashCode(): string {

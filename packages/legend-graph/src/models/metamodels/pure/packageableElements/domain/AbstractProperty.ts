@@ -17,16 +17,16 @@
 import type { Hashable } from '@finos/legend-shared';
 import type { GenericTypeReference } from './GenericTypeReference';
 import type { Multiplicity } from './Multiplicity';
-import type { Stubable } from '../../../../../helpers/Stubable';
 import type { Class } from './Class';
 import type { Association } from './Association';
 
 // NOTE: In PURE we have `Class` and `Association` extends `PropertyOwner`, which extends `PackageableElement`
 export type PropertyOwner = Class | Association;
 
-export interface AbstractProperty extends Hashable, Stubable {
-  name: string;
+export interface AbstractProperty extends Hashable {
   _OWNER: PropertyOwner;
+
+  name: string;
   genericType: GenericTypeReference;
   multiplicity: Multiplicity;
 }

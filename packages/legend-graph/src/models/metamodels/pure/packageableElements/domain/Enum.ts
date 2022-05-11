@@ -19,10 +19,9 @@ import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import type { Enumeration } from './Enumeration';
 import type { TaggedValue } from './TaggedValue';
 import type { AnnotatedElement } from './AnnotatedElement';
-import type { Stubable } from '../../../../../helpers/Stubable';
 import type { StereotypeReference } from './StereotypeReference';
 
-export class Enum implements AnnotatedElement, Hashable, Stubable {
+export class Enum implements AnnotatedElement, Hashable {
   readonly _UUID = uuid();
   readonly _OWNER: Enumeration;
 
@@ -33,12 +32,6 @@ export class Enum implements AnnotatedElement, Hashable, Stubable {
   constructor(name: string, owner: Enumeration) {
     this.name = name;
     this._OWNER = owner;
-  }
-
-  static createStub = (parentEnumeration: Enumeration): Enum =>
-    new Enum('', parentEnumeration);
-  get isStub(): boolean {
-    return !this.name;
   }
 
   get hashCode(): string {

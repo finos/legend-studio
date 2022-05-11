@@ -59,6 +59,7 @@ import {
   type SetImplementation,
   type Table,
   type View,
+  type RawLambda,
   extractExecutionResultValues,
   LAMBDA_PIPE,
   GRAPH_MANAGER_EVENT,
@@ -67,7 +68,6 @@ import {
   ObjectInputData,
   ObjectInputType,
   ExpectedOutputMappingTestAssert,
-  RawLambda,
   IdentifiedConnection,
   EngineRuntime,
   JsonModelConnection,
@@ -90,6 +90,8 @@ import {
   PureClientVersion,
   TableAlias,
   type RawExecutionPlan,
+  stub_RawLambda,
+  isStubbed_RawLambda,
 } from '@finos/legend-graph';
 import {
   ActionAlertActionType,
@@ -146,7 +148,7 @@ export class MappingExecutionQueryState extends LambdaEditorState {
   }
 
   *convertLambdaObjectToGrammarString(pretty?: boolean): GeneratorFn<void> {
-    if (!this.query.isStub) {
+    if (!isStubbed_RawLambda(this.query)) {
       try {
         const lambdas = new Map<string, RawLambda>();
         lambdas.set(this.lambdaId, this.query);
@@ -472,7 +474,7 @@ export class MappingExecutionState {
     this.name = name;
     this.queryState = new MappingExecutionQueryState(
       editorStore,
-      RawLambda.createStub(),
+      stub_RawLambda(),
     );
     this.inputDataState = new MappingExecutionEmptyInputDataState(
       editorStore,
@@ -501,7 +503,7 @@ export class MappingExecutionState {
   reset(): void {
     this.queryState = new MappingExecutionQueryState(
       this.editorStore,
-      RawLambda.createStub(),
+      stub_RawLambda(),
     );
     this.inputDataState = new MappingExecutionEmptyInputDataState(
       this.editorStore,
@@ -576,7 +578,7 @@ export class MappingExecutionState {
     try {
       const query = this.queryState.query;
       if (
-        !this.queryState.query.isStub &&
+        !isStubbed_RawLambda(this.queryState.query) &&
         this.inputDataState.isValid &&
         this.inputDataState.inputData &&
         this.executionResultText
@@ -611,7 +613,7 @@ export class MappingExecutionState {
     try {
       const query = this.queryState.query;
       if (
-        !this.queryState.query.isStub &&
+        !isStubbed_RawLambda(this.queryState.query) &&
         this.inputDataState.isValid &&
         this.executionResultText
       ) {
@@ -670,7 +672,7 @@ export class MappingExecutionState {
       const query = this.queryState.query;
       const runtime = this.inputDataState.runtime;
       if (
-        !this.queryState.query.isStub &&
+        !isStubbed_RawLambda(this.queryState.query) &&
         this.inputDataState.isValid &&
         !this.isExecuting
       ) {
@@ -712,7 +714,7 @@ export class MappingExecutionState {
       const query = this.queryState.query;
       const runtime = this.inputDataState.runtime;
       if (
-        !this.queryState.query.isStub &&
+        !isStubbed_RawLambda(this.queryState.query) &&
         this.inputDataState.isValid &&
         !this.isGeneratingPlan
       ) {
@@ -774,7 +776,7 @@ export class MappingExecutionState {
           ? this.editorStore.graphManagerState.graphManager.HACKY__createGetAllLambda(
               guaranteeType(getMappingElementTarget(setImplementation), Class),
             )
-          : RawLambda.createStub(),
+          : stub_RawLambda(),
       ),
     );
 

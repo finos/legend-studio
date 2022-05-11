@@ -14,25 +14,19 @@
  * limitations under the License.
  */
 
-import { hashArray, type Hashable } from '@finos/legend-shared';
+import { hashArray, isNonNullable, type Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
-import {
-  type PackageableElementReference,
-  type OptionalPackageableElementReference,
-  PackageableElementExplicitReference,
-  OptionalPackageableElementExplicitReference,
+import type {
+  PackageableElementReference,
+  OptionalPackageableElementReference,
 } from '../PackageableElementReference';
 import type { Mapping } from './Mapping';
 import type { Enumeration } from '../domain/Enumeration';
 import type { EnumValueMapping } from './EnumValueMapping';
 import type { Type } from '../domain/Type';
-import { type Stubable, isStubArray } from '../../../../../helpers/Stubable';
-import {
-  type InferableMappingElementIdValue,
-  InferableMappingElementIdExplicitValue,
-} from './InferableMappingElementId';
+import type { InferableMappingElementIdValue } from './InferableMappingElementId';
 
-export class EnumerationMapping implements Hashable, Stubable {
+export class EnumerationMapping implements Hashable {
   readonly _PARENT: Mapping;
 
   enumeration: PackageableElementReference<Enumeration>;
@@ -52,20 +46,6 @@ export class EnumerationMapping implements Hashable, Stubable {
     this.sourceType = sourceType;
   }
 
-  static createStub = (
-    enumeration: Enumeration,
-    mapping: Mapping,
-  ): EnumerationMapping =>
-    new EnumerationMapping(
-      InferableMappingElementIdExplicitValue.create('', enumeration.path),
-      PackageableElementExplicitReference.create(enumeration),
-      mapping,
-      OptionalPackageableElementExplicitReference.create<Type>(undefined),
-    );
-  get isStub(): boolean {
-    return !this.id.value && isStubArray(this.enumValueMappings);
-  }
-
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.ENUMERATION_MAPPING,
@@ -73,13 +53,17 @@ export class EnumerationMapping implements Hashable, Stubable {
       this.enumeration.hashValue,
       // If there are no enum value mapping, source type means nothing since it's not in the protocol anyway
       this.enumValueMappings.filter(
-        (enumValueMapping) => !enumValueMapping.isStub,
+        // TODO: use `isStubbed_EnumValueMapping` when we refactor hashing
+        (enumValueMapping) =>
+          enumValueMapping.sourceValues.filter(isNonNullable).length,
       ).length
         ? this.sourceType.valueForSerialization ?? ''
         : '', // default source value when there is no element
       hashArray(
         this.enumValueMappings.filter(
-          (enumValueMapping) => !enumValueMapping.isStub,
+          // TODO: use `isStubbed_EnumValueMapping` when we refactor hashing
+          (enumValueMapping) =>
+            enumValueMapping.sourceValues.filter(isNonNullable).length,
         ),
       ),
     ]);

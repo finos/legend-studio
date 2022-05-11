@@ -26,7 +26,6 @@ import {
   ELEMENT_PATH_DELIMITER,
 } from '../../../../MetaModelConst';
 import type { Package } from './domain/Package';
-import type { Stubable } from '../../../../helpers/Stubable';
 import type { Profile } from './domain/Profile';
 import type { Enumeration } from './domain/Enumeration';
 import type { Class } from './domain/Class';
@@ -68,7 +67,7 @@ export interface PackageableElementVisitor<T> {
   visit_DataElement(element: DataElement): T;
 }
 
-export abstract class PackageableElement implements Hashable, Stubable {
+export abstract class PackageableElement implements Hashable {
   readonly _UUID = uuid();
   protected _isDeleted = false;
   protected _isDisposed = false;
@@ -96,10 +95,6 @@ export abstract class PackageableElement implements Hashable, Stubable {
     return !parentPackageName
       ? this.name
       : `${parentPackageName}${ELEMENT_PATH_DELIMITER}${this.name}`;
-  }
-
-  get isStub(): boolean {
-    return !this.name && !this.package;
   }
 
   /**

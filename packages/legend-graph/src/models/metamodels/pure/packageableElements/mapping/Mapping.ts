@@ -23,11 +23,10 @@ import {
   type PackageableElementVisitor,
   PackageableElement,
 } from '../PackageableElement';
-import { type Stubable, isStubArray } from '../../../../../helpers/Stubable';
 import type { MappingTest } from './MappingTest';
 import type { MappingInclude } from './MappingInclude';
 
-export class Mapping extends PackageableElement implements Hashable, Stubable {
+export class Mapping extends PackageableElement implements Hashable {
   includes: MappingInclude[] = [];
   classMappings: SetImplementation[] = [];
   enumerationMappings: EnumerationMapping[] = [];
@@ -59,18 +58,6 @@ export class Mapping extends PackageableElement implements Hashable, Stubable {
     resolveIncludes(this);
     visited.delete(this);
     return Array.from(visited);
-  }
-
-  static createStub = (): Mapping => new Mapping('');
-
-  override get isStub(): boolean {
-    return (
-      super.isStub &&
-      // && isStubArray(this.includes)
-      isStubArray(this.associationMappings) &&
-      isStubArray(this.classMappings) &&
-      isStubArray(this.enumerationMappings)
-    );
   }
 
   protected override get _elementHashCode(): string {

@@ -19,6 +19,7 @@ import {
   buildSourceInformationSourceId,
   ParserError,
   RawLambda,
+  stub_RawLambda,
 } from '@finos/legend-graph';
 import {
   type GeneratorFn,
@@ -76,7 +77,7 @@ export class QueryTextEditorState extends LambdaEditorState {
     });
 
     this.queryBuilderState = queryBuilderState;
-    this.rawLambdaState = new QueryRawLambdaState(RawLambda.createStub());
+    this.rawLambdaState = new QueryRawLambdaState(stub_RawLambda());
   }
 
   get lambdaId(): string {
@@ -96,7 +97,7 @@ export class QueryTextEditorState extends LambdaEditorState {
   }
 
   *convertLambdaGrammarStringToObject(): GeneratorFn<void> {
-    const emptyLambda = RawLambda.createStub();
+    const emptyLambda = stub_RawLambda();
     if (this.lambdaString) {
       try {
         const lambda =

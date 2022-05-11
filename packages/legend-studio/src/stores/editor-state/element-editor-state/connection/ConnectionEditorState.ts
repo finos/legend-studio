@@ -49,6 +49,7 @@ import {
   StaticDatasourceSpecification,
   RedshiftDatasourceSpecification,
   createValidationError,
+  isStubbed_PackageableElement,
 } from '@finos/legend-graph';
 import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../DSLMapping_LegendStudioPlugin_Extension';
 import {
@@ -116,7 +117,7 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
   }
 
   get storeValidationResult(): ValidationIssue | undefined {
-    return this.connection.store.value.isStub
+    return isStubbed_PackageableElement(this.connection.store.value)
       ? createValidationError(['Connection database cannot be empty'])
       : undefined;
   }

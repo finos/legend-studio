@@ -24,7 +24,6 @@ import {
 import type { SetImplementationContainer } from './SetImplementationContainer';
 import type { Mapping } from './Mapping';
 import type { Class } from '../domain/Class';
-import { type Stubable, isStubArray } from '../../../../../helpers/Stubable';
 import type { InferableMappingElementIdValue } from './InferableMappingElementId';
 import type { InferableMappingElementRoot } from './InferableMappingElementRoot';
 
@@ -37,7 +36,7 @@ export enum OperationType {
 
 export class OperationSetImplementation
   extends SetImplementation
-  implements Hashable, Stubable
+  implements Hashable
 {
   parameters: SetImplementationContainer[] = [];
   operation: OperationType;
@@ -85,10 +84,6 @@ export class OperationSetImplementation
     resolveleafSetImps(this);
     visitedOperations.delete(this);
     return Array.from(_leaves).concat(Array.from(visitedOperations));
-  }
-
-  override get isStub(): boolean {
-    return super.isStub && isStubArray(this.parameters);
   }
 
   override get hashCode(): string {

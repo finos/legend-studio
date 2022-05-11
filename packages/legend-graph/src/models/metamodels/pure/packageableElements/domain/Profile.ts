@@ -26,9 +26,8 @@ import {
 } from '../PackageableElement';
 import type { Stereotype } from './Stereotype';
 import type { Tag } from './Tag';
-import { type Stubable, isStubArray } from '../../../../../helpers/Stubable';
 
-export class Profile extends PackageableElement implements Hashable, Stubable {
+export class Profile extends PackageableElement implements Hashable {
   stereotypes: Stereotype[] = [];
   tags: Tag[] = [];
 
@@ -43,13 +42,6 @@ export class Profile extends PackageableElement implements Hashable, Stubable {
       this.stereotypes.find((stereotype) => stereotype.value === value),
       `Can't find stereotype '${value}' in profile '${this.path}'`,
     );
-
-  static createStub = (): Profile => new Profile('');
-  override get isStub(): boolean {
-    return (
-      super.isStub && isStubArray(this.stereotypes) && isStubArray(this.tags)
-    );
-  }
 
   protected override get _elementHashCode(): string {
     return hashArray([

@@ -63,7 +63,8 @@ export class RelationalInputData extends InputData implements Hashable {
   }
 
   get validationResult(): ValidationIssue | undefined {
-    if (this.database.value.isStub) {
+    // TODO: use `isStubbed_PackageableElement` when we refactor validation
+    if (!this.database.value.package && !this.database.value.name) {
       return createValidationError([
         'Relational input data source database store is missing',
       ]);

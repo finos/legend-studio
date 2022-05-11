@@ -161,7 +161,6 @@ export * from './helpers/ServiceHelper';
 export * from './helpers/DatabaseHelper';
 export * from './helpers/MappingHelper';
 export * from './helpers/ValidationHelper';
-export * from './helpers/Stubable'; // TODO: to be removed
 export * from './helpers/DomainHelper';
 export * from './helpers/PureLanguageHelper';
 
@@ -306,6 +305,13 @@ export * from './graphManager/action/changeDetection/DSLService_ObserverHelper';
 export * from './graphManager/action/changeDetection/DSLGenerationSpecification_ObserverHelper';
 
 export * from './graphManager/action/changeDetection/EngineObserverHelper';
+
+// --------------------------------------------- CREATOR --------------------------------------------------
+
+export * from './graphManager/action/creation/DomainModelCreatorHelper';
+export * from './graphManager/action/creation/DSLMapping_ModelCreatorHelper';
+export * from './graphManager/action/creation/RawValueSpecificationCreatorHelper';
+export * from './graphManager/action/creation/StoreRelational_ModelCreatorHelper';
 
 // --------------------------------------------- TO BE MODULARIZED --------------------------------------------------
 

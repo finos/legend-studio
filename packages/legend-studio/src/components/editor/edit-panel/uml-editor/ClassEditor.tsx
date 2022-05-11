@@ -54,24 +54,29 @@ import { useEditorStore } from '../../EditorStoreProvider';
 import {
   type StereotypeReference,
   type GenericTypeReference,
+  type TaggedValue,
+  type Constraint,
+  type Property,
+  type DerivedProperty,
   PRIMITIVE_TYPE,
   MULTIPLICITY_INFINITE,
   Class,
-  Property,
-  DerivedProperty,
   GenericType,
   Profile,
-  Tag,
-  TaggedValue,
-  Stereotype,
   Multiplicity,
-  Constraint,
   Type,
   PrimitiveType,
   Unit,
   StereotypeExplicitReference,
   GenericTypeExplicitReference,
   Association,
+  stub_TaggedValue,
+  stub_Tag,
+  stub_Profile,
+  stub_Stereotype,
+  stub_Constraint,
+  stub_Property,
+  stub_DerivedProperty,
 } from '@finos/legend-graph';
 import { StudioLambdaEditor } from '../../../shared/StudioLambdaEditor';
 import { useApplicationStore } from '@finos/legend-application';
@@ -949,13 +954,13 @@ export const ClassFormEditor = observer(
     const add = (): void => {
       if (!isReadOnly) {
         if (selectedTab === UML_EDITOR_TAB.PROPERTIES) {
-          class_addProperty(_class, Property.createStub(defaultType, _class));
+          class_addProperty(_class, stub_Property(defaultType, _class));
         } else if (selectedTab === UML_EDITOR_TAB.DERIVED_PROPERTIES) {
-          const dp = DerivedProperty.createStub(defaultType, _class);
+          const dp = stub_DerivedProperty(defaultType, _class);
           class_addDerivedProperty(_class, dp);
           classState.addDerivedPropertyState(dp);
         } else if (selectedTab === UML_EDITOR_TAB.CONSTRAINTS) {
-          const constraint = Constraint.createStub(_class);
+          const constraint = stub_Constraint(_class);
           class_addContraint(_class, constraint);
           classState.addConstraintState(constraint);
         } else if (
@@ -973,14 +978,12 @@ export const ClassFormEditor = observer(
         } else if (selectedTab === UML_EDITOR_TAB.TAGGED_VALUES) {
           annotatedElement_addTaggedValue(
             _class,
-            TaggedValue.createStub(Tag.createStub(Profile.createStub())),
+            stub_TaggedValue(stub_Tag(stub_Profile())),
           );
         } else if (selectedTab === UML_EDITOR_TAB.STEREOTYPES) {
           annotatedElement_addStereotype(
             _class,
-            StereotypeExplicitReference.create(
-              Stereotype.createStub(Profile.createStub()),
-            ),
+            StereotypeExplicitReference.create(stub_Stereotype(stub_Profile())),
           );
         }
       }
@@ -991,7 +994,7 @@ export const ClassFormEditor = observer(
         if (!isReadOnly && item.data.packageableElement instanceof Type) {
           class_addProperty(
             _class,
-            Property.createStub(item.data.packageableElement, _class),
+            stub_Property(item.data.packageableElement, _class),
           );
         }
       },
@@ -1013,10 +1016,7 @@ export const ClassFormEditor = observer(
     const handleDropDerivedProperty = useCallback(
       (item: UMLEditorElementDropTarget): void => {
         if (!isReadOnly && item.data.packageableElement instanceof Type) {
-          const dp = DerivedProperty.createStub(
-            item.data.packageableElement,
-            _class,
-          );
+          const dp = stub_DerivedProperty(item.data.packageableElement, _class);
           class_addDerivedProperty(_class, dp);
           classState.addDerivedPropertyState(dp);
         }
@@ -1078,9 +1078,7 @@ export const ClassFormEditor = observer(
         if (!isReadOnly && item.data.packageableElement instanceof Profile) {
           annotatedElement_addTaggedValue(
             _class,
-            TaggedValue.createStub(
-              Tag.createStub(item.data.packageableElement),
-            ),
+            stub_TaggedValue(stub_Tag(item.data.packageableElement)),
           );
         }
       },
@@ -1102,7 +1100,7 @@ export const ClassFormEditor = observer(
           annotatedElement_addStereotype(
             _class,
             StereotypeExplicitReference.create(
-              Stereotype.createStub(item.data.packageableElement),
+              stub_Stereotype(item.data.packageableElement),
             ),
           );
         }

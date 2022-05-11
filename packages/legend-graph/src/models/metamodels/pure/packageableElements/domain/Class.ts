@@ -30,18 +30,12 @@ import type { Property } from './Property';
 import type { Constraint } from './Constraint';
 import type { DerivedProperty } from './DerivedProperty';
 import type { AbstractProperty } from './AbstractProperty';
-import { type Stubable, isStubArray } from '../../../../../helpers/Stubable';
 import type { PackageableElementVisitor } from '../PackageableElement';
 import type { StereotypeReference } from './StereotypeReference';
 import type { TaggedValue } from './TaggedValue';
 import type { GenericTypeReference } from './GenericTypeReference';
 
-export class Class extends Type implements Hashable, Stubable {
-  properties: Property[] = [];
-  // derivedPropertiesFromAssociations: DerivedProperty[] = [];
-  propertiesFromAssociations: Property[] = [];
-  derivedProperties: DerivedProperty[] = [];
-  generalizations: GenericTypeReference[] = [];
+export class Class extends Type implements Hashable {
   /**
    * We can also call this `specifications` (i.e. vs. `generalizations`)
    *
@@ -50,16 +44,21 @@ export class Class extends Type implements Hashable, Stubable {
    *
    * @risk memory-leak
    */
-  subclasses: Class[] = [];
-  constraints: Constraint[] = [];
-  stereotypes: StereotypeReference[] = [];
-  taggedValues: TaggedValue[] = [];
-
+  _subclasses: Class[] = [];
   /**
    * To store the abstract properties generated while processing the milestoning properties. The properties
    * generated are `allVersions`, `allVersionsInRange` and derived property with date parameter.
    */
   _generatedMilestonedProperties: AbstractProperty[] = [];
+
+  properties: Property[] = [];
+  // derivedPropertiesFromAssociations: DerivedProperty[] = [];
+  propertiesFromAssociations: Property[] = [];
+  derivedProperties: DerivedProperty[] = [];
+  generalizations: GenericTypeReference[] = [];
+  constraints: Constraint[] = [];
+  stereotypes: StereotypeReference[] = [];
+  taggedValues: TaggedValue[] = [];
 
   /**
    * Get class and its supertypes' properties recursively, duplications and loops are handled (Which should be caught by compiler)
@@ -162,7 +161,7 @@ export class Class extends Type implements Hashable, Stubable {
       if (_class._isDisposed) {
         return;
       }
-      _class.subclasses.forEach((subclass) => {
+      _class._subclasses.forEach((subclass) => {
         if (!visitedClasses.has(subclass)) {
           visitedClasses.add(subclass);
           resolveSubclasses(subclass);
@@ -181,11 +180,11 @@ export class Class extends Type implements Hashable, Stubable {
    */
   override dispose(): void {
     super.dispose();
-    this.subclasses = []; // call this before setting `disposed` flag to avoid triggering errors if something is using this during disposal
+    this._subclasses = []; // call this before setting `disposed` flag to avoid triggering errors if something is using this during disposal
     // cleanup subclasses analytics on superclasses
     this.allSuperclasses.forEach((superclass) => {
       if (!superclass._isDisposed) {
-        superclass.subclasses = superclass.subclasses.filter(
+        superclass._subclasses = superclass._subclasses.filter(
           (subclass) => !subclass._isDisposed,
         );
       }
@@ -195,19 +194,6 @@ export class Class extends Type implements Hashable, Stubable {
     } catch {
       /* do nothing */
     } // trigger recomputation on `allSubclasses` so it removes itself from all observables it previously observed
-  }
-
-  static createStub = (): Class => new Class('');
-  override get isStub(): boolean {
-    return (
-      super.isStub &&
-      isStubArray(this.properties) &&
-      isStubArray(this.derivedProperties) &&
-      isStubArray(this.constraints) &&
-      isStubArray(this.generalizations) &&
-      isStubArray(this.stereotypes) &&
-      isStubArray(this.taggedValues)
-    );
   }
 
   protected override get _elementHashCode(): string {

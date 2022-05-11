@@ -40,8 +40,6 @@ export class FlatData extends Store implements Hashable {
     );
   }
 
-  static createStub = (): FlatData => new FlatData('');
-
   protected override get _elementHashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.FLAT_DATA,

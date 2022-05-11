@@ -21,7 +21,6 @@ import type { PackageableElementVisitor } from '../PackageableElement';
 import type { RawVariableExpression } from '../../rawValueSpecification/RawVariableExpression';
 import type { Type } from './Type';
 import type { Multiplicity } from './Multiplicity';
-import type { Stubable } from '../../../../../helpers/Stubable';
 import type { StereotypeReference } from './StereotypeReference';
 import type { TaggedValue } from './TaggedValue';
 import type { PackageableElementReference } from '../PackageableElementReference';
@@ -29,7 +28,7 @@ import { FunctionDefinition } from './Function';
 
 export class ConcreteFunctionDefinition
   extends FunctionDefinition
-  implements Hashable, Stubable
+  implements Hashable
 {
   returnType: PackageableElementReference<Type>;
   returnMultiplicity: Multiplicity;

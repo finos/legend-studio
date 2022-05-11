@@ -99,6 +99,7 @@ import {
   AssociationImplementation,
   InferableMappingElementIdExplicitValue,
   InferableMappingElementRootExplicitValue,
+  stub_Class,
 } from '@finos/legend-graph';
 import { LambdaEditorState } from '@finos/legend-application';
 import type {
@@ -1447,9 +1448,7 @@ export class MappingEditorState extends ElementEditorState {
     let inputData: InputData;
     if (source === undefined || source instanceof Class) {
       inputData = new ObjectInputData(
-        PackageableElementExplicitReference.create(
-          source ?? Class.createStub(),
-        ),
+        PackageableElementExplicitReference.create(source ?? stub_Class()),
         ObjectInputType.JSON,
         source
           ? createMockDataForMappingElementSource(source, this.editorStore)

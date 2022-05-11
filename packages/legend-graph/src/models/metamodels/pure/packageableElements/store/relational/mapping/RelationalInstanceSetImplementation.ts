@@ -14,13 +14,19 @@
  * limitations under the License.
  */
 
-import { type Hashable, hashArray, filterByType } from '@finos/legend-shared';
+import {
+  type Hashable,
+  hashArray,
+  filterByType,
+  isEmpty,
+} from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import { InstanceSetImplementation } from '../../../mapping/InstanceSetImplementation';
 import type { SetImplementationVisitor } from '../../../mapping/SetImplementation';
 import type { RelationalOperationElement } from '../model/RelationalOperationElement';
 import type { PropertyMapping } from '../../../mapping/PropertyMapping';
 import { EmbeddedRelationalInstanceSetImplementation } from './EmbeddedRelationalInstanceSetImplementation';
+import { RelationalPropertyMapping } from './RelationalPropertyMapping';
 
 export class RelationalInstanceSetImplementation
   extends InstanceSetImplementation
@@ -67,7 +73,15 @@ export class RelationalInstanceSetImplementation
       hashArray(this.primaryKey),
       hashArray(
         this.propertyMappings.filter(
-          (propertyMapping) => !propertyMapping.isStub,
+          // TODO: we should also handle of other property mapping types
+          // using some form of extension mechanism
+          (propertyMapping) => {
+            if (propertyMapping instanceof RelationalPropertyMapping) {
+              // TODO: use `isStubbed_RawRelationalOperationElement` when we move this out of the metamodel
+              return !isEmpty(propertyMapping.relationalOperation);
+            }
+            return true;
+          },
         ),
       ),
     ]);

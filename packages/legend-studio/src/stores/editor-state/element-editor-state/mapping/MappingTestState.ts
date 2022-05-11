@@ -81,6 +81,8 @@ import {
   PureClientVersion,
   TableAlias,
   type RawExecutionPlan,
+  isStubbed_RawLambda,
+  stub_Class,
 } from '@finos/legend-graph';
 import { LambdaEditorState, TAB_SIZE } from '@finos/legend-application';
 import { flatData_setData } from '../../../graphModifier/StoreFlatData_GraphModifierHelper';
@@ -141,7 +143,7 @@ export class MappingTestQueryState extends LambdaEditorState {
   }
 
   *convertLambdaObjectToGrammarString(pretty?: boolean): GeneratorFn<void> {
-    if (!this.query.isStub) {
+    if (!isStubbed_RawLambda(this.query)) {
       try {
         const lambdas = new Map<string, RawLambda>();
         lambdas.set(this.lambdaId, this.query);
@@ -527,9 +529,7 @@ export class MappingTestState {
         this.editorStore,
         this.mappingEditorState.mapping,
         new ObjectInputData(
-          PackageableElementExplicitReference.create(
-            source ?? Class.createStub(),
-          ),
+          PackageableElementExplicitReference.create(source ?? stub_Class()),
           ObjectInputType.JSON,
           tryToMinifyJSONString('{}'),
         ),

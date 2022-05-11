@@ -49,6 +49,11 @@ import {
   ARROW_FUNCTION_TOKEN,
   Multiplicity,
   getAllSuperSetImplementations,
+  PurePropertyMapping,
+  isStubbed_RawLambda,
+  FlatDataPropertyMapping,
+  RelationalPropertyMapping,
+  isStubbed_RawRelationalOperationElement,
 } from '@finos/legend-graph';
 import type { QueryBuilderState } from './QueryBuilderState';
 import { action, makeAutoObservable, observable } from 'mobx';
@@ -322,7 +327,20 @@ export const getPropertyNodeMappingData = (
             )
             .flat(),
         )
-        .filter((p) => !p.isStub);
+        .filter((p) => {
+          // TODO: we should also handle of other property mapping types
+          // using some form of extension mechanism
+          if (p instanceof PurePropertyMapping) {
+            return !isStubbed_RawLambda(p.transform);
+          } else if (p instanceof FlatDataPropertyMapping) {
+            return !isStubbed_RawLambda(p.transform);
+          } else if (p instanceof RelationalPropertyMapping) {
+            return !isStubbed_RawRelationalOperationElement(
+              p.relationalOperation,
+            );
+          }
+          return true;
+        });
       // NOTE: observe how we scan and prepare the list of property mappings above,
       // searching for the property mapping to be used takes into account
       // precedence, i.e. property mappings from super set implementations are of lower precedence
@@ -380,7 +398,7 @@ const generateExplorerTreeClassNodeChildrenIDs = (
           .getAllProperties()
           .concat(currentClass.getAllDerivedProperties())
   ).map((p) => `${node.id}.${p.name}`);
-  const idsFromsubclasses = currentClass.subclasses.map(
+  const idsFromsubclasses = currentClass._subclasses.map(
     (subclass) => `${node.id}${TYPE_CAST_TOKEN}${subclass.path}`,
   );
   return idsFromProperties.concat(idsFromsubclasses);
@@ -505,7 +523,7 @@ const getQueryBuilderTreeData = (
       addUniqueEntry(treeRootNode.childrenIds, propertyTreeNodeData.id);
       nodes.set(propertyTreeNodeData.id, propertyTreeNodeData);
     });
-  rootClass.subclasses.forEach((subclass) => {
+  rootClass._subclasses.forEach((subclass) => {
     const subTypeTreeNodeData = getQueryBuilderSubTypeNodeData(
       subclass,
       treeRootNode,

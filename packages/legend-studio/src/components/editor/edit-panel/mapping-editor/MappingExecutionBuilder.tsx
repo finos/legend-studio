@@ -69,11 +69,12 @@ import { ExecutionPlanViewer } from './execution-plan-viewer/ExecutionPlanViewer
 import { useEditorStore } from '../../EditorStoreProvider';
 import {
   Class,
-  RawLambda,
   SetImplementation,
   OperationSetImplementation,
   getAllClassMappings,
   RelationalInputType,
+  stub_RawLambda,
+  isStubbed_RawLambda,
 } from '@finos/legend-graph';
 import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor';
 import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../../stores/DSLMapping_LegendStudioPlugin_Extension';
@@ -209,7 +210,7 @@ const MappingExecutionQueryEditor = observer(
                     Class,
                   ),
                 )
-              : RawLambda.createStub(),
+              : stub_RawLambda(),
           ),
         ).catch(applicationStore.alertUnhandledError);
         hideClassMappingSelectorModal();
@@ -293,7 +294,7 @@ const MappingExecutionQueryEditor = observer(
     );
 
     const clearQuery = applicationStore.guardUnhandledError(() =>
-      flowResult(executionState.queryState.updateLamba(RawLambda.createStub())),
+      flowResult(executionState.queryState.updateLamba(stub_RawLambda())),
     );
 
     return (
@@ -314,7 +315,7 @@ const MappingExecutionQueryEditor = observer(
             </button>
           </div>
         </div>
-        {!queryState.query.isStub && (
+        {!isStubbed_RawLambda(queryState.query) && (
           <div className="panel__content">
             <div className="mapping-execution-builder__query-panel__query">
               <StudioTextInputEditor
@@ -326,7 +327,7 @@ const MappingExecutionQueryEditor = observer(
             </div>
           </div>
         )}
-        {queryState.query.isStub && (
+        {isStubbed_RawLambda(queryState.query) && (
           <div ref={dropRef} className="panel__content">
             <BlankPanelPlaceholder
               placeholderText="Choose a class mapping"
@@ -674,7 +675,7 @@ export const MappingExecutionBuilder = observer(
               <button
                 className="mapping-execution-builder__header__action"
                 disabled={
-                  queryState.query.isStub ||
+                  isStubbed_RawLambda(queryState.query) ||
                   !inputDataState.isValid ||
                   executionState.isExecuting ||
                   !executionState.executionResultText
@@ -690,7 +691,7 @@ export const MappingExecutionBuilder = observer(
               <button
                 className="mapping-execution-builder__header__action"
                 disabled={
-                  queryState.query.isStub ||
+                  isStubbed_RawLambda(queryState.query) ||
                   !inputDataState.isValid ||
                   executionState.isExecuting ||
                   !executionState.executionResultText
@@ -706,7 +707,7 @@ export const MappingExecutionBuilder = observer(
               className="mapping-execution-builder__execute-btn"
               onClick={execute}
               disabled={
-                queryState.query.isStub ||
+                isStubbed_RawLambda(queryState.query) ||
                 !inputDataState.isValid ||
                 executionState.isGeneratingPlan ||
                 executionState.isExecuting
@@ -722,7 +723,7 @@ export const MappingExecutionBuilder = observer(
               <DropdownMenu
                 className="mapping-execution-builder__execute-btn__dropdown-btn"
                 disabled={
-                  queryState.query.isStub ||
+                  isStubbed_RawLambda(queryState.query) ||
                   !inputDataState.isValid ||
                   executionState.isGeneratingPlan ||
                   executionState.isExecuting

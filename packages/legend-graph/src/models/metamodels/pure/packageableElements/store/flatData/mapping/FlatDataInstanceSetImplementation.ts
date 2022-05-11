@@ -27,6 +27,7 @@ import type { RawLambda } from '../../../../rawValueSpecification/RawLambda';
 import type { PackageableElementReference } from '../../../PackageableElementReference';
 import type { RootFlatDataRecordTypeReference } from '../model/RootFlatDataRecordTypeReference';
 import type { InferableMappingElementRoot } from '../../../mapping/InferableMappingElementRoot';
+import { FlatDataPropertyMapping } from './FlatDataPropertyMapping';
 
 export class FlatDataInstanceSetImplementation
   extends InstanceSetImplementation
@@ -89,7 +90,18 @@ export class FlatDataInstanceSetImplementation
       this.filter ?? '',
       hashArray(
         this.propertyMappings.filter(
-          (propertyMapping) => !propertyMapping.isStub,
+          // TODO: we should also handle of other property mapping types
+          // using some form of extension mechanism
+          (propertyMapping) => {
+            if (propertyMapping instanceof FlatDataPropertyMapping) {
+              // TODO: use `isStubbed_RawLambda` when we move this out of the metamodel
+              return (
+                !propertyMapping.transform.parameters &&
+                !propertyMapping.transform.body
+              );
+            }
+            return true;
+          },
         ),
       ),
     ]);

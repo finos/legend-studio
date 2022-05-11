@@ -29,7 +29,13 @@ import {
 } from '@finos/legend-art';
 import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID';
 import { useEditorStore } from '../../EditorStoreProvider';
-import { type Profile, Tag, Stereotype } from '@finos/legend-graph';
+import {
+  type Profile,
+  type Tag,
+  type Stereotype,
+  stub_Tag,
+  stub_Stereotype,
+} from '@finos/legend-graph';
 import {
   profile_addTag,
   profile_addStereotype,
@@ -148,9 +154,9 @@ export const ProfileEditor = observer((props: { profile: Profile }) => {
   const addValue = (): void => {
     if (!isReadOnly) {
       if (selectedTab === UML_EDITOR_TAB.TAGS) {
-        profile_addTag(profile, Tag.createStub(profile));
+        profile_addTag(profile, stub_Tag(profile));
       } else if (selectedTab === UML_EDITOR_TAB.STEREOTYPES) {
-        profile_addStereotype(profile, Stereotype.createStub(profile));
+        profile_addStereotype(profile, stub_Stereotype(profile));
       }
     }
   };

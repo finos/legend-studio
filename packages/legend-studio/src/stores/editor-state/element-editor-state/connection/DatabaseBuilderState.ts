@@ -45,6 +45,7 @@ import {
   Database,
   isValidFullPath,
   resolvePackagePathAndElementName,
+  isStubbed_PackageableElement,
 } from '@finos/legend-graph';
 import { connection_setStore } from '../../../graphModifier/DSLMapping_GraphModifierHelper';
 
@@ -601,22 +602,22 @@ export class DatabaseBuilderState {
       return true;
     });
     // update existing schemas
-    generatedDb.schemas.forEach((s) => {
-      (s as Writable<Schema>)._OWNER = current;
+    generatedDb.schemas.forEach((schema) => {
+      (schema as Writable<Schema>)._OWNER = current;
       const currentSchemaIndex = current.schemas.findIndex(
-        (c) => c.name === s.name,
+        (c) => c.name === schema.name,
       );
       if (currentSchemaIndex !== -1) {
-        current.schemas[currentSchemaIndex] = s;
+        current.schemas[currentSchemaIndex] = schema;
       } else {
-        current.schemas.push(s);
+        current.schemas.push(schema);
       }
     });
   }
 
   get currentDatabase(): Database | undefined {
     const store = this.connection.store.value;
-    if (store instanceof Database && !store.isStub) {
+    if (store instanceof Database && !isStubbed_PackageableElement(store)) {
       return store;
     }
     return undefined;

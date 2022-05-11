@@ -18,6 +18,7 @@ import {
   UnsupportedOperationError,
   hashArray,
   type Hashable,
+  isEmpty,
 } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import type { RelationalOperationElement } from '../model/RelationalOperationElement';
@@ -41,6 +42,7 @@ import type { PropertyReference } from '../../../domain/PropertyReference';
 import type { RelationalInstanceSetImplementation } from './RelationalInstanceSetImplementation';
 import { InferableMappingElementRootExplicitValue } from '../../../mapping/InferableMappingElementRoot';
 import type { MappingClass } from '../../../mapping/MappingClass';
+import { RelationalPropertyMapping } from './RelationalPropertyMapping';
 
 export class EmbeddedRelationalInstanceSetImplementation
   extends PropertyMapping
@@ -98,10 +100,6 @@ export class EmbeddedRelationalInstanceSetImplementation
     );
   }
 
-  override get isStub(): boolean {
-    return false;
-  }
-
   accept_PropertyMappingVisitor<T>(visitor: PropertyMappingVisitor<T>): T {
     return visitor.visit_EmbeddedRelationalPropertyMapping(this);
   }
@@ -116,11 +114,17 @@ export class EmbeddedRelationalInstanceSetImplementation
       super.hashCode,
       this.class.hashValue,
       hashArray(this.primaryKey),
-      //skip `root` since we disregard it in embedded property mappings
+      // skip `root` since we disregard it in embedded property mappings
       hashArray(
-        this.propertyMappings.filter(
-          (propertyMapping) => !propertyMapping.isStub,
-        ),
+        this.propertyMappings.filter((propertyMapping) => {
+          // TODO: we should also handle of other property mapping types
+          // using some form of extension mechanism
+          if (propertyMapping instanceof RelationalPropertyMapping) {
+            // TODO: use `isStubbed_RawRelationalOperationElement` when we move this out of the metamodel
+            return !isEmpty(propertyMapping.relationalOperation);
+          }
+          return true;
+        }),
       ),
     ]);
   }

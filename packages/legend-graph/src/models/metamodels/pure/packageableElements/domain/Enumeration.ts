@@ -22,13 +22,12 @@ import {
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import { DataType } from './DataType';
 import type { Enum } from './Enum';
-import { type Stubable, isStubArray } from '../../../../../helpers/Stubable';
 import type { PackageableElementVisitor } from '../PackageableElement';
 import type { Type } from './Type';
 import type { StereotypeReference } from './StereotypeReference';
 import type { TaggedValue } from './TaggedValue';
 
-export class Enumeration extends DataType implements Hashable, Stubable {
+export class Enumeration extends DataType implements Hashable {
   values: Enum[] = [];
   stereotypes: StereotypeReference[] = [];
   taggedValues: TaggedValue[] = [];
@@ -40,11 +39,6 @@ export class Enumeration extends DataType implements Hashable, Stubable {
       this.values.find((value) => value.name === name),
       `Can't find enum value '${name}' in enumeration '${this.path}'`,
     );
-  static createStub = (): Enumeration => new Enumeration('');
-
-  override get isStub(): boolean {
-    return super.isStub && isStubArray(this.values);
-  }
 
   isSuperType(type: Type): boolean {
     return false;

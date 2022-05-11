@@ -17,12 +17,8 @@
 import { hashArray, uuid, type Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../MetaModelConst';
 import type { Type } from '../packageableElements/domain/Type';
-import { Multiplicity } from '../packageableElements/domain/Multiplicity';
-import type { Stubable } from '../../../../helpers/Stubable';
-import {
-  type PackageableElementReference,
-  PackageableElementExplicitReference,
-} from '../packageableElements/PackageableElementReference';
+import type { Multiplicity } from '../packageableElements/domain/Multiplicity';
+import type { PackageableElementReference } from '../packageableElements/PackageableElementReference';
 import {
   type RawValueSpecificationVisitor,
   RawValueSpecification,
@@ -30,7 +26,7 @@ import {
 
 export class RawVariableExpression
   extends RawValueSpecification
-  implements Hashable, Stubable
+  implements Hashable
 {
   readonly _UUID = uuid();
 
@@ -47,16 +43,6 @@ export class RawVariableExpression
     this.name = name;
     this.multiplicity = multiplicity;
     this.type = type;
-  }
-
-  static createStub = (type: Type): RawVariableExpression =>
-    new RawVariableExpression(
-      '',
-      new Multiplicity(1, 1),
-      PackageableElementExplicitReference.create(type),
-    );
-  get isStub(): boolean {
-    return !this.name;
   }
 
   get hashCode(): string {

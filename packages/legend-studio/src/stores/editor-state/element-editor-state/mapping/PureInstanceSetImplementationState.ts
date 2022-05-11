@@ -31,11 +31,13 @@ import { MAPPING_ELEMENT_SOURCE_ID_LABEL } from './MappingEditorState';
 import {
   type PurePropertyMapping,
   type PureInstanceSetImplementation,
+  type RawLambda,
   LAMBDA_PIPE,
   GRAPH_MANAGER_EVENT,
   ParserError,
-  RawLambda,
   buildSourceInformationSourceId,
+  stub_RawLambda,
+  isStubbed_RawLambda,
 } from '@finos/legend-graph';
 import { LambdaEditorState } from '@finos/legend-application';
 import { pureInstanceSetImpl_setMappingFilter } from '../../../graphModifier/DSLMapping_GraphModifierHelper';
@@ -71,7 +73,7 @@ export class PurePropertyMappingState extends PropertyMappingState {
   }
 
   *convertLambdaGrammarStringToObject(): GeneratorFn<void> {
-    const emptyLambda = RawLambda.createStub();
+    const emptyLambda = stub_RawLambda();
     if (this.lambdaString) {
       try {
         const lambda =
@@ -98,7 +100,7 @@ export class PurePropertyMappingState extends PropertyMappingState {
   }
 
   *convertLambdaObjectToGrammarString(pretty: boolean): GeneratorFn<void> {
-    if (!this.propertyMapping.transform.isStub) {
+    if (!isStubbed_RawLambda(this.propertyMapping.transform)) {
       try {
         const lambdas = new Map<string, RawLambda>();
         lambdas.set(this.lambdaId, this.propertyMapping.transform);
@@ -155,7 +157,7 @@ export class PureInstanceSetImplementationFilterState extends LambdaEditorState 
   }
 
   *convertLambdaGrammarStringToObject(): GeneratorFn<void> {
-    const emptyFunctionDefinition = RawLambda.createStub();
+    const emptyFunctionDefinition = stub_RawLambda();
     if (this.lambdaString) {
       try {
         const lambda =
@@ -181,7 +183,7 @@ export class PureInstanceSetImplementationFilterState extends LambdaEditorState 
       }
     } else {
       this.clearErrors();
-      if (this.instanceSetImplementation.filter?.isStub) {
+      if (this.instanceSetImplementation.filter) {
         pureInstanceSetImpl_setMappingFilter(
           this.instanceSetImplementation,
           emptyFunctionDefinition,
@@ -191,10 +193,7 @@ export class PureInstanceSetImplementationFilterState extends LambdaEditorState 
   }
 
   *convertLambdaObjectToGrammarString(pretty: boolean): GeneratorFn<void> {
-    if (
-      this.instanceSetImplementation.filter &&
-      !this.instanceSetImplementation.isStub
-    ) {
+    if (this.instanceSetImplementation.filter) {
       try {
         const grammarText =
           (yield this.editorStore.graphManagerState.graphManager.lambdaToPureCode(
@@ -294,7 +293,7 @@ export class PureInstanceSetImplementationState extends InstanceSetImplementatio
     const lambdas = new Map<string, RawLambda>();
     const propertyMappingsMap = new Map<string, PurePropertyMappingState>();
     this.propertyMappingStates.forEach((pm) => {
-      if (!pm.propertyMapping.transform.isStub) {
+      if (!isStubbed_RawLambda(pm.propertyMapping.transform)) {
         lambdas.set(pm.lambdaId, pm.propertyMapping.transform);
         propertyMappingsMap.set(pm.lambdaId, pm);
       }

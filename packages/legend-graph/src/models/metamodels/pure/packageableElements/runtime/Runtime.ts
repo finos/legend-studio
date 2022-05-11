@@ -60,10 +60,6 @@ export class StoreConnections implements Hashable {
     this.store = store;
   }
 
-  get isStub(): boolean {
-    return !this.storeConnections.length;
-  }
-
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.STORE_CONNECTIONS,
@@ -117,7 +113,12 @@ export class EngineRuntime extends Runtime implements Hashable {
           ),
         ),
       ),
-      hashArray(this.connections.filter((connection) => !connection.isStub)),
+      hashArray(
+        this.connections.filter(
+          // TODO: use `isStubbed_StoreConnections` when we refactor hashing
+          (connection) => connection.storeConnections.length,
+        ),
+      ),
     ]);
   }
 }

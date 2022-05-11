@@ -42,7 +42,8 @@ export class FlatDataInputData extends InputData implements Hashable {
   }
 
   get validationResult(): ValidationIssue | undefined {
-    if (this.sourceFlatData.value.isStub) {
+    // TODO: use `isStubbed_PackageableElement` when we refactor validation
+    if (!this.sourceFlatData.value.package && !this.sourceFlatData.value.name) {
       return createValidationError([
         'Flat-data input data source flat-data store is missing',
       ]);

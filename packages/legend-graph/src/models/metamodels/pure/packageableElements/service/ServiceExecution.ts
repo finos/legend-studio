@@ -47,7 +47,8 @@ export class PureExecution extends ServiceExecution implements Hashable {
   }
 
   get queryValidationResult(): ValidationIssue | undefined {
-    if (this.func.isStub) {
+    // TODO: use `isStubbed_RawLambda` when we refactor validation
+    if (!this.func.parameters && !this.func.body) {
       return createValidationError([
         'Service execution function cannot be empty',
       ]);
@@ -80,7 +81,8 @@ export class PureSingleExecution extends PureExecution implements Hashable {
   }
 
   get mappingValidationResult(): ValidationIssue | undefined {
-    return this.mapping.value.isStub
+    // TODO: use `isStubbed_PackageableElement` when we refactor validation
+    return !this.mapping.value.package && !this.mapping.value.name
       ? createValidationError(['Service execution mapping cannot be empty'])
       : undefined;
   }
@@ -113,7 +115,8 @@ export class KeyedExecutionParameter implements Hashable {
   }
 
   get mappingValidationResult(): ValidationIssue | undefined {
-    return this.mapping.value.isStub
+    // TODO: use `isStubbed_PackageableElement` when we refactor validation
+    return !this.mapping.value.package && !this.mapping.value.name
       ? createValidationError(['Service execution mapping cannot be empty'])
       : undefined;
   }

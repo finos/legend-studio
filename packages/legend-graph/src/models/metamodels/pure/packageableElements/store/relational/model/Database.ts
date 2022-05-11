@@ -32,8 +32,6 @@ export class Database extends Store implements Hashable {
   joins: Join[] = [];
   filters: Filter[] = [];
 
-  static createStub = (): Database => new Database('');
-
   getSchema = (name: string): Schema =>
     guaranteeNonNullable(
       this.schemas.find((schema) => schema.name === name),

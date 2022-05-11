@@ -27,7 +27,12 @@ import {
 } from '@finos/legend-art';
 import type { PackageableElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';
 import { useEditorStore } from '../../EditorStoreProvider';
-import type { TaggedValue, Tag, Profile } from '@finos/legend-graph';
+import {
+  type TaggedValue,
+  type Tag,
+  type Profile,
+  isStubbed_PackageableElement,
+} from '@finos/legend-graph';
 import {
   taggedValue_setValue,
   taggedValue_setTag,
@@ -117,7 +122,9 @@ export const TaggedValueEditor = observer(
             className={`tagged-value-editor__profile__visit-btn ${
               darkTheme ? 'tagged-value-editor-dark-theme' : ''
             }`}
-            disabled={taggedValue.tag.value._OWNER.isStub}
+            disabled={isStubbed_PackageableElement(
+              taggedValue.tag.value._OWNER,
+            )}
             onClick={visitProfile}
             tabIndex={-1}
             title={'Visit profile'}

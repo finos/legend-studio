@@ -71,7 +71,8 @@ export class ObjectInputData extends InputData implements Hashable {
   }
 
   get validationResult(): ValidationIssue | undefined {
-    if (this.sourceClass.value.isStub) {
+    // TODO: use `isStubbed_PackageableElement` when we refactor validation
+    if (!this.sourceClass.value.package && !this.sourceClass.value.name) {
       return createValidationError([
         'Object input data source class is missing',
       ]);

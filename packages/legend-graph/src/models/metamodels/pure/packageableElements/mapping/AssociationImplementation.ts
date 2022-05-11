@@ -47,10 +47,6 @@ export abstract class AssociationImplementation
     this.association = association;
   }
 
-  get isStub(): boolean {
-    return !this.id.value;
-  }
-
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.ASSOCIATION_IMPLEMENTATION,

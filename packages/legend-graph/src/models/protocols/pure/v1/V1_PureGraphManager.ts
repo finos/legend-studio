@@ -254,6 +254,7 @@ import {
   getNullableTestable,
 } from '../../../metamodels/pure/test/Testable';
 import type { PureGraphManagerPlugin } from '../../../../graphManager/PureGraphManagerPlugin';
+import { stub_RawLambda } from '../../../../graphManager/action/creation/RawValueSpecificationCreatorHelper';
 
 const V1_FUNCTION_SUFFIX_MULTIPLICITY_INFINITE = 'MANY';
 
@@ -2327,7 +2328,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           if (serviceExecution instanceof V1_PureMultiExecution) {
             const execution = new PureMultiExecution(
               serviceExecution.executionKey,
-              RawLambda.createStub(),
+              stub_RawLambda(),
               service,
             );
             execution.executionParameters =
@@ -2342,7 +2343,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
             service.execution = execution;
           } else if (serviceExecution instanceof V1_PureSingleExecution) {
             service.execution = new PureSingleExecution(
-              RawLambda.createStub(),
+              stub_RawLambda(),
               service,
               PackageableElementExplicitReference.create(new Mapping('')),
               new EngineRuntime(),

@@ -123,7 +123,6 @@ export const observe_StereotypeReference = skipObserved(
   (metamodel: StereotypeReference): StereotypeReference => {
     makeObservable(metamodel, {
       value: observable,
-      isStub: computed,
       pointerHashCode: computed,
     });
 
@@ -137,7 +136,6 @@ export const observe_TagReference = skipObserved(
   (metamodel: TagReference): TagReference => {
     makeObservable(metamodel, {
       value: observable,
-      isStub: computed,
       pointerHashCode: computed,
     });
 
@@ -149,7 +147,6 @@ export const observe_TaggedValue = skipObserved(
   (metamodel: TaggedValue): TaggedValue => {
     makeObservable(metamodel, {
       value: observable,
-      isStub: computed,
       hashCode: computed,
     });
 
@@ -163,7 +160,6 @@ export const observe_GenericType = skipObserved(
   (metamodel: GenericType): GenericType =>
     makeObservable(metamodel, {
       rawType: observable,
-      isStub: computed,
     }),
 );
 
@@ -171,7 +167,6 @@ export const observe_GenericTypeReference = skipObserved(
   (metamodel: GenericTypeReference): GenericTypeReference => {
     makeObservable(metamodel, {
       value: observable,
-      isStub: computed,
     });
 
     observe_GenericType(metamodel.value);
@@ -223,7 +218,6 @@ export const observe_Stereotype = skipObserved(
   (metamodel: Stereotype): Stereotype =>
     makeObservable(metamodel, {
       value: observable,
-      isStub: computed,
     }),
 );
 
@@ -231,7 +225,6 @@ export const observe_Tag = skipObserved(
   (metamodel: Tag): Tag =>
     makeObservable(metamodel, {
       value: observable,
-      isStub: computed,
     }),
 );
 
@@ -241,7 +234,6 @@ export const observe_Profile = skipObserved((metamodel: Profile): Profile => {
   makeObservable<Profile, '_elementHashCode'>(metamodel, {
     stereotypes: observable,
     tags: observable,
-    isStub: computed,
     _elementHashCode: override,
   });
 
@@ -258,7 +250,6 @@ export const observe_Enum = skipObserved((metamodel: Enum): Enum => {
     name: observable,
     stereotypes: observable,
     taggedValues: observable,
-    isStub: computed,
     hashCode: computed,
   });
 
@@ -272,7 +263,6 @@ export const observe_EnumValueReference = skipObserved(
   (metamodel: EnumValueReference): EnumValueReference => {
     makeObservable(metamodel, {
       value: observable,
-      isStub: computed,
     });
 
     observe_PackageableElementReference(metamodel.ownerReference);
@@ -289,7 +279,6 @@ export const observe_Enumeration = skipObserved(
       values: observable,
       stereotypes: observable,
       taggedValues: observable,
-      isStub: computed,
       _elementHashCode: override,
     });
 
@@ -343,7 +332,6 @@ export const observe_Property = skipObserved(
       multiplicity: observable,
       stereotypes: observable,
       taggedValues: observable,
-      isStub: computed,
       hashCode: computed,
     });
 
@@ -365,7 +353,6 @@ export const observe_DerivedProperty = skipObserved(
       taggedValues: observable,
       body: observable.ref, // only observe the reference, the object itself is not observed
       parameters: observable.ref, // only observe the reference, the object itself is not observed
-      isStub: computed,
       hashCode: computed,
     });
 
@@ -382,7 +369,6 @@ export const observe_PropertyReference = skipObserved(
   (metamodel: PropertyReference): PropertyReference => {
     makeObservable(metamodel, {
       value: observable,
-      isStub: computed,
       pointerHashCode: computed,
     });
 
@@ -400,7 +386,6 @@ export const observe_Constraint = skipObserved(
       externalId: observable,
       enforcementLevel: observable,
       messageFunction: observable,
-      isStub: computed,
       hashCode: computed,
     });
 
@@ -418,18 +403,17 @@ export const observe_Class = skipObserved((metamodel: Class): Class => {
   observe_Abstract_PackageableElement(metamodel);
 
   makeObservable<Class, '_elementHashCode'>(metamodel, {
+    _subclasses: observable,
     properties: observable,
     propertiesFromAssociations: observable,
     derivedProperties: observable,
     generalizations: observable,
-    subclasses: observable,
     constraints: observable,
     stereotypes: observable,
     taggedValues: observable,
     allSuperclasses: computed,
     allSubclasses: computed,
     dispose: override,
-    isStub: computed,
     _elementHashCode: override,
   });
 
@@ -455,7 +439,6 @@ export const observe_Association = skipObserved(
       stereotypes: observable,
       taggedValues: observable,
       derivedProperties: observable,
-      isStub: computed,
       _elementHashCode: override,
     });
 

@@ -2341,7 +2341,7 @@ export class DiagramRenderer {
     else if ('ArrowDown' === e.key) {
       const views = uniqBy(
         this.selectedClasses.flatMap((x) =>
-          x.class.value.subclasses.flatMap(
+          x.class.value._subclasses.flatMap(
             (c) =>
               new ClassView(
                 this.diagram,

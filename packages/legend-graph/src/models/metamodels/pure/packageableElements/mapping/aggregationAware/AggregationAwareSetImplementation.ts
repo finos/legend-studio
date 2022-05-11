@@ -44,6 +44,7 @@ export class AggregationAwareSetImplementation extends InstanceSetImplementation
   getEmbeddedSetImplmentations(): InstanceSetImplementation[] {
     return [];
   }
+
   findPropertyMapping(
     propertyName: string,
     targetId: string | undefined,
@@ -61,6 +62,7 @@ export class AggregationAwareSetImplementation extends InstanceSetImplementation
         propertyMapping.targetSetImplementation.id.value === targetId,
     );
   }
+
   accept_SetImplementationVisitor<T>(visitor: SetImplementationVisitor<T>): T {
     return visitor.visit_AggregationAwareSetImplementation(this);
   }

@@ -34,6 +34,7 @@ import type { InferableMappingElementIdValue } from '../../../mapping/InferableM
 import type { PackageableElementReference } from '../../../PackageableElementReference';
 import { InferableMappingElementRootExplicitValue } from '../../../mapping/InferableMappingElementRoot';
 import type { MappingClass } from '../../../mapping/MappingClass';
+import { FlatDataPropertyMapping } from './FlatDataPropertyMapping';
 
 /**
  * We can think of embedded property mappings as a 'gateway' from one set of property mappings to another. They are in a sense
@@ -76,11 +77,6 @@ export class EmbeddedFlatDataPropertyMapping
     this._PARENT = rootInstanceSetImplementation._PARENT;
   }
 
-  // As of now, there is no stub cases of Embedded Flat Property Mapping since they are created with an existing property mapping
-  override get isStub(): boolean {
-    return false;
-  }
-
   override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.EMBEDDED_FLAT_DATA_PROPERTY_MAPPING,
@@ -90,7 +86,18 @@ export class EmbeddedFlatDataPropertyMapping
       // skip `root` since we disregard it in embedded property mappings
       hashArray(
         this.propertyMappings.filter(
-          (propertyMapping) => !propertyMapping.isStub,
+          // TODO: we should also handle of other property mapping types
+          // using some form of extension mechanism
+          (propertyMapping) => {
+            if (propertyMapping instanceof FlatDataPropertyMapping) {
+              // TODO: use `isStubbed_RawLambda` when we move this out of the metamodel
+              return (
+                !propertyMapping.transform.parameters &&
+                !propertyMapping.transform.body
+              );
+            }
+            return true;
+          },
         ),
       ),
     ]);

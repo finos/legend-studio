@@ -62,6 +62,7 @@ import {
   StaticDatasourceSpecification,
   DefaultH2AuthenticationStrategy,
   ModelChainConnection,
+  isStubbed_StoreConnections,
 } from '@finos/legend-graph';
 import type { DSLMapping_LegendStudioPlugin_Extension } from '../../DSLMapping_LegendStudioPlugin_Extension';
 import { packageableElementReference_setValue } from '../../graphModifier/DomainGraphModifierHelper';
@@ -774,7 +775,7 @@ export class RuntimeEditorState {
 
   cleanUpDecoration(): void {
     this.runtimeValue.connections = this.runtimeValue.connections.filter(
-      (storeConnections) => !storeConnections.isStub,
+      (storeConnections) => !isStubbed_StoreConnections(storeConnections),
     );
   }
 

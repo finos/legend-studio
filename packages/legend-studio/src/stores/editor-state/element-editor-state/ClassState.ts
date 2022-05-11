@@ -31,6 +31,8 @@ import {
   ParserError,
   RawLambda,
   buildSourceInformationSourceId,
+  stub_RawLambda,
+  isStubbed_RawLambda,
 } from '@finos/legend-graph';
 import { LambdaEditorState } from '@finos/legend-application';
 import {
@@ -74,7 +76,7 @@ export class DerivedPropertyState extends LambdaEditorState {
   }
 
   *convertLambdaGrammarStringToObject(): GeneratorFn<void> {
-    const emptyLambda = RawLambda.createStub();
+    const emptyLambda = stub_RawLambda();
     if (this.lambdaString) {
       try {
         const lambda =
@@ -163,7 +165,7 @@ export class ConstraintState extends LambdaEditorState {
   }
 
   *convertLambdaGrammarStringToObject(): GeneratorFn<void> {
-    const emptyFunctionDefinition = RawLambda.createStub();
+    const emptyFunctionDefinition = stub_RawLambda();
     if (this.lambdaString) {
       try {
         const lambda =
@@ -196,7 +198,7 @@ export class ConstraintState extends LambdaEditorState {
   }
 
   *convertLambdaObjectToGrammarString(pretty: boolean): GeneratorFn<void> {
-    if (!this.constraint.functionDefinition.isStub) {
+    if (!isStubbed_RawLambda(this.constraint.functionDefinition)) {
       try {
         const lambdas = new Map<string, RawLambda>();
         lambdas.set(this.lambdaId, this.constraint.functionDefinition);
@@ -332,7 +334,7 @@ export class ClassState {
     const lambdas = new Map<string, RawLambda>();
     const constraintStateMap = new Map<string, ConstraintState>();
     this.constraintStates.forEach((constraintState) => {
-      if (!constraintState.constraint.functionDefinition.isStub) {
+      if (!isStubbed_RawLambda(constraintState.constraint.functionDefinition)) {
         lambdas.set(
           constraintState.lambdaId,
           constraintState.constraint.functionDefinition,
@@ -373,7 +375,7 @@ export class ClassState {
         state.derivedProperty.parameters,
         state.derivedProperty.body,
       );
-      if (!lambda.isStub) {
+      if (!isStubbed_RawLambda(lambda)) {
         lambdas.set(state.lambdaId, lambda);
         derivedPropertyStateMap.set(state.lambdaId, state);
       }

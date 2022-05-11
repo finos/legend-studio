@@ -32,11 +32,13 @@ import {
   type Property,
   type DerivedProperty,
   type StereotypeReference,
+  type TaggedValue,
   Profile,
-  Tag,
-  TaggedValue,
-  Stereotype,
   StereotypeExplicitReference,
+  stub_TaggedValue,
+  stub_Tag,
+  stub_Profile,
+  stub_Stereotype,
 } from '@finos/legend-graph';
 import {
   annotatedElement_deleteTaggedValue,
@@ -78,14 +80,12 @@ export const PropertyEditor = observer(
         if (selectedTab === UML_EDITOR_TAB.TAGGED_VALUES) {
           annotatedElement_addTaggedValue(
             property,
-            TaggedValue.createStub(Tag.createStub(Profile.createStub())),
+            stub_TaggedValue(stub_Tag(stub_Profile())),
           );
         } else if (selectedTab === UML_EDITOR_TAB.STEREOTYPES) {
           annotatedElement_addStereotype(
             property,
-            StereotypeExplicitReference.create(
-              Stereotype.createStub(Profile.createStub()),
-            ),
+            StereotypeExplicitReference.create(stub_Stereotype(stub_Profile())),
           );
         }
       }
@@ -104,9 +104,7 @@ export const PropertyEditor = observer(
         if (!isReadOnly && item.data.packageableElement instanceof Profile) {
           annotatedElement_addTaggedValue(
             property,
-            TaggedValue.createStub(
-              Tag.createStub(item.data.packageableElement),
-            ),
+            stub_TaggedValue(stub_Tag(item.data.packageableElement)),
           );
         }
       },
@@ -128,7 +126,7 @@ export const PropertyEditor = observer(
           annotatedElement_addStereotype(
             property,
             StereotypeExplicitReference.create(
-              Stereotype.createStub(item.data.packageableElement),
+              stub_Stereotype(item.data.packageableElement),
             ),
           );
         }

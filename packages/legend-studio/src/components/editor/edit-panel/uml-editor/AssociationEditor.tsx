@@ -54,16 +54,18 @@ import {
   type Association,
   type Property,
   type StereotypeReference,
+  type TaggedValue,
   MULTIPLICITY_INFINITE,
-  TaggedValue,
-  Stereotype,
   Profile,
-  Tag,
   Multiplicity,
   Class,
   PrimitiveType,
   Unit,
   StereotypeExplicitReference,
+  stub_Profile,
+  stub_TaggedValue,
+  stub_Tag,
+  stub_Stereotype,
 } from '@finos/legend-graph';
 import {
   property_setName,
@@ -345,14 +347,12 @@ export const AssociationEditor = observer(
         if (selectedTab === UML_EDITOR_TAB.TAGGED_VALUES) {
           annotatedElement_addTaggedValue(
             association,
-            TaggedValue.createStub(Tag.createStub(Profile.createStub())),
+            stub_TaggedValue(stub_Tag(stub_Profile())),
           );
         } else if (selectedTab === UML_EDITOR_TAB.STEREOTYPES) {
           annotatedElement_addStereotype(
             association,
-            StereotypeExplicitReference.create(
-              Stereotype.createStub(Profile.createStub()),
-            ),
+            StereotypeExplicitReference.create(stub_Stereotype(stub_Profile())),
           );
         }
       }
@@ -374,9 +374,7 @@ export const AssociationEditor = observer(
         if (!isReadOnly && item.data.packageableElement instanceof Profile) {
           annotatedElement_addTaggedValue(
             association,
-            TaggedValue.createStub(
-              Tag.createStub(item.data.packageableElement),
-            ),
+            stub_TaggedValue(stub_Tag(item.data.packageableElement)),
           );
         }
       },
@@ -398,7 +396,7 @@ export const AssociationEditor = observer(
           annotatedElement_addStereotype(
             association,
             StereotypeExplicitReference.create(
-              Stereotype.createStub(item.data.packageableElement),
+              stub_Stereotype(item.data.packageableElement),
             ),
           );
         }

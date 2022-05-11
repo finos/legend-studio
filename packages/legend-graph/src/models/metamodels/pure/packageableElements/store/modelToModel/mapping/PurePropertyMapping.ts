@@ -25,12 +25,8 @@ import type { PropertyReference } from '../../../domain/PropertyReference';
 import type { SetImplementation } from '../../../mapping/SetImplementation';
 import type { PropertyMappingsImplementation } from '../../../mapping/PropertyMappingsImplementation';
 import type { RawLambda } from '../../../../rawValueSpecification/RawLambda';
-import type { Stubable } from '../../../../../../../helpers/Stubable';
 
-export class PurePropertyMapping
-  extends PropertyMapping
-  implements Hashable, Stubable
-{
+export class PurePropertyMapping extends PropertyMapping implements Hashable {
   // TODO: convert to reference
   transformer?: EnumerationMapping | undefined;
   /**
@@ -52,10 +48,6 @@ export class PurePropertyMapping
     super(owner, property, source, target);
     this.transform = transform;
     this.explodeProperty = explodeProperty;
-  }
-
-  override get isStub(): boolean {
-    return this.transform.isStub;
   }
 
   override get hashCode(): string {

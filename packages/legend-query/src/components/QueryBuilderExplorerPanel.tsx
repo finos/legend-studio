@@ -705,7 +705,7 @@ const QueryBuilderExplorerTree = observer(
             );
             treeData.nodes.set(propertyTreeNodeData.id, propertyTreeNodeData);
           });
-          node.type.subclasses.forEach((subclass) => {
+          node.type._subclasses.forEach((subclass) => {
             const subTypeTreeNodeData = getQueryBuilderSubTypeNodeData(
               subclass,
               node,
