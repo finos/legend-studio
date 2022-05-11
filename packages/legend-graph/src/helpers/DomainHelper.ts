@@ -181,6 +181,15 @@ export const getOrCreateGraphPackage = (
   return getOrCreatePackage(graph.root, packagePath, true, cache);
 };
 
+/**
+ * Extract the type of temporal milestone the class is associated with (using stereotype).
+ *
+ * Whatever the type, it means the class is milestoned, which means:
+ * 1. properties of this type will now be considered milestoned, and will be automatically
+ *    converted into a derived property which accept some temporal parameters (depending
+ *    on the milestoning type)
+ * 2. when we query properties of this type, we can provide the values for these parameters
+ */
 export const getMilestoneTemporalStereotype = (
   val: Class,
   graph: PureModel,
