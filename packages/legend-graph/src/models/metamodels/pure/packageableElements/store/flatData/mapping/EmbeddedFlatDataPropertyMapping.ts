@@ -104,8 +104,8 @@ export class EmbeddedFlatDataPropertyMapping
             if (propertyMapping instanceof FlatDataPropertyMapping) {
               // TODO: use `isStubbed_RawLambda` when we move this out of the metamodel
               return (
-                !propertyMapping.transform.parameters &&
-                !propertyMapping.transform.body
+                Boolean(propertyMapping.transform.parameters) ||
+                Boolean(propertyMapping.transform.body)
               );
             }
             return true;

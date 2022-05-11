@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-import { guaranteeType, isEmpty } from '@finos/legend-shared';
+import { guaranteeType } from '@finos/legend-shared';
 import { Database } from '../models/metamodels/pure/packageableElements/store/relational/model/Database';
 import type { Filter } from '../models/metamodels/pure/packageableElements/store/relational/model/Filter';
-import type { RawRelationalOperationElement } from '../models/metamodels/pure/packageableElements/store/relational/model/RawRelationalOperationElement';
 import type { Schema } from '../models/metamodels/pure/packageableElements/store/relational/model/Schema';
 import type { Table } from '../models/metamodels/pure/packageableElements/store/relational/model/Table';
 

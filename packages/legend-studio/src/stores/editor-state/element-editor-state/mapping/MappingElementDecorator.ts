@@ -53,10 +53,11 @@ import {
   getEnumerationMappingsByEnumeration,
   getRootSetImplementation,
   stub_RawLambda,
+  stub_RawRelationalOperationElement,
   isStubbed_RawLambda,
   isStubbed_RawRelationalOperationElement,
-  stub_RawRelationalOperationElement,
   isStubbed_EnumValueMapping,
+  isStubbed_SetImplementationContainer,
 } from '@finos/legend-graph';
 import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../DSLMapping_LegendStudioPlugin_Extension';
 import type { EditorStore } from '../../../EditorStore';
@@ -657,7 +658,7 @@ export class MappingElementDecorationCleaner
     operationMapping_setParameters(
       setImplementation,
       setImplementation.parameters.filter(
-        (param) => param.setImplementation.value.id,
+        (param) => !isStubbed_SetImplementationContainer(param),
       ),
     );
   }
@@ -668,7 +669,7 @@ export class MappingElementDecorationCleaner
     operationMapping_setParameters(
       setImplementation,
       setImplementation.parameters.filter(
-        (param) => param.setImplementation.value.id,
+        (param) => !isStubbed_SetImplementationContainer(param),
       ),
     );
   }

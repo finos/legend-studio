@@ -69,8 +69,8 @@ export class PureInstanceSetImplementation
           // using some form of extension mechanism
           (propertyMapping) =>
             // TODO: use `isStubbed_RawLambda` when we move this out of the metamodel
-            propertyMapping.transform.parameters ||
-            propertyMapping.transform.body,
+            Boolean(propertyMapping.transform.parameters) ||
+            Boolean(propertyMapping.transform.body),
         ),
       ),
     ]);
