@@ -82,24 +82,6 @@ export class EmbeddedRelationalInstanceSetImplementation
     throw new UnsupportedOperationError();
   }
 
-  findPropertyMapping(
-    propertyName: string,
-    targetId: string | undefined,
-  ): PropertyMapping | undefined {
-    let properties = undefined;
-    properties = this.propertyMappings.filter(
-      (propertyMapping) => propertyMapping.property.value.name === propertyName,
-    );
-    if (targetId === undefined || properties.length === 1) {
-      return properties[0];
-    }
-    return properties.find(
-      (propertyMapping) =>
-        propertyMapping.targetSetImplementation &&
-        propertyMapping.targetSetImplementation.id.value === targetId,
-    );
-  }
-
   accept_PropertyMappingVisitor<T>(visitor: PropertyMappingVisitor<T>): T {
     return visitor.visit_EmbeddedRelationalPropertyMapping(this);
   }

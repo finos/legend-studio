@@ -30,7 +30,10 @@ import {
   DynaFunction,
   TableAliasColumn,
 } from '../../../models/metamodels/pure/packageableElements/store/relational/model/RelationalOperationElement';
-import { getOwnClassMappingsByClass } from '../../../helpers/MappingHelper';
+import {
+  findPropertyMapping,
+  getOwnClassMappingsByClass,
+} from '../../../helpers/MappingHelper';
 import { RootRelationalInstanceSetImplementation } from '../../../models/metamodels/pure/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation';
 import { RelationalPropertyMapping } from '../../../models/metamodels/pure/packageableElements/store/relational/mapping/RelationalPropertyMapping';
 
@@ -115,7 +118,7 @@ test(unitTest('Relational Mapping with property from association'), () => {
   expect(firmPrimaryKey.column.value.name).toBe('ID');
   // association property
   const firmProperty = guaranteeType(
-    personClassMapping.findPropertyMapping('firm', undefined),
+    findPropertyMapping(personClassMapping, 'firm', undefined),
     RelationalPropertyMapping,
   );
   expect(firmProperty.targetSetImplementation).toBe(firmClassMapping);

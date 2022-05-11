@@ -26,7 +26,10 @@ import {
   TEST__getTestGraphManagerState,
 } from '../../../GraphManagerTestUtils';
 import type { GraphManagerState } from '../../../GraphManagerState';
-import { getOwnClassMappingsByClass } from '../../../helpers/MappingHelper';
+import {
+  findPropertyMapping,
+  getOwnClassMappingsByClass,
+} from '../../../helpers/MappingHelper';
 import { RootRelationalInstanceSetImplementation } from '../../../models/metamodels/pure/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation';
 import { EmbeddedRelationalInstanceSetImplementation } from '../../../models/metamodels/pure/packageableElements/store/relational/mapping/EmbeddedRelationalInstanceSetImplementation';
 
@@ -68,7 +71,7 @@ test(unitTest('Embedded Relational Mapping'), () => {
   expect(personClassMapping.propertyMappings).toHaveLength(4);
   // address embedded
   const addressEmbedded = guaranteeType(
-    personClassMapping.findPropertyMapping('address', undefined),
+    findPropertyMapping(personClassMapping, 'address', undefined),
     EmbeddedRelationalInstanceSetImplementation,
   );
   expect(addressEmbedded.propertyMappings).toHaveLength(2);
@@ -84,7 +87,7 @@ test(unitTest('Embedded Relational Mapping'), () => {
   expect(addressEmbedded.class.value).toBe(addressClass);
   // firm embedded
   const firmEmbedded = guaranteeType(
-    personClassMapping.findPropertyMapping('firm', undefined),
+    findPropertyMapping(personClassMapping, 'firm', undefined),
     EmbeddedRelationalInstanceSetImplementation,
   );
   expect(firmEmbedded.propertyMappings).toHaveLength(3);
@@ -95,7 +98,7 @@ test(unitTest('Embedded Relational Mapping'), () => {
   expect(firmEmbedded.class.value).toBe(firmClass);
   // firm address embedded
   const firmEmbeddedAddress = guaranteeType(
-    firmEmbedded.findPropertyMapping('address', undefined),
+    findPropertyMapping(firmEmbedded, 'address', undefined),
     EmbeddedRelationalInstanceSetImplementation,
   );
   expect(firmEmbeddedAddress.id.value).toBe(

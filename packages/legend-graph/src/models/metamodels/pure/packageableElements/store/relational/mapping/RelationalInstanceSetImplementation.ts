@@ -24,7 +24,6 @@ import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import { InstanceSetImplementation } from '../../../mapping/InstanceSetImplementation';
 import type { SetImplementationVisitor } from '../../../mapping/SetImplementation';
 import type { RelationalOperationElement } from '../model/RelationalOperationElement';
-import type { PropertyMapping } from '../../../mapping/PropertyMapping';
 import { EmbeddedRelationalInstanceSetImplementation } from './EmbeddedRelationalInstanceSetImplementation';
 import { RelationalPropertyMapping } from './RelationalPropertyMapping';
 
@@ -42,24 +41,6 @@ export class RelationalInstanceSetImplementation
       .map((propertyMapping) => propertyMapping.getEmbeddedSetImplmentations())
       .flat()
       .concat(embeddedPropertyMappings);
-  }
-
-  findPropertyMapping(
-    propertyName: string,
-    targetId: string | undefined,
-  ): PropertyMapping | undefined {
-    let properties = undefined;
-    properties = this.propertyMappings.filter(
-      (propertyMapping) => propertyMapping.property.value.name === propertyName,
-    );
-    if (targetId === undefined || properties.length === 1) {
-      return properties[0];
-    }
-    return properties.find(
-      (propertyMapping) =>
-        propertyMapping.targetSetImplementation &&
-        propertyMapping.targetSetImplementation.id.value === targetId,
-    );
   }
 
   accept_SetImplementationVisitor<T>(visitor: SetImplementationVisitor<T>): T {

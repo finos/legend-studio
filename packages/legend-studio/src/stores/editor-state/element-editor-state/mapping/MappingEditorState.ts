@@ -100,6 +100,7 @@ import {
   InferableMappingElementIdExplicitValue,
   InferableMappingElementRootExplicitValue,
   stub_Class,
+  findPropertyMapping,
 } from '@finos/legend-graph';
 import { LambdaEditorState } from '@finos/legend-application';
 import type {
@@ -1227,7 +1228,8 @@ export class MappingEditorState extends ElementEditorState {
             newMappingElement instanceof FlatDataInstanceSetImplementation ||
             newMappingElement instanceof EmbeddedFlatDataPropertyMapping
           ) {
-            const propertyMapping = newMappingElement.findPropertyMapping(
+            const propertyMapping = findPropertyMapping(
+              newMappingElement,
               guaranteeNonNullable(
                 propertyName,
                 `Can't reveal compilation error: mapping property name is missing`,

@@ -77,6 +77,18 @@ export class EmbeddedFlatDataPropertyMapping
     this._PARENT = rootInstanceSetImplementation._PARENT;
   }
 
+  getEmbeddedSetImplmentations(): InstanceSetImplementation[] {
+    const embeddedPropertyMappings = this.propertyMappings.filter(
+      filterByType(EmbeddedFlatDataPropertyMapping),
+    );
+    return embeddedPropertyMappings
+      .map((embeddedPropertyMapping) =>
+        embeddedPropertyMapping.getEmbeddedSetImplmentations(),
+      )
+      .flat()
+      .concat(embeddedPropertyMappings);
+  }
+
   override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.EMBEDDED_FLAT_DATA_PROPERTY_MAPPING,
@@ -109,35 +121,5 @@ export class EmbeddedFlatDataPropertyMapping
 
   accept_PropertyMappingVisitor<T>(visitor: PropertyMappingVisitor<T>): T {
     return visitor.visit_EmbeddedFlatDataPropertyMapping(this);
-  }
-
-  getEmbeddedSetImplmentations(): InstanceSetImplementation[] {
-    const embeddedPropertyMappings = this.propertyMappings.filter(
-      filterByType(EmbeddedFlatDataPropertyMapping),
-    );
-    return embeddedPropertyMappings
-      .map((embeddedPropertyMapping) =>
-        embeddedPropertyMapping.getEmbeddedSetImplmentations(),
-      )
-      .flat()
-      .concat(embeddedPropertyMappings);
-  }
-
-  findPropertyMapping(
-    propertyName: string,
-    targetId: string | undefined,
-  ): AbstractFlatDataPropertyMapping | undefined {
-    let properties = undefined;
-    properties = this.propertyMappings.filter(
-      (propertyMapping) => propertyMapping.property.value.name === propertyName,
-    );
-    if (targetId === undefined || properties.length === 1) {
-      return properties[0];
-    }
-    return properties.find(
-      (propertyMapping) =>
-        propertyMapping.targetSetImplementation &&
-        propertyMapping.targetSetImplementation.id.value === targetId,
-    );
   }
 }

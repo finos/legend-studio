@@ -53,24 +53,6 @@ export class FlatDataInstanceSetImplementation
     this.sourceRootRecordType = sourceRootRecordType;
   }
 
-  findPropertyMapping(
-    propertyName: string,
-    targetId: string | undefined,
-  ): AbstractFlatDataPropertyMapping | undefined {
-    let properties = undefined;
-    properties = this.propertyMappings.filter(
-      (propertyMapping) => propertyMapping.property.value.name === propertyName,
-    );
-    if (targetId === undefined || properties.length === 1) {
-      return properties[0];
-    }
-    return properties.find(
-      (propertyMapping) =>
-        propertyMapping.targetSetImplementation &&
-        propertyMapping.targetSetImplementation.id.value === targetId,
-    );
-  }
-
   getEmbeddedSetImplmentations(): InstanceSetImplementation[] {
     const embeddedPropertyMappings = this.propertyMappings.filter(
       filterByType(EmbeddedFlatDataPropertyMapping),

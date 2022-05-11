@@ -30,7 +30,10 @@ import {
 } from '../../../GraphManagerTestUtils';
 import { Database } from '../../../models/metamodels/pure/packageableElements/store/relational/model/Database';
 import { RootRelationalInstanceSetImplementation } from '../../../models/metamodels/pure/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation';
-import { getOwnClassMappingsByClass } from '../../../helpers/MappingHelper';
+import {
+  findPropertyMapping,
+  getOwnClassMappingsByClass,
+} from '../../../helpers/MappingHelper';
 import { EmbeddedRelationalInstanceSetImplementation } from '../../../models/metamodels/pure/packageableElements/store/relational/mapping/EmbeddedRelationalInstanceSetImplementation';
 import { RelationalPropertyMapping } from '../../../models/metamodels/pure/packageableElements/store/relational/mapping/RelationalPropertyMapping';
 import { PRIMITIVE_TYPE } from '../../../MetaModelConst';
@@ -106,7 +109,7 @@ test(unitTest('Relational Mapping is loaded properly'), () => {
   );
   expect(firmExtensionSetImpl.propertyMappings).toHaveLength(3);
   const embeddedProperty = guaranteeType(
-    firmExtensionSetImpl.findPropertyMapping('employeesExt', undefined),
+    findPropertyMapping(firmExtensionSetImpl, 'employeesExt', undefined),
     EmbeddedRelationalInstanceSetImplementation,
   );
   expect(embeddedProperty.propertyMappings).toHaveLength(1);

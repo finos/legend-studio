@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import type { PropertyMapping } from '../PropertyMapping';
 import { InstanceSetImplementation } from '../InstanceSetImplementation';
 import type { SetImplementationVisitor } from '../SetImplementation';
 import type { InferableMappingElementIdValue } from '../InferableMappingElementId';
@@ -45,28 +44,6 @@ export class AggregationAwareSetImplementation extends InstanceSetImplementation
     return [];
   }
 
-  findPropertyMapping(
-    propertyName: string,
-    targetId: string | undefined,
-  ): PropertyMapping | undefined {
-    let properties = undefined;
-    properties = this.propertyMappings.filter(
-      (propertyMapping) => propertyMapping.property.value.name === propertyName,
-    );
-    if (targetId === undefined || properties.length === 1) {
-      return properties[0];
-    }
-    return properties.find(
-      (propertyMapping) =>
-        propertyMapping.targetSetImplementation &&
-        propertyMapping.targetSetImplementation.id.value === targetId,
-    );
-  }
-
-  accept_SetImplementationVisitor<T>(visitor: SetImplementationVisitor<T>): T {
-    return visitor.visit_AggregationAwareSetImplementation(this);
-  }
-
   override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.AGGREGATION_AWARE_MAPPING,
@@ -75,5 +52,9 @@ export class AggregationAwareSetImplementation extends InstanceSetImplementation
       hashArray(this.aggregateSetImplementations),
       hashArray(this.propertyMappings),
     ]);
+  }
+
+  accept_SetImplementationVisitor<T>(visitor: SetImplementationVisitor<T>): T {
+    return visitor.visit_AggregationAwareSetImplementation(this);
   }
 }

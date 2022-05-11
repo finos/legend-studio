@@ -26,7 +26,10 @@ import {
   TEST__buildGraphWithEntities,
   TEST__getTestGraphManagerState,
 } from '../../../GraphManagerTestUtils';
-import { getOwnClassMappingsByClass } from '../../../helpers/MappingHelper';
+import {
+  findPropertyMapping,
+  getOwnClassMappingsByClass,
+} from '../../../helpers/MappingHelper';
 import { RootRelationalInstanceSetImplementation } from '../../../models/metamodels/pure/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation';
 import { OtherwiseEmbeddedRelationalInstanceSetImplementation } from '../../../models/metamodels/pure/packageableElements/store/relational/mapping/OtherwiseEmbeddedRelationalInstanceSetImplementation';
 import { RelationalPropertyMapping } from '../../../models/metamodels/pure/packageableElements/store/relational/mapping/RelationalPropertyMapping';
@@ -59,11 +62,11 @@ test(unitTest('Otherwise Embedded Relational Mapping'), () => {
   expect(personClassMapping.id.value).toBe('alias1');
   expect(personClassMapping.propertyMappings).toHaveLength(2);
   const otherwiseFirmMapping = guaranteeType(
-    personClassMapping.findPropertyMapping('firm', undefined),
+    findPropertyMapping(personClassMapping, 'firm', undefined),
     OtherwiseEmbeddedRelationalInstanceSetImplementation,
   );
 
-  // const legalNamePropertyMapping = guaranteeType(otherwiseFirmMapping.findPropertyMapping('legalName', undefined), RelationalPropertyMapping);
+  // const legalNamePropertyMapping = guaranteeType(findPropertyMapping(otherwiseFirmMapping, 'legalName', undefined), RelationalPropertyMapping);
   // expect(legalNamePropertyMapping.owner).toBe(otherwiseFirmMapping);
   expect(otherwiseFirmMapping.id.value).toBe('alias1_firm');
   expect(otherwiseFirmMapping.primaryKey).toHaveLength(1);

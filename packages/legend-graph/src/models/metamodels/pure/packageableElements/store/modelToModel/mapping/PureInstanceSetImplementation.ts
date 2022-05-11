@@ -53,22 +53,8 @@ export class PureInstanceSetImplementation
     this.srcClass = srcClass;
   }
 
-  findPropertyMapping(
-    propertyName: string,
-    targetId: string | undefined,
-  ): PurePropertyMapping | undefined {
-    let properties = undefined;
-    properties = this.propertyMappings.filter(
-      (propertyMapping) => propertyMapping.property.value.name === propertyName,
-    );
-    if (targetId === undefined || properties.length === 1) {
-      return properties[0];
-    }
-    return properties.find(
-      (propertyMapping) =>
-        propertyMapping.targetSetImplementation &&
-        propertyMapping.targetSetImplementation.id.value === targetId,
-    );
+  getEmbeddedSetImplmentations(): InstanceSetImplementation[] {
+    return [];
   }
 
   override get hashCode(): string {
@@ -92,9 +78,5 @@ export class PureInstanceSetImplementation
 
   accept_SetImplementationVisitor<T>(visitor: SetImplementationVisitor<T>): T {
     return visitor.visit_PureInstanceSetImplementation(this);
-  }
-
-  getEmbeddedSetImplmentations(): InstanceSetImplementation[] {
-    return [];
   }
 }

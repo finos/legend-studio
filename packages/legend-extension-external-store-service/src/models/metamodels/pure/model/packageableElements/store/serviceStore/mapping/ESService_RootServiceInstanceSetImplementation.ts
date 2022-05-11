@@ -17,7 +17,6 @@
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import {
   InstanceSetImplementation,
-  type PropertyMapping,
   type SetImplementationVisitor,
 } from '@finos/legend-graph';
 import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../ESService_ModelUtils';
@@ -30,6 +29,10 @@ export class RootServiceInstanceSetImplementation
 {
   localMappingProperties: LocalMappingProperty[] = [];
   servicesMapping: ServiceMapping[] = [];
+
+  getEmbeddedSetImplmentations(): InstanceSetImplementation[] {
+    return [];
+  }
 
   override get hashCode(): string {
     return hashArray([
@@ -44,27 +47,5 @@ export class RootServiceInstanceSetImplementation
 
   accept_SetImplementationVisitor<T>(visitor: SetImplementationVisitor<T>): T {
     return visitor.visit_SetImplementation(this);
-  }
-
-  getEmbeddedSetImplmentations(): InstanceSetImplementation[] {
-    return [];
-  }
-
-  findPropertyMapping(
-    propertyName: string,
-    targetId: string | undefined,
-  ): PropertyMapping | undefined {
-    let properties = undefined;
-    properties = this.propertyMappings.filter(
-      (propertyMapping) => propertyMapping.property.value.name === propertyName,
-    );
-    if (targetId === undefined || properties.length === 1) {
-      return properties[0];
-    }
-    return properties.find(
-      (propertyMapping) =>
-        propertyMapping.targetSetImplementation &&
-        propertyMapping.targetSetImplementation.id.value === targetId,
-    );
   }
 }

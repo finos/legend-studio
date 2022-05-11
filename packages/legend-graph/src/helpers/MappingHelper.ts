@@ -27,6 +27,8 @@ import type { Enumeration } from '../models/metamodels/pure/packageableElements/
 import type { Mapping } from '../models/metamodels/pure/packageableElements/mapping/Mapping';
 import { AggregationAwareSetImplementation } from '../models/metamodels/pure/packageableElements/mapping/aggregationAware/AggregationAwareSetImplementation';
 import { RootRelationalInstanceSetImplementation } from '../models/metamodels/pure/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation';
+import type { PropertyMapping } from '../models/metamodels/pure/packageableElements/mapping/PropertyMapping';
+import type { InstanceSetImplementation } from '../models/metamodels/pure/packageableElements/mapping/InstanceSetImplementation';
 
 export const getAllClassMappings = (mapping: Mapping): SetImplementation[] =>
   uniq(
@@ -165,3 +167,22 @@ export const getRootSetImplementation = (
   _class: Class,
 ): SetImplementation | undefined =>
   findRootSetImplementation(getClassMappingsByClass(mapping, _class));
+
+export const findPropertyMapping = (
+  instanceSetImplementation: InstanceSetImplementation,
+  propertyName: string,
+  targetId: string | undefined,
+): PropertyMapping | undefined => {
+  let properties = undefined;
+  properties = instanceSetImplementation.propertyMappings.filter(
+    (propertyMapping) => propertyMapping.property.value.name === propertyName,
+  );
+  if (targetId === undefined || properties.length === 1) {
+    return properties[0];
+  }
+  return properties.find(
+    (propertyMapping) =>
+      propertyMapping.targetSetImplementation &&
+      propertyMapping.targetSetImplementation.id.value === targetId,
+  );
+};
