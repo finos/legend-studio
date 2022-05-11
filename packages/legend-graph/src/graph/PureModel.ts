@@ -215,7 +215,7 @@ export class PureModel extends BasicModel {
 
   get allOwnTestables(): Testable[] {
     const extraTestables = this.graphPlugins
-      .flatMap((plugin) => plugin.getExtraTestableCollectors?.() ?? [])
+      .flatMap((plugin) => plugin.getExtraTestablesCollectors?.() ?? [])
       .map((collector) => collector(this));
     return [...this.ownTestables].concat(...extraTestables);
   }

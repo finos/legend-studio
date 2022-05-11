@@ -253,7 +253,7 @@ import {
   getNullableIdFromTestable,
   getNullableTestable,
 } from '../../../metamodels/pure/test/Testable';
-import type { GraphManagerState } from '../../../../GraphManagerState';
+import type { PureGraphManagerPlugin } from '../../../../graphManager/PureGraphManagerPlugin';
 
 const V1_FUNCTION_SUFFIX_MULTIPLICITY_INFINITE = 'MANY';
 
@@ -1629,7 +1629,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   async runTests(
     graph: PureModel,
-    graphManagerState: GraphManagerState,
+    pureGraphManagerPlugins: PureGraphManagerPlugin[],
     testableInputs: RunTestsTestableInput[],
   ): Promise<TestResult[]> {
     const runTestsInput = new V1_RunTestsInput();
@@ -1637,7 +1637,11 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     runTestsInput.testables = testableInputs
       .map((input) => {
         const testable = guaranteeNonNullable(
-          getNullableIdFromTestable(input.testable, graphManagerState),
+          getNullableIdFromTestable(
+            input.testable,
+            graph,
+            pureGraphManagerPlugins,
+          ),
         );
         if (!testable) {
           return undefined;
@@ -1654,7 +1658,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       })
       .filter(isNonNullable);
     const testableFromIdGetter = (id: string): Testable | undefined =>
-      getNullableTestable(id, graphManagerState);
+      getNullableTestable(id, graph, pureGraphManagerPlugins);
     const runTestsResult = await this.engine.runTests(runTestsInput);
     const result = V1_buildTestsResult(runTestsResult, testableFromIdGetter);
     return result;

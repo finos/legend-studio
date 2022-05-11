@@ -16,7 +16,7 @@
 
 import { isNonNullable } from '@finos/legend-shared';
 import type { PureModel } from '../../../../graph/PureModel';
-import type { GraphManagerState } from '../../../../GraphManagerState';
+import type { PureGraphManagerPlugin } from '../../../../graphManager/PureGraphManagerPlugin';
 import { PackageableElement } from '../packageableElements/PackageableElement';
 import type { Test } from './Test';
 
@@ -24,41 +24,41 @@ export interface Testable {
   tests: Test[];
 }
 
-export type IdFromTestableGetter = (
+export type TestableIDBuilder = (
   testable: Testable,
   graph: PureModel,
 ) => string | undefined;
 
-export type TestableFromIdGetter = (
+export type TestableFinder = (
   id: string,
   graph: PureModel,
 ) => Testable | undefined;
 
-export type TestablesGetter = (graph: PureModel) => Testable[];
+export type TestablesCollector = (graph: PureModel) => Testable[];
 
 export const getNullableTestable = (
   id: string,
-  graphManager: GraphManagerState,
+  graph: PureModel,
+  pureGraphManagerPlugins: PureGraphManagerPlugin[],
 ): Testable | undefined =>
-  graphManager.graph.allOwnTestables.find(
+  graph.allOwnTestables.find(
     (e) => e instanceof PackageableElement && e.path === id,
   ) ??
-  graphManager.pluginManager
-    .getPureGraphManagerPlugins()
-    .flatMap((plugin) => plugin.getEtxraTestableFromIdGetters?.() ?? [])
-    .map((getter) => getter(id, graphManager.graph))
+  pureGraphManagerPlugins
+    .flatMap((plugin) => plugin.getExtraTestableFinders?.() ?? [])
+    .map((getter) => getter(id, graph))
     .filter(isNonNullable)[0];
 
 export const getNullableIdFromTestable = (
   testable: Testable,
-  graphManager: GraphManagerState,
+  graph: PureModel,
+  pureGraphManagerPlugins: PureGraphManagerPlugin[],
 ): string | undefined => {
   if (testable instanceof PackageableElement) {
     return testable.path;
   }
-  return graphManager.pluginManager
-    .getPureGraphManagerPlugins()
-    .flatMap((plugin) => plugin.getExtraIdFromTestableGetters?.() ?? [])
-    .map((getter) => getter(testable, graphManager.graph))
+  return pureGraphManagerPlugins
+    .flatMap((plugin) => plugin.getExtraTestableIDBuilders?.() ?? [])
+    .map((getter) => getter(testable, graph))
     .filter(isNonNullable)[0];
 };

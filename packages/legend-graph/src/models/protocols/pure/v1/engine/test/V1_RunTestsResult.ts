@@ -38,13 +38,10 @@ export class V1_RunTestsResult {
 
 export const V1_buildTestsResult = (
   results: V1_RunTestsResult,
-  testableFromIdGetter: (id: string) => Testable | undefined,
+  testableFinder: (id: string) => Testable | undefined,
 ): TestResult[] =>
   results.results
     .map((r) =>
-      V1_buildTestResult(
-        r,
-        guaranteeNonNullable(testableFromIdGetter(r.testable)),
-      ),
+      V1_buildTestResult(r, guaranteeNonNullable(testableFinder(r.testable))),
     )
     .filter(isNonNullable);

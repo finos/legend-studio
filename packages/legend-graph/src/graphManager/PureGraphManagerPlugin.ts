@@ -18,8 +18,8 @@ import { AbstractPlugin } from '@finos/legend-shared';
 import type { GraphPluginManager } from '../GraphPluginManager';
 import type { PackageableElement } from '../models/metamodels/pure/packageableElements/PackageableElement';
 import type {
-  IdFromTestableGetter,
-  TestableFromIdGetter,
+  TestableIDBuilder,
+  TestableFinder,
 } from '../models/metamodels/pure/test/Testable';
 import type { ObserverContext } from './action/changeDetection/CoreObserverHelper';
 
@@ -78,7 +78,13 @@ export abstract class PureGraphManagerPlugin extends AbstractPlugin {
    */
   getExtraPureGrammarElementLabelers?(): PureGrammarElementLabeler[];
 
-  getExtraIdFromTestableGetters?(): IdFromTestableGetter[];
+  /**
+   * Get the list of Testable id builders.
+   */
+  getExtraTestableIDBuilders?(): TestableIDBuilder[];
 
-  getEtxraTestableFromIdGetters?(): TestableFromIdGetter[];
+  /**
+   * Get the list of Testable finders.
+   */
+  getExtraTestableFinders?(): TestableFinder[];
 }

@@ -77,8 +77,8 @@ const getTestableResultIcon = (
     case TESTABLE_RESULT.IN_PROGRESS:
       return (
         <div
-          title="Pipeline is running"
-          className="workflow-manager__item__link__content__status__indicator workflow-manager__item__link__content__status__indicator--in-progress"
+          title="Test is running"
+          className="global-test-runner__item__link__content__status__indicator workflow-manager__item__link__content__status__indicator--in-progress"
         >
           <CircleNotchIcon />
         </div>
@@ -345,11 +345,8 @@ const TestableTreeNodeContainer: React.FC<
 };
 
 // TODO:
-// Current Work in Progress
-// 1. Add UI feedback when single test is running
-// 2. Handle Multi Execution Test Results
-// 3. Find Icon for `TestError` (different than Test Fail)
-// 4. Add `Visit Test` to open test editors when Testable Editors are complete
+// - Handle Multi Execution Test Results
+// - Add `Visit Test` to open test editors when Testable Editors are complete
 export const GlobalTestRunner = observer(
   (props: { globalTestRunnerState: GlobalTestRunnerState }) => {
     const editorStore = useEditorStore();
@@ -400,7 +397,10 @@ export const GlobalTestRunner = observer(
 
     const reset = (): void => globalTestRunnerState.init(true);
     return (
-      <div className="panel global-test-runner">
+      <div
+        data-testid={LEGEND_STUDIO_TEST_ID.GLOBAL_TEST_RUNNER}
+        className="panel global-test-runner"
+      >
         <div className="panel__header side-bar__header">
           <div className="panel__header__title global-test-runner__header__title">
             <div className="panel__header__title__content side-bar__header__title__content">

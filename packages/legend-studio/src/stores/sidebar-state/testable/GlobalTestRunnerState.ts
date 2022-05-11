@@ -70,8 +70,11 @@ export const getTestableMetadata = (
     return {
       testable: testable,
       id:
-        getNullableIdFromTestable(testable, editorStore.graphManagerState) ??
-        uuid(),
+        getNullableIdFromTestable(
+          testable,
+          editorStore.graphManagerState.graph,
+          editorStore.graphManagerState.pluginManager.getPureGraphManagerPlugins(),
+        ) ?? uuid(),
       name: testable.name,
       icon: getElementTypeIcon(
         editorStore,
@@ -296,10 +299,10 @@ const getTestableResultFromTestResults = (
 
 export const getNodeTestableResult = (
   node: TestableExplorerTreeNodeData,
-  gloablRun: boolean,
+  globalRun: boolean,
   results: Map<AtomicTest, TestResult>,
 ): TESTABLE_RESULT => {
-  if (gloablRun && node instanceof TestableTreeNodeData) {
+  if (globalRun && node instanceof TestableTreeNodeData) {
     return TESTABLE_RESULT.IN_PROGRESS;
   }
   if (
@@ -372,7 +375,7 @@ export class TestableState {
   *run(node: TestableExplorerTreeNodeData): GeneratorFn<void> {
     this.isRunningTests.inProgress();
     let input: RunTestsTestableInput;
-    let nodeRunning = node;
+    let currentNode = node;
     try {
       if (node instanceof AssertionTestTreeNodeData) {
         const atomicTest = guaranteeNonNullable(node.assertion.parentTest);
@@ -383,7 +386,7 @@ export class TestableState {
           .filter(filterByType(AtomicTestTreeNodeData))
           .find((n) => n.atomicTest === atomicTest);
         if (parentNode) {
-          nodeRunning = parentNode;
+          currentNode = parentNode;
           parentNode.isRunning = true;
         }
       } else if (node instanceof AtomicTestTreeNodeData) {
@@ -409,7 +412,7 @@ export class TestableState {
       const testResults =
         (yield this.editorStore.graphManagerState.graphManager.runTests(
           this.editorStore.graphManagerState.graph,
-          this.editorStore.graphManagerState,
+          this.editorStore.graphManagerState.pluginManager.getPureGraphManagerPlugins(),
           [input],
         )) as TestResult[];
       this.globalTestRunnerState.handleResults(testResults);
@@ -420,10 +423,10 @@ export class TestableState {
       this.isRunningTests.fail();
     } finally {
       if (
-        nodeRunning instanceof TestTreeNodeData ||
-        nodeRunning instanceof TestableTreeNodeData
+        currentNode instanceof TestTreeNodeData ||
+        currentNode instanceof TestableTreeNodeData
       ) {
-        nodeRunning.isRunning = false;
+        currentNode.isRunning = false;
       }
     }
   }
@@ -535,8 +538,7 @@ export class GlobalTestRunnerState {
       const testResults =
         (yield this.editorStore.graphManagerState.graphManager.runTests(
           this.editorStore.graphManagerState.graph,
-          this.editorStore.graphManagerState,
-
+          this.editorStore.graphManagerState.pluginManager.getPureGraphManagerPlugins(),
           inputs,
         )) as TestResult[];
       this.handleResults(testResults);
