@@ -42,7 +42,7 @@
     "@types/lodash-es": "4.17.6",
     "@types/lossless-json": "1.0.1",
     "@types/object-hash": "2.2.1",
-    "@types/pako": "1.0.3",
+    "@types/pako": "2.0.0",
     "@types/seedrandom": "3.0.2",
     "@types/uuid": "8.3.4",
     "hash.js": "1.1.7",

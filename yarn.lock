@@ -5,33 +5,31 @@ __metadata:
   version: 6
   cacheKey: 8
 
-"@actions/core@npm:1.8.0":
-  version: 1.8.0
-  resolution: "@actions/core@npm:1.8.0"
+"@actions/core@npm:1.8.1":
+  version: 1.8.1
+  resolution: "@actions/core@npm:1.8.1"
   dependencies:
-    "@actions/http-client": ^1.0.11
-  checksum: 0634770fce3fdf56fd76338731921fde67dcea54cba7e5be2398d62445ada2ee8afca6694da1c6f72d9b4d257cbf3ed0dacbd58753adac712e06249f57156cf3
+    "@actions/http-client": ^2.0.0
+  checksum: 9a3758528e32a951d457cf29494125360251a3631bc63af9465895ab5749a55b85db043226c39c260b8d931c16a237156051e40a7351d484ab2f7249f82fa3bf
   languageName: node
   linkType: hard
 
-"@actions/github@npm:5.0.1":
-  version: 5.0.1
-  resolution: "@actions/github@npm:5.0.1"
+"@actions/github@npm:5.0.2":
+  version: 5.0.2
+  resolution: "@actions/github@npm:5.0.2"
   dependencies:
-    "@actions/http-client": ^1.0.11
+    "@actions/http-client": ^2.0.0
     "@octokit/core": ^3.6.0
     "@octokit/plugin-paginate-rest": ^2.17.0
     "@octokit/plugin-rest-endpoint-methods": ^5.13.0
-  checksum: 4c8541cbe8332a616a405c84a67566c2e0ef07f401967ab72f8e3608e68bbc73f94bff1b002d28147a58f812e9546b475f58629514532882f59200073b80bd0b
+  checksum: fb6c4cda9e55d10533ad091b0d001c13083057c127fcc7d6c287c0ae35d7a5f78eecd829c57a1224880d109a943d4a788c019215bde8ff4d811b36c5a71b72f9
   languageName: node
   linkType: hard
 
-"@actions/http-client@npm:^1.0.11":
-  version: 1.0.11
-  resolution: "@actions/http-client@npm:1.0.11"
-  dependencies:
-    tunnel: 0.0.6
-  checksum: 2c72834ec36a121ae95d2cb61fd28234eae2ab265a2aefe857a9eeb788ea77b284ad727ecd3c67fefd1920d5f2800b6c1ba6916b39d44f81f293b4b0020d367c
+"@actions/http-client@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "@actions/http-client@npm:2.0.0"
+  checksum: ac0818271563f3608601a4781014a2df98be4324adac43572509846066e64329637c2f4982624de99ff1df4a92911d393f5978ae3a779e26639e031dba593e6f
   languageName: node
   linkType: hard
 
@@ -2047,7 +2045,7 @@ __metadata:
     "@changesets/write": 0.1.8
     "@juggle/resize-observer": 3.3.1
     "@manypkg/get-packages": 1.1.3
-    "@pmmmwh/react-refresh-webpack-plugin": 0.5.5
+    "@pmmmwh/react-refresh-webpack-plugin": 0.5.6
     autoprefixer: 10.4.7
     babel-jest: 28.1.0
     babel-loader: 8.2.5
@@ -2359,8 +2357,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@finos/legend-internal-github-bot@workspace:scripts/github-bot"
   dependencies:
-    "@actions/core": 1.8.0
-    "@actions/github": 5.0.1
+    "@actions/core": 1.8.1
+    "@actions/github": 5.0.2
     chalk: 5.0.1
   languageName: unknown
   linkType: soft
@@ -2534,7 +2532,7 @@ __metadata:
     "@types/lodash-es": 4.17.6
     "@types/lossless-json": 1.0.1
     "@types/object-hash": 2.2.1
-    "@types/pako": 1.0.3
+    "@types/pako": 2.0.0
     "@types/seedrandom": 3.0.2
     "@types/uuid": 8.3.4
     cross-env: 7.0.3
@@ -2706,7 +2704,7 @@ __metadata:
     rimraf: 3.0.2
     sass: 1.51.0
     serializr: 2.0.5
-    sql-formatter: 4.0.2
+    sql-formatter: 6.1.0
     typescript: 4.6.4
   peerDependencies:
     react: ^18.0.0
@@ -3525,9 +3523,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@pmmmwh/react-refresh-webpack-plugin@npm:0.5.5":
-  version: 0.5.5
-  resolution: "@pmmmwh/react-refresh-webpack-plugin@npm:0.5.5"
+"@pmmmwh/react-refresh-webpack-plugin@npm:0.5.6":
+  version: 0.5.6
+  resolution: "@pmmmwh/react-refresh-webpack-plugin@npm:0.5.6"
   dependencies:
     ansi-html-community: ^0.0.8
     common-path-prefix: ^3.0.0
@@ -3560,7 +3558,7 @@ __metadata:
       optional: true
     webpack-plugin-serve:
       optional: true
-  checksum: 9914430fc3c5bb6a907cc94faaf6232ee7fdcc8b631a33d3541ae1273f46cdd719eca87932755abf8433c9297666484ed6707c568a131a7a0f55bb442b0e6243
+  checksum: 21ab1157c3b8f5d9a1114cc25f14692757506aa47117ffdeeaf484a71ceeba114d9f9a33b705c51b0991f66f573dc30298eb246b939b4e5afb7592add25fb987
   languageName: node
   linkType: hard
 
@@ -3921,13 +3919,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/jest@npm:27.5.0":
-  version: 27.5.0
-  resolution: "@types/jest@npm:27.5.0"
+"@types/jest@npm:27.5.1":
+  version: 27.5.1
+  resolution: "@types/jest@npm:27.5.1"
   dependencies:
     jest-matcher-utils: ^27.0.0
     pretty-format: ^27.0.0
-  checksum: ca09ac3a17972e18683c57b681a6866c7a56c67f429810ece00425d948da62f207d271becb5cc759da3630f120596ec3c8e0ceb0eecefbe26daffba168b82879
+  checksum: be20e39f7aaf17179109c0060d0a0489cec2034d4e2e28a631284c7ecd13c5ae52f62697a33a0e89b03b6cfe54e9d5e8c2bd387ab2bd90d6071d68c63b86d1e3
   languageName: node
   linkType: hard
 
@@ -4032,10 +4030,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:*, @types/node@npm:17.0.31":
+"@types/node@npm:*":
   version: 17.0.31
   resolution: "@types/node@npm:17.0.31"
   checksum: 704618350f8420d5c47db0f7778398e821b7724369946f5c441a7e6b9343295553936400eb8309f0b07d5e39c240988ab3456b983712ca86265dabc9aee4ad3d
+  languageName: node
+  linkType: hard
+
+"@types/node@npm:17.0.32":
+  version: 17.0.32
+  resolution: "@types/node@npm:17.0.32"
+  checksum: afb05704b42032566b3da8b2d80a68883cd3b888472d1b8b4dd6c84f8fad371454f083d4e28bd30c10589187296119d92aba255638b30067afe062b5922388a5
   languageName: node
   linkType: hard
 
@@ -4060,10 +4065,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/pako@npm:1.0.3":
-  version: 1.0.3
-  resolution: "@types/pako@npm:1.0.3"
-  checksum: a0fcada8fe162b191b43b68036772bf6344fc047426a7187100f9570ef73c9b953fef2098ade84e709a280790e7e92043ed8f83675dfd042fa605ffc78c7e400
+"@types/pako@npm:2.0.0":
+  version: 2.0.0
+  resolution: "@types/pako@npm:2.0.0"
+  checksum: 50240a036b5e6acabbf36ac4dca93ec9e619241f0404da8d401cdb427bec3029833324b8a04c4b1ae2ecbc33422fdec31dbf9f43653d9d07cafb82ace78dfccd
   languageName: node
   linkType: hard
 
@@ -10125,16 +10130,16 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "legend-studio@workspace:."
   dependencies:
-    "@actions/core": 1.8.0
-    "@actions/github": 5.0.1
+    "@actions/core": 1.8.1
+    "@actions/github": 5.0.2
     "@babel/core": 7.17.10
     "@changesets/cli": 2.22.0
     "@finos/babel-preset-legend-studio": "workspace:*"
     "@finos/eslint-plugin-legend-studio": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/stylelint-config-legend-studio": "workspace:*"
-    "@types/jest": 27.5.0
-    "@types/node": 17.0.31
+    "@types/jest": 27.5.1
+    "@types/node": 17.0.32
     chalk: 5.0.1
     cross-env: 7.0.3
     envinfo: 7.8.1
@@ -10153,7 +10158,7 @@ __metadata:
     sort-package-json: 1.57.0
     stylelint: 14.8.2
     typescript: 4.6.4
-    yargs: 17.4.1
+    yargs: 17.5.0
   languageName: unknown
   linkType: soft
 
@@ -14504,14 +14509,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sql-formatter@npm:4.0.2":
-  version: 4.0.2
-  resolution: "sql-formatter@npm:4.0.2"
+"sql-formatter@npm:6.1.0":
+  version: 6.1.0
+  resolution: "sql-formatter@npm:6.1.0"
   dependencies:
     argparse: ^2.0.1
   bin:
-    sql-formatter: bin/sqlfmt.js
-  checksum: ce2bd1c507bc3435cfc17184d6404e39d033541ebf0f092087623972a4cf0f72822aec0752060b9f8ed387b63e3a1c46e3d621037dd069fe15f258a83e235940
+    sql-formatter: bin/sql-formatter-cli.js
+  checksum: 6d72e3752acf5fd831fded05c9120c42271b8ef313986f772b128c38c11d09fc7c6c439feb0cd6fdd4d31bbf913328509d4ed1ba9912d2ff55d5ea036d25b4cd
   languageName: node
   linkType: hard
 
@@ -15288,13 +15293,6 @@ __metadata:
   bin:
     tty-table: adapters/terminal-adapter.js
   checksum: 7dd03d7bbc8d945533fed1df73b393681ad4b9e50626a3c523fbe86f90d83d08163cb58d76a326b3f5cb7bdc8d751c31c61441902565dc800c25313e67656e00
-  languageName: node
-  linkType: hard
-
-"tunnel@npm:0.0.6":
-  version: 0.0.6
-  resolution: "tunnel@npm:0.0.6"
-  checksum: c362948df9ad34b649b5585e54ce2838fa583aa3037091aaed66793c65b423a264e5229f0d7e9a95513a795ac2bd4cb72cda7e89a74313f182c1e9ae0b0994fa
   languageName: node
   linkType: hard
 
@@ -16315,9 +16313,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"yargs@npm:17.4.1, yargs@npm:^17.3.1":
-  version: 17.4.1
-  resolution: "yargs@npm:17.4.1"
+"yargs@npm:17.5.0":
+  version: 17.5.0
+  resolution: "yargs@npm:17.5.0"
   dependencies:
     cliui: ^7.0.2
     escalade: ^3.1.1
@@ -16326,7 +16324,7 @@ __metadata:
     string-width: ^4.2.3
     y18n: ^5.0.5
     yargs-parser: ^21.0.0
-  checksum: e9012322870d7e4e912a6ae1f63b203e365f911c0cf158be92c36edefddfb3bd38ce17eb9ef0d18858a4777f047c50589ea22dacb44bd949169ba37dc6d34bee
+  checksum: e2c662a7a63aa125a162cc0d77e38bdfe2a0dd5121a0d485a464499cd7782c5198b57103aed4608df96a017d01cb6a834bc22d4a1f20b92649fa82983d53522b
   languageName: node
   linkType: hard
 
@@ -16346,6 +16344,21 @@ __metadata:
     y18n: ^4.0.0
     yargs-parser: ^18.1.2
   checksum: 40b974f508d8aed28598087720e086ecd32a5fd3e945e95ea4457da04ee9bdb8bdd17fd91acff36dc5b7f0595a735929c514c40c402416bbb87c03f6fb782373
+  languageName: node
+  linkType: hard
+
+"yargs@npm:^17.3.1":
+  version: 17.4.1
+  resolution: "yargs@npm:17.4.1"
+  dependencies:
+    cliui: ^7.0.2
+    escalade: ^3.1.1
+    get-caller-file: ^2.0.5
+    require-directory: ^2.1.1
+    string-width: ^4.2.3
+    y18n: ^5.0.5
+    yargs-parser: ^21.0.0
+  checksum: e9012322870d7e4e912a6ae1f63b203e365f911c0cf158be92c36edefddfb3bd38ce17eb9ef0d18858a4777f047c50589ea22dacb44bd949169ba37dc6d34bee
   languageName: node
   linkType: hard
 
