@@ -16,7 +16,7 @@
 
 @use 'mixins' as *;
 
-.testable-manager {
+.global-test-runner {
   &__header__title {
     width: calc(100% - 3.4rem);
   }

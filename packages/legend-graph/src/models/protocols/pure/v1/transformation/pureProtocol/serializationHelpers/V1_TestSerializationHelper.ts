@@ -162,8 +162,8 @@ export const V1_equalToJsonModelSchema = createModelSchema(V1_EqualToJson, {
 });
 
 const V1_relationalTDSModelSchema = createModelSchema(V1_RelationalTDS, {
-  rows: list(usingModelSchema(V1_relationalDataTableRowModelSchema)),
   columns: list(usingModelSchema(V1_relationalDataTableColumnSchema)),
+  rows: list(usingModelSchema(V1_relationalDataTableRowModelSchema)),
 });
 
 const V1_equalToTDSModelSchema = createModelSchema(V1_EqualToTDS, {

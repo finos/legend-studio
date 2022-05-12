@@ -30,6 +30,8 @@ import {
   TestPassed,
   AssertPass,
   AssertFail,
+  PackageableElement,
+  getNullableIdFromTestable,
 } from '@finos/legend-graph';
 import {
   type GeneratorFn,
@@ -39,18 +41,59 @@ import {
   uuid,
   assertTrue,
   guaranteeNonNullable,
+  UnsupportedOperationError,
+  filterByType,
 } from '@finos/legend-shared';
 import { action, flow, makeObservable, observable } from 'mobx';
-import {
-  type TestableMetadata,
-  getTestableMetadata,
-} from '../../../components/TestableStudio';
+import { getElementTypeIcon } from '../../../components/shared/ElementIconUtils';
 import type { EditorSDLCState } from '../../EditorSDLCState';
 import type { EditorStore } from '../../EditorStore';
 import type {
   LegendStudioPlugin,
   TestableMetadataGetter,
 } from '../../LegendStudioPlugin';
+
+// Testable Metadata
+export interface TestableMetadata {
+  testable: Testable;
+  id: string;
+  name: string;
+  icon: React.ReactNode;
+}
+
+export const getTestableMetadata = (
+  testable: Testable,
+  editorStore: EditorStore,
+  extraTestableMetadataGetters: TestableMetadataGetter[],
+): TestableMetadata => {
+  if (testable instanceof PackageableElement) {
+    return {
+      testable: testable,
+      id:
+        getNullableIdFromTestable(
+          testable,
+          editorStore.graphManagerState.graph,
+          editorStore.graphManagerState.pluginManager.getPureGraphManagerPlugins(),
+        ) ?? uuid(),
+      name: testable.name,
+      icon: getElementTypeIcon(
+        editorStore,
+        editorStore.graphState.getPackageableElementType(testable),
+      ),
+    };
+  }
+  const extraTestables = extraTestableMetadataGetters
+    .map((getter) => getter(testable, editorStore))
+    .filter(isNonNullable);
+  return (
+    extraTestables[0] ?? {
+      testable,
+      id: uuid(),
+      name: '(unknown)',
+      icon: null,
+    }
+  );
+};
 
 // TreeData
 export abstract class TestableExplorerTreeNodeData implements TreeNodeData {
@@ -67,14 +110,27 @@ export abstract class TestableExplorerTreeNodeData implements TreeNodeData {
 
 export class TestableTreeNodeData extends TestableExplorerTreeNodeData {
   testableMetadata: TestableMetadata;
+  isRunning = false;
 
   constructor(testable: TestableMetadata) {
     super(testable.id, testable.id);
     this.testableMetadata = testable;
+    makeObservable(this, {
+      isRunning: observable,
+    });
   }
 }
 
-export abstract class TestTreeNodeData extends TestableExplorerTreeNodeData {}
+export abstract class TestTreeNodeData extends TestableExplorerTreeNodeData {
+  isRunning = false;
+
+  constructor(id: string, label: string) {
+    super(id, label);
+    makeObservable(this, {
+      isRunning: observable,
+    });
+  }
+}
 
 export class AtomicTestTreeNodeData extends TestTreeNodeData {
   atomicTest: AtomicTest;
@@ -202,6 +258,7 @@ export enum TESTABLE_RESULT {
   ERROR = 'ERROR',
   FAILED = 'FAILED',
   PASSED = 'PASSED',
+  IN_PROGRESS = 'IN_PROGRESS',
 }
 
 const getTestableResultFromTestResult = (
@@ -242,8 +299,19 @@ const getTestableResultFromTestResults = (
 
 export const getNodeTestableResult = (
   node: TestableExplorerTreeNodeData,
+  globalRun: boolean,
   results: Map<AtomicTest, TestResult>,
 ): TESTABLE_RESULT => {
+  if (globalRun && node instanceof TestableTreeNodeData) {
+    return TESTABLE_RESULT.IN_PROGRESS;
+  }
+  if (
+    (node instanceof TestTreeNodeData ||
+      node instanceof TestableTreeNodeData) &&
+    node.isRunning
+  ) {
+    return TESTABLE_RESULT.IN_PROGRESS;
+  }
   if (node instanceof AssertionTestTreeNodeData) {
     const status = getAssertionStatus(node.assertion, results);
     if (status) {
@@ -271,7 +339,7 @@ export const getNodeTestableResult = (
 
 export class TestableState {
   readonly uuid = uuid();
-  managerState: TestableManagerState;
+  globalTestRunnerState: GlobalTestRunnerState;
   editorStore: EditorStore;
   testableMetadata: TestableMetadata;
   treeData: TreeData<TestableExplorerTreeNodeData>;
@@ -280,7 +348,7 @@ export class TestableState {
 
   constructor(
     editorStore: EditorStore,
-    managerState: TestableManagerState,
+    globalTestRunnerState: GlobalTestRunnerState,
     testable: Testable,
   ) {
     makeObservable(this, {
@@ -295,50 +363,71 @@ export class TestableState {
       run: flow,
     });
     this.editorStore = editorStore;
-    this.managerState = managerState;
-    this.testableMetadata = guaranteeNonNullable(
-      getTestableMetadata(
-        testable,
-        editorStore,
-        this.managerState.extraTestableMetadataGetters,
-      ),
+    this.globalTestRunnerState = globalTestRunnerState;
+    this.testableMetadata = getTestableMetadata(
+      testable,
+      editorStore,
+      this.globalTestRunnerState.extraTestableMetadataGetters,
     );
     this.treeData = this.buildTreeData(this.testableMetadata);
   }
 
   *run(node: TestableExplorerTreeNodeData): GeneratorFn<void> {
+    this.isRunningTests.inProgress();
+    let input: RunTestsTestableInput;
+    let currentNode = node;
     try {
-      this.isRunningTests.inProgress();
-      let input: RunTestsTestableInput;
       if (node instanceof AssertionTestTreeNodeData) {
         const atomicTest = guaranteeNonNullable(node.assertion.parentTest);
-        const suite = atomicTest.parentSuite;
+        const suite = atomicTest.__parentSuite;
         input = new RunTestsTestableInput(this.testableMetadata.testable);
         input.unitTestIds = [new AtomicTestId(suite, atomicTest)];
+        const parentNode = Array.from(this.treeData.nodes.values())
+          .filter(filterByType(AtomicTestTreeNodeData))
+          .find((n) => n.atomicTest === atomicTest);
+        if (parentNode) {
+          currentNode = parentNode;
+          parentNode.isRunning = true;
+        }
       } else if (node instanceof AtomicTestTreeNodeData) {
         const atomicTest = node.atomicTest;
-        const suite = atomicTest.parentSuite;
+        const suite = atomicTest.__parentSuite;
         input = new RunTestsTestableInput(this.testableMetadata.testable);
         input.unitTestIds = [new AtomicTestId(suite, atomicTest)];
+        node.isRunning = true;
       } else if (node instanceof TestSuiteTreeNodeData) {
         input = new RunTestsTestableInput(this.testableMetadata.testable);
         input.unitTestIds = node.testSuite.tests.map(
           (s) => new AtomicTestId(node.testSuite, s),
         );
-      } else {
+        node.isRunning = true;
+      } else if (node instanceof TestableTreeNodeData) {
         input = new RunTestsTestableInput(this.testableMetadata.testable);
+        node.isRunning = true;
+      } else {
+        throw new UnsupportedOperationError(
+          `Unable to run tests for node ${node}`,
+        );
       }
       const testResults =
         (yield this.editorStore.graphManagerState.graphManager.runTests(
           this.editorStore.graphManagerState.graph,
+          this.editorStore.graphManagerState.pluginManager.getPureGraphManagerPlugins(),
           [input],
         )) as TestResult[];
-      this.managerState.handleResults(testResults);
+      this.globalTestRunnerState.handleResults(testResults);
       this.isRunningTests.complete();
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.notifyError(error);
       this.isRunningTests.fail();
+    } finally {
+      if (
+        currentNode instanceof TestTreeNodeData ||
+        currentNode instanceof TestableTreeNodeData
+      ) {
+        currentNode.isRunning = false;
+      }
     }
   }
 
@@ -379,10 +468,10 @@ export class TestableState {
   }
 }
 
-export class TestableManagerState {
+export class GlobalTestRunnerState {
   editorStore: EditorStore;
   sdlcState: EditorSDLCState;
-  _testableStates: TestableState[] | undefined;
+  testableStates: TestableState[] | undefined;
   isRunningTests = ActionState.create();
   extraTestableMetadataGetters: TestableMetadataGetter[] = [];
   failureViewing: AssertFail | TestError | undefined;
@@ -391,7 +480,7 @@ export class TestableManagerState {
     makeObservable(this, {
       editorStore: false,
       sdlcState: false,
-      _testableStates: observable,
+      testableStates: observable,
       init: action,
       runAllTests: flow,
       failureViewing: observable,
@@ -409,17 +498,17 @@ export class TestableManagerState {
   }
 
   init(force?: boolean): void {
-    if (!this._testableStates || force) {
+    if (!this.testableStates || force) {
       const testables =
         this.editorStore.graphManagerState.graph.allOwnTestables;
-      this._testableStates = testables.map(
+      this.testableStates = testables.map(
         (testable) => new TestableState(this.editorStore, this, testable),
       );
     }
   }
 
   get testables(): TestableState[] {
-    return this._testableStates ?? [];
+    return this.testableStates ?? [];
   }
 
   get isDispatchingAction(): boolean {
@@ -432,12 +521,13 @@ export class TestableManagerState {
   setFailureViewing(val: AssertFail | TestError | undefined): void {
     this.failureViewing = val;
   }
+
   *runAllTests(testableState: TestableState | undefined): GeneratorFn<void> {
     try {
       this.isRunningTests.inProgress();
       let inputs: RunTestsTestableInput[] = [];
       if (!testableState) {
-        inputs = (this._testableStates ?? []).map(
+        inputs = (this.testableStates ?? []).map(
           (e) => new RunTestsTestableInput(e.testableMetadata.testable),
         );
       } else {
@@ -448,9 +538,9 @@ export class TestableManagerState {
       const testResults =
         (yield this.editorStore.graphManagerState.graphManager.runTests(
           this.editorStore.graphManagerState.graph,
+          this.editorStore.graphManagerState.pluginManager.getPureGraphManagerPlugins(),
           inputs,
         )) as TestResult[];
-
       this.handleResults(testResults);
       this.isRunningTests.complete();
     } catch (error) {
@@ -459,6 +549,7 @@ export class TestableManagerState {
       this.isRunningTests.fail();
     }
   }
+
   handleResults(testResults: TestResult[]): void {
     testResults.forEach((testResult) => {
       const testableState = this.testables.find(

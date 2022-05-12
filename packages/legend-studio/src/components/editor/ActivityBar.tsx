@@ -247,8 +247,8 @@ export const ActivityBar = observer(() => {
       icon: <WrenchIcon />,
     },
     !editorStore.isInConflictResolutionMode && {
-      mode: ACTIVITY_MODE.TEST,
-      title: 'Test Manager',
+      mode: ACTIVITY_MODE.GLOBAL_TEST_RUNNER,
+      title: 'Global Test Runner',
       icon: <FlaskIcon />,
     },
   ].filter((activity): activity is ActivityDisplay => Boolean(activity));

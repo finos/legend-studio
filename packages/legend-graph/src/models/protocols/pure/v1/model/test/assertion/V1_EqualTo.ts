@@ -32,6 +32,7 @@ export class V1_EqualTo extends V1_TestAssertion implements Hashable {
       hashObjectWithoutSourceInformation(this.expected),
     ]);
   }
+
   accept_TestAssertionVisitor<T>(visitor: V1_TestAssertionVisitor<T>): T {
     return visitor.visit_EqualTo(this);
   }

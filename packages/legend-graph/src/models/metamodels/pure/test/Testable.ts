@@ -16,31 +16,49 @@
 
 import { isNonNullable } from '@finos/legend-shared';
 import type { PureModel } from '../../../../graph/PureModel';
+import type { PureGraphManagerPlugin } from '../../../../graphManager/PureGraphManagerPlugin';
 import { PackageableElement } from '../packageableElements/PackageableElement';
 import type { Test } from './Test';
 
 export interface Testable {
   tests: Test[];
 }
+
+export type TestableIDBuilder = (
+  testable: Testable,
+  graph: PureModel,
+) => string | undefined;
+
+export type TestableFinder = (
+  id: string,
+  graph: PureModel,
+) => Testable | undefined;
+
+export type TestablesCollector = (graph: PureModel) => Testable[];
+
 export const getNullableTestable = (
   id: string,
   graph: PureModel,
+  pureGraphManagerPlugins: PureGraphManagerPlugin[],
 ): Testable | undefined =>
   graph.allOwnTestables.find(
     (e) => e instanceof PackageableElement && e.path === id,
   ) ??
-  graph.testableExtensions
-    .map((g) => g.getTestableFromId?.(id, graph))
+  pureGraphManagerPlugins
+    .flatMap((plugin) => plugin.getExtraTestableFinders?.() ?? [])
+    .map((getter) => getter(id, graph))
     .filter(isNonNullable)[0];
 
 export const getNullableIdFromTestable = (
   testable: Testable,
   graph: PureModel,
+  pureGraphManagerPlugins: PureGraphManagerPlugin[],
 ): string | undefined => {
   if (testable instanceof PackageableElement) {
     return testable.path;
   }
-  return graph.testableExtensions
-    .map((g) => g.getIdFromTestable?.(testable, graph))
+  return pureGraphManagerPlugins
+    .flatMap((plugin) => plugin.getExtraTestableIDBuilders?.() ?? [])
+    .map((getter) => getter(testable, graph))
     .filter(isNonNullable)[0];
 };

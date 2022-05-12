@@ -248,7 +248,12 @@ import type { RunTestsTestableInput } from '../../../metamodels/pure/test/result
 import { V1_buildTestsResult } from './engine/test/V1_RunTestsResult';
 import type { TestResult } from '../../../metamodels/pure/test/result/TestResult';
 import type { Service } from '../../../../DSLService_Exports';
-import { getNullableIdFromTestable } from '../../../metamodels/pure/test/Testable';
+import {
+  type Testable,
+  getNullableIdFromTestable,
+  getNullableTestable,
+} from '../../../metamodels/pure/test/Testable';
+import type { PureGraphManagerPlugin } from '../../../../graphManager/PureGraphManagerPlugin';
 
 const V1_FUNCTION_SUFFIX_MULTIPLICITY_INFINITE = 'MANY';
 
@@ -1621,15 +1626,23 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   }
 
   // ------------------------------------------- Test  -------------------------------------------
+
   async runTests(
     graph: PureModel,
+    pureGraphManagerPlugins: PureGraphManagerPlugin[],
     testableInputs: RunTestsTestableInput[],
   ): Promise<TestResult[]> {
     const runTestsInput = new V1_RunTestsInput();
     runTestsInput.model = this.getFullGraphModelData(graph);
     runTestsInput.testables = testableInputs
       .map((input) => {
-        const testable = getNullableIdFromTestable(input.testable, graph);
+        const testable = guaranteeNonNullable(
+          getNullableIdFromTestable(
+            input.testable,
+            graph,
+            pureGraphManagerPlugins,
+          ),
+        );
         if (!testable) {
           return undefined;
         }
@@ -1644,8 +1657,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         return runTestableInput;
       })
       .filter(isNonNullable);
+    const testableFromIdGetter = (id: string): Testable | undefined =>
+      getNullableTestable(id, graph, pureGraphManagerPlugins);
     const runTestsResult = await this.engine.runTests(runTestsInput);
-    const result = V1_buildTestsResult(runTestsResult, graph);
+    const result = V1_buildTestsResult(runTestsResult, testableFromIdGetter);
     return result;
   }
 

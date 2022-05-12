@@ -33,7 +33,7 @@ import {
   observe_ExternalFormatData,
   observe_RelationalDataTableColumn,
   observe_RelationalDataTableRow,
-} from './Data_ObserverHelper';
+} from './DSLData_ObserverHelper';
 import {
   observe_ServiceTest,
   observe_ServiceTestSuite,

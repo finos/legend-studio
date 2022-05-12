@@ -28,7 +28,7 @@ import {
   type LegendApplicationDocumentationEntry,
   LegendApplicationPlugin,
 } from '@finos/legend-application';
-import type { TestableMetadata } from '../components/TestableStudio';
+import type { TestableMetadata } from './sidebar-state/testable/GlobalTestRunnerState';
 
 export type ApplicationSetup = (
   pluginManager: LegendStudioPluginManager,

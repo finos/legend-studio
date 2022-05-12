@@ -108,10 +108,10 @@ export const V1_relationalDataTableRowModelSchema = createModelSchema(
 const V1_relationalDataTableModelSchema = createModelSchema(
   V1_RelationalDataTable,
   {
-    schemaName: optional(primitive()),
-    tableName: primitive(),
     columns: list(usingModelSchema(V1_relationalDataTableColumnSchema)),
     rows: list(usingModelSchema(V1_relationalDataTableRowModelSchema)),
+    schemaName: optional(primitive()),
+    tableName: primitive(),
   },
 );
 

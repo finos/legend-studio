@@ -18,7 +18,7 @@ import { AbstractPlugin, type Clazz } from '@finos/legend-shared';
 import type { PackageableElement } from '../models/metamodels/pure/packageableElements/PackageableElement';
 import type { PureModel } from './PureModel';
 import type { GraphPluginManager } from '../GraphPluginManager';
-import type { TestableExtension } from './TestableExtension';
+import type { TestablesCollector } from '../models/metamodels/pure/test/Testable';
 
 export type DeadReferencesCleaner = (graph: PureModel) => void;
 
@@ -50,5 +50,8 @@ export abstract class PureGraphPlugin extends AbstractPlugin {
    */
   getExtraDeadReferencesCleaners?(): DeadReferencesCleaner[];
 
-  getExtraTestables?(): TestableExtension[];
+  /**
+   * Get the list of collectors for testable items
+   */
+  getExtraTestablesCollectors?(): TestablesCollector[];
 }

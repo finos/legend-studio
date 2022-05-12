@@ -18,6 +18,7 @@ import type { TestAssertion } from '../TestAssertion';
 
 export abstract class AssertionStatus {
   assertion: TestAssertion;
+
   constructor(assertion: TestAssertion) {
     this.assertion = assertion;
   }

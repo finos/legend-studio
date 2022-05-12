@@ -119,7 +119,7 @@ export const V1_buildServiceTest = (
 ): ServiceTest => {
   const serviceTest = new ServiceTest();
   serviceTest.id = element.id;
-  serviceTest.parentSuite = parentSuite;
+  serviceTest.__parentSuite = parentSuite;
   serviceTest.parameters = element.parameters.map((parameter) =>
     buildParameterValue(parameter),
   );
