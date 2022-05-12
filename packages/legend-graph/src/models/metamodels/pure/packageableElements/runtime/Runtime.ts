@@ -14,13 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  type Hashable,
-  hashArray,
-  generateEnumerableNameFromToken,
-  assertTrue,
-  uuid,
-} from '@finos/legend-shared';
+import { type Hashable, hashArray, uuid } from '@finos/legend-shared';
 import {
   CORE_HASH_STRUCTURE,
   PackageableElementPointerType,
@@ -79,30 +73,6 @@ export abstract class Runtime implements Hashable {
 export class EngineRuntime extends Runtime implements Hashable {
   mappings: PackageableElementReference<Mapping>[] = [];
   connections: StoreConnections[] = [];
-
-  // TODO: to be simplified out of metamodel
-  get allIdentifiedConnections(): IdentifiedConnection[] {
-    return this.connections.flatMap(
-      (storeConnections) => storeConnections.storeConnections,
-    );
-  }
-
-  // TODO: to be simplified out of metamodel
-  generateIdentifiedConnectionId(): string {
-    const generatedId = generateEnumerableNameFromToken(
-      this.allIdentifiedConnections.map(
-        (identifiedConnection) => identifiedConnection.id,
-      ),
-      'connection',
-    );
-    assertTrue(
-      !this.allIdentifiedConnections.find(
-        (identifiedConnection) => identifiedConnection.id === generatedId,
-      ),
-      `Can't auto-generate connection ID with value '${generatedId}'`,
-    );
-    return generatedId;
-  }
 
   get hashCode(): string {
     return hashArray([

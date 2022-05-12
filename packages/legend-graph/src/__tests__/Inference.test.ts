@@ -28,6 +28,7 @@ import {
   TEST__excludeSectionIndex,
   TEST__getTestGraphManagerState,
 } from '../GraphManagerTestUtils';
+import { getTag } from '../helpers/DomainHelper';
 
 test(unitTest('Infer default mapping element ID'), async () => {
   const graphManagerState = TEST__getTestGraphManagerState();
@@ -94,9 +95,10 @@ test(
     let enumeration = graphManagerState.graph.getEnumeration('test::tEnum');
     const tagValue = enumeration.taggedValues[0];
     if (tagValue) {
-      tagValue.tag.value = graphManagerState.graph
-        .getProfile('test::tProf')
-        .getTag('s4');
+      tagValue.tag.value = getTag(
+        graphManagerState.graph.getProfile('test::tProf'),
+        's4',
+      );
       tagValue.tag.ownerReference.value =
         graphManagerState.graph.getProfile('test::tProf');
     }
@@ -120,9 +122,10 @@ test(
     enumeration = graphManagerState.graph.getEnumeration('test::tEnum');
     const taggedValue = enumeration.taggedValues[0];
     if (taggedValue) {
-      taggedValue.tag.value = graphManagerState.graph
-        .getProfile('test2::tProf')
-        .getTag('s1');
+      taggedValue.tag.value = getTag(
+        graphManagerState.graph.getProfile('test2::tProf'),
+        's1',
+      );
       taggedValue.tag.ownerReference.value =
         graphManagerState.graph.getProfile('test2::tProf');
     }

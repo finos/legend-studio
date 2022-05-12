@@ -61,6 +61,7 @@ import {
   type SourceValue,
   type EnumerationMapping,
   type OptionalPackageableElementReference,
+  getEnumValueNames,
 } from '@finos/legend-graph';
 import {
   enumMapping_updateSourceType,
@@ -175,13 +176,13 @@ export const SourceValueInput = observer(
       // reset if not an enum value set to enum if source value not an enum
       if (
         expectedType instanceof Enumeration &&
-        !expectedType.getValueNames().includes(val)
+        !getEnumValueNames(expectedType).includes(val)
       ) {
         updateSourceValue(undefined);
       } else if (
         expectedType instanceof Enumeration &&
         !(sourceValue instanceof Enum) &&
-        expectedType.getValueNames().includes(val)
+        getEnumValueNames(expectedType).includes(val)
       ) {
         const enumValue = expectedType.values.find((e) => e.name === val);
         updateSourceValue(enumValue);

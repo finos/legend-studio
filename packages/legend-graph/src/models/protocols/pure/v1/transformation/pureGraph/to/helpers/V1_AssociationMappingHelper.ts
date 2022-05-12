@@ -27,7 +27,10 @@ import { V1_ProtocolToMetaModelPropertyMappingBuilder } from '../../../../transf
 import type { V1_AssociationMapping } from '../../../../model/packageableElements/mapping/V1_AssociationMapping';
 import { V1_XStoreAssociationMapping } from '../../../../model/packageableElements/mapping/xStore/V1_XStoreAssociationMapping';
 import { XStoreAssociationImplementation } from '../../../../../../../metamodels/pure/packageableElements/mapping/xStore/XStoreAssociationImplementation';
-import { getAllEnumerationMappings } from '../../../../../../../../helpers/DSLMapping_Helper';
+import {
+  getAllEnumerationMappings,
+  getAllIncludedMappings,
+} from '../../../../../../../../helpers/DSLMapping_Helper';
 
 const getInferredAssociationMappingId = (
   _association: Association,
@@ -44,7 +47,10 @@ const buildRelationalAssociationMapping = (
   parentMapping: Mapping,
   context: V1_GraphBuilderContext,
 ): RelationalAssociationImplementation => {
-  const allClassMappings = [parentMapping, ...parentMapping.allIncludedMappings]
+  const allClassMappings = [
+    parentMapping,
+    ...getAllIncludedMappings(parentMapping),
+  ]
     .map((m) => m.classMappings)
     .flat();
   const association = context.resolveAssociation(element.association);
@@ -78,7 +84,10 @@ const buildXStoreAssociationMapping = (
   parentMapping: Mapping,
   context: V1_GraphBuilderContext,
 ): XStoreAssociationImplementation => {
-  const allClassMappings = [parentMapping, ...parentMapping.allIncludedMappings]
+  const allClassMappings = [
+    parentMapping,
+    ...getAllIncludedMappings(parentMapping),
+  ]
     .map((m) => m.classMappings)
     .flat();
   const association = context.resolveAssociation(element.association);

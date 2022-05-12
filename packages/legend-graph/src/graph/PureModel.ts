@@ -36,8 +36,6 @@ import type { Type } from '../models/metamodels/pure/packageableElements/domain/
 import { Class } from '../models/metamodels/pure/packageableElements/domain/Class';
 import type { Mapping } from '../models/metamodels/pure/packageableElements/mapping/Mapping';
 import type { Profile } from '../models/metamodels/pure/packageableElements/domain/Profile';
-import type { Stereotype } from '../models/metamodels/pure/packageableElements/domain/Stereotype';
-import type { Tag } from '../models/metamodels/pure/packageableElements/domain/Tag';
 import type { Store } from '../models/metamodels/pure/packageableElements/store/Store';
 import { DependencyManager } from '../graph/DependencyManager';
 import { ConcreteFunctionDefinition } from '../models/metamodels/pure/packageableElements/domain/ConcreteFunctionDefinition';
@@ -220,21 +218,6 @@ export class PureModel extends BasicModel {
     return [...this.ownTestables].concat(...extraTestables);
   }
 
-  getProfileStereotype = (
-    path: string,
-    value: string,
-  ): Stereotype | undefined => this.getProfile(path).getStereotype(value);
-  getProfileTag = (path: string, value: string): Tag | undefined =>
-    this.getProfile(path).getTag(value);
-  getNullableClass = (path: string): Class | undefined =>
-    returnUndefOnError(() => this.getClass(path));
-  getNullableMapping = (path: string): Mapping | undefined =>
-    returnUndefOnError(() => this.getMapping(path));
-  getNullableFileGeneration = (
-    path: string,
-  ): FileGenerationSpecification | undefined =>
-    returnUndefOnError(() => this.getFileGeneration(path));
-
   getPrimitiveType = (type: PRIMITIVE_TYPE): PrimitiveType =>
     guaranteeNonNullable(
       this.coreModel.primitiveTypesIndex.get(type),
@@ -392,6 +375,15 @@ export class PureModel extends BasicModel {
       this.getNullableElement(path, includePackage),
       `Can't find element '${path}'`,
     );
+
+  getNullableClass = (path: string): Class | undefined =>
+    returnUndefOnError(() => this.getClass(path));
+  getNullableMapping = (path: string): Mapping | undefined =>
+    returnUndefOnError(() => this.getMapping(path));
+  getNullableFileGeneration = (
+    path: string,
+  ): FileGenerationSpecification | undefined =>
+    returnUndefOnError(() => this.getFileGeneration(path));
 
   getNullableElement(
     path: string,

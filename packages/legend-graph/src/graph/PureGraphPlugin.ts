@@ -18,9 +18,9 @@ import { AbstractPlugin, type Clazz } from '@finos/legend-shared';
 import type { PackageableElement } from '../models/metamodels/pure/packageableElements/PackageableElement';
 import type { PureModel } from './PureModel';
 import type { GraphPluginManager } from '../GraphPluginManager';
+import type { Testable } from '../models/metamodels/pure/test/Testable';
 
 export type DeadReferencesCleaner = (graph: PureModel) => void;
-
 export type TestablesCollector = (graph: PureModel) => Testable[];
 
 /**

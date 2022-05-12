@@ -15,8 +15,10 @@
  */
 
 import { AbstractPlugin } from '@finos/legend-shared';
+import type { PureModel } from '../graph/PureModel';
 import type { GraphPluginManager } from '../GraphPluginManager';
 import type { PackageableElement } from '../models/metamodels/pure/packageableElements/PackageableElement';
+import type { Testable } from '../models/metamodels/pure/test/Testable';
 import type { ObserverContext } from './action/changeDetection/CoreObserverHelper';
 
 /**

@@ -54,6 +54,7 @@ import {
   VariableExpression,
   INTERNAL__PropagatedValue,
   SimpleFunctionExpression,
+  getEnumValue,
 } from '@finos/legend-graph';
 import { getMultiplicityDescription } from './shared/QueryBuilderUtils';
 import {
@@ -414,7 +415,9 @@ const setCollectionValue = (
   } else if (expectedType instanceof Enumeration) {
     result = uniq(parseData.map((item) => item.trim()))
       .map((item): EnumValueInstanceValue | undefined => {
-        const _enum = returnUndefOnError(() => expectedType.getValue(item));
+        const _enum = returnUndefOnError(() =>
+          getEnumValue(expectedType, item),
+        );
         if (!_enum) {
           return undefined;
         }

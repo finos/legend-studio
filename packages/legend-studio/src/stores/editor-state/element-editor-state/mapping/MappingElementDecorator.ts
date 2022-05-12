@@ -58,6 +58,9 @@ import {
   isStubbed_RawRelationalOperationElement,
   isStubbed_EnumValueMapping,
   isStubbed_SetImplementationContainer,
+  getLeafSetImplementations,
+  getAllClassProperties,
+  getRawGenericType,
 } from '@finos/legend-graph';
 import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../DSLMapping_LegendStudioPlugin_Extension';
 import type { EditorStore } from '../../../EditorStore';
@@ -94,7 +97,7 @@ export const getDecoratedSetImplementationPropertyMappings = <
       propertyMappingMap.set(pm.property.value.name, [pm]);
     }
   });
-  setImp.class.value.getAllProperties().forEach((property) => {
+  getAllClassProperties(setImp.class.value).forEach((property) => {
     propertyMappingMap.set(
       property.name,
       decoratePropertyMapping(propertyMappingMap.get(property.name), property),
@@ -103,7 +106,7 @@ export const getDecoratedSetImplementationPropertyMappings = <
   return Array.from(propertyMappingMap.values()).flat();
 };
 
-export const getLeafSetImplementations = (
+export const getLeafSetImplementationsForClass = (
   mapping: Mapping,
   _class: Class,
 ): SetImplementation[] | undefined => {
@@ -112,7 +115,7 @@ export const getLeafSetImplementations = (
     return undefined;
   }
   if (setImp instanceof OperationSetImplementation) {
-    return setImp.leafSetImplementations;
+    return getLeafSetImplementations(setImp);
   }
   return [setImp];
 };
@@ -234,9 +237,11 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
         // Find existing enumeration mappings for the property enumeration
         const existingEnumerationMappings = getEnumerationMappingsByEnumeration(
           setImplementation._PARENT,
-          (
-            enumerationPropertyMapping[0] as PurePropertyMapping
-          ).property.value.genericType.value.getRawType(Enumeration),
+          getRawGenericType(
+            (enumerationPropertyMapping[0] as PurePropertyMapping).property
+              .value.genericType.value,
+            Enumeration,
+          ),
         );
         enumerationPropertyMapping.forEach((epm) => {
           // If there are no enumeration mappings, delete the transformer of the property mapping
@@ -260,9 +265,9 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
           // TODO: should we try to get leaf implementation here from the root
           // or should we just simply find all class mappings for the target class
           // as we should not try to `understand` operation class mapping union?
-          getLeafSetImplementations(
+          getLeafSetImplementationsForClass(
             setImplementation._PARENT,
-            property.genericType.value.getRawType(Class),
+            getRawGenericType(property.genericType.value, Class),
           );
         // if there are no root-resolved set implementations for the class, return empty array
         if (!resolvedLeafSetImps) {
@@ -375,9 +380,11 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
         // Find existing enumeration mappings for the property enumeration
         const existingEnumerationMappings = getEnumerationMappingsByEnumeration(
           setImplementation._PARENT,
-          (
-            ePropertyMapping[0] as FlatDataPropertyMapping
-          ).property.value.genericType.value.getRawType(Enumeration),
+          getRawGenericType(
+            (ePropertyMapping[0] as FlatDataPropertyMapping).property.value
+              .genericType.value,
+            Enumeration,
+          ),
         );
         ePropertyMapping.forEach((epm) => {
           assertType(
@@ -504,9 +511,11 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
         // Find existing enumeration mappings for the property enumeration
         const existingEnumerationMappings = getEnumerationMappingsByEnumeration(
           setImplementation._PARENT,
-          (
-            ePropertyMapping[0] as PropertyMapping
-          ).property.value.genericType.value.getRawType(Enumeration),
+          getRawGenericType(
+            (ePropertyMapping[0] as PropertyMapping).property.value.genericType
+              .value,
+            Enumeration,
+          ),
         );
         ePropertyMapping.forEach((epm) => {
           assertType(
@@ -532,9 +541,9 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
         // TODO: should we try to get leaf implementation here from the root
         // or should we just simply find all class mappings for the target class
         // as we should not try to `understand` operation class mapping union?
-        const resolvedLeafSetImps = getLeafSetImplementations(
+        const resolvedLeafSetImps = getLeafSetImplementationsForClass(
           setImplementation._PARENT,
-          property.genericType.value.getRawType(Class),
+          getRawGenericType(property.genericType.value, Class),
         );
         // if there are no root-resolved set implementations for the class, return empty array
         if (resolvedLeafSetImps) {

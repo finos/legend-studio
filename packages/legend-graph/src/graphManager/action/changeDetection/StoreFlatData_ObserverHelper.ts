@@ -165,7 +165,6 @@ export const observe_FlatData = skipObserved(
 
     makeObservable<FlatData, '_elementHashCode'>(metamodel, {
       sections: observable,
-      recordTypes: computed,
       _elementHashCode: override,
     });
 

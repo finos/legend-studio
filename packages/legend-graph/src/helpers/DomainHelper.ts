@@ -21,17 +21,42 @@ import {
   ELEMENT_PATH_DELIMITER,
   RESERVERD_PACKAGE_NAMES,
   MILESTONING_STEREOTYPE,
+  PRIMITIVE_TYPE,
 } from '../MetaModelConst';
 import { Package } from '../models/metamodels/pure/packageableElements/domain/Package';
 import type { PackageableElement } from '../models/metamodels/pure/packageableElements/PackageableElement';
 import {
+  type Clazz,
   AssertionError,
   assertNonEmptyString,
   assertTrue,
+  guaranteeNonNullable,
   guaranteeType,
+  uniqBy,
+  UnsupportedOperationError,
 } from '@finos/legend-shared';
 import { createPath } from '../MetaModelUtils';
 import type { BasicModel } from '../graph/BasicModel';
+import type { Profile } from '../models/metamodels/pure/packageableElements/domain/Profile';
+import type { Tag } from '../models/metamodels/pure/packageableElements/domain/Tag';
+import type { Stereotype } from '../models/metamodels/pure/packageableElements/domain/Stereotype';
+import type { Type } from '../models/metamodels/pure/packageableElements/domain/Type';
+import {
+  Measure,
+  Unit,
+} from '../models/metamodels/pure/packageableElements/domain/Measure';
+import { Enumeration } from '../models/metamodels/pure/packageableElements/domain/Enumeration';
+import { PrimitiveType } from '../models/metamodels/pure/packageableElements/domain/PrimitiveType';
+import { Property } from '../models/metamodels/pure/packageableElements/domain/Property';
+import type { Association } from '../models/metamodels/pure/packageableElements/domain/Association';
+import type {
+  AbstractProperty,
+  PropertyOwner,
+} from '../models/metamodels/pure/packageableElements/domain/AbstractProperty';
+import { DerivedProperty } from '../models/metamodels/pure/packageableElements/domain/DerivedProperty';
+import type { Enum } from '../models/metamodels/pure/packageableElements/domain/Enum';
+import type { Constraint } from '../models/metamodels/pure/packageableElements/domain/Constraint';
+import type { GenericType } from '../models/metamodels/pure/packageableElements/domain/GenericType';
 
 export const addElementToPackage = (
   parent: Package,
@@ -181,6 +206,11 @@ export const getOrCreateGraphPackage = (
   return getOrCreatePackage(graph.root, packagePath, true, cache);
 };
 
+export const getRawGenericType = <T extends Type>(
+  genericType: GenericType,
+  clazz: Clazz<T>,
+): T => guaranteeType<T>(genericType.rawType, clazz);
+
 /**
  * Extract the type of temporal milestone the class is associated with (using stereotype).
  *
@@ -220,4 +250,249 @@ export const getMilestoneTemporalStereotype = (
     }
   });
   return stereotype;
+};
+
+export const getTag = (profile: Profile, value: string): Tag =>
+  guaranteeNonNullable(
+    profile.tags.find((tag) => tag.value === value),
+    `Can't find tag '${value}' in profile '${profile.path}'`,
+  );
+
+export const getStereotype = (profile: Profile, value: string): Stereotype =>
+  guaranteeNonNullable(
+    profile.stereotypes.find((stereotype) => stereotype.value === value),
+    `Can't find stereotype '${value}' in profile '${profile.path}'`,
+  );
+
+export const getEnumValueNames = (enumeration: Enumeration): string[] =>
+  enumeration.values.map((value) => value.name).filter(Boolean);
+
+export const getEnumValue = (enumeration: Enumeration, name: string): Enum =>
+  guaranteeNonNullable(
+    enumeration.values.find((value) => value.name === name),
+    `Can't find enum value '${name}' in enumeration '${enumeration.path}'`,
+  );
+
+export const getFirstAssociatedProperty = (
+  association: Association,
+): Property => guaranteeNonNullable(association.properties[0]);
+
+export const getSecondAssociatedProperty = (
+  association: Association,
+): Property => guaranteeNonNullable(association.properties[1]);
+
+export const getOtherAssociatedProperty = (
+  association: Association,
+  property: Property,
+): Property => {
+  const idx = association.properties.findIndex((p) => p === property);
+  assertTrue(
+    idx !== -1,
+    `Can't find property '${property.name}' in association '${association.path}'`,
+  );
+  return guaranteeNonNullable(association.properties[(idx + 1) % 2]);
+};
+
+export const getAssociatedPropertyClass = (
+  association: Association,
+  property: AbstractProperty,
+): Class => {
+  if (property instanceof Property) {
+    return guaranteeType(
+      getOtherAssociatedProperty(association, property).genericType
+        .ownerReference.value,
+      Class,
+      `Association property '${property.name}' must be of type 'class'`,
+    );
+  } else if (property instanceof DerivedProperty) {
+    throw new UnsupportedOperationError(
+      `Derived property is not currently supported in association`,
+    );
+  }
+  throw new UnsupportedOperationError(
+    `Can't get associated class of property`,
+    property,
+  );
+};
+
+export const getOwnProperty = (
+  propertyOwner: PropertyOwner,
+  name: string,
+): Property =>
+  guaranteeNonNullable(
+    propertyOwner.properties.find((property) => property.name === name),
+    `Can't find property '${name}' in owner '${propertyOwner.path}'`,
+  );
+
+/**
+ * Get all super types of a class, accounted for loop and duplication (which should be caught by compiler)
+ * NOTE: we intentionally leave out `Any`
+ */
+export const getAllSuperclasses = (c: Class): Class[] => {
+  const visitedClasses = new Set<Class>();
+  visitedClasses.add(c);
+  const resolveSuperTypes = (_class: Class): void => {
+    _class.generalizations.forEach((gen) => {
+      const superType = getRawGenericType(gen.value, Class);
+      if (!visitedClasses.has(superType)) {
+        visitedClasses.add(superType);
+        resolveSuperTypes(superType);
+      }
+    });
+  };
+  resolveSuperTypes(c);
+  visitedClasses.delete(c);
+  return Array.from(visitedClasses);
+};
+
+/**
+ * Get all subclasses of a class, accounted for loop and duplication (which should be caught by compiler)
+ * NOTE: we intentionally leave out `Any`
+ */
+export const getAllSubclasses = (c: Class): Class[] => {
+  const visitedClasses = new Set<Class>();
+  visitedClasses.add(c);
+  const resolveSubclasses = (_class: Class): void => {
+    _class._subclasses.forEach((subclass) => {
+      if (!visitedClasses.has(subclass)) {
+        visitedClasses.add(subclass);
+        resolveSubclasses(subclass);
+      }
+    });
+  };
+  resolveSubclasses(c);
+  visitedClasses.delete(c);
+  return Array.from(visitedClasses);
+};
+
+/**
+ * Get class and its supertypes' properties recursively, duplications and loops are handled (Which should be caught by compiler)
+ */
+export const getAllClassProperties = (_class: Class): Property[] =>
+  uniqBy(
+    getAllSuperclasses(_class)
+      .concat(_class)
+      .map((c) => c.propertiesFromAssociations.concat(c.properties))
+      .flat(),
+    (property) => property.name,
+  );
+
+export const getAllClassDerivedProperties = (
+  _class: Class,
+): DerivedProperty[] =>
+  uniqBy(
+    getAllSuperclasses(_class)
+      .concat(_class)
+      .map((c) => c.derivedProperties)
+      .flat(),
+    (property) => property.name,
+  );
+
+export const getClassProperty = (_class: Class, name: string): Property =>
+  guaranteeNonNullable(
+    getAllClassProperties(_class).find((property) => property.name === name),
+    `Can't find property '${name}' in class '${_class.path}'`,
+  );
+
+export const getAllOwnClassProperties = (_class: Class): AbstractProperty[] =>
+  _class.properties
+    .concat(_class.propertiesFromAssociations)
+    .concat(_class.derivedProperties);
+
+export const getOwnClassProperty = (
+  _class: Class,
+  name: string,
+): AbstractProperty =>
+  guaranteeNonNullable(
+    getAllOwnClassProperties(_class).find((property) => property.name === name),
+    `Can't find property '${name}' in class '${_class.path}'`,
+  );
+
+export const getAllClassConstraints = (_class: Class): Constraint[] =>
+  // Perhaps we don't need to care about deduping constraints here like for properties
+  getAllSuperclasses(_class)
+    .concat(_class)
+    .map((c) => c.constraints)
+    .flat();
+
+/**
+ * Check if the first type subtype of the second type
+ *
+ * NOTE: Use this for contravariant and covariant check
+ * See https://www.originate.com/cheat-codes-for-contravariance-and-covariance
+ * See https://en.wikipedia.org/wiki/Covariance_and_contravariance_of_vectors
+ */
+export const isSubType = (type1: Type, type2: Type): boolean => {
+  if (type1 instanceof Unit) {
+    return type1.measure === type2;
+  } else if (type1 instanceof Measure) {
+    return false;
+  } else if (type1 instanceof Enumeration) {
+    return false;
+  } else if (type1 instanceof PrimitiveType) {
+    if (!(type2 instanceof PrimitiveType)) {
+      return false;
+    }
+    if (type2.name === PRIMITIVE_TYPE.NUMBER) {
+      return (
+        type1.name === PRIMITIVE_TYPE.INTEGER ||
+        type1.name === PRIMITIVE_TYPE.FLOAT ||
+        type1.name === PRIMITIVE_TYPE.DECIMAL
+      );
+    }
+    if (type2.name === PRIMITIVE_TYPE.DATE) {
+      return (
+        type1.name === PRIMITIVE_TYPE.STRICTDATE ||
+        type1.name === PRIMITIVE_TYPE.DATETIME ||
+        type1.name === PRIMITIVE_TYPE.LATESTDATE
+      );
+    }
+  } else if (type1 instanceof Class) {
+    return (
+      type1.path === CORE_PURE_PATH.ANY ||
+      (type2 instanceof Class && getAllSuperclasses(type2).includes(type1))
+    );
+  }
+  return false;
+};
+
+/**
+ * Check if the first type supertype of the second type
+ *
+ * NOTE: Use this for contravariant and covariant check
+ * See https://www.originate.com/cheat-codes-for-contravariance-and-covariance
+ * See https://en.wikipedia.org/wiki/Covariance_and_contravariance_of_vectors
+ */
+export const isSuperType = (type1: Type, type2: Type): boolean => {
+  if (type1 instanceof Unit) {
+    return false;
+  } else if (type1 instanceof Measure) {
+    return type2 instanceof Unit && type2.measure === type1;
+  } else if (type1 instanceof Enumeration) {
+    return false;
+  } else if (type1 instanceof PrimitiveType) {
+    if (!(type2 instanceof PrimitiveType)) {
+      return false;
+    }
+    if (type1.name === PRIMITIVE_TYPE.NUMBER) {
+      return (
+        type2.name === PRIMITIVE_TYPE.INTEGER ||
+        type2.name === PRIMITIVE_TYPE.FLOAT ||
+        type2.name === PRIMITIVE_TYPE.DECIMAL
+      );
+    }
+    if (type1.name === PRIMITIVE_TYPE.DATE) {
+      return (
+        type2.name === PRIMITIVE_TYPE.STRICTDATE ||
+        type2.name === PRIMITIVE_TYPE.DATETIME ||
+        type2.name === PRIMITIVE_TYPE.LATESTDATE
+      );
+    }
+  } else if (type1 instanceof Class) {
+    return (
+      type2.path === CORE_PURE_PATH.ANY ||
+      (type2 instanceof Class && getAllSubclasses(type2).includes(type1))
+    );
+  }
+  return false;
 };

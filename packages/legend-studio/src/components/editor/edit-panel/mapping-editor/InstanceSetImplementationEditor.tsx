@@ -81,6 +81,8 @@ import {
   TableAlias,
   TableExplicitReference,
   ViewExplicitReference,
+  getAllRecordTypes,
+  getAllClassProperties,
 } from '@finos/legend-graph';
 import { StudioLambdaEditor } from '../../../shared/StudioLambdaEditor';
 import type { EditorStore } from '../../../../stores/EditorStore';
@@ -161,23 +163,22 @@ export const InstanceSetImplementationSourceExplorer = observer(
             ),
           ).catch(applicationStore.alertUnhandledError);
         } else if (droppedPackagableElement instanceof FlatData) {
-          if (droppedPackagableElement.recordTypes.length === 0) {
+          const allRecordTypes = getAllRecordTypes(droppedPackagableElement);
+          if (allRecordTypes.length === 0) {
             applicationStore.notifyWarning(
               `Source flat-data store '${droppedPackagableElement.path}' must have at least one action`,
             );
             return;
           }
-          if (droppedPackagableElement.recordTypes.length === 1) {
+          if (allRecordTypes.length === 1) {
             flowResult(
               mappingEditorState.changeClassMappingSourceDriver(
                 setImplementation,
-                droppedPackagableElement.recordTypes[0],
+                allRecordTypes[0],
               ),
             ).catch(applicationStore.alertUnhandledError);
           } else {
-            setSourceElementForSourceSelectorModal(
-              droppedPackagableElement.recordTypes[0],
-            );
+            setSourceElementForSourceSelectorModal(allRecordTypes[0]);
           }
         } else if (droppedPackagableElement instanceof Database) {
           const relations = droppedPackagableElement.schemas.flatMap((schema) =>
@@ -437,8 +438,9 @@ export const InstanceSetImplementationEditor = observer(
     );
     const handleSortChange = (): void => setSortByRequired(!sortByRequired);
     // Get properties of supertypes
-    const sortedProperties = setImplementation.class.value
-      .getAllProperties()
+    const sortedProperties = getAllClassProperties(
+      setImplementation.class.value,
+    )
       // LEVEL 1: sort properties by name
       .sort((a, b) => a.name.localeCompare(b.name))
       // LEVEL 2: sort by properties by required/type (which ever is not chosen to be the primary sort)

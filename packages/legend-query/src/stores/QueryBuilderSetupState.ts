@@ -34,6 +34,7 @@ import {
   DEFAULT_PROCESSING_DATE_MILESTONING_PARAMETER_NAME,
   MILESTONING_STEREOTYPE,
   observe_ValueSpecification,
+  getAllIncludedMappings,
 } from '@finos/legend-graph';
 
 export class QueryBuilderSetupState {
@@ -108,7 +109,7 @@ export class QueryBuilderSetupState {
     );
     const resolvedMappingIncludes = this.queryBuilderState.mappings.filter(
       (mapping) =>
-        mapping.allIncludedMappings.some((e) =>
+        getAllIncludedMappings(mapping).some((e) =>
           mappingsWithClassMapped.includes(e),
         ),
     );

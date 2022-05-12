@@ -684,9 +684,6 @@ export const observe_Mapping = skipObservedWithContext(
       enumerationMappings: observable,
       associationMappings: observable,
       tests: observable,
-      allOwnClassMappings: computed,
-      allOwnEnumerationMappings: computed,
-      allIncludedMappings: computed,
       _elementHashCode: override,
     });
 
@@ -877,7 +874,6 @@ export const observe_EngineRuntime = skipObservedWithContext(
     makeObservable(metamodel, {
       mappings: observable,
       connections: observable,
-      allIdentifiedConnections: computed,
       hashCode: computed,
     });
 

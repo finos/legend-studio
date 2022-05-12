@@ -63,6 +63,7 @@ import {
   observe_Unit,
   observe_RawLambda,
   isStubbed_PackageableElement,
+  getOtherAssociatedProperty,
 } from '@finos/legend-graph';
 
 // --------------------------------------------- PackageableElementReference -------------------------------------
@@ -308,7 +309,7 @@ export const enumValueReference_setValue = action(
 
 export const association_changePropertyType = action(
   (association: Association, property: Property, type: Class): void => {
-    const otherProperty = association.getOtherProperty(property);
+    const otherProperty = getOtherAssociatedProperty(association, property);
     // remove other property from current parent class of the to-be-changed property
     const otherPropertyAssociatedClass = guaranteeType(
       property.genericType.ownerReference.value,

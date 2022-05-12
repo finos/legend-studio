@@ -14,16 +14,11 @@
  * limitations under the License.
  */
 
-import {
-  type Hashable,
-  hashArray,
-  guaranteeNonNullable,
-} from '@finos/legend-shared';
+import { type Hashable, hashArray } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import { DataType } from './DataType';
 import type { Enum } from './Enum';
 import type { PackageableElementVisitor } from '../PackageableElement';
-import type { Type } from './Type';
 import type { StereotypeReference } from './StereotypeReference';
 import type { TaggedValue } from './TaggedValue';
 
@@ -31,24 +26,6 @@ export class Enumeration extends DataType implements Hashable {
   values: Enum[] = [];
   stereotypes: StereotypeReference[] = [];
   taggedValues: TaggedValue[] = [];
-
-  // TODO: to be simplified out of metamodel
-  getValueNames = (): string[] =>
-    this.values.map((value) => value.name).filter(Boolean);
-  // TODO: to be simplified out of metamodel
-  getValue = (name: string): Enum =>
-    guaranteeNonNullable(
-      this.values.find((value) => value.name === name),
-      `Can't find enum value '${name}' in enumeration '${this.path}'`,
-    );
-  // TODO: to be simplified out of metamodel
-  isSuperType(type: Type): boolean {
-    return false;
-  }
-  // TODO: to be simplified out of metamodel
-  isSubType(type: Type): boolean {
-    return false;
-  }
 
   protected override get _elementHashCode(): string {
     return hashArray([

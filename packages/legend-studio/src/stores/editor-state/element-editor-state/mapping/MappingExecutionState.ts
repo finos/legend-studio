@@ -60,6 +60,7 @@ import {
   type Table,
   type View,
   type RawLambda,
+  type RawExecutionPlan,
   extractExecutionResultValues,
   LAMBDA_PIPE,
   GRAPH_MANAGER_EVENT,
@@ -89,9 +90,9 @@ import {
   buildSourceInformationSourceId,
   PureClientVersion,
   TableAlias,
-  type RawExecutionPlan,
   stub_RawLambda,
   isStubbed_RawLambda,
+  generateIdentifiedConnectionId,
 } from '@finos/legend-graph';
 import {
   ActionAlertActionType,
@@ -217,7 +218,7 @@ export const createRuntimeForExecution = (
   runtime_addIdentifiedConnection(
     runtime,
     new IdentifiedConnection(
-      runtime.generateIdentifiedConnectionId(),
+      generateIdentifiedConnectionId(runtime),
       connection,
     ),
     editorStore.changeDetectionState.observerContext,

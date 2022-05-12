@@ -45,13 +45,6 @@ export class Unit extends DataType implements Hashable {
     this.conversionFunction = conversionFunction;
   }
 
-  isSuperType(type: Type): boolean {
-    return false;
-  }
-  isSubType(type: Type): boolean {
-    return this.measure === type;
-  }
-
   override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.UNIT,
@@ -70,14 +63,6 @@ export class Unit extends DataType implements Hashable {
 export class Measure extends Type implements Hashable {
   canonicalUnit?: Unit | undefined;
   nonCanonicalUnits: Unit[] = [];
-
-  isSubType(type: Type): boolean {
-    return false;
-  }
-
-  isSuperType(type: Type): boolean {
-    return type instanceof Unit && type.measure === this;
-  }
 
   protected override get _elementHashCode(): string {
     return hashArray([

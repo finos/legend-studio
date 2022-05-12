@@ -80,6 +80,21 @@ import type { GraphBuilderOptions } from '../../../../../../../graphManager/Abst
 import { DataType } from '../../../../../../metamodels/pure/packageableElements/domain/DataType';
 import { GraphBuilderError } from '../../../../../../../graphManager/GraphManagerUtils';
 import type { DataElement } from '../../../../../../../DSLData_Exports';
+import {
+  getClassProperty,
+  getEnumValue,
+  getOwnClassProperty,
+  getStereotype,
+  getTag,
+} from '../../../../../../../helpers/DomainHelper';
+import {
+  getFilter,
+  getJoin,
+} from '../../../../../../../helpers/StoreRelational_Helper';
+import {
+  getRootRecordType,
+  getSection,
+} from '../../../../../../../helpers/StoreFlatData_Helper';
 
 export const V1_buildFullPath = (
   packagePath: string | undefined,
@@ -275,7 +290,7 @@ export class V1_GraphBuilderContext {
       `Steoreotype pointer 'value' field is missing or empty`,
     );
     const ownerReference = this.resolveProfile(stereotypePtr.profile);
-    const value = ownerReference.value.getStereotype(stereotypePtr.value);
+    const value = getStereotype(ownerReference.value, stereotypePtr.value);
     return StereotypeImplicitReference.create(ownerReference, value);
   };
 
@@ -289,7 +304,7 @@ export class V1_GraphBuilderContext {
       `Tag pointer 'value' field is missing or empty`,
     );
     const ownerReference = this.resolveProfile(tagPtr.profile);
-    const value = ownerReference.value.getTag(tagPtr.value);
+    const value = getTag(ownerReference.value, tagPtr.value);
     return TagImplicitReference.create(ownerReference, value);
   };
 
@@ -299,7 +314,7 @@ export class V1_GraphBuilderContext {
     return GenericTypeImplicitReference.create(ownerReference, value);
   };
 
-  resolveOwnedProperty = (
+  resolveOwnProperty = (
     propertyPtr: V1_PropertyPointer,
   ): PropertyImplicitReference => {
     assertNonEmptyString(
@@ -311,7 +326,10 @@ export class V1_GraphBuilderContext {
       `Property pointer 'property' field is missing or empty`,
     );
     const ownerReference = this.resolveClass(propertyPtr.class);
-    const value = ownerReference.value.getOwnedProperty(propertyPtr.property);
+    const value = getOwnClassProperty(
+      ownerReference.value,
+      propertyPtr.property,
+    );
     return PropertyImplicitReference.create(ownerReference, value);
   };
 
@@ -327,7 +345,7 @@ export class V1_GraphBuilderContext {
       `Property pointer 'property' field is missing or empty`,
     );
     const ownerReference = this.resolveClass(propertyPtr.class);
-    const value = ownerReference.value.getProperty(propertyPtr.property);
+    const value = getClassProperty(ownerReference.value, propertyPtr.property);
     return PropertyImplicitReference.create(ownerReference, value);
   };
 
@@ -343,9 +361,9 @@ export class V1_GraphBuilderContext {
       `Flat-data class mapping 'sectionName' field is missing or empty`,
     );
     const ownerReference = this.resolveFlatDataStore(classMapping.flatData);
-    const value = ownerReference.value
-      .findSection(classMapping.sectionName)
-      .getRecordType();
+    const value = getRootRecordType(
+      getSection(ownerReference.value, classMapping.sectionName),
+    );
     return RootFlatDataRecordTypeImplicitReference.create(
       ownerReference,
       value,
@@ -386,7 +404,7 @@ export class V1_GraphBuilderContext {
       `Join pointer 'name' field is missing or empty`,
     );
     const ownerReference = this.resolveDatabase(joinPtr.db);
-    const value = ownerReference.value.getJoin(joinPtr.name);
+    const value = getJoin(ownerReference.value, joinPtr.name);
     return JoinImplicitReference.create(ownerReference, value);
   };
 
@@ -400,7 +418,7 @@ export class V1_GraphBuilderContext {
       `Filter pointer 'name' field is missing or empty`,
     );
     const ownerReference = this.resolveDatabase(filterPtr.db);
-    const value = ownerReference.value.getFilter(filterPtr.name);
+    const value = getFilter(ownerReference.value, filterPtr.name);
     return FilterImplicitReference.create(ownerReference, value);
   };
 
@@ -409,7 +427,7 @@ export class V1_GraphBuilderContext {
     enumValue: string,
   ): EnumValueImplicitReference => {
     const ownerReference = this.resolveEnumeration(enumeration);
-    const value = ownerReference.value.getValue(enumValue);
+    const value = getEnumValue(ownerReference.value, enumValue);
     return EnumValueImplicitReference.create(ownerReference, value);
   };
 

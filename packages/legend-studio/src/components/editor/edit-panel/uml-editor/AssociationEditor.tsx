@@ -66,6 +66,9 @@ import {
   stub_TaggedValue,
   stub_Tag,
   stub_Stereotype,
+  getFirstAssociatedProperty,
+  getSecondAssociatedProperty,
+  getOtherAssociatedProperty,
 } from '@finos/legend-graph';
 import {
   property_setName,
@@ -109,7 +112,8 @@ const AssociationPropertyBasicEditor = observer(
     const propertyTypeOptions = editorStore.classOptions.filter(
       (classOption) =>
         classOption.value !==
-        association.getOtherProperty(property).genericType.value.rawType,
+        getOtherAssociatedProperty(association, property).genericType.value
+          .rawType,
     );
     const propertyType = property.genericType.value.rawType;
     const propertyTypeName = getClassPropertyType(propertyType);
@@ -473,17 +477,17 @@ export const AssociationEditor = observer(
                   <div className="panel__content__lists">
                     <AssociationPropertyBasicEditor
                       association={association}
-                      property={association.getFirstProperty()}
+                      property={getFirstAssociatedProperty(association)}
                       selectProperty={selectProperty(
-                        association.getFirstProperty(),
+                        getFirstAssociatedProperty(association),
                       )}
                       isReadOnly={isReadOnly}
                     />
                     <AssociationPropertyBasicEditor
                       association={association}
-                      property={association.getSecondProperty()}
+                      property={getSecondAssociatedProperty(association)}
                       selectProperty={selectProperty(
-                        association.getSecondProperty(),
+                        getSecondAssociatedProperty(association),
                       )}
                       isReadOnly={isReadOnly}
                     />

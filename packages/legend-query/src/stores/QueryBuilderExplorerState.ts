@@ -54,6 +54,10 @@ import {
   FlatDataPropertyMapping,
   RelationalPropertyMapping,
   isStubbed_RawRelationalOperationElement,
+  getAllClassProperties,
+  getClassProperty,
+  getAllOwnClassProperties,
+  getAllClassDerivedProperties,
 } from '@finos/legend-graph';
 import type { QueryBuilderState } from './QueryBuilderState';
 import { action, makeAutoObservable, observable } from 'mobx';
@@ -283,8 +287,8 @@ const isAutoMappedProperty = (
     const sourceClass = setImpl.srcClass;
     return Boolean(
       sourceClass.value
-        ?.getAllProperties()
-        .find((p) => p.name === property.name),
+        ? getClassProperty(sourceClass.value, property.name)
+        : undefined,
     );
   }
   return false;
@@ -393,10 +397,10 @@ const generateExplorerTreeClassNodeChildrenIDs = (
   const currentClass = node.type as Class;
   const idsFromProperties = (
     node instanceof QueryBuilderExplorerTreeSubTypeNodeData
-      ? currentClass.getAllOwnedProperties()
-      : currentClass
-          .getAllProperties()
-          .concat(currentClass.getAllDerivedProperties())
+      ? getAllOwnClassProperties(currentClass)
+      : getAllClassProperties(currentClass).concat(
+          getAllClassDerivedProperties(currentClass),
+        )
   ).map((p) => `${node.id}.${p.name}`);
   const idsFromsubclasses = currentClass._subclasses.map(
     (subclass) => `${node.id}${TYPE_CAST_TOKEN}${subclass.path}`,
@@ -504,9 +508,8 @@ const getQueryBuilderTreeData = (
   treeRootNode.isOpen = true;
   nodes.set(treeRootNode.id, treeRootNode);
   rootIds.push(treeRootNode.id);
-  rootClass
-    .getAllProperties()
-    .concat(rootClass.getAllDerivedProperties())
+  getAllClassProperties(rootClass)
+    .concat(getAllClassDerivedProperties(rootClass))
     .sort((a, b) => a.name.localeCompare(b.name))
     .sort(
       (a, b) =>

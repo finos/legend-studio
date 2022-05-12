@@ -36,6 +36,10 @@ import {
   GenericType,
   Property,
   Multiplicity,
+  getAllSuperclasses,
+  getAllOwnClassProperties,
+  generateMultiplicityString,
+  getRawGenericType,
 } from '@finos/legend-graph';
 import { action, makeObservable, observable } from 'mobx';
 import type { Diagram } from './models/metamodels/pure/packageableElements/diagram/DSLDiagram_Diagram';
@@ -595,11 +599,11 @@ export class DiagramRenderer {
               // Do not allow creating self-inheritance
               startClassView.class.value !== targetClassView.class.value &&
               // Avoid creating inhertance that already existed
-              !startClassView.class.value.allSuperclasses.includes(
+              !getAllSuperclasses(startClassView.class.value).includes(
                 targetClassView.class.value,
               ) &&
               // Avoid loop (might be expensive)
-              !targetClassView.class.value.allSuperclasses.includes(
+              !getAllSuperclasses(targetClassView.class.value).includes(
                 startClassView.class.value,
               )
             ) {
@@ -924,7 +928,7 @@ export class DiagramRenderer {
             );
           }
           // Add property view
-          addedClass.getAllOwnedProperties().forEach((property) => {
+          getAllOwnClassProperties(addedClass).forEach((property) => {
             if (property.genericType.value.rawType === _class) {
               diagram_addPropertyView(
                 this.diagram,
@@ -938,7 +942,7 @@ export class DiagramRenderer {
               );
             }
           });
-          _class.getAllOwnedProperties().forEach((property) => {
+          getAllOwnClassProperties(_class).forEach((property) => {
             if (property.genericType.value.rawType === addedClass) {
               diagram_addPropertyView(
                 this.diagram,
@@ -1394,14 +1398,14 @@ export class DiagramRenderer {
     this.ctx.font = `${(this.fontSize - 1) * (measureOnly ? 1 : this.zoom)}px ${
       this.fontFamily
     }`;
+    const multiplicityString = generateMultiplicityString(
+      property.multiplicity.lowerBound,
+      property.multiplicity.upperBound,
+    );
     if (!measureOnly) {
-      this.ctx.fillText(
-        `[${property.multiplicity.str}]`,
-        propX + txtMeasure,
-        propY,
-      );
+      this.ctx.fillText(`[${multiplicityString}]`, propX + txtMeasure, propY);
     }
-    txtMeasure += this.ctx.measureText(`[${property.multiplicity.str}]`).width;
+    txtMeasure += this.ctx.measureText(`[${multiplicityString}]`).width;
     return txtMeasure;
   }
 
@@ -1451,7 +1455,7 @@ export class DiagramRenderer {
 
     // Calculate box for properties
     if (!classView.hideProperties) {
-      classView.class.value.getAllOwnedProperties().forEach((property) => {
+      getAllOwnClassProperties(classView.class.value).forEach((property) => {
         if (!this.hasPropertyView(classView, property)) {
           const propertyTextMeasure = this.drawClassViewProperty(
             classView,
@@ -1632,7 +1636,7 @@ export class DiagramRenderer {
       );
       this.ctx.stroke();
 
-      for (const property of classView.class.value.getAllOwnedProperties()) {
+      for (const property of getAllOwnClassProperties(classView.class.value)) {
         if (!this.hasPropertyView(classView, property)) {
           this.ctx.fillStyle =
             property instanceof DerivedProperty
@@ -1671,8 +1675,12 @@ export class DiagramRenderer {
   ): PositionedRectangle {
     this.ctx.font = `${this.fontSize}px ${this.fontFamily}`;
     const propertyName = getPropertyDisplayName(property);
+    const multiplictyString = generateMultiplicityString(
+      property.multiplicity.lowerBound,
+      property.multiplicity.upperBound,
+    );
     const textSize = this.ctx.measureText(propertyName).width;
-    const mulSize = this.ctx.measureText(property.multiplicity.str).width;
+    const mulSize = this.ctx.measureText(multiplictyString).width;
     this.ctx.font = `${this.fontSize * this.zoom}px ${this.fontFamily}`;
     const posX = textPositionX(textSize);
     const posY = textPositionY(textSize);
@@ -1689,7 +1697,7 @@ export class DiagramRenderer {
     );
     if (!measureOnly) {
       this.ctx.fillText(
-        property.multiplicity.str,
+        multiplictyString,
         multiplicityPosition.x,
         multiplicityPosition.y,
       );
@@ -3115,7 +3123,7 @@ export class DiagramRenderer {
           cursorY += this.classViewSpaceY;
 
           // Check hover class property
-          for (const property of _class.getAllOwnedProperties()) {
+          for (const property of getAllOwnClassProperties(_class)) {
             if (!this.hasPropertyView(classView, property)) {
               this.ctx.font = `${(this.fontSize - 1) * this.zoom}px ${
                 this.fontFamily
@@ -3204,7 +3212,7 @@ export class DiagramRenderer {
                 diagram,
                 uuid(),
                 PackageableElementExplicitReference.create(
-                  generation.value.getRawType(Class),
+                  getRawGenericType(generation.value, Class),
                 ),
               ),
           ),

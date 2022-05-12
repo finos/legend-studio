@@ -26,8 +26,11 @@ import {
 import { Database } from '../../../../../../../metamodels/pure/packageableElements/store/relational/model/Database';
 import {
   getAllIncludedDatabases,
+  getColumn,
   getJoinType,
-  getNullableDatabaseFilter,
+  getNullableFilter,
+  getSchema,
+  getView,
 } from '../../../../../../../../helpers/StoreRelational_Helper';
 import { Schema } from '../../../../../../../metamodels/pure/packageableElements/store/relational/model/Schema';
 import { Table } from '../../../../../../../metamodels/pure/packageableElements/store/relational/model/Table';
@@ -193,7 +196,7 @@ const V1_findFilter = (
   const dbs = getAllIncludedDatabases(database).values();
   let db = dbs.next();
   while (!filter && !db.done) {
-    filter = getNullableDatabaseFilter(filterName, db.value);
+    filter = getNullableFilter(db.value, filterName);
     db = dbs.next();
   }
   return filter;
@@ -270,7 +273,7 @@ export const V1_buildRelationalOperationElement = (
     }
     const columnReference = ColumnImplicitReference.create(
       context.resolveDatabase(operationalElement.table.database),
-      relation.value.getColumn(operationalElement.column),
+      getColumn(relation.value, operationalElement.column),
     );
     const tableAliasColumn = new TableAliasColumn();
     tableAliasColumn.alias = guaranteeNonNullable(aliasMap.get(aliasName));
@@ -509,7 +512,7 @@ const buildViewSecondPass = (
   context: V1_GraphBuilderContext,
   schema: Schema,
 ): View => {
-  const view = schema.getView(srcView.name);
+  const view = getView(schema, srcView.name);
   const columnMappings = srcView.columnMappings.map(
     (columnMapping) =>
       new ColumnMapping(
@@ -552,7 +555,7 @@ export const V1_buildDatabaseSchemaViewsFirstPass = (
   database: Database,
   context: V1_GraphBuilderContext,
 ): Schema => {
-  const schema = database.getSchema(srcSchema.name);
+  const schema = getSchema(database, srcSchema.name);
   schema.views = srcSchema.views.map((view) =>
     buildViewFirstPass(view, schema),
   );
@@ -564,7 +567,7 @@ export const V1_buildDatabaseSchemaViewsSecondPass = (
   context: V1_GraphBuilderContext,
   database: Database,
 ): Schema => {
-  const schema = database.getSchema(srcSchema.name);
+  const schema = getSchema(database, srcSchema.name);
   schema.views = srcSchema.views.map((view) =>
     buildViewSecondPass(view, context, schema),
   );

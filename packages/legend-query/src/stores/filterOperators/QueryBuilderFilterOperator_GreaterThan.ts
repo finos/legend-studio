@@ -24,6 +24,7 @@ import {
   type SimpleFunctionExpression,
   type AbstractPropertyExpression,
   PRIMITIVE_TYPE,
+  isSuperType,
 } from '@finos/legend-graph';
 import { UnsupportedOperationError } from '@finos/legend-shared';
 import {
@@ -97,7 +98,7 @@ export class QueryBuilderFilterOperator_GreaterThan extends QueryBuilderFilterOp
         // e.g. LHS(DateTime) = RHS(Date) -> we use isOnDay() instead of is()
         DATE_PRIMITIVE_TYPES.includes(type.path) ||
         type === propertyType ||
-        propertyType.isSuperType(type))
+        isSuperType(propertyType, type))
     );
   }
 

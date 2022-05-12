@@ -42,6 +42,7 @@ import {
   EnumerationMapping,
   FlatDataPropertyMapping,
   getEnumerationMappingsByEnumeration,
+  getRawGenericType,
 } from '@finos/legend-graph';
 import { StudioLambdaEditor } from '../../../shared/StudioLambdaEditor';
 import { flatDataPropertyMapping_setTransformer } from '../../../../stores/graphModifier/StoreFlatData_GraphModifierHelper';
@@ -117,8 +118,10 @@ const EnumerationPropertyMappingEditor = observer(
       FlatDataPropertyMapping,
       'Flat-data property mapping for enumeration type property must be a simple property mapping',
     );
-    const enumeration =
-      propertyMapping.property.value.genericType.value.getRawType(Enumeration);
+    const enumeration = getRawGenericType(
+      propertyMapping.property.value.genericType.value,
+      Enumeration,
+    );
     const expectedType = propertyMapping.transformer
       ? propertyMapping.transformer.sourceType.value
       : enumeration;

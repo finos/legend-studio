@@ -14,56 +14,10 @@
  * limitations under the License.
  */
 
-import { PRIMITIVE_TYPE } from '../../../../../MetaModelConst';
 import { DataType } from './DataType';
 import type { PackageableElementVisitor } from '../PackageableElement';
-import type { Type } from './Type';
 
 export class PrimitiveType extends DataType {
-  // TODO: to be simplified out of metamodel
-  isSuperType(type: Type): boolean {
-    if (!(type instanceof PrimitiveType)) {
-      return false;
-    }
-    if (this.name === PRIMITIVE_TYPE.NUMBER) {
-      return (
-        type.name === PRIMITIVE_TYPE.INTEGER ||
-        type.name === PRIMITIVE_TYPE.FLOAT ||
-        type.name === PRIMITIVE_TYPE.DECIMAL
-      );
-    }
-    if (this.name === PRIMITIVE_TYPE.DATE) {
-      return (
-        type.name === PRIMITIVE_TYPE.STRICTDATE ||
-        type.name === PRIMITIVE_TYPE.DATETIME ||
-        type.name === PRIMITIVE_TYPE.LATESTDATE
-      );
-    }
-    return false;
-  }
-
-  // TODO: to be simplified out of metamodel
-  isSubType(type: Type): boolean {
-    if (!(type instanceof PrimitiveType)) {
-      return false;
-    }
-    if (type.name === PRIMITIVE_TYPE.NUMBER) {
-      return (
-        this.name === PRIMITIVE_TYPE.INTEGER ||
-        this.name === PRIMITIVE_TYPE.FLOAT ||
-        this.name === PRIMITIVE_TYPE.DECIMAL
-      );
-    }
-    if (type.name === PRIMITIVE_TYPE.DATE) {
-      return (
-        this.name === PRIMITIVE_TYPE.STRICTDATE ||
-        this.name === PRIMITIVE_TYPE.DATETIME ||
-        this.name === PRIMITIVE_TYPE.LATESTDATE
-      );
-    }
-    return false;
-  }
-
   accept_PackageableElementVisitor<T>(
     visitor: PackageableElementVisitor<T>,
   ): T {

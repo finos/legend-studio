@@ -32,6 +32,7 @@ import {
   VariableExpression,
   observe_VariableExpression,
   observe_ValueSpecification,
+  getEnumValue,
 } from '@finos/legend-graph';
 import {
   addUniqueEntry,
@@ -160,7 +161,7 @@ export class QueryParameterState {
       const mock = createMockEnumerationProperty(varType);
       if (mock !== '') {
         enumValueInstance.values = [
-          EnumValueExplicitReference.create(varType.getValue(mock)),
+          EnumValueExplicitReference.create(getEnumValue(varType, mock)),
         ];
       }
       return enumValueInstance;

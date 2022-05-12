@@ -14,13 +14,24 @@
  * limitations under the License.
  */
 
-import { guaranteeType, UnsupportedOperationError } from '@finos/legend-shared';
+import {
+  filterByType,
+  guaranteeNonNullable,
+  guaranteeType,
+  UnsupportedOperationError,
+} from '@finos/legend-shared';
 import { RelationalInputType } from '../models/metamodels/pure/packageableElements/store/relational/mapping/RelationalInputData';
+import { Column } from '../models/metamodels/pure/packageableElements/store/relational/model/Column';
 import { Database } from '../models/metamodels/pure/packageableElements/store/relational/model/Database';
 import type { Filter } from '../models/metamodels/pure/packageableElements/store/relational/model/Filter';
-import { JoinType } from '../models/metamodels/pure/packageableElements/store/relational/model/RelationalOperationElement';
+import type { Join } from '../models/metamodels/pure/packageableElements/store/relational/model/Join';
+import {
+  JoinType,
+  type Relation,
+} from '../models/metamodels/pure/packageableElements/store/relational/model/RelationalOperationElement';
 import type { Schema } from '../models/metamodels/pure/packageableElements/store/relational/model/Schema';
 import type { Table } from '../models/metamodels/pure/packageableElements/store/relational/model/Table';
+import type { View } from '../models/metamodels/pure/packageableElements/store/relational/model/View';
 
 const collectIncludedDatabases = (
   results: Set<Database>,
@@ -54,34 +65,6 @@ export const getAllIncludedDatabases = (db: Database): Set<Database> => {
   return results;
 };
 
-export const getNullableDatabaseSchema = (
-  name: string,
-  db: Database,
-): Schema | undefined => db.schemas.find((schema) => schema.name === name);
-
-export const getNullableSchemaTable = (
-  name: string,
-  schema: Schema,
-): Table | undefined => schema.tables.find((table) => table.name === name);
-
-export const getNullableDatabaseFilter = (
-  filterName: string,
-  db: Database,
-): Filter | undefined =>
-  db.filters.find((filter) => filter.name === filterName);
-
-export const getNullableDatabaseTable = (
-  _table: string,
-  _schema: string,
-  db: Database,
-): Table | undefined => {
-  const schema = getNullableDatabaseSchema(_schema, db);
-  if (schema) {
-    return getNullableSchemaTable(_table, schema);
-  }
-  return undefined;
-};
-
 export const getJoinType = (type: string): JoinType => {
   switch (type) {
     case JoinType.INNER:
@@ -109,3 +92,68 @@ export const getRelationalInputType = (type: string): RelationalInputType => {
       );
   }
 };
+
+export const getNullableSchema = (
+  database: Database,
+  name: string,
+): Schema | undefined =>
+  database.schemas.find((schema) => schema.name === name);
+
+export const getNullableFilter = (
+  database: Database,
+  name: string,
+): Filter | undefined =>
+  database.filters.find((filter) => filter.name === name);
+
+export const getSchema = (database: Database, name: string): Schema =>
+  guaranteeNonNullable(
+    getNullableSchema(database, name),
+    `Can't find schema '${name}' in database '${database.path}'`,
+  );
+
+export const getJoin = (database: Database, name: string): Join =>
+  guaranteeNonNullable(
+    Array.from(getAllIncludedDatabases(database))
+      .flatMap((includedDB) => includedDB.joins)
+      .find((join) => join.name === name),
+    `Can't find join '${name}' in database '${database.path}'`,
+  );
+
+export const getFilter = (database: Database, name: string): Filter =>
+  guaranteeNonNullable(
+    getNullableFilter(database, name),
+    `Can't find filter '${name}' in database '${database.path}'`,
+  );
+
+export const getNullableTable = (
+  schema: Schema,
+  name: string,
+): Table | undefined => schema.tables.find((table) => table.name === name);
+
+export const getTable = (schema: Schema, name: string): Table =>
+  guaranteeNonNullable(
+    getNullableTable(schema, name),
+    `Can't find table '${name}' in schema '${schema.name}' of database '${schema._OWNER.path}'`,
+  );
+
+export const getView = (schema: Schema, name: string): View =>
+  guaranteeNonNullable(
+    schema.views.find((view) => view.name === name),
+    `Can't find view '${name}' in schema '${schema.name}' of database '${schema._OWNER.path}'`,
+  );
+
+export const getRelation = (schema: Schema, name: string): Relation => {
+  const relations: (Table | View)[] = schema.tables;
+  return guaranteeNonNullable(
+    relations.concat(schema.views).find((relation) => relation.name === name),
+    `Can't find relation '${name}' in schema '${schema.name}' of database '${schema._OWNER.path}'`,
+  );
+};
+
+export const getColumn = (relation: Table | View, name: string): Column =>
+  guaranteeNonNullable(
+    relation.columns
+      .filter(filterByType(Column))
+      .find((column) => column.name === name),
+    `Can't find column '${name}' in table '${relation.name}'`,
+  );

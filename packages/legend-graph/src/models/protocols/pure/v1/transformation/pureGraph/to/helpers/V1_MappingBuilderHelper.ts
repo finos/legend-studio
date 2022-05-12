@@ -33,10 +33,7 @@ import {
   SourceValue,
 } from '../../../../../../../metamodels/pure/packageableElements/mapping/EnumValueMapping';
 import { MappingTest } from '../../../../../../../metamodels/pure/packageableElements/mapping/MappingTest';
-import {
-  ObjectInputData,
-  getObjectInputType,
-} from '../../../../../../../metamodels/pure/packageableElements/store/modelToModel/mapping/ObjectInputData';
+import { ObjectInputData } from '../../../../../../../metamodels/pure/packageableElements/store/modelToModel/mapping/ObjectInputData';
 import type { InputData } from '../../../../../../../metamodels/pure/packageableElements/mapping/InputData';
 import { FlatDataInputData } from '../../../../../../../metamodels/pure/packageableElements/store/flatData/mapping/FlatDataInputData';
 import { ExpectedOutputMappingTestAssert } from '../../../../../../../metamodels/pure/packageableElements/mapping/ExpectedOutputMappingTestAssert';
@@ -67,8 +64,13 @@ import type { V1_MappingInclude } from '../../../../model/packageableElements/ma
 import { V1_buildRawLambdaWithResolvedPaths } from './V1_ValueSpecificationPathResolver';
 import { V1_RelationalInputData } from '../../../../model/packageableElements/store/relational/mapping/V1_RelationalInputData';
 import { RelationalInputData } from '../../../../../../../metamodels/pure/packageableElements/store/relational/mapping/RelationalInputData';
-import { getAllClassMappings } from '../../../../../../../../helpers/DSLMapping_Helper';
+import {
+  getAllClassMappings,
+  getObjectInputType,
+} from '../../../../../../../../helpers/DSLMapping_Helper';
 import { getRelationalInputType } from '../../../../../../../../helpers/StoreRelational_Helper';
+import { getEnumValue } from '../../../../../../../../helpers/DomainHelper';
+import { V1_getIncludedMappingPath } from '../../../../helper/V1_DSLMapping_Helper';
 
 export const V1_getInferredClassMappingId = (
   _class: Class,
@@ -92,7 +94,7 @@ const buildEnumValueMapping = (
   const enumValueMapping = new EnumValueMapping(
     EnumValueImplicitReference.create(
       enumerationReference,
-      enumerationReference.value.getValue(srcEnumValueMapping.enumValue),
+      getEnumValue(enumerationReference.value, srcEnumValueMapping.enumValue),
     ),
   );
   // We will support processing for enumeration mappings with and without source type
@@ -184,7 +186,7 @@ export const V1_buildMappingInclude = (
 ): MappingInclude => {
   const includedMapping = new MappingInclude(
     parentMapping,
-    context.resolveMapping(mappingInclude.includedMappingPath),
+    context.resolveMapping(V1_getIncludedMappingPath(mappingInclude)),
   );
   if (mappingInclude.sourceDatabasePath && mappingInclude.targetDatabasePath) {
     includedMapping.storeSubstitutions.push(

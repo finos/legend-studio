@@ -414,7 +414,7 @@ export const getEmbeddedSetImplementations = (
 const getMappingEmbeddedSetImplementations = (
   mapping: Mapping,
 ): InstanceSetImplementation[] =>
-  mapping.allOwnClassMappings
+  mapping.classMappings
     .filter(filterByType(InstanceSetImplementation))
     .map(getEmbeddedSetImplementations)
     .flat();
@@ -431,7 +431,7 @@ const getMappingElementByTypeAndId = (
     case MAPPING_ELEMENT_SOURCE_ID_LABEL.OPERATION_CLASS_MAPPING:
     case MAPPING_ELEMENT_SOURCE_ID_LABEL.AGGREGATION_AWARE_CLASS_MAPPING:
     case MAPPING_ELEMENT_SOURCE_ID_LABEL.PURE_INSTANCE_CLASS_MAPPING:
-      return mapping.allOwnClassMappings.find(
+      return mapping.classMappings.find(
         (classMapping) => classMapping.id.value === id,
       );
     case MAPPING_ELEMENT_SOURCE_ID_LABEL.FLAT_DATA_CLASS_MAPPING:

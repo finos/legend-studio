@@ -32,6 +32,7 @@ import {
 } from '../../../helpers/DSLMapping_Helper';
 import { RootRelationalInstanceSetImplementation } from '../../../models/metamodels/pure/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation';
 import { EmbeddedRelationalInstanceSetImplementation } from '../../../models/metamodels/pure/packageableElements/store/relational/mapping/EmbeddedRelationalInstanceSetImplementation';
+import { getClassProperty } from '../../../helpers/DomainHelper';
 
 let graphManagerState: GraphManagerState;
 
@@ -110,6 +111,6 @@ test(unitTest('Embedded Relational Mapping'), () => {
     personClassMapping,
   );
   expect(firmEmbeddedAddress.property.value).toBe(
-    firmClass.getProperty('address'),
+    getClassProperty(firmClass, 'address'),
   );
 });

@@ -90,6 +90,11 @@ import { BindingTransformer } from '../../../../../../metamodels/pure/packageabl
 import type { Mapping } from '../../../../../../metamodels/pure/packageableElements/mapping/Mapping';
 import { V1_resolveBinding } from './V1_DSLExternalFormat_GraphBuilderHelper';
 import { TEMPORARY__UnresolvedSetImplementation } from '../../../../../../metamodels/pure/packageableElements/mapping/TEMPORARY__UnresolvedSetImplementation';
+import {
+  getAssociatedPropertyClass,
+  getOwnProperty,
+  getClassProperty,
+} from '../../../../../../../helpers/DomainHelper';
 
 /**
  * This test is skipped because we want to temporarily relax graph building algorithm
@@ -117,11 +122,14 @@ const resolveRelationalPropertyMappingSource = (
         value.source,
       );
     }
-    const property = immediateParent.association.value.getProperty(
+    const property = getOwnProperty(
+      immediateParent.association.value,
       value.property.property,
     );
-    const _class =
-      immediateParent.association.value.getPropertyAssociatedClass(property);
+    const _class = getAssociatedPropertyClass(
+      immediateParent.association.value,
+      property,
+    );
     const setImpls = getClassMappingsByClass(immediateParent._PARENT, _class);
     return setImpls.find((r) => r.root.value) ?? setImpls[0];
   }
@@ -303,7 +311,10 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
       );
     }
     // NOTE: mapping for derived property is not supported
-    const property = propertyOwnerClass.getProperty(protocol.property.property);
+    const property = getClassProperty(
+      propertyOwnerClass,
+      protocol.property.property,
+    );
     const sourceSetImplementation = guaranteeNonNullable(
       this.immediateParent instanceof EmbeddedFlatDataPropertyMapping
         ? this.immediateParent
@@ -381,7 +392,10 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
         `Can't find property owner class for property '${protocol.property.property}'`,
       );
     }
-    const property = propertyOwnerClass.getProperty(protocol.property.property);
+    const property = getClassProperty(
+      propertyOwnerClass,
+      protocol.property.property,
+    );
     let _class: PackageableElementReference<Class>;
     if (protocol.class) {
       _class = this.context.resolveClass(protocol.class);
@@ -497,7 +511,7 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
           `Can't find property owner class for property '${protocol.property.property}'`,
         );
       }
-      property = propertyOwner.getProperty(protocol.property.property);
+      property = getOwnProperty(propertyOwner, protocol.property.property);
     }
     // NOTE: mapping for derived property is not supported
     // since we are not doing embedded property mappings yet, the target must have already been added to the mapping
@@ -632,7 +646,10 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
         `Can't find property owner class for property '${protocol.property.property}'`,
       );
     }
-    const property = propertyOwnerClass.getProperty(protocol.property.property);
+    const property = getClassProperty(
+      propertyOwnerClass,
+      protocol.property.property,
+    );
     const propertyType = property.genericType.value.rawType;
     const complexClass = guaranteeType(
       propertyType,
@@ -826,7 +843,7 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
       `XStore property 'xStoreParent' field is missing`,
     );
     const _association = xStoreParent.association.value;
-    const property = _association.getProperty(protocol.property.property);
+    const property = getOwnProperty(_association, protocol.property.property);
     const sourceSetImplementation = this.allClassMappings.find(
       (c) => c.id.value === protocol.source,
     );

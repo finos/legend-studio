@@ -121,6 +121,7 @@ import type { V1_HackedUnit } from '../../../../model/valueSpecification/raw/V1_
 import type { V1_INTERNAL__UnknownValueSpecification } from '../../../../model/valueSpecification/V1_INTERNAL__UnknownValueSpecfication';
 import { INTERNAL__UnknownValueSpecification } from '../../../../../../../metamodels/pure/valueSpecification/INTERNAL__UnknownValueSpecification';
 import { GraphBuilderError } from '../../../../../../../../graphManager/GraphManagerUtils';
+import { getEnumValue } from '../../../../../../../../helpers/DomainHelper';
 
 const LET_FUNCTION = 'letFunction';
 
@@ -888,7 +889,7 @@ export function V1_processProperty(
       context.graph.getTypicalMultiplicity(TYPICAL_MULTIPLICITY_TYPE.ONE),
     );
     enumValueInstanceValue.values = [
-      EnumValueExplicitReference.create(inferredType.getValue(property)),
+      EnumValueExplicitReference.create(getEnumValue(inferredType, property)),
     ];
     return enumValueInstanceValue;
   }

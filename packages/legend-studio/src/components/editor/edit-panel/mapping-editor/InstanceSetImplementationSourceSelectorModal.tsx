@@ -37,6 +37,7 @@ import {
   TableAlias,
   TableExplicitReference,
   ViewExplicitReference,
+  getAllRecordTypes,
 } from '@finos/legend-graph';
 import { UnsupportedOperationError } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
@@ -137,7 +138,7 @@ export const InstanceSetImplementationSourceSelectorModal = observer(
       )
       .concat(
         editorStore.graphManagerState.graph.ownFlatDatas.flatMap(
-          (e) => e.recordTypes,
+          getAllRecordTypes,
         ),
       )
       .concat(

@@ -14,26 +14,17 @@
  * limitations under the License.
  */
 
-import {
-  type Hashable,
-  type Writable,
-  guaranteeNonNullable,
-  guaranteeType,
-  assertTrue,
-  UnsupportedOperationError,
-  hashArray,
-} from '@finos/legend-shared';
+import { type Hashable, type Writable, hashArray } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import {
   type PackageableElementVisitor,
   PackageableElement,
 } from '../PackageableElement';
-import { Property } from './Property';
-import { Class } from './Class';
+import type { Property } from './Property';
 import type { AnnotatedElement } from './AnnotatedElement';
 import type { TaggedValue } from './TaggedValue';
 import type { StereotypeReference } from './StereotypeReference';
-import { DerivedProperty } from './DerivedProperty';
+import type { DerivedProperty } from './DerivedProperty';
 import type { AbstractProperty } from './AbstractProperty';
 import {
   stub_Class,
@@ -64,6 +55,8 @@ export class Association
   /**
    * To store the abstract properties generated while processing the milestoning properties. The properties
    * generated are `allVersions`, `allVersionsInRange` and derived property with date parameter.
+   *
+   * TODO: process new property added while editing the graph
    */
   _generatedMilestonedProperties: AbstractProperty[] = [];
 
@@ -84,40 +77,6 @@ export class Association
     (properties[1] as Writable<Property>)._OWNER = this;
     this.properties = properties;
   }
-
-  getFirstProperty = (): Property => guaranteeNonNullable(this.properties[0]);
-  getSecondProperty = (): Property => guaranteeNonNullable(this.properties[1]);
-  getOtherProperty = (property: Property): Property => {
-    const idx = this.properties.findIndex((p) => p === property);
-    assertTrue(
-      idx !== -1,
-      `Can't find property '${property.name}' in association '${this.path}'`,
-    );
-    return guaranteeNonNullable(this.properties[(idx + 1) % 2]);
-  };
-  getPropertyAssociatedClass = (property: AbstractProperty): Class => {
-    if (property instanceof Property) {
-      return guaranteeType(
-        this.getOtherProperty(property).genericType.ownerReference.value,
-        Class,
-        `Association property '${property.name}' must be of type 'class'`,
-      );
-    } else if (property instanceof DerivedProperty) {
-      throw new UnsupportedOperationError(
-        `Derived property is not currently supported in association`,
-      );
-    }
-    throw new UnsupportedOperationError(
-      `Can't get associated class of property`,
-      property,
-    );
-  };
-
-  getProperty = (name: string): Property =>
-    guaranteeNonNullable(
-      this.properties.find((p) => p.name === name),
-      `Can't find property '${name}' in class '${this.path}'`,
-    );
 
   protected override get _elementHashCode(): string {
     return hashArray([

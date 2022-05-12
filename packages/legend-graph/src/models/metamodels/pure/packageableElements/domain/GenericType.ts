@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { type Clazz, guaranteeType, uuid } from '@finos/legend-shared';
+import { uuid } from '@finos/legend-shared';
 import type { Type } from './Type';
 
 export class GenericType {
@@ -25,7 +25,4 @@ export class GenericType {
   constructor(rawType: Type) {
     this.rawType = rawType;
   }
-
-  getRawType = <T extends Type>(clazz: Clazz<T>): T =>
-    guaranteeType<T>(this.rawType, clazz);
 }

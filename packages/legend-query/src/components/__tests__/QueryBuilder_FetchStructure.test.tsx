@@ -37,6 +37,7 @@ import { getAllByText, waitFor } from '@testing-library/dom';
 import {
   AbstractPropertyExpression,
   create_RawLambda,
+  getClassProperty,
   getRootSetImplementation,
   stub_RawLambda,
 } from '@finos/legend-graph';
@@ -144,7 +145,7 @@ test(
       fistNameCol,
       QueryBuilderSimpleProjectionColumnState,
     ).propertyExpressionState.propertyExpression.func;
-    expect(firstNameProperty).toBe(_personClass.getProperty('firstName'));
+    expect(firstNameProperty).toBe(getClassProperty(_personClass, 'firstName'));
     const lastNameCol = guaranteeNonNullable(
       queryBuilderState.fetchStructureState.projectionState.columns.find(
         (e) => e.columnName === LAST_NAME_ALIAS,
@@ -154,7 +155,7 @@ test(
       lastNameCol,
       QueryBuilderSimpleProjectionColumnState,
     ).propertyExpressionState.propertyExpression.func;
-    expect(lastNameProperty).toBe(_personClass.getProperty('lastName'));
+    expect(lastNameProperty).toBe(getClassProperty(_personClass, 'lastName'));
     expect(queryBuilderState.resultSetModifierState.limit).toBeUndefined();
 
     // chainedProperty
@@ -189,13 +190,17 @@ test(
       legalNameCol,
       QueryBuilderSimpleProjectionColumnState,
     ).propertyExpressionState.propertyExpression.func;
-    expect(legalNameColProperty).toBe(_firmClass.getProperty('legalName'));
+    expect(legalNameColProperty).toBe(
+      getClassProperty(_firmClass, 'legalName'),
+    );
     const _firmPropertyExpression = guaranteeType(
       guaranteeType(legalNameCol, QueryBuilderSimpleProjectionColumnState)
         .propertyExpressionState.propertyExpression.parametersValues[0],
       AbstractPropertyExpression,
     );
-    expect(_firmPropertyExpression.func).toBe(_personClass.getProperty('firm'));
+    expect(_firmPropertyExpression.func).toBe(
+      getClassProperty(_personClass, 'firm'),
+    );
     expect(queryBuilderState.resultSetModifierState.limit).toBeUndefined();
 
     // result set modifiers
@@ -474,7 +479,7 @@ test(
       nameCol,
       QueryBuilderSimpleProjectionColumnState,
     ).propertyExpressionState.propertyExpression.func;
-    expect(nameProperty).toBe(_personClass.getProperty('firstName'));
+    expect(nameProperty).toBe(getClassProperty(_personClass, 'firstName'));
   },
 );
 

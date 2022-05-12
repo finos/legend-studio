@@ -157,11 +157,15 @@ export { TDSResultType } from './models/metamodels/pure/executionPlan/result/TDS
 export * from './MetaModelUtils';
 export * from './MetaModelConst';
 
-export * from './helpers/DSLService_Helper';
-export * from './helpers/StoreRelational_Helper';
-export * from './helpers/DSLMapping_Helper';
-export * from './helpers/ValidationHelper';
 export * from './helpers/DomainHelper';
+export * from './helpers/Testable_Helper';
+export * from './helpers/DSLMapping_Helper';
+export * from './helpers/StoreRelational_Helper';
+export * from './helpers/StoreFlatData_Helper';
+export * from './helpers/DSLService_Helper';
+export * from './helpers/DSLGeneration_Helper';
+
+export * from './helpers/ValidationHelper';
 export * from './helpers/PureLanguageHelper';
 
 // --------------------------------------------- GRAPH --------------------------------------------------

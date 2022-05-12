@@ -33,36 +33,6 @@ export class Mapping extends PackageableElement implements Hashable {
   associationMappings: AssociationImplementation[] = [];
   tests: MappingTest[] = [];
 
-  // TODO: to be simplified out of metamodel
-  get allOwnClassMappings(): SetImplementation[] {
-    return this.classMappings;
-  }
-
-  // TODO: to be simplified out of metamodel
-  get allOwnEnumerationMappings(): EnumerationMapping[] {
-    return this.enumerationMappings;
-  }
-
-  // TODO: to be simplified out of metamodel
-  /**
-   * Get all included mappings, accounted for loop and duplication (which should be caught by compiler)
-   */
-  get allIncludedMappings(): Mapping[] {
-    const visited = new Set<Mapping>();
-    visited.add(this);
-    const resolveIncludes = (_mapping: Mapping): void => {
-      _mapping.includes.forEach((incMapping) => {
-        if (!visited.has(incMapping.included.value)) {
-          visited.add(incMapping.included.value);
-          resolveIncludes(incMapping.included.value);
-        }
-      });
-    };
-    resolveIncludes(this);
-    visited.delete(this);
-    return Array.from(visited);
-  }
-
   protected override get _elementHashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.MAPPING,

@@ -14,19 +14,13 @@
  * limitations under the License.
  */
 
-import { addUniqueEntry } from '@finos/legend-shared';
-import {
-  type ValidationIssue,
-  createValidationError,
-} from './ValidationHelper';
+import type { ConfigurationProperty } from '../models/metamodels/pure/packageableElements/fileGeneration/ConfigurationProperty';
+import type { FileGenerationSpecification } from '../models/metamodels/pure/packageableElements/fileGeneration/FileGenerationSpecification';
 
-export const validateServicePattern = (pattern: string): ValidationIssue => {
-  const errors: string[] = [];
-  if (!pattern) {
-    addUniqueEntry(errors, 'Pattern must not be empty');
-  } else if (!pattern.startsWith('/')) {
-    addUniqueEntry(errors, `Pattern must start with a '/'`);
-  }
-  // TODO: potentially do more validation
-  return createValidationError(errors);
-};
+export const getNullableFileGenerationConfig = (
+  fileGeneration: FileGenerationSpecification,
+  name: string,
+): ConfigurationProperty | undefined =>
+  fileGeneration.configurationProperties.find(
+    (property) => name === property.name,
+  );

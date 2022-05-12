@@ -63,6 +63,8 @@ import {
   DefaultH2AuthenticationStrategy,
   ModelChainConnection,
   isStubbed_StoreConnections,
+  getAllIdentifiedConnections,
+  generateIdentifiedConnectionId,
 } from '@finos/legend-graph';
 import type { DSLMapping_LegendStudioPlugin_Extension } from '../../DSLMapping_LegendStudioPlugin_Extension';
 import { packageableElementReference_setValue } from '../../graphModifier/DomainGraphModifierHelper';
@@ -162,7 +164,7 @@ export const decorateRuntimeWithNewMapping = (
       runtime_addIdentifiedConnection(
         runtimeValue,
         new IdentifiedConnection(
-          runtimeValue.generateIdentifiedConnectionId(),
+          generateIdentifiedConnectionId(runtimeValue),
           new JsonModelConnection(
             PackageableElementExplicitReference.create(
               editorStore.graphManagerState.graph.modelStore,
@@ -269,7 +271,7 @@ export const getRuntimeExplorerTreeData = (
       if (store instanceof ModelStore) {
         // expand ModelStore to show source classes
         const classes = uniq(
-          runtimeValue.allIdentifiedConnections
+          getAllIdentifiedConnections(runtimeValue)
             .filter(
               (identifiedConnection) =>
                 identifiedConnection.connection.store.value instanceof
@@ -395,7 +397,7 @@ export abstract class IdentifiedConnectionsEditorTabState extends RuntimeEditorT
       }
     }
     const newIdentifiedConnection = new IdentifiedConnection(
-      this.runtimeEditorState.runtimeValue.generateIdentifiedConnectionId(),
+      generateIdentifiedConnectionId(this.runtimeEditorState.runtimeValue),
       newConnection,
     );
     runtime_addIdentifiedConnection(
@@ -553,12 +555,13 @@ export class IdentifiedConnectionsPerClassEditorTabState extends IdentifiedConne
   }
 
   get identifiedConnections(): IdentifiedConnection[] {
-    return this.runtimeEditorState.runtimeValue.allIdentifiedConnections.filter(
-      (identifiedConnection) =>
-        isConnectionForModelStoreWithClass(
-          identifiedConnection.connection,
-          this.class,
-        ),
+    return getAllIdentifiedConnections(
+      this.runtimeEditorState.runtimeValue,
+    ).filter((identifiedConnection) =>
+      isConnectionForModelStoreWithClass(
+        identifiedConnection.connection,
+        this.class,
+      ),
     );
   }
 

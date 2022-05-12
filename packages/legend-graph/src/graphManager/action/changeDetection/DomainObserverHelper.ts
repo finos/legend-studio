@@ -411,8 +411,6 @@ export const observe_Class = skipObserved((metamodel: Class): Class => {
     constraints: observable,
     stereotypes: observable,
     taggedValues: observable,
-    allSuperclasses: computed,
-    allSubclasses: computed,
     dispose: override,
     _elementHashCode: override,
   });

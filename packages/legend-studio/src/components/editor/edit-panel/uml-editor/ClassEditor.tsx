@@ -77,6 +77,10 @@ import {
   stub_Constraint,
   stub_Property,
   stub_DerivedProperty,
+  getAllClassProperties,
+  getAllSuperclasses,
+  getAllClassConstraints,
+  getAllClassDerivedProperties,
 } from '@finos/legend-graph';
 import { StudioLambdaEditor } from '../../../shared/StudioLambdaEditor';
 import { useApplicationStore } from '@finos/legend-application';
@@ -754,9 +758,9 @@ const SuperTypeEditor = observer(
         // Exclude current class
         classOption.value !== _class &&
         // Exclude super types of the class
-        !_class.allSuperclasses.includes(classOption.value) &&
+        !getAllSuperclasses(_class).includes(classOption.value) &&
         // Ensure there is no loop (might be expensive)
-        !classOption.value.allSuperclasses.includes(_class),
+        !getAllSuperclasses(classOption.value).includes(_class),
     );
     const rawType = superType.value.rawType;
     const filterOption = createFilter({
@@ -867,8 +871,7 @@ export const ClassFormEditor = observer(
           setSelectedProperty(undefined);
         }
       };
-    const indirectProperties = _class
-      .getAllProperties()
+    const indirectProperties = getAllClassProperties(_class)
       .filter((property) => !_class.properties.includes(property))
       .sort((p1, p2) => p1.name.localeCompare(p2.name))
       .sort(
@@ -883,9 +886,9 @@ export const ClassFormEditor = observer(
         class_deleteConstraint(_class, constraint);
         classState.deleteConstraintState(constraint);
       };
-    const inheritedConstraints = _class
-      .getAllConstraints()
-      .filter((constraint) => !_class.constraints.includes(constraint));
+    const inheritedConstraints = getAllClassConstraints(_class).filter(
+      (constraint) => !_class.constraints.includes(constraint),
+    );
     // Super type
     const deleteSuperType =
       (superType: GenericTypeReference): (() => void) =>
@@ -901,13 +904,12 @@ export const ClassFormEditor = observer(
           // Exclude current class
           superType !== _class &&
           // Exclude super types of the class
-          !_class.allSuperclasses.includes(superType) &&
+          !getAllSuperclasses(_class).includes(superType) &&
           // Ensure there is no loop (might be expensive)
-          !superType.allSuperclasses.includes(_class),
+          !getAllSuperclasses(superType).includes(_class),
       );
     // Derived properties
-    const indirectDerivedProperties = _class
-      .getAllDerivedProperties()
+    const indirectDerivedProperties = getAllClassDerivedProperties(_class)
       .filter((property) => !_class.derivedProperties.includes(property))
       .sort((p1, p2) => p1.name.localeCompare(p2.name))
       .sort(
@@ -1047,9 +1049,9 @@ export const ClassFormEditor = observer(
           // Must not be the same class
           element !== _class &&
           // Must not be a supertype of the current class
-          !_class.allSuperclasses.includes(element) &&
+          !getAllSuperclasses(_class).includes(element) &&
           // Must not have the current class as a super type
-          !element.allSuperclasses.includes(_class)
+          !getAllSuperclasses(element).includes(_class)
         ) {
           class_addSuperType(
             _class,

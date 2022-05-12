@@ -35,6 +35,7 @@ import {
   type PackageableRuntime,
   type Service,
   QuerySearchSpecification,
+  getAllIncludedMappings,
 } from '@finos/legend-graph';
 import type { LegendQueryStore } from './LegendQueryStore';
 import { ProjectData } from '@finos/legend-server-depot';
@@ -188,7 +189,7 @@ export class CreateQuerySetupState extends QuerySetupState {
         runtime.value.runtimeValue.mappings
           .map((mappingReference) => [
             mappingReference.value,
-            ...mappingReference.value.allIncludedMappings,
+            ...getAllIncludedMappings(mappingReference.value),
           ])
           .flat()
           .includes(currentMapping),

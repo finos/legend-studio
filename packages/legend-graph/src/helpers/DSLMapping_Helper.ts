@@ -15,10 +15,13 @@
  */
 
 import {
+  assertTrue,
   filterByType,
   findLast,
+  generateEnumerableNameFromToken,
   guaranteeNonNullable,
   uniq,
+  UnsupportedOperationError,
 } from '@finos/legend-shared';
 import type { EnumerationMapping } from '../models/metamodels/pure/packageableElements/mapping/EnumerationMapping';
 import type { SetImplementation } from '../models/metamodels/pure/packageableElements/mapping/SetImplementation';
@@ -29,11 +32,40 @@ import { AggregationAwareSetImplementation } from '../models/metamodels/pure/pac
 import { RootRelationalInstanceSetImplementation } from '../models/metamodels/pure/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation';
 import type { PropertyMapping } from '../models/metamodels/pure/packageableElements/mapping/PropertyMapping';
 import type { InstanceSetImplementation } from '../models/metamodels/pure/packageableElements/mapping/InstanceSetImplementation';
+import type {
+  EngineRuntime,
+  IdentifiedConnection,
+} from '../models/metamodels/pure/packageableElements/runtime/Runtime';
+import { OperationSetImplementation } from '../models/metamodels/pure/packageableElements/mapping/OperationSetImplementation';
+import { ObjectInputType } from '../models/metamodels/pure/packageableElements/store/modelToModel/mapping/ObjectInputData';
+
+// ----------------------------------------- Mapping -----------------------------------------
+
+/**
+ * Get all included mappings, accounted for loop and duplication (which should be caught by compiler)
+ */
+export const getAllIncludedMappings = (mapping: Mapping): Mapping[] => {
+  const visited = new Set<Mapping>();
+  visited.add(mapping);
+  const resolveIncludes = (_mapping: Mapping): void => {
+    _mapping.includes.forEach((incMapping) => {
+      if (!visited.has(incMapping.included.value)) {
+        visited.add(incMapping.included.value);
+        resolveIncludes(incMapping.included.value);
+      }
+    });
+  };
+  resolveIncludes(mapping);
+  visited.delete(mapping);
+  return Array.from(visited);
+};
 
 export const getAllClassMappings = (mapping: Mapping): SetImplementation[] =>
   uniq(
-    mapping.allOwnClassMappings.concat(
-      mapping.allIncludedMappings.map((e) => e.allOwnClassMappings).flat(),
+    mapping.classMappings.concat(
+      getAllIncludedMappings(mapping)
+        .map((e) => e.classMappings)
+        .flat(),
     ),
   );
 
@@ -41,9 +73,9 @@ export const getAllEnumerationMappings = (
   mapping: Mapping,
 ): EnumerationMapping[] =>
   uniq(
-    mapping.allOwnEnumerationMappings.concat(
-      mapping.allIncludedMappings
-        .map((e) => e.allOwnEnumerationMappings)
+    mapping.enumerationMappings.concat(
+      getAllIncludedMappings(mapping)
+        .map((e) => e.enumerationMappings)
         .flat(),
     ),
   );
@@ -74,7 +106,7 @@ export const getOwnClassMappingById = (
 ): SetImplementation =>
   guaranteeNonNullable(
     [
-      ...mapping.allOwnClassMappings,
+      ...mapping.classMappings,
       ...extractClassMappingsFromAggregationAwareClassMappings(mapping),
     ].find((classMapping) => classMapping.id.value === id),
     `Can't find class mapping with ID '${id}' in mapping '${mapping.path}'`,
@@ -98,7 +130,7 @@ export const getOwnClassMappingsByClass = (
 ): SetImplementation[] =>
   // TODO: Add association property Mapping to class mappings, AggregationAwareSetImplementation, mappingClass
   // NOTE: Add in the proper order so find root can resolve properly down the line
-  mapping.allOwnClassMappings.filter(
+  mapping.classMappings.filter(
     (classMapping) => classMapping.class.value === _class,
   );
 
@@ -185,4 +217,84 @@ export const findPropertyMapping = (
       propertyMapping.targetSetImplementation &&
       propertyMapping.targetSetImplementation.id.value === targetId,
   );
+};
+
+/**
+ * Get all child set implementation of an operation set implementation (including itself).
+ * This takes into account loops and duplication.
+ */
+export const getAllChildSetImplementations = (
+  operationSetImplementation: OperationSetImplementation,
+): SetImplementation[] => {
+  const visitedOperations = new Set<OperationSetImplementation>();
+  visitedOperations.add(operationSetImplementation);
+  const _leaves = new Set<SetImplementation>();
+  const resolveLeaves = (_opSetImpl: OperationSetImplementation): void => {
+    _opSetImpl.parameters.forEach((p) => {
+      const setImp = p.setImplementation.value;
+      if (
+        setImp instanceof OperationSetImplementation &&
+        !visitedOperations.has(setImp)
+      ) {
+        visitedOperations.add(setImp);
+        resolveLeaves(setImp);
+      } else {
+        _leaves.add(setImp);
+      }
+    });
+  };
+  resolveLeaves(operationSetImplementation);
+  visitedOperations.delete(operationSetImplementation);
+  return Array.from(_leaves).concat(Array.from(visitedOperations));
+};
+
+/**
+ * Get all leaf set implementations (i.e. no operation) of an operation set implementation
+ * This takes into account loops and duplication.
+ */
+export const getLeafSetImplementations = (
+  operationSetImplementation: OperationSetImplementation,
+): SetImplementation[] =>
+  getAllChildSetImplementations(operationSetImplementation).filter(
+    (child) => !(child instanceof OperationSetImplementation),
+  );
+
+export const getObjectInputType = (type: string): ObjectInputType => {
+  switch (type) {
+    case ObjectInputType.JSON:
+      return ObjectInputType.JSON;
+    case ObjectInputType.XML:
+      return ObjectInputType.XML;
+    default:
+      throw new UnsupportedOperationError(
+        `Encountered unsupported object input type '${type}'`,
+      );
+  }
+};
+
+// ----------------------------------------- Runtime -----------------------------------------
+
+export const getAllIdentifiedConnections = (
+  runtime: EngineRuntime,
+): IdentifiedConnection[] =>
+  runtime.connections.flatMap(
+    (storeConnections) => storeConnections.storeConnections,
+  );
+
+export const generateIdentifiedConnectionId = (
+  runtime: EngineRuntime,
+): string => {
+  const generatedId = generateEnumerableNameFromToken(
+    getAllIdentifiedConnections(runtime).map(
+      (identifiedConnection) => identifiedConnection.id,
+    ),
+    'connection',
+  );
+  assertTrue(
+    !getAllIdentifiedConnections(runtime).find(
+      (identifiedConnection) => identifiedConnection.id === generatedId,
+    ),
+    `Can't auto-generate connection ID with value '${generatedId}'`,
+  );
+  return generatedId;
 };

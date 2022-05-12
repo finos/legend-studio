@@ -17,7 +17,6 @@
 import {
   type Hashable,
   hashArray,
-  UnsupportedOperationError,
   isValidJSONString,
   tryToMinifyLosslessJSONString,
 } from '@finos/legend-shared';
@@ -34,19 +33,6 @@ export enum ObjectInputType {
   JSON = 'JSON',
   XML = 'XML',
 }
-
-export const getObjectInputType = (type: string): ObjectInputType => {
-  switch (type) {
-    case ObjectInputType.JSON:
-      return ObjectInputType.JSON;
-    case ObjectInputType.XML:
-      return ObjectInputType.XML;
-    default:
-      throw new UnsupportedOperationError(
-        `Encountered unsupported object input type '${type}'`,
-      );
-  }
-};
 
 export class ObjectInputData extends InputData implements Hashable {
   sourceClass: PackageableElementReference<Class>;

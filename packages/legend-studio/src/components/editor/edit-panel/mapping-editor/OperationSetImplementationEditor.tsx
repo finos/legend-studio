@@ -48,6 +48,7 @@ import {
   SetImplementationExplicitReference,
   InferableMappingElementRootExplicitValue,
   getClassMappingsByClass,
+  getAllChildSetImplementations,
 } from '@finos/legend-graph';
 import { useEditorStore } from '../../EditorStoreProvider';
 import {
@@ -81,7 +82,7 @@ export const OperationSetImplementationEditor = observer(
           // filter out the current set impl
           si.id.value !== setImplementation.id.value &&
           // filter out set impls already included through a container or the actual container itself
-          !setImplementation.childSetImplementations.includes(si),
+          !getAllChildSetImplementations(setImplementation).includes(si),
       )
       .map((si) => ({ value: si, label: si.id.value }));
     const filterOption = createFilter({

@@ -31,6 +31,7 @@ import type { V1_GraphBuilderContext } from '../../../../transformation/pureGrap
 import type { V1_EmbeddedRelationalPropertyMapping } from '../../../../model/packageableElements/store/relational/mapping/V1_EmbeddedRelationalPropertyMapping';
 import { V1_getInferredClassMappingId } from '../../../../transformation/pureGraph/to/helpers/V1_MappingBuilderHelper';
 import { GraphBuilderError } from '../../../../../../../../graphManager/GraphManagerUtils';
+import { getClassProperty } from '../../../../../../../../helpers/DomainHelper';
 
 export const V1_buildEmbeddedRelationalMappingProperty = (
   propertyMapping: V1_EmbeddedRelationalPropertyMapping,
@@ -59,7 +60,8 @@ export const V1_buildEmbeddedRelationalMappingProperty = (
       `Can't find property owner class for property '${propertyMapping.property.property}'`,
     );
   }
-  const property = propertyOwnerClass.getProperty(
+  const property = getClassProperty(
+    propertyOwnerClass,
     propertyMapping.property.property,
   );
   let _class: PackageableElementReference<Class>;

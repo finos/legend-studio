@@ -34,16 +34,6 @@ export class FileGenerationSpecification
     [];
   configurationProperties: ConfigurationProperty[] = [];
 
-  getConfigValue(name: string): unknown | undefined {
-    return this.getConfig(name)?.value;
-  }
-
-  getConfig(name: string): ConfigurationProperty | undefined {
-    return this.configurationProperties.find(
-      (property) => name === property.name,
-    );
-  }
-
   protected override get _elementHashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.FILE_GENERATION,

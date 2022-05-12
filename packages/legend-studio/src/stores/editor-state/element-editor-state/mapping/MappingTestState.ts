@@ -83,6 +83,7 @@ import {
   type RawExecutionPlan,
   isStubbed_RawLambda,
   stub_Class,
+  generateIdentifiedConnectionId,
 } from '@finos/legend-graph';
 import { LambdaEditorState, TAB_SIZE } from '@finos/legend-application';
 import { flatData_setData } from '../../../graphModifier/StoreFlatData_GraphModifierHelper';
@@ -254,7 +255,7 @@ export class MappingTestObjectInputDataState extends MappingTestInputDataState {
     runtime_addIdentifiedConnection(
       runtime,
       new IdentifiedConnection(
-        runtime.generateIdentifiedConnectionId(),
+        generateIdentifiedConnectionId(runtime),
         connection,
       ),
       this.editorStore.changeDetectionState.observerContext,
@@ -287,7 +288,7 @@ export class MappingTestFlatDataInputDataState extends MappingTestInputDataState
     runtime_addIdentifiedConnection(
       runtime,
       new IdentifiedConnection(
-        runtime.generateIdentifiedConnectionId(),
+        generateIdentifiedConnectionId(runtime),
         connection,
       ),
       this.editorStore.changeDetectionState.observerContext,
@@ -332,7 +333,7 @@ export class MappingTestRelationalInputDataState extends MappingTestInputDataSta
     runtime_addIdentifiedConnection(
       runtime,
       new IdentifiedConnection(
-        runtime.generateIdentifiedConnectionId(),
+        generateIdentifiedConnectionId(runtime),
         connection,
       ),
       this.editorStore.changeDetectionState.observerContext,

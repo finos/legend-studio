@@ -72,6 +72,8 @@ import {
   observe_Class,
   observe_Connection,
   observe_EngineRuntime,
+  getEnumValueNames,
+  getEnumValue,
 } from '@finos/legend-graph';
 import {
   addUniqueEntry,
@@ -230,9 +232,9 @@ export const enumValueMapping_updateSourceValue = action(
     if (
       sourceType instanceof Enumeration &&
       typeof val === 'string' &&
-      sourceType.getValueNames().includes(val)
+      getEnumValueNames(sourceType).includes(val)
     ) {
-      sourceValue_setValue(sourceValue, sourceType.getValue(val));
+      sourceValue_setValue(sourceValue, getEnumValue(sourceType, val));
     } else {
       // Here we update the source values depending on the source type.
       sourceValue_setValue(
