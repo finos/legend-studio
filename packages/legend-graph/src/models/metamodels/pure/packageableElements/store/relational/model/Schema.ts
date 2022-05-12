@@ -37,16 +37,21 @@ export class Schema implements Hashable {
     this._OWNER = owner;
   }
 
+  // TODO: to be simplified out of metamodel
   getTable = (name: string): Table =>
     guaranteeNonNullable(
       this.tables.find((table) => table.name === name),
       `Can't find table '${name}' in schema '${this.name}' of database '${this._OWNER.path}'`,
     );
+
+  // TODO: to be simplified out of metamodel
   getView = (name: string): View =>
     guaranteeNonNullable(
       this.views.find((view) => view.name === name),
       `Can't find view '${name}' in schema '${this.name}' of database '${this._OWNER.path}'`,
     );
+
+  // TODO: to be simplified out of metamodel
   getRelation = (name: string): Relation => {
     const relations: (Table | View)[] = this.tables;
     return guaranteeNonNullable(

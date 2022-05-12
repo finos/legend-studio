@@ -32,12 +32,14 @@ export class Database extends Store implements Hashable {
   joins: Join[] = [];
   filters: Filter[] = [];
 
+  // TODO: to be simplified out of metamodel
   getSchema = (name: string): Schema =>
     guaranteeNonNullable(
       this.schemas.find((schema) => schema.name === name),
       `Can't find schema '${name}' in database '${this.path}'`,
     );
 
+  // TODO: to be simplified out of metamodel
   getJoin = (name: string): Join =>
     guaranteeNonNullable(
       Array.from(getAllIncludedDatabases(this))
@@ -46,6 +48,7 @@ export class Database extends Store implements Hashable {
       `Can't find join '${name}' in database '${this.path}'`,
     );
 
+  // TODO: to be simplified out of metamodel
   getFilter = (name: string): Filter =>
     guaranteeNonNullable(
       this.filters.find((filter) => filter.name === name),

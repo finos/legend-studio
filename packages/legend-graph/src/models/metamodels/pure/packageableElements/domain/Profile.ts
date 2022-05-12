@@ -30,13 +30,13 @@ import type { Tag } from './Tag';
 export class Profile extends PackageableElement implements Hashable {
   stereotypes: Stereotype[] = [];
   tags: Tag[] = [];
-
+  // TODO: to be simplified out of metamodel
   getTag = (value: string): Tag =>
     guaranteeNonNullable(
       this.tags.find((tag) => tag.value === value),
       `Can't find tag '${value}' in profile '${this.path}'`,
     );
-
+  // TODO: to be simplified out of metamodel
   getStereotype = (value: string): Stereotype =>
     guaranteeNonNullable(
       this.stereotypes.find((stereotype) => stereotype.value === value),

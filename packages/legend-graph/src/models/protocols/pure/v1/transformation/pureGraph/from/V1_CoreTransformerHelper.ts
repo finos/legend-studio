@@ -52,7 +52,7 @@ export const V1_initPackageableElement = (
   element: PackageableElement,
 ): void => {
   protocolElement.name = element.name;
-  protocolElement.package = element.package?.fullPath ?? '';
+  protocolElement.package = element.package?.path ?? '';
 };
 
 export const V1_transformMultiplicity = (

@@ -60,6 +60,7 @@ export class Class extends Type implements Hashable {
   stereotypes: StereotypeReference[] = [];
   taggedValues: TaggedValue[] = [];
 
+  // TODO: to be simplified out of metamodel
   /**
    * Get class and its supertypes' properties recursively, duplications and loops are handled (Which should be caught by compiler)
    */
@@ -74,12 +75,14 @@ export class Class extends Type implements Hashable {
       (p) => p.name,
     );
 
+  // TODO: to be simplified out of metamodel
   getProperty = (name: string): Property =>
     guaranteeNonNullable(
       this.getAllProperties().find((p) => p.name === name),
       `Can't find property '${name}' in class '${this.path}'`,
     );
 
+  // TODO: to be simplified out of metamodel
   getAllDerivedProperties = (): DerivedProperty[] =>
     uniqBy(
       this.allSuperclasses
@@ -89,17 +92,20 @@ export class Class extends Type implements Hashable {
       (p) => p.name,
     );
 
+  // TODO: to be simplified out of metamodel
   getAllOwnedProperties = (): AbstractProperty[] =>
     this.properties
       .concat(this.propertiesFromAssociations)
       .concat(this.derivedProperties);
 
+  // TODO: to be simplified out of metamodel
   getOwnedProperty = (name: string): AbstractProperty =>
     guaranteeNonNullable(
       this.getAllOwnedProperties().find((p) => p.name === name),
       `Can't find property '${name}' in class '${this.path}'`,
     );
 
+  // TODO: to be simplified out of metamodel
   // Perhaps we don't need to care about deduping constraints here like for properties
   getAllConstraints = (): Constraint[] =>
     this.allSuperclasses
@@ -107,6 +113,7 @@ export class Class extends Type implements Hashable {
       .map((_class) => _class.constraints)
       .flat();
 
+  // TODO: to be simplified out of metamodel
   isSuperType(type: Type): boolean {
     return (
       type.path === CORE_PURE_PATH.ANY ||
@@ -114,6 +121,7 @@ export class Class extends Type implements Hashable {
     );
   }
 
+  // TODO: to be simplified out of metamodel
   isSubType(type: Type): boolean {
     return (
       this.path === CORE_PURE_PATH.ANY ||
@@ -121,6 +129,7 @@ export class Class extends Type implements Hashable {
     );
   }
 
+  // TODO: to be simplified out of metamodel
   /**
    * Get all super types of a class, accounted for loop and duplication (which should be caught by compiler)
    * NOTE: we intentionally leave out `Any`
@@ -142,6 +151,7 @@ export class Class extends Type implements Hashable {
     return Array.from(visitedClasses);
   }
 
+  // TODO: to be simplified out of metamodel
   /**
    * Get all subclasses of a class, accounted for loop and duplication (which should be caught by compiler)
    * NOTE: we intentionally leave out `Any`
@@ -173,6 +183,7 @@ export class Class extends Type implements Hashable {
     return Array.from(visitedClasses);
   }
 
+  // TODO: to be simplified out of metamodel
   /**
    * Make sure to remove the disposed class from being referenced in other elements
    * e.g. subclass analytics is great, but it causes the class being referred to by classes

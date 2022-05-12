@@ -80,12 +80,14 @@ export class EngineRuntime extends Runtime implements Hashable {
   mappings: PackageableElementReference<Mapping>[] = [];
   connections: StoreConnections[] = [];
 
+  // TODO: to be simplified out of metamodel
   get allIdentifiedConnections(): IdentifiedConnection[] {
     return this.connections.flatMap(
       (storeConnections) => storeConnections.storeConnections,
     );
   }
 
+  // TODO: to be simplified out of metamodel
   generateIdentifiedConnectionId(): string {
     const generatedId = generateEnumerableNameFromToken(
       this.allIdentifiedConnections.map(

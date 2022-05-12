@@ -101,7 +101,7 @@ const _getOrCreatePackage = (
 
   // populate cache after resolving the package
   if (cache) {
-    cache.set(createPath(parentPackage.fullPath, packageName), pkg);
+    cache.set(createPath(parentPackage.path, packageName), pkg);
   }
 
   // traverse the package chain
@@ -127,7 +127,7 @@ export const getOrCreatePackage = (
   if (cache) {
     // short-circuit
     const cachedPackage = cache.get(
-      createPath(parentPackage.fullPath, relativePackagePath),
+      createPath(parentPackage.path, relativePackagePath),
     );
     if (cachedPackage) {
       return cachedPackage;
@@ -138,7 +138,7 @@ export const getOrCreatePackage = (
     let immediateParentPackageRelativePath = relativePackagePath;
     while (immediateParentPackageRelativePath !== '') {
       const fullPath = createPath(
-        parentPackage.fullPath,
+        parentPackage.path,
         immediateParentPackageRelativePath,
       );
       const cachedParentPackage = cache.get(fullPath);

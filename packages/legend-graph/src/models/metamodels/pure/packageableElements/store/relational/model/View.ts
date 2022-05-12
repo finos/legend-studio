@@ -47,6 +47,7 @@ export class View
     this.schema = schema;
   }
 
+  // TODO: to be simplified out of metamodel
   getColumn = (name: string): Column =>
     guaranteeNonNullable(
       this.columns

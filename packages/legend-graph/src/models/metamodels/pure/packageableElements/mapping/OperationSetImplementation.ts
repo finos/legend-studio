@@ -52,6 +52,7 @@ export class OperationSetImplementation
     this.operation = operation;
   }
 
+  // TODO: to be simplified out of metamodel
   /**
    * Get all leaf impls of an operation Set Implementation. Accounts for loops and duplication (which should be caught by compiler).
    */
@@ -61,6 +62,7 @@ export class OperationSetImplementation
     );
   }
 
+  // TODO: to be simplified out of metamodel
   get childSetImplementations(): SetImplementation[] {
     const visitedOperations = new Set<OperationSetImplementation>();
     visitedOperations.add(this);

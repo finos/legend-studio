@@ -242,6 +242,6 @@ export class GraphManagerState {
   }
 
   isElementReadOnly(element: PackageableElement): boolean {
-    return getElementRootPackage(element).path !== ROOT_PACKAGE_NAME.MAIN;
+    return getElementRootPackage(element).name !== ROOT_PACKAGE_NAME.MAIN;
   }
 }

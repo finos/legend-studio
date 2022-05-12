@@ -78,26 +78,53 @@ export abstract class PackageableElement implements Hashable {
     this.name = name;
   }
 
+  /**
+   * This logic is specific to the codebase and this is not part of the native metamodel.
+   * If needed, we can probably move this out as an utility or do type declaration merge
+   * and define this externally using `Object.defineProperty`.
+   *
+   * @internal model logic
+   */
   get isDeleted(): boolean {
     return this._isDeleted;
   }
 
+  /**
+   * This logic is specific to the codebase and this is not part of the native metamodel.
+   * If needed, we can probably move this out as an utility or do type declaration merge
+   * and define this externally using `Object.defineProperty`.
+   *
+   * @internal model logic
+   */
   setIsDeleted(value: boolean): void {
     this._isDeleted = value;
   }
 
+  /**
+   * This logic is specific to the codebase and this is not part of the native metamodel.
+   * If needed, we can probably move this out as an utility or do type declaration merge
+   * and define this externally using `Object.defineProperty`.
+   *
+   * @internal model logic
+   */
   get path(): string {
     if (!this.package) {
       return this.name;
     }
-    const parentPackageName = this.package.fullPath;
-    return !parentPackageName
+    const parentPackagePath = this.package.path;
+    return !parentPackagePath
       ? this.name
-      : `${parentPackageName}${ELEMENT_PATH_DELIMITER}${this.name}`;
+      : `${parentPackagePath}${ELEMENT_PATH_DELIMITER}${this.name}`;
   }
 
   /**
-   * Dispose the element and its references to avoid memory leaks
+   * Dispose the element and its references to avoid memory leaks.
+   *
+   * This logic is specific to the codebase and this is not part of the native metamodel.
+   * If needed, we can probably move this out as an utility or do type declaration merge
+   * and define this externally using `Object.defineProperty`.
+   *
+   * @internal model logic
    */
   dispose(): void {
     this._isDisposed = true;

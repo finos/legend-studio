@@ -17,6 +17,7 @@
 import { PackageableElement } from '../PackageableElement';
 
 export abstract class Type extends PackageableElement {
+  // TODO: to be simplified out of metamodel
   // Use these for contravariant and covariant check
   // See https://www.originate.com/cheat-codes-for-contravariance-and-covariance/
   // See https://en.wikipedia.org/wiki/Covariance_and_contravariance_of_vectors

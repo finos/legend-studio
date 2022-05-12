@@ -28,12 +28,14 @@ import type { RootFlatDataRecordType } from './FlatDataDataType';
 export class FlatData extends Store implements Hashable {
   sections: FlatDataSection[] = [];
 
+  // TODO: to be simplified out of metamodel
   findSection = (sectionName: string): FlatDataSection =>
     guaranteeNonNullable(
       this.sections.find((section) => section.name === sectionName),
       `Can't find section '${sectionName}' in flat-data store '${this.path}'`,
     );
 
+  // TODO: to be simplified out of metamodel
   get recordTypes(): RootFlatDataRecordType[] {
     return this.sections.flatMap((section) =>
       section.recordType ? [section.recordType] : [],

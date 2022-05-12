@@ -261,7 +261,7 @@ export class DSLExternalFormat_PureProtocolProcessorPlugin
           const protocol = new V1_Binding();
           V1_initPackageableElement(protocol, metamodel);
           protocol.name = metamodel.name;
-          protocol.package = metamodel.package?.fullPath ?? '';
+          protocol.package = metamodel.package?.path ?? '';
           protocol.schemaId = metamodel.schemaId;
           protocol.schemaSet = metamodel.schemaSet.valueForSerialization;
           protocol.contentType = metamodel.contentType;
@@ -285,7 +285,7 @@ export class DSLExternalFormat_PureProtocolProcessorPlugin
           const protocol = new V1_SchemaSet();
           V1_initPackageableElement(protocol, metamodel);
           protocol.name = metamodel.name;
-          protocol.package = metamodel.package?.fullPath ?? '';
+          protocol.package = metamodel.package?.path ?? '';
           protocol.format = metamodel.format;
           protocol.schemas = metamodel.schemas.map((schema) => {
             const schemaProtocol = new V1_Schema();

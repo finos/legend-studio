@@ -20,6 +20,7 @@ import type { PackageableElementVisitor } from '../PackageableElement';
 import type { Type } from './Type';
 
 export class PrimitiveType extends DataType {
+  // TODO: to be simplified out of metamodel
   isSuperType(type: Type): boolean {
     if (!(type instanceof PrimitiveType)) {
       return false;
@@ -41,6 +42,7 @@ export class PrimitiveType extends DataType {
     return false;
   }
 
+  // TODO: to be simplified out of metamodel
   isSubType(type: Type): boolean {
     if (!(type instanceof PrimitiveType)) {
       return false;

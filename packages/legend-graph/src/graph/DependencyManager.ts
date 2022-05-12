@@ -78,7 +78,7 @@ export class DependencyManager {
    */
   initialize(dependencyEntitiesMap: Map<string, Entity[]>): void {
     Array.from(dependencyEntitiesMap.keys()).forEach((dependencyKey) => {
-      // NOTE: all dependency models will share the dependency manager package root.
+      // NOTE: all dependency models will share the dependency manager root package.
       this.projectDependencyModelsIndex.set(
         dependencyKey,
         new DependencyModel(this.extensionElementClasses, this.root),

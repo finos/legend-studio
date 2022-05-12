@@ -38,6 +38,7 @@ export class FlatDataSection implements Hashable {
     this._OWNER = owner;
   }
 
+  // TODO: to be simplified out of metamodel
   getRecordType = (): RootFlatDataRecordType =>
     guaranteeNonNullable(
       this.recordType,

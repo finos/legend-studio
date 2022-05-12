@@ -32,18 +32,20 @@ export class Enumeration extends DataType implements Hashable {
   stereotypes: StereotypeReference[] = [];
   taggedValues: TaggedValue[] = [];
 
+  // TODO: to be simplified out of metamodel
   getValueNames = (): string[] =>
     this.values.map((value) => value.name).filter(Boolean);
+  // TODO: to be simplified out of metamodel
   getValue = (name: string): Enum =>
     guaranteeNonNullable(
       this.values.find((value) => value.name === name),
       `Can't find enum value '${name}' in enumeration '${this.path}'`,
     );
-
+  // TODO: to be simplified out of metamodel
   isSuperType(type: Type): boolean {
     return false;
   }
-
+  // TODO: to be simplified out of metamodel
   isSubType(type: Type): boolean {
     return false;
   }

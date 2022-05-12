@@ -152,7 +152,7 @@ export class V1_GraphBuilderContext {
    */
   get enableRawLambdaAutoPathResolution(): boolean {
     return (
-      this.graph.root.path === ROOT_PACKAGE_NAME.MAIN &&
+      this.graph.root.name === ROOT_PACKAGE_NAME.MAIN &&
       !this.options?.TEMPORARY__preserveSectionIndex
     );
   }
