@@ -511,7 +511,10 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
           `Can't find property owner class for property '${protocol.property.property}'`,
         );
       }
-      property = getOwnProperty(propertyOwner, protocol.property.property);
+      property =
+        propertyOwner instanceof Class
+          ? getClassProperty(propertyOwner, protocol.property.property)
+          : getOwnProperty(propertyOwner, protocol.property.property);
     }
     // NOTE: mapping for derived property is not supported
     // since we are not doing embedded property mappings yet, the target must have already been added to the mapping

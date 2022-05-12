@@ -19,6 +19,7 @@ import {
   guaranteeNonNullable,
   addUniqueEntry,
   uniq,
+  returnUndefOnError,
 } from '@finos/legend-shared';
 import {
   type AbstractProperty,
@@ -284,10 +285,10 @@ const isAutoMappedProperty = (
   setImpl: SetImplementation,
 ): boolean => {
   if (setImpl instanceof PureInstanceSetImplementation) {
-    const sourceClass = setImpl.srcClass;
+    const sourceClass = setImpl.srcClass.value;
     return Boolean(
-      sourceClass.value
-        ? getClassProperty(sourceClass.value, property.name)
+      sourceClass
+        ? returnUndefOnError(() => getClassProperty(sourceClass, property.name))
         : undefined,
     );
   }
