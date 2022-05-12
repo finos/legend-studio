@@ -10157,6 +10157,7 @@ __metadata:
     semver: 7.3.7
     sort-package-json: 1.57.0
     stylelint: 14.8.2
+    tunnel: 0.0.6
     typescript: 4.6.4
     yargs: 17.5.0
   languageName: unknown
@@ -15293,6 +15294,13 @@ __metadata:
   bin:
     tty-table: adapters/terminal-adapter.js
   checksum: 7dd03d7bbc8d945533fed1df73b393681ad4b9e50626a3c523fbe86f90d83d08163cb58d76a326b3f5cb7bdc8d751c31c61441902565dc800c25313e67656e00
+  languageName: node
+  linkType: hard
+
+"tunnel@npm:0.0.6":
+  version: 0.0.6
+  resolution: "tunnel@npm:0.0.6"
+  checksum: c362948df9ad34b649b5585e54ce2838fa583aa3037091aaed66793c65b423a264e5229f0d7e9a95513a795ac2bd4cb72cda7e89a74313f182c1e9ae0b0994fa
   languageName: node
   linkType: hard
 
