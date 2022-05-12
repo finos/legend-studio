@@ -78,13 +78,13 @@ import type { LegendStudioConfig } from '../../../application/LegendStudioConfig
 import { PACKAGEABLE_ELEMENT_TYPE } from '../../../stores/shared/ModelUtil';
 
 const isGeneratedPackageTreeNode = (node: PackageTreeNodeData): boolean =>
-  getElementRootPackage(node.packageableElement).path ===
+  getElementRootPackage(node.packageableElement).name ===
   ROOT_PACKAGE_NAME.MODEL_GENERATION;
 const isSystemPackageTreeNode = (node: PackageTreeNodeData): boolean =>
-  getElementRootPackage(node.packageableElement).path ===
+  getElementRootPackage(node.packageableElement).name ===
   ROOT_PACKAGE_NAME.SYSTEM;
 const isDependencyTreeNode = (node: PackageTreeNodeData): boolean =>
-  getElementRootPackage(node.packageableElement).path ===
+  getElementRootPackage(node.packageableElement).name ===
   ROOT_PACKAGE_NAME.PROJECT_DEPENDENCY_ROOT;
 
 const ElementRenamer = observer(() => {

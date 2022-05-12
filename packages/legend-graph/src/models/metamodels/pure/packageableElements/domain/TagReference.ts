@@ -23,13 +23,9 @@ import {
 } from '../PackageableElementReference';
 import type { Profile } from './Profile';
 import type { Tag } from './Tag';
-import type { Stubable } from '../../../../../helpers/Stubable';
 import { ReferenceWithOwner } from '../../Reference';
 
-export abstract class TagReference
-  extends ReferenceWithOwner
-  implements Stubable
-{
+export abstract class TagReference extends ReferenceWithOwner {
   override readonly ownerReference: PackageableElementReference<Profile>;
   value: Tag;
 
@@ -40,10 +36,6 @@ export abstract class TagReference
     super(ownerReference);
     this.ownerReference = ownerReference;
     this.value = value;
-  }
-
-  get isStub(): boolean {
-    return !this.value.isStub;
   }
 
   get pointerHashCode(): string {

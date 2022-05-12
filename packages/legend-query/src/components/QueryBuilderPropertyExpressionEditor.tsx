@@ -43,6 +43,7 @@ import {
   Enumeration,
   PrimitiveType,
   PRIMITIVE_TYPE,
+  isSuperType,
 } from '@finos/legend-graph';
 import { QueryBuilderValueSpecificationEditor } from './QueryBuilderValueSpecificationEditor';
 import { propertyExpression_setParametersValue } from '../stores/QueryBuilderValueSpecificationModifierHelper';
@@ -83,7 +84,7 @@ const DerivedPropertyParameterValueEditor = observer(
             !monitor.didDrop() &&
             // Doing a type check, which only allows dragging and dropping parameters of the same type or of child types
             itemType &&
-            (parameterType.isSuperType(itemType) ||
+            (isSuperType(parameterType, itemType) ||
               parameterType.name === itemType.name)
           ) {
             handleDrop(item);

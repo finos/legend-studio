@@ -26,7 +26,7 @@ import {
   TEST__getTestGraphManagerState,
 } from '../../../GraphManagerTestUtils';
 import type { GraphManagerState } from '../../../GraphManagerState';
-import { getOwnClassMappingsByClass } from '../../../helpers/MappingHelper';
+import { getOwnClassMappingsByClass } from '../../../helpers/DSLMapping_Helper';
 import { RootRelationalInstanceSetImplementation } from '../../../models/metamodels/pure/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation';
 
 let graphManagerState: GraphManagerState;
@@ -56,8 +56,8 @@ test(unitTest('Inline Embedded Relational Mapping'), () => {
   );
   expect(personClassMapping.id.value).toBe('alias1');
   expect(personClassMapping.propertyMappings).toHaveLength(3);
-  // const otherwiseFirmMapping = guaranteeType(personClassMapping.findPropertyMapping('firm', undefined), OtherwiseEmbeddedRelationalInstanceSetImplementation);
-  // const legalNamePropertyMapping = guaranteeType(otherwiseFirmMapping.findPropertyMapping('legalName', undefined), RelationalPropertyMapping);
+  // const otherwiseFirmMapping = guaranteeType(findPropertyMapping(personClassMapping, 'firm', undefined), OtherwiseEmbeddedRelationalInstanceSetImplementation);
+  // const legalNamePropertyMapping = guaranteeType(findPropertyMapping(otherwiseFirmMapping, 'legalName', undefined), RelationalPropertyMapping);
   // expect(legalNamePropertyMapping.owner).toBe(otherwiseFirmMapping);
   // expect(otherwiseFirmMapping.id.value).toBe('alias1_firm');
   // expect(otherwiseFirmMapping.primaryKey).toHaveLength(2);

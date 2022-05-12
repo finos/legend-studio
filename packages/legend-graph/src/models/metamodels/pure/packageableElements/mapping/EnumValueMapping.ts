@@ -14,13 +14,18 @@
  * limitations under the License.
  */
 
-import { type Hashable, uuid, isNumber, hashArray } from '@finos/legend-shared';
+import {
+  type Hashable,
+  uuid,
+  isNumber,
+  hashArray,
+  isNonNullable,
+} from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import { Enum } from '../domain/Enum';
-import type { Stubable } from '../../../../../helpers/Stubable';
 import type { EnumValueReference } from '../domain/EnumValueReference';
 
-export class SourceValue implements Stubable {
+export class SourceValue {
   readonly _UUID = uuid();
 
   value: Enum | string | number | undefined;
@@ -28,13 +33,9 @@ export class SourceValue implements Stubable {
   constructor(value: Enum | string | number | undefined) {
     this.value = value;
   }
-
-  get isStub(): boolean {
-    return this.value === undefined;
-  }
 }
 
-export class EnumValueMapping implements Hashable, Stubable {
+export class EnumValueMapping implements Hashable {
   enum: EnumValueReference;
   sourceValues: SourceValue[] = [];
 
@@ -42,25 +43,19 @@ export class EnumValueMapping implements Hashable, Stubable {
     this.enum = enumValue;
   }
 
-  get isStub(): boolean {
-    return !this.sourceValues.filter((value) => !value.isStub).length;
-  }
-
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.ENUM_VALUE_MAPPING,
       this.enum.value.name,
       hashArray(
-        this.sourceValues
-          .filter((value) => !value.isStub)
-          .map((sourceValue) => {
-            const value = sourceValue.value;
-            return isNumber(value)
-              ? value.toString()
-              : value instanceof Enum
-              ? `${value._OWNER.path}.${value.name}`
-              : value ?? '';
-          }),
+        this.sourceValues.filter(isNonNullable).map((sourceValue) => {
+          const value = sourceValue.value;
+          return isNumber(value)
+            ? value.toString()
+            : value instanceof Enum
+            ? `${value._OWNER.path}.${value.name}`
+            : value ?? '';
+        }),
       ),
     ]);
   }

@@ -23,9 +23,4 @@ export class AggregationAwarePropertyMapping extends PropertyMapping {
   accept_PropertyMappingVisitor<T>(visitor: PropertyMappingVisitor<T>): T {
     return visitor.visit_AggregationAwarePropertyMapping(this);
   }
-
-  override get isStub(): boolean {
-    // TODO figure out isStub conditions
-    return false;
-  }
 }

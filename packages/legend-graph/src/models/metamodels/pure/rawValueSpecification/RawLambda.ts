@@ -21,12 +21,8 @@ import {
   type RawValueSpecificationVisitor,
   RawValueSpecification,
 } from './RawValueSpecification';
-import type { Stubable } from '../../../../helpers/Stubable';
 
-export class RawLambda
-  extends RawValueSpecification
-  implements Hashable, Stubable
-{
+export class RawLambda extends RawValueSpecification implements Hashable {
   body?: object | undefined;
   parameters?: object | undefined;
 
@@ -34,11 +30,6 @@ export class RawLambda
     super();
     this.parameters = parameters;
     this.body = body;
-  }
-
-  static createStub = (): RawLambda => new RawLambda(undefined, undefined);
-  get isStub(): boolean {
-    return !this.body && !this.parameters;
   }
 
   get hashCode(): string {

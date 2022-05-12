@@ -22,6 +22,7 @@ import { useApplicationStore } from '@finos/legend-application';
 import { MappingExecutionQueryBuilderMode } from './MappingExecutionQueryBuilder';
 import { assertErrorThrown } from '@finos/legend-shared';
 import { PencilIcon } from '@finos/legend-art';
+import { isStubbed_RawLambda } from '@finos/legend-graph';
 
 export const MappingTestQueryBuilder = observer(
   (props: { testState: MappingTestState; isReadOnly: boolean }) => {
@@ -91,7 +92,7 @@ export const MappingTestQueryBuilder = observer(
                 },
               },
             ],
-            disableCompile: testState.queryState.query.isStub,
+            disableCompile: isStubbed_RawLambda(testState.queryState.query),
             queryBuilderMode: new MappingExecutionQueryBuilderMode(),
           }),
         );

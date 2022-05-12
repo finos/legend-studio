@@ -28,6 +28,7 @@ import {
   GenericTypeExplicitReference,
   PRIMITIVE_TYPE,
   TYPICAL_MULTIPLICITY_TYPE,
+  isSuperType,
 } from '@finos/legend-graph';
 import {
   guaranteeNonNullable,
@@ -110,7 +111,7 @@ export class QueryBuilderPostFilterOperator_Equal extends QueryBuilderPostFilter
           // e.g. LHS(DateTime) = RHS(Date) -> we use isOnDay() instead of is()
           DATE_PRIMITIVE_TYPES.includes(type.path) ||
           type === lhsType ||
-          lhsType.isSuperType(type))
+          isSuperType(lhsType, type))
       );
     }
     return false;

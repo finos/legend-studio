@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-import { PRIMITIVE_TYPE } from '../MetaModelConst';
+import {
+  MULTIPLICITY_INFINITE,
+  MULTIPLICITY_RANGE_OPERATOR,
+  PRIMITIVE_TYPE,
+} from '../MetaModelConst';
 import type { ConcreteFunctionDefinition } from '../models/metamodels/pure/packageableElements/domain/ConcreteFunctionDefinition';
 import type { Type } from '../models/metamodels/pure/packageableElements/domain/Type';
 import { PrimitiveType } from '../models/metamodels/pure/packageableElements/domain/PrimitiveType';
@@ -59,6 +63,20 @@ export enum PURE_PARSER {
   FILE_GENERATION = 'FileGeneration',
   DATA = 'Data',
 }
+
+export const generateMultiplicityString = (
+  lowerBound: number,
+  upperBound: number | undefined,
+): string => {
+  if (lowerBound === upperBound) {
+    return lowerBound.toString();
+  } else if (lowerBound === 0 && upperBound === undefined) {
+    return MULTIPLICITY_INFINITE;
+  }
+  return `${lowerBound}${MULTIPLICITY_RANGE_OPERATOR}${
+    upperBound ?? MULTIPLICITY_INFINITE
+  }`;
+};
 
 export const generateDefaultParameterValueForType = (
   type: Type | undefined,
@@ -120,6 +138,15 @@ export const generateFunctionSignature = (
   fullPath: boolean,
 ): string =>
   `${fullPath ? element.path : element.name}(${element.parameters
-    .map((p) => `${p.name}: ${p.type.value.name}[${p.multiplicity.str}]`)
+    .map(
+      (p) =>
+        `${p.name}: ${p.type.value.name}[${generateMultiplicityString(
+          p.multiplicity.lowerBound,
+          p.multiplicity.upperBound,
+        )}]`,
+    )
     .join(', ')})` +
-  `: ${element.returnType.value.name}[${element.returnMultiplicity.str}]`;
+  `: ${element.returnType.value.name}[${generateMultiplicityString(
+    element.returnMultiplicity.lowerBound,
+    element.returnMultiplicity.upperBound,
+  )}]`;

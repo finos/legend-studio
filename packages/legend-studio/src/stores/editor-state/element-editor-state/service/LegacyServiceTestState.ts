@@ -63,6 +63,7 @@ import {
   ConnectionPointer,
   PackageableElementExplicitReference,
   PureClientVersion,
+  generateIdentifiedConnectionId,
 } from '@finos/legend-graph';
 import { TAB_SIZE } from '@finos/legend-application';
 import type { DSLService_LegendStudioPlugin_Extension } from '../../../DSLService_LegendStudioPlugin_Extension';
@@ -203,7 +204,7 @@ export class TestContainerState {
           runtime_addIdentifiedConnection(
             newRuntime,
             new IdentifiedConnection(
-              newRuntime.generateIdentifiedConnectionId(),
+              generateIdentifiedConnectionId(newRuntime),
               new JsonModelConnection(
                 PackageableElementExplicitReference.create(
                   this.editorStore.graphManagerState.graph.modelStore,
@@ -225,7 +226,7 @@ export class TestContainerState {
           runtime_addIdentifiedConnection(
             newRuntime,
             new IdentifiedConnection(
-              newRuntime.generateIdentifiedConnectionId(),
+              generateIdentifiedConnectionId(newRuntime),
               new XmlModelConnection(
                 PackageableElementExplicitReference.create(
                   this.editorStore.graphManagerState.graph.modelStore,
@@ -244,7 +245,7 @@ export class TestContainerState {
           runtime_addIdentifiedConnection(
             newRuntime,
             new IdentifiedConnection(
-              newRuntime.generateIdentifiedConnectionId(),
+              generateIdentifiedConnectionId(newRuntime),
               new FlatDataConnection(
                 PackageableElementExplicitReference.create(
                   connection.store.value,
@@ -262,7 +263,7 @@ export class TestContainerState {
           runtime_addIdentifiedConnection(
             newRuntime,
             new IdentifiedConnection(
-              newRuntime.generateIdentifiedConnectionId(),
+              generateIdentifiedConnectionId(newRuntime),
               new RelationalDatabaseConnection(
                 PackageableElementExplicitReference.create(
                   connection.store.value,
@@ -296,7 +297,7 @@ export class TestContainerState {
             runtime_addIdentifiedConnection(
               newRuntime,
               new IdentifiedConnection(
-                newRuntime.generateIdentifiedConnectionId(),
+                generateIdentifiedConnectionId(newRuntime),
                 testConnection,
               ),
               this.editorStore.changeDetectionState.observerContext,

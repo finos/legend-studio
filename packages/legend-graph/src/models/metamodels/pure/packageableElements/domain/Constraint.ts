@@ -16,11 +16,10 @@
 
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import { hashArray, uuid, type Hashable } from '@finos/legend-shared';
-import { RawLambda } from '../../rawValueSpecification/RawLambda';
+import type { RawLambda } from '../../rawValueSpecification/RawLambda';
 import type { Class } from './Class';
-import type { Stubable } from '../../../../../helpers/Stubable';
 
-export class Constraint implements Hashable, Stubable {
+export class Constraint implements Hashable {
   readonly _UUID = uuid();
   readonly _OWNER: Class;
 
@@ -44,14 +43,6 @@ export class Constraint implements Hashable, Stubable {
     this.name = name;
     this._OWNER = owner;
     this.functionDefinition = functionDefinition;
-  }
-
-  static createStub = (_class: Class): Constraint =>
-    new Constraint('', _class, RawLambda.createStub());
-  // the constraint is considered stub if it doesn't have a body in the function definition lambda because
-  // without the function definition, it is not even parsable and so we should not transform this
-  get isStub(): boolean {
-    return !this.functionDefinition.body;
   }
 
   get hashCode(): string {

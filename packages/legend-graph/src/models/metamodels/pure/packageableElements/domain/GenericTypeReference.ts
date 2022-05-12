@@ -19,15 +19,11 @@ import {
   type PackageableElementReference,
   type PackageableElementImplicitReference,
 } from '../PackageableElementReference';
-import type { Stubable } from '../../../../../helpers/Stubable';
 import { ReferenceWithOwner } from '../../Reference';
 import type { GenericType } from './GenericType';
 import type { Type } from './Type';
 
-export abstract class GenericTypeReference
-  extends ReferenceWithOwner
-  implements Stubable
-{
+export abstract class GenericTypeReference extends ReferenceWithOwner {
   override readonly ownerReference: PackageableElementReference<Type>;
   value: GenericType;
 
@@ -39,10 +35,6 @@ export abstract class GenericTypeReference
 
     this.ownerReference = ownerReference;
     this.value = value;
-  }
-
-  get isStub(): boolean {
-    return !this.value.isStub;
   }
 }
 

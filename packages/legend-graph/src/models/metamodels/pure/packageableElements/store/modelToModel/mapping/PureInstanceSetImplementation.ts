@@ -20,10 +20,6 @@ import type { Class } from '../../../domain/Class';
 import { InstanceSetImplementation } from '../../../mapping/InstanceSetImplementation';
 import type { PurePropertyMapping } from './PurePropertyMapping';
 import type { SetImplementationVisitor } from '../../../mapping/SetImplementation';
-import {
-  type Stubable,
-  isStubArray,
-} from '../../../../../../../helpers/Stubable';
 import type { RawLambda } from '../../../../rawValueSpecification/RawLambda';
 import type {
   PackageableElementReference,
@@ -35,7 +31,7 @@ import type { InferableMappingElementRoot } from '../../../mapping/InferableMapp
 
 export class PureInstanceSetImplementation
   extends InstanceSetImplementation
-  implements Hashable, Stubable
+  implements Hashable
 {
   declare propertyMappings: PurePropertyMapping[];
   srcClass: OptionalPackageableElementReference<Class>;
@@ -57,28 +53,6 @@ export class PureInstanceSetImplementation
     this.srcClass = srcClass;
   }
 
-  findPropertyMapping(
-    propertyName: string,
-    targetId: string | undefined,
-  ): PurePropertyMapping | undefined {
-    let properties = undefined;
-    properties = this.propertyMappings.filter(
-      (propertyMapping) => propertyMapping.property.value.name === propertyName,
-    );
-    if (targetId === undefined || properties.length === 1) {
-      return properties[0];
-    }
-    return properties.find(
-      (propertyMapping) =>
-        propertyMapping.targetSetImplementation &&
-        propertyMapping.targetSetImplementation.id.value === targetId,
-    );
-  }
-
-  override get isStub(): boolean {
-    return super.isStub && isStubArray(this.propertyMappings);
-  }
-
   override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.PURE_INSTANCE_SET_IMPLEMENTATION,
@@ -87,7 +61,12 @@ export class PureInstanceSetImplementation
       this.filter ?? '',
       hashArray(
         this.propertyMappings.filter(
-          (propertyMapping) => !propertyMapping.isStub,
+          // TODO: we should also handle of other property mapping types
+          // using some form of extension mechanism
+          (propertyMapping) =>
+            // TODO: use `isStubbed_RawLambda` when we move this out of the metamodel
+            Boolean(propertyMapping.transform.parameters) ||
+            Boolean(propertyMapping.transform.body),
         ),
       ),
     ]);
@@ -95,9 +74,5 @@ export class PureInstanceSetImplementation
 
   accept_SetImplementationVisitor<T>(visitor: SetImplementationVisitor<T>): T {
     return visitor.visit_PureInstanceSetImplementation(this);
-  }
-
-  getEmbeddedSetImplmentations(): InstanceSetImplementation[] {
-    return [];
   }
 }

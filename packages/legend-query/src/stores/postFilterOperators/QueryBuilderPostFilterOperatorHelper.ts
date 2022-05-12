@@ -26,6 +26,7 @@ import {
   SimpleFunctionExpression,
   TYPICAL_MULTIPLICITY_TYPE,
   VariableExpression,
+  getAllClassDerivedProperties,
 } from '@finos/legend-graph';
 import {
   guaranteeNonNullable,
@@ -97,10 +98,9 @@ export const buildPostFilterConditionExpression = (
     tdsDerivedPropertyName = getTDSColumnDerivedProperyFromType(type);
   }
   tdsPropertyExpression.func = guaranteeNonNullable(
-    graph
-      .getClass(TDS_ROW)
-      .getAllDerivedProperties()
-      .find((p) => p.name === tdsDerivedPropertyName),
+    getAllClassDerivedProperties(graph.getClass(TDS_ROW)).find(
+      (p) => p.name === tdsDerivedPropertyName,
+    ),
   );
   const variableName = new VariableExpression(
     filterConditionState.postFilterState.lambdaParameterName,

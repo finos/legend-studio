@@ -61,6 +61,13 @@ export abstract class V1_PackageableElement implements Hashable {
   package!: string;
   name!: string;
 
+  /**
+   * This logic is specific to the codebase and this is not part of the native metamodel.
+   * If needed, we can probably move this out as an utility or do type declaration merge
+   * and define this externally using `Object.defineProperty`.
+   *
+   * @internal model logic
+   */
   get path(): string {
     return `${this.package}${ELEMENT_PATH_DELIMITER}${this.name}`;
   }

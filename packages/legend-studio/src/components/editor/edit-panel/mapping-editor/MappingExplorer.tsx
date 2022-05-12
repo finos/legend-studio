@@ -61,7 +61,7 @@ import {
   EnumerationMapping,
   PropertyMapping,
   PureInstanceSetImplementation,
-  RawLambda,
+  stub_RawLambda,
 } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
 import {
@@ -126,7 +126,7 @@ export const MappingExplorerContextMenu = observer(
     const addMappingFilter = (): void => {
       if (mappingElement instanceof PureInstanceSetImplementation) {
         if (!mappingElement.filter) {
-          const stubLambda = RawLambda.createStub();
+          const stubLambda = stub_RawLambda();
           pureInstanceSetImpl_setMappingFilter(mappingElement, stubLambda);
         }
         if (

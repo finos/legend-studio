@@ -13,19 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { addUniqueEntry } from '@finos/legend-shared';
-import {
-  type ValidationIssue,
-  createValidationError,
-} from './ValidationHelper';
 
-export const validateServicePattern = (pattern: string): ValidationIssue => {
-  const errors: string[] = [];
-  if (!pattern) {
-    addUniqueEntry(errors, 'Pattern must not be empty');
-  } else if (!pattern.startsWith('/')) {
-    addUniqueEntry(errors, `Pattern must start with a '/'`);
-  }
-  // TODO: potentially do more validation
-  return createValidationError(errors);
-};
+import { ELEMENT_PATH_DELIMITER } from '../../../../../MetaModelConst';
+import type { V1_MappingInclude } from '../model/packageableElements/mapping/V1_MappingInclude';
+
+export const V1_getIncludedMappingPath = (
+  mappingInclude: V1_MappingInclude,
+): string =>
+  mappingInclude.includedMapping
+    ? mappingInclude.includedMapping
+    : `${mappingInclude.includedMappingPackage}${ELEMENT_PATH_DELIMITER}${mappingInclude.includedMappingName}`;

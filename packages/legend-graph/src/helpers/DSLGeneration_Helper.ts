@@ -14,7 +14,13 @@
  * limitations under the License.
  */
 
-import { RawLambda } from '../models/metamodels/pure/rawValueSpecification/RawLambda';
+import type { ConfigurationProperty } from '../models/metamodels/pure/packageableElements/fileGeneration/ConfigurationProperty';
+import type { FileGenerationSpecification } from '../models/metamodels/pure/packageableElements/fileGeneration/FileGenerationSpecification';
 
-export const createStubRawLambda = (): RawLambda =>
-  new RawLambda(undefined, undefined);
+export const getNullableFileGenerationConfig = (
+  fileGeneration: FileGenerationSpecification,
+  name: string,
+): ConfigurationProperty | undefined =>
+  fileGeneration.configurationProperties.find(
+    (property) => name === property.name,
+  );

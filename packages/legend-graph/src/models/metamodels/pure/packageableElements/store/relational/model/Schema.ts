@@ -15,15 +15,10 @@
  */
 
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
-import {
-  type Hashable,
-  hashArray,
-  guaranteeNonNullable,
-} from '@finos/legend-shared';
+import { type Hashable, hashArray } from '@finos/legend-shared';
 import type { Database } from './Database';
 import type { Table } from './Table';
 import type { View } from './View';
-import type { Relation } from './RelationalOperationElement';
 
 export class Schema implements Hashable {
   readonly _OWNER: Database;
@@ -36,24 +31,6 @@ export class Schema implements Hashable {
     this.name = name;
     this._OWNER = owner;
   }
-
-  getTable = (name: string): Table =>
-    guaranteeNonNullable(
-      this.tables.find((table) => table.name === name),
-      `Can't find table '${name}' in schema '${this.name}' of database '${this._OWNER.path}'`,
-    );
-  getView = (name: string): View =>
-    guaranteeNonNullable(
-      this.views.find((view) => view.name === name),
-      `Can't find view '${name}' in schema '${this.name}' of database '${this._OWNER.path}'`,
-    );
-  getRelation = (name: string): Relation => {
-    const relations: (Table | View)[] = this.tables;
-    return guaranteeNonNullable(
-      relations.concat(this.views).find((relation) => relation.name === name),
-      `Can't find relation '${name}' in schema '${this.name}' of database '${this._OWNER.path}'`,
-    );
-  };
 
   get hashCode(): string {
     return hashArray([

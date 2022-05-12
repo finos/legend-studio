@@ -47,6 +47,7 @@ import {
   PackageableElementReference,
   PackageableElementExplicitReference,
   ELEMENT_PATH_DELIMITER,
+  getNullableFileGenerationConfig,
 } from '@finos/legend-graph';
 import {
   configurationProperty_setValue,
@@ -269,7 +270,8 @@ export class FileGenerationState {
             (e) => e.name !== generationProperty.name,
           );
       } else {
-        const configProperty = fileGeneration.getConfig(
+        const configProperty = getNullableFileGenerationConfig(
+          fileGeneration,
           generationProperty.name,
         );
         if (configProperty) {
@@ -285,7 +287,10 @@ export class FileGenerationState {
         }
       }
     } else {
-      const configProperty = fileGeneration.getConfig(generationProperty.name);
+      const configProperty = getNullableFileGenerationConfig(
+        fileGeneration,
+        generationProperty.name,
+      );
       let useDefaultValue = generationProperty.defaultValue === newValue;
       if (generationProperty.type === GenerationPropertyItemType.BOOLEAN) {
         useDefaultValue =

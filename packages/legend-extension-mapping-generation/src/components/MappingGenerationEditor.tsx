@@ -41,7 +41,11 @@ import {
 } from '@finos/legend-application';
 import type { MappingGenerationEditorState } from '../stores/MappingGenerationEditorState';
 import { flowResult, runInAction } from 'mobx';
-import { Mapping, createValidationError } from '@finos/legend-graph';
+import {
+  Mapping,
+  createValidationError,
+  isStubbed_PackageableElement,
+} from '@finos/legend-graph';
 
 const StringEditor = observer(
   (props: {
@@ -295,9 +299,11 @@ const MappingSelectorEditor = observer(
       editorStore,
     } = props;
     // mapping
-    const isMappingEmpty = selectedMapping?.value.isStub
-      ? createValidationError(['Mapping cannot be empty'])
-      : undefined;
+    const isMappingEmpty =
+      selectedMapping?.value &&
+      isStubbed_PackageableElement(selectedMapping.value)
+        ? createValidationError(['Mapping cannot be empty'])
+        : undefined;
     const mapping = selectedMapping?.value;
     const mappingOptions = editorStore.mappingOptions;
     const noMappingLabel = (

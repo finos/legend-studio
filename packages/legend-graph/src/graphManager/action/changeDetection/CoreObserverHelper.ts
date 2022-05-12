@@ -95,7 +95,6 @@ export const observe_Multiplicity = skipObserved(
     makeObservable(metamodel, {
       lowerBound: observable,
       upperBound: observable,
-      str: computed,
       hashCode: computed,
     }),
 );

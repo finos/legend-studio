@@ -16,23 +16,14 @@
 
 import { type Hashable, hashArray, uuid } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
-import {
-  type GenericTypeReference,
-  GenericTypeExplicitReference,
-} from './GenericTypeReference';
-import { Multiplicity } from './Multiplicity';
-import { GenericType } from './GenericType';
-import type { Class } from './Class';
+import type { GenericTypeReference } from './GenericTypeReference';
+import type { Multiplicity } from './Multiplicity';
 import type { AbstractProperty, PropertyOwner } from './AbstractProperty';
 import type { AnnotatedElement } from './AnnotatedElement';
 import type { TaggedValue } from './TaggedValue';
-import { type Stubable, isStubArray } from '../../../../../helpers/Stubable';
-import type { Type } from './Type';
 import type { StereotypeReference } from './StereotypeReference';
 
-export class Property
-  implements AbstractProperty, AnnotatedElement, Hashable, Stubable
-{
+export class Property implements AbstractProperty, AnnotatedElement, Hashable {
   readonly _UUID = uuid();
   readonly _OWNER: PropertyOwner;
 
@@ -52,22 +43,6 @@ export class Property
     this.multiplicity = multiplicity;
     this.genericType = genericType;
     this._OWNER = owner;
-  }
-
-  static createStub = (type: Type, _class: Class): Property =>
-    new Property(
-      '',
-      new Multiplicity(1, 1),
-      GenericTypeExplicitReference.create(new GenericType(type)),
-      _class,
-    );
-  get isStub(): boolean {
-    return (
-      !this.name &&
-      this.genericType.isStub &&
-      isStubArray(this.stereotypes) &&
-      isStubArray(this.taggedValues)
-    );
   }
 
   get hashCode(): string {

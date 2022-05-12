@@ -50,12 +50,15 @@ import { useEditorStore } from '../../EditorStoreProvider';
 import {
   type Enumeration,
   type StereotypeReference,
-  Enum,
+  type TaggedValue,
+  type Enum,
   Profile,
-  Tag,
-  TaggedValue,
-  Stereotype,
   StereotypeExplicitReference,
+  stub_TaggedValue,
+  stub_Tag,
+  stub_Profile,
+  stub_Stereotype,
+  stub_Enum,
 } from '@finos/legend-graph';
 import {
   enum_setName,
@@ -148,14 +151,12 @@ const EnumEditor = observer(
         if (selectedTab === UML_EDITOR_TAB.TAGGED_VALUES) {
           annotatedElement_addTaggedValue(
             _enum,
-            TaggedValue.createStub(Tag.createStub(Profile.createStub())),
+            stub_TaggedValue(stub_Tag(stub_Profile())),
           );
         } else if (selectedTab === UML_EDITOR_TAB.STEREOTYPES) {
           annotatedElement_addStereotype(
             _enum,
-            StereotypeExplicitReference.create(
-              Stereotype.createStub(Profile.createStub()),
-            ),
+            StereotypeExplicitReference.create(stub_Stereotype(stub_Profile())),
           );
         }
       }
@@ -174,9 +175,7 @@ const EnumEditor = observer(
         if (!isReadOnly && item.data.packageableElement instanceof Profile) {
           annotatedElement_addTaggedValue(
             _enum,
-            TaggedValue.createStub(
-              Tag.createStub(item.data.packageableElement),
-            ),
+            stub_TaggedValue(stub_Tag(item.data.packageableElement)),
           );
         }
       },
@@ -198,7 +197,7 @@ const EnumEditor = observer(
           annotatedElement_addStereotype(
             _enum,
             StereotypeExplicitReference.create(
-              Stereotype.createStub(item.data.packageableElement),
+              stub_Stereotype(item.data.packageableElement),
             ),
           );
         }
@@ -357,18 +356,16 @@ export const EnumerationEditor = observer(
     const add = (): void => {
       if (!isReadOnly) {
         if (selectedTab === UML_EDITOR_TAB.ENUM_VALUES) {
-          enum_addValue(enumeration, Enum.createStub(enumeration));
+          enum_addValue(enumeration, stub_Enum(enumeration));
         } else if (selectedTab === UML_EDITOR_TAB.TAGGED_VALUES) {
           annotatedElement_addTaggedValue(
             enumeration,
-            TaggedValue.createStub(Tag.createStub(Profile.createStub())),
+            stub_TaggedValue(stub_Tag(stub_Profile())),
           );
         } else if (selectedTab === UML_EDITOR_TAB.STEREOTYPES) {
           annotatedElement_addStereotype(
             enumeration,
-            StereotypeExplicitReference.create(
-              Stereotype.createStub(Profile.createStub()),
-            ),
+            StereotypeExplicitReference.create(stub_Stereotype(stub_Profile())),
           );
         }
       }
@@ -395,9 +392,7 @@ export const EnumerationEditor = observer(
         if (!isReadOnly && item.data.packageableElement instanceof Profile) {
           annotatedElement_addTaggedValue(
             enumeration,
-            TaggedValue.createStub(
-              Tag.createStub(item.data.packageableElement),
-            ),
+            stub_TaggedValue(stub_Tag(item.data.packageableElement)),
           );
         }
       },
@@ -419,7 +414,7 @@ export const EnumerationEditor = observer(
           annotatedElement_addStereotype(
             enumeration,
             StereotypeExplicitReference.create(
-              Stereotype.createStub(item.data.packageableElement),
+              stub_Stereotype(item.data.packageableElement),
             ),
           );
         }

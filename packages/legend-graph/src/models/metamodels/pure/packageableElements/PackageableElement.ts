@@ -17,7 +17,6 @@
 import {
   type Hashable,
   hashArray,
-  hashString,
   IllegalStateError,
   uuid,
 } from '@finos/legend-shared';
@@ -26,7 +25,6 @@ import {
   ELEMENT_PATH_DELIMITER,
 } from '../../../../MetaModelConst';
 import type { Package } from './domain/Package';
-import type { Stubable } from '../../../../helpers/Stubable';
 import type { Profile } from './domain/Profile';
 import type { Enumeration } from './domain/Enumeration';
 import type { Class } from './domain/Class';
@@ -68,7 +66,7 @@ export interface PackageableElementVisitor<T> {
   visit_DataElement(element: DataElement): T;
 }
 
-export abstract class PackageableElement implements Hashable, Stubable {
+export abstract class PackageableElement implements Hashable {
   readonly _UUID = uuid();
   protected _isDeleted = false;
   protected _isDisposed = false;
@@ -80,30 +78,53 @@ export abstract class PackageableElement implements Hashable, Stubable {
     this.name = name;
   }
 
+  /**
+   * This logic is specific to the codebase and this is not part of the native metamodel.
+   * If needed, we can probably move this out as an utility or do type declaration merge
+   * and define this externally using `Object.defineProperty`.
+   *
+   * @internal model logic
+   */
   get isDeleted(): boolean {
     return this._isDeleted;
   }
 
+  /**
+   * This logic is specific to the codebase and this is not part of the native metamodel.
+   * If needed, we can probably move this out as an utility or do type declaration merge
+   * and define this externally using `Object.defineProperty`.
+   *
+   * @internal model logic
+   */
   setIsDeleted(value: boolean): void {
     this._isDeleted = value;
   }
 
+  /**
+   * This logic is specific to the codebase and this is not part of the native metamodel.
+   * If needed, we can probably move this out as an utility or do type declaration merge
+   * and define this externally using `Object.defineProperty`.
+   *
+   * @internal model logic
+   */
   get path(): string {
     if (!this.package) {
       return this.name;
     }
-    const parentPackageName = this.package.fullPath;
-    return !parentPackageName
+    const parentPackagePath = this.package.path;
+    return !parentPackagePath
       ? this.name
-      : `${parentPackageName}${ELEMENT_PATH_DELIMITER}${this.name}`;
-  }
-
-  get isStub(): boolean {
-    return !this.name && !this.package;
+      : `${parentPackagePath}${ELEMENT_PATH_DELIMITER}${this.name}`;
   }
 
   /**
-   * Dispose the element and its references to avoid memory leaks
+   * Dispose the element and its references to avoid memory leaks.
+   *
+   * This logic is specific to the codebase and this is not part of the native metamodel.
+   * If needed, we can probably move this out as an utility or do type declaration merge
+   * and define this externally using `Object.defineProperty`.
+   *
+   * @internal model logic
    */
   dispose(): void {
     this._isDisposed = true;
@@ -140,11 +161,3 @@ export abstract class PackageableElement implements Hashable, Stubable {
     visitor: PackageableElementVisitor<T>,
   ): T;
 }
-
-export const getElementPointerHashCode = (
-  pointerType: string,
-  path: string,
-): string =>
-  [CORE_HASH_STRUCTURE.PACKAGEABLE_ELEMENT_POINTER, pointerType, path]
-    .map(hashString)
-    .join(',');

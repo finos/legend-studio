@@ -21,16 +21,13 @@ import {
   type PackageableElementReference,
   type PackageableElementImplicitReference,
 } from '../PackageableElementReference';
-import type { Stubable } from '../../../../../helpers/Stubable';
 import { ReferenceWithOwner } from '../../Reference';
 import type { AbstractProperty } from './AbstractProperty';
 import type { Class } from './Class';
 import { Association } from './Association';
+import { getAssociatedPropertyClass } from '../../../../../helpers/DomainHelper';
 
-export abstract class PropertyReference
-  extends ReferenceWithOwner
-  implements Stubable
-{
+export abstract class PropertyReference extends ReferenceWithOwner {
   override readonly ownerReference: PackageableElementReference<
     Class | Association
   >;
@@ -43,10 +40,6 @@ export abstract class PropertyReference
     super(ownerReference);
     this.ownerReference = ownerReference;
     this.value = value;
-  }
-
-  get isStub(): boolean {
-    return !this.value.isStub;
   }
 
   get pointerHashCode(): string {
@@ -66,7 +59,7 @@ export class PropertyExplicitReference extends PropertyReference {
   private constructor(value: AbstractProperty) {
     const ownerReference = PackageableElementExplicitReference.create(
       value._OWNER instanceof Association
-        ? value._OWNER.getPropertyAssociatedClass(value)
+        ? getAssociatedPropertyClass(value._OWNER, value)
         : value._OWNER,
     );
     super(ownerReference, value);

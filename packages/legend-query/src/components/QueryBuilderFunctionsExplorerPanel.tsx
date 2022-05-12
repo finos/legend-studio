@@ -61,7 +61,7 @@ import { getMultiplicityDescription } from './shared/QueryBuilderUtils';
 const isDependencyTreeNode = (
   node: QueryBuilderFunctionsExplorerTreeNodeData,
 ): boolean =>
-  getElementRootPackage(node.packageableElement).path ===
+  getElementRootPackage(node.packageableElement).name ===
   ROOT_PACKAGE_NAME.PROJECT_DEPENDENCY_ROOT;
 
 const QueryBuilderFunctionInfoTooltip: React.FC<{

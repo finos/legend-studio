@@ -74,6 +74,10 @@ import {
 import { getDerivedPropertyMilestoningSteoreotype } from './QueryBuilderPropertyEditorState';
 
 /**
+ * Checks if the provided property expression match the criteria for default
+ * date propagation so we know whether we need to fill in values for the parameter
+ * or just propgate values from the parent's expression
+ *
  * NOTE: this takes date propgation into account. See the table below for all
  * the combination:
  *

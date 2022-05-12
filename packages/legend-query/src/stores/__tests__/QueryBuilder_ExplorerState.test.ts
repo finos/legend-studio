@@ -23,6 +23,8 @@ import { integrationTest } from '@finos/legend-shared';
 import type { Entity } from '@finos/legend-model-storage';
 import {
   Class,
+  getAllClassDerivedProperties,
+  getAllClassProperties,
   type AbstractProperty,
   type GraphManagerState,
   type Mapping,
@@ -159,9 +161,9 @@ const buildMappingData = (
   };
   if (type instanceof Class) {
     if (depth <= max_depth) {
-      const properties = type
-        .getAllProperties()
-        .concat(type.getAllDerivedProperties());
+      const properties = getAllClassProperties(type).concat(
+        getAllClassDerivedProperties(type),
+      );
       propertyMappingData.childNodes = properties.map((p) =>
         buildMappingData(
           p,
@@ -184,9 +186,9 @@ const generatePropertyMappingDataTree = (
   max_depth: number,
 ): NodePropertyMappingData[] => {
   const mappingData = getRootMappingData(mapping, _class);
-  const properties = _class
-    .getAllProperties()
-    .concat(_class.getAllDerivedProperties());
+  const properties = getAllClassProperties(_class).concat(
+    getAllClassDerivedProperties(_class),
+  );
   return properties.map((p) =>
     buildMappingData(p, graphManagerState, mappingData, max_depth, mapping),
   );

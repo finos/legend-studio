@@ -42,7 +42,6 @@ export * from './models/metamodels/pure/packageableElements/store/relational/mod
 export {
   RelationalInputData,
   RelationalInputType,
-  getRelationalInputType,
 } from './models/metamodels/pure/packageableElements/store/relational/mapping/RelationalInputData';
 export { RelationalPropertyMapping } from './models/metamodels/pure/packageableElements/store/relational/mapping/RelationalPropertyMapping';
 export { RelationalInstanceSetImplementation } from './models/metamodels/pure/packageableElements/store/relational/mapping/RelationalInstanceSetImplementation';

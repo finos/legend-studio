@@ -98,7 +98,7 @@ export class V1_ProtocolToMetaModelGraphThirdPassBuilder
           addUniqueEntry(_class.generalizations, genricTypeReference);
           if (genricTypeReference.ownerReference.value instanceof Class) {
             addUniqueEntry(
-              genricTypeReference.ownerReference.value.subclasses,
+              genricTypeReference.ownerReference.value._subclasses,
               _class,
             );
           }

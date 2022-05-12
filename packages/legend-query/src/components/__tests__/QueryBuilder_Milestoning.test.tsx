@@ -36,7 +36,7 @@ import {
   guaranteeType,
 } from '@finos/legend-shared';
 import { waitFor } from '@testing-library/dom';
-import { RawLambda } from '@finos/legend-graph';
+import { stub_RawLambda, create_RawLambda } from '@finos/legend-graph';
 import {
   TEST__provideMockedLegendQueryStore,
   TEST__setUpQueryEditor,
@@ -45,11 +45,6 @@ import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_TestID';
 import { QueryBuilderSimpleProjectionColumnState } from '../../stores/QueryBuilderProjectionState';
 import { LegendQueryPluginManager } from '../../application/LegendQueryPluginManager';
 import { Query_GraphPreset } from '../../models/Query_GraphPreset';
-
-const getRawLambda = (jsonRawLambda: {
-  parameters?: object;
-  body?: object;
-}): RawLambda => new RawLambda(jsonRawLambda.parameters, jsonRawLambda.body);
 
 test(
   integrationTest(
@@ -64,7 +59,7 @@ test(
     const renderResult = await TEST__setUpQueryEditor(
       mockedQueryStore,
       TEST_MilestoningModel,
-      RawLambda.createStub(),
+      stub_RawLambda(),
       'my::map',
       'my::runtime',
     );
@@ -84,8 +79,9 @@ test(
 
     act(() => {
       queryBuilderState.initialize(
-        getRawLambda(
-          TEST_DATA__simpleProjectionWithBusinessTemporalSourceAndProcessingTemporalTarget,
+        create_RawLambda(
+          TEST_DATA__simpleProjectionWithBusinessTemporalSourceAndProcessingTemporalTarget.parameters,
+          TEST_DATA__simpleProjectionWithBusinessTemporalSourceAndProcessingTemporalTarget.body,
         ),
       );
     });
@@ -121,7 +117,7 @@ test(
     const renderResult = await TEST__setUpQueryEditor(
       mockedQueryStore,
       TEST_MilestoningModel,
-      RawLambda.createStub(),
+      stub_RawLambda(),
       'my::map',
       'my::runtime',
     );
@@ -141,8 +137,9 @@ test(
 
     act(() => {
       queryBuilderState.initialize(
-        getRawLambda(
-          TEST_DATA__simpleProjectionWithBusinessTemporalSourceAndBusinessTemporalTarget,
+        create_RawLambda(
+          TEST_DATA__simpleProjectionWithBusinessTemporalSourceAndBusinessTemporalTarget.parameters,
+          TEST_DATA__simpleProjectionWithBusinessTemporalSourceAndBusinessTemporalTarget.body,
         ),
       );
     });
@@ -178,7 +175,7 @@ test(
     const renderResult = await TEST__setUpQueryEditor(
       mockedQueryStore,
       TEST_MilestoningModel,
-      RawLambda.createStub(),
+      stub_RawLambda(),
       'my::map',
       'my::runtime',
     );
@@ -198,8 +195,9 @@ test(
 
     act(() => {
       queryBuilderState.initialize(
-        getRawLambda(
-          TEST_DATA__simpleProjectionWithBusinessTemporalSourceAndBiTemporalTarget,
+        create_RawLambda(
+          TEST_DATA__simpleProjectionWithBusinessTemporalSourceAndBiTemporalTarget.parameters,
+          TEST_DATA__simpleProjectionWithBusinessTemporalSourceAndBiTemporalTarget.body,
         ),
       );
     });
@@ -235,7 +233,7 @@ test(
     const renderResult = await TEST__setUpQueryEditor(
       mockedQueryStore,
       TEST_MilestoningModel,
-      RawLambda.createStub(),
+      stub_RawLambda(),
       'my::map',
       'my::runtime',
     );
@@ -255,8 +253,9 @@ test(
 
     act(() => {
       queryBuilderState.initialize(
-        getRawLambda(
-          TEST_DATA__simpleProjectionWithBiTemporalSourceAndBiTemporalTarget,
+        create_RawLambda(
+          TEST_DATA__simpleProjectionWithBiTemporalSourceAndBiTemporalTarget.parameters,
+          TEST_DATA__simpleProjectionWithBiTemporalSourceAndBiTemporalTarget.body,
         ),
       );
     });
@@ -292,7 +291,7 @@ test(
     const renderResult = await TEST__setUpQueryEditor(
       mockedQueryStore,
       TEST_MilestoningModel,
-      RawLambda.createStub(),
+      stub_RawLambda(),
       'my::map',
       'my::runtime',
     );
@@ -312,8 +311,9 @@ test(
 
     act(() => {
       queryBuilderState.initialize(
-        getRawLambda(
-          TEST_DATA__simpleProjectionWithBiTemporalSourceAndBusinessTemporalTarget,
+        create_RawLambda(
+          TEST_DATA__simpleProjectionWithBiTemporalSourceAndBusinessTemporalTarget.parameters,
+          TEST_DATA__simpleProjectionWithBiTemporalSourceAndBusinessTemporalTarget.body,
         ),
       );
     });
@@ -349,7 +349,7 @@ test(
     const renderResult = await TEST__setUpQueryEditor(
       mockedQueryStore,
       TEST_MilestoningModel,
-      RawLambda.createStub(),
+      stub_RawLambda(),
       'my::map',
       'my::runtime',
     );
@@ -369,8 +369,9 @@ test(
 
     act(() => {
       queryBuilderState.initialize(
-        getRawLambda(
-          TEST_DATA__simpleProjectionWithBiTemporalSourceAndProcessingTemporalTarget,
+        create_RawLambda(
+          TEST_DATA__simpleProjectionWithBiTemporalSourceAndProcessingTemporalTarget.parameters,
+          TEST_DATA__simpleProjectionWithBiTemporalSourceAndProcessingTemporalTarget.body,
         ),
       );
     });
@@ -406,7 +407,7 @@ test(
     const renderResult = await TEST__setUpQueryEditor(
       mockedQueryStore,
       TEST_MilestoningModel,
-      RawLambda.createStub(),
+      stub_RawLambda(),
       'my::map',
       'my::runtime',
     );
@@ -426,8 +427,9 @@ test(
 
     act(() => {
       queryBuilderState.initialize(
-        getRawLambda(
-          TEST_DATA__simpleProjectionWithProcessingTemporalSourceAndBiTemporalTarget,
+        create_RawLambda(
+          TEST_DATA__simpleProjectionWithProcessingTemporalSourceAndBiTemporalTarget.parameters,
+          TEST_DATA__simpleProjectionWithProcessingTemporalSourceAndBiTemporalTarget.body,
         ),
       );
     });
@@ -463,7 +465,7 @@ test(
     const renderResult = await TEST__setUpQueryEditor(
       mockedQueryStore,
       TEST_MilestoningModel,
-      RawLambda.createStub(),
+      stub_RawLambda(),
       'my::map',
       'my::runtime',
     );
@@ -483,8 +485,9 @@ test(
 
     act(() => {
       queryBuilderState.initialize(
-        getRawLambda(
-          TEST_DATA__simpleProjectionWithProcessingTemporalSourceAndBusinessTemporalTarget,
+        create_RawLambda(
+          TEST_DATA__simpleProjectionWithProcessingTemporalSourceAndBusinessTemporalTarget.parameters,
+          TEST_DATA__simpleProjectionWithProcessingTemporalSourceAndBusinessTemporalTarget.body,
         ),
       );
     });
@@ -520,7 +523,7 @@ test(
     const renderResult = await TEST__setUpQueryEditor(
       mockedQueryStore,
       TEST_MilestoningModel,
-      RawLambda.createStub(),
+      stub_RawLambda(),
       'my::map',
       'my::runtime',
     );
@@ -540,8 +543,9 @@ test(
 
     act(() => {
       queryBuilderState.initialize(
-        getRawLambda(
-          TEST_DATA__simpleProjectionWithProcessingTemporalSourceAndProcessingTemporalTarget,
+        create_RawLambda(
+          TEST_DATA__simpleProjectionWithProcessingTemporalSourceAndProcessingTemporalTarget.parameters,
+          TEST_DATA__simpleProjectionWithProcessingTemporalSourceAndProcessingTemporalTarget.body,
         ),
       );
     });
@@ -577,7 +581,7 @@ test(
     const renderResult = await TEST__setUpQueryEditor(
       mockedQueryStore,
       TEST_MilestoningModel,
-      RawLambda.createStub(),
+      stub_RawLambda(),
       'my::map',
       'my::runtime',
     );
@@ -597,8 +601,9 @@ test(
 
     act(() => {
       queryBuilderState.initialize(
-        getRawLambda(
-          TEST_DATA__simpleProjectionWithNonTemporalSourceAndProcessingTemporalTarget,
+        create_RawLambda(
+          TEST_DATA__simpleProjectionWithNonTemporalSourceAndProcessingTemporalTarget.parameters,
+          TEST_DATA__simpleProjectionWithNonTemporalSourceAndProcessingTemporalTarget.body,
         ),
       );
     });
@@ -634,7 +639,7 @@ test(
     const renderResult = await TEST__setUpQueryEditor(
       mockedQueryStore,
       TEST_MilestoningModel,
-      RawLambda.createStub(),
+      stub_RawLambda(),
       'my::map',
       'my::runtime',
     );
@@ -654,8 +659,9 @@ test(
 
     act(() => {
       queryBuilderState.initialize(
-        getRawLambda(
-          TEST_DATA__simpleProjectionWithNonTemporalSourceAndBusinessTemporalTarget,
+        create_RawLambda(
+          TEST_DATA__simpleProjectionWithNonTemporalSourceAndBusinessTemporalTarget.parameters,
+          TEST_DATA__simpleProjectionWithNonTemporalSourceAndBusinessTemporalTarget.body,
         ),
       );
     });
@@ -691,7 +697,7 @@ test(
     const renderResult = await TEST__setUpQueryEditor(
       mockedQueryStore,
       TEST_MilestoningModel,
-      RawLambda.createStub(),
+      stub_RawLambda(),
       'my::map',
       'my::runtime',
     );
@@ -711,8 +717,9 @@ test(
 
     act(() => {
       queryBuilderState.initialize(
-        getRawLambda(
-          TEST_DATA__simpleProjectionWithNonTemporalSourceAndBiTemporalTarget,
+        create_RawLambda(
+          TEST_DATA__simpleProjectionWithNonTemporalSourceAndBiTemporalTarget.parameters,
+          TEST_DATA__simpleProjectionWithNonTemporalSourceAndBiTemporalTarget.body,
         ),
       );
     });

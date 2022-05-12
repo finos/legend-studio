@@ -74,10 +74,11 @@ import {
 import { useEditorStore } from '../../EditorStoreProvider';
 import {
   Class,
-  RawLambda,
   SetImplementation,
   OperationSetImplementation,
   RelationalInputType,
+  stub_RawLambda,
+  isStubbed_RawLambda,
 } from '@finos/legend-graph';
 import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor';
 import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../../stores/DSLMapping_LegendStudioPlugin_Extension';
@@ -127,7 +128,7 @@ const MappingTestQueryEditor = observer(
                     Class,
                   ),
                 )
-              : RawLambda.createStub(),
+              : stub_RawLambda(),
           ),
         ).catch(applicationStore.alertUnhandledError);
         hideClassMappingSelectorModal();
@@ -185,7 +186,7 @@ const MappingTestQueryEditor = observer(
     );
 
     const clearQuery = applicationStore.guardUnhandledError(() =>
-      flowResult(testState.queryState.updateLamba(RawLambda.createStub())),
+      flowResult(testState.queryState.updateLamba(stub_RawLambda())),
     );
 
     return (
@@ -207,7 +208,7 @@ const MappingTestQueryEditor = observer(
             </button>
           </div>
         </div>
-        {!queryState.query.isStub && (
+        {!isStubbed_RawLambda(queryState.query) && (
           <div className="panel__content">
             <div className="mapping-test-editor__query-panel__query">
               <StudioTextInputEditor
@@ -219,7 +220,7 @@ const MappingTestQueryEditor = observer(
             </div>
           </div>
         )}
-        {queryState.query.isStub && (
+        {isStubbed_RawLambda(queryState.query) && (
           <div ref={dropRef} className="panel__content">
             <BlankPanelPlaceholder
               placeholderText="Choose a class mapping"

@@ -81,6 +81,7 @@ import type { V1_DataElement } from '../../../model/packageableElements/data/V1_
 import { V1_ProtocolToMetaModelEmbeddedDataBuilder } from './helpers/V1_DataElementBuilderHelper';
 import { V1_buildTestSuite } from './helpers/V1_TestBuilderHelper';
 import { ServiceTestSuite } from '../../../../../../metamodels/pure/packageableElements/service/ServiceTestSuite';
+import { V1_getIncludedMappingPath } from '../../../helper/V1_DSLMapping_Helper';
 
 export class V1_ProtocolToMetaModelGraphSecondPassBuilder
   implements V1_PackageableElementVisitor<void>
@@ -278,15 +279,16 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
     );
     const mappingIncludesSet = new Set<string>();
     mapping.includes = element.includedMappings.map((i) => {
+      const includedMappingPath = V1_getIncludedMappingPath(i);
       assertNonEmptyString(
-        i.includedMappingPath,
-        `Mapping include 'includedMappingPath' field is missing or empty`,
+        includedMappingPath,
+        `Mapping include path is missing or empty`,
       );
       assertTrue(
-        !mappingIncludesSet.has(i.includedMappingPath),
-        `Duplicated mapping include '${i.includedMappingPath}' in mapping '${mapping.path}'`,
+        !mappingIncludesSet.has(includedMappingPath),
+        `Duplicated mapping include '${includedMappingPath}' in mapping '${mapping.path}'`,
       );
-      mappingIncludesSet.add(i.includedMappingPath);
+      mappingIncludesSet.add(includedMappingPath);
       return V1_buildMappingInclude(i, this.context, mapping);
     });
     mapping.enumerationMappings = element.enumerationMappings.map(

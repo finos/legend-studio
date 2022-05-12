@@ -48,10 +48,6 @@ export class FlatDataPropertyMapping
     this.transform = transform;
   }
 
-  override get isStub(): boolean {
-    return this.transform.isStub;
-  }
-
   override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.FLAT_DATA_PROPERTY_MAPPING,

@@ -51,6 +51,7 @@ import type { V1_TaggedValue } from '../../../../model/packageableElements/domai
 import { V1_buildRawLambdaWithResolvedPaths } from './V1_ValueSpecificationPathResolver';
 import {
   addElementToPackage,
+  getAllClassProperties,
   getOrCreateGraphPackage,
 } from '../../../../../../../../helpers/DomainHelper';
 
@@ -269,7 +270,9 @@ export const V1_getAppliedProperty = (
   name: string,
 ): AbstractProperty => {
   // TODO: C3 Linearzation
-  let property = parentClass.getAllProperties().find((p) => p.name === name);
+  let property = getAllClassProperties(parentClass).find(
+    (p) => p.name === name,
+  );
   if (property) {
     return property;
   }

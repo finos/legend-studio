@@ -110,7 +110,7 @@ export const V1_buildPropertyView = (
     getClassView(diagram, guaranteeNonNullable(propertyView.targetView)),
     `Property view 'targetView' field is missing`,
   );
-  const property = context.resolveOwnedProperty(propertyView.property);
+  const property = context.resolveOwnProperty(propertyView.property);
   const view = new PropertyView(
     diagram,
     property,

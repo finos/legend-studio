@@ -41,6 +41,7 @@ import {
   EnumerationMapping,
   DerivedProperty,
   getEnumerationMappingsByEnumeration,
+  getRawGenericType,
 } from '@finos/legend-graph';
 import { StudioLambdaEditor } from '../../../shared/StudioLambdaEditor';
 import { purePropertyMapping_setTransformer } from '../../../../stores/graphModifier/DSLMapping_GraphModifierHelper';
@@ -117,8 +118,10 @@ const EnumerationPropertyMappingEditor = observer(
     const mappingEditorState =
       editorStore.getCurrentEditorState(MappingEditorState);
     const propertyMapping = propertyMappingState.propertyMapping;
-    const enumeration =
-      propertyMapping.property.value.genericType.value.getRawType(Enumeration);
+    const enumeration = getRawGenericType(
+      propertyMapping.property.value.genericType.value,
+      Enumeration,
+    );
     const expectedType = propertyMapping.transformer
       ? propertyMapping.transformer.sourceType.value
       : enumeration;

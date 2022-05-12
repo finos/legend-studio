@@ -26,6 +26,7 @@ import {
   type Log,
   type PlainObject,
   type ServerClientConfig,
+  type ActionState,
   TracerService,
   LogEvent,
   getClass,
@@ -35,11 +36,10 @@ import {
   assertTrue,
   assertErrorThrown,
   promisify,
-  type ActionState,
   StopWatch,
-  assertNonEmptyString,
   filterByType,
   isNonNullable,
+  guaranteeNonEmptyString,
 } from '@finos/legend-shared';
 import type { TEMPORARY__AbstractEngineConfig } from '../../../../graphManager/action/TEMPORARY__AbstractEngineConfig';
 import {
@@ -248,12 +248,13 @@ import type { RunTestsTestableInput } from '../../../metamodels/pure/test/result
 import { V1_buildTestsResult } from './engine/test/V1_RunTestsResult';
 import type { TestResult } from '../../../metamodels/pure/test/result/TestResult';
 import type { Service } from '../../../../DSLService_Exports';
+import type { Testable } from '../../../metamodels/pure/test/Testable';
+import { stub_RawLambda } from '../../../../graphManager/action/creation/RawValueSpecificationCreatorHelper';
 import {
-  type Testable,
-  getNullableIdFromTestable,
+  getNullableIDFromTestable,
   getNullableTestable,
-} from '../../../metamodels/pure/test/Testable';
-import type { PureGraphManagerPlugin } from '../../../../graphManager/PureGraphManagerPlugin';
+} from '../../../../helpers/Testable_Helper';
+import { V1_getIncludedMappingPath } from './helper/V1_DSLMapping_Helper';
 
 const V1_FUNCTION_SUFFIX_MULTIPLICITY_INFINITE = 'MANY';
 
@@ -1628,19 +1629,18 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   // ------------------------------------------- Test  -------------------------------------------
 
   async runTests(
+    inputs: RunTestsTestableInput[],
     graph: PureModel,
-    pureGraphManagerPlugins: PureGraphManagerPlugin[],
-    testableInputs: RunTestsTestableInput[],
   ): Promise<TestResult[]> {
     const runTestsInput = new V1_RunTestsInput();
     runTestsInput.model = this.getFullGraphModelData(graph);
-    runTestsInput.testables = testableInputs
+    runTestsInput.testables = inputs
       .map((input) => {
         const testable = guaranteeNonNullable(
-          getNullableIdFromTestable(
+          getNullableIDFromTestable(
             input.testable,
             graph,
-            pureGraphManagerPlugins,
+            this.pluginManager.getPureGraphManagerPlugins(),
           ),
         );
         if (!testable) {
@@ -1657,10 +1657,16 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         return runTestableInput;
       })
       .filter(isNonNullable);
-    const testableFromIdGetter = (id: string): Testable | undefined =>
-      getNullableTestable(id, graph, pureGraphManagerPlugins);
     const runTestsResult = await this.engine.runTests(runTestsInput);
-    const result = V1_buildTestsResult(runTestsResult, testableFromIdGetter);
+    const result = V1_buildTestsResult(
+      runTestsResult,
+      (id: string): Testable | undefined =>
+        getNullableTestable(
+          id,
+          graph,
+          this.pluginManager.getPureGraphManagerPlugins(),
+        ),
+    );
     return result;
   }
 
@@ -2253,16 +2259,18 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       v1Mappings.forEach((element) => {
         const mapping = mappings.find((e) => e.path === element.path);
         if (mapping) {
-          mapping.includes = element.includedMappings.map((i) => {
-            assertNonEmptyString(
-              i.includedMappingPath,
-              `Mapping include 'includedMappingPath' field is missing or empty`,
-            );
-            return new MappingInclude(
-              mapping,
-              context.resolveMapping(i.includedMappingPath),
-            );
-          });
+          mapping.includes = element.includedMappings.map(
+            (i) =>
+              new MappingInclude(
+                mapping,
+                context.resolveMapping(
+                  guaranteeNonEmptyString(
+                    V1_getIncludedMappingPath(i),
+                    `Mapping include path is missing or empty`,
+                  ),
+                ),
+              ),
+          );
         }
       });
       // handle runtimes
@@ -2327,7 +2335,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           if (serviceExecution instanceof V1_PureMultiExecution) {
             const execution = new PureMultiExecution(
               serviceExecution.executionKey,
-              RawLambda.createStub(),
+              stub_RawLambda(),
               service,
             );
             execution.executionParameters =
@@ -2342,7 +2350,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
             service.execution = execution;
           } else if (serviceExecution instanceof V1_PureSingleExecution) {
             service.execution = new PureSingleExecution(
-              RawLambda.createStub(),
+              stub_RawLambda(),
               service,
               PackageableElementExplicitReference.create(new Mapping('')),
               new EngineRuntime(),

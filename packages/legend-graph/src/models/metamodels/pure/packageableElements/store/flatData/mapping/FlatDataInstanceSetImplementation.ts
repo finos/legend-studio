@@ -14,19 +14,19 @@
  * limitations under the License.
  */
 
-import { filterByType, hashArray, type Hashable } from '@finos/legend-shared';
+import { hashArray, type Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import { InstanceSetImplementation } from '../../../mapping/InstanceSetImplementation';
 import type { AbstractFlatDataPropertyMapping } from './AbstractFlatDataPropertyMapping';
 import type { Class } from '../../../domain/Class';
 import type { Mapping } from '../../../mapping/Mapping';
 import type { SetImplementationVisitor } from '../../../mapping/SetImplementation';
-import { EmbeddedFlatDataPropertyMapping } from './EmbeddedFlatDataPropertyMapping';
 import type { InferableMappingElementIdValue } from '../../../mapping/InferableMappingElementId';
 import type { RawLambda } from '../../../../rawValueSpecification/RawLambda';
 import type { PackageableElementReference } from '../../../PackageableElementReference';
 import type { RootFlatDataRecordTypeReference } from '../model/RootFlatDataRecordTypeReference';
 import type { InferableMappingElementRoot } from '../../../mapping/InferableMappingElementRoot';
+import { FlatDataPropertyMapping } from './FlatDataPropertyMapping';
 
 export class FlatDataInstanceSetImplementation
   extends InstanceSetImplementation
@@ -52,34 +52,6 @@ export class FlatDataInstanceSetImplementation
     this.sourceRootRecordType = sourceRootRecordType;
   }
 
-  findPropertyMapping(
-    propertyName: string,
-    targetId: string | undefined,
-  ): AbstractFlatDataPropertyMapping | undefined {
-    let properties = undefined;
-    properties = this.propertyMappings.filter(
-      (propertyMapping) => propertyMapping.property.value.name === propertyName,
-    );
-    if (targetId === undefined || properties.length === 1) {
-      return properties[0];
-    }
-    return properties.find(
-      (propertyMapping) =>
-        propertyMapping.targetSetImplementation &&
-        propertyMapping.targetSetImplementation.id.value === targetId,
-    );
-  }
-
-  getEmbeddedSetImplmentations(): InstanceSetImplementation[] {
-    const embeddedPropertyMappings = this.propertyMappings.filter(
-      filterByType(EmbeddedFlatDataPropertyMapping),
-    );
-    return embeddedPropertyMappings
-      .map((propertyMapping) => propertyMapping.getEmbeddedSetImplmentations())
-      .flat()
-      .concat(embeddedPropertyMappings);
-  }
-
   override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.FLAT_DATA_INSTANCE_SET_IMPLEMENTATION,
@@ -89,7 +61,18 @@ export class FlatDataInstanceSetImplementation
       this.filter ?? '',
       hashArray(
         this.propertyMappings.filter(
-          (propertyMapping) => !propertyMapping.isStub,
+          // TODO: we should also handle of other property mapping types
+          // using some form of extension mechanism
+          (propertyMapping) => {
+            if (propertyMapping instanceof FlatDataPropertyMapping) {
+              // TODO: use `isStubbed_RawLambda` when we move this out of the metamodel
+              return (
+                Boolean(propertyMapping.transform.parameters) ||
+                Boolean(propertyMapping.transform.body)
+              );
+            }
+            return true;
+          },
         ),
       ),
     ]);

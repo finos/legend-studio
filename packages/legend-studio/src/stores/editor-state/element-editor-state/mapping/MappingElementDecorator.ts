@@ -41,7 +41,6 @@ import {
   EmbeddedFlatDataPropertyMapping,
   EnumValueMapping,
   PrimitiveType,
-  RawLambda,
   Enumeration,
   Class,
   FlatDataPropertyMapping,
@@ -50,10 +49,18 @@ import {
   EnumValueExplicitReference,
   PropertyExplicitReference,
   RelationalPropertyMapping,
-  createStubRelationalOperationElement,
   EmbeddedRelationalInstanceSetImplementation,
   getEnumerationMappingsByEnumeration,
   getRootSetImplementation,
+  stub_RawLambda,
+  stub_RawRelationalOperationElement,
+  isStubbed_RawLambda,
+  isStubbed_RawRelationalOperationElement,
+  isStubbed_EnumValueMapping,
+  isStubbed_SetImplementationContainer,
+  getLeafSetImplementations,
+  getAllClassProperties,
+  getRawGenericType,
 } from '@finos/legend-graph';
 import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../DSLMapping_LegendStudioPlugin_Extension';
 import type { EditorStore } from '../../../EditorStore';
@@ -90,7 +97,7 @@ export const getDecoratedSetImplementationPropertyMappings = <
       propertyMappingMap.set(pm.property.value.name, [pm]);
     }
   });
-  setImp.class.value.getAllProperties().forEach((property) => {
+  getAllClassProperties(setImp.class.value).forEach((property) => {
     propertyMappingMap.set(
       property.name,
       decoratePropertyMapping(propertyMappingMap.get(property.name), property),
@@ -99,7 +106,7 @@ export const getDecoratedSetImplementationPropertyMappings = <
   return Array.from(propertyMappingMap.values()).flat();
 };
 
-export const getLeafSetImplementations = (
+export const getLeafSetImplementationsForClass = (
   mapping: Mapping,
   _class: Class,
 ): SetImplementation[] | undefined => {
@@ -108,7 +115,7 @@ export const getLeafSetImplementations = (
     return undefined;
   }
   if (setImp instanceof OperationSetImplementation) {
-    return setImp.leafSetImplementations;
+    return getLeafSetImplementations(setImp);
   }
   return [setImp];
 };
@@ -186,7 +193,7 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
       // before decoration, make sure to prune stubbed property mappings in case they are nolonger compatible
       // with the set implemenetation (this happens when we switch sources)
       const existingPropertyMappings = (propertyMappings ?? []).filter(
-        (pm) => !pm.isStub,
+        (pm) => !isStubbed_RawLambda(pm.transform),
       );
       const propertyType = property.genericType.value.rawType;
       if (
@@ -206,7 +213,7 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
               new PurePropertyMapping(
                 setImplementation,
                 PropertyExplicitReference.create(property),
-                RawLambda.createStub(),
+                stub_RawLambda(),
                 setImplementation,
               ),
             ];
@@ -223,16 +230,18 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
               new PurePropertyMapping(
                 setImplementation,
                 PropertyExplicitReference.create(property),
-                RawLambda.createStub(),
+                stub_RawLambda(),
                 setImplementation,
               ),
             ];
         // Find existing enumeration mappings for the property enumeration
         const existingEnumerationMappings = getEnumerationMappingsByEnumeration(
           setImplementation._PARENT,
-          (
-            enumerationPropertyMapping[0] as PurePropertyMapping
-          ).property.value.genericType.value.getRawType(Enumeration),
+          getRawGenericType(
+            (enumerationPropertyMapping[0] as PurePropertyMapping).property
+              .value.genericType.value,
+            Enumeration,
+          ),
         );
         enumerationPropertyMapping.forEach((epm) => {
           // If there are no enumeration mappings, delete the transformer of the property mapping
@@ -256,9 +265,9 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
           // TODO: should we try to get leaf implementation here from the root
           // or should we just simply find all class mappings for the target class
           // as we should not try to `understand` operation class mapping union?
-          getLeafSetImplementations(
+          getLeafSetImplementationsForClass(
             setImplementation._PARENT,
-            property.genericType.value.getRawType(Class),
+            getRawGenericType(property.genericType.value, Class),
           );
         // if there are no root-resolved set implementations for the class, return empty array
         if (!resolvedLeafSetImps) {
@@ -277,7 +286,7 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
                 new PurePropertyMapping(
                   setImplementation,
                   PropertyExplicitReference.create(property),
-                  RawLambda.createStub(),
+                  stub_RawLambda(),
                   setImplementation,
                   setImp,
                 ),
@@ -323,9 +332,12 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
     ): AbstractFlatDataPropertyMapping[] => {
       // before decoration, make sure to prune stubbed property mappings in case they are nolonger compatible
       // with the set implemenetation (this happens when we switch sources)
-      const existingPropertyMappings = (propertyMappings ?? []).filter(
-        (pm) => !pm.isStub,
-      );
+      const existingPropertyMappings = (propertyMappings ?? []).filter((pm) => {
+        if (pm instanceof FlatDataPropertyMapping) {
+          return !isStubbed_RawLambda(pm.transform);
+        }
+        return true;
+      });
       const propertyType = property.genericType.value.rawType;
       if (
         propertyType instanceof PrimitiveType ||
@@ -344,7 +356,7 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
               new FlatDataPropertyMapping(
                 setImplementation,
                 PropertyExplicitReference.create(property),
-                RawLambda.createStub(),
+                stub_RawLambda(),
                 setImplementation,
               ),
             ];
@@ -361,16 +373,18 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
               new FlatDataPropertyMapping(
                 setImplementation,
                 PropertyExplicitReference.create(property),
-                RawLambda.createStub(),
+                stub_RawLambda(),
                 setImplementation,
               ),
             ];
         // Find existing enumeration mappings for the property enumeration
         const existingEnumerationMappings = getEnumerationMappingsByEnumeration(
           setImplementation._PARENT,
-          (
-            ePropertyMapping[0] as FlatDataPropertyMapping
-          ).property.value.genericType.value.getRawType(Enumeration),
+          getRawGenericType(
+            (ePropertyMapping[0] as FlatDataPropertyMapping).property.value
+              .genericType.value,
+            Enumeration,
+          ),
         );
         ePropertyMapping.forEach((epm) => {
           assertType(
@@ -441,9 +455,14 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
     ): PropertyMapping[] => {
       // before decoration, make sure to prune stubbed property mappings in case they are nolonger compatible
       // with the set implemenetation (this happens when we switch sources)
-      const existingPropertyMappings = (propertyMappings ?? []).filter(
-        (pm) => !pm.isStub,
-      );
+      const existingPropertyMappings = (propertyMappings ?? []).filter((pm) => {
+        if (pm instanceof RelationalPropertyMapping) {
+          return !isStubbed_RawRelationalOperationElement(
+            pm.relationalOperation,
+          );
+        }
+        return true;
+      });
       const propertyType = property.genericType.value.rawType;
       if (
         propertyType instanceof PrimitiveType ||
@@ -466,7 +485,7 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
           setImplementation,
         );
         newPropertyMapping.relationalOperation =
-          createStubRelationalOperationElement();
+          stub_RawRelationalOperationElement();
         return [newPropertyMapping];
       } else if (propertyType instanceof Enumeration) {
         // only allow one property mapping per enumeration property
@@ -486,15 +505,17 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
             setImplementation,
           );
           newPropertyMapping.relationalOperation =
-            createStubRelationalOperationElement();
+            stub_RawRelationalOperationElement();
           ePropertyMapping = [newPropertyMapping];
         }
         // Find existing enumeration mappings for the property enumeration
         const existingEnumerationMappings = getEnumerationMappingsByEnumeration(
           setImplementation._PARENT,
-          (
-            ePropertyMapping[0] as PropertyMapping
-          ).property.value.genericType.value.getRawType(Enumeration),
+          getRawGenericType(
+            (ePropertyMapping[0] as PropertyMapping).property.value.genericType
+              .value,
+            Enumeration,
+          ),
         );
         ePropertyMapping.forEach((epm) => {
           assertType(
@@ -520,9 +541,9 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
         // TODO: should we try to get leaf implementation here from the root
         // or should we just simply find all class mappings for the target class
         // as we should not try to `understand` operation class mapping union?
-        const resolvedLeafSetImps = getLeafSetImplementations(
+        const resolvedLeafSetImps = getLeafSetImplementationsForClass(
           setImplementation._PARENT,
-          property.genericType.value.getRawType(Class),
+          getRawGenericType(property.genericType.value, Class),
         );
         // if there are no root-resolved set implementations for the class, return empty array
         if (resolvedLeafSetImps) {
@@ -544,7 +565,7 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
                 setImp,
               );
               newPropertyMapping.relationalOperation =
-                createStubRelationalOperationElement();
+                stub_RawRelationalOperationElement();
               return newPropertyMapping;
             })
             // sort these property mappings by id of their set implementations
@@ -625,7 +646,7 @@ export class MappingElementDecorationCleaner
     // Remove the enum value mapping if all of its source values are empty
     const nonEmptyEnumValueMappings =
       enumerationMapping.enumValueMappings.filter(
-        (enumValueMapping) => !enumValueMapping.isStub,
+        (enumValueMapping) => !isStubbed_EnumValueMapping(enumValueMapping),
       );
     // Prune the empty source values of each enum value mapping
     nonEmptyEnumValueMappings.forEach((enumValueMapping) => {
@@ -645,7 +666,9 @@ export class MappingElementDecorationCleaner
   ): void {
     operationMapping_setParameters(
       setImplementation,
-      setImplementation.parameters.filter((param) => !param.isStub),
+      setImplementation.parameters.filter(
+        (param) => !isStubbed_SetImplementationContainer(param),
+      ),
     );
   }
 
@@ -654,7 +677,9 @@ export class MappingElementDecorationCleaner
   ): void {
     operationMapping_setParameters(
       setImplementation,
-      setImplementation.parameters.filter((param) => !param.isStub),
+      setImplementation.parameters.filter(
+        (param) => !isStubbed_SetImplementationContainer(param),
+      ),
     );
   }
 
@@ -664,7 +689,7 @@ export class MappingElementDecorationCleaner
     mapping_setPropertyMappings(
       setImplementation,
       setImplementation.propertyMappings.filter(
-        (propertyMapping) => !propertyMapping.transform.isStub,
+        (propertyMapping) => !isStubbed_RawLambda(propertyMapping.transform),
       ),
       this.editorStore.changeDetectionState.observerContext,
     );
@@ -680,7 +705,7 @@ export class MappingElementDecorationCleaner
       setImplementation.propertyMappings.filter(
         (propertyMapping) =>
           (propertyMapping instanceof FlatDataPropertyMapping &&
-            !propertyMapping.transform.isStub) ||
+            !isStubbed_RawLambda(propertyMapping.transform)) ||
           (propertyMapping instanceof EmbeddedFlatDataPropertyMapping &&
             propertyMapping.property),
       ),
@@ -708,7 +733,9 @@ export class MappingElementDecorationCleaner
       setImplementation.propertyMappings.filter(
         (propertyMapping) =>
           (propertyMapping instanceof RelationalPropertyMapping &&
-            !propertyMapping.isStub) ||
+            !isStubbed_RawRelationalOperationElement(
+              propertyMapping.relationalOperation,
+            )) ||
           propertyMapping instanceof
             EmbeddedRelationalInstanceSetImplementation,
       ),

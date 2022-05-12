@@ -25,6 +25,10 @@ import { useApplicationStore } from '@finos/legend-application';
 import { StandardQueryBuilderMode } from '@finos/legend-query';
 import { assertErrorThrown } from '@finos/legend-shared';
 import { PencilIcon } from '@finos/legend-art';
+import {
+  isStubbed_RawLambda,
+  isStubbed_PackageableElement,
+} from '@finos/legend-graph';
 
 export const ServiceQueryBuilder = observer(
   (props: {
@@ -44,7 +48,7 @@ export const ServiceQueryBuilder = observer(
           const mapping =
             executionState.selectedExecutionConfiguration.mapping.value;
           const runtime = executionState.selectedExecutionConfiguration.runtime;
-          if (!mapping.isStub) {
+          if (!isStubbed_PackageableElement(mapping)) {
             queryBuilderExtension.reset();
             queryBuilderExtension.queryBuilderState.querySetupState.setMapping(
               mapping,
@@ -103,7 +107,9 @@ export const ServiceQueryBuilder = observer(
                     },
                   },
                 ],
-                disableCompile: executionState.queryState.query.isStub,
+                disableCompile: isStubbed_RawLambda(
+                  executionState.queryState.query,
+                ),
                 queryBuilderMode: new StandardQueryBuilderMode(),
               }),
             );

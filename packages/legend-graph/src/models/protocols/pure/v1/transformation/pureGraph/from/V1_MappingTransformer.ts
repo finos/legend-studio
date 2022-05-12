@@ -30,7 +30,7 @@ import type {
   PropertyMappingVisitor,
   PropertyMapping,
 } from '../../../../../../metamodels/pure/packageableElements/mapping/PropertyMapping';
-import type { PurePropertyMapping } from '../../../../../../metamodels/pure/packageableElements/store/modelToModel/mapping/PurePropertyMapping';
+import { PurePropertyMapping } from '../../../../../../metamodels/pure/packageableElements/store/modelToModel/mapping/PurePropertyMapping';
 import { Enum } from '../../../../../../metamodels/pure/packageableElements/domain/Enum';
 import type { EnumValueMapping } from '../../../../../../metamodels/pure/packageableElements/mapping/EnumValueMapping';
 import type { EnumerationMapping } from '../../../../../../metamodels/pure/packageableElements/mapping/EnumerationMapping';
@@ -43,7 +43,7 @@ import {
 import { FlatDataInputData } from '../../../../../../metamodels/pure/packageableElements/store/flatData/mapping/FlatDataInputData';
 import { ExpectedOutputMappingTestAssert } from '../../../../../../metamodels/pure/packageableElements/mapping/ExpectedOutputMappingTestAssert';
 import { extractLine } from '../../../../../../metamodels/pure/packageableElements/store/relational/model/RelationalOperationElement';
-import type { FlatDataPropertyMapping } from '../../../../../../metamodels/pure/packageableElements/store/flatData/mapping/FlatDataPropertyMapping';
+import { FlatDataPropertyMapping } from '../../../../../../metamodels/pure/packageableElements/store/flatData/mapping/FlatDataPropertyMapping';
 import type { EmbeddedFlatDataPropertyMapping } from '../../../../../../metamodels/pure/packageableElements/store/flatData/mapping/EmbeddedFlatDataPropertyMapping';
 import type { PureInstanceSetImplementation } from '../../../../../../metamodels/pure/packageableElements/store/modelToModel/mapping/PureInstanceSetImplementation';
 import {
@@ -53,7 +53,7 @@ import {
 import type { FlatDataInstanceSetImplementation } from '../../../../../../metamodels/pure/packageableElements/store/flatData/mapping/FlatDataInstanceSetImplementation';
 import type { RelationalInstanceSetImplementation } from '../../../../../../metamodels/pure/packageableElements/store/relational/mapping/RelationalInstanceSetImplementation';
 import type { RootRelationalInstanceSetImplementation } from '../../../../../../metamodels/pure/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation';
-import type { RelationalPropertyMapping } from '../../../../../../metamodels/pure/packageableElements/store/relational/mapping/RelationalPropertyMapping';
+import { RelationalPropertyMapping } from '../../../../../../metamodels/pure/packageableElements/store/relational/mapping/RelationalPropertyMapping';
 import type { EmbeddedRelationalInstanceSetImplementation } from '../../../../../../metamodels/pure/packageableElements/store/relational/mapping/EmbeddedRelationalInstanceSetImplementation';
 import type { InlineEmbeddedRelationalInstanceSetImplementation } from '../../../../../../metamodels/pure/packageableElements/store/relational/mapping/InlineEmbeddedRelationalInstanceSetImplementation';
 import type { OtherwiseEmbeddedRelationalInstanceSetImplementation } from '../../../../../../metamodels/pure/packageableElements/store/relational/mapping/OtherwiseEmbeddedRelationalInstanceSetImplementation';
@@ -151,6 +151,9 @@ import { V1_BindingTransformer } from '../../../model/packageableElements/extern
 import { V1_MergeOperationClassMapping } from '../../../model/packageableElements/mapping/V1_MergeOperationClassMapping';
 import { MergeOperationSetImplementation } from '../../../../../../metamodels/pure/packageableElements/mapping/MergeOperationSetImplementation';
 import type { TEMPORARY__UnresolvedSetImplementation } from '../../../../../../metamodels/pure/packageableElements/mapping/TEMPORARY__UnresolvedSetImplementation';
+import { isStubbed_EnumValueMapping } from '../../../../../../../graphManager/action/creation/DSLMapping_ModelCreatorHelper';
+import { isStubbed_RawLambda } from '../../../../../../../graphManager/action/creation/RawValueSpecificationCreatorHelper';
+import { isStubbed_RawRelationalOperationElement } from '../../../../../../../graphManager/action/creation/StoreRelational_ModelCreatorHelper';
 
 export const V1_transformPropertyReference = (
   element: PropertyReference,
@@ -191,7 +194,7 @@ const transformEnumValueMapping = (
   const enumValueMapping = new V1_EnumValueMapping();
   enumValueMapping.enumValue = element.enum.value.name;
   enumValueMapping.sourceValues = element.sourceValues
-    .filter((s) => !s.isStub)
+    .filter(isNonNullable)
     .map((value) => {
       if (typeof value.value === 'string') {
         const _string = new V1_EnumValueMappingStringSourceValue();
@@ -220,7 +223,7 @@ const transformEnumerationMapping = (
 ): V1_EnumerationMapping => {
   const enumerationMapping = new V1_EnumerationMapping();
   enumerationMapping.enumValueMappings = element.enumValueMappings
-    .filter((e) => !e.isStub)
+    .filter((e) => !isStubbed_EnumValueMapping(e))
     .map(transformEnumValueMapping);
   enumerationMapping.enumeration = V1_transformElementReference(
     element.enumeration,
@@ -229,7 +232,7 @@ const transformEnumerationMapping = (
   return enumerationMapping;
 };
 
-// V1_Mapping Test
+// Mapping Test
 
 export const V1_getObjectInputType = (type: string): V1_ObjectInputType => {
   switch (type) {
@@ -366,7 +369,21 @@ const transformClassMappingPropertyMappings = (
   isTransformingSourceId: boolean,
 ): V1_PropertyMapping[] =>
   values
-    .filter((value) => !value.isStub)
+    // TODO: we should also handle of other property mapping types
+    // using some form of extension mechanism
+    .filter((value) => {
+      /* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
+      if (value instanceof PurePropertyMapping) {
+        return !isStubbed_RawLambda(value.transform);
+      } else if (value instanceof FlatDataPropertyMapping) {
+        return !isStubbed_RawLambda(value.transform);
+      } else if (value instanceof RelationalPropertyMapping) {
+        return !isStubbed_RawRelationalOperationElement(
+          value.relationalOperation,
+        );
+      }
+      return true;
+    })
     .map((value) =>
       transformProperyMapping(
         value,
@@ -392,7 +409,7 @@ const transformSimpleFlatDataPropertyMapping = (
   flatDataPropertyMapping.target = transformPropertyMappingTarget(
     element.targetSetImplementation,
   );
-  if (!element.transform.isStub) {
+  if (!isStubbed_RawLambda(element.transform)) {
     flatDataPropertyMapping.transform =
       element.transform.accept_RawValueSpecificationVisitor(
         new V1_RawValueSpecificationTransformer(context),
@@ -453,7 +470,7 @@ const transformPurePropertyMapping = (
   purePropertyMapping.target = transformPropertyMappingTarget(
     element.targetSetImplementation,
   );
-  if (!element.transform.isStub) {
+  if (!isStubbed_RawLambda(element.transform)) {
     purePropertyMapping.transform =
       element.transform.accept_RawValueSpecificationVisitor(
         new V1_RawValueSpecificationTransformer(context),
@@ -683,7 +700,7 @@ const transformXStorePropertyMapping = (
   xstore.target = transformPropertyMappingTarget(
     element.targetSetImplementation,
   );
-  if (!element.crossExpression.isStub) {
+  if (!isStubbed_RawLambda(element.crossExpression)) {
     xstore.crossExpression =
       element.crossExpression.accept_RawValueSpecificationVisitor(
         new V1_RawValueSpecificationTransformer(context),
@@ -1000,12 +1017,12 @@ const transformAggregationFunctionSpecification = (
   context: V1_GraphTransformerContext,
 ): V1_AggregateFunction => {
   const func = new V1_AggregateFunction();
-  if (!element.mapFn.isStub) {
+  if (!isStubbed_RawLambda(element.mapFn)) {
     func.mapFn = element.mapFn.accept_RawValueSpecificationVisitor(
       new V1_RawValueSpecificationTransformer(context),
     ) as V1_RawLambda;
   }
-  if (!element.aggregateFn.isStub) {
+  if (!isStubbed_RawLambda(element.aggregateFn)) {
     func.aggregateFn = element.aggregateFn.accept_RawValueSpecificationVisitor(
       new V1_RawValueSpecificationTransformer(context),
     ) as V1_RawLambda;
@@ -1018,7 +1035,7 @@ const transformGroupByFunctionSpec = (
   context: V1_GraphTransformerContext,
 ): V1_GroupByFunction => {
   const func = new V1_GroupByFunction();
-  if (!element.groupByFn.isStub) {
+  if (!isStubbed_RawLambda(element.groupByFn)) {
     func.groupByFn = element.groupByFn.accept_RawValueSpecificationVisitor(
       new V1_RawValueSpecificationTransformer(context),
     ) as V1_RawLambda;

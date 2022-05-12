@@ -62,11 +62,13 @@ import {
   extractSourceInformationCoordinates,
   buildSourceInformationSourceId,
   ParserError,
-  RawLambda,
   TYPICAL_MULTIPLICITY_TYPE,
   RawVariableExpression,
   Enumeration,
   LAMBDA_PIPE,
+  RawLambda,
+  stub_RawLambda,
+  isStubbed_RawLambda,
 } from '@finos/legend-graph';
 import {
   DEFAULT_LAMBDA_VARIABLE_NAME,
@@ -220,7 +222,7 @@ class QueryBuilderDerivationProjectionLambdaState extends LambdaEditorState {
   }
 
   *convertLambdaGrammarStringToObject(): GeneratorFn<void> {
-    const emptyLambda = RawLambda.createStub();
+    const emptyLambda = stub_RawLambda();
     if (this.lambdaString) {
       try {
         const lambda =
@@ -405,7 +407,7 @@ export class QueryBuilderProjectionState {
       QueryBuilderDerivationProjectionColumnState
     >();
     this.derivations.forEach((derivationProjectionColumnState) => {
-      if (!derivationProjectionColumnState.lambda.isStub) {
+      if (!isStubbed_RawLambda(derivationProjectionColumnState.lambda)) {
         lambdas.set(
           derivationProjectionColumnState.derivationLambdaEditorState.lambdaId,
           derivationProjectionColumnState.lambda,

@@ -69,7 +69,7 @@ const ES_RULES = {
   'no-process-exit': ERROR,
   'no-proto': ERROR,
   'no-prototype-builtins': ERROR,
-  'no-redeclare': ERROR,
+  'no-redeclare': OFF,
   'no-regex-spaces': ERROR,
   'no-return-assign': ERROR,
   /**
@@ -137,6 +137,7 @@ const TYPESCRIPT_RULES = {
   ],
   '@typescript-eslint/func-call-spacing': ERROR,
   '@typescript-eslint/no-inferrable-types': [WARN, { ignoreParameters: true }],
+  '@typescript-eslint/no-redeclare': [ERROR, { ignoreDeclarationMerge: true }],
   '@typescript-eslint/no-var-requires': OFF,
   '@typescript-eslint/no-unused-vars': [
     WARN,

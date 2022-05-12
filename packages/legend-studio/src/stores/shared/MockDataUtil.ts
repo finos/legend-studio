@@ -28,6 +28,7 @@ import {
   type Enumeration,
   PRIMITIVE_TYPE,
   Class,
+  getAllClassProperties,
 } from '@finos/legend-graph';
 import { DATE_FORMAT, DATE_TIME_FORMAT } from '@finos/legend-application';
 import { CLASS_PROPERTY_TYPE, getClassPropertyType } from './ModelUtil';
@@ -82,8 +83,8 @@ export const createMockClassInstance = (
   depth = 0,
 ): Record<PropertyKey, unknown> => {
   const properties = traverseNonRequiredProperties
-    ? _class.getAllProperties()
-    : _class.getAllProperties().filter((p) => p.multiplicity.lowerBound);
+    ? getAllClassProperties(_class)
+    : getAllClassProperties(_class).filter((p) => p.multiplicity.lowerBound);
   const mockData: Record<string, object | string | number | boolean> = {};
   properties.forEach((property) => {
     const propertyType = property.genericType.value.rawType;
@@ -137,8 +138,8 @@ export const classHasCycle = (
     return true;
   }
   const properties = traverseNonRequiredProperties
-    ? _class.getAllProperties()
-    : _class.getAllProperties().filter((p) => p.multiplicity.lowerBound);
+    ? getAllClassProperties(_class)
+    : getAllClassProperties(_class).filter((p) => p.multiplicity.lowerBound);
   const complexProperties = properties
     .map((property) => property.genericType.value.rawType)
     .filter((c) => getClassPropertyType(c) === CLASS_PROPERTY_TYPE.CLASS);

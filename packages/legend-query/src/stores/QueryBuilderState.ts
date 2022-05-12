@@ -61,6 +61,7 @@ import {
   VariableExpression,
   observe_ValueSpecification,
   ObserverContext,
+  isStubbed_RawLambda,
 } from '@finos/legend-graph';
 import {
   QueryBuilderFilterOperator_Equal,
@@ -369,7 +370,7 @@ export class QueryBuilderState {
   buildStateFromRawLambda(rawLambda: RawLambda): void {
     this.resetQueryBuilder();
     this.resetQuerySetup();
-    if (!rawLambda.isStub) {
+    if (!isStubbed_RawLambda(rawLambda)) {
       const valueSpec = observe_ValueSpecification(
         this.graphManagerState.graphManager.buildValueSpecification(
           this.graphManagerState.graphManager.serializeRawValueSpecification(

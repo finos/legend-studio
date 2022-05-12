@@ -25,14 +25,13 @@ import {
   type OperationType,
   OperationSetImplementation,
 } from './OperationSetImplementation';
-import type { Stubable } from '../../../../../helpers/Stubable';
 import type { RawLambda } from '../../rawValueSpecification/RawLambda';
 import type { SetImplementationVisitor } from './SetImplementation';
 import { hashLambda } from '../../../../../MetaModelUtils';
 
 export class MergeOperationSetImplementation
   extends OperationSetImplementation
-  implements Hashable, Stubable
+  implements Hashable
 {
   validationFunction: RawLambda;
 
@@ -53,6 +52,7 @@ export class MergeOperationSetImplementation
       CORE_HASH_STRUCTURE.OPERATION_SET_IMPLEMENTATION,
       this.operation,
       hashArray(
+        // TODO: use `isStubbed_SetImplementationContainer` when we refactor hashing
         this.parameters.map((param) => param.setImplementation.value.id.value),
       ),
       hashLambda(

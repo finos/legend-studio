@@ -15,7 +15,10 @@
  */
 
 import { type Hashable, hashArray } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
+import {
+  CORE_HASH_STRUCTURE,
+  ELEMENT_PATH_DELIMITER,
+} from '../../../../../../../MetaModelConst';
 
 export class V1_MappingInclude implements Hashable {
   includedMapping?: string | undefined;
@@ -28,15 +31,11 @@ export class V1_MappingInclude implements Hashable {
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.MAPPING_INCLUDE,
-      this.includedMappingPath,
+      this.includedMapping
+        ? this.includedMapping
+        : `${this.includedMappingPackage}${ELEMENT_PATH_DELIMITER}${this.includedMappingName}`,
       this.sourceDatabasePath ?? '',
       this.targetDatabasePath ?? '',
     ]);
-  }
-
-  get includedMappingPath(): string {
-    return this.includedMapping
-      ? this.includedMapping
-      : `${this.includedMappingPackage}::${this.includedMappingName}`;
   }
 }

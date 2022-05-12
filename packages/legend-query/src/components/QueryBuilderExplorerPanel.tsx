@@ -72,6 +72,9 @@ import {
   PRIMITIVE_TYPE,
   Enumeration,
   TYPE_CAST_TOKEN,
+  getAllOwnClassProperties,
+  getAllClassProperties,
+  getAllClassDerivedProperties,
 } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
 import { getClassPropertyIcon } from './shared/ElementIconUtils';
@@ -692,10 +695,10 @@ const QueryBuilderExplorerTree = observer(
           node.type instanceof Class
         ) {
           (node instanceof QueryBuilderExplorerTreeSubTypeNodeData
-            ? node.type.getAllOwnedProperties()
-            : node.type
-                .getAllProperties()
-                .concat(node.type.getAllDerivedProperties())
+            ? getAllOwnClassProperties(node.type)
+            : getAllClassProperties(node.type).concat(
+                getAllClassDerivedProperties(node.type),
+              )
           ).forEach((property) => {
             const propertyTreeNodeData = getQueryBuilderPropertyNodeData(
               queryBuilderState.graphManagerState,
@@ -705,7 +708,7 @@ const QueryBuilderExplorerTree = observer(
             );
             treeData.nodes.set(propertyTreeNodeData.id, propertyTreeNodeData);
           });
-          node.type.subclasses.forEach((subclass) => {
+          node.type._subclasses.forEach((subclass) => {
             const subTypeTreeNodeData = getQueryBuilderSubTypeNodeData(
               subclass,
               node,

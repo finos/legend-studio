@@ -34,6 +34,7 @@ import type {
 } from './graphManager/AbstractPureGraphManager';
 import type { GraphPluginManager } from './GraphPluginManager';
 import { getElementRootPackage } from './helpers/DomainHelper';
+import { getLeafSetImplementations } from './helpers/DSLMapping_Helper';
 import { ROOT_PACKAGE_NAME } from './MetaModelConst';
 import { AssociationImplementation } from './models/metamodels/pure/packageableElements/mapping/AssociationImplementation';
 import type { EnumerationMapping } from './models/metamodels/pure/packageableElements/mapping/EnumerationMapping';
@@ -214,7 +215,7 @@ export class GraphManagerState {
     } else if (mappingElement instanceof AssociationImplementation) {
       mappedProperties = mappingElement.propertyMappings;
     } else if (mappingElement instanceof OperationSetImplementation) {
-      mappedProperties = mappingElement.leafSetImplementations
+      mappedProperties = getLeafSetImplementations(mappingElement)
         .filter((me): me is InstanceSetImplementation =>
           this.isInstanceSetImplementation(me),
         )
@@ -242,6 +243,6 @@ export class GraphManagerState {
   }
 
   isElementReadOnly(element: PackageableElement): boolean {
-    return getElementRootPackage(element).path !== ROOT_PACKAGE_NAME.MAIN;
+    return getElementRootPackage(element).name !== ROOT_PACKAGE_NAME.MAIN;
   }
 }

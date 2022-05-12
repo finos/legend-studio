@@ -14,18 +14,9 @@
  * limitations under the License.
  */
 
-import { isEmpty } from '@finos/legend-shared';
-
 /**
  * Studio does not process value specification, they are left in raw JSON form
  *
  * @discrepancy model
  */
 export type RawRelationalOperationElement = object;
-
-export const createStubRelationalOperationElement =
-  (): RawRelationalOperationElement => ({});
-
-export const isStubRelationalOperationElement = (
-  operation: RawRelationalOperationElement,
-): boolean => isEmpty(operation);

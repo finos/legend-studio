@@ -22,14 +22,10 @@ import {
   type PackageableElementImplicitReference,
 } from '../PackageableElementReference';
 import type { Profile } from './Profile';
-import type { Stubable } from '../../../../../helpers/Stubable';
 import { ReferenceWithOwner } from '../../Reference';
 import type { Stereotype } from './Stereotype';
 
-export abstract class StereotypeReference
-  extends ReferenceWithOwner
-  implements Stubable
-{
+export abstract class StereotypeReference extends ReferenceWithOwner {
   override readonly ownerReference: PackageableElementReference<Profile>;
   value: Stereotype;
 
@@ -40,10 +36,6 @@ export abstract class StereotypeReference
     super(ownerReference);
     this.ownerReference = ownerReference;
     this.value = value;
-  }
-
-  get isStub(): boolean {
-    return !this.value.isStub;
   }
 
   get pointerHashCode(): string {

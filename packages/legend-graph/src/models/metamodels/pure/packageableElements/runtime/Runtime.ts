@@ -14,13 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  type Hashable,
-  hashArray,
-  generateEnumerableNameFromToken,
-  assertTrue,
-  uuid,
-} from '@finos/legend-shared';
+import { type Hashable, hashArray, uuid } from '@finos/legend-shared';
 import {
   CORE_HASH_STRUCTURE,
   PackageableElementPointerType,
@@ -29,8 +23,8 @@ import type { Connection } from '../connection/Connection';
 import type { PackageableRuntime } from './PackageableRuntime';
 import type { Mapping } from '../mapping/Mapping';
 import type { Store } from '../store/Store';
-import { getElementPointerHashCode } from '../PackageableElement';
 import type { PackageableElementReference } from '../PackageableElementReference';
+import { hashElementPointer } from '../../../../../MetaModelUtils';
 
 export class IdentifiedConnection implements Hashable {
   readonly _UUID = uuid();
@@ -60,14 +54,10 @@ export class StoreConnections implements Hashable {
     this.store = store;
   }
 
-  get isStub(): boolean {
-    return !this.storeConnections.length;
-  }
-
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.STORE_CONNECTIONS,
-      getElementPointerHashCode(
+      hashElementPointer(
         PackageableElementPointerType.STORE,
         this.store.hashValue,
       ),
@@ -84,40 +74,23 @@ export class EngineRuntime extends Runtime implements Hashable {
   mappings: PackageableElementReference<Mapping>[] = [];
   connections: StoreConnections[] = [];
 
-  get allIdentifiedConnections(): IdentifiedConnection[] {
-    return this.connections.flatMap(
-      (storeConnections) => storeConnections.storeConnections,
-    );
-  }
-
-  generateIdentifiedConnectionId(): string {
-    const generatedId = generateEnumerableNameFromToken(
-      this.allIdentifiedConnections.map(
-        (identifiedConnection) => identifiedConnection.id,
-      ),
-      'connection',
-    );
-    assertTrue(
-      !this.allIdentifiedConnections.find(
-        (identifiedConnection) => identifiedConnection.id === generatedId,
-      ),
-      `Can't auto-generate connection ID with value '${generatedId}'`,
-    );
-    return generatedId;
-  }
-
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.ENGINE_RUNTIME,
       hashArray(
         this.mappings.map((mapping) =>
-          getElementPointerHashCode(
+          hashElementPointer(
             PackageableElementPointerType.MAPPING,
             mapping.hashValue,
           ),
         ),
       ),
-      hashArray(this.connections.filter((connection) => !connection.isStub)),
+      hashArray(
+        this.connections.filter(
+          // TODO: use `isStubbed_StoreConnections` when we refactor hashing
+          (connection) => connection.storeConnections.length,
+        ),
+      ),
     ]);
   }
 }

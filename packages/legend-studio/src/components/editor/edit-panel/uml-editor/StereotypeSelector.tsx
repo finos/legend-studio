@@ -24,10 +24,11 @@ import {
 } from '@finos/legend-art';
 import type { PackageableElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';
 import { useEditorStore } from '../../EditorStoreProvider';
-import type {
-  Profile,
-  StereotypeReference,
-  Stereotype,
+import {
+  type Profile,
+  type StereotypeReference,
+  type Stereotype,
+  isStubbed_PackageableElement,
 } from '@finos/legend-graph';
 import { stereotypeReference_setValue } from '../../../../stores/graphModifier/DomainGraphModifierHelper';
 
@@ -106,7 +107,7 @@ export const StereotypeSelector = observer(
             className={`stereotype-selector__profile__visit-btn ${
               darkTheme ? 'stereotype-selector-dark-theme' : ''
             }`}
-            disabled={stereotype.value._OWNER.isStub}
+            disabled={isStubbed_PackageableElement(stereotype.value._OWNER)}
             onClick={visitProfile}
             tabIndex={-1}
             title={'Visit profile'}

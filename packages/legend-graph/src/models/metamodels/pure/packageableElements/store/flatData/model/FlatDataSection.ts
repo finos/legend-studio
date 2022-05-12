@@ -15,11 +15,7 @@
  */
 
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
-import {
-  type Hashable,
-  hashArray,
-  guaranteeNonNullable,
-} from '@finos/legend-shared';
+import { type Hashable, hashArray } from '@finos/legend-shared';
 import type { FlatData } from './FlatData';
 import type { FlatDataProperty } from './FlatDataProperty';
 import type { RootFlatDataRecordType } from './FlatDataDataType';
@@ -37,12 +33,6 @@ export class FlatDataSection implements Hashable {
     this.driverId = driverId;
     this._OWNER = owner;
   }
-
-  getRecordType = (): RootFlatDataRecordType =>
-    guaranteeNonNullable(
-      this.recordType,
-      `No record type defined in section '${this.name}' of flat-data store '${this._OWNER.path}'`,
-    );
 
   get hashCode(): string {
     return hashArray([

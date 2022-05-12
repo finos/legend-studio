@@ -31,7 +31,7 @@ import {
   AssertPass,
   AssertFail,
   PackageableElement,
-  getNullableIdFromTestable,
+  getNullableIDFromTestable,
 } from '@finos/legend-graph';
 import {
   type GeneratorFn,
@@ -70,7 +70,7 @@ export const getTestableMetadata = (
     return {
       testable: testable,
       id:
-        getNullableIdFromTestable(
+        getNullableIDFromTestable(
           testable,
           editorStore.graphManagerState.graph,
           editorStore.graphManagerState.pluginManager.getPureGraphManagerPlugins(),
@@ -411,9 +411,8 @@ export class TestableState {
       }
       const testResults =
         (yield this.editorStore.graphManagerState.graphManager.runTests(
-          this.editorStore.graphManagerState.graph,
-          this.editorStore.graphManagerState.pluginManager.getPureGraphManagerPlugins(),
           [input],
+          this.editorStore.graphManagerState.graph,
         )) as TestResult[];
       this.globalTestRunnerState.handleResults(testResults);
       this.isRunningTests.complete();
@@ -537,9 +536,8 @@ export class GlobalTestRunnerState {
       }
       const testResults =
         (yield this.editorStore.graphManagerState.graphManager.runTests(
-          this.editorStore.graphManagerState.graph,
-          this.editorStore.graphManagerState.pluginManager.getPureGraphManagerPlugins(),
           inputs,
+          this.editorStore.graphManagerState.graph,
         )) as TestResult[];
       this.handleResults(testResults);
       this.isRunningTests.complete();

@@ -60,7 +60,6 @@ import {
   PackageableConnection,
   PackageableRuntime,
   PureSingleExecution,
-  RawLambda,
   EngineRuntime,
   JsonModelConnection,
   FileGenerationSpecification,
@@ -77,6 +76,9 @@ import {
   ExternalFormatData,
   ModelStoreData,
   DEPRECATED__SingleExecutionTest,
+  stub_Mapping,
+  stub_RawLambda,
+  stub_Database,
 } from '@finos/legend-graph';
 import type { DSLMapping_LegendStudioPlugin_Extension } from './DSLMapping_LegendStudioPlugin_Extension';
 import {
@@ -262,7 +264,7 @@ export class NewRelationalDatabaseConnectionDriver extends NewConnectionValueDri
       selectedStore = store;
     } else {
       const dbs = this.editorStore.graphManagerState.graph.ownDatabases;
-      selectedStore = dbs.length ? (dbs[0] as Database) : Database.createStub();
+      selectedStore = dbs.length ? (dbs[0] as Database) : stub_Database();
     }
     return new RelationalDatabaseConnection(
       PackageableElementExplicitReference.create(selectedStore),
@@ -744,7 +746,8 @@ export class NewElementState {
         break;
       case PACKAGEABLE_ELEMENT_TYPE.SERVICE: {
         const service = new Service(name);
-        const mapping = Mapping.createStub(); // since it does not really make sense to start with the first available mapping, we start with a stub
+        // since it does not really make sense to start with the first available mapping, we start with a stub
+        const mapping = stub_Mapping();
         const runtimes =
           this.editorStore.graphManagerState.graph.ownRuntimes.filter(
             (runtime) =>
@@ -770,7 +773,7 @@ export class NewElementState {
         service_setExecution(
           service,
           new PureSingleExecution(
-            RawLambda.createStub(),
+            stub_RawLambda(),
             service,
             PackageableElementExplicitReference.create(mapping),
             runtimeValue,

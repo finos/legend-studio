@@ -33,12 +33,14 @@ import {
 } from '@finos/legend-art';
 import { prettyCONSTName } from '@finos/legend-shared';
 import {
-  StereotypeExplicitReference,
-  Stereotype,
-  Profile,
-  Tag,
-  TaggedValue,
+  type TaggedValue,
   type StereotypeReference,
+  StereotypeExplicitReference,
+  Profile,
+  stub_Stereotype,
+  stub_Profile,
+  stub_TaggedValue,
+  stub_Tag,
 } from '@finos/legend-graph';
 import {
   annotatedElement_addStereotype,
@@ -230,15 +232,13 @@ export const DataElementEditor = observer(() => {
   const addStereotype = (): void => {
     annotatedElement_addStereotype(
       dataElement,
-      StereotypeExplicitReference.create(
-        Stereotype.createStub(Profile.createStub()),
-      ),
+      StereotypeExplicitReference.create(stub_Stereotype(stub_Profile())),
     );
   };
   const addTaggedValue = (): void => {
     annotatedElement_addTaggedValue(
       dataElement,
-      TaggedValue.createStub(Tag.createStub(Profile.createStub())),
+      stub_TaggedValue(stub_Tag(stub_Profile())),
     );
   };
   const deleteTaggedValue =
@@ -254,7 +254,7 @@ export const DataElementEditor = observer(() => {
       if (!isReadOnly && item.data.packageableElement instanceof Profile) {
         annotatedElement_addTaggedValue(
           dataElement,
-          TaggedValue.createStub(Tag.createStub(item.data.packageableElement)),
+          stub_TaggedValue(stub_Tag(item.data.packageableElement)),
         );
       }
     },
@@ -276,7 +276,7 @@ export const DataElementEditor = observer(() => {
         annotatedElement_addStereotype(
           dataElement,
           StereotypeExplicitReference.create(
-            Stereotype.createStub(item.data.packageableElement),
+            stub_Stereotype(item.data.packageableElement),
           ),
         );
       }

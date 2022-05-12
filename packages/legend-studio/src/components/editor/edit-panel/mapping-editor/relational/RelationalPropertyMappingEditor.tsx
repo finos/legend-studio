@@ -42,6 +42,7 @@ import {
   EnumerationMapping,
   RelationalPropertyMapping,
   getEnumerationMappingsByEnumeration,
+  getRawGenericType,
 } from '@finos/legend-graph';
 import { StudioLambdaEditor } from '../../../../shared/StudioLambdaEditor';
 import { relationalPropertyMapping_setTransformer } from '../../../../../stores/graphModifier/StoreRelational_GraphModifierHelper';
@@ -95,8 +96,10 @@ const EnumerationPropertyMappingEditor = observer(
       RelationalPropertyMapping,
       'Relational property mapping for enumeration type property must be a simple property mapping',
     );
-    const enumeration =
-      propertyMapping.property.value.genericType.value.getRawType(Enumeration);
+    const enumeration = getRawGenericType(
+      propertyMapping.property.value.genericType.value,
+      Enumeration,
+    );
     // Enumeration Mapping Selector
     const options = getEnumerationMappingsByEnumeration(
       mappingEditorState.mapping,

@@ -28,7 +28,7 @@ import TEST_DATA__PostFilterModel from './TEST_DATA__QueryBuilder_Model_PostFilt
 import { integrationTest } from '@finos/legend-shared';
 import type { Entity } from '@finos/legend-model-storage';
 import {
-  RawLambda,
+  create_RawLambda,
   TEST__buildGraphWithEntities,
   TEST__getTestGraphManagerState,
 } from '@finos/legend-graph';
@@ -40,11 +40,6 @@ import {
   StandardQueryBuilderMode,
 } from '../QueryBuilderState';
 import { TEST__getTestQueryConfig } from '../QueryStoreTestUtils';
-
-const getRawLambda = (jsonRawLambda: {
-  parameters?: object;
-  body?: object;
-}): RawLambda => new RawLambda(jsonRawLambda.parameters, jsonRawLambda.body);
 
 type TestCase = [
   string,
@@ -131,7 +126,9 @@ describe(
           new StandardQueryBuilderMode(),
         );
         expect(() =>
-          queryBuilderState.buildStateFromRawLambda(getRawLambda(lambdaJson)),
+          queryBuilderState.buildStateFromRawLambda(
+            create_RawLambda(lambdaJson.parameters, lambdaJson.body),
+          ),
         ).toThrowError(errorMessage);
       },
     );

@@ -140,7 +140,7 @@ export class DSLText_PureProtocolProcessorPlugin extends PureProtocolProcessorPl
           const protocol = new V1_Text();
           V1_initPackageableElement(protocol, metamodel);
           protocol.name = metamodel.name;
-          protocol.package = metamodel.package?.fullPath ?? '';
+          protocol.package = metamodel.package?.path ?? '';
           protocol.content = metamodel.content;
           protocol.type = metamodel.type;
           return protocol;

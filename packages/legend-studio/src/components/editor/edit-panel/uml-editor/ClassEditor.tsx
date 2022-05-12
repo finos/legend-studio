@@ -54,24 +54,33 @@ import { useEditorStore } from '../../EditorStoreProvider';
 import {
   type StereotypeReference,
   type GenericTypeReference,
+  type TaggedValue,
+  type Constraint,
+  type Property,
+  type DerivedProperty,
   PRIMITIVE_TYPE,
   MULTIPLICITY_INFINITE,
   Class,
-  Property,
-  DerivedProperty,
   GenericType,
   Profile,
-  Tag,
-  TaggedValue,
-  Stereotype,
   Multiplicity,
-  Constraint,
   Type,
   PrimitiveType,
   Unit,
   StereotypeExplicitReference,
   GenericTypeExplicitReference,
   Association,
+  stub_TaggedValue,
+  stub_Tag,
+  stub_Profile,
+  stub_Stereotype,
+  stub_Constraint,
+  stub_Property,
+  stub_DerivedProperty,
+  getAllClassProperties,
+  getAllSuperclasses,
+  getAllClassConstraints,
+  getAllClassDerivedProperties,
 } from '@finos/legend-graph';
 import { StudioLambdaEditor } from '../../../shared/StudioLambdaEditor';
 import { useApplicationStore } from '@finos/legend-application';
@@ -749,9 +758,9 @@ const SuperTypeEditor = observer(
         // Exclude current class
         classOption.value !== _class &&
         // Exclude super types of the class
-        !_class.allSuperclasses.includes(classOption.value) &&
+        !getAllSuperclasses(_class).includes(classOption.value) &&
         // Ensure there is no loop (might be expensive)
-        !classOption.value.allSuperclasses.includes(_class),
+        !getAllSuperclasses(classOption.value).includes(_class),
     );
     const rawType = superType.value.rawType;
     const filterOption = createFilter({
@@ -862,8 +871,7 @@ export const ClassFormEditor = observer(
           setSelectedProperty(undefined);
         }
       };
-    const indirectProperties = _class
-      .getAllProperties()
+    const indirectProperties = getAllClassProperties(_class)
       .filter((property) => !_class.properties.includes(property))
       .sort((p1, p2) => p1.name.localeCompare(p2.name))
       .sort(
@@ -878,9 +886,9 @@ export const ClassFormEditor = observer(
         class_deleteConstraint(_class, constraint);
         classState.deleteConstraintState(constraint);
       };
-    const inheritedConstraints = _class
-      .getAllConstraints()
-      .filter((constraint) => !_class.constraints.includes(constraint));
+    const inheritedConstraints = getAllClassConstraints(_class).filter(
+      (constraint) => !_class.constraints.includes(constraint),
+    );
     // Super type
     const deleteSuperType =
       (superType: GenericTypeReference): (() => void) =>
@@ -896,13 +904,12 @@ export const ClassFormEditor = observer(
           // Exclude current class
           superType !== _class &&
           // Exclude super types of the class
-          !_class.allSuperclasses.includes(superType) &&
+          !getAllSuperclasses(_class).includes(superType) &&
           // Ensure there is no loop (might be expensive)
-          !superType.allSuperclasses.includes(_class),
+          !getAllSuperclasses(superType).includes(_class),
       );
     // Derived properties
-    const indirectDerivedProperties = _class
-      .getAllDerivedProperties()
+    const indirectDerivedProperties = getAllClassDerivedProperties(_class)
       .filter((property) => !_class.derivedProperties.includes(property))
       .sort((p1, p2) => p1.name.localeCompare(p2.name))
       .sort(
@@ -949,13 +956,13 @@ export const ClassFormEditor = observer(
     const add = (): void => {
       if (!isReadOnly) {
         if (selectedTab === UML_EDITOR_TAB.PROPERTIES) {
-          class_addProperty(_class, Property.createStub(defaultType, _class));
+          class_addProperty(_class, stub_Property(defaultType, _class));
         } else if (selectedTab === UML_EDITOR_TAB.DERIVED_PROPERTIES) {
-          const dp = DerivedProperty.createStub(defaultType, _class);
+          const dp = stub_DerivedProperty(defaultType, _class);
           class_addDerivedProperty(_class, dp);
           classState.addDerivedPropertyState(dp);
         } else if (selectedTab === UML_EDITOR_TAB.CONSTRAINTS) {
-          const constraint = Constraint.createStub(_class);
+          const constraint = stub_Constraint(_class);
           class_addContraint(_class, constraint);
           classState.addConstraintState(constraint);
         } else if (
@@ -973,14 +980,12 @@ export const ClassFormEditor = observer(
         } else if (selectedTab === UML_EDITOR_TAB.TAGGED_VALUES) {
           annotatedElement_addTaggedValue(
             _class,
-            TaggedValue.createStub(Tag.createStub(Profile.createStub())),
+            stub_TaggedValue(stub_Tag(stub_Profile())),
           );
         } else if (selectedTab === UML_EDITOR_TAB.STEREOTYPES) {
           annotatedElement_addStereotype(
             _class,
-            StereotypeExplicitReference.create(
-              Stereotype.createStub(Profile.createStub()),
-            ),
+            StereotypeExplicitReference.create(stub_Stereotype(stub_Profile())),
           );
         }
       }
@@ -991,7 +996,7 @@ export const ClassFormEditor = observer(
         if (!isReadOnly && item.data.packageableElement instanceof Type) {
           class_addProperty(
             _class,
-            Property.createStub(item.data.packageableElement, _class),
+            stub_Property(item.data.packageableElement, _class),
           );
         }
       },
@@ -1013,10 +1018,7 @@ export const ClassFormEditor = observer(
     const handleDropDerivedProperty = useCallback(
       (item: UMLEditorElementDropTarget): void => {
         if (!isReadOnly && item.data.packageableElement instanceof Type) {
-          const dp = DerivedProperty.createStub(
-            item.data.packageableElement,
-            _class,
-          );
+          const dp = stub_DerivedProperty(item.data.packageableElement, _class);
           class_addDerivedProperty(_class, dp);
           classState.addDerivedPropertyState(dp);
         }
@@ -1047,9 +1049,9 @@ export const ClassFormEditor = observer(
           // Must not be the same class
           element !== _class &&
           // Must not be a supertype of the current class
-          !_class.allSuperclasses.includes(element) &&
+          !getAllSuperclasses(_class).includes(element) &&
           // Must not have the current class as a super type
-          !element.allSuperclasses.includes(_class)
+          !getAllSuperclasses(element).includes(_class)
         ) {
           class_addSuperType(
             _class,
@@ -1078,9 +1080,7 @@ export const ClassFormEditor = observer(
         if (!isReadOnly && item.data.packageableElement instanceof Profile) {
           annotatedElement_addTaggedValue(
             _class,
-            TaggedValue.createStub(
-              Tag.createStub(item.data.packageableElement),
-            ),
+            stub_TaggedValue(stub_Tag(item.data.packageableElement)),
           );
         }
       },
@@ -1102,7 +1102,7 @@ export const ClassFormEditor = observer(
           annotatedElement_addStereotype(
             _class,
             StereotypeExplicitReference.create(
-              Stereotype.createStub(item.data.packageableElement),
+              stub_Stereotype(item.data.packageableElement),
             ),
           );
         }
