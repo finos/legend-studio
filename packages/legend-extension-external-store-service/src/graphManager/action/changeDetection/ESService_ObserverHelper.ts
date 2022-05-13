@@ -411,7 +411,7 @@ export const observe_EqualToPattern = skipObserved(
   },
 );
 
-function observe_StringValuePattern(
+export function observe_StringValuePattern(
   metamodel: StringValuePattern,
 ): StringValuePattern {
   if (metamodel instanceof EqualToJsonPattern) {

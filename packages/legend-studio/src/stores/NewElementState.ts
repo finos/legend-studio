@@ -101,6 +101,7 @@ import {
   modelStoreData_setInstance,
 } from './graphModifier/DSLData_GraphModifierHelper';
 import { PACKAGEABLE_ELEMENT_TYPE } from './shared/ModelUtil';
+import type { DSLData_LegendStudioPlugin_Extension } from './DSLData_LegendStudioPlugin_Extension';
 
 export const resolvePackageAndElementName = (
   _package: Package,
@@ -488,7 +489,11 @@ export class NewDataElementDriver extends NewElementDriver<DataElement> {
         externalFormatData,
         this.editorStore.changeDetectionState.observerContext,
       );
-    } else {
+      return dataElement;
+    } else if (
+      this.embeddedDataOption?.value ===
+      EmbeddedDataTypeOptions.MODEL_STORE_DATA
+    ) {
       const modelStoreData = new ModelStoreData();
       modelStoreData_setInstance(modelStoreData, new Map<Class, object>());
       dataElement_setEmbeddedData(
@@ -496,8 +501,34 @@ export class NewDataElementDriver extends NewElementDriver<DataElement> {
         modelStoreData,
         this.editorStore.changeDetectionState.observerContext,
       );
+      return dataElement;
+    } else {
+      const extraEmbeddedDataCreator = this.editorStore.pluginManager
+        .getStudioPlugins()
+        .flatMap(
+          (plugin) =>
+            (
+              plugin as DSLData_LegendStudioPlugin_Extension
+            ).getExtraEmbeddedDataCreators?.() ?? [],
+        );
+      for (const creator of extraEmbeddedDataCreator) {
+        const embeddedData = creator(
+          guaranteeNonEmptyString(this.embeddedDataOption?.value),
+        );
+        if (embeddedData) {
+          dataElement_setEmbeddedData(
+            dataElement,
+            embeddedData,
+            this.editorStore.changeDetectionState.observerContext,
+          );
+          return dataElement;
+        }
+      }
+      throw new UnsupportedOperationError(
+        `Can't create embedded data: no compatible creators available from plugins`,
+        this.embeddedDataOption?.value,
+      );
     }
-    return dataElement;
   }
 
   get isValid(): boolean {

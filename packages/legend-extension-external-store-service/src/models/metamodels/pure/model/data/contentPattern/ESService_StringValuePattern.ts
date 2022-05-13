@@ -14,13 +14,15 @@
  * limitations under the License.
  */
 
-import type { Hashable } from '@finos/legend-shared';
+import { type Hashable, uuid } from '@finos/legend-shared';
 import { ContentPattern } from './ESService_ContentPattern';
 
 export abstract class StringValuePattern
   extends ContentPattern
   implements Hashable
 {
+  readonly _UUID = uuid();
+
   expectedValue!: string;
   abstract override get hashCode(): string;
 }

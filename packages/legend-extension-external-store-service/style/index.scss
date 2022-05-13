@@ -1,0 +1,474 @@
+/**
+ * Copyright (c) 2020-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@use 'mixins' as *;
+
+.service-store-embedded-data-editor {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+
+  &__header {
+    @include flexVCenter;
+    @include flexHSpaceBetween;
+
+    cursor: default;
+    background: var(--color-dark-grey-50);
+    color: var(--color-light-grey-300);
+    height: 2.8rem;
+    min-height: 2.8rem;
+    position: relative;
+    z-index: 1;
+    border: 0.1rem solid var(--color-dark-grey-200);
+    box-shadow: var(--color-light-shade-280) 0 0.1rem 0.5rem 0;
+  }
+
+  &__header__actions {
+    display: flex;
+    height: 100%;
+  }
+
+  &__header__action {
+    @include flexCenter;
+
+    background: transparent;
+    color: var(--color-light-grey-300);
+    cursor: pointer;
+    width: 2.8rem;
+  }
+
+  &__header__lock {
+    @include flexCenter;
+
+    width: 4rem;
+    min-width: 4rem;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    background: var(--color-light-grey-100);
+  }
+
+  &__header__action[disabled] svg {
+    color: var(--color-dark-grey-400) !important;
+  }
+
+  &__header__title {
+    @include flexVCenter;
+
+    padding-left: 0.5rem;
+    user-select: none;
+  }
+
+  &__header__title__label {
+    height: 1.8rem;
+    line-height: 1.8rem;
+    border-radius: 0.1rem;
+    padding: 0 0.5rem;
+    color: var(--color-light-grey-200);
+    background: var(--color-dark-grey-250);
+    font-size: 1.1rem;
+    cursor: default;
+    margin-right: 0.5rem;
+    white-space: nowrap;
+  }
+
+  &__header__title__content {
+    font-weight: bold;
+
+    @include ellipsisTextOverflow;
+  }
+
+  &__context-menu {
+    @include flexVCenter;
+
+    cursor: default;
+    color: var(--color-light-grey-50);
+    height: 2.8rem;
+    padding: 0 1rem;
+  }
+
+  &__context-menu:hover {
+    background: var(--color-light-blue-200);
+    color: var(--color-light-grey-0);
+  }
+
+  &__content {
+    background: var(--color-dark-grey-50);
+    height: calc(100% - 2.8rem);
+    overflow-y: auto;
+  }
+
+  &__content__list {
+    height: 100%;
+    width: 100%;
+    padding-top: 0.5rem;
+  }
+
+  &__dropdown {
+    background: var(--color-dark-grey-50);
+    padding: 0;
+  }
+
+  &__option {
+    padding: 1rem;
+    height: 2.8rem;
+    background: var(--color-dark-grey-50);
+    color: var(--color-light-grey-200);
+
+    &__active {
+      background: var(--color-light-blue-400);
+      color: var(--color-light-grey-50);
+    }
+  }
+
+  &__option:hover {
+    background: var(--color-light-grey-100);
+    color: var(--color-light-grey-50);
+  }
+}
+
+.service-stub-mapping-editor {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+
+  &__tabs {
+    height: 2.8rem;
+    z-index: 1;
+    display: flex;
+    overflow-x: overlay;
+    overflow-y: hidden;
+  }
+
+  &__tab {
+    @include flexCenter;
+
+    display: inline-flex;
+    height: 100%;
+    color: var(--color-light-grey-400);
+    padding: 0 1rem;
+    border-right: 0.1rem solid var(--color-dark-grey-80);
+    white-space: nowrap;
+    cursor: pointer;
+  }
+
+  &__tab--active {
+    position: relative;
+  }
+
+  &__tab--active::after {
+    content: '';
+    height: 0.2rem;
+    width: 100%;
+    position: absolute;
+    bottom: 0;
+    background: var(--color-yellow-200);
+  }
+
+  &__header__actions {
+    display: flex;
+    height: 100%;
+  }
+
+  &__content {
+    background: var(--color-dark-grey-50);
+    height: calc(100% - 2.8rem);
+    overflow-y: auto;
+  }
+}
+
+.service-request-pattern-editor {
+  height: 100%;
+  width: 100%;
+  background: var(--color-dark-grey-50);
+
+  &__header {
+    @include flexVCenter;
+    @include flexHSpaceBetween;
+
+    cursor: default;
+    background: var(--color-dark-grey-50);
+    color: var(--color-light-grey-300);
+    height: 2.8rem;
+    min-height: 2.8rem;
+    position: relative;
+    z-index: 1;
+    border: 0.1rem solid var(--color-dark-grey-200);
+    box-shadow: var(--color-light-shade-280) 0 0.1rem 0.5rem 0;
+  }
+
+  &__header__actions {
+    display: flex;
+    height: 100%;
+  }
+
+  &__header__lock {
+    @include flexCenter;
+
+    width: 4rem;
+    min-width: 4rem;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    background: var(--color-light-grey-100);
+  }
+
+  &__header__title {
+    @include flexVCenter;
+
+    padding-left: 0.5rem;
+    user-select: none;
+  }
+
+  &__header__title__label {
+    height: 1.8rem;
+    line-height: 1.8rem;
+    border-radius: 0.1rem;
+    padding: 0 0.5rem;
+    color: var(--color-light-grey-200);
+    background: var(--color-dark-grey-250);
+    font-size: 1.1rem;
+    cursor: default;
+    margin-right: 0.5rem;
+    white-space: nowrap;
+  }
+
+  &__content {
+    background: var(--color-dark-grey-50);
+    height: calc(100% - 2.8rem);
+    overflow-y: auto;
+  }
+
+  &__url {
+    padding: 1rem;
+  }
+
+  &__dropdown {
+    background: var(--color-dark-grey-100);
+    border: 0.1rem solid var(--color-dark-grey-200);
+    padding: 0;
+  }
+
+  &__option {
+    @include flexCenter;
+
+    width: 25rem;
+    height: 2.8rem;
+    background: var(--color-dark-grey-100);
+    border: 0.01rem solid var(--color-dark-grey-200);
+    color: var(--color-light-grey-50);
+  }
+
+  &__type {
+    @include flexVCenter;
+
+    height: 2.6rem;
+    width: 25rem;
+    flex: auto;
+    min-width: 15rem;
+    background: var(--color-dark-grey-100);
+    border-right: 0.1rem solid var(--color-dark-grey-50);
+    border-left: 0.1rem solid var(--color-dark-grey-50);
+    color: var(--color-light-grey-50);
+    cursor: pointer;
+  }
+
+  &__type__label {
+    height: 2.6rem;
+    width: 23.4rem;
+
+    @include flexCenter;
+  }
+
+  &__type__icon {
+    @include flexCenter;
+
+    border-left: 0.1rem solid var(--color-dark-grey-50);
+    height: 2.6rem;
+    width: 2.6rem;
+    min-width: 2.6rem;
+  }
+
+  &__tabs {
+    height: 2.8rem;
+    z-index: 1;
+    display: flex;
+    overflow-x: overlay;
+    overflow-y: hidden;
+  }
+
+  &__tab {
+    @include flexCenter;
+
+    display: inline-flex;
+    height: 100%;
+    color: var(--color-light-grey-400);
+    padding: 0 1rem;
+    border-right: 0.1rem solid var(--color-dark-grey-80);
+    white-space: nowrap;
+    cursor: pointer;
+  }
+
+  &__tab--active {
+    position: relative;
+  }
+
+  &__tab--active::after {
+    content: '';
+    height: 0.2rem;
+    width: 100%;
+    position: absolute;
+    bottom: 0;
+    background: var(--color-yellow-200);
+  }
+}
+
+.header-params-editor,
+.body-patterns-editor,
+.query-params-editor {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+
+  &__header {
+    @include flexVCenter;
+    @include flexHSpaceBetween;
+
+    cursor: default;
+    background: var(--color-dark-grey-50);
+    color: var(--color-light-grey-300);
+    height: 2.8rem;
+    min-height: 2.8rem;
+    position: relative;
+    z-index: 1;
+    border: 0.1rem solid var(--color-dark-grey-200);
+    box-shadow: var(--color-light-shade-280) 0 0.1rem 0.5rem 0;
+  }
+
+  &__header__actions {
+    display: flex;
+    height: 100%;
+  }
+
+  &__header__action {
+    @include flexCenter;
+
+    background: transparent;
+    color: var(--color-light-grey-300);
+    cursor: pointer;
+    width: 2.8rem;
+  }
+
+  &__header__action[disabled] svg {
+    color: var(--color-dark-grey-400) !important;
+  }
+
+  &__header__title {
+    @include flexVCenter;
+
+    padding-left: 0.5rem;
+    user-select: none;
+  }
+
+  &__header__title__label {
+    height: 1.8rem;
+    line-height: 1.8rem;
+    border-radius: 0.1rem;
+    padding: 0 0.5rem;
+    color: var(--color-light-grey-200);
+    background: var(--color-dark-grey-250);
+    font-size: 1.1rem;
+    cursor: default;
+    margin-right: 0.5rem;
+    white-space: nowrap;
+  }
+
+  &__content {
+    background: var(--color-dark-grey-50);
+    height: calc(100% - 2.8rem);
+    overflow-y: auto;
+  }
+
+  &__content__group {
+    margin-top: 0.5rem;
+    display: flex;
+  }
+
+  &__remove-btn {
+    @include flexCenter;
+
+    flex: 2.8rem 0 0;
+    height: 2.8rem;
+    color: var(--color-light-grey-0);
+    background: var(--color-dark-grey-300);
+    border-radius: 0.2rem;
+    margin-left: 0.5rem;
+    cursor: pointer;
+  }
+
+  &__actions {
+    display: flex;
+    height: 2.8rem;
+    border-radius: 0.2rem;
+    margin: 0;
+    color: var(--color-light-grey-0);
+    cursor: default;
+    justify-content: end;
+    padding-left: 1rem;
+  }
+
+  &__selector {
+    width: 100%;
+    padding: 0 0.5rem;
+  }
+
+  &__param-name {
+    @include flexVCenter;
+
+    flex: auto;
+    height: 2.8rem;
+    background: var(--color-dark-grey-100);
+    color: var(--color-light-grey-200);
+    padding-left: 0.5rem;
+    border-radius: 0.2rem;
+    margin-left: 0.5rem;
+    width: calc(100% - 36rem);
+    min-width: calc(100% - 36rem);
+  }
+
+  &__expected-value {
+    width: 100%;
+    padding: 0 !important;
+    position: relative;
+    height: 2rem;
+  }
+}
+
+.url-editor {
+  &__action {
+    @include flexCenter;
+
+    background: transparent;
+    color: var(--color-light-grey-300);
+    cursor: pointer;
+    width: 2.8rem;
+    height: 2.8rem;
+    margin-left: 0.5rem;
+  }
+
+  &__icon {
+    width: 2rem;
+    height: 2rem;
+  }
+}
