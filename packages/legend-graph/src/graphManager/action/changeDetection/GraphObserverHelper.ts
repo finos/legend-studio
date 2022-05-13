@@ -52,6 +52,8 @@ const observe_Abstract_BasicModel = (metamodel: BasicModel): void => {
     | 'dataElementsIndex'
   >(metamodel, {
     elementSectionMap: observable,
+    extensions: observable,
+
     sectionIndicesIndex: observable,
     profilesIndex: observable,
     typesIndex: observable,
@@ -65,9 +67,7 @@ const observe_Abstract_BasicModel = (metamodel: BasicModel): void => {
     generationSpecificationsIndex: observable,
     fileGenerationsIndex: observable,
     dataElementsIndex: observable,
-    extensions: observable,
 
-    allOwnElements: computed,
     ownSectionIndices: computed,
     ownProfiles: computed,
     ownEnumerations: computed,
@@ -86,6 +86,8 @@ const observe_Abstract_BasicModel = (metamodel: BasicModel): void => {
     ownFileGenerations: computed,
     ownGenerationSpecifications: computed,
     ownDataElements: computed,
+
+    allOwnElements: computed,
   });
 
   metamodel.extensions.forEach(observe_PureGraphExtension);
@@ -96,7 +98,7 @@ export const observe_DependencyManager = skipObserved(
     makeObservable(metamodel, {
       root: observable,
       projectDependencyModelsIndex: observable,
-      allOwnElements: computed,
+
       dependencyGraphs: computed,
       sectionIndices: computed,
       profiles: computed,
@@ -115,6 +117,8 @@ export const observe_DependencyManager = skipObserved(
       generationSpecifications: computed,
       fileGenerations: computed,
       dataElements: computed,
+
+      allOwnElements: computed,
     }),
 );
 
@@ -141,6 +145,27 @@ export const observe_Graph = (metamodel: PureModel): PureModel => {
   makeObservable(metamodel, {
     generationModel: observable,
     dependencyManager: observable,
+
+    sectionIndices: computed,
+    profiles: computed,
+    enumerations: computed,
+    measures: computed,
+    classes: computed,
+    types: computed,
+    associations: computed,
+    functions: computed,
+    stores: computed,
+    databases: computed,
+    mappings: computed,
+    services: computed,
+    runtimes: computed,
+    connections: computed,
+    generationSpecifications: computed,
+    fileGenerations: computed,
+    dataElements: computed,
+
+    allElements: computed,
+    allOwnTestables: computed,
   });
 
   observe_DependencyManager(metamodel.dependencyManager);

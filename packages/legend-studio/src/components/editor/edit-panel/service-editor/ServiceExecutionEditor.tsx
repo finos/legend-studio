@@ -138,10 +138,7 @@ const PureSingleExecutionConfigurationEditor = observer(
           label: string | React.ReactNode;
           value?: Runtime;
         }[]);
-    const allRuntimes = editorStore.graphManagerState.graph.ownRuntimes.concat(
-      editorStore.graphManagerState.graph.dependencyManager.runtimes,
-    );
-    const runtimes = allRuntimes.filter((rt) =>
+    const runtimes = editorStore.graphManagerState.graph.runtimes.filter((rt) =>
       rt.runtimeValue.mappings.map((m) => m.value).includes(mapping),
     ); // only include runtime associated with the mapping
     runtimeOptions = runtimeOptions.concat(

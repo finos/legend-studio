@@ -57,6 +57,7 @@ import { createPath } from '../MetaModelUtils';
 import type { DataElement } from '../models/metamodels/pure/packageableElements/data/DataElement';
 import type { Testable } from '../models/metamodels/pure/test/Testable';
 import type { PackageableElement } from '../models/metamodels/pure/packageableElements/PackageableElement';
+import type { SectionIndex } from '../models/metamodels/pure/packageableElements/section/SectionIndex';
 
 /**
  * CoreModel holds meta models which are constant and basic building block of the graph. Since throughout the lifetime
@@ -199,6 +200,160 @@ export class PureModel extends BasicModel {
 
   get primitiveTypes(): PrimitiveType[] {
     return this.coreModel.primitiveTypes;
+  }
+
+  get sectionIndices(): SectionIndex[] {
+    return [
+      ...this.coreModel.ownSectionIndices,
+      ...this.systemModel.ownSectionIndices,
+      ...this.dependencyManager.sectionIndices,
+      ...this.ownSectionIndices,
+      ...this.generationModel.ownSectionIndices,
+    ];
+  }
+  get profiles(): Profile[] {
+    return [
+      ...this.coreModel.ownProfiles,
+      ...this.systemModel.ownProfiles,
+      ...this.dependencyManager.profiles,
+      ...this.ownProfiles,
+      ...this.generationModel.ownProfiles,
+    ];
+  }
+  get enumerations(): Enumeration[] {
+    return [
+      ...this.coreModel.ownEnumerations,
+      ...this.systemModel.ownEnumerations,
+      ...this.dependencyManager.enumerations,
+      ...this.ownEnumerations,
+      ...this.generationModel.ownEnumerations,
+    ];
+  }
+  get measures(): Measure[] {
+    return [
+      ...this.coreModel.ownMeasures,
+      ...this.systemModel.ownMeasures,
+      ...this.dependencyManager.measures,
+      ...this.ownMeasures,
+      ...this.generationModel.ownMeasures,
+    ];
+  }
+  get classes(): Class[] {
+    return [
+      ...this.coreModel.ownClasses,
+      ...this.systemModel.ownClasses,
+      ...this.dependencyManager.classes,
+      ...this.ownClasses,
+      ...this.generationModel.ownClasses,
+    ];
+  }
+  get types(): Type[] {
+    return [
+      ...this.coreModel.ownTypes,
+      ...this.systemModel.ownTypes,
+      ...this.dependencyManager.types,
+      ...this.ownTypes,
+      ...this.generationModel.ownTypes,
+    ];
+  }
+  get associations(): Association[] {
+    return [
+      ...this.coreModel.ownAssociations,
+      ...this.systemModel.ownAssociations,
+      ...this.dependencyManager.associations,
+      ...this.ownAssociations,
+      ...this.generationModel.ownAssociations,
+    ];
+  }
+  get functions(): ConcreteFunctionDefinition[] {
+    return [
+      ...this.coreModel.ownFunctions,
+      ...this.systemModel.ownFunctions,
+      ...this.dependencyManager.functions,
+      ...this.ownFunctions,
+      ...this.generationModel.ownFunctions,
+    ];
+  }
+  get stores(): Store[] {
+    return [
+      ...this.coreModel.ownStores,
+      ...this.systemModel.ownStores,
+      ...this.dependencyManager.stores,
+      ...this.ownStores,
+      ...this.generationModel.ownStores,
+    ];
+  }
+  get databases(): Database[] {
+    return [
+      ...this.coreModel.ownDatabases,
+      ...this.systemModel.ownDatabases,
+      ...this.dependencyManager.databases,
+      ...this.ownDatabases,
+      ...this.generationModel.ownDatabases,
+    ];
+  }
+  get mappings(): Mapping[] {
+    return [
+      ...this.coreModel.ownMappings,
+      ...this.systemModel.ownMappings,
+      ...this.dependencyManager.mappings,
+      ...this.ownMappings,
+      ...this.generationModel.ownMappings,
+    ];
+  }
+  get services(): Service[] {
+    return [
+      ...this.coreModel.ownServices,
+      ...this.systemModel.ownServices,
+      ...this.dependencyManager.services,
+      ...this.ownServices,
+      ...this.generationModel.ownServices,
+    ];
+  }
+  get runtimes(): PackageableRuntime[] {
+    return [
+      ...this.coreModel.ownRuntimes,
+      ...this.systemModel.ownRuntimes,
+      ...this.dependencyManager.runtimes,
+      ...this.ownRuntimes,
+      ...this.generationModel.ownRuntimes,
+    ];
+  }
+  get connections(): PackageableConnection[] {
+    return [
+      ...this.coreModel.ownConnections,
+      ...this.systemModel.ownConnections,
+      ...this.dependencyManager.connections,
+      ...this.ownConnections,
+      ...this.generationModel.ownConnections,
+    ];
+  }
+  get dataElements(): DataElement[] {
+    return [
+      ...this.coreModel.ownDataElements,
+      ...this.systemModel.ownDataElements,
+      ...this.dependencyManager.dataElements,
+      ...this.ownDataElements,
+      ...this.generationModel.ownDataElements,
+    ];
+  }
+  get generationSpecifications(): GenerationSpecification[] {
+    return [
+      ...this.coreModel.ownGenerationSpecifications,
+      ...this.systemModel.ownGenerationSpecifications,
+      ...this.dependencyManager.generationSpecifications,
+      ...this.ownGenerationSpecifications,
+      ...this.generationModel.ownGenerationSpecifications,
+    ];
+  }
+  get fileGenerations(): FileGenerationSpecification[] {
+    return [
+      ...this.coreModel.ownFileGenerations,
+      ...this.systemModel.ownFileGenerations,
+      ...this.dependencyManager.fileGenerations,
+      ...this.ownFileGenerations,
+      ...this.generationModel.ownFileGenerations,
+    ];
   }
 
   get allElements(): PackageableElement[] {
