@@ -2019,7 +2019,7 @@ __metadata:
     react-hotkeys: 2.0.0
     react-icons: 4.3.1
     react-markdown: 8.0.3
-    react-reflex: 4.0.6
+    react-reflex: 4.0.8
     react-resize-detector: 7.0.0
     react-select: 4.3.1
     react-window: 1.8.7
@@ -4039,10 +4039,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:17.0.32":
-  version: 17.0.32
-  resolution: "@types/node@npm:17.0.32"
-  checksum: afb05704b42032566b3da8b2d80a68883cd3b888472d1b8b4dd6c84f8fad371454f083d4e28bd30c10589187296119d92aba255638b30067afe062b5922388a5
+"@types/node@npm:17.0.33":
+  version: 17.0.33
+  resolution: "@types/node@npm:17.0.33"
+  checksum: 6620652cc89ce125e1162e060ec4608c25b3635185e3e5dcaae4ed09e4770dc8bf168ba48bcd7059a1a56087a05000d7ed562e81aea7b6a512e2b13d4409c6b6
   languageName: node
   linkType: hard
 
@@ -10141,7 +10141,7 @@ __metadata:
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/stylelint-config-legend-studio": "workspace:*"
     "@types/jest": 27.5.1
-    "@types/node": 17.0.32
+    "@types/node": 17.0.33
     chalk: 5.0.1
     cross-env: 7.0.3
     envinfo: 7.8.1
@@ -13222,9 +13222,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-reflex@npm:4.0.6":
-  version: 4.0.6
-  resolution: "react-reflex@npm:4.0.6"
+"react-reflex@npm:4.0.8":
+  version: 4.0.8
+  resolution: "react-reflex@npm:4.0.8"
   dependencies:
     "@babel/runtime": ^7.0.0
     lodash.throttle: ^4.1.1
@@ -13232,7 +13232,7 @@ __metadata:
     react-measure: ^2.0.2
   peerDependencies:
     react: ^16.0.0 || ^17.0.0
-  checksum: e750afcd8312c4f0ce529d8484e5293958eeae04719e469748d47f9576c38cc709b4c26915278074abbc48b6c7d66095d4da4f90071444a655a206f11d460d4e
+  checksum: 583a60bc26545029b9093dde37f09bdac16c6929406b96869bfd5751a9d87240112283b849eae85359ff41fea1e2518e808c834086b51159b9809db7a85ab49e
   languageName: node
   linkType: hard
 

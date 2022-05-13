@@ -18,8 +18,6 @@ import clsx, { type ClassValue } from 'clsx';
 import {
   type HandlerProps,
   type ReflexElementProps,
-  type ReflexSplitterProps,
-  type ReflexContainerProps,
   ReflexContainer,
   ReflexElement,
   ReflexSplitter,
@@ -48,13 +46,9 @@ const MockedReactComponent: React.FC<{
 
 export const ResizablePanelGroup =
   // eslint-disable-next-line no-process-env
-  (process.env.NODE_ENV === 'test'
+  process.env.NODE_ENV === 'test'
     ? (MockedReactComponent as unknown as typeof ReflexContainer)
-    : ReflexContainer) as unknown as React.FC<
-    // Workaround until `react-reflex` fully support React 18
-    // https://github.com/leefsmp/Re-Flex/issues/158
-    ReflexContainerProps & { children: React.ReactNode }
-  >;
+    : ReflexContainer;
 
 const RESIZABLE_PANEL_MINIMIZED_CLASS_NAME = 'resizable-panel--minimized';
 /**
@@ -101,23 +95,15 @@ export const getControlledResizablePanelProps = (
 
 export const ResizablePanel =
   // eslint-disable-next-line no-process-env
-  (process.env.NODE_ENV === 'test'
+  process.env.NODE_ENV === 'test'
     ? (MockedReactComponent as unknown as typeof ReflexElement)
-    : ReflexElement) as unknown as React.FC<
-    // Workaround until `react-reflex` fully support React 18
-    // https://github.com/leefsmp/Re-Flex/issues/158
-    ReflexElementProps & { children: React.ReactNode }
-  >;
+    : ReflexElement;
 
 export const ResizablePanelSplitter =
   // eslint-disable-next-line no-process-env
-  (process.env.NODE_ENV === 'test'
+  process.env.NODE_ENV === 'test'
     ? (MockedReactComponent as unknown as typeof ReflexSplitter)
-    : ReflexSplitter) as unknown as React.FC<
-    // Workaround until `react-reflex` fully support React 18
-    // https://github.com/leefsmp/Re-Flex/issues/158
-    ReflexSplitterProps & { children?: React.ReactNode }
-  >;
+    : ReflexSplitter;
 
 export const ResizablePanelSplitterLine: React.FC<{ color: string }> = (
   props,
