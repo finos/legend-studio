@@ -26,7 +26,9 @@
     @include flexVCenter;
 
     height: 3.8rem;
-    padding: 0.6rem 0.3rem 0.3rem;
+    padding: 0.3rem;
+    background: var(--color-dark-grey-80);
+    border-bottom: 0.1rem solid var(--color-dark-grey-100);
 
     &__label {
       @include flexVCenter;
@@ -67,7 +69,6 @@
 
       width: 3.2rem;
       height: 3.2rem;
-      margin: 0.3rem;
 
       svg {
         font-size: 1.2rem;
@@ -99,7 +100,6 @@
       @include flexCenter;
 
       height: 3.2rem;
-      margin: 0.3rem;
       border-radius: 0.2rem;
 
       &--simple {
@@ -121,6 +121,10 @@
       &__label {
         padding: 0 1rem;
       }
+    }
+
+    &__action + &__action {
+      margin-left: 0.3rem;
     }
   }
 

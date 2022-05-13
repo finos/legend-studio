@@ -36,8 +36,9 @@
     @include flexVCenter;
 
     height: 3.2rem;
-    background: var(--color-dark-grey-80);
+    background: var(--color-dark-grey-50);
     justify-content: flex-end;
+    border-bottom: 0.1rem solid var(--color-dark-grey-80);
   }
 
   &__sub-header__custom-action {
@@ -77,7 +78,7 @@
 
   &__activity-bar {
     width: 5rem;
-    background: var(--color-dark-grey-200);
+    background: var(--color-dark-grey-80);
     height: 100%;
     overflow-x: hidden;
     overflow-y: hidden;
