@@ -373,6 +373,8 @@ const transformView = (
     const filterPointer = new V1_FilterPointer();
     filterPointer.name = element.filter.filterName;
     filter.filter = filterPointer;
+    filterPointer.db =
+      element.filter.filter.ownerReference.valueForSerialization;
     filter.joins = element.filter.joinTreeNode
       ? extractLine(element.filter.joinTreeNode).map((node) => {
           const joinPtr = new V1_JoinPointer();

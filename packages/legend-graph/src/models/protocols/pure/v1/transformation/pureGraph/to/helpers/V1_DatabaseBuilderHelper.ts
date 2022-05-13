@@ -27,8 +27,8 @@ import { Database } from '../../../../../../../metamodels/pure/packageableElemen
 import {
   getAllIncludedDatabases,
   getColumn,
+  getFilter,
   getJoinType,
-  getNullableFilter,
   getSchema,
   getView,
 } from '../../../../../../../../helpers/StoreRelational_Helper';
@@ -186,20 +186,6 @@ export const V1_findRelation = (
     `Found multiple relations with name '${tableName}' in schema '${schemaName}' of database '${database.path}'`,
   );
   return relations.length === 0 ? undefined : relations[0];
-};
-
-const V1_findFilter = (
-  database: Database,
-  filterName: string,
-): Filter | undefined => {
-  let filter: Filter | undefined;
-  const dbs = getAllIncludedDatabases(database).values();
-  let db = dbs.next();
-  while (!filter && !db.done) {
-    filter = getNullableFilter(db.value, filterName);
-    db = dbs.next();
-  }
-  return filter;
 };
 
 export const V1_getRelation = (
@@ -489,7 +475,7 @@ const processFilterMapping = (
   context: V1_GraphBuilderContext,
 ): FilterMapping | undefined => {
   const srcFilter = srcFilterMapping.filter;
-  const filter = guaranteeNonNullable(V1_findFilter(ownerDb, srcFilter.name));
+  const filter = getFilter(ownerDb, srcFilter.name);
   const filterMapping = new FilterMapping(
     ownerDb,
     srcFilter.name,
