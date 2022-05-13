@@ -103,7 +103,9 @@ export const getNullableFilter = (
   database: Database,
   name: string,
 ): Filter | undefined =>
-  database.filters.find((filter) => filter.name === name);
+  Array.from(getAllIncludedDatabases(database))
+    .flatMap((includedDB) => includedDB.filters)
+    .find((filter) => filter.name === name);
 
 export const getSchema = (database: Database, name: string): Schema =>
   guaranteeNonNullable(
