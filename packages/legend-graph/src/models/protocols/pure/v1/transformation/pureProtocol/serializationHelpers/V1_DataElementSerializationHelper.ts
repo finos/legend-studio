@@ -43,11 +43,9 @@ import {
   V1_DataElementReference,
 } from '../../../model/data/V1_EmbeddedData';
 import {
-  V1_RelationalData,
-  V1_RelationalDataTable,
-  V1_RelationalDataTableColumn,
-  V1_RelationalDataTableRow,
-} from '../../../model/data/V1_RelationalData';
+  V1_RelationalCSVData,
+  V1_RelationalCSVDataTable,
+} from '../../../model/data/V1_RelationalCSVData';
 import { V1_DataElement } from '../../../model/packageableElements/data/V1_DataElement';
 import {
   V1_stereotypePtrSchema,
@@ -91,31 +89,16 @@ export const V1_dataElementReferenceModelSchema = createModelSchema(
   },
 );
 
-export const V1_relationalDataTableColumnSchema = createModelSchema(
-  V1_RelationalDataTableColumn,
+const V1_relationalDataTableModelSchema = createModelSchema(
+  V1_RelationalCSVDataTable,
   {
-    value: primitive(),
-  },
-);
-
-export const V1_relationalDataTableRowModelSchema = createModelSchema(
-  V1_RelationalDataTableRow,
-  {
+    schema: optional(primitive()),
+    table: primitive(),
     values: primitive(),
   },
 );
 
-const V1_relationalDataTableModelSchema = createModelSchema(
-  V1_RelationalDataTable,
-  {
-    columns: list(usingModelSchema(V1_relationalDataTableColumnSchema)),
-    rows: list(usingModelSchema(V1_relationalDataTableRowModelSchema)),
-    schemaName: optional(primitive()),
-    tableName: primitive(),
-  },
-);
-
-const V1_relationalDataModelSchema = createModelSchema(V1_RelationalData, {
+const V1_relationalDataModelSchema = createModelSchema(V1_RelationalCSVData, {
   _type: usingConstantValueSchema(V1_EmbeddedDataType.RELATIONAL_DATA),
   tables: list(usingModelSchema(V1_relationalDataTableModelSchema)),
 });
@@ -130,7 +113,7 @@ export const V1_serializeEmbeddedDataType = (
     return serialize(V1_modelStoreDataModelSchema, protocol);
   } else if (protocol instanceof V1_DataElementReference) {
     return serialize(V1_dataElementReferenceModelSchema, protocol);
-  } else if (protocol instanceof V1_RelationalData) {
+  } else if (protocol instanceof V1_RelationalCSVData) {
     return serialize(V1_relationalDataModelSchema, protocol);
   }
   const extraEmbeddedDataSerializers = plugins.flatMap(

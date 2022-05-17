@@ -18,10 +18,7 @@ import { guaranteeType, UnsupportedOperationError } from '@finos/legend-shared';
 import { ExternalFormatData } from '../../../../../../../metamodels/pure/data/EmbeddedData';
 import { EqualTo } from '../../../../../../../metamodels/pure/test/assertion/EqualTo';
 import { EqualToJson } from '../../../../../../../metamodels/pure/test/assertion/EqualToJson';
-import {
-  EqualToTDS,
-  RelationalTDS,
-} from '../../../../../../../metamodels/pure/test/assertion/EqualToTDS';
+import { EqualToTDS } from '../../../../../../../metamodels/pure/test/assertion/EqualToTDS';
 import type { TestAssertion } from '../../../../../../../metamodels/pure/test/assertion/TestAssertion';
 import type {
   AtomicTest,
@@ -78,10 +75,12 @@ const buildEqualToTDS = (
   const equalToTDS = new EqualToTDS();
   equalToTDS.id = element.id;
   equalToTDS.parentTest = parentTest;
-  const expected = new RelationalTDS();
-  expected.columns = element.expected.columns;
-  expected.rows = element.expected.rows;
-  equalToTDS.expected = expected;
+  equalToTDS.expected = guaranteeType(
+    element.expected.accept_EmbeddedDataVisitor(
+      new V1_ProtocolToMetaModelEmbeddedDataBuilder(context),
+    ),
+    ExternalFormatData,
+  );
   return equalToTDS;
 };
 

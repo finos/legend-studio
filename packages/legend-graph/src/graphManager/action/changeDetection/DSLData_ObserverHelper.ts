@@ -22,11 +22,9 @@ import {
   ModelStoreData,
 } from '../../../models/metamodels/pure/data/EmbeddedData';
 import {
-  type RelationalDataTable,
-  type RelationalDataTableColumn,
-  type RelationalDataTableRow,
-  RelationalData,
-} from '../../../models/metamodels/pure/data/RelationalData';
+  type RelationalCSVDataTable,
+  RelationalCSVData,
+} from '../../../models/metamodels/pure/data/RelationalCSVData';
 import type { DataElement } from '../../../models/metamodels/pure/packageableElements/data/DataElement';
 import type { EmbeddedData_PureGraphManagerPlugin_Extension } from '../../EmbeddedData_PureGraphManagerPlugin_Extension';
 import {
@@ -74,39 +72,17 @@ export const observe_ModelStoreData = skipObserved(
   },
 );
 
-export const observe_RelationalDataTableColumn = skipObserved(
-  (metamodel: RelationalDataTableColumn): RelationalDataTableColumn => {
-    makeObservable(metamodel, {
-      hashCode: computed,
-    });
-    return metamodel;
-  },
-);
-
-export const observe_RelationalDataTableRow = skipObserved(
-  (metamodel: RelationalDataTableRow): RelationalDataTableRow => {
-    makeObservable(metamodel, {
-      hashCode: computed,
-    });
-    return metamodel;
-  },
-);
-
 const observe_RelationalDataTable = skipObserved(
-  (metamodel: RelationalDataTable): RelationalDataTable => {
+  (metamodel: RelationalCSVDataTable): RelationalCSVDataTable => {
     makeObservable(metamodel, {
-      columns: observable,
-      rows: observable,
       hashCode: computed,
     });
-    metamodel.columns.forEach(observe_RelationalDataTableColumn);
-    metamodel.rows.forEach(observe_RelationalDataTableRow);
     return metamodel;
   },
 );
 
-const observe_RelationalData = skipObserved(
-  (metamodel: RelationalData): RelationalData => {
+const observe_RelationalCSVData = skipObserved(
+  (metamodel: RelationalCSVData): RelationalCSVData => {
     makeObservable(metamodel, {
       tables: observable,
       hashCode: computed,
@@ -126,8 +102,8 @@ export function observe_EmbeddedData(
     return observe_ExternalFormatData(metamodel);
   } else if (metamodel instanceof ModelStoreData) {
     return observe_ModelStoreData(metamodel);
-  } else if (metamodel instanceof RelationalData) {
-    return observe_RelationalData(metamodel);
+  } else if (metamodel instanceof RelationalCSVData) {
+    return observe_RelationalCSVData(metamodel);
   }
   const extraEmbeddedDataObservers = context.plugins.flatMap(
     (plugin) =>

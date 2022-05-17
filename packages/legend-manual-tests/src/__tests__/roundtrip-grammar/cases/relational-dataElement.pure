@@ -3,35 +3,16 @@ Data my::RelationalData
 {
   Relational
   #{
-    MyTable:
-      {
-        schema: 'mySchema';
-        columns:
-        [
-          'id',
-          'firstName',
-          'lastName',
-          'age'
-        ];
-        rows:
-        [
-          '1,John,Doe',
-          '2,Nicole,Smith',
-          '3,Nick,Smith'
-        ];
-      }
-    MyTable2:
-      {
-        columns:
-        [
-          'id',
-          'name'
-        ];
-        rows:
-        [
-          '1,John',
-          '2,Jack'
-        ];
-      }
+    MySchema.MyTable:
+      'id,firm_id,firstName,lastName\n'+
+      '1,1,John,Doe\n'+
+      '2,1,Nicole,Smith\n'+
+      '3,2,Tim,Smith\n';
+
+    MySchema2.MyTable:
+      'id,firm_id,firstName,lastName\n'+
+      '1,1,John,Doe\n'+
+      '2,1,Nicole,Smith\n'+
+      '3,2,Tim,Smith\n'+
   }#
 }

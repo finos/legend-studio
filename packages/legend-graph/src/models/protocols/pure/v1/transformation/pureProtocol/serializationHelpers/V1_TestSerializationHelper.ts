@@ -37,10 +37,7 @@ import { V1_AssertPass } from '../../../model/test/assertion/status/V1_AssertPas
 import { V1_EqualToJsonAssertFail } from '../../../model/test/assertion/status/V1_EqualToJsonAssertFail';
 import { V1_EqualTo } from '../../../model/test/assertion/V1_EqualTo';
 import { V1_EqualToJson } from '../../../model/test/assertion/V1_EqualToJson';
-import {
-  V1_EqualToTDS,
-  V1_RelationalTDS,
-} from '../../../model/test/assertion/V1_EqualToTDS';
+import { V1_EqualToTDS } from '../../../model/test/assertion/V1_EqualToTDS';
 import type { V1_TestAssertion } from '../../../model/test/assertion/V1_TestAssertion';
 import {
   type V1_TestResult,
@@ -51,11 +48,7 @@ import {
 import type { V1_AtomicTest } from '../../../model/test/V1_AtomicTest';
 import { V1_AtomicTestId } from '../../../model/test/V1_AtomicTestId';
 import type { V1_TestSuite } from '../../../model/test/V1_TestSuite';
-import {
-  V1_externalFormatDataModelSchema,
-  V1_relationalDataTableColumnSchema,
-  V1_relationalDataTableRowModelSchema,
-} from './V1_DataElementSerializationHelper';
+import { V1_externalFormatDataModelSchema } from './V1_DataElementSerializationHelper';
 import {
   V1_serviceTestModelSchema,
   V1_serviceTestSuiteModelSchema,
@@ -161,14 +154,9 @@ export const V1_equalToJsonModelSchema = createModelSchema(V1_EqualToJson, {
   id: primitive(),
 });
 
-const V1_relationalTDSModelSchema = createModelSchema(V1_RelationalTDS, {
-  columns: list(usingModelSchema(V1_relationalDataTableColumnSchema)),
-  rows: list(usingModelSchema(V1_relationalDataTableRowModelSchema)),
-});
-
 const V1_equalToTDSModelSchema = createModelSchema(V1_EqualToTDS, {
   _type: usingConstantValueSchema(V1_TestAssertionType.EQUAL_TO_TDS),
-  expected: usingModelSchema(V1_relationalTDSModelSchema),
+  expected: usingModelSchema(V1_externalFormatDataModelSchema),
   id: primitive(),
 });
 

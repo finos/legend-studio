@@ -20,14 +20,14 @@ import { hashObjectWithoutSourceInformation } from '../../../../MetaModelUtils';
 import type { DataElement } from '../packageableElements/data/DataElement';
 import type { Class } from '../packageableElements/domain/Class';
 import type { PackageableElementReference } from '../packageableElements/PackageableElementReference';
-import type { RelationalData } from './RelationalData';
+import type { RelationalCSVData } from './RelationalCSVData';
 
 export interface EmbeddedDataVisitor<T> {
   visit_EmbeddedData(embeddedData: EmbeddedData): T;
   visit_ExternalFormatData(externalFormatData: ExternalFormatData): T;
   visit_ModelStoreData(modelStoreData: ModelStoreData): T;
   visit_DataElementReference(dataElementReference: DataElementReference): T;
-  visit_RelationalData(relationalData: RelationalData): T;
+  visit_RelationalCSVData(relationalData: RelationalCSVData): T;
 }
 
 export abstract class EmbeddedData implements Hashable {

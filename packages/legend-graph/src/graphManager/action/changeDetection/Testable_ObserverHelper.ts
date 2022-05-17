@@ -19,21 +19,14 @@ import { ServiceTest } from '../../../DSLService_Exports';
 import { ServiceTestSuite } from '../../../models/metamodels/pure/packageableElements/service/ServiceTestSuite';
 import { EqualTo } from '../../../models/metamodels/pure/test/assertion/EqualTo';
 import { EqualToJson } from '../../../models/metamodels/pure/test/assertion/EqualToJson';
-import {
-  EqualToTDS,
-  type RelationalTDS,
-} from '../../../models/metamodels/pure/test/assertion/EqualToTDS';
+import { EqualToTDS } from '../../../models/metamodels/pure/test/assertion/EqualToTDS';
 import type { TestAssertion } from '../../../models/metamodels/pure/test/assertion/TestAssertion';
 import type {
   AtomicTest,
   TestSuite,
 } from '../../../models/metamodels/pure/test/Test';
 import { type ObserverContext, skipObserved } from './CoreObserverHelper';
-import {
-  observe_ExternalFormatData,
-  observe_RelationalDataTableColumn,
-  observe_RelationalDataTableRow,
-} from './DSLData_ObserverHelper';
+import { observe_ExternalFormatData } from './DSLData_ObserverHelper';
 import {
   observe_ServiceTest,
   observe_ServiceTestSuite,
@@ -49,26 +42,13 @@ const observe_EqualTo = skipObserved((metamodel: EqualTo): EqualTo => {
   return metamodel;
 });
 
-const observe_RelationalTDS = skipObserved(
-  (metamodel: RelationalTDS): RelationalTDS => {
-    makeObservable(metamodel, {
-      rows: observable,
-      columns: observable,
-      hashCode: computed,
-    });
-    metamodel.columns.forEach(observe_RelationalDataTableColumn);
-    metamodel.rows.forEach(observe_RelationalDataTableRow);
-    return metamodel;
-  },
-);
-
 const observe_EqualToTDS = skipObserved((metamodel: EqualToTDS): EqualToTDS => {
   makeObservable(metamodel, {
     id: observable,
     expected: observable,
     hashCode: computed,
   });
-  observe_RelationalTDS(metamodel.expected);
+  observe_ExternalFormatData(metamodel.expected);
   return metamodel;
 });
 

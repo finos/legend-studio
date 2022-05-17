@@ -14,29 +14,13 @@
  * limitations under the License.
  */
 
-import { hashArray, type Hashable } from '@finos/legend-shared';
+import { hashArray } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
-import type {
-  RelationalDataTableColumn,
-  RelationalDataTableRow,
-} from '../../data/RelationalData';
+import type { ExternalFormatData } from '../../data/EmbeddedData';
 import { type TestAssertionVisitor, TestAssertion } from './TestAssertion';
 
-export class RelationalTDS implements Hashable {
-  columns: RelationalDataTableColumn[] = [];
-  rows: RelationalDataTableRow[] = [];
-
-  get hashCode(): string {
-    return hashArray([
-      CORE_HASH_STRUCTURE.RELATIONAL_TDS,
-      hashArray(this.columns),
-      hashArray(this.rows),
-    ]);
-  }
-}
-
 export class EqualToTDS extends TestAssertion {
-  expected!: RelationalTDS;
+  expected!: ExternalFormatData;
 
   get hashCode(): string {
     return hashArray([
