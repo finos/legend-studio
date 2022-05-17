@@ -86,6 +86,12 @@ const configuration: monacoLanguagesAPI.LanguageConfiguration = {
  *
  * The way SQL monarch definition is organized is good and worth learning from
  * See https://github.com/microsoft/monaco-languages/blob/master/src/sql/sql.ts
+ *
+ * NOTE: using `monarch` only allows fairly very basic syntax-highlighting
+ * to actually do full AST analysis, we might need something more serious like
+ * using TextMate grammar which is used by VSCode itself
+ * See https://github.com/microsoft/monaco-editor#faq
+ * See https://code.visualstudio.com/api/language-extensions/syntax-highlight-guide
  */
 const generateLanguageMonarch = (
   extraKeywords: string[],
