@@ -34,7 +34,7 @@ import type { PositionedRectangle } from '../../../models/metamodels/pure/packag
 export const observe_PositionedRectangle = skipObserved(
   (metamodel: PositionedRectangle): PositionedRectangle =>
     makeObservable(metamodel, {
-      dummyObservable: observable,
+      _dummyObservable: observable,
     }),
 );
 

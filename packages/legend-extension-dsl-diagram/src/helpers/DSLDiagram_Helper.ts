@@ -16,11 +16,39 @@
 
 import { RelationshipView } from '../models/metamodels/pure/packageableElements/diagram/DSLDiagram_RelationshipView';
 import { Point } from '../models/metamodels/pure/packageableElements/diagram/geometry/DSLDiagram_Point';
-import { Vector } from '../models/metamodels/pure/packageableElements/diagram/geometry/DSLDiagram_Vector';
 import type { PureModel } from '@finos/legend-graph';
 import { deleteEntry } from '@finos/legend-shared';
 import type { ClassView } from '../models/metamodels/pure/packageableElements/diagram/DSLDiagram_ClassView';
 import type { Diagram } from '../models/metamodels/pure/packageableElements/diagram/DSLDiagram_Diagram';
+import { PositionedRectangle } from '../models/metamodels/pure/packageableElements/diagram/geometry/DSLDiagram_PositionedRectangle';
+import { Rectangle } from '../models/metamodels/pure/packageableElements/diagram/geometry/DSLDiagram_Rectangle';
+
+export class Vector {
+  readonly x: number;
+  readonly y: number;
+
+  constructor(x: number, y: number) {
+    this.x = x;
+    this.y = y;
+  }
+
+  static fromPoints(a: Point, b: Point): Vector {
+    return new Vector(b.x - a.x, b.y - a.y);
+  }
+
+  unit(): Vector {
+    const norm = Math.sqrt(this.x * this.x + this.y * this.y);
+    return new Vector(this.x / norm, this.y / norm);
+  }
+
+  normal(other: Vector): Vector {
+    return new Vector(other.y - this.y, -(other.x - this.x));
+  }
+
+  dotProduct(other: Vector): number {
+    return this.x * other.x + this.y * other.y;
+  }
+}
 
 /**
  * Get absolute position of element on the screen by recursively walking up element tree
@@ -110,15 +138,15 @@ export const _relationshipView_simplifyPath = (
   // if it does we will update the offset
   if (newPath[0] !== fullPath[0]) {
     const center = relationshipView.from.classView.value.center();
-    relationshipView.from.offsetX = (newPath[0] as Point).x - center.x;
-    relationshipView.from.offsetY = (newPath[0] as Point).y - center.y;
+    relationshipView.from._offsetX = (newPath[0] as Point).x - center.x;
+    relationshipView.from._offsetY = (newPath[0] as Point).y - center.y;
   }
 
   if (newPath[newPath.length - 1] !== fullPath[fullPath.length - 1]) {
     const center = relationshipView.to.classView.value.center();
-    relationshipView.to.offsetX =
+    relationshipView.to._offsetX =
       (newPath[newPath.length - 1] as Point).x - center.x;
-    relationshipView.to.offsetY =
+    relationshipView.to._offsetY =
       (newPath[newPath.length - 1] as Point).y - center.y;
   }
 
@@ -198,4 +226,59 @@ export const _findOrBuildPoint = (
     _relationshipView_setPath(relationshipView, newPath);
   }
   return point;
+};
+
+export const rotatePointX = (point: Point, angle: number): number =>
+  point.x * Math.cos(angle) - point.y * Math.sin(angle);
+
+export const rotatePointY = (point: Point, angle: number): number =>
+  point.x * Math.sin(angle) + point.y * Math.cos(angle);
+
+export const getBottomRightCornerPoint = (pR: PositionedRectangle): Point =>
+  new Point(
+    pR.position.x + pR.rectangle.width,
+    pR.position.y + pR.rectangle.height,
+  );
+
+/**
+ * Build a small box at the bottom right corner of the rectangle so we
+ * can use that for selection to resize the box
+ */
+export const buildBottomRightCornerBox = (
+  pR: PositionedRectangle,
+): PositionedRectangle => {
+  const bottomRightCornerPoint = getBottomRightCornerPoint(pR);
+  const boxSize = 10;
+  return new PositionedRectangle(
+    new Point(
+      bottomRightCornerPoint.x - boxSize / 2,
+      bottomRightCornerPoint.y - boxSize / 2,
+    ),
+    new Rectangle(boxSize, boxSize),
+  );
+};
+
+/**
+ * Check if a box contains another box
+ */
+export const boxContains = (
+  box: PositionedRectangle,
+  otherBox: PositionedRectangle,
+): boolean => {
+  otherBox = box.normalizeBox(otherBox);
+  return (
+    box.contains(otherBox.position.x, otherBox.position.y) ||
+    box.contains(
+      otherBox.position.x + otherBox.rectangle.width,
+      otherBox.position.y,
+    ) ||
+    box.contains(
+      otherBox.position.x,
+      otherBox.position.y + otherBox.rectangle.height,
+    ) ||
+    box.contains(
+      otherBox.position.x + otherBox.rectangle.width,
+      otherBox.position.y + otherBox.rectangle.height,
+    )
+  );
 };

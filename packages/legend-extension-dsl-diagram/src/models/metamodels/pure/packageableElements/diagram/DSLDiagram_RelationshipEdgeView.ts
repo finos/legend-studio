@@ -17,14 +17,15 @@
 import type { ClassViewReference } from './DSLDiagram_ClassViewReference';
 
 export class RelationshipEdgeView {
-  classView: ClassViewReference;
   /**
    * Offsets from the center of the class view.
    *
    * These offsets can be used to compute the end points of relationship views.
    */
-  offsetX?: number | undefined;
-  offsetY?: number | undefined;
+  _offsetX?: number | undefined;
+  _offsetY?: number | undefined;
+
+  classView: ClassViewReference;
 
   constructor(classView: ClassViewReference) {
     this.classView = classView;

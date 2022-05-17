@@ -33,6 +33,6 @@ export { Point } from './models/metamodels/pure/packageableElements/diagram/geom
 export { Rectangle } from './models/metamodels/pure/packageableElements/diagram/geometry/DSLDiagram_Rectangle';
 export { PositionedRectangle } from './models/metamodels/pure/packageableElements/diagram/geometry/DSLDiagram_PositionedRectangle';
 
-export * from './helpers/DiagramHelper';
+export * from './helpers/DSLDiagram_Helper';
 export * from './graphManager/DSLDiagram_GraphManagerHelper';
 export { V1_DSLDiagram_PackageableElementPointerType } from './models/protocols/pure/DSLDiagram_PureProtocolProcessorPlugin';

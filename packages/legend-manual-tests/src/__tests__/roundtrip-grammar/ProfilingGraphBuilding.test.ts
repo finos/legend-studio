@@ -171,6 +171,7 @@ const profileRoundtrip = async (
   logPhase(phase, log, options.debug);
   const grammarText = generatePureCode(options);
 
+  // TODO: refactor to use `StopWatch` instead
   let startTime = Date.now();
   const transformGrammarToJsonResult = await axios.post<
     unknown,
