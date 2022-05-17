@@ -31,10 +31,10 @@
     "publish:snapshot": "node ../../scripts/release/publishDevSnapshot.js"
   },
   "dependencies": {
-    "@babel/helper-plugin-utils": "7.16.7",
-    "@babel/preset-env": "7.17.10",
-    "@babel/preset-react": "7.16.7",
-    "@babel/preset-typescript": "7.16.7",
+    "@babel/helper-plugin-utils": "7.17.12",
+    "@babel/preset-env": "7.17.12",
+    "@babel/preset-react": "7.17.12",
+    "@babel/preset-typescript": "7.17.12",
     "@babel/runtime": "7.17.9",
     "react-refresh": "0.13.0"
   },

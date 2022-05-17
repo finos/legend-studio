@@ -52,7 +52,7 @@
     "@finos/legend-shared": "workspace:*",
     "@testing-library/react": "13.2.0",
     "@types/react": "18.0.9",
-    "@types/react-dom": "18.0.3",
+    "@types/react-dom": "18.0.4",
     "@types/react-router-dom": "5.3.2",
     "date-fns": "2.28.0",
     "history": "5.3.0",
@@ -70,7 +70,7 @@
     "react-router": "5.2.1",
     "react-router-dom": "5.3.0",
     "serializr": "2.0.5",
-    "sql-formatter": "6.1.0"
+    "sql-formatter": "6.1.1"
   },
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",
