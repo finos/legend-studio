@@ -15,7 +15,7 @@
  */
 
 import { useEffect, useRef, useState } from 'react';
-import { AppHeader, useApplicationStore } from '@finos/legend-application';
+import { useApplicationStore } from '@finos/legend-application';
 import { GlobalHotKeys } from 'react-hotkeys';
 import { observer } from 'mobx-react-lite';
 import { useParams } from 'react-router-dom';
@@ -43,7 +43,6 @@ import {
   WindowMaximizeIcon,
   clsx,
   getControlledResizablePanelProps,
-  ListIcon,
   ResizablePanel,
   ResizablePanelGroup,
   ResizablePanelSplitter,
@@ -51,6 +50,8 @@ import {
   compareLabelFn,
   CustomSelectorInput,
   NonBlockingDialog,
+  FileTrayIcon,
+  MenuIcon,
 } from '@finos/legend-art';
 import { TaxonomyTree } from './TaxonomyTree';
 import { TaxonomyNodeViewer } from './TaxonomyNodeViewer';
@@ -90,6 +91,16 @@ const TaxonomyViewerStatusBar = observer(() => {
 
 const TaxonomyViewerActivityBar = observer(() => (
   <div className="taxonomy-viewer__activity-bar">
+    <div className="taxonomy-viewer__activity-bar__menu">
+      <button
+        className="taxonomy-viewer__activity-bar__menu-item"
+        tabIndex={-1}
+        disabled={true}
+        title="Menu"
+      >
+        <MenuIcon />
+      </button>
+    </div>
     <div className="taxonomy-viewer__activity-bar__items">
       <button
         className={clsx(
@@ -99,7 +110,7 @@ const TaxonomyViewerActivityBar = observer(() => (
         tabIndex={-1}
         title="Explorer"
       >
-        <ListIcon />
+        <FileTrayIcon />
       </button>
     </div>
   </div>
@@ -108,6 +119,9 @@ const TaxonomyViewerActivityBar = observer(() => (
 const TaxonomyViewerSideBar = observer(() => {
   const taxonomyStore = useLegendTaxonomyStore();
   const applicationStore = useApplicationStore<LegendTaxonomyConfig>();
+  const [openTaxonomyTreeDropdown, setOpenTaxonomyTreeDropdown] =
+    useState(false);
+
   const showSearchModal = (): void =>
     taxonomyStore.searchTaxonomyNodeCommandState.open();
   const collapseTree = (): void => {
@@ -120,6 +134,21 @@ const TaxonomyViewerSideBar = observer(() => {
       });
     }
   };
+  const showTaxonomyTreeDropdown = (): void =>
+    setOpenTaxonomyTreeDropdown(true);
+  const hideTaxonomyTreeDropdown = (): void =>
+    setOpenTaxonomyTreeDropdown(false);
+  const selectTaxonomyTree =
+    (option: TaxonomyTreeOption): (() => void) =>
+    (): void => {
+      taxonomyStore.taxonomyServerClient.setBaseUrl(option.url);
+      applicationStore.navigator.jumpTo(
+        applicationStore.navigator.generateLocation(
+          generateExploreTaxonomyTreeRoute(option.key),
+        ),
+      );
+    };
+
   return (
     <div className="taxonomy-viewer__side-bar">
       <div className="taxonomy-viewer__side-bar__view">
@@ -130,6 +159,54 @@ const TaxonomyViewerSideBar = observer(() => {
                 EXPLORER
               </div>
             </div>
+            {applicationStore.config.taxonomyTreeOptions.length > 1 && (
+              <DropdownMenu
+                className={clsx('taxonomy-viewer__header__server-dropdown')}
+                onClose={hideTaxonomyTreeDropdown}
+                menuProps={{ elevation: 7 }}
+                content={
+                  <MenuContent className="taxonomy-viewer__header__server-dropdown__menu">
+                    {applicationStore.config.taxonomyTreeOptions.map(
+                      (option) => (
+                        <MenuContentItem
+                          key={option.key}
+                          className={clsx(
+                            'taxonomy-viewer__header__server-dropdown__menu__item',
+                            {
+                              'taxonomy-viewer__header__server-dropdown__menu__item--active':
+                                option ===
+                                applicationStore.config
+                                  .currentTaxonomyTreeOption,
+                            },
+                          )}
+                          onClick={selectTaxonomyTree(option)}
+                        >
+                          {option.label}
+                        </MenuContentItem>
+                      ),
+                    )}
+                  </MenuContent>
+                }
+              >
+                <button
+                  className="taxonomy-viewer__header__server-dropdown__label"
+                  tabIndex={-1}
+                  onClick={showTaxonomyTreeDropdown}
+                  title="Choose a taxonomy tree..."
+                >
+                  <div className="taxonomy-viewer__header__server-dropdown__label__text">
+                    {applicationStore.config.currentTaxonomyTreeOption.label}
+                  </div>
+                  <div className="taxonomy-viewer__header__server-dropdown__label__icon">
+                    {openTaxonomyTreeDropdown ? (
+                      <ChevronUpIcon />
+                    ) : (
+                      <ChevronDownIcon />
+                    )}
+                  </div>
+                </button>
+              </DropdownMenu>
+            )}
           </div>
           <div className="panel__content taxonomy-viewer__side-bar__content">
             <div className="panel">
@@ -275,73 +352,6 @@ const TaxonomyViewerMainPanel = observer(
   },
 );
 
-const LegendTaxonomyAppHeaderMenu: React.FC = () => {
-  const applicationStore = useApplicationStore<LegendTaxonomyConfig>();
-  const taxonomyStore = useLegendTaxonomyStore();
-
-  const [openTaxonomyTreeDropdown, setOpenTaxonomyTreeDropdown] =
-    useState(false);
-  const showTaxonomyTreeDropdown = (): void =>
-    setOpenTaxonomyTreeDropdown(true);
-  const hideTaxonomyTreeDropdown = (): void =>
-    setOpenTaxonomyTreeDropdown(false);
-  const selectTaxonomyTree =
-    (option: TaxonomyTreeOption): (() => void) =>
-    (): void => {
-      taxonomyStore.taxonomyServerClient.setBaseUrl(option.url);
-      applicationStore.navigator.jumpTo(
-        applicationStore.navigator.generateLocation(
-          generateExploreTaxonomyTreeRoute(option.key),
-        ),
-      );
-    };
-
-  if (applicationStore.config.taxonomyTreeOptions.length <= 1) {
-    return null;
-  }
-  return (
-    <DropdownMenu
-      className={clsx('taxonomy-app__header__server-dropdown')}
-      onClose={hideTaxonomyTreeDropdown}
-      menuProps={{ elevation: 7 }}
-      content={
-        <MenuContent className="taxonomy-app__header__server-dropdown__menu">
-          {applicationStore.config.taxonomyTreeOptions.map((option) => (
-            <MenuContentItem
-              key={option.key}
-              className={clsx(
-                'taxonomy-app__header__server-dropdown__menu__item',
-                {
-                  'taxonomy-app__header__server-dropdown__menu__item--active':
-                    option ===
-                    applicationStore.config.currentTaxonomyTreeOption,
-                },
-              )}
-              onClick={selectTaxonomyTree(option)}
-            >
-              {option.label}
-            </MenuContentItem>
-          ))}
-        </MenuContent>
-      }
-    >
-      <button
-        className="taxonomy-app__header__server-dropdown__label"
-        tabIndex={-1}
-        onClick={showTaxonomyTreeDropdown}
-        title="Choose a taxonomy tree..."
-      >
-        <div className="taxonomy-app__header__server-dropdown__label__text">
-          {applicationStore.config.currentTaxonomyTreeOption.label}
-        </div>
-        <div className="taxonomy-app__header__server-dropdown__label__icon">
-          {openTaxonomyTreeDropdown ? <ChevronUpIcon /> : <ChevronDownIcon />}
-        </div>
-      </button>
-    </DropdownMenu>
-  );
-};
-
 export const TaxonomySearchCommand = observer(() => {
   const taxonomyStore = useLegendTaxonomyStore();
   const selectorRef = useRef<SelectComponent>(null);
@@ -458,10 +468,7 @@ export const TaxonomyViewer = observer(() => {
   }
   return (
     <div className="app__page">
-      <AppHeader>
-        <LegendTaxonomyAppHeaderMenu />
-      </AppHeader>
-      <div className="app__content">
+      <div className="app__content app__content--headless">
         <PanelLoadingIndicator
           isLoading={taxonomyStore.initState.isInProgress}
         />

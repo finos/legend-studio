@@ -153,7 +153,11 @@ export {
   GoX as XIcon,
 } from 'react-icons/go';
 export { SiSwagger as SwaggerIcon } from 'react-icons/si';
-export { IoResize as ResizeIcon } from 'react-icons/io5';
+export {
+  IoResize as ResizeIcon,
+  IoFileTrayFullOutline as FileTrayIcon,
+  IoMenuOutline as MenuIcon,
+} from 'react-icons/io5';
 export {
   BsFillTriangleFill as FilledTriangleIcon,
   BsFillFileEarmarkSpreadsheetFill as FillFileEarmarkSpreadsheetFillIcon,

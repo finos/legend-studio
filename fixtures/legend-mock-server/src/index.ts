@@ -16,7 +16,7 @@
 
 import Fastify from 'fastify';
 import FastifyCORS from '@fastify/cors';
-import TAXONOMY_TREE_DATA from './TEST_DATA__TaxonomyTreeData.json';
+import TAXONOMY_TREE_DATA from './TEST_DATA__TaxonomyTreeData.json' assert { type: 'json' };
 
 const PORT = 60001;
 const BASE_URL = '/api/';

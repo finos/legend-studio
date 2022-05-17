@@ -144,4 +144,8 @@
     background: var(--color-dark-grey-50);
     height: calc(100% - 4.8rem);
   }
+
+  &__content--headless {
+    height: 100%;
+  }
 }

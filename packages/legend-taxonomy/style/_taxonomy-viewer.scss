@@ -349,6 +349,22 @@
   overflow-x: hidden;
   overflow-y: hidden;
 
+  &__menu {
+    height: 3.4rem;
+  }
+
+  &__menu-item {
+    @include flexCenter;
+
+    height: 3.4rem;
+    width: 100%;
+    color: var(--color-dark-grey-400);
+
+    svg {
+      font-size: 2.3rem;
+    }
+  }
+
   &__items {
     height: calc(100% - 5rem);
     overflow-y: auto;
@@ -365,7 +381,7 @@
   }
 
   &__item svg {
-    font-size: 2rem;
+    font-size: 2.3rem;
   }
 
   &__item:hover {
@@ -388,8 +404,8 @@
   }
 }
 
-.taxonomy-app__header__server-dropdown {
-  margin-right: 1rem;
+.taxonomy-viewer__header__server-dropdown {
+  margin: 0 0.5rem;
 
   &__menu {
     width: 20rem;
@@ -419,7 +435,7 @@
     justify-content: flex-end;
     background: var(--color-dark-grey-280);
     width: 20rem;
-    height: 2.8rem;
+    height: 2.4rem;
     font-weight: 500;
   }
 
@@ -436,7 +452,7 @@
     @include flexConstantDimension;
 
     height: 100%;
-    width: 2.8rem;
+    width: 2.4rem;
     border-left: 0.1rem solid var(--color-dark-grey-100);
 
     svg {
