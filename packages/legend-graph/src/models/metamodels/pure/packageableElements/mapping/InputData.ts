@@ -15,9 +15,7 @@
  */
 
 import type { Hashable } from '@finos/legend-shared';
-import type { ValidationIssue } from '../../../../../helpers/ValidationHelper';
 
 export abstract class InputData implements Hashable {
-  abstract get validationResult(): ValidationIssue | undefined;
   abstract get hashCode(): string;
 }

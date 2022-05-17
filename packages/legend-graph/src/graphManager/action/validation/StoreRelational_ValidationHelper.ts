@@ -14,19 +14,23 @@
  * limitations under the License.
  */
 
-import { addUniqueEntry } from '@finos/legend-shared';
+import type { RelationalInputData } from '../../../StoreRelational_Exports';
+import { isStubbed_PackageableElement } from '../creation/DomainModelCreatorHelper';
 import {
   type ValidationIssue,
   createValidationError,
 } from './ValidationHelper';
 
-export const validateServicePattern = (pattern: string): ValidationIssue => {
-  const errors: string[] = [];
-  if (!pattern) {
-    addUniqueEntry(errors, 'Pattern must not be empty');
-  } else if (!pattern.startsWith('/')) {
-    addUniqueEntry(errors, `Pattern must start with a '/'`);
+/**
+ * @deprecated
+ */
+export const DEPRECATED__validation_RelationalInputData = (
+  metamodel: RelationalInputData,
+): ValidationIssue | undefined => {
+  if (isStubbed_PackageableElement(metamodel.database.value)) {
+    return createValidationError([
+      'Relational input data source database store is missing',
+    ]);
   }
-  // TODO: potentially do more validation
-  return createValidationError(errors);
+  return undefined;
 };

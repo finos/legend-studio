@@ -162,10 +162,8 @@ export * from './helpers/Testable_Helper';
 export * from './helpers/DSLMapping_Helper';
 export * from './helpers/StoreRelational_Helper';
 export * from './helpers/StoreFlatData_Helper';
-export * from './helpers/DSLService_Helper';
 export * from './helpers/DSLGeneration_Helper';
 
-export * from './helpers/ValidationHelper';
 export * from './helpers/PureLanguageHelper';
 
 // --------------------------------------------- GRAPH --------------------------------------------------
@@ -292,6 +290,12 @@ export * from './models/metamodels/pure/test/assertion/status/EqualToJsonAssertF
 export * from './models/metamodels/pure/test/assertion/TestAssertion';
 export * from './models/metamodels/pure/test/Test';
 export * from './models/metamodels/pure/test/result/AtomicTestId';
+
+// --------------------------------------------- VALIDATION --------------------------------------------------
+
+export * from './graphManager/action/validation/ValidationHelper';
+export * from './graphManager/action/validation/DSLService_ValidationHelper';
+export * from './graphManager/action/validation/DSLMapping_ValidationHelper';
 
 // --------------------------------------------- OBSERVER --------------------------------------------------
 

@@ -14,25 +14,23 @@
  * limitations under the License.
  */
 
-export enum ValidationSeverity {
-  WARN,
-  ERROR,
-}
+import type { FlatDataInputData } from '../../../StoreFlatData_Exports';
+import { isStubbed_PackageableElement } from '../creation/DomainModelCreatorHelper';
+import {
+  type ValidationIssue,
+  createValidationError,
+} from './ValidationHelper';
 
-export interface ValidationIssue {
-  severity: ValidationSeverity;
-  messages: string[];
-  // modelSourceInformation - TODO: when we support navigating inside the component
-}
-
-export const createValidationWarning = (
-  messages: string[],
-): ValidationIssue => ({
-  severity: ValidationSeverity.WARN,
-  messages,
-});
-
-export const createValidationError = (messages: string[]): ValidationIssue => ({
-  severity: ValidationSeverity.WARN,
-  messages,
-});
+/**
+ * @deprecated
+ */
+export const DEPRECATED__validate_FlatDataInputData = (
+  metamodel: FlatDataInputData,
+): ValidationIssue | undefined => {
+  if (isStubbed_PackageableElement(metamodel.sourceFlatData.value)) {
+    return createValidationError([
+      'Flat-data input data source flat-data store is missing',
+    ]);
+  }
+  return undefined;
+};

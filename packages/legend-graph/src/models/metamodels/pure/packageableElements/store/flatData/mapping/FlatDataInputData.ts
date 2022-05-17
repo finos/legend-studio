@@ -22,10 +22,6 @@ import {
 import { InputData } from '../../../mapping/InputData';
 import type { FlatData } from '../model/FlatData';
 import type { PackageableElementReference } from '../../../PackageableElementReference';
-import {
-  type ValidationIssue,
-  createValidationError,
-} from '../../../../../../../helpers/ValidationHelper';
 import { hashElementPointer } from '../../../../../../../MetaModelUtils';
 
 export class FlatDataInputData extends InputData implements Hashable {
@@ -39,16 +35,6 @@ export class FlatDataInputData extends InputData implements Hashable {
     super();
     this.sourceFlatData = sourceFlatData;
     this.data = data;
-  }
-
-  get validationResult(): ValidationIssue | undefined {
-    // TODO: use `isStubbed_PackageableElement` when we refactor validation
-    if (!this.sourceFlatData.value.package && !this.sourceFlatData.value.name) {
-      return createValidationError([
-        'Flat-data input data source flat-data store is missing',
-      ]);
-    }
-    return undefined;
   }
 
   get hashCode(): string {

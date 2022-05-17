@@ -64,6 +64,7 @@ import {
   RuntimePointer,
   PackageableRuntime,
   PackageableElementExplicitReference,
+  validate_PureExecutionMapping,
 } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
 import {
@@ -84,7 +85,9 @@ const PureSingleExecutionConfigurationEditor = observer(
     const serviceState = editorStore.getCurrentEditorState(ServiceEditorState);
     const isReadOnly = serviceState.isReadOnly;
     // mapping
-    const isMappingEmpty = selectedExecution.mappingValidationResult;
+    // TODO: this is not generic error handling, as there could be other problems
+    // with mapping, we need to genericize this
+    const isMappingEmpty = validate_PureExecutionMapping(selectedExecution);
     const mapping = selectedExecution.mapping.value;
     const mappingOptions = editorStore.mappingOptions;
     const noMappingLabel = (

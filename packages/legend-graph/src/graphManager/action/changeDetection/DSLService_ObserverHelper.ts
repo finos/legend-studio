@@ -204,7 +204,6 @@ export const observe_ServiceTest_Legacy = (
 const observe_Abstract_PureExecution = (metamodel: PureExecution): void => {
   makeObservable(metamodel, {
     func: observable,
-    queryValidationResult: computed,
   });
 
   observe_RawLambda(metamodel.func);
@@ -216,7 +215,6 @@ export const observe_PureSingleExecution = skipObservedWithContext(
 
     makeObservable(metamodel, {
       runtime: observable,
-      mappingValidationResult: computed,
       hashCode: computed,
     });
 
@@ -232,7 +230,6 @@ export const observe_KeyedExecutionParameter = skipObservedWithContext(
     makeObservable(metamodel, {
       key: observable,
       runtime: observable,
-      mappingValidationResult: computed,
       hashCode: computed,
     });
 

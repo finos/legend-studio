@@ -84,6 +84,7 @@ import {
   isStubbed_RawLambda,
   stub_Class,
   generateIdentifiedConnectionId,
+  DEPRECATED__validate_MappingTest,
 } from '@finos/legend-graph';
 import { LambdaEditorState, TAB_SIZE } from '@finos/legend-application';
 import { flatData_setData } from '../../../graphModifier/StoreFlatData_GraphModifierHelper';
@@ -595,7 +596,7 @@ export class MappingTestState {
    * Execute mapping using current info in the test detail panel then set the execution result value as test expected result
    */
   *regenerateExpectedResult(): GeneratorFn<void> {
-    if (this.test.validationResult) {
+    if (DEPRECATED__validate_MappingTest(this.test)) {
       this.editorStore.applicationStore.notifyError(
         `Can't execute test '${this.test.name}'. Please make sure that the test query and input data are valid`,
       );
@@ -656,7 +657,7 @@ export class MappingTestState {
   }
 
   *runTest(): GeneratorFn<void> {
-    if (this.test.validationResult) {
+    if (DEPRECATED__validate_MappingTest(this.test)) {
       this.editorStore.applicationStore.notifyError(
         `Can't run test '${this.test.name}'. Please make sure that the test is valid`,
       );

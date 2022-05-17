@@ -718,7 +718,6 @@ export const observe_RelationalInputData = skipObserved(
     makeObservable(metamodel, {
       data: observable,
       inputType: observable,
-      validationResult: computed,
       hashCode: computed,
     });
 

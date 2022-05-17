@@ -37,7 +37,6 @@ import { ServiceExecutionEditor } from './ServiceExecutionEditor';
 import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID';
 import { ServiceRegistrationEditor } from './ServiceRegistrationEditor';
 import { useEditorStore } from '../../EditorStoreProvider';
-import { validateServicePattern } from '@finos/legend-graph';
 import {
   service_addOwner,
   service_deleteOwner,
@@ -47,6 +46,7 @@ import {
   service_setPattern,
   service_updateOwner,
 } from '../../../../stores/graphModifier/DSLService_GraphModifierHelper';
+import { validate_ServicePattern } from '@finos/legend-graph';
 
 const ServiceGeneralEditor = observer(() => {
   const editorStore = useEditorStore();
@@ -63,9 +63,10 @@ const ServiceGeneralEditor = observer(() => {
       service_setPattern(service, pattern);
     }
   };
-  const patternValidationResult = validateServicePattern(pattern);
+  const patternValidationResult = validate_ServicePattern(pattern);
   const allowUpdatingPattern =
-    !patternValidationResult.messages.length && pattern !== service.pattern;
+    !patternValidationResult ||
+    (!patternValidationResult.messages.length && pattern !== service.pattern);
   const removePatternParameter =
     (val: string): (() => void) =>
     (): void => {
@@ -157,18 +158,19 @@ const ServiceGeneralEditor = observer(() => {
                 value={pattern}
                 onChange={changePattern}
               />
-              {Boolean(patternValidationResult.messages.length) && (
-                <div className="input-group__error-message">
-                  {patternValidationResult.messages.map((error) => (
-                    <div
-                      key={error}
-                      className="input-group__error-message__item"
-                    >
-                      {error}
-                    </div>
-                  ))}
-                </div>
-              )}
+              {patternValidationResult &&
+                patternValidationResult.messages.length && (
+                  <div className="input-group__error-message">
+                    {patternValidationResult.messages.map((error) => (
+                      <div
+                        key={error}
+                        className="input-group__error-message__item"
+                      >
+                        {error}
+                      </div>
+                    ))}
+                  </div>
+                )}
             </div>
             <button
               className="service-editor__pattern__input__save-btn btn--dark"

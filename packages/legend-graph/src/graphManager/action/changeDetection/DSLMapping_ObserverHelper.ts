@@ -596,7 +596,6 @@ export const observe_ObjectInputData = skipObserved(
     makeObservable(metamodel, {
       inputType: observable,
       data: observable,
-      validationResult: computed,
       hashCode: computed,
     });
 
@@ -638,7 +637,6 @@ export const observe_ExpectedOutputMappingTestAssert = skipObserved(
   ): ExpectedOutputMappingTestAssert =>
     makeObservable(metamodel, {
       expectedOutput: observable,
-      validationResult: computed,
       hashCode: computed,
     }),
 );
@@ -660,7 +658,6 @@ export const observe_MappingTest = skipObservedWithContext(
       query: observable,
       inputData: observable,
       assert: observable,
-      validationResult: computed,
       hashCode: computed,
     });
 
