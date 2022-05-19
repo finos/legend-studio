@@ -36,11 +36,11 @@ import {
   ResizablePanelSplitter,
   getControlledResizablePanelProps,
   RepoIcon,
-  ListIcon,
   CodeBranchIcon,
   WindowMaximizeIcon,
   HackerIcon,
   WrenchIcon,
+  FileTrayIcon,
 } from '@finos/legend-art';
 import { isNonNullable } from '@finos/legend-shared';
 import { GlobalHotKeys } from 'react-hotkeys';
@@ -49,16 +49,15 @@ import {
   type ViewerPathParams,
   generateSetupRoute,
 } from '../../stores/LegendStudioRouter';
-import { LegendStudioAppHeaderMenu } from '../editor/header/LegendStudioAppHeaderMenu';
 import { ProjectSearchCommand } from '../editor/command-center/ProjectSearchCommand';
 import { flowResult } from 'mobx';
 import {
   EditorStoreProvider,
   useEditorStore,
 } from '../editor/EditorStoreProvider';
-import { AppHeader, useApplicationStore } from '@finos/legend-application';
+import { useApplicationStore } from '@finos/legend-application';
 import type { LegendStudioConfig } from '../../application/LegendStudioConfig';
-import type { ActivityDisplay } from '../editor/ActivityBar';
+import { ActivityBarMenu, type ActivityDisplay } from '../editor/ActivityBar';
 import { Explorer } from '../editor/side-bar/Explorer';
 import { ProjectOverview } from '../editor/side-bar/ProjectOverview';
 import { WorkflowManager } from '../editor/side-bar/WorkflowManager';
@@ -193,7 +192,7 @@ const ViewerActivityBar = observer(() => {
     {
       mode: ACTIVITY_MODE.EXPLORER,
       title: 'Explorer (Ctrl + Shift + X)',
-      icon: <ListIcon />,
+      icon: <FileTrayIcon />,
     },
     !editorStore.isInConflictResolutionMode && {
       mode: ACTIVITY_MODE.PROJECT_OVERVIEW,
@@ -213,6 +212,7 @@ const ViewerActivityBar = observer(() => {
 
   return (
     <div className="activity-bar">
+      <ActivityBarMenu />
       <div className="activity-bar__items">
         {activities.map((activity) => (
           <button
@@ -302,47 +302,42 @@ export const ViewerInner = observer(() => {
 
   return (
     <div className="app__page">
-      <AppHeader>
-        <LegendStudioAppHeaderMenu />
-      </AppHeader>
-      <div className="app__content">
-        <div className="editor viewer">
-          <GlobalHotKeys keyMap={keyMap} handlers={handlers}>
-            <div className="editor__body">
-              <ViewerActivityBar />
-              <div ref={ref} className="editor__content-container">
-                <div
-                  className={clsx('editor__content', {
-                    'editor__content--expanded': editorStore.isInExpandedMode,
-                  })}
-                >
-                  <ResizablePanelGroup orientation="vertical">
-                    <ResizablePanel
-                      {...getControlledResizablePanelProps(
-                        editorStore.sideBarDisplayState.size === 0,
-                        {
-                          onStopResize: resizeSideBar,
-                        },
-                      )}
-                      direction={1}
-                      size={editorStore.sideBarDisplayState.size}
-                    >
-                      <ViewerSideBar />
-                    </ResizablePanel>
-                    <ResizablePanelSplitter />
-                    <ResizablePanel minSize={300}>
-                      {editorStore.isInFormMode && <EditPanel />}
-                      {editorStore.isInGrammarTextMode && <GrammarTextEditor />}
-                    </ResizablePanel>
-                  </ResizablePanelGroup>
-                </div>
+      <div className="editor viewer">
+        <GlobalHotKeys keyMap={keyMap} handlers={handlers}>
+          <div className="editor__body">
+            <ViewerActivityBar />
+            <div ref={ref} className="editor__content-container">
+              <div
+                className={clsx('editor__content', {
+                  'editor__content--expanded': editorStore.isInExpandedMode,
+                })}
+              >
+                <ResizablePanelGroup orientation="vertical">
+                  <ResizablePanel
+                    {...getControlledResizablePanelProps(
+                      editorStore.sideBarDisplayState.size === 0,
+                      {
+                        onStopResize: resizeSideBar,
+                      },
+                    )}
+                    direction={1}
+                    size={editorStore.sideBarDisplayState.size}
+                  >
+                    <ViewerSideBar />
+                  </ResizablePanel>
+                  <ResizablePanelSplitter />
+                  <ResizablePanel minSize={300}>
+                    {editorStore.isInFormMode && <EditPanel />}
+                    {editorStore.isInGrammarTextMode && <GrammarTextEditor />}
+                  </ResizablePanel>
+                </ResizablePanelGroup>
               </div>
             </div>
-            <ViewerStatusBar />
-            {extraEditorExtensionComponents}
-            {allowOpeningElement && <ProjectSearchCommand />}
-          </GlobalHotKeys>
-        </div>
+          </div>
+          <ViewerStatusBar />
+          {extraEditorExtensionComponents}
+          {allowOpeningElement && <ProjectSearchCommand />}
+        </GlobalHotKeys>
       </div>
     </div>
   );

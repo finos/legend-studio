@@ -158,19 +158,18 @@ const ServiceGeneralEditor = observer(() => {
                 value={pattern}
                 onChange={changePattern}
               />
-              {patternValidationResult &&
-                patternValidationResult.messages.length && (
-                  <div className="input-group__error-message">
-                    {patternValidationResult.messages.map((error) => (
-                      <div
-                        key={error}
-                        className="input-group__error-message__item"
-                      >
-                        {error}
-                      </div>
-                    ))}
-                  </div>
-                )}
+              {patternValidationResult?.messages.length && (
+                <div className="input-group__error-message">
+                  {patternValidationResult.messages.map((error) => (
+                    <div
+                      key={error}
+                      className="input-group__error-message__item"
+                    >
+                      {error}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
             <button
               className="service-editor__pattern__input__save-btn btn--dark"

@@ -41,13 +41,12 @@ import {
   generateViewProjectRoute,
   generateEditorRoute,
 } from '../../stores/LegendStudioRouter';
-import { LegendStudioAppHeaderMenu } from '../editor/header/LegendStudioAppHeaderMenu';
 import { flowResult } from 'mobx';
 import {
   EditorStoreProvider,
   useEditorStore,
 } from '../editor/EditorStoreProvider';
-import { AppHeader, useApplicationStore } from '@finos/legend-application';
+import { useApplicationStore } from '@finos/legend-application';
 
 const ReviewStatusBar = observer(() => {
   const reviewStore = useReviewStore();
@@ -195,53 +194,48 @@ const ReviewInner = observer(() => {
 
   return (
     <div className="app__page">
-      <AppHeader>
-        <LegendStudioAppHeaderMenu />
-      </AppHeader>
-      <div className="app__content">
-        <div className="review">
-          <PanelLoadingIndicator
-            isLoading={reviewStore.isFetchingCurrentReview}
-          />
-          {reviewStore.currentReview && (
-            <>
-              <div className="review__body">
-                <div className="activity-bar">
-                  <div className="activity-bar__items">
-                    <button
-                      key={ACTIVITY_MODE.REVIEW}
-                      className="activity-bar__item activity-bar__item--active review__activity-bar__review-icon"
-                      tabIndex={-1}
-                      title={'Review'}
-                      onClick={changeActivity(ACTIVITY_MODE.REVIEW)}
-                    >
-                      <CheckListIcon />
-                    </button>
-                  </div>
-                  <div className="activity-bar__setting">
-                    <button
-                      className="activity-bar__item"
-                      tabIndex={-1}
-                      title={'Settings...'}
-                    >
-                      <CogIcon />
-                    </button>
-                  </div>
-                </div>
-                <div className="review__content-container">
-                  <div
-                    className={clsx('review__content', {
-                      'review__content--expanded': editorStore.isInExpandedMode,
-                    })}
+      <div className="review">
+        <PanelLoadingIndicator
+          isLoading={reviewStore.isFetchingCurrentReview}
+        />
+        {reviewStore.currentReview && (
+          <>
+            <div className="review__body">
+              <div className="activity-bar">
+                <div className="activity-bar__items">
+                  <button
+                    key={ACTIVITY_MODE.REVIEW}
+                    className="activity-bar__item activity-bar__item--active review__activity-bar__review-icon"
+                    tabIndex={-1}
+                    title={'Review'}
+                    onClick={changeActivity(ACTIVITY_MODE.REVIEW)}
                   >
-                    <ReviewExplorer />
-                  </div>
+                    <CheckListIcon />
+                  </button>
+                </div>
+                <div className="activity-bar__setting">
+                  <button
+                    className="activity-bar__item"
+                    tabIndex={-1}
+                    title={'Settings...'}
+                  >
+                    <CogIcon />
+                  </button>
                 </div>
               </div>
-              <ReviewStatusBar />
-            </>
-          )}
-        </div>
+              <div className="review__content-container">
+                <div
+                  className={clsx('review__content', {
+                    'review__content--expanded': editorStore.isInExpandedMode,
+                  })}
+                >
+                  <ReviewExplorer />
+                </div>
+              </div>
+            </div>
+            <ReviewStatusBar />
+          </>
+        )}
       </div>
     </div>
   );

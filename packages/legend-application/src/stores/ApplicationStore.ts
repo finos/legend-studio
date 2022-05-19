@@ -109,6 +109,7 @@ export class ApplicationStore<T extends LegendApplicationConfig> {
   docRegistry: LegendApplicationDocumentationRegistry;
 
   log: Log = new Log();
+  pluginManager: LegendApplicationPluginManager;
   telemetryService = new TelemetryService();
   tracerService = new TracerService();
   eventNotifierService = new EventNotifierService();
@@ -132,6 +133,7 @@ export class ApplicationStore<T extends LegendApplicationConfig> {
 
     this.config = config;
     this.navigator = navigator;
+    this.pluginManager = pluginManager;
 
     // Documentation
     this.docRegistry = new LegendApplicationDocumentationRegistry();

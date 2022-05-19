@@ -27,6 +27,10 @@
     padding-left: 1rem;
   }
 
+  &--scrollable {
+    overflow-y: auto;
+  }
+
   &__title,
   &__title__label {
     @include flexVCenter;
@@ -94,15 +98,6 @@
   &__footer__close-btn {
     border-color: var(--color-blue-200);
     background: var(--color-blue-300);
-  }
-}
-
-.modal.modal--scrollable {
-  height: 100%;
-
-  .modal__body {
-    height: calc(100% - 3.6rem);
-    overflow-y: auto;
   }
 }
 

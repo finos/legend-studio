@@ -104,7 +104,8 @@ export {
   FaUpload as UploadIcon,
   FaRegWindowRestore as EmptyWindowRestoreIcon,
   FaPauseCircle as PauseCircleIcon,
-  FaBars as BarsIcon, // to be reviewed/merged
+  FaShare as ShareIcon,
+  FaRegCopy as CopyIcon,
   FaEdit as PencilEditIcon, // to be reviewed/merged
   FaArrowsAltH as ArrowsAltHIcon, // to be reviewed/merged
   FaRegWindowMaximize as WindowMaximizeIcon, // to be reviewed/merged
@@ -151,6 +152,7 @@ export {
   GoRepo as RepoIcon,
   GoGitBranch as GitBranchIcon,
   GoX as XIcon,
+  GoPlug as PluginIcon,
 } from 'react-icons/go';
 export { SiSwagger as SwaggerIcon } from 'react-icons/si';
 export {
@@ -161,6 +163,7 @@ export {
 export {
   BsFillTriangleFill as FilledTriangleIcon,
   BsFillFileEarmarkSpreadsheetFill as FillFileEarmarkSpreadsheetFillIcon,
+  BsBoxSeam as BundleIcon,
 } from 'react-icons/bs';
 export { BiShapeTriangle as ShapeTriangleIcon } from 'react-icons/bi';
 export { CgOptions as OptionsIcon } from 'react-icons/cg';
@@ -173,6 +176,5 @@ export {
   FiTriangle as TriangleIcon,
   FiZoomIn as ZoomInIcon,
   FiZoomOut as ZoomOutIcon,
-  FiShare as ShareIcon, // to be reviewed
   FiGitMerge as TruncatedGitMergeIcon, // to be reviewed/merged
 } from 'react-icons/fi';

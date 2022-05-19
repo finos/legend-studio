@@ -17,7 +17,6 @@
 import {
   type Hashable,
   hashArray,
-  isValidJSONString,
   tryToMinifyLosslessJSONString,
 } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';

@@ -22,11 +22,8 @@ import {
   getQueryParameters,
 } from '@finos/legend-shared';
 import { useParams } from 'react-router-dom';
-import {
-  LegendStudioAppHeaderMenu,
-  useLegendStudioStore,
-} from '@finos/legend-studio';
-import { AppHeader, useApplicationStore } from '@finos/legend-application';
+import { useLegendStudioStore } from '@finos/legend-studio';
+import { useApplicationStore } from '@finos/legend-application';
 
 const MARKETING_LINK_ACCESS = 'marketing_link_accessed';
 type MarketingLinkAccess_TelemetryData = {
@@ -107,12 +104,7 @@ export const URLRedirector = observer(() => {
 
   return (
     <div className="app__page">
-      <AppHeader>
-        <LegendStudioAppHeaderMenu />
-      </AppHeader>
-      <div className="app__content">
-        <PanelLoadingIndicator isLoading={true} />
-      </div>
+      <PanelLoadingIndicator isLoading={true} />
     </div>
   );
 });

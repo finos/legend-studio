@@ -17,7 +17,6 @@
 import packageJson from '../../package.json';
 import { AbstractPreset } from '@finos/legend-shared';
 import { DSLExternalFormat_PureGraphManagerPlugin } from '../graphManager/DSLExternalFormat_PureGraphManagerPlugin';
-import type { GraphPluginManager } from '../GraphPluginManager';
 import { DSLExternalFormat_PureProtocolProcessorPlugin } from '../models/protocols/pure/DSLExternalFormat_PureProtocolProcessorPlugin';
 import { DSLExternalFormat_PureGraphPlugin } from './DSLExternalFormat_PureGraphPlugin';
 
@@ -26,12 +25,11 @@ export class DSLExternalFormat_GraphPreset extends AbstractPreset {
     super(
       packageJson.extensions.dsl_external_format_graphPreset,
       packageJson.version,
+      [
+        new DSLExternalFormat_PureGraphPlugin(),
+        new DSLExternalFormat_PureGraphManagerPlugin(),
+        new DSLExternalFormat_PureProtocolProcessorPlugin(),
+      ],
     );
-  }
-
-  install(pluginManager: GraphPluginManager): void {
-    new DSLExternalFormat_PureGraphPlugin().install(pluginManager);
-    new DSLExternalFormat_PureGraphManagerPlugin().install(pluginManager);
-    new DSLExternalFormat_PureProtocolProcessorPlugin().install(pluginManager);
   }
 }

@@ -29,14 +29,20 @@ import {
   GitPullRequestIcon,
   GitMergeIcon,
   CloudDownloadIcon,
-  ListIcon,
   CogIcon,
   CodeBranchIcon,
   EmptyClockIcon,
   WrenchIcon,
+  FileTrayIcon,
+  MenuIcon,
+  MenuContentDivider,
 } from '@finos/legend-art';
 import { useEditorStore } from './EditorStoreProvider';
-import { forwardRef } from 'react';
+import { forwardRef, useState } from 'react';
+import { useApplicationStore } from '@finos/legend-application';
+import type { LegendStudioConfig } from '../../application/LegendStudioConfig';
+import { LegendStudioAppInfo } from '../LegendStudioAppInfo';
+import { generateSetupRoute } from '../../stores/LegendStudioRouter';
 
 const SettingsMenu = observer(
   forwardRef<HTMLDivElement, unknown>(function SettingsMenu(props, ref) {
@@ -64,6 +70,85 @@ export interface ActivityDisplay {
   info?: string;
   icon: React.ReactElement;
 }
+
+export const ActivityBarMenu: React.FC = () => {
+  const applicationStore = useApplicationStore<LegendStudioConfig>();
+  const appDocUrl = applicationStore.docRegistry.url;
+
+  // menu
+  const [openMenuDropdown, setOpenMenuDropdown] = useState(false);
+  const showMenuDropdown = (): void => setOpenMenuDropdown(true);
+  const hideMenuDropdown = (): void => setOpenMenuDropdown(false);
+  // about modal
+  const [openAppInfo, setOpenAppInfo] = useState(false);
+  const showAppInfo = (): void => setOpenAppInfo(true);
+  const hideAppInfo = (): void => setOpenAppInfo(false);
+  // documentation
+  const goToDocumentation = (): void => {
+    if (appDocUrl) {
+      applicationStore.navigator.openNewWindow(appDocUrl);
+    }
+  };
+  // go to setup page
+  const goToSetupPage = (): void =>
+    applicationStore.navigator.openNewWindow(
+      applicationStore.navigator.generateLocation(
+        generateSetupRoute(undefined),
+      ),
+    );
+
+  return (
+    <>
+      <DropdownMenu
+        className={clsx('app__header__action', {
+          'menu__trigger--on-menu-open': openMenuDropdown,
+        })}
+        onClose={hideMenuDropdown}
+        menuProps={{
+          anchorOrigin: { vertical: 'top', horizontal: 'right' },
+          transformOrigin: { vertical: 'top', horizontal: 'left' },
+          elevation: 7,
+        }}
+        content={
+          <MenuContent className="app__header__menu">
+            <MenuContentItem
+              className="app__header__menu__item"
+              onClick={showAppInfo}
+            >
+              About
+            </MenuContentItem>
+            <MenuContentItem
+              className="app__header__menu__item"
+              disabled={!appDocUrl}
+              onClick={goToDocumentation}
+            >
+              Documentation
+            </MenuContentItem>
+            <MenuContentDivider />
+            <MenuContentItem
+              className="app__header__menu__item"
+              onClick={goToSetupPage}
+            >
+              Back to Setup
+            </MenuContentItem>
+          </MenuContent>
+        }
+      >
+        <div className="activity-bar__menu">
+          <button
+            className="activity-bar__menu-item"
+            tabIndex={-1}
+            onClick={showMenuDropdown}
+            title="Menu"
+          >
+            <MenuIcon />
+          </button>
+        </div>
+      </DropdownMenu>
+      <LegendStudioAppInfo open={openAppInfo} closeModal={hideAppInfo} />
+    </>
+  );
+};
 
 export const ActivityBar = observer(() => {
   const editorStore = useEditorStore();
@@ -175,7 +260,7 @@ export const ActivityBar = observer(() => {
     {
       mode: ACTIVITY_MODE.EXPLORER,
       title: 'Explorer (Ctrl + Shift + X)',
-      icon: <ListIcon />,
+      icon: <FileTrayIcon className="activity-bar__explorer-icon" />,
     },
     !editorStore.isInConflictResolutionMode && {
       mode: ACTIVITY_MODE.LOCAL_CHANGES,
@@ -254,6 +339,7 @@ export const ActivityBar = observer(() => {
 
   return (
     <div className="activity-bar">
+      <ActivityBarMenu />
       <div className="activity-bar__items">
         {activities.map((activity) => (
           <button
@@ -277,7 +363,7 @@ export const ActivityBar = observer(() => {
         className="activity-bar__setting"
         content={<SettingsMenu />}
         menuProps={{
-          anchorOrigin: { vertical: 'center', horizontal: 'center' },
+          anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
           transformOrigin: { vertical: 'bottom', horizontal: 'left' },
           elevation: 7,
         }}

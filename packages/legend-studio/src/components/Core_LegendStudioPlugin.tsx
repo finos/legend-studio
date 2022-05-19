@@ -23,8 +23,10 @@ import { CORE_DOCUMENTATION_ENTRIES } from '../stores/LegendStudioDocumentation'
 import { LegendStudioPlugin } from '../stores/LegendStudioPlugin';
 
 export class Core_LegendStudioPlugin extends LegendStudioPlugin {
+  static NAME = packageJson.extensions.core_studioPlugin;
+
   constructor() {
-    super(packageJson.extensions.core_studioPlugin, packageJson.version);
+    super(Core_LegendStudioPlugin.NAME, packageJson.version);
   }
 
   override getExtraKeyedDocumentationEntries(): LegendApplicationKeyedDocumentationEntry[] {

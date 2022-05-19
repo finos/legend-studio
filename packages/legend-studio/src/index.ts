@@ -53,7 +53,6 @@ export * from './stores/graphModifier/DSLService_GraphModifierHelper';
 // components
 export * from './components/editor/EditorStoreProvider';
 export { ClassFormEditor } from './components/editor/edit-panel/uml-editor/ClassEditor';
-export { LegendStudioAppHeaderMenu } from './components/editor/header/LegendStudioAppHeaderMenu';
 export { TypeTree } from './components/shared/TypeTree';
 export { StudioTextInputEditor } from './components/shared/StudioTextInputEditor';
 

@@ -468,58 +468,54 @@ export const TaxonomyViewer = observer(() => {
   }
   return (
     <div className="app__page">
-      <div className="app__content app__content--headless">
-        <PanelLoadingIndicator
-          isLoading={taxonomyStore.initState.isInProgress}
-        />
-        <div className="taxonomy-viewer">
-          <GlobalHotKeys
-            keyMap={hotkeyMapping}
-            handlers={hotkeyHandlers}
-            allowChanges={true}
-          >
-            <div className="taxonomy-viewer__body">
-              <TaxonomyViewerActivityBar />
-              <div className="taxonomy-viewer__content-container">
-                <div
-                  className={clsx('taxonomy-viewer__content', {
-                    'taxonomy-viewer__content--expanded':
-                      taxonomyStore.isInExpandedMode,
-                  })}
-                >
-                  <ResizablePanelGroup orientation="vertical">
-                    <ResizablePanel
-                      {...getControlledResizablePanelProps(
-                        taxonomyStore.sideBarDisplayState.size === 0,
-                        {
-                          onStopResize: resizeSideBar,
-                        },
-                      )}
-                      direction={1}
-                      size={taxonomyStore.sideBarDisplayState.size}
-                    >
-                      <TaxonomyViewerSideBar />
-                    </ResizablePanel>
-                    <ResizablePanelSplitter />
-                    <ResizablePanel minSize={300}>
-                      {taxonomyStore.currentTaxonomyNodeViewerState ? (
-                        <TaxonomyViewerMainPanel
-                          taxonomyViewerState={
-                            taxonomyStore.currentTaxonomyNodeViewerState
-                          }
-                        />
-                      ) : (
-                        <TaxonomyViewerSplashScreen />
-                      )}
-                    </ResizablePanel>
-                  </ResizablePanelGroup>
-                </div>
+      <PanelLoadingIndicator isLoading={taxonomyStore.initState.isInProgress} />
+      <div className="taxonomy-viewer">
+        <GlobalHotKeys
+          keyMap={hotkeyMapping}
+          handlers={hotkeyHandlers}
+          allowChanges={true}
+        >
+          <div className="taxonomy-viewer__body">
+            <TaxonomyViewerActivityBar />
+            <div className="taxonomy-viewer__content-container">
+              <div
+                className={clsx('taxonomy-viewer__content', {
+                  'taxonomy-viewer__content--expanded':
+                    taxonomyStore.isInExpandedMode,
+                })}
+              >
+                <ResizablePanelGroup orientation="vertical">
+                  <ResizablePanel
+                    {...getControlledResizablePanelProps(
+                      taxonomyStore.sideBarDisplayState.size === 0,
+                      {
+                        onStopResize: resizeSideBar,
+                      },
+                    )}
+                    direction={1}
+                    size={taxonomyStore.sideBarDisplayState.size}
+                  >
+                    <TaxonomyViewerSideBar />
+                  </ResizablePanel>
+                  <ResizablePanelSplitter />
+                  <ResizablePanel minSize={300}>
+                    {taxonomyStore.currentTaxonomyNodeViewerState ? (
+                      <TaxonomyViewerMainPanel
+                        taxonomyViewerState={
+                          taxonomyStore.currentTaxonomyNodeViewerState
+                        }
+                      />
+                    ) : (
+                      <TaxonomyViewerSplashScreen />
+                    )}
+                  </ResizablePanel>
+                </ResizablePanelGroup>
               </div>
             </div>
-            <TaxonomyViewerStatusBar />
-            <TaxonomySearchCommand />
-          </GlobalHotKeys>
-        </div>
+          </div>
+          <TaxonomyViewerStatusBar />
+          <TaxonomySearchCommand />
+        </GlobalHotKeys>
       </div>
     </div>
   );
