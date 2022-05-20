@@ -24,6 +24,11 @@ import {
   type LegendApplicationDocumentationEntry,
   collectKeyedDocumnetationEntriesFromConfig,
 } from './LegendApplicationDocumentationRegistry';
+import {
+  collectKeyedVirtualAssistantKnowledgeEntriesFromConfig,
+  type LegendApplicationKeyedVirtualAssistantKnowledgeEntry,
+  type LegendApplicationVirtualAssistantKnowledgeEntry,
+} from './LegendApplicationVirtualAssistant';
 
 export interface LegendApplicationVersionData {
   buildTime: string;
@@ -37,6 +42,10 @@ export interface LegendApplicationConfigurationData {
   documentation?: {
     url: string;
     entries?: Record<string, PlainObject<LegendApplicationDocumentationEntry>>;
+    assistanceKnowledgeBase: Record<
+      string,
+      PlainObject<LegendApplicationVirtualAssistantKnowledgeEntry>
+    >;
   };
   // TODO: when we support vault-like settings
   // See https://github.com/finos/legend-studio/issues/407
@@ -50,7 +59,8 @@ export abstract class LegendApplicationConfig {
   readonly env: string;
 
   readonly documentationUrl: string | undefined;
-  readonly documentationKeyedEntries: LegendApplicationKeyedDocumentationEntry[] =
+  readonly keyedDocEntries: LegendApplicationKeyedDocumentationEntry[] = [];
+  readonly keyedKnowledgeEntries: LegendApplicationKeyedVirtualAssistantKnowledgeEntry[] =
     [];
 
   readonly appVersion: string;
@@ -74,9 +84,13 @@ export abstract class LegendApplicationConfig {
 
     // Documentation
     this.documentationUrl = configData.documentation?.url;
-    this.documentationKeyedEntries = collectKeyedDocumnetationEntriesFromConfig(
+    this.keyedDocEntries = collectKeyedDocumnetationEntriesFromConfig(
       configData.documentation?.entries ?? {},
     );
+    this.keyedKnowledgeEntries =
+      collectKeyedVirtualAssistantKnowledgeEntriesFromConfig(
+        configData.documentation?.entries ?? {},
+      );
 
     // Version
     this.appVersion = guaranteeNonNullable(

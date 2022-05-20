@@ -32,6 +32,7 @@ import type { LegendApplicationConfig } from './LegendApplicationConfig';
 import type { WebApplicationNavigator } from './WebApplicationNavigator';
 import type { LegendApplicationPluginManager } from '../application/LegendApplicationPluginManager';
 import { LegendApplicationDocumentationRegistry } from './LegendApplicationDocumentationRegistry';
+import { LegendApplicationVirtualAssistant } from './LegendApplicationVirtualAssistant';
 
 export enum ActionAlertType {
   STANDARD = 'STANDARD',
@@ -107,6 +108,7 @@ export class ApplicationStore<T extends LegendApplicationConfig> {
   actionAlertInfo?: ActionAlertInfo | undefined;
   config: T;
   docRegistry: LegendApplicationDocumentationRegistry;
+  // assistant: LegendApplicationVirtualAssistant;
 
   log: Log = new Log();
   pluginManager: LegendApplicationPluginManager;
@@ -144,11 +146,25 @@ export class ApplicationStore<T extends LegendApplicationConfig> {
           (plugin) => plugin.getExtraKeyedDocumentationEntries?.() ?? [],
         ),
       // entries from config will override entries specified natively
-      ...config.documentationKeyedEntries,
+      ...config.keyedDocEntries,
     ].forEach((entry) =>
       this.docRegistry.registerEntry(entry.key, entry.content),
     );
     this.docRegistry.url = this.config.documentationUrl;
+
+    // Virtual Assistant
+    // this.assistant = new LegendApplicationVirtualAssistant(this.docRegistry);
+    // [
+    //   ...pluginManager
+    //     .getApplicationPlugins()
+    //     .flatMap(
+    //       (plugin) => plugin.getExtraKeyedDocumentationEntries?.() ?? [],
+    //     ),
+    //   // entries from config will override entries specified natively
+    //   ...config.keyedDocEntries,
+    // ].forEach((entry) =>
+    //   this.assistant.registerEntry(entry.key, entry.content),
+    // );
 
     // Register plugins
     this.log.registerPlugins(pluginManager.getLoggerPlugins());
