@@ -43,10 +43,15 @@ import {
   type PureGrammarParserDocumentationGetter,
   type PureGrammarParserElementDocumentationGetter,
   type EmbeddedDataSnippetSuggestion,
+  type EmbeddedDataEditorStateBuilder,
+  type EmbeddedDataState,
+  type EmbeddedDataEditorRenderer,
+  type EmbeddedDataCreator,
 } from '@finos/legend-studio';
 import { SwaggerIcon } from '@finos/legend-art';
 import type {
   Connection,
+  EmbeddedData,
   PackageableElement,
   SetImplementation,
 } from '@finos/legend-graph';
@@ -73,11 +78,15 @@ import {
   SERVICE_STORE_WITH_SERVICE,
   SERVICE_STORE_WITH_SERVICE_GROUP,
 } from './ESService_CodeSnippets';
+import { ServiceStoreEmbeddedData } from '../models/metamodels/pure/model/data/ESService_ServiceStoreEmbeddedData';
+import { ServiceStoreEmbeddedDataState } from '../stores/studio/ESService_ServiceStoreEmbeddedDataEditorState';
+import { ServiceStoreEmbeddedDataEditor } from './ESService_ServiceStoreEmbeddedData';
 
 const SERVICE_STORE_ELEMENT_TYPE = 'SERVICE_STORE';
 const SERVICE_STORE_ELEMENT_PROJECT_EXPLORER_DND_TYPE =
   'PROJECT_EXPLORER_SERVICE_STORE';
 const SERVICE_STORE_MAPPING_TYPE = 'serviceStore';
+const SERVICE_STORE_EMBEDDED_DATA_TYPE = 'ServiceStore';
 
 export class ESService_LegendStudioPlugin
   extends LegendStudioPlugin
@@ -230,8 +239,8 @@ export class ESService_LegendStudioPlugin
   getExtraEmbeddedDataTypeOptions(): EmbeddedDataTypeOption[] {
     return [
       {
-        value: 'ServiceStore',
-        label: 'ServiceStore',
+        value: SERVICE_STORE_EMBEDDED_DATA_TYPE,
+        label: SERVICE_STORE_EMBEDDED_DATA_TYPE,
       },
     ];
   }
@@ -326,6 +335,51 @@ export class ESService_LegendStudioPlugin
       {
         description: 'using service store',
         text: SERVICE_STORE_EMBEDDED_DATA,
+      },
+    ];
+  }
+
+  getExtraEmbeddedDataEditorStateBuilders(): EmbeddedDataEditorStateBuilder[] {
+    return [
+      (
+        editorStore: EditorStore,
+        embeddedData: EmbeddedData,
+      ): EmbeddedDataState | undefined => {
+        if (embeddedData instanceof ServiceStoreEmbeddedData) {
+          return new ServiceStoreEmbeddedDataState(editorStore, embeddedData);
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  getExtraEmbeddedDataEditorRenderers(): EmbeddedDataEditorRenderer[] {
+    return [
+      (
+        embeddedDataState: EmbeddedDataState,
+        isReadOnly: boolean,
+      ): React.ReactNode | undefined => {
+        if (embeddedDataState instanceof ServiceStoreEmbeddedDataState) {
+          return (
+            <ServiceStoreEmbeddedDataEditor
+              serviceStoreEmbeddedDataState={embeddedDataState}
+              isReadOnly={isReadOnly}
+            />
+          );
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  getExtraEmbeddedDataCreators(): EmbeddedDataCreator[] {
+    return [
+      (embeddedDataType: string): EmbeddedData | undefined => {
+        if (embeddedDataType === SERVICE_STORE_EMBEDDED_DATA_TYPE) {
+          const serviceStoreEmbeddedData = new ServiceStoreEmbeddedData();
+          return serviceStoreEmbeddedData;
+        }
+        return undefined;
       },
     ];
   }

@@ -14,12 +14,14 @@
  * limitations under the License.
  */
 
-import { type Hashable, hashArray } from '@finos/legend-shared';
+import { type Hashable, hashArray, uuid } from '@finos/legend-shared';
 import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../ESService_ModelUtils';
 import type { ServiceRequestPattern } from './ESService_ServiceRequestPattern';
 import type { ServiceResponseDefinition } from './ESService_ServiceResponseDefinition';
 
 export class ServiceStubMapping implements Hashable {
+  readonly _UUID = uuid();
+
   requestPattern!: ServiceRequestPattern;
   responseDefinition!: ServiceResponseDefinition;
 

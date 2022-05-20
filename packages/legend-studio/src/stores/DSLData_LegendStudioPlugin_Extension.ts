@@ -27,13 +27,17 @@ import type {
 
 export type EmbeddedDataEditorStateBuilder = (
   editorStore: EditorStore,
-  connection: EmbeddedData,
+  embeddedData: EmbeddedData,
 ) => EmbeddedDataState | undefined;
 
 export type EmbeddedDataEditorRenderer = (
-  connectionValueState: EmbeddedDataState,
+  embeddedDataState: EmbeddedDataState,
   isReadOnly: boolean,
 ) => React.ReactNode | undefined;
+
+export type EmbeddedDataCreator = (
+  embeddedDataType: string,
+) => EmbeddedData | undefined;
 
 /**
  * NOTE: The tab-stop index of the snippet must start from 2
@@ -62,4 +66,9 @@ export interface DSLData_LegendStudioPlugin_Extension
    * Get the list of Pure grammar suggestion snippet getters for embedded data
    */
   getExtraEmbeddedDataSnippetSuggestions?(): EmbeddedDataSnippetSuggestion[];
+
+  /**
+   * Get the list of embedded data creators
+   */
+  getExtraEmbeddedDataCreators?(): EmbeddedDataCreator[];
 }
