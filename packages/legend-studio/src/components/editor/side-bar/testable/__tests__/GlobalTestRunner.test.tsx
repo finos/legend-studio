@@ -36,7 +36,8 @@ beforeEach(async () => {
     entities: TEST_DATA__RelationalServiceTestable,
   });
 });
-test(
+
+test.skip(
   integrationTest('Test navigation on gloabl test runner explorer'),
   async () => {
     const globalTestRunnerButton =
