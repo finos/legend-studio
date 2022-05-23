@@ -39,7 +39,7 @@ export class ServiceMapping implements Hashable {
       this.pathOffset
         ? hashObjectWithoutSourceInformation(this.pathOffset)
         : '',
-      this.requestBuildInfo?.toString() ?? '',
+      this.requestBuildInfo ?? '',
     ]);
   }
 }
