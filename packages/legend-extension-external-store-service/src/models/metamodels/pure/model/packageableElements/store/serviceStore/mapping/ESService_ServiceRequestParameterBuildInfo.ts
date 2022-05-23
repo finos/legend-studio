@@ -26,7 +26,7 @@ export class ServiceRequestParameterBuildInfo implements Hashable {
   get hashCode(): string {
     return hashArray([
       SERVICE_STORE_HASH_STRUCTURE.SERVICE_REQUEST_PARAMETER_BUILD_INFO,
-      this.serviceParameter,
+      this.serviceParameter.name,
       this.transform,
     ]);
   }
