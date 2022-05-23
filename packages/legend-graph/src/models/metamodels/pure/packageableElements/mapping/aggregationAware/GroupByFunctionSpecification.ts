@@ -17,7 +17,7 @@
 import type { RawLambda } from '../../../rawValueSpecification/RawLambda';
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../MetaModelConst';
-import { hashLambda } from '../../../../../../MetaModelUtils';
+import { hashRawLambda } from '../../../../../../MetaModelUtils';
 
 export class GroupByFunctionSpecification implements Hashable {
   /**
@@ -34,7 +34,7 @@ export class GroupByFunctionSpecification implements Hashable {
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.GROUP_BY_FUNCTION,
-      hashLambda(this.groupByFn.parameters, this.groupByFn.body),
+      hashRawLambda(this.groupByFn.parameters, this.groupByFn.body),
     ]);
   }
 }

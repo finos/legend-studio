@@ -27,7 +27,7 @@ import {
 } from './OperationSetImplementation';
 import type { RawLambda } from '../../rawValueSpecification/RawLambda';
 import type { SetImplementationVisitor } from './SetImplementation';
-import { hashLambda } from '../../../../../MetaModelUtils';
+import { hashRawLambda } from '../../../../../MetaModelUtils';
 
 export class MergeOperationSetImplementation
   extends OperationSetImplementation
@@ -55,7 +55,7 @@ export class MergeOperationSetImplementation
         // TODO: use `isStubbed_SetImplementationContainer` when we refactor hashing
         this.parameters.map((param) => param.setImplementation.value.id.value),
       ),
-      hashLambda(
+      hashRawLambda(
         this.validationFunction.parameters,
         this.validationFunction.body,
       ),

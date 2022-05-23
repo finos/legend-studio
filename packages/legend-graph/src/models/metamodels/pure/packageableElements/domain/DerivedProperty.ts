@@ -15,7 +15,7 @@
  */
 
 import { type Hashable, hashArray, uuid } from '@finos/legend-shared';
-import { hashLambda } from '../../../../../MetaModelUtils';
+import { hashRawLambda } from '../../../../../MetaModelUtils';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import type { Multiplicity } from './Multiplicity';
 import type { TaggedValue } from './TaggedValue';
@@ -68,7 +68,7 @@ export class DerivedProperty
       this.genericType.ownerReference.hashValue,
       hashArray(this.stereotypes.map((val) => val.pointerHashCode)),
       hashArray(this.taggedValues),
-      hashLambda(this.parameters, this.body),
+      hashRawLambda(this.parameters, this.body),
     ]);
   }
 }

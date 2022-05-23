@@ -220,7 +220,6 @@ export class ServicePureExecutionQueryState extends LambdaEditorState {
                 query.id,
               )) as string,
             )) as RawLambda,
-            '',
             true,
           )) as string;
         this.selectedQueryInfo = {

@@ -74,9 +74,9 @@ export class FunctionBodyEditorState extends LambdaEditorState {
           (yield this.editorStore.graphManagerState.graphManager.pureCodeToLambda(
             this.fullLambdaString,
             this.lambdaId,
-          )) as RawLambda | undefined;
+          )) as RawLambda;
         this.setParserError(undefined);
-        this.functionElement.body = lambda ? (lambda.body as object[]) : [];
+        this.functionElement.body = lambda.body as object[];
       } catch (error) {
         assertErrorThrown(error);
         if (error instanceof ParserError) {

@@ -15,7 +15,7 @@
  */
 
 import { type Hashable, hashArray } from '@finos/legend-shared';
-import { hashLambda } from '../../../../../MetaModelUtils';
+import { hashRawLambda } from '../../../../../MetaModelUtils';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import type { PackageableElementVisitor } from '../PackageableElement';
 import type { RawVariableExpression } from '../../rawValueSpecification/RawVariableExpression';
@@ -65,7 +65,7 @@ export class ConcreteFunctionDefinition
       this.returnType.hashValue,
       hashArray(this.taggedValues),
       hashArray(this.stereotypes.map((val) => val.pointerHashCode)),
-      hashLambda(undefined, this.body),
+      hashRawLambda(undefined, this.body),
     ]);
   }
 
