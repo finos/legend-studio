@@ -104,16 +104,16 @@ test(
       graphManagerState.systemModel,
       dependencyManager,
       dependencyEntitiesMap,
+      graphManagerState.dependenciesBuildState,
     );
-    expect(
-      graphManagerState.graph.dependencyManager.buildState.hasSucceeded,
-    ).toBe(true);
+    expect(graphManagerState.dependenciesBuildState.hasSucceeded).toBe(true);
 
     await graphManagerState.graphManager.buildGraph(
       graphManagerState.graph,
       entities,
+      graphManagerState.graphBuildState,
     );
-    expect(graphManagerState.graph.buildState.hasSucceeded).toBe(true);
+    expect(graphManagerState.graphBuildState.hasSucceeded).toBe(true);
     Array.from(dependencyEntitiesMap.keys()).forEach((k) =>
       expect(dependencyManager.getModel(k)).toBeDefined(),
     );
@@ -147,15 +147,15 @@ test(
       graphManagerState.systemModel,
       dependencyManager,
       dependencyEntitiesMap,
+      graphManagerState.dependenciesBuildState,
     );
-    expect(
-      graphManagerState.graph.dependencyManager.buildState.hasSucceeded,
-    ).toBe(true);
+    expect(graphManagerState.dependenciesBuildState.hasSucceeded).toBe(true);
 
     await expect(() =>
       graphManagerState.graphManager.buildGraph(
         graphManagerState.graph,
         firstDependencyEntities,
+        graphManagerState.graphBuildState,
       ),
     ).rejects.toThrowError(`Element 'model::ClassB' already exists`);
   },

@@ -21,6 +21,12 @@ import {
   ExternalFormatData,
   ModelStoreData,
 } from '../../../../../../../metamodels/pure/data/EmbeddedData';
+import {
+  RelationalData,
+  RelationalDataTable,
+  RelationalDataTableColumn,
+  RelationalDataTableRow,
+} from '../../../../../../../metamodels/pure/data/RelationalData';
 import type { Class } from '../../../../../../../metamodels/pure/packageableElements/domain/Class';
 import type { DSLData_PureProtocolProcessorPlugin_Extension } from '../../../../../DSLData_PureProtocolProcessorPlugin_Extension';
 import type {
@@ -30,6 +36,7 @@ import type {
   V1_ExternalFormatData,
   V1_ModelStoreData,
 } from '../../../../model/data/V1_EmbeddedData';
+import type { V1_RelationalData } from '../../../../model/data/V1_RelationalData';
 
 import type { V1_GraphBuilderContext } from '../V1_GraphBuilderContext';
 
@@ -88,6 +95,27 @@ export class V1_ProtocolToMetaModelEmbeddedDataBuilder
     metamodel.dataElement = this.context.resolveDataElement(
       dataElementReference.dataElement,
     );
+    return metamodel;
+  }
+
+  visit_RelationalData(relationalData: V1_RelationalData): EmbeddedData {
+    const metamodel = new RelationalData();
+    metamodel.tables = relationalData.tables.map((t) => {
+      const table = new RelationalDataTable();
+      table.schemaName = t.schemaName;
+      table.columns = t.columns.map((c) => {
+        const col = new RelationalDataTableColumn();
+        col.value = c.value;
+        return col;
+      });
+      table.tableName = t.tableName;
+      table.rows = t.rows.map((r) => {
+        const row = new RelationalDataTableRow();
+        row.values = r.values;
+        return row;
+      });
+      return table;
+    });
     return metamodel;
   }
 }

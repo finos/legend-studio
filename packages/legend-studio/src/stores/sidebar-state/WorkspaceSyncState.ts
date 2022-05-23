@@ -452,7 +452,7 @@ export class WorkspaceSyncState {
       }
       if (conflicts.length) {
         this.editorStore.setBlockingAlert(undefined);
-        this.editorStore.setActionAltertInfo({
+        this.editorStore.setActionAlertInfo({
           message: 'Conflicts found while pulling changes',
           prompt:
             'You can either force-pull (override local changes) or resolve these conflicts manually',

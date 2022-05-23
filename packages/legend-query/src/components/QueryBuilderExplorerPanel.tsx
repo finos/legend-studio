@@ -72,6 +72,9 @@ import {
   PRIMITIVE_TYPE,
   Enumeration,
   TYPE_CAST_TOKEN,
+  getAllOwnClassProperties,
+  getAllClassProperties,
+  getAllClassDerivedProperties,
 } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
 import { getClassPropertyIcon } from './shared/ElementIconUtils';
@@ -677,6 +680,28 @@ const QueryBuilderExplorerTreeNodeView = observer(
   },
 );
 
+/**
+ * Sort order for Query Builder tree nodes will be ranked by return type as followed:
+ * 1. Primitive
+ * 2. Enumeration
+ * 3. Class
+ * 4. Class Subtypes
+ * Note: Derived property nodes will be ranked lower for each relevant return type
+ */
+const getQueryBuilderExplorerTreeNodeSortRank = (
+  node: QueryBuilderExplorerTreeNodeData,
+): number => {
+  if (node instanceof QueryBuilderExplorerTreeSubTypeNodeData) {
+    return 0;
+  } else if (node.type instanceof Class) {
+    return node.isPartOfDerivedPropertyBranch ? 1 : 2;
+  } else if (node.type instanceof Enumeration) {
+    return node.isPartOfDerivedPropertyBranch ? 3 : 4;
+  } else {
+    return node.isPartOfDerivedPropertyBranch ? 5 : 6;
+  }
+};
+
 const QueryBuilderExplorerTree = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
@@ -692,10 +717,10 @@ const QueryBuilderExplorerTree = observer(
           node.type instanceof Class
         ) {
           (node instanceof QueryBuilderExplorerTreeSubTypeNodeData
-            ? node.type.getAllOwnedProperties()
-            : node.type
-                .getAllProperties()
-                .concat(node.type.getAllDerivedProperties())
+            ? getAllOwnClassProperties(node.type)
+            : getAllClassProperties(node.type).concat(
+                getAllClassDerivedProperties(node.type),
+              )
           ).forEach((property) => {
             const propertyTreeNodeData = getQueryBuilderPropertyNodeData(
               queryBuilderState.graphManagerState,
@@ -705,7 +730,7 @@ const QueryBuilderExplorerTree = observer(
             );
             treeData.nodes.set(propertyTreeNodeData.id, propertyTreeNodeData);
           });
-          node.type.subclasses.forEach((subclass) => {
+          node.type._subclasses.forEach((subclass) => {
             const subTypeTreeNodeData = getQueryBuilderSubTypeNodeData(
               subclass,
               node,
@@ -716,7 +741,6 @@ const QueryBuilderExplorerTree = observer(
       }
       explorerState.refreshTree();
     };
-
     const getChildNodes = (
       node: QueryBuilderExplorerTreeNodeData,
     ): QueryBuilderExplorerTreeNodeData[] =>
@@ -735,20 +759,8 @@ const QueryBuilderExplorerTree = observer(
         .sort((a, b) => a.label.localeCompare(b.label))
         .sort(
           (a, b) =>
-            (b instanceof QueryBuilderExplorerTreeSubTypeNodeData
-              ? 0
-              : b.type instanceof Class
-              ? 3
-              : b.type instanceof Enumeration
-              ? 2
-              : 1) -
-            (a instanceof QueryBuilderExplorerTreeSubTypeNodeData
-              ? 0
-              : a.type instanceof Class
-              ? 3
-              : a.type instanceof Enumeration
-              ? 2
-              : 1),
+            getQueryBuilderExplorerTreeNodeSortRank(b) -
+            getQueryBuilderExplorerTreeNodeSortRank(a),
         );
 
     return (

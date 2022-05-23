@@ -21,6 +21,7 @@ import {
   waitFor,
   getByText,
   fireEvent,
+  act,
 } from '@testing-library/react';
 import TEST_DATA__serviceEntities from '../../../../editor/edit-panel/service-editor/__tests__/TEST_DATA__ServiceRegistration.json';
 import {
@@ -154,7 +155,9 @@ test(
         },
       ],
     );
-    await flowResult(mockedEditorStore.sdlcState.fetchProjectVersions());
+    await act(async () => {
+      await flowResult(mockedEditorStore.sdlcState.fetchProjectVersions());
+    });
     const result = new ServiceRegistrationResult(
       'https://legend.org/exec',
       '/myservice',
@@ -207,18 +210,27 @@ test(
     // since `int` is the first env in the config list, it is expected to be selected by default
     // we will then change env from `int` to `prod`
     await waitFor(() => getByText(registrationEditor, 'INT'));
-    registrationState.updateEnv('prod');
+
+    act(() => {
+      registrationState.updateEnv('prod');
+    });
     await waitFor(() => getByText(registrationEditor, 'PROD'));
+
     // select version
     await waitFor(() => getByText(registrationEditor, 'Select...'));
-    registrationState.setProjectVersion(
-      versions.find((v) => v.id.id === '1.0.1'),
-    );
+    act(() => {
+      registrationState.setProjectVersion(
+        versions.find((v) => v.id.id === '1.0.1'),
+      );
+    });
     expect(registrationState.versionOptions).toHaveLength(2);
     expect(registrationState.executionModes).toHaveLength(1);
     expect(registrationState.executionModes[0]).toBe(ServiceExecutionMode.PROD);
-    // change env from prod to int
-    registrationState.updateEnv('int');
+
+    // change env
+    act(() => {
+      registrationState.updateEnv('int');
+    });
     // change from full to semi
     await waitFor(() =>
       getByText(
@@ -226,7 +238,9 @@ test(
         prettyCONSTName(ServiceExecutionMode.FULL_INTERACTIVE),
       ),
     );
-    registrationState.updateType(ServiceExecutionMode.SEMI_INTERACTIVE);
+    act(() => {
+      registrationState.updateType(ServiceExecutionMode.SEMI_INTERACTIVE);
+    });
     await waitFor(() =>
       getByText(
         registrationEditor,

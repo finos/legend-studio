@@ -66,6 +66,7 @@ import { FunctionEditorState } from './editor-state/element-editor-state/Functio
 import { ProjectConfigurationEditorState } from './editor-state/ProjectConfigurationEditorState';
 import { PackageableRuntimeEditorState } from './editor-state/element-editor-state/RuntimeEditorState';
 import { PackageableConnectionEditorState } from './editor-state/element-editor-state/connection/ConnectionEditorState';
+import { PackageableDataEditorState } from './editor-state/element-editor-state/data/DataEditorState';
 import { FileGenerationEditorState } from './editor-state/element-editor-state/FileGenerationEditorState';
 import { EntityDiffEditorState } from './editor-state/entity-diff-editor-state/EntityDiffEditorState';
 import { EntityChangeConflictEditorState } from './editor-state/entity-diff-editor-state/EntityChangeConflictEditorState';
@@ -102,7 +103,6 @@ import {
   type Store,
   type GraphManagerState,
   GRAPH_MANAGER_EVENT,
-  PACKAGEABLE_ELEMENT_TYPE,
   PrimitiveType,
   Class,
   Enumeration,
@@ -144,6 +144,8 @@ import {
   graph_deleteOwnElement,
   graph_renameElement,
 } from './graphModifier/GraphModifierHelper';
+import { PACKAGEABLE_ELEMENT_TYPE } from './shared/ModelUtil';
+import { GlobalTestRunnerState } from './sidebar-state/testable/GlobalTestRunnerState';
 
 export abstract class EditorExtensionState {
   /**
@@ -190,6 +192,7 @@ export class EditorStore {
   projectConfigurationEditorState: ProjectConfigurationEditorState;
   projectOverviewState: ProjectOverviewState;
   workspaceWorkflowManagerState: WorkspaceWorkflowManagerState;
+  globalTestRunnerState: GlobalTestRunnerState;
   workspaceUpdaterState: WorkspaceUpdaterState;
   workspaceReviewState: WorkspaceReviewState;
   localChangesState: LocalChangesState;
@@ -262,7 +265,7 @@ export class EditorStore {
       setIgnoreNavigationBlocking: action,
       refreshCurrentEntityDiffEditorState: action,
       setBlockingAlert: action,
-      setActionAltertInfo: action,
+      setActionAlertInfo: action,
       cleanUp: action,
       reset: action,
       setGraphEditMode: action,
@@ -295,6 +298,10 @@ export class EditorStore {
     // side bar panels
     this.explorerTreeState = new ExplorerTreeState(this);
     this.projectOverviewState = new ProjectOverviewState(this, this.sdlcState);
+    this.globalTestRunnerState = new GlobalTestRunnerState(
+      this,
+      this.sdlcState,
+    );
     this.workspaceWorkflowManagerState = new WorkspaceWorkflowManagerState(
       this,
       this.sdlcState,
@@ -429,7 +436,7 @@ export class EditorStore {
           this.sdlcState.currentWorkspace &&
           this.sdlcState.currentRevision &&
           this.sdlcState.remoteWorkspaceRevision,
-      ) && this.graphManagerState.systemModel.buildState.hasSucceeded
+      ) && this.graphManagerState.systemBuildState.hasSucceeded
     );
   }
   get isInGrammarTextMode(): boolean {
@@ -499,11 +506,11 @@ export class EditorStore {
     this.applicationStore.setBlockingAlert(alertInfo);
   }
 
-  setActionAltertInfo(alertInfo: ActionAlertInfo | undefined): void {
+  setActionAlertInfo(alertInfo: ActionAlertInfo | undefined): void {
     if (this._isDisposed) {
       return;
     }
-    this.applicationStore.setActionAltertInfo(alertInfo);
+    this.applicationStore.setActionAlertInfo(alertInfo);
   }
 
   cleanUp(): void {
@@ -512,7 +519,7 @@ export class EditorStore {
     // e.g. trying going to an unknown workspace, we will be redirected to the home page
     // but the blocking alert for not-found workspace will still block the app
     this.setBlockingAlert(undefined);
-    this.setActionAltertInfo(undefined);
+    this.setActionAlertInfo(undefined);
     // stop change detection to avoid memory-leak
     this.changeDetectionState.stop();
     this._isDisposed = true;
@@ -577,7 +584,7 @@ export class EditorStore {
       // instead, we give them the option to:
       // - reload the page (in case they later gain access)
       // - back to the setup page
-      this.setActionAltertInfo({
+      this.setActionAlertInfo({
         message: `Project not found or inaccessible`,
         prompt: 'Please check that the project exists and request access to it',
         type: ActionAlertType.STANDARD,
@@ -648,7 +655,7 @@ export class EditorStore {
           this.applicationStore.notifyError(error);
         }
       };
-      this.setActionAltertInfo({
+      this.setActionAlertInfo({
         message: 'Workspace not found',
         prompt: `Please note that you can check out the project in viewer mode. Workspace is only required if you need to work on the project.`,
         type: ActionAlertType.STANDARD,
@@ -710,7 +717,6 @@ export class EditorStore {
       ),
     ]);
     yield flowResult(this.initMode());
-
     onLeave(true);
   }
 
@@ -744,7 +750,7 @@ export class EditorStore {
   }
 
   private *initConflictResolutionMode(): GeneratorFn<void> {
-    this.setActionAltertInfo({
+    this.setActionAlertInfo({
       message: 'Failed to update workspace.',
       prompt:
         'You can discard all of your changes or review them, resolve all merge conflicts and fix any potential compilation issues as well as test failures',
@@ -1046,8 +1052,7 @@ export class EditorStore {
     } else if (
       element instanceof Measure ||
       element instanceof Database ||
-      element instanceof FlatData ||
-      element instanceof DataElement
+      element instanceof FlatData
     ) {
       return new UnsupportedElementEditorState(this, element);
     } else if (element instanceof PackageableRuntime) {
@@ -1062,6 +1067,8 @@ export class EditorStore {
       return new GenerationSpecificationEditorState(this, element);
     } else if (element instanceof FileGenerationSpecification) {
       return new FileGenerationEditorState(this, element);
+    } else if (element instanceof DataElement) {
+      return new PackageableDataEditorState(this, element);
     }
     const extraElementEditorStateCreators = this.pluginManager
       .getStudioPlugins()

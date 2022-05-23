@@ -25,7 +25,6 @@ import {
   Measure,
   Unit,
   PrimitiveType,
-  PACKAGEABLE_ELEMENT_TYPE,
 } from '@finos/legend-graph';
 import {
   PURE_ClassIcon,
@@ -46,7 +45,9 @@ import {
   PURE_UnknownElementTypeIcon,
   PURE_UnitIcon,
   PURE_PackageIcon,
+  PURE_DataIcon,
 } from '@finos/legend-art';
+import { PACKAGEABLE_ELEMENT_TYPE } from '../../stores/shared/ModelUtil';
 
 export const getClassPropertyIcon = (type: Type): React.ReactNode => {
   if (type instanceof PrimitiveType) {
@@ -100,6 +101,8 @@ export const getElementTypeIcon = (
       return <PURE_RuntimeIcon />;
     case PACKAGEABLE_ELEMENT_TYPE.FILE_GENERATION:
       return <PURE_FileGenerationIcon />;
+    case PACKAGEABLE_ELEMENT_TYPE.DATA:
+      return <PURE_DataIcon />;
     case PACKAGEABLE_ELEMENT_TYPE.GENERATION_SPECIFICATION:
       return <PURE_GenerationSpecificationIcon />;
     default: {

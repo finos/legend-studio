@@ -112,6 +112,8 @@ export {
   FaLongArrowAltDown as LongArrowAltDownIcon, // to be reviewed/merged
   FaLongArrowAltUp as LongArrowAltUpIcon, // to be reviewed/merged
   FaMeteor as MeteorIcon, // to be reviewed/merged
+  FaToggleOn as ToggleOn,
+  FaToggleOff as ToggleOff,
 } from 'react-icons/fa';
 export { GiWaterDrop as WaterDropIcon } from 'react-icons/gi';
 export {
@@ -129,6 +131,7 @@ export {
   MdEdit as EditIcon, // to be reviewed
   MdSubject as SubjectIcon,
   MdViewHeadline as ViewHeadlineIcon,
+  MdWarning as WarningIcon,
 } from 'react-icons/md';
 export {
   VscError as ErrorIcon,
@@ -151,7 +154,10 @@ export {
 } from 'react-icons/go';
 export { SiSwagger as SwaggerIcon } from 'react-icons/si';
 export { IoResize as ResizeIcon } from 'react-icons/io5';
-export { BsFillTriangleFill as FilledTriangleIcon } from 'react-icons/bs';
+export {
+  BsFillTriangleFill as FilledTriangleIcon,
+  BsFillFileEarmarkSpreadsheetFill as FillFileEarmarkSpreadsheetFillIcon,
+} from 'react-icons/bs';
 export { CgOptions as OptionsIcon } from 'react-icons/cg';
 export {
   FiMinus as MinusIcon,

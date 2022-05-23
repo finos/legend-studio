@@ -214,7 +214,7 @@ export class ESService_PureProtocolProcessorPlugin
           const protocol = new V1_ServiceStore();
           V1_initPackageableElement(protocol, metamodel);
           protocol.name = metamodel.name;
-          protocol.package = metamodel.package?.fullPath ?? '';
+          protocol.package = metamodel.package?.path ?? '';
           protocol.description = metamodel.description;
           protocol.elements = metamodel.elements.map((element) =>
             V1_transformServiceStoreElement(element, context),

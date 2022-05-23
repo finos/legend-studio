@@ -14,11 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  type Hashable,
-  hashArray,
-  guaranteeNonNullable,
-} from '@finos/legend-shared';
+import { type Hashable, hashArray } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import type { PackageableElementReference } from '../PackageableElementReference';
 import {
@@ -28,7 +24,6 @@ import {
 import type { SetImplementationContainer } from './SetImplementationContainer';
 import type { Mapping } from './Mapping';
 import type { Class } from '../domain/Class';
-import { type Stubable, isStubArray } from '../../../../../helpers/Stubable';
 import type { InferableMappingElementIdValue } from './InferableMappingElementId';
 import type { InferableMappingElementRoot } from './InferableMappingElementRoot';
 
@@ -39,16 +34,9 @@ export enum OperationType {
   MERGE = 'MERGE',
 }
 
-// TODO: to be moved out of metamodel
-export const getClassMappingOperationType = (value: string): OperationType =>
-  guaranteeNonNullable(
-    Object.values(OperationType).find((type) => type === value),
-    `Encountered unsupproted class mapping operation type '${value}'`,
-  );
-
 export class OperationSetImplementation
   extends SetImplementation
-  implements Hashable, Stubable
+  implements Hashable
 {
   parameters: SetImplementationContainer[] = [];
   operation: OperationType;
@@ -64,49 +52,12 @@ export class OperationSetImplementation
     this.operation = operation;
   }
 
-  /**
-   * Get all leaf impls of an operation Set Implementation. Accounts for loops and duplication (which should be caught by compiler).
-   */
-  get leafSetImplementations(): SetImplementation[] {
-    return this.childSetImplementations.filter(
-      (si) => !(si instanceof OperationSetImplementation),
-    );
-  }
-
-  get childSetImplementations(): SetImplementation[] {
-    const visitedOperations = new Set<OperationSetImplementation>();
-    visitedOperations.add(this);
-    const _leaves = new Set<SetImplementation>();
-    const resolveleafSetImps = (
-      _opSetImpl: OperationSetImplementation,
-    ): void => {
-      _opSetImpl.parameters.forEach((p) => {
-        const setImp = p.setImplementation.value;
-        if (
-          setImp instanceof OperationSetImplementation &&
-          !visitedOperations.has(setImp)
-        ) {
-          visitedOperations.add(setImp);
-          resolveleafSetImps(setImp);
-        } else {
-          _leaves.add(setImp);
-        }
-      });
-    };
-    resolveleafSetImps(this);
-    visitedOperations.delete(this);
-    return Array.from(_leaves).concat(Array.from(visitedOperations));
-  }
-
-  override get isStub(): boolean {
-    return super.isStub && isStubArray(this.parameters);
-  }
-
   override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.OPERATION_SET_IMPLEMENTATION,
       this.operation,
       hashArray(
+        // TODO: use `isStubbed_SetImplementationContainer` when we refactor hashing
         this.parameters.map((param) => param.setImplementation.value.id.value),
       ),
     ]);

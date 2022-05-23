@@ -32,11 +32,7 @@ export {
   GenericTypeExplicitReference,
 } from './models/metamodels/pure/packageableElements/domain/GenericTypeReference';
 export { GenericType } from './models/metamodels/pure/packageableElements/domain/GenericType';
-export {
-  Class,
-  CLASS_PROPERTY_TYPE,
-  getClassPropertyType,
-} from './models/metamodels/pure/packageableElements/domain/Class';
+export { Class } from './models/metamodels/pure/packageableElements/domain/Class';
 export { type AnnotatedElement } from './models/metamodels/pure/packageableElements/domain/AnnotatedElement';
 export { Package } from './models/metamodels/pure/packageableElements/domain/Package';
 export { Constraint } from './models/metamodels/pure/packageableElements/domain/Constraint';
@@ -161,12 +157,15 @@ export { TDSResultType } from './models/metamodels/pure/executionPlan/result/TDS
 export * from './MetaModelUtils';
 export * from './MetaModelConst';
 
-export * from './helpers/ServiceHelper';
-export * from './helpers/DatabaseHelper';
-export * from './helpers/MappingHelper';
-export * from './helpers/ValidationHelper';
-export * from './helpers/Stubable'; // TODO: to be removed
 export * from './helpers/DomainHelper';
+export * from './helpers/Testable_Helper';
+export * from './helpers/DSLMapping_Helper';
+export * from './helpers/StoreRelational_Helper';
+export * from './helpers/StoreFlatData_Helper';
+export * from './helpers/DSLService_Helper';
+export * from './helpers/DSLGeneration_Helper';
+
+export * from './helpers/ValidationHelper';
 export * from './helpers/PureLanguageHelper';
 
 // --------------------------------------------- GRAPH --------------------------------------------------
@@ -218,7 +217,7 @@ export * from './graphManager/action/generation/GenerationConfigurationDescripti
 export { GenerationOutput } from './graphManager/action/generation/GenerationOutput';
 export { ServiceExecutionMode } from './graphManager/action/service/ServiceExecutionMode';
 export { ServiceRegistrationResult } from './graphManager/action/service/ServiceRegistrationResult';
-export { ServiceTestResult } from './graphManager/action/service/ServiceTestResult';
+export { DEPRECATED__ServiceTestResult } from './graphManager/action/service/DEPRECATED__ServiceTestResult';
 export { SourceInformation } from './graphManager/action/SourceInformation';
 
 export { getGraphManager } from './models/protocols/pure/Pure';
@@ -281,6 +280,19 @@ export * from './models/protocols/pure/v1/transformation/pureGraph/to/V1_DSLExte
 export * from './models/ModelGenerationConfiguration';
 export * from './models/protocols/pure/MappingGeneration_PureProtocolProcessorPlugin_Extension';
 
+// --------------------------------------------- TESTING --------------------------------------------------
+
+export * from './models/metamodels/pure/test/Testable';
+export * from './models/metamodels/pure/test/result/RunTestsTestableInput';
+export * from './models/metamodels/pure/test/result/TestResult';
+export * from './models/metamodels/pure/test/assertion/status/AssertionStatus';
+export * from './models/metamodels/pure/test/assertion/status/AssertFail';
+export * from './models/metamodels/pure/test/assertion/status/AssertPass';
+export * from './models/metamodels/pure/test/assertion/status/EqualToJsonAssertFail';
+export * from './models/metamodels/pure/test/assertion/TestAssertion';
+export * from './models/metamodels/pure/test/Test';
+export * from './models/metamodels/pure/test/result/AtomicTestId';
+
 // --------------------------------------------- OBSERVER --------------------------------------------------
 
 export * from './graphManager/action/changeDetection/PackageableElementObserver';
@@ -295,6 +307,15 @@ export * from './graphManager/action/changeDetection/GraphObserverHelper';
 export * from './graphManager/action/changeDetection/DSLExternalFormat_ObserverHelper';
 export * from './graphManager/action/changeDetection/DSLService_ObserverHelper';
 export * from './graphManager/action/changeDetection/DSLGenerationSpecification_ObserverHelper';
+
+export * from './graphManager/action/changeDetection/EngineObserverHelper';
+
+// --------------------------------------------- CREATOR --------------------------------------------------
+
+export * from './graphManager/action/creation/DomainModelCreatorHelper';
+export * from './graphManager/action/creation/DSLMapping_ModelCreatorHelper';
+export * from './graphManager/action/creation/RawValueSpecificationCreatorHelper';
+export * from './graphManager/action/creation/StoreRelational_ModelCreatorHelper';
 
 // --------------------------------------------- TO BE MODULARIZED --------------------------------------------------
 

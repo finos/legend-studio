@@ -38,16 +38,19 @@ import {
 } from './TableOrViewSourceTree';
 import { useEditorStore } from '../../../EditorStoreProvider';
 import {
-  CLASS_PROPERTY_TYPE,
-  getClassPropertyType,
   Enumeration,
   EnumerationMapping,
   RelationalPropertyMapping,
   getEnumerationMappingsByEnumeration,
+  getRawGenericType,
 } from '@finos/legend-graph';
 import { StudioLambdaEditor } from '../../../../shared/StudioLambdaEditor';
 import { relationalPropertyMapping_setTransformer } from '../../../../../stores/graphModifier/StoreRelational_GraphModifierHelper';
 import { getExpectedReturnType } from '../PropertyMappingsEditor';
+import {
+  CLASS_PROPERTY_TYPE,
+  getClassPropertyType,
+} from '../../../../../stores/shared/ModelUtil';
 
 const SimplePropertyMappingEditor = observer(
   (props: {
@@ -93,8 +96,10 @@ const EnumerationPropertyMappingEditor = observer(
       RelationalPropertyMapping,
       'Relational property mapping for enumeration type property must be a simple property mapping',
     );
-    const enumeration =
-      propertyMapping.property.value.genericType.value.getRawType(Enumeration);
+    const enumeration = getRawGenericType(
+      propertyMapping.property.value.genericType.value,
+      Enumeration,
+    );
     // Enumeration Mapping Selector
     const options = getEnumerationMappingsByEnumeration(
       mappingEditorState.mapping,

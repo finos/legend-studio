@@ -14,11 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  CORE_HASH_STRUCTURE,
-  ELEMENT_PATH_DELIMITER,
-} from '../../../../../MetaModelConst';
-import { type Hashable, hashArray } from '@finos/legend-shared';
+import type { Hashable } from '@finos/legend-shared';
 import {
   type PackageableElementVisitor,
   PackageableElement,
@@ -27,22 +23,19 @@ import {
 export class Package extends PackageableElement implements Hashable {
   children: PackageableElement[] = [];
 
-  get fullPath(): string {
-    if (!this.package) {
-      return '';
-    }
-    const parentPackageName = this.package.fullPath;
-    return !parentPackageName
-      ? this.name
-      : `${parentPackageName}${ELEMENT_PATH_DELIMITER}${this.name}`;
+  /**
+   * This logic is specific to the codebase and this is not part of the native metamodel.
+   * If needed, we can probably move this out as an utility or do type declaration merge
+   * and define this externally using `Object.defineProperty`.
+   *
+   * @internal model logic
+   */
+  override get path(): string {
+    return !this.package ? '' : super.path;
   }
 
   override get hashCode(): string {
-    return hashArray([
-      CORE_HASH_STRUCTURE.PACKAGE,
-      this.path,
-      hashArray(this.children.map((child) => child.path)),
-    ]);
+    return '';
   }
 
   accept_PackageableElementVisitor<T>(

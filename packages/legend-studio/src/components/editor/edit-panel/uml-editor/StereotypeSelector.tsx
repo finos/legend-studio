@@ -24,10 +24,11 @@ import {
 } from '@finos/legend-art';
 import type { PackageableElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';
 import { useEditorStore } from '../../EditorStoreProvider';
-import type {
-  Profile,
-  StereotypeReference,
-  Stereotype,
+import {
+  type Profile,
+  type StereotypeReference,
+  type Stereotype,
+  isStubbed_PackageableElement,
 } from '@finos/legend-graph';
 import { stereotypeReference_setValue } from '../../../../stores/graphModifier/DomainGraphModifierHelper';
 
@@ -41,8 +42,9 @@ export const StereotypeSelector = observer(
     stereotype: StereotypeReference;
     deleteStereotype: () => void;
     isReadOnly: boolean;
+    darkTheme?: boolean;
   }) => {
-    const { stereotype, deleteStereotype, isReadOnly } = props;
+    const { stereotype, deleteStereotype, isReadOnly, darkTheme } = props;
     const editorStore = useEditorStore();
     // Profile
     const profileOptions = editorStore.profileOptions.filter(
@@ -56,7 +58,7 @@ export const StereotypeSelector = observer(
     });
     const [selectedProfile, setSelectedProfile] = useState<
       PackageableElementOption<Profile>
-    >({ value: stereotype.value.owner, label: stereotype.value.owner.name });
+    >({ value: stereotype.value._OWNER, label: stereotype.value._OWNER.name });
     const changeProfile = (val: PackageableElementOption<Profile>): void => {
       if (val.value.stereotypes.length) {
         setSelectedProfile(val);
@@ -86,7 +88,11 @@ export const StereotypeSelector = observer(
       stereotypeReference_setValue(stereotype, val.value);
     return (
       <div className="stereotype-selector">
-        <div className="stereotype-selector__profile">
+        <div
+          className={`stereotype-selector__profile ${
+            darkTheme ? 'stereotype-selector-dark-theme' : ''
+          }`}
+        >
           <CustomSelectorInput
             className="stereotype-selector__profile__selector"
             disabled={isReadOnly}
@@ -95,10 +101,13 @@ export const StereotypeSelector = observer(
             value={selectedProfile}
             placeholder={'Choose a profile'}
             filterOption={filterOption}
+            darkMode={Boolean(darkTheme)}
           />
           <button
-            className="stereotype-selector__profile__visit-btn"
-            disabled={stereotype.value.owner.isStub}
+            className={`stereotype-selector__profile__visit-btn ${
+              darkTheme ? 'stereotype-selector-dark-theme' : ''
+            }`}
+            disabled={isStubbed_PackageableElement(stereotype.value._OWNER)}
             onClick={visitProfile}
             tabIndex={-1}
             title={'Visit profile'}
@@ -114,6 +123,7 @@ export const StereotypeSelector = observer(
           value={selectedStereotype}
           placeholder={'Choose a stereotype'}
           filterOption={stereotypeFilterOption}
+          darkMode={darkTheme ?? false}
         />
         {!isReadOnly && (
           <button

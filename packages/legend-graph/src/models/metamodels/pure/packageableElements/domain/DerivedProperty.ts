@@ -17,25 +17,18 @@
 import { type Hashable, hashArray, uuid } from '@finos/legend-shared';
 import { hashLambda } from '../../../../../MetaModelUtils';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
-import { Multiplicity } from './Multiplicity';
+import type { Multiplicity } from './Multiplicity';
 import type { TaggedValue } from './TaggedValue';
 import type { AbstractProperty, PropertyOwner } from './AbstractProperty';
 import type { AnnotatedElement } from './AnnotatedElement';
-import { GenericType } from './GenericType';
-import type { Class } from './Class';
-import type { Type } from './Type';
-import type { Stubable } from '../../../../../helpers/Stubable';
 import type { StereotypeReference } from './StereotypeReference';
-import {
-  type GenericTypeReference,
-  GenericTypeExplicitReference,
-} from './GenericTypeReference';
+import type { GenericTypeReference } from './GenericTypeReference';
 
 export class DerivedProperty
-  implements AbstractProperty, AnnotatedElement, Hashable, Stubable
+  implements AbstractProperty, AnnotatedElement, Hashable
 {
-  readonly uuid = uuid();
-  owner: PropertyOwner; // readonly
+  readonly _UUID = uuid();
+  readonly _OWNER: PropertyOwner;
 
   name: string;
   genericType: GenericTypeReference;
@@ -64,18 +57,7 @@ export class DerivedProperty
     this.name = name;
     this.multiplicity = multiplicity;
     this.genericType = genericType;
-    this.owner = owner;
-  }
-  static createStub = (type: Type, _class: Class): DerivedProperty =>
-    new DerivedProperty(
-      '',
-      new Multiplicity(1, 1),
-      GenericTypeExplicitReference.create(new GenericType(type)),
-      _class,
-    );
-  // the derived property is considered stub if it doesn't have a body in the lambda because without a body, it is not parsable, and should be discarded in transformer
-  get isStub(): boolean {
-    return !this.body;
+    this._OWNER = owner;
   }
 
   get hashCode(): string {

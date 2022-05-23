@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import { configure as configureReactHotkeys } from 'react-hotkeys';
 import { LegendStudioApplication } from '../components/LegendStudioApplication';
@@ -83,10 +83,11 @@ export class LegendStudio extends LegendApplication {
     await setupLegendStudioUILibrary(this.pluginManager, this.logger);
 
     // Render React application
-    ReactDOM.render(
+    const rootElement = createRoot(getRootElement());
+    rootElement.render(
       // TODO: would be great if we can have <React.StrictMode> here but since Mobx React is not ready for
-      // concurrency yet, we would have to wait until @next become official
-      // See https://github.com/mobxjs/mobx-react-lite/issues/53
+      // concurrency yet, we would have to wait
+      // See https://github.com/mobxjs/mobx/issues/2526
       <BrowserRouter basename={this.baseUrl}>
         <WebApplicationNavigatorProvider>
           <ApplicationStoreProvider
@@ -100,7 +101,6 @@ export class LegendStudio extends LegendApplication {
           </ApplicationStoreProvider>
         </WebApplicationNavigatorProvider>
       </BrowserRouter>,
-      getRootElement(),
     );
   }
 }

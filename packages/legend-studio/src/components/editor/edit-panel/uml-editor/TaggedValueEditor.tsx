@@ -27,7 +27,12 @@ import {
 } from '@finos/legend-art';
 import type { PackageableElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';
 import { useEditorStore } from '../../EditorStoreProvider';
-import type { TaggedValue, Tag, Profile } from '@finos/legend-graph';
+import {
+  type TaggedValue,
+  type Tag,
+  type Profile,
+  isStubbed_PackageableElement,
+} from '@finos/legend-graph';
 import {
   taggedValue_setValue,
   taggedValue_setTag,
@@ -43,8 +48,9 @@ export const TaggedValueEditor = observer(
     taggedValue: TaggedValue;
     deleteValue: () => void;
     isReadOnly: boolean;
+    darkTheme?: boolean;
   }) => {
-    const { taggedValue, deleteValue, isReadOnly } = props;
+    const { taggedValue, deleteValue, isReadOnly, darkTheme } = props;
     const editorStore = useEditorStore();
     // Name
     const changeValue: React.ChangeEventHandler<
@@ -63,8 +69,8 @@ export const TaggedValueEditor = observer(
     const [selectedProfile, setSelectedProfile] = useState<
       PackageableElementOption<Profile>
     >({
-      value: taggedValue.tag.value.owner,
-      label: taggedValue.tag.value.owner.name,
+      value: taggedValue.tag.value._OWNER,
+      label: taggedValue.tag.value._OWNER.name,
     });
     const changeProfile = (val: PackageableElementOption<Profile>): void => {
       if (val.value.tags.length) {
@@ -97,7 +103,11 @@ export const TaggedValueEditor = observer(
 
     return (
       <div className="tagged-value-editor">
-        <div className="tagged-value-editor__profile">
+        <div
+          className={`tagged-value-editor__profile ${
+            darkTheme ? 'tagged-value-editor-dark-theme' : ''
+          }`}
+        >
           <CustomSelectorInput
             className="tagged-value-editor__profile__selector"
             disabled={isReadOnly}
@@ -106,10 +116,15 @@ export const TaggedValueEditor = observer(
             value={selectedProfile}
             placeholder={'Choose a profile'}
             filterOption={profileFilterOption}
+            darkMode={darkTheme ?? false}
           />
           <button
-            className="tagged-value-editor__profile__visit-btn"
-            disabled={taggedValue.tag.value.owner.isStub}
+            className={`tagged-value-editor__profile__visit-btn ${
+              darkTheme ? 'tagged-value-editor-dark-theme' : ''
+            }`}
+            disabled={isStubbed_PackageableElement(
+              taggedValue.tag.value._OWNER,
+            )}
             onClick={visitProfile}
             tabIndex={-1}
             title={'Visit profile'}
@@ -125,6 +140,7 @@ export const TaggedValueEditor = observer(
           value={selectedTag}
           placeholder={'Choose a tag'}
           filterOption={tagFilterOption}
+          darkMode={Boolean(darkTheme)}
         />
         {!isReadOnly && (
           <button
@@ -144,7 +160,9 @@ export const TaggedValueEditor = observer(
         >
           {isExpanded && (
             <textarea
-              className="tagged-value-editor__value__input"
+              className={`tagged-value-editor__value__input ${
+                darkTheme ? 'tagged-value-editor-dark-theme' : ''
+              }`}
               spellCheck={false}
               disabled={isReadOnly}
               value={taggedValue.value}
@@ -154,7 +172,9 @@ export const TaggedValueEditor = observer(
           )}
           {!isExpanded && (
             <input
-              className="tagged-value-editor__value__input"
+              className={`tagged-value-editor__value__input ${
+                darkTheme ? 'tagged-value-editor-dark-theme' : ''
+              }`}
               spellCheck={false}
               disabled={isReadOnly}
               value={taggedValue.value}
@@ -163,7 +183,9 @@ export const TaggedValueEditor = observer(
             />
           )}
           <button
-            className="tagged-value-editor__value__expand-btn"
+            className={`tagged-value-editor__value__expand-btn ${
+              darkTheme ? 'tagged-value-editor-dark-theme' : ''
+            }`}
             onClick={toggleExpandedMode}
             tabIndex={-1}
             title={'Expand/Collapse'}

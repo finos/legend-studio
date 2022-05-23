@@ -22,7 +22,6 @@ import {
   type StoreConnections,
   type Runtime,
 } from '../../../../../../metamodels/pure/packageableElements/runtime/Runtime';
-import { V1_PackageableElementPointerType } from '../../../model/packageableElements/V1_PackageableElement';
 import {
   V1_initPackageableElement,
   V1_transformElementReference,
@@ -38,6 +37,7 @@ import {
 } from '../../../model/packageableElements/runtime/V1_Runtime';
 import { V1_transformConnection } from './V1_ConnectionTransformer';
 import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext';
+import { PackageableElementPointerType } from '../../../../../../../MetaModelConst';
 
 const transformStoreConnections = (
   element: StoreConnections,
@@ -45,7 +45,7 @@ const transformStoreConnections = (
 ): V1_StoreConnections => {
   const connections = new V1_StoreConnections();
   connections.store = V1_transformElementReferencePointer(
-    V1_PackageableElementPointerType.STORE,
+    PackageableElementPointerType.STORE,
     element.store,
   );
   connections.storeConnections = element.storeConnections.map((value) => {
@@ -67,7 +67,7 @@ const transformEngineRuntime = (
   );
   runtime.mappings = element.mappings.map((e) =>
     V1_transformElementReferencePointer(
-      V1_PackageableElementPointerType.MAPPING,
+      PackageableElementPointerType.MAPPING,
       e,
     ),
   );

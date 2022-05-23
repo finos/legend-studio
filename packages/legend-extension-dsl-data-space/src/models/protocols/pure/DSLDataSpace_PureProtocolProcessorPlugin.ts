@@ -60,7 +60,7 @@ import {
   V1_taggedValueSchema,
   PackageableElementExplicitReference,
   V1_PackageableElementPointer,
-  V1_PackageableElementPointerType,
+  PackageableElementPointerType,
   V1_buildTaggedValue,
   V1_transformStereotype,
   V1_transformTaggedValue,
@@ -263,11 +263,11 @@ export class DSLDataSpace_PureProtocolProcessorPlugin extends PureProtocolProces
               contextProtocol.name = execContext.name;
               contextProtocol.description = execContext.description;
               contextProtocol.mapping = new V1_PackageableElementPointer(
-                V1_PackageableElementPointerType.MAPPING,
+                PackageableElementPointerType.MAPPING,
                 execContext.mapping,
               );
               contextProtocol.defaultRuntime = new V1_PackageableElementPointer(
-                V1_PackageableElementPointerType.RUNTIME,
+                PackageableElementPointerType.RUNTIME,
                 execContext.defaultRuntime,
               );
               return contextProtocol;

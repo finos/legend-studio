@@ -213,7 +213,7 @@ export const TestContainerStateExplorer = observer(
             testState.test.asserts.map((test, idx) => (
               <TestContainerItem
                 testState={testState}
-                key={test.uuid}
+                key={test._UUID}
                 testContainer={test}
                 testIdx={idx}
                 isReadOnly={Boolean(isReadOnly)}

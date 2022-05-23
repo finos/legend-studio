@@ -17,16 +17,12 @@
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../MetaModelConst';
 import type { RawLambda } from '../../../rawValueSpecification/RawLambda';
-import type { Stubable } from '../../../../../../helpers/Stubable';
 import {
   type PropertyMappingVisitor,
   PropertyMapping,
 } from '../PropertyMapping';
 
-export class XStorePropertyMapping
-  extends PropertyMapping
-  implements Hashable, Stubable
-{
+export class XStorePropertyMapping extends PropertyMapping implements Hashable {
   /**
    * Studio does not process value specification, they are left in raw JSON form
    *
@@ -40,11 +36,6 @@ export class XStorePropertyMapping
       super.hashCode,
       this.crossExpression,
     ]);
-  }
-
-  override get isStub(): boolean {
-    // TODO figure out isStub conditions
-    return false;
   }
 
   accept_PropertyMappingVisitor<T>(visitor: PropertyMappingVisitor<T>): T {

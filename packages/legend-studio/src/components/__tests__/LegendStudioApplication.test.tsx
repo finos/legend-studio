@@ -20,7 +20,6 @@ import {
   MOBX__enableSpyOrMock,
   MOBX__disableSpyOrMock,
 } from '@finos/legend-shared';
-import { waitFor } from '@testing-library/dom';
 import {
   WebApplicationNavigator,
   TEST__provideMockedApplicationStore,
@@ -29,7 +28,7 @@ import {
   LegendApplicationComponentFrameworkProvider,
 } from '@finos/legend-application';
 import { TEST__LegendStudioStoreProvider } from '../EditorComponentTestUtils';
-import { render } from '@testing-library/react';
+import { render, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { createMemoryHistory } from 'history';
 import {
@@ -41,44 +40,50 @@ import { TEST__DepotServerClientProvider } from '@finos/legend-server-depot';
 import { TEST__getTestStudioConfig } from '../../stores/EditorStoreTestUtils';
 import { LegendStudioPluginManager } from '../../application/LegendStudioPluginManager';
 
-test(integrationTest('App header is displayed properly'), async () => {
-  const sdlcServerClient = TEST__provideMockedSDLCServerClient();
+test(
+  integrationTest('Failed to accept SDLC Terms of Service will show alert'),
+  async () => {
+    const sdlcServerClient = TEST__provideMockedSDLCServerClient();
 
-  MOBX__enableSpyOrMock();
-  jest.spyOn(sdlcServerClient, 'isAuthorized').mockResolvedValueOnce(true);
-  jest
-    .spyOn(sdlcServerClient, 'getCurrentUser')
-    .mockResolvedValueOnce({ name: 'testUser', userId: 'testUserId' });
-  jest
-    .spyOn(sdlcServerClient, 'hasAcceptedTermsOfService')
-    .mockResolvedValueOnce([]);
-  jest.spyOn(sdlcServerClient, 'getProjects').mockResolvedValue([]);
-  MOBX__disableSpyOrMock();
-  TEST__provideMockedWebApplicationNavigator();
+    MOBX__enableSpyOrMock();
+    jest.spyOn(sdlcServerClient, 'isAuthorized').mockResolvedValueOnce(true);
+    jest
+      .spyOn(sdlcServerClient, 'getCurrentUser')
+      .mockResolvedValueOnce({ name: 'testUser', userId: 'testUserId' });
+    jest
+      .spyOn(sdlcServerClient, 'hasAcceptedTermsOfService')
+      .mockResolvedValueOnce(['stubUrl']);
+    jest.spyOn(sdlcServerClient, 'getProjects').mockResolvedValue([]);
+    jest
+      .spyOn(sdlcServerClient, 'fetchServerFeaturesConfiguration')
+      .mockResolvedValue();
+    MOBX__disableSpyOrMock();
+    TEST__provideMockedWebApplicationNavigator();
 
-  const { queryByText } = render(
-    <MemoryRouter>
-      <TEST__ApplicationStoreProvider
-        config={TEST__getTestStudioConfig()}
-        pluginManager={LegendStudioPluginManager.create()}
-      >
-        <TEST__SDLCServerClientProvider>
-          <TEST__DepotServerClientProvider>
-            <TEST__LegendStudioStoreProvider>
-              <LegendApplicationComponentFrameworkProvider>
-                <LegendStudioApplicationRoot />
-              </LegendApplicationComponentFrameworkProvider>
-            </TEST__LegendStudioStoreProvider>
-          </TEST__DepotServerClientProvider>
-        </TEST__SDLCServerClientProvider>
-      </TEST__ApplicationStoreProvider>
-    </MemoryRouter>,
-  );
+    const { queryByText } = render(
+      <MemoryRouter>
+        <TEST__ApplicationStoreProvider
+          config={TEST__getTestStudioConfig()}
+          pluginManager={LegendStudioPluginManager.create()}
+        >
+          <TEST__SDLCServerClientProvider>
+            <TEST__DepotServerClientProvider>
+              <TEST__LegendStudioStoreProvider>
+                <LegendApplicationComponentFrameworkProvider>
+                  <LegendStudioApplicationRoot />
+                </LegendApplicationComponentFrameworkProvider>
+              </TEST__LegendStudioStoreProvider>
+            </TEST__DepotServerClientProvider>
+          </TEST__SDLCServerClientProvider>
+        </TEST__ApplicationStoreProvider>
+      </MemoryRouter>,
+    );
 
-  expect(
-    queryByText(TEST__getTestStudioConfig().env.toUpperCase()),
-  ).not.toBeNull();
-});
+    await waitFor(() =>
+      expect(queryByText('See terms of services')).not.toBeNull(),
+    );
+  },
+);
 
 test(integrationTest('Failed to authorize SDLC will redirect'), async () => {
   const applicationStore = TEST__provideMockedApplicationStore(
@@ -130,45 +135,3 @@ test(integrationTest('Failed to authorize SDLC will redirect'), async () => {
     ),
   );
 });
-
-test(
-  integrationTest('Failed to accept SDLC Terms of Service will show alert'),
-  async () => {
-    const sdlcServerClient = TEST__provideMockedSDLCServerClient();
-
-    MOBX__enableSpyOrMock();
-    jest.spyOn(sdlcServerClient, 'isAuthorized').mockResolvedValueOnce(true);
-    jest
-      .spyOn(sdlcServerClient, 'getCurrentUser')
-      .mockResolvedValueOnce({ name: 'testUser', userId: 'testUserId' });
-    jest
-      .spyOn(sdlcServerClient, 'hasAcceptedTermsOfService')
-      .mockResolvedValueOnce(['stubUrl']);
-    jest.spyOn(sdlcServerClient, 'getProjects').mockResolvedValue([]);
-    MOBX__disableSpyOrMock();
-    TEST__provideMockedWebApplicationNavigator();
-
-    const { queryByText } = render(
-      <MemoryRouter>
-        <TEST__ApplicationStoreProvider
-          config={TEST__getTestStudioConfig()}
-          pluginManager={LegendStudioPluginManager.create()}
-        >
-          <TEST__SDLCServerClientProvider>
-            <TEST__DepotServerClientProvider>
-              <TEST__LegendStudioStoreProvider>
-                <LegendApplicationComponentFrameworkProvider>
-                  <LegendStudioApplicationRoot />
-                </LegendApplicationComponentFrameworkProvider>
-              </TEST__LegendStudioStoreProvider>
-            </TEST__DepotServerClientProvider>
-          </TEST__SDLCServerClientProvider>
-        </TEST__ApplicationStoreProvider>
-      </MemoryRouter>,
-    );
-
-    await waitFor(() =>
-      expect(queryByText('See terms of services')).not.toBeNull(),
-    );
-  },
-);

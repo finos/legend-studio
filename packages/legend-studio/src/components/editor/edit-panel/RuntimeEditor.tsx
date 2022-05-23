@@ -92,6 +92,7 @@ import {
   RelationalDatabaseConnection,
   PackageableElementExplicitReference,
   ModelChainConnection,
+  generateIdentifiedConnectionId,
 } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
 import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../stores/DSLMapping_LegendStudioPlugin_Extension';
@@ -386,7 +387,7 @@ const RuntimeExplorer = observer(
           if (element instanceof PackageableConnection) {
             runtimeEditorState.addIdentifiedConnection(
               new IdentifiedConnection(
-                runtimeValue.generateIdentifiedConnectionId(),
+                generateIdentifiedConnectionId(runtimeValue),
                 new ConnectionPointer(
                   PackageableElementExplicitReference.create(element),
                 ),
@@ -528,7 +529,7 @@ const IdentifiedConnectionEditor = observer(
           return;
         }
         const newIdentifiedConnection = new IdentifiedConnection(
-          runtimeValue.generateIdentifiedConnectionId(),
+          generateIdentifiedConnectionId(runtimeValue),
           customConnection,
         );
         runtime_addIdentifiedConnection(
@@ -550,7 +551,7 @@ const IdentifiedConnectionEditor = observer(
           PackageableElementExplicitReference.create(val.value),
         );
         const newIdentifiedConnection = new IdentifiedConnection(
-          runtimeValue.generateIdentifiedConnectionId(),
+          generateIdentifiedConnectionId(runtimeValue),
           connectionPointer,
         );
         runtime_addIdentifiedConnection(
@@ -742,7 +743,7 @@ const IdentifiedConnectionsPerStoreEditor = observer(
                         {currentRuntimeEditorTabState.identifiedConnections.map(
                           (rtConnection) => (
                             <IdentifiedConnectionsPerStoreExplorerItem
-                              key={rtConnection.uuid}
+                              key={rtConnection._UUID}
                               identifiedConnection={rtConnection}
                               currentRuntimeEditorTabState={
                                 currentRuntimeEditorTabState
@@ -949,7 +950,7 @@ const RuntimeGeneralEditor = observer(
               <div className="panel__content__form__section__list">
                 {runtimeValue.mappings.map((mappingRef) => (
                   <RuntimeMappingEditor
-                    key={mappingRef.value.uuid}
+                    key={mappingRef.value._UUID}
                     runtimeEditorState={runtimeEditorState}
                     mappingRef={mappingRef}
                     isReadOnly={isReadOnly || isRuntimeEmbedded}

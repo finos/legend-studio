@@ -25,9 +25,13 @@ import {
 } from '@finos/legend-shared';
 import { Database } from '../../../../../../../metamodels/pure/packageableElements/store/relational/model/Database';
 import {
-  getAllIncludedDbs,
-  getDatabaseNullableFilter,
-} from '../../../../../../../../helpers/DatabaseHelper';
+  getAllIncludedDatabases,
+  getColumn,
+  getFilter,
+  getJoinType,
+  getSchema,
+  getView,
+} from '../../../../../../../../helpers/StoreRelational_Helper';
 import { Schema } from '../../../../../../../metamodels/pure/packageableElements/store/relational/model/Schema';
 import { Table } from '../../../../../../../metamodels/pure/packageableElements/store/relational/model/Table';
 import { Column } from '../../../../../../../metamodels/pure/packageableElements/store/relational/model/Column';
@@ -49,7 +53,6 @@ import {
   TableAliasColumn,
   JoinTreeNode,
   RelationalOperationElementWithJoin,
-  getJoinType,
 } from '../../../../../../../metamodels/pure/packageableElements/store/relational/model/RelationalOperationElement';
 import {
   type RelationalDataType,
@@ -164,7 +167,7 @@ export const V1_findRelation = (
   tableName: string,
 ): Relation | undefined => {
   const relations: Relation[] = [];
-  getAllIncludedDbs(database).forEach((db) => {
+  getAllIncludedDatabases(database).forEach((db) => {
     const schema = db.schemas.find((_schema) => _schema.name === schemaName);
     if (schema) {
       let relation: Relation | undefined = schema.tables.find(
@@ -183,20 +186,6 @@ export const V1_findRelation = (
     `Found multiple relations with name '${tableName}' in schema '${schemaName}' of database '${database.path}'`,
   );
   return relations.length === 0 ? undefined : relations[0];
-};
-
-const V1_findFilter = (
-  database: Database,
-  filterName: string,
-): Filter | undefined => {
-  let filter: Filter | undefined;
-  const dbs = getAllIncludedDbs(database).values();
-  let db = dbs.next();
-  while (!filter && !db.done) {
-    filter = getDatabaseNullableFilter(filterName, db.value);
-    db = dbs.next();
-  }
-  return filter;
 };
 
 export const V1_getRelation = (
@@ -270,7 +259,7 @@ export const V1_buildRelationalOperationElement = (
     }
     const columnReference = ColumnImplicitReference.create(
       context.resolveDatabase(operationalElement.table.database),
-      relation.value.getColumn(operationalElement.column),
+      getColumn(relation.value, operationalElement.column),
     );
     const tableAliasColumn = new TableAliasColumn();
     tableAliasColumn.alias = guaranteeNonNullable(aliasMap.get(aliasName));
@@ -486,7 +475,7 @@ const processFilterMapping = (
   context: V1_GraphBuilderContext,
 ): FilterMapping | undefined => {
   const srcFilter = srcFilterMapping.filter;
-  const filter = guaranteeNonNullable(V1_findFilter(ownerDb, srcFilter.name));
+  const filter = getFilter(ownerDb, srcFilter.name);
   const filterMapping = new FilterMapping(
     ownerDb,
     srcFilter.name,
@@ -509,7 +498,7 @@ const buildViewSecondPass = (
   context: V1_GraphBuilderContext,
   schema: Schema,
 ): View => {
-  const view = schema.getView(srcView.name);
+  const view = getView(schema, srcView.name);
   const columnMappings = srcView.columnMappings.map(
     (columnMapping) =>
       new ColumnMapping(
@@ -534,7 +523,7 @@ const buildViewSecondPass = (
     const filterPtr = srcView.filter.filter;
     const db = filterPtr.db
       ? context.resolveDatabase(filterPtr.db).value
-      : view.schema.owner;
+      : view.schema._OWNER;
     view.filter = processFilterMapping(srcView.filter, db, context);
   }
   if (groupByColumns.length) {
@@ -552,7 +541,7 @@ export const V1_buildDatabaseSchemaViewsFirstPass = (
   database: Database,
   context: V1_GraphBuilderContext,
 ): Schema => {
-  const schema = database.getSchema(srcSchema.name);
+  const schema = getSchema(database, srcSchema.name);
   schema.views = srcSchema.views.map((view) =>
     buildViewFirstPass(view, schema),
   );
@@ -564,7 +553,7 @@ export const V1_buildDatabaseSchemaViewsSecondPass = (
   context: V1_GraphBuilderContext,
   database: Database,
 ): Schema => {
-  const schema = database.getSchema(srcSchema.name);
+  const schema = getSchema(database, srcSchema.name);
   schema.views = srcSchema.views.map((view) =>
     buildViewSecondPass(view, context, schema),
   );

@@ -16,21 +16,15 @@
 
 import { uuid } from '@finos/legend-shared';
 import type { Profile } from './Profile';
-import type { Stubable } from '../../../../../helpers/Stubable';
 
-export class Tag implements Stubable {
-  readonly uuid = uuid();
-  owner: Profile;
+export class Tag {
+  readonly _UUID = uuid();
+  readonly _OWNER: Profile;
 
   value: string;
 
   constructor(owner: Profile, value: string) {
-    this.owner = owner;
+    this._OWNER = owner;
     this.value = value;
-  }
-
-  static createStub = (profile: Profile): Tag => new Tag(profile, '');
-  get isStub(): boolean {
-    return !this.value;
   }
 }

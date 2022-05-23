@@ -23,55 +23,15 @@ import {
   type PackageableElementVisitor,
   PackageableElement,
 } from '../PackageableElement';
-import { type Stubable, isStubArray } from '../../../../../helpers/Stubable';
 import type { MappingTest } from './MappingTest';
 import type { MappingInclude } from './MappingInclude';
 
-export class Mapping extends PackageableElement implements Hashable, Stubable {
+export class Mapping extends PackageableElement implements Hashable {
   includes: MappingInclude[] = [];
   classMappings: SetImplementation[] = [];
   enumerationMappings: EnumerationMapping[] = [];
   associationMappings: AssociationImplementation[] = [];
   tests: MappingTest[] = [];
-
-  get allOwnClassMappings(): SetImplementation[] {
-    return this.classMappings;
-  }
-
-  get allOwnEnumerationMappings(): EnumerationMapping[] {
-    return this.enumerationMappings;
-  }
-
-  /**
-   * Get all included mappings, accounted for loop and duplication (which should be caught by compiler)
-   */
-  get allIncludedMappings(): Mapping[] {
-    const visited = new Set<Mapping>();
-    visited.add(this);
-    const resolveIncludes = (_mapping: Mapping): void => {
-      _mapping.includes.forEach((incMapping) => {
-        if (!visited.has(incMapping.included.value)) {
-          visited.add(incMapping.included.value);
-          resolveIncludes(incMapping.included.value);
-        }
-      });
-    };
-    resolveIncludes(this);
-    visited.delete(this);
-    return Array.from(visited);
-  }
-
-  static createStub = (): Mapping => new Mapping('');
-
-  override get isStub(): boolean {
-    return (
-      super.isStub &&
-      // && isStubArray(this.includes)
-      isStubArray(this.associationMappings) &&
-      isStubArray(this.classMappings) &&
-      isStubArray(this.enumerationMappings)
-    );
-  }
 
   protected override get _elementHashCode(): string {
     return hashArray([

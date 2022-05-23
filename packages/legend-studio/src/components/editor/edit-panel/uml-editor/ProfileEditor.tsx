@@ -29,7 +29,13 @@ import {
 } from '@finos/legend-art';
 import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID';
 import { useEditorStore } from '../../EditorStoreProvider';
-import { type Profile, Tag, Stereotype } from '@finos/legend-graph';
+import {
+  type Profile,
+  type Tag,
+  type Stereotype,
+  stub_Tag,
+  stub_Stereotype,
+} from '@finos/legend-graph';
 import {
   profile_addTag,
   profile_addStereotype,
@@ -45,7 +51,7 @@ const TagBasicEditor = observer(
       tagStereotype_setValue(tag, event.target.value);
     };
     const isTagDuplicated = (val: Tag): boolean =>
-      tag.owner.tags.filter((t) => t.value === val.value).length >= 2;
+      tag._OWNER.tags.filter((t) => t.value === val.value).length >= 2;
 
     return (
       <div className="tag-basic-editor">
@@ -87,7 +93,7 @@ const StereotypeBasicEditor = observer(
       tagStereotype_setValue(stereotype, event.target.value);
     };
     const isStereotypeDuplicated = (val: Stereotype): boolean =>
-      stereotype.owner.stereotypes.filter((s) => s.value === val.value)
+      stereotype._OWNER.stereotypes.filter((s) => s.value === val.value)
         .length >= 2;
 
     return (
@@ -148,9 +154,9 @@ export const ProfileEditor = observer((props: { profile: Profile }) => {
   const addValue = (): void => {
     if (!isReadOnly) {
       if (selectedTab === UML_EDITOR_TAB.TAGS) {
-        profile_addTag(profile, Tag.createStub(profile));
+        profile_addTag(profile, stub_Tag(profile));
       } else if (selectedTab === UML_EDITOR_TAB.STEREOTYPES) {
-        profile_addStereotype(profile, Stereotype.createStub(profile));
+        profile_addStereotype(profile, stub_Stereotype(profile));
       }
     }
   };
@@ -210,7 +216,7 @@ export const ProfileEditor = observer((props: { profile: Profile }) => {
             <div className="panel__content__lists">
               {profile.tags.map((tag) => (
                 <TagBasicEditor
-                  key={tag.uuid}
+                  key={tag._UUID}
                   tag={tag}
                   deleteValue={deleteTag(tag)}
                   isReadOnly={isReadOnly}
@@ -222,7 +228,7 @@ export const ProfileEditor = observer((props: { profile: Profile }) => {
             <div className="panel__content__lists">
               {profile.stereotypes.map((stereotype) => (
                 <StereotypeBasicEditor
-                  key={stereotype.uuid}
+                  key={stereotype._UUID}
                   stereotype={stereotype}
                   deleteStereotype={deleteStereotype(stereotype)}
                   isReadOnly={isReadOnly}

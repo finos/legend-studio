@@ -17,9 +17,14 @@
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import { hashObjectWithoutSourceInformation } from '../../../../../MetaModelUtils';
-import { TestAssertion } from './TestAssertion';
+import { TestAssertion, type TestAssertionVisitor } from './TestAssertion';
 
 export class EqualTo extends TestAssertion implements Hashable {
+  /**
+   * Studio does not process value specification, they are left in raw JSON form
+   *
+   * @discrepancy model
+   */
   expected!: object;
 
   get hashCode(): string {
@@ -28,5 +33,9 @@ export class EqualTo extends TestAssertion implements Hashable {
       this.id,
       hashObjectWithoutSourceInformation(this.expected),
     ]);
+  }
+
+  accept_TestAssertionVisitor<T>(visitor: TestAssertionVisitor<T>): T {
+    return visitor.visit_EqualTo(this);
   }
 }

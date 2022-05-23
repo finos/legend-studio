@@ -14,24 +14,15 @@
  * limitations under the License.
  */
 
-import { type Clazz, guaranteeType, uuid } from '@finos/legend-shared';
+import { uuid } from '@finos/legend-shared';
 import type { Type } from './Type';
-import type { Stubable } from '../../../../../helpers/Stubable';
 
-export class GenericType implements Stubable {
-  readonly uuid = uuid();
+export class GenericType {
+  readonly _UUID = uuid();
+
   rawType: Type;
 
   constructor(rawType: Type) {
     this.rawType = rawType;
-  }
-
-  getRawType = <T extends Type>(clazz: Clazz<T>): T =>
-    guaranteeType<T>(this.rawType, clazz);
-
-  // NOTE: we don't have a `createStub` for GenericType because it all depends on the type passed in
-  // so might as well use constructor
-  get isStub(): boolean {
-    return this.rawType.isStub;
   }
 }

@@ -72,6 +72,8 @@ import {
   observe_Class,
   observe_Connection,
   observe_EngineRuntime,
+  getEnumValueNames,
+  getEnumValue,
 } from '@finos/legend-graph';
 import {
   addUniqueEntry,
@@ -230,9 +232,9 @@ export const enumValueMapping_updateSourceValue = action(
     if (
       sourceType instanceof Enumeration &&
       typeof val === 'string' &&
-      sourceType.getValueNames().includes(val)
+      getEnumValueNames(sourceType).includes(val)
     ) {
-      sourceValue_setValue(sourceValue, sourceType.getValue(val));
+      sourceValue_setValue(sourceValue, getEnumValue(sourceType, val));
     } else {
       // Here we update the source values depending on the source type.
       sourceValue_setValue(
@@ -335,7 +337,7 @@ export const operationMapping_deleteParameter = action(
 export const setImpl_updateRootOnCreate = action(
   (setImp: SetImplementation): void => {
     const classMappingsWithSimilarTarget = getOwnClassMappingsByClass(
-      setImp.parent,
+      setImp._PARENT,
       setImp.class.value,
     ).filter((si) => si !== setImp);
     if (classMappingsWithSimilarTarget.length) {
@@ -360,7 +362,7 @@ export const setImpl_updateRootOnCreate = action(
 export const setImpl_updateRootOnDelete = action(
   (setImp: SetImplementation): void => {
     const classMappingsWithSimilarTarget = getOwnClassMappingsByClass(
-      setImp.parent,
+      setImp._PARENT,
       setImp.class.value,
     ).filter((si) => si !== setImp);
     if (classMappingsWithSimilarTarget.length === 1) {
@@ -381,7 +383,7 @@ export const setImpl_updateRootOnDelete = action(
 export const setImpl_nominateRoot = action(
   (setImp: SetImplementation): void => {
     const classMappingsWithSimilarTarget = getOwnClassMappingsByClass(
-      setImp.parent,
+      setImp._PARENT,
       setImp.class.value,
     );
     classMappingsWithSimilarTarget.forEach((si) => {

@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-graph",
-  "version": "5.0.0",
+  "version": "6.0.1",
   "description": "Legend metamodel graph",
   "keywords": [
     "legend",
@@ -42,15 +42,15 @@
     "@finos/legend-shared": "workspace:*",
     "date-fns": "2.28.0",
     "mobx": "6.5.0",
-    "mobx-react-lite": "3.3.0",
-    "react": "17.0.2",
+    "mobx-react-lite": "3.4.0",
+    "react": "18.1.0",
     "serializr": "2.0.5"
   },
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",
     "cross-env": "7.0.3",
-    "eslint": "8.14.0",
-    "jest": "28.0.3",
+    "eslint": "8.15.0",
+    "jest": "28.1.0",
     "npm-run-all": "4.1.5",
     "rimraf": "3.0.2",
     "typescript": "4.6.4"

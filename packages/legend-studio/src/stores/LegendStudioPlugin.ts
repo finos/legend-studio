@@ -22,11 +22,13 @@ import type {
   Class,
   PackageableElement,
   ModelGenerationConfiguration,
+  Testable,
 } from '@finos/legend-graph';
 import {
   type LegendApplicationDocumentationEntry,
   LegendApplicationPlugin,
 } from '@finos/legend-application';
+import type { TestableMetadata } from './sidebar-state/testable/GlobalTestRunnerState';
 
 export type ApplicationSetup = (
   pluginManager: LegendStudioPluginManager,
@@ -65,6 +67,11 @@ export type ModelLoaderExtensionConfiguration = {
   load: (editorStore: EditorStore) => Promise<void>;
   renderer: (editorStore: EditorStore) => React.ReactNode | undefined;
 };
+
+export type TestableMetadataGetter = (
+  testable: Testable,
+  editorStore: EditorStore,
+) => TestableMetadata | undefined;
 
 export abstract class LegendStudioPlugin extends LegendApplicationPlugin {
   /**
@@ -116,6 +123,11 @@ export abstract class LegendStudioPlugin extends LegendApplicationPlugin {
    * Get the list of extension configurations for model loader.
    */
   getExtraModelLoaderExtensionConfigurations?(): ModelLoaderExtensionConfiguration[];
+
+  /**
+   * Get the list of extension for testables
+   */
+  getExtraTestableMetadata?(): TestableMetadataGetter[];
 }
 
 export type ElementTypeGetter = (
@@ -182,6 +194,28 @@ export type PureGrammarParserElementDocumentationGetter = (
 ) => LegendApplicationDocumentationEntry | undefined;
 
 /**
+ * This snippet suggestion is meant for an embedded content of an element
+ * In other words, it is used to construct element snippet suggestions
+ *
+ * Because of that, it is expected that there are text content wrapping around
+ * this snippet, so the first suggestion might not start from index 1.
+ */
+export interface ElementEmbeddedContentSnippetSuggestion {
+  /**
+   * Brief description about the suggestion item to enable the users to quickly
+   * differentiate between one suggestions from another
+   */
+  description?: string | undefined;
+  /**
+   * The snippet text to be embedded in the full snippet suggestion text for the element
+   *
+   * NOTE: The snippet syntax follows that of `monaco-editor`
+   * See https://code.visualstudio.com/docs/editor/userdefinedsnippets#_create-your-own-snippets
+   */
+  text: string;
+}
+
+/**
  * This mirrors `monaco-editor` completion item structure
  * See https://microsoft.github.io/monaco-editor/api/interfaces/monaco.languages.CompletionItem.html
  */
@@ -216,11 +250,6 @@ export type PureGrammarParserElementSnippetSuggestionsGetter = (
   editorStore: EditorStore,
   parserKeyword: string,
 ) => PureGrammarTextSuggestion[] | undefined;
-
-export type DataElementSnippetSuggestionsGetter = (
-  editorStore: EditorStore,
-  elementName: string,
-) => PureGrammarTextSuggestion[];
 
 /**
  * Studio plugins for new DSL extension.
@@ -318,9 +347,4 @@ export interface DSL_LegendStudioPlugin_Extension extends LegendStudioPlugin {
    * (e.g. Class, Enum in ###Pure)
    */
   getExtraPureGrammarParserElementSnippetSuggestionsGetters?(): PureGrammarParserElementSnippetSuggestionsGetter[];
-
-  /**
-   * Get the list of Pure grammar element suggestion snippet getters for data element
-   */
-  getExtraDataElementSnippetSuggestionsGetters?(): DataElementSnippetSuggestionsGetter[];
 }

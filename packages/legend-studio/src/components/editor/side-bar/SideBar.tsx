@@ -24,6 +24,7 @@ import { WorkspaceUpdateConflictResolver } from './WorkspaceUpdateConflictResolv
 import { ProjectOverview } from './ProjectOverview';
 import { WorkflowManager } from './WorkflowManager';
 import { useEditorStore } from '../EditorStoreProvider';
+import { GlobalTestRunner } from './testable/GlobalTestRunner';
 
 /**
  * Wrapper component around different implementations of sidebar, such as to view domain, to manage SDLC, etc.
@@ -49,6 +50,12 @@ export const SideBar = observer(() => {
         return (
           <WorkflowManager
             workflowManagerState={editorStore.workspaceWorkflowManagerState}
+          />
+        );
+      case ACTIVITY_MODE.GLOBAL_TEST_RUNNER:
+        return (
+          <GlobalTestRunner
+            globalTestRunnerState={editorStore.globalTestRunnerState}
           />
         );
       default:

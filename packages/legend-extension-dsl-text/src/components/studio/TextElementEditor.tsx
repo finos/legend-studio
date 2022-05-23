@@ -16,10 +16,7 @@
 
 import { useRef, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
-import {
-  prettyCONSTName,
-  UnsupportedOperationError,
-} from '@finos/legend-shared';
+import { prettyCONSTName } from '@finos/legend-shared';
 import { StudioTextInputEditor, useEditorStore } from '@finos/legend-studio';
 import { TextEditorState } from '../../stores/studio/TextEditorState';
 import {
@@ -30,22 +27,19 @@ import {
   MenuContentItem,
 } from '@finos/legend-art';
 import { EDITOR_LANGUAGE } from '@finos/legend-application';
-import { TEXT_TYPE } from '../../models/metamodels/pure/model/packageableElements/text/DSLText_Text';
 import {
   text_setContent,
   text_setType,
 } from '../../stores/studio/DSLText_GraphModifierHelper';
+import { TEXT_TYPE } from '../../helper/DSLText_Helper';
 
-const getTextElementEditorLanguage = (type: TEXT_TYPE): EDITOR_LANGUAGE => {
+const getTextElementEditorLanguage = (type: string): EDITOR_LANGUAGE => {
   switch (type) {
     case TEXT_TYPE.MARKDOWN:
       return EDITOR_LANGUAGE.MARKDOWN;
     case TEXT_TYPE.PLAIN_TEXT:
-      return EDITOR_LANGUAGE.TEXT;
     default:
-      throw new UnsupportedOperationError(
-        `Can't derive text editor format for text content of type '${type}'`,
-      );
+      return EDITOR_LANGUAGE.TEXT;
   }
 };
 
@@ -83,6 +77,7 @@ export const TextElementEditor = observer(() => {
             className="edit-panel__element-view"
             content={
               <MenuContent>
+                {/* TODO: account for unknown types */}
                 {Object.values(TEXT_TYPE).map((mode) => (
                   <MenuContentItem
                     key={mode}

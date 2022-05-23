@@ -192,7 +192,7 @@ export const V1_transformTableAliasToTablePointer = (
 
 export const V1_transformTableToTablePointer = (table: Table): V1_TablePtr => {
   const tablePtr = new V1_TablePtr();
-  tablePtr.database = table.schema.owner.path;
+  tablePtr.database = table.schema._OWNER.path;
   // NOTE: Sometimes, we interpret this, so to maintain roundtrip stability, we need to handle this differrently
   // See https://github.com/finos/legend-studio/issues/295
   tablePtr.mainTableDb = tablePtr.database;
@@ -373,6 +373,8 @@ const transformView = (
     const filterPointer = new V1_FilterPointer();
     filterPointer.name = element.filter.filterName;
     filter.filter = filterPointer;
+    filterPointer.db =
+      element.filter.filter.ownerReference.valueForSerialization;
     filter.joins = element.filter.joinTreeNode
       ? extractLine(element.filter.joinTreeNode).map((node) => {
           const joinPtr = new V1_JoinPointer();

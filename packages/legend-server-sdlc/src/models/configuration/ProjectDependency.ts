@@ -28,7 +28,7 @@ import { observable, action, computed, makeObservable } from 'mobx';
 const PROJECT_DEPENDENCY_HASH_STRUCTURE = 'PROJECT_DEPENDENCY';
 
 export class ProjectDependency implements Hashable {
-  uuid = uuid();
+  readonly _UUID = uuid();
   projectId: string;
   versionId: VersionId;
 

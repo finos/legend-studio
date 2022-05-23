@@ -15,7 +15,7 @@
  */
 
 import { useCallback } from 'react';
-import { clsx, Dialog, InfoCircleIcon, RefreshIcon } from '@finos/legend-art';
+import { clsx, Dialog, InfoCircleIcon } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import {
   generateMilestonedPropertyParameterValue,
@@ -43,6 +43,7 @@ import {
   Enumeration,
   PrimitiveType,
   PRIMITIVE_TYPE,
+  isSuperType,
 } from '@finos/legend-graph';
 import { QueryBuilderValueSpecificationEditor } from './QueryBuilderValueSpecificationEditor';
 import { propertyExpression_setParametersValue } from '../stores/QueryBuilderValueSpecificationModifierHelper';
@@ -83,7 +84,7 @@ const DerivedPropertyParameterValueEditor = observer(
             !monitor.didDrop() &&
             // Doing a type check, which only allows dragging and dropping parameters of the same type or of child types
             itemType &&
-            (parameterType.isSuperType(itemType) ||
+            (isSuperType(parameterType, itemType) ||
               parameterType.name === itemType.name)
           ) {
             handleDrop(item);
@@ -135,7 +136,7 @@ const DerivedPropertyParameterValueEditor = observer(
             valueSpecification={guaranteeNonNullable(
               derivedPropertyExpressionState.parameterValues[idx],
             )}
-            updateValueSpecification={(val: ValueSpecification): void => {
+            updateValue={(val: ValueSpecification): void => {
               propertyExpression_setParametersValue(
                 derivedPropertyExpressionState.propertyExpression,
                 idx + 1,
@@ -151,15 +152,8 @@ const DerivedPropertyParameterValueEditor = observer(
                 parameterType ===
                 graph.getPrimitiveType(PRIMITIVE_TYPE.DATETIME),
             }}
+            resetValue={resetParameterValue}
           />
-          <button
-            className="query-builder-filter-tree__node__action"
-            tabIndex={-1}
-            title="Reset Parameter Value"
-            onClick={resetParameterValue}
-          >
-            <RefreshIcon style={{ fontSize: '1.6rem' }} />
-          </button>
         </div>
         <div className="panel__content__form__section__list"></div>
       </div>

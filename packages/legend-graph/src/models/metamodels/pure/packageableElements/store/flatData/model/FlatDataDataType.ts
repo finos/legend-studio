@@ -20,10 +20,10 @@ import type { FlatDataSection } from './FlatDataSection';
 import type { PrimitiveType } from '../../../domain/PrimitiveType';
 
 export abstract class FlatDataDataType {
-  readonly correspondingPrimitiveType?: PrimitiveType | undefined;
+  readonly _correspondingPrimitiveType?: PrimitiveType | undefined;
 
   constructor(correspondingPrimitiveType?: PrimitiveType) {
-    this.correspondingPrimitiveType = correspondingPrimitiveType;
+    this._correspondingPrimitiveType = correspondingPrimitiveType;
   }
 
   abstract get hashCode(): string;
@@ -156,11 +156,11 @@ export class RootFlatDataRecordType
   extends FlatDataRecordType
   implements Hashable
 {
-  owner: FlatDataSection;
+  readonly _OWNER: FlatDataSection;
 
   constructor(owner: FlatDataSection) {
     super();
-    this.owner = owner;
+    this._OWNER = owner;
   }
 
   override get hashCode(): string {

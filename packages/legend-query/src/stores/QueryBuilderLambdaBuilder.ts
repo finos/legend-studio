@@ -74,7 +74,9 @@ import {
 import { getDerivedPropertyMilestoningSteoreotype } from './QueryBuilderPropertyEditorState';
 
 /**
- * TODO: @gayathrir11 let's add more doc to this
+ * Checks if the provided property expression match the criteria for default
+ * date propagation so we know whether we need to fill in values for the parameter
+ * or just propgate values from the parent's expression
  *
  * NOTE: this takes date propgation into account. See the table below for all
  * the combination:
@@ -113,7 +115,7 @@ const isDefaultDatePropagationSupported = (
   const property = currentPropertyExpression.func;
   const graph = queryBuilderState.graphManagerState.graph;
   // Default date propagation is not supported for current expression when the milestonedParameterValues of
-  // previous property expression doesn't match with the global milestonedParameterValues
+  // the previous property expression doesn't match with the global milestonedParameterValues
   if (
     prevPropertyExpression &&
     prevPropertyExpression.func.genericType.value.rawType instanceof Class
@@ -337,9 +339,7 @@ export const buildPropertyExpressionChain = (
       const parameterValues = currentExpression.parametersValues.slice(1);
       parameterValues.forEach((parameterValue, index) => {
         if (parameterValue instanceof INTERNAL__PropagatedValue) {
-          // Replace with No-Arg derived property expression only when default date propagation is supported and
-          // for `bitemporal` property check if the property expression has parameters which are not instanceof
-          // INTERNAL_PropagatedValue then pass the parameters as user explicitly changed values of one of the parameters.
+          // Replace with argumentless derived property expression only when default date propagation is supported
           if (
             isDefaultDatePropagationSupported(
               guaranteeType(currentExpression, AbstractPropertyExpression),
@@ -349,6 +349,8 @@ export const buildPropertyExpressionChain = (
                 : undefined,
             )
           ) {
+            // NOTE: For `bitemporal` property check if the property expression has parameters which are not instance of
+            // `INTERNAL_PropagatedValue` then pass the parameters as user explicitly changed values of either of the parameters.
             if (
               (index === 1 &&
                 guaranteeType(currentExpression, AbstractPropertyExpression)

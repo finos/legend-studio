@@ -48,20 +48,23 @@ import { useEditorStore } from '../EditorStoreProvider';
 import {
   type ConcreteFunctionDefinition,
   type StereotypeReference,
+  type TaggedValue,
+  type RawVariableExpression,
+  Profile,
   PRIMITIVE_TYPE,
   MULTIPLICITY_INFINITE,
-  TaggedValue,
-  Tag,
-  Profile,
-  Stereotype,
   Unit,
-  RawVariableExpression,
   Type,
   Multiplicity,
   Enumeration,
   Class,
   PrimitiveType,
   StereotypeExplicitReference,
+  stub_Tag,
+  stub_Profile,
+  stub_TaggedValue,
+  stub_Stereotype,
+  stub_RawVariableExpression,
 } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
 import { StudioLambdaEditor } from '../../shared/StudioLambdaEditor';
@@ -502,7 +505,7 @@ export const FunctionMainEditor = observer(
     const addParameter = (): void => {
       function_addParameter(
         functionElement,
-        RawVariableExpression.createStub(defaultType),
+        stub_RawVariableExpression(defaultType),
       );
     };
     const deleteParameter =
@@ -515,7 +518,7 @@ export const FunctionMainEditor = observer(
         if (!isReadOnly && item.data.packageableElement instanceof Type) {
           function_addParameter(
             functionElement,
-            RawVariableExpression.createStub(item.data.packageableElement),
+            stub_RawVariableExpression(item.data.packageableElement),
           );
         }
       },
@@ -582,7 +585,7 @@ export const FunctionMainEditor = observer(
           >
             {functionElement.parameters.map((param) => (
               <ParameterBasicEditor
-                key={param.uuid}
+                key={param._UUID}
                 parameter={param}
                 deleteParameter={deleteParameter(param)}
                 isReadOnly={isReadOnly}
@@ -657,14 +660,12 @@ export const FunctionEditor = observer(() => {
       if (selectedTab === FUNCTION_SPEC_TAB.TAGGED_VALUES) {
         annotatedElement_addTaggedValue(
           functionElement,
-          TaggedValue.createStub(Tag.createStub(Profile.createStub())),
+          stub_TaggedValue(stub_Tag(stub_Profile())),
         );
       } else if (selectedTab === FUNCTION_SPEC_TAB.STEREOTYPES) {
         annotatedElement_addStereotype(
           functionElement,
-          StereotypeExplicitReference.create(
-            Stereotype.createStub(Profile.createStub()),
-          ),
+          StereotypeExplicitReference.create(stub_Stereotype(stub_Profile())),
         );
       }
     }
@@ -674,7 +675,7 @@ export const FunctionEditor = observer(() => {
       if (!isReadOnly && item.data.packageableElement instanceof Profile) {
         annotatedElement_addTaggedValue(
           functionElement,
-          TaggedValue.createStub(Tag.createStub(item.data.packageableElement)),
+          stub_TaggedValue(stub_Tag(item.data.packageableElement)),
         );
       }
     },
@@ -696,7 +697,7 @@ export const FunctionEditor = observer(() => {
         annotatedElement_addStereotype(
           functionElement,
           StereotypeExplicitReference.create(
-            Stereotype.createStub(item.data.packageableElement),
+            stub_Stereotype(item.data.packageableElement),
           ),
         );
       }
@@ -795,7 +796,7 @@ export const FunctionEditor = observer(() => {
               >
                 {functionElement.taggedValues.map((taggedValue) => (
                   <TaggedValueEditor
-                    key={taggedValue.uuid}
+                    key={taggedValue._UUID}
                     taggedValue={taggedValue}
                     deleteValue={_deleteTaggedValue(taggedValue)}
                     isReadOnly={isReadOnly}
@@ -813,7 +814,7 @@ export const FunctionEditor = observer(() => {
               >
                 {functionElement.stereotypes.map((stereotype) => (
                   <StereotypeSelector
-                    key={stereotype.value.uuid}
+                    key={stereotype.value._UUID}
                     stereotype={stereotype}
                     deleteStereotype={_deleteStereotype(stereotype)}
                     isReadOnly={isReadOnly}

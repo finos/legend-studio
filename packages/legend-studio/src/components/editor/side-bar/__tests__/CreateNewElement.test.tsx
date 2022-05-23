@@ -28,7 +28,7 @@ import {
 } from '../../../EditorComponentTestUtils';
 import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID';
 import type { EditorStore } from '../../../../stores/EditorStore';
-import { PACKAGEABLE_ELEMENT_TYPE } from '@finos/legend-graph';
+import { PACKAGEABLE_ELEMENT_TYPE } from '../../../../stores/shared/ModelUtil';
 
 const addRootPackage = (packagePath: string, result: RenderResult): void => {
   fireEvent.click(result.getByTitle('New Element...', { exact: false }));

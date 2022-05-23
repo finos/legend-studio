@@ -18,7 +18,10 @@ import type { EditorStore } from '../EditorStore';
 import { uuid } from '@finos/legend-shared';
 
 export abstract class EditorState {
-  uuid = uuid(); // NOTE: used to detect when an element editor state changes so we can force a remount of the editor component
+  /**
+   * NOTE: used to detect when an element editor state changes so we can force a remount of the editor component
+   */
+  readonly uuid = uuid();
   editorStore: EditorStore;
 
   constructor(editorStore: EditorStore) {

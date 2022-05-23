@@ -78,6 +78,7 @@ import {
   PackageableElementExplicitReference,
   isValidFullPath,
   resolvePackagePathAndElementName,
+  getNullableFileGenerationConfig,
 } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
 import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor';
@@ -1347,7 +1348,7 @@ export const FileGenerationConfigurationEditor = observer(
     );
 
     const getConfigValue = (name: string): unknown | undefined =>
-      fileGeneration.getConfigValue(name);
+      getNullableFileGenerationConfig(fileGeneration, name)?.value;
 
     return (
       <div className="panel file-generation-editor__configuration">

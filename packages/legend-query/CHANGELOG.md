@@ -1,5 +1,34 @@
 # @finos/legend-query
 
+## 2.0.3
+
+## 2.0.2
+
+## 2.0.1
+
+## 2.0.0
+
+### Major Changes
+
+- [#1113](https://github.com/finos/legend-studio/pull/1113) [`e35042ba`](https://github.com/finos/legend-studio/commit/e35042bacf7999e8a5d9836fa6b31cf89cc66237) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Adopt `ESM` styled exports: i.e. we now make use of `exports` field (and removed `main` field) in `package.json`.
+
+### Minor Changes
+
+- [#1131](https://github.com/finos/legend-studio/pull/1131) [`d194cce7`](https://github.com/finos/legend-studio/commit/d194cce765ebc68d5494a9a645431a37bb88725e) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Support more date/time capabilities in filter.
+
+* [#891](https://github.com/finos/legend-studio/pull/891) [`8192c5fe`](https://github.com/finos/legend-studio/commit/8192c5fe0066523822266155da2024cb4eac9c37) ([@gayathrir11](https://github.com/gayathrir11)) - Support editing of milestoning properties in projection and filter.
+
+### Patch Changes
+
+- [#1103](https://github.com/finos/legend-studio/pull/1103) [`4e2811de`](https://github.com/finos/legend-studio/commit/4e2811de48f803529a2917fe9c020de1eb25f1ba) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add enumeration support for aggregation projection columns.
+  Also, aggregation operators dropdown is now disabled when there is no operations compatible with the projection type ([#1079](https://github.com/finos/legend-studio/issues/1079)).
+
+* [#1111](https://github.com/finos/legend-studio/pull/1111) [`4fc532a8`](https://github.com/finos/legend-studio/commit/4fc532a8b6b9956e4470a48f2fac6440c015ee17) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Properly show `value specification editor` for `Date` parameters of derived properties ([#1099](https://github.com/finos/legend-studio/issues/1099)).
+
+- [#1132](https://github.com/finos/legend-studio/pull/1132) [`e1054482`](https://github.com/finos/legend-studio/commit/e1054482794e9c50d310a047c16a06b8bd9acdc9) ([@akphi](https://github.com/akphi)) - Fix a problem where discarding changes in text-mode when there is a grammar parsing errors leaving a `backdrop` rendering the app unusable afterwards.
+
+* [#1107](https://github.com/finos/legend-studio/pull/1107) [`e552f5b1`](https://github.com/finos/legend-studio/commit/e552f5b12737315d7615907ad0fbb76904db0bbf) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Observe `classMilestoningTemporalValues` for milestoning parameter panel.
+
 ## 1.3.12
 
 ## 1.3.11

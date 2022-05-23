@@ -16,7 +16,6 @@
 
 import {
   type Clazz,
-  ActionState,
   UnsupportedOperationError,
   getClass,
   IllegalStateError,
@@ -65,6 +64,7 @@ import {
   getOrCreatePackage,
 } from '../helpers/DomainHelper';
 import { DataElement } from '../models/metamodels/pure/packageableElements/data/DataElement';
+import type { Testable } from '../models/metamodels/pure/test/Testable';
 
 const FORBIDDEN_EXTENSION_ELEMENT_CLASS = new Set([
   PackageableElement,
@@ -100,9 +100,6 @@ const FORBIDDEN_EXTENSION_ELEMENT_CLASS = new Set([
 export abstract class BasicModel {
   root: Package;
   readonly extensions: PureGraphExtension<PackageableElement>[] = [];
-
-  // TODO: to be moved, this is graph-manager logic and should be moved elsewhere
-  buildState = ActionState.create();
 
   private elementSectionMap = new Map<string, Section>();
 
@@ -205,6 +202,14 @@ export abstract class BasicModel {
   }
   get ownGenerationSpecifications(): GenerationSpecification[] {
     return Array.from(this.generationSpecificationsIndex.values());
+  }
+
+  get ownTestables(): Testable[] {
+    return [
+      ...this.ownServices,
+      // TODO: add mappings once supported in the backend
+      // ...this.ownMappings,
+    ];
   }
 
   getExtensionElements<T extends PackageableElement>(

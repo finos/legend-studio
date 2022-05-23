@@ -14,33 +14,14 @@
  * limitations under the License.
  */
 
-import {
-  type Hashable,
-  guaranteeNonNullable,
-  hashArray,
-} from '@finos/legend-shared';
+import { type Hashable, hashArray } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import type { FlatDataSection } from './FlatDataSection';
 import { Store } from '../../Store';
 import type { PackageableElementVisitor } from '../../../PackageableElement';
-import type { RootFlatDataRecordType } from './FlatDataDataType';
 
 export class FlatData extends Store implements Hashable {
   sections: FlatDataSection[] = [];
-
-  findSection = (sectionName: string): FlatDataSection =>
-    guaranteeNonNullable(
-      this.sections.find((section) => section.name === sectionName),
-      `Can't find section '${sectionName}' in flat-data store '${this.path}'`,
-    );
-
-  get recordTypes(): RootFlatDataRecordType[] {
-    return this.sections.flatMap((section) =>
-      section.recordType ? [section.recordType] : [],
-    );
-  }
-
-  static createStub = (): FlatData => new FlatData('');
 
   protected override get _elementHashCode(): string {
     return hashArray([

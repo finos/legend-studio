@@ -74,17 +74,17 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
   const pushLocalChanges = applicationStore.guardUnhandledError(() =>
     flowResult(editorStore.localChangesState.pushLocalChanges()),
   );
+  // TODO: we probably should refactor this, these messages are not that helpful and
+  // meant for different purposes
   const pushStatusText =
-    editorStore.graphManagerState.graph.buildState.hasFailed ||
-    editorStore.changeDetectionState.forcedStop
+    editorStore.graphManagerState.graphBuildState.hasFailed ||
+    editorStore.changeDetectionState.initState.hasFailed
       ? 'change detection halted'
-      : !editorStore.changeDetectionState.isChangeDetectionRunning
-      ? !editorStore.changeDetectionState.hasChangeDetectionStarted
-        ? 'starting change detection...'
-        : 'restarting change detection...'
-      : editorStore.changeDetectionState.workspaceLocalLatestRevisionState
+      : !editorStore.changeDetectionState.initState.hasSucceeded
+      ? editorStore.changeDetectionState.workspaceLocalLatestRevisionState
           .isBuildingEntityHashesIndex
-      ? 'building indexes...'
+        ? 'building indexes...'
+        : 'starting change detection...'
       : editorStore.localChangesState.pushChangesState.isInProgress
       ? 'pushing local changes...'
       : configurationState.isUpdatingConfiguration
@@ -99,17 +99,17 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
   const acceptConflictResolution = applicationStore.guardUnhandledError(() =>
     flowResult(editorStore.conflictResolutionState.acceptConflictResolution()),
   );
+  // TODO: we probably should refactor this, these messages are not that helpful and
+  // meant for different purposes
   const conflictResolutionStatusText =
-    editorStore.graphManagerState.graph.buildState.hasFailed ||
-    editorStore.changeDetectionState.forcedStop
+    editorStore.graphManagerState.graphBuildState.hasFailed ||
+    editorStore.changeDetectionState.initState.hasFailed
       ? 'change detection halted'
-      : !editorStore.changeDetectionState.isChangeDetectionRunning
-      ? !editorStore.changeDetectionState.hasChangeDetectionStarted
-        ? 'starting change detection...'
-        : 'restarting change detection...'
-      : editorStore.changeDetectionState.workspaceLocalLatestRevisionState
+      : !editorStore.changeDetectionState.initState.hasSucceeded
+      ? editorStore.changeDetectionState.workspaceLocalLatestRevisionState
           .isBuildingEntityHashesIndex
-      ? 'building indexes...'
+        ? 'building indexes...'
+        : 'starting change detection...'
       : editorStore.conflictResolutionState.isAcceptingConflictResolution
       ? 'submitting conflict resolution...'
       : conflicts

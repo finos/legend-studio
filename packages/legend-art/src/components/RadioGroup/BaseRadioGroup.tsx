@@ -53,13 +53,17 @@ export const BaseRadioGroup: React.FC<
           <MuiRadioGroup className="mui-radio-group__group" {...otherProps}>
             {row.map((op) => (
               <FormControlLabel
-                className="mui-radio-group__group__form-control-label"
+                className="mui-radio-group__group__column"
                 key={op}
                 value={op}
                 control={
-                  <Radio className="mui-radio-group__group__form-control-label__radio" />
+                  <Radio className="mui-radio-group__group__item__radio-btn" />
                 }
-                label={op}
+                label={
+                  <div className="mui-radio-group__group__item__label">
+                    {op}
+                  </div>
+                }
               />
             ))}
           </MuiRadioGroup>

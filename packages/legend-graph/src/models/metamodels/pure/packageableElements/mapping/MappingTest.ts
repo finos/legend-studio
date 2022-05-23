@@ -25,7 +25,7 @@ import {
 } from '../../../../../helpers/ValidationHelper';
 
 export class MappingTest implements Hashable {
-  readonly uuid = uuid();
+  readonly _UUID = uuid();
 
   name: string;
   /**
@@ -52,7 +52,8 @@ export class MappingTest implements Hashable {
   get validationResult(): ValidationIssue[] | undefined {
     let problems: ValidationIssue[] = [];
     // query
-    if (this.query.isStub) {
+    // TODO: use `isStubbed_RawLambda` when we refactor validation
+    if (!this.query.parameters && !this.query.body) {
       problems.push(
         createValidationError(['Mapping test query cannot be empty']),
       );

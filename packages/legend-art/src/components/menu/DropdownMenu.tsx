@@ -19,6 +19,7 @@ import type { MenuProps as MuiMenuProps } from '@mui/material';
 import { BaseMenu } from './BaseMenu';
 
 export const DropdownMenu: React.FC<{
+  children: React.ReactNode;
   open?: boolean | undefined;
   menuProps?: Partial<MuiMenuProps> | undefined;
   content?: React.ReactNode | undefined;

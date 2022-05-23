@@ -59,6 +59,8 @@ import {
   type SetImplementation,
   type Table,
   type View,
+  type RawLambda,
+  type RawExecutionPlan,
   extractExecutionResultValues,
   LAMBDA_PIPE,
   GRAPH_MANAGER_EVENT,
@@ -67,7 +69,6 @@ import {
   ObjectInputData,
   ObjectInputType,
   ExpectedOutputMappingTestAssert,
-  RawLambda,
   IdentifiedConnection,
   EngineRuntime,
   JsonModelConnection,
@@ -89,7 +90,9 @@ import {
   buildSourceInformationSourceId,
   PureClientVersion,
   TableAlias,
-  type RawExecutionPlan,
+  stub_RawLambda,
+  isStubbed_RawLambda,
+  generateIdentifiedConnectionId,
 } from '@finos/legend-graph';
 import {
   ActionAlertActionType,
@@ -146,7 +149,7 @@ export class MappingExecutionQueryState extends LambdaEditorState {
   }
 
   *convertLambdaObjectToGrammarString(pretty?: boolean): GeneratorFn<void> {
-    if (!this.query.isStub) {
+    if (!isStubbed_RawLambda(this.query)) {
       try {
         const lambdas = new Map<string, RawLambda>();
         lambdas.set(this.lambdaId, this.query);
@@ -182,7 +185,7 @@ export class MappingExecutionQueryState extends LambdaEditorState {
 }
 
 abstract class MappingExecutionInputDataState {
-  uuid = uuid();
+  readonly uuid = uuid();
   editorStore: EditorStore;
   mapping: Mapping;
   inputData?: InputData | undefined;
@@ -215,7 +218,7 @@ export const createRuntimeForExecution = (
   runtime_addIdentifiedConnection(
     runtime,
     new IdentifiedConnection(
-      runtime.generateIdentifiedConnectionId(),
+      generateIdentifiedConnectionId(runtime),
       connection,
     ),
     editorStore.changeDetectionState.observerContext,
@@ -317,7 +320,7 @@ export class MappingExecutionFlatDataInputDataState extends MappingExecutionInpu
       mapping,
       new FlatDataInputData(
         PackageableElementExplicitReference.create(
-          guaranteeNonNullable(rootFlatDataRecordType.owner.owner),
+          guaranteeNonNullable(rootFlatDataRecordType._OWNER._OWNER),
         ),
         '',
       ),
@@ -374,7 +377,7 @@ export class MappingExecutionRelationalInputDataState extends MappingExecutionIn
       mapping,
       new RelationalInputData(
         PackageableElementExplicitReference.create(
-          guaranteeNonNullable(tableOrView.schema.owner),
+          guaranteeNonNullable(tableOrView.schema._OWNER),
         ),
         '',
         RelationalInputType.SQL,
@@ -435,7 +438,7 @@ export class MappingExecutionRelationalInputDataState extends MappingExecutionIn
 }
 
 export class MappingExecutionState {
-  uuid = uuid();
+  readonly uuid = uuid();
   name: string;
   editorStore: EditorStore;
   mappingEditorState: MappingEditorState;
@@ -472,7 +475,7 @@ export class MappingExecutionState {
     this.name = name;
     this.queryState = new MappingExecutionQueryState(
       editorStore,
-      RawLambda.createStub(),
+      stub_RawLambda(),
     );
     this.inputDataState = new MappingExecutionEmptyInputDataState(
       editorStore,
@@ -501,7 +504,7 @@ export class MappingExecutionState {
   reset(): void {
     this.queryState = new MappingExecutionQueryState(
       this.editorStore,
-      RawLambda.createStub(),
+      stub_RawLambda(),
     );
     this.inputDataState = new MappingExecutionEmptyInputDataState(
       this.editorStore,
@@ -576,7 +579,7 @@ export class MappingExecutionState {
     try {
       const query = this.queryState.query;
       if (
-        !this.queryState.query.isStub &&
+        !isStubbed_RawLambda(this.queryState.query) &&
         this.inputDataState.isValid &&
         this.inputDataState.inputData &&
         this.executionResultText
@@ -611,7 +614,7 @@ export class MappingExecutionState {
     try {
       const query = this.queryState.query;
       if (
-        !this.queryState.query.isStub &&
+        !isStubbed_RawLambda(this.queryState.query) &&
         this.inputDataState.isValid &&
         this.executionResultText
       ) {
@@ -670,7 +673,7 @@ export class MappingExecutionState {
       const query = this.queryState.query;
       const runtime = this.inputDataState.runtime;
       if (
-        !this.queryState.query.isStub &&
+        !isStubbed_RawLambda(this.queryState.query) &&
         this.inputDataState.isValid &&
         !this.isExecuting
       ) {
@@ -712,7 +715,7 @@ export class MappingExecutionState {
       const query = this.queryState.query;
       const runtime = this.inputDataState.runtime;
       if (
-        !this.queryState.query.isStub &&
+        !isStubbed_RawLambda(this.queryState.query) &&
         this.inputDataState.isValid &&
         !this.isGeneratingPlan
       ) {
@@ -774,7 +777,7 @@ export class MappingExecutionState {
           ? this.editorStore.graphManagerState.graphManager.HACKY__createGetAllLambda(
               guaranteeType(getMappingElementTarget(setImplementation), Class),
             )
-          : RawLambda.createStub(),
+          : stub_RawLambda(),
       ),
     );
 
@@ -800,7 +803,7 @@ export class MappingExecutionState {
           );
         }
       } else {
-        this.editorStore.setActionAltertInfo({
+        this.editorStore.setActionAlertInfo({
           message: 'Mapping execution input data is already set',
           prompt: 'Do you want to regenerate the input data?',
           type: ActionAlertType.CAUTION,

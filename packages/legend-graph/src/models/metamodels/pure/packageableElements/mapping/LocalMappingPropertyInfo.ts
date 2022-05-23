@@ -18,17 +18,17 @@ import { hashArray, type Hashable } from '@finos/legend-shared';
 import type { Multiplicity } from '../domain/Multiplicity';
 import type { Type } from '../domain/Type';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
+import type { PackageableElementReference } from '../PackageableElementReference';
 
 export class LocalMappingPropertyInfo implements Hashable {
   localMappingProperty!: boolean;
-  // TODO: refactor this to use `PackageableElementReference`
-  localMappingPropertyType!: Type;
+  localMappingPropertyType!: PackageableElementReference<Type>;
   localMappingPropertyMultiplicity!: Multiplicity;
 
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.LOCAL_MAPPING_PROPERTY,
-      this.localMappingPropertyType.path,
+      this.localMappingPropertyType.hashValue,
       this.localMappingPropertyMultiplicity,
     ]);
   }

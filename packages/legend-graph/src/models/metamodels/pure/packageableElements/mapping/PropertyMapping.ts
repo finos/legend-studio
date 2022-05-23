@@ -14,16 +14,11 @@
  * limitations under the License.
  */
 
-import {
-  UnsupportedOperationError,
-  hashArray,
-  type Hashable,
-} from '@finos/legend-shared';
+import { hashArray, type Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import type { PropertyReference } from '../domain/PropertyReference';
 import type { PropertyMappingsImplementation } from './PropertyMappingsImplementation';
 import type { SetImplementation } from './SetImplementation';
-import type { Stubable } from '../../../../../helpers/Stubable';
 import type { PurePropertyMapping } from '../store/modelToModel/mapping/PurePropertyMapping';
 import type { FlatDataPropertyMapping } from '../store/flatData/mapping/FlatDataPropertyMapping';
 import type { EmbeddedFlatDataPropertyMapping } from '../store/flatData/mapping/EmbeddedFlatDataPropertyMapping';
@@ -60,17 +55,29 @@ export interface PropertyMappingVisitor<T> {
   visit_XStorePropertyMapping(propertyMapping: XStorePropertyMapping): T;
 }
 
-export abstract class PropertyMapping implements Hashable, Stubable {
-  readonly isEmbedded: boolean = false;
+export abstract class PropertyMapping implements Hashable {
+  /**
+   * the immediate parent instance set implementation that holds the property mappings
+   */
+  readonly _OWNER: PropertyMappingsImplementation;
+  readonly _isEmbedded: boolean = false;
+
   property: PropertyReference;
-  owner: PropertyMappingsImplementation; // the immediate parent instance set implementation that holds the property mappings
-  // NOTE: in case the holder of this property mapping is an embedded property mapping, that embedded property mapping is considered the source
-  // otherwise, it is always the top/root `InstanceSetImplementation` that is considered the source implementation
-  // TODO: change this to use `SetImplemenetationReference`
+  /**
+   * NOTE: in case the holder of this property mapping is an embedded property mapping,
+   * that embedded property mapping is considered the source otherwise, it is always
+   * the top/root `InstanceSetImplementation` that is considered the source implementation
+   *
+   * TODO: change this to use `SetImplemenetationReference`
+   */
   sourceSetImplementation: SetImplementation;
-  // NOTE: in Pure, we actually only store `targetId` and `sourceId` instead of the reference
-  // but for convenience and graph completeness validation purpose we will resolve to the actual set implementations here
-  // TODO: change this to use `OptionalSetImplemenetationReference`
+  /**
+   * NOTE: in Pure, we actually only store `targetId` and `sourceId` instead of the
+   * reference but for convenience and graph completeness validation purpose we will
+   * resolve to the actual set implementations here
+   *
+   * TODO: change this to use `OptionalSetImplemenetationReference`
+   */
   targetSetImplementation?: SetImplementation | undefined;
   localMappingProperty?: LocalMappingPropertyInfo | undefined;
   // store?: Store | undefined;
@@ -81,14 +88,10 @@ export abstract class PropertyMapping implements Hashable, Stubable {
     source: SetImplementation,
     target?: SetImplementation,
   ) {
-    this.owner = owner;
+    this._OWNER = owner;
     this.sourceSetImplementation = source;
     this.targetSetImplementation = target;
     this.property = property;
-  }
-
-  get isStub(): boolean {
-    throw new UnsupportedOperationError();
   }
 
   get hashCode(): string {

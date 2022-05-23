@@ -21,5 +21,5 @@ export interface PropertyOwnerImplementation {
   id: InferableMappingElementIdValue;
   // TODO: consider changing this to object ref instead of ID
   // superSetImplementationId?: string | undefined;
-  parent: Mapping;
+  _PARENT: Mapping;
 }

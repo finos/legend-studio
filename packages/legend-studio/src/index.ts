@@ -46,6 +46,7 @@ export * from './stores/graphModifier/GraphModifierHelper';
 export * from './stores/graphModifier/DomainGraphModifierHelper';
 export * from './stores/DSLMapping_LegendStudioPlugin_Extension';
 export * from './stores/DSLService_LegendStudioPlugin_Extension';
+export * from './stores/DSLData_LegendStudioPlugin_Extension';
 export * from './stores/graphModifier/DSLGeneration_GraphModifierHelper';
 export * from './stores/graphModifier/DSLService_GraphModifierHelper';
 
@@ -74,6 +75,14 @@ export { MappingElementState } from './stores/editor-state/element-editor-state/
 export { UnsupportedInstanceSetImplementationState } from './stores/editor-state/element-editor-state/mapping/UnsupportedInstanceSetImplementationState';
 export { getElementIcon } from './components/shared/ElementIconUtils';
 
+// TO BE REMOVED: this is currently needed for project dependency dashboard
+export {
+  SetupStoreProvider,
+  useSetupStore,
+} from './components/setup/SetupStoreProvider';
+export { SetupStore } from './stores/SetupStore';
+export { ProjectSelector } from './components/setup/ProjectSelector';
+
 // --------------------------------------------- TO BE MODULARIZED --------------------------------------------------
 
 export {
@@ -90,3 +99,13 @@ export { NewServiceModal } from './components/editor/edit-panel/service-editor/N
 export { GenerationFile } from './stores/shared/FileGenerationTreeUtil';
 export { FileGenerationState } from './stores/editor-state/FileGenerationState';
 export { DSLExternalFormat_LegendStudioPlugin } from './components/DSLExternalFormat_LegendStudioPlugin';
+export {
+  EmbeddedDataState,
+  type EmbeddedDataTypeOption,
+  ExternalFormatDataState,
+} from './stores/editor-state/element-editor-state/data/DataEditorState';
+export {
+  externalFormatData_setData,
+  externalFormatData_setContentType,
+} from './stores/graphModifier/DSLData_GraphModifierHelper';
+export { ExternalFormatDataEditor } from './components/editor/edit-panel/data-editor/DataElementEditor';

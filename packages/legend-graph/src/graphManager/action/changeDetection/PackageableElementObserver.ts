@@ -62,7 +62,7 @@ import { observe_Service } from './DSLService_ObserverHelper';
 import { observe_FlatData } from './StoreFlatData_ObserverHelper';
 import { observe_Database } from './StoreRelational_ObserverHelper';
 import type { DataElement } from '../../../models/metamodels/pure/packageableElements/data/DataElement';
-import { observe_DataElement } from './Data_ObserverHelper';
+import { observe_DataElement } from './DSLData_ObserverHelper';
 
 class PackageableElementObserver implements PackageableElementVisitor<void> {
   observerContext: ObserverContext;

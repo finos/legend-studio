@@ -14,16 +14,11 @@
  * limitations under the License.
  */
 
-import {
-  type Hashable,
-  hashArray,
-  guaranteeNonNullable,
-  filterByType,
-} from '@finos/legend-shared';
+import { type Hashable, hashArray } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import type { ColumnMapping } from './ColumnMapping';
 import type { Schema } from './Schema';
-import { Column } from './Column';
+import type { Column } from './Column';
 import {
   type RelationalMappingSpecification,
   NamedRelation,
@@ -46,14 +41,6 @@ export class View
     super(name);
     this.schema = schema;
   }
-
-  getColumn = (name: string): Column =>
-    guaranteeNonNullable(
-      this.columns
-        .filter(filterByType(Column))
-        .find((column) => column.name === name),
-      `Can't find column '${name}' in table '${this.name}'`,
-    );
 
   override get hashCode(): string {
     return hashArray([

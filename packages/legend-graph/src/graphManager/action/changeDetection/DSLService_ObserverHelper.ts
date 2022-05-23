@@ -38,7 +38,7 @@ import {
 import { observe_RawLambda } from './RawValueSpecificationObserver';
 import { observe_Runtime } from './DSLMapping_ObserverHelper';
 import type { ConnectionTestData } from '../../../models/metamodels/pure/packageableElements/service/ConnectionTestData';
-import { observe_EmbeddedData } from './Data_ObserverHelper';
+import { observe_EmbeddedData } from './DSLData_ObserverHelper';
 import type { ParameterValue } from '../../../models/metamodels/pure/packageableElements/service/ParameterValue';
 import {
   type DEPRECATED__ServiceTest,
@@ -52,8 +52,7 @@ import type { TestData } from '../../../models/metamodels/pure/packageableElemen
 import {
   observe_AtomicTest,
   observe_TestAssertion,
-  observe_TestSuite,
-} from './Test_ObserverHelper';
+} from './Testable_ObserverHelper';
 
 export const observe_ConnectionTestData = skipObservedWithContext(
   (
@@ -296,10 +295,7 @@ export const observe_Service = skipObservedWithContext(
     if (metamodel.test) {
       observe_ServiceTest_Legacy(metamodel.test);
     }
-    metamodel.tests.forEach((testSuite) =>
-      observe_TestSuite(testSuite, context),
-    );
-
+    metamodel.tests.forEach((m) => observe_ServiceTestSuite(m, context));
     return metamodel;
   },
 );

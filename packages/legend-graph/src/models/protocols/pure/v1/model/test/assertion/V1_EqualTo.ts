@@ -17,7 +17,10 @@
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import { hashObjectWithoutSourceInformation } from '../../../../../../../MetaModelUtils';
-import { V1_TestAssertion } from './V1_TestAssertion';
+import {
+  V1_TestAssertion,
+  type V1_TestAssertionVisitor,
+} from './V1_TestAssertion';
 
 export class V1_EqualTo extends V1_TestAssertion implements Hashable {
   expected!: object;
@@ -28,5 +31,9 @@ export class V1_EqualTo extends V1_TestAssertion implements Hashable {
       this.id,
       hashObjectWithoutSourceInformation(this.expected),
     ]);
+  }
+
+  accept_TestAssertionVisitor<T>(visitor: V1_TestAssertionVisitor<T>): T {
+    return visitor.visit_EqualTo(this);
   }
 }

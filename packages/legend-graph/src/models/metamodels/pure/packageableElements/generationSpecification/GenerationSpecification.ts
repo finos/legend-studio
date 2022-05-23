@@ -14,16 +14,18 @@
  * limitations under the License.
  */
 
-import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
+import {
+  CORE_HASH_STRUCTURE,
+  PackageableElementPointerType,
+} from '../../../../../MetaModelConst';
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import {
   type PackageableElementVisitor,
   PackageableElement,
-  PACKAGEABLE_ELEMENT_POINTER_TYPE,
-  getElementPointerHashCode,
 } from '../PackageableElement';
 import type { PackageableElementReference } from '../PackageableElementReference';
 import type { FileGenerationSpecification } from '../fileGeneration/FileGenerationSpecification';
+import { hashElementPointer } from '../../../../../MetaModelUtils';
 
 // NOTE: As of now the tree only supports a linear order of generation. This is because the only use case is linear,
 // but the shape has been left as a tree to support 'branching' off in the future.
@@ -68,8 +70,8 @@ export class GenerationSpecification
       hashArray(this.generationNodes),
       hashArray(
         this.fileGenerations.map((fileGeneration) =>
-          getElementPointerHashCode(
-            PACKAGEABLE_ELEMENT_POINTER_TYPE.FILE_GENERATION,
+          hashElementPointer(
+            PackageableElementPointerType.FILE_GENERATION,
             fileGeneration.hashValue,
           ),
         ),

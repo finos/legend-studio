@@ -37,11 +37,12 @@ import {
   type CompilationError,
   type SourceInformation,
   RelationalPropertyMapping,
-  createStubRelationalOperationElement,
   ParserError,
   GRAPH_MANAGER_EVENT,
   EmbeddedRelationalInstanceSetImplementation,
   buildSourceInformationSourceId,
+  isStubbed_RawRelationalOperationElement,
+  stub_RawRelationalOperationElement,
 } from '@finos/legend-graph';
 
 export class RelationalPropertyMappingState extends PropertyMappingState {
@@ -67,9 +68,9 @@ export class RelationalPropertyMappingState extends PropertyMappingState {
     // NOTE: Added the index here just in case but the order needs to be checked carefully as bugs may result from inaccurate orderings
     return buildSourceInformationSourceId(
       [
-        this.propertyMapping.owner.parent.path,
+        this.propertyMapping._OWNER._PARENT.path,
         MAPPING_ELEMENT_SOURCE_ID_LABEL.RELATIONAL_CLASS_MAPPING,
-        this.propertyMapping.owner.id.value,
+        this.propertyMapping._OWNER.id.value,
         this.propertyMapping.property.value.name,
         this.propertyMapping.targetSetImplementation?.id.value,
         this.uuid, // in case of duplications
@@ -78,7 +79,7 @@ export class RelationalPropertyMappingState extends PropertyMappingState {
   }
 
   *convertLambdaGrammarStringToObject(): GeneratorFn<void> {
-    const stubOperation = createStubRelationalOperationElement();
+    const stubOperation = stub_RawRelationalOperationElement();
     if (this.lambdaString) {
       try {
         const operation =
@@ -110,7 +111,7 @@ export class RelationalPropertyMappingState extends PropertyMappingState {
 
   *convertLambdaObjectToGrammarString(pretty: boolean): GeneratorFn<void> {
     if (this.propertyMapping instanceof RelationalPropertyMapping) {
-      if (!this.propertyMapping.isStub) {
+      if (!isStubbed_RawRelationalOperationElement(this.propertyMapping)) {
         try {
           const operations = new Map<string, RawRelationalOperationElement>();
           operations.set(
@@ -310,7 +311,9 @@ export class RootRelationalInstanceSetImplementationState extends RelationalInst
     this.propertyMappingStates.forEach((pmState) => {
       if (
         pmState.propertyMapping instanceof RelationalPropertyMapping &&
-        !pmState.propertyMapping.isStub
+        !isStubbed_RawRelationalOperationElement(
+          pmState.propertyMapping.relationalOperation,
+        )
       ) {
         operations.set(
           pmState.lambdaId,

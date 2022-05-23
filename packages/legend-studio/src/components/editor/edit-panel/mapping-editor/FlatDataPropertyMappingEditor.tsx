@@ -38,15 +38,18 @@ import { type ConnectDropTarget, useDrop } from 'react-dnd';
 import { useEditorStore } from '../../EditorStoreProvider';
 import { guaranteeType } from '@finos/legend-shared';
 import {
-  CLASS_PROPERTY_TYPE,
-  getClassPropertyType,
   Enumeration,
   EnumerationMapping,
   FlatDataPropertyMapping,
   getEnumerationMappingsByEnumeration,
+  getRawGenericType,
 } from '@finos/legend-graph';
 import { StudioLambdaEditor } from '../../../shared/StudioLambdaEditor';
 import { flatDataPropertyMapping_setTransformer } from '../../../../stores/graphModifier/StoreFlatData_GraphModifierHelper';
+import {
+  CLASS_PROPERTY_TYPE,
+  getClassPropertyType,
+} from '../../../../stores/shared/ModelUtil';
 
 const SimplePropertyMappingEditor = observer(
   (props: {
@@ -65,7 +68,7 @@ const SimplePropertyMappingEditor = observer(
       propertyMapping.property.value.genericType.value.rawType;
     const canDrop =
       dragItem &&
-      dragItem.data.field.flatDataDataType.correspondingPrimitiveType ===
+      dragItem.data.field.flatDataDataType._correspondingPrimitiveType ===
         expectedType;
     const onExpectedTypeLabelSelect = (): void =>
       propertyMappingState.instanceSetImplementationState.setSelectedType(
@@ -115,8 +118,10 @@ const EnumerationPropertyMappingEditor = observer(
       FlatDataPropertyMapping,
       'Flat-data property mapping for enumeration type property must be a simple property mapping',
     );
-    const enumeration =
-      propertyMapping.property.value.genericType.value.getRawType(Enumeration);
+    const enumeration = getRawGenericType(
+      propertyMapping.property.value.genericType.value,
+      Enumeration,
+    );
     const expectedType = propertyMapping.transformer
       ? propertyMapping.transformer.sourceType.value
       : enumeration;
@@ -165,8 +170,8 @@ const EnumerationPropertyMappingEditor = observer(
     };
     // Drag and Drop
     const canDrop =
-      dragItem?.data.field.flatDataDataType.correspondingPrimitiveType &&
-      dragItem.data.field.flatDataDataType.correspondingPrimitiveType ===
+      dragItem?.data.field.flatDataDataType._correspondingPrimitiveType &&
+      dragItem.data.field.flatDataDataType._correspondingPrimitiveType ===
         expectedType;
 
     return (

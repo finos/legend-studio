@@ -64,6 +64,7 @@ import {
   type PackageableElement,
   type InputData,
   type Type,
+  type EmbeddedSetImplementation,
   getAllClassMappings,
   GRAPH_MANAGER_EVENT,
   PRIMITIVE_TYPE,
@@ -74,7 +75,6 @@ import {
   Enumeration,
   Mapping,
   EnumerationMapping,
-  BASIC_SET_IMPLEMENTATION_TYPE,
   SetImplementation,
   PureInstanceSetImplementation,
   MappingTest,
@@ -100,6 +100,8 @@ import {
   AssociationImplementation,
   InferableMappingElementIdExplicitValue,
   InferableMappingElementRootExplicitValue,
+  stub_Class,
+  findPropertyMapping,
 } from '@finos/legend-graph';
 import { LambdaEditorState } from '@finos/legend-application';
 import type {
@@ -120,6 +122,7 @@ import {
   setImpl_updateRootOnCreate,
   setImpl_updateRootOnDelete,
 } from '../../../graphModifier/DSLMapping_GraphModifierHelper';
+import { BASIC_SET_IMPLEMENTATION_TYPE } from '../../../shared/ModelUtil';
 
 export interface MappingExplorerTreeNodeData extends TreeNodeData {
   mappingElement: MappingElement;
@@ -391,14 +394,29 @@ export const createEnumerationMapping = (
   return enumMapping;
 };
 
-// We use get `own` Class mapping as embedded set implementations can only be within the
+export const getEmbeddedSetImplementations = (
+  setImpl: InstanceSetImplementation,
+): InstanceSetImplementation[] => {
+  const embeddedPropertyMappings = setImpl.propertyMappings.filter(
+    // NOTE: we use this convenient flag to check if something is embedded mapping or not
+    // however, in reality, we can check for presence of `propertyMappings`, or more overkill
+    // do an extension mechanism to figure this out, for example, do an extension mechanism
+    // to check if an instance set implementation is embedded or not
+    (pm) => pm._isEmbedded,
+  ) as EmbeddedSetImplementation[];
+  return embeddedPropertyMappings
+    .flatMap(getEmbeddedSetImplementations)
+    .concat(embeddedPropertyMappings);
+};
+
+// We only care to get `own` class mapping as embedded set implementations can only be within the
 // current class mapping i.e current mapping.
-const getEmbeddedSetImplmentations = (
+const getMappingEmbeddedSetImplementations = (
   mapping: Mapping,
 ): InstanceSetImplementation[] =>
-  mapping.allOwnClassMappings
+  mapping.classMappings
     .filter(filterByType(InstanceSetImplementation))
-    .map((setImpl) => setImpl.getEmbeddedSetImplmentations())
+    .map(getEmbeddedSetImplementations)
     .flat();
 
 /* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
@@ -413,7 +431,7 @@ const getMappingElementByTypeAndId = (
     case MAPPING_ELEMENT_SOURCE_ID_LABEL.OPERATION_CLASS_MAPPING:
     case MAPPING_ELEMENT_SOURCE_ID_LABEL.AGGREGATION_AWARE_CLASS_MAPPING:
     case MAPPING_ELEMENT_SOURCE_ID_LABEL.PURE_INSTANCE_CLASS_MAPPING:
-      return mapping.allOwnClassMappings.find(
+      return mapping.classMappings.find(
         (classMapping) => classMapping.id.value === id,
       );
     case MAPPING_ELEMENT_SOURCE_ID_LABEL.FLAT_DATA_CLASS_MAPPING:
@@ -421,7 +439,7 @@ const getMappingElementByTypeAndId = (
         getAllClassMappings(mapping).find(
           (classMapping) => classMapping.id.value === id,
         ) ??
-        getEmbeddedSetImplmentations(mapping)
+        getMappingEmbeddedSetImplementations(mapping)
           .filter(filterByType(EmbeddedFlatDataPropertyMapping))
           .find((me) => me.id.value === id)
       );
@@ -430,7 +448,7 @@ const getMappingElementByTypeAndId = (
         getAllClassMappings(mapping).find(
           (classMapping) => classMapping.id.value === id,
         ) ??
-        getEmbeddedSetImplmentations(mapping)
+        getMappingEmbeddedSetImplementations(mapping)
           .filter(filterByType(EmbeddedRelationalInstanceSetImplementation))
           .find((me) => me.id.value === id)
       );
@@ -850,8 +868,8 @@ export class MappingEditorState extends ElementEditorState {
       return;
     }
     // Open mapping element from included mapping in another mapping editor tab
-    if (mappingElement.parent !== this.element) {
-      this.editorStore.openElement(mappingElement.parent);
+    if (mappingElement._PARENT !== this.element) {
+      this.editorStore.openElement(mappingElement._PARENT);
     }
     const currentMappingEditorState =
       this.editorStore.getCurrentEditorState(MappingEditorState);
@@ -911,7 +929,7 @@ export class MappingEditorState extends ElementEditorState {
       } else if (
         setImplementation instanceof FlatDataInstanceSetImplementation &&
         newSource instanceof RootFlatDataRecordType &&
-        !setImplementation.getEmbeddedSetImplmentations().length
+        !getEmbeddedSetImplementations(setImplementation).length
       ) {
         flatData_setSourceRootRecordType(setImplementation, newSource);
       } else {
@@ -992,7 +1010,7 @@ export class MappingEditorState extends ElementEditorState {
         mappingElement,
       )
     ) {
-      const embeddedChildren = mappingElement.getEmbeddedSetImplmentations();
+      const embeddedChildren = getEmbeddedSetImplementations(mappingElement);
       mappingElementsToClose = mappingElementsToClose.concat(embeddedChildren);
     }
     const matchMappingElementState = (
@@ -1018,11 +1036,11 @@ export class MappingEditorState extends ElementEditorState {
     } else if (mappingElement instanceof AssociationImplementation) {
       mapping_deleteAssociationMapping(this.mapping, mappingElement);
     } else if (mappingElement instanceof EmbeddedFlatDataPropertyMapping) {
-      deleteEntry(mappingElement.owner.propertyMappings, mappingElement);
+      deleteEntry(mappingElement._OWNER.propertyMappings, mappingElement);
     } else if (
       mappingElement instanceof EmbeddedRelationalInstanceSetImplementation
     ) {
-      deleteEntry(mappingElement.owner.propertyMappings, mappingElement);
+      deleteEntry(mappingElement._OWNER.propertyMappings, mappingElement);
     } else if (mappingElement instanceof SetImplementation) {
       mapping_deleteClassMapping(this.mapping, mappingElement);
     }
@@ -1226,7 +1244,8 @@ export class MappingEditorState extends ElementEditorState {
             newMappingElement instanceof FlatDataInstanceSetImplementation ||
             newMappingElement instanceof EmbeddedFlatDataPropertyMapping
           ) {
-            const propertyMapping = newMappingElement.findPropertyMapping(
+            const propertyMapping = findPropertyMapping(
+              newMappingElement,
               guaranteeNonNullable(
                 propertyName,
                 `Can't reveal compilation error: mapping property name is missing`,
@@ -1447,9 +1466,7 @@ export class MappingEditorState extends ElementEditorState {
     let inputData: InputData;
     if (source === undefined || source instanceof Class) {
       inputData = new ObjectInputData(
-        PackageableElementExplicitReference.create(
-          source ?? Class.createStub(),
-        ),
+        PackageableElementExplicitReference.create(source ?? stub_Class()),
         ObjectInputType.JSON,
         source
           ? createMockDataForMappingElementSource(source, this.editorStore)
@@ -1457,7 +1474,7 @@ export class MappingEditorState extends ElementEditorState {
       );
     } else if (source instanceof RootFlatDataRecordType) {
       inputData = new FlatDataInputData(
-        PackageableElementExplicitReference.create(source.owner.owner),
+        PackageableElementExplicitReference.create(source._OWNER._OWNER),
         createMockDataForMappingElementSource(source, this.editorStore),
       );
     } else if (source instanceof TableAlias) {

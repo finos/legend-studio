@@ -27,7 +27,7 @@ import type {
 } from './QueryBuilderPostFilterState';
 
 export abstract class QueryBuilderPostFilterOperator {
-  uuid = uuid();
+  readonly uuid = uuid();
 
   abstract getLabel(): string;
 

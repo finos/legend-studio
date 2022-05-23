@@ -50,6 +50,7 @@ import {
   StaticDatasourceSpecification,
   RedshiftDatasourceSpecification,
   createValidationError,
+  isStubbed_PackageableElement,
 } from '@finos/legend-graph';
 import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../DSLMapping_LegendStudioPlugin_Extension';
 import {
@@ -118,7 +119,7 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
   }
 
   get storeValidationResult(): ValidationIssue | undefined {
-    return this.connection.store.value.isStub
+    return isStubbed_PackageableElement(this.connection.store.value)
       ? createValidationError(['Connection database cannot be empty'])
       : undefined;
   }
@@ -390,7 +391,10 @@ export class UnsupportedConnectionValueState extends ConnectionValueState {
 }
 
 export class ConnectionEditorState {
-  uuid = uuid(); // NOTE: used to force component remount on state change
+  /**
+   * NOTE: used to force component remount on state change
+   */
+  readonly uuid = uuid();
   editorStore: EditorStore;
   connection: Connection;
   connectionValueState: ConnectionValueState;

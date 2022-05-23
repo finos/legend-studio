@@ -81,6 +81,9 @@ import {
   PureClientVersion,
   TableAlias,
   type RawExecutionPlan,
+  isStubbed_RawLambda,
+  stub_Class,
+  generateIdentifiedConnectionId,
 } from '@finos/legend-graph';
 import { LambdaEditorState, TAB_SIZE } from '@finos/legend-application';
 import { flatData_setData } from '../../../graphModifier/StoreFlatData_GraphModifierHelper';
@@ -141,7 +144,7 @@ export class MappingTestQueryState extends LambdaEditorState {
   }
 
   *convertLambdaObjectToGrammarString(pretty?: boolean): GeneratorFn<void> {
-    if (!this.query.isStub) {
+    if (!isStubbed_RawLambda(this.query)) {
       try {
         const lambdas = new Map<string, RawLambda>();
         lambdas.set(this.lambdaId, this.query);
@@ -177,7 +180,7 @@ export class MappingTestQueryState extends LambdaEditorState {
 }
 
 abstract class MappingTestInputDataState {
-  uuid = uuid();
+  readonly uuid = uuid();
   editorStore: EditorStore;
   mapping: Mapping;
   inputData: InputData;
@@ -252,7 +255,7 @@ export class MappingTestObjectInputDataState extends MappingTestInputDataState {
     runtime_addIdentifiedConnection(
       runtime,
       new IdentifiedConnection(
-        runtime.generateIdentifiedConnectionId(),
+        generateIdentifiedConnectionId(runtime),
         connection,
       ),
       this.editorStore.changeDetectionState.observerContext,
@@ -285,7 +288,7 @@ export class MappingTestFlatDataInputDataState extends MappingTestInputDataState
     runtime_addIdentifiedConnection(
       runtime,
       new IdentifiedConnection(
-        runtime.generateIdentifiedConnectionId(),
+        generateIdentifiedConnectionId(runtime),
         connection,
       ),
       this.editorStore.changeDetectionState.observerContext,
@@ -330,7 +333,7 @@ export class MappingTestRelationalInputDataState extends MappingTestInputDataSta
     runtime_addIdentifiedConnection(
       runtime,
       new IdentifiedConnection(
-        runtime.generateIdentifiedConnectionId(),
+        generateIdentifiedConnectionId(runtime),
         connection,
       ),
       this.editorStore.changeDetectionState.observerContext,
@@ -340,7 +343,7 @@ export class MappingTestRelationalInputDataState extends MappingTestInputDataSta
 }
 
 abstract class MappingTestAssertionState {
-  uuid = uuid();
+  readonly uuid = uuid();
   assert: MappingTestAssert;
 
   constructor(assert: MappingTestAssert) {
@@ -389,7 +392,7 @@ export enum MAPPING_TEST_EDITOR_TAB_TYPE {
 }
 
 export class MappingTestState {
-  uuid = uuid();
+  readonly uuid = uuid();
   selectedTab = MAPPING_TEST_EDITOR_TAB_TYPE.SETUP;
   editorStore: EditorStore;
   mappingEditorState: MappingEditorState;
@@ -527,9 +530,7 @@ export class MappingTestState {
         this.editorStore,
         this.mappingEditorState.mapping,
         new ObjectInputData(
-          PackageableElementExplicitReference.create(
-            source ?? Class.createStub(),
-          ),
+          PackageableElementExplicitReference.create(source ?? stub_Class()),
           ObjectInputType.JSON,
           tryToMinifyJSONString('{}'),
         ),
@@ -549,7 +550,7 @@ export class MappingTestState {
         this.mappingEditorState.mapping,
         new FlatDataInputData(
           PackageableElementExplicitReference.create(
-            guaranteeNonNullable(source.owner.owner),
+            guaranteeNonNullable(source._OWNER._OWNER),
           ),
           '',
         ),

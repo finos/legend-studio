@@ -35,16 +35,23 @@ import {
   type MappingElementSourceGetter,
   type MappingElementSource,
   type ElementIconGetter,
+  type DSLData_LegendStudioPlugin_Extension,
+  type EmbeddedDataTypeOption,
   type PureGrammarTextSuggestion,
   type PureGrammarParserElementSnippetSuggestionsGetter,
   type PureGrammarParserKeywordSuggestionGetter,
   type PureGrammarParserDocumentationGetter,
   type PureGrammarParserElementDocumentationGetter,
-  type DataElementSnippetSuggestionsGetter,
+  type EmbeddedDataSnippetSuggestion,
+  type EmbeddedDataEditorStateBuilder,
+  type EmbeddedDataState,
+  type EmbeddedDataEditorRenderer,
+  type EmbeddedDataCreator,
 } from '@finos/legend-studio';
 import { SwaggerIcon } from '@finos/legend-art';
 import type {
   Connection,
+  EmbeddedData,
   PackageableElement,
   SetImplementation,
 } from '@finos/legend-graph';
@@ -66,23 +73,26 @@ import {
 } from './ESService_LegendStudioDocumentation';
 import {
   BLANK_SERVICE_STORE_SNIPPET,
-  DATA_ELEMENT_WITH_SERVICE_STORE_DATA,
-  DATA_ELEMENT_WITH_SERVICE_STORE_DATA_WITH_BODY_PATTERNS,
-  DATA_ELEMENT_WITH_SERVICE_STORE_DATA_WITH_HEADER_PARAMS,
-  DATA_ELEMENT_WITH_SERVICE_STORE_DATA_WITH_QUERY_PARAMS,
+  SERVICE_STORE_EMBEDDED_DATA,
   SERVICE_STORE_WITH_DESCRIPTION,
   SERVICE_STORE_WITH_SERVICE,
   SERVICE_STORE_WITH_SERVICE_GROUP,
 } from './ESService_CodeSnippets';
+import { ServiceStoreEmbeddedData } from '../models/metamodels/pure/model/data/ESService_ServiceStoreEmbeddedData';
+import { ServiceStoreEmbeddedDataState } from '../stores/studio/ESService_ServiceStoreEmbeddedDataEditorState';
+import { ServiceStoreEmbeddedDataEditor } from './ESService_ServiceStoreEmbeddedData';
 
 const SERVICE_STORE_ELEMENT_TYPE = 'SERVICE_STORE';
 const SERVICE_STORE_ELEMENT_PROJECT_EXPLORER_DND_TYPE =
   'PROJECT_EXPLORER_SERVICE_STORE';
 const SERVICE_STORE_MAPPING_TYPE = 'serviceStore';
+const SERVICE_STORE_EMBEDDED_DATA_TYPE = 'ServiceStore';
 
 export class ESService_LegendStudioPlugin
   extends LegendStudioPlugin
-  implements DSLMapping_LegendStudioPlugin_Extension
+  implements
+    DSLMapping_LegendStudioPlugin_Extension,
+    DSLData_LegendStudioPlugin_Extension
 {
   constructor() {
     super(packageJson.extensions.studioPlugin, packageJson.version);
@@ -226,6 +236,15 @@ export class ESService_LegendStudioPlugin
     ];
   }
 
+  getExtraEmbeddedDataTypeOptions(): EmbeddedDataTypeOption[] {
+    return [
+      {
+        value: SERVICE_STORE_EMBEDDED_DATA_TYPE,
+        label: SERVICE_STORE_EMBEDDED_DATA_TYPE,
+      },
+    ];
+  }
+
   getExtraPureGrammarParserElementDocumentationGetters(): PureGrammarParserElementDocumentationGetter[] {
     return [
       (
@@ -268,7 +287,7 @@ export class ESService_LegendStudioPlugin
       (editorStore: EditorStore): PureGrammarTextSuggestion[] => [
         {
           text: PURE_GRAMMAR_SERVICE_STORE_PARSER_NAME,
-          description: `External Store Service`,
+          description: `(external store)`,
           documentation: editorStore.applicationStore.docRegistry.getEntry(
             EXTERNAL_STORE_SERVICE_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER,
           ),
@@ -311,33 +330,57 @@ export class ESService_LegendStudioPlugin
     ];
   }
 
-  getExtraDataElementSnippetSuggestionsGetters(): DataElementSnippetSuggestionsGetter[] {
+  getExtraEmbeddedDataSnippetSuggestions(): EmbeddedDataSnippetSuggestion[] {
+    return [
+      {
+        description: 'using service store',
+        text: SERVICE_STORE_EMBEDDED_DATA,
+      },
+    ];
+  }
+
+  getExtraEmbeddedDataEditorStateBuilders(): EmbeddedDataEditorStateBuilder[] {
     return [
       (
         editorStore: EditorStore,
-        elementName: string,
-      ): PureGrammarTextSuggestion[] => [
-        {
-          text: elementName,
-          description: 'with service store embedded data',
-          insertText: DATA_ELEMENT_WITH_SERVICE_STORE_DATA,
-        },
-        {
-          text: elementName,
-          description: 'with service store embedded data with body patterns',
-          insertText: DATA_ELEMENT_WITH_SERVICE_STORE_DATA_WITH_BODY_PATTERNS,
-        },
-        {
-          text: elementName,
-          description: 'with service store embedded data with header paramters',
-          insertText: DATA_ELEMENT_WITH_SERVICE_STORE_DATA_WITH_HEADER_PARAMS,
-        },
-        {
-          text: elementName,
-          description: 'with service store embedded data with query paramters',
-          insertText: DATA_ELEMENT_WITH_SERVICE_STORE_DATA_WITH_QUERY_PARAMS,
-        },
-      ],
+        embeddedData: EmbeddedData,
+      ): EmbeddedDataState | undefined => {
+        if (embeddedData instanceof ServiceStoreEmbeddedData) {
+          return new ServiceStoreEmbeddedDataState(editorStore, embeddedData);
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  getExtraEmbeddedDataEditorRenderers(): EmbeddedDataEditorRenderer[] {
+    return [
+      (
+        embeddedDataState: EmbeddedDataState,
+        isReadOnly: boolean,
+      ): React.ReactNode | undefined => {
+        if (embeddedDataState instanceof ServiceStoreEmbeddedDataState) {
+          return (
+            <ServiceStoreEmbeddedDataEditor
+              serviceStoreEmbeddedDataState={embeddedDataState}
+              isReadOnly={isReadOnly}
+            />
+          );
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  getExtraEmbeddedDataCreators(): EmbeddedDataCreator[] {
+    return [
+      (embeddedDataType: string): EmbeddedData | undefined => {
+        if (embeddedDataType === SERVICE_STORE_EMBEDDED_DATA_TYPE) {
+          const serviceStoreEmbeddedData = new ServiceStoreEmbeddedData();
+          return serviceStoreEmbeddedData;
+        }
+        return undefined;
+      },
     ];
   }
 }

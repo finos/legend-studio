@@ -36,9 +36,6 @@ import type { Type } from '../models/metamodels/pure/packageableElements/domain/
 import { Class } from '../models/metamodels/pure/packageableElements/domain/Class';
 import type { Mapping } from '../models/metamodels/pure/packageableElements/mapping/Mapping';
 import type { Profile } from '../models/metamodels/pure/packageableElements/domain/Profile';
-import type { Stereotype } from '../models/metamodels/pure/packageableElements/domain/Stereotype';
-import type { Tag } from '../models/metamodels/pure/packageableElements/domain/Tag';
-import type { PackageableElement } from '../models/metamodels/pure/packageableElements/PackageableElement';
 import type { Store } from '../models/metamodels/pure/packageableElements/store/Store';
 import { DependencyManager } from '../graph/DependencyManager';
 import { ConcreteFunctionDefinition } from '../models/metamodels/pure/packageableElements/domain/ConcreteFunctionDefinition';
@@ -58,6 +55,8 @@ import {
 import type { PureGraphPlugin } from './PureGraphPlugin';
 import { createPath } from '../MetaModelUtils';
 import type { DataElement } from '../models/metamodels/pure/packageableElements/data/DataElement';
+import type { Testable } from '../models/metamodels/pure/test/Testable';
+import type { PackageableElement } from '../models/metamodels/pure/packageableElements/PackageableElement';
 
 /**
  * CoreModel holds meta models which are constant and basic building block of the graph. Since throughout the lifetime
@@ -140,10 +139,6 @@ export class SystemModel extends BasicModel {
 
   constructor(extensionElementClasses: Clazz<PackageableElement>[]) {
     super(ROOT_PACKAGE_NAME.SYSTEM, extensionElementClasses);
-
-    this.buildState.setMessageFormatter(
-      (message: string) => `[system] ${message}`,
-    );
   }
 
   /**
@@ -165,10 +160,6 @@ export class SystemModel extends BasicModel {
 export class GenerationModel extends BasicModel {
   constructor(extensionElementClasses: Clazz<PackageableElement>[]) {
     super(ROOT_PACKAGE_NAME.MODEL_GENERATION, extensionElementClasses);
-
-    this.buildState.setMessageFormatter(
-      (message: string) => `[generation] ${message}`,
-    );
   }
 }
 
@@ -220,20 +211,12 @@ export class PureModel extends BasicModel {
     ];
   }
 
-  getProfileStereotype = (
-    path: string,
-    value: string,
-  ): Stereotype | undefined => this.getProfile(path).getStereotype(value);
-  getProfileTag = (path: string, value: string): Tag | undefined =>
-    this.getProfile(path).getTag(value);
-  getNullableClass = (path: string): Class | undefined =>
-    returnUndefOnError(() => this.getClass(path));
-  getNullableMapping = (path: string): Mapping | undefined =>
-    returnUndefOnError(() => this.getMapping(path));
-  getNullableFileGeneration = (
-    path: string,
-  ): FileGenerationSpecification | undefined =>
-    returnUndefOnError(() => this.getFileGeneration(path));
+  get allOwnTestables(): Testable[] {
+    const extraTestables = this.graphPlugins
+      .flatMap((plugin) => plugin.getExtraTestablesCollectors?.() ?? [])
+      .map((collector) => collector(this));
+    return [...this.ownTestables].concat(...extraTestables);
+  }
 
   getPrimitiveType = (type: PRIMITIVE_TYPE): PrimitiveType =>
     guaranteeNonNullable(
@@ -392,6 +375,15 @@ export class PureModel extends BasicModel {
       this.getNullableElement(path, includePackage),
       `Can't find element '${path}'`,
     );
+
+  getNullableClass = (path: string): Class | undefined =>
+    returnUndefOnError(() => this.getClass(path));
+  getNullableMapping = (path: string): Mapping | undefined =>
+    returnUndefOnError(() => this.getMapping(path));
+  getNullableFileGeneration = (
+    path: string,
+  ): FileGenerationSpecification | undefined =>
+    returnUndefOnError(() => this.getFileGeneration(path));
 
   getNullableElement(
     path: string,

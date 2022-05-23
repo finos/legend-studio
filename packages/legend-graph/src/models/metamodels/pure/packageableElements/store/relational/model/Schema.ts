@@ -15,44 +15,22 @@
  */
 
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
-import {
-  type Hashable,
-  hashArray,
-  guaranteeNonNullable,
-} from '@finos/legend-shared';
+import { type Hashable, hashArray } from '@finos/legend-shared';
 import type { Database } from './Database';
 import type { Table } from './Table';
 import type { View } from './View';
-import type { Relation } from './RelationalOperationElement';
 
 export class Schema implements Hashable {
-  owner: Database;
+  readonly _OWNER: Database;
+
   name: string;
   tables: Table[] = [];
   views: View[] = [];
 
   constructor(name: string, owner: Database) {
     this.name = name;
-    this.owner = owner;
+    this._OWNER = owner;
   }
-
-  getTable = (name: string): Table =>
-    guaranteeNonNullable(
-      this.tables.find((table) => table.name === name),
-      `Can't find table '${name}' in schema '${this.name}' of database '${this.owner.path}'`,
-    );
-  getView = (name: string): View =>
-    guaranteeNonNullable(
-      this.views.find((view) => view.name === name),
-      `Can't find view '${name}' in schema '${this.name}' of database '${this.owner.path}'`,
-    );
-  getRelation = (name: string): Relation => {
-    const relations: (Table | View)[] = this.tables;
-    return guaranteeNonNullable(
-      relations.concat(this.views).find((relation) => relation.name === name),
-      `Can't find relation '${name}' in schema '${this.name}' of database '${this.owner.path}'`,
-    );
-  };
 
   get hashCode(): string {
     return hashArray([

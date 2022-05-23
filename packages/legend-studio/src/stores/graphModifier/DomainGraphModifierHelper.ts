@@ -62,6 +62,8 @@ import {
   observe_Type,
   observe_Unit,
   observe_RawLambda,
+  isStubbed_PackageableElement,
+  getOtherAssociatedProperty,
 } from '@finos/legend-graph';
 
 // --------------------------------------------- PackageableElementReference -------------------------------------
@@ -119,11 +121,11 @@ export const class_deleteSuperType = action(
   },
 );
 export const class_addSubclass = action((_class: Class, val: Class): void => {
-  addUniqueEntry(_class.subclasses, val);
+  addUniqueEntry(_class._subclasses, val);
 });
 export const class_deleteSubclass = action(
   (_class: Class, val: Class): void => {
-    deleteEntry(_class.subclasses, val);
+    deleteEntry(_class._subclasses, val);
   },
 );
 
@@ -161,7 +163,7 @@ export const property_setMultiplicity = action(
 export const stereotypeReference_setValue = action(
   (sV: StereotypeReference, value: Stereotype): void => {
     sV.value = observe_Stereotype(value);
-    packageableElementReference_setValue(sV.ownerReference, value.owner);
+    packageableElementReference_setValue(sV.ownerReference, value._OWNER);
   },
 );
 
@@ -194,7 +196,7 @@ export const annotatedElement_deleteStereotype = action(
 export const taggedValue_setTag = action(
   (taggedValue: TaggedValue, value: Tag): void => {
     taggedValue.tag.value = observe_Tag(value);
-    taggedValue.tag.ownerReference.value = value.owner;
+    taggedValue.tag.ownerReference.value = value._OWNER;
   },
 );
 
@@ -299,7 +301,7 @@ export const enum_deleteValue = action(
 export const enumValueReference_setValue = action(
   (ref: EnumValueReference, value: Enum): void => {
     ref.value = observe_Enum(value);
-    packageableElementReference_setValue(ref.ownerReference, value.owner);
+    packageableElementReference_setValue(ref.ownerReference, value._OWNER);
   },
 );
 
@@ -307,7 +309,7 @@ export const enumValueReference_setValue = action(
 
 export const association_changePropertyType = action(
   (association: Association, property: Property, type: Class): void => {
-    const otherProperty = association.getOtherProperty(property);
+    const otherProperty = getOtherAssociatedProperty(association, property);
     // remove other property from current parent class of the to-be-changed property
     const otherPropertyAssociatedClass = guaranteeType(
       property.genericType.ownerReference.value,
@@ -315,7 +317,7 @@ export const association_changePropertyType = action(
       `Association property '${property.name}' must be of type 'class'`,
     );
     // don't invoke deletion if the class is a stub (otherProperty is not present)
-    if (!otherPropertyAssociatedClass.isStub) {
+    if (!isStubbed_PackageableElement(otherPropertyAssociatedClass)) {
       assertTrue(
         deleteEntry(
           otherPropertyAssociatedClass.propertiesFromAssociations,

@@ -121,7 +121,7 @@ export class ApplicationStore<T extends LegendApplicationConfig> {
     makeAutoObservable(this, {
       navigator: false,
       setBlockingAlert: action,
-      setActionAltertInfo: action,
+      setActionAlertInfo: action,
       setNotification: action,
       notify: action,
       notifySuccess: action,
@@ -146,6 +146,7 @@ export class ApplicationStore<T extends LegendApplicationConfig> {
     ].forEach((entry) =>
       this.docRegistry.registerEntry(entry.key, entry.content),
     );
+    this.docRegistry.url = this.config.documentationUrl;
 
     // Register plugins
     this.log.registerPlugins(pluginManager.getLoggerPlugins());
@@ -162,7 +163,7 @@ export class ApplicationStore<T extends LegendApplicationConfig> {
     this.blockingAlertInfo = alertInfo;
   }
 
-  setActionAltertInfo(alertInfo: ActionAlertInfo | undefined): void {
+  setActionAlertInfo(alertInfo: ActionAlertInfo | undefined): void {
     if (this.actionAlertInfo && alertInfo) {
       this.notifyIllegalState(
         'Action alert is stacked: new alert is invoked while another one is being displayed',

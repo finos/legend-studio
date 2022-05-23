@@ -85,21 +85,6 @@ export enum JoinType {
   RIGHT_OUTER = 'RIGHT_OUTER',
 }
 
-export const getJoinType = (type: string): JoinType => {
-  switch (type) {
-    case JoinType.INNER:
-      return JoinType.INNER;
-    case JoinType.LEFT_OUTER:
-      return JoinType.LEFT_OUTER;
-    case JoinType.RIGHT_OUTER:
-      return JoinType.RIGHT_OUTER;
-    default:
-      throw new UnsupportedOperationError(
-        `Encountered unsupported join type '${type}'`,
-      );
-  }
-};
-
 // TODO: create RelationalTreeNode like in PURE?
 export class JoinTreeNode {
   alias?: TableAlias | undefined; // required in PURE

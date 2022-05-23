@@ -45,6 +45,7 @@ import {
   type MappingElementSource,
   getMappingElementSource,
   MappingEditorState,
+  getEmbeddedSetImplementations,
 } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
 import { TypeTree } from '../../../shared/TypeTree';
 import { FlatDataRecordTypeTree } from './FlatDataRecordTypeTree';
@@ -80,6 +81,8 @@ import {
   TableAlias,
   TableExplicitReference,
   ViewExplicitReference,
+  getAllRecordTypes,
+  getAllClassProperties,
 } from '@finos/legend-graph';
 import { StudioLambdaEditor } from '../../../shared/StudioLambdaEditor';
 import type { EditorStore } from '../../../../stores/EditorStore';
@@ -115,11 +118,11 @@ export const InstanceSetImplementationSourceExplorer = observer(
     const showSourceSelectorModal = (): void => {
       if (!isReadOnly) {
         const embeddedSetImpls =
-          setImplementation.getEmbeddedSetImplmentations();
+          getEmbeddedSetImplementations(setImplementation);
         if (!embeddedSetImpls.length) {
           setSourceElementForSourceSelectorModal(null);
         } else {
-          editorStore.setActionAltertInfo({
+          editorStore.setActionAlertInfo({
             message: CHANGING_SOURCE_ON_EMBEDDED,
             onEnter: (): void => editorStore.setBlockGlobalHotkeys(true),
             onClose: (): void => editorStore.setBlockGlobalHotkeys(false),
@@ -160,23 +163,22 @@ export const InstanceSetImplementationSourceExplorer = observer(
             ),
           ).catch(applicationStore.alertUnhandledError);
         } else if (droppedPackagableElement instanceof FlatData) {
-          if (droppedPackagableElement.recordTypes.length === 0) {
+          const allRecordTypes = getAllRecordTypes(droppedPackagableElement);
+          if (allRecordTypes.length === 0) {
             applicationStore.notifyWarning(
               `Source flat-data store '${droppedPackagableElement.path}' must have at least one action`,
             );
             return;
           }
-          if (droppedPackagableElement.recordTypes.length === 1) {
+          if (allRecordTypes.length === 1) {
             flowResult(
               mappingEditorState.changeClassMappingSourceDriver(
                 setImplementation,
-                droppedPackagableElement.recordTypes[0],
+                allRecordTypes[0],
               ),
             ).catch(applicationStore.alertUnhandledError);
           } else {
-            setSourceElementForSourceSelectorModal(
-              droppedPackagableElement.recordTypes[0],
-            );
+            setSourceElementForSourceSelectorModal(allRecordTypes[0]);
           }
         } else if (droppedPackagableElement instanceof Database) {
           const relations = droppedPackagableElement.schemas.flatMap((schema) =>
@@ -210,14 +212,14 @@ export const InstanceSetImplementationSourceExplorer = observer(
     );
     const handleDrop = useCallback(
       (item: MappingElementSourceDropTarget): void => {
-        if (!setImplementation.isEmbedded && !isReadOnly) {
+        if (!setImplementation._isEmbedded && !isReadOnly) {
           const embeddedSetImpls =
-            setImplementation.getEmbeddedSetImplmentations();
+            getEmbeddedSetImplementations(setImplementation);
           const droppedPackagableElement = item.data.packageableElement;
           if (!embeddedSetImpls.length) {
             changeClassMappingSourceDriver(droppedPackagableElement);
           } else {
-            editorStore.setActionAltertInfo({
+            editorStore.setActionAlertInfo({
               message: CHANGING_SOURCE_ON_EMBEDDED,
               onEnter: (): void => editorStore.setBlockGlobalHotkeys(true),
               onClose: (): void => editorStore.setBlockGlobalHotkeys(false),
@@ -290,7 +292,7 @@ export const InstanceSetImplementationSourceExplorer = observer(
               className="panel__header__action"
               onClick={showSourceSelectorModal}
               disabled={
-                isReadOnly || setImplementation.isEmbedded || isUnsupported
+                isReadOnly || setImplementation._isEmbedded || isUnsupported
               }
               tabIndex={-1}
               title="Select Source..."
@@ -436,8 +438,9 @@ export const InstanceSetImplementationEditor = observer(
     );
     const handleSortChange = (): void => setSortByRequired(!sortByRequired);
     // Get properties of supertypes
-    const sortedProperties = setImplementation.class.value
-      .getAllProperties()
+    const sortedProperties = getAllClassProperties(
+      setImplementation.class.value,
+    )
       // LEVEL 1: sort properties by name
       .sort((a, b) => a.name.localeCompare(b.name))
       // LEVEL 2: sort by properties by required/type (which ever is not chosen to be the primary sort)

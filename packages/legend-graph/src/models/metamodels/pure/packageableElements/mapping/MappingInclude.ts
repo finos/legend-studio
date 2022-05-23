@@ -21,12 +21,13 @@ import type { Mapping } from './Mapping';
 import type { SubstituteStore } from './SubstituteStore';
 
 export class MappingInclude {
-  owner: Mapping;
+  readonly _OWNER: Mapping;
+
   included: PackageableElementReference<Mapping>;
   storeSubstitutions: SubstituteStore[] = [];
 
   constructor(owner: Mapping, included: PackageableElementReference<Mapping>) {
-    this.owner = owner;
+    this._OWNER = owner;
     this.included = included;
   }
 

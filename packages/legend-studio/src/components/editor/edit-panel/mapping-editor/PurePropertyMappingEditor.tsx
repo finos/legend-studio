@@ -38,15 +38,18 @@ import { type ConnectDropTarget, useDrop } from 'react-dnd';
 import { useEditorStore } from '../../EditorStoreProvider';
 import {
   Enumeration,
-  CLASS_PROPERTY_TYPE,
-  getClassPropertyType,
   EnumerationMapping,
   DerivedProperty,
   getEnumerationMappingsByEnumeration,
+  getRawGenericType,
 } from '@finos/legend-graph';
 import { StudioLambdaEditor } from '../../../shared/StudioLambdaEditor';
 import { purePropertyMapping_setTransformer } from '../../../../stores/graphModifier/DSLMapping_GraphModifierHelper';
 import { getExpectedReturnType } from './PropertyMappingsEditor';
+import {
+  CLASS_PROPERTY_TYPE,
+  getClassPropertyType,
+} from '../../../../stores/shared/ModelUtil';
 
 const SimplePropertyMappingEditor = observer(
   (props: {
@@ -115,8 +118,10 @@ const EnumerationPropertyMappingEditor = observer(
     const mappingEditorState =
       editorStore.getCurrentEditorState(MappingEditorState);
     const propertyMapping = propertyMappingState.propertyMapping;
-    const enumeration =
-      propertyMapping.property.value.genericType.value.getRawType(Enumeration);
+    const enumeration = getRawGenericType(
+      propertyMapping.property.value.genericType.value,
+      Enumeration,
+    );
     const expectedType = propertyMapping.transformer
       ? propertyMapping.transformer.sourceType.value
       : enumeration;

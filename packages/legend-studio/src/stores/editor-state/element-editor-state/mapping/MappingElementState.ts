@@ -27,7 +27,7 @@ import type {
 import { LambdaEditorState } from '@finos/legend-application';
 
 export class MappingElementState {
-  uuid = uuid();
+  readonly uuid = uuid();
   editorStore: EditorStore;
   mappingElement: MappingElement;
 

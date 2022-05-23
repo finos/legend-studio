@@ -54,6 +54,7 @@ import { V1_Property } from '../../../model/packageableElements/domain/V1_Proper
 import { V1_DerivedProperty } from '../../../model/packageableElements/domain/V1_DerivedProperty';
 import type { V1_RawVariable } from '../../../model/rawValueSpecification/V1_RawVariable';
 import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext';
+import { isStubbed_RawLambda } from '../../../../../../../graphManager/action/creation/RawValueSpecificationCreatorHelper';
 
 export const V1_transformProfile = (element: Profile): V1_Profile => {
   const profile = new V1_Profile();
@@ -145,7 +146,10 @@ const transformConstraint = (
   constraint.name = element.name;
   constraint.externalId = element.externalId;
   constraint.enforcementLevel = element.enforcementLevel;
-  if (element.messageFunction && !element.messageFunction.isStub) {
+  if (
+    element.messageFunction &&
+    !isStubbed_RawLambda(element.messageFunction)
+  ) {
     constraint.messageFunction =
       element.messageFunction.accept_RawValueSpecificationVisitor(
         new V1_RawValueSpecificationTransformer(context),

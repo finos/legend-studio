@@ -18,6 +18,8 @@ export { DataElement } from './models/metamodels/pure/packageableElements/data/D
 export { V1_DataElement } from './models/protocols/pure/v1/model/packageableElements/data/V1_DataElement';
 export {
   EmbeddedData,
+  ModelStoreData,
+  DataElementReference,
   ExternalFormatData,
   type EmbeddedDataVisitor,
 } from './models/metamodels/pure/data/EmbeddedData';
@@ -29,6 +31,9 @@ export {
 export * from './models/protocols/pure/DSLData_PureProtocolProcessorPlugin_Extension';
 export * from './graphManager/EmbeddedData_PureGraphManagerPlugin_Extension';
 export { V1_ProtocolToMetaModelEmbeddedDataBuilder } from './models/protocols/pure/v1/transformation/pureGraph/to/helpers/V1_DataElementBuilderHelper';
-export { observe_ExternalFormatData } from './graphManager/action/changeDetection/Data_ObserverHelper';
+export {
+  observe_ExternalFormatData,
+  observe_EmbeddedData,
+} from './graphManager/action/changeDetection/DSLData_ObserverHelper';
 export { V1_transformExternalFormatData } from './models/protocols/pure/v1/transformation/pureGraph/from/V1_DataElementTransformer';
 export { V1_externalFormatDataModelSchema } from './models/protocols/pure/v1/transformation/pureProtocol/serializationHelpers/V1_DataElementSerializationHelper';

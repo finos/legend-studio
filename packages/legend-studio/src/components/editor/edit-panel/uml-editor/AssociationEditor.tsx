@@ -54,18 +54,21 @@ import {
   type Association,
   type Property,
   type StereotypeReference,
+  type TaggedValue,
   MULTIPLICITY_INFINITE,
-  TaggedValue,
-  Stereotype,
   Profile,
-  Tag,
   Multiplicity,
   Class,
-  CLASS_PROPERTY_TYPE,
-  getClassPropertyType,
   PrimitiveType,
   Unit,
   StereotypeExplicitReference,
+  stub_Profile,
+  stub_TaggedValue,
+  stub_Tag,
+  stub_Stereotype,
+  getFirstAssociatedProperty,
+  getSecondAssociatedProperty,
+  getOtherAssociatedProperty,
 } from '@finos/legend-graph';
 import {
   property_setName,
@@ -76,6 +79,10 @@ import {
   annotatedElement_deleteTaggedValue,
   association_changePropertyType,
 } from '../../../../stores/graphModifier/DomainGraphModifierHelper';
+import {
+  CLASS_PROPERTY_TYPE,
+  getClassPropertyType,
+} from '../../../../stores/shared/ModelUtil';
 
 const AssociationPropertyBasicEditor = observer(
   (props: {
@@ -105,7 +112,8 @@ const AssociationPropertyBasicEditor = observer(
     const propertyTypeOptions = editorStore.classOptions.filter(
       (classOption) =>
         classOption.value !==
-        association.getOtherProperty(property).genericType.value.rawType,
+        getOtherAssociatedProperty(association, property).genericType.value
+          .rawType,
     );
     const propertyType = property.genericType.value.rawType;
     const propertyTypeName = getClassPropertyType(propertyType);
@@ -343,14 +351,12 @@ export const AssociationEditor = observer(
         if (selectedTab === UML_EDITOR_TAB.TAGGED_VALUES) {
           annotatedElement_addTaggedValue(
             association,
-            TaggedValue.createStub(Tag.createStub(Profile.createStub())),
+            stub_TaggedValue(stub_Tag(stub_Profile())),
           );
         } else if (selectedTab === UML_EDITOR_TAB.STEREOTYPES) {
           annotatedElement_addStereotype(
             association,
-            StereotypeExplicitReference.create(
-              Stereotype.createStub(Profile.createStub()),
-            ),
+            StereotypeExplicitReference.create(stub_Stereotype(stub_Profile())),
           );
         }
       }
@@ -372,9 +378,7 @@ export const AssociationEditor = observer(
         if (!isReadOnly && item.data.packageableElement instanceof Profile) {
           annotatedElement_addTaggedValue(
             association,
-            TaggedValue.createStub(
-              Tag.createStub(item.data.packageableElement),
-            ),
+            stub_TaggedValue(stub_Tag(item.data.packageableElement)),
           );
         }
       },
@@ -396,7 +400,7 @@ export const AssociationEditor = observer(
           annotatedElement_addStereotype(
             association,
             StereotypeExplicitReference.create(
-              Stereotype.createStub(item.data.packageableElement),
+              stub_Stereotype(item.data.packageableElement),
             ),
           );
         }
@@ -473,17 +477,17 @@ export const AssociationEditor = observer(
                   <div className="panel__content__lists">
                     <AssociationPropertyBasicEditor
                       association={association}
-                      property={association.getFirstProperty()}
+                      property={getFirstAssociatedProperty(association)}
                       selectProperty={selectProperty(
-                        association.getFirstProperty(),
+                        getFirstAssociatedProperty(association),
                       )}
                       isReadOnly={isReadOnly}
                     />
                     <AssociationPropertyBasicEditor
                       association={association}
-                      property={association.getSecondProperty()}
+                      property={getSecondAssociatedProperty(association)}
                       selectProperty={selectProperty(
-                        association.getSecondProperty(),
+                        getSecondAssociatedProperty(association),
                       )}
                       isReadOnly={isReadOnly}
                     />
@@ -499,7 +503,7 @@ export const AssociationEditor = observer(
                   >
                     {association.taggedValues.map((taggedValue) => (
                       <TaggedValueEditor
-                        key={taggedValue.uuid}
+                        key={taggedValue._UUID}
                         taggedValue={taggedValue}
                         deleteValue={_deleteTaggedValue(taggedValue)}
                         isReadOnly={isReadOnly}
@@ -517,7 +521,7 @@ export const AssociationEditor = observer(
                   >
                     {association.stereotypes.map((stereotype) => (
                       <StereotypeSelector
-                        key={stereotype.value.uuid}
+                        key={stereotype.value._UUID}
                         stereotype={stereotype}
                         deleteStereotype={_deleteStereotype(stereotype)}
                         isReadOnly={isReadOnly}

@@ -21,13 +21,9 @@ import {
 } from '../PackageableElementReference';
 import type { Enumeration } from './Enumeration';
 import type { Enum } from './Enum';
-import type { Stubable } from '../../../../../helpers/Stubable';
 import { ReferenceWithOwner } from '../../Reference';
 
-export abstract class EnumValueReference
-  extends ReferenceWithOwner
-  implements Stubable
-{
+export abstract class EnumValueReference extends ReferenceWithOwner {
   override readonly ownerReference: PackageableElementReference<Enumeration>;
   value: Enum;
 
@@ -39,10 +35,6 @@ export abstract class EnumValueReference
     this.ownerReference = ownerReference;
     this.value = value;
   }
-
-  get isStub(): boolean {
-    return !this.value.isStub;
-  }
 }
 
 export class EnumValueExplicitReference extends EnumValueReference {
@@ -50,7 +42,7 @@ export class EnumValueExplicitReference extends EnumValueReference {
 
   private constructor(value: Enum) {
     const ownerReference = PackageableElementExplicitReference.create(
-      value.owner,
+      value._OWNER,
     );
     super(ownerReference, value);
     this.ownerReference = ownerReference;

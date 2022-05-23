@@ -64,7 +64,7 @@ import {
   getAllClassMappings,
   getAllEnumerationMappings,
   getOwnClassMappingById,
-} from '../../../../../../../helpers/MappingHelper';
+} from '../../../../../../../helpers/DSLMapping_Helper';
 import type { DSLMapping_PureProtocolProcessorPlugin_Extension } from '../../../../DSLMapping_PureProtocolProcessorPlugin_Extension';
 import type { V1_MergeOperationClassMapping } from '../../../model/packageableElements/mapping/V1_MergeOperationClassMapping';
 
@@ -265,7 +265,7 @@ export class V1_ProtocolToMetaModelClassMappingSecondPassBuilder
       );
       const dbs = new Set(
         Array.from(tableAliasMap.values()).map(
-          (e) => e.relation.value.schema.owner,
+          (e) => e.relation.value.schema._OWNER,
         ),
       );
       assertTrue(

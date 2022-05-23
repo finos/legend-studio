@@ -65,7 +65,7 @@ export class ViewExplicitReference extends ViewReference {
 
   private constructor(value: View) {
     const ownerReference = PackageableElementExplicitReference.create(
-      value.schema.owner,
+      value.schema._OWNER,
     );
     super(ownerReference, value);
     this.ownerReference = ownerReference;

@@ -108,7 +108,7 @@ const generateColumnTreeNodeId = (
     ? parentNode instanceof JoinNodeData
       ? `${parentNode.id} ${JOIN_PIPE_SYMBOL} ${relation.name}.${column.name}`
       : `${parentNode.id}.${column.name}`
-    : `${generateDatabasePointerText(relation.schema.owner.path)}${
+    : `${generateDatabasePointerText(relation.schema._OWNER.path)}${
         relation.schema.name
       }.${relation.name}.${column.name}`;
 
@@ -183,7 +183,7 @@ const getJoinTreeNodeData = (
       );
     });
   // joins
-  relation.schema.owner.joins
+  relation.schema._OWNER.joins
     .slice()
     .filter(
       (_join) =>
@@ -217,7 +217,7 @@ const getRelationTreeData = (
       nodes.set(columnNode.id, columnNode);
     });
   // joins
-  relation.schema.owner.joins
+  relation.schema._OWNER.joins
     .slice()
     .filter(
       (join) =>
@@ -330,7 +330,7 @@ export const TableOrViewSourceTree: React.FC<{
         treeData.nodes.set(columnNode.id, columnNode);
       });
       // joins
-      node.relation.schema.owner.joins
+      node.relation.schema._OWNER.joins
         .filter(
           (join) =>
             join.aliases.filter(

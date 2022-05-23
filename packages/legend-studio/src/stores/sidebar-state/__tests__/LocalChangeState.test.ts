@@ -128,6 +128,7 @@ test(unitTest('Load entity changes'), async () => {
   await editorStore.graphManagerState.graphManager.buildGraph(
     editorStore.graphManagerState.graph,
     entities,
+    editorStore.graphManagerState.graphBuildState,
   );
   const changes = entityChanges.entityChanges.map((e) =>
     EntityChange.serialization.fromJson(e),

@@ -117,6 +117,7 @@ export const TEST__setUpQueryEditor = async (
   await mockedQueryStore.graphManagerState.graphManager.buildGraph(
     mockedQueryStore.graphManagerState.graph,
     entities,
+    mockedQueryStore.graphManagerState.graphBuildState,
   );
 
   const query = new Query();

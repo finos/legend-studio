@@ -33,6 +33,7 @@ import {
   ConcreteFunctionDefinition,
   RawLambda,
   buildSourceInformationSourceId,
+  isStubbed_PackageableElement,
 } from '@finos/legend-graph';
 import { LambdaEditorState } from '@finos/legend-application';
 
@@ -96,7 +97,7 @@ export class FunctionBodyEditorState extends LambdaEditorState {
     pretty: boolean,
     firstLoad?: boolean,
   ): GeneratorFn<void> {
-    if (!this.functionElement.isStub) {
+    if (!isStubbed_PackageableElement(this.functionElement)) {
       this.isConvertingFunctionBodyToString = true;
       try {
         const lambdas = new Map<string, RawLambda>();

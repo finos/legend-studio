@@ -73,3 +73,12 @@ export abstract class ReferenceWithOwner extends RequiredReference {
     this.ownerReference = ownerReference;
   }
 }
+
+export abstract class OptionalReferenceWithOwner extends OptionalReference {
+  readonly ownerReference: OptionalReference;
+
+  protected constructor(ownerReference: OptionalReference) {
+    super();
+    this.ownerReference = ownerReference;
+  }
+}

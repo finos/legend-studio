@@ -61,14 +61,18 @@ import {
   SNAPSHOT_VERSION_ALIAS,
   compareSemVerVersions,
 } from '@finos/legend-server-depot';
-import type {
-  LightQuery,
-  Mapping,
-  PackageableRuntime,
+import {
+  type LightQuery,
+  type Mapping,
+  type Service,
+  type PackageableRuntime,
+  PureMultiExecution,
+  PureSingleExecution,
 } from '@finos/legend-graph';
 import {
   type PackageableElementOption,
   useApplicationStore,
+  buildElementOption,
 } from '@finos/legend-application';
 
 type QueryOption = { label: string; value: LightQuery };
@@ -325,7 +329,7 @@ const ServiceQuerySetup = observer(
     const canProceed =
       querySetupState.currentProject &&
       querySetupState.currentVersionId &&
-      queryStore.graphManagerState.graph.buildState.hasSucceeded &&
+      queryStore.buildGraphState.hasSucceeded &&
       querySetupState.currentService;
 
     // project
@@ -355,14 +359,19 @@ const ServiceQuerySetup = observer(
       LATEST_VERSION_ALIAS,
       SNAPSHOT_VERSION_ALIAS,
       ...(querySetupState.currentProject?.versions ?? []),
-    ].map(buildVersionOption);
+    ]
+      .slice()
+      .sort((v1, v2) => compareSemVerVersions(v2, v1))
+      .map(buildVersionOption);
     const selectedVersionOption = querySetupState.currentVersionId
       ? buildVersionOption(querySetupState.currentVersionId)
       : null;
     const versionSelectorPlaceholder = !querySetupState.currentProject
       ? 'No project selected'
       : 'Choose a version';
-    const onVersionOptionChange = (option: VersionOption | null): void => {
+    const onVersionOptionChange = async (
+      option: VersionOption | null,
+    ): Promise<void> => {
       if (option?.value !== querySetupState.currentVersionId) {
         querySetupState.setCurrentVersionId(option?.value);
         // cascade
@@ -372,12 +381,43 @@ const ServiceQuerySetup = observer(
           querySetupState.currentProject &&
           querySetupState.currentVersionId
         ) {
-          flowResult(
+          await flowResult(
             queryStore.buildGraphForServiceQuerySetup(
               querySetupState.currentProject,
               querySetupState.currentVersionId,
             ),
           ).catch(applicationStore.alertUnhandledError);
+
+          querySetupState.setServiceExecutionOptions(
+            querySetupState.queryStore.queryBuilderState.graphManagerState.graph.ownServices
+              .map(
+                (e) =>
+                  buildElementOption(e) as PackageableElementOption<Service>,
+              )
+              .flatMap((serviceOption) => {
+                const service = serviceOption.value;
+                const serviceExecution = service.execution;
+                if (serviceExecution instanceof PureSingleExecution) {
+                  return {
+                    label: service.name,
+                    value: {
+                      service,
+                    },
+                  };
+                } else if (serviceExecution instanceof PureMultiExecution) {
+                  return serviceExecution.executionParameters.map(
+                    (parameter) => ({
+                      label: `${service.name} [${parameter.key}]`,
+                      value: {
+                        service,
+                        key: parameter.key,
+                      },
+                    }),
+                  );
+                }
+                return [];
+              }),
+          );
         }
       }
     };
@@ -479,30 +519,29 @@ const ServiceQuerySetup = observer(
           <div className="query-setup__service-query__graph">
             {(!querySetupState.currentProject ||
               !querySetupState.currentVersionId ||
-              !queryStore.graphManagerState.graph.buildState.hasSucceeded) && (
+              !queryStore.buildGraphState.hasSucceeded) && (
               <div className="query-setup__service-query__graph__loader">
                 <PanelLoadingIndicator
                   isLoading={
                     Boolean(querySetupState.currentProject) &&
                     Boolean(querySetupState.currentVersionId) &&
-                    !queryStore.graphManagerState.graph.buildState.hasSucceeded
+                    !queryStore.buildGraphState.hasSucceeded
                   }
                 />
                 {queryStore.buildGraphState.isInProgress && (
                   <BlankPanelContent>
                     {queryStore.buildGraphState.message ??
-                      queryStore.graphManagerState.graph.systemModel.buildState
+                      queryStore.graphManagerState.systemBuildState.message ??
+                      queryStore.graphManagerState.dependenciesBuildState
                         .message ??
-                      queryStore.graphManagerState.graph.dependencyManager
-                        .buildState.message ??
-                      queryStore.graphManagerState.graph.generationModel
-                        .buildState.message ??
-                      queryStore.graphManagerState.graph.buildState.message}
+                      queryStore.graphManagerState.generationsBuildState
+                        .message ??
+                      queryStore.graphManagerState.graphBuildState.message}
                   </BlankPanelContent>
                 )}
                 {!queryStore.buildGraphState.isInProgress && (
                   <BlankPanelContent>
-                    {queryStore.graphManagerState.graph.buildState.hasFailed
+                    {queryStore.buildGraphState.hasFailed
                       ? `Can't build graph`
                       : 'Project and version must be specified'}
                   </BlankPanelContent>
@@ -511,7 +550,7 @@ const ServiceQuerySetup = observer(
             )}
             {querySetupState.currentProject &&
               querySetupState.currentVersionId &&
-              queryStore.graphManagerState.graph.buildState.hasSucceeded && (
+              queryStore.buildGraphState.hasSucceeded && (
                 <>
                   <div className="query-setup__wizard__group">
                     <div className="query-setup__wizard__group__title">
@@ -583,7 +622,7 @@ const CreateQuerySetup = observer(
     const canProceed =
       querySetupState.currentProject &&
       querySetupState.currentVersionId &&
-      queryStore.graphManagerState.graph.buildState.hasSucceeded &&
+      queryStore.buildGraphState.hasSucceeded &&
       querySetupState.currentMapping &&
       querySetupState.currentRuntime;
 
@@ -625,7 +664,9 @@ const CreateQuerySetup = observer(
     const versionSelectorPlaceholder = !querySetupState.currentProject
       ? 'No project selected'
       : 'Choose a version';
-    const onVersionOptionChange = (option: VersionOption | null): void => {
+    const onVersionOptionChange = async (
+      option: VersionOption | null,
+    ): Promise<void> => {
       if (option?.value !== querySetupState.currentVersionId) {
         querySetupState.setCurrentVersionId(option?.value);
         // cascade
@@ -636,18 +677,24 @@ const CreateQuerySetup = observer(
           querySetupState.currentProject &&
           querySetupState.currentVersionId
         ) {
-          flowResult(
+          await flowResult(
             queryStore.buildGraphForCreateQuerySetup(
               querySetupState.currentProject,
               querySetupState.currentVersionId,
             ),
           ).catch(applicationStore.alertUnhandledError);
+
+          querySetupState.setMappingOptions(
+            querySetupState.queryStore.queryBuilderState.mappings.map(
+              (e) => buildElementOption(e) as PackageableElementOption<Mapping>,
+            ),
+          );
         }
       }
     };
 
     // mapping
-    const mappingOptions = queryStore.queryBuilderState.getMappingOptions();
+    const mappingOptions = querySetupState.mappingOptions;
     const selectedMappingOption = querySetupState.currentMapping
       ? {
           label: querySetupState.currentMapping.name,
@@ -763,30 +810,29 @@ const CreateQuerySetup = observer(
           <div className="query-setup__create-query__graph">
             {(!querySetupState.currentProject ||
               !querySetupState.currentVersionId ||
-              !queryStore.graphManagerState.graph.buildState.hasSucceeded) && (
+              !queryStore.buildGraphState.hasSucceeded) && (
               <div className="query-setup__create-query__graph__loader">
                 <PanelLoadingIndicator
                   isLoading={
                     Boolean(querySetupState.currentProject) &&
                     Boolean(querySetupState.currentVersionId) &&
-                    !queryStore.graphManagerState.graph.buildState.hasSucceeded
+                    !queryStore.buildGraphState.hasSucceeded
                   }
                 />
                 {queryStore.buildGraphState.isInProgress && (
                   <BlankPanelContent>
                     {queryStore.buildGraphState.message ??
-                      queryStore.graphManagerState.graph.systemModel.buildState
+                      queryStore.graphManagerState.systemBuildState.message ??
+                      queryStore.graphManagerState.dependenciesBuildState
                         .message ??
-                      queryStore.graphManagerState.graph.dependencyManager
-                        .buildState.message ??
-                      queryStore.graphManagerState.graph.generationModel
-                        .buildState.message ??
-                      queryStore.graphManagerState.graph.buildState.message}
+                      queryStore.graphManagerState.generationsBuildState
+                        .message ??
+                      queryStore.graphManagerState.graphBuildState.message}
                   </BlankPanelContent>
                 )}
                 {!queryStore.buildGraphState.isInProgress && (
                   <BlankPanelContent>
-                    {queryStore.graphManagerState.graph.buildState.hasFailed
+                    {queryStore.buildGraphState.hasFailed
                       ? `Can't build graph`
                       : 'Project and version must be specified'}
                   </BlankPanelContent>
@@ -795,7 +841,7 @@ const CreateQuerySetup = observer(
             )}
             {querySetupState.currentProject &&
               querySetupState.currentVersionId &&
-              queryStore.graphManagerState.graph.buildState.hasSucceeded && (
+              queryStore.buildGraphState.hasSucceeded && (
                 <>
                   <div className="query-setup__wizard__group">
                     <div className="query-setup__wizard__group__title">

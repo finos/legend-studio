@@ -250,6 +250,10 @@ export const ServiceExecutionQueryEditor = observer(
     const importQuery = (): void => {
       queryState.setOpenQueryImporter(true);
     };
+    const temporaryDisableExecutionWithParams = Boolean(
+      Array.isArray(executionState.queryState.query.parameters) &&
+        executionState.queryState.query.parameters.length,
+    );
     // execute
     const execute = applicationStore.guardUnhandledError(() =>
       flowResult(executionState.execute()),
@@ -289,8 +293,16 @@ export const ServiceExecutionQueryEditor = observer(
             <button
               className="service-editor__execution__execute-btn"
               onClick={execute}
+              title={
+                temporaryDisableExecutionWithParams
+                  ? `Use query builder to execute queries with parameters`
+                  : `Execute`
+              }
               disabled={
-                executionState.isExecuting || executionState.isGeneratingPlan
+                executionState.isExecuting ||
+                executionState.isGeneratingPlan ||
+                // TODO: Enable once we allow setting parameters for execution
+                temporaryDisableExecutionWithParams
               }
               tabIndex={-1}
             >

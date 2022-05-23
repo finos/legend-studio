@@ -136,10 +136,10 @@ export const observe_LocalMappingPropertyInfo = skipObserved(
       localMappingProperty: observable,
       localMappingPropertyType: observable,
       localMappingPropertyMultiplicity: observable,
-      hashCode: observable,
+      hashCode: computed,
     });
 
-    // TODO localMappingPropertyType!: Type;
+    observe_PackageableElementReference(metamodel.localMappingPropertyType);
     observe_Multiplicity(metamodel.localMappingPropertyMultiplicity);
 
     return metamodel;
@@ -171,7 +171,6 @@ export const observe_PurePropertyMapping = skipObservedWithContext(
       transformer: observable,
       transform: observable,
       explodeProperty: observable,
-      isStub: computed,
       hashCode: computed,
     });
 
@@ -334,9 +333,7 @@ export const observe_SetImplementationReference = skipObserved(
 
 export const observe_SetImplementationContainer = skipObserved(
   (metamodel: SetImplementationContainer): SetImplementationContainer => {
-    makeObservable(metamodel, {
-      isStub: computed,
-    });
+    makeObservable(metamodel, {});
 
     observe_SetImplementationReference(metamodel.setImplementation);
 
@@ -352,7 +349,6 @@ export const observe_Abstract_OperationSetImplementation = (
   makeObservable(metamodel, {
     parameters: observable,
     operation: observable,
-    isStub: computed,
     hashCode: computed,
   });
 
@@ -392,7 +388,6 @@ export const observe_PureInstanceSetImplementation = skipObservedWithContext(
 
     makeObservable(metamodel, {
       filter: observable,
-      isStub: computed,
       hashCode: computed,
     });
 
@@ -539,7 +534,6 @@ export const observe_SourceValue = skipObserved(
   (metamodel: SourceValue): SourceValue =>
     makeObservable(metamodel, {
       value: observable,
-      isStub: computed,
     }),
 );
 
@@ -547,7 +541,6 @@ export const observe_EnumValueMapping = skipObserved(
   (metamodel: EnumValueMapping): EnumValueMapping => {
     makeObservable(metamodel, {
       sourceValues: observable,
-      isStub: computed,
       hashCode: computed,
     });
 
@@ -563,7 +556,6 @@ export const observe_EnumerationMapping = skipObserved(
     makeObservable(metamodel, {
       sourceType: observable,
       enumValueMappings: observable,
-      isStub: computed,
       hashCode: computed,
     });
 
@@ -692,10 +684,6 @@ export const observe_Mapping = skipObservedWithContext(
       enumerationMappings: observable,
       associationMappings: observable,
       tests: observable,
-      allOwnClassMappings: computed,
-      allOwnEnumerationMappings: computed,
-      allIncludedMappings: computed,
-      isStub: computed,
       _elementHashCode: override,
     });
 
@@ -869,7 +857,6 @@ export const observe_StoreConnections = skipObservedWithContext(
   (metamodel: StoreConnections, context): StoreConnections => {
     makeObservable(metamodel, {
       storeConnections: observable,
-      isStub: computed,
       hashCode: computed,
     });
 
@@ -887,7 +874,6 @@ export const observe_EngineRuntime = skipObservedWithContext(
     makeObservable(metamodel, {
       mappings: observable,
       connections: observable,
-      allIdentifiedConnections: computed,
       hashCode: computed,
     });
 

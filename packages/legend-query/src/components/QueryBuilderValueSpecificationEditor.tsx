@@ -27,6 +27,7 @@ import {
   CheckSquareIcon,
   SquareIcon,
   SaveIcon,
+  RefreshIcon,
 } from '@finos/legend-art';
 import {
   guaranteeNonNullable,
@@ -53,16 +54,26 @@ import {
   VariableExpression,
   INTERNAL__PropagatedValue,
   SimpleFunctionExpression,
+  getEnumValue,
 } from '@finos/legend-graph';
 import { getMultiplicityDescription } from './shared/QueryBuilderUtils';
 import {
   instanceValue_changeValue,
   instanceValue_changeValues,
 } from '../stores/QueryBuilderValueSpecificationModifierHelper';
-import {
-  type TypeCheckOption,
-  QueryBuilderCustomDatePicker,
-} from './QueryBuilderCustomDatePicker';
+import { QueryBuilderCustomDatePicker } from './QueryBuilderCustomDatePicker';
+
+type TypeCheckOption = {
+  expectedType: Type;
+  /**
+   * Indicates if a strict type-matching will happen.
+   * Sometimes, auto-boxing allow some rooms to wiggle,
+   * for example we can assign a Float to an Integer, a
+   * Date to a DateTime. With this flag set to `true`
+   * we will not allow this.
+   */
+  match?: boolean;
+};
 
 const QueryBuilderParameterInfoTooltip: React.FC<{
   variable: VariableExpression;
@@ -120,8 +131,9 @@ const VariableExpressionParameterEditor = observer(
   (props: {
     valueSpecification: VariableExpression;
     className?: string | undefined;
+    resetValue: () => void;
   }) => {
-    const { valueSpecification, className } = props;
+    const { valueSpecification, className, resetValue } = props;
     const varName = valueSpecification.name;
     return (
       <div
@@ -142,6 +154,13 @@ const VariableExpressionParameterEditor = observer(
               <InfoCircleIcon />
             </div>
           </QueryBuilderParameterInfoTooltip>
+          <button
+            className="query-builder-value-spec-editor__parameter__reset-btn"
+            title="Reset"
+            onClick={resetValue}
+          >
+            <RefreshIcon />
+          </button>
         </div>
       </div>
     );
@@ -152,8 +171,9 @@ const StringPrimitiveInstanceValueEditor = observer(
   (props: {
     valueSpecification: PrimitiveInstanceValue;
     className?: string | undefined;
+    resetValue: () => void;
   }) => {
-    const { valueSpecification, className } = props;
+    const { valueSpecification, className, resetValue } = props;
     const value = valueSpecification.values[0] as string;
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) =>
       instanceValue_changeValue(valueSpecification, event.target.value, 0);
@@ -167,6 +187,13 @@ const StringPrimitiveInstanceValueEditor = observer(
           placeholder={value === '' ? '(empty)' : undefined}
           onChange={changeValue}
         />
+        <button
+          className="query-builder-value-spec-editor__reset-btn"
+          title="Reset"
+          onClick={resetValue}
+        >
+          <RefreshIcon />
+        </button>
       </div>
     );
   },
@@ -176,8 +203,9 @@ const BooleanPrimitiveInstanceValueEditor = observer(
   (props: {
     valueSpecification: PrimitiveInstanceValue;
     className?: string | undefined;
+    resetValue: () => void;
   }) => {
-    const { valueSpecification, className } = props;
+    const { valueSpecification, className, resetValue } = props;
     const value = valueSpecification.values[0] as boolean;
     const toggleValue = (): void =>
       instanceValue_changeValue(valueSpecification, !value, 0);
@@ -192,6 +220,13 @@ const BooleanPrimitiveInstanceValueEditor = observer(
         >
           {value ? <CheckSquareIcon /> : <SquareIcon />}
         </button>
+        <button
+          className="query-builder-value-spec-editor__reset-btn"
+          title="Reset"
+          onClick={resetValue}
+        >
+          <RefreshIcon />
+        </button>
       </div>
     );
   },
@@ -202,8 +237,9 @@ const NumberPrimitiveInstanceValueEditor = observer(
     valueSpecification: PrimitiveInstanceValue;
     isInteger: boolean;
     className?: string | undefined;
+    resetValue: () => void;
   }) => {
-    const { valueSpecification, isInteger, className } = props;
+    const { valueSpecification, isInteger, className, resetValue } = props;
     const value = valueSpecification.values[0] as number;
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
       let inputVal = isInteger
@@ -222,6 +258,13 @@ const NumberPrimitiveInstanceValueEditor = observer(
           value={value}
           onChange={changeValue}
         />
+        <button
+          className="query-builder-value-spec-editor__reset-btn"
+          title="Reset"
+          onClick={resetValue}
+        >
+          <RefreshIcon />
+        </button>
       </div>
     );
   },
@@ -231,11 +274,12 @@ const EnumValueInstanceValueEditor = observer(
   (props: {
     valueSpecification: EnumValueInstanceValue;
     className?: string | undefined;
+    resetValue: () => void;
   }) => {
-    const { valueSpecification, className } = props;
+    const { valueSpecification, className, resetValue } = props;
     const enumValueRef = guaranteeNonNullable(valueSpecification.values[0]);
     const enumValue = enumValueRef.value;
-    const options = enumValue.owner.values.map((value) => ({
+    const options = enumValue._OWNER.values.map((value) => ({
       label: value.name,
       value: value,
     }));
@@ -256,6 +300,13 @@ const EnumValueInstanceValueEditor = observer(
           value={{ value: enumValue, label: enumValue.name }}
           darkMode={true}
         />
+        <button
+          className="query-builder-value-spec-editor__reset-btn"
+          title="Reset"
+          onClick={resetValue}
+        >
+          <RefreshIcon />
+        </button>
       </div>
     );
   },
@@ -364,7 +415,9 @@ const setCollectionValue = (
   } else if (expectedType instanceof Enumeration) {
     result = uniq(parseData.map((item) => item.trim()))
       .map((item): EnumValueInstanceValue | undefined => {
-        const _enum = returnUndefOnError(() => expectedType.getValue(item));
+        const _enum = returnUndefOnError(() =>
+          getEnumValue(expectedType, item),
+        );
         if (!_enum) {
           return undefined;
         }
@@ -390,8 +443,10 @@ const CollectionValueInstanceValueEditor = observer(
     graph: PureModel;
     expectedType: Type;
     className?: string | undefined;
+    resetValue: () => void;
   }) => {
-    const { valueSpecification, graph, expectedType, className } = props;
+    const { valueSpecification, graph, expectedType, className, resetValue } =
+      props;
     const inputRef = useRef<HTMLInputElement>(null);
     const [text, setText] = useState(stringifyValue(valueSpecification.values));
     const [editable, setEditable] = useState(false);
@@ -442,6 +497,13 @@ const CollectionValueInstanceValueEditor = observer(
           >
             <SaveIcon />
           </button>
+          <button
+            className="query-builder-value-spec-editor__reset-btn"
+            title="Reset"
+            onClick={resetValue}
+          >
+            <RefreshIcon />
+          </button>
         </div>
       );
     }
@@ -477,23 +539,32 @@ const DateInstanceValueEditor = observer(
     graph: PureModel;
     typeCheckOption: TypeCheckOption;
     className?: string | undefined;
-    updateValueSpecification: (val: ValueSpecification) => void;
+    updateValue: (val: ValueSpecification) => void;
+    resetValue: () => void;
   }) => {
     const {
       valueSpecification,
-      updateValueSpecification,
+      updateValue,
       graph,
       typeCheckOption,
+      resetValue,
     } = props;
 
     return (
-      <div className="query-builder-value-spec-editor__date">
+      <div className="query-builder-value-spec-editor">
         <QueryBuilderCustomDatePicker
           valueSpecification={valueSpecification}
           graph={graph}
           typeCheckOption={typeCheckOption}
-          updateValueSpecification={updateValueSpecification}
+          updateValue={updateValue}
         />
+        <button
+          className="query-builder-value-spec-editor__reset-btn"
+          title="Reset"
+          onClick={resetValue}
+        >
+          <RefreshIcon />
+        </button>
       </div>
     );
   },
@@ -510,14 +581,16 @@ export const QueryBuilderValueSpecificationEditor: React.FC<{
   graph: PureModel;
   typeCheckOption: TypeCheckOption;
   className?: string | undefined;
-  updateValueSpecification: (val: ValueSpecification) => void;
+  updateValue: (val: ValueSpecification) => void;
+  resetValue: () => void;
 }> = (props) => {
   const {
+    className,
     valueSpecification,
-    updateValueSpecification,
     graph,
     typeCheckOption,
-    className,
+    updateValue,
+    resetValue,
   } = props;
   if (valueSpecification instanceof PrimitiveInstanceValue) {
     const _type = valueSpecification.genericType.value.rawType;
@@ -527,6 +600,7 @@ export const QueryBuilderValueSpecificationEditor: React.FC<{
           <StringPrimitiveInstanceValueEditor
             valueSpecification={valueSpecification}
             className={className}
+            resetValue={resetValue}
           />
         );
       case PRIMITIVE_TYPE.BOOLEAN:
@@ -534,6 +608,7 @@ export const QueryBuilderValueSpecificationEditor: React.FC<{
           <BooleanPrimitiveInstanceValueEditor
             valueSpecification={valueSpecification}
             className={className}
+            resetValue={resetValue}
           />
         );
       case PRIMITIVE_TYPE.NUMBER:
@@ -545,6 +620,7 @@ export const QueryBuilderValueSpecificationEditor: React.FC<{
             valueSpecification={valueSpecification}
             isInteger={_type.path === PRIMITIVE_TYPE.INTEGER}
             className={className}
+            resetValue={resetValue}
           />
         );
       case PRIMITIVE_TYPE.DATE:
@@ -557,7 +633,8 @@ export const QueryBuilderValueSpecificationEditor: React.FC<{
             graph={graph}
             typeCheckOption={typeCheckOption}
             className={className}
-            updateValueSpecification={updateValueSpecification}
+            updateValue={updateValue}
+            resetValue={resetValue}
           />
         );
       default:
@@ -568,6 +645,7 @@ export const QueryBuilderValueSpecificationEditor: React.FC<{
       <EnumValueInstanceValueEditor
         valueSpecification={valueSpecification}
         className={className}
+        resetValue={resetValue}
       />
     );
   } else if (
@@ -583,6 +661,7 @@ export const QueryBuilderValueSpecificationEditor: React.FC<{
         graph={graph}
         expectedType={typeCheckOption.expectedType}
         className={className}
+        resetValue={resetValue}
       />
     );
   }
@@ -592,6 +671,7 @@ export const QueryBuilderValueSpecificationEditor: React.FC<{
       <VariableExpressionParameterEditor
         valueSpecification={valueSpecification}
         className={className}
+        resetValue={resetValue}
       />
     );
   } else if (valueSpecification instanceof INTERNAL__PropagatedValue) {
@@ -600,7 +680,8 @@ export const QueryBuilderValueSpecificationEditor: React.FC<{
         valueSpecification={valueSpecification.getValue()}
         graph={graph}
         typeCheckOption={typeCheckOption}
-        updateValueSpecification={updateValueSpecification}
+        updateValue={updateValue}
+        resetValue={resetValue}
       />
     );
   } else if (
@@ -618,7 +699,8 @@ export const QueryBuilderValueSpecificationEditor: React.FC<{
         graph={graph}
         typeCheckOption={typeCheckOption}
         className={className}
-        updateValueSpecification={updateValueSpecification}
+        updateValue={updateValue}
+        resetValue={resetValue}
       />
     );
   }

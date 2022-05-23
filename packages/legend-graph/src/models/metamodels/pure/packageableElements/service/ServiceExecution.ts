@@ -31,7 +31,8 @@ export abstract class ServiceExecution implements Hashable {
 }
 
 export class PureExecution extends ServiceExecution implements Hashable {
-  owner: Service;
+  readonly _OWNER: Service;
+
   /**
    * Studio does not process value specification, they are left in raw JSON form
    *
@@ -42,11 +43,12 @@ export class PureExecution extends ServiceExecution implements Hashable {
   constructor(func: RawLambda, owner: Service) {
     super();
     this.func = func;
-    this.owner = owner;
+    this._OWNER = owner;
   }
 
   get queryValidationResult(): ValidationIssue | undefined {
-    if (this.func.isStub) {
+    // TODO: use `isStubbed_RawLambda` when we refactor validation
+    if (!this.func.parameters && !this.func.body) {
       return createValidationError([
         'Service execution function cannot be empty',
       ]);
@@ -79,7 +81,8 @@ export class PureSingleExecution extends PureExecution implements Hashable {
   }
 
   get mappingValidationResult(): ValidationIssue | undefined {
-    return this.mapping.value.isStub
+    // TODO: use `isStubbed_PackageableElement` when we refactor validation
+    return !this.mapping.value.package && !this.mapping.value.name
       ? createValidationError(['Service execution mapping cannot be empty'])
       : undefined;
   }
@@ -95,7 +98,7 @@ export class PureSingleExecution extends PureExecution implements Hashable {
 }
 
 export class KeyedExecutionParameter implements Hashable {
-  readonly uuid = uuid();
+  readonly _UUID = uuid();
 
   key: string;
   mapping: PackageableElementReference<Mapping>;
@@ -112,7 +115,8 @@ export class KeyedExecutionParameter implements Hashable {
   }
 
   get mappingValidationResult(): ValidationIssue | undefined {
-    return this.mapping.value.isStub
+    // TODO: use `isStubbed_PackageableElement` when we refactor validation
+    return !this.mapping.value.package && !this.mapping.value.name
       ? createValidationError(['Service execution mapping cannot be empty'])
       : undefined;
   }

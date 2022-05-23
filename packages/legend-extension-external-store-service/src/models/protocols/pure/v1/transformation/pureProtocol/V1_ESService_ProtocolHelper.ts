@@ -91,7 +91,7 @@ enum V1_ServiceStoreElementType {
   SERVICE_GROUP = 'serviceGroup',
 }
 
-enum V1_StringValuePatternType {
+export enum V1_StringValuePatternType {
   EQUAL_TO_PATTERN = 'equalTo',
   EQUAL_TO_JSON_PATTERN = 'equalToJson',
 }

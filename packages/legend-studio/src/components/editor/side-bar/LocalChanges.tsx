@@ -232,7 +232,7 @@ export const LocalChanges = observer(() => {
             disabled={
               isDispatchingAction ||
               editorStore.workspaceUpdaterState.isUpdatingWorkspace ||
-              !editorStore.changeDetectionState.isChangeDetectionRunning ||
+              !editorStore.changeDetectionState.initState.hasSucceeded ||
               !editorStore.isInFormMode
             }
             tabIndex={-1}

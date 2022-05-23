@@ -41,11 +41,16 @@ import {
   type AbstractProperty,
   Enumeration,
   Class,
-  CLASS_PROPERTY_TYPE,
-  getClassPropertyType,
   DEFAULT_SOURCE_PARAMETER_NAME,
   VARIABLE_REFERENCE_TOKEN,
+  getAllClassProperties,
+  getAllClassDerivedProperties,
+  getRawGenericType,
 } from '@finos/legend-graph';
+import {
+  CLASS_PROPERTY_TYPE,
+  getClassPropertyType,
+} from '../../stores/shared/ModelUtil';
 
 const getEnumTypeTreeNodeData = (
   _enum: Enum,
@@ -84,16 +89,16 @@ const getPropertyTypeTreeNodeData = (
   };
   switch (getClassPropertyType(property.genericType.value.rawType)) {
     case CLASS_PROPERTY_TYPE.CLASS:
-      nodeData.childrenIds = property.genericType.value
-        .getRawType(Class)
-        .getAllProperties()
-        .map((p) => `${nodeData.id}.${p.name}`);
+      nodeData.childrenIds = getAllClassProperties(
+        getRawGenericType(property.genericType.value, Class),
+      ).map((p) => `${nodeData.id}.${p.name}`);
       nodeData.dndType = CORE_DND_TYPE.TYPE_TREE_CLASS;
       break;
     case CLASS_PROPERTY_TYPE.ENUMERATION:
-      nodeData.childrenIds = property.genericType.value
-        .getRawType(Enumeration)
-        .values.map((p) => `${nodeData.id}.${p.name}`);
+      nodeData.childrenIds = getRawGenericType(
+        property.genericType.value,
+        Enumeration,
+      ).values.map((p) => `${nodeData.id}.${p.name}`);
       nodeData.dndType = CORE_DND_TYPE.TYPE_TREE_ENUMERATION;
       break;
     default:
@@ -105,9 +110,8 @@ const getTypeTreeData = (type: Type): TreeData<TypeTreeNodeData> => {
   const rootIds: string[] = [];
   const nodes = new Map<string, TypeTreeNodeData>();
   if (type instanceof Class) {
-    type
-      .getAllProperties()
-      .concat(type.getAllDerivedProperties())
+    getAllClassProperties(type)
+      .concat(getAllClassDerivedProperties(type))
       .sort((a, b) => a.name.localeCompare(b.name))
       .sort(
         (a, b) =>
@@ -226,9 +230,8 @@ export const TypeTree: React.FC<{
     if (node.childrenIds?.length) {
       node.isOpen = !node.isOpen;
       if (node.type instanceof Class) {
-        node.type
-          .getAllProperties()
-          .concat(node.type.getAllDerivedProperties())
+        getAllClassProperties(node.type)
+          .concat(getAllClassDerivedProperties(node.type))
           .forEach((property) => {
             const propertyTreeNodeData = getPropertyTypeTreeNodeData(
               property,

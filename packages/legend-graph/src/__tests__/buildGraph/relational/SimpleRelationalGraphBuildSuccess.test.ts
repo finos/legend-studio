@@ -30,12 +30,16 @@ import {
 } from '../../../GraphManagerTestUtils';
 import { Database } from '../../../models/metamodels/pure/packageableElements/store/relational/model/Database';
 import { RootRelationalInstanceSetImplementation } from '../../../models/metamodels/pure/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation';
-import { getOwnClassMappingsByClass } from '../../../helpers/MappingHelper';
+import {
+  findPropertyMapping,
+  getOwnClassMappingsByClass,
+} from '../../../helpers/DSLMapping_Helper';
 import { EmbeddedRelationalInstanceSetImplementation } from '../../../models/metamodels/pure/packageableElements/store/relational/mapping/EmbeddedRelationalInstanceSetImplementation';
 import { RelationalPropertyMapping } from '../../../models/metamodels/pure/packageableElements/store/relational/mapping/RelationalPropertyMapping';
 import { PRIMITIVE_TYPE } from '../../../MetaModelConst';
 import { TEST_DATA__SemiStructuredRelationalTypeRoundtrip } from './TEST_DATA__SemiStructuredRelationalTypeRoundtrip';
 import { DSLExternalFormat_GraphPreset } from '../../../graph/DSLExternalFormat_Extension';
+import { getSchema, getTable } from '../../../helpers/StoreRelational_Helper';
 
 let graphManagerState: GraphManagerState;
 
@@ -56,20 +60,20 @@ test(unitTest('Relational database is loaded properly'), () => {
   expect(db.schemas).toHaveLength(2);
   expect(db.filters).toHaveLength(4);
   expect(db.joins).toHaveLength(21);
-  const defaultSchema = db.getSchema('default');
+  const defaultSchema = getSchema(db, 'default');
   expect(defaultSchema.tables).toHaveLength(8);
   expect(defaultSchema.views).toHaveLength(7);
-  const interactionTable = defaultSchema.getTable('interactionTable');
+  const interactionTable = getTable(defaultSchema, 'interactionTable');
   expect(interactionTable.columns).toHaveLength(5);
   expect(interactionTable.primaryKey[0]?.name).toBe('ID');
-  const productSchema = db.getSchema('productSchema');
+  const productSchema = getSchema(db, 'productSchema');
   expect(productSchema.tables).toHaveLength(1);
   expect(productSchema.views).toHaveLength(0);
   expect(db.includes).toHaveLength(1);
   // dbInc
   const dbInc = guaranteeType(db.includes[0]?.value, Database);
   expect(dbInc.path).toBe('meta::relational::tests::dbInc');
-  const dbIncDefaultSchema = dbInc.getSchema('default');
+  const dbIncDefaultSchema = getSchema(dbInc, 'default');
   expect(dbIncDefaultSchema.tables).toHaveLength(9);
   expect(dbIncDefaultSchema.views).toHaveLength(3);
   // add join/fiilter tests
@@ -106,7 +110,7 @@ test(unitTest('Relational Mapping is loaded properly'), () => {
   );
   expect(firmExtensionSetImpl.propertyMappings).toHaveLength(3);
   const embeddedProperty = guaranteeType(
-    firmExtensionSetImpl.findPropertyMapping('employeesExt', undefined),
+    findPropertyMapping(firmExtensionSetImpl, 'employeesExt', undefined),
     EmbeddedRelationalInstanceSetImplementation,
   );
   expect(embeddedProperty.propertyMappings).toHaveLength(1);

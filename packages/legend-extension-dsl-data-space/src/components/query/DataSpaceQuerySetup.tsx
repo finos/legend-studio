@@ -213,14 +213,14 @@ export const DataspaceQuerySetup = observer(
               querySetupState.setUpDataSpaceState.isInProgress && (
                 <BlankPanelContent>
                   {querySetupState.queryStore.buildGraphState.message ??
-                    querySetupState.queryStore.graphManagerState.graph
-                      .systemModel.buildState.message ??
-                    querySetupState.queryStore.graphManagerState.graph
-                      .dependencyManager.buildState.message ??
-                    querySetupState.queryStore.graphManagerState.graph
-                      .generationModel.buildState.message ??
-                    querySetupState.queryStore.graphManagerState.graph
-                      .buildState.message}
+                    querySetupState.queryStore.graphManagerState
+                      .systemBuildState.message ??
+                    querySetupState.queryStore.graphManagerState
+                      .dependenciesBuildState.message ??
+                    querySetupState.queryStore.graphManagerState
+                      .generationsBuildState.message ??
+                    querySetupState.queryStore.graphManagerState.graphBuildState
+                      .message}
                 </BlankPanelContent>
               )}
             {!querySetupState.dataSpaceViewerState &&

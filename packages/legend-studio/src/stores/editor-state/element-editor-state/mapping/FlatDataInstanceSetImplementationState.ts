@@ -36,10 +36,10 @@ import {
   type AbstractFlatDataPropertyMapping,
   type PropertyMapping,
   type Property,
+  type RawLambda,
   LAMBDA_PIPE,
   GRAPH_MANAGER_EVENT,
   ParserError,
-  RawLambda,
   FlatDataPropertyMapping,
   EmbeddedFlatDataPropertyMapping,
   Class,
@@ -47,6 +47,8 @@ import {
   PackageableElementExplicitReference,
   PropertyExplicitReference,
   buildSourceInformationSourceId,
+  stub_RawLambda,
+  isStubbed_RawLambda,
 } from '@finos/legend-graph';
 import { MAPPING_ELEMENT_SOURCE_ID_LABEL } from './MappingEditorState';
 
@@ -67,16 +69,16 @@ export class FlatDataPropertyMappingState extends PropertyMappingState {
 
   get lambdaId(): string {
     return buildSourceInformationSourceId([
-      this.propertyMapping.owner.parent.path,
+      this.propertyMapping._OWNER._PARENT.path,
       MAPPING_ELEMENT_SOURCE_ID_LABEL.FLAT_DATA_CLASS_MAPPING,
-      this.propertyMapping.owner.id.value,
+      this.propertyMapping._OWNER.id.value,
       this.propertyMapping.property.value.name,
       this.uuid, // in case of duplications
     ]);
   }
 
   *convertLambdaGrammarStringToObject(): GeneratorFn<void> {
-    const emptyLambda = RawLambda.createStub();
+    const emptyLambda = stub_RawLambda();
     if (this.lambdaString) {
       try {
         const lambda =
@@ -108,7 +110,7 @@ export class FlatDataPropertyMappingState extends PropertyMappingState {
 
   *convertLambdaObjectToGrammarString(pretty: boolean): GeneratorFn<void> {
     if (this.propertyMapping instanceof FlatDataPropertyMapping) {
-      if (!this.propertyMapping.transform.isStub) {
+      if (!isStubbed_RawLambda(this.propertyMapping.transform)) {
         try {
           const lambdas = new Map<string, RawLambda>();
           lambdas.set(this.lambdaId, this.propertyMapping.transform);
@@ -209,7 +211,7 @@ export abstract class FlatDataInstanceSetImplementationState extends InstanceSet
     this.propertyMappingStates.forEach((pm) => {
       if (
         pm.propertyMapping instanceof FlatDataPropertyMapping &&
-        !pm.propertyMapping.transform.isStub
+        !isStubbed_RawLambda(pm.propertyMapping.transform)
       ) {
         lambdas.set(pm.lambdaId, pm.propertyMapping.transform);
         propertyMappingStates.set(pm.lambdaId, pm);

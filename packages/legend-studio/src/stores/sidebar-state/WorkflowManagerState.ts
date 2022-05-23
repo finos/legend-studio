@@ -186,7 +186,7 @@ export class WorkflowLogState {
 }
 
 export class WorkflowState {
-  uuid = uuid();
+  readonly uuid = uuid();
   editorStore: EditorStore;
   workflowManagerState: WorkflowManagerState;
   treeData: TreeData<WorkflowExplorerTreeNodeData>;

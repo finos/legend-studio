@@ -18,6 +18,7 @@ import type { Entity } from '@finos/legend-model-storage';
 import type { TreeData, TreeNodeData } from '@finos/legend-art';
 import {
   type GeneratorFn,
+  type Writable,
   assertErrorThrown,
   LogEvent,
   addUniqueEntry,
@@ -26,6 +27,7 @@ import {
   guaranteeNonNullable,
   isNonNullable,
   filterByType,
+  ActionState,
 } from '@finos/legend-shared';
 import { observable, action, makeObservable, flow, flowResult } from 'mobx';
 import { LEGEND_STUDIO_APP_EVENT } from '../../../LegendStudioAppEvent';
@@ -37,12 +39,15 @@ import {
   DatabaseBuilderInput,
   DatabasePattern,
   TargetDatabase,
-  getDbNullableTable,
   PackageableElementExplicitReference,
   Column,
   Database,
   isValidFullPath,
   resolvePackagePathAndElementName,
+  isStubbed_PackageableElement,
+  getSchema,
+  getNullableSchema,
+  getNullableTable,
 } from '@finos/legend-graph';
 import { connection_setStore } from '../../../graphModifier/DSLMapping_GraphModifierHelper';
 
@@ -277,25 +282,35 @@ export class DatabaseBuilderState {
       const database = (yield flowResult(
         this.buildDatabaseFromInput(databaseBuilderInput),
       )) as Database;
-      const tables = database.getSchema(schema.name).tables;
+      const tables = getSchema(database, schema.name).tables;
       const childrenIds = schemaNode.childrenIds ?? [];
       schema.tables = tables;
       tables
         .slice()
         .sort((tableA, tableB) => tableA.name.localeCompare(tableB.name))
-        .forEach((e) => {
-          e.schema = schema;
-          const tableId = `${schema.name}.${e.name}`;
+        .forEach((table) => {
+          table.schema = schema;
+          const tableId = `${schema.name}.${table.name}`;
           const tableNode = new TableDatabaseBuilderTreeNodeData(
             tableId,
             schemaNode.id,
-            e,
+            table,
           );
 
-          tableNode.isChecked = Boolean(
-            this.currentDatabase &&
-              getDbNullableTable(e.name, schema.name, this.currentDatabase),
-          );
+          if (this.currentDatabase) {
+            const matchingSchema = getNullableSchema(
+              this.currentDatabase,
+              schema.name,
+            );
+            tableNode.isChecked = Boolean(
+              matchingSchema
+                ? getNullableTable(matchingSchema, table.name)
+                : undefined,
+            );
+          } else {
+            tableNode.isChecked = false;
+          }
+
           treeData.nodes.set(tableId, tableNode);
           addUniqueEntry(childrenIds, tableId);
         });
@@ -496,6 +511,7 @@ export class DatabaseBuilderState {
     (yield this.editorStore.graphManagerState.graphManager.buildGraph(
       dbGraph,
       entities,
+      ActionState.create(),
     )) as Entity[];
     assertTrue(
       dbGraph.ownDatabases.length === 1,
@@ -515,6 +531,7 @@ export class DatabaseBuilderState {
     (yield this.editorStore.graphManagerState.graphManager.buildGraph(
       dbGraph,
       entities,
+      ActionState.create(),
     )) as Entity[];
     assertTrue(
       dbGraph.ownDatabases.length === 1,
@@ -597,22 +614,22 @@ export class DatabaseBuilderState {
       return true;
     });
     // update existing schemas
-    generatedDb.schemas.forEach((s) => {
-      s.owner = current;
+    generatedDb.schemas.forEach((schema) => {
+      (schema as Writable<Schema>)._OWNER = current;
       const currentSchemaIndex = current.schemas.findIndex(
-        (c) => c.name === s.name,
+        (c) => c.name === schema.name,
       );
       if (currentSchemaIndex !== -1) {
-        current.schemas[currentSchemaIndex] = s;
+        current.schemas[currentSchemaIndex] = schema;
       } else {
-        current.schemas.push(s);
+        current.schemas.push(schema);
       }
     });
   }
 
   get currentDatabase(): Database | undefined {
     const store = this.connection.store.value;
-    if (store instanceof Database && !store.isStub) {
+    if (store instanceof Database && !isStubbed_PackageableElement(store)) {
       return store;
     }
     return undefined;

@@ -21,21 +21,10 @@ import { Table } from './Table';
 import type { Relation } from './RelationalOperationElement';
 import { ViewExplicitReference, ViewImplicitReference } from './ViewReference';
 import { View } from './View';
-import type { Schema } from './Schema';
 import {
   TableExplicitReference,
   TableImplicitReference,
 } from './TableReference';
-
-export const getSchemaFromRelation = (value: Relation): Schema => {
-  if (value instanceof Table || value instanceof View) {
-    return value.schema;
-  }
-  throw new UnsupportedOperationError(
-    `Can't derive schema for relation`,
-    value,
-  );
-};
 
 export const createExplicitRelationReference = (
   value: Relation,

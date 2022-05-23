@@ -16,18 +16,13 @@
 
 import { uuid } from '@finos/legend-shared';
 import type { SetImplementationReference } from './SetImplementationReference';
-import type { Stubable } from '../../../../../helpers/Stubable';
 
-export class SetImplementationContainer implements Stubable {
-  readonly uuid = uuid();
+export class SetImplementationContainer {
+  readonly _UUID = uuid();
 
   setImplementation: SetImplementationReference;
 
   constructor(setImplementation: SetImplementationReference) {
     this.setImplementation = setImplementation;
-  }
-
-  get isStub(): boolean {
-    return !this.setImplementation.value.id;
   }
 }

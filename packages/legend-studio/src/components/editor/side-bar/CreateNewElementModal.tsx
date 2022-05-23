@@ -24,6 +24,8 @@ import {
   NewFileGenerationDriver,
   resolvePackageAndElementName,
   CONNECTION_TYPE,
+  NewDataElementDriver,
+  EmbeddedDataTypeOptions,
 } from '../../../stores/NewElementState';
 import { Dialog, compareLabelFn, CustomSelectorInput } from '@finos/legend-art';
 import type { EditorStore } from '../../../stores/EditorStore';
@@ -36,11 +38,13 @@ import {
   type Store,
   type Class,
   ELEMENT_PATH_DELIMITER,
-  PACKAGEABLE_ELEMENT_TYPE,
 } from '@finos/legend-graph';
 import type { FileGenerationTypeOption } from '../../../stores/editor-state/GraphGenerationState';
 import { flowResult } from 'mobx';
 import { useApplicationStore } from '@finos/legend-application';
+import type { EmbeddedDataTypeOption } from '../../../stores/editor-state/element-editor-state/data/DataEditorState';
+import type { DSLData_LegendStudioPlugin_Extension } from '../../../stores/DSLData_LegendStudioPlugin_Extension';
+import { PACKAGEABLE_ELEMENT_TYPE } from '../../../stores/shared/ModelUtil';
 
 export const getElementTypeLabel = (
   editorStore: EditorStore,
@@ -69,6 +73,8 @@ export const getElementTypeLabel = (
       return 'file generation';
     case PACKAGEABLE_ELEMENT_TYPE.GENERATION_SPECIFICATION:
       return 'generation specification';
+    case PACKAGEABLE_ELEMENT_TYPE.DATA:
+      return 'data';
     default: {
       if (type) {
         const extraElementTypeLabelGetters = editorStore.pluginManager
@@ -100,6 +106,47 @@ interface ElementTypeSelectOption {
 const buildElementTypeOption = (type: string): ElementTypeSelectOption => ({
   label: type,
   value: type,
+});
+
+const NewDataElementDriverEditor = observer(() => {
+  const editorStore = useEditorStore();
+  const newDataELementDriver =
+    editorStore.newElementState.getNewElementDriver(NewDataElementDriver);
+  const extraOptionTypes = editorStore.pluginManager
+    .getStudioPlugins()
+    .flatMap(
+      (plugin) =>
+        (
+          plugin as DSLData_LegendStudioPlugin_Extension
+        ).getExtraEmbeddedDataTypeOptions?.() ?? [],
+    );
+  let options: EmbeddedDataTypeOption[] = Object.values(
+    EmbeddedDataTypeOptions,
+  ).map((typeOption) => ({
+    label: typeOption,
+    value: typeOption,
+  }));
+  options = options.concat(extraOptionTypes);
+  const onTypeSelectionChange = (val: EmbeddedDataTypeOption | null): void => {
+    if (!val) {
+      newDataELementDriver.setEmbeddedDataOption(undefined);
+    } else {
+      newDataELementDriver.setEmbeddedDataOption(val);
+    }
+  };
+  return (
+    <div>
+      <div className="">
+        <CustomSelectorInput
+          className="sub-panel__content__form__section__dropdown"
+          options={options}
+          onChange={onTypeSelectionChange}
+          value={newDataELementDriver.embeddedDataOption}
+          darkMode={true}
+        />
+      </div>
+    </div>
+  );
 });
 
 const NewRuntimeDriverEditor = observer(() => {
@@ -303,6 +350,8 @@ const renderNewElementDriver = (
       return <NewConnectionDriverEditor />;
     case PACKAGEABLE_ELEMENT_TYPE.FILE_GENERATION:
       return <NewFileGenerationDriverEditor />;
+    case PACKAGEABLE_ELEMENT_TYPE.DATA:
+      return <NewDataElementDriverEditor />;
     default: {
       const extraNewElementDriverEditorCreators = editorStore.pluginManager
         .getStudioPlugins()

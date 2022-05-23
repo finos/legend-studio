@@ -237,19 +237,18 @@ const testDependencyElements = async (
     editorStore.graphManagerState.systemModel,
     dependencyManager,
     dependencyEntitiesMap,
+    editorStore.graphManagerState.dependenciesBuildState,
   );
   expect(
-    editorStore.graphManagerState.graph.dependencyManager.buildState
-      .hasSucceeded,
+    editorStore.graphManagerState.dependenciesBuildState.hasSucceeded,
   ).toBe(true);
 
   await editorStore.graphManagerState.graphManager.buildGraph(
     editorStore.graphManagerState.graph,
     entities,
+    editorStore.graphManagerState.graphBuildState,
   );
-  expect(editorStore.graphManagerState.graph.buildState.hasSucceeded).toBe(
-    true,
-  );
+  expect(editorStore.graphManagerState.graphBuildState.hasSucceeded).toBe(true);
 
   Array.from(dependencyEntitiesMap.keys()).forEach((k) =>
     expect(dependencyManager.getModel(k)).toBeDefined(),

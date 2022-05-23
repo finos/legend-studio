@@ -86,9 +86,22 @@ export const MockedMonacoEditorAPI = {
   EndOfLinePreference: MockedMonacoEditorEndOfLinePreference,
 };
 
+export enum MockedMonacoLanguageCompletionItemKind {
+  Keyword = 17,
+  Snippet = 27,
+}
+
+export enum MockedMonacoLanguageCompletionItemInsertTextRule {
+  InsertAsSnippet = 4,
+}
+
 export const MockedMonacoEditorLanguagesAPI = {
-  registerCodeLensProvider: jest.fn(),
   register: jest.fn(),
   setLanguageConfiguration: jest.fn(),
   setMonarchTokensProvider: jest.fn(),
+  registerCodeLensProvider: jest.fn(),
+  registerHoverProvider: jest.fn(),
+  registerCompletionItemProvider: jest.fn(),
+  CompletionItemKind: MockedMonacoLanguageCompletionItemKind,
+  CompletionItemInsertTextRule: MockedMonacoLanguageCompletionItemKind,
 };

@@ -27,10 +27,7 @@ import {
   V1_TEXT_ELEMENT_PROTOCOL_TYPE,
 } from './v1/transformation/pureProtocol/V1_DSLText_ProtocolHelper';
 import { getOwnText } from '../../../graphManager/DSLText_GraphManagerHelper';
-import {
-  Text,
-  TEXT_TYPE,
-} from '../../metamodels/pure/model/packageableElements/text/DSLText_Text';
+import { Text } from '../../metamodels/pure/model/packageableElements/text/DSLText_Text';
 import {
   type PackageableElement,
   type V1_ElementProtocolClassifierPathGetter,
@@ -84,10 +81,7 @@ export class DSLText_PureProtocolProcessorPlugin extends PureProtocolProcessorPl
             elementProtocol.name,
           );
           const element = getOwnText(path, context.currentSubGraph);
-          element.type =
-            Object.values(TEXT_TYPE).find(
-              (type) => type === elementProtocol.type,
-            ) ?? TEXT_TYPE.PLAIN_TEXT;
+          element.type = elementProtocol.type;
           element.content = guaranteeNonNullable(
             elementProtocol.content,
             `Text element 'content' field is missing`,
@@ -146,7 +140,7 @@ export class DSLText_PureProtocolProcessorPlugin extends PureProtocolProcessorPl
           const protocol = new V1_Text();
           V1_initPackageableElement(protocol, metamodel);
           protocol.name = metamodel.name;
-          protocol.package = metamodel.package?.fullPath ?? '';
+          protocol.package = metamodel.package?.path ?? '';
           protocol.content = metamodel.content;
           protocol.type = metamodel.type;
           return protocol;

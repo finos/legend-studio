@@ -14,26 +14,18 @@
  * limitations under the License.
  */
 
-import {
-  CORE_HASH_STRUCTURE,
-  MULTIPLICITY_INFINITE,
-} from '../../../../../../../MetaModelConst';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import { hashArray, type Hashable } from '@finos/legend-shared';
 
 export class V1_Multiplicity implements Hashable {
   lowerBound = 0;
   upperBound?: number | undefined;
 
-  get str(): string {
-    if (this.lowerBound === this.upperBound) {
-      return this.lowerBound.toString();
-    } else if (this.lowerBound === 0 && this.upperBound === undefined) {
-      return MULTIPLICITY_INFINITE;
-    }
-    return `${this.lowerBound}..${this.upperBound ?? MULTIPLICITY_INFINITE}`;
-  }
-
   get hashCode(): string {
-    return hashArray([CORE_HASH_STRUCTURE.MULTIPLICITY, this.str]);
+    return hashArray([
+      CORE_HASH_STRUCTURE.MULTIPLICITY,
+      this.lowerBound.toString(),
+      this.upperBound?.toString() ?? '',
+    ]);
   }
 }

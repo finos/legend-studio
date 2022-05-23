@@ -34,7 +34,6 @@ import {
   ObjectInputData,
   ObjectInputType,
 } from '../models/metamodels/pure/packageableElements/store/modelToModel/mapping/ObjectInputData';
-import { Class } from '../models/metamodels/pure/packageableElements/domain/Class';
 import { PackageableElementExplicitReference } from '../models/metamodels/pure/packageableElements/PackageableElementReference';
 import {
   TEST__buildGraphWithEntities,
@@ -43,6 +42,7 @@ import {
 import { TEST_DATA__MilestonedClassRoundtrip } from './roundtripTestData/TEST_DATA__DomainRoundtrip';
 import type { Entity } from '@finos/legend-model-storage';
 import { getMilestoneTemporalStereotype } from '../helpers/DomainHelper';
+import { stub_Class } from '../graphManager/action/creation/DomainModelCreatorHelper';
 
 test(
   unitTest(
@@ -77,19 +77,19 @@ test(
 
 test(unitTest('JSON Object input data should be minified'), () => {
   const test1 = new ObjectInputData(
-    PackageableElementExplicitReference.create(Class.createStub()),
+    PackageableElementExplicitReference.create(stub_Class()),
     ObjectInputType.JSON,
     '{"a":1}',
   );
 
   const test2 = new ObjectInputData(
-    PackageableElementExplicitReference.create(Class.createStub()),
+    PackageableElementExplicitReference.create(stub_Class()),
     ObjectInputType.JSON,
     '{\n  "a":1\n}',
   );
 
   const test3 = new ObjectInputData(
-    PackageableElementExplicitReference.create(Class.createStub()),
+    PackageableElementExplicitReference.create(stub_Class()),
     ObjectInputType.JSON,
     '{\n  "a":1, \n "b" : {\n  "b1":"hello"\n} \n}',
   );

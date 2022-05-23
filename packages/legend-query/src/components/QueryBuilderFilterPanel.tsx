@@ -27,7 +27,6 @@ import {
   MenuContentItem,
   BlankPanelPlaceholder,
   FilledTriangleIcon,
-  RefreshIcon,
   CompressIcon,
   ExpandIcon,
   BrushIcon,
@@ -206,6 +205,11 @@ const QueryBuilderFilterConditionEditor = observer(
       }),
       [handleDrop],
     );
+    const resetNode = (): void => {
+      node.condition.setValue(
+        node.condition.operator.getDefaultFilterConditionValue(node.condition),
+      );
+    };
 
     return (
       <div className="query-builder-filter-tree__node__label__content dnd__overlay__container">
@@ -265,7 +269,7 @@ const QueryBuilderFilterConditionEditor = observer(
               )}
               <QueryBuilderValueSpecificationEditor
                 valueSpecification={node.condition.value}
-                updateValueSpecification={(val: ValueSpecification): void =>
+                updateValue={(val: ValueSpecification): void =>
                   node.condition.setValue(val)
                 }
                 graph={graph}
@@ -274,6 +278,7 @@ const QueryBuilderFilterConditionEditor = observer(
                     node.condition.propertyExpressionState.propertyExpression
                       .func.genericType.value.rawType,
                 }}
+                resetValue={resetNode}
               />
             </div>
           )}
@@ -371,15 +376,6 @@ const QueryBuilderFilterTreeNodeContainer = observer(
     const isExpandable = node instanceof QueryBuilderFilterTreeGroupNodeData;
     const selectNode = (): void => onNodeSelect?.(node);
     const toggleExpandNode = (): void => node.setIsOpen(!node.isOpen);
-    const resetNode = (): void => {
-      if (node instanceof QueryBuilderFilterTreeConditionNodeData) {
-        node.condition.setValue(
-          node.condition.operator.getDefaultFilterConditionValue(
-            node.condition,
-          ),
-        );
-      }
-    };
     const removeNode = (): void => filterState.removeNodeAndPruneBranch(node);
 
     // Drag and Drop
@@ -559,16 +555,6 @@ const QueryBuilderFilterTreeNodeContainer = observer(
             </div>
           </div>
           <div className="query-builder-filter-tree__node__actions">
-            {node instanceof QueryBuilderFilterTreeConditionNodeData && (
-              <button
-                className="query-builder-filter-tree__node__action"
-                tabIndex={-1}
-                title="Reset Filter Value"
-                onClick={resetNode}
-              >
-                <RefreshIcon style={{ fontSize: '1.6rem' }} />
-              </button>
-            )}
             <button
               className="query-builder-filter-tree__node__action"
               tabIndex={-1}

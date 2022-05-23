@@ -22,13 +22,14 @@ import type { SectionIndex } from './SectionIndex';
 import type { PackageableElementExplicitReference } from '../PackageableElementReference';
 
 export abstract class Section implements Hashable {
-  readonly parent: SectionIndex;
+  readonly _OWNER: SectionIndex;
+
   parserName: string;
   elements: PackageableElementExplicitReference<PackageableElement>[] = [];
 
-  constructor(parserName: string, parent: SectionIndex) {
+  constructor(parserName: string, owner: SectionIndex) {
     this.parserName = parserName;
-    this.parent = parent;
+    this._OWNER = owner;
   }
 
   get hashCode(): string {

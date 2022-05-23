@@ -49,6 +49,7 @@ test(unitTest('Missing super type'), async () => {
     graphManagerState.graphManager.buildGraph(
       graphManagerState.graph,
       TEST_DATA__MissingSuperType as Entity[],
+      graphManagerState.graphBuildState,
     ),
   ).rejects.toThrowError(
     `Can't find supertype 'ui::test1::Organism' of class 'ui::test1::Animal'`,
@@ -60,6 +61,7 @@ test(unitTest('Missing profile'), async () => {
     graphManagerState.graphManager.buildGraph(
       graphManagerState.graph,
       TEST_DATA__MissingProfile as Entity[],
+      graphManagerState.graphBuildState,
     ),
   ).rejects.toThrowError(`Can't find profile 'ui::test1::ProfileTest'`);
 });
@@ -69,6 +71,7 @@ test(unitTest('Duplicated element'), async () => {
     graphManagerState.graphManager.buildGraph(
       graphManagerState.graph,
       TEST_DATA__DuplicatedElement as Entity[],
+      graphManagerState.graphBuildState,
     ),
   ).rejects.toThrowError(`Element 'ui::test1::Animal' already exists`);
 });
@@ -78,6 +81,7 @@ test(unitTest('Missing class property'), async () => {
     graphManagerState.graphManager.buildGraph(
       graphManagerState.graph,
       TEST_DATA__MissingProperty as Entity[],
+      graphManagerState.graphBuildState,
     ),
   ).rejects.toThrowError(`Can't find type 'ui::test1::NotFound'`);
 });
@@ -87,6 +91,7 @@ test(unitTest('Missing stereotype'), async () => {
     graphManagerState.graphManager.buildGraph(
       graphManagerState.graph,
       TEST_DATA__MissingStereoType as Entity[],
+      graphManagerState.graphBuildState,
     ),
   ).rejects.toThrowError(
     `Can't find stereotype 'missingStereotype' in profile 'ui::meta::pure::profiles::TestProfile'`,
@@ -98,6 +103,7 @@ test(unitTest('Missing tagged value'), async () => {
     graphManagerState.graphManager.buildGraph(
       graphManagerState.graph,
       TEST_DATA__MissingTagValue as Entity[],
+      graphManagerState.graphBuildState,
     ),
   ).rejects.toThrowError(
     `Can't find tag 'missingTag' in profile 'ui::meta::pure::profiles::TestProfile'`,
@@ -109,6 +115,7 @@ test(unitTest('Missing class in Pure Instance class mapping'), async () => {
     graphManagerState.graphManager.buildGraph(
       graphManagerState.graph,
       TEST_DATA__MissingTargetClassinMapping as Entity[],
+      graphManagerState.graphBuildState,
     ),
   ).rejects.toThrowError(`Can't find type 'ui::test1::Target_Something'`);
 });
@@ -136,6 +143,7 @@ test.skip(unitTest('Missing class mapping with ID'), async () => {
     graphManagerState.graphManager.buildGraph(
       graphManagerState.graph,
       TEST_DATA__MissingClassMappingWithTargetId as Entity[],
+      graphManagerState.graphBuildState,
     ),
   ).rejects.toThrowError(
     `Can't find class mapping with ID 'notFound' in mapping 'ui::myMap'`,
@@ -154,6 +162,7 @@ test.skip(unitTest('Duplicate enumeration values'), async () => {
     graphManagerState.graphManager.buildGraph(
       graphManagerState.graph,
       TEST_DATA__DuplicateEnumerationValues as Entity[],
+      graphManagerState.graphBuildState,
     ),
   ).rejects.toThrowError(
     `Found duplicated value 'enum_value' in enumeration 'test::enum'`,
@@ -172,6 +181,7 @@ test.skip(unitTest('Duplicate profile tags'), async () => {
     graphManagerState.graphManager.buildGraph(
       graphManagerState.graph,
       TEST_DATA__DuplicateProfileTags as Entity[],
+      graphManagerState.graphBuildState,
     ),
   ).rejects.toThrowError(
     `Found duplicated tag 'tag1' in profile 'test::profile1'`,
@@ -190,6 +200,7 @@ test.skip(unitTest('Duplicate profile stereotypes'), async () => {
     graphManagerState.graphManager.buildGraph(
       graphManagerState.graph,
       TEST_DATA__DuplicateProfileStereotypes as Entity[],
+      graphManagerState.graphBuildState,
     ),
   ).rejects.toThrowError(
     `Found duplicated stereotype 'stereotype1' in profile 'test::profile2'`,
@@ -208,6 +219,7 @@ test.skip(unitTest('Duplicate class properties'), async () => {
     graphManagerState.graphManager.buildGraph(
       graphManagerState.graph,
       TEST_DATA__DuplicateClassProperties as Entity[],
+      graphManagerState.graphBuildState,
     ),
   ).rejects.toThrowError(
     `Found duplicated property 'abc' in class 'test::class'`,
@@ -226,6 +238,7 @@ test.skip(unitTest('Duplicate association properties'), async () => {
     graphManagerState.graphManager.buildGraph(
       graphManagerState.graph,
       TEST_DATA__DuplicateAssociationProperties as Entity[],
+      graphManagerState.graphBuildState,
     ),
   ).rejects.toThrowError(
     `Found duplicated property 'abc' in association 'test::association'`,

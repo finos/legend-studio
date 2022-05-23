@@ -19,6 +19,7 @@ import type { MenuProps as MuiMenuProps } from '@mui/material';
 import { BaseMenu } from './BaseMenu';
 
 export const ContextMenu: React.FC<{
+  children: React.ReactNode;
   menuProps?: Partial<MuiMenuProps>;
   content?: React.ReactNode;
   onClose?: () => void;

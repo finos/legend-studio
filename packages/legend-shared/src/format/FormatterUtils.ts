@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import {
   stringify as losslessStringify,
   parse as losslessParse,
@@ -142,3 +143,9 @@ export const tryToMinifyLosslessJSONString = (value: string): string => {
     return value.replace(/\n\s*/g, '');
   }
 };
+
+export const indent = (value: string, indentText: string): string =>
+  value
+    .split('\n')
+    .map((line) => `${indentText}${line}`)
+    .join('\n');

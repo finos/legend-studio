@@ -83,13 +83,18 @@ import {
   getAllEnumerationMappings,
   getClassMappingById,
   getClassMappingsByClass,
-} from '../../../../../../../helpers/MappingHelper';
+} from '../../../../../../../helpers/DSLMapping_Helper';
 import { GraphBuilderError } from '../../../../../../../graphManager/GraphManagerUtils';
 import type { AbstractProperty } from '../../../../../../metamodels/pure/packageableElements/domain/AbstractProperty';
 import { BindingTransformer } from '../../../../../../metamodels/pure/packageableElements/externalFormat/store/DSLExternalFormat_BindingTransformer';
 import type { Mapping } from '../../../../../../metamodels/pure/packageableElements/mapping/Mapping';
 import { V1_resolveBinding } from './V1_DSLExternalFormat_GraphBuilderHelper';
 import { TEMPORARY__UnresolvedSetImplementation } from '../../../../../../metamodels/pure/packageableElements/mapping/TEMPORARY__UnresolvedSetImplementation';
+import {
+  getAssociatedPropertyClass,
+  getOwnProperty,
+  getClassProperty,
+} from '../../../../../../../helpers/DomainHelper';
 
 /**
  * This test is skipped because we want to temporarily relax graph building algorithm
@@ -113,16 +118,19 @@ const resolveRelationalPropertyMappingSource = (
   if (immediateParent instanceof AssociationImplementation) {
     if (value.source) {
       return TEMPORARY__getClassMappingByIdOrReturnUnresolved(
-        immediateParent.parent,
+        immediateParent._PARENT,
         value.source,
       );
     }
-    const property = immediateParent.association.value.getProperty(
+    const property = getOwnProperty(
+      immediateParent.association.value,
       value.property.property,
     );
-    const _class =
-      immediateParent.association.value.getPropertyAssociatedClass(property);
-    const setImpls = getClassMappingsByClass(immediateParent.parent, _class);
+    const _class = getAssociatedPropertyClass(
+      immediateParent.association.value,
+      property,
+    );
+    const setImpls = getClassMappingsByClass(immediateParent._PARENT, _class);
     return setImpls.find((r) => r.root.value) ?? setImpls[0];
   }
   return topParent;
@@ -181,7 +189,7 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
     if (protocol.localMappingProperty) {
       const localMappingProperty = protocol.localMappingProperty;
       const mappingClass = new MappingClass(
-        `${this.topParent?.parent.path}_${this.topParent?.id}${protocol.property.property}`,
+        `${this.topParent?._PARENT.path}_${this.topParent?.id}${protocol.property.property}`,
       );
       const _multiplicity = this.context.graph.getMultiplicity(
         localMappingProperty.multiplicity.lowerBound,
@@ -205,7 +213,7 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
       localMapping.localMappingPropertyMultiplicity = _multiplicity;
       localMapping.localMappingPropertyType = this.context.resolveType(
         localMappingProperty.type,
-      ).value;
+      );
     } else {
       assertNonEmptyString(
         protocol.property.class,
@@ -220,24 +228,24 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
       if (protocol.target) {
         targetSetImplementation =
           TEMPORARY__getClassMappingByIdOrReturnUnresolved(
-            topParent.parent,
+            topParent._PARENT,
             protocol.target,
           );
       } else {
         // NOTE: if no there is one non-root class mapping, auto-nominate that as the target set implementation
         const setImplementation = getClassMappingsByClass(
-          topParent.parent,
+          topParent._PARENT,
           guaranteeType(propertyType, Class),
         )[0];
         targetSetImplementation = guaranteeNonNullable(
           setImplementation,
-          `Can't find any class mapping for class '${propertyType.path}' in mapping '${topParent.parent.path}'`,
+          `Can't find any class mapping for class '${propertyType.path}' in mapping '${topParent._PARENT.path}'`,
         );
       }
     }
     const sourceSetImplementation = protocol.source
       ? TEMPORARY__getClassMappingByIdOrReturnUnresolved(
-          topParent.parent,
+          topParent._PARENT,
           protocol.source,
         )
       : undefined;
@@ -261,7 +269,7 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
         // TODO: Since we don't support includedMappings, this will throw errors, but right now we can just make it undefined.
         this.context.log.debug(
           LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_FAILURE),
-          `Can't find enumeration mapping with ID '${protocol.enumMappingId}' in mapping '${topParent.parent.path}' (perhaps because we haven't supported included mappings)`,
+          `Can't find enumeration mapping with ID '${protocol.enumMappingId}' in mapping '${topParent._PARENT.path}' (perhaps because we haven't supported included mappings)`,
         );
       }
       purePropertyMapping.transformer = enumerationMapping;
@@ -303,7 +311,10 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
       );
     }
     // NOTE: mapping for derived property is not supported
-    const property = propertyOwnerClass.getProperty(protocol.property.property);
+    const property = getClassProperty(
+      propertyOwnerClass,
+      protocol.property.property,
+    );
     const sourceSetImplementation = guaranteeNonNullable(
       this.immediateParent instanceof EmbeddedFlatDataPropertyMapping
         ? this.immediateParent
@@ -315,7 +326,7 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
     if (propertyType instanceof Class && protocol.target) {
       targetSetImplementation = this.topParent
         ? TEMPORARY__getClassMappingByIdOrReturnUnresolved(
-            this.topParent.parent,
+            this.topParent._PARENT,
             protocol.target,
           )
         : undefined;
@@ -345,7 +356,7 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
         // TODO: Since we don't support includedMappings, this will throw errors, but right now we can just make it undefined.
         this.context.log.debug(
           LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_FAILURE),
-          `Can't find enumeration mapping with ID '${protocol.enumMappingId}' in mapping '${this.topParent?.parent.path} (perhaps because we haven't supported included mappings)`,
+          `Can't find enumeration mapping with ID '${protocol.enumMappingId}' in mapping '${this.topParent?._PARENT.path} (perhaps because we haven't supported included mappings)`,
         );
       }
       flatDataPropertyMapping.transformer = enumerationMapping;
@@ -381,7 +392,10 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
         `Can't find property owner class for property '${protocol.property.property}'`,
       );
     }
-    const property = propertyOwnerClass.getProperty(protocol.property.property);
+    const property = getClassProperty(
+      propertyOwnerClass,
+      protocol.property.property,
+    );
     let _class: PackageableElementReference<Class>;
     if (protocol.class) {
       _class = this.context.resolveClass(protocol.class);
@@ -454,7 +468,7 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
     if (protocol.localMappingProperty) {
       const localMappingProperty = protocol.localMappingProperty;
       const mappingClass = new MappingClass(
-        `${this.topParent?.parent.path}_${this.topParent?.id}${protocol.property.property}`,
+        `${this.topParent?._PARENT.path}_${this.topParent?.id}${protocol.property.property}`,
       );
       const _multiplicity = this.context.graph.getMultiplicity(
         localMappingProperty.multiplicity.lowerBound,
@@ -478,8 +492,8 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
       localMapping.localMappingPropertyMultiplicity = _multiplicity;
       localMapping.localMappingPropertyType = this.context.resolveType(
         localMappingProperty.type,
-      ).value;
-      propertyOwner = property.owner;
+      );
+      propertyOwner = property._OWNER;
     } else {
       if (this.immediateParent instanceof AssociationImplementation) {
         propertyOwner = this.immediateParent.association.value;
@@ -497,19 +511,22 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
           `Can't find property owner class for property '${protocol.property.property}'`,
         );
       }
-      property = propertyOwner.getProperty(protocol.property.property);
+      property =
+        propertyOwner instanceof Class
+          ? getClassProperty(propertyOwner, protocol.property.property)
+          : getOwnProperty(propertyOwner, protocol.property.property);
     }
     // NOTE: mapping for derived property is not supported
     // since we are not doing embedded property mappings yet, the target must have already been added to the mapping
     const propertyType = property.genericType.value.rawType;
     let targetSetImplementation: SetImplementation | undefined;
     if (propertyType instanceof Class) {
-      let parentMapping = this.topParent?.parent;
+      let parentMapping = this.topParent?._PARENT;
       if (
         !parentMapping &&
         this.immediateParent instanceof AssociationImplementation
       ) {
-        parentMapping = this.immediateParent.parent;
+        parentMapping = this.immediateParent._PARENT;
       }
       if (protocol.target) {
         targetSetImplementation = parentMapping
@@ -596,7 +613,7 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
         // TODO: Since we don't support includedMappings, this will throw errors, but right now we can just make it undefined.
         this.context.log.debug(
           LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_FAILURE),
-          `Can't find enumeration mapping with ID '${protocol.enumMappingId}' in mapping '${this.topParent?.parent.path}' (perhaps because we haven't supported included mappings)`,
+          `Can't find enumeration mapping with ID '${protocol.enumMappingId}' in mapping '${this.topParent?._PARENT.path}' (perhaps because we haven't supported included mappings)`,
         );
       }
       relationalPropertyMapping.transformer = enumerationMapping;
@@ -632,7 +649,10 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
         `Can't find property owner class for property '${protocol.property.property}'`,
       );
     }
-    const property = propertyOwnerClass.getProperty(protocol.property.property);
+    const property = getClassProperty(
+      propertyOwnerClass,
+      protocol.property.property,
+    );
     const propertyType = property.genericType.value.rawType;
     const complexClass = guaranteeType(
       propertyType,
@@ -665,7 +685,7 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
     );
     inline.inlineSetImplementation =
       TEMPORARY__getClassMappingByIdOrReturnUnresolved(
-        topParent.parent,
+        topParent._PARENT,
         protocol.setImplementationId,
       );
     return inline;
@@ -717,8 +737,8 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
             this.context,
             embedded,
             this.topParent,
-            this.topParent?.parent
-              ? getAllEnumerationMappings(this.topParent.parent)
+            this.topParent?._PARENT
+              ? getAllEnumerationMappings(this.topParent._PARENT)
               : [],
             this.tableAliasMap,
           ),
@@ -777,8 +797,8 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
             this.context,
             otherwiseEmbedded,
             this.topParent,
-            this.topParent?.parent
-              ? getAllEnumerationMappings(this.topParent.parent)
+            this.topParent?._PARENT
+              ? getAllEnumerationMappings(this.topParent._PARENT)
               : [],
             this.tableAliasMap,
           ),
@@ -790,8 +810,8 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
           this.context,
           otherwiseEmbedded,
           this.topParent,
-          this.topParent?.parent
-            ? getAllEnumerationMappings(this.topParent.parent)
+          this.topParent?._PARENT
+            ? getAllEnumerationMappings(this.topParent._PARENT)
             : [],
           this.tableAliasMap,
         ),
@@ -826,7 +846,7 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
       `XStore property 'xStoreParent' field is missing`,
     );
     const _association = xStoreParent.association.value;
-    const property = _association.getProperty(protocol.property.property);
+    const property = getOwnProperty(_association, protocol.property.property);
     const sourceSetImplementation = this.allClassMappings.find(
       (c) => c.id.value === protocol.source,
     );

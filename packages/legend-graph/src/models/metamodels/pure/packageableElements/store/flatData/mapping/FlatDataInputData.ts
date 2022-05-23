@@ -15,18 +15,18 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
+import {
+  CORE_HASH_STRUCTURE,
+  PackageableElementPointerType,
+} from '../../../../../../../MetaModelConst';
 import { InputData } from '../../../mapping/InputData';
 import type { FlatData } from '../model/FlatData';
 import type { PackageableElementReference } from '../../../PackageableElementReference';
 import {
-  PACKAGEABLE_ELEMENT_POINTER_TYPE,
-  getElementPointerHashCode,
-} from '../../../PackageableElement';
-import {
   type ValidationIssue,
   createValidationError,
 } from '../../../../../../../helpers/ValidationHelper';
+import { hashElementPointer } from '../../../../../../../MetaModelUtils';
 
 export class FlatDataInputData extends InputData implements Hashable {
   sourceFlatData: PackageableElementReference<FlatData>;
@@ -42,7 +42,8 @@ export class FlatDataInputData extends InputData implements Hashable {
   }
 
   get validationResult(): ValidationIssue | undefined {
-    if (this.sourceFlatData.value.isStub) {
+    // TODO: use `isStubbed_PackageableElement` when we refactor validation
+    if (!this.sourceFlatData.value.package && !this.sourceFlatData.value.name) {
       return createValidationError([
         'Flat-data input data source flat-data store is missing',
       ]);
@@ -53,8 +54,8 @@ export class FlatDataInputData extends InputData implements Hashable {
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.FLAT_DATA_INPUT_DATA,
-      getElementPointerHashCode(
-        PACKAGEABLE_ELEMENT_POINTER_TYPE.STORE,
+      hashElementPointer(
+        PackageableElementPointerType.STORE,
         this.sourceFlatData.hashValue,
       ),
       this.data,

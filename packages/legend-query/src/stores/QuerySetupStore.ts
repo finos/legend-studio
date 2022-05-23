@@ -35,12 +35,14 @@ import {
   type PackageableRuntime,
   type Service,
   QuerySearchSpecification,
-  PureSingleExecution,
-  PureMultiExecution,
+  getAllIncludedMappings,
 } from '@finos/legend-graph';
 import type { LegendQueryStore } from './LegendQueryStore';
 import { ProjectData } from '@finos/legend-server-depot';
-import type { PackageableElementOption } from '@finos/legend-application';
+import {
+  buildElementOption,
+  type PackageableElementOption,
+} from '@finos/legend-application';
 
 export abstract class QuerySetupState {
   setupStore: QuerySetupStore;
@@ -131,6 +133,7 @@ export class CreateQuerySetupState extends QuerySetupState {
   currentVersionId?: string | undefined;
   currentMapping?: Mapping | undefined;
   currentRuntime?: PackageableRuntime | undefined;
+  mappingOptions: PackageableElementOption<Mapping>[] = [];
 
   constructor(setupStore: QuerySetupStore) {
     super(setupStore);
@@ -141,11 +144,13 @@ export class CreateQuerySetupState extends QuerySetupState {
       currentVersionId: observable,
       currentMapping: observable,
       currentRuntime: observable,
+      mappingOptions: observable,
       runtimeOptions: computed,
       setCurrentProject: action,
       setCurrentVersionId: action,
       setCurrentMapping: action,
       setCurrentRuntime: action,
+      setMappingOptions: action,
       loadProjects: flow,
     });
   }
@@ -166,18 +171,25 @@ export class CreateQuerySetupState extends QuerySetupState {
     this.currentRuntime = val;
   }
 
+  setMappingOptions(val: PackageableElementOption<Mapping>[]): void {
+    this.mappingOptions = val;
+  }
+
   get runtimeOptions(): PackageableElementOption<PackageableRuntime>[] {
     const currentMapping = this.currentMapping;
     if (!currentMapping) {
       return [];
     }
-    return this.queryStore.queryBuilderState
-      .getRuntimeOptions()
+    return this.queryStore.queryBuilderState.runtimes
+      .map(
+        (e) =>
+          buildElementOption(e) as PackageableElementOption<PackageableRuntime>,
+      )
       .filter((runtime) =>
         runtime.value.runtimeValue.mappings
           .map((mappingReference) => [
             mappingReference.value,
-            ...mappingReference.value.allIncludedMappings,
+            ...getAllIncludedMappings(mappingReference.value),
           ])
           .flat()
           .includes(currentMapping),
@@ -211,11 +223,13 @@ export class ServiceQuerySetupState extends QuerySetupState {
   currentVersionId?: string | undefined;
   currentService?: Service | undefined;
   currentServiceExecutionKey?: string | undefined;
+  serviceExecutionOptions: ServiceExecutionOption[] = [];
 
   constructor(setupStore: QuerySetupStore) {
     super(setupStore);
 
     makeObservable(this, {
+      serviceExecutionOptions: observable,
       projects: observable,
       currentProject: observable,
       currentVersionId: observable,
@@ -224,6 +238,7 @@ export class ServiceQuerySetupState extends QuerySetupState {
       setCurrentProject: action,
       setCurrentVersionId: action,
       setCurrentServiceExecution: action,
+      setServiceExecutionOptions: action,
       loadProjects: flow,
     });
   }
@@ -244,30 +259,8 @@ export class ServiceQuerySetupState extends QuerySetupState {
     this.currentServiceExecutionKey = key;
   }
 
-  get serviceExecutionOptions(): ServiceExecutionOption[] {
-    return this.queryStore.queryBuilderState
-      .getServiceOptions()
-      .flatMap((option) => {
-        const service = option.value;
-        const serviceExecution = service.execution;
-        if (serviceExecution instanceof PureSingleExecution) {
-          return {
-            label: service.name,
-            value: {
-              service,
-            },
-          };
-        } else if (serviceExecution instanceof PureMultiExecution) {
-          return serviceExecution.executionParameters.map((parameter) => ({
-            label: `${service.name} [${parameter.key}]`,
-            value: {
-              service,
-              key: parameter.key,
-            },
-          }));
-        }
-        return [];
-      });
+  setServiceExecutionOptions(val: ServiceExecutionOption[]): void {
+    this.serviceExecutionOptions = val;
   }
 
   *loadProjects(): GeneratorFn<void> {

@@ -14,8 +14,8 @@
     "lint:js": "echo \"Skipped - already done as part of linting ./scripts\""
   },
   "dependencies": {
-    "@actions/core": "1.7.0",
-    "@actions/github": "5.0.1",
+    "@actions/core": "1.8.1",
+    "@actions/github": "5.0.2",
     "chalk": "5.0.1"
   }
 }

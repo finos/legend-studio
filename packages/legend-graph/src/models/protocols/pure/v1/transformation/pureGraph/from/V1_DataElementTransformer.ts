@@ -21,6 +21,10 @@ import {
   ExternalFormatData,
   ModelStoreData,
 } from '../../../../../../metamodels/pure/data/EmbeddedData';
+import {
+  type RelationalDataTable,
+  RelationalData,
+} from '../../../../../../metamodels/pure/data/RelationalData';
 import type { DataElement } from '../../../../../../metamodels/pure/packageableElements/data/DataElement';
 import type { DSLData_PureProtocolProcessorPlugin_Extension } from '../../../../DSLData_PureProtocolProcessorPlugin_Extension';
 import {
@@ -29,6 +33,12 @@ import {
   V1_ExternalFormatData,
   V1_ModelStoreData,
 } from '../../../model/data/V1_EmbeddedData';
+import {
+  V1_RelationalData,
+  V1_RelationalDataTable,
+  V1_RelationalDataTableColumn,
+  V1_RelationalDataTableRow,
+} from '../../../model/data/V1_RelationalData';
 import { V1_DataElement } from '../../../model/packageableElements/data/V1_DataElement';
 import { V1_initPackageableElement } from './V1_CoreTransformerHelper';
 import {
@@ -39,7 +49,7 @@ import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext';
 
 // ----------------------------------------------- DATA ----------------------------------------
 
-export const V1_transformModelStoreData = (
+const V1_transformModelStoreData = (
   element: ModelStoreData,
 ): V1_ModelStoreData => {
   const modelStoreDataElement = new V1_ModelStoreData();
@@ -60,13 +70,40 @@ export const V1_transformExternalFormatData = (
   return externalFormatDataElement;
 };
 
-export const V1_transformDataElementReference = (
+const V1_transformDataElementReference = (
   element: DataElementReference,
 ): V1_DataElementReference => {
   const dataElementReference = new V1_DataElementReference();
   dataElementReference.dataElement =
     element.dataElement.valueForSerialization ?? '';
   return dataElementReference;
+};
+
+const V1_transformRelationalDataTable = (
+  element: RelationalDataTable,
+): V1_RelationalDataTable => {
+  const table = new V1_RelationalDataTable();
+  table.tableName = element.tableName;
+  table.schemaName = element.schemaName;
+  table.rows = element.rows.map((e) => {
+    const row = new V1_RelationalDataTableRow();
+    row.values = e.values;
+    return row;
+  });
+  table.columns = element.columns.map((e) => {
+    const col = new V1_RelationalDataTableColumn();
+    col.value = e.value;
+    return col;
+  });
+  return table;
+};
+
+const V1_transformRelationalData = (
+  element: RelationalData,
+): V1_RelationalData => {
+  const data = new V1_RelationalData();
+  data.tables = element.tables.map(V1_transformRelationalDataTable);
+  return data;
 };
 
 export const V1_transformEmbeddedData = (
@@ -79,6 +116,8 @@ export const V1_transformEmbeddedData = (
     return V1_transformExternalFormatData(metamodel);
   } else if (metamodel instanceof DataElementReference) {
     return V1_transformDataElementReference(metamodel);
+  } else if (metamodel instanceof RelationalData) {
+    return V1_transformRelationalData(metamodel);
   }
   const extraEmbeddedDataTransformers = context.plugins.flatMap(
     (plugin) =>

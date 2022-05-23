@@ -30,9 +30,13 @@ import {
   DynaFunction,
   TableAliasColumn,
 } from '../../../models/metamodels/pure/packageableElements/store/relational/model/RelationalOperationElement';
-import { getOwnClassMappingsByClass } from '../../../helpers/MappingHelper';
+import {
+  findPropertyMapping,
+  getOwnClassMappingsByClass,
+} from '../../../helpers/DSLMapping_Helper';
 import { RootRelationalInstanceSetImplementation } from '../../../models/metamodels/pure/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation';
 import { RelationalPropertyMapping } from '../../../models/metamodels/pure/packageableElements/store/relational/mapping/RelationalPropertyMapping';
+import { getTable } from '../../../helpers/StoreRelational_Helper';
 
 let graphManagerState: GraphManagerState;
 
@@ -53,8 +57,8 @@ test(unitTest('Relational Mapping with property from association'), () => {
   expect(database.schemas).toHaveLength(1);
   const defaultSchema = guaranteeNonNullable(database.schemas[0]);
   expect(defaultSchema.tables).toHaveLength(2);
-  defaultSchema.getTable('personTable');
-  defaultSchema.getTable('firmTable');
+  getTable(defaultSchema, 'personTable');
+  getTable(defaultSchema, 'firmTable');
   // join
   expect(database.joins).toHaveLength(1);
   const firmPersonJoin = guaranteeNonNullable(database.joins[0]);
@@ -115,7 +119,7 @@ test(unitTest('Relational Mapping with property from association'), () => {
   expect(firmPrimaryKey.column.value.name).toBe('ID');
   // association property
   const firmProperty = guaranteeType(
-    personClassMapping.findPropertyMapping('firm', undefined),
+    findPropertyMapping(personClassMapping, 'firm', undefined),
     RelationalPropertyMapping,
   );
   expect(firmProperty.targetSetImplementation).toBe(firmClassMapping);

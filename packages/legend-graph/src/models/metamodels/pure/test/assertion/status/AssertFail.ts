@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-import { hashArray, type Hashable } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../MetaModelConst';
+import type { TestAssertion } from '../TestAssertion';
 import { AssertionStatus } from './AssertionStatus';
 
-export class AssertFail extends AssertionStatus implements Hashable {
-  message!: string;
+export class AssertFail extends AssertionStatus {
+  message?: string | undefined;
 
-  get hashCode(): string {
-    return hashArray([CORE_HASH_STRUCTURE.ASSERT_FAIL, this.id, this.message]);
+  constructor(assertion: TestAssertion, message: string | undefined) {
+    super(assertion);
+    this.message = message;
   }
 }

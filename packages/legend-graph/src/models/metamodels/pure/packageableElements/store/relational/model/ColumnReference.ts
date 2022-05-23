@@ -22,7 +22,21 @@ import {
 import { ReferenceWithOwner } from '../../../../Reference';
 import type { Database } from './Database';
 import type { Column } from './Column';
-import { getSchemaFromRelation } from './RelationReference';
+import type { Relation } from './RelationalOperationElement';
+import type { Schema } from './Schema';
+import { View } from './View';
+import { Table } from './Table';
+import { UnsupportedOperationError } from '@finos/legend-shared';
+
+const getSchemaFromRelation = (value: Relation): Schema => {
+  if (value instanceof Table || value instanceof View) {
+    return value.schema;
+  }
+  throw new UnsupportedOperationError(
+    `Can't derive schema for relation`,
+    value,
+  );
+};
 
 export abstract class ColumnReference extends ReferenceWithOwner {
   override readonly ownerReference: PackageableElementReference<Database>;
@@ -43,7 +57,7 @@ export class ColumnExplicitReference extends ColumnReference {
 
   private constructor(value: Column) {
     const ownerReference = PackageableElementExplicitReference.create(
-      getSchemaFromRelation(value.owner).owner,
+      getSchemaFromRelation(value.owner)._OWNER,
     );
     super(ownerReference, value);
     this.ownerReference = ownerReference;

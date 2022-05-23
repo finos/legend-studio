@@ -225,6 +225,10 @@
     width: 100%;
   }
 
+  &__placeholder {
+    color: var(--color-dark-grey-500) !important;
+  }
+
   &__single-value--is-disabled {
     cursor: not-allowed;
     color: var(--color-light-grey-400) !important;

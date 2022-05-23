@@ -52,7 +52,6 @@ export const observe_RawLambda = skipObserved(
     makeObservable(metamodel, {
       body: observable.ref, // only observe the reference, the object itself is not observed
       parameters: observable.ref, // only observe the reference, the object itself is not observed
-      isStub: computed,
       hashCode: computed,
     }),
 );
@@ -62,7 +61,6 @@ export const observe_RawVariableExpression = skipObserved(
     makeObservable(metamodel, {
       name: observable,
       multiplicity: observable,
-      isStub: computed,
       hashCode: computed,
     });
 

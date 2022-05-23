@@ -30,7 +30,6 @@ module.exports = declare((api, opts) => {
     useTypescript = false,
     useReact = false,
     useReactFastRefresh = false,
-    useBabelRuntime = false,
   } = opts;
 
   const config = {
@@ -48,42 +47,18 @@ module.exports = declare((api, opts) => {
           runtime: 'automatic', // use React@17 JSX transform
         },
       ],
-      function () {
-        return {
-          plugins: [
-            // NOTE: both of these proposals are in stage 3, so we should keep track of when we need to remove this plugin
-            // See https://github.com/tc39/proposal-class-fields
-            // See https://github.com/tc39/proposal-static-class-features
-            '@babel/plugin-proposal-class-properties',
-          ],
-        };
-      },
       useTypescript && [
         '@babel/preset-typescript',
         {
           onlyRemoveTypeImports: true,
           // Allow using `declare` keyword for class fields.
-          // NOTE: for this to work, this plugin has to run before other class modifier plugins like
-          // `@babel/plugin-proposal-class-properties`; `babel` should want about this if it happens.
           // `allowDeclareFields` will be `true` by default in babel 8
           // See https://babeljs.io/docs/en/babel-preset-typescript#allowdeclarefields
           allowDeclareFields: true,
         },
       ],
     ].filter(Boolean),
-    plugins: [
-      useBabelRuntime && [
-        // Reduce bundle size by referencing `babel` helpers from `@babel/runtime`
-        // See https://babeljs.io/docs/en/babel-plugin-transform-runtime
-        '@babel/plugin-transform-runtime',
-        {
-          version: require('@babel/runtime/package.json').version,
-          // We should turn this on once the lowest version of Node LTS supports ES Modules.
-          // See https://babeljs.io/docs/en/babel-plugin-transform-runtime#useesmodules
-          useESModules: true,
-        },
-      ],
-    ].filter(Boolean),
+    plugins: [],
     overrides: [
       {
         test: (filename) => filename && isJSXSourceFile(filename),

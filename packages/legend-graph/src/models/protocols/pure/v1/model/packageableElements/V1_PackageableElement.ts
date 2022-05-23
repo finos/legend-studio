@@ -61,6 +61,13 @@ export abstract class V1_PackageableElement implements Hashable {
   package!: string;
   name!: string;
 
+  /**
+   * This logic is specific to the codebase and this is not part of the native metamodel.
+   * If needed, we can probably move this out as an utility or do type declaration merge
+   * and define this externally using `Object.defineProperty`.
+   *
+   * @internal model logic
+   */
   get path(): string {
     return `${this.package}${ELEMENT_PATH_DELIMITER}${this.name}`;
   }
@@ -72,15 +79,6 @@ export abstract class V1_PackageableElement implements Hashable {
   abstract accept_PackageableElementVisitor<T>(
     visitor: V1_PackageableElementVisitor<T>,
   ): T;
-}
-
-// TODO: to be moved out of metamodel
-export enum V1_PackageableElementPointerType {
-  STORE = 'STORE',
-  MAPPING = 'MAPPING',
-  RUNTIME = 'RUNTIME',
-  FILE_GENERATION = 'FILE_GENERATION',
-  SERVICE = 'SERVICE',
 }
 
 export class V1_PackageableElementPointer implements Hashable {

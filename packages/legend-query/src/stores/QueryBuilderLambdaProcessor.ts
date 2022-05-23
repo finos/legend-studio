@@ -112,8 +112,6 @@ const getNullableNumberValueFromValueSpec = (
  * Checks if the milestoning property expression is valid in terms of number of parameter values provided
  * in relation to its milestoning type.
  *
- * TODO: @gayathrir11 let's add more doc to this
- *
  * NOTE: this takes date propgation into account. See the table below for all
  * the combination:
  *
@@ -149,11 +147,11 @@ const validatePropertyExpressionChain = (
 ): void => {
   if (
     propertyExpression.func.genericType.value.rawType instanceof Class &&
-    propertyExpression.func.owner._generatedMilestonedProperties.length !== 0
+    propertyExpression.func._OWNER._generatedMilestonedProperties.length !== 0
   ) {
     const name = propertyExpression.func.name;
     const func =
-      propertyExpression.func.owner._generatedMilestonedProperties.find(
+      propertyExpression.func._OWNER._generatedMilestonedProperties.find(
         (e) => e.name === name,
       );
     if (func) {

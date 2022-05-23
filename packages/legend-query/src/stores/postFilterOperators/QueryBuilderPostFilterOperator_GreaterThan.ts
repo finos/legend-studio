@@ -20,6 +20,7 @@ import {
   type FunctionExpression,
   AbstractPropertyExpression,
   PRIMITIVE_TYPE,
+  isSuperType,
 } from '@finos/legend-graph';
 import {
   guaranteeNonNullable,
@@ -94,7 +95,7 @@ export class QueryBuilderPostFilterOperator_GreaterThan extends QueryBuilderPost
         // e.g. LHS(DateTime) = RHS(Date) -> we use isOnDay() instead of is()
         DATE_PRIMITIVE_TYPES.includes(type.path) ||
         type === lhsType ||
-        lhsType.isSuperType(type))
+        isSuperType(lhsType, type))
     );
   }
 

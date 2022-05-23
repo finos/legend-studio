@@ -41,7 +41,7 @@ const theme: monacoEditorAPI.IStandaloneThemeData = {
     { token: 'language-struct', foreground: 'c586c0' },
     { token: 'multiplicity', foreground: '2d796b' },
     { token: 'attribute', foreground: '9cdcfe' },
-    { token: 'cast', foreground: 'f98a00' },
+    { token: 'cast', foreground: '569cd6' },
   ],
 };
 
@@ -99,14 +99,25 @@ const generateLanguageMonarch = (
 
     keywords: [
       ...extraKeywords,
+      // relational
+      'Schema',
+      'Table',
+      'Join',
+      'View',
+      'primaryKey',
+      'groupBy',
+      'mainTable',
+      // native
+      'let',
       'extends',
-      'function',
       'projects',
+      // elements
       PURE_ELEMENT_NAME.CLASS,
       PURE_ELEMENT_NAME.ASSOCIATION,
       PURE_ELEMENT_NAME.ENUMERATION,
       PURE_ELEMENT_NAME.MEASURE,
       PURE_ELEMENT_NAME.PROFILE,
+      PURE_ELEMENT_NAME.FUNCTION,
       PURE_ELEMENT_NAME.FLAT_DATA,
       PURE_ELEMENT_NAME.DATABASE,
       PURE_ELEMENT_NAME.MAPPING,
@@ -116,12 +127,19 @@ const generateLanguageMonarch = (
       PURE_ELEMENT_NAME.FILE_GENERATION,
       PURE_ELEMENT_NAME.GENERATION_SPECIFICATION,
       PURE_ELEMENT_NAME.DATA_ELEMENT,
-
+      // connections
       PURE_CONNECTION_NAME.JSON_MODEL_CONNECTION,
       PURE_CONNECTION_NAME.MODEL_CHAIN_CONNECTION,
       PURE_CONNECTION_NAME.XML_MODEL_CONNECTION,
       PURE_CONNECTION_NAME.FLAT_DATA_CONNECTION,
       PURE_CONNECTION_NAME.RELATIONAL_DATABASE_CONNECTION,
+      // mapping
+      'EnumerationMapping',
+      'Pure',
+      'Relational', // to be modularized
+      'AssociationMapping',
+      'XStore',
+      'AggregationAware',
     ],
 
     operators: [
@@ -148,6 +166,9 @@ const generateLanguageMonarch = (
       '^',
       '%',
       '->',
+      '#{',
+      '}#',
+      '@',
     ],
 
     languageStructs: ['import', 'native', 'if', 'fold'],
@@ -170,7 +191,7 @@ const generateLanguageMonarch = (
       .map((parser) => `${PARSER_SECTION_MARKER}${parser}`),
 
     // common regular expressions to be used in tokenizer
-    symbols: /[=><!~?:&|+\-*/^%]+/,
+    symbols: /[=><!~?:&|+\-*/^%#@]+/,
     escapes:
       /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
     digits: /\d+(_+\d+)*/,
@@ -225,7 +246,7 @@ const generateLanguageMonarch = (
           /@symbols/,
           {
             cases: {
-              '@operators': 'delimiter',
+              '@operators': 'operator',
               '@default': '',
             },
           },
@@ -276,8 +297,8 @@ const generateLanguageMonarch = (
           ['attribute', '', 'package', 'type', '', 'multiplicity'],
         ],
         [
-          /([\w_]+)(\s*:\s*)([\w_]+)(\s*)(@multiplicity)/,
-          ['attribute', '', 'type', '', 'multiplicity'],
+          /(:\s*)([\w_]+)(\s*)(@multiplicity)/,
+          ['', 'type', '', 'multiplicity'],
         ],
       ],
 

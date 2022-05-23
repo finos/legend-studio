@@ -44,7 +44,7 @@ jobs:
         run: node ./scripts/release/createNewReleasePRTitle.js
       - name: Create new release pull request or Publish to NPM
         id: changesets
-        uses: changesets/action@v1.2.2
+        uses: changesets/action@v1.3.0
         with:
           version: yarn release:version
           commit: 'chore: bump versions and release'
@@ -70,7 +70,7 @@ jobs:
         run: node ./scripts/release/concludeNewRelease.js
       - name: Login to Docker Hub
         if: steps.changesets.outputs.published == 'true'
-        uses: docker/login-action@v1
+        uses: docker/login-action@v2
         with:
           username: finos
           password: ${{ secrets.DOCKER_PASSWORD }}

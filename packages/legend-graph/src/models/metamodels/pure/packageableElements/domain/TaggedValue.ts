@@ -16,12 +16,10 @@
 
 import { hashArray, uuid, type Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
-import type { Tag } from './Tag';
-import type { Stubable } from '../../../../../helpers/Stubable';
-import { type TagReference, TagExplicitReference } from './TagReference';
+import type { TagReference } from './TagReference';
 
-export class TaggedValue implements Hashable, Stubable {
-  readonly uuid = uuid();
+export class TaggedValue implements Hashable {
+  readonly _UUID = uuid();
 
   tag: TagReference;
   value: string;
@@ -29,12 +27,6 @@ export class TaggedValue implements Hashable, Stubable {
   constructor(tag: TagReference, value: string) {
     this.tag = tag;
     this.value = value;
-  }
-
-  static createStub = (tag: Tag): TaggedValue =>
-    new TaggedValue(TagExplicitReference.create(tag), '');
-  get isStub(): boolean {
-    return !this.value && this.tag.isStub;
   }
 
   get hashCode(): string {

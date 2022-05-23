@@ -19,12 +19,14 @@ import {
   CORE_PURE_PATH,
   ELEMENT_PATH_DELIMITER,
   SOURCE_INFORMATION_KEY,
+  PackageableElementPointerType,
 } from '../../../../MetaModelConst';
 import {
   type Clazz,
   type Log,
   type PlainObject,
   type ServerClientConfig,
+  type ActionState,
   TracerService,
   LogEvent,
   getClass,
@@ -34,10 +36,10 @@ import {
   assertTrue,
   assertErrorThrown,
   promisify,
-  type ActionState,
   StopWatch,
-  assertNonEmptyString,
   filterByType,
+  isNonNullable,
+  guaranteeNonEmptyString,
 } from '@finos/legend-shared';
 import type { TEMPORARY__AbstractEngineConfig } from '../../../../graphManager/action/TEMPORARY__AbstractEngineConfig';
 import {
@@ -66,13 +68,12 @@ import type { DependencyManager } from '../../../../graph/DependencyManager';
 import type { Class } from '../../../metamodels/pure/packageableElements/domain/Class';
 import { RawLambda } from '../../../metamodels/pure/rawValueSpecification/RawLambda';
 import type { RawValueSpecification } from '../../../metamodels/pure/rawValueSpecification/RawValueSpecification';
-import type { Service } from '../../../metamodels/pure/packageableElements/service/Service';
 import type { FileGenerationSpecification } from '../../../metamodels/pure/packageableElements/fileGeneration/FileGenerationSpecification';
 import type {
   GenerationConfigurationDescription,
   GenerationMode,
 } from '../../../../graphManager/action/generation/GenerationConfigurationDescription';
-import type { ServiceTestResult } from '../../../../graphManager/action/service/ServiceTestResult';
+import type { DEPRECATED__ServiceTestResult } from '../../../../graphManager/action/service/DEPRECATED__ServiceTestResult';
 import type { ServiceRegistrationResult } from '../../../../graphManager/action/service/ServiceRegistrationResult';
 import type { ExecutionResult } from '../../../../graphManager/action/execution/ExecutionResult';
 import type { GenerationOutput } from '../../../../graphManager/action/generation/GenerationOutput';
@@ -103,7 +104,6 @@ import { V1_PureModelContextData } from './model/context/V1_PureModelContextData
 import {
   type V1_PackageableElement,
   type V1_PackageableElementVisitor,
-  V1_PackageableElementPointerType,
   V1_PackageableElementPointer,
 } from './model/packageableElements/V1_PackageableElement';
 import { V1_ProtocolToMetaModelGraphFirstPassBuilder } from './transformation/pureGraph/to/V1_ProtocolToMetaModelGraphFirstPassBuilder';
@@ -201,7 +201,7 @@ import type {
 } from '../../../../graphManager/action/query/Query';
 import {
   V1_buildQuery,
-  V1_buildServiceTestResult,
+  V1_buildLegacyServiceTestResult,
   V1_buildServiceRegistrationResult,
   V1_transformQuery,
   V1_buildGenerationOutput,
@@ -239,6 +239,22 @@ import type { ModelGenerationConfiguration } from '../../../ModelGenerationConfi
 import type { MappingGeneration_PureProtocolProcessorPlugin_Extension } from '../MappingGeneration_PureProtocolProcessorPlugin_Extension';
 import type { Package } from '../../../metamodels/pure/packageableElements/domain/Package';
 import { V1_DataElement } from './model/packageableElements/data/V1_DataElement';
+import {
+  V1_RunTestsInput,
+  V1_RunTestsTestableInput,
+} from './engine/test/V1_RunTestsInput';
+import { V1_AtomicTestId } from './model/test/V1_AtomicTestId';
+import type { RunTestsTestableInput } from '../../../metamodels/pure/test/result/RunTestsTestableInput';
+import { V1_buildTestsResult } from './engine/test/V1_RunTestsResult';
+import type { TestResult } from '../../../metamodels/pure/test/result/TestResult';
+import type { Service } from '../../../../DSLService_Exports';
+import type { Testable } from '../../../metamodels/pure/test/Testable';
+import { stub_RawLambda } from '../../../../graphManager/action/creation/RawValueSpecificationCreatorHelper';
+import {
+  getNullableIDFromTestable,
+  getNullableTestable,
+} from '../../../../helpers/Testable_Helper';
+import { V1_getIncludedMappingPath } from './helper/V1_DSLMapping_Helper';
 
 const V1_FUNCTION_SUFFIX_MULTIPLICITY_INFINITE = 'MANY';
 
@@ -480,12 +496,12 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   async buildSystem(
     coreModel: CoreModel,
     systemModel: SystemModel,
+    buildState: ActionState,
     options?: GraphBuilderOptions,
   ): Promise<GraphBuilderReport> {
     const stopWatch = new StopWatch();
     const report = new GraphBuilderReport();
-    const graphBuilderState = systemModel.buildState;
-    graphBuilderState.reset();
+    buildState.reset();
 
     // Create a dummy graph for system processing. This is to ensure system model does not depend on the main graph
     const graph = new PureModel(
@@ -496,7 +512,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
     try {
       // deserialize
-      graphBuilderState.setMessage(`Collecting and deserializing elements...`);
+      buildState.setMessage(`Collecting and deserializing elements...`);
       const systemData = mergePureModelContextData(
         V1_deserializePureModelContextData(V1_CORE_SYSTEM_MODELS),
         ...this.pluginManager
@@ -522,11 +538,11 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         buildInputs,
         report,
         stopWatch,
-        graphBuilderState,
+        buildState,
         options,
       );
 
-      graphBuilderState.pass();
+      buildState.pass();
       report.timings = {
         ...Object.fromEntries(stopWatch.records),
         [GRAPH_MANAGER_EVENT.GRAPH_BUILDER_COMPLETED]: stopWatch.elapsed,
@@ -534,14 +550,14 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       return report;
     } catch (error) {
       assertErrorThrown(error);
-      graphBuilderState.fail();
+      buildState.fail();
       this.log.error(
         LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_FAILURE),
         error,
       );
       throw new SystemGraphBuilderError(error);
     } finally {
-      graphBuilderState.setMessage(undefined);
+      buildState.setMessage(undefined);
     }
   }
 
@@ -550,12 +566,12 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     systemModel: SystemModel,
     dependencyManager: DependencyManager,
     dependencyEntitiesMap: Map<string, Entity[]>,
+    buildState: ActionState,
     options?: GraphBuilderOptions,
   ): Promise<GraphBuilderReport> {
     const stopWatch = new StopWatch();
     const report = new GraphBuilderReport();
-    const graphBuilderState = dependencyManager.buildState;
-    graphBuilderState.reset();
+    buildState.reset();
 
     // Create a dummy graph for system processing. This is to ensure dependency models do not depend on the main graph
     const graph = new PureModel(
@@ -569,9 +585,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       dependencyManager.initialize(dependencyEntitiesMap);
 
       // deserialize
-      graphBuilderState.setMessage(
-        `Partitioning and deserializing elements...`,
-      );
+      buildState.setMessage(`Partitioning and deserializing elements...`);
       const dependencyDataMap = new Map<string, V1_PureModelContextData>();
       await Promise.all(
         Array.from(dependencyEntitiesMap.entries()).map(
@@ -606,11 +620,11 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         buildInputs,
         report,
         stopWatch,
-        graphBuilderState,
+        buildState,
         options,
       );
 
-      graphBuilderState.pass();
+      buildState.pass();
       report.otherStats.projectCount = dependencyEntitiesMap.size;
       report.timings = {
         ...Object.fromEntries(stopWatch.records),
@@ -623,26 +637,26 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_FAILURE),
         error,
       );
-      graphBuilderState.fail();
+      buildState.fail();
       throw new DependencyGraphBuilderError(error);
     } finally {
-      graphBuilderState.setMessage(undefined);
+      buildState.setMessage(undefined);
     }
   }
 
   async buildGraph(
     graph: PureModel,
     entities: Entity[],
+    buildState: ActionState,
     options?: GraphBuilderOptions,
   ): Promise<GraphBuilderReport> {
     const stopWatch = new StopWatch();
     const report = new GraphBuilderReport();
-    const graphBuilderState = graph.buildState;
-    graphBuilderState.reset();
+    buildState.reset();
 
     try {
       // deserialize
-      graphBuilderState.setMessage(`Deserializing elements...`);
+      buildState.setMessage(`Deserializing elements...`);
       const data = new V1_PureModelContextData();
       await V1_entitiesToPureModelContextData(
         entities,
@@ -665,7 +679,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         buildInputs,
         report,
         stopWatch,
-        graphBuilderState,
+        buildState,
         options,
       );
 
@@ -678,7 +692,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         graph.TEMPORARY__deleteOwnSectionIndex();
       }
 
-      graphBuilderState.pass();
+      buildState.pass();
       report.timings = {
         ...Object.fromEntries(stopWatch.records),
         [GRAPH_MANAGER_EVENT.GRAPH_BUILDER_COMPLETED]: stopWatch.elapsed,
@@ -690,7 +704,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_FAILURE),
         error,
       );
-      graphBuilderState.fail();
+      buildState.fail();
       /**
        * Wrap all error with `GraphBuilderError`, as we throw a lot of assertion error in the graph builder
        * But we might want to rethink this decision in the future and throw appropriate type of error
@@ -699,24 +713,24 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         ? error
         : new GraphBuilderError(error);
     } finally {
-      graphBuilderState.setMessage(undefined);
+      buildState.setMessage(undefined);
     }
   }
 
   async buildGenerations(
     graph: PureModel,
     generatedEntities: Map<string, Entity[]>,
+    buildState: ActionState,
     options?: GraphBuilderOptions,
   ): Promise<GraphBuilderReport> {
     const stopWatch = new StopWatch();
     const report = new GraphBuilderReport();
     const generatedModel = graph.generationModel;
-    const graphBuilderState = generatedModel.buildState;
-    graphBuilderState.reset();
+    buildState.reset();
 
     try {
       // deserialize
-      graphBuilderState.setMessage(`Deserializing elements...`);
+      buildState.setMessage(`Deserializing elements...`);
       const generatedDataMap = new Map<string, V1_PureModelContextData>();
       await Promise.all(
         Array.from(generatedEntities.entries()).map(
@@ -747,11 +761,11 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         buildInputs,
         report,
         stopWatch,
-        graphBuilderState,
+        buildState,
         options,
       );
 
-      graphBuilderState.pass();
+      buildState.pass();
       report.otherStats.generationCount = generatedDataMap.size;
       report.timings = {
         ...Object.fromEntries(stopWatch.records),
@@ -764,7 +778,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_FAILURE),
         error,
       );
-      graphBuilderState.fail();
+      buildState.fail();
       /**
        * Wrap all error with `GraphBuilderError`, as we throw a lot of assertion error in the graph builder
        * But we might want to rethink this decision in the future and throw appropriate type of error
@@ -773,7 +787,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         ? error
         : new GraphBuilderError(error);
     } finally {
-      graphBuilderState.setMessage(undefined);
+      buildState.setMessage(undefined);
     }
   }
 
@@ -1612,6 +1626,50 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     return this.pureModelContextDataToEntities(generatedModel);
   }
 
+  // ------------------------------------------- Test  -------------------------------------------
+
+  async runTests(
+    inputs: RunTestsTestableInput[],
+    graph: PureModel,
+  ): Promise<TestResult[]> {
+    const runTestsInput = new V1_RunTestsInput();
+    runTestsInput.model = this.getFullGraphModelData(graph);
+    runTestsInput.testables = inputs
+      .map((input) => {
+        const testable = guaranteeNonNullable(
+          getNullableIDFromTestable(
+            input.testable,
+            graph,
+            this.pluginManager.getPureGraphManagerPlugins(),
+          ),
+        );
+        if (!testable) {
+          return undefined;
+        }
+        const runTestableInput = new V1_RunTestsTestableInput();
+        runTestableInput.testable = testable;
+        runTestableInput.unitTestIds = input.unitTestIds.map((unit) => {
+          const unitAtomicTest = new V1_AtomicTestId();
+          unitAtomicTest.testSuiteId = unit.parentSuite?.id;
+          unitAtomicTest.atomicTestId = unit.atomicTest.id;
+          return unitAtomicTest;
+        });
+        return runTestableInput;
+      })
+      .filter(isNonNullable);
+    const runTestsResult = await this.engine.runTests(runTestsInput);
+    const result = V1_buildTestsResult(
+      runTestsResult,
+      (id: string): Testable | undefined =>
+        getNullableTestable(
+          id,
+          graph,
+          this.pluginManager.getPureGraphManagerPlugins(),
+        ),
+    );
+    return result;
+  }
+
   // ------------------------------------------- ValueSpecification -------------------------------------------
 
   buildValueSpecification(
@@ -1951,10 +2009,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   // --------------------------------------------- Service ---------------------------------------------
 
-  async runServiceTests(
+  async runLegacyServiceTests(
     service: Service,
     graph: PureModel,
-  ): Promise<ServiceTestResult[]> {
+  ): Promise<DEPRECATED__ServiceTestResult[]> {
     const protocolGraph = this.getFullGraphModelData(graph);
     const targetService = guaranteeNonNullable(
       protocolGraph.elements
@@ -1966,8 +2024,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       (element) => !(element instanceof V1_Service),
     );
     protocolGraph.elements.push(targetService);
-    return (await this.engine.runServiceTests(protocolGraph)).map(
-      V1_buildServiceTestResult,
+    return (await this.engine.runLegacyServiceTests(protocolGraph)).map(
+      V1_buildLegacyServiceTestResult,
     );
   }
 
@@ -2008,7 +2066,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         if (execution instanceof PureSingleExecution) {
           sdlcInfo.packageableElementPointers = [
             new V1_PackageableElementPointer(
-              V1_PackageableElementPointerType.MAPPING,
+              PackageableElementPointerType.MAPPING,
               execution.mapping.value.path,
             ),
           ];
@@ -2017,7 +2075,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
             execution.executionParameters.map(
               (e) =>
                 new V1_PackageableElementPointer(
-                  V1_PackageableElementPointerType.MAPPING,
+                  PackageableElementPointerType.MAPPING,
                   e.mapping.value.path,
                 ),
             );
@@ -2036,7 +2094,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         const pointer = new V1_PureModelContextPointer(protocol, sdlcInfo);
         sdlcInfo.packageableElementPointers = [
           new V1_PackageableElementPointer(
-            V1_PackageableElementPointerType.SERVICE,
+            PackageableElementPointerType.SERVICE,
             service.path,
           ),
         ];
@@ -2201,16 +2259,18 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       v1Mappings.forEach((element) => {
         const mapping = mappings.find((e) => e.path === element.path);
         if (mapping) {
-          mapping.includes = element.includedMappings.map((i) => {
-            assertNonEmptyString(
-              i.includedMappingPath,
-              `Mapping include 'includedMappingPath' field is missing or empty`,
-            );
-            return new MappingInclude(
-              mapping,
-              context.resolveMapping(i.includedMappingPath),
-            );
-          });
+          mapping.includes = element.includedMappings.map(
+            (i) =>
+              new MappingInclude(
+                mapping,
+                context.resolveMapping(
+                  guaranteeNonEmptyString(
+                    V1_getIncludedMappingPath(i),
+                    `Mapping include path is missing or empty`,
+                  ),
+                ),
+              ),
+          );
         }
       });
       // handle runtimes
@@ -2231,10 +2291,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           );
         }
       });
-      graph.buildState.pass();
     } catch (error) {
       assertErrorThrown(error);
-      graph.buildState.fail();
       /**
        * Wrap all error with `GraphBuilderError`, as we throw a lot of assertion error in the graph builder
        * But we might want to rethink this decision in the future and throw appropriate type of error
@@ -2277,7 +2335,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           if (serviceExecution instanceof V1_PureMultiExecution) {
             const execution = new PureMultiExecution(
               serviceExecution.executionKey,
-              RawLambda.createStub(),
+              stub_RawLambda(),
               service,
             );
             execution.executionParameters =
@@ -2292,7 +2350,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
             service.execution = execution;
           } else if (serviceExecution instanceof V1_PureSingleExecution) {
             service.execution = new PureSingleExecution(
-              RawLambda.createStub(),
+              stub_RawLambda(),
               service,
               PackageableElementExplicitReference.create(new Mapping('')),
               new EngineRuntime(),
@@ -2300,10 +2358,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           }
         }
       });
-      graph.buildState.pass();
     } catch (error) {
       assertErrorThrown(error);
-      graph.buildState.fail();
       /**
        * Wrap all error with `GraphBuilderError`, as we throw a lot of assertion error in the graph builder
        * But we might want to rethink this decision in the future and throw appropriate type of error

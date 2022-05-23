@@ -14,10 +14,12 @@
  * limitations under the License.
  */
 
-import type { Hashable } from '@finos/legend-shared';
+import type { TestAssertion } from '../TestAssertion';
 
-export abstract class AssertionStatus implements Hashable {
-  id!: string;
+export abstract class AssertionStatus {
+  assertion: TestAssertion;
 
-  abstract get hashCode(): string;
+  constructor(assertion: TestAssertion) {
+    this.assertion = assertion;
+  }
 }

@@ -165,7 +165,6 @@ export const observe_FlatData = skipObserved(
 
     makeObservable<FlatData, '_elementHashCode'>(metamodel, {
       sections: observable,
-      recordTypes: computed,
       _elementHashCode: override,
     });
 
@@ -223,7 +222,6 @@ export const observe_EmbeddedFlatDataPropertyMapping = skipObservedWithContext(
 
     makeObservable(metamodel, {
       rootInstanceSetImplementation: observable,
-      isStub: computed,
       hashCode: computed,
     });
 
@@ -238,7 +236,6 @@ export const observe_FlatDataPropertyMapping = skipObservedWithContext(
     makeObservable(metamodel, {
       transformer: observable,
       transform: observable,
-      isStub: computed,
       hashCode: computed,
     });
 

@@ -41,7 +41,11 @@ import {
 } from '@finos/legend-application';
 import type { MappingGenerationEditorState } from '../stores/MappingGenerationEditorState';
 import { flowResult, runInAction } from 'mobx';
-import { Mapping, createValidationError } from '@finos/legend-graph';
+import {
+  Mapping,
+  createValidationError,
+  isStubbed_PackageableElement,
+} from '@finos/legend-graph';
 
 const StringEditor = observer(
   (props: {
@@ -172,7 +176,7 @@ const ArrayEditor = observer(
             {arrayValues.map((value, idx) => (
               // NOTE: since the value must be unique, we will use it as the key
               <div
-                key={value.value.uuid}
+                key={value.value._UUID}
                 className={
                   showEditInput === idx
                     ? 'mapping-generation-editor__configuration__item'
@@ -295,9 +299,11 @@ const MappingSelectorEditor = observer(
       editorStore,
     } = props;
     // mapping
-    const isMappingEmpty = selectedMapping?.value.isStub
-      ? createValidationError(['Mapping cannot be empty'])
-      : undefined;
+    const isMappingEmpty =
+      selectedMapping?.value &&
+      isStubbed_PackageableElement(selectedMapping.value)
+        ? createValidationError(['Mapping cannot be empty'])
+        : undefined;
     const mapping = selectedMapping?.value;
     const mappingOptions = editorStore.mappingOptions;
     const noMappingLabel = (

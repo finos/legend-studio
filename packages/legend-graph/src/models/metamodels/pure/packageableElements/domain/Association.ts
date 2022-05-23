@@ -14,40 +14,22 @@
  * limitations under the License.
  */
 
-import {
-  type Hashable,
-  guaranteeNonNullable,
-  guaranteeType,
-  assertTrue,
-  UnsupportedOperationError,
-  hashArray,
-} from '@finos/legend-shared';
+import { type Hashable, type Writable, hashArray } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
 import {
   type PackageableElementVisitor,
   PackageableElement,
 } from '../PackageableElement';
-import { Property } from './Property';
-import { type Stubable, isStubArray } from '../../../../../helpers/Stubable';
-import { Class } from './Class';
+import type { Property } from './Property';
 import type { AnnotatedElement } from './AnnotatedElement';
 import type { TaggedValue } from './TaggedValue';
 import type { StereotypeReference } from './StereotypeReference';
-import { DerivedProperty } from './DerivedProperty';
+import type { DerivedProperty } from './DerivedProperty';
 import type { AbstractProperty } from './AbstractProperty';
-
-// NOTE: we might want to revisit this decision to initialize to association properties to stubs
-const initAssociationProperties = (
-  association: Association,
-): [Property, Property] => {
-  const properties: [Property, Property] = [
-    Property.createStub(Class.createStub(), Class.createStub()),
-    Property.createStub(Class.createStub(), Class.createStub()),
-  ];
-  properties[0].owner = association;
-  properties[1].owner = association;
-  return properties;
-};
+import {
+  stub_Class,
+  stub_Property,
+} from '../../../../../graphManager/action/creation/DomainModelCreatorHelper';
 
 /**
  * Assocation needs exactly 2 properties (for 2 classes, not enumeration, not primitive), e.g.
@@ -62,60 +44,38 @@ const initAssociationProperties = (
  * or project dependencies. As such, in the app, we have to make it very clear that we prohibits this.
  *
  * TODO: We probably should change backend to do compilation check whether association refers
- * to a class from a different project. Here, while building the graph, we can make use of the
+ * to a class from a different projects. Here, while building the graph, we can make use of the
  * root package to verify this in the UI and make this a validation error in a way.
+ * See https://github.com/finos/legend-studio/issues/282
  */
 export class Association
   extends PackageableElement
-  implements AnnotatedElement, Hashable, Stubable
+  implements AnnotatedElement, Hashable
 {
-  properties: [Property, Property] = initAssociationProperties(this);
+  /**
+   * To store the abstract properties generated while processing the milestoning properties. The properties
+   * generated are `allVersions`, `allVersionsInRange` and derived property with date parameter.
+   *
+   * TODO: process new property added while editing the graph
+   */
+  _generatedMilestonedProperties: AbstractProperty[] = [];
+
+  properties!: [Property, Property];
   stereotypes: StereotypeReference[] = [];
   taggedValues: TaggedValue[] = [];
   derivedProperties: DerivedProperty[] = [];
 
-  /**
-   * To store the abstract properties generated while processing the milestoning properties. The properties
-   * generated are `allVersions`, `allVersionsInRange` and derived property with date parameter.
-   */
-  _generatedMilestonedProperties: AbstractProperty[] = [];
+  constructor(name: string) {
+    super(name);
 
-  getFirstProperty = (): Property => guaranteeNonNullable(this.properties[0]);
-  getSecondProperty = (): Property => guaranteeNonNullable(this.properties[1]);
-  getOtherProperty = (property: Property): Property => {
-    const idx = this.properties.findIndex((p) => p === property);
-    assertTrue(
-      idx !== -1,
-      `Can't find property '${property.name}' in association '${this.path}'`,
-    );
-    return guaranteeNonNullable(this.properties[(idx + 1) % 2]);
-  };
-  getPropertyAssociatedClass = (property: AbstractProperty): Class => {
-    if (property instanceof Property) {
-      return guaranteeType(
-        this.getOtherProperty(property).genericType.ownerReference.value,
-        Class,
-        `Association property '${property.name}' must be of type 'class'`,
-      );
-    } else if (property instanceof DerivedProperty) {
-      throw new UnsupportedOperationError(
-        `Derived property is not currently supported in association`,
-      );
-    }
-    throw new UnsupportedOperationError(
-      `Can't get associated class of property`,
-      property,
-    );
-  };
-
-  getProperty = (name: string): Property =>
-    guaranteeNonNullable(
-      this.properties.find((p) => p.name === name),
-      `Can't find property '${name}' in class '${this.path}'`,
-    );
-
-  override get isStub(): boolean {
-    return super.isStub && isStubArray(this.properties);
+    // NOTE: we might want to revisit this decision to initialize to association properties to stubs
+    const properties: [Property, Property] = [
+      stub_Property(stub_Class(), stub_Class()),
+      stub_Property(stub_Class(), stub_Class()),
+    ];
+    (properties[0] as Writable<Property>)._OWNER = this;
+    (properties[1] as Writable<Property>)._OWNER = this;
+    this.properties = properties;
   }
 
   protected override get _elementHashCode(): string {
