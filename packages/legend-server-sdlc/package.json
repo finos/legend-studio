@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-server-sdlc",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Legend SDLC server client",
   "keywords": [
     "legend",

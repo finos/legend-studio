@@ -1,5 +1,7 @@
 # @finos/legend-taxonomy
 
+## 3.0.4
+
 ## 3.0.3
 
 ## 3.0.2

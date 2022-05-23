@@ -1,5 +1,11 @@
 # @finos/eslint-plugin-legend-studio
 
+## 1.1.0
+
+### Minor Changes
+
+- [#1159](https://github.com/finos/legend-studio/pull/1159) [`f6abe87a`](https://github.com/finos/legend-studio/commit/f6abe87a27ec3f2604caf25e38df17344b31ef9f) ([@akphi](https://github.com/akphi)) - Support `Typscript` [declaration merging](https://www.typescriptlang.org/docs/handbook/declaration-merging.html), by using `@typescript-eslint/no-redeclare` instead of `no-redeclare`
+
 ## 1.0.0
 
 ### Major Changes

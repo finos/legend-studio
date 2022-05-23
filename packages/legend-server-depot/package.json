@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-server-depot",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Legend Depot server client",
   "keywords": [
     "legend",

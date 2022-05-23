@@ -1,5 +1,15 @@
 # @finos/legend-extension-external-store-service
 
+## 2.1.0
+
+### Minor Changes
+
+- [#1171](https://github.com/finos/legend-studio/pull/1171) [`190e3857`](https://github.com/finos/legend-studio/commit/190e3857ee7ec23cb57401ef67686ddacc7cfbc1) ([@gayathrir11](https://github.com/gayathrir11)) - Add form support for Service store embedded data
+
+### Patch Changes
+
+- [#1174](https://github.com/finos/legend-studio/pull/1174) [`81b132a2`](https://github.com/finos/legend-studio/commit/81b132a2fff4a5d6b1a03e68d3192a742a602105) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix hashing of service mapping with param definitions ([#1175](https://github.com/finos/legend-studio/issues/1175)).
+
 ## 2.0.2
 
 ## 2.0.1
