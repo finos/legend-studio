@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { hashLambda } from '../../../../../../../MetaModelUtils';
+import { hashRawLambda } from '../../../../../../../MetaModelUtils';
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import type { V1_Multiplicity } from './V1_Multiplicity';
@@ -48,7 +48,7 @@ export class V1_DerivedProperty implements Hashable {
       this.returnType,
       hashArray(this.stereotypes),
       hashArray(this.taggedValues),
-      hashLambda(this.parameters, this.body),
+      hashRawLambda(this.parameters, this.body),
     ]);
   }
 }

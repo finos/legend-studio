@@ -15,7 +15,7 @@
  */
 
 import { hashArray } from '@finos/legend-shared';
-import { hashLambda } from '../../../../../../../MetaModelUtils';
+import { hashRawLambda } from '../../../../../../../MetaModelUtils';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import type { V1_RawVariable } from '../../../model/rawValueSpecification/V1_RawVariable';
 import type { V1_Multiplicity } from '../../../model/packageableElements/domain/V1_Multiplicity';
@@ -52,7 +52,7 @@ export class V1_ConcreteFunctionDefinition extends V1_PackageableElement {
       this.returnType,
       hashArray(this.taggedValues),
       hashArray(this.stereotypes),
-      hashLambda(undefined, this.body),
+      hashRawLambda(undefined, this.body),
     ]);
   }
 

@@ -16,7 +16,7 @@
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
-import { hashLambda } from '../../../../../../../MetaModelUtils';
+import { hashRawLambda } from '../../../../../../../MetaModelUtils';
 import type { V1_RawLambda } from '../../rawValueSpecification/V1_RawLambda';
 import type { V1_ClassMappingVisitor } from './V1_ClassMapping';
 import { V1_OperationClassMapping } from './V1_OperationClassMapping';
@@ -37,7 +37,7 @@ export class V1_MergeOperationClassMapping
       CORE_HASH_STRUCTURE.OPERATION_SET_IMPLEMENTATION,
       this.operation,
       hashArray(this.parameters),
-      hashLambda(
+      hashRawLambda(
         this.validationFunction.parameters,
         this.validationFunction.body,
       ),

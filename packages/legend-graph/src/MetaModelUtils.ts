@@ -34,6 +34,7 @@ import {
   hashArray,
   hashObject,
   hashString,
+  recursiveOmit,
 } from '@finos/legend-shared';
 
 export const extractElementNameFromPath = (fullPath: string): string =>
@@ -85,6 +86,20 @@ export const isValidPath = (path: string): boolean =>
 export const fromElementPathToMappingElementId = (className: string): string =>
   className.split(ELEMENT_PATH_DELIMITER).join('_');
 
+/**
+ * Prune source information from object such as raw lambda, raw value specification, etc.
+ *
+ * NOTE: currently, there is no exhaustive way to do this. Majority of the cases, the source information field
+ * is named `sourceInformation`, however, we have sometimes deviated from this pattern in our protocol model,
+ * so we have fields like `classSourceInformation`, etc. So this is really an optimistic, non-exhaustive prune.
+ * To do this exhaustively, we might need to make use of engine grammar API endpoints or do a full roundtrip
+ * raw object-protocol transformation to prune unrecognized fields, which include source information fields.
+ */
+export const pruneSourceInformation = (
+  object: Record<PropertyKey, unknown>,
+): Record<PropertyKey, unknown> =>
+  recursiveOmit(object, [SOURCE_INFORMATION_KEY]);
+
 // -------------------------------- HASHING -------------------------------------
 // TODO: this should be moved after we refactor `hashing` out of metamodels
 
@@ -93,7 +108,8 @@ export const hashObjectWithoutSourceInformation = (val: object): string =>
   hashObject(val, {
     excludeKeys: (key: string) => key === SOURCE_INFORMATION_KEY,
   });
-export const hashLambda = (
+
+export const hashRawLambda = (
   parameters: object | undefined,
   body: object | undefined,
 ): string =>

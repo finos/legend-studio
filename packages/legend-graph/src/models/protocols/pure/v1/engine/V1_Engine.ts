@@ -21,11 +21,11 @@ import {
   LogEvent,
   losslessParse,
   assertErrorThrown,
-  guaranteeNonNullable,
   mergeObjects,
   HttpStatus,
   NetworkClientError,
   returnUndefOnError,
+  deserializeMap,
 } from '@finos/legend-shared';
 import {
   type ImportConfigurationDescription,
@@ -40,11 +40,6 @@ import { TEMPORARY__AbstractEngineConfig } from '../../../../../graphManager/act
 import { V1_EngineServerClient } from './V1_EngineServerClient';
 import type { V1_PureModelContextData } from '../model/context/V1_PureModelContextData';
 import type { V1_LambdaReturnTypeResult } from '../engine/compilation/V1_LambdaReturnTypeResult';
-import {
-  V1_JsonToGrammarInput,
-  V1_RenderStyle,
-} from '../engine/grammar/V1_JsonToGrammarInput';
-import { V1_GrammarToJsonInput } from '../engine/grammar/V1_GrammarToJson';
 import type { V1_RawLambda } from '../model/rawValueSpecification/V1_RawLambda';
 import {
   V1_deserializePureModelContextData,
@@ -62,8 +57,6 @@ import { V1_ParserError } from '../engine/grammar/V1_ParserError';
 import { V1_CompilationError } from '../engine/compilation/V1_CompilationError';
 import type { V1_RawRelationalOperationElement } from '../model/packageableElements/store/relational/model/V1_RawRelationalOperationElement';
 import type { RawRelationalOperationElement } from '../../../../metamodels/pure/packageableElements/store/relational/model/RawRelationalOperationElement';
-import { V1_RelationalOperationElementJsonToGrammarInput } from './grammar/V1_RelationalOperationElementJsonToGrammarInput';
-import { V1_RelationalOperationElementGrammarToJsonInput } from './grammar/V1_RelationalOperationElementGrammarToJson';
 import { V1_GraphTransformerContextBuilder } from '../transformation/pureGraph/from/V1_GraphTransformerContext';
 import type { PureProtocolProcessorPlugin } from '../../PureProtocolProcessorPlugin';
 import {
@@ -101,6 +94,7 @@ import { V1_ExternalFormatModelGenerationInput } from './externalFormat/V1_Exter
 import { GRAPH_MANAGER_EVENT } from '../../../../../graphManager/GraphManagerEvent';
 import { V1_RunTestsInput } from './test/V1_RunTestsInput';
 import { V1_RunTestsResult } from './test/V1_RunTestsResult';
+import { V1_RenderStyle } from './grammar/V1_RenderStyle';
 
 class V1_EngineConfig extends TEMPORARY__AbstractEngineConfig {
   private engine: V1_Engine;
@@ -196,15 +190,12 @@ export class V1_Engine {
 
   // ------------------------------------------- Grammar -------------------------------------------
 
-  async pureModelContextDataToPureCode(
+  pureModelContextDataToPureCode(
     graph: V1_PureModelContextData,
   ): Promise<string> {
-    return (
-      ((
-        await this.engineServerClient.transformJSONToGrammar({
-          modelDataContext: this.serializePureModelContextData(graph),
-        })
-      ).code as string | undefined) ?? ''
+    return this.engineServerClient.JSONToGrammar_model(
+      this.serializePureModelContextData(graph),
+      V1_RenderStyle.STANDARD,
     );
   }
 
@@ -213,111 +204,155 @@ export class V1_Engine {
     options?: { onError?: () => void },
   ): Promise<V1_PureModelContextData> {
     return V1_deserializePureModelContextData(
-      await this.pureCodeToPureModelContextDataJson(code, options),
+      await this.pureCodeToPureModelContextDataJSON(code, false, options),
     );
   }
 
-  private async pureCodeToPureModelContextDataJson(
+  private async pureCodeToPureModelContextDataJSON(
     code: string,
+    returnSourceInformation: boolean,
     options?: { onError?: () => void },
   ): Promise<PlainObject<V1_PureModelContextData>> {
-    const parsingResult = await this.engineServerClient.transformGrammarToJSON({
-      code,
-    });
-    if (parsingResult.codeError) {
-      options?.onError?.();
-      throw V1_buildParserError(
-        V1_ParserError.serialization.fromJson(
-          parsingResult.codeError as PlainObject<V1_ParserError>,
-        ),
+    try {
+      return await this.engineServerClient.grammarToJSON_model(
+        code,
+        undefined,
+        undefined,
+        // TODO: we should use the passed `returnSourceInformation`
+        // but right now, we must test if this works for engine
+        // See https://github.com/finos/legend-engine/pull/692
+        undefined,
       );
+    } catch (error) {
+      assertErrorThrown(error);
+      options?.onError?.();
+      if (
+        error instanceof NetworkClientError &&
+        error.response.status === HttpStatus.BAD_REQUEST
+      ) {
+        throw V1_buildParserError(
+          V1_ParserError.serialization.fromJson(
+            error.payload as PlainObject<V1_ParserError>,
+          ),
+        );
+      }
+      throw error;
     }
-    return guaranteeNonNullable(
-      parsingResult.modelDataContext,
-    ) as PlainObject<V1_PureModelContextData>;
   }
 
   async transformLambdasToCode(
-    inputLambdas: Map<string, RawLambda>,
-    pureProtocolProcessorPlugins: PureProtocolProcessorPlugin[],
-    pretty?: boolean,
+    input: Map<string, RawLambda>,
+    pretty: boolean,
+    plugins: PureProtocolProcessorPlugin[],
   ): Promise<Map<string, string>> {
     const lambdas: Record<string, PlainObject<V1_RawLambda>> = {};
-    inputLambdas.forEach((inputLambda, key) => {
+    input.forEach((inputLambda, key) => {
       lambdas[key] = V1_serializeRawValueSpecification(
         V1_transformRawLambda(
           inputLambda,
-          new V1_GraphTransformerContextBuilder(
-            pureProtocolProcessorPlugins,
-          ).build(),
+          new V1_GraphTransformerContextBuilder(plugins).build(),
         ),
       );
     });
-    const result = V1_GrammarToJsonInput.serialization.fromJson(
-      await this.engineServerClient.transformJSONToGrammar({
-        isolatedLambdas: { lambdas },
-        renderStyle: pretty ? V1_RenderStyle.PRETTY : V1_RenderStyle.STANDARD,
-      }),
+    return deserializeMap(
+      await this.engineServerClient.JSONToGrammar_lambda_batch(
+        lambdas,
+        pretty ? V1_RenderStyle.PRETTY : V1_RenderStyle.STANDARD,
+      ),
+      (v) => v,
     );
-    return result.isolatedLambdas ?? new Map<string, string>();
+  }
+
+  async transformLambdaToCode(
+    lambda: RawLambda,
+    pretty: boolean,
+    plugins: PureProtocolProcessorPlugin[],
+  ): Promise<string> {
+    return await this.engineServerClient.JSONToGrammar_lambda(
+      V1_serializeRawValueSpecification(
+        V1_transformRawLambda(
+          lambda,
+          new V1_GraphTransformerContextBuilder(plugins).build(),
+        ),
+      ),
+      pretty ? V1_RenderStyle.PRETTY : V1_RenderStyle.STANDARD,
+    );
   }
 
   async transformCodeToLambda(
-    lambda: string,
-    lambdaId: string,
-  ): Promise<V1_RawLambda | undefined> {
-    const result = V1_JsonToGrammarInput.serialization.fromJson(
-      await this.engineServerClient.transformGrammarToJSON({
-        isolatedLambdas: { [lambdaId]: lambda },
-      }),
-    );
-    const lambdaResult = guaranteeNonNullable(result.isolatedLambdas);
-    const parserError = lambdaResult.lambdaErrors?.get(lambdaId);
-    if (parserError) {
-      throw V1_buildParserError(parserError);
+    code: string,
+    lambdaId?: string,
+  ): Promise<V1_RawLambda> {
+    try {
+      return (await this.engineServerClient.grammarToJSON_lambda(
+        code,
+        lambdaId ?? '',
+        undefined,
+        undefined,
+        true,
+      )) as unknown as V1_RawLambda;
+    } catch (error) {
+      assertErrorThrown(error);
+      if (
+        error instanceof NetworkClientError &&
+        error.response.status === HttpStatus.BAD_REQUEST
+      ) {
+        throw V1_buildParserError(
+          V1_ParserError.serialization.fromJson(
+            error.payload as PlainObject<V1_ParserError>,
+          ),
+        );
+      }
+      throw error;
     }
-    return lambdaResult.lambdas?.get(lambdaId);
   }
 
   async transformRelationalOperationElementsToPureCode(
-    inputOperations: Map<string, RawRelationalOperationElement>,
+    input: Map<string, RawRelationalOperationElement>,
   ): Promise<Map<string, string>> {
     const operations: Record<
       string,
       PlainObject<V1_RawRelationalOperationElement>
     > = {};
-    inputOperations.forEach((inputOperation, key) => {
+    input.forEach((inputOperation, key) => {
       operations[key] =
         inputOperation as PlainObject<V1_RawRelationalOperationElement>;
     });
-    const result =
-      V1_RelationalOperationElementGrammarToJsonInput.serialization.fromJson(
-        await this.engineServerClient.transformRelationalOperationElementJSONToGrammar(
-          {
-            operations,
-          },
-        ),
-      );
-    return result.operations;
+    return deserializeMap(
+      await this.engineServerClient.JSONToGrammar_relationalOperationElement_batch(
+        operations,
+        V1_RenderStyle.STANDARD,
+      ),
+      (v) => v,
+    );
   }
 
   async transformPureCodeToRelationalOperationElement(
-    operation: string,
+    code: string,
     operationId: string,
-  ): Promise<V1_RawRelationalOperationElement | undefined> {
-    const result =
-      V1_RelationalOperationElementJsonToGrammarInput.serialization.fromJson(
-        await this.engineServerClient.transformRelationalOperationElementGrammarToJSON(
-          {
-            operations: { [operationId]: operation },
-          },
-        ),
-      );
-    const parserError = result.operationErrors?.get(operationId);
-    if (parserError) {
-      throw V1_buildParserError(parserError);
+  ): Promise<V1_RawRelationalOperationElement> {
+    try {
+      return (await this.engineServerClient.grammarToJSON_relationalOperationElement(
+        code,
+        operationId,
+        undefined,
+        undefined,
+        true,
+      )) as unknown as V1_RawRelationalOperationElement;
+    } catch (error) {
+      assertErrorThrown(error);
+      if (
+        error instanceof NetworkClientError &&
+        error.response.status === HttpStatus.BAD_REQUEST
+      ) {
+        throw V1_buildParserError(
+          V1_ParserError.serialization.fromJson(
+            error.payload as PlainObject<V1_ParserError>,
+          ),
+        );
+      }
+      throw error;
     }
-    return result.operations.get(operationId);
   }
 
   // ------------------------------------------- Compile -------------------------------------------
@@ -352,8 +387,11 @@ export class V1_Engine {
     compileContext?: V1_PureModelContextData,
     options?: { onError?: () => void },
   ): Promise<V1_PureModelContextData> {
-    const mainGraph = await this.pureCodeToPureModelContextDataJson(
+    const mainGraph = await this.pureCodeToPureModelContextDataJSON(
       graphText,
+      // NOTE: we need to return source information here so we can locate the compilation
+      // errors/warnings
+      true,
       options,
     );
     const pureModelContextDataJson = compileContext
@@ -545,15 +583,13 @@ export class V1_Engine {
   async generateModel(
     input: V1_ExternalFormatModelGenerationInput,
   ): Promise<string> {
-    const pmcd = (await this.engineServerClient.generateModel(
+    const model = (await this.engineServerClient.generateModel(
       V1_ExternalFormatModelGenerationInput.serialization.toJson(input),
     )) as unknown as PlainObject<V1_PureModelContextData>;
-    const pureCode =
-      ((
-        await this.engineServerClient.transformJSONToGrammar({
-          modelDataContext: pmcd,
-        })
-      ).code as string | undefined) ?? '';
+    const pureCode = await this.engineServerClient.JSONToGrammar_model(
+      model,
+      V1_RenderStyle.STANDARD,
+    );
     return pureCode;
   }
 

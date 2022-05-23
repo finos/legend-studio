@@ -85,10 +85,10 @@ export class FlatDataPropertyMappingState extends PropertyMappingState {
           (yield this.editorStore.graphManagerState.graphManager.pureCodeToLambda(
             this.fullLambdaString,
             this.lambdaId,
-          )) as RawLambda | undefined;
+          )) as RawLambda;
         this.setParserError(undefined);
         if (this.propertyMapping instanceof FlatDataPropertyMapping) {
-          this.propertyMapping.transform = lambda ?? emptyLambda;
+          this.propertyMapping.transform = lambda;
         }
       } catch (error) {
         assertErrorThrown(error);

@@ -28,8 +28,6 @@ import type { V1_DEPRECATED__ServiceTestResult } from './service/V1_DEPRECATED__
 import type { V1_ServiceRegistrationResult } from './service/V1_ServiceRegistrationResult';
 import type { V1_ServiceConfigurationInfo } from './service/V1_ServiceConfiguration';
 import type { V1_CompileResult } from './compilation/V1_CompileResult';
-import type { V1_GrammarToJsonInput } from './grammar/V1_GrammarToJson';
-import type { V1_JsonToGrammarInput } from './grammar/V1_JsonToGrammarInput';
 import type { V1_RawLambda } from '../model/rawValueSpecification/V1_RawLambda';
 import type { V1_PureModelContextGenerationInput } from './import/V1_PureModelContextGenerationInput';
 import type { V1_GenerateFileInput } from './generation/V1_FileGenerationInput';
@@ -39,8 +37,6 @@ import type { V1_GenerationConfigurationDescription } from './generation/V1_Gene
 import type { V1_GenerationOutput } from './generation/V1_GenerationOutput';
 import type { V1_ExecuteInput } from './execution/V1_ExecuteInput';
 import type { V1_PureModelContext } from '../model/context/V1_PureModelContext';
-import type { V1_RelationalOperationElementGrammarToJsonInput } from './grammar/V1_RelationalOperationElementGrammarToJson';
-import type { V1_RelationalOperationElementJsonToGrammarInput } from './grammar/V1_RelationalOperationElementJsonToGrammarInput';
 import type { V1_ExecutionPlan } from '../model/executionPlan/V1_ExecutionPlan';
 import type { V1_LightQuery, V1_Query } from './query/V1_Query';
 import type { V1_ServiceStorage } from './service/V1_ServiceStorage';
@@ -51,6 +47,9 @@ import type { V1_ExternalFormatDescription } from './externalFormat/V1_ExternalF
 import type { V1_ExternalFormatModelGenerationInput } from './externalFormat/V1_ExternalFormatModelGeneration';
 import type { V1_RunTestsInput } from './test/V1_RunTestsInput';
 import type { V1_TestResult } from '../model/test/result/V1_TestResult';
+import type { V1_RawRelationalOperationElement } from '../model/packageableElements/store/relational/model/V1_RawRelationalOperationElement';
+import type { V1_RenderStyle } from './grammar/V1_RenderStyle';
+import type { V1_ParserError } from './grammar/V1_ParserError';
 
 enum CORE_ENGINE_TRACER_SPAN {
   GRAMMAR_TO_JSON = 'transform Pure code to protocol',
@@ -78,6 +77,18 @@ enum CORE_ENGINE_TRACER_SPAN {
   UPDATE_QUERY = 'update query',
   DELETE_QUERY = 'delete query',
 }
+
+type GrammarParserBatchInputEntry = {
+  value: string;
+  returnSourceInformation?: boolean | undefined;
+  sourceInformationOffset?:
+    | {
+        sourceId?: string | undefined;
+        lineOffset?: number | undefined;
+        columnOffset?: number | undefined;
+      }
+    | undefined;
+};
 
 export class V1_EngineServerClient extends AbstractServerClient {
   currentUserId?: string | undefined;
@@ -131,24 +142,59 @@ export class V1_EngineServerClient extends AbstractServerClient {
 
   // ------------------------------------------- Grammar -------------------------------------------
 
-  transformGrammarToJSON = (
-    input: PlainObject<V1_GrammarToJsonInput>,
-  ): Promise<PlainObject<V1_JsonToGrammarInput>> =>
+  _grammarToJSON = (): string => `${this._pure()}/grammar/grammarToJson`;
+
+  grammarToJSON_model = (
+    input: string,
+    sourceId?: string | undefined,
+    lineOffset?: number | undefined,
+    returnSourceInformation?: boolean | undefined,
+  ): Promise<PlainObject<V1_PureModelContextData>> =>
     this.postWithTracing(
       this.getTraceData(CORE_ENGINE_TRACER_SPAN.GRAMMAR_TO_JSON),
-      `${this._pure()}/grammar/transformGrammarToJson`,
+      `${this._grammarToJSON()}/model`,
       input,
       {},
       undefined,
-      undefined,
+      {
+        sourceId,
+        lineOffset,
+        returnSourceInformation,
+      },
       { enableCompression: true },
     );
-  transformJSONToGrammar = (
-    input: PlainObject<V1_JsonToGrammarInput>,
-  ): Promise<PlainObject<V1_JsonToGrammarInput>> =>
+
+  grammarToJSON_lambda = (
+    input: string,
+    sourceId?: string | undefined,
+    lineOffset?: number | undefined,
+    columnOffset?: number | undefined,
+    returnSourceInformation?: boolean | undefined,
+  ): Promise<PlainObject<V1_RawLambda>> =>
     this.postWithTracing(
-      this.getTraceData(CORE_ENGINE_TRACER_SPAN.JSON_TO_GRAMMAR),
-      `${this._pure()}/grammar/transformJsonToGrammar`,
+      this.getTraceData(CORE_ENGINE_TRACER_SPAN.GRAMMAR_TO_JSON),
+      `${this._grammarToJSON()}/lambda`,
+      input,
+      {},
+      undefined,
+      {
+        sourceId,
+        lineOffset,
+        columnOffset,
+        returnSourceInformation,
+      },
+      { enableCompression: true },
+    );
+
+  grammarToJSON_lambda_batch = (
+    input: Record<string, GrammarParserBatchInputEntry>,
+  ): Promise<{
+    errors?: Record<string, PlainObject<V1_ParserError>> | undefined;
+    result?: Record<string, PlainObject<V1_RawLambda>> | undefined;
+  }> =>
+    this.postWithTracing(
+      this.getTraceData(CORE_ENGINE_TRACER_SPAN.GRAMMAR_TO_JSON),
+      `${this._grammarToJSON()}/lambda/batch`,
       input,
       {},
       undefined,
@@ -156,12 +202,39 @@ export class V1_EngineServerClient extends AbstractServerClient {
       { enableCompression: true },
     );
 
-  transformRelationalOperationElementGrammarToJSON = (
-    input: PlainObject<V1_RelationalOperationElementGrammarToJsonInput>,
-  ): Promise<PlainObject<V1_RelationalOperationElementJsonToGrammarInput>> =>
+  grammarToJSON_relationalOperationElement = (
+    input: string,
+    sourceId?: string | undefined,
+    lineOffset?: number | undefined,
+    columnOffset?: number | undefined,
+    returnSourceInformation?: boolean | undefined,
+  ): Promise<PlainObject<V1_RawRelationalOperationElement>> =>
     this.postWithTracing(
       this.getTraceData(CORE_ENGINE_TRACER_SPAN.GRAMMAR_TO_JSON),
-      `${this._pure()}/grammar/transformRelationalOperationElementGrammarToJson`,
+      `${this._grammarToJSON()}/relationalOperationElement`,
+      input,
+      {},
+      undefined,
+      {
+        sourceId,
+        lineOffset,
+        columnOffset,
+        returnSourceInformation,
+      },
+      { enableCompression: true },
+    );
+
+  grammarToJSON_relationalOperationElement_batch = (
+    input: Record<string, GrammarParserBatchInputEntry>,
+  ): Promise<{
+    errors?: Record<string, PlainObject<V1_ParserError>> | undefined;
+    result?:
+      | Record<string, PlainObject<V1_RawRelationalOperationElement>>
+      | undefined;
+  }> =>
+    this.postWithTracing(
+      this.getTraceData(CORE_ENGINE_TRACER_SPAN.GRAMMAR_TO_JSON),
+      `${this._grammarToJSON()}/relationalOperationElement/batch`,
       input,
       {},
       undefined,
@@ -169,16 +242,75 @@ export class V1_EngineServerClient extends AbstractServerClient {
       { enableCompression: true },
     );
 
-  transformRelationalOperationElementJSONToGrammar = (
-    input: PlainObject<V1_RelationalOperationElementJsonToGrammarInput>,
-  ): Promise<PlainObject<V1_RelationalOperationElementGrammarToJsonInput>> =>
+  _JSONToGrammar = (): string => `${this._pure()}/grammar/jsonToGrammar`;
+
+  JSONToGrammar_model = (
+    input: PlainObject<V1_PureModelContextData>,
+    renderStyle?: V1_RenderStyle | undefined,
+  ): Promise<string> =>
     this.postWithTracing(
       this.getTraceData(CORE_ENGINE_TRACER_SPAN.JSON_TO_GRAMMAR),
-      `${this._pure()}/grammar/transformRelationalOperationElementJsonToGrammar`,
+      `${this._JSONToGrammar()}/model`,
+      input,
+      {},
+      { Accept: ContentType.TEXT_PLAIN },
+      { renderStyle },
+      { enableCompression: true },
+    );
+
+  JSONToGrammar_lambda = (
+    input: PlainObject<V1_RawLambda>,
+    renderStyle?: V1_RenderStyle | undefined,
+  ): Promise<string> =>
+    this.postWithTracing(
+      this.getTraceData(CORE_ENGINE_TRACER_SPAN.JSON_TO_GRAMMAR),
+      `${this._JSONToGrammar()}/lambda`,
       input,
       {},
       undefined,
+      { renderStyle },
+      { enableCompression: true },
+    );
+
+  JSONToGrammar_lambda_batch = (
+    input: Record<string, PlainObject<V1_RawLambda>>,
+    renderStyle?: V1_RenderStyle | undefined,
+  ): Promise<Record<string, string>> =>
+    this.postWithTracing(
+      this.getTraceData(CORE_ENGINE_TRACER_SPAN.JSON_TO_GRAMMAR),
+      `${this._JSONToGrammar()}/lambda/batch`,
+      input,
+      {},
       undefined,
+      { renderStyle },
+      { enableCompression: true },
+    );
+
+  JSONToGrammar_relationalOperationElement = (
+    input: PlainObject<V1_RawRelationalOperationElement>,
+    renderStyle?: V1_RenderStyle | undefined,
+  ): Promise<string> =>
+    this.postWithTracing(
+      this.getTraceData(CORE_ENGINE_TRACER_SPAN.JSON_TO_GRAMMAR),
+      `${this._JSONToGrammar()}/relationalOperationElement`,
+      input,
+      {},
+      undefined,
+      { renderStyle },
+      { enableCompression: true },
+    );
+
+  JSONToGrammar_relationalOperationElement_batch = (
+    input: Record<string, PlainObject<V1_RawRelationalOperationElement>>,
+    renderStyle?: V1_RenderStyle | undefined,
+  ): Promise<Record<string, string>> =>
+    this.postWithTracing(
+      this.getTraceData(CORE_ENGINE_TRACER_SPAN.JSON_TO_GRAMMAR),
+      `${this._JSONToGrammar()}/relationalOperationElement/batch`,
+      input,
+      {},
+      undefined,
+      { renderStyle },
       { enableCompression: true },
     );
 

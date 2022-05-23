@@ -1431,21 +1431,17 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   async pureCodeToLambda(
     lambda: string,
-    lambdaId = 'stub_lambdaId',
-  ): Promise<RawLambda | undefined> {
+    lambdaId?: string,
+  ): Promise<RawLambda> {
     const result = await this.engine.transformCodeToLambda(lambda, lambdaId);
-    return result ? new RawLambda(result.parameters, result.body) : undefined;
+    return new RawLambda(result.parameters, result.body);
   }
 
-  async lambdaToPureCode(
-    lambda: RawLambda,
-    lambdaId = 'stub_lambdaId',
-    pretty?: boolean,
-  ): Promise<string> {
-    const lambdas = new Map<string, RawLambda>();
-    lambdas.set(lambdaId, lambda);
-    return guaranteeNonNullable(
-      (await this.lambdasToPureCode(lambdas, pretty)).get(lambdaId),
+  async lambdaToPureCode(lambda: RawLambda, pretty?: boolean): Promise<string> {
+    return this.engine.transformLambdaToCode(
+      lambda,
+      Boolean(pretty),
+      this.pluginManager.getPureProtocolProcessorPlugins(),
     );
   }
 
@@ -1455,15 +1451,15 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   ): Promise<Map<string, string>> {
     return this.engine.transformLambdasToCode(
       lambdas,
+      Boolean(pretty),
       this.pluginManager.getPureProtocolProcessorPlugins(),
-      pretty,
     );
   }
 
   pureCodeToRelationalOperationElement(
     operation: string,
     operationId: string,
-  ): Promise<RawRelationalOperationElement | undefined> {
+  ): Promise<RawRelationalOperationElement> {
     return this.engine.transformPureCodeToRelationalOperationElement(
       operation,
       operationId,

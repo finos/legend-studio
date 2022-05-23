@@ -18,7 +18,7 @@ import {
   extractElementNameFromPath,
   fromElementPathToMappingElementId,
   matchFunctionName,
-  hashLambda,
+  hashRawLambda,
   isValidFullPath,
   isValidPath,
   isValidPathIdentifier,
@@ -66,11 +66,11 @@ test(
       parameters: [{ b: 2 }, { a: 1 }],
       body: { a: 3 },
     };
-    expect(hashLambda(lambda1.parameters, lambda1.body)).toEqual(
-      hashLambda(lambda2.parameters, lambda2.body),
+    expect(hashRawLambda(lambda1.parameters, lambda1.body)).toEqual(
+      hashRawLambda(lambda2.parameters, lambda2.body),
     );
-    expect(hashLambda(lambda1.parameters, lambda1.body)).not.toEqual(
-      hashLambda(lambda3.parameters, lambda3.body),
+    expect(hashRawLambda(lambda1.parameters, lambda1.body)).not.toEqual(
+      hashRawLambda(lambda3.parameters, lambda3.body),
     );
   },
 );

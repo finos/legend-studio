@@ -179,10 +179,9 @@ export abstract class AbstractPureGraphManager {
   abstract pureCodeToLambda(
     lambda: string,
     lambdaId?: string,
-  ): Promise<RawLambda | undefined>;
+  ): Promise<RawLambda>;
   abstract lambdaToPureCode(
     lambda: RawLambda,
-    lambdaId?: string,
     pretty?: boolean,
   ): Promise<string>;
   abstract lambdasToPureCode(
@@ -194,7 +193,7 @@ export abstract class AbstractPureGraphManager {
   abstract pureCodeToRelationalOperationElement(
     operation: string,
     operationId: string,
-  ): Promise<RawRelationalOperationElement | undefined>;
+  ): Promise<RawRelationalOperationElement>;
   abstract relationalOperationElementToPureCode(
     operations: Map<string, RawRelationalOperationElement>,
   ): Promise<Map<string, string>>;
@@ -223,7 +222,7 @@ export abstract class AbstractPureGraphManager {
     graph: PureModel,
   ): Promise<TestResult[]>;
 
-  // ------------------------------------------- ValueSpecification  -------------------------------------------
+  // ------------------------------------------- Value Specification  -------------------------------------------
 
   abstract buildValueSpecification(
     valueSpecificationJson: Record<PropertyKey, unknown>,
@@ -401,13 +400,6 @@ export abstract class AbstractPureGraphManager {
   // displaying, or for interacting with SDLC server.
   // As such, most of these methods will only deal with `string` or `plain object`
 
-  /**
-   * Prune source information from protocol object
-   *
-   * NOTE: if we did this right initially, it is as easy as walking through the object and prune
-   * any field with key `sourceInformation`, but we have introduced many specific source information
-   * fields, such as `elementSourceInformation in connection, so we need to handle them all.
-   */
   abstract pruneSourceInformation(object: object): Record<PropertyKey, unknown>;
   abstract elementToEntity(
     element: PackageableElement,

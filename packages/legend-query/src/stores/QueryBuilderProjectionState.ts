@@ -229,9 +229,9 @@ class QueryBuilderDerivationProjectionLambdaState extends LambdaEditorState {
           (yield this.queryBuilderState.graphManagerState.graphManager.pureCodeToLambda(
             this.fullLambdaString,
             this.lambdaId,
-          )) as RawLambda | undefined;
+          )) as RawLambda;
         this.setParserError(undefined);
-        this.derivationProjectionColumnState.setLambda(lambda ?? emptyLambda);
+        this.derivationProjectionColumnState.setLambda(lambda);
       } catch (error) {
         assertErrorThrown(error);
         if (error instanceof ParserError) {

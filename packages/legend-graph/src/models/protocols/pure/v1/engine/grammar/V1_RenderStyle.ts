@@ -14,24 +14,8 @@
  * limitations under the License.
  */
 
-import { custom, createModelSchema, primitive } from 'serializr';
-import {
-  deserializeMap,
-  SerializationFactory,
-  serializeMap,
-} from '@finos/legend-shared';
-
-export class V1_GrammarToJsonInput {
-  isolatedLambdas?: Map<string, string> | undefined;
-  code?: string | undefined;
-
-  static readonly serialization = new SerializationFactory(
-    createModelSchema(V1_GrammarToJsonInput, {
-      isolatedLambdas: custom(
-        (val) => serializeMap(val, (v) => v),
-        (val) => deserializeMap(val, (v) => v),
-      ),
-      code: primitive(),
-    }),
-  );
+export enum V1_RenderStyle {
+  STANDARD = 'STANDARD',
+  PRETTY = 'PRETTY',
+  PRETTY_HTML = 'PRETTY_HTML',
 }

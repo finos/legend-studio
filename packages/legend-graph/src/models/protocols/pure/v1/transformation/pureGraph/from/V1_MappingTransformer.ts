@@ -18,7 +18,6 @@ import {
   guaranteeNonEmptyString,
   IllegalStateError,
   isNonNullable,
-  recursiveOmit,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
 import type { Mapping } from '../../../../../../metamodels/pure/packageableElements/mapping/Mapping';
@@ -139,10 +138,7 @@ import { V1_JoinPointer } from '../../../model/packageableElements/store/relatio
 import type { V1_RawRelationalOperationElement } from '../../../model/packageableElements/store/relational/model/V1_RawRelationalOperationElement';
 import { RelationalInputData } from '../../../../../../metamodels/pure/packageableElements/store/relational/mapping/RelationalInputData';
 import { V1_RelationalInputData } from '../../../model/packageableElements/store/relational/mapping/V1_RelationalInputData';
-import {
-  SOURCE_INFORMATION_KEY,
-  PackageableElementPointerType,
-} from '../../../../../../../MetaModelConst';
+import { PackageableElementPointerType } from '../../../../../../../MetaModelConst';
 import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext';
 import type { DSLMapping_PureProtocolProcessorPlugin_Extension } from '../../../../DSLMapping_PureProtocolProcessorPlugin_Extension';
 import type { InstanceSetImplementation } from '../../../../../../metamodels/pure/packageableElements/mapping/InstanceSetImplementation';
@@ -154,6 +150,7 @@ import type { TEMPORARY__UnresolvedSetImplementation } from '../../../../../../m
 import { isStubbed_EnumValueMapping } from '../../../../../../../graphManager/action/creation/DSLMapping_ModelCreatorHelper';
 import { isStubbed_RawLambda } from '../../../../../../../graphManager/action/creation/RawValueSpecificationCreatorHelper';
 import { isStubbed_RawRelationalOperationElement } from '../../../../../../../graphManager/action/creation/StoreRelational_ModelCreatorHelper';
+import { pruneSourceInformation } from '../../../../../../../MetaModelUtils';
 
 export const V1_transformPropertyReference = (
   element: PropertyReference,
@@ -507,9 +504,8 @@ const transformRelationalPropertyMapping = (
   propertyMapping.relationalOperation = (
     context.keepSourceInformation
       ? element.relationalOperation
-      : recursiveOmit(
+      : pruneSourceInformation(
           element.relationalOperation as Record<PropertyKey, unknown>,
-          [SOURCE_INFORMATION_KEY],
         )
   ) as V1_RawRelationalOperationElement;
   // NOTE: isTransformingSourceId is needed for the roundtrip of association relational property mapping

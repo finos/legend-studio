@@ -22,8 +22,10 @@ import {
   TEST__buildGraphWithEntities,
   TEST__getTestGraphManagerState,
   TEST__GraphPluginManager,
+  type V1_PureModelContextData,
 } from '@finos/legend-graph';
 import { getLegendGraphExtensionCollection } from '@finos/legend-graph-extension-collection';
+import { ContentType, type PlainObject } from '@finos/legend-shared';
 
 const engineConfig = JSON.parse(
   fs.readFileSync(resolve(__dirname, '../../../engine-config.json'), {
@@ -121,16 +123,19 @@ const checkGrammarRoundtripMismatch = async (
 
   const transformGrammarToJsonResult = await axios.post<
     unknown,
-    AxiosResponse<{ modelDataContext: unknown }>
-  >(
-    `${ENGINE_SERVER_URL}/pure/v1/grammar/transformGrammarToJson`,
-    {
-      code: grammarBefore,
+    AxiosResponse<PlainObject<V1_PureModelContextData>>
+  >(`${ENGINE_SERVER_URL}/pure/v1/grammar/grammarToJson/model`, grammarBefore, {
+    headers: {
+      'Content-Type': ContentType.TEXT_PLAIN,
     },
-    {},
-  );
+    // TODO: we should enable this, but we need to make sure engine works first
+    // See https://github.com/finos/legend-engine/pull/692
+    // params: {
+    //   returnSourceInformation: false,
+    // },
+  });
   const entities = graphManagerState.graphManager.pureProtocolTextToEntities(
-    JSON.stringify(transformGrammarToJsonResult.data.modelDataContext),
+    JSON.stringify(transformGrammarToJsonResult.data),
   );
   await TEST__buildGraphWithEntities(graphManagerState, entities, {
     TEMPORARY__preserveSectionIndex: false,
@@ -155,17 +160,21 @@ const checkGrammarRoundtripMismatch = async (
   };
   const transformJsonToGrammarResult = await axios.post<
     unknown,
-    AxiosResponse<{ code: string }>
+    AxiosResponse<string>
   >(
-    `${ENGINE_SERVER_URL}/pure/v1/grammar/transformJsonToGrammar`,
+    `${ENGINE_SERVER_URL}/pure/v1/grammar/jsonToGrammar/model`,
+    modelDataContext,
     {
-      modelDataContext,
-      renderStyle: 'STANDARD',
+      headers: {
+        Accept: ContentType.TEXT_PLAIN,
+      },
+      params: {
+        renderStyle: 'STANDARD',
+      },
     },
-    {},
   );
   if (!excludes.includes(phase)) {
-    expect(transformJsonToGrammarResult.data.code).toEqual(grammarAfter);
+    expect(transformJsonToGrammarResult.data).toEqual(grammarAfter);
     logSuccess(phase, options?.debug);
   }
 
