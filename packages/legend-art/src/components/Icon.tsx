@@ -162,7 +162,7 @@ export {
 } from 'react-icons/io5';
 export {
   BsFillTriangleFill as FilledTriangleIcon,
-  BsFillFileEarmarkSpreadsheetFill as FillFileEarmarkSpreadsheetFillIcon,
+  BsFillFileEarmarkSpreadsheetFill as TabulatedDataFileIcon,
   BsBoxSeam as BundleIcon,
 } from 'react-icons/bs';
 export { BiShapeTriangle as ShapeTriangleIcon } from 'react-icons/bi';
