@@ -1,5 +1,7 @@
 # @finos/legend-tracer-extension-zipkin
 
+## 1.0.1
+
 ## 1.0.0
 
 ### Major Changes

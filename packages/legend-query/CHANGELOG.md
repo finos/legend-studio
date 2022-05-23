@@ -1,5 +1,11 @@
 # @finos/legend-query
 
+## 2.0.4
+
+### Patch Changes
+
+- [#1170](https://github.com/finos/legend-studio/pull/1170) [`9263d26d`](https://github.com/finos/legend-studio/commit/9263d26d50118bfb4140da25944e2a58cebff456) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Sort query builder explorer nodes by their return types with primitives going first following by enumeration, class and class subtypes.
+
 ## 2.0.3
 
 ## 2.0.2

@@ -1,5 +1,21 @@
 # @finos/legend-studio
 
+## 9.1.0
+
+### Minor Changes
+
+- [#1114](https://github.com/finos/legend-studio/pull/1114) [`5e248794`](https://github.com/finos/legend-studio/commit/5e24879419c4116456d58b67702919bc0577eeb6) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add (WIP) global testable runner v0.
+
+* [#1133](https://github.com/finos/legend-studio/pull/1133) [`bd86b7b3`](https://github.com/finos/legend-studio/commit/bd86b7b3e4c02b1409b71e0ce9922d701669edcb) ([@gayathrir11](https://github.com/gayathrir11)) - Add editor for `ExternalFormat` embedded data.
+
+### Patch Changes
+
+- [#1164](https://github.com/finos/legend-studio/pull/1164) [`f5ac6733`](https://github.com/finos/legend-studio/commit/f5ac673398c7300f0100bbd2da582eb1b082d7b1) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Temporary disable executing service queries with parameters until workflow is supported.
+
+* [#1163](https://github.com/finos/legend-studio/pull/1163) [`1df0754d`](https://github.com/finos/legend-studio/commit/1df0754d4b990ed34d9debf9f327a23122a238b4) ([@gayathrir11](https://github.com/gayathrir11)) - Fix service execution runtime showing invalid validation warnings. ([#1161](https://github.com/finos/legend-studio/issues/1161))
+
+- [#1010](https://github.com/finos/legend-studio/pull/1010) [`5d8c7c35`](https://github.com/finos/legend-studio/commit/5d8c7c3554369b5b0eee274422a072b383b7b25b) ([@abhishoya-gs](https://github.com/abhishoya-gs)) - Add Proxy Parameters to BigQueryDataSourceSpecification
+
 ## 9.0.2
 
 ## 9.0.1
