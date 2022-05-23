@@ -70,6 +70,8 @@ import {
   apiTokenAuthenticationStrategy_setApiToken,
   bigQueryDatasourceSpecification_setDefaultDataset,
   bigQueryDatasourceSpecification_setProjectId,
+  bigQueryDatasourceSpecification_setProxyHost,
+  bigQueryDatasourceSpecification_setProxyPort,
   databricksDatasourceSpecification_setHostName,
   databricksDatasourceSpecification_setHttpPath,
   databricksDatasourceSpecification_setPort,
@@ -814,6 +816,30 @@ const BigQueryDatasourceSpecificationEditor = observer(
           propertyName={'default dataset'}
           update={(value: string | undefined): void =>
             bigQueryDatasourceSpecification_setDefaultDataset(
+              sourceSpec,
+              value ?? '',
+            )
+          }
+        />
+        <ConnectionEditor_StringEditor
+          isReadOnly={isReadOnly}
+          value={sourceSpec.proxyHost}
+          propertyName="proxy host"
+          description="Specifies proxy host for connection to GCP BigQuery"
+          update={(value: string | undefined): void =>
+            bigQueryDatasourceSpecification_setProxyHost(
+              sourceSpec,
+              value ?? '',
+            )
+          }
+        />
+        <ConnectionEditor_StringEditor
+          isReadOnly={isReadOnly}
+          value={sourceSpec.proxyPort}
+          propertyName="proxy port"
+          description="Specifies proxy port for connection to GCP BigQuery"
+          update={(value: string | undefined): void =>
+            bigQueryDatasourceSpecification_setProxyPort(
               sourceSpec,
               value ?? '',
             )

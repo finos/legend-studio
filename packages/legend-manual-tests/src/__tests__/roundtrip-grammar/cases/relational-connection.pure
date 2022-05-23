@@ -204,3 +204,29 @@ RelationalDatabaseConnection connection::relational::BQWithGCPWorkloadIdentityFe
     serviceAccountEmail: 'your@name.com';
   };
 }
+
+RelationalDatabaseConnection connection::relational::BigQueryWithoutProxy
+{
+  store: store::db;
+  type: BigQuery;
+  specification: BigQuery
+  {
+    projectId: 'projectId';
+    defaultDataset: 'defaultDataset';
+  };
+  auth: GCPApplicationDefaultCredentials;
+}
+
+RelationalDatabaseConnection connection::relational::BigQueryWithProxy
+{
+  store: store::db;
+  type: BigQuery;
+  specification: BigQuery
+  {
+    projectId: 'projectId';
+    defaultDataset: 'defaultDataset';
+    proxyHost: 'someProxyHost';
+    proxyPort: '0';
+  };
+  auth: GCPApplicationDefaultCredentials;
+}

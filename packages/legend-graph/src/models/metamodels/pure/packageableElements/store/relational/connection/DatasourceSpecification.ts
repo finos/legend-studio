@@ -219,6 +219,8 @@ export class BigQueryDatasourceSpecification
 {
   projectId: string;
   defaultDataset: string;
+  proxyHost?: string | undefined;
+  proxyPort?: string | undefined;
 
   constructor(projectId: string, defaultDataset: string) {
     super();
@@ -231,6 +233,8 @@ export class BigQueryDatasourceSpecification
       CORE_HASH_STRUCTURE.BIGQUERY_DATASOURCE_SPECIFICATION,
       this.projectId,
       this.defaultDataset,
+      this.proxyHost ?? '',
+      this.proxyPort ?? '',
     ]);
   }
 }
