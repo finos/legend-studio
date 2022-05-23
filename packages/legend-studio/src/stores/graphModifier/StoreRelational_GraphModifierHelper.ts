@@ -326,6 +326,16 @@ export const bigQueryDatasourceSpecification_setDefaultDataset = action(
     spec.defaultDataset = val;
   },
 );
+export const bigQueryDatasourceSpecification_setProxyHost = action(
+  (spec: BigQueryDatasourceSpecification, val: string | undefined): void => {
+    spec.proxyHost = val;
+  },
+);
+export const bigQueryDatasourceSpecification_setProxyPort = action(
+  (spec: BigQueryDatasourceSpecification, val: string | undefined): void => {
+    spec.proxyPort = val;
+  },
+);
 //
 
 export const relationalInputData_setData = action(

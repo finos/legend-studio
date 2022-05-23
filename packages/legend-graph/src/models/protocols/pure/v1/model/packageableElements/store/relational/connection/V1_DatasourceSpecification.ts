@@ -143,12 +143,16 @@ export class V1_BigQueryDatasourceSpecification
 {
   projectId!: string;
   defaultDataset!: string;
+  proxyHost?: string | undefined;
+  proxyPort?: string | undefined;
 
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.BIGQUERY_DATASOURCE_SPECIFICATION,
       this.projectId,
       this.defaultDataset,
+      this.proxyHost ?? '',
+      this.proxyPort ?? '',
     ]);
   }
 }

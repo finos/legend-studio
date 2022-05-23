@@ -816,6 +816,8 @@ export const observe_BigQueryDatasourceSpecification = skipObserved(
     makeObservable(metamodel, {
       projectId: observable,
       defaultDataset: observable,
+      proxyHost: observable,
+      proxyPort: observable,
       hashCode: computed,
     }),
 );
