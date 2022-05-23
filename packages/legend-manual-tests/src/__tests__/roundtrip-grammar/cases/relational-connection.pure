@@ -189,3 +189,18 @@ RelationalDatabaseConnection connection::relational::StaticWithUserNameNoBase
     passwordVaultReference: 'value';
   };
 }
+
+RelationalDatabaseConnection connection::relational::BQWithGCPWorkloadIdentityFederation
+{
+  store: store::db;
+  type: BigQuery;
+  specification: BigQuery
+  {
+    projectId: 'projectId';
+    defaultDataset: 'defaultDataset';
+  };
+  auth: GCPWorkloadIdentityFederation
+  {
+    serviceAccountEmail: 'your@name.com';
+  };
+}
