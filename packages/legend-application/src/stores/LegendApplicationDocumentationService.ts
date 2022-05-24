@@ -68,7 +68,7 @@ export const collectKeyedDocumnetationEntriesFromConfig = (
     ),
   }));
 
-export class LegendApplicationDocumentationRegistry {
+export class LegendApplicationDocumentationService {
   url?: string | undefined;
 
   private registry = new Map<string, LegendApplicationDocumentationEntry>();

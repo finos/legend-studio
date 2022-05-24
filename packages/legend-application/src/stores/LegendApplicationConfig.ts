@@ -23,7 +23,7 @@ import {
   type LegendApplicationKeyedDocumentationEntry,
   type LegendApplicationDocumentationEntryConfig,
   collectKeyedDocumnetationEntriesFromConfig,
-} from './LegendApplicationDocumentationRegistry';
+} from './LegendApplicationDocumentationService';
 import {
   collectKeyedKnowledgeBaseEntriesFromConfig,
   type LegendApplicationKeyedContextualDocumentationEntry,

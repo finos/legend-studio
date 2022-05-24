@@ -15,7 +15,7 @@
  */
 
 import { AbstractPlugin } from '@finos/legend-shared';
-import type { LegendApplicationKeyedDocumentationEntry } from './LegendApplicationDocumentationRegistry';
+import type { LegendApplicationKeyedDocumentationEntry } from './LegendApplicationDocumentationService';
 
 export abstract class LegendApplicationPlugin extends AbstractPlugin {
   /**

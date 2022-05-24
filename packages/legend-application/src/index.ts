@@ -37,7 +37,7 @@ export * from './stores/LegendApplicationConfig';
 export { WebApplicationNavigator } from './stores/WebApplicationNavigator';
 export { LambdaEditorState } from './stores/LambdaEditorState';
 export * from './stores/PackageableElementOption';
-export * from './stores/LegendApplicationDocumentationRegistry';
+export * from './stores/LegendApplicationDocumentationService';
 export * from './stores/LegendApplicationVirtualAssistant';
 export * from './stores/LegendApplicationPlugin';
 

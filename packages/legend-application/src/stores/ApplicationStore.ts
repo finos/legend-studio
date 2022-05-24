@@ -31,7 +31,7 @@ import { APPLICATION_EVENT } from './ApplicationEvent';
 import type { LegendApplicationConfig } from './LegendApplicationConfig';
 import type { WebApplicationNavigator } from './WebApplicationNavigator';
 import type { LegendApplicationPluginManager } from '../application/LegendApplicationPluginManager';
-import { LegendApplicationDocumentationRegistry } from './LegendApplicationDocumentationRegistry';
+import { LegendApplicationDocumentationService } from './LegendApplicationDocumentationService';
 import { LegendApplicationVirtualAssistant } from './LegendApplicationVirtualAssistant';
 
 export enum ActionAlertType {
@@ -107,7 +107,7 @@ export class ApplicationStore<T extends LegendApplicationConfig> {
   blockingAlertInfo?: BlockingAlertInfo | undefined;
   actionAlertInfo?: ActionAlertInfo | undefined;
   config: T;
-  docRegistry: LegendApplicationDocumentationRegistry;
+  docRegistry: LegendApplicationDocumentationService;
   // assistant: LegendApplicationVirtualAssistant;
 
   log: Log = new Log();
@@ -138,7 +138,7 @@ export class ApplicationStore<T extends LegendApplicationConfig> {
     this.pluginManager = pluginManager;
 
     // Documentation
-    this.docRegistry = new LegendApplicationDocumentationRegistry();
+    this.docRegistry = new LegendApplicationDocumentationService();
     [
       ...pluginManager
         .getApplicationPlugins()

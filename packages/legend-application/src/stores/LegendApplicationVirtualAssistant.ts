@@ -30,7 +30,7 @@ import {
   primitive,
   SKIP,
 } from 'serializr';
-import type { LegendApplicationDocumentationRegistry } from './LegendApplicationDocumentationRegistry';
+import type { LegendApplicationDocumentationService } from './LegendApplicationDocumentationService';
 
 export class LegendApplicationContextualDocumentationEntry {
   readonly uuid = uuid();
@@ -79,13 +79,13 @@ export class LegendApplicationVirtualAssistant {
     LegendApplicationContextualDocumentationEntry
   >();
   private latestEvent?: string | undefined;
-  private readonly docRegistry: LegendApplicationDocumentationRegistry;
+  private readonly docRegistry: LegendApplicationDocumentationService;
   isHidden = false;
   // isOpen
   // selectedTab
   // searchText = '';
 
-  constructor(docRegistry: LegendApplicationDocumentationRegistry) {
+  constructor(docRegistry: LegendApplicationDocumentationService) {
     makeObservable<
       LegendApplicationVirtualAssistant,
       'knowledgeBase' | 'latestEvent'
