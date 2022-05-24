@@ -169,7 +169,7 @@ export class DSLText_LegendStudioPlugin
         if (parserKeyword === PURE_GRAMMAR_TEXT_PARSER_NAME) {
           if (elementKeyword === PURE_GRAMMAR_TEXT_ELEMENT_TYPE_LABEL) {
             return editorStore.applicationStore.docRegistry.getEntry(
-              DSL_TEXT_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_TEXT_ELEMENT,
+              DSL_TEXT_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_ELEMENT_TEXT,
             );
           }
         }

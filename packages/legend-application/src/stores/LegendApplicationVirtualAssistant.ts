@@ -32,7 +32,7 @@ import {
 } from 'serializr';
 import type { LegendApplicationDocumentationRegistry } from './LegendApplicationDocumentationRegistry';
 
-export class LegendApplicationVirtualAssistantKnowledgeEntry {
+export class LegendApplicationContextualDocumentationEntry {
   readonly uuid = uuid();
   markdownText?: MarkdownText | undefined;
   title?: string | undefined;
@@ -41,7 +41,7 @@ export class LegendApplicationVirtualAssistantKnowledgeEntry {
   relevantDocEntries: string[] = [];
 
   static readonly serialization = new SerializationFactory(
-    createModelSchema(LegendApplicationVirtualAssistantKnowledgeEntry, {
+    createModelSchema(LegendApplicationContextualDocumentationEntry, {
       markdownText: custom(
         () => SKIP,
         (val) => deserializeMarkdownText(val),
@@ -54,21 +54,21 @@ export class LegendApplicationVirtualAssistantKnowledgeEntry {
   );
 }
 
-export interface LegendApplicationKeyedVirtualAssistantKnowledgeEntry {
+export interface LegendApplicationKeyedContextualDocumentationEntry {
   key: string;
-  content: LegendApplicationVirtualAssistantKnowledgeEntry;
+  content: LegendApplicationContextualDocumentationEntry;
 }
 
-export const collectKeyedVirtualAssistantKnowledgeEntriesFromConfig = (
+export const collectKeyedKnowledgeBaseEntriesFromConfig = (
   rawEntries: Record<
     string,
-    PlainObject<LegendApplicationKeyedVirtualAssistantKnowledgeEntry>
+    PlainObject<LegendApplicationKeyedContextualDocumentationEntry>
   >,
-): LegendApplicationKeyedVirtualAssistantKnowledgeEntry[] =>
+): LegendApplicationKeyedContextualDocumentationEntry[] =>
   Object.entries(rawEntries).map((entry) => ({
     key: entry[0],
     content:
-      LegendApplicationVirtualAssistantKnowledgeEntry.serialization.fromJson(
+      LegendApplicationContextualDocumentationEntry.serialization.fromJson(
         entry[1],
       ),
   }));
@@ -76,7 +76,7 @@ export const collectKeyedVirtualAssistantKnowledgeEntriesFromConfig = (
 export class LegendApplicationVirtualAssistant {
   private readonly knowledgeBase = new Map<
     string,
-    LegendApplicationVirtualAssistantKnowledgeEntry
+    LegendApplicationContextualDocumentationEntry
   >();
   private latestEvent?: string | undefined;
   private readonly docRegistry: LegendApplicationDocumentationRegistry;
@@ -93,7 +93,7 @@ export class LegendApplicationVirtualAssistant {
       knowledgeBase: observable,
       latestEvent: observable,
       isHidden: observable,
-      registerKnowledgeEntry: action,
+      registerKnowledgeBaseEntry: action,
       postEvent: action,
       hide: action,
       relevantKnowledgeEntry: computed,
@@ -102,9 +102,9 @@ export class LegendApplicationVirtualAssistant {
     this.docRegistry = docRegistry;
   }
 
-  registerKnowledgeEntry(
+  registerKnowledgeBaseEntry(
     eventKey: string,
-    entry: LegendApplicationVirtualAssistantKnowledgeEntry,
+    entry: LegendApplicationContextualDocumentationEntry,
   ): void {
     this.knowledgeBase.set(eventKey, entry);
   }
@@ -118,7 +118,7 @@ export class LegendApplicationVirtualAssistant {
   }
 
   get relevantKnowledgeEntry():
-    | LegendApplicationVirtualAssistantKnowledgeEntry
+    | LegendApplicationContextualDocumentationEntry
     | undefined {
     return undefined;
   }

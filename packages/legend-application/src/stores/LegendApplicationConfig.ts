@@ -21,13 +21,13 @@ import {
 } from '@finos/legend-shared';
 import {
   type LegendApplicationKeyedDocumentationEntry,
-  type LegendApplicationDocumentationEntry,
+  type LegendApplicationDocumentationEntryConfig,
   collectKeyedDocumnetationEntriesFromConfig,
 } from './LegendApplicationDocumentationRegistry';
 import {
-  collectKeyedVirtualAssistantKnowledgeEntriesFromConfig,
-  type LegendApplicationKeyedVirtualAssistantKnowledgeEntry,
-  type LegendApplicationVirtualAssistantKnowledgeEntry,
+  collectKeyedKnowledgeBaseEntriesFromConfig,
+  type LegendApplicationKeyedContextualDocumentationEntry,
+  type LegendApplicationContextualDocumentationEntry,
 } from './LegendApplicationVirtualAssistant';
 
 export interface LegendApplicationVersionData {
@@ -41,10 +41,10 @@ export interface LegendApplicationConfigurationData {
   env: string;
   documentation?: {
     url: string;
-    entries?: Record<string, PlainObject<LegendApplicationDocumentationEntry>>;
-    assistanceKnowledgeBase: Record<
+    entries?: Record<string, LegendApplicationDocumentationEntryConfig>;
+    contextualEntries?: Record<
       string,
-      PlainObject<LegendApplicationVirtualAssistantKnowledgeEntry>
+      PlainObject<LegendApplicationContextualDocumentationEntry>
     >;
   };
   // TODO: when we support vault-like settings
@@ -60,7 +60,7 @@ export abstract class LegendApplicationConfig {
 
   readonly documentationUrl: string | undefined;
   readonly keyedDocEntries: LegendApplicationKeyedDocumentationEntry[] = [];
-  readonly keyedKnowledgeEntries: LegendApplicationKeyedVirtualAssistantKnowledgeEntry[] =
+  readonly keyedKnowledgeEntries: LegendApplicationKeyedContextualDocumentationEntry[] =
     [];
 
   readonly appVersion: string;
@@ -87,10 +87,9 @@ export abstract class LegendApplicationConfig {
     this.keyedDocEntries = collectKeyedDocumnetationEntriesFromConfig(
       configData.documentation?.entries ?? {},
     );
-    this.keyedKnowledgeEntries =
-      collectKeyedVirtualAssistantKnowledgeEntriesFromConfig(
-        configData.documentation?.entries ?? {},
-      );
+    this.keyedKnowledgeEntries = collectKeyedKnowledgeBaseEntriesFromConfig(
+      configData.documentation?.entries ?? {},
+    );
 
     // Version
     this.appVersion = guaranteeNonNullable(

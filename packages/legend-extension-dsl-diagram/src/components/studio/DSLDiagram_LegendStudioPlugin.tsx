@@ -204,7 +204,7 @@ export class DSLDiagram_LegendStudioPlugin
         if (parserKeyword === PURE_GRAMMAR_DIAGRAM_PARSER_NAME) {
           if (elementKeyword === PURE_GRAMMAR_DIAGRAM_ELEMENT_TYPE_LABEL) {
             return editorStore.applicationStore.docRegistry.getEntry(
-              DSL_DIAGRAM_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_DIAGRAM_ELEMENT,
+              DSL_DIAGRAM_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_ELEMENT_DIAGRAM,
             );
           }
         }

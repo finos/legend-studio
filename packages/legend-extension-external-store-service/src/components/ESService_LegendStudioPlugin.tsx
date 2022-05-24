@@ -257,7 +257,7 @@ export class ESService_LegendStudioPlugin
             elementKeyword === PURE_GRAMMAR_SERVICE_STORE_ELEMENT_TYPE_LABEL
           ) {
             return editorStore.applicationStore.docRegistry.getEntry(
-              EXTERNAL_STORE_SERVICE_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_SERVICE_STORE_ELEMENT,
+              EXTERNAL_STORE_SERVICE_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_ELEMENT_SERVICE_STORE,
             );
           }
         }

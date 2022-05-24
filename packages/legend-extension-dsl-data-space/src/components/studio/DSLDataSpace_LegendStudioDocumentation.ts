@@ -14,20 +14,27 @@
  * limitations under the License.
  */
 
+import type { LegendApplicationDocumentationEntryConfig } from '@finos/legend-application';
+
 export enum DSL_DATA_SPACE_LEGEND_STUDIO_DOCUMENTATION_KEY {
-  GRAMMAR_PARSER = 'dsl-dataspace__grammar-parser',
-  GRAMMAR_DATA_SPACE_ELEMENT = 'dsl-dataspace__grammar-data-space-element',
+  GRAMMAR_PARSER = 'dsl-dataspace.grammar.parser',
+  GRAMMAR_ELEMENT_DATA_SPACE = 'dsl-dataspace.grammar.element.data-space',
 }
 
-export const DSL_DATA_SPACE_DOCUMENTATION_ENTRIES = {
+export const DSL_DATA_SPACE_DOCUMENTATION_ENTRIES: Record<
+  string,
+  LegendApplicationDocumentationEntryConfig
+> = {
   [DSL_DATA_SPACE_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER]: {
+    title: `What is DataSpace DSL about?`,
     markdownText: {
-      value: `DSL DataSpace (\`###DataSpace\`) concerns with providing information and documentation about the taxonomy of data models`,
+      value: `\`DataSpace DSL\` (corresponding to header \`###DataSpace\` section in \`Pure\`) concerns with providing information and documentation about the taxonomy of data models`,
     },
   },
-  [DSL_DATA_SPACE_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_DATA_SPACE_ELEMENT]: {
+  [DSL_DATA_SPACE_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_ELEMENT_DATA_SPACE]: {
+    title: `What is a data-space element?`,
     markdownText: {
-      value: `A data-space element specifies a grouping of model diagrams, execution context (mapping, runtime), test data, and so on to help communicate about the _meaning_, _usage_, and relationships of data models and to help users quickly explore and understand the models`,
+      value: `A \`Data-space\` element specifies a grouping of model diagrams, execution context (mapping, runtime), test data, and so on to help communicate about the _meaning_, _usage_, and relationships of data models and to help users quickly explore and understand the models`,
     },
   },
 };

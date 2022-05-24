@@ -153,7 +153,7 @@ export class DSLPersistence_LegendStudioPlugin
         if (parserKeyword === PURE_GRAMMAR_PERSISTENCE_PARSER_NAME) {
           if (elementKeyword === PURE_GRAMMAR_PERSISTENCE_ELEMENT_TYPE_LABEL) {
             return editorStore.applicationStore.docRegistry.getEntry(
-              DSL_PERSISTENCE_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PERSISTENCE_ELEMENT,
+              DSL_PERSISTENCE_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_ELEMENT_PERSISTENCE,
             );
           }
         }

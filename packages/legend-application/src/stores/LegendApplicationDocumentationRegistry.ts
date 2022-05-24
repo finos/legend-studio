@@ -16,7 +16,6 @@
 
 import {
   type MarkdownText,
-  type PlainObject,
   deserializeMarkdownText,
   SerializationFactory,
 } from '@finos/legend-shared';
@@ -27,6 +26,13 @@ import {
   primitive,
   SKIP,
 } from 'serializr';
+
+export type LegendApplicationDocumentationEntryConfig = {
+  markdownText?: MarkdownText | undefined;
+  title?: string | undefined;
+  text?: string | undefined;
+  url?: string | undefined;
+};
 
 export class LegendApplicationDocumentationEntry {
   markdownText?: MarkdownText | undefined;
@@ -53,7 +59,7 @@ export interface LegendApplicationKeyedDocumentationEntry {
 }
 
 export const collectKeyedDocumnetationEntriesFromConfig = (
-  rawEntries: Record<string, PlainObject<LegendApplicationDocumentationEntry>>,
+  rawEntries: Record<string, LegendApplicationDocumentationEntryConfig>,
 ): LegendApplicationKeyedDocumentationEntry[] =>
   Object.entries(rawEntries).map((entry) => ({
     key: entry[0],
