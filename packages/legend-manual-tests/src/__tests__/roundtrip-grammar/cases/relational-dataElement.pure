@@ -1,18 +1,22 @@
 ###Data
-Data my::RelationalData
+Data data::RelationalData
 {
   Relational
   #{
-    MySchema.MyTable:
-      'id,firm_id,firstName,lastName\n'+
-      '1,1,John,Doe\n'+
-      '2,1,Nicole,Smith\n'+
-      '3,2,Tim,Smith\n';
+    default.PersonTable:
+          'id,firm_id,firstName,lastName\n'+
+          '1,1,John,Doe\n'+
+          '2,1,Nicole,Smith\n'+
+          '3,2,Time,Smith\n';
 
-    MySchema2.MyTable:
-      'id,firm_id,firstName,lastName\n'+
-      '1,1,John,Doe\n'+
-      '2,1,Nicole,Smith\n'+
-      '3,2,Tim,Smith\n'+
+    default.FirmTable:
+          'id,legal_name\n'+
+          '1,Finos\n'+
+          '2,Apple\n';
+
+    default.FirmTable2:
+          'id,legal_name\n'+
+          '1,Finos\n'+
+          '2,Apple\n';
   }#
 }

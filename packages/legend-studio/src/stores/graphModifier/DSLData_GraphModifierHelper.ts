@@ -21,7 +21,10 @@ import {
   type ExternalFormatData,
   type ModelStoreData,
   type Class,
+  type DataElementReference,
   observe_EmbeddedData,
+  observe_DataElement,
+  PackageableElementExplicitReference,
 } from '@finos/legend-graph';
 import { action } from 'mobx';
 
@@ -50,5 +53,18 @@ export const externalFormatData_setData = action(
 export const modelStoreData_setInstance = action(
   (modelStoreData: ModelStoreData, value: Map<Class, object>): void => {
     modelStoreData.instances = value;
+  },
+);
+
+export const dataElementReference_setDataElement = action(
+  (
+    dataElementReference: DataElementReference,
+    value: DataElement,
+    context: ObserverContext,
+  ): void => {
+    dataElementReference.dataElement =
+      PackageableElementExplicitReference.create(
+        observe_DataElement(value, context),
+      );
   },
 );

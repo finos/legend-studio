@@ -17,15 +17,16 @@
 import {
   DataElement,
   type EmbeddedData,
-  ExternalFormatData,
-  ModelStoreData,
   type PackageableElement,
 } from '@finos/legend-graph';
 import { guaranteeType, uuid } from '@finos/legend-shared';
 import { action, computed, makeObservable, observable } from 'mobx';
-import type { DSLData_LegendStudioPlugin_Extension } from '../../../DSLData_LegendStudioPlugin_Extension';
 import type { EditorStore } from '../../../EditorStore';
 import { ElementEditorState } from '../ElementEditorState';
+import {
+  type EmbeddedDataState,
+  buildEmbeddedDataEditorState,
+} from './EmbeddedDataState';
 
 export enum DATA_TAB_TYPE {
   GENERAL = 'GENERAL',
@@ -37,50 +38,6 @@ export type EmbeddedDataTypeOption = {
   value: string;
   label: string;
 };
-
-export abstract class EmbeddedDataState {
-  editorStore: EditorStore;
-  embeddedData: EmbeddedData;
-
-  constructor(editorStore: EditorStore, embeddedData: EmbeddedData) {
-    this.editorStore = editorStore;
-    this.embeddedData = embeddedData;
-  }
-
-  abstract label(): string;
-}
-
-export class ExternalFormatDataState extends EmbeddedDataState {
-  override embeddedData: ExternalFormatData;
-
-  constructor(editorStore: EditorStore, embeddedData: ExternalFormatData) {
-    super(editorStore, embeddedData);
-    this.embeddedData = embeddedData;
-  }
-
-  label(): string {
-    return 'ExternalFormat Data';
-  }
-}
-
-export class ModelStoreDataState extends EmbeddedDataState {
-  override embeddedData: ModelStoreData;
-
-  constructor(editorStore: EditorStore, embeddedData: ModelStoreData) {
-    super(editorStore, embeddedData);
-    this.embeddedData = embeddedData;
-  }
-
-  label(): string {
-    return 'ModelStore Data';
-  }
-}
-
-export class UnSupportedDataState extends EmbeddedDataState {
-  label(): string {
-    return 'Unsupported embedded data';
-  }
-}
 
 export class EmbeddedDataEditorState {
   /**
@@ -94,33 +51,10 @@ export class EmbeddedDataEditorState {
   constructor(editorStore: EditorStore, embeddedData: EmbeddedData) {
     this.editorStore = editorStore;
     this.embeddedData = embeddedData;
-    this.embeddedDataState = this.buildEmbeddedDataEditorState();
-  }
-
-  buildEmbeddedDataEditorState(): EmbeddedDataState {
-    const embeddedData = this.embeddedData;
-    if (embeddedData instanceof ExternalFormatData) {
-      return new ExternalFormatDataState(this.editorStore, embeddedData);
-    } else if (embeddedData instanceof ModelStoreData) {
-      return new ModelStoreDataState(this.editorStore, embeddedData);
-    } else {
-      const extraEmbeddedDataEditorStateBuilders =
-        this.editorStore.pluginManager
-          .getStudioPlugins()
-          .flatMap(
-            (plugin) =>
-              (
-                plugin as DSLData_LegendStudioPlugin_Extension
-              ).getExtraEmbeddedDataEditorStateBuilders?.() ?? [],
-          );
-      for (const stateBuilder of extraEmbeddedDataEditorStateBuilders) {
-        const state = stateBuilder(this.editorStore, embeddedData);
-        if (state) {
-          return state;
-        }
-      }
-      return new UnSupportedDataState(this.editorStore, embeddedData);
-    }
+    this.embeddedDataState = buildEmbeddedDataEditorState(
+      embeddedData,
+      editorStore,
+    );
   }
 }
 

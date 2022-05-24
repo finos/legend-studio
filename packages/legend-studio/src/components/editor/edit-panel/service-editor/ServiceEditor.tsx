@@ -47,6 +47,7 @@ import {
   service_setPattern,
   service_updateOwner,
 } from '../../../../stores/graphModifier/DSLService_GraphModifierHelper';
+import { ServiceTestSuiteEditor } from './testSuite/ServiceTestSuiteEditor';
 
 const ServiceGeneralEditor = observer(() => {
   const editorStore = useEditorStore();
@@ -464,6 +465,11 @@ export const ServiceEditor = observer(() => {
           {selectedTab === SERVICE_TAB.EXECUTION && <ServiceExecutionEditor />}
           {selectedTab === SERVICE_TAB.REGISTRATION && (
             <ServiceRegistrationEditor />
+          )}
+          {selectedTab === SERVICE_TAB.TEST && (
+            <ServiceTestSuiteEditor
+              serviceTestableState={serviceState.serviceTestableState}
+            />
           )}
         </div>
       </div>

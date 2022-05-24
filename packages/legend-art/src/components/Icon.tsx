@@ -153,11 +153,14 @@ export {
   GoX as XIcon,
 } from 'react-icons/go';
 export { SiSwagger as SwaggerIcon } from 'react-icons/si';
-export { IoResize as ResizeIcon } from 'react-icons/io5';
 export {
   BsFillTriangleFill as FilledTriangleIcon,
   BsFillFileEarmarkSpreadsheetFill as FillFileEarmarkSpreadsheetFillIcon,
 } from 'react-icons/bs';
+export {
+  IoResize as ResizeIcon,
+  IoBeaker as BeakerIcon,
+} from 'react-icons/io5';
 export { CgOptions as OptionsIcon } from 'react-icons/cg';
 export {
   FiMinus as MinusIcon,
@@ -171,3 +174,4 @@ export {
   FiShare as ShareIcon, // to be reviewed
   FiGitMerge as TruncatedGitMergeIcon, // to be reviewed/merged
 } from 'react-icons/fi';
+export { RiTestTubeFill as TestTubeIcon } from 'react-icons/ri';

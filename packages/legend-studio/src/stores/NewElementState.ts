@@ -75,10 +75,11 @@ import {
   DataElement,
   ExternalFormatData,
   ModelStoreData,
-  DEPRECATED__SingleExecutionTest,
   stub_Mapping,
   stub_RawLambda,
   stub_Database,
+  DEPRECATED__SingleExecutionTest,
+  ServiceTestSuite,
 } from '@finos/legend-graph';
 import type { DSLMapping_LegendStudioPlugin_Extension } from './DSLMapping_LegendStudioPlugin_Extension';
 import {
@@ -91,6 +92,7 @@ import {
   generationSpecification_addGenerationElement,
 } from './graphModifier/DSLGeneration_GraphModifierHelper';
 import {
+  service_addTestSuite,
   service_initNewService,
   service_setExecution,
   service_setLegacyTest,
@@ -104,6 +106,8 @@ import {
 } from './graphModifier/DSLData_GraphModifierHelper';
 import { PACKAGEABLE_ELEMENT_TYPE } from './shared/ModelUtil';
 import type { DSLData_LegendStudioPlugin_Extension } from './DSLData_LegendStudioPlugin_Extension';
+import type { PackageableElementOption } from '@finos/legend-application';
+import { getAllIdentifiedConnectionsFromRuntime } from './editor-state/element-editor-state/service/ServiceTestEditorState';
 
 export const resolvePackageAndElementName = (
   _package: Package,
@@ -382,6 +386,72 @@ export class NewPackageableConnectionDriver extends NewElementDriver<Packageable
   }
 }
 
+export class NewServiceDriver extends NewElementDriver<Service> {
+  mappingOption?: PackageableElementOption<Mapping> | undefined;
+  constructor(editorStore: EditorStore) {
+    super(editorStore);
+
+    makeObservable(this, {
+      mappingOption: observable,
+      setMappingOption: action,
+      isValid: computed,
+      createElement: action,
+    });
+    this.mappingOption = editorStore.mappingOptions[0];
+  }
+
+  setMappingOption(val: PackageableElementOption<Mapping> | undefined): void {
+    this.mappingOption = val;
+  }
+
+  get isValid(): boolean {
+    return Boolean(this.mappingOption);
+  }
+
+  createElement(name: string): Service {
+    const mappingOption = guaranteeNonNullable(this.mappingOption);
+    const _mapping = mappingOption.value;
+    const mapping = PackageableElementExplicitReference.create(_mapping);
+    const service = new Service(name);
+    // since it does not really make sense to start with the first available mapping, we start with a stub
+    const runtimes =
+      this.editorStore.graphManagerState.graph.ownRuntimes.concat(
+        this.editorStore.graphManagerState.graph.dependencyManager.runtimes,
+      );
+    const compatibleRuntimes = runtimes.filter((runtime) =>
+      runtime.runtimeValue.mappings.map((m) => m.value).includes(_mapping),
+    );
+    let runtimeValue: Runtime;
+    if (compatibleRuntimes.length) {
+      runtimeValue = (compatibleRuntimes[0] as PackageableRuntime).runtimeValue;
+    } else {
+      const engineRuntime = new EngineRuntime();
+      runtime_addMapping(engineRuntime, mapping);
+      decorateRuntimeWithNewMapping(engineRuntime, _mapping, this.editorStore);
+      runtimeValue = engineRuntime;
+    }
+    if (!this.editorStore.TEMPORARY_supportNewServiceTestableFlow) {
+      service_setLegacyTest(
+        service,
+        new DEPRECATED__SingleExecutionTest(service, ''),
+      );
+    }
+    service_setExecution(
+      service,
+      new PureSingleExecution(stub_RawLambda(), service, mapping, runtimeValue),
+      this.editorStore.changeDetectionState.observerContext,
+    );
+    service_initNewService(service);
+    const currentUserId =
+      this.editorStore.graphManagerState.graphManager.TEMPORARY__getEngineConfig()
+        .currentUserId;
+    if (currentUserId) {
+      service.owners = [currentUserId];
+    }
+    return service;
+  }
+}
+
 export class NewFileGenerationDriver extends NewElementDriver<FileGenerationSpecification> {
   typeOption?: FileGenerationTypeOption | undefined;
 
@@ -628,6 +698,9 @@ export class NewElementState {
         case PACKAGEABLE_ELEMENT_TYPE.DATA:
           driver = new NewDataElementDriver(this.editorStore);
           break;
+        case PACKAGEABLE_ELEMENT_TYPE.SERVICE:
+          driver = new NewServiceDriver(this.editorStore);
+          break;
         default: {
           const extraNewElementDriverCreators = this.editorStore.pluginManager
             .getStudioPlugins()
@@ -776,49 +849,8 @@ export class NewElementState {
         element = new Database(name);
         break;
       case PACKAGEABLE_ELEMENT_TYPE.SERVICE: {
-        const service = new Service(name);
-        // since it does not really make sense to start with the first available mapping, we start with a stub
-        const mapping = stub_Mapping();
-        const runtimes =
-          this.editorStore.graphManagerState.graph.ownRuntimes.filter(
-            (runtime) =>
-              runtime.runtimeValue.mappings
-                .map((m) => m.value)
-                .includes(mapping),
-          );
-        let runtimeValue: Runtime;
-        if (runtimes.length) {
-          runtimeValue = (runtimes[0] as PackageableRuntime).runtimeValue;
-        } else {
-          runtimeValue = new EngineRuntime();
-          decorateRuntimeWithNewMapping(
-            runtimeValue,
-            mapping,
-            this.editorStore,
-          );
-        }
-        service_setLegacyTest(
-          service,
-          new DEPRECATED__SingleExecutionTest(service, ''),
-        );
-        service_setExecution(
-          service,
-          new PureSingleExecution(
-            stub_RawLambda(),
-            service,
-            PackageableElementExplicitReference.create(mapping),
-            runtimeValue,
-          ),
-          this.editorStore.changeDetectionState.observerContext,
-        );
-        service_initNewService(service);
-        const currentUserId =
-          this.editorStore.graphManagerState.graphManager.TEMPORARY__getEngineConfig()
-            .currentUserId;
-        if (currentUserId) {
-          service.owners = [currentUserId];
-        }
-        element = service;
+        element =
+          this.getNewElementDriver(NewServiceDriver).createElement(name);
         break;
       }
       case PACKAGEABLE_ELEMENT_TYPE.CONNECTION:

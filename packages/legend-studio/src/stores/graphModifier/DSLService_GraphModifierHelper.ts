@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import type { ServiceTestSuite, ServiceTest } from '@finos/legend-graph';
 import {
   type KeyedExecutionParameter,
   type Mapping,
@@ -36,9 +37,27 @@ import {
   observe_RawLambda,
   observe_Runtime,
   observe_ServiceTest_Legacy,
+  observe_ServiceTestSuite,
+  observe_ServiceTest,
 } from '@finos/legend-graph';
 import { addUniqueEntry, deleteEntry, uuid } from '@finos/legend-shared';
 import { action } from 'mobx';
+
+export const service_addTest = action(
+  (suite: ServiceTestSuite, test: ServiceTest) => {
+    suite.tests.push(observe_ServiceTest(test));
+  },
+);
+
+export const service_addTestSuite = action(
+  (
+    service: Service,
+    suite: ServiceTestSuite,
+    observerContext: ObserverContext,
+  ) => {
+    service.tests.push(observe_ServiceTestSuite(suite, observerContext));
+  },
+);
 
 export const service_initNewService = action(
   (service: Service, userId?: string): void => {

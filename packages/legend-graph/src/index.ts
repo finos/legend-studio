@@ -290,6 +290,9 @@ export * from './models/metamodels/pure/test/assertion/status/AssertFail';
 export * from './models/metamodels/pure/test/assertion/status/AssertPass';
 export * from './models/metamodels/pure/test/assertion/status/EqualToJsonAssertFail';
 export * from './models/metamodels/pure/test/assertion/TestAssertion';
+export * from './models/metamodels/pure/test/assertion/EqualTo';
+export * from './models/metamodels/pure/test/assertion/EqualToJson';
+export * from './models/metamodels/pure/test/assertion/EqualToTDS';
 export * from './models/metamodels/pure/test/Test';
 export * from './models/metamodels/pure/test/result/AtomicTestId';
 
@@ -306,6 +309,7 @@ export * from './graphManager/action/changeDetection/StoreFlatData_ObserverHelpe
 export * from './graphManager/action/changeDetection/GraphObserverHelper';
 export * from './graphManager/action/changeDetection/DSLExternalFormat_ObserverHelper';
 export * from './graphManager/action/changeDetection/DSLService_ObserverHelper';
+export * from './graphManager/action/changeDetection/Testable_ObserverHelper';
 export * from './graphManager/action/changeDetection/DSLGenerationSpecification_ObserverHelper';
 
 export * from './graphManager/action/changeDetection/EngineObserverHelper';

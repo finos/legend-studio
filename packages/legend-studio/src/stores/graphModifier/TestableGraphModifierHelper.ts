@@ -14,18 +14,13 @@
  * limitations under the License.
  */
 
-import type { EditorStore } from '../../../EditorStore';
-import type { ServiceEditorState } from './ServiceEditorState';
+import type { AtomicTest, TestAssertion } from '@finos/legend-graph';
+import { observe_TestAssertion } from '@finos/legend-graph';
+import { addUniqueEntry } from '@finos/legend-shared';
+import { action } from 'mobx';
 
-export class ServiceTestSuiteState {
-  editorStore: EditorStore;
-  serviceEditorState: ServiceEditorState;
-
-  constructor(
-    editorStore: EditorStore,
-    serviceEditorState: ServiceEditorState,
-  ) {
-    this.editorStore = editorStore;
-    this.serviceEditorState = serviceEditorState;
-  }
-}
+export const atomicTest_addAssertion = action(
+  (test: AtomicTest, val: TestAssertion): void => {
+    addUniqueEntry(test.assertions, observe_TestAssertion(val));
+  },
+);

@@ -58,7 +58,7 @@ export enum V1_EmbeddedDataType {
   MODEL_STORE_DATA = 'modelStore',
   EXTERNAL_FORMAT_DATA = 'externalFormat',
   DATA_ELEMENT_REFERENCE = 'reference',
-  RELATIONAL_DATA = 'relationalData',
+  RELATIONAL_DATA = 'relationalCSVData',
 }
 
 export const V1_modelStoreDataModelSchema = createModelSchema(

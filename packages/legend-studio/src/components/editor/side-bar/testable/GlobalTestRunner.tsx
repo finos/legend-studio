@@ -34,6 +34,7 @@ import {
   Dialog,
   WarningIcon,
   CircleNotchIcon,
+  EmptyCircleIcon,
 } from '@finos/legend-art';
 import {
   AssertFail,
@@ -104,10 +105,10 @@ const getTestableResultIcon = (
     default:
       return (
         <div
-          title="Test status is none"
+          title="Test did not run"
           className="global-test-runner__item__link__content__status__indicator global-test-runner__item__link__content__status__indicator--unknown"
         >
-          <CircleIcon />
+          <EmptyCircleIcon />
         </div>
       );
   }

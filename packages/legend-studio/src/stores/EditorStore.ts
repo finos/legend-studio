@@ -1438,12 +1438,24 @@ export class EditorStore {
       .map((e) => buildElementOption(e) as PackageableElementOption<Service>);
   }
 
+  // may make sense to add to config
+  get TEMPORARY_supportNewServiceTestableFlow(): boolean {
+    return true;
+  }
+
   get storeOptions(): PackageableElementOption<Store>[] {
     return this.graphManagerState.graph.ownStores
       .concat(this.graphManagerState.graph.dependencyManager.stores)
       .map((e) => buildElementOption(e) as PackageableElementOption<Store>);
   }
 
+  get dataOptions(): PackageableElementOption<DataElement>[] {
+    return this.graphManagerState.graph.ownDataElements
+      .concat(this.graphManagerState.graph.dependencyManager.dataElements)
+      .map(
+        (e) => buildElementOption(e) as PackageableElementOption<DataElement>,
+      );
+  }
   getSupportedElementTypes(): string[] {
     return (
       [

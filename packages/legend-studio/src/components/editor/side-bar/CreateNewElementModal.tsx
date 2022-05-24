@@ -26,6 +26,7 @@ import {
   CONNECTION_TYPE,
   NewDataElementDriver,
   EmbeddedDataTypeOptions,
+  NewServiceDriver,
 } from '../../../stores/NewElementState';
 import { Dialog, compareLabelFn, CustomSelectorInput } from '@finos/legend-art';
 import type { EditorStore } from '../../../stores/EditorStore';
@@ -41,7 +42,10 @@ import {
 } from '@finos/legend-graph';
 import type { FileGenerationTypeOption } from '../../../stores/editor-state/GraphGenerationState';
 import { flowResult } from 'mobx';
-import { useApplicationStore } from '@finos/legend-application';
+import {
+  buildElementOption,
+  useApplicationStore,
+} from '@finos/legend-application';
 import type { EmbeddedDataTypeOption } from '../../../stores/editor-state/element-editor-state/data/DataEditorState';
 import type { DSLData_LegendStudioPlugin_Extension } from '../../../stores/DSLData_LegendStudioPlugin_Extension';
 import { PACKAGEABLE_ELEMENT_TYPE } from '../../../stores/shared/ModelUtil';
@@ -307,6 +311,38 @@ const NewConnectionDriverEditor = observer(() => {
     </div>
   );
 });
+const NewServiceDriverEditor = observer(() => {
+  const editorStore = useEditorStore();
+  const newServiceDriver =
+    editorStore.newElementState.getNewElementDriver(NewServiceDriver);
+  // type
+  const currentMappingOption = newServiceDriver.mappingOption;
+  const mappingOptions = editorStore.mappingOptions;
+  const onMappingChange = (
+    val: PackageableElementOption<Mapping> | null,
+  ): void => {
+    if (!val) {
+      newServiceDriver.setMappingOption(undefined);
+    } else {
+      newServiceDriver.setMappingOption(val);
+    }
+  };
+  return (
+    <div>
+      <div>
+        <div>
+          <CustomSelectorInput
+            className="panel__content__form__section__dropdown"
+            options={mappingOptions}
+            onChange={onMappingChange}
+            value={currentMappingOption}
+            darkMode={true}
+          />
+        </div>
+      </div>
+    </div>
+  );
+});
 
 const NewFileGenerationDriverEditor = observer(() => {
   const editorStore = useEditorStore();
@@ -352,6 +388,8 @@ const renderNewElementDriver = (
       return <NewFileGenerationDriverEditor />;
     case PACKAGEABLE_ELEMENT_TYPE.DATA:
       return <NewDataElementDriverEditor />;
+    case PACKAGEABLE_ELEMENT_TYPE.SERVICE:
+      return <NewServiceDriverEditor />;
     default: {
       const extraNewElementDriverEditorCreators = editorStore.pluginManager
         .getStudioPlugins()

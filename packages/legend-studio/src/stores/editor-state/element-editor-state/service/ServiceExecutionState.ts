@@ -65,7 +65,19 @@ import {
   pureSingleExecution_setRuntime,
   singleExecTest_setData,
 } from '../../../graphModifier/DSLService_GraphModifierHelper';
-import { ServiceTestSuiteState } from './ServiceTestSuiteState';
+
+export class UnsupportedServiceTestState {
+  editorStore: EditorStore;
+  serviceEditorState: ServiceEditorState;
+
+  constructor(
+    editorStore: EditorStore,
+    serviceEditorState: ServiceEditorState,
+  ) {
+    this.editorStore = editorStore;
+    this.serviceEditorState = serviceEditorState;
+  }
+}
 
 export enum SERVICE_EXECUTION_TAB {
   EXECUTION_CONTEXT = 'EXECUTION_CONTEXT',
@@ -78,7 +90,7 @@ export abstract class ServiceExecutionState {
   execution: ServiceExecution;
   selectedSingeExecutionTestState?:
     | LegacySingleExecutionTestState
-    | ServiceTestSuiteState
+    | UnsupportedServiceTestState
     | undefined;
   selectedTab = SERVICE_EXECUTION_TAB.EXECUTION_CONTEXT;
 
@@ -122,7 +134,7 @@ export abstract class ServiceExecutionState {
 
   getInitiallySelectedTestState(
     execution: ServiceExecution,
-  ): LegacySingleExecutionTestState | ServiceTestSuiteState | undefined {
+  ): LegacySingleExecutionTestState | UnsupportedServiceTestState | undefined {
     if (execution instanceof PureSingleExecution) {
       const _legacyTest = this.serviceEditorState.service.test;
       if (_legacyTest) {
@@ -132,7 +144,7 @@ export abstract class ServiceExecutionState {
           guaranteeType(_legacyTest, DEPRECATED__SingleExecutionTest),
         );
       }
-      return new ServiceTestSuiteState(
+      return new UnsupportedServiceTestState(
         this.editorStore,
         this.serviceEditorState,
       );

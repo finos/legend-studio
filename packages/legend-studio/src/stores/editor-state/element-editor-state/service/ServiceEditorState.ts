@@ -28,10 +28,12 @@ import {
   Service,
   PureExecution,
 } from '@finos/legend-graph';
+import { ServiceTestSuitesState } from './ServiceTestSuitesState';
 
 export enum SERVICE_TAB {
   GENERAL = 'GENERAL',
   EXECUTION = 'EXECUTION',
+  TEST = 'TEST',
   REGISTRATION = 'REGISTRATION',
 }
 
@@ -39,6 +41,7 @@ export const MINIMUM_SERVICE_OWNERS = 2;
 export class ServiceEditorState extends ElementEditorState {
   executionState: ServiceExecutionState;
   registrationState: ServiceRegistrationState;
+  serviceTestableState: ServiceTestSuitesState;
   selectedTab = SERVICE_TAB.GENERAL;
 
   constructor(editorStore: EditorStore, element: PackageableElement) {
@@ -55,10 +58,14 @@ export class ServiceEditorState extends ElementEditorState {
 
     this.executionState = this.buildExecutionState();
     this.registrationState = new ServiceRegistrationState(editorStore, this);
+    this.serviceTestableState = new ServiceTestSuitesState(editorStore, this);
   }
 
   setSelectedTab(tab: SERVICE_TAB): void {
     this.selectedTab = tab;
+    if (this.selectedTab === SERVICE_TAB.TEST) {
+      this.serviceTestableState.handleOpen();
+    }
   }
 
   buildExecutionState(): ServiceExecutionState {

@@ -288,3 +288,127 @@
     min-width: 2.6rem;
   }
 }
+
+.data-element-reference-editor {
+  height: 100%;
+  width: 100%;
+  background: var(--color-dark-grey-50);
+  display: flex;
+  flex-direction: column;
+
+  &__header {
+    @include flexVCenter;
+    @include flexHSpaceBetween;
+
+    cursor: default;
+    background: var(--color-dark-grey-50);
+    color: var(--color-light-grey-300);
+    height: 2.8rem;
+    min-height: 2.8rem;
+    position: relative;
+    z-index: 1;
+    border: 0.1rem solid var(--color-dark-grey-200);
+    box-shadow: var(--color-light-shade-280) 0 0.1rem 0.5rem 0;
+  }
+
+  &__header__actions {
+    display: flex;
+    height: 100%;
+  }
+
+  &__header__lock {
+    @include flexCenter;
+
+    width: 4rem;
+    min-width: 4rem;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    background: var(--color-light-grey-100);
+  }
+
+  &__header__title {
+    @include flexVCenter;
+
+    padding-left: 0.5rem;
+    user-select: none;
+  }
+
+  &__header__title__label {
+    height: 1.8rem;
+    line-height: 1.8rem;
+    border-radius: 0.1rem;
+    padding: 0 0.5rem;
+    color: var(--color-light-grey-200);
+    background: var(--color-dark-grey-250);
+    font-size: 1.1rem;
+    cursor: default;
+    margin-right: 0.5rem;
+    white-space: nowrap;
+  }
+
+  &__content {
+    margin-top: 0.5rem;
+    flex: 1 1 100%;
+    display: flex;
+    padding: 0.3rem;
+    flex-direction: column;
+
+    &__value {
+      height: 100%;
+      width: 100%;
+    }
+  }
+
+  &__value {
+    display: flex;
+    align-items: center;
+    margin: 0 0 1rem;
+
+    &__label {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--color-dark-grey-100);
+      margin-right: 0.5rem;
+    }
+
+    &__dropdown {
+      max-width: none;
+      width: 100%;
+    }
+
+    &-btn {
+      margin-left: 0.5rem;
+    }
+  }
+
+  &__type {
+    @include flexVCenter;
+
+    height: 2.6rem;
+    width: 25rem;
+    flex: auto;
+    min-width: 15rem;
+    background: var(--color-dark-grey-100);
+    border-right: 0.1rem solid var(--color-dark-grey-50);
+    border-left: 0.1rem solid var(--color-dark-grey-50);
+    color: var(--color-light-grey-50);
+    cursor: pointer;
+  }
+
+  &__type__label {
+    height: 2.6rem;
+    width: 23.4rem;
+
+    @include flexCenter;
+  }
+
+  &__type__icon {
+    @include flexCenter;
+
+    border-left: 0.1rem solid var(--color-dark-grey-50);
+    height: 2.6rem;
+    width: 2.6rem;
+    min-width: 2.6rem;
+  }
+}

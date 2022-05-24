@@ -18,19 +18,9 @@ import { observer } from 'mobx-react-lite';
 import { useEditorStore } from '../../EditorStoreProvider';
 import {
   DATA_TAB_TYPE,
-  type EmbeddedDataEditorState,
-  ExternalFormatDataState,
   PackageableDataEditorState,
 } from '../../../../stores/editor-state/element-editor-state/data/DataEditorState';
-import {
-  CaretDownIcon,
-  clsx,
-  DropdownMenu,
-  LockIcon,
-  MenuContent,
-  MenuContentItem,
-  PlusIcon,
-} from '@finos/legend-art';
+import { clsx, LockIcon, PlusIcon } from '@finos/legend-art';
 import { prettyCONSTName } from '@finos/legend-shared';
 import {
   type TaggedValue,
@@ -55,167 +45,9 @@ import {
   type ElementDragSource,
 } from '../../../../stores/shared/DnDUtil';
 import { TaggedValueEditor } from '../uml-editor/TaggedValueEditor';
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback } from 'react';
 import { StereotypeSelector } from '../uml-editor/StereotypeSelector';
-import { UnsupportedEditorPanel } from '../UnsupportedElementEditor';
-import {
-  externalFormatData_setContentType,
-  externalFormatData_setData,
-} from '../../../../stores/graphModifier/DSLData_GraphModifierHelper';
-import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor';
-import type { DSLData_LegendStudioPlugin_Extension } from '../../../../stores/DSLData_LegendStudioPlugin_Extension';
-import { getEditorLanguageFromFormat } from '../../../../stores/editor-state/FileGenerationViewerState';
-
-export const ExternalFormatDataEditor = observer(
-  (props: {
-    externalFormatDataState: ExternalFormatDataState;
-    isReadOnly: boolean;
-  }) => {
-    const { externalFormatDataState, isReadOnly } = props;
-    const editorStore = useEditorStore();
-    const typeNameRef = useRef<HTMLInputElement>(null);
-    const changeData = (val: string): void =>
-      externalFormatData_setData(externalFormatDataState.embeddedData, val);
-    useEffect(() => {
-      if (!isReadOnly) {
-        typeNameRef.current?.focus();
-      }
-    }, [isReadOnly]);
-    const contentTypeOptions =
-      editorStore.graphState.graphGenerationState.externalFormatState
-        .formatContentTypes;
-    const onContentTypeChange = (val: string): void =>
-      externalFormatData_setContentType(
-        externalFormatDataState.embeddedData,
-        val,
-      );
-    const language = getEditorLanguageFromFormat(
-      editorStore.graphState.graphGenerationState.externalFormatState.getFormatTypeForContentType(
-        externalFormatDataState.embeddedData.contentType,
-      ),
-    );
-
-    return (
-      <div className="panel external-format-data-editor">
-        <div className="external-format-data-editor__header">
-          <div className="external-format-data-editor__header__title">
-            {isReadOnly && (
-              <div className="external-format-editor-editor__header__lock">
-                <LockIcon />
-              </div>
-            )}
-            <div className="external-format-data-editor__header__title__label">
-              {externalFormatDataState.label()}
-            </div>
-          </div>
-          <div className="external-format-data-editor__header__actions">
-            <DropdownMenu
-              disabled={isReadOnly}
-              content={
-                <MenuContent className="external-format-data-editor__dropdown">
-                  {contentTypeOptions.map((contentType) => (
-                    <MenuContentItem
-                      key={contentType}
-                      className="external-format-data-editor__option"
-                      onClick={(): void => onContentTypeChange(contentType)}
-                    >
-                      {contentType}
-                    </MenuContentItem>
-                  ))}
-                </MenuContent>
-              }
-              menuProps={{
-                anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
-                transformOrigin: { vertical: 'top', horizontal: 'right' },
-              }}
-            >
-              <div className="external-format-data-editor__type">
-                <div className="external-format-data-editor__type__label">
-                  {externalFormatDataState.embeddedData.contentType}
-                </div>
-                <div className="external-format-data-editor__type__icon">
-                  <CaretDownIcon />
-                </div>
-              </div>
-            </DropdownMenu>
-          </div>
-        </div>
-        <div className={clsx('external-format-data-editor__content')}>
-          <div className="external-format-data-editor__content__input">
-            <StudioTextInputEditor
-              language={language}
-              inputValue={externalFormatDataState.embeddedData.data}
-              updateInput={changeData}
-              hideGutter={true}
-            />
-          </div>
-        </div>
-      </div>
-    );
-  },
-);
-
-export const EmbeddedDataEditor = observer(
-  (props: {
-    embeddedDataEditorState: EmbeddedDataEditorState;
-    isReadOnly: boolean;
-  }) => {
-    const { embeddedDataEditorState, isReadOnly } = props;
-    const editorStore = useEditorStore();
-    const plugins = editorStore.pluginManager.getStudioPlugins();
-    const embeddedDataState = embeddedDataEditorState.embeddedDataState;
-    const renderEmbeddedDataEditor = (): React.ReactNode => {
-      if (embeddedDataState instanceof ExternalFormatDataState) {
-        return (
-          <ExternalFormatDataEditor
-            externalFormatDataState={embeddedDataState}
-            isReadOnly={isReadOnly}
-          />
-        );
-      } else {
-        const extraEmbeddedDataEditorRenderers = plugins.flatMap(
-          (plugin) =>
-            (
-              plugin as DSLData_LegendStudioPlugin_Extension
-            ).getExtraEmbeddedDataEditorRenderers?.() ?? [],
-        );
-        for (const editorRenderer of extraEmbeddedDataEditorRenderers) {
-          const editor = editorRenderer(embeddedDataState, isReadOnly);
-          if (editor) {
-            return editor;
-          }
-        }
-        return (
-          <div className="panel connection-editor">
-            <div className="data-editor__header">
-              <div className="data-editor__header__title">
-                {isReadOnly && (
-                  <div className="element-editor__header__lock">
-                    <LockIcon />
-                  </div>
-                )}
-                <div className="data-editor__header__title__label">
-                  {embeddedDataState.label()}
-                </div>
-              </div>
-            </div>
-            <div className="panel__content">
-              <UnsupportedEditorPanel
-                text="Can't display this embedded data in form-mode"
-                isReadOnly={isReadOnly}
-              />
-            </div>
-          </div>
-        );
-      }
-    };
-    return (
-      <div className="panel connection-editor">
-        {renderEmbeddedDataEditor()}
-      </div>
-    );
-  },
-);
+import { EmbeddedDataEditor } from './EmbeddedDataEditor';
 
 export const DataElementEditor = observer(() => {
   const editorStore = useEditorStore();

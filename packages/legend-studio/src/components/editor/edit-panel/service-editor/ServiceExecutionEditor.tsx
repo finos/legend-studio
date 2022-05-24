@@ -20,6 +20,7 @@ import { ServiceEditorState } from '../../../../stores/editor-state/element-edit
 import {
   SERVICE_EXECUTION_TAB,
   ServicePureExecutionState,
+  UnsupportedServiceTestState,
 } from '../../../../stores/editor-state/element-editor-state/service/ServiceExecutionState';
 import {
   prettyCONSTName,
@@ -51,7 +52,7 @@ import {
   ExclamationTriangleIcon,
 } from '@finos/legend-art';
 import { ServiceExecutionQueryEditor } from '../../../editor/edit-panel/service-editor/ServiceExecutionQueryEditor';
-import { ServiceTestEditor } from '../../../editor/edit-panel/service-editor/ServiceTestEditor';
+import { ServiceLegacyTestEditor } from './ServiceLegacyTestEditor';
 import type { PackageableElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../../EditorStoreProvider';
@@ -70,13 +71,14 @@ import {
   pureSingleExecution_setMapping,
   pureSingleExecution_setRuntime,
 } from '../../../../stores/graphModifier/DSLService_GraphModifierHelper';
-import { ServiceTestSuiteState } from '../../../../stores/editor-state/element-editor-state/service/ServiceTestSuiteState';
 
 const PureSingleExecutionConfigurationEditor = observer(
   (props: {
     executionState: ServicePureExecutionState;
     selectedExecution: PureSingleExecution | KeyedExecutionParameter;
-    selectedTestState: LegacySingleExecutionTestState | ServiceTestSuiteState;
+    selectedTestState:
+      | LegacySingleExecutionTestState
+      | UnsupportedServiceTestState;
   }) => {
     const { executionState, selectedExecution, selectedTestState } = props;
     const editorStore = useEditorStore();
@@ -352,7 +354,9 @@ const PureSingleExecutionEditor = observer(
   (props: {
     executionState: ServicePureExecutionState;
     selectedExecution: PureSingleExecution | KeyedExecutionParameter;
-    selectedTestState: LegacySingleExecutionTestState | ServiceTestSuiteState;
+    selectedTestState:
+      | LegacySingleExecutionTestState
+      | UnsupportedServiceTestState;
   }) => {
     const { executionState, selectedExecution, selectedTestState } = props;
     // tab
@@ -372,17 +376,24 @@ const PureSingleExecutionEditor = observer(
         <div className="panel">
           <div className="panel__header service-editor__header--with-tabs">
             <div className="uml-element-editor__tabs">
-              {Object.values(SERVICE_EXECUTION_TAB).map((tab) => (
-                <div
-                  key={tab}
-                  onClick={changeTab(tab)}
-                  className={clsx('service-editor__tab', {
-                    'service-editor__tab--active': tab === selectedTab,
-                  })}
-                >
-                  {prettyCONSTName(tab)}
-                </div>
-              ))}
+              {Object.values(SERVICE_EXECUTION_TAB)
+                .filter(
+                  (t) =>
+                    !executionState.editorStore
+                      .TEMPORARY_supportNewServiceTestableFlow ||
+                    t !== SERVICE_EXECUTION_TAB.TESTS,
+                )
+                .map((tab) => (
+                  <div
+                    key={tab}
+                    onClick={changeTab(tab)}
+                    className={clsx('service-editor__tab', {
+                      'service-editor__tab--active': tab === selectedTab,
+                    })}
+                  >
+                    {prettyCONSTName(tab)}
+                  </div>
+                ))}
             </div>
           </div>
           <div className="panel__content service-editor__content">
@@ -395,13 +406,13 @@ const PureSingleExecutionEditor = observer(
             )}
             {selectedTab === SERVICE_EXECUTION_TAB.TESTS &&
               selectedTestState instanceof LegacySingleExecutionTestState && (
-                <ServiceTestEditor
+                <ServiceLegacyTestEditor
                   executionState={executionState}
                   selectedTestState={selectedTestState}
                 />
               )}
             {selectedTab === SERVICE_EXECUTION_TAB.TESTS &&
-              selectedTestState instanceof ServiceTestSuiteState && (
+              selectedTestState instanceof UnsupportedServiceTestState && (
                 <UnsupportedEditorPanel
                   text={`Can't display this element in form-mode`}
                   isReadOnly={selectedTestState.serviceEditorState.isReadOnly}

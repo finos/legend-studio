@@ -55,7 +55,7 @@ import {
 } from '../../../../stores/editor-state/element-editor-state/service/LegacyServiceTestState';
 import { TEST_RESULT } from '../../../../stores/editor-state/element-editor-state/mapping/MappingTestState';
 import { JsonDiffView } from '../../../shared/DiffView';
-import { UnsupportedEditorPanel } from '../../../editor/edit-panel/UnsupportedElementEditor';
+import { UnsupportedEditorPanel } from '../UnsupportedElementEditor';
 import { ServiceEditorState } from '../../../../stores/editor-state/element-editor-state/service/ServiceEditorState';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../../EditorStoreProvider';
@@ -120,7 +120,7 @@ export const TestContainerItem = observer(
     let testStatusIcon: React.ReactNode = (
       <div
         title="Test did not run"
-        className="service-test-explorer__test-result-indicator service-test-explorer__test-result-indicator--none"
+        className="service-legacy-test-explorer__test-result-indicator service-legacy-test-explorer__test-result-indicator--none"
       >
         <EmptyCircleIcon />
       </div>
@@ -129,14 +129,14 @@ export const TestContainerItem = observer(
       testStatusIcon = testResult.result ? (
         <div
           title="Test passed"
-          className="service-test-explorer__test-result-indicator service-test-explorer__test-result-indicator--passed"
+          className="service-legacy-test-explorer__test-result-indicator service-legacy-test-explorer__test-result-indicator--passed"
         >
           <CheckCircleIcon />
         </div>
       ) : (
         <div
           title="Test failed assertion"
-          className="service-test-explorer__test-result-indicator service-test-explorer__test-result-indicator--failed"
+          className="service-legacy-test-explorer__test-result-indicator service-legacy-test-explorer__test-result-indicator--failed"
         >
           <TimesCircleIcon />
         </div>
@@ -145,7 +145,7 @@ export const TestContainerItem = observer(
     testStatusIcon = testState.isRunningAllTests ? (
       <div
         title="Test is running"
-        className="service-test-explorer__test-result-indicator service-test-explorer__test-result-indicator--in-progress"
+        className="service-legacy-test-explorer__test-result-indicator service-legacy-test-explorer__test-result-indicator--in-progress"
       >
         <CircleNotchIcon />
       </div>
@@ -156,12 +156,12 @@ export const TestContainerItem = observer(
     return (
       <ContextMenu
         className={clsx(
-          'service-test-explorer__item',
+          'service-legacy-test-explorer__item',
           {
-            'service-test-explorer__item--selected-from-context-menu':
+            'service-legacy-test-explorer__item--selected-from-context-menu':
               !isActive && isSelectedFromContextMenu,
           },
-          { 'service-test-explorer__item--active': isActive },
+          { 'service-legacy-test-explorer__item--active': isActive },
         )}
         disabled={isReadOnly}
         content={
@@ -176,14 +176,14 @@ export const TestContainerItem = observer(
         onClose={onContextMenuClose}
       >
         <button
-          className={clsx('service-test-explorer__item__label')}
+          className={clsx('service-legacy-test-explorer__item__label')}
           onClick={openTestContainer}
           tabIndex={-1}
         >
-          <div className="service-test-explorer__item__label__icon service-test-explorer__test-result-indicator__container">
+          <div className="service-legacy-test-explorer__item__label__icon service-legacy-test-explorer__test-result-indicator__container">
             {testStatusIcon}
           </div>
-          <div className="service-test-explorer__item__label__text">{`test_${
+          <div className="service-legacy-test-explorer__item__label__text">{`test_${
             testIdx + 1
           }`}</div>
         </button>
@@ -287,25 +287,25 @@ export const ServiceTestEditorEditPanel = observer(
     };
     // result
     const testResultMessage = testState.testSuiteRunError ? (
-      <div className="service-test-editor__test__result__text service-test-editor__test__result__text--error">
+      <div className="service-legacy-test-editor__test__result__text service-legacy-test-editor__test__result__text--error">
         Test failed in {testState.allTestRunTime}ms due to error:
         <br />
         {testState.testSuiteRunError.message}
       </div>
     ) : testState.isRunningAllTests ? (
-      <div className="service-test-editor__test__result__text service-test-editor__test__result__text--running">
+      <div className="service-legacy-test-editor__test__result__text service-legacy-test-editor__test__result__text--running">
         Running test...
       </div>
     ) : !testResult ? (
-      <div className="service-test-editor__test__result__text service-test-editor__test__result__text--none">
+      <div className="service-legacy-test-editor__test__result__text service-legacy-test-editor__test__result__text--none">
         Test did not run
       </div>
     ) : testResult.result ? (
-      <div className="service-test-editor__test__result__text service-test-editor__test__result__text--passed">
+      <div className="service-legacy-test-editor__test__result__text service-legacy-test-editor__test__result__text--passed">
         Test passed in {testState.allTestRunTime}ms
       </div>
     ) : (
-      <div className="service-test-editor__test__result__text service-test-editor__test__result__text--failed">
+      <div className="service-legacy-test-editor__test__result__text service-legacy-test-editor__test__result__text--failed">
         Test failed in {testState.allTestRunTime}ms. See the comparison below:
       </div>
     );
@@ -321,7 +321,7 @@ export const ServiceTestEditorEditPanel = observer(
     ); // reset selected tab
 
     return (
-      <div className="panel service-test-editor__test">
+      <div className="panel service-legacy-test-editor__test">
         <div className="panel__header panel__header--with-tabs">
           <div className="panel__header__tabs">
             {Object.values(SERVICE_TEST_TAB).map((tab) => (
@@ -341,24 +341,25 @@ export const ServiceTestEditorEditPanel = observer(
           {selectedTab === SERVICE_TEST_TAB.RESULT && (
             <>
               <div
-                className={clsx('service-test-editor__test__result', {
-                  'service-test-editor__test__result--with-diff': showDiff,
+                className={clsx('service-legacy-test-editor__test__result', {
+                  'service-legacy-test-editor__test__result--with-diff':
+                    showDiff,
                 })}
               >
                 {testResultMessage}
               </div>
               {showDiff && (
-                <div className="panel service-test-editor__test__diff">
+                <div className="panel service-legacy-test-editor__test__diff">
                   <div className="panel__header">
                     <div className="panel__header__title">
-                      <div className="service-test-editor__test__diff__header__info">
-                        <div className="service-test-editor__test__diff__header__info__label">
+                      <div className="service-legacy-test-editor__test__diff__header__info">
+                        <div className="service-legacy-test-editor__test__diff__header__info__label">
                           expected
                         </div>
-                        <div className="service-test-editor__test__diff__header__info__icon">
+                        <div className="service-legacy-test-editor__test__diff__header__info__icon">
                           <CompareIcon />
                         </div>
-                        <div className="service-test-editor__test__diff__header__info__label">
+                        <div className="service-legacy-test-editor__test__diff__header__info__label">
                           actual
                         </div>
                       </div>
@@ -371,7 +372,7 @@ export const ServiceTestEditorEditPanel = observer(
                     </div>
                     <div className="panel__header__actions">
                       <button
-                        className="panel__header__action service-test-editor__test__generate-expected-result-btn"
+                        className="panel__header__action service-legacy-test-editor__test__generate-expected-result-btn"
                         disabled={
                           selectedTestContainerState.isFetchingActualResultForComparison ||
                           testState.isRunningAllTests
@@ -400,7 +401,7 @@ export const ServiceTestEditorEditPanel = observer(
                     {!testExecutionResult && (
                       <BlankPanelContent>
                         <button
-                          className="service-test-editor__test__fetch-diff-panel"
+                          className="service-legacy-test-editor__test__fetch-diff-panel"
                           onClick={fetchActualResult}
                           disabled={
                             selectedTestContainerState.isFetchingActualResultForComparison
@@ -418,7 +419,7 @@ export const ServiceTestEditorEditPanel = observer(
           {selectedTab === SERVICE_TEST_TAB.DETAIL && (
             <ResizablePanelGroup orientation="vertical">
               <ResizablePanel size={200} minSize={150}>
-                <div className="panel service-test-editor__parameters">
+                <div className="panel service-legacy-test-editor__parameters">
                   <div className="panel__header">
                     <div className="panel__header__title">
                       <div className="panel__header__title__label service-editor__execution__sub-label--test">
@@ -435,7 +436,7 @@ export const ServiceTestEditorEditPanel = observer(
                 <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
               </ResizablePanelSplitter>
               <ResizablePanel minSize={150}>
-                <div className="panel service-test-editor__expected-result">
+                <div className="panel service-legacy-test-editor__expected-result">
                   <div className="panel__header">
                     <div className="panel__header__title">
                       <div className="panel__header__title__label service-editor__execution__sub-label--test">
@@ -450,7 +451,7 @@ export const ServiceTestEditorEditPanel = observer(
                     </div>
                     <div className="panel__header__actions">
                       <button
-                        className="panel__header__action service-test-editor__test__generate-expected-result-btn"
+                        className="panel__header__action service-legacy-test-editor__test__generate-expected-result-btn"
                         tabIndex={-1}
                         onClick={generateAssertion}
                         disabled={
@@ -472,7 +473,7 @@ export const ServiceTestEditorEditPanel = observer(
                       </button>
                     </div>
                   </div>
-                  <div className="panel__content service-test-editor__expected-result__editor">
+                  <div className="panel__content service-legacy-test-editor__expected-result__editor">
                     <PanelLoadingIndicator
                       isLoading={
                         selectedTestContainerState.isGeneratingTestAssertion
@@ -560,26 +561,26 @@ export const ServiceTestAssertEditor = observer(
     }
 
     return (
-      <div className="service-test-editor">
+      <div className="service-legacy-test-editor">
         <ResizablePanelGroup orientation="vertical">
           <ResizablePanel size={250} minSize={250}>
-            <div className="panel service-test-editor__explorer">
+            <div className="panel service-legacy-test-editor__explorer">
               <div className="panel__header">
                 <div className="panel__header__title" title={testReportSummary}>
-                  <div className="panel__header__title__content service-test-editor__explorer__report">
-                    <div className="service-test-editor__explorer__report__overview">
-                      <div className="service-test-editor__explorer__report__overview__stat service-test-editor__explorer__report__overview__stat--total">
+                  <div className="panel__header__title__content service-legacy-test-editor__explorer__report">
+                    <div className="service-legacy-test-editor__explorer__report__overview">
+                      <div className="service-legacy-test-editor__explorer__report__overview__stat service-legacy-test-editor__explorer__report__overview__stat--total">
                         {numberOfTests} total
                       </div>
-                      <div className="service-test-editor__explorer__report__overview__stat service-test-editor__explorer__report__overview__stat--passed">
+                      <div className="service-legacy-test-editor__explorer__report__overview__stat service-legacy-test-editor__explorer__report__overview__stat--passed">
                         {numberOfTestsPassed} <CheckCircleIcon />
                       </div>
-                      <div className="service-test-editor__explorer__report__overview__stat service-test-editor__explorer__report__overview__stat--failed">
+                      <div className="service-legacy-test-editor__explorer__report__overview__stat service-legacy-test-editor__explorer__report__overview__stat--failed">
                         {numberOfTestsFailed} <TimesCircleIcon />
                       </div>
                     </div>
                     {testState.testSuiteResult !== TEST_RESULT.NONE && (
-                      <div className="service-test-editor__explorer__report__time">
+                      <div className="service-legacy-test-editor__explorer__report__time">
                         {testState.allTestRunTime}ms
                       </div>
                     )}
@@ -606,11 +607,11 @@ export const ServiceTestAssertEditor = observer(
                   </button>
                 </div>
               </div>
-              <div className="service-test-editor__header__status">
+              <div className="service-legacy-test-editor__header__status">
                 <ProgressBar
-                  className={`service-test-editor__progress-bar service-test-editor__progress-bar--${testState.testSuiteResult.toLowerCase()}`}
+                  className={`service-legacy-test-editor__progress-bar service-legacy-test-editor__progress-bar--${testState.testSuiteResult.toLowerCase()}`}
                   classes={{
-                    bar: `service-test-editor__progress-bar__bar service-test-editor__progress-bar__bar--${testState.testSuiteResult.toLowerCase()}`,
+                    bar: `service-legacy-test-editor__progress-bar__bar service-legacy-test-editor__progress-bar__bar--${testState.testSuiteResult.toLowerCase()}`,
                   }}
                   variant="determinate"
                   value={percentageTestRun}
@@ -645,7 +646,7 @@ export const ServiceTestAssertEditor = observer(
   },
 );
 
-export const ServiceTestEditor = observer(
+export const ServiceLegacyTestEditor = observer(
   (props: {
     executionState: ServiceExecutionState;
     selectedTestState: LegacySingleExecutionTestState;
