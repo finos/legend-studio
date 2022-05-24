@@ -4055,6 +4055,7 @@ export const TEST_DATA__RelationalDatabaseConnectionRoundtrip = [
         authenticationStrategy: {
           _type: 'gcpApplicationDefaultCredentials',
         },
+        databaseType: 'BigQuery',
         datasourceSpecification: {
           _type: 'bigQuery',
           defaultDataset: 'legend_testing_dataset',
@@ -4081,6 +4082,7 @@ export const TEST_DATA__RelationalDatabaseConnectionRoundtrip = [
           additionalGcpScopes: [],
           serviceAccountEmail: 'serviceAccountEmail',
         },
+        databaseType: 'BigQuery',
         datasourceSpecification: {
           _type: 'bigQuery',
           defaultDataset: 'legend_testing_dataset',
