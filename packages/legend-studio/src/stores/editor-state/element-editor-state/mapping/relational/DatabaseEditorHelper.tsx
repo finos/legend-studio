@@ -21,8 +21,8 @@ import {
   HashtagIcon,
   QuestionCircleIcon,
   StringTypeIcon,
+  ShapeTriangleIcon,
 } from '@finos/legend-art';
-import { getClass, UnsupportedOperationError } from '@finos/legend-shared';
 import {
   type RelationalDataType,
   Real,
@@ -42,6 +42,7 @@ import {
   TinyInt,
   SmallInt,
   BigInt,
+  SemiStructured,
 } from '@finos/legend-graph';
 
 export const generateColumnTypeLabel = (type: RelationalDataType): string => {
@@ -79,10 +80,10 @@ export const generateColumnTypeLabel = (type: RelationalDataType): string => {
     return `TIMESTAMP`;
   } else if (type instanceof Other) {
     return `OTHER`;
+  } else if (type instanceof SemiStructured) {
+    return 'SEMI-STRUCTURED';
   }
-  throw new UnsupportedOperationError(
-    `Can't generate column label of data type '${getClass(type).name}'`,
-  );
+  return '(UNKNOWN)';
 };
 
 export const renderColumnTypeIcon = (
@@ -118,12 +119,16 @@ export const renderColumnTypeIcon = (
     return (
       <ClockIcon className="relation-source-tree__icon relation-source-tree__icon__time" />
     );
+  } else if (type instanceof SemiStructured) {
+    return (
+      <ShapeTriangleIcon className="relation-source-tree__icon relation-source-tree__icon__semi-structured" />
+    );
   } else if (type instanceof Other) {
     return (
       <QuestionCircleIcon className="relation-source-tree__icon relation-source-tree__icon__unknown" />
     );
   }
-  throw new UnsupportedOperationError(
-    `Can't render column of data type '${getClass(type).name}'`,
+  return (
+    <QuestionCircleIcon className="relation-source-tree__icon relation-source-tree__icon__unknown" />
   );
 };
