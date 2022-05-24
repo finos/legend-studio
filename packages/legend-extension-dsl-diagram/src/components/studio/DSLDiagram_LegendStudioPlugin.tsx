@@ -203,7 +203,7 @@ export class DSLDiagram_LegendStudioPlugin
       ): LegendApplicationDocumentationEntry | undefined => {
         if (parserKeyword === PURE_GRAMMAR_DIAGRAM_PARSER_NAME) {
           if (elementKeyword === PURE_GRAMMAR_DIAGRAM_ELEMENT_TYPE_LABEL) {
-            return editorStore.applicationStore.docRegistry.getEntry(
+            return editorStore.applicationStore.documentationService.getDocEntry(
               DSL_DIAGRAM_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_ELEMENT_DIAGRAM,
             );
           }
@@ -220,7 +220,7 @@ export class DSLDiagram_LegendStudioPlugin
         parserKeyword: string,
       ): LegendApplicationDocumentationEntry | undefined => {
         if (parserKeyword === PURE_GRAMMAR_DIAGRAM_PARSER_NAME) {
-          return editorStore.applicationStore.docRegistry.getEntry(
+          return editorStore.applicationStore.documentationService.getDocEntry(
             DSL_DIAGRAM_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER,
           );
         }
@@ -235,9 +235,10 @@ export class DSLDiagram_LegendStudioPlugin
         {
           text: PURE_GRAMMAR_DIAGRAM_PARSER_NAME,
           description: `(dsl)`,
-          documentation: editorStore.applicationStore.docRegistry.getEntry(
-            DSL_DIAGRAM_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER,
-          ),
+          documentation:
+            editorStore.applicationStore.documentationService.getDocEntry(
+              DSL_DIAGRAM_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER,
+            ),
           insertText: PURE_GRAMMAR_DIAGRAM_PARSER_NAME,
         },
       ],

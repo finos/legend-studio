@@ -17,7 +17,6 @@
 import {
   AbstractPlugin,
   type AbstractPluginManager,
-  type PluginConsumer,
 } from '../application/AbstractPluginManager';
 
 export interface TraceData {
@@ -102,7 +101,7 @@ export class Trace {
   }
 }
 
-export class TracerService implements PluginConsumer {
+export class TracerService {
   private plugins: TracerServicePlugin<unknown>[] = [];
 
   registerPlugins(plugins: TracerServicePlugin<unknown>[]): void {

@@ -233,7 +233,7 @@ const SetupSelection = observer(() => {
   const projectSelectorRef = useRef<SelectComponent>(null);
   const workspaceSelectorRef = useRef<SelectComponent>(null);
   const proceedButtonRef = useRef<HTMLButtonElement>(null);
-  const documentation = applicationStore.docRegistry.getEntry(
+  const documentation = applicationStore.documentationService.getDocEntry(
     LEGEND_STUDIO_DOCUMENTATION_KEY.SETUP_WORKSPACE,
   );
   const isCreatingWorkspace = setupStore.createWorkspaceState.isInProgress;

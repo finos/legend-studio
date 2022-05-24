@@ -49,7 +49,7 @@ const LegendStudioNotFoundRouteScreen = observer(() => {
 
   const currentPath = applicationStore.navigator.getCurrentLocationPath();
 
-  const documentation = applicationStore.docRegistry.getEntry(
+  const documentation = applicationStore.documentationService.getDocEntry(
     LEGEND_STUDIO_DOCUMENTATION_KEY.NOT_FOUND_HELP,
   );
 

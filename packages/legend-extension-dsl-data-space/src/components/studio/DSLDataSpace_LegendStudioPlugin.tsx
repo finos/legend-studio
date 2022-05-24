@@ -168,7 +168,7 @@ export class DSLDataSpace_LegendStudioPlugin
       ): LegendApplicationDocumentationEntry | undefined => {
         if (parserKeyword === PURE_GRAMMAR_DATA_SPACE_PARSER_NAME) {
           if (elementKeyword === PURE_GRAMMAR_DATA_SPACE_ELEMENT_TYPE_LABEL) {
-            return editorStore.applicationStore.docRegistry.getEntry(
+            return editorStore.applicationStore.documentationService.getDocEntry(
               DSL_DATA_SPACE_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_ELEMENT_DATA_SPACE,
             );
           }
@@ -185,7 +185,7 @@ export class DSLDataSpace_LegendStudioPlugin
         parserKeyword: string,
       ): LegendApplicationDocumentationEntry | undefined => {
         if (parserKeyword === PURE_GRAMMAR_DATA_SPACE_PARSER_NAME) {
-          return editorStore.applicationStore.docRegistry.getEntry(
+          return editorStore.applicationStore.documentationService.getDocEntry(
             DSL_DATA_SPACE_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER,
           );
         }
@@ -200,9 +200,10 @@ export class DSLDataSpace_LegendStudioPlugin
         {
           text: PURE_GRAMMAR_DATA_SPACE_PARSER_NAME,
           description: `(dsl)`,
-          documentation: editorStore.applicationStore.docRegistry.getEntry(
-            DSL_DATA_SPACE_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER,
-          ),
+          documentation:
+            editorStore.applicationStore.documentationService.getDocEntry(
+              DSL_DATA_SPACE_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER,
+            ),
           insertText: PURE_GRAMMAR_DATA_SPACE_PARSER_NAME,
         },
       ],

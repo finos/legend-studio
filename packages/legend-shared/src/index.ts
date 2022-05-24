@@ -28,7 +28,7 @@ export * from './format/ValidatorUtils';
 
 export * from './markdown/MarkdownUtils';
 
-export * from './communication/EventNotifierService';
+export * from './communication/EventNotifierPlugin';
 export * from './communication/IframeEventNotifierPlugin';
 export * from './communication/TelemetryService';
 

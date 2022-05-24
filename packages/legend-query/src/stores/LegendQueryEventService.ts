@@ -14,27 +14,27 @@
  * limitations under the License.
  */
 
-import type { EventNotifierService } from '@finos/legend-shared';
+import type { LegendApplicationEventService } from '@finos/legend-application';
 
 const QUERY_CREATE = 'query_created';
 type QueryCreated_EventData = {
   queryId: string;
 };
 
-export class LegendQueryEventNotifierService {
-  private eventNotifierService!: EventNotifierService;
+export class LegendQueryEventService {
+  private eventService!: LegendApplicationEventService;
 
-  private constructor(eventNotifierService: EventNotifierService) {
-    this.eventNotifierService = eventNotifierService;
+  private constructor(eventService: LegendApplicationEventService) {
+    this.eventService = eventService;
   }
 
   static create(
-    eventNotifierService: EventNotifierService,
-  ): LegendQueryEventNotifierService {
-    return new LegendQueryEventNotifierService(eventNotifierService);
+    eventService: LegendApplicationEventService,
+  ): LegendQueryEventService {
+    return new LegendQueryEventService(eventService);
   }
 
   notify_QueryCreated(data: QueryCreated_EventData): void {
-    this.eventNotifierService.notify(QUERY_CREATE, data);
+    this.eventService.notify(QUERY_CREATE, data);
   }
 }

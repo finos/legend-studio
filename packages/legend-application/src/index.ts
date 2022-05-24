@@ -38,6 +38,7 @@ export { WebApplicationNavigator } from './stores/WebApplicationNavigator';
 export { LambdaEditorState } from './stores/LambdaEditorState';
 export * from './stores/PackageableElementOption';
 export * from './stores/LegendApplicationDocumentationService';
+export * from './stores/LegendApplicationEventService';
 export * from './stores/LegendApplicationVirtualAssistant';
 export * from './stores/LegendApplicationPlugin';
 

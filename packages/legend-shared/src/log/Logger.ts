@@ -17,7 +17,6 @@
 import {
   AbstractPlugin,
   type AbstractPluginManager,
-  type PluginConsumer,
 } from '../application/AbstractPluginManager';
 
 // We use numeric enum here for because we want to do comparison
@@ -86,7 +85,7 @@ export abstract class LoggerPlugin extends AbstractPlugin {
   }
 }
 
-export class Log implements PluginConsumer {
+export class Log {
   private loggers: LoggerPlugin[] = [];
 
   registerPlugins(loggerPlugins: LoggerPlugin[]): void {

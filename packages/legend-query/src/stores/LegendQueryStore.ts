@@ -83,7 +83,7 @@ import {
 } from '@finos/legend-application';
 import type { LegendQueryPluginManager } from '../application/LegendQueryPluginManager';
 import type { LegendQueryConfig } from '../application/LegendQueryConfig';
-import { LegendQueryEventNotifierService } from './LegendQueryEventNotifierService';
+import { LegendQueryEventService } from './LegendQueryEventService';
 
 export abstract class QueryInfoState {
   queryStore: LegendQueryStore;
@@ -312,8 +312,8 @@ export class QueryExportState {
             generateExistingQueryRoute(newQuery.id),
           ),
         );
-        LegendQueryEventNotifierService.create(
-          this.queryStore.applicationStore.eventNotifierService,
+        LegendQueryEventService.create(
+          this.queryStore.applicationStore.eventService,
         ).notify_QueryCreated({ queryId: newQuery.id });
       } else {
         assertType(this.queryStore.queryInfoState, ExistingQueryInfoState);

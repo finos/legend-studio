@@ -22,6 +22,7 @@ import {
 import {
   createModelSchema,
   custom,
+  list,
   optional,
   primitive,
   SKIP,
@@ -53,6 +54,51 @@ export class LegendApplicationDocumentationEntry {
   );
 }
 
+export type LegendApplicationContextualDocumentationEntryConfig =
+  LegendApplicationDocumentationEntryConfig & {
+    relevantDocEntries: string[];
+  };
+
+export class LegendApplicationContextualDocumentationEntry {
+  markdownText?: MarkdownText | undefined;
+  title?: string | undefined;
+  text?: string | undefined;
+  url?: string | undefined;
+  relevantDocEntries: string[] = [];
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(LegendApplicationContextualDocumentationEntry, {
+      markdownText: custom(
+        () => SKIP,
+        (val) => deserializeMarkdownText(val),
+      ),
+      title: optional(primitive()),
+      text: optional(primitive()),
+      url: optional(primitive()),
+      relevantDocEntries: list(primitive()),
+    }),
+  );
+}
+
+export interface LegendApplicationKeyedContextualDocumentationEntry {
+  key: string;
+  content: LegendApplicationContextualDocumentationEntry;
+}
+
+export const collectKeyedContextualDocumentationEntriesFromConfig = (
+  rawEntries: Record<
+    string,
+    LegendApplicationContextualDocumentationEntryConfig
+  >,
+): LegendApplicationKeyedContextualDocumentationEntry[] =>
+  Object.entries(rawEntries).map((entry) => ({
+    key: entry[0],
+    content:
+      LegendApplicationContextualDocumentationEntry.serialization.fromJson(
+        entry[1],
+      ),
+  }));
+
 export interface LegendApplicationKeyedDocumentationEntry {
   key: string;
   content: LegendApplicationDocumentationEntry;
@@ -71,17 +117,38 @@ export const collectKeyedDocumnetationEntriesFromConfig = (
 export class LegendApplicationDocumentationService {
   url?: string | undefined;
 
-  private registry = new Map<string, LegendApplicationDocumentationEntry>();
+  private docRegistry = new Map<string, LegendApplicationDocumentationEntry>();
+  private contextualDocRegistry = new Map<
+    string,
+    LegendApplicationContextualDocumentationEntry
+  >();
 
-  registerEntry(key: string, value: LegendApplicationDocumentationEntry): void {
-    this.registry.set(key, value);
+  addDocEntry(key: string, value: LegendApplicationDocumentationEntry): void {
+    this.docRegistry.set(key, value);
   }
 
-  getEntry(key: string): LegendApplicationDocumentationEntry | undefined {
-    return this.registry.get(key);
+  getDocEntry(key: string): LegendApplicationDocumentationEntry | undefined {
+    return this.docRegistry.get(key);
   }
 
-  hasEntry(key: string): boolean {
-    return this.registry.has(key);
+  hasDocEntry(key: string): boolean {
+    return this.docRegistry.has(key);
+  }
+
+  addContextualDocEntry(
+    key: string,
+    value: LegendApplicationContextualDocumentationEntry,
+  ): void {
+    this.contextualDocRegistry.set(key, value);
+  }
+
+  getContextualDocEntry(
+    key: string,
+  ): LegendApplicationContextualDocumentationEntry | undefined {
+    return this.contextualDocRegistry.get(key);
+  }
+
+  hasContextualDocEntry(key: string): boolean {
+    return this.contextualDocRegistry.has(key);
   }
 }

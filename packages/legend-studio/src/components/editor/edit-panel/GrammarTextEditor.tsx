@@ -139,47 +139,47 @@ const getParserDocumetation = (
 ): LegendApplicationDocumentationEntry | undefined => {
   switch (parserKeyword) {
     case PURE_PARSER.PURE: {
-      return editorStore.applicationStore.docRegistry.getEntry(
+      return editorStore.applicationStore.documentationService.getDocEntry(
         LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER_PURE,
       );
     }
     case PURE_PARSER.MAPPING: {
-      return editorStore.applicationStore.docRegistry.getEntry(
+      return editorStore.applicationStore.documentationService.getDocEntry(
         LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER_MAPPING,
       );
     }
     case PURE_PARSER.CONNECTION: {
-      return editorStore.applicationStore.docRegistry.getEntry(
+      return editorStore.applicationStore.documentationService.getDocEntry(
         LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER_CONNECTION,
       );
     }
     case PURE_PARSER.RUNTIME: {
-      return editorStore.applicationStore.docRegistry.getEntry(
+      return editorStore.applicationStore.documentationService.getDocEntry(
         LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER_RUNTIME,
       );
     }
     case PURE_PARSER.SERVICE: {
-      return editorStore.applicationStore.docRegistry.getEntry(
+      return editorStore.applicationStore.documentationService.getDocEntry(
         LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER_SERVICE,
       );
     }
     case PURE_PARSER.RELATIONAL: {
-      return editorStore.applicationStore.docRegistry.getEntry(
+      return editorStore.applicationStore.documentationService.getDocEntry(
         LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER_RELATIONAL,
       );
     }
     case PURE_PARSER.FILE_GENERATION_SPECIFICATION: {
-      return editorStore.applicationStore.docRegistry.getEntry(
+      return editorStore.applicationStore.documentationService.getDocEntry(
         LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER_FILE_GENERATION,
       );
     }
     case PURE_PARSER.GENERATION_SPECIFICATION: {
-      return editorStore.applicationStore.docRegistry.getEntry(
+      return editorStore.applicationStore.documentationService.getDocEntry(
         LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER_GENERATION_SPECIFICATION,
       );
     }
     case PURE_PARSER.DATA: {
-      return editorStore.applicationStore.docRegistry.getEntry(
+      return editorStore.applicationStore.documentationService.getDocEntry(
         LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER_DATA,
       );
     }
@@ -211,27 +211,27 @@ const getParserElementDocumentation = (
   switch (parserKeyword) {
     case PURE_PARSER.PURE: {
       if (elementKeyword === PURE_ELEMENT_NAME.CLASS) {
-        return editorStore.applicationStore.docRegistry.getEntry(
+        return editorStore.applicationStore.documentationService.getDocEntry(
           LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_ELEMENT_CLASS,
         );
       } else if (elementKeyword === PURE_ELEMENT_NAME.PROFILE) {
-        return editorStore.applicationStore.docRegistry.getEntry(
+        return editorStore.applicationStore.documentationService.getDocEntry(
           LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_ELEMENT_PROFILE,
         );
       } else if (elementKeyword === PURE_ELEMENT_NAME.ENUMERATION) {
-        return editorStore.applicationStore.docRegistry.getEntry(
+        return editorStore.applicationStore.documentationService.getDocEntry(
           LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_ELEMENT_ENUMERATION,
         );
       } else if (elementKeyword === PURE_ELEMENT_NAME.MEASURE) {
-        return editorStore.applicationStore.docRegistry.getEntry(
+        return editorStore.applicationStore.documentationService.getDocEntry(
           LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_ELEMENT_MEASURE,
         );
       } else if (elementKeyword === PURE_ELEMENT_NAME.ASSOCIATION) {
-        return editorStore.applicationStore.docRegistry.getEntry(
+        return editorStore.applicationStore.documentationService.getDocEntry(
           LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_ELEMENT_ASSOCIATION,
         );
       } else if (elementKeyword === PURE_ELEMENT_NAME.FUNCTION) {
-        return editorStore.applicationStore.docRegistry.getEntry(
+        return editorStore.applicationStore.documentationService.getDocEntry(
           LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_ELEMENT_FUNCTION,
         );
       }
@@ -239,7 +239,7 @@ const getParserElementDocumentation = (
     }
     case PURE_PARSER.MAPPING: {
       if (elementKeyword === PURE_ELEMENT_NAME.MAPPING) {
-        return editorStore.applicationStore.docRegistry.getEntry(
+        return editorStore.applicationStore.documentationService.getDocEntry(
           LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_ELEMENT_MAPPING,
         );
       }
@@ -247,23 +247,23 @@ const getParserElementDocumentation = (
     }
     case PURE_PARSER.CONNECTION: {
       if (elementKeyword === PURE_CONNECTION_NAME.JSON_MODEL_CONNECTION) {
-        return editorStore.applicationStore.docRegistry.getEntry(
+        return editorStore.applicationStore.documentationService.getDocEntry(
           LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_CONNECTION_JSON_MODEL_CONNECTION,
         );
       } else if (elementKeyword === PURE_CONNECTION_NAME.XML_MODEL_CONNECTION) {
-        return editorStore.applicationStore.docRegistry.getEntry(
+        return editorStore.applicationStore.documentationService.getDocEntry(
           LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_CONNECTION_XML_MODEL_CONNECTION,
         );
       } else if (
         elementKeyword === PURE_CONNECTION_NAME.MODEL_CHAIN_CONNECTION
       ) {
-        return editorStore.applicationStore.docRegistry.getEntry(
+        return editorStore.applicationStore.documentationService.getDocEntry(
           LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_CONNECTION_MODEL_CHAIN_CONNECTION,
         );
       } else if (
         elementKeyword === PURE_CONNECTION_NAME.RELATIONAL_DATABASE_CONNECTION
       ) {
-        return editorStore.applicationStore.docRegistry.getEntry(
+        return editorStore.applicationStore.documentationService.getDocEntry(
           LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_CONNECTION_RELATIONAL_DATABASE_CONNECTION,
         );
       }
@@ -272,7 +272,7 @@ const getParserElementDocumentation = (
     }
     case PURE_PARSER.RUNTIME: {
       if (elementKeyword === PURE_ELEMENT_NAME.RUNTIME) {
-        return editorStore.applicationStore.docRegistry.getEntry(
+        return editorStore.applicationStore.documentationService.getDocEntry(
           LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_ELEMENT_RUNTIME,
         );
       }
@@ -280,7 +280,7 @@ const getParserElementDocumentation = (
     }
     case PURE_PARSER.SERVICE: {
       if (elementKeyword === PURE_ELEMENT_NAME.SERVICE) {
-        return editorStore.applicationStore.docRegistry.getEntry(
+        return editorStore.applicationStore.documentationService.getDocEntry(
           LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_ELEMENT_SERVICE,
         );
       }
@@ -288,7 +288,7 @@ const getParserElementDocumentation = (
     }
     case PURE_PARSER.RELATIONAL: {
       if (elementKeyword === PURE_ELEMENT_NAME.DATABASE) {
-        return editorStore.applicationStore.docRegistry.getEntry(
+        return editorStore.applicationStore.documentationService.getDocEntry(
           LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_ELEMENT_DATABASE,
         );
       }
@@ -296,7 +296,7 @@ const getParserElementDocumentation = (
     }
     case PURE_PARSER.FILE_GENERATION_SPECIFICATION: {
       if (elementKeyword === PURE_ELEMENT_NAME.FILE_GENERATION) {
-        return editorStore.applicationStore.docRegistry.getEntry(
+        return editorStore.applicationStore.documentationService.getDocEntry(
           LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_ELEMENT_FILE_GENERATION_SPECIFICATION,
         );
       }
@@ -304,7 +304,7 @@ const getParserElementDocumentation = (
     }
     case PURE_PARSER.GENERATION_SPECIFICATION: {
       if (elementKeyword === PURE_ELEMENT_NAME.GENERATION_SPECIFICATION) {
-        return editorStore.applicationStore.docRegistry.getEntry(
+        return editorStore.applicationStore.documentationService.getDocEntry(
           LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_ELEMENT_GENERATION_SPECIFICATION,
         );
       }
@@ -312,7 +312,7 @@ const getParserElementDocumentation = (
     }
     case PURE_PARSER.DATA: {
       if (elementKeyword === PURE_ELEMENT_NAME.DATA_ELEMENT) {
-        return editorStore.applicationStore.docRegistry.getEntry(
+        return editorStore.applicationStore.documentationService.getDocEntry(
           LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER_DATA,
         );
       }
@@ -354,73 +354,82 @@ const getParserKeywordSuggestions = (
     {
       text: PURE_PARSER.PURE,
       description: `(core Pure)`,
-      documentation: editorStore.applicationStore.docRegistry.getEntry(
-        LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER_PURE,
-      ),
+      documentation:
+        editorStore.applicationStore.documentationService.getDocEntry(
+          LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER_PURE,
+        ),
       insertText: PURE_PARSER.PURE,
     },
     {
       text: PURE_PARSER.MAPPING,
       description: `(dsl)`,
-      documentation: editorStore.applicationStore.docRegistry.getEntry(
-        LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER_MAPPING,
-      ),
+      documentation:
+        editorStore.applicationStore.documentationService.getDocEntry(
+          LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER_MAPPING,
+        ),
       insertText: PURE_PARSER.MAPPING,
     },
     {
       text: PURE_PARSER.CONNECTION,
       description: `(dsl)`,
-      documentation: editorStore.applicationStore.docRegistry.getEntry(
-        LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER_CONNECTION,
-      ),
+      documentation:
+        editorStore.applicationStore.documentationService.getDocEntry(
+          LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER_CONNECTION,
+        ),
       insertText: PURE_PARSER.CONNECTION,
     },
     {
       text: PURE_PARSER.RUNTIME,
       description: `(dsl)`,
-      documentation: editorStore.applicationStore.docRegistry.getEntry(
-        LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER_RUNTIME,
-      ),
+      documentation:
+        editorStore.applicationStore.documentationService.getDocEntry(
+          LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER_RUNTIME,
+        ),
       insertText: PURE_PARSER.RUNTIME,
     },
     {
       text: PURE_PARSER.RELATIONAL,
       description: `(external store)`,
-      documentation: editorStore.applicationStore.docRegistry.getEntry(
-        LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER_RELATIONAL,
-      ),
+      documentation:
+        editorStore.applicationStore.documentationService.getDocEntry(
+          LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER_RELATIONAL,
+        ),
       insertText: PURE_PARSER.RELATIONAL,
     },
     {
       text: PURE_PARSER.SERVICE,
       description: `(dsl)`,
-      documentation: editorStore.applicationStore.docRegistry.getEntry(
-        LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER_SERVICE,
-      ),
+      documentation:
+        editorStore.applicationStore.documentationService.getDocEntry(
+          LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER_SERVICE,
+        ),
       insertText: PURE_PARSER.SERVICE,
     },
     {
       text: PURE_PARSER.GENERATION_SPECIFICATION,
       description: `(dsl)`,
-      documentation: editorStore.applicationStore.docRegistry.getEntry(
-        LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER_GENERATION_SPECIFICATION,
-      ),
+      documentation:
+        editorStore.applicationStore.documentationService.getDocEntry(
+          LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER_GENERATION_SPECIFICATION,
+        ),
       insertText: PURE_PARSER.GENERATION_SPECIFICATION,
     },
     {
       text: PURE_PARSER.FILE_GENERATION_SPECIFICATION,
       description: `(dsl)`,
-      documentation: editorStore.applicationStore.docRegistry.getEntry(
-        LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER_FILE_GENERATION,
-      ),
+      documentation:
+        editorStore.applicationStore.documentationService.getDocEntry(
+          LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER_FILE_GENERATION,
+        ),
       insertText: PURE_PARSER.FILE_GENERATION_SPECIFICATION,
     },
     {
       text: PURE_PARSER.DATA,
       description: `(dsl)`,
-      documentation: editorStore.applicationStore.docRegistry.getEntry(
-        LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER_DATA,
-      ),
+      documentation:
+        editorStore.applicationStore.documentationService.getDocEntry(
+          LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER_DATA,
+        ),
       insertText: PURE_PARSER.DATA,
     },
     ...parserKeywordSuggestions,

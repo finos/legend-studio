@@ -14,112 +14,47 @@
  * limitations under the License.
  */
 
-import {
-  type MarkdownText,
-  type PlainObject,
-  deserializeMarkdownText,
-  SerializationFactory,
-  uuid,
-} from '@finos/legend-shared';
 import { action, computed, makeObservable, observable } from 'mobx';
-import {
-  createModelSchema,
-  custom,
-  list,
-  optional,
-  primitive,
-  SKIP,
-} from 'serializr';
-import type { LegendApplicationDocumentationService } from './LegendApplicationDocumentationService';
-
-export class LegendApplicationContextualDocumentationEntry {
-  readonly uuid = uuid();
-  markdownText?: MarkdownText | undefined;
-  title?: string | undefined;
-  text?: string | undefined;
-  url?: string | undefined;
-  relevantDocEntries: string[] = [];
-
-  static readonly serialization = new SerializationFactory(
-    createModelSchema(LegendApplicationContextualDocumentationEntry, {
-      markdownText: custom(
-        () => SKIP,
-        (val) => deserializeMarkdownText(val),
-      ),
-      title: optional(primitive()),
-      text: optional(primitive()),
-      url: optional(primitive()),
-      relevantDocEntries: list(primitive()),
-    }),
-  );
-}
-
-export interface LegendApplicationKeyedContextualDocumentationEntry {
-  key: string;
-  content: LegendApplicationContextualDocumentationEntry;
-}
-
-export const collectKeyedKnowledgeBaseEntriesFromConfig = (
-  rawEntries: Record<
-    string,
-    PlainObject<LegendApplicationKeyedContextualDocumentationEntry>
-  >,
-): LegendApplicationKeyedContextualDocumentationEntry[] =>
-  Object.entries(rawEntries).map((entry) => ({
-    key: entry[0],
-    content:
-      LegendApplicationContextualDocumentationEntry.serialization.fromJson(
-        entry[1],
-      ),
-  }));
+import type {
+  LegendApplicationContextualDocumentationEntry,
+  LegendApplicationDocumentationService,
+} from './LegendApplicationDocumentationService';
+import type { LegendApplicationEventService } from './LegendApplicationEventService';
 
 export class LegendApplicationVirtualAssistant {
-  private readonly knowledgeBase = new Map<
-    string,
-    LegendApplicationContextualDocumentationEntry
-  >();
-  private latestEvent?: string | undefined;
-  private readonly docRegistry: LegendApplicationDocumentationService;
+  readonly documentationService: LegendApplicationDocumentationService;
+  readonly eventService: LegendApplicationEventService;
   isHidden = false;
   // isOpen
   // selectedTab
   // searchText = '';
 
-  constructor(docRegistry: LegendApplicationDocumentationService) {
-    makeObservable<
-      LegendApplicationVirtualAssistant,
-      'knowledgeBase' | 'latestEvent'
-    >(this, {
-      knowledgeBase: observable,
-      latestEvent: observable,
+  constructor(
+    documentationService: LegendApplicationDocumentationService,
+    eventManagerService: LegendApplicationEventService,
+  ) {
+    makeObservable(this, {
       isHidden: observable,
-      registerKnowledgeBaseEntry: action,
-      postEvent: action,
       hide: action,
-      relevantKnowledgeEntry: computed,
+      currentContextualDocumentationEntry: computed,
     });
 
-    this.docRegistry = docRegistry;
-  }
-
-  registerKnowledgeBaseEntry(
-    eventKey: string,
-    entry: LegendApplicationContextualDocumentationEntry,
-  ): void {
-    this.knowledgeBase.set(eventKey, entry);
-  }
-
-  postEvent(eventKey: string | undefined): void {
-    this.latestEvent = eventKey;
+    this.documentationService = documentationService;
+    this.eventService = eventManagerService;
   }
 
   hide(val: boolean): void {
     this.isHidden = val;
   }
 
-  get relevantKnowledgeEntry():
+  get currentContextualDocumentationEntry():
     | LegendApplicationContextualDocumentationEntry
     | undefined {
+    if (this.eventService.latestEvent) {
+      return this.documentationService.getContextualDocEntry(
+        this.eventService.latestEvent,
+      );
+    }
     return undefined;
   }
 }

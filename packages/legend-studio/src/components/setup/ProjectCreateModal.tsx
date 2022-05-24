@@ -43,7 +43,7 @@ enum CREATE_PROJECT_MODAL_TAB {
 const CreateNewProjectTab = observer(() => {
   const setupStore = useSetupStore();
   const applicationStore = useApplicationStore<LegendStudioConfig>();
-  const documentation = applicationStore.docRegistry.getEntry(
+  const documentation = applicationStore.documentationService.getDocEntry(
     LEGEND_STUDIO_DOCUMENTATION_KEY.CREATE_PROJECT,
   );
   const allowCreatingNewProject =
@@ -356,7 +356,7 @@ const ImportProjectTab = observer(() => {
   const setupStore = useSetupStore();
   const applicationStore = useApplicationStore<LegendStudioConfig>();
   const importProjectSuccessReport = setupStore.importProjectSuccessReport;
-  const documentation = applicationStore.docRegistry.getEntry(
+  const documentation = applicationStore.documentationService.getDocEntry(
     LEGEND_STUDIO_DOCUMENTATION_KEY.IMPORT_PROJECT,
   );
   const [projectIdentifier, setProjectIdentifier] = useState('');

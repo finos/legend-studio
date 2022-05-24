@@ -73,7 +73,7 @@ export interface ActivityDisplay {
 
 export const ActivityBarMenu: React.FC = () => {
   const applicationStore = useApplicationStore<LegendStudioConfig>();
-  const appDocUrl = applicationStore.docRegistry.url;
+  const appDocUrl = applicationStore.documentationService.url;
 
   // menu
   const [openMenuDropdown, setOpenMenuDropdown] = useState(false);

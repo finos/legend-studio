@@ -202,7 +202,3 @@ export abstract class AbstractPluginManager {
     return [];
   }
 }
-
-export interface PluginConsumer {
-  registerPlugins(plugins: AbstractPlugin[]): void;
-}

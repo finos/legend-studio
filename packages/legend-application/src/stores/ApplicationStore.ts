@@ -16,7 +16,6 @@
 
 import {
   type SuperGenericFunction,
-  EventNotifierService,
   TracerService,
   TelemetryService,
   assertTrue,
@@ -33,6 +32,7 @@ import type { WebApplicationNavigator } from './WebApplicationNavigator';
 import type { LegendApplicationPluginManager } from '../application/LegendApplicationPluginManager';
 import { LegendApplicationDocumentationService } from './LegendApplicationDocumentationService';
 import { LegendApplicationVirtualAssistant } from './LegendApplicationVirtualAssistant';
+import { LegendApplicationEventService } from './LegendApplicationEventService';
 
 export enum ActionAlertType {
   STANDARD = 'STANDARD',
@@ -107,14 +107,18 @@ export class ApplicationStore<T extends LegendApplicationConfig> {
   blockingAlertInfo?: BlockingAlertInfo | undefined;
   actionAlertInfo?: ActionAlertInfo | undefined;
   config: T;
-  docRegistry: LegendApplicationDocumentationService;
-  // assistant: LegendApplicationVirtualAssistant;
 
   log: Log = new Log();
   pluginManager: LegendApplicationPluginManager;
   telemetryService = new TelemetryService();
   tracerService = new TracerService();
-  eventNotifierService = new EventNotifierService();
+
+  // documentation & help
+  documentationService: LegendApplicationDocumentationService;
+  assistant: LegendApplicationVirtualAssistant;
+
+  // event
+  eventService = new LegendApplicationEventService();
 
   constructor(
     config: T,
@@ -138,7 +142,7 @@ export class ApplicationStore<T extends LegendApplicationConfig> {
     this.pluginManager = pluginManager;
 
     // Documentation
-    this.docRegistry = new LegendApplicationDocumentationService();
+    this.documentationService = new LegendApplicationDocumentationService();
     [
       ...pluginManager
         .getApplicationPlugins()
@@ -146,25 +150,29 @@ export class ApplicationStore<T extends LegendApplicationConfig> {
           (plugin) => plugin.getExtraKeyedDocumentationEntries?.() ?? [],
         ),
       // entries from config will override entries specified natively
-      ...config.keyedDocEntries,
+      ...config.keyedDocumentationEntries,
     ].forEach((entry) =>
-      this.docRegistry.registerEntry(entry.key, entry.content),
+      this.documentationService.addDocEntry(entry.key, entry.content),
     );
-    this.docRegistry.url = this.config.documentationUrl;
+    [
+      ...pluginManager
+        .getApplicationPlugins()
+        .flatMap(
+          (plugin) =>
+            plugin.getExtraKeyedContextualDocumentationEntries?.() ?? [],
+        ),
+      // entries from config will override entries specified natively
+      ...config.keyedContextualDocumentationEntries,
+    ].forEach((entry) =>
+      this.documentationService.addContextualDocEntry(entry.key, entry.content),
+    );
+    this.documentationService.url = this.config.documentationUrl;
 
     // Virtual Assistant
-    // this.assistant = new LegendApplicationVirtualAssistant(this.docRegistry);
-    // [
-    //   ...pluginManager
-    //     .getApplicationPlugins()
-    //     .flatMap(
-    //       (plugin) => plugin.getExtraKeyedDocumentationEntries?.() ?? [],
-    //     ),
-    //   // entries from config will override entries specified natively
-    //   ...config.keyedDocEntries,
-    // ].forEach((entry) =>
-    //   this.assistant.registerEntry(entry.key, entry.content),
-    // );
+    this.assistant = new LegendApplicationVirtualAssistant(
+      this.documentationService,
+      this.eventService,
+    );
 
     // Register plugins
     this.log.registerPlugins(pluginManager.getLoggerPlugins());
@@ -172,7 +180,7 @@ export class ApplicationStore<T extends LegendApplicationConfig> {
       pluginManager.getTelemetryServicePlugins(),
     );
     this.tracerService.registerPlugins(pluginManager.getTracerServicePlugins());
-    this.eventNotifierService.registerPlugins(
+    this.eventService.registerEventNotifierPlugins(
       pluginManager.getEventNotifierPlugins(),
     );
   }
