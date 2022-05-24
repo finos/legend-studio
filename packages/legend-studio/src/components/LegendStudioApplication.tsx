@@ -40,6 +40,7 @@ import { GraphManagerStateProvider } from '@finos/legend-graph';
 import {
   LegendApplicationComponentFrameworkProvider,
   useApplicationStore,
+  VirtualAssistant,
 } from '@finos/legend-application';
 import type { LegendStudioConfig } from '../application/LegendStudioConfig';
 import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../stores/LegendStudioDocumentation';
@@ -129,57 +130,61 @@ export const LegendStudioApplicationRoot = observer(() => {
         </div>
       )}
       {studioStore.isSDLCAuthorized && (
-        <Switch>
-          <Route
-            exact={true}
-            path={[
-              LEGEND_STUDIO_ROUTE_PATTERN.VIEW,
-              LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_GAV,
-              LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_GAV_ENTITY,
-              LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_ENTITY,
-              LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_REVISION,
-              LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_VERSION,
-              LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_REVISION_ENTITY,
-              LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_VERSION_ENTITY,
-            ]}
-            component={Viewer}
-          />
-          <Route
-            exact={true}
-            path={LEGEND_STUDIO_ROUTE_PATTERN.REVIEW}
-            component={Review}
-          />
-          <Route
-            exact={true}
-            strict={true}
-            path={[
-              LEGEND_STUDIO_ROUTE_PATTERN.EDIT_GROUP,
-              LEGEND_STUDIO_ROUTE_PATTERN.EDIT,
-            ]}
-            component={Editor}
-          />
-          <Route
-            exact={true}
-            path={[
-              // root path will lead to setup page (home page)
-              '/',
-              LEGEND_STUDIO_ROUTE_PATTERN.SETUP,
-              LEGEND_STUDIO_ROUTE_PATTERN.SETUP_GROUP,
-            ]}
-            component={Setup}
-          />
-          {extraApplicationPageRenderEntries.map((entry) => (
+        <>
+          {/* TODO: consider moving this to `LegendApplicationComponentFrameworkProvider` */}
+          <VirtualAssistant />
+          <Switch>
             <Route
-              key={entry.key}
               exact={true}
-              path={entry.urlPatterns.map(generateExtensionUrlPattern)}
-              component={entry.component as React.ComponentType<unknown>}
+              path={[
+                LEGEND_STUDIO_ROUTE_PATTERN.VIEW,
+                LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_GAV,
+                LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_GAV_ENTITY,
+                LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_ENTITY,
+                LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_REVISION,
+                LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_VERSION,
+                LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_REVISION_ENTITY,
+                LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_VERSION_ENTITY,
+              ]}
+              component={Viewer}
             />
-          ))}
-          <Route>
-            <LegendStudioNotFoundRouteScreen />
-          </Route>
-        </Switch>
+            <Route
+              exact={true}
+              path={LEGEND_STUDIO_ROUTE_PATTERN.REVIEW}
+              component={Review}
+            />
+            <Route
+              exact={true}
+              strict={true}
+              path={[
+                LEGEND_STUDIO_ROUTE_PATTERN.EDIT_GROUP,
+                LEGEND_STUDIO_ROUTE_PATTERN.EDIT,
+              ]}
+              component={Editor}
+            />
+            <Route
+              exact={true}
+              path={[
+                // root path will lead to setup page (home page)
+                '/',
+                LEGEND_STUDIO_ROUTE_PATTERN.SETUP,
+                LEGEND_STUDIO_ROUTE_PATTERN.SETUP_GROUP,
+              ]}
+              component={Setup}
+            />
+            {extraApplicationPageRenderEntries.map((entry) => (
+              <Route
+                key={entry.key}
+                exact={true}
+                path={entry.urlPatterns.map(generateExtensionUrlPattern)}
+                component={entry.component as React.ComponentType<unknown>}
+              />
+            ))}
+            <Route>
+              <LegendStudioNotFoundRouteScreen />
+            </Route>
+          </Switch>
+        </>
       )}
     </div>
   );

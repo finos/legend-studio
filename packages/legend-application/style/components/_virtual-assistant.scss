@@ -1,0 +1,115 @@
+/**
+ * Copyright (c) 2020-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@use 'mixins' as *;
+
+.virtual-assistant {
+  position: absolute;
+  // NOTE: we must take into account of UI component libraries, such as MUI
+  // See https://mui.com/material-ui/customization/z-index/
+  z-index: 10000;
+
+  // currently we hard-code these to the bottom right
+  // so we must make sure we avoid visually blocking notification
+  bottom: 9rem;
+  right: 0;
+
+  &__station {
+    @include flexVCenter;
+
+    justify-content: flex-end;
+    height: 3.4rem;
+    width: 5.4rem;
+    border-radius: 1.7rem 0 0 1.7rem;
+    background: var(--color-light-grey-200);
+    background: var(--color-dark-grey-50);
+    opacity: 0.9;
+    border: 0.1rem solid var(--color-blue-50);
+    border-right: none;
+    transition: width 0.1s ease-in-out;
+  }
+
+  &__station__trigger {
+    height: 2.8rem;
+    width: 2.8rem;
+    border-radius: 50%;
+    background: var(--color-blue-50);
+    margin: 0.3rem 0.3rem 0.3rem 0.2rem;
+
+    svg {
+      font-size: 1.8rem;
+      color: var(--color-dark-shade-800);
+      position: relative;
+      // transform: rotate(45deg);
+    }
+  }
+
+  &__station__arrow {
+    @include flexCenter;
+    @include flexConstantDimension;
+
+    width: 2.2rem;
+    height: 3.4rem;
+
+    // NOTE: due to this animation, the width must be at minimum `sqrt(2)*{height of icon}`, i.e. ~2.2rem
+    // else the layout will jump
+    svg {
+      transition: 0.1s ease-in-out all;
+      color: var(--color-blue-50);
+      font-size: 1.6rem;
+    }
+
+    &:hover svg {
+      animation: arrow-bounce-right 0.5s infinite;
+    }
+  }
+
+  &__station--collapsed {
+    width: 2.4rem;
+  }
+
+  &__station--collapsed &__station__trigger {
+    display: none;
+  }
+
+  &__station--collapsed &__station__arrow svg {
+    transform: rotate(-180deg);
+  }
+
+  &__station--collapsed &__station__arrow:hover svg {
+    animation: arrow-bounce-left 0.5s infinite;
+  }
+
+  @keyframes arrow-bounce-right {
+    from {
+      transform: translateX(0.05rem);
+    }
+
+    to {
+      transform: translateX(-0.05rem);
+    }
+  }
+
+  @keyframes arrow-bounce-left {
+    from {
+      transform: rotate(-180deg) translateX(0.05rem);
+    }
+
+    to {
+      transform: rotate(-180deg) translateX(-0.05rem);
+    }
+  }
+}

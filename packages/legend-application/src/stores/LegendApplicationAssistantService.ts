@@ -21,11 +21,11 @@ import type {
 } from './LegendApplicationDocumentationService';
 import type { LegendApplicationEventService } from './LegendApplicationEventService';
 
-export class LegendApplicationVirtualAssistant {
+export class LegendApplicationAssistantService {
   readonly documentationService: LegendApplicationDocumentationService;
   readonly eventService: LegendApplicationEventService;
   isHidden = false;
-  // isOpen
+  isOpen = false;
   // selectedTab
   // searchText = '';
 
@@ -35,7 +35,9 @@ export class LegendApplicationVirtualAssistant {
   ) {
     makeObservable(this, {
       isHidden: observable,
-      hide: action,
+      isOpen: observable,
+      setIsHidden: action,
+      setIsOpen: action,
       currentContextualDocumentationEntry: computed,
     });
 
@@ -43,8 +45,12 @@ export class LegendApplicationVirtualAssistant {
     this.eventService = eventManagerService;
   }
 
-  hide(val: boolean): void {
+  setIsHidden(val: boolean): void {
     this.isHidden = val;
+  }
+
+  setIsOpen(val: boolean): void {
+    this.isOpen = val;
   }
 
   get currentContextualDocumentationEntry():

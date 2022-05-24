@@ -60,6 +60,7 @@ export {
   FaExternalLinkAlt as ExternalLinkIcon,
   FaExternalLinkSquareAlt as ExternalLinkSquareIcon,
   FaLightbulb as LightBulbIcon,
+  FaRegLightbulb as EmptyLightBulbIcon,
   FaList as ListIcon,
   FaCircle as CircleIcon,
   FaRegCircle as EmptyCircleIcon,
@@ -160,6 +161,10 @@ export {
   IoFileTrayFullOutline as FileTrayIcon,
   IoMenuOutline as MenuIcon,
 } from 'react-icons/io5';
+export {
+  HiChevronDoubleRight as ChevronDoubleRightIcon,
+  HiChevronDoubleLeft as ChevronDoubleLeftIcon,
+} from 'react-icons/hi';
 export {
   BsFillTriangleFill as FilledTriangleIcon,
   BsFillFileEarmarkSpreadsheetFill as TabulatedDataFileIcon,

@@ -26,7 +26,9 @@ export * from './components/LegendApplicationComponentFrameworkProvider';
 export * from './components/ApplicationStoreProviderTestUtils';
 export * from './components/WebApplicationNavigatorProviderTestUtils';
 
-export { DocumentationLink } from './components/DocumentationLink';
+// TODO: consider moving this to `LegendApplicationComponentFrameworkProvider`
+export * from './components/VirtualAssistant';
+export * from './components/DocumentationLink';
 export * from './components/TextInputEditor';
 export * from './components/LambdaEditor';
 
@@ -39,7 +41,7 @@ export { LambdaEditorState } from './stores/LambdaEditorState';
 export * from './stores/PackageableElementOption';
 export * from './stores/LegendApplicationDocumentationService';
 export * from './stores/LegendApplicationEventService';
-export * from './stores/LegendApplicationVirtualAssistant';
+export * from './stores/LegendApplicationAssistantService';
 export * from './stores/LegendApplicationPlugin';
 
 export * from './stores/ApplicationStoreTestUtils';

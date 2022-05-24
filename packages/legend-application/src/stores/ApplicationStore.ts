@@ -31,7 +31,7 @@ import type { LegendApplicationConfig } from './LegendApplicationConfig';
 import type { WebApplicationNavigator } from './WebApplicationNavigator';
 import type { LegendApplicationPluginManager } from '../application/LegendApplicationPluginManager';
 import { LegendApplicationDocumentationService } from './LegendApplicationDocumentationService';
-import { LegendApplicationVirtualAssistant } from './LegendApplicationVirtualAssistant';
+import { LegendApplicationAssistantService } from './LegendApplicationAssistantService';
 import { LegendApplicationEventService } from './LegendApplicationEventService';
 
 export enum ActionAlertType {
@@ -103,22 +103,25 @@ export class Notification {
 
 export class ApplicationStore<T extends LegendApplicationConfig> {
   navigator: WebApplicationNavigator;
+  pluginManager: LegendApplicationPluginManager;
+  config: T;
+
+  // TODO: refactor this to `NotificationService` including notifications and alerts
   notification?: Notification | undefined;
   blockingAlertInfo?: BlockingAlertInfo | undefined;
   actionAlertInfo?: ActionAlertInfo | undefined;
-  config: T;
 
+  // TODO: consider renaming this to `LogService`
   log: Log = new Log();
-  pluginManager: LegendApplicationPluginManager;
-  telemetryService = new TelemetryService();
-  tracerService = new TracerService();
 
   // documentation & help
   documentationService: LegendApplicationDocumentationService;
-  assistant: LegendApplicationVirtualAssistant;
+  assistantService: LegendApplicationAssistantService;
 
-  // event
+  // communication
   eventService = new LegendApplicationEventService();
+  telemetryService = new TelemetryService();
+  tracerService = new TracerService();
 
   constructor(
     config: T,
@@ -168,8 +171,8 @@ export class ApplicationStore<T extends LegendApplicationConfig> {
     );
     this.documentationService.url = this.config.documentationUrl;
 
-    // Virtual Assistant
-    this.assistant = new LegendApplicationVirtualAssistant(
+    // Assistant Service
+    this.assistantService = new LegendApplicationAssistantService(
       this.documentationService,
       this.eventService,
     );

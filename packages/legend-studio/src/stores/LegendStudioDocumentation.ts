@@ -17,12 +17,12 @@
 import type { LegendApplicationDocumentationEntryConfig } from '@finos/legend-application';
 
 export enum LEGEND_STUDIO_DOCUMENTATION_KEY {
-  NOT_FOUND_HELP = 'not-found-help',
+  NOT_FOUND_HELP = 'application.not-found-help',
 
-  SETUP_WORKSPACE = 'setup-workspace',
-  CREATE_PROJECT = 'create-project',
-  IMPORT_PROJECT = 'import-project',
-  CREATE_WORKSPACE = 'create-workspace',
+  SETUP_WORKSPACE = 'setup.setup-workspace',
+  CREATE_PROJECT = 'setup.create-project',
+  IMPORT_PROJECT = 'setup.import-project',
+  CREATE_WORKSPACE = 'setup.create-workspace',
 
   // grammar parsers
   GRAMMAR_PARSER_PURE = 'grammar.parser.pure',
