@@ -15,5 +15,6 @@
  */
 
 export enum LEGEND_QUERY_APP_EVENT {
-  QUERY_PROBLEM = 'QUERY_PROBLEM',
+  // TODO: split this into specific events
+  QUERY_PROBLEM = 'application.failure.generic',
 }

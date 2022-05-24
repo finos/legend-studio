@@ -18,17 +18,20 @@ export enum LEGEND_STUDIO_APP_EVENT {
   // SETUP
 
   // FAILURE
-  WORKSPACE_SETUP_FAILURE = 'EDITOR_SETUP_FAILURE', // TODO: consider to split this generic errors into more specific events
-  PACKAGE_TREE_BUILDER_FAILURE = 'PACKAGE_TREE_BUILDER_FAILURE', // TODO: consider to split this generic errors into more specific events
-  MODEL_LOADER_FAILURE = 'MODEL_LOADER_FAILURE', // TODO: consider to split this generic errors into more specific events
-  DATABASE_BUILDER_FAILURE = 'DATABASE_BUILDER_FAILURE', // TODO: consider to split this generic errors into more specific events
-  SERVICE_REGISTRATION_FAILURE = 'SERVICE_REGISTRATION_FAILURE', // TODO: consider to split this generic errors into more specific events
-  SERVICE_TEST_RUNNER_FAILURE = 'SERVICE_TEST_RUNNER_FAILURE', // TODO: consider to split this generic errors into more specific events
-  GENERATION_FAILURE = 'GENERATION_FAILURE', // TODO: consider to split this generic errors into more specific events
-  EXTERNAL_FORMAT_FAILURE = 'EXTERNAL_FORMAT_FAILURE', // TODO: consider to split this generic errors into more specific events
+  // TODO: consider to spliting all of these generic errors into more specific events
+  WORKSPACE_SETUP_FAILURE = 'setup.workspace.failure',
+  PACKAGE_TREE_BUILDER_FAILURE = 'editor.package-tree-build.failure',
+  MODEL_LOADER_FAILURE = 'editor.model-loader.failure',
+  DATABASE_BUILDER_FAILURE = 'editor.database-builder.failure',
+  SERVICE_REGISTRATION_FAILURE = 'editor.service-editor.registration.failure',
+  SERVICE_TEST_RUNNER_FAILURE = 'editor.service-editor.test-runner.failure',
+  GENERATION_FAILURE = 'editor.generation.failure',
+  EXTERNAL_FORMAT_FAILURE = 'editor.external-format.failure',
 
   // SDLC
-  SDLC_MANAGER_FAILURE = 'SDLC_MANAGER_FAILURE', // TODO: consider to split this generic errors into more specific events
-  WORKSPACE_UPDATED = 'WORKSPACE_UPDATED',
-  WORKSPACE_LOCAL_CHANGES_PUSHED = 'WORKSPACE_LOCAL_CHANGES_PUSHED',
+  // TODO: consider to split this generic errors into more specific events
+  SDLC_MANAGER_FAILURE = 'SDLC_MANAGER_FAILURE',
+
+  WORKSPACE_UPDATED = 'sdlc.workspace-update.success',
+  WORKSPACE_LOCAL_CHANGES_PUSHED = 'sdlc.local-changes-push.success',
 }

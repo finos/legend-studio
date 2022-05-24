@@ -261,7 +261,6 @@ export { V1_transformPropertyReference } from './models/protocols/pure/v1/transf
 export { V1_buildEngineRuntime } from './models/protocols/pure/v1/transformation/pureGraph/to/helpers/V1_RuntimeBuilderHelper';
 export { V1_EngineServerClient } from './models/protocols/pure/v1/engine/V1_EngineServerClient';
 export { V1_Engine } from './models/protocols/pure/v1/engine/V1_Engine';
-export * from './models/protocols/pure/v1/engine/V1_EngineEvent';
 export {
   V1_entitiesToPureModelContextData,
   V1_deserializePureModelContextData,
