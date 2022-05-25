@@ -42,11 +42,13 @@ import { WorkspaceType } from '@finos/legend-server-sdlc';
 import {
   useApplicationStore,
   DocumentationLink,
+  useApplicationNavigationContext,
 } from '@finos/legend-application';
 import type { LegendStudioConfig } from '../../application/LegendStudioConfig';
 import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../stores/LegendStudioDocumentation';
 import { CreateProjectModal } from './ProjectCreateModal';
 import { ActivityBarMenu } from '../editor/ActivityBar';
+import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT } from '../../stores/LegendStudioApplicationNavigationContext';
 
 const CreateWorkspaceModal = observer(() => {
   const setupStore = useSetupStore();
@@ -334,7 +336,7 @@ const SetupSelection = observer(() => {
                   </button>
                 </div>
               </div>
-              {/* We do this to reset the initial state of the modals */}
+              {/* NOTE: We do this to reset the initial state of the modals */}
               {setupStore.showCreateProjectModal && <CreateProjectModal />}
               {setupStore.showCreateWorkspaceModal && <CreateWorkspaceModal />}
             </div>
@@ -366,6 +368,10 @@ export const SetupInner = observer(() => {
       );
     }
   }, [applicationStore, setupStore]);
+
+  useApplicationNavigationContext(
+    LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT.SETUP,
+  );
 
   return <SetupSelection />;
 });

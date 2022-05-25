@@ -14,35 +14,73 @@
  * limitations under the License.
  */
 
-import { action, computed, makeObservable, observable } from 'mobx';
-import type {
-  LegendApplicationContextualDocumentationEntry,
-  LegendApplicationDocumentationService,
-} from './LegendApplicationDocumentationService';
-import type { LegendApplicationEventService } from './LegendApplicationEventService';
+import {
+  type IReactionDisposer,
+  action,
+  makeObservable,
+  observable,
+  reaction,
+} from 'mobx';
+import type { LegendApplicationContextualDocumentationEntry } from './LegendApplicationDocumentationService';
+import type { LegendApplicationConfig } from './LegendApplicationConfig';
+import type { ApplicationStore } from './ApplicationStore';
 
 export class LegendApplicationAssistantService {
-  readonly documentationService: LegendApplicationDocumentationService;
-  readonly eventService: LegendApplicationEventService;
+  readonly applicationStore: ApplicationStore<LegendApplicationConfig>;
+  private contextualDocReaction?: IReactionDisposer | undefined;
+  currentContextualDocumentationEntry:
+    | LegendApplicationContextualDocumentationEntry
+    | undefined;
   isHidden = false;
   isOpen = false;
   // selectedTab
   // searchText = '';
 
-  constructor(
-    documentationService: LegendApplicationDocumentationService,
-    eventManagerService: LegendApplicationEventService,
-  ) {
+  constructor(applicationStore: ApplicationStore<LegendApplicationConfig>) {
     makeObservable(this, {
       isHidden: observable,
       isOpen: observable,
       setIsHidden: action,
       setIsOpen: action,
-      currentContextualDocumentationEntry: computed,
+      currentContextualDocumentationEntry: observable,
     });
 
-    this.documentationService = documentationService;
-    this.eventService = eventManagerService;
+    this.applicationStore = applicationStore;
+  }
+
+  start(): void {
+    this.contextualDocReaction?.();
+
+    this.contextualDocReaction = reaction(
+      () => this.applicationStore.navigationContextService.currentContext,
+      () => {
+        this.currentContextualDocumentationEntry = this.applicationStore
+          .navigationContextService.currentContext
+          ? this.applicationStore.documentationService.getContextualDocEntry(
+              this.applicationStore.navigationContextService.currentContext
+                .value,
+            )
+          : undefined;
+      },
+      {
+        fireImmediately: true,
+        /**
+         * It seems like the reaction action is not always called in tests, causing fluctuation in
+         * code coverage report for this file. As such, for test, we would want to disable throttling
+         * to avoid timing issue.
+         *
+         * See https://docs.codecov.io/docs/unexpected-coverage-changes
+         * See https://community.codecov.io/t/codecov-reporting-impacted-files-for-unchanged-and-completely-unrelated-file/2635
+         */
+        // eslint-disable-next-line no-process-env
+        delay: process.env.NODE_ENV === 'test' ? 0 : 100,
+      },
+    );
+  }
+
+  stop(): void {
+    this.contextualDocReaction?.();
+    this.currentContextualDocumentationEntry = undefined;
   }
 
   setIsHidden(val: boolean): void {
@@ -51,16 +89,5 @@ export class LegendApplicationAssistantService {
 
   setIsOpen(val: boolean): void {
     this.isOpen = val;
-  }
-
-  get currentContextualDocumentationEntry():
-    | LegendApplicationContextualDocumentationEntry
-    | undefined {
-    if (this.eventService.latestEvent) {
-      return this.documentationService.getContextualDocEntry(
-        this.eventService.latestEvent,
-      );
-    }
-    return undefined;
   }
 }

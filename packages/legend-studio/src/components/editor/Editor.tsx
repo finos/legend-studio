@@ -52,9 +52,11 @@ import {
   ActionAlertType,
   ActionAlertActionType,
   useApplicationStore,
+  useApplicationNavigationContext,
 } from '@finos/legend-application';
 import { WorkspaceType } from '@finos/legend-server-sdlc';
 import { WorkspaceSyncConflictResolver } from './side-bar/WorkspaceSyncConflictResolver';
+import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT } from '../../stores/LegendStudioApplicationNavigationContext';
 
 export const EditorInner = observer(() => {
   const params = useParams<EditorPathParams | GroupEditorPathParams>();
@@ -107,12 +109,7 @@ export const EditorInner = observer(() => {
   );
 
   // Cleanup the editor
-  useEffect(
-    () => (): void => {
-      editorStore.cleanUp();
-    },
-    [editorStore],
-  );
+  useEffect(() => (): void => editorStore.cleanUp(), [editorStore]);
 
   // Initialize the app
   useEffect(() => {
@@ -225,6 +222,11 @@ export const EditorInner = observer(() => {
       message={handleRouteNavigationBlocking}
     />
   );
+
+  useApplicationNavigationContext(
+    LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT.EDITOR,
+  );
+
   return (
     <div className="app__page">
       <div className="editor">

@@ -33,6 +33,7 @@ import type { LegendApplicationPluginManager } from '../application/LegendApplic
 import { LegendApplicationDocumentationService } from './LegendApplicationDocumentationService';
 import { LegendApplicationAssistantService } from './LegendApplicationAssistantService';
 import { LegendApplicationEventService } from './LegendApplicationEventService';
+import { LegendApplicationNavigationContextService } from './LegendApplicationNavigationContextService';
 
 export enum ActionAlertType {
   STANDARD = 'STANDARD',
@@ -102,9 +103,12 @@ export class Notification {
 }
 
 export class ApplicationStore<T extends LegendApplicationConfig> {
-  navigator: WebApplicationNavigator;
   pluginManager: LegendApplicationPluginManager;
   config: T;
+
+  // navigation
+  navigator: WebApplicationNavigator;
+  navigationContextService: LegendApplicationNavigationContextService;
 
   // TODO: refactor this to `NotificationService` including notifications and alerts
   notification?: Notification | undefined;
@@ -138,11 +142,16 @@ export class ApplicationStore<T extends LegendApplicationConfig> {
       notifyWarning: action,
       notifyIllegalState: action,
       notifyError: action,
+      initialize: action,
+      cleanUp: action,
     });
 
     this.config = config;
     this.navigator = navigator;
     this.pluginManager = pluginManager;
+
+    this.navigationContextService =
+      new LegendApplicationNavigationContextService();
 
     // Documentation
     this.documentationService = new LegendApplicationDocumentationService();
@@ -172,10 +181,7 @@ export class ApplicationStore<T extends LegendApplicationConfig> {
     this.documentationService.url = this.config.documentationUrl;
 
     // Assistant Service
-    this.assistantService = new LegendApplicationAssistantService(
-      this.documentationService,
-      this.eventService,
-    );
+    this.assistantService = new LegendApplicationAssistantService(this);
 
     // Register plugins
     this.log.registerPlugins(pluginManager.getLoggerPlugins());
@@ -199,6 +205,14 @@ export class ApplicationStore<T extends LegendApplicationConfig> {
       );
     }
     this.actionAlertInfo = alertInfo;
+  }
+
+  initialize(): void {
+    this.assistantService.start();
+  }
+
+  cleanUp(): void {
+    this.assistantService.stop();
   }
 
   setNotification(notification: Notification | undefined): void {

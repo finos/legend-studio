@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-import type { LegendApplicationDocumentationEntryConfig } from '@finos/legend-application';
+import type {
+  LegendApplicationContextualDocumentationEntryConfig,
+  LegendApplicationDocumentationEntryConfig,
+} from '@finos/legend-application';
+import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT } from './LegendStudioApplicationNavigationContext';
 
 export enum LEGEND_STUDIO_DOCUMENTATION_KEY {
   NOT_FOUND_HELP = 'application.not-found-help',
@@ -57,6 +61,8 @@ export enum LEGEND_STUDIO_DOCUMENTATION_KEY {
 
   // questions
   QUESTION_WHAT_IS_DSL = 'question.what-is-dsl',
+  QUESTION_WHAT_IS_PURE_LANGUAGE = 'question.what-is-pure-language',
+  QUESTION_HOW_TO_WRITE_PURE_LAMBDA = 'question.how-to-write-pure-lambda',
 }
 
 export const CORE_DOCUMENTATION_ENTRIES: Record<
@@ -229,5 +235,63 @@ export const CORE_DOCUMENTATION_ENTRIES: Record<
     markdownText: {
       value: `A \`domain-specific language\` (DSL) is a higher-level abstraction optimized for a specific domain/class of problems. Each \`DSL\` often has their own \`Pure\` sub-grammar, which partition \`Pure\` code into sections (each starts with a header, such as \`###Pure\`, \`###Mapping\`, etc.`,
     },
+  },
+  [LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_WHAT_IS_PURE_LANGUAGE]: {
+    title: `What is the Pure language?`,
+    url: `https://legend.finos.org/docs/language/legend-language`,
+  },
+  [LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_HOW_TO_WRITE_PURE_LAMBDA]: {
+    title: `How do I write a lambda function in Pure?`,
+    url: `https://legend.finos.org/docs/language/legend-language#lambda`,
+  },
+};
+
+export const CORE_CONTEXTUAL_DOCUMENTATION_ENTRIES: Record<
+  string,
+  LegendApplicationContextualDocumentationEntryConfig
+> = {
+  [LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT.SETUP]: {
+    title: `Setup`,
+    markdownText: {
+      value: `...`,
+    },
+    relevantDocEntries: [],
+  },
+  [LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT.SETUP_CREATE_PROJECT_DIALOG]: {
+    title: `How do I create a new project?`,
+    markdownText: {
+      value: `...`,
+    },
+    relevantDocEntries: [],
+  },
+  [LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT.EDITOR]: {
+    title: `Editor`,
+    markdownText: {
+      value: `...`,
+    },
+    relevantDocEntries: [],
+  },
+  [LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT.CLASS_EDITOR]: {
+    title: `How to create a class?`,
+    markdownText: {
+      value: `...`,
+    },
+    relevantDocEntries: [],
+  },
+  [LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT.DERIVED_PROPERTY_EDITOR]: {
+    title: `How to write a derived property lambda in Pure?`,
+    url: `https://legend.finos.org/docs/language/legend-language#derivation`,
+    relevantDocEntries: [
+      LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_HOW_TO_WRITE_PURE_LAMBDA,
+      LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_WHAT_IS_PURE_LANGUAGE,
+    ],
+  },
+  [LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT.CONSTRAINT_EDITOR]: {
+    title: `How to write a constraint lambda in Pure?`,
+    url: `https://legend.finos.org/docs/language/legend-language#derivation`,
+    relevantDocEntries: [
+      LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_HOW_TO_WRITE_PURE_LAMBDA,
+      LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_WHAT_IS_PURE_LANGUAGE,
+    ],
   },
 };

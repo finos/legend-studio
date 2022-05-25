@@ -18,122 +18,16 @@ import {
   ChevronDoubleRightIcon,
   clsx,
   EmptyLightBulbIcon,
+  LightBulbIcon,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
-import { useEffect } from 'react';
 import { useApplicationStore } from './ApplicationStoreProvider';
-
-// import { Dialog } from '@finos/legend-art';
-// import {
-//   ActionAlertActionType,
-//   ActionAlertType,
-//   type ActionAlertInfo,
-// } from '../stores/ApplicationStore';
-// import { observer } from 'mobx-react-lite';
-// import { noop } from '@finos/legend-shared';
-// import { useApplicationStore } from './ApplicationStoreProvider';
-
-// const getActionButtonClassName = (type: ActionAlertActionType): string => {
-//   switch (type) {
-//     case ActionAlertActionType.PROCEED_WITH_CAUTION:
-//       return 'btn--caution';
-//     case ActionAlertActionType.PROCEED:
-//     case ActionAlertActionType.STANDARD:
-//     default:
-//       return 'btn--dark';
-//   }
-// };
-
-// const ActionAlertInner = observer((props: { info: ActionAlertInfo }) => {
-//   const { info } = props;
-//   const applicationStore = useApplicationStore();
-//   const { title, message, prompt, type, onClose, onEnter, actions } = info;
-//   const handleClose = (): void => {
-//     onClose?.();
-//     applicationStore.setActionAlertInfo(undefined);
-//   };
-//   const handleEnter = (): void => onEnter?.();
-//   const handleSubmit = (): void => {
-//     actions.find((action) => action.default)?.handler?.();
-//     handleClose();
-//   };
-//   const onSubmit = (event: React.FormEvent<HTMLFormElement>): void => {
-//     event.preventDefault();
-//     handleSubmit();
-//   };
-
-//   return (
-//     <Dialog
-//       open={Boolean(applicationStore.actionAlertInfo)}
-//       onClose={noop} // disallow closing dialog by using Esc key or clicking on the backdrop
-//       TransitionProps={{
-//         onEnter: handleEnter,
-//       }}
-//     >
-//       <form
-//         onSubmit={onSubmit}
-//         className={`modal search-modal modal--dark blocking-alert blocking-alert--${(
-//           type ?? ActionAlertType.STANDARD
-//         ).toLowerCase()}`}
-//       >
-//         {title && (
-//           <div className="modal__header">
-//             <div className="modal__title">
-//               <div className="modal__title__label">{title}</div>
-//             </div>
-//           </div>
-//         )}
-//         <div className="modal__body">
-//           <div className="blocking-alert__summary-text">{message}</div>
-//           <div className="blocking-alert__prompt-text">{prompt}</div>
-//         </div>
-//         <div className="modal__footer">
-//           {actions.map((action) => {
-//             // NOTE: need to prevent default for the submit button, otherwise, we would get the warning "Form submission canceled because the form is not connected"
-//             // See https://stackoverflow.com/a/58234405
-//             const handler: React.ReactEventHandler<HTMLButtonElement> = (
-//               e,
-//             ): void => {
-//               e.preventDefault();
-//               action.handler?.();
-//               handleClose();
-//             };
-//             return (
-//               <button
-//                 key={action.label}
-//                 type={action.default ? 'submit' : 'button'}
-//                 className={`btn btn--dark ${getActionButtonClassName(
-//                   action.type ?? ActionAlertActionType.STANDARD,
-//                 )}`}
-//                 onClick={handler}
-//                 autoFocus={Boolean(action.default)}
-//                 // since this is a text button, no need for tooltip
-//               >
-//                 {action.label}
-//               </button>
-//             );
-//           })}
-//           {!actions.length && (
-//             <button
-//               type="button"
-//               className="btn btn--dark blocking-alert__action--standard"
-//               onClick={handleClose}
-//             >
-//               Cancel
-//             </button>
-//           )}
-//         </div>
-//       </form>
-//     </Dialog>
-//   );
-// });
 
 export const VirtualAssistant = observer(() => {
   const applicationStore = useApplicationStore();
   const assistantService = applicationStore.assistantService;
   const currentContextualDocumentationEntry =
     assistantService.currentContextualDocumentationEntry;
-  // const actionAlertInfo = applicationStore.actionAlertInfo;
 
   const toggleAssistant = (): void => {
     const newVal = !assistantService.isHidden;
@@ -143,25 +37,30 @@ export const VirtualAssistant = observer(() => {
     }
   };
 
-  useEffect(() => {
-    if (currentContextualDocumentationEntry) {
-      console.log('example', currentContextualDocumentationEntry);
-    }
-  }, [currentContextualDocumentationEntry]);
-
   return (
     <div className="virtual-assistant">
       <div
+        //  NOTE: make sure when we change the documentation entry, the flashing animation
+        // is replayed
+        key={currentContextualDocumentationEntry?.uuid ?? ''}
         className={clsx('virtual-assistant__station', {
           'virtual-assistant__station--collapsed': assistantService.isHidden,
-          'virtual-assistant__station--active': Boolean(
-            currentContextualDocumentationEntry,
-          ),
+          'virtual-assistant__station--active':
+            !assistantService.isHidden &&
+            Boolean(currentContextualDocumentationEntry),
         })}
       >
         {!assistantService.isHidden && (
-          <button className="virtual-assistant__station__trigger">
-            <EmptyLightBulbIcon />
+          <button
+            className="virtual-assistant__station__trigger"
+            tabIndex={-1}
+            title="Click to open assistant panel"
+          >
+            {currentContextualDocumentationEntry ? (
+              <LightBulbIcon />
+            ) : (
+              <EmptyLightBulbIcon />
+            )}
           </button>
         )}
         <button

@@ -15,8 +15,6 @@
  */
 
 export enum LEGEND_STUDIO_APP_EVENT {
-  // SETUP
-
   // FAILURE
   // TODO: consider to spliting all of these generic errors into more specific events
   WORKSPACE_SETUP_FAILURE = 'setup.workspace.failure',

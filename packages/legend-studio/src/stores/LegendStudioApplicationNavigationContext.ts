@@ -14,19 +14,14 @@
  * limitations under the License.
  */
 
-import type {
-  NotificationEventData,
-  EventNotifierPlugin,
-} from '@finos/legend-shared';
+export enum LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT {
+  // SETUP
+  SETUP = 'setup',
+  SETUP_CREATE_PROJECT_DIALOG = 'setup.create-project-dialog',
 
-export class LegendApplicationEventService {
-  private notifierPlugins: EventNotifierPlugin[] = [];
-
-  registerEventNotifierPlugins(plugins: EventNotifierPlugin[]): void {
-    this.notifierPlugins = plugins;
-  }
-
-  notify(event: string, data: NotificationEventData): void {
-    this.notifierPlugins.forEach((plugin) => plugin.notify(event, data));
-  }
+  // EDITOR
+  EDITOR = 'editor',
+  CLASS_EDITOR = 'editor.class-editor',
+  DERIVED_PROPERTY_EDITOR = 'editor.class-editor.derived-property-editor',
+  CONSTRAINT_EDITOR = 'editor.class-editor.constraint-editor',
 }

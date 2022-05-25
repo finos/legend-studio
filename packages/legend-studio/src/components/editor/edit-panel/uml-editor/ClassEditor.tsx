@@ -83,7 +83,10 @@ import {
   getAllClassDerivedProperties,
 } from '@finos/legend-graph';
 import { StudioLambdaEditor } from '../../../shared/StudioLambdaEditor';
-import { useApplicationStore } from '@finos/legend-application';
+import {
+  useApplicationNavigationContext,
+  useApplicationStore,
+} from '@finos/legend-application';
 import { getElementIcon } from '../../../shared/ElementIconUtils';
 import type { ClassPreviewRenderer } from '../../../../stores/LegendStudioPlugin';
 import {
@@ -111,6 +114,7 @@ import {
   CLASS_PROPERTY_TYPE,
   getClassPropertyType,
 } from '../../../../stores/shared/ModelUtil';
+import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT } from '../../../../stores/LegendStudioApplicationNavigationContext';
 
 const PropertyBasicEditor = observer(
   (props: {
@@ -493,7 +497,7 @@ const DerivedPropertyBasicEditor = observer(
               spellCheck={false}
               className="property-basic-editor__name property-basic-editor__qualififed-property__name"
               value={derivedProperty.name}
-              placeholder={`Property name`}
+              placeholder="Property name"
               onChange={changeValue}
             />
           )}
@@ -503,7 +507,7 @@ const DerivedPropertyBasicEditor = observer(
               options={propertyTypeOptions}
               onChange={changePropertyType}
               value={selectedPropertyType}
-              placeholder={'Choose a data type or enumeration'}
+              placeholder="Choose a data type or enumeration"
               filterOption={filterOption}
             />
           )}
@@ -542,7 +546,7 @@ const DerivedPropertyBasicEditor = observer(
                   className="property-basic-editor__type__visit-btn"
                   onClick={openElement}
                   tabIndex={-1}
-                  title={'Visit element'}
+                  title="Visit element"
                 >
                   <ArrowCircleRightIcon />
                 </button>
@@ -574,7 +578,7 @@ const DerivedPropertyBasicEditor = observer(
                   className="property-basic-editor__type__visit-btn"
                   onClick={openElement}
                   tabIndex={-1}
-                  title={'Visit element'}
+                  title="Visit element"
                 >
                   <ArrowCircleRightIcon />
                 </button>
@@ -603,7 +607,7 @@ const DerivedPropertyBasicEditor = observer(
               className="uml-element-editor__basic__detail-btn"
               onClick={selectDerivedProperty}
               tabIndex={-1}
-              title={'See detail'}
+              title="See detail"
             >
               <LongArrowRightIcon />
             </button>
@@ -625,22 +629,24 @@ const DerivedPropertyBasicEditor = observer(
               })}
               onClick={remove}
               tabIndex={-1}
-              title={'Remove'}
+              title="Remove"
             >
               <TimesIcon />
             </button>
           )}
         </div>
-        <StudioLambdaEditor
-          disabled={
-            editorState.classState.isConvertingDerivedPropertyLambdaObjects ||
-            isInheritedProperty ||
-            isReadOnly
-          }
-          lambdaEditorState={dpState}
-          forceBackdrop={hasParserError}
-          expectedType={propertyType}
-        />
+        <div>
+          <StudioLambdaEditor
+            disabled={
+              editorState.classState.isConvertingDerivedPropertyLambdaObjects ||
+              isInheritedProperty ||
+              isReadOnly
+            }
+            lambdaEditorState={dpState}
+            forceBackdrop={hasParserError}
+            expectedType={propertyType}
+          />
+        </div>
       </div>
     );
   },
@@ -700,7 +706,7 @@ const ConstraintEditor = observer(
               disabled={isReadOnly || isInheritedConstraint}
               value={constraint.name}
               onChange={changeName}
-              placeholder={`Constraint name`}
+              placeholder="Constraint name"
             />
           )}
           {isInheritedConstraint && (
@@ -719,24 +725,26 @@ const ConstraintEditor = observer(
               disabled={isInheritedConstraint}
               onClick={remove}
               tabIndex={-1}
-              title={'Remove'}
+              title="Remove"
             >
               <TimesIcon />
             </button>
           )}
         </div>
-        <StudioLambdaEditor
-          disabled={
-            editorState.classState.isConvertingConstraintLambdaObjects ||
-            isReadOnly ||
-            isInheritedConstraint
-          }
-          lambdaEditorState={constraintState}
-          forceBackdrop={hasParserError}
-          expectedType={editorStore.graphManagerState.graph.getPrimitiveType(
-            PRIMITIVE_TYPE.BOOLEAN,
-          )}
-        />
+        <div>
+          <StudioLambdaEditor
+            disabled={
+              editorState.classState.isConvertingConstraintLambdaObjects ||
+              isReadOnly ||
+              isInheritedConstraint
+            }
+            lambdaEditorState={constraintState}
+            forceBackdrop={hasParserError}
+            expectedType={editorStore.graphManagerState.graph.getPrimitiveType(
+              PRIMITIVE_TYPE.BOOLEAN,
+            )}
+          />
+        </div>
       </div>
     );
   },
@@ -1391,6 +1399,10 @@ export const ClassEditor = observer((props: { _class: Class }) => {
     .getStudioPlugins()
     .flatMap((plugin) => plugin.getExtraClassPreviewRenderers?.() ?? [])
     .filter(isNonNullable);
+
+  useApplicationNavigationContext(
+    LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT.CLASS_EDITOR,
+  );
 
   return (
     <ResizablePanelGroup orientation="vertical" className="class-editor">

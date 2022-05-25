@@ -19,11 +19,11 @@ import { SchemaSet } from '@finos/legend-graph';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { makeObservable, observable, action } from 'mobx';
 import { observer } from 'mobx-react-lite';
-import { useEditorStore } from '../../../../components/editor/EditorStoreProvider';
-import type { EditorStore } from '../../../EditorStore';
-import { externalFormat_schemaSet_setFormat } from '../../../graphModifier/DSLExternalFormat_GraphModifierHelper';
-import { NewElementDriver } from '../../../NewElementState';
-import type { ExternalFormatTypeOption } from '../../ExternalFormatState';
+import { useEditorStore } from '../../EditorStoreProvider';
+import type { EditorStore } from '../../../../stores/EditorStore';
+import { externalFormat_schemaSet_setFormat } from '../../../../stores/graphModifier/DSLExternalFormat_GraphModifierHelper';
+import { NewElementDriver } from '../../../../stores/NewElementState';
+import type { ExternalFormatTypeOption } from '../../../../stores/editor-state/ExternalFormatState';
 
 export class NewSchemaSetDriver extends NewElementDriver<SchemaSet> {
   formatOption?: ExternalFormatTypeOption | undefined;

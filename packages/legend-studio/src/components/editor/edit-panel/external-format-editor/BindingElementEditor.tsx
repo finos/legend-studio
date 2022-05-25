@@ -34,7 +34,7 @@ import {
 import {
   BINDING_TAB_TYPE,
   BindingEditorState,
-} from '../../../../stores/editor-state/element-editor-state/externalFormat/BindingEditorState';
+} from '../../../../stores/editor-state/element-editor-state/external-format/BindingEditorState';
 import {
   PackageableElementExplicitReference,
   SchemaSet,

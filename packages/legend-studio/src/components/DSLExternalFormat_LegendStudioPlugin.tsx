@@ -69,14 +69,10 @@ import type {
   NewElementDriver,
   NewElementState,
 } from '../stores/NewElementState';
-import {
-  NewSchemaSetDriver,
-  NewSchemaSetDriverEditor,
-} from '../stores/editor-state/element-editor-state/externalFormat/NewSchemaSetDriver';
 import type { EditorStore } from '../stores/EditorStore';
 import type { ElementEditorState } from '../stores/editor-state/element-editor-state/ElementEditorState';
-import { SchemaSetEditorState } from '../stores/editor-state/element-editor-state/externalFormat/SchemaSetEditorState';
-import { BindingEditorState } from '../stores/editor-state/element-editor-state/externalFormat/BindingEditorState';
+import { SchemaSetEditorState } from '../stores/editor-state/element-editor-state/external-format/SchemaSetEditorState';
+import { BindingEditorState } from '../stores/editor-state/element-editor-state/external-format/BindingEditorState';
 import type { ConnectionValueState } from '../stores/editor-state/element-editor-state/connection/ConnectionEditorState';
 import {
   externalFormat_Binding_setContentType,
@@ -91,6 +87,10 @@ import {
   SCHEMASET_WITH_XML_SCHEMA_SNIPPET,
   SCHEMASET_WITH_FLAT_DATA_SCHEMA_SNIPPET,
 } from './DSLExternalFormat_CodeSnippets';
+import {
+  NewSchemaSetDriver,
+  NewSchemaSetDriverEditor,
+} from './editor/edit-panel/external-format-editor/NewSchemaSetDriver';
 
 const SCHEMA_SET_ELEMENT_TYPE = 'SCHEMASET';
 const SCHEMA_SET_ELEMENT_PROJECT_EXPLORER_DND_TYPE =

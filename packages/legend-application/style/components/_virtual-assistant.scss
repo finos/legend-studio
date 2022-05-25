@@ -34,7 +34,6 @@
     height: 3.4rem;
     width: 5.4rem;
     border-radius: 1.7rem 0 0 1.7rem;
-    background: var(--color-light-grey-200);
     background: var(--color-dark-grey-50);
     opacity: 0.9;
     border: 0.1rem solid var(--color-blue-50);
@@ -48,6 +47,7 @@
     border-radius: 50%;
     background: var(--color-blue-50);
     margin: 0.3rem 0.3rem 0.3rem 0.2rem;
+    // transition: background 0.1s ease-in-out;
 
     svg {
       font-size: 1.8rem;
@@ -67,8 +67,9 @@
     // NOTE: due to this animation, the width must be at minimum `sqrt(2)*{height of icon}`, i.e. ~2.2rem
     // else the layout will jump
     svg {
-      transition: 0.1s ease-in-out all;
-      color: var(--color-blue-50);
+      transition: transform 0.1s ease-in-out, color 0.1s ease-in-out;
+      color: var(--color-light-grey-50);
+      opacity: 0.4;
       font-size: 1.6rem;
     }
 
@@ -79,6 +80,7 @@
 
   &__station--collapsed {
     width: 2.4rem;
+    border-color: var(--color-blue-300);
   }
 
   &__station--collapsed &__station__trigger {
@@ -110,6 +112,40 @@
 
     to {
       transform: rotate(-180deg) translateX(-0.05rem);
+    }
+  }
+
+  &__station--active {
+    border-color: var(--color-yellow-100);
+    animation: border-flash 0.5s;
+    animation-iteration-count: 3;
+  }
+
+  &__station--active &__station__trigger {
+    background: var(--color-yellow-100);
+    animation: background-flash 0.5s;
+    animation-iteration-count: 3;
+  }
+
+  @keyframes border-flash {
+    from {
+      // border-color: var(--color-light-grey-50);
+      border-color: var(--color-dark-grey-50);
+    }
+
+    to {
+      border-color: var(--color-yellow-100);
+    }
+  }
+
+  @keyframes background-flash {
+    from {
+      // background: var(--color-light-grey-50);
+      background: var(--color-dark-grey-50);
+    }
+
+    to {
+      background: var(--color-yellow-100);
     }
   }
 }

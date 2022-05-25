@@ -450,7 +450,6 @@ const QueryBuilderFilterTreeNodeContainer = observer(
           } // prevent drop event propagation to accomondate for nested DnD
         },
         // canDrop: (item: QueryBuilderFilterConditionDragSource, monitor: DropTargetMonitor): boolean => {
-        //   console.log('check can drop - STUBBED');
         //   // prevent drop inside of children
         //   // prevent dropping inside my direct ancestor
         //   return true;

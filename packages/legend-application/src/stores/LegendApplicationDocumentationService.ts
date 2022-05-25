@@ -18,6 +18,7 @@ import {
   type MarkdownText,
   deserializeMarkdownText,
   SerializationFactory,
+  uuid,
 } from '@finos/legend-shared';
 import {
   createModelSchema,
@@ -60,6 +61,7 @@ export type LegendApplicationContextualDocumentationEntryConfig =
   };
 
 export class LegendApplicationContextualDocumentationEntry {
+  uuid = uuid();
   markdownText?: MarkdownText | undefined;
   title?: string | undefined;
   text?: string | undefined;

@@ -31,9 +31,11 @@ import { flowResult } from 'mobx';
 import {
   useApplicationStore,
   DocumentationLink,
+  useConditionedApplicationNavigationContext,
 } from '@finos/legend-application';
 import type { LegendStudioConfig } from '../../application/LegendStudioConfig';
 import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../stores/LegendStudioDocumentation';
+import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT } from '../../stores/LegendStudioApplicationNavigationContext';
 
 enum CREATE_PROJECT_MODAL_TAB {
   CREATE = 'CREATE',
@@ -688,6 +690,11 @@ export const CreateProjectModal = observer(() => {
     (val: CREATE_PROJECT_MODAL_TAB): (() => void) =>
     () =>
       setSelectedTab(val);
+
+  useConditionedApplicationNavigationContext(
+    LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT.SETUP_CREATE_PROJECT_DIALOG,
+    setupStore.showCreateProjectModal,
+  );
 
   return (
     <Dialog

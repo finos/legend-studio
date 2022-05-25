@@ -31,6 +31,7 @@ import {
 import type { LegendTaxonomyConfig } from '../application/LegendTaxonomyConfig';
 import { TaxonomyViewer } from './TaxonomyViewer';
 import { StandaloneDataSpaceViewer } from './StandaloneDataSpaceViewer';
+import { useEffect } from 'react';
 
 export const LegendTaxonomyApplicationRoot = observer(() => {
   const applicationStore = useApplicationStore<LegendTaxonomyConfig>();
@@ -69,6 +70,11 @@ export const LegendTaxonomyApplication = observer(
   }) => {
     const { config, pluginManager } = props;
     const applicationStore = useApplicationStore();
+
+    useEffect(() => {
+      applicationStore.initialize();
+      return (): void => applicationStore.cleanUp();
+    }, [applicationStore]);
 
     return (
       <DepotServerClientProvider
