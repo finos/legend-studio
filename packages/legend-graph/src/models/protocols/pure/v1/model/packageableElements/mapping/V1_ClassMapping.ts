@@ -57,6 +57,7 @@ export abstract class V1_ClassMapping implements Hashable {
       this.id ?? '',
       this.class ?? '',
       this.root.toString(),
+      this.extendsClassMappingId ?? '',
     ]);
   }
 

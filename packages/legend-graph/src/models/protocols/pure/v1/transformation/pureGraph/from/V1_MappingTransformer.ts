@@ -850,6 +850,7 @@ const transformOperationSetImplementation = (
   if (root !== undefined) {
     classMapping.root = root;
   }
+  classMapping.extendsClassMappingId = element.superSetImplementationId;
   return classMapping;
 };
 
@@ -868,6 +869,7 @@ const transformMergeOperationSetImplementation = (
   classMapping.parameters = element.parameters.map(
     (e) => e.setImplementation.value.id.value,
   );
+  classMapping.extendsClassMappingId = element.superSetImplementationId;
   const root = transformMappingElementRoot(element.root);
   if (root !== undefined) {
     classMapping.root = root;
@@ -893,6 +895,7 @@ const transformPureInstanceSetImplementation = (
     context,
     false,
   );
+  classMapping.extendsClassMappingId = element.superSetImplementationId;
   const root = transformMappingElementRoot(element.root);
   if (root !== undefined) {
     classMapping.root = root;
@@ -927,6 +930,7 @@ const transformFlatDataInstanceSetImpl = (
   if (root !== undefined) {
     classMapping.root = root;
   }
+  classMapping.extendsClassMappingId = element.superSetImplementationId;
   classMapping.sectionName = element.sourceRootRecordType.value._OWNER.name;
   return classMapping;
 };
@@ -986,6 +990,7 @@ const transformRelationalInstanceSetImpl = (
   classMapping.primaryKey = element.primaryKey.map((pk) =>
     V1_transformRelationalOperationElement(pk, context),
   );
+  classMapping.extendsClassMappingId = element.superSetImplementationId;
   classMapping.propertyMappings = transformClassMappingPropertyMappings(
     element.propertyMappings,
     true,
@@ -1100,6 +1105,7 @@ const transformAggregationAwareSetImplementation = (
     context,
     false,
   );
+  classMapping.extendsClassMappingId = element.superSetImplementationId;
   classMapping.aggregateSetImplementations =
     element.aggregateSetImplementations.map((aggregateSetImpl) =>
       transformAggSetImplContainer(aggregateSetImpl, context),
