@@ -202,7 +202,9 @@ RelationalDatabaseConnection connection::relational::BQWithGCPWorkloadIdentityFe
   auth: GCPWorkloadIdentityFederation
   {
     serviceAccountEmail: 'your@name.com';
-    additionalGcpScopes: [];
+    additionalGcpScopes: [
+      'someScope'
+    ];
   };
 }
 
