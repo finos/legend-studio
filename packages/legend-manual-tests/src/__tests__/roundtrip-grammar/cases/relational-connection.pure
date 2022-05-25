@@ -204,7 +204,7 @@ RelationalDatabaseConnection connection::relational::BQWithGCPWorkloadIdentityFe
     serviceAccountEmail: 'your@name.com';
     additionalGcpScopes: [
       'someScope'
-    ];
+      ];
   };
 }
 
