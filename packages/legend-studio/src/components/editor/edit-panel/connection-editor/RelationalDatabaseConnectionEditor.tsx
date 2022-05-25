@@ -44,6 +44,7 @@ import {
   SnowflakePublicAuthenticationStrategy,
   ApiTokenAuthenticationStrategy,
   UsernamePasswordAuthenticationStrategy,
+  GCPWorkloadIdentityFederationAuthenticationStrategy,
   EmbeddedH2DatasourceSpecification,
   LocalH2DatasourceSpecification,
   SnowflakeDatasourceSpecification,
@@ -111,6 +112,8 @@ import {
   usernamePasswordAuthenticationStrategy_setBaseVaultReference,
   usernamePasswordAuthenticationStrategy_setPasswordVaultReference,
   usernamePasswordAuthenticationStrategy_setUserNameVaultReference,
+  gcpWorkloadIdentityFederationAuthenticationStrategy_setServiceAccountEmail,
+  gcpWorkloadIdentityFederationAuthenticationStrategy_setAdditionalGcpScopes,
 } from '../../../../stores/graphModifier/StoreRelational_GraphModifierHelper';
 
 /**
@@ -1012,6 +1015,42 @@ const UsernamePasswordAuthenticationStrategyEditor = observer(
   },
 );
 
+const GCPWorkloadIdentityFederationAuthenticationStrategyEditor = observer(
+  (props: {
+    authSpec: GCPWorkloadIdentityFederationAuthenticationStrategy;
+    isReadOnly: boolean;
+  }) => {
+    const { authSpec, isReadOnly } = props;
+    const GCPScopes = authSpec.additionalGcpScopes.join('\n');
+    return (
+      <>
+        <ConnectionEditor_StringEditor
+          isReadOnly={isReadOnly}
+          value={authSpec.serviceAccountEmail}
+          propertyName={'Service Account Email'}
+          update={(value: string | undefined): void =>
+            gcpWorkloadIdentityFederationAuthenticationStrategy_setServiceAccountEmail(
+              authSpec,
+              value ?? '',
+            )
+          }
+        />
+        <ConnectionEditor_StringEditor
+          isReadOnly={isReadOnly}
+          value={GCPScopes}
+          propertyName={'Additional GCP Scopes'}
+          update={(value: string | undefined): void =>
+            gcpWorkloadIdentityFederationAuthenticationStrategy_setAdditionalGcpScopes(
+              authSpec,
+              value ? [value] : [],
+            )
+          }
+        />
+      </>
+    );
+  },
+);
+
 const RelationalConnectionStoreEditor = observer(
   (props: {
     connectionValueState: RelationalDatabaseConnectionValueState;
@@ -1195,6 +1234,15 @@ const renderAuthenticationStrategyEditor = (
   } else if (authSpec instanceof UsernamePasswordAuthenticationStrategy) {
     return (
       <UsernamePasswordAuthenticationStrategyEditor
+        authSpec={authSpec}
+        isReadOnly={isReadOnly}
+      />
+    );
+  } else if (
+    authSpec instanceof GCPWorkloadIdentityFederationAuthenticationStrategy
+  ) {
+    return (
+      <GCPWorkloadIdentityFederationAuthenticationStrategyEditor
         authSpec={authSpec}
         isReadOnly={isReadOnly}
       />

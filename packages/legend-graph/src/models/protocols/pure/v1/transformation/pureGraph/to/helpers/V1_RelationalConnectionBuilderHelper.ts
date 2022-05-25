@@ -39,6 +39,7 @@ import {
   OAuthAuthenticationStrategy,
   DefaultH2AuthenticationStrategy,
   DelegatedKerberosAuthenticationStrategy,
+  GCPWorkloadIdentityFederationAuthenticationStrategy,
 } from '../../../../../../../metamodels/pure/packageableElements/store/relational/connection/AuthenticationStrategy';
 import type { V1_GraphBuilderContext } from '../../../../transformation/pureGraph/to/V1_GraphBuilderContext';
 import {
@@ -60,6 +61,7 @@ import {
   V1_ApiTokenAuthenticationStrategy,
   V1_DelegatedKerberosAuthenticationStrategy,
   V1_UsernamePasswordAuthenticationStrategy,
+  V1_GCPWorkloadIdentityFederationAuthenticationStrategy,
 } from '../../../../model/packageableElements/store/relational/connection/V1_AuthenticationStrategy';
 import type { StoreRelational_PureProtocolProcessorPlugin_Extension } from '../../../../../StoreRelational_PureProtocolProcessorPlugin_Extension';
 
@@ -267,6 +269,18 @@ export const V1_buildAuthenticationStrategy = (
     V1_GCPApplicationDefaultCredentialsAuthenticationStrategy
   ) {
     return new GCPApplicationDefaultCredentialsAuthenticationStrategy();
+  } else if (
+    protocol instanceof V1_GCPWorkloadIdentityFederationAuthenticationStrategy
+  ) {
+    assertNonEmptyString(
+      protocol.serviceAccountEmail,
+      `GCPWorkloadIdentityFederation 'serviceAccountEmail' field is missing or empty`,
+    );
+
+    return new GCPWorkloadIdentityFederationAuthenticationStrategy(
+      protocol.serviceAccountEmail,
+      protocol.additionalGcpScopes,
+    );
   } else if (protocol instanceof V1_OAuthAuthenticationStrategy) {
     return new OAuthAuthenticationStrategy(
       guaranteeNonEmptyString(

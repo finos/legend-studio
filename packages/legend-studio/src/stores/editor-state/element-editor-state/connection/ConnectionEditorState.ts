@@ -41,6 +41,7 @@ import {
   ApiTokenAuthenticationStrategy,
   SnowflakePublicAuthenticationStrategy,
   GCPApplicationDefaultCredentialsAuthenticationStrategy,
+  GCPWorkloadIdentityFederationAuthenticationStrategy,
   EmbeddedH2DatasourceSpecification,
   LocalH2DatasourceSpecification,
   DatabricksDatasourceSpecification,
@@ -92,6 +93,7 @@ export enum CORE_AUTHENTICATION_STRATEGY_TYPE {
   API_TOKEN = 'API_TOKEN',
   OAUTH = 'OAUTH',
   USERNAME_PASSWORD = 'USERNAME_PASSWORD',
+  GCP_WORKLOAD_IDENTITY_FEDERATION = 'GCP_WORKLOAD_IDENTITY_FEDERATION',
 }
 
 export class RelationalDatabaseConnectionValueState extends ConnectionValueState {
@@ -256,6 +258,10 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
       auth instanceof GCPApplicationDefaultCredentialsAuthenticationStrategy
     ) {
       return CORE_AUTHENTICATION_STRATEGY_TYPE.GCP_APPLICATION_DEFAULT_CREDENTIALS;
+    } else if (
+      auth instanceof GCPWorkloadIdentityFederationAuthenticationStrategy
+    ) {
+      return CORE_AUTHENTICATION_STRATEGY_TYPE.GCP_WORKLOAD_IDENTITY_FEDERATION;
     }
 
     const extraAuthenticationStrategyTypeGetters =
@@ -299,6 +305,13 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
       case CORE_AUTHENTICATION_STRATEGY_TYPE.GCP_APPLICATION_DEFAULT_CREDENTIALS: {
         authStrategy =
           new GCPApplicationDefaultCredentialsAuthenticationStrategy();
+        break;
+      }
+      case CORE_AUTHENTICATION_STRATEGY_TYPE.GCP_WORKLOAD_IDENTITY_FEDERATION: {
+        authStrategy = new GCPWorkloadIdentityFederationAuthenticationStrategy(
+          '',
+          [],
+        );
         break;
       }
       case CORE_AUTHENTICATION_STRATEGY_TYPE.H2_DEFAULT: {

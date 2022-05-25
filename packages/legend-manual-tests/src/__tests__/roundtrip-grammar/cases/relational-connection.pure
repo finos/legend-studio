@@ -190,6 +190,24 @@ RelationalDatabaseConnection connection::relational::StaticWithUserNameNoBase
   };
 }
 
+RelationalDatabaseConnection connection::relational::BQWithGCPWorkloadIdentityFederation
+{
+  store: store::db;
+  type: BigQuery;
+  specification: BigQuery
+  {
+    projectId: 'projectId';
+    defaultDataset: 'defaultDataset';
+  };
+  auth: GCPWorkloadIdentityFederation
+  {
+    serviceAccountEmail: 'your@name.com';
+    additionalGcpScopes: [
+      'someScope'
+      ];
+  };
+}
+
 RelationalDatabaseConnection connection::relational::BigQueryWithoutProxy
 {
   store: store::db;

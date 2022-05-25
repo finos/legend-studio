@@ -125,6 +125,28 @@ export class GCPApplicationDefaultCredentialsAuthenticationStrategy
   }
 }
 
+export class GCPWorkloadIdentityFederationAuthenticationStrategy
+  extends AuthenticationStrategy
+  implements Hashable
+{
+  serviceAccountEmail: string;
+  additionalGcpScopes: string[] = [];
+
+  constructor(serviceAccountEmail: string, additionalGcpScopes: string[] = []) {
+    super();
+    this.serviceAccountEmail = serviceAccountEmail;
+    this.additionalGcpScopes = additionalGcpScopes;
+  }
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.GCP_WORKLOAD_IDENTITY_FEDERATION_AUTHENTICATION_STRATEGY,
+      this.serviceAccountEmail,
+      hashArray(this.additionalGcpScopes),
+    ]);
+  }
+}
+
 export class UsernamePasswordAuthenticationStrategy
   extends AuthenticationStrategy
   implements Hashable

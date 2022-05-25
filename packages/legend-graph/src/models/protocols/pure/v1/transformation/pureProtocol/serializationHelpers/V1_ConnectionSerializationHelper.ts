@@ -62,6 +62,7 @@ import {
   V1_DefaultH2AuthenticationStrategy,
   V1_DelegatedKerberosAuthenticationStrategy,
   V1_UsernamePasswordAuthenticationStrategy,
+  V1_GCPWorkloadIdentityFederationAuthenticationStrategy,
 } from '../../../model/packageableElements/store/relational/connection/V1_AuthenticationStrategy';
 import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin';
 import type { StoreRelational_PureProtocolProcessorPlugin_Extension } from '../../../../StoreRelational_PureProtocolProcessorPlugin_Extension';
@@ -344,6 +345,7 @@ enum V1_AuthenticationStrategyType {
   H2_DEFAULT = 'h2Default',
   OAUTH = 'oauth',
   USERNAME_PASSWORD = 'userNamePassword',
+  GCP_WORKLOAD_IDENTITY_FEDERATION = 'gcpWorkloadIdentityFederation',
 }
 
 const V1_delegatedKerberosAuthenticationStrategyModelSchema = createModelSchema(
@@ -386,6 +388,15 @@ const V1_GCPApplicationDefaultCredentialsAuthenticationStrategyModelSchema =
     _type: usingConstantValueSchema(
       V1_AuthenticationStrategyType.GCP_APPLICATION_DEFAULT_CREDENTIALS,
     ),
+  });
+
+const V1_GCPWorkloadIdentityFederationAuthenticationStrategyModelSchema =
+  createModelSchema(V1_GCPWorkloadIdentityFederationAuthenticationStrategy, {
+    _type: usingConstantValueSchema(
+      V1_AuthenticationStrategyType.GCP_WORKLOAD_IDENTITY_FEDERATION,
+    ),
+    additionalGcpScopes: list(primitive()),
+    serviceAccountEmail: primitive(),
   });
 
 const V1_UsernamePasswordAuthenticationStrategyModelSchema = createModelSchema(
@@ -433,6 +444,13 @@ export const V1_serializeAuthenticationStrategy = (
   ) {
     return serialize(
       V1_GCPApplicationDefaultCredentialsAuthenticationStrategyModelSchema,
+      protocol,
+    );
+  } else if (
+    protocol instanceof V1_GCPWorkloadIdentityFederationAuthenticationStrategy
+  ) {
+    return serialize(
+      V1_GCPWorkloadIdentityFederationAuthenticationStrategyModelSchema,
       protocol,
     );
   } else if (protocol instanceof V1_OAuthAuthenticationStrategy) {
@@ -485,6 +503,11 @@ export const V1_deserializeAuthenticationStrategy = (
     case V1_AuthenticationStrategyType.GCP_APPLICATION_DEFAULT_CREDENTIALS:
       return deserialize(
         V1_GCPApplicationDefaultCredentialsAuthenticationStrategyModelSchema,
+        json,
+      );
+    case V1_AuthenticationStrategyType.GCP_WORKLOAD_IDENTITY_FEDERATION:
+      return deserialize(
+        V1_GCPWorkloadIdentityFederationAuthenticationStrategyModelSchema,
         json,
       );
     case V1_AuthenticationStrategyType.OAUTH:

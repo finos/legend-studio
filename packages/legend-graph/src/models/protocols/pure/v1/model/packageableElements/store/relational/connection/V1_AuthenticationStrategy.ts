@@ -102,6 +102,22 @@ export class V1_GCPApplicationDefaultCredentialsAuthenticationStrategy
   }
 }
 
+export class V1_GCPWorkloadIdentityFederationAuthenticationStrategy
+  extends V1_AuthenticationStrategy
+  implements Hashable
+{
+  serviceAccountEmail!: string;
+  additionalGcpScopes: string[] = [];
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.GCP_WORKLOAD_IDENTITY_FEDERATION_AUTHENTICATION_STRATEGY,
+      this.serviceAccountEmail,
+      hashArray(this.additionalGcpScopes),
+    ]);
+  }
+}
+
 export class V1_UsernamePasswordAuthenticationStrategy
   extends V1_AuthenticationStrategy
   implements Hashable
