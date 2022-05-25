@@ -5,31 +5,33 @@ __metadata:
   version: 6
   cacheKey: 8
 
-"@actions/core@npm:1.8.1":
-  version: 1.8.1
-  resolution: "@actions/core@npm:1.8.1"
+"@actions/core@npm:1.8.2":
+  version: 1.8.2
+  resolution: "@actions/core@npm:1.8.2"
   dependencies:
-    "@actions/http-client": ^2.0.0
-  checksum: 9a3758528e32a951d457cf29494125360251a3631bc63af9465895ab5749a55b85db043226c39c260b8d931c16a237156051e40a7351d484ab2f7249f82fa3bf
+    "@actions/http-client": ^2.0.1
+  checksum: 1cd1a47f751501900a579e641565bbe13a09d626507a4fa46b51e6a959a74a89134490ae7311570ed8ec1735ada83bcfde81a456ea4d2e24e323c16e94e39fd1
   languageName: node
   linkType: hard
 
-"@actions/github@npm:5.0.2":
-  version: 5.0.2
-  resolution: "@actions/github@npm:5.0.2"
+"@actions/github@npm:5.0.3":
+  version: 5.0.3
+  resolution: "@actions/github@npm:5.0.3"
   dependencies:
-    "@actions/http-client": ^2.0.0
+    "@actions/http-client": ^2.0.1
     "@octokit/core": ^3.6.0
     "@octokit/plugin-paginate-rest": ^2.17.0
     "@octokit/plugin-rest-endpoint-methods": ^5.13.0
-  checksum: fb6c4cda9e55d10533ad091b0d001c13083057c127fcc7d6c287c0ae35d7a5f78eecd829c57a1224880d109a943d4a788c019215bde8ff4d811b36c5a71b72f9
+  checksum: 1d8e8c5c351dd069a96b1ec39c8f609a2bbcb135d69bb8d9bb5c00752bdff81ec6d67ca90eb77dedc657cd630af484538f881c16eb5b008fd3ee5f430d0c38d2
   languageName: node
   linkType: hard
 
-"@actions/http-client@npm:^2.0.0":
-  version: 2.0.0
-  resolution: "@actions/http-client@npm:2.0.0"
-  checksum: ac0818271563f3608601a4781014a2df98be4324adac43572509846066e64329637c2f4982624de99ff1df4a92911d393f5978ae3a779e26639e031dba593e6f
+"@actions/http-client@npm:^2.0.1":
+  version: 2.0.1
+  resolution: "@actions/http-client@npm:2.0.1"
+  dependencies:
+    tunnel: ^0.0.6
+  checksum: 799ec3df91e28a9da91ce6592e94f8b8923ccf6cc21a2f72c7429be5af5273f1625335411adc2a1bb222d56c852d5767214dfa6fa32a6da7e81dba8290e08f17
   languageName: node
   linkType: hard
 
@@ -2357,8 +2359,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@finos/legend-internal-github-bot@workspace:scripts/github-bot"
   dependencies:
-    "@actions/core": 1.8.1
-    "@actions/github": 5.0.2
+    "@actions/core": 1.8.2
+    "@actions/github": 5.0.3
     chalk: 5.0.1
   languageName: unknown
   linkType: soft
@@ -10130,8 +10132,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "legend-studio@workspace:."
   dependencies:
-    "@actions/core": 1.8.1
-    "@actions/github": 5.0.2
+    "@actions/core": 1.8.2
+    "@actions/github": 5.0.3
     "@babel/core": 7.17.10
     "@changesets/cli": 2.22.0
     "@finos/babel-preset-legend-studio": "workspace:*"
@@ -10157,7 +10159,6 @@ __metadata:
     semver: 7.3.7
     sort-package-json: 1.57.0
     stylelint: 14.8.2
-    tunnel: 0.0.6
     typescript: 4.6.4
     yargs: 17.5.0
   languageName: unknown
@@ -15297,7 +15298,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tunnel@npm:0.0.6":
+"tunnel@npm:^0.0.6":
   version: 0.0.6
   resolution: "tunnel@npm:0.0.6"
   checksum: c362948df9ad34b649b5585e54ce2838fa583aa3037091aaed66793c65b423a264e5229f0d7e9a95513a795ac2bd4cb72cda7e89a74313f182c1e9ae0b0994fa

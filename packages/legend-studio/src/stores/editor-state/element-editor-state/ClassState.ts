@@ -85,9 +85,9 @@ export class DerivedPropertyState extends LambdaEditorState {
           (yield this.editorStore.graphManagerState.graphManager.pureCodeToLambda(
             this.fullLambdaString,
             this.lambdaId,
-          )) as RawLambda | undefined;
+          )) as RawLambda;
         this.setParserError(undefined);
-        this.setBodyAndParameters(lambda ?? emptyLambda);
+        this.setBodyAndParameters(lambda);
       } catch (error) {
         assertErrorThrown(error);
         if (error instanceof ParserError) {
@@ -174,12 +174,9 @@ export class ConstraintState extends LambdaEditorState {
           (yield this.editorStore.graphManagerState.graphManager.pureCodeToLambda(
             this.fullLambdaString,
             this.lambdaId,
-          )) as RawLambda | undefined;
+          )) as RawLambda;
         this.setParserError(undefined);
-        constraint_setFunctionDefinition(
-          this.constraint,
-          lambda ?? emptyFunctionDefinition,
-        );
+        constraint_setFunctionDefinition(this.constraint, lambda);
       } catch (error) {
         assertErrorThrown(error);
         if (error instanceof ParserError) {

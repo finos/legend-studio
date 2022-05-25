@@ -1,5 +1,35 @@
 # @finos/legend-graph
 
+## 7.0.0
+
+### Major Changes
+
+- [#1159](https://github.com/finos/legend-studio/pull/1159) [`f6abe87a`](https://github.com/finos/legend-studio/commit/f6abe87a27ec3f2604caf25e38df17344b31ef9f) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Move logic out of metamodels, such as `Class.getProperty()`, `Database.getSchema()`, etc. and expose them as helper methods.
+
+* [#1153](https://github.com/finos/legend-studio/pull/1153) [`9e3b9b57`](https://github.com/finos/legend-studio/commit/9e3b9b57ae2589a9627911713126a024d0da82ae) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Renamed extra fields added to the metamodels for navigation or other graph management purposes, such as `owner`, `parent`, `uuid`, etc. to `_OWNER`, `_PARENT`, `_UUID`, etc.; these fields are also made `readonly`.
+
+- [#1159](https://github.com/finos/legend-studio/pull/1159) [`f6abe87a`](https://github.com/finos/legend-studio/commit/f6abe87a27ec3f2604caf25e38df17344b31ef9f) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Remove `Stubable` interface and all stub logic in metamodels, such as `createStub()`, `isStub()`, these methods are now cleaned up and organized in `model creater helpers` which will be exported as utilities from this package.
+
+* [#1153](https://github.com/finos/legend-studio/pull/1153) [`9e3b9b57`](https://github.com/finos/legend-studio/commit/9e3b9b57ae2589a9627911713126a024d0da82ae) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Move some `enum`s out of metamodels, such as `SET_IMPLEMENTATION_TYPE`, `BASIC_SET_IMPLEMENTATION_TYPE`, `PACKAGEABLE_ELEMENT_POINTER_TYPE`, `CLASS_PROPERTY_TYPE`, etc.
+
+- [#1153](https://github.com/finos/legend-studio/pull/1153) [`9e3b9b57`](https://github.com/finos/legend-studio/commit/9e3b9b57ae2589a9627911713126a024d0da82ae) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Removed `buildState` from `BasicModel` and `DependencyManager` and moved them to `GraphManagerState` since these states don't belong inherently to the graph but the graph manager. As such, methods like `AbstractPureGraphManager.buildSystem()`, `AbstractPureGraphManager.buildGraph()` etc. now require the build state to as a parameter.
+
+* [#1159](https://github.com/finos/legend-studio/pull/1159) [`f6abe87a`](https://github.com/finos/legend-studio/commit/f6abe87a27ec3f2604caf25e38df17344b31ef9f) ([@akphi](https://github.com/akphi)) - Rename `fullPath` to `path` in `Package`. Where this change really makes a difference is for the root package: previously, `path` was the `name` of the root package element, from now on, `path` will be `empty string`, this makes the handling of root package when constructing element path more consistent.
+
+### Minor Changes
+
+- [#1114](https://github.com/finos/legend-studio/pull/1114) [`5e248794`](https://github.com/finos/legend-studio/commit/5e24879419c4116456d58b67702919bc0577eeb6) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Deprecate running service Legacy Tests.
+  Add `RelationalData` and `EqualToTDS` to support testing on relational queries.
+  Support running testable tests.
+
+### Patch Changes
+
+- [#1165](https://github.com/finos/legend-studio/pull/1165) [`5fcd423b`](https://github.com/finos/legend-studio/commit/5fcd423b28c11713a1e39ced193cdfb80ce42119) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Correctly resolve view filter in database by looking in included databases. ([#1160](https://github.com/finos/legend-studio/issues/1160))
+
+* [#1153](https://github.com/finos/legend-studio/pull/1153) [`9e3b9b57`](https://github.com/finos/legend-studio/commit/9e3b9b57ae2589a9627911713126a024d0da82ae) ([@akphi](https://github.com/akphi)) - Update `LocalMappingPropertyInfo` metamodel to have `localMappingPropertyType: PackageableElementReference<Type>`
+
+- [#1010](https://github.com/finos/legend-studio/pull/1010) [`5d8c7c35`](https://github.com/finos/legend-studio/commit/5d8c7c3554369b5b0eee274422a072b383b7b25b) ([@abhishoya-gs](https://github.com/abhishoya-gs)) - Add Proxy Parameters to BigQueryDataSourceSpecification
+
 ## 6.0.1
 
 ## 6.0.0

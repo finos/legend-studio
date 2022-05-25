@@ -19,13 +19,20 @@
 import { resolve } from 'path';
 import fs from 'fs';
 import axios, { type AxiosResponse } from 'axios';
-import { WebConsole, Log, LogEvent } from '@finos/legend-shared';
+import {
+  WebConsole,
+  Log,
+  LogEvent,
+  ContentType,
+  type PlainObject,
+} from '@finos/legend-shared';
 import {
   TEST__GraphPluginManager,
   TEST__buildGraphWithEntities,
   TEST__getTestGraphManagerState,
   GRAPH_MANAGER_EVENT,
   V1_ENGINE_EVENT,
+  type V1_PureModelContextData,
 } from '@finos/legend-graph';
 import { getLegendGraphExtensionCollection } from '@finos/legend-graph-extension-collection';
 
@@ -167,14 +174,17 @@ const profileRoundtrip = async (
   let startTime = Date.now();
   const transformGrammarToJsonResult = await axios.post<
     unknown,
-    AxiosResponse<{ modelDataContext: { elements: object[] } }>
-  >(
-    `${ENGINE_SERVER_URL}/pure/v1/grammar/transformGrammarToJson`,
-    {
-      code: grammarText,
+    AxiosResponse<PlainObject<V1_PureModelContextData>>
+  >(`${ENGINE_SERVER_URL}/pure/v1/grammar/grammarToJson/model`, grammarText, {
+    headers: {
+      'Content-Type': ContentType.TEXT_PLAIN,
     },
-    {},
-  );
+    // TODO: we should enable this, but we need to make sure engine works first
+    // See https://github.com/finos/legend-engine/pull/692
+    // params: {
+    //   returnSourceInformation: false,
+    // },
+  });
   if (options.debug) {
     log.info(
       LogEvent.create(V1_ENGINE_EVENT.GRAMMAR_TO_JSON),
@@ -183,7 +193,7 @@ const profileRoundtrip = async (
     );
   }
   const entities = graphManagerState.graphManager.pureProtocolTextToEntities(
-    JSON.stringify(transformGrammarToJsonResult.data.modelDataContext),
+    JSON.stringify(transformGrammarToJsonResult.data),
   );
   if (options.debug) {
     log.info(
@@ -239,13 +249,17 @@ const profileRoundtrip = async (
       .map((entity) => entity.content),
   };
   startTime = Date.now();
-  await axios.post<unknown, AxiosResponse<{ code: string }>>(
-    `${ENGINE_SERVER_URL}/pure/v1/grammar/transformJsonToGrammar`,
+  await axios.post<unknown, AxiosResponse<string>>(
+    `${ENGINE_SERVER_URL}/pure/v1/grammar/jsonToGrammar/model`,
+    modelDataContext,
     {
-      modelDataContext,
-      renderStyle: 'STANDARD',
+      headers: {
+        Accept: ContentType.TEXT_PLAIN,
+      },
+      params: {
+        renderStyle: 'STANDARD',
+      },
     },
-    {},
   );
   if (options.debug) {
     log.info(

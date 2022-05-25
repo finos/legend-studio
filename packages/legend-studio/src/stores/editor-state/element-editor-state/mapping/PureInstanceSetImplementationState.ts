@@ -80,9 +80,9 @@ export class PurePropertyMappingState extends PropertyMappingState {
           (yield this.editorStore.graphManagerState.graphManager.pureCodeToLambda(
             this.fullLambdaString,
             this.lambdaId,
-          )) as RawLambda | undefined;
+          )) as RawLambda;
         this.setParserError(undefined);
-        this.propertyMapping.transform = lambda ?? emptyLambda;
+        this.propertyMapping.transform = lambda;
       } catch (error) {
         assertErrorThrown(error);
         if (error instanceof ParserError) {
@@ -164,11 +164,11 @@ export class PureInstanceSetImplementationFilterState extends LambdaEditorState 
           (yield this.editorStore.graphManagerState.graphManager.pureCodeToLambda(
             this.fullLambdaString,
             this.lambdaId,
-          )) as RawLambda | undefined;
+          )) as RawLambda;
         this.setParserError(undefined);
         pureInstanceSetImpl_setMappingFilter(
           this.instanceSetImplementation,
-          lambda ?? emptyFunctionDefinition,
+          lambda,
         );
       } catch (error) {
         assertErrorThrown(error);
@@ -198,7 +198,6 @@ export class PureInstanceSetImplementationFilterState extends LambdaEditorState 
         const grammarText =
           (yield this.editorStore.graphManagerState.graphManager.lambdaToPureCode(
             this.instanceSetImplementation.filter,
-            this.lambdaId,
             pretty,
           )) as string;
         this.setLambdaString(this.extractLambdaString(grammarText));

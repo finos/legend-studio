@@ -86,10 +86,10 @@ export class RelationalPropertyMappingState extends PropertyMappingState {
           (yield this.editorStore.graphManagerState.graphManager.pureCodeToRelationalOperationElement(
             this.fullLambdaString,
             this.lambdaId,
-          )) as RawRelationalOperationElement | undefined;
+          )) as RawRelationalOperationElement;
         this.setParserError(undefined);
         if (this.propertyMapping instanceof RelationalPropertyMapping) {
-          this.propertyMapping.relationalOperation = operation ?? stubOperation;
+          this.propertyMapping.relationalOperation = operation;
         }
       } catch (error) {
         assertErrorThrown(error);

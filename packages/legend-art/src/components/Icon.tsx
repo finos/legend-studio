@@ -158,6 +158,7 @@ export {
   BsFillTriangleFill as FilledTriangleIcon,
   BsFillFileEarmarkSpreadsheetFill as FillFileEarmarkSpreadsheetFillIcon,
 } from 'react-icons/bs';
+export { BiShapeTriangle as ShapeTriangleIcon } from 'react-icons/bi';
 export { CgOptions as OptionsIcon } from 'react-icons/cg';
 export {
   FiMinus as MinusIcon,

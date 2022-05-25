@@ -23,6 +23,7 @@ import {
   WebConsole,
   Log,
   LogEvent,
+  ContentType,
 } from '@finos/legend-shared';
 import {
   type V1_PackageableElement,
@@ -85,6 +86,9 @@ const EXCLUSIONS: { [key: string]: ROUNTRIP_TEST_PHASES[] | typeof SKIP } = {
   'mapping-include-enum-mapping.pure': [
     ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP,
   ],
+
+  // TODO: Unskip this test when we merge https://github.com/finos/legend-studio/pull/1108
+  'DSLPersistence-basic.pure': SKIP,
 
   // TODO: Unskip once https://github.com/finos/legend-engine/pull/658 is resolved
   'relational-dataElement.pure': SKIP,
@@ -154,14 +158,17 @@ const checkGrammarRoundtrip = async (
   let startTime = Date.now();
   const transformGrammarToJsonResult = await axios.post<
     unknown,
-    AxiosResponse<{ modelDataContext: { elements: object[] } }>
-  >(
-    `${ENGINE_SERVER_URL}/pure/v1/grammar/transformGrammarToJson`,
-    {
-      code: grammarText,
+    AxiosResponse<{ elements: object[] }>
+  >(`${ENGINE_SERVER_URL}/pure/v1/grammar/grammarToJson/model`, grammarText, {
+    headers: {
+      'Content-Type': ContentType.TEXT_PLAIN,
     },
-    {},
-  );
+    // TODO: we should enable this, but we need to make sure engine works first
+    // See https://github.com/finos/legend-engine/pull/692
+    // params: {
+    //   returnSourceInformation: false,
+    // },
+  });
   if (options?.debug) {
     log.info(
       LogEvent.create(V1_ENGINE_EVENT.GRAMMAR_TO_JSON),
@@ -170,7 +177,7 @@ const checkGrammarRoundtrip = async (
     );
   }
   const entities = graphManagerState.graphManager.pureProtocolTextToEntities(
-    JSON.stringify(transformGrammarToJsonResult.data.modelDataContext),
+    JSON.stringify(transformGrammarToJsonResult.data),
   );
   if (options?.debug) {
     log.info(
@@ -213,7 +220,10 @@ const checkGrammarRoundtrip = async (
         .map(graphManagerState.graphManager.pruneSourceInformation),
     ).toIncludeSameMembers(
       // expected: protocol JSON parsed from grammar text
-      transformGrammarToJsonResult.data.modelDataContext.elements
+      (
+        (transformGrammarToJsonResult.data as { elements: object[] })
+          .elements as PlainObject<V1_PackageableElement>[]
+      )
         .map(graphManagerState.graphManager.pruneSourceInformation)
         .filter(
           (elementProtocol: PlainObject<V1_PackageableElement>) =>
@@ -253,14 +263,18 @@ const checkGrammarRoundtrip = async (
   startTime = Date.now();
   const transformJsonToGrammarResult = await axios.post<
     unknown,
-    AxiosResponse<{ code: string }>
+    AxiosResponse<string>
   >(
-    `${ENGINE_SERVER_URL}/pure/v1/grammar/transformJsonToGrammar`,
+    `${ENGINE_SERVER_URL}/pure/v1/grammar/jsonToGrammar/model`,
+    modelDataContext,
     {
-      modelDataContext,
-      renderStyle: 'STANDARD',
+      headers: {
+        Accept: ContentType.TEXT_PLAIN,
+      },
+      params: {
+        renderStyle: 'STANDARD',
+      },
     },
-    {},
   );
   if (options?.debug) {
     log.info(
@@ -270,7 +284,7 @@ const checkGrammarRoundtrip = async (
     );
   }
   if (!excludes.includes(phase)) {
-    expect(transformJsonToGrammarResult.data.code).toEqual(grammarText);
+    expect(transformJsonToGrammarResult.data).toEqual(grammarText);
     logSuccess(phase, log, options?.debug);
   }
 
