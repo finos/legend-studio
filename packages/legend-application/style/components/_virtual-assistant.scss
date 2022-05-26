@@ -149,3 +149,21 @@
     }
   }
 }
+
+.virtual-assistant__panel {
+  height: 40rem;
+  width: 30rem;
+  margin: 1rem;
+  border-radius: 0.2rem;
+  background: var(--color-dark-grey-100);
+  border: 0.1rem solid var(--color-dark-grey-200);
+  box-shadow: 0 1.1rem 1.5rem -0.7rem, var(--color-light-shade-280),
+    0 2.4rem 3.8rem 0.3rem var(--color-light-shade-280),
+    0 0.9rem 4.6rem 0.8rem var(--color-light-shade-280);
+
+  &__container {
+    // NOTE: we must take into account of UI component libraries, such as MUI
+    // See https://mui.com/material-ui/customization/z-index/
+    z-index: 10000;
+  }
+}

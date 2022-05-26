@@ -15,19 +15,45 @@
  */
 
 import {
-  ChevronDoubleRightIcon,
   clsx,
+  ChevronDoubleRightIcon,
   EmptyLightBulbIcon,
   LightBulbIcon,
+  BasePopper,
+  TimesIcon,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
+import { useRef } from 'react';
 import { useApplicationStore } from './ApplicationStoreProvider';
+
+export const VirtualAssistantPanel = observer(
+  (props: { triggerElement: HTMLElement | null }) => {
+    const { triggerElement } = props;
+    const applicationStore = useApplicationStore();
+    const assistantService = applicationStore.assistantService;
+
+    return (
+      <BasePopper
+        open={assistantService.isOpen}
+        className="virtual-assistant__panel__container"
+        anchorEl={triggerElement}
+        placement="top-end"
+      >
+        <div className="virtual-assistant__panel"></div>
+      </BasePopper>
+    );
+  },
+);
 
 export const VirtualAssistant = observer(() => {
   const applicationStore = useApplicationStore();
   const assistantService = applicationStore.assistantService;
   const currentContextualDocumentationEntry =
     assistantService.currentContextualDocumentationEntry;
+  const assistantRef = useRef<HTMLDivElement>(null);
+  const toggleAssistantPanel = (): void => {
+    assistantService.setIsOpen(!assistantService.isOpen);
+  };
 
   const toggleAssistant = (): void => {
     const newVal = !assistantService.isHidden;
@@ -38,7 +64,7 @@ export const VirtualAssistant = observer(() => {
   };
 
   return (
-    <div className="virtual-assistant">
+    <div className="virtual-assistant" ref={assistantRef}>
       <div
         //  NOTE: make sure when we change the documentation entry, the flashing animation
         // is replayed
@@ -51,21 +77,33 @@ export const VirtualAssistant = observer(() => {
         })}
       >
         {!assistantService.isHidden && (
-          <button
-            className="virtual-assistant__station__trigger"
-            tabIndex={-1}
-            title={`${
-              currentContextualDocumentationEntry
-                ? 'Contextual documentation available.\n'
-                : ''
-            }Click to open assistant panel...`}
-          >
-            {currentContextualDocumentationEntry ? (
-              <LightBulbIcon />
-            ) : (
-              <EmptyLightBulbIcon />
+          <>
+            <button
+              className="virtual-assistant__station__trigger"
+              tabIndex={-1}
+              onClick={toggleAssistantPanel}
+              title={
+                assistantService.isOpen
+                  ? `Click to close assistant panel`
+                  : `${
+                      currentContextualDocumentationEntry
+                        ? 'Contextual support available.\n'
+                        : ''
+                    }Click to open assistant panel...`
+              }
+            >
+              {assistantService.isOpen ? (
+                <TimesIcon />
+              ) : currentContextualDocumentationEntry ? (
+                <LightBulbIcon />
+              ) : (
+                <EmptyLightBulbIcon />
+              )}
+            </button>
+            {assistantRef.current && (
+              <VirtualAssistantPanel triggerElement={assistantRef.current} />
             )}
-          </button>
+          </>
         )}
         <button
           className="virtual-assistant__station__arrow"
