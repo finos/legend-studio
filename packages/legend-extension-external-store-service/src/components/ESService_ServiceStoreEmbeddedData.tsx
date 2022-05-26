@@ -48,7 +48,6 @@ import {
   StudioTextInputEditor,
 } from '@finos/legend-studio';
 import { observer } from 'mobx-react-lite';
-import { useState } from 'react';
 import { EqualToJsonPattern } from '../models/metamodels/pure/model/data/contentPattern/ESService_EqualToJsonPattern';
 import { EqualToPattern } from '../models/metamodels/pure/model/data/contentPattern/ESService_EqualToPattern';
 import type { StringValuePattern } from '../models/metamodels/pure/model/data/contentPattern/ESService_StringValuePattern';
@@ -586,19 +585,27 @@ export const ServiceRequestPatternEditor = observer(
       (tab: SERVICE_REQUEST_PATTERN_TAB_TYPE): (() => void) =>
       (): void =>
         serviceStubMappingState.setSelectedServiceRequestPatternTab(tab);
-    const [toggleOn, setToggleOn] = useState<boolean>(true);
+    const changeToggleOn = (): void => {
+      serviceStubMappingState.setToggleOn();
+      serviceStubMappingState.toggleOn
+        ? serviceStubMappingState.setUrlValue(serviceRequestPattern.url ?? '')
+        : serviceStubMappingState.setUrlValue(
+            serviceRequestPattern.urlPath ?? '',
+          );
+    };
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
       const stringValue = event.target.value;
       const updatedValue = stringValue ? stringValue : undefined;
-      toggleOn
-        ? serviceStore_serviceRequestPattern_setUrlPath(
+      serviceStubMappingState.toggleOn
+        ? serviceStore_serviceRequestPattern_setUrl(
             serviceRequestPattern,
             updatedValue,
           )
-        : serviceStore_serviceRequestPattern_setUrl(
+        : serviceStore_serviceRequestPattern_setUrlPath(
             serviceRequestPattern,
             updatedValue,
           );
+      serviceStubMappingState.setUrlValue(stringValue);
     };
 
     return (
@@ -652,15 +659,15 @@ export const ServiceRequestPatternEditor = observer(
               <div className="panel__content service-request-pattern-editor__url">
                 <div className="panel__content__form__section">
                   <div className="panel__content__form__section__header__label">
-                    UrlPath
+                    Url
                     <button
                       className="url-editor__action"
-                      onClick={(): void => setToggleOn(!toggleOn)}
+                      onClick={changeToggleOn}
                       disabled={isReadOnly}
                       tabIndex={-1}
                       title={'Toggle'}
                     >
-                      {toggleOn ? (
+                      {serviceStubMappingState.toggleOn ? (
                         <ToggleOn className="url-editor__icon" />
                       ) : (
                         <ToggleOff className="url-editor__icon" />
@@ -668,18 +675,13 @@ export const ServiceRequestPatternEditor = observer(
                     </button>
                   </div>
                   <div className="panel__content__form__section__header__prompt">
-                    Toggles between UrlPath(Specifies the Url group) and
-                    Url(Specifies the exact Url)
+                    Toggles between Url and UrlPath
                   </div>
                   <input
                     className="panel__content__form__section__input"
                     spellCheck={false}
                     disabled={isReadOnly}
-                    value={
-                      toggleOn
-                        ? serviceRequestPattern.urlPath
-                        : serviceRequestPattern.url
-                    }
+                    value={serviceStubMappingState.urlValue}
                     onChange={changeValue}
                   />
                 </div>

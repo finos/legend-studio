@@ -36,22 +36,38 @@ export class ServiceStubMappingState {
   selectedServiceRequestPatternTab?:
     | SERVICE_REQUEST_PATTERN_TAB_TYPE
     | undefined;
+  toggleOn = true;
+  urlValue: string;
 
   constructor(
     editorStore: EditorStore,
     serviceStubMapping: ServiceStubMapping | undefined,
   ) {
     this.serviceStubMapping = serviceStubMapping;
+    this.urlValue = serviceStubMapping?.requestPattern.url ?? '';
 
     makeObservable(this, {
       selectedTab: observable,
+      serviceStubMapping: observable,
+      toggleOn: observable,
+      urlValue: observable,
       selectedServiceRequestPatternTab: observable,
+      setToggleOn: action,
+      setUrlValue: action,
       setSelectedTab: action,
     });
   }
 
   setSelectedTab(val: SERVICE_STUB_MAPPING_TAB_TYPE): void {
     this.selectedTab = val;
+  }
+
+  setToggleOn(): void {
+    this.toggleOn = !this.toggleOn;
+  }
+
+  setUrlValue(val: string): void {
+    this.urlValue = val;
   }
 
   setSelectedServiceRequestPatternTab(
