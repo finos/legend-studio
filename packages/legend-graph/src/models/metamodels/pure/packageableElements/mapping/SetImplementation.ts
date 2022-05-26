@@ -74,6 +74,7 @@ export abstract class SetImplementation
   id: InferableMappingElementIdValue;
   class: PackageableElementReference<Class>;
   root: InferableMappingElementRoot;
+  superSetImplementationId?: string | undefined;
 
   constructor(
     id: InferableMappingElementIdValue,
@@ -93,6 +94,7 @@ export abstract class SetImplementation
       this.id.valueForSerialization ?? '',
       this.class.hashValue,
       this.root.valueForSerialization.toString(),
+      this.superSetImplementationId ?? '',
     ]);
   }
 

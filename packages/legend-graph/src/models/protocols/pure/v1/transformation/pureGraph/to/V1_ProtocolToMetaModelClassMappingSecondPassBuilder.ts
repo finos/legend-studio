@@ -106,6 +106,10 @@ export class V1_ProtocolToMetaModelClassMappingSecondPassBuilder
       OperationSetImplementation,
       `Class mapping with ID '${id}' is not of type operation set implementation`,
     );
+    if (classMapping.extendsClassMappingId) {
+      operationSetImplementation.superSetImplementationId =
+        classMapping.extendsClassMappingId;
+    }
     operationSetImplementation.parameters = classMapping.parameters
       .map((parameter) => {
         const setImplementation = getAllClassMappings(this.parent).find(
@@ -152,6 +156,10 @@ export class V1_ProtocolToMetaModelClassMappingSecondPassBuilder
       ),
       PureInstanceSetImplementation,
     );
+    if (classMapping.extendsClassMappingId) {
+      pureInstanceSetImplementation.superSetImplementationId =
+        classMapping.extendsClassMappingId;
+    }
     // NOTE: we have to process property mappings here instead of in the first pass like the backend because we actually resolve `target` and `source`
     // at this point instead of just passing in the IDs. This means we have to go through the first pass to create basic mapping elements first
     // before we can finally use/resolve them in this pass
@@ -185,6 +193,10 @@ export class V1_ProtocolToMetaModelClassMappingSecondPassBuilder
       ),
       FlatDataInstanceSetImplementation,
     );
+    if (classMapping.extendsClassMappingId) {
+      flatDataInstanceSetImplementation.superSetImplementationId =
+        classMapping.extendsClassMappingId;
+    }
     flatDataInstanceSetImplementation.propertyMappings =
       classMapping.propertyMappings.map((propertyMapping) =>
         propertyMapping.accept_PropertyMappingVisitor(
@@ -310,6 +322,10 @@ export class V1_ProtocolToMetaModelClassMappingSecondPassBuilder
       ),
       AggregationAwareSetImplementation,
     );
+    if (classMapping.extendsClassMappingId) {
+      aggragetionAwareInstanceSetImplementation.superSetImplementationId =
+        classMapping.extendsClassMappingId;
+    }
     const mapping = this.context.graph.getMapping(this.parent.path);
     classMapping.mainSetImplementation.accept_ClassMappingVisitor(
       new V1_ProtocolToMetaModelClassMappingSecondPassBuilder(

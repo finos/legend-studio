@@ -35,7 +35,6 @@ export class RootRelationalInstanceSetImplementation
   distinct?: boolean | undefined;
   groupBy?: GroupByMapping | undefined;
   mainTableAlias?: TableAlias;
-  superSetImplementationId?: string | undefined;
 
   override accept_SetImplementationVisitor<T>(
     visitor: SetImplementationVisitor<T>,
@@ -51,7 +50,6 @@ export class RootRelationalInstanceSetImplementation
       this.distinct?.toString() ?? '',
       hashArray(this.groupBy?.columns ?? []),
       this.filter ?? '',
-      this.superSetImplementationId ?? '',
     ]);
   }
 }

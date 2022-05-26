@@ -158,6 +158,7 @@ const operationClassMappingModelSchema = createModelSchema(
   {
     _type: usingConstantValueSchema(V1_ClassMappingType.OPERATION),
     class: primitive(),
+    extendsClassMappingId: optional(primitive()),
     id: optional(primitive()),
     operation: primitive(),
     parameters: list(primitive()),
@@ -170,6 +171,7 @@ const mergeOperationClassMappingModelSchema = createModelSchema(
   {
     _type: usingConstantValueSchema(V1_ClassMappingType.MERGE_OPERATION),
     class: primitive(),
+    extendsClassMappingId: optional(primitive()),
     id: optional(primitive()),
     operation: primitive(),
     parameters: list(primitive()),
@@ -203,6 +205,7 @@ const pureInstanceClassMappingModelSchema = createModelSchema(
   {
     _type: usingConstantValueSchema(V1_ClassMappingType.PUREINSTANCE),
     class: primitive(),
+    extendsClassMappingId: optional(primitive()),
     filter: usingModelSchema(V1_rawLambdaModelSchema),
     id: optional(primitive()),
     propertyMappings: list(
@@ -512,6 +515,7 @@ const rootFlatDataCLassMappingModelSchema = createModelSchema(
   {
     _type: usingConstantValueSchema(V1_ClassMappingType.ROOT_FLAT_DATA),
     class: primitive(),
+    extendsClassMappingId: optional(primitive()),
     filter: usingModelSchema(V1_rawLambdaModelSchema),
     flatData: primitive(),
     id: optional(primitive()),
@@ -599,6 +603,7 @@ const aggregationAwareClassMappingModelSchema = createModelSchema(
       usingModelSchema(aggregateSetImplementationContainer),
     ),
     class: primitive(),
+    extendsClassMappingId: optional(primitive()),
     id: optional(primitive()),
     mainSetImplementation: custom(
       (val) => V1_serializeClassMapping(val),
