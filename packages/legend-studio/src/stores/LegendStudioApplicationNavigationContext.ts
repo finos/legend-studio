@@ -21,7 +21,12 @@ export enum LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT {
 
   // EDITOR
   EDITOR = 'editor',
+
   CLASS_EDITOR = 'editor.class-editor',
-  DERIVED_PROPERTY_EDITOR = 'editor.class-editor.derived-property-editor',
-  CONSTRAINT_EDITOR = 'editor.class-editor.constraint-editor',
+  CLASS_EDITOR_PROPERTIES = 'editor.class-editor.properties',
+  CLASS_EDITOR_DERIVED_PROPERTIES = 'editor.class-editor.derived-properties',
+  CLASS_EDITOR_CONSTRAINTS = 'editor.class-editor.constraints',
+  CLASS_EDITOR_SUPERTYPES = 'editor.class-editor.supertypes',
+  CLASS_DERIVED_PROPERTY_LAMBDA_EDITOR = 'editor.class-editor.derived-properties.lambda-editor',
+  CLASS_CONTRAINT_LAMBDA_EDITOR = 'editor.class-editor.constraints.lambda-editor',
 }

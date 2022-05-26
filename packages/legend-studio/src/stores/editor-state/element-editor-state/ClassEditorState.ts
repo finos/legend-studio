@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { computed, observable, makeObservable, override } from 'mobx';
+import { computed, observable, makeObservable, override, action } from 'mobx';
 import { UMLEditorState, UML_EDITOR_TAB } from './UMLEditorState';
 import {
   LogEvent,
@@ -30,6 +30,7 @@ import type { EditorStore } from '../../EditorStore';
 import {
   type CompilationError,
   type PackageableElement,
+  type AbstractProperty,
   GRAPH_MANAGER_EVENT,
   extractSourceInformationCoordinates,
   Class,
@@ -37,15 +38,18 @@ import {
 
 export class ClassEditorState extends UMLEditorState {
   classState: ClassState;
+  selectedProperty: AbstractProperty | undefined;
 
   constructor(editorStore: EditorStore, element: PackageableElement) {
     super(editorStore, element);
 
     makeObservable(this, {
       classState: observable,
+      selectedProperty: observable,
       class: computed,
       hasCompilationError: computed,
       reprocess: override,
+      setSelectedProperty: action,
     });
 
     this.classState = new ClassState(editorStore, this.class);
@@ -57,6 +61,10 @@ export class ClassEditorState extends UMLEditorState {
       Class,
       'Element inside class editor state must be a class',
     );
+  }
+
+  setSelectedProperty(val: AbstractProperty | undefined): void {
+    this.selectedProperty = val;
   }
 
   override revealCompilationError(compilationError: CompilationError): boolean {

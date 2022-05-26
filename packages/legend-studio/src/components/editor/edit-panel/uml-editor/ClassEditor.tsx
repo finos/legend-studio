@@ -84,6 +84,7 @@ import {
 } from '@finos/legend-graph';
 import { StudioLambdaEditor } from '../../../shared/StudioLambdaEditor';
 import {
+  ApplicationNavigationContextData,
   useApplicationNavigationContext,
   useApplicationStore,
 } from '@finos/legend-application';
@@ -119,13 +120,12 @@ import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT } from '../../../../stores
 const PropertyBasicEditor = observer(
   (props: {
     _class: Class;
+    editorState: ClassEditorState;
     property: Property;
-    selectProperty: () => void;
     deleteProperty: () => void;
     isReadOnly: boolean;
   }) => {
-    const { property, _class, selectProperty, deleteProperty, isReadOnly } =
-      props;
+    const { property, _class, editorState, deleteProperty, isReadOnly } = props;
     const editorStore = useEditorStore();
     const isInheritedProperty =
       property._OWNER instanceof Class && property._OWNER !== _class;
@@ -133,6 +133,8 @@ const PropertyBasicEditor = observer(
     const isIndirectProperty = isInheritedProperty || isPropertyFromAssociation;
     const isPropertyDuplicated = (val: Property): boolean =>
       _class.properties.filter((p) => p.name === val.name).length >= 2;
+    const selectProperty = (): void =>
+      editorState.setSelectedProperty(property);
     // Name
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
       property_setName(property, event.target.value);
@@ -379,14 +381,12 @@ const DerivedPropertyBasicEditor = observer(
     _class: Class;
     editorState: ClassEditorState;
     derivedProperty: DerivedProperty;
-    selectDerivedProperty: () => void;
     deleteDerivedProperty: () => void;
     isReadOnly: boolean;
   }) => {
     const {
       derivedProperty,
       _class,
-      selectDerivedProperty,
       deleteDerivedProperty,
       editorState,
       isReadOnly,
@@ -399,6 +399,8 @@ const DerivedPropertyBasicEditor = observer(
     const dpState =
       editorState.classState.getDerivedPropertyState(derivedProperty);
     const isInheritedProperty = derivedProperty._OWNER !== _class;
+    const selectDerivedProperty = (): void =>
+      editorState.setSelectedProperty(derivedProperty);
     // Name
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) =>
       property_setName(derivedProperty, event.target.value);
@@ -459,6 +461,12 @@ const DerivedPropertyBasicEditor = observer(
       updateMultiplicity(lowerBound, event.target.value);
     };
     // Action
+    const onLambdaEditorFocus = (): void =>
+      applicationStore.navigationContextService.push(
+        ApplicationNavigationContextData.createTransient(
+          LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT.CLASS_DERIVED_PROPERTY_LAMBDA_EDITOR,
+        ),
+      );
     const openElement = (): void => {
       if (!(propertyType instanceof PrimitiveType)) {
         editorStore.openElement(
@@ -635,7 +643,7 @@ const DerivedPropertyBasicEditor = observer(
             </button>
           )}
         </div>
-        <div>
+        <div onFocus={onLambdaEditorFocus}>
           <StudioLambdaEditor
             disabled={
               editorState.classState.isConvertingDerivedPropertyLambdaObjects ||
@@ -674,6 +682,12 @@ const ConstraintEditor = observer(
     const changeName: React.ChangeEventHandler<HTMLInputElement> = (event) =>
       constraint_setName(constraint, event.target.value);
     // Actions
+    const onLambdaEditorFocus = (): void =>
+      applicationStore.navigationContextService.push(
+        ApplicationNavigationContextData.createTransient(
+          LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT.CLASS_CONTRAINT_LAMBDA_EDITOR,
+        ),
+      );
     const remove = applicationStore.guardUnhandledError(async () => {
       await flowResult(
         constraintState.convertLambdaObjectToGrammarString(false),
@@ -731,7 +745,7 @@ const ConstraintEditor = observer(
             </button>
           )}
         </div>
-        <div>
+        <div onFocus={onLambdaEditorFocus}>
           <StudioLambdaEditor
             disabled={
               editorState.classState.isConvertingConstraintLambdaObjects ||
@@ -817,6 +831,384 @@ const SuperTypeEditor = observer(
   },
 );
 
+const PropertiesEditor = observer(
+  (props: { _class: Class; editorState: ClassEditorState }) => {
+    const { _class, editorState } = props;
+    const isReadOnly = editorState.isReadOnly;
+
+    const deleteProperty =
+      (property: Property): (() => void) =>
+      (): void => {
+        class_deleteProperty(_class, property);
+        if (property === editorState.selectedProperty) {
+          editorState.setSelectedProperty(undefined);
+        }
+      };
+    const indirectProperties = getAllClassProperties(_class)
+      .filter((property) => !_class.properties.includes(property))
+      .sort((p1, p2) => p1.name.localeCompare(p2.name))
+      .sort(
+        (p1, p2) =>
+          (p1._OWNER === _class ? 1 : 0) - (p2._OWNER === _class ? 1 : 0),
+      );
+
+    const handleDropProperty = useCallback(
+      (item: UMLEditorElementDropTarget): void => {
+        if (!isReadOnly && item.data.packageableElement instanceof Type) {
+          class_addProperty(
+            _class,
+            stub_Property(item.data.packageableElement, _class),
+          );
+        }
+      },
+      [_class, isReadOnly],
+    );
+    const [{ isPropertyDragOver }, dropPropertyRef] = useDrop(
+      () => ({
+        accept: [
+          CORE_DND_TYPE.PROJECT_EXPLORER_CLASS,
+          CORE_DND_TYPE.PROJECT_EXPLORER_ENUMERATION,
+        ],
+        drop: (item: ElementDragSource): void => handleDropProperty(item),
+        collect: (monitor): { isPropertyDragOver: boolean } => ({
+          isPropertyDragOver: monitor.isOver({ shallow: true }),
+        }),
+      }),
+      [handleDropProperty],
+    );
+
+    useApplicationNavigationContext(
+      LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT.CLASS_EDITOR_PROPERTIES,
+    );
+
+    return (
+      <div
+        ref={dropPropertyRef}
+        className={clsx('panel__content__lists', {
+          'panel__content__lists--dnd-over': isPropertyDragOver && !isReadOnly,
+        })}
+      >
+        {_class.properties.concat(indirectProperties).map((property) => (
+          <PropertyBasicEditor
+            key={property._UUID}
+            property={property}
+            _class={_class}
+            editorState={editorState}
+            deleteProperty={deleteProperty(property)}
+            isReadOnly={isReadOnly}
+          />
+        ))}
+      </div>
+    );
+  },
+);
+
+const DerviedPropertiesEditor = observer(
+  (props: { _class: Class; editorState: ClassEditorState }) => {
+    const { _class, editorState } = props;
+    const isReadOnly = editorState.isReadOnly;
+    const classState = editorState.classState;
+
+    const indirectDerivedProperties = getAllClassDerivedProperties(_class)
+      .filter((property) => !_class.derivedProperties.includes(property))
+      .sort((p1, p2) => p1.name.localeCompare(p2.name))
+      .sort(
+        (p1, p2) =>
+          (p1._OWNER === _class ? 1 : 0) - (p2._OWNER === _class ? 1 : 0),
+      );
+    const deleteDerivedProperty =
+      (dp: DerivedProperty): (() => void) =>
+      (): void => {
+        class_deleteDerivedProperty(_class, dp);
+        classState.deleteDerivedPropertyState(dp);
+        if (dp === editorState.selectedProperty) {
+          editorState.setSelectedProperty(undefined);
+        }
+      };
+
+    const handleDropDerivedProperty = useCallback(
+      (item: UMLEditorElementDropTarget): void => {
+        if (!isReadOnly && item.data.packageableElement instanceof Type) {
+          const dp = stub_DerivedProperty(item.data.packageableElement, _class);
+          class_addDerivedProperty(_class, dp);
+          classState.addDerivedPropertyState(dp);
+        }
+      },
+      [_class, classState, isReadOnly],
+    );
+    const [{ isDerivedPropertyDragOver }, dropDerivedPropertyRef] = useDrop(
+      () => ({
+        accept: [
+          CORE_DND_TYPE.PROJECT_EXPLORER_CLASS,
+          CORE_DND_TYPE.PROJECT_EXPLORER_ENUMERATION,
+        ],
+        drop: (item: ElementDragSource): void =>
+          handleDropDerivedProperty(item),
+        collect: (monitor): { isDerivedPropertyDragOver: boolean } => ({
+          isDerivedPropertyDragOver: monitor.isOver({ shallow: true }),
+        }),
+      }),
+      [handleDropDerivedProperty],
+    );
+
+    useApplicationNavigationContext(
+      LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT.CLASS_EDITOR_DERIVED_PROPERTIES,
+    );
+
+    return (
+      <div
+        ref={dropDerivedPropertyRef}
+        className={clsx('panel__content__lists', {
+          'panel__content__lists--dnd-over':
+            isDerivedPropertyDragOver && !isReadOnly,
+        })}
+      >
+        {_class.derivedProperties
+          .concat(indirectDerivedProperties)
+          .filter((dp): dp is DerivedProperty =>
+            Boolean(classState.getNullableDerivedPropertyState(dp)),
+          )
+          .map((dp) => (
+            <DerivedPropertyBasicEditor
+              key={dp._UUID}
+              derivedProperty={dp}
+              _class={_class}
+              editorState={editorState}
+              deleteDerivedProperty={deleteDerivedProperty(dp)}
+              isReadOnly={isReadOnly}
+            />
+          ))}
+      </div>
+    );
+  },
+);
+
+const ConstraintsEditor = observer(
+  (props: { _class: Class; editorState: ClassEditorState }) => {
+    const { _class, editorState } = props;
+    const isReadOnly = editorState.isReadOnly;
+    const classState = editorState.classState;
+
+    const deleteConstraint =
+      (constraint: Constraint): (() => void) =>
+      (): void => {
+        class_deleteConstraint(_class, constraint);
+        classState.deleteConstraintState(constraint);
+      };
+    const inheritedConstraints = getAllClassConstraints(_class).filter(
+      (constraint) => !_class.constraints.includes(constraint),
+    );
+
+    useApplicationNavigationContext(
+      LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT.CLASS_EDITOR_CONSTRAINTS,
+    );
+
+    return (
+      <div className="panel__content__lists">
+        {_class.constraints
+          .concat(inheritedConstraints)
+          .filter((constraint): constraint is Constraint =>
+            Boolean(classState.getNullableConstraintState(constraint)),
+          )
+          .map((constraint) => (
+            <ConstraintEditor
+              key={constraint._UUID}
+              constraint={constraint}
+              _class={_class}
+              editorState={editorState}
+              deleteConstraint={deleteConstraint(constraint)}
+              isReadOnly={isReadOnly}
+            />
+          ))}
+      </div>
+    );
+  },
+);
+
+const SupertypesEditor = observer(
+  (props: { _class: Class; editorState: ClassEditorState }) => {
+    const { _class, editorState } = props;
+    const isReadOnly = editorState.isReadOnly;
+
+    const deleteSuperType =
+      (superType: GenericTypeReference): (() => void) =>
+      (): void => {
+        class_deleteSuperType(_class, superType);
+        if (superType.value.rawType instanceof Class) {
+          class_deleteSubclass(superType.value.rawType, _class);
+        }
+      };
+
+    const handleDropSuperType = useCallback(
+      (item: UMLEditorElementDropTarget): void => {
+        const element = item.data.packageableElement;
+        if (
+          !isReadOnly &&
+          // Have to be a class
+          element instanceof Class &&
+          // Must not be the same class
+          element !== _class &&
+          // Must not be a supertype of the current class
+          !getAllSuperclasses(_class).includes(element) &&
+          // Must not have the current class as a super type
+          !getAllSuperclasses(element).includes(_class)
+        ) {
+          class_addSuperType(
+            _class,
+            GenericTypeExplicitReference.create(new GenericType(element)),
+          );
+          class_addSubclass(element, _class);
+        }
+      },
+      [_class, isReadOnly],
+    );
+    const [{ isSuperTypeDragOver }, dropSuperTypeRef] = useDrop(
+      () => ({
+        accept: [
+          CORE_DND_TYPE.PROJECT_EXPLORER_CLASS,
+          CORE_DND_TYPE.PROJECT_EXPLORER_ENUMERATION,
+        ],
+        drop: (item: ElementDragSource): void => handleDropSuperType(item),
+        collect: (monitor): { isSuperTypeDragOver: boolean } => ({
+          isSuperTypeDragOver: monitor.isOver({ shallow: true }),
+        }),
+      }),
+      [handleDropSuperType],
+    );
+
+    useApplicationNavigationContext(
+      LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT.CLASS_EDITOR_SUPERTYPES,
+    );
+
+    return (
+      <div
+        ref={dropSuperTypeRef}
+        className={clsx('panel__content__lists', {
+          'panel__content__lists--dnd-over': isSuperTypeDragOver && !isReadOnly,
+        })}
+      >
+        {_class.generalizations.map((superType) => (
+          <SuperTypeEditor
+            key={superType.value._UUID}
+            superType={superType}
+            _class={_class}
+            deleteSuperType={deleteSuperType(superType)}
+            isReadOnly={isReadOnly}
+          />
+        ))}
+      </div>
+    );
+  },
+);
+
+const TaggedValuesEditor = observer(
+  (props: { _class: Class; editorState: ClassEditorState }) => {
+    const { _class, editorState } = props;
+    const isReadOnly = editorState.isReadOnly;
+
+    const deleteTaggedValue =
+      (val: TaggedValue): (() => void) =>
+      (): void =>
+        annotatedElement_deleteTaggedValue(_class, val);
+
+    const handleDropTaggedValue = useCallback(
+      (item: UMLEditorElementDropTarget): void => {
+        if (!isReadOnly && item.data.packageableElement instanceof Profile) {
+          annotatedElement_addTaggedValue(
+            _class,
+            stub_TaggedValue(stub_Tag(item.data.packageableElement)),
+          );
+        }
+      },
+      [_class, isReadOnly],
+    );
+    const [{ isTaggedValueDragOver }, dropTaggedValueRef] = useDrop(
+      () => ({
+        accept: [CORE_DND_TYPE.PROJECT_EXPLORER_PROFILE],
+        drop: (item: ElementDragSource): void => handleDropTaggedValue(item),
+        collect: (monitor): { isTaggedValueDragOver: boolean } => ({
+          isTaggedValueDragOver: monitor.isOver({ shallow: true }),
+        }),
+      }),
+      [handleDropTaggedValue],
+    );
+
+    return (
+      <div
+        ref={dropTaggedValueRef}
+        className={clsx('panel__content__lists', {
+          'panel__content__lists--dnd-over':
+            isTaggedValueDragOver && !isReadOnly,
+        })}
+      >
+        {_class.taggedValues.map((taggedValue) => (
+          <TaggedValueEditor
+            key={taggedValue._UUID}
+            taggedValue={taggedValue}
+            deleteValue={deleteTaggedValue(taggedValue)}
+            isReadOnly={isReadOnly}
+          />
+        ))}
+      </div>
+    );
+  },
+);
+
+const StereotypesEditor = observer(
+  (props: { _class: Class; editorState: ClassEditorState }) => {
+    const { _class, editorState } = props;
+    const isReadOnly = editorState.isReadOnly;
+
+    const deleteStereotype =
+      (val: StereotypeReference): (() => void) =>
+      (): void =>
+        annotatedElement_deleteStereotype(_class, val);
+
+    const handleDropStereotype = useCallback(
+      (item: UMLEditorElementDropTarget): void => {
+        if (!isReadOnly && item.data.packageableElement instanceof Profile) {
+          annotatedElement_addStereotype(
+            _class,
+            StereotypeExplicitReference.create(
+              stub_Stereotype(item.data.packageableElement),
+            ),
+          );
+        }
+      },
+      [_class, isReadOnly],
+    );
+    const [{ isStereotypeDragOver }, dropStereotypeRef] = useDrop(
+      () => ({
+        accept: [CORE_DND_TYPE.PROJECT_EXPLORER_PROFILE],
+        drop: (item: ElementDragSource): void => handleDropStereotype(item),
+        collect: (monitor): { isStereotypeDragOver: boolean } => ({
+          isStereotypeDragOver: monitor.isOver({ shallow: true }),
+        }),
+      }),
+      [handleDropStereotype],
+    );
+
+    return (
+      <div
+        ref={dropStereotypeRef}
+        className={clsx('panel__content__lists', {
+          'panel__content__lists--dnd-over':
+            isStereotypeDragOver && !isReadOnly,
+        })}
+      >
+        {_class.stereotypes.map((stereotype) => (
+          <StereotypeSelector
+            key={stereotype.value._UUID}
+            stereotype={stereotype}
+            deleteStereotype={deleteStereotype(stereotype)}
+            isReadOnly={isReadOnly}
+          />
+        ))}
+      </div>
+    );
+  },
+);
+
 export const ClassFormEditor = observer(
   (props: {
     _class: Class;
@@ -837,14 +1229,7 @@ export const ClassFormEditor = observer(
     const defaultType = editorStore.graphManagerState.graph.getPrimitiveType(
       PRIMITIVE_TYPE.STRING,
     );
-    // Selected property
-    const [selectedProperty, setSelectedProperty] = useState<
-      Property | DerivedProperty | undefined
-    >();
-    const selectProperty =
-      (e: Property | DerivedProperty): (() => void) =>
-      (): void =>
-        setSelectedProperty(e);
+
     // Tab
     const selectedTab = editorState.selectedTab;
     const tabs = [
@@ -859,53 +1244,12 @@ export const ClassFormEditor = observer(
       (tab: UML_EDITOR_TAB): (() => void) =>
       (): void => {
         editorState.setSelectedTab(tab);
-        setSelectedProperty(undefined);
+        editorState.setSelectedProperty(undefined);
       };
-    // Tagged value and Stereotype
-    const _deleteStereotype =
-      (val: StereotypeReference): (() => void) =>
-      (): void =>
-        annotatedElement_deleteStereotype(_class, val);
-    const _deleteTaggedValue =
-      (val: TaggedValue): (() => void) =>
-      (): void =>
-        annotatedElement_deleteTaggedValue(_class, val);
-    // Property
-    const deleteProperty =
-      (property: Property): (() => void) =>
-      (): void => {
-        class_deleteProperty(_class, property);
-        if (property === selectedProperty) {
-          setSelectedProperty(undefined);
-        }
-      };
-    const indirectProperties = getAllClassProperties(_class)
-      .filter((property) => !_class.properties.includes(property))
-      .sort((p1, p2) => p1.name.localeCompare(p2.name))
-      .sort(
-        (p1, p2) =>
-          (p1._OWNER === _class ? 1 : 0) - (p2._OWNER === _class ? 1 : 0),
-      );
-    const deselectProperty = (): void => setSelectedProperty(undefined);
-    // Constraints
-    const deleteConstraint =
-      (constraint: Constraint): (() => void) =>
-      (): void => {
-        class_deleteConstraint(_class, constraint);
-        classState.deleteConstraintState(constraint);
-      };
-    const inheritedConstraints = getAllClassConstraints(_class).filter(
-      (constraint) => !_class.constraints.includes(constraint),
-    );
-    // Super type
-    const deleteSuperType =
-      (superType: GenericTypeReference): (() => void) =>
-      (): void => {
-        class_deleteSuperType(_class, superType);
-        if (superType.value.rawType instanceof Class) {
-          class_deleteSubclass(superType.value.rawType, _class);
-        }
-      };
+
+    const deselectProperty = (): void =>
+      editorState.setSelectedProperty(undefined);
+
     const possibleSupertypes =
       editorStore.graphManagerState.graph.ownClasses.filter(
         (superType) =>
@@ -916,23 +1260,6 @@ export const ClassFormEditor = observer(
           // Ensure there is no loop (might be expensive)
           !getAllSuperclasses(superType).includes(_class),
       );
-    // Derived properties
-    const indirectDerivedProperties = getAllClassDerivedProperties(_class)
-      .filter((property) => !_class.derivedProperties.includes(property))
-      .sort((p1, p2) => p1.name.localeCompare(p2.name))
-      .sort(
-        (p1, p2) =>
-          (p1._OWNER === _class ? 1 : 0) - (p2._OWNER === _class ? 1 : 0),
-      );
-    const deleteDerivedProperty =
-      (dp: DerivedProperty): (() => void) =>
-      (): void => {
-        class_deleteDerivedProperty(_class, dp);
-        classState.deleteDerivedPropertyState(dp);
-        if (dp === selectedProperty) {
-          setSelectedProperty(undefined);
-        }
-      };
     // Add button
     let addButtonTitle = '';
     switch (selectedTab) {
@@ -998,135 +1325,7 @@ export const ClassFormEditor = observer(
         }
       }
     };
-    // Drag and Drop
-    const handleDropProperty = useCallback(
-      (item: UMLEditorElementDropTarget): void => {
-        if (!isReadOnly && item.data.packageableElement instanceof Type) {
-          class_addProperty(
-            _class,
-            stub_Property(item.data.packageableElement, _class),
-          );
-        }
-      },
-      [_class, isReadOnly],
-    );
-    const [{ isPropertyDragOver }, dropPropertyRef] = useDrop(
-      () => ({
-        accept: [
-          CORE_DND_TYPE.PROJECT_EXPLORER_CLASS,
-          CORE_DND_TYPE.PROJECT_EXPLORER_ENUMERATION,
-        ],
-        drop: (item: ElementDragSource): void => handleDropProperty(item),
-        collect: (monitor): { isPropertyDragOver: boolean } => ({
-          isPropertyDragOver: monitor.isOver({ shallow: true }),
-        }),
-      }),
-      [handleDropProperty],
-    );
-    const handleDropDerivedProperty = useCallback(
-      (item: UMLEditorElementDropTarget): void => {
-        if (!isReadOnly && item.data.packageableElement instanceof Type) {
-          const dp = stub_DerivedProperty(item.data.packageableElement, _class);
-          class_addDerivedProperty(_class, dp);
-          classState.addDerivedPropertyState(dp);
-        }
-      },
-      [_class, classState, isReadOnly],
-    );
-    const [{ isDerivedPropertyDragOver }, dropDerivedPropertyRef] = useDrop(
-      () => ({
-        accept: [
-          CORE_DND_TYPE.PROJECT_EXPLORER_CLASS,
-          CORE_DND_TYPE.PROJECT_EXPLORER_ENUMERATION,
-        ],
-        drop: (item: ElementDragSource): void =>
-          handleDropDerivedProperty(item),
-        collect: (monitor): { isDerivedPropertyDragOver: boolean } => ({
-          isDerivedPropertyDragOver: monitor.isOver({ shallow: true }),
-        }),
-      }),
-      [handleDropDerivedProperty],
-    );
-    const handleDropSuperType = useCallback(
-      (item: UMLEditorElementDropTarget): void => {
-        const element = item.data.packageableElement;
-        if (
-          !isReadOnly &&
-          // Have to be a class
-          element instanceof Class &&
-          // Must not be the same class
-          element !== _class &&
-          // Must not be a supertype of the current class
-          !getAllSuperclasses(_class).includes(element) &&
-          // Must not have the current class as a super type
-          !getAllSuperclasses(element).includes(_class)
-        ) {
-          class_addSuperType(
-            _class,
-            GenericTypeExplicitReference.create(new GenericType(element)),
-          );
-          class_addSubclass(element, _class);
-        }
-      },
-      [_class, isReadOnly],
-    );
-    const [{ isSuperTypeDragOver }, dropSuperTypeRef] = useDrop(
-      () => ({
-        accept: [
-          CORE_DND_TYPE.PROJECT_EXPLORER_CLASS,
-          CORE_DND_TYPE.PROJECT_EXPLORER_ENUMERATION,
-        ],
-        drop: (item: ElementDragSource): void => handleDropSuperType(item),
-        collect: (monitor): { isSuperTypeDragOver: boolean } => ({
-          isSuperTypeDragOver: monitor.isOver({ shallow: true }),
-        }),
-      }),
-      [handleDropSuperType],
-    );
-    const handleDropTaggedValue = useCallback(
-      (item: UMLEditorElementDropTarget): void => {
-        if (!isReadOnly && item.data.packageableElement instanceof Profile) {
-          annotatedElement_addTaggedValue(
-            _class,
-            stub_TaggedValue(stub_Tag(item.data.packageableElement)),
-          );
-        }
-      },
-      [_class, isReadOnly],
-    );
-    const [{ isTaggedValueDragOver }, dropTaggedValueRef] = useDrop(
-      () => ({
-        accept: [CORE_DND_TYPE.PROJECT_EXPLORER_PROFILE],
-        drop: (item: ElementDragSource): void => handleDropTaggedValue(item),
-        collect: (monitor): { isTaggedValueDragOver: boolean } => ({
-          isTaggedValueDragOver: monitor.isOver({ shallow: true }),
-        }),
-      }),
-      [handleDropTaggedValue],
-    );
-    const handleDropStereotype = useCallback(
-      (item: UMLEditorElementDropTarget): void => {
-        if (!isReadOnly && item.data.packageableElement instanceof Profile) {
-          annotatedElement_addStereotype(
-            _class,
-            StereotypeExplicitReference.create(
-              stub_Stereotype(item.data.packageableElement),
-            ),
-          );
-        }
-      },
-      [_class, isReadOnly],
-    );
-    const [{ isStereotypeDragOver }, dropStereotypeRef] = useDrop(
-      () => ({
-        accept: [CORE_DND_TYPE.PROJECT_EXPLORER_PROFILE],
-        drop: (item: ElementDragSource): void => handleDropStereotype(item),
-        collect: (monitor): { isStereotypeDragOver: boolean } => ({
-          isStereotypeDragOver: monitor.isOver({ shallow: true }),
-        }),
-      }),
-      [handleDropStereotype],
-    );
+
     // Generation
     const generationParentElementPath =
       editorStore.graphState.graphGenerationState.findGenerationParentPath(
@@ -1142,10 +1341,12 @@ export const ClassFormEditor = observer(
         editorStore.openElement(generationParentElement);
       }
     };
+
     // On change handler (this is used for other editors which embeds editor)
     useEffect(() => {
       onHashChange?.();
     }, [_class, classHash, onHashChange]);
+
     // Decorate (add/remove states for derived properties/constraints) and convert lambda objects
     useEffect(() => {
       classState.decorate();
@@ -1237,128 +1438,34 @@ export const ClassFormEditor = observer(
                 })}
               >
                 {selectedTab === UML_EDITOR_TAB.PROPERTIES && (
-                  <div
-                    ref={dropPropertyRef}
-                    className={clsx('panel__content__lists', {
-                      'panel__content__lists--dnd-over':
-                        isPropertyDragOver && !isReadOnly,
-                    })}
-                  >
-                    {_class.properties
-                      .concat(indirectProperties)
-                      .map((property) => (
-                        <PropertyBasicEditor
-                          key={property._UUID}
-                          property={property}
-                          _class={_class}
-                          deleteProperty={deleteProperty(property)}
-                          selectProperty={selectProperty(property)}
-                          isReadOnly={isReadOnly}
-                        />
-                      ))}
-                  </div>
+                  <PropertiesEditor _class={_class} editorState={editorState} />
                 )}
                 {selectedTab === UML_EDITOR_TAB.DERIVED_PROPERTIES && (
-                  <div
-                    ref={dropDerivedPropertyRef}
-                    className={clsx('panel__content__lists', {
-                      'panel__content__lists--dnd-over':
-                        isDerivedPropertyDragOver && !isReadOnly,
-                    })}
-                  >
-                    {_class.derivedProperties
-                      .concat(indirectDerivedProperties)
-                      .filter((dp): dp is DerivedProperty =>
-                        Boolean(classState.getNullableDerivedPropertyState(dp)),
-                      )
-                      .map((dp) => (
-                        <DerivedPropertyBasicEditor
-                          key={dp._UUID}
-                          derivedProperty={dp}
-                          _class={_class}
-                          editorState={editorState}
-                          deleteDerivedProperty={deleteDerivedProperty(dp)}
-                          selectDerivedProperty={selectProperty(dp)}
-                          isReadOnly={isReadOnly}
-                        />
-                      ))}
-                  </div>
+                  <DerviedPropertiesEditor
+                    _class={_class}
+                    editorState={editorState}
+                  />
                 )}
                 {selectedTab === UML_EDITOR_TAB.CONSTRAINTS && (
-                  <div className="panel__content__lists">
-                    {_class.constraints
-                      .concat(inheritedConstraints)
-                      .filter((constraint): constraint is Constraint =>
-                        Boolean(
-                          classState.getNullableConstraintState(constraint),
-                        ),
-                      )
-                      .map((constraint) => (
-                        <ConstraintEditor
-                          key={constraint._UUID}
-                          constraint={constraint}
-                          _class={_class}
-                          editorState={editorState}
-                          deleteConstraint={deleteConstraint(constraint)}
-                          isReadOnly={isReadOnly}
-                        />
-                      ))}
-                  </div>
+                  <ConstraintsEditor
+                    _class={_class}
+                    editorState={editorState}
+                  />
                 )}
                 {selectedTab === UML_EDITOR_TAB.SUPER_TYPES && (
-                  <div
-                    ref={dropSuperTypeRef}
-                    className={clsx('panel__content__lists', {
-                      'panel__content__lists--dnd-over':
-                        isSuperTypeDragOver && !isReadOnly,
-                    })}
-                  >
-                    {_class.generalizations.map((superType) => (
-                      <SuperTypeEditor
-                        key={superType.value._UUID}
-                        superType={superType}
-                        _class={_class}
-                        deleteSuperType={deleteSuperType(superType)}
-                        isReadOnly={isReadOnly}
-                      />
-                    ))}
-                  </div>
+                  <SupertypesEditor _class={_class} editorState={editorState} />
                 )}
                 {selectedTab === UML_EDITOR_TAB.TAGGED_VALUES && (
-                  <div
-                    ref={dropTaggedValueRef}
-                    className={clsx('panel__content__lists', {
-                      'panel__content__lists--dnd-over':
-                        isTaggedValueDragOver && !isReadOnly,
-                    })}
-                  >
-                    {_class.taggedValues.map((taggedValue) => (
-                      <TaggedValueEditor
-                        key={taggedValue._UUID}
-                        taggedValue={taggedValue}
-                        deleteValue={_deleteTaggedValue(taggedValue)}
-                        isReadOnly={isReadOnly}
-                      />
-                    ))}
-                  </div>
+                  <TaggedValuesEditor
+                    _class={_class}
+                    editorState={editorState}
+                  />
                 )}
                 {selectedTab === UML_EDITOR_TAB.STEREOTYPES && (
-                  <div
-                    ref={dropStereotypeRef}
-                    className={clsx('panel__content__lists', {
-                      'panel__content__lists--dnd-over':
-                        isStereotypeDragOver && !isReadOnly,
-                    })}
-                  >
-                    {_class.stereotypes.map((stereotype) => (
-                      <StereotypeSelector
-                        key={stereotype.value._UUID}
-                        stereotype={stereotype}
-                        deleteStereotype={_deleteStereotype(stereotype)}
-                        isReadOnly={isReadOnly}
-                      />
-                    ))}
-                  </div>
+                  <StereotypesEditor
+                    _class={_class}
+                    editorState={editorState}
+                  />
                 )}
               </div>
             </div>
@@ -1367,14 +1474,14 @@ export const ClassFormEditor = observer(
             <ResizablePanelSplitterLine color="var(--color-light-grey-200)" />
           </ResizablePanelSplitter>
           <ResizablePanel
-            {...getControlledResizablePanelProps(!selectedProperty)}
+            {...getControlledResizablePanelProps(!editorState.selectedProperty)}
             flex={0}
             direction={-1}
-            size={selectedProperty ? 250 : 0}
+            size={editorState.selectedProperty ? 250 : 0}
           >
-            {selectedProperty ? (
+            {editorState.selectedProperty ? (
               <PropertyEditor
-                property={selectedProperty}
+                property={editorState.selectedProperty}
                 deselectProperty={deselectProperty}
                 isReadOnly={isReadOnly}
               />

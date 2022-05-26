@@ -278,20 +278,22 @@ export const CORE_CONTEXTUAL_DOCUMENTATION_ENTRIES: Record<
     },
     relevantDocEntries: [],
   },
-  [LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT.DERIVED_PROPERTY_EDITOR]: {
-    title: `How to write a derived property lambda in Pure?`,
-    url: `https://legend.finos.org/docs/language/legend-language#derivation`,
-    relevantDocEntries: [
-      LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_HOW_TO_WRITE_PURE_LAMBDA,
-      LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_WHAT_IS_PURE_LANGUAGE,
-    ],
-  },
-  [LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT.CONSTRAINT_EDITOR]: {
-    title: `How to write a constraint lambda in Pure?`,
-    url: `https://legend.finos.org/docs/language/legend-language#derivation`,
-    relevantDocEntries: [
-      LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_HOW_TO_WRITE_PURE_LAMBDA,
-      LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_WHAT_IS_PURE_LANGUAGE,
-    ],
-  },
+  [LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT.CLASS_DERIVED_PROPERTY_LAMBDA_EDITOR]:
+    {
+      title: `How to write a derived property lambda in Pure?`,
+      url: `https://legend.finos.org/docs/language/legend-language#derivation`,
+      relevantDocEntries: [
+        LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_HOW_TO_WRITE_PURE_LAMBDA,
+        LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_WHAT_IS_PURE_LANGUAGE,
+      ],
+    },
+  [LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT.CLASS_CONTRAINT_LAMBDA_EDITOR]:
+    {
+      title: `How to write a constraint lambda in Pure?`,
+      url: `https://legend.finos.org/docs/language/legend-language#derivation`,
+      relevantDocEntries: [
+        LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_HOW_TO_WRITE_PURE_LAMBDA,
+        LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_WHAT_IS_PURE_LANGUAGE,
+      ],
+    },
 };

@@ -54,7 +54,11 @@ export const VirtualAssistant = observer(() => {
           <button
             className="virtual-assistant__station__trigger"
             tabIndex={-1}
-            title="Click to open assistant panel"
+            title={`${
+              currentContextualDocumentationEntry
+                ? 'Contextual documentation available.\n'
+                : ''
+            }Click to open assistant panel...`}
           >
             {currentContextualDocumentationEntry ? (
               <LightBulbIcon />

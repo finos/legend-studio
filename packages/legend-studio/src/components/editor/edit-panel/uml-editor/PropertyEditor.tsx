@@ -29,8 +29,7 @@ import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID';
 import { prettyCONSTName } from '@finos/legend-shared';
 import { UML_EDITOR_TAB } from '../../../../stores/editor-state/element-editor-state/UMLEditorState';
 import {
-  type Property,
-  type DerivedProperty,
+  type AbstractProperty,
   type StereotypeReference,
   type TaggedValue,
   Profile,
@@ -49,7 +48,7 @@ import {
 
 export const PropertyEditor = observer(
   (props: {
-    property: Property | DerivedProperty;
+    property: AbstractProperty;
     deselectProperty: () => void;
     isReadOnly: boolean;
   }) => {
