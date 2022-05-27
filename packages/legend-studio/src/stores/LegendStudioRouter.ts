@@ -81,7 +81,10 @@ const generateGroupWorkspaceSetupRoute = (
   groupWorkspaceId: string,
 ): string =>
   generatePath(LEGEND_STUDIO_ROUTE_PATTERN.SETUP_GROUP, {
-    projectId,
+    // FIXME: due to some problem with typings, we will need to cast like this
+    // we will fix this when upgrading react-router
+    // See https://github.com/finos/legend-studio/issues/688
+    projectId: projectId as string,
     groupWorkspaceId,
   });
 
@@ -90,8 +93,14 @@ const generateWorkspaceSetupRoute = (
   workspaceId?: string,
 ): string =>
   generatePath(LEGEND_STUDIO_ROUTE_PATTERN.SETUP, {
-    projectId,
-    workspaceId,
+    // FIXME: due to some problem with typings, we will need to cast like this
+    // we will fix this when upgrading react-router
+    // See https://github.com/finos/legend-studio/issues/688
+    projectId: projectId as string,
+    // FIXME: due to some problem with typings, we will need to cast like this
+    // we will fix this when upgrading react-router
+    // See https://github.com/finos/legend-studio/issues/688
+    workspaceId: workspaceId as string,
   });
 
 export const generateSetupRoute = (
@@ -135,7 +144,7 @@ export const generateEditorRoute = (
 
 export const generateReviewRoute = (
   projectId: string,
-  reviewId?: string,
+  reviewId: string,
 ): string =>
   generatePath(LEGEND_STUDIO_ROUTE_PATTERN.REVIEW, {
     projectId,
