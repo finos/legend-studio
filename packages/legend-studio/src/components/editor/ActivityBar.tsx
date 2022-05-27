@@ -39,7 +39,10 @@ import {
 } from '@finos/legend-art';
 import { useEditorStore } from './EditorStoreProvider';
 import { forwardRef, useState } from 'react';
-import { useApplicationStore } from '@finos/legend-application';
+import {
+  useApplicationStore,
+  VIRTUAL_ASSISTANT_TAB,
+} from '@finos/legend-application';
 import type { LegendStudioConfig } from '../../application/LegendStudioConfig';
 import { LegendStudioAppInfo } from '../LegendStudioAppInfo';
 import { generateSetupRoute } from '../../stores/LegendStudioRouter';
@@ -96,6 +99,14 @@ export const ActivityBarMenu: React.FC = () => {
         generateSetupRoute(undefined),
       ),
     );
+  // help
+  const seekHelp = (): void => {
+    applicationStore.assistantService.setIsHidden(false);
+    applicationStore.assistantService.setIsOpen(true);
+    applicationStore.assistantService.setSelectedTab(
+      VIRTUAL_ASSISTANT_TAB.SEARCH,
+    );
+  };
 
   return (
     <>
@@ -119,10 +130,16 @@ export const ActivityBarMenu: React.FC = () => {
             </MenuContentItem>
             <MenuContentItem
               className="app__header__menu__item"
+              onClick={seekHelp}
+            >
+              Help...
+            </MenuContentItem>
+            <MenuContentItem
+              className="app__header__menu__item"
               disabled={!appDocUrl}
               onClick={goToDocumentation}
             >
-              Documentation
+              See Documentation
             </MenuContentItem>
             <MenuContentDivider />
             <MenuContentItem

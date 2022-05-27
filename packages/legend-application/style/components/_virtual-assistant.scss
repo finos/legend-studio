@@ -166,4 +166,371 @@
     // See https://mui.com/material-ui/customization/z-index/
     z-index: 10000;
   }
+
+  &__header {
+    @include flexVCenter;
+
+    justify-content: space-between;
+    background: var(--color-dark-grey-250);
+    height: 2.8rem;
+
+    &__actions {
+      @include flexVCenter;
+    }
+
+    &__action {
+      @include flexCenter;
+
+      width: 2.8rem;
+      height: 2.8rem;
+
+      svg {
+        color: var(--color-dark-grey-400);
+      }
+
+      &:hover svg {
+        color: var(--color-dark-grey-500);
+      }
+    }
+  }
+
+  &__header__tabs {
+    display: flex;
+    height: 2.8rem;
+    color: var(--color-dark-grey-400);
+  }
+
+  &__header__tab {
+    padding: 0 1rem;
+    border-right: 0.1rem solid var(--color-dark-grey-100);
+
+    &:hover {
+      background: var(--color-dark-grey-280);
+    }
+  }
+
+  &__header__tab__content {
+    @include flexCenter;
+
+    cursor: pointer;
+    height: 2.8rem;
+    width: 6rem;
+    border-bottom: 0.3rem solid var(--color-dark-grey-300);
+    padding-top: 0.1rem;
+    position: relative;
+
+    svg {
+      font-size: 1.5rem;
+      color: var(--color-dark-grey-400);
+    }
+  }
+
+  &__header__tab__indicator {
+    position: absolute;
+    top: 0.5rem;
+    right: 1rem;
+    height: 1rem;
+    width: 1rem;
+    border-radius: 50%;
+    background: var(--color-yellow-200);
+  }
+
+  &__header__tab:hover &__header__tab__content svg {
+    color: var(--color-dark-grey-500);
+  }
+
+  &__header__tab--active:hover &__header__tab__content,
+  &__header__tab--active &__header__tab__content {
+    border-bottom: 0.3rem solid var(--color-yellow-300);
+
+    svg {
+      color: var(--color-light-grey-200);
+    }
+  }
+
+  &__content {
+    height: calc(100% - 2.8rem);
+  }
+
+  &__icon__close {
+    font-size: 2.4rem;
+  }
+}
+
+.virtual-assistant__search {
+  height: 100%;
+
+  &__header {
+    @include flexCenter;
+
+    padding: 0.3rem;
+    border-bottom: 0.1rem solid var(--color-dark-grey-250);
+    height: 3.4rem;
+    position: relative;
+  }
+
+  &__input {
+    font-size: 1.3rem;
+    height: 2.8rem;
+    padding-right: 2.8rem;
+    padding-left: 1rem;
+    width: 100%;
+    background: var(--color-dark-grey-85);
+    border-radius: 0.2rem;
+    border: 0.1rem solid var(--color-dark-grey-200);
+
+    &--searching {
+      padding-right: 5.6rem;
+    }
+
+    &__search__count {
+      @include flexCenter;
+
+      position: absolute;
+      right: 2.8rem;
+      border-radius: 0.8rem;
+      height: 1.6rem;
+      width: 2.8rem;
+      font-size: 1.1rem;
+      font-weight: 700;
+      background: var(--color-yellow-100);
+      color: var(--color-dark-grey-280);
+      user-select: none;
+      cursor: default;
+    }
+
+    &__search__icon {
+      @include flexCenter;
+
+      position: absolute;
+      right: 0.3rem;
+      height: 2.8rem;
+      width: 2.8rem;
+
+      svg {
+        color: var(--color-light-shade-100);
+      }
+    }
+
+    &__clear-btn {
+      @include flexCenter;
+
+      position: absolute;
+      right: 0.3rem;
+      height: 2.8rem;
+      width: 2.8rem;
+
+      svg {
+        color: var(--color-dark-grey-400);
+      }
+
+      &:hover svg {
+        color: var(--color-dark-grey-500);
+      }
+    }
+  }
+
+  &__content {
+    height: calc(100% - 3.4rem);
+  }
+
+  &__results {
+    height: 100%;
+    overflow-y: auto;
+    padding: 1rem;
+  }
+
+  &__results__placeholder {
+    font-family: 'Roboto Mono', monospace;
+    font-size: 1.3rem;
+    color: var(--color-light-grey-400);
+  }
+}
+
+.virtual-assistant__doc-entry {
+  & + & {
+    margin-top: 0.5rem;
+  }
+
+  &__header {
+    display: flex;
+  }
+
+  &__expand-icon {
+    display: flex;
+    align-items: flex-start;
+    width: 2rem;
+    min-width: 2rem;
+    padding-top: 0.3rem;
+
+    svg {
+      color: var(--color-light-grey-50);
+    }
+  }
+
+  &__expand-icon--disabled {
+    svg {
+      color: var(--color-dark-grey-300);
+    }
+  }
+
+  &__title {
+    line-height: 1.5;
+    font-weight: 500;
+    color: var(--color-light-grey-50);
+    cursor: pointer;
+    user-select: none;
+  }
+
+  &__title--link {
+    color: var(--color-blue-40);
+    text-decoration: none;
+  }
+
+  &__content {
+    margin-top: 0.5rem;
+    padding-left: 2rem;
+  }
+
+  &__content__text {
+    color: var(--color-light-grey-50);
+    line-height: 1.5;
+    background: var(--color-dark-grey-80);
+    border-radius: 0.2rem;
+    padding: 1rem;
+  }
+
+  &__content__markdown-text {
+    padding: 1rem;
+    border-radius: 0.2rem;
+  }
+
+  &__context-menu {
+    // NOTE: we must take into account of UI component libraries, such as MUI
+    // See https://mui.com/material-ui/customization/z-index/
+    z-index: 10100;
+  }
+}
+
+.virtual-assistant__character {
+  @include flexCenter;
+
+  flex-direction: column;
+
+  &__greeting {
+    font-family: 'Roboto Mono', monospace;
+    font-size: 1.3rem;
+    color: var(--color-light-grey-400);
+  }
+
+  &__question {
+    font-family: 'Roboto Mono', monospace;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--color-light-grey-0);
+  }
+
+  &__figure {
+    @include flexCenter;
+
+    position: relative;
+    width: 10rem;
+    height: 20rem;
+  }
+
+  &__hat {
+    position: absolute;
+    font-size: 8rem;
+    color: var(--color-orange-150);
+    top: 0;
+  }
+
+  &__glasses {
+    position: absolute;
+    font-size: 8rem;
+    top: 6rem;
+  }
+
+  &__beard {
+    position: absolute;
+    color: var(--color-yellow-200);
+    font-size: 8rem;
+    top: 11rem;
+  }
+}
+
+.virtual-assistant__contextual-support {
+  height: 100%;
+
+  &__content {
+    height: 100%;
+    overflow-y: auto;
+    padding: 1.5rem;
+  }
+
+  &__title {
+    line-height: 1.5;
+    font-weight: 700;
+    color: var(--color-light-grey-50);
+    cursor: pointer;
+    user-select: none;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  &__text {
+    color: var(--color-light-grey-50);
+    line-height: 1.5;
+    background: var(--color-dark-grey-80);
+    border-radius: 0.2rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  &__markdown-text {
+    padding: 1rem;
+    border-radius: 0.2rem;
+    margin-bottom: 1rem;
+  }
+
+  &__relevant-entries {
+    &__title {
+      color: var(--color-dark-grey-500);
+      font-family: 'Roboto Mono', monospace;
+      font-size: 1.3rem;
+      margin-bottom: 1rem;
+    }
+  }
+
+  &__placeholder {
+    @include flexCenter;
+
+    flex-direction: column;
+
+    &__icon {
+      font-size: 5rem;
+      color: var(--color-yellow-200);
+    }
+
+    &__message {
+      font-family: 'Roboto Mono', monospace;
+      font-size: 1.3rem;
+      color: var(--color-light-grey-400);
+      margin-top: 1rem;
+    }
+
+    &__instruction {
+      font-family: 'Roboto Mono', monospace;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--color-dark-grey-300);
+      margin-top: 0.5rem;
+    }
+  }
+
+  &__context-menu {
+    // NOTE: we must take into account of UI component libraries, such as MUI
+    // See https://mui.com/material-ui/customization/z-index/
+    z-index: 10100;
+  }
 }

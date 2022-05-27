@@ -21,16 +21,321 @@ import {
   LightBulbIcon,
   BasePopper,
   TimesIcon,
+  SearchIcon,
+  MapMarkerIcon,
+  CloseIcon,
+  ContextMenu,
+  MenuContent,
+  MenuContentItem,
+  MarkdownTextViewer,
+  ChevronDownIcon,
+  ChevronRightIcon,
+  BlankPanelContent,
+  BeardIcon,
+  SunglassesIcon,
+  WizardHatIcon,
+  FaceLaughWinkIcon,
 } from '@finos/legend-art';
+import { isString } from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
+import {
+  type VirtualAssistantDocumentationEntry,
+  VIRTUAL_ASSISTANT_TAB,
+} from '../stores/LegendApplicationAssistantService';
 import { useApplicationStore } from './ApplicationStoreProvider';
 
-export const VirtualAssistantPanel = observer(
+const VirtualAssistantDocumentationEntryViewer = observer(
+  (props: { entry: VirtualAssistantDocumentationEntry }) => {
+    const { entry } = props;
+    const applicationStore = useApplicationStore();
+    const toggleExpand = (): void => entry.setIsOpen(!entry.isOpen);
+    const copyDocumentationKey = applicationStore.guardUnhandledError(() =>
+      applicationStore.copyTextToClipboard(entry.documentationKey),
+    );
+
+    return (
+      <ContextMenu
+        className="virtual-assistant__doc-entry"
+        menuProps={{
+          elevation: 7,
+          classes: {
+            root: 'virtual-assistant__doc-entry__context-menu',
+          },
+        }}
+        content={
+          <MenuContent>
+            <MenuContentItem onClick={copyDocumentationKey}>
+              Copy Documentation Key
+            </MenuContentItem>
+          </MenuContent>
+        }
+      >
+        <div className="virtual-assistant__doc-entry">
+          <div className="virtual-assistant__doc-entry__header">
+            <button
+              className={clsx('virtual-assistant__doc-entry__expand-icon', {
+                'virtual-assistant__doc-entry__expand-icon--disabled':
+                  !entry.content,
+              })}
+              disabled={!entry.content}
+              tabIndex={-1}
+              onClick={toggleExpand}
+            >
+              {entry.isOpen ? <ChevronDownIcon /> : <ChevronRightIcon />}
+            </button>
+            {entry.url ? (
+              <a
+                className="virtual-assistant__doc-entry__title virtual-assistant__doc-entry__title--link"
+                rel="noopener noreferrer"
+                target="_blank"
+                href={entry.url}
+                title="Click to see external documentation"
+              >
+                {entry.title}
+              </a>
+            ) : (
+              <div
+                className="virtual-assistant__doc-entry__title"
+                onClick={toggleExpand}
+              >
+                {entry.title}
+              </div>
+            )}
+          </div>
+          {entry.isOpen && entry.content && (
+            <div className="virtual-assistant__doc-entry__content">
+              {isString(entry.content) ? (
+                <div className="virtual-assistant__doc-entry__content__text">
+                  {entry.content}
+                </div>
+              ) : (
+                <MarkdownTextViewer
+                  className="virtual-assistant__doc-entry__content__markdown-text"
+                  value={entry.content}
+                />
+              )}
+            </div>
+          )}
+        </div>
+      </ContextMenu>
+    );
+  },
+);
+
+const VirtualAssistantContextualSupportPanel = observer(() => {
+  const applicationStore = useApplicationStore();
+  const assistantService = applicationStore.assistantService;
+  const contextualEntry = assistantService.currentContextualDocumentationEntry;
+  const copyContextIDToClipboard = applicationStore.guardUnhandledError(() =>
+    applicationStore.copyTextToClipboard(contextualEntry?.context ?? ''),
+  );
+  const copyCurrentContextIDToClipboard = applicationStore.guardUnhandledError(
+    () =>
+      applicationStore.copyTextToClipboard(
+        applicationStore.navigationContextService.currentContext?.value ?? '',
+      ),
+  );
+  const copyContextStackToClipboard = applicationStore.guardUnhandledError(() =>
+    applicationStore.copyTextToClipboard(
+      applicationStore.navigationContextService.contextStack
+        .map((context) => context.value)
+        .join(' > '),
+    ),
+  );
+
+  return (
+    <ContextMenu
+      className="virtual-assistant__contextual-support"
+      disabled={!contextualEntry}
+      menuProps={{
+        elevation: 7,
+        classes: {
+          root: 'virtual-assistant__contextual-support__context-menu',
+        },
+      }}
+      content={
+        <MenuContent>
+          <MenuContentItem onClick={copyContextIDToClipboard}>
+            Copy Context ID
+          </MenuContentItem>
+          <MenuContentItem onClick={copyCurrentContextIDToClipboard}>
+            Copy Current Context ID
+          </MenuContentItem>
+          <MenuContentItem onClick={copyContextStackToClipboard}>
+            Copy Context Stack
+          </MenuContentItem>
+        </MenuContent>
+      }
+    >
+      {contextualEntry && (
+        <div className="virtual-assistant__contextual-support__content">
+          {contextualEntry.title && (
+            <div className="virtual-assistant__contextual-support__title">
+              {contextualEntry.title}
+            </div>
+          )}
+          {contextualEntry.content && (
+            <>
+              {isString(contextualEntry.content) ? (
+                <div className="virtual-assistant__contextual-support__text">
+                  {contextualEntry.content}
+                </div>
+              ) : (
+                <MarkdownTextViewer
+                  className="virtual-assistant__contextual-support__markdown-text"
+                  value={contextualEntry.content}
+                />
+              )}
+            </>
+          )}
+          {contextualEntry.relevantDocEntries.length && (
+            <div className="virtual-assistant__contextual-support__relevant-entries">
+              <div className="virtual-assistant__contextual-support__relevant-entries__title">
+                Relevant entries ({contextualEntry.relevantDocEntries.length})
+              </div>
+              {contextualEntry.relevantDocEntries.map((entry) => (
+                <VirtualAssistantDocumentationEntryViewer
+                  key={entry.uuid}
+                  entry={entry}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+      {!contextualEntry && (
+        <BlankPanelContent>
+          <div className="virtual-assistant__contextual-support__placeholder">
+            <FaceLaughWinkIcon className="virtual-assistant__contextual-support__placeholder__icon" />
+            <div className="virtual-assistant__contextual-support__placeholder__message">
+              No contextual documentation found!
+            </div>
+            <div className="virtual-assistant__contextual-support__placeholder__instruction">
+              Keep using the app, when contextual doc available, we will let you
+              know!
+            </div>
+          </div>
+        </BlankPanelContent>
+      )}
+    </ContextMenu>
+  );
+});
+
+const VirtualAssistantSearchPanel = observer(() => {
+  const applicationStore = useApplicationStore();
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const assistantService = applicationStore.assistantService;
+  const searchText = assistantService.searchText;
+  const onSearchTextChange: React.ChangeEventHandler<HTMLInputElement> = (
+    event,
+  ) => assistantService.setSearchText(event.target.value);
+  const clearSearchText = (): void => {
+    assistantService.setSearchText('');
+    searchInputRef.current?.focus();
+  };
+  const results = assistantService.searchResults;
+  const resultCount =
+    assistantService.searchResults.length > 99
+      ? '99+'
+      : assistantService.searchResults.length;
+
+  useEffect(() => {
+    searchInputRef.current?.focus();
+  }, []);
+
+  return (
+    <div className="virtual-assistant__search">
+      <div className="virtual-assistant__search__header">
+        <input
+          ref={searchInputRef}
+          className={clsx('virtual-assistant__search__input input--dark', {
+            'virtual-assistant__search__input--searching': searchText,
+          })}
+          onChange={onSearchTextChange}
+          value={searchText}
+          placeholder="Ask me a question"
+        />
+        {!searchText ? (
+          <div className="virtual-assistant__search__input__search__icon">
+            <SearchIcon />
+          </div>
+        ) : (
+          <>
+            <div className="virtual-assistant__search__input__search__count">
+              {resultCount}
+            </div>
+            <button
+              className="virtual-assistant__search__input__clear-btn"
+              tabIndex={-1}
+              onClick={clearSearchText}
+              title="Clear"
+            >
+              <TimesIcon />
+            </button>
+          </>
+        )}
+      </div>
+      <div className="virtual-assistant__search__content">
+        {Boolean(results.length) && (
+          <div className="virtual-assistant__search__results">
+            {results.map((result) => (
+              <VirtualAssistantDocumentationEntryViewer
+                key={result.uuid}
+                entry={result}
+              />
+            ))}
+          </div>
+        )}
+        {searchText && !results.length && (
+          <BlankPanelContent>
+            <div className="virtual-assistant__search__results__placeholder">
+              no result
+            </div>
+          </BlankPanelContent>
+        )}
+        {/*
+          NOTE: technically, we don't need to check for the result size here.
+          However, since the search results update is slightly delayed compared to
+          the search text update, we do this to avoid showing the placeholder too
+          early, i.e. when the search results are not yet cleaned
+         */}
+        {!searchText && !results.length && (
+          <BlankPanelContent>
+            <div className="virtual-assistant__character">
+              <div className="virtual-assistant__character__figure">
+                <WizardHatIcon className="virtual-assistant__character__hat" />
+                <SunglassesIcon className="virtual-assistant__character__glasses" />
+                <BeardIcon className="virtual-assistant__character__beard" />
+              </div>
+              <div className="virtual-assistant__character__greeting">
+                Bonjour, It&apos;s Pierre!
+              </div>
+              <div className="virtual-assistant__character__question">
+                How can I help today?
+              </div>
+            </div>
+          </BlankPanelContent>
+        )}
+      </div>
+    </div>
+  );
+});
+
+const VirtualAssistantPanel = observer(
   (props: { triggerElement: HTMLElement | null }) => {
     const { triggerElement } = props;
     const applicationStore = useApplicationStore();
     const assistantService = applicationStore.assistantService;
+    const currentContextualDocumentationEntry =
+      assistantService.currentContextualDocumentationEntry;
+    const selectedTab = assistantService.selectedTab;
+
+    const selectSearch = (): void =>
+      assistantService.setSelectedTab(VIRTUAL_ASSISTANT_TAB.SEARCH);
+    const selectContextualDoc = (): void =>
+      assistantService.setSelectedTab(VIRTUAL_ASSISTANT_TAB.CONTEXTUAL_SUPPORT);
+    const closeAssistantPanel = (): void => assistantService.setIsOpen(false);
 
     return (
       <BasePopper
@@ -39,7 +344,60 @@ export const VirtualAssistantPanel = observer(
         anchorEl={triggerElement}
         placement="top-end"
       >
-        <div className="virtual-assistant__panel"></div>
+        <div className="virtual-assistant__panel">
+          <div className="virtual-assistant__panel__header">
+            <div className="virtual-assistant__panel__header__tabs">
+              <div
+                className={clsx('virtual-assistant__panel__header__tab', {
+                  'virtual-assistant__panel__header__tab--active':
+                    selectedTab === VIRTUAL_ASSISTANT_TAB.SEARCH,
+                })}
+                onClick={selectSearch}
+                title="Search"
+              >
+                <div className="virtual-assistant__panel__header__tab__content">
+                  <SearchIcon />
+                </div>
+              </div>
+              <div
+                className={clsx('virtual-assistant__panel__header__tab', {
+                  'virtual-assistant__panel__header__tab--active':
+                    selectedTab === VIRTUAL_ASSISTANT_TAB.CONTEXTUAL_SUPPORT,
+                })}
+                onClick={selectContextualDoc}
+                title="Contextual Support"
+              >
+                <div className="virtual-assistant__panel__header__tab__content">
+                  <MapMarkerIcon />
+                  {currentContextualDocumentationEntry && (
+                    <div
+                      className="virtual-assistant__panel__header__tab__indicator"
+                      title="Contextual support available"
+                    />
+                  )}
+                </div>
+              </div>
+            </div>
+            <div className="virtual-assistant__panel__header__actions">
+              <button
+                className="virtual-assistant__panel__header__action"
+                tabIndex={-1}
+                onClick={closeAssistantPanel}
+                title="Close panel"
+              >
+                <CloseIcon className="virtual-assistant__panel__icon__close" />
+              </button>
+            </div>
+          </div>
+          <div className="virtual-assistant__panel__content">
+            {selectedTab === VIRTUAL_ASSISTANT_TAB.SEARCH && (
+              <VirtualAssistantSearchPanel />
+            )}
+            {selectedTab === VIRTUAL_ASSISTANT_TAB.CONTEXTUAL_SUPPORT && (
+              <VirtualAssistantContextualSupportPanel />
+            )}
+          </div>
+        </div>
       </BasePopper>
     );
   },
@@ -52,6 +410,11 @@ export const VirtualAssistant = observer(() => {
     assistantService.currentContextualDocumentationEntry;
   const assistantRef = useRef<HTMLDivElement>(null);
   const toggleAssistantPanel = (): void => {
+    const newVal = !assistantService.isOpen;
+    // open the contextual help tab when contextual help is available
+    if (newVal && currentContextualDocumentationEntry) {
+      assistantService.setSelectedTab(VIRTUAL_ASSISTANT_TAB.CONTEXTUAL_SUPPORT);
+    }
     assistantService.setIsOpen(!assistantService.isOpen);
   };
 

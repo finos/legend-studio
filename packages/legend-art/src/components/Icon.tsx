@@ -114,10 +114,17 @@ export {
   FaLongArrowAltDown as LongArrowAltDownIcon, // to be reviewed/merged
   FaLongArrowAltUp as LongArrowAltUpIcon, // to be reviewed/merged
   FaMeteor as MeteorIcon, // to be reviewed/merged
-  FaToggleOn as ToggleOn,
-  FaToggleOff as ToggleOff,
+  FaToggleOn as ToggleOnIcon,
+  FaToggleOff as ToggleOffIcon,
+  FaMapMarkerAlt as MapMarkerIcon,
+  FaHatWizard as WizardHatIcon,
+  FaRegLaughWink as FaceLaughWinkIcon,
 } from 'react-icons/fa';
-export { GiWaterDrop as WaterDropIcon } from 'react-icons/gi';
+export {
+  GiWaterDrop as WaterDropIcon,
+  GiBeard as BeardIcon,
+  GiSunglasses as SunglassesIcon,
+} from 'react-icons/gi';
 export {
   MdModeEdit as PencilIcon,
   MdTextFields as StringTypeIcon,
@@ -139,6 +146,7 @@ export {
   VscError as ErrorIcon,
   VscWordWrap as WordWrapIcon,
   VscGoToFile as GoToFileIcon,
+  VscClose as CloseIcon,
 } from 'react-icons/vsc';
 export {
   GoChevronDown as ChevronDownIcon,

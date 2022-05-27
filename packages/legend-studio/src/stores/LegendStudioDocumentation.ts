@@ -61,8 +61,14 @@ export enum LEGEND_STUDIO_DOCUMENTATION_KEY {
 
   // questions
   QUESTION_WHAT_IS_DSL = 'question.what-is-dsl',
-  QUESTION_WHAT_IS_PURE_LANGUAGE = 'question.what-is-pure-language',
+  QUESTION_WHAT_IS_BASIC_PURE_LANGUAGE = 'question.what-is-basic-pure-language',
   QUESTION_HOW_TO_WRITE_PURE_LAMBDA = 'question.how-to-write-pure-lambda',
+
+  QUESTION_HOW_TO_DEFINE_A_CLASS = 'question.how-to-define-a-class',
+  QUESTION_HOW_TO_DEFINE_A_PROPERTY = 'question.how-to-define-a-class-property',
+  QUESTION_HOW_TO_DEFINE_A_DERIVATION = 'question.how-to-define-a-class-derivation',
+  QUESTION_HOW_TO_DEFINE_A_CONSTRAINT = 'question.how-to-define-a-class-constraint',
+  QUESTION_HOW_TO_SPECIFY_A_SUPERTYPE = 'question.how-to-specify-a-class-supertype',
 }
 
 export const CORE_DOCUMENTATION_ENTRIES: Record<
@@ -75,6 +81,7 @@ export const CORE_DOCUMENTATION_ENTRIES: Record<
     markdownText: {
       value: `Core \`Pure\` (coressponding to \`###Pure\` section in \`Pure\`) concerns with fundamental modelling concepts, such as, classes (data models), enumerations, associations, functions, etc.`,
     },
+    url: `https://legend.finos.org/docs/language/legend-language`,
   },
   [LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER_MAPPING]: {
     title: `What is Mapping DSL about?`,
@@ -236,13 +243,33 @@ export const CORE_DOCUMENTATION_ENTRIES: Record<
       value: `A \`domain-specific language\` (DSL) is a higher-level abstraction optimized for a specific domain/class of problems. Each \`DSL\` often has their own \`Pure\` sub-grammar, which partition \`Pure\` code into sections (each starts with a header, such as \`###Pure\`, \`###Mapping\`, etc.`,
     },
   },
-  [LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_WHAT_IS_PURE_LANGUAGE]: {
-    title: `What is the Pure language?`,
+  [LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_WHAT_IS_BASIC_PURE_LANGUAGE]: {
+    title: `What are the basics of Pure language?`,
     url: `https://legend.finos.org/docs/language/legend-language`,
   },
   [LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_HOW_TO_WRITE_PURE_LAMBDA]: {
     title: `How do I write a lambda function in Pure?`,
     url: `https://legend.finos.org/docs/language/legend-language#lambda`,
+  },
+  [LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_HOW_TO_DEFINE_A_CLASS]: {
+    title: `How do I define a class?`,
+    url: `https://legend.finos.org/docs/studio/create-data-model#define-a-new-class`,
+  },
+  [LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_HOW_TO_DEFINE_A_PROPERTY]: {
+    title: `How do I define a class property?`,
+    url: `https://legend.finos.org/docs/studio/create-data-model#add-a-property-primitive-data-type`,
+  },
+  [LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_HOW_TO_DEFINE_A_DERIVATION]: {
+    title: `How do I define a class derivation (derived property)?`,
+    url: `https://legend.finos.org/docs/studio/create-data-model#add-a-derived-property`,
+  },
+  [LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_HOW_TO_DEFINE_A_CONSTRAINT]: {
+    title: `How do I put constraint on a class?`,
+    url: `https://legend.finos.org/docs/studio/create-data-model#add-a-constraint`,
+  },
+  [LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_HOW_TO_SPECIFY_A_SUPERTYPE]: {
+    title: `How do I specify a supertype of a class?`,
+    url: `https://legend.finos.org/docs/studio/create-data-model#add-a-super-type`,
   },
 };
 
@@ -250,22 +277,8 @@ export const CORE_CONTEXTUAL_DOCUMENTATION_ENTRIES: Record<
   string,
   LegendApplicationContextualDocumentationEntryConfig
 > = {
-  [LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT.SETUP]: {
-    title: `Setup`,
-    markdownText: {
-      value: `...`,
-    },
-    relevantDocEntries: [],
-  },
   [LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT.SETUP_CREATE_PROJECT_DIALOG]: {
     title: `How do I create a new project?`,
-    markdownText: {
-      value: `...`,
-    },
-    relevantDocEntries: [],
-  },
-  [LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT.EDITOR]: {
-    title: `Editor`,
     markdownText: {
       value: `...`,
     },
@@ -276,15 +289,29 @@ export const CORE_CONTEXTUAL_DOCUMENTATION_ENTRIES: Record<
     markdownText: {
       value: `...`,
     },
-    relevantDocEntries: [],
+    relevantDocEntries: [
+      LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_HOW_TO_DEFINE_A_CLASS,
+      LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_HOW_TO_DEFINE_A_PROPERTY,
+      LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_HOW_TO_DEFINE_A_DERIVATION,
+      LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_HOW_TO_DEFINE_A_CONSTRAINT,
+      LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_HOW_TO_SPECIFY_A_SUPERTYPE,
+    ],
   },
+  // [LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT.CLASS_EDITOR_PROPERTIES]: {
+  //   title: `How to write a derived property lambda in Pure?`,
+  //   url: `https://legend.finos.org/docs/language/legend-language#derivation`,
+  //   relevantDocEntries: [
+  //     LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_HOW_TO_WRITE_PURE_LAMBDA,
+  //     LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_WHAT_IS_BASIC_PURE_LANGUAGE,
+  //   ],
+  // },
   [LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT.CLASS_DERIVED_PROPERTY_LAMBDA_EDITOR]:
     {
       title: `How to write a derived property lambda in Pure?`,
       url: `https://legend.finos.org/docs/language/legend-language#derivation`,
       relevantDocEntries: [
         LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_HOW_TO_WRITE_PURE_LAMBDA,
-        LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_WHAT_IS_PURE_LANGUAGE,
+        LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_WHAT_IS_BASIC_PURE_LANGUAGE,
       ],
     },
   [LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT.CLASS_CONTRAINT_LAMBDA_EDITOR]:
@@ -293,7 +320,7 @@ export const CORE_CONTEXTUAL_DOCUMENTATION_ENTRIES: Record<
       url: `https://legend.finos.org/docs/language/legend-language#derivation`,
       relevantDocEntries: [
         LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_HOW_TO_WRITE_PURE_LAMBDA,
-        LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_WHAT_IS_PURE_LANGUAGE,
+        LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_WHAT_IS_BASIC_PURE_LANGUAGE,
       ],
     },
 };

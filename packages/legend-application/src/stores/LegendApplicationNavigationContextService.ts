@@ -64,23 +64,20 @@ export class ApplicationNavigationContextData {
 }
 
 export class LegendApplicationNavigationContextService {
-  private _contextStack: ApplicationNavigationContextData[] = [];
+  contextStack: ApplicationNavigationContextData[] = [];
 
   constructor() {
-    makeObservable<LegendApplicationNavigationContextService, '_contextStack'>(
-      this,
-      {
-        _contextStack: observable,
-        currentContext: computed,
-        push: action,
-        pop: action,
-      },
-    );
+    makeObservable(this, {
+      contextStack: observable,
+      currentContext: computed,
+      push: action,
+      pop: action,
+    });
   }
 
   get currentContext(): ApplicationNavigationContextData | undefined {
-    return this._contextStack.length
-      ? this._contextStack[this._contextStack.length - 1]
+    return this.contextStack.length
+      ? this.contextStack[this.contextStack.length - 1]
       : undefined;
   }
 
@@ -95,16 +92,14 @@ export class LegendApplicationNavigationContextService {
     // first, filter out all transient contexts, so we can be sure that
     // all of the remaining contexts are standard and they should be cleaned up properly
     // this makes our duplication meaningful
-    const newContextStack = this._contextStack.filter(
-      (ctx) => !ctx.isTransient,
-    );
+    const newContextStack = this.contextStack.filter((ctx) => !ctx.isTransient);
     if (newContextStack.find((ctx) => ctx.value === context.value)) {
       throw new IllegalStateError(
         `Found multiple context '${context.value}' in application navigation context stack`,
       );
     }
     newContextStack.push(context);
-    this._contextStack = newContextStack;
+    this.contextStack = newContextStack;
   }
 
   /**
@@ -117,7 +112,7 @@ export class LegendApplicationNavigationContextService {
    * to go to setup page.
    */
   pop(context: ApplicationNavigationContextData): void {
-    const existingCtx = this._contextStack.find(
+    const existingCtx = this.contextStack.find(
       (ctx) => ctx.value === context.value,
     );
     if (!existingCtx) {
@@ -125,9 +120,9 @@ export class LegendApplicationNavigationContextService {
     }
     // NOTE: since we should not have any duplicated contexts
     // it's safe to search from bottom to top of the stack
-    const idx = this._contextStack.indexOf(existingCtx);
+    const idx = this.contextStack.indexOf(existingCtx);
     if (idx !== -1) {
-      this._contextStack = this._contextStack
+      this.contextStack = this.contextStack
         .slice(0, idx)
         // remove all transient contexts
         .filter((ctx) => !ctx.isTransient);

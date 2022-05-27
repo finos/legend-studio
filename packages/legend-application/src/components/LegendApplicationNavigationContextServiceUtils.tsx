@@ -55,6 +55,9 @@ export const useConditionedApplicationNavigationContext = (
     } else {
       applicationStore.navigationContextService.pop(context);
     }
+    // NOTE: we are modifying a state in the clean up function, if we have
+    // some components observing the context stack, we could end up with `React` warning
+    // about bad state
     return () => applicationStore.navigationContextService.pop(context);
   }, [applicationStore, value, condition]);
 };

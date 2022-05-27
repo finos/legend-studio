@@ -16,9 +16,10 @@
 
 import {
   type MarkdownText,
+  type PlainObject,
+  type Writable,
   deserializeMarkdownText,
   SerializationFactory,
-  uuid,
 } from '@finos/legend-shared';
 import {
   createModelSchema,
@@ -37,12 +38,14 @@ export type LegendApplicationDocumentationEntryConfig = {
 };
 
 export class LegendApplicationDocumentationEntry {
+  readonly _documentationKey!: string;
+
   markdownText?: MarkdownText | undefined;
   title?: string | undefined;
   text?: string | undefined;
   url?: string | undefined;
 
-  static readonly serialization = new SerializationFactory(
+  private static readonly serialization = new SerializationFactory(
     createModelSchema(LegendApplicationDocumentationEntry, {
       markdownText: custom(
         () => SKIP,
@@ -53,6 +56,17 @@ export class LegendApplicationDocumentationEntry {
       url: optional(primitive()),
     }),
   );
+
+  static create(
+    json: PlainObject<LegendApplicationDocumentationEntry>,
+    documentationKey: string,
+  ): LegendApplicationDocumentationEntry {
+    const entry =
+      LegendApplicationDocumentationEntry.serialization.fromJson(json);
+    (entry as Writable<LegendApplicationDocumentationEntry>)._documentationKey =
+      documentationKey;
+    return entry;
+  }
 }
 
 export type LegendApplicationContextualDocumentationEntryConfig =
@@ -61,14 +75,15 @@ export type LegendApplicationContextualDocumentationEntryConfig =
   };
 
 export class LegendApplicationContextualDocumentationEntry {
-  uuid = uuid();
+  readonly _context!: string;
+
   markdownText?: MarkdownText | undefined;
   title?: string | undefined;
   text?: string | undefined;
   url?: string | undefined;
   relevantDocEntries: string[] = [];
 
-  static readonly serialization = new SerializationFactory(
+  private static readonly serialization = new SerializationFactory(
     createModelSchema(LegendApplicationContextualDocumentationEntry, {
       markdownText: custom(
         () => SKIP,
@@ -80,6 +95,20 @@ export class LegendApplicationContextualDocumentationEntry {
       relevantDocEntries: list(primitive()),
     }),
   );
+
+  static create(
+    json: PlainObject<LegendApplicationContextualDocumentationEntry>,
+    context: string,
+  ): LegendApplicationContextualDocumentationEntry {
+    const entry =
+      LegendApplicationContextualDocumentationEntry.serialization.fromJson(
+        json,
+      );
+    (
+      entry as Writable<LegendApplicationContextualDocumentationEntry>
+    )._context = context;
+    return entry;
+  }
 }
 
 export interface LegendApplicationKeyedContextualDocumentationEntry {
@@ -95,10 +124,10 @@ export const collectKeyedContextualDocumentationEntriesFromConfig = (
 ): LegendApplicationKeyedContextualDocumentationEntry[] =>
   Object.entries(rawEntries).map((entry) => ({
     key: entry[0],
-    content:
-      LegendApplicationContextualDocumentationEntry.serialization.fromJson(
-        entry[1],
-      ),
+    content: LegendApplicationContextualDocumentationEntry.create(
+      entry[1],
+      entry[0],
+    ),
   }));
 
 export interface LegendApplicationKeyedDocumentationEntry {
@@ -111,9 +140,7 @@ export const collectKeyedDocumnetationEntriesFromConfig = (
 ): LegendApplicationKeyedDocumentationEntry[] =>
   Object.entries(rawEntries).map((entry) => ({
     key: entry[0],
-    content: LegendApplicationDocumentationEntry.serialization.fromJson(
-      entry[1],
-    ),
+    content: LegendApplicationDocumentationEntry.create(entry[1], entry[0]),
   }));
 
 export class LegendApplicationDocumentationService {
@@ -135,6 +162,10 @@ export class LegendApplicationDocumentationService {
 
   hasDocEntry(key: string): boolean {
     return this.docRegistry.has(key);
+  }
+
+  getAllDocEntries(): LegendApplicationDocumentationEntry[] {
+    return Array.from(this.docRegistry.values());
   }
 
   addContextualDocEntry(
