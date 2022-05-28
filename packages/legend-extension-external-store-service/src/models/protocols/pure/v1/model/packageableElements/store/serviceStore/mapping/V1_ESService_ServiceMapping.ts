@@ -29,11 +29,6 @@ export class V1_ServiceMapping implements Hashable {
    */
   pathOffset?: object | undefined;
   requestBuildInfo?: V1_ServiceRequestBuildInfo | undefined;
-  /**
-   * TODO: this will be removed in upcoming releases
-   * @deprecated
-   */
-  parameterMappings: V1_ServiceParameterMapping[] | undefined;
 
   get hashCode(): string {
     return hashArray([
