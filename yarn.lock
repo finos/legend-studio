@@ -2227,7 +2227,7 @@ __metadata:
     react-hotkeys: 2.0.0
     react-icons: 4.3.1
     react-markdown: 8.0.3
-    react-reflex: 4.0.8
+    react-reflex: 4.0.9
     react-resize-detector: 7.1.1
     react-select: 4.3.1
     react-window: 1.8.7
@@ -2333,7 +2333,7 @@ __metadata:
     "@finos/legend-model-storage": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-studio": "workspace:*"
-    "@testing-library/react": 13.2.0
+    "@testing-library/react": 13.3.0
     "@types/react": 18.0.9
     cross-env: 7.0.3
     eslint: 8.16.0
@@ -2664,7 +2664,7 @@ __metadata:
     "@finos/legend-server-depot": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@testing-library/dom": 8.13.0
-    "@testing-library/react": 13.2.0
+    "@testing-library/react": 13.3.0
     "@types/papaparse": 5.3.2
     "@types/react": 18.0.9
     "@types/react-dom": 18.0.5
@@ -2857,7 +2857,7 @@ __metadata:
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-studio": "workspace:*"
     "@testing-library/dom": 8.13.0
-    "@testing-library/react": 13.2.0
+    "@testing-library/react": 13.3.0
     "@types/react": 18.0.9
     cross-env: 7.0.3
     eslint: 8.16.0
@@ -2888,7 +2888,7 @@ __metadata:
     "@finos/legend-server-sdlc": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@testing-library/dom": 8.13.0
-    "@testing-library/react": 13.2.0
+    "@testing-library/react": 13.3.0
     "@types/react": 18.0.9
     "@types/react-dom": 18.0.5
     "@types/react-router-dom": 5.3.2
@@ -3866,9 +3866,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@testing-library/react@npm:13.2.0":
-  version: 13.2.0
-  resolution: "@testing-library/react@npm:13.2.0"
+"@testing-library/react@npm:13.3.0":
+  version: 13.3.0
+  resolution: "@testing-library/react@npm:13.3.0"
   dependencies:
     "@babel/runtime": ^7.12.5
     "@testing-library/dom": ^8.5.0
@@ -3876,7 +3876,7 @@ __metadata:
   peerDependencies:
     react: ^18.0.0
     react-dom: ^18.0.0
-  checksum: 29f4a97c932a7fd78a55791a0ae0ba8d33c5241acbade98b6714440981e6e3d86a243e0b22161d3323b549ce059c175ae56d6b5053ad44083ab6e40ca211f19e
+  checksum: 98fd8616a7cae0ecfcbe97b5b3c5b91fbafccf449c04875395ccc0e3f0b139e53b3261b9536ec2169a5e2883a1be2098907209064061fe0c2ff21dfbc785dd40
   languageName: node
   linkType: hard
 
@@ -4249,10 +4249,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:17.0.35":
-  version: 17.0.35
-  resolution: "@types/node@npm:17.0.35"
-  checksum: 7a24946ae7fd20267ed92466384f594e448bfb151081158d565cc635d406ecb29ea8fb85fcd2a1f71efccf26fb5bd3c6f509bde56077eb8b832b847a6664bc62
+"@types/node@npm:17.0.36":
+  version: 17.0.36
+  resolution: "@types/node@npm:17.0.36"
+  checksum: 11055fde0a1e1421113849b5e32c7022911efc0be670729947bf0162970e79962d804b1eb8a9afb291380cac97cf0e684511415d586ae5fe1560322c940fe188
   languageName: node
   linkType: hard
 
@@ -10340,7 +10340,7 @@ __metadata:
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/stylelint-config-legend-studio": "workspace:*"
     "@types/jest": 27.5.1
-    "@types/node": 17.0.35
+    "@types/node": 17.0.36
     chalk: 5.0.1
     cross-env: 7.0.3
     envinfo: 7.8.1
@@ -13426,17 +13426,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-reflex@npm:4.0.8":
-  version: 4.0.8
-  resolution: "react-reflex@npm:4.0.8"
+"react-reflex@npm:4.0.9":
+  version: 4.0.9
+  resolution: "react-reflex@npm:4.0.9"
   dependencies:
     "@babel/runtime": ^7.0.0
     lodash.throttle: ^4.1.1
     prop-types: ^15.5.8
     react-measure: ^2.0.2
   peerDependencies:
-    react: ^16.0.0 || ^17.0.0
-  checksum: 583a60bc26545029b9093dde37f09bdac16c6929406b96869bfd5751a9d87240112283b849eae85359ff41fea1e2518e808c834086b51159b9809db7a85ab49e
+    react: ^16.0.0 || ^17.0.0 || ^18.0.0
+  checksum: 963294242febdfedee7e944954b5f1a53631fb9c4bd29198b0b58545a1559c5e003ed1b00ef5ad4514baedd6ea43be01c110f6d76971e14ea3b42c7fd941bb78
   languageName: node
   linkType: hard
 
