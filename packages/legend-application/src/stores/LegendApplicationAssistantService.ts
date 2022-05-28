@@ -71,17 +71,17 @@ export class VirtualAssistantContextualDocumentationEntry {
   title?: string | undefined;
   content?: string | MarkdownText | undefined;
   url?: string | undefined;
-  relevantDocEntries: VirtualAssistantDocumentationEntry[];
+  related: VirtualAssistantDocumentationEntry[];
 
   constructor(
     contextualDocEntry: LegendApplicationContextualDocumentationEntry,
-    relevantDocEntries: VirtualAssistantDocumentationEntry[],
+    related: VirtualAssistantDocumentationEntry[],
   ) {
     this.context = contextualDocEntry._context;
     this.title = contextualDocEntry.title;
     this.content = contextualDocEntry.markdownText ?? contextualDocEntry.text;
     this.url = contextualDocEntry.url;
-    this.relevantDocEntries = relevantDocEntries;
+    this.related = related;
   }
 }
 
@@ -172,7 +172,7 @@ export class LegendApplicationAssistantService {
           currentContextualDocumentationEntry
             ? new VirtualAssistantContextualDocumentationEntry(
                 currentContextualDocumentationEntry,
-                currentContextualDocumentationEntry.relevantDocEntries
+                currentContextualDocumentationEntry.related
                   .map((entry) =>
                     this.applicationStore.documentationService.getDocEntry(
                       entry,

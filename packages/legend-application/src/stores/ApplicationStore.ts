@@ -149,41 +149,10 @@ export class ApplicationStore<T extends LegendApplicationConfig> {
     this.config = config;
     this.navigator = navigator;
     this.pluginManager = pluginManager;
-
     this.navigationContextService =
       new LegendApplicationNavigationContextService();
-
-    // Documentation
-    this.documentationService = new LegendApplicationDocumentationService();
-    [
-      ...pluginManager
-        .getApplicationPlugins()
-        .flatMap(
-          (plugin) => plugin.getExtraKeyedDocumentationEntries?.() ?? [],
-        ),
-      // entries from config will override entries specified natively
-      ...config.keyedDocumentationEntries,
-    ].forEach((entry) =>
-      this.documentationService.addDocEntry(entry.key, entry.content),
-    );
-    [
-      ...pluginManager
-        .getApplicationPlugins()
-        .flatMap(
-          (plugin) =>
-            plugin.getExtraKeyedContextualDocumentationEntries?.() ?? [],
-        ),
-      // entries from config will override entries specified natively
-      ...config.keyedContextualDocumentationEntries,
-    ].forEach((entry) =>
-      this.documentationService.addContextualDocEntry(entry.key, entry.content),
-    );
-    this.documentationService.url = this.config.documentationUrl;
-
-    // Assistant Service
+    this.documentationService = new LegendApplicationDocumentationService(this);
     this.assistantService = new LegendApplicationAssistantService(this);
-
-    // Register plugins
     this.log.registerPlugins(pluginManager.getLoggerPlugins());
     this.telemetryService.registerPlugins(
       pluginManager.getTelemetryServicePlugins(),

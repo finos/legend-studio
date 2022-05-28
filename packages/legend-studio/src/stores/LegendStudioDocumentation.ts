@@ -277,19 +277,8 @@ export const CORE_CONTEXTUAL_DOCUMENTATION_ENTRIES: Record<
   string,
   LegendApplicationContextualDocumentationEntryConfig
 > = {
-  [LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT.SETUP_CREATE_PROJECT_DIALOG]: {
-    title: `How do I create a new project?`,
-    markdownText: {
-      value: `...`,
-    },
-    relevantDocEntries: [],
-  },
   [LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT.CLASS_EDITOR]: {
-    title: `How to create a class?`,
-    markdownText: {
-      value: `...`,
-    },
-    relevantDocEntries: [
+    related: [
       LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_HOW_TO_DEFINE_A_CLASS,
       LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_HOW_TO_DEFINE_A_PROPERTY,
       LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_HOW_TO_DEFINE_A_DERIVATION,
@@ -297,19 +286,11 @@ export const CORE_CONTEXTUAL_DOCUMENTATION_ENTRIES: Record<
       LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_HOW_TO_SPECIFY_A_SUPERTYPE,
     ],
   },
-  // [LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT.CLASS_EDITOR_PROPERTIES]: {
-  //   title: `How to write a derived property lambda in Pure?`,
-  //   url: `https://legend.finos.org/docs/language/legend-language#derivation`,
-  //   relevantDocEntries: [
-  //     LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_HOW_TO_WRITE_PURE_LAMBDA,
-  //     LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_WHAT_IS_BASIC_PURE_LANGUAGE,
-  //   ],
-  // },
   [LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT.CLASS_DERIVED_PROPERTY_LAMBDA_EDITOR]:
     {
       title: `How to write a derived property lambda in Pure?`,
       url: `https://legend.finos.org/docs/language/legend-language#derivation`,
-      relevantDocEntries: [
+      related: [
         LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_HOW_TO_WRITE_PURE_LAMBDA,
         LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_WHAT_IS_BASIC_PURE_LANGUAGE,
       ],
@@ -317,8 +298,8 @@ export const CORE_CONTEXTUAL_DOCUMENTATION_ENTRIES: Record<
   [LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT.CLASS_CONTRAINT_LAMBDA_EDITOR]:
     {
       title: `How to write a constraint lambda in Pure?`,
-      url: `https://legend.finos.org/docs/language/legend-language#derivation`,
-      relevantDocEntries: [
+      url: `https://legend.finos.org/docs/language/legend-language#constraint`,
+      related: [
         LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_HOW_TO_WRITE_PURE_LAMBDA,
         LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_WHAT_IS_BASIC_PURE_LANGUAGE,
       ],

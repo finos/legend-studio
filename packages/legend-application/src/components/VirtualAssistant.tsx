@@ -189,12 +189,12 @@ const VirtualAssistantContextualSupportPanel = observer(() => {
               )}
             </>
           )}
-          {contextualEntry.relevantDocEntries.length && (
+          {contextualEntry.related.length && (
             <div className="virtual-assistant__contextual-support__relevant-entries">
               <div className="virtual-assistant__contextual-support__relevant-entries__title">
-                Relevant entries ({contextualEntry.relevantDocEntries.length})
+                Relevant entries ({contextualEntry.related.length})
               </div>
-              {contextualEntry.relevantDocEntries.map((entry) => (
+              {contextualEntry.related.map((entry) => (
                 <VirtualAssistantDocumentationEntryViewer
                   key={entry.uuid}
                   entry={entry}
