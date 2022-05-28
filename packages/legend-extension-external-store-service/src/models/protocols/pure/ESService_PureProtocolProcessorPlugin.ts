@@ -84,7 +84,6 @@ import { LocalMappingProperty } from '../../metamodels/pure/model/packageableEle
 import { ServiceMapping } from '../../metamodels/pure/model/packageableElements/store/serviceStore/mapping/ESService_ServiceMapping';
 import { V1_ServiceStoreConnection } from './v1/model/packageableElements/store/serviceStore/connection/V1_ESService_ServicestoreConnection';
 import {
-  V1_buildServiceParameterMapping,
   V1_buildServiceRequestBuildInfo,
   V1_buildServiceStoreElement,
   V1_buildServiceStoreEmbeddedData,
@@ -99,8 +98,6 @@ import {
   V1_transformServiceStoreEmbeddedData,
   V1_transformServiceToServicePtr,
 } from './v1/transformation/pureGraph/V1_ESService_TransformerHelper';
-import { ServiceRequestBuildInfo } from '../../metamodels/pure/model/packageableElements/store/serviceStore/mapping/ESService_ServiceRequestBuildInfo';
-import { ServiceRequestParametersBuildInfo } from '../../metamodels/pure/model/packageableElements/store/serviceStore/mapping/ESService_ServiceRequestParametersBuildInfo';
 import { ServiceStoreEmbeddedData } from '../../metamodels/pure/model/data/ESService_ServiceStoreEmbeddedData';
 import { V1_ServiceStoreEmbeddedData } from './v1/model/data/V1_ESService_ServiceStoreEmbeddedData';
 
@@ -284,23 +281,6 @@ export class ESService_PureProtocolProcessorPlugin
                   mapping.service,
                   context,
                 );
-              }
-              if (
-                serviceMapping.parameterMappings &&
-                serviceMapping.parameterMappings.length > 0
-              ) {
-                const requestBuildInfo = new ServiceRequestBuildInfo();
-                requestBuildInfo.requestParametersBuildInfo =
-                  new ServiceRequestParametersBuildInfo();
-                requestBuildInfo.requestParametersBuildInfo.parameterBuildInfoList =
-                  serviceMapping.parameterMappings.map((parameter) =>
-                    V1_buildServiceParameterMapping(
-                      parameter,
-                      mapping.service,
-                      context,
-                    ),
-                  );
-                mapping.requestBuildInfo = requestBuildInfo;
               }
               return mapping;
             });

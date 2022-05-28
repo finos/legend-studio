@@ -59,8 +59,6 @@ import {
   LOCATION,
   ServiceParameter,
 } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/model/ESService_ServiceParameter';
-import type { V1_ServiceParameterMapping } from '../../model/packageableElements/store/serviceStore/mapping/V1_ESService_ServiceParameterMapping';
-import { V1_ParameterIndexedParameterMapping } from '../../model/packageableElements/store/serviceStore/mapping/V1_ESService_ParameterIndexedParameterMapping';
 import type { V1_ServiceStoreElement } from '../../model/packageableElements/store/serviceStore/model/V1_ESService_ServiceStoreElement';
 import type { ServiceStoreElement } from '../../../../../metamodels/pure/model/packageableElements/store/serviceStore/model/ESService_ServiceStoreElement';
 import { V1_ServiceStoreService } from '../../model/packageableElements/store/serviceStore/model/V1_ESService_ServiceStoreService';
@@ -206,30 +204,6 @@ export const V1_buildServiceParameter = (
     );
   }
   return serviceParameter;
-};
-
-export const V1_buildServiceParameterMapping = (
-  protocol: V1_ServiceParameterMapping,
-  service: ServiceStoreService,
-  context: V1_GraphBuilderContext,
-): ServiceRequestParameterBuildInfo => {
-  if (protocol instanceof V1_ParameterIndexedParameterMapping) {
-    const requestParameterBuildInfo = new ServiceRequestParameterBuildInfo();
-    requestParameterBuildInfo.serviceParameter = getParameter(
-      protocol.serviceParameter,
-      service.parameters,
-    );
-    requestParameterBuildInfo.transform = V1_buildRawLambdaWithResolvedPaths(
-      protocol.transform.parameters,
-      protocol.transform.body,
-      context,
-    );
-    return requestParameterBuildInfo;
-  }
-  throw new UnsupportedOperationError(
-    `Can't build service parameter mapping`,
-    protocol,
-  );
 };
 
 export const V1_buildServiceRequestBuildInfo = (
