@@ -18,7 +18,6 @@ import {
   type MarkdownText,
   type PlainObject,
   type Writable,
-  deserializeMarkdownText,
   SerializationFactory,
   LogEvent,
   uniq,
@@ -30,7 +29,6 @@ import {
   list,
   optional,
   primitive,
-  SKIP,
 } from 'serializr';
 import { APPLICATION_EVENT } from './ApplicationEvent';
 import type { ApplicationStore } from './ApplicationStore';
@@ -51,11 +49,11 @@ export class LegendApplicationDocumentationEntry {
   text?: string | undefined;
   url?: string | undefined;
 
-  private static readonly serialization = new SerializationFactory(
+  static readonly serialization = new SerializationFactory(
     createModelSchema(LegendApplicationDocumentationEntry, {
       markdownText: custom(
-        () => SKIP,
-        (val) => deserializeMarkdownText(val),
+        (val) => val,
+        (val) => (val.value ? val : undefined),
       ),
       title: optional(primitive()),
       text: optional(primitive()),
@@ -77,7 +75,7 @@ export class LegendApplicationDocumentationEntry {
 
 export type LegendApplicationContextualDocumentationEntryConfig =
   LegendApplicationDocumentationEntryConfig & {
-    related: string[];
+    related?: string[];
   };
 
 export class LegendApplicationContextualDocumentationEntry {
@@ -89,11 +87,11 @@ export class LegendApplicationContextualDocumentationEntry {
   url?: string | undefined;
   related: string[] = [];
 
-  private static readonly serialization = new SerializationFactory(
+  static readonly serialization = new SerializationFactory(
     createModelSchema(LegendApplicationContextualDocumentationEntry, {
       markdownText: custom(
-        () => SKIP,
-        (val) => deserializeMarkdownText(val),
+        (val) => val,
+        (val) => (val.value ? val : undefined),
       ),
       title: optional(primitive()),
       text: optional(primitive()),
@@ -235,10 +233,6 @@ export class LegendApplicationDocumentationService {
     return this.docRegistry.has(key);
   }
 
-  getAllDocEntries(): LegendApplicationDocumentationEntry[] {
-    return Array.from(this.docRegistry.values());
-  }
-
   getContextualDocEntry(
     key: string,
   ): LegendApplicationContextualDocumentationEntry | undefined {
@@ -247,5 +241,36 @@ export class LegendApplicationDocumentationService {
 
   hasContextualDocEntry(key: string): boolean {
     return this.contextualDocRegistry.has(key);
+  }
+
+  getAllDocEntries(): LegendApplicationDocumentationEntry[] {
+    return Array.from(this.docRegistry.values());
+  }
+
+  publishDocRegistry(): Record<
+    string,
+    LegendApplicationDocumentationEntryConfig
+  > {
+    const result: Record<string, LegendApplicationDocumentationEntryConfig> =
+      {};
+    this.docRegistry.forEach((value, key) => {
+      result[key] =
+        LegendApplicationDocumentationEntry.serialization.toJson(value);
+    });
+    return result;
+  }
+
+  publishContextualDocRegistry(): object {
+    const result: Record<
+      string,
+      LegendApplicationContextualDocumentationEntryConfig
+    > = {};
+    this.contextualDocRegistry.forEach((value, key) => {
+      result[key] =
+        LegendApplicationContextualDocumentationEntry.serialization.toJson(
+          value,
+        );
+    });
+    return result;
   }
 }

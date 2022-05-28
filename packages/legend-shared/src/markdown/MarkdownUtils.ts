@@ -14,16 +14,6 @@
  * limitations under the License.
  */
 
-import type { PlainObject } from '../CommonUtils';
-import { guaranteeNonNullable } from '../error/AssertionUtils';
-
 export interface MarkdownText {
   value: string;
 }
-
-export const deserializeMarkdownText = (
-  val: PlainObject<MarkdownText>,
-): MarkdownText => {
-  guaranteeNonNullable(val.value);
-  return val as unknown as MarkdownText;
-};

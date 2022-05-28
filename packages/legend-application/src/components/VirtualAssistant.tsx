@@ -36,14 +36,22 @@ import {
   WizardHatIcon,
   FaceLaughWinkIcon,
 } from '@finos/legend-art';
-import { isString } from '@finos/legend-shared';
+import {
+  ContentType,
+  downloadFileUsingDataURI,
+  isString,
+} from '@finos/legend-shared';
+import { format } from 'date-fns';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef } from 'react';
+import { DATE_TIME_FORMAT, TAB_SIZE } from '../const';
 import {
   type VirtualAssistantDocumentationEntry,
   VIRTUAL_ASSISTANT_TAB,
 } from '../stores/LegendApplicationAssistantService';
 import { useApplicationStore } from './ApplicationStoreProvider';
+
+const WIZARD_GREETING = `Bonjour, It's Pierre!`;
 
 const VirtualAssistantDocumentationEntryViewer = observer(
   (props: { entry: VirtualAssistantDocumentationEntry }) => {
@@ -239,6 +247,34 @@ const VirtualAssistantSearchPanel = observer(() => {
     assistantService.searchResults.length > 99
       ? '99+'
       : assistantService.searchResults.length;
+  const downloadDocRegistry = (): void => {
+    downloadFileUsingDataURI(
+      `documentation-registry_${format(
+        new Date(Date.now()),
+        DATE_TIME_FORMAT,
+      )}.json`,
+      JSON.stringify(
+        applicationStore.documentationService.publishDocRegistry(),
+        undefined,
+        TAB_SIZE,
+      ),
+      ContentType.APPLICATION_JSON,
+    );
+  };
+  const downloadContextualDocRegistry = (): void => {
+    downloadFileUsingDataURI(
+      `documentation-registry_${format(
+        new Date(Date.now()),
+        DATE_TIME_FORMAT,
+      )}.json`,
+      JSON.stringify(
+        applicationStore.documentationService.publishContextualDocRegistry(),
+        undefined,
+        TAB_SIZE,
+      ),
+      ContentType.APPLICATION_JSON,
+    );
+  };
 
   useEffect(() => {
     searchInputRef.current?.focus();
@@ -301,7 +337,25 @@ const VirtualAssistantSearchPanel = observer(() => {
           early, i.e. when the search results are not yet cleaned
          */}
         {!searchText && !results.length && (
-          <BlankPanelContent>
+          <ContextMenu
+            className="virtual-assistant__character__container"
+            menuProps={{
+              elevation: 7,
+              classes: {
+                root: 'virtual-assistant__doc-entry__context-menu',
+              },
+            }}
+            content={
+              <MenuContent>
+                <MenuContentItem onClick={downloadDocRegistry}>
+                  Download documentation registry
+                </MenuContentItem>
+                <MenuContentItem onClick={downloadContextualDocRegistry}>
+                  Download contextual documentation registry
+                </MenuContentItem>
+              </MenuContent>
+            }
+          >
             <div className="virtual-assistant__character">
               <div className="virtual-assistant__character__figure">
                 <WizardHatIcon className="virtual-assistant__character__hat" />
@@ -309,13 +363,13 @@ const VirtualAssistantSearchPanel = observer(() => {
                 <BeardIcon className="virtual-assistant__character__beard" />
               </div>
               <div className="virtual-assistant__character__greeting">
-                Bonjour, It&apos;s Pierre!
+                {WIZARD_GREETING}
               </div>
               <div className="virtual-assistant__character__question">
                 How can I help today?
               </div>
             </div>
-          </BlankPanelContent>
+          </ContextMenu>
         )}
       </div>
     </div>

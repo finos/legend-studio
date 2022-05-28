@@ -2175,6 +2175,7 @@ __metadata:
     "@types/react-dom": 18.0.5
     "@types/react-router-dom": 5.3.2
     cross-env: 7.0.3
+    date-fns: 2.28.0
     eslint: 8.16.0
     fuse.js: 6.6.2
     history: 5.3.0
