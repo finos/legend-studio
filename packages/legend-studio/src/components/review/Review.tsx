@@ -33,7 +33,6 @@ import {
   CheckListIcon,
   CodeBranchIcon,
   CogIcon,
-  WindowMaximizeIcon,
   UserIcon,
   AssistantIcon,
 } from '@finos/legend-art';
@@ -59,9 +58,6 @@ const ReviewStatusBar = observer(() => {
     ? reviewStore.currentProject.name
     : reviewStore.projectId;
   const review = reviewStore.review;
-  const toggleExpandMode = (): void =>
-    editorStore.setExpandedMode(!editorStore.isInExpandedMode);
-
   const reviewStatus = reviewStore.isApprovingReview
     ? 'approving review...'
     : reviewStore.isCommittingReview
@@ -115,20 +111,6 @@ const ReviewStatusBar = observer(() => {
           </div>
           <div className="review__status-bar__user__name">{currentUserId}</div>
         </div>
-        <button
-          className={clsx(
-            'review__status-bar__action review__status-bar__action__toggler',
-            {
-              'review__status-bar__action__toggler--active':
-                editorStore.isInExpandedMode,
-            },
-          )}
-          onClick={toggleExpandMode}
-          tabIndex={-1}
-          title={'Maximize/Minimize'}
-        >
-          <WindowMaximizeIcon />
-        </button>
         <button
           className={clsx(
             'editor__status-bar__action editor__status-bar__action__toggler',
@@ -242,11 +224,7 @@ const ReviewInner = observer(() => {
                 </div>
               </div>
               <div className="review__content-container">
-                <div
-                  className={clsx('review__content', {
-                    'review__content--expanded': editorStore.isInExpandedMode,
-                  })}
-                >
+                <div className="review__content">
                   <ReviewExplorer />
                 </div>
               </div>

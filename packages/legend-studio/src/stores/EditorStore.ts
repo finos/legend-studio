@@ -233,7 +233,6 @@ export class EditorStore {
    */
   elementGenerationStates: ElementFileGenerationState[] = [];
   searchElementCommandState = new NonBlockingDialogState();
-  isInExpandedMode = true;
   backdrop = false;
   ignoreNavigationBlocking = false;
   isDevToolEnabled = true;
@@ -260,7 +259,6 @@ export class EditorStore {
       setBlockGlobalHotkeys: action,
       setCurrentEditorState: action,
       setBackdrop: action,
-      setExpandedMode: action,
       setActiveAuxPanelMode: action,
       setIgnoreNavigationBlocking: action,
       refreshCurrentEntityDiffEditorState: action,
@@ -478,10 +476,6 @@ export class EditorStore {
 
   setBackdrop(val: boolean): void {
     this.backdrop = val;
-  }
-
-  setExpandedMode(val: boolean): void {
-    this.isInExpandedMode = val;
   }
 
   setActiveAuxPanelMode(val: AUX_PANEL_MODE): void {

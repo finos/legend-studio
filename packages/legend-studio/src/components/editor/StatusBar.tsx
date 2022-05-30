@@ -22,7 +22,6 @@ import {
   SyncIcon,
   FireIcon,
   CodeBranchIcon,
-  WindowMaximizeIcon,
   TerminalIcon,
   HackerIcon,
   BrushIcon,
@@ -121,8 +120,6 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
 
   // Other actions
   const toggleAuxPanel = (): void => editorStore.auxPanelDisplayState.toggle();
-  const toggleExpandMode = (): void =>
-    editorStore.setExpandedMode(!editorStore.isInExpandedMode);
   const handleTextModeClick = applicationStore.guardUnhandledError(() =>
     flowResult(editorStore.toggleTextMode()),
   );
@@ -312,20 +309,6 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
           title="Compile (F9)"
         >
           <HammerIcon />
-        </button>
-        <button
-          className={clsx(
-            'editor__status-bar__action editor__status-bar__action__toggler',
-            {
-              'editor__status-bar__action__toggler--active':
-                editorStore.isInExpandedMode,
-            },
-          )}
-          onClick={toggleExpandMode}
-          tabIndex={-1}
-          title="Maximize/Minimize"
-        >
-          <WindowMaximizeIcon />
         </button>
         <button
           className={clsx(

@@ -37,7 +37,6 @@ import {
   getControlledResizablePanelProps,
   RepoIcon,
   CodeBranchIcon,
-  WindowMaximizeIcon,
   HackerIcon,
   WrenchIcon,
   FileTrayIcon,
@@ -87,8 +86,6 @@ const ViewerStatusBar = observer(() => {
       ? 'current'
       : ''
   }`;
-  const toggleExpandMode = (): void =>
-    editorStore.setExpandedMode(!editorStore.isInExpandedMode);
   const handleTextModeClick = applicationStore.guardUnhandledError(() =>
     flowResult(editorStore.toggleTextMode()),
   );
@@ -124,20 +121,6 @@ const ViewerStatusBar = observer(() => {
         )}
       </div>
       <div className="editor__status-bar__right">
-        <button
-          className={clsx(
-            'editor__status-bar__action editor__status-bar__action__toggler',
-            {
-              'editor__status-bar__action__toggler--active':
-                editorStore.isInExpandedMode,
-            },
-          )}
-          onClick={toggleExpandMode}
-          tabIndex={-1}
-          title={'Maximize/Minimize'}
-        >
-          <WindowMaximizeIcon />
-        </button>
         <button
           className={clsx(
             'editor__status-bar__action editor__status-bar__action__toggler',
@@ -324,11 +307,7 @@ export const ViewerInner = observer(() => {
           <div className="editor__body">
             <ViewerActivityBar />
             <div ref={ref} className="editor__content-container">
-              <div
-                className={clsx('editor__content', {
-                  'editor__content--expanded': editorStore.isInExpandedMode,
-                })}
-              >
+              <div className="editor__content">
                 <ResizablePanelGroup orientation="vertical">
                   <ResizablePanel
                     {...getControlledResizablePanelProps(

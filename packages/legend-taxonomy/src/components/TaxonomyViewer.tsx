@@ -64,27 +64,10 @@ import type { TaxonomyNodeViewerState } from '../stores/LegendTaxonomyStore';
 
 const TaxonomyViewerStatusBar = observer(() => {
   const taxonomyStore = useLegendTaxonomyStore();
-  const toggleExpandMode = (): void =>
-    taxonomyStore.setExpandedMode(!taxonomyStore.isInExpandedMode);
   return (
     <div className="taxonomy-viewer__status-bar ">
       <div className="taxonomy-viewer__status-bar__left"></div>
-      <div className="taxonomy-viewer__status-bar__right">
-        <button
-          className={clsx(
-            'taxonomy-viewer__status-bar__action taxonomy-viewer__status-bar__action__toggler',
-            {
-              'taxonomy-viewer__status-bar__action__toggler--active':
-                taxonomyStore.isInExpandedMode,
-            },
-          )}
-          onClick={toggleExpandMode}
-          tabIndex={-1}
-          title={'Maximize/Minimize'}
-        >
-          <WindowMaximizeIcon />
-        </button>
-      </div>
+      <div className="taxonomy-viewer__status-bar__right"></div>
     </div>
   );
 });
@@ -478,12 +461,7 @@ export const TaxonomyViewer = observer(() => {
           <div className="taxonomy-viewer__body">
             <TaxonomyViewerActivityBar />
             <div className="taxonomy-viewer__content-container">
-              <div
-                className={clsx('taxonomy-viewer__content', {
-                  'taxonomy-viewer__content--expanded':
-                    taxonomyStore.isInExpandedMode,
-                })}
-              >
+              <div className="taxonomy-viewer__content">
                 <ResizablePanelGroup orientation="vertical">
                   <ResizablePanel
                     {...getControlledResizablePanelProps(

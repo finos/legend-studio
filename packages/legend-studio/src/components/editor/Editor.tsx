@@ -22,7 +22,6 @@ import { useResizeDetector } from 'react-resize-detector';
 import type { Location } from 'history';
 import {
   type ResizablePanelHandlerProps,
-  clsx,
   Backdrop,
   buildReactHotkeysConfiguration,
   getControlledResizablePanelProps,
@@ -240,11 +239,7 @@ export const EditorInner = observer(() => {
             <ActivityBar />
             <Backdrop className="backdrop" open={editorStore.backdrop} />
             <div ref={ref} className="editor__content-container">
-              <div
-                className={clsx('editor__content', {
-                  'editor__content--expanded': editorStore.isInExpandedMode,
-                })}
-              >
+              <div className="editor__content">
                 <ResizablePanelGroup orientation="vertical">
                   <ResizablePanel
                     {...getControlledResizablePanelProps(
