@@ -58,15 +58,12 @@ import { V1_LocalMappingProperty } from '../../model/packageableElements/store/s
 import { V1_ServiceMapping } from '../../model/packageableElements/store/serviceStore/mapping/V1_ESService_ServiceMapping';
 import { V1_ServiceStoreServicePtr } from '../../model/packageableElements/store/serviceStore/model/V1_ESService_ServiceStoreServicePtr';
 import { V1_ServiceGroupPtr } from '../../model/packageableElements/store/serviceStore/model/V1_ESService_ServiceGroupPtr';
-import type { V1_ServiceParameterMapping } from '../../model/packageableElements/store/serviceStore/mapping/V1_ESService_ServiceParameterMapping';
 import {
   type PureProtocolProcessorPlugin,
   V1_Multiplicity,
   V1_externalFormatDataModelSchema,
   V1_rawLambdaModelSchema,
 } from '@finos/legend-graph';
-import { V1_ParameterIndexedParameterMapping } from '../../model/packageableElements/store/serviceStore/mapping/V1_ESService_ParameterIndexedParameterMapping';
-import { V1_PropertyIndexedParameterMapping } from '../../model/packageableElements/store/serviceStore/mapping/V1_ESService_PropertyIndexedParameterMapping';
 import type { V1_SecurityScheme } from '../../model/packageableElements/store/serviceStore/model/V1_ESService_SecurityScheme';
 import type { ESService_PureProtocolPlugin_Extension } from '../../../ESService_PureProtocolPlugin_Extension';
 import { V1_ServiceRequestBuildInfo } from '../../model/packageableElements/store/serviceStore/mapping/V1_ESService_ServiceRequestBuildInfo';
@@ -102,11 +99,6 @@ enum V1_ReferenceType {
   FLOAT_TYPE_REFERENCE = 'float',
   INTEGER_TYPE_REFERENCE = 'integer',
   STRING_TYPE_REFERENCE = 'string',
-}
-
-enum V1_ServiceParameterMappingType {
-  PROPERTY_INDEXED_PARAMETER_MAPPING = 'property',
-  PARAMETER_INDEXED_PARAMETER_MAPPING = 'parameter',
 }
 
 const V1_booleanTypeReferenceModelSchema = createModelSchema(
@@ -362,28 +354,6 @@ const V1_servicePtrModelSchema = createModelSchema(V1_ServiceStoreServicePtr, {
   serviceStore: primitive(),
 });
 
-const V1_parameterIndexedParameterMappingModelSchema = createModelSchema(
-  V1_ParameterIndexedParameterMapping,
-  {
-    _type: usingConstantValueSchema(
-      V1_ServiceParameterMappingType.PARAMETER_INDEXED_PARAMETER_MAPPING,
-    ),
-    serviceParameter: primitive(),
-    transform: usingModelSchema(V1_rawLambdaModelSchema),
-  },
-);
-
-const V1_propertyIndexedParameterMappingModelSchema = createModelSchema(
-  V1_PropertyIndexedParameterMapping,
-  {
-    _type: usingConstantValueSchema(
-      V1_ServiceParameterMappingType.PROPERTY_INDEXED_PARAMETER_MAPPING,
-    ),
-    property: primitive(),
-    serviceParameter: primitive(),
-  },
-);
-
 const V1_serializeServiceRequestBodyBuildInfo = createModelSchema(
   V1_ServiceRequestBodyBuildInfo,
   {
@@ -420,45 +390,7 @@ const V1_serializeServiceRequestBuildInfo = createModelSchema(
   },
 );
 
-const V1_serializeServiceParameterMapping = (
-  protocol: V1_ServiceParameterMapping,
-): PlainObject<V1_ServiceParameterMapping> => {
-  if (protocol instanceof V1_ParameterIndexedParameterMapping) {
-    return serialize(V1_parameterIndexedParameterMappingModelSchema, protocol);
-  } else if (protocol instanceof V1_PropertyIndexedParameterMapping) {
-    return serialize(V1_propertyIndexedParameterMappingModelSchema, protocol);
-  }
-  throw new UnsupportedOperationError(
-    `Can't serialize service parameter mapping`,
-    protocol,
-  );
-};
-
-const V1_deserializeServiceParameterMapping = (
-  json: PlainObject<V1_ServiceParameterMapping>,
-): V1_ServiceParameterMapping => {
-  switch (json._type) {
-    case 'parameter':
-      return deserialize(V1_parameterIndexedParameterMappingModelSchema, json);
-    case 'property':
-      return deserialize(V1_propertyIndexedParameterMappingModelSchema, json);
-    default: {
-      throw new UnsupportedOperationError(
-        `Can't deserialize service store element of type '${json._type}'`,
-      );
-    }
-  }
-};
-
 const V1_serviceMappingModelSchema = createModelSchema(V1_ServiceMapping, {
-  parameterMappings: optional(
-    list(
-      custom(
-        (val) => V1_serializeServiceParameterMapping(val),
-        (val) => V1_deserializeServiceParameterMapping(val),
-      ),
-    ),
-  ),
   pathOffset: raw(),
   requestBuildInfo: usingModelSchema(V1_serializeServiceRequestBuildInfo),
   service: usingModelSchema(V1_servicePtrModelSchema),
