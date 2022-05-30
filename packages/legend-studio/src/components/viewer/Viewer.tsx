@@ -41,6 +41,7 @@ import {
   HackerIcon,
   WrenchIcon,
   FileTrayIcon,
+  AssistantIcon,
 } from '@finos/legend-art';
 import { isNonNullable } from '@finos/legend-shared';
 import { GlobalHotKeys } from 'react-hotkeys';
@@ -91,6 +92,8 @@ const ViewerStatusBar = observer(() => {
   const handleTextModeClick = applicationStore.guardUnhandledError(() =>
     flowResult(editorStore.toggleTextMode()),
   );
+  const toggleAssistant = (): void =>
+    applicationStore.assistantService.toggleAssistant();
 
   return (
     <div
@@ -139,7 +142,7 @@ const ViewerStatusBar = observer(() => {
           className={clsx(
             'editor__status-bar__action editor__status-bar__action__toggler',
             {
-              'editor__status-bar__action editor__status-bar__action__toggler--active':
+              'editor__status-bar__action__toggler--active':
                 editorStore.isInGrammarTextMode,
             },
           )}
@@ -148,6 +151,20 @@ const ViewerStatusBar = observer(() => {
           title={'Toggle text mode (F8)'}
         >
           <HackerIcon />
+        </button>
+        <button
+          className={clsx(
+            'editor__status-bar__action editor__status-bar__action__toggler',
+            {
+              'editor__status-bar__action__toggler--active':
+                !applicationStore.assistantService.isHidden,
+            },
+          )}
+          onClick={toggleAssistant}
+          tabIndex={-1}
+          title="Toggle assistant"
+        >
+          <AssistantIcon />
         </button>
       </div>
     </div>

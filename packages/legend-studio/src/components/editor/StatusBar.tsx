@@ -27,6 +27,7 @@ import {
   HackerIcon,
   BrushIcon,
   CloudUploadIcon,
+  AssistantIcon,
 } from '@finos/legend-art';
 import { LEGEND_STUDIO_TEST_ID } from '../LegendStudioTestID';
 import { ACTIVITY_MODE } from '../../stores/EditorConfig';
@@ -136,6 +137,8 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
   const emptyGenerationEntities = applicationStore.guardUnhandledError(() =>
     flowResult(editorStore.graphState.graphGenerationState.clearGenerations()),
   );
+  const toggleAssistant = (): void =>
+    applicationStore.assistantService.toggleAssistant();
 
   return (
     <div
@@ -218,7 +221,7 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
                 editorStore.conflictResolutionState.isAbortingConflictResolution
               }
               tabIndex={-1}
-              title={'Accept conflict resolution'}
+              title="Accept conflict resolution"
             >
               <SyncIcon />
             </button>
@@ -246,7 +249,7 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
                 actionsDisabled
               }
               tabIndex={-1}
-              title={'Push local changes (Ctrl + S)'}
+              title="Push local changes (Ctrl + S)"
             >
               <CloudUploadIcon />
             </button>
@@ -269,7 +272,7 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
           }
           onClick={generate}
           tabIndex={-1}
-          title={'Generate (F10)'}
+          title="Generate (F10)"
         >
           <FireIcon />
         </button>
@@ -288,7 +291,7 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
           }
           onClick={emptyGenerationEntities}
           tabIndex={-1}
-          title={'Clear generation entities'}
+          title="Clear generation entities"
         >
           <BrushIcon />
         </button>
@@ -320,7 +323,7 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
           )}
           onClick={toggleExpandMode}
           tabIndex={-1}
-          title={'Maximize/Minimize'}
+          title="Maximize/Minimize"
         >
           <WindowMaximizeIcon />
         </button>
@@ -334,7 +337,7 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
           )}
           onClick={toggleAuxPanel}
           tabIndex={-1}
-          title={'Toggle auxiliary panel (Ctrl + `)'}
+          title="Toggle auxiliary panel (Ctrl + `)"
         >
           <TerminalIcon />
         </button>
@@ -349,9 +352,23 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
           disabled={actionsDisabled}
           onClick={handleTextModeClick}
           tabIndex={-1}
-          title={'Toggle text mode (F8)'}
+          title="Toggle text mode (F8)"
         >
           <HackerIcon />
+        </button>
+        <button
+          className={clsx(
+            'editor__status-bar__action editor__status-bar__action__toggler',
+            {
+              'editor__status-bar__action__toggler--active':
+                !applicationStore.assistantService.isHidden,
+            },
+          )}
+          onClick={toggleAssistant}
+          tabIndex={-1}
+          title="Toggle assistant"
+        >
+          <AssistantIcon />
         </button>
       </div>
     </div>

@@ -141,6 +141,7 @@ export {
   MdSubject as SubjectIcon,
   MdViewHeadline as ViewHeadlineIcon,
   MdWarning as WarningIcon,
+  MdAssistant as AssistantIcon,
 } from 'react-icons/md';
 export {
   VscError as ErrorIcon,

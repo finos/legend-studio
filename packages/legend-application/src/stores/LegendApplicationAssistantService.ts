@@ -246,6 +246,14 @@ export class LegendApplicationAssistantService {
     this.isHidden = val;
   }
 
+  toggleAssistant(): void {
+    const newVal = !this.isHidden;
+    this.setIsHidden(newVal);
+    if (newVal) {
+      this.setIsOpen(false);
+    }
+  }
+
   setIsOpen(val: boolean): void {
     this.isOpen = val;
   }

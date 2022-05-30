@@ -35,6 +35,7 @@ import {
   CogIcon,
   WindowMaximizeIcon,
   UserIcon,
+  AssistantIcon,
 } from '@finos/legend-art';
 import {
   type ReviewPathParams,
@@ -51,6 +52,7 @@ import { useApplicationStore } from '@finos/legend-application';
 const ReviewStatusBar = observer(() => {
   const reviewStore = useReviewStore();
   const editorStore = useEditorStore();
+  const applicationStore = useApplicationStore();
   const currentUserId =
     editorStore.sdlcServerClient.currentUser?.userId ?? '(unknown)';
   const currentProject = reviewStore.currentProject
@@ -71,6 +73,8 @@ const ReviewStatusBar = observer(() => {
     : reviewStore.isFetchingComparison
     ? 'loading changes...'
     : undefined;
+  const toggleAssistant = (): void =>
+    applicationStore.assistantService.toggleAssistant();
 
   return (
     <div className="review__status-bar review__status-bar">
@@ -124,6 +128,20 @@ const ReviewStatusBar = observer(() => {
           title={'Maximize/Minimize'}
         >
           <WindowMaximizeIcon />
+        </button>
+        <button
+          className={clsx(
+            'editor__status-bar__action editor__status-bar__action__toggler',
+            {
+              'editor__status-bar__action__toggler--active':
+                !applicationStore.assistantService.isHidden,
+            },
+          )}
+          onClick={toggleAssistant}
+          tabIndex={-1}
+          title="Toggle assistant"
+        >
+          <AssistantIcon />
         </button>
       </div>
     </div>
