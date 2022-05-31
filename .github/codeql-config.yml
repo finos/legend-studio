@@ -1,0 +1,11 @@
+name: 'CodeQL Config'
+
+paths:
+  - packages/*/src
+  - fixtures/*/src
+  - scripts
+
+paths-ignore:
+  - .yarn/
+  - '**/.pnp.*'
+  - '**/node_modules/**'
