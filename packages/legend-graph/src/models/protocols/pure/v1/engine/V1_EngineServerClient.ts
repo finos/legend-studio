@@ -20,6 +20,7 @@ import {
   type PlainObject,
   type ServerClientConfig,
   type TraceData,
+  HttpHeader,
 } from '@finos/legend-shared';
 import type { ImportMode } from '../../../../../graphManager/action/generation/ImportConfigurationDescription';
 import type { V1_PureModelContextData } from '../model/context/V1_PureModelContextData';
@@ -155,7 +156,9 @@ export class V1_EngineServerClient extends AbstractServerClient {
       `${this._grammarToJSON()}/model`,
       input,
       {},
-      undefined,
+      {
+        [HttpHeader.CONTENT_TYPE]: ContentType.TEXT_PLAIN,
+      },
       {
         sourceId,
         lineOffset,
@@ -176,7 +179,9 @@ export class V1_EngineServerClient extends AbstractServerClient {
       `${this._grammarToJSON()}/lambda`,
       input,
       {},
-      undefined,
+      {
+        [HttpHeader.CONTENT_TYPE]: ContentType.TEXT_PLAIN,
+      },
       {
         sourceId,
         lineOffset,
@@ -214,7 +219,9 @@ export class V1_EngineServerClient extends AbstractServerClient {
       `${this._grammarToJSON()}/relationalOperationElement`,
       input,
       {},
-      undefined,
+      {
+        [HttpHeader.CONTENT_TYPE]: ContentType.TEXT_PLAIN,
+      },
       {
         sourceId,
         lineOffset,
@@ -253,7 +260,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
       `${this._JSONToGrammar()}/model`,
       input,
       {},
-      { Accept: ContentType.TEXT_PLAIN },
+      { [HttpHeader.ACCPEPT]: ContentType.TEXT_PLAIN },
       { renderStyle },
       { enableCompression: true },
     );
@@ -489,7 +496,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
       `${this._execution()}/testDataGeneration/generateTestData_WithDefaultSeed`,
       input,
       {},
-      { Accept: ContentType.TEXT_PLAIN },
+      { [HttpHeader.ACCPEPT]: ContentType.TEXT_PLAIN },
       undefined,
       { enableCompression: true },
     );

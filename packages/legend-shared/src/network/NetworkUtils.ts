@@ -42,6 +42,11 @@ const compressData = (data: Record<PropertyKey, unknown> | string): Blob =>
 export const HttpStatus = StatusCodes;
 export const CHARSET = 'charset=utf-8';
 
+export enum HttpHeader {
+  CONTENT_TYPE = 'Content-Type',
+  ACCPEPT = 'Accept',
+}
+
 export enum ContentType {
   APPLICATION_JSON = 'application/json',
   APPLICATION_XML = 'application/xml',
@@ -290,8 +295,8 @@ export const createRequestHeaders = (
   baseRequestHeaders.Accept = ContentType.APPLICATION_JSON;
   if (method !== HttpMethod.GET) {
     baseRequestHeaders[
-      'Content-Type'
-    ] = `${ContentType.APPLICATION_JSON}; ${CHARSET}`;
+      HttpHeader.CONTENT_TYPE
+    ] = `${ContentType.APPLICATION_JSON};${CHARSET}`;
   }
   return mergeRequestHeaders(baseRequestHeaders, headers);
 };
@@ -412,17 +417,17 @@ export class NetworkClient {
     responseProcessConfig?: ResponseProcessConfig | undefined,
   ): Promise<T> {
     const requestUrl = makeUrl(this.baseUrl, url, parameters ?? {});
-    if (data && requestProcessConfig?.enableCompression) {
+    if (data !== undefined && requestProcessConfig?.enableCompression) {
       assertTrue(
         method !== HttpMethod.GET,
         ' GET request should not have any request payload',
       );
       data = compressData(data as Record<PropertyKey, unknown> | string);
       // NOTE: do not use Content-Type for GET to avoid unnecessary pre-flight when cross-origin
-      headers = mergeRequestHeaders(
-        { 'Content-Type': `${ContentType.APPLICATION_ZLIB};${CHARSET}` },
-        headers,
-      );
+      headers = mergeRequestHeaders(headers, {
+        // Override Content-Type header when compression is enabled
+        [HttpHeader.CONTENT_TYPE]: `${ContentType.APPLICATION_ZLIB};${CHARSET}`,
+      });
     }
     let body: Blob | string | undefined;
     if (data !== undefined) {

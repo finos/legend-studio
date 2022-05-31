@@ -33,6 +33,7 @@ import {
   AbstractServerClient,
   ContentType,
   guaranteeNonNullable,
+  HttpHeader,
 } from '@finos/legend-shared';
 import type { Entity } from '@finos/legend-model-storage';
 import type {
@@ -477,7 +478,7 @@ export class SDLCServerClient extends AbstractServerClient {
         workflowJob.id,
       )}/logs`,
       {},
-      { Accept: ContentType.TEXT_PLAIN },
+      { [HttpHeader.ACCPEPT]: ContentType.TEXT_PLAIN },
     );
   cancelWorkflowJob = (
     projectId: string,
@@ -612,7 +613,7 @@ export class SDLCServerClient extends AbstractServerClient {
         workflowJob.id,
       )}/logs`,
       {},
-      { Accept: ContentType.TEXT_PLAIN },
+      { [HttpHeader.ACCPEPT]: ContentType.TEXT_PLAIN },
     );
   cancelWorkflowJobByVersion = (
     projectId: string,

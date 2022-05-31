@@ -25,7 +25,11 @@ import {
   type V1_PureModelContextData,
 } from '@finos/legend-graph';
 import { getLegendGraphExtensionCollection } from '@finos/legend-graph-extension-collection';
-import { ContentType, type PlainObject } from '@finos/legend-shared';
+import {
+  ContentType,
+  HttpHeader,
+  type PlainObject,
+} from '@finos/legend-shared';
 
 const engineConfig = JSON.parse(
   fs.readFileSync(resolve(__dirname, '../../../engine-config.json'), {
@@ -126,7 +130,7 @@ const checkGrammarRoundtripMismatch = async (
     AxiosResponse<PlainObject<V1_PureModelContextData>>
   >(`${ENGINE_SERVER_URL}/pure/v1/grammar/grammarToJson/model`, grammarBefore, {
     headers: {
-      'Content-Type': ContentType.TEXT_PLAIN,
+      [HttpHeader.CONTENT_TYPE]: ContentType.TEXT_PLAIN,
     },
     // TODO: we should enable this, but we need to make sure engine works first
     // See https://github.com/finos/legend-engine/pull/692
@@ -166,7 +170,7 @@ const checkGrammarRoundtripMismatch = async (
     modelDataContext,
     {
       headers: {
-        Accept: ContentType.TEXT_PLAIN,
+        [HttpHeader.ACCPEPT]: ContentType.TEXT_PLAIN,
       },
       params: {
         renderStyle: 'STANDARD',
