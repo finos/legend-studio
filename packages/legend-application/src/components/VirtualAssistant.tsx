@@ -34,16 +34,18 @@ import {
   FaceLaughWinkIcon,
   VerticalDragHandleThinIcon,
   CircleIcon,
+  PanelLoadingIndicator,
 } from '@finos/legend-art';
 import {
   ContentType,
+  debounce,
   downloadFileUsingDataURI,
   isString,
   uuid,
 } from '@finos/legend-shared';
 import { format } from 'date-fns';
 import { observer } from 'mobx-react-lite';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { DATE_TIME_FORMAT, TAB_SIZE } from '../const';
 import {
   type VirtualAssistantDocumentationEntry,
@@ -236,11 +238,18 @@ const VirtualAssistantSearchPanel = observer(() => {
   const searchInputRef = useRef<HTMLInputElement>(null);
   const assistantService = applicationStore.assistantService;
   const searchText = assistantService.searchText;
+  const debouncedSearch = useMemo(
+    () => debounce(() => assistantService.search(), 100),
+    [assistantService],
+  );
   const onSearchTextChange: React.ChangeEventHandler<HTMLInputElement> = (
     event,
-  ) => assistantService.setSearchText(event.target.value);
+  ) => {
+    assistantService.setSearchText(event.target.value);
+    debouncedSearch();
+  };
   const clearSearchText = (): void => {
-    assistantService.setSearchText('');
+    assistantService.resetSearch();
     searchInputRef.current?.focus();
   };
   const results = assistantService.searchResults;
@@ -314,6 +323,9 @@ const VirtualAssistantSearchPanel = observer(() => {
         )}
       </div>
       <div className="virtual-assistant__search__content">
+        <PanelLoadingIndicator
+          isLoading={assistantService.searchState.isInProgress}
+        />
         {Boolean(results.length) && (
           <div className="virtual-assistant__search__results">
             {results.map((result) => (
@@ -463,10 +475,10 @@ export const VirtualAssistant = observer(() => {
   const [isDragging, setIsDragging] = useState(false);
   const [_key, _setKey] = useState(uuid());
   const applicationStore = useApplicationStore();
+  const assistantStationRef = useRef<HTMLDivElement>(null);
   const assistantService = applicationStore.assistantService;
   const currentContextualDocumentationEntry =
     assistantService.currentContextualDocumentationEntry;
-  const assistantStationRef = useRef<HTMLDivElement>(null);
   const toggleAssistantPanel = (): void => {
     const newVal = !assistantService.isOpen;
     // open the contextual help tab when contextual help is available
@@ -477,7 +489,7 @@ export const VirtualAssistant = observer(() => {
   };
   const hideAssistant = (): void =>
     applicationStore.assistantService.hideAssistant();
-  const resetPosition = async (): Promise<void> => {
+  const resetPosition = (): void => {
     // close the panel since
     assistantService.setIsOpen(false);
     _setKey(uuid());
@@ -546,7 +558,6 @@ export const VirtualAssistant = observer(() => {
             className={clsx('virtual-assistant__station__drag-handle', {
               'virtual-assistant__station__drag-handle--dragging': isDragging,
             })}
-            // title={isDragging ? undefined : 'Grab to drag assistant'}
             menuProps={{
               elevation: 7,
               classes: {

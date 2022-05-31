@@ -14,13 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  type IReactionDisposer,
-  action,
-  makeObservable,
-  observable,
-  reaction,
-} from 'mobx';
+import { action, makeObservable, observable, computed } from 'mobx';
 import type {
   LegendApplicationContextualDocumentationEntry,
   LegendApplicationDocumentationEntry,
@@ -33,6 +27,7 @@ import {
   guaranteeNonEmptyString,
   uuid,
   isNonNullable,
+  ActionState,
 } from '@finos/legend-shared';
 
 export enum VIRTUAL_ASSISTANT_TAB {
@@ -88,15 +83,12 @@ export class VirtualAssistantContextualDocumentationEntry {
 export class LegendApplicationAssistantService {
   readonly applicationStore: ApplicationStore<LegendApplicationConfig>;
   private readonly searchEngine: Fuse<LegendApplicationDocumentationEntry>;
-  private contextualDocReaction?: IReactionDisposer | undefined;
-  private docSearchReaction?: IReactionDisposer | undefined;
-  currentContextualDocumentationEntry:
-    | VirtualAssistantContextualDocumentationEntry
-    | undefined;
   isHidden = false;
   isOpen = false;
   selectedTab = VIRTUAL_ASSISTANT_TAB.SEARCH;
+
   searchResults: VirtualAssistantDocumentationEntry[] = [];
+  searchState = ActionState.create().pass();
   searchText = '';
 
   constructor(applicationStore: ApplicationStore<LegendApplicationConfig>) {
@@ -105,12 +97,13 @@ export class LegendApplicationAssistantService {
       isOpen: observable,
       selectedTab: observable,
       searchText: observable,
-      currentContextualDocumentationEntry: observable,
       searchResults: observable,
+      currentContextualDocumentationEntry: computed,
       setIsHidden: action,
       setIsOpen: action,
       setSelectedTab: action,
       setSearchText: action,
+      search: action,
     });
 
     this.applicationStore = applicationStore;
@@ -150,96 +143,32 @@ export class LegendApplicationAssistantService {
     );
   }
 
-  start(): void {
-    this.contextualDocReaction?.();
-    this.docSearchReaction?.();
-
-    // NOTE: since sometimes, we modify the context stack in clean up methods of `useEffect`, we could
-    // end up with having React complaining about bad state, as such, we de-couple that by using
-    // `reaction`. Also, it gains a slight performance benefit as we now throttle the rate of refresh
-    // in assistant service when context changes
-    this.contextualDocReaction = reaction(
-      () => this.applicationStore.navigationContextService.currentContext,
-      () => {
-        const currentContextualDocumentationEntry = this.applicationStore
-          .navigationContextService.currentContext
-          ? this.applicationStore.documentationService.getContextualDocEntry(
-              this.applicationStore.navigationContextService.currentContext
-                .value,
+  get currentContextualDocumentationEntry():
+    | VirtualAssistantContextualDocumentationEntry
+    | undefined {
+    const currentContextualDocumentationEntry = this.applicationStore
+      .navigationContextService.currentContext
+      ? this.applicationStore.documentationService.getContextualDocEntry(
+          this.applicationStore.navigationContextService.currentContext.value,
+        )
+      : undefined;
+    return currentContextualDocumentationEntry
+      ? new VirtualAssistantContextualDocumentationEntry(
+          currentContextualDocumentationEntry,
+          currentContextualDocumentationEntry.related
+            .map((entry) =>
+              this.applicationStore.documentationService.getDocEntry(entry),
             )
-          : undefined;
-        this.currentContextualDocumentationEntry =
-          currentContextualDocumentationEntry
-            ? new VirtualAssistantContextualDocumentationEntry(
-                currentContextualDocumentationEntry,
-                currentContextualDocumentationEntry.related
-                  .map((entry) =>
-                    this.applicationStore.documentationService.getDocEntry(
-                      entry,
-                    ),
-                  )
-                  .filter(isNonNullable)
-                  .filter(
-                    (entry) =>
-                      // NOTE: since we're searching for user-friendly docs, we will discard anything that
-                      // doesn't come with a title, or does not have any content/url
-                      entry.title &&
-                      (entry.url ?? entry.text ?? entry.markdownText),
-                  )
-                  .map(
-                    (entry) => new VirtualAssistantDocumentationEntry(entry),
-                  ),
-              )
-            : undefined;
-      },
-      {
-        fireImmediately: true,
-        /**
-         * It seems like the reaction action is not always called in tests, causing fluctuation in
-         * code coverage report for this file. As such, for test, we would want to disable throttling
-         * to avoid timing issue.
-         *
-         * See https://docs.codecov.io/docs/unexpected-coverage-changes
-         * See https://community.codecov.io/t/codecov-reporting-impacted-files-for-unchanged-and-completely-unrelated-file/2635
-         */
-        // eslint-disable-next-line no-process-env
-        delay: process.env.NODE_ENV === 'test' ? 0 : 100,
-      },
-    );
-
-    // NOTE: we have this as a reaction and throttle because the doc registry can get huge
-    // so we need to optimize this a bit
-    // also, if we make this a `computed` and having the component uses it, when the component is
-    // unmounted, the computation will be done again, leading to losing doc entry states
-    this.docSearchReaction = reaction(
-      () => this.searchText,
-      () => {
-        this.searchResults = Array.from(
-          this.searchEngine.search(this.searchText).values(),
-        ).map((result) => new VirtualAssistantDocumentationEntry(result.item));
-      },
-      {
-        fireImmediately: true,
-        /**
-         * It seems like the reaction action is not always called in tests, causing fluctuation in
-         * code coverage report for this file. As such, for test, we would want to disable throttling
-         * to avoid timing issue.
-         *
-         * See https://docs.codecov.io/docs/unexpected-coverage-changes
-         * See https://community.codecov.io/t/codecov-reporting-impacted-files-for-unchanged-and-completely-unrelated-file/2635
-         */
-        // eslint-disable-next-line no-process-env
-        delay: process.env.NODE_ENV === 'test' ? 0 : 100,
-      },
-    );
-  }
-
-  stop(): void {
-    this.contextualDocReaction?.();
-    this.docSearchReaction?.();
-    this.currentContextualDocumentationEntry = undefined;
-    this.searchResults = [];
-    this.searchText = '';
+            .filter(isNonNullable)
+            .filter(
+              (entry) =>
+                // NOTE: since we're searching for user-friendly docs, we will discard anything that
+                // doesn't come with a title, or does not have any content/url
+                entry.title && (entry.url ?? entry.text ?? entry.markdownText),
+            )
+            .map((entry) => new VirtualAssistantDocumentationEntry(entry)),
+        )
+      : undefined;
   }
 
   setIsHidden(val: boolean): void {
@@ -270,5 +199,19 @@ export class LegendApplicationAssistantService {
 
   setSearchText(val: string): void {
     this.searchText = val;
+  }
+
+  resetSearch(): void {
+    this.searchText = '';
+    this.searchResults = [];
+    this.searchState.complete();
+  }
+
+  search(): void {
+    this.searchState.inProgress();
+    this.searchResults = Array.from(
+      this.searchEngine.search(this.searchText).values(),
+    ).map((result) => new VirtualAssistantDocumentationEntry(result.item));
+    this.searchState.complete();
   }
 }

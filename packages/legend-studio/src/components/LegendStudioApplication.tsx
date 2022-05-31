@@ -198,11 +198,6 @@ export const LegendStudioApplication = observer(
     const { config, pluginManager } = props;
     const applicationStore = useApplicationStore();
 
-    useEffect(() => {
-      applicationStore.initialize();
-      return (): void => applicationStore.cleanUp();
-    }, [applicationStore]);
-
     return (
       <SDLCServerClientProvider
         config={{

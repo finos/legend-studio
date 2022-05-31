@@ -92,11 +92,6 @@ export const LegendQueryApplication = observer(
     const { config, pluginManager } = props;
     const applicationStore = useApplicationStore();
 
-    useEffect(() => {
-      applicationStore.initialize();
-      return (): void => applicationStore.cleanUp();
-    }, [applicationStore]);
-
     return (
       <DepotServerClientProvider
         config={{

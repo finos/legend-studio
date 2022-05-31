@@ -142,8 +142,6 @@ export class ApplicationStore<T extends LegendApplicationConfig> {
       notifyWarning: action,
       notifyIllegalState: action,
       notifyError: action,
-      initialize: action,
-      cleanUp: action,
     });
 
     this.config = config;
@@ -174,14 +172,6 @@ export class ApplicationStore<T extends LegendApplicationConfig> {
       );
     }
     this.actionAlertInfo = alertInfo;
-  }
-
-  initialize(): void {
-    this.assistantService.start();
-  }
-
-  cleanUp(): void {
-    this.assistantService.stop();
   }
 
   setNotification(notification: Notification | undefined): void {
