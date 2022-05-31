@@ -100,7 +100,7 @@ export const ActivityBarMenu: React.FC = () => {
       ),
     );
   // help
-  const seekHelp = (): void => {
+  const openHelp = (): void => {
     applicationStore.assistantService.setIsHidden(false);
     applicationStore.assistantService.setIsOpen(true);
     applicationStore.assistantService.setSelectedTab(
@@ -130,7 +130,7 @@ export const ActivityBarMenu: React.FC = () => {
             </MenuContentItem>
             <MenuContentItem
               className="app__header__menu__item"
-              onClick={seekHelp}
+              onClick={openHelp}
             >
               Help...
             </MenuContentItem>

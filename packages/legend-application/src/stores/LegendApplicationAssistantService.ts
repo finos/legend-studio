@@ -103,6 +103,7 @@ export class LegendApplicationAssistantService {
       setIsOpen: action,
       setSelectedTab: action,
       setSearchText: action,
+      resetSearch: action,
       search: action,
     });
 

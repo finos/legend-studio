@@ -79,6 +79,10 @@
     }
   }
 
+  &__station--hidden {
+    display: none;
+  }
+
   &__station__drag-handle {
     height: 3.4rem;
     width: 2rem;

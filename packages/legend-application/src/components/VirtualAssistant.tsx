@@ -475,7 +475,7 @@ export const VirtualAssistant = observer(() => {
   const [isDragging, setIsDragging] = useState(false);
   const [_key, _setKey] = useState(uuid());
   const applicationStore = useApplicationStore();
-  const assistantStationRef = useRef<HTMLDivElement>(null);
+  const assistantRef = useRef<HTMLDivElement>(null);
   const assistantService = applicationStore.assistantService;
   const currentContextualDocumentationEntry =
     assistantService.currentContextualDocumentationEntry;
@@ -499,9 +499,14 @@ export const VirtualAssistant = observer(() => {
   const onDragEnd = (): void => setIsDragging(false);
   const onDragStart = (): void => setIsDragging(true);
 
-  if (assistantService.isHidden) {
-    return null;
-  }
+  useEffect(() => {
+    if (assistantService.isHidden) {
+      // reset to default position when we hide the assistant
+      // so that when we open it the position is reset
+      _setKey(uuid());
+    }
+  }, [assistantService.isHidden]);
+
   return (
     <Draggable
       // this is a trick so we could reset the default position of the assistant
@@ -514,14 +519,19 @@ export const VirtualAssistant = observer(() => {
       // limit the dnd trigger to only the drag handle
       handle=".virtual-assistant__station__drag-handle"
     >
-      <div className="virtual-assistant">
+      <div
+        className="virtual-assistant"
+        // NOTE: we have to set the `ref` at this level so even when the assistant is hidden
+        // the element is still in the DOM so when we programmatically show the assistant panel
+        // the anchor is available in time
+        ref={assistantRef}
+      >
         <div
-          ref={assistantStationRef}
           //  NOTE: make sure when we change the documentation entry, the flashing animation
           // is replayed
           key={currentContextualDocumentationEntry?.uuid ?? ''}
           className={clsx('virtual-assistant__station', {
-            // 'virtual-assistant__station--collapsed': assistantService.isHidden,
+            'virtual-assistant__station--hidden': assistantService.isHidden,
             'virtual-assistant__station--active': Boolean(
               currentContextualDocumentationEntry,
             ),
@@ -548,11 +558,12 @@ export const VirtualAssistant = observer(() => {
             ) : null}
           </button>
           {/* NOTE: temporarily hide the assistant panel while dragging so the position is re-calculated */}
-          {!isDragging && assistantStationRef.current && (
-            <VirtualAssistantPanel
-              triggerElement={assistantStationRef.current}
-            />
-          )}
+          {!isDragging &&
+            assistantService.isOpen &&
+            !assistantService.isHidden &&
+            assistantRef.current && (
+              <VirtualAssistantPanel triggerElement={assistantRef.current} />
+            )}
 
           <ContextMenu
             className={clsx('virtual-assistant__station__drag-handle', {
