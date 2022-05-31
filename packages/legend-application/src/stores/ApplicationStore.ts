@@ -16,7 +16,6 @@
 
 import {
   type SuperGenericFunction,
-  EventNotifierService,
   TracerService,
   TelemetryService,
   assertTrue,
@@ -31,7 +30,10 @@ import { APPLICATION_EVENT } from './ApplicationEvent';
 import type { LegendApplicationConfig } from './LegendApplicationConfig';
 import type { WebApplicationNavigator } from './WebApplicationNavigator';
 import type { LegendApplicationPluginManager } from '../application/LegendApplicationPluginManager';
-import { LegendApplicationDocumentationRegistry } from './LegendApplicationDocumentationRegistry';
+import { LegendApplicationDocumentationService } from './LegendApplicationDocumentationService';
+import { LegendApplicationAssistantService } from './LegendApplicationAssistantService';
+import { LegendApplicationEventService } from './LegendApplicationEventService';
+import { LegendApplicationNavigationContextService } from './LegendApplicationNavigationContextService';
 
 export enum ActionAlertType {
   STANDARD = 'STANDARD',
@@ -101,17 +103,29 @@ export class Notification {
 }
 
 export class ApplicationStore<T extends LegendApplicationConfig> {
+  pluginManager: LegendApplicationPluginManager;
+  config: T;
+
+  // navigation
   navigator: WebApplicationNavigator;
+  navigationContextService: LegendApplicationNavigationContextService;
+
+  // TODO: refactor this to `NotificationService` including notifications and alerts
   notification?: Notification | undefined;
   blockingAlertInfo?: BlockingAlertInfo | undefined;
   actionAlertInfo?: ActionAlertInfo | undefined;
-  config: T;
-  docRegistry: LegendApplicationDocumentationRegistry;
 
+  // TODO: consider renaming this to `LogService`
   log: Log = new Log();
+
+  // documentation & help
+  documentationService: LegendApplicationDocumentationService;
+  assistantService: LegendApplicationAssistantService;
+
+  // communication
+  eventService = new LegendApplicationEventService();
   telemetryService = new TelemetryService();
   tracerService = new TracerService();
-  eventNotifierService = new EventNotifierService();
 
   constructor(
     config: T,
@@ -132,29 +146,17 @@ export class ApplicationStore<T extends LegendApplicationConfig> {
 
     this.config = config;
     this.navigator = navigator;
-
-    // Documentation
-    this.docRegistry = new LegendApplicationDocumentationRegistry();
-    [
-      ...pluginManager
-        .getApplicationPlugins()
-        .flatMap(
-          (plugin) => plugin.getExtraKeyedDocumentationEntries?.() ?? [],
-        ),
-      // entries from config will override entries specified natively
-      ...config.documentationKeyedEntries,
-    ].forEach((entry) =>
-      this.docRegistry.registerEntry(entry.key, entry.content),
-    );
-    this.docRegistry.url = this.config.documentationUrl;
-
-    // Register plugins
+    this.pluginManager = pluginManager;
+    this.navigationContextService =
+      new LegendApplicationNavigationContextService();
+    this.documentationService = new LegendApplicationDocumentationService(this);
+    this.assistantService = new LegendApplicationAssistantService(this);
     this.log.registerPlugins(pluginManager.getLoggerPlugins());
     this.telemetryService.registerPlugins(
       pluginManager.getTelemetryServicePlugins(),
     );
     this.tracerService.registerPlugins(pluginManager.getTracerServicePlugins());
-    this.eventNotifierService.registerPlugins(
+    this.eventService.registerEventNotifierPlugins(
       pluginManager.getEventNotifierPlugins(),
     );
   }

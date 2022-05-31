@@ -30,8 +30,8 @@ import {
   ResizablePanelSplitter,
   ResizablePanelSplitterLine,
   TimesIcon,
-  ToggleOff,
-  ToggleOn,
+  ToggleOffIcon,
+  ToggleOnIcon,
 } from '@finos/legend-art';
 import { ExternalFormatData } from '@finos/legend-graph';
 import {
@@ -668,9 +668,9 @@ export const ServiceRequestPatternEditor = observer(
                       title={'Toggle'}
                     >
                       {serviceStubMappingState.toggleOn ? (
-                        <ToggleOn className="url-editor__icon" />
+                        <ToggleOnIcon className="url-editor__icon" />
                       ) : (
-                        <ToggleOff className="url-editor__icon" />
+                        <ToggleOffIcon className="url-editor__icon" />
                       )}
                     </button>
                   </div>

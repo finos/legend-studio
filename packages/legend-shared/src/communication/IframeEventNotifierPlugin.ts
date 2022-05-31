@@ -15,7 +15,10 @@
  */
 
 import packageJson from '../../package.json';
-import { type EventData, EventNotifierPlugin } from './EventNotifierService';
+import {
+  type NotificationEventData,
+  EventNotifierPlugin,
+} from './EventNotifierPlugin';
 
 export class IframeEventNotifierPlugin extends EventNotifierPlugin {
   constructor() {
@@ -25,7 +28,7 @@ export class IframeEventNotifierPlugin extends EventNotifierPlugin {
     );
   }
 
-  notify(event: string, data: EventData): void {
+  notify(event: string, data: NotificationEventData): void {
     // NOTE: here we only open communication channel with parent frame, hence `window.parent`
     // instead of `window.top`
     //

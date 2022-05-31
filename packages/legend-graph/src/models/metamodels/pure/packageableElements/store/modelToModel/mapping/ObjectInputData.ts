@@ -17,16 +17,11 @@
 import {
   type Hashable,
   hashArray,
-  isValidJSONString,
   tryToMinifyLosslessJSONString,
 } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import { InputData } from '../../../mapping/InputData';
 import type { Class } from '../../../domain/Class';
-import {
-  type ValidationIssue,
-  createValidationError,
-} from '../../../../../../../helpers/ValidationHelper';
 import type { PackageableElementReference } from '../../../PackageableElementReference';
 
 export enum ObjectInputType {
@@ -54,23 +49,6 @@ export class ObjectInputData extends InputData implements Hashable {
       inputType === ObjectInputType.JSON
         ? tryToMinifyLosslessJSONString(data)
         : data;
-  }
-
-  get validationResult(): ValidationIssue | undefined {
-    // TODO: use `isStubbed_PackageableElement` when we refactor validation
-    if (!this.sourceClass.value.package && !this.sourceClass.value.name) {
-      return createValidationError([
-        'Object input data source class is missing',
-      ]);
-    }
-    if (this.inputType === ObjectInputType.JSON) {
-      return !isValidJSONString(this.data)
-        ? createValidationError([
-            'JSON object input data is not a valid JSON string',
-          ])
-        : undefined;
-    }
-    return undefined;
   }
 
   get hashCode(): string {

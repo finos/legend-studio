@@ -84,7 +84,7 @@ export const prettyCamelCase = (value: string | undefined): string =>
 
 export const tryToFormatJSONString = (value: string, tabSize = 2): string => {
   try {
-    return JSON.stringify(JSON.parse(value), null, tabSize);
+    return JSON.stringify(JSON.parse(value), undefined, tabSize);
   } catch {
     return value;
   }

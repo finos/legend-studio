@@ -14,8 +14,23 @@
  * limitations under the License.
  */
 
-export enum V1_ENGINE_EVENT {
-  GRAMMAR_TO_JSON = 'GRAMMAR_TO_JSON',
-  JSON_TO_GRAMMAR = 'JSON_TO_GRAMMAR',
-  COMPILATION = 'COMPILATION',
-}
+import type { FlatDataInputData } from '../../../StoreFlatData_Exports';
+import { isStubbed_PackageableElement } from '../creation/DomainModelCreatorHelper';
+import {
+  type ValidationIssue,
+  createValidationError,
+} from './ValidationHelper';
+
+/**
+ * @deprecated
+ */
+export const DEPRECATED__validate_FlatDataInputData = (
+  metamodel: FlatDataInputData,
+): ValidationIssue | undefined => {
+  if (isStubbed_PackageableElement(metamodel.sourceFlatData.value)) {
+    return createValidationError([
+      'Flat-data input data source flat-data store is missing',
+    ]);
+  }
+  return undefined;
+};

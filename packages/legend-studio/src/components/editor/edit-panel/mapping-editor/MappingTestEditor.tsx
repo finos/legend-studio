@@ -79,6 +79,7 @@ import {
   RelationalInputType,
   stub_RawLambda,
   isStubbed_RawLambda,
+  DEPRECATED__validate_MappingTestAssert,
 } from '@finos/legend-graph';
 import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor';
 import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../../stores/DSLMapping_LegendStudioPlugin_Extension';
@@ -480,7 +481,9 @@ export const MappingTestExpectedOutputAssertionBuilder = observer(
   }) => {
     const { testState, assertionState, isReadOnly } = props;
     const applicationStore = useApplicationStore();
-    const validationResult = testState.test.assert.validationResult;
+    const validationResult = DEPRECATED__validate_MappingTestAssert(
+      testState.test,
+    );
     const isValid = !validationResult;
     // Expected Result
     const updateExpectedResult = (val: string): void => {

@@ -16,7 +16,7 @@
 
 import {
   type EventNotifierPlugin,
-  type EventNotifierServicePluginManager,
+  type EventNotifierPluginManager,
   type LoggerPlugin,
   type LoggerPluginManager,
   type TelemetryServicePlugin,
@@ -33,7 +33,7 @@ export class LegendApplicationPluginManager
     LoggerPluginManager,
     TelemetryServicePluginManager,
     TracerServicePluginManager,
-    EventNotifierServicePluginManager
+    EventNotifierPluginManager
 {
   protected loggerPlugins: LoggerPlugin[] = [];
   protected telemetryServicePlugins: TelemetryServicePlugin[] = [];

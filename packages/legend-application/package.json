@@ -48,15 +48,18 @@
     "@finos/legend-shared": "workspace:*",
     "@types/css-font-loading-module": "0.0.7",
     "@types/react": "18.0.9",
-    "@types/react-dom": "18.0.3",
+    "@types/react-dom": "18.0.5",
     "@types/react-router-dom": "5.3.2",
+    "date-fns": "2.28.0",
+    "fuse.js": "6.6.2",
     "history": "5.3.0",
-    "mobx": "6.5.0",
+    "mobx": "6.6.0",
     "mobx-react-lite": "3.4.0",
     "monaco-editor": "0.33.0",
     "react": "18.1.0",
     "react-dom": "18.1.0",
-    "react-resize-detector": "7.0.0",
+    "react-draggable": "4.4.5",
+    "react-resize-detector": "7.1.1",
     "react-router": "5.2.1",
     "react-router-dom": "5.3.0",
     "serializr": "2.0.5"
@@ -64,12 +67,12 @@
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",
     "cross-env": "7.0.3",
-    "eslint": "8.15.0",
+    "eslint": "8.16.0",
     "jest": "28.1.0",
     "npm-run-all": "4.1.5",
     "rimraf": "3.0.2",
-    "sass": "1.51.0",
-    "typescript": "4.6.4"
+    "sass": "1.52.1",
+    "typescript": "4.7.2"
   },
   "peerDependencies": {
     "react": "^18.0.0"

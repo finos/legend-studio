@@ -17,25 +17,23 @@
 import {
   AbstractPlugin,
   type AbstractPluginManager,
-  type PluginConsumer,
 } from '../application/AbstractPluginManager';
 
 // NOTE: here, we keep event data at a very generic shape
-// One of the main motivation of event notifier is Github web hook
+// One of the main motivation of event notifier is Github web-hook
 // we would need to document event as well their event data
 // See https://docs.github.com/en/developers/webhooks-and-events/webhooks/webhook-events-and-payloads#webhook-payload-object-common-properties
-export interface EventData {
+export interface NotificationEventData {
   [key: string]: unknown;
 }
 
-export interface EventNotifierServicePluginManager
-  extends AbstractPluginManager {
+export interface EventNotifierPluginManager extends AbstractPluginManager {
   registerEventNotifierPlugin(plugin: EventNotifierPlugin): void;
   getEventNotifierPlugins(): EventNotifierPlugin[];
 }
 
 export abstract class EventNotifierPlugin extends AbstractPlugin {
-  install(pluginManager: EventNotifierServicePluginManager): void {
+  install(pluginManager: EventNotifierPluginManager): void {
     pluginManager.registerEventNotifierPlugin(this);
   }
 
@@ -43,17 +41,5 @@ export abstract class EventNotifierPlugin extends AbstractPlugin {
    * NOTE: Similar to telemetry service, event notifier should be considered "fire and forget"
    * it should not throw any error
    */
-  abstract notify(event: string, data: EventData): void;
-}
-
-export class EventNotifierService implements PluginConsumer {
-  private plugins: EventNotifierPlugin[] = [];
-
-  registerPlugins(plugins: EventNotifierPlugin[]): void {
-    this.plugins = plugins;
-  }
-
-  notify(event: string, data: EventData): void {
-    this.plugins.forEach((plugin) => plugin.notify(event, data));
-  }
+  abstract notify(event: string, data: NotificationEventData): void;
 }

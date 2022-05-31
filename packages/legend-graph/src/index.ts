@@ -162,10 +162,8 @@ export * from './helpers/Testable_Helper';
 export * from './helpers/DSLMapping_Helper';
 export * from './helpers/StoreRelational_Helper';
 export * from './helpers/StoreFlatData_Helper';
-export * from './helpers/DSLService_Helper';
 export * from './helpers/DSLGeneration_Helper';
 
-export * from './helpers/ValidationHelper';
 export * from './helpers/PureLanguageHelper';
 
 // --------------------------------------------- GRAPH --------------------------------------------------
@@ -263,7 +261,6 @@ export { V1_transformPropertyReference } from './models/protocols/pure/v1/transf
 export { V1_buildEngineRuntime } from './models/protocols/pure/v1/transformation/pureGraph/to/helpers/V1_RuntimeBuilderHelper';
 export { V1_EngineServerClient } from './models/protocols/pure/v1/engine/V1_EngineServerClient';
 export { V1_Engine } from './models/protocols/pure/v1/engine/V1_Engine';
-export * from './models/protocols/pure/v1/engine/V1_EngineEvent';
 export {
   V1_entitiesToPureModelContextData,
   V1_deserializePureModelContextData,
@@ -292,6 +289,12 @@ export * from './models/metamodels/pure/test/assertion/status/EqualToJsonAssertF
 export * from './models/metamodels/pure/test/assertion/TestAssertion';
 export * from './models/metamodels/pure/test/Test';
 export * from './models/metamodels/pure/test/result/AtomicTestId';
+
+// --------------------------------------------- VALIDATION --------------------------------------------------
+
+export * from './graphManager/action/validation/ValidationHelper';
+export * from './graphManager/action/validation/DSLService_ValidationHelper';
+export * from './graphManager/action/validation/DSLMapping_ValidationHelper';
 
 // --------------------------------------------- OBSERVER --------------------------------------------------
 

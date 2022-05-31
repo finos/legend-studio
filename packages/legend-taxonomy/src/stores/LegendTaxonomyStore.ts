@@ -379,7 +379,6 @@ export class LegendTaxonomyStore {
     default: 300,
     snap: 150,
   });
-  isInExpandedMode = true;
   hotkeys: HotkeyConfiguration[] = [];
   searchTaxonomyNodeCommandState = new NonBlockingDialogState();
 
@@ -404,13 +403,11 @@ export class LegendTaxonomyStore {
     pluginManager: LegendTaxonomyPluginManager,
   ) {
     makeObservable(this, {
-      isInExpandedMode: observable,
       standaloneDataSpaceViewerState: observable,
       treeData: observable.ref,
       currentTaxonomyNodeViewerState: observable,
       initialize: flow,
       initializeStandaloneDataSpaceViewer: flow,
-      setExpandedMode: action,
       setTreeData: action,
       setCurrentTaxonomyNodeViewerState: action,
     });
@@ -439,10 +436,6 @@ export class LegendTaxonomyStore {
         },
       ),
     ];
-  }
-
-  setExpandedMode(val: boolean): void {
-    this.isInExpandedMode = val;
   }
 
   setTreeData(val: TreeData<TaxonomyTreeNodeData>): void {

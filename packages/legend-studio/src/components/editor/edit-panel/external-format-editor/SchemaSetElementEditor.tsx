@@ -42,7 +42,7 @@ import { useMemo } from 'react';
 import {
   SchemaSetEditorState,
   SCHEMA_SET_TAB_TYPE,
-} from '../../../../stores/editor-state/element-editor-state/externalFormat/SchemaSetEditorState';
+} from '../../../../stores/editor-state/element-editor-state/external-format/SchemaSetEditorState';
 import { EDITOR_LANGUAGE } from '@finos/legend-application';
 import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor';
 import { getEditorLanguageFromFormat } from '../../../../stores/editor-state/FileGenerationViewerState';

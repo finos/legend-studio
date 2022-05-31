@@ -38,7 +38,7 @@ import type { V1_GeneralizationView } from '../../model/packageableElements/diag
 import {
   getClassView,
   _relationshipView_simplifyPath,
-} from '../../../../../../helpers/DiagramHelper';
+} from '../../../../../../helpers/DSLDiagram_Helper';
 
 const buildPoint = (point: V1_Point): Point => {
   const x = guaranteeNonNullable(point.x, `Point 'x' coordinate is missing`);

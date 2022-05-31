@@ -28,7 +28,6 @@ import {
   PanelLoadingIndicator,
 } from '@finos/legend-art';
 import { LEGEND_STUDIO_ROUTE_PATTERN } from '../stores/LegendStudioRouter';
-import { LegendStudioAppHeaderMenu } from './editor/header/LegendStudioAppHeaderMenu';
 import type { LegendStudioPluginManager } from '../application/LegendStudioPluginManager';
 import { flowResult } from 'mobx';
 import { SDLCServerClientProvider } from '@finos/legend-server-sdlc';
@@ -39,9 +38,9 @@ import {
 } from './LegendStudioStoreProvider';
 import { GraphManagerStateProvider } from '@finos/legend-graph';
 import {
-  AppHeader,
   LegendApplicationComponentFrameworkProvider,
   useApplicationStore,
+  VirtualAssistant,
 } from '@finos/legend-application';
 import type { LegendStudioConfig } from '../application/LegendStudioConfig';
 import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../stores/LegendStudioDocumentation';
@@ -51,58 +50,53 @@ const LegendStudioNotFoundRouteScreen = observer(() => {
 
   const currentPath = applicationStore.navigator.getCurrentLocationPath();
 
-  const documentation = applicationStore.docRegistry.getEntry(
+  const documentation = applicationStore.documentationService.getDocEntry(
     LEGEND_STUDIO_DOCUMENTATION_KEY.NOT_FOUND_HELP,
   );
 
   return (
     <div className="app__page">
-      <AppHeader>
-        <LegendStudioAppHeaderMenu />
-      </AppHeader>
-      <div className="app__content">
-        <div
-          className={clsx('not-found-screen', {
-            'not-found-screen--no-documentation': !documentation?.markdownText,
-          })}
-        >
-          <div className="not-found-screen__icon">
-            <div className="not-found-screen__icon__ghost">
-              <GhostIcon />
-            </div>
-            <div className="not-found-screen__icon__shadow">
-              <svg viewBox="0 0 600 400">
-                <g transform="translate(300 200)">
-                  <ellipse
-                    className="not-found-screen__icon__shadow__inner"
-                    rx="320"
-                    ry="80"
-                  ></ellipse>
-                </g>
-              </svg>
-            </div>
+      <div
+        className={clsx('not-found-screen', {
+          'not-found-screen--no-documentation': !documentation?.markdownText,
+        })}
+      >
+        <div className="not-found-screen__icon">
+          <div className="not-found-screen__icon__ghost">
+            <GhostIcon />
           </div>
-          <div className="not-found-screen__text-content">
-            <div className="not-found-screen__text-content__title">
-              404. Not Found
-            </div>
-            <div className="not-found-screen__text-content__detail">
-              The requested URL
-              <span className="not-found-screen__text-content__detail__url">
-                {applicationStore.navigator.generateLocation(currentPath)}
-              </span>
-              was not found in the application
-            </div>
+          <div className="not-found-screen__icon__shadow">
+            <svg viewBox="0 0 600 400">
+              <g transform="translate(300 200)">
+                <ellipse
+                  className="not-found-screen__icon__shadow__inner"
+                  rx="320"
+                  ry="80"
+                ></ellipse>
+              </g>
+            </svg>
           </div>
-          {documentation?.markdownText && (
-            <div className="not-found-screen__documentation">
-              <MarkdownTextViewer
-                value={documentation.markdownText}
-                className="markdown-content--page"
-              />
-            </div>
-          )}
         </div>
+        <div className="not-found-screen__text-content">
+          <div className="not-found-screen__text-content__title">
+            404. Not Found
+          </div>
+          <div className="not-found-screen__text-content__detail">
+            The requested URL
+            <span className="not-found-screen__text-content__detail__url">
+              {applicationStore.navigator.generateLocation(currentPath)}
+            </span>
+            was not found in the application
+          </div>
+        </div>
+        {documentation?.markdownText && (
+          <div className="not-found-screen__documentation">
+            <MarkdownTextViewer
+              value={documentation.markdownText}
+              className="markdown-content--page"
+            />
+          </div>
+        )}
       </div>
     </div>
   );
@@ -132,65 +126,65 @@ export const LegendStudioApplicationRoot = observer(() => {
     <div className="app">
       {!studioStore.isSDLCAuthorized && (
         <div className="app__page">
-          <AppHeader>
-            <LegendStudioAppHeaderMenu />
-          </AppHeader>
           <PanelLoadingIndicator isLoading={true} />
-          <div className="app__content" />
         </div>
       )}
       {studioStore.isSDLCAuthorized && (
-        <Switch>
-          <Route
-            exact={true}
-            path={[
-              LEGEND_STUDIO_ROUTE_PATTERN.VIEW,
-              LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_GAV,
-              LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_GAV_ENTITY,
-              LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_ENTITY,
-              LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_REVISION,
-              LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_VERSION,
-              LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_REVISION_ENTITY,
-              LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_VERSION_ENTITY,
-            ]}
-            component={Viewer}
-          />
-          <Route
-            exact={true}
-            path={LEGEND_STUDIO_ROUTE_PATTERN.REVIEW}
-            component={Review}
-          />
-          <Route
-            exact={true}
-            strict={true}
-            path={[
-              LEGEND_STUDIO_ROUTE_PATTERN.EDIT_GROUP,
-              LEGEND_STUDIO_ROUTE_PATTERN.EDIT,
-            ]}
-            component={Editor}
-          />
-          <Route
-            exact={true}
-            path={[
-              // root path will lead to setup page (home page)
-              '/',
-              LEGEND_STUDIO_ROUTE_PATTERN.SETUP,
-              LEGEND_STUDIO_ROUTE_PATTERN.SETUP_GROUP,
-            ]}
-            component={Setup}
-          />
-          {extraApplicationPageRenderEntries.map((entry) => (
+        <>
+          {/* TODO: consider moving this to `LegendApplicationComponentFrameworkProvider` */}
+          <VirtualAssistant />
+          <Switch>
             <Route
-              key={entry.key}
               exact={true}
-              path={entry.urlPatterns.map(generateExtensionUrlPattern)}
-              component={entry.component as React.ComponentType<unknown>}
+              path={[
+                LEGEND_STUDIO_ROUTE_PATTERN.VIEW,
+                LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_GAV,
+                LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_GAV_ENTITY,
+                LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_ENTITY,
+                LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_REVISION,
+                LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_VERSION,
+                LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_REVISION_ENTITY,
+                LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_VERSION_ENTITY,
+              ]}
+              component={Viewer}
             />
-          ))}
-          <Route>
-            <LegendStudioNotFoundRouteScreen />
-          </Route>
-        </Switch>
+            <Route
+              exact={true}
+              path={LEGEND_STUDIO_ROUTE_PATTERN.REVIEW}
+              component={Review}
+            />
+            <Route
+              exact={true}
+              strict={true}
+              path={[
+                LEGEND_STUDIO_ROUTE_PATTERN.EDIT_GROUP,
+                LEGEND_STUDIO_ROUTE_PATTERN.EDIT,
+              ]}
+              component={Editor}
+            />
+            <Route
+              exact={true}
+              path={[
+                // root path will lead to setup page (home page)
+                '/',
+                LEGEND_STUDIO_ROUTE_PATTERN.SETUP,
+                LEGEND_STUDIO_ROUTE_PATTERN.SETUP_GROUP,
+              ]}
+              component={Setup}
+            />
+            {extraApplicationPageRenderEntries.map((entry) => (
+              <Route
+                key={entry.key}
+                exact={true}
+                path={entry.urlPatterns.map(generateExtensionUrlPattern)}
+                component={entry.component as React.ComponentType<unknown>}
+              />
+            ))}
+            <Route>
+              <LegendStudioNotFoundRouteScreen />
+            </Route>
+          </Switch>
+        </>
       )}
     </div>
   );

@@ -24,7 +24,7 @@ import {
   _findOrBuildPoint,
   _relationshipView_simplifyPath,
   _relationshipView_setPath,
-} from '../../helpers/DiagramHelper';
+} from '../../helpers/DSLDiagram_Helper';
 import type { PropertyView } from '../../models/metamodels/pure/packageableElements/diagram/DSLDiagram_PropertyView';
 import type { RelationshipEdgeView } from '../../models/metamodels/pure/packageableElements/diagram/DSLDiagram_RelationshipEdgeView';
 import type { RelationshipView } from '../../models/metamodels/pure/packageableElements/diagram/DSLDiagram_RelationshipView';
@@ -114,21 +114,22 @@ export const classView_setHideTaggedValues = action(
 );
 export const relationshipEdgeView_setOffsetX = action(
   (r: RelationshipEdgeView, val: number): void => {
-    r.offsetX = val;
+    r._offsetX = val;
   },
 );
 export const relationshipEdgeView_setOffsetY = action(
   (r: RelationshipEdgeView, val: number): void => {
-    r.offsetY = val;
+    r._offsetY = val;
   },
 );
 
-// To optimize performance we will not observe point (path)
+// NOTE: To optimize performance, for now, we will not observe point (path)
 export const relationshipView_changePoint = action(
   (v: RelationshipView, val: Point, newVal: Point): void => {
     changeEntry(v.path, val, newVal);
   },
 );
+
 export const relationshipView_simplifyPath = action(
   _relationshipView_simplifyPath,
 );
@@ -136,19 +137,20 @@ export const relationshipView_simplifyPath = action(
 export const findOrBuildPoint = action(_findOrBuildPoint);
 export const relationshipView_setPath = action(_relationshipView_setPath);
 
-// To optimize performance we will not observe rectangle
+// NOTE: To optimize performance, for now, we will not observe rectangle
 export const positionedRectangle_setRectangle = action(
   (pR: PositionedRectangle, value: Rectangle): void => {
     pR.rectangle = value;
   },
 );
 
-// To optimize performance we will not observe point (path)
+// NOTE: To optimize performance, for now, we will not observe point (path)
 export const positionedRectangle_setPosition = action(
   (pR: PositionedRectangle, value: Point): void => {
     pR.position = value;
   },
 );
+
 /**
  * NOTE: Having `position` and `rectangle` as observables compromises the performance of diagram
  * so we want to have a way to refresh the hash for change detection to pick up new hash when we resize
@@ -159,6 +161,6 @@ export const positionedRectangle_setPosition = action(
  */
 export const positionedRectangle_forceRefreshHash = action(
   (pR: PositionedRectangle): void => {
-    pR.dummyObservable = {};
+    pR._dummyObservable = {};
   },
 );

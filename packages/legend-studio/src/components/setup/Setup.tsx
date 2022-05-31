@@ -28,6 +28,7 @@ import {
   PanelLoadingIndicator,
   CheckSquareIcon,
   MarkdownTextViewer,
+  AssistantIcon,
 } from '@finos/legend-art';
 import type { ProjectOption } from '../../stores/SetupStore';
 import { SetupStoreProvider, useSetupStore } from './SetupStoreProvider';
@@ -37,17 +38,18 @@ import {
   type SetupPathParams,
   generateEditorRoute,
 } from '../../stores/LegendStudioRouter';
-import { LegendStudioAppHeaderMenu } from '../editor/header/LegendStudioAppHeaderMenu';
 import { flowResult } from 'mobx';
 import { WorkspaceType } from '@finos/legend-server-sdlc';
 import {
   useApplicationStore,
-  AppHeader,
   DocumentationLink,
+  useApplicationNavigationContext,
 } from '@finos/legend-application';
 import type { LegendStudioConfig } from '../../application/LegendStudioConfig';
 import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../stores/LegendStudioDocumentation';
 import { CreateProjectModal } from './ProjectCreateModal';
+import { ActivityBarMenu } from '../editor/ActivityBar';
+import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT } from '../../stores/LegendStudioApplicationNavigationContext';
 
 const CreateWorkspaceModal = observer(() => {
   const setupStore = useSetupStore();
@@ -234,7 +236,7 @@ const SetupSelection = observer(() => {
   const projectSelectorRef = useRef<SelectComponent>(null);
   const workspaceSelectorRef = useRef<SelectComponent>(null);
   const proceedButtonRef = useRef<HTMLButtonElement>(null);
-  const documentation = applicationStore.docRegistry.getEntry(
+  const documentation = applicationStore.documentationService.getDocEntry(
     LEGEND_STUDIO_DOCUMENTATION_KEY.SETUP_WORKSPACE,
   );
   const isCreatingWorkspace = setupStore.createWorkspaceState.isInProgress;
@@ -273,6 +275,8 @@ const SetupSelection = observer(() => {
       );
     }
   };
+  const toggleAssistant = (): void =>
+    applicationStore.assistantService.toggleAssistant();
 
   useEffect(() => {
     if (!disableProceedButton) {
@@ -282,57 +286,87 @@ const SetupSelection = observer(() => {
 
   return (
     <div className="app__page">
-      <AppHeader>
-        <LegendStudioAppHeaderMenu />
-      </AppHeader>
-      <div className="app__content">
-        <div className="setup">
+      <div className="setup">
+        <div className="setup__body">
+          <div className="activity-bar">
+            {/*
+              TODO: consider what we can put here and componentize it
+              Currently, we reuse the one from editor which might
+              no longer be right in the future
+            */}
+            <ActivityBarMenu />
+          </div>
           <div
             className="setup__content"
             data-testid={LEGEND_STUDIO_TEST_ID.SETUP__CONTENT}
           >
-            <div className="setup__title">
-              <div className="setup__title__header">
-                Setup Workspace
-                <DocumentationLink
-                  className="setup__doc__setup-workspace"
-                  documentationKey={
-                    LEGEND_STUDIO_DOCUMENTATION_KEY.SETUP_WORKSPACE
-                  }
-                />
-              </div>
-              {documentation?.markdownText && (
-                <div className="setup__title__documentation">
-                  <MarkdownTextViewer value={documentation.markdownText} />
+            <div className="setup__content__main">
+              <div className="setup__title">
+                <div className="setup__title__header">
+                  Setup Workspace
+                  <DocumentationLink
+                    className="setup__doc__setup-workspace"
+                    documentationKey={
+                      LEGEND_STUDIO_DOCUMENTATION_KEY.SETUP_WORKSPACE
+                    }
+                  />
                 </div>
-              )}
-            </div>
-            <div>
-              <ProjectSelector
-                ref={projectSelectorRef}
-                onChange={onProjectChange}
-                create={handleCreateProjectModal}
-              />
-              <WorkspaceSelector
-                ref={workspaceSelectorRef}
-                onChange={onWorkspaceChange}
-                create={handleCreateWorkspaceModal}
-              />
-              <div className="setup__actions">
-                <button
-                  ref={proceedButtonRef}
-                  className="setup__next-btn btn--dark"
-                  onClick={handleProceed}
-                  disabled={disableProceedButton}
-                >
-                  Edit Workspace
-                </button>
+                {documentation?.markdownText && (
+                  <div className="setup__title__documentation">
+                    <MarkdownTextViewer value={documentation.markdownText} />
+                  </div>
+                )}
               </div>
+              <div>
+                <ProjectSelector
+                  ref={projectSelectorRef}
+                  onChange={onProjectChange}
+                  create={handleCreateProjectModal}
+                />
+                <WorkspaceSelector
+                  ref={workspaceSelectorRef}
+                  onChange={onWorkspaceChange}
+                  create={handleCreateWorkspaceModal}
+                />
+                <div className="setup__actions">
+                  <button
+                    ref={proceedButtonRef}
+                    className="setup__next-btn btn--dark"
+                    onClick={handleProceed}
+                    disabled={disableProceedButton}
+                  >
+                    Edit Workspace
+                  </button>
+                </div>
+              </div>
+              {/* NOTE: We do this to reset the initial state of the modals */}
+              {setupStore.showCreateProjectModal && <CreateProjectModal />}
+              {setupStore.showCreateWorkspaceModal && <CreateWorkspaceModal />}
             </div>
           </div>
-          {/* We do this to reset the initial state of the modals */}
-          {setupStore.showCreateProjectModal && <CreateProjectModal />}
-          {setupStore.showCreateWorkspaceModal && <CreateWorkspaceModal />}
+        </div>
+
+        <div
+          data-testid={LEGEND_STUDIO_TEST_ID.STATUS_BAR}
+          className="editor__status-bar"
+        >
+          <div className="editor__status-bar__left"></div>
+          <div className="editor__status-bar__right">
+            <button
+              className={clsx(
+                'editor__status-bar__action editor__status-bar__action__toggler',
+                {
+                  'editor__status-bar__action__toggler--active':
+                    !applicationStore.assistantService.isHidden,
+                },
+              )}
+              onClick={toggleAssistant}
+              tabIndex={-1}
+              title="Toggle assistant"
+            >
+              <AssistantIcon />
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -358,6 +392,10 @@ export const SetupInner = observer(() => {
       );
     }
   }, [applicationStore, setupStore]);
+
+  useApplicationNavigationContext(
+    LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT.SETUP,
+  );
 
   return <SetupSelection />;
 });

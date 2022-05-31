@@ -36,6 +36,7 @@ export * from './components/menu/ContextMenu';
 export * from './components/menu/DropdownMenu';
 
 export * from './components/popover/BasePopover';
+export * from './components/popover/BasePopper';
 export * from './components/RadioGroup/BaseRadioGroup';
 
 export * from './components/panel/BlankPanelContent';

@@ -148,12 +148,15 @@ export class SetupStore {
   setShowCreateProjectModal(val: boolean): void {
     this.showCreateProjectModal = val;
   }
+
   setShowCreateWorkspaceModal(val: boolean): void {
     this.showCreateWorkspaceModal = val;
   }
+
   setCurrentProjectId(id: string | undefined): void {
     this.currentProjectId = id;
   }
+
   setCurrentWorkspaceIdentifier(val: WorkspaceIdentifier | undefined): void {
     this.currentWorkspaceIdentifier = val;
   }

@@ -511,6 +511,7 @@ export class ServicePureExecutionState extends ServiceExecutionState {
   closeRuntimeEditor(): void {
     this.runtimeEditorState = undefined;
   }
+
   openRuntimeEditor(): void {
     if (
       this.selectedExecutionConfiguration &&

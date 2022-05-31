@@ -224,7 +224,7 @@ const ExecutionNodeElementTreeNodeContainer: React.FC<
         display: 'flex',
       }}
     >
-      <div className="tree-view__node__icon flat-data-column-tree__node__icon">
+      <div className="tree-view__node__icon">
         <div className="type-tree__expand-icon" onClick={expandNode}>
           {nodeExpandIcon}
         </div>

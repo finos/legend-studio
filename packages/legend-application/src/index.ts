@@ -22,12 +22,15 @@ export * from './application/LegendApplication';
 export * from './components/ApplicationStoreProvider';
 export * from './components/WebApplicationNavigatorProvider';
 export * from './components/LegendApplicationComponentFrameworkProvider';
+export * from './components/LegendApplicationNavigationContextServiceUtils';
 
 export * from './components/ApplicationStoreProviderTestUtils';
 export * from './components/WebApplicationNavigatorProviderTestUtils';
 
-export { AppHeader } from './components/AppHeader';
-export { DocumentationLink } from './components/DocumentationLink';
+// TODO: consider moving this to `LegendApplicationComponentFrameworkProvider`
+// once we think we can add virtual assistant support for all apps
+export * from './components/VirtualAssistant';
+export * from './components/DocumentationLink';
 export * from './components/TextInputEditor';
 export * from './components/LambdaEditor';
 
@@ -38,7 +41,10 @@ export * from './stores/LegendApplicationConfig';
 export { WebApplicationNavigator } from './stores/WebApplicationNavigator';
 export { LambdaEditorState } from './stores/LambdaEditorState';
 export * from './stores/PackageableElementOption';
-export * from './stores/LegendApplicationDocumentationRegistry';
+export * from './stores/LegendApplicationDocumentationService';
+export * from './stores/LegendApplicationEventService';
+export * from './stores/LegendApplicationAssistantService';
+export * from './stores/LegendApplicationNavigationContextService';
 export * from './stores/LegendApplicationPlugin';
 
 export * from './stores/ApplicationStoreTestUtils';

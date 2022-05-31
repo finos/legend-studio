@@ -104,7 +104,7 @@ import {
   property_setGenericType,
   property_setMultiplicity,
 } from '@finos/legend-studio';
-import { cleanUpDeadReferencesInDiagram } from '../../helpers/DiagramHelper';
+import { cleanUpDeadReferencesInDiagram } from '../../helpers/DSLDiagram_Helper';
 import { Point } from '../../models/metamodels/pure/packageableElements/diagram/geometry/DSLDiagram_Point';
 import type { DSLDiagram_LegendStudioPlugin_Extension } from './DSLDiagram_LegendStudioPlugin_Extension';
 import {

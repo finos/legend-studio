@@ -14,27 +14,23 @@
  * limitations under the License.
  */
 
-@use 'mixins' as *;
+import type { RelationalInputData } from '../../../StoreRelational_Exports';
+import { isStubbed_PackageableElement } from '../creation/DomainModelCreatorHelper';
+import {
+  type ValidationIssue,
+  createValidationError,
+} from './ValidationHelper';
 
-.about-modal {
-  &__info-entry {
-    display: flex;
-    cursor: default;
-    padding: 0.2rem 0;
+/**
+ * @deprecated
+ */
+export const DEPRECATED__validation_RelationalInputData = (
+  metamodel: RelationalInputData,
+): ValidationIssue | undefined => {
+  if (isStubbed_PackageableElement(metamodel.database.value)) {
+    return createValidationError([
+      'Relational input data source database store is missing',
+    ]);
   }
-
-  &__info-entry__title {
-    margin-right: 0.5rem;
-    color: var(--color-dark-grey-500);
-  }
-
-  &__info-entry__value {
-    color: var(--color-light-grey-200);
-  }
-
-  &__info-entry__value a {
-    text-decoration: none;
-    font-weight: 500;
-    color: var(--color-blue-50);
-  }
-}
+  return undefined;
+};

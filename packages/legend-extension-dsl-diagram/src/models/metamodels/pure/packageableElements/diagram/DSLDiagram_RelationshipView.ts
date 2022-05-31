@@ -47,6 +47,8 @@ export class RelationshipView implements Hashable {
     this.to = new RelationshipEdgeView(ClassViewExplicitReference.create(to));
   }
 
+  // TODO: to be simplified out of metamodel
+  // we will move these when we move hashing out of metamodel
   /**
    * Calculate the end points of the edge using offset, otherwise, use the center
    */
@@ -56,18 +58,20 @@ export class RelationshipView implements Hashable {
   ): Point {
     const box = edgeView.classView.value;
     const center = edgeView.classView.value.center();
-    const newX = center.x + (edgeView.offsetX ?? 0);
-    const newY = center.y + (edgeView.offsetY ?? 0);
+    const newX = center.x + (edgeView._offsetX ?? 0);
+    const newY = center.y + (edgeView._offsetY ?? 0);
     if (box.contains(newX, newY)) {
       return new Point(newX, newY);
     }
     if (allowChange) {
-      edgeView.offsetX = 0;
-      edgeView.offsetY = 0;
+      edgeView._offsetX = 0;
+      edgeView._offsetY = 0;
     }
     return new Point(center.x, center.y);
   }
 
+  // TODO: to be simplified out of metamodel
+  // we will move these when we move hashing out of metamodel
   /**
    * Compute the full path for the relationship view (including the ends even if these
    * ends lie inside of the classviews)
@@ -83,6 +87,8 @@ export class RelationshipView implements Hashable {
     ];
   }
 
+  // TODO: to be simplified out of metamodel
+  // we will move these when we move hashing out of metamodel
   /**
    * For a path, only keep **at most** 1 point at each end that lies inside the class view.
    * If there is no inside points, none of kept, so the path only contains outside points.
@@ -122,6 +128,8 @@ export class RelationshipView implements Hashable {
     return path.slice(start - 1, end + 2);
   };
 
+  // TODO: to be simplified out of metamodel
+  // we will move these when we move hashing out of metamodel
   /**
    * This method will compute the full path from the offset within class view for serialization and persistence purpose
    */

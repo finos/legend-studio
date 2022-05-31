@@ -261,7 +261,7 @@ export abstract class LegendApplication {
     } catch (error) {
       assertErrorThrown(error);
       this.logger.error(
-        LogEvent.create(APPLICATION_EVENT.APPLICATION_FAILURE),
+        LogEvent.create(APPLICATION_EVENT.APPLICATION_LOAD_FAILURE),
         'Failed to load Legend application',
       );
       throw error;

@@ -250,7 +250,6 @@ export const observe_FlatDataInputData = skipObserved(
   (metamodel: FlatDataInputData): FlatDataInputData => {
     makeObservable(metamodel, {
       data: observable,
-      validationResult: computed,
       hashCode: computed,
     });
 

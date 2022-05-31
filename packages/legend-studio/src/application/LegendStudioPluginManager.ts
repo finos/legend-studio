@@ -15,12 +15,14 @@
  */
 
 import { LegendApplicationPluginManager } from '@finos/legend-application';
-import type {
-  GraphPluginManager,
-  PureGraphManagerPlugin,
-  PureGraphPlugin,
-  PureProtocolProcessorPlugin,
+import {
+  CorePureGraphManagerPlugin,
+  type GraphPluginManager,
+  type PureGraphManagerPlugin,
+  type PureGraphPlugin,
+  type PureProtocolProcessorPlugin,
 } from '@finos/legend-graph';
+import { Core_LegendStudioPlugin } from '../components/Core_LegendStudioPlugin';
 import type { LegendStudioPlugin } from '../stores/LegendStudioPlugin';
 
 export class LegendStudioPluginManager
@@ -72,5 +74,9 @@ export class LegendStudioPluginManager
 
   getStudioPlugins(): LegendStudioPlugin[] {
     return [...this.studioPlugins];
+  }
+
+  override getHiddenPluginNames(): string[] {
+    return [Core_LegendStudioPlugin.NAME, CorePureGraphManagerPlugin.NAME];
   }
 }

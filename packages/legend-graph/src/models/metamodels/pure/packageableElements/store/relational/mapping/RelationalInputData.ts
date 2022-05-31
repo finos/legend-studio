@@ -17,10 +17,6 @@
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
 import { InputData } from '../../../mapping/InputData';
-import {
-  type ValidationIssue,
-  createValidationError,
-} from '../../../../../../../helpers/ValidationHelper';
 import type { PackageableElementReference } from '../../../PackageableElementReference';
 import type { Database } from '../model/Database';
 
@@ -43,16 +39,6 @@ export class RelationalInputData extends InputData implements Hashable {
     this.database = database;
     this.data = data;
     this.inputType = inputType;
-  }
-
-  get validationResult(): ValidationIssue | undefined {
-    // TODO: use `isStubbed_PackageableElement` when we refactor validation
-    if (!this.database.value.package && !this.database.value.name) {
-      return createValidationError([
-        'Relational input data source database store is missing',
-      ]);
-    }
-    return undefined;
   }
 
   get hashCode(): string {

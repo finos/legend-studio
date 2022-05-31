@@ -28,7 +28,7 @@ import {
 import { MdSettingsEthernet, MdLink } from 'react-icons/md';
 import { FiPackage } from 'react-icons/fi';
 import { RiShapeLine } from 'react-icons/ri';
-import { FillFileEarmarkSpreadsheetFillIcon } from './Icon';
+import { TabulatedDataFileIcon } from './Icon';
 
 export const PURE_PrimitiveTypeIcon: React.FC = () => (
   <div className="icon icon--primitive color--primitive">p</div>
@@ -142,7 +142,7 @@ export const PURE_ModelStoreIcon: React.FC = () => (
 
 export const PURE_DataIcon: React.FC = () => (
   <div className="icon color--data">
-    <FillFileEarmarkSpreadsheetFillIcon />
+    <TabulatedDataFileIcon />
   </div>
 );
 

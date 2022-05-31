@@ -19,8 +19,10 @@ import { PureGraphManagerPlugin } from './PureGraphManagerPlugin';
 import { CORE_PURE_PATH } from '../MetaModelConst';
 
 export class CorePureGraphManagerPlugin extends PureGraphManagerPlugin {
+  static NAME = packageJson.extensions.pureGraphManagerPlugin;
+
   constructor() {
-    super(packageJson.extensions.pureGraphManagerPlugin, packageJson.version);
+    super(CorePureGraphManagerPlugin.NAME, packageJson.version);
   }
 
   override getExtraExposedSystemElementPath(): string[] {

@@ -1,0 +1,527 @@
+/**
+ * Copyright (c) 2020-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@use 'mixins' as *;
+
+.virtual-assistant {
+  position: absolute;
+  // NOTE: we must take into account of UI component libraries, such as MUI
+  // See https://mui.com/material-ui/customization/z-index/
+  z-index: 10000;
+
+  // currently we hard-code these to the bottom right
+  // so we must make sure we avoid visually blocking notification
+  bottom: 9rem;
+  right: 1rem;
+
+  &__context-menu {
+    // NOTE: we must take into account of UI component libraries, such as MUI
+    // See https://mui.com/material-ui/customization/z-index/
+    z-index: 10100;
+  }
+
+  &__station {
+    @include flexVCenter;
+
+    justify-content: flex-end;
+    height: 3.4rem;
+    width: 5.1rem;
+    // make the bottom right corner slightly pointer to form an arrow pointing at the button in status bar
+    border-radius: 1.7rem 1.1rem 0.2em 1.7rem;
+    background: var(--color-dark-grey-50);
+    opacity: 0.9;
+    border: 0.1rem solid var(--color-blue-50);
+    transition: width 0.1s ease-in-out;
+  }
+
+  &__station__trigger {
+    @include flexCenter;
+
+    height: 2.8rem;
+    width: 2.8rem;
+    border-radius: 50%;
+    background: var(--color-blue-50);
+    margin: 0.3rem 0 0.3rem 0.2rem;
+
+    &__close {
+      font-size: 2.6rem;
+      color: var(--color-dark-shade-800);
+      position: relative;
+    }
+
+    &__circle {
+      font-size: 2.2rem;
+      color: var(--color-dark-grey-80);
+      animation: opacity-pulse 1.2s infinite ease-in-out alternate-reverse;
+    }
+
+    @keyframes opacity-pulse {
+      from {
+        opacity: 0.1;
+      }
+
+      to {
+        opacity: 0.3;
+      }
+    }
+  }
+
+  &__station--hidden {
+    display: none;
+  }
+
+  &__station__drag-handle {
+    height: 3.4rem;
+    width: 2rem;
+    cursor: grab;
+
+    &__content {
+      @include flexCenter;
+
+      height: 100%;
+      width: 100%;
+    }
+
+    &--dragging {
+      cursor: grabbing;
+    }
+
+    svg {
+      font-size: 2rem;
+      color: var(--color-light-shade-100);
+    }
+  }
+
+  &__station--active {
+    border-color: var(--color-yellow-100);
+    animation: border-flash 0.5s;
+    animation-iteration-count: 3;
+  }
+
+  &__station--active &__station__trigger {
+    background: var(--color-yellow-100);
+    animation: background-flash 0.5s;
+    animation-iteration-count: 3;
+  }
+
+  @keyframes border-flash {
+    from {
+      border-color: var(--color-dark-grey-50);
+    }
+
+    to {
+      border-color: var(--color-yellow-100);
+    }
+  }
+
+  @keyframes background-flash {
+    from {
+      background: var(--color-dark-grey-50);
+    }
+
+    to {
+      background: var(--color-yellow-100);
+    }
+  }
+}
+
+.virtual-assistant__panel {
+  height: 40rem;
+  width: 30rem;
+  margin: 1rem;
+  border-radius: 0.2rem;
+  background: var(--color-dark-grey-100);
+  border: 0.1rem solid var(--color-dark-grey-200);
+  box-shadow: 0 1.1rem 1.5rem -0.7rem, var(--color-light-shade-280),
+    0 2.4rem 3.8rem 0.3rem var(--color-light-shade-280),
+    0 0.9rem 4.6rem 0.8rem var(--color-light-shade-280);
+
+  &__container {
+    // NOTE: we must take into account of UI component libraries, such as MUI
+    // See https://mui.com/material-ui/customization/z-index/
+    z-index: 10000;
+  }
+
+  &__header {
+    @include flexVCenter;
+
+    justify-content: space-between;
+    background: var(--color-dark-grey-250);
+    height: 2.8rem;
+
+    &__actions {
+      @include flexVCenter;
+    }
+
+    &__action {
+      @include flexCenter;
+
+      width: 2.8rem;
+      height: 2.8rem;
+
+      svg {
+        color: var(--color-dark-grey-400);
+      }
+
+      &:hover svg {
+        color: var(--color-dark-grey-500);
+      }
+    }
+  }
+
+  &__header__tabs {
+    display: flex;
+    height: 2.8rem;
+    color: var(--color-dark-grey-400);
+  }
+
+  &__header__tab {
+    padding: 0 1rem;
+    border-right: 0.1rem solid var(--color-dark-grey-100);
+
+    &:hover {
+      background: var(--color-dark-grey-280);
+    }
+  }
+
+  &__header__tab__content {
+    @include flexCenter;
+
+    cursor: pointer;
+    height: 2.8rem;
+    width: 6rem;
+    border-bottom: 0.3rem solid var(--color-dark-grey-300);
+    padding-top: 0.1rem;
+    position: relative;
+
+    svg {
+      font-size: 1.5rem;
+      color: var(--color-dark-grey-400);
+    }
+  }
+
+  &__header__tab__indicator {
+    position: absolute;
+    top: 0.5rem;
+    right: 1rem;
+    height: 1rem;
+    width: 1rem;
+    border-radius: 50%;
+    background: var(--color-yellow-200);
+  }
+
+  &__header__tab:hover &__header__tab__content svg {
+    color: var(--color-dark-grey-500);
+  }
+
+  &__header__tab--active:hover &__header__tab__content,
+  &__header__tab--active &__header__tab__content {
+    border-bottom: 0.3rem solid var(--color-yellow-300);
+
+    svg {
+      color: var(--color-light-grey-200);
+    }
+  }
+
+  &__content {
+    height: calc(100% - 2.8rem);
+  }
+
+  &__icon__close {
+    font-size: 2.4rem;
+  }
+}
+
+.virtual-assistant__search {
+  height: 100%;
+
+  &__header {
+    @include flexCenter;
+
+    padding: 0.3rem;
+    border-bottom: 0.1rem solid var(--color-dark-grey-250);
+    height: 3.4rem;
+    position: relative;
+  }
+
+  &__input {
+    font-size: 1.3rem;
+    height: 2.8rem;
+    padding-right: 2.8rem;
+    padding-left: 1rem;
+    width: 100%;
+    background: var(--color-dark-grey-85);
+    border-radius: 0.2rem;
+    border: 0.1rem solid var(--color-dark-grey-200);
+
+    &--searching {
+      padding-right: 5.6rem;
+    }
+
+    &__search__count {
+      @include flexCenter;
+
+      position: absolute;
+      right: 2.8rem;
+      border-radius: 0.8rem;
+      height: 1.6rem;
+      width: 2.8rem;
+      font-size: 1.1rem;
+      font-weight: 700;
+      background: var(--color-yellow-100);
+      color: var(--color-dark-grey-280);
+      user-select: none;
+      cursor: default;
+    }
+
+    &__search__icon {
+      @include flexCenter;
+
+      position: absolute;
+      right: 0.3rem;
+      height: 2.8rem;
+      width: 2.8rem;
+
+      svg {
+        color: var(--color-light-shade-100);
+      }
+    }
+
+    &__clear-btn {
+      @include flexCenter;
+
+      position: absolute;
+      right: 0.3rem;
+      height: 2.8rem;
+      width: 2.8rem;
+
+      svg {
+        color: var(--color-dark-grey-400);
+      }
+
+      &:hover svg {
+        color: var(--color-dark-grey-500);
+      }
+    }
+  }
+
+  &__content {
+    height: calc(100% - 3.4rem);
+  }
+
+  &__results {
+    height: 100%;
+    overflow-y: auto;
+    padding: 1rem;
+  }
+
+  &__results__placeholder {
+    font-family: 'Roboto Mono', monospace;
+    font-size: 1.3rem;
+    color: var(--color-light-grey-400);
+  }
+}
+
+.virtual-assistant__doc-entry {
+  & + & {
+    margin-top: 0.5rem;
+  }
+
+  &__header {
+    display: flex;
+  }
+
+  &__expand-icon {
+    display: flex;
+    align-items: flex-start;
+    width: 2rem;
+    min-width: 2rem;
+    padding-top: 0.3rem;
+
+    svg {
+      color: var(--color-light-grey-50);
+    }
+  }
+
+  &__expand-icon--disabled {
+    svg {
+      color: var(--color-dark-grey-300);
+    }
+  }
+
+  &__title {
+    line-height: 1.5;
+    font-weight: 500;
+    color: var(--color-light-grey-50);
+    cursor: pointer;
+    user-select: none;
+  }
+
+  &__title--link {
+    color: var(--color-blue-40);
+    text-decoration: none;
+  }
+
+  &__content {
+    margin-top: 0.5rem;
+    padding-left: 2rem;
+  }
+
+  &__content__text {
+    color: var(--color-light-grey-50);
+    line-height: 1.5;
+    background: var(--color-dark-grey-80);
+    border-radius: 0.2rem;
+    padding: 1rem;
+  }
+
+  &__content__markdown-text {
+    padding: 1rem;
+    border-radius: 0.2rem;
+  }
+}
+
+.virtual-assistant__character {
+  @include flexCenter;
+
+  flex-direction: column;
+
+  &__container {
+    @include flexCenter;
+
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  &__greeting {
+    font-family: 'Roboto Mono', monospace;
+    font-size: 1.3rem;
+    color: var(--color-light-grey-400);
+    margin-top: 0.6rem;
+    cursor: default;
+    user-select: none;
+  }
+
+  &__question {
+    font-family: 'Roboto Mono', monospace;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--color-light-grey-0);
+    margin-top: 0.6rem;
+    cursor: default;
+    user-select: none;
+  }
+
+  &__figure {
+    @include flexCenter;
+
+    position: relative;
+    width: 10rem;
+    height: 20rem;
+  }
+
+  &__hat {
+    position: absolute;
+    font-size: 8rem;
+    color: var(--color-orange-150);
+    top: 0;
+  }
+
+  &__glasses {
+    position: absolute;
+    font-size: 8rem;
+    color: var(--color-dark-grey-300);
+    top: 6rem;
+  }
+
+  &__beard {
+    position: absolute;
+    color: var(--color-yellow-200);
+    font-size: 8rem;
+    top: 11rem;
+  }
+}
+
+.virtual-assistant__contextual-support {
+  height: 100%;
+
+  &__content {
+    height: 100%;
+    overflow-y: auto;
+    padding: 1.5rem;
+  }
+
+  &__title {
+    line-height: 1.5;
+    font-weight: 700;
+    color: var(--color-light-grey-50);
+    cursor: pointer;
+    user-select: none;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  &__text {
+    color: var(--color-light-grey-50);
+    line-height: 1.5;
+    background: var(--color-dark-grey-80);
+    border-radius: 0.2rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  &__markdown-text {
+    padding: 1rem;
+    border-radius: 0.2rem;
+    margin-bottom: 1rem;
+  }
+
+  &__relevant-entries {
+    &__title {
+      color: var(--color-dark-grey-500);
+      font-family: 'Roboto Mono', monospace;
+      font-size: 1.3rem;
+      margin-bottom: 1rem;
+    }
+  }
+
+  &__placeholder {
+    @include flexCenter;
+
+    flex-direction: column;
+
+    &__icon {
+      font-size: 5rem;
+      color: var(--color-yellow-200);
+    }
+
+    &__message {
+      font-family: 'Roboto Mono', monospace;
+      font-size: 1.3rem;
+      color: var(--color-light-grey-400);
+      margin-top: 1rem;
+    }
+
+    &__instruction {
+      font-family: 'Roboto Mono', monospace;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--color-dark-grey-300);
+      margin-top: 0.5rem;
+    }
+  }
+}

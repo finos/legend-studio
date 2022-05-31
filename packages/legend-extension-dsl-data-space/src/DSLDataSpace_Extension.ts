@@ -18,17 +18,14 @@ import packageJson from '../package.json';
 import { AbstractPreset } from '@finos/legend-shared';
 import { DSLDataSpace_PureGraphManagerPlugin } from './graphManager/DSLDataSpace_PureGraphManagerPlugin';
 import { DSLDataSpace_PureProtocolProcessorPlugin } from './models/protocols/pure/DSLDataSpace_PureProtocolProcessorPlugin';
-import type { GraphPluginManager } from '@finos/legend-graph';
 import { DSLDataSpace_PureGraphPlugin } from './graph/DSLDataSpace_PureGraphPlugin';
 
 export class DSLDataSpace_GraphPreset extends AbstractPreset {
   constructor() {
-    super(packageJson.extensions.graphPreset, packageJson.version);
-  }
-
-  install(pluginManager: GraphPluginManager): void {
-    new DSLDataSpace_PureGraphPlugin().install(pluginManager);
-    new DSLDataSpace_PureGraphManagerPlugin().install(pluginManager);
-    new DSLDataSpace_PureProtocolProcessorPlugin().install(pluginManager);
+    super(packageJson.extensions.graphPreset, packageJson.version, [
+      new DSLDataSpace_PureGraphPlugin(),
+      new DSLDataSpace_PureGraphManagerPlugin(),
+      new DSLDataSpace_PureProtocolProcessorPlugin(),
+    ]);
   }
 }

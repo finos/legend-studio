@@ -14,21 +14,28 @@
  * limitations under the License.
  */
 
+import type { LegendApplicationDocumentationEntryConfig } from '@finos/legend-application';
+
 export enum DSL_PERSISTENCE_LEGEND_STUDIO_DOCUMENTATION_KEY {
-  GRAMMAR_PARSER = 'dsl-persistence__grammar-parser',
-  GRAMMAR_PERSISTENCE_ELEMENT = 'dsl-persistence__grammar-persistence-element',
+  GRAMMAR_PARSER = 'dsl-persistence.grammar.parser',
+  GRAMMAR_ELEMENT_PERSISTENCE = 'dsl-persistence.grammar.element.persistence',
 }
 
-export const DSL_PERSISTENCE_DOCUMENTATION_ENTRIES = {
+export const DSL_PERSISTENCE_DOCUMENTATION_ENTRIES: Record<
+  string,
+  LegendApplicationDocumentationEntryConfig
+> = {
   [DSL_PERSISTENCE_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER]: {
+    title: `What is Persistence DSL about?`,
     markdownText: {
-      value: `DSL Persistence (\`###Persistence\`) concerns with data pipelines which enable writing/persisting data`,
+      value: `\`Persistence DSL\` (coressponding to \`###Persistence\` section in \`Pure\`) concerns with data pipelines which enable writing/persisting data`,
     },
   },
-  [DSL_PERSISTENCE_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PERSISTENCE_ELEMENT]:
+  [DSL_PERSISTENCE_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_ELEMENT_PERSISTENCE]:
     {
+      title: `What is a persistence element?`,
       markdownText: {
-        value: `A persistence element specifies a data pipeline`,
+        value: `A \`Persistence\` element specifies a data pipeline`,
       },
     },
 };

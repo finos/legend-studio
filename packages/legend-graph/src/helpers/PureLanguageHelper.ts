@@ -60,7 +60,7 @@ export enum PURE_PARSER {
   FLATDATA = 'FlatData',
   RELATIONAL = 'Relational',
   GENERATION_SPECIFICATION = 'GenerationSpecification',
-  FILE_GENERATION = 'FileGeneration',
+  FILE_GENERATION_SPECIFICATION = 'FileGeneration',
   DATA = 'Data',
 }
 

@@ -14,25 +14,16 @@
  * limitations under the License.
  */
 
-export enum ValidationSeverity {
-  WARN,
-  ERROR,
-}
+import {
+  type PopperProps as MuiPopperProps,
+  Popper as MuiPopper,
+} from '@mui/material';
 
-export interface ValidationIssue {
-  severity: ValidationSeverity;
-  messages: string[];
-  // modelSourceInformation - TODO: when we support navigating inside the component
-}
+/**
+ * Similar to `Popover` but does not come with a backdrop
+ */
+export const BasePopper: React.FC<MuiPopperProps> = (props) => {
+  const { children, ...otherProps } = props;
 
-export const createValidationWarning = (
-  messages: string[],
-): ValidationIssue => ({
-  severity: ValidationSeverity.WARN,
-  messages,
-});
-
-export const createValidationError = (messages: string[]): ValidationIssue => ({
-  severity: ValidationSeverity.WARN,
-  messages,
-});
+  return <MuiPopper {...otherProps}>{props.children}</MuiPopper>;
+};

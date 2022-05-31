@@ -15,5 +15,5 @@
  */
 
 export enum LEGEND_TAXONOMY_APP_EVENT {
-  TAXONOMY_DATA_CHECK_FAILURE = 'TAXONOMY_DATA_CHECK_FAILURE',
+  TAXONOMY_DATA_CHECK_FAILURE = 'application.data-check.failure',
 }

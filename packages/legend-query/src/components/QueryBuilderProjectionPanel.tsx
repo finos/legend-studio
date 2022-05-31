@@ -24,7 +24,7 @@ import {
   MenuContent,
   MenuContentItem,
   CaretDownIcon,
-  GripVerticalIcon,
+  VerticalDragHandleIcon,
   ContextMenu,
   InputWithInlineValidation,
   SigmaIcon,
@@ -409,7 +409,7 @@ const QueryBuilderProjectionColumnEditor = observer(
           >
             <div className="query-builder__projection__column__dnd__indicator">
               <div className="query-builder__projection__column__dnd__indicator__handler">
-                <GripVerticalIcon />
+                <VerticalDragHandleIcon />
               </div>
             </div>
             <div className="query-builder__projection__column__name">

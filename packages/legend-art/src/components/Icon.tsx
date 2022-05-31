@@ -42,7 +42,7 @@ export {
   FaMap as MapIcon,
   FaFlask as FlaskIcon,
   FaPlay as PlayIcon,
-  FaGripVertical as GripVerticalIcon,
+  FaGripVertical as VerticalDragHandleIcon,
   FaRobot as RobotIcon,
   FaArrowLeft as ArrowLeftIcon,
   FaArrowRight as ArrowRightIcon,
@@ -60,6 +60,7 @@ export {
   FaExternalLinkAlt as ExternalLinkIcon,
   FaExternalLinkSquareAlt as ExternalLinkSquareIcon,
   FaLightbulb as LightBulbIcon,
+  FaRegLightbulb as EmptyLightBulbIcon,
   FaList as ListIcon,
   FaCircle as CircleIcon,
   FaRegCircle as EmptyCircleIcon,
@@ -104,7 +105,8 @@ export {
   FaUpload as UploadIcon,
   FaRegWindowRestore as EmptyWindowRestoreIcon,
   FaPauseCircle as PauseCircleIcon,
-  FaBars as BarsIcon, // to be reviewed/merged
+  FaShare as ShareIcon,
+  FaRegCopy as CopyIcon,
   FaEdit as PencilEditIcon, // to be reviewed/merged
   FaArrowsAltH as ArrowsAltHIcon, // to be reviewed/merged
   FaRegWindowMaximize as WindowMaximizeIcon, // to be reviewed/merged
@@ -112,10 +114,17 @@ export {
   FaLongArrowAltDown as LongArrowAltDownIcon, // to be reviewed/merged
   FaLongArrowAltUp as LongArrowAltUpIcon, // to be reviewed/merged
   FaMeteor as MeteorIcon, // to be reviewed/merged
-  FaToggleOn as ToggleOn,
-  FaToggleOff as ToggleOff,
+  FaToggleOn as ToggleOnIcon,
+  FaToggleOff as ToggleOffIcon,
+  FaMapMarkerAlt as MapMarkerIcon,
+  FaHatWizard as WizardHatIcon,
+  FaRegLaughWink as FaceLaughWinkIcon,
 } from 'react-icons/fa';
-export { GiWaterDrop as WaterDropIcon } from 'react-icons/gi';
+export {
+  GiWaterDrop as WaterDropIcon,
+  GiBeard as BeardIcon,
+  GiSunglasses as SunglassesIcon,
+} from 'react-icons/gi';
 export {
   MdModeEdit as PencilIcon,
   MdTextFields as StringTypeIcon,
@@ -132,11 +141,13 @@ export {
   MdSubject as SubjectIcon,
   MdViewHeadline as ViewHeadlineIcon,
   MdWarning as WarningIcon,
+  MdAssistant as AssistantIcon,
 } from 'react-icons/md';
 export {
   VscError as ErrorIcon,
   VscWordWrap as WordWrapIcon,
   VscGoToFile as GoToFileIcon,
+  VscClose as CloseIcon,
 } from 'react-icons/vsc';
 export {
   GoChevronDown as ChevronDownIcon,
@@ -151,12 +162,19 @@ export {
   GoRepo as RepoIcon,
   GoGitBranch as GitBranchIcon,
   GoX as XIcon,
+  GoPlug as PluginIcon,
 } from 'react-icons/go';
 export { SiSwagger as SwaggerIcon } from 'react-icons/si';
-export { IoResize as ResizeIcon } from 'react-icons/io5';
+export {
+  IoResize as ResizeIcon,
+  IoFileTrayFullOutline as FileTrayIcon,
+  IoMenuOutline as MenuIcon,
+} from 'react-icons/io5';
 export {
   BsFillTriangleFill as FilledTriangleIcon,
-  BsFillFileEarmarkSpreadsheetFill as FillFileEarmarkSpreadsheetFillIcon,
+  BsFillFileEarmarkSpreadsheetFill as TabulatedDataFileIcon,
+  BsBoxSeam as BundleIcon,
+  BsGripVertical as VerticalDragHandleThinIcon,
 } from 'react-icons/bs';
 export { BiShapeTriangle as ShapeTriangleIcon } from 'react-icons/bi';
 export { CgOptions as OptionsIcon } from 'react-icons/cg';
@@ -169,6 +187,5 @@ export {
   FiTriangle as TriangleIcon,
   FiZoomIn as ZoomInIcon,
   FiZoomOut as ZoomOutIcon,
-  FiShare as ShareIcon, // to be reviewed
   FiGitMerge as TruncatedGitMergeIcon, // to be reviewed/merged
 } from 'react-icons/fi';

@@ -14,19 +14,19 @@
  * limitations under the License.
  */
 
-import { addUniqueEntry } from '@finos/legend-shared';
-import {
-  type ValidationIssue,
-  createValidationError,
-} from './ValidationHelper';
+import type {
+  NotificationEventData,
+  EventNotifierPlugin,
+} from '@finos/legend-shared';
 
-export const validateServicePattern = (pattern: string): ValidationIssue => {
-  const errors: string[] = [];
-  if (!pattern) {
-    addUniqueEntry(errors, 'Pattern must not be empty');
-  } else if (!pattern.startsWith('/')) {
-    addUniqueEntry(errors, `Pattern must start with a '/'`);
+export class LegendApplicationEventService {
+  private notifierPlugins: EventNotifierPlugin[] = [];
+
+  registerEventNotifierPlugins(plugins: EventNotifierPlugin[]): void {
+    this.notifierPlugins = plugins;
   }
-  // TODO: potentially do more validation
-  return createValidationError(errors);
-};
+
+  notify(event: string, data: NotificationEventData): void {
+    this.notifierPlugins.forEach((plugin) => plugin.notify(event, data));
+  }
+}

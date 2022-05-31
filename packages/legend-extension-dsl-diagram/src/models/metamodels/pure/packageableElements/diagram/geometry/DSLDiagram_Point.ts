@@ -26,14 +26,6 @@ export class Point implements Hashable {
     this.y = y;
   }
 
-  rotateX(angle: number): number {
-    return this.x * Math.cos(angle) - this.y * Math.sin(angle);
-  }
-
-  rotateY(angle: number): number {
-    return this.x * Math.sin(angle) + this.y * Math.cos(angle);
-  }
-
   get hashCode(): string {
     return hashArray([
       DIAGRAM_HASH_STRUCTURE.POINT,

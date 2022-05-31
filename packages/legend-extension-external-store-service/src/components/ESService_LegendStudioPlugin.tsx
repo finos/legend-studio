@@ -256,8 +256,8 @@ export class ESService_LegendStudioPlugin
           if (
             elementKeyword === PURE_GRAMMAR_SERVICE_STORE_ELEMENT_TYPE_LABEL
           ) {
-            return editorStore.applicationStore.docRegistry.getEntry(
-              EXTERNAL_STORE_SERVICE_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_SERVICE_STORE_ELEMENT,
+            return editorStore.applicationStore.documentationService.getDocEntry(
+              EXTERNAL_STORE_SERVICE_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_ELEMENT_SERVICE_STORE,
             );
           }
         }
@@ -273,7 +273,7 @@ export class ESService_LegendStudioPlugin
         parserKeyword: string,
       ): LegendApplicationDocumentationEntry | undefined => {
         if (parserKeyword === PURE_GRAMMAR_SERVICE_STORE_PARSER_NAME) {
-          return editorStore.applicationStore.docRegistry.getEntry(
+          return editorStore.applicationStore.documentationService.getDocEntry(
             EXTERNAL_STORE_SERVICE_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER,
           );
         }
@@ -288,9 +288,10 @@ export class ESService_LegendStudioPlugin
         {
           text: PURE_GRAMMAR_SERVICE_STORE_PARSER_NAME,
           description: `(external store)`,
-          documentation: editorStore.applicationStore.docRegistry.getEntry(
-            EXTERNAL_STORE_SERVICE_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER,
-          ),
+          documentation:
+            editorStore.applicationStore.documentationService.getDocEntry(
+              EXTERNAL_STORE_SERVICE_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER,
+            ),
           insertText: PURE_GRAMMAR_SERVICE_STORE_PARSER_NAME,
         },
       ],

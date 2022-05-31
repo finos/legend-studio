@@ -31,7 +31,6 @@ import {
   TEST__buildGraphWithEntities,
   TEST__getTestGraphManagerState,
   GRAPH_MANAGER_EVENT,
-  V1_ENGINE_EVENT,
   type V1_PureModelContextData,
 } from '@finos/legend-graph';
 import { getLegendGraphExtensionCollection } from '@finos/legend-graph-extension-collection';
@@ -171,6 +170,7 @@ const profileRoundtrip = async (
   logPhase(phase, log, options.debug);
   const grammarText = generatePureCode(options);
 
+  // TODO: refactor to use `StopWatch` instead
   let startTime = Date.now();
   const transformGrammarToJsonResult = await axios.post<
     unknown,
@@ -187,7 +187,7 @@ const profileRoundtrip = async (
   });
   if (options.debug) {
     log.info(
-      LogEvent.create(V1_ENGINE_EVENT.GRAMMAR_TO_JSON),
+      LogEvent.create('engine.grammar.grammar-to-json'),
       Date.now() - startTime,
       'ms',
     );
@@ -263,7 +263,7 @@ const profileRoundtrip = async (
   );
   if (options.debug) {
     log.info(
-      LogEvent.create(V1_ENGINE_EVENT.JSON_TO_GRAMMAR),
+      LogEvent.create('engine.grammar.json-to-grammar'),
       Date.now() - startTime,
       'ms',
     );
@@ -280,7 +280,7 @@ const profileRoundtrip = async (
   >(`${ENGINE_SERVER_URL}/pure/v1/compilation/compile`, modelDataContext);
   if (options.debug) {
     log.info(
-      LogEvent.create(V1_ENGINE_EVENT.COMPILATION),
+      LogEvent.create('engine.compilation'),
       Date.now() - startTime,
       'ms',
     );

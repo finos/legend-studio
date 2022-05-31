@@ -31,18 +31,18 @@
     "publish:snapshot": "node ../../scripts/release/publishDevSnapshot.js"
   },
   "dependencies": {
-    "@babel/helper-plugin-utils": "7.16.7",
-    "@babel/preset-env": "7.17.10",
-    "@babel/preset-react": "7.16.7",
-    "@babel/preset-typescript": "7.16.7",
-    "@babel/runtime": "7.17.9",
+    "@babel/helper-plugin-utils": "7.17.12",
+    "@babel/preset-env": "7.18.2",
+    "@babel/preset-react": "7.17.12",
+    "@babel/preset-typescript": "7.17.12",
+    "@babel/runtime": "7.18.3",
     "react-refresh": "0.13.0"
   },
   "devDependencies": {
     "cross-env": "7.0.3",
-    "eslint": "8.15.0",
+    "eslint": "8.16.0",
     "rimraf": "3.0.2",
-    "typescript": "4.6.4"
+    "typescript": "4.7.2"
   },
   "peerDependencies": {
     "@babel/core": "^7.16.0"
