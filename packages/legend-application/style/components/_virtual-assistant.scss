@@ -25,93 +25,79 @@
   // currently we hard-code these to the bottom right
   // so we must make sure we avoid visually blocking notification
   bottom: 9rem;
-  right: 0;
+  right: 1rem;
+
+  &__context-menu {
+    // NOTE: we must take into account of UI component libraries, such as MUI
+    // See https://mui.com/material-ui/customization/z-index/
+    z-index: 10100;
+  }
 
   &__station {
     @include flexVCenter;
 
     justify-content: flex-end;
     height: 3.4rem;
-    width: 5.4rem;
-    border-radius: 1.7rem 0 0 1.7rem;
+    width: 5.1rem;
+    // make the bottom right corner slightly pointer to form an arrow pointing at the button in status bar
+    border-radius: 1.7rem 1.1rem 0.2em 1.7rem;
     background: var(--color-dark-grey-50);
     opacity: 0.9;
     border: 0.1rem solid var(--color-blue-50);
-    border-right: none;
     transition: width 0.1s ease-in-out;
   }
 
   &__station__trigger {
+    @include flexCenter;
+
     height: 2.8rem;
     width: 2.8rem;
     border-radius: 50%;
     background: var(--color-blue-50);
-    margin: 0.3rem 0.3rem 0.3rem 0.2rem;
-    // transition: background 0.1s ease-in-out;
+    margin: 0.3rem 0 0.3rem 0.2rem;
 
-    svg {
-      font-size: 1.8rem;
+    &__close {
+      font-size: 2.6rem;
       color: var(--color-dark-shade-800);
       position: relative;
-      // transform: rotate(45deg);
+    }
+
+    &__circle {
+      font-size: 2.2rem;
+      color: var(--color-dark-grey-80);
+      animation: opacity-pulse 1.2s infinite ease-in-out alternate-reverse;
+    }
+
+    @keyframes opacity-pulse {
+      from {
+        opacity: 0.1;
+      }
+
+      to {
+        opacity: 0.3;
+      }
     }
   }
 
-  &__station__arrow {
-    @include flexCenter;
-    @include flexConstantDimension;
-
-    width: 2.2rem;
+  &__station__drag-handle {
     height: 3.4rem;
+    width: 2rem;
+    cursor: grab;
 
-    // NOTE: due to this animation, the width must be at minimum `sqrt(2)*{height of icon}`, i.e. ~2.2rem
-    // else the layout will jump
+    &__content {
+      @include flexCenter;
+
+      height: 100%;
+      width: 100%;
+    }
+
+    &--dragging {
+      cursor: grabbing;
+    }
+
     svg {
-      transition: transform 0.1s ease-in-out, color 0.1s ease-in-out;
-      color: var(--color-light-grey-50);
-      opacity: 0.4;
-      font-size: 1.6rem;
-    }
-
-    &:hover svg {
-      animation: arrow-bounce-right 0.5s infinite;
-    }
-  }
-
-  &__station--collapsed {
-    width: 2.4rem;
-    border-color: var(--color-blue-300);
-  }
-
-  &__station--collapsed &__station__trigger {
-    display: none;
-  }
-
-  &__station--collapsed &__station__arrow svg {
-    transform: rotate(-180deg);
-  }
-
-  &__station--collapsed &__station__arrow:hover svg {
-    animation: arrow-bounce-left 0.5s infinite;
-  }
-
-  @keyframes arrow-bounce-right {
-    from {
-      transform: translateX(0.05rem);
-    }
-
-    to {
-      transform: translateX(-0.05rem);
-    }
-  }
-
-  @keyframes arrow-bounce-left {
-    from {
-      transform: rotate(-180deg) translateX(0.05rem);
-    }
-
-    to {
-      transform: rotate(-180deg) translateX(-0.05rem);
+      font-size: 2rem;
+      color: var(--color-light-shade-100);
     }
   }
 
@@ -129,7 +115,6 @@
 
   @keyframes border-flash {
     from {
-      // border-color: var(--color-light-grey-50);
       border-color: var(--color-dark-grey-50);
     }
 
@@ -140,7 +125,6 @@
 
   @keyframes background-flash {
     from {
-      // background: var(--color-light-grey-50);
       background: var(--color-dark-grey-50);
     }
 
@@ -404,12 +388,6 @@
     padding: 1rem;
     border-radius: 0.2rem;
   }
-
-  &__context-menu {
-    // NOTE: we must take into account of UI component libraries, such as MUI
-    // See https://mui.com/material-ui/customization/z-index/
-    z-index: 10100;
-  }
 }
 
 .virtual-assistant__character {
@@ -541,11 +519,5 @@
       color: var(--color-dark-grey-300);
       margin-top: 0.5rem;
     }
-  }
-
-  &__context-menu {
-    // NOTE: we must take into account of UI component libraries, such as MUI
-    // See https://mui.com/material-ui/customization/z-index/
-    z-index: 10100;
   }
 }

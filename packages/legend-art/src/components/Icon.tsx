@@ -42,7 +42,7 @@ export {
   FaMap as MapIcon,
   FaFlask as FlaskIcon,
   FaPlay as PlayIcon,
-  FaGripVertical as GripVerticalIcon,
+  FaGripVertical as VerticalDragHandleIcon,
   FaRobot as RobotIcon,
   FaArrowLeft as ArrowLeftIcon,
   FaArrowRight as ArrowRightIcon,
@@ -171,13 +171,10 @@ export {
   IoMenuOutline as MenuIcon,
 } from 'react-icons/io5';
 export {
-  HiChevronDoubleRight as ChevronDoubleRightIcon,
-  HiChevronDoubleLeft as ChevronDoubleLeftIcon,
-} from 'react-icons/hi';
-export {
   BsFillTriangleFill as FilledTriangleIcon,
   BsFillFileEarmarkSpreadsheetFill as TabulatedDataFileIcon,
   BsBoxSeam as BundleIcon,
+  BsGripVertical as VerticalDragHandleThinIcon,
 } from 'react-icons/bs';
 export { BiShapeTriangle as ShapeTriangleIcon } from 'react-icons/bi';
 export { CgOptions as OptionsIcon } from 'react-icons/cg';

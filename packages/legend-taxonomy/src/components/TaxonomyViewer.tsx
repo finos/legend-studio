@@ -40,7 +40,6 @@ import {
   MenuContentItem,
   CompressIcon,
   PanelLoadingIndicator,
-  WindowMaximizeIcon,
   clsx,
   getControlledResizablePanelProps,
   ResizablePanel,
@@ -61,16 +60,6 @@ import type {
 } from '../application/LegendTaxonomyConfig';
 import { useResizeDetector } from 'react-resize-detector';
 import type { TaxonomyNodeViewerState } from '../stores/LegendTaxonomyStore';
-
-const TaxonomyViewerStatusBar = observer(() => {
-  const taxonomyStore = useLegendTaxonomyStore();
-  return (
-    <div className="taxonomy-viewer__status-bar ">
-      <div className="taxonomy-viewer__status-bar__left"></div>
-      <div className="taxonomy-viewer__status-bar__right"></div>
-    </div>
-  );
-});
 
 const TaxonomyViewerActivityBar = observer(() => (
   <div className="taxonomy-viewer__activity-bar">
@@ -491,7 +480,10 @@ export const TaxonomyViewer = observer(() => {
               </div>
             </div>
           </div>
-          <TaxonomyViewerStatusBar />
+          <div className="taxonomy-viewer__status-bar ">
+            <div className="taxonomy-viewer__status-bar__left"></div>
+            <div className="taxonomy-viewer__status-bar__right"></div>
+          </div>
           <TaxonomySearchCommand />
         </GlobalHotKeys>
       </div>

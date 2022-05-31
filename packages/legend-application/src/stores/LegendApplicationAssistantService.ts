@@ -246,11 +246,17 @@ export class LegendApplicationAssistantService {
     this.isHidden = val;
   }
 
+  hideAssistant(): void {
+    this.setIsHidden(true);
+    this.setIsOpen(false);
+  }
+
   toggleAssistant(): void {
     const newVal = !this.isHidden;
-    this.setIsHidden(newVal);
     if (newVal) {
-      this.setIsOpen(false);
+      this.hideAssistant();
+    } else {
+      this.setIsHidden(false);
     }
   }
 

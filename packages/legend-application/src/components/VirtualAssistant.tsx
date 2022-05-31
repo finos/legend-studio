@@ -16,9 +16,6 @@
 
 import {
   clsx,
-  ChevronDoubleRightIcon,
-  EmptyLightBulbIcon,
-  LightBulbIcon,
   BasePopper,
   TimesIcon,
   SearchIcon,
@@ -35,15 +32,18 @@ import {
   SunglassesIcon,
   WizardHatIcon,
   FaceLaughWinkIcon,
+  VerticalDragHandleThinIcon,
+  CircleIcon,
 } from '@finos/legend-art';
 import {
   ContentType,
   downloadFileUsingDataURI,
   isString,
+  uuid,
 } from '@finos/legend-shared';
 import { format } from 'date-fns';
 import { observer } from 'mobx-react-lite';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { DATE_TIME_FORMAT, TAB_SIZE } from '../const';
 import {
   type VirtualAssistantDocumentationEntry,
@@ -69,7 +69,7 @@ const VirtualAssistantDocumentationEntryViewer = observer(
         menuProps={{
           elevation: 7,
           classes: {
-            root: 'virtual-assistant__doc-entry__context-menu',
+            root: 'virtual-assistant__context-menu',
           },
         }}
         content={
@@ -160,7 +160,7 @@ const VirtualAssistantContextualSupportPanel = observer(() => {
       menuProps={{
         elevation: 7,
         classes: {
-          root: 'virtual-assistant__contextual-support__context-menu',
+          root: 'virtual-assistant__context-menu',
         },
       }}
       content={
@@ -201,7 +201,7 @@ const VirtualAssistantContextualSupportPanel = observer(() => {
           {contextualEntry.related.length && (
             <div className="virtual-assistant__contextual-support__relevant-entries">
               <div className="virtual-assistant__contextual-support__relevant-entries__title">
-                Relevant entries ({contextualEntry.related.length})
+                Related entries ({contextualEntry.related.length})
               </div>
               {contextualEntry.related.map((entry) => (
                 <VirtualAssistantDocumentationEntryViewer
@@ -343,7 +343,7 @@ const VirtualAssistantSearchPanel = observer(() => {
             menuProps={{
               elevation: 7,
               classes: {
-                root: 'virtual-assistant__doc-entry__context-menu',
+                root: 'virtual-assistant__context-menu',
               },
             }}
             content={
@@ -397,6 +397,7 @@ const VirtualAssistantPanel = observer(
         open={assistantService.isOpen}
         className="virtual-assistant__panel__container"
         anchorEl={triggerElement}
+        // NOTE: make sure the assistant is always fully displayed (not cropped)
         placement="auto-start"
       >
         <div className="virtual-assistant__panel">
@@ -459,11 +460,13 @@ const VirtualAssistantPanel = observer(
 );
 
 export const VirtualAssistant = observer(() => {
+  const [isDragging, setIsDragging] = useState(false);
+  const [_key, _setKey] = useState(uuid());
   const applicationStore = useApplicationStore();
   const assistantService = applicationStore.assistantService;
   const currentContextualDocumentationEntry =
     assistantService.currentContextualDocumentationEntry;
-  const assistantRef = useRef<HTMLDivElement>(null);
+  const assistantStationRef = useRef<HTMLDivElement>(null);
   const toggleAssistantPanel = (): void => {
     const newVal = !assistantService.isOpen;
     // open the contextual help tab when contextual help is available
@@ -472,64 +475,102 @@ export const VirtualAssistant = observer(() => {
     }
     assistantService.setIsOpen(!assistantService.isOpen);
   };
-  const toggleAssistant = (): void =>
-    applicationStore.assistantService.toggleAssistant();
+  const hideAssistant = (): void =>
+    applicationStore.assistantService.hideAssistant();
+  const resetPosition = async (): Promise<void> => {
+    // close the panel since
+    assistantService.setIsOpen(false);
+    _setKey(uuid());
+  };
 
+  // drag and drop
+  const onDragEnd = (): void => setIsDragging(false);
+  const onDragStart = (): void => setIsDragging(true);
+
+  if (assistantService.isHidden) {
+    return null;
+  }
   return (
-    <Draggable bounds="parent">
-      <div className="virtual-assistant" ref={assistantRef}>
+    <Draggable
+      // this is a trick so we could reset the default position of the assistant
+      // See https://github.com/react-grid-layout/react-draggable/issues/214#issuecomment-270021423
+      key={_key}
+      // make sure we cannot drag and drop outside of the screen
+      bounds="parent"
+      onStart={onDragStart}
+      onStop={onDragEnd}
+      // limit the dnd trigger to only the drag handle
+      handle=".virtual-assistant__station__drag-handle"
+    >
+      <div className="virtual-assistant">
         <div
+          ref={assistantStationRef}
           //  NOTE: make sure when we change the documentation entry, the flashing animation
           // is replayed
           key={currentContextualDocumentationEntry?.uuid ?? ''}
           className={clsx('virtual-assistant__station', {
-            'virtual-assistant__station--collapsed': assistantService.isHidden,
-            'virtual-assistant__station--active':
-              !assistantService.isHidden &&
-              Boolean(currentContextualDocumentationEntry),
+            // 'virtual-assistant__station--collapsed': assistantService.isHidden,
+            'virtual-assistant__station--active': Boolean(
+              currentContextualDocumentationEntry,
+            ),
           })}
         >
-          {!assistantService.isHidden && (
-            <>
-              <button
-                className="virtual-assistant__station__trigger"
-                tabIndex={-1}
-                onClick={toggleAssistantPanel}
-                title={
-                  assistantService.isOpen
-                    ? `Click to close assistant panel`
-                    : `${
-                        currentContextualDocumentationEntry
-                          ? 'Contextual support available.\n'
-                          : ''
-                      }Click to open assistant panel...`
-                }
-              >
-                {assistantService.isOpen ? (
-                  <TimesIcon />
-                ) : currentContextualDocumentationEntry ? (
-                  <LightBulbIcon />
-                ) : (
-                  <EmptyLightBulbIcon />
-                )}
-              </button>
-              {assistantRef.current && (
-                <VirtualAssistantPanel triggerElement={assistantRef.current} />
-              )}
-            </>
-          )}
           <button
-            className="virtual-assistant__station__arrow"
+            className="virtual-assistant__station__trigger"
             tabIndex={-1}
-            onClick={toggleAssistant}
+            onClick={toggleAssistantPanel}
             title={
-              assistantService.isHidden
-                ? 'Click to show assistant'
-                : 'Click to hide assistant'
+              assistantService.isOpen
+                ? `Click to close assistant panel`
+                : `${
+                    currentContextualDocumentationEntry
+                      ? 'Contextual support available.\n'
+                      : ''
+                  }Click to open assistant panel...`
             }
           >
-            <ChevronDoubleRightIcon />
+            {assistantService.isOpen ? (
+              <CloseIcon className="virtual-assistant__station__trigger__close" />
+            ) : currentContextualDocumentationEntry ? (
+              <CircleIcon className="virtual-assistant__station__trigger__circle" />
+            ) : null}
           </button>
+          {/* NOTE: temporarily hide the assistant panel while dragging so the position is re-calculated */}
+          {!isDragging && assistantStationRef.current && (
+            <VirtualAssistantPanel
+              triggerElement={assistantStationRef.current}
+            />
+          )}
+
+          <ContextMenu
+            className={clsx('virtual-assistant__station__drag-handle', {
+              'virtual-assistant__station__drag-handle--dragging': isDragging,
+            })}
+            // title={isDragging ? undefined : 'Grab to drag assistant'}
+            menuProps={{
+              elevation: 7,
+              classes: {
+                root: 'virtual-assistant__context-menu',
+              },
+            }}
+            content={
+              <MenuContent>
+                <MenuContentItem onClick={resetPosition}>
+                  Reset Position
+                </MenuContentItem>
+                <MenuContentItem onClick={hideAssistant}>
+                  Hide Assistant
+                </MenuContentItem>
+              </MenuContent>
+            }
+          >
+            <div
+              className="virtual-assistant__station__drag-handle__content"
+              title={isDragging ? undefined : 'Grab to drag assistant'}
+            >
+              <VerticalDragHandleThinIcon />
+            </div>
+          </ContextMenu>
         </div>
       </div>
     </Draggable>

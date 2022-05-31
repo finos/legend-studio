@@ -28,6 +28,7 @@ import {
   PanelLoadingIndicator,
   CheckSquareIcon,
   MarkdownTextViewer,
+  AssistantIcon,
 } from '@finos/legend-art';
 import type { ProjectOption } from '../../stores/SetupStore';
 import { SetupStoreProvider, useSetupStore } from './SetupStoreProvider';
@@ -274,6 +275,8 @@ const SetupSelection = observer(() => {
       );
     }
   };
+  const toggleAssistant = (): void =>
+    applicationStore.assistantService.toggleAssistant();
 
   useEffect(() => {
     if (!disableProceedButton) {
@@ -342,8 +345,29 @@ const SetupSelection = observer(() => {
             </div>
           </div>
         </div>
-        {/* TODO: consider what we can put here and componentize it */}
-        <div className="setup__status-bar" />
+
+        <div
+          data-testid={LEGEND_STUDIO_TEST_ID.STATUS_BAR}
+          className="editor__status-bar"
+        >
+          <div className="editor__status-bar__left"></div>
+          <div className="editor__status-bar__right">
+            <button
+              className={clsx(
+                'editor__status-bar__action editor__status-bar__action__toggler',
+                {
+                  'editor__status-bar__action__toggler--active':
+                    !applicationStore.assistantService.isHidden,
+                },
+              )}
+              onClick={toggleAssistant}
+              tabIndex={-1}
+              title="Toggle assistant"
+            >
+              <AssistantIcon />
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
