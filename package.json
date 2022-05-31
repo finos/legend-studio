@@ -10,7 +10,6 @@
   "scripts": {
     "build": "yarn clean && npm-run-all build:ts build:sass",
     "build:sass": "node ./scripts/workflow/buildSassAll.js --compressed",
-    "build:sorted": "yarn clean && yarn workspaces foreach --topological-dev --verbose run build",
     "build:ts": "tsc --build tsconfig.build.json",
     "changeset": "node ./scripts/workflow/generateChangeset.js",
     "changeset:cli": "changeset",
