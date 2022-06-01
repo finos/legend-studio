@@ -24,6 +24,7 @@ import {
   Log,
   LogEvent,
   ContentType,
+  HttpHeader,
 } from '@finos/legend-shared';
 import {
   type V1_PackageableElement,
@@ -160,7 +161,7 @@ const checkGrammarRoundtrip = async (
     AxiosResponse<{ elements: object[] }>
   >(`${ENGINE_SERVER_URL}/pure/v1/grammar/grammarToJson/model`, grammarText, {
     headers: {
-      'Content-Type': ContentType.TEXT_PLAIN,
+      [HttpHeader.CONTENT_TYPE]: ContentType.TEXT_PLAIN,
     },
     // TODO: we should enable this, but we need to make sure engine works first
     // See https://github.com/finos/legend-engine/pull/692
@@ -268,7 +269,7 @@ const checkGrammarRoundtrip = async (
     modelDataContext,
     {
       headers: {
-        Accept: ContentType.TEXT_PLAIN,
+        [HttpHeader.ACCPEPT]: ContentType.TEXT_PLAIN,
       },
       params: {
         renderStyle: 'STANDARD',

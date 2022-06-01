@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
+const OFF = 0;
+const ERROR = 2;
+
 /**
  * We need to detect environment for ESLint CLI because there are rules
  * which are computationally expensive to perform during development.
@@ -55,4 +58,9 @@ module.exports = {
     !enableFastMode && 'plugin:@finos/legend-studio/computationally-expensive',
     'plugin:@finos/legend-studio/scripts-override', // must be called last to turn off rules which are not applicable for scripts
   ].filter(Boolean),
+  rules: {
+    // turn off the prettier format check when running this in CI (i.e. production environment)
+    // to speed up pipeline
+    'prettier/prettier': process.env.NODE_ENV === 'production' ? OFF : ERROR,
+  },
 };
