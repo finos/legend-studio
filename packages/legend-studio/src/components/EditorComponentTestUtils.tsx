@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { jest, expect } from '@jest/globals';
 import {
   type RenderResult,
   render,
@@ -29,6 +30,7 @@ import { Editor } from './editor/Editor';
 import { generateEditorRoute } from '../stores/LegendStudioRouter';
 import {
   type PlainObject,
+  type TEMPORARY__JestMock,
   MOBX__disableSpyOrMock,
   MOBX__enableSpyOrMock,
 } from '@finos/legend-shared';
@@ -314,7 +316,8 @@ export const TEST__setUpEditor = async (
     .mockResolvedValue(projectDependency);
 
   // TODO: we need to think of how we will mock these calls when we modularize
-  mockedEditorStore.graphManagerState.graphManager.initialize = jest.fn();
+  mockedEditorStore.graphManagerState.graphManager.initialize =
+    jest.fn<TEMPORARY__JestMock>();
   jest
     .spyOn(
       mockedEditorStore.graphManagerState.graphManager,
@@ -330,15 +333,15 @@ export const TEST__setUpEditor = async (
 
   // mock change detections (since we do not test them now)
   mockedEditorStore.changeDetectionState.workspaceLocalLatestRevisionState.buildEntityHashesIndex =
-    jest.fn();
+    jest.fn<TEMPORARY__JestMock>();
   mockedEditorStore.sdlcState.buildWorkspaceBaseRevisionEntityHashesIndex =
-    jest.fn();
+    jest.fn<TEMPORARY__JestMock>();
   mockedEditorStore.sdlcState.buildProjectLatestRevisionEntityHashesIndex =
-    jest.fn();
+    jest.fn<TEMPORARY__JestMock>();
   mockedEditorStore.workspaceReviewState.fetchCurrentWorkspaceReview =
-    jest.fn();
+    jest.fn<TEMPORARY__JestMock>();
   mockedEditorStore.workspaceUpdaterState.fetchLatestCommittedReviews =
-    jest.fn();
+    jest.fn<TEMPORARY__JestMock>();
   MOBX__disableSpyOrMock();
 
   const history = createMemoryHistory({

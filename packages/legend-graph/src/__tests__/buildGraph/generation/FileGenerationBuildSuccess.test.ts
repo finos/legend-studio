@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { test, expect, beforeEach } from '@jest/globals';
 import TEST_DATA__fileGeneration from './TEST_DATA__FileGeneration.json';
 import { guaranteeType, unitTest } from '@finos/legend-shared';
 import type { Entity } from '@finos/legend-model-storage';

@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { test, describe } from '@jest/globals';
 import { unitTest } from '@finos/legend-shared';
 import {
   TEST_DATA__AutoImportsWithSystemProfiles,

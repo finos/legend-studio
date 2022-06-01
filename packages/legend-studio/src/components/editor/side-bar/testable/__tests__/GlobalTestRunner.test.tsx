@@ -13,6 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+import { test, beforeEach } from '@jest/globals';
 import { integrationTest } from '@finos/legend-shared';
 import {
   type RenderResult,

@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { test, expect, beforeEach } from '@jest/globals';
 import { TEST_DATA__inlineEmbeddedRelationalTestData } from './TEST_DATA__RelationalEntities';
 import {
   guaranteeNonNullable,

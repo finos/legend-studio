@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { test } from '@jest/globals';
 import { waitFor } from '@testing-library/react';
 import { integrationTest } from '@finos/legend-shared';
 import {

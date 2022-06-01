@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { test, expect } from '@jest/globals';
 import { unitTest } from '@finos/legend-shared';
 import type { Entity } from '@finos/legend-model-storage';
 import { DSLDiagram_GraphPreset } from '../../DSLDiagram_Extension';

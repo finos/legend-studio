@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { test, expect } from '@jest/globals';
 import { unitTest } from '@finos/legend-shared';
 import { addElementToPackage } from '../helpers/DomainHelper';
 import { Class } from '../models/metamodels/pure/packageableElements/domain/Class';

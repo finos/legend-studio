@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-/// <reference types="jest-extended" />
+import { jest, expect } from '@jest/globals';
 import {
   type LoggerPlugin,
+  type TEMPORARRY__JestMatcher,
   Log,
   AbstractPluginManager,
   promisify,
@@ -194,10 +195,12 @@ export const TEST__checkGraphHashUnchanged = async (
       }),
     ),
   );
-  expect(
-    Array.from(originalHashesIndex.entries()).filter(
-      (entry) => entry[0] !== SECTION_INDEX_ELEMENT_PATH,
-    ),
+  (
+    expect(
+      Array.from(originalHashesIndex.entries()).filter(
+        (entry) => entry[0] !== SECTION_INDEX_ELEMENT_PATH,
+      ),
+    ) as TEMPORARRY__JestMatcher
   ).toIncludeSameMembers(
     Array.from(graphHashesIndex.entries()).filter(
       (entry) => entry[0] !== SECTION_INDEX_ELEMENT_PATH,
@@ -222,7 +225,7 @@ export const TEST__checkBuildingElementsRoundtrip = async (
     TEST__ensureObjectFieldsAreSortedAlphabetically(entity.content),
   );
   // check if the contents are the same (i.e. roundtrip test)
-  expect(transformedEntities).toIncludeSameMembers(
+  (expect(transformedEntities) as TEMPORARRY__JestMatcher).toIncludeSameMembers(
     TEST__excludeSectionIndex(entities),
   );
   await TEST__checkGraphHashUnchanged(graphManagerState, entities);
@@ -247,7 +250,7 @@ export const TEST__checkBuildingResolvedElements = async (
     TEST__ensureObjectFieldsAreSortedAlphabetically(entity.content),
   );
   // check if the contents are the same (i.e. roundtrip test)
-  expect(transformedEntities).toIncludeSameMembers(
+  (expect(transformedEntities) as TEMPORARRY__JestMatcher).toIncludeSameMembers(
     TEST__excludeSectionIndex(resolvedEntities),
   );
 };

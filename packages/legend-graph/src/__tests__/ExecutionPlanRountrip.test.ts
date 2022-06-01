@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { test, describe, expect } from '@jest/globals';
 import type { Entity } from '@finos/legend-model-storage';
 import { unitTest } from '@finos/legend-shared';
 import {
@@ -43,18 +44,25 @@ const cases: RoundtripTestCase[] = [
 ];
 
 describe(unitTest('Execution plan processing roundtrip test'), () => {
-  test.each(cases)('%s', async (testName, context, executionPlanJson) => {
-    const { entities } = context;
-    // setup
-    const graphManagerState = TEST__getTestGraphManagerState();
-    await TEST__buildGraphWithEntities(graphManagerState, entities);
-    // roundtrip check
-    const executionPlan = graphManagerState.graphManager.buildExecutionPlan(
-      executionPlanJson,
-      graphManagerState.graph,
-    );
-    const _executionPlanJson =
-      graphManagerState.graphManager.serializeExecutionPlan(executionPlan);
-    expect(_executionPlanJson).toEqual(executionPlanJson);
-  });
+  test.each(cases)(
+    '%s',
+    async (
+      testName: RoundtripTestCase[0],
+      context: RoundtripTestCase[1],
+      executionPlanJson: RoundtripTestCase[2],
+    ) => {
+      const { entities } = context;
+      // setup
+      const graphManagerState = TEST__getTestGraphManagerState();
+      await TEST__buildGraphWithEntities(graphManagerState, entities);
+      // roundtrip check
+      const executionPlan = graphManagerState.graphManager.buildExecutionPlan(
+        executionPlanJson,
+        graphManagerState.graph,
+      );
+      const _executionPlanJson =
+        graphManagerState.graphManager.serializeExecutionPlan(executionPlan);
+      expect(_executionPlanJson).toEqual(executionPlanJson);
+    },
+  );
 });

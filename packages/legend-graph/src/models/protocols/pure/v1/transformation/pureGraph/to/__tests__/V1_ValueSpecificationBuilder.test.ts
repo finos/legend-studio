@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { test, describe, expect } from '@jest/globals';
 import type { Entity } from '@finos/legend-model-storage';
 import { unitTest, Log, ActionState } from '@finos/legend-shared';
 import {
@@ -57,23 +58,31 @@ const cases: RoundtripTestCase[] = [
 ];
 
 describe(unitTest('Lambda processing roundtrip test'), () => {
-  test.each(cases)('%s', async (testName, context, lambdaJson, result) => {
-    const { entities } = context;
-    const { errorMessage } = result;
-    const graph = new PureModel(new CoreModel([]), new SystemModel([]), []);
-    // setup
-    const graphManager = getGraphManager(
-      new TEST__GraphPluginManager(),
-      new Log(),
-    );
-    await graphManager.buildGraph(graph, entities, ActionState.create());
-    const fn = (): void => {
-      graphManager.buildValueSpecification(lambdaJson, graph);
-    };
-    if (errorMessage) {
-      expect(fn).toThrow(errorMessage);
-    } else {
-      fn();
-    }
-  });
+  test.each(cases)(
+    '%s',
+    async (
+      testName: RoundtripTestCase[0],
+      context: RoundtripTestCase[1],
+      lambdaJson: RoundtripTestCase[2],
+      result: RoundtripTestCase[3],
+    ) => {
+      const { entities } = context;
+      const { errorMessage } = result;
+      const graph = new PureModel(new CoreModel([]), new SystemModel([]), []);
+      // setup
+      const graphManager = getGraphManager(
+        new TEST__GraphPluginManager(),
+        new Log(),
+      );
+      await graphManager.buildGraph(graph, entities, ActionState.create());
+      const fn = (): void => {
+        graphManager.buildValueSpecification(lambdaJson, graph);
+      };
+      if (errorMessage) {
+        expect(fn).toThrow(errorMessage);
+      } else {
+        fn();
+      }
+    },
+  );
 });

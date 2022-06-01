@@ -81,6 +81,11 @@ export const getBaseConfig = ({
     // the built-in GitHub Actions Reporter will annotate changed files with test failure messages
     'github-actions',
   ],
+  // NOTE: we cannot really turn this flag on, though we have tried to disabled usage of global jest
+  // within the code base, some libraries we rely on still need global injections apparently,
+  // we observed problems with mock libraries like `jest-canvas-mock`, timing issues, and duplicated
+  // rendering of elements in general
+  // injectGlobals: false,
 });
 
 export const unitTest = (testName) => `[UNIT] ${testName}`;

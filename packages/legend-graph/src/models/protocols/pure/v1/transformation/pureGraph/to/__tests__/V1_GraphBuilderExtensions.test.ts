@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { test, expect } from '@jest/globals';
 import {
   type Clazz,
   UnsupportedOperationError,

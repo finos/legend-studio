@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { test } from '@jest/globals';
 import { DSLPersistence_GraphPreset } from '../../DSLPersistence_Extension';
 import { TEST_DATA__roundtrip } from './TEST_DATA__DSLPersistence_Roundtrip';
 import {

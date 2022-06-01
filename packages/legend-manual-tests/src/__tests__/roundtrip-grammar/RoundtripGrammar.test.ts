@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-/// <reference types="jest-extended" />
+import { test, describe, expect } from '@jest/globals';
 import { resolve, basename } from 'path';
 import fs from 'fs';
 import axios, { type AxiosResponse } from 'axios';
 import {
   type PlainObject,
+  type TEMPORARRY__JestMatcher,
   WebConsole,
   Log,
   LogEvent,
@@ -213,11 +214,13 @@ const checkGrammarRoundtrip = async (
 
   if (!excludes.includes(phase)) {
     // ensure that transformed entities have all fields ordered alphabetically
-    expect(
-      // received: transformed entity
-      transformedEntities
-        .map((entity) => entity.content)
-        .map(graphManagerState.graphManager.pruneSourceInformation),
+    (
+      expect(
+        // received: transformed entity
+        transformedEntities
+          .map((entity) => entity.content)
+          .map(graphManagerState.graphManager.pruneSourceInformation),
+      ) as TEMPORARRY__JestMatcher
     ).toIncludeSameMembers(
       // expected: protocol JSON parsed from grammar text
       (

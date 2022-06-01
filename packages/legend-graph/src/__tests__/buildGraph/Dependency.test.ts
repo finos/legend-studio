@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-import { unitTest } from '@finos/legend-shared';
+import { test, expect } from '@jest/globals';
+import { type TEMPORARRY__JestMatcher, unitTest } from '@finos/legend-shared';
 import { TEST__getTestGraphManagerState } from '../../GraphManagerTestUtils';
 import { DependencyManager } from '../../graph/DependencyManager';
 import type { Entity } from '@finos/legend-model-storage';
@@ -128,7 +129,9 @@ test(
     const transformedEntities = graphManagerState.graph.allOwnElements.map(
       (el) => graphManagerState.graphManager.elementToEntity(el),
     );
-    expect(entities).toIncludeSameMembers(transformedEntities);
+    (expect(entities) as TEMPORARRY__JestMatcher).toIncludeSameMembers(
+      transformedEntities,
+    );
   },
 );
 

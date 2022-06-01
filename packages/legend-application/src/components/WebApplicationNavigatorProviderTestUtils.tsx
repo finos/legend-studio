@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { jest } from '@jest/globals';
 import { WebApplicationNavigator } from '../stores/WebApplicationNavigator';
 import { createMemoryHistory, type History } from 'history';
 

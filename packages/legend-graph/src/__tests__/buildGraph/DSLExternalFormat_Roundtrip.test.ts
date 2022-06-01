@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { test } from '@jest/globals';
 import type { Entity } from '@finos/legend-model-storage';
 import { unitTest } from '@finos/legend-shared';
 import { roundtripTestData } from './TEST_DATA__DSLExternalFormat_Roundtrip';

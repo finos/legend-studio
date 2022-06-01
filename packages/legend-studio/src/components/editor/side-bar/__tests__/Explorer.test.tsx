@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { test, expect, beforeEach } from '@jest/globals';
 import { type RenderResult, getByText } from '@testing-library/react';
 import TEST_DATA__m2mGraphEntities from '../../../../stores/__tests__/TEST_DATA__M2MGraphEntities.json';
 import { integrationTest, guaranteeNonNullable } from '@finos/legend-shared';

@@ -14,11 +14,13 @@
  * limitations under the License.
  */
 
+import { test, jest, expect } from '@jest/globals';
 import { LegendStudioApplicationRoot } from '../LegendStudioApplication';
 import {
   integrationTest,
   MOBX__enableSpyOrMock,
   MOBX__disableSpyOrMock,
+  noop,
 } from '@finos/legend-shared';
 import {
   WebApplicationNavigator,
@@ -100,7 +102,7 @@ test(integrationTest('Failed to authorize SDLC will redirect'), async () => {
     .mockResolvedValueOnce({ name: 'testUser', userId: 'testUserId' });
   const navigator = new WebApplicationNavigator(createMemoryHistory());
   applicationStore.navigator = navigator;
-  const jumpToSpy = jest.spyOn(navigator, 'jumpTo').mockImplementation();
+  const jumpToSpy = jest.spyOn(navigator, 'jumpTo').mockImplementation(noop);
   jest
     .spyOn(navigator, 'getCurrentLocation')
     .mockImplementationOnce(() => stubURL);

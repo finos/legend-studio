@@ -14,12 +14,15 @@
  * limitations under the License.
  */
 
-/// <reference types="jest-extended" />
+import { test, expect, describe } from '@jest/globals';
 import TEST_DATA__ComplexM2MModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_ComplexM2M.json';
 import TEST_DATA__SimpleRelationalInheritanceModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_SimpleRelationalInheritanceModel.json';
 import TEST_DATA__COVIDDataSimpleModel from './TEST_DATA__QueryBuilder_Model_COVID.json';
 import TEST_DATA_AssociationMappingModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_AssociationMappingModel.json';
-import { integrationTest } from '@finos/legend-shared';
+import {
+  integrationTest,
+  type TEMPORARRY__JestMatcher,
+} from '@finos/legend-shared';
 import type { Entity } from '@finos/legend-model-storage';
 import {
   Class,
@@ -206,32 +209,37 @@ const transformToTestPropertyMappingData = (
   }));
 
 describe(integrationTest('Build property mapping data'), () => {
-  test.each(cases)('%s', async (testName, testCase) => {
-    const { mapping, rootClass, expectedMappingData, entities, maxDepth } =
-      testCase;
-    const pluginManager = LegendQueryPluginManager.create();
-    pluginManager.usePresets([new Query_GraphPreset()]).install();
-    const mockedQueryStore = TEST__provideMockedLegendQueryStore({
-      pluginManager,
-    });
-    const graphManagerState =
-      mockedQueryStore.queryBuilderState.graphManagerState;
-    await graphManagerState.initializeSystem();
-    await graphManagerState.graphManager.buildGraph(
-      graphManagerState.graph,
-      entities,
-      graphManagerState.graphBuildState,
-    );
-    const _mapping = graphManagerState.graph.getMapping(mapping);
-    const _class = graphManagerState.graph.getClass(rootClass);
-    const actualMappingData = generatePropertyMappingDataTree(
-      _mapping,
-      _class,
-      graphManagerState,
-      maxDepth === undefined ? 1000 : maxDepth,
-    );
-    expect(expectedMappingData).toIncludeSameMembers(
-      transformToTestPropertyMappingData(actualMappingData),
-    );
-  });
+  test.each(cases)(
+    '%s',
+    async (testName: TestCase[0], testCase: TestCase[1]) => {
+      const { mapping, rootClass, expectedMappingData, entities, maxDepth } =
+        testCase;
+      const pluginManager = LegendQueryPluginManager.create();
+      pluginManager.usePresets([new Query_GraphPreset()]).install();
+      const mockedQueryStore = TEST__provideMockedLegendQueryStore({
+        pluginManager,
+      });
+      const graphManagerState =
+        mockedQueryStore.queryBuilderState.graphManagerState;
+      await graphManagerState.initializeSystem();
+      await graphManagerState.graphManager.buildGraph(
+        graphManagerState.graph,
+        entities,
+        graphManagerState.graphBuildState,
+      );
+      const _mapping = graphManagerState.graph.getMapping(mapping);
+      const _class = graphManagerState.graph.getClass(rootClass);
+      const actualMappingData = generatePropertyMappingDataTree(
+        _mapping,
+        _class,
+        graphManagerState,
+        maxDepth === undefined ? 1000 : maxDepth,
+      );
+      (
+        expect(expectedMappingData) as TEMPORARRY__JestMatcher
+      ).toIncludeSameMembers(
+        transformToTestPropertyMappingData(actualMappingData),
+      );
+    },
+  );
 });

@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { jest } from '@jest/globals';
 import { SDLCServerClient } from './SDLCServerClient';
 import { SDLCServerClientProvider } from './SDLCServerClientProvider';
 

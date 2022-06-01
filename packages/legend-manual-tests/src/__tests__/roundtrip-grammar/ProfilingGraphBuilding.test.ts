@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-/// <reference types="jest-extended" />
-
+import { test, describe, expect } from '@jest/globals';
 import { resolve } from 'path';
 import fs from 'fs';
 import axios, { type AxiosResponse } from 'axios';

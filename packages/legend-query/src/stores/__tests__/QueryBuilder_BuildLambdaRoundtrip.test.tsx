@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-/// <reference types="jest-extended" />
+import { test, expect, describe } from '@jest/globals';
 import {
   TEST_DATA__simpleProjection,
   TEST_DATA__projectionWithChainedProperty,
@@ -70,7 +70,10 @@ import {
   TEST__getTestGraphManagerState,
 } from '@finos/legend-graph';
 import { TEST__getTestApplicationStore } from '@finos/legend-application';
-import { integrationTest } from '@finos/legend-shared';
+import {
+  integrationTest,
+  type TEMPORARRY__JestMatcher,
+} from '@finos/legend-shared';
 import {
   QueryBuilderState,
   StandardQueryBuilderMode,
@@ -332,31 +335,41 @@ const cases: RoundtripTestCase[] = [
 describe(
   integrationTest('Query builder lambda processing roundtrip test'),
   () => {
-    test.each(cases)('%s', async (testName, context, lambda, inputLambda) => {
-      const { entities } = context;
-      const pluginManager = LegendQueryPluginManager.create();
-      pluginManager.usePresets([new Query_GraphPreset()]).install();
-      const applicationStore = TEST__getTestApplicationStore(
-        TEST__getTestQueryConfig(),
-        LegendQueryPluginManager.create(),
-      );
-      const graphManagerState = TEST__getTestGraphManagerState(pluginManager);
-      await TEST__buildGraphWithEntities(graphManagerState, entities);
-      const queryBuilderState = new QueryBuilderState(
-        applicationStore,
-        graphManagerState,
-        new StandardQueryBuilderMode(),
-      );
-      // do the check using input and output lambda
-      const rawLambda = inputLambda ?? lambda;
-      queryBuilderState.buildStateFromRawLambda(
-        new RawLambda(rawLambda.parameters, rawLambda.body),
-      );
-      const jsonQuery =
-        graphManagerState.graphManager.serializeRawValueSpecification(
-          queryBuilderState.getQuery(),
+    test.each(cases)(
+      '%s',
+      async (
+        testName: RoundtripTestCase[0],
+        context: RoundtripTestCase[1],
+        lambda: RoundtripTestCase[2],
+        inputLambda: RoundtripTestCase[3],
+      ) => {
+        const { entities } = context;
+        const pluginManager = LegendQueryPluginManager.create();
+        pluginManager.usePresets([new Query_GraphPreset()]).install();
+        const applicationStore = TEST__getTestApplicationStore(
+          TEST__getTestQueryConfig(),
+          LegendQueryPluginManager.create(),
         );
-      expect([lambda]).toIncludeSameMembers([jsonQuery]);
-    });
+        const graphManagerState = TEST__getTestGraphManagerState(pluginManager);
+        await TEST__buildGraphWithEntities(graphManagerState, entities);
+        const queryBuilderState = new QueryBuilderState(
+          applicationStore,
+          graphManagerState,
+          new StandardQueryBuilderMode(),
+        );
+        // do the check using input and output lambda
+        const rawLambda = inputLambda ?? lambda;
+        queryBuilderState.buildStateFromRawLambda(
+          new RawLambda(rawLambda.parameters, rawLambda.body),
+        );
+        const jsonQuery =
+          graphManagerState.graphManager.serializeRawValueSpecification(
+            queryBuilderState.getQuery(),
+          );
+        (expect([lambda]) as TEMPORARRY__JestMatcher).toIncludeSameMembers([
+          jsonQuery,
+        ]);
+      },
+    );
   },
 );

@@ -14,8 +14,12 @@
  * limitations under the License.
  */
 
-/// <reference types="jest-extended" />
-import { unitTest, guaranteeNonNullable } from '@finos/legend-shared';
+import { test, expect } from '@jest/globals';
+import {
+  type TEMPORARRY__JestMatcher,
+  unitTest,
+  guaranteeNonNullable,
+} from '@finos/legend-shared';
 import {
   TEST_DATA__simpleDebuggingCase,
   TEST_DATA__AutoImportsWithAny,
@@ -93,7 +97,9 @@ const testGeneratedElements = async (
   const transformedEntities = graphManagerState.graph.allOwnElements.map((el) =>
     graphManagerState.graphManager.elementToEntity(el),
   );
-  expect(entities).toIncludeSameMembers(transformedEntities);
+  (expect(entities) as TEMPORARRY__JestMatcher).toIncludeSameMembers(
+    transformedEntities,
+  );
   // Ensure generated elements are not transformed
   for (const entityPath of generatedElementPaths) {
     expect(

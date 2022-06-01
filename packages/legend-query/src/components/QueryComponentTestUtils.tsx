@@ -14,10 +14,12 @@
  * limitations under the License.
  */
 
+import { jest } from '@jest/globals';
 import { type RenderResult, render, waitFor } from '@testing-library/react';
 import { Router } from 'react-router-dom';
 import { createMemoryHistory } from 'history';
 import {
+  type TEMPORARY__JestMock,
   MOBX__disableSpyOrMock,
   MOBX__enableSpyOrMock,
 } from '@finos/legend-shared';
@@ -150,9 +152,10 @@ export const TEST__setUpQueryEditor = async (
     .spyOn(mockedQueryStore.graphManagerState.graphManager, 'getQuery')
     .mockResolvedValue(query);
 
-  mockedQueryStore.buildGraph = jest.fn();
+  mockedQueryStore.buildGraph = jest.fn<TEMPORARY__JestMock>();
   // TODO: we need to think of how we will mock these calls when we modularize
-  mockedQueryStore.graphManagerState.graphManager.initialize = jest.fn();
+  mockedQueryStore.graphManagerState.graphManager.initialize =
+    jest.fn<TEMPORARY__JestMock>();
   MOBX__disableSpyOrMock();
 
   const history = createMemoryHistory({

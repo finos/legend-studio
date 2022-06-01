@@ -60,6 +60,7 @@
   },
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",
+    "@jest/globals": "28.1.0",
     "@testing-library/react": "13.3.0",
     "cross-env": "7.0.3",
     "eslint": "8.16.0",

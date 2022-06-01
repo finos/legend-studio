@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { test, expect } from '@jest/globals';
 import { act, getByText } from '@testing-library/react';
 import {
   TEST_DATA__simpleProjectionWithBiTemporalSourceAndBiTemporalTarget,

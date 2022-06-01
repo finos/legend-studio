@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { test, expect, describe } from '@jest/globals';
 import {
   TEST_DATA__malformedFilterExpression,
   TEST_DATA__errorInGraphLambda,
@@ -110,7 +111,12 @@ describe(
   () => {
     test.each(cases)(
       '%s',
-      async (testName, context, lambdaJson, errorMessage) => {
+      async (
+        testName: TestCase[0],
+        context: TestCase[1],
+        lambdaJson: TestCase[2],
+        errorMessage: TestCase[3],
+      ) => {
         const { entities } = context;
         const pluginManager = LegendQueryPluginManager.create();
         pluginManager.usePresets([new Query_GraphPreset()]).install();

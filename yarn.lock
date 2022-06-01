@@ -1975,6 +1975,7 @@ __metadata:
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-graph": "workspace:*"
     "@finos/legend-shared": "workspace:*"
+    "@jest/globals": 28.1.0
     "@types/css-font-loading-module": 0.0.7
     "@types/papaparse": 5.3.2
     "@types/react": 18.0.10
@@ -2019,6 +2020,7 @@ __metadata:
     "@fontsource/roboto": 4.5.7
     "@fontsource/roboto-condensed": 4.5.8
     "@fontsource/roboto-mono": 4.5.7
+    "@jest/globals": 28.1.0
     "@mui/material": 5.8.2
     "@types/react": 18.0.10
     "@types/react-select": 4.0.18
@@ -2062,6 +2064,7 @@ __metadata:
     "@changesets/logger": 0.0.5
     "@changesets/read": 0.5.5
     "@changesets/write": 0.1.8
+    "@jest/globals": 28.1.0
     "@juggle/resize-observer": 3.3.1
     "@manypkg/get-packages": 1.1.3
     "@pmmmwh/react-refresh-webpack-plugin": 0.5.7
@@ -2112,6 +2115,7 @@ __metadata:
     "@finos/legend-server-depot": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-studio": "workspace:*"
+    "@jest/globals": 28.1.0
     "@types/react": 18.0.10
     cross-env: 7.0.3
     eslint: 8.16.0
@@ -2142,6 +2146,7 @@ __metadata:
     "@finos/legend-model-storage": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-studio": "workspace:*"
+    "@jest/globals": 28.1.0
     "@testing-library/react": 13.3.0
     "@types/react": 18.0.10
     cross-env: 7.0.3
@@ -2175,6 +2180,7 @@ __metadata:
     "@finos/legend-model-storage": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-studio": "workspace:*"
+    "@jest/globals": 28.1.0
     "@types/react": 18.0.10
     cross-env: 7.0.3
     eslint: 8.16.0
@@ -2202,6 +2208,7 @@ __metadata:
     "@finos/legend-model-storage": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-studio": "workspace:*"
+    "@jest/globals": 28.1.0
     "@types/react": 18.0.10
     cross-env: 7.0.3
     eslint: 8.16.0
@@ -2226,6 +2233,7 @@ __metadata:
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-graph": "workspace:*"
     "@finos/legend-shared": "workspace:*"
+    "@jest/globals": 28.1.0
     cross-env: 7.0.3
     eslint: 8.16.0
     jest: 28.1.0
@@ -2248,6 +2256,7 @@ __metadata:
     "@finos/legend-server-sdlc": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-studio": "workspace:*"
+    "@jest/globals": 28.1.0
     cross-env: 7.0.3
     eslint: 8.16.0
     jest: 28.1.0
@@ -2269,6 +2278,7 @@ __metadata:
     "@finos/legend-model-storage": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-studio": "workspace:*"
+    "@jest/globals": 28.1.0
     "@types/react": 18.0.10
     cross-env: 7.0.3
     eslint: 8.16.0
@@ -2299,6 +2309,7 @@ __metadata:
     "@finos/legend-server-sdlc": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-studio": "workspace:*"
+    "@jest/globals": 28.1.0
     cross-env: 7.0.3
     eslint: 8.16.0
     jest: 28.1.0
@@ -2342,6 +2353,7 @@ __metadata:
     "@finos/legend-extension-external-store-service": "workspace:*"
     "@finos/legend-graph": "workspace:*"
     "@finos/legend-shared": "workspace:*"
+    "@jest/globals": 28.1.0
     cross-env: 7.0.3
     eslint: 8.16.0
     jest: 28.1.0
@@ -2358,6 +2370,7 @@ __metadata:
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-model-storage": "workspace:*"
     "@finos/legend-shared": "workspace:*"
+    "@jest/globals": 28.1.0
     cross-env: 7.0.3
     date-fns: 2.28.0
     eslint: 8.16.0
@@ -2391,6 +2404,7 @@ __metadata:
     "@finos/legend-graph": "workspace:*"
     "@finos/legend-graph-extension-collection": "workspace:*"
     "@finos/legend-shared": "workspace:*"
+    "@jest/globals": 28.1.0
     axios: 0.27.2
     cross-env: 7.0.3
     eslint: 8.16.0
@@ -2407,6 +2421,7 @@ __metadata:
   dependencies:
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-shared": "workspace:*"
+    "@jest/globals": 28.1.0
     cross-env: 7.0.3
     eslint: 8.16.0
     jest: 28.1.0
@@ -2472,6 +2487,7 @@ __metadata:
     "@finos/legend-model-storage": "workspace:*"
     "@finos/legend-server-depot": "workspace:*"
     "@finos/legend-shared": "workspace:*"
+    "@jest/globals": 28.1.0
     "@testing-library/dom": 8.13.0
     "@testing-library/react": 13.3.0
     "@types/react": 18.0.10
@@ -2508,6 +2524,7 @@ __metadata:
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-model-storage": "workspace:*"
     "@finos/legend-shared": "workspace:*"
+    "@jest/globals": 28.1.0
     cross-env: 7.0.3
     eslint: 8.16.0
     jest: 28.1.0
@@ -2528,6 +2545,7 @@ __metadata:
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-model-storage": "workspace:*"
     "@finos/legend-shared": "workspace:*"
+    "@jest/globals": 28.1.0
     cross-env: 7.0.3
     eslint: 8.16.0
     jest: 28.1.0
@@ -2546,6 +2564,7 @@ __metadata:
   resolution: "@finos/legend-shared@workspace:packages/legend-shared"
   dependencies:
     "@finos/legend-dev-utils": "workspace:*"
+    "@jest/globals": 28.1.0
     "@types/lodash-es": 4.17.6
     "@types/lossless-json": 1.0.1
     "@types/object-hash": 2.2.1
@@ -2631,6 +2650,7 @@ __metadata:
     "@finos/legend-server-sdlc": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-studio": "workspace:*"
+    "@jest/globals": 28.1.0
     "@types/react": 18.0.10
     "@types/react-router-dom": 5.3.2
     cross-env: 7.0.3
@@ -2663,6 +2683,7 @@ __metadata:
     "@finos/legend-server-depot": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-studio": "workspace:*"
+    "@jest/globals": 28.1.0
     "@testing-library/dom": 8.13.0
     "@testing-library/react": 13.3.0
     "@types/react": 18.0.10
@@ -2694,6 +2715,7 @@ __metadata:
     "@finos/legend-server-depot": "workspace:*"
     "@finos/legend-server-sdlc": "workspace:*"
     "@finos/legend-shared": "workspace:*"
+    "@jest/globals": 28.1.0
     "@testing-library/dom": 8.13.0
     "@testing-library/react": 13.3.0
     "@types/react": 18.0.10
@@ -2780,6 +2802,7 @@ __metadata:
     "@finos/legend-model-storage": "workspace:*"
     "@finos/legend-server-depot": "workspace:*"
     "@finos/legend-shared": "workspace:*"
+    "@jest/globals": 28.1.0
     "@types/react": 18.0.10
     "@types/react-dom": 18.0.5
     "@types/react-router-dom": 5.3.2
@@ -2811,6 +2834,7 @@ __metadata:
   dependencies:
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-shared": "workspace:*"
+    "@jest/globals": 28.1.0
     "@types/zipkin-javascript-opentracing": 1.6.0
     cross-env: 7.0.3
     eslint: 8.16.0
@@ -3016,7 +3040,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@jest/globals@npm:^28.1.0":
+"@jest/globals@npm:28.1.0, @jest/globals@npm:^28.1.0":
   version: 28.1.0
   resolution: "@jest/globals@npm:28.1.0"
   dependencies:
@@ -3945,16 +3969,6 @@ __metadata:
   dependencies:
     "@types/istanbul-lib-report": "*"
   checksum: f1ad54bc68f37f60b30c7915886b92f86b847033e597f9b34f2415acdbe5ed742fa559a0a40050d74cdba3b6a63c342cac1f3a64dba5b68b66a6941f4abd7903
-  languageName: node
-  linkType: hard
-
-"@types/jest@npm:27.5.1":
-  version: 27.5.1
-  resolution: "@types/jest@npm:27.5.1"
-  dependencies:
-    jest-matcher-utils: ^27.0.0
-    pretty-format: ^27.0.0
-  checksum: be20e39f7aaf17179109c0060d0a0489cec2034d4e2e28a631284c7ecd13c5ae52f62697a33a0e89b03b6cfe54e9d5e8c2bd387ab2bd90d6071d68c63b86d1e3
   languageName: node
   linkType: hard
 
@@ -7453,7 +7467,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"execa@npm:^5.0.0, execa@npm:^5.1.1":
+"execa@npm:^5.0.0":
   version: 5.1.1
   resolution: "execa@npm:5.1.1"
   dependencies:
@@ -7467,6 +7481,23 @@ __metadata:
     signal-exit: ^3.0.3
     strip-final-newline: ^2.0.0
   checksum: fba9022c8c8c15ed862847e94c252b3d946036d7547af310e344a527e59021fd8b6bb0723883ea87044dc4f0201f949046993124a42ccb0855cae5bf8c786343
+  languageName: node
+  linkType: hard
+
+"execa@npm:^6.1.0":
+  version: 6.1.0
+  resolution: "execa@npm:6.1.0"
+  dependencies:
+    cross-spawn: ^7.0.3
+    get-stream: ^6.0.1
+    human-signals: ^3.0.1
+    is-stream: ^3.0.0
+    merge-stream: ^2.0.0
+    npm-run-path: ^5.1.0
+    onetime: ^6.0.0
+    signal-exit: ^3.0.7
+    strip-final-newline: ^3.0.0
+  checksum: 1a4af799839134f5c72eb63d525b87304c1114a63aa71676c91d57ccef2e26f2f53e14c11384ab11c4ec479be1efa83d11c8190e00040355c2c5c3364327fa8e
   languageName: node
   linkType: hard
 
@@ -8080,7 +8111,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"get-stream@npm:^6.0.0":
+"get-stream@npm:^6.0.0, get-stream@npm:^6.0.1":
   version: 6.0.1
   resolution: "get-stream@npm:6.0.1"
   checksum: e04ecece32c92eebf5b8c940f51468cd53554dcbb0ea725b2748be583c9523d00128137966afce410b9b051eb2ef16d657cd2b120ca8edafcf5a65e81af63cad
@@ -8657,6 +8688,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"human-signals@npm:^3.0.1":
+  version: 3.0.1
+  resolution: "human-signals@npm:3.0.1"
+  checksum: f252a7769c8094a5c9dc6772816bdb417b188820b04c8b42d0fc468e03a0ba905b1dd07afabe9385cc83504af1ccc2b985cd1e4aeeeb8e0029896c5af2e6f354
+  languageName: node
+  linkType: hard
+
 "humanize-ms@npm:^1.2.1":
   version: 1.2.1
   resolution: "humanize-ms@npm:1.2.1"
@@ -9213,6 +9251,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"is-stream@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "is-stream@npm:3.0.0"
+  checksum: 172093fe99119ffd07611ab6d1bcccfe8bc4aa80d864b15f43e63e54b7abc71e779acd69afdb854c4e2a67fdc16ae710e370eda40088d1cfc956a50ed82d8f16
+  languageName: node
+  linkType: hard
+
 "is-string@npm:^1.0.5, is-string@npm:^1.0.7":
   version: 1.0.7
   resolution: "is-string@npm:1.0.7"
@@ -9485,7 +9530,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jest-diff@npm:^27.2.5, jest-diff@npm:^27.5.1":
+"jest-diff@npm:^27.2.5":
   version: 27.5.1
   resolution: "jest-diff@npm:27.5.1"
   dependencies:
@@ -9617,18 +9662,6 @@ __metadata:
     jest-get-type: ^28.0.2
     pretty-format: ^28.1.0
   checksum: 911eec6b96d389c1e7741c8df85e030a9618e38105c7e71f6f2c1284a02d033fec4e6a8916385f17fd5ed0ffffb8491ac887f5b3de11d0265d8415598e9c0ae6
-  languageName: node
-  linkType: hard
-
-"jest-matcher-utils@npm:^27.0.0":
-  version: 27.5.1
-  resolution: "jest-matcher-utils@npm:27.5.1"
-  dependencies:
-    chalk: ^4.0.0
-    jest-diff: ^27.5.1
-    jest-get-type: ^27.5.1
-    pretty-format: ^27.5.1
-  checksum: bb2135fc48889ff3fe73888f6cc7168ddab9de28b51b3148f820c89fdfd2effdcad005f18be67d0b9be80eda208ad47290f62f03d0a33f848db2dd0273c8217a
   languageName: node
   linkType: hard
 
@@ -10165,7 +10198,6 @@ __metadata:
     "@finos/eslint-plugin-legend-studio": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/stylelint-config-legend-studio": "workspace:*"
-    "@types/jest": 27.5.1
     "@types/node": 17.0.38
     chalk: 5.0.1
     cross-env: 7.0.3
@@ -10175,7 +10207,7 @@ __metadata:
     husky: 8.0.1
     inquirer: 8.2.4
     jest: 28.1.0
-    lint-staged: 12.5.0
+    lint-staged: 13.0.0
     micromatch: 4.0.5
     npm-run-all: 4.1.5
     prettier: 2.6.2
@@ -10242,15 +10274,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lint-staged@npm:12.5.0":
-  version: 12.5.0
-  resolution: "lint-staged@npm:12.5.0"
+"lint-staged@npm:13.0.0":
+  version: 13.0.0
+  resolution: "lint-staged@npm:13.0.0"
   dependencies:
     cli-truncate: ^3.1.0
     colorette: ^2.0.16
     commander: ^9.3.0
     debug: ^4.3.4
-    execa: ^5.1.1
+    execa: ^6.1.0
     lilconfig: 2.0.5
     listr2: ^4.0.5
     micromatch: ^4.0.5
@@ -10258,11 +10290,10 @@ __metadata:
     object-inspect: ^1.12.2
     pidtree: ^0.5.0
     string-argv: ^0.3.1
-    supports-color: ^9.2.2
-    yaml: ^1.10.2
+    yaml: ^2.1.1
   bin:
     lint-staged: bin/lint-staged.js
-  checksum: ac203917be098305bc0aebd5f1a969e88ea0854e8fb2199ebcbbb059d8bce324cf97db8f3d25f7954dd48c0666ae13987fb4db569d5b6fecda06f9fb742278e1
+  checksum: cd0810ae48297ecbf962fa727755424ed519cc02e27074fa27415b145f01b26936a3049bdb1a3db1ff564dd88d4261032173beacf18ee26c1eaa4b9ca19d5adb
   languageName: node
   linkType: hard
 
@@ -11230,6 +11261,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"mimic-fn@npm:^4.0.0":
+  version: 4.0.0
+  resolution: "mimic-fn@npm:4.0.0"
+  checksum: 995dcece15ee29aa16e188de6633d43a3db4611bcf93620e7e62109ec41c79c0f34277165b8ce5e361205049766e371851264c21ac64ca35499acb5421c2ba56
+  languageName: node
+  linkType: hard
+
 "mimic-response@npm:^1.0.0, mimic-response@npm:^1.0.1":
   version: 1.0.1
   resolution: "mimic-response@npm:1.0.1"
@@ -11743,6 +11781,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"npm-run-path@npm:^5.1.0":
+  version: 5.1.0
+  resolution: "npm-run-path@npm:5.1.0"
+  dependencies:
+    path-key: ^4.0.0
+  checksum: dc184eb5ec239d6a2b990b43236845332ef12f4e0beaa9701de724aa797fe40b6bbd0157fb7639d24d3ab13f5d5cf22d223a19c6300846b8126f335f788bee66
+  languageName: node
+  linkType: hard
+
 "npmlog@npm:^6.0.0":
   version: 6.0.2
   resolution: "npmlog@npm:6.0.2"
@@ -11892,6 +11939,15 @@ __metadata:
   dependencies:
     mimic-fn: ^2.1.0
   checksum: 2478859ef817fc5d4e9c2f9e5728512ddd1dbc9fb7829ad263765bb6d3b91ce699d6e2332eef6b7dff183c2f490bd3349f1666427eaba4469fba0ac38dfd0d34
+  languageName: node
+  linkType: hard
+
+"onetime@npm:^6.0.0":
+  version: 6.0.0
+  resolution: "onetime@npm:6.0.0"
+  dependencies:
+    mimic-fn: ^4.0.0
+  checksum: 0846ce78e440841335d4e9182ef69d5762e9f38aa7499b19f42ea1c4cd40f0b4446094c455c713f9adac3f4ae86f613bb5e30c99e52652764d06a89f709b3788
   languageName: node
   linkType: hard
 
@@ -12221,6 +12277,13 @@ __metadata:
   version: 3.1.1
   resolution: "path-key@npm:3.1.1"
   checksum: 55cd7a9dd4b343412a8386a743f9c746ef196e57c823d90ca3ab917f90ab9f13dd0ded27252ba49dbdfcab2b091d998bc446f6220cd3cea65db407502a740020
+  languageName: node
+  linkType: hard
+
+"path-key@npm:^4.0.0":
+  version: 4.0.0
+  resolution: "path-key@npm:4.0.0"
+  checksum: 8e6c314ae6d16b83e93032c61020129f6f4484590a777eed709c4a01b50e498822b00f76ceaf94bc64dbd90b327df56ceadce27da3d83393790f1219e07721d7
   languageName: node
   linkType: hard
 
@@ -12877,7 +12940,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pretty-format@npm:^27.0.0, pretty-format@npm:^27.0.2, pretty-format@npm:^27.5.1":
+"pretty-format@npm:^27.0.2, pretty-format@npm:^27.5.1":
   version: 27.5.1
   resolution: "pretty-format@npm:27.5.1"
   dependencies:
@@ -14754,6 +14817,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"strip-final-newline@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "strip-final-newline@npm:3.0.0"
+  checksum: 23ee263adfa2070cd0f23d1ac14e2ed2f000c9b44229aec9c799f1367ec001478469560abefd00c5c99ee6f0b31c137d53ec6029c53e9f32a93804e18c201050
+  languageName: node
+  linkType: hard
+
 "strip-indent@npm:^3.0.0":
   version: 3.0.0
   resolution: "strip-indent@npm:3.0.0"
@@ -14933,13 +15003,6 @@ __metadata:
   dependencies:
     has-flag: ^4.0.0
   checksum: c052193a7e43c6cdc741eb7f378df605636e01ad434badf7324f17fb60c69a880d8d8fcdcb562cf94c2350e57b937d7425ab5b8326c67c2adc48f7c87c1db406
-  languageName: node
-  linkType: hard
-
-"supports-color@npm:^9.2.2":
-  version: 9.2.2
-  resolution: "supports-color@npm:9.2.2"
-  checksum: 976d84877402fc38c1d43b1fde20b0a8dc0283273f21cfebe4ff7507d27543cdfbeec7db108a96b82d694465f06d64e8577562b05d0520b41710088e0a33cc50
   languageName: node
   linkType: hard
 
@@ -16275,6 +16338,13 @@ __metadata:
   version: 1.10.2
   resolution: "yaml@npm:1.10.2"
   checksum: ce4ada136e8a78a0b08dc10b4b900936912d15de59905b2bf415b4d33c63df1d555d23acb2a41b23cf9fb5da41c256441afca3d6509de7247daa062fd2c5ea5f
+  languageName: node
+  linkType: hard
+
+"yaml@npm:^2.1.1":
+  version: 2.1.1
+  resolution: "yaml@npm:2.1.1"
+  checksum: f48bb209918aa57cfaf78ef6448d1a1f8187f45c746f933268b7023dc59e5456004611879126c9bb5ea55b0a2b1c2b392dfde436931ece0c703a3d754562bb96
   languageName: node
   linkType: hard
 

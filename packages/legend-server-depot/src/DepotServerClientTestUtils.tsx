@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { jest } from '@jest/globals';
 import { DepotServerClient } from './DepotServerClient';
 import { DepotServerClientProvider } from './DepotServerClientProvider';
 

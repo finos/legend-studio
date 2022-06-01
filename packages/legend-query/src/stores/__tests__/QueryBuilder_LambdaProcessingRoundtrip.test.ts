@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { test, expect, describe } from '@jest/globals';
 import type { Entity } from '@finos/legend-model-storage';
 import { unitTest } from '@finos/legend-shared';
 import {
@@ -152,22 +153,29 @@ const cases: RoundtripTestCase[] = [
 ];
 
 describe(unitTest('Lambda processing roundtrip test'), () => {
-  test.each(cases)('%s', async (testName, context, lambdaJson) => {
-    const { entities } = context;
-    const graphManagerState = TEST__getTestGraphManagerState(pluginManager);
-    await TEST__buildGraphWithEntities(graphManagerState, entities);
-    // roundtrip check
-    const lambda = graphManagerState.graphManager.buildValueSpecification(
-      lambdaJson,
-      graphManagerState.graph,
-    );
-    const _lambdaJson =
-      graphManagerState.graphManager.serializeRawValueSpecification(
-        graphManagerState.graphManager.buildRawValueSpecification(
-          lambda,
-          graphManagerState.graph,
-        ),
+  test.each(cases)(
+    '%s',
+    async (
+      testName: RoundtripTestCase[0],
+      context: RoundtripTestCase[1],
+      lambdaJson: RoundtripTestCase[2],
+    ) => {
+      const { entities } = context;
+      const graphManagerState = TEST__getTestGraphManagerState(pluginManager);
+      await TEST__buildGraphWithEntities(graphManagerState, entities);
+      // roundtrip check
+      const lambda = graphManagerState.graphManager.buildValueSpecification(
+        lambdaJson,
+        graphManagerState.graph,
       );
-    expect(_lambdaJson).toEqual(lambdaJson);
-  });
+      const _lambdaJson =
+        graphManagerState.graphManager.serializeRawValueSpecification(
+          graphManagerState.graphManager.buildRawValueSpecification(
+            lambda,
+            graphManagerState.graph,
+          ),
+        );
+      expect(_lambdaJson).toEqual(lambdaJson);
+    },
+  );
 });
