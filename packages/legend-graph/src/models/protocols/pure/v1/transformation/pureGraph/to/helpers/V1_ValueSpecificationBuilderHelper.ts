@@ -1027,6 +1027,21 @@ export function V1_buildFunctionExpression(
       ),
     );
     return expression;
+  } else if (
+    Object.values(SUPPORTED_FUNCTIONS).some((fn) =>
+      matchFunctionName(functionName, fn),
+    )
+  ) {
+    // NOTE: this is a catch-all builder that is only meant for basic function expression
+    // such as and(), or(), etc. It will fail when type-inferencing/function-matching is required
+    // such as for project(), filter(), getAll(), etc.
+    return V1_buildGenericFunctionExpression(
+      functionName,
+      parameters,
+      openVariables,
+      compileContext,
+      processingContext,
+    );
   }
   const extraFunctionExpressionBuilders =
     compileContext.extensions.plugins.flatMap(

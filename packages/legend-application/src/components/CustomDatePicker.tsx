@@ -711,9 +711,9 @@ const AbsoluteDateValueSpecificationEditor: React.FC<{
     );
   };
   return (
-    <div className="query-builder-value-spec-editor__date-picker__absolute-date">
+    <div className="value-spec-editor__date-picker__absolute-date">
       <input
-        className="panel__content__form__section__input query-builder-value-spec-editor__date-picker__absolute-date__input input--dark"
+        className="panel__content__form__section__input value-spec-editor__date-picker__absolute-date__input input--dark"
         type="date"
         spellCheck={false}
         value={absoluteDateValue}
@@ -765,9 +765,9 @@ const AbsoluteTimeValueSpecificationEditor: React.FC<{
     );
   };
   return (
-    <div className="query-builder-value-spec-editor__date-picker__absolute-date">
+    <div className="value-spec-editor__date-picker__absolute-date">
       <input
-        className="panel__content__form__section__input query-builder-value-spec-editor__date-picker__absolute-date__input input--dark"
+        className="panel__content__form__section__input value-spec-editor__date-picker__absolute-date__input input--dark"
         // Despite its name this would actually allow us to register time in UTC
         // See https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/datetime-local#setting_timezones
         type="datetime-local"
@@ -848,20 +848,20 @@ const CustomDateInstanceValueEditor: React.FC<{
   };
 
   return (
-    <div className="query-builder-value-spec-editor__date-picker__custom-date">
-      <div className="query-builder-value-spec-editor__date-picker__custom-date__input">
+    <div className="value-spec-editor__date-picker__custom-date">
+      <div className="value-spec-editor__date-picker__custom-date__input">
         <input
-          className="query-builder-value-spec-editor__date-picker__custom-date__input-text-editor input--dark"
+          className="value-spec-editor__date-picker__custom-date__input-text-editor input--dark"
           spellCheck={false}
           value={durationValue}
           type="number"
           onChange={changeDurationValue}
         />
       </div>
-      <div className="query-builder-value-spec-editor__date-picker__custom-date__input">
+      <div className="value-spec-editor__date-picker__custom-date__input">
         <CustomSelectorInput
           placeholder="Unit"
-          className="query-builder-value-spec-editor__date-picker__custom-date__input-dropdown"
+          className="value-spec-editor__date-picker__custom-date__input-dropdown"
           options={Object.values(CUSTOM_DATE_OPTION_UNIT).map((t) => ({
             value: t.toString(),
             label: t.toString(),
@@ -882,9 +882,9 @@ const CustomDateInstanceValueEditor: React.FC<{
           darkMode={true}
         />
       </div>
-      <div className="query-builder-value-spec-editor__date-picker__custom-date__input">
+      <div className="value-spec-editor__date-picker__custom-date__input">
         <CustomSelectorInput
-          className="query-builder-value-spec-editor__date-picker__custom-date__input-dropdown"
+          className="value-spec-editor__date-picker__custom-date__input-dropdown"
           options={Object.values(CUSTOM_DATE_OPTION_DIRECTION).map((t) => ({
             value: t.toString(),
             label: t.toString(),
@@ -905,9 +905,9 @@ const CustomDateInstanceValueEditor: React.FC<{
           darkMode={true}
         />
       </div>
-      <div className="query-builder-value-spec-editor__date-picker__custom-date__input">
+      <div className="value-spec-editor__date-picker__custom-date__input">
         <CustomSelectorInput
-          className="query-builder-value-spec-editor__date-picker__custom-date__input-dropdown"
+          className="value-spec-editor__date-picker__custom-date__input-dropdown"
           options={Object.values(CUSTOM_DATE_OPTION_REFERENCE_MOMENT).map(
             (t) => ({
               value: t.toString(),
@@ -964,11 +964,11 @@ const CustomFirstDayOfValueSpecificationEditor: React.FC<{
   };
 
   return (
-    <div className="query-builder-value-spec-editor__date-picker__custom-date">
-      <div className="query-builder-value-spec-editor__date-picker__custom-date__input">
+    <div className="value-spec-editor__date-picker__custom-date">
+      <div className="value-spec-editor__date-picker__custom-date__input">
         <CustomSelectorInput
           placeholder="Choose a unit..."
-          className="query-builder-value-spec-editor__date-picker__custom-date__input-dropdown query-builder-value-spec-editor__date-picker__custom-date__input-dropdown--full"
+          className="value-spec-editor__date-picker__custom-date__input-dropdown value-spec-editor__date-picker__custom-date__input-dropdown--full"
           options={Object.values(CUSTOM_DATE_FIRST_DAY_OF_UNIT).map((t) => ({
             value: t.toString(),
             label: t.toString(),
@@ -1018,11 +1018,11 @@ const CustomPreviousDayOfWeekValueSpecificationEditor: React.FC<{
   };
 
   return (
-    <div className="query-builder-value-spec-editor__date-picker__custom-date">
-      <div className="query-builder-value-spec-editor__date-picker__custom-date__input">
+    <div className="value-spec-editor__date-picker__custom-date">
+      <div className="value-spec-editor__date-picker__custom-date__input">
         <CustomSelectorInput
           placeholder="Choose a day..."
-          className="query-builder-value-spec-editor__date-picker__custom-date__input-dropdown query-builder-value-spec-editor__date-picker__custom-date__input-dropdown--full"
+          className="value-spec-editor__date-picker__custom-date__input-dropdown value-spec-editor__date-picker__custom-date__input-dropdown--full"
           options={Object.values(CUSTOM_DATE_DAY_OF_WEEK).map((t) => ({
             value: t.toString(),
             label: t.toString(),
@@ -1198,7 +1198,7 @@ export const CustomDatePicker: React.FC<{
   return (
     <>
       <button
-        className="query-builder-value-spec-editor__date-picker__trigger"
+        className="value-spec-editor__date-picker__trigger"
         title="Click to edit and pick from more date options"
         onClick={openCustomDatePickerPopover}
       >
