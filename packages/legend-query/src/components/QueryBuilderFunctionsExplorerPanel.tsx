@@ -52,11 +52,11 @@ import {
   getElementRootPackage,
   Package,
   ROOT_PACKAGE_NAME,
+  getMultiplicityDescription,
 } from '@finos/legend-graph';
 import { getEmptyImage } from 'react-dnd-html5-backend';
 import { useEffect, useState } from 'react';
 import type { QueryBuilderState } from '../stores/QueryBuilderState';
-import { getMultiplicityDescription } from './shared/QueryBuilderUtils';
 
 const isDependencyTreeNode = (
   node: QueryBuilderFunctionsExplorerTreeNodeData,

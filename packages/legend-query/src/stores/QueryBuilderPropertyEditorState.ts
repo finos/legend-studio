@@ -55,9 +55,9 @@ import {
 } from '@finos/legend-graph';
 import { generateDefaultValueForPrimitiveType } from './QueryBuilderValueSpecificationBuilderHelper';
 import type { QueryBuilderState } from './QueryBuilderState';
-import { SUPPORTED_FUNCTIONS } from '../QueryBuilder_Const';
-import { functionExpression_setParametersValues } from './QueryBuilderValueSpecificationModifierHelper';
 import type { QueryBuilderSetupState } from './QueryBuilderSetupState';
+import { functionExpression_setParametersValues } from '@finos/legend-application';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../QueryBuilder_Const';
 
 export const getDerivedPropertyMilestoningSteoreotype = (
   property: DerivedProperty,
@@ -320,7 +320,7 @@ export const getPropertyChainName = (
       currentExpression instanceof SimpleFunctionExpression &&
       matchFunctionName(
         currentExpression.functionName,
-        SUPPORTED_FUNCTIONS.SUBTYPE,
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.SUBTYPE,
       )
     ) {
       const propertyWithSubtype = `(${TYPE_CAST_TOKEN}${propertyNameDecorator(
@@ -634,7 +634,7 @@ export class QueryBuilderPropertyExpressionState {
         currentExpression instanceof SimpleFunctionExpression &&
         matchFunctionName(
           currentExpression.functionName,
-          SUPPORTED_FUNCTIONS.SUBTYPE,
+          QUERY_BUILDER_SUPPORTED_FUNCTIONS.SUBTYPE,
         )
       ) {
         currentExpression = getNullableFirstElement(

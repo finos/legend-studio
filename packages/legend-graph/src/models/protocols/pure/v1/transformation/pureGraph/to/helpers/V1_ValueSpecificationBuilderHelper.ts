@@ -21,10 +21,12 @@ import {
   UnsupportedOperationError,
   isNonNullable,
   uniq,
+  returnUndefOnError,
 } from '@finos/legend-shared';
 import {
   TYPICAL_MULTIPLICITY_TYPE,
   PRIMITIVE_TYPE,
+  SUPPORTED_FUNCTIONS,
 } from '../../../../../../../../MetaModelConst';
 import {
   LambdaFunction,
@@ -48,7 +50,7 @@ import {
 } from '../../../../../../../metamodels/pure/valueSpecification/GraphFetchTree';
 import { ValueSpecification } from '../../../../../../../metamodels/pure/valueSpecification/ValueSpecification';
 import {
-  type SimpleFunctionExpression,
+  SimpleFunctionExpression,
   AbstractPropertyExpression,
 } from '../../../../../../../metamodels/pure/valueSpecification/SimpleFunctionExpression';
 import { GenericType } from '../../../../../../../metamodels/pure/packageableElements/domain/GenericType';
@@ -122,6 +124,7 @@ import type { V1_INTERNAL__UnknownValueSpecification } from '../../../../model/v
 import { INTERNAL__UnknownValueSpecification } from '../../../../../../../metamodels/pure/valueSpecification/INTERNAL__UnknownValueSpecification';
 import { GraphBuilderError } from '../../../../../../../../graphManager/GraphManagerUtils';
 import { getEnumValue } from '../../../../../../../../helpers/DomainHelper';
+import { matchFunctionName } from '../../../../../../../../MetaModelUtils';
 
 const LET_FUNCTION = 'letFunction';
 
@@ -898,6 +901,60 @@ export function V1_processProperty(
   );
 }
 
+export const V1_buildBaseSimpleFunctionExpression = (
+  processedParameters: ValueSpecification[],
+  functionName: string,
+  compileContext: V1_GraphBuilderContext,
+): SimpleFunctionExpression => {
+  const expression = new SimpleFunctionExpression(
+    functionName,
+    compileContext.graph.getTypicalMultiplicity(TYPICAL_MULTIPLICITY_TYPE.ONE),
+  );
+  const func = returnUndefOnError(() =>
+    compileContext.resolveFunction(functionName),
+  );
+  expression.func = func;
+  if (func) {
+    const val = func.value;
+    expression.genericType = GenericTypeExplicitReference.create(
+      new GenericType(val.returnType.value),
+    );
+    expression.multiplicity = val.returnMultiplicity;
+  }
+  expression.parametersValues = processedParameters;
+  return expression;
+};
+
+/**
+ * NOTE: this is a catch-all builder for all functions we support
+ * This is extremely basic and will fail for any functions that needs proper
+ * type-inferencing of the return and the parameters.
+ */
+export const V1_buildGenericFunctionExpression = (
+  functionName: string,
+  parameters: V1_ValueSpecification[],
+  openVariables: string[],
+  compileContext: V1_GraphBuilderContext,
+  processingContext: V1_ProcessingContext,
+): [SimpleFunctionExpression, ValueSpecification[]] => {
+  const processedParams = parameters.map((parameter) =>
+    parameter.accept_ValueSpecificationVisitor(
+      new V1_ValueSpecificationBuilder(
+        compileContext,
+        processingContext,
+        openVariables,
+      ),
+    ),
+  );
+  return [
+    V1_buildBaseSimpleFunctionExpression(
+      processedParams,
+      functionName,
+      compileContext,
+    ),
+    processedParams,
+  ];
+};
 /**
  * This is fairly similar to how engine does function matching in a way.
  * Notice that Studio core should not attempt to do any function inferencing/matching
@@ -913,6 +970,77 @@ export function V1_buildFunctionExpression(
   compileContext: V1_GraphBuilderContext,
   processingContext: V1_ProcessingContext,
 ): [SimpleFunctionExpression, ValueSpecification[]] {
+  if (
+    matchFunctionName(functionName, SUPPORTED_FUNCTIONS.TODAY) ||
+    matchFunctionName(functionName, SUPPORTED_FUNCTIONS.FIRST_DAY_OF_QUARTER)
+  ) {
+    const expression = V1_buildGenericFunctionExpression(
+      functionName,
+      parameters,
+      openVariables,
+      compileContext,
+      processingContext,
+    );
+    expression[0].genericType = GenericTypeExplicitReference.create(
+      new GenericType(
+        compileContext.graph.getPrimitiveType(PRIMITIVE_TYPE.STRICTDATE),
+      ),
+    );
+    return expression;
+  } else if (matchFunctionName(functionName, SUPPORTED_FUNCTIONS.NOW)) {
+    const expression = V1_buildGenericFunctionExpression(
+      functionName,
+      parameters,
+      openVariables,
+      compileContext,
+      processingContext,
+    );
+    expression[0].genericType = GenericTypeExplicitReference.create(
+      new GenericType(
+        compileContext.graph.getPrimitiveType(PRIMITIVE_TYPE.DATETIME),
+      ),
+    );
+    return expression;
+  } else if (
+    (
+      [
+        SUPPORTED_FUNCTIONS.FIRST_DAY_OF_YEAR,
+        SUPPORTED_FUNCTIONS.FIRST_DAY_OF_MONTH,
+        SUPPORTED_FUNCTIONS.FIRST_DAY_OF_WEEK,
+        SUPPORTED_FUNCTIONS.PREVIOUS_DAY_OF_WEEK,
+        SUPPORTED_FUNCTIONS.ADJUST,
+      ] as string[]
+    ).some((fn) => matchFunctionName(functionName, fn))
+  ) {
+    const expression = V1_buildGenericFunctionExpression(
+      functionName,
+      parameters,
+      openVariables,
+      compileContext,
+      processingContext,
+    );
+    expression[0].genericType = GenericTypeExplicitReference.create(
+      new GenericType(
+        compileContext.graph.getPrimitiveType(PRIMITIVE_TYPE.DATE),
+      ),
+    );
+    return expression;
+  } else if (
+    Object.values(SUPPORTED_FUNCTIONS).some((fn) =>
+      matchFunctionName(functionName, fn),
+    )
+  ) {
+    // NOTE: this is a catch-all builder that is only meant for basic function expression
+    // such as and(), or(), etc. It will fail when type-inferencing/function-matching is required
+    // such as for project(), filter(), getAll(), etc.
+    return V1_buildGenericFunctionExpression(
+      functionName,
+      parameters,
+      openVariables,
+      compileContext,
+      processingContext,
+    );
+  }
   const extraFunctionExpressionBuilders =
     compileContext.extensions.plugins.flatMap(
       (plugin) => plugin.V1_getExtraFunctionExpressionBuilders?.() ?? [],

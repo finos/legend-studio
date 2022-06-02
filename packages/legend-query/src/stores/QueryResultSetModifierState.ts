@@ -36,7 +36,7 @@ import {
   SimpleFunctionExpression,
   TYPICAL_MULTIPLICITY_TYPE,
 } from '@finos/legend-graph';
-import { SUPPORTED_FUNCTIONS } from '../QueryBuilder_Const';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../QueryBuilder_Const';
 
 export enum COLUMN_SORT_TYPE {
   ASC,
@@ -78,8 +78,8 @@ export class SortColumnState {
     const sortColumnFunction = new SimpleFunctionExpression(
       extractElementNameFromPath(
         this.sortType === COLUMN_SORT_TYPE.ASC
-          ? SUPPORTED_FUNCTIONS.TDS_ASC
-          : SUPPORTED_FUNCTIONS.TDS_DESC,
+          ? QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_ASC
+          : QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_DESC,
       ),
       multiplicityOne,
     );
@@ -169,20 +169,25 @@ export class QueryResultSetModifierState {
         if (
           matchFunctionName(
             func.functionName,
-            SUPPORTED_FUNCTIONS.TDS_PROJECT,
+            QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_PROJECT,
           ) ||
           matchFunctionName(
             func.functionName,
-            SUPPORTED_FUNCTIONS.TDS_GROUP_BY,
+            QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_GROUP_BY,
           ) ||
-          matchFunctionName(func.functionName, SUPPORTED_FUNCTIONS.TDS_FILTER)
+          matchFunctionName(
+            func.functionName,
+            QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_FILTER,
+          )
         ) {
           let currentExpression = func;
 
           // build distinct()
           if (this.distinct) {
             const distinctFunction = new SimpleFunctionExpression(
-              extractElementNameFromPath(SUPPORTED_FUNCTIONS.TDS_DISTINCT),
+              extractElementNameFromPath(
+                QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_DISTINCT,
+              ),
               multiplicityOne,
             );
             distinctFunction.parametersValues[0] = currentExpression;
@@ -192,7 +197,9 @@ export class QueryResultSetModifierState {
           // build sort()
           if (this.sortColumns.length) {
             const sortFunction = new SimpleFunctionExpression(
-              extractElementNameFromPath(SUPPORTED_FUNCTIONS.TDS_SORT),
+              extractElementNameFromPath(
+                QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_SORT,
+              ),
               multiplicityOne,
             );
             const multiplicity = new Multiplicity(
@@ -230,7 +237,9 @@ export class QueryResultSetModifierState {
               ),
             ];
             const takeFunction = new SimpleFunctionExpression(
-              extractElementNameFromPath(SUPPORTED_FUNCTIONS.TDS_TAKE),
+              extractElementNameFromPath(
+                QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_TAKE,
+              ),
               multiplicityOne,
             );
 
@@ -242,7 +251,10 @@ export class QueryResultSetModifierState {
           lambda.expressionSequence[0] = currentExpression;
           return lambda;
         } else if (
-          matchFunctionName(func.functionName, SUPPORTED_FUNCTIONS.SERIALIZE)
+          matchFunctionName(
+            func.functionName,
+            QUERY_BUILDER_SUPPORTED_FUNCTIONS.SERIALIZE,
+          )
         ) {
           // NOTE: we have to separate the handling of `take()` for projection and
           // graph-fetch as the latter use `meta::pure::functions::collection::take()`
@@ -263,7 +275,9 @@ export class QueryResultSetModifierState {
             );
             limit.values = [options.overridingLimit];
             const takeFunction = new SimpleFunctionExpression(
-              extractElementNameFromPath(SUPPORTED_FUNCTIONS.TAKE),
+              extractElementNameFromPath(
+                QUERY_BUILDER_SUPPORTED_FUNCTIONS.TAKE,
+              ),
               multiplicityOne,
             );
 

@@ -20,17 +20,16 @@ import {
   AbstractPropertyExpression,
   type FunctionExpression,
   PRIMITIVE_TYPE,
+  SUPPORTED_FUNCTIONS,
   isSuperType,
+  buildPrimitiveInstanceValue,
 } from '@finos/legend-graph';
 import {
   guaranteeNonNullable,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
-import { SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
-import {
-  buildPrimitiveInstanceValue,
-  getNonCollectionValueSpecificationType,
-} from '../QueryBuilderOperatorsHelper';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
+import { getNonCollectionValueSpecificationType } from '../QueryBuilderOperatorsHelper';
 import { QueryBuilderPostFilterOperator } from '../QueryBuilderPostFilterOperator';
 import { buildPostFilterConditionState } from '../QueryBuilderPostFilterProcessor';
 import type {
@@ -138,7 +137,7 @@ export class QueryBuilderPostFilterOperator_LessThan extends QueryBuilderPostFil
         postFilterConditionState.value?.genericType?.value.rawType.path !==
           PRIMITIVE_TYPE.DATETIME
         ? SUPPORTED_FUNCTIONS.IS_BEFORE_DAY
-        : SUPPORTED_FUNCTIONS.LESS_THAN,
+        : QUERY_BUILDER_SUPPORTED_FUNCTIONS.LESS_THAN,
     );
   }
 
@@ -155,7 +154,7 @@ export class QueryBuilderPostFilterOperator_LessThan extends QueryBuilderPostFil
         expression.parametersValues[1]?.genericType?.value.rawType.path !==
           PRIMITIVE_TYPE.DATETIME
         ? SUPPORTED_FUNCTIONS.IS_BEFORE_DAY
-        : SUPPORTED_FUNCTIONS.LESS_THAN,
+        : QUERY_BUILDER_SUPPORTED_FUNCTIONS.LESS_THAN,
       this,
     );
   }

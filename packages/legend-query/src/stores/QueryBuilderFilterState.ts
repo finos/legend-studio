@@ -48,7 +48,7 @@ import {
 } from '@finos/legend-graph';
 import {
   DEFAULT_LAMBDA_VARIABLE_NAME,
-  SUPPORTED_FUNCTIONS,
+  QUERY_BUILDER_SUPPORTED_FUNCTIONS,
 } from '../QueryBuilder_Const';
 import { buildGenericLambdaFunctionInstanceValue } from './QueryBuilderValueSpecificationBuilderHelper';
 import {
@@ -380,7 +380,7 @@ export const buildFilterExpression = (
     );
   // main filter expression
   const filterExpression = new SimpleFunctionExpression(
-    extractElementNameFromPath(SUPPORTED_FUNCTIONS.FILTER),
+    extractElementNameFromPath(QUERY_BUILDER_SUPPORTED_FUNCTIONS.FILTER),
     multiplicityOne,
   );
   // param [0]

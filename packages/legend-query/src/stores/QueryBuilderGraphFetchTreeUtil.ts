@@ -35,7 +35,7 @@ import type { QueryBuilderState } from './QueryBuilderState';
 import {
   graphFetchTree_addSubTree,
   graphFetchTree_removeSubTree,
-} from './QueryBuilderValueSpecificationModifierHelper';
+} from '@finos/legend-application';
 
 export class QueryBuilderGraphFetchTreeNodeData implements TreeNodeData {
   isSelected?: boolean | undefined;

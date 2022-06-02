@@ -14,54 +14,54 @@
  * limitations under the License.
  */
 
-import { useEffect, useRef, useState } from 'react';
-import { observer } from 'mobx-react-lite';
 import {
-  clsx,
   type TooltipPlacement,
   Tooltip,
-  CustomSelectorInput,
-  InfoCircleIcon,
-  PencilIcon,
   DollarIcon,
+  clsx,
+  InfoCircleIcon,
+  RefreshIcon,
   CheckSquareIcon,
   SquareIcon,
+  CustomSelectorInput,
   SaveIcon,
-  RefreshIcon,
+  PencilIcon,
 } from '@finos/legend-art';
+import {
+  type Enum,
+  type Type,
+  type ValueSpecification,
+  type PureModel,
+  PrimitiveInstanceValue,
+  CollectionInstanceValue,
+  EnumValueInstanceValue,
+  INTERNAL__PropagatedValue,
+  SimpleFunctionExpression,
+  VariableExpression,
+  EnumValueExplicitReference,
+  TYPICAL_MULTIPLICITY_TYPE,
+  PrimitiveType,
+  PRIMITIVE_TYPE,
+  GenericTypeExplicitReference,
+  GenericType,
+  Enumeration,
+  getEnumValue,
+  getMultiplicityDescription,
+} from '@finos/legend-graph';
 import {
   guaranteeNonNullable,
   isNonNullable,
   returnUndefOnError,
   uniq,
 } from '@finos/legend-shared';
+import { observer } from 'mobx-react-lite';
 import CSVParser from 'papaparse';
-import {
-  type PureModel,
-  type Enum,
-  type Type,
-  type ValueSpecification,
-  Enumeration,
-  GenericType,
-  GenericTypeExplicitReference,
-  PrimitiveType,
-  CollectionInstanceValue,
-  EnumValueExplicitReference,
-  EnumValueInstanceValue,
-  PrimitiveInstanceValue,
-  PRIMITIVE_TYPE,
-  TYPICAL_MULTIPLICITY_TYPE,
-  VariableExpression,
-  INTERNAL__PropagatedValue,
-  SimpleFunctionExpression,
-  getEnumValue,
-} from '@finos/legend-graph';
-import { getMultiplicityDescription } from './shared/QueryBuilderUtils';
+import { useEffect, useRef, useState } from 'react';
 import {
   instanceValue_changeValue,
   instanceValue_changeValues,
-} from '../stores/QueryBuilderValueSpecificationModifierHelper';
-import { QueryBuilderCustomDatePicker } from './QueryBuilderCustomDatePicker';
+} from '../stores/ValueSpecificationModifierHelper';
+import { CustomDatePicker } from './CustomDatePicker';
 
 type TypeCheckOption = {
   expectedType: Type;
@@ -75,7 +75,7 @@ type TypeCheckOption = {
   match?: boolean;
 };
 
-const QueryBuilderParameterInfoTooltip: React.FC<{
+const ParameterInfoTooltip: React.FC<{
   variable: VariableExpression;
   children: React.ReactElement;
   placement?: TooltipPlacement | undefined;
@@ -87,9 +87,9 @@ const QueryBuilderParameterInfoTooltip: React.FC<{
       arrow={true}
       {...(placement !== undefined ? { placement } : {})}
       classes={{
-        tooltip: 'query-builder__tooltip',
-        arrow: 'query-builder__tooltip__arrow',
-        tooltipPlacementRight: 'query-builder__tooltip--right',
+        tooltip: 'value-spec-paramater__tooltip',
+        arrow: 'value-spec-paramater__tooltip__arrow',
+        tooltipPlacementRight: 'value-spec-paramater__tooltip--right',
       }}
       TransitionProps={{
         // disable transition
@@ -98,24 +98,28 @@ const QueryBuilderParameterInfoTooltip: React.FC<{
         timeout: 0,
       }}
       title={
-        <div className="query-builder__tooltip__content">
-          <div className="query-builder__tooltip__item">
-            <div className="query-builder__tooltip__item__label">Type</div>
-            <div className="query-builder__tooltip__item__value">
+        <div className="value-spec-paramater__tooltip__content">
+          <div className="value-spec-paramater__tooltip__item">
+            <div className="value-spec-paramater__tooltip__item__label">
+              Type
+            </div>
+            <div className="value-spec-paramater__tooltip__item__value">
               {type?.name ?? ''}
             </div>
           </div>
-          <div className="query-builder__tooltip__item">
-            <div className="query-builder__tooltip__item__label">Var Name</div>
-            <div className="query-builder__tooltip__item__value">
+          <div className="value-spec-paramater__tooltip__item">
+            <div className="value-spec-paramater__tooltip__item__label">
+              Var Name
+            </div>
+            <div className="value-spec-paramater__tooltip__item__value">
               {variable.name}
             </div>
           </div>
-          <div className="query-builder__tooltip__item">
-            <div className="query-builder__tooltip__item__label">
+          <div className="value-spec-paramater__tooltip__item">
+            <div className="value-spec-paramater__tooltip__item__label">
               Multiplicity
             </div>
-            <div className="query-builder__tooltip__item__value">
+            <div className="value-spec-paramater__tooltip__item__value">
               {getMultiplicityDescription(variable.multiplicity)}
             </div>
           </div>
@@ -136,26 +140,19 @@ const VariableExpressionParameterEditor = observer(
     const { valueSpecification, className, resetValue } = props;
     const varName = valueSpecification.name;
     return (
-      <div
-        className={clsx(
-          'query-builder-value-spec-editor__parameter',
-          className,
-        )}
-      >
-        <div className="query-builder-value-spec-editor__parameter__icon">
+      <div className={clsx('value-spec-editor__parameter', className)}>
+        <div className="value-spec-editor__parameter__icon">
           <DollarIcon />
         </div>
-        <div className="query-builder-value-spec-editor__parameter__label">
-          <div className="query-builder-value-spec-editor__parameter__text">
-            {varName}
-          </div>
-          <QueryBuilderParameterInfoTooltip variable={valueSpecification}>
-            <div className="query-builder-value-spec-editor__parameter__info">
+        <div className="value-spec-editor__parameter__label">
+          <div className="value-spec-editor__parameter__text">{varName}</div>
+          <ParameterInfoTooltip variable={valueSpecification}>
+            <div className="value-spec-editor__parameter__info">
               <InfoCircleIcon />
             </div>
-          </QueryBuilderParameterInfoTooltip>
+          </ParameterInfoTooltip>
           <button
-            className="query-builder-value-spec-editor__parameter__reset-btn"
+            className="value-spec-editor__parameter__reset-btn"
             title="Reset"
             onClick={resetValue}
           >
@@ -179,16 +176,16 @@ const StringPrimitiveInstanceValueEditor = observer(
       instanceValue_changeValue(valueSpecification, event.target.value, 0);
 
     return (
-      <div className={clsx('query-builder-value-spec-editor', className)}>
+      <div className={clsx('value-spec-editor', className)}>
         <input
-          className="panel__content__form__section__input query-builder-value-spec-editor__input"
+          className="panel__content__form__section__input value-spec-editor__input"
           spellCheck={false}
           value={value}
           placeholder={value === '' ? '(empty)' : undefined}
           onChange={changeValue}
         />
         <button
-          className="query-builder-value-spec-editor__reset-btn"
+          className="value-spec-editor__reset-btn"
           title="Reset"
           onClick={resetValue}
         >
@@ -211,17 +208,17 @@ const BooleanPrimitiveInstanceValueEditor = observer(
       instanceValue_changeValue(valueSpecification, !value, 0);
 
     return (
-      <div className={clsx('query-builder-value-spec-editor', className)}>
+      <div className={clsx('value-spec-editor', className)}>
         <button
-          className={clsx('query-builder-value-spec-editor__toggler__btn', {
-            'query-builder-value-spec-editor__toggler__btn--toggled': value,
+          className={clsx('value-spec-editor__toggler__btn', {
+            'value-spec-editor__toggler__btn--toggled': value,
           })}
           onClick={toggleValue}
         >
           {value ? <CheckSquareIcon /> : <SquareIcon />}
         </button>
         <button
-          className="query-builder-value-spec-editor__reset-btn"
+          className="value-spec-editor__reset-btn"
           title="Reset"
           onClick={resetValue}
         >
@@ -250,16 +247,16 @@ const NumberPrimitiveInstanceValueEditor = observer(
     };
 
     return (
-      <div className={clsx('query-builder-value-spec-editor', className)}>
+      <div className={clsx('value-spec-editor', className)}>
         <input
-          className="panel__content__form__section__input query-builder-value-spec-editor__input"
+          className="panel__content__form__section__input value-spec-editor__input"
           spellCheck={false}
           type="number"
           value={value}
           onChange={changeValue}
         />
         <button
-          className="query-builder-value-spec-editor__reset-btn"
+          className="value-spec-editor__reset-btn"
           title="Reset"
           onClick={resetValue}
         >
@@ -292,16 +289,16 @@ const EnumValueInstanceValueEditor = observer(
     };
 
     return (
-      <div className={clsx('query-builder-value-spec-editor', className)}>
+      <div className={clsx('value-spec-editor', className)}>
         <CustomSelectorInput
-          className="query-builder-value-spec-editor__enum-selector"
+          className="value-spec-editor__enum-selector"
           options={options}
           onChange={changeValue}
           value={{ value: enumValue, label: enumValue.name }}
           darkMode={true}
         />
         <button
-          className="query-builder-value-spec-editor__reset-btn"
+          className="value-spec-editor__reset-btn"
           title="Reset"
           onClick={resetValue}
         >
@@ -482,23 +479,23 @@ const CollectionValueInstanceValueEditor = observer(
 
     if (editable) {
       return (
-        <div className={clsx('query-builder-value-spec-editor', className)}>
+        <div className={clsx('value-spec-editor', className)}>
           <input
             ref={inputRef}
-            className="panel__content__form__section__input query-builder-value-spec-editor__input"
+            className="panel__content__form__section__input value-spec-editor__input"
             spellCheck={false}
             value={text}
             placeholder={text === '' ? '(empty)' : undefined}
             onChange={changeValue}
           />
           <button
-            className="query-builder-value-spec-editor__list-editor__save-button btn--dark"
+            className="value-spec-editor__list-editor__save-button btn--dark"
             onClick={saveEdit}
           >
             <SaveIcon />
           </button>
           <button
-            className="query-builder-value-spec-editor__reset-btn"
+            className="value-spec-editor__reset-btn"
             title="Reset"
             onClick={resetValue}
           >
@@ -509,17 +506,17 @@ const CollectionValueInstanceValueEditor = observer(
     }
     return (
       <div
-        className={clsx('query-builder-value-spec-editor', className)}
+        className={clsx('value-spec-editor', className)}
         onClick={enableEdit}
         title="Click to edit"
       >
         <input
-          className="query-builder-value-spec-editor__list-editor__preview"
+          className="value-spec-editor__list-editor__preview"
           spellCheck={false}
           value={previewText}
           disabled={true}
         />
-        <button className="query-builder-value-spec-editor__list-editor__edit-icon">
+        <button className="value-spec-editor__list-editor__edit-icon">
           <PencilIcon />
         </button>
       </div>
@@ -527,10 +524,8 @@ const CollectionValueInstanceValueEditor = observer(
   },
 );
 
-const QueryBuilderUnsupportedValueSpecificationEditor: React.FC = () => (
-  <div className="query-builder-value-spec-editor--unsupported">
-    unsupported
-  </div>
+const UnsupportedValueSpecificationEditor: React.FC = () => (
+  <div className="value-spec-editor--unsupported">unsupported</div>
 );
 
 const DateInstanceValueEditor = observer(
@@ -551,15 +546,15 @@ const DateInstanceValueEditor = observer(
     } = props;
 
     return (
-      <div className="query-builder-value-spec-editor">
-        <QueryBuilderCustomDatePicker
+      <div className="value-spec-editor">
+        <CustomDatePicker
           valueSpecification={valueSpecification}
           graph={graph}
           typeCheckOption={typeCheckOption}
           updateValue={updateValue}
         />
         <button
-          className="query-builder-value-spec-editor__reset-btn"
+          className="value-spec-editor__reset-btn"
           title="Reset"
           onClick={resetValue}
         >
@@ -576,7 +571,7 @@ const DateInstanceValueEditor = observer(
  *
  * See https://github.com/finos/legend-studio/pull/1021
  */
-export const QueryBuilderValueSpecificationEditor: React.FC<{
+export const BasicValueSpecificationEditor: React.FC<{
   valueSpecification: ValueSpecification;
   graph: PureModel;
   typeCheckOption: TypeCheckOption;
@@ -638,7 +633,7 @@ export const QueryBuilderValueSpecificationEditor: React.FC<{
           />
         );
       default:
-        return <QueryBuilderUnsupportedValueSpecificationEditor />;
+        return <UnsupportedValueSpecificationEditor />;
     }
   } else if (valueSpecification instanceof EnumValueInstanceValue) {
     return (
@@ -676,7 +671,7 @@ export const QueryBuilderValueSpecificationEditor: React.FC<{
     );
   } else if (valueSpecification instanceof INTERNAL__PropagatedValue) {
     return (
-      <QueryBuilderValueSpecificationEditor
+      <BasicValueSpecificationEditor
         valueSpecification={valueSpecification.getValue()}
         graph={graph}
         typeCheckOption={typeCheckOption}
@@ -704,5 +699,5 @@ export const QueryBuilderValueSpecificationEditor: React.FC<{
       />
     );
   }
-  return <QueryBuilderUnsupportedValueSpecificationEditor />;
+  return <UnsupportedValueSpecificationEditor />;
 };

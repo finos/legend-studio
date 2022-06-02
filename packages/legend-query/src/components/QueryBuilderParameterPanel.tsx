@@ -41,12 +41,12 @@ import {
   type PackageableElementOption,
   buildElementOption,
   useApplicationStore,
+  BasicValueSpecificationEditor,
+  variableExpression_setName,
 } from '@finos/legend-application';
 import { useDrag, useDragLayer } from 'react-dnd';
 import { getEmptyImage } from 'react-dnd-html5-backend';
-import { QueryBuilderValueSpecificationEditor } from './QueryBuilderValueSpecificationEditor';
 import { prettyCONSTName } from '@finos/legend-shared';
-import { variableExpression_setName } from '../stores/QueryBuilderValueSpecificationModifierHelper';
 
 const ParameterValuesEditor = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
@@ -98,7 +98,7 @@ const ParameterValuesEditor = observer(
                     </div>
                   </div>
                   {paramState.value && (
-                    <QueryBuilderValueSpecificationEditor
+                    <BasicValueSpecificationEditor
                       valueSpecification={paramState.value}
                       updateValue={(val: ValueSpecification): void => {
                         paramState.setValue(val);

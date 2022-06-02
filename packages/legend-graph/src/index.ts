@@ -163,6 +163,7 @@ export * from './helpers/DSLMapping_Helper';
 export * from './helpers/StoreRelational_Helper';
 export * from './helpers/StoreFlatData_Helper';
 export * from './helpers/DSLGeneration_Helper';
+export * from './helpers/ValueSpecificationHelper';
 
 export * from './helpers/PureLanguageHelper';
 
@@ -271,7 +272,11 @@ export {
   V1_taggedValueSchema,
 } from './models/protocols/pure/v1/transformation/pureProtocol/serializationHelpers/V1_DomainSerializationHelper';
 export { V1_serializeValueSpecification } from './models/protocols/pure/v1/transformation/pureProtocol/serializationHelpers/V1_ValueSpecificationSerializer';
-export { V1_ValueSpecificationBuilder } from './models/protocols/pure/v1/transformation/pureGraph/to/helpers/V1_ValueSpecificationBuilderHelper';
+export {
+  V1_ValueSpecificationBuilder,
+  V1_buildGenericFunctionExpression,
+  V1_buildBaseSimpleFunctionExpression,
+} from './models/protocols/pure/v1/transformation/pureGraph/to/helpers/V1_ValueSpecificationBuilderHelper';
 export * from './models/protocols/pure/v1/transformation/pureProtocol/serializationHelpers/V1_CoreSerializationHelper';
 export * from './models/protocols/pure/v1/transformation/pureGraph/to/V1_DSLExternalFormat_GraphBuilderHelper';
 export * from './models/ModelGenerationConfiguration';

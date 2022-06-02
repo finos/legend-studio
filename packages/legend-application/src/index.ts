@@ -48,3 +48,7 @@ export * from './stores/LegendApplicationNavigationContextService';
 export * from './stores/LegendApplicationPlugin';
 
 export * from './stores/ApplicationStoreTestUtils';
+
+// value specification
+export * from './stores/ValueSpecificationModifierHelper';
+export * from './components/BasicValueSpecificationEditor';

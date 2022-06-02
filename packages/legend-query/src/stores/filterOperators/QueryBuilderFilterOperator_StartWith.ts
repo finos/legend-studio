@@ -23,17 +23,17 @@ import {
   PRIMITIVE_TYPE,
   type ValueSpecification,
   type SimpleFunctionExpression,
+  buildPrimitiveInstanceValue,
 } from '@finos/legend-graph';
 import { UnsupportedOperationError } from '@finos/legend-shared';
 import {
   buildFilterConditionState,
   buildFilterConditionExpression,
 } from './QueryBuilderFilterOperatorHelper';
-import { SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
 import { generateDefaultValueForPrimitiveType } from '../QueryBuilderValueSpecificationBuilderHelper';
 import {
   buildNotExpression,
-  buildPrimitiveInstanceValue,
   getNonCollectionValueSpecificationType,
   unwrapNotExpression,
 } from '../QueryBuilderOperatorsHelper';
@@ -90,7 +90,7 @@ export class QueryBuilderFilterOperator_StartWith extends QueryBuilderFilterOper
   ): ValueSpecification {
     return buildFilterConditionExpression(
       filterConditionState,
-      SUPPORTED_FUNCTIONS.STARTS_WITH,
+      QUERY_BUILDER_SUPPORTED_FUNCTIONS.STARTS_WITH,
     );
   }
 
@@ -101,7 +101,7 @@ export class QueryBuilderFilterOperator_StartWith extends QueryBuilderFilterOper
     return buildFilterConditionState(
       filterState,
       expression,
-      SUPPORTED_FUNCTIONS.STARTS_WITH,
+      QUERY_BUILDER_SUPPORTED_FUNCTIONS.STARTS_WITH,
       this,
     );
   }

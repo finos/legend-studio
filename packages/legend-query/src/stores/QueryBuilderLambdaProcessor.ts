@@ -77,12 +77,12 @@ import {
   QueryBuilderDerivationProjectionColumnState,
   QueryBuilderSimpleProjectionColumnState,
 } from './QueryBuilderProjectionState';
-import { SUPPORTED_FUNCTIONS } from '../QueryBuilder_Const';
 import type { QueryBuilderAggregationState } from './QueryBuilderAggregationState';
 import { QueryParameterState } from './QueryParametersState';
 import { toGroupOperation } from './QueryBuilderOperatorsHelper';
 import { processPostFilterLambda } from './QueryBuilderPostFilterProcessor';
 import { getDerivedPropertyMilestoningSteoreotype } from './QueryBuilderPropertyEditorState';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../QueryBuilder_Const';
 
 const getNullableStringValueFromValueSpec = (
   valueSpec: ValueSpecification,
@@ -206,9 +206,10 @@ const processFilterExpression = (
     ? filterState.getNode(parentFilterNodeId)
     : undefined;
   if (
-    [SUPPORTED_FUNCTIONS.AND, SUPPORTED_FUNCTIONS.OR].some((fn) =>
-      matchFunctionName(expression.functionName, fn),
-    )
+    [
+      QUERY_BUILDER_SUPPORTED_FUNCTIONS.AND,
+      QUERY_BUILDER_SUPPORTED_FUNCTIONS.OR,
+    ].some((fn) => matchFunctionName(expression.functionName, fn))
   ) {
     const groupNode = new QueryBuilderFilterTreeGroupNodeData(
       parentFilterNodeId,
@@ -382,9 +383,9 @@ export class QueryBuilderLambdaProcessor
     const precedingExpressionName = this.precedingExpression.functionName;
     if (
       [
-        SUPPORTED_FUNCTIONS.TDS_PROJECT,
-        SUPPORTED_FUNCTIONS.TDS_GROUP_BY,
-        SUPPORTED_FUNCTIONS.TDS_AGG,
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_PROJECT,
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_GROUP_BY,
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_AGG,
       ].some((fn) => matchFunctionName(precedingExpressionName, fn))
     ) {
       const projectionState =
@@ -480,7 +481,9 @@ export class QueryBuilderLambdaProcessor
     valueSpecification: SimpleFunctionExpression,
   ): void {
     const functionName = valueSpecification.functionName;
-    if (matchFunctionName(functionName, SUPPORTED_FUNCTIONS.GET_ALL)) {
+    if (
+      matchFunctionName(functionName, QUERY_BUILDER_SUPPORTED_FUNCTIONS.GET_ALL)
+    ) {
       const _class = valueSpecification.genericType?.value.rawType;
       assertType(
         _class,
@@ -540,8 +543,14 @@ export class QueryBuilderLambdaProcessor
       }
       return;
     } else if (
-      matchFunctionName(functionName, SUPPORTED_FUNCTIONS.FILTER) ||
-      matchFunctionName(functionName, SUPPORTED_FUNCTIONS.TDS_FILTER)
+      matchFunctionName(
+        functionName,
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.FILTER,
+      ) ||
+      matchFunctionName(
+        functionName,
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_FILTER,
+      )
     ) {
       assertTrue(
         valueSpecification.parametersValues.length === 2,
@@ -561,12 +570,15 @@ export class QueryBuilderLambdaProcessor
       if (
         matchFunctionName(
           precedingExpression.functionName,
-          SUPPORTED_FUNCTIONS.GET_ALL,
+          QUERY_BUILDER_SUPPORTED_FUNCTIONS.GET_ALL,
         )
       ) {
         assertTrue(
-          matchFunctionName(functionName, SUPPORTED_FUNCTIONS.FILTER),
-          `Can't process filter() expression: only supports ${SUPPORTED_FUNCTIONS.FILTER}() immediately following getAll() (got '${functionName}')`,
+          matchFunctionName(
+            functionName,
+            QUERY_BUILDER_SUPPORTED_FUNCTIONS.FILTER,
+          ),
+          `Can't process filter() expression: only supports ${QUERY_BUILDER_SUPPORTED_FUNCTIONS.FILTER}() immediately following getAll() (got '${functionName}')`,
         );
         const filterLambda = valueSpecification.parametersValues[1];
         assertType(
@@ -587,16 +599,19 @@ export class QueryBuilderLambdaProcessor
       } else if (
         matchFunctionName(
           precedingExpression.functionName,
-          SUPPORTED_FUNCTIONS.TDS_PROJECT,
+          QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_PROJECT,
         ) ||
         matchFunctionName(
           precedingExpression.functionName,
-          SUPPORTED_FUNCTIONS.TDS_GROUP_BY,
+          QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_GROUP_BY,
         )
       ) {
         assertTrue(
-          matchFunctionName(functionName, SUPPORTED_FUNCTIONS.TDS_FILTER),
-          `Can't process post-filter expression: only supports ${SUPPORTED_FUNCTIONS.TDS_FILTER}() immediately following TDS project()/groupBy() (got '${functionName}')`,
+          matchFunctionName(
+            functionName,
+            QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_FILTER,
+          ),
+          `Can't process post-filter expression: only supports ${QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_FILTER}() immediately following TDS project()/groupBy() (got '${functionName}')`,
         );
         const postFilterState = this.queryBuilderState.postFilterState;
         const postFilterLambda = valueSpecification.parametersValues[1];
@@ -615,7 +630,10 @@ export class QueryBuilderLambdaProcessor
         );
       }
     } else if (
-      matchFunctionName(functionName, SUPPORTED_FUNCTIONS.TDS_PROJECT)
+      matchFunctionName(
+        functionName,
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_PROJECT,
+      )
     ) {
       const params = valueSpecification.parametersValues;
       assertTrue(
@@ -633,9 +651,10 @@ export class QueryBuilderLambdaProcessor
       );
       // check caller
       assertTrue(
-        [SUPPORTED_FUNCTIONS.GET_ALL, SUPPORTED_FUNCTIONS.FILTER].some((fn) =>
-          matchFunctionName(precedingExpression.functionName, fn),
-        ),
+        [
+          QUERY_BUILDER_SUPPORTED_FUNCTIONS.GET_ALL,
+          QUERY_BUILDER_SUPPORTED_FUNCTIONS.FILTER,
+        ].some((fn) => matchFunctionName(precedingExpression.functionName, fn)),
         `Can't process project() expression: only support project() immediately following either getAll() or filter()`,
       );
 
@@ -675,7 +694,12 @@ export class QueryBuilderLambdaProcessor
       );
 
       return;
-    } else if (matchFunctionName(functionName, SUPPORTED_FUNCTIONS.TDS_TAKE)) {
+    } else if (
+      matchFunctionName(
+        functionName,
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_TAKE,
+      )
+    ) {
       assertTrue(
         valueSpecification.parametersValues.length === 2,
         `Can't process take() expression: take() expects 1 argument`,
@@ -693,11 +717,11 @@ export class QueryBuilderLambdaProcessor
       // check caller
       assertTrue(
         [
-          SUPPORTED_FUNCTIONS.TDS_TAKE,
-          SUPPORTED_FUNCTIONS.TDS_DISTINCT,
-          SUPPORTED_FUNCTIONS.TDS_SORT,
-          SUPPORTED_FUNCTIONS.TDS_PROJECT,
-          SUPPORTED_FUNCTIONS.TDS_GROUP_BY,
+          QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_TAKE,
+          QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_DISTINCT,
+          QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_SORT,
+          QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_PROJECT,
+          QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_GROUP_BY,
         ].some((fn) => matchFunctionName(precedingExpression.functionName, fn)),
         `Can't process take() expression: only support take() in TDS expression`,
       );
@@ -709,7 +733,10 @@ export class QueryBuilderLambdaProcessor
 
       return;
     } else if (
-      matchFunctionName(functionName, SUPPORTED_FUNCTIONS.TDS_DISTINCT)
+      matchFunctionName(
+        functionName,
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_DISTINCT,
+      )
     ) {
       assertTrue(
         valueSpecification.parametersValues.length === 1,
@@ -728,12 +755,12 @@ export class QueryBuilderLambdaProcessor
       // check caller
       assertTrue(
         [
-          SUPPORTED_FUNCTIONS.TDS_TAKE,
-          SUPPORTED_FUNCTIONS.TDS_DISTINCT,
-          SUPPORTED_FUNCTIONS.TDS_SORT,
-          SUPPORTED_FUNCTIONS.TDS_PROJECT,
-          SUPPORTED_FUNCTIONS.TDS_GROUP_BY,
-          SUPPORTED_FUNCTIONS.TDS_FILTER,
+          QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_TAKE,
+          QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_DISTINCT,
+          QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_SORT,
+          QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_PROJECT,
+          QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_GROUP_BY,
+          QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_FILTER,
         ].some((fn) => matchFunctionName(precedingExpression.functionName, fn)),
         `Can't process distinct() expression: only support distinct() in TDS expression`,
       );
@@ -741,7 +768,12 @@ export class QueryBuilderLambdaProcessor
       this.queryBuilderState.resultSetModifierState.distinct = true;
 
       return;
-    } else if (matchFunctionName(functionName, SUPPORTED_FUNCTIONS.TDS_SORT)) {
+    } else if (
+      matchFunctionName(
+        functionName,
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_SORT,
+      )
+    ) {
       assertTrue(
         valueSpecification.parametersValues.length === 2,
         `Can't process sort() expression: sort() expects 1 argument`,
@@ -759,12 +791,12 @@ export class QueryBuilderLambdaProcessor
       // check caller
       assertTrue(
         [
-          SUPPORTED_FUNCTIONS.TDS_TAKE,
-          SUPPORTED_FUNCTIONS.TDS_DISTINCT,
-          SUPPORTED_FUNCTIONS.TDS_SORT,
-          SUPPORTED_FUNCTIONS.TDS_PROJECT,
-          SUPPORTED_FUNCTIONS.TDS_GROUP_BY,
-          SUPPORTED_FUNCTIONS.TDS_FILTER,
+          QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_TAKE,
+          QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_DISTINCT,
+          QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_SORT,
+          QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_PROJECT,
+          QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_GROUP_BY,
+          QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_FILTER,
         ].some((fn) => matchFunctionName(precedingExpression.functionName, fn)),
         `Can't process sort() expression: only support sort() in TDS expression`,
       );
@@ -786,12 +818,18 @@ export class QueryBuilderLambdaProcessor
 
       return;
     } else if (
-      (matchFunctionName(functionName, SUPPORTED_FUNCTIONS.TDS_ASC) ||
-        matchFunctionName(functionName, SUPPORTED_FUNCTIONS.TDS_DESC)) &&
+      (matchFunctionName(
+        functionName,
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_ASC,
+      ) ||
+        matchFunctionName(
+          functionName,
+          QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_DESC,
+        )) &&
       this.precedingExpression &&
       matchFunctionName(
         this.precedingExpression.functionName,
-        SUPPORTED_FUNCTIONS.TDS_SORT,
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_SORT,
       )
     ) {
       assertTrue(
@@ -813,7 +851,7 @@ export class QueryBuilderLambdaProcessor
         );
         sortColumnState.sortType = matchFunctionName(
           functionName,
-          SUPPORTED_FUNCTIONS.TDS_ASC,
+          QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_ASC,
         )
           ? COLUMN_SORT_TYPE.ASC
           : COLUMN_SORT_TYPE.DESC;
@@ -824,7 +862,10 @@ export class QueryBuilderLambdaProcessor
 
       return;
     } else if (
-      matchFunctionName(functionName, SUPPORTED_FUNCTIONS.TDS_GROUP_BY)
+      matchFunctionName(
+        functionName,
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_GROUP_BY,
+      )
     ) {
       assertTrue(
         valueSpecification.parametersValues.length === 4,
@@ -843,9 +884,10 @@ export class QueryBuilderLambdaProcessor
 
       // check caller
       assertTrue(
-        [SUPPORTED_FUNCTIONS.GET_ALL, SUPPORTED_FUNCTIONS.FILTER].some((fn) =>
-          matchFunctionName(precedingExpression.functionName, fn),
-        ),
+        [
+          QUERY_BUILDER_SUPPORTED_FUNCTIONS.GET_ALL,
+          QUERY_BUILDER_SUPPORTED_FUNCTIONS.FILTER,
+        ].some((fn) => matchFunctionName(precedingExpression.functionName, fn)),
         `Can't process groupBy() expression: only support groupBy() immediately following either getAll() or filter()`,
       );
 
@@ -902,7 +944,9 @@ export class QueryBuilderLambdaProcessor
       );
 
       return;
-    } else if (matchFunctionName(functionName, SUPPORTED_FUNCTIONS.TDS_AGG)) {
+    } else if (
+      matchFunctionName(functionName, QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_AGG)
+    ) {
       assertTrue(
         valueSpecification.parametersValues.length === 2,
         `Can't process agg() expression: agg() expects 2 arguments`,
@@ -913,7 +957,7 @@ export class QueryBuilderLambdaProcessor
       assertTrue(
         matchFunctionName(
           this.precedingExpression.functionName,
-          SUPPORTED_FUNCTIONS.TDS_GROUP_BY,
+          QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_GROUP_BY,
         ),
         `Can't process agg() expression: only support agg() in aggregation`,
       );
@@ -950,7 +994,12 @@ export class QueryBuilderLambdaProcessor
       );
 
       return;
-    } else if (matchFunctionName(functionName, SUPPORTED_FUNCTIONS.SERIALIZE)) {
+    } else if (
+      matchFunctionName(
+        functionName,
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.SERIALIZE,
+      )
+    ) {
       assertTrue(
         valueSpecification.parametersValues.length === 2,
         `Can't process serialize() expression: serialize() expects 1 argument`,
@@ -972,8 +1021,8 @@ export class QueryBuilderLambdaProcessor
       // check caller
       assertTrue(
         [
-          SUPPORTED_FUNCTIONS.GRAPH_FETCH,
-          SUPPORTED_FUNCTIONS.GRAPH_FETCH_CHECKED,
+          QUERY_BUILDER_SUPPORTED_FUNCTIONS.GRAPH_FETCH,
+          QUERY_BUILDER_SUPPORTED_FUNCTIONS.GRAPH_FETCH_CHECKED,
         ].some((fn) => matchFunctionName(precedingExpression.functionName, fn)),
         `Can't process serialize() expression: only support serialize() in graph-fetch expression`,
       );
@@ -999,13 +1048,16 @@ export class QueryBuilderLambdaProcessor
     } else if (
       (matchFunctionName(
         functionName,
-        SUPPORTED_FUNCTIONS.GRAPH_FETCH_CHECKED,
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.GRAPH_FETCH_CHECKED,
       ) ||
-        matchFunctionName(functionName, SUPPORTED_FUNCTIONS.GRAPH_FETCH)) &&
+        matchFunctionName(
+          functionName,
+          QUERY_BUILDER_SUPPORTED_FUNCTIONS.GRAPH_FETCH,
+        )) &&
       this.precedingExpression &&
       matchFunctionName(
         this.precedingExpression.functionName,
-        SUPPORTED_FUNCTIONS.SERIALIZE,
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.SERIALIZE,
       )
     ) {
       assertTrue(
@@ -1027,16 +1079,17 @@ export class QueryBuilderLambdaProcessor
 
       // check caller
       assertTrue(
-        [SUPPORTED_FUNCTIONS.FILTER, SUPPORTED_FUNCTIONS.GET_ALL].some((fn) =>
-          matchFunctionName(precedingExpression.functionName, fn),
-        ),
+        [
+          QUERY_BUILDER_SUPPORTED_FUNCTIONS.FILTER,
+          QUERY_BUILDER_SUPPORTED_FUNCTIONS.GET_ALL,
+        ].some((fn) => matchFunctionName(precedingExpression.functionName, fn)),
         `Can't process ${functionName}(): only support ${functionName}() immediately following either getAll() or filter()`,
       );
 
       this.queryBuilderState.fetchStructureState.graphFetchTreeState.setChecked(
         matchFunctionName(
           functionName,
-          SUPPORTED_FUNCTIONS.GRAPH_FETCH_CHECKED,
+          QUERY_BUILDER_SUPPORTED_FUNCTIONS.GRAPH_FETCH_CHECKED,
         ),
       );
 
@@ -1077,9 +1130,9 @@ export class QueryBuilderLambdaProcessor
     const precedingExpressionName = this.precedingExpression.functionName;
     if (
       [
-        SUPPORTED_FUNCTIONS.TDS_PROJECT,
-        SUPPORTED_FUNCTIONS.TDS_GROUP_BY,
-        SUPPORTED_FUNCTIONS.TDS_AGG,
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_PROJECT,
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_GROUP_BY,
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_AGG,
       ].some((fn) => matchFunctionName(precedingExpressionName, fn))
     ) {
       // NOTE: we do this before creating the projection state, as we will
@@ -1112,7 +1165,7 @@ export class QueryBuilderLambdaProcessor
           currentPropertyExpression instanceof SimpleFunctionExpression &&
           matchFunctionName(
             currentPropertyExpression.functionName,
-            SUPPORTED_FUNCTIONS.SUBTYPE,
+            QUERY_BUILDER_SUPPORTED_FUNCTIONS.SUBTYPE,
           )
         ) {
           currentPropertyExpression = guaranteeNonNullable(

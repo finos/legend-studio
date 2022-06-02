@@ -30,7 +30,7 @@ import {
   guaranteeType,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
-import { SUPPORTED_FUNCTIONS } from '../QueryBuilder_Const';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../QueryBuilder_Const';
 import type { QueryBuilderAggregateColumnState } from './QueryBuilderAggregationState';
 import { toGroupOperation } from './QueryBuilderOperatorsHelper';
 import type { QueryBuilderPostFilterOperator } from './QueryBuilderPostFilterOperator';
@@ -187,9 +187,10 @@ const processPostFilterExpression = (
     ? postFilterState.getNode(parentPostFilterNodeId)
     : undefined;
   if (
-    [SUPPORTED_FUNCTIONS.AND, SUPPORTED_FUNCTIONS.OR].some((fn) =>
-      matchFunctionName(expression.functionName, fn),
-    )
+    [
+      QUERY_BUILDER_SUPPORTED_FUNCTIONS.AND,
+      QUERY_BUILDER_SUPPORTED_FUNCTIONS.OR,
+    ].some((fn) => matchFunctionName(expression.functionName, fn))
   ) {
     const groupNode = new QueryBuilderPostFilterTreeGroupNodeData(
       parentPostFilterNodeId,

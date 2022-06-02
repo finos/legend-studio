@@ -34,6 +34,10 @@ import {
   EnumValueInstanceValue,
   matchFunctionName,
   TYPICAL_MULTIPLICITY_TYPE,
+  SUPPORTED_FUNCTIONS,
+  DAY_OF_WEEK,
+  buildPrimitiveInstanceValue,
+  DURATION_UNIT,
 } from '@finos/legend-graph';
 import {
   guaranteeNonNullable,
@@ -41,17 +45,11 @@ import {
 } from '@finos/legend-shared';
 import { useEffect, useState } from 'react';
 import {
-  DAY_OF_WEEK,
-  DURATION_UNIT,
-  SUPPORTED_FUNCTIONS,
-} from '../QueryBuilder_Const';
-import { buildPrimitiveInstanceValue } from '../stores/QueryBuilderOperatorsHelper';
-import {
   genericType_setRawType,
   instanceValue_changeValue,
-} from '../stores/QueryBuilderValueSpecificationModifierHelper';
+} from '../stores/ValueSpecificationModifierHelper';
 
-enum QUERY_BUILDER_CUSTOM_DATE_PICKER_OPTION {
+enum CUSTOM_DATE_PICKER_OPTION {
   ABSOLUTE_DATE = 'Absolute Date',
   ABSOLUTE_TIME = 'Absolute Time',
   TODAY = 'Today',
@@ -66,21 +64,21 @@ enum QUERY_BUILDER_CUSTOM_DATE_PICKER_OPTION {
   LATEST_DATE = 'Latest Date',
 }
 
-enum QUERY_BUILDER_CUSTOM_DATE_OPTION_UNIT {
+enum CUSTOM_DATE_OPTION_UNIT {
   DAYS = 'Day(s)',
   WEEKS = 'Week(s)',
   MONTHS = 'Month(s)',
   YEARS = 'Year(s)',
 }
 
-enum QUERY_BUILDER_FIRST_DAY_OF_UNIT {
+enum CUSTOM_DATE_FIRST_DAY_OF_UNIT {
   WEEK = 'Week',
   MONTH = 'Month',
   QUARTER = 'Quarter',
   YEAR = 'Year',
 }
 
-enum QUERY_BUILDER_DAY_OF_WEEK {
+enum CUSTOM_DATE_DAY_OF_WEEK {
   MONDAY = 'Monday',
   TUESDAY = 'Tuesday',
   WENDNESDAY = 'Wednesday',
@@ -90,12 +88,12 @@ enum QUERY_BUILDER_DAY_OF_WEEK {
   SUNDAY = 'Sunday',
 }
 
-enum QUERY_BUILDER_CUSTOM_DATE_OPTION_DIRECTION {
+enum CUSTOM_DATE_OPTION_DIRECTION {
   BEFORE = 'Before',
   AFTER = 'After',
 }
 
-enum QUERY_BUILDER_CUSTOM_DATE_OPTION_REFERENCE_MOMENT {
+enum CUSTOM_DATE_OPTION_REFERENCE_MOMENT {
   TODAY = 'Today',
   NOW = 'Now',
   FIRST_DAY_OF_YEAR = 'Start of Year',
@@ -131,27 +129,23 @@ class CustomDateOption extends DatePickerOption {
   /**
    * unit represents the time duration unit, e.g. year, week, etc.
    */
-  unit: QUERY_BUILDER_CUSTOM_DATE_OPTION_UNIT | undefined;
+  unit: CUSTOM_DATE_OPTION_UNIT | undefined;
   /**
    * direction means the direction in which time adjustment will go to.
    */
-  direction: QUERY_BUILDER_CUSTOM_DATE_OPTION_DIRECTION | undefined;
+  direction: CUSTOM_DATE_OPTION_DIRECTION | undefined;
   /**
    * referenceMoment is the date which adjustment starts from.
    */
-  referenceMoment:
-    | QUERY_BUILDER_CUSTOM_DATE_OPTION_REFERENCE_MOMENT
-    | undefined;
+  referenceMoment: CUSTOM_DATE_OPTION_REFERENCE_MOMENT | undefined;
 
   constructor(
     label: string,
     value: string,
     duration: number,
-    unit: QUERY_BUILDER_CUSTOM_DATE_OPTION_UNIT | undefined,
-    direction: QUERY_BUILDER_CUSTOM_DATE_OPTION_DIRECTION | undefined,
-    referenceMoment:
-      | QUERY_BUILDER_CUSTOM_DATE_OPTION_REFERENCE_MOMENT
-      | undefined,
+    unit: CUSTOM_DATE_OPTION_UNIT | undefined,
+    direction: CUSTOM_DATE_OPTION_DIRECTION | undefined,
+    referenceMoment: CUSTOM_DATE_OPTION_REFERENCE_MOMENT | undefined,
   ) {
     super(label, value);
     this.duration = duration;
@@ -178,13 +172,10 @@ class CustomFirstDayOfOption extends DatePickerOption {
   /**
    * unit: time unit, e.g. Week, Month, etc.
    */
-  unit: QUERY_BUILDER_FIRST_DAY_OF_UNIT | undefined;
+  unit: CUSTOM_DATE_FIRST_DAY_OF_UNIT | undefined;
 
-  constructor(
-    label: string,
-    unit: QUERY_BUILDER_FIRST_DAY_OF_UNIT | undefined,
-  ) {
-    super(label, QUERY_BUILDER_CUSTOM_DATE_PICKER_OPTION.FIRST_DAY_OF);
+  constructor(label: string, unit: CUSTOM_DATE_FIRST_DAY_OF_UNIT | undefined) {
+    super(label, CUSTOM_DATE_PICKER_OPTION.FIRST_DAY_OF);
     this.unit = unit;
   }
 }
@@ -193,10 +184,10 @@ class CustomPreviousDayOfWeekOption extends DatePickerOption {
   /**
    * day: which day in the week will be selected.
    */
-  day: QUERY_BUILDER_DAY_OF_WEEK;
+  day: CUSTOM_DATE_DAY_OF_WEEK;
 
-  constructor(label: string, day: QUERY_BUILDER_DAY_OF_WEEK) {
-    super(label, QUERY_BUILDER_CUSTOM_DATE_PICKER_OPTION.PREVIOUS_DAY_OF_WEEK);
+  constructor(label: string, day: CUSTOM_DATE_DAY_OF_WEEK) {
+    super(label, CUSTOM_DATE_PICKER_OPTION.PREVIOUS_DAY_OF_WEEK);
     this.day = day;
   }
 }
@@ -204,35 +195,35 @@ class CustomPreviousDayOfWeekOption extends DatePickerOption {
 const reservedCustomDateOptions: CustomDateOption[] = [
   new CustomDateOption(
     'Yesterday',
-    QUERY_BUILDER_CUSTOM_DATE_PICKER_OPTION.YESTERDAY,
+    CUSTOM_DATE_PICKER_OPTION.YESTERDAY,
     1,
-    QUERY_BUILDER_CUSTOM_DATE_OPTION_UNIT.DAYS,
-    QUERY_BUILDER_CUSTOM_DATE_OPTION_DIRECTION.BEFORE,
-    QUERY_BUILDER_CUSTOM_DATE_OPTION_REFERENCE_MOMENT.TODAY,
+    CUSTOM_DATE_OPTION_UNIT.DAYS,
+    CUSTOM_DATE_OPTION_DIRECTION.BEFORE,
+    CUSTOM_DATE_OPTION_REFERENCE_MOMENT.TODAY,
   ),
   new CustomDateOption(
     'One Week Ago',
-    QUERY_BUILDER_CUSTOM_DATE_PICKER_OPTION.ONE_WEEK_AGO,
+    CUSTOM_DATE_PICKER_OPTION.ONE_WEEK_AGO,
     1,
-    QUERY_BUILDER_CUSTOM_DATE_OPTION_UNIT.WEEKS,
-    QUERY_BUILDER_CUSTOM_DATE_OPTION_DIRECTION.BEFORE,
-    QUERY_BUILDER_CUSTOM_DATE_OPTION_REFERENCE_MOMENT.TODAY,
+    CUSTOM_DATE_OPTION_UNIT.WEEKS,
+    CUSTOM_DATE_OPTION_DIRECTION.BEFORE,
+    CUSTOM_DATE_OPTION_REFERENCE_MOMENT.TODAY,
   ),
   new CustomDateOption(
     'One Month Ago',
-    QUERY_BUILDER_CUSTOM_DATE_PICKER_OPTION.ONE_MONTH_AGO,
+    CUSTOM_DATE_PICKER_OPTION.ONE_MONTH_AGO,
     1,
-    QUERY_BUILDER_CUSTOM_DATE_OPTION_UNIT.MONTHS,
-    QUERY_BUILDER_CUSTOM_DATE_OPTION_DIRECTION.BEFORE,
-    QUERY_BUILDER_CUSTOM_DATE_OPTION_REFERENCE_MOMENT.TODAY,
+    CUSTOM_DATE_OPTION_UNIT.MONTHS,
+    CUSTOM_DATE_OPTION_DIRECTION.BEFORE,
+    CUSTOM_DATE_OPTION_REFERENCE_MOMENT.TODAY,
   ),
   new CustomDateOption(
     'One Year Ago',
-    QUERY_BUILDER_CUSTOM_DATE_PICKER_OPTION.ONE_YEAR_AGO,
+    CUSTOM_DATE_PICKER_OPTION.ONE_YEAR_AGO,
     1,
-    QUERY_BUILDER_CUSTOM_DATE_OPTION_UNIT.YEARS,
-    QUERY_BUILDER_CUSTOM_DATE_OPTION_DIRECTION.BEFORE,
-    QUERY_BUILDER_CUSTOM_DATE_OPTION_REFERENCE_MOMENT.TODAY,
+    CUSTOM_DATE_OPTION_UNIT.YEARS,
+    CUSTOM_DATE_OPTION_DIRECTION.BEFORE,
+    CUSTOM_DATE_OPTION_REFERENCE_MOMENT.TODAY,
   ),
 ];
 
@@ -276,7 +267,7 @@ const buildPureDateFunctionExpression = (
     return previousFridaySFE;
   } else if (datePickerOption instanceof CustomFirstDayOfOption) {
     switch (datePickerOption.unit) {
-      case QUERY_BUILDER_FIRST_DAY_OF_UNIT.YEAR: {
+      case CUSTOM_DATE_FIRST_DAY_OF_UNIT.YEAR: {
         const firstDayOfYearSFE = new SimpleFunctionExpression(
           SUPPORTED_FUNCTIONS.FIRST_DAY_OF_YEAR,
           multiplicityOne,
@@ -286,7 +277,7 @@ const buildPureDateFunctionExpression = (
         );
         return firstDayOfYearSFE;
       }
-      case QUERY_BUILDER_FIRST_DAY_OF_UNIT.QUARTER: {
+      case CUSTOM_DATE_FIRST_DAY_OF_UNIT.QUARTER: {
         const firstDayOfQuarterSFE = new SimpleFunctionExpression(
           SUPPORTED_FUNCTIONS.FIRST_DAY_OF_QUARTER,
           multiplicityOne,
@@ -296,7 +287,7 @@ const buildPureDateFunctionExpression = (
         );
         return firstDayOfQuarterSFE;
       }
-      case QUERY_BUILDER_FIRST_DAY_OF_UNIT.MONTH: {
+      case CUSTOM_DATE_FIRST_DAY_OF_UNIT.MONTH: {
         const firstDayOfMonthSFE = new SimpleFunctionExpression(
           SUPPORTED_FUNCTIONS.FIRST_DAY_OF_MONTH,
           multiplicityOne,
@@ -306,7 +297,7 @@ const buildPureDateFunctionExpression = (
         );
         return firstDayOfMonthSFE;
       }
-      case QUERY_BUILDER_FIRST_DAY_OF_UNIT.WEEK: {
+      case CUSTOM_DATE_FIRST_DAY_OF_UNIT.WEEK: {
         const firstDayOfWeekSFE = new SimpleFunctionExpression(
           SUPPORTED_FUNCTIONS.FIRST_DAY_OF_WEEK,
           multiplicityOne,
@@ -323,7 +314,7 @@ const buildPureDateFunctionExpression = (
     }
   } else {
     switch (datePickerOption.value) {
-      case QUERY_BUILDER_CUSTOM_DATE_PICKER_OPTION.TODAY: {
+      case CUSTOM_DATE_PICKER_OPTION.TODAY: {
         const todaySFE = new SimpleFunctionExpression(
           SUPPORTED_FUNCTIONS.TODAY,
           multiplicityOne,
@@ -333,7 +324,7 @@ const buildPureDateFunctionExpression = (
         );
         return todaySFE;
       }
-      case QUERY_BUILDER_CUSTOM_DATE_PICKER_OPTION.NOW: {
+      case CUSTOM_DATE_PICKER_OPTION.NOW: {
         const nowSFE = new SimpleFunctionExpression(
           SUPPORTED_FUNCTIONS.NOW,
           multiplicityOne,
@@ -343,7 +334,7 @@ const buildPureDateFunctionExpression = (
         );
         return nowSFE;
       }
-      case QUERY_BUILDER_CUSTOM_DATE_OPTION_REFERENCE_MOMENT.FIRST_DAY_OF_YEAR: {
+      case CUSTOM_DATE_OPTION_REFERENCE_MOMENT.FIRST_DAY_OF_YEAR: {
         const firstDayOfYearSFE = new SimpleFunctionExpression(
           SUPPORTED_FUNCTIONS.FIRST_DAY_OF_YEAR,
           multiplicityOne,
@@ -353,7 +344,7 @@ const buildPureDateFunctionExpression = (
         );
         return firstDayOfYearSFE;
       }
-      case QUERY_BUILDER_CUSTOM_DATE_OPTION_REFERENCE_MOMENT.FIRST_DAY_OF_QUARTER: {
+      case CUSTOM_DATE_OPTION_REFERENCE_MOMENT.FIRST_DAY_OF_QUARTER: {
         const firstDayOfQuarterSFE = new SimpleFunctionExpression(
           SUPPORTED_FUNCTIONS.FIRST_DAY_OF_QUARTER,
           multiplicityOne,
@@ -363,7 +354,7 @@ const buildPureDateFunctionExpression = (
         );
         return firstDayOfQuarterSFE;
       }
-      case QUERY_BUILDER_CUSTOM_DATE_OPTION_REFERENCE_MOMENT.FIRST_DAY_OF_MONTH: {
+      case CUSTOM_DATE_OPTION_REFERENCE_MOMENT.FIRST_DAY_OF_MONTH: {
         const firstDayOfMonthSFE = new SimpleFunctionExpression(
           SUPPORTED_FUNCTIONS.FIRST_DAY_OF_MONTH,
           multiplicityOne,
@@ -373,7 +364,7 @@ const buildPureDateFunctionExpression = (
         );
         return firstDayOfMonthSFE;
       }
-      case QUERY_BUILDER_CUSTOM_DATE_OPTION_REFERENCE_MOMENT.FIRST_DAY_OF_WEEK: {
+      case CUSTOM_DATE_OPTION_REFERENCE_MOMENT.FIRST_DAY_OF_WEEK: {
         const firstDayOfWeekSFE = new SimpleFunctionExpression(
           SUPPORTED_FUNCTIONS.FIRST_DAY_OF_WEEK,
           multiplicityOne,
@@ -402,10 +393,10 @@ const buildPureDurationEnumValue = (
   const targetPureDurationEnumValue = durationUnitEnum.values.filter(
     (e) =>
       e.name ===
-      Object.keys(QUERY_BUILDER_CUSTOM_DATE_OPTION_UNIT).filter(
+      Object.keys(CUSTOM_DATE_OPTION_UNIT).filter(
         (key) =>
-          QUERY_BUILDER_CUSTOM_DATE_OPTION_UNIT[
-            key as keyof typeof QUERY_BUILDER_CUSTOM_DATE_OPTION_UNIT
+          CUSTOM_DATE_OPTION_UNIT[
+            key as keyof typeof CUSTOM_DATE_OPTION_UNIT
           ] === unitString,
       )[0],
   )[0];
@@ -438,10 +429,7 @@ const buildPureAdjustDateFunction = (
       graph,
     ),
   );
-  if (
-    customDateOption.direction ===
-    QUERY_BUILDER_CUSTOM_DATE_OPTION_DIRECTION.BEFORE
-  ) {
+  if (customDateOption.direction === CUSTOM_DATE_OPTION_DIRECTION.BEFORE) {
     const minusFunc = new SimpleFunctionExpression(
       SUPPORTED_FUNCTIONS.MINUS,
       multiplicityOne,
@@ -512,24 +500,24 @@ const buildCustomDateOptionDurationValue = (
  */
 const buildCustomDateOptionDirectionValue = (
   pureDateAdjustFunction: SimpleFunctionExpression,
-): QUERY_BUILDER_CUSTOM_DATE_OPTION_DIRECTION =>
+): CUSTOM_DATE_OPTION_DIRECTION =>
   pureDateAdjustFunction.parametersValues[1] instanceof
     SimpleFunctionExpression &&
   matchFunctionName(
     pureDateAdjustFunction.parametersValues[1].functionName,
     SUPPORTED_FUNCTIONS.MINUS,
   )
-    ? QUERY_BUILDER_CUSTOM_DATE_OPTION_DIRECTION.BEFORE
-    : QUERY_BUILDER_CUSTOM_DATE_OPTION_DIRECTION.AFTER;
+    ? CUSTOM_DATE_OPTION_DIRECTION.BEFORE
+    : CUSTOM_DATE_OPTION_DIRECTION.AFTER;
 
 /**
  * Generate the value of CustomDateOption.unit from the pure date adjust() function.
  */
 const buildCustomDateOptionUnitValue = (
   valueSpecification: SimpleFunctionExpression,
-): QUERY_BUILDER_CUSTOM_DATE_OPTION_UNIT =>
+): CUSTOM_DATE_OPTION_UNIT =>
   guaranteeNonNullable(
-    Object.keys(QUERY_BUILDER_CUSTOM_DATE_OPTION_UNIT)
+    Object.keys(CUSTOM_DATE_OPTION_UNIT)
       .filter(
         (key) =>
           key ===
@@ -538,9 +526,7 @@ const buildCustomDateOptionUnitValue = (
       )
       .map(
         (key) =>
-          QUERY_BUILDER_CUSTOM_DATE_OPTION_UNIT[
-            key as keyof typeof QUERY_BUILDER_CUSTOM_DATE_OPTION_UNIT
-          ],
+          CUSTOM_DATE_OPTION_UNIT[key as keyof typeof CUSTOM_DATE_OPTION_UNIT],
       )[0],
   );
 
@@ -549,23 +535,23 @@ const buildCustomDateOptionUnitValue = (
  */
 const buildCustomDateOptionReferenceMomentValue = (
   pureDateAjustFunction: SimpleFunctionExpression,
-): QUERY_BUILDER_CUSTOM_DATE_OPTION_REFERENCE_MOMENT => {
+): CUSTOM_DATE_OPTION_REFERENCE_MOMENT => {
   const funcName = (
     pureDateAjustFunction.parametersValues[0] as SimpleFunctionExpression
   ).functionName;
   switch (funcName) {
     case SUPPORTED_FUNCTIONS.TODAY:
-      return QUERY_BUILDER_CUSTOM_DATE_OPTION_REFERENCE_MOMENT.TODAY;
+      return CUSTOM_DATE_OPTION_REFERENCE_MOMENT.TODAY;
     case SUPPORTED_FUNCTIONS.NOW:
-      return QUERY_BUILDER_CUSTOM_DATE_OPTION_REFERENCE_MOMENT.NOW;
+      return CUSTOM_DATE_OPTION_REFERENCE_MOMENT.NOW;
     case SUPPORTED_FUNCTIONS.FIRST_DAY_OF_YEAR:
-      return QUERY_BUILDER_CUSTOM_DATE_OPTION_REFERENCE_MOMENT.FIRST_DAY_OF_YEAR;
+      return CUSTOM_DATE_OPTION_REFERENCE_MOMENT.FIRST_DAY_OF_YEAR;
     case SUPPORTED_FUNCTIONS.FIRST_DAY_OF_QUARTER:
-      return QUERY_BUILDER_CUSTOM_DATE_OPTION_REFERENCE_MOMENT.FIRST_DAY_OF_QUARTER;
+      return CUSTOM_DATE_OPTION_REFERENCE_MOMENT.FIRST_DAY_OF_QUARTER;
     case SUPPORTED_FUNCTIONS.FIRST_DAY_OF_MONTH:
-      return QUERY_BUILDER_CUSTOM_DATE_OPTION_REFERENCE_MOMENT.FIRST_DAY_OF_MONTH;
+      return CUSTOM_DATE_OPTION_REFERENCE_MOMENT.FIRST_DAY_OF_MONTH;
     case SUPPORTED_FUNCTIONS.FIRST_DAY_OF_WEEK:
-      return QUERY_BUILDER_CUSTOM_DATE_OPTION_REFERENCE_MOMENT.FIRST_DAY_OF_WEEK;
+      return CUSTOM_DATE_OPTION_REFERENCE_MOMENT.FIRST_DAY_OF_WEEK;
     default:
       throw new UnsupportedOperationError(
         `Can't build custom date option reference moment '${funcName}'`,
@@ -589,7 +575,7 @@ const buildCustomDateOption = (
   ) {
     const customDateOption = new CustomDateOption(
       '',
-      QUERY_BUILDER_CUSTOM_DATE_PICKER_OPTION.CUSTOM_DATE,
+      CUSTOM_DATE_PICKER_OPTION.CUSTOM_DATE,
       buildCustomDateOptionDurationValue(valueSpecification),
       buildCustomDateOptionUnitValue(valueSpecification),
       buildCustomDateOptionDirectionValue(valueSpecification),
@@ -624,33 +610,33 @@ const buildDatePickerOption = (
     switch (valueSpecification.functionName) {
       case SUPPORTED_FUNCTIONS.TODAY:
         return new DatePickerOption(
-          QUERY_BUILDER_CUSTOM_DATE_PICKER_OPTION.TODAY,
-          QUERY_BUILDER_CUSTOM_DATE_PICKER_OPTION.TODAY,
+          CUSTOM_DATE_PICKER_OPTION.TODAY,
+          CUSTOM_DATE_PICKER_OPTION.TODAY,
         );
       case SUPPORTED_FUNCTIONS.NOW:
         return new DatePickerOption(
-          QUERY_BUILDER_CUSTOM_DATE_PICKER_OPTION.NOW,
-          QUERY_BUILDER_CUSTOM_DATE_PICKER_OPTION.NOW,
+          CUSTOM_DATE_PICKER_OPTION.NOW,
+          CUSTOM_DATE_PICKER_OPTION.NOW,
         );
       case SUPPORTED_FUNCTIONS.FIRST_DAY_OF_YEAR:
         return new CustomFirstDayOfOption(
-          QUERY_BUILDER_CUSTOM_DATE_OPTION_REFERENCE_MOMENT.FIRST_DAY_OF_YEAR,
-          QUERY_BUILDER_FIRST_DAY_OF_UNIT.YEAR,
+          CUSTOM_DATE_OPTION_REFERENCE_MOMENT.FIRST_DAY_OF_YEAR,
+          CUSTOM_DATE_FIRST_DAY_OF_UNIT.YEAR,
         );
       case SUPPORTED_FUNCTIONS.FIRST_DAY_OF_QUARTER:
         return new CustomFirstDayOfOption(
-          QUERY_BUILDER_CUSTOM_DATE_OPTION_REFERENCE_MOMENT.FIRST_DAY_OF_QUARTER,
-          QUERY_BUILDER_FIRST_DAY_OF_UNIT.QUARTER,
+          CUSTOM_DATE_OPTION_REFERENCE_MOMENT.FIRST_DAY_OF_QUARTER,
+          CUSTOM_DATE_FIRST_DAY_OF_UNIT.QUARTER,
         );
       case SUPPORTED_FUNCTIONS.FIRST_DAY_OF_MONTH:
         return new CustomFirstDayOfOption(
-          QUERY_BUILDER_CUSTOM_DATE_OPTION_REFERENCE_MOMENT.FIRST_DAY_OF_MONTH,
-          QUERY_BUILDER_FIRST_DAY_OF_UNIT.MONTH,
+          CUSTOM_DATE_OPTION_REFERENCE_MOMENT.FIRST_DAY_OF_MONTH,
+          CUSTOM_DATE_FIRST_DAY_OF_UNIT.MONTH,
         );
       case SUPPORTED_FUNCTIONS.FIRST_DAY_OF_WEEK:
         return new CustomFirstDayOfOption(
-          QUERY_BUILDER_CUSTOM_DATE_OPTION_REFERENCE_MOMENT.FIRST_DAY_OF_WEEK,
-          QUERY_BUILDER_FIRST_DAY_OF_UNIT.WEEK,
+          CUSTOM_DATE_OPTION_REFERENCE_MOMENT.FIRST_DAY_OF_WEEK,
+          CUSTOM_DATE_FIRST_DAY_OF_UNIT.WEEK,
         );
       case SUPPORTED_FUNCTIONS.PREVIOUS_DAY_OF_WEEK:
         return new CustomPreviousDayOfWeekOption(
@@ -659,7 +645,7 @@ const buildDatePickerOption = (
               .values[0]?.value.name
           }`,
           (valueSpecification.parametersValues[0] as EnumValueInstanceValue)
-            .values[0]?.value.name as QUERY_BUILDER_DAY_OF_WEEK,
+            .values[0]?.value.name as CUSTOM_DATE_DAY_OF_WEEK,
         );
 
       case SUPPORTED_FUNCTIONS.ADJUST:
@@ -671,15 +657,15 @@ const buildDatePickerOption = (
     return valueSpecification.genericType.value.rawType.path ===
       PRIMITIVE_TYPE.LATESTDATE
       ? new DatePickerOption(
-          QUERY_BUILDER_CUSTOM_DATE_PICKER_OPTION.LATEST_DATE,
-          QUERY_BUILDER_CUSTOM_DATE_PICKER_OPTION.LATEST_DATE,
+          CUSTOM_DATE_PICKER_OPTION.LATEST_DATE,
+          CUSTOM_DATE_PICKER_OPTION.LATEST_DATE,
         )
       : new DatePickerOption(
           valueSpecification.values[0] as string,
           valueSpecification.genericType.value.rawType.path ===
           PRIMITIVE_TYPE.DATETIME
-            ? QUERY_BUILDER_CUSTOM_DATE_PICKER_OPTION.ABSOLUTE_TIME
-            : QUERY_BUILDER_CUSTOM_DATE_PICKER_OPTION.ABSOLUTE_DATE,
+            ? CUSTOM_DATE_PICKER_OPTION.ABSOLUTE_TIME
+            : CUSTOM_DATE_PICKER_OPTION.ABSOLUTE_DATE,
         );
   }
 };
@@ -721,14 +707,14 @@ const AbsoluteDateValueSpecificationEditor: React.FC<{
     setDatePickerOption(
       new DatePickerOption(
         event.target.value,
-        QUERY_BUILDER_CUSTOM_DATE_PICKER_OPTION.ABSOLUTE_DATE,
+        CUSTOM_DATE_PICKER_OPTION.ABSOLUTE_DATE,
       ),
     );
   };
   return (
-    <div className="query-builder-value-spec-editor__date-picker__absolute-date">
+    <div className="value-spec-editor__date-picker__absolute-date">
       <input
-        className="panel__content__form__section__input query-builder-value-spec-editor__date-picker__absolute-date__input input--dark"
+        className="panel__content__form__section__input value-spec-editor__date-picker__absolute-date__input input--dark"
         type="date"
         spellCheck={false}
         value={absoluteDateValue}
@@ -775,14 +761,14 @@ const AbsoluteTimeValueSpecificationEditor: React.FC<{
     setDatePickerOption(
       new DatePickerOption(
         event.target.value,
-        QUERY_BUILDER_CUSTOM_DATE_PICKER_OPTION.ABSOLUTE_TIME,
+        CUSTOM_DATE_PICKER_OPTION.ABSOLUTE_TIME,
       ),
     );
   };
   return (
-    <div className="query-builder-value-spec-editor__date-picker__absolute-date">
+    <div className="value-spec-editor__date-picker__absolute-date">
       <input
-        className="panel__content__form__section__input query-builder-value-spec-editor__date-picker__absolute-date__input input--dark"
+        className="panel__content__form__section__input value-spec-editor__date-picker__absolute-date__input input--dark"
         // Despite its name this would actually allow us to register time in UTC
         // See https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/datetime-local#setting_timezones
         type="datetime-local"
@@ -806,15 +792,14 @@ const CustomDateInstanceValueEditor: React.FC<{
     customDateOptionValue.duration,
   );
   const [unitValue, setUnitValue] = useState(
-    customDateOptionValue.unit ?? QUERY_BUILDER_CUSTOM_DATE_OPTION_UNIT.DAYS,
+    customDateOptionValue.unit ?? CUSTOM_DATE_OPTION_UNIT.DAYS,
   );
   const [directionValue, setDirectionValue] = useState(
-    customDateOptionValue.direction ??
-      QUERY_BUILDER_CUSTOM_DATE_OPTION_DIRECTION.BEFORE,
+    customDateOptionValue.direction ?? CUSTOM_DATE_OPTION_DIRECTION.BEFORE,
   );
   const [referenceMomentValue, setReferenceMomentValueValue] = useState(
     customDateOptionValue.referenceMoment ??
-      QUERY_BUILDER_CUSTOM_DATE_OPTION_REFERENCE_MOMENT.TODAY,
+      CUSTOM_DATE_OPTION_REFERENCE_MOMENT.TODAY,
   );
   const changeValue = (
     latestDurationValue: number,
@@ -829,12 +814,12 @@ const CustomDateInstanceValueEditor: React.FC<{
       latestReferenceMomentValue !== ''
     ) {
       const dateOption = new CustomDateOption(
-        QUERY_BUILDER_CUSTOM_DATE_PICKER_OPTION.CUSTOM_DATE,
-        QUERY_BUILDER_CUSTOM_DATE_PICKER_OPTION.CUSTOM_DATE,
+        CUSTOM_DATE_PICKER_OPTION.CUSTOM_DATE,
+        CUSTOM_DATE_PICKER_OPTION.CUSTOM_DATE,
         latestDurationValue,
-        latestUnitValue as QUERY_BUILDER_CUSTOM_DATE_OPTION_UNIT,
-        latestDirectionValue as QUERY_BUILDER_CUSTOM_DATE_OPTION_DIRECTION,
-        latestReferenceMomentValue as QUERY_BUILDER_CUSTOM_DATE_OPTION_REFERENCE_MOMENT,
+        latestUnitValue as CUSTOM_DATE_OPTION_UNIT,
+        latestDirectionValue as CUSTOM_DATE_OPTION_DIRECTION,
+        latestReferenceMomentValue as CUSTOM_DATE_OPTION_REFERENCE_MOMENT,
       );
       updateValue(buildPureAdjustDateFunction(dateOption, graph));
       const matchedPreservedCustomAdjustDates =
@@ -864,29 +849,27 @@ const CustomDateInstanceValueEditor: React.FC<{
   };
 
   return (
-    <div className="query-builder-value-spec-editor__date-picker__custom-date">
-      <div className="query-builder-value-spec-editor__date-picker__custom-date__input">
+    <div className="value-spec-editor__date-picker__custom-date">
+      <div className="value-spec-editor__date-picker__custom-date__input">
         <input
-          className="query-builder-value-spec-editor__date-picker__custom-date__input-text-editor input--dark"
+          className="value-spec-editor__date-picker__custom-date__input-text-editor input--dark"
           spellCheck={false}
           value={durationValue}
           type="number"
           onChange={changeDurationValue}
         />
       </div>
-      <div className="query-builder-value-spec-editor__date-picker__custom-date__input">
+      <div className="value-spec-editor__date-picker__custom-date__input">
         <CustomSelectorInput
           placeholder="Unit"
-          className="query-builder-value-spec-editor__date-picker__custom-date__input-dropdown"
-          options={Object.values(QUERY_BUILDER_CUSTOM_DATE_OPTION_UNIT).map(
-            (t) => ({
-              value: t.toString(),
-              label: t.toString(),
-            }),
-          )}
+          className="value-spec-editor__date-picker__custom-date__input-dropdown"
+          options={Object.values(CUSTOM_DATE_OPTION_UNIT).map((t) => ({
+            value: t.toString(),
+            label: t.toString(),
+          }))}
           onChange={(val: {
             label: string;
-            value: QUERY_BUILDER_CUSTOM_DATE_OPTION_UNIT;
+            value: CUSTOM_DATE_OPTION_UNIT;
           }): void => {
             setUnitValue(val.value);
             changeValue(
@@ -900,18 +883,16 @@ const CustomDateInstanceValueEditor: React.FC<{
           darkMode={true}
         />
       </div>
-      <div className="query-builder-value-spec-editor__date-picker__custom-date__input">
+      <div className="value-spec-editor__date-picker__custom-date__input">
         <CustomSelectorInput
-          className="query-builder-value-spec-editor__date-picker__custom-date__input-dropdown"
-          options={Object.values(
-            QUERY_BUILDER_CUSTOM_DATE_OPTION_DIRECTION,
-          ).map((t) => ({
+          className="value-spec-editor__date-picker__custom-date__input-dropdown"
+          options={Object.values(CUSTOM_DATE_OPTION_DIRECTION).map((t) => ({
             value: t.toString(),
             label: t.toString(),
           }))}
           onChange={(val: {
             label: string;
-            value: QUERY_BUILDER_CUSTOM_DATE_OPTION_DIRECTION;
+            value: CUSTOM_DATE_OPTION_DIRECTION;
           }): void => {
             setDirectionValue(val.value);
             changeValue(
@@ -925,18 +906,18 @@ const CustomDateInstanceValueEditor: React.FC<{
           darkMode={true}
         />
       </div>
-      <div className="query-builder-value-spec-editor__date-picker__custom-date__input">
+      <div className="value-spec-editor__date-picker__custom-date__input">
         <CustomSelectorInput
-          className="query-builder-value-spec-editor__date-picker__custom-date__input-dropdown"
-          options={Object.values(
-            QUERY_BUILDER_CUSTOM_DATE_OPTION_REFERENCE_MOMENT,
-          ).map((t) => ({
-            value: t.toString(),
-            label: t.toString(),
-          }))}
+          className="value-spec-editor__date-picker__custom-date__input-dropdown"
+          options={Object.values(CUSTOM_DATE_OPTION_REFERENCE_MOMENT).map(
+            (t) => ({
+              value: t.toString(),
+              label: t.toString(),
+            }),
+          )}
           onChange={(val: {
             label: string;
-            value: QUERY_BUILDER_CUSTOM_DATE_OPTION_REFERENCE_MOMENT;
+            value: CUSTOM_DATE_OPTION_REFERENCE_MOMENT;
           }): void => {
             setReferenceMomentValueValue(val.value);
             changeValue(durationValue, unitValue, directionValue, val.value);
@@ -969,13 +950,13 @@ const CustomFirstDayOfValueSpecificationEditor: React.FC<{
   const changeValue = (latestUnitValue: string): void => {
     if (latestUnitValue !== '') {
       const targetUnitValue = Object.values(
-        QUERY_BUILDER_CUSTOM_DATE_OPTION_REFERENCE_MOMENT,
+        CUSTOM_DATE_OPTION_REFERENCE_MOMENT,
       ).filter((moment) => moment.toString().includes(latestUnitValue));
       const startDayOfDateOption =
         targetUnitValue.length > 0
           ? new CustomFirstDayOfOption(
               guaranteeNonNullable(targetUnitValue[0]?.toString()),
-              latestUnitValue as QUERY_BUILDER_FIRST_DAY_OF_UNIT,
+              latestUnitValue as CUSTOM_DATE_FIRST_DAY_OF_UNIT,
             )
           : new CustomFirstDayOfOption('', undefined);
       updateValue(buildPureDateFunctionExpression(startDayOfDateOption, graph));
@@ -984,12 +965,12 @@ const CustomFirstDayOfValueSpecificationEditor: React.FC<{
   };
 
   return (
-    <div className="query-builder-value-spec-editor__date-picker__custom-date">
-      <div className="query-builder-value-spec-editor__date-picker__custom-date__input">
+    <div className="value-spec-editor__date-picker__custom-date">
+      <div className="value-spec-editor__date-picker__custom-date__input">
         <CustomSelectorInput
           placeholder="Choose a unit..."
-          className="query-builder-value-spec-editor__date-picker__custom-date__input-dropdown query-builder-value-spec-editor__date-picker__custom-date__input-dropdown--full"
-          options={Object.values(QUERY_BUILDER_FIRST_DAY_OF_UNIT).map((t) => ({
+          className="value-spec-editor__date-picker__custom-date__input-dropdown value-spec-editor__date-picker__custom-date__input-dropdown--full"
+          options={Object.values(CUSTOM_DATE_FIRST_DAY_OF_UNIT).map((t) => ({
             value: t.toString(),
             label: t.toString(),
           }))}
@@ -1028,7 +1009,7 @@ const CustomPreviousDayOfWeekValueSpecificationEditor: React.FC<{
     if (latestDurationUnitValue !== '') {
       const previousDayOfWeekDateOption = new CustomPreviousDayOfWeekOption(
         `Previous ${latestDurationUnitValue}`,
-        latestDurationUnitValue as QUERY_BUILDER_DAY_OF_WEEK,
+        latestDurationUnitValue as CUSTOM_DATE_DAY_OF_WEEK,
       );
       updateValue(
         buildPureDateFunctionExpression(previousDayOfWeekDateOption, graph),
@@ -1038,12 +1019,12 @@ const CustomPreviousDayOfWeekValueSpecificationEditor: React.FC<{
   };
 
   return (
-    <div className="query-builder-value-spec-editor__date-picker__custom-date">
-      <div className="query-builder-value-spec-editor__date-picker__custom-date__input">
+    <div className="value-spec-editor__date-picker__custom-date">
+      <div className="value-spec-editor__date-picker__custom-date__input">
         <CustomSelectorInput
           placeholder="Choose a day..."
-          className="query-builder-value-spec-editor__date-picker__custom-date__input-dropdown query-builder-value-spec-editor__date-picker__custom-date__input-dropdown--full"
-          options={Object.values(QUERY_BUILDER_DAY_OF_WEEK).map((t) => ({
+          className="value-spec-editor__date-picker__custom-date__input-dropdown value-spec-editor__date-picker__custom-date__input-dropdown--full"
+          options={Object.values(CUSTOM_DATE_DAY_OF_WEEK).map((t) => ({
             value: t.toString(),
             label: t.toString(),
           }))}
@@ -1065,7 +1046,7 @@ const CustomPreviousDayOfWeekValueSpecificationEditor: React.FC<{
   );
 };
 
-export const QueryBuilderCustomDatePicker: React.FC<{
+export const CustomDatePicker: React.FC<{
   valueSpecification: PrimitiveInstanceValue | SimpleFunctionExpression;
   graph: PureModel;
   typeCheckOption: {
@@ -1088,12 +1069,12 @@ export const QueryBuilderCustomDatePicker: React.FC<{
   const { valueSpecification, updateValue, graph, typeCheckOption } = props;
   // For some cases where types need to be matched strictly.
   // Some options need to be filtered out for DateTime.
-  const targetQueryBuilderDateOptionsEnum = typeCheckOption.match
+  const targetDateOptionsEnum = typeCheckOption.match
     ? Object.values([
-        QUERY_BUILDER_CUSTOM_DATE_PICKER_OPTION.ABSOLUTE_TIME,
-        QUERY_BUILDER_CUSTOM_DATE_PICKER_OPTION.NOW,
+        CUSTOM_DATE_PICKER_OPTION.ABSOLUTE_TIME,
+        CUSTOM_DATE_PICKER_OPTION.NOW,
       ])
-    : Object.values(QUERY_BUILDER_CUSTOM_DATE_PICKER_OPTION);
+    : Object.values(CUSTOM_DATE_PICKER_OPTION);
   const [datePickerOption, setDatePickerOption] = useState(
     buildDatePickerOption(valueSpecification),
   );
@@ -1119,8 +1100,7 @@ export const QueryBuilderCustomDatePicker: React.FC<{
       (event.target as HTMLInputElement).value,
     );
     if (
-      QUERY_BUILDER_CUSTOM_DATE_PICKER_OPTION.LATEST_DATE ===
-      chosenDatePickerOption.value
+      CUSTOM_DATE_PICKER_OPTION.LATEST_DATE === chosenDatePickerOption.value
     ) {
       updateValue(
         buildPrimitiveInstanceValue(
@@ -1132,14 +1112,12 @@ export const QueryBuilderCustomDatePicker: React.FC<{
     } else if (
       // Elements in this list will trigger children date components
       ![
-        QUERY_BUILDER_CUSTOM_DATE_PICKER_OPTION.ABSOLUTE_DATE,
-        QUERY_BUILDER_CUSTOM_DATE_PICKER_OPTION.ABSOLUTE_TIME,
-        QUERY_BUILDER_CUSTOM_DATE_PICKER_OPTION.CUSTOM_DATE,
-        QUERY_BUILDER_CUSTOM_DATE_PICKER_OPTION.FIRST_DAY_OF,
-        QUERY_BUILDER_CUSTOM_DATE_PICKER_OPTION.PREVIOUS_DAY_OF_WEEK,
-      ].includes(
-        chosenDatePickerOption.value as QUERY_BUILDER_CUSTOM_DATE_PICKER_OPTION,
-      )
+        CUSTOM_DATE_PICKER_OPTION.ABSOLUTE_DATE,
+        CUSTOM_DATE_PICKER_OPTION.ABSOLUTE_TIME,
+        CUSTOM_DATE_PICKER_OPTION.CUSTOM_DATE,
+        CUSTOM_DATE_PICKER_OPTION.FIRST_DAY_OF,
+        CUSTOM_DATE_PICKER_OPTION.PREVIOUS_DAY_OF_WEEK,
+      ].includes(chosenDatePickerOption.value as CUSTOM_DATE_PICKER_OPTION)
     ) {
       const theReservedCustomDateOption = reservedCustomDateOptions.filter(
         (d) => d.value === chosenDatePickerOption.value,
@@ -1159,7 +1137,7 @@ export const QueryBuilderCustomDatePicker: React.FC<{
   };
   const renderChildrenDateComponents = (): React.ReactNode => {
     switch (datePickerOption.value) {
-      case QUERY_BUILDER_CUSTOM_DATE_PICKER_OPTION.ABSOLUTE_DATE:
+      case CUSTOM_DATE_PICKER_OPTION.ABSOLUTE_DATE:
         return (
           <AbsoluteDateValueSpecificationEditor
             graph={graph}
@@ -1168,7 +1146,7 @@ export const QueryBuilderCustomDatePicker: React.FC<{
             setDatePickerOption={setDatePickerOption}
           />
         );
-      case QUERY_BUILDER_CUSTOM_DATE_PICKER_OPTION.ABSOLUTE_TIME:
+      case CUSTOM_DATE_PICKER_OPTION.ABSOLUTE_TIME:
         return (
           <AbsoluteTimeValueSpecificationEditor
             graph={graph}
@@ -1177,7 +1155,7 @@ export const QueryBuilderCustomDatePicker: React.FC<{
             setDatePickerOption={setDatePickerOption}
           />
         );
-      case QUERY_BUILDER_CUSTOM_DATE_PICKER_OPTION.CUSTOM_DATE:
+      case CUSTOM_DATE_PICKER_OPTION.CUSTOM_DATE:
         return (
           <CustomDateInstanceValueEditor
             graph={graph}
@@ -1186,7 +1164,7 @@ export const QueryBuilderCustomDatePicker: React.FC<{
             setDatePickerOption={setDatePickerOption}
           />
         );
-      case QUERY_BUILDER_CUSTOM_DATE_PICKER_OPTION.FIRST_DAY_OF:
+      case CUSTOM_DATE_PICKER_OPTION.FIRST_DAY_OF:
         return (
           <CustomFirstDayOfValueSpecificationEditor
             graph={graph}
@@ -1197,7 +1175,7 @@ export const QueryBuilderCustomDatePicker: React.FC<{
             setDatePickerOption={setDatePickerOption}
           />
         );
-      case QUERY_BUILDER_CUSTOM_DATE_PICKER_OPTION.PREVIOUS_DAY_OF_WEEK:
+      case CUSTOM_DATE_PICKER_OPTION.PREVIOUS_DAY_OF_WEEK:
         return (
           <CustomPreviousDayOfWeekValueSpecificationEditor
             graph={graph}
@@ -1221,7 +1199,7 @@ export const QueryBuilderCustomDatePicker: React.FC<{
   return (
     <>
       <button
-        className="query-builder-value-spec-editor__date-picker__trigger"
+        className="value-spec-editor__date-picker__trigger"
         title="Click to edit and pick from more date options"
         onClick={openCustomDatePickerPopover}
       >
@@ -1247,7 +1225,7 @@ export const QueryBuilderCustomDatePicker: React.FC<{
           value={datePickerOption.value}
           onChange={handleDatePickerOptionChange}
           row={true}
-          options={targetQueryBuilderDateOptionsEnum}
+          options={targetDateOptionsEnum}
           size={2}
         />
         {renderChildrenDateComponents()}

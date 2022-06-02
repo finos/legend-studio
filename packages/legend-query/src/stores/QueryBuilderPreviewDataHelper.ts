@@ -33,7 +33,7 @@ import {
 } from '@finos/legend-graph';
 import {
   DEFAULT_LAMBDA_VARIABLE_NAME,
-  SUPPORTED_FUNCTIONS,
+  QUERY_BUILDER_SUPPORTED_FUNCTIONS,
 } from '../QueryBuilder_Const';
 import { QueryBuilderAggregateOperator_Average } from './aggregateOperators/QueryBuilderAggregateOperator_Average';
 import { QueryBuilderAggregateOperator_Count } from './aggregateOperators/QueryBuilderAggregateOperator_Count';
@@ -64,7 +64,7 @@ const buildGroupByFunction = (
   );
 
   const groupByFunction = new SimpleFunctionExpression(
-    extractElementNameFromPath(SUPPORTED_FUNCTIONS.TDS_GROUP_BY),
+    extractElementNameFromPath(QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_GROUP_BY),
     multiplicityOne,
   );
 
@@ -101,7 +101,7 @@ const buildGroupByFunction = (
 
   aggregates.forEach((pair) => {
     const aggregateFunctionExpression = new SimpleFunctionExpression(
-      extractElementNameFromPath(SUPPORTED_FUNCTIONS.TDS_AGG),
+      extractElementNameFromPath(QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_AGG),
       multiplicityOne,
     );
     aggregateFunctionExpression.parametersValues = [
@@ -246,7 +246,7 @@ export const buildNonNumericPreviewDataQuery = (
 
   // build sort()
   const sortFunction = new SimpleFunctionExpression(
-    extractElementNameFromPath(SUPPORTED_FUNCTIONS.TDS_SORT),
+    extractElementNameFromPath(QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_SORT),
     multiplicityOne,
   );
   const sortColumnFunctions = new CollectionInstanceValue(
@@ -254,8 +254,8 @@ export const buildNonNumericPreviewDataQuery = (
     undefined,
   );
   sortColumnFunctions.values = [
-    [SUPPORTED_FUNCTIONS.TDS_DESC, 'Count'],
-    [SUPPORTED_FUNCTIONS.TDS_ASC, 'Value'],
+    [QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_DESC, 'Count'],
+    [QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_ASC, 'Value'],
   ].map((pair) => {
     const sortColumnFunction = new SimpleFunctionExpression(
       extractElementNameFromPath(pair[0] as string),
@@ -283,7 +283,7 @@ export const buildNonNumericPreviewDataQuery = (
   );
   limit.values = [10];
   const takeFunction = new SimpleFunctionExpression(
-    extractElementNameFromPath(SUPPORTED_FUNCTIONS.TDS_TAKE),
+    extractElementNameFromPath(QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_TAKE),
     multiplicityOne,
   );
   takeFunction.parametersValues[0] = sortFunction;

@@ -64,7 +64,7 @@ import type { QueryBuilderState } from './QueryBuilderState';
 import { action, makeAutoObservable, observable } from 'mobx';
 import {
   DEFAULT_LAMBDA_VARIABLE_NAME,
-  SUPPORTED_FUNCTIONS,
+  QUERY_BUILDER_SUPPORTED_FUNCTIONS,
 } from '../QueryBuilder_Const';
 import type { QueryBuilderPreviewData } from './QueryBuilderPreviewDataHelper';
 
@@ -203,7 +203,7 @@ export const buildPropertyExpressionFromExplorerTreeNodeData = (
     let parentPropertyExpression;
     if (parentNode instanceof QueryBuilderExplorerTreeSubTypeNodeData) {
       parentPropertyExpression = new SimpleFunctionExpression(
-        extractElementNameFromPath(SUPPORTED_FUNCTIONS.SUBTYPE),
+        extractElementNameFromPath(QUERY_BUILDER_SUPPORTED_FUNCTIONS.SUBTYPE),
         multiplicityOne,
       );
     } else {
@@ -218,7 +218,7 @@ export const buildPropertyExpressionFromExplorerTreeNodeData = (
       currentExpression instanceof SimpleFunctionExpression &&
       matchFunctionName(
         currentExpression.functionName,
-        SUPPORTED_FUNCTIONS.SUBTYPE,
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.SUBTYPE,
       )
     ) {
       const subclass = new InstanceValue(
@@ -464,12 +464,12 @@ export const getQueryBuilderSubTypeNodeData = (
     `${
       parentNode instanceof QueryBuilderExplorerTreeRootNodeData
         ? `${VARIABLE_REFERENCE_TOKEN}${DEFAULT_LAMBDA_VARIABLE_NAME}${ARROW_FUNCTION_TOKEN}${extractElementNameFromPath(
-            SUPPORTED_FUNCTIONS.SUBTYPE,
+            QUERY_BUILDER_SUPPORTED_FUNCTIONS.SUBTYPE,
           )}(${TYPE_CAST_TOKEN}${subclass.path})`
         : `${
             parentNode.dndText
           }${ARROW_FUNCTION_TOKEN}${extractElementNameFromPath(
-            SUPPORTED_FUNCTIONS.SUBTYPE,
+            QUERY_BUILDER_SUPPORTED_FUNCTIONS.SUBTYPE,
           )}(${TYPE_CAST_TOKEN}${subclass.path})`
     }`,
     subclass,

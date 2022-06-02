@@ -45,9 +45,11 @@ import {
   PRIMITIVE_TYPE,
   isSuperType,
 } from '@finos/legend-graph';
-import { QueryBuilderValueSpecificationEditor } from './QueryBuilderValueSpecificationEditor';
-import { propertyExpression_setParametersValue } from '../stores/QueryBuilderValueSpecificationModifierHelper';
 import { guaranteeNonNullable } from '@finos/legend-shared';
+import {
+  propertyExpression_setParametersValue,
+  BasicValueSpecificationEditor,
+} from '@finos/legend-application';
 
 const DerivedPropertyParameterValueEditor = observer(
   (props: {
@@ -132,7 +134,7 @@ const DerivedPropertyParameterValueEditor = observer(
               Change Parameter Value
             </div>
           )}
-          <QueryBuilderValueSpecificationEditor
+          <BasicValueSpecificationEditor
             valueSpecification={guaranteeNonNullable(
               derivedPropertyExpressionState.parameterValues[idx],
             )}

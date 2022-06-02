@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-import { useApplicationStore } from '@finos/legend-application';
+import {
+  useApplicationStore,
+  BasicValueSpecificationEditor,
+} from '@finos/legend-application';
 import {
   type TreeNodeContainerProps,
   type TreeNodeViewProps,
@@ -52,6 +55,7 @@ import {
   Enumeration,
   PrimitiveType,
   PRIMITIVE_TYPE,
+  getMultiplicityDescription,
 } from '@finos/legend-graph';
 import {
   assertErrorThrown,
@@ -93,9 +97,7 @@ import {
   type QueryBuilderParameterDragSource,
   QUERY_BUILDER_PARAMETER_TREE_DND_TYPE,
 } from '../stores/QueryParametersState';
-import { QueryBuilderValueSpecificationEditor } from './QueryBuilderValueSpecificationEditor';
 import { QUERY_BUILDER_TEST_ID } from './QueryBuilder_TestID';
-import { getMultiplicityDescription } from './shared/QueryBuilderUtils';
 
 const PostFilterConditionDragLayer: React.FC = () => {
   const { itemType, item, isDragging, currentPosition } = useDragLayer(
@@ -502,7 +504,7 @@ const QueryBuilderPostFilterConditionEditor = observer(
                   Change Filter Value
                 </div>
               )}
-              <QueryBuilderValueSpecificationEditor
+              <BasicValueSpecificationEditor
                 valueSpecification={node.condition.value}
                 updateValue={(val: ValueSpecification): void =>
                   node.condition.setValue(val)

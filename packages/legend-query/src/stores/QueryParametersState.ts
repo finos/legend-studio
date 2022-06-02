@@ -43,12 +43,13 @@ import {
 } from '@finos/legend-shared';
 import { observable, makeObservable, action } from 'mobx';
 import type { QueryBuilderState } from './QueryBuilderState';
-import { DATE_FORMAT, DATE_TIME_FORMAT } from '@finos/legend-application';
 import {
+  DATE_FORMAT,
+  DATE_TIME_FORMAT,
+  genericType_setRawType,
   multiplicity_setLowerBound,
   multiplicity_setUpperBound,
-  genericType_setRawType,
-} from './QueryBuilderValueSpecificationModifierHelper';
+} from '@finos/legend-application';
 
 export enum QUERY_BUILDER_PARAMETER_TREE_DND_TYPE {
   VARIABLE = 'VARIABLE',
