@@ -22,6 +22,7 @@ import {
   RESERVERD_PACKAGE_NAMES,
   MILESTONING_STEREOTYPE,
   PRIMITIVE_TYPE,
+  MULTIPLICITY_INFINITE,
 } from '../MetaModelConst';
 import { Package } from '../models/metamodels/pure/packageableElements/domain/Package';
 import type { PackageableElement } from '../models/metamodels/pure/packageableElements/PackageableElement';
@@ -57,6 +58,7 @@ import { DerivedProperty } from '../models/metamodels/pure/packageableElements/d
 import type { Enum } from '../models/metamodels/pure/packageableElements/domain/Enum';
 import type { Constraint } from '../models/metamodels/pure/packageableElements/domain/Constraint';
 import type { GenericType } from '../models/metamodels/pure/packageableElements/domain/GenericType';
+import type { Multiplicity } from '../models/metamodels/pure/packageableElements/domain/Multiplicity';
 
 export const addElementToPackage = (
   parent: Package,
@@ -495,4 +497,24 @@ export const isSuperType = (type1: Type, type2: Type): boolean => {
     );
   }
   return false;
+};
+
+export const getMultiplicityDescription = (
+  multiplicity: Multiplicity,
+): string => {
+  if (multiplicity.lowerBound === multiplicity.upperBound) {
+    return `[${multiplicity.lowerBound.toString()}] - Must have exactly ${multiplicity.lowerBound.toString()} value(s)`;
+  } else if (
+    multiplicity.lowerBound === 0 &&
+    multiplicity.upperBound === undefined
+  ) {
+    return `[${MULTIPLICITY_INFINITE}] - May have many values`;
+  }
+  return `[${multiplicity.lowerBound}..${
+    multiplicity.upperBound ?? MULTIPLICITY_INFINITE
+  }] - ${
+    multiplicity.upperBound
+      ? `Must have from ${multiplicity.lowerBound} to ${multiplicity.upperBound} value(s)`
+      : `Must have at least ${multiplicity.lowerBound} values(s)`
+  }`;
 };

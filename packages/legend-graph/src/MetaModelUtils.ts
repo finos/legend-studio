@@ -27,7 +27,6 @@ import {
   SOURCE_INFORMATION_KEY,
   ELEMENT_PATH_DELIMITER,
   CORE_HASH_STRUCTURE,
-  MULTIPLICITY_INFINITE,
 } from './MetaModelConst';
 import {
   findLast,
@@ -37,7 +36,6 @@ import {
   hashString,
   recursiveOmit,
 } from '@finos/legend-shared';
-import type { Multiplicity } from './models/metamodels/pure/packageableElements/domain/Multiplicity';
 
 export const extractElementNameFromPath = (fullPath: string): string =>
   guaranteeNonNullable(findLast(fullPath.split(ELEMENT_PATH_DELIMITER)));
@@ -48,26 +46,6 @@ export const matchFunctionName = (
 ): boolean =>
   functionName === functionFullPath ||
   extractElementNameFromPath(functionFullPath) === functionName;
-
-export const getMultiplicityDescription = (
-  multiplicity: Multiplicity,
-): string => {
-  if (multiplicity.lowerBound === multiplicity.upperBound) {
-    return `[${multiplicity.lowerBound.toString()}] - Must have exactly ${multiplicity.lowerBound.toString()} value(s)`;
-  } else if (
-    multiplicity.lowerBound === 0 &&
-    multiplicity.upperBound === undefined
-  ) {
-    return `[${MULTIPLICITY_INFINITE}] - May have many values`;
-  }
-  return `[${multiplicity.lowerBound}..${
-    multiplicity.upperBound ?? MULTIPLICITY_INFINITE
-  }] - ${
-    multiplicity.upperBound
-      ? `Must have from ${multiplicity.lowerBound} to ${multiplicity.upperBound} value(s)`
-      : `Must have at least ${multiplicity.lowerBound} values(s)`
-  }`;
-};
 
 /**
  * This method concatenate 2 fully-qualified elementh paths to form a single one

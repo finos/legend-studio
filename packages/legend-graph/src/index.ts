@@ -163,6 +163,7 @@ export * from './helpers/DSLMapping_Helper';
 export * from './helpers/StoreRelational_Helper';
 export * from './helpers/StoreFlatData_Helper';
 export * from './helpers/DSLGeneration_Helper';
+export * from './helpers/ValueSpecificationHelper';
 
 export * from './helpers/PureLanguageHelper';
 

@@ -20,10 +20,10 @@ import {
   type SimpleFunctionExpression,
   type FunctionExpression,
   PRIMITIVE_TYPE,
+  buildPrimitiveInstanceValue,
 } from '@finos/legend-graph';
 import { UnsupportedOperationError } from '@finos/legend-shared';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
-import { buildPrimitiveInstanceValue } from '@finos/legend-application';
 import {
   buildNotExpression,
   getNonCollectionValueSpecificationType,

@@ -20,12 +20,12 @@ import {
   type ValueSpecification,
   type FunctionExpression,
   PRIMITIVE_TYPE,
+  buildPrimitiveInstanceValue,
 } from '@finos/legend-graph';
 import {
   guaranteeNonNullable,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
-import { buildPrimitiveInstanceValue } from '@finos/legend-application';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
 import {
   buildNotExpression,

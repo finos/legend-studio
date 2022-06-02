@@ -30,12 +30,12 @@ import {
   TYPICAL_MULTIPLICITY_TYPE,
   isSuperType,
   SUPPORTED_FUNCTIONS,
+  buildPrimitiveInstanceValue,
 } from '@finos/legend-graph';
 import {
   guaranteeNonNullable,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
-import { buildPrimitiveInstanceValue } from '@finos/legend-application';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
 import {
   buildNotExpression,

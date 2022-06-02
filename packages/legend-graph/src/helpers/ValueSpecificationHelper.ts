@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
+import type { PureModel } from '../graph/PureModel';
 import {
-  type PureModel,
   type PRIMITIVE_TYPE,
-  PrimitiveInstanceValue,
   TYPICAL_MULTIPLICITY_TYPE,
-  GenericTypeExplicitReference,
-  GenericType,
-} from '@finos/legend-graph';
+} from '../MetaModelConst';
+import { GenericType } from '../models/metamodels/pure/packageableElements/domain/GenericType';
+import { GenericTypeExplicitReference } from '../models/metamodels/pure/packageableElements/domain/GenericTypeReference';
+import { PrimitiveInstanceValue } from '../models/metamodels/pure/valueSpecification/InstanceValue';
 
 export const buildPrimitiveInstanceValue = (
   graph: PureModel,

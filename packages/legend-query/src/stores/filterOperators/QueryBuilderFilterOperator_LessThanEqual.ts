@@ -26,6 +26,7 @@ import {
   type AbstractPropertyExpression,
   isSuperType,
   SUPPORTED_FUNCTIONS,
+  buildPrimitiveInstanceValue,
 } from '@finos/legend-graph';
 import { UnsupportedOperationError } from '@finos/legend-shared';
 import {
@@ -33,7 +34,6 @@ import {
   buildFilterConditionExpression,
 } from './QueryBuilderFilterOperatorHelper';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
-import { buildPrimitiveInstanceValue } from '@finos/legend-application';
 import { generateDefaultValueForPrimitiveType } from '../QueryBuilderValueSpecificationBuilderHelper';
 import { getNonCollectionValueSpecificationType } from '../QueryBuilderOperatorsHelper';
 

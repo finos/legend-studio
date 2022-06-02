@@ -22,14 +22,13 @@ import {
   PRIMITIVE_TYPE,
   SUPPORTED_FUNCTIONS,
   isSuperType,
+  buildPrimitiveInstanceValue,
 } from '@finos/legend-graph';
 import {
   guaranteeNonNullable,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
-
-import { buildPrimitiveInstanceValue } from '@finos/legend-application';
 import { getNonCollectionValueSpecificationType } from '../QueryBuilderOperatorsHelper';
 import { QueryBuilderPostFilterOperator } from '../QueryBuilderPostFilterOperator';
 import { buildPostFilterConditionState } from '../QueryBuilderPostFilterProcessor';

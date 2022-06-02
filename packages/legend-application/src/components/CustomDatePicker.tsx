@@ -36,6 +36,7 @@ import {
   TYPICAL_MULTIPLICITY_TYPE,
   SUPPORTED_FUNCTIONS,
   DAY_OF_WEEK,
+  buildPrimitiveInstanceValue,
   DURATION_UNIT,
 } from '@finos/legend-graph';
 import {
@@ -43,7 +44,6 @@ import {
   UnsupportedOperationError,
 } from '@finos/legend-shared';
 import { useEffect, useState } from 'react';
-import { buildPrimitiveInstanceValue } from '../stores/ValueSpecificationUtils';
 import {
   genericType_setRawType,
   instanceValue_changeValue,
