@@ -22,15 +22,15 @@ import {
   TimesIcon,
   ArrowCircleRightIcon,
 } from '@finos/legend-art';
-import type { PackageableElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';
-import { useEditorStore } from '../../EditorStoreProvider';
+import type { PackageableElementOption } from '../../../../stores/shared/PackageableElementOptionUtil.js';
+import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
   type Profile,
   type StereotypeReference,
   type Stereotype,
   isStubbed_PackageableElement,
 } from '@finos/legend-graph';
-import { stereotypeReference_setValue } from '../../../../stores/graphModifier/DomainGraphModifierHelper';
+import { stereotypeReference_setValue } from '../../../../stores/graphModifier/DomainGraphModifierHelper.js';
 
 interface StereotypeOption {
   label: string;

@@ -23,14 +23,14 @@ import {
 import {
   addElementToPackage,
   getOrCreateGraphPackage,
-} from '../../../../../../../helpers/DomainHelper';
-import type { Package } from '../../../../../../metamodels/pure/packageableElements/domain/Package';
-import type { PackageableElement } from '../../../../../../metamodels/pure/packageableElements/PackageableElement';
-import type { V1_PackageableElement } from '../../../model/packageableElements/V1_PackageableElement';
+} from '../../../../../../../helpers/DomainHelper.js';
+import type { Package } from '../../../../../../metamodels/pure/packageableElements/domain/Package.js';
+import type { PackageableElement } from '../../../../../../metamodels/pure/packageableElements/PackageableElement.js';
+import type { V1_PackageableElement } from '../../../model/packageableElements/V1_PackageableElement.js';
 import {
   V1_buildFullPath,
   type V1_GraphBuilderContext,
-} from './V1_GraphBuilderContext';
+} from './V1_GraphBuilderContext.js';
 
 export type V1_ElementBuilderPass = (
   elementProtocol: V1_PackageableElement,

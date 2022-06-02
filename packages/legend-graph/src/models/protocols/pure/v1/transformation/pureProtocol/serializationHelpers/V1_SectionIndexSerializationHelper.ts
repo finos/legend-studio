@@ -31,8 +31,8 @@ import {
   type V1_Section,
   V1_ImportAwareCodeSection,
   V1_DefaultCodeSection,
-} from '../../../model/packageableElements/section/V1_Section';
-import { V1_SectionIndex } from '../../../model/packageableElements/section/V1_SectionIndex';
+} from '../../../model/packageableElements/section/V1_Section.js';
+import { V1_SectionIndex } from '../../../model/packageableElements/section/V1_SectionIndex.js';
 
 export const V1_SECTION_INDEX_ELEMENT_PROTOCOL_TYPE = 'sectionIndex';
 

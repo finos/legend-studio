@@ -34,7 +34,7 @@ import {
 } from '@finos/legend-studio';
 import { QUERY_BUILDER_TEST_ID } from '@finos/legend-query';
 import { TEST__provideMockedGraphManagerState } from '@finos/legend-graph';
-import { QueryBuilder_LegendStudioPreset } from '../../QueryBuilder_LegendStudioPreset';
+import { QueryBuilder_LegendStudioPreset } from '../../QueryBuilder_LegendStudioPreset.js';
 import { TEST__provideMockedApplicationStore } from '@finos/legend-application';
 import { MockedMonacoEditorInstance } from '@finos/legend-art';
 

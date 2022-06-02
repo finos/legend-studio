@@ -37,19 +37,19 @@ import {
   TEST_DATA__temporalModel,
   TEST_DATA__personWithSubType,
   TEST_DATA_dateCompabilityForFilterAndPostFilter,
-} from './TEST_DATA__QueryBuilder_LambdaProcessingRoundtrip';
+} from './TEST_DATA__QueryBuilder_LambdaProcessingRoundtrip.js';
 import TEST_DATA__PostFilterModel from './TEST_DATA__QueryBuilder_Model_PostFilter.json';
 import {
   simpleDerivationProjection,
   groupByWithDerivationProjection,
   groupByWithDerivationAndAggregation,
-} from './TEST_DATA__QueryBuilder_ProcessingRoundtrip_TestDerivation';
+} from './TEST_DATA__QueryBuilder_ProcessingRoundtrip_TestDerivation.js';
 import {
   TEST__buildGraphWithEntities,
   TEST__getTestGraphManagerState,
 } from '@finos/legend-graph';
-import { Query_GraphPreset } from '../../models/Query_GraphPreset';
-import { LegendQueryPluginManager } from '../../application/LegendQueryPluginManager';
+import { Query_GraphPreset } from '../../models/Query_GraphPreset.js';
+import { LegendQueryPluginManager } from '../../application/LegendQueryPluginManager.js';
 
 const pluginManager = LegendQueryPluginManager.create();
 pluginManager.usePresets([new Query_GraphPreset()]).install();

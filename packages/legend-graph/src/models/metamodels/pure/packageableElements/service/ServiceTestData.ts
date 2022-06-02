@@ -15,8 +15,8 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
-import type { ConnectionTestData } from './ConnectionTestData';
+import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst.js';
+import type { ConnectionTestData } from './ConnectionTestData.js';
 
 export class TestData implements Hashable {
   connectionsTestData: ConnectionTestData[] = [];

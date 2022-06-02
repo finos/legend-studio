@@ -15,10 +15,10 @@
  */
 
 import { guaranteeType } from '@finos/legend-shared';
-import { ServiceGroup } from '../models/metamodels/pure/model/packageableElements/store/serviceStore/model/ESService_ServiceGroup';
-import { ServiceParameter } from '../models/metamodels/pure/model/packageableElements/store/serviceStore/model/ESService_ServiceParameter';
-import type { ServiceStoreElement } from '../models/metamodels/pure/model/packageableElements/store/serviceStore/model/ESService_ServiceStoreElement';
-import { ServiceStoreService } from '../models/metamodels/pure/model/packageableElements/store/serviceStore/model/ESService_ServiceStoreService';
+import { ServiceGroup } from '../models/metamodels/pure/model/packageableElements/store/serviceStore/model/ESService_ServiceGroup.js';
+import { ServiceParameter } from '../models/metamodels/pure/model/packageableElements/store/serviceStore/model/ESService_ServiceParameter.js';
+import type { ServiceStoreElement } from '../models/metamodels/pure/model/packageableElements/store/serviceStore/model/ESService_ServiceStoreElement.js';
+import { ServiceStoreService } from '../models/metamodels/pure/model/packageableElements/store/serviceStore/model/ESService_ServiceStoreService.js';
 
 export const getParameter = (
   value: string,

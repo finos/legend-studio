@@ -20,7 +20,7 @@ import {
 } from '@finos/legend-studio';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
-import { QueryBuilder_EditorExtensionState } from '../stores/QueryBuilder_EditorExtensionState';
+import { QueryBuilder_EditorExtensionState } from '../stores/QueryBuilder_EditorExtensionState.js';
 import { useApplicationStore } from '@finos/legend-application';
 import { StandardQueryBuilderMode } from '@finos/legend-query';
 import { assertErrorThrown } from '@finos/legend-shared';

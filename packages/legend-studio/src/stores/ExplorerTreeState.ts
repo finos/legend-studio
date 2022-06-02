@@ -15,7 +15,7 @@
  */
 
 import { action, observable, makeObservable } from 'mobx';
-import type { EditorStore } from './EditorStore';
+import type { EditorStore } from './EditorStore.js';
 import {
   LogEvent,
   IllegalStateError,
@@ -30,14 +30,14 @@ import {
   openNodeById,
   openNodes,
   populatePackageTreeNodeChildren,
-} from './shared/PackageTreeUtil';
-import { LEGEND_STUDIO_APP_EVENT } from './LegendStudioAppEvent';
-import type { PackageTreeNodeData } from './shared/TreeUtil';
+} from './shared/PackageTreeUtil.js';
+import { LEGEND_STUDIO_APP_EVENT } from './LegendStudioAppEvent.js';
+import type { PackageTreeNodeData } from './shared/TreeUtil.js';
 import type { TreeData } from '@finos/legend-art';
 import {
   type GenerationTreeNodeData,
   getGenerationTreeData,
-} from './shared/FileGenerationTreeUtil';
+} from './shared/FileGenerationTreeUtil.js';
 import {
   type PackageableElement,
   ROOT_PACKAGE_NAME,

@@ -15,9 +15,9 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
-import type { FlatDataSection } from './FlatDataSection';
-import type { PrimitiveType } from '../../../domain/PrimitiveType';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst.js';
+import type { FlatDataSection } from './FlatDataSection.js';
+import type { PrimitiveType } from '../../../domain/PrimitiveType.js';
 
 export abstract class FlatDataDataType {
   readonly _correspondingPrimitiveType?: PrimitiveType | undefined;

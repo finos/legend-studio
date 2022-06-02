@@ -23,15 +23,15 @@ import {
 import {
   type PackageableElementVisitor,
   PackageableElement,
-} from '../../../../../../../metamodels/pure/packageableElements/PackageableElement';
-import { PureProtocolProcessorPlugin } from '../../../../../PureProtocolProcessorPlugin';
+} from '../../../../../../../metamodels/pure/packageableElements/PackageableElement.js';
+import { PureProtocolProcessorPlugin } from '../../../../../PureProtocolProcessorPlugin.js';
 import {
   type V1_PackageableElementVisitor,
   V1_PackageableElement,
-} from '../../../../model/packageableElements/V1_PackageableElement';
-import { V1_ElementBuilder } from '../V1_ElementBuilder';
-import type { V1_GraphBuilderContext } from '../V1_GraphBuilderContext';
-import { V1_GraphBuilderExtensions } from '../V1_GraphBuilderExtensions';
+} from '../../../../model/packageableElements/V1_PackageableElement.js';
+import { V1_ElementBuilder } from '../V1_ElementBuilder.js';
+import type { V1_GraphBuilderContext } from '../V1_GraphBuilderContext.js';
+import { V1_GraphBuilderExtensions } from '../V1_GraphBuilderExtensions.js';
 
 class TestElement extends V1_PackageableElement {
   accept_PackageableElementVisitor<T>(

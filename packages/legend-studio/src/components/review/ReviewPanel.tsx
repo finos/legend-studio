@@ -20,10 +20,10 @@ import { filterByType } from '@finos/legend-shared';
 import {
   EntityDiffViewState,
   DIFF_VIEW_MODE,
-} from '../../stores/editor-state/entity-diff-editor-state/EntityDiffViewState';
-import { EntityDiffView } from '../editor/edit-panel/diff-editor/EntityDiffView';
-import type { EditorState } from '../../stores/editor-state/EditorState';
-import { useEditorStore } from '../editor/EditorStoreProvider';
+} from '../../stores/editor-state/entity-diff-editor-state/EntityDiffViewState.js';
+import { EntityDiffView } from '../editor/edit-panel/diff-editor/EntityDiffView.js';
+import type { EditorState } from '../../stores/editor-state/EditorState.js';
+import { useEditorStore } from '../editor/EditorStoreProvider.js';
 import { forwardRef } from 'react';
 
 export const ReviewPanelSplashScreen: React.FC = () => (

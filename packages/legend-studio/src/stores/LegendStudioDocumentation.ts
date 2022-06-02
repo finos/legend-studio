@@ -18,7 +18,7 @@ import type {
   LegendApplicationContextualDocumentationEntryConfig,
   LegendApplicationDocumentationEntryConfig,
 } from '@finos/legend-application';
-import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT } from './LegendStudioApplicationNavigationContext';
+import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT } from './LegendStudioApplicationNavigationContext.js';
 
 export enum LEGEND_STUDIO_DOCUMENTATION_KEY {
   NOT_FOUND_HELP = 'application.not-found-help',

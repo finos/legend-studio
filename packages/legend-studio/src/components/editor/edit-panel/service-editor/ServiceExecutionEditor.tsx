@@ -16,24 +16,24 @@
 
 import { useEffect, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
-import { ServiceEditorState } from '../../../../stores/editor-state/element-editor-state/service/ServiceEditorState';
+import { ServiceEditorState } from '../../../../stores/editor-state/element-editor-state/service/ServiceEditorState.js';
 import {
   SERVICE_EXECUTION_TAB,
   ServicePureExecutionState,
-} from '../../../../stores/editor-state/element-editor-state/service/ServiceExecutionState';
+} from '../../../../stores/editor-state/element-editor-state/service/ServiceExecutionState.js';
 import {
   prettyCONSTName,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
-import { LegacySingleExecutionTestState } from '../../../../stores/editor-state/element-editor-state/service/LegacyServiceTestState';
-import { EmbeddedRuntimeEditor } from '../../../editor/edit-panel/RuntimeEditor';
+import { LegacySingleExecutionTestState } from '../../../../stores/editor-state/element-editor-state/service/LegacyServiceTestState.js';
+import { EmbeddedRuntimeEditor } from '../../../editor/edit-panel/RuntimeEditor.js';
 import { useDrop } from 'react-dnd';
 import {
   CORE_DND_TYPE,
   type ElementDragSource,
   type UMLEditorElementDropTarget,
-} from '../../../../stores/shared/DnDUtil';
-import { UnsupportedEditorPanel } from '../../../editor/edit-panel/UnsupportedElementEditor';
+} from '../../../../stores/shared/DnDUtil.js';
+import { UnsupportedEditorPanel } from '../../../editor/edit-panel/UnsupportedElementEditor.js';
 import {
   clsx,
   BlankPanelContent,
@@ -50,11 +50,11 @@ import {
   LongArrowRightIcon,
   ExclamationTriangleIcon,
 } from '@finos/legend-art';
-import { ServiceExecutionQueryEditor } from '../../../editor/edit-panel/service-editor/ServiceExecutionQueryEditor';
-import { ServiceTestEditor } from '../../../editor/edit-panel/service-editor/ServiceTestEditor';
-import type { PackageableElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';
+import { ServiceExecutionQueryEditor } from '../../../editor/edit-panel/service-editor/ServiceExecutionQueryEditor.js';
+import { ServiceTestEditor } from '../../../editor/edit-panel/service-editor/ServiceTestEditor.js';
+import type { PackageableElementOption } from '../../../../stores/shared/PackageableElementOptionUtil.js';
 import { flowResult } from 'mobx';
-import { useEditorStore } from '../../EditorStoreProvider';
+import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
   type KeyedExecutionParameter,
   type Runtime,
@@ -70,8 +70,8 @@ import { useApplicationStore } from '@finos/legend-application';
 import {
   pureSingleExecution_setMapping,
   pureSingleExecution_setRuntime,
-} from '../../../../stores/graphModifier/DSLService_GraphModifierHelper';
-import { ServiceTestSuiteState } from '../../../../stores/editor-state/element-editor-state/service/ServiceTestSuiteState';
+} from '../../../../stores/graphModifier/DSLService_GraphModifierHelper.js';
+import { ServiceTestSuiteState } from '../../../../stores/editor-state/element-editor-state/service/ServiceTestSuiteState.js';
 
 const PureSingleExecutionConfigurationEditor = observer(
   (props: {

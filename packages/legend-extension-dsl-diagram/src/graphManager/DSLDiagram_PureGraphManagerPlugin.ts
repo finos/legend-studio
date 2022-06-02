@@ -22,8 +22,8 @@ import {
   type PackageableElement,
   type PureGrammarElementLabeler,
 } from '@finos/legend-graph';
-import { Diagram } from '../models/metamodels/pure/packageableElements/diagram/DSLDiagram_Diagram';
-import { observe_Diagram } from './action/changeDetection/DSLDiagram_ObserverHelper';
+import { Diagram } from '../models/metamodels/pure/packageableElements/diagram/DSLDiagram_Diagram.js';
+import { observe_Diagram } from './action/changeDetection/DSLDiagram_ObserverHelper.js';
 
 export const PURE_GRAMMAR_DIAGRAM_PARSER_NAME = 'Diagram';
 export const PURE_GRAMMAR_DIAGRAM_ELEMENT_TYPE_LABEL = 'Diagram';

@@ -14,6 +14,6 @@
  * limitations under the License.
  */
 
-import { PropertyMapping } from '../../../mapping/PropertyMapping';
+import { PropertyMapping } from '../../../mapping/PropertyMapping.js';
 
 export abstract class AbstractFlatDataPropertyMapping extends PropertyMapping {}

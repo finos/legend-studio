@@ -25,7 +25,7 @@ import { observer } from 'mobx-react-lite';
 import {
   ProjectConfigurationEditorState,
   CONFIGURATION_EDITOR_TAB,
-} from '../../../../stores/editor-state/ProjectConfigurationEditorState';
+} from '../../../../stores/editor-state/ProjectConfigurationEditorState.js';
 import {
   type SelectComponent,
   compareLabelFn,
@@ -42,13 +42,13 @@ import {
   ProjectDependency,
   type ProjectConfiguration,
 } from '@finos/legend-server-sdlc';
-import { useEditorStore } from '../../EditorStoreProvider';
+import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
   ActionAlertActionType,
   ActionAlertType,
   useApplicationStore,
 } from '@finos/legend-application';
-import { LEGEND_STUDIO_APP_EVENT } from '../../../../stores/LegendStudioAppEvent';
+import { LEGEND_STUDIO_APP_EVENT } from '../../../../stores/LegendStudioAppEvent.js';
 import {
   type ProjectData,
   compareSemVerVersions,

@@ -15,14 +15,14 @@
  */
 
 import { type Hashable, hashArray } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
+import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst.js';
 import type {
   PackageableElementVisitor,
   PackageableElement,
-} from '../PackageableElement';
-import { PackageableElementReference } from '../PackageableElementReference';
-import { AbstractGenerationSpecification } from '../generationSpecification/AbstractGenerationSpecification';
-import type { ConfigurationProperty } from './ConfigurationProperty';
+} from '../PackageableElement.js';
+import { PackageableElementReference } from '../PackageableElementReference.js';
+import { AbstractGenerationSpecification } from '../generationSpecification/AbstractGenerationSpecification.js';
+import type { ConfigurationProperty } from './ConfigurationProperty.js';
 
 export class FileGenerationSpecification
   extends AbstractGenerationSpecification

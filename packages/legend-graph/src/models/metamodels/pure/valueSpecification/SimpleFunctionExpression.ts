@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-import type { GenericTypeReference } from '../packageableElements/domain/GenericTypeReference';
-import type { Multiplicity } from '../packageableElements/domain/Multiplicity';
-import type { PackageableElementReference } from '../packageableElements/PackageableElementReference';
+import type { GenericTypeReference } from '../packageableElements/domain/GenericTypeReference.js';
+import type { Multiplicity } from '../packageableElements/domain/Multiplicity.js';
+import type { PackageableElementReference } from '../packageableElements/PackageableElementReference.js';
 import {
   type ValueSpecificationVisitor,
   ValueSpecification,
-} from './ValueSpecification';
-import type { Function } from '../packageableElements/domain/Function';
-import type { AbstractProperty } from '../packageableElements/domain/AbstractProperty';
+} from './ValueSpecification.js';
+import type { Function } from '../packageableElements/domain/Function.js';
+import type { AbstractProperty } from '../packageableElements/domain/AbstractProperty.js';
 import { UnsupportedOperationError } from '@finos/legend-shared';
 
 export class Expression extends ValueSpecification {

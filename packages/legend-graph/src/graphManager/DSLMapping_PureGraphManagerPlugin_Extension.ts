@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-import type { Connection } from '../models/metamodels/pure/packageableElements/connection/Connection';
-import type { InputData } from '../models/metamodels/pure/packageableElements/mapping/InputData';
-import type { PropertyMapping } from '../models/metamodels/pure/packageableElements/mapping/PropertyMapping';
-import type { SetImplementation } from '../models/metamodels/pure/packageableElements/mapping/SetImplementation';
-import type { ObserverContext } from './action/changeDetection/CoreObserverHelper';
-import type { PureGraphManagerPlugin } from './PureGraphManagerPlugin';
+import type { Connection } from '../models/metamodels/pure/packageableElements/connection/Connection.js';
+import type { InputData } from '../models/metamodels/pure/packageableElements/mapping/InputData.js';
+import type { PropertyMapping } from '../models/metamodels/pure/packageableElements/mapping/PropertyMapping.js';
+import type { SetImplementation } from '../models/metamodels/pure/packageableElements/mapping/SetImplementation.js';
+import type { ObserverContext } from './action/changeDetection/CoreObserverHelper.js';
+import type { PureGraphManagerPlugin } from './PureGraphManagerPlugin.js';
 
 export type PureGrammarConnectionLabeler = (
   connection: Connection,

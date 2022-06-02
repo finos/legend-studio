@@ -15,7 +15,7 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../ESService_ModelUtils';
+import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../ESService_ModelUtils.js';
 
 export class SerializationFormat implements Hashable {
   style?: string | undefined;

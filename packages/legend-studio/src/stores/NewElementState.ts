@@ -22,7 +22,7 @@ import {
   makeAutoObservable,
   flowResult,
 } from 'mobx';
-import type { EditorStore } from './EditorStore';
+import type { EditorStore } from './EditorStore.js';
 import {
   type Clazz,
   type GeneratorFn,
@@ -32,12 +32,12 @@ import {
   guaranteeNonNullable,
   guaranteeNonEmptyString,
 } from '@finos/legend-shared';
-import { decorateRuntimeWithNewMapping } from './editor-state/element-editor-state/RuntimeEditorState';
-import type { DSL_LegendStudioPlugin_Extension } from './LegendStudioPlugin';
+import { decorateRuntimeWithNewMapping } from './editor-state/element-editor-state/RuntimeEditorState.js';
+import type { DSL_LegendStudioPlugin_Extension } from './LegendStudioPlugin.js';
 import {
   type FileGenerationTypeOption,
   DEFAULT_GENERATION_SPECIFICATION_NAME,
-} from './editor-state/GraphGenerationState';
+} from './editor-state/GraphGenerationState.js';
 import {
   type PackageableElement,
   type Runtime,
@@ -80,30 +80,30 @@ import {
   stub_RawLambda,
   stub_Database,
 } from '@finos/legend-graph';
-import type { DSLMapping_LegendStudioPlugin_Extension } from './DSLMapping_LegendStudioPlugin_Extension';
+import type { DSLMapping_LegendStudioPlugin_Extension } from './DSLMapping_LegendStudioPlugin_Extension.js';
 import {
   packageableConnection_setConnectionValue,
   runtime_addMapping,
-} from './graphModifier/DSLMapping_GraphModifierHelper';
+} from './graphModifier/DSLMapping_GraphModifierHelper.js';
 import {
   fileGeneration_setScopeElements,
   fileGeneration_setType,
   generationSpecification_addGenerationElement,
-} from './graphModifier/DSLGeneration_GraphModifierHelper';
+} from './graphModifier/DSLGeneration_GraphModifierHelper.js';
 import {
   service_initNewService,
   service_setExecution,
   service_setLegacyTest,
-} from './graphModifier/DSLService_GraphModifierHelper';
-import type { EmbeddedDataTypeOption } from './editor-state/element-editor-state/data/DataEditorState';
+} from './graphModifier/DSLService_GraphModifierHelper.js';
+import type { EmbeddedDataTypeOption } from './editor-state/element-editor-state/data/DataEditorState.js';
 import {
   externalFormatData_setData,
   externalFormatData_setContentType,
   dataElement_setEmbeddedData,
   modelStoreData_setInstance,
-} from './graphModifier/DSLData_GraphModifierHelper';
-import { PACKAGEABLE_ELEMENT_TYPE } from './shared/ModelUtil';
-import type { DSLData_LegendStudioPlugin_Extension } from './DSLData_LegendStudioPlugin_Extension';
+} from './graphModifier/DSLData_GraphModifierHelper.js';
+import { PACKAGEABLE_ELEMENT_TYPE } from './shared/ModelUtil.js';
+import type { DSLData_LegendStudioPlugin_Extension } from './DSLData_LegendStudioPlugin_Extension.js';
 
 export const resolvePackageAndElementName = (
   _package: Package,

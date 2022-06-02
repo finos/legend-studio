@@ -24,17 +24,17 @@ import {
 } from '@testing-library/react';
 import { Router } from 'react-router-dom';
 import { createMemoryHistory } from 'history';
-import { LEGEND_STUDIO_TEST_ID } from './LegendStudioTestID';
-import { EditorStore } from '../stores/EditorStore';
-import { Editor } from './editor/Editor';
-import { generateEditorRoute } from '../stores/LegendStudioRouter';
+import { LEGEND_STUDIO_TEST_ID } from './LegendStudioTestID.js';
+import { EditorStore } from '../stores/EditorStore.js';
+import { Editor } from './editor/Editor.js';
+import { generateEditorRoute } from '../stores/LegendStudioRouter.js';
 import {
   type PlainObject,
   type TEMPORARY__JestMock,
   MOBX__disableSpyOrMock,
   MOBX__enableSpyOrMock,
 } from '@finos/legend-shared';
-import { LegendStudioPluginManager } from '../application/LegendStudioPluginManager';
+import { LegendStudioPluginManager } from '../application/LegendStudioPluginManager.js';
 import type { Entity } from '@finos/legend-model-storage';
 import {
   type Project,
@@ -66,7 +66,7 @@ import {
   TEST__DepotServerClientProvider,
   TEST__getTestDepotServerClient,
 } from '@finos/legend-server-depot';
-import { LegendStudioStoreProvider } from './LegendStudioStoreProvider';
+import { LegendStudioStoreProvider } from './LegendStudioStoreProvider.js';
 import {
   type ApplicationStore,
   TEST__provideMockedWebApplicationNavigator,
@@ -75,8 +75,8 @@ import {
   LegendApplicationComponentFrameworkProvider,
   WebApplicationNavigator,
 } from '@finos/legend-application';
-import { TEST__getTestStudioConfig } from '../stores/EditorStoreTestUtils';
-import type { LegendStudioConfig } from '../application/LegendStudioConfig';
+import { TEST__getTestStudioConfig } from '../stores/EditorStoreTestUtils.js';
+import type { LegendStudioConfig } from '../application/LegendStudioConfig.js';
 
 export const TEST_DATA__DefaultSDLCInfo = {
   project: {
@@ -175,7 +175,7 @@ export const TEST__provideMockedEditorStore = (customization?: {
         TEST__getTestGraphManagerState(customization?.pluginManager),
       pluginManager,
     );
-  const MockedEditorStoreProvider = require('./editor/EditorStoreProvider'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+  const MockedEditorStoreProvider = require('./editor/EditorStoreProvider.js'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
   MockedEditorStoreProvider.useEditorStore = jest.fn();
   MockedEditorStoreProvider.useEditorStore.mockReturnValue(value);
   return value;

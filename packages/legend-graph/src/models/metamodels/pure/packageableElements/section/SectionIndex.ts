@@ -15,12 +15,12 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
+import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst.js';
 import {
   type PackageableElementVisitor,
   PackageableElement,
-} from '../PackageableElement';
-import type { Section } from './Section';
+} from '../PackageableElement.js';
+import type { Section } from './Section.js';
 
 export class SectionIndex extends PackageableElement implements Hashable {
   sections: Section[] = [];

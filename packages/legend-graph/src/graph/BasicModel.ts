@@ -25,46 +25,46 @@ import {
   guaranteeNonNullable,
   guaranteeType,
 } from '@finos/legend-shared';
-import type { ROOT_PACKAGE_NAME } from '../MetaModelConst';
-import { Package } from '../models/metamodels/pure/packageableElements/domain/Package';
-import { Type } from '../models/metamodels/pure/packageableElements/domain/Type';
-import { Association } from '../models/metamodels/pure/packageableElements/domain/Association';
-import { Mapping } from '../models/metamodels/pure/packageableElements/mapping/Mapping';
-import { Class } from '../models/metamodels/pure/packageableElements/domain/Class';
-import { Enumeration } from '../models/metamodels/pure/packageableElements/domain/Enumeration';
-import { PackageableElement } from '../models/metamodels/pure/packageableElements/PackageableElement';
-import { Profile } from '../models/metamodels/pure/packageableElements/domain/Profile';
-import { Service } from '../models/metamodels/pure/packageableElements/service/Service';
-import { ConcreteFunctionDefinition } from '../models/metamodels/pure/packageableElements/domain/ConcreteFunctionDefinition';
-import { Store } from '../models/metamodels/pure/packageableElements/store/Store';
-import { FlatData } from '../models/metamodels/pure/packageableElements/store/flatData/model/FlatData';
-import { PackageableRuntime } from '../models/metamodels/pure/packageableElements/runtime/PackageableRuntime';
-import { PackageableConnection } from '../models/metamodels/pure/packageableElements/connection/PackageableConnection';
-import { FileGenerationSpecification } from '../models/metamodels/pure/packageableElements/fileGeneration/FileGenerationSpecification';
-import { GenerationSpecification } from '../models/metamodels/pure/packageableElements/generationSpecification/GenerationSpecification';
+import type { ROOT_PACKAGE_NAME } from '../MetaModelConst.js';
+import { Package } from '../models/metamodels/pure/packageableElements/domain/Package.js';
+import { Type } from '../models/metamodels/pure/packageableElements/domain/Type.js';
+import { Association } from '../models/metamodels/pure/packageableElements/domain/Association.js';
+import { Mapping } from '../models/metamodels/pure/packageableElements/mapping/Mapping.js';
+import { Class } from '../models/metamodels/pure/packageableElements/domain/Class.js';
+import { Enumeration } from '../models/metamodels/pure/packageableElements/domain/Enumeration.js';
+import { PackageableElement } from '../models/metamodels/pure/packageableElements/PackageableElement.js';
+import { Profile } from '../models/metamodels/pure/packageableElements/domain/Profile.js';
+import { Service } from '../models/metamodels/pure/packageableElements/service/Service.js';
+import { ConcreteFunctionDefinition } from '../models/metamodels/pure/packageableElements/domain/ConcreteFunctionDefinition.js';
+import { Store } from '../models/metamodels/pure/packageableElements/store/Store.js';
+import { FlatData } from '../models/metamodels/pure/packageableElements/store/flatData/model/FlatData.js';
+import { PackageableRuntime } from '../models/metamodels/pure/packageableElements/runtime/PackageableRuntime.js';
+import { PackageableConnection } from '../models/metamodels/pure/packageableElements/connection/PackageableConnection.js';
+import { FileGenerationSpecification } from '../models/metamodels/pure/packageableElements/fileGeneration/FileGenerationSpecification.js';
+import { GenerationSpecification } from '../models/metamodels/pure/packageableElements/generationSpecification/GenerationSpecification.js';
 import {
   Unit,
   Measure,
-} from '../models/metamodels/pure/packageableElements/domain/Measure';
-import { Database } from '../models/metamodels/pure/packageableElements/store/relational/model/Database';
-import { SectionIndex } from '../models/metamodels/pure/packageableElements/section/SectionIndex';
-import type { Section } from '../models/metamodels/pure/packageableElements/section/Section';
-import { PureGraphExtension } from './PureGraphExtension';
-import { PrimitiveType } from '../models/metamodels/pure/packageableElements/domain/PrimitiveType';
-import { DataType } from '../models/metamodels/pure/packageableElements/domain/DataType';
+} from '../models/metamodels/pure/packageableElements/domain/Measure.js';
+import { Database } from '../models/metamodels/pure/packageableElements/store/relational/model/Database.js';
+import { SectionIndex } from '../models/metamodels/pure/packageableElements/section/SectionIndex.js';
+import type { Section } from '../models/metamodels/pure/packageableElements/section/Section.js';
+import { PureGraphExtension } from './PureGraphExtension.js';
+import { PrimitiveType } from '../models/metamodels/pure/packageableElements/domain/PrimitiveType.js';
+import { DataType } from '../models/metamodels/pure/packageableElements/domain/DataType.js';
 import {
   isValidFullPath,
   isValidPath,
   resolvePackagePathAndElementName,
-} from '../MetaModelUtils';
+} from '../MetaModelUtils.js';
 import {
   addElementToPackage,
   deleteElementFromPackage,
   getOrCreateGraphPackage,
   getOrCreatePackage,
-} from '../helpers/DomainHelper';
-import { DataElement } from '../models/metamodels/pure/packageableElements/data/DataElement';
-import type { Testable } from '../models/metamodels/pure/test/Testable';
+} from '../helpers/DomainHelper.js';
+import { DataElement } from '../models/metamodels/pure/packageableElements/data/DataElement.js';
+import type { Testable } from '../models/metamodels/pure/test/Testable.js';
 
 const FORBIDDEN_EXTENSION_ELEMENT_CLASS = new Set([
   PackageableElement,

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { V1_Point } from './V1_DSLDiagram_Point';
+import type { V1_Point } from './V1_DSLDiagram_Point.js';
 
 export class V1_Line {
   points: V1_Point[] = [];

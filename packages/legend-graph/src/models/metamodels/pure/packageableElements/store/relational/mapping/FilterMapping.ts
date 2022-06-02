@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst.js';
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import type { Database } from '../model/Database';
+import type { Database } from '../model/Database.js';
 import {
   extractLine,
   type JoinTreeNode,
-} from '../model/RelationalOperationElement';
-import type { FilterReference } from '../model/FilterReference';
+} from '../model/RelationalOperationElement.js';
+import type { FilterReference } from '../model/FilterReference.js';
 
 export class FilterMapping implements Hashable {
   // setMappingOwner?: RelationalInstanceSetImplementation | undefined;

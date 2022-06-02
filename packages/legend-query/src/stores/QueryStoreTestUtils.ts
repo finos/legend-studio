@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { LegendQueryConfig } from '../application/LegendQueryConfig';
+import { LegendQueryConfig } from '../application/LegendQueryConfig.js';
 import { TEST_DATA__applicationVersion } from '@finos/legend-application';
 
 export const TEST_DATA__queryConfig = {

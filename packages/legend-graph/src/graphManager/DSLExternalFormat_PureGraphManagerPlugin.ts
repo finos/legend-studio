@@ -15,27 +15,27 @@
  */
 
 import packageJson from '../../package.json';
-import type { Connection } from '../DSLMapping_Exports';
-import { ExternalFormatConnection } from '../models/metamodels/pure/packageableElements/externalFormat/connection/DSLExternalFormat_ExternalFormatConnection';
-import { SchemaSet } from '../models/metamodels/pure/packageableElements/externalFormat/schemaSet/DSLExternalFormat_SchemaSet';
-import { Binding } from '../models/metamodels/pure/packageableElements/externalFormat/store/DSLExternalFormat_Binding';
-import type { PackageableElement } from '../models/metamodels/pure/packageableElements/PackageableElement';
-import type { ObserverContext } from './action/changeDetection/CoreObserverHelper';
+import type { Connection } from '../DSLMapping_Exports.js';
+import { ExternalFormatConnection } from '../models/metamodels/pure/packageableElements/externalFormat/connection/DSLExternalFormat_ExternalFormatConnection.js';
+import { SchemaSet } from '../models/metamodels/pure/packageableElements/externalFormat/schemaSet/DSLExternalFormat_SchemaSet.js';
+import { Binding } from '../models/metamodels/pure/packageableElements/externalFormat/store/DSLExternalFormat_Binding.js';
+import type { PackageableElement } from '../models/metamodels/pure/packageableElements/PackageableElement.js';
+import type { ObserverContext } from './action/changeDetection/CoreObserverHelper.js';
 import {
   observe_Binding,
   observe_ExternalFormatConnection,
   observe_SchemaSet,
-} from './action/changeDetection/DSLExternalFormat_ObserverHelper';
+} from './action/changeDetection/DSLExternalFormat_ObserverHelper.js';
 import type {
   ConnectionObserver,
   DSLMapping_PureGraphManagerPlugin_Extension,
   PureGrammarConnectionLabeler,
-} from './DSLMapping_PureGraphManagerPlugin_Extension';
+} from './DSLMapping_PureGraphManagerPlugin_Extension.js';
 import {
   type PureGrammarElementLabeler,
   type ElementObserver,
   PureGraphManagerPlugin,
-} from './PureGraphManagerPlugin';
+} from './PureGraphManagerPlugin.js';
 
 export const PURE_GRAMMAR_EXTERNAL_FORMAT_PARSER_NAME = 'ExternalFormat';
 export const PURE_GRAMMAR_BINDING_ELEMENT_TYPE_LABEL = 'Binding';

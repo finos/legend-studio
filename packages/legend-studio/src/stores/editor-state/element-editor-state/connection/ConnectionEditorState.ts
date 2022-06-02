@@ -15,15 +15,15 @@
  */
 
 import { computed, observable, action, makeObservable } from 'mobx';
-import type { EditorStore } from '../../../EditorStore';
+import type { EditorStore } from '../../../EditorStore.js';
 import {
   guaranteeType,
   uuid,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
-import { ElementEditorState } from './../ElementEditorState';
-import type { StoreRelational_LegendStudioPlugin_Extension } from '../../../StoreRelational_LegendStudioPlugin_Extension';
-import { DatabaseBuilderState } from './DatabaseBuilderState';
+import { ElementEditorState } from './../ElementEditorState.js';
+import type { StoreRelational_LegendStudioPlugin_Extension } from '../../../StoreRelational_LegendStudioPlugin_Extension.js';
+import { DatabaseBuilderState } from './DatabaseBuilderState.js';
 import {
   type PackageableElement,
   type Connection,
@@ -52,11 +52,11 @@ import {
   createValidationError,
   isStubbed_PackageableElement,
 } from '@finos/legend-graph';
-import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../DSLMapping_LegendStudioPlugin_Extension';
+import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../DSLMapping_LegendStudioPlugin_Extension.js';
 import {
   relationDbConnection_setNewAuthenticationStrategy,
   relationDbConnection_setDatasourceSpecification,
-} from '../../../graphModifier/StoreRelational_GraphModifierHelper';
+} from '../../../graphModifier/StoreRelational_GraphModifierHelper.js';
 
 export abstract class ConnectionValueState {
   editorStore: EditorStore;

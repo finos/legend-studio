@@ -22,19 +22,19 @@ import {
   makeObservable,
   flowResult,
 } from 'mobx';
-import type { EditorStore } from '../../../EditorStore';
+import type { EditorStore } from '../../../EditorStore.js';
 import {
   InstanceSetImplementationState,
   MappingElementState,
-} from './MappingElementState';
-import { PureInstanceSetImplementationState } from './PureInstanceSetImplementationState';
-import { ElementEditorState } from '../../../editor-state/element-editor-state/ElementEditorState';
+} from './MappingElementState.js';
+import { PureInstanceSetImplementationState } from './PureInstanceSetImplementationState.js';
+import { ElementEditorState } from '../../../editor-state/element-editor-state/ElementEditorState.js';
 import {
   MAPPING_TEST_EDITOR_TAB_TYPE,
   MappingTestState,
   TEST_RESULT,
-} from './MappingTestState';
-import { createMockDataForMappingElementSource } from '../../../shared/MockDataUtil';
+} from './MappingTestState.js';
+import { createMockDataForMappingElementSource } from '../../../shared/MockDataUtil.js';
 import {
   type GeneratorFn,
   assertErrorThrown,
@@ -51,17 +51,17 @@ import {
   addUniqueEntry,
   filterByType,
 } from '@finos/legend-shared';
-import { MappingExecutionState } from './MappingExecutionState';
+import { MappingExecutionState } from './MappingExecutionState.js';
 import {
   FlatDataInstanceSetImplementationState,
   RootFlatDataInstanceSetImplementationState,
-} from './FlatDataInstanceSetImplementationState';
+} from './FlatDataInstanceSetImplementationState.js';
 import type { TreeNodeData, TreeData } from '@finos/legend-art';
-import { UnsupportedInstanceSetImplementationState } from './UnsupportedInstanceSetImplementationState';
+import { UnsupportedInstanceSetImplementationState } from './UnsupportedInstanceSetImplementationState.js';
 import {
   RelationalInstanceSetImplementationState,
   RootRelationalInstanceSetImplementationState,
-} from './relational/RelationalInstanceSetImplementationState';
+} from './relational/RelationalInstanceSetImplementationState.js';
 import {
   type CompilationError,
   type PackageableElement,
@@ -110,9 +110,9 @@ import { LambdaEditorState } from '@finos/legend-application';
 import type {
   DSLMapping_LegendStudioPlugin_Extension,
   MappingElementLabel,
-} from '../../../DSLMapping_LegendStudioPlugin_Extension';
-import type { LegendStudioPlugin } from '../../../LegendStudioPlugin';
-import { flatData_setSourceRootRecordType } from '../../../graphModifier/StoreFlatData_GraphModifierHelper';
+} from '../../../DSLMapping_LegendStudioPlugin_Extension.js';
+import type { LegendStudioPlugin } from '../../../LegendStudioPlugin.js';
+import { flatData_setSourceRootRecordType } from '../../../graphModifier/StoreFlatData_GraphModifierHelper.js';
 import {
   pureInstanceSetImpl_setSrcClass,
   mapping_addClassMapping,
@@ -124,8 +124,8 @@ import {
   mapping_deleteTest,
   setImpl_updateRootOnCreate,
   setImpl_updateRootOnDelete,
-} from '../../../graphModifier/DSLMapping_GraphModifierHelper';
-import { BASIC_SET_IMPLEMENTATION_TYPE } from '../../../shared/ModelUtil';
+} from '../../../graphModifier/DSLMapping_GraphModifierHelper.js';
+import { BASIC_SET_IMPLEMENTATION_TYPE } from '../../../shared/ModelUtil.js';
 
 export interface MappingExplorerTreeNodeData extends TreeNodeData {
   mappingElement: MappingElement;

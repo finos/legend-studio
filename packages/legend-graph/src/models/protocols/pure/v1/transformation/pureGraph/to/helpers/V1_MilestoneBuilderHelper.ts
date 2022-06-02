@@ -15,8 +15,8 @@
  */
 
 import type { PlainObject } from '@finos/legend-shared';
-import type { PureModel } from '../../../../../../../../graph/PureModel';
-import { getMilestoneTemporalStereotype } from '../../../../../../../../helpers/DomainHelper';
+import type { PureModel } from '../../../../../../../../graph/PureModel.js';
+import { getMilestoneTemporalStereotype } from '../../../../../../../../helpers/DomainHelper.js';
 import {
   DEFAULT_PROCESSING_DATE_MILESTONING_PARAMETER_NAME,
   MILESTONING_END_DATE_PARAMETER_NAME,
@@ -25,18 +25,18 @@ import {
   PRIMITIVE_TYPE,
   MILESTONING_START_DATE_PARAMETER_NAME,
   DEFAULT_BUSINESS_DATE_MILESTONING_PARAMETER_NAME,
-} from '../../../../../../../../MetaModelConst';
-import type { PropertyOwner } from '../../../../../../../metamodels/pure/packageableElements/domain/AbstractProperty';
-import { Class } from '../../../../../../../metamodels/pure/packageableElements/domain/Class';
-import { DerivedProperty } from '../../../../../../../metamodels/pure/packageableElements/domain/DerivedProperty';
-import { GenericType } from '../../../../../../../metamodels/pure/packageableElements/domain/GenericType';
-import { GenericTypeExplicitReference } from '../../../../../../../metamodels/pure/packageableElements/domain/GenericTypeReference';
-import { Multiplicity } from '../../../../../../../metamodels/pure/packageableElements/domain/Multiplicity';
-import { Property } from '../../../../../../../metamodels/pure/packageableElements/domain/Property';
-import { V1_Multiplicity } from '../../../../model/packageableElements/domain/V1_Multiplicity';
-import type { V1_ValueSpecification } from '../../../../model/valueSpecification/V1_ValueSpecification';
-import { V1_Variable } from '../../../../model/valueSpecification/V1_Variable';
-import { V1_serializeValueSpecification } from '../../../pureProtocol/serializationHelpers/V1_ValueSpecificationSerializer';
+} from '../../../../../../../../MetaModelConst.js';
+import type { PropertyOwner } from '../../../../../../../metamodels/pure/packageableElements/domain/AbstractProperty.js';
+import { Class } from '../../../../../../../metamodels/pure/packageableElements/domain/Class.js';
+import { DerivedProperty } from '../../../../../../../metamodels/pure/packageableElements/domain/DerivedProperty.js';
+import { GenericType } from '../../../../../../../metamodels/pure/packageableElements/domain/GenericType.js';
+import { GenericTypeExplicitReference } from '../../../../../../../metamodels/pure/packageableElements/domain/GenericTypeReference.js';
+import { Multiplicity } from '../../../../../../../metamodels/pure/packageableElements/domain/Multiplicity.js';
+import { Property } from '../../../../../../../metamodels/pure/packageableElements/domain/Property.js';
+import { V1_Multiplicity } from '../../../../model/packageableElements/domain/V1_Multiplicity.js';
+import type { V1_ValueSpecification } from '../../../../model/valueSpecification/V1_ValueSpecification.js';
+import { V1_Variable } from '../../../../model/valueSpecification/V1_Variable.js';
+import { V1_serializeValueSpecification } from '../../../pureProtocol/serializationHelpers/V1_ValueSpecificationSerializer.js';
 
 const buildMilestoningParameter = (
   parameterName: string,

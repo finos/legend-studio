@@ -20,12 +20,12 @@ import {
   ContentType,
   createUrlStringFromData,
 } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
-import type { ConnectionVisitor } from '../../../connection/Connection';
-import type { Class } from '../../../domain/Class';
-import type { ModelStore } from '../model/ModelStore';
-import { PureModelConnection } from './PureModelConnection';
-import type { PackageableElementReference } from '../../../PackageableElementReference';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst.js';
+import type { ConnectionVisitor } from '../../../connection/Connection.js';
+import type { Class } from '../../../domain/Class.js';
+import type { ModelStore } from '../model/ModelStore.js';
+import { PureModelConnection } from './PureModelConnection.js';
+import type { PackageableElementReference } from '../../../PackageableElementReference.js';
 
 export class JsonModelConnection
   extends PureModelConnection

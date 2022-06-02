@@ -16,9 +16,9 @@
 
 // eslint-disable-next-line no-restricted-imports
 /// <reference path="../../support/index.d.ts" />
-import { TEST_ID } from '../../../src/const';
-import { ElementEditorTester } from '../../utils/ElementEditorTester';
-import { ServiceHelperExtension } from '../../utils/ElementHelperExtension';
+import { TEST_ID } from '../../../src/const.js';
+import { ElementEditorTester } from '../../utils/ElementEditorTester.js';
+import { ServiceHelperExtension } from '../../utils/ElementHelperExtension.js';
 
 Cypress.config('defaultCommandTimeout', 30000);
 Cypress.config('pageLoadTimeout', 60000);

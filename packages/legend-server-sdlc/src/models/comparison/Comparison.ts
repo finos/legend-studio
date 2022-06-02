@@ -16,8 +16,8 @@
 
 import { observable, makeObservable } from 'mobx';
 import { isNonNullable } from '@finos/legend-shared';
-import { EntityDiff } from '../comparison/EntityDiff';
-import { EntityChangeType } from '../entity/EntityChange';
+import { EntityDiff } from '../comparison/EntityDiff.js';
+import { EntityChangeType } from '../entity/EntityChange.js';
 
 export class Comparison {
   toRevisionId: string;

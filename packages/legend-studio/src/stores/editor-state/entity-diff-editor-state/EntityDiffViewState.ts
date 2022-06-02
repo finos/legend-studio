@@ -23,16 +23,16 @@ import {
   guaranteeNonNullable,
   hashObject,
 } from '@finos/legend-shared';
-import type { EditorStore } from '../../EditorStore';
+import type { EditorStore } from '../../EditorStore.js';
 import {
   type SPECIAL_REVISION_ALIAS,
   EntityDiffEditorState,
-} from './EntityDiffEditorState';
+} from './EntityDiffEditorState.js';
 import {
   type Entity,
   extractEntityNameFromPath,
 } from '@finos/legend-model-storage';
-import { LEGEND_STUDIO_APP_EVENT } from '../../LegendStudioAppEvent';
+import { LEGEND_STUDIO_APP_EVENT } from '../../LegendStudioAppEvent.js';
 import type { PackageableElement } from '@finos/legend-graph';
 
 /**

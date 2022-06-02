@@ -21,13 +21,13 @@ import {
   CORE_DND_TYPE,
   type ElementDragSource,
   type UMLEditorElementDropTarget,
-} from '../../../../stores/shared/DnDUtil';
+} from '../../../../stores/shared/DnDUtil.js';
 import { clsx, LockIcon, PlusIcon, TimesIcon } from '@finos/legend-art';
-import { StereotypeSelector } from './StereotypeSelector';
-import { TaggedValueEditor } from './TaggedValueEditor';
-import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID';
+import { StereotypeSelector } from './StereotypeSelector.js';
+import { TaggedValueEditor } from './TaggedValueEditor.js';
+import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID.js';
 import { prettyCONSTName } from '@finos/legend-shared';
-import { UML_EDITOR_TAB } from '../../../../stores/editor-state/element-editor-state/UMLEditorState';
+import { UML_EDITOR_TAB } from '../../../../stores/editor-state/element-editor-state/UMLEditorState.js';
 import {
   type AbstractProperty,
   type StereotypeReference,
@@ -44,7 +44,7 @@ import {
   annotatedElement_addTaggedValue,
   annotatedElement_addStereotype,
   annotatedElement_deleteStereotype,
-} from '../../../../stores/graphModifier/DomainGraphModifierHelper';
+} from '../../../../stores/graphModifier/DomainGraphModifierHelper.js';
 
 export const PropertyEditor = observer(
   (props: {

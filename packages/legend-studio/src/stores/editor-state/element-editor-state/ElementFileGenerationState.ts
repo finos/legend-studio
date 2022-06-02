@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import type { EditorStore } from '../../EditorStore';
-import { FileGenerationState } from '../../editor-state/FileGenerationState';
+import type { EditorStore } from '../../EditorStore.js';
+import { FileGenerationState } from '../../editor-state/FileGenerationState.js';
 import { action, flow, flowResult, makeAutoObservable } from 'mobx';
-import { ElementEditorState } from './ElementEditorState';
+import { ElementEditorState } from './ElementEditorState.js';
 import { type GeneratorFn, AssertionError, uuid } from '@finos/legend-shared';
 import {
   FileGenerationSpecification,
@@ -26,7 +26,7 @@ import {
 import {
   createObservableFileGeneration,
   fileGeneration_setType,
-} from '../../graphModifier/DSLGeneration_GraphModifierHelper';
+} from '../../graphModifier/DSLGeneration_GraphModifierHelper.js';
 
 export class ElementFileGenerationState {
   readonly uuid = uuid();

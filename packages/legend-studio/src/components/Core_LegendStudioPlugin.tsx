@@ -24,8 +24,8 @@ import packageJson from '../../package.json';
 import {
   CORE_CONTEXTUAL_DOCUMENTATION_ENTRIES,
   CORE_DOCUMENTATION_ENTRIES,
-} from '../stores/LegendStudioDocumentation';
-import { LegendStudioPlugin } from '../stores/LegendStudioPlugin';
+} from '../stores/LegendStudioDocumentation.js';
+import { LegendStudioPlugin } from '../stores/LegendStudioPlugin.js';
 
 export class Core_LegendStudioPlugin extends LegendStudioPlugin {
   static NAME = packageJson.extensions.core_studioPlugin;

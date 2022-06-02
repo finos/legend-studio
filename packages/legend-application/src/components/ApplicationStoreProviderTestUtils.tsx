@@ -16,11 +16,11 @@
 
 import { jest } from '@jest/globals';
 import { createMemoryHistory } from 'history';
-import { ApplicationStore } from '../stores/ApplicationStore';
-import { WebApplicationNavigator } from '../stores/WebApplicationNavigator';
-import type { LegendApplicationConfig } from '../stores/LegendApplicationConfig';
-import { ApplicationStoreProvider } from './ApplicationStoreProvider';
-import type { LegendApplicationPluginManager } from '../application/LegendApplicationPluginManager';
+import { ApplicationStore } from '../stores/ApplicationStore.js';
+import { WebApplicationNavigator } from '../stores/WebApplicationNavigator.js';
+import type { LegendApplicationConfig } from '../stores/LegendApplicationConfig.js';
+import { ApplicationStoreProvider } from './ApplicationStoreProvider.js';
+import type { LegendApplicationPluginManager } from '../application/LegendApplicationPluginManager.js';
 
 export const TEST__ApplicationStoreProvider: React.FC<{
   children: React.ReactNode;
@@ -50,7 +50,7 @@ export const TEST__provideMockedApplicationStore = <
         new WebApplicationNavigator(createMemoryHistory()),
       pluginManager,
     );
-  const MockedApplicationStoreProvider = require('./ApplicationStoreProvider'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+  const MockedApplicationStoreProvider = require('./ApplicationStoreProvider.js'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
   MockedApplicationStoreProvider.useApplicationStore = jest.fn();
   MockedApplicationStoreProvider.useApplicationStore.mockReturnValue(value);
   return value;

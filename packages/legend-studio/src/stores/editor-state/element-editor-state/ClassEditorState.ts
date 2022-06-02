@@ -15,7 +15,7 @@
  */
 
 import { computed, observable, makeObservable, override, action } from 'mobx';
-import { UMLEditorState, UML_EDITOR_TAB } from './UMLEditorState';
+import { UMLEditorState, UML_EDITOR_TAB } from './UMLEditorState.js';
 import {
   LogEvent,
   guaranteeType,
@@ -25,8 +25,8 @@ import {
   ClassState,
   CONSTRAINT_SOURCE_ID_LABEL,
   DERIVED_PROPERTY_SOURCE_ID_LABEL,
-} from './ClassState';
-import type { EditorStore } from '../../EditorStore';
+} from './ClassState.js';
+import type { EditorStore } from '../../EditorStore.js';
 import {
   type CompilationError,
   type PackageableElement,

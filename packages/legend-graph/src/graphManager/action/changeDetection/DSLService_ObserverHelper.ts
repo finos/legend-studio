@@ -15,44 +15,44 @@
  */
 
 import { computed, makeObservable, observable, override } from 'mobx';
-import type { Service } from '../../../models/metamodels/pure/packageableElements/service/Service';
+import type { Service } from '../../../models/metamodels/pure/packageableElements/service/Service.js';
 import {
   type KeyedExecutionParameter,
   type PureExecution,
   type ServiceExecution,
   PureMultiExecution,
   PureSingleExecution,
-} from '../../../models/metamodels/pure/packageableElements/service/ServiceExecution';
-import type { ServiceTest } from '../../../models/metamodels/pure/packageableElements/service/ServiceTest';
+} from '../../../models/metamodels/pure/packageableElements/service/ServiceExecution.js';
+import type { ServiceTest } from '../../../models/metamodels/pure/packageableElements/service/ServiceTest.js';
 import {
   observe_Abstract_PackageableElement,
   observe_PackageableElementReference,
   skipObserved,
   skipObservedWithContext,
   type ObserverContext,
-} from './CoreObserverHelper';
+} from './CoreObserverHelper.js';
 import {
   observe_StereotypeReference,
   observe_TaggedValue,
-} from './DomainObserverHelper';
-import { observe_RawLambda } from './RawValueSpecificationObserver';
-import { observe_Runtime } from './DSLMapping_ObserverHelper';
-import type { ConnectionTestData } from '../../../models/metamodels/pure/packageableElements/service/ConnectionTestData';
-import { observe_EmbeddedData } from './DSLData_ObserverHelper';
-import type { ParameterValue } from '../../../models/metamodels/pure/packageableElements/service/ParameterValue';
+} from './DomainObserverHelper.js';
+import { observe_RawLambda } from './RawValueSpecificationObserver.js';
+import { observe_Runtime } from './DSLMapping_ObserverHelper.js';
+import type { ConnectionTestData } from '../../../models/metamodels/pure/packageableElements/service/ConnectionTestData.js';
+import { observe_EmbeddedData } from './DSLData_ObserverHelper.js';
+import type { ParameterValue } from '../../../models/metamodels/pure/packageableElements/service/ParameterValue.js';
 import {
   type DEPRECATED__ServiceTest,
   type DEPRECATED__KeyedSingleExecutionTest,
   type DEPRECATED__TestContainer,
   DEPRECATED__MultiExecutionTest,
   DEPRECATED__SingleExecutionTest,
-} from '../../../models/metamodels/pure/packageableElements/service/DEPRECATED__ServiceTest';
-import type { ServiceTestSuite } from '../../../models/metamodels/pure/packageableElements/service/ServiceTestSuite';
-import type { TestData } from '../../../models/metamodels/pure/packageableElements/service/ServiceTestData';
+} from '../../../models/metamodels/pure/packageableElements/service/DEPRECATED__ServiceTest.js';
+import type { ServiceTestSuite } from '../../../models/metamodels/pure/packageableElements/service/ServiceTestSuite.js';
+import type { TestData } from '../../../models/metamodels/pure/packageableElements/service/ServiceTestData.js';
 import {
   observe_AtomicTest,
   observe_TestAssertion,
-} from './Testable_ObserverHelper';
+} from './Testable_ObserverHelper.js';
 
 export const observe_ConnectionTestData = skipObservedWithContext(
   (

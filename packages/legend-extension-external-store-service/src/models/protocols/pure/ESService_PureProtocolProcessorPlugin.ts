@@ -15,7 +15,7 @@
  */
 
 import packageJson from '../../../../package.json';
-import { V1_ServiceStore } from './v1/model/packageableElements/store/serviceStore/model/V1_ESService_ServiceStore';
+import { V1_ServiceStore } from './v1/model/packageableElements/store/serviceStore/model/V1_ESService_ServiceStore.js';
 import {
   type PlainObject,
   assertNonEmptyString,
@@ -33,9 +33,9 @@ import {
   V1_SERVICE_STORE_CONNECTION_PROTOCOL_TYPE,
   V1_serviceStoreEmbeddedDataModelSchema,
   V1_SERVICE_STORE_EMBEDDED_DATA_PROTOCOL_TYPE,
-} from './v1/transformation/pureProtocol/V1_ESService_ProtocolHelper';
-import { getOwnServiceStore } from '../../../graphManager/ESService_GraphManagerHelper';
-import { ServiceStore } from '../../metamodels/pure/model/packageableElements/store/serviceStore/model/ESService_ServiceStore';
+} from './v1/transformation/pureProtocol/V1_ESService_ProtocolHelper.js';
+import { getOwnServiceStore } from '../../../graphManager/ESService_GraphManagerHelper.js';
+import { ServiceStore } from '../../metamodels/pure/model/packageableElements/store/serviceStore/model/ESService_ServiceStore.js';
 import {
   type PackageableElement,
   type V1_ElementProtocolClassifierPathGetter,
@@ -78,28 +78,28 @@ import {
   V1_transformElementReference,
   V1_buildFullPath,
 } from '@finos/legend-graph';
-import { V1_RootServiceStoreClassMapping } from './v1/model/packageableElements/store/serviceStore/mapping/V1_ESService_RootServiceStoreClassMapping';
-import { RootServiceInstanceSetImplementation } from '../../metamodels/pure/model/packageableElements/store/serviceStore/mapping/ESService_RootServiceInstanceSetImplementation';
-import { LocalMappingProperty } from '../../metamodels/pure/model/packageableElements/store/serviceStore/mapping/ESService_LocalMappingProperty';
-import { ServiceMapping } from '../../metamodels/pure/model/packageableElements/store/serviceStore/mapping/ESService_ServiceMapping';
-import { V1_ServiceStoreConnection } from './v1/model/packageableElements/store/serviceStore/connection/V1_ESService_ServicestoreConnection';
+import { V1_RootServiceStoreClassMapping } from './v1/model/packageableElements/store/serviceStore/mapping/V1_ESService_RootServiceStoreClassMapping.js';
+import { RootServiceInstanceSetImplementation } from '../../metamodels/pure/model/packageableElements/store/serviceStore/mapping/ESService_RootServiceInstanceSetImplementation.js';
+import { LocalMappingProperty } from '../../metamodels/pure/model/packageableElements/store/serviceStore/mapping/ESService_LocalMappingProperty.js';
+import { ServiceMapping } from '../../metamodels/pure/model/packageableElements/store/serviceStore/mapping/ESService_ServiceMapping.js';
+import { V1_ServiceStoreConnection } from './v1/model/packageableElements/store/serviceStore/connection/V1_ESService_ServicestoreConnection.js';
 import {
   V1_buildServiceRequestBuildInfo,
   V1_buildServiceStoreElement,
   V1_buildServiceStoreEmbeddedData,
   V1_resolveService,
   V1_resolveServiceStore,
-} from './v1/transformation/pureGraph/V1_ESService_GraphBuilderHelper';
-import { ServiceStoreConnection } from '../../metamodels/pure/model/packageableElements/store/serviceStore/connection/ESService_ServiceStoreConnection';
-import { V1_ServiceMapping } from './v1/model/packageableElements/store/serviceStore/mapping/V1_ESService_ServiceMapping';
+} from './v1/transformation/pureGraph/V1_ESService_GraphBuilderHelper.js';
+import { ServiceStoreConnection } from '../../metamodels/pure/model/packageableElements/store/serviceStore/connection/ESService_ServiceStoreConnection.js';
+import { V1_ServiceMapping } from './v1/model/packageableElements/store/serviceStore/mapping/V1_ESService_ServiceMapping.js';
 import {
   V1_transformServiceRequestBuildInfo,
   V1_transformServiceStoreElement,
   V1_transformServiceStoreEmbeddedData,
   V1_transformServiceToServicePtr,
-} from './v1/transformation/pureGraph/V1_ESService_TransformerHelper';
-import { ServiceStoreEmbeddedData } from '../../metamodels/pure/model/data/ESService_ServiceStoreEmbeddedData';
-import { V1_ServiceStoreEmbeddedData } from './v1/model/data/V1_ESService_ServiceStoreEmbeddedData';
+} from './v1/transformation/pureGraph/V1_ESService_TransformerHelper.js';
+import { ServiceStoreEmbeddedData } from '../../metamodels/pure/model/data/ESService_ServiceStoreEmbeddedData.js';
+import { V1_ServiceStoreEmbeddedData } from './v1/model/data/V1_ESService_ServiceStoreEmbeddedData.js';
 
 const SERVICE_STORE_ELEMENT_CLASSIFIER_PATH =
   'meta::external::store::service::metamodel::ServiceStore';

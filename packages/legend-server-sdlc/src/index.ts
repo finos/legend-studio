@@ -14,41 +14,41 @@
  * limitations under the License.
  */
 
-export * from './models/server/SDLCServerFeaturesConfiguration';
+export * from './models/server/SDLCServerFeaturesConfiguration.js';
 
-export * from './models/entity/EntityChange';
-export * from './models/entity/EntityChangeConflict';
-export * from './models/entity/EntityChangeUtils';
+export * from './models/entity/EntityChange.js';
+export * from './models/entity/EntityChangeConflict.js';
+export * from './models/entity/EntityChangeUtils.js';
 
-export * from './models/comparison/EntityDiff';
+export * from './models/comparison/EntityDiff.js';
 
-export * from './models/review/Review';
-export * from './models/review/ReviewCommands';
+export * from './models/review/Review.js';
+export * from './models/review/ReviewCommands.js';
 
-export * from './models/workflow/Workflow';
-export * from './models/workflow/WorkflowJob';
+export * from './models/workflow/Workflow.js';
+export * from './models/workflow/WorkflowJob.js';
 
-export * from './models/project/Project';
-export * from './models/project/ImportReport';
-export * from './models/project/ProjectCommands';
+export * from './models/project/Project.js';
+export * from './models/project/ImportReport.js';
+export * from './models/project/ProjectCommands.js';
 
-export * from './models/workspace/Workspace';
-export * from './models/workspace/WorkspaceUtils';
-export * from './models/workspace/WorkspaceUpdateReport';
+export * from './models/workspace/Workspace.js';
+export * from './models/workspace/WorkspaceUtils.js';
+export * from './models/workspace/WorkspaceUpdateReport.js';
 
-export * from './models/revision/Revision';
+export * from './models/revision/Revision.js';
 
-export * from './models/version/Version';
-export * from './models/version/VersionCommands';
+export * from './models/version/Version.js';
+export * from './models/version/VersionCommands.js';
 
-export * from './models/configuration/ProjectDependency';
-export * from './models/configuration/ProjectConfiguration';
-export * from './models/configuration/ProjectStructureVersion';
-export * from './models/configuration/ProjectConfigurationCommands';
+export * from './models/configuration/ProjectDependency.js';
+export * from './models/configuration/ProjectConfiguration.js';
+export * from './models/configuration/ProjectStructureVersion.js';
+export * from './models/configuration/ProjectConfigurationCommands.js';
 
-export * from './models/User';
+export * from './models/User.js';
 
-export { SDLCServerClient } from './SDLCServerClient';
-export * from './SDLCServerClientProvider';
+export { SDLCServerClient } from './SDLCServerClient.js';
+export * from './SDLCServerClientProvider.js';
 
-export * from './SDLCServerClientTestUtils';
+export * from './SDLCServerClientTestUtils.js';

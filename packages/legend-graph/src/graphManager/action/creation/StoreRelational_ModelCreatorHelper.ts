@@ -15,8 +15,8 @@
  */
 
 import { isEmpty } from '@finos/legend-shared';
-import type { RawRelationalOperationElement } from '../../../models/metamodels/pure/packageableElements/store/relational/model/RawRelationalOperationElement';
-import { Database } from '../../../StoreRelational_Exports';
+import type { RawRelationalOperationElement } from '../../../models/metamodels/pure/packageableElements/store/relational/model/RawRelationalOperationElement.js';
+import { Database } from '../../../StoreRelational_Exports.js';
 
 export const stub_RawRelationalOperationElement =
   (): RawRelationalOperationElement => ({});

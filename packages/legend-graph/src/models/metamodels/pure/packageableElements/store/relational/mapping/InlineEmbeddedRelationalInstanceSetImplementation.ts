@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-import { EmbeddedRelationalInstanceSetImplementation } from './EmbeddedRelationalInstanceSetImplementation';
-import type { InlineEmbeddedSetImplementation } from '../../../mapping/EmbeddedSetImplementation';
+import { EmbeddedRelationalInstanceSetImplementation } from './EmbeddedRelationalInstanceSetImplementation.js';
+import type { InlineEmbeddedSetImplementation } from '../../../mapping/EmbeddedSetImplementation.js';
 import type {
   SetImplementation,
   SetImplementationVisitor,
-} from '../../../mapping/SetImplementation';
-import type { PropertyMappingVisitor } from '../../../mapping/PropertyMapping';
+} from '../../../mapping/SetImplementation.js';
+import type { PropertyMappingVisitor } from '../../../mapping/PropertyMapping.js';
 import { hashArray, UnsupportedOperationError } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst.js';
 
 export class InlineEmbeddedRelationalInstanceSetImplementation
   extends EmbeddedRelationalInstanceSetImplementation

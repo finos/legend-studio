@@ -17,54 +17,54 @@
 import type {
   ExecutionResult,
   EXECUTION_SERIALIZATION_FORMAT,
-} from './action/execution/ExecutionResult';
-import type { ServiceRegistrationResult } from './action/service/ServiceRegistrationResult';
-import type { Service } from '../models/metamodels/pure/packageableElements/service/Service';
+} from './action/execution/ExecutionResult.js';
+import type { ServiceRegistrationResult } from './action/service/ServiceRegistrationResult.js';
+import type { Service } from '../models/metamodels/pure/packageableElements/service/Service.js';
 import type {
   ImportConfigurationDescription,
   ImportMode,
-} from './action/generation/ImportConfigurationDescription';
-import type { FileGenerationSpecification } from '../models/metamodels/pure/packageableElements/fileGeneration/FileGenerationSpecification';
-import type { GenerationOutput } from './action/generation/GenerationOutput';
-import type { PackageableElement } from '../models/metamodels/pure/packageableElements/PackageableElement';
-import type { PureModel, CoreModel, SystemModel } from '../graph/PureModel';
-import type { Mapping } from '../models/metamodels/pure/packageableElements/mapping/Mapping';
-import type { Runtime } from '../models/metamodels/pure/packageableElements/runtime/Runtime';
-import type { DependencyManager } from '../graph/DependencyManager';
-import type { Class } from '../models/metamodels/pure/packageableElements/domain/Class';
-import type { RawLambda } from '../models/metamodels/pure/rawValueSpecification/RawLambda';
+} from './action/generation/ImportConfigurationDescription.js';
+import type { FileGenerationSpecification } from '../models/metamodels/pure/packageableElements/fileGeneration/FileGenerationSpecification.js';
+import type { GenerationOutput } from './action/generation/GenerationOutput.js';
+import type { PackageableElement } from '../models/metamodels/pure/packageableElements/PackageableElement.js';
+import type { PureModel, CoreModel, SystemModel } from '../graph/PureModel.js';
+import type { Mapping } from '../models/metamodels/pure/packageableElements/mapping/Mapping.js';
+import type { Runtime } from '../models/metamodels/pure/packageableElements/runtime/Runtime.js';
+import type { DependencyManager } from '../graph/DependencyManager.js';
+import type { Class } from '../models/metamodels/pure/packageableElements/domain/Class.js';
+import type { RawLambda } from '../models/metamodels/pure/rawValueSpecification/RawLambda.js';
 import type {
   GenerationConfigurationDescription,
   GenerationMode,
-} from './action/generation/GenerationConfigurationDescription';
-import type { ValueSpecification } from '../models/metamodels/pure/valueSpecification/ValueSpecification';
-import type { RawValueSpecification } from '../models/metamodels/pure/rawValueSpecification/RawValueSpecification';
-import type { ServiceExecutionMode } from './action/service/ServiceExecutionMode';
-import type { TEMPORARY__AbstractEngineConfig } from './action/TEMPORARY__AbstractEngineConfig';
-import type { DatabaseBuilderInput } from './action/generation/DatabaseBuilderInput';
-import type { RawRelationalOperationElement } from '../models/metamodels/pure/packageableElements/store/relational/model/RawRelationalOperationElement';
+} from './action/generation/GenerationConfigurationDescription.js';
+import type { ValueSpecification } from '../models/metamodels/pure/valueSpecification/ValueSpecification.js';
+import type { RawValueSpecification } from '../models/metamodels/pure/rawValueSpecification/RawValueSpecification.js';
+import type { ServiceExecutionMode } from './action/service/ServiceExecutionMode.js';
+import type { TEMPORARY__AbstractEngineConfig } from './action/TEMPORARY__AbstractEngineConfig.js';
+import type { DatabaseBuilderInput } from './action/generation/DatabaseBuilderInput.js';
+import type { RawRelationalOperationElement } from '../models/metamodels/pure/packageableElements/store/relational/model/RawRelationalOperationElement.js';
 import type {
   ExecutionPlan,
   RawExecutionPlan,
-} from '../models/metamodels/pure/executionPlan/ExecutionPlan';
-import type { ExecutionNode } from '../models/metamodels/pure/executionPlan/nodes/ExecutionNode';
+} from '../models/metamodels/pure/executionPlan/ExecutionPlan.js';
+import type { ExecutionNode } from '../models/metamodels/pure/executionPlan/nodes/ExecutionNode.js';
 import type {
   ActionState,
   Log,
   ServerClientConfig,
   TracerService,
 } from '@finos/legend-shared';
-import type { LightQuery, Query } from './action/query/Query';
+import type { LightQuery, Query } from './action/query/Query.js';
 import type { Entity } from '@finos/legend-model-storage';
-import type { GraphPluginManager } from '../GraphPluginManager';
-import type { QuerySearchSpecification } from './action/query/QuerySearchSpecification';
-import type { ExternalFormatDescription } from './action/externalFormat/ExternalFormatDescription';
-import type { ConfigurationProperty } from '../models/metamodels/pure/packageableElements/fileGeneration/ConfigurationProperty';
-import type { GraphBuilderReport } from './GraphBuilderReport';
-import type { ModelGenerationConfiguration } from '../models/ModelGenerationConfiguration';
-import type { DEPRECATED__ServiceTestResult } from './action/service/DEPRECATED__ServiceTestResult';
-import type { RunTestsTestableInput } from '../models/metamodels/pure/test/result/RunTestsTestableInput';
-import type { TestResult } from '../models/metamodels/pure/test/result/TestResult';
+import type { GraphPluginManager } from '../GraphPluginManager.js';
+import type { QuerySearchSpecification } from './action/query/QuerySearchSpecification.js';
+import type { ExternalFormatDescription } from './action/externalFormat/ExternalFormatDescription.js';
+import type { ConfigurationProperty } from '../models/metamodels/pure/packageableElements/fileGeneration/ConfigurationProperty.js';
+import type { GraphBuilderReport } from './GraphBuilderReport.js';
+import type { ModelGenerationConfiguration } from '../models/ModelGenerationConfiguration.js';
+import type { DEPRECATED__ServiceTestResult } from './action/service/DEPRECATED__ServiceTestResult.js';
+import type { RunTestsTestableInput } from '../models/metamodels/pure/test/result/RunTestsTestableInput.js';
+import type { TestResult } from '../models/metamodels/pure/test/result/TestResult.js';
 
 export interface TEMPORARY__EngineSetupConfig {
   env: string;

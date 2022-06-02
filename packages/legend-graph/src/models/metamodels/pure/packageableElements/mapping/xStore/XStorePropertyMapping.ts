@@ -15,12 +15,12 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../MetaModelConst';
-import type { RawLambda } from '../../../rawValueSpecification/RawLambda';
+import { CORE_HASH_STRUCTURE } from '../../../../../../MetaModelConst.js';
+import type { RawLambda } from '../../../rawValueSpecification/RawLambda.js';
 import {
   type PropertyMappingVisitor,
   PropertyMapping,
-} from '../PropertyMapping';
+} from '../PropertyMapping.js';
 
 export class XStorePropertyMapping extends PropertyMapping implements Hashable {
   /**

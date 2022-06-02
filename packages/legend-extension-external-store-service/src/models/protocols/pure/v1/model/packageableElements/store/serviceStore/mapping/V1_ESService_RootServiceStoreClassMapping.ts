@@ -19,9 +19,9 @@ import {
   V1_ClassMapping,
   type V1_ClassMappingVisitor,
 } from '@finos/legend-graph';
-import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../../ESService_ModelUtils';
-import type { V1_LocalMappingProperty } from './V1_ESService_LocalMappingProperty';
-import type { V1_ServiceMapping } from './V1_ESService_ServiceMapping';
+import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../../ESService_ModelUtils.js';
+import type { V1_LocalMappingProperty } from './V1_ESService_LocalMappingProperty.js';
+import type { V1_ServiceMapping } from './V1_ESService_ServiceMapping.js';
 
 export class V1_RootServiceStoreClassMapping
   extends V1_ClassMapping

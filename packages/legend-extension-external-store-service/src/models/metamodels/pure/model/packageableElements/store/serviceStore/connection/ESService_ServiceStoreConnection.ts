@@ -20,8 +20,8 @@ import {
   type PackageableElementReference,
   type ConnectionVisitor,
 } from '@finos/legend-graph';
-import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../ESService_ModelUtils';
-import type { ServiceStore } from '../model/ESService_ServiceStore';
+import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../ESService_ModelUtils.js';
+import type { ServiceStore } from '../model/ESService_ServiceStore.js';
 
 export class ServiceStoreConnection extends Connection implements Hashable {
   declare store: PackageableElementReference<ServiceStore>;

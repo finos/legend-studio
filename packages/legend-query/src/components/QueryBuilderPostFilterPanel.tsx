@@ -72,10 +72,10 @@ import {
   useDrag,
 } from 'react-dnd';
 import { getEmptyImage } from 'react-dnd-html5-backend';
-import { getColumnMultiplicity } from '../stores/postFilterOperators/QueryBuilderPostFilterOperatorHelper';
-import { QueryBuilderAggregateColumnState } from '../stores/QueryBuilderAggregationState';
-import { QUERY_BUILDER_GROUP_OPERATION } from '../stores/QueryBuilderOperatorsHelper';
-import type { QueryBuilderPostFilterOperator } from '../stores/QueryBuilderPostFilterOperator';
+import { getColumnMultiplicity } from '../stores/postFilterOperators/QueryBuilderPostFilterOperatorHelper.js';
+import { QueryBuilderAggregateColumnState } from '../stores/QueryBuilderAggregationState.js';
+import { QUERY_BUILDER_GROUP_OPERATION } from '../stores/QueryBuilderOperatorsHelper.js';
+import type { QueryBuilderPostFilterOperator } from '../stores/QueryBuilderPostFilterOperator.js';
 import {
   type QueryBuilderPostFilterTreeNodeData,
   type QueryBuilderPostFilterDropTarget,
@@ -85,19 +85,19 @@ import {
   QueryBuilderPostFilterTreeGroupNodeData,
   QUERY_BUILDER_POST_FILTER_DND_TYPE,
   QueryBuilderPostFilterTreeBlankConditionNodeData,
-} from '../stores/QueryBuilderPostFilterState';
+} from '../stores/QueryBuilderPostFilterState.js';
 import {
   type QueryBuilderProjectionColumnState,
   type QueryBuilderProjectionColumnDragSource,
   QUERY_BUILDER_PROJECTION_DND_TYPE,
   QueryBuilderDerivationProjectionColumnState,
-} from '../stores/QueryBuilderProjectionState';
-import type { QueryBuilderState } from '../stores/QueryBuilderState';
+} from '../stores/QueryBuilderProjectionState.js';
+import type { QueryBuilderState } from '../stores/QueryBuilderState.js';
 import {
   type QueryBuilderParameterDragSource,
   QUERY_BUILDER_PARAMETER_TREE_DND_TYPE,
-} from '../stores/QueryParametersState';
-import { QUERY_BUILDER_TEST_ID } from './QueryBuilder_TestID';
+} from '../stores/QueryParametersState.js';
+import { QUERY_BUILDER_TEST_ID } from './QueryBuilder_TestID.js';
 
 const PostFilterConditionDragLayer: React.FC = () => {
   const { itemType, item, isDragging, currentPosition } = useDragLayer(

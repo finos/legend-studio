@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-import type { PureModel } from '../graph/PureModel';
+import type { PureModel } from '../graph/PureModel.js';
 import {
   type PRIMITIVE_TYPE,
   TYPICAL_MULTIPLICITY_TYPE,
-} from '../MetaModelConst';
-import { GenericType } from '../models/metamodels/pure/packageableElements/domain/GenericType';
-import { GenericTypeExplicitReference } from '../models/metamodels/pure/packageableElements/domain/GenericTypeReference';
-import { PrimitiveInstanceValue } from '../models/metamodels/pure/valueSpecification/InstanceValue';
+} from '../MetaModelConst.js';
+import { GenericType } from '../models/metamodels/pure/packageableElements/domain/GenericType.js';
+import { GenericTypeExplicitReference } from '../models/metamodels/pure/packageableElements/domain/GenericTypeReference.js';
+import { PrimitiveInstanceValue } from '../models/metamodels/pure/valueSpecification/InstanceValue.js';
 
 export const buildPrimitiveInstanceValue = (
   graph: PureModel,

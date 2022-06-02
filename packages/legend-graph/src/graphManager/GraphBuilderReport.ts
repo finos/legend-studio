@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { GRAPH_MANAGER_EVENT } from './GraphManagerEvent';
+import { GRAPH_MANAGER_EVENT } from './GraphManagerEvent.js';
 
 export class GraphBuilderReport {
   timings: {

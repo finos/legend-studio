@@ -15,9 +15,9 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import type { V1_Point } from './V1_DSLDiagram_Point';
-import type { V1_Rectangle } from './V1_DSLDiagram_Rectangle';
-import { DIAGRAM_HASH_STRUCTURE } from '../../../../../../../DSLDiagram_ModelUtils';
+import type { V1_Point } from './V1_DSLDiagram_Point.js';
+import type { V1_Rectangle } from './V1_DSLDiagram_Rectangle.js';
+import { DIAGRAM_HASH_STRUCTURE } from '../../../../../../../DSLDiagram_ModelUtils.js';
 
 export class V1_PositionedRectangle implements Hashable {
   rectangle!: V1_Rectangle;

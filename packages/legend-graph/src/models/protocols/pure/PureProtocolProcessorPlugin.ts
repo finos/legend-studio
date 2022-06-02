@@ -15,21 +15,21 @@
  */
 
 import { AbstractPlugin, type PlainObject } from '@finos/legend-shared';
-import type { PackageableElement } from '../../metamodels/pure/packageableElements/PackageableElement';
-import type { V1_PackageableElement } from './v1/model/packageableElements/V1_PackageableElement';
-import type { V1_ElementBuilder } from './v1/transformation/pureGraph/to/V1_ElementBuilder';
-import type { V1_PureModelContextData } from './v1/model/context/V1_PureModelContextData';
-import type { PureModel } from '../../../graph/PureModel';
-import type { Mapping } from '../../metamodels/pure/packageableElements/mapping/Mapping';
-import type { Runtime } from '../../metamodels/pure/packageableElements/runtime/Runtime';
-import type { V1_GraphTransformerContext } from './v1/transformation/pureGraph/from/V1_GraphTransformerContext';
-import type { V1_ValueSpecification } from './v1/model/valueSpecification/V1_ValueSpecification';
-import type { V1_GraphBuilderContext } from './v1/transformation/pureGraph/to/V1_GraphBuilderContext';
-import type { V1_ProcessingContext } from './v1/transformation/pureGraph/to/helpers/V1_ProcessingContext';
-import type { SimpleFunctionExpression } from '../../metamodels/pure/valueSpecification/SimpleFunctionExpression';
-import type { ValueSpecification } from '../../metamodels/pure/valueSpecification/ValueSpecification';
-import type { GraphPluginManager } from '../../../GraphPluginManager';
-import type { Type } from '../../metamodels/pure/packageableElements/domain/Type';
+import type { PackageableElement } from '../../metamodels/pure/packageableElements/PackageableElement.js';
+import type { V1_PackageableElement } from './v1/model/packageableElements/V1_PackageableElement.js';
+import type { V1_ElementBuilder } from './v1/transformation/pureGraph/to/V1_ElementBuilder.js';
+import type { V1_PureModelContextData } from './v1/model/context/V1_PureModelContextData.js';
+import type { PureModel } from '../../../graph/PureModel.js';
+import type { Mapping } from '../../metamodels/pure/packageableElements/mapping/Mapping.js';
+import type { Runtime } from '../../metamodels/pure/packageableElements/runtime/Runtime.js';
+import type { V1_GraphTransformerContext } from './v1/transformation/pureGraph/from/V1_GraphTransformerContext.js';
+import type { V1_ValueSpecification } from './v1/model/valueSpecification/V1_ValueSpecification.js';
+import type { V1_GraphBuilderContext } from './v1/transformation/pureGraph/to/V1_GraphBuilderContext.js';
+import type { V1_ProcessingContext } from './v1/transformation/pureGraph/to/helpers/V1_ProcessingContext.js';
+import type { SimpleFunctionExpression } from '../../metamodels/pure/valueSpecification/SimpleFunctionExpression.js';
+import type { ValueSpecification } from '../../metamodels/pure/valueSpecification/ValueSpecification.js';
+import type { GraphPluginManager } from '../../../GraphPluginManager.js';
+import type { Type } from '../../metamodels/pure/packageableElements/domain/Type.js';
 
 export type V1_ElementProtocolClassifierPathGetter = (
   protocol: V1_PackageableElement,

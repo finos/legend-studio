@@ -16,10 +16,10 @@
 
 import { useEffect } from 'react';
 import { Switch, Route } from 'react-router-dom';
-import { Setup } from './setup/Setup';
-import { Editor } from './editor/Editor';
-import { Review } from './review/Review';
-import { Viewer } from './viewer/Viewer';
+import { Setup } from './setup/Setup.js';
+import { Editor } from './editor/Editor.js';
+import { Review } from './review/Review.js';
+import { Viewer } from './viewer/Viewer.js';
 import { observer } from 'mobx-react-lite';
 import {
   clsx,
@@ -27,23 +27,23 @@ import {
   MarkdownTextViewer,
   PanelLoadingIndicator,
 } from '@finos/legend-art';
-import { LEGEND_STUDIO_ROUTE_PATTERN } from '../stores/LegendStudioRouter';
-import type { LegendStudioPluginManager } from '../application/LegendStudioPluginManager';
+import { LEGEND_STUDIO_ROUTE_PATTERN } from '../stores/LegendStudioRouter.js';
+import type { LegendStudioPluginManager } from '../application/LegendStudioPluginManager.js';
 import { flowResult } from 'mobx';
 import { SDLCServerClientProvider } from '@finos/legend-server-sdlc';
 import { DepotServerClientProvider } from '@finos/legend-server-depot';
 import {
   LegendStudioStoreProvider,
   useLegendStudioStore,
-} from './LegendStudioStoreProvider';
+} from './LegendStudioStoreProvider.js';
 import { GraphManagerStateProvider } from '@finos/legend-graph';
 import {
   LegendApplicationComponentFrameworkProvider,
   useApplicationStore,
   VirtualAssistant,
 } from '@finos/legend-application';
-import type { LegendStudioConfig } from '../application/LegendStudioConfig';
-import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../stores/LegendStudioDocumentation';
+import type { LegendStudioConfig } from '../application/LegendStudioConfig.js';
+import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../stores/LegendStudioDocumentation.js';
 
 const LegendStudioNotFoundRouteScreen = observer(() => {
   const applicationStore = useApplicationStore();

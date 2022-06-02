@@ -19,18 +19,18 @@ import { observer } from 'mobx-react-lite';
 import {
   generateExploreTaxonomyTreeRoute,
   LEGEND_TAXONOMY_ROUTE_PATTERN,
-} from '../stores/LegendTaxonomyRouter';
-import type { LegendTaxonomyPluginManager } from '../application/LegendTaxonomyPluginManager';
+} from '../stores/LegendTaxonomyRouter.js';
+import type { LegendTaxonomyPluginManager } from '../application/LegendTaxonomyPluginManager.js';
 import { DepotServerClientProvider } from '@finos/legend-server-depot';
-import { LegendTaxonomyStoreProvider } from './LegendTaxonomyStoreProvider';
+import { LegendTaxonomyStoreProvider } from './LegendTaxonomyStoreProvider.js';
 import { GraphManagerStateProvider } from '@finos/legend-graph';
 import {
   LegendApplicationComponentFrameworkProvider,
   useApplicationStore,
 } from '@finos/legend-application';
-import type { LegendTaxonomyConfig } from '../application/LegendTaxonomyConfig';
-import { TaxonomyViewer } from './TaxonomyViewer';
-import { StandaloneDataSpaceViewer } from './StandaloneDataSpaceViewer';
+import type { LegendTaxonomyConfig } from '../application/LegendTaxonomyConfig.js';
+import { TaxonomyViewer } from './TaxonomyViewer.js';
+import { StandaloneDataSpaceViewer } from './StandaloneDataSpaceViewer.js';
 
 export const LegendTaxonomyApplicationRoot = observer(() => {
   const applicationStore = useApplicationStore<LegendTaxonomyConfig>();

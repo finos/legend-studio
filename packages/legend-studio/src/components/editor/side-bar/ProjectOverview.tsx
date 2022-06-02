@@ -16,7 +16,7 @@
 
 import { forwardRef, useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
-import { LEGEND_STUDIO_TEST_ID } from '../../LegendStudioTestID';
+import { LEGEND_STUDIO_TEST_ID } from '../../LegendStudioTestID.js';
 import { Link } from 'react-router-dom';
 import {
   clsx,
@@ -33,13 +33,13 @@ import {
   ExternalLinkIcon,
   Dialog,
 } from '@finos/legend-art';
-import { PROJECT_OVERVIEW_ACTIVITY_MODE } from '../../../stores/sidebar-state/ProjectOverviewState';
+import { PROJECT_OVERVIEW_ACTIVITY_MODE } from '../../../stores/sidebar-state/ProjectOverviewState.js';
 import {
   generateEditorRoute,
   generateViewProjectRoute,
   generateViewVersionRoute,
   generateReviewRoute,
-} from '../../../stores/LegendStudioRouter';
+} from '../../../stores/LegendStudioRouter.js';
 import { flowResult } from 'mobx';
 import {
   type Workspace,
@@ -48,9 +48,9 @@ import {
   WorkspaceType,
   areWorkspacesEquivalent,
 } from '@finos/legend-server-sdlc';
-import { useEditorStore } from '../EditorStoreProvider';
+import { useEditorStore } from '../EditorStoreProvider.js';
 import { useApplicationStore } from '@finos/legend-application';
-import type { LegendStudioConfig } from '../../../application/LegendStudioConfig';
+import type { LegendStudioConfig } from '../../../application/LegendStudioConfig.js';
 
 const ShareProjectModal = observer(
   (props: { open: boolean; closeModal: () => void }) => {

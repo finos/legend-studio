@@ -22,8 +22,8 @@ import {
   makeObservable,
   observable,
 } from 'mobx';
-import type { EditorStore } from '../EditorStore';
-import type { EditorSDLCState } from '../EditorSDLCState';
+import type { EditorStore } from '../EditorStore.js';
+import type { EditorSDLCState } from '../EditorSDLCState.js';
 import type { Entity } from '@finos/legend-model-storage';
 import {
   type GeneratorFn,
@@ -37,13 +37,13 @@ import {
   deleteEntry,
   ActionState,
 } from '@finos/legend-shared';
-import { CHANGE_DETECTION_EVENT } from '../ChangeDetectionEvent';
-import { EntityChangeConflictEditorState } from '../editor-state/entity-diff-editor-state/EntityChangeConflictEditorState';
+import { CHANGE_DETECTION_EVENT } from '../ChangeDetectionEvent.js';
+import { EntityChangeConflictEditorState } from '../editor-state/entity-diff-editor-state/EntityChangeConflictEditorState.js';
 import {
   type EntityDiffEditorState,
   SPECIAL_REVISION_ALIAS,
-} from '../editor-state/entity-diff-editor-state/EntityDiffEditorState';
-import { EntityDiffViewState } from '../editor-state/entity-diff-editor-state/EntityDiffViewState';
+} from '../editor-state/entity-diff-editor-state/EntityDiffEditorState.js';
+import { EntityDiffViewState } from '../editor-state/entity-diff-editor-state/EntityDiffViewState.js';
 import {
   type EntityChangeConflict,
   type EntityChangeConflictResolution,
@@ -57,7 +57,7 @@ import {
   ActionAlertActionType,
   ActionAlertType,
 } from '@finos/legend-application';
-import { AbstractConflictResolutionState } from '../AbstractConflictResolutionState';
+import { AbstractConflictResolutionState } from '../AbstractConflictResolutionState.js';
 
 class WorkspaceSyncConflictResolutionState extends AbstractConflictResolutionState {
   showModal = false;

@@ -22,35 +22,35 @@ import {
   type TraceData,
   HttpHeader,
 } from '@finos/legend-shared';
-import type { ImportMode } from '../../../../../graphManager/action/generation/ImportConfigurationDescription';
-import type { V1_PureModelContextData } from '../model/context/V1_PureModelContextData';
-import type { V1_LambdaReturnTypeResult } from './compilation/V1_LambdaReturnTypeResult';
-import type { V1_DEPRECATED__ServiceTestResult } from './service/V1_DEPRECATED__ServiceTestResult';
-import type { V1_ServiceRegistrationResult } from './service/V1_ServiceRegistrationResult';
-import type { V1_ServiceConfigurationInfo } from './service/V1_ServiceConfiguration';
-import type { V1_CompileResult } from './compilation/V1_CompileResult';
-import type { V1_RawLambda } from '../model/rawValueSpecification/V1_RawLambda';
-import type { V1_PureModelContextGenerationInput } from './import/V1_PureModelContextGenerationInput';
-import type { V1_GenerateFileInput } from './generation/V1_FileGenerationInput';
-import type { V1_ExecutionResult } from './execution/V1_ExecutionResult';
-import type { V1_ImportConfigurationDescription } from './import/V1_ImportConfigurationDescription';
-import type { V1_GenerationConfigurationDescription } from './generation/V1_GenerationConfigurationDescription';
-import type { V1_GenerationOutput } from './generation/V1_GenerationOutput';
-import type { V1_ExecuteInput } from './execution/V1_ExecuteInput';
-import type { V1_PureModelContext } from '../model/context/V1_PureModelContext';
-import type { V1_ExecutionPlan } from '../model/executionPlan/V1_ExecutionPlan';
-import type { V1_LightQuery, V1_Query } from './query/V1_Query';
-import type { V1_ServiceStorage } from './service/V1_ServiceStorage';
-import type { GenerationMode } from '../../../../../graphManager/action/generation/GenerationConfigurationDescription';
-import type { V1_QuerySearchSpecification } from './query/V1_QuerySearchSpecification';
-import type { EXECUTION_SERIALIZATION_FORMAT } from '../../../../../graphManager/action/execution/ExecutionResult';
-import type { V1_ExternalFormatDescription } from './externalFormat/V1_ExternalFormatDescription';
-import type { V1_ExternalFormatModelGenerationInput } from './externalFormat/V1_ExternalFormatModelGeneration';
-import type { V1_RunTestsInput } from './test/V1_RunTestsInput';
-import type { V1_TestResult } from '../model/test/result/V1_TestResult';
-import type { V1_RawRelationalOperationElement } from '../model/packageableElements/store/relational/model/V1_RawRelationalOperationElement';
-import type { V1_RenderStyle } from './grammar/V1_RenderStyle';
-import type { V1_ParserError } from './grammar/V1_ParserError';
+import type { ImportMode } from '../../../../../graphManager/action/generation/ImportConfigurationDescription.js';
+import type { V1_PureModelContextData } from '../model/context/V1_PureModelContextData.js';
+import type { V1_LambdaReturnTypeResult } from './compilation/V1_LambdaReturnTypeResult.js';
+import type { V1_DEPRECATED__ServiceTestResult } from './service/V1_DEPRECATED__ServiceTestResult.js';
+import type { V1_ServiceRegistrationResult } from './service/V1_ServiceRegistrationResult.js';
+import type { V1_ServiceConfigurationInfo } from './service/V1_ServiceConfiguration.js';
+import type { V1_CompileResult } from './compilation/V1_CompileResult.js';
+import type { V1_RawLambda } from '../model/rawValueSpecification/V1_RawLambda.js';
+import type { V1_PureModelContextGenerationInput } from './import/V1_PureModelContextGenerationInput.js';
+import type { V1_GenerateFileInput } from './generation/V1_FileGenerationInput.js';
+import type { V1_ExecutionResult } from './execution/V1_ExecutionResult.js';
+import type { V1_ImportConfigurationDescription } from './import/V1_ImportConfigurationDescription.js';
+import type { V1_GenerationConfigurationDescription } from './generation/V1_GenerationConfigurationDescription.js';
+import type { V1_GenerationOutput } from './generation/V1_GenerationOutput.js';
+import type { V1_ExecuteInput } from './execution/V1_ExecuteInput.js';
+import type { V1_PureModelContext } from '../model/context/V1_PureModelContext.js';
+import type { V1_ExecutionPlan } from '../model/executionPlan/V1_ExecutionPlan.js';
+import type { V1_LightQuery, V1_Query } from './query/V1_Query.js';
+import type { V1_ServiceStorage } from './service/V1_ServiceStorage.js';
+import type { GenerationMode } from '../../../../../graphManager/action/generation/GenerationConfigurationDescription.js';
+import type { V1_QuerySearchSpecification } from './query/V1_QuerySearchSpecification.js';
+import type { EXECUTION_SERIALIZATION_FORMAT } from '../../../../../graphManager/action/execution/ExecutionResult.js';
+import type { V1_ExternalFormatDescription } from './externalFormat/V1_ExternalFormatDescription.js';
+import type { V1_ExternalFormatModelGenerationInput } from './externalFormat/V1_ExternalFormatModelGeneration.js';
+import type { V1_RunTestsInput } from './test/V1_RunTestsInput.js';
+import type { V1_TestResult } from '../model/test/result/V1_TestResult.js';
+import type { V1_RawRelationalOperationElement } from '../model/packageableElements/store/relational/model/V1_RawRelationalOperationElement.js';
+import type { V1_RenderStyle } from './grammar/V1_RenderStyle.js';
+import type { V1_ParserError } from './grammar/V1_ParserError.js';
 
 enum CORE_ENGINE_TRACER_SPAN {
   GRAMMAR_TO_JSON = 'transform Pure code to protocol',

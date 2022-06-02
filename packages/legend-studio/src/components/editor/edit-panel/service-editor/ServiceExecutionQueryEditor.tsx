@@ -19,7 +19,7 @@ import { observer } from 'mobx-react-lite';
 import type {
   ServicePureExecutionQueryState,
   ServicePureExecutionState,
-} from '../../../../stores/editor-state/element-editor-state/service/ServiceExecutionState';
+} from '../../../../stores/editor-state/element-editor-state/service/ServiceExecutionState.js';
 import {
   Dialog,
   type SelectComponent,
@@ -36,15 +36,15 @@ import {
 } from '@finos/legend-art';
 import { debounce } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
-import { ExecutionPlanViewer } from '../mapping-editor/execution-plan-viewer/ExecutionPlanViewer';
-import { useEditorStore } from '../../EditorStoreProvider';
+import { ExecutionPlanViewer } from '../mapping-editor/execution-plan-viewer/ExecutionPlanViewer.js';
+import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
   EDITOR_LANGUAGE,
   useApplicationStore,
 } from '@finos/legend-application';
-import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor';
+import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor.js';
 import type { LightQuery } from '@finos/legend-graph';
-import type { DSLService_LegendStudioPlugin_Extension } from '../../../../stores/DSLService_LegendStudioPlugin_Extension';
+import type { DSLService_LegendStudioPlugin_Extension } from '../../../../stores/DSLService_LegendStudioPlugin_Extension.js';
 
 const ServiceExecutionResultViewer = observer(
   (props: { executionState: ServicePureExecutionState }) => {

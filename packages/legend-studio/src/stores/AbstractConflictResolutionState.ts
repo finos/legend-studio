@@ -19,9 +19,9 @@ import type {
   EntityChangeConflictResolution,
 } from '@finos/legend-server-sdlc';
 import type { GeneratorFn } from '@finos/legend-shared';
-import type { EntityChangeConflictEditorState } from './editor-state/entity-diff-editor-state/EntityChangeConflictEditorState';
-import type { EditorSDLCState } from './EditorSDLCState';
-import type { EditorStore } from './EditorStore';
+import type { EntityChangeConflictEditorState } from './editor-state/entity-diff-editor-state/EntityChangeConflictEditorState.js';
+import type { EditorSDLCState } from './EditorSDLCState.js';
+import type { EditorStore } from './EditorStore.js';
 
 export abstract class AbstractConflictResolutionState {
   editorStore: EditorStore;

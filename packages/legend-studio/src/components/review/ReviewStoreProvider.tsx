@@ -16,10 +16,10 @@
 
 import { createContext, useContext } from 'react';
 import { useLocalObservable } from 'mobx-react-lite';
-import { ReviewStore } from '../../stores/ReviewStore';
-import { EDITOR_MODE } from '../../stores/EditorConfig';
+import { ReviewStore } from '../../stores/ReviewStore.js';
+import { EDITOR_MODE } from '../../stores/EditorConfig.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
-import { useEditorStore } from '../editor/EditorStoreProvider';
+import { useEditorStore } from '../editor/EditorStoreProvider.js';
 
 const ReviewStoreContext = createContext<ReviewStore | undefined>(undefined);
 

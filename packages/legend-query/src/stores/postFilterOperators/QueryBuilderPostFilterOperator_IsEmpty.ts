@@ -22,17 +22,17 @@ import {
   PRIMITIVE_TYPE,
 } from '@finos/legend-graph';
 import { returnUndefOnError } from '@finos/legend-shared';
-import { QueryBuilderPostFilterOperator } from '../QueryBuilderPostFilterOperator';
-import { buildPostFilterConditionState } from '../QueryBuilderPostFilterProcessor';
+import { QueryBuilderPostFilterOperator } from '../QueryBuilderPostFilterOperator.js';
+import { buildPostFilterConditionState } from '../QueryBuilderPostFilterProcessor.js';
 import {
   type PostFilterConditionState,
   type QueryBuilderPostFilterState,
   TDS_COLUMN_GETTER,
-} from '../QueryBuilderPostFilterState';
+} from '../QueryBuilderPostFilterState.js';
 import {
   buildPostFilterConditionExpression,
   getColumnMultiplicity,
-} from './QueryBuilderPostFilterOperatorHelper';
+} from './QueryBuilderPostFilterOperatorHelper.js';
 
 export class QueryBuilderPostFilterOperator_IsEmpty extends QueryBuilderPostFilterOperator {
   getLabel(): string {

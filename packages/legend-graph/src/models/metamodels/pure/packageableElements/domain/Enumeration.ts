@@ -15,12 +15,12 @@
  */
 
 import { type Hashable, hashArray } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
-import { DataType } from './DataType';
-import type { Enum } from './Enum';
-import type { PackageableElementVisitor } from '../PackageableElement';
-import type { StereotypeReference } from './StereotypeReference';
-import type { TaggedValue } from './TaggedValue';
+import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst.js';
+import { DataType } from './DataType.js';
+import type { Enum } from './Enum.js';
+import type { PackageableElementVisitor } from '../PackageableElement.js';
+import type { StereotypeReference } from './StereotypeReference.js';
+import type { TaggedValue } from './TaggedValue.js';
 
 export class Enumeration extends DataType implements Hashable {
   values: Enum[] = [];

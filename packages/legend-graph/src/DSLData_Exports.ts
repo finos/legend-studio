@@ -14,26 +14,26 @@
  * limitations under the License.
  */
 
-export { DataElement } from './models/metamodels/pure/packageableElements/data/DataElement';
-export { V1_DataElement } from './models/protocols/pure/v1/model/packageableElements/data/V1_DataElement';
+export { DataElement } from './models/metamodels/pure/packageableElements/data/DataElement.js';
+export { V1_DataElement } from './models/protocols/pure/v1/model/packageableElements/data/V1_DataElement.js';
 export {
   EmbeddedData,
   ModelStoreData,
   DataElementReference,
   ExternalFormatData,
   type EmbeddedDataVisitor,
-} from './models/metamodels/pure/data/EmbeddedData';
+} from './models/metamodels/pure/data/EmbeddedData.js';
 export {
   V1_EmbeddedData,
   V1_ExternalFormatData,
   type V1_EmbeddedDataVisitor,
-} from './models/protocols/pure/v1/model/data/V1_EmbeddedData';
-export * from './models/protocols/pure/DSLData_PureProtocolProcessorPlugin_Extension';
-export * from './graphManager/EmbeddedData_PureGraphManagerPlugin_Extension';
-export { V1_ProtocolToMetaModelEmbeddedDataBuilder } from './models/protocols/pure/v1/transformation/pureGraph/to/helpers/V1_DataElementBuilderHelper';
+} from './models/protocols/pure/v1/model/data/V1_EmbeddedData.js';
+export * from './models/protocols/pure/DSLData_PureProtocolProcessorPlugin_Extension.js';
+export * from './graphManager/EmbeddedData_PureGraphManagerPlugin_Extension.js';
+export { V1_ProtocolToMetaModelEmbeddedDataBuilder } from './models/protocols/pure/v1/transformation/pureGraph/to/helpers/V1_DataElementBuilderHelper.js';
 export {
   observe_ExternalFormatData,
   observe_EmbeddedData,
-} from './graphManager/action/changeDetection/DSLData_ObserverHelper';
-export { V1_transformExternalFormatData } from './models/protocols/pure/v1/transformation/pureGraph/from/V1_DataElementTransformer';
-export { V1_externalFormatDataModelSchema } from './models/protocols/pure/v1/transformation/pureProtocol/serializationHelpers/V1_DataElementSerializationHelper';
+} from './graphManager/action/changeDetection/DSLData_ObserverHelper.js';
+export { V1_transformExternalFormatData } from './models/protocols/pure/v1/transformation/pureGraph/from/V1_DataElementTransformer.js';
+export { V1_externalFormatDataModelSchema } from './models/protocols/pure/v1/transformation/pureProtocol/serializationHelpers/V1_DataElementSerializationHelper.js';

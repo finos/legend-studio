@@ -24,8 +24,8 @@ import {
   isString,
   guaranteeType,
 } from '@finos/legend-shared';
-import { PRIMITIVE_TYPE } from '../../../../../../../../MetaModelConst';
-import { FlatDataSection } from '../../../../../../../metamodels/pure/packageableElements/store/flatData/model/FlatDataSection';
+import { PRIMITIVE_TYPE } from '../../../../../../../../MetaModelConst.js';
+import { FlatDataSection } from '../../../../../../../metamodels/pure/packageableElements/store/flatData/model/FlatDataSection.js';
 import {
   type FlatDataDataType,
   FlatDataString,
@@ -40,11 +40,11 @@ import {
   FlatDataRecordType,
   RootFlatDataRecordType,
   FlatDataRecordField,
-} from '../../../../../../../metamodels/pure/packageableElements/store/flatData/model/FlatDataDataType';
-import type { FlatData } from '../../../../../../../metamodels/pure/packageableElements/store/flatData/model/FlatData';
-import { FlatDataProperty } from '../../../../../../../metamodels/pure/packageableElements/store/flatData/model/FlatDataProperty';
-import type { V1_GraphBuilderContext } from '../../../../transformation/pureGraph/to/V1_GraphBuilderContext';
-import type { V1_FlatDataSection } from '../../../../model/packageableElements/store/flatData/model/V1_FlatDataSection';
+} from '../../../../../../../metamodels/pure/packageableElements/store/flatData/model/FlatDataDataType.js';
+import type { FlatData } from '../../../../../../../metamodels/pure/packageableElements/store/flatData/model/FlatData.js';
+import { FlatDataProperty } from '../../../../../../../metamodels/pure/packageableElements/store/flatData/model/FlatDataProperty.js';
+import type { V1_GraphBuilderContext } from '../../../../transformation/pureGraph/to/V1_GraphBuilderContext.js';
+import type { V1_FlatDataSection } from '../../../../model/packageableElements/store/flatData/model/V1_FlatDataSection.js';
 import {
   type V1_FlatDataDataType,
   type V1_FlatDataRecordField,
@@ -59,8 +59,8 @@ import {
   V1_FlatDataStrictDate,
   V1_FlatDataRecordType,
   V1_RootFlatDataRecordType,
-} from '../../../../model/packageableElements/store/flatData/model/V1_FlatDataDataType';
-import type { V1_FlatDataProperty } from '../../../../model/packageableElements/store/flatData/model/V1_FlatDataProperty';
+} from '../../../../model/packageableElements/store/flatData/model/V1_FlatDataDataType.js';
+import type { V1_FlatDataProperty } from '../../../../model/packageableElements/store/flatData/model/V1_FlatDataProperty.js';
 
 const buildFlatDataDataType = (
   type: V1_FlatDataDataType,

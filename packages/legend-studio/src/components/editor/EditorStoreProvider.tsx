@@ -16,14 +16,14 @@
 
 import { createContext, useContext } from 'react';
 import { useLocalObservable } from 'mobx-react-lite';
-import { EditorStore } from '../../stores/EditorStore';
+import { EditorStore } from '../../stores/EditorStore.js';
 import { useApplicationStore } from '@finos/legend-application';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { useSDLCServerClient } from '@finos/legend-server-sdlc';
 import { useDepotServerClient } from '@finos/legend-server-depot';
-import { useLegendStudioStore } from '../LegendStudioStoreProvider';
+import { useLegendStudioStore } from '../LegendStudioStoreProvider.js';
 import { useGraphManagerState } from '@finos/legend-graph';
-import type { LegendStudioConfig } from '../../application/LegendStudioConfig';
+import type { LegendStudioConfig } from '../../application/LegendStudioConfig.js';
 
 const EditorStoreContext = createContext<EditorStore | undefined>(undefined);
 

@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-import type { MappingElement } from '../editor-state/element-editor-state/mapping/MappingEditorState';
+import type { MappingElement } from '../editor-state/element-editor-state/mapping/MappingEditorState.js';
 import type {
   FlatDataRecordTypeTreeNodeData,
   TypeTreeNodeData,
   PackageTreeNodeData,
-} from '../shared/TreeUtil';
+} from '../shared/TreeUtil.js';
 
 export enum CORE_DND_TYPE {
   NONE = 'NONE',

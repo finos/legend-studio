@@ -21,61 +21,61 @@ import {
   assertErrorThrown,
   guaranteeIsString,
 } from '@finos/legend-shared';
-import type { V1_PackageableConnection } from '../../model/packageableElements/connection/V1_PackageableConnection';
-import type { V1_Association } from '../../model/packageableElements/domain/V1_Association';
-import type { V1_Class } from '../../model/packageableElements/domain/V1_Class';
-import type { V1_Enumeration } from '../../model/packageableElements/domain/V1_Enumeration';
-import type { V1_Measure } from '../../model/packageableElements/domain/V1_Measure';
-import type { V1_Profile } from '../../model/packageableElements/domain/V1_Profile';
-import type { V1_FileGenerationSpecification } from '../../model/packageableElements/fileGeneration/V1_FileGenerationSpecification';
-import type { V1_ConcreteFunctionDefinition } from '../../model/packageableElements/function/V1_ConcreteFunctionDefinition';
-import type { V1_GenerationSpecification } from '../../model/packageableElements/generationSpecification/V1_GenerationSpecification';
-import type { V1_Mapping } from '../../model/packageableElements/mapping/V1_Mapping';
+import type { V1_PackageableConnection } from '../../model/packageableElements/connection/V1_PackageableConnection.js';
+import type { V1_Association } from '../../model/packageableElements/domain/V1_Association.js';
+import type { V1_Class } from '../../model/packageableElements/domain/V1_Class.js';
+import type { V1_Enumeration } from '../../model/packageableElements/domain/V1_Enumeration.js';
+import type { V1_Measure } from '../../model/packageableElements/domain/V1_Measure.js';
+import type { V1_Profile } from '../../model/packageableElements/domain/V1_Profile.js';
+import type { V1_FileGenerationSpecification } from '../../model/packageableElements/fileGeneration/V1_FileGenerationSpecification.js';
+import type { V1_ConcreteFunctionDefinition } from '../../model/packageableElements/function/V1_ConcreteFunctionDefinition.js';
+import type { V1_GenerationSpecification } from '../../model/packageableElements/generationSpecification/V1_GenerationSpecification.js';
+import type { V1_Mapping } from '../../model/packageableElements/mapping/V1_Mapping.js';
 import type {
   V1_PackageableElement,
   V1_PackageableElementVisitor,
-} from '../../model/packageableElements/V1_PackageableElement';
-import type { V1_PackageableRuntime } from '../../model/packageableElements/runtime/V1_PackageableRuntime';
-import type { V1_SectionIndex } from '../../model/packageableElements/section/V1_SectionIndex';
-import type { V1_Service } from '../../model/packageableElements/service/V1_Service';
-import type { V1_FlatData } from '../../model/packageableElements/store/flatData/model/V1_FlatData';
-import type { V1_Database } from '../../model/packageableElements/store/relational/model/V1_Database';
+} from '../../model/packageableElements/V1_PackageableElement.js';
+import type { V1_PackageableRuntime } from '../../model/packageableElements/runtime/V1_PackageableRuntime.js';
+import type { V1_SectionIndex } from '../../model/packageableElements/section/V1_SectionIndex.js';
+import type { V1_Service } from '../../model/packageableElements/service/V1_Service.js';
+import type { V1_FlatData } from '../../model/packageableElements/store/flatData/model/V1_FlatData.js';
+import type { V1_Database } from '../../model/packageableElements/store/relational/model/V1_Database.js';
 import {
   V1_flatDataModelSchema,
   V1_FLAT_DATA_ELEMENT_PROTOCOL_TYPE,
-} from './serializationHelpers/V1_StoreSerializationHelper';
+} from './serializationHelpers/V1_StoreSerializationHelper.js';
 import {
   V1_mappingModelSchema,
   V1_MAPPING_ELEMENT_PROTOCOL_TYPE,
-} from './serializationHelpers/V1_MappingSerializationHelper';
+} from './serializationHelpers/V1_MappingSerializationHelper.js';
 import {
   V1_serviceModelSchema,
   V1_SERVICE_ELEMENT_PROTOCOL_TYPE,
-} from './serializationHelpers/V1_ServiceSerializationHelper';
+} from './serializationHelpers/V1_ServiceSerializationHelper.js';
 import {
   V1_PACKAGEABLE_RUNTIME_ELEMENT_PROTOCOL_TYPE,
   V1_packageableRuntimeModelSchema,
-} from './serializationHelpers/V1_RuntimeSerializationHelper';
+} from './serializationHelpers/V1_RuntimeSerializationHelper.js';
 import {
   V1_PACKAGEABLE_CONNECTION_ELEMENT_PROTOCOL_TYPE,
   V1_packageableConnectionModelSchema,
-} from './serializationHelpers/V1_ConnectionSerializationHelper';
+} from './serializationHelpers/V1_ConnectionSerializationHelper.js';
 import {
   V1_FILE_GENERATION_ELEMENT_PROTOCOL_TYPE,
   V1_fileGenerationModelSchema,
-} from './serializationHelpers/V1_FileGenerationSerializationHelper';
+} from './serializationHelpers/V1_FileGenerationSerializationHelper.js';
 import {
   V1_GENERATION_SPECIFICATION_ELEMENT_PROTOCOL_TYPE,
   V1_generationSpecificationsModelSchema,
-} from './serializationHelpers/V1_GenerationSpecificationSerializationHelper';
+} from './serializationHelpers/V1_GenerationSpecificationSerializationHelper.js';
 import {
   V1_SECTION_INDEX_ELEMENT_PROTOCOL_TYPE,
   V1_sectionIndexModelSchema,
-} from './serializationHelpers/V1_SectionIndexSerializationHelper';
+} from './serializationHelpers/V1_SectionIndexSerializationHelper.js';
 import {
   V1_databaseModelSchema,
   V1_DATABASE_ELEMENT_PROTOCOL_TYPE,
-} from './serializationHelpers/V1_DatabaseSerializationHelper';
+} from './serializationHelpers/V1_DatabaseSerializationHelper.js';
 import {
   V1_associationSchema,
   V1_ASSOCIATION_ELEMENT_PROTOCOL_TYPE,
@@ -89,17 +89,17 @@ import {
   V1_MEASURE_ELEMENT_PROTOCOL_TYPE,
   V1_profileSchema,
   V1_PROFILE_ELEMENT_PROTOCOL_TYPE,
-} from './serializationHelpers/V1_DomainSerializationHelper';
+} from './serializationHelpers/V1_DomainSerializationHelper.js';
 import type {
   PureProtocolProcessorPlugin,
   V1_ElementProtocolSerializer,
-} from '../../../PureProtocolProcessorPlugin';
-import { createPath } from '../../../../../../MetaModelUtils';
-import type { V1_DataElement } from '../../model/packageableElements/data/V1_DataElement';
+} from '../../../PureProtocolProcessorPlugin.js';
+import { createPath } from '../../../../../../MetaModelUtils.js';
+import type { V1_DataElement } from '../../model/packageableElements/data/V1_DataElement.js';
 import {
   V1_dataElementModelSchema,
   V1_DATA_ELEMENT_PROTOCOL_TYPE,
-} from './serializationHelpers/V1_DataElementSerializationHelper';
+} from './serializationHelpers/V1_DataElementSerializationHelper.js';
 
 class V1_PackageableElementSerializer
   implements V1_PackageableElementVisitor<PlainObject<V1_PackageableElement>>

@@ -15,9 +15,9 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
-import { V1_TestSuite } from '../../test/V1_TestSuite';
-import type { V1_TestData } from './V1_TestData';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst.js';
+import { V1_TestSuite } from '../../test/V1_TestSuite.js';
+import type { V1_TestData } from './V1_TestData.js';
 
 export class V1_ServiceTestSuite extends V1_TestSuite implements Hashable {
   testData!: V1_TestData;

@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-import { CORE_HASH_STRUCTURE } from '../../../../../../../../../MetaModelConst';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../../../MetaModelConst.js';
 import { type Hashable, hashArray } from '@finos/legend-shared';
-import type { V1_PackageableElementVisitor } from '../../../../../model/packageableElements/V1_PackageableElement';
-import { V1_Store } from '../../../../../model/packageableElements/store/V1_Store';
-import type { V1_Schema } from './V1_Schema';
-import type { V1_Join } from './V1_Join';
-import type { V1_Filter } from './V1_Filter';
+import type { V1_PackageableElementVisitor } from '../../../../../model/packageableElements/V1_PackageableElement.js';
+import { V1_Store } from '../../../../../model/packageableElements/store/V1_Store.js';
+import type { V1_Schema } from './V1_Schema.js';
+import type { V1_Join } from './V1_Join.js';
+import type { V1_Filter } from './V1_Filter.js';
 
 export class V1_Database extends V1_Store implements Hashable {
   schemas: V1_Schema[] = [];

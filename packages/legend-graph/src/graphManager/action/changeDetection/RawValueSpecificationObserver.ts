@@ -15,20 +15,20 @@
  */
 
 import { computed, makeObservable, observable } from 'mobx';
-import type { RawPrimitiveInstanceValue } from '../../../models/metamodels/pure/rawValueSpecification/RawPrimitiveInstanceValue';
-import type { RawLambda } from '../../../models/metamodels/pure/rawValueSpecification/RawLambda';
+import type { RawPrimitiveInstanceValue } from '../../../models/metamodels/pure/rawValueSpecification/RawPrimitiveInstanceValue.js';
+import type { RawLambda } from '../../../models/metamodels/pure/rawValueSpecification/RawLambda.js';
 import type {
   RawValueSpecification,
   RawValueSpecificationVisitor,
-} from '../../../models/metamodels/pure/rawValueSpecification/RawValueSpecification';
-import type { RawVariableExpression } from '../../../models/metamodels/pure/rawValueSpecification/RawVariableExpression';
+} from '../../../models/metamodels/pure/rawValueSpecification/RawValueSpecification.js';
+import type { RawVariableExpression } from '../../../models/metamodels/pure/rawValueSpecification/RawVariableExpression.js';
 import {
   observe_PackageableElementReference,
   observe_Multiplicity,
   skipObserved,
   skipObservedWithContext,
   type ObserverContext,
-} from './CoreObserverHelper';
+} from './CoreObserverHelper.js';
 
 export const observe_RawPrimitiveInstanceValue = skipObserved(
   (metamodel: RawPrimitiveInstanceValue): RawPrimitiveInstanceValue => {

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { uuid } from '../CommonUtils';
+import { uuid } from '../CommonUtils.js';
 
 export class PluginInfo {
   name!: string;

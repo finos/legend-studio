@@ -22,15 +22,15 @@ import {
   AbstractPluginManager,
   promisify,
 } from '@finos/legend-shared';
-import type { PureGraphManagerPlugin } from './graphManager/PureGraphManagerPlugin';
-import { GraphManagerState } from './GraphManagerState';
-import { GraphManagerStateProvider } from './GraphManagerStateProvider';
-import type { GraphPluginManager } from './GraphPluginManager';
-import type { PureProtocolProcessorPlugin } from './models/protocols/pure/PureProtocolProcessorPlugin';
+import type { PureGraphManagerPlugin } from './graphManager/PureGraphManagerPlugin.js';
+import { GraphManagerState } from './GraphManagerState.js';
+import { GraphManagerStateProvider } from './GraphManagerStateProvider.js';
+import type { GraphPluginManager } from './GraphPluginManager.js';
+import type { PureProtocolProcessorPlugin } from './models/protocols/pure/PureProtocolProcessorPlugin.js';
 import type { Entity } from '@finos/legend-model-storage';
-import { SECTION_INDEX_ELEMENT_PATH } from './MetaModelConst';
-import type { GraphBuilderOptions } from './graphManager/AbstractPureGraphManager';
-import type { PureGraphPlugin } from './graph/PureGraphPlugin';
+import { SECTION_INDEX_ELEMENT_PATH } from './MetaModelConst.js';
+import type { GraphBuilderOptions } from './graphManager/AbstractPureGraphManager.js';
+import type { PureGraphPlugin } from './graph/PureGraphPlugin.js';
 
 export class TEST__GraphPluginManager
   extends AbstractPluginManager
@@ -92,7 +92,7 @@ export const TEST__provideMockedGraphManagerState = (customization?: {
   const value =
     customization?.mock ??
     TEST__getTestGraphManagerState(customization?.pluginManager);
-  const MockedGraphManagerStateProvider = require('./GraphManagerStateProvider'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+  const MockedGraphManagerStateProvider = require('./GraphManagerStateProvider.js'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
   MockedGraphManagerStateProvider.useGraphManagerState = jest.fn();
   MockedGraphManagerStateProvider.useGraphManagerState.mockReturnValue(value);
   return value;

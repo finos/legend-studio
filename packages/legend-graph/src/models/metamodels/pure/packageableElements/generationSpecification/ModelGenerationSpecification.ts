@@ -14,6 +14,6 @@
  * limitations under the License.
  */
 
-import { AbstractGenerationSpecification } from './AbstractGenerationSpecification';
+import { AbstractGenerationSpecification } from './AbstractGenerationSpecification.js';
 
 export abstract class ModelGenerationSpecification extends AbstractGenerationSpecification {}

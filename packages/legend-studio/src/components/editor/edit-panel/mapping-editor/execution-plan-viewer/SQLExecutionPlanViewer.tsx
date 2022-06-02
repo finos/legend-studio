@@ -19,12 +19,12 @@ import { EDITOR_LANGUAGE } from '@finos/legend-application';
 import {
   type ExecutionPlanState,
   SQL_DISPLAY_TABS,
-} from '../../../../../stores/ExecutionPlanState';
+} from '../../../../../stores/ExecutionPlanState.js';
 import { prettyCONSTName } from '@finos/legend-shared';
 import { clsx } from '@finos/legend-art';
-import { RelationalDatabaseConnectionEditor } from '../../connection-editor/RelationalDatabaseConnectionEditor';
+import { RelationalDatabaseConnectionEditor } from '../../connection-editor/RelationalDatabaseConnectionEditor.js';
 import { format } from 'sql-formatter';
-import { RelationalDatabaseConnectionValueState } from '../../../../../stores/editor-state/element-editor-state/connection/ConnectionEditorState';
+import { RelationalDatabaseConnectionValueState } from '../../../../../stores/editor-state/element-editor-state/connection/ConnectionEditorState.js';
 import {
   type SQLResultColumn,
   type RelationalDataType,
@@ -48,7 +48,7 @@ import {
   BigInt,
   RelationalDatabaseConnection,
 } from '@finos/legend-graph';
-import { StudioTextInputEditor } from '../../../../shared/StudioTextInputEditor';
+import { StudioTextInputEditor } from '../../../../shared/StudioTextInputEditor.js';
 
 const generateDataTypeLabel = (
   type: RelationalDataType | undefined,

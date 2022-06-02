@@ -17,8 +17,8 @@
 import { computed, action, makeObservable, observable } from 'mobx';
 import { guaranteeType } from '@finos/legend-shared';
 import { Binding, type PackageableElement } from '@finos/legend-graph';
-import { ElementEditorState } from '../ElementEditorState';
-import type { EditorStore } from '../../../EditorStore';
+import { ElementEditorState } from '../ElementEditorState.js';
+import type { EditorStore } from '../../../EditorStore.js';
 
 export enum BINDING_TAB_TYPE {
   GENERAL = 'GENERAL',

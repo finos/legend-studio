@@ -15,9 +15,9 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../../../MetaModelConst';
-import { V1_AbstractFlatDataPropertyMapping } from './V1_AbstractFlatDataPropertyMapping';
-import type { V1_PropertyMappingVisitor } from '../../../../../model/packageableElements/mapping/V1_PropertyMapping';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../../../MetaModelConst.js';
+import { V1_AbstractFlatDataPropertyMapping } from './V1_AbstractFlatDataPropertyMapping.js';
+import type { V1_PropertyMappingVisitor } from '../../../../../model/packageableElements/mapping/V1_PropertyMapping.js';
 
 export class V1_EmbeddedFlatDataPropertyMapping
   extends V1_AbstractFlatDataPropertyMapping

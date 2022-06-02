@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import type { AtomicTest, TestSuite } from '../Test';
+import type { AtomicTest, TestSuite } from '../Test.js';
 
 export class AtomicTestId {
   parentSuite: TestSuite | undefined;

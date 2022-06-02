@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import type { IngestMode } from './DSLPersistence_IngestMode';
-import type { Sink } from './DSLPersistence_Sink';
-import type { TargetShape } from './DSLPersistence_TargetShape';
-import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../DSLPersistence_ModelUtils';
+import type { IngestMode } from './DSLPersistence_IngestMode.js';
+import type { Sink } from './DSLPersistence_Sink.js';
+import type { TargetShape } from './DSLPersistence_TargetShape.js';
+import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../DSLPersistence_ModelUtils.js';
 import { type Hashable, hashArray } from '@finos/legend-shared';
 
 export abstract class Persister implements Hashable {

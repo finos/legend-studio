@@ -15,10 +15,10 @@
  */
 
 import { useEffect, useState } from 'react';
-import { VerticalAlignBottomIcon, AddIcon, EditIcon } from '../Icon';
+import { VerticalAlignBottomIcon, AddIcon, EditIcon } from '../Icon.js';
 import clsx from 'clsx';
 import { useResizeDetector } from 'react-resize-detector';
-import { BlankPanelContent } from './BlankPanelContent';
+import { BlankPanelContent } from './BlankPanelContent.js';
 
 const DEFAULT_CONTENT_PADDING = 20;
 const MIN_DIMENSION = 50;

@@ -16,10 +16,10 @@
 
 // eslint-disable-next-line no-restricted-imports
 /// <reference path="../../support/index.d.ts" />
-import { TEST_ID } from '../../../src/const';
-import { EDITOR_LANGUAGE } from '../../../src/stores/EditorConfig';
-import { ElementEditorTester } from '../../utils/ElementEditorTester';
-import { CoreElementHelper } from '../../utils/ElementHelperExtension';
+import { TEST_ID } from '../../../src/const.js';
+import { EDITOR_LANGUAGE } from '../../../src/stores/EditorConfig.js';
+import { ElementEditorTester } from '../../utils/ElementEditorTester.js';
+import { CoreElementHelper } from '../../utils/ElementHelperExtension.js';
 
 describe('UML End to End Test', () => {
   let tester: ElementEditorTester;

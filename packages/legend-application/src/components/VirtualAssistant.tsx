@@ -46,12 +46,12 @@ import {
 import { format } from 'date-fns';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { DATE_TIME_FORMAT, TAB_SIZE } from '../const';
+import { DATE_TIME_FORMAT, TAB_SIZE } from '../const.js';
 import {
   type VirtualAssistantDocumentationEntry,
   VIRTUAL_ASSISTANT_TAB,
-} from '../stores/LegendApplicationAssistantService';
-import { useApplicationStore } from './ApplicationStoreProvider';
+} from '../stores/LegendApplicationAssistantService.js';
+import { useApplicationStore } from './ApplicationStoreProvider.js';
 import Draggable from 'react-draggable';
 
 const WIZARD_GREETING = `Bonjour, It's Pierre!`;

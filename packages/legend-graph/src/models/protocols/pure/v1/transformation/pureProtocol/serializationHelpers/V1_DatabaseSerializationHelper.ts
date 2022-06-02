@@ -34,13 +34,13 @@ import {
   serializeArray,
   usingModelSchema,
 } from '@finos/legend-shared';
-import { V1_Column } from '../../../model/packageableElements/store/relational/model/V1_Column';
-import { V1_Database } from '../../../model/packageableElements/store/relational/model/V1_Database';
-import { V1_TablePtr } from '../../../model/packageableElements/store/relational/model/V1_TablePtr';
-import { V1_Schema } from '../../../model/packageableElements/store/relational/model/V1_Schema';
-import { V1_Join } from '../../../model/packageableElements/store/relational/model/V1_Join';
-import { V1_Filter } from '../../../model/packageableElements/store/relational/model/V1_Filter';
-import { V1_Table } from '../../../model/packageableElements/store/relational/model/V1_Table';
+import { V1_Column } from '../../../model/packageableElements/store/relational/model/V1_Column.js';
+import { V1_Database } from '../../../model/packageableElements/store/relational/model/V1_Database.js';
+import { V1_TablePtr } from '../../../model/packageableElements/store/relational/model/V1_TablePtr.js';
+import { V1_Schema } from '../../../model/packageableElements/store/relational/model/V1_Schema.js';
+import { V1_Join } from '../../../model/packageableElements/store/relational/model/V1_Join.js';
+import { V1_Filter } from '../../../model/packageableElements/store/relational/model/V1_Filter.js';
+import { V1_Table } from '../../../model/packageableElements/store/relational/model/V1_Table.js';
 import {
   type V1_RelationalDataType,
   V1_VarChar,
@@ -61,12 +61,12 @@ import {
   V1_Other,
   V1_Decimal,
   V1_SemiStructured,
-} from '../../../model/packageableElements/store/relational/model/V1_RelationalDataType';
-import { V1_View } from '../../../model/packageableElements/store/relational/model/V1_View';
-import { V1_FilterPointer } from '../../../model/packageableElements/store/relational/mapping/V1_FilterPointer';
-import { V1_FilterMapping } from '../../../model/packageableElements/store/relational/mapping/V1_FilterMapping';
-import { V1_JoinPointer } from '../../../model/packageableElements/store/relational/model/V1_JoinPointer';
-import { V1_ColumnMapping } from '../../../model/packageableElements/store/relational/model/V1_ColumnMapping';
+} from '../../../model/packageableElements/store/relational/model/V1_RelationalDataType.js';
+import { V1_View } from '../../../model/packageableElements/store/relational/model/V1_View.js';
+import { V1_FilterPointer } from '../../../model/packageableElements/store/relational/mapping/V1_FilterPointer.js';
+import { V1_FilterMapping } from '../../../model/packageableElements/store/relational/mapping/V1_FilterMapping.js';
+import { V1_JoinPointer } from '../../../model/packageableElements/store/relational/model/V1_JoinPointer.js';
+import { V1_ColumnMapping } from '../../../model/packageableElements/store/relational/model/V1_ColumnMapping.js';
 import {
   type V1_RelationalOperationElement,
   V1_DynaFunc,
@@ -74,26 +74,26 @@ import {
   V1_Literal,
   V1_LiteralList,
   V1_TableAliasColumn,
-} from '../../../model/packageableElements/store/relational/model/V1_RelationalOperationElement';
+} from '../../../model/packageableElements/store/relational/model/V1_RelationalOperationElement.js';
 import {
   V1_deserializeMilestoning,
   V1_serializeMilestoning,
-} from './V1_MilestoningSerializationHelper';
-import type { V1_Milestoning } from '../../../model/packageableElements/store/relational/model/milestoning/V1_Milestoning';
-import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin';
-import { V1_RelationalDatabaseConnection } from '../../../model/packageableElements/store/relational/connection/V1_RelationalDatabaseConnection';
+} from './V1_MilestoningSerializationHelper.js';
+import type { V1_Milestoning } from '../../../model/packageableElements/store/relational/model/milestoning/V1_Milestoning.js';
+import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin.js';
+import { V1_RelationalDatabaseConnection } from '../../../model/packageableElements/store/relational/connection/V1_RelationalDatabaseConnection.js';
 import {
   V1_deserializePostProcessor,
   V1_serializePostProcessor,
-} from './V1_PostProcessorSerializationHelper';
-import type { V1_PostProcessor } from '../../../model/packageableElements/store/relational/connection/postprocessor/V1_PostProcessor';
+} from './V1_PostProcessorSerializationHelper.js';
+import type { V1_PostProcessor } from '../../../model/packageableElements/store/relational/connection/postprocessor/V1_PostProcessor.js';
 import {
   V1_ConnectionType,
   V1_deserializeAuthenticationStrategy,
   V1_deserializeDatasourceSpecification,
   V1_serializeAuthenticationStrategy,
   V1_serializeDatasourceSpecification,
-} from './V1_ConnectionSerializationHelper';
+} from './V1_ConnectionSerializationHelper.js';
 
 export const V1_DATABASE_ELEMENT_PROTOCOL_TYPE = 'relational';
 

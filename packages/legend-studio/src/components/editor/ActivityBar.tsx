@@ -15,8 +15,8 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { ACTIVITY_MODE } from '../../stores/EditorConfig';
-import { LEGEND_STUDIO_TEST_ID } from '../LegendStudioTestID';
+import { ACTIVITY_MODE } from '../../stores/EditorConfig.js';
+import { LEGEND_STUDIO_TEST_ID } from '../LegendStudioTestID.js';
 import {
   CheckIcon,
   clsx,
@@ -37,15 +37,15 @@ import {
   MenuIcon,
   MenuContentDivider,
 } from '@finos/legend-art';
-import { useEditorStore } from './EditorStoreProvider';
+import { useEditorStore } from './EditorStoreProvider.js';
 import { forwardRef, useState } from 'react';
 import {
   useApplicationStore,
   VIRTUAL_ASSISTANT_TAB,
 } from '@finos/legend-application';
-import type { LegendStudioConfig } from '../../application/LegendStudioConfig';
-import { LegendStudioAppInfo } from '../LegendStudioAppInfo';
-import { generateSetupRoute } from '../../stores/LegendStudioRouter';
+import type { LegendStudioConfig } from '../../application/LegendStudioConfig.js';
+import { LegendStudioAppInfo } from '../LegendStudioAppInfo.js';
+import { generateSetupRoute } from '../../stores/LegendStudioRouter.js';
 
 const SettingsMenu = observer(
   forwardRef<HTMLDivElement, unknown>(function SettingsMenu(props, ref) {

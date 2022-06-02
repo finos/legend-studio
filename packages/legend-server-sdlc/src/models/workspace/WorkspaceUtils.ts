@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { Workspace } from './Workspace';
+import type { Workspace } from './Workspace.js';
 
 export const areWorkspacesEquivalent = (
   workspace: Workspace,

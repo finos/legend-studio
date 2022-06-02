@@ -16,12 +16,12 @@
 
 import { configure as configureMobx } from 'mobx';
 import { editor as monacoEditorAPI } from 'monaco-editor';
-import { MONOSPACED_FONT_FAMILY } from '../const';
+import { MONOSPACED_FONT_FAMILY } from '../const.js';
 import type {
   LegendApplicationConfig,
   LegendApplicationConfigurationData,
   LegendApplicationVersionData,
-} from '../stores/LegendApplicationConfig';
+} from '../stores/LegendApplicationConfig.js';
 import {
   type AbstractPlugin,
   type AbstractPreset,
@@ -31,11 +31,11 @@ import {
   assertNonNullable,
   NetworkClient,
 } from '@finos/legend-shared';
-import { APPLICATION_EVENT } from '../stores/ApplicationEvent';
+import { APPLICATION_EVENT } from '../stores/ApplicationEvent.js';
 import { configureComponents } from '@finos/legend-art';
 import type { GraphPluginManager } from '@finos/legend-graph';
-import type { LegendApplicationPluginManager } from './LegendApplicationPluginManager';
-import { setupPureLanguageService } from '../stores/PureLanguageSupport';
+import type { LegendApplicationPluginManager } from './LegendApplicationPluginManager.js';
+import { setupPureLanguageService } from '../stores/PureLanguageSupport.js';
 
 export abstract class LegendApplicationLogger {
   abstract debug(event: LogEvent, ...data: unknown[]): void;

@@ -16,7 +16,7 @@
 
 import { useEffect, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
-import { MappingEditorState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
+import { MappingEditorState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState.js';
 import {
   clsx,
   CustomSelectorInput,
@@ -29,13 +29,13 @@ import {
   CORE_DND_TYPE,
   type OperationSetImplementationDropTarget,
   type MappingElementDragSource,
-} from '../../../../stores/shared/DnDUtil';
+} from '../../../../stores/shared/DnDUtil.js';
 import { useDrop } from 'react-dnd';
 import { noop } from '@finos/legend-shared';
 import {
   MappingElementDecorator,
   MappingElementDecorationCleaner,
-} from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementDecorator';
+} from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementDecorator.js';
 import {
   Mapping,
   OperationSetImplementation,
@@ -50,12 +50,12 @@ import {
   getClassMappingsByClass,
   getAllChildSetImplementations,
 } from '@finos/legend-graph';
-import { useEditorStore } from '../../EditorStoreProvider';
+import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
   operationMapping_addParameter,
   operationMapping_changeParameter,
   operationMapping_deleteParameter,
-} from '../../../../stores/graphModifier/DSLMapping_GraphModifierHelper';
+} from '../../../../stores/graphModifier/DSLMapping_GraphModifierHelper.js';
 
 interface SetImplementationOption {
   value: SetImplementation;

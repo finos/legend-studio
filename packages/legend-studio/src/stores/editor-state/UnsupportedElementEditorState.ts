@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import { ElementEditorState } from './element-editor-state/ElementEditorState';
-import type { EditorStore } from '../EditorStore';
+import { ElementEditorState } from './element-editor-state/ElementEditorState.js';
+import type { EditorStore } from '../EditorStore.js';
 import type { PackageableElement } from '@finos/legend-graph';
 
 export class UnsupportedElementEditorState extends ElementEditorState {

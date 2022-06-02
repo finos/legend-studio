@@ -15,16 +15,16 @@
  */
 
 import { type Hashable, hashArray } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
-import { Type } from './Type';
-import type { Property } from './Property';
-import type { Constraint } from './Constraint';
-import type { DerivedProperty } from './DerivedProperty';
-import type { AbstractProperty } from './AbstractProperty';
-import type { PackageableElementVisitor } from '../PackageableElement';
-import type { StereotypeReference } from './StereotypeReference';
-import type { TaggedValue } from './TaggedValue';
-import type { GenericTypeReference } from './GenericTypeReference';
+import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst.js';
+import { Type } from './Type.js';
+import type { Property } from './Property.js';
+import type { Constraint } from './Constraint.js';
+import type { DerivedProperty } from './DerivedProperty.js';
+import type { AbstractProperty } from './AbstractProperty.js';
+import type { PackageableElementVisitor } from '../PackageableElement.js';
+import type { StereotypeReference } from './StereotypeReference.js';
+import type { TaggedValue } from './TaggedValue.js';
+import type { GenericTypeReference } from './GenericTypeReference.js';
 
 export class Class extends Type implements Hashable {
   /**

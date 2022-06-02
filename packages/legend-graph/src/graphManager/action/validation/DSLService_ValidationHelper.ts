@@ -19,13 +19,13 @@ import type {
   KeyedExecutionParameter,
   PureExecution,
   PureSingleExecution,
-} from '../../../models/metamodels/pure/packageableElements/service/ServiceExecution';
-import { isStubbed_PackageableElement } from '../creation/DomainModelCreatorHelper';
-import { isStubbed_RawLambda } from '../creation/RawValueSpecificationCreatorHelper';
+} from '../../../models/metamodels/pure/packageableElements/service/ServiceExecution.js';
+import { isStubbed_PackageableElement } from '../creation/DomainModelCreatorHelper.js';
+import { isStubbed_RawLambda } from '../creation/RawValueSpecificationCreatorHelper.js';
 import {
   type ValidationIssue,
   createValidationError,
-} from './ValidationHelper';
+} from './ValidationHelper.js';
 
 export const validate_ServicePattern = (
   pattern: string,

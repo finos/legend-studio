@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import { fromElementPathToMappingElementId } from '../../../../../MetaModelUtils';
-import { InferableValue } from '../../InferableValue';
+import { fromElementPathToMappingElementId } from '../../../../../MetaModelUtils.js';
+import { InferableValue } from '../../InferableValue.js';
 
 export abstract class InferableMappingElementIdValue extends InferableValue<
   string,

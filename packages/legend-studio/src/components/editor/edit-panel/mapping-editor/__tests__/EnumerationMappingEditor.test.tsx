@@ -29,10 +29,10 @@ import {
   TEST__openElementFromExplorerTree,
   TEST__provideMockedEditorStore,
   TEST__setUpEditorWithDefaultSDLCData,
-} from '../../../../EditorComponentTestUtils';
-import { LEGEND_STUDIO_TEST_ID } from '../../../../LegendStudioTestID';
-import type { EditorStore } from '../../../../../stores/EditorStore';
-import { MappingEditorState } from '../../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
+} from '../../../../EditorComponentTestUtils.js';
+import { LEGEND_STUDIO_TEST_ID } from '../../../../LegendStudioTestID.js';
+import type { EditorStore } from '../../../../../stores/EditorStore.js';
+import { MappingEditorState } from '../../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState.js';
 
 let renderResult: RenderResult;
 let mockedEditorStore: EditorStore;

@@ -18,9 +18,9 @@ import { action, makeObservable, observable, computed } from 'mobx';
 import type {
   LegendApplicationContextualDocumentationEntry,
   LegendApplicationDocumentationEntry,
-} from './LegendApplicationDocumentationService';
-import type { LegendApplicationConfig } from './LegendApplicationConfig';
-import type { ApplicationStore } from './ApplicationStore';
+} from './LegendApplicationDocumentationService.js';
+import type { LegendApplicationConfig } from './LegendApplicationConfig.js';
+import type { ApplicationStore } from './ApplicationStore.js';
 import Fuse from 'fuse.js';
 import {
   type MarkdownText,

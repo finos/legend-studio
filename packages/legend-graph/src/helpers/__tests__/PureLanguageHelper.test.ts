@@ -21,11 +21,11 @@ import type { Entity } from '@finos/legend-model-storage';
 import {
   TEST__buildGraphWithEntities,
   TEST__getTestGraphManagerState,
-} from '../../GraphManagerTestUtils';
+} from '../../GraphManagerTestUtils.js';
 import {
   generateFunctionCallString,
   generateFunctionSignature,
-} from '../../helpers/PureLanguageHelper';
+} from '../../helpers/PureLanguageHelper.js';
 
 afterEach(() => {
   // running all pending timers and switching to real timers using Jest

@@ -15,7 +15,7 @@
  */
 
 import { computed, action, observable, makeObservable } from 'mobx';
-import type { EditorStore } from '../../EditorStore';
+import type { EditorStore } from '../../EditorStore.js';
 import {
   guaranteeType,
   uuid,
@@ -26,11 +26,11 @@ import {
   assertErrorThrown,
   filterByType,
 } from '@finos/legend-shared';
-import { ElementEditorState } from './ElementEditorState';
-import type { RuntimeExplorerTreeNodeData } from '../../shared/TreeUtil';
+import { ElementEditorState } from './ElementEditorState.js';
+import type { RuntimeExplorerTreeNodeData } from '../../shared/TreeUtil.js';
 import type { TreeData } from '@finos/legend-art';
-import { ConnectionEditorState } from './connection/ConnectionEditorState';
-import { getMappingElementSource } from './mapping/MappingEditorState';
+import { ConnectionEditorState } from './connection/ConnectionEditorState.js';
+import { getMappingElementSource } from './mapping/MappingEditorState.js';
 import {
   type PackageableElement,
   type Mapping,
@@ -66,15 +66,15 @@ import {
   getAllIdentifiedConnections,
   generateIdentifiedConnectionId,
 } from '@finos/legend-graph';
-import type { DSLMapping_LegendStudioPlugin_Extension } from '../../DSLMapping_LegendStudioPlugin_Extension';
-import { packageableElementReference_setValue } from '../../graphModifier/DomainGraphModifierHelper';
+import type { DSLMapping_LegendStudioPlugin_Extension } from '../../DSLMapping_LegendStudioPlugin_Extension.js';
+import { packageableElementReference_setValue } from '../../graphModifier/DomainGraphModifierHelper.js';
 import {
   runtime_addIdentifiedConnection,
   runtime_addMapping,
   runtime_addUniqueStoreConnectionsForStore,
   runtime_deleteIdentifiedConnection,
   runtime_deleteMapping,
-} from '../../graphModifier/DSLMapping_GraphModifierHelper';
+} from '../../graphModifier/DSLMapping_GraphModifierHelper.js';
 
 /* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
 export const getClassMappingStore = (

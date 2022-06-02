@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import format from 'date-fns/format';
-import addDays from 'date-fns/addDays';
+
+import { format, addDays } from 'date-fns';
 import {
   type InstanceValue,
   type Type,
@@ -42,7 +42,7 @@ import {
   uuid,
 } from '@finos/legend-shared';
 import { observable, makeObservable, action } from 'mobx';
-import type { QueryBuilderState } from './QueryBuilderState';
+import type { QueryBuilderState } from './QueryBuilderState.js';
 import {
   DATE_FORMAT,
   DATE_TIME_FORMAT,

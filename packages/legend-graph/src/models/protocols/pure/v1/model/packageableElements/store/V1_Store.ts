@@ -15,7 +15,7 @@
  */
 
 import type { Hashable } from '@finos/legend-shared';
-import { V1_PackageableElement } from '../../../model/packageableElements/V1_PackageableElement';
+import { V1_PackageableElement } from '../../../model/packageableElements/V1_PackageableElement.js';
 
 export abstract class V1_Store
   extends V1_PackageableElement

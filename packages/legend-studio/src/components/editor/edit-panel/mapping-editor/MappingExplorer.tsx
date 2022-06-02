@@ -21,7 +21,7 @@ import {
   type ElementDragSource,
   CORE_DND_TYPE,
   MappingElementDragSource,
-} from '../../../../stores/shared/DnDUtil';
+} from '../../../../stores/shared/DnDUtil.js';
 import {
   type TreeNodeContainerProps,
   clsx,
@@ -37,7 +37,7 @@ import {
   ChevronDownIcon,
   FilterIcon,
 } from '@finos/legend-art';
-import { MappingElementState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementState';
+import { MappingElementState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementState.js';
 import { useDrop, useDrag } from 'react-dnd';
 import { toSentenceCase } from '@finos/legend-shared';
 import {
@@ -48,13 +48,13 @@ import {
   getMappingElementType,
   MappingEditorState,
   getMappingElementLabel,
-} from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
-import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID';
-import { getElementIcon } from '../../../shared/ElementIconUtils';
-import { NewMappingElementModal } from '../../../editor/edit-panel/mapping-editor/NewMappingElementModal';
-import { MappingElementDecorator } from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementDecorator';
+} from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState.js';
+import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID.js';
+import { getElementIcon } from '../../../shared/ElementIconUtils.js';
+import { NewMappingElementModal } from '../../../editor/edit-panel/mapping-editor/NewMappingElementModal.js';
+import { MappingElementDecorator } from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementDecorator.js';
 import { flowResult } from 'mobx';
-import { useEditorStore } from '../../EditorStoreProvider';
+import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
   type PackageableElement,
   SetImplementation,
@@ -67,8 +67,8 @@ import { useApplicationStore } from '@finos/legend-application';
 import {
   PureInstanceSetImplementationFilterState,
   PureInstanceSetImplementationState,
-} from '../../../../stores/editor-state/element-editor-state/mapping/PureInstanceSetImplementationState';
-import { pureInstanceSetImpl_setMappingFilter } from '../../../../stores/graphModifier/DSLMapping_GraphModifierHelper';
+} from '../../../../stores/editor-state/element-editor-state/mapping/PureInstanceSetImplementationState.js';
+import { pureInstanceSetImpl_setMappingFilter } from '../../../../stores/graphModifier/DSLMapping_GraphModifierHelper.js';
 
 export const MappingExplorerContextMenu = observer(
   forwardRef<

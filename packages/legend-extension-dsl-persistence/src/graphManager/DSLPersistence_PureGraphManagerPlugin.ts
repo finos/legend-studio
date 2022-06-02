@@ -15,8 +15,8 @@
  */
 
 import packageJson from '../../package.json';
-import { Persistence } from '../models/metamodels/pure/model/packageableElements/persistence/DSLPersistence_Persistence';
-import { observe_Persistence } from './action/changeDetection/DSLPersistence_ObserverHelper';
+import { Persistence } from '../models/metamodels/pure/model/packageableElements/persistence/DSLPersistence_Persistence.js';
+import { observe_Persistence } from './action/changeDetection/DSLPersistence_ObserverHelper.js';
 import {
   PureGraphManagerPlugin,
   type PackageableElement,

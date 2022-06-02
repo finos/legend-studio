@@ -16,9 +16,9 @@
 
 import { SerializationFactory, usingModelSchema } from '@finos/legend-shared';
 import { createModelSchema, object, primitive, list } from 'serializr';
-import { V1_PureModelContextData } from '../../model/context/V1_PureModelContextData';
-import type { V1_AtomicTestId } from '../../model/test/V1_AtomicTestId';
-import { V1_atomicTestIdModelSchema } from '../../transformation/pureProtocol/serializationHelpers/V1_TestSerializationHelper';
+import { V1_PureModelContextData } from '../../model/context/V1_PureModelContextData.js';
+import type { V1_AtomicTestId } from '../../model/test/V1_AtomicTestId.js';
+import { V1_atomicTestIdModelSchema } from '../../transformation/pureProtocol/serializationHelpers/V1_TestSerializationHelper.js';
 
 export class V1_RunTestsTestableInput {
   testable!: string;

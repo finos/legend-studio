@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { V1_ValueSpecification } from '../../../../model/valueSpecification/V1_ValueSpecification';
+import { V1_ValueSpecification } from '../../../../model/valueSpecification/V1_ValueSpecification.js';
 
 export abstract class V1_GraphFetchTree extends V1_ValueSpecification {
   subTrees: V1_GraphFetchTree[] = [];

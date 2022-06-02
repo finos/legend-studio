@@ -15,31 +15,31 @@
  */
 
 import { UnsupportedOperationError } from '@finos/legend-shared';
-import { V1_EqualTo } from '../../../model/test/assertion/V1_EqualTo';
-import { V1_EqualToJson } from '../../../model/test/assertion/V1_EqualToJson';
-import { EqualTo } from '../../../../../../metamodels/pure/test/assertion/EqualTo';
-import { EqualToJson } from '../../../../../../metamodels/pure/test/assertion/EqualToJson';
-import { V1_transformExternalFormatData } from './V1_DataElementTransformer';
-import type { V1_AtomicTest } from '../../../model/test/V1_AtomicTest';
-import { ServiceTest } from '../../../../../../metamodels/pure/packageableElements/service/ServiceTest';
-import type { V1_TestAssertion } from '../../../model/test/assertion/V1_TestAssertion';
-import type { TestAssertion } from '../../../../../../metamodels/pure/test/assertion/TestAssertion';
-import type { V1_TestSuite } from '../../../model/test/V1_TestSuite';
+import { V1_EqualTo } from '../../../model/test/assertion/V1_EqualTo.js';
+import { V1_EqualToJson } from '../../../model/test/assertion/V1_EqualToJson.js';
+import { EqualTo } from '../../../../../../metamodels/pure/test/assertion/EqualTo.js';
+import { EqualToJson } from '../../../../../../metamodels/pure/test/assertion/EqualToJson.js';
+import { V1_transformExternalFormatData } from './V1_DataElementTransformer.js';
+import type { V1_AtomicTest } from '../../../model/test/V1_AtomicTest.js';
+import { ServiceTest } from '../../../../../../metamodels/pure/packageableElements/service/ServiceTest.js';
+import type { V1_TestAssertion } from '../../../model/test/assertion/V1_TestAssertion.js';
+import type { TestAssertion } from '../../../../../../metamodels/pure/test/assertion/TestAssertion.js';
+import type { V1_TestSuite } from '../../../model/test/V1_TestSuite.js';
 import {
   V1_transformServiceTest,
   V1_transformServiceTestSuite,
-} from './V1_ServiceTransformer';
-import { ServiceTestSuite } from '../../../../../../metamodels/pure/packageableElements/service/ServiceTestSuite';
-import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext';
+} from './V1_ServiceTransformer.js';
+import { ServiceTestSuite } from '../../../../../../metamodels/pure/packageableElements/service/ServiceTestSuite.js';
+import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext.js';
 import type {
   AtomicTest,
   TestSuite,
-} from '../../../../../../metamodels/pure/test/Test';
-import { EqualToTDS } from '../../../../../../metamodels/pure/test/assertion/EqualToTDS';
+} from '../../../../../../metamodels/pure/test/Test.js';
+import { EqualToTDS } from '../../../../../../metamodels/pure/test/assertion/EqualToTDS.js';
 import {
   V1_EqualToTDS,
   V1_RelationalTDS,
-} from '../../../model/test/assertion/V1_EqualToTDS';
+} from '../../../model/test/assertion/V1_EqualToTDS.js';
 
 const transformEqualTo = (element: EqualTo): V1_EqualTo => {
   const equalTo = new V1_EqualTo();

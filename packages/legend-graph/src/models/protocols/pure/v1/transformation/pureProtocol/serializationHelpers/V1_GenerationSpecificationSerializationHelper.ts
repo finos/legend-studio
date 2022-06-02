@@ -21,11 +21,11 @@ import {
   usingModelSchema,
   usingConstantValueSchema,
 } from '@finos/legend-shared';
-import { V1_packageableElementPointerDeserializerSchema } from '../../../transformation/pureProtocol/serializationHelpers/V1_CoreSerializationHelper';
+import { V1_packageableElementPointerDeserializerSchema } from '../../../transformation/pureProtocol/serializationHelpers/V1_CoreSerializationHelper.js';
 import {
   V1_GenerationSpecification,
   V1_GenerationTreeNode,
-} from '../../../model/packageableElements/generationSpecification/V1_GenerationSpecification';
+} from '../../../model/packageableElements/generationSpecification/V1_GenerationSpecification.js';
 
 export const V1_GENERATION_SPECIFICATION_ELEMENT_PROTOCOL_TYPE =
   'generationSpecification';

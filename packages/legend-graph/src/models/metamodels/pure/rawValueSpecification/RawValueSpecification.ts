@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import type { RawVariableExpression } from './RawVariableExpression';
-import type { RawLambda } from './RawLambda';
-import type { RawPrimitiveInstanceValue } from './RawPrimitiveInstanceValue';
+import type { RawVariableExpression } from './RawVariableExpression.js';
+import type { RawLambda } from './RawLambda.js';
+import type { RawPrimitiveInstanceValue } from './RawPrimitiveInstanceValue.js';
 
 export interface RawValueSpecificationVisitor<T> {
   visit_RawLambda(valueSpecification: RawLambda): T;

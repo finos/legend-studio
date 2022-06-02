@@ -19,9 +19,9 @@ import {
   generateViewProjectByGAVRoute,
   generateViewRevisionRoute,
   generateViewVersionRoute,
-} from '../LegendStudioRouter';
-import { EditorMode } from '../editor/EditorMode';
-import type { ViewerStore } from '../ViewerStore';
+} from '../LegendStudioRouter.js';
+import { EditorMode } from '../editor/EditorMode.js';
+import type { ViewerStore } from '../ViewerStore.js';
 
 export class ViewerEditorMode extends EditorMode {
   viewerStore: ViewerStore;

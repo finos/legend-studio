@@ -15,8 +15,8 @@
  */
 
 import { type Hashable, hashArray } from '@finos/legend-shared';
-import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../ESService_ModelUtils';
-import { StringValuePattern } from './ESService_StringValuePattern';
+import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../ESService_ModelUtils.js';
+import { StringValuePattern } from './ESService_StringValuePattern.js';
 
 export class EqualToJsonPattern extends StringValuePattern implements Hashable {
   override get hashCode(): string {

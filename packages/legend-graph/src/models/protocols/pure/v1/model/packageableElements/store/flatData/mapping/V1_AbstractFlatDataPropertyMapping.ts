@@ -14,6 +14,6 @@
  * limitations under the License.
  */
 
-import { V1_PropertyMapping } from '../../../../../model/packageableElements/mapping/V1_PropertyMapping';
+import { V1_PropertyMapping } from '../../../../../model/packageableElements/mapping/V1_PropertyMapping.js';
 
 export abstract class V1_AbstractFlatDataPropertyMapping extends V1_PropertyMapping {}

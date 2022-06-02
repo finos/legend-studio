@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import { V1_ValueSpecification } from '../../../model/valueSpecification/V1_ValueSpecification';
-import type { V1_Multiplicity } from '../../../model/packageableElements/domain/V1_Multiplicity';
+import { V1_ValueSpecification } from '../../../model/valueSpecification/V1_ValueSpecification.js';
+import type { V1_Multiplicity } from '../../../model/packageableElements/domain/V1_Multiplicity.js';
 
 export abstract class V1_CDate extends V1_ValueSpecification {
   multiplicity!: V1_Multiplicity;

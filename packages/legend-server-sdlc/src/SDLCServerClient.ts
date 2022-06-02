@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-import type { Project } from './models/project/Project';
-import type { ImportReport } from './models/project/ImportReport';
-import { type Workspace, WorkspaceType } from './models/workspace/Workspace';
-import type { Revision, RevisionAlias } from './models/revision/Revision';
-import type { Workflow, WorkflowStatus } from './models/workflow/Workflow';
-import type { Review, ReviewState } from './models/review/Review';
-import type { Version } from './models/version/Version';
-import type { WorkspaceUpdateReport } from './models/workspace/WorkspaceUpdateReport';
-import type { ProjectConfiguration } from './models/configuration/ProjectConfiguration';
-import type { CreateVersionCommand } from './models/version/VersionCommands';
-import type { ProjectStructureVersion } from './models/configuration/ProjectStructureVersion';
-import type { User } from './models/User';
+import type { Project } from './models/project/Project.js';
+import type { ImportReport } from './models/project/ImportReport.js';
+import { type Workspace, WorkspaceType } from './models/workspace/Workspace.js';
+import type { Revision, RevisionAlias } from './models/revision/Revision.js';
+import type { Workflow, WorkflowStatus } from './models/workflow/Workflow.js';
+import type { Review, ReviewState } from './models/review/Review.js';
+import type { Version } from './models/version/Version.js';
+import type { WorkspaceUpdateReport } from './models/workspace/WorkspaceUpdateReport.js';
+import type { ProjectConfiguration } from './models/configuration/ProjectConfiguration.js';
+import type { CreateVersionCommand } from './models/version/VersionCommands.js';
+import type { ProjectStructureVersion } from './models/configuration/ProjectStructureVersion.js';
+import type { User } from './models/User.js';
 import {
   type PlainObject,
   type TraceData,
@@ -40,18 +40,18 @@ import type {
   CreateProjectCommand,
   ImportProjectCommand,
   UpdateProjectCommand,
-} from './models/project/ProjectCommands';
-import type { UpdateProjectConfigurationCommand } from './models/configuration/ProjectConfigurationCommands';
+} from './models/project/ProjectCommands.js';
+import type { UpdateProjectConfigurationCommand } from './models/configuration/ProjectConfigurationCommands.js';
 import type {
   PerformEntitiesChangesCommand,
   UpdateEntitiesCommand,
-} from './models/entity/EntityCommands';
+} from './models/entity/EntityCommands.js';
 import type {
   CommitReviewCommand,
   CreateReviewCommand,
-} from './models/review/ReviewCommands';
-import type { WorkflowJob } from './models/workflow/WorkflowJob';
-import type { SDLCServerFeaturesConfiguration } from './models/server/SDLCServerFeaturesConfiguration';
+} from './models/review/ReviewCommands.js';
+import type { WorkflowJob } from './models/workflow/WorkflowJob.js';
+import type { SDLCServerFeaturesConfiguration } from './models/server/SDLCServerFeaturesConfiguration.js';
 
 enum SDLC_TRACER_SPAN {
   IMPORT_PROJECT = 'import project',

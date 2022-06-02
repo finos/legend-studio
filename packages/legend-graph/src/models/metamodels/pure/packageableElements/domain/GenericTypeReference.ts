@@ -18,10 +18,10 @@ import {
   PackageableElementExplicitReference,
   type PackageableElementReference,
   type PackageableElementImplicitReference,
-} from '../PackageableElementReference';
-import { ReferenceWithOwner } from '../../Reference';
-import type { GenericType } from './GenericType';
-import type { Type } from './Type';
+} from '../PackageableElementReference.js';
+import { ReferenceWithOwner } from '../../Reference.js';
+import type { GenericType } from './GenericType.js';
+import type { Type } from './Type.js';
 
 export abstract class GenericTypeReference extends ReferenceWithOwner {
   override readonly ownerReference: PackageableElementReference<Type>;

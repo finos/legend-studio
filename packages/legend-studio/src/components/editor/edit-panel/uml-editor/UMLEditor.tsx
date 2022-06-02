@@ -15,12 +15,12 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { UMLEditorState } from '../../../../stores/editor-state/element-editor-state/UMLEditorState';
-import { ClassEditor } from './ClassEditor';
-import { EnumerationEditor } from './EnumerationEditor';
-import { AssociationEditor } from './AssociationEditor';
-import { ProfileEditor } from './ProfileEditor';
-import { useEditorStore } from '../../EditorStoreProvider';
+import { UMLEditorState } from '../../../../stores/editor-state/element-editor-state/UMLEditorState.js';
+import { ClassEditor } from './ClassEditor.js';
+import { EnumerationEditor } from './EnumerationEditor.js';
+import { AssociationEditor } from './AssociationEditor.js';
+import { ProfileEditor } from './ProfileEditor.js';
+import { useEditorStore } from '../../EditorStoreProvider.js';
 import { Class, Enumeration, Association, Profile } from '@finos/legend-graph';
 
 export const UMLEditor = observer(() => {

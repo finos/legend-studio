@@ -19,8 +19,8 @@ import {
   type V1_EmbeddedDataVisitor,
 } from '@finos/legend-graph';
 import { type Hashable, hashArray } from '@finos/legend-shared';
-import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../ESService_ModelUtils';
-import type { V1_ServiceStubMapping } from './V1_ESService_ServiceStubMapping';
+import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../ESService_ModelUtils.js';
+import type { V1_ServiceStubMapping } from './V1_ESService_ServiceStubMapping.js';
 
 export class V1_ServiceStoreEmbeddedData
   extends V1_EmbeddedData

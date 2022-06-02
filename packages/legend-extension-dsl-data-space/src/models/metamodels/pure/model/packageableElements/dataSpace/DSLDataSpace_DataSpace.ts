@@ -21,7 +21,7 @@ import {
   type StereotypeReference,
   type TaggedValue,
 } from '@finos/legend-graph';
-import { DATA_SPACE_HASH_STRUCTURE } from '../../../../../DSLDataSpace_ModelUtils';
+import { DATA_SPACE_HASH_STRUCTURE } from '../../../../../DSLDataSpace_ModelUtils.js';
 
 export abstract class DataSpaceSupportInfo implements Hashable {
   abstract get hashCode(): string;

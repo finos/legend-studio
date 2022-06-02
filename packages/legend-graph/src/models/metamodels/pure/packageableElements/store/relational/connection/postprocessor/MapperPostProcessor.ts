@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import type { Mapper } from './Mapper';
-import { PostProcessor } from './PostProcessor';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../../MetaModelConst';
+import type { Mapper } from './Mapper.js';
+import { PostProcessor } from './PostProcessor.js';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../../MetaModelConst.js';
 import { type Hashable, hashArray } from '@finos/legend-shared';
 
 export class MapperPostProcessor extends PostProcessor implements Hashable {

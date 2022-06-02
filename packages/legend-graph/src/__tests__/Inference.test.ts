@@ -21,14 +21,14 @@ import {
   TEST_DATA__ImportResolutionMultipleMatchesFound,
   TEST_DATA__ReferenceWithoutSection,
   TEST_DATA__ReferenceModification,
-} from './TEST_DATA__Inference';
+} from './TEST_DATA__Inference.js';
 import type { Entity } from '@finos/legend-model-storage';
 import {
   TEST__buildGraphWithEntities,
   TEST__excludeSectionIndex,
   TEST__getTestGraphManagerState,
-} from '../GraphManagerTestUtils';
-import { getTag } from '../helpers/DomainHelper';
+} from '../GraphManagerTestUtils.js';
+import { getTag } from '../helpers/DomainHelper.js';
 
 test(unitTest('Infer default mapping element ID'), async () => {
   const graphManagerState = TEST__getTestGraphManagerState();

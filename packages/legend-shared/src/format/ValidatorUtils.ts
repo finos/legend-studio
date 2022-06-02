@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { returnUndefOnError } from '../error/ErrorUtils';
+import { returnUndefOnError } from '../error/ErrorUtils.js';
 
 const VALID_STRING = /^[\w_][\w_$]*$/u;
 

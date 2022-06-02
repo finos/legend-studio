@@ -15,12 +15,12 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../MetaModelConst';
-import { hashObjectWithoutSourceInformation } from '../../../../MetaModelUtils';
-import type { DataElement } from '../packageableElements/data/DataElement';
-import type { Class } from '../packageableElements/domain/Class';
-import type { PackageableElementReference } from '../packageableElements/PackageableElementReference';
-import type { RelationalData } from './RelationalData';
+import { CORE_HASH_STRUCTURE } from '../../../../MetaModelConst.js';
+import { hashObjectWithoutSourceInformation } from '../../../../MetaModelUtils.js';
+import type { DataElement } from '../packageableElements/data/DataElement.js';
+import type { Class } from '../packageableElements/domain/Class.js';
+import type { PackageableElementReference } from '../packageableElements/PackageableElementReference.js';
+import type { RelationalData } from './RelationalData.js';
 
 export interface EmbeddedDataVisitor<T> {
   visit_EmbeddedData(embeddedData: EmbeddedData): T;

@@ -30,7 +30,7 @@ import {
   guaranteeNonNullable,
   isNonNullable,
 } from '@finos/legend-shared';
-import { LEGEND_STUDIO_APP_EVENT } from '../LegendStudioAppEvent';
+import { LEGEND_STUDIO_APP_EVENT } from '../LegendStudioAppEvent.js';
 import {
   type GenerationTreeNodeData,
   type GenerationOutputResult,
@@ -42,14 +42,14 @@ import {
   populateDirectoryTreeNodeChildren,
   buildGenerationDirectory,
   reprocessOpenNodes,
-} from '../shared/FileGenerationTreeUtil';
+} from '../shared/FileGenerationTreeUtil.js';
 import type { TreeData } from '@finos/legend-art';
-import type { EditorStore } from '../EditorStore';
-import { ExplorerTreeRootPackageLabel } from '../ExplorerTreeState';
-import { FileGenerationViewerState } from './FileGenerationViewerState';
-import type { EditorState } from './EditorState';
-import { ElementEditorState } from './element-editor-state/ElementEditorState';
-import { ElementFileGenerationState } from './element-editor-state/ElementFileGenerationState';
+import type { EditorStore } from '../EditorStore.js';
+import { ExplorerTreeRootPackageLabel } from '../ExplorerTreeState.js';
+import { FileGenerationViewerState } from './FileGenerationViewerState.js';
+import type { EditorState } from './EditorState.js';
+import { ElementEditorState } from './element-editor-state/ElementEditorState.js';
+import { ElementFileGenerationState } from './element-editor-state/ElementFileGenerationState.js';
 import type { Entity } from '@finos/legend-model-storage';
 import {
   type GenerationConfigurationDescription,
@@ -61,12 +61,12 @@ import {
   GenerationSpecification,
   ELEMENT_PATH_DELIMITER,
 } from '@finos/legend-graph';
-import type { DSLGenerationSpecification_LegendStudioPlugin_Extension } from '../DSLGenerationSpecification_LegendStudioPlugin_Extension';
-import { ExternalFormatState } from './ExternalFormatState';
+import type { DSLGenerationSpecification_LegendStudioPlugin_Extension } from '../DSLGenerationSpecification_LegendStudioPlugin_Extension.js';
+import { ExternalFormatState } from './ExternalFormatState.js';
 import {
   generationSpecification_addFileGeneration,
   generationSpecification_addGenerationElement,
-} from '../graphModifier/DSLGeneration_GraphModifierHelper';
+} from '../graphModifier/DSLGeneration_GraphModifierHelper.js';
 
 export const DEFAULT_GENERATION_SPECIFICATION_NAME =
   'MyGenerationSpecification';

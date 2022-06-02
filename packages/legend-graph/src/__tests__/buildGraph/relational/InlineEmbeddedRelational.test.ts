@@ -15,7 +15,7 @@
  */
 
 import { test, expect, beforeEach } from '@jest/globals';
-import { TEST_DATA__inlineEmbeddedRelationalTestData } from './TEST_DATA__RelationalEntities';
+import { TEST_DATA__inlineEmbeddedRelationalTestData } from './TEST_DATA__RelationalEntities.js';
 import {
   guaranteeNonNullable,
   guaranteeType,
@@ -25,10 +25,10 @@ import type { Entity } from '@finos/legend-model-storage';
 import {
   TEST__buildGraphWithEntities,
   TEST__getTestGraphManagerState,
-} from '../../../GraphManagerTestUtils';
-import type { GraphManagerState } from '../../../GraphManagerState';
-import { getOwnClassMappingsByClass } from '../../../helpers/DSLMapping_Helper';
-import { RootRelationalInstanceSetImplementation } from '../../../models/metamodels/pure/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation';
+} from '../../../GraphManagerTestUtils.js';
+import type { GraphManagerState } from '../../../GraphManagerState.js';
+import { getOwnClassMappingsByClass } from '../../../helpers/DSLMapping_Helper.js';
+import { RootRelationalInstanceSetImplementation } from '../../../models/metamodels/pure/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation.js';
 
 let graphManagerState: GraphManagerState;
 

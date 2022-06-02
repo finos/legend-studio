@@ -23,7 +23,7 @@ import {
   TEST_DATA__unsupportedFunctionWithFullPath,
   TEST_DATA_malformedFilterExpressionWithSubtype,
   TEST_DATA__malformedTodayFunction,
-} from './TEST_DATA__QueryBuilder_Failure';
+} from './TEST_DATA__QueryBuilder_Failure.js';
 import TEST_DATA__ComplexRelationalModel from './TEST_DATA__QueryBuilder_Model_ComplexRelational.json';
 import TEST_DATA__PostFilterModel from './TEST_DATA__QueryBuilder_Model_PostFilter.json';
 import { integrationTest } from '@finos/legend-shared';
@@ -33,14 +33,14 @@ import {
   TEST__buildGraphWithEntities,
   TEST__getTestGraphManagerState,
 } from '@finos/legend-graph';
-import { LegendQueryPluginManager } from '../../application/LegendQueryPluginManager';
-import { Query_GraphPreset } from '../../models/Query_GraphPreset';
+import { LegendQueryPluginManager } from '../../application/LegendQueryPluginManager.js';
+import { Query_GraphPreset } from '../../models/Query_GraphPreset.js';
 import { TEST__getTestApplicationStore } from '@finos/legend-application';
 import {
   QueryBuilderState,
   StandardQueryBuilderMode,
-} from '../QueryBuilderState';
-import { TEST__getTestQueryConfig } from '../QueryStoreTestUtils';
+} from '../QueryBuilderState.js';
+import { TEST__getTestQueryConfig } from '../QueryStoreTestUtils.js';
 
 type TestCase = [
   string,

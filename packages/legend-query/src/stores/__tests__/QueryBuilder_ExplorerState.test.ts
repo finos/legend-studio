@@ -36,14 +36,14 @@ import {
   type QueryBuilderPropertyMappingData,
   getPropertyNodeMappingData,
   getRootMappingData,
-} from '../../stores/QueryBuilderExplorerState';
-import { LegendQueryPluginManager } from '../../application/LegendQueryPluginManager';
-import { Query_GraphPreset } from '../../models/Query_GraphPreset';
-import { TEST__provideMockedLegendQueryStore } from '../../components/QueryComponentTestUtils';
+} from '../../stores/QueryBuilderExplorerState.js';
+import { LegendQueryPluginManager } from '../../application/LegendQueryPluginManager.js';
+import { Query_GraphPreset } from '../../models/Query_GraphPreset.js';
+import { TEST__provideMockedLegendQueryStore } from '../../components/QueryComponentTestUtils.js';
 import {
   TEST_DATA__Auto_M2M,
   TEST_DATA__Relational_Inline,
-} from './TEST_DATA__MappingData';
+} from './TEST_DATA__MappingData.js';
 import {
   EXPECTED__MappingData_ComplexM2MModel,
   EXPECTED__MappingData__AssociationMapping,
@@ -51,7 +51,7 @@ import {
   EXPECTED__MappingData__COVIDDataSimpleModel,
   EXPECTED__MappingData__Relational_Inheritance,
   EXPECTED__MappingData__Relational_Inline,
-} from './TEST_DATA__Expected_MappingData';
+} from './TEST_DATA__Expected_MappingData.js';
 
 interface NodePropertyMappingData {
   property: AbstractProperty;

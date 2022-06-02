@@ -22,8 +22,8 @@ import {
   TEST__openAndAssertPathWithElement,
   TEST__provideMockedEditorStore,
   TEST__setUpEditorWithDefaultSDLCData,
-} from '../../../EditorComponentTestUtils';
-import type { EditorStore } from '../../../../stores/EditorStore';
+} from '../../../EditorComponentTestUtils.js';
+import type { EditorStore } from '../../../../stores/EditorStore.js';
 
 const packageRootChildren = ['ui'];
 

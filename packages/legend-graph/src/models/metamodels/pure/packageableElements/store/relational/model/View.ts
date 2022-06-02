@@ -15,16 +15,16 @@
  */
 
 import { type Hashable, hashArray } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
-import type { ColumnMapping } from './ColumnMapping';
-import type { Schema } from './Schema';
-import type { Column } from './Column';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst.js';
+import type { ColumnMapping } from './ColumnMapping.js';
+import type { Schema } from './Schema.js';
+import type { Column } from './Column.js';
 import {
   type RelationalMappingSpecification,
   NamedRelation,
-} from './RelationalOperationElement';
-import type { GroupByMapping } from '../mapping/GroupByMapping';
-import type { FilterMapping } from '../mapping/FilterMapping';
+} from './RelationalOperationElement.js';
+import type { GroupByMapping } from '../mapping/GroupByMapping.js';
+import type { FilterMapping } from '../mapping/FilterMapping.js';
 
 export class View
   extends NamedRelation

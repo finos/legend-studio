@@ -62,8 +62,8 @@ import {
   getAllClassProperties,
   getRawGenericType,
 } from '@finos/legend-graph';
-import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../DSLMapping_LegendStudioPlugin_Extension';
-import type { EditorStore } from '../../../EditorStore';
+import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../DSLMapping_LegendStudioPlugin_Extension.js';
+import type { EditorStore } from '../../../EditorStore.js';
 import {
   enumMapping_setEnumValueMappings,
   enumValueMapping_addSourceValue,
@@ -72,8 +72,8 @@ import {
   operationMapping_setParameters,
   pureInstanceSetImpl_setPropertyMappings,
   purePropertyMapping_setTransformer,
-} from '../../../graphModifier/DSLMapping_GraphModifierHelper';
-import { rootRelationalSetImp_setPropertyMappings } from '../../../graphModifier/StoreRelational_GraphModifierHelper';
+} from '../../../graphModifier/DSLMapping_GraphModifierHelper.js';
+import { rootRelationalSetImp_setPropertyMappings } from '../../../graphModifier/StoreRelational_GraphModifierHelper.js';
 
 /**
  * Iterate through all properties (including supertypes' properties) of the set implementation

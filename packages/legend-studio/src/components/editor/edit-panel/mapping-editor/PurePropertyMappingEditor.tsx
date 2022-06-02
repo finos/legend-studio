@@ -20,22 +20,22 @@ import {
   type TransformDropTarget,
   CORE_DND_TYPE,
   TypeDragSource,
-} from '../../../../stores/shared/DnDUtil';
+} from '../../../../stores/shared/DnDUtil.js';
 import {
   type MappingElement,
   MappingEditorState,
-} from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
+} from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState.js';
 import type {
   PurePropertyMappingState,
   PureInstanceSetImplementationState,
-} from '../../../../stores/editor-state/element-editor-state/mapping/PureInstanceSetImplementationState';
+} from '../../../../stores/editor-state/element-editor-state/mapping/PureInstanceSetImplementationState.js';
 import {
   clsx,
   CustomSelectorInput,
   ArrowCircleRightIcon,
 } from '@finos/legend-art';
 import { type ConnectDropTarget, useDrop } from 'react-dnd';
-import { useEditorStore } from '../../EditorStoreProvider';
+import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
   Enumeration,
   EnumerationMapping,
@@ -43,13 +43,13 @@ import {
   getEnumerationMappingsByEnumeration,
   getRawGenericType,
 } from '@finos/legend-graph';
-import { StudioLambdaEditor } from '../../../shared/StudioLambdaEditor';
-import { purePropertyMapping_setTransformer } from '../../../../stores/graphModifier/DSLMapping_GraphModifierHelper';
-import { getExpectedReturnType } from './PropertyMappingsEditor';
+import { StudioLambdaEditor } from '../../../shared/StudioLambdaEditor.js';
+import { purePropertyMapping_setTransformer } from '../../../../stores/graphModifier/DSLMapping_GraphModifierHelper.js';
+import { getExpectedReturnType } from './PropertyMappingsEditor.js';
 import {
   CLASS_PROPERTY_TYPE,
   getClassPropertyType,
-} from '../../../../stores/shared/ModelUtil';
+} from '../../../../stores/shared/ModelUtil.js';
 
 const SimplePropertyMappingEditor = observer(
   (props: {

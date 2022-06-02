@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import type { EmbeddedData } from '../models/metamodels/pure/data/EmbeddedData';
-import type { ObserverContext } from './action/changeDetection/CoreObserverHelper';
-import type { PureGraphManagerPlugin } from './PureGraphManagerPlugin';
+import type { EmbeddedData } from '../models/metamodels/pure/data/EmbeddedData.js';
+import type { ObserverContext } from './action/changeDetection/CoreObserverHelper.js';
+import type { PureGraphManagerPlugin } from './PureGraphManagerPlugin.js';
 
 export type EmbeddedDataObserver = (
   embeddedData: EmbeddedData,

@@ -23,41 +23,41 @@ import {
   LogEvent,
   addUniqueEntry,
 } from '@finos/legend-shared';
-import { CORE_PURE_PATH } from '../../../../../../../MetaModelConst';
-import { Class } from '../../../../../../metamodels/pure/packageableElements/domain/Class';
+import { CORE_PURE_PATH } from '../../../../../../../MetaModelConst.js';
+import { Class } from '../../../../../../metamodels/pure/packageableElements/domain/Class.js';
 import {
   V1_buildFullPath,
   type V1_GraphBuilderContext,
-} from '../../../transformation/pureGraph/to/V1_GraphBuilderContext';
+} from '../../../transformation/pureGraph/to/V1_GraphBuilderContext.js';
 import type {
   V1_PackageableElement,
   V1_PackageableElementVisitor,
-} from '../../../model/packageableElements/V1_PackageableElement';
-import type { V1_Profile } from '../../../model/packageableElements/domain/V1_Profile';
-import type { V1_Enumeration } from '../../../model/packageableElements/domain/V1_Enumeration';
-import type { V1_Class } from '../../../model/packageableElements/domain/V1_Class';
-import type { V1_ConcreteFunctionDefinition } from '../../../model/packageableElements/function/V1_ConcreteFunctionDefinition';
-import type { V1_Association } from '../../../model/packageableElements/domain/V1_Association';
-import type { V1_FlatData } from '../../../model/packageableElements/store/flatData/model/V1_FlatData';
-import type { V1_Database } from '../../../model/packageableElements/store/relational/model/V1_Database';
-import type { V1_Mapping } from '../../../model/packageableElements/mapping/V1_Mapping';
-import type { V1_Service } from '../../../model/packageableElements/service/V1_Service';
-import { V1_ProtocolToMetaModelClassMappingFirstPassBuilder } from './V1_ProtocolToMetaModelClassMappingFirstPassBuilder';
+} from '../../../model/packageableElements/V1_PackageableElement.js';
+import type { V1_Profile } from '../../../model/packageableElements/domain/V1_Profile.js';
+import type { V1_Enumeration } from '../../../model/packageableElements/domain/V1_Enumeration.js';
+import type { V1_Class } from '../../../model/packageableElements/domain/V1_Class.js';
+import type { V1_ConcreteFunctionDefinition } from '../../../model/packageableElements/function/V1_ConcreteFunctionDefinition.js';
+import type { V1_Association } from '../../../model/packageableElements/domain/V1_Association.js';
+import type { V1_FlatData } from '../../../model/packageableElements/store/flatData/model/V1_FlatData.js';
+import type { V1_Database } from '../../../model/packageableElements/store/relational/model/V1_Database.js';
+import type { V1_Mapping } from '../../../model/packageableElements/mapping/V1_Mapping.js';
+import type { V1_Service } from '../../../model/packageableElements/service/V1_Service.js';
+import { V1_ProtocolToMetaModelClassMappingFirstPassBuilder } from './V1_ProtocolToMetaModelClassMappingFirstPassBuilder.js';
 import {
   V1_buildAssociationProperty,
   V1_buildDerivedProperty,
   V1_buildProperty,
   V1_buildTaggedValue,
-} from '../../../transformation/pureGraph/to/helpers/V1_DomainBuilderHelper';
-import type { V1_PackageableRuntime } from '../../../model/packageableElements/runtime/V1_PackageableRuntime';
-import type { V1_PackageableConnection } from '../../../model/packageableElements/connection/V1_PackageableConnection';
-import type { V1_FileGenerationSpecification } from '../../../model/packageableElements/fileGeneration/V1_FileGenerationSpecification';
-import type { V1_GenerationSpecification } from '../../../model/packageableElements/generationSpecification/V1_GenerationSpecification';
-import type { V1_Measure } from '../../../model/packageableElements/domain/V1_Measure';
-import { V1_buildDatabaseSchemaViewsFirstPass } from '../../../transformation/pureGraph/to/helpers/V1_DatabaseBuilderHelper';
-import type { V1_SectionIndex } from '../../../model/packageableElements/section/V1_SectionIndex';
-import { GraphBuilderError } from '../../../../../../../graphManager/GraphManagerUtils';
-import type { V1_DataElement } from '../../../model/packageableElements/data/V1_DataElement';
+} from '../../../transformation/pureGraph/to/helpers/V1_DomainBuilderHelper.js';
+import type { V1_PackageableRuntime } from '../../../model/packageableElements/runtime/V1_PackageableRuntime.js';
+import type { V1_PackageableConnection } from '../../../model/packageableElements/connection/V1_PackageableConnection.js';
+import type { V1_FileGenerationSpecification } from '../../../model/packageableElements/fileGeneration/V1_FileGenerationSpecification.js';
+import type { V1_GenerationSpecification } from '../../../model/packageableElements/generationSpecification/V1_GenerationSpecification.js';
+import type { V1_Measure } from '../../../model/packageableElements/domain/V1_Measure.js';
+import { V1_buildDatabaseSchemaViewsFirstPass } from '../../../transformation/pureGraph/to/helpers/V1_DatabaseBuilderHelper.js';
+import type { V1_SectionIndex } from '../../../model/packageableElements/section/V1_SectionIndex.js';
+import { GraphBuilderError } from '../../../../../../../graphManager/GraphManagerUtils.js';
+import type { V1_DataElement } from '../../../model/packageableElements/data/V1_DataElement.js';
 
 export class V1_ProtocolToMetaModelGraphThirdPassBuilder
   implements V1_PackageableElementVisitor<void>

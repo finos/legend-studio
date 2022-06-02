@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import type { ModelGenerationConfiguration } from '../../ModelGenerationConfiguration';
-import type { V1_PureModelContextData } from './v1/model/context/V1_PureModelContextData';
-import type { V1_Engine } from './v1/engine/V1_Engine';
-import type { PureProtocolProcessorPlugin } from './PureProtocolProcessorPlugin';
+import type { ModelGenerationConfiguration } from '../../ModelGenerationConfiguration.js';
+import type { V1_PureModelContextData } from './v1/model/context/V1_PureModelContextData.js';
+import type { V1_Engine } from './v1/engine/V1_Engine.js';
+import type { PureProtocolProcessorPlugin } from './PureProtocolProcessorPlugin.js';
 
 export type V1_ModelGeneratorFromConfiguration = (
   config: ModelGenerationConfiguration,

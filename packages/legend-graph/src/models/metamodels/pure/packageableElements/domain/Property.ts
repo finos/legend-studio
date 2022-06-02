@@ -15,13 +15,13 @@
  */
 
 import { type Hashable, hashArray, uuid } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
-import type { GenericTypeReference } from './GenericTypeReference';
-import type { Multiplicity } from './Multiplicity';
-import type { AbstractProperty, PropertyOwner } from './AbstractProperty';
-import type { AnnotatedElement } from './AnnotatedElement';
-import type { TaggedValue } from './TaggedValue';
-import type { StereotypeReference } from './StereotypeReference';
+import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst.js';
+import type { GenericTypeReference } from './GenericTypeReference.js';
+import type { Multiplicity } from './Multiplicity.js';
+import type { AbstractProperty, PropertyOwner } from './AbstractProperty.js';
+import type { AnnotatedElement } from './AnnotatedElement.js';
+import type { TaggedValue } from './TaggedValue.js';
+import type { StereotypeReference } from './StereotypeReference.js';
 
 export class Property implements AbstractProperty, AnnotatedElement, Hashable {
   readonly _UUID = uuid();

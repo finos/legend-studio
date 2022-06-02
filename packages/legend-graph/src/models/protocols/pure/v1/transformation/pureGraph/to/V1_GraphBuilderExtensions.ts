@@ -23,26 +23,26 @@ import {
   UnsupportedOperationError,
   IllegalStateError,
 } from '@finos/legend-shared';
-import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin';
-import { V1_PackageableConnection } from '../../../model/packageableElements/connection/V1_PackageableConnection';
-import { V1_Association } from '../../../model/packageableElements/domain/V1_Association';
-import { V1_Class } from '../../../model/packageableElements/domain/V1_Class';
-import { V1_Enumeration } from '../../../model/packageableElements/domain/V1_Enumeration';
+import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin.js';
+import { V1_PackageableConnection } from '../../../model/packageableElements/connection/V1_PackageableConnection.js';
+import { V1_Association } from '../../../model/packageableElements/domain/V1_Association.js';
+import { V1_Class } from '../../../model/packageableElements/domain/V1_Class.js';
+import { V1_Enumeration } from '../../../model/packageableElements/domain/V1_Enumeration.js';
 import {
   V1_Measure,
   V1_Unit,
-} from '../../../model/packageableElements/domain/V1_Measure';
-import { V1_Profile } from '../../../model/packageableElements/domain/V1_Profile';
-import { V1_FileGenerationSpecification } from '../../../model/packageableElements/fileGeneration/V1_FileGenerationSpecification';
-import { V1_ConcreteFunctionDefinition } from '../../../model/packageableElements/function/V1_ConcreteFunctionDefinition';
-import { V1_GenerationSpecification } from '../../../model/packageableElements/generationSpecification/V1_GenerationSpecification';
-import { V1_Mapping } from '../../../model/packageableElements/mapping/V1_Mapping';
-import { V1_PackageableRuntime } from '../../../model/packageableElements/runtime/V1_PackageableRuntime';
-import { V1_SectionIndex } from '../../../model/packageableElements/section/V1_SectionIndex';
-import { V1_Service } from '../../../model/packageableElements/service/V1_Service';
-import { V1_Store } from '../../../model/packageableElements/store/V1_Store';
-import { V1_PackageableElement } from '../../../model/packageableElements/V1_PackageableElement';
-import type { V1_ElementBuilder } from './V1_ElementBuilder';
+} from '../../../model/packageableElements/domain/V1_Measure.js';
+import { V1_Profile } from '../../../model/packageableElements/domain/V1_Profile.js';
+import { V1_FileGenerationSpecification } from '../../../model/packageableElements/fileGeneration/V1_FileGenerationSpecification.js';
+import { V1_ConcreteFunctionDefinition } from '../../../model/packageableElements/function/V1_ConcreteFunctionDefinition.js';
+import { V1_GenerationSpecification } from '../../../model/packageableElements/generationSpecification/V1_GenerationSpecification.js';
+import { V1_Mapping } from '../../../model/packageableElements/mapping/V1_Mapping.js';
+import { V1_PackageableRuntime } from '../../../model/packageableElements/runtime/V1_PackageableRuntime.js';
+import { V1_SectionIndex } from '../../../model/packageableElements/section/V1_SectionIndex.js';
+import { V1_Service } from '../../../model/packageableElements/service/V1_Service.js';
+import { V1_Store } from '../../../model/packageableElements/store/V1_Store.js';
+import { V1_PackageableElement } from '../../../model/packageableElements/V1_PackageableElement.js';
+import type { V1_ElementBuilder } from './V1_ElementBuilder.js';
 
 const FORBIDDEN_BUILDER_PROTOCOL_CLASSES = new Set<
   GenericClazz<V1_PackageableElement>

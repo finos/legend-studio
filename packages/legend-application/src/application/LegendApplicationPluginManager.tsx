@@ -25,7 +25,7 @@ import {
   type TracerServicePluginManager,
   AbstractPluginManager,
 } from '@finos/legend-shared';
-import type { LegendApplicationPlugin } from '../stores/LegendApplicationPlugin';
+import type { LegendApplicationPlugin } from '../stores/LegendApplicationPlugin.js';
 
 export class LegendApplicationPluginManager
   extends AbstractPluginManager

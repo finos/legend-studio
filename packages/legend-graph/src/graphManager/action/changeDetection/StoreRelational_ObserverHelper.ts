@@ -25,7 +25,7 @@ import {
   SnowflakePublicAuthenticationStrategy,
   UsernamePasswordAuthenticationStrategy,
   GCPWorkloadIdentityFederationAuthenticationStrategy,
-} from '../../../models/metamodels/pure/packageableElements/store/relational/connection/AuthenticationStrategy';
+} from '../../../models/metamodels/pure/packageableElements/store/relational/connection/AuthenticationStrategy.js';
 import {
   type DatasourceSpecification,
   BigQueryDatasourceSpecification,
@@ -35,34 +35,34 @@ import {
   RedshiftDatasourceSpecification,
   SnowflakeDatasourceSpecification,
   StaticDatasourceSpecification,
-} from '../../../models/metamodels/pure/packageableElements/store/relational/connection/DatasourceSpecification';
-import { MapperPostProcessor } from '../../../models/metamodels/pure/packageableElements/store/relational/connection/postprocessor/MapperPostProcessor';
-import type { PostProcessor } from '../../../models/metamodels/pure/packageableElements/store/relational/connection/postprocessor/PostProcessor';
+} from '../../../models/metamodels/pure/packageableElements/store/relational/connection/DatasourceSpecification.js';
+import { MapperPostProcessor } from '../../../models/metamodels/pure/packageableElements/store/relational/connection/postprocessor/MapperPostProcessor.js';
+import type { PostProcessor } from '../../../models/metamodels/pure/packageableElements/store/relational/connection/postprocessor/PostProcessor.js';
 import type {
   DatabaseConnection,
   RelationalDatabaseConnection,
-} from '../../../models/metamodels/pure/packageableElements/store/relational/connection/RelationalDatabaseConnection';
-import type { EmbeddedRelationalInstanceSetImplementation } from '../../../models/metamodels/pure/packageableElements/store/relational/mapping/EmbeddedRelationalInstanceSetImplementation';
-import type { FilterMapping } from '../../../models/metamodels/pure/packageableElements/store/relational/mapping/FilterMapping';
-import type { GroupByMapping } from '../../../models/metamodels/pure/packageableElements/store/relational/mapping/GroupByMapping';
-import type { InlineEmbeddedRelationalInstanceSetImplementation } from '../../../models/metamodels/pure/packageableElements/store/relational/mapping/InlineEmbeddedRelationalInstanceSetImplementation';
-import type { OtherwiseEmbeddedRelationalInstanceSetImplementation } from '../../../models/metamodels/pure/packageableElements/store/relational/mapping/OtherwiseEmbeddedRelationalInstanceSetImplementation';
-import type { RelationalInputData } from '../../../models/metamodels/pure/packageableElements/store/relational/mapping/RelationalInputData';
-import type { RelationalInstanceSetImplementation } from '../../../models/metamodels/pure/packageableElements/store/relational/mapping/RelationalInstanceSetImplementation';
-import type { RelationalPropertyMapping } from '../../../models/metamodels/pure/packageableElements/store/relational/mapping/RelationalPropertyMapping';
-import type { RootRelationalInstanceSetImplementation } from '../../../models/metamodels/pure/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation';
-import { Column } from '../../../models/metamodels/pure/packageableElements/store/relational/model/Column';
-import type { ColumnMapping } from '../../../models/metamodels/pure/packageableElements/store/relational/model/ColumnMapping';
-import type { ColumnReference } from '../../../models/metamodels/pure/packageableElements/store/relational/model/ColumnReference';
-import type { Database } from '../../../models/metamodels/pure/packageableElements/store/relational/model/Database';
-import type { Filter } from '../../../models/metamodels/pure/packageableElements/store/relational/model/Filter';
-import type { FilterReference } from '../../../models/metamodels/pure/packageableElements/store/relational/model/FilterReference';
-import type { Join } from '../../../models/metamodels/pure/packageableElements/store/relational/model/Join';
-import type { JoinReference } from '../../../models/metamodels/pure/packageableElements/store/relational/model/JoinReference';
+} from '../../../models/metamodels/pure/packageableElements/store/relational/connection/RelationalDatabaseConnection.js';
+import type { EmbeddedRelationalInstanceSetImplementation } from '../../../models/metamodels/pure/packageableElements/store/relational/mapping/EmbeddedRelationalInstanceSetImplementation.js';
+import type { FilterMapping } from '../../../models/metamodels/pure/packageableElements/store/relational/mapping/FilterMapping.js';
+import type { GroupByMapping } from '../../../models/metamodels/pure/packageableElements/store/relational/mapping/GroupByMapping.js';
+import type { InlineEmbeddedRelationalInstanceSetImplementation } from '../../../models/metamodels/pure/packageableElements/store/relational/mapping/InlineEmbeddedRelationalInstanceSetImplementation.js';
+import type { OtherwiseEmbeddedRelationalInstanceSetImplementation } from '../../../models/metamodels/pure/packageableElements/store/relational/mapping/OtherwiseEmbeddedRelationalInstanceSetImplementation.js';
+import type { RelationalInputData } from '../../../models/metamodels/pure/packageableElements/store/relational/mapping/RelationalInputData.js';
+import type { RelationalInstanceSetImplementation } from '../../../models/metamodels/pure/packageableElements/store/relational/mapping/RelationalInstanceSetImplementation.js';
+import type { RelationalPropertyMapping } from '../../../models/metamodels/pure/packageableElements/store/relational/mapping/RelationalPropertyMapping.js';
+import type { RootRelationalInstanceSetImplementation } from '../../../models/metamodels/pure/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation.js';
+import { Column } from '../../../models/metamodels/pure/packageableElements/store/relational/model/Column.js';
+import type { ColumnMapping } from '../../../models/metamodels/pure/packageableElements/store/relational/model/ColumnMapping.js';
+import type { ColumnReference } from '../../../models/metamodels/pure/packageableElements/store/relational/model/ColumnReference.js';
+import type { Database } from '../../../models/metamodels/pure/packageableElements/store/relational/model/Database.js';
+import type { Filter } from '../../../models/metamodels/pure/packageableElements/store/relational/model/Filter.js';
+import type { FilterReference } from '../../../models/metamodels/pure/packageableElements/store/relational/model/FilterReference.js';
+import type { Join } from '../../../models/metamodels/pure/packageableElements/store/relational/model/Join.js';
+import type { JoinReference } from '../../../models/metamodels/pure/packageableElements/store/relational/model/JoinReference.js';
 import {
   type Milestoning,
   TemporalMilestoning,
-} from '../../../models/metamodels/pure/packageableElements/store/relational/model/milestoning/Milestoning';
+} from '../../../models/metamodels/pure/packageableElements/store/relational/model/milestoning/Milestoning.js';
 import {
   type RelationalDataType,
   Binary,
@@ -82,7 +82,7 @@ import {
   TinyInt,
   VarBinary,
   VarChar,
-} from '../../../models/metamodels/pure/packageableElements/store/relational/model/RelationalDataType';
+} from '../../../models/metamodels/pure/packageableElements/store/relational/model/RelationalDataType.js';
 import {
   RelationalOperationElement,
   type NamedRelation,
@@ -93,31 +93,31 @@ import {
   Literal,
   LiteralList,
   RelationalOperationElementWithJoin,
-} from '../../../models/metamodels/pure/packageableElements/store/relational/model/RelationalOperationElement';
-import type { Schema } from '../../../models/metamodels/pure/packageableElements/store/relational/model/Schema';
-import type { Table } from '../../../models/metamodels/pure/packageableElements/store/relational/model/Table';
+} from '../../../models/metamodels/pure/packageableElements/store/relational/model/RelationalOperationElement.js';
+import type { Schema } from '../../../models/metamodels/pure/packageableElements/store/relational/model/Schema.js';
+import type { Table } from '../../../models/metamodels/pure/packageableElements/store/relational/model/Table.js';
 import {
   type NamedRelationalReference,
   TableReference,
-} from '../../../models/metamodels/pure/packageableElements/store/relational/model/TableReference';
-import type { View } from '../../../models/metamodels/pure/packageableElements/store/relational/model/View';
-import { ViewReference } from '../../../models/metamodels/pure/packageableElements/store/relational/model/ViewReference';
-import type { StoreRelational_PureGraphManagerPlugin_Extension } from '../../StoreRelational_PureGraphManagerPlugin_Extension';
+} from '../../../models/metamodels/pure/packageableElements/store/relational/model/TableReference.js';
+import type { View } from '../../../models/metamodels/pure/packageableElements/store/relational/model/View.js';
+import { ViewReference } from '../../../models/metamodels/pure/packageableElements/store/relational/model/ViewReference.js';
+import type { StoreRelational_PureGraphManagerPlugin_Extension } from '../../StoreRelational_PureGraphManagerPlugin_Extension.js';
 import {
   type ObserverContext,
   observe_Abstract_PackageableElement,
   observe_PackageableElementReference,
   skipObserved,
   skipObservedWithContext,
-} from './CoreObserverHelper';
-import { observe_BindingTransformer } from './DSLExternalFormat_ObserverHelper';
+} from './CoreObserverHelper.js';
+import { observe_BindingTransformer } from './DSLExternalFormat_ObserverHelper.js';
 import {
   observe_Abstract_Connection,
   observe_Abstract_InstanceSetImplementation,
   observe_Abstract_PropertyMapping,
   observe_PropertyMapping,
   observe_SetImplementation,
-} from './DSLMapping_ObserverHelper';
+} from './DSLMapping_ObserverHelper.js';
 
 // ------------------------------------- Operation -------------------------------------
 

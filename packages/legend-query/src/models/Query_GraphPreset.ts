@@ -16,7 +16,7 @@
 
 import packageJson from '../../package.json';
 import { AbstractPreset } from '@finos/legend-shared';
-import { QueryBuilder_PureProtocolProcessorPlugin } from './protocols/pure/QueryBuilder_PureProtocolProcessorPlugin';
+import { QueryBuilder_PureProtocolProcessorPlugin } from './protocols/pure/QueryBuilder_PureProtocolProcessorPlugin.js';
 
 export class Query_GraphPreset extends AbstractPreset {
   constructor() {

@@ -30,9 +30,9 @@ import {
   optional,
   primitive,
 } from 'serializr';
-import { APPLICATION_EVENT } from './ApplicationEvent';
-import type { ApplicationStore } from './ApplicationStore';
-import type { LegendApplicationConfig } from './LegendApplicationConfig';
+import { APPLICATION_EVENT } from './ApplicationEvent.js';
+import type { ApplicationStore } from './ApplicationStore.js';
+import type { LegendApplicationConfig } from './LegendApplicationConfig.js';
 
 export type LegendApplicationDocumentationEntryConfig = {
   markdownText?: MarkdownText | undefined;

@@ -14,23 +14,23 @@
  * limitations under the License.
  */
 
-import { BusinessMilestoning } from '../../../../../../../metamodels/pure/packageableElements/store/relational/model/milestoning/BusinessMilestoning';
+import { BusinessMilestoning } from '../../../../../../../metamodels/pure/packageableElements/store/relational/model/milestoning/BusinessMilestoning.js';
 import {
   assertNonEmptyString,
   guaranteeType,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
-import { V1_BusinessMilestoning } from '../../../../model/packageableElements/store/relational/model/milestoning/V1_BusinessMilestoning';
-import type { V1_Milestoning } from '../../../../model/packageableElements/store/relational/model/milestoning/V1_Milestoning';
-import type { Milestoning } from '../../../../../../../metamodels/pure/packageableElements/store/relational/model/milestoning/Milestoning';
-import { V1_BusinessSnapshotMilestoning } from '../../../../model/packageableElements/store/relational/model/milestoning/V1_BusinessSnapshotMilestoning';
-import { BusinessSnapshotMilestoning } from '../../../../../../../metamodels/pure/packageableElements/store/relational/model/milestoning/BusinessSnapshotMilestoning';
-import { V1_ProcessingMilestoning } from '../../../../model/packageableElements/store/relational/model/milestoning/V1_ProcessingMilestoning';
-import { ProcessingMilestoning } from '../../../../../../../metamodels/pure/packageableElements/store/relational/model/milestoning/ProcessingMilestoning';
-import type { V1_GraphBuilderContext } from '../V1_GraphBuilderContext';
-import type { StoreRelational_PureProtocolProcessorPlugin_Extension } from '../../../../../StoreRelational_PureProtocolProcessorPlugin_Extension';
-import { RawPrimitiveInstanceValue } from '../../../../../../../metamodels/pure/rawValueSpecification/RawPrimitiveInstanceValue';
-import { V1_ProtocolToMetaModelRawValueSpecificationBuilder } from '../V1_ProtocolToMetaModelRawValueSpecificationBuilder';
+import { V1_BusinessMilestoning } from '../../../../model/packageableElements/store/relational/model/milestoning/V1_BusinessMilestoning.js';
+import type { V1_Milestoning } from '../../../../model/packageableElements/store/relational/model/milestoning/V1_Milestoning.js';
+import type { Milestoning } from '../../../../../../../metamodels/pure/packageableElements/store/relational/model/milestoning/Milestoning.js';
+import { V1_BusinessSnapshotMilestoning } from '../../../../model/packageableElements/store/relational/model/milestoning/V1_BusinessSnapshotMilestoning.js';
+import { BusinessSnapshotMilestoning } from '../../../../../../../metamodels/pure/packageableElements/store/relational/model/milestoning/BusinessSnapshotMilestoning.js';
+import { V1_ProcessingMilestoning } from '../../../../model/packageableElements/store/relational/model/milestoning/V1_ProcessingMilestoning.js';
+import { ProcessingMilestoning } from '../../../../../../../metamodels/pure/packageableElements/store/relational/model/milestoning/ProcessingMilestoning.js';
+import type { V1_GraphBuilderContext } from '../V1_GraphBuilderContext.js';
+import type { StoreRelational_PureProtocolProcessorPlugin_Extension } from '../../../../../StoreRelational_PureProtocolProcessorPlugin_Extension.js';
+import { RawPrimitiveInstanceValue } from '../../../../../../../metamodels/pure/rawValueSpecification/RawPrimitiveInstanceValue.js';
+import { V1_ProtocolToMetaModelRawValueSpecificationBuilder } from '../V1_ProtocolToMetaModelRawValueSpecificationBuilder.js';
 
 const buildBusinessMilesoning = (
   protocol: V1_BusinessMilestoning,

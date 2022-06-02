@@ -15,8 +15,8 @@
  */
 
 import { test } from '@jest/globals';
-import { DSLPersistence_GraphPreset } from '../../DSLPersistence_Extension';
-import { TEST_DATA__roundtrip } from './TEST_DATA__DSLPersistence_Roundtrip';
+import { DSLPersistence_GraphPreset } from '../../DSLPersistence_Extension.js';
+import { TEST_DATA__roundtrip } from './TEST_DATA__DSLPersistence_Roundtrip.js';
 import {
   DSLExternalFormat_GraphPreset,
   TEST__checkBuildingElementsRoundtrip,

@@ -23,19 +23,19 @@ import {
   getPropertyPath,
   type QueryBuilderDerivedPropertyExpressionState,
   type QueryBuilderPropertyExpressionState,
-} from '../stores/QueryBuilderPropertyEditorState';
+} from '../stores/QueryBuilderPropertyEditorState.js';
 import { type DropTargetMonitor, useDrop } from 'react-dnd';
 import {
   QUERY_BUILDER_EXPLORER_TREE_DND_TYPE,
   type QueryBuilderExplorerTreeDragSource,
   type QueryBuilderExplorerTreePropertyNodeData,
-} from '../stores/QueryBuilderExplorerState';
-import { QueryBuilderPropertyInfoTooltip } from './QueryBuilderPropertyInfoTooltip';
-import { VariableExpressionViewer } from './QueryBuilderParameterPanel';
+} from '../stores/QueryBuilderExplorerState.js';
+import { QueryBuilderPropertyInfoTooltip } from './QueryBuilderPropertyInfoTooltip.js';
+import { VariableExpressionViewer } from './QueryBuilderParameterPanel.js';
 import {
   type QueryBuilderParameterDragSource,
   QUERY_BUILDER_PARAMETER_TREE_DND_TYPE,
-} from '../stores/QueryParametersState';
+} from '../stores/QueryParametersState.js';
 import {
   type ValueSpecification,
   type VariableExpression,

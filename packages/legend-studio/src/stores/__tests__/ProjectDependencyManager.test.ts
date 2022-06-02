@@ -21,7 +21,7 @@ import {
   unitTest,
   guaranteeNonNullable,
 } from '@finos/legend-shared';
-import { TEST__getTestEditorStore } from '../EditorStoreTestUtils';
+import { TEST__getTestEditorStore } from '../EditorStoreTestUtils.js';
 import { flowResult } from 'mobx';
 import type { Entity } from '@finos/legend-model-storage';
 import { ProjectConfiguration } from '@finos/legend-server-sdlc';

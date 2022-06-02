@@ -15,10 +15,10 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
-import type { V1_RawLambda } from '../../../model/rawValueSpecification/V1_RawLambda';
-import type { V1_MappingTestAssert } from './V1_MappingTestAssert';
-import type { V1_InputData } from './V1_InputData';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst.js';
+import type { V1_RawLambda } from '../../../model/rawValueSpecification/V1_RawLambda.js';
+import type { V1_MappingTestAssert } from './V1_MappingTestAssert.js';
+import type { V1_InputData } from './V1_InputData.js';
 
 export class V1_MappingTest implements Hashable {
   name!: string;

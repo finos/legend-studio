@@ -21,13 +21,13 @@ import {
   CoreModel,
   PureModel,
   SystemModel,
-} from '../../../../../../../../graph/PureModel';
-import { TEST__GraphPluginManager } from '../../../../../../../../GraphManagerTestUtils';
-import { getGraphManager } from '../../../../../Pure';
+} from '../../../../../../../../graph/PureModel.js';
+import { TEST__GraphPluginManager } from '../../../../../../../../GraphManagerTestUtils.js';
+import { getGraphManager } from '../../../../../Pure.js';
 import {
   V1_TEST_DATA__unsupportedFunctionExpression,
   V1_TEST_DATA__valueSpecificationWithLatestDate,
-} from './V1_TEST_DATA__ValueSpecificationBuilder';
+} from './V1_TEST_DATA__ValueSpecificationBuilder.js';
 
 type RoundtripTestCase = [
   string,

@@ -22,37 +22,37 @@ import {
   observable,
   override,
 } from 'mobx';
-import type { Association } from '../../../models/metamodels/pure/packageableElements/domain/Association';
-import { Class } from '../../../models/metamodels/pure/packageableElements/domain/Class';
-import type { ConcreteFunctionDefinition } from '../../../models/metamodels/pure/packageableElements/domain/ConcreteFunctionDefinition';
-import type { Constraint } from '../../../models/metamodels/pure/packageableElements/domain/Constraint';
-import type { DataType } from '../../../models/metamodels/pure/packageableElements/domain/DataType';
-import type { DerivedProperty } from '../../../models/metamodels/pure/packageableElements/domain/DerivedProperty';
-import type { Enum } from '../../../models/metamodels/pure/packageableElements/domain/Enum';
-import { Enumeration } from '../../../models/metamodels/pure/packageableElements/domain/Enumeration';
-import type { EnumValueReference } from '../../../models/metamodels/pure/packageableElements/domain/EnumValueReference';
-import type { GenericType } from '../../../models/metamodels/pure/packageableElements/domain/GenericType';
-import type { GenericTypeReference } from '../../../models/metamodels/pure/packageableElements/domain/GenericTypeReference';
+import type { Association } from '../../../models/metamodels/pure/packageableElements/domain/Association.js';
+import { Class } from '../../../models/metamodels/pure/packageableElements/domain/Class.js';
+import type { ConcreteFunctionDefinition } from '../../../models/metamodels/pure/packageableElements/domain/ConcreteFunctionDefinition.js';
+import type { Constraint } from '../../../models/metamodels/pure/packageableElements/domain/Constraint.js';
+import type { DataType } from '../../../models/metamodels/pure/packageableElements/domain/DataType.js';
+import type { DerivedProperty } from '../../../models/metamodels/pure/packageableElements/domain/DerivedProperty.js';
+import type { Enum } from '../../../models/metamodels/pure/packageableElements/domain/Enum.js';
+import { Enumeration } from '../../../models/metamodels/pure/packageableElements/domain/Enumeration.js';
+import type { EnumValueReference } from '../../../models/metamodels/pure/packageableElements/domain/EnumValueReference.js';
+import type { GenericType } from '../../../models/metamodels/pure/packageableElements/domain/GenericType.js';
+import type { GenericTypeReference } from '../../../models/metamodels/pure/packageableElements/domain/GenericTypeReference.js';
 import {
   Measure,
   Unit,
-} from '../../../models/metamodels/pure/packageableElements/domain/Measure';
-import { Package } from '../../../models/metamodels/pure/packageableElements/domain/Package';
-import type { Profile } from '../../../models/metamodels/pure/packageableElements/domain/Profile';
-import type { Property } from '../../../models/metamodels/pure/packageableElements/domain/Property';
-import type { PropertyReference } from '../../../models/metamodels/pure/packageableElements/domain/PropertyReference';
-import type { Stereotype } from '../../../models/metamodels/pure/packageableElements/domain/Stereotype';
-import type { StereotypeReference } from '../../../models/metamodels/pure/packageableElements/domain/StereotypeReference';
-import type { Tag } from '../../../models/metamodels/pure/packageableElements/domain/Tag';
-import type { TaggedValue } from '../../../models/metamodels/pure/packageableElements/domain/TaggedValue';
-import type { TagReference } from '../../../models/metamodels/pure/packageableElements/domain/TagReference';
-import type { Type } from '../../../models/metamodels/pure/packageableElements/domain/Type';
+} from '../../../models/metamodels/pure/packageableElements/domain/Measure.js';
+import { Package } from '../../../models/metamodels/pure/packageableElements/domain/Package.js';
+import type { Profile } from '../../../models/metamodels/pure/packageableElements/domain/Profile.js';
+import type { Property } from '../../../models/metamodels/pure/packageableElements/domain/Property.js';
+import type { PropertyReference } from '../../../models/metamodels/pure/packageableElements/domain/PropertyReference.js';
+import type { Stereotype } from '../../../models/metamodels/pure/packageableElements/domain/Stereotype.js';
+import type { StereotypeReference } from '../../../models/metamodels/pure/packageableElements/domain/StereotypeReference.js';
+import type { Tag } from '../../../models/metamodels/pure/packageableElements/domain/Tag.js';
+import type { TaggedValue } from '../../../models/metamodels/pure/packageableElements/domain/TaggedValue.js';
+import type { TagReference } from '../../../models/metamodels/pure/packageableElements/domain/TagReference.js';
+import type { Type } from '../../../models/metamodels/pure/packageableElements/domain/Type.js';
 import {
   DefaultCodeSection,
   ImportAwareCodeSection,
   type Section,
-} from '../../../models/metamodels/pure/packageableElements/section/Section';
-import type { SectionIndex } from '../../../models/metamodels/pure/packageableElements/section/SectionIndex';
+} from '../../../models/metamodels/pure/packageableElements/section/Section.js';
+import type { SectionIndex } from '../../../models/metamodels/pure/packageableElements/section/SectionIndex.js';
 import {
   observe_Multiplicity,
   observe_Abstract_PackageableElement,
@@ -60,12 +60,12 @@ import {
   skipObserved,
   skipObservedWithContext,
   type ObserverContext,
-} from './CoreObserverHelper';
-import { observe_PackageableElement } from './PackageableElementObserver';
+} from './CoreObserverHelper.js';
+import { observe_PackageableElement } from './PackageableElementObserver.js';
 import {
   observe_RawLambda,
   observe_RawVariableExpression,
-} from './RawValueSpecificationObserver';
+} from './RawValueSpecificationObserver.js';
 
 const _observe_Abstract_Package = (metamodel: Package): void => {
   observe_Abstract_PackageableElement(metamodel);

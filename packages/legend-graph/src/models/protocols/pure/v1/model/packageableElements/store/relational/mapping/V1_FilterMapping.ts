@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import { CORE_HASH_STRUCTURE } from '../../../../../../../../../MetaModelConst';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../../../MetaModelConst.js';
 import { type Hashable, hashArray } from '@finos/legend-shared';
-import type { V1_FilterPointer } from './V1_FilterPointer';
-import type { V1_JoinPointer } from '../../../../../model/packageableElements/store/relational/model/V1_JoinPointer';
+import type { V1_FilterPointer } from './V1_FilterPointer.js';
+import type { V1_JoinPointer } from '../../../../../model/packageableElements/store/relational/model/V1_JoinPointer.js';
 
 export class V1_FilterMapping implements Hashable {
   filter!: V1_FilterPointer;

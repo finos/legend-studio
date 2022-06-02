@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { Text } from '../models/metamodels/pure/model/packageableElements/text/DSLText_Text';
+import { Text } from '../models/metamodels/pure/model/packageableElements/text/DSLText_Text.js';
 
 export enum TEXT_TYPE {
   PLAIN_TEXT = 'plainText',

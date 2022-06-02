@@ -14,23 +14,23 @@
  * limitations under the License.
  */
 
-import { Profile } from '../../../models/metamodels/pure/packageableElements/domain/Profile';
-import { Tag } from '../../../models/metamodels/pure/packageableElements/domain/Tag';
-import { Enum } from '../../../models/metamodels/pure/packageableElements/domain/Enum';
-import { Stereotype } from '../../../models/metamodels/pure/packageableElements/domain/Stereotype';
-import { TaggedValue } from '../../../models/metamodels/pure/packageableElements/domain/TaggedValue';
-import { TagExplicitReference } from '../../../models/metamodels/pure/packageableElements/domain/TagReference';
-import type { Enumeration } from '../../../models/metamodels/pure/packageableElements/domain/Enumeration';
-import { Class } from '../../../models/metamodels/pure/packageableElements/domain/Class';
-import { Constraint } from '../../../models/metamodels/pure/packageableElements/domain/Constraint';
-import { stub_RawLambda } from './RawValueSpecificationCreatorHelper';
-import type { PackageableElement } from '../../../models/metamodels/pure/packageableElements/PackageableElement';
-import { Multiplicity } from '../../../models/metamodels/pure/packageableElements/domain/Multiplicity';
-import { GenericTypeExplicitReference } from '../../../models/metamodels/pure/packageableElements/domain/GenericTypeReference';
-import { GenericType } from '../../../models/metamodels/pure/packageableElements/domain/GenericType';
-import type { Type } from '../../../models/metamodels/pure/packageableElements/domain/Type';
-import { DerivedProperty } from '../../../models/metamodels/pure/packageableElements/domain/DerivedProperty';
-import { Property } from '../../../models/metamodels/pure/packageableElements/domain/Property';
+import { Profile } from '../../../models/metamodels/pure/packageableElements/domain/Profile.js';
+import { Tag } from '../../../models/metamodels/pure/packageableElements/domain/Tag.js';
+import { Enum } from '../../../models/metamodels/pure/packageableElements/domain/Enum.js';
+import { Stereotype } from '../../../models/metamodels/pure/packageableElements/domain/Stereotype.js';
+import { TaggedValue } from '../../../models/metamodels/pure/packageableElements/domain/TaggedValue.js';
+import { TagExplicitReference } from '../../../models/metamodels/pure/packageableElements/domain/TagReference.js';
+import type { Enumeration } from '../../../models/metamodels/pure/packageableElements/domain/Enumeration.js';
+import { Class } from '../../../models/metamodels/pure/packageableElements/domain/Class.js';
+import { Constraint } from '../../../models/metamodels/pure/packageableElements/domain/Constraint.js';
+import { stub_RawLambda } from './RawValueSpecificationCreatorHelper.js';
+import type { PackageableElement } from '../../../models/metamodels/pure/packageableElements/PackageableElement.js';
+import { Multiplicity } from '../../../models/metamodels/pure/packageableElements/domain/Multiplicity.js';
+import { GenericTypeExplicitReference } from '../../../models/metamodels/pure/packageableElements/domain/GenericTypeReference.js';
+import { GenericType } from '../../../models/metamodels/pure/packageableElements/domain/GenericType.js';
+import type { Type } from '../../../models/metamodels/pure/packageableElements/domain/Type.js';
+import { DerivedProperty } from '../../../models/metamodels/pure/packageableElements/domain/DerivedProperty.js';
+import { Property } from '../../../models/metamodels/pure/packageableElements/domain/Property.js';
 
 export const stub_Tag = (profile: Profile): Tag => new Tag(profile, '');
 export const stub_TaggedValue = (tag: Tag): TaggedValue =>

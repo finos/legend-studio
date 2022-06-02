@@ -16,7 +16,7 @@
 
 import { SerializationFactory, usingModelSchema } from '@finos/legend-shared';
 import { createModelSchema, primitive } from 'serializr';
-import { Project } from './Project';
+import { Project } from './Project.js';
 
 export class ImportReport {
   project!: Project;

@@ -15,11 +15,11 @@
  */
 
 import { AbstractPlugin } from '@finos/legend-shared';
-import type { PureModel } from '../graph/PureModel';
-import type { GraphPluginManager } from '../GraphPluginManager';
-import type { PackageableElement } from '../models/metamodels/pure/packageableElements/PackageableElement';
-import type { Testable } from '../models/metamodels/pure/test/Testable';
-import type { ObserverContext } from './action/changeDetection/CoreObserverHelper';
+import type { PureModel } from '../graph/PureModel.js';
+import type { GraphPluginManager } from '../GraphPluginManager.js';
+import type { PackageableElement } from '../models/metamodels/pure/packageableElements/PackageableElement.js';
+import type { Testable } from '../models/metamodels/pure/test/Testable.js';
+import type { ObserverContext } from './action/changeDetection/CoreObserverHelper.js';
 
 /**
  * Unlike `PureGraphPlugin`, this is for plugins of graph manager, i.e. operations acting

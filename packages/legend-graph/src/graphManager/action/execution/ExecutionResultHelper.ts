@@ -21,7 +21,7 @@ import {
   TdsExecutionResult,
   ClassExecutionResult,
   INTERNAL__UnknownExecutionResult,
-} from './ExecutionResult';
+} from './ExecutionResult.js';
 
 // Execution Results often wrap the result values with additional metadata.
 // This method extracts the actual values from the execution result

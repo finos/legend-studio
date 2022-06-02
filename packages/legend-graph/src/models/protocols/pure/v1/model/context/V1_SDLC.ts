@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { V1_PackageableElementPointer } from '../packageableElements/V1_PackageableElement';
+import type { V1_PackageableElementPointer } from '../packageableElements/V1_PackageableElement.js';
 
 export abstract class V1_SDLC {
   baseVersion = 'latest';

@@ -23,7 +23,7 @@ import {
   guaranteeType,
   assertTrue,
 } from '@finos/legend-shared';
-import { Database } from '../../../../../../../metamodels/pure/packageableElements/store/relational/model/Database';
+import { Database } from '../../../../../../../metamodels/pure/packageableElements/store/relational/model/Database.js';
 import {
   getAllIncludedDatabases,
   getColumn,
@@ -31,17 +31,17 @@ import {
   getJoinType,
   getSchema,
   getView,
-} from '../../../../../../../../helpers/StoreRelational_Helper';
-import { Schema } from '../../../../../../../metamodels/pure/packageableElements/store/relational/model/Schema';
-import { Table } from '../../../../../../../metamodels/pure/packageableElements/store/relational/model/Table';
-import { Column } from '../../../../../../../metamodels/pure/packageableElements/store/relational/model/Column';
-import { View } from '../../../../../../../metamodels/pure/packageableElements/store/relational/model/View';
+} from '../../../../../../../../helpers/StoreRelational_Helper.js';
+import { Schema } from '../../../../../../../metamodels/pure/packageableElements/store/relational/model/Schema.js';
+import { Table } from '../../../../../../../metamodels/pure/packageableElements/store/relational/model/Table.js';
+import { Column } from '../../../../../../../metamodels/pure/packageableElements/store/relational/model/Column.js';
+import { View } from '../../../../../../../metamodels/pure/packageableElements/store/relational/model/View.js';
 import {
   Join,
   SELF_JOIN_TABLE_NAME,
   SELF_JOIN_ALIAS_PREFIX,
-} from '../../../../../../../metamodels/pure/packageableElements/store/relational/model/Join';
-import { Filter } from '../../../../../../../metamodels/pure/packageableElements/store/relational/model/Filter';
+} from '../../../../../../../metamodels/pure/packageableElements/store/relational/model/Join.js';
+import { Filter } from '../../../../../../../metamodels/pure/packageableElements/store/relational/model/Filter.js';
 import {
   type JoinType,
   type RelationalOperationElement,
@@ -53,7 +53,7 @@ import {
   TableAliasColumn,
   JoinTreeNode,
   RelationalOperationElementWithJoin,
-} from '../../../../../../../metamodels/pure/packageableElements/store/relational/model/RelationalOperationElement';
+} from '../../../../../../../metamodels/pure/packageableElements/store/relational/model/RelationalOperationElement.js';
 import {
   type RelationalDataType,
   Real,
@@ -74,20 +74,20 @@ import {
   SmallInt,
   BigInt,
   SemiStructured,
-} from '../../../../../../../metamodels/pure/packageableElements/store/relational/model/RelationalDataType';
-import { ColumnMapping } from '../../../../../../../metamodels/pure/packageableElements/store/relational/model/ColumnMapping';
-import { GroupByMapping } from '../../../../../../../metamodels/pure/packageableElements/store/relational/mapping/GroupByMapping';
-import type { JoinReference } from '../../../../../../../metamodels/pure/packageableElements/store/relational/model/JoinReference';
+} from '../../../../../../../metamodels/pure/packageableElements/store/relational/model/RelationalDataType.js';
+import { ColumnMapping } from '../../../../../../../metamodels/pure/packageableElements/store/relational/model/ColumnMapping.js';
+import { GroupByMapping } from '../../../../../../../metamodels/pure/packageableElements/store/relational/mapping/GroupByMapping.js';
+import type { JoinReference } from '../../../../../../../metamodels/pure/packageableElements/store/relational/model/JoinReference.js';
 import {
   ColumnImplicitReference,
   ColumnExplicitReference,
-} from '../../../../../../../metamodels/pure/packageableElements/store/relational/model/ColumnReference';
-import { TableReference } from '../../../../../../../metamodels/pure/packageableElements/store/relational/model/TableReference';
-import { ViewReference } from '../../../../../../../metamodels/pure/packageableElements/store/relational/model/ViewReference';
-import type { V1_GraphBuilderContext } from '../../../../transformation/pureGraph/to/V1_GraphBuilderContext';
-import type { V1_Schema } from '../../../../model/packageableElements/store/relational/model/V1_Schema';
-import type { V1_Table } from '../../../../model/packageableElements/store/relational/model/V1_Table';
-import type { V1_Column } from '../../../../model/packageableElements/store/relational/model/V1_Column';
+} from '../../../../../../../metamodels/pure/packageableElements/store/relational/model/ColumnReference.js';
+import { TableReference } from '../../../../../../../metamodels/pure/packageableElements/store/relational/model/TableReference.js';
+import { ViewReference } from '../../../../../../../metamodels/pure/packageableElements/store/relational/model/ViewReference.js';
+import type { V1_GraphBuilderContext } from '../../../../transformation/pureGraph/to/V1_GraphBuilderContext.js';
+import type { V1_Schema } from '../../../../model/packageableElements/store/relational/model/V1_Schema.js';
+import type { V1_Table } from '../../../../model/packageableElements/store/relational/model/V1_Table.js';
+import type { V1_Column } from '../../../../model/packageableElements/store/relational/model/V1_Column.js';
 import {
   type V1_RelationalDataType,
   V1_VarChar,
@@ -108,9 +108,9 @@ import {
   V1_Binary,
   V1_Other,
   V1_SemiStructured,
-} from '../../../../model/packageableElements/store/relational/model/V1_RelationalDataType';
-import type { V1_View } from '../../../../model/packageableElements/store/relational/model/V1_View';
-import type { V1_Join } from '../../../../model/packageableElements/store/relational/model/V1_Join';
+} from '../../../../model/packageableElements/store/relational/model/V1_RelationalDataType.js';
+import type { V1_View } from '../../../../model/packageableElements/store/relational/model/V1_View.js';
+import type { V1_Join } from '../../../../model/packageableElements/store/relational/model/V1_Join.js';
 import {
   V1_RelationalOperationElement,
   V1_TableAliasColumn,
@@ -118,15 +118,15 @@ import {
   V1_DynaFunc,
   V1_Literal,
   V1_LiteralList,
-} from '../../../../model/packageableElements/store/relational/model/V1_RelationalOperationElement';
-import type { V1_JoinPointer } from '../../../../model/packageableElements/store/relational/model/V1_JoinPointer';
-import type { V1_Filter } from '../../../../model/packageableElements/store/relational/model/V1_Filter';
-import { V1_buildMilestoning } from './V1_MilestoningBuilderHelper';
-import { DEFAULT_DATABASE_SCHEMA_NAME } from '../../../../../../../../MetaModelConst';
-import { FilterMapping } from '../../../../../../../metamodels/pure/packageableElements/store/relational/mapping/FilterMapping';
-import type { V1_FilterMapping } from '../../../../model/packageableElements/store/relational/mapping/V1_FilterMapping';
-import { FilterImplicitReference } from '../../../../../../../metamodels/pure/packageableElements/store/relational/model/FilterReference';
-import { PackageableElementImplicitReference } from '../../../../../../../metamodels/pure/packageableElements/PackageableElementReference';
+} from '../../../../model/packageableElements/store/relational/model/V1_RelationalOperationElement.js';
+import type { V1_JoinPointer } from '../../../../model/packageableElements/store/relational/model/V1_JoinPointer.js';
+import type { V1_Filter } from '../../../../model/packageableElements/store/relational/model/V1_Filter.js';
+import { V1_buildMilestoning } from './V1_MilestoningBuilderHelper.js';
+import { DEFAULT_DATABASE_SCHEMA_NAME } from '../../../../../../../../MetaModelConst.js';
+import { FilterMapping } from '../../../../../../../metamodels/pure/packageableElements/store/relational/mapping/FilterMapping.js';
+import type { V1_FilterMapping } from '../../../../model/packageableElements/store/relational/mapping/V1_FilterMapping.js';
+import { FilterImplicitReference } from '../../../../../../../metamodels/pure/packageableElements/store/relational/model/FilterReference.js';
+import { PackageableElementImplicitReference } from '../../../../../../../metamodels/pure/packageableElements/PackageableElementReference.js';
 
 const _schemaExists = (
   db: Database,

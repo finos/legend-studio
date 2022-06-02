@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { V1_PostProcessor } from '../../../model/packageableElements/store/relational/connection/postprocessor/V1_PostProcessor';
+import type { V1_PostProcessor } from '../../../model/packageableElements/store/relational/connection/postprocessor/V1_PostProcessor.js';
 import {
   createModelSchema,
   deserialize,
@@ -27,16 +27,16 @@ import {
   type V1_Mapper,
   V1_SchemaNameMapper,
   V1_TableNameMapper,
-} from '../../../model/packageableElements/store/relational/connection/postprocessor/V1_Mapper';
+} from '../../../model/packageableElements/store/relational/connection/postprocessor/V1_Mapper.js';
 import {
   type PlainObject,
   usingConstantValueSchema,
   UnsupportedOperationError,
   usingModelSchema,
 } from '@finos/legend-shared';
-import { V1_MapperPostProcessor } from '../../../model/packageableElements/store/relational/connection/postprocessor/V1_MapperPostProcessor';
-import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin';
-import type { StoreRelational_PureProtocolProcessorPlugin_Extension } from '../../../../StoreRelational_PureProtocolProcessorPlugin_Extension';
+import { V1_MapperPostProcessor } from '../../../model/packageableElements/store/relational/connection/postprocessor/V1_MapperPostProcessor.js';
+import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin.js';
+import type { StoreRelational_PureProtocolProcessorPlugin_Extension } from '../../../../StoreRelational_PureProtocolProcessorPlugin_Extension.js';
 
 enum V1_MapperType {
   TABLE = 'table',

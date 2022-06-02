@@ -18,16 +18,16 @@ import { observable, action, computed, makeObservable, flow } from 'mobx';
 import {
   InstanceSetImplementationState,
   PropertyMappingState,
-} from './MappingElementState';
-import type { EditorStore } from '../../../EditorStore';
-import { MappingElementDecorator } from './MappingElementDecorator';
+} from './MappingElementState.js';
+import type { EditorStore } from '../../../EditorStore.js';
+import { MappingElementDecorator } from './MappingElementDecorator.js';
 import {
   type GeneratorFn,
   assertErrorThrown,
   LogEvent,
   isNonNullable,
 } from '@finos/legend-shared';
-import { MAPPING_ELEMENT_SOURCE_ID_LABEL } from './MappingEditorState';
+import { MAPPING_ELEMENT_SOURCE_ID_LABEL } from './MappingEditorState.js';
 import {
   type PurePropertyMapping,
   type PureInstanceSetImplementation,
@@ -40,7 +40,7 @@ import {
   isStubbed_RawLambda,
 } from '@finos/legend-graph';
 import { LambdaEditorState } from '@finos/legend-application';
-import { pureInstanceSetImpl_setMappingFilter } from '../../../graphModifier/DSLMapping_GraphModifierHelper';
+import { pureInstanceSetImpl_setMappingFilter } from '../../../graphModifier/DSLMapping_GraphModifierHelper.js';
 
 export const FILTER_SOURCE_ID_LABEL = 'filter';
 

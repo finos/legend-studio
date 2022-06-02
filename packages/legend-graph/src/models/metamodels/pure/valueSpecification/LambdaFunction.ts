@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-import type { Type } from '../packageableElements/domain/Type';
-import type { VariableExpression } from './VariableExpression';
-import { InstanceValue } from './InstanceValue';
+import type { Type } from '../packageableElements/domain/Type.js';
+import type { VariableExpression } from './VariableExpression.js';
+import { InstanceValue } from './InstanceValue.js';
 import type {
   ValueSpecification,
   ValueSpecificationVisitor,
-} from './ValueSpecification';
-import type { Multiplicity } from '../packageableElements/domain/Multiplicity';
+} from './ValueSpecification.js';
+import type { Multiplicity } from '../packageableElements/domain/Multiplicity.js';
 
 export class FunctionType {
   returnType?: Type | undefined;

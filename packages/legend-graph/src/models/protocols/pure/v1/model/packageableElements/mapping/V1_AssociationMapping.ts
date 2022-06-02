@@ -15,7 +15,7 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst.js';
 
 export abstract class V1_AssociationMapping implements Hashable {
   id?: string | undefined;

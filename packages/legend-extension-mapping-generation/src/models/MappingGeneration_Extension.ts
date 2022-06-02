@@ -16,7 +16,7 @@
 
 import packageJson from '../../package.json';
 import { AbstractPreset } from '@finos/legend-shared';
-import { MappingGeneration_PureProtocolProcessorPlugin } from './MappingGeneration_PureProtocolProcessorPlugin';
+import { MappingGeneration_PureProtocolProcessorPlugin } from './MappingGeneration_PureProtocolProcessorPlugin.js';
 
 export class MappingGeneration_GraphPreset extends AbstractPreset {
   constructor() {

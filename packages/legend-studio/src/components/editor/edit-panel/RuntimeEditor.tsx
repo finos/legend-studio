@@ -23,8 +23,8 @@ import {
   IdentifiedConnectionsEditorTabState,
   IdentifiedConnectionsPerClassEditorTabState,
   IdentifiedConnectionsPerStoreEditorTabState,
-} from '../../../stores/editor-state/element-editor-state/RuntimeEditorState';
-import type { EditorStore } from '../../../stores/EditorStore';
+} from '../../../stores/editor-state/element-editor-state/RuntimeEditorState.js';
+import type { EditorStore } from '../../../stores/EditorStore.js';
 import {
   clsx,
   Dialog,
@@ -54,26 +54,26 @@ import {
   CogIcon,
   CaretRightIcon,
 } from '@finos/legend-art';
-import { getElementIcon } from '../../shared/ElementIconUtils';
-import type { RuntimeExplorerTreeNodeData } from '../../../stores/shared/TreeUtil';
-import { ConnectionEditor } from './connection-editor/ConnectionEditor';
+import { getElementIcon } from '../../shared/ElementIconUtils.js';
+import type { RuntimeExplorerTreeNodeData } from '../../../stores/shared/TreeUtil.js';
+import { ConnectionEditor } from './connection-editor/ConnectionEditor.js';
 import {
   type UMLEditorElementDropTarget,
   CORE_DND_TYPE,
   ElementDragSource,
-} from '../../../stores/shared/DnDUtil';
+} from '../../../stores/shared/DnDUtil.js';
 import { useDrop } from 'react-dnd';
 import {
   assertErrorThrown,
   guaranteeType,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
-import type { ConnectionEditorState } from '../../../stores/editor-state/element-editor-state/connection/ConnectionEditorState';
+import type { ConnectionEditorState } from '../../../stores/editor-state/element-editor-state/connection/ConnectionEditorState.js';
 import {
   buildElementOption,
   type PackageableElementOption,
-} from '../../../stores/shared/PackageableElementOptionUtil';
-import { useEditorStore } from '../EditorStoreProvider';
+} from '../../../stores/shared/PackageableElementOptionUtil.js';
+import { useEditorStore } from '../EditorStoreProvider.js';
 import {
   type PackageableElementReference,
   Connection,
@@ -95,11 +95,11 @@ import {
   generateIdentifiedConnectionId,
 } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
-import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../stores/DSLMapping_LegendStudioPlugin_Extension';
+import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../stores/DSLMapping_LegendStudioPlugin_Extension.js';
 import {
   runtime_addIdentifiedConnection,
   runtime_deleteIdentifiedConnection,
-} from '../../../stores/graphModifier/DSLMapping_GraphModifierHelper';
+} from '../../../stores/graphModifier/DSLMapping_GraphModifierHelper.js';
 
 const getConnectionTooltipText = (
   connection: Connection,

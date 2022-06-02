@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { V1_ResultType } from './V1_ResultType';
+import { V1_ResultType } from './V1_ResultType.js';
 
 export class V1_DataTypeResultType extends V1_ResultType {
   dataType!: string;

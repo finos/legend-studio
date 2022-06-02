@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import type { V1_ValueSpecificationVisitor } from '../../../model/valueSpecification/V1_ValueSpecification';
-import { V1_CDate } from './V1_CDate';
+import type { V1_ValueSpecificationVisitor } from '../../../model/valueSpecification/V1_ValueSpecification.js';
+import { V1_CDate } from './V1_CDate.js';
 
 export class V1_CStrictDate extends V1_CDate {
   values: string[] = [];

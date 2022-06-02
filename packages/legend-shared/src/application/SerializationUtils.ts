@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { type PlainObject, pruneNullValues } from '../CommonUtils';
+import { type PlainObject, pruneNullValues } from '../CommonUtils.js';
 import {
   type ModelSchema,
   type PropSchema,

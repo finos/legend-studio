@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { DSL_LegendStudioPlugin_Extension } from './LegendStudioPlugin';
+import type { DSL_LegendStudioPlugin_Extension } from './LegendStudioPlugin.js';
 import type {
   DatasourceSpecification,
   AuthenticationStrategy,

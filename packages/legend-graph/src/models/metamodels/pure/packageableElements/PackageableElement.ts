@@ -23,25 +23,25 @@ import {
 import {
   CORE_HASH_STRUCTURE,
   ELEMENT_PATH_DELIMITER,
-} from '../../../../MetaModelConst';
-import type { Package } from './domain/Package';
-import type { Profile } from './domain/Profile';
-import type { Enumeration } from './domain/Enumeration';
-import type { Class } from './domain/Class';
-import type { Association } from './domain/Association';
-import type { ConcreteFunctionDefinition } from './domain/ConcreteFunctionDefinition';
-import type { FlatData } from './store/flatData/model/FlatData';
-import type { Mapping } from './mapping/Mapping';
-import type { Service } from './service/Service';
-import type { PrimitiveType } from './domain/PrimitiveType';
-import type { Database } from './store/relational/model/Database';
-import type { PackageableConnection } from './connection/PackageableConnection';
-import type { PackageableRuntime } from './runtime/PackageableRuntime';
-import type { FileGenerationSpecification } from './fileGeneration/FileGenerationSpecification';
-import type { GenerationSpecification } from './generationSpecification/GenerationSpecification';
-import type { Measure } from './domain/Measure';
-import type { SectionIndex } from './section/SectionIndex';
-import type { DataElement } from './data/DataElement';
+} from '../../../../MetaModelConst.js';
+import type { Package } from './domain/Package.js';
+import type { Profile } from './domain/Profile.js';
+import type { Enumeration } from './domain/Enumeration.js';
+import type { Class } from './domain/Class.js';
+import type { Association } from './domain/Association.js';
+import type { ConcreteFunctionDefinition } from './domain/ConcreteFunctionDefinition.js';
+import type { FlatData } from './store/flatData/model/FlatData.js';
+import type { Mapping } from './mapping/Mapping.js';
+import type { Service } from './service/Service.js';
+import type { PrimitiveType } from './domain/PrimitiveType.js';
+import type { Database } from './store/relational/model/Database.js';
+import type { PackageableConnection } from './connection/PackageableConnection.js';
+import type { PackageableRuntime } from './runtime/PackageableRuntime.js';
+import type { FileGenerationSpecification } from './fileGeneration/FileGenerationSpecification.js';
+import type { GenerationSpecification } from './generationSpecification/GenerationSpecification.js';
+import type { Measure } from './domain/Measure.js';
+import type { SectionIndex } from './section/SectionIndex.js';
+import type { DataElement } from './data/DataElement.js';
 
 export interface PackageableElementVisitor<T> {
   visit_PackageableElement(element: PackageableElement): T;

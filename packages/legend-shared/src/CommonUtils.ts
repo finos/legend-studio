@@ -27,7 +27,7 @@ import {
   mergeWith,
   type DebouncedFunc,
 } from 'lodash-es';
-import { UnsupportedOperationError } from './error/ErrorUtils';
+import { UnsupportedOperationError } from './error/ErrorUtils.js';
 import { format as prettyPrintObject } from 'pretty-format';
 
 // NOTE: We re-export lodash utilities like this so we centralize utility usage in our app

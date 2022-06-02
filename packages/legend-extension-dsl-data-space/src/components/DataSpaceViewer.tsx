@@ -43,13 +43,13 @@ import {
 import {
   DataSpaceSupportEmail,
   type DataSpaceSupportInfo,
-} from '../models/metamodels/pure/model/packageableElements/dataSpace/DSLDataSpace_DataSpace';
-import type { ResolvedDataSpaceExecutionContext } from '../models/protocols/pure/DSLDataSpace_PureProtocolProcessorPlugin';
+} from '../models/metamodels/pure/model/packageableElements/dataSpace/DSLDataSpace_DataSpace.js';
+import type { ResolvedDataSpaceExecutionContext } from '../models/protocols/pure/DSLDataSpace_PureProtocolProcessorPlugin.js';
 import type { PackageableRuntime } from '@finos/legend-graph';
 import {
   type DataSpaceViewerState,
   DATA_SPACE_VIEWER_ACTIVITY_MODE,
-} from '../stores/DataSpaceViewerState';
+} from '../stores/DataSpaceViewerState.js';
 
 interface DataSpaceViewerActivityConfig {
   mode: DATA_SPACE_VIEWER_ACTIVITY_MODE;

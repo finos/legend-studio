@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-import type { V1_Notifier } from './V1_DSLPersistence_Notifier';
-import type { V1_Persister } from './V1_DSLPersistence_Persister';
-import type { V1_Trigger } from './V1_DSLPersistence_Trigger';
+import type { V1_Notifier } from './V1_DSLPersistence_Notifier.js';
+import type { V1_Persister } from './V1_DSLPersistence_Persister.js';
+import type { V1_Trigger } from './V1_DSLPersistence_Trigger.js';
 import {
   V1_PackageableElement,
   type V1_PackageableElementVisitor,
 } from '@finos/legend-graph';
 import { type Hashable, hashArray } from '@finos/legend-shared';
-import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../../DSLPersistence_ModelUtils';
+import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../../DSLPersistence_ModelUtils.js';
 
 export class V1_Persistence extends V1_PackageableElement implements Hashable {
   documentation!: string;

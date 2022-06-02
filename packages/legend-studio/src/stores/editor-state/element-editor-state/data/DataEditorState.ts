@@ -23,9 +23,9 @@ import {
 } from '@finos/legend-graph';
 import { guaranteeType, uuid } from '@finos/legend-shared';
 import { action, computed, makeObservable, observable } from 'mobx';
-import type { DSLData_LegendStudioPlugin_Extension } from '../../../DSLData_LegendStudioPlugin_Extension';
-import type { EditorStore } from '../../../EditorStore';
-import { ElementEditorState } from '../ElementEditorState';
+import type { DSLData_LegendStudioPlugin_Extension } from '../../../DSLData_LegendStudioPlugin_Extension.js';
+import type { EditorStore } from '../../../EditorStore.js';
+import { ElementEditorState } from '../ElementEditorState.js';
 
 export enum DATA_TAB_TYPE {
   GENERAL = 'GENERAL',

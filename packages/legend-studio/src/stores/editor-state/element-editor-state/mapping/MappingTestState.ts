@@ -17,7 +17,7 @@
 import type {
   MappingEditorState,
   MappingElementSource,
-} from './MappingEditorState';
+} from './MappingEditorState.js';
 import {
   type GeneratorFn,
   LogEvent,
@@ -38,7 +38,7 @@ import {
   tryToMinifyJSONString,
   ContentType,
 } from '@finos/legend-shared';
-import type { EditorStore } from '../../../EditorStore';
+import type { EditorStore } from '../../../EditorStore.js';
 import {
   observable,
   flow,
@@ -47,8 +47,8 @@ import {
   makeAutoObservable,
   flowResult,
 } from 'mobx';
-import { createMockDataForMappingElementSource } from '../../../shared/MockDataUtil';
-import { ExecutionPlanState } from '../../../ExecutionPlanState';
+import { createMockDataForMappingElementSource } from '../../../shared/MockDataUtil.js';
+import { ExecutionPlanState } from '../../../ExecutionPlanState.js';
 import {
   type MappingTest,
   type RawLambda,
@@ -87,7 +87,7 @@ import {
   DEPRECATED__validate_MappingTest,
 } from '@finos/legend-graph';
 import { LambdaEditorState, TAB_SIZE } from '@finos/legend-application';
-import { flatData_setData } from '../../../graphModifier/StoreFlatData_GraphModifierHelper';
+import { flatData_setData } from '../../../graphModifier/StoreFlatData_GraphModifierHelper.js';
 import {
   expectedOutputMappingTestAssert_setExpectedOutput,
   mappingTest_setAssert,
@@ -95,12 +95,12 @@ import {
   objectInputData_setData,
   runtime_addIdentifiedConnection,
   runtime_addMapping,
-} from '../../../graphModifier/DSLMapping_GraphModifierHelper';
+} from '../../../graphModifier/DSLMapping_GraphModifierHelper.js';
 import {
   localH2DatasourceSpecification_setTestDataSetupCsv,
   localH2DatasourceSpecification_setTestDataSetupSqls,
   relationalInputData_setData,
-} from '../../../graphModifier/StoreRelational_GraphModifierHelper';
+} from '../../../graphModifier/StoreRelational_GraphModifierHelper.js';
 
 export enum TEST_RESULT {
   NONE = 'NONE', // test has not run yet

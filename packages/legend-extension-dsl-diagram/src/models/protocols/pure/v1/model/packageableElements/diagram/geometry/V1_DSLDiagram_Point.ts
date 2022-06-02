@@ -15,7 +15,7 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { DIAGRAM_HASH_STRUCTURE } from '../../../../../../../DSLDiagram_ModelUtils';
+import { DIAGRAM_HASH_STRUCTURE } from '../../../../../../../DSLDiagram_ModelUtils.js';
 
 export class V1_Point implements Hashable {
   x!: number;

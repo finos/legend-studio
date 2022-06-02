@@ -25,7 +25,7 @@ import {
 } from '@finos/legend-application';
 import { flowResult } from 'mobx';
 import type { Type } from '@finos/legend-graph';
-import { useEditorStore } from '../editor/EditorStoreProvider';
+import { useEditorStore } from '../editor/EditorStoreProvider.js';
 
 export const StudioLambdaEditor = observer(
   (props: {

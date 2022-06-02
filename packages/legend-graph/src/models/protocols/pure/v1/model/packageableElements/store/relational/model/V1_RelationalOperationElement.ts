@@ -15,9 +15,9 @@
  */
 
 import { type Hashable, hashArray } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../../../MetaModelConst';
-import type { V1_JoinPointer } from './V1_JoinPointer';
-import type { V1_TablePtr } from './V1_TablePtr';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../../../MetaModelConst.js';
+import type { V1_JoinPointer } from './V1_JoinPointer.js';
+import type { V1_TablePtr } from './V1_TablePtr.js';
 
 export abstract class V1_RelationalOperationElement implements Hashable {
   abstract get hashCode(): string;

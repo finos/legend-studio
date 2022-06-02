@@ -35,7 +35,7 @@ import {
   LongArrowAltUpIcon,
   Dialog,
 } from '@finos/legend-art';
-import type { LambdaEditorState } from '../stores/LambdaEditorState';
+import type { LambdaEditorState } from '../stores/LambdaEditorState.js';
 import {
   debounce,
   noop,
@@ -44,9 +44,9 @@ import {
 } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { ParserError, type EngineError, type Type } from '@finos/legend-graph';
-import { APPLICATION_TEST_ID } from './ApplicationTestID';
-import { useApplicationStore } from './ApplicationStoreProvider';
-import { EDITOR_LANGUAGE, EDITOR_THEME, TAB_SIZE } from '../const';
+import { APPLICATION_TEST_ID } from './ApplicationTestID.js';
+import { useApplicationStore } from './ApplicationStoreProvider.js';
+import { EDITOR_LANGUAGE, EDITOR_THEME, TAB_SIZE } from '../const.js';
 
 export type LambdaEditorOnKeyDownEventHandler = {
   matcher: (event: IKeyboardEvent) => boolean;

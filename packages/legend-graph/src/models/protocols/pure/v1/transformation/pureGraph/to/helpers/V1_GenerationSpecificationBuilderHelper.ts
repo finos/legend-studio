@@ -15,12 +15,12 @@
  */
 
 import { assertNonEmptyString } from '@finos/legend-shared';
-import { GenerationTreeNode } from '../../../../../../../metamodels/pure/packageableElements/generationSpecification/GenerationSpecification';
-import type { FileGenerationSpecification } from '../../../../../../../metamodels/pure/packageableElements/fileGeneration/FileGenerationSpecification';
-import type { PackageableElementReference } from '../../../../../../../metamodels/pure/packageableElements/PackageableElementReference';
-import type { V1_GraphBuilderContext } from '../../../../transformation/pureGraph/to/V1_GraphBuilderContext';
-import type { V1_GenerationTreeNode } from '../../../../model/packageableElements/generationSpecification/V1_GenerationSpecification';
-import type { V1_PackageableElementPointer } from '../../../../model/packageableElements/V1_PackageableElement';
+import { GenerationTreeNode } from '../../../../../../../metamodels/pure/packageableElements/generationSpecification/GenerationSpecification.js';
+import type { FileGenerationSpecification } from '../../../../../../../metamodels/pure/packageableElements/fileGeneration/FileGenerationSpecification.js';
+import type { PackageableElementReference } from '../../../../../../../metamodels/pure/packageableElements/PackageableElementReference.js';
+import type { V1_GraphBuilderContext } from '../../../../transformation/pureGraph/to/V1_GraphBuilderContext.js';
+import type { V1_GenerationTreeNode } from '../../../../model/packageableElements/generationSpecification/V1_GenerationSpecification.js';
+import type { V1_PackageableElementPointer } from '../../../../model/packageableElements/V1_PackageableElement.js';
 
 export const V1_buildGenerationTreeNode = (
   generationNode: V1_GenerationTreeNode,

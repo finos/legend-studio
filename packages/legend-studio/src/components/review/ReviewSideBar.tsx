@@ -15,7 +15,7 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { EntityDiffSideBarItem } from '../editor/edit-panel/diff-editor/EntityDiffView';
+import { EntityDiffSideBarItem } from '../editor/edit-panel/diff-editor/EntityDiffView.js';
 import {
   clsx,
   PanelLoadingIndicator,
@@ -26,13 +26,13 @@ import {
   InfoCircleIcon,
 } from '@finos/legend-art';
 import { formatDistanceToNow } from 'date-fns';
-import { EntityDiffViewState } from '../../stores/editor-state/entity-diff-editor-state/EntityDiffViewState';
-import { LEGEND_STUDIO_TEST_ID } from '../LegendStudioTestID';
+import { EntityDiffViewState } from '../../stores/editor-state/entity-diff-editor-state/EntityDiffViewState.js';
+import { LEGEND_STUDIO_TEST_ID } from '../LegendStudioTestID.js';
 import { flowResult } from 'mobx';
 import { type EntityDiff, ReviewState } from '@finos/legend-server-sdlc';
-import { entityDiffSorter } from '../../stores/EditorSDLCState';
-import { useReviewStore } from './ReviewStoreProvider';
-import { useEditorStore } from '../editor/EditorStoreProvider';
+import { entityDiffSorter } from '../../stores/EditorSDLCState.js';
+import { useReviewStore } from './ReviewStoreProvider.js';
+import { useEditorStore } from '../editor/EditorStoreProvider.js';
 import { useApplicationStore } from '@finos/legend-application';
 
 export const ReviewSideBar = observer(() => {

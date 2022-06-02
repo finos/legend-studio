@@ -39,7 +39,7 @@ import {
   EDITOR_LANGUAGE,
   useApplicationStore,
 } from '@finos/legend-application';
-import type { MappingGenerationEditorState } from '../stores/MappingGenerationEditorState';
+import type { MappingGenerationEditorState } from '../stores/MappingGenerationEditorState.js';
 import { flowResult, runInAction } from 'mobx';
 import {
   Mapping,

@@ -19,8 +19,8 @@ import { useResizeDetector } from 'react-resize-detector';
 import { observer } from 'mobx-react-lite';
 import { useApplicationStore } from '@finos/legend-application';
 import type { Class } from '@finos/legend-graph';
-import { InheritanceDiagramRenderer } from './InheritanceDiagramRenderer';
-import { DSL_DIAGRAM_TEST_ID } from './DSLDiagram_TestID';
+import { InheritanceDiagramRenderer } from './InheritanceDiagramRenderer.js';
+import { DSL_DIAGRAM_TEST_ID } from './DSLDiagram_TestID.js';
 import { useEditorStore } from '@finos/legend-studio';
 
 export const ClassDiagramPreview = observer((props: { _class: Class }) => {

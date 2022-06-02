@@ -38,7 +38,7 @@ import type { PackageableElement } from '@finos/legend-graph';
 import {
   DataSpace,
   DataSpaceExecutionContext,
-} from '../../models/metamodels/pure/model/packageableElements/dataSpace/DSLDataSpace_DataSpace';
+} from '../../models/metamodels/pure/model/packageableElements/dataSpace/DSLDataSpace_DataSpace.js';
 import { LATEST_VERSION_ALIAS } from '@finos/legend-server-depot';
 import {
   collectKeyedDocumnetationEntriesFromConfig,
@@ -48,12 +48,12 @@ import {
 import {
   DSL_DATA_SPACE_DOCUMENTATION_ENTRIES,
   DSL_DATA_SPACE_LEGEND_STUDIO_DOCUMENTATION_KEY,
-} from './DSLDataSpace_LegendStudioDocumentation';
+} from './DSLDataSpace_LegendStudioDocumentation.js';
 import {
   PURE_GRAMMAR_DATA_SPACE_ELEMENT_TYPE_LABEL,
   PURE_GRAMMAR_DATA_SPACE_PARSER_NAME,
-} from '../../graphManager/DSLDataSpace_PureGraphManagerPlugin';
-import { SIMPLE_DATA_SPACE_SNIPPET } from './DSLDataSpace_CodeSnippets';
+} from '../../graphManager/DSLDataSpace_PureGraphManagerPlugin.js';
+import { SIMPLE_DATA_SPACE_SNIPPET } from './DSLDataSpace_CodeSnippets.js';
 
 const DATA_SPACE_ELEMENT_TYPE = 'DATA SPACE';
 const DATA_SPACE_ELEMENT_PROJECT_EXPLORER_DND_TYPE =

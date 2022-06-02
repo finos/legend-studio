@@ -15,12 +15,12 @@
  */
 
 import { hashArray, uuid, type Hashable } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
-import type { Mapping } from '../mapping/Mapping';
-import type { RawLambda } from '../../rawValueSpecification/RawLambda';
-import type { Service } from './Service';
-import type { Runtime } from '../runtime/Runtime';
-import type { PackageableElementReference } from '../PackageableElementReference';
+import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst.js';
+import type { Mapping } from '../mapping/Mapping.js';
+import type { RawLambda } from '../../rawValueSpecification/RawLambda.js';
+import type { Service } from './Service.js';
+import type { Runtime } from '../runtime/Runtime.js';
+import type { PackageableElementReference } from '../PackageableElementReference.js';
 
 export abstract class ServiceExecution implements Hashable {
   abstract get hashCode(): string;

@@ -124,6 +124,8 @@ const IMPORT_RULES = {
   'import/namespace': OFF,
   'import/default': OFF,
   'import/export': OFF,
+  // Enforce ESM-styled imports
+  'import/extensions': [ERROR, 'always', { ignorePackages: true }],
   'import/newline-after-import': [WARN, { count: 1 }],
   'import/no-default-export': WARN,
 };

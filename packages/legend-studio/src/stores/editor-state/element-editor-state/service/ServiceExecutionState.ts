@@ -25,15 +25,15 @@ import {
   UnsupportedOperationError,
   guaranteeType,
 } from '@finos/legend-shared';
-import { LegacySingleExecutionTestState } from './LegacyServiceTestState';
-import type { EditorStore } from '../../../EditorStore';
-import type { ServiceEditorState } from './ServiceEditorState';
+import { LegacySingleExecutionTestState } from './LegacyServiceTestState.js';
+import type { EditorStore } from '../../../EditorStore.js';
+import type { ServiceEditorState } from './ServiceEditorState.js';
 import {
   decorateRuntimeWithNewMapping,
   RuntimeEditorState,
-} from '../../../editor-state/element-editor-state/RuntimeEditorState';
+} from '../../../editor-state/element-editor-state/RuntimeEditorState.js';
 import { LambdaEditorState, TAB_SIZE } from '@finos/legend-application';
-import { ExecutionPlanState } from '../../../ExecutionPlanState';
+import { ExecutionPlanState } from '../../../ExecutionPlanState.js';
 import {
   type ServiceExecution,
   type KeyedExecutionParameter,
@@ -59,13 +59,13 @@ import {
 } from '@finos/legend-graph';
 import type { Entity } from '@finos/legend-model-storage';
 import { parseGACoordinates } from '@finos/legend-server-depot';
-import { runtime_addMapping } from '../../../graphModifier/DSLMapping_GraphModifierHelper';
+import { runtime_addMapping } from '../../../graphModifier/DSLMapping_GraphModifierHelper.js';
 import {
   pureExecution_setFunction,
   pureSingleExecution_setRuntime,
   singleExecTest_setData,
-} from '../../../graphModifier/DSLService_GraphModifierHelper';
-import { ServiceTestSuiteState } from './ServiceTestSuiteState';
+} from '../../../graphModifier/DSLService_GraphModifierHelper.js';
+import { ServiceTestSuiteState } from './ServiceTestSuiteState.js';
 
 export enum SERVICE_EXECUTION_TAB {
   EXECUTION_CONTEXT = 'EXECUTION_CONTEXT',

@@ -19,8 +19,8 @@ import {
   type V1_PackageableElementVisitor,
   V1_Store,
 } from '@finos/legend-graph';
-import type { V1_ServiceStoreElement } from './V1_ESService_ServiceStoreElement';
-import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../../ESService_ModelUtils';
+import type { V1_ServiceStoreElement } from './V1_ESService_ServiceStoreElement.js';
+import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../../ESService_ModelUtils.js';
 
 export class V1_ServiceStore extends V1_Store implements Hashable {
   description?: string | undefined;

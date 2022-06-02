@@ -51,27 +51,27 @@ import {
   INTERNAL__PropagatedValue,
   matchFunctionName,
 } from '@finos/legend-graph';
-import { isGraphFetchTreeDataEmpty } from './QueryBuilderGraphFetchTreeUtil';
-import type { QueryBuilderState } from './QueryBuilderState';
-import { buildFilterExpression } from './QueryBuilderFilterState';
+import { isGraphFetchTreeDataEmpty } from './QueryBuilderGraphFetchTreeUtil.js';
+import type { QueryBuilderState } from './QueryBuilderState.js';
+import { buildFilterExpression } from './QueryBuilderFilterState.js';
 import {
   QueryBuilderDerivationProjectionColumnState,
   QueryBuilderSimpleProjectionColumnState,
-} from './QueryBuilderProjectionState';
-import { buildGenericLambdaFunctionInstanceValue } from './QueryBuilderValueSpecificationBuilderHelper';
+} from './QueryBuilderProjectionState.js';
+import { buildGenericLambdaFunctionInstanceValue } from './QueryBuilderValueSpecificationBuilderHelper.js';
 import {
   type QueryBuilderPostFilterState,
   type QueryBuilderPostFilterTreeNodeData,
   QueryBuilderPostFilterTreeConditionNodeData,
   QueryBuilderPostFilterTreeGroupNodeData,
-} from './QueryBuilderPostFilterState';
-import { fromGroupOperation } from './QueryBuilderOperatorsHelper';
-import { getDerivedPropertyMilestoningSteoreotype } from './QueryBuilderPropertyEditorState';
+} from './QueryBuilderPostFilterState.js';
+import { fromGroupOperation } from './QueryBuilderOperatorsHelper.js';
+import { getDerivedPropertyMilestoningSteoreotype } from './QueryBuilderPropertyEditorState.js';
 import {
   functionExpression_setParametersValues,
   propertyExpression_setParametersValue,
 } from '@finos/legend-application';
-import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../QueryBuilder_Const';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../QueryBuilder_Const.js';
 
 /**
  * Checks if the provided property expression match the criteria for default

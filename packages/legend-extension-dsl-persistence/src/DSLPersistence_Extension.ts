@@ -16,9 +16,9 @@
 
 import packageJson from '../package.json';
 import { AbstractPreset } from '@finos/legend-shared';
-import { DSLPersistence_PureGraphPlugin } from './graph/DSLPersistence_PureGraphPlugin';
-import { DSLPersistence_PureGraphManagerPlugin } from './graphManager/DSLPersistence_PureGraphManagerPlugin';
-import { DSLPersistence_PureProtocolProcessorPlugin } from './models/protocols/pure/DSLPersistence_PureProtocolProcessorPlugin';
+import { DSLPersistence_PureGraphPlugin } from './graph/DSLPersistence_PureGraphPlugin.js';
+import { DSLPersistence_PureGraphManagerPlugin } from './graphManager/DSLPersistence_PureGraphManagerPlugin.js';
+import { DSLPersistence_PureProtocolProcessorPlugin } from './models/protocols/pure/DSLPersistence_PureProtocolProcessorPlugin.js';
 
 export class DSLPersistence_GraphPreset extends AbstractPreset {
   constructor() {

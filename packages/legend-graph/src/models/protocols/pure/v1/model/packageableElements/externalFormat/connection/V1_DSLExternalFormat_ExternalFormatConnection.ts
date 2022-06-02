@@ -15,12 +15,12 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { DSL_EXTERNAL_FORMAT_HASH_STRUCTURE } from '../../../../../../../DSLExternalFormat_ModelUtils';
+import { DSL_EXTERNAL_FORMAT_HASH_STRUCTURE } from '../../../../../../../DSLExternalFormat_ModelUtils.js';
 import {
   V1_Connection,
   type V1_ConnectionVisitor,
-} from '../../connection/V1_Connection';
-import type { V1_UrlStream } from './V1_DSLExternalFormat_UrlStream';
+} from '../../connection/V1_Connection.js';
+import type { V1_UrlStream } from './V1_DSLExternalFormat_UrlStream.js';
 
 export class V1_ExternalFormatConnection
   extends V1_Connection

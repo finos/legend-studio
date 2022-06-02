@@ -44,14 +44,14 @@ import {
   TEST__getTestApplicationStore,
   WebApplicationNavigator,
 } from '@finos/legend-application';
-import { LegendQueryStore } from '../stores/LegendQueryStore';
-import { TEST__getTestQueryConfig } from '../stores/QueryStoreTestUtils';
-import { LegendQueryStoreProvider } from './LegendQueryStoreProvider';
-import { LegendQueryPluginManager } from '../application/LegendQueryPluginManager';
-import { ExistingQueryLoader } from './QueryEditor';
-import { generateExistingQueryRoute } from '../stores/LegendQueryRouter';
-import { QUERY_BUILDER_TEST_ID } from './QueryBuilder_TestID';
-import type { LegendQueryConfig } from '../application/LegendQueryConfig';
+import { LegendQueryStore } from '../stores/LegendQueryStore.js';
+import { TEST__getTestQueryConfig } from '../stores/QueryStoreTestUtils.js';
+import { LegendQueryStoreProvider } from './LegendQueryStoreProvider.js';
+import { LegendQueryPluginManager } from '../application/LegendQueryPluginManager.js';
+import { ExistingQueryLoader } from './QueryEditor.js';
+import { generateExistingQueryRoute } from '../stores/LegendQueryRouter.js';
+import { QUERY_BUILDER_TEST_ID } from './QueryBuilder_TestID.js';
+import type { LegendQueryConfig } from '../application/LegendQueryConfig.js';
 import type { Entity } from '@finos/legend-model-storage';
 
 export const TEST__LegendQueryStoreProvider: React.FC<{
@@ -84,7 +84,7 @@ export const TEST__provideMockedLegendQueryStore = (customization?: {
         TEST__getTestGraphManagerState(customization?.pluginManager),
       pluginManager,
     );
-  const MockedQueryStoreProvider = require('./LegendQueryStoreProvider'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+  const MockedQueryStoreProvider = require('./LegendQueryStoreProvider.js'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
   MockedQueryStoreProvider.useLegendQueryStore = jest.fn();
   MockedQueryStoreProvider.useLegendQueryStore.mockReturnValue(value);
   return value;

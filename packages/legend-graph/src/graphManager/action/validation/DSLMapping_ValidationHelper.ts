@@ -15,24 +15,24 @@
  */
 
 import { fromGrammarString, isValidJSONString } from '@finos/legend-shared';
-import { ExpectedOutputMappingTestAssert } from '../../../models/metamodels/pure/packageableElements/mapping/ExpectedOutputMappingTestAssert';
-import type { InputData } from '../../../models/metamodels/pure/packageableElements/mapping/InputData';
-import type { MappingTest } from '../../../models/metamodels/pure/packageableElements/mapping/MappingTest';
-import type { MappingTestAssert } from '../../../models/metamodels/pure/packageableElements/mapping/MappingTestAssert';
-import { FlatDataInputData } from '../../../models/metamodels/pure/packageableElements/store/flatData/mapping/FlatDataInputData';
+import { ExpectedOutputMappingTestAssert } from '../../../models/metamodels/pure/packageableElements/mapping/ExpectedOutputMappingTestAssert.js';
+import type { InputData } from '../../../models/metamodels/pure/packageableElements/mapping/InputData.js';
+import type { MappingTest } from '../../../models/metamodels/pure/packageableElements/mapping/MappingTest.js';
+import type { MappingTestAssert } from '../../../models/metamodels/pure/packageableElements/mapping/MappingTestAssert.js';
+import { FlatDataInputData } from '../../../models/metamodels/pure/packageableElements/store/flatData/mapping/FlatDataInputData.js';
 import {
   ObjectInputData,
   ObjectInputType,
-} from '../../../models/metamodels/pure/packageableElements/store/modelToModel/mapping/ObjectInputData';
-import { RelationalInputData } from '../../../models/metamodels/pure/packageableElements/store/relational/mapping/RelationalInputData';
-import { isStubbed_PackageableElement } from '../creation/DomainModelCreatorHelper';
-import { isStubbed_RawLambda } from '../creation/RawValueSpecificationCreatorHelper';
-import { DEPRECATED__validate_FlatDataInputData } from './StoreFlatData_ValidationHelper';
-import { DEPRECATED__validation_RelationalInputData } from './StoreRelational_ValidationHelper';
+} from '../../../models/metamodels/pure/packageableElements/store/modelToModel/mapping/ObjectInputData.js';
+import { RelationalInputData } from '../../../models/metamodels/pure/packageableElements/store/relational/mapping/RelationalInputData.js';
+import { isStubbed_PackageableElement } from '../creation/DomainModelCreatorHelper.js';
+import { isStubbed_RawLambda } from '../creation/RawValueSpecificationCreatorHelper.js';
+import { DEPRECATED__validate_FlatDataInputData } from './StoreFlatData_ValidationHelper.js';
+import { DEPRECATED__validation_RelationalInputData } from './StoreRelational_ValidationHelper.js';
 import {
   type ValidationIssue,
   createValidationError,
-} from './ValidationHelper';
+} from './ValidationHelper.js';
 
 /**
  * @deprecated

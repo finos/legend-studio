@@ -15,10 +15,10 @@
  */
 
 import type { Hashable } from '@finos/legend-shared';
-import type { MappingClass } from './MappingClass';
-import { SetImplementation } from './SetImplementation';
-import type { PropertyMappingsImplementation } from './PropertyMappingsImplementation';
-import type { PropertyMapping } from './PropertyMapping';
+import type { MappingClass } from './MappingClass.js';
+import { SetImplementation } from './SetImplementation.js';
+import type { PropertyMappingsImplementation } from './PropertyMappingsImplementation.js';
+import type { PropertyMapping } from './PropertyMapping.js';
 
 export abstract class InstanceSetImplementation
   extends SetImplementation

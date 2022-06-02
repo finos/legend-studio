@@ -29,12 +29,12 @@ import type {
   ValueSpecification,
   VariableExpression,
 } from '@finos/legend-graph';
-import { DEFAULT_LAMBDA_VARIABLE_NAME } from '../QueryBuilder_Const';
+import { DEFAULT_LAMBDA_VARIABLE_NAME } from '../QueryBuilder_Const.js';
 import {
   QueryBuilderSimpleProjectionColumnState,
   type QueryBuilderProjectionColumnState,
   type QueryBuilderProjectionState,
-} from './QueryBuilderProjectionState';
+} from './QueryBuilderProjectionState.js';
 
 export abstract class QueryBuilderAggregateOperator {
   readonly uuid = uuid();

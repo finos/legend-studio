@@ -15,10 +15,10 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
-import { InputData } from '../../../mapping/InputData';
-import type { PackageableElementReference } from '../../../PackageableElementReference';
-import type { Database } from '../model/Database';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst.js';
+import { InputData } from '../../../mapping/InputData.js';
+import type { PackageableElementReference } from '../../../PackageableElementReference.js';
+import type { Database } from '../model/Database.js';
 
 export enum RelationalInputType {
   SQL = 'SQL',

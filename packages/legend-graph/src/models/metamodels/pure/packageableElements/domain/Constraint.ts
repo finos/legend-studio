@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
+import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst.js';
 import { hashArray, uuid, type Hashable } from '@finos/legend-shared';
-import type { RawLambda } from '../../rawValueSpecification/RawLambda';
-import type { Class } from './Class';
+import type { RawLambda } from '../../rawValueSpecification/RawLambda.js';
+import type { Class } from './Class.js';
 
 export class Constraint implements Hashable {
   readonly _UUID = uuid();

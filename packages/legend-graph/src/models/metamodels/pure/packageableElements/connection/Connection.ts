@@ -15,15 +15,15 @@
  */
 
 import { hashArray, uuid, type Hashable } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
-import type { Store } from '../store/Store';
-import type { JsonModelConnection } from '../store/modelToModel/connection/JsonModelConnection';
-import type { XmlModelConnection } from '../store/modelToModel/connection/XmlModelConnection';
-import type { FlatDataConnection } from '../store/flatData/connection/FlatDataConnection';
-import type { PackageableConnection } from './PackageableConnection';
-import type { RelationalDatabaseConnection } from '../store/relational/connection/RelationalDatabaseConnection';
-import type { PackageableElementReference } from '../PackageableElementReference';
-import type { ModelChainConnection } from '../store/modelToModel/connection/ModelChainConnection';
+import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst.js';
+import type { Store } from '../store/Store.js';
+import type { JsonModelConnection } from '../store/modelToModel/connection/JsonModelConnection.js';
+import type { XmlModelConnection } from '../store/modelToModel/connection/XmlModelConnection.js';
+import type { FlatDataConnection } from '../store/flatData/connection/FlatDataConnection.js';
+import type { PackageableConnection } from './PackageableConnection.js';
+import type { RelationalDatabaseConnection } from '../store/relational/connection/RelationalDatabaseConnection.js';
+import type { PackageableElementReference } from '../PackageableElementReference.js';
+import type { ModelChainConnection } from '../store/modelToModel/connection/ModelChainConnection.js';
 
 export interface ConnectionVisitor<T> {
   visit_Connection(connection: Connection): T;

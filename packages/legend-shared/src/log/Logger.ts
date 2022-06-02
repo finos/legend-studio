@@ -17,7 +17,7 @@
 import {
   AbstractPlugin,
   type AbstractPluginManager,
-} from '../application/AbstractPluginManager';
+} from '../application/AbstractPluginManager.js';
 
 // We use numeric enum here for because we want to do comparison
 // In order to retrieve the name of the enum we can do reverse mapping, for example: LogLevel[LogLevel.INFO] -> INFO

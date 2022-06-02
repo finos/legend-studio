@@ -15,14 +15,14 @@
  */
 
 import { hashArray, uuid, type Hashable } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../MetaModelConst';
-import type { Type } from '../packageableElements/domain/Type';
-import type { Multiplicity } from '../packageableElements/domain/Multiplicity';
-import type { PackageableElementReference } from '../packageableElements/PackageableElementReference';
+import { CORE_HASH_STRUCTURE } from '../../../../MetaModelConst.js';
+import type { Type } from '../packageableElements/domain/Type.js';
+import type { Multiplicity } from '../packageableElements/domain/Multiplicity.js';
+import type { PackageableElementReference } from '../packageableElements/PackageableElementReference.js';
 import {
   type RawValueSpecificationVisitor,
   RawValueSpecification,
-} from './RawValueSpecification';
+} from './RawValueSpecification.js';
 
 export class RawVariableExpression
   extends RawValueSpecification

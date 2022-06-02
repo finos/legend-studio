@@ -15,9 +15,9 @@
  */
 
 import { type Hashable, hashArray } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../MetaModelConst';
-import { hashObjectWithoutSourceInformation } from '../../../../../../MetaModelUtils';
-import type { V1_RelationalData } from './V1_RelationalData';
+import { CORE_HASH_STRUCTURE } from '../../../../../../MetaModelConst.js';
+import { hashObjectWithoutSourceInformation } from '../../../../../../MetaModelUtils.js';
+import type { V1_RelationalData } from './V1_RelationalData.js';
 
 export interface V1_EmbeddedDataVisitor<T> {
   visit_EmbeddedData(embeddedData: V1_EmbeddedData): T;

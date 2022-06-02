@@ -27,8 +27,8 @@ import { guaranteeType, assertTrue } from '@finos/legend-shared';
 import {
   type QueryBuilderAggregateOperator,
   QueryBuilderAggregateColumnState,
-} from '../QueryBuilderAggregationState';
-import type { QueryBuilderProjectionColumnState } from '../QueryBuilderProjectionState';
+} from '../QueryBuilderAggregationState.js';
+import type { QueryBuilderProjectionColumnState } from '../QueryBuilderProjectionState.js';
 
 export const buildAggregateExpression = (
   operatorFunctionFullPath: string,

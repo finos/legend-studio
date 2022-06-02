@@ -20,28 +20,28 @@ import {
   type Hashable,
   isEmpty,
 } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
-import type { RelationalOperationElement } from '../model/RelationalOperationElement';
-import type { EmbeddedSetImplementation } from '../../../mapping/EmbeddedSetImplementation';
-import type { Class } from '../../../domain/Class';
-import type { Mapping } from '../../../mapping/Mapping';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst.js';
+import type { RelationalOperationElement } from '../model/RelationalOperationElement.js';
+import type { EmbeddedSetImplementation } from '../../../mapping/EmbeddedSetImplementation.js';
+import type { Class } from '../../../domain/Class.js';
+import type { Mapping } from '../../../mapping/Mapping.js';
 import type {
   SetImplementationVisitor,
   SetImplementation,
-} from '../../../mapping/SetImplementation';
-import type { PropertyMappingsImplementation } from '../../../mapping/PropertyMappingsImplementation';
+} from '../../../mapping/SetImplementation.js';
+import type { PropertyMappingsImplementation } from '../../../mapping/PropertyMappingsImplementation.js';
 import {
   type PropertyMappingVisitor,
   PropertyMapping,
-} from '../../../mapping/PropertyMapping';
-import type { RootRelationalInstanceSetImplementation } from './RootRelationalInstanceSetImplementation';
-import type { InferableMappingElementIdValue } from '../../../mapping/InferableMappingElementId';
-import type { PackageableElementReference } from '../../../PackageableElementReference';
-import type { PropertyReference } from '../../../domain/PropertyReference';
-import type { RelationalInstanceSetImplementation } from './RelationalInstanceSetImplementation';
-import { InferableMappingElementRootExplicitValue } from '../../../mapping/InferableMappingElementRoot';
-import type { MappingClass } from '../../../mapping/MappingClass';
-import { RelationalPropertyMapping } from './RelationalPropertyMapping';
+} from '../../../mapping/PropertyMapping.js';
+import type { RootRelationalInstanceSetImplementation } from './RootRelationalInstanceSetImplementation.js';
+import type { InferableMappingElementIdValue } from '../../../mapping/InferableMappingElementId.js';
+import type { PackageableElementReference } from '../../../PackageableElementReference.js';
+import type { PropertyReference } from '../../../domain/PropertyReference.js';
+import type { RelationalInstanceSetImplementation } from './RelationalInstanceSetImplementation.js';
+import { InferableMappingElementRootExplicitValue } from '../../../mapping/InferableMappingElementRoot.js';
+import type { MappingClass } from '../../../mapping/MappingClass.js';
+import { RelationalPropertyMapping } from './RelationalPropertyMapping.js';
 
 export class EmbeddedRelationalInstanceSetImplementation
   extends PropertyMapping

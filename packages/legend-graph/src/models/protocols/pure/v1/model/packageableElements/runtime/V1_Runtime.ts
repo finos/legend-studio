@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst.js';
 import { type Hashable, hashArray } from '@finos/legend-shared';
-import type { V1_PackageableElementPointer } from '../../../model/packageableElements/V1_PackageableElement';
-import type { V1_Connection } from '../../../model/packageableElements/connection/V1_Connection';
+import type { V1_PackageableElementPointer } from '../../../model/packageableElements/V1_PackageableElement.js';
+import type { V1_Connection } from '../../../model/packageableElements/connection/V1_Connection.js';
 
 export abstract class V1_Runtime implements Hashable {
   abstract get hashCode(): string;

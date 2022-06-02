@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import type { AbstractPureGraphManager } from '../../../graphManager/AbstractPureGraphManager';
-import { V1_PureGraphManager } from './v1/V1_PureGraphManager';
+import type { AbstractPureGraphManager } from '../../../graphManager/AbstractPureGraphManager.js';
+import { V1_PureGraphManager } from './v1/V1_PureGraphManager.js';
 import type { Log } from '@finos/legend-shared';
-import type { GraphPluginManager } from '../../../GraphPluginManager';
+import type { GraphPluginManager } from '../../../GraphPluginManager.js';
 
 export const getGraphManager = (
   pluginManager: GraphPluginManager,

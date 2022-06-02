@@ -15,7 +15,7 @@
  */
 
 import { computed, observable, action, makeObservable } from 'mobx';
-import type { EditorStore } from '../../EditorStore';
+import type { EditorStore } from '../../EditorStore.js';
 import {
   type GeneratorFn,
   assertErrorThrown,
@@ -23,7 +23,7 @@ import {
   guaranteeType,
   assertType,
 } from '@finos/legend-shared';
-import { ElementEditorState } from './ElementEditorState';
+import { ElementEditorState } from './ElementEditorState.js';
 import {
   type CompilationError,
   type PackageableElement,

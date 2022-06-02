@@ -16,13 +16,13 @@
 
 import { createContext, useContext } from 'react';
 import { useLocalObservable } from 'mobx-react-lite';
-import { LegendQueryStore } from '../stores/LegendQueryStore';
+import { LegendQueryStore } from '../stores/LegendQueryStore.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { useDepotServerClient } from '@finos/legend-server-depot';
 import { useGraphManagerState } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
-import type { LegendQueryPluginManager } from '../application/LegendQueryPluginManager';
-import type { LegendQueryConfig } from '../application/LegendQueryConfig';
+import type { LegendQueryPluginManager } from '../application/LegendQueryPluginManager.js';
+import type { LegendQueryConfig } from '../application/LegendQueryConfig.js';
 
 const LegendQueryStoreContext = createContext<LegendQueryStore | undefined>(
   undefined,

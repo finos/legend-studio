@@ -22,79 +22,79 @@ import {
   guaranteeNonNullable,
   returnUndefOnError,
 } from '@finos/legend-shared';
-import { GRAPH_MANAGER_EVENT } from '../../../../../../../graphManager/GraphManagerEvent';
-import type { PropertyMapping } from '../../../../../../metamodels/pure/packageableElements/mapping/PropertyMapping';
-import { PurePropertyMapping } from '../../../../../../metamodels/pure/packageableElements/store/modelToModel/mapping/PurePropertyMapping';
-import { RelationalPropertyMapping } from '../../../../../../metamodels/pure/packageableElements/store/relational/mapping/RelationalPropertyMapping';
-import type { InstanceSetImplementation } from '../../../../../../metamodels/pure/packageableElements/mapping/InstanceSetImplementation';
-import type { PropertyMappingsImplementation } from '../../../../../../metamodels/pure/packageableElements/mapping/PropertyMappingsImplementation';
-import { EmbeddedFlatDataPropertyMapping } from '../../../../../../metamodels/pure/packageableElements/store/flatData/mapping/EmbeddedFlatDataPropertyMapping';
-import { FlatDataPropertyMapping } from '../../../../../../metamodels/pure/packageableElements/store/flatData/mapping/FlatDataPropertyMapping';
-import type { EnumerationMapping } from '../../../../../../metamodels/pure/packageableElements/mapping/EnumerationMapping';
-import type { SetImplementation } from '../../../../../../metamodels/pure/packageableElements/mapping/SetImplementation';
-import { Class } from '../../../../../../metamodels/pure/packageableElements/domain/Class';
-import type { Association } from '../../../../../../metamodels/pure/packageableElements/domain/Association';
-import type { TableAlias } from '../../../../../../metamodels/pure/packageableElements/store/relational/model/RelationalOperationElement';
-import { InferableMappingElementIdExplicitValue } from '../../../../../../metamodels/pure/packageableElements/mapping/InferableMappingElementId';
+import { GRAPH_MANAGER_EVENT } from '../../../../../../../graphManager/GraphManagerEvent.js';
+import type { PropertyMapping } from '../../../../../../metamodels/pure/packageableElements/mapping/PropertyMapping.js';
+import { PurePropertyMapping } from '../../../../../../metamodels/pure/packageableElements/store/modelToModel/mapping/PurePropertyMapping.js';
+import { RelationalPropertyMapping } from '../../../../../../metamodels/pure/packageableElements/store/relational/mapping/RelationalPropertyMapping.js';
+import type { InstanceSetImplementation } from '../../../../../../metamodels/pure/packageableElements/mapping/InstanceSetImplementation.js';
+import type { PropertyMappingsImplementation } from '../../../../../../metamodels/pure/packageableElements/mapping/PropertyMappingsImplementation.js';
+import { EmbeddedFlatDataPropertyMapping } from '../../../../../../metamodels/pure/packageableElements/store/flatData/mapping/EmbeddedFlatDataPropertyMapping.js';
+import { FlatDataPropertyMapping } from '../../../../../../metamodels/pure/packageableElements/store/flatData/mapping/FlatDataPropertyMapping.js';
+import type { EnumerationMapping } from '../../../../../../metamodels/pure/packageableElements/mapping/EnumerationMapping.js';
+import type { SetImplementation } from '../../../../../../metamodels/pure/packageableElements/mapping/SetImplementation.js';
+import { Class } from '../../../../../../metamodels/pure/packageableElements/domain/Class.js';
+import type { Association } from '../../../../../../metamodels/pure/packageableElements/domain/Association.js';
+import type { TableAlias } from '../../../../../../metamodels/pure/packageableElements/store/relational/model/RelationalOperationElement.js';
+import { InferableMappingElementIdExplicitValue } from '../../../../../../metamodels/pure/packageableElements/mapping/InferableMappingElementId.js';
 import {
   type PackageableElementReference,
   PackageableElementImplicitReference,
-} from '../../../../../../metamodels/pure/packageableElements/PackageableElementReference';
+} from '../../../../../../metamodels/pure/packageableElements/PackageableElementReference.js';
 import {
   type PropertyReference,
   PropertyImplicitReference,
-} from '../../../../../../metamodels/pure/packageableElements/domain/PropertyReference';
-import { RootRelationalInstanceSetImplementation } from '../../../../../../metamodels/pure/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation';
-import { OtherwiseEmbeddedRelationalInstanceSetImplementation } from '../../../../../../metamodels/pure/packageableElements/store/relational/mapping/OtherwiseEmbeddedRelationalInstanceSetImplementation';
-import { EmbeddedRelationalInstanceSetImplementation } from '../../../../../../metamodels/pure/packageableElements/store/relational/mapping/EmbeddedRelationalInstanceSetImplementation';
-import { InlineEmbeddedRelationalInstanceSetImplementation } from '../../../../../../metamodels/pure/packageableElements/store/relational/mapping/InlineEmbeddedRelationalInstanceSetImplementation';
-import { AssociationImplementation } from '../../../../../../metamodels/pure/packageableElements/mapping/AssociationImplementation';
-import type { V1_GraphBuilderContext } from '../../../transformation/pureGraph/to/V1_GraphBuilderContext';
+} from '../../../../../../metamodels/pure/packageableElements/domain/PropertyReference.js';
+import { RootRelationalInstanceSetImplementation } from '../../../../../../metamodels/pure/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation.js';
+import { OtherwiseEmbeddedRelationalInstanceSetImplementation } from '../../../../../../metamodels/pure/packageableElements/store/relational/mapping/OtherwiseEmbeddedRelationalInstanceSetImplementation.js';
+import { EmbeddedRelationalInstanceSetImplementation } from '../../../../../../metamodels/pure/packageableElements/store/relational/mapping/EmbeddedRelationalInstanceSetImplementation.js';
+import { InlineEmbeddedRelationalInstanceSetImplementation } from '../../../../../../metamodels/pure/packageableElements/store/relational/mapping/InlineEmbeddedRelationalInstanceSetImplementation.js';
+import { AssociationImplementation } from '../../../../../../metamodels/pure/packageableElements/mapping/AssociationImplementation.js';
+import type { V1_GraphBuilderContext } from '../../../transformation/pureGraph/to/V1_GraphBuilderContext.js';
 import type {
   V1_PropertyMapping,
   V1_PropertyMappingVisitor,
-} from '../../../model/packageableElements/mapping/V1_PropertyMapping';
-import type { V1_PurePropertyMapping } from '../../../model/packageableElements/store/modelToModel/mapping/V1_PurePropertyMapping';
-import type { V1_InlineEmbeddedPropertyMapping } from '../../../model/packageableElements/store/relational/mapping/V1_InlineEmbeddedPropertyMapping';
-import type { V1_AggregationAwarePropertyMapping } from '../../../model/packageableElements/store/relational/mapping/aggregationAware/V1_AggregationAwarePropertyMapping';
-import type { V1_RelationalPropertyMapping } from '../../../model/packageableElements/store/relational/mapping/V1_RelationalPropertyMapping';
-import type { V1_EmbeddedFlatDataPropertyMapping } from '../../../model/packageableElements/store/flatData/mapping/V1_EmbeddedFlatDataPropertyMapping';
-import type { V1_FlatDataPropertyMapping } from '../../../model/packageableElements/store/flatData/mapping/V1_FlatDataPropertyMapping';
-import type { V1_OtherwiseEmbeddedRelationalPropertyMapping } from '../../../model/packageableElements/store/relational/mapping/V1_OtherwiseEmbeddedRelationalPropertyMapping';
-import type { V1_EmbeddedRelationalPropertyMapping } from '../../../model/packageableElements/store/relational/mapping/V1_EmbeddedRelationalPropertyMapping';
-import { V1_buildRelationalOperationElement } from '../../../transformation/pureGraph/to/helpers/V1_DatabaseBuilderHelper';
-import { V1_buildEmbeddedRelationalMappingProperty } from '../../../transformation/pureGraph/to/helpers/V1_RelationalPropertyMappingBuilder';
-import type { V1_XStorePropertyMapping } from '../../../model/packageableElements/mapping/xStore/V1_XStorePropertyMapping';
-import { XStorePropertyMapping } from '../../../../../../metamodels/pure/packageableElements/mapping/xStore/XStorePropertyMapping';
-import type { XStoreAssociationImplementation } from '../../../../../../metamodels/pure/packageableElements/mapping/xStore/XStoreAssociationImplementation';
-import { Property } from '../../../../../../metamodels/pure/packageableElements/domain/Property';
-import { MappingClass } from '../../../../../../metamodels/pure/packageableElements/mapping/MappingClass';
-import { LocalMappingPropertyInfo } from '../../../../../../metamodels/pure/packageableElements/mapping/LocalMappingPropertyInfo';
-import type { AggregationAwareSetImplementation } from '../../../../../../metamodels/pure/packageableElements/mapping/aggregationAware/AggregationAwareSetImplementation';
-import { AggregationAwarePropertyMapping } from '../../../../../../metamodels/pure/packageableElements/mapping/aggregationAware/AggregationAwarePropertyMapping';
-import { V1_buildRawLambdaWithResolvedPaths } from './helpers/V1_ValueSpecificationPathResolver';
+} from '../../../model/packageableElements/mapping/V1_PropertyMapping.js';
+import type { V1_PurePropertyMapping } from '../../../model/packageableElements/store/modelToModel/mapping/V1_PurePropertyMapping.js';
+import type { V1_InlineEmbeddedPropertyMapping } from '../../../model/packageableElements/store/relational/mapping/V1_InlineEmbeddedPropertyMapping.js';
+import type { V1_AggregationAwarePropertyMapping } from '../../../model/packageableElements/store/relational/mapping/aggregationAware/V1_AggregationAwarePropertyMapping.js';
+import type { V1_RelationalPropertyMapping } from '../../../model/packageableElements/store/relational/mapping/V1_RelationalPropertyMapping.js';
+import type { V1_EmbeddedFlatDataPropertyMapping } from '../../../model/packageableElements/store/flatData/mapping/V1_EmbeddedFlatDataPropertyMapping.js';
+import type { V1_FlatDataPropertyMapping } from '../../../model/packageableElements/store/flatData/mapping/V1_FlatDataPropertyMapping.js';
+import type { V1_OtherwiseEmbeddedRelationalPropertyMapping } from '../../../model/packageableElements/store/relational/mapping/V1_OtherwiseEmbeddedRelationalPropertyMapping.js';
+import type { V1_EmbeddedRelationalPropertyMapping } from '../../../model/packageableElements/store/relational/mapping/V1_EmbeddedRelationalPropertyMapping.js';
+import { V1_buildRelationalOperationElement } from '../../../transformation/pureGraph/to/helpers/V1_DatabaseBuilderHelper.js';
+import { V1_buildEmbeddedRelationalMappingProperty } from '../../../transformation/pureGraph/to/helpers/V1_RelationalPropertyMappingBuilder.js';
+import type { V1_XStorePropertyMapping } from '../../../model/packageableElements/mapping/xStore/V1_XStorePropertyMapping.js';
+import { XStorePropertyMapping } from '../../../../../../metamodels/pure/packageableElements/mapping/xStore/XStorePropertyMapping.js';
+import type { XStoreAssociationImplementation } from '../../../../../../metamodels/pure/packageableElements/mapping/xStore/XStoreAssociationImplementation.js';
+import { Property } from '../../../../../../metamodels/pure/packageableElements/domain/Property.js';
+import { MappingClass } from '../../../../../../metamodels/pure/packageableElements/mapping/MappingClass.js';
+import { LocalMappingPropertyInfo } from '../../../../../../metamodels/pure/packageableElements/mapping/LocalMappingPropertyInfo.js';
+import type { AggregationAwareSetImplementation } from '../../../../../../metamodels/pure/packageableElements/mapping/aggregationAware/AggregationAwareSetImplementation.js';
+import { AggregationAwarePropertyMapping } from '../../../../../../metamodels/pure/packageableElements/mapping/aggregationAware/AggregationAwarePropertyMapping.js';
+import { V1_buildRawLambdaWithResolvedPaths } from './helpers/V1_ValueSpecificationPathResolver.js';
 import {
   V1_deserializeRelationalOperationElement,
   V1_serializeRelationalOperationElement,
-} from '../../pureProtocol/serializationHelpers/V1_DatabaseSerializationHelper';
-import { V1_transformRelationalOperationElement } from '../from/V1_DatabaseTransformer';
-import { V1_GraphTransformerContextBuilder } from '../from/V1_GraphTransformerContext';
+} from '../../pureProtocol/serializationHelpers/V1_DatabaseSerializationHelper.js';
+import { V1_transformRelationalOperationElement } from '../from/V1_DatabaseTransformer.js';
+import { V1_GraphTransformerContextBuilder } from '../from/V1_GraphTransformerContext.js';
 import {
   getAllEnumerationMappings,
   getClassMappingById,
   getClassMappingsByClass,
-} from '../../../../../../../helpers/DSLMapping_Helper';
-import { GraphBuilderError } from '../../../../../../../graphManager/GraphManagerUtils';
-import type { AbstractProperty } from '../../../../../../metamodels/pure/packageableElements/domain/AbstractProperty';
-import { BindingTransformer } from '../../../../../../metamodels/pure/packageableElements/externalFormat/store/DSLExternalFormat_BindingTransformer';
-import type { Mapping } from '../../../../../../metamodels/pure/packageableElements/mapping/Mapping';
-import { V1_resolveBinding } from './V1_DSLExternalFormat_GraphBuilderHelper';
-import { TEMPORARY__UnresolvedSetImplementation } from '../../../../../../metamodels/pure/packageableElements/mapping/TEMPORARY__UnresolvedSetImplementation';
+} from '../../../../../../../helpers/DSLMapping_Helper.js';
+import { GraphBuilderError } from '../../../../../../../graphManager/GraphManagerUtils.js';
+import type { AbstractProperty } from '../../../../../../metamodels/pure/packageableElements/domain/AbstractProperty.js';
+import { BindingTransformer } from '../../../../../../metamodels/pure/packageableElements/externalFormat/store/DSLExternalFormat_BindingTransformer.js';
+import type { Mapping } from '../../../../../../metamodels/pure/packageableElements/mapping/Mapping.js';
+import { V1_resolveBinding } from './V1_DSLExternalFormat_GraphBuilderHelper.js';
+import { TEMPORARY__UnresolvedSetImplementation } from '../../../../../../metamodels/pure/packageableElements/mapping/TEMPORARY__UnresolvedSetImplementation.js';
 import {
   getAssociatedPropertyClass,
   getOwnProperty,
   getClassProperty,
-} from '../../../../../../../helpers/DomainHelper';
+} from '../../../../../../../helpers/DomainHelper.js';
 
 /**
  * This test is skipped because we want to temporarily relax graph building algorithm

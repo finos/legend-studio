@@ -23,21 +23,21 @@ import {
   uniq,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
-import type { EnumerationMapping } from '../models/metamodels/pure/packageableElements/mapping/EnumerationMapping';
-import type { SetImplementation } from '../models/metamodels/pure/packageableElements/mapping/SetImplementation';
-import type { Class } from '../models/metamodels/pure/packageableElements/domain/Class';
-import type { Enumeration } from '../models/metamodels/pure/packageableElements/domain/Enumeration';
-import type { Mapping } from '../models/metamodels/pure/packageableElements/mapping/Mapping';
-import { AggregationAwareSetImplementation } from '../models/metamodels/pure/packageableElements/mapping/aggregationAware/AggregationAwareSetImplementation';
-import { RootRelationalInstanceSetImplementation } from '../models/metamodels/pure/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation';
-import type { PropertyMapping } from '../models/metamodels/pure/packageableElements/mapping/PropertyMapping';
-import type { InstanceSetImplementation } from '../models/metamodels/pure/packageableElements/mapping/InstanceSetImplementation';
+import type { EnumerationMapping } from '../models/metamodels/pure/packageableElements/mapping/EnumerationMapping.js';
+import type { SetImplementation } from '../models/metamodels/pure/packageableElements/mapping/SetImplementation.js';
+import type { Class } from '../models/metamodels/pure/packageableElements/domain/Class.js';
+import type { Enumeration } from '../models/metamodels/pure/packageableElements/domain/Enumeration.js';
+import type { Mapping } from '../models/metamodels/pure/packageableElements/mapping/Mapping.js';
+import { AggregationAwareSetImplementation } from '../models/metamodels/pure/packageableElements/mapping/aggregationAware/AggregationAwareSetImplementation.js';
+import { RootRelationalInstanceSetImplementation } from '../models/metamodels/pure/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation.js';
+import type { PropertyMapping } from '../models/metamodels/pure/packageableElements/mapping/PropertyMapping.js';
+import type { InstanceSetImplementation } from '../models/metamodels/pure/packageableElements/mapping/InstanceSetImplementation.js';
 import type {
   EngineRuntime,
   IdentifiedConnection,
-} from '../models/metamodels/pure/packageableElements/runtime/Runtime';
-import { OperationSetImplementation } from '../models/metamodels/pure/packageableElements/mapping/OperationSetImplementation';
-import { ObjectInputType } from '../models/metamodels/pure/packageableElements/store/modelToModel/mapping/ObjectInputData';
+} from '../models/metamodels/pure/packageableElements/runtime/Runtime.js';
+import { OperationSetImplementation } from '../models/metamodels/pure/packageableElements/mapping/OperationSetImplementation.js';
+import { ObjectInputType } from '../models/metamodels/pure/packageableElements/store/modelToModel/mapping/ObjectInputData.js';
 
 // ----------------------------------------- Mapping -----------------------------------------
 

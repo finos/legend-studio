@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import type { SetImplementation } from './SetImplementation';
-import { Class } from '../domain/Class';
-import type { Property } from '../domain/Property';
+import type { SetImplementation } from './SetImplementation.js';
+import { Class } from '../domain/Class.js';
+import type { Property } from '../domain/Property.js';
 
 export class MappingClass extends Class {
   setImplementation?: SetImplementation | undefined;

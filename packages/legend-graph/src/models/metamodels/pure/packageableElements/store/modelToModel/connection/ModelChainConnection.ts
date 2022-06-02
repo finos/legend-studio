@@ -15,14 +15,14 @@
  */
 
 import { hashArray } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst.js';
 import {
   type ConnectionVisitor,
   Connection,
-} from '../../../connection/Connection';
-import type { Mapping } from '../../../mapping/Mapping';
-import type { PackageableElementReference } from '../../../PackageableElementReference';
-import type { ModelStore } from '../model/ModelStore';
+} from '../../../connection/Connection.js';
+import type { Mapping } from '../../../mapping/Mapping.js';
+import type { PackageableElementReference } from '../../../PackageableElementReference.js';
+import type { ModelStore } from '../model/ModelStore.js';
 
 export class ModelChainConnection extends Connection {
   declare store: PackageableElementReference<ModelStore>;

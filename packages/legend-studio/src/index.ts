@@ -15,46 +15,46 @@
  */
 
 // application
-export * from './components/LegendStudioStoreProvider';
-export * from './application/LegendStudio';
-export * from './application/LegendStudioConfig';
-export * from './application/LegendStudioPluginManager';
-export * from './stores/shared/PackageableElementOptionUtil';
-export * from './stores/LegendStudioAppEvent';
+export * from './components/LegendStudioStoreProvider.js';
+export * from './application/LegendStudio.js';
+export * from './application/LegendStudioConfig.js';
+export * from './application/LegendStudioPluginManager.js';
+export * from './stores/shared/PackageableElementOptionUtil.js';
+export * from './stores/LegendStudioAppEvent.js';
 
 // stores
-export * from './stores/LegendStudioPlugin';
-export * from './stores/EditorStore';
-export * from './stores/EditorConfig';
-export { ClassEditorState } from './stores/editor-state/element-editor-state/ClassEditorState';
-export { ElementEditorState } from './stores/editor-state/element-editor-state/ElementEditorState';
-export { UnsupportedElementEditorState } from './stores/editor-state/UnsupportedElementEditorState';
+export * from './stores/LegendStudioPlugin.js';
+export * from './stores/EditorStore.js';
+export * from './stores/EditorConfig.js';
+export { ClassEditorState } from './stores/editor-state/element-editor-state/ClassEditorState.js';
+export { ElementEditorState } from './stores/editor-state/element-editor-state/ElementEditorState.js';
+export { UnsupportedElementEditorState } from './stores/editor-state/UnsupportedElementEditorState.js';
 export {
   NewElementState,
   NewElementDriver,
   NewConnectionValueDriver,
-} from './stores/NewElementState';
+} from './stores/NewElementState.js';
 export {
   CORE_DND_TYPE,
   ElementDragSource,
   TypeDragSource,
   type UMLEditorElementDropTarget,
   type TransformDropTarget,
-} from './stores/shared/DnDUtil';
-export { ExplorerTreeRootPackageLabel } from './stores/ExplorerTreeState';
-export * from './stores/graphModifier/GraphModifierHelper';
-export * from './stores/graphModifier/DomainGraphModifierHelper';
-export * from './stores/DSLMapping_LegendStudioPlugin_Extension';
-export * from './stores/DSLService_LegendStudioPlugin_Extension';
-export * from './stores/DSLData_LegendStudioPlugin_Extension';
-export * from './stores/graphModifier/DSLGeneration_GraphModifierHelper';
-export * from './stores/graphModifier/DSLService_GraphModifierHelper';
+} from './stores/shared/DnDUtil.js';
+export { ExplorerTreeRootPackageLabel } from './stores/ExplorerTreeState.js';
+export * from './stores/graphModifier/GraphModifierHelper.js';
+export * from './stores/graphModifier/DomainGraphModifierHelper.js';
+export * from './stores/DSLMapping_LegendStudioPlugin_Extension.js';
+export * from './stores/DSLService_LegendStudioPlugin_Extension.js';
+export * from './stores/DSLData_LegendStudioPlugin_Extension.js';
+export * from './stores/graphModifier/DSLGeneration_GraphModifierHelper.js';
+export * from './stores/graphModifier/DSLService_GraphModifierHelper.js';
 
 // components
-export * from './components/editor/EditorStoreProvider';
-export { ClassFormEditor } from './components/editor/edit-panel/uml-editor/ClassEditor';
-export { TypeTree } from './components/shared/TypeTree';
-export { StudioTextInputEditor } from './components/shared/StudioTextInputEditor';
+export * from './components/editor/EditorStoreProvider.js';
+export { ClassFormEditor } from './components/editor/edit-panel/uml-editor/ClassEditor.js';
+export { TypeTree } from './components/shared/TypeTree.js';
+export { StudioTextInputEditor } from './components/shared/StudioTextInputEditor.js';
 
 // test
 export {
@@ -62,25 +62,25 @@ export {
   TEST__setUpEditor,
   TEST__setUpEditorWithDefaultSDLCData,
   TEST__openElementFromExplorerTree,
-} from './components/EditorComponentTestUtils';
-export * from './components/LegendStudioTestID';
-export * from './stores/EditorStoreTestUtils';
+} from './components/EditorComponentTestUtils.js';
+export * from './components/LegendStudioTestID.js';
+export * from './stores/EditorStoreTestUtils.js';
 
-export { MappingExecutionState } from './stores/editor-state/element-editor-state/mapping/MappingExecutionState';
-export { MappingTestState } from './stores/editor-state/element-editor-state/mapping/MappingTestState';
-export { ConnectionValueState } from './stores/editor-state/element-editor-state/connection/ConnectionEditorState';
-export * from './stores/editor-state/element-editor-state/mapping/MappingEditorState';
-export { MappingElementState } from './stores/editor-state/element-editor-state/mapping/MappingElementState';
-export { UnsupportedInstanceSetImplementationState } from './stores/editor-state/element-editor-state/mapping/UnsupportedInstanceSetImplementationState';
-export { getElementIcon } from './components/shared/ElementIconUtils';
+export { MappingExecutionState } from './stores/editor-state/element-editor-state/mapping/MappingExecutionState.js';
+export { MappingTestState } from './stores/editor-state/element-editor-state/mapping/MappingTestState.js';
+export { ConnectionValueState } from './stores/editor-state/element-editor-state/connection/ConnectionEditorState.js';
+export * from './stores/editor-state/element-editor-state/mapping/MappingEditorState.js';
+export { MappingElementState } from './stores/editor-state/element-editor-state/mapping/MappingElementState.js';
+export { UnsupportedInstanceSetImplementationState } from './stores/editor-state/element-editor-state/mapping/UnsupportedInstanceSetImplementationState.js';
+export { getElementIcon } from './components/shared/ElementIconUtils.js';
 
 // TO BE REMOVED: this is currently needed for project dependency dashboard
 export {
   SetupStoreProvider,
   useSetupStore,
-} from './components/setup/SetupStoreProvider';
-export { SetupStore } from './stores/SetupStore';
-export { ProjectSelector } from './components/setup/ProjectSelector';
+} from './components/setup/SetupStoreProvider.js';
+export { SetupStore } from './stores/SetupStore.js';
+export { ProjectSelector } from './components/setup/ProjectSelector.js';
 
 // --------------------------------------------- TO BE MODULARIZED --------------------------------------------------
 
@@ -88,23 +88,23 @@ export {
   ConnectionEditor_StringEditor,
   ConnectionEditor_BooleanEditor,
   ConnectionEditor_ArrayEditor,
-} from './components/editor/edit-panel/connection-editor/RelationalDatabaseConnectionEditor';
-export * from './stores/DSLGenerationSpecification_LegendStudioPlugin_Extension';
+} from './components/editor/edit-panel/connection-editor/RelationalDatabaseConnectionEditor.js';
+export * from './stores/DSLGenerationSpecification_LegendStudioPlugin_Extension.js';
 
-export * from './stores/StoreRelational_LegendStudioPlugin_Extension';
+export * from './stores/StoreRelational_LegendStudioPlugin_Extension.js';
 
-export { ServicePureExecutionState } from './stores/editor-state/element-editor-state/service/ServiceExecutionState';
-export { NewServiceModal } from './components/editor/edit-panel/service-editor/NewServiceModal';
-export { GenerationFile } from './stores/shared/FileGenerationTreeUtil';
-export { FileGenerationState } from './stores/editor-state/FileGenerationState';
-export { DSLExternalFormat_LegendStudioPlugin } from './components/DSLExternalFormat_LegendStudioPlugin';
+export { ServicePureExecutionState } from './stores/editor-state/element-editor-state/service/ServiceExecutionState.js';
+export { NewServiceModal } from './components/editor/edit-panel/service-editor/NewServiceModal.js';
+export { GenerationFile } from './stores/shared/FileGenerationTreeUtil.js';
+export { FileGenerationState } from './stores/editor-state/FileGenerationState.js';
+export { DSLExternalFormat_LegendStudioPlugin } from './components/DSLExternalFormat_LegendStudioPlugin.js';
 export {
   EmbeddedDataState,
   type EmbeddedDataTypeOption,
   ExternalFormatDataState,
-} from './stores/editor-state/element-editor-state/data/DataEditorState';
+} from './stores/editor-state/element-editor-state/data/DataEditorState.js';
 export {
   externalFormatData_setData,
   externalFormatData_setContentType,
-} from './stores/graphModifier/DSLData_GraphModifierHelper';
-export { ExternalFormatDataEditor } from './components/editor/edit-panel/data-editor/DataElementEditor';
+} from './stores/graphModifier/DSLData_GraphModifierHelper.js';
+export { ExternalFormatDataEditor } from './components/editor/edit-panel/data-editor/DataElementEditor.js';

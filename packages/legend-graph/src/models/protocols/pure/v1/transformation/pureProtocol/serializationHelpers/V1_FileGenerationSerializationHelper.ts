@@ -19,8 +19,8 @@ import {
   usingConstantValueSchema,
   usingModelSchema,
 } from '@finos/legend-shared';
-import { V1_ConfigurationProperty } from '../../../model/packageableElements/fileGeneration/V1_ConfigurationProperty';
-import { V1_FileGenerationSpecification } from '../../../model/packageableElements/fileGeneration/V1_FileGenerationSpecification';
+import { V1_ConfigurationProperty } from '../../../model/packageableElements/fileGeneration/V1_ConfigurationProperty.js';
+import { V1_FileGenerationSpecification } from '../../../model/packageableElements/fileGeneration/V1_FileGenerationSpecification.js';
 
 export const V1_FILE_GENERATION_ELEMENT_PROTOCOL_TYPE = 'fileGeneration';
 

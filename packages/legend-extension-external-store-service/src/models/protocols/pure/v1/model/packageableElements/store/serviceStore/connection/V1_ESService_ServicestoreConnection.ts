@@ -16,7 +16,7 @@
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import { type V1_ConnectionVisitor, V1_Connection } from '@finos/legend-graph';
-import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../../ESService_ModelUtils';
+import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../../ESService_ModelUtils.js';
 
 export class V1_ServiceStoreConnection
   extends V1_Connection

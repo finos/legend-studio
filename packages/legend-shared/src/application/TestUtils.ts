@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { noop } from '../CommonUtils';
+import { noop } from '../CommonUtils.js';
 import { configure as configureMobx } from 'mobx';
 
 /**

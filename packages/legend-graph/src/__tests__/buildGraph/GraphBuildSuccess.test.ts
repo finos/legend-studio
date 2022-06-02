@@ -21,12 +21,12 @@ import type { Entity } from '@finos/legend-model-storage';
 import {
   TEST__buildGraphWithEntities,
   TEST__getTestGraphManagerState,
-} from '../../GraphManagerTestUtils';
-import { PRIMITIVE_TYPE } from '../../MetaModelConst';
-import type { OperationSetImplementation } from '../../models/metamodels/pure/packageableElements/mapping/OperationSetImplementation';
-import type { PureInstanceSetImplementation } from '../../models/metamodels/pure/packageableElements/store/modelToModel/mapping/PureInstanceSetImplementation';
-import { fromElementPathToMappingElementId } from '../../MetaModelUtils';
-import { Enum } from '../../models/metamodels/pure/packageableElements/domain/Enum';
+} from '../../GraphManagerTestUtils.js';
+import { PRIMITIVE_TYPE } from '../../MetaModelConst.js';
+import type { OperationSetImplementation } from '../../models/metamodels/pure/packageableElements/mapping/OperationSetImplementation.js';
+import type { PureInstanceSetImplementation } from '../../models/metamodels/pure/packageableElements/store/modelToModel/mapping/PureInstanceSetImplementation.js';
+import { fromElementPathToMappingElementId } from '../../MetaModelUtils.js';
+import { Enum } from '../../models/metamodels/pure/packageableElements/domain/Enum.js';
 
 const graphManagerState = TEST__getTestGraphManagerState();
 

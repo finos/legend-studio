@@ -26,7 +26,7 @@ import {
   V1_PureModelContextData,
   PureClientVersion,
 } from '@finos/legend-graph';
-import { V1_MappingGenConfiguration } from '../model/V1_MappingGenConfiguration';
+import { V1_MappingGenConfiguration } from '../model/V1_MappingGenConfiguration.js';
 
 export const V1_mappingGenConfigModelSchema = createModelSchema(
   V1_MappingGenConfiguration,

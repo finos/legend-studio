@@ -14,41 +14,40 @@
  * limitations under the License.
  */
 
-export * from './const';
+export * from './const.js';
 
-export * from './application/LegendApplicationPluginManager';
-export * from './application/LegendApplication';
+export * from './application/LegendApplicationPluginManager.js';
+export * from './application/LegendApplication.js';
 
-export * from './components/ApplicationStoreProvider';
-export * from './components/WebApplicationNavigatorProvider';
-export * from './components/LegendApplicationComponentFrameworkProvider';
-export * from './components/LegendApplicationNavigationContextServiceUtils';
+export * from './components/ApplicationStoreProvider.js';
+export * from './components/WebApplicationNavigatorProvider.js';
+export * from './components/LegendApplicationComponentFrameworkProvider.js';
+export * from './components/LegendApplicationNavigationContextServiceUtils.js';
 
-export * from './components/ApplicationStoreProviderTestUtils';
-export * from './components/WebApplicationNavigatorProviderTestUtils';
+export * from './components/ApplicationStoreProviderTestUtils.js';
+export * from './components/WebApplicationNavigatorProviderTestUtils.js';
 
 // TODO: consider moving this to `LegendApplicationComponentFrameworkProvider`
 // once we think we can add virtual assistant support for all apps
-export * from './components/VirtualAssistant';
-export * from './components/DocumentationLink';
-export * from './components/TextInputEditor';
-export * from './components/LambdaEditor';
+export * from './components/VirtualAssistant.js';
 
-export * from './stores/ApplicationStore';
-export * from './stores/ApplicationTelemetry';
-export * from './stores/ApplicationEvent';
-export * from './stores/LegendApplicationConfig';
-export { WebApplicationNavigator } from './stores/WebApplicationNavigator';
-export { LambdaEditorState } from './stores/LambdaEditorState';
-export * from './stores/PackageableElementOption';
-export * from './stores/LegendApplicationDocumentationService';
-export * from './stores/LegendApplicationEventService';
-export * from './stores/LegendApplicationAssistantService';
-export * from './stores/LegendApplicationNavigationContextService';
-export * from './stores/LegendApplicationPlugin';
+export * from './components/DocumentationLink.js';
+export * from './components/TextInputEditor.js';
+export * from './components/LambdaEditor.js';
+export * from './components/BasicValueSpecificationEditor.js';
 
-export * from './stores/ApplicationStoreTestUtils';
+export * from './stores/ApplicationStore.js';
+export * from './stores/ApplicationTelemetry.js';
+export * from './stores/ApplicationEvent.js';
+export * from './stores/LegendApplicationConfig.js';
+export { WebApplicationNavigator } from './stores/WebApplicationNavigator.js';
+export { LambdaEditorState } from './stores/LambdaEditorState.js';
+export * from './stores/PackageableElementOption.js';
+export * from './stores/LegendApplicationDocumentationService.js';
+export * from './stores/LegendApplicationEventService.js';
+export * from './stores/LegendApplicationAssistantService.js';
+export * from './stores/LegendApplicationNavigationContextService.js';
+export * from './stores/LegendApplicationPlugin.js';
 
-// value specification
-export * from './stores/ValueSpecificationModifierHelper';
-export * from './components/BasicValueSpecificationEditor';
+export * from './stores/ApplicationStoreTestUtils.js';
+export * from './stores/ValueSpecificationModifierHelper.js';

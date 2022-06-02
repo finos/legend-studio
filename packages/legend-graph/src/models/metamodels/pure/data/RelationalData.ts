@@ -15,8 +15,8 @@
  */
 
 import { type Hashable, hashArray } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../MetaModelConst';
-import { type EmbeddedDataVisitor, EmbeddedData } from './EmbeddedData';
+import { CORE_HASH_STRUCTURE } from '../../../../MetaModelConst.js';
+import { type EmbeddedDataVisitor, EmbeddedData } from './EmbeddedData.js';
 
 export class RelationalDataTableColumn implements Hashable {
   value!: string;

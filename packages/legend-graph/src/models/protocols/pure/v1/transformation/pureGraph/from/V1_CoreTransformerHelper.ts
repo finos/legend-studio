@@ -14,17 +14,17 @@
  * limitations under the License.
  */
 
-import type { Multiplicity } from '../../../../../../metamodels/pure/packageableElements/domain/Multiplicity';
-import type { PackageableElement } from '../../../../../../metamodels/pure/packageableElements/PackageableElement';
+import type { Multiplicity } from '../../../../../../metamodels/pure/packageableElements/domain/Multiplicity.js';
+import type { PackageableElement } from '../../../../../../metamodels/pure/packageableElements/PackageableElement.js';
 import type {
   OptionalPackageableElementReference,
   PackageableElementReference,
-} from '../../../../../../metamodels/pure/packageableElements/PackageableElementReference';
-import { V1_Multiplicity } from '../../../model/packageableElements/domain/V1_Multiplicity';
+} from '../../../../../../metamodels/pure/packageableElements/PackageableElementReference.js';
+import { V1_Multiplicity } from '../../../model/packageableElements/domain/V1_Multiplicity.js';
 import {
   V1_PackageableElementPointer,
   type V1_PackageableElement,
-} from '../../../model/packageableElements/V1_PackageableElement';
+} from '../../../model/packageableElements/V1_PackageableElement.js';
 
 export const V1_transformOptionalElementReference = <
   T extends PackageableElement,

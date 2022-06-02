@@ -42,12 +42,12 @@ import {
 import {
   type QueryBuilderExplorerTreePropertyNodeData,
   buildPropertyExpressionFromExplorerTreeNodeData,
-} from './QueryBuilderExplorerState';
+} from './QueryBuilderExplorerState.js';
 import {
   getPropertyChainName,
   QueryBuilderPropertyExpressionState,
-} from './QueryBuilderPropertyEditorState';
-import type { QueryBuilderState } from './QueryBuilderState';
+} from './QueryBuilderPropertyEditorState.js';
+import type { QueryBuilderState } from './QueryBuilderState.js';
 import {
   type AbstractPropertyExpression,
   type CompilationError,
@@ -73,24 +73,24 @@ import {
 import {
   DEFAULT_LAMBDA_VARIABLE_NAME,
   QUERY_BUILDER_SOURCE_ID_LABEL,
-} from '../QueryBuilder_Const';
-import { QueryBuilderAggregationState } from './QueryBuilderAggregationState';
-import { QueryBuilderAggregateOperator_Count } from './aggregateOperators/QueryBuilderAggregateOperator_Count';
-import { QueryBuilderAggregateOperator_Distinct } from './aggregateOperators/QueryBuilderAggregateOperator_Distinct';
-import { QueryBuilderAggregateOperator_Sum } from './aggregateOperators/QueryBuilderAggregateOperator_Sum';
-import { QueryBuilderAggregateOperator_Average } from './aggregateOperators/QueryBuilderAggregateOperator_Average';
-import { QueryBuilderAggregateOperator_StdDev_Population } from './aggregateOperators/QueryBuilderAggregateOperator_StdDev_Population';
-import { QueryBuilderAggregateOperator_StdDev_Sample } from './aggregateOperators/QueryBuilderAggregateOperator_StdDev_Sample';
-import { QueryBuilderAggregateOperator_DistinctCount } from './aggregateOperators/QueryBuilderAggregateOperator_DistinctCount';
-import { QueryBuilderAggregateOperator_Min } from './aggregateOperators/QueryBuilderAggregateOperator_Min';
-import { QueryBuilderAggregateOperator_Max } from './aggregateOperators/QueryBuilderAggregateOperator_Max';
-import { QueryBuilderAggregateOperator_JoinString } from './aggregateOperators/QueryBuilderAggregateOperator_JoinString';
+} from '../QueryBuilder_Const.js';
+import { QueryBuilderAggregationState } from './QueryBuilderAggregationState.js';
+import { QueryBuilderAggregateOperator_Count } from './aggregateOperators/QueryBuilderAggregateOperator_Count.js';
+import { QueryBuilderAggregateOperator_Distinct } from './aggregateOperators/QueryBuilderAggregateOperator_Distinct.js';
+import { QueryBuilderAggregateOperator_Sum } from './aggregateOperators/QueryBuilderAggregateOperator_Sum.js';
+import { QueryBuilderAggregateOperator_Average } from './aggregateOperators/QueryBuilderAggregateOperator_Average.js';
+import { QueryBuilderAggregateOperator_StdDev_Population } from './aggregateOperators/QueryBuilderAggregateOperator_StdDev_Population.js';
+import { QueryBuilderAggregateOperator_StdDev_Sample } from './aggregateOperators/QueryBuilderAggregateOperator_StdDev_Sample.js';
+import { QueryBuilderAggregateOperator_DistinctCount } from './aggregateOperators/QueryBuilderAggregateOperator_DistinctCount.js';
+import { QueryBuilderAggregateOperator_Min } from './aggregateOperators/QueryBuilderAggregateOperator_Min.js';
+import { QueryBuilderAggregateOperator_Max } from './aggregateOperators/QueryBuilderAggregateOperator_Max.js';
+import { QueryBuilderAggregateOperator_JoinString } from './aggregateOperators/QueryBuilderAggregateOperator_JoinString.js';
 import {
   type QueryBuilderPreviewData,
   buildNonNumericPreviewDataQuery,
   buildNumericPreviewDataQuery,
-} from './QueryBuilderPreviewDataHelper';
-import { buildGenericLambdaFunctionInstanceValue } from './QueryBuilderValueSpecificationBuilderHelper';
+} from './QueryBuilderPreviewDataHelper.js';
+import { buildGenericLambdaFunctionInstanceValue } from './QueryBuilderValueSpecificationBuilderHelper.js';
 import { LambdaEditorState } from '@finos/legend-application';
 
 export enum QUERY_BUILDER_PROJECTION_DND_TYPE {

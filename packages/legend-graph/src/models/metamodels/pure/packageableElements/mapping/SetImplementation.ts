@@ -15,23 +15,23 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
-import type { PackageableElementReference } from '../PackageableElementReference';
-import type { PropertyOwnerImplementation } from './PropertyOwnerImplementation';
-import type { Mapping } from './Mapping';
-import type { OperationSetImplementation } from './OperationSetImplementation';
-import type { PureInstanceSetImplementation } from '../store/modelToModel/mapping/PureInstanceSetImplementation';
-import type { FlatDataInstanceSetImplementation } from '../store/flatData/mapping/FlatDataInstanceSetImplementation';
-import type { EmbeddedFlatDataPropertyMapping } from '../store/flatData/mapping/EmbeddedFlatDataPropertyMapping';
-import type { RelationalInstanceSetImplementation } from '../store/relational/mapping/RelationalInstanceSetImplementation';
-import type { RootRelationalInstanceSetImplementation } from '../store/relational/mapping/RootRelationalInstanceSetImplementation';
-import type { InferableMappingElementIdValue } from './InferableMappingElementId';
-import type { InferableMappingElementRoot } from './InferableMappingElementRoot';
-import type { AggregationAwareSetImplementation } from './aggregationAware/AggregationAwareSetImplementation';
-import type { InstanceSetImplementation } from './InstanceSetImplementation';
-import type { MergeOperationSetImplementation } from './MergeOperationSetImplementation';
-import type { TEMPORARY__UnresolvedSetImplementation } from './TEMPORARY__UnresolvedSetImplementation';
-import type { Class } from '../domain/Class';
+import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst.js';
+import type { PackageableElementReference } from '../PackageableElementReference.js';
+import type { PropertyOwnerImplementation } from './PropertyOwnerImplementation.js';
+import type { Mapping } from './Mapping.js';
+import type { OperationSetImplementation } from './OperationSetImplementation.js';
+import type { PureInstanceSetImplementation } from '../store/modelToModel/mapping/PureInstanceSetImplementation.js';
+import type { FlatDataInstanceSetImplementation } from '../store/flatData/mapping/FlatDataInstanceSetImplementation.js';
+import type { EmbeddedFlatDataPropertyMapping } from '../store/flatData/mapping/EmbeddedFlatDataPropertyMapping.js';
+import type { RelationalInstanceSetImplementation } from '../store/relational/mapping/RelationalInstanceSetImplementation.js';
+import type { RootRelationalInstanceSetImplementation } from '../store/relational/mapping/RootRelationalInstanceSetImplementation.js';
+import type { InferableMappingElementIdValue } from './InferableMappingElementId.js';
+import type { InferableMappingElementRoot } from './InferableMappingElementRoot.js';
+import type { AggregationAwareSetImplementation } from './aggregationAware/AggregationAwareSetImplementation.js';
+import type { InstanceSetImplementation } from './InstanceSetImplementation.js';
+import type { MergeOperationSetImplementation } from './MergeOperationSetImplementation.js';
+import type { TEMPORARY__UnresolvedSetImplementation } from './TEMPORARY__UnresolvedSetImplementation.js';
+import type { Class } from '../domain/Class.js';
 
 export interface SetImplementationVisitor<T> {
   visit_SetImplementation(setImplementation: InstanceSetImplementation): T;

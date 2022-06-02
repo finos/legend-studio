@@ -15,8 +15,8 @@
  */
 
 import { jest } from '@jest/globals';
-import { SDLCServerClient } from './SDLCServerClient';
-import { SDLCServerClientProvider } from './SDLCServerClientProvider';
+import { SDLCServerClient } from './SDLCServerClient.js';
+import { SDLCServerClientProvider } from './SDLCServerClientProvider.js';
 
 export const TEST__getTestSDLCServerClient = (): SDLCServerClient =>
   new SDLCServerClient({
@@ -28,7 +28,7 @@ export const TEST__provideMockedSDLCServerClient = (customization?: {
   mock?: SDLCServerClient;
 }): SDLCServerClient => {
   const value = customization?.mock ?? TEST__getTestSDLCServerClient();
-  const MockedSDLCServerClientProvider = require('./SDLCServerClientProvider'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+  const MockedSDLCServerClientProvider = require('./SDLCServerClientProvider.js'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
   MockedSDLCServerClientProvider.useSDLCServerClient = jest.fn();
   MockedSDLCServerClientProvider.useSDLCServerClient.mockReturnValue(value);
   return value;

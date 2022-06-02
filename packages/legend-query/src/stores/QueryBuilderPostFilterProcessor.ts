@@ -30,10 +30,10 @@ import {
   guaranteeType,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
-import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../QueryBuilder_Const';
-import type { QueryBuilderAggregateColumnState } from './QueryBuilderAggregationState';
-import { toGroupOperation } from './QueryBuilderOperatorsHelper';
-import type { QueryBuilderPostFilterOperator } from './QueryBuilderPostFilterOperator';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../QueryBuilder_Const.js';
+import type { QueryBuilderAggregateColumnState } from './QueryBuilderAggregationState.js';
+import { toGroupOperation } from './QueryBuilderOperatorsHelper.js';
+import type { QueryBuilderPostFilterOperator } from './QueryBuilderPostFilterOperator.js';
 import {
   type QueryBuilderPostFilterState,
   getTDSColumnDerivedProperyFromType,
@@ -42,11 +42,11 @@ import {
   QueryBuilderPostFilterTreeGroupNodeData,
   TDS_COLUMN_GETTER,
   getTypeFromDerivedProperty,
-} from './QueryBuilderPostFilterState';
+} from './QueryBuilderPostFilterState.js';
 import {
   type QueryBuilderProjectionColumnState,
   QueryBuilderDerivationProjectionColumnState,
-} from './QueryBuilderProjectionState';
+} from './QueryBuilderProjectionState.js';
 
 export const findTdsColumnState = (
   propertyExpression: AbstractPropertyExpression,

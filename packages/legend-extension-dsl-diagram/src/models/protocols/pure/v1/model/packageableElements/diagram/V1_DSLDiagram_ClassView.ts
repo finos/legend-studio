@@ -15,8 +15,8 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { V1_PositionedRectangle } from './geometry/V1_DSLDiagram_PositionedRectangle';
-import { DIAGRAM_HASH_STRUCTURE } from '../../../../../../DSLDiagram_ModelUtils';
+import { V1_PositionedRectangle } from './geometry/V1_DSLDiagram_PositionedRectangle.js';
+import { DIAGRAM_HASH_STRUCTURE } from '../../../../../../DSLDiagram_ModelUtils.js';
 
 export class V1_ClassView extends V1_PositionedRectangle implements Hashable {
   id!: string;

@@ -15,17 +15,17 @@
  */
 
 import { type Hashable, hashArray } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
-import type { PackageableElementReference } from '../PackageableElementReference';
+import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst.js';
+import type { PackageableElementReference } from '../PackageableElementReference.js';
 import {
   type SetImplementationVisitor,
   SetImplementation,
-} from './SetImplementation';
-import type { SetImplementationContainer } from './SetImplementationContainer';
-import type { Mapping } from './Mapping';
-import type { Class } from '../domain/Class';
-import type { InferableMappingElementIdValue } from './InferableMappingElementId';
-import type { InferableMappingElementRoot } from './InferableMappingElementRoot';
+} from './SetImplementation.js';
+import type { SetImplementationContainer } from './SetImplementationContainer.js';
+import type { Mapping } from './Mapping.js';
+import type { Class } from '../domain/Class.js';
+import type { InferableMappingElementIdValue } from './InferableMappingElementId.js';
+import type { InferableMappingElementRoot } from './InferableMappingElementRoot.js';
 
 export enum OperationType {
   STORE_UNION = 'STORE_UNION',

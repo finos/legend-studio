@@ -19,7 +19,7 @@ import { observer } from 'mobx-react-lite';
 import {
   type TaxonomyTreeNodeData,
   TaxonomyNodeViewerState,
-} from '../stores/LegendTaxonomyStore';
+} from '../stores/LegendTaxonomyStore.js';
 import {
   type TreeData,
   type TreeNodeContainerProps,
@@ -33,11 +33,11 @@ import {
   clsx,
   TreeView,
 } from '@finos/legend-art';
-import { useLegendTaxonomyStore } from './LegendTaxonomyStoreProvider';
+import { useLegendTaxonomyStore } from './LegendTaxonomyStoreProvider.js';
 import { isNonNullable } from '@finos/legend-shared';
 import { useApplicationStore } from '@finos/legend-application';
-import { generateExploreTaxonomyTreeNodeRoute } from '../stores/LegendTaxonomyRouter';
-import type { LegendTaxonomyConfig } from '../application/LegendTaxonomyConfig';
+import { generateExploreTaxonomyTreeNodeRoute } from '../stores/LegendTaxonomyRouter.js';
+import type { LegendTaxonomyConfig } from '../application/LegendTaxonomyConfig.js';
 
 const TaxonomyTreeNodeContainer = observer(
   (

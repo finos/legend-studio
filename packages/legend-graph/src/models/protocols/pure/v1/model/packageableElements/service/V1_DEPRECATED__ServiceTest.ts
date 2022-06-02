@@ -15,8 +15,8 @@
  */
 
 import { type Hashable, hashArray } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
-import type { V1_RawLambda } from '../../rawValueSpecification/V1_RawLambda';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst.js';
+import type { V1_RawLambda } from '../../rawValueSpecification/V1_RawLambda.js';
 
 /**
  * TODO: Remove once migration from `V1_ServiceTest_Legacy` to `V1_ServiceTest` is complete

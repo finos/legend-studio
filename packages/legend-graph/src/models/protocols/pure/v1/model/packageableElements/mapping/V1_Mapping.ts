@@ -15,16 +15,16 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
-import type { V1_MappingInclude } from '../../../model/packageableElements/mapping/V1_MappingInclude';
-import type { V1_ClassMapping } from '../../../model/packageableElements/mapping/V1_ClassMapping';
-import type { V1_AssociationMapping } from '../../../model/packageableElements/mapping/V1_AssociationMapping';
-import type { V1_EnumerationMapping } from '../../../model/packageableElements/mapping/V1_EnumerationMapping';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst.js';
+import type { V1_MappingInclude } from '../../../model/packageableElements/mapping/V1_MappingInclude.js';
+import type { V1_ClassMapping } from '../../../model/packageableElements/mapping/V1_ClassMapping.js';
+import type { V1_AssociationMapping } from '../../../model/packageableElements/mapping/V1_AssociationMapping.js';
+import type { V1_EnumerationMapping } from '../../../model/packageableElements/mapping/V1_EnumerationMapping.js';
 import {
   type V1_PackageableElementVisitor,
   V1_PackageableElement,
-} from '../../../model/packageableElements/V1_PackageableElement';
-import type { V1_MappingTest } from '../../../model/packageableElements/mapping/V1_MappingTest';
+} from '../../../model/packageableElements/V1_PackageableElement.js';
+import type { V1_MappingTest } from '../../../model/packageableElements/mapping/V1_MappingTest.js';
 
 export class V1_Mapping extends V1_PackageableElement implements Hashable {
   includedMappings: V1_MappingInclude[] = [];

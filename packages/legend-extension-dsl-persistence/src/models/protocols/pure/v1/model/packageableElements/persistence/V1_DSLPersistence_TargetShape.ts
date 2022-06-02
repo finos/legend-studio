@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import type { V1_DeduplicationStrategy } from './V1_DSLPersistence_DeduplicationStrategy';
-import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../../DSLPersistence_ModelUtils';
+import type { V1_DeduplicationStrategy } from './V1_DSLPersistence_DeduplicationStrategy.js';
+import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../../DSLPersistence_ModelUtils.js';
 import { type Hashable, hashArray } from '@finos/legend-shared';
 
 export abstract class V1_TargetShape implements Hashable {

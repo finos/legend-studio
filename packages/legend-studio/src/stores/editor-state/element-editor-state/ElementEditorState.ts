@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import type { EditorStore } from '../../EditorStore';
+import type { EditorStore } from '../../EditorStore.js';
 import { observable, action, flow, computed, makeObservable } from 'mobx';
-import { ELEMENT_NATIVE_VIEW_MODE } from '../../EditorConfig';
-import { EditorState } from '../../editor-state/EditorState';
+import { ELEMENT_NATIVE_VIEW_MODE } from '../../EditorConfig.js';
+import { EditorState } from '../../editor-state/EditorState.js';
 import {
   type GeneratorFn,
   LogEvent,

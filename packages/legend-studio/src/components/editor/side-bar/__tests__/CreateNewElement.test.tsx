@@ -26,10 +26,10 @@ import { integrationTest, toTitleCase } from '@finos/legend-shared';
 import {
   TEST__provideMockedEditorStore,
   TEST__setUpEditorWithDefaultSDLCData,
-} from '../../../EditorComponentTestUtils';
-import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID';
-import type { EditorStore } from '../../../../stores/EditorStore';
-import { PACKAGEABLE_ELEMENT_TYPE } from '../../../../stores/shared/ModelUtil';
+} from '../../../EditorComponentTestUtils.js';
+import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID.js';
+import type { EditorStore } from '../../../../stores/EditorStore.js';
+import { PACKAGEABLE_ELEMENT_TYPE } from '../../../../stores/shared/ModelUtil.js';
 
 const addRootPackage = (packagePath: string, result: RenderResult): void => {
   fireEvent.click(result.getByTitle('New Element...', { exact: false }));

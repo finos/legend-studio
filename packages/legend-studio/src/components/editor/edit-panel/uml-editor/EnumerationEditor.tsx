@@ -19,13 +19,13 @@ import { observer } from 'mobx-react-lite';
 import {
   UMLEditorState,
   UML_EDITOR_TAB,
-} from '../../../../stores/editor-state/element-editor-state/UMLEditorState';
+} from '../../../../stores/editor-state/element-editor-state/UMLEditorState.js';
 import { useDrop } from 'react-dnd';
 import {
   CORE_DND_TYPE,
   type ElementDragSource,
   type UMLEditorElementDropTarget,
-} from '../../../../stores/shared/DnDUtil';
+} from '../../../../stores/shared/DnDUtil.js';
 import { prettyCONSTName } from '@finos/legend-shared';
 import {
   BlankPanelContent,
@@ -43,10 +43,10 @@ import {
   FireIcon,
   StickArrowCircleRightIcon,
 } from '@finos/legend-art';
-import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID';
-import { StereotypeSelector } from './StereotypeSelector';
-import { TaggedValueEditor } from './TaggedValueEditor';
-import { useEditorStore } from '../../EditorStoreProvider';
+import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID.js';
+import { StereotypeSelector } from './StereotypeSelector.js';
+import { TaggedValueEditor } from './TaggedValueEditor.js';
+import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
   type Enumeration,
   type StereotypeReference,
@@ -68,7 +68,7 @@ import {
   annotatedElement_deleteTaggedValue,
   enum_deleteValue,
   enum_addValue,
-} from '../../../../stores/graphModifier/DomainGraphModifierHelper';
+} from '../../../../stores/graphModifier/DomainGraphModifierHelper.js';
 
 const EnumBasicEditor = observer(
   (props: {

@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst.js';
 import { type Hashable, type Pair, hashArray } from '@finos/legend-shared';
-import type { Operation, TableAlias } from './RelationalOperationElement';
-import type { Database } from './Database';
+import type { Operation, TableAlias } from './RelationalOperationElement.js';
+import type { Database } from './Database.js';
 
 export const SELF_JOIN_TABLE_NAME = '{target}';
 export const SELF_JOIN_SCHEMA_NAME = 'default';

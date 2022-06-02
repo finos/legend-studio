@@ -26,7 +26,7 @@ import {
   UnsupportedOperationError,
   ActionState,
 } from '@finos/legend-shared';
-import type { QueryBuilderState } from './QueryBuilderState';
+import type { QueryBuilderState } from './QueryBuilderState.js';
 import {
   type RawExecutionPlan,
   type ExecutionResult,
@@ -39,7 +39,7 @@ import {
 import {
   buildLambdaFunction,
   buildParametersLetLambdaFunc,
-} from './QueryBuilderLambdaBuilder';
+} from './QueryBuilderLambdaBuilder.js';
 
 const DEFAULT_LIMIT = 1000;
 

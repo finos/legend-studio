@@ -14,4 +14,4 @@
  * limitations under the License.
  */
 
-export * from './ZipkinTracerPlugin';
+export * from './ZipkinTracerPlugin.js';

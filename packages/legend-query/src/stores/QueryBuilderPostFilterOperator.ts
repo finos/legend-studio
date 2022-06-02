@@ -24,7 +24,7 @@ import type {
   PostFilterConditionState,
   QueryBuilderPostFilterState,
   TDS_COLUMN_GETTER,
-} from './QueryBuilderPostFilterState';
+} from './QueryBuilderPostFilterState.js';
 
 export abstract class QueryBuilderPostFilterOperator {
   readonly uuid = uuid();

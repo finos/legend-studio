@@ -23,20 +23,20 @@ import {
   buildPrimitiveInstanceValue,
 } from '@finos/legend-graph';
 import { UnsupportedOperationError } from '@finos/legend-shared';
-import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const.js';
 import {
   buildNotExpression,
   getNonCollectionValueSpecificationType,
   unwrapNotExpression,
-} from '../QueryBuilderOperatorsHelper';
-import { QueryBuilderPostFilterOperator } from '../QueryBuilderPostFilterOperator';
-import { buildPostFilterConditionState } from '../QueryBuilderPostFilterProcessor';
+} from '../QueryBuilderOperatorsHelper.js';
+import { QueryBuilderPostFilterOperator } from '../QueryBuilderPostFilterOperator.js';
+import { buildPostFilterConditionState } from '../QueryBuilderPostFilterProcessor.js';
 import type {
   PostFilterConditionState,
   QueryBuilderPostFilterState,
-} from '../QueryBuilderPostFilterState';
-import { generateDefaultValueForPrimitiveType } from '../QueryBuilderValueSpecificationBuilderHelper';
-import { buildPostFilterConditionExpression } from './QueryBuilderPostFilterOperatorHelper';
+} from '../QueryBuilderPostFilterState.js';
+import { generateDefaultValueForPrimitiveType } from '../QueryBuilderValueSpecificationBuilderHelper.js';
+import { buildPostFilterConditionExpression } from './QueryBuilderPostFilterOperatorHelper.js';
 
 export class QueryBuilderPostFilterOperator_StartWith extends QueryBuilderPostFilterOperator {
   getLabel(): string {

@@ -21,7 +21,7 @@ import React, {
   forwardRef,
   type LegacyRef,
 } from 'react';
-import { CaretDownIcon, TimesIcon, CircleNotchIcon } from './Icon';
+import { CaretDownIcon, TimesIcon, CircleNotchIcon } from './Icon.js';
 import CreatableSelect, { type Props } from 'react-select/creatable';
 import Select, { createFilter } from 'react-select';
 import { FixedSizeList } from 'react-window';

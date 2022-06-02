@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import type { EditorStore } from '../EditorStore';
-import { generateViewEntityRoute } from '../LegendStudioRouter';
-import { EditorMode } from './EditorMode';
+import type { EditorStore } from '../EditorStore.js';
+import { generateViewEntityRoute } from '../LegendStudioRouter.js';
+import { EditorMode } from './EditorMode.js';
 
 export class StandardEditorMode extends EditorMode {
   editorStore: EditorStore;

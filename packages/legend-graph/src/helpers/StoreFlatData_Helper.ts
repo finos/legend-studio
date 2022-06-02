@@ -15,9 +15,9 @@
  */
 
 import { guaranteeNonNullable } from '@finos/legend-shared';
-import type { FlatData } from '../models/metamodels/pure/packageableElements/store/flatData/model/FlatData';
-import type { RootFlatDataRecordType } from '../models/metamodels/pure/packageableElements/store/flatData/model/FlatDataDataType';
-import type { FlatDataSection } from '../models/metamodels/pure/packageableElements/store/flatData/model/FlatDataSection';
+import type { FlatData } from '../models/metamodels/pure/packageableElements/store/flatData/model/FlatData.js';
+import type { RootFlatDataRecordType } from '../models/metamodels/pure/packageableElements/store/flatData/model/FlatDataDataType.js';
+import type { FlatDataSection } from '../models/metamodels/pure/packageableElements/store/flatData/model/FlatDataSection.js';
 
 export const getRootRecordType = (
   section: FlatDataSection,

@@ -20,11 +20,11 @@ import {
   SerializationFactory,
 } from '@finos/legend-shared';
 import { createModelSchema, custom, list, SKIP } from 'serializr';
-import type { TestResult } from '../../../../../metamodels/pure/test/result/TestResult';
-import type { Testable } from '../../../../../metamodels/pure/test/Testable';
-import type { V1_TestResult } from '../../model/test/result/V1_TestResult';
-import { V1_buildTestResult } from '../../transformation/pureGraph/to/helpers/V1_TestResultBuilderHelper';
-import { V1_deserializeTestResult } from '../../transformation/pureProtocol/serializationHelpers/V1_TestSerializationHelper';
+import type { TestResult } from '../../../../../metamodels/pure/test/result/TestResult.js';
+import type { Testable } from '../../../../../metamodels/pure/test/Testable.js';
+import type { V1_TestResult } from '../../model/test/result/V1_TestResult.js';
+import { V1_buildTestResult } from '../../transformation/pureGraph/to/helpers/V1_TestResultBuilderHelper.js';
+import { V1_deserializeTestResult } from '../../transformation/pureProtocol/serializationHelpers/V1_TestSerializationHelper.js';
 
 export class V1_RunTestsResult {
   results: V1_TestResult[] = [];

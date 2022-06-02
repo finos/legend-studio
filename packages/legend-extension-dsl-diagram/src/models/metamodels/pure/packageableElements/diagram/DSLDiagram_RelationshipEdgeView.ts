@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { ClassViewReference } from './DSLDiagram_ClassViewReference';
+import type { ClassViewReference } from './DSLDiagram_ClassViewReference.js';
 
 export class RelationshipEdgeView {
   /**

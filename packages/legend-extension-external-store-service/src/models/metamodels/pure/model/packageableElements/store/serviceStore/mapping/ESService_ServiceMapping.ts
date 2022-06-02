@@ -16,10 +16,10 @@
 
 import { hashObjectWithoutSourceInformation } from '@finos/legend-graph';
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../ESService_ModelUtils';
-import type { ServiceStoreService } from '../model/ESService_ServiceStoreService';
-import type { RootServiceInstanceSetImplementation } from './ESService_RootServiceInstanceSetImplementation';
-import type { ServiceRequestBuildInfo } from './ESService_ServiceRequestBuildInfo';
+import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../ESService_ModelUtils.js';
+import type { ServiceStoreService } from '../model/ESService_ServiceStoreService.js';
+import type { RootServiceInstanceSetImplementation } from './ESService_RootServiceInstanceSetImplementation.js';
+import type { ServiceRequestBuildInfo } from './ESService_ServiceRequestBuildInfo.js';
 
 export class ServiceMapping implements Hashable {
   owner!: RootServiceInstanceSetImplementation;

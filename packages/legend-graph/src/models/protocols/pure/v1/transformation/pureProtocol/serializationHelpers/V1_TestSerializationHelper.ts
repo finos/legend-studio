@@ -28,38 +28,38 @@ import {
   primitive,
   serialize,
 } from 'serializr';
-import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin';
-import { V1_ServiceTest } from '../../../model/packageableElements/service/V1_ServiceTest';
-import { V1_ServiceTestSuite } from '../../../model/packageableElements/service/V1_ServiceTestSuite';
-import { V1_AssertFail } from '../../../model/test/assertion/status/V1_AssertFail';
-import type { V1_AssertionStatus } from '../../../model/test/assertion/status/V1_AssertionStatus';
-import { V1_AssertPass } from '../../../model/test/assertion/status/V1_AssertPass';
-import { V1_EqualToJsonAssertFail } from '../../../model/test/assertion/status/V1_EqualToJsonAssertFail';
-import { V1_EqualTo } from '../../../model/test/assertion/V1_EqualTo';
-import { V1_EqualToJson } from '../../../model/test/assertion/V1_EqualToJson';
+import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin.js';
+import { V1_ServiceTest } from '../../../model/packageableElements/service/V1_ServiceTest.js';
+import { V1_ServiceTestSuite } from '../../../model/packageableElements/service/V1_ServiceTestSuite.js';
+import { V1_AssertFail } from '../../../model/test/assertion/status/V1_AssertFail.js';
+import type { V1_AssertionStatus } from '../../../model/test/assertion/status/V1_AssertionStatus.js';
+import { V1_AssertPass } from '../../../model/test/assertion/status/V1_AssertPass.js';
+import { V1_EqualToJsonAssertFail } from '../../../model/test/assertion/status/V1_EqualToJsonAssertFail.js';
+import { V1_EqualTo } from '../../../model/test/assertion/V1_EqualTo.js';
+import { V1_EqualToJson } from '../../../model/test/assertion/V1_EqualToJson.js';
 import {
   V1_EqualToTDS,
   V1_RelationalTDS,
-} from '../../../model/test/assertion/V1_EqualToTDS';
-import type { V1_TestAssertion } from '../../../model/test/assertion/V1_TestAssertion';
+} from '../../../model/test/assertion/V1_EqualToTDS.js';
+import type { V1_TestAssertion } from '../../../model/test/assertion/V1_TestAssertion.js';
 import {
   type V1_TestResult,
   V1_TestError,
   V1_TestFailed,
   V1_TestPassed,
-} from '../../../model/test/result/V1_TestResult';
-import type { V1_AtomicTest } from '../../../model/test/V1_AtomicTest';
-import { V1_AtomicTestId } from '../../../model/test/V1_AtomicTestId';
-import type { V1_TestSuite } from '../../../model/test/V1_TestSuite';
+} from '../../../model/test/result/V1_TestResult.js';
+import type { V1_AtomicTest } from '../../../model/test/V1_AtomicTest.js';
+import { V1_AtomicTestId } from '../../../model/test/V1_AtomicTestId.js';
+import type { V1_TestSuite } from '../../../model/test/V1_TestSuite.js';
 import {
   V1_externalFormatDataModelSchema,
   V1_relationalDataTableColumnSchema,
   V1_relationalDataTableRowModelSchema,
-} from './V1_DataElementSerializationHelper';
+} from './V1_DataElementSerializationHelper.js';
 import {
   V1_serviceTestModelSchema,
   V1_serviceTestSuiteModelSchema,
-} from './V1_ServiceSerializationHelper';
+} from './V1_ServiceSerializationHelper.js';
 
 enum V1_AssertionStatusType {
   ASSERT_FAIL = 'assertFail',

@@ -48,14 +48,14 @@ import { useResizeDetector } from 'react-resize-detector';
 import {
   type ElementDragSource,
   CORE_DND_TYPE,
-} from '../../../stores/shared/DnDUtil';
+} from '../../../stores/shared/DnDUtil.js';
 import { type DropTargetMonitor, useDrop } from 'react-dnd';
 import type {
   DSL_LegendStudioPlugin_Extension,
   PureGrammarTextSuggestion,
-} from '../../../stores/LegendStudioPlugin';
+} from '../../../stores/LegendStudioPlugin.js';
 import { flowResult } from 'mobx';
-import { useEditorStore } from '../EditorStoreProvider';
+import { useEditorStore } from '../EditorStoreProvider.js';
 import {
   guaranteeNonNullable,
   hasWhiteSpace,
@@ -67,8 +67,8 @@ import {
   PURE_ELEMENT_NAME,
   PURE_PARSER,
 } from '@finos/legend-graph';
-import type { EditorStore } from '../../../stores/EditorStore';
-import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../../stores/LegendStudioDocumentation';
+import type { EditorStore } from '../../../stores/EditorStore.js';
+import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../../stores/LegendStudioDocumentation.js';
 import {
   BLANK_CLASS_SNIPPET,
   CLASS_WITH_CONSTRAINT_SNIPPET,
@@ -97,8 +97,8 @@ import {
   MAPPING_WITH_M2M_CLASS_MAPPING_SNIPPET,
   MAPPING_WITH_ENUMERATION_MAPPING_SNIPPET,
   MAPPING_WITH_RELATIONAL_CLASS_MAPPING_SNIPPET,
-} from '../../../stores/LegendStudioCodeSnippets';
-import type { DSLData_LegendStudioPlugin_Extension } from '../../../stores/DSLData_LegendStudioPlugin_Extension';
+} from '../../../stores/LegendStudioCodeSnippets.js';
+import type { DSLData_LegendStudioPlugin_Extension } from '../../../stores/DSLData_LegendStudioPlugin_Extension.js';
 
 const getSectionParserNameFromLineText = (
   lineText: string,

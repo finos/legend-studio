@@ -26,21 +26,21 @@ import {
 import {
   type QueryBuilderFilterOperator,
   QueryBuilderFilterState,
-} from './QueryBuilderFilterState';
-import { QueryBuilderFetchStructureState } from './QueryBuilderFetchStructureState';
-import { QueryResultSetModifierState } from './QueryResultSetModifierState';
+} from './QueryBuilderFilterState.js';
+import { QueryBuilderFetchStructureState } from './QueryBuilderFetchStructureState.js';
+import { QueryResultSetModifierState } from './QueryResultSetModifierState.js';
 import {
   QueryTextEditorMode,
   QueryTextEditorState,
-} from './QueryTextEditorState';
-import { QueryBuilderSetupState } from './QueryBuilderSetupState';
-import { QueryBuilderExplorerState } from './QueryBuilderExplorerState';
-import { QueryBuilderResultState } from './QueryBuilderResultState';
+} from './QueryTextEditorState.js';
+import { QueryBuilderSetupState } from './QueryBuilderSetupState.js';
+import { QueryBuilderExplorerState } from './QueryBuilderExplorerState.js';
+import { QueryBuilderResultState } from './QueryBuilderResultState.js';
 import {
   processQueryBuilderLambdaFunction,
   processQueryParameters,
-} from './QueryBuilderLambdaProcessor';
-import { QueryBuilderUnsupportedState } from './QueryBuilderUnsupportedState';
+} from './QueryBuilderLambdaProcessor.js';
+import { QueryBuilderUnsupportedState } from './QueryBuilderUnsupportedState.js';
 import {
   type Class,
   type Enumeration,
@@ -66,32 +66,32 @@ import {
 import {
   QueryBuilderFilterOperator_Equal,
   QueryBuilderFilterOperator_NotEqual,
-} from './filterOperators/QueryBuilderFilterOperator_Equal';
-import { QueryBuilderFilterOperator_GreaterThan } from './filterOperators/QueryBuilderFilterOperator_GreaterThan';
+} from './filterOperators/QueryBuilderFilterOperator_Equal.js';
+import { QueryBuilderFilterOperator_GreaterThan } from './filterOperators/QueryBuilderFilterOperator_GreaterThan.js';
 import {
   QueryBuilderFilterOperator_NotStartWith,
   QueryBuilderFilterOperator_StartWith,
-} from './filterOperators/QueryBuilderFilterOperator_StartWith';
-import { QueryBuilderFilterOperator_GreaterThanEqual } from './filterOperators/QueryBuilderFilterOperator_GreaterThanEqual';
-import { QueryBuilderFilterOperator_LessThanEqual } from './filterOperators/QueryBuilderFilterOperator_LessThanEqual';
-import { QueryBuilderFilterOperator_LessThan } from './filterOperators/QueryBuilderFilterOperator_LessThan';
+} from './filterOperators/QueryBuilderFilterOperator_StartWith.js';
+import { QueryBuilderFilterOperator_GreaterThanEqual } from './filterOperators/QueryBuilderFilterOperator_GreaterThanEqual.js';
+import { QueryBuilderFilterOperator_LessThanEqual } from './filterOperators/QueryBuilderFilterOperator_LessThanEqual.js';
+import { QueryBuilderFilterOperator_LessThan } from './filterOperators/QueryBuilderFilterOperator_LessThan.js';
 import {
   QueryBuilderFilterOperator_EndWith,
   QueryBuilderFilterOperator_NotEndWith,
-} from './filterOperators/QueryBuilderFilterOperator_EndWith';
+} from './filterOperators/QueryBuilderFilterOperator_EndWith.js';
 import {
   QueryBuilderFilterOperator_Contain,
   QueryBuilderFilterOperator_NotContain,
-} from './filterOperators/QueryBuilderFilterOperator_Contain';
+} from './filterOperators/QueryBuilderFilterOperator_Contain.js';
 import {
   QueryBuilderFilterOperator_IsEmpty,
   QueryBuilderFilterOperator_IsNotEmpty,
-} from './filterOperators/QueryBuilderFilterOperator_IsEmpty';
+} from './filterOperators/QueryBuilderFilterOperator_IsEmpty.js';
 import {
   QueryBuilderFilterOperator_In,
   QueryBuilderFilterOperator_NotIn,
-} from './filterOperators/QueryBuilderFilterOperator_In';
-import { buildLambdaFunction } from './QueryBuilderLambdaBuilder';
+} from './filterOperators/QueryBuilderFilterOperator_In.js';
+import { buildLambdaFunction } from './QueryBuilderLambdaBuilder.js';
 import {
   buildElementOption,
   type ApplicationStore,
@@ -101,38 +101,38 @@ import {
 import {
   QueryParametersState,
   QueryParameterState,
-} from './QueryParametersState';
-import { QueryBuilderPostFilterState } from './QueryBuilderPostFilterState';
+} from './QueryParametersState.js';
+import { QueryBuilderPostFilterState } from './QueryBuilderPostFilterState.js';
 import {
   QueryBuilderPostFilterOperator_Equal,
   QueryBuilderPostFilterOperator_NotEqual,
-} from './postFilterOperators/QueryBuilderPostFilterOperator_Equal';
-import { QueryBuilderPostFilterOperator_LessThan } from './postFilterOperators/QueryBuilderPostFilterOperator_LessThan';
-import { QueryBuilderPostFilterOperator_LessThanEqual } from './postFilterOperators/QueryBuilderPostFilterOperator_LessThanEqual';
-import { QueryBuilderPostFilterOperator_GreaterThan } from './postFilterOperators/QueryBuilderPostFilterOperator_GreaterThan';
-import { QueryBuilderPostFilterOperator_GreaterThanEqual } from './postFilterOperators/QueryBuilderPostFilterOperator_GreaterThanEqual';
+} from './postFilterOperators/QueryBuilderPostFilterOperator_Equal.js';
+import { QueryBuilderPostFilterOperator_LessThan } from './postFilterOperators/QueryBuilderPostFilterOperator_LessThan.js';
+import { QueryBuilderPostFilterOperator_LessThanEqual } from './postFilterOperators/QueryBuilderPostFilterOperator_LessThanEqual.js';
+import { QueryBuilderPostFilterOperator_GreaterThan } from './postFilterOperators/QueryBuilderPostFilterOperator_GreaterThan.js';
+import { QueryBuilderPostFilterOperator_GreaterThanEqual } from './postFilterOperators/QueryBuilderPostFilterOperator_GreaterThanEqual.js';
 import {
   QueryBuilderPostFilterOperator_NotStartWith,
   QueryBuilderPostFilterOperator_StartWith,
-} from './postFilterOperators/QueryBuilderPostFilterOperator_StartWith';
+} from './postFilterOperators/QueryBuilderPostFilterOperator_StartWith.js';
 import {
   QueryBuilderPostFilterOperator_Contain,
   QueryBuilderPostFilterOperator_NotContain,
-} from './postFilterOperators/QueryBuilderPostFilterOperator_Contain';
+} from './postFilterOperators/QueryBuilderPostFilterOperator_Contain.js';
 import {
   QueryBuilderPostFilterOperator_EndWith,
   QueryBuilderPostFilterOperator_NotEndWith,
-} from './postFilterOperators/QueryBuilderPostFilterOperator_EndWith';
-import type { QueryBuilderPostFilterOperator } from './QueryBuilderPostFilterOperator';
+} from './postFilterOperators/QueryBuilderPostFilterOperator_EndWith.js';
+import type { QueryBuilderPostFilterOperator } from './QueryBuilderPostFilterOperator.js';
 import {
   QueryBuilderPostFilterOperator_In,
   QueryBuilderPostFilterOperator_NotIn,
-} from './postFilterOperators/QueryBuilderPostFilterOperator_In';
+} from './postFilterOperators/QueryBuilderPostFilterOperator_In.js';
 import {
   QueryBuilderPostFilterOperator_IsEmpty,
   QueryBuilderPostFilterOperator_IsNotEmpty,
-} from './postFilterOperators/QueryBuilderPostFilterOperator_IsEmpty';
-import { QueryFunctionsExplorerState } from './QueryFunctionsExplorerState';
+} from './postFilterOperators/QueryBuilderPostFilterOperator_IsEmpty.js';
+import { QueryFunctionsExplorerState } from './QueryFunctionsExplorerState.js';
 
 export abstract class QueryBuilderMode {
   abstract get isParametersDisabled(): boolean;

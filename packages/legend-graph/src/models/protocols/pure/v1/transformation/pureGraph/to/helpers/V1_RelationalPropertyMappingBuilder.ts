@@ -15,23 +15,23 @@
  */
 
 import { guaranteeType } from '@finos/legend-shared';
-import type { InstanceSetImplementation } from '../../../../../../../metamodels/pure/packageableElements/mapping/InstanceSetImplementation';
-import { RootRelationalInstanceSetImplementation } from '../../../../../../../metamodels/pure/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation';
-import { EmbeddedRelationalInstanceSetImplementation } from '../../../../../../../metamodels/pure/packageableElements/store/relational/mapping/EmbeddedRelationalInstanceSetImplementation';
+import type { InstanceSetImplementation } from '../../../../../../../metamodels/pure/packageableElements/mapping/InstanceSetImplementation.js';
+import { RootRelationalInstanceSetImplementation } from '../../../../../../../metamodels/pure/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation.js';
+import { EmbeddedRelationalInstanceSetImplementation } from '../../../../../../../metamodels/pure/packageableElements/store/relational/mapping/EmbeddedRelationalInstanceSetImplementation.js';
 import {
   type PackageableElementReference,
   PackageableElementImplicitReference,
-} from '../../../../../../../metamodels/pure/packageableElements/PackageableElementReference';
-import { InferableMappingElementIdExplicitValue } from '../../../../../../../metamodels/pure/packageableElements/mapping/InferableMappingElementId';
-import type { Property } from '../../../../../../../metamodels/pure/packageableElements/domain/Property';
-import { Class } from '../../../../../../../metamodels/pure/packageableElements/domain/Class';
-import type { PropertyMappingsImplementation } from '../../../../../../../metamodels/pure/packageableElements/mapping/PropertyMappingsImplementation';
-import type { SetImplementation } from '../../../../../../../metamodels/pure/packageableElements/mapping/SetImplementation';
-import type { V1_GraphBuilderContext } from '../../../../transformation/pureGraph/to/V1_GraphBuilderContext';
-import type { V1_EmbeddedRelationalPropertyMapping } from '../../../../model/packageableElements/store/relational/mapping/V1_EmbeddedRelationalPropertyMapping';
-import { V1_getInferredClassMappingId } from '../../../../transformation/pureGraph/to/helpers/V1_MappingBuilderHelper';
-import { GraphBuilderError } from '../../../../../../../../graphManager/GraphManagerUtils';
-import { getClassProperty } from '../../../../../../../../helpers/DomainHelper';
+} from '../../../../../../../metamodels/pure/packageableElements/PackageableElementReference.js';
+import { InferableMappingElementIdExplicitValue } from '../../../../../../../metamodels/pure/packageableElements/mapping/InferableMappingElementId.js';
+import type { Property } from '../../../../../../../metamodels/pure/packageableElements/domain/Property.js';
+import { Class } from '../../../../../../../metamodels/pure/packageableElements/domain/Class.js';
+import type { PropertyMappingsImplementation } from '../../../../../../../metamodels/pure/packageableElements/mapping/PropertyMappingsImplementation.js';
+import type { SetImplementation } from '../../../../../../../metamodels/pure/packageableElements/mapping/SetImplementation.js';
+import type { V1_GraphBuilderContext } from '../../../../transformation/pureGraph/to/V1_GraphBuilderContext.js';
+import type { V1_EmbeddedRelationalPropertyMapping } from '../../../../model/packageableElements/store/relational/mapping/V1_EmbeddedRelationalPropertyMapping.js';
+import { V1_getInferredClassMappingId } from '../../../../transformation/pureGraph/to/helpers/V1_MappingBuilderHelper.js';
+import { GraphBuilderError } from '../../../../../../../../graphManager/GraphManagerUtils.js';
+import { getClassProperty } from '../../../../../../../../helpers/DomainHelper.js';
 
 export const V1_buildEmbeddedRelationalMappingProperty = (
   propertyMapping: V1_EmbeddedRelationalPropertyMapping,

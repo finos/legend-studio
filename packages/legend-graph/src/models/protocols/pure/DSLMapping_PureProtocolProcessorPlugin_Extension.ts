@@ -15,16 +15,16 @@
  */
 
 import type { PlainObject } from '@finos/legend-shared';
-import type { Connection } from '../../metamodels/pure/packageableElements/connection/Connection';
-import type { Mapping } from '../../metamodels/pure/packageableElements/mapping/Mapping';
-import type { InstanceSetImplementation } from '../../metamodels/pure/packageableElements/mapping/InstanceSetImplementation';
-import type { PureProtocolProcessorPlugin } from './PureProtocolProcessorPlugin';
-import type { V1_Connection } from '../pure/v1/model/packageableElements/connection/V1_Connection';
-import type { V1_GraphTransformerContext } from './v1/transformation/pureGraph/from/V1_GraphTransformerContext';
-import type { V1_ClassMapping } from '../pure/v1/model/packageableElements/mapping/V1_ClassMapping';
-import type { V1_GraphBuilderContext } from './v1/transformation/pureGraph/to/V1_GraphBuilderContext';
-import type { Store } from '../../metamodels/pure/packageableElements/store/Store';
-import type { PackageableElementReference } from '../../metamodels/pure/packageableElements/PackageableElementReference';
+import type { Connection } from '../../metamodels/pure/packageableElements/connection/Connection.js';
+import type { Mapping } from '../../metamodels/pure/packageableElements/mapping/Mapping.js';
+import type { InstanceSetImplementation } from '../../metamodels/pure/packageableElements/mapping/InstanceSetImplementation.js';
+import type { PureProtocolProcessorPlugin } from './PureProtocolProcessorPlugin.js';
+import type { V1_Connection } from '../pure/v1/model/packageableElements/connection/V1_Connection.js';
+import type { V1_GraphTransformerContext } from './v1/transformation/pureGraph/from/V1_GraphTransformerContext.js';
+import type { V1_ClassMapping } from '../pure/v1/model/packageableElements/mapping/V1_ClassMapping.js';
+import type { V1_GraphBuilderContext } from './v1/transformation/pureGraph/to/V1_GraphBuilderContext.js';
+import type { Store } from '../../metamodels/pure/packageableElements/store/Store.js';
+import type { PackageableElementReference } from '../../metamodels/pure/packageableElements/PackageableElementReference.js';
 
 export type V1_ClassMappingFirstPassBuilder = (
   classMapping: V1_ClassMapping,

@@ -15,14 +15,14 @@
  */
 
 import { returnUndefOnError } from '@finos/legend-shared';
-import { ConfigurationProperty } from '../../../../../../../metamodels/pure/packageableElements/fileGeneration/ConfigurationProperty';
-import type { PackageableElement } from '../../../../../../../metamodels/pure/packageableElements/PackageableElement';
+import { ConfigurationProperty } from '../../../../../../../metamodels/pure/packageableElements/fileGeneration/ConfigurationProperty.js';
+import type { PackageableElement } from '../../../../../../../metamodels/pure/packageableElements/PackageableElement.js';
 import {
   type PackageableElementReference,
   PackageableElementExplicitReference,
-} from '../../../../../../../metamodels/pure/packageableElements/PackageableElementReference';
-import type { V1_GraphBuilderContext } from '../../../../transformation/pureGraph/to/V1_GraphBuilderContext';
-import type { V1_ConfigurationProperty } from '../../../../model/packageableElements/fileGeneration/V1_ConfigurationProperty';
+} from '../../../../../../../metamodels/pure/packageableElements/PackageableElementReference.js';
+import type { V1_GraphBuilderContext } from '../../../../transformation/pureGraph/to/V1_GraphBuilderContext.js';
+import type { V1_ConfigurationProperty } from '../../../../model/packageableElements/fileGeneration/V1_ConfigurationProperty.js';
 
 export const V1_buildConfigurationProperty = (
   propSpec: V1_ConfigurationProperty,

@@ -15,10 +15,10 @@
  */
 
 import { uuid, hashArray, type Hashable } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
-import type { MappingTestAssert } from './MappingTestAssert';
-import type { InputData } from './InputData';
-import type { RawLambda } from '../../rawValueSpecification/RawLambda';
+import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst.js';
+import type { MappingTestAssert } from './MappingTestAssert.js';
+import type { InputData } from './InputData.js';
+import type { RawLambda } from '../../rawValueSpecification/RawLambda.js';
 
 export class MappingTest implements Hashable {
   readonly _UUID = uuid();

@@ -42,24 +42,24 @@ import { useMemo } from 'react';
 import {
   SchemaSetEditorState,
   SCHEMA_SET_TAB_TYPE,
-} from '../../../../stores/editor-state/element-editor-state/external-format/SchemaSetEditorState';
+} from '../../../../stores/editor-state/element-editor-state/external-format/SchemaSetEditorState.js';
 import { EDITOR_LANGUAGE } from '@finos/legend-application';
-import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor';
-import { getEditorLanguageFromFormat } from '../../../../stores/editor-state/FileGenerationViewerState';
+import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor.js';
+import { getEditorLanguageFromFormat } from '../../../../stores/editor-state/FileGenerationViewerState.js';
 import {
   debounce,
   guaranteeNonNullable,
   prettyCONSTName,
 } from '@finos/legend-shared';
-import { GenerationPropertyEditor } from '../element-generation-editor/FileGenerationEditor';
-import { useEditorStore } from '../../EditorStoreProvider';
+import { GenerationPropertyEditor } from '../element-generation-editor/FileGenerationEditor.js';
+import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
   externalFormat_schemaSet_addSchema,
   externalFormat_schemaSet_deleteSchema,
   externalFormat_schema_setContent,
   externalFormat_schema_setId,
   externalFormat_schema_setLocation,
-} from '../../../../stores/graphModifier/DSLExternalFormat_GraphModifierHelper';
+} from '../../../../stores/graphModifier/DSLExternalFormat_GraphModifierHelper.js';
 
 const SchemaLoader = observer(
   (props: { schemaSetEditorState: SchemaSetEditorState }) => {

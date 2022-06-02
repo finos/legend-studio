@@ -17,24 +17,24 @@
 import type {
   PackageableElement,
   PackageableElementVisitor,
-} from '../../../models/metamodels/pure/packageableElements/PackageableElement';
-import type { Profile } from '../../../models/metamodels/pure/packageableElements/domain/Profile';
-import type { Enumeration } from '../../../models/metamodels/pure/packageableElements/domain/Enumeration';
-import type { Measure } from '../../../models/metamodels/pure/packageableElements/domain/Measure';
-import type { Class } from '../../../models/metamodels/pure/packageableElements/domain/Class';
-import type { Association } from '../../../models/metamodels/pure/packageableElements/domain/Association';
-import type { ConcreteFunctionDefinition } from '../../../models/metamodels/pure/packageableElements/domain/ConcreteFunctionDefinition';
-import type { FlatData } from '../../../models/metamodels/pure/packageableElements/store/flatData/model/FlatData';
-import type { Database } from '../../../models/metamodels/pure/packageableElements/store/relational/model/Database';
-import type { Mapping } from '../../../models/metamodels/pure/packageableElements/mapping/Mapping';
-import type { Service } from '../../../models/metamodels/pure/packageableElements/service/Service';
-import type { PackageableRuntime } from '../../../models/metamodels/pure/packageableElements/runtime/PackageableRuntime';
-import type { PackageableConnection } from '../../../models/metamodels/pure/packageableElements/connection/PackageableConnection';
-import type { FileGenerationSpecification } from '../../../models/metamodels/pure/packageableElements/fileGeneration/FileGenerationSpecification';
-import type { GenerationSpecification } from '../../../models/metamodels/pure/packageableElements/generationSpecification/GenerationSpecification';
-import type { Package } from '../../../models/metamodels/pure/packageableElements/domain/Package';
-import type { PrimitiveType } from '../../../models/metamodels/pure/packageableElements/domain/PrimitiveType';
-import type { SectionIndex } from '../../../models/metamodels/pure/packageableElements/section/SectionIndex';
+} from '../../../models/metamodels/pure/packageableElements/PackageableElement.js';
+import type { Profile } from '../../../models/metamodels/pure/packageableElements/domain/Profile.js';
+import type { Enumeration } from '../../../models/metamodels/pure/packageableElements/domain/Enumeration.js';
+import type { Measure } from '../../../models/metamodels/pure/packageableElements/domain/Measure.js';
+import type { Class } from '../../../models/metamodels/pure/packageableElements/domain/Class.js';
+import type { Association } from '../../../models/metamodels/pure/packageableElements/domain/Association.js';
+import type { ConcreteFunctionDefinition } from '../../../models/metamodels/pure/packageableElements/domain/ConcreteFunctionDefinition.js';
+import type { FlatData } from '../../../models/metamodels/pure/packageableElements/store/flatData/model/FlatData.js';
+import type { Database } from '../../../models/metamodels/pure/packageableElements/store/relational/model/Database.js';
+import type { Mapping } from '../../../models/metamodels/pure/packageableElements/mapping/Mapping.js';
+import type { Service } from '../../../models/metamodels/pure/packageableElements/service/Service.js';
+import type { PackageableRuntime } from '../../../models/metamodels/pure/packageableElements/runtime/PackageableRuntime.js';
+import type { PackageableConnection } from '../../../models/metamodels/pure/packageableElements/connection/PackageableConnection.js';
+import type { FileGenerationSpecification } from '../../../models/metamodels/pure/packageableElements/fileGeneration/FileGenerationSpecification.js';
+import type { GenerationSpecification } from '../../../models/metamodels/pure/packageableElements/generationSpecification/GenerationSpecification.js';
+import type { Package } from '../../../models/metamodels/pure/packageableElements/domain/Package.js';
+import type { PrimitiveType } from '../../../models/metamodels/pure/packageableElements/domain/PrimitiveType.js';
+import type { SectionIndex } from '../../../models/metamodels/pure/packageableElements/section/SectionIndex.js';
 import {
   observe_Association,
   observe_Class,
@@ -44,25 +44,25 @@ import {
   observe_Package,
   observe_Profile,
   observe_SectionIndex,
-} from './DomainObserverHelper';
+} from './DomainObserverHelper.js';
 import {
   type ObserverContext,
   skipObservedWithContext,
-} from './CoreObserverHelper';
+} from './CoreObserverHelper.js';
 import {
   observe_FileGenerationSpecification,
   observe_GenerationSpecification,
-} from './DSLGenerationSpecification_ObserverHelper';
+} from './DSLGenerationSpecification_ObserverHelper.js';
 import {
   observe_Mapping,
   observe_PackageableConnection,
   observe_PackageableRuntime,
-} from './DSLMapping_ObserverHelper';
-import { observe_Service } from './DSLService_ObserverHelper';
-import { observe_FlatData } from './StoreFlatData_ObserverHelper';
-import { observe_Database } from './StoreRelational_ObserverHelper';
-import type { DataElement } from '../../../models/metamodels/pure/packageableElements/data/DataElement';
-import { observe_DataElement } from './DSLData_ObserverHelper';
+} from './DSLMapping_ObserverHelper.js';
+import { observe_Service } from './DSLService_ObserverHelper.js';
+import { observe_FlatData } from './StoreFlatData_ObserverHelper.js';
+import { observe_Database } from './StoreRelational_ObserverHelper.js';
+import type { DataElement } from '../../../models/metamodels/pure/packageableElements/data/DataElement.js';
+import { observe_DataElement } from './DSLData_ObserverHelper.js';
 
 class PackageableElementObserver implements PackageableElementVisitor<void> {
   observerContext: ObserverContext;

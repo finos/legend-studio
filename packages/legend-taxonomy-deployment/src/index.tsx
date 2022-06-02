@@ -15,7 +15,7 @@
  */
 
 import { LegendTaxonomyWebApplication } from '@finos/legend-taxonomy-app';
-import config from '../taxonomy.config';
+import config from '../taxonomy.config.js';
 import './index.scss';
 
 LegendTaxonomyWebApplication.run(config.baseUrl);

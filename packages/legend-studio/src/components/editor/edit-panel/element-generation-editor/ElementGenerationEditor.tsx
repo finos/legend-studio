@@ -21,13 +21,13 @@ import {
   resolvePackagePathAndElementName,
   Package,
 } from '@finos/legend-graph';
-import type { ElementFileGenerationState } from '../../../../stores/editor-state/element-editor-state/ElementFileGenerationState';
-import type { ElementEditorState } from '../../../../stores/editor-state/element-editor-state/ElementEditorState';
+import type { ElementFileGenerationState } from '../../../../stores/editor-state/element-editor-state/ElementFileGenerationState.js';
+import type { ElementEditorState } from '../../../../stores/editor-state/element-editor-state/ElementEditorState.js';
 import { guaranteeType } from '@finos/legend-shared';
 import {
   GenerationResultViewer,
   FileGenerationConfigurationEditor,
-} from '../../../editor/edit-panel/element-generation-editor/FileGenerationEditor';
+} from '../../../editor/edit-panel/element-generation-editor/FileGenerationEditor.js';
 import { flowResult } from 'mobx';
 import {
   Dialog,
@@ -37,7 +37,7 @@ import {
   ResizablePanelSplitterLine,
   ArrowCircleLeftIcon,
 } from '@finos/legend-art';
-import { useEditorStore } from '../../EditorStoreProvider';
+import { useEditorStore } from '../../EditorStoreProvider.js';
 import { useApplicationStore } from '@finos/legend-application';
 
 const NewFileGenerationModal = observer(

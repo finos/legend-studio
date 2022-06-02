@@ -21,14 +21,14 @@ import {
   PRIMITIVE_TYPE,
   SUPPORTED_FUNCTIONS,
 } from '@finos/legend-graph';
-import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
-import { buildPostFilterConditionState } from '../QueryBuilderPostFilterProcessor';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const.js';
+import { buildPostFilterConditionState } from '../QueryBuilderPostFilterProcessor.js';
 import type {
   PostFilterConditionState,
   QueryBuilderPostFilterState,
-} from '../QueryBuilderPostFilterState';
-import { buildPostFilterConditionExpression } from './QueryBuilderPostFilterOperatorHelper';
-import { QueryBuilderPostFilterOperator_GreaterThan } from './QueryBuilderPostFilterOperator_GreaterThan';
+} from '../QueryBuilderPostFilterState.js';
+import { buildPostFilterConditionExpression } from './QueryBuilderPostFilterOperatorHelper.js';
+import { QueryBuilderPostFilterOperator_GreaterThan } from './QueryBuilderPostFilterOperator_GreaterThan.js';
 
 export class QueryBuilderPostFilterOperator_GreaterThanEqual extends QueryBuilderPostFilterOperator_GreaterThan {
   override getLabel(): string {

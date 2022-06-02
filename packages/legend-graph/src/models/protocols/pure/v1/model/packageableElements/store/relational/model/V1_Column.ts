@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import { CORE_HASH_STRUCTURE } from '../../../../../../../../../MetaModelConst';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../../../MetaModelConst.js';
 import { type Hashable, hashArray } from '@finos/legend-shared';
-import type { V1_RelationalDataType } from './V1_RelationalDataType';
+import type { V1_RelationalDataType } from './V1_RelationalDataType.js';
 
 export class V1_Column implements Hashable {
   name!: string;

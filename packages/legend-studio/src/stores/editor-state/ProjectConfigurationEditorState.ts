@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import type { EditorStore } from '../EditorStore';
-import { EditorState } from '../editor-state/EditorState';
+import type { EditorStore } from '../EditorStore.js';
+import { EditorState } from '../editor-state/EditorState.js';
 import {
   action,
   computed,
@@ -31,13 +31,13 @@ import {
   assertErrorThrown,
   guaranteeNonNullable,
 } from '@finos/legend-shared';
-import type { EditorSDLCState } from '../EditorSDLCState';
+import type { EditorSDLCState } from '../EditorSDLCState.js';
 import {
   type ProjectConfiguration,
   ProjectStructureVersion,
   UpdateProjectConfigurationCommand,
 } from '@finos/legend-server-sdlc';
-import { LEGEND_STUDIO_APP_EVENT } from '../LegendStudioAppEvent';
+import { LEGEND_STUDIO_APP_EVENT } from '../LegendStudioAppEvent.js';
 import { ProjectData } from '@finos/legend-server-depot';
 
 export enum CONFIGURATION_EDITOR_TAB {

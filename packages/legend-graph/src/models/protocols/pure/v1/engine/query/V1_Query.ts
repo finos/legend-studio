@@ -16,12 +16,12 @@
 
 import { SerializationFactory, usingModelSchema } from '@finos/legend-shared';
 import { createModelSchema, list, optional, primitive } from 'serializr';
-import type { V1_StereotypePtr } from '../../model/packageableElements/domain/V1_StereotypePtr';
-import type { V1_TaggedValue } from '../../model/packageableElements/domain/V1_TaggedValue';
+import type { V1_StereotypePtr } from '../../model/packageableElements/domain/V1_StereotypePtr.js';
+import type { V1_TaggedValue } from '../../model/packageableElements/domain/V1_TaggedValue.js';
 import {
   V1_stereotypePtrSchema,
   V1_taggedValueSchema,
-} from '../../transformation/pureProtocol/serializationHelpers/V1_DomainSerializationHelper';
+} from '../../transformation/pureProtocol/serializationHelpers/V1_DomainSerializationHelper.js';
 
 export class V1_Query {
   name!: string;

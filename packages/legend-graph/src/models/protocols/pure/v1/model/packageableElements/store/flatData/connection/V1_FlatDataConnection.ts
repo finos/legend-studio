@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-import { CORE_HASH_STRUCTURE } from '../../../../../../../../../MetaModelConst';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../../../MetaModelConst.js';
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import {
   type V1_ConnectionVisitor,
   V1_Connection,
-} from '../../../../../model/packageableElements/connection/V1_Connection';
+} from '../../../../../model/packageableElements/connection/V1_Connection.js';
 
 export class V1_FlatDataConnection extends V1_Connection implements Hashable {
   url!: string;

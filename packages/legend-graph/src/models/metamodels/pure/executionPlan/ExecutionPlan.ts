@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { ExecutionNode } from './nodes/ExecutionNode';
+import type { ExecutionNode } from './nodes/ExecutionNode.js';
 
 export type RawExecutionPlan = object;
 

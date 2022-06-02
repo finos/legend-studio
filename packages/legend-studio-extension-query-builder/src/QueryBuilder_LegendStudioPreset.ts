@@ -16,7 +16,7 @@
 
 import packageJson from '../package.json';
 import { AbstractPreset } from '@finos/legend-shared';
-import { QueryBuilder_LegendStudioPlugin } from './components/QueryBuilder_LegendStudioPlugin';
+import { QueryBuilder_LegendStudioPlugin } from './components/QueryBuilder_LegendStudioPlugin.js';
 import { QueryBuilder_PureProtocolProcessorPlugin } from '@finos/legend-query';
 
 export class QueryBuilder_LegendStudioPreset extends AbstractPreset {

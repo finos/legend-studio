@@ -14,17 +14,17 @@
  * limitations under the License.
  */
 
-import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst.js';
 import { hashString } from '@finos/legend-shared';
 import {
   PackageableElementExplicitReference,
   type PackageableElementReference,
   type PackageableElementImplicitReference,
-} from '../../../PackageableElementReference';
-import { ReferenceWithOwner } from '../../../../Reference';
-import type { Database } from './Database';
-import type { Table } from './Table';
-import { SELF_JOIN_SCHEMA_NAME, SELF_JOIN_TABLE_NAME } from './Join';
+} from '../../../PackageableElementReference.js';
+import { ReferenceWithOwner } from '../../../../Reference.js';
+import type { Database } from './Database.js';
+import type { Table } from './Table.js';
+import { SELF_JOIN_SCHEMA_NAME, SELF_JOIN_TABLE_NAME } from './Join.js';
 
 export abstract class NamedRelationalReference extends ReferenceWithOwner {
   override readonly ownerReference: PackageableElementReference<Database>;

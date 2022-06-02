@@ -15,10 +15,10 @@
  */
 
 import { action, flowResult, makeObservable, observable, flow } from 'mobx';
-import type { EditorStore } from '../EditorStore';
-import { CHANGE_DETECTION_EVENT } from '../ChangeDetectionEvent';
-import { LEGEND_STUDIO_APP_EVENT } from '../LegendStudioAppEvent';
-import type { EditorSDLCState } from '../EditorSDLCState';
+import type { EditorStore } from '../EditorStore.js';
+import { CHANGE_DETECTION_EVENT } from '../ChangeDetectionEvent.js';
+import { LEGEND_STUDIO_APP_EVENT } from '../LegendStudioAppEvent.js';
+import type { EditorSDLCState } from '../EditorSDLCState.js';
 import {
   type GeneratorFn,
   type PlainObject,
@@ -32,10 +32,10 @@ import {
   hashObject,
   deleteEntry,
 } from '@finos/legend-shared';
-import { EntityDiffViewState } from '../editor-state/entity-diff-editor-state/EntityDiffViewState';
-import { SPECIAL_REVISION_ALIAS } from '../editor-state/entity-diff-editor-state/EntityDiffEditorState';
-import { EntityChangeConflictEditorState } from '../editor-state/entity-diff-editor-state/EntityChangeConflictEditorState';
-import { ACTIVITY_MODE } from '../EditorConfig';
+import { EntityDiffViewState } from '../editor-state/entity-diff-editor-state/EntityDiffViewState.js';
+import { SPECIAL_REVISION_ALIAS } from '../editor-state/entity-diff-editor-state/EntityDiffEditorState.js';
+import { EntityChangeConflictEditorState } from '../editor-state/entity-diff-editor-state/EntityChangeConflictEditorState.js';
+import { ACTIVITY_MODE } from '../EditorConfig.js';
 import type { Entity } from '@finos/legend-model-storage';
 import {
   type EntityChangeConflict,
@@ -46,8 +46,8 @@ import {
   Revision,
   RevisionAlias,
 } from '@finos/legend-server-sdlc';
-import type { GraphBuilderResult } from '../EditorGraphState';
-import { AbstractConflictResolutionState } from '../AbstractConflictResolutionState';
+import type { GraphBuilderResult } from '../EditorGraphState.js';
+import { AbstractConflictResolutionState } from '../AbstractConflictResolutionState.js';
 
 export class WorkspaceUpdateConflictResolutionState extends AbstractConflictResolutionState {
   isInitializingConflictResolution = false;

@@ -15,7 +15,7 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { useEditorStore } from '../EditorStoreProvider';
+import { useEditorStore } from '../EditorStoreProvider.js';
 import { noop } from '@finos/legend-shared';
 import {
   clsx,
@@ -34,15 +34,15 @@ import type {
 import {
   EntityChangeConflictEditor,
   EntityChangeConflictSideBarItem,
-} from '../edit-panel/diff-editor/EntityChangeConflictEditor';
-import { EntityChangeConflictEditorState } from '../../../stores/editor-state/entity-diff-editor-state/EntityChangeConflictEditorState';
-import type { EntityDiffEditorState } from '../../../stores/editor-state/entity-diff-editor-state/EntityDiffEditorState';
+} from '../edit-panel/diff-editor/EntityChangeConflictEditor.js';
+import { EntityChangeConflictEditorState } from '../../../stores/editor-state/entity-diff-editor-state/EntityChangeConflictEditorState.js';
+import type { EntityDiffEditorState } from '../../../stores/editor-state/entity-diff-editor-state/EntityDiffEditorState.js';
 import {
   EntityDiffSideBarItem,
   EntityDiffView,
-} from '../edit-panel/diff-editor/EntityDiffView';
-import { EntityDiffViewState } from '../../../stores/editor-state/entity-diff-editor-state/EntityDiffViewState';
-import { entityDiffSorter } from '../../../stores/EditorSDLCState';
+} from '../edit-panel/diff-editor/EntityDiffView.js';
+import { EntityDiffViewState } from '../../../stores/editor-state/entity-diff-editor-state/EntityDiffViewState.js';
+import { entityDiffSorter } from '../../../stores/EditorSDLCState.js';
 import { flowResult } from 'mobx';
 import { useApplicationStore } from '@finos/legend-application';
 

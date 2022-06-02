@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import type { EditorStore } from '../../../EditorStore';
-import type { ServiceEditorState } from './ServiceEditorState';
+import type { EditorStore } from '../../../EditorStore.js';
+import type { ServiceEditorState } from './ServiceEditorState.js';
 
 export class ServiceTestSuiteState {
   editorStore: EditorStore;

@@ -15,9 +15,9 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
-import type { V1_Runtime } from '../../../model/packageableElements/runtime/V1_Runtime';
-import type { V1_RawLambda } from '../../../model/rawValueSpecification/V1_RawLambda';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst.js';
+import type { V1_Runtime } from '../../../model/packageableElements/runtime/V1_Runtime.js';
+import type { V1_RawLambda } from '../../../model/rawValueSpecification/V1_RawLambda.js';
 
 export abstract class V1_ServiceExecution implements Hashable {
   abstract get hashCode(): string;

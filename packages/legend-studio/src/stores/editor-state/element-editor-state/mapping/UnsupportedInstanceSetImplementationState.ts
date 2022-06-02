@@ -15,7 +15,7 @@
  */
 
 import type { GeneratorFn } from '@finos/legend-shared';
-import { InstanceSetImplementationState } from './MappingElementState';
+import { InstanceSetImplementationState } from './MappingElementState.js';
 
 export class UnsupportedInstanceSetImplementationState extends InstanceSetImplementationState {
   decorate(): void {

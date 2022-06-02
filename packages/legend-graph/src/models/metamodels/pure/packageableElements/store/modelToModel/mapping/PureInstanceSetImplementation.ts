@@ -15,19 +15,19 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
-import type { Class } from '../../../domain/Class';
-import { InstanceSetImplementation } from '../../../mapping/InstanceSetImplementation';
-import type { PurePropertyMapping } from './PurePropertyMapping';
-import type { SetImplementationVisitor } from '../../../mapping/SetImplementation';
-import type { RawLambda } from '../../../../rawValueSpecification/RawLambda';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst.js';
+import type { Class } from '../../../domain/Class.js';
+import { InstanceSetImplementation } from '../../../mapping/InstanceSetImplementation.js';
+import type { PurePropertyMapping } from './PurePropertyMapping.js';
+import type { SetImplementationVisitor } from '../../../mapping/SetImplementation.js';
+import type { RawLambda } from '../../../../rawValueSpecification/RawLambda.js';
 import type {
   PackageableElementReference,
   OptionalPackageableElementReference,
-} from '../../../PackageableElementReference';
-import type { InferableMappingElementIdValue } from '../../../mapping/InferableMappingElementId';
-import type { Mapping } from '../../../mapping/Mapping';
-import type { InferableMappingElementRoot } from '../../../mapping/InferableMappingElementRoot';
+} from '../../../PackageableElementReference.js';
+import type { InferableMappingElementIdValue } from '../../../mapping/InferableMappingElementId.js';
+import type { Mapping } from '../../../mapping/Mapping.js';
+import type { InferableMappingElementRoot } from '../../../mapping/InferableMappingElementRoot.js';
 
 export class PureInstanceSetImplementation
   extends InstanceSetImplementation

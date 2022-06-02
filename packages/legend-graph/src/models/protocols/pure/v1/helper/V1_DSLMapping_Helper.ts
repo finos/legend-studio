@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import { ELEMENT_PATH_DELIMITER } from '../../../../../MetaModelConst';
-import type { V1_MappingInclude } from '../model/packageableElements/mapping/V1_MappingInclude';
+import { ELEMENT_PATH_DELIMITER } from '../../../../../MetaModelConst.js';
+import type { V1_MappingInclude } from '../model/packageableElements/mapping/V1_MappingInclude.js';
 
 export const V1_getIncludedMappingPath = (
   mappingInclude: V1_MappingInclude,

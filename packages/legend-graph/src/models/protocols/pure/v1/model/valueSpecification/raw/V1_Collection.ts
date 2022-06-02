@@ -17,8 +17,8 @@
 import {
   type V1_ValueSpecificationVisitor,
   V1_ValueSpecification,
-} from '../../../model/valueSpecification/V1_ValueSpecification';
-import type { V1_Multiplicity } from '../../../model/packageableElements/domain/V1_Multiplicity';
+} from '../../../model/valueSpecification/V1_ValueSpecification.js';
+import type { V1_Multiplicity } from '../../../model/packageableElements/domain/V1_Multiplicity.js';
 
 export class V1_Collection extends V1_ValueSpecification {
   values: V1_ValueSpecification[] = [];

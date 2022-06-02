@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import { V1_PureModelContext } from '../../model/context/V1_PureModelContext';
-import type { V1_PackageableElement } from '../../model/packageableElements/V1_PackageableElement';
-import type { V1_PureModelContextPointer } from '../../model/context/V1_PureModelContextPointer';
-import type { V1_Protocol } from '../../model/V1_Protocol';
+import { V1_PureModelContext } from '../../model/context/V1_PureModelContext.js';
+import type { V1_PackageableElement } from '../../model/packageableElements/V1_PackageableElement.js';
+import type { V1_PureModelContextPointer } from '../../model/context/V1_PureModelContextPointer.js';
+import type { V1_Protocol } from '../../model/V1_Protocol.js';
 
 export class V1_PureModelContextData extends V1_PureModelContext {
   origin?: V1_PureModelContextPointer | undefined;

@@ -15,7 +15,7 @@
  */
 
 import type { TelemetryService } from '@finos/legend-shared';
-import { APPLICATION_EVENT } from './ApplicationEvent';
+import { APPLICATION_EVENT } from './ApplicationEvent.js';
 
 type ApplicationLoaded_TelemetryData = {
   browser: {

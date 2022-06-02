@@ -15,7 +15,7 @@
  */
 
 import { test, jest, expect } from '@jest/globals';
-import { LegendStudioApplicationRoot } from '../LegendStudioApplication';
+import { LegendStudioApplicationRoot } from '../LegendStudioApplication.js';
 import {
   integrationTest,
   MOBX__enableSpyOrMock,
@@ -29,7 +29,7 @@ import {
   TEST__provideMockedWebApplicationNavigator,
   LegendApplicationComponentFrameworkProvider,
 } from '@finos/legend-application';
-import { TEST__LegendStudioStoreProvider } from '../EditorComponentTestUtils';
+import { TEST__LegendStudioStoreProvider } from '../EditorComponentTestUtils.js';
 import { render, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { createMemoryHistory } from 'history';
@@ -39,8 +39,8 @@ import {
   TEST__SDLCServerClientProvider,
 } from '@finos/legend-server-sdlc';
 import { TEST__DepotServerClientProvider } from '@finos/legend-server-depot';
-import { TEST__getTestStudioConfig } from '../../stores/EditorStoreTestUtils';
-import { LegendStudioPluginManager } from '../../application/LegendStudioPluginManager';
+import { TEST__getTestStudioConfig } from '../../stores/EditorStoreTestUtils.js';
+import { LegendStudioPluginManager } from '../../application/LegendStudioPluginManager.js';
 
 test(
   integrationTest('Failed to accept SDLC Terms of Service will show alert'),

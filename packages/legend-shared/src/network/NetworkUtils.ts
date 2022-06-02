@@ -21,13 +21,13 @@ import {
   isObject,
   AssertionError,
   assertTrue,
-} from '../error/AssertionUtils';
+} from '../error/AssertionUtils.js';
 import { deflate } from 'pako';
 import {
   parse as _getQueryParams,
   parseUrl as _getQueryParamsFromUrl,
 } from 'query-string';
-import { returnUndefOnError } from '../error/ErrorUtils';
+import { returnUndefOnError } from '../error/ErrorUtils.js';
 
 /**
  * Unlike the download call (GET requests) which is gziped, the upload call send uncompressed data which is in megabytes realms

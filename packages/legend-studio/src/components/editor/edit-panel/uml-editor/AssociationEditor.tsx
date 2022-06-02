@@ -19,12 +19,12 @@ import { observer } from 'mobx-react-lite';
 import {
   UMLEditorState,
   UML_EDITOR_TAB,
-} from '../../../../stores/editor-state/element-editor-state/UMLEditorState';
+} from '../../../../stores/editor-state/element-editor-state/UMLEditorState.js';
 import {
   CORE_DND_TYPE,
   type UMLEditorElementDropTarget,
   type ElementDragSource,
-} from '../../../../stores/shared/DnDUtil';
+} from '../../../../stores/shared/DnDUtil.js';
 import { useDrop } from 'react-dnd';
 import {
   clsx,
@@ -42,14 +42,14 @@ import {
   ArrowCircleRightIcon,
   LongArrowRightIcon,
 } from '@finos/legend-art';
-import { getElementIcon } from '../../../shared/ElementIconUtils';
+import { getElementIcon } from '../../../shared/ElementIconUtils.js';
 import { prettyCONSTName, guaranteeType } from '@finos/legend-shared';
-import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID';
-import { StereotypeSelector } from './StereotypeSelector';
-import { TaggedValueEditor } from './TaggedValueEditor';
-import { PropertyEditor } from './PropertyEditor';
-import type { PackageableElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';
-import { useEditorStore } from '../../EditorStoreProvider';
+import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID.js';
+import { StereotypeSelector } from './StereotypeSelector.js';
+import { TaggedValueEditor } from './TaggedValueEditor.js';
+import { PropertyEditor } from './PropertyEditor.js';
+import type { PackageableElementOption } from '../../../../stores/shared/PackageableElementOptionUtil.js';
+import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
   type Association,
   type Property,
@@ -78,11 +78,11 @@ import {
   annotatedElement_addStereotype,
   annotatedElement_deleteTaggedValue,
   association_changePropertyType,
-} from '../../../../stores/graphModifier/DomainGraphModifierHelper';
+} from '../../../../stores/graphModifier/DomainGraphModifierHelper.js';
 import {
   CLASS_PROPERTY_TYPE,
   getClassPropertyType,
-} from '../../../../stores/shared/ModelUtil';
+} from '../../../../stores/shared/ModelUtil.js';
 
 const AssociationPropertyBasicEditor = observer(
   (props: {

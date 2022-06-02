@@ -14,31 +14,31 @@
  * limitations under the License.
  */
 
-export * from './application/LegendQuery';
+export * from './application/LegendQuery.js';
 
-export { QUERY_BUILDER_TEST_ID } from './components/QueryBuilder_TestID';
+export { QUERY_BUILDER_TEST_ID } from './components/QueryBuilder_TestID.js';
 
-export { QueryBuilder_PureProtocolProcessorPlugin } from './models/protocols/pure/QueryBuilder_PureProtocolProcessorPlugin';
+export { QueryBuilder_PureProtocolProcessorPlugin } from './models/protocols/pure/QueryBuilder_PureProtocolProcessorPlugin.js';
 
-export { QueryBuilder } from './components/QueryBuilder';
-export { useQuerySetupStore } from './components/QuerySetupStoreProvider';
-export { useLegendQueryStore } from './components/LegendQueryStoreProvider';
+export { QueryBuilder } from './components/QueryBuilder.js';
+export { useQuerySetupStore } from './components/QuerySetupStoreProvider.js';
+export { useLegendQueryStore } from './components/LegendQueryStoreProvider.js';
 
-export { LegendQueryPluginManager } from './application/LegendQueryPluginManager';
+export { LegendQueryPluginManager } from './application/LegendQueryPluginManager.js';
 
-export * from './stores/LegendQueryPlugin';
-export * from './stores/LegendQueryRouter';
-export { QuerySetupState, QuerySetupStore } from './stores/QuerySetupStore';
+export * from './stores/LegendQueryPlugin.js';
+export * from './stores/LegendQueryRouter.js';
+export { QuerySetupState, QuerySetupStore } from './stores/QuerySetupStore.js';
 export {
   LegendQueryStore,
   CreateQueryInfoState,
-} from './stores/LegendQueryStore';
+} from './stores/LegendQueryStore.js';
 export {
   QueryBuilderMode,
   StandardQueryBuilderMode,
   QueryBuilderState,
-} from './stores/QueryBuilderState';
-export { QueryBuilderExplorerTreeRootNodeData } from './stores/QueryBuilderExplorerState';
-export { FETCH_STRUCTURE_MODE } from './stores/QueryBuilderFetchStructureState';
-export { COLUMN_SORT_TYPE } from './stores/QueryResultSetModifierState';
-export { QueryBuilderSimpleProjectionColumnState } from './stores/QueryBuilderProjectionState';
+} from './stores/QueryBuilderState.js';
+export { QueryBuilderExplorerTreeRootNodeData } from './stores/QueryBuilderExplorerState.js';
+export { FETCH_STRUCTURE_MODE } from './stores/QueryBuilderFetchStructureState.js';
+export { COLUMN_SORT_TYPE } from './stores/QueryResultSetModifierState.js';
+export { QueryBuilderSimpleProjectionColumnState } from './stores/QueryBuilderProjectionState.js';

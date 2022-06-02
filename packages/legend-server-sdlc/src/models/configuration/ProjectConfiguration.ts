@@ -16,8 +16,8 @@
 
 import { list, createModelSchema, primitive } from 'serializr';
 import { observable, action, computed, makeObservable } from 'mobx';
-import { ProjectStructureVersion } from '../configuration/ProjectStructureVersion';
-import { ProjectDependency } from '../configuration/ProjectDependency';
+import { ProjectStructureVersion } from '../configuration/ProjectStructureVersion.js';
+import { ProjectDependency } from '../configuration/ProjectDependency.js';
 import {
   type Hashable,
   hashArray,

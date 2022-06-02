@@ -28,7 +28,7 @@ import {
 import { MdSettingsEthernet, MdLink } from 'react-icons/md';
 import { FiPackage } from 'react-icons/fi';
 import { RiShapeLine } from 'react-icons/ri';
-import { TabulatedDataFileIcon } from './Icon';
+import { TabulatedDataFileIcon } from './Icon.js';
 
 export const PURE_PrimitiveTypeIcon: React.FC = () => (
   <div className="icon icon--primitive color--primitive">p</div>

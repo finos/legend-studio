@@ -37,21 +37,21 @@ import {
   TEST__openElementFromExplorerTree,
   TEST__provideMockedEditorStore,
   TEST__setUpEditor,
-} from '../../../../EditorComponentTestUtils';
-import { LEGEND_STUDIO_TEST_ID } from '../../../../LegendStudioTestID';
-import type { EditorStore } from '../../../../../stores/EditorStore';
-import { ServiceEditorState } from '../../../../../stores/editor-state/element-editor-state/service/ServiceEditorState';
+} from '../../../../EditorComponentTestUtils.js';
+import { LEGEND_STUDIO_TEST_ID } from '../../../../LegendStudioTestID.js';
+import type { EditorStore } from '../../../../../stores/EditorStore.js';
+import { ServiceEditorState } from '../../../../../stores/editor-state/element-editor-state/service/ServiceEditorState.js';
 import { TEST__provideMockedApplicationStore } from '@finos/legend-application';
-import { LATEST_PROJECT_REVISION } from '../../../../../stores/editor-state/element-editor-state/service/ServiceRegistrationState';
+import { LATEST_PROJECT_REVISION } from '../../../../../stores/editor-state/element-editor-state/service/ServiceRegistrationState.js';
 import { flowResult } from 'mobx';
 import type { Project, Version, Workspace } from '@finos/legend-server-sdlc';
 import {
   ServiceExecutionMode,
   ServiceRegistrationResult,
 } from '@finos/legend-graph';
-import { TEST__getTestStudioConfig } from '../../../../../stores/EditorStoreTestUtils';
-import { LegendStudioPluginManager } from '../../../../../application/LegendStudioPluginManager';
-import { service_deleteOwner } from '../../../../../stores/graphModifier/DSLService_GraphModifierHelper';
+import { TEST__getTestStudioConfig } from '../../../../../stores/EditorStoreTestUtils.js';
+import { LegendStudioPluginManager } from '../../../../../application/LegendStudioPluginManager.js';
+import { service_deleteOwner } from '../../../../../stores/graphModifier/DSLService_GraphModifierHelper.js';
 
 let renderResult: RenderResult;
 

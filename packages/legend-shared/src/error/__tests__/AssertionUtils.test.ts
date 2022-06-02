@@ -19,8 +19,8 @@ import {
   isNonNullable,
   AssertionError,
   guaranteeNonNullable,
-} from '../AssertionUtils';
-import { unitTest } from '../../application/TestUtils';
+} from '../AssertionUtils.js';
+import { unitTest } from '../../application/TestUtils.js';
 
 test(unitTest('Check nullable value'), () => {
   expect(isNonNullable(null)).toEqual(false);

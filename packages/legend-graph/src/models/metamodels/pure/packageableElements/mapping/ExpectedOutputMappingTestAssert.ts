@@ -19,8 +19,8 @@ import {
   hashArray,
   tryToMinifyLosslessJSONString,
 } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
-import { MappingTestAssert } from './MappingTestAssert';
+import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst.js';
+import { MappingTestAssert } from './MappingTestAssert.js';
 
 export class ExpectedOutputMappingTestAssert
   extends MappingTestAssert

@@ -27,7 +27,7 @@ import {
   SOURCE_INFORMATION_KEY,
   ELEMENT_PATH_DELIMITER,
   CORE_HASH_STRUCTURE,
-} from './MetaModelConst';
+} from './MetaModelConst.js';
 import {
   findLast,
   guaranteeNonNullable,

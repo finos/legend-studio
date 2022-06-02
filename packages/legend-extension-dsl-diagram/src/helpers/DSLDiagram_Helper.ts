@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-import { RelationshipView } from '../models/metamodels/pure/packageableElements/diagram/DSLDiagram_RelationshipView';
-import { Point } from '../models/metamodels/pure/packageableElements/diagram/geometry/DSLDiagram_Point';
+import { RelationshipView } from '../models/metamodels/pure/packageableElements/diagram/DSLDiagram_RelationshipView.js';
+import { Point } from '../models/metamodels/pure/packageableElements/diagram/geometry/DSLDiagram_Point.js';
 import type { PureModel } from '@finos/legend-graph';
 import { deleteEntry } from '@finos/legend-shared';
-import type { ClassView } from '../models/metamodels/pure/packageableElements/diagram/DSLDiagram_ClassView';
-import type { Diagram } from '../models/metamodels/pure/packageableElements/diagram/DSLDiagram_Diagram';
-import { PositionedRectangle } from '../models/metamodels/pure/packageableElements/diagram/geometry/DSLDiagram_PositionedRectangle';
-import { Rectangle } from '../models/metamodels/pure/packageableElements/diagram/geometry/DSLDiagram_Rectangle';
+import type { ClassView } from '../models/metamodels/pure/packageableElements/diagram/DSLDiagram_ClassView.js';
+import type { Diagram } from '../models/metamodels/pure/packageableElements/diagram/DSLDiagram_Diagram.js';
+import { PositionedRectangle } from '../models/metamodels/pure/packageableElements/diagram/geometry/DSLDiagram_PositionedRectangle.js';
+import { Rectangle } from '../models/metamodels/pure/packageableElements/diagram/geometry/DSLDiagram_Rectangle.js';
 
 export class Vector {
   readonly x: number;

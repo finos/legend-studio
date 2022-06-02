@@ -15,8 +15,8 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../../MetaModelConst';
-import { V1_AssertFail } from './V1_AssertFail';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../../MetaModelConst.js';
+import { V1_AssertFail } from './V1_AssertFail.js';
 
 export class V1_EqualToJsonAssertFail
   extends V1_AssertFail

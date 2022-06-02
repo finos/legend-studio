@@ -28,17 +28,17 @@ import {
   CloudUploadIcon,
   AssistantIcon,
 } from '@finos/legend-art';
-import { LEGEND_STUDIO_TEST_ID } from '../LegendStudioTestID';
-import { ACTIVITY_MODE } from '../../stores/EditorConfig';
+import { LEGEND_STUDIO_TEST_ID } from '../LegendStudioTestID.js';
+import { ACTIVITY_MODE } from '../../stores/EditorConfig.js';
 import {
   generateSetupRoute,
   type EditorPathParams,
   type GroupEditorPathParams,
-} from '../../stores/LegendStudioRouter';
+} from '../../stores/LegendStudioRouter.js';
 import { flowResult } from 'mobx';
-import { useEditorStore } from './EditorStoreProvider';
+import { useEditorStore } from './EditorStoreProvider.js';
 import { useApplicationStore } from '@finos/legend-application';
-import type { LegendStudioConfig } from '../../application/LegendStudioConfig';
+import type { LegendStudioConfig } from '../../application/LegendStudioConfig.js';
 import { WorkspaceType } from '@finos/legend-server-sdlc';
 
 export const StatusBar = observer((props: { actionsDisabled: boolean }) => {

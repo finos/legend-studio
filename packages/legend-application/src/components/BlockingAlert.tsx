@@ -17,7 +17,7 @@
 import { observer } from 'mobx-react-lite';
 import { PanelLoadingIndicator, Dialog } from '@finos/legend-art';
 import { noop } from '@finos/legend-shared';
-import { useApplicationStore } from './ApplicationStoreProvider';
+import { useApplicationStore } from './ApplicationStoreProvider.js';
 
 /**
  * The users of this need to justify their use case because blocking app disrupts the UX flow.

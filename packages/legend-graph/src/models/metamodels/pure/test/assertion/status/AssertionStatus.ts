@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { TestAssertion } from '../TestAssertion';
+import type { TestAssertion } from '../TestAssertion.js';
 
 export abstract class AssertionStatus {
   assertion: TestAssertion;

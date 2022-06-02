@@ -16,7 +16,7 @@
 
 import { useState, useRef } from 'react';
 import type { MenuProps as MuiMenuProps } from '@mui/material';
-import { BaseMenu } from './BaseMenu';
+import { BaseMenu } from './BaseMenu.js';
 
 export const ContextMenu: React.FC<{
   children: React.ReactNode;

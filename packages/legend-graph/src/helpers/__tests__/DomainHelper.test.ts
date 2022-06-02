@@ -16,8 +16,8 @@
 
 import { test, expect } from '@jest/globals';
 import { guaranteeType, unitTest } from '@finos/legend-shared';
-import { Package } from '../../models/metamodels/pure/packageableElements/domain/Package';
-import { getOrCreatePackage } from '../DomainHelper';
+import { Package } from '../../models/metamodels/pure/packageableElements/domain/Package.js';
+import { getOrCreatePackage } from '../DomainHelper.js';
 
 test(unitTest('Get or create package utility properly handle cache'), () => {
   const root = new Package('ROOT');

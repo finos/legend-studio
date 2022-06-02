@@ -17,27 +17,27 @@
 import { useEffect } from 'react';
 import { Redirect, Route, Switch } from 'react-router-dom';
 import { observer } from 'mobx-react-lite';
-import { LEGEND_QUERY_ROUTE_PATTERN } from '../stores/LegendQueryRouter';
-import { QuerySetup } from './QuerySetup';
+import { LEGEND_QUERY_ROUTE_PATTERN } from '../stores/LegendQueryRouter.js';
+import { QuerySetup } from './QuerySetup.js';
 import {
   CreateQueryLoader,
   ExistingQueryLoader,
   ServiceQueryLoader,
-} from './QueryEditor';
+} from './QueryEditor.js';
 import { flowResult } from 'mobx';
 import { PanelLoadingIndicator } from '@finos/legend-art';
 import {
   LegendQueryStoreProvider,
   useLegendQueryStore,
-} from './LegendQueryStoreProvider';
+} from './LegendQueryStoreProvider.js';
 import { DepotServerClientProvider } from '@finos/legend-server-depot';
 import { GraphManagerStateProvider } from '@finos/legend-graph';
 import {
   LegendApplicationComponentFrameworkProvider,
   useApplicationStore,
 } from '@finos/legend-application';
-import type { LegendQueryPluginManager } from '../application/LegendQueryPluginManager';
-import type { LegendQueryConfig } from '../application/LegendQueryConfig';
+import type { LegendQueryPluginManager } from '../application/LegendQueryPluginManager.js';
+import type { LegendQueryConfig } from '../application/LegendQueryConfig.js';
 
 const LegendQueryApplicationInner = observer(() => {
   const queryStore = useLegendQueryStore();

@@ -15,21 +15,21 @@
  */
 
 import { type Hashable, type Writable, hashArray } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
+import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst.js';
 import {
   type PackageableElementVisitor,
   PackageableElement,
-} from '../PackageableElement';
-import type { Property } from './Property';
-import type { AnnotatedElement } from './AnnotatedElement';
-import type { TaggedValue } from './TaggedValue';
-import type { StereotypeReference } from './StereotypeReference';
-import type { DerivedProperty } from './DerivedProperty';
-import type { AbstractProperty } from './AbstractProperty';
+} from '../PackageableElement.js';
+import type { Property } from './Property.js';
+import type { AnnotatedElement } from './AnnotatedElement.js';
+import type { TaggedValue } from './TaggedValue.js';
+import type { StereotypeReference } from './StereotypeReference.js';
+import type { DerivedProperty } from './DerivedProperty.js';
+import type { AbstractProperty } from './AbstractProperty.js';
 import {
   stub_Class,
   stub_Property,
-} from '../../../../../graphManager/action/creation/DomainModelCreatorHelper';
+} from '../../../../../graphManager/action/creation/DomainModelCreatorHelper.js';
 
 /**
  * Assocation needs exactly 2 properties (for 2 classes, not enumeration, not primitive), e.g.

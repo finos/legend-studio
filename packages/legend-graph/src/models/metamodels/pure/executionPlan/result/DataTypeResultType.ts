@@ -14,6 +14,6 @@
  * limitations under the License.
  */
 
-import { ResultType } from './ResultType';
+import { ResultType } from './ResultType.js';
 
 export class DataTypeResultType extends ResultType {}
