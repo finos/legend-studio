@@ -15,7 +15,7 @@
  */
 
 const COMPUTATIONALLY_EXPENSIVE_RULES =
-  require('./computationally-expensive').rules;
+  require('./computationally-expensive.js').rules;
 
 const OFF = 0;
 

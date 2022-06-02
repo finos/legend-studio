@@ -19,6 +19,7 @@ import {
   type ValueSpecification,
   AbstractPropertyExpression,
   PRIMITIVE_TYPE,
+  SUPPORTED_FUNCTIONS,
 } from '@finos/legend-graph';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const.js';
 import { buildPostFilterConditionState } from '../QueryBuilderPostFilterProcessor.js';
