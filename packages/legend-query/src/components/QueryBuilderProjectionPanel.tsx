@@ -568,6 +568,14 @@ export const QueryBuilderProjectionPanel = observer(
           default:
             break;
         }
+        if (
+          queryBuilderState.explorerState.propertySearchPanelState
+            .searchedPropertyName.length >= 3
+        ) {
+          queryBuilderState.explorerState.propertySearchPanelState.setIsSearchPanelOpen(
+            true,
+          );
+        }
       },
       [queryBuilderState, projectionState],
     );

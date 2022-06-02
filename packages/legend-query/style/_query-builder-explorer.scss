@@ -321,6 +321,10 @@
     background: var(--color-dark-blue-shade-100);
   }
 
+  &__node__container--highlight-in-tree {
+    background: var(--color-light-blue-450);
+  }
+
   &__node__label {
     @include ellipsisTextOverflow;
 
