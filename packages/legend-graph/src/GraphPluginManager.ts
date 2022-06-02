@@ -15,9 +15,9 @@
  */
 
 import type { AbstractPluginManager } from '@finos/legend-shared';
-import type { PureGraphPlugin } from './graph/PureGraphPlugin';
-import type { PureGraphManagerPlugin } from './graphManager/PureGraphManagerPlugin';
-import type { PureProtocolProcessorPlugin } from './models/protocols/pure/PureProtocolProcessorPlugin';
+import type { PureGraphPlugin } from './graph/PureGraphPlugin.js';
+import type { PureGraphManagerPlugin } from './graphManager/PureGraphManagerPlugin.js';
+import type { PureProtocolProcessorPlugin } from './models/protocols/pure/PureProtocolProcessorPlugin.js';
 
 export interface GraphPluginManager extends AbstractPluginManager {
   getPureGraphPlugins(): PureGraphPlugin[];

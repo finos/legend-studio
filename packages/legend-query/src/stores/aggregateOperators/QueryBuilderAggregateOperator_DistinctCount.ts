@@ -28,15 +28,15 @@ import {
   Enumeration,
 } from '@finos/legend-graph';
 import { assertTrue, guaranteeType } from '@finos/legend-shared';
-import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const.js';
 import {
   QueryBuilderAggregateColumnState,
   QueryBuilderAggregateOperator,
-} from '../QueryBuilderAggregationState';
+} from '../QueryBuilderAggregationState.js';
 import {
   type QueryBuilderProjectionColumnState,
   QueryBuilderSimpleProjectionColumnState,
-} from '../QueryBuilderProjectionState';
+} from '../QueryBuilderProjectionState.js';
 
 export class QueryBuilderAggregateOperator_DistinctCount extends QueryBuilderAggregateOperator {
   getLabel(projectionColumnState: QueryBuilderProjectionColumnState): string {

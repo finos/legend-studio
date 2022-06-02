@@ -24,7 +24,7 @@ import {
   makeObservable,
   isComputedProp,
 } from 'mobx';
-import { CHANGE_DETECTION_EVENT } from './ChangeDetectionEvent';
+import { CHANGE_DETECTION_EVENT } from './ChangeDetectionEvent.js';
 import {
   type GeneratorFn,
   LogEvent,
@@ -36,8 +36,8 @@ import {
   promisify,
   ActionState,
 } from '@finos/legend-shared';
-import type { EditorStore } from './EditorStore';
-import type { EditorGraphState } from './EditorGraphState';
+import type { EditorStore } from './EditorStore.js';
+import type { EditorGraphState } from './EditorGraphState.js';
 import type { Entity } from '@finos/legend-model-storage';
 import {
   type EntityChangeConflictResolution,

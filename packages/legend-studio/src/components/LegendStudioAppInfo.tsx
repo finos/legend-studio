@@ -31,7 +31,7 @@ import {
   type TreeNodeData,
 } from '@finos/legend-art';
 import { useApplicationStore } from '@finos/legend-application';
-import type { LegendStudioConfig } from '../application/LegendStudioConfig';
+import type { LegendStudioConfig } from '../application/LegendStudioConfig.js';
 import {
   addUniqueEntry,
   isNonNullable,

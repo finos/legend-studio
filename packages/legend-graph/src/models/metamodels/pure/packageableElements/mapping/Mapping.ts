@@ -14,17 +14,17 @@
  * limitations under the License.
  */
 
-import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
+import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst.js';
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import type { EnumerationMapping } from './EnumerationMapping';
-import type { SetImplementation } from './SetImplementation';
-import type { AssociationImplementation } from './AssociationImplementation';
+import type { EnumerationMapping } from './EnumerationMapping.js';
+import type { SetImplementation } from './SetImplementation.js';
+import type { AssociationImplementation } from './AssociationImplementation.js';
 import {
   type PackageableElementVisitor,
   PackageableElement,
-} from '../PackageableElement';
-import type { MappingTest } from './MappingTest';
-import type { MappingInclude } from './MappingInclude';
+} from '../PackageableElement.js';
+import type { MappingTest } from './MappingTest.js';
+import type { MappingInclude } from './MappingInclude.js';
 
 export class Mapping extends PackageableElement implements Hashable {
   includes: MappingInclude[] = [];

@@ -14,17 +14,17 @@
  * limitations under the License.
  */
 
-import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst.js';
 import { hashString } from '@finos/legend-shared';
 import {
   PackageableElementExplicitReference,
   type PackageableElementReference,
   type PackageableElementImplicitReference,
-} from '../../../PackageableElementReference';
-import type { Database } from './Database';
-import type { View } from './View';
-import { NamedRelationalReference } from './TableReference';
-import { SELF_JOIN_SCHEMA_NAME, SELF_JOIN_TABLE_NAME } from './Join';
+} from '../../../PackageableElementReference.js';
+import type { Database } from './Database.js';
+import type { View } from './View.js';
+import { NamedRelationalReference } from './TableReference.js';
+import { SELF_JOIN_SCHEMA_NAME, SELF_JOIN_TABLE_NAME } from './Join.js';
 
 export abstract class ViewReference extends NamedRelationalReference {
   value: View;

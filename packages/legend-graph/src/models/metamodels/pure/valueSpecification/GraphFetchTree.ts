@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-import type { Class } from '../packageableElements/domain/Class';
-import type { PropertyReference } from '../packageableElements/domain/PropertyReference';
+import type { Class } from '../packageableElements/domain/Class.js';
+import type { PropertyReference } from '../packageableElements/domain/PropertyReference.js';
 import {
   OptionalPackageableElementExplicitReference,
   type OptionalPackageableElementReference,
   type PackageableElementReference,
-} from '../packageableElements/PackageableElementReference';
+} from '../packageableElements/PackageableElementReference.js';
 import type {
   ValueSpecification,
   ValueSpecificationVisitor,
-} from './ValueSpecification';
-import { InstanceValue } from './InstanceValue';
+} from './ValueSpecification.js';
+import { InstanceValue } from './InstanceValue.js';
 
 export abstract class GraphFetchTree {
   subTrees: GraphFetchTree[] = [];

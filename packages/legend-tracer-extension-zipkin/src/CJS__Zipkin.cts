@@ -15,19 +15,14 @@
  */
 
 /**
- * Since these modules are in ESM, Jest does not yet play well with them so we can mock them out during
- * testing without much harm.
+ * Previously, these exports rely on ES module interop to expose `default` export
+ * properly. But since we use `ESM` for Typescript resolution now, we lose this
+ * so we have to workaround by importing these and re-export them from CJS
  *
- * See https://github.com/remarkjs/remark/discussions/814
- * See https://github.com/remarkjs/react-markdown/issues/635
+ * TODO: remove these when the package properly work with Typescript's nodenext
+ * module resolution
  *
- * We're waiting for
- * See https://github.com/finos/legend-studio/issues/502
+ * @workaround ESM
+ * See https://github.com/microsoft/TypeScript/issues/49298
  */
-jest.mock('react-markdown', () => (props) => {
-  return <>{props.children}</>;
-});
-
-jest.mock('remark-gfm', () => () => {
-  // do nothing
-});
+export { default as SpanBuilder } from 'zipkin-javascript-opentracing';

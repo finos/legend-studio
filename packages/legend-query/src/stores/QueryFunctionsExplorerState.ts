@@ -28,7 +28,7 @@ import {
   uuid,
 } from '@finos/legend-shared';
 import { action, makeObservable, observable } from 'mobx';
-import type { QueryBuilderState } from './QueryBuilderState';
+import type { QueryBuilderState } from './QueryBuilderState.js';
 import type { TreeNodeData, TreeData } from '@finos/legend-art';
 
 export enum QUERY_BUILDER_FUNCTIONS_EXPLORER_TREE_DND_TYPE {

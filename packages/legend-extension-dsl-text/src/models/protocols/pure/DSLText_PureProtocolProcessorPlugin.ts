@@ -15,7 +15,7 @@
  */
 
 import packageJson from '../../../../package.json';
-import { V1_Text } from './v1/model/packageableElements/text/V1_DSLText_Text';
+import { V1_Text } from './v1/model/packageableElements/text/V1_DSLText_Text.js';
 import {
   type PlainObject,
   guaranteeNonNullable,
@@ -25,9 +25,9 @@ import { deserialize, serialize } from 'serializr';
 import {
   V1_textModelSchema,
   V1_TEXT_ELEMENT_PROTOCOL_TYPE,
-} from './v1/transformation/pureProtocol/V1_DSLText_ProtocolHelper';
-import { getOwnText } from '../../../graphManager/DSLText_GraphManagerHelper';
-import { Text } from '../../metamodels/pure/model/packageableElements/text/DSLText_Text';
+} from './v1/transformation/pureProtocol/V1_DSLText_ProtocolHelper.js';
+import { getOwnText } from '../../../graphManager/DSLText_GraphManagerHelper.js';
+import { Text } from '../../metamodels/pure/model/packageableElements/text/DSLText_Text.js';
 import {
   type PackageableElement,
   type V1_ElementProtocolClassifierPathGetter,

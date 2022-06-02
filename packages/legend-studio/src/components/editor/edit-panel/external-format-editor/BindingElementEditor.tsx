@@ -34,7 +34,7 @@ import {
 import {
   BINDING_TAB_TYPE,
   BindingEditorState,
-} from '../../../../stores/editor-state/element-editor-state/external-format/BindingEditorState';
+} from '../../../../stores/editor-state/element-editor-state/external-format/BindingEditorState.js';
 import {
   PackageableElementExplicitReference,
   SchemaSet,
@@ -43,13 +43,13 @@ import {
 } from '@finos/legend-graph';
 import { useCallback, useRef } from 'react';
 import { useDrop } from 'react-dnd';
-import { useEditorStore } from '../../EditorStoreProvider';
-import { getElementIcon } from '../../../shared/ElementIconUtils';
+import { useEditorStore } from '../../EditorStoreProvider.js';
+import { getElementIcon } from '../../../shared/ElementIconUtils.js';
 import {
   CORE_DND_TYPE,
   type ElementDragSource,
   type UMLEditorElementDropTarget,
-} from '../../../../stores/shared/DnDUtil';
+} from '../../../../stores/shared/DnDUtil.js';
 import {
   externalFormat_Binding_setContentType,
   externalFormat_Binding_setSchemaId,
@@ -58,7 +58,7 @@ import {
   externalFormat_modelUnit_addPackageableElementIncludes,
   externalFormat_modelUnit_deletePackageableElementExcludes,
   externalFormat_modelUnit_deletePackageableElementIncludes,
-} from '../../../../stores/graphModifier/DSLExternalFormat_GraphModifierHelper';
+} from '../../../../stores/graphModifier/DSLExternalFormat_GraphModifierHelper.js';
 
 const BindingScopeEntryEditor = observer(
   (props: {

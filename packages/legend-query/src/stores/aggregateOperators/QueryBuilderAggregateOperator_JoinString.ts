@@ -29,16 +29,16 @@ import {
   GenericType,
   PRIMITIVE_TYPE,
 } from '@finos/legend-graph';
-import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const.js';
 import { assertTrue, guaranteeType } from '@finos/legend-shared';
 import {
   QueryBuilderAggregateColumnState,
   QueryBuilderAggregateOperator,
-} from '../QueryBuilderAggregationState';
+} from '../QueryBuilderAggregationState.js';
 import {
   type QueryBuilderProjectionColumnState,
   QueryBuilderSimpleProjectionColumnState,
-} from '../QueryBuilderProjectionState';
+} from '../QueryBuilderProjectionState.js';
 
 export class QueryBuilderAggregateOperator_JoinString extends QueryBuilderAggregateOperator {
   getLabel(projectionColumnState: QueryBuilderProjectionColumnState): string {

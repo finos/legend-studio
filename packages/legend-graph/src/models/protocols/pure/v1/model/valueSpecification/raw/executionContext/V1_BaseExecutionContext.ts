@@ -14,6 +14,6 @@
  * limitations under the License.
  */
 
-import { V1_ExecutionContext } from './V1_ExecutionContext';
+import { V1_ExecutionContext } from './V1_ExecutionContext.js';
 
 export class V1_BaseExecutionContext extends V1_ExecutionContext {}

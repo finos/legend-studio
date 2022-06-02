@@ -15,8 +15,8 @@
  */
 
 import type { Hashable } from '@finos/legend-shared';
-import type { ServiceStore } from './ESService_ServiceStore';
-import type { ServiceGroup } from './ESService_ServiceGroup';
+import type { ServiceStore } from './ESService_ServiceStore.js';
+import type { ServiceGroup } from './ESService_ServiceGroup.js';
 
 export abstract class ServiceStoreElement implements Hashable {
   owner!: ServiceStore;

@@ -18,7 +18,7 @@ import {
   QueryBuilderFilterOperator,
   type QueryBuilderFilterState,
   type FilterConditionState,
-} from '../QueryBuilderFilterState';
+} from '../QueryBuilderFilterState.js';
 import {
   PRIMITIVE_TYPE,
   type ValueSpecification,
@@ -32,10 +32,10 @@ import { UnsupportedOperationError } from '@finos/legend-shared';
 import {
   buildFilterConditionState,
   buildFilterConditionExpression,
-} from './QueryBuilderFilterOperatorHelper';
-import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
-import { generateDefaultValueForPrimitiveType } from '../QueryBuilderValueSpecificationBuilderHelper';
-import { getNonCollectionValueSpecificationType } from '../QueryBuilderOperatorsHelper';
+} from './QueryBuilderFilterOperatorHelper.js';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const.js';
+import { generateDefaultValueForPrimitiveType } from '../QueryBuilderValueSpecificationBuilderHelper.js';
+import { getNonCollectionValueSpecificationType } from '../QueryBuilderOperatorsHelper.js';
 
 export class QueryBuilderFilterOperator_GreaterThanEqual extends QueryBuilderFilterOperator {
   getLabel(filterConditionState: FilterConditionState): string {

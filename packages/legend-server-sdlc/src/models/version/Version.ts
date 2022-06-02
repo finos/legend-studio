@@ -16,7 +16,7 @@
 
 import { createModelSchema, primitive } from 'serializr';
 import { observable, makeObservable } from 'mobx';
-import { VersionId } from '../version/VersionId';
+import { VersionId } from '../version/VersionId.js';
 import { SerializationFactory, usingModelSchema } from '@finos/legend-shared';
 
 export class Version {

@@ -41,8 +41,8 @@ import { action, flow, flowResult, makeObservable, observable } from 'mobx';
 import {
   DATA_SPACE_ELEMENT_CLASSIFIER_PATH,
   getResolvedDataSpace,
-} from '../../models/protocols/pure/DSLDataSpace_PureProtocolProcessorPlugin';
-import { DataSpaceViewerState } from '../DataSpaceViewerState';
+} from '../../models/protocols/pure/DSLDataSpace_PureProtocolProcessorPlugin.js';
+import { DataSpaceViewerState } from '../DataSpaceViewerState.js';
 
 export type LightDataSpace = Entity & {
   groupId: string;

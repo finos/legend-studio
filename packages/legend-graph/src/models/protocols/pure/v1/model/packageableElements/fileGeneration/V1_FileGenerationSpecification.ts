@@ -15,10 +15,10 @@
  */
 
 import { type Hashable, hashArray } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
-import type { V1_ConfigurationProperty } from './V1_ConfigurationProperty';
-import type { V1_PackageableElementVisitor } from '../V1_PackageableElement';
-import { V1_AbstractGenerationSpecification } from '../generationSpecification/V1_AbstractGenerationSpecification';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst.js';
+import type { V1_ConfigurationProperty } from './V1_ConfigurationProperty.js';
+import type { V1_PackageableElementVisitor } from '../V1_PackageableElement.js';
+import { V1_AbstractGenerationSpecification } from '../generationSpecification/V1_AbstractGenerationSpecification.js';
 
 export class V1_FileGenerationSpecification
   extends V1_AbstractGenerationSpecification

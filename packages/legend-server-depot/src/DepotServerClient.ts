@@ -16,13 +16,13 @@
 
 import type { Entity } from '@finos/legend-model-storage';
 import { type PlainObject, AbstractServerClient } from '@finos/legend-shared';
-import type { DepotScope } from './models/DepotScope';
-import type { ProjectData } from './models/ProjectData';
+import type { DepotScope } from './models/DepotScope.js';
+import type { ProjectData } from './models/ProjectData.js';
 import type {
   ProjectDependencyCoordinates,
   ProjectVersionEntities,
-} from './models/ProjectVersionEntities';
-import type { StoredEntity } from './models/StoredEntity';
+} from './models/ProjectVersionEntities.js';
+import type { StoredEntity } from './models/StoredEntity.js';
 
 export interface DepotServerClientConfig {
   serverUrl: string;

@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-import type { DSL_LegendStudioPlugin_Extension } from './LegendStudioPlugin';
-import type { ConnectionValueState } from './editor-state/element-editor-state/connection/ConnectionEditorState';
-import type { EditorStore } from './EditorStore';
+import type { DSL_LegendStudioPlugin_Extension } from './LegendStudioPlugin.js';
+import type { ConnectionValueState } from './editor-state/element-editor-state/connection/ConnectionEditorState.js';
+import type { EditorStore } from './EditorStore.js';
 import type { Store, Connection, SetImplementation } from '@finos/legend-graph';
-import type { MappingTestState } from './editor-state/element-editor-state/mapping/MappingTestState';
-import type { MappingExecutionState } from './editor-state/element-editor-state/mapping/MappingExecutionState';
-import type { NewConnectionValueDriver } from './NewElementState';
+import type { MappingTestState } from './editor-state/element-editor-state/mapping/MappingTestState.js';
+import type { MappingExecutionState } from './editor-state/element-editor-state/mapping/MappingExecutionState.js';
+import type { NewConnectionValueDriver } from './NewElementState.js';
 import type {
   MappingElement,
   MappingElementSource,
-} from '../stores/editor-state/element-editor-state/mapping/MappingEditorState';
-import type { MappingElementState } from '../stores/editor-state/element-editor-state/mapping/MappingElementState';
+} from '../stores/editor-state/element-editor-state/mapping/MappingEditorState.js';
+import type { MappingElementState } from '../stores/editor-state/element-editor-state/mapping/MappingElementState.js';
 
 export type SetImplementationDecorator = (
   setImplementation: SetImplementation,

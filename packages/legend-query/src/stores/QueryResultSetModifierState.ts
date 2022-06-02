@@ -15,13 +15,13 @@
  */
 
 import { action, makeAutoObservable } from 'mobx';
-import type { QueryBuilderProjectionColumnState } from './QueryBuilderProjectionState';
+import type { QueryBuilderProjectionColumnState } from './QueryBuilderProjectionState.js';
 import {
   addUniqueEntry,
   deleteEntry,
   guaranteeType,
 } from '@finos/legend-shared';
-import type { QueryBuilderState } from './QueryBuilderState';
+import type { QueryBuilderState } from './QueryBuilderState.js';
 import {
   type LambdaFunction,
   type ValueSpecification,
@@ -36,7 +36,7 @@ import {
   SimpleFunctionExpression,
   TYPICAL_MULTIPLICITY_TYPE,
 } from '@finos/legend-graph';
-import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../QueryBuilder_Const';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../QueryBuilder_Const.js';
 
 export enum COLUMN_SORT_TYPE {
   ASC,

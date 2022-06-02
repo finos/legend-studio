@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-import type { RawValueSpecification } from '../../../../../../metamodels/pure/rawValueSpecification/RawValueSpecification';
-import { RawLambda } from '../../../../../../metamodels/pure/rawValueSpecification/RawLambda';
-import { RawVariableExpression } from '../../../../../../metamodels/pure/rawValueSpecification/RawVariableExpression';
-import type { V1_GraphBuilderContext } from '../../../transformation/pureGraph/to/V1_GraphBuilderContext';
-import type { V1_RawValueSpecificationVisitor } from '../../../model/rawValueSpecification/V1_RawValueSpecification';
-import type { V1_RawLambda } from '../../../model/rawValueSpecification/V1_RawLambda';
-import type { V1_RawVariable } from '../../../model/rawValueSpecification/V1_RawVariable';
-import type { V1_RawPrimitiveInstanceValue } from '../../../model/rawValueSpecification/V1_RawPrimitiveInstanceValue';
-import { RawPrimitiveInstanceValue } from '../../../../../../metamodels/pure/rawValueSpecification/RawPrimitiveInstanceValue';
+import type { RawValueSpecification } from '../../../../../../metamodels/pure/rawValueSpecification/RawValueSpecification.js';
+import { RawLambda } from '../../../../../../metamodels/pure/rawValueSpecification/RawLambda.js';
+import { RawVariableExpression } from '../../../../../../metamodels/pure/rawValueSpecification/RawVariableExpression.js';
+import type { V1_GraphBuilderContext } from '../../../transformation/pureGraph/to/V1_GraphBuilderContext.js';
+import type { V1_RawValueSpecificationVisitor } from '../../../model/rawValueSpecification/V1_RawValueSpecification.js';
+import type { V1_RawLambda } from '../../../model/rawValueSpecification/V1_RawLambda.js';
+import type { V1_RawVariable } from '../../../model/rawValueSpecification/V1_RawVariable.js';
+import type { V1_RawPrimitiveInstanceValue } from '../../../model/rawValueSpecification/V1_RawPrimitiveInstanceValue.js';
+import { RawPrimitiveInstanceValue } from '../../../../../../metamodels/pure/rawValueSpecification/RawPrimitiveInstanceValue.js';
 
 export class V1_ProtocolToMetaModelRawValueSpecificationBuilder
   implements V1_RawValueSpecificationVisitor<RawValueSpecification>

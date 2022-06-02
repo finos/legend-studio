@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import type { AssertionStatus } from '../assertion/status/AssertionStatus';
-import type { Testable } from '../Testable';
-import type { AtomicTestId } from './AtomicTestId';
+import type { AssertionStatus } from '../assertion/status/AssertionStatus.js';
+import type { Testable } from '../Testable.js';
+import type { AtomicTestId } from './AtomicTestId.js';
 
 export class TestResult {
   testable!: Testable;

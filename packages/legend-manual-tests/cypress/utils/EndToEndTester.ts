@@ -16,7 +16,7 @@
 
 /// <reference path="../support/index.d.ts" />
 
-import { TEST_ID } from '../../src/const';
+import { TEST_ID } from '../../src/const.js';
 
 const TITLE = {
   REVIEW: 'Review (Ctrl + Shift + M)',

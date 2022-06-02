@@ -18,7 +18,7 @@ import { prettyCONSTName } from '@finos/legend-shared';
 import {
   UMLEditorState,
   UML_EDITOR_TAB,
-} from '../../../../stores/editor-state/element-editor-state/UMLEditorState';
+} from '../../../../stores/editor-state/element-editor-state/UMLEditorState.js';
 import { observer } from 'mobx-react-lite';
 import {
   clsx,
@@ -27,8 +27,8 @@ import {
   TimesIcon,
   LockIcon,
 } from '@finos/legend-art';
-import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID';
-import { useEditorStore } from '../../EditorStoreProvider';
+import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID.js';
+import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
   type Profile,
   type Tag,
@@ -42,7 +42,7 @@ import {
   profile_deleteTag,
   profile_deleteStereotype,
   tagStereotype_setValue,
-} from '../../../../stores/graphModifier/DomainGraphModifierHelper';
+} from '../../../../stores/graphModifier/DomainGraphModifierHelper.js';
 
 const TagBasicEditor = observer(
   (props: { tag: Tag; deleteValue: () => void; isReadOnly: boolean }) => {

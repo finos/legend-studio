@@ -16,8 +16,8 @@
 
 // eslint-disable-next-line no-restricted-imports
 /// <reference path="../../support/index.d.ts" />
-import { ElementEditorTester } from '../../utils/ElementEditorTester';
-import { CoreElementHelper } from '../../utils/ElementHelperExtension';
+import { ElementEditorTester } from '../../utils/ElementEditorTester.js';
+import { CoreElementHelper } from '../../utils/ElementHelperExtension.js';
 
 Cypress.config('defaultCommandTimeout', 30000);
 Cypress.config('pageLoadTimeout', 60000);

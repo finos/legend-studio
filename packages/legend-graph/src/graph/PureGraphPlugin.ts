@@ -15,10 +15,10 @@
  */
 
 import { AbstractPlugin, type Clazz } from '@finos/legend-shared';
-import type { PackageableElement } from '../models/metamodels/pure/packageableElements/PackageableElement';
-import type { PureModel } from './PureModel';
-import type { GraphPluginManager } from '../GraphPluginManager';
-import type { Testable } from '../models/metamodels/pure/test/Testable';
+import type { PackageableElement } from '../models/metamodels/pure/packageableElements/PackageableElement.js';
+import type { PureModel } from './PureModel.js';
+import type { GraphPluginManager } from '../GraphPluginManager.js';
+import type { Testable } from '../models/metamodels/pure/test/Testable.js';
 
 export type DeadReferencesCleaner = (graph: PureModel) => void;
 export type TestablesCollector = (graph: PureModel) => Testable[];

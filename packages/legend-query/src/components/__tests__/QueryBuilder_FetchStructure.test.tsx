@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { test, expect } from '@jest/globals';
 import { fireEvent, getByTitle, getByText, act } from '@testing-library/react';
 import {
   TEST_DATA__simpleProjection,
@@ -25,7 +26,7 @@ import {
   TEST_DATA__complexGraphFetch,
   TEST_DATA__simpleGraphFetch,
   TEST_DATA__simpleProjectionWithSubtype,
-} from '../../stores/__tests__/TEST_DATA__QueryBuilder_Generic';
+} from '../../stores/__tests__/TEST_DATA__QueryBuilder_Generic.js';
 import TEST_DATA__ComplexRelationalModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_ComplexRelational.json';
 import TEST_DATA__ComplexM2MModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_ComplexM2M.json';
 import {
@@ -44,17 +45,17 @@ import {
 import {
   TEST__provideMockedLegendQueryStore,
   TEST__setUpQueryEditor,
-} from '../QueryComponentTestUtils';
-import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_TestID';
+} from '../QueryComponentTestUtils.js';
+import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_TestID.js';
 import {
   QueryBuilderExplorerTreeRootNodeData,
   QueryBuilderExplorerTreeSubTypeNodeData,
-} from '../../stores/QueryBuilderExplorerState';
-import { QueryBuilderSimpleProjectionColumnState } from '../../stores/QueryBuilderProjectionState';
-import { COLUMN_SORT_TYPE } from '../../stores/QueryResultSetModifierState';
-import { LegendQueryPluginManager } from '../../application/LegendQueryPluginManager';
-import { Query_GraphPreset } from '../../models/Query_GraphPreset';
-import { FETCH_STRUCTURE_MODE } from '../../stores/QueryBuilderFetchStructureState';
+} from '../../stores/QueryBuilderExplorerState.js';
+import { QueryBuilderSimpleProjectionColumnState } from '../../stores/QueryBuilderProjectionState.js';
+import { COLUMN_SORT_TYPE } from '../../stores/QueryResultSetModifierState.js';
+import { LegendQueryPluginManager } from '../../application/LegendQueryPluginManager.js';
+import { Query_GraphPreset } from '../../models/Query_GraphPreset.js';
+import { FETCH_STRUCTURE_MODE } from '../../stores/QueryBuilderFetchStructureState.js';
 
 test(
   integrationTest(

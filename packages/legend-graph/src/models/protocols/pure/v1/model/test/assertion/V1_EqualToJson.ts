@@ -15,12 +15,12 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
-import type { V1_ExternalFormatData } from '../../data/V1_EmbeddedData';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst.js';
+import type { V1_ExternalFormatData } from '../../data/V1_EmbeddedData.js';
 import {
   V1_TestAssertion,
   type V1_TestAssertionVisitor,
-} from './V1_TestAssertion';
+} from './V1_TestAssertion.js';
 
 export class V1_EqualToJson extends V1_TestAssertion implements Hashable {
   expected!: V1_ExternalFormatData;

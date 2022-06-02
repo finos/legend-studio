@@ -17,7 +17,7 @@
 import {
   ValueSpecification,
   type ValueSpecificationVisitor,
-} from './ValueSpecification';
+} from './ValueSpecification.js';
 
 /**
  * This value specification maintains a reference to another value specification

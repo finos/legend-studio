@@ -25,7 +25,7 @@ import {
   type LegendApplicationContextualDocumentationEntryConfig,
   collectKeyedDocumnetationEntriesFromConfig,
   collectKeyedContextualDocumentationEntriesFromConfig,
-} from './LegendApplicationDocumentationService';
+} from './LegendApplicationDocumentationService.js';
 
 export interface LegendApplicationVersionData {
   buildTime: string;

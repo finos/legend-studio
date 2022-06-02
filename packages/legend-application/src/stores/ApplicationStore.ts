@@ -26,14 +26,14 @@ import {
   ApplicationError,
 } from '@finos/legend-shared';
 import { makeAutoObservable, action } from 'mobx';
-import { APPLICATION_EVENT } from './ApplicationEvent';
-import type { LegendApplicationConfig } from './LegendApplicationConfig';
-import type { WebApplicationNavigator } from './WebApplicationNavigator';
-import type { LegendApplicationPluginManager } from '../application/LegendApplicationPluginManager';
-import { LegendApplicationDocumentationService } from './LegendApplicationDocumentationService';
-import { LegendApplicationAssistantService } from './LegendApplicationAssistantService';
-import { LegendApplicationEventService } from './LegendApplicationEventService';
-import { LegendApplicationNavigationContextService } from './LegendApplicationNavigationContextService';
+import { APPLICATION_EVENT } from './ApplicationEvent.js';
+import type { LegendApplicationConfig } from './LegendApplicationConfig.js';
+import type { WebApplicationNavigator } from './WebApplicationNavigator.js';
+import type { LegendApplicationPluginManager } from '../application/LegendApplicationPluginManager.js';
+import { LegendApplicationDocumentationService } from './LegendApplicationDocumentationService.js';
+import { LegendApplicationAssistantService } from './LegendApplicationAssistantService.js';
+import { LegendApplicationEventService } from './LegendApplicationEventService.js';
+import { LegendApplicationNavigationContextService } from './LegendApplicationNavigationContextService.js';
 
 export enum ActionAlertType {
   STANDARD = 'STANDARD',

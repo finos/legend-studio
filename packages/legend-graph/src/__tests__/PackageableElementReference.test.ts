@@ -14,17 +14,18 @@
  * limitations under the License.
  */
 
+import { test, expect } from '@jest/globals';
 import { unitTest } from '@finos/legend-shared';
-import { addElementToPackage } from '../helpers/DomainHelper';
-import { Class } from '../models/metamodels/pure/packageableElements/domain/Class';
-import { Package } from '../models/metamodels/pure/packageableElements/domain/Package';
-import { PrimitiveType } from '../models/metamodels/pure/packageableElements/domain/PrimitiveType';
+import { addElementToPackage } from '../helpers/DomainHelper.js';
+import { Class } from '../models/metamodels/pure/packageableElements/domain/Class.js';
+import { Package } from '../models/metamodels/pure/packageableElements/domain/Package.js';
+import { PrimitiveType } from '../models/metamodels/pure/packageableElements/domain/PrimitiveType.js';
 import {
   PackageableElementExplicitReference,
   PackageableElementImplicitReference,
-} from '../models/metamodels/pure/packageableElements/PackageableElementReference';
-import { ImportAwareCodeSection } from '../models/metamodels/pure/packageableElements/section/Section';
-import { SectionIndex } from '../models/metamodels/pure/packageableElements/section/SectionIndex';
+} from '../models/metamodels/pure/packageableElements/PackageableElementReference.js';
+import { ImportAwareCodeSection } from '../models/metamodels/pure/packageableElements/section/Section.js';
+import { SectionIndex } from '../models/metamodels/pure/packageableElements/section/SectionIndex.js';
 
 test(
   unitTest(

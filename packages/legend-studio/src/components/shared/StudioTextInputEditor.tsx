@@ -27,7 +27,7 @@ import {
   useApplicationStore,
 } from '@finos/legend-application';
 import { flowResult } from 'mobx';
-import { useEditorStore } from '../editor/EditorStoreProvider';
+import { useEditorStore } from '../editor/EditorStoreProvider.js';
 
 export const StudioTextInputEditor: React.FC<{
   inputValue: string;

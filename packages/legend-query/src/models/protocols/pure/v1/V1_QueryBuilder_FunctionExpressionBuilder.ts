@@ -25,7 +25,7 @@ import {
 import {
   QUERY_BUILDER_SUPPORTED_FUNCTIONS,
   TDS_ROW,
-} from '../../../../QueryBuilder_Const';
+} from '../../../../QueryBuilder_Const.js';
 import {
   type V1_GraphBuilderContext,
   type V1_ProcessingContext,

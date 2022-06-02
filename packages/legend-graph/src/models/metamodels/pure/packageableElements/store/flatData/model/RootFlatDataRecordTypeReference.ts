@@ -18,10 +18,10 @@ import {
   PackageableElementExplicitReference,
   type PackageableElementReference,
   type PackageableElementImplicitReference,
-} from '../../../PackageableElementReference';
-import { ReferenceWithOwner } from '../../../../Reference';
-import type { RootFlatDataRecordType } from './FlatDataDataType';
-import type { FlatData } from './FlatData';
+} from '../../../PackageableElementReference.js';
+import { ReferenceWithOwner } from '../../../../Reference.js';
+import type { RootFlatDataRecordType } from './FlatDataDataType.js';
+import type { FlatData } from './FlatData.js';
 
 export abstract class RootFlatDataRecordTypeReference extends ReferenceWithOwner {
   override readonly ownerReference: PackageableElementReference<FlatData>;

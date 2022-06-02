@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import type { TestAssertion } from '../TestAssertion';
-import { AssertionStatus } from './AssertionStatus';
+import type { TestAssertion } from '../TestAssertion.js';
+import { AssertionStatus } from './AssertionStatus.js';
 
 export class AssertFail extends AssertionStatus {
   message?: string | undefined;

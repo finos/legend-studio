@@ -1,4 +1,5 @@
 [![FINOS - Incubating](https://cdn.jsdelivr.net/gh/finos/contrib-toolbox@master/images/badge-incubating.svg)](https://finosfoundation.atlassian.net/wiki/display/FINOS/Incubating)
+[![npm](https://img.shields.io/npm/v/@finos/legend-studio-app)](https://www.npmjs.com/package/@finos/legend-studio-app)
 ![build](https://github.com/finos/legend-studio/actions/workflows/check-build.yml/badge.svg)
 [![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=legend-studio&metric=security_rating&token=1649412014267d7d7a6833643cb3133afe0137b0)](https://sonarcloud.io/dashboard?id=legend-studio)
 

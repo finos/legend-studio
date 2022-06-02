@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { test, expect } from '@jest/globals';
 import {
   toSentenceCase,
   prettyCONSTName,
@@ -26,8 +27,8 @@ import {
   toTitleCase,
   TITLE_CASE_EXCEPTION_WORDS,
   isCamelCase,
-} from '../FormatterUtils';
-import { unitTest } from '../../application/TestUtils';
+} from '../FormatterUtils.js';
+import { unitTest } from '../../application/TestUtils.js';
 
 test(unitTest('To sentence case'), () => {
   expect(toSentenceCase('')).toEqual('');

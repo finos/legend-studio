@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import type { PureModel } from '../graph/PureModel';
-import { Class } from '../models/metamodels/pure/packageableElements/domain/Class';
+import type { PureModel } from '../graph/PureModel.js';
+import { Class } from '../models/metamodels/pure/packageableElements/domain/Class.js';
 import {
   CORE_PURE_PATH,
   ELEMENT_PATH_DELIMITER,
@@ -23,9 +23,9 @@ import {
   MILESTONING_STEREOTYPE,
   PRIMITIVE_TYPE,
   MULTIPLICITY_INFINITE,
-} from '../MetaModelConst';
-import { Package } from '../models/metamodels/pure/packageableElements/domain/Package';
-import type { PackageableElement } from '../models/metamodels/pure/packageableElements/PackageableElement';
+} from '../MetaModelConst.js';
+import { Package } from '../models/metamodels/pure/packageableElements/domain/Package.js';
+import type { PackageableElement } from '../models/metamodels/pure/packageableElements/PackageableElement.js';
 import {
   type Clazz,
   AssertionError,
@@ -36,29 +36,29 @@ import {
   uniqBy,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
-import { createPath } from '../MetaModelUtils';
-import type { BasicModel } from '../graph/BasicModel';
-import type { Profile } from '../models/metamodels/pure/packageableElements/domain/Profile';
-import type { Tag } from '../models/metamodels/pure/packageableElements/domain/Tag';
-import type { Stereotype } from '../models/metamodels/pure/packageableElements/domain/Stereotype';
-import type { Type } from '../models/metamodels/pure/packageableElements/domain/Type';
+import { createPath } from '../MetaModelUtils.js';
+import type { BasicModel } from '../graph/BasicModel.js';
+import type { Profile } from '../models/metamodels/pure/packageableElements/domain/Profile.js';
+import type { Tag } from '../models/metamodels/pure/packageableElements/domain/Tag.js';
+import type { Stereotype } from '../models/metamodels/pure/packageableElements/domain/Stereotype.js';
+import type { Type } from '../models/metamodels/pure/packageableElements/domain/Type.js';
 import {
   Measure,
   Unit,
-} from '../models/metamodels/pure/packageableElements/domain/Measure';
-import { Enumeration } from '../models/metamodels/pure/packageableElements/domain/Enumeration';
-import { PrimitiveType } from '../models/metamodels/pure/packageableElements/domain/PrimitiveType';
-import { Property } from '../models/metamodels/pure/packageableElements/domain/Property';
-import type { Association } from '../models/metamodels/pure/packageableElements/domain/Association';
+} from '../models/metamodels/pure/packageableElements/domain/Measure.js';
+import { Enumeration } from '../models/metamodels/pure/packageableElements/domain/Enumeration.js';
+import { PrimitiveType } from '../models/metamodels/pure/packageableElements/domain/PrimitiveType.js';
+import { Property } from '../models/metamodels/pure/packageableElements/domain/Property.js';
+import type { Association } from '../models/metamodels/pure/packageableElements/domain/Association.js';
 import type {
   AbstractProperty,
   PropertyOwner,
-} from '../models/metamodels/pure/packageableElements/domain/AbstractProperty';
-import { DerivedProperty } from '../models/metamodels/pure/packageableElements/domain/DerivedProperty';
-import type { Enum } from '../models/metamodels/pure/packageableElements/domain/Enum';
-import type { Constraint } from '../models/metamodels/pure/packageableElements/domain/Constraint';
-import type { GenericType } from '../models/metamodels/pure/packageableElements/domain/GenericType';
-import type { Multiplicity } from '../models/metamodels/pure/packageableElements/domain/Multiplicity';
+} from '../models/metamodels/pure/packageableElements/domain/AbstractProperty.js';
+import { DerivedProperty } from '../models/metamodels/pure/packageableElements/domain/DerivedProperty.js';
+import type { Enum } from '../models/metamodels/pure/packageableElements/domain/Enum.js';
+import type { Constraint } from '../models/metamodels/pure/packageableElements/domain/Constraint.js';
+import type { GenericType } from '../models/metamodels/pure/packageableElements/domain/GenericType.js';
+import type { Multiplicity } from '../models/metamodels/pure/packageableElements/domain/Multiplicity.js';
 
 export const addElementToPackage = (
   parent: Package,

@@ -18,11 +18,11 @@ import { hashArray, type Hashable } from '@finos/legend-shared';
 import {
   CORE_HASH_STRUCTURE,
   PackageableElementPointerType,
-} from '../../../../../../../MetaModelConst';
-import { InputData } from '../../../mapping/InputData';
-import type { FlatData } from '../model/FlatData';
-import type { PackageableElementReference } from '../../../PackageableElementReference';
-import { hashElementPointer } from '../../../../../../../MetaModelUtils';
+} from '../../../../../../../MetaModelConst.js';
+import { InputData } from '../../../mapping/InputData.js';
+import type { FlatData } from '../model/FlatData.js';
+import type { PackageableElementReference } from '../../../PackageableElementReference.js';
+import { hashElementPointer } from '../../../../../../../MetaModelUtils.js';
 
 export class FlatDataInputData extends InputData implements Hashable {
   sourceFlatData: PackageableElementReference<FlatData>;

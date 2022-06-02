@@ -24,52 +24,52 @@ import {
   Query,
   QueryStereotype,
   QueryTaggedValue,
-} from '../../../../../graphManager/action/query/Query';
-import { type V1_LightQuery, V1_Query } from './query/V1_Query';
-import type { PureModel } from '../../../../../graph/PureModel';
-import { PackageableElementExplicitReference } from '../../../../metamodels/pure/packageableElements/PackageableElementReference';
-import { DEPRECATED__ServiceTestResult } from '../../../../../graphManager/action/service/DEPRECATED__ServiceTestResult';
-import type { V1_DEPRECATED__ServiceTestResult } from './service/V1_DEPRECATED__ServiceTestResult';
-import type { V1_ServiceRegistrationResult } from './service/V1_ServiceRegistrationResult';
-import { ServiceRegistrationResult } from '../../../../../graphManager/action/service/ServiceRegistrationResult';
+} from '../../../../../graphManager/action/query/Query.js';
+import { type V1_LightQuery, V1_Query } from './query/V1_Query.js';
+import type { PureModel } from '../../../../../graph/PureModel.js';
+import { PackageableElementExplicitReference } from '../../../../metamodels/pure/packageableElements/PackageableElementReference.js';
+import { DEPRECATED__ServiceTestResult } from '../../../../../graphManager/action/service/DEPRECATED__ServiceTestResult.js';
+import type { V1_DEPRECATED__ServiceTestResult } from './service/V1_DEPRECATED__ServiceTestResult.js';
+import type { V1_ServiceRegistrationResult } from './service/V1_ServiceRegistrationResult.js';
+import { ServiceRegistrationResult } from '../../../../../graphManager/action/service/ServiceRegistrationResult.js';
 import {
   getImportMode,
   ImportConfigurationDescription,
-} from '../../../../../graphManager/action/generation/ImportConfigurationDescription';
-import type { V1_ImportConfigurationDescription } from './import/V1_ImportConfigurationDescription';
-import { GenerationOutput } from '../../../../../graphManager/action/generation/GenerationOutput';
-import type { V1_GenerationOutput } from './generation/V1_GenerationOutput';
+} from '../../../../../graphManager/action/generation/ImportConfigurationDescription.js';
+import type { V1_ImportConfigurationDescription } from './import/V1_ImportConfigurationDescription.js';
+import { GenerationOutput } from '../../../../../graphManager/action/generation/GenerationOutput.js';
+import type { V1_GenerationOutput } from './generation/V1_GenerationOutput.js';
 import {
   GenerationConfigurationDescription,
   GenerationMode,
   GenerationProperty,
   GenerationPropertyItem,
   getGenerationPropertyItemType,
-} from '../../../../../graphManager/action/generation/GenerationConfigurationDescription';
+} from '../../../../../graphManager/action/generation/GenerationConfigurationDescription.js';
 import type {
   V1_GenerationConfigurationDescription,
   V1_GenerationProperty,
-} from './generation/V1_GenerationConfigurationDescription';
-import type { V1_CompilationError } from './compilation/V1_CompilationError';
-import type { V1_ParserError } from './grammar/V1_ParserError';
+} from './generation/V1_GenerationConfigurationDescription.js';
+import type { V1_CompilationError } from './compilation/V1_CompilationError.js';
+import type { V1_ParserError } from './grammar/V1_ParserError.js';
 import {
   CompilationError,
   ParserError,
-} from '../../../../../graphManager/action/EngineError';
-import type { V1_SourceInformation } from '../model/V1_SourceInformation';
-import { SourceInformation } from '../../../../../graphManager/action/SourceInformation';
-import { ExecutionError } from '../../../../../graphManager/action/ExecutionError';
-import type { V1_ExecutionError } from './execution/V1_ExecutionError';
-import type { QuerySearchSpecification } from '../../../../../graphManager/action/query/QuerySearchSpecification';
+} from '../../../../../graphManager/action/EngineError.js';
+import type { V1_SourceInformation } from '../model/V1_SourceInformation.js';
+import { SourceInformation } from '../../../../../graphManager/action/SourceInformation.js';
+import { ExecutionError } from '../../../../../graphManager/action/ExecutionError.js';
+import type { V1_ExecutionError } from './execution/V1_ExecutionError.js';
+import type { QuerySearchSpecification } from '../../../../../graphManager/action/query/QuerySearchSpecification.js';
 import {
   V1_QueryProjectCoordinates,
   V1_QuerySearchSpecification,
-} from './query/V1_QuerySearchSpecification';
-import { V1_TaggedValue } from '../model/packageableElements/domain/V1_TaggedValue';
-import { V1_TagPtr } from '../model/packageableElements/domain/V1_TagPtr';
-import { V1_StereotypePtr } from '../model/packageableElements/domain/V1_StereotypePtr';
-import type { V1_ExternalFormatDescription } from './externalFormat/V1_ExternalFormatDescription';
-import { ExternalFormatDescription } from '../../../../../graphManager/action/externalFormat/ExternalFormatDescription';
+} from './query/V1_QuerySearchSpecification.js';
+import { V1_TaggedValue } from '../model/packageableElements/domain/V1_TaggedValue.js';
+import { V1_TagPtr } from '../model/packageableElements/domain/V1_TagPtr.js';
+import { V1_StereotypePtr } from '../model/packageableElements/domain/V1_StereotypePtr.js';
+import type { V1_ExternalFormatDescription } from './externalFormat/V1_ExternalFormatDescription.js';
+import { ExternalFormatDescription } from '../../../../../graphManager/action/externalFormat/ExternalFormatDescription.js';
 
 export const V1_buildLightQuery = (
   protocol: V1_LightQuery,

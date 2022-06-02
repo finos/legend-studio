@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-import { CORE_HASH_STRUCTURE } from '../../../../../../../../../MetaModelConst';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../../../MetaModelConst.js';
 import { hashArray } from '@finos/legend-shared';
-import type { V1_RelationalOperationElement } from '../../../../../model/packageableElements/store/relational/model/V1_RelationalOperationElement';
-import type { V1_TablePtr } from '../../../../../model/packageableElements/store/relational/model/V1_TablePtr';
-import type { V1_FilterMapping } from '../../../../../model/packageableElements/store/relational/mapping/V1_FilterMapping';
-import type { V1_ColumnMapping } from '../../../../../model/packageableElements/store/relational/model/V1_ColumnMapping';
+import type { V1_RelationalOperationElement } from '../../../../../model/packageableElements/store/relational/model/V1_RelationalOperationElement.js';
+import type { V1_TablePtr } from '../../../../../model/packageableElements/store/relational/model/V1_TablePtr.js';
+import type { V1_FilterMapping } from '../../../../../model/packageableElements/store/relational/mapping/V1_FilterMapping.js';
+import type { V1_ColumnMapping } from '../../../../../model/packageableElements/store/relational/model/V1_ColumnMapping.js';
 
 export class V1_View {
   name!: string;

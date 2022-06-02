@@ -15,7 +15,7 @@
  */
 
 import { UnsupportedOperationError } from '@finos/legend-shared';
-import type { Database } from '../../../../../../metamodels/pure/packageableElements/store/relational/model/Database';
+import type { Database } from '../../../../../../metamodels/pure/packageableElements/store/relational/model/Database.js';
 import {
   type RelationalDataType,
   Real,
@@ -36,7 +36,7 @@ import {
   SmallInt,
   BigInt,
   SemiStructured,
-} from '../../../../../../metamodels/pure/packageableElements/store/relational/model/RelationalDataType';
+} from '../../../../../../metamodels/pure/packageableElements/store/relational/model/RelationalDataType.js';
 import {
   type TableAlias,
   RelationalOperationElement,
@@ -46,19 +46,19 @@ import {
   LiteralList,
   RelationalOperationElementWithJoin,
   extractLine,
-} from '../../../../../../metamodels/pure/packageableElements/store/relational/model/RelationalOperationElement';
-import type { Table } from '../../../../../../metamodels/pure/packageableElements/store/relational/model/Table';
-import type { Column } from '../../../../../../metamodels/pure/packageableElements/store/relational/model/Column';
-import type { Filter } from '../../../../../../metamodels/pure/packageableElements/store/relational/model/Filter';
-import type { GroupByMapping } from '../../../../../../metamodels/pure/packageableElements/store/relational/mapping/GroupByMapping';
+} from '../../../../../../metamodels/pure/packageableElements/store/relational/model/RelationalOperationElement.js';
+import type { Table } from '../../../../../../metamodels/pure/packageableElements/store/relational/model/Table.js';
+import type { Column } from '../../../../../../metamodels/pure/packageableElements/store/relational/model/Column.js';
+import type { Filter } from '../../../../../../metamodels/pure/packageableElements/store/relational/model/Filter.js';
+import type { GroupByMapping } from '../../../../../../metamodels/pure/packageableElements/store/relational/mapping/GroupByMapping.js';
 import {
   type Join,
   SELF_JOIN_SCHEMA_NAME,
   SELF_JOIN_TABLE_NAME,
-} from '../../../../../../metamodels/pure/packageableElements/store/relational/model/Join';
-import type { ColumnMapping } from '../../../../../../metamodels/pure/packageableElements/store/relational/model/ColumnMapping';
-import type { View } from '../../../../../../metamodels/pure/packageableElements/store/relational/model/View';
-import type { Schema } from '../../../../../../metamodels/pure/packageableElements/store/relational/model/Schema';
+} from '../../../../../../metamodels/pure/packageableElements/store/relational/model/Join.js';
+import type { ColumnMapping } from '../../../../../../metamodels/pure/packageableElements/store/relational/model/ColumnMapping.js';
+import type { View } from '../../../../../../metamodels/pure/packageableElements/store/relational/model/View.js';
+import type { Schema } from '../../../../../../metamodels/pure/packageableElements/store/relational/model/Schema.js';
 import {
   type V1_RelationalDataType,
   V1_VarChar,
@@ -79,12 +79,12 @@ import {
   V1_Binary,
   V1_Other,
   V1_SemiStructured,
-} from '../../../model/packageableElements/store/relational/model/V1_RelationalDataType';
-import { V1_Database } from '../../../model/packageableElements/store/relational/model/V1_Database';
+} from '../../../model/packageableElements/store/relational/model/V1_RelationalDataType.js';
+import { V1_Database } from '../../../model/packageableElements/store/relational/model/V1_Database.js';
 import {
   V1_initPackageableElement,
   V1_transformElementReference,
-} from './V1_CoreTransformerHelper';
+} from './V1_CoreTransformerHelper.js';
 import {
   type V1_RelationalOperationElement,
   V1_ElementWithJoins,
@@ -92,20 +92,20 @@ import {
   V1_Literal,
   V1_TableAliasColumn,
   V1_DynaFunc,
-} from '../../../model/packageableElements/store/relational/model/V1_RelationalOperationElement';
-import { V1_TablePtr } from '../../../model/packageableElements/store/relational/model/V1_TablePtr';
-import { V1_JoinPointer } from '../../../model/packageableElements/store/relational/model/V1_JoinPointer';
-import { V1_ColumnMapping } from '../../../model/packageableElements/store/relational/model/V1_ColumnMapping';
-import { V1_Column } from '../../../model/packageableElements/store/relational/model/V1_Column';
-import { V1_Filter } from '../../../model/packageableElements/store/relational/model/V1_Filter';
-import { V1_Join } from '../../../model/packageableElements/store/relational/model/V1_Join';
-import { V1_View } from '../../../model/packageableElements/store/relational/model/V1_View';
-import { V1_Schema } from '../../../model/packageableElements/store/relational/model/V1_Schema';
-import { V1_Table } from '../../../model/packageableElements/store/relational/model/V1_Table';
-import { V1_transformMilestoning } from './V1_MilestoningTransformer';
-import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext';
-import { V1_FilterMapping } from '../../../model/packageableElements/store/relational/mapping/V1_FilterMapping';
-import { V1_FilterPointer } from '../../../model/packageableElements/store/relational/mapping/V1_FilterPointer';
+} from '../../../model/packageableElements/store/relational/model/V1_RelationalOperationElement.js';
+import { V1_TablePtr } from '../../../model/packageableElements/store/relational/model/V1_TablePtr.js';
+import { V1_JoinPointer } from '../../../model/packageableElements/store/relational/model/V1_JoinPointer.js';
+import { V1_ColumnMapping } from '../../../model/packageableElements/store/relational/model/V1_ColumnMapping.js';
+import { V1_Column } from '../../../model/packageableElements/store/relational/model/V1_Column.js';
+import { V1_Filter } from '../../../model/packageableElements/store/relational/model/V1_Filter.js';
+import { V1_Join } from '../../../model/packageableElements/store/relational/model/V1_Join.js';
+import { V1_View } from '../../../model/packageableElements/store/relational/model/V1_View.js';
+import { V1_Schema } from '../../../model/packageableElements/store/relational/model/V1_Schema.js';
+import { V1_Table } from '../../../model/packageableElements/store/relational/model/V1_Table.js';
+import { V1_transformMilestoning } from './V1_MilestoningTransformer.js';
+import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext.js';
+import { V1_FilterMapping } from '../../../model/packageableElements/store/relational/mapping/V1_FilterMapping.js';
+import { V1_FilterPointer } from '../../../model/packageableElements/store/relational/mapping/V1_FilterPointer.js';
 
 const transformRelationalDataType = (
   type: RelationalDataType,

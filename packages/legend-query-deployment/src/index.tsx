@@ -15,7 +15,7 @@
  */
 
 import { LegendQueryWebApplication } from '@finos/legend-query-app';
-import config from '../query.config';
+import config from '../query.config.js';
 import './index.scss';
 
 LegendQueryWebApplication.run(config.baseUrl);

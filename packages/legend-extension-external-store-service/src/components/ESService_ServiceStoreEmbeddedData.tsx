@@ -48,14 +48,14 @@ import {
   StudioTextInputEditor,
 } from '@finos/legend-studio';
 import { observer } from 'mobx-react-lite';
-import { EqualToJsonPattern } from '../models/metamodels/pure/model/data/contentPattern/ESService_EqualToJsonPattern';
-import { EqualToPattern } from '../models/metamodels/pure/model/data/contentPattern/ESService_EqualToPattern';
-import type { StringValuePattern } from '../models/metamodels/pure/model/data/contentPattern/ESService_StringValuePattern';
-import { ServiceRequestPattern } from '../models/metamodels/pure/model/data/ESService_ServiceRequestPattern';
-import { ServiceResponseDefinition } from '../models/metamodels/pure/model/data/ESService_ServiceResponseDefinition';
-import { ServiceStubMapping } from '../models/metamodels/pure/model/data/ESService_ServiceStubMapping';
-import { HTTP_METHOD } from '../models/metamodels/pure/model/packageableElements/store/serviceStore/model/ESService_ServiceStoreService';
-import { V1_StringValuePatternType } from '../models/protocols/pure/v1/transformation/pureProtocol/V1_ESService_ProtocolHelper';
+import { EqualToJsonPattern } from '../models/metamodels/pure/model/data/contentPattern/ESService_EqualToJsonPattern.js';
+import { EqualToPattern } from '../models/metamodels/pure/model/data/contentPattern/ESService_EqualToPattern.js';
+import type { StringValuePattern } from '../models/metamodels/pure/model/data/contentPattern/ESService_StringValuePattern.js';
+import { ServiceRequestPattern } from '../models/metamodels/pure/model/data/ESService_ServiceRequestPattern.js';
+import { ServiceResponseDefinition } from '../models/metamodels/pure/model/data/ESService_ServiceResponseDefinition.js';
+import { ServiceStubMapping } from '../models/metamodels/pure/model/data/ESService_ServiceStubMapping.js';
+import { HTTP_METHOD } from '../models/metamodels/pure/model/packageableElements/store/serviceStore/model/ESService_ServiceStoreService.js';
+import { V1_StringValuePatternType } from '../models/protocols/pure/v1/transformation/pureProtocol/V1_ESService_ProtocolHelper.js';
 import {
   serviceStore_embeddedData_addServiceStubMapping,
   serviceStore_embeddedData_deleteServiceStubMapping,
@@ -77,13 +77,13 @@ import {
   serviceStore_serviceStubMapping_setServiceRequestPattern,
   serviceStore_serviceStubMapping_setServiceResponseDefinition,
   serviceStore_stringValuePattern_setExpectedValue,
-} from '../stores/studio/ESService_GraphModifierHelper';
+} from '../stores/studio/ESService_GraphModifierHelper.js';
 import {
   type ServiceStoreEmbeddedDataState,
   ServiceStubMappingState,
   SERVICE_REQUEST_PATTERN_TAB_TYPE,
   SERVICE_STUB_MAPPING_TAB_TYPE,
-} from '../stores/studio/ESService_ServiceStoreEmbeddedDataEditorState';
+} from '../stores/studio/ESService_ServiceStoreEmbeddedDataEditorState.js';
 
 export type StringValuePatternOption = {
   value: string;

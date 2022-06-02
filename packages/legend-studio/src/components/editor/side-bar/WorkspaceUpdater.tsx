@@ -16,8 +16,8 @@
 
 import { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
-import { EntityDiffViewState } from '../../../stores/editor-state/entity-diff-editor-state/EntityDiffViewState';
-import { EntityDiffSideBarItem } from '../../editor/edit-panel/diff-editor/EntityDiffView';
+import { EntityDiffViewState } from '../../../stores/editor-state/entity-diff-editor-state/EntityDiffViewState.js';
+import { EntityDiffSideBarItem } from '../../editor/edit-panel/diff-editor/EntityDiffView.js';
 import {
   clsx,
   PanelLoadingIndicator,
@@ -30,23 +30,23 @@ import {
   InfoCircleIcon,
 } from '@finos/legend-art';
 import { Link } from 'react-router-dom';
-import { EntityChangeConflictSideBarItem } from '../../editor/edit-panel/diff-editor/EntityChangeConflictEditor';
-import { EntityChangeConflictEditorState } from '../../../stores/editor-state/entity-diff-editor-state/EntityChangeConflictEditorState';
-import { generateReviewRoute } from '../../../stores/LegendStudioRouter';
-import { LEGEND_STUDIO_TEST_ID } from '../../LegendStudioTestID';
+import { EntityChangeConflictSideBarItem } from '../../editor/edit-panel/diff-editor/EntityChangeConflictEditor.js';
+import { EntityChangeConflictEditorState } from '../../../stores/editor-state/entity-diff-editor-state/EntityChangeConflictEditorState.js';
+import { generateReviewRoute } from '../../../stores/LegendStudioRouter.js';
+import { LEGEND_STUDIO_TEST_ID } from '../../LegendStudioTestID.js';
 import { flowResult } from 'mobx';
 import type {
   EntityChangeConflict,
   EntityDiff,
 } from '@finos/legend-server-sdlc';
-import { entityDiffSorter } from '../../../stores/EditorSDLCState';
-import { useEditorStore } from '../EditorStoreProvider';
+import { entityDiffSorter } from '../../../stores/EditorSDLCState.js';
+import { useEditorStore } from '../EditorStoreProvider.js';
 import {
   ActionAlertType,
   ActionAlertActionType,
   useApplicationStore,
 } from '@finos/legend-application';
-import type { LegendStudioConfig } from '../../../application/LegendStudioConfig';
+import type { LegendStudioConfig } from '../../../application/LegendStudioConfig.js';
 
 export const WorkspaceUpdater = observer(() => {
   const editorStore = useEditorStore();

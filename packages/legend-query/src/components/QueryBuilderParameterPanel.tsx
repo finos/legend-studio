@@ -15,7 +15,7 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import type { QueryBuilderState } from '../stores/QueryBuilderState';
+import type { QueryBuilderState } from '../stores/QueryBuilderState.js';
 import {
   Dialog,
   BlankPanelContent,
@@ -29,7 +29,7 @@ import {
   type QueryBuilderParameterDragSource,
   QUERY_BUILDER_PARAMETER_TREE_DND_TYPE,
   QueryParameterState,
-} from '../stores/QueryParametersState';
+} from '../stores/QueryParametersState.js';
 import { useEffect, useState } from 'react';
 import {
   type Type,

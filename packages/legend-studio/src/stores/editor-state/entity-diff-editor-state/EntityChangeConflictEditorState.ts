@@ -22,11 +22,11 @@ import {
   makeObservable,
   flowResult,
 } from 'mobx';
-import type { EditorStore } from '../../EditorStore';
+import type { EditorStore } from '../../EditorStore.js';
 import {
   type SPECIAL_REVISION_ALIAS,
   EntityDiffEditorState,
-} from './EntityDiffEditorState';
+} from './EntityDiffEditorState.js';
 import {
   type GeneratorFn,
   assertErrorThrown,
@@ -39,7 +39,7 @@ import {
 } from '@finos/legend-model-storage';
 import { EntityChangeConflictResolution } from '@finos/legend-server-sdlc';
 import { ParserError } from '@finos/legend-graph';
-import type { AbstractConflictResolutionState } from '../../AbstractConflictResolutionState';
+import type { AbstractConflictResolutionState } from '../../AbstractConflictResolutionState.js';
 
 const START_HEADER_MARKER = '<<<<<<<';
 const COMMON_BASE_MARKER = '|||||||';

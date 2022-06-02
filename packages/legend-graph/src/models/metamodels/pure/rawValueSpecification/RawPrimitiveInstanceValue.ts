@@ -15,14 +15,14 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import type { Multiplicity } from '../packageableElements/domain/Multiplicity';
-import type { PackageableElementReference } from '../packageableElements/PackageableElementReference';
-import type { Type } from '../packageableElements/domain/Type';
+import type { Multiplicity } from '../packageableElements/domain/Multiplicity.js';
+import type { PackageableElementReference } from '../packageableElements/PackageableElementReference.js';
+import type { Type } from '../packageableElements/domain/Type.js';
 import {
   type RawValueSpecificationVisitor,
   RawValueSpecification,
-} from './RawValueSpecification';
-import { CORE_HASH_STRUCTURE } from '../../../../MetaModelConst';
+} from './RawValueSpecification.js';
+import { CORE_HASH_STRUCTURE } from '../../../../MetaModelConst.js';
 
 export class RawPrimitiveInstanceValue
   extends RawValueSpecification

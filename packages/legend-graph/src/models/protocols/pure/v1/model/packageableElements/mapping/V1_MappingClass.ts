@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import type { V1_ClassMapping } from './V1_ClassMapping';
-import type { V1_Property } from '../../../model/packageableElements/domain/V1_Property';
-import { V1_Class } from '../../../model/packageableElements/domain/V1_Class';
+import type { V1_ClassMapping } from './V1_ClassMapping.js';
+import type { V1_Property } from '../../../model/packageableElements/domain/V1_Property.js';
+import { V1_Class } from '../../../model/packageableElements/domain/V1_Class.js';
 
 export class V1_MappingClass extends V1_Class {
   setImplementation?: V1_ClassMapping | undefined;

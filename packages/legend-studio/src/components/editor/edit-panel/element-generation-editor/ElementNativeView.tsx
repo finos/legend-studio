@@ -16,14 +16,14 @@
 
 import { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
-import type { ElementEditorState } from '../../../../stores/editor-state/element-editor-state/ElementEditorState';
-import { ELEMENT_NATIVE_VIEW_MODE } from '../../../../stores/EditorConfig';
+import type { ElementEditorState } from '../../../../stores/editor-state/element-editor-state/ElementEditorState.js';
+import { ELEMENT_NATIVE_VIEW_MODE } from '../../../../stores/EditorConfig.js';
 import { flowResult } from 'mobx';
 import {
   useApplicationStore,
   EDITOR_LANGUAGE,
 } from '@finos/legend-application';
-import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor';
+import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor.js';
 
 export const ElementNativeView = observer(
   (props: { currentElementState: ElementEditorState }) => {

@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-import { CORE_HASH_STRUCTURE } from '../../../../../../../../../MetaModelConst';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../../../MetaModelConst.js';
 import { type Hashable, hashArray } from '@finos/legend-shared';
-import type { V1_FlatDataSection } from './V1_FlatDataSection';
-import { V1_Store } from '../../../../../model/packageableElements/store/V1_Store';
-import type { V1_PackageableElementVisitor } from '../../../../../model/packageableElements/V1_PackageableElement';
+import type { V1_FlatDataSection } from './V1_FlatDataSection.js';
+import { V1_Store } from '../../../../../model/packageableElements/store/V1_Store.js';
+import type { V1_PackageableElementVisitor } from '../../../../../model/packageableElements/V1_PackageableElement.js';
 
 export class V1_FlatData extends V1_Store implements Hashable {
   sections: V1_FlatDataSection[] = [];

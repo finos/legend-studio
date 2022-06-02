@@ -15,7 +15,7 @@
  */
 
 import { type Hashable, hashArray } from '@finos/legend-shared';
-import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../ESService_ModelUtils';
+import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../ESService_ModelUtils.js';
 import type {
   Binding,
   Class,

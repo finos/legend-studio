@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import type { Store } from '../store/Store';
-import type { PackageableElementReference } from '../PackageableElementReference';
-import type { MappingInclude } from './MappingInclude';
+import type { Store } from '../store/Store.js';
+import type { PackageableElementReference } from '../PackageableElementReference.js';
+import type { MappingInclude } from './MappingInclude.js';
 
 export class SubstituteStore {
   readonly _OWNER: MappingInclude;

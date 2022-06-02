@@ -16,11 +16,11 @@
 
 import { createContext, useContext } from 'react';
 import { useLocalObservable } from 'mobx-react-lite';
-import { ApplicationStore } from '../stores/ApplicationStore';
-import type { LegendApplicationConfig } from '../stores/LegendApplicationConfig';
+import { ApplicationStore } from '../stores/ApplicationStore.js';
+import type { LegendApplicationConfig } from '../stores/LegendApplicationConfig.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
-import { useWebApplicationNavigator } from './WebApplicationNavigatorProvider';
-import type { LegendApplicationPluginManager } from '../application/LegendApplicationPluginManager';
+import { useWebApplicationNavigator } from './WebApplicationNavigatorProvider.js';
+import type { LegendApplicationPluginManager } from '../application/LegendApplicationPluginManager.js';
 
 const ApplicationStoreContext = createContext<
   ApplicationStore<LegendApplicationConfig> | undefined

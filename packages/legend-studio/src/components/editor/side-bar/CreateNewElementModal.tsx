@@ -15,7 +15,7 @@
  */
 
 import { useRef } from 'react';
-import { LEGEND_STUDIO_TEST_ID } from '../../LegendStudioTestID';
+import { LEGEND_STUDIO_TEST_ID } from '../../LegendStudioTestID.js';
 import { observer } from 'mobx-react-lite';
 import {
   NewPackageableRuntimeDriver,
@@ -26,25 +26,25 @@ import {
   CONNECTION_TYPE,
   NewDataElementDriver,
   EmbeddedDataTypeOptions,
-} from '../../../stores/NewElementState';
+} from '../../../stores/NewElementState.js';
 import { Dialog, compareLabelFn, CustomSelectorInput } from '@finos/legend-art';
-import type { EditorStore } from '../../../stores/EditorStore';
+import type { EditorStore } from '../../../stores/EditorStore.js';
 import { prettyCONSTName } from '@finos/legend-shared';
-import type { PackageableElementOption } from '../../../stores/shared/PackageableElementOptionUtil';
-import type { DSL_LegendStudioPlugin_Extension } from '../../../stores/LegendStudioPlugin';
-import { useEditorStore } from '../EditorStoreProvider';
+import type { PackageableElementOption } from '../../../stores/shared/PackageableElementOptionUtil.js';
+import type { DSL_LegendStudioPlugin_Extension } from '../../../stores/LegendStudioPlugin.js';
+import { useEditorStore } from '../EditorStoreProvider.js';
 import {
   type Mapping,
   type Store,
   type Class,
   ELEMENT_PATH_DELIMITER,
 } from '@finos/legend-graph';
-import type { FileGenerationTypeOption } from '../../../stores/editor-state/GraphGenerationState';
+import type { FileGenerationTypeOption } from '../../../stores/editor-state/GraphGenerationState.js';
 import { flowResult } from 'mobx';
 import { useApplicationStore } from '@finos/legend-application';
-import type { EmbeddedDataTypeOption } from '../../../stores/editor-state/element-editor-state/data/DataEditorState';
-import type { DSLData_LegendStudioPlugin_Extension } from '../../../stores/DSLData_LegendStudioPlugin_Extension';
-import { PACKAGEABLE_ELEMENT_TYPE } from '../../../stores/shared/ModelUtil';
+import type { EmbeddedDataTypeOption } from '../../../stores/editor-state/element-editor-state/data/DataEditorState.js';
+import type { DSLData_LegendStudioPlugin_Extension } from '../../../stores/DSLData_LegendStudioPlugin_Extension.js';
+import { PACKAGEABLE_ELEMENT_TYPE } from '../../../stores/shared/ModelUtil.js';
 
 export const getElementTypeLabel = (
   editorStore: EditorStore,

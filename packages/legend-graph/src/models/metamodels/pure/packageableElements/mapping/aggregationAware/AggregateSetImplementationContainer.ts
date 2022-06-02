@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import type { InstanceSetImplementation } from '../InstanceSetImplementation';
-import type { AggregateSpecification } from './AggregateSpecification';
+import type { InstanceSetImplementation } from '../InstanceSetImplementation.js';
+import type { AggregateSpecification } from './AggregateSpecification.js';
 import { type Hashable, hashArray } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../MetaModelConst';
+import { CORE_HASH_STRUCTURE } from '../../../../../../MetaModelConst.js';
 
 export class AggregateSetImplementationContainer implements Hashable {
   index: number;

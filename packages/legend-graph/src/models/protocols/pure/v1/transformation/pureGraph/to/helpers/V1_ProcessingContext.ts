@@ -15,7 +15,7 @@
  */
 
 import { Stack } from '@finos/legend-shared';
-import type { ValueSpecification } from '../../../../../../../metamodels/pure/valueSpecification/ValueSpecification';
+import type { ValueSpecification } from '../../../../../../../metamodels/pure/valueSpecification/ValueSpecification.js';
 
 export class V1_ProcessingContext {
   inferredVariableList: Map<string, ValueSpecification>[] = [];

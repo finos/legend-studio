@@ -25,14 +25,14 @@ import {
 } from '@finos/legend-application';
 import { configure as configureReactHotkeys } from 'react-hotkeys';
 import { BrowserRouter } from 'react-router-dom';
-import { LegendTaxonomyApplication } from '../components/LegendTaxonomyApplication';
-import { LegendTaxonomyPluginManager } from './LegendTaxonomyPluginManager';
+import { LegendTaxonomyApplication } from '../components/LegendTaxonomyApplication.js';
+import { LegendTaxonomyPluginManager } from './LegendTaxonomyPluginManager.js';
 import { getRootElement } from '@finos/legend-art';
 import { CorePureGraphManagerPlugin } from '@finos/legend-graph';
 import {
   type LegendTaxonomyConfigurationData,
   LegendTaxonomyConfig,
-} from './LegendTaxonomyConfig';
+} from './LegendTaxonomyConfig.js';
 
 export const setupLegendQueryUILibrary = async (): Promise<void> => {
   configureReactHotkeys({

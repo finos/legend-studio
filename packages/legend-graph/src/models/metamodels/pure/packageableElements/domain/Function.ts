@@ -18,7 +18,7 @@ import { UnsupportedOperationError } from '@finos/legend-shared';
 import {
   type PackageableElementVisitor,
   PackageableElement,
-} from '../PackageableElement';
+} from '../PackageableElement.js';
 
 export abstract class Function extends PackageableElement {
   functionName: string;

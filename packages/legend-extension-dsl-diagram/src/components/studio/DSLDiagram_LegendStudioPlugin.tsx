@@ -38,10 +38,10 @@ import {
 } from '@finos/legend-studio';
 import { ShapesIcon } from '@finos/legend-art';
 import type { Class, PackageableElement } from '@finos/legend-graph';
-import { Diagram } from '../../models/metamodels/pure/packageableElements/diagram/DSLDiagram_Diagram';
-import { DiagramEditorState } from '../../stores/studio/DiagramEditorState';
-import { DiagramEditor } from './DiagramEditor';
-import { ClassDiagramPreview } from './ClassDiagramPreview';
+import { Diagram } from '../../models/metamodels/pure/packageableElements/diagram/DSLDiagram_Diagram.js';
+import { DiagramEditorState } from '../../stores/studio/DiagramEditorState.js';
+import { DiagramEditor } from './DiagramEditor.js';
+import { ClassDiagramPreview } from './ClassDiagramPreview.js';
 import {
   type LegendApplicationDocumentationEntry,
   type LegendApplicationKeyedDocumentationEntry,
@@ -50,17 +50,17 @@ import {
 import {
   PURE_GRAMMAR_DIAGRAM_ELEMENT_TYPE_LABEL,
   PURE_GRAMMAR_DIAGRAM_PARSER_NAME,
-} from '../../graphManager/DSLDiagram_PureGraphManagerPlugin';
+} from '../../graphManager/DSLDiagram_PureGraphManagerPlugin.js';
 import {
   DSL_DIAGRAM_DOCUMENTATION_ENTRIES,
   DSL_DIAGRAM_LEGEND_STUDIO_DOCUMENTATION_KEY,
-} from './DSLDiagram_LegendStudioDocumentation';
+} from './DSLDiagram_LegendStudioDocumentation.js';
 import {
   EMPTY_DIAGRAM_SNIPPET,
   getDiagramSnippetWithGeneralizationView,
   getDiagramSnippetWithOneClassView,
   getDiagramSnippetWithPropertyView,
-} from './DSLDiagram_CodeSnippets';
+} from './DSLDiagram_CodeSnippets.js';
 
 const DIAGRAM_ELEMENT_TYPE = 'DIAGRAM';
 const DIAGRAM_ELEMENT_PROJECT_EXPLORER_DND_TYPE = 'PROJECT_EXPLORER_DIAGRAM';

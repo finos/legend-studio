@@ -20,7 +20,7 @@ import {
   MINIMUM_SERVICE_OWNERS,
   ServiceEditorState,
   SERVICE_TAB,
-} from '../../../../stores/editor-state/element-editor-state/service/ServiceEditorState';
+} from '../../../../stores/editor-state/element-editor-state/service/ServiceEditorState.js';
 import {
   clsx,
   PencilIcon,
@@ -33,10 +33,10 @@ import {
   ErrorIcon,
 } from '@finos/legend-art';
 import { prettyCONSTName } from '@finos/legend-shared';
-import { ServiceExecutionEditor } from './ServiceExecutionEditor';
-import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID';
-import { ServiceRegistrationEditor } from './ServiceRegistrationEditor';
-import { useEditorStore } from '../../EditorStoreProvider';
+import { ServiceExecutionEditor } from './ServiceExecutionEditor.js';
+import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID.js';
+import { ServiceRegistrationEditor } from './ServiceRegistrationEditor.js';
+import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
   service_addOwner,
   service_deleteOwner,
@@ -45,7 +45,7 @@ import {
   service_setDocumentation,
   service_setPattern,
   service_updateOwner,
-} from '../../../../stores/graphModifier/DSLService_GraphModifierHelper';
+} from '../../../../stores/graphModifier/DSLService_GraphModifierHelper.js';
 import { validate_ServicePattern } from '@finos/legend-graph';
 
 const ServiceGeneralEditor = observer(() => {

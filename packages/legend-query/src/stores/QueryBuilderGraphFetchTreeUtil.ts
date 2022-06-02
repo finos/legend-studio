@@ -30,8 +30,8 @@ import {
   type QueryBuilderExplorerTreeNodeData,
   QueryBuilderExplorerTreePropertyNodeData,
   QueryBuilderExplorerTreeSubTypeNodeData,
-} from './QueryBuilderExplorerState';
-import type { QueryBuilderState } from './QueryBuilderState';
+} from './QueryBuilderExplorerState.js';
+import type { QueryBuilderState } from './QueryBuilderState.js';
 import {
   graphFetchTree_addSubTree,
   graphFetchTree_removeSubTree,

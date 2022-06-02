@@ -16,8 +16,8 @@
 
 import packageJson from '../package.json';
 import { AbstractPreset } from '@finos/legend-shared';
-import { EFJSONSchema_PureGraphManagerPlugin } from './graphManager/EFJSONSchema_PureGraphManagerPlugin';
-import { EFJSONSchema_PureProtocolProcessorPlugin } from './models/protocols/pure/EFJSONSchema_PureProtocolProcessorPlugin';
+import { EFJSONSchema_PureGraphManagerPlugin } from './graphManager/EFJSONSchema_PureGraphManagerPlugin.js';
+import { EFJSONSchema_PureProtocolProcessorPlugin } from './models/protocols/pure/EFJSONSchema_PureProtocolProcessorPlugin.js';
 
 export class EFJSONSchema_GraphPreset extends AbstractPreset {
   constructor() {

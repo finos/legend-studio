@@ -15,7 +15,7 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { TEXT_HASH_STRUCTURE } from '../../../../../DSLText_ModelUtils';
+import { TEXT_HASH_STRUCTURE } from '../../../../../DSLText_ModelUtils.js';
 import {
   type PackageableElementVisitor,
   PackageableElement,

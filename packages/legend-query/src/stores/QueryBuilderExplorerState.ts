@@ -60,13 +60,13 @@ import {
   getAllOwnClassProperties,
   getAllClassDerivedProperties,
 } from '@finos/legend-graph';
-import type { QueryBuilderState } from './QueryBuilderState';
+import type { QueryBuilderState } from './QueryBuilderState.js';
 import { action, makeAutoObservable, observable } from 'mobx';
 import {
   DEFAULT_LAMBDA_VARIABLE_NAME,
   QUERY_BUILDER_SUPPORTED_FUNCTIONS,
-} from '../QueryBuilder_Const';
-import type { QueryBuilderPreviewData } from './QueryBuilderPreviewDataHelper';
+} from '../QueryBuilder_Const.js';
+import type { QueryBuilderPreviewData } from './QueryBuilderPreviewDataHelper.js';
 
 export enum QUERY_BUILDER_EXPLORER_TREE_DND_TYPE {
   ROOT = 'ROOT',

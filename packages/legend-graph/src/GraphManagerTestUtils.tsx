@@ -14,22 +14,23 @@
  * limitations under the License.
  */
 
-/// <reference types="jest-extended" />
+import { jest, expect } from '@jest/globals';
 import {
   type LoggerPlugin,
+  type TEMPORARRY__JestMatcher,
   Log,
   AbstractPluginManager,
   promisify,
 } from '@finos/legend-shared';
-import type { PureGraphManagerPlugin } from './graphManager/PureGraphManagerPlugin';
-import { GraphManagerState } from './GraphManagerState';
-import { GraphManagerStateProvider } from './GraphManagerStateProvider';
-import type { GraphPluginManager } from './GraphPluginManager';
-import type { PureProtocolProcessorPlugin } from './models/protocols/pure/PureProtocolProcessorPlugin';
+import type { PureGraphManagerPlugin } from './graphManager/PureGraphManagerPlugin.js';
+import { GraphManagerState } from './GraphManagerState.js';
+import { GraphManagerStateProvider } from './GraphManagerStateProvider.js';
+import type { GraphPluginManager } from './GraphPluginManager.js';
+import type { PureProtocolProcessorPlugin } from './models/protocols/pure/PureProtocolProcessorPlugin.js';
 import type { Entity } from '@finos/legend-model-storage';
-import { SECTION_INDEX_ELEMENT_PATH } from './MetaModelConst';
-import type { GraphBuilderOptions } from './graphManager/AbstractPureGraphManager';
-import type { PureGraphPlugin } from './graph/PureGraphPlugin';
+import { SECTION_INDEX_ELEMENT_PATH } from './MetaModelConst.js';
+import type { GraphBuilderOptions } from './graphManager/AbstractPureGraphManager.js';
+import type { PureGraphPlugin } from './graph/PureGraphPlugin.js';
 
 export class TEST__GraphPluginManager
   extends AbstractPluginManager
@@ -91,7 +92,7 @@ export const TEST__provideMockedGraphManagerState = (customization?: {
   const value =
     customization?.mock ??
     TEST__getTestGraphManagerState(customization?.pluginManager);
-  const MockedGraphManagerStateProvider = require('./GraphManagerStateProvider'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+  const MockedGraphManagerStateProvider = require('./GraphManagerStateProvider.js'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
   MockedGraphManagerStateProvider.useGraphManagerState = jest.fn();
   MockedGraphManagerStateProvider.useGraphManagerState.mockReturnValue(value);
   return value;
@@ -194,10 +195,12 @@ export const TEST__checkGraphHashUnchanged = async (
       }),
     ),
   );
-  expect(
-    Array.from(originalHashesIndex.entries()).filter(
-      (entry) => entry[0] !== SECTION_INDEX_ELEMENT_PATH,
-    ),
+  (
+    expect(
+      Array.from(originalHashesIndex.entries()).filter(
+        (entry) => entry[0] !== SECTION_INDEX_ELEMENT_PATH,
+      ),
+    ) as TEMPORARRY__JestMatcher
   ).toIncludeSameMembers(
     Array.from(graphHashesIndex.entries()).filter(
       (entry) => entry[0] !== SECTION_INDEX_ELEMENT_PATH,
@@ -222,7 +225,7 @@ export const TEST__checkBuildingElementsRoundtrip = async (
     TEST__ensureObjectFieldsAreSortedAlphabetically(entity.content),
   );
   // check if the contents are the same (i.e. roundtrip test)
-  expect(transformedEntities).toIncludeSameMembers(
+  (expect(transformedEntities) as TEMPORARRY__JestMatcher).toIncludeSameMembers(
     TEST__excludeSectionIndex(entities),
   );
   await TEST__checkGraphHashUnchanged(graphManagerState, entities);
@@ -247,7 +250,7 @@ export const TEST__checkBuildingResolvedElements = async (
     TEST__ensureObjectFieldsAreSortedAlphabetically(entity.content),
   );
   // check if the contents are the same (i.e. roundtrip test)
-  expect(transformedEntities).toIncludeSameMembers(
+  (expect(transformedEntities) as TEMPORARRY__JestMatcher).toIncludeSameMembers(
     TEST__excludeSectionIndex(resolvedEntities),
   );
 };

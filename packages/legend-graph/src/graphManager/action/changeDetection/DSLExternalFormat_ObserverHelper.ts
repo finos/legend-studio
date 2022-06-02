@@ -15,23 +15,23 @@
  */
 
 import { computed, makeObservable, observable, override } from 'mobx';
-import type { ExternalFormatConnection } from '../../../models/metamodels/pure/packageableElements/externalFormat/connection/DSLExternalFormat_ExternalFormatConnection';
-import type { UrlStream } from '../../../models/metamodels/pure/packageableElements/externalFormat/connection/DSLExternalFormat_UrlStream';
-import type { Schema } from '../../../models/metamodels/pure/packageableElements/externalFormat/schemaSet/DSLExternalFormat_Schema';
-import type { SchemaSet } from '../../../models/metamodels/pure/packageableElements/externalFormat/schemaSet/DSLExternalFormat_SchemaSet';
-import type { Binding } from '../../../models/metamodels/pure/packageableElements/externalFormat/store/DSLExternalFormat_Binding';
-import type { BindingTransformer } from '../../../models/metamodels/pure/packageableElements/externalFormat/store/DSLExternalFormat_BindingTransformer';
-import type { ModelUnit } from '../../../models/metamodels/pure/packageableElements/externalFormat/store/DSLExternalFormat_ModelUnit';
+import type { ExternalFormatConnection } from '../../../models/metamodels/pure/packageableElements/externalFormat/connection/DSLExternalFormat_ExternalFormatConnection.js';
+import type { UrlStream } from '../../../models/metamodels/pure/packageableElements/externalFormat/connection/DSLExternalFormat_UrlStream.js';
+import type { Schema } from '../../../models/metamodels/pure/packageableElements/externalFormat/schemaSet/DSLExternalFormat_Schema.js';
+import type { SchemaSet } from '../../../models/metamodels/pure/packageableElements/externalFormat/schemaSet/DSLExternalFormat_SchemaSet.js';
+import type { Binding } from '../../../models/metamodels/pure/packageableElements/externalFormat/store/DSLExternalFormat_Binding.js';
+import type { BindingTransformer } from '../../../models/metamodels/pure/packageableElements/externalFormat/store/DSLExternalFormat_BindingTransformer.js';
+import type { ModelUnit } from '../../../models/metamodels/pure/packageableElements/externalFormat/store/DSLExternalFormat_ModelUnit.js';
 import {
   observe_PackageableElementReference,
   skipObserved,
   observe_OptionalPackageableElementReference,
   observe_Abstract_PackageableElement,
-} from './CoreObserverHelper';
+} from './CoreObserverHelper.js';
 import {
   observe_Abstract_Connection,
   observe_Abstract_Store,
-} from './DSLMapping_ObserverHelper';
+} from './DSLMapping_ObserverHelper.js';
 
 // ------------------------------------- Store -------------------------------------
 

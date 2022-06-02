@@ -36,7 +36,7 @@ import {
   tryToFormatLosslessJSONString,
 } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
-import { useEditorStore } from '../editor/EditorStoreProvider';
+import { useEditorStore } from '../editor/EditorStoreProvider.js';
 
 export const TextDiffView = observer(
   (props: {

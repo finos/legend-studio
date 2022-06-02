@@ -34,9 +34,9 @@ import {
   filterByType,
   isNonNullable,
 } from '@finos/legend-shared';
-import type { ExecutionPlanState } from '../../../../../stores/ExecutionPlanState';
+import type { ExecutionPlanState } from '../../../../../stores/ExecutionPlanState.js';
 import { observer } from 'mobx-react-lite';
-import { ExecutionNodesViewer } from './ExecutionNodesViewer';
+import { ExecutionNodesViewer } from './ExecutionNodesViewer.js';
 import { EDITOR_LANGUAGE, TAB_SIZE } from '@finos/legend-application';
 import {
   type ExecutionPlan,
@@ -45,7 +45,7 @@ import {
   RelationalTDSInstantiationExecutionNode,
   type RawExecutionPlan,
 } from '@finos/legend-graph';
-import { StudioTextInputEditor } from '../../../../shared/StudioTextInputEditor';
+import { StudioTextInputEditor } from '../../../../shared/StudioTextInputEditor.js';
 
 export class ExecutionPlanViewTreeNodeData implements TreeNodeData {
   id: string;

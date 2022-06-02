@@ -16,7 +16,7 @@
 
 import { forwardRef, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
-import type { ProjectOption } from '../../stores/SetupStore';
+import type { ProjectOption } from '../../stores/SetupStore.js';
 import {
   type SelectComponent,
   compareLabelFn,
@@ -28,11 +28,11 @@ import {
 import {
   generateSetupRoute,
   generateViewProjectRoute,
-} from '../../stores/LegendStudioRouter';
+} from '../../stores/LegendStudioRouter.js';
 import { flowResult } from 'mobx';
-import { useSetupStore } from './SetupStoreProvider';
+import { useSetupStore } from './SetupStoreProvider.js';
 import { useApplicationStore } from '@finos/legend-application';
-import type { LegendStudioConfig } from '../../application/LegendStudioConfig';
+import type { LegendStudioConfig } from '../../application/LegendStudioConfig.js';
 
 export const ProjectSelector = observer(
   forwardRef<

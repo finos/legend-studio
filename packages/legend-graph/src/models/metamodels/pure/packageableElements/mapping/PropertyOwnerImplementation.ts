@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import type { Mapping } from './Mapping';
-import type { InferableMappingElementIdValue } from './InferableMappingElementId';
+import type { Mapping } from './Mapping.js';
+import type { InferableMappingElementIdValue } from './InferableMappingElementId.js';
 
 export interface PropertyOwnerImplementation {
   id: InferableMappingElementIdValue;

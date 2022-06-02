@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { RelationalOperationElement } from '../model/RelationalOperationElement';
+import type { RelationalOperationElement } from '../model/RelationalOperationElement.js';
 
 export class GroupByMapping {
   // setMappingOwner?: RelationalInstanceSetImplementation | undefined;

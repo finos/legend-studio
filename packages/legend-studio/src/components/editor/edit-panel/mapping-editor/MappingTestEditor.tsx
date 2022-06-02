@@ -24,8 +24,8 @@ import {
   MappingTestFlatDataInputDataState,
   MappingTestExpectedOutputAssertionState,
   MappingTestRelationalInputDataState,
-} from '../../../../stores/editor-state/element-editor-state/mapping/MappingTestState';
-import { JsonDiffView } from '../../../shared/DiffView';
+} from '../../../../stores/editor-state/element-editor-state/mapping/MappingTestState.js';
+import { JsonDiffView } from '../../../shared/DiffView.js';
 import {
   clsx,
   PanelLoadingIndicator,
@@ -48,7 +48,7 @@ import { useDrop } from 'react-dnd';
 import {
   type MappingElementDragSource,
   CORE_DND_TYPE,
-} from '../../../../stores/shared/DnDUtil';
+} from '../../../../stores/shared/DnDUtil.js';
 import {
   IllegalStateError,
   guaranteeType,
@@ -63,15 +63,15 @@ import {
 import {
   ClassMappingSelectorModal,
   getRelationalInputTestDataEditorLanguage,
-} from './MappingExecutionBuilder';
+} from './MappingExecutionBuilder.js';
 import { flowResult } from 'mobx';
-import { MappingTestStatusIndicator } from './MappingTestsExplorer';
-import { ExecutionPlanViewer } from './execution-plan-viewer/ExecutionPlanViewer';
+import { MappingTestStatusIndicator } from './MappingTestsExplorer.js';
+import { ExecutionPlanViewer } from './execution-plan-viewer/ExecutionPlanViewer.js';
 import {
   getMappingElementSource,
   getMappingElementTarget,
-} from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
-import { useEditorStore } from '../../EditorStoreProvider';
+} from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState.js';
+import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
   Class,
   SetImplementation,
@@ -81,13 +81,13 @@ import {
   isStubbed_RawLambda,
   DEPRECATED__validate_MappingTestAssert,
 } from '@finos/legend-graph';
-import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor';
-import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../../stores/DSLMapping_LegendStudioPlugin_Extension';
-import { flatData_setData } from '../../../../stores/graphModifier/StoreFlatData_GraphModifierHelper';
+import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor.js';
+import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../../stores/DSLMapping_LegendStudioPlugin_Extension.js';
+import { flatData_setData } from '../../../../stores/graphModifier/StoreFlatData_GraphModifierHelper.js';
 import {
   relationalInputData_setData,
   relationalInputData_setInputType,
-} from '../../../../stores/graphModifier/StoreRelational_GraphModifierHelper';
+} from '../../../../stores/graphModifier/StoreRelational_GraphModifierHelper.js';
 
 const MappingTestQueryEditor = observer(
   (props: { testState: MappingTestState; isReadOnly: boolean }) => {

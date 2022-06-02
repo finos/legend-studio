@@ -14,6 +14,6 @@
  * limitations under the License.
  */
 
-import { V1_AbstractGenerationSpecification } from './V1_AbstractGenerationSpecification';
+import { V1_AbstractGenerationSpecification } from './V1_AbstractGenerationSpecification.js';
 
 export abstract class V1_ModelGenerationSpecification extends V1_AbstractGenerationSpecification {}

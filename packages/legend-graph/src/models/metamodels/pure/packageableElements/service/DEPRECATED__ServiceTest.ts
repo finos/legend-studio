@@ -15,9 +15,9 @@
  */
 
 import { type Hashable, hashArray, uuid } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
-import type { RawLambda } from '../../rawValueSpecification/RawLambda';
-import type { Service } from './Service';
+import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst.js';
+import type { RawLambda } from '../../rawValueSpecification/RawLambda.js';
+import type { Service } from './Service.js';
 
 /**
  * TODO: Remove once migration from `ServiceTest_Legacy` to `ServiceTest` is complete

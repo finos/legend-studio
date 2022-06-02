@@ -19,7 +19,10 @@ import {
   type ApplicationPageRenderEntry,
   LegendStudioPlugin,
 } from '@finos/legend-studio';
-import { PATH_PARAM_TOKEN_REDIRECT_URL, URLRedirector } from './URLRedirector';
+import {
+  PATH_PARAM_TOKEN_REDIRECT_URL,
+  URLRedirector,
+} from './URLRedirector.js';
 
 export class Management_LegendStudioPlugin extends LegendStudioPlugin {
   constructor() {

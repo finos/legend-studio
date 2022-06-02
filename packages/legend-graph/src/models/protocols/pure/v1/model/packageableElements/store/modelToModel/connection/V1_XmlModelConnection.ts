@@ -15,11 +15,11 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../../../MetaModelConst';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../../../MetaModelConst.js';
 import {
   type V1_ConnectionVisitor,
   V1_Connection,
-} from '../../../../../model/packageableElements/connection/V1_Connection';
+} from '../../../../../model/packageableElements/connection/V1_Connection.js';
 
 export class V1_XmlModelConnection extends V1_Connection implements Hashable {
   class!: string;

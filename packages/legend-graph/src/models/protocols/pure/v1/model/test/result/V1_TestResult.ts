@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import type { V1_AssertionStatus } from '../assertion/status/V1_AssertionStatus';
-import type { V1_AtomicTestId } from '../V1_AtomicTestId';
+import type { V1_AssertionStatus } from '../assertion/status/V1_AssertionStatus.js';
+import type { V1_AtomicTestId } from '../V1_AtomicTestId.js';
 
 export abstract class V1_TestResult {
   testable!: string;

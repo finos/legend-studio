@@ -19,15 +19,15 @@ import {
   FileGenerationViewerState,
   getTextContent,
   getEditorLanguageFromFormat,
-} from '../../../stores/editor-state/FileGenerationViewerState';
+} from '../../../stores/editor-state/FileGenerationViewerState.js';
 import {
   LockIcon,
   FireIcon,
   StickArrowCircleRightIcon,
 } from '@finos/legend-art';
 import type { FileGenerationSpecification } from '@finos/legend-graph';
-import { useEditorStore } from '../EditorStoreProvider';
-import { StudioTextInputEditor } from '../../shared/StudioTextInputEditor';
+import { useEditorStore } from '../EditorStoreProvider.js';
+import { StudioTextInputEditor } from '../../shared/StudioTextInputEditor.js';
 
 export const FileGenerationViewer = observer(() => {
   const editorStore = useEditorStore();

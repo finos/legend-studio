@@ -18,7 +18,7 @@ import { AbstractPlugin } from '@finos/legend-shared';
 import type {
   LegendApplicationKeyedContextualDocumentationEntry,
   LegendApplicationKeyedDocumentationEntry,
-} from './LegendApplicationDocumentationService';
+} from './LegendApplicationDocumentationService.js';
 
 export abstract class LegendApplicationPlugin extends AbstractPlugin {
   /**

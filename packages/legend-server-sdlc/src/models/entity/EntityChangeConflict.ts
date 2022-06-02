@@ -15,8 +15,8 @@
  */
 
 import { observable, computed, makeObservable } from 'mobx';
-import type { EntityDiff } from '../comparison/EntityDiff';
-import { EntityChangeType } from '../entity/EntityChange';
+import type { EntityDiff } from '../comparison/EntityDiff.js';
+import { EntityChangeType } from '../entity/EntityChange.js';
 import { IllegalStateError, shallowStringify } from '@finos/legend-shared';
 import {
   type Entity,

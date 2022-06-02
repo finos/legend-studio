@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import type { EditorStore } from '../EditorStore';
+import type { EditorStore } from '../EditorStore.js';
 import { observable, action, makeAutoObservable } from 'mobx';
-import { LEGEND_STUDIO_APP_EVENT } from '../LegendStudioAppEvent';
+import { LEGEND_STUDIO_APP_EVENT } from '../LegendStudioAppEvent.js';
 import type { TreeData } from '@finos/legend-art';
 import {
   type GenerationTreeNodeData,
@@ -29,7 +29,7 @@ import {
   populateDirectoryTreeNodeChildren,
   buildGenerationDirectory,
   reprocessOpenNodes,
-} from '../shared/FileGenerationTreeUtil';
+} from '../shared/FileGenerationTreeUtil.js';
 import {
   type GeneratorFn,
   assertErrorThrown,
@@ -54,7 +54,7 @@ import {
   fileGeneration_addConfigurationProperty,
   fileGeneration_addScopeElement,
   fileGeneration_deleteScopeElement,
-} from '../graphModifier/DSLGeneration_GraphModifierHelper';
+} from '../graphModifier/DSLGeneration_GraphModifierHelper.js';
 
 export class FileGenerationState {
   editorStore: EditorStore;

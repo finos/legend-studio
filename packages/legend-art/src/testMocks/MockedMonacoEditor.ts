@@ -21,4 +21,4 @@ export {
   MockedMonacoEditorInstance as mockedMonacoEditorInstance,
   MockedMonacoEditorAPI as editor,
   MockedMonacoEditorLanguagesAPI as languages,
-} from './MonacoEditorMockUtils';
+} from './MonacoEditorMockUtils.js';

@@ -15,10 +15,10 @@
  */
 
 import { isNonNullable } from '@finos/legend-shared';
-import type { EnumValueMapping } from '../../../models/metamodels/pure/packageableElements/mapping/EnumValueMapping';
-import { Mapping } from '../../../models/metamodels/pure/packageableElements/mapping/Mapping';
-import type { SetImplementationContainer } from '../../../models/metamodels/pure/packageableElements/mapping/SetImplementationContainer';
-import type { StoreConnections } from '../../../models/metamodels/pure/packageableElements/runtime/Runtime';
+import type { EnumValueMapping } from '../../../models/metamodels/pure/packageableElements/mapping/EnumValueMapping.js';
+import { Mapping } from '../../../models/metamodels/pure/packageableElements/mapping/Mapping.js';
+import type { SetImplementationContainer } from '../../../models/metamodels/pure/packageableElements/mapping/SetImplementationContainer.js';
+import type { StoreConnections } from '../../../models/metamodels/pure/packageableElements/runtime/Runtime.js';
 
 export const stub_Mapping = (): Mapping => new Mapping('');
 

@@ -14,11 +14,20 @@
  * limitations under the License.
  */
 
-/// <reference types="jest-extended" />
-
+import { test, describe, expect } from '@jest/globals';
 import { resolve } from 'path';
 import fs from 'fs';
-import axios, { type AxiosResponse } from 'axios';
+/**
+ * Previously, these exports rely on ES module interop to expose `default` export
+ * properly. But since we use `ESM` for Typescript resolution now, we lose this
+ *
+ * TODO: remove these when the package properly work with Typescript's nodenext
+ * module resolution
+ *
+ * @workaround ESM
+ * See https://github.com/microsoft/TypeScript/issues/49298
+ */
+import { default as axios, type AxiosResponse } from 'axios';
 import {
   WebConsole,
   Log,

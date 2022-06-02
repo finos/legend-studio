@@ -32,8 +32,8 @@ import {
   serializeArray,
   usingModelSchema,
 } from '@finos/legend-shared';
-import { V1_FlatData } from '../../../model/packageableElements/store/flatData/model/V1_FlatData';
-import { V1_FlatDataProperty } from '../../../model/packageableElements/store/flatData/model/V1_FlatDataProperty';
+import { V1_FlatData } from '../../../model/packageableElements/store/flatData/model/V1_FlatData.js';
+import { V1_FlatDataProperty } from '../../../model/packageableElements/store/flatData/model/V1_FlatDataProperty.js';
 import {
   type V1_FlatDataDataType,
   V1_FlatDataDecimal,
@@ -48,8 +48,8 @@ import {
   V1_FlatDataNumber,
   V1_FlatDataRecordField,
   V1_FlatDataString,
-} from '../../../model/packageableElements/store/flatData/model/V1_FlatDataDataType';
-import { V1_FlatDataSection } from '../../../model/packageableElements/store/flatData/model/V1_FlatDataSection';
+} from '../../../model/packageableElements/store/flatData/model/V1_FlatDataDataType.js';
+import { V1_FlatDataSection } from '../../../model/packageableElements/store/flatData/model/V1_FlatDataSection.js';
 
 // ------------------------------------------ Flat Data ------------------------------------------
 

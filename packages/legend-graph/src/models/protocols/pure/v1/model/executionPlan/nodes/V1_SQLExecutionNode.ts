@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import type { V1_DatabaseConnection } from '../../packageableElements/store/relational/connection/V1_RelationalDatabaseConnection';
-import { V1_ExecutionNode } from './V1_ExecutionNode';
-import type { V1_SQLResultColumn } from './V1_SQLResultColumn';
+import type { V1_DatabaseConnection } from '../../packageableElements/store/relational/connection/V1_RelationalDatabaseConnection.js';
+import { V1_ExecutionNode } from './V1_ExecutionNode.js';
+import type { V1_SQLResultColumn } from './V1_SQLResultColumn.js';
 
 export class V1_SQLExecutionNode extends V1_ExecutionNode {
   sqlQuery!: string;

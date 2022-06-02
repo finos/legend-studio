@@ -14,6 +14,6 @@
  * limitations under the License.
  */
 
-import { Connection } from '../../../connection/Connection';
+import { Connection } from '../../../connection/Connection.js';
 
 export abstract class PureModelConnection extends Connection {}

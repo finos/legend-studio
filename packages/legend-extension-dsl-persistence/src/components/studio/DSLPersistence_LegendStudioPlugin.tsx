@@ -35,21 +35,21 @@ import {
   type PureGrammarParserElementDocumentationGetter,
   type PureGrammarParserDocumentationGetter,
 } from '@finos/legend-studio';
-import { Persistence } from '../../models/metamodels/pure/model/packageableElements/persistence/DSLPersistence_Persistence';
+import { Persistence } from '../../models/metamodels/pure/model/packageableElements/persistence/DSLPersistence_Persistence.js';
 import {
   PURE_GRAMMAR_PERSISTENCE_ELEMENT_TYPE_LABEL,
   PURE_GRAMMAR_PERSISTENCE_PARSER_NAME,
-} from '../../graphManager/DSLPersistence_PureGraphManagerPlugin';
+} from '../../graphManager/DSLPersistence_PureGraphManagerPlugin.js';
 import {
   DSL_PERSISTENCE_DOCUMENTATION_ENTRIES,
   DSL_PERSISTENCE_LEGEND_STUDIO_DOCUMENTATION_KEY,
-} from './DSLPersistence_LegendStudioDocumentation';
+} from './DSLPersistence_LegendStudioDocumentation.js';
 import {
   collectKeyedDocumnetationEntriesFromConfig,
   type LegendApplicationDocumentationEntry,
   type LegendApplicationKeyedDocumentationEntry,
 } from '@finos/legend-application';
-import { BLANK_PERSISTENCE_SNIPPET } from './DSLPersistence_CodeSnippets';
+import { BLANK_PERSISTENCE_SNIPPET } from './DSLPersistence_CodeSnippets.js';
 
 const PERSISTENCE_ELEMENT_TYPE = 'PERSISTENCE';
 const PERSISTENCE_ELEMENT_PROJECT_EXPLORER_DND_TYPE =

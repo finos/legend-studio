@@ -32,18 +32,18 @@ import {
   guaranteeNonNullable,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
-import { TDS_ROW } from '../../QueryBuilder_Const';
-import { QueryBuilderAggregateColumnState } from '../QueryBuilderAggregationState';
-import type { QueryBuilderPostFilterOperator } from '../QueryBuilderPostFilterOperator';
+import { TDS_ROW } from '../../QueryBuilder_Const.js';
+import { QueryBuilderAggregateColumnState } from '../QueryBuilderAggregationState.js';
+import type { QueryBuilderPostFilterOperator } from '../QueryBuilderPostFilterOperator.js';
 import {
   type PostFilterConditionState,
   type TDS_COLUMN_GETTER,
   getTDSColumnDerivedProperyFromType,
-} from '../QueryBuilderPostFilterState';
+} from '../QueryBuilderPostFilterState.js';
 import {
   type QueryBuilderProjectionColumnState,
   QueryBuilderSimpleProjectionColumnState,
-} from '../QueryBuilderProjectionState';
+} from '../QueryBuilderProjectionState.js';
 
 export const getColumnMultiplicity = (
   columnState:

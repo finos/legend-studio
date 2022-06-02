@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { Test } from './Test';
+import type { Test } from './Test.js';
 
 export interface Testable {
   tests: Test[];

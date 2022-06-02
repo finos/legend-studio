@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import type { V1_RawLambda } from '../../../../../../model/rawValueSpecification/V1_RawLambda';
+import type { V1_RawLambda } from '../../../../../../model/rawValueSpecification/V1_RawLambda.js';
 import { type Hashable, hashArray } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../../../../MetaModelConst';
-import { hashRawLambda } from '../../../../../../../../../../MetaModelUtils';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../../../../MetaModelConst.js';
+import { hashRawLambda } from '../../../../../../../../../../MetaModelUtils.js';
 
 export class V1_GroupByFunction implements Hashable {
   /**

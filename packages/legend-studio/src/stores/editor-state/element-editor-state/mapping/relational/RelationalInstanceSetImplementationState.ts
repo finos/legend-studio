@@ -18,7 +18,7 @@ import { observable, action, computed, makeObservable } from 'mobx';
 import {
   InstanceSetImplementationState,
   PropertyMappingState,
-} from '../MappingElementState';
+} from '../MappingElementState.js';
 import {
   type GeneratorFn,
   assertErrorThrown,
@@ -27,9 +27,9 @@ import {
   isNonNullable,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
-import type { EditorStore } from '../../../../EditorStore';
-import { MappingElementDecorator } from '../MappingElementDecorator';
-import { MAPPING_ELEMENT_SOURCE_ID_LABEL } from '../MappingEditorState';
+import type { EditorStore } from '../../../../EditorStore.js';
+import { MappingElementDecorator } from '../MappingElementDecorator.js';
+import { MAPPING_ELEMENT_SOURCE_ID_LABEL } from '../MappingEditorState.js';
 import {
   type PropertyMapping,
   type RelationalInstanceSetImplementation,

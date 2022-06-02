@@ -26,7 +26,7 @@ import {
   editor as monacoEditorAPI,
   languages as monacoLanguagesAPI,
 } from 'monaco-editor';
-import { EDITOR_LANGUAGE, EDITOR_THEME } from '../const';
+import { EDITOR_LANGUAGE, EDITOR_THEME } from '../const.js';
 
 const theme: monacoEditorAPI.IStandaloneThemeData = {
   base: 'vs-dark', // can also be vs-dark or hc-black

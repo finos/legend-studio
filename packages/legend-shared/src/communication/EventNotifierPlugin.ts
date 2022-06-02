@@ -17,7 +17,7 @@
 import {
   AbstractPlugin,
   type AbstractPluginManager,
-} from '../application/AbstractPluginManager';
+} from '../application/AbstractPluginManager.js';
 
 // NOTE: here, we keep event data at a very generic shape
 // One of the main motivation of event notifier is Github web-hook

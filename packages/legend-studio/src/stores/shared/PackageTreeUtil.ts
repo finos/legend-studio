@@ -15,11 +15,11 @@
  */
 
 import { isNonNullable, addUniqueEntry } from '@finos/legend-shared';
-import type { PackageTreeNodeData } from './TreeUtil';
+import type { PackageTreeNodeData } from './TreeUtil.js';
 import type { TreeNodeData, TreeData } from '@finos/legend-art';
-import type { EditorStore } from '../EditorStore';
-import { CORE_DND_TYPE } from './DnDUtil';
-import type { DSL_LegendStudioPlugin_Extension } from '../LegendStudioPlugin';
+import type { EditorStore } from '../EditorStore.js';
+import { CORE_DND_TYPE } from './DnDUtil.js';
+import type { DSL_LegendStudioPlugin_Extension } from '../LegendStudioPlugin.js';
 import {
   type PackageableElement,
   ROOT_PACKAGE_NAME,

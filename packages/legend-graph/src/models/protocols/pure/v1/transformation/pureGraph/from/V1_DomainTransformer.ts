@@ -14,47 +14,47 @@
  * limitations under the License.
  */
 
-import type { DerivedProperty } from '../../../../../../metamodels/pure/packageableElements/domain/DerivedProperty';
-import type { Constraint } from '../../../../../../metamodels/pure/packageableElements/domain/Constraint';
+import type { DerivedProperty } from '../../../../../../metamodels/pure/packageableElements/domain/DerivedProperty.js';
+import type { Constraint } from '../../../../../../metamodels/pure/packageableElements/domain/Constraint.js';
 import type {
   Measure,
   Unit,
-} from '../../../../../../metamodels/pure/packageableElements/domain/Measure';
-import type { Enum } from '../../../../../../metamodels/pure/packageableElements/domain/Enum';
-import type { Profile } from '../../../../../../metamodels/pure/packageableElements/domain/Profile';
-import type { StereotypeReference } from '../../../../../../metamodels/pure/packageableElements/domain/StereotypeReference';
-import type { TaggedValue } from '../../../../../../metamodels/pure/packageableElements/domain/TaggedValue';
-import type { Enumeration } from '../../../../../../metamodels/pure/packageableElements/domain/Enumeration';
-import type { Class } from '../../../../../../metamodels/pure/packageableElements/domain/Class';
-import type { Association } from '../../../../../../metamodels/pure/packageableElements/domain/Association';
-import type { ConcreteFunctionDefinition } from '../../../../../../metamodels/pure/packageableElements/domain/ConcreteFunctionDefinition';
-import type { Property } from '../../../../../../metamodels/pure/packageableElements/domain/Property';
-import { V1_Profile } from '../../../model/packageableElements/domain/V1_Profile';
-import { V1_StereotypePtr } from '../../../model/packageableElements/domain/V1_StereotypePtr';
+} from '../../../../../../metamodels/pure/packageableElements/domain/Measure.js';
+import type { Enum } from '../../../../../../metamodels/pure/packageableElements/domain/Enum.js';
+import type { Profile } from '../../../../../../metamodels/pure/packageableElements/domain/Profile.js';
+import type { StereotypeReference } from '../../../../../../metamodels/pure/packageableElements/domain/StereotypeReference.js';
+import type { TaggedValue } from '../../../../../../metamodels/pure/packageableElements/domain/TaggedValue.js';
+import type { Enumeration } from '../../../../../../metamodels/pure/packageableElements/domain/Enumeration.js';
+import type { Class } from '../../../../../../metamodels/pure/packageableElements/domain/Class.js';
+import type { Association } from '../../../../../../metamodels/pure/packageableElements/domain/Association.js';
+import type { ConcreteFunctionDefinition } from '../../../../../../metamodels/pure/packageableElements/domain/ConcreteFunctionDefinition.js';
+import type { Property } from '../../../../../../metamodels/pure/packageableElements/domain/Property.js';
+import { V1_Profile } from '../../../model/packageableElements/domain/V1_Profile.js';
+import { V1_StereotypePtr } from '../../../model/packageableElements/domain/V1_StereotypePtr.js';
 import {
   V1_initPackageableElement,
   V1_transformMultiplicity,
   V1_transformElementReference,
-} from './V1_CoreTransformerHelper';
-import { V1_TaggedValue } from '../../../model/packageableElements/domain/V1_TaggedValue';
-import { V1_TagPtr } from '../../../model/packageableElements/domain/V1_TagPtr';
-import { V1_Enumeration } from '../../../model/packageableElements/domain/V1_Enumeration';
-import { V1_EnumValue } from '../../../model/packageableElements/domain/V1_EnumValue';
+} from './V1_CoreTransformerHelper.js';
+import { V1_TaggedValue } from '../../../model/packageableElements/domain/V1_TaggedValue.js';
+import { V1_TagPtr } from '../../../model/packageableElements/domain/V1_TagPtr.js';
+import { V1_Enumeration } from '../../../model/packageableElements/domain/V1_Enumeration.js';
+import { V1_EnumValue } from '../../../model/packageableElements/domain/V1_EnumValue.js';
 import {
   V1_Measure,
   V1_Unit,
-} from '../../../model/packageableElements/domain/V1_Measure';
-import { V1_Class } from '../../../model/packageableElements/domain/V1_Class';
-import { V1_Association } from '../../../model/packageableElements/domain/V1_Association';
-import { V1_ConcreteFunctionDefinition } from '../../../model/packageableElements/function/V1_ConcreteFunctionDefinition';
-import { V1_RawValueSpecificationTransformer } from './V1_RawValueSpecificationTransformer';
-import type { V1_RawLambda } from '../../../model/rawValueSpecification/V1_RawLambda';
-import { V1_Constraint } from '../../../model/packageableElements/domain/V1_Constraint';
-import { V1_Property } from '../../../model/packageableElements/domain/V1_Property';
-import { V1_DerivedProperty } from '../../../model/packageableElements/domain/V1_DerivedProperty';
-import type { V1_RawVariable } from '../../../model/rawValueSpecification/V1_RawVariable';
-import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext';
-import { isStubbed_RawLambda } from '../../../../../../../graphManager/action/creation/RawValueSpecificationCreatorHelper';
+} from '../../../model/packageableElements/domain/V1_Measure.js';
+import { V1_Class } from '../../../model/packageableElements/domain/V1_Class.js';
+import { V1_Association } from '../../../model/packageableElements/domain/V1_Association.js';
+import { V1_ConcreteFunctionDefinition } from '../../../model/packageableElements/function/V1_ConcreteFunctionDefinition.js';
+import { V1_RawValueSpecificationTransformer } from './V1_RawValueSpecificationTransformer.js';
+import type { V1_RawLambda } from '../../../model/rawValueSpecification/V1_RawLambda.js';
+import { V1_Constraint } from '../../../model/packageableElements/domain/V1_Constraint.js';
+import { V1_Property } from '../../../model/packageableElements/domain/V1_Property.js';
+import { V1_DerivedProperty } from '../../../model/packageableElements/domain/V1_DerivedProperty.js';
+import type { V1_RawVariable } from '../../../model/rawValueSpecification/V1_RawVariable.js';
+import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext.js';
+import { isStubbed_RawLambda } from '../../../../../../../graphManager/action/creation/RawValueSpecificationCreatorHelper.js';
 
 export const V1_transformProfile = (element: Profile): V1_Profile => {
   const profile = new V1_Profile();

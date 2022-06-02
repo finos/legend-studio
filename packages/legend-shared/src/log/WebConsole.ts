@@ -15,7 +15,7 @@
  */
 
 import packageJson from '../../package.json';
-import { type LogEvent, LoggerPlugin } from './Logger';
+import { type LogEvent, LoggerPlugin } from './Logger.js';
 
 const { debug, info, warn, error } = console;
 

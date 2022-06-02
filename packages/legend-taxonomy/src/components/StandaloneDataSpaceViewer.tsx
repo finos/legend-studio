@@ -18,8 +18,8 @@ import { useEffect } from 'react';
 import { useApplicationStore } from '@finos/legend-application';
 import { observer } from 'mobx-react-lite';
 import { useParams } from 'react-router-dom';
-import type { LegendTaxonomyStandaloneDataSpaceViewerParams } from '../stores/LegendTaxonomyRouter';
-import { useLegendTaxonomyStore } from './LegendTaxonomyStoreProvider';
+import type { LegendTaxonomyStandaloneDataSpaceViewerParams } from '../stores/LegendTaxonomyRouter.js';
+import { useLegendTaxonomyStore } from './LegendTaxonomyStoreProvider.js';
 import { flowResult } from 'mobx';
 import {
   ArrowRightIcon,

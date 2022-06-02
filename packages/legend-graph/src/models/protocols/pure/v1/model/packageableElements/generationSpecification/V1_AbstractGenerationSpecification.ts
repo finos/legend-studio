@@ -14,6 +14,6 @@
  * limitations under the License.
  */
 
-import { V1_PackageableElement } from '../V1_PackageableElement';
+import { V1_PackageableElement } from '../V1_PackageableElement.js';
 
 export abstract class V1_AbstractGenerationSpecification extends V1_PackageableElement {}

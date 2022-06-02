@@ -15,8 +15,8 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../../ESService_ModelUtils';
-import type { V1_ServiceRequestParameterBuildInfo } from './V1_ESService_ServiceRequestParameterBuildInfo';
+import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../../ESService_ModelUtils.js';
+import type { V1_ServiceRequestParameterBuildInfo } from './V1_ESService_ServiceRequestParameterBuildInfo.js';
 
 export class V1_ServiceRequestParametersBuildInfo implements Hashable {
   parameterBuildInfoList: V1_ServiceRequestParameterBuildInfo[] = [];

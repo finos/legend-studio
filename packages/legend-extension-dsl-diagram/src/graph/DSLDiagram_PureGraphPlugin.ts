@@ -22,8 +22,8 @@ import {
   type PackageableElement,
   type PureModel,
 } from '@finos/legend-graph';
-import { Diagram } from '../models/metamodels/pure/packageableElements/diagram/DSLDiagram_Diagram';
-import { cleanUpDeadReferencesInDiagram } from '../helpers/DSLDiagram_Helper';
+import { Diagram } from '../models/metamodels/pure/packageableElements/diagram/DSLDiagram_Diagram.js';
+import { cleanUpDeadReferencesInDiagram } from '../helpers/DSLDiagram_Helper.js';
 
 export class DSLDiagram_PureGraphPlugin extends PureGraphPlugin {
   constructor() {

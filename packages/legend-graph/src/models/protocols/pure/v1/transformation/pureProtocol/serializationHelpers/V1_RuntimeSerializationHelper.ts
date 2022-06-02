@@ -29,8 +29,8 @@ import {
   UnsupportedOperationError,
   usingModelSchema,
 } from '@finos/legend-shared';
-import { V1_packageableElementPointerDeserializerSchema } from '../../../transformation/pureProtocol/serializationHelpers/V1_CoreSerializationHelper';
-import { V1_PackageableRuntime } from '../../../model/packageableElements/runtime/V1_PackageableRuntime';
+import { V1_packageableElementPointerDeserializerSchema } from '../../../transformation/pureProtocol/serializationHelpers/V1_CoreSerializationHelper.js';
+import { V1_PackageableRuntime } from '../../../model/packageableElements/runtime/V1_PackageableRuntime.js';
 import {
   type V1_Runtime,
   V1_EngineRuntime,
@@ -38,12 +38,12 @@ import {
   V1_LegacyRuntime,
   V1_RuntimePointer,
   V1_StoreConnections,
-} from '../../../model/packageableElements/runtime/V1_Runtime';
+} from '../../../model/packageableElements/runtime/V1_Runtime.js';
 import {
   V1_serializeConnectionValue,
   V1_deserializeConnectionValue,
-} from './V1_ConnectionSerializationHelper';
-import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin';
+} from './V1_ConnectionSerializationHelper.js';
+import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin.js';
 
 export const V1_PACKAGEABLE_RUNTIME_ELEMENT_PROTOCOL_TYPE = 'runtime';
 

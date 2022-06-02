@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst.js';
 import { hashArray } from '@finos/legend-shared';
 
 export abstract class RelationalDataType {

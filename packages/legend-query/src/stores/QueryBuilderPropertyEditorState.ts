@@ -53,11 +53,11 @@ import {
   INTERNAL__PropagatedValue,
   Association,
 } from '@finos/legend-graph';
-import { generateDefaultValueForPrimitiveType } from './QueryBuilderValueSpecificationBuilderHelper';
-import type { QueryBuilderState } from './QueryBuilderState';
-import type { QueryBuilderSetupState } from './QueryBuilderSetupState';
+import { generateDefaultValueForPrimitiveType } from './QueryBuilderValueSpecificationBuilderHelper.js';
+import type { QueryBuilderState } from './QueryBuilderState.js';
+import type { QueryBuilderSetupState } from './QueryBuilderSetupState.js';
 import { functionExpression_setParametersValues } from '@finos/legend-application';
-import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../QueryBuilder_Const';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../QueryBuilder_Const.js';
 
 export const getDerivedPropertyMilestoningSteoreotype = (
   property: DerivedProperty,

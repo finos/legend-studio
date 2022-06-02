@@ -20,25 +20,25 @@ import {
   ExternalFormatData,
   DataElementReference,
   ModelStoreData,
-} from '../../../models/metamodels/pure/data/EmbeddedData';
+} from '../../../models/metamodels/pure/data/EmbeddedData.js';
 import {
   type RelationalDataTable,
   type RelationalDataTableColumn,
   type RelationalDataTableRow,
   RelationalData,
-} from '../../../models/metamodels/pure/data/RelationalData';
-import type { DataElement } from '../../../models/metamodels/pure/packageableElements/data/DataElement';
-import type { EmbeddedData_PureGraphManagerPlugin_Extension } from '../../EmbeddedData_PureGraphManagerPlugin_Extension';
+} from '../../../models/metamodels/pure/data/RelationalData.js';
+import type { DataElement } from '../../../models/metamodels/pure/packageableElements/data/DataElement.js';
+import type { EmbeddedData_PureGraphManagerPlugin_Extension } from '../../EmbeddedData_PureGraphManagerPlugin_Extension.js';
 import {
   type ObserverContext,
   observe_Abstract_PackageableElement,
   skipObserved,
   skipObservedWithContext,
-} from './CoreObserverHelper';
+} from './CoreObserverHelper.js';
 import {
   observe_StereotypeReference,
   observe_TaggedValue,
-} from './DomainObserverHelper';
+} from './DomainObserverHelper.js';
 
 export const observe_ExternalFormatData = skipObserved(
   (metamodel: ExternalFormatData): ExternalFormatData => {

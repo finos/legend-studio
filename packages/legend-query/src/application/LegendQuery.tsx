@@ -27,15 +27,15 @@ import { configure as configureReactHotkeys } from 'react-hotkeys';
 import { ModuleRegistry as agGrid_ModuleRegistry } from '@ag-grid-community/core';
 import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
 import { BrowserRouter } from 'react-router-dom';
-import { LegendQueryApplication } from '../components/LegendQueryApplication';
-import { LegendQueryPluginManager } from './LegendQueryPluginManager';
-import { Query_GraphPreset } from '../models/Query_GraphPreset';
+import { LegendQueryApplication } from '../components/LegendQueryApplication.js';
+import { LegendQueryPluginManager } from './LegendQueryPluginManager.js';
+import { Query_GraphPreset } from '../models/Query_GraphPreset.js';
 import { getRootElement } from '@finos/legend-art';
 import { CorePureGraphManagerPlugin } from '@finos/legend-graph';
 import {
   type LegendQueryConfigurationData,
   LegendQueryConfig,
-} from './LegendQueryConfig';
+} from './LegendQueryConfig.js';
 
 export const setupLegendQueryUILibrary = async (): Promise<void> => {
   // Register module extensions for `ag-grid`

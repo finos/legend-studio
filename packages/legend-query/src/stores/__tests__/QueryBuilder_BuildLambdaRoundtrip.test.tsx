@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-/// <reference types="jest-extended" />
+import { test, expect, describe } from '@jest/globals';
 import {
   TEST_DATA__simpleProjection,
   TEST_DATA__projectionWithChainedProperty,
@@ -32,7 +32,7 @@ import {
   TEST_DATA__filterQueryWithSubtypeWithoutExists,
   TEST_DATA__filterQueryWithSubtypeWithExists,
   TEST_DATA__filterQueryWithSubtypeWithExistsChain,
-} from './TEST_DATA__QueryBuilder_Generic';
+} from './TEST_DATA__QueryBuilder_Generic.js';
 import TEST_DATA__ComplexRelationalModel from './TEST_DATA__QueryBuilder_Model_ComplexRelational.json';
 import TEST_DATA__ComplexM2MModel from './TEST_DATA__QueryBuilder_Model_ComplexM2M.json';
 import TEST_DATA__M2MWithInheritance from './TEST_DATA__QueryBuilder_Model_M2MWithInheritance.json';
@@ -50,11 +50,11 @@ import {
   TEST_DATA__lambda_setOperatorFilter,
   TEST_DATA__lambda_simpleSingleConditionFilter,
   TEST_DATA_lambda_dateTimeCapabilityFilterWithYesterday,
-} from './TEST_DATA__QueryBuilder_Roundtrip_TestFilterQueries';
+} from './TEST_DATA__QueryBuilder_Roundtrip_TestFilterQueries.js';
 import {
   TEST_DATA__lambda_input_filterWithExists,
   lambda_output_filterWithExists,
-} from './TEST_DATA__QueryBuilder_TestFilterQueriesWithExists';
+} from './TEST_DATA__QueryBuilder_TestFilterQueriesWithExists.js';
 import {
   TEST_DATA__lambda_input_graphFetchWithFullPathFunctions,
   TEST_DATA__lambda_output_graphFetchWithFullPathFunctions,
@@ -62,7 +62,7 @@ import {
   TEST_DATA__lambda_output_filterWithFullPathFunctions,
   TEST_DATA__lambda_input_projectionWithFullPathFunctions,
   TEST_DATA__lambda_output_projectionWithFullPathFunctions,
-} from './TEST_DATA__QueryBuilder_TestQueriesWithFullPathFunctions';
+} from './TEST_DATA__QueryBuilder_TestQueriesWithFullPathFunctions.js';
 import type { Entity } from '@finos/legend-model-storage';
 import {
   RawLambda,
@@ -70,20 +70,23 @@ import {
   TEST__getTestGraphManagerState,
 } from '@finos/legend-graph';
 import { TEST__getTestApplicationStore } from '@finos/legend-application';
-import { integrationTest } from '@finos/legend-shared';
+import {
+  integrationTest,
+  type TEMPORARRY__JestMatcher,
+} from '@finos/legend-shared';
 import {
   QueryBuilderState,
   StandardQueryBuilderMode,
-} from '../QueryBuilderState';
-import { LegendQueryPluginManager } from '../../application/LegendQueryPluginManager';
-import { Query_GraphPreset } from '../../models/Query_GraphPreset';
-import { TEST__getTestQueryConfig } from '../QueryStoreTestUtils';
+} from '../QueryBuilderState.js';
+import { LegendQueryPluginManager } from '../../application/LegendQueryPluginManager.js';
+import { Query_GraphPreset } from '../../models/Query_GraphPreset.js';
+import { TEST__getTestQueryConfig } from '../QueryStoreTestUtils.js';
 import {
   TEST_DATA__lambda_simpleConditionPostFilter,
   TEST_DATA__lambda_aggregationPostFilter,
   TEST_DATA__lambda_derivationPostFilter,
   TEST_DATA_lambda_dateTimeCapabilityPostFilterWithToday,
-} from './TEST_DATA__QueryBuilder_Roundtrip_TestPostFilterQueries';
+} from './TEST_DATA__QueryBuilder_Roundtrip_TestPostFilterQueries.js';
 
 type RoundtripTestCase = [
   string,
@@ -332,31 +335,41 @@ const cases: RoundtripTestCase[] = [
 describe(
   integrationTest('Query builder lambda processing roundtrip test'),
   () => {
-    test.each(cases)('%s', async (testName, context, lambda, inputLambda) => {
-      const { entities } = context;
-      const pluginManager = LegendQueryPluginManager.create();
-      pluginManager.usePresets([new Query_GraphPreset()]).install();
-      const applicationStore = TEST__getTestApplicationStore(
-        TEST__getTestQueryConfig(),
-        LegendQueryPluginManager.create(),
-      );
-      const graphManagerState = TEST__getTestGraphManagerState(pluginManager);
-      await TEST__buildGraphWithEntities(graphManagerState, entities);
-      const queryBuilderState = new QueryBuilderState(
-        applicationStore,
-        graphManagerState,
-        new StandardQueryBuilderMode(),
-      );
-      // do the check using input and output lambda
-      const rawLambda = inputLambda ?? lambda;
-      queryBuilderState.buildStateFromRawLambda(
-        new RawLambda(rawLambda.parameters, rawLambda.body),
-      );
-      const jsonQuery =
-        graphManagerState.graphManager.serializeRawValueSpecification(
-          queryBuilderState.getQuery(),
+    test.each(cases)(
+      '%s',
+      async (
+        testName: RoundtripTestCase[0],
+        context: RoundtripTestCase[1],
+        lambda: RoundtripTestCase[2],
+        inputLambda: RoundtripTestCase[3],
+      ) => {
+        const { entities } = context;
+        const pluginManager = LegendQueryPluginManager.create();
+        pluginManager.usePresets([new Query_GraphPreset()]).install();
+        const applicationStore = TEST__getTestApplicationStore(
+          TEST__getTestQueryConfig(),
+          LegendQueryPluginManager.create(),
         );
-      expect([lambda]).toIncludeSameMembers([jsonQuery]);
-    });
+        const graphManagerState = TEST__getTestGraphManagerState(pluginManager);
+        await TEST__buildGraphWithEntities(graphManagerState, entities);
+        const queryBuilderState = new QueryBuilderState(
+          applicationStore,
+          graphManagerState,
+          new StandardQueryBuilderMode(),
+        );
+        // do the check using input and output lambda
+        const rawLambda = inputLambda ?? lambda;
+        queryBuilderState.buildStateFromRawLambda(
+          new RawLambda(rawLambda.parameters, rawLambda.body),
+        );
+        const jsonQuery =
+          graphManagerState.graphManager.serializeRawValueSpecification(
+            queryBuilderState.getQuery(),
+          );
+        (expect([lambda]) as TEMPORARRY__JestMatcher).toIncludeSameMembers([
+          jsonQuery,
+        ]);
+      },
+    );
   },
 );

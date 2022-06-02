@@ -15,8 +15,8 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
-import type { V1_RawLambda } from '../../../model/rawValueSpecification/V1_RawLambda';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst.js';
+import type { V1_RawLambda } from '../../../model/rawValueSpecification/V1_RawLambda.js';
 
 export class V1_Constraint implements Hashable {
   name!: string;

@@ -26,13 +26,13 @@ import {
   MoreHorizontalIcon,
   CaretDownIcon,
 } from '@finos/legend-art';
-import { getElementTypeIcon } from '../../shared/ElementIconUtils';
+import { getElementTypeIcon } from '../../shared/ElementIconUtils.js';
 import type { PackageableElement } from '@finos/legend-graph';
 import {
   type PackageableElementOption,
   buildElementOption,
-} from '../../../stores/shared/PackageableElementOptionUtil';
-import { useEditorStore } from '../EditorStoreProvider';
+} from '../../../stores/shared/PackageableElementOptionUtil.js';
+import { useEditorStore } from '../EditorStoreProvider.js';
 
 export const ProjectSearchCommand = observer(() => {
   const editorStore = useEditorStore();

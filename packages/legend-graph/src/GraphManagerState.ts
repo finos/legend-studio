@@ -21,33 +21,33 @@ import {
   assertErrorThrown,
 } from '@finos/legend-shared';
 import { action, makeObservable, observable } from 'mobx';
-import { DependencyManager } from './graph/DependencyManager';
+import { DependencyManager } from './graph/DependencyManager.js';
 import {
   CoreModel,
   GenerationModel,
   PureModel,
   SystemModel,
-} from './graph/PureModel';
+} from './graph/PureModel.js';
 import type {
   AbstractPureGraphManager,
   GraphBuilderOptions,
-} from './graphManager/AbstractPureGraphManager';
-import type { GraphPluginManager } from './GraphPluginManager';
-import { getElementRootPackage } from './helpers/DomainHelper';
-import { getLeafSetImplementations } from './helpers/DSLMapping_Helper';
-import { ROOT_PACKAGE_NAME } from './MetaModelConst';
-import { AssociationImplementation } from './models/metamodels/pure/packageableElements/mapping/AssociationImplementation';
-import type { EnumerationMapping } from './models/metamodels/pure/packageableElements/mapping/EnumerationMapping';
-import { InstanceSetImplementation } from './models/metamodels/pure/packageableElements/mapping/InstanceSetImplementation';
-import { OperationSetImplementation } from './models/metamodels/pure/packageableElements/mapping/OperationSetImplementation';
-import type { PropertyMapping } from './models/metamodels/pure/packageableElements/mapping/PropertyMapping';
-import type { SetImplementation } from './models/metamodels/pure/packageableElements/mapping/SetImplementation';
-import type { PackageableElement } from './models/metamodels/pure/packageableElements/PackageableElement';
-import { EmbeddedFlatDataPropertyMapping } from './models/metamodels/pure/packageableElements/store/flatData/mapping/EmbeddedFlatDataPropertyMapping';
-import { EmbeddedRelationalInstanceSetImplementation } from './models/metamodels/pure/packageableElements/store/relational/mapping/EmbeddedRelationalInstanceSetImplementation';
-import { InlineEmbeddedRelationalInstanceSetImplementation } from './models/metamodels/pure/packageableElements/store/relational/mapping/InlineEmbeddedRelationalInstanceSetImplementation';
-import { OtherwiseEmbeddedRelationalInstanceSetImplementation } from './models/metamodels/pure/packageableElements/store/relational/mapping/OtherwiseEmbeddedRelationalInstanceSetImplementation';
-import { getGraphManager } from './models/protocols/pure/Pure';
+} from './graphManager/AbstractPureGraphManager.js';
+import type { GraphPluginManager } from './GraphPluginManager.js';
+import { getElementRootPackage } from './helpers/DomainHelper.js';
+import { getLeafSetImplementations } from './helpers/DSLMapping_Helper.js';
+import { ROOT_PACKAGE_NAME } from './MetaModelConst.js';
+import { AssociationImplementation } from './models/metamodels/pure/packageableElements/mapping/AssociationImplementation.js';
+import type { EnumerationMapping } from './models/metamodels/pure/packageableElements/mapping/EnumerationMapping.js';
+import { InstanceSetImplementation } from './models/metamodels/pure/packageableElements/mapping/InstanceSetImplementation.js';
+import { OperationSetImplementation } from './models/metamodels/pure/packageableElements/mapping/OperationSetImplementation.js';
+import type { PropertyMapping } from './models/metamodels/pure/packageableElements/mapping/PropertyMapping.js';
+import type { SetImplementation } from './models/metamodels/pure/packageableElements/mapping/SetImplementation.js';
+import type { PackageableElement } from './models/metamodels/pure/packageableElements/PackageableElement.js';
+import { EmbeddedFlatDataPropertyMapping } from './models/metamodels/pure/packageableElements/store/flatData/mapping/EmbeddedFlatDataPropertyMapping.js';
+import { EmbeddedRelationalInstanceSetImplementation } from './models/metamodels/pure/packageableElements/store/relational/mapping/EmbeddedRelationalInstanceSetImplementation.js';
+import { InlineEmbeddedRelationalInstanceSetImplementation } from './models/metamodels/pure/packageableElements/store/relational/mapping/InlineEmbeddedRelationalInstanceSetImplementation.js';
+import { OtherwiseEmbeddedRelationalInstanceSetImplementation } from './models/metamodels/pure/packageableElements/store/relational/mapping/OtherwiseEmbeddedRelationalInstanceSetImplementation.js';
+import { getGraphManager } from './models/protocols/pure/Pure.js';
 
 export class GraphManagerState {
   pluginManager: GraphPluginManager;

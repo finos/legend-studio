@@ -14,47 +14,48 @@
  * limitations under the License.
  */
 
-export * from './utils/ComponentUtils';
-export * from './utils/PanelDisplayState';
-export * from './utils/TextEditorUtils';
-export * from './utils/HotkeyConfiguration';
+export * from './utils/CJS__clsx.cjs';
+export * from './utils/ComponentUtils.js';
+export * from './utils/PanelDisplayState.js';
+export * from './utils/TextEditorUtils.js';
+export * from './utils/HotkeyConfiguration.js';
 
-export * from './components/Icon';
-export * from './components/TypeIcon';
-export * from './components/Input';
-export * from './components/LegendLogo';
-export * from './components/TreeView';
-export * from './components/CustomSelectorInput';
-export * from './components/ComponentsConfiguration';
-export * from './components/ResizablePanel';
+export * from './components/CJS__Icon.cjs';
+export * from './components/TypeIcon.js';
+export * from './components/Input.js';
+export * from './components/LegendLogo.js';
+export * from './components/TreeView.js';
+export * from './components/CustomSelectorInput.js';
+export * from './components/ComponentsConfiguration.js';
+export * from './components/ResizablePanel.js';
 
-export * from './components/dialog/Dialog';
-export * from './components/dialog/NonBlockingDialog';
+export * from './components/dialog/Dialog.js';
+export * from './components/dialog/NonBlockingDialog.js';
 
-export * from './components/menu/MenuContent';
-export * from './components/menu/ContextMenu';
-export * from './components/menu/DropdownMenu';
+export * from './components/menu/MenuContent.js';
+export * from './components/menu/ContextMenu.js';
+export * from './components/menu/DropdownMenu.js';
 
-export * from './components/popover/BasePopover';
-export * from './components/popover/BasePopper';
-export * from './components/RadioGroup/BaseRadioGroup';
+export * from './components/popover/BasePopover.js';
+export * from './components/popover/BasePopper.js';
+export * from './components/RadioGroup/BaseRadioGroup.js';
 
-export * from './components/panel/BlankPanelContent';
-export * from './components/panel/BlankPanelPlaceholder';
-export * from './components/panel/PanelLoadingIndicator';
+export * from './components/panel/BlankPanelContent.js';
+export * from './components/panel/BlankPanelPlaceholder.js';
+export * from './components/panel/PanelLoadingIndicator.js';
 
-export * from './components/ProgressBar';
+export * from './components/ProgressBar.js';
 
-export * from './components/Tooltip';
+export * from './components/Tooltip.js';
 
-export * from './components/Notification';
+export * from './components/Notification.js';
 
-export * from './components/Backdrop';
+export * from './components/Backdrop.js';
 
-export * from './components/ClickAwayListener';
+export * from './components/ClickAwayListener.js';
 
-export * from './components/LegendStyleProvider';
+export * from './components/LegendStyleProvider.js';
 
-export * from './components/markdown/MarkdownTextViewer';
+export * from './components/markdown/MarkdownTextViewer.js';
 
-export * from './testMocks/MonacoEditorMockUtils';
+export * from './testMocks/MonacoEditorMockUtils.js';

@@ -35,7 +35,7 @@ import {
   guaranteeType,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
-import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../QueryBuilder_Const';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../QueryBuilder_Const.js';
 
 export enum QUERY_BUILDER_GROUP_OPERATION {
   AND = 'and',

@@ -15,12 +15,12 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { DSL_EXTERNAL_FORMAT_HASH_STRUCTURE } from '../../../../../../../DSLExternalFormat_ModelUtils';
+import { DSL_EXTERNAL_FORMAT_HASH_STRUCTURE } from '../../../../../../../DSLExternalFormat_ModelUtils.js';
 import {
   type V1_PackageableElementVisitor,
   V1_PackageableElement,
-} from '../../V1_PackageableElement';
-import type { V1_Schema } from './V1_DSLExternalFormat_Schema';
+} from '../../V1_PackageableElement.js';
+import type { V1_Schema } from './V1_DSLExternalFormat_Schema.js';
 
 export class V1_SchemaSet extends V1_PackageableElement implements Hashable {
   format = '';

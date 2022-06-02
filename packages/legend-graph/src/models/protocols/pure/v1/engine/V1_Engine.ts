@@ -30,35 +30,35 @@ import {
 import {
   type ImportConfigurationDescription,
   ImportMode,
-} from '../../../../../graphManager/action/generation/ImportConfigurationDescription';
-import type { RawLambda } from '../../../../metamodels/pure/rawValueSpecification/RawLambda';
+} from '../../../../../graphManager/action/generation/ImportConfigurationDescription.js';
+import type { RawLambda } from '../../../../metamodels/pure/rawValueSpecification/RawLambda.js';
 import {
   GenerationMode,
   type GenerationConfigurationDescription,
-} from '../../../../../graphManager/action/generation/GenerationConfigurationDescription';
-import { TEMPORARY__AbstractEngineConfig } from '../../../../../graphManager/action/TEMPORARY__AbstractEngineConfig';
-import { V1_EngineServerClient } from './V1_EngineServerClient';
-import type { V1_PureModelContextData } from '../model/context/V1_PureModelContextData';
-import type { V1_LambdaReturnTypeResult } from '../engine/compilation/V1_LambdaReturnTypeResult';
-import type { V1_RawLambda } from '../model/rawValueSpecification/V1_RawLambda';
+} from '../../../../../graphManager/action/generation/GenerationConfigurationDescription.js';
+import { TEMPORARY__AbstractEngineConfig } from '../../../../../graphManager/action/TEMPORARY__AbstractEngineConfig.js';
+import { V1_EngineServerClient } from './V1_EngineServerClient.js';
+import type { V1_PureModelContextData } from '../model/context/V1_PureModelContextData.js';
+import type { V1_LambdaReturnTypeResult } from '../engine/compilation/V1_LambdaReturnTypeResult.js';
+import type { V1_RawLambda } from '../model/rawValueSpecification/V1_RawLambda.js';
 import {
   V1_deserializePureModelContextData,
   V1_serializePureModelContext,
   V1_serializePureModelContextData,
-} from '../transformation/pureProtocol/V1_PureProtocolSerialization';
-import { V1_DEPRECATED__ServiceTestResult } from './service/V1_DEPRECATED__ServiceTestResult';
-import { V1_serializeRawValueSpecification } from '../transformation/pureProtocol/serializationHelpers/V1_RawValueSpecificationSerializationHelper';
-import { V1_transformRawLambda } from '../transformation/pureGraph/from/V1_RawValueSpecificationTransformer';
-import { V1_GenerateFileInput } from '../engine/generation/V1_FileGenerationInput';
-import { V1_ImportConfigurationDescription } from '../engine/import/V1_ImportConfigurationDescription';
-import { V1_GenerationConfigurationDescription } from '../engine/generation/V1_GenerationConfigurationDescription';
-import { V1_GenerationOutput } from '../engine/generation/V1_GenerationOutput';
-import { V1_ParserError } from '../engine/grammar/V1_ParserError';
-import { V1_CompilationError } from '../engine/compilation/V1_CompilationError';
-import type { V1_RawRelationalOperationElement } from '../model/packageableElements/store/relational/model/V1_RawRelationalOperationElement';
-import type { RawRelationalOperationElement } from '../../../../metamodels/pure/packageableElements/store/relational/model/RawRelationalOperationElement';
-import { V1_GraphTransformerContextBuilder } from '../transformation/pureGraph/from/V1_GraphTransformerContext';
-import type { PureProtocolProcessorPlugin } from '../../PureProtocolProcessorPlugin';
+} from '../transformation/pureProtocol/V1_PureProtocolSerialization.js';
+import { V1_DEPRECATED__ServiceTestResult } from './service/V1_DEPRECATED__ServiceTestResult.js';
+import { V1_serializeRawValueSpecification } from '../transformation/pureProtocol/serializationHelpers/V1_RawValueSpecificationSerializationHelper.js';
+import { V1_transformRawLambda } from '../transformation/pureGraph/from/V1_RawValueSpecificationTransformer.js';
+import { V1_GenerateFileInput } from '../engine/generation/V1_FileGenerationInput.js';
+import { V1_ImportConfigurationDescription } from '../engine/import/V1_ImportConfigurationDescription.js';
+import { V1_GenerationConfigurationDescription } from '../engine/generation/V1_GenerationConfigurationDescription.js';
+import { V1_GenerationOutput } from '../engine/generation/V1_GenerationOutput.js';
+import { V1_ParserError } from '../engine/grammar/V1_ParserError.js';
+import { V1_CompilationError } from '../engine/compilation/V1_CompilationError.js';
+import type { V1_RawRelationalOperationElement } from '../model/packageableElements/store/relational/model/V1_RawRelationalOperationElement.js';
+import type { RawRelationalOperationElement } from '../../../../metamodels/pure/packageableElements/store/relational/model/RawRelationalOperationElement.js';
+import { V1_GraphTransformerContextBuilder } from '../transformation/pureGraph/from/V1_GraphTransformerContext.js';
+import type { PureProtocolProcessorPlugin } from '../../PureProtocolProcessorPlugin.js';
 import {
   V1_buildCompilationError,
   V1_buildExecutionError,
@@ -66,35 +66,35 @@ import {
   V1_buildGenerationConfigurationDescription,
   V1_buildImportConfigurationDescription,
   V1_buildParserError,
-} from './V1_EngineHelper';
-import { V1_LightQuery, V1_Query } from './query/V1_Query';
-import { V1_DatabaseBuilderInput } from './generation/V1_DatabaseBuilderInput';
-import type { V1_ServiceConfigurationInfo } from './service/V1_ServiceConfiguration';
+} from './V1_EngineHelper.js';
+import { V1_LightQuery, V1_Query } from './query/V1_Query.js';
+import { V1_DatabaseBuilderInput } from './generation/V1_DatabaseBuilderInput.js';
+import type { V1_ServiceConfigurationInfo } from './service/V1_ServiceConfiguration.js';
 import {
   V1_ExecuteInput,
   V1_TestDataGenerationExecutionInput,
-} from './execution/V1_ExecuteInput';
-import type { V1_ExecutionPlan } from '../model/executionPlan/V1_ExecutionPlan';
+} from './execution/V1_ExecuteInput.js';
+import type { V1_ExecutionPlan } from '../model/executionPlan/V1_ExecutionPlan.js';
 import {
   type V1_ExecutionResult,
   V1_serializeExecutionResult,
-} from './execution/V1_ExecutionResult';
-import { V1_ServiceStorage } from './service/V1_ServiceStorage';
-import { V1_ServiceRegistrationResult } from './service/V1_ServiceRegistrationResult';
-import type { V1_PureModelContext } from '../model/context/V1_PureModelContext';
-import { ServiceExecutionMode } from '../../../../../graphManager/action/service/ServiceExecutionMode';
+} from './execution/V1_ExecutionResult.js';
+import { V1_ServiceStorage } from './service/V1_ServiceStorage.js';
+import { V1_ServiceRegistrationResult } from './service/V1_ServiceRegistrationResult.js';
+import type { V1_PureModelContext } from '../model/context/V1_PureModelContext.js';
+import { ServiceExecutionMode } from '../../../../../graphManager/action/service/ServiceExecutionMode.js';
 import { serialize } from 'serializr';
-import { V1_ExecutionError } from './execution/V1_ExecutionError';
-import { V1_PureModelContextText } from '../model/context/V1_PureModelContextText';
-import { V1_QuerySearchSpecification } from './query/V1_QuerySearchSpecification';
-import type { ExecutionOptions } from '../../../../../graphManager/AbstractPureGraphManager';
-import type { ExternalFormatDescription } from '../../../../../graphManager/action/externalFormat/ExternalFormatDescription';
-import { V1_ExternalFormatDescription } from './externalFormat/V1_ExternalFormatDescription';
-import { V1_ExternalFormatModelGenerationInput } from './externalFormat/V1_ExternalFormatModelGeneration';
-import { GRAPH_MANAGER_EVENT } from '../../../../../graphManager/GraphManagerEvent';
-import { V1_RunTestsInput } from './test/V1_RunTestsInput';
-import { V1_RunTestsResult } from './test/V1_RunTestsResult';
-import { V1_RenderStyle } from './grammar/V1_RenderStyle';
+import { V1_ExecutionError } from './execution/V1_ExecutionError.js';
+import { V1_PureModelContextText } from '../model/context/V1_PureModelContextText.js';
+import { V1_QuerySearchSpecification } from './query/V1_QuerySearchSpecification.js';
+import type { ExecutionOptions } from '../../../../../graphManager/AbstractPureGraphManager.js';
+import type { ExternalFormatDescription } from '../../../../../graphManager/action/externalFormat/ExternalFormatDescription.js';
+import { V1_ExternalFormatDescription } from './externalFormat/V1_ExternalFormatDescription.js';
+import { V1_ExternalFormatModelGenerationInput } from './externalFormat/V1_ExternalFormatModelGeneration.js';
+import { GRAPH_MANAGER_EVENT } from '../../../../../graphManager/GraphManagerEvent.js';
+import { V1_RunTestsInput } from './test/V1_RunTestsInput.js';
+import { V1_RunTestsResult } from './test/V1_RunTestsResult.js';
+import { V1_RenderStyle } from './grammar/V1_RenderStyle.js';
 
 class V1_EngineConfig extends TEMPORARY__AbstractEngineConfig {
   private engine: V1_Engine;

@@ -15,14 +15,14 @@
  */
 
 import { type Hashable, hashArray } from '@finos/legend-shared';
-import type { Binding } from '../store/DSLExternalFormat_Binding';
-import type { UrlStream } from './DSLExternalFormat_UrlStream';
+import type { Binding } from '../store/DSLExternalFormat_Binding.js';
+import type { UrlStream } from './DSLExternalFormat_UrlStream.js';
 import {
   Connection,
   type ConnectionVisitor,
-} from '../../connection/Connection';
-import type { PackageableElementReference } from '../../PackageableElementReference';
-import { DSL_EXTERNAL_FORMAT_HASH_STRUCTURE } from '../../../../../DSLExternalFormat_ModelUtils';
+} from '../../connection/Connection.js';
+import type { PackageableElementReference } from '../../PackageableElementReference.js';
+import { DSL_EXTERNAL_FORMAT_HASH_STRUCTURE } from '../../../../../DSLExternalFormat_ModelUtils.js';
 
 export class ExternalFormatConnection extends Connection implements Hashable {
   declare store: PackageableElementReference<Binding>;

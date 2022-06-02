@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-import type { GenericTypeReference } from '../packageableElements/domain/GenericTypeReference';
-import type { Multiplicity } from '../packageableElements/domain/Multiplicity';
+import type { GenericTypeReference } from '../packageableElements/domain/GenericTypeReference.js';
+import type { Multiplicity } from '../packageableElements/domain/Multiplicity.js';
 import {
   type ValueSpecificationVisitor,
   ValueSpecification,
-} from './ValueSpecification';
+} from './ValueSpecification.js';
 
 export class VariableExpression extends ValueSpecification {
   name: string;

@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { test } from '@jest/globals';
 import { waitFor } from '@testing-library/react';
 import { integrationTest } from '@finos/legend-shared';
 import {
@@ -22,9 +23,9 @@ import {
   TEST__openElementFromExplorerTree,
   LegendStudioPluginManager,
 } from '@finos/legend-studio';
-import { DSL_DIAGRAM_TEST_ID } from '../DSLDiagram_TestID';
-import { DSLDiagram_GraphPreset } from '../../../DSLDiagram_Extension';
-import { DSLDiagram_LegendStudioPlugin } from '../DSLDiagram_LegendStudioPlugin';
+import { DSL_DIAGRAM_TEST_ID } from '../DSLDiagram_TestID.js';
+import { DSLDiagram_GraphPreset } from '../../../DSLDiagram_Extension.js';
+import { DSLDiagram_LegendStudioPlugin } from '../DSLDiagram_LegendStudioPlugin.js';
 
 const TEST_DATA__dummyModel = [
   {

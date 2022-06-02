@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-import { hashRawLambda } from '../../../../../../MetaModelUtils';
+import { hashRawLambda } from '../../../../../../MetaModelUtils.js';
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../MetaModelConst';
+import { CORE_HASH_STRUCTURE } from '../../../../../../MetaModelConst.js';
 import {
   type V1_RawValueSpecificationVisitor,
   V1_RawValueSpecification,
-} from '../../model/rawValueSpecification/V1_RawValueSpecification';
+} from '../../model/rawValueSpecification/V1_RawValueSpecification.js';
 
 export class V1_RawLambda extends V1_RawValueSpecification implements Hashable {
   body?: object | undefined;

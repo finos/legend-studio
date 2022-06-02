@@ -14,6 +14,6 @@
  * limitations under the License.
  */
 
-import { PackageableElement } from '../PackageableElement';
+import { PackageableElement } from '../PackageableElement.js';
 
 export abstract class Type extends PackageableElement {}

@@ -14,32 +14,36 @@
  * limitations under the License.
  */
 
-import { TEST_DATA__relationalCompleteGraphEntities } from './TEST_DATA__RelationalEntities';
+import { test, expect, beforeEach } from '@jest/globals';
+import { TEST_DATA__relationalCompleteGraphEntities } from './TEST_DATA__RelationalEntities.js';
 import {
   unitTest,
   guaranteeType,
   guaranteeNonNullable,
 } from '@finos/legend-shared';
 import type { Entity } from '@finos/legend-model-storage';
-import type { GraphManagerState } from '../../../GraphManagerState';
+import type { GraphManagerState } from '../../../GraphManagerState.js';
 import {
   TEST__buildGraphWithEntities,
   TEST__checkBuildingElementsRoundtrip,
   TEST__getTestGraphManagerState,
   TEST__GraphPluginManager,
-} from '../../../GraphManagerTestUtils';
-import { Database } from '../../../models/metamodels/pure/packageableElements/store/relational/model/Database';
-import { RootRelationalInstanceSetImplementation } from '../../../models/metamodels/pure/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation';
+} from '../../../GraphManagerTestUtils.js';
+import { Database } from '../../../models/metamodels/pure/packageableElements/store/relational/model/Database.js';
+import { RootRelationalInstanceSetImplementation } from '../../../models/metamodels/pure/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation.js';
 import {
   findPropertyMapping,
   getOwnClassMappingsByClass,
-} from '../../../helpers/DSLMapping_Helper';
-import { EmbeddedRelationalInstanceSetImplementation } from '../../../models/metamodels/pure/packageableElements/store/relational/mapping/EmbeddedRelationalInstanceSetImplementation';
-import { RelationalPropertyMapping } from '../../../models/metamodels/pure/packageableElements/store/relational/mapping/RelationalPropertyMapping';
-import { PRIMITIVE_TYPE } from '../../../MetaModelConst';
-import { TEST_DATA__SemiStructuredRelationalTypeRoundtrip } from './TEST_DATA__SemiStructuredRelationalTypeRoundtrip';
-import { DSLExternalFormat_GraphPreset } from '../../../graph/DSLExternalFormat_Extension';
-import { getSchema, getTable } from '../../../helpers/StoreRelational_Helper';
+} from '../../../helpers/DSLMapping_Helper.js';
+import { EmbeddedRelationalInstanceSetImplementation } from '../../../models/metamodels/pure/packageableElements/store/relational/mapping/EmbeddedRelationalInstanceSetImplementation.js';
+import { RelationalPropertyMapping } from '../../../models/metamodels/pure/packageableElements/store/relational/mapping/RelationalPropertyMapping.js';
+import { PRIMITIVE_TYPE } from '../../../MetaModelConst.js';
+import { TEST_DATA__SemiStructuredRelationalTypeRoundtrip } from './TEST_DATA__SemiStructuredRelationalTypeRoundtrip.js';
+import { DSLExternalFormat_GraphPreset } from '../../../graph/DSLExternalFormat_Extension.js';
+import {
+  getSchema,
+  getTable,
+} from '../../../helpers/StoreRelational_Helper.js';
 
 let graphManagerState: GraphManagerState;
 

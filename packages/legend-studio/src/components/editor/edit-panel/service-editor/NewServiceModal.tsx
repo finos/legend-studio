@@ -18,7 +18,7 @@ import { useState, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 import { guaranteeType } from '@finos/legend-shared';
 import { Dialog } from '@finos/legend-art';
-import { useEditorStore } from '../../EditorStoreProvider';
+import { useEditorStore } from '../../EditorStoreProvider.js';
 import { useApplicationStore } from '@finos/legend-application';
 import {
   type Mapping,

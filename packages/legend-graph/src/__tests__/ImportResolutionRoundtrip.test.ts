@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
+import { test, describe } from '@jest/globals';
 import { unitTest } from '@finos/legend-shared';
 import {
   TEST_DATA__AutoImportsWithSystemProfiles,
   TEST_DATA__simpleDebuggingCase,
   TEST_DATA__AutoImportsWithAny,
-} from './roundtripTestData/TEST_DATA__GenericRoundtrip';
+} from './roundtripTestData/TEST_DATA__GenericRoundtrip.js';
 import TEST_DATA__m2mGraphEntities from './buildGraph/TEST_DATA__M2MGraphEntities.json';
 import {
   TEST_DATA__ClassRoundtrip,
@@ -28,15 +29,15 @@ import {
   TEST_DATA__FunctionRoundtrip,
   TEST_DATA__MeasureRoundtrip,
   TEST_DATA__ClassWithComplexConstraint,
-} from './roundtripTestData/TEST_DATA__DomainRoundtrip';
+} from './roundtripTestData/TEST_DATA__DomainRoundtrip.js';
 import {
   testConnectionRoundtrip,
   testModelChainConnectionRoundtrip,
-} from './roundtripTestData/TEST_DATA__ConnectionRoundtrip';
+} from './roundtripTestData/TEST_DATA__ConnectionRoundtrip.js';
 import {
   TEST_DATA__FileGenerationRoundtrip,
   TEST_DATA__FileGenerationWithPackageSameAsSystemElement,
-} from './roundtripTestData/TEST_DATA__FileGenerationRoundtrip';
+} from './roundtripTestData/TEST_DATA__FileGenerationRoundtrip.js';
 import {
   TEST_DATA__FlatDataRoundtrip,
   TEST_DATA__FlatDataMappingRoundtrip,
@@ -44,8 +45,8 @@ import {
   TEST_DATA__FlatDataInputDataRoundtrip,
   TEST_DATA__FlatDataRoundtrip2,
   TEST_DATA__EmbeddedFlatDataMappingRoundtrip,
-} from './roundtripTestData/TEST_DATA__FlatDataRoundtrip';
-import { TEST_DATA__GenerationSpecificationRoundtrip } from './roundtripTestData/TEST_DATA__GenerationSpecification';
+} from './roundtripTestData/TEST_DATA__FlatDataRoundtrip.js';
+import { TEST_DATA__GenerationSpecificationRoundtrip } from './roundtripTestData/TEST_DATA__GenerationSpecification.js';
 import {
   TEST_DATA__DatabaseRoundtrip,
   TEST_DATA__RelationalDatabaseConnectionRoundtrip,
@@ -54,17 +55,17 @@ import {
   TEST_DATA__multiLevelEmbeddedRelationalRoundtrip,
   TEST_DATA__RelationalAssociationMapping,
   TEST_DATA__XStoreAssociationMapping,
-} from './roundtripTestData/TEST_DATA__RelationalRoundtrip';
-import { TEST_DATA__ServiceRoundtrip } from './roundtripTestData/TEST_DATA__ServiceRoundtrip';
+} from './roundtripTestData/TEST_DATA__RelationalRoundtrip.js';
+import { TEST_DATA__ServiceRoundtrip } from './roundtripTestData/TEST_DATA__ServiceRoundtrip.js';
 import {
   TEST_DATA__AggregationAwareMappingRoundtrip,
   TEST_DATA__Relational_LocalPropertyMappingRoundtrip,
   TEST_DATA__MappingRoundtrip,
   TEST_DATA__LocalPropertyMapping,
-} from './roundtripTestData/TEST_DATA__MappingRoundtrip';
-import { TEST_DATA__RuntimeRoundtrip } from './roundtripTestData/TEST_DATA__RuntimeRoundtrip';
-import { TEST__checkBuildingElementsRoundtrip } from '../GraphManagerTestUtils';
-import { TEST_DATA__DataRoundtrip } from './roundtripTestData/TEST_DATA__DataRoundtrip';
+} from './roundtripTestData/TEST_DATA__MappingRoundtrip.js';
+import { TEST_DATA__RuntimeRoundtrip } from './roundtripTestData/TEST_DATA__RuntimeRoundtrip.js';
+import { TEST__checkBuildingElementsRoundtrip } from '../GraphManagerTestUtils.js';
+import { TEST_DATA__DataRoundtrip } from './roundtripTestData/TEST_DATA__DataRoundtrip.js';
 
 describe(unitTest('M2M graph roundtrip'), () => {
   test.each([

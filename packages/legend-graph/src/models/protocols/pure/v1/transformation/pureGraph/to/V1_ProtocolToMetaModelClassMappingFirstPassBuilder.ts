@@ -20,37 +20,37 @@ import {
   assertNonNullable,
   guaranteeNonNullable,
 } from '@finos/legend-shared';
-import type { Mapping } from '../../../../../../metamodels/pure/packageableElements/mapping/Mapping';
-import type { SetImplementation } from '../../../../../../metamodels/pure/packageableElements/mapping/SetImplementation';
+import type { Mapping } from '../../../../../../metamodels/pure/packageableElements/mapping/Mapping.js';
+import type { SetImplementation } from '../../../../../../metamodels/pure/packageableElements/mapping/SetImplementation.js';
 import {
   OperationSetImplementation,
   OperationType,
-} from '../../../../../../metamodels/pure/packageableElements/mapping/OperationSetImplementation';
-import { PureInstanceSetImplementation } from '../../../../../../metamodels/pure/packageableElements/store/modelToModel/mapping/PureInstanceSetImplementation';
-import { FlatDataInstanceSetImplementation } from '../../../../../../metamodels/pure/packageableElements/store/flatData/mapping/FlatDataInstanceSetImplementation';
-import { RootRelationalInstanceSetImplementation } from '../../../../../../metamodels/pure/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation';
-import { InferableMappingElementRootExplicitValue } from '../../../../../../metamodels/pure/packageableElements/mapping/InferableMappingElementRoot';
-import type { V1_GraphBuilderContext } from '../../../transformation/pureGraph/to/V1_GraphBuilderContext';
+} from '../../../../../../metamodels/pure/packageableElements/mapping/OperationSetImplementation.js';
+import { PureInstanceSetImplementation } from '../../../../../../metamodels/pure/packageableElements/store/modelToModel/mapping/PureInstanceSetImplementation.js';
+import { FlatDataInstanceSetImplementation } from '../../../../../../metamodels/pure/packageableElements/store/flatData/mapping/FlatDataInstanceSetImplementation.js';
+import { RootRelationalInstanceSetImplementation } from '../../../../../../metamodels/pure/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation.js';
+import { InferableMappingElementRootExplicitValue } from '../../../../../../metamodels/pure/packageableElements/mapping/InferableMappingElementRoot.js';
+import type { V1_GraphBuilderContext } from '../../../transformation/pureGraph/to/V1_GraphBuilderContext.js';
 import type {
   V1_ClassMappingVisitor,
   V1_ClassMapping,
-} from '../../../model/packageableElements/mapping/V1_ClassMapping';
-import type { V1_OperationClassMapping } from '../../../model/packageableElements/mapping/V1_OperationClassMapping';
-import type { V1_PureInstanceClassMapping } from '../../../model/packageableElements/store/modelToModel/mapping/V1_PureInstanceClassMapping';
-import type { V1_RelationalClassMapping } from '../../../model/packageableElements/store/relational/mapping/V1_RelationalClassMapping';
-import type { V1_RootFlatDataClassMapping } from '../../../model/packageableElements/store/flatData/mapping/V1_RootFlatDataClassMapping';
-import type { V1_RootRelationalClassMapping } from '../../../model/packageableElements/store/relational/mapping/V1_RootRelationalClassMapping';
-import type { V1_AggregationAwareClassMapping } from '../../../model/packageableElements/store/relational/mapping/aggregationAware/V1_AggregationAwareClassMapping';
-import { V1_getInferredClassMappingId } from '../../../transformation/pureGraph/to/helpers/V1_MappingBuilderHelper';
-import { AggregationAwareSetImplementation } from '../../../../../../metamodels/pure/packageableElements/mapping/aggregationAware/AggregationAwareSetImplementation';
-import type { InstanceSetImplementation } from '../../../../../../metamodels/pure/packageableElements/mapping/InstanceSetImplementation';
-import { V1_buildAggregateContainer } from './helpers/V1_AggregationAwareClassMappingBuilderHelper';
-import { V1_buildRawLambdaWithResolvedPaths } from './helpers/V1_ValueSpecificationPathResolver';
-import { V1_buildRelationalMappingFilter } from './helpers/V1_RelationalClassMappingBuilderHelper';
-import { toOptionalPackageableElementReference } from '../../../../../../metamodels/pure/packageableElements/PackageableElementReference';
-import type { DSLMapping_PureProtocolProcessorPlugin_Extension } from '../../../../DSLMapping_PureProtocolProcessorPlugin_Extension';
-import type { V1_MergeOperationClassMapping } from '../../../model/packageableElements/mapping/V1_MergeOperationClassMapping';
-import { MergeOperationSetImplementation } from '../../../../../../metamodels/pure/packageableElements/mapping/MergeOperationSetImplementation';
+} from '../../../model/packageableElements/mapping/V1_ClassMapping.js';
+import type { V1_OperationClassMapping } from '../../../model/packageableElements/mapping/V1_OperationClassMapping.js';
+import type { V1_PureInstanceClassMapping } from '../../../model/packageableElements/store/modelToModel/mapping/V1_PureInstanceClassMapping.js';
+import type { V1_RelationalClassMapping } from '../../../model/packageableElements/store/relational/mapping/V1_RelationalClassMapping.js';
+import type { V1_RootFlatDataClassMapping } from '../../../model/packageableElements/store/flatData/mapping/V1_RootFlatDataClassMapping.js';
+import type { V1_RootRelationalClassMapping } from '../../../model/packageableElements/store/relational/mapping/V1_RootRelationalClassMapping.js';
+import type { V1_AggregationAwareClassMapping } from '../../../model/packageableElements/store/relational/mapping/aggregationAware/V1_AggregationAwareClassMapping.js';
+import { V1_getInferredClassMappingId } from '../../../transformation/pureGraph/to/helpers/V1_MappingBuilderHelper.js';
+import { AggregationAwareSetImplementation } from '../../../../../../metamodels/pure/packageableElements/mapping/aggregationAware/AggregationAwareSetImplementation.js';
+import type { InstanceSetImplementation } from '../../../../../../metamodels/pure/packageableElements/mapping/InstanceSetImplementation.js';
+import { V1_buildAggregateContainer } from './helpers/V1_AggregationAwareClassMappingBuilderHelper.js';
+import { V1_buildRawLambdaWithResolvedPaths } from './helpers/V1_ValueSpecificationPathResolver.js';
+import { V1_buildRelationalMappingFilter } from './helpers/V1_RelationalClassMappingBuilderHelper.js';
+import { toOptionalPackageableElementReference } from '../../../../../../metamodels/pure/packageableElements/PackageableElementReference.js';
+import type { DSLMapping_PureProtocolProcessorPlugin_Extension } from '../../../../DSLMapping_PureProtocolProcessorPlugin_Extension.js';
+import type { V1_MergeOperationClassMapping } from '../../../model/packageableElements/mapping/V1_MergeOperationClassMapping.js';
+import { MergeOperationSetImplementation } from '../../../../../../metamodels/pure/packageableElements/mapping/MergeOperationSetImplementation.js';
 
 const getClassMappingOperationType = (value: string): OperationType =>
   guaranteeNonNullable(

@@ -55,11 +55,11 @@ import {
   getNodeTestableResult,
   getAtomicTest_TestResult,
   getAssertionStatus,
-} from '../../../../stores/sidebar-state/testable/GlobalTestRunnerState';
-import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID';
-import { TextDiffView } from '../../../shared/DiffView';
-import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor';
-import { useEditorStore } from '../../EditorStoreProvider';
+} from '../../../../stores/sidebar-state/testable/GlobalTestRunnerState.js';
+import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID.js';
+import { TextDiffView } from '../../../shared/DiffView.js';
+import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor.js';
+import { useEditorStore } from '../../EditorStoreProvider.js';
 
 const getTestableResultIcon = (
   testableResult: TESTABLE_RESULT,

@@ -32,9 +32,18 @@ const baseConfig = getBaseConfig({
 export const baseJestConfig = {
   ...baseConfig,
   setupFiles: [
-    // TODO: problem with ESM - remove when we run Jest with ESM
-    // See https://github.com/finos/legend-studio/issues/502
-    '@finos/legend-art/jest/mockESM.jsx',
+    /**
+     * TODO: problem with ESM - remove when we run Jest with ESM
+     * See https://github.com/finos/legend-studio/issues/502
+     *
+     * NOTE: we could do what we do with `react-dnd` which is to include `react-markdown` and `remark-gfm`
+     * and some of their dependencies to the list of packages to be transformed by `babel-jest`, but mocking
+     * them like this might just be faster. However, usage of `jest.mock` might not be fully supported by
+     * Jest ESM
+     * See https://github.com/facebook/jest/issues/9430
+     * See https://github.com/facebook/jest/pull/10976
+     */
+    '@finos/legend-art/lib/testMocks/ReactMarkdownMocker.js',
     '@finos/legend-dev-utils/jest/disallowConsoleError',
     '@finos/legend-dev-utils/jest/handleUnhandledRejection',
     // TODO: remove this when we no longer need to mock `Window.fetch()` for tests

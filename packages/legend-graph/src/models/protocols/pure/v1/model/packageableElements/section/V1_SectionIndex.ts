@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst.js';
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import {
   type V1_PackageableElementVisitor,
   V1_PackageableElement,
-} from '../../../model/packageableElements/V1_PackageableElement';
-import type { V1_Section } from './V1_Section';
+} from '../../../model/packageableElements/V1_PackageableElement.js';
+import type { V1_Section } from './V1_Section.js';
 
 export class V1_SectionIndex extends V1_PackageableElement implements Hashable {
   sections: V1_Section[] = [];

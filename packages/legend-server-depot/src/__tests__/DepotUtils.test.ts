@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
+import { test, expect } from '@jest/globals';
 import { unitTest } from '@finos/legend-shared';
-import { compareSemVerVersions } from '../DepotUtils';
+import { compareSemVerVersions } from '../DepotUtils.js';
 
 test(unitTest('Compare Semver versions'), () => {
   expect(compareSemVerVersions('0.0.0', '0.0.0')).toEqual(0);

@@ -18,17 +18,17 @@ import { UnsupportedOperationError } from '@finos/legend-shared';
 import {
   DefaultCodeSection,
   ImportAwareCodeSection,
-} from '../../../../../../metamodels/pure/packageableElements/section/Section';
-import type { SectionIndex } from '../../../../../../metamodels/pure/packageableElements/section/SectionIndex';
+} from '../../../../../../metamodels/pure/packageableElements/section/Section.js';
+import type { SectionIndex } from '../../../../../../metamodels/pure/packageableElements/section/SectionIndex.js';
 import {
   V1_DefaultCodeSection,
   V1_ImportAwareCodeSection,
-} from '../../../model/packageableElements/section/V1_Section';
-import { V1_SectionIndex } from '../../../model/packageableElements/section/V1_SectionIndex';
+} from '../../../model/packageableElements/section/V1_Section.js';
+import { V1_SectionIndex } from '../../../model/packageableElements/section/V1_SectionIndex.js';
 import {
   V1_initPackageableElement,
   V1_transformElementReference,
-} from './V1_CoreTransformerHelper';
+} from './V1_CoreTransformerHelper.js';
 
 const transformDefaultCodeSectionSchema = (
   element: DefaultCodeSection,

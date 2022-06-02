@@ -15,16 +15,16 @@
  */
 
 import { hashArray, isNonNullable, type Hashable } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
+import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst.js';
 import type {
   PackageableElementReference,
   OptionalPackageableElementReference,
-} from '../PackageableElementReference';
-import type { Mapping } from './Mapping';
-import type { Enumeration } from '../domain/Enumeration';
-import type { EnumValueMapping } from './EnumValueMapping';
-import type { Type } from '../domain/Type';
-import type { InferableMappingElementIdValue } from './InferableMappingElementId';
+} from '../PackageableElementReference.js';
+import type { Mapping } from './Mapping.js';
+import type { Enumeration } from '../domain/Enumeration.js';
+import type { EnumValueMapping } from './EnumValueMapping.js';
+import type { Type } from '../domain/Type.js';
+import type { InferableMappingElementIdValue } from './InferableMappingElementId.js';
 
 export class EnumerationMapping implements Hashable {
   readonly _PARENT: Mapping;

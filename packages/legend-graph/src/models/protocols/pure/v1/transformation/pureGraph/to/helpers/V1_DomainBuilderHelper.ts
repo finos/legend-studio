@@ -21,39 +21,39 @@ import {
   isNonNullable,
   assertTrue,
 } from '@finos/legend-shared';
-import type { Class } from '../../../../../../../metamodels/pure/packageableElements/domain/Class';
-import type { Association } from '../../../../../../../metamodels/pure/packageableElements/domain/Association';
+import type { Class } from '../../../../../../../metamodels/pure/packageableElements/domain/Class.js';
+import type { Association } from '../../../../../../../metamodels/pure/packageableElements/domain/Association.js';
 import {
   type Measure,
   Unit,
-} from '../../../../../../../metamodels/pure/packageableElements/domain/Measure';
-import { Property } from '../../../../../../../metamodels/pure/packageableElements/domain/Property';
-import { DerivedProperty } from '../../../../../../../metamodels/pure/packageableElements/domain/DerivedProperty';
-import { RawVariableExpression } from '../../../../../../../metamodels/pure/rawValueSpecification/RawVariableExpression';
-import { TaggedValue } from '../../../../../../../metamodels/pure/packageableElements/domain/TaggedValue';
-import { Constraint } from '../../../../../../../metamodels/pure/packageableElements/domain/Constraint';
-import type { BasicModel } from '../../../../../../../../graph/BasicModel';
+} from '../../../../../../../metamodels/pure/packageableElements/domain/Measure.js';
+import { Property } from '../../../../../../../metamodels/pure/packageableElements/domain/Property.js';
+import { DerivedProperty } from '../../../../../../../metamodels/pure/packageableElements/domain/DerivedProperty.js';
+import { RawVariableExpression } from '../../../../../../../metamodels/pure/rawValueSpecification/RawVariableExpression.js';
+import { TaggedValue } from '../../../../../../../metamodels/pure/packageableElements/domain/TaggedValue.js';
+import { Constraint } from '../../../../../../../metamodels/pure/packageableElements/domain/Constraint.js';
+import type { BasicModel } from '../../../../../../../../graph/BasicModel.js';
 import type {
   AbstractProperty,
   PropertyOwner,
-} from '../../../../../../../metamodels/pure/packageableElements/domain/AbstractProperty';
-import type { V1_ValueSpecification } from '../../../../model/valueSpecification/V1_ValueSpecification';
+} from '../../../../../../../metamodels/pure/packageableElements/domain/AbstractProperty.js';
+import type { V1_ValueSpecification } from '../../../../model/valueSpecification/V1_ValueSpecification.js';
 import {
   V1_buildFullPath,
   type V1_GraphBuilderContext,
-} from '../../../../transformation/pureGraph/to/V1_GraphBuilderContext';
-import type { V1_Constraint } from '../../../../model/packageableElements/domain/V1_Constraint';
-import type { V1_RawVariable } from '../../../../model/rawValueSpecification/V1_RawVariable';
-import type { V1_Property } from '../../../../model/packageableElements/domain/V1_Property';
-import type { V1_DerivedProperty } from '../../../../model/packageableElements/domain/V1_DerivedProperty';
-import type { V1_Unit } from '../../../../model/packageableElements/domain/V1_Measure';
-import type { V1_TaggedValue } from '../../../../model/packageableElements/domain/V1_TaggedValue';
-import { V1_buildRawLambdaWithResolvedPaths } from './V1_ValueSpecificationPathResolver';
+} from '../../../../transformation/pureGraph/to/V1_GraphBuilderContext.js';
+import type { V1_Constraint } from '../../../../model/packageableElements/domain/V1_Constraint.js';
+import type { V1_RawVariable } from '../../../../model/rawValueSpecification/V1_RawVariable.js';
+import type { V1_Property } from '../../../../model/packageableElements/domain/V1_Property.js';
+import type { V1_DerivedProperty } from '../../../../model/packageableElements/domain/V1_DerivedProperty.js';
+import type { V1_Unit } from '../../../../model/packageableElements/domain/V1_Measure.js';
+import type { V1_TaggedValue } from '../../../../model/packageableElements/domain/V1_TaggedValue.js';
+import { V1_buildRawLambdaWithResolvedPaths } from './V1_ValueSpecificationPathResolver.js';
 import {
   addElementToPackage,
   getAllClassProperties,
   getOrCreateGraphPackage,
-} from '../../../../../../../../helpers/DomainHelper';
+} from '../../../../../../../../helpers/DomainHelper.js';
 
 export const V1_buildTaggedValue = (
   taggedValue: V1_TaggedValue,

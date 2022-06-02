@@ -21,12 +21,12 @@ import {
   PlusIcon,
   OptionsIcon,
 } from '@finos/legend-art';
-import type { QueryBuilderState } from '../stores/QueryBuilderState';
+import type { QueryBuilderState } from '../stores/QueryBuilderState.js';
 import { prettyCONSTName } from '@finos/legend-shared';
-import { QueryBuilderProjectionPanel } from './QueryBuilderProjectionPanel';
-import { QueryBuilderGraphFetchTreePanel } from './QueryBuilderGraphFetchTreePanel';
-import { FETCH_STRUCTURE_MODE } from '../stores/QueryBuilderFetchStructureState';
-import { QueryBuilderPostFilterState } from '../stores/QueryBuilderPostFilterState';
+import { QueryBuilderProjectionPanel } from './QueryBuilderProjectionPanel.js';
+import { QueryBuilderGraphFetchTreePanel } from './QueryBuilderGraphFetchTreePanel.js';
+import { FETCH_STRUCTURE_MODE } from '../stores/QueryBuilderFetchStructureState.js';
+import { QueryBuilderPostFilterState } from '../stores/QueryBuilderPostFilterState.js';
 
 const QueryBuilderUnsupportedFetchStructure = observer(
   (props: { mode: FETCH_STRUCTURE_MODE }) => {

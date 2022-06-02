@@ -15,7 +15,7 @@
  */
 
 import type { Entity } from '@finos/legend-model-storage';
-import type { EntityChange } from './EntityChange';
+import type { EntityChange } from './EntityChange.js';
 
 export interface UpdateEntitiesCommand {
   message: string;

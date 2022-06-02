@@ -15,15 +15,15 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { SQLPlanViewer } from './SQLExecutionPlanViewer';
+import { SQLPlanViewer } from './SQLExecutionPlanViewer.js';
 import {
   type ExecutionPlanState,
   EXECUTION_PLAN_VIEW_MODE,
-} from '../../../../../stores/ExecutionPlanState';
+} from '../../../../../stores/ExecutionPlanState.js';
 import {
   ExecutionNodeTreeNodeData,
   ExecutionPlanViewTreeNodeData,
-} from './ExecutionPlanViewer';
+} from './ExecutionPlanViewer.js';
 import {
   type ResultType,
   type DataType,
@@ -55,7 +55,7 @@ import {
 } from '@finos/legend-art';
 import { prettyCONSTName } from '@finos/legend-shared';
 import { EDITOR_LANGUAGE } from '@finos/legend-application';
-import { StudioTextInputEditor } from '../../../../shared/StudioTextInputEditor';
+import { StudioTextInputEditor } from '../../../../shared/StudioTextInputEditor.js';
 
 const generateDataTypeLabel = (type: unknown | undefined): string => {
   if (type === undefined) {

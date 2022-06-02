@@ -15,9 +15,9 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
-import type { V1_StereotypePtr } from '../../../model/packageableElements/domain/V1_StereotypePtr';
-import type { V1_TaggedValue } from '../../../model/packageableElements/domain/V1_TaggedValue';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst.js';
+import type { V1_StereotypePtr } from '../../../model/packageableElements/domain/V1_StereotypePtr.js';
+import type { V1_TaggedValue } from '../../../model/packageableElements/domain/V1_TaggedValue.js';
 
 export class V1_EnumValue implements Hashable {
   value!: string;

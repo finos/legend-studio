@@ -15,12 +15,12 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import type { SchemaSet } from '../schemaSet/DSLExternalFormat_SchemaSet';
-import { Store } from '../../store/Store';
-import type { OptionalPackageableElementReference } from '../../PackageableElementReference';
-import type { ModelUnit } from './DSLExternalFormat_ModelUnit';
-import type { PackageableElementVisitor } from '../../PackageableElement';
-import { DSL_EXTERNAL_FORMAT_HASH_STRUCTURE } from '../../../../../DSLExternalFormat_ModelUtils';
+import type { SchemaSet } from '../schemaSet/DSLExternalFormat_SchemaSet.js';
+import { Store } from '../../store/Store.js';
+import type { OptionalPackageableElementReference } from '../../PackageableElementReference.js';
+import type { ModelUnit } from './DSLExternalFormat_ModelUnit.js';
+import type { PackageableElementVisitor } from '../../PackageableElement.js';
+import { DSL_EXTERNAL_FORMAT_HASH_STRUCTURE } from '../../../../../DSLExternalFormat_ModelUtils.js';
 
 export class Binding extends Store implements Hashable {
   schemaSet!: OptionalPackageableElementReference<SchemaSet>;

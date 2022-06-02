@@ -14,21 +14,21 @@
  * limitations under the License.
  */
 
-/// <reference types="jest-extended" />
-import { unitTest } from '@finos/legend-shared';
+import { test, expect } from '@jest/globals';
+import { type TEMPORARRY__JestMatcher, unitTest } from '@finos/legend-shared';
 import {
   TEST_DATA__InferenceDefaultMappingElementID,
   TEST_DATA__ImportResolutionMultipleMatchesFound,
   TEST_DATA__ReferenceWithoutSection,
   TEST_DATA__ReferenceModification,
-} from './TEST_DATA__Inference';
+} from './TEST_DATA__Inference.js';
 import type { Entity } from '@finos/legend-model-storage';
 import {
   TEST__buildGraphWithEntities,
   TEST__excludeSectionIndex,
   TEST__getTestGraphManagerState,
-} from '../GraphManagerTestUtils';
-import { getTag } from '../helpers/DomainHelper';
+} from '../GraphManagerTestUtils.js';
+import { getTag } from '../helpers/DomainHelper.js';
 
 test(unitTest('Infer default mapping element ID'), async () => {
   const graphManagerState = TEST__getTestGraphManagerState();
@@ -39,7 +39,7 @@ test(unitTest('Infer default mapping element ID'), async () => {
   const transformedEntities = graphManagerState.graph.allOwnElements.map(
     (element) => graphManagerState.graphManager.elementToEntity(element),
   );
-  expect(transformedEntities).toIncludeSameMembers(
+  (expect(transformedEntities) as TEMPORARRY__JestMatcher).toIncludeSameMembers(
     TEST__excludeSectionIndex(
       TEST_DATA__InferenceDefaultMappingElementID as Entity[],
     ),
@@ -76,9 +76,9 @@ test(
     const transformedEntities = graphManagerState.graph.allOwnElements.map(
       (element) => graphManagerState.graphManager.elementToEntity(element),
     );
-    expect(transformedEntities).toIncludeSameMembers(
-      TEST_DATA__ReferenceWithoutSection.withoutSection,
-    );
+    (
+      expect(transformedEntities) as TEMPORARRY__JestMatcher
+    ).toIncludeSameMembers(TEST_DATA__ReferenceWithoutSection.withoutSection);
   },
 );
 
@@ -103,10 +103,12 @@ test(
         graphManagerState.graph.getProfile('test::tProf');
     }
 
-    expect(
-      graphManagerState.graph.allOwnElements.map((element) =>
-        graphManagerState.graphManager.elementToEntity(element),
-      ),
+    (
+      expect(
+        graphManagerState.graph.allOwnElements.map((element) =>
+          graphManagerState.graphManager.elementToEntity(element),
+        ),
+      ) as TEMPORARRY__JestMatcher
     ).toIncludeSameMembers(
       TEST__excludeSectionIndex(
         TEST_DATA__ReferenceModification.sameProfileModification as Entity[],
@@ -130,10 +132,12 @@ test(
         graphManagerState.graph.getProfile('test2::tProf');
     }
 
-    expect(
-      graphManagerState.graph.allOwnElements.map((element) =>
-        graphManagerState.graphManager.elementToEntity(element),
-      ),
+    (
+      expect(
+        graphManagerState.graph.allOwnElements.map((element) =>
+          graphManagerState.graphManager.elementToEntity(element),
+        ),
+      ) as TEMPORARRY__JestMatcher
     ).toIncludeSameMembers(
       TEST__excludeSectionIndex(
         TEST_DATA__ReferenceModification.differentProfileModification as Entity[],

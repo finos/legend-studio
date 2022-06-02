@@ -42,7 +42,7 @@ import {
   ColumnDatabaseBuilderTreeNodeData,
   SchemaDatabaseBuilderTreeNodeData,
   TableDatabaseBuilderTreeNodeData,
-} from '../../../../stores/editor-state/element-editor-state/connection/DatabaseBuilderState';
+} from '../../../../stores/editor-state/element-editor-state/connection/DatabaseBuilderState.js';
 import { capitalize } from '@finos/legend-shared';
 import {
   EDITOR_LANGUAGE,
@@ -51,9 +51,9 @@ import {
 import {
   generateColumnTypeLabel,
   renderColumnTypeIcon,
-} from '../../../../stores/editor-state/element-editor-state/mapping/relational/DatabaseEditorHelper';
+} from '../../../../stores/editor-state/element-editor-state/mapping/relational/DatabaseEditorHelper.js';
 import { flowResult } from 'mobx';
-import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor';
+import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor.js';
 
 const getNodeIcon = (node: DatabaseBuilderTreeNodeData): React.ReactNode => {
   if (node instanceof SchemaDatabaseBuilderTreeNodeData) {

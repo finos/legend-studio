@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-import type { V1_Runtime } from '../../../model/packageableElements/runtime/V1_Runtime';
+import type { V1_Runtime } from '../../../model/packageableElements/runtime/V1_Runtime.js';
 import {
   type V1_ValueSpecificationVisitor,
   V1_ValueSpecification,
-} from '../../../model/valueSpecification/V1_ValueSpecification';
+} from '../../../model/valueSpecification/V1_ValueSpecification.js';
 
 export class V1_RuntimeInstance extends V1_ValueSpecification {
   runtime!: V1_Runtime;

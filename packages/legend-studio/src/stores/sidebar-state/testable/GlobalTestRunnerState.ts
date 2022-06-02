@@ -45,13 +45,13 @@ import {
   filterByType,
 } from '@finos/legend-shared';
 import { action, flow, makeObservable, observable } from 'mobx';
-import { getElementTypeIcon } from '../../../components/shared/ElementIconUtils';
-import type { EditorSDLCState } from '../../EditorSDLCState';
-import type { EditorStore } from '../../EditorStore';
+import { getElementTypeIcon } from '../../../components/shared/ElementIconUtils.js';
+import type { EditorSDLCState } from '../../EditorSDLCState.js';
+import type { EditorStore } from '../../EditorStore.js';
 import type {
   LegendStudioPlugin,
   TestableMetadataGetter,
-} from '../../LegendStudioPlugin';
+} from '../../LegendStudioPlugin.js';
 
 // Testable Metadata
 export interface TestableMetadata {

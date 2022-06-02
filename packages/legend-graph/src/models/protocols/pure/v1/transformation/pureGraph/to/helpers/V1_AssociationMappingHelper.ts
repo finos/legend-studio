@@ -14,23 +14,23 @@
  * limitations under the License.
  */
 
-import { fromElementPathToMappingElementId } from '../../../../../../../../MetaModelUtils';
+import { fromElementPathToMappingElementId } from '../../../../../../../../MetaModelUtils.js';
 import { UnsupportedOperationError } from '@finos/legend-shared';
-import type { Mapping } from '../../../../../../../metamodels/pure/packageableElements/mapping/Mapping';
-import { RelationalAssociationImplementation } from '../../../../../../../metamodels/pure/packageableElements/mapping/RelationalAssociationImplementation';
-import type { AssociationImplementation } from '../../../../../../../metamodels/pure/packageableElements/mapping/AssociationImplementation';
-import { InferableMappingElementIdImplicitValue } from '../../../../../../../metamodels/pure/packageableElements/mapping/InferableMappingElementId';
-import type { Association } from '../../../../../../../metamodels/pure/packageableElements/domain/Association';
-import { V1_RelationalAssociationMapping } from '../../../../model/packageableElements/store/relational/mapping/V1_RelationalAssociationMapping';
-import type { V1_GraphBuilderContext } from '../../../../transformation/pureGraph/to/V1_GraphBuilderContext';
-import { V1_ProtocolToMetaModelPropertyMappingBuilder } from '../../../../transformation/pureGraph/to/V1_ProtocolToMetaModelPropertyMappingBuilder';
-import type { V1_AssociationMapping } from '../../../../model/packageableElements/mapping/V1_AssociationMapping';
-import { V1_XStoreAssociationMapping } from '../../../../model/packageableElements/mapping/xStore/V1_XStoreAssociationMapping';
-import { XStoreAssociationImplementation } from '../../../../../../../metamodels/pure/packageableElements/mapping/xStore/XStoreAssociationImplementation';
+import type { Mapping } from '../../../../../../../metamodels/pure/packageableElements/mapping/Mapping.js';
+import { RelationalAssociationImplementation } from '../../../../../../../metamodels/pure/packageableElements/mapping/RelationalAssociationImplementation.js';
+import type { AssociationImplementation } from '../../../../../../../metamodels/pure/packageableElements/mapping/AssociationImplementation.js';
+import { InferableMappingElementIdImplicitValue } from '../../../../../../../metamodels/pure/packageableElements/mapping/InferableMappingElementId.js';
+import type { Association } from '../../../../../../../metamodels/pure/packageableElements/domain/Association.js';
+import { V1_RelationalAssociationMapping } from '../../../../model/packageableElements/store/relational/mapping/V1_RelationalAssociationMapping.js';
+import type { V1_GraphBuilderContext } from '../../../../transformation/pureGraph/to/V1_GraphBuilderContext.js';
+import { V1_ProtocolToMetaModelPropertyMappingBuilder } from '../../../../transformation/pureGraph/to/V1_ProtocolToMetaModelPropertyMappingBuilder.js';
+import type { V1_AssociationMapping } from '../../../../model/packageableElements/mapping/V1_AssociationMapping.js';
+import { V1_XStoreAssociationMapping } from '../../../../model/packageableElements/mapping/xStore/V1_XStoreAssociationMapping.js';
+import { XStoreAssociationImplementation } from '../../../../../../../metamodels/pure/packageableElements/mapping/xStore/XStoreAssociationImplementation.js';
 import {
   getAllEnumerationMappings,
   getAllIncludedMappings,
-} from '../../../../../../../../helpers/DSLMapping_Helper';
+} from '../../../../../../../../helpers/DSLMapping_Helper.js';
 
 const getInferredAssociationMappingId = (
   _association: Association,

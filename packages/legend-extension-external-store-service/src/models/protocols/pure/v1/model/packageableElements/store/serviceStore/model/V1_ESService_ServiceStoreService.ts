@@ -15,14 +15,14 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../../ESService_ModelUtils';
-import { V1_ServiceStoreElement } from './V1_ESService_ServiceStoreElement';
-import type { V1_ServiceParameter } from './V1_ESService_ServiceParameter';
-import type { V1_SecurityScheme } from './V1_ESService_SecurityScheme';
+import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../../ESService_ModelUtils.js';
+import { V1_ServiceStoreElement } from './V1_ESService_ServiceStoreElement.js';
+import type { V1_ServiceParameter } from './V1_ESService_ServiceParameter.js';
+import type { V1_SecurityScheme } from './V1_ESService_SecurityScheme.js';
 import type {
   V1_TypeReference,
   V1_ComplexTypeReference,
-} from './V1_ESService_TypeReference';
+} from './V1_ESService_TypeReference.js';
 
 export class V1_ServiceStoreService
   extends V1_ServiceStoreElement

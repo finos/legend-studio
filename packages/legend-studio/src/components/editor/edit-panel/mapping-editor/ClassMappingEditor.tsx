@@ -15,8 +15,8 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { InstanceSetImplementationEditor } from './InstanceSetImplementationEditor';
-import { OperationSetImplementationEditor } from './OperationSetImplementationEditor';
+import { InstanceSetImplementationEditor } from './InstanceSetImplementationEditor.js';
+import { OperationSetImplementationEditor } from './OperationSetImplementationEditor.js';
 import {
   clsx,
   CustomSelectorInput,
@@ -24,9 +24,9 @@ import {
   EmptySquareIcon,
   CheckSquareIcon,
 } from '@finos/legend-art';
-import { getElementTypeIcon } from '../../../shared/ElementIconUtils';
-import { MappingEditorState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
-import { useEditorStore } from '../../EditorStoreProvider';
+import { getElementTypeIcon } from '../../../shared/ElementIconUtils.js';
+import { MappingEditorState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState.js';
+import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
   type SetImplementation,
   type PureInstanceSetImplementation,
@@ -42,8 +42,8 @@ import {
   operationMapping_setOperation,
   operationMapping_setParameters,
   setImpl_setRoot,
-} from '../../../../stores/graphModifier/DSLMapping_GraphModifierHelper';
-import { SET_IMPLEMENTATION_TYPE } from '../../../../stores/shared/ModelUtil';
+} from '../../../../stores/graphModifier/DSLMapping_GraphModifierHelper.js';
+import { SET_IMPLEMENTATION_TYPE } from '../../../../stores/shared/ModelUtil.js';
 
 export const OperatorSelector = observer(
   (props: {

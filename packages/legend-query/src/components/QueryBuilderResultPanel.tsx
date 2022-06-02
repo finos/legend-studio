@@ -31,7 +31,7 @@ import {
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { flowResult } from 'mobx';
-import type { QueryBuilderState } from '../stores/QueryBuilderState';
+import type { QueryBuilderState } from '../stores/QueryBuilderState.js';
 import {
   type ExecutionResult,
   extractExecutionResultValues,
@@ -47,7 +47,7 @@ import {
   TextInputEditor,
   useApplicationStore,
 } from '@finos/legend-application';
-import { PARAMETER_SUBMIT_ACTION } from '../stores/QueryParametersState';
+import { PARAMETER_SUBMIT_ACTION } from '../stores/QueryParametersState.js';
 import { isBoolean } from '@finos/legend-shared';
 
 const QueryBuilderResultValues = observer(

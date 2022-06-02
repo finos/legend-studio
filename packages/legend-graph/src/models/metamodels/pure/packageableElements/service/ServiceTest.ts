@@ -15,9 +15,9 @@
  */
 
 import { type Hashable, hashArray } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
-import { AtomicTest } from '../../test/Test';
-import type { ParameterValue } from './ParameterValue';
+import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst.js';
+import { AtomicTest } from '../../test/Test.js';
+import type { ParameterValue } from './ParameterValue.js';
 
 export class ServiceTest extends AtomicTest implements Hashable {
   parameters: ParameterValue[] = [];

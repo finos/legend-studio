@@ -28,21 +28,21 @@ import {
   CheckSquareIcon,
   SquareIcon,
 } from '@finos/legend-art';
-import type { QueryBuilderState } from '../stores/QueryBuilderState';
-import { QUERY_BUILDER_TEST_ID } from './QueryBuilder_TestID';
+import type { QueryBuilderState } from '../stores/QueryBuilderState.js';
+import { QUERY_BUILDER_TEST_ID } from './QueryBuilder_TestID.js';
 import { isNonNullable } from '@finos/legend-shared';
 import {
   type QueryBuilderGraphFetchTreeData,
   type QueryBuilderGraphFetchTreeNodeData,
   removeNodeRecursively,
   isGraphFetchTreeDataEmpty,
-} from '../stores/QueryBuilderGraphFetchTreeUtil';
+} from '../stores/QueryBuilderGraphFetchTreeUtil.js';
 import {
   type QueryBuilderExplorerTreeDragSource,
   QUERY_BUILDER_EXPLORER_TREE_DND_TYPE,
-} from '../stores/QueryBuilderExplorerState';
-import type { QueryBuilderGraphFetchTreeState } from '../stores/QueryBuilderGraphFetchTreeState';
-import { getClassPropertyIcon } from './shared/ElementIconUtils';
+} from '../stores/QueryBuilderExplorerState.js';
+import type { QueryBuilderGraphFetchTreeState } from '../stores/QueryBuilderGraphFetchTreeState.js';
+import { getClassPropertyIcon } from './shared/ElementIconUtils.js';
 
 const QueryBuilderGraphFetchTreeNodeContainer: React.FC<
   TreeNodeContainerProps<

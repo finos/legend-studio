@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import { TemporalMilestoning } from './Milestoning';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../../MetaModelConst';
+import { TemporalMilestoning } from './Milestoning.js';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../../MetaModelConst.js';
 import { hashArray } from '@finos/legend-shared';
 
 export class ProcessingMilestoning extends TemporalMilestoning {

@@ -15,17 +15,17 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
+import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst.js';
 import type {
   PackageableElementExplicitReference,
   PackageableElementReference,
-} from '../PackageableElementReference';
-import type { PropertyMappingsImplementation } from './PropertyMappingsImplementation';
-import type { Association } from '../domain/Association';
-import type { Mapping } from './Mapping';
-import type { Store } from '../store/Store';
-import type { PropertyMapping } from './PropertyMapping';
-import type { InferableMappingElementIdValue } from './InferableMappingElementId';
+} from '../PackageableElementReference.js';
+import type { PropertyMappingsImplementation } from './PropertyMappingsImplementation.js';
+import type { Association } from '../domain/Association.js';
+import type { Mapping } from './Mapping.js';
+import type { Store } from '../store/Store.js';
+import type { PropertyMapping } from './PropertyMapping.js';
+import type { InferableMappingElementIdValue } from './InferableMappingElementId.js';
 
 export abstract class AssociationImplementation
   implements PropertyMappingsImplementation, Hashable

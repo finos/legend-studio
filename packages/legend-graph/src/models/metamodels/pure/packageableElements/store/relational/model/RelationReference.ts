@@ -15,16 +15,19 @@
  */
 
 import { UnsupportedOperationError } from '@finos/legend-shared';
-import type { PackageableElementImplicitReference } from '../../../PackageableElementReference';
-import type { Database } from './Database';
-import { Table } from './Table';
-import type { Relation } from './RelationalOperationElement';
-import { ViewExplicitReference, ViewImplicitReference } from './ViewReference';
-import { View } from './View';
+import type { PackageableElementImplicitReference } from '../../../PackageableElementReference.js';
+import type { Database } from './Database.js';
+import { Table } from './Table.js';
+import type { Relation } from './RelationalOperationElement.js';
+import {
+  ViewExplicitReference,
+  ViewImplicitReference,
+} from './ViewReference.js';
+import { View } from './View.js';
 import {
   TableExplicitReference,
   TableImplicitReference,
-} from './TableReference';
+} from './TableReference.js';
 
 export const createExplicitRelationReference = (
   value: Relation,

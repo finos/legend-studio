@@ -15,7 +15,7 @@
  */
 
 import { action, flowResult, makeAutoObservable, observable } from 'mobx';
-import type { EditorStore } from './EditorStore';
+import type { EditorStore } from './EditorStore.js';
 import {
   type GeneratorFn,
   type PlainObject,
@@ -31,7 +31,7 @@ import {
   generateViewVersionRoute,
   generateViewRevisionRoute,
   generateViewProjectRoute,
-} from './LegendStudioRouter';
+} from './LegendStudioRouter.js';
 import type { Entity } from '@finos/legend-model-storage';
 import {
   ProjectConfiguration,
@@ -40,7 +40,7 @@ import {
   Version,
   Workspace,
 } from '@finos/legend-server-sdlc';
-import { LEGEND_STUDIO_APP_EVENT } from './LegendStudioAppEvent';
+import { LEGEND_STUDIO_APP_EVENT } from './LegendStudioAppEvent.js';
 import { TAB_SIZE } from '@finos/legend-application';
 import {
   type ProjectGAVCoordinates,
@@ -54,7 +54,7 @@ import {
   type WorkflowManagerState,
   ProjectVersionWorkflowManagerState,
   ProjectWorkflowManagerState,
-} from './sidebar-state/WorkflowManagerState';
+} from './sidebar-state/WorkflowManagerState.js';
 import {
   type GraphBuilderReport,
   GraphManagerTelemetry,

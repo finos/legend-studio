@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { EditorStore } from '../EditorStore';
+import type { EditorStore } from '../EditorStore.js';
 import { uuid } from '@finos/legend-shared';
 
 export abstract class EditorState {

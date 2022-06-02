@@ -15,15 +15,15 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst.js';
 import type {
   V1_RelationalDataTableColumn,
   V1_RelationalDataTableRow,
-} from '../../data/V1_RelationalData';
+} from '../../data/V1_RelationalData.js';
 import {
   type V1_TestAssertionVisitor,
   V1_TestAssertion,
-} from './V1_TestAssertion';
+} from './V1_TestAssertion.js';
 
 export class V1_RelationalTDS implements Hashable {
   columns: V1_RelationalDataTableColumn[] = [];

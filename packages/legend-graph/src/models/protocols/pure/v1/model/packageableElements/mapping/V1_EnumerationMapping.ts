@@ -19,11 +19,11 @@ import {
   getNullableFirstElement,
   type Hashable,
 } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst.js';
 import {
   type V1_EnumValueMapping,
   V1_getEnumValueMappingSourceValueType,
-} from '../../../model/packageableElements/mapping/V1_EnumValueMapping';
+} from '../../../model/packageableElements/mapping/V1_EnumValueMapping.js';
 
 export class V1_EnumerationMapping implements Hashable {
   id?: string | undefined;

@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import { TEST_ID } from '../../../src/const';
-import { ElementEditorTester } from '../../utils/ElementEditorTester';
-import { ConflictResolutionHelperExtension } from '../../utils/ElementHelperExtension';
+import { TEST_ID } from '../../../src/const.js';
+import { ElementEditorTester } from '../../utils/ElementEditorTester.js';
+import { ConflictResolutionHelperExtension } from '../../utils/ElementHelperExtension.js';
 
 Cypress.config('defaultCommandTimeout', 160000);
 Cypress.config('pageLoadTimeout', 160000);

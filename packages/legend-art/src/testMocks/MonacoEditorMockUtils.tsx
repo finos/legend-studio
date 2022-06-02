@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import { jest } from '@jest/globals';
+
 /**
  * NOTE: we have tried different ways to mock `monaco-editor`. But those ways often involve
  * trying to load `monaco-editor` from `node_modules` and that takes a long time, so we'd better just mock

@@ -24,19 +24,19 @@ import {
   type AbstractPropertyExpression,
   Enumeration,
 } from '@finos/legend-graph';
-import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const.js';
 import {
   type QueryBuilderAggregateColumnState,
   QueryBuilderAggregateOperator,
-} from '../QueryBuilderAggregationState';
+} from '../QueryBuilderAggregationState.js';
 import {
   type QueryBuilderProjectionColumnState,
   QueryBuilderSimpleProjectionColumnState,
-} from '../QueryBuilderProjectionState';
+} from '../QueryBuilderProjectionState.js';
 import {
   buildAggregateColumnState,
   buildAggregateExpression,
-} from './QueryBuilderAggregateOperatorHelper';
+} from './QueryBuilderAggregateOperatorHelper.js';
 
 export class QueryBuilderAggregateOperator_Count extends QueryBuilderAggregateOperator {
   getLabel(projectionColumnState: QueryBuilderProjectionColumnState): string {

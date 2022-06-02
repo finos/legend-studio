@@ -15,7 +15,7 @@
  */
 
 import { type Hashable, hashArray } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst.js';
 
 export abstract class DatasourceSpecification implements Hashable {
   abstract get hashCode(): string;

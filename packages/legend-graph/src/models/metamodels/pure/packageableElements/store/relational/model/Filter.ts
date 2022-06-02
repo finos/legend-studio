@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst.js';
 import { type Hashable, hashArray } from '@finos/legend-shared';
-import type { Operation } from './RelationalOperationElement';
-import type { Database } from './Database';
+import type { Operation } from './RelationalOperationElement.js';
+import type { Database } from './Database.js';
 
 export class Filter implements Hashable {
   owner!: Database;

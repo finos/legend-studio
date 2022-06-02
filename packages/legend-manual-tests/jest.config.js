@@ -26,6 +26,7 @@ const base = getBaseJestProjectConfig(
   packageJson.name,
   'packages/legend-manual-tests',
 );
+
 export default {
   ...base,
   // NOTE: skip manual tests

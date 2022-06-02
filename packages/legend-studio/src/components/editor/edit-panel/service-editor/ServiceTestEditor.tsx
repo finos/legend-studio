@@ -16,7 +16,7 @@
 
 import { useState, useEffect, forwardRef } from 'react';
 import { observer } from 'mobx-react-lite';
-import type { ServiceExecutionState } from '../../../../stores/editor-state/element-editor-state/service/ServiceExecutionState';
+import type { ServiceExecutionState } from '../../../../stores/editor-state/element-editor-state/service/ServiceExecutionState.js';
 import {
   isValidJSONString,
   prettyCONSTName,
@@ -52,19 +52,19 @@ import {
 import {
   type TestContainerState,
   LegacySingleExecutionTestState,
-} from '../../../../stores/editor-state/element-editor-state/service/LegacyServiceTestState';
-import { TEST_RESULT } from '../../../../stores/editor-state/element-editor-state/mapping/MappingTestState';
-import { JsonDiffView } from '../../../shared/DiffView';
-import { UnsupportedEditorPanel } from '../../../editor/edit-panel/UnsupportedElementEditor';
-import { ServiceEditorState } from '../../../../stores/editor-state/element-editor-state/service/ServiceEditorState';
+} from '../../../../stores/editor-state/element-editor-state/service/LegacyServiceTestState.js';
+import { TEST_RESULT } from '../../../../stores/editor-state/element-editor-state/mapping/MappingTestState.js';
+import { JsonDiffView } from '../../../shared/DiffView.js';
+import { UnsupportedEditorPanel } from '../../../editor/edit-panel/UnsupportedElementEditor.js';
+import { ServiceEditorState } from '../../../../stores/editor-state/element-editor-state/service/ServiceEditorState.js';
 import { flowResult } from 'mobx';
-import { useEditorStore } from '../../EditorStoreProvider';
+import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
   EDITOR_LANGUAGE,
   useApplicationStore,
 } from '@finos/legend-application';
-import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor';
-import { singleExecTest_setData } from '../../../../stores/graphModifier/DSLService_GraphModifierHelper';
+import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor.js';
+import { singleExecTest_setData } from '../../../../stores/graphModifier/DSLService_GraphModifierHelper.js';
 import type { DEPRECATED__TestContainer } from '@finos/legend-graph';
 
 const TestContainerContextMenu = observer(

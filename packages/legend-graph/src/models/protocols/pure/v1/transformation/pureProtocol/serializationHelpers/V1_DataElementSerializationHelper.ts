@@ -34,25 +34,25 @@ import {
   optional,
   list,
 } from 'serializr';
-import type { DSLData_PureProtocolProcessorPlugin_Extension } from '../../../../DSLData_PureProtocolProcessorPlugin_Extension';
-import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin';
+import type { DSLData_PureProtocolProcessorPlugin_Extension } from '../../../../DSLData_PureProtocolProcessorPlugin_Extension.js';
+import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin.js';
 import {
   type V1_EmbeddedData,
   V1_ExternalFormatData,
   V1_ModelStoreData,
   V1_DataElementReference,
-} from '../../../model/data/V1_EmbeddedData';
+} from '../../../model/data/V1_EmbeddedData.js';
 import {
   V1_RelationalData,
   V1_RelationalDataTable,
   V1_RelationalDataTableColumn,
   V1_RelationalDataTableRow,
-} from '../../../model/data/V1_RelationalData';
-import { V1_DataElement } from '../../../model/packageableElements/data/V1_DataElement';
+} from '../../../model/data/V1_RelationalData.js';
+import { V1_DataElement } from '../../../model/packageableElements/data/V1_DataElement.js';
 import {
   V1_stereotypePtrSchema,
   V1_taggedValueSchema,
-} from './V1_DomainSerializationHelper';
+} from './V1_DomainSerializationHelper.js';
 
 export const V1_DATA_ELEMENT_PROTOCOL_TYPE = 'dataElement';
 

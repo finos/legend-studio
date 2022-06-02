@@ -20,22 +20,22 @@ import {
   type FlatDataPropertyMappingTransformDropTarget,
   CORE_DND_TYPE,
   FlatDataColumnDragSource,
-} from '../../../../stores/shared/DnDUtil';
+} from '../../../../stores/shared/DnDUtil.js';
 import {
   type MappingElement,
   MappingEditorState,
-} from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
+} from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState.js';
 import type {
   FlatDataPropertyMappingState,
   FlatDataInstanceSetImplementationState,
-} from '../../../../stores/editor-state/element-editor-state/mapping/FlatDataInstanceSetImplementationState';
+} from '../../../../stores/editor-state/element-editor-state/mapping/FlatDataInstanceSetImplementationState.js';
 import {
   clsx,
   CustomSelectorInput,
   ArrowCircleRightIcon,
 } from '@finos/legend-art';
 import { type ConnectDropTarget, useDrop } from 'react-dnd';
-import { useEditorStore } from '../../EditorStoreProvider';
+import { useEditorStore } from '../../EditorStoreProvider.js';
 import { guaranteeType } from '@finos/legend-shared';
 import {
   Enumeration,
@@ -44,12 +44,12 @@ import {
   getEnumerationMappingsByEnumeration,
   getRawGenericType,
 } from '@finos/legend-graph';
-import { StudioLambdaEditor } from '../../../shared/StudioLambdaEditor';
-import { flatDataPropertyMapping_setTransformer } from '../../../../stores/graphModifier/StoreFlatData_GraphModifierHelper';
+import { StudioLambdaEditor } from '../../../shared/StudioLambdaEditor.js';
+import { flatDataPropertyMapping_setTransformer } from '../../../../stores/graphModifier/StoreFlatData_GraphModifierHelper.js';
 import {
   CLASS_PROPERTY_TYPE,
   getClassPropertyType,
-} from '../../../../stores/shared/ModelUtil';
+} from '../../../../stores/shared/ModelUtil.js';
 
 const SimplePropertyMappingEditor = observer(
   (props: {

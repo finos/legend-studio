@@ -15,9 +15,9 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { Point } from './DSLDiagram_Point';
-import { Rectangle } from './DSLDiagram_Rectangle';
-import { DIAGRAM_HASH_STRUCTURE } from '../../../../../DSLDiagram_ModelUtils';
+import { Point } from './DSLDiagram_Point.js';
+import { Rectangle } from './DSLDiagram_Rectangle.js';
+import { DIAGRAM_HASH_STRUCTURE } from '../../../../../DSLDiagram_ModelUtils.js';
 
 export class PositionedRectangle implements Hashable {
   _dummyObservable = {};

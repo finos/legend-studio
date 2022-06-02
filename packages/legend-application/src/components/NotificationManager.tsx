@@ -18,8 +18,8 @@ import { observer } from 'mobx-react-lite';
 import {
   DEFAULT_NOTIFICATION_HIDE_TIME,
   NOTIFCATION_SEVERITY,
-} from '../stores/ApplicationStore';
-import { useApplicationStore } from './ApplicationStoreProvider';
+} from '../stores/ApplicationStore.js';
+import { useApplicationStore } from './ApplicationStoreProvider.js';
 import {
   Notification,
   NotificationContent,

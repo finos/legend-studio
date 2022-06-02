@@ -13,19 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+import { test, beforeEach } from '@jest/globals';
 import { integrationTest } from '@finos/legend-shared';
 import {
   type RenderResult,
   getByText,
   fireEvent,
 } from '@testing-library/react';
-import type { EditorStore } from '../../../../../stores/EditorStore';
+import type { EditorStore } from '../../../../../stores/EditorStore.js';
 import {
   TEST__provideMockedEditorStore,
   TEST__setUpEditorWithDefaultSDLCData,
-} from '../../../../EditorComponentTestUtils';
-import { LEGEND_STUDIO_TEST_ID } from '../../../../LegendStudioTestID';
-import { TEST_DATA__RelationalServiceTestable } from './TEST_DATA__TestableData';
+} from '../../../../EditorComponentTestUtils.js';
+import { LEGEND_STUDIO_TEST_ID } from '../../../../LegendStudioTestID.js';
+import { TEST_DATA__RelationalServiceTestable } from './TEST_DATA__TestableData.js';
 
 let renderResult: RenderResult;
 let mockedEditorStore: EditorStore;

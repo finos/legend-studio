@@ -18,8 +18,8 @@ import { action, computed, makeAutoObservable } from 'mobx';
 import {
   type ServiceEditorState,
   MINIMUM_SERVICE_OWNERS,
-} from '../../../editor-state/element-editor-state/service/ServiceEditorState';
-import type { EditorStore } from '../../../EditorStore';
+} from '../../../editor-state/element-editor-state/service/ServiceEditorState.js';
+import type { EditorStore } from '../../../EditorStore.js';
 import {
   type GeneratorFn,
   assertErrorThrown,
@@ -32,13 +32,13 @@ import {
   getNullableFirstElement,
   assertTrue,
 } from '@finos/legend-shared';
-import { LEGEND_STUDIO_APP_EVENT } from '../../../LegendStudioAppEvent';
+import { LEGEND_STUDIO_APP_EVENT } from '../../../LegendStudioAppEvent.js';
 import { Version } from '@finos/legend-server-sdlc';
 import {
   type ServiceRegistrationResult,
   ServiceExecutionMode,
 } from '@finos/legend-graph';
-import { ServiceRegistrationEnvInfo } from '../../../../application/LegendStudioConfig';
+import { ServiceRegistrationEnvInfo } from '../../../../application/LegendStudioConfig.js';
 import {
   ActionAlertActionType,
   ActionAlertType,

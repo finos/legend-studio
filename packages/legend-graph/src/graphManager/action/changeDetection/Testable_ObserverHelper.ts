@@ -15,29 +15,29 @@
  */
 
 import { computed, makeObservable, observable } from 'mobx';
-import { ServiceTest } from '../../../DSLService_Exports';
-import { ServiceTestSuite } from '../../../models/metamodels/pure/packageableElements/service/ServiceTestSuite';
-import { EqualTo } from '../../../models/metamodels/pure/test/assertion/EqualTo';
-import { EqualToJson } from '../../../models/metamodels/pure/test/assertion/EqualToJson';
+import { ServiceTest } from '../../../DSLService_Exports.js';
+import { ServiceTestSuite } from '../../../models/metamodels/pure/packageableElements/service/ServiceTestSuite.js';
+import { EqualTo } from '../../../models/metamodels/pure/test/assertion/EqualTo.js';
+import { EqualToJson } from '../../../models/metamodels/pure/test/assertion/EqualToJson.js';
 import {
   EqualToTDS,
   type RelationalTDS,
-} from '../../../models/metamodels/pure/test/assertion/EqualToTDS';
-import type { TestAssertion } from '../../../models/metamodels/pure/test/assertion/TestAssertion';
+} from '../../../models/metamodels/pure/test/assertion/EqualToTDS.js';
+import type { TestAssertion } from '../../../models/metamodels/pure/test/assertion/TestAssertion.js';
 import type {
   AtomicTest,
   TestSuite,
-} from '../../../models/metamodels/pure/test/Test';
-import { type ObserverContext, skipObserved } from './CoreObserverHelper';
+} from '../../../models/metamodels/pure/test/Test.js';
+import { type ObserverContext, skipObserved } from './CoreObserverHelper.js';
 import {
   observe_ExternalFormatData,
   observe_RelationalDataTableColumn,
   observe_RelationalDataTableRow,
-} from './DSLData_ObserverHelper';
+} from './DSLData_ObserverHelper.js';
 import {
   observe_ServiceTest,
   observe_ServiceTestSuite,
-} from './DSLService_ObserverHelper';
+} from './DSLService_ObserverHelper.js';
 
 const observe_EqualTo = skipObserved((metamodel: EqualTo): EqualTo => {
   makeObservable(metamodel, {

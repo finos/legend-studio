@@ -15,11 +15,11 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import type { QueryBuilderState } from '../stores/QueryBuilderState';
+import type { QueryBuilderState } from '../stores/QueryBuilderState.js';
 import {
   type QueryBuilderParameterDragSource,
   QUERY_BUILDER_PARAMETER_TREE_DND_TYPE,
-} from '../stores/QueryParametersState';
+} from '../stores/QueryParametersState.js';
 import { useCallback } from 'react';
 import {
   type ValueSpecification,
@@ -33,9 +33,9 @@ import {
 } from '@finos/legend-graph';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { type DropTargetMonitor, useDrop } from 'react-dnd';
-import { VariableExpressionViewer } from './QueryBuilderParameterPanel';
+import { VariableExpressionViewer } from './QueryBuilderParameterPanel.js';
 import { Dialog } from '@finos/legend-art';
-import { generateDefaultValueForPrimitiveType } from '../stores/QueryBuilderValueSpecificationBuilderHelper';
+import { generateDefaultValueForPrimitiveType } from '../stores/QueryBuilderValueSpecificationBuilderHelper.js';
 import { BasicValueSpecificationEditor } from '@finos/legend-application';
 
 const MilestoningParameterEditor = observer(

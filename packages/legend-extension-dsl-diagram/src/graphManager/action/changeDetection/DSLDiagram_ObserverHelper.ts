@@ -21,15 +21,15 @@ import {
   skipObserved,
 } from '@finos/legend-graph';
 import { computed, makeObservable, observable, override } from 'mobx';
-import type { AssociationView } from '../../../models/metamodels/pure/packageableElements/diagram/DSLDiagram_AssociationView';
-import type { ClassView } from '../../../models/metamodels/pure/packageableElements/diagram/DSLDiagram_ClassView';
-import type { ClassViewReference } from '../../../models/metamodels/pure/packageableElements/diagram/DSLDiagram_ClassViewReference';
-import type { Diagram } from '../../../models/metamodels/pure/packageableElements/diagram/DSLDiagram_Diagram';
-import type { GeneralizationView } from '../../../models/metamodels/pure/packageableElements/diagram/DSLDiagram_GeneralizationView';
-import type { PropertyView } from '../../../models/metamodels/pure/packageableElements/diagram/DSLDiagram_PropertyView';
-import type { RelationshipEdgeView } from '../../../models/metamodels/pure/packageableElements/diagram/DSLDiagram_RelationshipEdgeView';
-import type { RelationshipView } from '../../../models/metamodels/pure/packageableElements/diagram/DSLDiagram_RelationshipView';
-import type { PositionedRectangle } from '../../../models/metamodels/pure/packageableElements/diagram/geometry/DSLDiagram_PositionedRectangle';
+import type { AssociationView } from '../../../models/metamodels/pure/packageableElements/diagram/DSLDiagram_AssociationView.js';
+import type { ClassView } from '../../../models/metamodels/pure/packageableElements/diagram/DSLDiagram_ClassView.js';
+import type { ClassViewReference } from '../../../models/metamodels/pure/packageableElements/diagram/DSLDiagram_ClassViewReference.js';
+import type { Diagram } from '../../../models/metamodels/pure/packageableElements/diagram/DSLDiagram_Diagram.js';
+import type { GeneralizationView } from '../../../models/metamodels/pure/packageableElements/diagram/DSLDiagram_GeneralizationView.js';
+import type { PropertyView } from '../../../models/metamodels/pure/packageableElements/diagram/DSLDiagram_PropertyView.js';
+import type { RelationshipEdgeView } from '../../../models/metamodels/pure/packageableElements/diagram/DSLDiagram_RelationshipEdgeView.js';
+import type { RelationshipView } from '../../../models/metamodels/pure/packageableElements/diagram/DSLDiagram_RelationshipView.js';
+import type { PositionedRectangle } from '../../../models/metamodels/pure/packageableElements/diagram/geometry/DSLDiagram_PositionedRectangle.js';
 
 export const observe_PositionedRectangle = skipObserved(
   (metamodel: PositionedRectangle): PositionedRectangle =>

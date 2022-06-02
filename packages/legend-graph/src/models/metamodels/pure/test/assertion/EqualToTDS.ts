@@ -15,12 +15,12 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
+import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst.js';
 import type {
   RelationalDataTableColumn,
   RelationalDataTableRow,
-} from '../../data/RelationalData';
-import { type TestAssertionVisitor, TestAssertion } from './TestAssertion';
+} from '../../data/RelationalData.js';
+import { type TestAssertionVisitor, TestAssertion } from './TestAssertion.js';
 
 export class RelationalTDS implements Hashable {
   columns: RelationalDataTableColumn[] = [];

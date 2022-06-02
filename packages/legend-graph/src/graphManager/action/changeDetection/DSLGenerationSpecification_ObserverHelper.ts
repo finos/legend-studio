@@ -20,13 +20,13 @@ import type {
   FileGenerationSpecification,
   GenerationSpecification,
   GenerationTreeNode,
-} from '../../../DSLGenerationSpecification_Exports';
-import { PackageableElementReference } from '../../../models/metamodels/pure/packageableElements/PackageableElementReference';
+} from '../../../DSLGenerationSpecification_Exports.js';
+import { PackageableElementReference } from '../../../models/metamodels/pure/packageableElements/PackageableElementReference.js';
 import {
   observe_Abstract_PackageableElement,
   observe_PackageableElementReference,
   skipObserved,
-} from './CoreObserverHelper';
+} from './CoreObserverHelper.js';
 
 export const observe_ConfigurationProperty = skipObserved(
   (metamodel: ConfigurationProperty): ConfigurationProperty =>

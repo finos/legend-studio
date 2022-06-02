@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import type { DatabaseConnection } from '../../packageableElements/store/relational/connection/RelationalDatabaseConnection';
-import { ExecutionNode } from './ExecutionNode';
-import type { SQLResultColumn } from './SQLResultColumn';
+import type { DatabaseConnection } from '../../packageableElements/store/relational/connection/RelationalDatabaseConnection.js';
+import { ExecutionNode } from './ExecutionNode.js';
+import type { SQLResultColumn } from './SQLResultColumn.js';
 
 export class SQLExecutionNode extends ExecutionNode {
   sqlQuery!: string;

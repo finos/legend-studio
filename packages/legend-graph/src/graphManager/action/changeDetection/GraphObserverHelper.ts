@@ -15,13 +15,13 @@
  */
 
 import { computed, isObservable, makeObservable, observable } from 'mobx';
-import type { BasicModel } from '../../../graph/BasicModel';
-import type { DependencyManager } from '../../../graph/DependencyManager';
-import type { PureGraphExtension } from '../../../graph/PureGraphExtension';
-import type { PureModel } from '../../../graph/PureModel';
-import type { PackageableElement } from '../../../models/metamodels/pure/packageableElements/PackageableElement';
-import { type ObserverContext, skipObserved } from './CoreObserverHelper';
-import { observe_PackageTree } from './DomainObserverHelper';
+import type { BasicModel } from '../../../graph/BasicModel.js';
+import type { DependencyManager } from '../../../graph/DependencyManager.js';
+import type { PureGraphExtension } from '../../../graph/PureGraphExtension.js';
+import type { PureModel } from '../../../graph/PureModel.js';
+import type { PackageableElement } from '../../../models/metamodels/pure/packageableElements/PackageableElement.js';
+import { type ObserverContext, skipObserved } from './CoreObserverHelper.js';
+import { observe_PackageTree } from './DomainObserverHelper.js';
 
 const observe_PureGraphExtension = skipObserved(
   <T extends PackageableElement>(

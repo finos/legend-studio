@@ -15,14 +15,14 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../ESService_ModelUtils';
-import { ServiceStoreElement } from './ESService_ServiceStoreElement';
-import type { ServiceParameter } from './ESService_ServiceParameter';
-import type { SecurityScheme } from './ESService_SecurityScheme';
+import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../ESService_ModelUtils.js';
+import { ServiceStoreElement } from './ESService_ServiceStoreElement.js';
+import type { ServiceParameter } from './ESService_ServiceParameter.js';
+import type { SecurityScheme } from './ESService_SecurityScheme.js';
 import type {
   TypeReference,
   ComplexTypeReference,
-} from './ESService_TypeReference';
+} from './ESService_TypeReference.js';
 
 export enum HTTP_METHOD {
   GET = 'GET',

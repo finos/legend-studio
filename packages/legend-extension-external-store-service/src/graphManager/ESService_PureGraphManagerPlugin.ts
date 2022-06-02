@@ -15,7 +15,7 @@
  */
 
 import packageJson from '../../package.json';
-import { ServiceStore } from '../models/metamodels/pure/model/packageableElements/store/serviceStore/model/ESService_ServiceStore';
+import { ServiceStore } from '../models/metamodels/pure/model/packageableElements/store/serviceStore/model/ESService_ServiceStore.js';
 import {
   PureGraphManagerPlugin,
   type DSLMapping_PureGraphManagerPlugin_Extension,
@@ -30,14 +30,14 @@ import {
   type EmbeddedDataObserver,
   type EmbeddedData_PureGraphManagerPlugin_Extension,
 } from '@finos/legend-graph';
-import { ServiceStoreConnection } from '../models/metamodels/pure/model/packageableElements/store/serviceStore/connection/ESService_ServiceStoreConnection';
+import { ServiceStoreConnection } from '../models/metamodels/pure/model/packageableElements/store/serviceStore/connection/ESService_ServiceStoreConnection.js';
 import {
   observe_RootServiceInstanceSetImplementation,
   observe_ServiceStore,
   observe_ServiceStoreEmbeddedData,
-} from './action/changeDetection/ESService_ObserverHelper';
-import { RootServiceInstanceSetImplementation } from '../models/metamodels/pure/model/packageableElements/store/serviceStore/mapping/ESService_RootServiceInstanceSetImplementation';
-import { ServiceStoreEmbeddedData } from '../models/metamodels/pure/model/data/ESService_ServiceStoreEmbeddedData';
+} from './action/changeDetection/ESService_ObserverHelper.js';
+import { RootServiceInstanceSetImplementation } from '../models/metamodels/pure/model/packageableElements/store/serviceStore/mapping/ESService_RootServiceInstanceSetImplementation.js';
+import { ServiceStoreEmbeddedData } from '../models/metamodels/pure/model/data/ESService_ServiceStoreEmbeddedData.js';
 
 export const PURE_GRAMMAR_SERVICE_STORE_PARSER_NAME = 'ServiceStore';
 export const PURE_GRAMMAR_SERVICE_STORE_ELEMENT_TYPE_LABEL = 'ServiceStore';

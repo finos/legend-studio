@@ -16,7 +16,7 @@
 
 import type { BasicModel, PureModel } from '@finos/legend-graph';
 import { guaranteeType } from '@finos/legend-shared';
-import { ServiceStore } from '../models/metamodels/pure/model/packageableElements/store/serviceStore/model/ESService_ServiceStore';
+import { ServiceStore } from '../models/metamodels/pure/model/packageableElements/store/serviceStore/model/ESService_ServiceStore.js';
 
 export const getServiceStore = (path: string, graph: PureModel): ServiceStore =>
   guaranteeType(

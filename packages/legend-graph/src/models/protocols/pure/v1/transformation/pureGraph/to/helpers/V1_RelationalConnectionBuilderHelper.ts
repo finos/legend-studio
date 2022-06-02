@@ -29,7 +29,7 @@ import {
   SnowflakeDatasourceSpecification,
   RedshiftDatasourceSpecification,
   BigQueryDatasourceSpecification,
-} from '../../../../../../../metamodels/pure/packageableElements/store/relational/connection/DatasourceSpecification';
+} from '../../../../../../../metamodels/pure/packageableElements/store/relational/connection/DatasourceSpecification.js';
 import {
   type AuthenticationStrategy,
   SnowflakePublicAuthenticationStrategy,
@@ -40,8 +40,8 @@ import {
   DefaultH2AuthenticationStrategy,
   DelegatedKerberosAuthenticationStrategy,
   GCPWorkloadIdentityFederationAuthenticationStrategy,
-} from '../../../../../../../metamodels/pure/packageableElements/store/relational/connection/AuthenticationStrategy';
-import type { V1_GraphBuilderContext } from '../../../../transformation/pureGraph/to/V1_GraphBuilderContext';
+} from '../../../../../../../metamodels/pure/packageableElements/store/relational/connection/AuthenticationStrategy.js';
+import type { V1_GraphBuilderContext } from '../../../../transformation/pureGraph/to/V1_GraphBuilderContext.js';
 import {
   type V1_DatasourceSpecification,
   V1_LocalH2DataSourceSpecification,
@@ -51,7 +51,7 @@ import {
   V1_SnowflakeDatasourceSpecification,
   V1_RedshiftDatasourceSpecification,
   V1_BigQueryDatasourceSpecification,
-} from '../../../../model/packageableElements/store/relational/connection/V1_DatasourceSpecification';
+} from '../../../../model/packageableElements/store/relational/connection/V1_DatasourceSpecification.js';
 import {
   type V1_AuthenticationStrategy,
   V1_SnowflakePublicAuthenticationStrategy,
@@ -62,8 +62,8 @@ import {
   V1_DelegatedKerberosAuthenticationStrategy,
   V1_UsernamePasswordAuthenticationStrategy,
   V1_GCPWorkloadIdentityFederationAuthenticationStrategy,
-} from '../../../../model/packageableElements/store/relational/connection/V1_AuthenticationStrategy';
-import type { StoreRelational_PureProtocolProcessorPlugin_Extension } from '../../../../../StoreRelational_PureProtocolProcessorPlugin_Extension';
+} from '../../../../model/packageableElements/store/relational/connection/V1_AuthenticationStrategy.js';
+import type { StoreRelational_PureProtocolProcessorPlugin_Extension } from '../../../../../StoreRelational_PureProtocolProcessorPlugin_Extension.js';
 
 export const V1_buildDatasourceSpecification = (
   protocol: V1_DatasourceSpecification,

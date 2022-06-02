@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
+import { test, expect } from '@jest/globals';
 import {
   recursiveOmit,
   mergeObjects,
   getClass,
   getSuperclass,
-} from '../CommonUtils';
-import { unitTest } from '../application/TestUtils';
+} from '../CommonUtils.js';
+import { unitTest } from '../application/TestUtils.js';
 
 test(unitTest('Recursive omit'), () => {
   const obj: Record<PropertyKey, unknown> = { a: '', b: { c: '', d: '' } };

@@ -31,22 +31,22 @@ import {
   ResizablePanelSplitterLine,
   useStateWithCallback,
 } from '@finos/legend-art';
-import { AuxiliaryPanel } from './aux-panel/AuxiliaryPanel';
-import { SideBar } from './side-bar/SideBar';
-import { EditPanel, EditPanelSplashScreen } from './edit-panel/EditPanel';
+import { AuxiliaryPanel } from './aux-panel/AuxiliaryPanel.js';
+import { SideBar } from './side-bar/SideBar.js';
+import { EditPanel, EditPanelSplashScreen } from './edit-panel/EditPanel.js';
 import { GlobalHotKeys } from 'react-hotkeys';
-import { GrammarTextEditor } from './edit-panel/GrammarTextEditor';
-import { StatusBar } from './StatusBar';
-import { ActivityBar } from './ActivityBar';
+import { GrammarTextEditor } from './edit-panel/GrammarTextEditor.js';
+import { StatusBar } from './StatusBar.js';
+import { ActivityBar } from './ActivityBar.js';
 import { useParams, Prompt } from 'react-router-dom';
 import type {
   EditorPathParams,
   GroupEditorPathParams,
-} from '../../stores/LegendStudioRouter';
-import { ProjectSearchCommand } from '../editor/command-center/ProjectSearchCommand';
+} from '../../stores/LegendStudioRouter.js';
+import { ProjectSearchCommand } from '../editor/command-center/ProjectSearchCommand.js';
 import { isNonNullable } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
-import { EditorStoreProvider, useEditorStore } from './EditorStoreProvider';
+import { EditorStoreProvider, useEditorStore } from './EditorStoreProvider.js';
 import {
   ActionAlertType,
   ActionAlertActionType,
@@ -54,8 +54,8 @@ import {
   useApplicationNavigationContext,
 } from '@finos/legend-application';
 import { WorkspaceType } from '@finos/legend-server-sdlc';
-import { WorkspaceSyncConflictResolver } from './side-bar/WorkspaceSyncConflictResolver';
-import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT } from '../../stores/LegendStudioApplicationNavigationContext';
+import { WorkspaceSyncConflictResolver } from './side-bar/WorkspaceSyncConflictResolver.js';
+import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT } from '../../stores/LegendStudioApplicationNavigationContext.js';
 
 export const EditorInner = observer(() => {
   const params = useParams<EditorPathParams | GroupEditorPathParams>();

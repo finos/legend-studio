@@ -65,18 +65,18 @@ import {
   flowResult,
   computed,
 } from 'mobx';
-import type { LegendTaxonomyConfig } from '../application/LegendTaxonomyConfig';
-import type { LegendTaxonomyPluginManager } from '../application/LegendTaxonomyPluginManager';
-import { LEGEND_TAXONOMY_APP_EVENT } from './LegendTaxonomyAppEvent';
+import type { LegendTaxonomyConfig } from '../application/LegendTaxonomyConfig.js';
+import type { LegendTaxonomyPluginManager } from '../application/LegendTaxonomyPluginManager.js';
+import { LEGEND_TAXONOMY_APP_EVENT } from './LegendTaxonomyAppEvent.js';
 import {
   generateExploreTaxonomyTreeRoute,
   type LegendTaxonomyPathParams,
   type LegendTaxonomyStandaloneDataSpaceViewerParams,
-} from './LegendTaxonomyRouter';
+} from './LegendTaxonomyRouter.js';
 import {
   type TaxonomyServerClient,
   TaxonomyNodeData,
-} from './TaxonomyServerClient';
+} from './TaxonomyServerClient.js';
 
 const DATA_SPACE_ID_DELIMITER = '@';
 const TAXONOMY_NODE_PATH_DELIMITER = '::';

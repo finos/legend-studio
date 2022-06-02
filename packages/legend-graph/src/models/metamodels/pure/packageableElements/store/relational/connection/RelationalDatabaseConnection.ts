@@ -14,17 +14,17 @@
  * limitations under the License.
  */
 
-import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst.js';
 import { hashArray } from '@finos/legend-shared';
 import {
   type ConnectionVisitor,
   Connection,
-} from '../../../connection/Connection';
-import type { DatasourceSpecification } from './DatasourceSpecification';
-import type { AuthenticationStrategy } from './AuthenticationStrategy';
-import type { Database } from '../model/Database';
-import type { PackageableElementReference } from '../../../PackageableElementReference';
-import type { PostProcessor } from './postprocessor/PostProcessor';
+} from '../../../connection/Connection.js';
+import type { DatasourceSpecification } from './DatasourceSpecification.js';
+import type { AuthenticationStrategy } from './AuthenticationStrategy.js';
+import type { Database } from '../model/Database.js';
+import type { PackageableElementReference } from '../../../PackageableElementReference.js';
+import type { PostProcessor } from './postprocessor/PostProcessor.js';
 
 // TODO: to be modularized or handled differently
 // See https://github.com/finos/legend-studio/issues/946

@@ -21,7 +21,7 @@ import {
   type GenerationSpecNodeDragSource,
   type GenerationSpecNodeDropTarget,
   type GenerationTreeNodeState,
-} from '../../../stores/editor-state/GenerationSpecificationEditorState';
+} from '../../../stores/editor-state/GenerationSpecificationEditorState.js';
 import { getEmptyImage } from 'react-dnd-html5-backend';
 import {
   type DropTargetMonitor,
@@ -30,7 +30,7 @@ import {
   useDrag,
   useDrop,
 } from 'react-dnd';
-import { getElementIcon } from '../../shared/ElementIconUtils';
+import { getElementIcon } from '../../shared/ElementIconUtils.js';
 import {
   clsx,
   BlankPanelContent,
@@ -50,15 +50,15 @@ import {
   CORE_DND_TYPE,
   type ElementDragSource,
   type FileGenerationSourceDropTarget,
-} from '../../../stores/shared/DnDUtil';
+} from '../../../stores/shared/DnDUtil.js';
 import {
   type PackageableElementOption,
   buildElementOption,
-} from '../../../stores/shared/PackageableElementOptionUtil';
+} from '../../../stores/shared/PackageableElementOptionUtil.js';
 import { getNullableFirstElement } from '@finos/legend-shared';
-import type { DSLGenerationSpecification_LegendStudioPlugin_Extension } from '../../../stores/DSLGenerationSpecification_LegendStudioPlugin_Extension';
+import type { DSLGenerationSpecification_LegendStudioPlugin_Extension } from '../../../stores/DSLGenerationSpecification_LegendStudioPlugin_Extension.js';
 import { flowResult } from 'mobx';
-import { useEditorStore } from '../EditorStoreProvider';
+import { useEditorStore } from '../EditorStoreProvider.js';
 import {
   type PackageableElement,
   type PackageableElementReference,
@@ -68,12 +68,12 @@ import {
   GenerationTreeNode,
 } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
-import { packageableElementReference_setValue } from '../../../stores/graphModifier/DomainGraphModifierHelper';
+import { packageableElementReference_setValue } from '../../../stores/graphModifier/DomainGraphModifierHelper.js';
 import {
   generationSpecification_addFileGeneration,
   generationSpecification_deleteFileGeneration,
   generationSpecification_setId,
-} from '../../../stores/graphModifier/DSLGeneration_GraphModifierHelper';
+} from '../../../stores/graphModifier/DSLGeneration_GraphModifierHelper.js';
 
 const ModelGenerationDragLayer: React.FC = () => {
   const { itemType, item, isDragging, currentPosition } = useDragLayer(

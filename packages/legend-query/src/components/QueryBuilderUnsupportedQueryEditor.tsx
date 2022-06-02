@@ -15,16 +15,16 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import type { QueryBuilderState } from '../stores/QueryBuilderState';
-import { QueryTextEditorMode } from '../stores/QueryTextEditorState';
+import type { QueryBuilderState } from '../stores/QueryBuilderState.js';
+import { QueryTextEditorMode } from '../stores/QueryTextEditorState.js';
 import {
   BlankPanelContent,
   ResizablePanelGroup,
   ResizablePanel,
   ResizablePanelSplitter,
 } from '@finos/legend-art';
-import { QueryBuilderSetupPanel } from './QueryBuilderSetupPanel';
-import { QueryBuilderParameterPanel } from './QueryBuilderParameterPanel';
+import { QueryBuilderSetupPanel } from './QueryBuilderSetupPanel.js';
+import { QueryBuilderParameterPanel } from './QueryBuilderParameterPanel.js';
 
 const QueryBuilderUnsupportedQueryExplorer = observer(() => (
   <div className="panel query-builder__explorer">

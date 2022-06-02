@@ -16,9 +16,9 @@
 
 import packageJson from '../package.json';
 import { AbstractPreset } from '@finos/legend-shared';
-import { DSLDiagram_PureGraphManagerPlugin } from './graphManager/DSLDiagram_PureGraphManagerPlugin';
-import { DSLDiagram_PureProtocolProcessorPlugin } from './models/protocols/pure/DSLDiagram_PureProtocolProcessorPlugin';
-import { DSLDiagram_PureGraphPlugin } from './graph/DSLDiagram_PureGraphPlugin';
+import { DSLDiagram_PureGraphManagerPlugin } from './graphManager/DSLDiagram_PureGraphManagerPlugin.js';
+import { DSLDiagram_PureProtocolProcessorPlugin } from './models/protocols/pure/DSLDiagram_PureProtocolProcessorPlugin.js';
+import { DSLDiagram_PureGraphPlugin } from './graph/DSLDiagram_PureGraphPlugin.js';
 
 export class DSLDiagram_GraphPreset extends AbstractPreset {
   constructor() {

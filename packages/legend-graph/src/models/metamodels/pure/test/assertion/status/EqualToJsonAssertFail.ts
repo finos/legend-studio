@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { AssertFail } from './AssertFail';
+import { AssertFail } from './AssertFail.js';
 
 export class EqualToJsonAssertFail extends AssertFail {
   expected!: string;

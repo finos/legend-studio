@@ -15,14 +15,14 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import type { V1_ClassView } from './V1_DSLDiagram_ClassView';
-import type { V1_PropertyView } from './V1_DSLDiagram_PropertyView';
-import type { V1_GeneralizationView } from './V1_DSLDiagram_GeneralizationView';
+import type { V1_ClassView } from './V1_DSLDiagram_ClassView.js';
+import type { V1_PropertyView } from './V1_DSLDiagram_PropertyView.js';
+import type { V1_GeneralizationView } from './V1_DSLDiagram_GeneralizationView.js';
 import {
   type V1_PackageableElementVisitor,
   V1_PackageableElement,
 } from '@finos/legend-graph';
-import { DIAGRAM_HASH_STRUCTURE } from '../../../../../../DSLDiagram_ModelUtils';
+import { DIAGRAM_HASH_STRUCTURE } from '../../../../../../DSLDiagram_ModelUtils.js';
 
 export class V1_Diagram extends V1_PackageableElement implements Hashable {
   classViews: V1_ClassView[] = [];

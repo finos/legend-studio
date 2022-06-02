@@ -15,8 +15,8 @@
  */
 
 import { action, makeObservable, observable } from 'mobx';
-import type { TEMPORARY__AbstractEngineConfig } from '../TEMPORARY__AbstractEngineConfig';
-import { skipObserved } from './CoreObserverHelper';
+import type { TEMPORARY__AbstractEngineConfig } from '../TEMPORARY__AbstractEngineConfig.js';
+import { skipObserved } from './CoreObserverHelper.js';
 
 export const observe_TEMPORARY__AbstractEngineConfig = skipObserved(
   (

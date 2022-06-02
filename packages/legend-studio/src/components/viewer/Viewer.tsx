@@ -19,15 +19,15 @@ import { observer } from 'mobx-react-lite';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { useResizeDetector } from 'react-resize-detector';
-import { EditPanel } from '../editor/edit-panel/EditPanel';
-import { GrammarTextEditor } from '../editor/edit-panel/GrammarTextEditor';
+import { EditPanel } from '../editor/edit-panel/EditPanel.js';
+import { GrammarTextEditor } from '../editor/edit-panel/GrammarTextEditor.js';
 import { useParams, Link } from 'react-router-dom';
-import { LEGEND_STUDIO_TEST_ID } from '../LegendStudioTestID';
+import { LEGEND_STUDIO_TEST_ID } from '../LegendStudioTestID.js';
 import {
   ACTIVITY_MODE,
   LEGEND_STUDIO_HOTKEY,
   LEGEND_STUDIO_HOTKEY_MAP,
-} from '../../stores/EditorConfig';
+} from '../../stores/EditorConfig.js';
 import {
   type ResizablePanelHandlerProps,
   clsx,
@@ -44,23 +44,26 @@ import {
 } from '@finos/legend-art';
 import { isNonNullable } from '@finos/legend-shared';
 import { GlobalHotKeys } from 'react-hotkeys';
-import { useViewerStore, ViewerStoreProvider } from './ViewerStoreProvider';
+import { useViewerStore, ViewerStoreProvider } from './ViewerStoreProvider.js';
 import {
   type ViewerPathParams,
   generateSetupRoute,
-} from '../../stores/LegendStudioRouter';
-import { ProjectSearchCommand } from '../editor/command-center/ProjectSearchCommand';
+} from '../../stores/LegendStudioRouter.js';
+import { ProjectSearchCommand } from '../editor/command-center/ProjectSearchCommand.js';
 import { flowResult } from 'mobx';
 import {
   EditorStoreProvider,
   useEditorStore,
-} from '../editor/EditorStoreProvider';
+} from '../editor/EditorStoreProvider.js';
 import { useApplicationStore } from '@finos/legend-application';
-import type { LegendStudioConfig } from '../../application/LegendStudioConfig';
-import { ActivityBarMenu, type ActivityDisplay } from '../editor/ActivityBar';
-import { Explorer } from '../editor/side-bar/Explorer';
-import { ProjectOverview } from '../editor/side-bar/ProjectOverview';
-import { WorkflowManager } from '../editor/side-bar/WorkflowManager';
+import type { LegendStudioConfig } from '../../application/LegendStudioConfig.js';
+import {
+  ActivityBarMenu,
+  type ActivityDisplay,
+} from '../editor/ActivityBar.js';
+import { Explorer } from '../editor/side-bar/Explorer.js';
+import { ProjectOverview } from '../editor/side-bar/ProjectOverview.js';
+import { WorkflowManager } from '../editor/side-bar/WorkflowManager.js';
 
 const ViewerStatusBar = observer(() => {
   const params = useParams<ViewerPathParams>();

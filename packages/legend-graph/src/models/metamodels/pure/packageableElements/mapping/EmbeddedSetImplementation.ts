@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import type { PropertyMapping } from './PropertyMapping';
-import type { InstanceSetImplementation } from './InstanceSetImplementation';
-import type { SetImplementation } from './SetImplementation';
+import type { PropertyMapping } from './PropertyMapping.js';
+import type { InstanceSetImplementation } from './InstanceSetImplementation.js';
+import type { SetImplementation } from './SetImplementation.js';
 
 export interface EmbeddedSetImplementation
   extends InstanceSetImplementation,

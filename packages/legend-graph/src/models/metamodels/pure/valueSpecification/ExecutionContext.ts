@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { LambdaFunction } from './LambdaFunction';
+import type { LambdaFunction } from './LambdaFunction.js';
 
 export abstract class ExecutionContext {
   queryTimeOutInSeconds?: number | undefined;

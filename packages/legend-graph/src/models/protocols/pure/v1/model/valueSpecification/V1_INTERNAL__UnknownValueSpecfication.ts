@@ -17,7 +17,7 @@
 import {
   V1_ValueSpecification,
   type V1_ValueSpecificationVisitor,
-} from './V1_ValueSpecification';
+} from './V1_ValueSpecification.js';
 
 export class V1_INTERNAL__UnknownValueSpecification extends V1_ValueSpecification {
   content!: object;

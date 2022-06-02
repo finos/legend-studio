@@ -15,8 +15,8 @@
  */
 
 import type { Hashable } from '@finos/legend-shared';
-import { PackageableElement } from '../PackageableElement';
-import type { PackageableElementReference } from '../PackageableElementReference';
+import { PackageableElement } from '../PackageableElement.js';
+import type { PackageableElementReference } from '../PackageableElementReference.js';
 
 export abstract class Store extends PackageableElement implements Hashable {
   includes: PackageableElementReference<Store>[] = [];

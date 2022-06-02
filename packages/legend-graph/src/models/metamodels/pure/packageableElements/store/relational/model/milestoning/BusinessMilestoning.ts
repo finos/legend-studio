@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import { CORE_HASH_STRUCTURE } from '../../../../../../../../MetaModelConst';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../../MetaModelConst.js';
 import { hashArray } from '@finos/legend-shared';
-import { TemporalMilestoning } from './Milestoning';
+import { TemporalMilestoning } from './Milestoning.js';
 
 export class BusinessMilestoning extends TemporalMilestoning {
   // from and to are columns in mm. We will use string for now until we add resolvement of columns

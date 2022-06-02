@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import type { DeduplicationStrategy } from './DSLPersistence_DeduplicationStrategy';
-import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../DSLPersistence_ModelUtils';
+import type { DeduplicationStrategy } from './DSLPersistence_DeduplicationStrategy.js';
+import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../DSLPersistence_ModelUtils.js';
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import type { Class, PackageableElementReference } from '@finos/legend-graph';
 

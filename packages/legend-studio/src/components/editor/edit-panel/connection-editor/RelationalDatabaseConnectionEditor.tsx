@@ -20,7 +20,7 @@ import {
   CORE_AUTHENTICATION_STRATEGY_TYPE,
   CORE_DATASOURCE_SPEC_TYPE,
   RELATIONAL_DATABASE_TAB_TYPE,
-} from '../../../../stores/editor-state/element-editor-state/connection/ConnectionEditorState';
+} from '../../../../stores/editor-state/element-editor-state/connection/ConnectionEditorState.js';
 import { useState } from 'react';
 import {
   ResizablePanelGroup,
@@ -58,14 +58,14 @@ import { runInAction } from 'mobx';
 import {
   buildElementOption,
   type PackageableElementOption,
-} from '../../../../stores/shared/PackageableElementOptionUtil';
-import type { LegendStudioPlugin } from '../../../../stores/LegendStudioPlugin';
-import type { StoreRelational_LegendStudioPlugin_Extension } from '../../../../stores/StoreRelational_LegendStudioPlugin_Extension';
-import { DatabaseBuilder } from './DatabaseBuilder';
-import { useEditorStore } from '../../EditorStoreProvider';
+} from '../../../../stores/shared/PackageableElementOptionUtil.js';
+import type { LegendStudioPlugin } from '../../../../stores/LegendStudioPlugin.js';
+import type { StoreRelational_LegendStudioPlugin_Extension } from '../../../../stores/StoreRelational_LegendStudioPlugin_Extension.js';
+import { DatabaseBuilder } from './DatabaseBuilder.js';
+import { useEditorStore } from '../../EditorStoreProvider.js';
 import { EDITOR_LANGUAGE } from '@finos/legend-application';
-import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor';
-import { connection_setStore } from '../../../../stores/graphModifier/DSLMapping_GraphModifierHelper';
+import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor.js';
+import { connection_setStore } from '../../../../stores/graphModifier/DSLMapping_GraphModifierHelper.js';
 import {
   apiTokenAuthenticationStrategy_setApiToken,
   bigQueryDatasourceSpecification_setDefaultDataset,
@@ -114,7 +114,7 @@ import {
   usernamePasswordAuthenticationStrategy_setUserNameVaultReference,
   gcpWorkloadIdentityFederationAuthenticationStrategy_setServiceAccountEmail,
   gcpWorkloadIdentityFederationAuthenticationStrategy_setAdditionalGcpScopes,
-} from '../../../../stores/graphModifier/StoreRelational_GraphModifierHelper';
+} from '../../../../stores/graphModifier/StoreRelational_GraphModifierHelper.js';
 
 /**
  * NOTE: this is a WIP we did to quickly assemble a modular UI for relational database connection editor

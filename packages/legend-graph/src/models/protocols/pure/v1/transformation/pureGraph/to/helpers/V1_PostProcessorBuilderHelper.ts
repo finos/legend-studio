@@ -14,23 +14,23 @@
  * limitations under the License.
  */
 
-import type { PostProcessor } from '../../../../../../../metamodels/pure/packageableElements/store/relational/connection/postprocessor/PostProcessor';
-import { MapperPostProcessor } from '../../../../../../../metamodels/pure/packageableElements/store/relational/connection/postprocessor/MapperPostProcessor';
-import { V1_MapperPostProcessor } from '../../../../model/packageableElements/store/relational/connection/postprocessor/V1_MapperPostProcessor';
-import type { V1_PostProcessor } from '../../../../model/packageableElements/store/relational/connection/postprocessor/V1_PostProcessor';
+import type { PostProcessor } from '../../../../../../../metamodels/pure/packageableElements/store/relational/connection/postprocessor/PostProcessor.js';
+import { MapperPostProcessor } from '../../../../../../../metamodels/pure/packageableElements/store/relational/connection/postprocessor/MapperPostProcessor.js';
+import { V1_MapperPostProcessor } from '../../../../model/packageableElements/store/relational/connection/postprocessor/V1_MapperPostProcessor.js';
+import type { V1_PostProcessor } from '../../../../model/packageableElements/store/relational/connection/postprocessor/V1_PostProcessor.js';
 import { UnsupportedOperationError } from '@finos/legend-shared';
 import {
   type V1_Mapper,
   V1_TableNameMapper,
   V1_SchemaNameMapper,
-} from '../../../../model/packageableElements/store/relational/connection/postprocessor/V1_Mapper';
+} from '../../../../model/packageableElements/store/relational/connection/postprocessor/V1_Mapper.js';
 import {
   type Mapper,
   SchemaNameMapper,
   TableNameMapper,
-} from '../../../../../../../metamodels/pure/packageableElements/store/relational/connection/postprocessor/Mapper';
-import type { V1_GraphBuilderContext } from '../V1_GraphBuilderContext';
-import type { StoreRelational_PureProtocolProcessorPlugin_Extension } from '../../../../../StoreRelational_PureProtocolProcessorPlugin_Extension';
+} from '../../../../../../../metamodels/pure/packageableElements/store/relational/connection/postprocessor/Mapper.js';
+import type { V1_GraphBuilderContext } from '../V1_GraphBuilderContext.js';
+import type { StoreRelational_PureProtocolProcessorPlugin_Extension } from '../../../../../StoreRelational_PureProtocolProcessorPlugin_Extension.js';
 
 const buildSchemaNameMapper = (schema: V1_SchemaNameMapper): SchemaNameMapper =>
   new SchemaNameMapper(schema.from, schema.to);

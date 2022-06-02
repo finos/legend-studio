@@ -16,7 +16,7 @@
 
 import { forwardRef, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
-import type { WorkspaceOption } from '../../stores/SetupStore';
+import type { WorkspaceOption } from '../../stores/SetupStore.js';
 import { WorkspaceType } from '@finos/legend-server-sdlc';
 import {
   type SelectComponent,
@@ -27,10 +27,10 @@ import {
   UsersIcon,
   GitBranchIcon,
 } from '@finos/legend-art';
-import { generateSetupRoute } from '../../stores/LegendStudioRouter';
-import { useSetupStore } from './SetupStoreProvider';
+import { generateSetupRoute } from '../../stores/LegendStudioRouter.js';
+import { useSetupStore } from './SetupStoreProvider.js';
 import { useApplicationStore } from '@finos/legend-application';
-import type { LegendStudioConfig } from '../../application/LegendStudioConfig';
+import type { LegendStudioConfig } from '../../application/LegendStudioConfig.js';
 
 const formatOptionLabel = (option: WorkspaceOption): React.ReactNode => (
   <div className="setup__workspace__label">

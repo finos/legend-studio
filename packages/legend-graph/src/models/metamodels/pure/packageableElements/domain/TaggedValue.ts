@@ -15,8 +15,8 @@
  */
 
 import { hashArray, uuid, type Hashable } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
-import type { TagReference } from './TagReference';
+import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst.js';
+import type { TagReference } from './TagReference.js';
 
 export class TaggedValue implements Hashable {
   readonly _UUID = uuid();

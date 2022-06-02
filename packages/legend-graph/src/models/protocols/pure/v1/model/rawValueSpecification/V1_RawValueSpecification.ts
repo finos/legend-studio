@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import type { V1_RawVariable } from '../../model/rawValueSpecification/V1_RawVariable';
-import type { V1_RawLambda } from '../../model/rawValueSpecification/V1_RawLambda';
-import type { V1_RawPrimitiveInstanceValue } from './V1_RawPrimitiveInstanceValue';
+import type { V1_RawVariable } from '../../model/rawValueSpecification/V1_RawVariable.js';
+import type { V1_RawLambda } from '../../model/rawValueSpecification/V1_RawLambda.js';
+import type { V1_RawPrimitiveInstanceValue } from './V1_RawPrimitiveInstanceValue.js';
 
 export interface V1_RawValueSpecificationVisitor<T> {
   visit_Lambda(valueSpecification: V1_RawLambda): T;

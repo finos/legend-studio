@@ -46,10 +46,10 @@ import {
 } from '@finos/legend-graph';
 import type { Entity } from '@finos/legend-model-storage';
 import { type EntityChange, EntityChangeType } from '@finos/legend-server-sdlc';
-import type { EditorStore } from '../../../EditorStore';
-import { ElementEditorState } from '../ElementEditorState';
-import { LEGEND_STUDIO_APP_EVENT } from '../../../LegendStudioAppEvent';
-import { configurationProperty_setValue } from '../../../graphModifier/DSLGeneration_GraphModifierHelper';
+import type { EditorStore } from '../../../EditorStore.js';
+import { ElementEditorState } from '../ElementEditorState.js';
+import { LEGEND_STUDIO_APP_EVENT } from '../../../LegendStudioAppEvent.js';
+import { configurationProperty_setValue } from '../../../graphModifier/DSLGeneration_GraphModifierHelper.js';
 
 export enum SCHEMA_SET_TAB_TYPE {
   GENERAL = 'GENERAL',

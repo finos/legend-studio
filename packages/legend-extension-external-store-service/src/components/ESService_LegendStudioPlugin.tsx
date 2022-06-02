@@ -55,9 +55,9 @@ import type {
   PackageableElement,
   SetImplementation,
 } from '@finos/legend-graph';
-import { ServiceStore } from '../models/metamodels/pure/model/packageableElements/store/serviceStore/model/ESService_ServiceStore';
-import { RootServiceInstanceSetImplementation } from '../models/metamodels/pure/model/packageableElements/store/serviceStore/mapping/ESService_RootServiceInstanceSetImplementation';
-import { ServiceStoreConnection } from '../models/metamodels/pure/model/packageableElements/store/serviceStore/connection/ESService_ServiceStoreConnection';
+import { ServiceStore } from '../models/metamodels/pure/model/packageableElements/store/serviceStore/model/ESService_ServiceStore.js';
+import { RootServiceInstanceSetImplementation } from '../models/metamodels/pure/model/packageableElements/store/serviceStore/mapping/ESService_RootServiceInstanceSetImplementation.js';
+import { ServiceStoreConnection } from '../models/metamodels/pure/model/packageableElements/store/serviceStore/connection/ESService_ServiceStoreConnection.js';
 import {
   collectKeyedDocumnetationEntriesFromConfig,
   type LegendApplicationDocumentationEntry,
@@ -66,21 +66,21 @@ import {
 import {
   PURE_GRAMMAR_SERVICE_STORE_ELEMENT_TYPE_LABEL,
   PURE_GRAMMAR_SERVICE_STORE_PARSER_NAME,
-} from '../graphManager/ESService_PureGraphManagerPlugin';
+} from '../graphManager/ESService_PureGraphManagerPlugin.js';
 import {
   EXTERNAL_STORE_SERVICE_DOCUMENTATION_ENTRIES,
   EXTERNAL_STORE_SERVICE_LEGEND_STUDIO_DOCUMENTATION_KEY,
-} from './ESService_LegendStudioDocumentation';
+} from './ESService_LegendStudioDocumentation.js';
 import {
   BLANK_SERVICE_STORE_SNIPPET,
   SERVICE_STORE_EMBEDDED_DATA,
   SERVICE_STORE_WITH_DESCRIPTION,
   SERVICE_STORE_WITH_SERVICE,
   SERVICE_STORE_WITH_SERVICE_GROUP,
-} from './ESService_CodeSnippets';
-import { ServiceStoreEmbeddedData } from '../models/metamodels/pure/model/data/ESService_ServiceStoreEmbeddedData';
-import { ServiceStoreEmbeddedDataState } from '../stores/studio/ESService_ServiceStoreEmbeddedDataEditorState';
-import { ServiceStoreEmbeddedDataEditor } from './ESService_ServiceStoreEmbeddedData';
+} from './ESService_CodeSnippets.js';
+import { ServiceStoreEmbeddedData } from '../models/metamodels/pure/model/data/ESService_ServiceStoreEmbeddedData.js';
+import { ServiceStoreEmbeddedDataState } from '../stores/studio/ESService_ServiceStoreEmbeddedDataEditorState.js';
+import { ServiceStoreEmbeddedDataEditor } from './ESService_ServiceStoreEmbeddedData.js';
 
 const SERVICE_STORE_ELEMENT_TYPE = 'SERVICE_STORE';
 const SERVICE_STORE_ELEMENT_PROJECT_EXPLORER_DND_TYPE =

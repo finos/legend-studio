@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-export * from './DSLDataSpace_Extension';
-export { DSLDataSpace_LegendStudioPlugin } from './components/studio/DSLDataSpace_LegendStudioPlugin';
-export { DSLDataSpace_LegendQueryPlugin } from './components/query/DSLDataSpace_LegendQueryPlugin';
+export * from './DSLDataSpace_Extension.js';
+export { DSLDataSpace_LegendStudioPlugin } from './components/studio/DSLDataSpace_LegendStudioPlugin.js';
+export { DSLDataSpace_LegendQueryPlugin } from './components/query/DSLDataSpace_LegendQueryPlugin.js';
 
-export { DataSpaceViewer } from './components/DataSpaceViewer';
+export { DataSpaceViewer } from './components/DataSpaceViewer.js';
 
 export {
   DATA_SPACE_ELEMENT_CLASSIFIER_PATH,
   extractDataSpaceTaxonomyNodes,
   getResolvedDataSpace,
-} from './models/protocols/pure/DSLDataSpace_PureProtocolProcessorPlugin';
+} from './models/protocols/pure/DSLDataSpace_PureProtocolProcessorPlugin.js';
 
-export { DataSpaceViewerState } from './stores/DataSpaceViewerState';
+export { DataSpaceViewerState } from './stores/DataSpaceViewerState.js';

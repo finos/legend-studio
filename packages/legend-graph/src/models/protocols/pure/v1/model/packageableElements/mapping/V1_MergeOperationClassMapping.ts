@@ -15,11 +15,11 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
-import { hashRawLambda } from '../../../../../../../MetaModelUtils';
-import type { V1_RawLambda } from '../../rawValueSpecification/V1_RawLambda';
-import type { V1_ClassMappingVisitor } from './V1_ClassMapping';
-import { V1_OperationClassMapping } from './V1_OperationClassMapping';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst.js';
+import { hashRawLambda } from '../../../../../../../MetaModelUtils.js';
+import type { V1_RawLambda } from '../../rawValueSpecification/V1_RawLambda.js';
+import type { V1_ClassMappingVisitor } from './V1_ClassMapping.js';
+import { V1_OperationClassMapping } from './V1_OperationClassMapping.js';
 
 export class V1_MergeOperationClassMapping
   extends V1_OperationClassMapping

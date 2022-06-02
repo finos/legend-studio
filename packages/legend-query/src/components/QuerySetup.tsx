@@ -37,24 +37,24 @@ import {
   generateCreateQueryRoute,
   generateExistingQueryRoute,
   generateServiceQueryRoute,
-} from '../stores/LegendQueryRouter';
+} from '../stores/LegendQueryRouter.js';
 import {
   type QuerySetupState,
   type ServiceExecutionOption,
   CreateQuerySetupState,
   ExistingQuerySetupState,
   ServiceQuerySetupState,
-} from '../stores/QuerySetupStore';
+} from '../stores/QuerySetupStore.js';
 import {
   CreateQueryInfoState,
   ExistingQueryInfoState,
   ServiceQueryInfoState,
-} from '../stores/LegendQueryStore';
+} from '../stores/LegendQueryStore.js';
 import {
   QuerySetupStoreProvider,
   useQuerySetupStore,
-} from './QuerySetupStoreProvider';
-import { useLegendQueryStore } from './LegendQueryStoreProvider';
+} from './QuerySetupStoreProvider.js';
+import { useLegendQueryStore } from './LegendQueryStoreProvider.js';
 import {
   type ProjectData,
   LATEST_VERSION_ALIAS,

@@ -18,7 +18,7 @@ import { type Hashable, hashArray } from '@finos/legend-shared';
 import {
   CORE_HASH_STRUCTURE,
   ELEMENT_PATH_DELIMITER,
-} from '../../../../../../../MetaModelConst';
+} from '../../../../../../../MetaModelConst.js';
 
 export class V1_MappingInclude implements Hashable {
   includedMapping?: string | undefined;

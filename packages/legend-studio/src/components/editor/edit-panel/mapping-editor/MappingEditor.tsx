@@ -33,8 +33,8 @@ import {
   PURE_EnumerationIcon,
   PURE_AssociationIcon,
 } from '@finos/legend-art';
-import { ClassMappingEditor } from './ClassMappingEditor';
-import { EnumerationMappingEditor } from './EnumerationMappingEditor';
+import { ClassMappingEditor } from './ClassMappingEditor.js';
+import { EnumerationMappingEditor } from './EnumerationMappingEditor.js';
 import { useResizeDetector } from 'react-resize-detector';
 import {
   type MappingEditorTabState,
@@ -44,17 +44,17 @@ import {
   getMappingElementType,
   MAPPING_ELEMENT_TYPE,
   getMappingElementLabel,
-} from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
-import { MappingElementState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementState';
-import { MappingExplorer } from './MappingExplorer';
-import { MappingTestEditor } from './MappingTestEditor';
-import { MappingTestState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingTestState';
-import { MappingTestsExplorer } from './MappingTestsExplorer';
-import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID';
-import { MappingExecutionState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingExecutionState';
-import { MappingExecutionBuilder } from './MappingExecutionBuilder';
+} from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState.js';
+import { MappingElementState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementState.js';
+import { MappingExplorer } from './MappingExplorer.js';
+import { MappingTestEditor } from './MappingTestEditor.js';
+import { MappingTestState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingTestState.js';
+import { MappingTestsExplorer } from './MappingTestsExplorer.js';
+import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID.js';
+import { MappingExecutionState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingExecutionState.js';
+import { MappingExecutionBuilder } from './MappingExecutionBuilder.js';
 import { flowResult } from 'mobx';
-import { useEditorStore } from '../../EditorStoreProvider';
+import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
   Class,
   Enumeration,

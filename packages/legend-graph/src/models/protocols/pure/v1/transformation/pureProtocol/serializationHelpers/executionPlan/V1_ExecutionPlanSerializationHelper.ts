@@ -34,21 +34,21 @@ import {
   usingConstantValueSchema,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
-import type { V1_ExecutionPlan } from '../../../../model/executionPlan/V1_ExecutionPlan';
-import { V1_SimpleExecutionPlan } from '../../../../model/executionPlan/V1_SimpleExecutionPlan';
-import { V1_Protocol } from '../../../../model/V1_Protocol';
-import { V1_DataTypeResultType } from '../../../../model/executionPlan/results/V1_DataTypeResultType';
-import { V1_TDSResultType } from '../../../../model/executionPlan/results/V1_TDSResultType';
-import { V1_TDSColumn } from '../../../../model/executionPlan/results/V1_TDSColumn';
-import type { V1_ResultType } from '../../../../model/executionPlan/results/V1_ResultType';
-import { V1_multiplicitySchema } from '../V1_CoreSerializationHelper';
-import { V1_RelationalTDSInstantiationExecutionNode } from '../../../../model/executionPlan/nodes/V1_RelationalTDSInstantiationExecutionNode';
-import { V1_SQLExecutionNode } from '../../../../model/executionPlan/nodes/V1_SQLExecutionNode';
-import { V1_SQLResultColumn } from '../../../../model/executionPlan/nodes/V1_SQLResultColumn';
+import type { V1_ExecutionPlan } from '../../../../model/executionPlan/V1_ExecutionPlan.js';
+import { V1_SimpleExecutionPlan } from '../../../../model/executionPlan/V1_SimpleExecutionPlan.js';
+import { V1_Protocol } from '../../../../model/V1_Protocol.js';
+import { V1_DataTypeResultType } from '../../../../model/executionPlan/results/V1_DataTypeResultType.js';
+import { V1_TDSResultType } from '../../../../model/executionPlan/results/V1_TDSResultType.js';
+import { V1_TDSColumn } from '../../../../model/executionPlan/results/V1_TDSColumn.js';
+import type { V1_ResultType } from '../../../../model/executionPlan/results/V1_ResultType.js';
+import { V1_multiplicitySchema } from '../V1_CoreSerializationHelper.js';
+import { V1_RelationalTDSInstantiationExecutionNode } from '../../../../model/executionPlan/nodes/V1_RelationalTDSInstantiationExecutionNode.js';
+import { V1_SQLExecutionNode } from '../../../../model/executionPlan/nodes/V1_SQLExecutionNode.js';
+import { V1_SQLResultColumn } from '../../../../model/executionPlan/nodes/V1_SQLResultColumn.js';
 import {
   V1_deserializeDatabaseConnectionValue,
   V1_serializeDatabaseConnectionValue,
-} from '../V1_ConnectionSerializationHelper';
+} from '../V1_ConnectionSerializationHelper.js';
 
 // ---------------------------------------- Result Type ----------------------------------------
 

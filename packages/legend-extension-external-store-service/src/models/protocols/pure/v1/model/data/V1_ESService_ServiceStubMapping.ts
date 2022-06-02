@@ -15,9 +15,9 @@
  */
 
 import { type Hashable, hashArray } from '@finos/legend-shared';
-import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../ESService_ModelUtils';
-import type { V1_ServiceRequestPattern } from './V1_ESService_ServiceRequestPattern';
-import type { V1_ServiceResponseDefinition } from './V1_ESService_ServiceResponseDefinition';
+import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../ESService_ModelUtils.js';
+import type { V1_ServiceRequestPattern } from './V1_ESService_ServiceRequestPattern.js';
+import type { V1_ServiceResponseDefinition } from './V1_ESService_ServiceResponseDefinition.js';
 
 export class V1_ServiceStubMapping implements Hashable {
   requestPattern!: V1_ServiceRequestPattern;

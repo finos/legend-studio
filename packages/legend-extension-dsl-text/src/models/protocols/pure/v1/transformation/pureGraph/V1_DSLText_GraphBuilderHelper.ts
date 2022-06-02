@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import { getText } from '../../../../../../graphManager/DSLText_GraphManagerHelper';
-import type { Text } from '../../../../../metamodels/pure/model/packageableElements/text/DSLText_Text';
+import { getText } from '../../../../../../graphManager/DSLText_GraphManagerHelper.js';
+import type { Text } from '../../../../../metamodels/pure/model/packageableElements/text/DSLText_Text.js';
 import type {
   PackageableElementImplicitReference,
   V1_GraphBuilderContext,

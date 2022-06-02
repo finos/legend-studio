@@ -15,10 +15,10 @@
  */
 
 import { action, makeAutoObservable, flowResult } from 'mobx';
-import type { EditorStore } from '../EditorStore';
-import type { EditorSDLCState } from '../EditorSDLCState';
-import { CHANGE_DETECTION_EVENT } from '../ChangeDetectionEvent';
-import { LEGEND_STUDIO_APP_EVENT } from '../LegendStudioAppEvent';
+import type { EditorStore } from '../EditorStore.js';
+import type { EditorSDLCState } from '../EditorSDLCState.js';
+import { CHANGE_DETECTION_EVENT } from '../ChangeDetectionEvent.js';
+import { LEGEND_STUDIO_APP_EVENT } from '../LegendStudioAppEvent.js';
 import {
   type GeneratorFn,
   type PlainObject,
@@ -27,9 +27,9 @@ import {
   assertNonNullable,
   guaranteeNonNullable,
 } from '@finos/legend-shared';
-import { EntityDiffViewState } from '../editor-state/entity-diff-editor-state/EntityDiffViewState';
-import { SPECIAL_REVISION_ALIAS } from '../editor-state/entity-diff-editor-state/EntityDiffEditorState';
-import { generateSetupRoute } from '../LegendStudioRouter';
+import { EntityDiffViewState } from '../editor-state/entity-diff-editor-state/EntityDiffViewState.js';
+import { SPECIAL_REVISION_ALIAS } from '../editor-state/entity-diff-editor-state/EntityDiffEditorState.js';
+import { generateSetupRoute } from '../LegendStudioRouter.js';
 import type { Entity } from '@finos/legend-model-storage';
 import {
   type Revision,

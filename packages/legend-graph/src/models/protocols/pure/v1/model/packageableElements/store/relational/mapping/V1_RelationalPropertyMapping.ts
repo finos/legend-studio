@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-import { CORE_HASH_STRUCTURE } from '../../../../../../../../../MetaModelConst';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../../../MetaModelConst.js';
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import {
   type V1_PropertyMappingVisitor,
   V1_PropertyMapping,
-} from '../../../../../model/packageableElements/mapping/V1_PropertyMapping';
-import { hashObjectWithoutSourceInformation } from '../../../../../../../../../MetaModelUtils';
-import type { V1_RawRelationalOperationElement } from '../model/V1_RawRelationalOperationElement';
-import type { V1_BindingTransformer } from '../../../externalFormat/store/V1_BindingTransformer';
+} from '../../../../../model/packageableElements/mapping/V1_PropertyMapping.js';
+import { hashObjectWithoutSourceInformation } from '../../../../../../../../../MetaModelUtils.js';
+import type { V1_RawRelationalOperationElement } from '../model/V1_RawRelationalOperationElement.js';
+import type { V1_BindingTransformer } from '../../../externalFormat/store/V1_BindingTransformer.js';
 
 export class V1_RelationalPropertyMapping
   extends V1_PropertyMapping

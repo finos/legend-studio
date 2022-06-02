@@ -15,29 +15,29 @@
  */
 
 import { UnsupportedOperationError } from '@finos/legend-shared';
-import type { PackageableRuntime } from '../../../../../../metamodels/pure/packageableElements/runtime/PackageableRuntime';
+import type { PackageableRuntime } from '../../../../../../metamodels/pure/packageableElements/runtime/PackageableRuntime.js';
 import {
   EngineRuntime,
   RuntimePointer,
   type StoreConnections,
   type Runtime,
-} from '../../../../../../metamodels/pure/packageableElements/runtime/Runtime';
+} from '../../../../../../metamodels/pure/packageableElements/runtime/Runtime.js';
 import {
   V1_initPackageableElement,
   V1_transformElementReference,
   V1_transformElementReferencePointer,
-} from './V1_CoreTransformerHelper';
-import { V1_PackageableRuntime } from '../../../model/packageableElements/runtime/V1_PackageableRuntime';
+} from './V1_CoreTransformerHelper.js';
+import { V1_PackageableRuntime } from '../../../model/packageableElements/runtime/V1_PackageableRuntime.js';
 import {
   type V1_Runtime,
   V1_EngineRuntime,
   V1_StoreConnections,
   V1_IdentifiedConnection,
   V1_RuntimePointer,
-} from '../../../model/packageableElements/runtime/V1_Runtime';
-import { V1_transformConnection } from './V1_ConnectionTransformer';
-import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext';
-import { PackageableElementPointerType } from '../../../../../../../MetaModelConst';
+} from '../../../model/packageableElements/runtime/V1_Runtime.js';
+import { V1_transformConnection } from './V1_ConnectionTransformer.js';
+import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext.js';
+import { PackageableElementPointerType } from '../../../../../../../MetaModelConst.js';
 
 const transformStoreConnections = (
   element: StoreConnections,

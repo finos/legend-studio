@@ -18,10 +18,10 @@ import {
   PackageableElementExplicitReference,
   type PackageableElementReference,
   type PackageableElementImplicitReference,
-} from '../../../PackageableElementReference';
-import { ReferenceWithOwner } from '../../../../Reference';
-import type { Database } from './Database';
-import type { Filter } from './Filter';
+} from '../../../PackageableElementReference.js';
+import { ReferenceWithOwner } from '../../../../Reference.js';
+import type { Database } from './Database.js';
+import type { Filter } from './Filter.js';
 
 export abstract class FilterReference extends ReferenceWithOwner {
   override readonly ownerReference: PackageableElementReference<Database>;

@@ -27,17 +27,17 @@ import {
   returnUndefOnError,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
-import type { QueryBuilderState } from './QueryBuilderState';
+import type { QueryBuilderState } from './QueryBuilderState.js';
 import {
   COLUMN_SORT_TYPE,
   SortColumnState,
-} from './QueryResultSetModifierState';
+} from './QueryResultSetModifierState.js';
 import {
   type QueryBuilderFilterState,
   QueryBuilderFilterTreeGroupNodeData,
   QueryBuilderFilterTreeConditionNodeData,
-} from './QueryBuilderFilterState';
-import { FETCH_STRUCTURE_MODE } from './QueryBuilderFetchStructureState';
+} from './QueryBuilderFilterState.js';
+import { FETCH_STRUCTURE_MODE } from './QueryBuilderFetchStructureState.js';
 import {
   type AlloySerializationConfigInstanceValue,
   type EnumValueInstanceValue,
@@ -76,13 +76,13 @@ import {
   type QueryBuilderProjectionColumnState,
   QueryBuilderDerivationProjectionColumnState,
   QueryBuilderSimpleProjectionColumnState,
-} from './QueryBuilderProjectionState';
-import type { QueryBuilderAggregationState } from './QueryBuilderAggregationState';
-import { QueryParameterState } from './QueryParametersState';
-import { toGroupOperation } from './QueryBuilderOperatorsHelper';
-import { processPostFilterLambda } from './QueryBuilderPostFilterProcessor';
-import { getDerivedPropertyMilestoningSteoreotype } from './QueryBuilderPropertyEditorState';
-import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../QueryBuilder_Const';
+} from './QueryBuilderProjectionState.js';
+import type { QueryBuilderAggregationState } from './QueryBuilderAggregationState.js';
+import { QueryParameterState } from './QueryParametersState.js';
+import { toGroupOperation } from './QueryBuilderOperatorsHelper.js';
+import { processPostFilterLambda } from './QueryBuilderPostFilterProcessor.js';
+import { getDerivedPropertyMilestoningSteoreotype } from './QueryBuilderPropertyEditorState.js';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../QueryBuilder_Const.js';
 
 const getNullableStringValueFromValueSpec = (
   valueSpec: ValueSpecification,

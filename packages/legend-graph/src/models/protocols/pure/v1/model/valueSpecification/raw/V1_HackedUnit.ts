@@ -17,7 +17,7 @@
 import {
   type V1_ValueSpecificationVisitor,
   V1_ValueSpecification,
-} from '../V1_ValueSpecification';
+} from '../V1_ValueSpecification.js';
 
 /**
  * @deprecated

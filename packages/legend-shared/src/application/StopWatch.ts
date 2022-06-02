@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { guaranteeNonNullable } from '../error/AssertionUtils';
+import { guaranteeNonNullable } from '../error/AssertionUtils.js';
 
 export class StopWatch {
   private _startTime = Date.now();

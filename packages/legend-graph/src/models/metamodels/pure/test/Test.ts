@@ -15,7 +15,7 @@
  */
 
 import type { Hashable } from '@finos/legend-shared';
-import type { TestAssertion } from './assertion/TestAssertion';
+import type { TestAssertion } from './assertion/TestAssertion.js';
 
 export abstract class Test implements Hashable {
   id!: string;

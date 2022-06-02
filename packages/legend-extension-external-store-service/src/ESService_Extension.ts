@@ -16,9 +16,9 @@
 
 import packageJson from '../package.json';
 import { AbstractPreset } from '@finos/legend-shared';
-import { ESService_PureGraphManagerPlugin } from './graphManager/ESService_PureGraphManagerPlugin';
-import { ESService_PureProtocolProcessorPlugin } from './models/protocols/pure/ESService_PureProtocolProcessorPlugin';
-import { ESService_PureGraphPlugin } from './graph/ESService_PureGraphPlugin';
+import { ESService_PureGraphManagerPlugin } from './graphManager/ESService_PureGraphManagerPlugin.js';
+import { ESService_PureProtocolProcessorPlugin } from './models/protocols/pure/ESService_PureProtocolProcessorPlugin.js';
+import { ESService_PureGraphPlugin } from './graph/ESService_PureGraphPlugin.js';
 
 export class ESService_GraphPreset extends AbstractPreset {
   constructor() {

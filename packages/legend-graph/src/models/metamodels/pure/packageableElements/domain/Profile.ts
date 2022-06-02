@@ -15,13 +15,13 @@
  */
 
 import { type Hashable, hashArray } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
+import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst.js';
 import {
   type PackageableElementVisitor,
   PackageableElement,
-} from '../PackageableElement';
-import type { Stereotype } from './Stereotype';
-import type { Tag } from './Tag';
+} from '../PackageableElement.js';
+import type { Stereotype } from './Stereotype.js';
+import type { Tag } from './Tag.js';
 
 export class Profile extends PackageableElement implements Hashable {
   stereotypes: Stereotype[] = [];

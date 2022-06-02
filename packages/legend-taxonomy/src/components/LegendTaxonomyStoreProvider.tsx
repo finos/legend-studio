@@ -20,10 +20,10 @@ import { useApplicationStore } from '@finos/legend-application';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { useDepotServerClient } from '@finos/legend-server-depot';
 import { useGraphManagerState } from '@finos/legend-graph';
-import { LegendTaxonomyStore } from '../stores/LegendTaxonomyStore';
-import type { LegendTaxonomyPluginManager } from '../application/LegendTaxonomyPluginManager';
-import type { LegendTaxonomyConfig } from '../application/LegendTaxonomyConfig';
-import { TaxonomyServerClient } from '../stores/TaxonomyServerClient';
+import { LegendTaxonomyStore } from '../stores/LegendTaxonomyStore.js';
+import type { LegendTaxonomyPluginManager } from '../application/LegendTaxonomyPluginManager.js';
+import type { LegendTaxonomyConfig } from '../application/LegendTaxonomyConfig.js';
+import { TaxonomyServerClient } from '../stores/TaxonomyServerClient.js';
 
 const LegendTaxonomyStoreContext = createContext<
   LegendTaxonomyStore | undefined

@@ -14,20 +14,24 @@
  * limitations under the License.
  */
 
-/// <reference types="jest-extended" />
-import { unitTest, guaranteeNonNullable } from '@finos/legend-shared';
+import { test, expect } from '@jest/globals';
+import {
+  type TEMPORARRY__JestMatcher,
+  unitTest,
+  guaranteeNonNullable,
+} from '@finos/legend-shared';
 import {
   TEST_DATA__simpleDebuggingCase,
   TEST_DATA__AutoImportsWithAny,
   TEST_DATA__AutoImportsWithSystemProfiles,
-} from '../roundtripTestData/TEST_DATA__GenericRoundtrip';
+} from '../roundtripTestData/TEST_DATA__GenericRoundtrip.js';
 import TEST_DATA__m2mGraphEntities from './TEST_DATA__M2MGraphEntities.json';
-import { TEST_DATA__SimpleGraph } from './TEST_DATA__Core';
+import { TEST_DATA__SimpleGraph } from './TEST_DATA__Core.js';
 import type { Entity } from '@finos/legend-model-storage';
 import {
   TEST__buildGraphWithEntities,
   TEST__getTestGraphManagerState,
-} from '../../GraphManagerTestUtils';
+} from '../../GraphManagerTestUtils.js';
 
 const PARENT_ELEMENT_PATH = 'model::myFileGeneration';
 
@@ -93,7 +97,9 @@ const testGeneratedElements = async (
   const transformedEntities = graphManagerState.graph.allOwnElements.map((el) =>
     graphManagerState.graphManager.elementToEntity(el),
   );
-  expect(entities).toIncludeSameMembers(transformedEntities);
+  (expect(entities) as TEMPORARRY__JestMatcher).toIncludeSameMembers(
+    transformedEntities,
+  );
   // Ensure generated elements are not transformed
   for (const entityPath of generatedElementPaths) {
     expect(

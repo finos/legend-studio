@@ -21,7 +21,7 @@ import type {
   PureGraphPlugin,
   PureProtocolProcessorPlugin,
 } from '@finos/legend-graph';
-import type { LegendQueryPlugin } from '../stores/LegendQueryPlugin';
+import type { LegendQueryPlugin } from '../stores/LegendQueryPlugin.js';
 
 export class LegendQueryPluginManager
   extends LegendApplicationPluginManager

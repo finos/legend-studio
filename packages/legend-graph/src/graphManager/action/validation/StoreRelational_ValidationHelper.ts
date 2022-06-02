@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-import type { RelationalInputData } from '../../../StoreRelational_Exports';
-import { isStubbed_PackageableElement } from '../creation/DomainModelCreatorHelper';
+import type { RelationalInputData } from '../../../StoreRelational_Exports.js';
+import { isStubbed_PackageableElement } from '../creation/DomainModelCreatorHelper.js';
 import {
   type ValidationIssue,
   createValidationError,
-} from './ValidationHelper';
+} from './ValidationHelper.js';
 
 /**
  * @deprecated

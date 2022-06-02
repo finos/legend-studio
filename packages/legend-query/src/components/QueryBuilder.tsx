@@ -33,21 +33,21 @@ import {
   CaretDownIcon,
   CogIcon,
 } from '@finos/legend-art';
-import { QueryBuilderFilterPanel } from './QueryBuilderFilterPanel';
-import { QueryBuilderExplorerPanel } from './QueryBuilderExplorerPanel';
-import { QueryBuilderSetupPanel } from './QueryBuilderSetupPanel';
-import { QueryBuilderResultPanel } from './QueryBuilderResultPanel';
-import { QueryBuilderTextEditor } from './QueryBuilderTextEditor';
-import type { QueryBuilderState } from '../stores/QueryBuilderState';
-import { QueryTextEditorMode } from '../stores/QueryTextEditorState';
-import { QueryBuilderFetchStructurePanel } from './QueryBuilderFetchStructurePanel';
-import { QUERY_BUILDER_TEST_ID } from './QueryBuilder_TestID';
+import { QueryBuilderFilterPanel } from './QueryBuilderFilterPanel.js';
+import { QueryBuilderExplorerPanel } from './QueryBuilderExplorerPanel.js';
+import { QueryBuilderSetupPanel } from './QueryBuilderSetupPanel.js';
+import { QueryBuilderResultPanel } from './QueryBuilderResultPanel.js';
+import { QueryBuilderTextEditor } from './QueryBuilderTextEditor.js';
+import type { QueryBuilderState } from '../stores/QueryBuilderState.js';
+import { QueryTextEditorMode } from '../stores/QueryTextEditorState.js';
+import { QueryBuilderFetchStructurePanel } from './QueryBuilderFetchStructurePanel.js';
+import { QUERY_BUILDER_TEST_ID } from './QueryBuilder_TestID.js';
 import { flowResult } from 'mobx';
-import { QueryBuilderUnsupportedQueryEditor } from './QueryBuilderUnsupportedQueryEditor';
+import { QueryBuilderUnsupportedQueryEditor } from './QueryBuilderUnsupportedQueryEditor.js';
 import { useApplicationStore } from '@finos/legend-application';
-import { QueryBuilderParameterPanel } from './QueryBuilderParameterPanel';
-import { QueryBuilderPostFilterPanel } from './QueryBuilderPostFilterPanel';
-import { QueryBuilderFunctionsExplorerPanel } from './QueryBuilderFunctionsExplorerPanel';
+import { QueryBuilderParameterPanel } from './QueryBuilderParameterPanel.js';
+import { QueryBuilderPostFilterPanel } from './QueryBuilderPostFilterPanel.js';
+import { QueryBuilderFunctionsExplorerPanel } from './QueryBuilderFunctionsExplorerPanel.js';
 
 enum QUERY_BUILDER_HOTKEY {
   COMPILE = 'COMPILE',

@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { test, expect } from '@jest/globals';
 import {
   extractElementNameFromPath,
   fromElementPathToMappingElementId,
@@ -23,26 +24,26 @@ import {
   isValidPath,
   isValidPathIdentifier,
   resolvePackagePathAndElementName,
-} from '../MetaModelUtils';
+} from '../MetaModelUtils.js';
 import {
   losslessParse,
   losslessStringify,
   unitTest,
 } from '@finos/legend-shared';
-import { MILESTONING_STEREOTYPE } from '../MetaModelConst';
+import { MILESTONING_STEREOTYPE } from '../MetaModelConst.js';
 import {
   ObjectInputData,
   ObjectInputType,
-} from '../models/metamodels/pure/packageableElements/store/modelToModel/mapping/ObjectInputData';
-import { PackageableElementExplicitReference } from '../models/metamodels/pure/packageableElements/PackageableElementReference';
+} from '../models/metamodels/pure/packageableElements/store/modelToModel/mapping/ObjectInputData.js';
+import { PackageableElementExplicitReference } from '../models/metamodels/pure/packageableElements/PackageableElementReference.js';
 import {
   TEST__buildGraphWithEntities,
   TEST__getTestGraphManagerState,
-} from '../GraphManagerTestUtils';
-import { TEST_DATA__MilestonedClassRoundtrip } from './roundtripTestData/TEST_DATA__DomainRoundtrip';
+} from '../GraphManagerTestUtils.js';
+import { TEST_DATA__MilestonedClassRoundtrip } from './roundtripTestData/TEST_DATA__DomainRoundtrip.js';
 import type { Entity } from '@finos/legend-model-storage';
-import { getMilestoneTemporalStereotype } from '../helpers/DomainHelper';
-import { stub_Class } from '../graphManager/action/creation/DomainModelCreatorHelper';
+import { getMilestoneTemporalStereotype } from '../helpers/DomainHelper.js';
+import { stub_Class } from '../graphManager/action/creation/DomainModelCreatorHelper.js';
 
 test(
   unitTest(

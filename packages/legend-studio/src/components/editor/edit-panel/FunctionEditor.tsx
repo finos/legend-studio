@@ -19,12 +19,12 @@ import { observer } from 'mobx-react-lite';
 import {
   FunctionEditorState,
   FUNCTION_SPEC_TAB,
-} from '../../../stores/editor-state/element-editor-state/FunctionEditorState';
+} from '../../../stores/editor-state/element-editor-state/FunctionEditorState.js';
 import {
   CORE_DND_TYPE,
   type UMLEditorElementDropTarget,
   type ElementDragSource,
-} from '../../../stores/shared/DnDUtil';
+} from '../../../stores/shared/DnDUtil.js';
 import {
   prettyCONSTName,
   UnsupportedOperationError,
@@ -39,12 +39,12 @@ import {
   TimesIcon,
   ArrowCircleRightIcon,
 } from '@finos/legend-art';
-import { LEGEND_STUDIO_TEST_ID } from '../../LegendStudioTestID';
-import { StereotypeSelector } from './uml-editor/StereotypeSelector';
-import { TaggedValueEditor } from './uml-editor/TaggedValueEditor';
-import type { PackageableElementOption } from '../../../stores/shared/PackageableElementOptionUtil';
+import { LEGEND_STUDIO_TEST_ID } from '../../LegendStudioTestID.js';
+import { StereotypeSelector } from './uml-editor/StereotypeSelector.js';
+import { TaggedValueEditor } from './uml-editor/TaggedValueEditor.js';
+import type { PackageableElementOption } from '../../../stores/shared/PackageableElementOptionUtil.js';
 import { flowResult } from 'mobx';
-import { useEditorStore } from '../EditorStoreProvider';
+import { useEditorStore } from '../EditorStoreProvider.js';
 import {
   type ConcreteFunctionDefinition,
   type StereotypeReference,
@@ -67,8 +67,8 @@ import {
   stub_RawVariableExpression,
 } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
-import { StudioLambdaEditor } from '../../shared/StudioLambdaEditor';
-import { getElementIcon } from '../../shared/ElementIconUtils';
+import { StudioLambdaEditor } from '../../shared/StudioLambdaEditor.js';
+import { getElementIcon } from '../../shared/ElementIconUtils.js';
 import {
   function_setReturnType,
   function_setReturnMultiplicity,
@@ -78,12 +78,12 @@ import {
   annotatedElement_addStereotype,
   annotatedElement_deleteStereotype,
   annotatedElement_deleteTaggedValue,
-} from '../../../stores/graphModifier/DomainGraphModifierHelper';
+} from '../../../stores/graphModifier/DomainGraphModifierHelper.js';
 import {
   rawVariableExpression_setMultiplicity,
   rawVariableExpression_setName,
   rawVariableExpression_setType,
-} from '../../../stores/graphModifier/ValueSpecificationGraphModifierHelper';
+} from '../../../stores/graphModifier/ValueSpecificationGraphModifierHelper.js';
 
 enum FUNCTION_PARAMETER_TYPE {
   CLASS = 'CLASS',

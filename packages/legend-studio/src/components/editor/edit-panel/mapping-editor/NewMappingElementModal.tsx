@@ -29,13 +29,13 @@ import {
   createEnumerationMapping,
   getAllMappingElements,
   MappingEditorState,
-} from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
+} from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState.js';
 import {
   guaranteeNonNullable,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
-import type { PackageableElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';
-import { useEditorStore } from '../../EditorStoreProvider';
+import type { PackageableElementOption } from '../../../../stores/shared/PackageableElementOptionUtil.js';
+import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
   type PackageableElement,
   PRIMITIVE_TYPE,
@@ -44,7 +44,7 @@ import {
   Enumeration,
   Association,
 } from '@finos/legend-graph';
-import { BASIC_SET_IMPLEMENTATION_TYPE } from '../../../../stores/shared/ModelUtil';
+import { BASIC_SET_IMPLEMENTATION_TYPE } from '../../../../stores/shared/ModelUtil.js';
 
 interface ClassMappingSubTypeOption {
   label: string;

@@ -15,8 +15,8 @@
  */
 
 import { type Hashable, hashArray } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
-import type { RelationalOperationElement } from './RelationalOperationElement';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst.js';
+import type { RelationalOperationElement } from './RelationalOperationElement.js';
 
 export class ColumnMapping implements Hashable {
   columnName: string;

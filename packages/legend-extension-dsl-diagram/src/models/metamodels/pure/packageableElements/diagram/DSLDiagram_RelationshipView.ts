@@ -15,12 +15,12 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { RelationshipEdgeView } from './DSLDiagram_RelationshipEdgeView';
-import { Point } from './geometry/DSLDiagram_Point';
-import type { ClassView } from './DSLDiagram_ClassView';
-import type { Diagram } from './DSLDiagram_Diagram';
-import { ClassViewExplicitReference } from './DSLDiagram_ClassViewReference';
-import { DIAGRAM_HASH_STRUCTURE } from '../../../../DSLDiagram_ModelUtils';
+import { RelationshipEdgeView } from './DSLDiagram_RelationshipEdgeView.js';
+import { Point } from './geometry/DSLDiagram_Point.js';
+import type { ClassView } from './DSLDiagram_ClassView.js';
+import type { Diagram } from './DSLDiagram_Diagram.js';
+import { ClassViewExplicitReference } from './DSLDiagram_ClassViewReference.js';
+import { DIAGRAM_HASH_STRUCTURE } from '../../../../DSLDiagram_ModelUtils.js';
 
 export class RelationshipView implements Hashable {
   readonly _OWNER: Diagram;

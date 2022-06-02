@@ -18,7 +18,7 @@ import { observable, action, computed, makeObservable } from 'mobx';
 import {
   InstanceSetImplementationState,
   PropertyMappingState,
-} from './MappingElementState';
+} from './MappingElementState.js';
 import {
   type GeneratorFn,
   assertErrorThrown,
@@ -27,8 +27,8 @@ import {
   guaranteeType,
   IllegalStateError,
 } from '@finos/legend-shared';
-import type { EditorStore } from '../../../EditorStore';
-import { MappingElementDecorator } from './MappingElementDecorator';
+import type { EditorStore } from '../../../EditorStore.js';
+import { MappingElementDecorator } from './MappingElementDecorator.js';
 import {
   type SourceInformation,
   type CompilationError,
@@ -50,7 +50,7 @@ import {
   stub_RawLambda,
   isStubbed_RawLambda,
 } from '@finos/legend-graph';
-import { MAPPING_ELEMENT_SOURCE_ID_LABEL } from './MappingEditorState';
+import { MAPPING_ELEMENT_SOURCE_ID_LABEL } from './MappingEditorState.js';
 
 export class FlatDataPropertyMappingState extends PropertyMappingState {
   editorStore: EditorStore;

@@ -15,7 +15,7 @@
  */
 
 import { type Hashable, uuid } from '@finos/legend-shared';
-import { ContentPattern } from './ESService_ContentPattern';
+import { ContentPattern } from './ESService_ContentPattern.js';
 
 export abstract class StringValuePattern
   extends ContentPattern

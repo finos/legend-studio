@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import clsx, { type ClassValue } from 'clsx';
+import { clsx, type ClassValue } from '../utils/CJS__clsx.cjs';
 import {
   type HandlerProps,
   type ReflexElementProps,

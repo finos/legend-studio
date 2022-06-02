@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst.js';
 import { type Hashable, hashArray } from '@finos/legend-shared';
-import { NamedRelation } from './RelationalOperationElement';
-import type { Schema } from './Schema';
-import type { Column } from './Column';
-import type { Milestoning } from './milestoning/Milestoning';
+import { NamedRelation } from './RelationalOperationElement.js';
+import type { Schema } from './Schema.js';
+import type { Column } from './Column.js';
+import type { Milestoning } from './milestoning/Milestoning.js';
 
 export class Table extends NamedRelation implements Hashable {
   schema!: Schema;

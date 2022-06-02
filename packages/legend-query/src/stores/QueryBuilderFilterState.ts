@@ -35,9 +35,9 @@ import {
   assertErrorThrown,
   filterByType,
 } from '@finos/legend-shared';
-import type { QueryBuilderExplorerTreeDragSource } from './QueryBuilderExplorerState';
-import { QueryBuilderPropertyExpressionState } from './QueryBuilderPropertyEditorState';
-import type { QueryBuilderState } from './QueryBuilderState';
+import type { QueryBuilderExplorerTreeDragSource } from './QueryBuilderExplorerState.js';
+import { QueryBuilderPropertyExpressionState } from './QueryBuilderPropertyEditorState.js';
+import type { QueryBuilderState } from './QueryBuilderState.js';
 import {
   type AbstractPropertyExpression,
   type ValueSpecification,
@@ -49,12 +49,12 @@ import {
 import {
   DEFAULT_LAMBDA_VARIABLE_NAME,
   QUERY_BUILDER_SUPPORTED_FUNCTIONS,
-} from '../QueryBuilder_Const';
-import { buildGenericLambdaFunctionInstanceValue } from './QueryBuilderValueSpecificationBuilderHelper';
+} from '../QueryBuilder_Const.js';
+import { buildGenericLambdaFunctionInstanceValue } from './QueryBuilderValueSpecificationBuilderHelper.js';
 import {
   fromGroupOperation,
   QUERY_BUILDER_GROUP_OPERATION,
-} from './QueryBuilderOperatorsHelper';
+} from './QueryBuilderOperatorsHelper.js';
 
 export abstract class QueryBuilderFilterOperator {
   readonly uuid = uuid();

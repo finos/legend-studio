@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import { CORE_HASH_STRUCTURE } from '../../../../../../../../../MetaModelConst';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../../../MetaModelConst.js';
 import { type Hashable, hashArray } from '@finos/legend-shared';
-import type { V1_Table } from './V1_Table';
-import type { V1_View } from './V1_View';
+import type { V1_Table } from './V1_Table.js';
+import type { V1_View } from './V1_View.js';
 
 export class V1_Schema implements Hashable {
   name!: string;

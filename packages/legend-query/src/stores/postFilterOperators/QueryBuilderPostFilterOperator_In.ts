@@ -28,19 +28,19 @@ import {
   TYPICAL_MULTIPLICITY_TYPE,
 } from '@finos/legend-graph';
 import { guaranteeNonNullable } from '@finos/legend-shared';
-import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const.js';
 import {
   buildNotExpression,
   getCollectionValueSpecificationType,
   unwrapNotExpression,
-} from '../QueryBuilderOperatorsHelper';
-import { QueryBuilderPostFilterOperator } from '../QueryBuilderPostFilterOperator';
-import { buildPostFilterConditionState } from '../QueryBuilderPostFilterProcessor';
+} from '../QueryBuilderOperatorsHelper.js';
+import { QueryBuilderPostFilterOperator } from '../QueryBuilderPostFilterOperator.js';
+import { buildPostFilterConditionState } from '../QueryBuilderPostFilterProcessor.js';
 import type {
   PostFilterConditionState,
   QueryBuilderPostFilterState,
-} from '../QueryBuilderPostFilterState';
-import { buildPostFilterConditionExpression } from './QueryBuilderPostFilterOperatorHelper';
+} from '../QueryBuilderPostFilterState.js';
+import { buildPostFilterConditionExpression } from './QueryBuilderPostFilterOperatorHelper.js';
 
 export class QueryBuilderPostFilterOperator_In extends QueryBuilderPostFilterOperator {
   getLabel(): string {

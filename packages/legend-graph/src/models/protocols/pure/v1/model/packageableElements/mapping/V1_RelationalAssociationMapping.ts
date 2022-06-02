@@ -15,8 +15,8 @@
  */
 
 import { type Hashable, hashArray } from '@finos/legend-shared';
-import { V1_AssociationMapping } from './V1_AssociationMapping';
-import type { V1_PropertyMapping } from './V1_PropertyMapping';
+import { V1_AssociationMapping } from './V1_AssociationMapping.js';
+import type { V1_PropertyMapping } from './V1_PropertyMapping.js';
 
 export class V1_RelationalAssociationMapping
   extends V1_AssociationMapping

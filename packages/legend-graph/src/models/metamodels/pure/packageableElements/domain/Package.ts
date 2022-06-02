@@ -18,7 +18,7 @@ import type { Hashable } from '@finos/legend-shared';
 import {
   type PackageableElementVisitor,
   PackageableElement,
-} from '../PackageableElement';
+} from '../PackageableElement.js';
 
 export class Package extends PackageableElement implements Hashable {
   children: PackageableElement[] = [];

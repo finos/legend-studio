@@ -15,9 +15,9 @@
  */
 
 import { LegendStyleProvider } from '@finos/legend-art';
-import { ActionAlert } from './ActionAlert';
-import { BlockingAlert } from './BlockingAlert';
-import { NotificationManager } from './NotificationManager';
+import { ActionAlert } from './ActionAlert.js';
+import { BlockingAlert } from './BlockingAlert.js';
+import { NotificationManager } from './NotificationManager.js';
 
 export const LegendApplicationComponentFrameworkProvider: React.FC<{
   children: React.ReactNode;

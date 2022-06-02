@@ -20,7 +20,7 @@ import { createContext, useContext } from 'react';
 import {
   type SDLCServerClientConfig,
   SDLCServerClient,
-} from './SDLCServerClient';
+} from './SDLCServerClient.js';
 
 const SDLCServerClientContext = createContext<SDLCServerClient | undefined>(
   undefined,

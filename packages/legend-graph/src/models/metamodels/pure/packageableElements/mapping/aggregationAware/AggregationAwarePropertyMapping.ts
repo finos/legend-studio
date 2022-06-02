@@ -17,7 +17,7 @@
 import {
   type PropertyMappingVisitor,
   PropertyMapping,
-} from '../PropertyMapping';
+} from '../PropertyMapping.js';
 
 export class AggregationAwarePropertyMapping extends PropertyMapping {
   accept_PropertyMappingVisitor<T>(visitor: PropertyMappingVisitor<T>): T {

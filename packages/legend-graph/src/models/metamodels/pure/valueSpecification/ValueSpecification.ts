@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-import type { GenericTypeReference } from '../packageableElements/domain/GenericTypeReference';
-import type { Multiplicity } from '../packageableElements/domain/Multiplicity';
-import type { AlloySerializationConfigInstanceValue } from './AlloySerializationConfig';
+import type { GenericTypeReference } from '../packageableElements/domain/GenericTypeReference.js';
+import type { Multiplicity } from '../packageableElements/domain/Multiplicity.js';
+import type { AlloySerializationConfigInstanceValue } from './AlloySerializationConfig.js';
 import type {
   RootGraphFetchTreeInstanceValue,
   PropertyGraphFetchTreeInstanceValue,
-} from './GraphFetchTree';
+} from './GraphFetchTree.js';
 import type {
   InstanceValue,
   PrimitiveInstanceValue,
@@ -30,16 +30,16 @@ import type {
   PairInstanceValue,
   PureListInstanceValue,
   CollectionInstanceValue,
-} from './InstanceValue';
-import type { LambdaFunctionInstanceValue } from './LambdaFunction';
+} from './InstanceValue.js';
+import type { LambdaFunctionInstanceValue } from './LambdaFunction.js';
 import type {
   FunctionExpression,
   SimpleFunctionExpression,
   AbstractPropertyExpression,
-} from './SimpleFunctionExpression';
-import type { INTERNAL__UnknownValueSpecification } from './INTERNAL__UnknownValueSpecification';
-import type { VariableExpression } from './VariableExpression';
-import type { INTERNAL__PropagatedValue } from './INTERNAL__PropagatedValue';
+} from './SimpleFunctionExpression.js';
+import type { INTERNAL__UnknownValueSpecification } from './INTERNAL__UnknownValueSpecification.js';
+import type { VariableExpression } from './VariableExpression.js';
+import type { INTERNAL__PropagatedValue } from './INTERNAL__PropagatedValue.js';
 
 export interface ValueSpecificationVisitor<T> {
   visit_RootGraphFetchTreeInstanceValue(

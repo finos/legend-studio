@@ -15,11 +15,11 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst.js';
 import {
   type V1_ClassMappingVisitor,
   V1_ClassMapping,
-} from './V1_ClassMapping';
+} from './V1_ClassMapping.js';
 
 export enum V1_MappingOperationType {
   STORE_UNION = 'STORE_UNION',

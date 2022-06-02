@@ -29,7 +29,7 @@ import {
   filterByType,
   isNonNullable,
 } from '@finos/legend-shared';
-import type { ExecutionPlanState } from '../../../../../stores/ExecutionPlanState';
+import type { ExecutionPlanState } from '../../../../../stores/ExecutionPlanState.js';
 import {
   type ExecutionPlan,
   ExecutionNode,

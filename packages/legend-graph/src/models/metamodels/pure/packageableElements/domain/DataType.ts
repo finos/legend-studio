@@ -14,6 +14,6 @@
  * limitations under the License.
  */
 
-import { Type } from './Type';
+import { Type } from './Type.js';
 
 export abstract class DataType extends Type {}

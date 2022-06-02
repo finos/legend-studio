@@ -17,8 +17,8 @@
 import {
   type V1_ValueSpecificationVisitor,
   V1_ValueSpecification,
-} from '../../../model/valueSpecification/V1_ValueSpecification';
-import type { V1_Lambda } from './V1_Lambda';
+} from '../../../model/valueSpecification/V1_ValueSpecification.js';
+import type { V1_Lambda } from './V1_Lambda.js';
 
 export class V1_TdsOlapAggregation extends V1_ValueSpecification {
   function!: V1_Lambda;

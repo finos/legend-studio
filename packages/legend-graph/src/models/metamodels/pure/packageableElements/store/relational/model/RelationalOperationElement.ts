@@ -14,20 +14,20 @@
  * limitations under the License.
  */
 
-import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst.js';
 import {
   hashArray,
   UnsupportedOperationError,
   type Hashable,
 } from '@finos/legend-shared';
-import type { GroupByMapping } from '../mapping/GroupByMapping';
-import type { FilterMapping } from '../mapping/FilterMapping';
-import type { JoinReference } from './JoinReference';
-import type { TableReference } from './TableReference';
-import type { ViewReference } from './ViewReference';
-import type { ColumnReference } from './ColumnReference';
-import type { Database } from './Database';
-import { SELF_JOIN_TABLE_NAME } from './Join';
+import type { GroupByMapping } from '../mapping/GroupByMapping.js';
+import type { FilterMapping } from '../mapping/FilterMapping.js';
+import type { JoinReference } from './JoinReference.js';
+import type { TableReference } from './TableReference.js';
+import type { ViewReference } from './ViewReference.js';
+import type { ColumnReference } from './ColumnReference.js';
+import type { Database } from './Database.js';
+import { SELF_JOIN_TABLE_NAME } from './Join.js';
 
 export abstract class RelationalOperationElement {
   abstract get hashCode(): string;

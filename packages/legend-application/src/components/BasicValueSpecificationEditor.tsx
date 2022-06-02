@@ -60,8 +60,8 @@ import { useEffect, useRef, useState } from 'react';
 import {
   instanceValue_changeValue,
   instanceValue_changeValues,
-} from '../stores/ValueSpecificationModifierHelper';
-import { CustomDatePicker } from './CustomDatePicker';
+} from '../stores/ValueSpecificationModifierHelper.js';
+import { CustomDatePicker } from './CustomDatePicker.js';
 
 type TypeCheckOption = {
   expectedType: Type;

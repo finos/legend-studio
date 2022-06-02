@@ -17,7 +17,7 @@
 import {
   AbstractPlugin,
   type AbstractPluginManager,
-} from '../application/AbstractPluginManager';
+} from '../application/AbstractPluginManager.js';
 
 export interface TelemetryData {
   [key: string]: unknown;

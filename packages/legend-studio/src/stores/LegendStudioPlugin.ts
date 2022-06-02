@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import type { LegendStudioPluginManager } from '../application/LegendStudioPluginManager';
-import type { ElementEditorState } from './editor-state/element-editor-state/ElementEditorState';
-import type { EditorExtensionState, EditorStore } from './EditorStore';
-import type { NewElementDriver, NewElementState } from './NewElementState';
+import type { LegendStudioPluginManager } from '../application/LegendStudioPluginManager.js';
+import type { ElementEditorState } from './editor-state/element-editor-state/ElementEditorState.js';
+import type { EditorExtensionState, EditorStore } from './EditorStore.js';
+import type { NewElementDriver, NewElementState } from './NewElementState.js';
 import type {
   Class,
   PackageableElement,
@@ -28,7 +28,7 @@ import {
   type LegendApplicationDocumentationEntry,
   LegendApplicationPlugin,
 } from '@finos/legend-application';
-import type { TestableMetadata } from './sidebar-state/testable/GlobalTestRunnerState';
+import type { TestableMetadata } from './sidebar-state/testable/GlobalTestRunnerState.js';
 
 export type ApplicationSetup = (
   pluginManager: LegendStudioPluginManager,

@@ -36,8 +36,8 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import type {
   DataSpaceQuerySetupState,
   LightDataSpace,
-} from '../../stores/query/DataSpaceQuerySetupState';
-import { DataSpaceViewer } from '../DataSpaceViewer';
+} from '../../stores/query/DataSpaceQuerySetupState.js';
+import { DataSpaceViewer } from '../DataSpaceViewer.js';
 
 type DataSpaceOption = { label: string; value: LightDataSpace };
 const buildDataSpaceOption = (dataSpace: LightDataSpace): DataSpaceOption => ({

@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst.js';
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import type { EnumerationMapping } from '../../../mapping/EnumerationMapping';
+import type { EnumerationMapping } from '../../../mapping/EnumerationMapping.js';
 import {
   type PropertyMappingVisitor,
   PropertyMapping,
-} from '../../../mapping/PropertyMapping';
-import { hashObjectWithoutSourceInformation } from '../../../../../../../MetaModelUtils';
-import type { RawRelationalOperationElement } from '../model/RawRelationalOperationElement';
-import type { BindingTransformer } from '../../../externalFormat/store/DSLExternalFormat_BindingTransformer';
+} from '../../../mapping/PropertyMapping.js';
+import { hashObjectWithoutSourceInformation } from '../../../../../../../MetaModelUtils.js';
+import type { RawRelationalOperationElement } from '../model/RawRelationalOperationElement.js';
+import type { BindingTransformer } from '../../../externalFormat/store/DSLExternalFormat_BindingTransformer.js';
 
 export class RelationalPropertyMapping
   extends PropertyMapping

@@ -15,16 +15,16 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst.js';
 import {
   type V1_PackageableElementVisitor,
   V1_PackageableElement,
-} from '../../../model/packageableElements/V1_PackageableElement';
-import type { V1_ServiceExecution } from './V1_ServiceExecution';
-import type { V1_StereotypePtr } from '../../../model/packageableElements/domain/V1_StereotypePtr';
-import type { V1_TaggedValue } from '../../../model/packageableElements/domain/V1_TaggedValue';
-import type { V1_DEPRECATED__ServiceTest } from './V1_DEPRECATED__ServiceTest';
-import type { V1_TestSuite } from '../../test/V1_TestSuite';
+} from '../../../model/packageableElements/V1_PackageableElement.js';
+import type { V1_ServiceExecution } from './V1_ServiceExecution.js';
+import type { V1_StereotypePtr } from '../../../model/packageableElements/domain/V1_StereotypePtr.js';
+import type { V1_TaggedValue } from '../../../model/packageableElements/domain/V1_TaggedValue.js';
+import type { V1_DEPRECATED__ServiceTest } from './V1_DEPRECATED__ServiceTest.js';
+import type { V1_TestSuite } from '../../test/V1_TestSuite.js';
 
 export class V1_Service extends V1_PackageableElement implements Hashable {
   stereotypes: V1_StereotypePtr[] = [];

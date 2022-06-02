@@ -22,7 +22,7 @@ import {
   CORE_DND_TYPE,
   type ElementDragSource,
   type UMLEditorElementDropTarget,
-} from '../../../../stores/shared/DnDUtil';
+} from '../../../../stores/shared/DnDUtil.js';
 import {
   clsx,
   CustomSelectorInput,
@@ -42,15 +42,15 @@ import {
   FireIcon,
   StickArrowCircleRightIcon,
 } from '@finos/legend-art';
-import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID';
-import { PropertyEditor } from './PropertyEditor';
-import { StereotypeSelector } from './StereotypeSelector';
-import { TaggedValueEditor } from './TaggedValueEditor';
-import { UML_EDITOR_TAB } from '../../../../stores/editor-state/element-editor-state/UMLEditorState';
-import { ClassEditorState } from '../../../../stores/editor-state/element-editor-state/ClassEditorState';
-import type { PackageableElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';
+import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID.js';
+import { PropertyEditor } from './PropertyEditor.js';
+import { StereotypeSelector } from './StereotypeSelector.js';
+import { TaggedValueEditor } from './TaggedValueEditor.js';
+import { UML_EDITOR_TAB } from '../../../../stores/editor-state/element-editor-state/UMLEditorState.js';
+import { ClassEditorState } from '../../../../stores/editor-state/element-editor-state/ClassEditorState.js';
+import type { PackageableElementOption } from '../../../../stores/shared/PackageableElementOptionUtil.js';
 import { flowResult } from 'mobx';
-import { useEditorStore } from '../../EditorStoreProvider';
+import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
   type StereotypeReference,
   type GenericTypeReference,
@@ -82,14 +82,14 @@ import {
   getAllClassConstraints,
   getAllClassDerivedProperties,
 } from '@finos/legend-graph';
-import { StudioLambdaEditor } from '../../../shared/StudioLambdaEditor';
+import { StudioLambdaEditor } from '../../../shared/StudioLambdaEditor.js';
 import {
   ApplicationNavigationContextData,
   useApplicationNavigationContext,
   useApplicationStore,
 } from '@finos/legend-application';
-import { getElementIcon } from '../../../shared/ElementIconUtils';
-import type { ClassPreviewRenderer } from '../../../../stores/LegendStudioPlugin';
+import { getElementIcon } from '../../../shared/ElementIconUtils.js';
+import type { ClassPreviewRenderer } from '../../../../stores/LegendStudioPlugin.js';
 import {
   class_addProperty,
   class_deleteDerivedProperty,
@@ -110,12 +110,12 @@ import {
   property_setGenericType,
   property_setMultiplicity,
   setGenericTypeReferenceValue,
-} from '../../../../stores/graphModifier/DomainGraphModifierHelper';
+} from '../../../../stores/graphModifier/DomainGraphModifierHelper.js';
 import {
   CLASS_PROPERTY_TYPE,
   getClassPropertyType,
-} from '../../../../stores/shared/ModelUtil';
-import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT } from '../../../../stores/LegendStudioApplicationNavigationContext';
+} from '../../../../stores/shared/ModelUtil.js';
+import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT } from '../../../../stores/LegendStudioApplicationNavigationContext.js';
 
 const PropertyBasicEditor = observer(
   (props: {

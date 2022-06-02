@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import type { PropertyOwnerImplementation } from './PropertyOwnerImplementation';
-import type { PropertyMapping } from './PropertyMapping';
+import type { PropertyOwnerImplementation } from './PropertyOwnerImplementation.js';
+import type { PropertyMapping } from './PropertyMapping.js';
 
 export interface PropertyMappingsImplementation
   extends PropertyOwnerImplementation {

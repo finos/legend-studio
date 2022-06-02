@@ -15,8 +15,8 @@
  */
 
 import { action, computed, flowResult, makeAutoObservable } from 'mobx';
-import { CHANGE_DETECTION_EVENT } from './ChangeDetectionEvent';
-import { GRAPH_EDITOR_MODE, AUX_PANEL_MODE } from './EditorConfig';
+import { CHANGE_DETECTION_EVENT } from './ChangeDetectionEvent.js';
+import { GRAPH_EDITOR_MODE, AUX_PANEL_MODE } from './EditorConfig.js';
 import {
   type GeneratorFn,
   type PlainObject,
@@ -32,11 +32,11 @@ import {
   filterByType,
   ActionState,
 } from '@finos/legend-shared';
-import type { EditorStore } from './EditorStore';
-import { ElementEditorState } from './editor-state/element-editor-state/ElementEditorState';
-import { GraphGenerationState } from './editor-state/GraphGenerationState';
-import { MODEL_UPDATER_INPUT_TYPE } from './editor-state/ModelLoaderState';
-import type { DSL_LegendStudioPlugin_Extension } from './LegendStudioPlugin';
+import type { EditorStore } from './EditorStore.js';
+import { ElementEditorState } from './editor-state/element-editor-state/ElementEditorState.js';
+import { GraphGenerationState } from './editor-state/GraphGenerationState.js';
+import { MODEL_UPDATER_INPUT_TYPE } from './editor-state/ModelLoaderState.js';
+import type { DSL_LegendStudioPlugin_Extension } from './LegendStudioPlugin.js';
 import type { Entity } from '@finos/legend-model-storage';
 import {
   type EntityChange,
@@ -95,14 +95,14 @@ import {
   ActionAlertActionType,
   ActionAlertType,
 } from '@finos/legend-application';
-import { CONFIGURATION_EDITOR_TAB } from './editor-state/ProjectConfigurationEditorState';
-import type { DSLMapping_LegendStudioPlugin_Extension } from './DSLMapping_LegendStudioPlugin_Extension';
-import { graph_dispose } from './graphModifier/GraphModifierHelper';
+import { CONFIGURATION_EDITOR_TAB } from './editor-state/ProjectConfigurationEditorState.js';
+import type { DSLMapping_LegendStudioPlugin_Extension } from './DSLMapping_LegendStudioPlugin_Extension.js';
+import { graph_dispose } from './graphModifier/GraphModifierHelper.js';
 import {
   PACKAGEABLE_ELEMENT_TYPE,
   SET_IMPLEMENTATION_TYPE,
-} from './shared/ModelUtil';
-import { GlobalTestRunnerState } from './sidebar-state/testable/GlobalTestRunnerState';
+} from './shared/ModelUtil.js';
+import { GlobalTestRunnerState } from './sidebar-state/testable/GlobalTestRunnerState.js';
 
 export enum GraphBuilderStatus {
   SUCCEEDED = 'SUCCEEDED',

@@ -30,7 +30,7 @@ import { action, computed, makeObservable, observable } from 'mobx';
 import type {
   ResolvedDataSpace,
   ResolvedDataSpaceExecutionContext,
-} from '../models/protocols/pure/DSLDataSpace_PureProtocolProcessorPlugin';
+} from '../models/protocols/pure/DSLDataSpace_PureProtocolProcessorPlugin.js';
 
 export enum DATA_SPACE_VIEWER_ACTIVITY_MODE {
   MODELS_OVERVIEW = 'MODELS_OVERVIEW',

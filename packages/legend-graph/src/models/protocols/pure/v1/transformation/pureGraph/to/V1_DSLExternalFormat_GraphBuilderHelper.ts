@@ -17,11 +17,11 @@
 import {
   getSchemaSet,
   getBinding,
-} from '../../../../../../../graphManager/DSLExternalFormat_GraphManagerHelper';
-import type { PackageableElementImplicitReference } from '../../../../../../metamodels/pure/packageableElements/PackageableElementReference';
-import type { SchemaSet } from '../../../../../../metamodels/pure/packageableElements/externalFormat/schemaSet/DSLExternalFormat_SchemaSet';
-import type { Binding } from '../../../../../../metamodels/pure/packageableElements/externalFormat/store/DSLExternalFormat_Binding';
-import type { V1_GraphBuilderContext } from './V1_GraphBuilderContext';
+} from '../../../../../../../graphManager/DSLExternalFormat_GraphManagerHelper.js';
+import type { PackageableElementImplicitReference } from '../../../../../../metamodels/pure/packageableElements/PackageableElementReference.js';
+import type { SchemaSet } from '../../../../../../metamodels/pure/packageableElements/externalFormat/schemaSet/DSLExternalFormat_SchemaSet.js';
+import type { Binding } from '../../../../../../metamodels/pure/packageableElements/externalFormat/store/DSLExternalFormat_Binding.js';
+import type { V1_GraphBuilderContext } from './V1_GraphBuilderContext.js';
 
 export const V1_resolveSchemaSet = (
   path: string,

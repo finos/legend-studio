@@ -24,8 +24,8 @@ import {
   PureProtocolProcessorPlugin,
   V1_deserializePureModelContextData,
 } from '@finos/legend-graph';
-import { V1_MappingGenerateModelInput } from './protocols/pure/v1/engine/V1_MappingGenerateModelInput';
-import { V1_MappingGenConfiguration } from './protocols/pure/v1/model/V1_MappingGenConfiguration';
+import { V1_MappingGenerateModelInput } from './protocols/pure/v1/engine/V1_MappingGenerateModelInput.js';
+import { V1_MappingGenConfiguration } from './protocols/pure/v1/model/V1_MappingGenConfiguration.js';
 
 const GENERATE_MAPPING_ENGINE_TRACER_SPAN = 'generate relational mapping';
 

@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-import { Multiplicity } from '../packageableElements/domain/Multiplicity';
+import { Multiplicity } from '../packageableElements/domain/Multiplicity.js';
 import {
   type ValueSpecificationVisitor,
   ValueSpecification,
-} from './ValueSpecification';
+} from './ValueSpecification.js';
 
 /**
  * This value specification is used to hold a value specification type that we can't yet handle

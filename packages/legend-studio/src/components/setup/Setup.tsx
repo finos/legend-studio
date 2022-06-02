@@ -15,8 +15,8 @@
  */
 
 import { useState, useEffect, useRef } from 'react';
-import { ProjectSelector } from './ProjectSelector';
-import { WorkspaceSelector } from './WorkspaceSelector';
+import { ProjectSelector } from './ProjectSelector.js';
+import { WorkspaceSelector } from './WorkspaceSelector.js';
 import { observer } from 'mobx-react-lite';
 import {
   type SelectComponent,
@@ -30,14 +30,14 @@ import {
   MarkdownTextViewer,
   AssistantIcon,
 } from '@finos/legend-art';
-import type { ProjectOption } from '../../stores/SetupStore';
-import { SetupStoreProvider, useSetupStore } from './SetupStoreProvider';
+import type { ProjectOption } from '../../stores/SetupStore.js';
+import { SetupStoreProvider, useSetupStore } from './SetupStoreProvider.js';
 import { useParams } from 'react-router';
-import { LEGEND_STUDIO_TEST_ID } from '../LegendStudioTestID';
+import { LEGEND_STUDIO_TEST_ID } from '../LegendStudioTestID.js';
 import {
   type SetupPathParams,
   generateEditorRoute,
-} from '../../stores/LegendStudioRouter';
+} from '../../stores/LegendStudioRouter.js';
 import { flowResult } from 'mobx';
 import { WorkspaceType } from '@finos/legend-server-sdlc';
 import {
@@ -45,11 +45,11 @@ import {
   DocumentationLink,
   useApplicationNavigationContext,
 } from '@finos/legend-application';
-import type { LegendStudioConfig } from '../../application/LegendStudioConfig';
-import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../stores/LegendStudioDocumentation';
-import { CreateProjectModal } from './ProjectCreateModal';
-import { ActivityBarMenu } from '../editor/ActivityBar';
-import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT } from '../../stores/LegendStudioApplicationNavigationContext';
+import type { LegendStudioConfig } from '../../application/LegendStudioConfig.js';
+import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../stores/LegendStudioDocumentation.js';
+import { CreateProjectModal } from './ProjectCreateModal.js';
+import { ActivityBarMenu } from '../editor/ActivityBar.js';
+import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT } from '../../stores/LegendStudioApplicationNavigationContext.js';
 
 const CreateWorkspaceModal = observer(() => {
   const setupStore = useSetupStore();

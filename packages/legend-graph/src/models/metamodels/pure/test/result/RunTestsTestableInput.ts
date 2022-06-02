@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import type { Testable } from '../Testable';
-import type { AtomicTestId } from './AtomicTestId';
+import type { Testable } from '../Testable.js';
+import type { AtomicTestId } from './AtomicTestId.js';
 
 export class RunTestsTestableInput {
   testable: Testable;

@@ -14,15 +14,16 @@
  * limitations under the License.
  */
 
+import { test, expect, beforeEach } from '@jest/globals';
 import TEST_DATA__fileGeneration from './TEST_DATA__FileGeneration.json';
 import { guaranteeType, unitTest } from '@finos/legend-shared';
 import type { Entity } from '@finos/legend-model-storage';
 import {
   TEST__buildGraphWithEntities,
   TEST__getTestGraphManagerState,
-} from '../../../GraphManagerTestUtils';
-import { PackageableElementReference } from '../../../models/metamodels/pure/packageableElements/PackageableElementReference';
-import type { GraphManagerState } from '../../../GraphManagerState';
+} from '../../../GraphManagerTestUtils.js';
+import { PackageableElementReference } from '../../../models/metamodels/pure/packageableElements/PackageableElementReference.js';
+import type { GraphManagerState } from '../../../GraphManagerState.js';
 
 let graphManagerState: GraphManagerState;
 

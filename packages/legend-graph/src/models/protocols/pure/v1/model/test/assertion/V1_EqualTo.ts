@@ -15,12 +15,12 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
-import { hashObjectWithoutSourceInformation } from '../../../../../../../MetaModelUtils';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst.js';
+import { hashObjectWithoutSourceInformation } from '../../../../../../../MetaModelUtils.js';
 import {
   V1_TestAssertion,
   type V1_TestAssertionVisitor,
-} from './V1_TestAssertion';
+} from './V1_TestAssertion.js';
 
 export class V1_EqualTo extends V1_TestAssertion implements Hashable {
   expected!: object;

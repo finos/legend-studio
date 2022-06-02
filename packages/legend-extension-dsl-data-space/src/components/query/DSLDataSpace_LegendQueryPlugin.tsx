@@ -23,8 +23,8 @@ import {
   type QuerySetupStore,
 } from '@finos/legend-query';
 import { SquareIcon } from '@finos/legend-art';
-import { DataSpaceQuerySetupState } from '../../stores/query/DataSpaceQuerySetupState';
-import { DataspaceQuerySetup } from './DataSpaceQuerySetup';
+import { DataSpaceQuerySetupState } from '../../stores/query/DataSpaceQuerySetupState.js';
+import { DataspaceQuerySetup } from './DataSpaceQuerySetup.js';
 
 export class DSLDataSpace_LegendQueryPlugin extends LegendQueryPlugin {
   constructor() {

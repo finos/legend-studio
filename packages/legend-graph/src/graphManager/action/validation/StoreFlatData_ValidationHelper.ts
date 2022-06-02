@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-import type { FlatDataInputData } from '../../../StoreFlatData_Exports';
-import { isStubbed_PackageableElement } from '../creation/DomainModelCreatorHelper';
+import type { FlatDataInputData } from '../../../StoreFlatData_Exports.js';
+import { isStubbed_PackageableElement } from '../creation/DomainModelCreatorHelper.js';
 import {
   type ValidationIssue,
   createValidationError,
-} from './ValidationHelper';
+} from './ValidationHelper.js';
 
 /**
  * @deprecated

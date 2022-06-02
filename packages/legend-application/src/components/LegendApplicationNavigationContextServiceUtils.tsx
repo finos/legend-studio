@@ -15,8 +15,8 @@
  */
 
 import { useEffect } from 'react';
-import { ApplicationNavigationContextData } from '../stores/LegendApplicationNavigationContextService';
-import { useApplicationStore } from './ApplicationStoreProvider';
+import { ApplicationNavigationContextData } from '../stores/LegendApplicationNavigationContextService.js';
+import { useApplicationStore } from './ApplicationStoreProvider.js';
 
 /**
  * Provides a convenient hook mechanism to handle application navigation

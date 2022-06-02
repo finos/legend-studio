@@ -24,8 +24,8 @@ import {
   PencilIcon,
   MarkdownTextViewer,
 } from '@finos/legend-art';
-import { useSetupStore } from './SetupStoreProvider';
-import { LEGEND_STUDIO_TEST_ID } from '../LegendStudioTestID';
+import { useSetupStore } from './SetupStoreProvider.js';
+import { LEGEND_STUDIO_TEST_ID } from '../LegendStudioTestID.js';
 import { isNumber } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import {
@@ -33,9 +33,9 @@ import {
   DocumentationLink,
   useConditionedApplicationNavigationContext,
 } from '@finos/legend-application';
-import type { LegendStudioConfig } from '../../application/LegendStudioConfig';
-import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../stores/LegendStudioDocumentation';
-import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT } from '../../stores/LegendStudioApplicationNavigationContext';
+import type { LegendStudioConfig } from '../../application/LegendStudioConfig.js';
+import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../stores/LegendStudioDocumentation.js';
+import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT } from '../../stores/LegendStudioApplicationNavigationContext.js';
 
 enum CREATE_PROJECT_MODAL_TAB {
   CREATE = 'CREATE',

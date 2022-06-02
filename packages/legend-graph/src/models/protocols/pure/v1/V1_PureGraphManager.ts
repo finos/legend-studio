@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-import { GRAPH_MANAGER_EVENT } from '../../../../graphManager/GraphManagerEvent';
+import { GRAPH_MANAGER_EVENT } from '../../../../graphManager/GraphManagerEvent.js';
 import {
   CORE_PURE_PATH,
   ELEMENT_PATH_DELIMITER,
   SOURCE_INFORMATION_KEY,
   PackageableElementPointerType,
-} from '../../../../MetaModelConst';
+} from '../../../../MetaModelConst.js';
 import {
   type Clazz,
   type Log,
@@ -41,164 +41,164 @@ import {
   isNonNullable,
   guaranteeNonEmptyString,
 } from '@finos/legend-shared';
-import type { TEMPORARY__AbstractEngineConfig } from '../../../../graphManager/action/TEMPORARY__AbstractEngineConfig';
+import type { TEMPORARY__AbstractEngineConfig } from '../../../../graphManager/action/TEMPORARY__AbstractEngineConfig.js';
 import {
   AbstractPureGraphManager,
   type TEMPORARY__EngineSetupConfig,
   type GraphBuilderOptions,
   type ExecutionOptions,
-} from '../../../../graphManager/AbstractPureGraphManager';
-import { Mapping } from '../../../metamodels/pure/packageableElements/mapping/Mapping';
+} from '../../../../graphManager/AbstractPureGraphManager.js';
+import { Mapping } from '../../../metamodels/pure/packageableElements/mapping/Mapping.js';
 import {
   type Runtime,
   EngineRuntime,
-} from '../../../metamodels/pure/packageableElements/runtime/Runtime';
+} from '../../../metamodels/pure/packageableElements/runtime/Runtime.js';
 import type {
   ImportConfigurationDescription,
   ImportMode,
-} from '../../../../graphManager/action/generation/ImportConfigurationDescription';
-import type { PackageableElement } from '../../../metamodels/pure/packageableElements/PackageableElement';
+} from '../../../../graphManager/action/generation/ImportConfigurationDescription.js';
+import type { PackageableElement } from '../../../metamodels/pure/packageableElements/PackageableElement.js';
 import {
   type SystemModel,
   type CoreModel,
   PureModel,
-} from '../../../../graph/PureModel';
-import type { BasicModel } from '../../../../graph/BasicModel';
-import type { DependencyManager } from '../../../../graph/DependencyManager';
-import type { Class } from '../../../metamodels/pure/packageableElements/domain/Class';
-import { RawLambda } from '../../../metamodels/pure/rawValueSpecification/RawLambda';
-import type { RawValueSpecification } from '../../../metamodels/pure/rawValueSpecification/RawValueSpecification';
-import type { FileGenerationSpecification } from '../../../metamodels/pure/packageableElements/fileGeneration/FileGenerationSpecification';
+} from '../../../../graph/PureModel.js';
+import type { BasicModel } from '../../../../graph/BasicModel.js';
+import type { DependencyManager } from '../../../../graph/DependencyManager.js';
+import type { Class } from '../../../metamodels/pure/packageableElements/domain/Class.js';
+import { RawLambda } from '../../../metamodels/pure/rawValueSpecification/RawLambda.js';
+import type { RawValueSpecification } from '../../../metamodels/pure/rawValueSpecification/RawValueSpecification.js';
+import type { FileGenerationSpecification } from '../../../metamodels/pure/packageableElements/fileGeneration/FileGenerationSpecification.js';
 import type {
   GenerationConfigurationDescription,
   GenerationMode,
-} from '../../../../graphManager/action/generation/GenerationConfigurationDescription';
-import type { DEPRECATED__ServiceTestResult } from '../../../../graphManager/action/service/DEPRECATED__ServiceTestResult';
-import type { ServiceRegistrationResult } from '../../../../graphManager/action/service/ServiceRegistrationResult';
-import type { ExecutionResult } from '../../../../graphManager/action/execution/ExecutionResult';
-import type { GenerationOutput } from '../../../../graphManager/action/generation/GenerationOutput';
-import type { ValueSpecification } from '../../../metamodels/pure/valueSpecification/ValueSpecification';
-import { ServiceExecutionMode } from '../../../../graphManager/action/service/ServiceExecutionMode';
+} from '../../../../graphManager/action/generation/GenerationConfigurationDescription.js';
+import type { DEPRECATED__ServiceTestResult } from '../../../../graphManager/action/service/DEPRECATED__ServiceTestResult.js';
+import type { ServiceRegistrationResult } from '../../../../graphManager/action/service/ServiceRegistrationResult.js';
+import type { ExecutionResult } from '../../../../graphManager/action/execution/ExecutionResult.js';
+import type { GenerationOutput } from '../../../../graphManager/action/generation/GenerationOutput.js';
+import type { ValueSpecification } from '../../../metamodels/pure/valueSpecification/ValueSpecification.js';
+import { ServiceExecutionMode } from '../../../../graphManager/action/service/ServiceExecutionMode.js';
 import {
   KeyedExecutionParameter,
   PureMultiExecution,
   PureSingleExecution,
-} from '../../../metamodels/pure/packageableElements/service/ServiceExecution';
+} from '../../../metamodels/pure/packageableElements/service/ServiceExecution.js';
 import {
   V1_deserializeRawValueSpecification,
   V1_serializeRawValueSpecification,
-} from './transformation/pureProtocol/serializationHelpers/V1_RawValueSpecificationSerializationHelper';
+} from './transformation/pureProtocol/serializationHelpers/V1_RawValueSpecificationSerializationHelper.js';
 import {
   V1_serializeValueSpecification,
   V1_deserializeValueSpecification,
-} from './transformation/pureProtocol/serializationHelpers/V1_ValueSpecificationSerializer';
+} from './transformation/pureProtocol/serializationHelpers/V1_ValueSpecificationSerializer.js';
 import V1_CORE_SYSTEM_MODELS from './V1_Core_SystemModels.json';
-import { V1_serializePackageableElement } from './transformation/pureProtocol/V1_PackageableElementSerialization';
+import { V1_serializePackageableElement } from './transformation/pureProtocol/V1_PackageableElementSerialization.js';
 import {
   V1_entitiesToPureModelContextData,
   V1_serializePureModelContext,
   V1_deserializePureModelContextData,
   V1_setupPureModelContextDataSerialization,
-} from './transformation/pureProtocol/V1_PureProtocolSerialization';
-import { V1_PureModelContextData } from './model/context/V1_PureModelContextData';
+} from './transformation/pureProtocol/V1_PureProtocolSerialization.js';
+import { V1_PureModelContextData } from './model/context/V1_PureModelContextData.js';
 import {
   type V1_PackageableElement,
   type V1_PackageableElementVisitor,
   V1_PackageableElementPointer,
-} from './model/packageableElements/V1_PackageableElement';
-import { V1_ProtocolToMetaModelGraphFirstPassBuilder } from './transformation/pureGraph/to/V1_ProtocolToMetaModelGraphFirstPassBuilder';
-import { V1_ProtocolToMetaModelGraphSecondPassBuilder } from './transformation/pureGraph/to/V1_ProtocolToMetaModelGraphSecondPassBuilder';
-import { V1_ProtocolToMetaModelGraphThirdPassBuilder } from './transformation/pureGraph/to/V1_ProtocolToMetaModelGraphThirdPassBuilder';
-import { V1_ProtocolToMetaModelGraphFourthPassBuilder } from './transformation/pureGraph/to/V1_ProtocolToMetaModelGraphFourthPassBuilder';
-import { V1_ProtocolToMetaModelGraphFifthPassBuilder } from './transformation/pureGraph/to/V1_ProtocolToMetaModelGraphFifthPassBuilder';
-import { V1_ProtocolToMetaModelRawValueSpecificationBuilder } from './transformation/pureGraph/to/V1_ProtocolToMetaModelRawValueSpecificationBuilder';
-import { V1_RawBaseExecutionContext } from './model/rawValueSpecification/V1_RawExecutionContext';
+} from './model/packageableElements/V1_PackageableElement.js';
+import { V1_ProtocolToMetaModelGraphFirstPassBuilder } from './transformation/pureGraph/to/V1_ProtocolToMetaModelGraphFirstPassBuilder.js';
+import { V1_ProtocolToMetaModelGraphSecondPassBuilder } from './transformation/pureGraph/to/V1_ProtocolToMetaModelGraphSecondPassBuilder.js';
+import { V1_ProtocolToMetaModelGraphThirdPassBuilder } from './transformation/pureGraph/to/V1_ProtocolToMetaModelGraphThirdPassBuilder.js';
+import { V1_ProtocolToMetaModelGraphFourthPassBuilder } from './transformation/pureGraph/to/V1_ProtocolToMetaModelGraphFourthPassBuilder.js';
+import { V1_ProtocolToMetaModelGraphFifthPassBuilder } from './transformation/pureGraph/to/V1_ProtocolToMetaModelGraphFifthPassBuilder.js';
+import { V1_ProtocolToMetaModelRawValueSpecificationBuilder } from './transformation/pureGraph/to/V1_ProtocolToMetaModelRawValueSpecificationBuilder.js';
+import { V1_RawBaseExecutionContext } from './model/rawValueSpecification/V1_RawExecutionContext.js';
 import {
   type V1_GraphBuilderContext,
   V1_GraphBuilderContextBuilder,
-} from './transformation/pureGraph/to/V1_GraphBuilderContext';
-import { V1_PureModelContextPointer } from './model/context/V1_PureModelContextPointer';
-import { V1_Engine } from './engine/V1_Engine';
-import { V1_transformPackageableElement } from './transformation/pureGraph/from/V1_PackageableElementTransformer';
+} from './transformation/pureGraph/to/V1_GraphBuilderContext.js';
+import { V1_PureModelContextPointer } from './model/context/V1_PureModelContextPointer.js';
+import { V1_Engine } from './engine/V1_Engine.js';
+import { V1_transformPackageableElement } from './transformation/pureGraph/from/V1_PackageableElementTransformer.js';
 import {
   V1_transformRawLambda,
   V1_RawValueSpecificationTransformer,
-} from './transformation/pureGraph/from/V1_RawValueSpecificationTransformer';
-import { V1_transformRuntime } from './transformation/pureGraph/from/V1_RuntimeTransformer';
-import type { V1_RawLambda } from './model/rawValueSpecification/V1_RawLambda';
+} from './transformation/pureGraph/from/V1_RawValueSpecificationTransformer.js';
+import { V1_transformRuntime } from './transformation/pureGraph/from/V1_RuntimeTransformer.js';
+import type { V1_RawLambda } from './model/rawValueSpecification/V1_RawLambda.js';
 import {
   V1_ExecuteInput,
   V1_TestDataGenerationExecutionInput,
-} from './engine/execution/V1_ExecuteInput';
-import type { V1_PureModelContextGenerationInput } from './engine/import/V1_PureModelContextGenerationInput';
-import { V1_buildValueSpecification } from './transformation/pureGraph/to/helpers/V1_ValueSpecificationBuilderHelper';
-import { V1_transformRootValueSpecification } from './transformation/pureGraph/from/V1_ValueSpecificationTransformer';
-import { V1_Profile } from './model/packageableElements/domain/V1_Profile';
-import { V1_Class } from './model/packageableElements/domain/V1_Class';
-import { V1_Enumeration } from './model/packageableElements/domain/V1_Enumeration';
-import { V1_Association } from './model/packageableElements/domain/V1_Association';
-import { V1_Measure } from './model/packageableElements/domain/V1_Measure';
-import { V1_Store } from './model/packageableElements/store/V1_Store';
-import { V1_Service } from './model/packageableElements/service/V1_Service';
-import { V1_PackageableRuntime } from './model/packageableElements/runtime/V1_PackageableRuntime';
-import { V1_PackageableConnection } from './model/packageableElements/connection/V1_PackageableConnection';
-import { V1_FileGenerationSpecification } from './model/packageableElements/fileGeneration/V1_FileGenerationSpecification';
-import { V1_SectionIndex } from './model/packageableElements/section/V1_SectionIndex';
-import { V1_GenerationSpecification } from './model/packageableElements/generationSpecification/V1_GenerationSpecification';
-import { V1_Mapping } from './model/packageableElements/mapping/V1_Mapping';
-import { V1_ConcreteFunctionDefinition } from './model/packageableElements/function/V1_ConcreteFunctionDefinition';
-import { V1_PureModelContextComposite } from './model/context/V1_PureModelContextComposite';
-import { V1_AlloySDLC } from './model/context/V1_SDLC';
-import { V1_Protocol } from './model/V1_Protocol';
-import type { V1_PureModelContext } from './model/context/V1_PureModelContext';
-import type { V1_ElementBuilder } from './transformation/pureGraph/to/V1_ElementBuilder';
-import { V1_GraphBuilderExtensions } from './transformation/pureGraph/to/V1_GraphBuilderExtensions';
+} from './engine/execution/V1_ExecuteInput.js';
+import type { V1_PureModelContextGenerationInput } from './engine/import/V1_PureModelContextGenerationInput.js';
+import { V1_buildValueSpecification } from './transformation/pureGraph/to/helpers/V1_ValueSpecificationBuilderHelper.js';
+import { V1_transformRootValueSpecification } from './transformation/pureGraph/from/V1_ValueSpecificationTransformer.js';
+import { V1_Profile } from './model/packageableElements/domain/V1_Profile.js';
+import { V1_Class } from './model/packageableElements/domain/V1_Class.js';
+import { V1_Enumeration } from './model/packageableElements/domain/V1_Enumeration.js';
+import { V1_Association } from './model/packageableElements/domain/V1_Association.js';
+import { V1_Measure } from './model/packageableElements/domain/V1_Measure.js';
+import { V1_Store } from './model/packageableElements/store/V1_Store.js';
+import { V1_Service } from './model/packageableElements/service/V1_Service.js';
+import { V1_PackageableRuntime } from './model/packageableElements/runtime/V1_PackageableRuntime.js';
+import { V1_PackageableConnection } from './model/packageableElements/connection/V1_PackageableConnection.js';
+import { V1_FileGenerationSpecification } from './model/packageableElements/fileGeneration/V1_FileGenerationSpecification.js';
+import { V1_SectionIndex } from './model/packageableElements/section/V1_SectionIndex.js';
+import { V1_GenerationSpecification } from './model/packageableElements/generationSpecification/V1_GenerationSpecification.js';
+import { V1_Mapping } from './model/packageableElements/mapping/V1_Mapping.js';
+import { V1_ConcreteFunctionDefinition } from './model/packageableElements/function/V1_ConcreteFunctionDefinition.js';
+import { V1_PureModelContextComposite } from './model/context/V1_PureModelContextComposite.js';
+import { V1_AlloySDLC } from './model/context/V1_SDLC.js';
+import { V1_Protocol } from './model/V1_Protocol.js';
+import type { V1_PureModelContext } from './model/context/V1_PureModelContext.js';
+import type { V1_ElementBuilder } from './transformation/pureGraph/to/V1_ElementBuilder.js';
+import { V1_GraphBuilderExtensions } from './transformation/pureGraph/to/V1_GraphBuilderExtensions.js';
 import type {
   DatabaseBuilderInput,
   DatabasePattern,
-} from '../../../../graphManager/action/generation/DatabaseBuilderInput';
+} from '../../../../graphManager/action/generation/DatabaseBuilderInput.js';
 import {
   V1_DatabaseBuilderConfig,
   V1_DatabaseBuilderInput,
   V1_DatabasePattern,
   V1_setupDatabaseBuilderInputSerialization,
   V1_TargetDatabase,
-} from './engine/generation/V1_DatabaseBuilderInput';
-import { V1_transformRelationalDatabaseConnection } from './transformation/pureGraph/from/V1_ConnectionTransformer';
-import { V1_FlatData } from './model/packageableElements/store/flatData/model/V1_FlatData';
-import { V1_Database } from './model/packageableElements/store/relational/model/V1_Database';
-import type { V1_Multiplicity } from './model/packageableElements/domain/V1_Multiplicity';
-import type { V1_RawVariable } from './model/rawValueSpecification/V1_RawVariable';
-import { V1_setupDatabaseSerialization } from './transformation/pureProtocol/serializationHelpers/V1_DatabaseSerializationHelper';
+} from './engine/generation/V1_DatabaseBuilderInput.js';
+import { V1_transformRelationalDatabaseConnection } from './transformation/pureGraph/from/V1_ConnectionTransformer.js';
+import { V1_FlatData } from './model/packageableElements/store/flatData/model/V1_FlatData.js';
+import { V1_Database } from './model/packageableElements/store/relational/model/V1_Database.js';
+import type { V1_Multiplicity } from './model/packageableElements/domain/V1_Multiplicity.js';
+import type { V1_RawVariable } from './model/rawValueSpecification/V1_RawVariable.js';
+import { V1_setupDatabaseSerialization } from './transformation/pureProtocol/serializationHelpers/V1_DatabaseSerializationHelper.js';
 import {
   V1_PACKAGEABLE_RUNTIME_ELEMENT_PROTOCOL_TYPE,
   V1_setupEngineRuntimeSerialization,
   V1_setupLegacyRuntimeSerialization,
-} from './transformation/pureProtocol/serializationHelpers/V1_RuntimeSerializationHelper';
-import type { DSLGenerationSpecification_PureProtocolProcessorPlugin_Extension } from '../DSLGenerationSpecification_PureProtocolProcessorPlugin_Extension';
-import type { RawRelationalOperationElement } from '../../../metamodels/pure/packageableElements/store/relational/model/RawRelationalOperationElement';
-import { V1_GraphTransformerContextBuilder } from './transformation/pureGraph/from/V1_GraphTransformerContext';
+} from './transformation/pureProtocol/serializationHelpers/V1_RuntimeSerializationHelper.js';
+import type { DSLGenerationSpecification_PureProtocolProcessorPlugin_Extension } from '../DSLGenerationSpecification_PureProtocolProcessorPlugin_Extension.js';
+import type { RawRelationalOperationElement } from '../../../metamodels/pure/packageableElements/store/relational/model/RawRelationalOperationElement.js';
+import { V1_GraphTransformerContextBuilder } from './transformation/pureGraph/from/V1_GraphTransformerContext.js';
 import type {
   ExecutionPlan,
   RawExecutionPlan,
-} from '../../../metamodels/pure/executionPlan/ExecutionPlan';
-import type { V1_ExecutionNode } from './model/executionPlan/nodes/V1_ExecutionNode';
-import type { ExecutionNode } from '../../../metamodels/pure/executionPlan/nodes/ExecutionNode';
-import type { V1_ExecutionPlan } from './model/executionPlan/V1_ExecutionPlan';
+} from '../../../metamodels/pure/executionPlan/ExecutionPlan.js';
+import type { V1_ExecutionNode } from './model/executionPlan/nodes/V1_ExecutionNode.js';
+import type { ExecutionNode } from '../../../metamodels/pure/executionPlan/nodes/ExecutionNode.js';
+import type { V1_ExecutionPlan } from './model/executionPlan/V1_ExecutionPlan.js';
 import {
   V1_transformExecutionNode,
   V1_transformExecutionPlan,
-} from './transformation/pureGraph/from/executionPlan/V1_ExecutionPlanTransformer';
+} from './transformation/pureGraph/from/executionPlan/V1_ExecutionPlanTransformer.js';
 import {
   V1_deserializeExecutionPlan,
   V1_serializeExecutionNode,
   V1_serializeExecutionPlan,
-} from './transformation/pureProtocol/serializationHelpers/executionPlan/V1_ExecutionPlanSerializationHelper';
-import { V1_buildExecutionPlan } from './transformation/pureGraph/to/V1_ExecutionPlanBuilder';
+} from './transformation/pureProtocol/serializationHelpers/executionPlan/V1_ExecutionPlanSerializationHelper.js';
+import { V1_buildExecutionPlan } from './transformation/pureGraph/to/V1_ExecutionPlanBuilder.js';
 import type {
   LightQuery,
   Query,
-} from '../../../../graphManager/action/query/Query';
+} from '../../../../graphManager/action/query/Query.js';
 import {
   V1_buildQuery,
   V1_buildLegacyServiceTestResult,
@@ -207,8 +207,8 @@ import {
   V1_buildGenerationOutput,
   V1_buildLightQuery,
   V1_transformQuerySearchSpecification,
-} from './engine/V1_EngineHelper';
-import { V1_buildExecutionResult } from './engine/V1_ExecutionHelper';
+} from './engine/V1_EngineHelper.js';
+import { V1_buildExecutionResult } from './engine/V1_ExecutionHelper.js';
 import {
   type Entity,
   ENTITY_PATH_DELIMITER,
@@ -217,44 +217,44 @@ import {
   DependencyGraphBuilderError,
   GraphBuilderError,
   SystemGraphBuilderError,
-} from '../../../../graphManager/GraphManagerUtils';
+} from '../../../../graphManager/GraphManagerUtils.js';
 import {
   PackageableElementExplicitReference,
   PackageableElementReference,
-} from '../../../metamodels/pure/packageableElements/PackageableElementReference';
-import type { GraphPluginManager } from '../../../../GraphPluginManager';
-import type { QuerySearchSpecification } from '../../../../graphManager/action/query/QuerySearchSpecification';
-import type { ExternalFormatDescription } from '../../../../graphManager/action/externalFormat/ExternalFormatDescription';
-import type { ConfigurationProperty } from '../../../metamodels/pure/packageableElements/fileGeneration/ConfigurationProperty';
-import { V1_ExternalFormatModelGenerationInput } from './engine/externalFormat/V1_ExternalFormatModelGeneration';
-import { GraphBuilderReport } from '../../../../graphManager/GraphBuilderReport';
+} from '../../../metamodels/pure/packageableElements/PackageableElementReference.js';
+import type { GraphPluginManager } from '../../../../GraphPluginManager.js';
+import type { QuerySearchSpecification } from '../../../../graphManager/action/query/QuerySearchSpecification.js';
+import type { ExternalFormatDescription } from '../../../../graphManager/action/externalFormat/ExternalFormatDescription.js';
+import type { ConfigurationProperty } from '../../../metamodels/pure/packageableElements/fileGeneration/ConfigurationProperty.js';
+import { V1_ExternalFormatModelGenerationInput } from './engine/externalFormat/V1_ExternalFormatModelGeneration.js';
+import { GraphBuilderReport } from '../../../../graphManager/GraphBuilderReport.js';
 import {
   V1_PureMultiExecution,
   V1_PureSingleExecution,
-} from './model/packageableElements/service/V1_ServiceExecution';
-import { V1_MAPPING_ELEMENT_PROTOCOL_TYPE } from './transformation/pureProtocol/serializationHelpers/V1_MappingSerializationHelper';
-import { V1_SERVICE_ELEMENT_PROTOCOL_TYPE } from './transformation/pureProtocol/serializationHelpers/V1_ServiceSerializationHelper';
-import { MappingInclude } from '../../../metamodels/pure/packageableElements/mapping/MappingInclude';
-import type { ModelGenerationConfiguration } from '../../../ModelGenerationConfiguration';
-import type { MappingGeneration_PureProtocolProcessorPlugin_Extension } from '../MappingGeneration_PureProtocolProcessorPlugin_Extension';
-import type { Package } from '../../../metamodels/pure/packageableElements/domain/Package';
-import { V1_DataElement } from './model/packageableElements/data/V1_DataElement';
+} from './model/packageableElements/service/V1_ServiceExecution.js';
+import { V1_MAPPING_ELEMENT_PROTOCOL_TYPE } from './transformation/pureProtocol/serializationHelpers/V1_MappingSerializationHelper.js';
+import { V1_SERVICE_ELEMENT_PROTOCOL_TYPE } from './transformation/pureProtocol/serializationHelpers/V1_ServiceSerializationHelper.js';
+import { MappingInclude } from '../../../metamodels/pure/packageableElements/mapping/MappingInclude.js';
+import type { ModelGenerationConfiguration } from '../../../ModelGenerationConfiguration.js';
+import type { MappingGeneration_PureProtocolProcessorPlugin_Extension } from '../MappingGeneration_PureProtocolProcessorPlugin_Extension.js';
+import type { Package } from '../../../metamodels/pure/packageableElements/domain/Package.js';
+import { V1_DataElement } from './model/packageableElements/data/V1_DataElement.js';
 import {
   V1_RunTestsInput,
   V1_RunTestsTestableInput,
-} from './engine/test/V1_RunTestsInput';
-import { V1_AtomicTestId } from './model/test/V1_AtomicTestId';
-import type { RunTestsTestableInput } from '../../../metamodels/pure/test/result/RunTestsTestableInput';
-import { V1_buildTestsResult } from './engine/test/V1_RunTestsResult';
-import type { TestResult } from '../../../metamodels/pure/test/result/TestResult';
-import type { Service } from '../../../../DSLService_Exports';
-import type { Testable } from '../../../metamodels/pure/test/Testable';
-import { stub_RawLambda } from '../../../../graphManager/action/creation/RawValueSpecificationCreatorHelper';
+} from './engine/test/V1_RunTestsInput.js';
+import { V1_AtomicTestId } from './model/test/V1_AtomicTestId.js';
+import type { RunTestsTestableInput } from '../../../metamodels/pure/test/result/RunTestsTestableInput.js';
+import { V1_buildTestsResult } from './engine/test/V1_RunTestsResult.js';
+import type { TestResult } from '../../../metamodels/pure/test/result/TestResult.js';
+import type { Service } from '../../../../DSLService_Exports.js';
+import type { Testable } from '../../../metamodels/pure/test/Testable.js';
+import { stub_RawLambda } from '../../../../graphManager/action/creation/RawValueSpecificationCreatorHelper.js';
 import {
   getNullableIDFromTestable,
   getNullableTestable,
-} from '../../../../helpers/Testable_Helper';
-import { V1_getIncludedMappingPath } from './helper/V1_DSLMapping_Helper';
+} from '../../../../helpers/Testable_Helper.js';
+import { V1_getIncludedMappingPath } from './helper/V1_DSLMapping_Helper.js';
 
 const V1_FUNCTION_SUFFIX_MULTIPLICITY_INFINITE = 'MANY';
 

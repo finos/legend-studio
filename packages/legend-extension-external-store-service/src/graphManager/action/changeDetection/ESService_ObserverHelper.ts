@@ -27,28 +27,28 @@ import {
   observe_ExternalFormatData,
 } from '@finos/legend-graph';
 import { computed, makeObservable, observable, override } from 'mobx';
-import { EqualToJsonPattern } from '../../../models/metamodels/pure/model/data/contentPattern/ESService_EqualToJsonPattern';
-import { EqualToPattern } from '../../../models/metamodels/pure/model/data/contentPattern/ESService_EqualToPattern';
-import type { StringValuePattern } from '../../../models/metamodels/pure/model/data/contentPattern/ESService_StringValuePattern';
-import type { ServiceRequestPattern } from '../../../models/metamodels/pure/model/data/ESService_ServiceRequestPattern';
-import type { ServiceResponseDefinition } from '../../../models/metamodels/pure/model/data/ESService_ServiceResponseDefinition';
-import type { ServiceStoreEmbeddedData } from '../../../models/metamodels/pure/model/data/ESService_ServiceStoreEmbeddedData';
-import type { ServiceStubMapping } from '../../../models/metamodels/pure/model/data/ESService_ServiceStubMapping';
-import type { ServiceStoreConnection } from '../../../models/metamodels/pure/model/packageableElements/store/serviceStore/connection/ESService_ServiceStoreConnection';
-import type { LocalMappingProperty } from '../../../models/metamodels/pure/model/packageableElements/store/serviceStore/mapping/ESService_LocalMappingProperty';
-import type { RootServiceInstanceSetImplementation } from '../../../models/metamodels/pure/model/packageableElements/store/serviceStore/mapping/ESService_RootServiceInstanceSetImplementation';
-import type { ServiceMapping } from '../../../models/metamodels/pure/model/packageableElements/store/serviceStore/mapping/ESService_ServiceMapping';
-import type { ServiceRequestBodyBuildInfo } from '../../../models/metamodels/pure/model/packageableElements/store/serviceStore/mapping/ESService_ServiceRequestBodyBuildInfo';
-import type { ServiceRequestBuildInfo } from '../../../models/metamodels/pure/model/packageableElements/store/serviceStore/mapping/ESService_ServiceRequestBuildInfo';
-import type { ServiceRequestParameterBuildInfo } from '../../../models/metamodels/pure/model/packageableElements/store/serviceStore/mapping/ESService_ServiceRequestParameterBuildInfo';
-import type { ServiceRequestParametersBuildInfo } from '../../../models/metamodels/pure/model/packageableElements/store/serviceStore/mapping/ESService_ServiceRequestParametersBuildInfo';
-import type { SecurityScheme } from '../../../models/metamodels/pure/model/packageableElements/store/serviceStore/model/ESService_SecurityScheme';
-import type { SerializationFormat } from '../../../models/metamodels/pure/model/packageableElements/store/serviceStore/model/ESService_SerializationFormat';
-import { ServiceGroup } from '../../../models/metamodels/pure/model/packageableElements/store/serviceStore/model/ESService_ServiceGroup';
-import type { ServiceParameter } from '../../../models/metamodels/pure/model/packageableElements/store/serviceStore/model/ESService_ServiceParameter';
-import type { ServiceStore } from '../../../models/metamodels/pure/model/packageableElements/store/serviceStore/model/ESService_ServiceStore';
-import type { ServiceStoreElement } from '../../../models/metamodels/pure/model/packageableElements/store/serviceStore/model/ESService_ServiceStoreElement';
-import { ServiceStoreService } from '../../../models/metamodels/pure/model/packageableElements/store/serviceStore/model/ESService_ServiceStoreService';
+import { EqualToJsonPattern } from '../../../models/metamodels/pure/model/data/contentPattern/ESService_EqualToJsonPattern.js';
+import { EqualToPattern } from '../../../models/metamodels/pure/model/data/contentPattern/ESService_EqualToPattern.js';
+import type { StringValuePattern } from '../../../models/metamodels/pure/model/data/contentPattern/ESService_StringValuePattern.js';
+import type { ServiceRequestPattern } from '../../../models/metamodels/pure/model/data/ESService_ServiceRequestPattern.js';
+import type { ServiceResponseDefinition } from '../../../models/metamodels/pure/model/data/ESService_ServiceResponseDefinition.js';
+import type { ServiceStoreEmbeddedData } from '../../../models/metamodels/pure/model/data/ESService_ServiceStoreEmbeddedData.js';
+import type { ServiceStubMapping } from '../../../models/metamodels/pure/model/data/ESService_ServiceStubMapping.js';
+import type { ServiceStoreConnection } from '../../../models/metamodels/pure/model/packageableElements/store/serviceStore/connection/ESService_ServiceStoreConnection.js';
+import type { LocalMappingProperty } from '../../../models/metamodels/pure/model/packageableElements/store/serviceStore/mapping/ESService_LocalMappingProperty.js';
+import type { RootServiceInstanceSetImplementation } from '../../../models/metamodels/pure/model/packageableElements/store/serviceStore/mapping/ESService_RootServiceInstanceSetImplementation.js';
+import type { ServiceMapping } from '../../../models/metamodels/pure/model/packageableElements/store/serviceStore/mapping/ESService_ServiceMapping.js';
+import type { ServiceRequestBodyBuildInfo } from '../../../models/metamodels/pure/model/packageableElements/store/serviceStore/mapping/ESService_ServiceRequestBodyBuildInfo.js';
+import type { ServiceRequestBuildInfo } from '../../../models/metamodels/pure/model/packageableElements/store/serviceStore/mapping/ESService_ServiceRequestBuildInfo.js';
+import type { ServiceRequestParameterBuildInfo } from '../../../models/metamodels/pure/model/packageableElements/store/serviceStore/mapping/ESService_ServiceRequestParameterBuildInfo.js';
+import type { ServiceRequestParametersBuildInfo } from '../../../models/metamodels/pure/model/packageableElements/store/serviceStore/mapping/ESService_ServiceRequestParametersBuildInfo.js';
+import type { SecurityScheme } from '../../../models/metamodels/pure/model/packageableElements/store/serviceStore/model/ESService_SecurityScheme.js';
+import type { SerializationFormat } from '../../../models/metamodels/pure/model/packageableElements/store/serviceStore/model/ESService_SerializationFormat.js';
+import { ServiceGroup } from '../../../models/metamodels/pure/model/packageableElements/store/serviceStore/model/ESService_ServiceGroup.js';
+import type { ServiceParameter } from '../../../models/metamodels/pure/model/packageableElements/store/serviceStore/model/ESService_ServiceParameter.js';
+import type { ServiceStore } from '../../../models/metamodels/pure/model/packageableElements/store/serviceStore/model/ESService_ServiceStore.js';
+import type { ServiceStoreElement } from '../../../models/metamodels/pure/model/packageableElements/store/serviceStore/model/ESService_ServiceStoreElement.js';
+import { ServiceStoreService } from '../../../models/metamodels/pure/model/packageableElements/store/serviceStore/model/ESService_ServiceStoreService.js';
 import {
   BooleanTypeReference,
   ComplexTypeReference,
@@ -56,8 +56,8 @@ import {
   IntegerTypeReference,
   StringTypeReference,
   type TypeReference,
-} from '../../../models/metamodels/pure/model/packageableElements/store/serviceStore/model/ESService_TypeReference';
-import type { ESService_PureGraphManagerPlugin_Extension } from '../../ESService_PureGraphManagerPlugin_Extension';
+} from '../../../models/metamodels/pure/model/packageableElements/store/serviceStore/model/ESService_TypeReference.js';
+import type { ESService_PureGraphManagerPlugin_Extension } from '../../ESService_PureGraphManagerPlugin_Extension.js';
 
 // ------------------------------------- Store -------------------------------------
 

@@ -23,8 +23,8 @@ import {
   type LegendTaxonomyPathParams,
   generateExploreTaxonomyTreeRoute,
   LEGEND_TAXONOMY_PARAM_TOKEN,
-} from '../stores/LegendTaxonomyRouter';
-import { useLegendTaxonomyStore } from './LegendTaxonomyStoreProvider';
+} from '../stores/LegendTaxonomyRouter.js';
+import { useLegendTaxonomyStore } from './LegendTaxonomyStoreProvider.js';
 import { flowResult } from 'mobx';
 import {
   type ResizablePanelHandlerProps,
@@ -52,14 +52,14 @@ import {
   FileTrayIcon,
   MenuIcon,
 } from '@finos/legend-art';
-import { TaxonomyTree } from './TaxonomyTree';
-import { TaxonomyNodeViewer } from './TaxonomyNodeViewer';
+import { TaxonomyTree } from './TaxonomyTree.js';
+import { TaxonomyNodeViewer } from './TaxonomyNodeViewer.js';
 import type {
   LegendTaxonomyConfig,
   TaxonomyTreeOption,
-} from '../application/LegendTaxonomyConfig';
+} from '../application/LegendTaxonomyConfig.js';
 import { useResizeDetector } from 'react-resize-detector';
-import type { TaxonomyNodeViewerState } from '../stores/LegendTaxonomyStore';
+import type { TaxonomyNodeViewerState } from '../stores/LegendTaxonomyStore.js';
 
 const TaxonomyViewerActivityBar = observer(() => (
   <div className="taxonomy-viewer__activity-bar">

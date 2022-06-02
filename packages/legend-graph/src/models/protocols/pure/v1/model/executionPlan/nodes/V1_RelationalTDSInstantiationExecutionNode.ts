@@ -14,6 +14,6 @@
  * limitations under the License.
  */
 
-import { V1_RelationalInstantiationExecutionNode } from './V1_RelationalInstantiationExecutionNode';
+import { V1_RelationalInstantiationExecutionNode } from './V1_RelationalInstantiationExecutionNode.js';
 
 export class V1_RelationalTDSInstantiationExecutionNode extends V1_RelationalInstantiationExecutionNode {}

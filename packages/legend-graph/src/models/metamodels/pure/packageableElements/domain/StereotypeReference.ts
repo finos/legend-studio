@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
+import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst.js';
 import { hashString } from '@finos/legend-shared';
 import {
   PackageableElementExplicitReference,
   type PackageableElementReference,
   type PackageableElementImplicitReference,
-} from '../PackageableElementReference';
-import type { Profile } from './Profile';
-import { ReferenceWithOwner } from '../../Reference';
-import type { Stereotype } from './Stereotype';
+} from '../PackageableElementReference.js';
+import type { Profile } from './Profile.js';
+import { ReferenceWithOwner } from '../../Reference.js';
+import type { Stereotype } from './Stereotype.js';
 
 export abstract class StereotypeReference extends ReferenceWithOwner {
   override readonly ownerReference: PackageableElementReference<Profile>;

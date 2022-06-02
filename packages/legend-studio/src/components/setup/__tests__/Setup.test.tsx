@@ -14,14 +14,15 @@
  * limitations under the License.
  */
 
+import { test, jest, expect, beforeEach } from '@jest/globals';
 import { waitFor } from '@testing-library/dom';
-import { Setup } from '../../setup/Setup';
+import { Setup } from '../../setup/Setup.js';
 import {
   integrationTest,
   MOBX__disableSpyOrMock,
   MOBX__enableSpyOrMock,
 } from '@finos/legend-shared';
-import { TEST_DATA__DefaultSDLCInfo } from '../../EditorComponentTestUtils';
+import { TEST_DATA__DefaultSDLCInfo } from '../../EditorComponentTestUtils.js';
 import { MemoryRouter } from 'react-router-dom';
 import { render } from '@testing-library/react';
 import {
@@ -33,8 +34,8 @@ import {
   TEST__ApplicationStoreProvider,
   TEST__provideMockedWebApplicationNavigator,
 } from '@finos/legend-application';
-import { TEST__getTestStudioConfig } from '../../../stores/EditorStoreTestUtils';
-import { LegendStudioPluginManager } from '../../../application/LegendStudioPluginManager';
+import { TEST__getTestStudioConfig } from '../../../stores/EditorStoreTestUtils.js';
+import { LegendStudioPluginManager } from '../../../application/LegendStudioPluginManager.js';
 
 let sdlcServerClient: SDLCServerClient;
 

@@ -19,10 +19,10 @@ import {
   hashArray,
   tryToMinifyLosslessJSONString,
 } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
-import { InputData } from '../../../mapping/InputData';
-import type { Class } from '../../../domain/Class';
-import type { PackageableElementReference } from '../../../PackageableElementReference';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst.js';
+import { InputData } from '../../../mapping/InputData.js';
+import type { Class } from '../../../domain/Class.js';
+import type { PackageableElementReference } from '../../../PackageableElementReference.js';
 
 export enum ObjectInputType {
   JSON = 'JSON',

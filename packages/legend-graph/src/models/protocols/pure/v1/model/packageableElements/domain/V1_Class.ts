@@ -15,16 +15,16 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
-import type { V1_Property } from '../../../model/packageableElements/domain/V1_Property';
-import type { V1_StereotypePtr } from '../../../model/packageableElements/domain/V1_StereotypePtr';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst.js';
+import type { V1_Property } from '../../../model/packageableElements/domain/V1_Property.js';
+import type { V1_StereotypePtr } from '../../../model/packageableElements/domain/V1_StereotypePtr.js';
 import {
   type V1_PackageableElementVisitor,
   V1_PackageableElement,
-} from '../../../model/packageableElements/V1_PackageableElement';
-import type { V1_TaggedValue } from '../../../model/packageableElements/domain/V1_TaggedValue';
-import type { V1_Constraint } from '../../../model/packageableElements/domain/V1_Constraint';
-import type { V1_DerivedProperty } from './V1_DerivedProperty';
+} from '../../../model/packageableElements/V1_PackageableElement.js';
+import type { V1_TaggedValue } from '../../../model/packageableElements/domain/V1_TaggedValue.js';
+import type { V1_Constraint } from '../../../model/packageableElements/domain/V1_Constraint.js';
+import type { V1_DerivedProperty } from './V1_DerivedProperty.js';
 
 export class V1_Class extends V1_PackageableElement implements Hashable {
   superTypes: string[] = [];

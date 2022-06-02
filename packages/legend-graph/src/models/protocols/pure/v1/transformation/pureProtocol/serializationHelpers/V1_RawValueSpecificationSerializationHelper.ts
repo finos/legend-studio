@@ -31,16 +31,16 @@ import {
   UnsupportedOperationError,
   usingModelSchema,
 } from '@finos/legend-shared';
-import { V1_RawLambda } from '../../../model/rawValueSpecification/V1_RawLambda';
+import { V1_RawLambda } from '../../../model/rawValueSpecification/V1_RawLambda.js';
 import type {
   V1_RawValueSpecification,
   V1_RawValueSpecificationVisitor,
-} from '../../../model/rawValueSpecification/V1_RawValueSpecification';
-import { V1_RawVariable } from '../../../model/rawValueSpecification/V1_RawVariable';
-import { V1_multiplicitySchema } from '../../../transformation/pureProtocol/serializationHelpers/V1_CoreSerializationHelper';
-import { V1_RawBaseExecutionContext } from '../../../model/rawValueSpecification/V1_RawExecutionContext';
-import { V1_RawPrimitiveInstanceValue } from '../../../model/rawValueSpecification/V1_RawPrimitiveInstanceValue';
-import { PRIMITIVE_TYPE } from '../../../../../../../MetaModelConst';
+} from '../../../model/rawValueSpecification/V1_RawValueSpecification.js';
+import { V1_RawVariable } from '../../../model/rawValueSpecification/V1_RawVariable.js';
+import { V1_multiplicitySchema } from '../../../transformation/pureProtocol/serializationHelpers/V1_CoreSerializationHelper.js';
+import { V1_RawBaseExecutionContext } from '../../../model/rawValueSpecification/V1_RawExecutionContext.js';
+import { V1_RawPrimitiveInstanceValue } from '../../../model/rawValueSpecification/V1_RawPrimitiveInstanceValue.js';
+import { PRIMITIVE_TYPE } from '../../../../../../../MetaModelConst.js';
 
 enum V1_RawExecutionContextType {
   BASE_EXECUTION_CONTEXT = 'BaseExecutionContext',

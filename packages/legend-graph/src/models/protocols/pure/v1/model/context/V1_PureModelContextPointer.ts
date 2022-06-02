@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import type { V1_SDLC } from './V1_SDLC';
-import type { V1_Protocol } from '../../model/V1_Protocol';
-import { V1_PureModelContext } from './V1_PureModelContext';
+import type { V1_SDLC } from './V1_SDLC.js';
+import type { V1_Protocol } from '../../model/V1_Protocol.js';
+import { V1_PureModelContext } from './V1_PureModelContext.js';
 
 export class V1_PureModelContextPointer extends V1_PureModelContext {
   serializer: V1_Protocol;

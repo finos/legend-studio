@@ -16,11 +16,11 @@
 
 import { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
-import { ReviewStoreProvider, useReviewStore } from './ReviewStoreProvider';
+import { ReviewStoreProvider, useReviewStore } from './ReviewStoreProvider.js';
 import { useParams } from 'react-router';
-import { ReviewSideBar } from './ReviewSideBar';
-import { ReviewPanel } from './ReviewPanel';
-import { ACTIVITY_MODE } from '../../stores/EditorConfig';
+import { ReviewSideBar } from './ReviewSideBar.js';
+import { ReviewPanel } from './ReviewPanel.js';
+import { ACTIVITY_MODE } from '../../stores/EditorConfig.js';
 import { Link } from 'react-router-dom';
 import {
   type ResizablePanelHandlerProps,
@@ -40,12 +40,12 @@ import {
   type ReviewPathParams,
   generateViewProjectRoute,
   generateEditorRoute,
-} from '../../stores/LegendStudioRouter';
+} from '../../stores/LegendStudioRouter.js';
 import { flowResult } from 'mobx';
 import {
   EditorStoreProvider,
   useEditorStore,
-} from '../editor/EditorStoreProvider';
+} from '../editor/EditorStoreProvider.js';
 import { useApplicationStore } from '@finos/legend-application';
 
 const ReviewStatusBar = observer(() => {
