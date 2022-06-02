@@ -35,7 +35,7 @@ import {
   type QueryBuilderFilterState,
   type QueryBuilderFilterOperator,
 } from '../QueryBuilderFilterState';
-import { SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
 import { buildGenericLambdaFunctionInstanceValue } from '../QueryBuilderValueSpecificationBuilderHelper';
 import { buildPropertyExpressionChain } from '../QueryBuilderLambdaBuilder';
 
@@ -53,7 +53,7 @@ const getPropertyExpressionChainVariable = (
       currentExpression instanceof SimpleFunctionExpression &&
       matchFunctionName(
         currentExpression.functionName,
-        SUPPORTED_FUNCTIONS.SUBTYPE,
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.SUBTYPE,
       )
     ) {
       currentExpression = guaranteeNonNullable(
@@ -85,13 +85,13 @@ const buildFilterConditionExpressionWithExists = (
     (currentPropertyExpression instanceof SimpleFunctionExpression &&
       matchFunctionName(
         currentPropertyExpression.functionName,
-        SUPPORTED_FUNCTIONS.SUBTYPE,
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.SUBTYPE,
       ))
   ) {
     let exp: AbstractPropertyExpression | SimpleFunctionExpression;
     if (currentPropertyExpression instanceof SimpleFunctionExpression) {
       exp = new SimpleFunctionExpression(
-        extractElementNameFromPath(SUPPORTED_FUNCTIONS.SUBTYPE),
+        extractElementNameFromPath(QUERY_BUILDER_SUPPORTED_FUNCTIONS.SUBTYPE),
         multiplicityOne,
       );
     } else {
@@ -163,7 +163,7 @@ const buildFilterConditionExpressionWithExists = (
   const simpleFunctionExpressions: SimpleFunctionExpression[] = [];
   for (let i = 0; i < existsLambdaPropertyChains.length - 1; ++i) {
     const simpleFunctionExpression = new SimpleFunctionExpression(
-      extractElementNameFromPath(SUPPORTED_FUNCTIONS.EXISTS),
+      extractElementNameFromPath(QUERY_BUILDER_SUPPORTED_FUNCTIONS.EXISTS),
       multiplicityOne,
     );
     simpleFunctionExpression.parametersValues.push(
@@ -264,7 +264,7 @@ const buildFilterConditionStateWithExists = (
   if (
     matchFunctionName(
       precedingExpression.functionName,
-      SUPPORTED_FUNCTIONS.EXISTS,
+      QUERY_BUILDER_SUPPORTED_FUNCTIONS.EXISTS,
     )
   ) {
     // 1. Decompose the exists() lambda chain into property expression chains
@@ -278,7 +278,7 @@ const buildFilterConditionStateWithExists = (
     while (
       matchFunctionName(
         mainFilterExpression.functionName,
-        SUPPORTED_FUNCTIONS.EXISTS,
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.EXISTS,
       )
     ) {
       const existsLambda = guaranteeNonNullable(
@@ -358,12 +358,14 @@ const buildFilterConditionStateWithExists = (
         (currentExpression instanceof SimpleFunctionExpression &&
           matchFunctionName(
             currentExpression.functionName,
-            SUPPORTED_FUNCTIONS.SUBTYPE,
+            QUERY_BUILDER_SUPPORTED_FUNCTIONS.SUBTYPE,
           ))
       ) {
         if (currentExpression instanceof SimpleFunctionExpression) {
           const functionExpression = new SimpleFunctionExpression(
-            extractElementNameFromPath(SUPPORTED_FUNCTIONS.SUBTYPE),
+            extractElementNameFromPath(
+              QUERY_BUILDER_SUPPORTED_FUNCTIONS.SUBTYPE,
+            ),
             multiplicityOne,
           );
           functionExpression.parametersValues.unshift(
@@ -482,7 +484,10 @@ export const buildFilterConditionState = (
     );
     mainExpressionWithOperator = expression;
   } else if (
-    matchFunctionName(expression.functionName, SUPPORTED_FUNCTIONS.EXISTS)
+    matchFunctionName(
+      expression.functionName,
+      QUERY_BUILDER_SUPPORTED_FUNCTIONS.EXISTS,
+    )
   ) {
     [filterConditionState, mainExpressionWithOperator] =
       buildFilterConditionStateWithExists(

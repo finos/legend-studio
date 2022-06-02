@@ -23,7 +23,7 @@ import {
   type PureModel,
   type AbstractPropertyExpression,
 } from '@finos/legend-graph';
-import { SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
 import {
   type QueryBuilderAggregateColumnState,
   QueryBuilderAggregateOperator,
@@ -82,8 +82,8 @@ export class QueryBuilderAggregateOperator_Max extends QueryBuilderAggregateOper
         propertyExpression?.func.genericType.value.rawType.path ??
           PRIMITIVE_TYPE.NUMBER, // this decision does not affect the output expression
       )
-        ? SUPPORTED_FUNCTIONS.DATE_MAX
-        : SUPPORTED_FUNCTIONS.MAX,
+        ? QUERY_BUILDER_SUPPORTED_FUNCTIONS.DATE_MAX
+        : QUERY_BUILDER_SUPPORTED_FUNCTIONS.MAX,
       graph,
       variableName,
     );
@@ -106,7 +106,10 @@ export class QueryBuilderAggregateOperator_Max extends QueryBuilderAggregateOper
         case PRIMITIVE_TYPE.DECIMAL:
         case PRIMITIVE_TYPE.FLOAT: {
           if (
-            !matchFunctionName(expression.functionName, SUPPORTED_FUNCTIONS.MAX)
+            !matchFunctionName(
+              expression.functionName,
+              QUERY_BUILDER_SUPPORTED_FUNCTIONS.MAX,
+            )
           ) {
             return undefined;
           }
@@ -114,7 +117,7 @@ export class QueryBuilderAggregateOperator_Max extends QueryBuilderAggregateOper
             projectionColumnState,
             lambdaParam,
             expression,
-            SUPPORTED_FUNCTIONS.MAX,
+            QUERY_BUILDER_SUPPORTED_FUNCTIONS.MAX,
             this,
           );
         }
@@ -124,7 +127,7 @@ export class QueryBuilderAggregateOperator_Max extends QueryBuilderAggregateOper
           if (
             !matchFunctionName(
               expression.functionName,
-              SUPPORTED_FUNCTIONS.DATE_MAX,
+              QUERY_BUILDER_SUPPORTED_FUNCTIONS.DATE_MAX,
             )
           ) {
             return undefined;
@@ -133,7 +136,7 @@ export class QueryBuilderAggregateOperator_Max extends QueryBuilderAggregateOper
             projectionColumnState,
             lambdaParam,
             expression,
-            SUPPORTED_FUNCTIONS.DATE_MAX,
+            QUERY_BUILDER_SUPPORTED_FUNCTIONS.DATE_MAX,
             this,
           );
         }
@@ -141,22 +144,30 @@ export class QueryBuilderAggregateOperator_Max extends QueryBuilderAggregateOper
           return undefined;
       }
     }
-    if (matchFunctionName(expression.functionName, SUPPORTED_FUNCTIONS.MAX)) {
-      return buildAggregateColumnState(
-        projectionColumnState,
-        lambdaParam,
-        expression,
-        SUPPORTED_FUNCTIONS.MAX,
-        this,
-      );
-    } else if (
-      matchFunctionName(expression.functionName, SUPPORTED_FUNCTIONS.DATE_MAX)
+    if (
+      matchFunctionName(
+        expression.functionName,
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.MAX,
+      )
     ) {
       return buildAggregateColumnState(
         projectionColumnState,
         lambdaParam,
         expression,
-        SUPPORTED_FUNCTIONS.DATE_MAX,
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.MAX,
+        this,
+      );
+    } else if (
+      matchFunctionName(
+        expression.functionName,
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.DATE_MAX,
+      )
+    ) {
+      return buildAggregateColumnState(
+        projectionColumnState,
+        lambdaParam,
+        expression,
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.DATE_MAX,
         this,
       );
     }

@@ -14,7 +14,16 @@
  * limitations under the License.
  */
 
-import { type Multiplicity, MULTIPLICITY_INFINITE } from '@finos/legend-graph';
+import {
+  type PureModel,
+  type PRIMITIVE_TYPE,
+  type Multiplicity,
+  MULTIPLICITY_INFINITE,
+  PrimitiveInstanceValue,
+  TYPICAL_MULTIPLICITY_TYPE,
+  GenericTypeExplicitReference,
+  GenericType,
+} from '@finos/legend-graph';
 
 export const getMultiplicityDescription = (
   multiplicity: Multiplicity,
@@ -34,4 +43,22 @@ export const getMultiplicityDescription = (
       ? `Must have from ${multiplicity.lowerBound} to ${multiplicity.upperBound} value(s)`
       : `Must have at least ${multiplicity.lowerBound} values(s)`
   }`;
+};
+
+export const buildPrimitiveInstanceValue = (
+  graph: PureModel,
+  type: PRIMITIVE_TYPE,
+  value: unknown,
+): PrimitiveInstanceValue => {
+  const multiplicityOne = graph.getTypicalMultiplicity(
+    TYPICAL_MULTIPLICITY_TYPE.ONE,
+  );
+  const instance = new PrimitiveInstanceValue(
+    GenericTypeExplicitReference.create(
+      new GenericType(graph.getPrimitiveType(type)),
+    ),
+    multiplicityOne,
+  );
+  instance.values = [value];
+  return instance;
 };

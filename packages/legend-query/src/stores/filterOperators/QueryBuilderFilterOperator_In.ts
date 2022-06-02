@@ -34,7 +34,7 @@ import {
   buildFilterConditionState,
   buildFilterConditionExpression,
 } from './QueryBuilderFilterOperatorHelper';
-import { SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
 import {
   buildNotExpression,
   unwrapNotExpression,
@@ -137,7 +137,7 @@ export class QueryBuilderFilterOperator_In extends QueryBuilderFilterOperator {
   ): ValueSpecification {
     return buildFilterConditionExpression(
       filterConditionState,
-      SUPPORTED_FUNCTIONS.IN,
+      QUERY_BUILDER_SUPPORTED_FUNCTIONS.IN,
     );
   }
 
@@ -148,7 +148,7 @@ export class QueryBuilderFilterOperator_In extends QueryBuilderFilterOperator {
     return buildFilterConditionState(
       filterState,
       expression,
-      SUPPORTED_FUNCTIONS.IN,
+      QUERY_BUILDER_SUPPORTED_FUNCTIONS.IN,
       this,
     );
   }

@@ -23,7 +23,7 @@ import {
   type AbstractPropertyExpression,
   type Type,
 } from '@finos/legend-graph';
-import { SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
 import {
   type QueryBuilderAggregateColumnState,
   QueryBuilderAggregateOperator,
@@ -69,7 +69,7 @@ export class QueryBuilderAggregateOperator_Average extends QueryBuilderAggregate
     graph: PureModel,
   ): ValueSpecification {
     return buildAggregateExpression(
-      SUPPORTED_FUNCTIONS.AVERAGE,
+      QUERY_BUILDER_SUPPORTED_FUNCTIONS.AVERAGE,
       graph,
       variableName,
     );
@@ -84,7 +84,7 @@ export class QueryBuilderAggregateOperator_Average extends QueryBuilderAggregate
       projectionColumnState,
       lambdaParam,
       expression,
-      SUPPORTED_FUNCTIONS.AVERAGE,
+      QUERY_BUILDER_SUPPORTED_FUNCTIONS.AVERAGE,
       this,
     );
   }

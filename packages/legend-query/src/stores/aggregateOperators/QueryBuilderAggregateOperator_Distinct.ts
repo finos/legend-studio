@@ -23,7 +23,7 @@ import {
   type AbstractPropertyExpression,
   Enumeration,
 } from '@finos/legend-graph';
-import { SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
 import {
   type QueryBuilderAggregateColumnState,
   QueryBuilderAggregateOperator,
@@ -76,7 +76,7 @@ export class QueryBuilderAggregateOperator_Distinct extends QueryBuilderAggregat
     graph: PureModel,
   ): ValueSpecification {
     return buildAggregateExpression(
-      SUPPORTED_FUNCTIONS.UNIQUE_VALUE_ONLY,
+      QUERY_BUILDER_SUPPORTED_FUNCTIONS.UNIQUE_VALUE_ONLY,
       graph,
       variableName,
     );
@@ -91,7 +91,7 @@ export class QueryBuilderAggregateOperator_Distinct extends QueryBuilderAggregat
       projectionColumnState,
       lambdaParam,
       expression,
-      SUPPORTED_FUNCTIONS.UNIQUE_VALUE_ONLY,
+      QUERY_BUILDER_SUPPORTED_FUNCTIONS.UNIQUE_VALUE_ONLY,
       this,
     );
   }

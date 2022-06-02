@@ -29,11 +29,11 @@ import {
   buildFilterConditionState,
   buildFilterConditionExpression,
 } from './QueryBuilderFilterOperatorHelper';
-import { SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
+import { buildPrimitiveInstanceValue } from '@finos/legend-application';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
 import { generateDefaultValueForPrimitiveType } from '../QueryBuilderValueSpecificationBuilderHelper';
 import {
   buildNotExpression,
-  buildPrimitiveInstanceValue,
   getNonCollectionValueSpecificationType,
   unwrapNotExpression,
 } from '../QueryBuilderOperatorsHelper';
@@ -90,7 +90,7 @@ export class QueryBuilderFilterOperator_StartWith extends QueryBuilderFilterOper
   ): ValueSpecification {
     return buildFilterConditionExpression(
       filterConditionState,
-      SUPPORTED_FUNCTIONS.STARTS_WITH,
+      QUERY_BUILDER_SUPPORTED_FUNCTIONS.STARTS_WITH,
     );
   }
 
@@ -101,7 +101,7 @@ export class QueryBuilderFilterOperator_StartWith extends QueryBuilderFilterOper
     return buildFilterConditionState(
       filterState,
       expression,
-      SUPPORTED_FUNCTIONS.STARTS_WITH,
+      QUERY_BUILDER_SUPPORTED_FUNCTIONS.STARTS_WITH,
       this,
     );
   }

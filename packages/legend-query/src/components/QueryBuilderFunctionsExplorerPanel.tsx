@@ -56,7 +56,7 @@ import {
 import { getEmptyImage } from 'react-dnd-html5-backend';
 import { useEffect, useState } from 'react';
 import type { QueryBuilderState } from '../stores/QueryBuilderState';
-import { getMultiplicityDescription } from './shared/QueryBuilderUtils';
+import { getMultiplicityDescription } from '@finos/legend-application';
 
 const isDependencyTreeNode = (
   node: QueryBuilderFunctionsExplorerTreeNodeData,

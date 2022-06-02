@@ -22,7 +22,7 @@ import {
   type AbstractPropertyExpression,
   type PureModel,
 } from '@finos/legend-graph';
-import { SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
 import {
   type QueryBuilderAggregateColumnState,
   QueryBuilderAggregateOperator,
@@ -68,7 +68,7 @@ export class QueryBuilderAggregateOperator_Sum extends QueryBuilderAggregateOper
     graph: PureModel,
   ): ValueSpecification {
     return buildAggregateExpression(
-      SUPPORTED_FUNCTIONS.SUM,
+      QUERY_BUILDER_SUPPORTED_FUNCTIONS.SUM,
       graph,
       variableName,
     );
@@ -83,7 +83,7 @@ export class QueryBuilderAggregateOperator_Sum extends QueryBuilderAggregateOper
       projectionColumnState,
       lambdaParam,
       expression,
-      SUPPORTED_FUNCTIONS.SUM,
+      QUERY_BUILDER_SUPPORTED_FUNCTIONS.SUM,
       this,
     );
   }

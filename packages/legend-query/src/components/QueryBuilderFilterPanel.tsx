@@ -66,9 +66,11 @@ import {
 import { QueryBuilderPropertyExpressionBadge } from './QueryBuilderPropertyExpressionEditor';
 import type { QueryBuilderState } from '../stores/QueryBuilderState';
 import { assertErrorThrown } from '@finos/legend-shared';
-import { QueryBuilderValueSpecificationEditor } from './QueryBuilderValueSpecificationEditor';
 import { QUERY_BUILDER_TEST_ID } from './QueryBuilder_TestID';
-import { useApplicationStore } from '@finos/legend-application';
+import {
+  useApplicationStore,
+  ValueSpecificationEditor,
+} from '@finos/legend-application';
 import {
   type QueryBuilderParameterDragSource,
   QUERY_BUILDER_PARAMETER_TREE_DND_TYPE,
@@ -267,7 +269,7 @@ const QueryBuilderFilterConditionEditor = observer(
                   Change Filter Value
                 </div>
               )}
-              <QueryBuilderValueSpecificationEditor
+              <ValueSpecificationEditor
                 valueSpecification={node.condition.value}
                 updateValue={(val: ValueSpecification): void =>
                   node.condition.setValue(val)

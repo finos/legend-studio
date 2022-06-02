@@ -16,7 +16,7 @@
 
 import { type TooltipPlacement, Tooltip } from '@finos/legend-art';
 import { type AbstractProperty, DerivedProperty } from '@finos/legend-graph';
-import { getMultiplicityDescription } from './shared/QueryBuilderUtils';
+import { getMultiplicityDescription } from '@finos/legend-application';
 
 export const QueryBuilderPropertyInfoTooltip: React.FC<{
   property: AbstractProperty;

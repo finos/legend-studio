@@ -28,7 +28,7 @@ import {
   TYPICAL_MULTIPLICITY_TYPE,
 } from '@finos/legend-graph';
 import { guaranteeNonNullable } from '@finos/legend-shared';
-import { SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
 import {
   buildNotExpression,
   getCollectionValueSpecificationType,
@@ -134,7 +134,7 @@ export class QueryBuilderPostFilterOperator_In extends QueryBuilderPostFilterOpe
     return buildPostFilterConditionExpression(
       postFilterConditionState,
       this,
-      SUPPORTED_FUNCTIONS.IN,
+      QUERY_BUILDER_SUPPORTED_FUNCTIONS.IN,
     );
   }
 
@@ -145,7 +145,7 @@ export class QueryBuilderPostFilterOperator_In extends QueryBuilderPostFilterOpe
     return buildPostFilterConditionState(
       postFilterState,
       expression,
-      SUPPORTED_FUNCTIONS.IN,
+      QUERY_BUILDER_SUPPORTED_FUNCTIONS.IN,
       this,
     );
   }

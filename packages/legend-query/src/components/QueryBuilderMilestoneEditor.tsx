@@ -31,12 +31,12 @@ import {
   PRIMITIVE_TYPE,
   TYPICAL_MULTIPLICITY_TYPE,
 } from '@finos/legend-graph';
-import { QueryBuilderValueSpecificationEditor } from './QueryBuilderValueSpecificationEditor';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { type DropTargetMonitor, useDrop } from 'react-dnd';
 import { VariableExpressionViewer } from './QueryBuilderParameterPanel';
 import { Dialog } from '@finos/legend-art';
 import { generateDefaultValueForPrimitiveType } from '../stores/QueryBuilderValueSpecificationBuilderHelper';
+import { ValueSpecificationEditor } from '@finos/legend-application';
 
 const MilestoningParameterEditor = observer(
   (props: {
@@ -124,7 +124,7 @@ const MilestoningParameterEditor = observer(
             Change Milestoning Parameter Value
           </div>
         )}
-        <QueryBuilderValueSpecificationEditor
+        <ValueSpecificationEditor
           valueSpecification={milestoningParameter}
           graph={queryBuilderState.graphManagerState.graph}
           updateValue={(val: ValueSpecification): void =>

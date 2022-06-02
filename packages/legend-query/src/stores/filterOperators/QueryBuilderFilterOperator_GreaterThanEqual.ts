@@ -25,18 +25,17 @@ import {
   type SimpleFunctionExpression,
   type AbstractPropertyExpression,
   isSuperType,
+  SUPPORTED_FUNCTIONS,
 } from '@finos/legend-graph';
 import { UnsupportedOperationError } from '@finos/legend-shared';
 import {
   buildFilterConditionState,
   buildFilterConditionExpression,
 } from './QueryBuilderFilterOperatorHelper';
-import { SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
+import { buildPrimitiveInstanceValue } from '@finos/legend-application';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
 import { generateDefaultValueForPrimitiveType } from '../QueryBuilderValueSpecificationBuilderHelper';
-import {
-  buildPrimitiveInstanceValue,
-  getNonCollectionValueSpecificationType,
-} from '../QueryBuilderOperatorsHelper';
+import { getNonCollectionValueSpecificationType } from '../QueryBuilderOperatorsHelper';
 
 export class QueryBuilderFilterOperator_GreaterThanEqual extends QueryBuilderFilterOperator {
   getLabel(filterConditionState: FilterConditionState): string {
@@ -142,7 +141,7 @@ export class QueryBuilderFilterOperator_GreaterThanEqual extends QueryBuilderFil
         filterConditionState.value?.genericType?.value.rawType.path !==
           PRIMITIVE_TYPE.DATETIME
         ? SUPPORTED_FUNCTIONS.IS_ON_OR_AFTER_DAY
-        : SUPPORTED_FUNCTIONS.GREATER_THAN_EQUAL,
+        : QUERY_BUILDER_SUPPORTED_FUNCTIONS.GREATER_THAN_EQUAL,
     );
   }
 
@@ -158,7 +157,7 @@ export class QueryBuilderFilterOperator_GreaterThanEqual extends QueryBuilderFil
         expression.parametersValues[1]?.genericType?.value.rawType.path !==
           PRIMITIVE_TYPE.DATETIME
         ? SUPPORTED_FUNCTIONS.IS_ON_OR_AFTER_DAY
-        : SUPPORTED_FUNCTIONS.GREATER_THAN_EQUAL,
+        : QUERY_BUILDER_SUPPORTED_FUNCTIONS.GREATER_THAN_EQUAL,
       this,
     );
   }

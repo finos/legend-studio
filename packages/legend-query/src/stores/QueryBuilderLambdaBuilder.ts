@@ -53,7 +53,6 @@ import {
 } from '@finos/legend-graph';
 import { isGraphFetchTreeDataEmpty } from './QueryBuilderGraphFetchTreeUtil';
 import type { QueryBuilderState } from './QueryBuilderState';
-import { SUPPORTED_FUNCTIONS } from '../QueryBuilder_Const';
 import { buildFilterExpression } from './QueryBuilderFilterState';
 import {
   QueryBuilderDerivationProjectionColumnState,
@@ -67,11 +66,12 @@ import {
   QueryBuilderPostFilterTreeGroupNodeData,
 } from './QueryBuilderPostFilterState';
 import { fromGroupOperation } from './QueryBuilderOperatorsHelper';
+import { getDerivedPropertyMilestoningSteoreotype } from './QueryBuilderPropertyEditorState';
 import {
   functionExpression_setParametersValues,
   propertyExpression_setParametersValue,
-} from './QueryBuilderValueSpecificationModifierHelper';
-import { getDerivedPropertyMilestoningSteoreotype } from './QueryBuilderPropertyEditorState';
+} from '@finos/legend-application';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../QueryBuilder_Const';
 
 /**
  * Checks if the provided property expression match the criteria for default
@@ -164,7 +164,7 @@ export const buildGetAllFunction = (
   multiplicity: Multiplicity,
 ): SimpleFunctionExpression => {
   const _func = new SimpleFunctionExpression(
-    extractElementNameFromPath(SUPPORTED_FUNCTIONS.GET_ALL),
+    extractElementNameFromPath(QUERY_BUILDER_SUPPORTED_FUNCTIONS.GET_ALL),
     multiplicity,
   );
   const classInstance = new InstanceValue(
@@ -197,7 +197,7 @@ export const buildParametersLetLambdaFunc = (
       .map((queryParamState) => {
         if (queryParamState.value) {
           const letFunc = new SimpleFunctionExpression(
-            extractElementNameFromPath(SUPPORTED_FUNCTIONS.LET),
+            extractElementNameFromPath(QUERY_BUILDER_SUPPORTED_FUNCTIONS.LET),
             multiplicityOne,
           );
           const letVar = new PrimitiveInstanceValue(
@@ -298,7 +298,7 @@ export const processPostFilterOnLambda = (
   );
   // main filter expression
   const filterExpression = new SimpleFunctionExpression(
-    extractElementNameFromPath(SUPPORTED_FUNCTIONS.FILTER),
+    extractElementNameFromPath(QUERY_BUILDER_SUPPORTED_FUNCTIONS.FILTER),
     multiplicityOne,
   );
   const currentExpression = guaranteeNonNullable(lambda.expressionSequence[0]);
@@ -399,7 +399,7 @@ export const buildPropertyExpressionChain = (
       currentExpression instanceof SimpleFunctionExpression &&
       matchFunctionName(
         currentExpression.functionName,
-        SUPPORTED_FUNCTIONS.SUBTYPE,
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.SUBTYPE,
       )
     ) {
       currentExpression = getNullableFirstElement(
@@ -504,7 +504,9 @@ export const buildLambdaFunction = (
       // aggregation
 
       const groupByFunction = new SimpleFunctionExpression(
-        extractElementNameFromPath(SUPPORTED_FUNCTIONS.TDS_GROUP_BY),
+        extractElementNameFromPath(
+          QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_GROUP_BY,
+        ),
         multiplicityOne,
       );
 
@@ -593,7 +595,9 @@ export const buildLambdaFunction = (
           // column aggregation
           if (aggregateColumnState) {
             const aggregateFunctionExpression = new SimpleFunctionExpression(
-              extractElementNameFromPath(SUPPORTED_FUNCTIONS.TDS_AGG),
+              extractElementNameFromPath(
+                QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_AGG,
+              ),
               multiplicityOne,
             );
             const aggregateLambda = buildGenericLambdaFunctionInstanceValue(
@@ -630,7 +634,9 @@ export const buildLambdaFunction = (
     ) {
       // projection
       const projectFunction = new SimpleFunctionExpression(
-        extractElementNameFromPath(SUPPORTED_FUNCTIONS.TDS_PROJECT),
+        extractElementNameFromPath(
+          QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_PROJECT,
+        ),
         multiplicityOne,
       );
       const colLambdas = new CollectionInstanceValue(
@@ -719,13 +725,17 @@ export const buildLambdaFunction = (
       queryBuilderState.fetchStructureState.graphFetchTreeState.treeData.tree,
     ];
     const serializeFunction = new SimpleFunctionExpression(
-      extractElementNameFromPath(SUPPORTED_FUNCTIONS.SERIALIZE),
+      extractElementNameFromPath(QUERY_BUILDER_SUPPORTED_FUNCTIONS.SERIALIZE),
       multiplicityOne,
     );
     const graphFetchFunc = new SimpleFunctionExpression(
       queryBuilderState.fetchStructureState.graphFetchTreeState.isChecked
-        ? extractElementNameFromPath(SUPPORTED_FUNCTIONS.GRAPH_FETCH_CHECKED)
-        : extractElementNameFromPath(SUPPORTED_FUNCTIONS.GRAPH_FETCH),
+        ? extractElementNameFromPath(
+            QUERY_BUILDER_SUPPORTED_FUNCTIONS.GRAPH_FETCH_CHECKED,
+          )
+        : extractElementNameFromPath(
+            QUERY_BUILDER_SUPPORTED_FUNCTIONS.GRAPH_FETCH,
+          ),
       multiplicityOne,
     );
     const expression = lambdaFunction.expressionSequence[0];

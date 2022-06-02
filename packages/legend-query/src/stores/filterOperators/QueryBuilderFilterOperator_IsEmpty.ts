@@ -29,7 +29,7 @@ import {
   buildFilterConditionState,
   buildFilterConditionExpression,
 } from './QueryBuilderFilterOperatorHelper';
-import { SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
 import {
   buildNotExpression,
   unwrapNotExpression,
@@ -78,7 +78,7 @@ export class QueryBuilderFilterOperator_IsEmpty extends QueryBuilderFilterOperat
   ): ValueSpecification {
     return buildFilterConditionExpression(
       filterConditionState,
-      SUPPORTED_FUNCTIONS.IS_EMPTY,
+      QUERY_BUILDER_SUPPORTED_FUNCTIONS.IS_EMPTY,
     );
   }
 
@@ -89,7 +89,7 @@ export class QueryBuilderFilterOperator_IsEmpty extends QueryBuilderFilterOperat
     return buildFilterConditionState(
       filterState,
       expression,
-      SUPPORTED_FUNCTIONS.IS_EMPTY,
+      QUERY_BUILDER_SUPPORTED_FUNCTIONS.IS_EMPTY,
       this,
       true,
     );

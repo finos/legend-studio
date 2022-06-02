@@ -32,18 +32,19 @@ import {
   Enumeration,
   PRIMITIVE_TYPE,
   isSuperType,
+  SUPPORTED_FUNCTIONS,
 } from '@finos/legend-graph';
 import { UnsupportedOperationError } from '@finos/legend-shared';
 import {
   buildFilterConditionState,
   buildFilterConditionExpression,
 } from './QueryBuilderFilterOperatorHelper';
-import { SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
+import { buildPrimitiveInstanceValue } from '@finos/legend-application';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
 import { generateDefaultValueForPrimitiveType } from '../QueryBuilderValueSpecificationBuilderHelper';
 import {
   buildNotExpression,
   unwrapNotExpression,
-  buildPrimitiveInstanceValue,
   getNonCollectionValueSpecificationType,
 } from '../QueryBuilderOperatorsHelper';
 
@@ -183,7 +184,7 @@ export class QueryBuilderFilterOperator_Equal extends QueryBuilderFilterOperator
         filterConditionState.value?.genericType?.value.rawType.path !==
           PRIMITIVE_TYPE.DATETIME
         ? SUPPORTED_FUNCTIONS.IS_ON_DAY
-        : SUPPORTED_FUNCTIONS.EQUAL,
+        : QUERY_BUILDER_SUPPORTED_FUNCTIONS.EQUAL,
     );
   }
 
@@ -199,7 +200,7 @@ export class QueryBuilderFilterOperator_Equal extends QueryBuilderFilterOperator
         expression.parametersValues[1]?.genericType?.value.rawType.path !==
           PRIMITIVE_TYPE.DATETIME
         ? SUPPORTED_FUNCTIONS.IS_ON_DAY
-        : SUPPORTED_FUNCTIONS.EQUAL,
+        : QUERY_BUILDER_SUPPORTED_FUNCTIONS.EQUAL,
       this,
     );
   }

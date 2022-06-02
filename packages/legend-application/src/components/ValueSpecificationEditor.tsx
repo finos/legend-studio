@@ -14,54 +14,54 @@
  * limitations under the License.
  */
 
-import { useEffect, useRef, useState } from 'react';
-import { observer } from 'mobx-react-lite';
 import {
-  clsx,
   type TooltipPlacement,
   Tooltip,
-  CustomSelectorInput,
-  InfoCircleIcon,
-  PencilIcon,
   DollarIcon,
+  clsx,
+  InfoCircleIcon,
+  RefreshIcon,
   CheckSquareIcon,
   SquareIcon,
+  CustomSelectorInput,
   SaveIcon,
-  RefreshIcon,
+  PencilIcon,
 } from '@finos/legend-art';
+import {
+  type Enum,
+  type Type,
+  type ValueSpecification,
+  type PureModel,
+  PrimitiveInstanceValue,
+  CollectionInstanceValue,
+  EnumValueInstanceValue,
+  INTERNAL__PropagatedValue,
+  SimpleFunctionExpression,
+  VariableExpression,
+  EnumValueExplicitReference,
+  TYPICAL_MULTIPLICITY_TYPE,
+  PrimitiveType,
+  PRIMITIVE_TYPE,
+  GenericTypeExplicitReference,
+  GenericType,
+  Enumeration,
+  getEnumValue,
+} from '@finos/legend-graph';
 import {
   guaranteeNonNullable,
   isNonNullable,
   returnUndefOnError,
   uniq,
 } from '@finos/legend-shared';
+import { observer } from 'mobx-react-lite';
 import CSVParser from 'papaparse';
-import {
-  type PureModel,
-  type Enum,
-  type Type,
-  type ValueSpecification,
-  Enumeration,
-  GenericType,
-  GenericTypeExplicitReference,
-  PrimitiveType,
-  CollectionInstanceValue,
-  EnumValueExplicitReference,
-  EnumValueInstanceValue,
-  PrimitiveInstanceValue,
-  PRIMITIVE_TYPE,
-  TYPICAL_MULTIPLICITY_TYPE,
-  VariableExpression,
-  INTERNAL__PropagatedValue,
-  SimpleFunctionExpression,
-  getEnumValue,
-} from '@finos/legend-graph';
-import { getMultiplicityDescription } from './shared/QueryBuilderUtils';
+import { useEffect, useRef, useState } from 'react';
+import { getMultiplicityDescription } from '../stores/ValueSpecificationUtils';
 import {
   instanceValue_changeValue,
   instanceValue_changeValues,
-} from '../stores/QueryBuilderValueSpecificationModifierHelper';
-import { QueryBuilderCustomDatePicker } from './QueryBuilderCustomDatePicker';
+} from '../stores/ValueSpecificationModifierHelper';
+import { CustomDatePicker } from './CustomDatePicker';
 
 type TypeCheckOption = {
   expectedType: Type;
@@ -75,7 +75,7 @@ type TypeCheckOption = {
   match?: boolean;
 };
 
-const QueryBuilderParameterInfoTooltip: React.FC<{
+const ParameterInfoTooltip: React.FC<{
   variable: VariableExpression;
   children: React.ReactElement;
   placement?: TooltipPlacement | undefined;
@@ -149,11 +149,11 @@ const VariableExpressionParameterEditor = observer(
           <div className="query-builder-value-spec-editor__parameter__text">
             {varName}
           </div>
-          <QueryBuilderParameterInfoTooltip variable={valueSpecification}>
+          <ParameterInfoTooltip variable={valueSpecification}>
             <div className="query-builder-value-spec-editor__parameter__info">
               <InfoCircleIcon />
             </div>
-          </QueryBuilderParameterInfoTooltip>
+          </ParameterInfoTooltip>
           <button
             className="query-builder-value-spec-editor__parameter__reset-btn"
             title="Reset"
@@ -527,7 +527,7 @@ const CollectionValueInstanceValueEditor = observer(
   },
 );
 
-const QueryBuilderUnsupportedValueSpecificationEditor: React.FC = () => (
+const UnsupportedValueSpecificationEditor: React.FC = () => (
   <div className="query-builder-value-spec-editor--unsupported">
     unsupported
   </div>
@@ -552,7 +552,7 @@ const DateInstanceValueEditor = observer(
 
     return (
       <div className="query-builder-value-spec-editor">
-        <QueryBuilderCustomDatePicker
+        <CustomDatePicker
           valueSpecification={valueSpecification}
           graph={graph}
           typeCheckOption={typeCheckOption}
@@ -576,7 +576,7 @@ const DateInstanceValueEditor = observer(
  *
  * See https://github.com/finos/legend-studio/pull/1021
  */
-export const QueryBuilderValueSpecificationEditor: React.FC<{
+export const ValueSpecificationEditor: React.FC<{
   valueSpecification: ValueSpecification;
   graph: PureModel;
   typeCheckOption: TypeCheckOption;
@@ -638,7 +638,7 @@ export const QueryBuilderValueSpecificationEditor: React.FC<{
           />
         );
       default:
-        return <QueryBuilderUnsupportedValueSpecificationEditor />;
+        return <UnsupportedValueSpecificationEditor />;
     }
   } else if (valueSpecification instanceof EnumValueInstanceValue) {
     return (
@@ -676,7 +676,7 @@ export const QueryBuilderValueSpecificationEditor: React.FC<{
     );
   } else if (valueSpecification instanceof INTERNAL__PropagatedValue) {
     return (
-      <QueryBuilderValueSpecificationEditor
+      <ValueSpecificationEditor
         valueSpecification={valueSpecification.getValue()}
         graph={graph}
         typeCheckOption={typeCheckOption}
@@ -704,5 +704,5 @@ export const QueryBuilderValueSpecificationEditor: React.FC<{
       />
     );
   }
-  return <QueryBuilderUnsupportedValueSpecificationEditor />;
+  return <UnsupportedValueSpecificationEditor />;
 };

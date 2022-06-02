@@ -28,7 +28,7 @@ import {
   Enumeration,
 } from '@finos/legend-graph';
 import { assertTrue, guaranteeType } from '@finos/legend-shared';
-import { SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
 import {
   QueryBuilderAggregateColumnState,
   QueryBuilderAggregateOperator,
@@ -80,14 +80,14 @@ export class QueryBuilderAggregateOperator_DistinctCount extends QueryBuilderAgg
       TYPICAL_MULTIPLICITY_TYPE.ONE,
     );
     const distinctExpression = new SimpleFunctionExpression(
-      extractElementNameFromPath(SUPPORTED_FUNCTIONS.DISTINCT),
+      extractElementNameFromPath(QUERY_BUILDER_SUPPORTED_FUNCTIONS.DISTINCT),
       multiplicityOne,
     );
     distinctExpression.parametersValues.push(
       new VariableExpression(variableName, multiplicityOne),
     );
     const distinctCountExpression = new SimpleFunctionExpression(
-      extractElementNameFromPath(SUPPORTED_FUNCTIONS.COUNT),
+      extractElementNameFromPath(QUERY_BUILDER_SUPPORTED_FUNCTIONS.COUNT),
       multiplicityOne,
     );
     distinctCountExpression.parametersValues.push(distinctExpression);
@@ -99,7 +99,12 @@ export class QueryBuilderAggregateOperator_DistinctCount extends QueryBuilderAgg
     lambdaParam: VariableExpression,
     projectionColumnState: QueryBuilderProjectionColumnState,
   ): QueryBuilderAggregateColumnState | undefined {
-    if (matchFunctionName(expression.functionName, SUPPORTED_FUNCTIONS.COUNT)) {
+    if (
+      matchFunctionName(
+        expression.functionName,
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.COUNT,
+      )
+    ) {
       const aggregateColumnState = new QueryBuilderAggregateColumnState(
         projectionColumnState.projectionState.aggregationState,
         projectionColumnState,
@@ -124,7 +129,7 @@ export class QueryBuilderAggregateOperator_DistinctCount extends QueryBuilderAgg
       assertTrue(
         matchFunctionName(
           distinctExpression.functionName,
-          SUPPORTED_FUNCTIONS.DISTINCT,
+          QUERY_BUILDER_SUPPORTED_FUNCTIONS.DISTINCT,
         ),
         `Can't process '${this.getLabel(
           projectionColumnState,
