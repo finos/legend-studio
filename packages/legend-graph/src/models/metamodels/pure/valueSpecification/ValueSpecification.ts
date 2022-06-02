@@ -41,26 +41,6 @@ import type { INTERNAL__UnknownValueSpecification } from './INTERNAL__UnknownVal
 import type { VariableExpression } from './VariableExpression';
 import type { INTERNAL__PropagatedValue } from './INTERNAL__PropagatedValue';
 
-export enum SUPPORTED_FUNCTIONS {
-  // date-time value helper functions
-  TODAY = 'meta::pure::functions::date::today',
-  NOW = 'meta::pure::functions::date::now',
-  FIRST_DAY_OF_WEEK = 'meta::pure::functions::date::firstDayOfThisWeek',
-  FIRST_DAY_OF_MONTH = 'meta::pure::functions::date::firstDayOfThisMonth',
-  FIRST_DAY_OF_QUARTER = 'meta::pure::functions::date::firstDayOfThisQuarter',
-  FIRST_DAY_OF_YEAR = 'meta::pure::functions::date::firstDayOfThisYear',
-  PREVIOUS_DAY_OF_WEEK = 'meta::pure::functions::date::previousDayOfWeek',
-  IS_ON_DAY = 'meta::pure::functions::date::isOnDay',
-  IS_ON_OR_AFTER_DAY = 'meta::pure::functions::date::isOnOrAfterDay',
-  IS_AFTER_DAY = 'meta::pure::functions::date::isAfterDay',
-  IS_ON_OR_BEFORE_DAY = 'meta::pure::functions::date::isOnOrBeforeDay',
-  IS_BEFORE_DAY = 'meta::pure::functions::date::isBeforeDay',
-
-  // adjust time
-  MINUS = 'meta::pure::functions::math::minus',
-  ADJUST = 'meta::pure::functions::date::adjust',
-}
-
 export interface ValueSpecificationVisitor<T> {
   visit_RootGraphFetchTreeInstanceValue(
     valueSpecification: RootGraphFetchTreeInstanceValue,

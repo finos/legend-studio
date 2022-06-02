@@ -1,5 +1,5 @@
 ---
-"@finos/legend-application": patch
-"@finos/legend-query": patch
+'@finos/legend-application': minor
 ---
-Move `ValueSpecificationEditor` from `legend-query` to `legend-application`.
+
+Add `BasicValueSpecificationEditor`.

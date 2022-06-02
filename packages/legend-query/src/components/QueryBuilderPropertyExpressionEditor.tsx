@@ -48,7 +48,7 @@ import {
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import {
   propertyExpression_setParametersValue,
-  ValueSpecificationEditor,
+  BasicValueSpecificationEditor,
 } from '@finos/legend-application';
 
 const DerivedPropertyParameterValueEditor = observer(
@@ -134,7 +134,7 @@ const DerivedPropertyParameterValueEditor = observer(
               Change Parameter Value
             </div>
           )}
-          <ValueSpecificationEditor
+          <BasicValueSpecificationEditor
             valueSpecification={guaranteeNonNullable(
               derivedPropertyExpressionState.parameterValues[idx],
             )}

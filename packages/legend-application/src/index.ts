@@ -52,4 +52,4 @@ export * from './stores/ApplicationStoreTestUtils';
 // value specification
 export * from './stores/ValueSpecificationModifierHelper';
 export * from './stores/ValueSpecificationUtils';
-export * from './components/ValueSpecificationEditor';
+export * from './components/BasicValueSpecificationEditor';

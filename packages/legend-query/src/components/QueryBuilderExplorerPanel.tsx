@@ -75,11 +75,9 @@ import {
   getAllOwnClassProperties,
   getAllClassProperties,
   getAllClassDerivedProperties,
-} from '@finos/legend-graph';
-import {
-  useApplicationStore,
   getMultiplicityDescription,
-} from '@finos/legend-application';
+} from '@finos/legend-graph';
+import { useApplicationStore } from '@finos/legend-application';
 import { getClassPropertyIcon } from './shared/ElementIconUtils';
 import { QUERY_BUILDER_TEST_ID } from './QueryBuilder_TestID';
 import { filterByType, guaranteeNonNullable } from '@finos/legend-shared';

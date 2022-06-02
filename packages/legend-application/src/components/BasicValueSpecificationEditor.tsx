@@ -46,6 +46,7 @@ import {
   GenericType,
   Enumeration,
   getEnumValue,
+  getMultiplicityDescription,
 } from '@finos/legend-graph';
 import {
   guaranteeNonNullable,
@@ -56,7 +57,6 @@ import {
 import { observer } from 'mobx-react-lite';
 import CSVParser from 'papaparse';
 import { useEffect, useRef, useState } from 'react';
-import { getMultiplicityDescription } from '../stores/ValueSpecificationUtils';
 import {
   instanceValue_changeValue,
   instanceValue_changeValues,
@@ -571,7 +571,7 @@ const DateInstanceValueEditor = observer(
  *
  * See https://github.com/finos/legend-studio/pull/1021
  */
-export const ValueSpecificationEditor: React.FC<{
+export const BasicValueSpecificationEditor: React.FC<{
   valueSpecification: ValueSpecification;
   graph: PureModel;
   typeCheckOption: TypeCheckOption;
@@ -671,7 +671,7 @@ export const ValueSpecificationEditor: React.FC<{
     );
   } else if (valueSpecification instanceof INTERNAL__PropagatedValue) {
     return (
-      <ValueSpecificationEditor
+      <BasicValueSpecificationEditor
         valueSpecification={valueSpecification.getValue()}
         graph={graph}
         typeCheckOption={typeCheckOption}

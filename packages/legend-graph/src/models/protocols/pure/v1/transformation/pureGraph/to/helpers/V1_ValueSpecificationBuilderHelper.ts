@@ -26,6 +26,7 @@ import {
 import {
   TYPICAL_MULTIPLICITY_TYPE,
   PRIMITIVE_TYPE,
+  SUPPORTED_FUNCTIONS,
 } from '../../../../../../../../MetaModelConst';
 import {
   LambdaFunction,
@@ -47,10 +48,7 @@ import {
   PropertyGraphFetchTreeInstanceValue,
   RootGraphFetchTreeInstanceValue,
 } from '../../../../../../../metamodels/pure/valueSpecification/GraphFetchTree';
-import {
-  SUPPORTED_FUNCTIONS,
-  ValueSpecification,
-} from '../../../../../../../metamodels/pure/valueSpecification/ValueSpecification';
+import { ValueSpecification } from '../../../../../../../metamodels/pure/valueSpecification/ValueSpecification';
 import {
   SimpleFunctionExpression,
   AbstractPropertyExpression,

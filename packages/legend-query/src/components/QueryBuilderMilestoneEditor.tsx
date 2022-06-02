@@ -36,7 +36,7 @@ import { type DropTargetMonitor, useDrop } from 'react-dnd';
 import { VariableExpressionViewer } from './QueryBuilderParameterPanel';
 import { Dialog } from '@finos/legend-art';
 import { generateDefaultValueForPrimitiveType } from '../stores/QueryBuilderValueSpecificationBuilderHelper';
-import { ValueSpecificationEditor } from '@finos/legend-application';
+import { BasicValueSpecificationEditor } from '@finos/legend-application';
 
 const MilestoningParameterEditor = observer(
   (props: {
@@ -124,7 +124,7 @@ const MilestoningParameterEditor = observer(
             Change Milestoning Parameter Value
           </div>
         )}
-        <ValueSpecificationEditor
+        <BasicValueSpecificationEditor
           valueSpecification={milestoningParameter}
           graph={queryBuilderState.graphManagerState.graph}
           updateValue={(val: ValueSpecification): void =>

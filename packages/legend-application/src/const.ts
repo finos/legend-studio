@@ -35,6 +35,3 @@ export enum EDITOR_LANGUAGE {
   MARKDOWN = 'markdown',
   SQL = 'sql',
 }
-
-export const DURATION_UNIT = 'meta::pure::functions::date::DurationUnit';
-export const DAY_OF_WEEK = 'meta::pure::functions::date::DayOfWeek';

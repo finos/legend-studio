@@ -69,7 +69,7 @@ import { assertErrorThrown } from '@finos/legend-shared';
 import { QUERY_BUILDER_TEST_ID } from './QueryBuilder_TestID';
 import {
   useApplicationStore,
-  ValueSpecificationEditor,
+  BasicValueSpecificationEditor,
 } from '@finos/legend-application';
 import {
   type QueryBuilderParameterDragSource,
@@ -269,7 +269,7 @@ const QueryBuilderFilterConditionEditor = observer(
                   Change Filter Value
                 </div>
               )}
-              <ValueSpecificationEditor
+              <BasicValueSpecificationEditor
                 valueSpecification={node.condition.value}
                 updateValue={(val: ValueSpecification): void =>
                   node.condition.setValue(val)

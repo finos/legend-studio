@@ -41,7 +41,7 @@ import {
   type PackageableElementOption,
   buildElementOption,
   useApplicationStore,
-  ValueSpecificationEditor,
+  BasicValueSpecificationEditor,
   variableExpression_setName,
 } from '@finos/legend-application';
 import { useDrag, useDragLayer } from 'react-dnd';
@@ -98,7 +98,7 @@ const ParameterValuesEditor = observer(
                     </div>
                   </div>
                   {paramState.value && (
-                    <ValueSpecificationEditor
+                    <BasicValueSpecificationEditor
                       valueSpecification={paramState.value}
                       updateValue={(val: ValueSpecification): void => {
                         paramState.setValue(val);

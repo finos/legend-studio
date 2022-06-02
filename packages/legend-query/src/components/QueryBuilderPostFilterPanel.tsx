@@ -16,8 +16,7 @@
 
 import {
   useApplicationStore,
-  getMultiplicityDescription,
-  ValueSpecificationEditor,
+  BasicValueSpecificationEditor,
 } from '@finos/legend-application';
 import {
   type TreeNodeContainerProps,
@@ -56,6 +55,7 @@ import {
   Enumeration,
   PrimitiveType,
   PRIMITIVE_TYPE,
+  getMultiplicityDescription,
 } from '@finos/legend-graph';
 import {
   assertErrorThrown,
@@ -504,7 +504,7 @@ const QueryBuilderPostFilterConditionEditor = observer(
                   Change Filter Value
                 </div>
               )}
-              <ValueSpecificationEditor
+              <BasicValueSpecificationEditor
                 valueSpecification={node.condition.value}
                 updateValue={(val: ValueSpecification): void =>
                   node.condition.setValue(val)

@@ -119,7 +119,6 @@ export {
 export { INTERNAL__PropagatedValue } from './models/metamodels/pure/valueSpecification/INTERNAL__PropagatedValue';
 export {
   ValueSpecification,
-  SUPPORTED_FUNCTIONS,
   type ValueSpecificationVisitor,
 } from './models/metamodels/pure/valueSpecification/ValueSpecification';
 export {

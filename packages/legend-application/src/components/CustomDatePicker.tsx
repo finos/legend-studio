@@ -35,6 +35,8 @@ import {
   matchFunctionName,
   TYPICAL_MULTIPLICITY_TYPE,
   SUPPORTED_FUNCTIONS,
+  DAY_OF_WEEK,
+  DURATION_UNIT,
 } from '@finos/legend-graph';
 import {
   guaranteeNonNullable,
@@ -46,7 +48,6 @@ import {
   genericType_setRawType,
   instanceValue_changeValue,
 } from '../stores/ValueSpecificationModifierHelper';
-import { DAY_OF_WEEK, DURATION_UNIT } from '../const';
 
 enum CUSTOM_DATE_PICKER_OPTION {
   ABSOLUTE_DATE = 'Absolute Date',
