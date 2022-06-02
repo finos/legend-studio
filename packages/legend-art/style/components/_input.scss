@@ -14,19 +14,28 @@
  * limitations under the License.
  */
 
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import type { MarkdownText } from '@finos/legend-shared';
-import { clsx } from '../../utils/CJS__clsx.cjs';
+.input--with-validation {
+  position: relative;
+  width: 100%;
 
-export const MarkdownTextViewer: React.FC<{
-  value: MarkdownText;
-  className?: string | undefined;
-}> = (props) => (
-  <ReactMarkdown
-    className={clsx('markdown-content', props.className)}
-    remarkPlugins={[remarkGfm]}
-  >
-    {props.value.value}
-  </ReactMarkdown>
-);
+  &--error {
+    border: 0.1rem solid var(--color-red-300);
+    background: var(--color-red-500);
+    padding-right: 2.3rem;
+    color: var(--color-light-grey-100);
+
+    :focus {
+      border: 0.1rem solid var(--color-red-300);
+    }
+  }
+
+  &__error {
+    position: absolute;
+    right: 0.5rem;
+    top: calc(50% - 0.7rem);
+  }
+
+  &__error__indicator {
+    color: var(--color-red-180);
+  }
+}

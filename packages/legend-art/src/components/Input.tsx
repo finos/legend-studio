@@ -13,37 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import styled from '@emotion/styled';
-import { css, cx } from '@emotion/css';
-import { TimesCircleIcon } from './Icon.js';
 
-// TODO: migrate to `TailWindCSS`
-// See https://github.com/finos/legend-studio/issues/760
-const InputGroup = styled.div`
-  position: relative;
-  width: 100%;
-`;
-
-const class__InputValidationErrorStyle = css`
-  border: 0.1rem solid var(--color-red-300);
-  background: var(--color-red-500);
-  padding-right: 2.3rem;
-  color: var(--color-light-grey-100);
-
-  :focus {
-    border: 0.1rem solid var(--color-red-300);
-  }
-`;
-
-const InputValidationErrorIndicator = styled.div`
-  position: absolute;
-  right: 0.5rem;
-  top: calc(50% - 0.7rem);
-`;
-
-const class__InputValidationErrorIndicatorIcon = css`
-  color: var(--color-red-180);
-`;
+import { clsx } from '../utils/CJS__clsx.cjs';
+import { TimesCircleIcon } from './CJS__Icon.cjs';
 
 export const InputWithInlineValidation: React.FC<
   React.InputHTMLAttributes<HTMLInputElement> & {
@@ -52,20 +24,21 @@ export const InputWithInlineValidation: React.FC<
 > = (props) => {
   const { validationErrorMessage, className, ...inputProps } = props;
   return (
-    <InputGroup>
+    <div className="input--with-validation">
       <input
-        className={cx(className, {
-          [class__InputValidationErrorStyle]: Boolean(validationErrorMessage),
+        className={clsx(className, {
+          'input--with-validation--error': Boolean(validationErrorMessage),
         })}
         {...inputProps}
       />
       {validationErrorMessage && (
-        <InputValidationErrorIndicator title={validationErrorMessage}>
-          <TimesCircleIcon
-            className={class__InputValidationErrorIndicatorIcon}
-          />
-        </InputValidationErrorIndicator>
+        <div
+          className="input--with-validation__error"
+          title={validationErrorMessage}
+        >
+          <TimesCircleIcon className="input--with-validation__error__indicator" />
+        </div>
       )}
-    </InputGroup>
+    </div>
   );
 };

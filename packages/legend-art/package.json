@@ -24,7 +24,7 @@
   "type": "module",
   "exports": {
     ".": "./lib/index.js",
-    "./jest/mockESM.jsx": "./jest/mockESM.jsx",
+    "./lib/testMocks/ReactMarkdownMocker.js": "./jest/ReactMarkdownMocker.jsx",
     "./lib/testMocks/MockedMonacoEditor.js": "./lib/testMocks/MockedMonacoEditor.js",
     "./lib/index.css": "./lib/index.css"
   },
@@ -47,8 +47,6 @@
     "test:watch": "jest --watch"
   },
   "dependencies": {
-    "@emotion/css": "11.9.0",
-    "@emotion/react": "11.9.0",
     "@emotion/styled": "11.8.1",
     "@finos/legend-shared": "workspace:*",
     "@fontsource/raleway": "4.5.8",

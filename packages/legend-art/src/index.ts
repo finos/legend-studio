@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
+export * from './utils/CJS__clsx.cjs';
 export * from './utils/ComponentUtils.js';
 export * from './utils/PanelDisplayState.js';
 export * from './utils/TextEditorUtils.js';
 export * from './utils/HotkeyConfiguration.js';
 
-export * from './components/Icon.js';
+export * from './components/CJS__Icon.cjs';
 export * from './components/TypeIcon.js';
 export * from './components/Input.js';
 export * from './components/LegendLogo.js';

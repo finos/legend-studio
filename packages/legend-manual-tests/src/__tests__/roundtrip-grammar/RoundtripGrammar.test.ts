@@ -17,7 +17,7 @@
 import { test, describe, expect } from '@jest/globals';
 import { resolve, basename } from 'path';
 import fs from 'fs';
-import axios, { type AxiosResponse } from 'axios';
+import { axios, type AxiosResponse } from '../CJS__Axios.cjs';
 import {
   type PlainObject,
   type TEMPORARRY__JestMatcher,

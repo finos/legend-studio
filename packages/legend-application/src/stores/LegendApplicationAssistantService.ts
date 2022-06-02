@@ -21,7 +21,7 @@ import type {
 } from './LegendApplicationDocumentationService.js';
 import type { LegendApplicationConfig } from './LegendApplicationConfig.js';
 import type { ApplicationStore } from './ApplicationStore.js';
-import Fuse from 'fuse.js';
+import { Fuse } from './CJS__Fuse.cjs';
 import {
   type MarkdownText,
   guaranteeNonEmptyString,

@@ -17,7 +17,6 @@
 import { test, describe, expect } from '@jest/globals';
 import { resolve, basename } from 'path';
 import fs from 'fs';
-import axios, { type AxiosResponse } from 'axios';
 import {
   TEST__buildGraphWithEntities,
   TEST__getTestGraphManagerState,
@@ -30,6 +29,7 @@ import {
   HttpHeader,
   type PlainObject,
 } from '@finos/legend-shared';
+import { axios, type AxiosResponse } from '../CJS__Axios.cjs';
 
 const engineConfig = JSON.parse(
   fs.readFileSync(resolve(__dirname, '../../../engine-config.json'), {

@@ -15,7 +15,7 @@
  */
 
 import React, { forwardRef } from 'react';
-import clsx from 'clsx';
+import { clsx } from '../../utils/CJS__clsx.cjs';
 
 export const MenuContent = forwardRef<
   HTMLDivElement,

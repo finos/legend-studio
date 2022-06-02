@@ -15,7 +15,7 @@
  */
 
 import packageJson from '../package.json';
-import SpanBuilder from 'zipkin-javascript-opentracing';
+import { SpanBuilder } from './CJS__Zipkin.cjs';
 import { BatchRecorder, jsonEncoder } from 'zipkin';
 import { HttpLogger } from 'zipkin-transport-http';
 import type { Span as ZipkinSpan } from 'opentracing';

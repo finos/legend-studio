@@ -5,7 +5,7 @@
     "noEmit": true,
     "jsx": "react-jsxdev"
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.json"],
+  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.json", "src/**/*.cts"],
   "references": [
     { "path": "../legend-art" },
     { "path": "../legend-shared" },

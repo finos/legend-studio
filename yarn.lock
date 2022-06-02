@@ -1755,24 +1755,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@emotion/css@npm:11.9.0":
-  version: 11.9.0
-  resolution: "@emotion/css@npm:11.9.0"
-  dependencies:
-    "@emotion/babel-plugin": ^11.7.1
-    "@emotion/cache": ^11.7.1
-    "@emotion/serialize": ^1.0.3
-    "@emotion/sheet": ^1.0.3
-    "@emotion/utils": ^1.0.0
-  peerDependencies:
-    "@babel/core": ^7.0.0
-  peerDependenciesMeta:
-    "@babel/core":
-      optional: true
-  checksum: bd83d9af5cf87b82992dea030b5c7db9cc26f8fee508fc8c20257bc040d35b0cc595143c5c8e3f5d6719351f3ae1c53b152899c22b60a2a5ff37d3439304401e
-  languageName: node
-  linkType: hard
-
 "@emotion/hash@npm:^0.8.0":
   version: 0.8.0
   resolution: "@emotion/hash@npm:0.8.0"
@@ -1796,7 +1778,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@emotion/react@npm:11.9.0, @emotion/react@npm:^11.1.1":
+"@emotion/react@npm:^11.1.1":
   version: 11.9.0
   resolution: "@emotion/react@npm:11.9.0"
   dependencies:
@@ -1832,7 +1814,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@emotion/sheet@npm:^1.0.3, @emotion/sheet@npm:^1.1.0":
+"@emotion/sheet@npm:^1.1.0":
   version: 1.1.0
   resolution: "@emotion/sheet@npm:1.1.0"
   checksum: a4b74e16a8fea1157413efe4904f5f679d724323cb605d66d20a0b98744422f5d411fca927ceb52e4de454a0a819c5273ca9496db9f011b4ecd17b9f1b212007
@@ -2011,8 +1993,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@finos/legend-art@workspace:packages/legend-art"
   dependencies:
-    "@emotion/css": 11.9.0
-    "@emotion/react": 11.9.0
     "@emotion/styled": 11.8.1
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-shared": "workspace:*"

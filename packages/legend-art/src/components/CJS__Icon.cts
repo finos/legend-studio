@@ -14,7 +14,19 @@
  * limitations under the License.
  */
 
+/**
+ * Previously, these exports rely on ES module interop to expose `default` export
+ * properly. But since we use `ESM` for Typescript resolution now, we lose this
+ * so we have to workaround by importing these and re-export them from CJS
+ *
+ * TODO: remove these when the package properly work with Typescript's nodenext
+ * module resolution
+ *
+ * @workaround ESM
+ * See https://github.com/microsoft/TypeScript/issues/49298
+ */
 export {
+  FaLayerGroup as LayerGroupIcon,
   FaGhost as GhostIcon,
   FaLock as LockIcon,
   FaMask as MaskIcon,
@@ -36,6 +48,7 @@ export {
   FaClock as ClockIcon,
   FaRegClock as EmptyClockIcon,
   FaToggleOn as ToggleIcon,
+  FaQuestion as QuestionIcon,
   FaQuestionCircle as QuestionCircleIcon,
   FaInfoCircle as InfoCircleIcon,
   FaCompress as CompressIcon,
@@ -107,18 +120,22 @@ export {
   FaPauseCircle as PauseCircleIcon,
   FaShare as ShareIcon,
   FaRegCopy as CopyIcon,
-  FaEdit as PencilEditIcon, // to be reviewed/merged
-  FaArrowsAltH as ArrowsAltHIcon, // to be reviewed/merged
-  FaRegWindowMaximize as WindowMaximizeIcon, // to be reviewed/merged
-  FaWindowMaximize as FilledWindowMaximizeIcon, // to be reviewed/merged
-  FaLongArrowAltDown as LongArrowAltDownIcon, // to be reviewed/merged
-  FaLongArrowAltUp as LongArrowAltUpIcon, // to be reviewed/merged
-  FaMeteor as MeteorIcon, // to be reviewed/merged
+  FaEdit as PencilEditIcon, // to be reviewed/combined
+  FaArrowsAltH as ArrowsAltHIcon, // to be reviewed/combined
+  FaRegWindowMaximize as WindowMaximizeIcon, // to be reviewed/combined
+  FaWindowMaximize as FilledWindowMaximizeIcon, // to be reviewed/combined
+  FaLongArrowAltDown as LongArrowAltDownIcon, // to be reviewed/combined
+  FaLongArrowAltUp as LongArrowAltUpIcon, // to be reviewed/combined
+  FaMeteor as MeteorIcon, // to be reviewed/combined
   FaToggleOn as ToggleOnIcon,
   FaToggleOff as ToggleOffIcon,
   FaMapMarkerAlt as MapMarkerIcon,
   FaHatWizard as WizardHatIcon,
   FaRegLaughWink as FaceLaughWinkIcon,
+  FaBusinessTime as BusinessTimeIcon, // to be reviewed/combined
+  FaDatabase as DatabaseIcon,
+  FaServer as ServerIcon,
+  FaTable as TableIcon,
 } from 'react-icons/fa';
 export {
   GiWaterDrop as WaterDropIcon,
@@ -142,6 +159,8 @@ export {
   MdViewHeadline as ViewHeadlineIcon,
   MdWarning as WarningIcon,
   MdAssistant as AssistantIcon,
+  MdSettingsEthernet as SettingsEthernetIcon,
+  MdLink as LinkIcon,
 } from 'react-icons/md';
 export {
   VscError as ErrorIcon,
@@ -179,6 +198,7 @@ export {
 export { BiShapeTriangle as ShapeTriangleIcon } from 'react-icons/bi';
 export { CgOptions as OptionsIcon } from 'react-icons/cg';
 export {
+  FiPackage as PackageIcon,
   FiMinus as MinusIcon,
   FiMousePointer as MousePointerIcon,
   FiMove as MoveIcon,
@@ -187,5 +207,6 @@ export {
   FiTriangle as TriangleIcon,
   FiZoomIn as ZoomInIcon,
   FiZoomOut as ZoomOutIcon,
-  FiGitMerge as TruncatedGitMergeIcon, // to be reviewed/merged
+  FiGitMerge as TruncatedGitMergeIcon, // to be reviewed/combined
 } from 'react-icons/fi';
+export { RiShapeLine as ShapeLineIcon } from 'react-icons/ri';

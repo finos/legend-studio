@@ -36,26 +36,28 @@ export const getBaseConfig = ({
       },
     ],
   },
-  transformIgnorePatterns: [
-    // Since we're using ESM in our project code, we need `Jest `to transform them
-    // since files coming from `/node_modules/` are skipped by default
-    // So having more items un-ignored will make tests run slower
-    // See https://github.com/finos/legend-studio/issues/502
-    //
-    // NOTE: Providing regexp patterns that overlap with each other may result in files
-    // not being transformed that you expected to be transformed
-    // See https://jestjs.io/docs/configuration#transformignorepatterns-arraystring
-    `/node_modules/(?!(@finos/legend)${
-      TEMPORARY__esmPackagesToTransform.length
-        ? `|${TEMPORARY__esmPackagesToTransform.join('|')}`
-        : ''
-    })`,
-  ],
+  transformIgnorePatterns: TEMPORARY__esmPackagesToTransform.length
+    ? [
+        // NOTE: Providing regexp patterns that overlap with each other may result in files
+        // not being transformed that you expected to be transformed
+        // See https://jestjs.io/docs/configuration#transformignorepatterns-arraystring
+        `/node_modules/(?!${TEMPORARY__esmPackagesToTransform.join('|')})`,
+      ]
+    : [],
   // Setup to run immediately after the test framework has been installed in the environment
   // before each test file in the suite is executed
   // See https://jestjs.io/docs/en/configuration#setupfilesafterenv-array
   setupFilesAfterEnv: [],
   moduleNameMapper: {
+    // Since for Typescript, we have fully adopted ESM, the imports will contain extensions
+    // as such, in the test, since we're not running Jest with ESM support, we will need to
+    // strip these extensions.
+    // NOTE: we account for package imports like `hash.js`, `fuse.js`, etc.
+    // See https://github.com/kulshekhar/ts-jest/issues/1057
+    //
+    // TODO: problem with ESM - remove when we run Jest with ESM
+    // See https://github.com/finos/legend-studio/issues/502
+    '^\\.(.+)\\.js': '.$1',
     // Mock for non-javascript file as we don't need Jest to transform these
     // NOTE: we should not need this right now, but we leave this here just in case
     '\\.(svg|css|scss)$': '@finos/legend-dev-utils/mocks/fileMock',
