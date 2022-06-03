@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import type { Persistence } from '../../../../../metamodels/pure/model/packageableElements/persistence/DSLPersistence_Persistence';
-import { getPersistence } from '../../../../../../graphManager/DSLPersistence_GraphManagerHelper';
+import type { Persistence } from '../../../../../metamodels/pure/model/packageableElements/persistence/DSLPersistence_Persistence.js';
+import { getPersistence } from '../../../../../../graphManager/DSLPersistence_GraphManagerHelper.js';
 import type {
   PackageableElementImplicitReference,
   V1_GraphBuilderContext,
