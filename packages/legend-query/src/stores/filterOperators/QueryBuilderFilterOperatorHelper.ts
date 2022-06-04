@@ -79,7 +79,10 @@ const buildFilterConditionExpressionWithExists = (
   const expressions: (AbstractPropertyExpression | SimpleFunctionExpression)[] =
     [];
   let currentPropertyExpression: ValueSpecification =
-    filterConditionState.propertyExpressionState.propertyExpression;
+    buildPropertyExpressionChain(
+      filterConditionState.propertyExpressionState.propertyExpression,
+      filterConditionState.propertyExpressionState.queryBuilderState,
+    );
   while (
     currentPropertyExpression instanceof AbstractPropertyExpression ||
     (currentPropertyExpression instanceof SimpleFunctionExpression &&
