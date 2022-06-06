@@ -789,6 +789,7 @@ export const GrammarTextEditor = observer(() => {
         ...baseTextEditorSettings,
         language: EDITOR_LANGUAGE.PURE,
         theme: EDITOR_THEME.LEGEND,
+        renderValidationDecorations: 'on',
       });
       _editor.onDidChangeModelContent(() => {
         grammarTextEditorState.setGraphGrammarText(getEditorValue(_editor));

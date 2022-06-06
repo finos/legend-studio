@@ -59,7 +59,16 @@ import {
   type GraphBuilderReport,
   GraphManagerTelemetry,
   GRAPH_MANAGER_EVENT,
+  DependencyGraphBuilderError,
+  GraphDataDeserializationError,
+  GraphBuilderError,
 } from '@finos/legend-graph';
+import { GRAPH_EDITOR_MODE } from './EditorConfig.js';
+
+interface ViewerGraphBuilderMaterial {
+  entities: Entity[];
+  dependencyEntitiesMap: Map<string, Entity[]>;
+}
 
 export class ViewerStore {
   editorStore: EditorStore;
@@ -155,7 +164,7 @@ export class ViewerStore {
     projectId: string,
     versionId: string | undefined,
     revisionId: string | undefined,
-  ): GeneratorFn<void> {
+  ): GeneratorFn<ViewerGraphBuilderMaterial> {
     const stopWatch = new StopWatch();
 
     // fetch project informations
@@ -244,20 +253,16 @@ export class ViewerStore {
     }
     // if no revision ID or version ID is specified, we will just get the project HEAD
     else if (!revisionId && !versionId) {
-      try {
-        graphBuildingMaterial = (yield Promise.all([
-          this.editorStore.sdlcServerClient.getEntities(
-            this.editorStore.sdlcState.activeProject.projectId,
-            undefined,
-          ),
-          this.editorStore.sdlcServerClient.getConfiguration(
-            this.editorStore.sdlcState.activeProject.projectId,
-            undefined,
-          ),
-        ])) as [Entity[], PlainObject<ProjectConfiguration>];
-      } catch {
-        return;
-      }
+      graphBuildingMaterial = (yield Promise.all([
+        this.editorStore.sdlcServerClient.getEntities(
+          this.editorStore.sdlcState.activeProject.projectId,
+          undefined,
+        ),
+        this.editorStore.sdlcServerClient.getConfiguration(
+          this.editorStore.sdlcState.activeProject.projectId,
+          undefined,
+        ),
+      ])) as [Entity[], PlainObject<ProjectConfiguration>];
     } else {
       throw new IllegalStateError(
         `Can't initialize viewer when both 'verisonId' and 'revisionId' are provided`,
@@ -282,20 +287,8 @@ export class ViewerStore {
     this.editorStore.changeDetectionState.workspaceLocalLatestRevisionState.setEntities(
       entities,
     );
-    this.editorStore.changeDetectionState.stop();
 
-    // initialize system
-    yield flowResult(this.initializeGraphManagerState());
-
-    // reset
-    this.editorStore.graphManagerState.resetGraph();
-
-    // fetch and build dependencies
-    stopWatch.record();
-    const dependencyManager =
-      this.editorStore.graphManagerState.createEmptyDependencyManager();
-    this.editorStore.graphManagerState.graph.dependencyManager =
-      dependencyManager;
+    // fetch dependencies
     this.editorStore.graphManagerState.dependenciesBuildState.setMessage(
       `Fetching dependencies...`,
     );
@@ -304,67 +297,10 @@ export class ViewerStore {
     )) as Map<string, Entity[]>;
     stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED);
 
-    const dependency_buildReport =
-      (yield this.editorStore.graphManagerState.graphManager.buildDependencies(
-        this.editorStore.graphManagerState.coreModel,
-        this.editorStore.graphManagerState.systemModel,
-        dependencyManager,
-        dependencyEntitiesMap,
-        this.editorStore.graphManagerState.dependenciesBuildState,
-      )) as GraphBuilderReport;
-    dependency_buildReport.timings[
-      GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED
-    ] = stopWatch.getRecord(GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED);
-
-    // build graph
-    const graph_buildReport =
-      (yield this.editorStore.graphManagerState.graphManager.buildGraph(
-        this.editorStore.graphManagerState.graph,
-        entities,
-        this.editorStore.graphManagerState.graphBuildState,
-      )) as GraphBuilderReport;
-    graph_buildReport.timings[GRAPH_MANAGER_EVENT.GRAPH_ENTITIES_FETCHED] =
-      stopWatch.getRecord(GRAPH_MANAGER_EVENT.GRAPH_ENTITIES_FETCHED);
-
-    // report
-    stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_INITIALIZED);
-    const graphBuilderReportData = {
-      timings: {
-        [GRAPH_MANAGER_EVENT.GRAPH_INITIALIZED]: stopWatch.getRecord(
-          GRAPH_MANAGER_EVENT.GRAPH_INITIALIZED,
-        ),
-      },
-      dependencies: dependency_buildReport,
-      graph: graph_buildReport,
+    return {
+      entities,
+      dependencyEntitiesMap,
     };
-    this.editorStore.applicationStore.log.info(
-      LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_INITIALIZED),
-      graphBuilderReportData,
-    );
-    GraphManagerTelemetry.logEvent_GraphInitialized(
-      this.editorStore.applicationStore.telemetryService,
-      graphBuilderReportData,
-    );
-
-    // fetch available file generation descriptions
-    this.editorStore.initState.setMessage(`Generating elements...`);
-    yield flowResult(
-      this.editorStore.graphState.graphGenerationState.fetchAvailableFileGenerationDescriptions(),
-    );
-    yield flowResult(
-      this.editorStore.graphState.graphGenerationState.externalFormatState.fetchExternalFormatsDescriptions(),
-    );
-
-    // generate
-    if (
-      this.editorStore.graphManagerState.graph.ownGenerationSpecifications
-        .length
-    ) {
-      yield flowResult(
-        this.editorStore.graphState.graphGenerationState.globalGenerate(),
-      );
-    }
-    this.editorStore.initState.setMessage(undefined);
   }
 
   /**
@@ -377,7 +313,7 @@ export class ViewerStore {
     groupId: string,
     artifactId: string,
     versionId: string,
-  ): GeneratorFn<void> {
+  ): GeneratorFn<ViewerGraphBuilderMaterial> {
     const stopWatch = new StopWatch();
 
     // fetch project data
@@ -411,18 +347,7 @@ export class ViewerStore {
     this.editorStore.initState.setMessage(undefined);
     stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_ENTITIES_FETCHED);
 
-    // initialize system
-    yield flowResult(this.initializeGraphManagerState());
-
-    // reset
-    this.editorStore.graphManagerState.resetGraph();
-
-    // fetch and build dependencies
-    stopWatch.record();
-    const dependencyManager =
-      this.editorStore.graphManagerState.createEmptyDependencyManager();
-    this.editorStore.graphManagerState.graph.dependencyManager =
-      dependencyManager;
+    // fetch dependencies
     this.editorStore.graphManagerState.dependenciesBuildState.setMessage(
       `Fetching dependencies...`,
     );
@@ -450,47 +375,131 @@ export class ViewerStore {
       });
     stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED);
 
-    const dependency_buildReport =
-      (yield this.editorStore.graphManagerState.graphManager.buildDependencies(
-        this.editorStore.graphManagerState.coreModel,
-        this.editorStore.graphManagerState.systemModel,
-        dependencyManager,
-        dependencyEntitiesMap,
-        this.editorStore.graphManagerState.dependenciesBuildState,
-      )) as GraphBuilderReport;
-    dependency_buildReport.timings[
-      GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED
-    ] = stopWatch.getRecord(GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED);
-
-    // build graph
-    const graph_buildReport =
-      (yield this.editorStore.graphManagerState.graphManager.buildGraph(
-        this.editorStore.graphManagerState.graph,
-        entities,
-        this.editorStore.graphManagerState.graphBuildState,
-      )) as GraphBuilderReport;
-    graph_buildReport.timings[GRAPH_MANAGER_EVENT.GRAPH_ENTITIES_FETCHED] =
-      stopWatch.getRecord(GRAPH_MANAGER_EVENT.GRAPH_ENTITIES_FETCHED);
-
-    // report
-    stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_INITIALIZED);
-    const graphBuilderReportData = {
-      timings: {
-        [GRAPH_MANAGER_EVENT.GRAPH_INITIALIZED]: stopWatch.getRecord(
-          GRAPH_MANAGER_EVENT.GRAPH_INITIALIZED,
-        ),
-      },
-      dependencies: dependency_buildReport,
-      graph: graph_buildReport,
+    return {
+      entities,
+      dependencyEntitiesMap,
     };
-    this.editorStore.applicationStore.log.info(
-      LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_INITIALIZED),
-      graphBuilderReportData,
-    );
-    GraphManagerTelemetry.logEvent_GraphInitialized(
-      this.editorStore.applicationStore.telemetryService,
-      graphBuilderReportData,
-    );
+  }
+
+  *buildGraph(
+    entities: Entity[],
+    dependencyEntitiesMap: Map<string, Entity[]>,
+  ): GeneratorFn<boolean> {
+    try {
+      const stopWatch = new StopWatch();
+
+      // initialize system
+      yield flowResult(this.initializeGraphManagerState());
+
+      // reset
+      this.editorStore.graphManagerState.resetGraph();
+
+      // build dependencies
+      stopWatch.record();
+      const dependencyManager =
+        this.editorStore.graphManagerState.createEmptyDependencyManager();
+      this.editorStore.graphManagerState.graph.dependencyManager =
+        dependencyManager;
+
+      const dependency_buildReport =
+        (yield this.editorStore.graphManagerState.graphManager.buildDependencies(
+          this.editorStore.graphManagerState.coreModel,
+          this.editorStore.graphManagerState.systemModel,
+          dependencyManager,
+          dependencyEntitiesMap,
+          this.editorStore.graphManagerState.dependenciesBuildState,
+        )) as GraphBuilderReport;
+
+      // build graph
+      const graph_buildReport =
+        (yield this.editorStore.graphManagerState.graphManager.buildGraph(
+          this.editorStore.graphManagerState.graph,
+          entities,
+          this.editorStore.graphManagerState.graphBuildState,
+        )) as GraphBuilderReport;
+
+      // report
+      stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_INITIALIZED);
+      const graphBuilderReportData = {
+        timings: {
+          [GRAPH_MANAGER_EVENT.GRAPH_INITIALIZED]: stopWatch.getRecord(
+            GRAPH_MANAGER_EVENT.GRAPH_INITIALIZED,
+          ),
+        },
+        dependencies: dependency_buildReport,
+        graph: graph_buildReport,
+      };
+      this.editorStore.applicationStore.log.info(
+        LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_INITIALIZED),
+        graphBuilderReportData,
+      );
+      GraphManagerTelemetry.logEvent_GraphInitialized(
+        this.editorStore.applicationStore.telemetryService,
+        graphBuilderReportData,
+      );
+
+      // fetch available file generation descriptions
+      yield flowResult(
+        this.editorStore.graphState.graphGenerationState.fetchAvailableFileGenerationDescriptions(),
+      );
+      yield flowResult(
+        this.editorStore.graphState.graphGenerationState.externalFormatState.fetchExternalFormatsDescriptions(),
+      );
+
+      return true;
+    } catch (error) {
+      assertErrorThrown(error);
+
+      // if graph builder fails, we fall back to text-mode
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_FAILURE),
+        error,
+      );
+      if (error instanceof DependencyGraphBuilderError) {
+        // no recovery if dependency models cannot be built, this makes assumption that all dependencies models are compiled successfully
+        // TODO: we might want to handle this more gracefully when we can show people the dependency model element in the future
+        this.editorStore.applicationStore.notifyError(
+          `Can't initialize dependency models. Error: ${error.message}`,
+        );
+      } else if (error instanceof GraphDataDeserializationError) {
+        // if something goes wrong with de-serialization, we can't really do anything but to alert
+        this.editorStore.applicationStore.notifyError(
+          `Can't deserialize graph. Error: ${error.message}`,
+        );
+      } else if (error instanceof GraphBuilderError) {
+        // TODO: we should split this into 2 notifications when we support multiple notifications
+        this.editorStore.applicationStore.notifyError(
+          `Can't build graph. Redirected to text mode for debugging. Error: ${error.message}`,
+        );
+        try {
+          const editorGrammar =
+            (yield this.editorStore.graphManagerState.graphManager.entitiesToPureCode(
+              entities,
+            )) as string;
+          yield flowResult(
+            this.editorStore.grammarTextEditorState.setGraphGrammarText(
+              editorGrammar,
+            ),
+          );
+        } catch (error2) {
+          assertErrorThrown(error2);
+          this.editorStore.applicationStore.log.error(
+            LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_FAILURE),
+            error2,
+          );
+        }
+        this.editorStore.setGraphEditMode(GRAPH_EDITOR_MODE.GRAMMAR_TEXT);
+        yield flowResult(
+          this.editorStore.graphState.globalCompileInTextMode({
+            ignoreBlocking: true,
+            suppressCompilationFailureMessage: true,
+          }),
+        );
+      } else {
+        this.editorStore.applicationStore.notifyError(error);
+      }
+      return false;
+    }
   }
 
   *initialize(params: ViewerPathParams): GeneratorFn<void> {
@@ -505,24 +514,53 @@ export class ViewerStore {
     };
 
     try {
+      let graphBuilderMaterial: ViewerGraphBuilderMaterial;
       if (projectId) {
-        yield flowResult(
+        graphBuilderMaterial = (yield flowResult(
           this.initializeWithProjectInformation(
             projectId,
             params.versionId,
             params.revisionId,
           ),
-        );
+        )) as ViewerGraphBuilderMaterial;
       } else if (gav) {
         this.projectGAVCoordinates = parseGAVCoordinates(gav);
         const { groupId, artifactId, versionId } = this.projectGAVCoordinates;
-        yield flowResult(
+        graphBuilderMaterial = (yield flowResult(
           this.initializeWithGAV(groupId, artifactId, versionId),
-        );
+        )) as ViewerGraphBuilderMaterial;
       } else {
         throw new IllegalStateError(
           `Can't initialize viewer when neither 'projectId' nor 'gav' is provided`,
         );
+      }
+
+      const graphBuilderResult = (yield flowResult(
+        this.buildGraph(
+          graphBuilderMaterial.entities,
+          graphBuilderMaterial.dependencyEntitiesMap,
+        ),
+      )) as boolean;
+
+      if (!graphBuilderResult) {
+        onLeave(false);
+        return;
+      }
+
+      // generate
+      // NOTE: if we fetch the entities from a published project
+      // there is no need to generate since the generated elements are already included
+      if (!gav) {
+        this.editorStore.initState.setMessage(`Generating elements...`);
+        if (
+          this.editorStore.graphManagerState.graph.ownGenerationSpecifications
+            .length
+        ) {
+          yield flowResult(
+            this.editorStore.graphState.graphGenerationState.globalGenerate(),
+          );
+        }
+        this.editorStore.initState.setMessage(undefined);
       }
 
       // build explorer tree
