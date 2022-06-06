@@ -461,11 +461,19 @@ export class ViewerStore {
         this.editorStore.applicationStore.notifyError(
           `Can't initialize dependency models. Error: ${error.message}`,
         );
+        this.editorStore.applicationStore.setBlockingAlert({
+          message: `Can't initialize dependencies`,
+          prompt: 'Please use editor to better invesigate the issue',
+        });
       } else if (error instanceof GraphDataDeserializationError) {
         // if something goes wrong with de-serialization, we can't really do anything but to alert
         this.editorStore.applicationStore.notifyError(
           `Can't deserialize graph. Error: ${error.message}`,
         );
+        this.editorStore.applicationStore.setBlockingAlert({
+          message: `Can't deserialize graph`,
+          prompt: 'Please use editor to better invesigate the issue',
+        });
       } else if (error instanceof GraphBuilderError) {
         // TODO: we should split this into 2 notifications when we support multiple notifications
         this.editorStore.applicationStore.notifyError(
@@ -481,12 +489,13 @@ export class ViewerStore {
               editorGrammar,
             ),
           );
-        } catch (error2) {
-          assertErrorThrown(error2);
-          this.editorStore.applicationStore.log.error(
-            LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_FAILURE),
-            error2,
-          );
+        } catch {
+          // nothing we can do here so we will just block the user
+          this.editorStore.applicationStore.setBlockingAlert({
+            message: `Can't compose Pure code from graph models`,
+            prompt: 'Please use editor to better invesigate the issue',
+          });
+          return false;
         }
         this.editorStore.setGraphEditMode(GRAPH_EDITOR_MODE.GRAMMAR_TEXT);
         yield flowResult(
