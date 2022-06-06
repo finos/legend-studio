@@ -797,6 +797,7 @@ export class EditorGraphState {
         const dependencyManager =
           this.editorStore.graphManagerState.createEmptyDependencyManager();
         newGraph.dependencyManager = dependencyManager;
+        const dependenciesBuildState = ActionState.create();
         yield this.editorStore.graphManagerState.graphManager.buildDependencies(
           this.editorStore.graphManagerState.coreModel,
           this.editorStore.graphManagerState.systemModel,
@@ -804,9 +805,10 @@ export class EditorGraphState {
           (yield flowResult(
             this.getConfigurationProjectDependencyEntities(),
           )) as Map<string, Entity[]>,
-          // NOTE: since we want to rebuild the graph quietly in the background, we won't care about the build states
-          ActionState.create(),
+          dependenciesBuildState,
         );
+        this.editorStore.graphManagerState.dependenciesBuildState =
+          dependenciesBuildState;
       }
 
       /**
@@ -830,11 +832,11 @@ export class EditorGraphState {
       this.editorStore.changeDetectionState.stop(); // stop change detection before disposing hash
       yield flowResult(graph_dispose(this.editorStore.graphManagerState.graph));
 
+      const graphBuildState = ActionState.create();
       yield this.editorStore.graphManagerState.graphManager.buildGraph(
         newGraph,
         entities,
-        // NOTE: since we want to rebuild the graph quietly in the background, we won't care about the build states
-        ActionState.create(),
+        graphBuildState,
         {
           TEMPORARY__preserveSectionIndex:
             this.editorStore.applicationStore.config.options
@@ -849,14 +851,17 @@ export class EditorGraphState {
       );
 
       // NOTE: build model generation entities every-time we rebuild the graph - should we do this?
+      const generationsBuildState = ActionState.create();
       yield this.editorStore.graphManagerState.graphManager.buildGenerations(
         newGraph,
         this.graphGenerationState.generatedEntities,
-        // NOTE: since we want to rebuild the graph quietly in the background, we won't care about the build states
-        ActionState.create(),
+        generationsBuildState,
       );
 
       this.editorStore.graphManagerState.graph = newGraph;
+      this.editorStore.graphManagerState.graphBuildState = graphBuildState;
+      this.editorStore.graphManagerState.generationsBuildState =
+        generationsBuildState;
 
       /**
        * Reprocess explorer tree which might still hold references to old graph
