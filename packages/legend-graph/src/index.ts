@@ -219,7 +219,6 @@ export { ServiceRegistrationResult } from './graphManager/action/service/Service
 export { DEPRECATED__ServiceTestResult } from './graphManager/action/service/DEPRECATED__ServiceTestResult.js';
 export { SourceInformation } from './graphManager/action/SourceInformation.js';
 
-export { getGraphManager } from './models/protocols/pure/Pure.js';
 export * from './models/protocols/pure/PureProtocolProcessorPlugin.js';
 
 // --------------------------------------------- TRANSFORMATION --------------------------------------------------
