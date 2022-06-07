@@ -22,7 +22,6 @@ import {
   isNonNullable,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
-import type { PureModel } from '@finos/legend-graph';
 import {
   type ValueSpecification,
   Class,
@@ -69,12 +68,9 @@ import {
 import { fromGroupOperation } from './QueryBuilderOperatorsHelper.js';
 import { getDerivedPropertyMilestoningSteoreotype } from './QueryBuilderPropertyEditorState.js';
 import {
-  buildParametersLetLambdaFunc,
-  LambdaParameterState,
-} from '@finos/legend-application';
-import {
   functionExpression_setParametersValues,
   propertyExpression_setParametersValue,
+  buildParametersLetLambdaFunc,
 } from '@finos/legend-application';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../QueryBuilder_Const.js';
 
@@ -723,7 +719,7 @@ export const buildLambdaFunction = (
   // build parameters
   if (
     !queryBuilderState.mode.isParametersDisabled &&
-    queryBuilderState.queryParametersState.parameters.length
+    queryBuilderState.queryParametersState.parameterStates.length
   ) {
     // if we are executing:
     // set the parameters to empty
@@ -732,7 +728,7 @@ export const buildLambdaFunction = (
       lambdaFunction.functionType.parameters = [];
       const letsFuncs = buildParametersLetLambdaFunc(
         queryBuilderState.graphManagerState.graph,
-        queryBuilderState.queryParametersState.parameters,
+        queryBuilderState.queryParametersState.parameterStates,
       );
       lambdaFunction.expressionSequence = [
         ...letsFuncs.expressionSequence,
@@ -740,7 +736,7 @@ export const buildLambdaFunction = (
       ];
     } else {
       lambdaFunction.functionType.parameters =
-        queryBuilderState.queryParametersState.parameters.map(
+        queryBuilderState.queryParametersState.parameterStates.map(
           (e) => e.parameter,
         );
     }

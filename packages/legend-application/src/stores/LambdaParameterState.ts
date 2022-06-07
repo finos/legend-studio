@@ -1,3 +1,19 @@
+/**
+ * Copyright (c) 2020-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 import {
   type InstanceValue,
   type Multiplicity,
@@ -27,6 +43,8 @@ import {
   extractElementNameFromPath,
 } from '@finos/legend-graph';
 import {
+  addUniqueEntry,
+  deleteEntry,
   IllegalStateError,
   isNonNullable,
   Randomizer,
@@ -40,6 +58,11 @@ import {
 } from './ValueSpecificationModifierHelper.js';
 import { format, addDays } from 'date-fns';
 import { DATE_FORMAT, DATE_TIME_FORMAT } from '../const.js';
+
+export enum PARAMETER_SUBMIT_ACTION {
+  EXECUTE = 'EXECUTE',
+  EXPORT = 'EXPORT',
+}
 
 export const createMockEnumerationProperty = (
   enumeration: Enumeration,
@@ -227,5 +250,65 @@ export class LambdaParameterState {
 
   get variableType(): Type | undefined {
     return this.parameter.genericType?.value.rawType;
+  }
+}
+
+export class ParameterInstanceValuesEditorState {
+  showModal = false;
+  submitAction:
+    | {
+        handler: () => Promise<void>;
+        label: string;
+      }
+    | undefined;
+
+  constructor() {
+    makeObservable(this, {
+      showModal: observable,
+      submitAction: observable,
+      setShowModal: action,
+      open: action,
+      setSubmitAction: action,
+    });
+  }
+
+  setShowModal(val: boolean): void {
+    this.showModal = val;
+  }
+
+  setSubmitAction(
+    val:
+      | {
+          handler: () => Promise<void>;
+          label: string;
+        }
+      | undefined,
+  ): void {
+    this.submitAction = val;
+  }
+
+  open(handler: () => Promise<void>, label: string): void {
+    this.setSubmitAction({ handler, label });
+    this.setShowModal(true);
+  }
+
+  close(): void {
+    this.setSubmitAction(undefined);
+    this.setShowModal(false);
+  }
+}
+export class LambdaParametersState {
+  parameterStates: LambdaParameterState[] = [];
+  parameterValuesEditorState = new ParameterInstanceValuesEditorState();
+
+  addParameter(val: LambdaParameterState): void {
+    addUniqueEntry(this.parameterStates, val);
+  }
+
+  removeParameter(val: LambdaParameterState): void {
+    deleteEntry(this.parameterStates, val);
+  }
+  setParameters(val: LambdaParameterState[]): void {
+    this.parameterStates = val;
   }
 }

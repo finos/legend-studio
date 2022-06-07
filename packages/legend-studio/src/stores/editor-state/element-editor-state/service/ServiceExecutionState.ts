@@ -36,7 +36,9 @@ import {
 import {
   buildParametersLetLambdaFunc,
   LambdaEditorState,
+  LambdaParametersState,
   LambdaParameterState,
+  PARAMETER_SUBMIT_ACTION,
   TAB_SIZE,
 } from '@finos/legend-application';
 import { ExecutionPlanState } from '../../../ExecutionPlanState.js';
@@ -82,49 +84,50 @@ export enum SERVICE_EXECUTION_TAB {
   TESTS = 'TESTS',
 }
 
-export class ServiceExecutionParameterState {
-  editorStore: EditorStore;
-  parametersState: LambdaParameterState[] = [];
-  showModal = false;
+export class ServiceExecutionParameterState extends LambdaParametersState {
+  executionState: ServicePureExecutionState;
 
-  constructor(editorStore: EditorStore) {
+  constructor(executionState: ServicePureExecutionState) {
+    super();
     makeObservable(this, {
-      parametersState: observable,
-      showModal: observable,
-      closeModal: action,
+      parameterValuesEditorState: observable,
+      parameterStates: observable,
+      addParameter: action,
+      removeParameter: action,
+      openModal: action,
       build: action,
+      setParameters: action,
     });
-    this.editorStore = editorStore;
-  }
-  setShowModal(val: boolean): void {
-    this.showModal = val;
+    this.executionState = executionState;
   }
 
   openModal(query: RawLambda): void {
-    this.parametersState = this.build(query);
-    this.setShowModal(true);
-  }
-  closeModal(): void {
-    this.setShowModal(false);
-    this.parametersState = [];
+    this.parameterStates = this.build(query);
+    this.parameterValuesEditorState.open(
+      (): Promise<void> =>
+        flowResult(this.executionState.execute()).catch(
+          this.executionState.editorStore.applicationStore.alertUnhandledError,
+        ),
+      PARAMETER_SUBMIT_ACTION.EXECUTE,
+    );
   }
 
   build(query: RawLambda): LambdaParameterState[] {
     const parameters = buildLambdaVariableExpressions(
       query,
-      this.editorStore.graphManagerState,
+      this.executionState.editorStore.graphManagerState,
     )
       .map((p) =>
         observe_ValueSpecification(
           p,
-          this.editorStore.changeDetectionState.observerContext,
+          this.executionState.editorStore.changeDetectionState.observerContext,
         ),
       )
       .filter(filterByType(VariableExpression));
     const states = parameters.map((p) => {
       const parmeterState = new LambdaParameterState(
         p,
-        this.editorStore.changeDetectionState.observerContext,
+        this.executionState.editorStore.changeDetectionState.observerContext,
       );
       parmeterState.mockParameterValue();
       return parmeterState;
@@ -142,7 +145,6 @@ export abstract class ServiceExecutionState {
     | ServiceTestSuiteState
     | undefined;
   selectedTab = SERVICE_EXECUTION_TAB.EXECUTION_CONTEXT;
-  parameterState: ServiceExecutionParameterState;
 
   constructor(
     editorStore: EditorStore,
@@ -153,14 +155,12 @@ export abstract class ServiceExecutionState {
       execution: observable,
       selectedSingeExecutionTestState: observable,
       selectedTab: observable,
-      parameterState: observable,
       setSelectedTab: action,
     });
 
     this.editorStore = editorStore;
     this.execution = execution;
     this.serviceEditorState = serviceEditorState;
-    this.parameterState = new ServiceExecutionParameterState(editorStore);
     this.selectedSingeExecutionTestState =
       this.getInitiallySelectedTestState(execution);
     // TODO: format to other format when we support other connections in the future
@@ -424,6 +424,7 @@ export class ServicePureExecutionState extends ServiceExecutionState {
   isOpeningQueryEditor = false;
   executionResultText?: string | undefined; // NOTE: stored as lossless JSON string
   executionPlanState: ExecutionPlanState;
+  parameterState: ServiceExecutionParameterState;
 
   constructor(
     editorStore: EditorStore,
@@ -441,6 +442,7 @@ export class ServicePureExecutionState extends ServiceExecutionState {
       isOpeningQueryEditor: observable,
       executionResultText: observable,
       executionPlanState: observable,
+      parameterState: observable,
       setExecutionResultText: action,
       closeRuntimeEditor: action,
       openRuntimeEditor: action,
@@ -462,6 +464,7 @@ export class ServicePureExecutionState extends ServiceExecutionState {
       execution,
     );
     this.executionPlanState = new ExecutionPlanState(this.editorStore);
+    this.parameterState = new ServiceExecutionParameterState(this);
   }
 
   setOpeningQueryEditor(val: boolean): void {
@@ -546,7 +549,7 @@ export class ServicePureExecutionState extends ServiceExecutionState {
     }
     try {
       this.isExecuting = true;
-      const query = this.buildQuery();
+      const query = this.getExecutionQuery();
       const result =
         (yield this.editorStore.graphManagerState.graphManager.executeMapping(
           this.editorStore.graphManagerState.graph,
@@ -561,7 +564,7 @@ export class ServicePureExecutionState extends ServiceExecutionState {
       this.setExecutionResultText(
         losslessStringify(result, undefined, TAB_SIZE),
       );
-      this.parameterState.closeModal();
+      this.parameterState.setParameters([]);
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
@@ -574,20 +577,17 @@ export class ServicePureExecutionState extends ServiceExecutionState {
     }
   }
 
-  buildQuery(): RawLambda {
-    if (
-      this.parameterState.showModal &&
-      this.parameterState.parametersState.length
-    ) {
+  getExecutionQuery(): RawLambda {
+    if (this.parameterState.parameterStates.length) {
       const letlambdaFunction = buildParametersLetLambdaFunc(
         this.editorStore.graphManagerState.graph,
-        this.parameterState.parametersState,
+        this.parameterState.parameterStates,
       );
       const letRawLambda = buildRawLambdaFromLambdaFunction(
         letlambdaFunction,
         this.editorStore.graphManagerState,
       );
-      // reset paramaters
+      // reset parameters
       if (
         Array.isArray(this.queryState.query.body) &&
         Array.isArray(letRawLambda.body)

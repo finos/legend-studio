@@ -324,3 +324,43 @@
     margin-left: 0.5rem;
   }
 }
+
+.lambda__parameters__editor {
+  padding: 2rem;
+  width: 100%;
+
+  &__modal {
+    height: 65vh;
+    width: 65vh;
+  }
+
+  &__modal__body {
+    overflow: auto;
+    padding: 2rem !important;
+    height: 60vh;
+  }
+
+  &__value {
+    &__label {
+      @include flexVCenter;
+
+      color: var(--color-light-grey-50);
+      margin-bottom: 0.5rem;
+      line-height: 2rem;
+      cursor: default;
+    }
+
+    &__name {
+      @include flexVCenter;
+
+      background: var(--color-dark-grey-250);
+      color: var(--color-light-grey-200);
+      margin-left: 0.5rem;
+      border-radius: 0.2rem;
+      font-size: 1rem;
+      padding: 0 0.5rem;
+      height: 1.6rem;
+      font-weight: 500;
+    }
+  }
+}

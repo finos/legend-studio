@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
-import type { LambdaParameterState } from '@finos/legend-application';
-import { addUniqueEntry, deleteEntry } from '@finos/legend-shared';
+import {
+  LambdaParametersState,
+  type LambdaParameterState,
+} from '@finos/legend-application';
 import { observable, makeObservable, action } from 'mobx';
 import type { QueryBuilderState } from './QueryBuilderState.js';
 
@@ -26,70 +28,21 @@ export enum QUERY_BUILDER_PARAMETER_TREE_DND_TYPE {
 export interface QueryBuilderParameterDragSource {
   variable: LambdaParameterState;
 }
-export enum PARAMETER_SUBMIT_ACTION {
-  EXECUTE = 'EXECUTE',
-  EXPORT = 'EXPORT',
-}
 
-export class ParameterInstanceValuesEditorState {
-  showModal = false;
-  submitAction:
-    | {
-        handler: () => Promise<void>;
-        label: PARAMETER_SUBMIT_ACTION;
-      }
-    | undefined;
-
-  constructor() {
-    makeObservable(this, {
-      showModal: observable,
-      submitAction: observable,
-      setShowModal: action,
-      open: action,
-      setSubmitAction: action,
-    });
-  }
-
-  setShowModal(val: boolean): void {
-    this.showModal = val;
-  }
-
-  setSubmitAction(
-    val:
-      | {
-          handler: () => Promise<void>;
-          label: PARAMETER_SUBMIT_ACTION;
-        }
-      | undefined,
-  ): void {
-    this.submitAction = val;
-  }
-
-  open(handler: () => Promise<void>, label: PARAMETER_SUBMIT_ACTION): void {
-    this.setSubmitAction({ handler, label });
-    this.setShowModal(true);
-  }
-
-  close(): void {
-    this.setSubmitAction(undefined);
-    this.setShowModal(false);
-  }
-}
-
-export class QueryParametersState {
+export class QueryParametersState extends LambdaParametersState {
   selectedParameter: LambdaParameterState | undefined;
   queryBuilderState: QueryBuilderState;
-  parameters: LambdaParameterState[] = [];
-  parameterValuesEditorState = new ParameterInstanceValuesEditorState();
 
   constructor(queryBuilderState: QueryBuilderState) {
+    super();
     makeObservable(this, {
       parameterValuesEditorState: observable,
-      parameters: observable,
-      selectedParameter: observable,
-      setSelectedParameter: action,
+      parameterStates: observable,
       addParameter: action,
       removeParameter: action,
+      setParameters: action,
+      selectedParameter: observable,
+      setSelectedParameter: action,
     });
 
     this.queryBuilderState = queryBuilderState;
@@ -97,13 +50,5 @@ export class QueryParametersState {
 
   setSelectedParameter(val: LambdaParameterState | undefined): void {
     this.selectedParameter = val;
-  }
-
-  addParameter(val: LambdaParameterState): void {
-    addUniqueEntry(this.parameters, val);
-  }
-
-  removeParameter(val: LambdaParameterState): void {
-    deleteEntry(this.parameters, val);
   }
 }

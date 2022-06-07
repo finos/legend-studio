@@ -17,7 +17,6 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import type {
-  ServiceExecutionParameterState,
   ServicePureExecutionQueryState,
   ServicePureExecutionState,
 } from '../../../../stores/editor-state/element-editor-state/service/ServiceExecutionState.js';
@@ -40,13 +39,12 @@ import { flowResult } from 'mobx';
 import { ExecutionPlanViewer } from '../mapping-editor/execution-plan-viewer/ExecutionPlanViewer.js';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
-  BasicValueSpecificationEditor,
   EDITOR_LANGUAGE,
+  LambdaParameterValuesEditor,
   useApplicationStore,
 } from '@finos/legend-application';
 import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor.js';
-import type { LightQuery, ValueSpecification } from '@finos/legend-graph';
-import { PRIMITIVE_TYPE } from '@finos/legend-graph';
+import type { LightQuery } from '@finos/legend-graph';
 import type { DSLService_LegendStudioPlugin_Extension } from '../../../../stores/DSLService_LegendStudioPlugin_Extension.js';
 
 const ServiceExecutionResultViewer = observer(
@@ -228,92 +226,6 @@ const ServiceExecutionQueryImporter = observer(
   },
 );
 
-const ParameterValuesEditor = observer(
-  (props: {
-    pureExecutionState: ServicePureExecutionState;
-    serviceExecutionParameterState: ServiceExecutionParameterState;
-  }) => {
-    const { serviceExecutionParameterState, pureExecutionState } = props;
-    const applicationStore = useApplicationStore();
-    const graph =
-      serviceExecutionParameterState.editorStore.graphManagerState.graph;
-    const close = (): void => serviceExecutionParameterState.closeModal();
-    const submit = applicationStore.guardUnhandledError(async () => {
-      pureExecutionState.execute();
-    });
-
-    return (
-      <Dialog
-        open={Boolean(serviceExecutionParameterState.showModal)}
-        onClose={close}
-        classes={{
-          root: 'editor-modal__root-container',
-          container: 'editor-modal__container',
-          paper: 'editor-modal__content',
-        }}
-      >
-        <div className="modal modal--dark editor-modal query-builder__parameters__values__editor__modal">
-          <div className="modal__header">
-            <div className="modal__title">Execute Parameter Values</div>
-          </div>
-          <div className="modal__body query-builder__parameters__modal__body">
-            {serviceExecutionParameterState.parametersState.map(
-              (paramState) => {
-                const stringType =
-                  serviceExecutionParameterState.editorStore.graphManagerState.graph.getPrimitiveType(
-                    PRIMITIVE_TYPE.STRING,
-                  );
-                const variableType = paramState.variableType ?? stringType;
-                return (
-                  <div
-                    key={paramState.uuid}
-                    className="panel__content__form__section"
-                  >
-                    <div className="query-builder__parameters__value__label">
-                      <div>{paramState.parameter.name}</div>
-                      <div className="query-builder__parameters__parameter__type__label">
-                        {variableType.name}
-                      </div>
-                    </div>
-                    {paramState.value && (
-                      <BasicValueSpecificationEditor
-                        valueSpecification={paramState.value}
-                        updateValue={(val: ValueSpecification): void => {
-                          paramState.setValue(val);
-                        }}
-                        graph={graph}
-                        typeCheckOption={{
-                          expectedType: variableType,
-                          match:
-                            variableType ===
-                            graph.getPrimitiveType(PRIMITIVE_TYPE.DATETIME),
-                        }}
-                        className="query-builder__parameters__value__editor"
-                        resetValue={(): void => paramState.mockParameterValue()}
-                      />
-                    )}
-                  </div>
-                );
-              },
-            )}
-          </div>
-          <div className="modal__footer">
-            <button
-              className="btn modal__footer__close-btn"
-              title="execute"
-              onClick={submit}
-            >
-              execute
-            </button>
-            <button className="btn modal__footer__close-btn" onClick={close}>
-              Close
-            </button>
-          </div>
-        </div>
-      </Dialog>
-    );
-  },
-);
 export const ServiceExecutionQueryEditor = observer(
   (props: {
     executionState: ServicePureExecutionState;
@@ -442,10 +354,11 @@ export const ServiceExecutionQueryEditor = observer(
           {queryState.openQueryImporter && (
             <ServiceExecutionQueryImporter queryState={queryState} />
           )}
-          {executionState.parameterState.showModal && (
-            <ParameterValuesEditor
-              pureExecutionState={executionState}
-              serviceExecutionParameterState={executionState.parameterState}
+          {executionState.parameterState.parameterValuesEditorState
+            .showModal && (
+            <LambdaParameterValuesEditor
+              graph={executionState.editorStore.graphManagerState.graph}
+              lambdaParametersState={executionState.parameterState}
             />
           )}
         </div>

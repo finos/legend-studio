@@ -32,7 +32,6 @@ import {
 import { useEffect, useState } from 'react';
 import {
   type Type,
-  type ValueSpecification,
   MULTIPLICITY_INFINITE,
   PRIMITIVE_TYPE,
   VariableExpression,
@@ -43,108 +42,14 @@ import {
 import {
   type PackageableElementOption,
   buildElementOption,
-  useApplicationStore,
-  BasicValueSpecificationEditor,
   variableExpression_setName,
   LambdaParameterState,
+  LambdaParameterValuesEditor,
 } from '@finos/legend-application';
 import { useDrag, useDragLayer } from 'react-dnd';
 import { getEmptyImage } from 'react-dnd-html5-backend';
-import {
-  generateEnumerableNameFromToken,
-  prettyCONSTName,
-} from '@finos/legend-shared';
+import { generateEnumerableNameFromToken } from '@finos/legend-shared';
 import { DEFAULT_VARIABLE_NAME } from '../QueryBuilder_Const.js';
-
-const ParameterValuesEditor = observer(
-  (props: { queryBuilderState: QueryBuilderState }) => {
-    const { queryBuilderState } = props;
-    const applicationStore = useApplicationStore();
-    const parameterState = queryBuilderState.queryParametersState;
-    const parameterValuesEditorState =
-      parameterState.parameterValuesEditorState;
-    const graph = queryBuilderState.graphManagerState.graph;
-    const close = (): void => parameterValuesEditorState.close();
-    const submitAction = parameterValuesEditorState.submitAction;
-    const submit = applicationStore.guardUnhandledError(async () => {
-      if (submitAction) {
-        close();
-        await submitAction.handler();
-      }
-    });
-
-    return (
-      <Dialog
-        open={Boolean(parameterValuesEditorState.showModal)}
-        onClose={close}
-        classes={{
-          root: 'editor-modal__root-container',
-          container: 'editor-modal__container',
-          paper: 'editor-modal__content',
-        }}
-      >
-        <div className="modal modal--dark editor-modal query-builder__parameters__values__editor__modal">
-          <div className="modal__header">
-            <div className="modal__title">Execute Parameter Values</div>
-          </div>
-          <div className="modal__body query-builder__parameters__modal__body">
-            {parameterState.parameters.map((paramState) => {
-              const stringType =
-                queryBuilderState.graphManagerState.graph.getPrimitiveType(
-                  PRIMITIVE_TYPE.STRING,
-                );
-              const variableType = paramState.variableType ?? stringType;
-              return (
-                <div
-                  key={paramState.uuid}
-                  className="panel__content__form__section"
-                >
-                  <div className="query-builder__parameters__value__label">
-                    <div>{paramState.parameter.name}</div>
-                    <div className="query-builder__parameters__parameter__type__label">
-                      {variableType.name}
-                    </div>
-                  </div>
-                  {paramState.value && (
-                    <BasicValueSpecificationEditor
-                      valueSpecification={paramState.value}
-                      updateValue={(val: ValueSpecification): void => {
-                        paramState.setValue(val);
-                      }}
-                      graph={graph}
-                      typeCheckOption={{
-                        expectedType: variableType,
-                        match:
-                          variableType ===
-                          graph.getPrimitiveType(PRIMITIVE_TYPE.DATETIME),
-                      }}
-                      className="query-builder__parameters__value__editor"
-                      resetValue={(): void => paramState.mockParameterValue()}
-                    />
-                  )}
-                </div>
-              );
-            })}
-          </div>
-          <div className="modal__footer">
-            {submitAction && (
-              <button
-                className="btn modal__footer__close-btn"
-                title={submitAction.label}
-                onClick={submit}
-              >
-                {prettyCONSTName(submitAction.label)}
-              </button>
-            )}
-            <button className="btn modal__footer__close-btn" onClick={close}>
-              Close
-            </button>
-          </div>
-        </div>
-      </Dialog>
-    );
-  },
-);
 
 const VariableExpressionEditor = observer(
   (props: {
@@ -155,7 +60,7 @@ const VariableExpressionEditor = observer(
     const { queryBuilderState, lambdaParameterState } = props;
     const queryParametersState = queryBuilderState.queryParametersState;
     const isCreating =
-      !queryParametersState.parameters.includes(lambdaParameterState);
+      !queryParametersState.parameterStates.includes(lambdaParameterState);
     const varState = lambdaParameterState.parameter;
     const multiplity = varState.multiplicity;
     // variable
@@ -426,7 +331,7 @@ export const QueryBuilderParameterPanel = observer(
     const parametersDisabled = Boolean(
       queryBuilderState.mode.isParametersDisabled,
     );
-    const varNames = queryBuilderState.queryParametersState.parameters.map(
+    const varNames = queryBuilderState.queryParametersState.parameterStates.map(
       (e) => e.variableName,
     );
     const addParameter = (): void => {
@@ -470,7 +375,7 @@ export const QueryBuilderParameterPanel = observer(
         </div>
         <div className="panel__content query-builder__parameters__content">
           {!parametersDisabled &&
-            queryParameterState.parameters.map((parameter) => (
+            queryParameterState.parameterStates.map((parameter) => (
               <VariableExpressionViewer
                 key={parameter.uuid}
                 queryBuilderState={queryBuilderState}
@@ -490,7 +395,12 @@ export const QueryBuilderParameterPanel = observer(
           />
         )}
         {queryParameterState.parameterValuesEditorState.showModal && (
-          <ParameterValuesEditor queryBuilderState={queryBuilderState} />
+          <LambdaParameterValuesEditor
+            graph={
+              queryParameterState.queryBuilderState.graphManagerState.graph
+            }
+            lambdaParametersState={queryParameterState}
+          />
         )}
       </div>
     );

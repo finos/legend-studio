@@ -48,6 +48,7 @@ export const buildPrimitiveInstanceValue = (
   instance.values = [value];
   return instance;
 };
+
 export const buildLambdaVariableExpressions = (
   rawLambda: RawLambda,
   graphManagerState: GraphManagerState,
@@ -58,6 +59,7 @@ export const buildLambdaVariableExpressions = (
       graphManagerState.graph,
     ),
   );
+
 export const buildRawLambdaFromLambdaFunction = (
   lambdaFunction: LambdaFunction,
   graphManagerState: GraphManagerState,
@@ -69,7 +71,6 @@ export const buildRawLambdaFromLambdaFunction = (
     undefined,
   );
   lambdaFunctionInstanceValue.values = [lambdaFunction];
-
   return guaranteeType(
     graphManagerState.graphManager.buildRawValueSpecification(
       lambdaFunctionInstanceValue,

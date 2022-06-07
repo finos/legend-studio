@@ -45,7 +45,6 @@ import {
   type Class,
   type Enumeration,
   type GraphManagerState,
-  type LambdaFunction,
   type Mapping,
   type PackageableRuntime,
   type ValueSpecification,
@@ -63,6 +62,7 @@ import {
   ObserverContext,
   isStubbed_RawLambda,
   buildLambdaVariableExpressions,
+  buildRawLambdaFromLambdaFunction,
 } from '@finos/legend-graph';
 import {
   QueryBuilderFilterOperator_Equal,
@@ -282,7 +282,7 @@ export class QueryBuilderState {
 
   getQuery(options?: { keepSourceInformation: boolean }): RawLambda {
     if (!this.isQuerySupported()) {
-      const parameters = this.queryParametersState.parameters.map((e) =>
+      const parameters = this.queryParametersState.parameterStates.map((e) =>
         this.graphManagerState.graphManager.serializeValueSpecification(
           e.parameter,
         ),
@@ -292,10 +292,11 @@ export class QueryBuilderState {
       );
       return guaranteeNonNullable(this.queryUnsupportedState.rawLambda);
     }
-    return this.buildRawLambdaFromLambdaFunction(
+    return buildRawLambdaFromLambdaFunction(
       buildLambdaFunction(this, {
         keepSourceInformation: Boolean(options?.keepSourceInformation),
       }),
+      this.graphManagerState,
     );
   }
 
@@ -386,23 +387,6 @@ export class QueryBuilderState {
     }
   }
 
-  buildRawLambdaFromLambdaFunction(lambdaFunction: LambdaFunction): RawLambda {
-    const lambdaFunctionInstanceValue = new LambdaFunctionInstanceValue(
-      this.graphManagerState.graph.getTypicalMultiplicity(
-        TYPICAL_MULTIPLICITY_TYPE.ONE,
-      ),
-      undefined,
-    );
-    lambdaFunctionInstanceValue.values = [lambdaFunction];
-    return guaranteeType(
-      this.graphManagerState.graphManager.buildRawValueSpecification(
-        lambdaFunctionInstanceValue,
-        this.graphManagerState.graph,
-      ),
-      RawLambda,
-    );
-  }
-
   buildMilestoningParameter(parameterName: string): ValueSpecification {
     const milestoningParameter = new VariableExpression(
       parameterName,
@@ -418,7 +402,7 @@ export class QueryBuilderState {
       ),
     );
     if (
-      !this.queryParametersState.parameters.find(
+      !this.queryParametersState.parameterStates.find(
         (p) => p.variableName === parameterName,
       )
     ) {
