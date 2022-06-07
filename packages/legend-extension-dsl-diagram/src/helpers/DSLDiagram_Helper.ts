@@ -16,7 +16,11 @@
 
 import { RelationshipView } from '../models/metamodels/pure/packageableElements/diagram/DSLDiagram_RelationshipView.js';
 import { Point } from '../models/metamodels/pure/packageableElements/diagram/geometry/DSLDiagram_Point.js';
-import type { PureModel } from '@finos/legend-graph';
+import {
+  type PureModel,
+  Class,
+  getAllOwnClassProperties,
+} from '@finos/legend-graph';
 import { deleteEntry } from '@finos/legend-shared';
 import type { ClassView } from '../models/metamodels/pure/packageableElements/diagram/DSLDiagram_ClassView.js';
 import type { Diagram } from '../models/metamodels/pure/packageableElements/diagram/DSLDiagram_Diagram.js';
@@ -77,7 +81,11 @@ export const cleanUpDeadReferencesInDiagram = (
   // Delete orphan property views
   const propertyViewsToRemove = diagram.propertyViews.filter(
     (propertyView) =>
-      !propertyView.property.ownerReference.value.properties
+      !(
+        propertyView.property.ownerReference.value instanceof Class
+          ? getAllOwnClassProperties(propertyView.property.ownerReference.value)
+          : propertyView.property.ownerReference.value.properties
+      )
         .map((property) => property.name)
         .includes(propertyView.property.value.name),
   );
