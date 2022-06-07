@@ -21,7 +21,6 @@ import {
   UnsupportedOperationError,
 } from '@finos/legend-shared';
 import type { EditorStore } from '../EditorStore.js';
-import type { MappingElementSource } from '../editor-state/element-editor-state/mapping/MappingEditorState.js';
 import {
   type PrimitiveType,
   type Enumeration,
@@ -166,7 +165,7 @@ export const createMockDataForClass = (
 };
 
 export const createMockDataForMappingElementSource = (
-  srcElement: MappingElementSource,
+  srcElement: unknown,
   editorStore: EditorStore,
 ): string => {
   if (srcElement instanceof Class) {
