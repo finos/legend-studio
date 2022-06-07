@@ -2710,7 +2710,7 @@ __metadata:
     mobx-react-lite: 3.4.0
     mobx-utils: 6.0.5
     monaco-editor: 0.33.0
-    node-diff3: 3.1.0
+    node-diff3: 3.1.2
     npm-run-all: 4.1.5
     react: 18.1.0
     react-dnd: 16.0.1
@@ -11575,10 +11575,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"node-diff3@npm:3.1.0":
-  version: 3.1.0
-  resolution: "node-diff3@npm:3.1.0"
-  checksum: 6af936c668dedf89f3ec8a309916006c808f66b1d71335f12dadee9532299c35f0ad2e98fa61ec7477e0ba31439a5b9403d8dfa84f5cf874ea4d4b81e5e42d0f
+"node-diff3@npm:3.1.2":
+  version: 3.1.2
+  resolution: "node-diff3@npm:3.1.2"
+  checksum: 2f9f02ee8659bc63b2eb7fbea65377896fa9b40a0c0ba0ce91e9540c4e513ba4bc7d036c3334c32ce70dc08f13d0d09ed0d430f3ea6fbd06d6eaeb9c66f725ae
   languageName: node
   linkType: hard
 
