@@ -62,6 +62,7 @@ import {
   observe_ValueSpecification,
   ObserverContext,
   isStubbed_RawLambda,
+  buildLambdaVariableExpressions,
 } from '@finos/legend-graph';
 import {
   QueryBuilderFilterOperator_Equal,
@@ -94,14 +95,11 @@ import {
 import { buildLambdaFunction } from './QueryBuilderLambdaBuilder.js';
 import {
   buildElementOption,
+  LambdaParameterState,
   type ApplicationStore,
   type LegendApplicationConfig,
   type PackageableElementOption,
 } from '@finos/legend-application';
-import {
-  QueryParametersState,
-  QueryParameterState,
-} from './QueryParametersState.js';
 import { QueryBuilderPostFilterState } from './QueryBuilderPostFilterState.js';
 import {
   QueryBuilderPostFilterOperator_Equal,
@@ -133,6 +131,7 @@ import {
   QueryBuilderPostFilterOperator_IsNotEmpty,
 } from './postFilterOperators/QueryBuilderPostFilterOperator_IsEmpty.js';
 import { QueryFunctionsExplorerState } from './QueryFunctionsExplorerState.js';
+import { QueryParametersState } from './QueryParametersState.js';
 
 export abstract class QueryBuilderMode {
   abstract get isParametersDisabled(): boolean;
@@ -337,20 +336,15 @@ export class QueryBuilderState {
     } catch (error) {
       assertErrorThrown(error);
       this.changeClass(undefined, true);
-      const parameters = ((rawLambda.parameters ?? []) as object[]).map(
-        (param) =>
-          observe_ValueSpecification(
-            this.graphManagerState.graphManager.buildValueSpecification(
-              param as Record<PropertyKey, unknown>,
-              this.graphManagerState.graph,
-            ),
-            this.observableContext,
-          ),
-      );
-      processQueryParameters(
-        parameters.filter(filterByType(VariableExpression)),
-        this,
-      );
+      const parameters = buildLambdaVariableExpressions(
+        rawLambda,
+        this.graphManagerState,
+      )
+        .map((param) =>
+          observe_ValueSpecification(param, this.observableContext),
+        )
+        .filter(filterByType(VariableExpression));
+      processQueryParameters(parameters, this);
       if (options?.notifyError) {
         this.applicationStore.notifyError(
           `Can't initialize query builder: ${error.message}`,
@@ -428,9 +422,9 @@ export class QueryBuilderState {
         (p) => p.variableName === parameterName,
       )
     ) {
-      const variableState = new QueryParameterState(
-        this.queryParametersState,
+      const variableState = new LambdaParameterState(
         milestoningParameter,
+        this.querySetupState.queryBuilderState.observableContext,
       );
       variableState.mockParameterValue();
       this.queryParametersState.addParameter(variableState);

@@ -24,6 +24,7 @@ import {
   tryToFormatLosslessJSONString,
   UnsupportedOperationError,
   guaranteeType,
+  filterByType,
 } from '@finos/legend-shared';
 import { LegacySingleExecutionTestState } from './LegacyServiceTestState.js';
 import type { EditorStore } from '../../../EditorStore.js';
@@ -32,7 +33,12 @@ import {
   decorateRuntimeWithNewMapping,
   RuntimeEditorState,
 } from '../../../editor-state/element-editor-state/RuntimeEditorState.js';
-import { LambdaEditorState, TAB_SIZE } from '@finos/legend-application';
+import {
+  buildParametersLetLambdaFunc,
+  LambdaEditorState,
+  LambdaParameterState,
+  TAB_SIZE,
+} from '@finos/legend-application';
 import { ExecutionPlanState } from '../../../ExecutionPlanState.js';
 import {
   type ServiceExecution,
@@ -56,6 +62,10 @@ import {
   QuerySearchSpecification,
   type RawExecutionPlan,
   DEPRECATED__SingleExecutionTest,
+  buildLambdaVariableExpressions,
+  observe_ValueSpecification,
+  VariableExpression,
+  buildRawLambdaFromLambdaFunction,
 } from '@finos/legend-graph';
 import type { Entity } from '@finos/legend-model-storage';
 import { parseGACoordinates } from '@finos/legend-server-depot';
@@ -72,6 +82,57 @@ export enum SERVICE_EXECUTION_TAB {
   TESTS = 'TESTS',
 }
 
+export class ServiceExecutionParameterState {
+  editorStore: EditorStore;
+  parametersState: LambdaParameterState[] = [];
+  showModal = false;
+
+  constructor(editorStore: EditorStore) {
+    makeObservable(this, {
+      parametersState: observable,
+      showModal: observable,
+      closeModal: action,
+      build: action,
+    });
+    this.editorStore = editorStore;
+  }
+  setShowModal(val: boolean): void {
+    this.showModal = val;
+  }
+
+  openModal(query: RawLambda): void {
+    this.parametersState = this.build(query);
+    this.setShowModal(true);
+  }
+  closeModal(): void {
+    this.setShowModal(false);
+    this.parametersState = [];
+  }
+
+  build(query: RawLambda): LambdaParameterState[] {
+    const parameters = buildLambdaVariableExpressions(
+      query,
+      this.editorStore.graphManagerState,
+    )
+      .map((p) =>
+        observe_ValueSpecification(
+          p,
+          this.editorStore.changeDetectionState.observerContext,
+        ),
+      )
+      .filter(filterByType(VariableExpression));
+    const states = parameters.map((p) => {
+      const parmeterState = new LambdaParameterState(
+        p,
+        this.editorStore.changeDetectionState.observerContext,
+      );
+      parmeterState.mockParameterValue();
+      return parmeterState;
+    });
+    return states;
+  }
+}
+
 export abstract class ServiceExecutionState {
   editorStore: EditorStore;
   serviceEditorState: ServiceEditorState;
@@ -81,6 +142,7 @@ export abstract class ServiceExecutionState {
     | ServiceTestSuiteState
     | undefined;
   selectedTab = SERVICE_EXECUTION_TAB.EXECUTION_CONTEXT;
+  parameterState: ServiceExecutionParameterState;
 
   constructor(
     editorStore: EditorStore,
@@ -91,12 +153,14 @@ export abstract class ServiceExecutionState {
       execution: observable,
       selectedSingeExecutionTestState: observable,
       selectedTab: observable,
+      parameterState: observable,
       setSelectedTab: action,
     });
 
     this.editorStore = editorStore;
     this.execution = execution;
     this.serviceEditorState = serviceEditorState;
+    this.parameterState = new ServiceExecutionParameterState(editorStore);
     this.selectedSingeExecutionTestState =
       this.getInitiallySelectedTestState(execution);
     // TODO: format to other format when we support other connections in the future
@@ -386,6 +450,7 @@ export class ServicePureExecutionState extends ServiceExecutionState {
       updateExecutionQuery: action,
       setOpeningQueryEditor: action,
       generatePlan: flow,
+      handleExecute: flow,
       execute: flow,
     });
 
@@ -461,13 +526,27 @@ export class ServicePureExecutionState extends ServiceExecutionState {
     }
   }
 
+  *handleExecute(): GeneratorFn<void> {
+    if (!this.selectedExecutionConfiguration || this.isExecuting) {
+      return;
+    }
+    const query = this.queryState.query;
+    const parameters = (query.parameters ?? []) as object[];
+    if (parameters.length) {
+      this.parameterState.openModal(query);
+      return;
+    } else {
+      this.execute();
+    }
+  }
+
   *execute(): GeneratorFn<void> {
     if (!this.selectedExecutionConfiguration || this.isExecuting) {
       return;
     }
     try {
       this.isExecuting = true;
-      const query = this.queryState.query;
+      const query = this.buildQuery();
       const result =
         (yield this.editorStore.graphManagerState.graphManager.executeMapping(
           this.editorStore.graphManagerState.graph,
@@ -482,6 +561,7 @@ export class ServicePureExecutionState extends ServiceExecutionState {
       this.setExecutionResultText(
         losslessStringify(result, undefined, TAB_SIZE),
       );
+      this.parameterState.closeModal();
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
@@ -492,6 +572,34 @@ export class ServicePureExecutionState extends ServiceExecutionState {
     } finally {
       this.isExecuting = false;
     }
+  }
+
+  buildQuery(): RawLambda {
+    if (
+      this.parameterState.showModal &&
+      this.parameterState.parametersState.length
+    ) {
+      const letlambdaFunction = buildParametersLetLambdaFunc(
+        this.editorStore.graphManagerState.graph,
+        this.parameterState.parametersState,
+      );
+      const letRawLambda = buildRawLambdaFromLambdaFunction(
+        letlambdaFunction,
+        this.editorStore.graphManagerState,
+      );
+      // reset paramaters
+      if (
+        Array.isArray(this.queryState.query.body) &&
+        Array.isArray(letRawLambda.body)
+      ) {
+        letRawLambda.body = [
+          ...(letRawLambda.body as object[]),
+          ...(this.queryState.query.body as object[]),
+        ];
+        return letRawLambda;
+      }
+    }
+    return this.queryState.query;
   }
 
   get serviceExecutionParameters():

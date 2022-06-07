@@ -393,4 +393,6 @@ export enum SUPPORTED_FUNCTIONS {
   // adjust time
   MINUS = 'meta::pure::functions::math::minus',
   ADJUST = 'meta::pure::functions::date::adjust',
+  // variables
+  LET = 'meta::pure::functions::lang::letFunction',
 }

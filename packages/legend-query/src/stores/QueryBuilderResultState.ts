@@ -36,10 +36,8 @@ import {
   EXECUTION_SERIALIZATION_FORMAT,
   RawExecutionResult,
 } from '@finos/legend-graph';
-import {
-  buildLambdaFunction,
-  buildParametersLetLambdaFunc,
-} from './QueryBuilderLambdaBuilder.js';
+import { buildLambdaFunction } from './QueryBuilderLambdaBuilder.js';
+import { buildParametersLetLambdaFunc } from '@finos/legend-application';
 
 const DEFAULT_LIMIT = 1000;
 
@@ -100,7 +98,8 @@ export class QueryBuilderResultState {
         this.queryBuilderState.queryParametersState.parameters.length
       ) {
         const letlambdaFunction = buildParametersLetLambdaFunc(
-          this.queryBuilderState,
+          this.queryBuilderState.graphManagerState.graph,
+          this.queryBuilderState.queryParametersState.parameters,
         );
         const letRawLambda =
           this.queryBuilderState.buildRawLambdaFromLambdaFunction(

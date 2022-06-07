@@ -22,6 +22,7 @@ import {
   isNonNullable,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
+import type { PureModel } from '@finos/legend-graph';
 import {
   type ValueSpecification,
   Class,
@@ -67,6 +68,10 @@ import {
 } from './QueryBuilderPostFilterState.js';
 import { fromGroupOperation } from './QueryBuilderOperatorsHelper.js';
 import { getDerivedPropertyMilestoningSteoreotype } from './QueryBuilderPropertyEditorState.js';
+import {
+  buildParametersLetLambdaFunc,
+  LambdaParameterState,
+} from '@finos/legend-application';
 import {
   functionExpression_setParametersValues,
   propertyExpression_setParametersValue,
@@ -174,45 +179,6 @@ export const buildGetAllFunction = (
   classInstance.values[0] = PackageableElementExplicitReference.create(_class);
   _func.parametersValues.push(classInstance);
   return _func;
-};
-
-export const buildParametersLetLambdaFunc = (
-  queryBuilderState: QueryBuilderState,
-): LambdaFunction => {
-  const multiplicityOne =
-    queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
-      TYPICAL_MULTIPLICITY_TYPE.ONE,
-    );
-  const typeString = queryBuilderState.graphManagerState.graph.getPrimitiveType(
-    PRIMITIVE_TYPE.STRING,
-  );
-  const typeAny = queryBuilderState.graphManagerState.graph.getType(
-    CORE_PURE_PATH.ANY,
-  );
-  const letlambdaFunction = new LambdaFunction(
-    new FunctionType(typeAny, multiplicityOne),
-  );
-  letlambdaFunction.expressionSequence =
-    queryBuilderState.queryParametersState.parameters
-      .map((queryParamState) => {
-        if (queryParamState.value) {
-          const letFunc = new SimpleFunctionExpression(
-            extractElementNameFromPath(QUERY_BUILDER_SUPPORTED_FUNCTIONS.LET),
-            multiplicityOne,
-          );
-          const letVar = new PrimitiveInstanceValue(
-            GenericTypeExplicitReference.create(new GenericType(typeString)),
-            multiplicityOne,
-          );
-          letVar.values = [queryParamState.variableName];
-          letFunc.parametersValues.push(letVar);
-          letFunc.parametersValues.push(queryParamState.value);
-          return letFunc;
-        }
-        return undefined;
-      })
-      .filter(isNonNullable);
-  return letlambdaFunction;
 };
 
 const buildPostFilterExpression = (
@@ -764,7 +730,10 @@ export const buildLambdaFunction = (
     // add let statements for each parameter
     if (options?.isBuildingExecutionQuery) {
       lambdaFunction.functionType.parameters = [];
-      const letsFuncs = buildParametersLetLambdaFunc(queryBuilderState);
+      const letsFuncs = buildParametersLetLambdaFunc(
+        queryBuilderState.graphManagerState.graph,
+        queryBuilderState.queryParametersState.parameters,
+      );
       lambdaFunction.expressionSequence = [
         ...letsFuncs.expressionSequence,
         ...lambdaFunction.expressionSequence,

@@ -51,3 +51,4 @@ export * from './stores/LegendApplicationPlugin.js';
 
 export * from './stores/ApplicationStoreTestUtils.js';
 export * from './stores/ValueSpecificationModifierHelper.js';
+export * from './stores/LambdaParameterState.js';
