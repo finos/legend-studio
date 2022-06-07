@@ -76,8 +76,6 @@ body:
           Yarn: 3.0.1
           npm: 7.21.0
       render: text
-    validations:
-      required: true
   - type: textarea
     attributes:
       label: Possible solution and workaround
