@@ -45,7 +45,6 @@ import {
   type Class,
   type Enumeration,
   type GraphManagerState,
-  type LambdaFunction,
   type Mapping,
   type PackageableRuntime,
   type ValueSpecification,
@@ -62,6 +61,8 @@ import {
   observe_ValueSpecification,
   ObserverContext,
   isStubbed_RawLambda,
+  buildLambdaVariableExpressions,
+  buildRawLambdaFromLambdaFunction,
 } from '@finos/legend-graph';
 import {
   QueryBuilderFilterOperator_Equal,
@@ -94,14 +95,11 @@ import {
 import { buildLambdaFunction } from './QueryBuilderLambdaBuilder.js';
 import {
   buildElementOption,
+  LambdaParameterState,
   type ApplicationStore,
   type LegendApplicationConfig,
   type PackageableElementOption,
 } from '@finos/legend-application';
-import {
-  QueryParametersState,
-  QueryParameterState,
-} from './QueryParametersState.js';
 import { QueryBuilderPostFilterState } from './QueryBuilderPostFilterState.js';
 import {
   QueryBuilderPostFilterOperator_Equal,
@@ -133,6 +131,7 @@ import {
   QueryBuilderPostFilterOperator_IsNotEmpty,
 } from './postFilterOperators/QueryBuilderPostFilterOperator_IsEmpty.js';
 import { QueryFunctionsExplorerState } from './QueryFunctionsExplorerState.js';
+import { QueryParametersState } from './QueryParametersState.js';
 
 export abstract class QueryBuilderMode {
   abstract get isParametersDisabled(): boolean;
@@ -283,7 +282,7 @@ export class QueryBuilderState {
 
   getQuery(options?: { keepSourceInformation: boolean }): RawLambda {
     if (!this.isQuerySupported()) {
-      const parameters = this.queryParametersState.parameters.map((e) =>
+      const parameters = this.queryParametersState.parameterStates.map((e) =>
         this.graphManagerState.graphManager.serializeValueSpecification(
           e.parameter,
         ),
@@ -293,10 +292,11 @@ export class QueryBuilderState {
       );
       return guaranteeNonNullable(this.queryUnsupportedState.rawLambda);
     }
-    return this.buildRawLambdaFromLambdaFunction(
+    return buildRawLambdaFromLambdaFunction(
       buildLambdaFunction(this, {
         keepSourceInformation: Boolean(options?.keepSourceInformation),
       }),
+      this.graphManagerState,
     );
   }
 
@@ -337,20 +337,15 @@ export class QueryBuilderState {
     } catch (error) {
       assertErrorThrown(error);
       this.changeClass(undefined, true);
-      const parameters = ((rawLambda.parameters ?? []) as object[]).map(
-        (param) =>
-          observe_ValueSpecification(
-            this.graphManagerState.graphManager.buildValueSpecification(
-              param as Record<PropertyKey, unknown>,
-              this.graphManagerState.graph,
-            ),
-            this.observableContext,
-          ),
-      );
-      processQueryParameters(
-        parameters.filter(filterByType(VariableExpression)),
-        this,
-      );
+      const parameters = buildLambdaVariableExpressions(
+        rawLambda,
+        this.graphManagerState,
+      )
+        .map((param) =>
+          observe_ValueSpecification(param, this.observableContext),
+        )
+        .filter(filterByType(VariableExpression));
+      processQueryParameters(parameters, this);
       if (options?.notifyError) {
         this.applicationStore.notifyError(
           `Can't initialize query builder: ${error.message}`,
@@ -392,23 +387,6 @@ export class QueryBuilderState {
     }
   }
 
-  buildRawLambdaFromLambdaFunction(lambdaFunction: LambdaFunction): RawLambda {
-    const lambdaFunctionInstanceValue = new LambdaFunctionInstanceValue(
-      this.graphManagerState.graph.getTypicalMultiplicity(
-        TYPICAL_MULTIPLICITY_TYPE.ONE,
-      ),
-      undefined,
-    );
-    lambdaFunctionInstanceValue.values = [lambdaFunction];
-    return guaranteeType(
-      this.graphManagerState.graphManager.buildRawValueSpecification(
-        lambdaFunctionInstanceValue,
-        this.graphManagerState.graph,
-      ),
-      RawLambda,
-    );
-  }
-
   buildMilestoningParameter(parameterName: string): ValueSpecification {
     const milestoningParameter = new VariableExpression(
       parameterName,
@@ -424,13 +402,13 @@ export class QueryBuilderState {
       ),
     );
     if (
-      !this.queryParametersState.parameters.find(
+      !this.queryParametersState.parameterStates.find(
         (p) => p.variableName === parameterName,
       )
     ) {
-      const variableState = new QueryParameterState(
-        this.queryParametersState,
+      const variableState = new LambdaParameterState(
         milestoningParameter,
+        this.querySetupState.queryBuilderState.observableContext,
       );
       variableState.mockParameterValue();
       this.queryParametersState.addParameter(variableState);

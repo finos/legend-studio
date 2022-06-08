@@ -35,6 +35,7 @@ export * from './components/DocumentationLink.js';
 export * from './components/TextInputEditor.js';
 export * from './components/LambdaEditor.js';
 export * from './components/BasicValueSpecificationEditor.js';
+export * from './components/LambdaParameterValuesEditor.js';
 
 export * from './stores/ApplicationStore.js';
 export * from './stores/ApplicationTelemetry.js';
@@ -51,3 +52,4 @@ export * from './stores/LegendApplicationPlugin.js';
 
 export * from './stores/ApplicationStoreTestUtils.js';
 export * from './stores/ValueSpecificationModifierHelper.js';
+export * from './stores/LambdaParameterState.js';

@@ -258,7 +258,7 @@ export const MilestoningParametersEditor = observer(
               List of compatible milestoning parameters
             </div>
             <div className="panel__content__form__section__list__items">
-              {queryBuilderState.queryParametersState.parameters
+              {queryBuilderState.queryParametersState.parameterStates
                 .filter(
                   (parameter) =>
                     parameter.parameter.genericType?.value.rawType.name ===

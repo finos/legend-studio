@@ -35,11 +35,10 @@ import {
   PureClientVersion,
   EXECUTION_SERIALIZATION_FORMAT,
   RawExecutionResult,
+  buildRawLambdaFromLambdaFunction,
 } from '@finos/legend-graph';
-import {
-  buildLambdaFunction,
-  buildParametersLetLambdaFunc,
-} from './QueryBuilderLambdaBuilder.js';
+import { buildLambdaFunction } from './QueryBuilderLambdaBuilder.js';
+import { buildParametersLetLambdaFunc } from '@finos/legend-application';
 
 const DEFAULT_LIMIT = 1000;
 
@@ -88,8 +87,10 @@ export class QueryBuilderResultState {
       const lambdaFunction = buildLambdaFunction(this.queryBuilderState, {
         isBuildingExecutionQuery: true,
       });
-      query =
-        this.queryBuilderState.buildRawLambdaFromLambdaFunction(lambdaFunction);
+      query = buildRawLambdaFromLambdaFunction(
+        lambdaFunction,
+        this.queryBuilderState.graphManagerState,
+      );
     } else {
       query = guaranteeNonNullable(
         this.queryBuilderState.queryUnsupportedState.rawLambda,
@@ -97,15 +98,16 @@ export class QueryBuilderResultState {
       );
       if (
         !this.queryBuilderState.mode.isParametersDisabled &&
-        this.queryBuilderState.queryParametersState.parameters.length
+        this.queryBuilderState.queryParametersState.parameterStates.length
       ) {
         const letlambdaFunction = buildParametersLetLambdaFunc(
-          this.queryBuilderState,
+          this.queryBuilderState.graphManagerState.graph,
+          this.queryBuilderState.queryParametersState.parameterStates,
         );
-        const letRawLambda =
-          this.queryBuilderState.buildRawLambdaFromLambdaFunction(
-            letlambdaFunction,
-          );
+        const letRawLambda = buildRawLambdaFromLambdaFunction(
+          letlambdaFunction,
+          this.queryBuilderState.graphManagerState,
+        );
         // reset paramaters
         if (Array.isArray(query.body) && Array.isArray(letRawLambda.body)) {
           letRawLambda.body = [

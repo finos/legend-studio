@@ -40,6 +40,7 @@ import { ExecutionPlanViewer } from '../mapping-editor/execution-plan-viewer/Exe
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
   EDITOR_LANGUAGE,
+  LambdaParameterValuesEditor,
   useApplicationStore,
 } from '@finos/legend-application';
 import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor.js';
@@ -250,13 +251,9 @@ export const ServiceExecutionQueryEditor = observer(
     const importQuery = (): void => {
       queryState.setOpenQueryImporter(true);
     };
-    const temporaryDisableExecutionWithParams = Boolean(
-      Array.isArray(executionState.queryState.query.parameters) &&
-        executionState.queryState.query.parameters.length,
-    );
     // execute
-    const execute = applicationStore.guardUnhandledError(() =>
-      flowResult(executionState.execute()),
+    const handleExecute = applicationStore.guardUnhandledError(() =>
+      flowResult(executionState.handleExecute()),
     );
     const generatePlan = applicationStore.guardUnhandledError(() =>
       flowResult(executionState.generatePlan(false)),
@@ -292,18 +289,9 @@ export const ServiceExecutionQueryEditor = observer(
             </button>
             <button
               className="service-editor__execution__execute-btn"
-              onClick={execute}
-              title={
-                temporaryDisableExecutionWithParams
-                  ? `Use query builder to execute queries with parameters`
-                  : `Execute`
-              }
-              disabled={
-                executionState.isExecuting ||
-                executionState.isGeneratingPlan ||
-                // TODO: Enable once we allow setting parameters for execution
-                temporaryDisableExecutionWithParams
-              }
+              onClick={handleExecute}
+              title={`Execute`}
+              disabled={executionState.isExecuting}
               tabIndex={-1}
             >
               <div className="service-editor__execution__execute-btn__label">
@@ -365,6 +353,13 @@ export const ServiceExecutionQueryEditor = observer(
           <ServiceExecutionResultViewer executionState={executionState} />
           {queryState.openQueryImporter && (
             <ServiceExecutionQueryImporter queryState={queryState} />
+          )}
+          {executionState.parameterState.parameterValuesEditorState
+            .showModal && (
+            <LambdaParameterValuesEditor
+              graph={executionState.editorStore.graphManagerState.graph}
+              lambdaParametersState={executionState.parameterState}
+            />
           )}
         </div>
       </div>

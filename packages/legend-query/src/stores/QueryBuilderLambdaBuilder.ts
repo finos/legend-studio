@@ -70,6 +70,7 @@ import { getDerivedPropertyMilestoningSteoreotype } from './QueryBuilderProperty
 import {
   functionExpression_setParametersValues,
   propertyExpression_setParametersValue,
+  buildParametersLetLambdaFunc,
 } from '@finos/legend-application';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../QueryBuilder_Const.js';
 
@@ -174,45 +175,6 @@ export const buildGetAllFunction = (
   classInstance.values[0] = PackageableElementExplicitReference.create(_class);
   _func.parametersValues.push(classInstance);
   return _func;
-};
-
-export const buildParametersLetLambdaFunc = (
-  queryBuilderState: QueryBuilderState,
-): LambdaFunction => {
-  const multiplicityOne =
-    queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
-      TYPICAL_MULTIPLICITY_TYPE.ONE,
-    );
-  const typeString = queryBuilderState.graphManagerState.graph.getPrimitiveType(
-    PRIMITIVE_TYPE.STRING,
-  );
-  const typeAny = queryBuilderState.graphManagerState.graph.getType(
-    CORE_PURE_PATH.ANY,
-  );
-  const letlambdaFunction = new LambdaFunction(
-    new FunctionType(typeAny, multiplicityOne),
-  );
-  letlambdaFunction.expressionSequence =
-    queryBuilderState.queryParametersState.parameters
-      .map((queryParamState) => {
-        if (queryParamState.value) {
-          const letFunc = new SimpleFunctionExpression(
-            extractElementNameFromPath(QUERY_BUILDER_SUPPORTED_FUNCTIONS.LET),
-            multiplicityOne,
-          );
-          const letVar = new PrimitiveInstanceValue(
-            GenericTypeExplicitReference.create(new GenericType(typeString)),
-            multiplicityOne,
-          );
-          letVar.values = [queryParamState.variableName];
-          letFunc.parametersValues.push(letVar);
-          letFunc.parametersValues.push(queryParamState.value);
-          return letFunc;
-        }
-        return undefined;
-      })
-      .filter(isNonNullable);
-  return letlambdaFunction;
 };
 
 const buildPostFilterExpression = (
@@ -757,21 +719,24 @@ export const buildLambdaFunction = (
   // build parameters
   if (
     !queryBuilderState.mode.isParametersDisabled &&
-    queryBuilderState.queryParametersState.parameters.length
+    queryBuilderState.queryParametersState.parameterStates.length
   ) {
     // if we are executing:
     // set the parameters to empty
     // add let statements for each parameter
     if (options?.isBuildingExecutionQuery) {
       lambdaFunction.functionType.parameters = [];
-      const letsFuncs = buildParametersLetLambdaFunc(queryBuilderState);
+      const letsFuncs = buildParametersLetLambdaFunc(
+        queryBuilderState.graphManagerState.graph,
+        queryBuilderState.queryParametersState.parameterStates,
+      );
       lambdaFunction.expressionSequence = [
         ...letsFuncs.expressionSequence,
         ...lambdaFunction.expressionSequence,
       ];
     } else {
       lambdaFunction.functionType.parameters =
-        queryBuilderState.queryParametersState.parameters.map(
+        queryBuilderState.queryParametersState.parameterStates.map(
           (e) => e.parameter,
         );
     }

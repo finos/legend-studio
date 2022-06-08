@@ -19,6 +19,7 @@ export enum QUERY_BUILDER_SOURCE_ID_LABEL {
 }
 
 export const DEFAULT_LAMBDA_VARIABLE_NAME = 'x';
+export const DEFAULT_VARIABLE_NAME = 'var';
 
 export enum QUERY_BUILDER_SUPPORTED_FUNCTIONS {
   AND = 'meta::pure::functions::boolean::and',
@@ -70,9 +71,6 @@ export enum QUERY_BUILDER_SUPPORTED_FUNCTIONS {
   STD_DEV_SAMPLE = 'meta::pure::functions::math::stdDevSample',
   SUM = 'meta::pure::functions::math::sum',
   UNIQUE_VALUE_ONLY = 'meta::pure::functions::collection::uniqueValueOnly',
-
-  // variables
-  LET = 'meta::pure::functions::lang::letFunction',
 }
 
 // TDS

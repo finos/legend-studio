@@ -78,11 +78,11 @@ import {
   QueryBuilderSimpleProjectionColumnState,
 } from './QueryBuilderProjectionState.js';
 import type { QueryBuilderAggregationState } from './QueryBuilderAggregationState.js';
-import { QueryParameterState } from './QueryParametersState.js';
 import { toGroupOperation } from './QueryBuilderOperatorsHelper.js';
 import { processPostFilterLambda } from './QueryBuilderPostFilterProcessor.js';
 import { getDerivedPropertyMilestoningSteoreotype } from './QueryBuilderPropertyEditorState.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../QueryBuilder_Const.js';
+import { LambdaParameterState } from '@finos/legend-application';
 
 const getNullableStringValueFromValueSpec = (
   valueSpec: ValueSpecification,
@@ -1212,12 +1212,12 @@ export const processQueryParameters = (
 ): void => {
   const queryParameterState = queryBuilderState.queryParametersState;
   parameters.forEach((parameter) => {
-    const variableState = new QueryParameterState(
-      queryParameterState,
+    const parameterState = new LambdaParameterState(
       parameter,
+      queryBuilderState.observableContext,
     );
-    variableState.mockParameterValue();
-    queryParameterState.addParameter(variableState);
+    parameterState.mockParameterValue();
+    queryParameterState.addParameter(parameterState);
   });
 };
 

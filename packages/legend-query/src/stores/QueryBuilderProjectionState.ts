@@ -69,6 +69,7 @@ import {
   RawLambda,
   stub_RawLambda,
   isStubbed_RawLambda,
+  buildRawLambdaFromLambdaFunction,
 } from '@finos/legend-graph';
 import {
   DEFAULT_LAMBDA_VARIABLE_NAME,
@@ -705,12 +706,13 @@ export class QueryBuilderProjectionState {
             (yield this.queryBuilderState.graphManagerState.graphManager.executeMapping(
               this.queryBuilderState.graphManagerState.graph,
               this.queryBuilderState.querySetupState.mapping,
-              this.queryBuilderState.buildRawLambdaFromLambdaFunction(
+              buildRawLambdaFromLambdaFunction(
                 buildNumericPreviewDataQuery(
                   propertyExpression,
                   this.queryBuilderState.querySetupState._class,
                   this.queryBuilderState.graphManagerState.graph,
                 ),
+                this.queryBuilderState.graphManagerState,
               ),
               runtime,
               PureClientVersion.VX_X_X,
@@ -748,12 +750,13 @@ export class QueryBuilderProjectionState {
             (yield this.queryBuilderState.graphManagerState.graphManager.executeMapping(
               this.queryBuilderState.graphManagerState.graph,
               this.queryBuilderState.querySetupState.mapping,
-              this.queryBuilderState.buildRawLambdaFromLambdaFunction(
+              buildRawLambdaFromLambdaFunction(
                 buildNonNumericPreviewDataQuery(
                   propertyExpression,
                   this.queryBuilderState.querySetupState._class,
                   this.queryBuilderState.graphManagerState.graph,
                 ),
+                this.queryBuilderState.graphManagerState,
               ),
               runtime,
               PureClientVersion.VX_X_X,

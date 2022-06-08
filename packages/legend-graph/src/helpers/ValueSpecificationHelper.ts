@@ -14,7 +14,15 @@
  * limitations under the License.
  */
 
+import { guaranteeType } from '@finos/legend-shared';
 import type { PureModel } from '../graph/PureModel.js';
+import {
+  type GraphManagerState,
+  type LambdaFunction,
+  type ValueSpecification,
+  LambdaFunctionInstanceValue,
+  RawLambda,
+} from '../index.js';
 import {
   type PRIMITIVE_TYPE,
   TYPICAL_MULTIPLICITY_TYPE,
@@ -39,4 +47,35 @@ export const buildPrimitiveInstanceValue = (
   );
   instance.values = [value];
   return instance;
+};
+
+export const buildLambdaVariableExpressions = (
+  rawLambda: RawLambda,
+  graphManagerState: GraphManagerState,
+): ValueSpecification[] =>
+  ((rawLambda.parameters ?? []) as object[]).map((param) =>
+    graphManagerState.graphManager.buildValueSpecification(
+      param as Record<PropertyKey, unknown>,
+      graphManagerState.graph,
+    ),
+  );
+
+export const buildRawLambdaFromLambdaFunction = (
+  lambdaFunction: LambdaFunction,
+  graphManagerState: GraphManagerState,
+): RawLambda => {
+  const lambdaFunctionInstanceValue = new LambdaFunctionInstanceValue(
+    graphManagerState.graph.getTypicalMultiplicity(
+      TYPICAL_MULTIPLICITY_TYPE.ONE,
+    ),
+    undefined,
+  );
+  lambdaFunctionInstanceValue.values = [lambdaFunction];
+  return guaranteeType(
+    graphManagerState.graphManager.buildRawValueSpecification(
+      lambdaFunctionInstanceValue,
+      graphManagerState.graph,
+    ),
+    RawLambda,
+  );
 };
