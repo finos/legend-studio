@@ -2,7 +2,7 @@ version: 2.1
 
 aliases:
   - &docker
-    - image: cimg/openjdk:17.0.0-node
+    - image: cimg/openjdk:16.15
 
   - &environment
     TZ: /usr/share/zoneinfo/UTC
@@ -12,7 +12,11 @@ aliases:
       name: Restore Yarn cache
       key: yarn-packages-{{ checksum "yarn.lock" }}
 
-  - &TEST_PARALLELISM 20
+  - &restore_node_modules
+  restore_cache:
+    name: Restore node_modules cache
+    keys:
+      - v2-node-{{ arch }}-{{ .Branch }}-{{ checksum "yarn.lock" }}-node-modules
 
   - &attach_workspace
     at: build
@@ -41,7 +45,16 @@ jobs:
             - .yarn/unplugged
             # It's recommended to not cache node_modules in CI in general
             # See https://github.com/actions/cache/blob/main/examples.md#node---npm
-            # - node_modules
+            - node_modules
+      - save_cache:
+          # Store node_modules for all jobs in this workflow so that they don't
+          # need to each run a yarn install for each job. This will speed up
+          # all jobs run on this branch with the same lockfile.
+          name: Save node_modules cache
+          # This cache key is per branch, a yarn install in setup is required.
+          key: v2-node-{{ arch }}-{{ .Branch }}-{{ checksum "yarn.lock" }}-node-modules
+          paths:
+            - node_modules
 
   yarn_lint:
     docker: *docker
@@ -49,6 +62,7 @@ jobs:
     resource_class: xlarge
     steps:
       - checkout
+      *restore_node_modules
       - run:
           name: Check typings
           command: yarn check:ts
