@@ -45,10 +45,10 @@ export class UpdateProjectConfigurationCommand {
       groupId: primitive(),
       message: primitive(),
       projectDependenciesToAdd: list(
-        usingModelSchema(ProjectDependency.serialization.schema),
+        usingModelSchema(ProjectDependency.newSerialization.schema),
       ),
       projectDependenciesToRemove: list(
-        usingModelSchema(ProjectDependency.serialization.schema),
+        usingModelSchema(ProjectDependency.newSerialization.schema),
       ),
       projectStructureVersion: usingModelSchema(
         ProjectStructureVersion.serialization.schema,

@@ -40,6 +40,7 @@ export * from './models/revision/Revision';
 
 export * from './models/version/Version';
 export * from './models/version/VersionCommands';
+export * from './models/version/VersionId';
 
 export * from './models/configuration/ProjectDependency';
 export * from './models/configuration/ProjectConfiguration';

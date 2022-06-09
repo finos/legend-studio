@@ -244,6 +244,7 @@ export class ProjectConfigurationEditorState extends EditorState {
           this.currentProjectConfiguration.projectStructureVersion,
           `update project configuration from ${this.editorStore.applicationStore.config.appName}`,
         );
+
       updateProjectConfigurationCommand.projectDependenciesToAdd =
         this.currentProjectConfiguration.projectDependencies.filter(
           (dep) =>
@@ -258,6 +259,7 @@ export class ProjectConfigurationEditorState extends EditorState {
               (dep) => dep.hashCode === originalProjDep.hashCode,
             ),
         );
+
       yield flowResult(
         this.updateProjectConfiguration(updateProjectConfigurationCommand),
       );

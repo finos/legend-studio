@@ -64,6 +64,8 @@ interface ProjectOption {
   value: ProjectData;
 }
 
+const MASTER_SNAPSHOT = 'master-SNAPSHOT';
+
 const buildProjectOption = (project: ProjectData): ProjectOption => ({
   label: project.coordinates,
   value: project,
@@ -232,10 +234,16 @@ const ProjectDependencyEditor = observer(
     // version
     const version = projectDependency.versionId;
     const versions = selectedProject?.versions ?? [];
-    const versionOptions = versions
+    let versionOptions = versions
       .slice()
       .sort((v1, v2) => compareSemVerVersions(v2, v1))
       .map((v) => ({ value: v, label: v }));
+
+    versionOptions = [
+      { label: 'Head', value: MASTER_SNAPSHOT },
+      ...versionOptions,
+    ];
+
     const selectedVersionOption: VersionOption | null =
       versionOptions.find((v) => v.value === version.id) ?? null;
     const versionDisabled =
@@ -263,13 +271,17 @@ const ProjectDependencyEditor = observer(
     };
     const openProject = (): void => {
       if (!projectDependency.isLegacyDependency) {
+        const projectDependencyVersionId =
+          projectDependency.versionId.id === MASTER_SNAPSHOT
+            ? 'HEAD'
+            : projectDependency.versionId.id;
         applicationStore.navigator.openNewWindow(
           `${
             applicationStore.config.baseUrl
           }view/archive/${generateGAVCoordinates(
             guaranteeNonNullable(projectDependency.groupId),
             guaranteeNonNullable(projectDependency.artifactId),
-            projectDependency.versionId.id,
+            projectDependencyVersionId,
           )}`,
         );
       }
@@ -437,6 +449,7 @@ export const ProjectConfigurationEditor = observer(() => {
   if (!configState.projectConfiguration) {
     return null;
   }
+
   return (
     <div className="project-configuration-editor">
       <div className="panel">

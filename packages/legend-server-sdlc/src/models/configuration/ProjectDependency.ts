@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { createModelSchema, primitive } from 'serializr';
+import { createModelSchema, primitive, alias } from 'serializr';
 import {
   type Hashable,
   hashArray,
@@ -52,6 +52,13 @@ export class ProjectDependency implements Hashable {
     }),
   );
 
+  static readonly newSerialization = new SerializationFactory(
+    createModelSchema(ProjectDependency, {
+      projectId: primitive(),
+      version: alias('versionId', primitive()),
+    }),
+  );
+
   setProjectId(projectId: string): void {
     this.projectId = projectId;
   }
@@ -78,6 +85,10 @@ export class ProjectDependency implements Hashable {
     return this.projectId.split(':')[1];
   }
 
+  get version(): string | undefined {
+    return this.versionId.id;
+  }
+
   get hashCode(): string {
     return hashArray([
       PROJECT_DEPENDENCY_HASH_STRUCTURE,
@@ -85,6 +96,8 @@ export class ProjectDependency implements Hashable {
       this.versionId.majorVersion.toString(),
       this.versionId.minorVersion.toString(),
       this.versionId.patchVersion.toString(),
+      this.versionId.branchName.toString(),
+      this.versionId.changeName.toString(),
     ]);
   }
 }
