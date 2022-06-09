@@ -93,6 +93,7 @@ jobs:
           node-version: 16
       - name: Install dependencies
         run: yarn
+      # NOTE: we need this step to build the code before linting
       - name: Check typings
         run: yarn check:ts
       - name: Run lint
