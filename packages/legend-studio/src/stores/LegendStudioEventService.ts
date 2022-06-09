@@ -14,24 +14,25 @@
  * limitations under the License.
  */
 
-import type { TelemetryService } from '@finos/legend-shared';
-import { APPLICATION_EVENT } from './ApplicationEvent.js';
+import {
+  APPLICATION_EVENT,
+  type LegendApplicationEventService,
+} from '@finos/legend-application';
 
-type ApplicationLoaded_TelemetryData = {
-  browser: {
-    userAgent: string;
-  };
-  screen: {
-    height: number;
-    width: number;
-  };
-};
+export class LegendStudioEventService {
+  private eventService!: LegendApplicationEventService;
 
-export class ApplicationTelemetry {
-  static logEvent_AppInitialized(
-    telemetryService: TelemetryService,
-    data: ApplicationLoaded_TelemetryData,
-  ): void {
-    telemetryService.logEvent(APPLICATION_EVENT.APPLICATION_LOADED, data);
+  private constructor(eventService: LegendApplicationEventService) {
+    this.eventService = eventService;
+  }
+
+  static create(
+    eventService: LegendApplicationEventService,
+  ): LegendStudioEventService {
+    return new LegendStudioEventService(eventService);
+  }
+
+  notify_ApplicationLoaded(): void {
+    this.eventService.notify(APPLICATION_EVENT.APPLICATION_LOADED, {});
   }
 }
