@@ -47,10 +47,11 @@ jobs:
     docker: *docker
     environment: *environment
     resource_class: xlarge
-
     steps:
       - checkout
-      - name: Check typings
-        run: yarn check:ts
-      - name: Run lint
-        run: yarn lint:ci
+      - run:
+          name: Check typings
+          command: yarn check:ts
+      - run:
+          name: Run lint
+          command: yarn lint:ci
