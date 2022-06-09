@@ -51,7 +51,7 @@ const TagBasicEditor = observer(
       tagStereotype_setValue(tag, event.target.value);
     };
     const isTagDuplicated = (val: Tag): boolean =>
-      tag._OWNER.tags.filter((t) => t.value === val.value).length >= 2;
+      tag._OWNER.p_tags.filter((t) => t.value === val.value).length >= 2;
 
     return (
       <div className="tag-basic-editor">
@@ -93,7 +93,7 @@ const StereotypeBasicEditor = observer(
       tagStereotype_setValue(stereotype, event.target.value);
     };
     const isStereotypeDuplicated = (val: Stereotype): boolean =>
-      stereotype._OWNER.stereotypes.filter((s) => s.value === val.value)
+      stereotype._OWNER.p_stereotypes.filter((s) => s.value === val.value)
         .length >= 2;
 
     return (
@@ -214,7 +214,7 @@ export const ProfileEditor = observer((props: { profile: Profile }) => {
         <div className="panel__content">
           {selectedTab === UML_EDITOR_TAB.TAGS && (
             <div className="panel__content__lists">
-              {profile.tags.map((tag) => (
+              {profile.p_tags.map((tag) => (
                 <TagBasicEditor
                   key={tag._UUID}
                   tag={tag}
@@ -226,7 +226,7 @@ export const ProfileEditor = observer((props: { profile: Profile }) => {
           )}
           {selectedTab === UML_EDITOR_TAB.STEREOTYPES && (
             <div className="panel__content__lists">
-              {profile.stereotypes.map((stereotype) => (
+              {profile.p_stereotypes.map((stereotype) => (
                 <StereotypeBasicEditor
                   key={stereotype._UUID}
                   stereotype={stereotype}

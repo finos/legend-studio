@@ -22,8 +22,6 @@ import type { Constraint } from './Constraint.js';
 import type { DerivedProperty } from './DerivedProperty.js';
 import type { AbstractProperty } from './AbstractProperty.js';
 import type { PackageableElementVisitor } from '../PackageableElement.js';
-import type { StereotypeReference } from './StereotypeReference.js';
-import type { TaggedValue } from './TaggedValue.js';
 import type { GenericTypeReference } from './GenericTypeReference.js';
 
 export class Class extends Type implements Hashable {
@@ -50,8 +48,6 @@ export class Class extends Type implements Hashable {
   // derivedPropertiesFromAssociations: DerivedProperty[] = [];
   generalizations: GenericTypeReference[] = [];
   constraints: Constraint[] = [];
-  stereotypes: StereotypeReference[] = [];
-  taggedValues: TaggedValue[] = [];
 
   /**
    * Make sure to remove the disposed class from being referenced in other elements

@@ -14,18 +14,25 @@
  * limitations under the License.
  */
 
-import { uuid } from '@finos/legend-shared';
-import type { Profile } from './Profile.js';
+import {
+  APPLICATION_EVENT,
+  type LegendApplicationEventService,
+} from '@finos/legend-application';
 
-// NOTE: in Pure metamodel, this extends `Annotation`
-export class Tag {
-  readonly _UUID = uuid();
-  readonly _OWNER: Profile;
+export class LegendStudioEventService {
+  private eventService!: LegendApplicationEventService;
 
-  value: string;
+  private constructor(eventService: LegendApplicationEventService) {
+    this.eventService = eventService;
+  }
 
-  constructor(owner: Profile, value: string) {
-    this._OWNER = owner;
-    this.value = value;
+  static create(
+    eventService: LegendApplicationEventService,
+  ): LegendStudioEventService {
+    return new LegendStudioEventService(eventService);
+  }
+
+  notify_ApplicationLoaded(): void {
+    this.eventService.notify(APPLICATION_EVENT.APPLICATION_LOADED, {});
   }
 }

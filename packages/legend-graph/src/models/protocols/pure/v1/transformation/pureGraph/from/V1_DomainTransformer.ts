@@ -59,8 +59,8 @@ import { isStubbed_RawLambda } from '../../../../../../../graphManager/action/cr
 export const V1_transformProfile = (element: Profile): V1_Profile => {
   const profile = new V1_Profile();
   V1_initPackageableElement(profile, element);
-  profile.stereotypes = element.stereotypes.map((s) => s.value);
-  profile.tags = element.tags.map((t) => t.value);
+  profile.stereotypes = element.p_stereotypes.map((s) => s.value);
+  profile.tags = element.p_tags.map((t) => t.value);
   return profile;
 };
 
@@ -231,7 +231,7 @@ export const V1_transformFunction = (
 ): V1_ConcreteFunctionDefinition => {
   const _function = new V1_ConcreteFunctionDefinition();
   V1_initPackageableElement(_function, element);
-  _function.body = element.body;
+  _function.body = element.expressionSequence;
   _function.parameters = element.parameters.map(
     (v) =>
       v.accept_RawValueSpecificationVisitor(

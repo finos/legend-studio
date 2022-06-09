@@ -67,7 +67,7 @@ test(unitTest('Class is loaded properly'), () => {
   expect(
     graph
       .getProfile(stereotype._OWNER.path)
-      .stereotypes.find((s) => s.value === stereotype.value),
+      .p_stereotypes.find((s) => s.value === stereotype.value),
   ).toBeDefined();
   const personClass = graph.getClass('ui::test2::Person');
   const personWithoutConstraints = graph.getClass(

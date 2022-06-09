@@ -28,7 +28,7 @@ type ApplicationLoaded_TelemetryData = {
 };
 
 export class ApplicationTelemetry {
-  static logEvent_GraphInitialized(
+  static logEvent_AppInitialized(
     telemetryService: TelemetryService,
     data: ApplicationLoaded_TelemetryData,
   ): void {

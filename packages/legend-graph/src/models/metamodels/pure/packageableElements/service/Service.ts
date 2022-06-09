@@ -21,8 +21,6 @@ import {
   type PackageableElementVisitor,
   PackageableElement,
 } from '../PackageableElement.js';
-import type { StereotypeReference } from '../domain/StereotypeReference.js';
-import type { TaggedValue } from '../domain/TaggedValue.js';
 import type { DEPRECATED__ServiceTest } from './DEPRECATED__ServiceTest.js';
 import type { ServiceTestSuite } from './ServiceTestSuite.js';
 import type { Testable } from '../../test/Testable.js';
@@ -30,8 +28,6 @@ import type { Testable } from '../../test/Testable.js';
 export const DEFAULT_SERVICE_PATTERN = '/';
 
 export class Service extends PackageableElement implements Hashable, Testable {
-  stereotypes: StereotypeReference[] = [];
-  taggedValues: TaggedValue[] = [];
   pattern = '/';
   owners: string[] = [];
   documentation = '';

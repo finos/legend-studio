@@ -42,6 +42,7 @@ import type { GenerationSpecification } from './generationSpecification/Generati
 import type { Measure } from './domain/Measure.js';
 import type { SectionIndex } from './section/SectionIndex.js';
 import type { DataElement } from './data/DataElement.js';
+import { AnnotatedElement } from './domain/AnnotatedElement.js';
 
 export interface PackageableElementVisitor<T> {
   visit_PackageableElement(element: PackageableElement): T;
@@ -66,15 +67,22 @@ export interface PackageableElementVisitor<T> {
   visit_DataElement(element: DataElement): T;
 }
 
-export abstract class PackageableElement implements Hashable {
+class ModelElement extends AnnotatedElement {
+  name!: string;
+}
+
+export abstract class PackageableElement
+  extends ModelElement
+  implements Hashable
+{
   readonly _UUID = uuid();
   protected _isDeleted = false;
   protected _isDisposed = false;
 
-  name: string;
   package?: Package | undefined;
 
   constructor(name: string) {
+    super();
     this.name = name;
   }
 

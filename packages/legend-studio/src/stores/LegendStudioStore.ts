@@ -42,6 +42,7 @@ import { LEGEND_STUDIO_APP_EVENT } from './LegendStudioAppEvent.js';
 import type { DepotServerClient } from '@finos/legend-server-depot';
 import type { LegendStudioPluginManager } from '../application/LegendStudioPluginManager.js';
 import type { LegendStudioConfig } from '../application/LegendStudioConfig.js';
+import { LegendStudioEventService } from './LegendStudioEventService.js';
 
 const UNKNOWN_USER_ID = '(unknown)';
 
@@ -115,7 +116,7 @@ export class LegendStudioStore {
     // setup telemetry service
     this.applicationStore.telemetryService.setUserId(currentUserID);
 
-    ApplicationTelemetry.logEvent_GraphInitialized(
+    ApplicationTelemetry.logEvent_AppInitialized(
       this.applicationStore.telemetryService,
       {
         browser: {
@@ -127,6 +128,9 @@ export class LegendStudioStore {
         },
       },
     );
+    LegendStudioEventService.create(
+      this.applicationStore.eventService,
+    ).notify_ApplicationLoaded();
 
     this.initState.complete();
   }

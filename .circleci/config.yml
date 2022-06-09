@@ -1,0 +1,56 @@
+version: 2.1
+
+aliases:
+  - &docker
+    - image: cimg/openjdk:17.0.0-node
+
+  - &environment
+    TZ: /usr/share/zoneinfo/UTC
+
+  - &restore_yarn_cache
+    restore_cache:
+      name: Restore Yarn cache
+      key: yarn-packages-{{ checksum "yarn.lock" }}
+
+  - &TEST_PARALLELISM 20
+
+  - &attach_workspace
+    at: build
+
+jobs:
+  setup:
+    docker: *docker
+    environment: *environment
+    steps:
+      - checkout
+      - run:
+          name: Nodejs Version
+          command: node --version
+      - *restore_yarn_cache
+      - run:
+          name: Install Dependencies
+          command: yarn install --immutable
+      - save_cache:
+          # Store the yarn cache and node_modules globally for all lock files with this same
+          # checksum. This will speed up the setup job for all PRs where the
+          # lockfile is the same.
+          name: Save Yarn cache
+          key: yarn-packages-{{ checksum "yarn.lock" }}
+          paths:
+            - .yarn/cache
+            - .yarn/unplugged
+            # It's recommended to not cache node_modules in CI in general
+            # See https://github.com/actions/cache/blob/main/examples.md#node---npm
+            # - node_modules
+
+  yarn_lint:
+    docker: *docker
+    environment: *environment
+    resource_class: xlarge
+
+    steps:
+      - checkout
+      - name: Check typings
+        run: yarn check:ts
+      - name: Run lint
+        run: yarn lint:ci

@@ -77,9 +77,7 @@ export const baseJestConfig = {
   ],
   collectCoverageFrom: [
     '<rootDir>/packages/*/**/*.[jt]s?(x)',
-    '!<rootDir>/packages/*/webpack.config.js',
-    '!<rootDir>/packages/*/jest.config.js',
-    '!<rootDir>/packages/*/_package.config.js',
+    '!<rootDir>/packages/*/*.js',
     '!<rootDir>/packages/*/build/**',
     '!<rootDir>/packages/*/lib/**',
     '!<rootDir>/packages/*/dev/**',
