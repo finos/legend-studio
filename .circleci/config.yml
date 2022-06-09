@@ -33,7 +33,7 @@ jobs:
       - *restore_yarn_cache
       - run:
           name: Install Dependencies
-          command: yarn install --immutable
+          command: yarn install
       - save_cache:
           # Store the yarn cache and node_modules globally for all lock files with this same
           # checksum. This will speed up the setup job for all PRs where the
@@ -45,7 +45,7 @@ jobs:
             - .yarn/unplugged
             # It's recommended to not cache node_modules in CI in general
             # See https://github.com/actions/cache/blob/main/examples.md#node---npm
-            - node_modules
+            # - node_modules
       - save_cache:
           # Store node_modules for all jobs in this workflow so that they don't
           # need to each run a yarn install for each job. This will speed up
