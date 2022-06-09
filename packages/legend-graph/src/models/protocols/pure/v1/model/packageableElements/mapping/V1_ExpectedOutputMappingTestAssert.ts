@@ -15,8 +15,8 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
-import { V1_MappingTestAssert } from './V1_MappingTestAssert';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst.js';
+import { V1_MappingTestAssert } from './V1_MappingTestAssert.js';
 
 export class V1_ExpectedOutputMappingTestAssert
   extends V1_MappingTestAssert

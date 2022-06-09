@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { WorkspaceType } from '../workspace/Workspace';
+import type { WorkspaceType } from '../workspace/Workspace.js';
 
 export interface CreateReviewCommand {
   workspaceId: string;

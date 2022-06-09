@@ -23,19 +23,19 @@ import {
   type AbstractPropertyExpression,
   type PureModel,
 } from '@finos/legend-graph';
-import { SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const.js';
 import {
   type QueryBuilderAggregateColumnState,
   QueryBuilderAggregateOperator,
-} from '../QueryBuilderAggregationState';
+} from '../QueryBuilderAggregationState.js';
 import {
   type QueryBuilderProjectionColumnState,
   QueryBuilderSimpleProjectionColumnState,
-} from '../QueryBuilderProjectionState';
+} from '../QueryBuilderProjectionState.js';
 import {
   buildAggregateColumnState,
   buildAggregateExpression,
-} from './QueryBuilderAggregateOperatorHelper';
+} from './QueryBuilderAggregateOperatorHelper.js';
 
 export class QueryBuilderAggregateOperator_StdDev_Sample extends QueryBuilderAggregateOperator {
   getLabel(projectionColumnState: QueryBuilderProjectionColumnState): string {
@@ -69,7 +69,7 @@ export class QueryBuilderAggregateOperator_StdDev_Sample extends QueryBuilderAgg
     graph: PureModel,
   ): ValueSpecification {
     return buildAggregateExpression(
-      SUPPORTED_FUNCTIONS.STD_DEV_SAMPLE,
+      QUERY_BUILDER_SUPPORTED_FUNCTIONS.STD_DEV_SAMPLE,
       graph,
       variableName,
     );
@@ -84,7 +84,7 @@ export class QueryBuilderAggregateOperator_StdDev_Sample extends QueryBuilderAgg
       projectionColumnState,
       lambdaParam,
       expression,
-      SUPPORTED_FUNCTIONS.STD_DEV_SAMPLE,
+      QUERY_BUILDER_SUPPORTED_FUNCTIONS.STD_DEV_SAMPLE,
       this,
     );
   }

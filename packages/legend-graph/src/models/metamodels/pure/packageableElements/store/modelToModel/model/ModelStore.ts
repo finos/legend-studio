@@ -15,9 +15,9 @@
  */
 
 import { UnsupportedOperationError } from '@finos/legend-shared';
-import { MODEL_STORE_NAME } from '../../../../../../../MetaModelConst';
-import { Store } from '../../Store';
-import type { PackageableElementVisitor } from '../../../PackageableElement';
+import { MODEL_STORE_NAME } from '../../../../../../../MetaModelConst.js';
+import { Store } from '../../Store.js';
+import type { PackageableElementVisitor } from '../../../PackageableElement.js';
 
 export class ModelStore extends Store {
   constructor() {

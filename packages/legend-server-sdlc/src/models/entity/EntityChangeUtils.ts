@@ -16,8 +16,8 @@
 
 import type { Entity } from '@finos/legend-model-storage';
 import { UnsupportedOperationError } from '@finos/legend-shared';
-import type { EntityDiff } from '../comparison/EntityDiff';
-import { type EntityChange, EntityChangeType } from './EntityChange';
+import type { EntityDiff } from '../comparison/EntityDiff.js';
+import { type EntityChange, EntityChangeType } from './EntityChange.js';
 
 export const applyEntityChanges = (
   entities: Entity[],

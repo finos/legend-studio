@@ -23,19 +23,19 @@ import {
   type AbstractPropertyExpression,
   type Type,
 } from '@finos/legend-graph';
-import { SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const.js';
 import {
   type QueryBuilderAggregateColumnState,
   QueryBuilderAggregateOperator,
-} from '../QueryBuilderAggregationState';
+} from '../QueryBuilderAggregationState.js';
 import {
   type QueryBuilderProjectionColumnState,
   QueryBuilderSimpleProjectionColumnState,
-} from '../QueryBuilderProjectionState';
+} from '../QueryBuilderProjectionState.js';
 import {
   buildAggregateColumnState,
   buildAggregateExpression,
-} from './QueryBuilderAggregateOperatorHelper';
+} from './QueryBuilderAggregateOperatorHelper.js';
 
 export class QueryBuilderAggregateOperator_Average extends QueryBuilderAggregateOperator {
   getLabel(projectionColumnState: QueryBuilderProjectionColumnState): string {
@@ -69,7 +69,7 @@ export class QueryBuilderAggregateOperator_Average extends QueryBuilderAggregate
     graph: PureModel,
   ): ValueSpecification {
     return buildAggregateExpression(
-      SUPPORTED_FUNCTIONS.AVERAGE,
+      QUERY_BUILDER_SUPPORTED_FUNCTIONS.AVERAGE,
       graph,
       variableName,
     );
@@ -84,7 +84,7 @@ export class QueryBuilderAggregateOperator_Average extends QueryBuilderAggregate
       projectionColumnState,
       lambdaParam,
       expression,
-      SUPPORTED_FUNCTIONS.AVERAGE,
+      QUERY_BUILDER_SUPPORTED_FUNCTIONS.AVERAGE,
       this,
     );
   }

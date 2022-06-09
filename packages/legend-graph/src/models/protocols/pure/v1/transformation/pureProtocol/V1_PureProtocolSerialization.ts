@@ -32,22 +32,22 @@ import {
   assertErrorThrown,
   usingModelSchema,
 } from '@finos/legend-shared';
-import { V1_PureModelContextData } from '../../model/context/V1_PureModelContextData';
-import { V1_PureModelContextPointer } from '../../model/context/V1_PureModelContextPointer';
-import type { V1_PackageableElement } from '../../model/packageableElements/V1_PackageableElement';
+import { V1_PureModelContextData } from '../../model/context/V1_PureModelContextData.js';
+import { V1_PureModelContextPointer } from '../../model/context/V1_PureModelContextPointer.js';
+import type { V1_PackageableElement } from '../../model/packageableElements/V1_PackageableElement.js';
 import {
   V1_serializePackageableElement,
   V1_deserializePackageableElement,
-} from '../../transformation/pureProtocol/V1_PackageableElementSerialization';
-import { V1_PureModelContextComposite } from '../../model/context/V1_PureModelContextComposite';
-import { V1_Protocol } from '../../model/V1_Protocol';
-import { V1_AlloySDLC } from '../../model/context/V1_SDLC';
-import type { V1_PureModelContext } from '../../model/context/V1_PureModelContext';
-import { V1_packageableElementPointerDeserializerSchema } from '../../transformation/pureProtocol/serializationHelpers/V1_CoreSerializationHelper';
-import type { PureProtocolProcessorPlugin } from '../../../PureProtocolProcessorPlugin';
+} from '../../transformation/pureProtocol/V1_PackageableElementSerialization.js';
+import { V1_PureModelContextComposite } from '../../model/context/V1_PureModelContextComposite.js';
+import { V1_Protocol } from '../../model/V1_Protocol.js';
+import { V1_AlloySDLC } from '../../model/context/V1_SDLC.js';
+import type { V1_PureModelContext } from '../../model/context/V1_PureModelContext.js';
+import { V1_packageableElementPointerDeserializerSchema } from '../../transformation/pureProtocol/serializationHelpers/V1_CoreSerializationHelper.js';
+import type { PureProtocolProcessorPlugin } from '../../../PureProtocolProcessorPlugin.js';
 import type { Entity } from '@finos/legend-model-storage';
-import { GraphDataDeserializationError } from '../../../../../../graphManager/GraphManagerUtils';
-import { V1_PureModelContextText } from '../../model/context/V1_PureModelContextText';
+import { GraphDataDeserializationError } from '../../../../../../graphManager/GraphManagerUtils.js';
+import { V1_PureModelContextText } from '../../model/context/V1_PureModelContextText.js';
 
 enum V1_SDLCType {
   ALLOY = 'alloy',

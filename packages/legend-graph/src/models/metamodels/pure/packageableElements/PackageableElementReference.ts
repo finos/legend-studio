@@ -15,9 +15,9 @@
  */
 
 import { assertType } from '@finos/legend-shared';
-import type { PackageableElement } from './PackageableElement';
-import type { Section } from './section/Section';
-import { RequiredReference, OptionalReference } from '../Reference';
+import type { PackageableElement } from './PackageableElement.js';
+import type { Section } from './section/Section.js';
+import { RequiredReference, OptionalReference } from '../Reference.js';
 
 export abstract class PackageableElementReference<
   T extends PackageableElement,

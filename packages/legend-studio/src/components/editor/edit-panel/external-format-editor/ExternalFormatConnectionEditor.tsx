@@ -21,10 +21,10 @@ import {
   type Binding,
 } from '@finos/legend-graph';
 import { computed, makeObservable } from 'mobx';
-import { ConnectionValueState } from '../../../../stores/editor-state/element-editor-state/connection/ConnectionEditorState';
-import type { EditorStore } from '../../../../stores/EditorStore';
-import { NewConnectionValueDriver } from '../../../../stores/NewElementState';
-import { externalFormat_urlStream_setUrl } from '../../../../stores/graphModifier/DSLExternalFormat_GraphModifierHelper';
+import { ConnectionValueState } from '../../../../stores/editor-state/element-editor-state/connection/ConnectionEditorState.js';
+import type { EditorStore } from '../../../../stores/EditorStore.js';
+import { NewConnectionValueDriver } from '../../../../stores/NewElementState.js';
+import { externalFormat_urlStream_setUrl } from '../../../../stores/graphModifier/DSLExternalFormat_GraphModifierHelper.js';
 
 export class ExternalFormatConnectionValueState extends ConnectionValueState {
   override connection: ExternalFormatConnection;

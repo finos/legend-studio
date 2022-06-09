@@ -16,9 +16,9 @@
 
 // eslint-disable-next-line no-restricted-imports
 /// <reference path="../../support/index.d.ts" />
-import { TEST_ID } from '../../../src/const';
-import { ElementEditorTester } from '../../utils/ElementEditorTester';
-import { SDLCHelperExtension } from '../../utils/ElementHelperExtension';
+import { TEST_ID } from '../../../src/const.js';
+import { ElementEditorTester } from '../../utils/ElementEditorTester.js';
+import { SDLCHelperExtension } from '../../utils/ElementHelperExtension.js';
 
 const TEXT =
   'Class model::Firm\n' +

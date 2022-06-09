@@ -15,11 +15,11 @@
  */
 
 import { hashArray } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../../../MetaModelConst';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../../../MetaModelConst.js';
 import {
   type V1_PropertyMappingVisitor,
   V1_PropertyMapping,
-} from '../../../../../model/packageableElements/mapping/V1_PropertyMapping';
+} from '../../../../../model/packageableElements/mapping/V1_PropertyMapping.js';
 
 export class V1_InlineEmbeddedPropertyMapping extends V1_PropertyMapping {
   id!: string;

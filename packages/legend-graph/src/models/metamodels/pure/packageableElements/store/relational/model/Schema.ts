@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst.js';
 import { type Hashable, hashArray } from '@finos/legend-shared';
-import type { Database } from './Database';
-import type { Table } from './Table';
-import type { View } from './View';
+import type { Database } from './Database.js';
+import type { Table } from './Table.js';
+import type { View } from './View.js';
 
 export class Schema implements Hashable {
   readonly _OWNER: Database;

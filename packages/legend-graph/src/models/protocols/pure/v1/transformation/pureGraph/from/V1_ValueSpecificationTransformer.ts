@@ -20,15 +20,15 @@ import {
   guaranteeType,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
-import { PRIMITIVE_TYPE } from '../../../../../../../MetaModelConst';
-import type { AlloySerializationConfigInstanceValue } from '../../../../../../metamodels/pure/valueSpecification/AlloySerializationConfig';
+import { PRIMITIVE_TYPE } from '../../../../../../../MetaModelConst.js';
+import type { AlloySerializationConfigInstanceValue } from '../../../../../../metamodels/pure/valueSpecification/AlloySerializationConfig.js';
 import {
   type GraphFetchTree,
   type PropertyGraphFetchTreeInstanceValue,
   type RootGraphFetchTreeInstanceValue,
   PropertyGraphFetchTree,
   RootGraphFetchTree,
-} from '../../../../../../metamodels/pure/valueSpecification/GraphFetchTree';
+} from '../../../../../../metamodels/pure/valueSpecification/GraphFetchTree.js';
 import type {
   PrimitiveInstanceValue,
   EnumValueInstanceValue,
@@ -38,51 +38,51 @@ import type {
   PureListInstanceValue,
   CollectionInstanceValue,
   InstanceValue,
-} from '../../../../../../metamodels/pure/valueSpecification/InstanceValue';
+} from '../../../../../../metamodels/pure/valueSpecification/InstanceValue.js';
 import {
   LambdaFunctionInstanceValue,
   type LambdaFunction,
-} from '../../../../../../metamodels/pure/valueSpecification/LambdaFunction';
+} from '../../../../../../metamodels/pure/valueSpecification/LambdaFunction.js';
 import type {
   AbstractPropertyExpression,
   FunctionExpression,
   SimpleFunctionExpression,
-} from '../../../../../../metamodels/pure/valueSpecification/SimpleFunctionExpression';
+} from '../../../../../../metamodels/pure/valueSpecification/SimpleFunctionExpression.js';
 import {
   type ValueSpecificationVisitor,
   ValueSpecification,
-} from '../../../../../../metamodels/pure/valueSpecification/ValueSpecification';
-import type { VariableExpression } from '../../../../../../metamodels/pure/valueSpecification/VariableExpression';
-import { V1_Lambda } from '../../../model/valueSpecification/raw/V1_Lambda';
-import type { V1_ValueSpecification } from '../../../model/valueSpecification/V1_ValueSpecification';
-import { V1_Variable } from '../../../model/valueSpecification/V1_Variable';
-import { V1_AppliedFunction } from '../../../model/valueSpecification/application/V1_AppliedFunction';
-import { V1_AppliedProperty } from '../../../model/valueSpecification/application/V1_AppliedProperty';
-import { V1_CString } from '../../../model/valueSpecification/raw/V1_CString';
-import { V1_CInteger } from '../../../model/valueSpecification/raw/V1_CInteger';
-import { V1_CDecimal } from '../../../model/valueSpecification/raw/V1_CDecimal';
-import { V1_CBoolean } from '../../../model/valueSpecification/raw/V1_CBoolean';
-import { V1_CFloat } from '../../../model/valueSpecification/raw/V1_CFloat';
-import { V1_CDateTime } from '../../../model/valueSpecification/raw/V1_CDateTime';
-import { V1_CStrictDate } from '../../../model/valueSpecification/raw/V1_CStrictDate';
-import { V1_CStrictTime } from '../../../model/valueSpecification/raw/V1_CStrictTime';
-import { V1_CLatestDate } from '../../../model/valueSpecification/raw/V1_CLatestDate';
-import { V1_Multiplicity } from '../../../model/packageableElements/domain/V1_Multiplicity';
-import { V1_EnumValue } from '../../../model/valueSpecification/raw/V1_EnumValue';
-import { V1_PropertyGraphFetchTree } from '../../../model/valueSpecification/raw/graph/V1_PropertyGraphFetchTree';
-import { V1_RootGraphFetchTree } from '../../../model/valueSpecification/raw/graph/V1_RootGraphFetchTree';
-import type { V1_GraphFetchTree } from '../../../model/valueSpecification/raw/graph/V1_GraphFetchTree';
-import { V1_Collection } from '../../../model/valueSpecification/raw/V1_Collection';
-import { V1_PackageableElementPtr } from '../../../model/valueSpecification/raw/V1_PackageableElementPtr';
-import { PackageableElementReference } from '../../../../../../metamodels/pure/packageableElements/PackageableElementReference';
-import { Unit } from '../../../../../../metamodels/pure/packageableElements/domain/Measure';
-import { Class } from '../../../../../../metamodels/pure/packageableElements/domain/Class';
-import { V1_HackedUnit } from '../../../model/valueSpecification/raw/V1_HackedUnit';
-import { V1_HackedClass } from '../../../model/valueSpecification/raw/V1_HackedClass';
-import type { PackageableElement } from '../../../../../../metamodels/pure/packageableElements/PackageableElement';
-import type { INTERNAL__UnknownValueSpecification } from '../../../../../../metamodels/pure/valueSpecification/INTERNAL__UnknownValueSpecification';
-import { V1_INTERNAL__UnknownValueSpecification } from '../../../model/valueSpecification/V1_INTERNAL__UnknownValueSpecfication';
-import type { INTERNAL__PropagatedValue } from '../../../../../../metamodels/pure/valueSpecification/INTERNAL__PropagatedValue';
+} from '../../../../../../metamodels/pure/valueSpecification/ValueSpecification.js';
+import type { VariableExpression } from '../../../../../../metamodels/pure/valueSpecification/VariableExpression.js';
+import { V1_Lambda } from '../../../model/valueSpecification/raw/V1_Lambda.js';
+import type { V1_ValueSpecification } from '../../../model/valueSpecification/V1_ValueSpecification.js';
+import { V1_Variable } from '../../../model/valueSpecification/V1_Variable.js';
+import { V1_AppliedFunction } from '../../../model/valueSpecification/application/V1_AppliedFunction.js';
+import { V1_AppliedProperty } from '../../../model/valueSpecification/application/V1_AppliedProperty.js';
+import { V1_CString } from '../../../model/valueSpecification/raw/V1_CString.js';
+import { V1_CInteger } from '../../../model/valueSpecification/raw/V1_CInteger.js';
+import { V1_CDecimal } from '../../../model/valueSpecification/raw/V1_CDecimal.js';
+import { V1_CBoolean } from '../../../model/valueSpecification/raw/V1_CBoolean.js';
+import { V1_CFloat } from '../../../model/valueSpecification/raw/V1_CFloat.js';
+import { V1_CDateTime } from '../../../model/valueSpecification/raw/V1_CDateTime.js';
+import { V1_CStrictDate } from '../../../model/valueSpecification/raw/V1_CStrictDate.js';
+import { V1_CStrictTime } from '../../../model/valueSpecification/raw/V1_CStrictTime.js';
+import { V1_CLatestDate } from '../../../model/valueSpecification/raw/V1_CLatestDate.js';
+import { V1_Multiplicity } from '../../../model/packageableElements/domain/V1_Multiplicity.js';
+import { V1_EnumValue } from '../../../model/valueSpecification/raw/V1_EnumValue.js';
+import { V1_PropertyGraphFetchTree } from '../../../model/valueSpecification/raw/graph/V1_PropertyGraphFetchTree.js';
+import { V1_RootGraphFetchTree } from '../../../model/valueSpecification/raw/graph/V1_RootGraphFetchTree.js';
+import type { V1_GraphFetchTree } from '../../../model/valueSpecification/raw/graph/V1_GraphFetchTree.js';
+import { V1_Collection } from '../../../model/valueSpecification/raw/V1_Collection.js';
+import { V1_PackageableElementPtr } from '../../../model/valueSpecification/raw/V1_PackageableElementPtr.js';
+import { PackageableElementReference } from '../../../../../../metamodels/pure/packageableElements/PackageableElementReference.js';
+import { Unit } from '../../../../../../metamodels/pure/packageableElements/domain/Measure.js';
+import { Class } from '../../../../../../metamodels/pure/packageableElements/domain/Class.js';
+import { V1_HackedUnit } from '../../../model/valueSpecification/raw/V1_HackedUnit.js';
+import { V1_HackedClass } from '../../../model/valueSpecification/raw/V1_HackedClass.js';
+import type { PackageableElement } from '../../../../../../metamodels/pure/packageableElements/PackageableElement.js';
+import type { INTERNAL__UnknownValueSpecification } from '../../../../../../metamodels/pure/valueSpecification/INTERNAL__UnknownValueSpecification.js';
+import { V1_INTERNAL__UnknownValueSpecification } from '../../../model/valueSpecification/V1_INTERNAL__UnknownValueSpecfication.js';
+import type { INTERNAL__PropagatedValue } from '../../../../../../metamodels/pure/valueSpecification/INTERNAL__PropagatedValue.js';
 
 class V1_ValueSpecificationTransformer
   implements ValueSpecificationVisitor<V1_ValueSpecification>

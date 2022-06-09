@@ -6,7 +6,7 @@
     "rootDir": "src",
     "jsx": "react-jsxdev"
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.json"],
+  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.json", "src/**/*.cts"],
   "references": [
     { "path": "../legend-shared" },
     { "path": "../legend-art" },

@@ -29,16 +29,16 @@ import {
   GenericType,
   PRIMITIVE_TYPE,
 } from '@finos/legend-graph';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const.js';
 import { assertTrue, guaranteeType } from '@finos/legend-shared';
-import { SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
 import {
   QueryBuilderAggregateColumnState,
   QueryBuilderAggregateOperator,
-} from '../QueryBuilderAggregationState';
+} from '../QueryBuilderAggregationState.js';
 import {
   type QueryBuilderProjectionColumnState,
   QueryBuilderSimpleProjectionColumnState,
-} from '../QueryBuilderProjectionState';
+} from '../QueryBuilderProjectionState.js';
 
 export class QueryBuilderAggregateOperator_JoinString extends QueryBuilderAggregateOperator {
   getLabel(projectionColumnState: QueryBuilderProjectionColumnState): string {
@@ -69,7 +69,9 @@ export class QueryBuilderAggregateOperator_JoinString extends QueryBuilderAggreg
       TYPICAL_MULTIPLICITY_TYPE.ONE,
     );
     const expression = new SimpleFunctionExpression(
-      extractElementNameFromPath(SUPPORTED_FUNCTIONS.JOIN_STRINGS),
+      extractElementNameFromPath(
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.JOIN_STRINGS,
+      ),
       multiplicityOne,
     );
     const delimiter = new PrimitiveInstanceValue(
@@ -94,7 +96,7 @@ export class QueryBuilderAggregateOperator_JoinString extends QueryBuilderAggreg
     if (
       matchFunctionName(
         expression.functionName,
-        SUPPORTED_FUNCTIONS.JOIN_STRINGS,
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.JOIN_STRINGS,
       )
     ) {
       const aggregateColumnState = new QueryBuilderAggregateColumnState(

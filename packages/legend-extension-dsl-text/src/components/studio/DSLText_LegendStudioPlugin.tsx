@@ -34,10 +34,10 @@ import {
   type PureGrammarParserElementDocumentationGetter,
 } from '@finos/legend-studio';
 import { FileIcon } from '@finos/legend-art';
-import { TextEditorState } from '../../stores/studio/TextEditorState';
-import { TextElementEditor } from './TextElementEditor';
+import { TextEditorState } from '../../stores/studio/TextEditorState.js';
+import { TextElementEditor } from './TextElementEditor.js';
 import type { PackageableElement } from '@finos/legend-graph';
-import { Text } from '../../models/metamodels/pure/model/packageableElements/text/DSLText_Text';
+import { Text } from '../../models/metamodels/pure/model/packageableElements/text/DSLText_Text.js';
 import {
   collectKeyedDocumnetationEntriesFromConfig,
   type LegendApplicationDocumentationEntry,
@@ -46,16 +46,16 @@ import {
 import {
   DSL_TEXT_DOCUMENTATION_ENTRIES,
   DSL_TEXT_LEGEND_STUDIO_DOCUMENTATION_KEY,
-} from './DSLText_LegendStudioDocumentation';
+} from './DSLText_LegendStudioDocumentation.js';
 import {
   PURE_GRAMMAR_TEXT_ELEMENT_TYPE_LABEL,
   PURE_GRAMMAR_TEXT_PARSER_NAME,
-} from '../../graphManager/DSLText_PureGraphManagerPlugin';
+} from '../../graphManager/DSLText_PureGraphManagerPlugin.js';
 import {
   MARKDOWN_TEXT_SNIPPET,
   PLAIN_TEXT_SNIPPET,
-} from './DSLText_CodeSnippets';
-import { create_TextElement } from '../../helper/DSLText_Helper';
+} from './DSLText_CodeSnippets.js';
+import { create_TextElement } from '../../helper/DSLText_Helper.js';
 
 const TEXT_ELEMENT_TYPE = 'TEXT';
 const TEXT_ELEMENT_PROJECT_EXPLORER_DND_TYPE = 'PROJECT_EXPLORER_TEXT';
@@ -168,8 +168,8 @@ export class DSLText_LegendStudioPlugin
       ): LegendApplicationDocumentationEntry | undefined => {
         if (parserKeyword === PURE_GRAMMAR_TEXT_PARSER_NAME) {
           if (elementKeyword === PURE_GRAMMAR_TEXT_ELEMENT_TYPE_LABEL) {
-            return editorStore.applicationStore.docRegistry.getEntry(
-              DSL_TEXT_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_TEXT_ELEMENT,
+            return editorStore.applicationStore.documentationService.getDocEntry(
+              DSL_TEXT_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_ELEMENT_TEXT,
             );
           }
         }
@@ -185,7 +185,7 @@ export class DSLText_LegendStudioPlugin
         parserKeyword: string,
       ): LegendApplicationDocumentationEntry | undefined => {
         if (parserKeyword === PURE_GRAMMAR_TEXT_PARSER_NAME) {
-          return editorStore.applicationStore.docRegistry.getEntry(
+          return editorStore.applicationStore.documentationService.getDocEntry(
             DSL_TEXT_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER,
           );
         }
@@ -200,9 +200,10 @@ export class DSLText_LegendStudioPlugin
         {
           text: PURE_GRAMMAR_TEXT_PARSER_NAME,
           description: `(dsl)`,
-          documentation: editorStore.applicationStore.docRegistry.getEntry(
-            DSL_TEXT_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER,
-          ),
+          documentation:
+            editorStore.applicationStore.documentationService.getDocEntry(
+              DSL_TEXT_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER,
+            ),
           insertText: PURE_GRAMMAR_TEXT_PARSER_NAME,
         },
       ],

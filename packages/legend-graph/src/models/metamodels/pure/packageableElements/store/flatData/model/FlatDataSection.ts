@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst.js';
 import { type Hashable, hashArray } from '@finos/legend-shared';
-import type { FlatData } from './FlatData';
-import type { FlatDataProperty } from './FlatDataProperty';
-import type { RootFlatDataRecordType } from './FlatDataDataType';
+import type { FlatData } from './FlatData.js';
+import type { FlatDataProperty } from './FlatDataProperty.js';
+import type { RootFlatDataRecordType } from './FlatDataDataType.js';
 
 export class FlatDataSection implements Hashable {
   readonly _OWNER: FlatData;

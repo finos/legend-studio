@@ -18,10 +18,10 @@ import {
   PackageableElementExplicitReference,
   type PackageableElementReference,
   type PackageableElementImplicitReference,
-} from '../PackageableElementReference';
-import type { Enumeration } from './Enumeration';
-import type { Enum } from './Enum';
-import { ReferenceWithOwner } from '../../Reference';
+} from '../PackageableElementReference.js';
+import type { Enumeration } from './Enumeration.js';
+import type { Enum } from './Enum.js';
+import { ReferenceWithOwner } from '../../Reference.js';
 
 export abstract class EnumValueReference extends ReferenceWithOwner {
   override readonly ownerReference: PackageableElementReference<Enumeration>;

@@ -17,8 +17,8 @@
 import { useRef, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Link } from 'react-router-dom';
-import { EntityDiffViewState } from '../../../stores/editor-state/entity-diff-editor-state/EntityDiffViewState';
-import { EntityDiffSideBarItem } from '../../editor/edit-panel/diff-editor/EntityDiffView';
+import { EntityDiffViewState } from '../../../stores/editor-state/entity-diff-editor-state/EntityDiffViewState.js';
+import { EntityDiffSideBarItem } from '../../editor/edit-panel/diff-editor/EntityDiffView.js';
 import {
   clsx,
   PanelLoadingIndicator,
@@ -29,20 +29,20 @@ import {
   PlusIcon,
   ExternalLinkSquareIcon,
 } from '@finos/legend-art';
-import { ACTIVITY_MODE } from '../../../stores/EditorConfig';
+import { ACTIVITY_MODE } from '../../../stores/EditorConfig.js';
 import { formatDistanceToNow } from 'date-fns';
-import { generateReviewRoute } from '../../../stores/LegendStudioRouter';
-import { LEGEND_STUDIO_TEST_ID } from '../../LegendStudioTestID';
+import { generateReviewRoute } from '../../../stores/LegendStudioRouter.js';
+import { LEGEND_STUDIO_TEST_ID } from '../../LegendStudioTestID.js';
 import { flowResult } from 'mobx';
 import type { EntityDiff } from '@finos/legend-server-sdlc';
-import { entityDiffSorter } from '../../../stores/EditorSDLCState';
-import { useEditorStore } from '../EditorStoreProvider';
+import { entityDiffSorter } from '../../../stores/EditorSDLCState.js';
+import { useEditorStore } from '../EditorStoreProvider.js';
 import {
   ActionAlertType,
   ActionAlertActionType,
   useApplicationStore,
 } from '@finos/legend-application';
-import type { LegendStudioConfig } from '../../../application/LegendStudioConfig';
+import type { LegendStudioConfig } from '../../../application/LegendStudioConfig.js';
 
 export const WorkspaceReviewDiffs = observer(() => {
   const editorStore = useEditorStore();

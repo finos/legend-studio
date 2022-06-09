@@ -28,9 +28,9 @@ import {
 import {
   COLUMN_SORT_TYPE,
   SortColumnState,
-} from '../stores/QueryResultSetModifierState';
-import type { QueryBuilderState } from '../stores/QueryBuilderState';
-import type { QueryBuilderProjectionColumnState } from '../stores/QueryBuilderProjectionState';
+} from '../stores/QueryResultSetModifierState.js';
+import type { QueryBuilderState } from '../stores/QueryBuilderState.js';
+import type { QueryBuilderProjectionColumnState } from '../stores/QueryBuilderProjectionState.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 
 const ColumnSortEditor = observer(

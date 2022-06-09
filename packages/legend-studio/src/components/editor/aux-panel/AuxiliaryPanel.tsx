@@ -17,11 +17,11 @@
 import { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { clsx, ChevronUpIcon, ChevronDownIcon, XIcon } from '@finos/legend-art';
-import { Console } from './Console';
-import { AUX_PANEL_MODE } from '../../../stores/EditorConfig';
+import { Console } from './Console.js';
+import { AUX_PANEL_MODE } from '../../../stores/EditorConfig.js';
 import { isNonNullable } from '@finos/legend-shared';
-import { DevTool } from './DevTool';
-import { useEditorStore } from '../EditorStoreProvider';
+import { DevTool } from './DevTool.js';
+import { useEditorStore } from '../EditorStoreProvider.js';
 
 export const AuxiliaryPanel = observer(() => {
   const editorStore = useEditorStore();

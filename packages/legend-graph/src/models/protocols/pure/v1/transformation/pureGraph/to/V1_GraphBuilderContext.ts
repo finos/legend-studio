@@ -18,7 +18,7 @@ import {
   PRIMITIVE_TYPE,
   ELEMENT_PATH_DELIMITER,
   ROOT_PACKAGE_NAME,
-} from '../../../../../../../MetaModelConst';
+} from '../../../../../../../MetaModelConst.js';
 import {
   type Log,
   uniq,
@@ -26,75 +26,75 @@ import {
   assertNonEmptyString,
   guaranteeType,
 } from '@finos/legend-shared';
-import { GenericType } from '../../../../../../metamodels/pure/packageableElements/domain/GenericType';
-import type { PackageableElement } from '../../../../../../metamodels/pure/packageableElements/PackageableElement';
-import type { PureModel } from '../../../../../../../graph/PureModel';
-import type { Package } from '../../../../../../metamodels/pure/packageableElements/domain/Package';
+import { GenericType } from '../../../../../../metamodels/pure/packageableElements/domain/GenericType.js';
+import type { PackageableElement } from '../../../../../../metamodels/pure/packageableElements/PackageableElement.js';
+import type { PureModel } from '../../../../../../../graph/PureModel.js';
+import type { Package } from '../../../../../../metamodels/pure/packageableElements/domain/Package.js';
 import {
   type Section,
   ImportAwareCodeSection,
-} from '../../../../../../metamodels/pure/packageableElements/section/Section';
-import { StereotypeImplicitReference } from '../../../../../../metamodels/pure/packageableElements/domain/StereotypeReference';
-import { GenericTypeImplicitReference } from '../../../../../../metamodels/pure/packageableElements/domain/GenericTypeReference';
-import type { Type } from '../../../../../../metamodels/pure/packageableElements/domain/Type';
-import type { Class } from '../../../../../../metamodels/pure/packageableElements/domain/Class';
-import type { Enumeration } from '../../../../../../metamodels/pure/packageableElements/domain/Enumeration';
-import type { Association } from '../../../../../../metamodels/pure/packageableElements/domain/Association';
-import type { Mapping } from '../../../../../../metamodels/pure/packageableElements/mapping/Mapping';
-import type { Profile } from '../../../../../../metamodels/pure/packageableElements/domain/Profile';
-import type { ConcreteFunctionDefinition } from '../../../../../../metamodels/pure/packageableElements/domain/ConcreteFunctionDefinition';
-import type { Store } from '../../../../../../metamodels/pure/packageableElements/store/Store';
-import type { Service } from '../../../../../../metamodels/pure/packageableElements/service/Service';
-import type { FlatData } from '../../../../../../metamodels/pure/packageableElements/store/flatData/model/FlatData';
-import type { Database } from '../../../../../../metamodels/pure/packageableElements/store/relational/model/Database';
-import type { PackageableConnection } from '../../../../../../metamodels/pure/packageableElements/connection/PackageableConnection';
-import type { PackageableRuntime } from '../../../../../../metamodels/pure/packageableElements/runtime/PackageableRuntime';
-import type { FileGenerationSpecification } from '../../../../../../metamodels/pure/packageableElements/fileGeneration/FileGenerationSpecification';
-import type { GenerationSpecification } from '../../../../../../metamodels/pure/packageableElements/generationSpecification/GenerationSpecification';
+} from '../../../../../../metamodels/pure/packageableElements/section/Section.js';
+import { StereotypeImplicitReference } from '../../../../../../metamodels/pure/packageableElements/domain/StereotypeReference.js';
+import { GenericTypeImplicitReference } from '../../../../../../metamodels/pure/packageableElements/domain/GenericTypeReference.js';
+import type { Type } from '../../../../../../metamodels/pure/packageableElements/domain/Type.js';
+import type { Class } from '../../../../../../metamodels/pure/packageableElements/domain/Class.js';
+import type { Enumeration } from '../../../../../../metamodels/pure/packageableElements/domain/Enumeration.js';
+import type { Association } from '../../../../../../metamodels/pure/packageableElements/domain/Association.js';
+import type { Mapping } from '../../../../../../metamodels/pure/packageableElements/mapping/Mapping.js';
+import type { Profile } from '../../../../../../metamodels/pure/packageableElements/domain/Profile.js';
+import type { ConcreteFunctionDefinition } from '../../../../../../metamodels/pure/packageableElements/domain/ConcreteFunctionDefinition.js';
+import type { Store } from '../../../../../../metamodels/pure/packageableElements/store/Store.js';
+import type { Service } from '../../../../../../metamodels/pure/packageableElements/service/Service.js';
+import type { FlatData } from '../../../../../../metamodels/pure/packageableElements/store/flatData/model/FlatData.js';
+import type { Database } from '../../../../../../metamodels/pure/packageableElements/store/relational/model/Database.js';
+import type { PackageableConnection } from '../../../../../../metamodels/pure/packageableElements/connection/PackageableConnection.js';
+import type { PackageableRuntime } from '../../../../../../metamodels/pure/packageableElements/runtime/PackageableRuntime.js';
+import type { FileGenerationSpecification } from '../../../../../../metamodels/pure/packageableElements/fileGeneration/FileGenerationSpecification.js';
+import type { GenerationSpecification } from '../../../../../../metamodels/pure/packageableElements/generationSpecification/GenerationSpecification.js';
 import type {
   Measure,
   Unit,
-} from '../../../../../../metamodels/pure/packageableElements/domain/Measure';
-import { PackageableElementImplicitReference } from '../../../../../../metamodels/pure/packageableElements/PackageableElementReference';
-import { TagImplicitReference } from '../../../../../../metamodels/pure/packageableElements/domain/TagReference';
-import { PropertyImplicitReference } from '../../../../../../metamodels/pure/packageableElements/domain/PropertyReference';
-import { JoinImplicitReference } from '../../../../../../metamodels/pure/packageableElements/store/relational/model/JoinReference';
-import { FilterImplicitReference } from '../../../../../../metamodels/pure/packageableElements/store/relational/model/FilterReference';
-import { RootFlatDataRecordTypeImplicitReference } from '../../../../../../metamodels/pure/packageableElements/store/flatData/model/RootFlatDataRecordTypeReference';
-import type { ViewImplicitReference } from '../../../../../../metamodels/pure/packageableElements/store/relational/model/ViewReference';
-import type { TableImplicitReference } from '../../../../../../metamodels/pure/packageableElements/store/relational/model/TableReference';
-import { createImplicitRelationReference } from '../../../../../../metamodels/pure/packageableElements/store/relational/model/RelationReference';
-import { EnumValueImplicitReference } from '../../../../../../metamodels/pure/packageableElements/domain/EnumValueReference';
-import type { V1_StereotypePtr } from '../../../model/packageableElements/domain/V1_StereotypePtr';
-import type { V1_PackageableElement } from '../../../model/packageableElements/V1_PackageableElement';
-import type { V1_TagPtr } from '../../../model/packageableElements/domain/V1_TagPtr';
-import type { V1_PropertyPointer } from '../../../model/packageableElements/domain/V1_PropertyPointer';
-import type { V1_JoinPointer } from '../../../model/packageableElements/store/relational/model/V1_JoinPointer';
-import type { V1_FilterPointer } from '../../../model/packageableElements/store/relational/mapping/V1_FilterPointer';
-import type { V1_RootFlatDataClassMapping } from '../../../model/packageableElements/store/flatData/mapping/V1_RootFlatDataClassMapping';
-import type { V1_TablePtr } from '../../../model/packageableElements/store/relational/model/V1_TablePtr';
-import { V1_getRelation } from './helpers/V1_DatabaseBuilderHelper';
-import type { BasicModel } from '../../../../../../../graph/BasicModel';
-import type { V1_GraphBuilderExtensions } from './V1_GraphBuilderExtensions';
-import type { GraphBuilderOptions } from '../../../../../../../graphManager/AbstractPureGraphManager';
-import { DataType } from '../../../../../../metamodels/pure/packageableElements/domain/DataType';
-import { GraphBuilderError } from '../../../../../../../graphManager/GraphManagerUtils';
-import type { DataElement } from '../../../../../../../DSLData_Exports';
+} from '../../../../../../metamodels/pure/packageableElements/domain/Measure.js';
+import { PackageableElementImplicitReference } from '../../../../../../metamodels/pure/packageableElements/PackageableElementReference.js';
+import { TagImplicitReference } from '../../../../../../metamodels/pure/packageableElements/domain/TagReference.js';
+import { PropertyImplicitReference } from '../../../../../../metamodels/pure/packageableElements/domain/PropertyReference.js';
+import { JoinImplicitReference } from '../../../../../../metamodels/pure/packageableElements/store/relational/model/JoinReference.js';
+import { FilterImplicitReference } from '../../../../../../metamodels/pure/packageableElements/store/relational/model/FilterReference.js';
+import { RootFlatDataRecordTypeImplicitReference } from '../../../../../../metamodels/pure/packageableElements/store/flatData/model/RootFlatDataRecordTypeReference.js';
+import type { ViewImplicitReference } from '../../../../../../metamodels/pure/packageableElements/store/relational/model/ViewReference.js';
+import type { TableImplicitReference } from '../../../../../../metamodels/pure/packageableElements/store/relational/model/TableReference.js';
+import { createImplicitRelationReference } from '../../../../../../metamodels/pure/packageableElements/store/relational/model/RelationReference.js';
+import { EnumValueImplicitReference } from '../../../../../../metamodels/pure/packageableElements/domain/EnumValueReference.js';
+import type { V1_StereotypePtr } from '../../../model/packageableElements/domain/V1_StereotypePtr.js';
+import type { V1_PackageableElement } from '../../../model/packageableElements/V1_PackageableElement.js';
+import type { V1_TagPtr } from '../../../model/packageableElements/domain/V1_TagPtr.js';
+import type { V1_PropertyPointer } from '../../../model/packageableElements/domain/V1_PropertyPointer.js';
+import type { V1_JoinPointer } from '../../../model/packageableElements/store/relational/model/V1_JoinPointer.js';
+import type { V1_FilterPointer } from '../../../model/packageableElements/store/relational/mapping/V1_FilterPointer.js';
+import type { V1_RootFlatDataClassMapping } from '../../../model/packageableElements/store/flatData/mapping/V1_RootFlatDataClassMapping.js';
+import type { V1_TablePtr } from '../../../model/packageableElements/store/relational/model/V1_TablePtr.js';
+import { V1_getRelation } from './helpers/V1_DatabaseBuilderHelper.js';
+import type { BasicModel } from '../../../../../../../graph/BasicModel.js';
+import type { V1_GraphBuilderExtensions } from './V1_GraphBuilderExtensions.js';
+import type { GraphBuilderOptions } from '../../../../../../../graphManager/AbstractPureGraphManager.js';
+import { DataType } from '../../../../../../metamodels/pure/packageableElements/domain/DataType.js';
+import { GraphBuilderError } from '../../../../../../../graphManager/GraphManagerUtils.js';
+import type { DataElement } from '../../../../../../../DSLData_Exports.js';
 import {
   getClassProperty,
   getEnumValue,
   getOwnClassProperty,
   getStereotype,
   getTag,
-} from '../../../../../../../helpers/DomainHelper';
+} from '../../../../../../../helpers/DomainHelper.js';
 import {
   getFilter,
   getJoin,
-} from '../../../../../../../helpers/StoreRelational_Helper';
+} from '../../../../../../../helpers/StoreRelational_Helper.js';
 import {
   getRootRecordType,
   getSection,
-} from '../../../../../../../helpers/StoreFlatData_Helper';
+} from '../../../../../../../helpers/StoreFlatData_Helper.js';
 
 export const V1_buildFullPath = (
   packagePath: string | undefined,

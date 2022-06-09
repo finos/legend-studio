@@ -262,6 +262,7 @@ export enum CORE_HASH_STRUCTURE {
   GCP_APPLICATION_DEFAULT_CREDENTIALS_AUTHENTICATION_STRATEGY = 'GCP_APPLICATION_DEFAULT_CREDENTIALS_AUTHENTICATION_STRATEGY',
   USERNAME_PASSWORD_AUTHENTICATION_STRATEGY = 'USERNAME_PASSWORD_AUTHENTICATION_STRATEGY',
   OAUTH_AUTHENTICATION_STRATEGY = 'OAUTH_AUTHENTICATION_STRATEGY',
+  GCP_WORKLOAD_IDENTITY_FEDERATION_AUTHENTICATION_STRATEGY = 'GCP_WORKLOAD_IDENTITY_FEDERATION_AUTHENTICATION_STRATEGY',
   // relational database connection post processors
   MAPPER_POST_PROCESSOR = 'MAPPER_POST_PROCESSOR',
   SCHEMA_MAPPER = 'SCHEMA_MAPPER',
@@ -369,4 +370,29 @@ export enum PackageableElementPointerType {
   RUNTIME = 'RUNTIME',
   FILE_GENERATION = 'FILE_GENERATION',
   SERVICE = 'SERVICE',
+}
+
+export const DURATION_UNIT = 'meta::pure::functions::date::DurationUnit';
+export const DAY_OF_WEEK = 'meta::pure::functions::date::DayOfWeek';
+
+export enum SUPPORTED_FUNCTIONS {
+  // date-time value helper functions
+  TODAY = 'meta::pure::functions::date::today',
+  NOW = 'meta::pure::functions::date::now',
+  FIRST_DAY_OF_WEEK = 'meta::pure::functions::date::firstDayOfThisWeek',
+  FIRST_DAY_OF_MONTH = 'meta::pure::functions::date::firstDayOfThisMonth',
+  FIRST_DAY_OF_QUARTER = 'meta::pure::functions::date::firstDayOfThisQuarter',
+  FIRST_DAY_OF_YEAR = 'meta::pure::functions::date::firstDayOfThisYear',
+  PREVIOUS_DAY_OF_WEEK = 'meta::pure::functions::date::previousDayOfWeek',
+  IS_ON_DAY = 'meta::pure::functions::date::isOnDay',
+  IS_ON_OR_AFTER_DAY = 'meta::pure::functions::date::isOnOrAfterDay',
+  IS_AFTER_DAY = 'meta::pure::functions::date::isAfterDay',
+  IS_ON_OR_BEFORE_DAY = 'meta::pure::functions::date::isOnOrBeforeDay',
+  IS_BEFORE_DAY = 'meta::pure::functions::date::isBeforeDay',
+
+  // adjust time
+  MINUS = 'meta::pure::functions::math::minus',
+  ADJUST = 'meta::pure::functions::date::adjust',
+  // variables
+  LET = 'meta::pure::functions::lang::letFunction',
 }

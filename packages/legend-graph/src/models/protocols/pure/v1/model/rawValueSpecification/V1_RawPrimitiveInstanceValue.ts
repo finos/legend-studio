@@ -15,12 +15,12 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../MetaModelConst';
+import { CORE_HASH_STRUCTURE } from '../../../../../../MetaModelConst.js';
 import {
   type V1_RawValueSpecificationVisitor,
   V1_RawValueSpecification,
-} from './V1_RawValueSpecification';
-import type { V1_Multiplicity } from '../packageableElements/domain/V1_Multiplicity';
+} from './V1_RawValueSpecification.js';
+import type { V1_Multiplicity } from '../packageableElements/domain/V1_Multiplicity.js';
 
 export class V1_RawPrimitiveInstanceValue
   extends V1_RawValueSpecification

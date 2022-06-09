@@ -15,10 +15,10 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import type { Multiplicity } from '../domain/Multiplicity';
-import type { Type } from '../domain/Type';
-import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
-import type { PackageableElementReference } from '../PackageableElementReference';
+import type { Multiplicity } from '../domain/Multiplicity.js';
+import type { Type } from '../domain/Type.js';
+import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst.js';
+import type { PackageableElementReference } from '../PackageableElementReference.js';
 
 export class LocalMappingPropertyInfo implements Hashable {
   localMappingProperty!: boolean;

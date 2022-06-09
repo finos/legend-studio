@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-import { unitTest } from '../application/TestUtils';
-import { Randomizer } from '../application/RandomizerUtils';
+import { test, expect } from '@jest/globals';
+import { unitTest } from '../application/TestUtils.js';
+import { Randomizer } from '../application/RandomizerUtils.js';
 
 const NUMBER_OF_ITERATIONS = 10000;
 const repeater = (fn: () => void, repeat = NUMBER_OF_ITERATIONS): void => {

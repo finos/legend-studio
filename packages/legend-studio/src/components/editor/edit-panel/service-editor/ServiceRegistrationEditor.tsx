@@ -15,7 +15,7 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { ServiceEditorState } from '../../../../stores/editor-state/element-editor-state/service/ServiceEditorState';
+import { ServiceEditorState } from '../../../../stores/editor-state/element-editor-state/service/ServiceEditorState.js';
 import {
   clsx,
   PanelLoadingIndicator,
@@ -24,11 +24,11 @@ import {
   SquareIcon,
 } from '@finos/legend-art';
 import { prettyCONSTName } from '@finos/legend-shared';
-import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID';
+import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID.js';
 import { ServiceExecutionMode } from '@finos/legend-graph';
 import { flowResult } from 'mobx';
 import { Version } from '@finos/legend-server-sdlc';
-import { useEditorStore } from '../../EditorStoreProvider';
+import { useEditorStore } from '../../EditorStoreProvider.js';
 import { useApplicationStore } from '@finos/legend-application';
 
 export const ServiceRegistrationEditor = observer(() => {

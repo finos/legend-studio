@@ -18,14 +18,14 @@ import {
   PackageableElementExplicitReference,
   type PackageableElementReference,
   type PackageableElementImplicitReference,
-} from '../../../PackageableElementReference';
-import { ReferenceWithOwner } from '../../../../Reference';
-import type { Database } from './Database';
-import type { Column } from './Column';
-import type { Relation } from './RelationalOperationElement';
-import type { Schema } from './Schema';
-import { View } from './View';
-import { Table } from './Table';
+} from '../../../PackageableElementReference.js';
+import { ReferenceWithOwner } from '../../../../Reference.js';
+import type { Database } from './Database.js';
+import type { Column } from './Column.js';
+import type { Relation } from './RelationalOperationElement.js';
+import type { Schema } from './Schema.js';
+import { View } from './View.js';
+import { Table } from './Table.js';
 import { UnsupportedOperationError } from '@finos/legend-shared';
 
 const getSchemaFromRelation = (value: Relation): Schema => {

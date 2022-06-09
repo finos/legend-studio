@@ -15,9 +15,9 @@
  */
 
 import { action, makeAutoObservable } from 'mobx';
-import type { QueryBuilderState } from './QueryBuilderState';
-import { QueryBuilderGraphFetchTreeState } from './QueryBuilderGraphFetchTreeState';
-import { QueryBuilderProjectionState } from './QueryBuilderProjectionState';
+import type { QueryBuilderState } from './QueryBuilderState.js';
+import { QueryBuilderGraphFetchTreeState } from './QueryBuilderGraphFetchTreeState.js';
+import { QueryBuilderProjectionState } from './QueryBuilderProjectionState.js';
 
 export enum FETCH_STRUCTURE_MODE {
   PROJECTION = 'PROJECTION',

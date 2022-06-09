@@ -19,12 +19,12 @@ import {
   UnsupportedOperationError,
   type Hashable,
 } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst.js';
 import {
   type V1_PackageableElementVisitor,
   V1_PackageableElement,
-} from '../../../model/packageableElements/V1_PackageableElement';
-import type { V1_RawLambda } from '../../../model/rawValueSpecification/V1_RawLambda';
+} from '../../../model/packageableElements/V1_PackageableElement.js';
+import type { V1_RawLambda } from '../../../model/rawValueSpecification/V1_RawLambda.js';
 
 export class V1_Unit extends V1_PackageableElement implements Hashable {
   measure!: string;

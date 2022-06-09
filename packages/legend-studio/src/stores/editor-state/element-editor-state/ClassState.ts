@@ -21,7 +21,7 @@ import {
   LogEvent,
   guaranteeNonNullable,
 } from '@finos/legend-shared';
-import type { EditorStore } from '../../EditorStore';
+import type { EditorStore } from '../../EditorStore.js';
 import {
   type Class,
   type Constraint,
@@ -41,7 +41,7 @@ import {
   constraint_setFunctionDefinition,
   derivedProperty_setBody,
   derivedProperty_setParameters,
-} from '../../graphModifier/DomainGraphModifierHelper';
+} from '../../graphModifier/DomainGraphModifierHelper.js';
 
 export const CONSTRAINT_SOURCE_ID_LABEL = 'constraint';
 export const DERIVED_PROPERTY_SOURCE_ID_LABEL = 'derivedProperty';
@@ -85,9 +85,9 @@ export class DerivedPropertyState extends LambdaEditorState {
           (yield this.editorStore.graphManagerState.graphManager.pureCodeToLambda(
             this.fullLambdaString,
             this.lambdaId,
-          )) as RawLambda | undefined;
+          )) as RawLambda;
         this.setParserError(undefined);
-        this.setBodyAndParameters(lambda ?? emptyLambda);
+        this.setBodyAndParameters(lambda);
       } catch (error) {
         assertErrorThrown(error);
         if (error instanceof ParserError) {
@@ -174,12 +174,9 @@ export class ConstraintState extends LambdaEditorState {
           (yield this.editorStore.graphManagerState.graphManager.pureCodeToLambda(
             this.fullLambdaString,
             this.lambdaId,
-          )) as RawLambda | undefined;
+          )) as RawLambda;
         this.setParserError(undefined);
-        constraint_setFunctionDefinition(
-          this.constraint,
-          lambda ?? emptyFunctionDefinition,
-        );
+        constraint_setFunctionDefinition(this.constraint, lambda);
       } catch (error) {
         assertErrorThrown(error);
         if (error instanceof ParserError) {

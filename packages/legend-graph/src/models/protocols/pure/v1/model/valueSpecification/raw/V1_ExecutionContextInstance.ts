@@ -17,8 +17,8 @@
 import {
   type V1_ValueSpecificationVisitor,
   V1_ValueSpecification,
-} from '../../../model/valueSpecification/V1_ValueSpecification';
-import type { V1_ExecutionContext } from './executionContext/V1_ExecutionContext';
+} from '../../../model/valueSpecification/V1_ValueSpecification.js';
+import type { V1_ExecutionContext } from './executionContext/V1_ExecutionContext.js';
 
 export class V1_ExecutionContextInstance extends V1_ValueSpecification {
   executionContext!: V1_ExecutionContext;

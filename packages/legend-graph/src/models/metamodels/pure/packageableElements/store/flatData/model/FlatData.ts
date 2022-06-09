@@ -15,10 +15,10 @@
  */
 
 import { type Hashable, hashArray } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
-import type { FlatDataSection } from './FlatDataSection';
-import { Store } from '../../Store';
-import type { PackageableElementVisitor } from '../../../PackageableElement';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst.js';
+import type { FlatDataSection } from './FlatDataSection.js';
+import { Store } from '../../Store.js';
+import type { PackageableElementVisitor } from '../../../PackageableElement.js';
 
 export class FlatData extends Store implements Hashable {
   sections: FlatDataSection[] = [];

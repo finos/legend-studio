@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { test, expect, describe } from '@jest/globals';
 import type { Entity } from '@finos/legend-model-storage';
 import { unitTest } from '@finos/legend-shared';
 import {
@@ -36,19 +37,19 @@ import {
   TEST_DATA__temporalModel,
   TEST_DATA__personWithSubType,
   TEST_DATA_dateCompabilityForFilterAndPostFilter,
-} from './TEST_DATA__QueryBuilder_LambdaProcessingRoundtrip';
+} from './TEST_DATA__QueryBuilder_LambdaProcessingRoundtrip.js';
 import TEST_DATA__PostFilterModel from './TEST_DATA__QueryBuilder_Model_PostFilter.json';
 import {
   simpleDerivationProjection,
   groupByWithDerivationProjection,
   groupByWithDerivationAndAggregation,
-} from './TEST_DATA__QueryBuilder_ProcessingRoundtrip_TestDerivation';
+} from './TEST_DATA__QueryBuilder_ProcessingRoundtrip_TestDerivation.js';
 import {
   TEST__buildGraphWithEntities,
   TEST__getTestGraphManagerState,
 } from '@finos/legend-graph';
-import { Query_GraphPreset } from '../../models/Query_GraphPreset';
-import { LegendQueryPluginManager } from '../../application/LegendQueryPluginManager';
+import { Query_GraphPreset } from '../../models/Query_GraphPreset.js';
+import { LegendQueryPluginManager } from '../../application/LegendQueryPluginManager.js';
 
 const pluginManager = LegendQueryPluginManager.create();
 pluginManager.usePresets([new Query_GraphPreset()]).install();
@@ -152,22 +153,29 @@ const cases: RoundtripTestCase[] = [
 ];
 
 describe(unitTest('Lambda processing roundtrip test'), () => {
-  test.each(cases)('%s', async (testName, context, lambdaJson) => {
-    const { entities } = context;
-    const graphManagerState = TEST__getTestGraphManagerState(pluginManager);
-    await TEST__buildGraphWithEntities(graphManagerState, entities);
-    // roundtrip check
-    const lambda = graphManagerState.graphManager.buildValueSpecification(
-      lambdaJson,
-      graphManagerState.graph,
-    );
-    const _lambdaJson =
-      graphManagerState.graphManager.serializeRawValueSpecification(
-        graphManagerState.graphManager.buildRawValueSpecification(
-          lambda,
-          graphManagerState.graph,
-        ),
+  test.each(cases)(
+    '%s',
+    async (
+      testName: RoundtripTestCase[0],
+      context: RoundtripTestCase[1],
+      lambdaJson: RoundtripTestCase[2],
+    ) => {
+      const { entities } = context;
+      const graphManagerState = TEST__getTestGraphManagerState(pluginManager);
+      await TEST__buildGraphWithEntities(graphManagerState, entities);
+      // roundtrip check
+      const lambda = graphManagerState.graphManager.buildValueSpecification(
+        lambdaJson,
+        graphManagerState.graph,
       );
-    expect(_lambdaJson).toEqual(lambdaJson);
-  });
+      const _lambdaJson =
+        graphManagerState.graphManager.serializeRawValueSpecification(
+          graphManagerState.graphManager.buildRawValueSpecification(
+            lambda,
+            graphManagerState.graph,
+          ),
+        );
+      expect(_lambdaJson).toEqual(lambdaJson);
+    },
+  );
 });

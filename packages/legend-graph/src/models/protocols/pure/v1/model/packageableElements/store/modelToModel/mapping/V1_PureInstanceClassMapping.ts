@@ -15,13 +15,13 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../../../MetaModelConst';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../../../MetaModelConst.js';
 import {
   type V1_ClassMappingVisitor,
   V1_ClassMapping,
-} from '../../../../../model/packageableElements/mapping/V1_ClassMapping';
-import type { V1_PropertyMapping } from '../../../../../model/packageableElements/mapping/V1_PropertyMapping';
-import type { V1_RawLambda } from '../../../../../model/rawValueSpecification/V1_RawLambda';
+} from '../../../../../model/packageableElements/mapping/V1_ClassMapping.js';
+import type { V1_PropertyMapping } from '../../../../../model/packageableElements/mapping/V1_PropertyMapping.js';
+import type { V1_RawLambda } from '../../../../../model/rawValueSpecification/V1_RawLambda.js';
 
 export class V1_PureInstanceClassMapping
   extends V1_ClassMapping

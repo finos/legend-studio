@@ -14,15 +14,14 @@
  * limitations under the License.
  */
 
-import format from 'date-fns/format';
-import addDays from 'date-fns/addDays';
+import { format, addDays } from 'date-fns';
 import {
   assertErrorThrown,
   Randomizer,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
-import type { EditorStore } from '../EditorStore';
-import type { MappingElementSource } from '../editor-state/element-editor-state/mapping/MappingEditorState';
+import type { EditorStore } from '../EditorStore.js';
+import type { MappingElementSource } from '../editor-state/element-editor-state/mapping/MappingEditorState.js';
 import {
   type PrimitiveType,
   type Enumeration,
@@ -31,7 +30,7 @@ import {
   getAllClassProperties,
 } from '@finos/legend-graph';
 import { DATE_FORMAT, DATE_TIME_FORMAT } from '@finos/legend-application';
-import { CLASS_PROPERTY_TYPE, getClassPropertyType } from './ModelUtil';
+import { CLASS_PROPERTY_TYPE, getClassPropertyType } from './ModelUtil.js';
 
 export const createMockPrimitiveProperty = (
   primitiveType: PrimitiveType,

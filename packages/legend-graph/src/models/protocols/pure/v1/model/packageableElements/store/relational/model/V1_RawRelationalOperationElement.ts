@@ -15,7 +15,7 @@
  */
 
 import type { PlainObject } from '@finos/legend-shared';
-import type { V1_RelationalOperationElement } from './V1_RelationalOperationElement';
+import type { V1_RelationalOperationElement } from './V1_RelationalOperationElement.js';
 
 /**
  * Studio does not process value specification, they are left in raw JSON form

@@ -14,7 +14,14 @@
  * limitations under the License.
  */
 
-import { uuid } from '../CommonUtils';
+import { uuid } from '../CommonUtils.js';
+
+export class PluginInfo {
+  name!: string;
+  version!: string;
+  signature!: string;
+  uuid!: string;
+}
 
 export abstract class AbstractPlugin {
   private readonly name: string;
@@ -42,6 +49,15 @@ export abstract class AbstractPlugin {
     return this.uuid;
   }
 
+  getInfo(): PluginInfo {
+    const info = new PluginInfo();
+    info.name = this.getName();
+    info.version = this.getVersion();
+    info.signature = this.getSignature();
+    info.uuid = this.getUUID();
+    return info;
+  }
+
   configure(configData: object): AbstractPlugin {
     return this;
   }
@@ -49,14 +65,24 @@ export abstract class AbstractPlugin {
   abstract install(pluginManager: AbstractPluginManager): void;
 }
 
+export class PresetInfo {
+  name!: string;
+  version!: string;
+  signature!: string;
+  uuid!: string;
+  plugins: PluginInfo[] = [];
+}
+
 export abstract class AbstractPreset {
   private readonly name: string;
   private readonly version: string;
   private readonly uuid = uuid();
+  protected plugins: AbstractPlugin[] = [];
 
-  constructor(name: string, version: string) {
+  constructor(name: string, version: string, plugins: AbstractPlugin[]) {
     this.name = name;
     this.version = version;
+    this.plugins = plugins;
   }
 
   getName(): string {
@@ -75,12 +101,35 @@ export abstract class AbstractPreset {
     return this.uuid;
   }
 
+  getPlugins(): AbstractPlugin[] {
+    return [...this.plugins];
+  }
+
+  getInfo(): PresetInfo {
+    const info = new PresetInfo();
+    info.name = this.getName();
+    info.version = this.getVersion();
+    info.signature = this.getSignature();
+    info.uuid = this.getUUID();
+    info.plugins = this.plugins
+      .map((plugin) => plugin.getInfo())
+      .sort((a, b) => a.name.localeCompare(b.name));
+    return info;
+  }
+
   configure(configData: object): AbstractPreset {
     return this;
   }
 
-  abstract install(pluginManager: AbstractPluginManager): void;
+  install(pluginManager: AbstractPluginManager): void {
+    this.plugins.forEach((plugin) => plugin.install(pluginManager));
+  }
 }
+
+export type PluginManagerInfo = {
+  plugins: PluginInfo[];
+  presets: PresetInfo[];
+};
 
 export abstract class AbstractPluginManager {
   private plugins: AbstractPlugin[] = [];
@@ -119,8 +168,37 @@ export abstract class AbstractPluginManager {
     // Presets ordering is first to last
     this.presets.forEach((plugin) => plugin.install(this));
   }
-}
 
-export interface PluginConsumer {
-  registerPlugins(plugins: AbstractPlugin[]): void;
+  getInfo(): PluginManagerInfo {
+    return {
+      plugins: this.plugins
+        .filter(
+          (plugin) => !this.getHiddenPluginNames().includes(plugin.getName()),
+        )
+        .map((plugin) => plugin.getInfo())
+        .sort((a, b) => a.name.localeCompare(b.name)),
+      presets: this.presets
+        .filter(
+          (preset) => !this.getHiddenPresetNames().includes(preset.getName()),
+        )
+        .map((preset) => preset.getInfo())
+        .sort((a, b) => a.name.localeCompare(b.name)),
+    };
+  }
+
+  /**
+   * Return the list of core plugin names to be hidden
+   * when getting plugin manager info, such as core plugins.
+   */
+  protected getHiddenPluginNames(): string[] {
+    return [];
+  }
+
+  /**
+   * Return the list of core presets names to be hidden
+   * when getting plugin manager info, such as core presets.
+   */
+  protected getHiddenPresetNames(): string[] {
+    return [];
+  }
 }

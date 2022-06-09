@@ -37,7 +37,7 @@ import {
   BanIcon,
 } from '@finos/legend-art';
 import { formatDistanceToNow } from 'date-fns';
-import { LEGEND_STUDIO_TEST_ID } from '../../LegendStudioTestID';
+import { LEGEND_STUDIO_TEST_ID } from '../../LegendStudioTestID.js';
 import { flowResult } from 'mobx';
 import { WorkflowJobStatus, WorkflowStatus } from '@finos/legend-server-sdlc';
 import {
@@ -51,13 +51,13 @@ import {
   type WorkflowState,
   WorkflowJobTreeNodeData,
   WorkflowTreeNodeData,
-} from '../../../stores/sidebar-state/WorkflowManagerState';
+} from '../../../stores/sidebar-state/WorkflowManagerState.js';
 import {
   guaranteeNonNullable,
   guaranteeType,
   isNonNullable,
 } from '@finos/legend-shared';
-import { StudioTextInputEditor } from '../../shared/StudioTextInputEditor';
+import { StudioTextInputEditor } from '../../shared/StudioTextInputEditor.js';
 
 const getWorkflowStatusIcon = (
   workflowStatus: WorkflowStatus,

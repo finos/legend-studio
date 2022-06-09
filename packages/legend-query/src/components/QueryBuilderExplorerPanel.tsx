@@ -54,15 +54,15 @@ import {
   getQueryBuilderPropertyNodeData,
   QueryBuilderExplorerTreeSubTypeNodeData,
   getQueryBuilderSubTypeNodeData,
-} from '../stores/QueryBuilderExplorerState';
+} from '../stores/QueryBuilderExplorerState.js';
 import { useDrag, useDragLayer } from 'react-dnd';
-import { QueryBuilderPropertyInfoTooltip } from './QueryBuilderPropertyInfoTooltip';
+import { QueryBuilderPropertyInfoTooltip } from './QueryBuilderPropertyInfoTooltip.js';
 import { getEmptyImage } from 'react-dnd-html5-backend';
-import type { QueryBuilderState } from '../stores/QueryBuilderState';
-import { addQueryBuilderPropertyNode } from '../stores/QueryBuilderGraphFetchTreeUtil';
-import { QueryBuilderSimpleProjectionColumnState } from '../stores/QueryBuilderProjectionState';
+import type { QueryBuilderState } from '../stores/QueryBuilderState.js';
+import { addQueryBuilderPropertyNode } from '../stores/QueryBuilderGraphFetchTreeUtil.js';
+import { QueryBuilderSimpleProjectionColumnState } from '../stores/QueryBuilderProjectionState.js';
 import { flowResult } from 'mobx';
-import { prettyPropertyName } from '../stores/QueryBuilderPropertyEditorState';
+import { prettyPropertyName } from '../stores/QueryBuilderPropertyEditorState.js';
 import {
   type Type,
   type Multiplicity,
@@ -75,11 +75,11 @@ import {
   getAllOwnClassProperties,
   getAllClassProperties,
   getAllClassDerivedProperties,
+  getMultiplicityDescription,
 } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
-import { getClassPropertyIcon } from './shared/ElementIconUtils';
-import { QUERY_BUILDER_TEST_ID } from './QueryBuilder_TestID';
-import { getMultiplicityDescription } from './shared/QueryBuilderUtils';
+import { getClassPropertyIcon } from './shared/ElementIconUtils.js';
+import { QUERY_BUILDER_TEST_ID } from './QueryBuilder_TestID.js';
 import { filterByType, guaranteeNonNullable } from '@finos/legend-shared';
 
 const QueryBuilderSubclassInfoTooltip: React.FC<{

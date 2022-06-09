@@ -15,20 +15,20 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
-import type { PropertyReference } from '../domain/PropertyReference';
-import type { PropertyMappingsImplementation } from './PropertyMappingsImplementation';
-import type { SetImplementation } from './SetImplementation';
-import type { PurePropertyMapping } from '../store/modelToModel/mapping/PurePropertyMapping';
-import type { FlatDataPropertyMapping } from '../store/flatData/mapping/FlatDataPropertyMapping';
-import type { EmbeddedFlatDataPropertyMapping } from '../store/flatData/mapping/EmbeddedFlatDataPropertyMapping';
-import type { RelationalPropertyMapping } from '../store/relational/mapping/RelationalPropertyMapping';
-import type { OtherwiseEmbeddedRelationalInstanceSetImplementation } from '../store/relational/mapping/OtherwiseEmbeddedRelationalInstanceSetImplementation';
-import type { EmbeddedRelationalInstanceSetImplementation } from '../store/relational/mapping/EmbeddedRelationalInstanceSetImplementation';
-import type { InlineEmbeddedRelationalInstanceSetImplementation } from '../store/relational/mapping/InlineEmbeddedRelationalInstanceSetImplementation';
-import type { AggregationAwarePropertyMapping } from './aggregationAware/AggregationAwarePropertyMapping';
-import type { XStorePropertyMapping } from './xStore/XStorePropertyMapping';
-import type { LocalMappingPropertyInfo } from './LocalMappingPropertyInfo';
+import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst.js';
+import type { PropertyReference } from '../domain/PropertyReference.js';
+import type { PropertyMappingsImplementation } from './PropertyMappingsImplementation.js';
+import type { SetImplementation } from './SetImplementation.js';
+import type { PurePropertyMapping } from '../store/modelToModel/mapping/PurePropertyMapping.js';
+import type { FlatDataPropertyMapping } from '../store/flatData/mapping/FlatDataPropertyMapping.js';
+import type { EmbeddedFlatDataPropertyMapping } from '../store/flatData/mapping/EmbeddedFlatDataPropertyMapping.js';
+import type { RelationalPropertyMapping } from '../store/relational/mapping/RelationalPropertyMapping.js';
+import type { OtherwiseEmbeddedRelationalInstanceSetImplementation } from '../store/relational/mapping/OtherwiseEmbeddedRelationalInstanceSetImplementation.js';
+import type { EmbeddedRelationalInstanceSetImplementation } from '../store/relational/mapping/EmbeddedRelationalInstanceSetImplementation.js';
+import type { InlineEmbeddedRelationalInstanceSetImplementation } from '../store/relational/mapping/InlineEmbeddedRelationalInstanceSetImplementation.js';
+import type { AggregationAwarePropertyMapping } from './aggregationAware/AggregationAwarePropertyMapping.js';
+import type { XStorePropertyMapping } from './xStore/XStorePropertyMapping.js';
+import type { LocalMappingPropertyInfo } from './LocalMappingPropertyInfo.js';
 
 /* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
 export interface PropertyMappingVisitor<T> {

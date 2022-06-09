@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst.js';
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import {
   type Relation,
   RelationalOperationElement,
-} from './RelationalOperationElement';
-import type { RelationalDataType } from './RelationalDataType';
+} from './RelationalOperationElement.js';
+import type { RelationalDataType } from './RelationalDataType.js';
 
 export class Column extends RelationalOperationElement implements Hashable {
   owner!: Relation;

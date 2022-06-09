@@ -20,32 +20,32 @@ import {
   DataElementReference,
   ExternalFormatData,
   ModelStoreData,
-} from '../../../../../../metamodels/pure/data/EmbeddedData';
+} from '../../../../../../metamodels/pure/data/EmbeddedData.js';
 import {
   type RelationalDataTable,
   RelationalData,
-} from '../../../../../../metamodels/pure/data/RelationalData';
-import type { DataElement } from '../../../../../../metamodels/pure/packageableElements/data/DataElement';
-import type { DSLData_PureProtocolProcessorPlugin_Extension } from '../../../../DSLData_PureProtocolProcessorPlugin_Extension';
+} from '../../../../../../metamodels/pure/data/RelationalData.js';
+import type { DataElement } from '../../../../../../metamodels/pure/packageableElements/data/DataElement.js';
+import type { DSLData_PureProtocolProcessorPlugin_Extension } from '../../../../DSLData_PureProtocolProcessorPlugin_Extension.js';
 import {
   type V1_EmbeddedData,
   V1_DataElementReference,
   V1_ExternalFormatData,
   V1_ModelStoreData,
-} from '../../../model/data/V1_EmbeddedData';
+} from '../../../model/data/V1_EmbeddedData.js';
 import {
   V1_RelationalData,
   V1_RelationalDataTable,
   V1_RelationalDataTableColumn,
   V1_RelationalDataTableRow,
-} from '../../../model/data/V1_RelationalData';
-import { V1_DataElement } from '../../../model/packageableElements/data/V1_DataElement';
-import { V1_initPackageableElement } from './V1_CoreTransformerHelper';
+} from '../../../model/data/V1_RelationalData.js';
+import { V1_DataElement } from '../../../model/packageableElements/data/V1_DataElement.js';
+import { V1_initPackageableElement } from './V1_CoreTransformerHelper.js';
 import {
   V1_transformStereotype,
   V1_transformTaggedValue,
-} from './V1_DomainTransformer';
-import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext';
+} from './V1_DomainTransformer.js';
+import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext.js';
 
 // ----------------------------------------------- DATA ----------------------------------------
 

@@ -18,9 +18,9 @@ import { hashArray, type Hashable } from '@finos/legend-shared';
 import {
   type V1_PropertyMappingVisitor,
   V1_PropertyMapping,
-} from '../V1_PropertyMapping';
-import type { V1_RawLambda } from '../../../rawValueSpecification/V1_RawLambda';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../../MetaModelConst';
+} from '../V1_PropertyMapping.js';
+import type { V1_RawLambda } from '../../../rawValueSpecification/V1_RawLambda.js';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../../MetaModelConst.js';
 
 export class V1_XStorePropertyMapping
   extends V1_PropertyMapping

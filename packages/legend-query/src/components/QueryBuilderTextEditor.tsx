@@ -17,10 +17,10 @@
 import { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { clsx, Dialog } from '@finos/legend-art';
-import type { QueryBuilderState } from '../stores/QueryBuilderState';
-import { QueryTextEditorMode } from '../stores/QueryTextEditorState';
+import type { QueryBuilderState } from '../stores/QueryBuilderState.js';
+import { QueryTextEditorMode } from '../stores/QueryTextEditorState.js';
 import { flowResult } from 'mobx';
-import { QueryBuilderLambdaEditor } from './QueryBuilderLambdaEditor';
+import { QueryBuilderLambdaEditor } from './QueryBuilderLambdaEditor.js';
 import {
   EDITOR_LANGUAGE,
   TextInputEditor,

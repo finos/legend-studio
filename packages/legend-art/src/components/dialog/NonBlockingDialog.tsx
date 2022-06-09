@@ -20,9 +20,9 @@ import {
   type DialogProps as MuiDialogProps,
   type DialogClassKey as MuiDialogClassKey,
 } from '@mui/material';
-import clsx from 'clsx';
 import { observer } from 'mobx-react-lite';
 import { action, makeAutoObservable } from 'mobx';
+import { clsx } from '../../utils/CJS__clsx.cjs';
 
 export class NonBlockingDialogState {
   isOpen = false;

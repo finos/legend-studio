@@ -17,24 +17,24 @@
 import {
   CORE_HASH_STRUCTURE,
   ELEMENT_PATH_DELIMITER,
-} from '../../../../../../MetaModelConst';
+} from '../../../../../../MetaModelConst.js';
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import type { V1_Profile } from './domain/V1_Profile';
-import type { V1_Class } from './domain/V1_Class';
-import type { V1_Enumeration } from './domain/V1_Enumeration';
-import type { V1_FlatData } from './store/flatData/model/V1_FlatData';
-import type { V1_Database } from './store/relational/model/V1_Database';
-import type { V1_Mapping } from './mapping/V1_Mapping';
-import type { V1_Service } from './service/V1_Service';
-import type { V1_ConcreteFunctionDefinition } from './function/V1_ConcreteFunctionDefinition';
-import type { V1_Association } from './domain/V1_Association';
-import type { V1_PackageableRuntime } from './runtime/V1_PackageableRuntime';
-import type { V1_PackageableConnection } from './connection/V1_PackageableConnection';
-import type { V1_FileGenerationSpecification } from './fileGeneration/V1_FileGenerationSpecification';
-import type { V1_GenerationSpecification } from './generationSpecification/V1_GenerationSpecification';
-import type { V1_Measure } from './domain/V1_Measure';
-import type { V1_SectionIndex } from './section/V1_SectionIndex';
-import type { V1_DataElement } from './data/V1_DataElement';
+import type { V1_Profile } from './domain/V1_Profile.js';
+import type { V1_Class } from './domain/V1_Class.js';
+import type { V1_Enumeration } from './domain/V1_Enumeration.js';
+import type { V1_FlatData } from './store/flatData/model/V1_FlatData.js';
+import type { V1_Database } from './store/relational/model/V1_Database.js';
+import type { V1_Mapping } from './mapping/V1_Mapping.js';
+import type { V1_Service } from './service/V1_Service.js';
+import type { V1_ConcreteFunctionDefinition } from './function/V1_ConcreteFunctionDefinition.js';
+import type { V1_Association } from './domain/V1_Association.js';
+import type { V1_PackageableRuntime } from './runtime/V1_PackageableRuntime.js';
+import type { V1_PackageableConnection } from './connection/V1_PackageableConnection.js';
+import type { V1_FileGenerationSpecification } from './fileGeneration/V1_FileGenerationSpecification.js';
+import type { V1_GenerationSpecification } from './generationSpecification/V1_GenerationSpecification.js';
+import type { V1_Measure } from './domain/V1_Measure.js';
+import type { V1_SectionIndex } from './section/V1_SectionIndex.js';
+import type { V1_DataElement } from './data/V1_DataElement.js';
 
 export interface V1_PackageableElementVisitor<T> {
   visit_PackageableElement(element: V1_PackageableElement): T;

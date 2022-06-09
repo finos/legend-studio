@@ -19,7 +19,6 @@
 @forward 'editor/activity-bar';
 @forward 'editor/status-bar';
 @forward 'editor/side-bar';
-@forward 'editor/header';
 @forward 'editor/command';
 @forward 'editor/auxiliary-panel';
 @forward 'editor/model-loader';
@@ -64,20 +63,6 @@
   &__content {
     position: relative;
     width: 100%;
-    max-width: 1900px;
-    border-left: 0.1rem solid var(--color-black);
-    border-right: 0.1rem solid var(--color-black);
-
-    @media (max-width: 1900px) {
-      border-left: none;
-      border-right: none;
-    }
-  }
-
-  &__content--expanded {
-    max-width: initial;
-    border-left: none;
-    border-right: none;
   }
 
   &__main {

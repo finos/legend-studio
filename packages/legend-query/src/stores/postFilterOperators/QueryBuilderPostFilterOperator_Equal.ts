@@ -29,26 +29,27 @@ import {
   PRIMITIVE_TYPE,
   TYPICAL_MULTIPLICITY_TYPE,
   isSuperType,
+  SUPPORTED_FUNCTIONS,
+  buildPrimitiveInstanceValue,
 } from '@finos/legend-graph';
 import {
   guaranteeNonNullable,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
-import { SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const.js';
 import {
   buildNotExpression,
-  buildPrimitiveInstanceValue,
   getNonCollectionValueSpecificationType,
   unwrapNotExpression,
-} from '../QueryBuilderOperatorsHelper';
-import { QueryBuilderPostFilterOperator } from '../QueryBuilderPostFilterOperator';
-import { buildPostFilterConditionState } from '../QueryBuilderPostFilterProcessor';
+} from '../QueryBuilderOperatorsHelper.js';
+import { QueryBuilderPostFilterOperator } from '../QueryBuilderPostFilterOperator.js';
+import { buildPostFilterConditionState } from '../QueryBuilderPostFilterProcessor.js';
 import type {
   PostFilterConditionState,
   QueryBuilderPostFilterState,
-} from '../QueryBuilderPostFilterState';
-import { generateDefaultValueForPrimitiveType } from '../QueryBuilderValueSpecificationBuilderHelper';
-import { buildPostFilterConditionExpression } from './QueryBuilderPostFilterOperatorHelper';
+} from '../QueryBuilderPostFilterState.js';
+import { generateDefaultValueForPrimitiveType } from '../QueryBuilderValueSpecificationBuilderHelper.js';
+import { buildPostFilterConditionExpression } from './QueryBuilderPostFilterOperatorHelper.js';
 
 export class QueryBuilderPostFilterOperator_Equal extends QueryBuilderPostFilterOperator {
   getLabel(): string {
@@ -183,7 +184,7 @@ export class QueryBuilderPostFilterOperator_Equal extends QueryBuilderPostFilter
         postFilterConditionState.value?.genericType?.value.rawType.path !==
           PRIMITIVE_TYPE.DATETIME
         ? SUPPORTED_FUNCTIONS.IS_ON_DAY
-        : SUPPORTED_FUNCTIONS.EQUAL,
+        : QUERY_BUILDER_SUPPORTED_FUNCTIONS.EQUAL,
     );
   }
 
@@ -200,7 +201,7 @@ export class QueryBuilderPostFilterOperator_Equal extends QueryBuilderPostFilter
         expression.parametersValues[1]?.genericType?.value.rawType.path !==
           PRIMITIVE_TYPE.DATETIME
         ? SUPPORTED_FUNCTIONS.IS_ON_DAY
-        : SUPPORTED_FUNCTIONS.EQUAL,
+        : QUERY_BUILDER_SUPPORTED_FUNCTIONS.EQUAL,
       this,
     );
   }

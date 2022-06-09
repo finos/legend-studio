@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import type { ModelGenerationSpecification } from '../../metamodels/pure/packageableElements/generationSpecification/ModelGenerationSpecification';
-import type { PureProtocolProcessorPlugin } from './PureProtocolProcessorPlugin';
-import type { V1_Engine } from './v1/engine/V1_Engine';
-import type { V1_PureModelContextData } from './v1/model/context/V1_PureModelContextData';
+import type { ModelGenerationSpecification } from '../../metamodels/pure/packageableElements/generationSpecification/ModelGenerationSpecification.js';
+import type { PureProtocolProcessorPlugin } from './PureProtocolProcessorPlugin.js';
+import type { V1_Engine } from './v1/engine/V1_Engine.js';
+import type { V1_PureModelContextData } from './v1/model/context/V1_PureModelContextData.js';
 
 export type V1_ModelGenerator = (
   generationElement: ModelGenerationSpecification,

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { RelationalDataType } from '../../packageableElements/store/relational/model/RelationalDataType';
+import type { RelationalDataType } from '../../packageableElements/store/relational/model/RelationalDataType.js';
 
 export class SQLResultColumn {
   label!: string;

@@ -15,8 +15,8 @@
  */
 
 import packageJson from '../../package.json';
-import { MappingGenerationEditor } from './MappingGenerationEditor';
-import { MappingGenerationEditorState } from '../stores/MappingGenerationEditorState';
+import { MappingGenerationEditor } from './MappingGenerationEditor.js';
+import { MappingGenerationEditorState } from '../stores/MappingGenerationEditorState.js';
 import {
   type EditorStore,
   type DSLMapping_LegendStudioPlugin_Extension,

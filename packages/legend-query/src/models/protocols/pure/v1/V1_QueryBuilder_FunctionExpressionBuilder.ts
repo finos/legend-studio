@@ -22,12 +22,18 @@ import {
   guaranteeType,
   returnUndefOnError,
 } from '@finos/legend-shared';
-import { SUPPORTED_FUNCTIONS, TDS_ROW } from '../../../../QueryBuilder_Const';
+import {
+  QUERY_BUILDER_SUPPORTED_FUNCTIONS,
+  TDS_ROW,
+} from '../../../../QueryBuilder_Const.js';
 import {
   type V1_GraphBuilderContext,
   type V1_ProcessingContext,
   type V1_ValueSpecification,
   type ValueSpecification,
+  type SimpleFunctionExpression,
+  V1_buildBaseSimpleFunctionExpression,
+  V1_buildGenericFunctionExpression,
   extractElementNameFromPath,
   V1_AppliedProperty,
   CollectionInstanceValue,
@@ -37,7 +43,6 @@ import {
   V1_serializeValueSpecification,
   GenericType,
   GenericTypeExplicitReference,
-  SimpleFunctionExpression,
   matchFunctionName,
   InstanceValue,
   V1_AppliedFunction,
@@ -48,61 +53,6 @@ import {
   TYPICAL_MULTIPLICITY_TYPE,
   VariableExpression,
 } from '@finos/legend-graph';
-
-const buildBaseSimpleFunctionExpression = (
-  processedParameters: ValueSpecification[],
-  functionName: string,
-  compileContext: V1_GraphBuilderContext,
-): SimpleFunctionExpression => {
-  const expression = new SimpleFunctionExpression(
-    functionName,
-    compileContext.graph.getTypicalMultiplicity(TYPICAL_MULTIPLICITY_TYPE.ONE),
-  );
-  const func = returnUndefOnError(() =>
-    compileContext.resolveFunction(functionName),
-  );
-  expression.func = func;
-  if (func) {
-    const val = func.value;
-    expression.genericType = GenericTypeExplicitReference.create(
-      new GenericType(val.returnType.value),
-    );
-    expression.multiplicity = val.returnMultiplicity;
-  }
-  expression.parametersValues = processedParameters;
-  return expression;
-};
-
-/**
- * NOTE: this is a catch-all builder for all functions we support in query builder
- * This is extremely basic and will fail for any functions that needs proper
- * type-inferencing of the return and the parameters.
- */
-export const V1_buildGenericFunctionExpression = (
-  functionName: string,
-  parameters: V1_ValueSpecification[],
-  openVariables: string[],
-  compileContext: V1_GraphBuilderContext,
-  processingContext: V1_ProcessingContext,
-): [SimpleFunctionExpression, ValueSpecification[]] => {
-  const processedParams = parameters.map((parameter) =>
-    parameter.accept_ValueSpecificationVisitor(
-      new V1_ValueSpecificationBuilder(
-        compileContext,
-        processingContext,
-        openVariables,
-      ),
-    ),
-  );
-  return [
-    buildBaseSimpleFunctionExpression(
-      processedParams,
-      functionName,
-      compileContext,
-    ),
-    processedParams,
-  ];
-};
 
 const buildProjectionColumnLambda = (
   valueSpecification: V1_ValueSpecification,
@@ -152,7 +102,7 @@ const buildProjectionColumnLambda = (
       currentPropertyExpression instanceof V1_AppliedFunction &&
       matchFunctionName(
         currentPropertyExpression.function,
-        SUPPORTED_FUNCTIONS.SUBTYPE,
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.SUBTYPE,
       )
     ) {
       currentPropertyExpression = currentPropertyExpression
@@ -190,7 +140,10 @@ const buildAggregationExpression = (
     `Can't build aggregation: only support function`,
   );
   assertTrue(
-    matchFunctionName(valueSpecification.function, SUPPORTED_FUNCTIONS.TDS_AGG),
+    matchFunctionName(
+      valueSpecification.function,
+      QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_AGG,
+    ),
     `Can't build aggregation: only support agg()`,
   );
 
@@ -232,9 +185,9 @@ const buildAggregationExpression = (
       ),
     );
 
-  return buildBaseSimpleFunctionExpression(
+  return V1_buildBaseSimpleFunctionExpression(
     [processedColumnLambda, processedAggregateLambda],
-    extractElementNameFromPath(SUPPORTED_FUNCTIONS.TDS_AGG),
+    extractElementNameFromPath(QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_AGG),
     compileContext,
   );
 };
@@ -318,7 +271,7 @@ export const V1_buildExistsFunctionExpression = (
       ),
     ),
   ];
-  const expression = buildBaseSimpleFunctionExpression(
+  const expression = V1_buildBaseSimpleFunctionExpression(
     processedParameters,
     functionName,
     compileContext,
@@ -374,7 +327,7 @@ export const V1_buildFilterFunctionExpression = (
       ),
     ),
   ];
-  const expression = buildBaseSimpleFunctionExpression(
+  const expression = V1_buildBaseSimpleFunctionExpression(
     processedParams,
     functionName,
     compileContext,
@@ -470,7 +423,7 @@ export const V1_buildProjectFunctionExpression = (
       ),
     ),
   ];
-  const expression = buildBaseSimpleFunctionExpression(
+  const expression = V1_buildBaseSimpleFunctionExpression(
     processedParams,
     functionName,
     compileContext,
@@ -532,7 +485,10 @@ export const V1_buildGroupByFunctionExpression = (
       .filter(
         (value: V1_ValueSpecification): value is V1_AppliedFunction =>
           value instanceof V1_AppliedFunction &&
-          matchFunctionName(value.function, SUPPORTED_FUNCTIONS.TDS_AGG),
+          matchFunctionName(
+            value.function,
+            QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_AGG,
+          ),
       )
       .map((value) => value.parameters)
       .flat()
@@ -605,7 +561,7 @@ export const V1_buildGroupByFunctionExpression = (
       ),
     ),
   ];
-  const expression = buildBaseSimpleFunctionExpression(
+  const expression = V1_buildBaseSimpleFunctionExpression(
     processedParams,
     functionName,
     compileContext,

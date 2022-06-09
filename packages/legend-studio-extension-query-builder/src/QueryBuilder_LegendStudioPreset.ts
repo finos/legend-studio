@@ -15,18 +15,15 @@
  */
 
 import packageJson from '../package.json';
-import type { LegendStudioPluginManager } from '@finos/legend-studio';
 import { AbstractPreset } from '@finos/legend-shared';
-import { QueryBuilder_LegendStudioPlugin } from './components/QueryBuilder_LegendStudioPlugin';
+import { QueryBuilder_LegendStudioPlugin } from './components/QueryBuilder_LegendStudioPlugin.js';
 import { QueryBuilder_PureProtocolProcessorPlugin } from '@finos/legend-query';
 
 export class QueryBuilder_LegendStudioPreset extends AbstractPreset {
   constructor() {
-    super(packageJson.extensions.studioPreset, packageJson.version);
-  }
-
-  install(pluginManager: LegendStudioPluginManager): void {
-    new QueryBuilder_LegendStudioPlugin().install(pluginManager);
-    new QueryBuilder_PureProtocolProcessorPlugin().install(pluginManager);
+    super(packageJson.extensions.studioPreset, packageJson.version, [
+      new QueryBuilder_LegendStudioPlugin(),
+      new QueryBuilder_PureProtocolProcessorPlugin(),
+    ]);
   }
 }

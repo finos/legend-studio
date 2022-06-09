@@ -16,8 +16,8 @@
 
 import { createModelSchema, optional, primitive } from 'serializr';
 import { SerializationFactory, usingModelSchema } from '@finos/legend-shared';
-import { V1_EngineError } from '../../engine/V1_EngineError';
-import { V1_sourceInformationSerialization } from '../../transformation/pureProtocol/serializationHelpers/V1_CoreSerializationHelper';
+import { V1_EngineError } from '../../engine/V1_EngineError.js';
+import { V1_sourceInformationSerialization } from '../../transformation/pureProtocol/serializationHelpers/V1_CoreSerializationHelper.js';
 
 export class V1_ParserError extends V1_EngineError {
   static override readonly serialization = new SerializationFactory(

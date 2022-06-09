@@ -22,55 +22,55 @@ import {
   assertType,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
-import { PRIMITIVE_TYPE } from '../../../../../../../../MetaModelConst';
-import { fromElementPathToMappingElementId } from '../../../../../../../../MetaModelUtils';
-import { Type } from '../../../../../../../metamodels/pure/packageableElements/domain/Type';
-import type { Mapping } from '../../../../../../../metamodels/pure/packageableElements/mapping/Mapping';
-import { EnumerationMapping } from '../../../../../../../metamodels/pure/packageableElements/mapping/EnumerationMapping';
-import { Enumeration } from '../../../../../../../metamodels/pure/packageableElements/domain/Enumeration';
+import { PRIMITIVE_TYPE } from '../../../../../../../../MetaModelConst.js';
+import { fromElementPathToMappingElementId } from '../../../../../../../../MetaModelUtils.js';
+import { Type } from '../../../../../../../metamodels/pure/packageableElements/domain/Type.js';
+import type { Mapping } from '../../../../../../../metamodels/pure/packageableElements/mapping/Mapping.js';
+import { EnumerationMapping } from '../../../../../../../metamodels/pure/packageableElements/mapping/EnumerationMapping.js';
+import { Enumeration } from '../../../../../../../metamodels/pure/packageableElements/domain/Enumeration.js';
 import {
   EnumValueMapping,
   SourceValue,
-} from '../../../../../../../metamodels/pure/packageableElements/mapping/EnumValueMapping';
-import { MappingTest } from '../../../../../../../metamodels/pure/packageableElements/mapping/MappingTest';
-import { ObjectInputData } from '../../../../../../../metamodels/pure/packageableElements/store/modelToModel/mapping/ObjectInputData';
-import type { InputData } from '../../../../../../../metamodels/pure/packageableElements/mapping/InputData';
-import { FlatDataInputData } from '../../../../../../../metamodels/pure/packageableElements/store/flatData/mapping/FlatDataInputData';
-import { ExpectedOutputMappingTestAssert } from '../../../../../../../metamodels/pure/packageableElements/mapping/ExpectedOutputMappingTestAssert';
-import type { Class } from '../../../../../../../metamodels/pure/packageableElements/domain/Class';
-import { InferableMappingElementIdImplicitValue } from '../../../../../../../metamodels/pure/packageableElements/mapping/InferableMappingElementId';
+} from '../../../../../../../metamodels/pure/packageableElements/mapping/EnumValueMapping.js';
+import { MappingTest } from '../../../../../../../metamodels/pure/packageableElements/mapping/MappingTest.js';
+import { ObjectInputData } from '../../../../../../../metamodels/pure/packageableElements/store/modelToModel/mapping/ObjectInputData.js';
+import type { InputData } from '../../../../../../../metamodels/pure/packageableElements/mapping/InputData.js';
+import { FlatDataInputData } from '../../../../../../../metamodels/pure/packageableElements/store/flatData/mapping/FlatDataInputData.js';
+import { ExpectedOutputMappingTestAssert } from '../../../../../../../metamodels/pure/packageableElements/mapping/ExpectedOutputMappingTestAssert.js';
+import type { Class } from '../../../../../../../metamodels/pure/packageableElements/domain/Class.js';
+import { InferableMappingElementIdImplicitValue } from '../../../../../../../metamodels/pure/packageableElements/mapping/InferableMappingElementId.js';
 import {
   type PackageableElementImplicitReference,
   toOptionalPackageableElementReference,
-} from '../../../../../../../metamodels/pure/packageableElements/PackageableElementReference';
-import { EnumValueImplicitReference } from '../../../../../../../metamodels/pure/packageableElements/domain/EnumValueReference';
-import { MappingInclude } from '../../../../../../../metamodels/pure/packageableElements/mapping/MappingInclude';
-import { SubstituteStore } from '../../../../../../../metamodels/pure/packageableElements/mapping/SubstituteStore';
-import type { SetImplementation } from '../../../../../../../metamodels/pure/packageableElements/mapping/SetImplementation';
-import { InferableMappingElementRootImplicitValue } from '../../../../../../../metamodels/pure/packageableElements/mapping/InferableMappingElementRoot';
-import type { V1_GraphBuilderContext } from '../../../../transformation/pureGraph/to/V1_GraphBuilderContext';
+} from '../../../../../../../metamodels/pure/packageableElements/PackageableElementReference.js';
+import { EnumValueImplicitReference } from '../../../../../../../metamodels/pure/packageableElements/domain/EnumValueReference.js';
+import { MappingInclude } from '../../../../../../../metamodels/pure/packageableElements/mapping/MappingInclude.js';
+import { SubstituteStore } from '../../../../../../../metamodels/pure/packageableElements/mapping/SubstituteStore.js';
+import type { SetImplementation } from '../../../../../../../metamodels/pure/packageableElements/mapping/SetImplementation.js';
+import { InferableMappingElementRootImplicitValue } from '../../../../../../../metamodels/pure/packageableElements/mapping/InferableMappingElementRoot.js';
+import type { V1_GraphBuilderContext } from '../../../../transformation/pureGraph/to/V1_GraphBuilderContext.js';
 import {
   type V1_EnumValueMapping,
   V1_getEnumValueMappingSourceValueType,
-} from '../../../../model/packageableElements/mapping/V1_EnumValueMapping';
-import type { V1_EnumerationMapping } from '../../../../model/packageableElements/mapping/V1_EnumerationMapping';
-import type { V1_MappingTest } from '../../../../model/packageableElements/mapping/V1_MappingTest';
-import { V1_ExpectedOutputMappingTestAssert } from '../../../../model/packageableElements/mapping/V1_ExpectedOutputMappingTestAssert';
-import type { V1_InputData } from '../../../../model/packageableElements/mapping/V1_InputData';
-import { V1_ObjectInputData } from '../../../../model/packageableElements/store/modelToModel/mapping/V1_ObjectInputData';
-import { V1_FlatDataInputData } from '../../../../model/packageableElements/store/flatData/mapping/V1_FlatDataInputData';
-import type { V1_ClassMapping } from '../../../../model/packageableElements/mapping/V1_ClassMapping';
-import type { V1_MappingInclude } from '../../../../model/packageableElements/mapping/V1_MappingInclude';
-import { V1_buildRawLambdaWithResolvedPaths } from './V1_ValueSpecificationPathResolver';
-import { V1_RelationalInputData } from '../../../../model/packageableElements/store/relational/mapping/V1_RelationalInputData';
-import { RelationalInputData } from '../../../../../../../metamodels/pure/packageableElements/store/relational/mapping/RelationalInputData';
+} from '../../../../model/packageableElements/mapping/V1_EnumValueMapping.js';
+import type { V1_EnumerationMapping } from '../../../../model/packageableElements/mapping/V1_EnumerationMapping.js';
+import type { V1_MappingTest } from '../../../../model/packageableElements/mapping/V1_MappingTest.js';
+import { V1_ExpectedOutputMappingTestAssert } from '../../../../model/packageableElements/mapping/V1_ExpectedOutputMappingTestAssert.js';
+import type { V1_InputData } from '../../../../model/packageableElements/mapping/V1_InputData.js';
+import { V1_ObjectInputData } from '../../../../model/packageableElements/store/modelToModel/mapping/V1_ObjectInputData.js';
+import { V1_FlatDataInputData } from '../../../../model/packageableElements/store/flatData/mapping/V1_FlatDataInputData.js';
+import type { V1_ClassMapping } from '../../../../model/packageableElements/mapping/V1_ClassMapping.js';
+import type { V1_MappingInclude } from '../../../../model/packageableElements/mapping/V1_MappingInclude.js';
+import { V1_buildRawLambdaWithResolvedPaths } from './V1_ValueSpecificationPathResolver.js';
+import { V1_RelationalInputData } from '../../../../model/packageableElements/store/relational/mapping/V1_RelationalInputData.js';
+import { RelationalInputData } from '../../../../../../../metamodels/pure/packageableElements/store/relational/mapping/RelationalInputData.js';
 import {
   getAllClassMappings,
   getObjectInputType,
-} from '../../../../../../../../helpers/DSLMapping_Helper';
-import { getRelationalInputType } from '../../../../../../../../helpers/StoreRelational_Helper';
-import { getEnumValue } from '../../../../../../../../helpers/DomainHelper';
-import { V1_getIncludedMappingPath } from '../../../../helper/V1_DSLMapping_Helper';
+} from '../../../../../../../../helpers/DSLMapping_Helper.js';
+import { getRelationalInputType } from '../../../../../../../../helpers/StoreRelational_Helper.js';
+import { getEnumValue } from '../../../../../../../../helpers/DomainHelper.js';
+import { V1_getIncludedMappingPath } from '../../../../helper/V1_DSLMapping_Helper.js';
 
 export const V1_getInferredClassMappingId = (
   _class: Class,

@@ -14,30 +14,30 @@
  * limitations under the License.
  */
 
-import type { RootRelationalInstanceSetImplementation } from '../../../../../../../metamodels/pure/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation';
-import type { RelationalInstanceSetImplementation } from '../../../../../../../metamodels/pure/packageableElements/store/relational/mapping/RelationalInstanceSetImplementation';
-import type { EmbeddedRelationalInstanceSetImplementation } from '../../../../../../../metamodels/pure/packageableElements/store/relational/mapping/EmbeddedRelationalInstanceSetImplementation';
-import type { SetImplementation } from '../../../../../../../metamodels/pure/packageableElements/mapping/SetImplementation';
-import type { RelationalPropertyMapping } from '../../../../../../../metamodels/pure/packageableElements/store/relational/mapping/RelationalPropertyMapping';
-import type { Mapping } from '../../../../../../../metamodels/pure/packageableElements/mapping/Mapping';
-import type { EnumerationMapping } from '../../../../../../../metamodels/pure/packageableElements/mapping/EnumerationMapping';
+import type { RootRelationalInstanceSetImplementation } from '../../../../../../../metamodels/pure/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation.js';
+import type { RelationalInstanceSetImplementation } from '../../../../../../../metamodels/pure/packageableElements/store/relational/mapping/RelationalInstanceSetImplementation.js';
+import type { EmbeddedRelationalInstanceSetImplementation } from '../../../../../../../metamodels/pure/packageableElements/store/relational/mapping/EmbeddedRelationalInstanceSetImplementation.js';
+import type { SetImplementation } from '../../../../../../../metamodels/pure/packageableElements/mapping/SetImplementation.js';
+import type { RelationalPropertyMapping } from '../../../../../../../metamodels/pure/packageableElements/store/relational/mapping/RelationalPropertyMapping.js';
+import type { Mapping } from '../../../../../../../metamodels/pure/packageableElements/mapping/Mapping.js';
+import type { EnumerationMapping } from '../../../../../../../metamodels/pure/packageableElements/mapping/EnumerationMapping.js';
 import {
   type TableAlias,
   TableAliasColumn,
-} from '../../../../../../../metamodels/pure/packageableElements/store/relational/model/RelationalOperationElement';
-import type { Column } from '../../../../../../../metamodels/pure/packageableElements/store/relational/model/Column';
-import { Table } from '../../../../../../../metamodels/pure/packageableElements/store/relational/model/Table';
-import { View } from '../../../../../../../metamodels/pure/packageableElements/store/relational/model/View';
-import { ColumnExplicitReference } from '../../../../../../../metamodels/pure/packageableElements/store/relational/model/ColumnReference';
-import { FilterMapping } from '../../../../../../../metamodels/pure/packageableElements/store/relational/mapping/FilterMapping';
-import type { V1_GraphBuilderContext } from '../../../../transformation/pureGraph/to/V1_GraphBuilderContext';
-import type { V1_RelationalClassMapping } from '../../../../model/packageableElements/store/relational/mapping/V1_RelationalClassMapping';
-import type { V1_FilterMapping } from '../../../../model/packageableElements/store/relational/mapping/V1_FilterMapping';
-import { V1_ProtocolToMetaModelPropertyMappingBuilder } from '../../../../transformation/pureGraph/to/V1_ProtocolToMetaModelPropertyMappingBuilder';
+} from '../../../../../../../metamodels/pure/packageableElements/store/relational/model/RelationalOperationElement.js';
+import type { Column } from '../../../../../../../metamodels/pure/packageableElements/store/relational/model/Column.js';
+import { Table } from '../../../../../../../metamodels/pure/packageableElements/store/relational/model/Table.js';
+import { View } from '../../../../../../../metamodels/pure/packageableElements/store/relational/model/View.js';
+import { ColumnExplicitReference } from '../../../../../../../metamodels/pure/packageableElements/store/relational/model/ColumnReference.js';
+import { FilterMapping } from '../../../../../../../metamodels/pure/packageableElements/store/relational/mapping/FilterMapping.js';
+import type { V1_GraphBuilderContext } from '../../../../transformation/pureGraph/to/V1_GraphBuilderContext.js';
+import type { V1_RelationalClassMapping } from '../../../../model/packageableElements/store/relational/mapping/V1_RelationalClassMapping.js';
+import type { V1_FilterMapping } from '../../../../model/packageableElements/store/relational/mapping/V1_FilterMapping.js';
+import { V1_ProtocolToMetaModelPropertyMappingBuilder } from '../../../../transformation/pureGraph/to/V1_ProtocolToMetaModelPropertyMappingBuilder.js';
 import {
   V1_buildElementWithJoinsJoinTreeNode,
   V1_buildRelationalOperationElement,
-} from './V1_DatabaseBuilderHelper';
+} from './V1_DatabaseBuilderHelper.js';
 
 export const V1_buildRelationalClassMapping = (
   relationalClassMapping: V1_RelationalClassMapping,

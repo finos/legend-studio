@@ -26,8 +26,8 @@ import {
   ClockIcon,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
-import type { QueryBuilderState } from '../stores/QueryBuilderState';
-import { QUERY_BUILDER_TEST_ID } from './QueryBuilder_TestID';
+import type { QueryBuilderState } from '../stores/QueryBuilderState.js';
+import { QUERY_BUILDER_TEST_ID } from './QueryBuilder_TestID.js';
 import {
   type Class,
   type Mapping,
@@ -44,7 +44,7 @@ import {
   VARIABLE_REFERENCE_TOKEN,
 } from '@finos/legend-graph';
 import type { PackageableElementOption } from '@finos/legend-application';
-import { MilestoningParametersEditor } from './QueryBuilderMilestoneEditor';
+import { MilestoningParametersEditor } from './QueryBuilderMilestoneEditor.js';
 import { useState } from 'react';
 
 const getParameterValue = (

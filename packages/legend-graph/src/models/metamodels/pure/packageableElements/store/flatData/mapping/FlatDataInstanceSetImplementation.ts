@@ -15,18 +15,18 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
-import { InstanceSetImplementation } from '../../../mapping/InstanceSetImplementation';
-import type { AbstractFlatDataPropertyMapping } from './AbstractFlatDataPropertyMapping';
-import type { Class } from '../../../domain/Class';
-import type { Mapping } from '../../../mapping/Mapping';
-import type { SetImplementationVisitor } from '../../../mapping/SetImplementation';
-import type { InferableMappingElementIdValue } from '../../../mapping/InferableMappingElementId';
-import type { RawLambda } from '../../../../rawValueSpecification/RawLambda';
-import type { PackageableElementReference } from '../../../PackageableElementReference';
-import type { RootFlatDataRecordTypeReference } from '../model/RootFlatDataRecordTypeReference';
-import type { InferableMappingElementRoot } from '../../../mapping/InferableMappingElementRoot';
-import { FlatDataPropertyMapping } from './FlatDataPropertyMapping';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst.js';
+import { InstanceSetImplementation } from '../../../mapping/InstanceSetImplementation.js';
+import type { AbstractFlatDataPropertyMapping } from './AbstractFlatDataPropertyMapping.js';
+import type { Class } from '../../../domain/Class.js';
+import type { Mapping } from '../../../mapping/Mapping.js';
+import type { SetImplementationVisitor } from '../../../mapping/SetImplementation.js';
+import type { InferableMappingElementIdValue } from '../../../mapping/InferableMappingElementId.js';
+import type { RawLambda } from '../../../../rawValueSpecification/RawLambda.js';
+import type { PackageableElementReference } from '../../../PackageableElementReference.js';
+import type { RootFlatDataRecordTypeReference } from '../model/RootFlatDataRecordTypeReference.js';
+import type { InferableMappingElementRoot } from '../../../mapping/InferableMappingElementRoot.js';
+import { FlatDataPropertyMapping } from './FlatDataPropertyMapping.js';
 
 export class FlatDataInstanceSetImplementation
   extends InstanceSetImplementation

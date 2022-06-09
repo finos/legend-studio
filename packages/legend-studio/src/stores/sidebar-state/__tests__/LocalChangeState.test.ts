@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
+import { test, expect } from '@jest/globals';
 import { applyEntityChanges, EntityChange } from '@finos/legend-server-sdlc';
-import { unitTest } from '@finos/legend-shared';
+import { type TEMPORARRY__JestMatcher, unitTest } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
-import { TEST__getTestEditorStore } from '../../EditorStoreTestUtils';
+import { TEST__getTestEditorStore } from '../../EditorStoreTestUtils.js';
 
 const entities = [
   {
@@ -119,7 +120,9 @@ test(unitTest('Apply entity changes'), async () => {
       EntityChange.serialization.fromJson(e),
     ),
   );
-  expect(changed).toIncludeSameMembers(changedEntities);
+  (expect(changed) as TEMPORARRY__JestMatcher).toIncludeSameMembers(
+    changedEntities,
+  );
 });
 
 test(unitTest('Load entity changes'), async () => {

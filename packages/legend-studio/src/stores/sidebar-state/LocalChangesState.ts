@@ -15,10 +15,10 @@
  */
 
 import { action, makeAutoObservable, flowResult, flow } from 'mobx';
-import format from 'date-fns/format';
-import type { EditorStore } from '../EditorStore';
-import type { EditorSDLCState } from '../EditorSDLCState';
-import { CHANGE_DETECTION_EVENT } from '../ChangeDetectionEvent';
+import { format } from 'date-fns';
+import type { EditorStore } from '../EditorStore.js';
+import type { EditorSDLCState } from '../EditorSDLCState.js';
+import { CHANGE_DETECTION_EVENT } from '../ChangeDetectionEvent.js';
 import {
   type GeneratorFn,
   type PlainObject,
@@ -40,8 +40,8 @@ import {
   ActionAlertType,
   ActionAlertActionType,
 } from '@finos/legend-application';
-import { EntityDiffViewState } from '../editor-state/entity-diff-editor-state/EntityDiffViewState';
-import { SPECIAL_REVISION_ALIAS } from '../editor-state/entity-diff-editor-state/EntityDiffEditorState';
+import { EntityDiffViewState } from '../editor-state/entity-diff-editor-state/EntityDiffViewState.js';
+import { SPECIAL_REVISION_ALIAS } from '../editor-state/entity-diff-editor-state/EntityDiffEditorState.js';
 import type { Entity } from '@finos/legend-model-storage';
 import {
   type EntityChangeConflict,
@@ -49,10 +49,10 @@ import {
   EntityChange,
   Revision,
 } from '@finos/legend-server-sdlc';
-import { LEGEND_STUDIO_APP_EVENT } from '../LegendStudioAppEvent';
-import { WorkspaceSyncState } from './WorkspaceSyncState';
-import { ACTIVITY_MODE } from '../EditorConfig';
-import { EntityChangeConflictEditorState } from '../editor-state/entity-diff-editor-state/EntityChangeConflictEditorState';
+import { LEGEND_STUDIO_APP_EVENT } from '../LegendStudioAppEvent.js';
+import { WorkspaceSyncState } from './WorkspaceSyncState.js';
+import { ACTIVITY_MODE } from '../EditorConfig.js';
+import { EntityChangeConflictEditorState } from '../editor-state/entity-diff-editor-state/EntityChangeConflictEditorState.js';
 
 class PatchLoaderState {
   editorStore: EditorStore;

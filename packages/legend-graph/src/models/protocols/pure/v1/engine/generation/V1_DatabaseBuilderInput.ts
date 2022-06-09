@@ -25,9 +25,9 @@ import { SerializationFactory, usingModelSchema } from '@finos/legend-shared';
 import {
   V1_serializeConnectionValue,
   V1_deserializeConnectionValue,
-} from '../../transformation/pureProtocol/serializationHelpers/V1_ConnectionSerializationHelper';
-import type { V1_RelationalDatabaseConnection } from '../../model/packageableElements/store/relational/connection/V1_RelationalDatabaseConnection';
-import type { PureProtocolProcessorPlugin } from '../../../PureProtocolProcessorPlugin';
+} from '../../transformation/pureProtocol/serializationHelpers/V1_ConnectionSerializationHelper.js';
+import type { V1_RelationalDatabaseConnection } from '../../model/packageableElements/store/relational/connection/V1_RelationalDatabaseConnection.js';
+import type { PureProtocolProcessorPlugin } from '../../../PureProtocolProcessorPlugin.js';
 
 export class V1_DatabasePattern {
   schemaPattern!: string;

@@ -20,18 +20,18 @@ import {
   guaranteeType,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
-import { RelationalInputType } from '../models/metamodels/pure/packageableElements/store/relational/mapping/RelationalInputData';
-import { Column } from '../models/metamodels/pure/packageableElements/store/relational/model/Column';
-import { Database } from '../models/metamodels/pure/packageableElements/store/relational/model/Database';
-import type { Filter } from '../models/metamodels/pure/packageableElements/store/relational/model/Filter';
-import type { Join } from '../models/metamodels/pure/packageableElements/store/relational/model/Join';
+import { RelationalInputType } from '../models/metamodels/pure/packageableElements/store/relational/mapping/RelationalInputData.js';
+import { Column } from '../models/metamodels/pure/packageableElements/store/relational/model/Column.js';
+import { Database } from '../models/metamodels/pure/packageableElements/store/relational/model/Database.js';
+import type { Filter } from '../models/metamodels/pure/packageableElements/store/relational/model/Filter.js';
+import type { Join } from '../models/metamodels/pure/packageableElements/store/relational/model/Join.js';
 import {
   JoinType,
   type Relation,
-} from '../models/metamodels/pure/packageableElements/store/relational/model/RelationalOperationElement';
-import type { Schema } from '../models/metamodels/pure/packageableElements/store/relational/model/Schema';
-import type { Table } from '../models/metamodels/pure/packageableElements/store/relational/model/Table';
-import type { View } from '../models/metamodels/pure/packageableElements/store/relational/model/View';
+} from '../models/metamodels/pure/packageableElements/store/relational/model/RelationalOperationElement.js';
+import type { Schema } from '../models/metamodels/pure/packageableElements/store/relational/model/Schema.js';
+import type { Table } from '../models/metamodels/pure/packageableElements/store/relational/model/Table.js';
+import type { View } from '../models/metamodels/pure/packageableElements/store/relational/model/View.js';
 
 const collectIncludedDatabases = (
   results: Set<Database>,

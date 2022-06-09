@@ -21,26 +21,26 @@ import {
   assertType,
   assertNonNullable,
 } from '@finos/legend-shared';
-import { GRAPH_MANAGER_EVENT } from '../../../../../../../../graphManager/GraphManagerEvent';
+import { GRAPH_MANAGER_EVENT } from '../../../../../../../../graphManager/GraphManagerEvent.js';
 import {
   type Runtime,
   RuntimePointer,
-} from '../../../../../../../metamodels/pure/packageableElements/runtime/Runtime';
-import type { Service } from '../../../../../../../metamodels/pure/packageableElements/service/Service';
-import { ServiceTest } from '../../../../../../../metamodels/pure/packageableElements/service/ServiceTest';
+} from '../../../../../../../metamodels/pure/packageableElements/runtime/Runtime.js';
+import type { Service } from '../../../../../../../metamodels/pure/packageableElements/service/Service.js';
+import { ServiceTest } from '../../../../../../../metamodels/pure/packageableElements/service/ServiceTest.js';
 import {
   type ServiceExecution,
   PureSingleExecution,
   PureMultiExecution,
   KeyedExecutionParameter,
-} from '../../../../../../../metamodels/pure/packageableElements/service/ServiceExecution';
-import type { V1_GraphBuilderContext } from '../../../../transformation/pureGraph/to/V1_GraphBuilderContext';
-import type { V1_ServiceTest } from '../../../../model/packageableElements/service/V1_ServiceTest';
+} from '../../../../../../../metamodels/pure/packageableElements/service/ServiceExecution.js';
+import type { V1_GraphBuilderContext } from '../../../../transformation/pureGraph/to/V1_GraphBuilderContext.js';
+import type { V1_ServiceTest } from '../../../../model/packageableElements/service/V1_ServiceTest.js';
 import {
   type V1_ServiceExecution,
   V1_PureSingleExecution,
   V1_PureMultiExecution,
-} from '../../../../model/packageableElements/service/V1_ServiceExecution';
+} from '../../../../model/packageableElements/service/V1_ServiceExecution.js';
 import {
   type V1_Runtime,
   V1_RuntimePointer,
@@ -48,38 +48,38 @@ import {
   V1_LegacyRuntime,
   V1_StoreConnections,
   V1_IdentifiedConnection,
-} from '../../../../model/packageableElements/runtime/V1_Runtime';
-import { V1_buildEngineRuntime } from './V1_RuntimeBuilderHelper';
-import { V1_PackageableElementPointer } from '../../../../model/packageableElements/V1_PackageableElement';
-import { V1_buildRawLambdaWithResolvedPaths } from './V1_ValueSpecificationPathResolver';
-import { GraphBuilderError } from '../../../../../../../../graphManager/GraphManagerUtils';
+} from '../../../../model/packageableElements/runtime/V1_Runtime.js';
+import { V1_buildEngineRuntime } from './V1_RuntimeBuilderHelper.js';
+import { V1_PackageableElementPointer } from '../../../../model/packageableElements/V1_PackageableElement.js';
+import { V1_buildRawLambdaWithResolvedPaths } from './V1_ValueSpecificationPathResolver.js';
+import { GraphBuilderError } from '../../../../../../../../graphManager/GraphManagerUtils.js';
 import {
   type DEPRECATED__ServiceTest,
   DEPRECATED__KeyedSingleExecutionTest,
   DEPRECATED__MultiExecutionTest,
   DEPRECATED__SingleExecutionTest,
   DEPRECATED__TestContainer,
-} from '../../../../../../../metamodels/pure/packageableElements/service/DEPRECATED__ServiceTest';
-import { ConnectionTestData } from '../../../../../../../metamodels/pure/packageableElements/service/ConnectionTestData';
-import { ParameterValue } from '../../../../../../../metamodels/pure/packageableElements/service/ParameterValue';
-import { ServiceTestSuite } from '../../../../../../../metamodels/pure/packageableElements/service/ServiceTestSuite';
-import { TestData } from '../../../../../../../metamodels/pure/packageableElements/service/ServiceTestData';
-import type { V1_ConnectionTestData } from '../../../../model/packageableElements/service/V1_ConnectionTestData';
-import type { V1_ParameterValue } from '../../../../model/packageableElements/service/V1_ParameterValue';
-import type { V1_ServiceTestSuite } from '../../../../model/packageableElements/service/V1_ServiceTestSuite';
-import type { V1_TestData } from '../../../../model/packageableElements/service/V1_TestData';
+} from '../../../../../../../metamodels/pure/packageableElements/service/DEPRECATED__ServiceTest.js';
+import { ConnectionTestData } from '../../../../../../../metamodels/pure/packageableElements/service/ConnectionTestData.js';
+import { ParameterValue } from '../../../../../../../metamodels/pure/packageableElements/service/ParameterValue.js';
+import { ServiceTestSuite } from '../../../../../../../metamodels/pure/packageableElements/service/ServiceTestSuite.js';
+import { TestData } from '../../../../../../../metamodels/pure/packageableElements/service/ServiceTestData.js';
+import type { V1_ConnectionTestData } from '../../../../model/packageableElements/service/V1_ConnectionTestData.js';
+import type { V1_ParameterValue } from '../../../../model/packageableElements/service/V1_ParameterValue.js';
+import type { V1_ServiceTestSuite } from '../../../../model/packageableElements/service/V1_ServiceTestSuite.js';
+import type { V1_TestData } from '../../../../model/packageableElements/service/V1_TestData.js';
 import {
   V1_buildTestAssertion,
   V1_buildAtomicTest,
-} from './V1_TestBuilderHelper';
-import { V1_ProtocolToMetaModelEmbeddedDataBuilder } from './V1_DataElementBuilderHelper';
+} from './V1_TestBuilderHelper.js';
+import { V1_ProtocolToMetaModelEmbeddedDataBuilder } from './V1_DataElementBuilderHelper.js';
 import {
   type V1_DEPRECATED__ServiceTest,
   V1_DEPRECATED__SingleExecutionTest,
   V1_DEPRECATED__MultiExecutionTest,
-} from '../../../../model/packageableElements/service/V1_DEPRECATED__ServiceTest';
-import type { TestSuite } from '../../../../../../../metamodels/pure/test/Test';
-import { PackageableElementPointerType } from '../../../../../../../../MetaModelConst';
+} from '../../../../model/packageableElements/service/V1_DEPRECATED__ServiceTest.js';
+import type { TestSuite } from '../../../../../../../metamodels/pure/test/Test.js';
+import { PackageableElementPointerType } from '../../../../../../../../MetaModelConst.js';
 
 const buildConnectionTestData = (
   element: V1_ConnectionTestData,

@@ -15,9 +15,9 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
-import { hashObjectWithoutSourceInformation } from '../../../../../MetaModelUtils';
-import { TestAssertion, type TestAssertionVisitor } from './TestAssertion';
+import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst.js';
+import { hashObjectWithoutSourceInformation } from '../../../../../MetaModelUtils.js';
+import { TestAssertion, type TestAssertionVisitor } from './TestAssertion.js';
 
 export class EqualTo extends TestAssertion implements Hashable {
   /**

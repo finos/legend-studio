@@ -21,13 +21,13 @@ import {
   type OptionalPackageableElementReference,
   PackageableElementExplicitReference,
   OptionalPackageableElementExplicitReference,
-} from '../PackageableElementReference';
-import type { Mapping } from './Mapping';
-import type { SetImplementation } from './SetImplementation';
+} from '../PackageableElementReference.js';
+import type { Mapping } from './Mapping.js';
+import type { SetImplementation } from './SetImplementation.js';
 import {
   OptionalReferenceWithOwner,
   ReferenceWithOwner,
-} from '../../Reference';
+} from '../../Reference.js';
 
 export abstract class SetImplementationReference extends ReferenceWithOwner {
   override readonly ownerReference: PackageableElementReference<Mapping>;

@@ -20,7 +20,7 @@ import {
   V1_DataSpace,
   V1_DataSpaceExecutionContext,
   V1_DataSpaceSupportEmail,
-} from './v1/model/packageableElements/dataSpace/V1_DSLDataSpace_DataSpace';
+} from './v1/model/packageableElements/dataSpace/V1_DSLDataSpace_DataSpace.js';
 import {
   type PlainObject,
   uuid,
@@ -34,14 +34,14 @@ import { deserialize, serialize } from 'serializr';
 import {
   V1_dataSpaceModelSchema,
   V1_DATA_SPACE_ELEMENT_PROTOCOL_TYPE,
-} from './v1/transformation/pureProtocol/V1_DSLDataSpace_ProtocolHelper';
-import { getOwnDataSpace } from '../../../graphManager/DSLDataSpace_GraphManagerHelper';
+} from './v1/transformation/pureProtocol/V1_DSLDataSpace_ProtocolHelper.js';
+import { getOwnDataSpace } from '../../../graphManager/DSLDataSpace_GraphManagerHelper.js';
 import {
   type DataSpaceSupportInfo,
   DataSpace,
   DataSpaceExecutionContext,
   DataSpaceSupportEmail,
-} from '../../metamodels/pure/model/packageableElements/dataSpace/DSLDataSpace_DataSpace';
+} from '../../metamodels/pure/model/packageableElements/dataSpace/DSLDataSpace_DataSpace.js';
 import {
   type Mapping,
   type PackageableElement,

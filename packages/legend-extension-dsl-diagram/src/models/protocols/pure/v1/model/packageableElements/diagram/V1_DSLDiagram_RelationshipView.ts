@@ -15,8 +15,8 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import type { V1_Line } from './geometry/V1_DSLDiagram_Line';
-import { DIAGRAM_HASH_STRUCTURE } from '../../../../../../DSLDiagram_ModelUtils';
+import type { V1_Line } from './geometry/V1_DSLDiagram_Line.js';
+import { DIAGRAM_HASH_STRUCTURE } from '../../../../../../DSLDiagram_ModelUtils.js';
 
 export class V1_RelationshipView implements Hashable {
   sourceView!: string;

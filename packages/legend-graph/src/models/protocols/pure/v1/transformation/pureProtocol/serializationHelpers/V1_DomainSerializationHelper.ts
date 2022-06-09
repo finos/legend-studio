@@ -32,28 +32,28 @@ import {
   usingConstantValueSchema,
   usingModelSchema,
 } from '@finos/legend-shared';
-import { V1_multiplicitySchema } from '../../../transformation/pureProtocol/serializationHelpers/V1_CoreSerializationHelper';
-import { V1_Enumeration } from '../../../model/packageableElements/domain/V1_Enumeration';
-import { V1_Profile } from '../../../model/packageableElements/domain/V1_Profile';
+import { V1_multiplicitySchema } from '../../../transformation/pureProtocol/serializationHelpers/V1_CoreSerializationHelper.js';
+import { V1_Enumeration } from '../../../model/packageableElements/domain/V1_Enumeration.js';
+import { V1_Profile } from '../../../model/packageableElements/domain/V1_Profile.js';
 import {
   V1_Measure,
   V1_Unit,
-} from '../../../model/packageableElements/domain/V1_Measure';
-import { V1_Class } from '../../../model/packageableElements/domain/V1_Class';
-import { V1_Association } from '../../../model/packageableElements/domain/V1_Association';
-import { V1_ConcreteFunctionDefinition } from '../../../model/packageableElements/function/V1_ConcreteFunctionDefinition';
-import { V1_EnumValue } from '../../../model/packageableElements/domain/V1_EnumValue';
-import { V1_StereotypePtr } from '../../../model/packageableElements/domain/V1_StereotypePtr';
-import { V1_TagPtr } from '../../../model/packageableElements/domain/V1_TagPtr';
-import { V1_TaggedValue } from '../../../model/packageableElements/domain/V1_TaggedValue';
-import { V1_Property } from '../../../model/packageableElements/domain/V1_Property';
-import { V1_DerivedProperty } from '../../../model/packageableElements/domain/V1_DerivedProperty';
-import { V1_PropertyPointer } from '../../../model/packageableElements/domain/V1_PropertyPointer';
-import { V1_Constraint } from '../../../model/packageableElements/domain/V1_Constraint';
+} from '../../../model/packageableElements/domain/V1_Measure.js';
+import { V1_Class } from '../../../model/packageableElements/domain/V1_Class.js';
+import { V1_Association } from '../../../model/packageableElements/domain/V1_Association.js';
+import { V1_ConcreteFunctionDefinition } from '../../../model/packageableElements/function/V1_ConcreteFunctionDefinition.js';
+import { V1_EnumValue } from '../../../model/packageableElements/domain/V1_EnumValue.js';
+import { V1_StereotypePtr } from '../../../model/packageableElements/domain/V1_StereotypePtr.js';
+import { V1_TagPtr } from '../../../model/packageableElements/domain/V1_TagPtr.js';
+import { V1_TaggedValue } from '../../../model/packageableElements/domain/V1_TaggedValue.js';
+import { V1_Property } from '../../../model/packageableElements/domain/V1_Property.js';
+import { V1_DerivedProperty } from '../../../model/packageableElements/domain/V1_DerivedProperty.js';
+import { V1_PropertyPointer } from '../../../model/packageableElements/domain/V1_PropertyPointer.js';
+import { V1_Constraint } from '../../../model/packageableElements/domain/V1_Constraint.js';
 import {
   V1_rawLambdaModelSchema,
   V1_rawVariableModelSchema,
-} from './V1_RawValueSpecificationSerializationHelper';
+} from './V1_RawValueSpecificationSerializationHelper.js';
 
 export const V1_CLASS_ELEMENT_PROTOCOL_TYPE = 'class';
 export const V1_PROFILE_ELEMENT_PROTOCOL_TYPE = 'profile';

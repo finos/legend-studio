@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { ExecutionNode } from './ExecutionNode';
+import { ExecutionNode } from './ExecutionNode.js';
 
 export abstract class RelationalInstantiationExecutionNode extends ExecutionNode {}
 

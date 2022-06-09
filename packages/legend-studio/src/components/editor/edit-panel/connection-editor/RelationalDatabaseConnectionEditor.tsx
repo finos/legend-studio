@@ -20,7 +20,7 @@ import {
   CORE_AUTHENTICATION_STRATEGY_TYPE,
   CORE_DATASOURCE_SPEC_TYPE,
   RELATIONAL_DATABASE_TAB_TYPE,
-} from '../../../../stores/editor-state/element-editor-state/connection/ConnectionEditorState';
+} from '../../../../stores/editor-state/element-editor-state/connection/ConnectionEditorState.js';
 import { useState } from 'react';
 import {
   ResizablePanelGroup,
@@ -44,6 +44,7 @@ import {
   SnowflakePublicAuthenticationStrategy,
   ApiTokenAuthenticationStrategy,
   UsernamePasswordAuthenticationStrategy,
+  GCPWorkloadIdentityFederationAuthenticationStrategy,
   EmbeddedH2DatasourceSpecification,
   LocalH2DatasourceSpecification,
   SnowflakeDatasourceSpecification,
@@ -57,18 +58,20 @@ import { runInAction } from 'mobx';
 import {
   buildElementOption,
   type PackageableElementOption,
-} from '../../../../stores/shared/PackageableElementOptionUtil';
-import type { LegendStudioPlugin } from '../../../../stores/LegendStudioPlugin';
-import type { StoreRelational_LegendStudioPlugin_Extension } from '../../../../stores/StoreRelational_LegendStudioPlugin_Extension';
-import { DatabaseBuilder } from './DatabaseBuilder';
-import { useEditorStore } from '../../EditorStoreProvider';
+} from '../../../../stores/shared/PackageableElementOptionUtil.js';
+import type { LegendStudioPlugin } from '../../../../stores/LegendStudioPlugin.js';
+import type { StoreRelational_LegendStudioPlugin_Extension } from '../../../../stores/StoreRelational_LegendStudioPlugin_Extension.js';
+import { DatabaseBuilder } from './DatabaseBuilder.js';
+import { useEditorStore } from '../../EditorStoreProvider.js';
 import { EDITOR_LANGUAGE } from '@finos/legend-application';
-import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor';
-import { connection_setStore } from '../../../../stores/graphModifier/DSLMapping_GraphModifierHelper';
+import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor.js';
+import { connection_setStore } from '../../../../stores/graphModifier/DSLMapping_GraphModifierHelper.js';
 import {
   apiTokenAuthenticationStrategy_setApiToken,
   bigQueryDatasourceSpecification_setDefaultDataset,
   bigQueryDatasourceSpecification_setProjectId,
+  bigQueryDatasourceSpecification_setProxyHost,
+  bigQueryDatasourceSpecification_setProxyPort,
   databricksDatasourceSpecification_setHostName,
   databricksDatasourceSpecification_setHttpPath,
   databricksDatasourceSpecification_setPort,
@@ -109,7 +112,9 @@ import {
   usernamePasswordAuthenticationStrategy_setBaseVaultReference,
   usernamePasswordAuthenticationStrategy_setPasswordVaultReference,
   usernamePasswordAuthenticationStrategy_setUserNameVaultReference,
-} from '../../../../stores/graphModifier/StoreRelational_GraphModifierHelper';
+  gcpWorkloadIdentityFederationAuthenticationStrategy_setServiceAccountEmail,
+  gcpWorkloadIdentityFederationAuthenticationStrategy_setAdditionalGcpScopes,
+} from '../../../../stores/graphModifier/StoreRelational_GraphModifierHelper.js';
 
 /**
  * NOTE: this is a WIP we did to quickly assemble a modular UI for relational database connection editor
@@ -816,6 +821,30 @@ const BigQueryDatasourceSpecificationEditor = observer(
             )
           }
         />
+        <ConnectionEditor_StringEditor
+          isReadOnly={isReadOnly}
+          value={sourceSpec.proxyHost}
+          propertyName="proxy host"
+          description="Specifies proxy host for connection to GCP BigQuery"
+          update={(value: string | undefined): void =>
+            bigQueryDatasourceSpecification_setProxyHost(
+              sourceSpec,
+              value ?? '',
+            )
+          }
+        />
+        <ConnectionEditor_StringEditor
+          isReadOnly={isReadOnly}
+          value={sourceSpec.proxyPort}
+          propertyName="proxy port"
+          description="Specifies proxy port for connection to GCP BigQuery"
+          update={(value: string | undefined): void =>
+            bigQueryDatasourceSpecification_setProxyPort(
+              sourceSpec,
+              value ?? '',
+            )
+          }
+        />
       </>
     );
   },
@@ -978,6 +1007,42 @@ const UsernamePasswordAuthenticationStrategyEditor = observer(
             usernamePasswordAuthenticationStrategy_setPasswordVaultReference(
               authSpec,
               value ?? '',
+            )
+          }
+        />
+      </>
+    );
+  },
+);
+
+const GCPWorkloadIdentityFederationAuthenticationStrategyEditor = observer(
+  (props: {
+    authSpec: GCPWorkloadIdentityFederationAuthenticationStrategy;
+    isReadOnly: boolean;
+  }) => {
+    const { authSpec, isReadOnly } = props;
+    const GCPScopes = authSpec.additionalGcpScopes.join('\n');
+    return (
+      <>
+        <ConnectionEditor_StringEditor
+          isReadOnly={isReadOnly}
+          value={authSpec.serviceAccountEmail}
+          propertyName={'Service Account Email'}
+          update={(value: string | undefined): void =>
+            gcpWorkloadIdentityFederationAuthenticationStrategy_setServiceAccountEmail(
+              authSpec,
+              value ?? '',
+            )
+          }
+        />
+        <ConnectionEditor_StringEditor
+          isReadOnly={isReadOnly}
+          value={GCPScopes}
+          propertyName={'Additional GCP Scopes'}
+          update={(value: string | undefined): void =>
+            gcpWorkloadIdentityFederationAuthenticationStrategy_setAdditionalGcpScopes(
+              authSpec,
+              value ? [value] : [],
             )
           }
         />
@@ -1169,6 +1234,15 @@ const renderAuthenticationStrategyEditor = (
   } else if (authSpec instanceof UsernamePasswordAuthenticationStrategy) {
     return (
       <UsernamePasswordAuthenticationStrategyEditor
+        authSpec={authSpec}
+        isReadOnly={isReadOnly}
+      />
+    );
+  } else if (
+    authSpec instanceof GCPWorkloadIdentityFederationAuthenticationStrategy
+  ) {
+    return (
+      <GCPWorkloadIdentityFederationAuthenticationStrategyEditor
         authSpec={authSpec}
         isReadOnly={isReadOnly}
       />

@@ -15,8 +15,8 @@
  */
 
 import type { Hashable } from '@finos/legend-shared';
-import type { V1_TestAssertion } from './assertion/V1_TestAssertion';
-import { V1_Test } from './V1_Test';
+import type { V1_TestAssertion } from './assertion/V1_TestAssertion.js';
+import { V1_Test } from './V1_Test.js';
 
 export abstract class V1_AtomicTest extends V1_Test implements Hashable {
   assertions: V1_TestAssertion[] = [];

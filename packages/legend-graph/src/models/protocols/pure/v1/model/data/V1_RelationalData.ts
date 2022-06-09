@@ -15,11 +15,11 @@
  */
 
 import { type Hashable, hashArray } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../MetaModelConst';
+import { CORE_HASH_STRUCTURE } from '../../../../../../MetaModelConst.js';
 import {
   V1_EmbeddedData,
   type V1_EmbeddedDataVisitor,
-} from './V1_EmbeddedData';
+} from './V1_EmbeddedData.js';
 
 export class V1_RelationalDataTableColumn implements Hashable {
   value!: string;

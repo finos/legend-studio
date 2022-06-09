@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import { getDataSpace } from '../../../../../../graphManager/DSLDataSpace_GraphManagerHelper';
-import type { DataSpace } from '../../../../../metamodels/pure/model/packageableElements/dataSpace/DSLDataSpace_DataSpace';
+import { getDataSpace } from '../../../../../../graphManager/DSLDataSpace_GraphManagerHelper.js';
+import type { DataSpace } from '../../../../../metamodels/pure/model/packageableElements/dataSpace/DSLDataSpace_DataSpace.js';
 import type {
   PackageableElementImplicitReference,
   V1_GraphBuilderContext,

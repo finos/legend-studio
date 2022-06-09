@@ -45,26 +45,26 @@ import {
 import {
   getElementIcon,
   getElementTypeIcon,
-} from '../../shared/ElementIconUtils';
+} from '../../shared/ElementIconUtils.js';
 import {
   getElementTypeLabel,
   CreateNewElementModal,
-} from './CreateNewElementModal';
+} from './CreateNewElementModal.js';
 import { useDrag } from 'react-dnd';
-import { ElementDragSource } from '../../../stores/shared/DnDUtil';
-import { LEGEND_STUDIO_TEST_ID } from '../../LegendStudioTestID';
-import { ACTIVITY_MODE } from '../../../stores/EditorConfig';
-import { getTreeChildNodes } from '../../../stores/shared/PackageTreeUtil';
-import type { PackageTreeNodeData } from '../../../stores/shared/TreeUtil';
+import { ElementDragSource } from '../../../stores/shared/DnDUtil.js';
+import { LEGEND_STUDIO_TEST_ID } from '../../LegendStudioTestID.js';
+import { ACTIVITY_MODE } from '../../../stores/EditorConfig.js';
+import { getTreeChildNodes } from '../../../stores/shared/PackageTreeUtil.js';
+import type { PackageTreeNodeData } from '../../../stores/shared/TreeUtil.js';
 import {
   type GenerationTreeNodeData,
   getFileGenerationChildNodes,
-} from '../../../stores/shared/FileGenerationTreeUtil';
-import { FileGenerationTree } from '../../editor/edit-panel/element-generation-editor/FileGenerationEditor';
-import { generateViewEntityRoute } from '../../../stores/LegendStudioRouter';
+} from '../../../stores/shared/FileGenerationTreeUtil.js';
+import { FileGenerationTree } from '../../editor/edit-panel/element-generation-editor/FileGenerationEditor.js';
+import { generateViewEntityRoute } from '../../../stores/LegendStudioRouter.js';
 import { toTitleCase } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
-import { useEditorStore } from '../EditorStoreProvider';
+import { useEditorStore } from '../EditorStoreProvider.js';
 import {
   ELEMENT_PATH_DELIMITER,
   ROOT_PACKAGE_NAME,
@@ -74,8 +74,8 @@ import {
   getElementRootPackage,
 } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
-import type { LegendStudioConfig } from '../../../application/LegendStudioConfig';
-import { PACKAGEABLE_ELEMENT_TYPE } from '../../../stores/shared/ModelUtil';
+import type { LegendStudioConfig } from '../../../application/LegendStudioConfig.js';
+import { PACKAGEABLE_ELEMENT_TYPE } from '../../../stores/shared/ModelUtil.js';
 
 const isGeneratedPackageTreeNode = (node: PackageTreeNodeData): boolean =>
   getElementRootPackage(node.packageableElement).name ===

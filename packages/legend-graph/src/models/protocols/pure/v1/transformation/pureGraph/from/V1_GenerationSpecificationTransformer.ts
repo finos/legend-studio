@@ -14,25 +14,25 @@
  * limitations under the License.
  */
 
-import { PackageableElementPointerType } from '../../../../../../../MetaModelConst';
-import type { ConfigurationProperty } from '../../../../../../metamodels/pure/packageableElements/fileGeneration/ConfigurationProperty';
-import type { FileGenerationSpecification } from '../../../../../../metamodels/pure/packageableElements/fileGeneration/FileGenerationSpecification';
+import { PackageableElementPointerType } from '../../../../../../../MetaModelConst.js';
+import type { ConfigurationProperty } from '../../../../../../metamodels/pure/packageableElements/fileGeneration/ConfigurationProperty.js';
+import type { FileGenerationSpecification } from '../../../../../../metamodels/pure/packageableElements/fileGeneration/FileGenerationSpecification.js';
 import type {
   GenerationSpecification,
   GenerationTreeNode,
-} from '../../../../../../metamodels/pure/packageableElements/generationSpecification/GenerationSpecification';
-import { PackageableElementReference } from '../../../../../../metamodels/pure/packageableElements/PackageableElementReference';
-import { V1_ConfigurationProperty } from '../../../model/packageableElements/fileGeneration/V1_ConfigurationProperty';
-import { V1_FileGenerationSpecification } from '../../../model/packageableElements/fileGeneration/V1_FileGenerationSpecification';
+} from '../../../../../../metamodels/pure/packageableElements/generationSpecification/GenerationSpecification.js';
+import { PackageableElementReference } from '../../../../../../metamodels/pure/packageableElements/PackageableElementReference.js';
+import { V1_ConfigurationProperty } from '../../../model/packageableElements/fileGeneration/V1_ConfigurationProperty.js';
+import { V1_FileGenerationSpecification } from '../../../model/packageableElements/fileGeneration/V1_FileGenerationSpecification.js';
 import {
   V1_GenerationSpecification,
   V1_GenerationTreeNode,
-} from '../../../model/packageableElements/generationSpecification/V1_GenerationSpecification';
+} from '../../../model/packageableElements/generationSpecification/V1_GenerationSpecification.js';
 import {
   V1_transformElementReferencePointer,
   V1_initPackageableElement,
   V1_transformElementReference,
-} from './V1_CoreTransformerHelper';
+} from './V1_CoreTransformerHelper.js';
 
 // ----------------------------------------------- GENERATION SPECIFICATION ----------------------------------------
 

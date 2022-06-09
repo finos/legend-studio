@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { guaranteeNonNullable } from '../error/AssertionUtils';
+import { guaranteeNonNullable } from '../error/AssertionUtils.js';
 import {
   type Parameters,
   type RequestHeaders,
@@ -24,8 +24,8 @@ import {
   makeUrl,
   createRequestHeaders,
   NetworkClient,
-} from './NetworkUtils';
-import type { TraceData, TracerService } from './TracerService';
+} from './NetworkUtils.js';
+import type { TraceData, TracerService } from './TracerService.js';
 
 export interface ServerClientConfig {
   baseUrl?: string;

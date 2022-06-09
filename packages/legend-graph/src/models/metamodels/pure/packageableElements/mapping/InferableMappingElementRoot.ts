@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { InferableValue } from '../../InferableValue';
+import { InferableValue } from '../../InferableValue.js';
 
 export abstract class InferableMappingElementRoot extends InferableValue<
   boolean,

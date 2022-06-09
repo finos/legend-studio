@@ -15,31 +15,31 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { MultiplicityBadge } from '../../../shared/MultiplicityBadge';
-import { PurePropertyMappingEditor } from './PurePropertyMappingEditor';
-import { getElementIcon } from '../../../shared/ElementIconUtils';
+import { MultiplicityBadge } from '../../../shared/MultiplicityBadge.js';
+import { PurePropertyMappingEditor } from './PurePropertyMappingEditor.js';
+import { getElementIcon } from '../../../shared/ElementIconUtils.js';
 import {
   type MappingElement,
   MappingEditorState,
-} from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
-import type { InstanceSetImplementationState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementState';
+} from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState.js';
+import type { InstanceSetImplementationState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementState.js';
 import {
   PurePropertyMappingState,
   PureInstanceSetImplementationState,
-} from '../../../../stores/editor-state/element-editor-state/mapping/PureInstanceSetImplementationState';
+} from '../../../../stores/editor-state/element-editor-state/mapping/PureInstanceSetImplementationState.js';
 import { clsx, ArrowCircleRightIcon } from '@finos/legend-art';
 import { guaranteeType } from '@finos/legend-shared';
 import {
   type FlatDataPropertyMappingState,
   FlatDataInstanceSetImplementationState,
-} from '../../../../stores/editor-state/element-editor-state/mapping/FlatDataInstanceSetImplementationState';
-import { FlatDataPropertyMappingEditor } from './FlatDataPropertyMappingEditor';
-import { RelationalPropertyMappingEditor } from './relational/RelationalPropertyMappingEditor';
+} from '../../../../stores/editor-state/element-editor-state/mapping/FlatDataInstanceSetImplementationState.js';
+import { FlatDataPropertyMappingEditor } from './FlatDataPropertyMappingEditor.js';
+import { RelationalPropertyMappingEditor } from './relational/RelationalPropertyMappingEditor.js';
 import type {
   RelationalPropertyMappingState,
   RootRelationalInstanceSetImplementationState,
-} from '../../../../stores/editor-state/element-editor-state/mapping/relational/RelationalInstanceSetImplementationState';
-import { useEditorStore } from '../../EditorStoreProvider';
+} from '../../../../stores/editor-state/element-editor-state/mapping/relational/RelationalInstanceSetImplementationState.js';
+import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
   type Property,
   type Type,
@@ -55,12 +55,12 @@ import { useApplicationStore } from '@finos/legend-application';
 import {
   setImpl_nominateRoot,
   setImpl_setRoot,
-} from '../../../../stores/graphModifier/DSLMapping_GraphModifierHelper';
+} from '../../../../stores/graphModifier/DSLMapping_GraphModifierHelper.js';
 import {
   CLASS_PROPERTY_TYPE,
   getClassPropertyType,
   SET_IMPLEMENTATION_TYPE,
-} from '../../../../stores/shared/ModelUtil';
+} from '../../../../stores/shared/ModelUtil.js';
 
 export const getExpectedReturnType = (
   targetSetImplementation: SetImplementation | undefined,

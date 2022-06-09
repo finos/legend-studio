@@ -19,12 +19,12 @@ import {
   guaranteeType,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
-import { ExecutionPlan } from '../../../../../../metamodels/pure/executionPlan/ExecutionPlan';
-import type { ExecutionNode } from '../../../../../../metamodels/pure/executionPlan/nodes/ExecutionNode';
-import { RelationalTDSInstantiationExecutionNode } from '../../../../../../metamodels/pure/executionPlan/nodes/RelationalInstantiationExecutionNode';
-import { SQLExecutionNode } from '../../../../../../metamodels/pure/executionPlan/nodes/SQLExecutionNode';
-import { SQLResultColumn } from '../../../../../../metamodels/pure/executionPlan/nodes/SQLResultColumn';
-import { DatabaseConnection } from '../../../../../../metamodels/pure/packageableElements/store/relational/connection/RelationalDatabaseConnection';
+import { ExecutionPlan } from '../../../../../../metamodels/pure/executionPlan/ExecutionPlan.js';
+import type { ExecutionNode } from '../../../../../../metamodels/pure/executionPlan/nodes/ExecutionNode.js';
+import { RelationalTDSInstantiationExecutionNode } from '../../../../../../metamodels/pure/executionPlan/nodes/RelationalInstantiationExecutionNode.js';
+import { SQLExecutionNode } from '../../../../../../metamodels/pure/executionPlan/nodes/SQLExecutionNode.js';
+import { SQLResultColumn } from '../../../../../../metamodels/pure/executionPlan/nodes/SQLResultColumn.js';
+import { DatabaseConnection } from '../../../../../../metamodels/pure/packageableElements/store/relational/connection/RelationalDatabaseConnection.js';
 import {
   type RelationalDataType,
   Real,
@@ -44,24 +44,24 @@ import {
   TinyInt,
   SmallInt,
   BigInt,
-} from '../../../../../../metamodels/pure/packageableElements/store/relational/model/RelationalDataType';
-import type { V1_ExecutionNode } from '../../../model/executionPlan/nodes/V1_ExecutionNode';
-import { V1_RelationalTDSInstantiationExecutionNode } from '../../../model/executionPlan/nodes/V1_RelationalTDSInstantiationExecutionNode';
-import { V1_SQLExecutionNode } from '../../../model/executionPlan/nodes/V1_SQLExecutionNode';
-import type { V1_SQLResultColumn } from '../../../model/executionPlan/nodes/V1_SQLResultColumn';
-import type { V1_ExecutionPlan } from '../../../model/executionPlan/V1_ExecutionPlan';
-import { V1_SimpleExecutionPlan } from '../../../model/executionPlan/V1_SimpleExecutionPlan';
-import type { V1_GraphBuilderContext } from './V1_GraphBuilderContext';
-import { V1_ProtocolToMetaModelConnectionBuilder } from './V1_ProtocolToMetaModelConnectionBuilder';
-import type { V1_ResultType } from '../../../model/executionPlan/results/V1_ResultType';
-import type { ResultType } from '../../../../../../metamodels/pure/executionPlan/result/ResultType';
-import { V1_DataTypeResultType } from '../../../model/executionPlan/results/V1_DataTypeResultType';
-import { V1_TDSResultType } from '../../../model/executionPlan/results/V1_TDSResultType';
-import { DataTypeResultType } from '../../../../../../metamodels/pure/executionPlan/result/DataTypeResultType';
-import { TDSResultType } from '../../../../../../metamodels/pure/executionPlan/result/TDSResultType';
-import { TDSColumn } from '../../../../../../metamodels/pure/executionPlan/result/TDSColumn';
-import type { V1_TDSColumn } from '../../../model/executionPlan/results/V1_TDSColumn';
-import { CORE_PURE_PATH } from '../../../../../../../MetaModelConst';
+} from '../../../../../../metamodels/pure/packageableElements/store/relational/model/RelationalDataType.js';
+import type { V1_ExecutionNode } from '../../../model/executionPlan/nodes/V1_ExecutionNode.js';
+import { V1_RelationalTDSInstantiationExecutionNode } from '../../../model/executionPlan/nodes/V1_RelationalTDSInstantiationExecutionNode.js';
+import { V1_SQLExecutionNode } from '../../../model/executionPlan/nodes/V1_SQLExecutionNode.js';
+import type { V1_SQLResultColumn } from '../../../model/executionPlan/nodes/V1_SQLResultColumn.js';
+import type { V1_ExecutionPlan } from '../../../model/executionPlan/V1_ExecutionPlan.js';
+import { V1_SimpleExecutionPlan } from '../../../model/executionPlan/V1_SimpleExecutionPlan.js';
+import type { V1_GraphBuilderContext } from './V1_GraphBuilderContext.js';
+import { V1_ProtocolToMetaModelConnectionBuilder } from './V1_ProtocolToMetaModelConnectionBuilder.js';
+import type { V1_ResultType } from '../../../model/executionPlan/results/V1_ResultType.js';
+import type { ResultType } from '../../../../../../metamodels/pure/executionPlan/result/ResultType.js';
+import { V1_DataTypeResultType } from '../../../model/executionPlan/results/V1_DataTypeResultType.js';
+import { V1_TDSResultType } from '../../../model/executionPlan/results/V1_TDSResultType.js';
+import { DataTypeResultType } from '../../../../../../metamodels/pure/executionPlan/result/DataTypeResultType.js';
+import { TDSResultType } from '../../../../../../metamodels/pure/executionPlan/result/TDSResultType.js';
+import { TDSColumn } from '../../../../../../metamodels/pure/executionPlan/result/TDSColumn.js';
+import type { V1_TDSColumn } from '../../../model/executionPlan/results/V1_TDSColumn.js';
+import { CORE_PURE_PATH } from '../../../../../../../MetaModelConst.js';
 
 const parseDataType = (val: string): RelationalDataType => {
   const getTypeParams = (typeVal: string): number[] =>

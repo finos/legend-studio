@@ -14,19 +14,19 @@
  * limitations under the License.
  */
 
-import type { Mapping } from '../../../../../../../metamodels/pure/packageableElements/mapping/Mapping';
-import type { V1_GraphBuilderContext } from '../../../../transformation/pureGraph/to/V1_GraphBuilderContext';
-import type { V1_AggregateSetImplementationContainer } from '../../../../model/packageableElements/store/relational/mapping/aggregationAware/V1_AggregateSetImplementationContainer';
-import { AggregateSetImplementationContainer } from '../../../../../../../metamodels/pure/packageableElements/mapping/aggregationAware/AggregateSetImplementationContainer';
-import type { InstanceSetImplementation } from '../../../../../../../metamodels/pure/packageableElements/mapping/InstanceSetImplementation';
-import { AggregateSpecification } from '../../../../../../../metamodels/pure/packageableElements/mapping/aggregationAware/AggregateSpecification';
-import type { V1_AggregateSpecification } from '../../../../model/packageableElements/store/relational/mapping/aggregationAware/V1_AggregateSpecification';
-import type { V1_GroupByFunction } from '../../../../model/packageableElements/store/relational/mapping/aggregationAware/V1_GroupByFunction';
-import { GroupByFunctionSpecification } from '../../../../../../../metamodels/pure/packageableElements/mapping/aggregationAware/GroupByFunctionSpecification';
-import { AggregationFunctionSpecification } from '../../../../../../../metamodels/pure/packageableElements/mapping/aggregationAware/AggregationFunctionSpecification';
-import type { V1_AggregateFunction } from '../../../../model/packageableElements/store/relational/mapping/aggregationAware/V1_AggregateFunction';
-import { V1_ProtocolToMetaModelClassMappingFirstPassBuilder } from '../V1_ProtocolToMetaModelClassMappingFirstPassBuilder';
-import { V1_buildRawLambdaWithResolvedPaths } from './V1_ValueSpecificationPathResolver';
+import type { Mapping } from '../../../../../../../metamodels/pure/packageableElements/mapping/Mapping.js';
+import type { V1_GraphBuilderContext } from '../../../../transformation/pureGraph/to/V1_GraphBuilderContext.js';
+import type { V1_AggregateSetImplementationContainer } from '../../../../model/packageableElements/store/relational/mapping/aggregationAware/V1_AggregateSetImplementationContainer.js';
+import { AggregateSetImplementationContainer } from '../../../../../../../metamodels/pure/packageableElements/mapping/aggregationAware/AggregateSetImplementationContainer.js';
+import type { InstanceSetImplementation } from '../../../../../../../metamodels/pure/packageableElements/mapping/InstanceSetImplementation.js';
+import { AggregateSpecification } from '../../../../../../../metamodels/pure/packageableElements/mapping/aggregationAware/AggregateSpecification.js';
+import type { V1_AggregateSpecification } from '../../../../model/packageableElements/store/relational/mapping/aggregationAware/V1_AggregateSpecification.js';
+import type { V1_GroupByFunction } from '../../../../model/packageableElements/store/relational/mapping/aggregationAware/V1_GroupByFunction.js';
+import { GroupByFunctionSpecification } from '../../../../../../../metamodels/pure/packageableElements/mapping/aggregationAware/GroupByFunctionSpecification.js';
+import { AggregationFunctionSpecification } from '../../../../../../../metamodels/pure/packageableElements/mapping/aggregationAware/AggregationFunctionSpecification.js';
+import type { V1_AggregateFunction } from '../../../../model/packageableElements/store/relational/mapping/aggregationAware/V1_AggregateFunction.js';
+import { V1_ProtocolToMetaModelClassMappingFirstPassBuilder } from '../V1_ProtocolToMetaModelClassMappingFirstPassBuilder.js';
+import { V1_buildRawLambdaWithResolvedPaths } from './V1_ValueSpecificationPathResolver.js';
 
 const buildGroupByFunction = (
   groupByFunction: V1_GroupByFunction,

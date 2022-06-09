@@ -16,7 +16,7 @@
 
 import type { BasicModel, PureModel } from '@finos/legend-graph';
 import { guaranteeNonNullable } from '@finos/legend-shared';
-import { DataSpace } from '../models/metamodels/pure/model/packageableElements/dataSpace/DSLDataSpace_DataSpace';
+import { DataSpace } from '../models/metamodels/pure/model/packageableElements/dataSpace/DSLDataSpace_DataSpace.js';
 
 export const getDataSpace = (path: string, graph: PureModel): DataSpace =>
   graph.getExtensionElement(path, DataSpace, `Can't find data space '${path}'`);

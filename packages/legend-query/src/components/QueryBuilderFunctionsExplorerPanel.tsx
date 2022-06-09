@@ -44,7 +44,7 @@ import {
   QUERY_BUILDER_FUNCTIONS_EXPLORER_TREE_DND_TYPE,
   generateFunctionsExplorerTreeNodeData,
   getFunctionsExplorerTreeNodeChildren,
-} from '../stores/QueryFunctionsExplorerState';
+} from '../stores/QueryFunctionsExplorerState.js';
 import { useDrag, useDragLayer } from 'react-dnd';
 import {
   ConcreteFunctionDefinition,
@@ -52,11 +52,11 @@ import {
   getElementRootPackage,
   Package,
   ROOT_PACKAGE_NAME,
+  getMultiplicityDescription,
 } from '@finos/legend-graph';
 import { getEmptyImage } from 'react-dnd-html5-backend';
 import { useEffect, useState } from 'react';
-import type { QueryBuilderState } from '../stores/QueryBuilderState';
-import { getMultiplicityDescription } from './shared/QueryBuilderUtils';
+import type { QueryBuilderState } from '../stores/QueryBuilderState.js';
 
 const isDependencyTreeNode = (
   node: QueryBuilderFunctionsExplorerTreeNodeData,

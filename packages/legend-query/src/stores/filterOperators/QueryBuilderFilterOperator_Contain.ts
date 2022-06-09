@@ -18,25 +18,25 @@ import {
   QueryBuilderFilterOperator,
   type QueryBuilderFilterState,
   type FilterConditionState,
-} from '../QueryBuilderFilterState';
+} from '../QueryBuilderFilterState.js';
 import {
   PRIMITIVE_TYPE,
   type ValueSpecification,
   type SimpleFunctionExpression,
+  buildPrimitiveInstanceValue,
 } from '@finos/legend-graph';
 import { UnsupportedOperationError } from '@finos/legend-shared';
 import {
   buildFilterConditionState,
   buildFilterConditionExpression,
-} from './QueryBuilderFilterOperatorHelper';
-import { SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
-import { generateDefaultValueForPrimitiveType } from '../QueryBuilderValueSpecificationBuilderHelper';
+} from './QueryBuilderFilterOperatorHelper.js';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const.js';
+import { generateDefaultValueForPrimitiveType } from '../QueryBuilderValueSpecificationBuilderHelper.js';
 import {
   buildNotExpression,
   unwrapNotExpression,
-  buildPrimitiveInstanceValue,
   getNonCollectionValueSpecificationType,
-} from '../QueryBuilderOperatorsHelper';
+} from '../QueryBuilderOperatorsHelper.js';
 
 export class QueryBuilderFilterOperator_Contain extends QueryBuilderFilterOperator {
   getLabel(filterConditionState: FilterConditionState): string {
@@ -90,7 +90,7 @@ export class QueryBuilderFilterOperator_Contain extends QueryBuilderFilterOperat
   ): ValueSpecification {
     return buildFilterConditionExpression(
       filterConditionState,
-      SUPPORTED_FUNCTIONS.CONTAINS,
+      QUERY_BUILDER_SUPPORTED_FUNCTIONS.CONTAINS,
     );
   }
 
@@ -101,7 +101,7 @@ export class QueryBuilderFilterOperator_Contain extends QueryBuilderFilterOperat
     return buildFilterConditionState(
       filterState,
       expression,
-      SUPPORTED_FUNCTIONS.CONTAINS,
+      QUERY_BUILDER_SUPPORTED_FUNCTIONS.CONTAINS,
       this,
     );
   }

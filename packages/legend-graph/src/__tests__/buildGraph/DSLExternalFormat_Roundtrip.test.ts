@@ -14,14 +14,15 @@
  * limitations under the License.
  */
 
+import { test } from '@jest/globals';
 import type { Entity } from '@finos/legend-model-storage';
 import { unitTest } from '@finos/legend-shared';
-import { roundtripTestData } from './TEST_DATA__DSLExternalFormat_Roundtrip';
+import { roundtripTestData } from './TEST_DATA__DSLExternalFormat_Roundtrip.js';
 import {
   TEST__checkBuildingElementsRoundtrip,
   TEST__GraphPluginManager,
-} from '../../GraphManagerTestUtils';
-import { DSLExternalFormat_GraphPreset } from '../../graph/DSLExternalFormat_Extension';
+} from '../../GraphManagerTestUtils.js';
+import { DSLExternalFormat_GraphPreset } from '../../graph/DSLExternalFormat_Extension.js';
 
 const pluginManager = new TEST__GraphPluginManager();
 pluginManager.usePresets([new DSLExternalFormat_GraphPreset()]).install();

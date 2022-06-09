@@ -17,95 +17,95 @@
 // --------------------------------------------- PACKAGEABLE ELEMENT --------------------------------------------------
 
 // metamodels
-export * from './models/metamodels/pure/Reference';
-export * from './models/metamodels/pure/packageableElements/connection/Connection';
-export * from './models/metamodels/pure/packageableElements/PackageableElement';
-export * from './models/metamodels/pure/packageableElements/PackageableElementReference';
-export { SectionIndex } from './models/metamodels/pure/packageableElements/section/SectionIndex';
+export * from './models/metamodels/pure/Reference.js';
+export * from './models/metamodels/pure/packageableElements/connection/Connection.js';
+export * from './models/metamodels/pure/packageableElements/PackageableElement.js';
+export * from './models/metamodels/pure/packageableElements/PackageableElementReference.js';
+export { SectionIndex } from './models/metamodels/pure/packageableElements/section/SectionIndex.js';
 
-export { Multiplicity } from './models/metamodels/pure/packageableElements/domain/Multiplicity';
-export { Type } from './models/metamodels/pure/packageableElements/domain/Type';
-export { DataType } from './models/metamodels/pure/packageableElements/domain/DataType';
-export { PrimitiveType } from './models/metamodels/pure/packageableElements/domain/PrimitiveType';
+export { Multiplicity } from './models/metamodels/pure/packageableElements/domain/Multiplicity.js';
+export { Type } from './models/metamodels/pure/packageableElements/domain/Type.js';
+export { DataType } from './models/metamodels/pure/packageableElements/domain/DataType.js';
+export { PrimitiveType } from './models/metamodels/pure/packageableElements/domain/PrimitiveType.js';
 export {
   GenericTypeReference,
   GenericTypeExplicitReference,
-} from './models/metamodels/pure/packageableElements/domain/GenericTypeReference';
-export { GenericType } from './models/metamodels/pure/packageableElements/domain/GenericType';
-export { Class } from './models/metamodels/pure/packageableElements/domain/Class';
-export { type AnnotatedElement } from './models/metamodels/pure/packageableElements/domain/AnnotatedElement';
-export { Package } from './models/metamodels/pure/packageableElements/domain/Package';
-export { Constraint } from './models/metamodels/pure/packageableElements/domain/Constraint';
-export { Association } from './models/metamodels/pure/packageableElements/domain/Association';
-export { Enumeration } from './models/metamodels/pure/packageableElements/domain/Enumeration';
-export { Enum } from './models/metamodels/pure/packageableElements/domain/Enum';
-export { TaggedValue } from './models/metamodels/pure/packageableElements/domain/TaggedValue';
-export { Tag } from './models/metamodels/pure/packageableElements/domain/Tag';
-export { Profile } from './models/metamodels/pure/packageableElements/domain/Profile';
-export { Stereotype } from './models/metamodels/pure/packageableElements/domain/Stereotype';
+} from './models/metamodels/pure/packageableElements/domain/GenericTypeReference.js';
+export { GenericType } from './models/metamodels/pure/packageableElements/domain/GenericType.js';
+export { Class } from './models/metamodels/pure/packageableElements/domain/Class.js';
+export { type AnnotatedElement } from './models/metamodels/pure/packageableElements/domain/AnnotatedElement.js';
+export { Package } from './models/metamodels/pure/packageableElements/domain/Package.js';
+export { Constraint } from './models/metamodels/pure/packageableElements/domain/Constraint.js';
+export { Association } from './models/metamodels/pure/packageableElements/domain/Association.js';
+export { Enumeration } from './models/metamodels/pure/packageableElements/domain/Enumeration.js';
+export { Enum } from './models/metamodels/pure/packageableElements/domain/Enum.js';
+export { TaggedValue } from './models/metamodels/pure/packageableElements/domain/TaggedValue.js';
+export { Tag } from './models/metamodels/pure/packageableElements/domain/Tag.js';
+export { Profile } from './models/metamodels/pure/packageableElements/domain/Profile.js';
+export { Stereotype } from './models/metamodels/pure/packageableElements/domain/Stereotype.js';
 export {
   Measure,
   Unit,
-} from './models/metamodels/pure/packageableElements/domain/Measure';
+} from './models/metamodels/pure/packageableElements/domain/Measure.js';
 export {
   EnumValueReference,
   EnumValueExplicitReference,
-} from './models/metamodels/pure/packageableElements/domain/EnumValueReference';
-export { type AbstractProperty } from './models/metamodels/pure/packageableElements/domain/AbstractProperty';
-export { DerivedProperty } from './models/metamodels/pure/packageableElements/domain/DerivedProperty';
-export { Property } from './models/metamodels/pure/packageableElements/domain/Property';
+} from './models/metamodels/pure/packageableElements/domain/EnumValueReference.js';
+export { type AbstractProperty } from './models/metamodels/pure/packageableElements/domain/AbstractProperty.js';
+export { DerivedProperty } from './models/metamodels/pure/packageableElements/domain/DerivedProperty.js';
+export { Property } from './models/metamodels/pure/packageableElements/domain/Property.js';
 export {
   PropertyReference,
   PropertyExplicitReference,
-} from './models/metamodels/pure/packageableElements/domain/PropertyReference';
-export { ConcreteFunctionDefinition } from './models/metamodels/pure/packageableElements/domain/ConcreteFunctionDefinition';
+} from './models/metamodels/pure/packageableElements/domain/PropertyReference.js';
+export { ConcreteFunctionDefinition } from './models/metamodels/pure/packageableElements/domain/ConcreteFunctionDefinition.js';
 export {
   StereotypeReference,
   StereotypeExplicitReference,
-} from './models/metamodels/pure/packageableElements/domain/StereotypeReference';
+} from './models/metamodels/pure/packageableElements/domain/StereotypeReference.js';
 export {
   TagReference,
   TagExplicitReference,
-} from './models/metamodels/pure/packageableElements/domain/TagReference';
+} from './models/metamodels/pure/packageableElements/domain/TagReference.js';
 export {
   RuntimePointer,
   StoreConnections,
-} from './models/metamodels/pure/packageableElements/runtime/Runtime';
+} from './models/metamodels/pure/packageableElements/runtime/Runtime.js';
 // metamodel external formats
-export { Binding } from './models/metamodels/pure/packageableElements/externalFormat/store/DSLExternalFormat_Binding';
-export { ModelUnit } from './models/metamodels/pure/packageableElements/externalFormat/store/DSLExternalFormat_ModelUnit';
-export { SchemaSet } from './models/metamodels/pure/packageableElements/externalFormat/schemaSet/DSLExternalFormat_SchemaSet';
-export { Schema as ExternalFormatSchema } from './models/metamodels/pure/packageableElements/externalFormat/schemaSet/DSLExternalFormat_Schema';
-export { ExternalFormatConnection } from './models/metamodels/pure/packageableElements/externalFormat/connection/DSLExternalFormat_ExternalFormatConnection';
-export { UrlStream } from './models/metamodels/pure/packageableElements/externalFormat/connection/DSLExternalFormat_UrlStream';
-export { DSLExternalFormat_GraphPreset } from './graph/DSLExternalFormat_Extension';
-export { BindingTransformer } from './models/metamodels/pure/packageableElements/externalFormat/store/DSLExternalFormat_BindingTransformer';
-export * from './graphManager/DSLExternalFormat_PureGraphManagerPlugin';
+export { Binding } from './models/metamodels/pure/packageableElements/externalFormat/store/DSLExternalFormat_Binding.js';
+export { ModelUnit } from './models/metamodels/pure/packageableElements/externalFormat/store/DSLExternalFormat_ModelUnit.js';
+export { SchemaSet } from './models/metamodels/pure/packageableElements/externalFormat/schemaSet/DSLExternalFormat_SchemaSet.js';
+export { Schema as ExternalFormatSchema } from './models/metamodels/pure/packageableElements/externalFormat/schemaSet/DSLExternalFormat_Schema.js';
+export { ExternalFormatConnection } from './models/metamodels/pure/packageableElements/externalFormat/connection/DSLExternalFormat_ExternalFormatConnection.js';
+export { UrlStream } from './models/metamodels/pure/packageableElements/externalFormat/connection/DSLExternalFormat_UrlStream.js';
+export { DSLExternalFormat_GraphPreset } from './graph/DSLExternalFormat_Extension.js';
+export { BindingTransformer } from './models/metamodels/pure/packageableElements/externalFormat/store/DSLExternalFormat_BindingTransformer.js';
+export * from './graphManager/DSLExternalFormat_PureGraphManagerPlugin.js';
 // V1 protocols
-export * from './models/protocols/pure/v1/model/packageableElements/V1_PackageableElement';
-export { V1_StereotypePtr } from './models/protocols/pure/v1/model/packageableElements/domain/V1_StereotypePtr';
-export { V1_TaggedValue } from './models/protocols/pure/v1/model/packageableElements/domain/V1_TaggedValue';
-export { V1_PropertyPointer } from './models/protocols/pure/v1/model/packageableElements/domain/V1_PropertyPointer';
-export { V1_SectionIndex } from './models/protocols/pure/v1/model/packageableElements/section/V1_SectionIndex';
+export * from './models/protocols/pure/v1/model/packageableElements/V1_PackageableElement.js';
+export { V1_StereotypePtr } from './models/protocols/pure/v1/model/packageableElements/domain/V1_StereotypePtr.js';
+export { V1_TaggedValue } from './models/protocols/pure/v1/model/packageableElements/domain/V1_TaggedValue.js';
+export { V1_PropertyPointer } from './models/protocols/pure/v1/model/packageableElements/domain/V1_PropertyPointer.js';
+export { V1_SectionIndex } from './models/protocols/pure/v1/model/packageableElements/section/V1_SectionIndex.js';
 
 // --------------------------------------------- VALUE SPECIFICATION --------------------------------------------------
 
 // metamodels
-export { RawLambda } from './models/metamodels/pure/rawValueSpecification/RawLambda';
-export { RawVariableExpression } from './models/metamodels/pure/rawValueSpecification/RawVariableExpression';
-export { INTERNAL__UnknownValueSpecification } from './models/metamodels/pure/valueSpecification/INTERNAL__UnknownValueSpecification';
-export { VariableExpression } from './models/metamodels/pure/valueSpecification/VariableExpression';
+export { RawLambda } from './models/metamodels/pure/rawValueSpecification/RawLambda.js';
+export { RawVariableExpression } from './models/metamodels/pure/rawValueSpecification/RawVariableExpression.js';
+export { INTERNAL__UnknownValueSpecification } from './models/metamodels/pure/valueSpecification/INTERNAL__UnknownValueSpecification.js';
+export { VariableExpression } from './models/metamodels/pure/valueSpecification/VariableExpression.js';
 export {
   AbstractPropertyExpression,
   SimpleFunctionExpression,
   FunctionExpression,
-} from './models/metamodels/pure/valueSpecification/SimpleFunctionExpression';
+} from './models/metamodels/pure/valueSpecification/SimpleFunctionExpression.js';
 export {
   FunctionType,
   LambdaFunction,
   LambdaFunctionInstanceValue,
-} from './models/metamodels/pure/valueSpecification/LambdaFunction';
-export { AlloySerializationConfigInstanceValue } from './models/metamodels/pure/valueSpecification/AlloySerializationConfig';
+} from './models/metamodels/pure/valueSpecification/LambdaFunction.js';
+export { AlloySerializationConfigInstanceValue } from './models/metamodels/pure/valueSpecification/AlloySerializationConfig.js';
 export {
   EnumValueInstanceValue,
   MappingInstanceValue,
@@ -115,12 +115,12 @@ export {
   InstanceValue,
   CollectionInstanceValue,
   PrimitiveInstanceValue,
-} from './models/metamodels/pure/valueSpecification/InstanceValue';
-export { INTERNAL__PropagatedValue } from './models/metamodels/pure/valueSpecification/INTERNAL__PropagatedValue';
+} from './models/metamodels/pure/valueSpecification/InstanceValue.js';
+export { INTERNAL__PropagatedValue } from './models/metamodels/pure/valueSpecification/INTERNAL__PropagatedValue.js';
 export {
   ValueSpecification,
   type ValueSpecificationVisitor,
-} from './models/metamodels/pure/valueSpecification/ValueSpecification';
+} from './models/metamodels/pure/valueSpecification/ValueSpecification.js';
 export {
   GraphFetchTree,
   PropertyGraphFetchTree,
@@ -128,200 +128,207 @@ export {
   GraphFetchTreeInstanceValue,
   PropertyGraphFetchTreeInstanceValue,
   RootGraphFetchTreeInstanceValue,
-} from './models/metamodels/pure/valueSpecification/GraphFetchTree';
-export { V1_PureGraphManager } from './models/protocols/pure/v1/V1_PureGraphManager';
+} from './models/metamodels/pure/valueSpecification/GraphFetchTree.js';
+export { V1_PureGraphManager } from './models/protocols/pure/v1/V1_PureGraphManager.js';
 
 // V1 protocols
-export { V1_AppliedFunction } from './models/protocols/pure/v1/model/valueSpecification/application/V1_AppliedFunction';
-export { V1_AppliedProperty } from './models/protocols/pure/v1/model/valueSpecification/application/V1_AppliedProperty';
-export { V1_Collection } from './models/protocols/pure/v1/model/valueSpecification/raw/V1_Collection';
-export { V1_Lambda } from './models/protocols/pure/v1/model/valueSpecification/raw/V1_Lambda';
-export { V1_Variable } from './models/protocols/pure/v1/model/valueSpecification/V1_Variable';
-export { V1_ValueSpecification } from './models/protocols/pure/v1/model/valueSpecification/V1_ValueSpecification';
-export { V1_Multiplicity } from './models/protocols/pure/v1/model/packageableElements/domain/V1_Multiplicity';
-export { V1_ExternalFormatDescription } from './models/protocols/pure/v1/engine/externalFormat/V1_ExternalFormatDescription';
-export { V1_ExternalFormatModelGenerationInput } from './models/protocols/pure/v1/engine/externalFormat/V1_ExternalFormatModelGeneration';
+export { V1_AppliedFunction } from './models/protocols/pure/v1/model/valueSpecification/application/V1_AppliedFunction.js';
+export { V1_AppliedProperty } from './models/protocols/pure/v1/model/valueSpecification/application/V1_AppliedProperty.js';
+export { V1_Collection } from './models/protocols/pure/v1/model/valueSpecification/raw/V1_Collection.js';
+export { V1_Lambda } from './models/protocols/pure/v1/model/valueSpecification/raw/V1_Lambda.js';
+export { V1_Variable } from './models/protocols/pure/v1/model/valueSpecification/V1_Variable.js';
+export { V1_ValueSpecification } from './models/protocols/pure/v1/model/valueSpecification/V1_ValueSpecification.js';
+export { V1_Multiplicity } from './models/protocols/pure/v1/model/packageableElements/domain/V1_Multiplicity.js';
+export { V1_ExternalFormatDescription } from './models/protocols/pure/v1/engine/externalFormat/V1_ExternalFormatDescription.js';
+export { V1_ExternalFormatModelGenerationInput } from './models/protocols/pure/v1/engine/externalFormat/V1_ExternalFormatModelGeneration.js';
 
 // --------------------------------------------- EXECUTION PLAN --------------------------------------------------
 
-export * from './models/metamodels/pure/executionPlan/ExecutionPlan';
-export { ExecutionNode } from './models/metamodels/pure/executionPlan/nodes/ExecutionNode';
-export { SQLExecutionNode } from './models/metamodels/pure/executionPlan/nodes/SQLExecutionNode';
-export { SQLResultColumn } from './models/metamodels/pure/executionPlan/nodes/SQLResultColumn';
-export { RelationalTDSInstantiationExecutionNode } from './models/metamodels/pure/executionPlan/nodes/RelationalInstantiationExecutionNode';
-export { ResultType } from './models/metamodels/pure/executionPlan/result/ResultType';
-export { TDSResultType } from './models/metamodels/pure/executionPlan/result/TDSResultType';
+export * from './models/metamodels/pure/executionPlan/ExecutionPlan.js';
+export { ExecutionNode } from './models/metamodels/pure/executionPlan/nodes/ExecutionNode.js';
+export { SQLExecutionNode } from './models/metamodels/pure/executionPlan/nodes/SQLExecutionNode.js';
+export { SQLResultColumn } from './models/metamodels/pure/executionPlan/nodes/SQLResultColumn.js';
+export { RelationalTDSInstantiationExecutionNode } from './models/metamodels/pure/executionPlan/nodes/RelationalInstantiationExecutionNode.js';
+export { ResultType } from './models/metamodels/pure/executionPlan/result/ResultType.js';
+export { TDSResultType } from './models/metamodels/pure/executionPlan/result/TDSResultType.js';
 
 // --------------------------------------------- HELPER --------------------------------------------------
 
-export * from './MetaModelUtils';
-export * from './MetaModelConst';
+export * from './MetaModelUtils.js';
+export * from './MetaModelConst.js';
 
-export * from './helpers/DomainHelper';
-export * from './helpers/Testable_Helper';
-export * from './helpers/DSLMapping_Helper';
-export * from './helpers/StoreRelational_Helper';
-export * from './helpers/StoreFlatData_Helper';
-export * from './helpers/DSLService_Helper';
-export * from './helpers/DSLGeneration_Helper';
+export * from './helpers/DomainHelper.js';
+export * from './helpers/Testable_Helper.js';
+export * from './helpers/DSLMapping_Helper.js';
+export * from './helpers/StoreRelational_Helper.js';
+export * from './helpers/StoreFlatData_Helper.js';
+export * from './helpers/DSLGeneration_Helper.js';
+export * from './helpers/ValueSpecificationHelper.js';
 
-export * from './helpers/ValidationHelper';
-export * from './helpers/PureLanguageHelper';
+export * from './helpers/PureLanguageHelper.js';
 
 // --------------------------------------------- GRAPH --------------------------------------------------
 
-export { DependencyManager } from './graph/DependencyManager';
-export { BasicModel } from './graph/BasicModel';
+export { DependencyManager } from './graph/DependencyManager.js';
+export { BasicModel } from './graph/BasicModel.js';
 export {
   CoreModel,
   SystemModel,
   GenerationModel,
   PureModel,
-} from './graph/PureModel';
-export * from './graph/PureGraphExtension';
-export * from './graph/PureGraphPlugin';
+} from './graph/PureModel.js';
+export * from './graph/PureGraphExtension.js';
+export * from './graph/PureGraphPlugin.js';
 
 // --------------------------------------------- GRAPH MANAGER --------------------------------------------------
 
-export { type GraphPluginManager } from './GraphPluginManager';
-export { CorePureGraphManagerPlugin } from './graphManager/CorePureGraphManagerPlugin';
-export { GraphManagerState } from './GraphManagerState';
-export * from './GraphManagerStateProvider';
-export * from './GraphManagerTestUtils';
+export { type GraphPluginManager } from './GraphPluginManager.js';
+export { CorePureGraphManagerPlugin } from './graphManager/CorePureGraphManagerPlugin.js';
+export { GraphManagerState } from './GraphManagerState.js';
+export * from './GraphManagerStateProvider.js';
+export * from './GraphManagerTestUtils.js';
 export {
   AbstractPureGraphManager,
   type GraphBuilderOptions,
-} from './graphManager/AbstractPureGraphManager';
-export { GraphBuilderReport } from './graphManager/GraphBuilderReport';
-export { GraphManagerTelemetry } from './graphManager/GraphManagerTelemetry';
-export * from './graphManager/GraphManagerUtils';
-export * from './graphManager/GraphManagerEvent';
-export * from './graphManager/DSLMapping_PureGraphManagerPlugin_Extension';
-export * from './graphManager/DSLGenerationSpecification_PureGraphManagerPlugin_Extension';
+} from './graphManager/AbstractPureGraphManager.js';
+export { GraphBuilderReport } from './graphManager/GraphBuilderReport.js';
+export { GraphManagerTelemetry } from './graphManager/GraphManagerTelemetry.js';
+export * from './graphManager/GraphManagerUtils.js';
+export * from './graphManager/GraphManagerEvent.js';
+export * from './graphManager/DSLMapping_PureGraphManagerPlugin_Extension.js';
+export * from './graphManager/DSLGenerationSpecification_PureGraphManagerPlugin_Extension.js';
 export {
   ExecutionResult,
   TdsExecutionResult,
   RawExecutionResult,
   EXECUTION_SERIALIZATION_FORMAT,
-} from './graphManager/action/execution/ExecutionResult';
-export { ExternalFormatDescription } from './graphManager/action/externalFormat/ExternalFormatDescription';
-export * from './graphManager/action/execution/ExecutionResultHelper';
-export * from './graphManager/PureGraphManagerPlugin';
-export * from './graphManager/action/query/Query';
-export * from './graphManager/action/query/QuerySearchSpecification';
-export * from './graphManager/action/EngineError';
-export * from './graphManager/action/SourceInformationHelper';
-export * from './graphManager/action/generation/ImportConfigurationDescription';
-export * from './graphManager/action/generation/DatabaseBuilderInput';
-export * from './graphManager/action/generation/GenerationConfigurationDescription';
-export { GenerationOutput } from './graphManager/action/generation/GenerationOutput';
-export { ServiceExecutionMode } from './graphManager/action/service/ServiceExecutionMode';
-export { ServiceRegistrationResult } from './graphManager/action/service/ServiceRegistrationResult';
-export { DEPRECATED__ServiceTestResult } from './graphManager/action/service/DEPRECATED__ServiceTestResult';
-export { SourceInformation } from './graphManager/action/SourceInformation';
+} from './graphManager/action/execution/ExecutionResult.js';
+export { ExternalFormatDescription } from './graphManager/action/externalFormat/ExternalFormatDescription.js';
+export * from './graphManager/action/execution/ExecutionResultHelper.js';
+export * from './graphManager/PureGraphManagerPlugin.js';
+export * from './graphManager/action/query/Query.js';
+export * from './graphManager/action/query/QuerySearchSpecification.js';
+export * from './graphManager/action/EngineError.js';
+export * from './graphManager/action/SourceInformationHelper.js';
+export * from './graphManager/action/generation/ImportConfigurationDescription.js';
+export * from './graphManager/action/generation/DatabaseBuilderInput.js';
+export * from './graphManager/action/generation/GenerationConfigurationDescription.js';
+export { GenerationOutput } from './graphManager/action/generation/GenerationOutput.js';
+export { ServiceExecutionMode } from './graphManager/action/service/ServiceExecutionMode.js';
+export { ServiceRegistrationResult } from './graphManager/action/service/ServiceRegistrationResult.js';
+export { DEPRECATED__ServiceTestResult } from './graphManager/action/service/DEPRECATED__ServiceTestResult.js';
+export { SourceInformation } from './graphManager/action/SourceInformation.js';
 
-export { getGraphManager } from './models/protocols/pure/Pure';
-export * from './models/protocols/pure/PureProtocolProcessorPlugin';
+export * from './models/protocols/pure/PureProtocolProcessorPlugin.js';
 
 // --------------------------------------------- TRANSFORMATION --------------------------------------------------
 
-export { V1_transformConnection } from './models/protocols/pure/v1/transformation/pureGraph/from/V1_ConnectionTransformer';
-export { V1_transformRuntime } from './models/protocols/pure/v1/transformation/pureGraph/from/V1_RuntimeTransformer';
-export { V1_transformPackageableElement } from './models/protocols/pure/v1/transformation/pureGraph/from/V1_PackageableElementTransformer';
+export { V1_transformConnection } from './models/protocols/pure/v1/transformation/pureGraph/from/V1_ConnectionTransformer.js';
+export { V1_transformRuntime } from './models/protocols/pure/v1/transformation/pureGraph/from/V1_RuntimeTransformer.js';
+export { V1_transformPackageableElement } from './models/protocols/pure/v1/transformation/pureGraph/from/V1_PackageableElementTransformer.js';
 export {
   V1_transformStereotype,
   V1_transformTaggedValue,
-} from './models/protocols/pure/v1/transformation/pureGraph/from/V1_DomainTransformer';
-export { V1_buildTaggedValue } from './models/protocols/pure/v1/transformation/pureGraph/to/helpers/V1_DomainBuilderHelper';
-export { V1_PureModelContextData } from './models/protocols/pure/v1/model/context/V1_PureModelContextData';
-export * from './models/protocols/pure/v1/transformation/pureGraph/to/V1_GraphBuilderContext';
-export * from './models/protocols/pure/v1/transformation/pureGraph/to/helpers/V1_ValueSpecificationPathResolver';
-export * from './models/protocols/pure/v1/transformation/pureGraph/to/V1_ElementBuilder';
-export { V1_RawLambda } from './models/protocols/pure/v1/model/rawValueSpecification/V1_RawLambda';
-export { V1_ProcessingContext } from './models/protocols/pure/v1/transformation/pureGraph/to/helpers/V1_ProcessingContext';
-export { V1_ProtocolToMetaModelConnectionBuilder } from './models/protocols/pure/v1/transformation/pureGraph/to/V1_ProtocolToMetaModelConnectionBuilder';
-export * from './models/protocols/pure/v1/transformation/pureGraph/from/V1_GraphTransformerContext';
+} from './models/protocols/pure/v1/transformation/pureGraph/from/V1_DomainTransformer.js';
+export { V1_buildTaggedValue } from './models/protocols/pure/v1/transformation/pureGraph/to/helpers/V1_DomainBuilderHelper.js';
+export { V1_PureModelContextData } from './models/protocols/pure/v1/model/context/V1_PureModelContextData.js';
+export * from './models/protocols/pure/v1/transformation/pureGraph/to/V1_GraphBuilderContext.js';
+export * from './models/protocols/pure/v1/transformation/pureGraph/to/helpers/V1_ValueSpecificationPathResolver.js';
+export * from './models/protocols/pure/v1/transformation/pureGraph/to/V1_ElementBuilder.js';
+export { V1_RawLambda } from './models/protocols/pure/v1/model/rawValueSpecification/V1_RawLambda.js';
+export { V1_ProcessingContext } from './models/protocols/pure/v1/transformation/pureGraph/to/helpers/V1_ProcessingContext.js';
+export { V1_ProtocolToMetaModelConnectionBuilder } from './models/protocols/pure/v1/transformation/pureGraph/to/V1_ProtocolToMetaModelConnectionBuilder.js';
+export * from './models/protocols/pure/v1/transformation/pureGraph/from/V1_GraphTransformerContext.js';
 export {
   V1_initPackageableElement,
   V1_transformElementReference,
-} from './models/protocols/pure/v1/transformation/pureGraph/from/V1_CoreTransformerHelper';
+} from './models/protocols/pure/v1/transformation/pureGraph/from/V1_CoreTransformerHelper.js';
 export {
   V1_RawValueSpecificationTransformer,
   V1_transformRawLambda,
-} from './models/protocols/pure/v1/transformation/pureGraph/from/V1_RawValueSpecificationTransformer';
+} from './models/protocols/pure/v1/transformation/pureGraph/from/V1_RawValueSpecificationTransformer.js';
 export {
   V1_deserializeConnectionValue,
   V1_serializeConnectionValue,
-} from './models/protocols/pure/v1/transformation/pureProtocol/serializationHelpers/V1_ConnectionSerializationHelper';
-export { V1_runtimePointerModelSchema } from './models/protocols/pure/v1/transformation/pureProtocol/serializationHelpers/V1_RuntimeSerializationHelper';
+} from './models/protocols/pure/v1/transformation/pureProtocol/serializationHelpers/V1_ConnectionSerializationHelper.js';
+export { V1_runtimePointerModelSchema } from './models/protocols/pure/v1/transformation/pureProtocol/serializationHelpers/V1_RuntimeSerializationHelper.js';
 export {
   V1_rawLambdaModelSchema,
   V1_deserializeRawValueSpecification,
   V1_serializeRawValueSpecification,
-} from './models/protocols/pure/v1/transformation/pureProtocol/serializationHelpers/V1_RawValueSpecificationSerializationHelper';
-export { V1_transformPropertyReference } from './models/protocols/pure/v1/transformation/pureGraph/from/V1_MappingTransformer';
-export { V1_buildEngineRuntime } from './models/protocols/pure/v1/transformation/pureGraph/to/helpers/V1_RuntimeBuilderHelper';
-export { V1_EngineServerClient } from './models/protocols/pure/v1/engine/V1_EngineServerClient';
-export { V1_Engine } from './models/protocols/pure/v1/engine/V1_Engine';
-export * from './models/protocols/pure/v1/engine/V1_EngineEvent';
+} from './models/protocols/pure/v1/transformation/pureProtocol/serializationHelpers/V1_RawValueSpecificationSerializationHelper.js';
+export { V1_transformPropertyReference } from './models/protocols/pure/v1/transformation/pureGraph/from/V1_MappingTransformer.js';
+export { V1_buildEngineRuntime } from './models/protocols/pure/v1/transformation/pureGraph/to/helpers/V1_RuntimeBuilderHelper.js';
+export { V1_EngineServerClient } from './models/protocols/pure/v1/engine/V1_EngineServerClient.js';
+export { V1_Engine } from './models/protocols/pure/v1/engine/V1_Engine.js';
 export {
   V1_entitiesToPureModelContextData,
   V1_deserializePureModelContextData,
-} from './models/protocols/pure/v1/transformation/pureProtocol/V1_PureProtocolSerialization';
+} from './models/protocols/pure/v1/transformation/pureProtocol/V1_PureProtocolSerialization.js';
 export {
   V1_propertyPointerModelSchema,
   V1_stereotypePtrSchema,
   V1_taggedValueSchema,
-} from './models/protocols/pure/v1/transformation/pureProtocol/serializationHelpers/V1_DomainSerializationHelper';
-export { V1_serializeValueSpecification } from './models/protocols/pure/v1/transformation/pureProtocol/serializationHelpers/V1_ValueSpecificationSerializer';
-export { V1_ValueSpecificationBuilder } from './models/protocols/pure/v1/transformation/pureGraph/to/helpers/V1_ValueSpecificationBuilderHelper';
-export * from './models/protocols/pure/v1/transformation/pureProtocol/serializationHelpers/V1_CoreSerializationHelper';
-export * from './models/protocols/pure/v1/transformation/pureGraph/to/V1_DSLExternalFormat_GraphBuilderHelper';
-export * from './models/ModelGenerationConfiguration';
-export * from './models/protocols/pure/MappingGeneration_PureProtocolProcessorPlugin_Extension';
+} from './models/protocols/pure/v1/transformation/pureProtocol/serializationHelpers/V1_DomainSerializationHelper.js';
+export { V1_serializeValueSpecification } from './models/protocols/pure/v1/transformation/pureProtocol/serializationHelpers/V1_ValueSpecificationSerializer.js';
+export {
+  V1_ValueSpecificationBuilder,
+  V1_buildGenericFunctionExpression,
+  V1_buildBaseSimpleFunctionExpression,
+} from './models/protocols/pure/v1/transformation/pureGraph/to/helpers/V1_ValueSpecificationBuilderHelper.js';
+export * from './models/protocols/pure/v1/transformation/pureProtocol/serializationHelpers/V1_CoreSerializationHelper.js';
+export * from './models/protocols/pure/v1/transformation/pureGraph/to/V1_DSLExternalFormat_GraphBuilderHelper.js';
+export * from './models/ModelGenerationConfiguration.js';
+export * from './models/protocols/pure/MappingGeneration_PureProtocolProcessorPlugin_Extension.js';
 
 // --------------------------------------------- TESTING --------------------------------------------------
 
-export * from './models/metamodels/pure/test/Testable';
-export * from './models/metamodels/pure/test/result/RunTestsTestableInput';
-export * from './models/metamodels/pure/test/result/TestResult';
-export * from './models/metamodels/pure/test/assertion/status/AssertionStatus';
-export * from './models/metamodels/pure/test/assertion/status/AssertFail';
-export * from './models/metamodels/pure/test/assertion/status/AssertPass';
-export * from './models/metamodels/pure/test/assertion/status/EqualToJsonAssertFail';
-export * from './models/metamodels/pure/test/assertion/TestAssertion';
-export * from './models/metamodels/pure/test/Test';
-export * from './models/metamodels/pure/test/result/AtomicTestId';
+export * from './models/metamodels/pure/test/Testable.js';
+export * from './models/metamodels/pure/test/result/RunTestsTestableInput.js';
+export * from './models/metamodels/pure/test/result/TestResult.js';
+export * from './models/metamodels/pure/test/assertion/status/AssertionStatus.js';
+export * from './models/metamodels/pure/test/assertion/status/AssertFail.js';
+export * from './models/metamodels/pure/test/assertion/status/AssertPass.js';
+export * from './models/metamodels/pure/test/assertion/status/EqualToJsonAssertFail.js';
+export * from './models/metamodels/pure/test/assertion/TestAssertion.js';
+export * from './models/metamodels/pure/test/Test.js';
+export * from './models/metamodels/pure/test/result/AtomicTestId.js';
+
+// --------------------------------------------- VALIDATION --------------------------------------------------
+
+export * from './graphManager/action/validation/ValidationHelper.js';
+export * from './graphManager/action/validation/DSLService_ValidationHelper.js';
+export * from './graphManager/action/validation/DSLMapping_ValidationHelper.js';
 
 // --------------------------------------------- OBSERVER --------------------------------------------------
 
-export * from './graphManager/action/changeDetection/PackageableElementObserver';
-export * from './graphManager/action/changeDetection/CoreObserverHelper';
-export * from './graphManager/action/changeDetection/DomainObserverHelper';
-export * from './graphManager/action/changeDetection/DSLMapping_ObserverHelper';
-export * from './graphManager/action/changeDetection/RawValueSpecificationObserver';
-export * from './graphManager/action/changeDetection/ValueSpecificationObserver';
-export * from './graphManager/action/changeDetection/StoreRelational_ObserverHelper';
-export * from './graphManager/action/changeDetection/StoreFlatData_ObserverHelper';
-export * from './graphManager/action/changeDetection/GraphObserverHelper';
-export * from './graphManager/action/changeDetection/DSLExternalFormat_ObserverHelper';
-export * from './graphManager/action/changeDetection/DSLService_ObserverHelper';
-export * from './graphManager/action/changeDetection/DSLGenerationSpecification_ObserverHelper';
+export * from './graphManager/action/changeDetection/PackageableElementObserver.js';
+export * from './graphManager/action/changeDetection/CoreObserverHelper.js';
+export * from './graphManager/action/changeDetection/DomainObserverHelper.js';
+export * from './graphManager/action/changeDetection/DSLMapping_ObserverHelper.js';
+export * from './graphManager/action/changeDetection/RawValueSpecificationObserver.js';
+export * from './graphManager/action/changeDetection/ValueSpecificationObserver.js';
+export * from './graphManager/action/changeDetection/StoreRelational_ObserverHelper.js';
+export * from './graphManager/action/changeDetection/StoreFlatData_ObserverHelper.js';
+export * from './graphManager/action/changeDetection/GraphObserverHelper.js';
+export * from './graphManager/action/changeDetection/DSLExternalFormat_ObserverHelper.js';
+export * from './graphManager/action/changeDetection/DSLService_ObserverHelper.js';
+export * from './graphManager/action/changeDetection/DSLGenerationSpecification_ObserverHelper.js';
 
-export * from './graphManager/action/changeDetection/EngineObserverHelper';
+export * from './graphManager/action/changeDetection/EngineObserverHelper.js';
 
 // --------------------------------------------- CREATOR --------------------------------------------------
 
-export * from './graphManager/action/creation/DomainModelCreatorHelper';
-export * from './graphManager/action/creation/DSLMapping_ModelCreatorHelper';
-export * from './graphManager/action/creation/RawValueSpecificationCreatorHelper';
-export * from './graphManager/action/creation/StoreRelational_ModelCreatorHelper';
+export * from './graphManager/action/creation/DomainModelCreatorHelper.js';
+export * from './graphManager/action/creation/DSLMapping_ModelCreatorHelper.js';
+export * from './graphManager/action/creation/RawValueSpecificationCreatorHelper.js';
+export * from './graphManager/action/creation/StoreRelational_ModelCreatorHelper.js';
 
 // --------------------------------------------- TO BE MODULARIZED --------------------------------------------------
 
-export * from './DSLMapping_Exports';
-export * from './DSLService_Exports';
-export * from './DSLGenerationSpecification_Exports';
-export * from './StoreFlatData_Exports';
-export * from './StoreRelational_Exports';
-export * from './DSLData_Exports';
+export * from './DSLMapping_Exports.js';
+export * from './DSLService_Exports.js';
+export * from './DSLGenerationSpecification_Exports.js';
+export * from './StoreFlatData_Exports.js';
+export * from './StoreRelational_Exports.js';
+export * from './DSLData_Exports.js';

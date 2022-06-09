@@ -14,35 +14,35 @@
  * limitations under the License.
  */
 
-export * from './CommonUtils';
+export * from './CommonUtils.js';
 
-export * from './error/AssertionUtils';
-export * from './error/ErrorUtils';
+export * from './error/AssertionUtils.js';
+export * from './error/ErrorUtils.js';
 
-export * from './network/NetworkUtils';
-export * from './network/AbstractServerClient';
-export * from './network/TracerService';
+export * from './network/NetworkUtils.js';
+export * from './network/AbstractServerClient.js';
+export * from './network/TracerService.js';
 
-export * from './format/FormatterUtils';
-export * from './format/ValidatorUtils';
+export * from './format/FormatterUtils.js';
+export * from './format/ValidatorUtils.js';
 
-export * from './markdown/MarkdownUtils';
+export * from './markdown/MarkdownUtils.js';
 
-export * from './communication/EventNotifierService';
-export * from './communication/IframeEventNotifierPlugin';
-export * from './communication/TelemetryService';
+export * from './communication/EventNotifierPlugin.js';
+export * from './communication/IframeEventNotifierPlugin.js';
+export * from './communication/TelemetryService.js';
 
-export * from './application/HashUtils';
-export * from './application/TestUtils';
-export * from './application/SerializationUtils';
-export * from './application/RandomizerUtils';
-export * from './application/ActionState';
-export * from './application/StopWatch';
-export * from './application/AbstractPluginManager';
-export * from './application/BrowserUtils';
+export * from './application/HashUtils.js';
+export * from './application/TestUtils.js';
+export * from './application/SerializationUtils.js';
+export * from './application/RandomizerUtils.js';
+export * from './application/ActionState.js';
+export * from './application/StopWatch.js';
+export * from './application/AbstractPluginManager.js';
+export * from './application/BrowserUtils.js';
 
-export * from './data-structure/Pair';
-export * from './data-structure/Stack';
+export * from './data-structure/Pair.js';
+export * from './data-structure/Stack.js';
 
-export * from './log/Logger';
-export * from './log/WebConsole';
+export * from './log/Logger.js';
+export * from './log/WebConsole.js';

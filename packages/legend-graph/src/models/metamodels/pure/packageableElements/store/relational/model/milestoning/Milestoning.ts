@@ -15,7 +15,7 @@
  */
 
 import type { Hashable } from '@finos/legend-shared';
-import type { RawPrimitiveInstanceValue } from '../../../../../rawValueSpecification/RawPrimitiveInstanceValue';
+import type { RawPrimitiveInstanceValue } from '../../../../../rawValueSpecification/RawPrimitiveInstanceValue.js';
 
 export abstract class Milestoning implements Hashable {
   abstract get hashCode(): string;

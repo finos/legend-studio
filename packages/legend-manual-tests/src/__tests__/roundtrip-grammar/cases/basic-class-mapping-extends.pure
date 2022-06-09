@@ -87,6 +87,18 @@ Database store::test::testDatabase
   Filter CFilter(ABC.cName = 'cName1')
 )
 
+Database my::db
+(
+  Table PersonTable
+  (
+    NAME CHAR(200) PRIMARY KEY
+  )
+  Table EmployeeTable
+  (
+    FIRMNAME CHAR(200) PRIMARY KEY
+  )
+)
+
 
 ###Pure
 Class model::test::A
@@ -177,6 +189,16 @@ Class model::test::O
   oName: String[1];
 }
 
+Class model::Person
+{
+  name: String[1];
+}
+
+Class model::Employee extends model::Person
+{
+  firmName: String[1];
+}
+
 
 ###Mapping
 Mapping mapping::testAMapping
@@ -231,5 +253,26 @@ Mapping mapping::testC2Mapping
     aName: concat('cName_', [store::test::testDatabase]ABC.aName),
     bName: concat('cName_', [store::test::testDatabase]ABC.bName),
     cName: [store::test::testDatabase]ABC.cName
+  }
+)
+
+Mapping model::map
+(
+  *model::Person[id]: Relational
+  {
+    ~primaryKey
+    (
+      [my::db]PersonTable.NAME
+    )
+    ~mainTable [my::db]PersonTable
+  }
+  *model::Employee extends [id]: Relational
+  {
+    ~primaryKey
+    (
+      [my::db]EmployeeTable.FIRMNAME
+    )
+    ~mainTable [my::db]EmployeeTable
+    firmName: [my::db]EmployeeTable.FIRMNAME
   }
 )

@@ -20,6 +20,7 @@ import {
   ParserError,
   RawLambda,
   stub_RawLambda,
+  pruneSourceInformation,
 } from '@finos/legend-graph';
 import {
   type GeneratorFn,
@@ -27,7 +28,7 @@ import {
   LogEvent,
 } from '@finos/legend-shared';
 import { observable, action, flow, makeObservable, flowResult } from 'mobx';
-import type { QueryBuilderState } from './QueryBuilderState';
+import type { QueryBuilderState } from './QueryBuilderState.js';
 import { LambdaEditorState, TAB_SIZE } from '@finos/legend-application';
 
 export class QueryRawLambdaState {
@@ -104,9 +105,9 @@ export class QueryTextEditorState extends LambdaEditorState {
           (yield this.queryBuilderState.graphManagerState.graphManager.pureCodeToLambda(
             this.fullLambdaString,
             this.lambdaId,
-          )) as RawLambda | undefined;
+          )) as RawLambda;
         this.setParserError(undefined);
-        this.rawLambdaState.setLambda(lambda ?? emptyLambda);
+        this.rawLambdaState.setLambda(lambda);
       } catch (error) {
         assertErrorThrown(error);
         if (error instanceof ParserError) {
@@ -170,7 +171,7 @@ export class QueryTextEditorState extends LambdaEditorState {
     if (mode === QueryTextEditorMode.JSON) {
       this.setLambdaJson(
         JSON.stringify(
-          this.queryBuilderState.graphManagerState.graphManager.pruneSourceInformation(
+          pruneSourceInformation(
             this.queryBuilderState.graphManagerState.graphManager.serializeRawValueSpecification(
               rawLambda,
             ),

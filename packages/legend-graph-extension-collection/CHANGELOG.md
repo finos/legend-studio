@@ -1,5 +1,7 @@
 # @finos/legend-graph-extension-collection
 
+## 1.0.4
+
 ## 1.0.3
 
 ## 1.0.2

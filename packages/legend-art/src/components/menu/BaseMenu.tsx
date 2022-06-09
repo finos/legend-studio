@@ -17,11 +17,12 @@
 import { type MenuProps as MuiMenuProps, Menu as MuiMenu } from '@mui/material';
 
 export const BaseMenu: React.FC<MuiMenuProps> = (props) => {
-  const { children, ...otherProps } = props;
+  const { children, classes, ...otherProps } = props;
 
   return (
     <MuiMenu
       classes={{
+        ...(classes ?? {}),
         paper: 'mui-menu__paper',
         list: 'mui-menu__list',
       }}

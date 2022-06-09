@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import { TEST_ID } from '../../../src/const';
-import { ElementEditorTester } from '../../utils/ElementEditorTester';
+import { TEST_ID } from '../../../src/const.js';
+import { ElementEditorTester } from '../../utils/ElementEditorTester.js';
 
 describe('Viewer Demo Script Test', () => {
   let demoTest: ElementEditorTester;

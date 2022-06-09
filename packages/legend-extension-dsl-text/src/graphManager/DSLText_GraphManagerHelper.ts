@@ -16,7 +16,7 @@
 
 import type { BasicModel, PureModel } from '@finos/legend-graph';
 import { guaranteeNonNullable } from '@finos/legend-shared';
-import { Text } from '../models/metamodels/pure/model/packageableElements/text/DSLText_Text';
+import { Text } from '../models/metamodels/pure/model/packageableElements/text/DSLText_Text.js';
 
 export const getText = (path: string, graph: PureModel): Text =>
   graph.getExtensionElement(path, Text, `Can't find text element '${path}'`);

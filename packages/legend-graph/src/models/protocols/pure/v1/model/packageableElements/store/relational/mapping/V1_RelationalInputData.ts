@@ -15,8 +15,8 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../../../MetaModelConst';
-import { V1_InputData } from '../../../../../model/packageableElements/mapping/V1_InputData';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../../../MetaModelConst.js';
+import { V1_InputData } from '../../../../../model/packageableElements/mapping/V1_InputData.js';
 
 export class V1_RelationalInputData extends V1_InputData implements Hashable {
   database!: string;

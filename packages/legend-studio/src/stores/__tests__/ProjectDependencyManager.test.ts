@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-/// <reference types="jest-extended" />
+import { test, jest, expect } from '@jest/globals';
 import {
   type PlainObject,
+  type TEMPORARRY__JestMatcher,
   unitTest,
   guaranteeNonNullable,
 } from '@finos/legend-shared';
-import { TEST__getTestEditorStore } from '../EditorStoreTestUtils';
+import { TEST__getTestEditorStore } from '../EditorStoreTestUtils.js';
 import { flowResult } from 'mobx';
 import type { Entity } from '@finos/legend-model-storage';
 import { ProjectConfiguration } from '@finos/legend-server-sdlc';
@@ -305,7 +306,9 @@ const testDependencyElements = async (
     editorStore.graphManagerState.graph.allOwnElements.map((el) =>
       editorStore.graphManagerState.graphManager.elementToEntity(el),
     );
-  expect(entities).toIncludeSameMembers(transformedEntities);
+  (expect(entities) as TEMPORARRY__JestMatcher).toIncludeSameMembers(
+    transformedEntities,
+  );
   // Ensure dependency elements are not transformed
   for (const entityPath of dependencyElementPaths) {
     expect(

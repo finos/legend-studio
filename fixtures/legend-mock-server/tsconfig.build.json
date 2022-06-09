@@ -3,5 +3,5 @@
   "compilerOptions": {
     "tsBuildInfoFile": "build/prod.tsbuildinfo"
   },
-  "exclude": ["src/**/__tests__/**/*.ts", "src/**/__mocks__/**/*.ts"]
+  "exclude": ["src/**/__tests__/**/*.*", "src/**/__mocks__/**/*.*"]
 }

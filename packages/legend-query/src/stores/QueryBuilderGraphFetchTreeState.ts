@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { QueryBuilderState } from './QueryBuilderState';
+import type { QueryBuilderState } from './QueryBuilderState.js';
 import { makeAutoObservable, action } from 'mobx';
 import {
   PackageableElementExplicitReference,
@@ -24,8 +24,8 @@ import {
   type QueryBuilderGraphFetchTreeData,
   addQueryBuilderPropertyNode,
   buildGraphFetchTreeData,
-} from './QueryBuilderGraphFetchTreeUtil';
-import type { QueryBuilderExplorerTreePropertyNodeData } from './QueryBuilderExplorerState';
+} from './QueryBuilderGraphFetchTreeUtil.js';
+import type { QueryBuilderExplorerTreePropertyNodeData } from './QueryBuilderExplorerState.js';
 
 export class QueryBuilderGraphFetchTreeState {
   queryBuilderState: QueryBuilderState;

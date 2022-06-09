@@ -38,7 +38,7 @@ import type { PackageableElement } from '@finos/legend-graph';
 import {
   DataSpace,
   DataSpaceExecutionContext,
-} from '../../models/metamodels/pure/model/packageableElements/dataSpace/DSLDataSpace_DataSpace';
+} from '../../models/metamodels/pure/model/packageableElements/dataSpace/DSLDataSpace_DataSpace.js';
 import { LATEST_VERSION_ALIAS } from '@finos/legend-server-depot';
 import {
   collectKeyedDocumnetationEntriesFromConfig,
@@ -48,12 +48,12 @@ import {
 import {
   DSL_DATA_SPACE_DOCUMENTATION_ENTRIES,
   DSL_DATA_SPACE_LEGEND_STUDIO_DOCUMENTATION_KEY,
-} from './DSLDataSpace_LegendStudioDocumentation';
+} from './DSLDataSpace_LegendStudioDocumentation.js';
 import {
   PURE_GRAMMAR_DATA_SPACE_ELEMENT_TYPE_LABEL,
   PURE_GRAMMAR_DATA_SPACE_PARSER_NAME,
-} from '../../graphManager/DSLDataSpace_PureGraphManagerPlugin';
-import { SIMPLE_DATA_SPACE_SNIPPET } from './DSLDataSpace_CodeSnippets';
+} from '../../graphManager/DSLDataSpace_PureGraphManagerPlugin.js';
+import { SIMPLE_DATA_SPACE_SNIPPET } from './DSLDataSpace_CodeSnippets.js';
 
 const DATA_SPACE_ELEMENT_TYPE = 'DATA SPACE';
 const DATA_SPACE_ELEMENT_PROJECT_EXPLORER_DND_TYPE =
@@ -168,8 +168,8 @@ export class DSLDataSpace_LegendStudioPlugin
       ): LegendApplicationDocumentationEntry | undefined => {
         if (parserKeyword === PURE_GRAMMAR_DATA_SPACE_PARSER_NAME) {
           if (elementKeyword === PURE_GRAMMAR_DATA_SPACE_ELEMENT_TYPE_LABEL) {
-            return editorStore.applicationStore.docRegistry.getEntry(
-              DSL_DATA_SPACE_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_DATA_SPACE_ELEMENT,
+            return editorStore.applicationStore.documentationService.getDocEntry(
+              DSL_DATA_SPACE_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_ELEMENT_DATA_SPACE,
             );
           }
         }
@@ -185,7 +185,7 @@ export class DSLDataSpace_LegendStudioPlugin
         parserKeyword: string,
       ): LegendApplicationDocumentationEntry | undefined => {
         if (parserKeyword === PURE_GRAMMAR_DATA_SPACE_PARSER_NAME) {
-          return editorStore.applicationStore.docRegistry.getEntry(
+          return editorStore.applicationStore.documentationService.getDocEntry(
             DSL_DATA_SPACE_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER,
           );
         }
@@ -200,9 +200,10 @@ export class DSLDataSpace_LegendStudioPlugin
         {
           text: PURE_GRAMMAR_DATA_SPACE_PARSER_NAME,
           description: `(dsl)`,
-          documentation: editorStore.applicationStore.docRegistry.getEntry(
-            DSL_DATA_SPACE_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER,
-          ),
+          documentation:
+            editorStore.applicationStore.documentationService.getDocEntry(
+              DSL_DATA_SPACE_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER,
+            ),
           insertText: PURE_GRAMMAR_DATA_SPACE_PARSER_NAME,
         },
       ],

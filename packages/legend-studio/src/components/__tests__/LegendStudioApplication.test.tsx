@@ -14,11 +14,13 @@
  * limitations under the License.
  */
 
-import { LegendStudioApplicationRoot } from '../LegendStudioApplication';
+import { test, jest, expect } from '@jest/globals';
+import { LegendStudioApplicationRoot } from '../LegendStudioApplication.js';
 import {
   integrationTest,
   MOBX__enableSpyOrMock,
   MOBX__disableSpyOrMock,
+  noop,
 } from '@finos/legend-shared';
 import {
   WebApplicationNavigator,
@@ -27,7 +29,7 @@ import {
   TEST__provideMockedWebApplicationNavigator,
   LegendApplicationComponentFrameworkProvider,
 } from '@finos/legend-application';
-import { TEST__LegendStudioStoreProvider } from '../EditorComponentTestUtils';
+import { TEST__LegendStudioStoreProvider } from '../EditorComponentTestUtils.js';
 import { render, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { createMemoryHistory } from 'history';
@@ -37,8 +39,8 @@ import {
   TEST__SDLCServerClientProvider,
 } from '@finos/legend-server-sdlc';
 import { TEST__DepotServerClientProvider } from '@finos/legend-server-depot';
-import { TEST__getTestStudioConfig } from '../../stores/EditorStoreTestUtils';
-import { LegendStudioPluginManager } from '../../application/LegendStudioPluginManager';
+import { TEST__getTestStudioConfig } from '../../stores/EditorStoreTestUtils.js';
+import { LegendStudioPluginManager } from '../../application/LegendStudioPluginManager.js';
 
 test(
   integrationTest('Failed to accept SDLC Terms of Service will show alert'),
@@ -100,7 +102,7 @@ test(integrationTest('Failed to authorize SDLC will redirect'), async () => {
     .mockResolvedValueOnce({ name: 'testUser', userId: 'testUserId' });
   const navigator = new WebApplicationNavigator(createMemoryHistory());
   applicationStore.navigator = navigator;
-  const jumpToSpy = jest.spyOn(navigator, 'jumpTo').mockImplementation();
+  const jumpToSpy = jest.spyOn(navigator, 'jumpTo').mockImplementation(noop);
   jest
     .spyOn(navigator, 'getCurrentLocation')
     .mockImplementationOnce(() => stubURL);

@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import type { EditorStore } from '../EditorStore';
-import type { EditorSDLCState } from '../EditorSDLCState';
+import type { EditorStore } from '../EditorStore.js';
+import type { EditorSDLCState } from '../EditorSDLCState.js';
 import { action, makeAutoObservable, flowResult } from 'mobx';
-import { CHANGE_DETECTION_EVENT } from '../ChangeDetectionEvent';
+import { CHANGE_DETECTION_EVENT } from '../ChangeDetectionEvent.js';
 import {
   type GeneratorFn,
   type PlainObject,
@@ -28,9 +28,9 @@ import {
   NetworkClientError,
   HttpStatus,
 } from '@finos/legend-shared';
-import { EntityDiffViewState } from '../editor-state/entity-diff-editor-state/EntityDiffViewState';
-import { SPECIAL_REVISION_ALIAS } from '../editor-state/entity-diff-editor-state/EntityDiffEditorState';
-import { EntityChangeConflictEditorState } from '../editor-state/entity-diff-editor-state/EntityChangeConflictEditorState';
+import { EntityDiffViewState } from '../editor-state/entity-diff-editor-state/EntityDiffViewState.js';
+import { SPECIAL_REVISION_ALIAS } from '../editor-state/entity-diff-editor-state/EntityDiffEditorState.js';
+import { EntityChangeConflictEditorState } from '../editor-state/entity-diff-editor-state/EntityChangeConflictEditorState.js';
 import type { Entity } from '@finos/legend-model-storage';
 import {
   type EntityChangeConflict,
@@ -42,7 +42,7 @@ import {
   Revision,
   RevisionAlias,
 } from '@finos/legend-server-sdlc';
-import { LEGEND_STUDIO_APP_EVENT } from '../LegendStudioAppEvent';
+import { LEGEND_STUDIO_APP_EVENT } from '../LegendStudioAppEvent.js';
 
 export class WorkspaceUpdaterState {
   editorStore: EditorStore;

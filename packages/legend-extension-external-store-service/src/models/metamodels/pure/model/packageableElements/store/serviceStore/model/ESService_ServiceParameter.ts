@@ -15,9 +15,9 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import type { SerializationFormat } from './ESService_SerializationFormat';
-import type { TypeReference } from './ESService_TypeReference';
-import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../ESService_ModelUtils';
+import type { SerializationFormat } from './ESService_SerializationFormat.js';
+import type { TypeReference } from './ESService_TypeReference.js';
+import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../ESService_ModelUtils.js';
 
 export enum LOCATION {
   HEADER = 'HEADER',

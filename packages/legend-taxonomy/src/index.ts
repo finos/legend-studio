@@ -14,4 +14,4 @@
  * limitations under the License.
  */
 
-export * from './application/LegendTaxonomy';
+export * from './application/LegendTaxonomy.js';

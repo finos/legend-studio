@@ -15,15 +15,13 @@
  */
 
 import packageJson from '../../../../package.json';
-import { SUPPORTED_FUNCTIONS } from '../../../QueryBuilder_Const';
 import {
   V1_buildExistsFunctionExpression,
   V1_buildFilterFunctionExpression,
-  V1_buildGenericFunctionExpression,
   V1_buildGetAllFunctionExpression,
   V1_buildGroupByFunctionExpression,
   V1_buildProjectFunctionExpression,
-} from './v1/V1_QueryBuilder_FunctionExpressionBuilder';
+} from './v1/V1_QueryBuilder_FunctionExpressionBuilder.js';
 import {
   type V1_GraphBuilderContext,
   type V1_ProcessingContext,
@@ -36,11 +34,10 @@ import {
   matchFunctionName,
   SimpleFunctionExpression,
   extractElementNameFromPath,
-  GenericTypeExplicitReference,
-  PRIMITIVE_TYPE,
-  GenericType,
+  V1_buildGenericFunctionExpression,
 } from '@finos/legend-graph';
-import { V1_buildSubTypePropertyExpressionTypeInference } from './v1/V1_QueryBuilder_PropertyExpressionTypeInferenceBuilder';
+import { V1_buildSubTypePropertyExpressionTypeInference } from './v1/V1_QueryBuilder_PropertyExpressionTypeInferenceBuilder.js';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../QueryBuilder_Const.js';
 
 export class QueryBuilder_PureProtocolProcessorPlugin extends PureProtocolProcessorPlugin {
   constructor() {
@@ -59,7 +56,12 @@ export class QueryBuilder_PureProtocolProcessorPlugin extends PureProtocolProces
         compileContext: V1_GraphBuilderContext,
         processingContext: V1_ProcessingContext,
       ): [SimpleFunctionExpression, ValueSpecification[]] | undefined => {
-        if (matchFunctionName(functionName, SUPPORTED_FUNCTIONS.GET_ALL)) {
+        if (
+          matchFunctionName(
+            functionName,
+            QUERY_BUILDER_SUPPORTED_FUNCTIONS.GET_ALL,
+          )
+        ) {
           return V1_buildGetAllFunctionExpression(
             functionName,
             parameters,
@@ -68,8 +70,14 @@ export class QueryBuilder_PureProtocolProcessorPlugin extends PureProtocolProces
             processingContext,
           );
         } else if (
-          matchFunctionName(functionName, SUPPORTED_FUNCTIONS.FILTER) ||
-          matchFunctionName(functionName, SUPPORTED_FUNCTIONS.TDS_FILTER)
+          matchFunctionName(
+            functionName,
+            QUERY_BUILDER_SUPPORTED_FUNCTIONS.FILTER,
+          ) ||
+          matchFunctionName(
+            functionName,
+            QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_FILTER,
+          )
         ) {
           return V1_buildFilterFunctionExpression(
             functionName,
@@ -79,7 +87,10 @@ export class QueryBuilder_PureProtocolProcessorPlugin extends PureProtocolProces
             processingContext,
           );
         } else if (
-          matchFunctionName(functionName, SUPPORTED_FUNCTIONS.EXISTS)
+          matchFunctionName(
+            functionName,
+            QUERY_BUILDER_SUPPORTED_FUNCTIONS.EXISTS,
+          )
         ) {
           return V1_buildExistsFunctionExpression(
             functionName,
@@ -89,7 +100,10 @@ export class QueryBuilder_PureProtocolProcessorPlugin extends PureProtocolProces
             processingContext,
           );
         } else if (
-          matchFunctionName(functionName, SUPPORTED_FUNCTIONS.TDS_PROJECT)
+          matchFunctionName(
+            functionName,
+            QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_PROJECT,
+          )
         ) {
           return V1_buildProjectFunctionExpression(
             functionName,
@@ -99,7 +113,10 @@ export class QueryBuilder_PureProtocolProcessorPlugin extends PureProtocolProces
             processingContext,
           );
         } else if (
-          matchFunctionName(functionName, SUPPORTED_FUNCTIONS.TDS_GROUP_BY)
+          matchFunctionName(
+            functionName,
+            QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_GROUP_BY,
+          )
         ) {
           return V1_buildGroupByFunctionExpression(
             functionName,
@@ -109,65 +126,7 @@ export class QueryBuilder_PureProtocolProcessorPlugin extends PureProtocolProces
             processingContext,
           );
         } else if (
-          matchFunctionName(functionName, SUPPORTED_FUNCTIONS.TODAY) ||
-          matchFunctionName(
-            functionName,
-            SUPPORTED_FUNCTIONS.FIRST_DAY_OF_QUARTER,
-          )
-        ) {
-          const expression = V1_buildGenericFunctionExpression(
-            functionName,
-            parameters,
-            openVariables,
-            compileContext,
-            processingContext,
-          );
-          expression[0].genericType = GenericTypeExplicitReference.create(
-            new GenericType(
-              compileContext.graph.getPrimitiveType(PRIMITIVE_TYPE.STRICTDATE),
-            ),
-          );
-          return expression;
-        } else if (matchFunctionName(functionName, SUPPORTED_FUNCTIONS.NOW)) {
-          const expression = V1_buildGenericFunctionExpression(
-            functionName,
-            parameters,
-            openVariables,
-            compileContext,
-            processingContext,
-          );
-          expression[0].genericType = GenericTypeExplicitReference.create(
-            new GenericType(
-              compileContext.graph.getPrimitiveType(PRIMITIVE_TYPE.DATETIME),
-            ),
-          );
-          return expression;
-        } else if (
-          (
-            [
-              SUPPORTED_FUNCTIONS.FIRST_DAY_OF_YEAR,
-              SUPPORTED_FUNCTIONS.FIRST_DAY_OF_MONTH,
-              SUPPORTED_FUNCTIONS.FIRST_DAY_OF_WEEK,
-              SUPPORTED_FUNCTIONS.PREVIOUS_DAY_OF_WEEK,
-              SUPPORTED_FUNCTIONS.ADJUST,
-            ] as string[]
-          ).some((fn) => matchFunctionName(functionName, fn))
-        ) {
-          const expression = V1_buildGenericFunctionExpression(
-            functionName,
-            parameters,
-            openVariables,
-            compileContext,
-            processingContext,
-          );
-          expression[0].genericType = GenericTypeExplicitReference.create(
-            new GenericType(
-              compileContext.graph.getPrimitiveType(PRIMITIVE_TYPE.DATE),
-            ),
-          );
-          return expression;
-        } else if (
-          Object.values(SUPPORTED_FUNCTIONS).some((fn) =>
+          Object.values(QUERY_BUILDER_SUPPORTED_FUNCTIONS).some((fn) =>
             matchFunctionName(functionName, fn),
           )
         ) {
@@ -196,7 +155,9 @@ export class QueryBuilder_PureProtocolProcessorPlugin extends PureProtocolProces
           inferredVariable instanceof SimpleFunctionExpression &&
           matchFunctionName(
             inferredVariable.functionName,
-            extractElementNameFromPath(SUPPORTED_FUNCTIONS.SUBTYPE),
+            extractElementNameFromPath(
+              QUERY_BUILDER_SUPPORTED_FUNCTIONS.SUBTYPE,
+            ),
           )
         ) {
           inferredType =

@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-import type { EditorStore } from './EditorStore';
+import type { EditorStore } from './EditorStore.js';
 import { observable, action, makeObservable } from 'mobx';
 import type {
   ExecutionNodeTreeNodeData,
   ExecutionPlanViewTreeNodeData,
-} from '../components/editor/edit-panel/mapping-editor/execution-plan-viewer/ExecutionPlanTree';
+} from '../components/editor/edit-panel/mapping-editor/execution-plan-viewer/ExecutionPlanTree.js';
 import {
   type RawExecutionPlan,
   ExecutionPlan,

@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import { ProjectDependency } from './ProjectDependency';
-import { ProjectStructureVersion } from './ProjectStructureVersion';
+import { ProjectDependency } from './ProjectDependency.js';
+import { ProjectStructureVersion } from './ProjectStructureVersion.js';
 import { createModelSchema, list, primitive } from 'serializr';
 import { SerializationFactory, usingModelSchema } from '@finos/legend-shared';
 

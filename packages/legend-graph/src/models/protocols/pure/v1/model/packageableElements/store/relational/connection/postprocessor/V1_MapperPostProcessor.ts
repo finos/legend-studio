@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import type { V1_Mapper } from './V1_Mapper';
-import { V1_PostProcessor } from './V1_PostProcessor';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../../../../MetaModelConst';
+import type { V1_Mapper } from './V1_Mapper.js';
+import { V1_PostProcessor } from './V1_PostProcessor.js';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../../../../MetaModelConst.js';
 import { type Hashable, hashArray } from '@finos/legend-shared';
 
 export class V1_MapperPostProcessor

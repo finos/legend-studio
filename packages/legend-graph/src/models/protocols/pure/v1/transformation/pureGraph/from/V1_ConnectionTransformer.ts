@@ -18,16 +18,16 @@ import {
   IllegalStateError,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
-import type { PackageableConnection } from '../../../../../../metamodels/pure/packageableElements/connection/PackageableConnection';
+import type { PackageableConnection } from '../../../../../../metamodels/pure/packageableElements/connection/PackageableConnection.js';
 import {
   ConnectionPointer,
   type Connection,
   type ConnectionVisitor,
-} from '../../../../../../metamodels/pure/packageableElements/connection/Connection';
-import type { JsonModelConnection } from '../../../../../../metamodels/pure/packageableElements/store/modelToModel/connection/JsonModelConnection';
-import type { XmlModelConnection } from '../../../../../../metamodels/pure/packageableElements/store/modelToModel/connection/XmlModelConnection';
-import type { FlatDataConnection } from '../../../../../../metamodels/pure/packageableElements/store/flatData/connection/FlatDataConnection';
-import type { RelationalDatabaseConnection } from '../../../../../../metamodels/pure/packageableElements/store/relational/connection/RelationalDatabaseConnection';
+} from '../../../../../../metamodels/pure/packageableElements/connection/Connection.js';
+import type { JsonModelConnection } from '../../../../../../metamodels/pure/packageableElements/store/modelToModel/connection/JsonModelConnection.js';
+import type { XmlModelConnection } from '../../../../../../metamodels/pure/packageableElements/store/modelToModel/connection/XmlModelConnection.js';
+import type { FlatDataConnection } from '../../../../../../metamodels/pure/packageableElements/store/flatData/connection/FlatDataConnection.js';
+import type { RelationalDatabaseConnection } from '../../../../../../metamodels/pure/packageableElements/store/relational/connection/RelationalDatabaseConnection.js';
 import {
   type AuthenticationStrategy,
   DefaultH2AuthenticationStrategy,
@@ -37,7 +37,8 @@ import {
   DelegatedKerberosAuthenticationStrategy,
   OAuthAuthenticationStrategy,
   UsernamePasswordAuthenticationStrategy,
-} from '../../../../../../metamodels/pure/packageableElements/store/relational/connection/AuthenticationStrategy';
+  GCPWorkloadIdentityFederationAuthenticationStrategy,
+} from '../../../../../../metamodels/pure/packageableElements/store/relational/connection/AuthenticationStrategy.js';
 import {
   type DatasourceSpecification,
   LocalH2DatasourceSpecification,
@@ -47,13 +48,13 @@ import {
   SnowflakeDatasourceSpecification,
   RedshiftDatasourceSpecification,
   BigQueryDatasourceSpecification,
-} from '../../../../../../metamodels/pure/packageableElements/store/relational/connection/DatasourceSpecification';
-import type { ModelChainConnection } from '../../../../../../metamodels/pure/packageableElements/store/modelToModel/connection/ModelChainConnection';
+} from '../../../../../../metamodels/pure/packageableElements/store/relational/connection/DatasourceSpecification.js';
+import type { ModelChainConnection } from '../../../../../../metamodels/pure/packageableElements/store/modelToModel/connection/ModelChainConnection.js';
 import {
   V1_initPackageableElement,
   V1_transformElementReference,
-} from './V1_CoreTransformerHelper';
-import { V1_PackageableConnection } from '../../../model/packageableElements/connection/V1_PackageableConnection';
+} from './V1_CoreTransformerHelper.js';
+import { V1_PackageableConnection } from '../../../model/packageableElements/connection/V1_PackageableConnection.js';
 import {
   type V1_DatasourceSpecification,
   V1_LocalH2DataSourceSpecification,
@@ -63,7 +64,7 @@ import {
   V1_DatabricksDatasourceSpecification,
   V1_StaticDatasourceSpecification,
   V1_RedshiftDatasourceSpecification,
-} from '../../../model/packageableElements/store/relational/connection/V1_DatasourceSpecification';
+} from '../../../model/packageableElements/store/relational/connection/V1_DatasourceSpecification.js';
 import {
   type V1_AuthenticationStrategy,
   V1_DefaultH2AuthenticationStrategy,
@@ -73,21 +74,22 @@ import {
   V1_ApiTokenAuthenticationStrategy,
   V1_DelegatedKerberosAuthenticationStrategy,
   V1_OAuthAuthenticationStrategy,
-} from '../../../model/packageableElements/store/relational/connection/V1_AuthenticationStrategy';
-import type { V1_Connection } from '../../../model/packageableElements/connection/V1_Connection';
+  V1_GCPWorkloadIdentityFederationAuthenticationStrategy,
+} from '../../../model/packageableElements/store/relational/connection/V1_AuthenticationStrategy.js';
+import type { V1_Connection } from '../../../model/packageableElements/connection/V1_Connection.js';
 import {
   type V1_DatabaseType,
   V1_RelationalDatabaseConnection,
-} from '../../../model/packageableElements/store/relational/connection/V1_RelationalDatabaseConnection';
-import { V1_ConnectionPointer } from '../../../model/packageableElements/connection/V1_ConnectionPointer';
-import { V1_JsonModelConnection } from '../../../model/packageableElements/store/modelToModel/connection/V1_JsonModelConnection';
-import { V1_XmlModelConnection } from '../../../model/packageableElements/store/modelToModel/connection/V1_XmlModelConnection';
-import { V1_FlatDataConnection } from '../../../model/packageableElements/store/flatData/connection/V1_FlatDataConnection';
-import { V1_ModelChainConnection } from '../../../model/packageableElements/store/modelToModel/connection/V1_ModelChainConnection';
-import { V1_transformPostProcessor } from './V1_PostProcessorTransformer';
-import type { StoreRelational_PureProtocolProcessorPlugin_Extension } from '../../../../StoreRelational_PureProtocolProcessorPlugin_Extension';
-import type { DSLMapping_PureProtocolProcessorPlugin_Extension } from '../../../../DSLMapping_PureProtocolProcessorPlugin_Extension';
-import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext';
+} from '../../../model/packageableElements/store/relational/connection/V1_RelationalDatabaseConnection.js';
+import { V1_ConnectionPointer } from '../../../model/packageableElements/connection/V1_ConnectionPointer.js';
+import { V1_JsonModelConnection } from '../../../model/packageableElements/store/modelToModel/connection/V1_JsonModelConnection.js';
+import { V1_XmlModelConnection } from '../../../model/packageableElements/store/modelToModel/connection/V1_XmlModelConnection.js';
+import { V1_FlatDataConnection } from '../../../model/packageableElements/store/flatData/connection/V1_FlatDataConnection.js';
+import { V1_ModelChainConnection } from '../../../model/packageableElements/store/modelToModel/connection/V1_ModelChainConnection.js';
+import { V1_transformPostProcessor } from './V1_PostProcessorTransformer.js';
+import type { StoreRelational_PureProtocolProcessorPlugin_Extension } from '../../../../StoreRelational_PureProtocolProcessorPlugin_Extension.js';
+import type { DSLMapping_PureProtocolProcessorPlugin_Extension } from '../../../../DSLMapping_PureProtocolProcessorPlugin_Extension.js';
+import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext.js';
 
 const transformStaticDatasourceSpecification = (
   metamodel: StaticDatasourceSpecification,
@@ -158,6 +160,8 @@ const transformBigQueryDatasourceSpecification = (
   const source = new V1_BigQueryDatasourceSpecification();
   source.projectId = metamodel.projectId;
   source.defaultDataset = metamodel.defaultDataset;
+  source.proxyHost = metamodel.proxyHost;
+  source.proxyPort = metamodel.proxyPort;
   return source;
 };
 
@@ -238,6 +242,13 @@ const transformAuthenticationStrategy = (
   ) {
     const auth =
       new V1_GCPApplicationDefaultCredentialsAuthenticationStrategy();
+    return auth;
+  } else if (
+    metamodel instanceof GCPWorkloadIdentityFederationAuthenticationStrategy
+  ) {
+    const auth = new V1_GCPWorkloadIdentityFederationAuthenticationStrategy();
+    auth.serviceAccountEmail = metamodel.serviceAccountEmail;
+    auth.additionalGcpScopes = metamodel.additionalGcpScopes;
     return auth;
   } else if (metamodel instanceof UsernamePasswordAuthenticationStrategy) {
     const auth = new V1_UsernamePasswordAuthenticationStrategy();

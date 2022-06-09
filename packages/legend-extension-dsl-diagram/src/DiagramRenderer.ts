@@ -42,17 +42,24 @@ import {
   getRawGenericType,
 } from '@finos/legend-graph';
 import { action, makeObservable, observable } from 'mobx';
-import type { Diagram } from './models/metamodels/pure/packageableElements/diagram/DSLDiagram_Diagram';
-import { Rectangle } from './models/metamodels/pure/packageableElements/diagram/geometry/DSLDiagram_Rectangle';
-import { Point } from './models/metamodels/pure/packageableElements/diagram/geometry/DSLDiagram_Point';
-import { PositionedRectangle } from './models/metamodels/pure/packageableElements/diagram/geometry/DSLDiagram_PositionedRectangle';
-import { ClassView } from './models/metamodels/pure/packageableElements/diagram/DSLDiagram_ClassView';
-import type { PropertyHolderView } from './models/metamodels/pure/packageableElements/diagram/DSLDiagram_PropertyHolderView';
-import { GeneralizationView } from './models/metamodels/pure/packageableElements/diagram/DSLDiagram_GeneralizationView';
-import { RelationshipView } from './models/metamodels/pure/packageableElements/diagram/DSLDiagram_RelationshipView';
-import { PropertyView } from './models/metamodels/pure/packageableElements/diagram/DSLDiagram_PropertyView';
-import { getElementPosition } from './helpers/DiagramHelper';
-import { AssociationView } from './models/metamodels/pure/packageableElements/diagram/DSLDiagram_AssociationView';
+import type { Diagram } from './models/metamodels/pure/packageableElements/diagram/DSLDiagram_Diagram.js';
+import { Rectangle } from './models/metamodels/pure/packageableElements/diagram/geometry/DSLDiagram_Rectangle.js';
+import { Point } from './models/metamodels/pure/packageableElements/diagram/geometry/DSLDiagram_Point.js';
+import { PositionedRectangle } from './models/metamodels/pure/packageableElements/diagram/geometry/DSLDiagram_PositionedRectangle.js';
+import { ClassView } from './models/metamodels/pure/packageableElements/diagram/DSLDiagram_ClassView.js';
+import type { PropertyHolderView } from './models/metamodels/pure/packageableElements/diagram/DSLDiagram_PropertyHolderView.js';
+import { GeneralizationView } from './models/metamodels/pure/packageableElements/diagram/DSLDiagram_GeneralizationView.js';
+import { RelationshipView } from './models/metamodels/pure/packageableElements/diagram/DSLDiagram_RelationshipView.js';
+import { PropertyView } from './models/metamodels/pure/packageableElements/diagram/DSLDiagram_PropertyView.js';
+import {
+  boxContains,
+  buildBottomRightCornerBox,
+  getBottomRightCornerPoint,
+  getElementPosition,
+  rotatePointX,
+  rotatePointY,
+} from './helpers/DSLDiagram_Helper.js';
+import { AssociationView } from './models/metamodels/pure/packageableElements/diagram/DSLDiagram_AssociationView.js';
 import { class_addProperty, class_addSuperType } from '@finos/legend-studio';
 import {
   classView_setHideProperties,
@@ -78,7 +85,7 @@ import {
   relationshipView_changePoint,
   relationshipView_simplifyPath,
   relationshipView_setPath,
-} from './stores/studio/DSLDiagram_GraphModifierHelper';
+} from './stores/studio/DSLDiagram_GraphModifierHelper.js';
 
 export enum DIAGRAM_INTERACTION_MODE {
   LAYOUT,
@@ -766,8 +773,8 @@ export class DiagramRenderer {
           );
           minX = Math.min(minX, box.position.x);
           minY = Math.min(minY, box.position.y);
-          maxX = Math.max(maxX, box.edgePoint().x);
-          maxY = Math.max(maxY, box.edgePoint().y);
+          maxX = Math.max(maxX, getBottomRightCornerPoint(box).x);
+          maxY = Math.max(maxY, getBottomRightCornerPoint(box).y);
         }
         // if (relationshipView.from.name) {
         //   var box = this.displayText(fullPath[1], fullPath[0], relationshipView.from.classView, relationshipView.property, this.ctx);
@@ -2014,34 +2021,34 @@ export class DiagramRenderer {
     this.ctx.beginPath();
     this.ctx.moveTo(
       resultX +
-        (this.screenOffset.x + (this.triangle[0] as Point).rotateX(angle)) *
+        (this.screenOffset.x + rotatePointX(this.triangle[0] as Point, angle)) *
           this.zoom,
       resultY +
-        (this.screenOffset.y + (this.triangle[0] as Point).rotateY(angle)) *
+        (this.screenOffset.y + rotatePointY(this.triangle[0] as Point, angle)) *
           this.zoom,
     );
     this.ctx.lineTo(
       resultX +
-        (this.screenOffset.x + (this.triangle[1] as Point).rotateX(angle)) *
+        (this.screenOffset.x + rotatePointX(this.triangle[1] as Point, angle)) *
           this.zoom,
       resultY +
-        (this.screenOffset.y + (this.triangle[1] as Point).rotateY(angle)) *
+        (this.screenOffset.y + rotatePointY(this.triangle[1] as Point, angle)) *
           this.zoom,
     );
     this.ctx.lineTo(
       resultX +
-        (this.screenOffset.x + (this.triangle[2] as Point).rotateX(angle)) *
+        (this.screenOffset.x + rotatePointX(this.triangle[2] as Point, angle)) *
           this.zoom,
       resultY +
-        (this.screenOffset.y + (this.triangle[2] as Point).rotateY(angle)) *
+        (this.screenOffset.y + rotatePointY(this.triangle[2] as Point, angle)) *
           this.zoom,
     );
     this.ctx.lineTo(
       resultX +
-        (this.screenOffset.x + (this.triangle[0] as Point).rotateX(angle)) *
+        (this.screenOffset.x + rotatePointX(this.triangle[0] as Point, angle)) *
           this.zoom,
       resultY +
-        (this.screenOffset.y + (this.triangle[0] as Point).rotateY(angle)) *
+        (this.screenOffset.y + rotatePointY(this.triangle[0] as Point, angle)) *
           this.zoom,
     );
     this.ctx.fillStyle = this.generalizationViewInheritanceTriangeFillColor;
@@ -2637,12 +2644,10 @@ export class DiagramRenderer {
           for (let i = this.diagram.classViews.length - 1; i >= 0; i--) {
             const targetClassView = this.diagram.classViews[i] as ClassView;
             if (
-              targetClassView
-                .buildBottomRightCornerBox()
-                .contains(
-                  eventPointInModelCoordinate.x,
-                  eventPointInModelCoordinate.y,
-                )
+              buildBottomRightCornerBox(targetClassView).contains(
+                eventPointInModelCoordinate.x,
+                eventPointInModelCoordinate.y,
+              )
             ) {
               this.setSelectedClasses([]);
               this.setSelectedClassCorner(this.diagram.classViews[i]);
@@ -3004,8 +3009,8 @@ export class DiagramRenderer {
             this.setSelectedClasses([]);
             for (const classView of this.diagram.classViews) {
               if (
-                this.selection.boxContains(classView) ||
-                classView.boxContains(this.selection)
+                boxContains(this.selection, classView) ||
+                boxContains(classView, this.selection)
               ) {
                 this.setSelectedClasses([...this.selectedClasses, classView]);
               }
@@ -3065,12 +3070,10 @@ export class DiagramRenderer {
 
           // Check hover class corner
           if (
-            classView
-              .buildBottomRightCornerBox()
-              .contains(
-                eventPointInModelCoordinate.x,
-                eventPointInModelCoordinate.y,
-              )
+            buildBottomRightCornerBox(classView).contains(
+              eventPointInModelCoordinate.x,
+              eventPointInModelCoordinate.y,
+            )
           ) {
             this.setMouseOverClassCorner(classView);
           }

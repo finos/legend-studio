@@ -15,7 +15,7 @@
  */
 
 import { action, flowResult, makeAutoObservable } from 'mobx';
-import type { EditorStore } from './EditorStore';
+import type { EditorStore } from './EditorStore.js';
 import {
   type PlainObject,
   type GeneratorFn,
@@ -26,8 +26,8 @@ import {
   guaranteeNonNullable,
   assertTrue,
 } from '@finos/legend-shared';
-import { CHANGE_DETECTION_EVENT } from './ChangeDetectionEvent';
-import { EDITOR_MODE, ACTIVITY_MODE } from './EditorConfig';
+import { CHANGE_DETECTION_EVENT } from './ChangeDetectionEvent.js';
+import { EDITOR_MODE, ACTIVITY_MODE } from './EditorConfig.js';
 import {
   type Entity,
   extractEntityNameFromPath,
@@ -43,7 +43,7 @@ import {
   Workspace,
   WorkspaceAccessType,
 } from '@finos/legend-server-sdlc';
-import { LEGEND_STUDIO_APP_EVENT } from './LegendStudioAppEvent';
+import { LEGEND_STUDIO_APP_EVENT } from './LegendStudioAppEvent.js';
 
 export const entityDiffSorter = (a: EntityDiff, b: EntityDiff): number =>
   extractEntityNameFromPath(a.newPath ?? a.oldPath ?? '').localeCompare(

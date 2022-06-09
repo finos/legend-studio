@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
+import { test } from '@jest/globals';
 import type { Entity } from '@finos/legend-model-storage';
 import { unitTest } from '@finos/legend-shared';
-import { TEST__checkBuildingResolvedElements } from '../../GraphManagerTestUtils';
+import { TEST__checkBuildingResolvedElements } from '../../GraphManagerTestUtils.js';
 
 const getClassEntity = (enumPath: string): Entity => ({
   classifierPath: 'meta::pure::metamodel::type::Class',

@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import { CORE_HASH_STRUCTURE } from '../../../../../../../../../MetaModelConst';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../../../MetaModelConst.js';
 import { type Hashable, hashArray } from '@finos/legend-shared';
-import type { V1_FlatDataProperty } from './V1_FlatDataProperty';
-import type { V1_RootFlatDataRecordType } from './V1_FlatDataDataType';
+import type { V1_FlatDataProperty } from './V1_FlatDataProperty.js';
+import type { V1_RootFlatDataRecordType } from './V1_FlatDataDataType.js';
 
 export class V1_FlatDataSection implements Hashable {
   driverId!: string;

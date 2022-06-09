@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { test, expect } from '@jest/globals';
 import { act, getByText } from '@testing-library/react';
 import {
   TEST_DATA__simpleProjectionWithBiTemporalSourceAndBiTemporalTarget,
@@ -28,7 +29,7 @@ import {
   TEST_DATA__simpleProjectionWithProcessingTemporalSourceAndBiTemporalTarget,
   TEST_DATA__simpleProjectionWithProcessingTemporalSourceAndBusinessTemporalTarget,
   TEST_DATA__simpleProjectionWithProcessingTemporalSourceAndProcessingTemporalTarget,
-} from '../../stores/__tests__/TEST_DATA__QueryBuilder_Milestoning';
+} from '../../stores/__tests__/TEST_DATA__QueryBuilder_Milestoning.js';
 import TEST_MilestoningModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_Milestoning.json';
 import {
   integrationTest,
@@ -40,11 +41,11 @@ import { stub_RawLambda, create_RawLambda } from '@finos/legend-graph';
 import {
   TEST__provideMockedLegendQueryStore,
   TEST__setUpQueryEditor,
-} from '../QueryComponentTestUtils';
-import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_TestID';
-import { QueryBuilderSimpleProjectionColumnState } from '../../stores/QueryBuilderProjectionState';
-import { LegendQueryPluginManager } from '../../application/LegendQueryPluginManager';
-import { Query_GraphPreset } from '../../models/Query_GraphPreset';
+} from '../QueryComponentTestUtils.js';
+import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_TestID.js';
+import { QueryBuilderSimpleProjectionColumnState } from '../../stores/QueryBuilderProjectionState.js';
+import { LegendQueryPluginManager } from '../../application/LegendQueryPluginManager.js';
+import { Query_GraphPreset } from '../../models/Query_GraphPreset.js';
 
 test(
   integrationTest(

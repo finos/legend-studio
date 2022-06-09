@@ -1,0 +1,212 @@
+/**
+ * Copyright (c) 2020-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/**
+ * Previously, these exports rely on ES module interop to expose `default` export
+ * properly. But since we use `ESM` for Typescript resolution now, we lose this
+ * so we have to workaround by importing these and re-export them from CJS
+ *
+ * TODO: remove these when the package properly work with Typescript's nodenext
+ * module resolution
+ *
+ * @workaround ESM
+ * See https://github.com/microsoft/TypeScript/issues/49298
+ */
+export {
+  FaLayerGroup as LayerGroupIcon,
+  FaGhost as GhostIcon,
+  FaLock as LockIcon,
+  FaMask as MaskIcon,
+  FaFile as FileIcon,
+  FaLongArrowAltRight as LongArrowRightIcon,
+  FaTimes as TimesIcon,
+  FaTimesCircle as TimesCircleIcon,
+  FaPlus as PlusIcon,
+  FaCog as CogIcon,
+  FaEye as EyeIcon,
+  FaCaretDown as CaretDownIcon,
+  FaFire as FireIcon,
+  FaSave as SaveIcon,
+  FaSquare as SquareIcon,
+  FaRegSquare as EmptySquareIcon,
+  FaCheckSquare as CheckSquareIcon,
+  FaHashtag as HashtagIcon,
+  FaHammer as HammerIcon,
+  FaClock as ClockIcon,
+  FaRegClock as EmptyClockIcon,
+  FaToggleOn as ToggleIcon,
+  FaQuestion as QuestionIcon,
+  FaQuestionCircle as QuestionCircleIcon,
+  FaInfoCircle as InfoCircleIcon,
+  FaCompress as CompressIcon,
+  FaMap as MapIcon,
+  FaFlask as FlaskIcon,
+  FaPlay as PlayIcon,
+  FaGripVertical as VerticalDragHandleIcon,
+  FaRobot as RobotIcon,
+  FaArrowLeft as ArrowLeftIcon,
+  FaArrowRight as ArrowRightIcon,
+  FaArrowAltCircleDown as ArrowCircleDownIcon,
+  FaArrowAltCircleRight as ArrowCircleRightIcon,
+  FaArrowCircleRight as StickArrowCircleRightIcon,
+  FaUser as UserIcon,
+  FaShapes as ShapesIcon,
+  FaEnvelope as EnvelopIcon,
+  FaSkull as SkullIcon,
+  FaDollarSign as DollarIcon,
+  FaSearch as SearchIcon,
+  FaStar as StarIcon,
+  FaKey as KeyIcon,
+  FaExternalLinkAlt as ExternalLinkIcon,
+  FaExternalLinkSquareAlt as ExternalLinkSquareIcon,
+  FaLightbulb as LightBulbIcon,
+  FaRegLightbulb as EmptyLightBulbIcon,
+  FaList as ListIcon,
+  FaCircle as CircleIcon,
+  FaRegCircle as EmptyCircleIcon,
+  FaShieldAlt as ShieldIcon,
+  FaTag as TagIcon,
+  FaTags as TagsIcon,
+  FaBolt as BoltIcon,
+  FaCheckCircle as CheckCircleIcon,
+  FaExclamationTriangle as ExclamationTriangleIcon,
+  FaBug as BugIcon,
+  FaCircleNotch as CircleNotchIcon,
+  FaRegKeyboard as KeyboardIcon,
+  FaUserSecret as HackerIcon,
+  FaBuffer as BufferIcon, // to be reviewed, moved to LegendIcon
+  FaSitemap as SitemapIcon, // to be reviewed, moved to LegendIcon
+  FaExpand as ExpandIcon,
+  FaBrush as BrushIcon,
+  FaSortAlphaDown as SortDownIcon,
+  FaSortAlphaDownAlt as SortDownAltIcon,
+  FaFolderPlus as NewFolderIcon,
+  FaCaretRight as CaretRightIcon,
+  FaWrench as WrenchIcon,
+  FaArrowDown as ArrowDownIcon,
+  FaArrowUp as ArrowUpIcon,
+  FaTerminal as TerminalIcon,
+  FaTruckLoading as TruckLoadingIcon,
+  FaFolderOpen as FolderOpenIcon,
+  FaFolder as FolderIcon,
+  FaFileCode as FileCodeIcon,
+  FaCodeBranch as CodeBranchIcon,
+  FaArrowAltCircleLeft as ArrowCircleLeftIcon,
+  FaRegStopCircle as EmptyStopCircleIcon,
+  FaAsterisk as AsteriskIcon,
+  FaFilter as FilterIcon,
+  FaExclamationCircle as ExclamationCircleIcon,
+  FaRocket as RocketIcon,
+  FaCheck as CheckIcon,
+  FaBan as BanIcon,
+  FaFileImport as FileImportIcon,
+  FaUserFriends as UsersIcon,
+  FaDownload as DownloadIcon,
+  FaUpload as UploadIcon,
+  FaRegWindowRestore as EmptyWindowRestoreIcon,
+  FaPauseCircle as PauseCircleIcon,
+  FaShare as ShareIcon,
+  FaRegCopy as CopyIcon,
+  FaEdit as PencilEditIcon, // to be reviewed/combined
+  FaArrowsAltH as ArrowsAltHIcon, // to be reviewed/combined
+  FaRegWindowMaximize as WindowMaximizeIcon, // to be reviewed/combined
+  FaWindowMaximize as FilledWindowMaximizeIcon, // to be reviewed/combined
+  FaLongArrowAltDown as LongArrowAltDownIcon, // to be reviewed/combined
+  FaLongArrowAltUp as LongArrowAltUpIcon, // to be reviewed/combined
+  FaMeteor as MeteorIcon, // to be reviewed/combined
+  FaToggleOn as ToggleOnIcon,
+  FaToggleOff as ToggleOffIcon,
+  FaMapMarkerAlt as MapMarkerIcon,
+  FaHatWizard as WizardHatIcon,
+  FaRegLaughWink as FaceLaughWinkIcon,
+  FaBusinessTime as BusinessTimeIcon, // to be reviewed/combined
+  FaDatabase as DatabaseIcon,
+  FaServer as ServerIcon,
+  FaTable as TableIcon,
+} from 'react-icons/fa';
+export {
+  GiWaterDrop as WaterDropIcon,
+  GiBeard as BeardIcon,
+  GiSunglasses as SunglassesIcon,
+} from 'react-icons/gi';
+export {
+  MdModeEdit as PencilIcon,
+  MdTextFields as StringTypeIcon,
+  MdMoreVert as MoreVerticalIcon,
+  MdMoreHoriz as MoreHorizontalIcon,
+  MdWrapText as WrapTextIcon,
+  MdVerticalAlignBottom as VerticalAlignBottomIcon,
+  MdRefresh as RefreshIcon,
+  MdFunctions as SigmaIcon,
+  MdCompareArrows as CompareIcon,
+  MdPlaylistAddCheck as CheckListIcon,
+  MdAdd as AddIcon, // to be reviewed
+  MdEdit as EditIcon, // to be reviewed
+  MdSubject as SubjectIcon,
+  MdViewHeadline as ViewHeadlineIcon,
+  MdWarning as WarningIcon,
+  MdAssistant as AssistantIcon,
+  MdSettingsEthernet as SettingsEthernetIcon,
+  MdLink as LinkIcon,
+} from 'react-icons/md';
+export {
+  VscError as ErrorIcon,
+  VscWordWrap as WordWrapIcon,
+  VscGoToFile as GoToFileIcon,
+  VscClose as CloseIcon,
+} from 'react-icons/vsc';
+export {
+  GoChevronDown as ChevronDownIcon,
+  GoChevronUp as ChevronUpIcon,
+  GoChevronRight as ChevronRightIcon,
+  GoFileBinary as BinaryTypeIcon,
+  GoGitPullRequest as GitPullRequestIcon,
+  GoGitMerge as GitMergeIcon,
+  GoCloudDownload as CloudDownloadIcon,
+  GoCloudUpload as CloudUploadIcon,
+  GoSync as SyncIcon,
+  GoRepo as RepoIcon,
+  GoGitBranch as GitBranchIcon,
+  GoX as XIcon,
+  GoPlug as PluginIcon,
+} from 'react-icons/go';
+export { SiSwagger as SwaggerIcon } from 'react-icons/si';
+export {
+  IoResize as ResizeIcon,
+  IoFileTrayFullOutline as FileTrayIcon,
+  IoMenuOutline as MenuIcon,
+} from 'react-icons/io5';
+export {
+  BsFillTriangleFill as FilledTriangleIcon,
+  BsFillFileEarmarkSpreadsheetFill as TabulatedDataFileIcon,
+  BsBoxSeam as BundleIcon,
+  BsGripVertical as VerticalDragHandleThinIcon,
+} from 'react-icons/bs';
+export { BiShapeTriangle as ShapeTriangleIcon } from 'react-icons/bi';
+export { CgOptions as OptionsIcon } from 'react-icons/cg';
+export {
+  FiPackage as PackageIcon,
+  FiMinus as MinusIcon,
+  FiMousePointer as MousePointerIcon,
+  FiMove as MoveIcon,
+  FiPlusCircle as PlusCircleIcon,
+  FiSidebar as SidebarIcon,
+  FiTriangle as TriangleIcon,
+  FiZoomIn as ZoomInIcon,
+  FiZoomOut as ZoomOutIcon,
+  FiGitMerge as TruncatedGitMergeIcon, // to be reviewed/combined
+} from 'react-icons/fi';
+export { RiShapeLine as ShapeLineIcon } from 'react-icons/ri';

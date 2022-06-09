@@ -15,9 +15,9 @@
  */
 
 import { type Hashable, hashArray } from '@finos/legend-shared';
-import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../ESService_ModelUtils';
-import type { HTTP_METHOD } from '../packageableElements/store/serviceStore/model/ESService_ServiceStoreService';
-import type { StringValuePattern } from './contentPattern/ESService_StringValuePattern';
+import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../ESService_ModelUtils.js';
+import type { HTTP_METHOD } from '../packageableElements/store/serviceStore/model/ESService_ServiceStoreService.js';
+import type { StringValuePattern } from './contentPattern/ESService_StringValuePattern.js';
 
 export class ServiceRequestPattern implements Hashable {
   url?: string | undefined;

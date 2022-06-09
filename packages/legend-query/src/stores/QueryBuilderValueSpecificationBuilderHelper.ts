@@ -27,7 +27,7 @@ import {
   VariableExpression,
 } from '@finos/legend-graph';
 import { UnsupportedOperationError } from '@finos/legend-shared';
-import format from 'date-fns/format';
+import { format } from 'date-fns';
 
 export const generateDefaultValueForPrimitiveType = (
   type: PRIMITIVE_TYPE,

@@ -15,8 +15,8 @@
  */
 
 import { action, flowResult, makeAutoObservable } from 'mobx';
-import { ClassEditorState } from './editor-state/element-editor-state/ClassEditorState';
-import { ExplorerTreeState } from './ExplorerTreeState';
+import { ClassEditorState } from './editor-state/element-editor-state/ClassEditorState.js';
+import { ExplorerTreeState } from './ExplorerTreeState.js';
 import {
   ACTIVITY_MODE,
   AUX_PANEL_MODE,
@@ -24,22 +24,22 @@ import {
   EDITOR_MODE,
   LEGEND_STUDIO_HOTKEY,
   LEGEND_STUDIO_HOTKEY_MAP,
-} from './EditorConfig';
-import { ElementEditorState } from './editor-state/element-editor-state/ElementEditorState';
-import { MappingEditorState } from './editor-state/element-editor-state/mapping/MappingEditorState';
+} from './EditorConfig.js';
+import { ElementEditorState } from './editor-state/element-editor-state/ElementEditorState.js';
+import { MappingEditorState } from './editor-state/element-editor-state/mapping/MappingEditorState.js';
 import {
   type GraphBuilderResult,
   EditorGraphState,
   GraphBuilderStatus,
-} from './EditorGraphState';
-import { ChangeDetectionState } from './ChangeDetectionState';
-import { NewElementState } from './NewElementState';
-import { WorkspaceUpdaterState } from './sidebar-state/WorkspaceUpdaterState';
-import { ProjectOverviewState } from './sidebar-state/ProjectOverviewState';
-import { WorkspaceReviewState } from './sidebar-state/WorkspaceReviewState';
-import { LocalChangesState } from './sidebar-state/LocalChangesState';
-import { WorkspaceWorkflowManagerState } from './sidebar-state/WorkflowManagerState';
-import { GrammarTextEditorState } from './editor-state/GrammarTextEditorState';
+} from './EditorGraphState.js';
+import { ChangeDetectionState } from './ChangeDetectionState.js';
+import { NewElementState } from './NewElementState.js';
+import { WorkspaceUpdaterState } from './sidebar-state/WorkspaceUpdaterState.js';
+import { ProjectOverviewState } from './sidebar-state/ProjectOverviewState.js';
+import { WorkspaceReviewState } from './sidebar-state/WorkspaceReviewState.js';
+import { LocalChangesState } from './sidebar-state/LocalChangesState.js';
+import { WorkspaceWorkflowManagerState } from './sidebar-state/WorkflowManagerState.js';
+import { GrammarTextEditorState } from './editor-state/GrammarTextEditorState.js';
 import {
   type Clazz,
   type GeneratorFn,
@@ -56,31 +56,31 @@ import {
   ActionState,
   filterByType,
 } from '@finos/legend-shared';
-import { UMLEditorState } from './editor-state/element-editor-state/UMLEditorState';
-import { ServiceEditorState } from './editor-state/element-editor-state/service/ServiceEditorState';
-import { EditorSDLCState } from './EditorSDLCState';
-import { ModelLoaderState } from './editor-state/ModelLoaderState';
-import type { EditorState } from './editor-state/EditorState';
-import { EntityDiffViewState } from './editor-state/entity-diff-editor-state/EntityDiffViewState';
-import { FunctionEditorState } from './editor-state/element-editor-state/FunctionEditorState';
-import { ProjectConfigurationEditorState } from './editor-state/ProjectConfigurationEditorState';
-import { PackageableRuntimeEditorState } from './editor-state/element-editor-state/RuntimeEditorState';
-import { PackageableConnectionEditorState } from './editor-state/element-editor-state/connection/ConnectionEditorState';
-import { PackageableDataEditorState } from './editor-state/element-editor-state/data/DataEditorState';
-import { FileGenerationEditorState } from './editor-state/element-editor-state/FileGenerationEditorState';
-import { EntityDiffEditorState } from './editor-state/entity-diff-editor-state/EntityDiffEditorState';
-import { EntityChangeConflictEditorState } from './editor-state/entity-diff-editor-state/EntityChangeConflictEditorState';
-import { CHANGE_DETECTION_EVENT } from './ChangeDetectionEvent';
-import { GenerationSpecificationEditorState } from './editor-state/GenerationSpecificationEditorState';
-import { UnsupportedElementEditorState } from './editor-state/UnsupportedElementEditorState';
-import { FileGenerationViewerState } from './editor-state/FileGenerationViewerState';
-import type { GenerationFile } from './shared/FileGenerationTreeUtil';
-import type { ElementFileGenerationState } from './editor-state/element-editor-state/ElementFileGenerationState';
-import { DevToolState } from './aux-panel-state/DevToolState';
+import { UMLEditorState } from './editor-state/element-editor-state/UMLEditorState.js';
+import { ServiceEditorState } from './editor-state/element-editor-state/service/ServiceEditorState.js';
+import { EditorSDLCState } from './EditorSDLCState.js';
+import { ModelLoaderState } from './editor-state/ModelLoaderState.js';
+import type { EditorState } from './editor-state/EditorState.js';
+import { EntityDiffViewState } from './editor-state/entity-diff-editor-state/EntityDiffViewState.js';
+import { FunctionEditorState } from './editor-state/element-editor-state/FunctionEditorState.js';
+import { ProjectConfigurationEditorState } from './editor-state/ProjectConfigurationEditorState.js';
+import { PackageableRuntimeEditorState } from './editor-state/element-editor-state/RuntimeEditorState.js';
+import { PackageableConnectionEditorState } from './editor-state/element-editor-state/connection/ConnectionEditorState.js';
+import { PackageableDataEditorState } from './editor-state/element-editor-state/data/DataEditorState.js';
+import { FileGenerationEditorState } from './editor-state/element-editor-state/FileGenerationEditorState.js';
+import { EntityDiffEditorState } from './editor-state/entity-diff-editor-state/EntityDiffEditorState.js';
+import { EntityChangeConflictEditorState } from './editor-state/entity-diff-editor-state/EntityChangeConflictEditorState.js';
+import { CHANGE_DETECTION_EVENT } from './ChangeDetectionEvent.js';
+import { GenerationSpecificationEditorState } from './editor-state/GenerationSpecificationEditorState.js';
+import { UnsupportedElementEditorState } from './editor-state/UnsupportedElementEditorState.js';
+import { FileGenerationViewerState } from './editor-state/FileGenerationViewerState.js';
+import type { GenerationFile } from './shared/FileGenerationTreeUtil.js';
+import type { ElementFileGenerationState } from './editor-state/element-editor-state/ElementFileGenerationState.js';
+import { DevToolState } from './aux-panel-state/DevToolState.js';
 import {
   generateSetupRoute,
   generateViewProjectRoute,
-} from './LegendStudioRouter';
+} from './LegendStudioRouter.js';
 import {
   HotkeyConfiguration,
   NonBlockingDialogState,
@@ -89,8 +89,8 @@ import {
 import {
   type PackageableElementOption,
   buildElementOption,
-} from './shared/PackageableElementOptionUtil';
-import type { DSL_LegendStudioPlugin_Extension } from './LegendStudioPlugin';
+} from './shared/PackageableElementOptionUtil.js';
+import type { DSL_LegendStudioPlugin_Extension } from './LegendStudioPlugin.js';
 import type { Entity } from '@finos/legend-model-storage';
 import {
   ProjectConfiguration,
@@ -124,7 +124,7 @@ import {
   DataElement,
 } from '@finos/legend-graph';
 import type { DepotServerClient } from '@finos/legend-server-depot';
-import type { LegendStudioPluginManager } from '../application/LegendStudioPluginManager';
+import type { LegendStudioPluginManager } from '../application/LegendStudioPluginManager.js';
 import {
   type ActionAlertInfo,
   type ApplicationStore,
@@ -134,19 +134,19 @@ import {
   APPLICATION_EVENT,
   TAB_SIZE,
 } from '@finos/legend-application';
-import { LEGEND_STUDIO_APP_EVENT } from './LegendStudioAppEvent';
-import type { LegendStudioConfig } from '../application/LegendStudioConfig';
-import type { EditorMode } from './editor/EditorMode';
-import { StandardEditorMode } from './editor/StandardEditorMode';
-import { WorkspaceUpdateConflictResolutionState } from './sidebar-state/WorkspaceUpdateConflictResolutionState';
+import { LEGEND_STUDIO_APP_EVENT } from './LegendStudioAppEvent.js';
+import type { LegendStudioConfig } from '../application/LegendStudioConfig.js';
+import type { EditorMode } from './editor/EditorMode.js';
+import { StandardEditorMode } from './editor/StandardEditorMode.js';
+import { WorkspaceUpdateConflictResolutionState } from './sidebar-state/WorkspaceUpdateConflictResolutionState.js';
 import {
   graph_addElement,
   graph_deleteElement,
   graph_deleteOwnElement,
   graph_renameElement,
-} from './graphModifier/GraphModifierHelper';
-import { PACKAGEABLE_ELEMENT_TYPE } from './shared/ModelUtil';
-import { GlobalTestRunnerState } from './sidebar-state/testable/GlobalTestRunnerState';
+} from './graphModifier/GraphModifierHelper.js';
+import { PACKAGEABLE_ELEMENT_TYPE } from './shared/ModelUtil.js';
+import { GlobalTestRunnerState } from './sidebar-state/testable/GlobalTestRunnerState.js';
 
 export abstract class EditorExtensionState {
   /**
@@ -234,7 +234,6 @@ export class EditorStore {
    */
   elementGenerationStates: ElementFileGenerationState[] = [];
   searchElementCommandState = new NonBlockingDialogState();
-  isInExpandedMode = true;
   backdrop = false;
   ignoreNavigationBlocking = false;
   isDevToolEnabled = true;
@@ -261,7 +260,6 @@ export class EditorStore {
       setBlockGlobalHotkeys: action,
       setCurrentEditorState: action,
       setBackdrop: action,
-      setExpandedMode: action,
       setActiveAuxPanelMode: action,
       setIgnoreNavigationBlocking: action,
       refreshCurrentEntityDiffEditorState: action,
@@ -479,10 +477,6 @@ export class EditorStore {
 
   setBackdrop(val: boolean): void {
     this.backdrop = val;
-  }
-
-  setExpandedMode(val: boolean): void {
-    this.isInExpandedMode = val;
   }
 
   setActiveAuxPanelMode(val: AUX_PANEL_MODE): void {

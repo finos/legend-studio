@@ -21,9 +21,9 @@ import {
   hashArray,
   isNonNullable,
 } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
-import { Enum } from '../domain/Enum';
-import type { EnumValueReference } from '../domain/EnumValueReference';
+import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst.js';
+import { Enum } from '../domain/Enum.js';
+import type { EnumValueReference } from '../domain/EnumValueReference.js';
 
 export class SourceValue {
   readonly _UUID = uuid();

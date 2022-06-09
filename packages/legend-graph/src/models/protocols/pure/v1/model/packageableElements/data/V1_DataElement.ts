@@ -15,14 +15,14 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
-import type { V1_EmbeddedData } from '../../data/V1_EmbeddedData';
-import type { V1_StereotypePtr } from '../domain/V1_StereotypePtr';
-import type { V1_TaggedValue } from '../domain/V1_TaggedValue';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst.js';
+import type { V1_EmbeddedData } from '../../data/V1_EmbeddedData.js';
+import type { V1_StereotypePtr } from '../domain/V1_StereotypePtr.js';
+import type { V1_TaggedValue } from '../domain/V1_TaggedValue.js';
 import {
   type V1_PackageableElementVisitor,
   V1_PackageableElement,
-} from '../V1_PackageableElement';
+} from '../V1_PackageableElement.js';
 
 export class V1_DataElement extends V1_PackageableElement implements Hashable {
   stereotypes: V1_StereotypePtr[] = [];

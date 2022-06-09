@@ -1,5 +1,11 @@
 # @finos/babel-preset-legend-studio
 
+## 2.0.0
+
+### Major Changes
+
+- [#1146](https://github.com/finos/legend-studio/pull/1146) [`e0de53ce`](https://github.com/finos/legend-studio/commit/e0de53ce74d9bc6c4dbf77574f3a377f111310bc) ([@akphi](https://github.com/akphi)) - Remove `@babel/plugin-proposal-class-properties` now that it's moved to `stage 4`. Also remove support for `@babel/plugin-transform-runtime`.
+
 ## 1.0.0
 
 ### Major Changes

@@ -21,38 +21,40 @@ import {
   UnsupportedOperationError,
   isNonNullable,
   uniq,
+  returnUndefOnError,
 } from '@finos/legend-shared';
 import {
   TYPICAL_MULTIPLICITY_TYPE,
   PRIMITIVE_TYPE,
-} from '../../../../../../../../MetaModelConst';
+  SUPPORTED_FUNCTIONS,
+} from '../../../../../../../../MetaModelConst.js';
 import {
   LambdaFunction,
   FunctionType,
   LambdaFunctionInstanceValue,
-} from '../../../../../../../metamodels/pure/valueSpecification/LambdaFunction';
+} from '../../../../../../../metamodels/pure/valueSpecification/LambdaFunction.js';
 import {
   type ExecutionContext,
   BaseExecutionContext,
   AnalyticsExecutionContext,
-} from '../../../../../../../metamodels/pure/valueSpecification/ExecutionContext';
-import { VariableExpression } from '../../../../../../../metamodels/pure/valueSpecification/VariableExpression';
-import { Class } from '../../../../../../../metamodels/pure/packageableElements/domain/Class';
-import type { AbstractProperty } from '../../../../../../../metamodels/pure/packageableElements/domain/AbstractProperty';
+} from '../../../../../../../metamodels/pure/valueSpecification/ExecutionContext.js';
+import { VariableExpression } from '../../../../../../../metamodels/pure/valueSpecification/VariableExpression.js';
+import { Class } from '../../../../../../../metamodels/pure/packageableElements/domain/Class.js';
+import type { AbstractProperty } from '../../../../../../../metamodels/pure/packageableElements/domain/AbstractProperty.js';
 import {
   type GraphFetchTree,
   PropertyGraphFetchTree,
   RootGraphFetchTree,
   PropertyGraphFetchTreeInstanceValue,
   RootGraphFetchTreeInstanceValue,
-} from '../../../../../../../metamodels/pure/valueSpecification/GraphFetchTree';
-import { ValueSpecification } from '../../../../../../../metamodels/pure/valueSpecification/ValueSpecification';
+} from '../../../../../../../metamodels/pure/valueSpecification/GraphFetchTree.js';
+import { ValueSpecification } from '../../../../../../../metamodels/pure/valueSpecification/ValueSpecification.js';
 import {
-  type SimpleFunctionExpression,
+  SimpleFunctionExpression,
   AbstractPropertyExpression,
-} from '../../../../../../../metamodels/pure/valueSpecification/SimpleFunctionExpression';
-import { GenericType } from '../../../../../../../metamodels/pure/packageableElements/domain/GenericType';
-import { GenericTypeExplicitReference } from '../../../../../../../metamodels/pure/packageableElements/domain/GenericTypeReference';
+} from '../../../../../../../metamodels/pure/valueSpecification/SimpleFunctionExpression.js';
+import { GenericType } from '../../../../../../../metamodels/pure/packageableElements/domain/GenericType.js';
+import { GenericTypeExplicitReference } from '../../../../../../../metamodels/pure/packageableElements/domain/GenericTypeReference.js';
 import {
   InstanceValue,
   PrimitiveInstanceValue,
@@ -60,68 +62,69 @@ import {
   PairInstanceValue,
   PureListInstanceValue,
   CollectionInstanceValue,
-} from '../../../../../../../metamodels/pure/valueSpecification/InstanceValue';
-import { Multiplicity } from '../../../../../../../metamodels/pure/packageableElements/domain/Multiplicity';
-import type { Type } from '../../../../../../../metamodels/pure/packageableElements/domain/Type';
-import { PropertyExplicitReference } from '../../../../../../../metamodels/pure/packageableElements/domain/PropertyReference';
+} from '../../../../../../../metamodels/pure/valueSpecification/InstanceValue.js';
+import { Multiplicity } from '../../../../../../../metamodels/pure/packageableElements/domain/Multiplicity.js';
+import type { Type } from '../../../../../../../metamodels/pure/packageableElements/domain/Type.js';
+import { PropertyExplicitReference } from '../../../../../../../metamodels/pure/packageableElements/domain/PropertyReference.js';
 import {
   OptionalPackageableElementExplicitReference,
   PackageableElementExplicitReference,
-} from '../../../../../../../metamodels/pure/packageableElements/PackageableElementReference';
+} from '../../../../../../../metamodels/pure/packageableElements/PackageableElementReference.js';
 import type {
   V1_ValueSpecificationVisitor,
   V1_ValueSpecification,
-} from '../../../../model/valueSpecification/V1_ValueSpecification';
-import type { V1_GraphBuilderContext } from '../../../../transformation/pureGraph/to/V1_GraphBuilderContext';
-import type { V1_Lambda } from '../../../../model/valueSpecification/raw/V1_Lambda';
-import { V1_Variable } from '../../../../model/valueSpecification/V1_Variable';
-import { V1_ProcessingContext } from './V1_ProcessingContext';
-import type { V1_ExecutionContext } from '../../../../model/valueSpecification/raw/executionContext/V1_ExecutionContext';
-import { V1_BaseExecutionContext } from '../../../../model/valueSpecification/raw/executionContext/V1_BaseExecutionContext';
-import { V1_AnalyticsExecutionContext } from '../../../../model/valueSpecification/raw/executionContext/V1_AnalyticsExecutionContext';
-import { V1_PropertyGraphFetchTree } from '../../../../model/valueSpecification/raw/graph/V1_PropertyGraphFetchTree';
-import { V1_Multiplicity } from '../../../../model/packageableElements/domain/V1_Multiplicity';
-import { V1_RootGraphFetchTree } from '../../../../model/valueSpecification/raw/graph/V1_RootGraphFetchTree';
-import type { V1_GraphFetchTree } from '../../../../model/valueSpecification/raw/graph/V1_GraphFetchTree';
-import type { V1_AppliedFunction } from '../../../../model/valueSpecification/application/V1_AppliedFunction';
-import type { V1_AppliedProperty } from '../../../../model/valueSpecification/application/V1_AppliedProperty';
-import type { V1_AggregateValue } from '../../../../model/valueSpecification/raw/V1_AggregateValue';
-import type { V1_CBoolean } from '../../../../model/valueSpecification/raw/V1_CBoolean';
-import type { V1_CDateTime } from '../../../../model/valueSpecification/raw/V1_CDateTime';
-import type { V1_CStrictTime } from '../../../../model/valueSpecification/raw/V1_CStrictTime';
-import type { V1_CDecimal } from '../../../../model/valueSpecification/raw/V1_CDecimal';
-import type { V1_CFloat } from '../../../../model/valueSpecification/raw/V1_CFloat';
-import type { V1_CInteger } from '../../../../model/valueSpecification/raw/V1_CInteger';
-import type { V1_CLatestDate } from '../../../../model/valueSpecification/raw/V1_CLatestDate';
-import type { V1_Collection } from '../../../../model/valueSpecification/raw/V1_Collection';
-import type { V1_CStrictDate } from '../../../../model/valueSpecification/raw/V1_CStrictDate';
-import { V1_CString } from '../../../../model/valueSpecification/raw/V1_CString';
-import type { V1_EnumValue } from '../../../../model/valueSpecification/raw/V1_EnumValue';
-import type { V1_ExecutionContextInstance } from '../../../../model/valueSpecification/raw/V1_ExecutionContextInstance';
-import type { V1_KeyExpression } from '../../../../model/valueSpecification/raw/V1_KeyExpression';
-import type { V1_Pair } from '../../../../model/valueSpecification/raw/V1_Pair';
-import type { V1_Path } from '../../../../model/valueSpecification/raw/path/V1_Path';
-import type { V1_PrimitiveType } from '../../../../model/valueSpecification/raw/V1_PrimitiveType';
-import type { V1_PureList } from '../../../../model/valueSpecification/raw/V1_PureList';
-import type { V1_RuntimeInstance } from '../../../../model/valueSpecification/raw/V1_RuntimeInstance';
-import type { V1_SerializationConfig } from '../../../../model/valueSpecification/raw/V1_SerializationConfig';
-import type { V1_TDSAggregateValue } from '../../../../model/valueSpecification/raw/V1_TDSAggregateValue';
-import type { V1_TDSColumnInformation } from '../../../../model/valueSpecification/raw/V1_TDSColumnInformation';
-import type { V1_TdsOlapAggregation } from '../../../../model/valueSpecification/raw/V1_TdsOlapAggregation';
-import type { V1_TdsOlapRank } from '../../../../model/valueSpecification/raw/V1_TdsOlapRank';
-import type { V1_TDSSortInformation } from '../../../../model/valueSpecification/raw/V1_TDSSortInformation';
-import type { V1_UnitInstance } from '../../../../model/valueSpecification/raw/V1_UnitInstance';
-import type { V1_UnitType } from '../../../../model/valueSpecification/raw/V1_UnitType';
-import { V1_getAppliedProperty } from './V1_DomainBuilderHelper';
-import { Enumeration } from '../../../../../../../metamodels/pure/packageableElements/domain/Enumeration';
-import { EnumValueExplicitReference } from '../../../../../../../metamodels/pure/packageableElements/domain/EnumValueReference';
-import type { V1_PackageableElementPtr } from '../../../../model/valueSpecification/raw/V1_PackageableElementPtr';
-import type { V1_HackedClass } from '../../../../model/valueSpecification/raw/V1_HackedClass';
-import type { V1_HackedUnit } from '../../../../model/valueSpecification/raw/V1_HackedUnit';
-import type { V1_INTERNAL__UnknownValueSpecification } from '../../../../model/valueSpecification/V1_INTERNAL__UnknownValueSpecfication';
-import { INTERNAL__UnknownValueSpecification } from '../../../../../../../metamodels/pure/valueSpecification/INTERNAL__UnknownValueSpecification';
-import { GraphBuilderError } from '../../../../../../../../graphManager/GraphManagerUtils';
-import { getEnumValue } from '../../../../../../../../helpers/DomainHelper';
+} from '../../../../model/valueSpecification/V1_ValueSpecification.js';
+import type { V1_GraphBuilderContext } from '../../../../transformation/pureGraph/to/V1_GraphBuilderContext.js';
+import type { V1_Lambda } from '../../../../model/valueSpecification/raw/V1_Lambda.js';
+import { V1_Variable } from '../../../../model/valueSpecification/V1_Variable.js';
+import { V1_ProcessingContext } from './V1_ProcessingContext.js';
+import type { V1_ExecutionContext } from '../../../../model/valueSpecification/raw/executionContext/V1_ExecutionContext.js';
+import { V1_BaseExecutionContext } from '../../../../model/valueSpecification/raw/executionContext/V1_BaseExecutionContext.js';
+import { V1_AnalyticsExecutionContext } from '../../../../model/valueSpecification/raw/executionContext/V1_AnalyticsExecutionContext.js';
+import { V1_PropertyGraphFetchTree } from '../../../../model/valueSpecification/raw/graph/V1_PropertyGraphFetchTree.js';
+import { V1_Multiplicity } from '../../../../model/packageableElements/domain/V1_Multiplicity.js';
+import { V1_RootGraphFetchTree } from '../../../../model/valueSpecification/raw/graph/V1_RootGraphFetchTree.js';
+import type { V1_GraphFetchTree } from '../../../../model/valueSpecification/raw/graph/V1_GraphFetchTree.js';
+import type { V1_AppliedFunction } from '../../../../model/valueSpecification/application/V1_AppliedFunction.js';
+import type { V1_AppliedProperty } from '../../../../model/valueSpecification/application/V1_AppliedProperty.js';
+import type { V1_AggregateValue } from '../../../../model/valueSpecification/raw/V1_AggregateValue.js';
+import type { V1_CBoolean } from '../../../../model/valueSpecification/raw/V1_CBoolean.js';
+import type { V1_CDateTime } from '../../../../model/valueSpecification/raw/V1_CDateTime.js';
+import type { V1_CStrictTime } from '../../../../model/valueSpecification/raw/V1_CStrictTime.js';
+import type { V1_CDecimal } from '../../../../model/valueSpecification/raw/V1_CDecimal.js';
+import type { V1_CFloat } from '../../../../model/valueSpecification/raw/V1_CFloat.js';
+import type { V1_CInteger } from '../../../../model/valueSpecification/raw/V1_CInteger.js';
+import type { V1_CLatestDate } from '../../../../model/valueSpecification/raw/V1_CLatestDate.js';
+import type { V1_Collection } from '../../../../model/valueSpecification/raw/V1_Collection.js';
+import type { V1_CStrictDate } from '../../../../model/valueSpecification/raw/V1_CStrictDate.js';
+import { V1_CString } from '../../../../model/valueSpecification/raw/V1_CString.js';
+import type { V1_EnumValue } from '../../../../model/valueSpecification/raw/V1_EnumValue.js';
+import type { V1_ExecutionContextInstance } from '../../../../model/valueSpecification/raw/V1_ExecutionContextInstance.js';
+import type { V1_KeyExpression } from '../../../../model/valueSpecification/raw/V1_KeyExpression.js';
+import type { V1_Pair } from '../../../../model/valueSpecification/raw/V1_Pair.js';
+import type { V1_Path } from '../../../../model/valueSpecification/raw/path/V1_Path.js';
+import type { V1_PrimitiveType } from '../../../../model/valueSpecification/raw/V1_PrimitiveType.js';
+import type { V1_PureList } from '../../../../model/valueSpecification/raw/V1_PureList.js';
+import type { V1_RuntimeInstance } from '../../../../model/valueSpecification/raw/V1_RuntimeInstance.js';
+import type { V1_SerializationConfig } from '../../../../model/valueSpecification/raw/V1_SerializationConfig.js';
+import type { V1_TDSAggregateValue } from '../../../../model/valueSpecification/raw/V1_TDSAggregateValue.js';
+import type { V1_TDSColumnInformation } from '../../../../model/valueSpecification/raw/V1_TDSColumnInformation.js';
+import type { V1_TdsOlapAggregation } from '../../../../model/valueSpecification/raw/V1_TdsOlapAggregation.js';
+import type { V1_TdsOlapRank } from '../../../../model/valueSpecification/raw/V1_TdsOlapRank.js';
+import type { V1_TDSSortInformation } from '../../../../model/valueSpecification/raw/V1_TDSSortInformation.js';
+import type { V1_UnitInstance } from '../../../../model/valueSpecification/raw/V1_UnitInstance.js';
+import type { V1_UnitType } from '../../../../model/valueSpecification/raw/V1_UnitType.js';
+import { V1_getAppliedProperty } from './V1_DomainBuilderHelper.js';
+import { Enumeration } from '../../../../../../../metamodels/pure/packageableElements/domain/Enumeration.js';
+import { EnumValueExplicitReference } from '../../../../../../../metamodels/pure/packageableElements/domain/EnumValueReference.js';
+import type { V1_PackageableElementPtr } from '../../../../model/valueSpecification/raw/V1_PackageableElementPtr.js';
+import type { V1_HackedClass } from '../../../../model/valueSpecification/raw/V1_HackedClass.js';
+import type { V1_HackedUnit } from '../../../../model/valueSpecification/raw/V1_HackedUnit.js';
+import type { V1_INTERNAL__UnknownValueSpecification } from '../../../../model/valueSpecification/V1_INTERNAL__UnknownValueSpecfication.js';
+import { INTERNAL__UnknownValueSpecification } from '../../../../../../../metamodels/pure/valueSpecification/INTERNAL__UnknownValueSpecification.js';
+import { GraphBuilderError } from '../../../../../../../../graphManager/GraphManagerUtils.js';
+import { getEnumValue } from '../../../../../../../../helpers/DomainHelper.js';
+import { matchFunctionName } from '../../../../../../../../MetaModelUtils.js';
 
 const LET_FUNCTION = 'letFunction';
 
@@ -898,6 +901,60 @@ export function V1_processProperty(
   );
 }
 
+export const V1_buildBaseSimpleFunctionExpression = (
+  processedParameters: ValueSpecification[],
+  functionName: string,
+  compileContext: V1_GraphBuilderContext,
+): SimpleFunctionExpression => {
+  const expression = new SimpleFunctionExpression(
+    functionName,
+    compileContext.graph.getTypicalMultiplicity(TYPICAL_MULTIPLICITY_TYPE.ONE),
+  );
+  const func = returnUndefOnError(() =>
+    compileContext.resolveFunction(functionName),
+  );
+  expression.func = func;
+  if (func) {
+    const val = func.value;
+    expression.genericType = GenericTypeExplicitReference.create(
+      new GenericType(val.returnType.value),
+    );
+    expression.multiplicity = val.returnMultiplicity;
+  }
+  expression.parametersValues = processedParameters;
+  return expression;
+};
+
+/**
+ * NOTE: this is a catch-all builder for all functions we support
+ * This is extremely basic and will fail for any functions that needs proper
+ * type-inferencing of the return and the parameters.
+ */
+export const V1_buildGenericFunctionExpression = (
+  functionName: string,
+  parameters: V1_ValueSpecification[],
+  openVariables: string[],
+  compileContext: V1_GraphBuilderContext,
+  processingContext: V1_ProcessingContext,
+): [SimpleFunctionExpression, ValueSpecification[]] => {
+  const processedParams = parameters.map((parameter) =>
+    parameter.accept_ValueSpecificationVisitor(
+      new V1_ValueSpecificationBuilder(
+        compileContext,
+        processingContext,
+        openVariables,
+      ),
+    ),
+  );
+  return [
+    V1_buildBaseSimpleFunctionExpression(
+      processedParams,
+      functionName,
+      compileContext,
+    ),
+    processedParams,
+  ];
+};
 /**
  * This is fairly similar to how engine does function matching in a way.
  * Notice that Studio core should not attempt to do any function inferencing/matching
@@ -913,6 +970,77 @@ export function V1_buildFunctionExpression(
   compileContext: V1_GraphBuilderContext,
   processingContext: V1_ProcessingContext,
 ): [SimpleFunctionExpression, ValueSpecification[]] {
+  if (
+    matchFunctionName(functionName, SUPPORTED_FUNCTIONS.TODAY) ||
+    matchFunctionName(functionName, SUPPORTED_FUNCTIONS.FIRST_DAY_OF_QUARTER)
+  ) {
+    const expression = V1_buildGenericFunctionExpression(
+      functionName,
+      parameters,
+      openVariables,
+      compileContext,
+      processingContext,
+    );
+    expression[0].genericType = GenericTypeExplicitReference.create(
+      new GenericType(
+        compileContext.graph.getPrimitiveType(PRIMITIVE_TYPE.STRICTDATE),
+      ),
+    );
+    return expression;
+  } else if (matchFunctionName(functionName, SUPPORTED_FUNCTIONS.NOW)) {
+    const expression = V1_buildGenericFunctionExpression(
+      functionName,
+      parameters,
+      openVariables,
+      compileContext,
+      processingContext,
+    );
+    expression[0].genericType = GenericTypeExplicitReference.create(
+      new GenericType(
+        compileContext.graph.getPrimitiveType(PRIMITIVE_TYPE.DATETIME),
+      ),
+    );
+    return expression;
+  } else if (
+    (
+      [
+        SUPPORTED_FUNCTIONS.FIRST_DAY_OF_YEAR,
+        SUPPORTED_FUNCTIONS.FIRST_DAY_OF_MONTH,
+        SUPPORTED_FUNCTIONS.FIRST_DAY_OF_WEEK,
+        SUPPORTED_FUNCTIONS.PREVIOUS_DAY_OF_WEEK,
+        SUPPORTED_FUNCTIONS.ADJUST,
+      ] as string[]
+    ).some((fn) => matchFunctionName(functionName, fn))
+  ) {
+    const expression = V1_buildGenericFunctionExpression(
+      functionName,
+      parameters,
+      openVariables,
+      compileContext,
+      processingContext,
+    );
+    expression[0].genericType = GenericTypeExplicitReference.create(
+      new GenericType(
+        compileContext.graph.getPrimitiveType(PRIMITIVE_TYPE.DATE),
+      ),
+    );
+    return expression;
+  } else if (
+    Object.values(SUPPORTED_FUNCTIONS).some((fn) =>
+      matchFunctionName(functionName, fn),
+    )
+  ) {
+    // NOTE: this is a catch-all builder that is only meant for basic function expression
+    // such as and(), or(), etc. It will fail when type-inferencing/function-matching is required
+    // such as for project(), filter(), getAll(), etc.
+    return V1_buildGenericFunctionExpression(
+      functionName,
+      parameters,
+      openVariables,
+      compileContext,
+      processingContext,
+    );
+  }
   const extraFunctionExpressionBuilders =
     compileContext.extensions.plugins.flatMap(
       (plugin) => plugin.V1_getExtraFunctionExpressionBuilders?.() ?? [],

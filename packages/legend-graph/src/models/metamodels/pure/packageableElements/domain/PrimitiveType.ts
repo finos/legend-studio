@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import { DataType } from './DataType';
-import type { PackageableElementVisitor } from '../PackageableElement';
+import { DataType } from './DataType.js';
+import type { PackageableElementVisitor } from '../PackageableElement.js';
 
 export class PrimitiveType extends DataType {
   accept_PackageableElementVisitor<T>(

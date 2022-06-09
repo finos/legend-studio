@@ -19,10 +19,10 @@ import {
   EngineRuntime,
   StoreConnections,
   IdentifiedConnection,
-} from '../../../../../../../metamodels/pure/packageableElements/runtime/Runtime';
-import type { V1_GraphBuilderContext } from '../../../../transformation/pureGraph/to/V1_GraphBuilderContext';
-import type { V1_EngineRuntime } from '../../../../model/packageableElements/runtime/V1_Runtime';
-import { V1_ProtocolToMetaModelConnectionBuilder } from '../../../../transformation/pureGraph/to/V1_ProtocolToMetaModelConnectionBuilder';
+} from '../../../../../../../metamodels/pure/packageableElements/runtime/Runtime.js';
+import type { V1_GraphBuilderContext } from '../../../../transformation/pureGraph/to/V1_GraphBuilderContext.js';
+import type { V1_EngineRuntime } from '../../../../model/packageableElements/runtime/V1_Runtime.js';
+import { V1_ProtocolToMetaModelConnectionBuilder } from '../../../../transformation/pureGraph/to/V1_ProtocolToMetaModelConnectionBuilder.js';
 
 export const V1_buildEngineRuntime = (
   runtime: V1_EngineRuntime,

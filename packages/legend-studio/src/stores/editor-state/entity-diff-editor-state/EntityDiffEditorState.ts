@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { EditorState } from '../../editor-state/EditorState';
+import { EditorState } from '../../editor-state/EditorState.js';
 
 export enum SPECIAL_REVISION_ALIAS {
   LOCAL = 'LOCAL_REVISION',

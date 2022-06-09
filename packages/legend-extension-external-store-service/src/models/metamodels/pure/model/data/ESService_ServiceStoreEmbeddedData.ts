@@ -16,8 +16,8 @@
 
 import { EmbeddedData, type EmbeddedDataVisitor } from '@finos/legend-graph';
 import { type Hashable, hashArray } from '@finos/legend-shared';
-import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../ESService_ModelUtils';
-import type { ServiceStubMapping } from './ESService_ServiceStubMapping';
+import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../ESService_ModelUtils.js';
+import type { ServiceStubMapping } from './ESService_ServiceStubMapping.js';
 
 export class ServiceStoreEmbeddedData extends EmbeddedData implements Hashable {
   serviceStubMappings: ServiceStubMapping[] = [];

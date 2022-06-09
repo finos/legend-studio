@@ -19,14 +19,14 @@ import {
   hashArray,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
-import { EmbeddedRelationalInstanceSetImplementation } from './EmbeddedRelationalInstanceSetImplementation';
-import type { OtherwiseEmebddedSetImplementation } from '../../../mapping/EmbeddedSetImplementation';
-import type { SetImplementationVisitor } from '../../../mapping/SetImplementation';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst.js';
+import { EmbeddedRelationalInstanceSetImplementation } from './EmbeddedRelationalInstanceSetImplementation.js';
+import type { OtherwiseEmebddedSetImplementation } from '../../../mapping/EmbeddedSetImplementation.js';
+import type { SetImplementationVisitor } from '../../../mapping/SetImplementation.js';
 import type {
   PropertyMapping,
   PropertyMappingVisitor,
-} from '../../../mapping/PropertyMapping';
+} from '../../../mapping/PropertyMapping.js';
 
 export class OtherwiseEmbeddedRelationalInstanceSetImplementation
   extends EmbeddedRelationalInstanceSetImplementation

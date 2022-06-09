@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { EngineError } from './EngineError';
+import { EngineError } from './EngineError.js';
 
 export class ExecutionError extends EngineError {
   declare stack: string;

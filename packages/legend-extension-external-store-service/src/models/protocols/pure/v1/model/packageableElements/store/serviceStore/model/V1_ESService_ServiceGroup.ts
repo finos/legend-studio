@@ -15,8 +15,8 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../../ESService_ModelUtils';
-import { V1_ServiceStoreElement } from './V1_ESService_ServiceStoreElement';
+import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../../ESService_ModelUtils.js';
+import { V1_ServiceStoreElement } from './V1_ESService_ServiceStoreElement.js';
 
 export class V1_ServiceGroup
   extends V1_ServiceStoreElement

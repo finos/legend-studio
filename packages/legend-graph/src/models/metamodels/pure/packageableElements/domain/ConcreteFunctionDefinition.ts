@@ -15,16 +15,16 @@
  */
 
 import { type Hashable, hashArray } from '@finos/legend-shared';
-import { hashLambda } from '../../../../../MetaModelUtils';
-import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
-import type { PackageableElementVisitor } from '../PackageableElement';
-import type { RawVariableExpression } from '../../rawValueSpecification/RawVariableExpression';
-import type { Type } from './Type';
-import type { Multiplicity } from './Multiplicity';
-import type { StereotypeReference } from './StereotypeReference';
-import type { TaggedValue } from './TaggedValue';
-import type { PackageableElementReference } from '../PackageableElementReference';
-import { FunctionDefinition } from './Function';
+import { hashRawLambda } from '../../../../../MetaModelUtils.js';
+import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst.js';
+import type { PackageableElementVisitor } from '../PackageableElement.js';
+import type { RawVariableExpression } from '../../rawValueSpecification/RawVariableExpression.js';
+import type { Type } from './Type.js';
+import type { Multiplicity } from './Multiplicity.js';
+import type { StereotypeReference } from './StereotypeReference.js';
+import type { TaggedValue } from './TaggedValue.js';
+import type { PackageableElementReference } from '../PackageableElementReference.js';
+import { FunctionDefinition } from './Function.js';
 
 export class ConcreteFunctionDefinition
   extends FunctionDefinition
@@ -65,7 +65,7 @@ export class ConcreteFunctionDefinition
       this.returnType.hashValue,
       hashArray(this.taggedValues),
       hashArray(this.stereotypes.map((val) => val.pointerHashCode)),
-      hashLambda(undefined, this.body),
+      hashRawLambda(undefined, this.body),
     ]);
   }
 

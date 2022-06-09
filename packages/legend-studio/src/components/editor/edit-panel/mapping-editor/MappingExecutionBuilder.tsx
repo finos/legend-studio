@@ -44,13 +44,13 @@ import {
   getMappingElementSource,
   getMappingElementTarget,
   getMappingElementLabel,
-} from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
+} from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState.js';
 import { useDrop } from 'react-dnd';
-import { NewServiceModal } from '../service-editor/NewServiceModal';
+import { NewServiceModal } from '../service-editor/NewServiceModal.js';
 import {
   type MappingElementDragSource,
   CORE_DND_TYPE,
-} from '../../../../stores/shared/DnDUtil';
+} from '../../../../stores/shared/DnDUtil.js';
 import { guaranteeType, uniq } from '@finos/legend-shared';
 import {
   type MappingExecutionState,
@@ -58,15 +58,15 @@ import {
   MappingExecutionObjectInputDataState,
   MappingExecutionFlatDataInputDataState,
   MappingExecutionRelationalInputDataState,
-} from '../../../../stores/editor-state/element-editor-state/mapping/MappingExecutionState';
+} from '../../../../stores/editor-state/element-editor-state/mapping/MappingExecutionState.js';
 import {
   EDITOR_LANGUAGE,
   ActionAlertActionType,
   ActionAlertType,
   useApplicationStore,
 } from '@finos/legend-application';
-import { ExecutionPlanViewer } from './execution-plan-viewer/ExecutionPlanViewer';
-import { useEditorStore } from '../../EditorStoreProvider';
+import { ExecutionPlanViewer } from './execution-plan-viewer/ExecutionPlanViewer.js';
+import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
   Class,
   SetImplementation,
@@ -76,14 +76,14 @@ import {
   stub_RawLambda,
   isStubbed_RawLambda,
 } from '@finos/legend-graph';
-import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor';
-import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../../stores/DSLMapping_LegendStudioPlugin_Extension';
-import { objectInputData_setData } from '../../../../stores/graphModifier/DSLMapping_GraphModifierHelper';
-import { flatData_setData } from '../../../../stores/graphModifier/StoreFlatData_GraphModifierHelper';
+import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor.js';
+import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../../stores/DSLMapping_LegendStudioPlugin_Extension.js';
+import { objectInputData_setData } from '../../../../stores/graphModifier/DSLMapping_GraphModifierHelper.js';
+import { flatData_setData } from '../../../../stores/graphModifier/StoreFlatData_GraphModifierHelper.js';
 import {
   relationalInputData_setData,
   relationalInputData_setInputType,
-} from '../../../../stores/graphModifier/StoreRelational_GraphModifierHelper';
+} from '../../../../stores/graphModifier/StoreRelational_GraphModifierHelper.js';
 
 interface ClassMappingSelectOption {
   label: string;

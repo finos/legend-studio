@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import type { V1_ValueSpecificationVisitor } from '../../../../model/valueSpecification/V1_ValueSpecification';
-import { V1_GraphFetchTree } from './V1_GraphFetchTree';
+import type { V1_ValueSpecificationVisitor } from '../../../../model/valueSpecification/V1_ValueSpecification.js';
+import { V1_GraphFetchTree } from './V1_GraphFetchTree.js';
 
 export class V1_RootGraphFetchTree extends V1_GraphFetchTree {
   class!: string;

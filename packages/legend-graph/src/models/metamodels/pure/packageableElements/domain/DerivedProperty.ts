@@ -15,14 +15,14 @@
  */
 
 import { type Hashable, hashArray, uuid } from '@finos/legend-shared';
-import { hashLambda } from '../../../../../MetaModelUtils';
-import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
-import type { Multiplicity } from './Multiplicity';
-import type { TaggedValue } from './TaggedValue';
-import type { AbstractProperty, PropertyOwner } from './AbstractProperty';
-import type { AnnotatedElement } from './AnnotatedElement';
-import type { StereotypeReference } from './StereotypeReference';
-import type { GenericTypeReference } from './GenericTypeReference';
+import { hashRawLambda } from '../../../../../MetaModelUtils.js';
+import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst.js';
+import type { Multiplicity } from './Multiplicity.js';
+import type { TaggedValue } from './TaggedValue.js';
+import type { AbstractProperty, PropertyOwner } from './AbstractProperty.js';
+import type { AnnotatedElement } from './AnnotatedElement.js';
+import type { StereotypeReference } from './StereotypeReference.js';
+import type { GenericTypeReference } from './GenericTypeReference.js';
 
 export class DerivedProperty
   implements AbstractProperty, AnnotatedElement, Hashable
@@ -68,7 +68,7 @@ export class DerivedProperty
       this.genericType.ownerReference.hashValue,
       hashArray(this.stereotypes.map((val) => val.pointerHashCode)),
       hashArray(this.taggedValues),
-      hashLambda(this.parameters, this.body),
+      hashRawLambda(this.parameters, this.body),
     ]);
   }
 }

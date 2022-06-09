@@ -20,8 +20,8 @@ import {
   getMappingElementSource,
   getMappingElementTarget,
   generateMappingTestName,
-} from './MappingEditorState';
-import type { EditorStore } from '../../../EditorStore';
+} from './MappingEditorState.js';
+import type { EditorStore } from '../../../EditorStore.js';
 import {
   observable,
   action,
@@ -48,8 +48,8 @@ import {
   guaranteeType,
   ContentType,
 } from '@finos/legend-shared';
-import { createMockDataForMappingElementSource } from '../../../shared/MockDataUtil';
-import { ExecutionPlanState } from '../../../ExecutionPlanState';
+import { createMockDataForMappingElementSource } from '../../../shared/MockDataUtil.js';
+import { ExecutionPlanState } from '../../../ExecutionPlanState.js';
 import {
   type Runtime,
   type InputData,
@@ -104,17 +104,17 @@ import {
   objectInputData_setData,
   runtime_addIdentifiedConnection,
   runtime_addMapping,
-} from '../../../graphModifier/DSLMapping_GraphModifierHelper';
-import { flatData_setData } from '../../../graphModifier/StoreFlatData_GraphModifierHelper';
+} from '../../../graphModifier/DSLMapping_GraphModifierHelper.js';
+import { flatData_setData } from '../../../graphModifier/StoreFlatData_GraphModifierHelper.js';
 import {
   service_initNewService,
   service_setExecution,
-} from '../../../graphModifier/DSLService_GraphModifierHelper';
+} from '../../../graphModifier/DSLService_GraphModifierHelper.js';
 import {
   localH2DatasourceSpecification_setTestDataSetupCsv,
   localH2DatasourceSpecification_setTestDataSetupSqls,
   relationalInputData_setData,
-} from '../../../graphModifier/StoreRelational_GraphModifierHelper';
+} from '../../../graphModifier/StoreRelational_GraphModifierHelper.js';
 
 export class MappingExecutionQueryState extends LambdaEditorState {
   editorStore: EditorStore;

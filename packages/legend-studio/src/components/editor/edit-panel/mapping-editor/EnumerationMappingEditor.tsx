@@ -31,8 +31,8 @@ import {
   TimesIcon,
   PlusIcon,
 } from '@finos/legend-art';
-import { MappingEditorState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
-import { TypeTree } from '../../../shared/TypeTree';
+import { MappingEditorState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState.js';
+import { TypeTree } from '../../../shared/TypeTree.js';
 import { useDrop } from 'react-dnd';
 import {
   type TransformDropTarget,
@@ -40,18 +40,18 @@ import {
   type MappingElementSourceDropTarget,
   CORE_DND_TYPE,
   TypeDragSource,
-} from '../../../../stores/shared/DnDUtil';
-import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID';
+} from '../../../../stores/shared/DnDUtil.js';
+import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID.js';
 import { noop } from '@finos/legend-shared';
 import {
   MappingElementDecorator,
   MappingElementDecorationCleaner,
-} from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementDecorator';
+} from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementDecorator.js';
 import {
   buildElementOption,
   type PackageableElementOption,
-} from '../../../../stores/shared/PackageableElementOptionUtil';
-import { useEditorStore } from '../../EditorStoreProvider';
+} from '../../../../stores/shared/PackageableElementOptionUtil.js';
+import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
   PRIMITIVE_TYPE,
   Type,
@@ -68,7 +68,7 @@ import {
   enumValueMapping_addSourceValue,
   enumValueMapping_deleteSourceValue,
   enumValueMapping_updateSourceValue,
-} from '../../../../stores/graphModifier/DSLMapping_GraphModifierHelper';
+} from '../../../../stores/graphModifier/DSLMapping_GraphModifierHelper.js';
 
 const EnumerationMappingSourceSelectorModal = observer(
   (props: {

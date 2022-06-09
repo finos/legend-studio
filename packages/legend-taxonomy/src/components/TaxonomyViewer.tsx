@@ -15,7 +15,7 @@
  */
 
 import { useEffect, useRef, useState } from 'react';
-import { AppHeader, useApplicationStore } from '@finos/legend-application';
+import { useApplicationStore } from '@finos/legend-application';
 import { GlobalHotKeys } from 'react-hotkeys';
 import { observer } from 'mobx-react-lite';
 import { useParams } from 'react-router-dom';
@@ -23,8 +23,8 @@ import {
   type LegendTaxonomyPathParams,
   generateExploreTaxonomyTreeRoute,
   LEGEND_TAXONOMY_PARAM_TOKEN,
-} from '../stores/LegendTaxonomyRouter';
-import { useLegendTaxonomyStore } from './LegendTaxonomyStoreProvider';
+} from '../stores/LegendTaxonomyRouter.js';
+import { useLegendTaxonomyStore } from './LegendTaxonomyStoreProvider.js';
 import { flowResult } from 'mobx';
 import {
   type ResizablePanelHandlerProps,
@@ -40,10 +40,8 @@ import {
   MenuContentItem,
   CompressIcon,
   PanelLoadingIndicator,
-  WindowMaximizeIcon,
   clsx,
   getControlledResizablePanelProps,
-  ListIcon,
   ResizablePanel,
   ResizablePanelGroup,
   ResizablePanelSplitter,
@@ -51,45 +49,30 @@ import {
   compareLabelFn,
   CustomSelectorInput,
   NonBlockingDialog,
+  FileTrayIcon,
+  MenuIcon,
 } from '@finos/legend-art';
-import { TaxonomyTree } from './TaxonomyTree';
-import { TaxonomyNodeViewer } from './TaxonomyNodeViewer';
+import { TaxonomyTree } from './TaxonomyTree.js';
+import { TaxonomyNodeViewer } from './TaxonomyNodeViewer.js';
 import type {
   LegendTaxonomyConfig,
   TaxonomyTreeOption,
-} from '../application/LegendTaxonomyConfig';
+} from '../application/LegendTaxonomyConfig.js';
 import { useResizeDetector } from 'react-resize-detector';
-import type { TaxonomyNodeViewerState } from '../stores/LegendTaxonomyStore';
-
-const TaxonomyViewerStatusBar = observer(() => {
-  const taxonomyStore = useLegendTaxonomyStore();
-  const toggleExpandMode = (): void =>
-    taxonomyStore.setExpandedMode(!taxonomyStore.isInExpandedMode);
-  return (
-    <div className="taxonomy-viewer__status-bar ">
-      <div className="taxonomy-viewer__status-bar__left"></div>
-      <div className="taxonomy-viewer__status-bar__right">
-        <button
-          className={clsx(
-            'taxonomy-viewer__status-bar__action taxonomy-viewer__status-bar__action__toggler',
-            {
-              'taxonomy-viewer__status-bar__action__toggler--active':
-                taxonomyStore.isInExpandedMode,
-            },
-          )}
-          onClick={toggleExpandMode}
-          tabIndex={-1}
-          title={'Maximize/Minimize'}
-        >
-          <WindowMaximizeIcon />
-        </button>
-      </div>
-    </div>
-  );
-});
+import type { TaxonomyNodeViewerState } from '../stores/LegendTaxonomyStore.js';
 
 const TaxonomyViewerActivityBar = observer(() => (
   <div className="taxonomy-viewer__activity-bar">
+    <div className="taxonomy-viewer__activity-bar__menu">
+      <button
+        className="taxonomy-viewer__activity-bar__menu-item"
+        tabIndex={-1}
+        disabled={true}
+        title="Menu"
+      >
+        <MenuIcon />
+      </button>
+    </div>
     <div className="taxonomy-viewer__activity-bar__items">
       <button
         className={clsx(
@@ -99,7 +82,7 @@ const TaxonomyViewerActivityBar = observer(() => (
         tabIndex={-1}
         title="Explorer"
       >
-        <ListIcon />
+        <FileTrayIcon />
       </button>
     </div>
   </div>
@@ -108,6 +91,9 @@ const TaxonomyViewerActivityBar = observer(() => (
 const TaxonomyViewerSideBar = observer(() => {
   const taxonomyStore = useLegendTaxonomyStore();
   const applicationStore = useApplicationStore<LegendTaxonomyConfig>();
+  const [openTaxonomyTreeDropdown, setOpenTaxonomyTreeDropdown] =
+    useState(false);
+
   const showSearchModal = (): void =>
     taxonomyStore.searchTaxonomyNodeCommandState.open();
   const collapseTree = (): void => {
@@ -120,6 +106,21 @@ const TaxonomyViewerSideBar = observer(() => {
       });
     }
   };
+  const showTaxonomyTreeDropdown = (): void =>
+    setOpenTaxonomyTreeDropdown(true);
+  const hideTaxonomyTreeDropdown = (): void =>
+    setOpenTaxonomyTreeDropdown(false);
+  const selectTaxonomyTree =
+    (option: TaxonomyTreeOption): (() => void) =>
+    (): void => {
+      taxonomyStore.taxonomyServerClient.setBaseUrl(option.url);
+      applicationStore.navigator.jumpTo(
+        applicationStore.navigator.generateLocation(
+          generateExploreTaxonomyTreeRoute(option.key),
+        ),
+      );
+    };
+
   return (
     <div className="taxonomy-viewer__side-bar">
       <div className="taxonomy-viewer__side-bar__view">
@@ -130,6 +131,54 @@ const TaxonomyViewerSideBar = observer(() => {
                 EXPLORER
               </div>
             </div>
+            {applicationStore.config.taxonomyTreeOptions.length > 1 && (
+              <DropdownMenu
+                className={clsx('taxonomy-viewer__header__server-dropdown')}
+                onClose={hideTaxonomyTreeDropdown}
+                menuProps={{ elevation: 7 }}
+                content={
+                  <MenuContent className="taxonomy-viewer__header__server-dropdown__menu">
+                    {applicationStore.config.taxonomyTreeOptions.map(
+                      (option) => (
+                        <MenuContentItem
+                          key={option.key}
+                          className={clsx(
+                            'taxonomy-viewer__header__server-dropdown__menu__item',
+                            {
+                              'taxonomy-viewer__header__server-dropdown__menu__item--active':
+                                option ===
+                                applicationStore.config
+                                  .currentTaxonomyTreeOption,
+                            },
+                          )}
+                          onClick={selectTaxonomyTree(option)}
+                        >
+                          {option.label}
+                        </MenuContentItem>
+                      ),
+                    )}
+                  </MenuContent>
+                }
+              >
+                <button
+                  className="taxonomy-viewer__header__server-dropdown__label"
+                  tabIndex={-1}
+                  onClick={showTaxonomyTreeDropdown}
+                  title="Choose a taxonomy tree..."
+                >
+                  <div className="taxonomy-viewer__header__server-dropdown__label__text">
+                    {applicationStore.config.currentTaxonomyTreeOption.label}
+                  </div>
+                  <div className="taxonomy-viewer__header__server-dropdown__label__icon">
+                    {openTaxonomyTreeDropdown ? (
+                      <ChevronUpIcon />
+                    ) : (
+                      <ChevronDownIcon />
+                    )}
+                  </div>
+                </button>
+              </DropdownMenu>
+            )}
           </div>
           <div className="panel__content taxonomy-viewer__side-bar__content">
             <div className="panel">
@@ -275,73 +324,6 @@ const TaxonomyViewerMainPanel = observer(
   },
 );
 
-const LegendTaxonomyAppHeaderMenu: React.FC = () => {
-  const applicationStore = useApplicationStore<LegendTaxonomyConfig>();
-  const taxonomyStore = useLegendTaxonomyStore();
-
-  const [openTaxonomyTreeDropdown, setOpenTaxonomyTreeDropdown] =
-    useState(false);
-  const showTaxonomyTreeDropdown = (): void =>
-    setOpenTaxonomyTreeDropdown(true);
-  const hideTaxonomyTreeDropdown = (): void =>
-    setOpenTaxonomyTreeDropdown(false);
-  const selectTaxonomyTree =
-    (option: TaxonomyTreeOption): (() => void) =>
-    (): void => {
-      taxonomyStore.taxonomyServerClient.setBaseUrl(option.url);
-      applicationStore.navigator.jumpTo(
-        applicationStore.navigator.generateLocation(
-          generateExploreTaxonomyTreeRoute(option.key),
-        ),
-      );
-    };
-
-  if (applicationStore.config.taxonomyTreeOptions.length <= 1) {
-    return null;
-  }
-  return (
-    <DropdownMenu
-      className={clsx('taxonomy-app__header__server-dropdown')}
-      onClose={hideTaxonomyTreeDropdown}
-      menuProps={{ elevation: 7 }}
-      content={
-        <MenuContent className="taxonomy-app__header__server-dropdown__menu">
-          {applicationStore.config.taxonomyTreeOptions.map((option) => (
-            <MenuContentItem
-              key={option.key}
-              className={clsx(
-                'taxonomy-app__header__server-dropdown__menu__item',
-                {
-                  'taxonomy-app__header__server-dropdown__menu__item--active':
-                    option ===
-                    applicationStore.config.currentTaxonomyTreeOption,
-                },
-              )}
-              onClick={selectTaxonomyTree(option)}
-            >
-              {option.label}
-            </MenuContentItem>
-          ))}
-        </MenuContent>
-      }
-    >
-      <button
-        className="taxonomy-app__header__server-dropdown__label"
-        tabIndex={-1}
-        onClick={showTaxonomyTreeDropdown}
-        title="Choose a taxonomy tree..."
-      >
-        <div className="taxonomy-app__header__server-dropdown__label__text">
-          {applicationStore.config.currentTaxonomyTreeOption.label}
-        </div>
-        <div className="taxonomy-app__header__server-dropdown__label__icon">
-          {openTaxonomyTreeDropdown ? <ChevronUpIcon /> : <ChevronDownIcon />}
-        </div>
-      </button>
-    </DropdownMenu>
-  );
-};
-
 export const TaxonomySearchCommand = observer(() => {
   const taxonomyStore = useLegendTaxonomyStore();
   const selectorRef = useRef<SelectComponent>(null);
@@ -458,61 +440,52 @@ export const TaxonomyViewer = observer(() => {
   }
   return (
     <div className="app__page">
-      <AppHeader>
-        <LegendTaxonomyAppHeaderMenu />
-      </AppHeader>
-      <div className="app__content">
-        <PanelLoadingIndicator
-          isLoading={taxonomyStore.initState.isInProgress}
-        />
-        <div className="taxonomy-viewer">
-          <GlobalHotKeys
-            keyMap={hotkeyMapping}
-            handlers={hotkeyHandlers}
-            allowChanges={true}
-          >
-            <div className="taxonomy-viewer__body">
-              <TaxonomyViewerActivityBar />
-              <div className="taxonomy-viewer__content-container">
-                <div
-                  className={clsx('taxonomy-viewer__content', {
-                    'taxonomy-viewer__content--expanded':
-                      taxonomyStore.isInExpandedMode,
-                  })}
-                >
-                  <ResizablePanelGroup orientation="vertical">
-                    <ResizablePanel
-                      {...getControlledResizablePanelProps(
-                        taxonomyStore.sideBarDisplayState.size === 0,
-                        {
-                          onStopResize: resizeSideBar,
-                        },
-                      )}
-                      direction={1}
-                      size={taxonomyStore.sideBarDisplayState.size}
-                    >
-                      <TaxonomyViewerSideBar />
-                    </ResizablePanel>
-                    <ResizablePanelSplitter />
-                    <ResizablePanel minSize={300}>
-                      {taxonomyStore.currentTaxonomyNodeViewerState ? (
-                        <TaxonomyViewerMainPanel
-                          taxonomyViewerState={
-                            taxonomyStore.currentTaxonomyNodeViewerState
-                          }
-                        />
-                      ) : (
-                        <TaxonomyViewerSplashScreen />
-                      )}
-                    </ResizablePanel>
-                  </ResizablePanelGroup>
-                </div>
+      <PanelLoadingIndicator isLoading={taxonomyStore.initState.isInProgress} />
+      <div className="taxonomy-viewer">
+        <GlobalHotKeys
+          keyMap={hotkeyMapping}
+          handlers={hotkeyHandlers}
+          allowChanges={true}
+        >
+          <div className="taxonomy-viewer__body">
+            <TaxonomyViewerActivityBar />
+            <div className="taxonomy-viewer__content-container">
+              <div className="taxonomy-viewer__content">
+                <ResizablePanelGroup orientation="vertical">
+                  <ResizablePanel
+                    {...getControlledResizablePanelProps(
+                      taxonomyStore.sideBarDisplayState.size === 0,
+                      {
+                        onStopResize: resizeSideBar,
+                      },
+                    )}
+                    direction={1}
+                    size={taxonomyStore.sideBarDisplayState.size}
+                  >
+                    <TaxonomyViewerSideBar />
+                  </ResizablePanel>
+                  <ResizablePanelSplitter />
+                  <ResizablePanel minSize={300}>
+                    {taxonomyStore.currentTaxonomyNodeViewerState ? (
+                      <TaxonomyViewerMainPanel
+                        taxonomyViewerState={
+                          taxonomyStore.currentTaxonomyNodeViewerState
+                        }
+                      />
+                    ) : (
+                      <TaxonomyViewerSplashScreen />
+                    )}
+                  </ResizablePanel>
+                </ResizablePanelGroup>
               </div>
             </div>
-            <TaxonomyViewerStatusBar />
-            <TaxonomySearchCommand />
-          </GlobalHotKeys>
-        </div>
+          </div>
+          <div className="taxonomy-viewer__status-bar ">
+            <div className="taxonomy-viewer__status-bar__left"></div>
+            <div className="taxonomy-viewer__status-bar__right"></div>
+          </div>
+          <TaxonomySearchCommand />
+        </GlobalHotKeys>
       </div>
     </div>
   );

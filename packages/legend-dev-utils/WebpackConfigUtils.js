@@ -40,12 +40,7 @@ export const getEnvInfo = (env, arg) => ({
  * This method gets the base Webpack config for bundling either top-level
  * webapp with HTML entry points or library.
  */
-const getBaseWebpackConfig = (
-  env,
-  arg,
-  dirname,
-  { babelConfigPath, extraBabelLoaderIncludePatterns },
-) => {
+const getBaseWebpackConfig = (env, arg, dirname, { babelConfigPath }) => {
   if (!dirname) {
     throw new Error(`\`dirname\` is required to build Webpack config`);
   }
@@ -107,29 +102,9 @@ const getBaseWebpackConfig = (
       rules: [
         {
           test: /\.(?:mjs|js|ts|tsx)$/,
-          resolve: {
-            // Since we use ES modules, the import path must be fully specified. But this is not something Typescript
-            // support, so the workaround is to not require extension in import path.
-            // See https://github.com/webpack/webpack/issues/11467
-            // See https://github.com/microsoft/TypeScript/issues/16577
-            fullySpecified: false,
-          },
           // NOTE: we don't need to specify the `exclude` part for this
           // loader as we already specify the include list instead.
-          //
-          // Since we don't transpile these modules, when consuming
-          // these in the top-level module (by bundlers like Webpack),
-          // we need to do so here.
-          include: [
-            // The source code of the current workspace
-            resolve(dirname, './src/'),
-            // Packages from the same monorepo
-            // NOTE: need to account for both slashes style for different OS
-            /packages[/\\]legend-/,
-            // Packages coming from NPM published under '@finos' scope
-            /@finos[/\\]legend-/,
-            ...extraBabelLoaderIncludePatterns,
-          ],
+          include: resolve(dirname, './src/'),
           use: [
             {
               loader: require.resolve('babel-loader'),
@@ -250,16 +225,6 @@ export const getWebAppBaseWebpackConfig = (
     indexHtmlPath,
     appConfig,
     babelConfigPath,
-    /**
-     * Regex patterns for to be added to `loader.include` of `babel-loader`
-     * For untranspiled modules, they need to be transpiled in order to be loaded and bundled
-     * in the app.
-     *
-     * e.g. We don't transpile our code at all in Studio, we publish exactly what `tsc` yields.
-     * As such, when being consumed by Webpack, our code needs to be passed through the `babel-loader`
-     * For that reason, we always default to include `/@finos\/legend-studio/` in the list of include patterns
-     */
-    extraBabelLoaderIncludePatterns = [],
     enableReactFastRefresh,
   },
 ) => {
@@ -269,7 +234,6 @@ export const getWebAppBaseWebpackConfig = (
   const { isEnvDevelopment, isEnvProduction } = getEnvInfo(env, arg);
   const baseConfig = getBaseWebpackConfig(env, arg, dirname, {
     babelConfigPath,
-    extraBabelLoaderIncludePatterns,
   });
   validateAppConfig(appConfig, dirname);
 

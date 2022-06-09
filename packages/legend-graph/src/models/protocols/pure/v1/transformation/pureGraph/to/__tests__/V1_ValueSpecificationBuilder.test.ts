@@ -14,19 +14,20 @@
  * limitations under the License.
  */
 
+import { test, describe, expect } from '@jest/globals';
 import type { Entity } from '@finos/legend-model-storage';
 import { unitTest, Log, ActionState } from '@finos/legend-shared';
 import {
   CoreModel,
   PureModel,
   SystemModel,
-} from '../../../../../../../../graph/PureModel';
-import { TEST__GraphPluginManager } from '../../../../../../../../GraphManagerTestUtils';
-import { getGraphManager } from '../../../../../Pure';
+} from '../../../../../../../../graph/PureModel.js';
+import { TEST__GraphPluginManager } from '../../../../../../../../GraphManagerTestUtils.js';
+import { getGraphManager } from '../../../../../Pure.js';
 import {
   V1_TEST_DATA__unsupportedFunctionExpression,
   V1_TEST_DATA__valueSpecificationWithLatestDate,
-} from './V1_TEST_DATA__ValueSpecificationBuilder';
+} from './V1_TEST_DATA__ValueSpecificationBuilder.js';
 
 type RoundtripTestCase = [
   string,
@@ -57,23 +58,31 @@ const cases: RoundtripTestCase[] = [
 ];
 
 describe(unitTest('Lambda processing roundtrip test'), () => {
-  test.each(cases)('%s', async (testName, context, lambdaJson, result) => {
-    const { entities } = context;
-    const { errorMessage } = result;
-    const graph = new PureModel(new CoreModel([]), new SystemModel([]), []);
-    // setup
-    const graphManager = getGraphManager(
-      new TEST__GraphPluginManager(),
-      new Log(),
-    );
-    await graphManager.buildGraph(graph, entities, ActionState.create());
-    const fn = (): void => {
-      graphManager.buildValueSpecification(lambdaJson, graph);
-    };
-    if (errorMessage) {
-      expect(fn).toThrow(errorMessage);
-    } else {
-      fn();
-    }
-  });
+  test.each(cases)(
+    '%s',
+    async (
+      testName: RoundtripTestCase[0],
+      context: RoundtripTestCase[1],
+      lambdaJson: RoundtripTestCase[2],
+      result: RoundtripTestCase[3],
+    ) => {
+      const { entities } = context;
+      const { errorMessage } = result;
+      const graph = new PureModel(new CoreModel([]), new SystemModel([]), []);
+      // setup
+      const graphManager = getGraphManager(
+        new TEST__GraphPluginManager(),
+        new Log(),
+      );
+      await graphManager.buildGraph(graph, entities, ActionState.create());
+      const fn = (): void => {
+        graphManager.buildValueSpecification(lambdaJson, graph);
+      };
+      if (errorMessage) {
+        expect(fn).toThrow(errorMessage);
+      } else {
+        fn();
+      }
+    },
+  );
 });

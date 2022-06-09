@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { Persistence } from '../models/metamodels/pure/model/packageableElements/persistence/DSLPersistence_Persistence';
+import { Persistence } from '../models/metamodels/pure/model/packageableElements/persistence/DSLPersistence_Persistence.js';
 import type { BasicModel, PureModel } from '@finos/legend-graph';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 

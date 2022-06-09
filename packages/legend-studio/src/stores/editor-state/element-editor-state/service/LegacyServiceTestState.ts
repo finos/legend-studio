@@ -15,9 +15,9 @@
  */
 
 import { observable, action, flow, computed, makeObservable } from 'mobx';
-import type { ServiceEditorState } from './ServiceEditorState';
-import { TEST_RESULT } from '../mapping/MappingTestState';
-import { LEGEND_STUDIO_APP_EVENT } from '../../../LegendStudioAppEvent';
+import type { ServiceEditorState } from './ServiceEditorState.js';
+import { TEST_RESULT } from '../mapping/MappingTestState.js';
+import { LEGEND_STUDIO_APP_EVENT } from '../../../LegendStudioAppEvent.js';
 import {
   type GeneratorFn,
   assertErrorThrown,
@@ -34,7 +34,7 @@ import {
   isNonNullable,
   guaranteeNonNullable,
 } from '@finos/legend-shared';
-import type { EditorStore } from '../../../EditorStore';
+import type { EditorStore } from '../../../EditorStore.js';
 import {
   type DEPRECATED__ServiceTestResult,
   type DEPRECATED__KeyedSingleExecutionTest,
@@ -66,17 +66,17 @@ import {
   generateIdentifiedConnectionId,
 } from '@finos/legend-graph';
 import { TAB_SIZE } from '@finos/legend-application';
-import type { DSLService_LegendStudioPlugin_Extension } from '../../../DSLService_LegendStudioPlugin_Extension';
-import { runtime_addIdentifiedConnection } from '../../../graphModifier/DSLMapping_GraphModifierHelper';
+import type { DSLService_LegendStudioPlugin_Extension } from '../../../DSLService_LegendStudioPlugin_Extension.js';
+import { runtime_addIdentifiedConnection } from '../../../graphModifier/DSLMapping_GraphModifierHelper.js';
 import {
   singleExecTest_addAssert,
   singleExecTest_deleteAssert,
   singleExecTest_setData,
-} from '../../../graphModifier/DSLService_GraphModifierHelper';
+} from '../../../graphModifier/DSLService_GraphModifierHelper.js';
 import {
   createMockEnumerationProperty,
   createMockPrimitiveProperty,
-} from '../../../shared/MockDataUtil';
+} from '../../../shared/MockDataUtil.js';
 
 interface ServiceTestExecutionResult {
   expected: string;

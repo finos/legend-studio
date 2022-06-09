@@ -15,7 +15,7 @@
  */
 
 import { LegendStudioWebApplication } from '@finos/legend-studio-app';
-import config from '../studio.config';
+import config from '../studio.config.js';
 import './index.scss';
 
 LegendStudioWebApplication.run(config.baseUrl);

@@ -28,12 +28,12 @@ import {
   serialize,
   deserialize,
 } from 'serializr';
-import { V1_ExternalFormatConnection } from '../../../model/packageableElements/externalFormat/connection/V1_DSLExternalFormat_ExternalFormatConnection';
-import { V1_UrlStream } from '../../../model/packageableElements/externalFormat/connection/V1_DSLExternalFormat_UrlStream';
-import { V1_Schema } from '../../../model/packageableElements/externalFormat/schemaSet/V1_DSLExternalFormat_Schema';
-import { V1_SchemaSet } from '../../../model/packageableElements/externalFormat/schemaSet/V1_DSLExternalFormat_SchemaSet';
-import { V1_Binding } from '../../../model/packageableElements/externalFormat/store/V1_DSLExternalFormat_Binding';
-import { V1_ModelUnit } from '../../../model/packageableElements/externalFormat/store/V1_DSLExternalFormat_ModelUnit';
+import { V1_ExternalFormatConnection } from '../../../model/packageableElements/externalFormat/connection/V1_DSLExternalFormat_ExternalFormatConnection.js';
+import { V1_UrlStream } from '../../../model/packageableElements/externalFormat/connection/V1_DSLExternalFormat_UrlStream.js';
+import { V1_Schema } from '../../../model/packageableElements/externalFormat/schemaSet/V1_DSLExternalFormat_Schema.js';
+import { V1_SchemaSet } from '../../../model/packageableElements/externalFormat/schemaSet/V1_DSLExternalFormat_SchemaSet.js';
+import { V1_Binding } from '../../../model/packageableElements/externalFormat/store/V1_DSLExternalFormat_Binding.js';
+import { V1_ModelUnit } from '../../../model/packageableElements/externalFormat/store/V1_DSLExternalFormat_ModelUnit.js';
 
 export const V1_SCHEMA_SET_ELEMENT_PROTOCOL_TYPE = 'externalFormatSchemaSet';
 export const V1_BINDING_ELEMENT_PROTOCOL_TYPE = 'binding';

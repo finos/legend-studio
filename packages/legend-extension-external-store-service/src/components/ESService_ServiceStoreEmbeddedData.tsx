@@ -30,8 +30,8 @@ import {
   ResizablePanelSplitter,
   ResizablePanelSplitterLine,
   TimesIcon,
-  ToggleOff,
-  ToggleOn,
+  ToggleOffIcon,
+  ToggleOnIcon,
 } from '@finos/legend-art';
 import { ExternalFormatData } from '@finos/legend-graph';
 import {
@@ -48,15 +48,14 @@ import {
   StudioTextInputEditor,
 } from '@finos/legend-studio';
 import { observer } from 'mobx-react-lite';
-import { useState } from 'react';
-import { EqualToJsonPattern } from '../models/metamodels/pure/model/data/contentPattern/ESService_EqualToJsonPattern';
-import { EqualToPattern } from '../models/metamodels/pure/model/data/contentPattern/ESService_EqualToPattern';
-import type { StringValuePattern } from '../models/metamodels/pure/model/data/contentPattern/ESService_StringValuePattern';
-import { ServiceRequestPattern } from '../models/metamodels/pure/model/data/ESService_ServiceRequestPattern';
-import { ServiceResponseDefinition } from '../models/metamodels/pure/model/data/ESService_ServiceResponseDefinition';
-import { ServiceStubMapping } from '../models/metamodels/pure/model/data/ESService_ServiceStubMapping';
-import { HTTP_METHOD } from '../models/metamodels/pure/model/packageableElements/store/serviceStore/model/ESService_ServiceStoreService';
-import { V1_StringValuePatternType } from '../models/protocols/pure/v1/transformation/pureProtocol/V1_ESService_ProtocolHelper';
+import { EqualToJsonPattern } from '../models/metamodels/pure/model/data/contentPattern/ESService_EqualToJsonPattern.js';
+import { EqualToPattern } from '../models/metamodels/pure/model/data/contentPattern/ESService_EqualToPattern.js';
+import type { StringValuePattern } from '../models/metamodels/pure/model/data/contentPattern/ESService_StringValuePattern.js';
+import { ServiceRequestPattern } from '../models/metamodels/pure/model/data/ESService_ServiceRequestPattern.js';
+import { ServiceResponseDefinition } from '../models/metamodels/pure/model/data/ESService_ServiceResponseDefinition.js';
+import { ServiceStubMapping } from '../models/metamodels/pure/model/data/ESService_ServiceStubMapping.js';
+import { HTTP_METHOD } from '../models/metamodels/pure/model/packageableElements/store/serviceStore/model/ESService_ServiceStoreService.js';
+import { V1_StringValuePatternType } from '../models/protocols/pure/v1/transformation/pureProtocol/V1_ESService_ProtocolHelper.js';
 import {
   serviceStore_embeddedData_addServiceStubMapping,
   serviceStore_embeddedData_deleteServiceStubMapping,
@@ -78,13 +77,13 @@ import {
   serviceStore_serviceStubMapping_setServiceRequestPattern,
   serviceStore_serviceStubMapping_setServiceResponseDefinition,
   serviceStore_stringValuePattern_setExpectedValue,
-} from '../stores/studio/ESService_GraphModifierHelper';
+} from '../stores/studio/ESService_GraphModifierHelper.js';
 import {
   type ServiceStoreEmbeddedDataState,
   ServiceStubMappingState,
   SERVICE_REQUEST_PATTERN_TAB_TYPE,
   SERVICE_STUB_MAPPING_TAB_TYPE,
-} from '../stores/studio/ESService_ServiceStoreEmbeddedDataEditorState';
+} from '../stores/studio/ESService_ServiceStoreEmbeddedDataEditorState.js';
 
 export type StringValuePatternOption = {
   value: string;
@@ -586,19 +585,27 @@ export const ServiceRequestPatternEditor = observer(
       (tab: SERVICE_REQUEST_PATTERN_TAB_TYPE): (() => void) =>
       (): void =>
         serviceStubMappingState.setSelectedServiceRequestPatternTab(tab);
-    const [toggleOn, setToggleOn] = useState<boolean>(true);
+    const changeToggleOn = (): void => {
+      serviceStubMappingState.setToggleOn();
+      serviceStubMappingState.toggleOn
+        ? serviceStubMappingState.setUrlValue(serviceRequestPattern.url ?? '')
+        : serviceStubMappingState.setUrlValue(
+            serviceRequestPattern.urlPath ?? '',
+          );
+    };
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
       const stringValue = event.target.value;
       const updatedValue = stringValue ? stringValue : undefined;
-      toggleOn
-        ? serviceStore_serviceRequestPattern_setUrlPath(
+      serviceStubMappingState.toggleOn
+        ? serviceStore_serviceRequestPattern_setUrl(
             serviceRequestPattern,
             updatedValue,
           )
-        : serviceStore_serviceRequestPattern_setUrl(
+        : serviceStore_serviceRequestPattern_setUrlPath(
             serviceRequestPattern,
             updatedValue,
           );
+      serviceStubMappingState.setUrlValue(stringValue);
     };
 
     return (
@@ -652,34 +659,29 @@ export const ServiceRequestPatternEditor = observer(
               <div className="panel__content service-request-pattern-editor__url">
                 <div className="panel__content__form__section">
                   <div className="panel__content__form__section__header__label">
-                    UrlPath
+                    Url
                     <button
                       className="url-editor__action"
-                      onClick={(): void => setToggleOn(!toggleOn)}
+                      onClick={changeToggleOn}
                       disabled={isReadOnly}
                       tabIndex={-1}
                       title={'Toggle'}
                     >
-                      {toggleOn ? (
-                        <ToggleOn className="url-editor__icon" />
+                      {serviceStubMappingState.toggleOn ? (
+                        <ToggleOnIcon className="url-editor__icon" />
                       ) : (
-                        <ToggleOff className="url-editor__icon" />
+                        <ToggleOffIcon className="url-editor__icon" />
                       )}
                     </button>
                   </div>
                   <div className="panel__content__form__section__header__prompt">
-                    Toggles between UrlPath(Specifies the Url group) and
-                    Url(Specifies the exact Url)
+                    Toggles between Url and UrlPath
                   </div>
                   <input
                     className="panel__content__form__section__input"
                     spellCheck={false}
                     disabled={isReadOnly}
-                    value={
-                      toggleOn
-                        ? serviceRequestPattern.urlPath
-                        : serviceRequestPattern.url
-                    }
+                    value={serviceStubMappingState.urlValue}
                     onChange={changeValue}
                   />
                 </div>

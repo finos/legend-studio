@@ -15,7 +15,7 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { DSL_EXTERNAL_FORMAT_HASH_STRUCTURE } from '../../../../../../../DSLExternalFormat_ModelUtils';
+import { DSL_EXTERNAL_FORMAT_HASH_STRUCTURE } from '../../../../../../../DSLExternalFormat_ModelUtils.js';
 
 export class V1_Schema implements Hashable {
   id?: string | undefined;

@@ -23,19 +23,19 @@ import {
   getPropertyPath,
   type QueryBuilderDerivedPropertyExpressionState,
   type QueryBuilderPropertyExpressionState,
-} from '../stores/QueryBuilderPropertyEditorState';
+} from '../stores/QueryBuilderPropertyEditorState.js';
 import { type DropTargetMonitor, useDrop } from 'react-dnd';
 import {
   QUERY_BUILDER_EXPLORER_TREE_DND_TYPE,
   type QueryBuilderExplorerTreeDragSource,
   type QueryBuilderExplorerTreePropertyNodeData,
-} from '../stores/QueryBuilderExplorerState';
-import { QueryBuilderPropertyInfoTooltip } from './QueryBuilderPropertyInfoTooltip';
-import { VariableExpressionViewer } from './QueryBuilderParameterPanel';
+} from '../stores/QueryBuilderExplorerState.js';
+import { QueryBuilderPropertyInfoTooltip } from './QueryBuilderPropertyInfoTooltip.js';
+import { VariableExpressionViewer } from './QueryBuilderParameterPanel.js';
 import {
   type QueryBuilderParameterDragSource,
   QUERY_BUILDER_PARAMETER_TREE_DND_TYPE,
-} from '../stores/QueryParametersState';
+} from '../stores/QueryParametersState.js';
 import {
   type ValueSpecification,
   type VariableExpression,
@@ -45,9 +45,11 @@ import {
   PRIMITIVE_TYPE,
   isSuperType,
 } from '@finos/legend-graph';
-import { QueryBuilderValueSpecificationEditor } from './QueryBuilderValueSpecificationEditor';
-import { propertyExpression_setParametersValue } from '../stores/QueryBuilderValueSpecificationModifierHelper';
 import { guaranteeNonNullable } from '@finos/legend-shared';
+import {
+  propertyExpression_setParametersValue,
+  BasicValueSpecificationEditor,
+} from '@finos/legend-application';
 
 const DerivedPropertyParameterValueEditor = observer(
   (props: {
@@ -132,7 +134,7 @@ const DerivedPropertyParameterValueEditor = observer(
               Change Parameter Value
             </div>
           )}
-          <QueryBuilderValueSpecificationEditor
+          <BasicValueSpecificationEditor
             valueSpecification={guaranteeNonNullable(
               derivedPropertyExpressionState.parameterValues[idx],
             )}
@@ -228,7 +230,7 @@ export const QueryBuilderPropertyExpressionEditor = observer(
                 List of available parameters
               </div>
               <div className="panel__content__form__section__list__items">
-                {propertyExpressionState.queryBuilderState.queryParametersState.parameters.map(
+                {propertyExpressionState.queryBuilderState.queryParametersState.parameterStates.map(
                   (parameter) => (
                     <VariableExpressionViewer
                       key={parameter.uuid}

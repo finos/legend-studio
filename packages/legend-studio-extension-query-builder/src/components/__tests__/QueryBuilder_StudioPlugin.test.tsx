@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
+import { test, jest } from '@jest/globals';
 import { fireEvent, getByText } from '@testing-library/react';
 import {
+  type TEMPORARY__JestMock,
   integrationTest,
   MOBX__enableSpyOrMock,
   MOBX__disableSpyOrMock,
@@ -32,7 +34,7 @@ import {
 } from '@finos/legend-studio';
 import { QUERY_BUILDER_TEST_ID } from '@finos/legend-query';
 import { TEST__provideMockedGraphManagerState } from '@finos/legend-graph';
-import { QueryBuilder_LegendStudioPreset } from '../../QueryBuilder_LegendStudioPreset';
+import { QueryBuilder_LegendStudioPreset } from '../../QueryBuilder_LegendStudioPreset.js';
 import { TEST__provideMockedApplicationStore } from '@finos/legend-application';
 import { MockedMonacoEditorInstance } from '@finos/legend-art';
 
@@ -224,7 +226,8 @@ test(integrationTest('Open query builder by executing a class'), async () => {
   );
 
   MOBX__enableSpyOrMock();
-  mockedEditorStore.graphState.globalCompileInFormMode = jest.fn();
+  mockedEditorStore.graphState.globalCompileInFormMode =
+    jest.fn<TEMPORARY__JestMock>();
   MOBX__disableSpyOrMock();
 
   await TEST__openElementFromExplorerTree('model::Person', renderResult);
@@ -255,9 +258,10 @@ test(
     );
 
     MOBX__enableSpyOrMock();
-    mockedEditorStore.graphState.globalCompileInFormMode = jest.fn();
+    mockedEditorStore.graphState.globalCompileInFormMode =
+      jest.fn<TEMPORARY__JestMock>();
     mockedEditorStore.graphManagerState.graphManager.lambdasToPureCode =
-      jest.fn();
+      jest.fn<TEMPORARY__JestMock>();
     MockedMonacoEditorInstance.getValue.mockReturnValue('');
     MOBX__disableSpyOrMock();
 
@@ -289,9 +293,10 @@ test(
     );
 
     MOBX__enableSpyOrMock();
-    mockedEditorStore.graphState.globalCompileInFormMode = jest.fn();
+    mockedEditorStore.graphState.globalCompileInFormMode =
+      jest.fn<TEMPORARY__JestMock>();
     mockedEditorStore.graphManagerState.graphManager.lambdasToPureCode =
-      jest.fn();
+      jest.fn<TEMPORARY__JestMock>();
     MockedMonacoEditorInstance.getValue.mockReturnValue('');
     MOBX__disableSpyOrMock();
 
@@ -316,9 +321,10 @@ test(
     );
 
     MOBX__enableSpyOrMock();
-    mockedEditorStore.graphState.globalCompileInFormMode = jest.fn();
+    mockedEditorStore.graphState.globalCompileInFormMode =
+      jest.fn<TEMPORARY__JestMock>();
     mockedEditorStore.graphManagerState.graphManager.lambdasToPureCode =
-      jest.fn();
+      jest.fn<TEMPORARY__JestMock>();
     MockedMonacoEditorInstance.getValue.mockReturnValue('');
     MOBX__disableSpyOrMock();
 

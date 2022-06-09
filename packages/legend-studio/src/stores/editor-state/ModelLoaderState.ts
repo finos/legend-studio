@@ -15,7 +15,7 @@
  */
 
 import { observable, action, flow, makeObservable } from 'mobx';
-import { EditorState } from './EditorState';
+import { EditorState } from './EditorState.js';
 import {
   type GeneratorFn,
   assertErrorThrown,
@@ -23,8 +23,8 @@ import {
   UnsupportedOperationError,
   isNonNullable,
 } from '@finos/legend-shared';
-import { LEGEND_STUDIO_APP_EVENT } from '../LegendStudioAppEvent';
-import type { EditorStore } from '../EditorStore';
+import { LEGEND_STUDIO_APP_EVENT } from '../LegendStudioAppEvent.js';
+import type { EditorStore } from '../EditorStore.js';
 import type { Entity } from '@finos/legend-model-storage';
 import {
   type ImportConfigurationDescription,
@@ -34,7 +34,7 @@ import { TAB_SIZE } from '@finos/legend-application';
 import type {
   ModelLoaderExtensionConfiguration,
   LegendStudioPlugin,
-} from '../LegendStudioPlugin';
+} from '../LegendStudioPlugin.js';
 
 export enum MODEL_UPDATER_INPUT_TYPE {
   ENTITIES = 'ENTITIES',

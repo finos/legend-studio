@@ -16,7 +16,7 @@
 
 import {
   type EventNotifierPlugin,
-  type EventNotifierServicePluginManager,
+  type EventNotifierPluginManager,
   type LoggerPlugin,
   type LoggerPluginManager,
   type TelemetryServicePlugin,
@@ -25,7 +25,7 @@ import {
   type TracerServicePluginManager,
   AbstractPluginManager,
 } from '@finos/legend-shared';
-import type { LegendApplicationPlugin } from '../stores/LegendApplicationPlugin';
+import type { LegendApplicationPlugin } from '../stores/LegendApplicationPlugin.js';
 
 export class LegendApplicationPluginManager
   extends AbstractPluginManager
@@ -33,7 +33,7 @@ export class LegendApplicationPluginManager
     LoggerPluginManager,
     TelemetryServicePluginManager,
     TracerServicePluginManager,
-    EventNotifierServicePluginManager
+    EventNotifierPluginManager
 {
   protected loggerPlugins: LoggerPlugin[] = [];
   protected telemetryServicePlugins: TelemetryServicePlugin[] = [];

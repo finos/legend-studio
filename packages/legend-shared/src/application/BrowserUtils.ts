@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import { isString } from '../error/AssertionUtils';
-import { UnsupportedOperationError } from '../error/ErrorUtils';
+import { isString } from '../error/AssertionUtils.js';
+import { UnsupportedOperationError } from '../error/ErrorUtils.js';
 
 export const readFileAsText = (file: File): Promise<string> =>
   new Promise((resolve, reject) => {

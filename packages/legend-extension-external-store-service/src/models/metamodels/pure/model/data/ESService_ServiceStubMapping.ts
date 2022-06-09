@@ -15,9 +15,9 @@
  */
 
 import { type Hashable, hashArray, uuid } from '@finos/legend-shared';
-import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../ESService_ModelUtils';
-import type { ServiceRequestPattern } from './ESService_ServiceRequestPattern';
-import type { ServiceResponseDefinition } from './ESService_ServiceResponseDefinition';
+import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../ESService_ModelUtils.js';
+import type { ServiceRequestPattern } from './ESService_ServiceRequestPattern.js';
+import type { ServiceResponseDefinition } from './ESService_ServiceResponseDefinition.js';
 
 export class ServiceStubMapping implements Hashable {
   readonly _UUID = uuid();

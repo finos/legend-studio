@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-import { useApplicationStore } from '@finos/legend-application';
+import {
+  useApplicationStore,
+  BasicValueSpecificationEditor,
+} from '@finos/legend-application';
 import {
   type TreeNodeContainerProps,
   type TreeNodeViewProps,
@@ -52,6 +55,7 @@ import {
   Enumeration,
   PrimitiveType,
   PRIMITIVE_TYPE,
+  getMultiplicityDescription,
 } from '@finos/legend-graph';
 import {
   assertErrorThrown,
@@ -68,10 +72,10 @@ import {
   useDrag,
 } from 'react-dnd';
 import { getEmptyImage } from 'react-dnd-html5-backend';
-import { getColumnMultiplicity } from '../stores/postFilterOperators/QueryBuilderPostFilterOperatorHelper';
-import { QueryBuilderAggregateColumnState } from '../stores/QueryBuilderAggregationState';
-import { QUERY_BUILDER_GROUP_OPERATION } from '../stores/QueryBuilderOperatorsHelper';
-import type { QueryBuilderPostFilterOperator } from '../stores/QueryBuilderPostFilterOperator';
+import { getColumnMultiplicity } from '../stores/postFilterOperators/QueryBuilderPostFilterOperatorHelper.js';
+import { QueryBuilderAggregateColumnState } from '../stores/QueryBuilderAggregationState.js';
+import { QUERY_BUILDER_GROUP_OPERATION } from '../stores/QueryBuilderOperatorsHelper.js';
+import type { QueryBuilderPostFilterOperator } from '../stores/QueryBuilderPostFilterOperator.js';
 import {
   type QueryBuilderPostFilterTreeNodeData,
   type QueryBuilderPostFilterDropTarget,
@@ -81,21 +85,19 @@ import {
   QueryBuilderPostFilterTreeGroupNodeData,
   QUERY_BUILDER_POST_FILTER_DND_TYPE,
   QueryBuilderPostFilterTreeBlankConditionNodeData,
-} from '../stores/QueryBuilderPostFilterState';
+} from '../stores/QueryBuilderPostFilterState.js';
 import {
   type QueryBuilderProjectionColumnState,
   type QueryBuilderProjectionColumnDragSource,
   QUERY_BUILDER_PROJECTION_DND_TYPE,
   QueryBuilderDerivationProjectionColumnState,
-} from '../stores/QueryBuilderProjectionState';
-import type { QueryBuilderState } from '../stores/QueryBuilderState';
+} from '../stores/QueryBuilderProjectionState.js';
+import type { QueryBuilderState } from '../stores/QueryBuilderState.js';
 import {
   type QueryBuilderParameterDragSource,
   QUERY_BUILDER_PARAMETER_TREE_DND_TYPE,
-} from '../stores/QueryParametersState';
-import { QueryBuilderValueSpecificationEditor } from './QueryBuilderValueSpecificationEditor';
-import { QUERY_BUILDER_TEST_ID } from './QueryBuilder_TestID';
-import { getMultiplicityDescription } from './shared/QueryBuilderUtils';
+} from '../stores/QueryParametersState.js';
+import { QUERY_BUILDER_TEST_ID } from './QueryBuilder_TestID.js';
 
 const PostFilterConditionDragLayer: React.FC = () => {
   const { itemType, item, isDragging, currentPosition } = useDragLayer(
@@ -502,7 +504,7 @@ const QueryBuilderPostFilterConditionEditor = observer(
                   Change Filter Value
                 </div>
               )}
-              <QueryBuilderValueSpecificationEditor
+              <BasicValueSpecificationEditor
                 valueSpecification={node.condition.value}
                 updateValue={(val: ValueSpecification): void =>
                   node.condition.setValue(val)

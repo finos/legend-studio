@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
+import { test, expect, beforeAll } from '@jest/globals';
 import TEST_DATA__completeGraphEntities from './TEST_DATA__MockDataGeneration.json';
-import { classHasCycle, createMockClassInstance } from '../MockDataUtil';
-import { unitTest } from '@finos/legend-shared';
-import { TEST__getTestEditorStore } from '../../EditorStoreTestUtils';
+import { classHasCycle, createMockClassInstance } from '../MockDataUtil.js';
+import { type TEMPORARRY__JestMatcher, unitTest } from '@finos/legend-shared';
+import { TEST__getTestEditorStore } from '../../EditorStoreTestUtils.js';
 import type { Entity } from '@finos/legend-model-storage';
 import { TEST__buildGraphWithEntities } from '@finos/legend-graph';
 
 const editorStore = TEST__getTestEditorStore();
-
 beforeAll(async () => {
   await TEST__buildGraphWithEntities(
     editorStore.graphManagerState,
@@ -34,7 +34,9 @@ test(unitTest('Class with hierarchy cycle is detected'), () => {
   const _class = editorStore.graphManagerState.graph.getClass(
     'myPackage::test::Misc',
   );
-  expect(createMockClassInstance(_class)).toContainAllKeys([
+  (
+    expect(createMockClassInstance(_class)) as TEMPORARRY__JestMatcher
+  ).toContainAllKeys([
     'string',
     'boolean',
     'float',
@@ -76,14 +78,16 @@ test(unitTest('Test mock data with classes cycle'), () => {
   );
   // 1st level
   const applicationKeys = ['applicant', 'employee', 'previousEmployeer'];
-  expect(applicationInstance).toContainAllKeys(applicationKeys);
+  (expect(applicationInstance) as TEMPORARRY__JestMatcher).toContainAllKeys(
+    applicationKeys,
+  );
   const applicantInstance = (
     applicationInstance as {
       applicant: Record<PropertyKey, unknown>;
     }
   ).applicant;
   // 2nd level
-  expect(applicantInstance).toContainKeys([
+  (expect(applicantInstance) as TEMPORARRY__JestMatcher).toContainKeys([
     'userName',
     'previousApplication',
     'password',
@@ -95,14 +99,16 @@ test(unitTest('Test mock data with classes cycle'), () => {
       previousApplication: Record<PropertyKey, unknown>;
     }
   ).previousApplication;
-  expect(secondApplicationInstance).toContainAllKeys(applicationKeys);
+  (
+    expect(secondApplicationInstance) as TEMPORARRY__JestMatcher
+  ).toContainAllKeys(applicationKeys);
   // 3rd level
   const secondApplicantInstance = (
     secondApplicationInstance as {
       applicant: Record<PropertyKey, unknown>;
     }
   ).applicant;
-  expect(secondApplicantInstance).toContainKeys([
+  (expect(secondApplicantInstance) as TEMPORARRY__JestMatcher).toContainKeys([
     'userName',
     'password',
     'firstName',

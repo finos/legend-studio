@@ -18,13 +18,13 @@ import type { Pair } from '@finos/legend-shared';
 import {
   type ValueSpecificationVisitor,
   ValueSpecification,
-} from './ValueSpecification';
-import type { Multiplicity } from '../packageableElements/domain/Multiplicity';
-import type { GenericTypeReference } from '../packageableElements/domain/GenericTypeReference';
-import type { EnumValueReference } from '../packageableElements/domain/EnumValueReference';
-import type { PackageableElementReference } from '../packageableElements/PackageableElementReference';
-import type { EngineRuntime } from '../packageableElements/runtime/Runtime';
-import type { Mapping } from '../packageableElements/mapping/Mapping';
+} from './ValueSpecification.js';
+import type { Multiplicity } from '../packageableElements/domain/Multiplicity.js';
+import type { GenericTypeReference } from '../packageableElements/domain/GenericTypeReference.js';
+import type { EnumValueReference } from '../packageableElements/domain/EnumValueReference.js';
+import type { PackageableElementReference } from '../packageableElements/PackageableElementReference.js';
+import type { EngineRuntime } from '../packageableElements/runtime/Runtime.js';
+import type { Mapping } from '../packageableElements/mapping/Mapping.js';
 
 /**
  * NOTE: {@link InstanceValue} is the only metamodel available in Pure.

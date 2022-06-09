@@ -15,16 +15,16 @@
  */
 
 import { type Hashable, hashArray } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
-import type { SetImplementationVisitor } from '../../../mapping/SetImplementation';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst.js';
+import type { SetImplementationVisitor } from '../../../mapping/SetImplementation.js';
 import type {
   RelationalMappingSpecification,
   TableAlias,
-} from '../model/RelationalOperationElement';
-import type { ColumnMapping } from '../model/ColumnMapping';
-import { RelationalInstanceSetImplementation } from './RelationalInstanceSetImplementation';
-import type { GroupByMapping } from './GroupByMapping';
-import type { FilterMapping } from './FilterMapping';
+} from '../model/RelationalOperationElement.js';
+import type { ColumnMapping } from '../model/ColumnMapping.js';
+import { RelationalInstanceSetImplementation } from './RelationalInstanceSetImplementation.js';
+import type { GroupByMapping } from './GroupByMapping.js';
+import type { FilterMapping } from './FilterMapping.js';
 
 export class RootRelationalInstanceSetImplementation
   extends RelationalInstanceSetImplementation
@@ -35,7 +35,6 @@ export class RootRelationalInstanceSetImplementation
   distinct?: boolean | undefined;
   groupBy?: GroupByMapping | undefined;
   mainTableAlias?: TableAlias;
-  superSetImplementationId?: string | undefined;
 
   override accept_SetImplementationVisitor<T>(
     visitor: SetImplementationVisitor<T>,
@@ -51,7 +50,6 @@ export class RootRelationalInstanceSetImplementation
       this.distinct?.toString() ?? '',
       hashArray(this.groupBy?.columns ?? []),
       this.filter ?? '',
-      this.superSetImplementationId ?? '',
     ]);
   }
 }

@@ -15,8 +15,8 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { V1_RelationshipView } from './V1_DSLDiagram_RelationshipView';
-import { DIAGRAM_HASH_STRUCTURE } from '../../../../../../DSLDiagram_ModelUtils';
+import { V1_RelationshipView } from './V1_DSLDiagram_RelationshipView.js';
+import { DIAGRAM_HASH_STRUCTURE } from '../../../../../../DSLDiagram_ModelUtils.js';
 import type { V1_PropertyPointer } from '@finos/legend-graph';
 
 export class V1_PropertyHolderView

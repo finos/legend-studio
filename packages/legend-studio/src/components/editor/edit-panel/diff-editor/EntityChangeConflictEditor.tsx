@@ -34,7 +34,7 @@ import {
   type MergeConflict,
   type EntityChangeConflictEditorState,
   ENTITY_CHANGE_CONFLICT_EDITOR_VIEW_MODE,
-} from '../../../../stores/editor-state/entity-diff-editor-state/EntityChangeConflictEditorState';
+} from '../../../../stores/editor-state/entity-diff-editor-state/EntityChangeConflictEditorState.js';
 import {
   IllegalStateError,
   shallowStringify,
@@ -58,8 +58,8 @@ import {
   ArrowDownIcon,
   ArrowUpIcon,
 } from '@finos/legend-art';
-import { TextDiffView } from '../../../shared/DiffView';
-import { getPrettyLabelForRevision } from '../../../../stores/editor-state/entity-diff-editor-state/EntityDiffEditorState';
+import { TextDiffView } from '../../../shared/DiffView.js';
+import { getPrettyLabelForRevision } from '../../../../stores/editor-state/entity-diff-editor-state/EntityDiffEditorState.js';
 import { flowResult } from 'mobx';
 import type { EntityChangeConflict } from '@finos/legend-server-sdlc';
 

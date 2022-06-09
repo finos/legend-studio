@@ -15,15 +15,16 @@
  */
 
 import type { Hashable } from '@finos/legend-shared';
-import type { GenericTypeReference } from './GenericTypeReference';
-import type { Multiplicity } from './Multiplicity';
-import type { Class } from './Class';
-import type { Association } from './Association';
+import type { GenericTypeReference } from './GenericTypeReference.js';
+import type { Multiplicity } from './Multiplicity.js';
+import type { Class } from './Class.js';
+import type { Association } from './Association.js';
+import type { AnnotatedElement } from './AnnotatedElement.js';
 
 // NOTE: In PURE we have `Class` and `Association` extends `PropertyOwner`, which extends `PackageableElement`
 export type PropertyOwner = Class | Association;
 
-export interface AbstractProperty extends Hashable {
+export interface AbstractProperty extends Hashable, AnnotatedElement {
   _OWNER: PropertyOwner;
 
   name: string;

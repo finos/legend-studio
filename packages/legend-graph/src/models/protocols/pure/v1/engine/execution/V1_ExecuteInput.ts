@@ -24,15 +24,15 @@ import {
   SKIP,
 } from 'serializr';
 import { SerializationFactory, usingModelSchema } from '@finos/legend-shared';
-import { V1_PureModelContextData } from '../../model/context/V1_PureModelContextData';
-import type { V1_Runtime } from '../../model/packageableElements/runtime/V1_Runtime';
-import type { V1_RawExecutionContext } from '../../model/rawValueSpecification/V1_RawExecutionContext';
-import type { V1_RawLambda } from '../../model/rawValueSpecification/V1_RawLambda';
-import { V1_serializeRuntime } from '../../transformation/pureProtocol/serializationHelpers/V1_RuntimeSerializationHelper';
+import { V1_PureModelContextData } from '../../model/context/V1_PureModelContextData.js';
+import type { V1_Runtime } from '../../model/packageableElements/runtime/V1_Runtime.js';
+import type { V1_RawExecutionContext } from '../../model/rawValueSpecification/V1_RawExecutionContext.js';
+import type { V1_RawLambda } from '../../model/rawValueSpecification/V1_RawLambda.js';
+import { V1_serializeRuntime } from '../../transformation/pureProtocol/serializationHelpers/V1_RuntimeSerializationHelper.js';
 import {
   V1_rawBaseExecutionContextModelSchema,
   V1_rawLambdaModelSchema,
-} from '../../transformation/pureProtocol/serializationHelpers/V1_RawValueSpecificationSerializationHelper';
+} from '../../transformation/pureProtocol/serializationHelpers/V1_RawValueSpecificationSerializationHelper.js';
 
 export class V1_ExecuteInput {
   clientVersion!: string;

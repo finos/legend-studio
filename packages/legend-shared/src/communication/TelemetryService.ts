@@ -17,8 +17,7 @@
 import {
   AbstractPlugin,
   type AbstractPluginManager,
-  type PluginConsumer,
-} from '../application/AbstractPluginManager';
+} from '../application/AbstractPluginManager.js';
 
 export interface TelemetryData {
   [key: string]: unknown;
@@ -48,7 +47,7 @@ export abstract class TelemetryServicePlugin extends AbstractPlugin {
   abstract logEvent(eventType: string, data: TelemetryData): void;
 }
 
-export class TelemetryService implements PluginConsumer {
+export class TelemetryService {
   private plugins: TelemetryServicePlugin[] = [];
 
   registerPlugins(plugins: TelemetryServicePlugin[]): void {

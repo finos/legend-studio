@@ -15,20 +15,21 @@
  */
 
 import {
-  FaMap,
-  FaQuestion,
-  FaLayerGroup,
-  FaRobot,
-  FaBusinessTime,
-  FaFileCode,
-  FaDatabase,
-  FaServer,
-  FaTable,
-} from 'react-icons/fa';
-import { MdSettingsEthernet, MdLink } from 'react-icons/md';
-import { FiPackage } from 'react-icons/fi';
-import { RiShapeLine } from 'react-icons/ri';
-import { FillFileEarmarkSpreadsheetFillIcon } from './Icon';
+  BusinessTimeIcon,
+  DatabaseIcon,
+  FileCodeIcon,
+  LayerGroupIcon,
+  LinkIcon,
+  MapIcon,
+  PackageIcon,
+  QuestionIcon,
+  RobotIcon,
+  ServerIcon,
+  SettingsEthernetIcon,
+  ShapeLineIcon,
+  TableIcon,
+  TabulatedDataFileIcon,
+} from './CJS__Icon.cjs';
 
 export const PURE_PrimitiveTypeIcon: React.FC = () => (
   <div className="icon icon--primitive color--primitive">p</div>
@@ -36,7 +37,7 @@ export const PURE_PrimitiveTypeIcon: React.FC = () => (
 
 export const PURE_PackageIcon: React.FC = () => (
   <div className="icon color--package">
-    <FiPackage />
+    <PackageIcon />
   </div>
 );
 
@@ -74,25 +75,25 @@ export const PURE_FunctionIcon: React.FC = () => (
 
 export const PURE_FlatDataStoreIcon: React.FC = () => (
   <div className="icon icon--flat-data color--flat-data">
-    <FaLayerGroup />
+    <LayerGroupIcon />
   </div>
 );
 
 export const PURE_DatabaseIcon: React.FC = () => (
   <div className="icon icon--database color--database">
-    <FaDatabase />
+    <DatabaseIcon />
   </div>
 );
 
 export const PURE_DatabaseSchemaIcon: React.FC = () => (
   <div className="icon icon--schema color--schema">
-    <FaServer />
+    <ServerIcon />
   </div>
 );
 
 export const PURE_DatabaseTableIcon: React.FC = () => (
   <div className="icon icon--table color--table">
-    <FaTable />
+    <TableIcon />
   </div>
 );
 
@@ -102,7 +103,7 @@ export const PURE_DatabaseTableJoinIcon: React.FC = () => (
 
 export const PURE_MappingIcon: React.FC = () => (
   <div className="icon color--mapping">
-    <FaMap />
+    <MapIcon />
   </div>
 );
 
@@ -112,49 +113,49 @@ export const PURE_GenerationSpecificationIcon: React.FC = () => (
 
 export const PURE_FileGenerationIcon: React.FC = () => (
   <div className="icon color--file-generation">
-    <FaFileCode />
+    <FileCodeIcon />
   </div>
 );
 
 export const PURE_ServiceIcon: React.FC = () => (
   <div className="icon color--service">
-    <FaRobot />
+    <RobotIcon />
   </div>
 );
 
 export const PURE_ConnectionIcon: React.FC = () => (
   <div className="icon icon--connection color--connection">
-    <MdLink />
+    <LinkIcon />
   </div>
 );
 
 export const PURE_RuntimeIcon: React.FC = () => (
   <div className="icon color--runtime">
-    <FaBusinessTime />
+    <BusinessTimeIcon />
   </div>
 );
 
 export const PURE_ModelStoreIcon: React.FC = () => (
   <div className="icon color--class">
-    <RiShapeLine />
+    <ShapeLineIcon />
   </div>
 );
 
 export const PURE_DataIcon: React.FC = () => (
   <div className="icon color--data">
-    <FillFileEarmarkSpreadsheetFillIcon />
+    <TabulatedDataFileIcon />
   </div>
 );
 
 export const PURE_UnknownElementTypeIcon: React.FC = () => (
   <div>
-    <FaQuestion />
+    <QuestionIcon />
   </div>
 );
 
 // TODO: consider moving this back to `Icon`?
 export const ProjectConfigurationIcon: React.FC = () => (
   <div className="icon icon--config color--config">
-    <MdSettingsEthernet />
+    <SettingsEthernetIcon />
   </div>
 );

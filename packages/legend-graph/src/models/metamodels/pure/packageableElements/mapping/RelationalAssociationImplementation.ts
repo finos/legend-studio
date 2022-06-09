@@ -15,8 +15,8 @@
  */
 
 import { hashArray } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
-import { AssociationImplementation } from './AssociationImplementation';
+import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst.js';
+import { AssociationImplementation } from './AssociationImplementation.js';
 
 export class RelationalAssociationImplementation extends AssociationImplementation {
   override get hashCode(): string {

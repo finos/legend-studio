@@ -28,7 +28,7 @@ import {
   TdsBuilder,
   TDSColumn,
   RawExecutionResult,
-} from '../../../../../graphManager/action/execution/ExecutionResult';
+} from '../../../../../graphManager/action/execution/ExecutionResult.js';
 import {
   type V1_ExecutionResult,
   type V1_TdsBuilder,
@@ -37,7 +37,7 @@ import {
   V1_INTERNAL__UnknownExecutionResult,
   V1_TdsExecutionResult,
   V1_RawExecutionResult,
-} from './execution/V1_ExecutionResult';
+} from './execution/V1_ExecutionResult.js';
 
 const buildJSONExecutionResult = (
   protocol: V1_JsonExecutionResult,

@@ -37,15 +37,15 @@ import {
   type ServiceQueryQueryParams,
   LEGEND_QUERY_ROUTE_PATTERN,
   generateCreateQueryRoute,
-} from '../stores/LegendQueryRouter';
+} from '../stores/LegendQueryRouter.js';
 import {
   type QueryExportState,
   ExistingQueryInfoState,
   ServiceQueryInfoState,
   CreateQueryInfoState,
-} from '../stores/LegendQueryStore';
-import { QueryBuilder } from './QueryBuilder';
-import { useLegendQueryStore } from './LegendQueryStoreProvider';
+} from '../stores/LegendQueryStore.js';
+import { QueryBuilder } from './QueryBuilder.js';
+import { useLegendQueryStore } from './LegendQueryStoreProvider.js';
 import { RuntimePointer } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
 

@@ -30,7 +30,7 @@ import {
   DIAGRAM_INTERACTION_MODE,
   DIAGRAM_RELATIONSHIP_EDIT_MODE,
   DIAGRAM_ZOOM_LEVELS,
-} from '../../DiagramRenderer';
+} from '../../DiagramRenderer.js';
 import {
   type DiagramEditorInlineClassCreatorState,
   type DiagramEditorInlineClassRenamerState,
@@ -38,7 +38,7 @@ import {
   DIAGRAM_EDITOR_SIDE_PANEL_TAB,
   DiagramEditorClassViewEditorSidePanelState,
   DiagramEditorState,
-} from '../../stores/studio/DiagramEditorState';
+} from '../../stores/studio/DiagramEditorState.js';
 import {
   type ResizablePanelHandlerProps,
   ContextMenu,
@@ -104,14 +104,14 @@ import {
   property_setGenericType,
   property_setMultiplicity,
 } from '@finos/legend-studio';
-import { cleanUpDeadReferencesInDiagram } from '../../helpers/DiagramHelper';
-import { Point } from '../../models/metamodels/pure/packageableElements/diagram/geometry/DSLDiagram_Point';
-import type { DSLDiagram_LegendStudioPlugin_Extension } from './DSLDiagram_LegendStudioPlugin_Extension';
+import { cleanUpDeadReferencesInDiagram } from '../../helpers/DSLDiagram_Helper.js';
+import { Point } from '../../models/metamodels/pure/packageableElements/diagram/geometry/DSLDiagram_Point.js';
+import type { DSLDiagram_LegendStudioPlugin_Extension } from './DSLDiagram_LegendStudioPlugin_Extension.js';
 import {
   classView_setHideProperties,
   classView_setHideStereotypes,
   classView_setHideTaggedValues,
-} from '../../stores/studio/DSLDiagram_GraphModifierHelper';
+} from '../../stores/studio/DSLDiagram_GraphModifierHelper.js';
 
 const DiagramEditorContextMenu = observer(
   forwardRef<

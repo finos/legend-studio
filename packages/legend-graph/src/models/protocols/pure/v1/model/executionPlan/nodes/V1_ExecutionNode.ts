@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import type { V1_Multiplicity } from '../../packageableElements/domain/V1_Multiplicity';
-import type { V1_ResultType } from '../results/V1_ResultType';
+import type { V1_Multiplicity } from '../../packageableElements/domain/V1_Multiplicity.js';
+import type { V1_ResultType } from '../results/V1_ResultType.js';
 
 export abstract class V1_ExecutionNode {
   resultType!: V1_ResultType;

@@ -15,7 +15,7 @@
  */
 
 import { type Hashable, hashArray } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst.js';
 
 export abstract class DatasourceSpecification implements Hashable {
   abstract get hashCode(): string;
@@ -219,6 +219,8 @@ export class BigQueryDatasourceSpecification
 {
   projectId: string;
   defaultDataset: string;
+  proxyHost?: string | undefined;
+  proxyPort?: string | undefined;
 
   constructor(projectId: string, defaultDataset: string) {
     super();
@@ -231,6 +233,8 @@ export class BigQueryDatasourceSpecification
       CORE_HASH_STRUCTURE.BIGQUERY_DATASOURCE_SPECIFICATION,
       this.projectId,
       this.defaultDataset,
+      this.proxyHost ?? '',
+      this.proxyPort ?? '',
     ]);
   }
 }

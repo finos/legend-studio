@@ -20,26 +20,26 @@ import {
   type ValueSpecification,
   type FunctionExpression,
   PRIMITIVE_TYPE,
+  buildPrimitiveInstanceValue,
 } from '@finos/legend-graph';
 import {
   guaranteeNonNullable,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
-import { SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const.js';
 import {
   buildNotExpression,
-  buildPrimitiveInstanceValue,
   getNonCollectionValueSpecificationType,
   unwrapNotExpression,
-} from '../QueryBuilderOperatorsHelper';
-import { QueryBuilderPostFilterOperator } from '../QueryBuilderPostFilterOperator';
-import { buildPostFilterConditionState } from '../QueryBuilderPostFilterProcessor';
+} from '../QueryBuilderOperatorsHelper.js';
+import { QueryBuilderPostFilterOperator } from '../QueryBuilderPostFilterOperator.js';
+import { buildPostFilterConditionState } from '../QueryBuilderPostFilterProcessor.js';
 import type {
   PostFilterConditionState,
   QueryBuilderPostFilterState,
-} from '../QueryBuilderPostFilterState';
-import { generateDefaultValueForPrimitiveType } from '../QueryBuilderValueSpecificationBuilderHelper';
-import { buildPostFilterConditionExpression } from './QueryBuilderPostFilterOperatorHelper';
+} from '../QueryBuilderPostFilterState.js';
+import { generateDefaultValueForPrimitiveType } from '../QueryBuilderValueSpecificationBuilderHelper.js';
+import { buildPostFilterConditionExpression } from './QueryBuilderPostFilterOperatorHelper.js';
 
 export class QueryBuilderPostFilterOperator_Contain extends QueryBuilderPostFilterOperator {
   getLabel(): string {
@@ -92,7 +92,7 @@ export class QueryBuilderPostFilterOperator_Contain extends QueryBuilderPostFilt
     return buildPostFilterConditionExpression(
       postFilterConditionState,
       this,
-      SUPPORTED_FUNCTIONS.CONTAINS,
+      QUERY_BUILDER_SUPPORTED_FUNCTIONS.CONTAINS,
     );
   }
 
@@ -103,7 +103,7 @@ export class QueryBuilderPostFilterOperator_Contain extends QueryBuilderPostFilt
     return buildPostFilterConditionState(
       postFilterState,
       expression,
-      SUPPORTED_FUNCTIONS.CONTAINS,
+      QUERY_BUILDER_SUPPORTED_FUNCTIONS.CONTAINS,
       this,
     );
   }

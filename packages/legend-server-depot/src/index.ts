@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-export { ProjectData } from './models/ProjectData';
-export * from './models/ProjectVersionEntities';
-export { StoredEntity } from './models/StoredEntity';
-export { DepotScope } from './models/DepotScope';
+export { ProjectData } from './models/ProjectData.js';
+export * from './models/ProjectVersionEntities.js';
+export { StoredEntity } from './models/StoredEntity.js';
+export { DepotScope } from './models/DepotScope.js';
 
-export { DepotServerClient } from './DepotServerClient';
-export * from './DepotServerClientProvider';
+export { DepotServerClient } from './DepotServerClient.js';
+export * from './DepotServerClientProvider.js';
 
-export * from './DepotServerClientTestUtils';
+export * from './DepotServerClientTestUtils.js';
 
-export * from './DepotUtils';
+export * from './DepotUtils.js';

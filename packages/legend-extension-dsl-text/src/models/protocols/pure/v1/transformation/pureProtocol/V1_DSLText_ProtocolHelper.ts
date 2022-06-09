@@ -16,7 +16,7 @@
 
 import { usingConstantValueSchema } from '@finos/legend-shared';
 import { createModelSchema, primitive } from 'serializr';
-import { V1_Text } from '../../model/packageableElements/text/V1_DSLText_Text';
+import { V1_Text } from '../../model/packageableElements/text/V1_DSLText_Text.js';
 
 export const V1_TEXT_ELEMENT_PROTOCOL_TYPE = 'text';
 

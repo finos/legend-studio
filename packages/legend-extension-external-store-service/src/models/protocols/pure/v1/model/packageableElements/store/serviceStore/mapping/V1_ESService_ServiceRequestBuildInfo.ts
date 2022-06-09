@@ -15,9 +15,9 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../../ESService_ModelUtils';
-import type { V1_ServiceRequestParametersBuildInfo } from './V1_ESService_ServiceRequestParametersBuildInfo';
-import type { V1_ServiceRequestBodyBuildInfo } from './V1_ESService_ServiceRequestBodyBuildInfo';
+import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../../ESService_ModelUtils.js';
+import type { V1_ServiceRequestParametersBuildInfo } from './V1_ESService_ServiceRequestParametersBuildInfo.js';
+import type { V1_ServiceRequestBodyBuildInfo } from './V1_ESService_ServiceRequestBodyBuildInfo.js';
 
 export class V1_ServiceRequestBuildInfo implements Hashable {
   requestBodyBuildInfo?: V1_ServiceRequestBodyBuildInfo | undefined;
@@ -26,8 +26,8 @@ export class V1_ServiceRequestBuildInfo implements Hashable {
   get hashCode(): string {
     return hashArray([
       SERVICE_STORE_HASH_STRUCTURE.SERVICE_REQUEST_BUILD_INFO,
-      this.requestBodyBuildInfo?.toString() ?? '',
-      this.requestParametersBuildInfo?.toString() ?? '',
+      this.requestBodyBuildInfo ?? '',
+      this.requestParametersBuildInfo ?? '',
     ]);
   }
 }

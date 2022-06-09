@@ -15,14 +15,14 @@
  */
 
 import { type Hashable, hashArray } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../../../MetaModelConst';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../../../MetaModelConst.js';
 import {
   type V1_ConnectionVisitor,
   V1_Connection,
-} from '../../../../../model/packageableElements/connection/V1_Connection';
-import type { V1_DatasourceSpecification } from './V1_DatasourceSpecification';
-import type { V1_AuthenticationStrategy } from './V1_AuthenticationStrategy';
-import type { V1_PostProcessor } from './postprocessor/V1_PostProcessor';
+} from '../../../../../model/packageableElements/connection/V1_Connection.js';
+import type { V1_DatasourceSpecification } from './V1_DatasourceSpecification.js';
+import type { V1_AuthenticationStrategy } from './V1_AuthenticationStrategy.js';
+import type { V1_PostProcessor } from './postprocessor/V1_PostProcessor.js';
 
 // TODO: to be modularized or handled differently
 // See https://github.com/finos/legend-studio/issues/946

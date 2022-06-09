@@ -20,20 +20,20 @@ import {
   isNonNullable,
   uniq,
 } from '@finos/legend-shared';
-import { GRAPH_MANAGER_EVENT } from '../../../../../../../../graphManager/GraphManagerEvent';
+import { GRAPH_MANAGER_EVENT } from '../../../../../../../../graphManager/GraphManagerEvent.js';
 import {
   type Section,
   ImportAwareCodeSection,
   DefaultCodeSection,
-} from '../../../../../../../metamodels/pure/packageableElements/section/Section';
-import type { SectionIndex } from '../../../../../../../metamodels/pure/packageableElements/section/SectionIndex';
-import { PackageableElementExplicitReference } from '../../../../../../../metamodels/pure/packageableElements/PackageableElementReference';
-import type { V1_GraphBuilderContext } from '../../../../transformation/pureGraph/to/V1_GraphBuilderContext';
+} from '../../../../../../../metamodels/pure/packageableElements/section/Section.js';
+import type { SectionIndex } from '../../../../../../../metamodels/pure/packageableElements/section/SectionIndex.js';
+import { PackageableElementExplicitReference } from '../../../../../../../metamodels/pure/packageableElements/PackageableElementReference.js';
+import type { V1_GraphBuilderContext } from '../../../../transformation/pureGraph/to/V1_GraphBuilderContext.js';
 import {
   type V1_Section,
   V1_ImportAwareCodeSection,
   V1_DefaultCodeSection,
-} from '../../../../model/packageableElements/section/V1_Section';
+} from '../../../../model/packageableElements/section/V1_Section.js';
 
 export const V1_buildSection = (
   protocol: V1_Section,

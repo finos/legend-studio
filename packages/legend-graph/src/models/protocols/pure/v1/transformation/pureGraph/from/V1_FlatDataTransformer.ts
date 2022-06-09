@@ -15,7 +15,7 @@
  */
 
 import { UnsupportedOperationError } from '@finos/legend-shared';
-import type { FlatData } from '../../../../../../metamodels/pure/packageableElements/store/flatData/model/FlatData';
+import type { FlatData } from '../../../../../../metamodels/pure/packageableElements/store/flatData/model/FlatData.js';
 import {
   FlatDataString,
   FlatDataBoolean,
@@ -30,10 +30,10 @@ import {
   FlatDataRecordType,
   type FlatDataDataType,
   type FlatDataRecordField,
-} from '../../../../../../metamodels/pure/packageableElements/store/flatData/model/FlatDataDataType';
-import type { FlatDataSection } from '../../../../../../metamodels/pure/packageableElements/store/flatData/model/FlatDataSection';
-import { V1_FlatDataSection } from '../../../model/packageableElements/store/flatData/model/V1_FlatDataSection';
-import { V1_FlatData } from '../../../model/packageableElements/store/flatData/model/V1_FlatData';
+} from '../../../../../../metamodels/pure/packageableElements/store/flatData/model/FlatDataDataType.js';
+import type { FlatDataSection } from '../../../../../../metamodels/pure/packageableElements/store/flatData/model/FlatDataSection.js';
+import { V1_FlatDataSection } from '../../../model/packageableElements/store/flatData/model/V1_FlatDataSection.js';
+import { V1_FlatData } from '../../../model/packageableElements/store/flatData/model/V1_FlatData.js';
 import {
   type V1_FlatDataDataType,
   V1_FlatDataRecordField,
@@ -48,9 +48,9 @@ import {
   V1_FlatDataInteger,
   V1_FlatDataBoolean,
   V1_FlatDataString,
-} from '../../../model/packageableElements/store/flatData/model/V1_FlatDataDataType';
-import { V1_initPackageableElement } from './V1_CoreTransformerHelper';
-import { V1_FlatDataProperty } from '../../../model/packageableElements/store/flatData/model/V1_FlatDataProperty';
+} from '../../../model/packageableElements/store/flatData/model/V1_FlatDataDataType.js';
+import { V1_initPackageableElement } from './V1_CoreTransformerHelper.js';
+import { V1_FlatDataProperty } from '../../../model/packageableElements/store/flatData/model/V1_FlatDataProperty.js';
 
 function transformFlatDataType(type: FlatDataDataType): V1_FlatDataDataType {
   const transformFlatDataRecordField = (

@@ -38,31 +38,31 @@ import {
   V1_KeyedExecutionParameter,
   V1_PureMultiExecution,
   V1_PureSingleExecution,
-} from '../../../model/packageableElements/service/V1_ServiceExecution';
-import { V1_Service } from '../../../model/packageableElements/service/V1_Service';
-import { V1_rawLambdaModelSchema } from './V1_RawValueSpecificationSerializationHelper';
+} from '../../../model/packageableElements/service/V1_ServiceExecution.js';
+import { V1_Service } from '../../../model/packageableElements/service/V1_Service.js';
+import { V1_rawLambdaModelSchema } from './V1_RawValueSpecificationSerializationHelper.js';
 import {
   type V1_Runtime,
   V1_EngineRuntime,
   V1_LegacyRuntime,
   V1_RuntimePointer,
-} from '../../../model/packageableElements/runtime/V1_Runtime';
+} from '../../../model/packageableElements/runtime/V1_Runtime.js';
 import {
   V1_runtimePointerModelSchema,
   V1_RuntimeType,
-} from './V1_RuntimeSerializationHelper';
-import { V1_ServiceTest } from '../../../model/packageableElements/service/V1_ServiceTest';
+} from './V1_RuntimeSerializationHelper.js';
+import { V1_ServiceTest } from '../../../model/packageableElements/service/V1_ServiceTest.js';
 import {
   V1_stereotypePtrSchema,
   V1_taggedValueSchema,
-} from './V1_DomainSerializationHelper';
-import { V1_ConnectionTestData } from '../../../model/packageableElements/service/V1_ConnectionTestData';
+} from './V1_DomainSerializationHelper.js';
+import { V1_ConnectionTestData } from '../../../model/packageableElements/service/V1_ConnectionTestData.js';
 import {
   V1_deserializeEmbeddedDataType,
   V1_serializeEmbeddedDataType,
-} from './V1_DataElementSerializationHelper';
-import { V1_ParameterValue } from '../../../model/packageableElements/service/V1_ParameterValue';
-import { V1_TestData } from '../../../model/packageableElements/service/V1_TestData';
+} from './V1_DataElementSerializationHelper.js';
+import { V1_ParameterValue } from '../../../model/packageableElements/service/V1_ParameterValue.js';
+import { V1_TestData } from '../../../model/packageableElements/service/V1_TestData.js';
 import {
   V1_AtomicTestType,
   V1_deserializeAtomicTest,
@@ -72,17 +72,17 @@ import {
   V1_serializeTestAssertion,
   V1_serializeTestSuite,
   V1_TestSuiteType,
-} from './V1_TestSerializationHelper';
-import { V1_ServiceTestSuite } from '../../../model/packageableElements/service/V1_ServiceTestSuite';
+} from './V1_TestSerializationHelper.js';
+import { V1_ServiceTestSuite } from '../../../model/packageableElements/service/V1_ServiceTestSuite.js';
 import {
   type V1_DEPRECATED__ServiceTest,
   V1_DEPRECATED__KeyedSingleExecutionTest,
   V1_DEPRECATED__MultiExecutionTest,
   V1_DEPRECATED__SingleExecutionTest,
   V1_DEPRECATED__TestContainer,
-} from '../../../model/packageableElements/service/V1_DEPRECATED__ServiceTest';
-import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin';
-import type { V1_TestSuite } from '../../../model/test/V1_TestSuite';
+} from '../../../model/packageableElements/service/V1_DEPRECATED__ServiceTest.js';
+import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin.js';
+import type { V1_TestSuite } from '../../../model/test/V1_TestSuite.js';
 
 export const V1_SERVICE_ELEMENT_PROTOCOL_TYPE = 'service';
 

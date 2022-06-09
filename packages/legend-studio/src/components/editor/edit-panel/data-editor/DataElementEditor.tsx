@@ -15,13 +15,13 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { useEditorStore } from '../../EditorStoreProvider';
+import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
   DATA_TAB_TYPE,
   type EmbeddedDataEditorState,
   ExternalFormatDataState,
   PackageableDataEditorState,
-} from '../../../../stores/editor-state/element-editor-state/data/DataEditorState';
+} from '../../../../stores/editor-state/element-editor-state/data/DataEditorState.js';
 import {
   CaretDownIcon,
   clsx,
@@ -47,24 +47,24 @@ import {
   annotatedElement_addTaggedValue,
   annotatedElement_deleteStereotype,
   annotatedElement_deleteTaggedValue,
-} from '../../../../stores/graphModifier/DomainGraphModifierHelper';
+} from '../../../../stores/graphModifier/DomainGraphModifierHelper.js';
 import { useDrop } from 'react-dnd';
 import {
   CORE_DND_TYPE,
   type UMLEditorElementDropTarget,
   type ElementDragSource,
-} from '../../../../stores/shared/DnDUtil';
-import { TaggedValueEditor } from '../uml-editor/TaggedValueEditor';
+} from '../../../../stores/shared/DnDUtil.js';
+import { TaggedValueEditor } from '../uml-editor/TaggedValueEditor.js';
 import { useCallback, useEffect, useRef } from 'react';
-import { StereotypeSelector } from '../uml-editor/StereotypeSelector';
-import { UnsupportedEditorPanel } from '../UnsupportedElementEditor';
+import { StereotypeSelector } from '../uml-editor/StereotypeSelector.js';
+import { UnsupportedEditorPanel } from '../UnsupportedElementEditor.js';
 import {
   externalFormatData_setContentType,
   externalFormatData_setData,
-} from '../../../../stores/graphModifier/DSLData_GraphModifierHelper';
-import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor';
-import type { DSLData_LegendStudioPlugin_Extension } from '../../../../stores/DSLData_LegendStudioPlugin_Extension';
-import { getEditorLanguageFromFormat } from '../../../../stores/editor-state/FileGenerationViewerState';
+} from '../../../../stores/graphModifier/DSLData_GraphModifierHelper.js';
+import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor.js';
+import type { DSLData_LegendStudioPlugin_Extension } from '../../../../stores/DSLData_LegendStudioPlugin_Extension.js';
+import { getEditorLanguageFromFormat } from '../../../../stores/editor-state/FileGenerationViewerState.js';
 
 export const ExternalFormatDataEditor = observer(
   (props: {

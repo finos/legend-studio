@@ -17,8 +17,8 @@
 import {
   type V1_ValueSpecificationVisitor,
   V1_ValueSpecification,
-} from '../../../model/valueSpecification/V1_ValueSpecification';
-import type { V1_Variable } from '../../../model/valueSpecification/V1_Variable';
+} from '../../../model/valueSpecification/V1_ValueSpecification.js';
+import type { V1_Variable } from '../../../model/valueSpecification/V1_Variable.js';
 
 export class V1_Lambda extends V1_ValueSpecification {
   body: V1_ValueSpecification[] = [];

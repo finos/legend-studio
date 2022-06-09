@@ -17,8 +17,8 @@
 import type {
   V1_ValueSpecification,
   V1_ValueSpecificationVisitor,
-} from '../../../../model/valueSpecification/V1_ValueSpecification';
-import { V1_GraphFetchTree } from './V1_GraphFetchTree';
+} from '../../../../model/valueSpecification/V1_ValueSpecification.js';
+import { V1_GraphFetchTree } from './V1_GraphFetchTree.js';
 
 export class V1_PropertyGraphFetchTree extends V1_GraphFetchTree {
   property!: string;

@@ -15,32 +15,32 @@
  */
 
 import { guaranteeType, UnsupportedOperationError } from '@finos/legend-shared';
-import { ExternalFormatData } from '../../../../../../../metamodels/pure/data/EmbeddedData';
-import { EqualTo } from '../../../../../../../metamodels/pure/test/assertion/EqualTo';
-import { EqualToJson } from '../../../../../../../metamodels/pure/test/assertion/EqualToJson';
+import { ExternalFormatData } from '../../../../../../../metamodels/pure/data/EmbeddedData.js';
+import { EqualTo } from '../../../../../../../metamodels/pure/test/assertion/EqualTo.js';
+import { EqualToJson } from '../../../../../../../metamodels/pure/test/assertion/EqualToJson.js';
 import {
   EqualToTDS,
   RelationalTDS,
-} from '../../../../../../../metamodels/pure/test/assertion/EqualToTDS';
-import type { TestAssertion } from '../../../../../../../metamodels/pure/test/assertion/TestAssertion';
+} from '../../../../../../../metamodels/pure/test/assertion/EqualToTDS.js';
+import type { TestAssertion } from '../../../../../../../metamodels/pure/test/assertion/TestAssertion.js';
 import type {
   AtomicTest,
   TestSuite,
-} from '../../../../../../../metamodels/pure/test/Test';
-import { V1_ServiceTest } from '../../../../model/packageableElements/service/V1_ServiceTest';
-import { V1_ServiceTestSuite } from '../../../../model/packageableElements/service/V1_ServiceTestSuite';
-import { V1_EqualTo } from '../../../../model/test/assertion/V1_EqualTo';
-import { V1_EqualToJson } from '../../../../model/test/assertion/V1_EqualToJson';
-import { V1_EqualToTDS } from '../../../../model/test/assertion/V1_EqualToTDS';
-import type { V1_TestAssertion } from '../../../../model/test/assertion/V1_TestAssertion';
-import type { V1_AtomicTest } from '../../../../model/test/V1_AtomicTest';
-import type { V1_TestSuite } from '../../../../model/test/V1_TestSuite';
-import type { V1_GraphBuilderContext } from '../V1_GraphBuilderContext';
-import { V1_ProtocolToMetaModelEmbeddedDataBuilder } from './V1_DataElementBuilderHelper';
+} from '../../../../../../../metamodels/pure/test/Test.js';
+import { V1_ServiceTest } from '../../../../model/packageableElements/service/V1_ServiceTest.js';
+import { V1_ServiceTestSuite } from '../../../../model/packageableElements/service/V1_ServiceTestSuite.js';
+import { V1_EqualTo } from '../../../../model/test/assertion/V1_EqualTo.js';
+import { V1_EqualToJson } from '../../../../model/test/assertion/V1_EqualToJson.js';
+import { V1_EqualToTDS } from '../../../../model/test/assertion/V1_EqualToTDS.js';
+import type { V1_TestAssertion } from '../../../../model/test/assertion/V1_TestAssertion.js';
+import type { V1_AtomicTest } from '../../../../model/test/V1_AtomicTest.js';
+import type { V1_TestSuite } from '../../../../model/test/V1_TestSuite.js';
+import type { V1_GraphBuilderContext } from '../V1_GraphBuilderContext.js';
+import { V1_ProtocolToMetaModelEmbeddedDataBuilder } from './V1_DataElementBuilderHelper.js';
 import {
   V1_buildServiceTest,
   V1_buildServiceTestSuite,
-} from './V1_ServiceBuilderHelper';
+} from './V1_ServiceBuilderHelper.js';
 
 const buildEqualTo = (
   element: V1_EqualTo,

@@ -16,8 +16,8 @@
 
 import { createContext, useContext } from 'react';
 import { useLocalObservable } from 'mobx-react-lite';
-import { QuerySetupStore } from '../stores/QuerySetupStore';
-import { useLegendQueryStore } from './LegendQueryStoreProvider';
+import { QuerySetupStore } from '../stores/QuerySetupStore.js';
+import { useLegendQueryStore } from './LegendQueryStoreProvider.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 
 const QuerySetupStoreContext = createContext<QuerySetupStore | undefined>(

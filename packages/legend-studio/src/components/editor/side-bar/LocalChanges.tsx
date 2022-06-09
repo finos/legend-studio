@@ -31,21 +31,21 @@ import {
   ResizablePanelSplitterLine,
   CloudUploadIcon,
 } from '@finos/legend-art';
-import { EntityDiffViewState } from '../../../stores/editor-state/entity-diff-editor-state/EntityDiffViewState';
-import { EntityDiffSideBarItem } from '../../editor/edit-panel/diff-editor/EntityDiffView';
-import { LEGEND_STUDIO_TEST_ID } from '../../LegendStudioTestID';
+import { EntityDiffViewState } from '../../../stores/editor-state/entity-diff-editor-state/EntityDiffViewState.js';
+import { EntityDiffSideBarItem } from '../../editor/edit-panel/diff-editor/EntityDiffView.js';
+import { LEGEND_STUDIO_TEST_ID } from '../../LegendStudioTestID.js';
 import { flowResult } from 'mobx';
 import type {
   EntityChange,
   EntityChangeConflict,
   EntityDiff,
 } from '@finos/legend-server-sdlc';
-import { entityDiffSorter } from '../../../stores/EditorSDLCState';
-import { useEditorStore } from '../EditorStoreProvider';
+import { entityDiffSorter } from '../../../stores/EditorSDLCState.js';
+import { useEditorStore } from '../EditorStoreProvider.js';
 import { useApplicationStore } from '@finos/legend-application';
 import { useEffect } from 'react';
-import { EntityChangeConflictEditorState } from '../../../stores/editor-state/entity-diff-editor-state/EntityChangeConflictEditorState';
-import { EntityChangeConflictSideBarItem } from '../edit-panel/diff-editor/EntityChangeConflictEditor';
+import { EntityChangeConflictEditorState } from '../../../stores/editor-state/entity-diff-editor-state/EntityChangeConflictEditorState.js';
+import { EntityChangeConflictSideBarItem } from '../edit-panel/diff-editor/EntityChangeConflictEditor.js';
 
 const PatchLoader = observer(() => {
   const editorStore = useEditorStore();

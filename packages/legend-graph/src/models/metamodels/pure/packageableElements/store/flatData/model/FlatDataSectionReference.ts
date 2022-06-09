@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst.js';
 import { hashString } from '@finos/legend-shared';
 import {
   PackageableElementExplicitReference,
   type PackageableElementReference,
   type PackageableElementImplicitReference,
-} from '../../../PackageableElementReference';
-import { ReferenceWithOwner } from '../../../../Reference';
-import type { FlatData } from './FlatData';
-import type { FlatDataSection } from './FlatDataSection';
+} from '../../../PackageableElementReference.js';
+import { ReferenceWithOwner } from '../../../../Reference.js';
+import type { FlatData } from './FlatData.js';
+import type { FlatDataSection } from './FlatDataSection.js';
 
 export abstract class FlatDataSectionReference extends ReferenceWithOwner {
   override readonly ownerReference: PackageableElementReference<FlatData>;

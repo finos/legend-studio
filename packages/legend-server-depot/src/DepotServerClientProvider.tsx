@@ -20,7 +20,7 @@ import { createContext, useContext } from 'react';
 import {
   type DepotServerClientConfig,
   DepotServerClient,
-} from './DepotServerClient';
+} from './DepotServerClient.js';
 
 const DepotServerClientContext = createContext<DepotServerClient | undefined>(
   undefined,

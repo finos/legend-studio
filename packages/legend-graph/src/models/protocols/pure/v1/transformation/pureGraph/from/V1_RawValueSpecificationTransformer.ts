@@ -14,21 +14,20 @@
  * limitations under the License.
  */
 
-import type { RawValueSpecificationVisitor } from '../../../../../../metamodels/pure/rawValueSpecification/RawValueSpecification';
-import type { RawLambda } from '../../../../../../metamodels/pure/rawValueSpecification/RawLambda';
-import type { RawVariableExpression } from '../../../../../../metamodels/pure/rawValueSpecification/RawVariableExpression';
-import { V1_RawLambda } from '../../../model/rawValueSpecification/V1_RawLambda';
-import { V1_RawVariable } from '../../../model/rawValueSpecification/V1_RawVariable';
+import type { RawValueSpecificationVisitor } from '../../../../../../metamodels/pure/rawValueSpecification/RawValueSpecification.js';
+import type { RawLambda } from '../../../../../../metamodels/pure/rawValueSpecification/RawLambda.js';
+import type { RawVariableExpression } from '../../../../../../metamodels/pure/rawValueSpecification/RawVariableExpression.js';
+import { V1_RawLambda } from '../../../model/rawValueSpecification/V1_RawLambda.js';
+import { V1_RawVariable } from '../../../model/rawValueSpecification/V1_RawVariable.js';
 import {
   V1_transformMultiplicity,
   V1_transformElementReference,
-} from './V1_CoreTransformerHelper';
-import { SOURCE_INFORMATION_KEY } from '../../../../../../../MetaModelConst';
-import { recursiveOmit } from '@finos/legend-shared';
-import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext';
-import type { V1_RawValueSpecification } from '../../../model/rawValueSpecification/V1_RawValueSpecification';
-import { V1_RawPrimitiveInstanceValue } from '../../../model/rawValueSpecification/V1_RawPrimitiveInstanceValue';
-import type { RawPrimitiveInstanceValue } from '../../../../../../metamodels/pure/rawValueSpecification/RawPrimitiveInstanceValue';
+} from './V1_CoreTransformerHelper.js';
+import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext.js';
+import type { V1_RawValueSpecification } from '../../../model/rawValueSpecification/V1_RawValueSpecification.js';
+import { V1_RawPrimitiveInstanceValue } from '../../../model/rawValueSpecification/V1_RawPrimitiveInstanceValue.js';
+import type { RawPrimitiveInstanceValue } from '../../../../../../metamodels/pure/rawValueSpecification/RawPrimitiveInstanceValue.js';
+import { pruneSourceInformation } from '../../../../../../../MetaModelUtils.js';
 
 export class V1_RawValueSpecificationTransformer
   implements RawValueSpecificationVisitor<V1_RawValueSpecification>
@@ -48,17 +47,15 @@ export class V1_RawValueSpecificationTransformer
     rawLambda.body = rawValueSpecification.body
       ? this.context.keepSourceInformation
         ? rawValueSpecification.body
-        : recursiveOmit(
+        : pruneSourceInformation(
             rawValueSpecification.body as Record<PropertyKey, unknown>,
-            [SOURCE_INFORMATION_KEY],
           )
       : undefined;
     rawLambda.parameters = rawValueSpecification.parameters
       ? this.context.keepSourceInformation
         ? rawValueSpecification.parameters
-        : recursiveOmit(
+        : pruneSourceInformation(
             rawValueSpecification.parameters as Record<PropertyKey, unknown>,
-            [SOURCE_INFORMATION_KEY],
           )
       : undefined;
     return rawLambda;

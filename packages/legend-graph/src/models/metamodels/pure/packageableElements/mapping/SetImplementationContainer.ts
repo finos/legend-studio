@@ -15,7 +15,7 @@
  */
 
 import { uuid } from '@finos/legend-shared';
-import type { SetImplementationReference } from './SetImplementationReference';
+import type { SetImplementationReference } from './SetImplementationReference.js';
 
 export class SetImplementationContainer {
   readonly _UUID = uuid();

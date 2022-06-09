@@ -15,10 +15,10 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { DSL_EXTERNAL_FORMAT_HASH_STRUCTURE } from '../../../../../../../DSLExternalFormat_ModelUtils';
-import { V1_Store } from '../../store/V1_Store';
-import type { V1_PackageableElementVisitor } from '../../V1_PackageableElement';
-import type { V1_ModelUnit } from './V1_DSLExternalFormat_ModelUnit';
+import { DSL_EXTERNAL_FORMAT_HASH_STRUCTURE } from '../../../../../../../DSLExternalFormat_ModelUtils.js';
+import { V1_Store } from '../../store/V1_Store.js';
+import type { V1_PackageableElementVisitor } from '../../V1_PackageableElement.js';
+import type { V1_ModelUnit } from './V1_DSLExternalFormat_ModelUnit.js';
 
 export class V1_Binding extends V1_Store implements Hashable {
   schemaSet?: string | undefined;

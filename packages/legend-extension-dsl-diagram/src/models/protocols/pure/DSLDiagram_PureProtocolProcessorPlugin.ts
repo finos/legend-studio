@@ -15,13 +15,13 @@
  */
 
 import packageJson from '../../../../package.json';
-import { V1_Diagram } from './v1/model/packageableElements/diagram/V1_DSLDiagram_Diagram';
+import { V1_Diagram } from './v1/model/packageableElements/diagram/V1_DSLDiagram_Diagram.js';
 import { type PlainObject, assertType } from '@finos/legend-shared';
 import { deserialize, serialize } from 'serializr';
 import {
   V1_diagramModelSchema,
   V1_DIAGRAM_ELEMENT_PROTOCOL_TYPE,
-} from './v1/transformation/pureProtocol/V1_DSLDiagram_ProtocolHelper';
+} from './v1/transformation/pureProtocol/V1_DSLDiagram_ProtocolHelper.js';
 import {
   type PackageableElement,
   type V1_ElementProtocolClassifierPathGetter,
@@ -35,14 +35,14 @@ import {
   V1_ElementBuilder,
   V1_buildFullPath,
 } from '@finos/legend-graph';
-import { V1_transformDiagram } from './v1/transformation/pureGraph/V1_DSLDiagram_TransformerHelper';
-import { Diagram } from '../../metamodels/pure/packageableElements/diagram/DSLDiagram_Diagram';
-import { getOwnDiagram } from '../../../graphManager/DSLDiagram_GraphManagerHelper';
+import { V1_transformDiagram } from './v1/transformation/pureGraph/V1_DSLDiagram_TransformerHelper.js';
+import { Diagram } from '../../metamodels/pure/packageableElements/diagram/DSLDiagram_Diagram.js';
+import { getOwnDiagram } from '../../../graphManager/DSLDiagram_GraphManagerHelper.js';
 import {
   V1_buildClassView,
   V1_buildGeneralizationView,
   V1_buildPropertyView,
-} from './v1/transformation/pureGraph/V1_DSLDiagram_GraphBuilderHelper';
+} from './v1/transformation/pureGraph/V1_DSLDiagram_GraphBuilderHelper.js';
 
 const DIAGRAM_ELEMENT_CLASSIFIER_PATH =
   'meta::pure::metamodel::diagram::Diagram';

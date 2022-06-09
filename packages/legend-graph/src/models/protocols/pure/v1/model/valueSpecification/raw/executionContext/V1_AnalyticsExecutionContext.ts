@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import type { V1_Lambda } from '../../../../model/valueSpecification/raw/V1_Lambda';
-import { V1_ExecutionContext } from './V1_ExecutionContext';
+import type { V1_Lambda } from '../../../../model/valueSpecification/raw/V1_Lambda.js';
+import { V1_ExecutionContext } from './V1_ExecutionContext.js';
 
 export class V1_AnalyticsExecutionContext extends V1_ExecutionContext {
   useAnalytics!: boolean;

@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-import { ApplicationStore } from './ApplicationStore';
+import { ApplicationStore } from './ApplicationStore.js';
 import { createBrowserHistory } from 'history';
-import { WebApplicationNavigator } from './WebApplicationNavigator';
-import type { LegendApplicationConfig } from './LegendApplicationConfig';
-import type { LegendApplicationPluginManager } from '../application/LegendApplicationPluginManager';
+import { WebApplicationNavigator } from './WebApplicationNavigator.js';
+import type { LegendApplicationConfig } from './LegendApplicationConfig.js';
+import type { LegendApplicationPluginManager } from '../application/LegendApplicationPluginManager.js';
 
 export const TEST_DATA__applicationVersion = {
   buildTime: '2001-01-01T00:00:00-0000',

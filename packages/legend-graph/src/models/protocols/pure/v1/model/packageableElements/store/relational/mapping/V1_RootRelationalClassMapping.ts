@@ -15,12 +15,12 @@
  */
 
 import { type Hashable, hashArray } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../../../MetaModelConst';
-import type { V1_FilterMapping } from './V1_FilterMapping';
-import { V1_RelationalClassMapping } from './V1_RelationalClassMapping';
-import type { V1_RelationalOperationElement } from '../../../../../model/packageableElements/store/relational/model/V1_RelationalOperationElement';
-import type { V1_TablePtr } from '../../../../../model/packageableElements/store/relational/model/V1_TablePtr';
-import type { V1_ClassMappingVisitor } from '../../../../../model/packageableElements/mapping/V1_ClassMapping';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../../../MetaModelConst.js';
+import type { V1_FilterMapping } from './V1_FilterMapping.js';
+import { V1_RelationalClassMapping } from './V1_RelationalClassMapping.js';
+import type { V1_RelationalOperationElement } from '../../../../../model/packageableElements/store/relational/model/V1_RelationalOperationElement.js';
+import type { V1_TablePtr } from '../../../../../model/packageableElements/store/relational/model/V1_TablePtr.js';
+import type { V1_ClassMappingVisitor } from '../../../../../model/packageableElements/mapping/V1_ClassMapping.js';
 
 export class V1_RootRelationalClassMapping
   extends V1_RelationalClassMapping
@@ -45,7 +45,6 @@ export class V1_RootRelationalClassMapping
       this.distinct.toString(),
       hashArray(this.groupBy),
       this.filter ?? '',
-      this.extendsClassMappingId ?? '',
     ]);
   }
 }

@@ -20,33 +20,33 @@ import {
   guaranteeType,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
-import { AssertFail } from '../../../../../../../metamodels/pure/test/assertion/status/AssertFail';
-import type { AssertionStatus } from '../../../../../../../metamodels/pure/test/assertion/status/AssertionStatus';
-import { AssertPass } from '../../../../../../../metamodels/pure/test/assertion/status/AssertPass';
-import { EqualToJsonAssertFail } from '../../../../../../../metamodels/pure/test/assertion/status/EqualToJsonAssertFail';
-import { AtomicTestId } from '../../../../../../../metamodels/pure/test/result/AtomicTestId';
+import { AssertFail } from '../../../../../../../metamodels/pure/test/assertion/status/AssertFail.js';
+import type { AssertionStatus } from '../../../../../../../metamodels/pure/test/assertion/status/AssertionStatus.js';
+import { AssertPass } from '../../../../../../../metamodels/pure/test/assertion/status/AssertPass.js';
+import { EqualToJsonAssertFail } from '../../../../../../../metamodels/pure/test/assertion/status/EqualToJsonAssertFail.js';
+import { AtomicTestId } from '../../../../../../../metamodels/pure/test/result/AtomicTestId.js';
 import {
   TestError,
   TestFailed,
   TestPassed,
   type TestResult,
-} from '../../../../../../../metamodels/pure/test/result/TestResult';
+} from '../../../../../../../metamodels/pure/test/result/TestResult.js';
 import {
   AtomicTest,
   TestSuite,
-} from '../../../../../../../metamodels/pure/test/Test';
-import type { Testable } from '../../../../../../../metamodels/pure/test/Testable';
-import { V1_AssertFail } from '../../../../model/test/assertion/status/V1_AssertFail';
-import type { V1_AssertionStatus } from '../../../../model/test/assertion/status/V1_AssertionStatus';
-import { V1_AssertPass } from '../../../../model/test/assertion/status/V1_AssertPass';
-import { V1_EqualToJsonAssertFail } from '../../../../model/test/assertion/status/V1_EqualToJsonAssertFail';
+} from '../../../../../../../metamodels/pure/test/Test.js';
+import type { Testable } from '../../../../../../../metamodels/pure/test/Testable.js';
+import { V1_AssertFail } from '../../../../model/test/assertion/status/V1_AssertFail.js';
+import type { V1_AssertionStatus } from '../../../../model/test/assertion/status/V1_AssertionStatus.js';
+import { V1_AssertPass } from '../../../../model/test/assertion/status/V1_AssertPass.js';
+import { V1_EqualToJsonAssertFail } from '../../../../model/test/assertion/status/V1_EqualToJsonAssertFail.js';
 import {
   type V1_TestResult,
   V1_TestFailed,
   V1_TestPassed,
   V1_TestError,
-} from '../../../../model/test/result/V1_TestResult';
-import type { V1_AtomicTestId } from '../../../../model/test/V1_AtomicTestId';
+} from '../../../../model/test/result/V1_TestResult.js';
+import type { V1_AtomicTestId } from '../../../../model/test/V1_AtomicTestId.js';
 
 const buildAtomicTestId = (
   element: V1_AtomicTestId,

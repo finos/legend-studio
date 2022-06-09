@@ -15,7 +15,7 @@
  */
 
 import { uuid } from '@finos/legend-shared';
-import type { Profile } from './Profile';
+import type { Profile } from './Profile.js';
 
 export class Tag {
   readonly _UUID = uuid();

@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-extension-dsl-text",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "description": "Legend extension for Text DSL",
   "keywords": [
     "legend",
@@ -49,21 +49,22 @@
     "@finos/legend-model-storage": "workspace:*",
     "@finos/legend-shared": "workspace:*",
     "@finos/legend-studio": "workspace:*",
-    "@types/react": "18.0.9",
-    "mobx": "6.5.0",
+    "@types/react": "18.0.12",
+    "mobx": "6.6.0",
     "mobx-react-lite": "3.4.0",
     "react": "18.1.0",
     "serializr": "2.0.5"
   },
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",
+    "@jest/globals": "28.1.0",
     "cross-env": "7.0.3",
-    "eslint": "8.15.0",
+    "eslint": "8.17.0",
     "jest": "28.1.0",
     "npm-run-all": "4.1.5",
     "rimraf": "3.0.2",
-    "sass": "1.51.0",
-    "typescript": "4.6.4"
+    "sass": "1.52.2",
+    "typescript": "4.7.3"
   },
   "peerDependencies": {
     "react": "^18.0.0"

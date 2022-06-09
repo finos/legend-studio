@@ -16,8 +16,8 @@
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import type { RawLambda } from '@finos/legend-graph';
-import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../ESService_ModelUtils';
-import type { ServiceParameter } from '../model/ESService_ServiceParameter';
+import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../ESService_ModelUtils.js';
+import type { ServiceParameter } from '../model/ESService_ServiceParameter.js';
 
 export class ServiceRequestParameterBuildInfo implements Hashable {
   serviceParameter!: ServiceParameter;
@@ -26,7 +26,7 @@ export class ServiceRequestParameterBuildInfo implements Hashable {
   get hashCode(): string {
     return hashArray([
       SERVICE_STORE_HASH_STRUCTURE.SERVICE_REQUEST_PARAMETER_BUILD_INFO,
-      this.serviceParameter,
+      this.serviceParameter.name,
       this.transform,
     ]);
   }

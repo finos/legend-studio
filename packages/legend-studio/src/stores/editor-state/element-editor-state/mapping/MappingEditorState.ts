@@ -22,19 +22,19 @@ import {
   makeObservable,
   flowResult,
 } from 'mobx';
-import type { EditorStore } from '../../../EditorStore';
+import type { EditorStore } from '../../../EditorStore.js';
 import {
   InstanceSetImplementationState,
   MappingElementState,
-} from './MappingElementState';
-import { PureInstanceSetImplementationState } from './PureInstanceSetImplementationState';
-import { ElementEditorState } from '../../../editor-state/element-editor-state/ElementEditorState';
+} from './MappingElementState.js';
+import { PureInstanceSetImplementationState } from './PureInstanceSetImplementationState.js';
+import { ElementEditorState } from '../../../editor-state/element-editor-state/ElementEditorState.js';
 import {
   MAPPING_TEST_EDITOR_TAB_TYPE,
   MappingTestState,
   TEST_RESULT,
-} from './MappingTestState';
-import { createMockDataForMappingElementSource } from '../../../shared/MockDataUtil';
+} from './MappingTestState.js';
+import { createMockDataForMappingElementSource } from '../../../shared/MockDataUtil.js';
 import {
   type GeneratorFn,
   assertErrorThrown,
@@ -51,14 +51,17 @@ import {
   addUniqueEntry,
   filterByType,
 } from '@finos/legend-shared';
-import { MappingExecutionState } from './MappingExecutionState';
+import { MappingExecutionState } from './MappingExecutionState.js';
 import {
   FlatDataInstanceSetImplementationState,
   RootFlatDataInstanceSetImplementationState,
-} from './FlatDataInstanceSetImplementationState';
+} from './FlatDataInstanceSetImplementationState.js';
 import type { TreeNodeData, TreeData } from '@finos/legend-art';
-import { UnsupportedInstanceSetImplementationState } from './UnsupportedInstanceSetImplementationState';
-import { RootRelationalInstanceSetImplementationState } from './relational/RelationalInstanceSetImplementationState';
+import { UnsupportedInstanceSetImplementationState } from './UnsupportedInstanceSetImplementationState.js';
+import {
+  RelationalInstanceSetImplementationState,
+  RootRelationalInstanceSetImplementationState,
+} from './relational/RelationalInstanceSetImplementationState.js';
 import {
   type CompilationError,
   type PackageableElement,
@@ -107,9 +110,9 @@ import { LambdaEditorState } from '@finos/legend-application';
 import type {
   DSLMapping_LegendStudioPlugin_Extension,
   MappingElementLabel,
-} from '../../../DSLMapping_LegendStudioPlugin_Extension';
-import type { LegendStudioPlugin } from '../../../LegendStudioPlugin';
-import { flatData_setSourceRootRecordType } from '../../../graphModifier/StoreFlatData_GraphModifierHelper';
+} from '../../../DSLMapping_LegendStudioPlugin_Extension.js';
+import type { LegendStudioPlugin } from '../../../LegendStudioPlugin.js';
+import { flatData_setSourceRootRecordType } from '../../../graphModifier/StoreFlatData_GraphModifierHelper.js';
 import {
   pureInstanceSetImpl_setSrcClass,
   mapping_addClassMapping,
@@ -121,8 +124,8 @@ import {
   mapping_deleteTest,
   setImpl_updateRootOnCreate,
   setImpl_updateRootOnDelete,
-} from '../../../graphModifier/DSLMapping_GraphModifierHelper';
-import { BASIC_SET_IMPLEMENTATION_TYPE } from '../../../shared/ModelUtil';
+} from '../../../graphModifier/DSLMapping_GraphModifierHelper.js';
+import { BASIC_SET_IMPLEMENTATION_TYPE } from '../../../shared/ModelUtil.js';
 
 export interface MappingExplorerTreeNodeData extends TreeNodeData {
   mappingElement: MappingElement;
@@ -1236,14 +1239,9 @@ export class MappingEditorState extends ElementEditorState {
               `Can't reveal compilation error: mapping ID is missing`,
             ),
           );
-          // NOTE: Unfortunately this is quite convoluted at the moment that is because we maintain a separate state
-          // that wraps around property mapping, this is deliberate as we don't want to mix UI state in metamodel classes
-          // in the future if this gets bigger, we might need to move this out to `MappingElementState`
-          if (
-            newMappingElement instanceof PureInstanceSetImplementation ||
-            newMappingElement instanceof FlatDataInstanceSetImplementation ||
-            newMappingElement instanceof EmbeddedFlatDataPropertyMapping
-          ) {
+          // TODO: take care of operation mapping using systematic coordinates
+          // See https://github.com/finos/legend-studio/issues/1168
+          if (newMappingElement instanceof InstanceSetImplementation) {
             const propertyMapping = findPropertyMapping(
               newMappingElement,
               guaranteeNonNullable(
@@ -1260,10 +1258,14 @@ export class MappingEditorState extends ElementEditorState {
                 this.openMappingElement(newMappingElement, false);
               }
               if (
+                // TODO: take care of operation mapping using systematic coordinates
+                // See https://github.com/finos/legend-studio/issues/1168
                 this.currentTabState instanceof
                   PureInstanceSetImplementationState ||
                 this.currentTabState instanceof
-                  FlatDataInstanceSetImplementationState
+                  FlatDataInstanceSetImplementationState ||
+                this.currentTabState instanceof
+                  RelationalInstanceSetImplementationState
               ) {
                 const propertyMappingState: LambdaEditorState | undefined = (
                   this.currentTabState.propertyMappingStates as unknown[]

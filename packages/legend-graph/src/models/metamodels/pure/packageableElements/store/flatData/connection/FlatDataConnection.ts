@@ -20,13 +20,13 @@ import {
   ContentType,
   createUrlStringFromData,
 } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst.js';
 import {
   type ConnectionVisitor,
   Connection,
-} from '../../../connection/Connection';
-import type { PackageableElementReference } from '../../../PackageableElementReference';
-import type { FlatData } from '../model/FlatData';
+} from '../../../connection/Connection.js';
+import type { PackageableElementReference } from '../../../PackageableElementReference.js';
+import type { FlatData } from '../model/FlatData.js';
 
 export class FlatDataConnection extends Connection implements Hashable {
   declare store: PackageableElementReference<FlatData>;

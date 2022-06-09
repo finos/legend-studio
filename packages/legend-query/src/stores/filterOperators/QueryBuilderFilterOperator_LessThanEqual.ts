@@ -18,25 +18,24 @@ import {
   QueryBuilderFilterOperator,
   type QueryBuilderFilterState,
   type FilterConditionState,
-} from '../QueryBuilderFilterState';
+} from '../QueryBuilderFilterState.js';
 import {
   PRIMITIVE_TYPE,
   type ValueSpecification,
   type SimpleFunctionExpression,
   type AbstractPropertyExpression,
   isSuperType,
+  SUPPORTED_FUNCTIONS,
+  buildPrimitiveInstanceValue,
 } from '@finos/legend-graph';
 import { UnsupportedOperationError } from '@finos/legend-shared';
 import {
   buildFilterConditionState,
   buildFilterConditionExpression,
-} from './QueryBuilderFilterOperatorHelper';
-import { SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
-import { generateDefaultValueForPrimitiveType } from '../QueryBuilderValueSpecificationBuilderHelper';
-import {
-  buildPrimitiveInstanceValue,
-  getNonCollectionValueSpecificationType,
-} from '../QueryBuilderOperatorsHelper';
+} from './QueryBuilderFilterOperatorHelper.js';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const.js';
+import { generateDefaultValueForPrimitiveType } from '../QueryBuilderValueSpecificationBuilderHelper.js';
+import { getNonCollectionValueSpecificationType } from '../QueryBuilderOperatorsHelper.js';
 
 export class QueryBuilderFilterOperator_LessThanEqual extends QueryBuilderFilterOperator {
   getLabel(filterConditionState: FilterConditionState): string {
@@ -142,7 +141,7 @@ export class QueryBuilderFilterOperator_LessThanEqual extends QueryBuilderFilter
         filterConditionState.value?.genericType?.value.rawType.path !==
           PRIMITIVE_TYPE.DATETIME
         ? SUPPORTED_FUNCTIONS.IS_ON_OR_BEFORE_DAY
-        : SUPPORTED_FUNCTIONS.LESS_THAN_EQUAL,
+        : QUERY_BUILDER_SUPPORTED_FUNCTIONS.LESS_THAN_EQUAL,
     );
   }
 
@@ -158,7 +157,7 @@ export class QueryBuilderFilterOperator_LessThanEqual extends QueryBuilderFilter
         expression.parametersValues[1]?.genericType?.value.rawType.path !==
           PRIMITIVE_TYPE.DATETIME
         ? SUPPORTED_FUNCTIONS.IS_ON_OR_BEFORE_DAY
-        : SUPPORTED_FUNCTIONS.LESS_THAN_EQUAL,
+        : QUERY_BUILDER_SUPPORTED_FUNCTIONS.LESS_THAN_EQUAL,
       this,
     );
   }

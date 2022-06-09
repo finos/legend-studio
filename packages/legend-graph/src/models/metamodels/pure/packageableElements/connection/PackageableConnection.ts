@@ -15,12 +15,12 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
+import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst.js';
 import {
   type PackageableElementVisitor,
   PackageableElement,
-} from '../PackageableElement';
-import type { Connection } from './Connection';
+} from '../PackageableElement.js';
+import type { Connection } from './Connection.js';
 
 export class PackageableConnection
   extends PackageableElement

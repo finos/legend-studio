@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import { V1_ResultType } from './V1_ResultType';
-import type { V1_TDSColumn } from './V1_TDSColumn';
+import { V1_ResultType } from './V1_ResultType.js';
+import type { V1_TDSColumn } from './V1_TDSColumn.js';
 
 export class V1_TDSResultType extends V1_ResultType {
   tdsColumns: V1_TDSColumn[] = [];

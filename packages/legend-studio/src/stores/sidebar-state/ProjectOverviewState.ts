@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import type { EditorStore } from '../EditorStore';
-import type { EditorSDLCState } from '../EditorSDLCState';
+import type { EditorStore } from '../EditorStore.js';
+import type { EditorSDLCState } from '../EditorSDLCState.js';
 import { action, flowResult, makeAutoObservable } from 'mobx';
 import {
   type GeneratorFn,
@@ -24,7 +24,7 @@ import {
   LogEvent,
   getNullableFirstElement,
 } from '@finos/legend-shared';
-import { generateSetupRoute } from '../LegendStudioRouter';
+import { generateSetupRoute } from '../LegendStudioRouter.js';
 import {
   type NewVersionType,
   CreateVersionCommand,
@@ -36,7 +36,7 @@ import {
   Review,
   areWorkspacesEquivalent,
 } from '@finos/legend-server-sdlc';
-import { LEGEND_STUDIO_APP_EVENT } from '../LegendStudioAppEvent';
+import { LEGEND_STUDIO_APP_EVENT } from '../LegendStudioAppEvent.js';
 
 export enum PROJECT_OVERVIEW_ACTIVITY_MODE {
   RELEASE = 'RELEASE',

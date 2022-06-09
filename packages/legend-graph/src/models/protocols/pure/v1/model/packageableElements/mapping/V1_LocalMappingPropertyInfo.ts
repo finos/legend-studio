@@ -15,8 +15,8 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import type { V1_Multiplicity } from '../../../model/packageableElements/domain/V1_Multiplicity';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
+import type { V1_Multiplicity } from '../../../model/packageableElements/domain/V1_Multiplicity.js';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst.js';
 
 export class V1_LocalMappingPropertyInfo implements Hashable {
   type!: string;

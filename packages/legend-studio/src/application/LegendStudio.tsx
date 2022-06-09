@@ -17,8 +17,8 @@
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import { configure as configureReactHotkeys } from 'react-hotkeys';
-import { LegendStudioApplication } from '../components/LegendStudioApplication';
-import { LegendStudioPluginManager } from './LegendStudioPluginManager';
+import { LegendStudioApplication } from '../components/LegendStudioApplication.js';
+import { LegendStudioPluginManager } from './LegendStudioPluginManager.js';
 import {
   type LegendApplicationConfig,
   type LegendApplicationLogger,
@@ -33,8 +33,8 @@ import { getRootElement } from '@finos/legend-art';
 import {
   type LegendStudioConfigurationData,
   LegendStudioConfig,
-} from './LegendStudioConfig';
-import { Core_LegendStudioPlugin } from '../components/Core_LegendStudioPlugin';
+} from './LegendStudioConfig.js';
+import { Core_LegendStudioPlugin } from '../components/Core_LegendStudioPlugin.js';
 
 const setupLegendStudioUILibrary = async (
   pluginManager: LegendStudioPluginManager,

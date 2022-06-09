@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import clsx from 'clsx';
+import { clsx } from '../utils/CJS__clsx.cjs';
 
 export const LegendLogo: React.FC<{
   className?: string;

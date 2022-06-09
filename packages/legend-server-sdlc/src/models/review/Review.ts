@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import { User } from '../User';
+import { User } from '../User.js';
 import { SKIP, custom, createModelSchema, primitive } from 'serializr';
 import { SerializationFactory, usingModelSchema } from '@finos/legend-shared';
-import type { WorkspaceType } from '../workspace/Workspace';
+import type { WorkspaceType } from '../workspace/Workspace.js';
 
 export enum ReviewState {
   OPEN = 'OPEN',

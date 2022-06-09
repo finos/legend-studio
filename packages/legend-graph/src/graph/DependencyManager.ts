@@ -14,29 +14,29 @@
  * limitations under the License.
  */
 
-import { ROOT_PACKAGE_NAME } from '../MetaModelConst';
+import { ROOT_PACKAGE_NAME } from '../MetaModelConst.js';
 import { type Clazz, guaranteeNonNullable } from '@finos/legend-shared';
-import type { PackageableElement } from '../models/metamodels/pure/packageableElements/PackageableElement';
-import type { Enumeration } from '../models/metamodels/pure/packageableElements/domain/Enumeration';
-import type { Type } from '../models/metamodels/pure/packageableElements/domain/Type';
-import type { Class } from '../models/metamodels/pure/packageableElements/domain/Class';
-import type { Mapping } from '../models/metamodels/pure/packageableElements/mapping/Mapping';
-import type { Profile } from '../models/metamodels/pure/packageableElements/domain/Profile';
-import { Package } from '../models/metamodels/pure/packageableElements/domain/Package';
-import type { ConcreteFunctionDefinition } from '../models/metamodels/pure/packageableElements/domain/ConcreteFunctionDefinition';
-import type { Store } from '../models/metamodels/pure/packageableElements/store/Store';
-import type { Association } from '../models/metamodels/pure/packageableElements/domain/Association';
-import type { Service } from '../models/metamodels/pure/packageableElements/service/Service';
-import { BasicModel } from '../graph/BasicModel';
-import type { PackageableRuntime } from '../models/metamodels/pure/packageableElements/runtime/PackageableRuntime';
-import type { PackageableConnection } from '../models/metamodels/pure/packageableElements/connection/PackageableConnection';
-import type { FileGenerationSpecification } from '../models/metamodels/pure/packageableElements/fileGeneration/FileGenerationSpecification';
-import type { GenerationSpecification } from '../models/metamodels/pure/packageableElements/generationSpecification/GenerationSpecification';
-import type { Measure } from '../models/metamodels/pure/packageableElements/domain/Measure';
-import type { SectionIndex } from '../models/metamodels/pure/packageableElements/section/SectionIndex';
+import type { PackageableElement } from '../models/metamodels/pure/packageableElements/PackageableElement.js';
+import type { Enumeration } from '../models/metamodels/pure/packageableElements/domain/Enumeration.js';
+import type { Type } from '../models/metamodels/pure/packageableElements/domain/Type.js';
+import type { Class } from '../models/metamodels/pure/packageableElements/domain/Class.js';
+import type { Mapping } from '../models/metamodels/pure/packageableElements/mapping/Mapping.js';
+import type { Profile } from '../models/metamodels/pure/packageableElements/domain/Profile.js';
+import { Package } from '../models/metamodels/pure/packageableElements/domain/Package.js';
+import type { ConcreteFunctionDefinition } from '../models/metamodels/pure/packageableElements/domain/ConcreteFunctionDefinition.js';
+import type { Store } from '../models/metamodels/pure/packageableElements/store/Store.js';
+import type { Association } from '../models/metamodels/pure/packageableElements/domain/Association.js';
+import type { Service } from '../models/metamodels/pure/packageableElements/service/Service.js';
+import { BasicModel } from '../graph/BasicModel.js';
+import type { PackageableRuntime } from '../models/metamodels/pure/packageableElements/runtime/PackageableRuntime.js';
+import type { PackageableConnection } from '../models/metamodels/pure/packageableElements/connection/PackageableConnection.js';
+import type { FileGenerationSpecification } from '../models/metamodels/pure/packageableElements/fileGeneration/FileGenerationSpecification.js';
+import type { GenerationSpecification } from '../models/metamodels/pure/packageableElements/generationSpecification/GenerationSpecification.js';
+import type { Measure } from '../models/metamodels/pure/packageableElements/domain/Measure.js';
+import type { SectionIndex } from '../models/metamodels/pure/packageableElements/section/SectionIndex.js';
 import type { Entity } from '@finos/legend-model-storage';
-import type { Database } from '../models/metamodels/pure/packageableElements/store/relational/model/Database';
-import type { DataElement } from '../models/metamodels/pure/packageableElements/data/DataElement';
+import type { Database } from '../models/metamodels/pure/packageableElements/store/relational/model/Database.js';
+import type { DataElement } from '../models/metamodels/pure/packageableElements/data/DataElement.js';
 
 class DependencyModel extends BasicModel {
   constructor(

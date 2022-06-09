@@ -14,6 +14,6 @@
  * limitations under the License.
  */
 
-import { AssertionStatus } from './AssertionStatus';
+import { AssertionStatus } from './AssertionStatus.js';
 
 export class AssertPass extends AssertionStatus {}

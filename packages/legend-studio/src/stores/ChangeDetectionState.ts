@@ -24,7 +24,7 @@ import {
   makeObservable,
   isComputedProp,
 } from 'mobx';
-import { CHANGE_DETECTION_EVENT } from './ChangeDetectionEvent';
+import { CHANGE_DETECTION_EVENT } from './ChangeDetectionEvent.js';
 import {
   type GeneratorFn,
   LogEvent,
@@ -36,8 +36,8 @@ import {
   promisify,
   ActionState,
 } from '@finos/legend-shared';
-import type { EditorStore } from './EditorStore';
-import type { EditorGraphState } from './EditorGraphState';
+import type { EditorStore } from './EditorStore.js';
+import type { EditorGraphState } from './EditorGraphState.js';
 import type { Entity } from '@finos/legend-model-storage';
 import {
   type EntityChangeConflictResolution,
@@ -212,7 +212,7 @@ export class ChangeDetectionState {
    * See {@link preComputeGraphElementHashes} for more details
    */
   private graphElementHashCodeKeepAliveComputationDisposers: IDisposer[] = [];
-  changeDetectionReaction?: IReactionDisposer | undefined;
+  private changeDetectionReaction?: IReactionDisposer | undefined;
   /**
    * [1. PJL] Store the entities from project HEAD (i.e. project latest revision)
    * This can be used to compute changes for a review as well as changes and potential conflicts when updating workspace
@@ -566,7 +566,7 @@ export class ChangeDetectionState {
   /**
    * Workspace update conflicts are computed between 2 sets of changes:
    * 1. Incoming changes: changes between workspace BASE revision and project LATEST revision
-   * 2. Current changes: changes between worksace BASE revision and workspace HEAD revision
+   * 2. Current changes: changes between workspace BASE revision and workspace HEAD revision
    */
   *computeWorkspaceUpdateConflicts(quiet?: boolean): GeneratorFn<void> {
     const startTime = Date.now();
@@ -592,7 +592,7 @@ export class ChangeDetectionState {
   /**
    * Conflict resolution conflicts are computed between 2 sets of changes:
    * 1. Incoming changes: changes between workspace BASE revision and conflict resolution BASE revision
-   * 2. Current changes: changes between worksace BASE revision and workspace HEAD revision
+   * 2. Current changes: changes between workspace BASE revision and workspace HEAD revision
    */
   *computeConflictResolutionConflicts(quiet?: boolean): GeneratorFn<void> {
     const aggregatedUpdateChanges =
@@ -625,7 +625,7 @@ export class ChangeDetectionState {
    * This function computes the entity change conflicts between 2 set of entity changes (let's call them incoming changes and current changes).
    * For a more comprehensive explanation, we take a look at how we can use this to compute potential conflicts during workspace update:
    *
-   * To compute potential conflicts during workspace update, we must base off the project latest changes [incChg] (worksapce BASE <-> project HEAD)
+   * To compute potential conflicts during workspace update, we must base off the project latest changes [incChg] (workspace BASE <-> project HEAD)
    * and the merge request changes [currChng] (workspace BASE <-> workspace HEAD). We have a case table below (`N.A.` means it's impossible cases)
    * For cases we with `conflict` there might be potential conflicts as the change to the entity appear in both [incChg] and [currChng]. But we must
    * note that this is `potential` because we cannot be too sure how SDCL server handle merging these during update.

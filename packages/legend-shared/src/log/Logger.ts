@@ -17,8 +17,7 @@
 import {
   AbstractPlugin,
   type AbstractPluginManager,
-  type PluginConsumer,
-} from '../application/AbstractPluginManager';
+} from '../application/AbstractPluginManager.js';
 
 // We use numeric enum here for because we want to do comparison
 // In order to retrieve the name of the enum we can do reverse mapping, for example: LogLevel[LogLevel.INFO] -> INFO
@@ -86,7 +85,7 @@ export abstract class LoggerPlugin extends AbstractPlugin {
   }
 }
 
-export class Log implements PluginConsumer {
+export class Log {
   private loggers: LoggerPlugin[] = [];
 
   registerPlugins(loggerPlugins: LoggerPlugin[]): void {

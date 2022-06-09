@@ -15,8 +15,8 @@
  */
 
 import type { Hashable } from '@finos/legend-shared';
-import type { V1_AtomicTest } from './V1_AtomicTest';
-import { V1_Test } from './V1_Test';
+import type { V1_AtomicTest } from './V1_AtomicTest.js';
+import { V1_Test } from './V1_Test.js';
 
 export abstract class V1_TestSuite extends V1_Test implements Hashable {
   tests: V1_AtomicTest[] = [];

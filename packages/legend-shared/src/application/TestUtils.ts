@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { noop } from '../CommonUtils';
+import { noop } from '../CommonUtils.js';
 import { configure as configureMobx } from 'mobx';
 
 /**
@@ -43,25 +43,6 @@ export const integrationTest = (testName: string): string =>
 export const unitTest = (testName: string): string => `[UNIT] ${testName}`;
 
 /**
- * This helps with restoring mocked/spyed object that works with Typescript.
- * Note that we rarely call this function since this restoring mocks only work with `jest.spyOn`
- * and for those, we can conveniently call `jest.restoreAllMocks` or set `restoreMocks: true` in Jest config
- * See https://jestjs.io/docs/en/mock-function-api#mockfnmockrestore
- * See https://jestjs.io/docs/en/jest-object#jestrestoreallmocks
- *
- * For cases where we stub the implementation using `jest.fn` we have to store the original implementation and restore it
- * manually, for example:
- *
- *    const originalFn = moduleA.fn;
- *    moduleA.fn = jest.fn().mockResolvedValue({});
- *    ...
- *    moduleA.fn = originalFn;
- */
-export const restoreMock = (mocked: unknown): void =>
-  (mocked as jest.Mock).mockRestore();
-export const asMock = (mock: unknown): jest.Mock => mock as jest.Mock;
-
-/**
  * MobX makes some fields non-configurable or non-writable which would prevent spying/mocking/stubbing in your tests.
  * NOTE: Use with caution and only when needed - do not turn this off globally for all tests, otherwise you risk
  * false positives (passing tests with broken code).
@@ -80,3 +61,15 @@ export const MOBX__enableSpyOrMock = (): void => {
 export const MOBX__disableSpyOrMock = (): void => {
   configureMobx({ safeDescriptors: false });
 };
+
+/**
+ * Currently, `jest-extended` augments the matchers from @types/jest instead of expect (or @jest/expect)
+ * so we're stubbing this type for now.
+ *
+ * Also, the type of `jest.fn` is not compatible with a lot of mocks right now
+ *
+ * TODO: We will remove these when Jest sort this out
+ * See https://github.com/facebook/jest/issues/12424
+ */
+export type TEMPORARRY__JestMatcher = any; // eslint-disable-line @typescript-eslint/no-explicit-any
+export type TEMPORARY__JestMock = any; // eslint-disable-line @typescript-eslint/no-explicit-any

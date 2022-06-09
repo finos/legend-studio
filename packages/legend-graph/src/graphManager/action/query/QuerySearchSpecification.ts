@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { QueryStereotype, QueryTaggedValue } from './Query';
+import type { QueryStereotype, QueryTaggedValue } from './Query.js';
 
 export class QueryProjectCoordinates {
   groupId!: string;

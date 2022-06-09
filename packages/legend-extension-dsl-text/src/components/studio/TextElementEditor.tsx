@@ -18,7 +18,7 @@ import { useRef, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { prettyCONSTName } from '@finos/legend-shared';
 import { StudioTextInputEditor, useEditorStore } from '@finos/legend-studio';
-import { TextEditorState } from '../../stores/studio/TextEditorState';
+import { TextEditorState } from '../../stores/studio/TextEditorState.js';
 import {
   LockIcon,
   CaretDownIcon,
@@ -30,8 +30,8 @@ import { EDITOR_LANGUAGE } from '@finos/legend-application';
 import {
   text_setContent,
   text_setType,
-} from '../../stores/studio/DSLText_GraphModifierHelper';
-import { TEXT_TYPE } from '../../helper/DSLText_Helper';
+} from '../../stores/studio/DSLText_GraphModifierHelper.js';
+import { TEXT_TYPE } from '../../helper/DSLText_Helper.js';
 
 const getTextElementEditorLanguage = (type: string): EDITOR_LANGUAGE => {
   switch (type) {

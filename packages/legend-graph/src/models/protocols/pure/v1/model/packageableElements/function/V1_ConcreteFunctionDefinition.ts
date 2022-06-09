@@ -15,16 +15,16 @@
  */
 
 import { hashArray } from '@finos/legend-shared';
-import { hashLambda } from '../../../../../../../MetaModelUtils';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
-import type { V1_RawVariable } from '../../../model/rawValueSpecification/V1_RawVariable';
-import type { V1_Multiplicity } from '../../../model/packageableElements/domain/V1_Multiplicity';
-import type { V1_StereotypePtr } from '../../../model/packageableElements/domain/V1_StereotypePtr';
-import type { V1_TaggedValue } from '../../../model/packageableElements/domain/V1_TaggedValue';
+import { hashRawLambda } from '../../../../../../../MetaModelUtils.js';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst.js';
+import type { V1_RawVariable } from '../../../model/rawValueSpecification/V1_RawVariable.js';
+import type { V1_Multiplicity } from '../../../model/packageableElements/domain/V1_Multiplicity.js';
+import type { V1_StereotypePtr } from '../../../model/packageableElements/domain/V1_StereotypePtr.js';
+import type { V1_TaggedValue } from '../../../model/packageableElements/domain/V1_TaggedValue.js';
 import {
   type V1_PackageableElementVisitor,
   V1_PackageableElement,
-} from '../../../model/packageableElements/V1_PackageableElement';
+} from '../../../model/packageableElements/V1_PackageableElement.js';
 
 export class V1_ConcreteFunctionDefinition extends V1_PackageableElement {
   /**
@@ -52,7 +52,7 @@ export class V1_ConcreteFunctionDefinition extends V1_PackageableElement {
       this.returnType,
       hashArray(this.taggedValues),
       hashArray(this.stereotypes),
-      hashLambda(undefined, this.body),
+      hashRawLambda(undefined, this.body),
     ]);
   }
 

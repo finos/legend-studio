@@ -26,7 +26,7 @@ import {
   getMappingElementSource,
   type MappingEditorState,
   type MappingElementSource,
-} from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
+} from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState.js';
 import {
   type InstanceSetImplementation,
   type View,
@@ -41,8 +41,8 @@ import {
 } from '@finos/legend-graph';
 import { UnsupportedOperationError } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
-import { buildElementOption } from '../../../../stores/shared/PackageableElementOptionUtil';
-import { useEditorStore } from '../../EditorStoreProvider';
+import { buildElementOption } from '../../../../stores/shared/PackageableElementOptionUtil.js';
+import { useEditorStore } from '../../EditorStoreProvider.js';
 import { useApplicationStore } from '@finos/legend-application';
 
 /* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */

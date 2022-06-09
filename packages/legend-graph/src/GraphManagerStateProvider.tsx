@@ -17,8 +17,8 @@
 import { type Log, guaranteeNonNullable } from '@finos/legend-shared';
 import { useLocalObservable } from 'mobx-react-lite';
 import { createContext, useContext } from 'react';
-import { GraphManagerState } from './GraphManagerState';
-import type { GraphPluginManager } from './GraphPluginManager';
+import { GraphManagerState } from './GraphManagerState.js';
+import type { GraphPluginManager } from './GraphPluginManager.js';
 
 const GraphManagerStateContext = createContext<GraphManagerState | undefined>(
   undefined,

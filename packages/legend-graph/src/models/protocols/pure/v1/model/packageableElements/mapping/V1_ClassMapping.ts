@@ -15,15 +15,15 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
-import type { V1_AggregationAwareClassMapping } from '../../../model/packageableElements/store/relational/mapping/aggregationAware/V1_AggregationAwareClassMapping';
-import type { V1_RootRelationalClassMapping } from '../../../model/packageableElements/store/relational/mapping/V1_RootRelationalClassMapping';
-import type { V1_RelationalClassMapping } from '../../../model/packageableElements/store/relational/mapping/V1_RelationalClassMapping';
-import type { V1_MappingClass } from './V1_MappingClass';
-import type { V1_OperationClassMapping } from './V1_OperationClassMapping';
-import type { V1_PureInstanceClassMapping } from '../../../model/packageableElements/store/modelToModel/mapping/V1_PureInstanceClassMapping';
-import type { V1_RootFlatDataClassMapping } from '../../../model/packageableElements/store/flatData/mapping/V1_RootFlatDataClassMapping';
-import type { V1_MergeOperationClassMapping } from './V1_MergeOperationClassMapping';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst.js';
+import type { V1_AggregationAwareClassMapping } from '../../../model/packageableElements/store/relational/mapping/aggregationAware/V1_AggregationAwareClassMapping.js';
+import type { V1_RootRelationalClassMapping } from '../../../model/packageableElements/store/relational/mapping/V1_RootRelationalClassMapping.js';
+import type { V1_RelationalClassMapping } from '../../../model/packageableElements/store/relational/mapping/V1_RelationalClassMapping.js';
+import type { V1_MappingClass } from './V1_MappingClass.js';
+import type { V1_OperationClassMapping } from './V1_OperationClassMapping.js';
+import type { V1_PureInstanceClassMapping } from '../../../model/packageableElements/store/modelToModel/mapping/V1_PureInstanceClassMapping.js';
+import type { V1_RootFlatDataClassMapping } from '../../../model/packageableElements/store/flatData/mapping/V1_RootFlatDataClassMapping.js';
+import type { V1_MergeOperationClassMapping } from './V1_MergeOperationClassMapping.js';
 
 export interface V1_ClassMappingVisitor<T> {
   visit_ClassMapping(classMapping: V1_ClassMapping): T;
@@ -57,6 +57,7 @@ export abstract class V1_ClassMapping implements Hashable {
       this.id ?? '',
       this.class ?? '',
       this.root.toString(),
+      this.extendsClassMappingId ?? '',
     ]);
   }
 

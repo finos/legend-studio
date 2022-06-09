@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import type { Notifier } from './DSLPersistence_Notifier';
-import type { Persister } from './DSLPersistence_Persister';
-import type { Trigger } from './DSLPersistence_Trigger';
-import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../DSLPersistence_ModelUtils';
+import type { Notifier } from './DSLPersistence_Notifier.js';
+import type { Persister } from './DSLPersistence_Persister.js';
+import type { Trigger } from './DSLPersistence_Trigger.js';
+import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../DSLPersistence_ModelUtils.js';
 import {
   PackageableElement,
   type PackageableElementReference,

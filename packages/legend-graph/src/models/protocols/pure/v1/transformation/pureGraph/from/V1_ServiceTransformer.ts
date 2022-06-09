@@ -15,62 +15,62 @@
  */
 
 import { UnsupportedOperationError } from '@finos/legend-shared';
-import type { Service } from '../../../../../../metamodels/pure/packageableElements/service/Service';
-import type { ServiceTest } from '../../../../../../metamodels/pure/packageableElements/service/ServiceTest';
+import type { Service } from '../../../../../../metamodels/pure/packageableElements/service/Service.js';
+import type { ServiceTest } from '../../../../../../metamodels/pure/packageableElements/service/ServiceTest.js';
 import {
   type KeyedExecutionParameter,
   type ServiceExecution,
   PureSingleExecution,
   PureMultiExecution,
-} from '../../../../../../metamodels/pure/packageableElements/service/ServiceExecution';
+} from '../../../../../../metamodels/pure/packageableElements/service/ServiceExecution.js';
 import {
   V1_initPackageableElement,
   V1_transformElementReference,
-} from './V1_CoreTransformerHelper';
-import { V1_Service } from '../../../model/packageableElements/service/V1_Service';
+} from './V1_CoreTransformerHelper.js';
+import { V1_Service } from '../../../model/packageableElements/service/V1_Service.js';
 import {
   type V1_ServiceExecution,
   V1_PureSingleExecution,
   V1_PureMultiExecution,
   V1_KeyedExecutionParameter,
-} from '../../../model/packageableElements/service/V1_ServiceExecution';
-import { V1_ServiceTest } from '../../../model/packageableElements/service/V1_ServiceTest';
-import { V1_RawValueSpecificationTransformer } from './V1_RawValueSpecificationTransformer';
-import type { V1_RawLambda } from '../../../model/rawValueSpecification/V1_RawLambda';
-import { V1_transformRuntime } from './V1_RuntimeTransformer';
-import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext';
+} from '../../../model/packageableElements/service/V1_ServiceExecution.js';
+import { V1_ServiceTest } from '../../../model/packageableElements/service/V1_ServiceTest.js';
+import { V1_RawValueSpecificationTransformer } from './V1_RawValueSpecificationTransformer.js';
+import type { V1_RawLambda } from '../../../model/rawValueSpecification/V1_RawLambda.js';
+import { V1_transformRuntime } from './V1_RuntimeTransformer.js';
+import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext.js';
 import {
   V1_transformStereotype,
   V1_transformTaggedValue,
-} from './V1_DomainTransformer';
+} from './V1_DomainTransformer.js';
 import {
   type DEPRECATED__ServiceTest,
   type DEPRECATED__KeyedSingleExecutionTest,
   type DEPRECATED__TestContainer,
   DEPRECATED__MultiExecutionTest,
   DEPRECATED__SingleExecutionTest,
-} from '../../../../../../metamodels/pure/packageableElements/service/DEPRECATED__ServiceTest';
+} from '../../../../../../metamodels/pure/packageableElements/service/DEPRECATED__ServiceTest.js';
 import {
   type V1_DEPRECATED__ServiceTest,
   V1_DEPRECATED__KeyedSingleExecutionTest,
   V1_DEPRECATED__MultiExecutionTest,
   V1_DEPRECATED__SingleExecutionTest,
   V1_DEPRECATED__TestContainer,
-} from '../../../model/packageableElements/service/V1_DEPRECATED__ServiceTest';
-import type { ConnectionTestData } from '../../../../../../metamodels/pure/packageableElements/service/ConnectionTestData';
-import { V1_ConnectionTestData } from '../../../model/packageableElements/service/V1_ConnectionTestData';
-import { V1_transformEmbeddedData } from './V1_DataElementTransformer';
-import { V1_ParameterValue } from '../../../model/packageableElements/service/V1_ParameterValue';
-import type { ParameterValue } from '../../../../../../metamodels/pure/packageableElements/service/ParameterValue';
-import type { TestData } from '../../../../../../metamodels/pure/packageableElements/service/ServiceTestData';
-import { V1_TestData } from '../../../model/packageableElements/service/V1_TestData';
-import { V1_ServiceTestSuite } from '../../../model/packageableElements/service/V1_ServiceTestSuite';
-import type { ServiceTestSuite } from '../../../../../../metamodels/pure/packageableElements/service/ServiceTestSuite';
+} from '../../../model/packageableElements/service/V1_DEPRECATED__ServiceTest.js';
+import type { ConnectionTestData } from '../../../../../../metamodels/pure/packageableElements/service/ConnectionTestData.js';
+import { V1_ConnectionTestData } from '../../../model/packageableElements/service/V1_ConnectionTestData.js';
+import { V1_transformEmbeddedData } from './V1_DataElementTransformer.js';
+import { V1_ParameterValue } from '../../../model/packageableElements/service/V1_ParameterValue.js';
+import type { ParameterValue } from '../../../../../../metamodels/pure/packageableElements/service/ParameterValue.js';
+import type { TestData } from '../../../../../../metamodels/pure/packageableElements/service/ServiceTestData.js';
+import { V1_TestData } from '../../../model/packageableElements/service/V1_TestData.js';
+import { V1_ServiceTestSuite } from '../../../model/packageableElements/service/V1_ServiceTestSuite.js';
+import type { ServiceTestSuite } from '../../../../../../metamodels/pure/packageableElements/service/ServiceTestSuite.js';
 import {
   V1_transformAtomicTest,
   V1_transformTestAssertion,
   V1_transformTestSuite,
-} from './V1_TestTransformer';
+} from './V1_TestTransformer.js';
 
 const transformConnectionTestData = (
   element: ConnectionTestData,

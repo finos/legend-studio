@@ -15,8 +15,8 @@
  */
 
 import { action, computed, flowResult, makeAutoObservable } from 'mobx';
-import { CHANGE_DETECTION_EVENT } from './ChangeDetectionEvent';
-import { GRAPH_EDITOR_MODE, AUX_PANEL_MODE } from './EditorConfig';
+import { CHANGE_DETECTION_EVENT } from './ChangeDetectionEvent.js';
+import { GRAPH_EDITOR_MODE, AUX_PANEL_MODE } from './EditorConfig.js';
 import {
   type GeneratorFn,
   type PlainObject,
@@ -32,11 +32,11 @@ import {
   filterByType,
   ActionState,
 } from '@finos/legend-shared';
-import type { EditorStore } from './EditorStore';
-import { ElementEditorState } from './editor-state/element-editor-state/ElementEditorState';
-import { GraphGenerationState } from './editor-state/GraphGenerationState';
-import { MODEL_UPDATER_INPUT_TYPE } from './editor-state/ModelLoaderState';
-import type { DSL_LegendStudioPlugin_Extension } from './LegendStudioPlugin';
+import type { EditorStore } from './EditorStore.js';
+import { ElementEditorState } from './editor-state/element-editor-state/ElementEditorState.js';
+import { GraphGenerationState } from './editor-state/GraphGenerationState.js';
+import { MODEL_UPDATER_INPUT_TYPE } from './editor-state/ModelLoaderState.js';
+import type { DSL_LegendStudioPlugin_Extension } from './LegendStudioPlugin.js';
 import type { Entity } from '@finos/legend-model-storage';
 import {
   type EntityChange,
@@ -95,14 +95,14 @@ import {
   ActionAlertActionType,
   ActionAlertType,
 } from '@finos/legend-application';
-import { CONFIGURATION_EDITOR_TAB } from './editor-state/ProjectConfigurationEditorState';
-import type { DSLMapping_LegendStudioPlugin_Extension } from './DSLMapping_LegendStudioPlugin_Extension';
-import { graph_dispose } from './graphModifier/GraphModifierHelper';
+import { CONFIGURATION_EDITOR_TAB } from './editor-state/ProjectConfigurationEditorState.js';
+import type { DSLMapping_LegendStudioPlugin_Extension } from './DSLMapping_LegendStudioPlugin_Extension.js';
+import { graph_dispose } from './graphModifier/GraphModifierHelper.js';
 import {
   PACKAGEABLE_ELEMENT_TYPE,
   SET_IMPLEMENTATION_TYPE,
-} from './shared/ModelUtil';
-import { GlobalTestRunnerState } from './sidebar-state/testable/GlobalTestRunnerState';
+} from './shared/ModelUtil.js';
+import { GlobalTestRunnerState } from './sidebar-state/testable/GlobalTestRunnerState.js';
 
 export enum GraphBuilderStatus {
   SUCCEEDED = 'SUCCEEDED',
@@ -797,6 +797,7 @@ export class EditorGraphState {
         const dependencyManager =
           this.editorStore.graphManagerState.createEmptyDependencyManager();
         newGraph.dependencyManager = dependencyManager;
+        const dependenciesBuildState = ActionState.create();
         yield this.editorStore.graphManagerState.graphManager.buildDependencies(
           this.editorStore.graphManagerState.coreModel,
           this.editorStore.graphManagerState.systemModel,
@@ -804,9 +805,10 @@ export class EditorGraphState {
           (yield flowResult(
             this.getConfigurationProjectDependencyEntities(),
           )) as Map<string, Entity[]>,
-          // NOTE: since we want to rebuild the graph quietly in the background, we won't care about the build states
-          ActionState.create(),
+          dependenciesBuildState,
         );
+        this.editorStore.graphManagerState.dependenciesBuildState =
+          dependenciesBuildState;
       }
 
       /**
@@ -830,11 +832,11 @@ export class EditorGraphState {
       this.editorStore.changeDetectionState.stop(); // stop change detection before disposing hash
       yield flowResult(graph_dispose(this.editorStore.graphManagerState.graph));
 
+      const graphBuildState = ActionState.create();
       yield this.editorStore.graphManagerState.graphManager.buildGraph(
         newGraph,
         entities,
-        // NOTE: since we want to rebuild the graph quietly in the background, we won't care about the build states
-        ActionState.create(),
+        graphBuildState,
         {
           TEMPORARY__preserveSectionIndex:
             this.editorStore.applicationStore.config.options
@@ -849,14 +851,17 @@ export class EditorGraphState {
       );
 
       // NOTE: build model generation entities every-time we rebuild the graph - should we do this?
+      const generationsBuildState = ActionState.create();
       yield this.editorStore.graphManagerState.graphManager.buildGenerations(
         newGraph,
         this.graphGenerationState.generatedEntities,
-        // NOTE: since we want to rebuild the graph quietly in the background, we won't care about the build states
-        ActionState.create(),
+        generationsBuildState,
       );
 
       this.editorStore.graphManagerState.graph = newGraph;
+      this.editorStore.graphManagerState.graphBuildState = graphBuildState;
+      this.editorStore.graphManagerState.generationsBuildState =
+        generationsBuildState;
 
       /**
        * Reprocess explorer tree which might still hold references to old graph

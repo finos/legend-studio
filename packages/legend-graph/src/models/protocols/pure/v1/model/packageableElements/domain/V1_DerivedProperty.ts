@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-import { hashLambda } from '../../../../../../../MetaModelUtils';
+import { hashRawLambda } from '../../../../../../../MetaModelUtils.js';
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
-import type { V1_Multiplicity } from './V1_Multiplicity';
-import type { V1_StereotypePtr } from '../../../model/packageableElements/domain/V1_StereotypePtr';
-import type { V1_TaggedValue } from '../../../model/packageableElements/domain/V1_TaggedValue';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst.js';
+import type { V1_Multiplicity } from './V1_Multiplicity.js';
+import type { V1_StereotypePtr } from '../../../model/packageableElements/domain/V1_StereotypePtr.js';
+import type { V1_TaggedValue } from '../../../model/packageableElements/domain/V1_TaggedValue.js';
 
 export class V1_DerivedProperty implements Hashable {
   name!: string;
@@ -48,7 +48,7 @@ export class V1_DerivedProperty implements Hashable {
       this.returnType,
       hashArray(this.stereotypes),
       hashArray(this.taggedValues),
-      hashLambda(this.parameters, this.body),
+      hashRawLambda(this.parameters, this.body),
     ]);
   }
 }

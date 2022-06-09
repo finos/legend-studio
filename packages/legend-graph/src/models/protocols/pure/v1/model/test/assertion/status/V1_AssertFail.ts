@@ -15,8 +15,8 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../../MetaModelConst';
-import { V1_AssertionStatus } from './V1_AssertionStatus';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../../MetaModelConst.js';
+import { V1_AssertionStatus } from './V1_AssertionStatus.js';
 
 export class V1_AssertFail extends V1_AssertionStatus implements Hashable {
   message!: string;

@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import type { GenericTypeReference } from '../../packageableElements/domain/GenericTypeReference';
-import type { Type } from '../../packageableElements/domain/Type';
-import type { PackageableElementReference } from '../../packageableElements/PackageableElementReference';
+import type { GenericTypeReference } from '../../packageableElements/domain/GenericTypeReference.js';
+import type { Type } from '../../packageableElements/domain/Type.js';
+import type { PackageableElementReference } from '../../packageableElements/PackageableElementReference.js';
 
 export class ResultType {
   type!: PackageableElementReference<Type>;

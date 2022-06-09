@@ -15,7 +15,7 @@
  */
 
 import { observable, action, makeAutoObservable, flowResult } from 'mobx';
-import { LEGEND_STUDIO_APP_EVENT } from './LegendStudioAppEvent';
+import { LEGEND_STUDIO_APP_EVENT } from './LegendStudioAppEvent.js';
 import type { ApplicationStore } from '@finos/legend-application';
 import {
   type GeneratorFn,
@@ -24,7 +24,7 @@ import {
   LogEvent,
   ActionState,
 } from '@finos/legend-shared';
-import { generateSetupRoute } from './LegendStudioRouter';
+import { generateSetupRoute } from './LegendStudioRouter.js';
 import {
   type SDLCServerClient,
   WorkspaceType,
@@ -34,7 +34,7 @@ import {
   Workspace,
   WorkspaceAccessType,
 } from '@finos/legend-server-sdlc';
-import type { LegendStudioConfig } from '../application/LegendStudioConfig';
+import type { LegendStudioConfig } from '../application/LegendStudioConfig.js';
 
 interface ImportProjectSuccessReport {
   projectId: string;
@@ -148,12 +148,15 @@ export class SetupStore {
   setShowCreateProjectModal(val: boolean): void {
     this.showCreateProjectModal = val;
   }
+
   setShowCreateWorkspaceModal(val: boolean): void {
     this.showCreateWorkspaceModal = val;
   }
+
   setCurrentProjectId(id: string | undefined): void {
     this.currentProjectId = id;
   }
+
   setCurrentWorkspaceIdentifier(val: WorkspaceIdentifier | undefined): void {
     this.currentWorkspaceIdentifier = val;
   }

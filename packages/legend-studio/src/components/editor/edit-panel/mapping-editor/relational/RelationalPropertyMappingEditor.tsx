@@ -20,11 +20,11 @@ import {
   EmbeddedRelationalInstanceSetImplementationState,
   type RelationalPropertyMappingState,
   type RootRelationalInstanceSetImplementationState,
-} from '../../../../../stores/editor-state/element-editor-state/mapping/relational/RelationalInstanceSetImplementationState';
+} from '../../../../../stores/editor-state/element-editor-state/mapping/relational/RelationalInstanceSetImplementationState.js';
 import {
   type MappingElement,
   MappingEditorState,
-} from '../../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
+} from '../../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState.js';
 import {
   clsx,
   CustomSelectorInput,
@@ -35,8 +35,8 @@ import { guaranteeType } from '@finos/legend-shared';
 import {
   TableOrViewTreeNodeDragSource,
   TABLE_ELEMENT_DND_TYPE,
-} from './TableOrViewSourceTree';
-import { useEditorStore } from '../../../EditorStoreProvider';
+} from './TableOrViewSourceTree.js';
+import { useEditorStore } from '../../../EditorStoreProvider.js';
 import {
   Enumeration,
   EnumerationMapping,
@@ -44,13 +44,13 @@ import {
   getEnumerationMappingsByEnumeration,
   getRawGenericType,
 } from '@finos/legend-graph';
-import { StudioLambdaEditor } from '../../../../shared/StudioLambdaEditor';
-import { relationalPropertyMapping_setTransformer } from '../../../../../stores/graphModifier/StoreRelational_GraphModifierHelper';
-import { getExpectedReturnType } from '../PropertyMappingsEditor';
+import { StudioLambdaEditor } from '../../../../shared/StudioLambdaEditor.js';
+import { relationalPropertyMapping_setTransformer } from '../../../../../stores/graphModifier/StoreRelational_GraphModifierHelper.js';
+import { getExpectedReturnType } from '../PropertyMappingsEditor.js';
 import {
   CLASS_PROPERTY_TYPE,
   getClassPropertyType,
-} from '../../../../../stores/shared/ModelUtil';
+} from '../../../../../stores/shared/ModelUtil.js';
 
 const SimplePropertyMappingEditor = observer(
   (props: {

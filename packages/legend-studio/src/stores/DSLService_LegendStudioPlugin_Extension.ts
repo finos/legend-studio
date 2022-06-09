@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import type { DSL_LegendStudioPlugin_Extension } from './LegendStudioPlugin';
+import type { DSL_LegendStudioPlugin_Extension } from './LegendStudioPlugin.js';
 import type { Connection, Runtime } from '@finos/legend-graph';
-import type { ServicePureExecutionState } from '../stores/editor-state/element-editor-state/service/ServiceExecutionState';
+import type { ServicePureExecutionState } from '../stores/editor-state/element-editor-state/service/ServiceExecutionState.js';
 
 export type ServiceQueryEditorActionConfiguration = {
   key: string;

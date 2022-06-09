@@ -29,7 +29,7 @@ import {
   SnowflakeDatasourceSpecification,
   RedshiftDatasourceSpecification,
   BigQueryDatasourceSpecification,
-} from '../../../../../../../metamodels/pure/packageableElements/store/relational/connection/DatasourceSpecification';
+} from '../../../../../../../metamodels/pure/packageableElements/store/relational/connection/DatasourceSpecification.js';
 import {
   type AuthenticationStrategy,
   SnowflakePublicAuthenticationStrategy,
@@ -39,8 +39,9 @@ import {
   OAuthAuthenticationStrategy,
   DefaultH2AuthenticationStrategy,
   DelegatedKerberosAuthenticationStrategy,
-} from '../../../../../../../metamodels/pure/packageableElements/store/relational/connection/AuthenticationStrategy';
-import type { V1_GraphBuilderContext } from '../../../../transformation/pureGraph/to/V1_GraphBuilderContext';
+  GCPWorkloadIdentityFederationAuthenticationStrategy,
+} from '../../../../../../../metamodels/pure/packageableElements/store/relational/connection/AuthenticationStrategy.js';
+import type { V1_GraphBuilderContext } from '../../../../transformation/pureGraph/to/V1_GraphBuilderContext.js';
 import {
   type V1_DatasourceSpecification,
   V1_LocalH2DataSourceSpecification,
@@ -50,7 +51,7 @@ import {
   V1_SnowflakeDatasourceSpecification,
   V1_RedshiftDatasourceSpecification,
   V1_BigQueryDatasourceSpecification,
-} from '../../../../model/packageableElements/store/relational/connection/V1_DatasourceSpecification';
+} from '../../../../model/packageableElements/store/relational/connection/V1_DatasourceSpecification.js';
 import {
   type V1_AuthenticationStrategy,
   V1_SnowflakePublicAuthenticationStrategy,
@@ -60,8 +61,9 @@ import {
   V1_ApiTokenAuthenticationStrategy,
   V1_DelegatedKerberosAuthenticationStrategy,
   V1_UsernamePasswordAuthenticationStrategy,
-} from '../../../../model/packageableElements/store/relational/connection/V1_AuthenticationStrategy';
-import type { StoreRelational_PureProtocolProcessorPlugin_Extension } from '../../../../../StoreRelational_PureProtocolProcessorPlugin_Extension';
+  V1_GCPWorkloadIdentityFederationAuthenticationStrategy,
+} from '../../../../model/packageableElements/store/relational/connection/V1_AuthenticationStrategy.js';
+import type { StoreRelational_PureProtocolProcessorPlugin_Extension } from '../../../../../StoreRelational_PureProtocolProcessorPlugin_Extension.js';
 
 export const V1_buildDatasourceSpecification = (
   protocol: V1_DatasourceSpecification,
@@ -171,6 +173,8 @@ export const V1_buildDatasourceSpecification = (
       protocol.projectId,
       protocol.defaultDataset,
     );
+    bigQuerySpec.proxyHost = protocol.proxyHost;
+    bigQuerySpec.proxyPort = protocol.proxyPort;
     return bigQuerySpec;
   } else if (protocol instanceof V1_LocalH2DataSourceSpecification) {
     const metamodel = new LocalH2DatasourceSpecification();
@@ -265,6 +269,18 @@ export const V1_buildAuthenticationStrategy = (
     V1_GCPApplicationDefaultCredentialsAuthenticationStrategy
   ) {
     return new GCPApplicationDefaultCredentialsAuthenticationStrategy();
+  } else if (
+    protocol instanceof V1_GCPWorkloadIdentityFederationAuthenticationStrategy
+  ) {
+    assertNonEmptyString(
+      protocol.serviceAccountEmail,
+      `GCPWorkloadIdentityFederation 'serviceAccountEmail' field is missing or empty`,
+    );
+
+    return new GCPWorkloadIdentityFederationAuthenticationStrategy(
+      protocol.serviceAccountEmail,
+      protocol.additionalGcpScopes,
+    );
   } else if (protocol instanceof V1_OAuthAuthenticationStrategy) {
     return new OAuthAuthenticationStrategy(
       guaranteeNonEmptyString(

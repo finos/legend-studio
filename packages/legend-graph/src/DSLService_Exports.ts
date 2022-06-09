@@ -17,7 +17,7 @@
 export {
   Service,
   DEFAULT_SERVICE_PATTERN,
-} from './models/metamodels/pure/packageableElements/service/Service';
-export * from './models/metamodels/pure/packageableElements/service/ServiceTest';
-export * from './models/metamodels/pure/packageableElements/service/ServiceExecution';
-export * from './models/metamodels/pure/packageableElements/service/DEPRECATED__ServiceTest';
+} from './models/metamodels/pure/packageableElements/service/Service.js';
+export * from './models/metamodels/pure/packageableElements/service/ServiceTest.js';
+export * from './models/metamodels/pure/packageableElements/service/ServiceExecution.js';
+export * from './models/metamodels/pure/packageableElements/service/DEPRECATED__ServiceTest.js';

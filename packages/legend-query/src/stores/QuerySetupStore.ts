@@ -37,7 +37,7 @@ import {
   QuerySearchSpecification,
   getAllIncludedMappings,
 } from '@finos/legend-graph';
-import type { LegendQueryStore } from './LegendQueryStore';
+import type { LegendQueryStore } from './LegendQueryStore.js';
 import { ProjectData } from '@finos/legend-server-depot';
 import {
   buildElementOption,

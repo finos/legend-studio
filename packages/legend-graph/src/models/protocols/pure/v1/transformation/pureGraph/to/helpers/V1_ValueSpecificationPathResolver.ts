@@ -19,62 +19,62 @@ import {
   assertErrorThrown,
   returnUndefOnError,
 } from '@finos/legend-shared';
-import { GRAPH_MANAGER_EVENT } from '../../../../../../../../graphManager/GraphManagerEvent';
-import type { PackageableElement } from '../../../../../../../metamodels/pure/packageableElements/PackageableElement';
-import type { PackageableElementReference } from '../../../../../../../metamodels/pure/packageableElements/PackageableElementReference';
-import { RawLambda } from '../../../../../../../metamodels/pure/rawValueSpecification/RawLambda';
-import { isValidFullPath } from '../../../../../../../../MetaModelUtils';
-import { V1_RawLambda } from '../../../../model/rawValueSpecification/V1_RawLambda';
-import type { V1_AppliedFunction } from '../../../../model/valueSpecification/application/V1_AppliedFunction';
-import type { V1_AppliedProperty } from '../../../../model/valueSpecification/application/V1_AppliedProperty';
-import type { V1_PropertyGraphFetchTree } from '../../../../model/valueSpecification/raw/graph/V1_PropertyGraphFetchTree';
-import type { V1_RootGraphFetchTree } from '../../../../model/valueSpecification/raw/graph/V1_RootGraphFetchTree';
-import type { V1_Path } from '../../../../model/valueSpecification/raw/path/V1_Path';
-import type { V1_AggregateValue } from '../../../../model/valueSpecification/raw/V1_AggregateValue';
-import type { V1_CBoolean } from '../../../../model/valueSpecification/raw/V1_CBoolean';
-import type { V1_CDateTime } from '../../../../model/valueSpecification/raw/V1_CDateTime';
-import type { V1_CDecimal } from '../../../../model/valueSpecification/raw/V1_CDecimal';
-import type { V1_CFloat } from '../../../../model/valueSpecification/raw/V1_CFloat';
-import type { V1_CInteger } from '../../../../model/valueSpecification/raw/V1_CInteger';
-import type { V1_CLatestDate } from '../../../../model/valueSpecification/raw/V1_CLatestDate';
-import type { V1_Collection } from '../../../../model/valueSpecification/raw/V1_Collection';
-import type { V1_CStrictDate } from '../../../../model/valueSpecification/raw/V1_CStrictDate';
-import type { V1_CStrictTime } from '../../../../model/valueSpecification/raw/V1_CStrictTime';
-import type { V1_CString } from '../../../../model/valueSpecification/raw/V1_CString';
-import type { V1_EnumValue } from '../../../../model/valueSpecification/raw/V1_EnumValue';
-import type { V1_ExecutionContextInstance } from '../../../../model/valueSpecification/raw/V1_ExecutionContextInstance';
-import type { V1_HackedClass } from '../../../../model/valueSpecification/raw/V1_HackedClass';
-import type { V1_HackedUnit } from '../../../../model/valueSpecification/raw/V1_HackedUnit';
-import type { V1_KeyExpression } from '../../../../model/valueSpecification/raw/V1_KeyExpression';
-import type { V1_Lambda } from '../../../../model/valueSpecification/raw/V1_Lambda';
-import type { V1_PackageableElementPtr } from '../../../../model/valueSpecification/raw/V1_PackageableElementPtr';
-import type { V1_Pair } from '../../../../model/valueSpecification/raw/V1_Pair';
-import type { V1_PrimitiveType } from '../../../../model/valueSpecification/raw/V1_PrimitiveType';
-import type { V1_PureList } from '../../../../model/valueSpecification/raw/V1_PureList';
-import type { V1_RuntimeInstance } from '../../../../model/valueSpecification/raw/V1_RuntimeInstance';
-import type { V1_SerializationConfig } from '../../../../model/valueSpecification/raw/V1_SerializationConfig';
-import type { V1_TDSAggregateValue } from '../../../../model/valueSpecification/raw/V1_TDSAggregateValue';
-import type { V1_TDSColumnInformation } from '../../../../model/valueSpecification/raw/V1_TDSColumnInformation';
-import type { V1_TdsOlapAggregation } from '../../../../model/valueSpecification/raw/V1_TdsOlapAggregation';
-import type { V1_TdsOlapRank } from '../../../../model/valueSpecification/raw/V1_TdsOlapRank';
-import type { V1_TDSSortInformation } from '../../../../model/valueSpecification/raw/V1_TDSSortInformation';
-import type { V1_UnitInstance } from '../../../../model/valueSpecification/raw/V1_UnitInstance';
-import type { V1_UnitType } from '../../../../model/valueSpecification/raw/V1_UnitType';
-import type { V1_INTERNAL__UnknownValueSpecification } from '../../../../model/valueSpecification/V1_INTERNAL__UnknownValueSpecfication';
+import { GRAPH_MANAGER_EVENT } from '../../../../../../../../graphManager/GraphManagerEvent.js';
+import type { PackageableElement } from '../../../../../../../metamodels/pure/packageableElements/PackageableElement.js';
+import type { PackageableElementReference } from '../../../../../../../metamodels/pure/packageableElements/PackageableElementReference.js';
+import { RawLambda } from '../../../../../../../metamodels/pure/rawValueSpecification/RawLambda.js';
+import { isValidFullPath } from '../../../../../../../../MetaModelUtils.js';
+import { V1_RawLambda } from '../../../../model/rawValueSpecification/V1_RawLambda.js';
+import type { V1_AppliedFunction } from '../../../../model/valueSpecification/application/V1_AppliedFunction.js';
+import type { V1_AppliedProperty } from '../../../../model/valueSpecification/application/V1_AppliedProperty.js';
+import type { V1_PropertyGraphFetchTree } from '../../../../model/valueSpecification/raw/graph/V1_PropertyGraphFetchTree.js';
+import type { V1_RootGraphFetchTree } from '../../../../model/valueSpecification/raw/graph/V1_RootGraphFetchTree.js';
+import type { V1_Path } from '../../../../model/valueSpecification/raw/path/V1_Path.js';
+import type { V1_AggregateValue } from '../../../../model/valueSpecification/raw/V1_AggregateValue.js';
+import type { V1_CBoolean } from '../../../../model/valueSpecification/raw/V1_CBoolean.js';
+import type { V1_CDateTime } from '../../../../model/valueSpecification/raw/V1_CDateTime.js';
+import type { V1_CDecimal } from '../../../../model/valueSpecification/raw/V1_CDecimal.js';
+import type { V1_CFloat } from '../../../../model/valueSpecification/raw/V1_CFloat.js';
+import type { V1_CInteger } from '../../../../model/valueSpecification/raw/V1_CInteger.js';
+import type { V1_CLatestDate } from '../../../../model/valueSpecification/raw/V1_CLatestDate.js';
+import type { V1_Collection } from '../../../../model/valueSpecification/raw/V1_Collection.js';
+import type { V1_CStrictDate } from '../../../../model/valueSpecification/raw/V1_CStrictDate.js';
+import type { V1_CStrictTime } from '../../../../model/valueSpecification/raw/V1_CStrictTime.js';
+import type { V1_CString } from '../../../../model/valueSpecification/raw/V1_CString.js';
+import type { V1_EnumValue } from '../../../../model/valueSpecification/raw/V1_EnumValue.js';
+import type { V1_ExecutionContextInstance } from '../../../../model/valueSpecification/raw/V1_ExecutionContextInstance.js';
+import type { V1_HackedClass } from '../../../../model/valueSpecification/raw/V1_HackedClass.js';
+import type { V1_HackedUnit } from '../../../../model/valueSpecification/raw/V1_HackedUnit.js';
+import type { V1_KeyExpression } from '../../../../model/valueSpecification/raw/V1_KeyExpression.js';
+import type { V1_Lambda } from '../../../../model/valueSpecification/raw/V1_Lambda.js';
+import type { V1_PackageableElementPtr } from '../../../../model/valueSpecification/raw/V1_PackageableElementPtr.js';
+import type { V1_Pair } from '../../../../model/valueSpecification/raw/V1_Pair.js';
+import type { V1_PrimitiveType } from '../../../../model/valueSpecification/raw/V1_PrimitiveType.js';
+import type { V1_PureList } from '../../../../model/valueSpecification/raw/V1_PureList.js';
+import type { V1_RuntimeInstance } from '../../../../model/valueSpecification/raw/V1_RuntimeInstance.js';
+import type { V1_SerializationConfig } from '../../../../model/valueSpecification/raw/V1_SerializationConfig.js';
+import type { V1_TDSAggregateValue } from '../../../../model/valueSpecification/raw/V1_TDSAggregateValue.js';
+import type { V1_TDSColumnInformation } from '../../../../model/valueSpecification/raw/V1_TDSColumnInformation.js';
+import type { V1_TdsOlapAggregation } from '../../../../model/valueSpecification/raw/V1_TdsOlapAggregation.js';
+import type { V1_TdsOlapRank } from '../../../../model/valueSpecification/raw/V1_TdsOlapRank.js';
+import type { V1_TDSSortInformation } from '../../../../model/valueSpecification/raw/V1_TDSSortInformation.js';
+import type { V1_UnitInstance } from '../../../../model/valueSpecification/raw/V1_UnitInstance.js';
+import type { V1_UnitType } from '../../../../model/valueSpecification/raw/V1_UnitType.js';
+import type { V1_INTERNAL__UnknownValueSpecification } from '../../../../model/valueSpecification/V1_INTERNAL__UnknownValueSpecfication.js';
 import type {
   V1_ValueSpecification,
   V1_ValueSpecificationVisitor,
-} from '../../../../model/valueSpecification/V1_ValueSpecification';
-import type { V1_Variable } from '../../../../model/valueSpecification/V1_Variable';
+} from '../../../../model/valueSpecification/V1_ValueSpecification.js';
+import type { V1_Variable } from '../../../../model/valueSpecification/V1_Variable.js';
 import {
   V1_serializeRawValueSpecification,
   V1_deserializeRawValueSpecification,
-} from '../../../pureProtocol/serializationHelpers/V1_RawValueSpecificationSerializationHelper';
+} from '../../../pureProtocol/serializationHelpers/V1_RawValueSpecificationSerializationHelper.js';
 import {
   V1_deserializeValueSpecification,
   V1_serializeValueSpecification,
-} from '../../../pureProtocol/serializationHelpers/V1_ValueSpecificationSerializer';
-import type { V1_GraphBuilderContext } from '../V1_GraphBuilderContext';
+} from '../../../pureProtocol/serializationHelpers/V1_ValueSpecificationSerializer.js';
+import type { V1_GraphBuilderContext } from '../V1_GraphBuilderContext.js';
 
 class V1_ValueSpecificationPathResolver
   implements V1_ValueSpecificationVisitor<V1_ValueSpecification>

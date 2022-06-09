@@ -16,19 +16,16 @@
 
 import packageJson from '../package.json';
 import { AbstractPreset } from '@finos/legend-shared';
-import { DSLText_PureGraphManagerPlugin } from './graphManager/DSLText_PureGraphManagerPlugin';
-import { DSLText_PureProtocolProcessorPlugin } from './models/protocols/pure/DSLText_PureProtocolProcessorPlugin';
-import type { GraphPluginManager } from '@finos/legend-graph';
-import { DSLText_PureGraphPlugin } from './graph/DSLText_PureGraphPlugin';
+import { DSLText_PureGraphManagerPlugin } from './graphManager/DSLText_PureGraphManagerPlugin.js';
+import { DSLText_PureProtocolProcessorPlugin } from './models/protocols/pure/DSLText_PureProtocolProcessorPlugin.js';
+import { DSLText_PureGraphPlugin } from './graph/DSLText_PureGraphPlugin.js';
 
 export class DSLText_GraphPreset extends AbstractPreset {
   constructor() {
-    super(packageJson.extensions.graphPreset, packageJson.version);
-  }
-
-  install(pluginManager: GraphPluginManager): void {
-    new DSLText_PureGraphPlugin().install(pluginManager);
-    new DSLText_PureGraphManagerPlugin().install(pluginManager);
-    new DSLText_PureProtocolProcessorPlugin().install(pluginManager);
+    super(packageJson.extensions.graphPreset, packageJson.version, [
+      new DSLText_PureGraphPlugin(),
+      new DSLText_PureGraphManagerPlugin(),
+      new DSLText_PureProtocolProcessorPlugin(),
+    ]);
   }
 }

@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-import { Multiplicity } from '../../../models/metamodels/pure/packageableElements/domain/Multiplicity';
-import type { Type } from '../../../models/metamodels/pure/packageableElements/domain/Type';
-import { PackageableElementExplicitReference } from '../../../models/metamodels/pure/packageableElements/PackageableElementReference';
-import { RawLambda } from '../../../models/metamodels/pure/rawValueSpecification/RawLambda';
-import { RawVariableExpression } from '../../../models/metamodels/pure/rawValueSpecification/RawVariableExpression';
+import { Multiplicity } from '../../../models/metamodels/pure/packageableElements/domain/Multiplicity.js';
+import type { Type } from '../../../models/metamodels/pure/packageableElements/domain/Type.js';
+import { PackageableElementExplicitReference } from '../../../models/metamodels/pure/packageableElements/PackageableElementReference.js';
+import { RawLambda } from '../../../models/metamodels/pure/rawValueSpecification/RawLambda.js';
+import { RawVariableExpression } from '../../../models/metamodels/pure/rawValueSpecification/RawVariableExpression.js';
 
 export const stub_RawVariableExpression = (type: Type): RawVariableExpression =>
   new RawVariableExpression(

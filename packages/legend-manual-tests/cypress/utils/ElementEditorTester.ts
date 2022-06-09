@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-import { TEST_ID } from '../../src/const';
-import { EDITOR_LANGUAGE } from '../../src/stores/EditorConfig';
-import { getConfigUrls } from './E2ETestUtil';
+import { TEST_ID } from '../../src/const.js';
+import { EDITOR_LANGUAGE } from '../../src/stores/EditorConfig.js';
+import { getConfigUrls } from './E2ETestUtil.js';
 import { editor as MonacoEditorAPI } from 'monaco-editor';
 import { Clazz, guaranteeType } from '@finos/legend-shared';
-import { EndToEndTester } from './EndToEndTester';
-import { ElementHelperExtension } from './ElementHelperExtension';
+import { EndToEndTester } from './EndToEndTester.js';
+import { ElementHelperExtension } from './ElementHelperExtension.js';
 
 export class ElementEditorTester extends EndToEndTester {
   // TODO make this an array

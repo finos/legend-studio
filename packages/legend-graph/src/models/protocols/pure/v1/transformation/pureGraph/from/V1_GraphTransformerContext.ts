@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin';
+import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin.js';
 
 export class V1_GraphTransformerContext {
   readonly keepSourceInformation: boolean;

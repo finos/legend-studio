@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { expect } from '@jest/globals';
 import {
   toContainKeys,
   toContainAllKeys,

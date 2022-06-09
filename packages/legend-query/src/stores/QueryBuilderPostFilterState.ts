@@ -46,16 +46,16 @@ import {
   makeObservable,
   observable,
 } from 'mobx';
-import { DEFAULT_POST_FILTER_LAMBDA_VARIABLE_NAME } from '../QueryBuilder_Const';
-import type { QueryBuilderAggregateColumnState } from './QueryBuilderAggregationState';
-import { QUERY_BUILDER_GROUP_OPERATION } from './QueryBuilderOperatorsHelper';
-import type { QueryBuilderPostFilterOperator } from './QueryBuilderPostFilterOperator';
+import { DEFAULT_POST_FILTER_LAMBDA_VARIABLE_NAME } from '../QueryBuilder_Const.js';
+import type { QueryBuilderAggregateColumnState } from './QueryBuilderAggregationState.js';
+import { QUERY_BUILDER_GROUP_OPERATION } from './QueryBuilderOperatorsHelper.js';
+import type { QueryBuilderPostFilterOperator } from './QueryBuilderPostFilterOperator.js';
 import {
   type QueryBuilderProjectionColumnDragSource,
   type QueryBuilderProjectionColumnState,
   QueryBuilderDerivationProjectionColumnState,
-} from './QueryBuilderProjectionState';
-import type { QueryBuilderState } from './QueryBuilderState';
+} from './QueryBuilderProjectionState.js';
+import type { QueryBuilderState } from './QueryBuilderState.js';
 
 export enum QUERY_BUILDER_POST_FILTER_DND_TYPE {
   GROUP_CONDITION = 'GROUP_CONDITION',

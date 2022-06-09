@@ -15,7 +15,7 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { DATA_SPACE_HASH_STRUCTURE } from '../../../../../../DSLDataSpace_ModelUtils';
+import { DATA_SPACE_HASH_STRUCTURE } from '../../../../../../DSLDataSpace_ModelUtils.js';
 import {
   V1_PackageableElement,
   type V1_PackageableElementPointer,

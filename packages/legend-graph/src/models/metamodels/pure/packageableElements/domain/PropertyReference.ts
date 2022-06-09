@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
+import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst.js';
 import { hashString } from '@finos/legend-shared';
 import {
   PackageableElementExplicitReference,
   type PackageableElementReference,
   type PackageableElementImplicitReference,
-} from '../PackageableElementReference';
-import { ReferenceWithOwner } from '../../Reference';
-import type { AbstractProperty } from './AbstractProperty';
-import type { Class } from './Class';
-import { Association } from './Association';
-import { getAssociatedPropertyClass } from '../../../../../helpers/DomainHelper';
+} from '../PackageableElementReference.js';
+import { ReferenceWithOwner } from '../../Reference.js';
+import type { AbstractProperty } from './AbstractProperty.js';
+import type { Class } from './Class.js';
+import { Association } from './Association.js';
+import { getAssociatedPropertyClass } from '../../../../../helpers/DomainHelper.js';
 
 export abstract class PropertyReference extends ReferenceWithOwner {
   override readonly ownerReference: PackageableElementReference<

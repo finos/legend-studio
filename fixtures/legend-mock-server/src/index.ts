@@ -14,9 +14,19 @@
  * limitations under the License.
  */
 
-import Fastify from 'fastify';
-import FastifyCORS from '@fastify/cors';
-import TAXONOMY_TREE_DATA from './TEST_DATA__TaxonomyTreeData.json';
+/**
+ * Previously, these exports rely on ES module interop to expose `default` export
+ * properly. But since we use `ESM` for Typescript resolution now, we lose this
+ *
+ * TODO: remove these when the package properly work with Typescript's nodenext
+ * module resolution
+ *
+ * @workaround ESM
+ * See https://github.com/microsoft/TypeScript/issues/49298
+ */
+import { default as Fastify } from 'fastify';
+import { default as FastifyCORS } from '@fastify/cors';
+import TAXONOMY_TREE_DATA from './TEST_DATA__TaxonomyTreeData.json' assert { type: 'json' };
 
 const PORT = 60001;
 const BASE_URL = '/api/';

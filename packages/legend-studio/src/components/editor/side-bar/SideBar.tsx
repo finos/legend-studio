@@ -15,16 +15,16 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { ACTIVITY_MODE } from '../../../stores/EditorConfig';
-import { Explorer } from './Explorer';
-import { LocalChanges } from './LocalChanges';
-import { WorkspaceReview } from './WorkspaceReview';
-import { WorkspaceUpdater } from './WorkspaceUpdater';
-import { WorkspaceUpdateConflictResolver } from './WorkspaceUpdateConflictResolver';
-import { ProjectOverview } from './ProjectOverview';
-import { WorkflowManager } from './WorkflowManager';
-import { useEditorStore } from '../EditorStoreProvider';
-import { GlobalTestRunner } from './testable/GlobalTestRunner';
+import { ACTIVITY_MODE } from '../../../stores/EditorConfig.js';
+import { Explorer } from './Explorer.js';
+import { LocalChanges } from './LocalChanges.js';
+import { WorkspaceReview } from './WorkspaceReview.js';
+import { WorkspaceUpdater } from './WorkspaceUpdater.js';
+import { WorkspaceUpdateConflictResolver } from './WorkspaceUpdateConflictResolver.js';
+import { ProjectOverview } from './ProjectOverview.js';
+import { WorkflowManager } from './WorkflowManager.js';
+import { useEditorStore } from '../EditorStoreProvider.js';
+import { GlobalTestRunner } from './testable/GlobalTestRunner.js';
 
 /**
  * Wrapper component around different implementations of sidebar, such as to view domain, to manage SDLC, etc.

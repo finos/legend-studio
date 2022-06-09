@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { InstanceValue } from './InstanceValue';
+import { InstanceValue } from './InstanceValue.js';
 
 export class AlloySerializationConfig {
   typeKeyName: string;

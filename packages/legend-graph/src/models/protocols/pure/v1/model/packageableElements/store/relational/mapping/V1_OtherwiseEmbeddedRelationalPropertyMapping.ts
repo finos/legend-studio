@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-import { CORE_HASH_STRUCTURE } from '../../../../../../../../../MetaModelConst';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../../../MetaModelConst.js';
 import { type Hashable, hashArray } from '@finos/legend-shared';
-import { V1_EmbeddedRelationalPropertyMapping } from './V1_EmbeddedRelationalPropertyMapping';
-import type { V1_RelationalPropertyMapping } from './V1_RelationalPropertyMapping';
-import type { V1_PropertyMappingVisitor } from '../../../../../model/packageableElements/mapping/V1_PropertyMapping';
+import { V1_EmbeddedRelationalPropertyMapping } from './V1_EmbeddedRelationalPropertyMapping.js';
+import type { V1_RelationalPropertyMapping } from './V1_RelationalPropertyMapping.js';
+import type { V1_PropertyMappingVisitor } from '../../../../../model/packageableElements/mapping/V1_PropertyMapping.js';
 
 export class V1_OtherwiseEmbeddedRelationalPropertyMapping
   extends V1_EmbeddedRelationalPropertyMapping

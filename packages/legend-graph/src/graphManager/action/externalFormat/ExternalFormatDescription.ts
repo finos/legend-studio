@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { GenerationProperty } from '../generation/GenerationConfigurationDescription';
+import type { GenerationProperty } from '../generation/GenerationConfigurationDescription.js';
 
 export class ExternalFormatDescription {
   name: string;

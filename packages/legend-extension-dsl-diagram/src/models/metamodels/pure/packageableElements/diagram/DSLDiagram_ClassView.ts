@@ -15,11 +15,11 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { PositionedRectangle } from './geometry/DSLDiagram_PositionedRectangle';
-import { Rectangle } from './geometry/DSLDiagram_Rectangle';
-import { Point } from './geometry/DSLDiagram_Point';
-import type { Diagram } from './DSLDiagram_Diagram';
-import { DIAGRAM_HASH_STRUCTURE } from '../../../../DSLDiagram_ModelUtils';
+import { PositionedRectangle } from './geometry/DSLDiagram_PositionedRectangle.js';
+import { Rectangle } from './geometry/DSLDiagram_Rectangle.js';
+import { Point } from './geometry/DSLDiagram_Point.js';
+import type { Diagram } from './DSLDiagram_Diagram.js';
+import { DIAGRAM_HASH_STRUCTURE } from '../../../../DSLDiagram_ModelUtils.js';
 import type { Class, PackageableElementReference } from '@finos/legend-graph';
 
 export class ClassView extends PositionedRectangle implements Hashable {

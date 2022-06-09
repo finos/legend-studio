@@ -18,14 +18,14 @@ import {
   type V1_Auditing,
   V1_DateTimeAuditing,
   V1_NoAuditing,
-} from '../../../model/packageableElements/persistence/V1_DSLPersistence_Auditing';
+} from '../../../model/packageableElements/persistence/V1_DSLPersistence_Auditing.js';
 import {
   V1_AnyVersionDeduplicationStrategy,
   type V1_DeduplicationStrategy,
   V1_DuplicateCountDeduplicationStrategy,
   V1_MaxVersionDeduplicationStrategy,
   V1_NoDeduplicationStrategy,
-} from '../../../model/packageableElements/persistence/V1_DSLPersistence_DeduplicationStrategy';
+} from '../../../model/packageableElements/persistence/V1_DSLPersistence_DeduplicationStrategy.js';
 import {
   V1_AppendOnly,
   V1_BitemporalDelta,
@@ -35,12 +35,12 @@ import {
   V1_NontemporalSnapshot,
   V1_UnitemporalDelta,
   V1_UnitemporalSnapshot,
-} from '../../../model/packageableElements/persistence/V1_DSLPersistence_IngestMode';
+} from '../../../model/packageableElements/persistence/V1_DSLPersistence_IngestMode.js';
 import {
   V1_DeleteIndicatorMergeStrategy,
   type V1_MergeStrategy,
   V1_NoDeletesMergeStrategy,
-} from '../../../model/packageableElements/persistence/V1_DSLPersistence_MergeStrategy';
+} from '../../../model/packageableElements/persistence/V1_DSLPersistence_MergeStrategy.js';
 import {
   V1_BatchIdAndDateTimeTransactionMilestoning,
   V1_BatchIdTransactionMilestoning,
@@ -51,48 +51,48 @@ import {
   type V1_TransactionMilestoning,
   type V1_ValidityDerivation,
   type V1_ValidityMilestoning,
-} from '../../../model/packageableElements/persistence/V1_DSLPersistence_Milestoning';
+} from '../../../model/packageableElements/persistence/V1_DSLPersistence_Milestoning.js';
 import {
   V1_EmailNotifyee,
   type V1_Notifier,
   type V1_Notifyee,
   V1_PagerDutyNotifyee,
-} from '../../../model/packageableElements/persistence/V1_DSLPersistence_Notifier';
-import type { V1_Persistence } from '../../../model/packageableElements/persistence/V1_DSLPersistence_Persistence';
+} from '../../../model/packageableElements/persistence/V1_DSLPersistence_Notifier.js';
+import type { V1_Persistence } from '../../../model/packageableElements/persistence/V1_DSLPersistence_Persistence.js';
 import {
   V1_BatchPersister,
   type V1_Persister,
   V1_StreamingPersister,
-} from '../../../model/packageableElements/persistence/V1_DSLPersistence_Persister';
+} from '../../../model/packageableElements/persistence/V1_DSLPersistence_Persister.js';
 import {
   V1_ObjectStorageSink,
   V1_RelationalSink,
   type V1_Sink,
-} from '../../../model/packageableElements/persistence/V1_DSLPersistence_Sink';
+} from '../../../model/packageableElements/persistence/V1_DSLPersistence_Sink.js';
 import {
   V1_FlatTarget,
   V1_MultiFlatTarget,
   type V1_MultiFlatTargetPart,
   type V1_TargetShape,
   V1_TransactionScope,
-} from '../../../model/packageableElements/persistence/V1_DSLPersistence_TargetShape';
+} from '../../../model/packageableElements/persistence/V1_DSLPersistence_TargetShape.js';
 import {
   V1_CronTrigger,
   V1_ManualTrigger,
   type V1_Trigger,
-} from '../../../model/packageableElements/persistence/V1_DSLPersistence_Trigger';
+} from '../../../model/packageableElements/persistence/V1_DSLPersistence_Trigger.js';
 import {
   type Auditing,
   DateTimeAuditing,
   NoAuditing,
-} from '../../../../../../metamodels/pure/model/packageableElements/persistence/DSLPersistence_Auditing';
+} from '../../../../../../metamodels/pure/model/packageableElements/persistence/DSLPersistence_Auditing.js';
 import {
   AnyVersionDeduplicationStrategy,
   type DeduplicationStrategy,
   DuplicateCountDeduplicationStrategy,
   MaxVersionDeduplicationStrategy,
   NoDeduplicationStrategy,
-} from '../../../../../../metamodels/pure/model/packageableElements/persistence/DSLPersistence_DeduplicationStrategy';
+} from '../../../../../../metamodels/pure/model/packageableElements/persistence/DSLPersistence_DeduplicationStrategy.js';
 import {
   AppendOnly,
   BitemporalDelta,
@@ -102,12 +102,12 @@ import {
   NontemporalSnapshot,
   UnitemporalDelta,
   UnitemporalSnapshot,
-} from '../../../../../../metamodels/pure/model/packageableElements/persistence/DSLPersistence_IngestMode';
+} from '../../../../../../metamodels/pure/model/packageableElements/persistence/DSLPersistence_IngestMode.js';
 import {
   DeleteIndicatorMergeStrategy,
   type MergeStrategy,
   NoDeletesMergeStrategy,
-} from '../../../../../../metamodels/pure/model/packageableElements/persistence/DSLPersistence_MergeStrategy';
+} from '../../../../../../metamodels/pure/model/packageableElements/persistence/DSLPersistence_MergeStrategy.js';
 import {
   BatchIdAndDateTimeTransactionMilestoning,
   BatchIdTransactionMilestoning,
@@ -118,36 +118,36 @@ import {
   type TransactionMilestoning,
   type ValidityDerivation,
   type ValidityMilestoning,
-} from '../../../../../../metamodels/pure/model/packageableElements/persistence/DSLPersistence_Milestoning';
+} from '../../../../../../metamodels/pure/model/packageableElements/persistence/DSLPersistence_Milestoning.js';
 import {
   EmailNotifyee,
   Notifier,
   type Notifyee,
   PagerDutyNotifyee,
-} from '../../../../../../metamodels/pure/model/packageableElements/persistence/DSLPersistence_Notifier';
+} from '../../../../../../metamodels/pure/model/packageableElements/persistence/DSLPersistence_Notifier.js';
 import {
   BatchPersister,
   type Persister,
   StreamingPersister,
-} from '../../../../../../metamodels/pure/model/packageableElements/persistence/DSLPersistence_Persister';
+} from '../../../../../../metamodels/pure/model/packageableElements/persistence/DSLPersistence_Persister.js';
 import {
   ObjectStorageSink,
   RelationalSink,
   type Sink,
-} from '../../../../../../metamodels/pure/model/packageableElements/persistence/DSLPersistence_Sink';
+} from '../../../../../../metamodels/pure/model/packageableElements/persistence/DSLPersistence_Sink.js';
 import {
   FlatTarget,
   MultiFlatTarget,
   MultiFlatTargetPart,
   type TargetShape,
   TransactionScope,
-} from '../../../../../../metamodels/pure/model/packageableElements/persistence/DSLPersistence_TargetShape';
+} from '../../../../../../metamodels/pure/model/packageableElements/persistence/DSLPersistence_TargetShape.js';
 import {
   CronTrigger,
   ManualTrigger,
   type Trigger,
-} from '../../../../../../metamodels/pure/model/packageableElements/persistence/DSLPersistence_Trigger';
-import { getOwnPersistence } from '../../../../../../../graphManager/DSLPersistence_GraphManagerHelper';
+} from '../../../../../../metamodels/pure/model/packageableElements/persistence/DSLPersistence_Trigger.js';
+import { getOwnPersistence } from '../../../../../../../graphManager/DSLPersistence_GraphManagerHelper.js';
 import {
   type Binding,
   type PackageableElementImplicitReference,

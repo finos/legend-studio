@@ -16,10 +16,9 @@
 
 import { hashObjectWithoutSourceInformation } from '@finos/legend-graph';
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../../ESService_ModelUtils';
-import type { V1_ServiceStoreServicePtr } from '../model/V1_ESService_ServiceStoreServicePtr';
-import type { V1_ServiceParameterMapping } from './V1_ESService_ServiceParameterMapping';
-import type { V1_ServiceRequestBuildInfo } from './V1_ESService_ServiceRequestBuildInfo';
+import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../../ESService_ModelUtils.js';
+import type { V1_ServiceStoreServicePtr } from '../model/V1_ESService_ServiceStoreServicePtr.js';
+import type { V1_ServiceRequestBuildInfo } from './V1_ESService_ServiceRequestBuildInfo.js';
 
 export class V1_ServiceMapping implements Hashable {
   service!: V1_ServiceStoreServicePtr;
@@ -30,11 +29,6 @@ export class V1_ServiceMapping implements Hashable {
    */
   pathOffset?: object | undefined;
   requestBuildInfo?: V1_ServiceRequestBuildInfo | undefined;
-  /**
-   * TODO: this will be removed in upcoming releases
-   * @deprecated
-   */
-  parameterMappings: V1_ServiceParameterMapping[] | undefined;
 
   get hashCode(): string {
     return hashArray([
@@ -43,7 +37,7 @@ export class V1_ServiceMapping implements Hashable {
       this.pathOffset
         ? hashObjectWithoutSourceInformation(this.pathOffset)
         : '',
-      this.requestBuildInfo?.toString() ?? '',
+      this.requestBuildInfo ?? '',
     ]);
   }
 }

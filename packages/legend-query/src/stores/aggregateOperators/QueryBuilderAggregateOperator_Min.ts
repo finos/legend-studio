@@ -23,19 +23,19 @@ import {
   type PureModel,
   type AbstractPropertyExpression,
 } from '@finos/legend-graph';
-import { SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const.js';
 import {
   type QueryBuilderAggregateColumnState,
   QueryBuilderAggregateOperator,
-} from '../QueryBuilderAggregationState';
+} from '../QueryBuilderAggregationState.js';
 import {
   type QueryBuilderProjectionColumnState,
   QueryBuilderSimpleProjectionColumnState,
-} from '../QueryBuilderProjectionState';
+} from '../QueryBuilderProjectionState.js';
 import {
   buildAggregateColumnState,
   buildAggregateExpression,
-} from './QueryBuilderAggregateOperatorHelper';
+} from './QueryBuilderAggregateOperatorHelper.js';
 
 export class QueryBuilderAggregateOperator_Min extends QueryBuilderAggregateOperator {
   getLabel(projectionColumnState: QueryBuilderProjectionColumnState): string {
@@ -82,8 +82,8 @@ export class QueryBuilderAggregateOperator_Min extends QueryBuilderAggregateOper
         propertyExpression?.func.genericType.value.rawType.path ??
           PRIMITIVE_TYPE.NUMBER, // this decision does not affect the output expression
       )
-        ? SUPPORTED_FUNCTIONS.DATE_MIN
-        : SUPPORTED_FUNCTIONS.MIN,
+        ? QUERY_BUILDER_SUPPORTED_FUNCTIONS.DATE_MIN
+        : QUERY_BUILDER_SUPPORTED_FUNCTIONS.MIN,
       graph,
       variableName,
     );
@@ -106,7 +106,10 @@ export class QueryBuilderAggregateOperator_Min extends QueryBuilderAggregateOper
         case PRIMITIVE_TYPE.DECIMAL:
         case PRIMITIVE_TYPE.FLOAT: {
           if (
-            !matchFunctionName(expression.functionName, SUPPORTED_FUNCTIONS.MIN)
+            !matchFunctionName(
+              expression.functionName,
+              QUERY_BUILDER_SUPPORTED_FUNCTIONS.MIN,
+            )
           ) {
             return undefined;
           }
@@ -114,7 +117,7 @@ export class QueryBuilderAggregateOperator_Min extends QueryBuilderAggregateOper
             projectionColumnState,
             lambdaParam,
             expression,
-            SUPPORTED_FUNCTIONS.MIN,
+            QUERY_BUILDER_SUPPORTED_FUNCTIONS.MIN,
             this,
           );
         }
@@ -124,7 +127,7 @@ export class QueryBuilderAggregateOperator_Min extends QueryBuilderAggregateOper
           if (
             !matchFunctionName(
               expression.functionName,
-              SUPPORTED_FUNCTIONS.DATE_MIN,
+              QUERY_BUILDER_SUPPORTED_FUNCTIONS.DATE_MIN,
             )
           ) {
             return undefined;
@@ -133,7 +136,7 @@ export class QueryBuilderAggregateOperator_Min extends QueryBuilderAggregateOper
             projectionColumnState,
             lambdaParam,
             expression,
-            SUPPORTED_FUNCTIONS.DATE_MIN,
+            QUERY_BUILDER_SUPPORTED_FUNCTIONS.DATE_MIN,
             this,
           );
         }
@@ -141,22 +144,30 @@ export class QueryBuilderAggregateOperator_Min extends QueryBuilderAggregateOper
           return undefined;
       }
     }
-    if (matchFunctionName(expression.functionName, SUPPORTED_FUNCTIONS.MIN)) {
-      return buildAggregateColumnState(
-        projectionColumnState,
-        lambdaParam,
-        expression,
-        SUPPORTED_FUNCTIONS.MIN,
-        this,
-      );
-    } else if (
-      matchFunctionName(expression.functionName, SUPPORTED_FUNCTIONS.DATE_MIN)
+    if (
+      matchFunctionName(
+        expression.functionName,
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.MIN,
+      )
     ) {
       return buildAggregateColumnState(
         projectionColumnState,
         lambdaParam,
         expression,
-        SUPPORTED_FUNCTIONS.DATE_MIN,
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.MIN,
+        this,
+      );
+    } else if (
+      matchFunctionName(
+        expression.functionName,
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.DATE_MIN,
+      )
+    ) {
+      return buildAggregateColumnState(
+        projectionColumnState,
+        lambdaParam,
+        expression,
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.DATE_MIN,
         this,
       );
     }

@@ -22,7 +22,7 @@ import {
   SerializationFactory,
   usingModelSchema,
 } from '@finos/legend-shared';
-import { VersionId } from '../version/VersionId';
+import { VersionId } from '../version/VersionId.js';
 import { observable, action, computed, makeObservable } from 'mobx';
 
 const PROJECT_DEPENDENCY_HASH_STRUCTURE = 'PROJECT_DEPENDENCY';

@@ -15,7 +15,7 @@
  */
 
 import { uuid } from '@finos/legend-shared';
-import type { Type } from './Type';
+import type { Type } from './Type.js';
 
 export class GenericType {
   readonly _UUID = uuid();

@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import type { V1_Protocol } from '../V1_Protocol';
-import type { V1_ExecutionNode } from './nodes/V1_ExecutionNode';
-import { V1_ExecutionPlan } from './V1_ExecutionPlan';
+import type { V1_Protocol } from '../V1_Protocol.js';
+import type { V1_ExecutionNode } from './nodes/V1_ExecutionNode.js';
+import { V1_ExecutionPlan } from './V1_ExecutionPlan.js';
 
 export class V1_SimpleExecutionPlan extends V1_ExecutionPlan {
   authDependent!: boolean;

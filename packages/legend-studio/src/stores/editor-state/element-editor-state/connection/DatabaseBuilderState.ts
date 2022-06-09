@@ -30,8 +30,8 @@ import {
   ActionState,
 } from '@finos/legend-shared';
 import { observable, action, makeObservable, flow, flowResult } from 'mobx';
-import { LEGEND_STUDIO_APP_EVENT } from '../../../LegendStudioAppEvent';
-import type { EditorStore } from '../../../EditorStore';
+import { LEGEND_STUDIO_APP_EVENT } from '../../../LegendStudioAppEvent.js';
+import type { EditorStore } from '../../../EditorStore.js';
 import {
   type RelationalDatabaseConnection,
   type Schema,
@@ -49,7 +49,7 @@ import {
   getNullableSchema,
   getNullableTable,
 } from '@finos/legend-graph';
-import { connection_setStore } from '../../../graphModifier/DSLMapping_GraphModifierHelper';
+import { connection_setStore } from '../../../graphModifier/DSLMapping_GraphModifierHelper.js';
 
 export abstract class DatabaseBuilderTreeNodeData implements TreeNodeData {
   isOpen?: boolean | undefined;

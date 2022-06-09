@@ -18,7 +18,7 @@ import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { type IKeyboardEvent, KeyCode } from 'monaco-editor';
 import { useCallback, useMemo } from 'react';
-import type { QueryBuilderState } from '../stores/QueryBuilderState';
+import type { QueryBuilderState } from '../stores/QueryBuilderState.js';
 import type { Type } from '@finos/legend-graph';
 import {
   useApplicationStore,

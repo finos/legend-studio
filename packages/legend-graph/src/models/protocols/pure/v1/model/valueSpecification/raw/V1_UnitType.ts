@@ -17,7 +17,7 @@
 import {
   type V1_ValueSpecificationVisitor,
   V1_ValueSpecification,
-} from '../../../model/valueSpecification/V1_ValueSpecification';
+} from '../../../model/valueSpecification/V1_ValueSpecification.js';
 
 export class V1_UnitType extends V1_ValueSpecification {
   unitType!: string;

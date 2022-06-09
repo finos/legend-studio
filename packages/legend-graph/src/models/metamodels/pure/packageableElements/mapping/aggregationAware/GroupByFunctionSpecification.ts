@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import type { RawLambda } from '../../../rawValueSpecification/RawLambda';
+import type { RawLambda } from '../../../rawValueSpecification/RawLambda.js';
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../MetaModelConst';
-import { hashLambda } from '../../../../../../MetaModelUtils';
+import { CORE_HASH_STRUCTURE } from '../../../../../../MetaModelConst.js';
+import { hashRawLambda } from '../../../../../../MetaModelUtils.js';
 
 export class GroupByFunctionSpecification implements Hashable {
   /**
@@ -34,7 +34,7 @@ export class GroupByFunctionSpecification implements Hashable {
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.GROUP_BY_FUNCTION,
-      hashLambda(this.groupByFn.parameters, this.groupByFn.body),
+      hashRawLambda(this.groupByFn.parameters, this.groupByFn.body),
     ]);
   }
 }

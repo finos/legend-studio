@@ -21,51 +21,44 @@ import {
   LogEvent,
   losslessParse,
   assertErrorThrown,
-  guaranteeNonNullable,
   mergeObjects,
   HttpStatus,
   NetworkClientError,
   returnUndefOnError,
+  deserializeMap,
 } from '@finos/legend-shared';
 import {
   type ImportConfigurationDescription,
   ImportMode,
-} from '../../../../../graphManager/action/generation/ImportConfigurationDescription';
-import type { RawLambda } from '../../../../metamodels/pure/rawValueSpecification/RawLambda';
+} from '../../../../../graphManager/action/generation/ImportConfigurationDescription.js';
+import type { RawLambda } from '../../../../metamodels/pure/rawValueSpecification/RawLambda.js';
 import {
   GenerationMode,
   type GenerationConfigurationDescription,
-} from '../../../../../graphManager/action/generation/GenerationConfigurationDescription';
-import { TEMPORARY__AbstractEngineConfig } from '../../../../../graphManager/action/TEMPORARY__AbstractEngineConfig';
-import { V1_EngineServerClient } from './V1_EngineServerClient';
-import type { V1_PureModelContextData } from '../model/context/V1_PureModelContextData';
-import type { V1_LambdaReturnTypeResult } from '../engine/compilation/V1_LambdaReturnTypeResult';
-import {
-  V1_JsonToGrammarInput,
-  V1_RenderStyle,
-} from '../engine/grammar/V1_JsonToGrammarInput';
-import { V1_GrammarToJsonInput } from '../engine/grammar/V1_GrammarToJson';
-import type { V1_RawLambda } from '../model/rawValueSpecification/V1_RawLambda';
+} from '../../../../../graphManager/action/generation/GenerationConfigurationDescription.js';
+import { TEMPORARY__AbstractEngineConfig } from '../../../../../graphManager/action/TEMPORARY__AbstractEngineConfig.js';
+import { V1_EngineServerClient } from './V1_EngineServerClient.js';
+import type { V1_PureModelContextData } from '../model/context/V1_PureModelContextData.js';
+import type { V1_LambdaReturnTypeResult } from '../engine/compilation/V1_LambdaReturnTypeResult.js';
+import type { V1_RawLambda } from '../model/rawValueSpecification/V1_RawLambda.js';
 import {
   V1_deserializePureModelContextData,
   V1_serializePureModelContext,
   V1_serializePureModelContextData,
-} from '../transformation/pureProtocol/V1_PureProtocolSerialization';
-import { V1_DEPRECATED__ServiceTestResult } from './service/V1_DEPRECATED__ServiceTestResult';
-import { V1_serializeRawValueSpecification } from '../transformation/pureProtocol/serializationHelpers/V1_RawValueSpecificationSerializationHelper';
-import { V1_transformRawLambda } from '../transformation/pureGraph/from/V1_RawValueSpecificationTransformer';
-import { V1_GenerateFileInput } from '../engine/generation/V1_FileGenerationInput';
-import { V1_ImportConfigurationDescription } from '../engine/import/V1_ImportConfigurationDescription';
-import { V1_GenerationConfigurationDescription } from '../engine/generation/V1_GenerationConfigurationDescription';
-import { V1_GenerationOutput } from '../engine/generation/V1_GenerationOutput';
-import { V1_ParserError } from '../engine/grammar/V1_ParserError';
-import { V1_CompilationError } from '../engine/compilation/V1_CompilationError';
-import type { V1_RawRelationalOperationElement } from '../model/packageableElements/store/relational/model/V1_RawRelationalOperationElement';
-import type { RawRelationalOperationElement } from '../../../../metamodels/pure/packageableElements/store/relational/model/RawRelationalOperationElement';
-import { V1_RelationalOperationElementJsonToGrammarInput } from './grammar/V1_RelationalOperationElementJsonToGrammarInput';
-import { V1_RelationalOperationElementGrammarToJsonInput } from './grammar/V1_RelationalOperationElementGrammarToJson';
-import { V1_GraphTransformerContextBuilder } from '../transformation/pureGraph/from/V1_GraphTransformerContext';
-import type { PureProtocolProcessorPlugin } from '../../PureProtocolProcessorPlugin';
+} from '../transformation/pureProtocol/V1_PureProtocolSerialization.js';
+import { V1_DEPRECATED__ServiceTestResult } from './service/V1_DEPRECATED__ServiceTestResult.js';
+import { V1_serializeRawValueSpecification } from '../transformation/pureProtocol/serializationHelpers/V1_RawValueSpecificationSerializationHelper.js';
+import { V1_transformRawLambda } from '../transformation/pureGraph/from/V1_RawValueSpecificationTransformer.js';
+import { V1_GenerateFileInput } from '../engine/generation/V1_FileGenerationInput.js';
+import { V1_ImportConfigurationDescription } from '../engine/import/V1_ImportConfigurationDescription.js';
+import { V1_GenerationConfigurationDescription } from '../engine/generation/V1_GenerationConfigurationDescription.js';
+import { V1_GenerationOutput } from '../engine/generation/V1_GenerationOutput.js';
+import { V1_ParserError } from '../engine/grammar/V1_ParserError.js';
+import { V1_CompilationError } from '../engine/compilation/V1_CompilationError.js';
+import type { V1_RawRelationalOperationElement } from '../model/packageableElements/store/relational/model/V1_RawRelationalOperationElement.js';
+import type { RawRelationalOperationElement } from '../../../../metamodels/pure/packageableElements/store/relational/model/RawRelationalOperationElement.js';
+import { V1_GraphTransformerContextBuilder } from '../transformation/pureGraph/from/V1_GraphTransformerContext.js';
+import type { PureProtocolProcessorPlugin } from '../../PureProtocolProcessorPlugin.js';
 import {
   V1_buildCompilationError,
   V1_buildExecutionError,
@@ -73,34 +66,35 @@ import {
   V1_buildGenerationConfigurationDescription,
   V1_buildImportConfigurationDescription,
   V1_buildParserError,
-} from './V1_EngineHelper';
-import { V1_LightQuery, V1_Query } from './query/V1_Query';
-import { V1_DatabaseBuilderInput } from './generation/V1_DatabaseBuilderInput';
-import type { V1_ServiceConfigurationInfo } from './service/V1_ServiceConfiguration';
+} from './V1_EngineHelper.js';
+import { V1_LightQuery, V1_Query } from './query/V1_Query.js';
+import { V1_DatabaseBuilderInput } from './generation/V1_DatabaseBuilderInput.js';
+import type { V1_ServiceConfigurationInfo } from './service/V1_ServiceConfiguration.js';
 import {
   V1_ExecuteInput,
   V1_TestDataGenerationExecutionInput,
-} from './execution/V1_ExecuteInput';
-import type { V1_ExecutionPlan } from '../model/executionPlan/V1_ExecutionPlan';
+} from './execution/V1_ExecuteInput.js';
+import type { V1_ExecutionPlan } from '../model/executionPlan/V1_ExecutionPlan.js';
 import {
   type V1_ExecutionResult,
   V1_serializeExecutionResult,
-} from './execution/V1_ExecutionResult';
-import { V1_ServiceStorage } from './service/V1_ServiceStorage';
-import { V1_ServiceRegistrationResult } from './service/V1_ServiceRegistrationResult';
-import type { V1_PureModelContext } from '../model/context/V1_PureModelContext';
-import { ServiceExecutionMode } from '../../../../../graphManager/action/service/ServiceExecutionMode';
+} from './execution/V1_ExecutionResult.js';
+import { V1_ServiceStorage } from './service/V1_ServiceStorage.js';
+import { V1_ServiceRegistrationResult } from './service/V1_ServiceRegistrationResult.js';
+import type { V1_PureModelContext } from '../model/context/V1_PureModelContext.js';
+import { ServiceExecutionMode } from '../../../../../graphManager/action/service/ServiceExecutionMode.js';
 import { serialize } from 'serializr';
-import { V1_ExecutionError } from './execution/V1_ExecutionError';
-import { V1_PureModelContextText } from '../model/context/V1_PureModelContextText';
-import { V1_QuerySearchSpecification } from './query/V1_QuerySearchSpecification';
-import type { ExecutionOptions } from '../../../../../graphManager/AbstractPureGraphManager';
-import type { ExternalFormatDescription } from '../../../../../graphManager/action/externalFormat/ExternalFormatDescription';
-import { V1_ExternalFormatDescription } from './externalFormat/V1_ExternalFormatDescription';
-import { V1_ExternalFormatModelGenerationInput } from './externalFormat/V1_ExternalFormatModelGeneration';
-import { GRAPH_MANAGER_EVENT } from '../../../../../graphManager/GraphManagerEvent';
-import { V1_RunTestsInput } from './test/V1_RunTestsInput';
-import { V1_RunTestsResult } from './test/V1_RunTestsResult';
+import { V1_ExecutionError } from './execution/V1_ExecutionError.js';
+import { V1_PureModelContextText } from '../model/context/V1_PureModelContextText.js';
+import { V1_QuerySearchSpecification } from './query/V1_QuerySearchSpecification.js';
+import type { ExecutionOptions } from '../../../../../graphManager/AbstractPureGraphManager.js';
+import type { ExternalFormatDescription } from '../../../../../graphManager/action/externalFormat/ExternalFormatDescription.js';
+import { V1_ExternalFormatDescription } from './externalFormat/V1_ExternalFormatDescription.js';
+import { V1_ExternalFormatModelGenerationInput } from './externalFormat/V1_ExternalFormatModelGeneration.js';
+import { GRAPH_MANAGER_EVENT } from '../../../../../graphManager/GraphManagerEvent.js';
+import { V1_RunTestsInput } from './test/V1_RunTestsInput.js';
+import { V1_RunTestsResult } from './test/V1_RunTestsResult.js';
+import { V1_RenderStyle } from './grammar/V1_RenderStyle.js';
 
 class V1_EngineConfig extends TEMPORARY__AbstractEngineConfig {
   private engine: V1_Engine;
@@ -196,15 +190,12 @@ export class V1_Engine {
 
   // ------------------------------------------- Grammar -------------------------------------------
 
-  async pureModelContextDataToPureCode(
+  pureModelContextDataToPureCode(
     graph: V1_PureModelContextData,
   ): Promise<string> {
-    return (
-      ((
-        await this.engineServerClient.transformJSONToGrammar({
-          modelDataContext: this.serializePureModelContextData(graph),
-        })
-      ).code as string | undefined) ?? ''
+    return this.engineServerClient.JSONToGrammar_model(
+      this.serializePureModelContextData(graph),
+      V1_RenderStyle.STANDARD,
     );
   }
 
@@ -213,111 +204,155 @@ export class V1_Engine {
     options?: { onError?: () => void },
   ): Promise<V1_PureModelContextData> {
     return V1_deserializePureModelContextData(
-      await this.pureCodeToPureModelContextDataJson(code, options),
+      await this.pureCodeToPureModelContextDataJSON(code, false, options),
     );
   }
 
-  private async pureCodeToPureModelContextDataJson(
+  private async pureCodeToPureModelContextDataJSON(
     code: string,
+    returnSourceInformation: boolean,
     options?: { onError?: () => void },
   ): Promise<PlainObject<V1_PureModelContextData>> {
-    const parsingResult = await this.engineServerClient.transformGrammarToJSON({
-      code,
-    });
-    if (parsingResult.codeError) {
-      options?.onError?.();
-      throw V1_buildParserError(
-        V1_ParserError.serialization.fromJson(
-          parsingResult.codeError as PlainObject<V1_ParserError>,
-        ),
+    try {
+      return await this.engineServerClient.grammarToJSON_model(
+        code,
+        undefined,
+        undefined,
+        // TODO: we should use the passed `returnSourceInformation`
+        // but right now, we must test if this works for engine
+        // See https://github.com/finos/legend-engine/pull/692
+        undefined,
       );
+    } catch (error) {
+      assertErrorThrown(error);
+      options?.onError?.();
+      if (
+        error instanceof NetworkClientError &&
+        error.response.status === HttpStatus.BAD_REQUEST
+      ) {
+        throw V1_buildParserError(
+          V1_ParserError.serialization.fromJson(
+            error.payload as PlainObject<V1_ParserError>,
+          ),
+        );
+      }
+      throw error;
     }
-    return guaranteeNonNullable(
-      parsingResult.modelDataContext,
-    ) as PlainObject<V1_PureModelContextData>;
   }
 
   async transformLambdasToCode(
-    inputLambdas: Map<string, RawLambda>,
-    pureProtocolProcessorPlugins: PureProtocolProcessorPlugin[],
-    pretty?: boolean,
+    input: Map<string, RawLambda>,
+    pretty: boolean,
+    plugins: PureProtocolProcessorPlugin[],
   ): Promise<Map<string, string>> {
     const lambdas: Record<string, PlainObject<V1_RawLambda>> = {};
-    inputLambdas.forEach((inputLambda, key) => {
+    input.forEach((inputLambda, key) => {
       lambdas[key] = V1_serializeRawValueSpecification(
         V1_transformRawLambda(
           inputLambda,
-          new V1_GraphTransformerContextBuilder(
-            pureProtocolProcessorPlugins,
-          ).build(),
+          new V1_GraphTransformerContextBuilder(plugins).build(),
         ),
       );
     });
-    const result = V1_GrammarToJsonInput.serialization.fromJson(
-      await this.engineServerClient.transformJSONToGrammar({
-        isolatedLambdas: { lambdas },
-        renderStyle: pretty ? V1_RenderStyle.PRETTY : V1_RenderStyle.STANDARD,
-      }),
+    return deserializeMap(
+      await this.engineServerClient.JSONToGrammar_lambda_batch(
+        lambdas,
+        pretty ? V1_RenderStyle.PRETTY : V1_RenderStyle.STANDARD,
+      ),
+      (v) => v,
     );
-    return result.isolatedLambdas ?? new Map<string, string>();
+  }
+
+  async transformLambdaToCode(
+    lambda: RawLambda,
+    pretty: boolean,
+    plugins: PureProtocolProcessorPlugin[],
+  ): Promise<string> {
+    return await this.engineServerClient.JSONToGrammar_lambda(
+      V1_serializeRawValueSpecification(
+        V1_transformRawLambda(
+          lambda,
+          new V1_GraphTransformerContextBuilder(plugins).build(),
+        ),
+      ),
+      pretty ? V1_RenderStyle.PRETTY : V1_RenderStyle.STANDARD,
+    );
   }
 
   async transformCodeToLambda(
-    lambda: string,
-    lambdaId: string,
-  ): Promise<V1_RawLambda | undefined> {
-    const result = V1_JsonToGrammarInput.serialization.fromJson(
-      await this.engineServerClient.transformGrammarToJSON({
-        isolatedLambdas: { [lambdaId]: lambda },
-      }),
-    );
-    const lambdaResult = guaranteeNonNullable(result.isolatedLambdas);
-    const parserError = lambdaResult.lambdaErrors?.get(lambdaId);
-    if (parserError) {
-      throw V1_buildParserError(parserError);
+    code: string,
+    lambdaId?: string,
+  ): Promise<V1_RawLambda> {
+    try {
+      return (await this.engineServerClient.grammarToJSON_lambda(
+        code,
+        lambdaId ?? '',
+        undefined,
+        undefined,
+        true,
+      )) as unknown as V1_RawLambda;
+    } catch (error) {
+      assertErrorThrown(error);
+      if (
+        error instanceof NetworkClientError &&
+        error.response.status === HttpStatus.BAD_REQUEST
+      ) {
+        throw V1_buildParserError(
+          V1_ParserError.serialization.fromJson(
+            error.payload as PlainObject<V1_ParserError>,
+          ),
+        );
+      }
+      throw error;
     }
-    return lambdaResult.lambdas?.get(lambdaId);
   }
 
   async transformRelationalOperationElementsToPureCode(
-    inputOperations: Map<string, RawRelationalOperationElement>,
+    input: Map<string, RawRelationalOperationElement>,
   ): Promise<Map<string, string>> {
     const operations: Record<
       string,
       PlainObject<V1_RawRelationalOperationElement>
     > = {};
-    inputOperations.forEach((inputOperation, key) => {
+    input.forEach((inputOperation, key) => {
       operations[key] =
         inputOperation as PlainObject<V1_RawRelationalOperationElement>;
     });
-    const result =
-      V1_RelationalOperationElementGrammarToJsonInput.serialization.fromJson(
-        await this.engineServerClient.transformRelationalOperationElementJSONToGrammar(
-          {
-            operations,
-          },
-        ),
-      );
-    return result.operations;
+    return deserializeMap(
+      await this.engineServerClient.JSONToGrammar_relationalOperationElement_batch(
+        operations,
+        V1_RenderStyle.STANDARD,
+      ),
+      (v) => v,
+    );
   }
 
   async transformPureCodeToRelationalOperationElement(
-    operation: string,
+    code: string,
     operationId: string,
-  ): Promise<V1_RawRelationalOperationElement | undefined> {
-    const result =
-      V1_RelationalOperationElementJsonToGrammarInput.serialization.fromJson(
-        await this.engineServerClient.transformRelationalOperationElementGrammarToJSON(
-          {
-            operations: { [operationId]: operation },
-          },
-        ),
-      );
-    const parserError = result.operationErrors?.get(operationId);
-    if (parserError) {
-      throw V1_buildParserError(parserError);
+  ): Promise<V1_RawRelationalOperationElement> {
+    try {
+      return (await this.engineServerClient.grammarToJSON_relationalOperationElement(
+        code,
+        operationId,
+        undefined,
+        undefined,
+        true,
+      )) as unknown as V1_RawRelationalOperationElement;
+    } catch (error) {
+      assertErrorThrown(error);
+      if (
+        error instanceof NetworkClientError &&
+        error.response.status === HttpStatus.BAD_REQUEST
+      ) {
+        throw V1_buildParserError(
+          V1_ParserError.serialization.fromJson(
+            error.payload as PlainObject<V1_ParserError>,
+          ),
+        );
+      }
+      throw error;
     }
-    return result.operations.get(operationId);
   }
 
   // ------------------------------------------- Compile -------------------------------------------
@@ -352,8 +387,11 @@ export class V1_Engine {
     compileContext?: V1_PureModelContextData,
     options?: { onError?: () => void },
   ): Promise<V1_PureModelContextData> {
-    const mainGraph = await this.pureCodeToPureModelContextDataJson(
+    const mainGraph = await this.pureCodeToPureModelContextDataJSON(
       graphText,
+      // NOTE: we need to return source information here so we can locate the compilation
+      // errors/warnings
+      true,
       options,
     );
     const pureModelContextDataJson = compileContext
@@ -545,15 +583,13 @@ export class V1_Engine {
   async generateModel(
     input: V1_ExternalFormatModelGenerationInput,
   ): Promise<string> {
-    const pmcd = (await this.engineServerClient.generateModel(
+    const model = (await this.engineServerClient.generateModel(
       V1_ExternalFormatModelGenerationInput.serialization.toJson(input),
     )) as unknown as PlainObject<V1_PureModelContextData>;
-    const pureCode =
-      ((
-        await this.engineServerClient.transformJSONToGrammar({
-          modelDataContext: pmcd,
-        })
-      ).code as string | undefined) ?? '';
+    const pureCode = await this.engineServerClient.JSONToGrammar_model(
+      model,
+      V1_RenderStyle.STANDARD,
+    );
     return pureCode;
   }
 

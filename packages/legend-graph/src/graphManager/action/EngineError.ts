@@ -15,7 +15,7 @@
  */
 
 import { ApplicationError } from '@finos/legend-shared';
-import type { SourceInformation } from '../action/SourceInformation';
+import type { SourceInformation } from '../action/SourceInformation.js';
 
 export class EngineError extends ApplicationError {
   sourceInformation?: SourceInformation | undefined;

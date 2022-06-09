@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import type { EditorStore } from '../../EditorStore';
+import type { EditorStore } from '../../EditorStore.js';
 import { observable, action, makeObservable } from 'mobx';
 import { UnsupportedOperationError } from '@finos/legend-shared';
-import { ElementEditorState } from './ElementEditorState';
+import { ElementEditorState } from './ElementEditorState.js';
 import {
   type PackageableElement,
   Class,

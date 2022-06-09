@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import type { DataType } from '../../packageableElements/domain/DataType';
-import type { PackageableElementReference } from '../../packageableElements/PackageableElementReference';
+import type { DataType } from '../../packageableElements/domain/DataType.js';
+import type { PackageableElementReference } from '../../packageableElements/PackageableElementReference.js';
 
 export class TDSColumn {
   name!: string;

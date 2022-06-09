@@ -38,10 +38,10 @@ import {
   observable,
 } from 'mobx';
 import { User, SDLCServerClient } from '@finos/legend-server-sdlc';
-import { LEGEND_STUDIO_APP_EVENT } from './LegendStudioAppEvent';
+import { LEGEND_STUDIO_APP_EVENT } from './LegendStudioAppEvent.js';
 import type { DepotServerClient } from '@finos/legend-server-depot';
-import type { LegendStudioPluginManager } from '../application/LegendStudioPluginManager';
-import type { LegendStudioConfig } from '../application/LegendStudioConfig';
+import type { LegendStudioPluginManager } from '../application/LegendStudioPluginManager.js';
+import type { LegendStudioConfig } from '../application/LegendStudioConfig.js';
 
 const UNKNOWN_USER_ID = '(unknown)';
 

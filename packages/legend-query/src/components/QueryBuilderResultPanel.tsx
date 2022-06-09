@@ -31,7 +31,7 @@ import {
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { flowResult } from 'mobx';
-import type { QueryBuilderState } from '../stores/QueryBuilderState';
+import type { QueryBuilderState } from '../stores/QueryBuilderState.js';
 import {
   type ExecutionResult,
   extractExecutionResultValues,
@@ -43,11 +43,11 @@ import {
   ActionAlertActionType,
   ActionAlertType,
   EDITOR_LANGUAGE,
+  PARAMETER_SUBMIT_ACTION,
   TAB_SIZE,
   TextInputEditor,
   useApplicationStore,
 } from '@finos/legend-application';
-import { PARAMETER_SUBMIT_ACTION } from '../stores/QueryParametersState';
 import { isBoolean } from '@finos/legend-shared';
 
 const QueryBuilderResultValues = observer(
@@ -126,7 +126,7 @@ export const QueryBuilderResultPanel = observer(
     const exportQueryResults = async (
       format: EXECUTION_SERIALIZATION_FORMAT,
     ): Promise<void> => {
-      if (queryBuilderState.queryParametersState.parameters.length) {
+      if (queryBuilderState.queryParametersState.parameterStates.length) {
         queryParametersState.parameterValuesEditorState.open(
           (): Promise<void> =>
             flowResult(resultState.exportData(format)).catch(
@@ -162,7 +162,7 @@ export const QueryBuilderResultPanel = observer(
       });
     };
     const execute = (): void => {
-      if (queryParametersState.parameters.length) {
+      if (queryParametersState.parameterStates.length) {
         queryParametersState.parameterValuesEditorState.open(
           (): Promise<void> =>
             flowResult(resultState.execute()).catch(

@@ -16,7 +16,7 @@
 
 import { list, primitive, createModelSchema } from 'serializr';
 import { SerializationFactory, usingModelSchema } from '@finos/legend-shared';
-import { V1_GenerationProperty } from '../generation/V1_GenerationConfigurationDescription';
+import { V1_GenerationProperty } from '../generation/V1_GenerationConfigurationDescription.js';
 
 export class V1_ExternalFormatDescription {
   name: string;

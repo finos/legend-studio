@@ -18,7 +18,7 @@ import {
   QueryBuilderFilterOperator,
   type QueryBuilderFilterState,
   type FilterConditionState,
-} from '../QueryBuilderFilterState';
+} from '../QueryBuilderFilterState.js';
 import {
   type ValueSpecification,
   type SimpleFunctionExpression,
@@ -33,13 +33,13 @@ import {
 import {
   buildFilterConditionState,
   buildFilterConditionExpression,
-} from './QueryBuilderFilterOperatorHelper';
-import { SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
+} from './QueryBuilderFilterOperatorHelper.js';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const.js';
 import {
   buildNotExpression,
   unwrapNotExpression,
   getCollectionValueSpecificationType,
-} from '../QueryBuilderOperatorsHelper';
+} from '../QueryBuilderOperatorsHelper.js';
 
 export class QueryBuilderFilterOperator_In extends QueryBuilderFilterOperator {
   getLabel(filterConditionState: FilterConditionState): string {
@@ -137,7 +137,7 @@ export class QueryBuilderFilterOperator_In extends QueryBuilderFilterOperator {
   ): ValueSpecification {
     return buildFilterConditionExpression(
       filterConditionState,
-      SUPPORTED_FUNCTIONS.IN,
+      QUERY_BUILDER_SUPPORTED_FUNCTIONS.IN,
     );
   }
 
@@ -148,7 +148,7 @@ export class QueryBuilderFilterOperator_In extends QueryBuilderFilterOperator {
     return buildFilterConditionState(
       filterState,
       expression,
-      SUPPORTED_FUNCTIONS.IN,
+      QUERY_BUILDER_SUPPORTED_FUNCTIONS.IN,
       this,
     );
   }

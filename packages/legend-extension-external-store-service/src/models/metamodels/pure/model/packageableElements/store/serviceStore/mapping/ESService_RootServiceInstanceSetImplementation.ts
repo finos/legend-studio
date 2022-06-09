@@ -19,9 +19,9 @@ import {
   InstanceSetImplementation,
   type SetImplementationVisitor,
 } from '@finos/legend-graph';
-import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../ESService_ModelUtils';
-import type { LocalMappingProperty } from './ESService_LocalMappingProperty';
-import type { ServiceMapping } from './ESService_ServiceMapping';
+import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../ESService_ModelUtils.js';
+import type { LocalMappingProperty } from './ESService_LocalMappingProperty.js';
+import type { ServiceMapping } from './ESService_ServiceMapping.js';
 
 export class RootServiceInstanceSetImplementation
   extends InstanceSetImplementation

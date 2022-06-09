@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import type { AggregationFunctionSpecification } from './AggregationFunctionSpecification';
-import type { GroupByFunctionSpecification } from './GroupByFunctionSpecification';
+import type { AggregationFunctionSpecification } from './AggregationFunctionSpecification.js';
+import type { GroupByFunctionSpecification } from './GroupByFunctionSpecification.js';
 import { type Hashable, hashArray } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../MetaModelConst';
+import { CORE_HASH_STRUCTURE } from '../../../../../../MetaModelConst.js';
 
 export class AggregateSpecification implements Hashable {
   canAggregate: boolean;

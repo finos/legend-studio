@@ -14,5 +14,5 @@
  * limitations under the License.
  */
 
-export * from './Entity';
-export * from './EntityUtils';
+export * from './Entity.js';
+export * from './EntityUtils.js';

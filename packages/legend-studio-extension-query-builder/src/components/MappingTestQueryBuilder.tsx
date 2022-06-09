@@ -17,9 +17,9 @@
 import { type MappingTestState, useEditorStore } from '@finos/legend-studio';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
-import { QueryBuilder_EditorExtensionState } from '../stores/QueryBuilder_EditorExtensionState';
+import { QueryBuilder_EditorExtensionState } from '../stores/QueryBuilder_EditorExtensionState.js';
 import { useApplicationStore } from '@finos/legend-application';
-import { MappingExecutionQueryBuilderMode } from './MappingExecutionQueryBuilder';
+import { MappingExecutionQueryBuilderMode } from './MappingExecutionQueryBuilder.js';
 import { assertErrorThrown } from '@finos/legend-shared';
 import { PencilIcon } from '@finos/legend-art';
 import { isStubbed_RawLambda } from '@finos/legend-graph';

@@ -38,6 +38,7 @@ import {
   type SnowflakePublicAuthenticationStrategy,
   type StaticDatasourceSpecification,
   type UsernamePasswordAuthenticationStrategy,
+  type GCPWorkloadIdentityFederationAuthenticationStrategy,
   type ObserverContext,
   getRelationalInputType,
   observe_DatasourceSpecification,
@@ -139,6 +140,26 @@ export const usernamePasswordAuthenticationStrategy_setPasswordVaultReference =
   action((v: UsernamePasswordAuthenticationStrategy, val: string): void => {
     v.passwordVaultReference = val;
   });
+
+export const gcpWorkloadIdentityFederationAuthenticationStrategy_setServiceAccountEmail =
+  action(
+    (
+      v: GCPWorkloadIdentityFederationAuthenticationStrategy,
+      val: string,
+    ): void => {
+      v.serviceAccountEmail = val;
+    },
+  );
+
+export const gcpWorkloadIdentityFederationAuthenticationStrategy_setAdditionalGcpScopes =
+  action(
+    (
+      v: GCPWorkloadIdentityFederationAuthenticationStrategy,
+      val: string[],
+    ): void => {
+      v.additionalGcpScopes = val;
+    },
+  );
 
 // --------------------------------------------- DatasourceSpecification -------------------------------------
 export const staticDatasourceSpecification_setHost = action(
@@ -324,6 +345,16 @@ export const bigQueryDatasourceSpecification_setProjectId = action(
 export const bigQueryDatasourceSpecification_setDefaultDataset = action(
   (spec: BigQueryDatasourceSpecification, val: string): void => {
     spec.defaultDataset = val;
+  },
+);
+export const bigQueryDatasourceSpecification_setProxyHost = action(
+  (spec: BigQueryDatasourceSpecification, val: string | undefined): void => {
+    spec.proxyHost = val;
+  },
+);
+export const bigQueryDatasourceSpecification_setProxyPort = action(
+  (spec: BigQueryDatasourceSpecification, val: string | undefined): void => {
+    spec.proxyPort = val;
   },
 );
 //

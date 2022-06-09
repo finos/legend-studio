@@ -241,4 +241,52 @@
   &__context-menu__item:hover {
     background: var(--color-light-blue-450);
   }
+
+  &__share-project {
+    &__btn svg {
+      font-size: 1.8rem;
+      stroke-width: 0.3rem;
+
+      &[disabled] {
+        stroke: var(--color-dark-grey-350);
+      }
+    }
+
+    &__modal {
+      &__info-entry {
+        @include flexVCenter;
+
+        cursor: default;
+        padding: 0.5rem 0;
+        font-size: 1.4rem;
+      }
+
+      &__info-entry__title {
+        margin-right: 0.5rem;
+        color: var(--color-dark-grey-500);
+      }
+
+      &__info-entry__value {
+        padding-left: 0.5rem;
+        color: var(--color-light-grey-200);
+      }
+
+      &__info-entry__value a {
+        text-decoration: none;
+        font-weight: 500;
+        color: var(--color-blue-50);
+      }
+
+      &__share-btn svg {
+        padding-right: 0.7rem;
+        font-size: 2.4rem;
+      }
+
+      &__select {
+        color: var(--color-light-grey-100);
+        font-size: 1.4rem;
+        width: 15rem;
+      }
+    }
+  }
 }

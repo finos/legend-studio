@@ -15,9 +15,9 @@
  */
 
 import { hashArray } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../../MetaModelConst';
-import { V1_AssociationMapping } from '../V1_AssociationMapping';
-import type { V1_PropertyMapping } from '../V1_PropertyMapping';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../../MetaModelConst.js';
+import { V1_AssociationMapping } from '../V1_AssociationMapping.js';
+import type { V1_PropertyMapping } from '../V1_PropertyMapping.js';
 
 export class V1_XStoreAssociationMapping extends V1_AssociationMapping {
   propertyMappings: V1_PropertyMapping[] = [];

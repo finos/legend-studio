@@ -22,7 +22,7 @@ import {
 import {
   CORE_HASH_STRUCTURE,
   PRIMITIVE_TYPE,
-} from '../../../../../../../MetaModelConst';
+} from '../../../../../../../MetaModelConst.js';
 
 export abstract class V1_EnumValueMappingSourceValue {
   value!: unknown; // Any

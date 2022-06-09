@@ -15,26 +15,26 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
-import type { Mapping } from '../../../mapping/Mapping';
-import { AbstractFlatDataPropertyMapping } from './AbstractFlatDataPropertyMapping';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst.js';
+import type { Mapping } from '../../../mapping/Mapping.js';
+import { AbstractFlatDataPropertyMapping } from './AbstractFlatDataPropertyMapping.js';
 import type {
   PropertyMapping,
   PropertyMappingVisitor,
-} from '../../../mapping/PropertyMapping';
+} from '../../../mapping/PropertyMapping.js';
 import type {
   SetImplementationVisitor,
   SetImplementation,
-} from '../../../mapping/SetImplementation';
-import type { Class } from '../../../domain/Class';
-import type { InstanceSetImplementation } from '../../../mapping/InstanceSetImplementation';
-import type { PropertyMappingsImplementation } from '../../../mapping/PropertyMappingsImplementation';
-import type { PropertyReference } from '../../../domain/PropertyReference';
-import type { InferableMappingElementIdValue } from '../../../mapping/InferableMappingElementId';
-import type { PackageableElementReference } from '../../../PackageableElementReference';
-import { InferableMappingElementRootExplicitValue } from '../../../mapping/InferableMappingElementRoot';
-import type { MappingClass } from '../../../mapping/MappingClass';
-import { FlatDataPropertyMapping } from './FlatDataPropertyMapping';
+} from '../../../mapping/SetImplementation.js';
+import type { Class } from '../../../domain/Class.js';
+import type { InstanceSetImplementation } from '../../../mapping/InstanceSetImplementation.js';
+import type { PropertyMappingsImplementation } from '../../../mapping/PropertyMappingsImplementation.js';
+import type { PropertyReference } from '../../../domain/PropertyReference.js';
+import type { InferableMappingElementIdValue } from '../../../mapping/InferableMappingElementId.js';
+import type { PackageableElementReference } from '../../../PackageableElementReference.js';
+import { InferableMappingElementRootExplicitValue } from '../../../mapping/InferableMappingElementRoot.js';
+import type { MappingClass } from '../../../mapping/MappingClass.js';
+import { FlatDataPropertyMapping } from './FlatDataPropertyMapping.js';
 
 /**
  * We can think of embedded property mappings as a 'gateway' from one set of property mappings to another. They are in a sense

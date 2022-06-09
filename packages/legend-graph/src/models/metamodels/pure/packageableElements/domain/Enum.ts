@@ -15,11 +15,11 @@
  */
 
 import { type Hashable, uuid, hashArray } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
-import type { Enumeration } from './Enumeration';
-import type { TaggedValue } from './TaggedValue';
-import type { AnnotatedElement } from './AnnotatedElement';
-import type { StereotypeReference } from './StereotypeReference';
+import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst.js';
+import type { Enumeration } from './Enumeration.js';
+import type { TaggedValue } from './TaggedValue.js';
+import type { AnnotatedElement } from './AnnotatedElement.js';
+import type { StereotypeReference } from './StereotypeReference.js';
 
 export class Enum implements AnnotatedElement, Hashable {
   readonly _UUID = uuid();

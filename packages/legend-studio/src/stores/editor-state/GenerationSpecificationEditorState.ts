@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { ElementEditorState } from './element-editor-state/ElementEditorState';
+import { ElementEditorState } from './element-editor-state/ElementEditorState.js';
 import {
   guaranteeType,
   uuid,
@@ -29,7 +29,7 @@ import {
   makeAutoObservable,
   action,
 } from 'mobx';
-import type { EditorStore } from '../EditorStore';
+import type { EditorStore } from '../EditorStore.js';
 import {
   GenerationSpecification,
   type GenerationTreeNode,
@@ -38,7 +38,7 @@ import {
 import {
   generationSpecification_addNode,
   generationSpecification_deleteGenerationNode,
-} from '../graphModifier/DSLGeneration_GraphModifierHelper';
+} from '../graphModifier/DSLGeneration_GraphModifierHelper.js';
 
 export interface GenerationSpecNodeDragSource {
   nodeState: GenerationTreeNodeState;

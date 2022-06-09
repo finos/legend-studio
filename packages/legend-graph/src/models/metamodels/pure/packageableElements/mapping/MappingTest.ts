@@ -15,14 +15,10 @@
  */
 
 import { uuid, hashArray, type Hashable } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
-import type { MappingTestAssert } from './MappingTestAssert';
-import type { InputData } from './InputData';
-import type { RawLambda } from '../../rawValueSpecification/RawLambda';
-import {
-  type ValidationIssue,
-  createValidationError,
-} from '../../../../../helpers/ValidationHelper';
+import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst.js';
+import type { MappingTestAssert } from './MappingTestAssert.js';
+import type { InputData } from './InputData.js';
+import type { RawLambda } from '../../rawValueSpecification/RawLambda.js';
 
 export class MappingTest implements Hashable {
   readonly _UUID = uuid();
@@ -47,26 +43,6 @@ export class MappingTest implements Hashable {
     this.query = query;
     this.inputData = inputData;
     this.assert = assert;
-  }
-
-  get validationResult(): ValidationIssue[] | undefined {
-    let problems: ValidationIssue[] = [];
-    // query
-    // TODO: use `isStubbed_RawLambda` when we refactor validation
-    if (!this.query.parameters && !this.query.body) {
-      problems.push(
-        createValidationError(['Mapping test query cannot be empty']),
-      );
-    }
-    // input data
-    problems = problems.concat(
-      this.inputData.flatMap((i) => i.validationResult ?? []),
-    );
-    // assertion
-    if (this.assert.validationResult) {
-      problems.push(this.assert.validationResult);
-    }
-    return problems.length ? problems : undefined;
   }
 
   get hashCode(): string {

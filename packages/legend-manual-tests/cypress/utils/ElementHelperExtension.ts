@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { TEST_ID } from '../../src/const';
+import { TEST_ID } from '../../src/const.js';
 
 export abstract class ElementHelperExtension {
   name!: string;

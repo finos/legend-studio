@@ -23,19 +23,19 @@ import {
   type AbstractPropertyExpression,
   Enumeration,
 } from '@finos/legend-graph';
-import { SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const.js';
 import {
   type QueryBuilderAggregateColumnState,
   QueryBuilderAggregateOperator,
-} from '../QueryBuilderAggregationState';
+} from '../QueryBuilderAggregationState.js';
 import {
   type QueryBuilderProjectionColumnState,
   QueryBuilderSimpleProjectionColumnState,
-} from '../QueryBuilderProjectionState';
+} from '../QueryBuilderProjectionState.js';
 import {
   buildAggregateColumnState,
   buildAggregateExpression,
-} from './QueryBuilderAggregateOperatorHelper';
+} from './QueryBuilderAggregateOperatorHelper.js';
 
 export class QueryBuilderAggregateOperator_Distinct extends QueryBuilderAggregateOperator {
   getLabel(projectionColumnState: QueryBuilderProjectionColumnState): string {
@@ -76,7 +76,7 @@ export class QueryBuilderAggregateOperator_Distinct extends QueryBuilderAggregat
     graph: PureModel,
   ): ValueSpecification {
     return buildAggregateExpression(
-      SUPPORTED_FUNCTIONS.UNIQUE_VALUE_ONLY,
+      QUERY_BUILDER_SUPPORTED_FUNCTIONS.UNIQUE_VALUE_ONLY,
       graph,
       variableName,
     );
@@ -91,7 +91,7 @@ export class QueryBuilderAggregateOperator_Distinct extends QueryBuilderAggregat
       projectionColumnState,
       lambdaParam,
       expression,
-      SUPPORTED_FUNCTIONS.UNIQUE_VALUE_ONLY,
+      QUERY_BUILDER_SUPPORTED_FUNCTIONS.UNIQUE_VALUE_ONLY,
       this,
     );
   }

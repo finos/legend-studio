@@ -15,63 +15,31 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { Point } from './DSLDiagram_Point';
-import { Rectangle } from './DSLDiagram_Rectangle';
-import { DIAGRAM_HASH_STRUCTURE } from '../../../../../DSLDiagram_ModelUtils';
+import { Point } from './DSLDiagram_Point.js';
+import { Rectangle } from './DSLDiagram_Rectangle.js';
+import { DIAGRAM_HASH_STRUCTURE } from '../../../../../DSLDiagram_ModelUtils.js';
 
 export class PositionedRectangle implements Hashable {
+  _dummyObservable = {};
+
   position: Point;
   rectangle: Rectangle;
-  dummyObservable = {};
 
   constructor(position: Point, rectangle: Rectangle) {
     this.position = position;
     this.rectangle = rectangle;
   }
 
-  edgePoint = (): Point =>
-    new Point(
-      this.position.x + this.rectangle.width,
-      this.position.y + this.rectangle.height,
-    );
+  // TODO: to be simplified out of metamodel
+  // to be moved out when we move hashing out
   center = (): Point =>
     new Point(
       this.position.x + this.rectangle.width / 2,
       this.position.y + this.rectangle.height / 2,
     );
 
-  /**
-   * Build a small box at the bottom right corner of the rectangle so we can use that for selection to resize the box
-   */
-  buildBottomRightCornerBox(): PositionedRectangle {
-    const cornerX = this.position.x + this.rectangle.width;
-    const cornerY = this.position.y + this.rectangle.height;
-    const boxSize = 10;
-    return new PositionedRectangle(
-      new Point(cornerX - boxSize / 2, cornerY - boxSize / 2),
-      new Rectangle(boxSize, boxSize),
-    );
-  }
-
-  boxContains(otherBox: PositionedRectangle): boolean {
-    otherBox = this.normalizeBox(otherBox);
-    return (
-      this.contains(otherBox.position.x, otherBox.position.y) ||
-      this.contains(
-        otherBox.position.x + otherBox.rectangle.width,
-        otherBox.position.y,
-      ) ||
-      this.contains(
-        otherBox.position.x,
-        otherBox.position.y + otherBox.rectangle.height,
-      ) ||
-      this.contains(
-        otherBox.position.x + otherBox.rectangle.width,
-        otherBox.position.y + otherBox.rectangle.height,
-      )
-    );
-  }
-
+  // TODO: to be simplified out of metamodel
+  // to be moved out when we move hashing out
   contains(x: number, y: number): boolean {
     const box = this.normalizeBox(this);
     return (
@@ -82,6 +50,8 @@ export class PositionedRectangle implements Hashable {
     );
   }
 
+  // TODO: to be simplified out of metamodel
+  // to be moved out when we move hashing out
   normalizeBox(box: PositionedRectangle): PositionedRectangle {
     let newBox = box;
     if (box.rectangle.width < 0) {
@@ -100,7 +70,7 @@ export class PositionedRectangle implements Hashable {
   }
 
   get hashCode(): string {
-    this.dummyObservable; // manually trigger classview hash code recomputation
+    this._dummyObservable; // manually trigger class-view hash code recomputation
     return hashArray([
       DIAGRAM_HASH_STRUCTURE.POSITIONED_RECTANGLE,
       this.position,

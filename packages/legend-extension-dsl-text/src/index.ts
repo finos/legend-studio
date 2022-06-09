@@ -14,5 +14,5 @@
  * limitations under the License.
  */
 
-export * from './DSLText_Extension';
-export { DSLText_LegendStudioPlugin } from './components/studio/DSLText_LegendStudioPlugin';
+export * from './DSLText_Extension.js';
+export { DSLText_LegendStudioPlugin } from './components/studio/DSLText_LegendStudioPlugin.js';

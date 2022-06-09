@@ -15,7 +15,7 @@
  */
 
 import { computed, observable, action, makeObservable } from 'mobx';
-import type { EditorStore } from '../../EditorStore';
+import type { EditorStore } from '../../EditorStore.js';
 import {
   type GeneratorFn,
   assertErrorThrown,
@@ -23,7 +23,7 @@ import {
   guaranteeType,
   assertType,
 } from '@finos/legend-shared';
-import { ElementEditorState } from './ElementEditorState';
+import { ElementEditorState } from './ElementEditorState.js';
 import {
   type CompilationError,
   type PackageableElement,
@@ -74,9 +74,9 @@ export class FunctionBodyEditorState extends LambdaEditorState {
           (yield this.editorStore.graphManagerState.graphManager.pureCodeToLambda(
             this.fullLambdaString,
             this.lambdaId,
-          )) as RawLambda | undefined;
+          )) as RawLambda;
         this.setParserError(undefined);
-        this.functionElement.body = lambda ? (lambda.body as object[]) : [];
+        this.functionElement.body = lambda.body as object[];
       } catch (error) {
         assertErrorThrown(error);
         if (error instanceof ParserError) {

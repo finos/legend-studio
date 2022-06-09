@@ -15,10 +15,10 @@
  */
 
 import { hashArray, getNullableFirstElement } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
-import type { PackageableElementReference } from '../PackageableElementReference';
-import type { Mapping } from './Mapping';
-import type { SubstituteStore } from './SubstituteStore';
+import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst.js';
+import type { PackageableElementReference } from '../PackageableElementReference.js';
+import type { Mapping } from './Mapping.js';
+import type { SubstituteStore } from './SubstituteStore.js';
 
 export class MappingInclude {
   readonly _OWNER: Mapping;

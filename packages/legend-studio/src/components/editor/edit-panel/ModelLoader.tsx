@@ -18,7 +18,7 @@ import { observer } from 'mobx-react-lite';
 import {
   ModelLoaderState,
   MODEL_UPDATER_INPUT_TYPE,
-} from '../../../stores/editor-state/ModelLoaderState';
+} from '../../../stores/editor-state/ModelLoaderState.js';
 import { prettyCONSTName } from '@finos/legend-shared';
 import {
   DropdownMenu,
@@ -30,15 +30,15 @@ import {
   EmptySquareIcon,
 } from '@finos/legend-art';
 import { flowResult } from 'mobx';
-import { useEditorStore } from '../EditorStoreProvider';
+import { useEditorStore } from '../EditorStoreProvider.js';
 import {
   ActionAlertType,
   ActionAlertActionType,
   useApplicationStore,
   EDITOR_LANGUAGE,
 } from '@finos/legend-application';
-import { StudioTextInputEditor } from '../../shared/StudioTextInputEditor';
-import type { ModelLoaderExtensionConfiguration } from '../../../stores/LegendStudioPlugin';
+import { StudioTextInputEditor } from '../../shared/StudioTextInputEditor.js';
+import type { ModelLoaderExtensionConfiguration } from '../../../stores/LegendStudioPlugin.js';
 
 export const ModelLoader = observer(() => {
   const editorStore = useEditorStore();

@@ -15,12 +15,12 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
-import { Store } from '../../Store';
-import type { PackageableElementVisitor } from '../../../PackageableElement';
-import type { Schema } from './Schema';
-import type { Join } from './Join';
-import type { Filter } from './Filter';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst.js';
+import { Store } from '../../Store.js';
+import type { PackageableElementVisitor } from '../../../PackageableElement.js';
+import type { Schema } from './Schema.js';
+import type { Join } from './Join.js';
+import type { Filter } from './Filter.js';
 
 export class Database extends Store implements Hashable {
   schemas: Schema[] = [];

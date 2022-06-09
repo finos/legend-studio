@@ -20,9 +20,7 @@ import {
   type Type,
   type PureModel,
   type ValueSpecification,
-  GenericType,
   PRIMITIVE_TYPE,
-  GenericTypeExplicitReference,
   extractElementNameFromPath,
   matchFunctionName,
   SimpleFunctionExpression,
@@ -37,7 +35,7 @@ import {
   guaranteeType,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
-import { SUPPORTED_FUNCTIONS } from '../QueryBuilder_Const';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../QueryBuilder_Const.js';
 
 export enum QUERY_BUILDER_GROUP_OPERATION {
   AND = 'and',
@@ -49,9 +47,9 @@ export const fromGroupOperation = (
 ): string => {
   switch (operation) {
     case QUERY_BUILDER_GROUP_OPERATION.AND:
-      return SUPPORTED_FUNCTIONS.AND;
+      return QUERY_BUILDER_SUPPORTED_FUNCTIONS.AND;
     case QUERY_BUILDER_GROUP_OPERATION.OR:
-      return SUPPORTED_FUNCTIONS.OR;
+      return QUERY_BUILDER_SUPPORTED_FUNCTIONS.OR;
     default:
       throw new UnsupportedOperationError(
         `Can't derive function name from group operation '${operation}'`,
@@ -62,9 +60,11 @@ export const fromGroupOperation = (
 export const toGroupOperation = (
   functionName: string,
 ): QUERY_BUILDER_GROUP_OPERATION => {
-  if (matchFunctionName(functionName, SUPPORTED_FUNCTIONS.AND)) {
+  if (matchFunctionName(functionName, QUERY_BUILDER_SUPPORTED_FUNCTIONS.AND)) {
     return QUERY_BUILDER_GROUP_OPERATION.AND;
-  } else if (matchFunctionName(functionName, SUPPORTED_FUNCTIONS.OR)) {
+  } else if (
+    matchFunctionName(functionName, QUERY_BUILDER_SUPPORTED_FUNCTIONS.OR)
+  ) {
     return QUERY_BUILDER_GROUP_OPERATION.OR;
   }
   throw new UnsupportedOperationError(
@@ -135,28 +135,16 @@ export const getCollectionValueSpecificationType = (
   }
   return undefined;
 };
-export const buildPrimitiveInstanceValue = (
-  graph: PureModel,
-  type: PRIMITIVE_TYPE,
-  value: unknown,
-): PrimitiveInstanceValue => {
-  const multiplicityOne = graph.getTypicalMultiplicity(
-    TYPICAL_MULTIPLICITY_TYPE.ONE,
-  );
-  const instance = new PrimitiveInstanceValue(
-    GenericTypeExplicitReference.create(
-      new GenericType(graph.getPrimitiveType(type)),
-    ),
-    multiplicityOne,
-  );
-  instance.values = [value];
-  return instance;
-};
 
 export const unwrapNotExpression = (
   expression: SimpleFunctionExpression,
 ): SimpleFunctionExpression | undefined => {
-  if (matchFunctionName(expression.functionName, SUPPORTED_FUNCTIONS.NOT)) {
+  if (
+    matchFunctionName(
+      expression.functionName,
+      QUERY_BUILDER_SUPPORTED_FUNCTIONS.NOT,
+    )
+  ) {
     return guaranteeType(
       expression.parametersValues[0],
       SimpleFunctionExpression,
@@ -173,7 +161,7 @@ export const buildNotExpression = (
     TYPICAL_MULTIPLICITY_TYPE.ONE,
   );
   const expressionNot = new SimpleFunctionExpression(
-    extractElementNameFromPath(SUPPORTED_FUNCTIONS.NOT),
+    extractElementNameFromPath(QUERY_BUILDER_SUPPORTED_FUNCTIONS.NOT),
     multiplicityOne,
   );
   expressionNot.parametersValues.push(expression);

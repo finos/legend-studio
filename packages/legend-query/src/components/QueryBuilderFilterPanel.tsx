@@ -49,7 +49,7 @@ import {
   QueryBuilderFilterTreeConditionNodeData,
   QueryBuilderFilterTreeBlankConditionNodeData,
   QueryBuilderFilterTreeGroupNodeData,
-} from '../stores/QueryBuilderFilterState';
+} from '../stores/QueryBuilderFilterState.js';
 import {
   type DropTargetMonitor,
   useDragLayer,
@@ -62,18 +62,20 @@ import {
   type QueryBuilderExplorerTreePropertyNodeData,
   buildPropertyExpressionFromExplorerTreeNodeData,
   QUERY_BUILDER_EXPLORER_TREE_DND_TYPE,
-} from '../stores/QueryBuilderExplorerState';
-import { QueryBuilderPropertyExpressionBadge } from './QueryBuilderPropertyExpressionEditor';
-import type { QueryBuilderState } from '../stores/QueryBuilderState';
+} from '../stores/QueryBuilderExplorerState.js';
+import { QueryBuilderPropertyExpressionBadge } from './QueryBuilderPropertyExpressionEditor.js';
+import type { QueryBuilderState } from '../stores/QueryBuilderState.js';
 import { assertErrorThrown } from '@finos/legend-shared';
-import { QueryBuilderValueSpecificationEditor } from './QueryBuilderValueSpecificationEditor';
-import { QUERY_BUILDER_TEST_ID } from './QueryBuilder_TestID';
-import { useApplicationStore } from '@finos/legend-application';
+import { QUERY_BUILDER_TEST_ID } from './QueryBuilder_TestID.js';
+import {
+  useApplicationStore,
+  BasicValueSpecificationEditor,
+} from '@finos/legend-application';
 import {
   type QueryBuilderParameterDragSource,
   QUERY_BUILDER_PARAMETER_TREE_DND_TYPE,
-} from '../stores/QueryParametersState';
-import { QUERY_BUILDER_GROUP_OPERATION } from '../stores/QueryBuilderOperatorsHelper';
+} from '../stores/QueryParametersState.js';
+import { QUERY_BUILDER_GROUP_OPERATION } from '../stores/QueryBuilderOperatorsHelper.js';
 import type { ValueSpecification } from '@finos/legend-graph';
 
 const FilterConditionDragLayer: React.FC = () => {
@@ -267,7 +269,7 @@ const QueryBuilderFilterConditionEditor = observer(
                   Change Filter Value
                 </div>
               )}
-              <QueryBuilderValueSpecificationEditor
+              <BasicValueSpecificationEditor
                 valueSpecification={node.condition.value}
                 updateValue={(val: ValueSpecification): void =>
                   node.condition.setValue(val)
@@ -450,7 +452,6 @@ const QueryBuilderFilterTreeNodeContainer = observer(
           } // prevent drop event propagation to accomondate for nested DnD
         },
         // canDrop: (item: QueryBuilderFilterConditionDragSource, monitor: DropTargetMonitor): boolean => {
-        //   console.log('check can drop - STUBBED');
         //   // prevent drop inside of children
         //   // prevent dropping inside my direct ancestor
         //   return true;

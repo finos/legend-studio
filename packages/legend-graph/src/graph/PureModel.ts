@@ -19,7 +19,7 @@ import {
   ROOT_PACKAGE_NAME,
   TYPICAL_MULTIPLICITY_TYPE,
   AUTO_IMPORTS,
-} from '../MetaModelConst';
+} from '../MetaModelConst.js';
 import {
   type Clazz,
   guaranteeNonNullable,
@@ -27,36 +27,37 @@ import {
   returnUndefOnError,
   IllegalStateError,
 } from '@finos/legend-shared';
-import { PrimitiveType } from '../models/metamodels/pure/packageableElements/domain/PrimitiveType';
-import { Enumeration } from '../models/metamodels/pure/packageableElements/domain/Enumeration';
-import { Multiplicity } from '../models/metamodels/pure/packageableElements/domain/Multiplicity';
-import type { Association } from '../models/metamodels/pure/packageableElements/domain/Association';
-import { Package } from '../models/metamodels/pure/packageableElements/domain/Package';
-import type { Type } from '../models/metamodels/pure/packageableElements/domain/Type';
-import { Class } from '../models/metamodels/pure/packageableElements/domain/Class';
-import type { Mapping } from '../models/metamodels/pure/packageableElements/mapping/Mapping';
-import type { Profile } from '../models/metamodels/pure/packageableElements/domain/Profile';
-import type { Store } from '../models/metamodels/pure/packageableElements/store/Store';
-import { DependencyManager } from '../graph/DependencyManager';
-import { ConcreteFunctionDefinition } from '../models/metamodels/pure/packageableElements/domain/ConcreteFunctionDefinition';
-import type { Service } from '../models/metamodels/pure/packageableElements/service/Service';
-import { BasicModel } from './BasicModel';
-import { FlatData } from '../models/metamodels/pure/packageableElements/store/flatData/model/FlatData';
-import { Database } from '../models/metamodels/pure/packageableElements/store/relational/model/Database';
-import type { PackageableConnection } from '../models/metamodels/pure/packageableElements/connection/PackageableConnection';
-import type { PackageableRuntime } from '../models/metamodels/pure/packageableElements/runtime/PackageableRuntime';
-import type { FileGenerationSpecification } from '../models/metamodels/pure/packageableElements/fileGeneration/FileGenerationSpecification';
-import { ModelStore } from '../models/metamodels/pure/packageableElements/store/modelToModel/model/ModelStore';
-import type { GenerationSpecification } from '../models/metamodels/pure/packageableElements/generationSpecification/GenerationSpecification';
+import { PrimitiveType } from '../models/metamodels/pure/packageableElements/domain/PrimitiveType.js';
+import { Enumeration } from '../models/metamodels/pure/packageableElements/domain/Enumeration.js';
+import { Multiplicity } from '../models/metamodels/pure/packageableElements/domain/Multiplicity.js';
+import type { Association } from '../models/metamodels/pure/packageableElements/domain/Association.js';
+import { Package } from '../models/metamodels/pure/packageableElements/domain/Package.js';
+import type { Type } from '../models/metamodels/pure/packageableElements/domain/Type.js';
+import { Class } from '../models/metamodels/pure/packageableElements/domain/Class.js';
+import type { Mapping } from '../models/metamodels/pure/packageableElements/mapping/Mapping.js';
+import type { Profile } from '../models/metamodels/pure/packageableElements/domain/Profile.js';
+import type { Store } from '../models/metamodels/pure/packageableElements/store/Store.js';
+import { DependencyManager } from '../graph/DependencyManager.js';
+import { ConcreteFunctionDefinition } from '../models/metamodels/pure/packageableElements/domain/ConcreteFunctionDefinition.js';
+import type { Service } from '../models/metamodels/pure/packageableElements/service/Service.js';
+import { BasicModel } from './BasicModel.js';
+import { FlatData } from '../models/metamodels/pure/packageableElements/store/flatData/model/FlatData.js';
+import { Database } from '../models/metamodels/pure/packageableElements/store/relational/model/Database.js';
+import type { PackageableConnection } from '../models/metamodels/pure/packageableElements/connection/PackageableConnection.js';
+import type { PackageableRuntime } from '../models/metamodels/pure/packageableElements/runtime/PackageableRuntime.js';
+import type { FileGenerationSpecification } from '../models/metamodels/pure/packageableElements/fileGeneration/FileGenerationSpecification.js';
+import { ModelStore } from '../models/metamodels/pure/packageableElements/store/modelToModel/model/ModelStore.js';
+import type { GenerationSpecification } from '../models/metamodels/pure/packageableElements/generationSpecification/GenerationSpecification.js';
 import {
   Measure,
   Unit,
-} from '../models/metamodels/pure/packageableElements/domain/Measure';
-import type { PureGraphPlugin } from './PureGraphPlugin';
-import { createPath } from '../MetaModelUtils';
-import type { DataElement } from '../models/metamodels/pure/packageableElements/data/DataElement';
-import type { Testable } from '../models/metamodels/pure/test/Testable';
-import type { PackageableElement } from '../models/metamodels/pure/packageableElements/PackageableElement';
+} from '../models/metamodels/pure/packageableElements/domain/Measure.js';
+import type { PureGraphPlugin } from './PureGraphPlugin.js';
+import { createPath } from '../MetaModelUtils.js';
+import type { DataElement } from '../models/metamodels/pure/packageableElements/data/DataElement.js';
+import type { Testable } from '../models/metamodels/pure/test/Testable.js';
+import type { PackageableElement } from '../models/metamodels/pure/packageableElements/PackageableElement.js';
+import type { SectionIndex } from '../models/metamodels/pure/packageableElements/section/SectionIndex.js';
 
 /**
  * CoreModel holds meta models which are constant and basic building block of the graph. Since throughout the lifetime
@@ -199,6 +200,160 @@ export class PureModel extends BasicModel {
 
   get primitiveTypes(): PrimitiveType[] {
     return this.coreModel.primitiveTypes;
+  }
+
+  get sectionIndices(): SectionIndex[] {
+    return [
+      ...this.coreModel.ownSectionIndices,
+      ...this.systemModel.ownSectionIndices,
+      ...this.dependencyManager.sectionIndices,
+      ...this.ownSectionIndices,
+      ...this.generationModel.ownSectionIndices,
+    ];
+  }
+  get profiles(): Profile[] {
+    return [
+      ...this.coreModel.ownProfiles,
+      ...this.systemModel.ownProfiles,
+      ...this.dependencyManager.profiles,
+      ...this.ownProfiles,
+      ...this.generationModel.ownProfiles,
+    ];
+  }
+  get enumerations(): Enumeration[] {
+    return [
+      ...this.coreModel.ownEnumerations,
+      ...this.systemModel.ownEnumerations,
+      ...this.dependencyManager.enumerations,
+      ...this.ownEnumerations,
+      ...this.generationModel.ownEnumerations,
+    ];
+  }
+  get measures(): Measure[] {
+    return [
+      ...this.coreModel.ownMeasures,
+      ...this.systemModel.ownMeasures,
+      ...this.dependencyManager.measures,
+      ...this.ownMeasures,
+      ...this.generationModel.ownMeasures,
+    ];
+  }
+  get classes(): Class[] {
+    return [
+      ...this.coreModel.ownClasses,
+      ...this.systemModel.ownClasses,
+      ...this.dependencyManager.classes,
+      ...this.ownClasses,
+      ...this.generationModel.ownClasses,
+    ];
+  }
+  get types(): Type[] {
+    return [
+      ...this.coreModel.ownTypes,
+      ...this.systemModel.ownTypes,
+      ...this.dependencyManager.types,
+      ...this.ownTypes,
+      ...this.generationModel.ownTypes,
+    ];
+  }
+  get associations(): Association[] {
+    return [
+      ...this.coreModel.ownAssociations,
+      ...this.systemModel.ownAssociations,
+      ...this.dependencyManager.associations,
+      ...this.ownAssociations,
+      ...this.generationModel.ownAssociations,
+    ];
+  }
+  get functions(): ConcreteFunctionDefinition[] {
+    return [
+      ...this.coreModel.ownFunctions,
+      ...this.systemModel.ownFunctions,
+      ...this.dependencyManager.functions,
+      ...this.ownFunctions,
+      ...this.generationModel.ownFunctions,
+    ];
+  }
+  get stores(): Store[] {
+    return [
+      ...this.coreModel.ownStores,
+      ...this.systemModel.ownStores,
+      ...this.dependencyManager.stores,
+      ...this.ownStores,
+      ...this.generationModel.ownStores,
+    ];
+  }
+  get databases(): Database[] {
+    return [
+      ...this.coreModel.ownDatabases,
+      ...this.systemModel.ownDatabases,
+      ...this.dependencyManager.databases,
+      ...this.ownDatabases,
+      ...this.generationModel.ownDatabases,
+    ];
+  }
+  get mappings(): Mapping[] {
+    return [
+      ...this.coreModel.ownMappings,
+      ...this.systemModel.ownMappings,
+      ...this.dependencyManager.mappings,
+      ...this.ownMappings,
+      ...this.generationModel.ownMappings,
+    ];
+  }
+  get services(): Service[] {
+    return [
+      ...this.coreModel.ownServices,
+      ...this.systemModel.ownServices,
+      ...this.dependencyManager.services,
+      ...this.ownServices,
+      ...this.generationModel.ownServices,
+    ];
+  }
+  get runtimes(): PackageableRuntime[] {
+    return [
+      ...this.coreModel.ownRuntimes,
+      ...this.systemModel.ownRuntimes,
+      ...this.dependencyManager.runtimes,
+      ...this.ownRuntimes,
+      ...this.generationModel.ownRuntimes,
+    ];
+  }
+  get connections(): PackageableConnection[] {
+    return [
+      ...this.coreModel.ownConnections,
+      ...this.systemModel.ownConnections,
+      ...this.dependencyManager.connections,
+      ...this.ownConnections,
+      ...this.generationModel.ownConnections,
+    ];
+  }
+  get dataElements(): DataElement[] {
+    return [
+      ...this.coreModel.ownDataElements,
+      ...this.systemModel.ownDataElements,
+      ...this.dependencyManager.dataElements,
+      ...this.ownDataElements,
+      ...this.generationModel.ownDataElements,
+    ];
+  }
+  get generationSpecifications(): GenerationSpecification[] {
+    return [
+      ...this.coreModel.ownGenerationSpecifications,
+      ...this.systemModel.ownGenerationSpecifications,
+      ...this.dependencyManager.generationSpecifications,
+      ...this.ownGenerationSpecifications,
+      ...this.generationModel.ownGenerationSpecifications,
+    ];
+  }
+  get fileGenerations(): FileGenerationSpecification[] {
+    return [
+      ...this.coreModel.ownFileGenerations,
+      ...this.systemModel.ownFileGenerations,
+      ...this.dependencyManager.fileGenerations,
+      ...this.ownFileGenerations,
+      ...this.generationModel.ownFileGenerations,
+    ];
   }
 
   get allElements(): PackageableElement[] {

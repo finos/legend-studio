@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import type { V1_RawLambda } from '../../../../../../model/rawValueSpecification/V1_RawLambda';
+import type { V1_RawLambda } from '../../../../../../model/rawValueSpecification/V1_RawLambda.js';
 import { type Hashable, hashArray } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../../../../MetaModelConst';
-import { hashLambda } from '../../../../../../../../../../MetaModelUtils';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../../../../MetaModelConst.js';
+import { hashRawLambda } from '../../../../../../../../../../MetaModelUtils.js';
 
 export class V1_AggregateFunction implements Hashable {
   /**
@@ -36,8 +36,8 @@ export class V1_AggregateFunction implements Hashable {
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.AGGREGATE_FUNCTION,
-      hashLambda(this.mapFn.parameters, this.mapFn.body),
-      hashLambda(this.aggregateFn.parameters, this.aggregateFn.body),
+      hashRawLambda(this.mapFn.parameters, this.mapFn.body),
+      hashRawLambda(this.aggregateFn.parameters, this.aggregateFn.body),
     ]);
   }
 }

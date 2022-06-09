@@ -20,25 +20,25 @@ import {
   DataElementReference,
   ExternalFormatData,
   ModelStoreData,
-} from '../../../../../../../metamodels/pure/data/EmbeddedData';
+} from '../../../../../../../metamodels/pure/data/EmbeddedData.js';
 import {
   RelationalData,
   RelationalDataTable,
   RelationalDataTableColumn,
   RelationalDataTableRow,
-} from '../../../../../../../metamodels/pure/data/RelationalData';
-import type { Class } from '../../../../../../../metamodels/pure/packageableElements/domain/Class';
-import type { DSLData_PureProtocolProcessorPlugin_Extension } from '../../../../../DSLData_PureProtocolProcessorPlugin_Extension';
+} from '../../../../../../../metamodels/pure/data/RelationalData.js';
+import type { Class } from '../../../../../../../metamodels/pure/packageableElements/domain/Class.js';
+import type { DSLData_PureProtocolProcessorPlugin_Extension } from '../../../../../DSLData_PureProtocolProcessorPlugin_Extension.js';
 import type {
   V1_DataElementReference,
   V1_EmbeddedData,
   V1_EmbeddedDataVisitor,
   V1_ExternalFormatData,
   V1_ModelStoreData,
-} from '../../../../model/data/V1_EmbeddedData';
-import type { V1_RelationalData } from '../../../../model/data/V1_RelationalData';
+} from '../../../../model/data/V1_EmbeddedData.js';
+import type { V1_RelationalData } from '../../../../model/data/V1_RelationalData.js';
 
-import type { V1_GraphBuilderContext } from '../V1_GraphBuilderContext';
+import type { V1_GraphBuilderContext } from '../V1_GraphBuilderContext.js';
 
 export class V1_ProtocolToMetaModelEmbeddedDataBuilder
   implements V1_EmbeddedDataVisitor<EmbeddedData>

@@ -36,18 +36,18 @@ import { generateGAVCoordinates } from '@finos/legend-server-depot';
 import type {
   RawDataSpace,
   TaxonomyNodeViewerState,
-} from '../stores/LegendTaxonomyStore';
+} from '../stores/LegendTaxonomyStore.js';
 import {
   generateStandaloneDataSpaceViewerRoute,
   generateExploreTaxonomyTreeNodeDataSpaceRoute,
-} from '../stores/LegendTaxonomyRouter';
-import type { LegendTaxonomyConfig } from '../application/LegendTaxonomyConfig';
+} from '../stores/LegendTaxonomyRouter.js';
+import type { LegendTaxonomyConfig } from '../application/LegendTaxonomyConfig.js';
 import {
   DataSpaceViewer,
   type DataSpaceViewerState,
 } from '@finos/legend-extension-dsl-data-space';
 import { ELEMENT_PATH_DELIMITER } from '@finos/legend-graph';
-import { useLegendTaxonomyStore } from './LegendTaxonomyStoreProvider';
+import { useLegendTaxonomyStore } from './LegendTaxonomyStoreProvider.js';
 
 const TaxonomyNodeDataSpaceItem = observer(
   (props: {

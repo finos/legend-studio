@@ -18,13 +18,13 @@ import { type Hashable, hashArray, uuid } from '@finos/legend-shared';
 import {
   CORE_HASH_STRUCTURE,
   PackageableElementPointerType,
-} from '../../../../../MetaModelConst';
-import type { Connection } from '../connection/Connection';
-import type { PackageableRuntime } from './PackageableRuntime';
-import type { Mapping } from '../mapping/Mapping';
-import type { Store } from '../store/Store';
-import type { PackageableElementReference } from '../PackageableElementReference';
-import { hashElementPointer } from '../../../../../MetaModelUtils';
+} from '../../../../../MetaModelConst.js';
+import type { Connection } from '../connection/Connection.js';
+import type { PackageableRuntime } from './PackageableRuntime.js';
+import type { Mapping } from '../mapping/Mapping.js';
+import type { Store } from '../store/Store.js';
+import type { PackageableElementReference } from '../PackageableElementReference.js';
+import { hashElementPointer } from '../../../../../MetaModelUtils.js';
 
 export class IdentifiedConnection implements Hashable {
   readonly _UUID = uuid();

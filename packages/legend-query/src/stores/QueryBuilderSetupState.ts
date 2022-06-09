@@ -20,7 +20,7 @@ import {
   isNonNullable,
   uniq,
 } from '@finos/legend-shared';
-import type { QueryBuilderState } from './QueryBuilderState';
+import type { QueryBuilderState } from './QueryBuilderState.js';
 import {
   type Class,
   type Mapping,

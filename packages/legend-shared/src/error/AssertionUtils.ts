@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import { EnrichedError } from './ErrorUtils';
-import type { GenericClazz } from '../CommonUtils';
+import { EnrichedError } from './ErrorUtils.js';
+import type { GenericClazz } from '../CommonUtils.js';
 
 export class AssertionError extends EnrichedError {
   constructor(error: string | Error | undefined, message?: string) {

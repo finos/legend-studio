@@ -16,27 +16,27 @@
 
 import { addUniqueEntry, changeEntry, deleteEntry } from '@finos/legend-shared';
 import { action } from 'mobx';
-import type { AssociationView } from '../../models/metamodels/pure/packageableElements/diagram/DSLDiagram_AssociationView';
-import type { ClassView } from '../../models/metamodels/pure/packageableElements/diagram/DSLDiagram_ClassView';
-import type { Diagram } from '../../models/metamodels/pure/packageableElements/diagram/DSLDiagram_Diagram';
-import type { GeneralizationView } from '../../models/metamodels/pure/packageableElements/diagram/DSLDiagram_GeneralizationView';
+import type { AssociationView } from '../../models/metamodels/pure/packageableElements/diagram/DSLDiagram_AssociationView.js';
+import type { ClassView } from '../../models/metamodels/pure/packageableElements/diagram/DSLDiagram_ClassView.js';
+import type { Diagram } from '../../models/metamodels/pure/packageableElements/diagram/DSLDiagram_Diagram.js';
+import type { GeneralizationView } from '../../models/metamodels/pure/packageableElements/diagram/DSLDiagram_GeneralizationView.js';
 import {
   _findOrBuildPoint,
   _relationshipView_simplifyPath,
   _relationshipView_setPath,
-} from '../../helpers/DiagramHelper';
-import type { PropertyView } from '../../models/metamodels/pure/packageableElements/diagram/DSLDiagram_PropertyView';
-import type { RelationshipEdgeView } from '../../models/metamodels/pure/packageableElements/diagram/DSLDiagram_RelationshipEdgeView';
-import type { RelationshipView } from '../../models/metamodels/pure/packageableElements/diagram/DSLDiagram_RelationshipView';
-import type { Point } from '../../models/metamodels/pure/packageableElements/diagram/geometry/DSLDiagram_Point';
-import type { PositionedRectangle } from '../../models/metamodels/pure/packageableElements/diagram/geometry/DSLDiagram_PositionedRectangle';
-import type { Rectangle } from '../../models/metamodels/pure/packageableElements/diagram/geometry/DSLDiagram_Rectangle';
+} from '../../helpers/DSLDiagram_Helper.js';
+import type { PropertyView } from '../../models/metamodels/pure/packageableElements/diagram/DSLDiagram_PropertyView.js';
+import type { RelationshipEdgeView } from '../../models/metamodels/pure/packageableElements/diagram/DSLDiagram_RelationshipEdgeView.js';
+import type { RelationshipView } from '../../models/metamodels/pure/packageableElements/diagram/DSLDiagram_RelationshipView.js';
+import type { Point } from '../../models/metamodels/pure/packageableElements/diagram/geometry/DSLDiagram_Point.js';
+import type { PositionedRectangle } from '../../models/metamodels/pure/packageableElements/diagram/geometry/DSLDiagram_PositionedRectangle.js';
+import type { Rectangle } from '../../models/metamodels/pure/packageableElements/diagram/geometry/DSLDiagram_Rectangle.js';
 import {
   observe_AssociationView,
   observe_ClassView,
   observe_GeneralizationView,
   observe_PropertyView,
-} from '../../graphManager/action/changeDetection/DSLDiagram_ObserverHelper';
+} from '../../graphManager/action/changeDetection/DSLDiagram_ObserverHelper.js';
 
 export const diagram_setClassViews = action(
   (diagram: Diagram, val: ClassView[]): void => {
@@ -114,21 +114,22 @@ export const classView_setHideTaggedValues = action(
 );
 export const relationshipEdgeView_setOffsetX = action(
   (r: RelationshipEdgeView, val: number): void => {
-    r.offsetX = val;
+    r._offsetX = val;
   },
 );
 export const relationshipEdgeView_setOffsetY = action(
   (r: RelationshipEdgeView, val: number): void => {
-    r.offsetY = val;
+    r._offsetY = val;
   },
 );
 
-// To optimize performance we will not observe point (path)
+// NOTE: To optimize performance, for now, we will not observe point (path)
 export const relationshipView_changePoint = action(
   (v: RelationshipView, val: Point, newVal: Point): void => {
     changeEntry(v.path, val, newVal);
   },
 );
+
 export const relationshipView_simplifyPath = action(
   _relationshipView_simplifyPath,
 );
@@ -136,19 +137,20 @@ export const relationshipView_simplifyPath = action(
 export const findOrBuildPoint = action(_findOrBuildPoint);
 export const relationshipView_setPath = action(_relationshipView_setPath);
 
-// To optimize performance we will not observe rectangle
+// NOTE: To optimize performance, for now, we will not observe rectangle
 export const positionedRectangle_setRectangle = action(
   (pR: PositionedRectangle, value: Rectangle): void => {
     pR.rectangle = value;
   },
 );
 
-// To optimize performance we will not observe point (path)
+// NOTE: To optimize performance, for now, we will not observe point (path)
 export const positionedRectangle_setPosition = action(
   (pR: PositionedRectangle, value: Point): void => {
     pR.position = value;
   },
 );
+
 /**
  * NOTE: Having `position` and `rectangle` as observables compromises the performance of diagram
  * so we want to have a way to refresh the hash for change detection to pick up new hash when we resize
@@ -159,6 +161,6 @@ export const positionedRectangle_setPosition = action(
  */
 export const positionedRectangle_forceRefreshHash = action(
   (pR: PositionedRectangle): void => {
-    pR.dummyObservable = {};
+    pR._dummyObservable = {};
   },
 );

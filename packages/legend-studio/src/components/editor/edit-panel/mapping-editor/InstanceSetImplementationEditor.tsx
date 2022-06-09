@@ -30,38 +30,38 @@ import {
   CORE_DND_TYPE,
   type ElementDragSource,
   type MappingElementSourceDropTarget,
-} from '../../../../stores/shared/DnDUtil';
-import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID';
+} from '../../../../stores/shared/DnDUtil.js';
+import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID.js';
 import {
   InstanceSetImplementationState,
   MappingElementState,
-} from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementState';
+} from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementState.js';
 import {
   type PureInstanceSetImplementationFilterState,
   PureInstanceSetImplementationState,
-} from '../../../../stores/editor-state/element-editor-state/mapping/PureInstanceSetImplementationState';
+} from '../../../../stores/editor-state/element-editor-state/mapping/PureInstanceSetImplementationState.js';
 import { guaranteeNonNullable, noop } from '@finos/legend-shared';
 import {
   type MappingElementSource,
   getMappingElementSource,
   MappingEditorState,
   getEmbeddedSetImplementations,
-} from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState';
-import { TypeTree } from '../../../shared/TypeTree';
-import { FlatDataRecordTypeTree } from './FlatDataRecordTypeTree';
-import { PropertyMappingsEditor } from './PropertyMappingsEditor';
+} from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState.js';
+import { TypeTree } from '../../../shared/TypeTree.js';
+import { FlatDataRecordTypeTree } from './FlatDataRecordTypeTree.js';
+import { PropertyMappingsEditor } from './PropertyMappingsEditor.js';
 import { useDrop } from 'react-dnd';
-import { FlatDataInstanceSetImplementationState } from '../../../../stores/editor-state/element-editor-state/mapping/FlatDataInstanceSetImplementationState';
-import { MappingElementDecorationCleaner } from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementDecorator';
-import { UnsupportedInstanceSetImplementationState } from '../../../../stores/editor-state/element-editor-state/mapping/UnsupportedInstanceSetImplementationState';
-import { UnsupportedEditorPanel } from '../../../editor/edit-panel/UnsupportedElementEditor';
-import { TableOrViewSourceTree } from './relational/TableOrViewSourceTree';
+import { FlatDataInstanceSetImplementationState } from '../../../../stores/editor-state/element-editor-state/mapping/FlatDataInstanceSetImplementationState.js';
+import { MappingElementDecorationCleaner } from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementDecorator.js';
+import { UnsupportedInstanceSetImplementationState } from '../../../../stores/editor-state/element-editor-state/mapping/UnsupportedInstanceSetImplementationState.js';
+import { UnsupportedEditorPanel } from '../../../editor/edit-panel/UnsupportedElementEditor.js';
+import { TableOrViewSourceTree } from './relational/TableOrViewSourceTree.js';
 import {
   getSourceElementLabel,
   InstanceSetImplementationSourceSelectorModal,
-} from './InstanceSetImplementationSourceSelectorModal';
+} from './InstanceSetImplementationSourceSelectorModal.js';
 import { flowResult } from 'mobx';
-import { useEditorStore } from '../../EditorStoreProvider';
+import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
   ActionAlertActionType,
   useApplicationStore,
@@ -84,8 +84,8 @@ import {
   getAllRecordTypes,
   getAllClassProperties,
 } from '@finos/legend-graph';
-import { StudioLambdaEditor } from '../../../shared/StudioLambdaEditor';
-import type { EditorStore } from '../../../../stores/EditorStore';
+import { StudioLambdaEditor } from '../../../shared/StudioLambdaEditor.js';
+import type { EditorStore } from '../../../../stores/EditorStore.js';
 
 export const InstanceSetImplementationSourceExplorer = observer(
   (props: {

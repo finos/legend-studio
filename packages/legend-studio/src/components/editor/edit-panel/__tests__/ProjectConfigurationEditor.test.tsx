@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { test, expect, beforeEach } from '@jest/globals';
 import {
   type RenderResult,
   getByDisplayValue,
@@ -25,9 +26,9 @@ import { integrationTest } from '@finos/legend-shared';
 import {
   TEST__provideMockedEditorStore,
   TEST__setUpEditorWithDefaultSDLCData,
-} from '../../../EditorComponentTestUtils';
-import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID';
-import type { EditorStore } from '../../../../stores/EditorStore';
+} from '../../../EditorComponentTestUtils.js';
+import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID.js';
+import type { EditorStore } from '../../../../stores/EditorStore.js';
 import type { ProjectDependency } from '@finos/legend-server-sdlc';
 
 let renderResult: RenderResult;

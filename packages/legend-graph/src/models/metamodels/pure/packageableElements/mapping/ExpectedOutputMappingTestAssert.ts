@@ -17,16 +17,10 @@
 import {
   type Hashable,
   hashArray,
-  isValidJSONString,
-  fromGrammarString,
   tryToMinifyLosslessJSONString,
 } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
-import { MappingTestAssert } from './MappingTestAssert';
-import {
-  type ValidationIssue,
-  createValidationError,
-} from '../../../../../helpers/ValidationHelper';
+import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst.js';
+import { MappingTestAssert } from './MappingTestAssert.js';
 
 export class ExpectedOutputMappingTestAssert
   extends MappingTestAssert
@@ -40,14 +34,6 @@ export class ExpectedOutputMappingTestAssert
      * @workaround https://github.com/finos/legend-studio/issues/68
      */
     this.expectedOutput = tryToMinifyLosslessJSONString(expectedOutput);
-  }
-
-  get validationResult(): ValidationIssue | undefined {
-    return !isValidJSONString(fromGrammarString(this.expectedOutput))
-      ? createValidationError([
-          'Mapping test expected output assertion data is not a valid JSON string',
-        ])
-      : undefined;
   }
 
   get hashCode(): string {

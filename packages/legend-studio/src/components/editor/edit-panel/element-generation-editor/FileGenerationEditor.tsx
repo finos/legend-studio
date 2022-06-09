@@ -17,13 +17,13 @@
 import { useState, useMemo, useCallback, Fragment } from 'react';
 import { observer } from 'mobx-react-lite';
 import { flowResult, runInAction } from 'mobx';
-import { getElementIcon } from '../../../shared/ElementIconUtils';
+import { getElementIcon } from '../../../shared/ElementIconUtils.js';
 import { useDrop } from 'react-dnd';
 import {
   getTextContent,
   getEditorLanguageFromFormat,
-} from '../../../../stores/editor-state/FileGenerationViewerState';
-import { FileGenerationEditorState } from '../../../../stores/editor-state/element-editor-state/FileGenerationEditorState';
+} from '../../../../stores/editor-state/FileGenerationViewerState.js';
+import { FileGenerationEditorState } from '../../../../stores/editor-state/element-editor-state/FileGenerationEditorState.js';
 import {
   type DebouncedFunc,
   UnsupportedOperationError,
@@ -59,17 +59,17 @@ import {
 import {
   type FileGenerationSourceDropTarget,
   CORE_DND_TYPE,
-} from '../../../../stores/shared/DnDUtil';
-import type { FileGenerationState } from '../../../../stores/editor-state/FileGenerationState';
-import type { ElementFileGenerationState } from '../../../../stores/editor-state/element-editor-state/ElementFileGenerationState';
+} from '../../../../stores/shared/DnDUtil.js';
+import type { FileGenerationState } from '../../../../stores/editor-state/FileGenerationState.js';
+import type { ElementFileGenerationState } from '../../../../stores/editor-state/element-editor-state/ElementFileGenerationState.js';
 import {
   type GenerationTreeNodeData,
   GenerationDirectory,
   GenerationFile,
   getFileGenerationChildNodes,
-} from '../../../../stores/shared/FileGenerationTreeUtil';
-import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID';
-import { useEditorStore } from '../../EditorStoreProvider';
+} from '../../../../stores/shared/FileGenerationTreeUtil.js';
+import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID.js';
+import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
   type GenerationProperty,
   type PackageableElement,
@@ -81,14 +81,14 @@ import {
   getNullableFileGenerationConfig,
 } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
-import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor';
-import type { DSLGenerationSpecification_LegendStudioPlugin_Extension } from '../../../../stores/DSLGenerationSpecification_LegendStudioPlugin_Extension';
+import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor.js';
+import type { DSLGenerationSpecification_LegendStudioPlugin_Extension } from '../../../../stores/DSLGenerationSpecification_LegendStudioPlugin_Extension.js';
 import {
   fileGeneration_addScopeElement,
   fileGeneration_changeScopeElement,
   fileGeneration_deleteScopeElement,
   fileGeneration_setGenerationOutputPath,
-} from '../../../../stores/graphModifier/DSLGeneration_GraphModifierHelper';
+} from '../../../../stores/graphModifier/DSLGeneration_GraphModifierHelper.js';
 
 export const FileGenerationTreeNodeContainer: React.FC<
   TreeNodeContainerProps<

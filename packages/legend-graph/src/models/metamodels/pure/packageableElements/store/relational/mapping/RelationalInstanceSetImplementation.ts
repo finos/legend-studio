@@ -15,11 +15,11 @@
  */
 
 import { type Hashable, hashArray, isEmpty } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
-import { InstanceSetImplementation } from '../../../mapping/InstanceSetImplementation';
-import type { SetImplementationVisitor } from '../../../mapping/SetImplementation';
-import type { RelationalOperationElement } from '../model/RelationalOperationElement';
-import { RelationalPropertyMapping } from './RelationalPropertyMapping';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst.js';
+import { InstanceSetImplementation } from '../../../mapping/InstanceSetImplementation.js';
+import type { SetImplementationVisitor } from '../../../mapping/SetImplementation.js';
+import type { RelationalOperationElement } from '../model/RelationalOperationElement.js';
+import { RelationalPropertyMapping } from './RelationalPropertyMapping.js';
 
 export class RelationalInstanceSetImplementation
   extends InstanceSetImplementation

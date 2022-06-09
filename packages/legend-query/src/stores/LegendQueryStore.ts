@@ -57,15 +57,15 @@ import {
 import {
   QueryBuilderState,
   StandardQueryBuilderMode,
-} from './QueryBuilderState';
+} from './QueryBuilderState.js';
 import {
   type CreateQueryPathParams,
   type ExistingQueryPathParams,
   type ServiceQueryPathParams,
   generateCreateQueryRoute,
   generateExistingQueryRoute,
-} from './LegendQueryRouter';
-import { LEGEND_QUERY_APP_EVENT } from '../LegendQueryAppEvent';
+} from './LegendQueryRouter.js';
+import { LEGEND_QUERY_APP_EVENT } from '../LegendQueryAppEvent.js';
 import type { Entity } from '@finos/legend-model-storage';
 import {
   type DepotServerClient,
@@ -81,9 +81,9 @@ import {
   APPLICATION_EVENT,
   TAB_SIZE,
 } from '@finos/legend-application';
-import type { LegendQueryPluginManager } from '../application/LegendQueryPluginManager';
-import type { LegendQueryConfig } from '../application/LegendQueryConfig';
-import { LegendQueryEventNotifierService } from './LegendQueryEventNotifierService';
+import type { LegendQueryPluginManager } from '../application/LegendQueryPluginManager.js';
+import type { LegendQueryConfig } from '../application/LegendQueryConfig.js';
+import { LegendQueryEventService } from './LegendQueryEventService.js';
 
 export abstract class QueryInfoState {
   queryStore: LegendQueryStore;
@@ -312,8 +312,8 @@ export class QueryExportState {
             generateExistingQueryRoute(newQuery.id),
           ),
         );
-        LegendQueryEventNotifierService.create(
-          this.queryStore.applicationStore.eventNotifierService,
+        LegendQueryEventService.create(
+          this.queryStore.applicationStore.eventService,
         ).notify_QueryCreated({ queryId: newQuery.id });
       } else {
         assertType(this.queryStore.queryInfoState, ExistingQueryInfoState);

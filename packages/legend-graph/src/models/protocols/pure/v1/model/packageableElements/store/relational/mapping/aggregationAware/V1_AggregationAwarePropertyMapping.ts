@@ -17,7 +17,7 @@
 import {
   type V1_PropertyMappingVisitor,
   V1_PropertyMapping,
-} from '../../../../../../model/packageableElements/mapping/V1_PropertyMapping';
+} from '../../../../../../model/packageableElements/mapping/V1_PropertyMapping.js';
 
 export class V1_AggregationAwarePropertyMapping extends V1_PropertyMapping {
   accept_PropertyMappingVisitor<T>(visitor: V1_PropertyMappingVisitor<T>): T {

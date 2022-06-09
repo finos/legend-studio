@@ -15,19 +15,19 @@
  */
 
 import { type Hashable, hashArray } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
-import type { PackageableElementReference } from '../PackageableElementReference';
-import type { Mapping } from './Mapping';
-import type { Class } from '../domain/Class';
-import type { InferableMappingElementIdValue } from './InferableMappingElementId';
-import type { InferableMappingElementRoot } from './InferableMappingElementRoot';
+import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst.js';
+import type { PackageableElementReference } from '../PackageableElementReference.js';
+import type { Mapping } from './Mapping.js';
+import type { Class } from '../domain/Class.js';
+import type { InferableMappingElementIdValue } from './InferableMappingElementId.js';
+import type { InferableMappingElementRoot } from './InferableMappingElementRoot.js';
 import {
   type OperationType,
   OperationSetImplementation,
-} from './OperationSetImplementation';
-import type { RawLambda } from '../../rawValueSpecification/RawLambda';
-import type { SetImplementationVisitor } from './SetImplementation';
-import { hashLambda } from '../../../../../MetaModelUtils';
+} from './OperationSetImplementation.js';
+import type { RawLambda } from '../../rawValueSpecification/RawLambda.js';
+import type { SetImplementationVisitor } from './SetImplementation.js';
+import { hashRawLambda } from '../../../../../MetaModelUtils.js';
 
 export class MergeOperationSetImplementation
   extends OperationSetImplementation
@@ -55,7 +55,7 @@ export class MergeOperationSetImplementation
         // TODO: use `isStubbed_SetImplementationContainer` when we refactor hashing
         this.parameters.map((param) => param.setImplementation.value.id.value),
       ),
-      hashLambda(
+      hashRawLambda(
         this.validationFunction.parameters,
         this.validationFunction.body,
       ),

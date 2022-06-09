@@ -16,7 +16,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import type { MenuProps as MuiMenuProps } from '@mui/material';
-import { BaseMenu } from './BaseMenu';
+import { BaseMenu } from './BaseMenu.js';
 
 export const DropdownMenu: React.FC<{
   children: React.ReactNode;

@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-import { WebApplicationNavigator } from '../stores/WebApplicationNavigator';
+import { jest } from '@jest/globals';
+import { WebApplicationNavigator } from '../stores/WebApplicationNavigator.js';
 import { createMemoryHistory, type History } from 'history';
 
 export const TEST__provideMockedWebApplicationNavigator = (customization?: {
@@ -26,7 +27,7 @@ export const TEST__provideMockedWebApplicationNavigator = (customization?: {
     new WebApplicationNavigator(
       customization?.history ?? createMemoryHistory(),
     );
-  const MockWebApplicationNavigatorProvider = require('./WebApplicationNavigatorProvider'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+  const MockWebApplicationNavigatorProvider = require('./WebApplicationNavigatorProvider.js'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
   MockWebApplicationNavigatorProvider.useWebApplicationNavigator = jest.fn();
   MockWebApplicationNavigatorProvider.useWebApplicationNavigator.mockReturnValue(
     value,

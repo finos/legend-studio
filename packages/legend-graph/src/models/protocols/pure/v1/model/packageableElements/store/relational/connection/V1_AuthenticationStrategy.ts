@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { CORE_HASH_STRUCTURE } from '../../../../../../../../../MetaModelConst';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../../../MetaModelConst.js';
 import { type Hashable, hashArray } from '@finos/legend-shared';
 
 export abstract class V1_AuthenticationStrategy implements Hashable {
@@ -98,6 +98,22 @@ export class V1_GCPApplicationDefaultCredentialsAuthenticationStrategy
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.GCP_APPLICATION_DEFAULT_CREDENTIALS_AUTHENTICATION_STRATEGY,
+    ]);
+  }
+}
+
+export class V1_GCPWorkloadIdentityFederationAuthenticationStrategy
+  extends V1_AuthenticationStrategy
+  implements Hashable
+{
+  serviceAccountEmail!: string;
+  additionalGcpScopes: string[] = [];
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.GCP_WORKLOAD_IDENTITY_FEDERATION_AUTHENTICATION_STRATEGY,
+      this.serviceAccountEmail,
+      hashArray(this.additionalGcpScopes),
     ]);
   }
 }

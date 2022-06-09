@@ -20,25 +20,24 @@ import {
   AbstractPropertyExpression,
   type FunctionExpression,
   PRIMITIVE_TYPE,
+  SUPPORTED_FUNCTIONS,
   isSuperType,
+  buildPrimitiveInstanceValue,
 } from '@finos/legend-graph';
 import {
   guaranteeNonNullable,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
-import { SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
-import {
-  buildPrimitiveInstanceValue,
-  getNonCollectionValueSpecificationType,
-} from '../QueryBuilderOperatorsHelper';
-import { QueryBuilderPostFilterOperator } from '../QueryBuilderPostFilterOperator';
-import { buildPostFilterConditionState } from '../QueryBuilderPostFilterProcessor';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const.js';
+import { getNonCollectionValueSpecificationType } from '../QueryBuilderOperatorsHelper.js';
+import { QueryBuilderPostFilterOperator } from '../QueryBuilderPostFilterOperator.js';
+import { buildPostFilterConditionState } from '../QueryBuilderPostFilterProcessor.js';
 import type {
   PostFilterConditionState,
   QueryBuilderPostFilterState,
-} from '../QueryBuilderPostFilterState';
-import { generateDefaultValueForPrimitiveType } from '../QueryBuilderValueSpecificationBuilderHelper';
-import { buildPostFilterConditionExpression } from './QueryBuilderPostFilterOperatorHelper';
+} from '../QueryBuilderPostFilterState.js';
+import { generateDefaultValueForPrimitiveType } from '../QueryBuilderValueSpecificationBuilderHelper.js';
+import { buildPostFilterConditionExpression } from './QueryBuilderPostFilterOperatorHelper.js';
 
 export class QueryBuilderPostFilterOperator_LessThan extends QueryBuilderPostFilterOperator {
   getLabel(): string {
@@ -138,7 +137,7 @@ export class QueryBuilderPostFilterOperator_LessThan extends QueryBuilderPostFil
         postFilterConditionState.value?.genericType?.value.rawType.path !==
           PRIMITIVE_TYPE.DATETIME
         ? SUPPORTED_FUNCTIONS.IS_BEFORE_DAY
-        : SUPPORTED_FUNCTIONS.LESS_THAN,
+        : QUERY_BUILDER_SUPPORTED_FUNCTIONS.LESS_THAN,
     );
   }
 
@@ -155,7 +154,7 @@ export class QueryBuilderPostFilterOperator_LessThan extends QueryBuilderPostFil
         expression.parametersValues[1]?.genericType?.value.rawType.path !==
           PRIMITIVE_TYPE.DATETIME
         ? SUPPORTED_FUNCTIONS.IS_BEFORE_DAY
-        : SUPPORTED_FUNCTIONS.LESS_THAN,
+        : QUERY_BUILDER_SUPPORTED_FUNCTIONS.LESS_THAN,
       this,
     );
   }

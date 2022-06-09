@@ -15,7 +15,7 @@
  */
 
 import { clsx, QuestionCircleIcon } from '@finos/legend-art';
-import { useApplicationStore } from './ApplicationStoreProvider';
+import { useApplicationStore } from './ApplicationStoreProvider.js';
 
 export const DocumentationLink: React.FC<{
   documentationKey: string;
@@ -24,7 +24,7 @@ export const DocumentationLink: React.FC<{
   const { documentationKey, className } = props;
   const applicationStore = useApplicationStore();
   const documentationEntry =
-    applicationStore.docRegistry.getEntry(documentationKey);
+    applicationStore.documentationService.getDocEntry(documentationKey);
   const openDocLink = (): void => {
     if (documentationEntry?.url) {
       applicationStore.navigator.openNewWindow(documentationEntry.url);

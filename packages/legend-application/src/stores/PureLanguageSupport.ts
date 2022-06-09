@@ -26,7 +26,7 @@ import {
   editor as monacoEditorAPI,
   languages as monacoLanguagesAPI,
 } from 'monaco-editor';
-import { EDITOR_LANGUAGE, EDITOR_THEME } from '../const';
+import { EDITOR_LANGUAGE, EDITOR_THEME } from '../const.js';
 
 const theme: monacoEditorAPI.IStandaloneThemeData = {
   base: 'vs-dark', // can also be vs-dark or hc-black
@@ -86,6 +86,12 @@ const configuration: monacoLanguagesAPI.LanguageConfiguration = {
  *
  * The way SQL monarch definition is organized is good and worth learning from
  * See https://github.com/microsoft/monaco-languages/blob/master/src/sql/sql.ts
+ *
+ * NOTE: using `monarch` only allows fairly very basic syntax-highlighting
+ * to actually do full AST analysis, we might need something more serious like
+ * using TextMate grammar which is used by VSCode itself
+ * See https://github.com/microsoft/monaco-editor#faq
+ * See https://code.visualstudio.com/api/language-extensions/syntax-highlight-guide
  */
 const generateLanguageMonarch = (
   extraKeywords: string[],
@@ -183,7 +189,7 @@ const generateLanguageMonarch = (
         PURE_PARSER.FLATDATA,
         PURE_PARSER.RELATIONAL,
         PURE_PARSER.GENERATION_SPECIFICATION,
-        PURE_PARSER.FILE_GENERATION,
+        PURE_PARSER.FILE_GENERATION_SPECIFICATION,
         PURE_PARSER.DATA,
       ] as string[]
     )

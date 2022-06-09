@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
+import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst.js';
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import type { PackageableElement } from '../PackageableElement';
-import type { Package } from '../domain/Package';
-import type { SectionIndex } from './SectionIndex';
-import type { PackageableElementExplicitReference } from '../PackageableElementReference';
+import type { PackageableElement } from '../PackageableElement.js';
+import type { Package } from '../domain/Package.js';
+import type { SectionIndex } from './SectionIndex.js';
+import type { PackageableElementExplicitReference } from '../PackageableElementReference.js';
 
 export abstract class Section implements Hashable {
   readonly _OWNER: SectionIndex;

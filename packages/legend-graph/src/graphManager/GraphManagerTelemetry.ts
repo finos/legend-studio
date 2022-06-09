@@ -15,8 +15,8 @@
  */
 
 import type { TelemetryService } from '@finos/legend-shared';
-import type { GraphBuilderReport } from './GraphBuilderReport';
-import { GRAPH_MANAGER_EVENT } from './GraphManagerEvent';
+import type { GraphBuilderReport } from './GraphBuilderReport.js';
+import { GRAPH_MANAGER_EVENT } from './GraphManagerEvent.js';
 
 type GraphBuilt_TelemetryData = {
   timings: Record<string, number>;

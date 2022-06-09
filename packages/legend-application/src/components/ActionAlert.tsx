@@ -19,10 +19,10 @@ import {
   ActionAlertActionType,
   ActionAlertType,
   type ActionAlertInfo,
-} from '../stores/ApplicationStore';
+} from '../stores/ApplicationStore.js';
 import { observer } from 'mobx-react-lite';
 import { noop } from '@finos/legend-shared';
-import { useApplicationStore } from './ApplicationStoreProvider';
+import { useApplicationStore } from './ApplicationStoreProvider.js';
 
 const getActionButtonClassName = (type: ActionAlertActionType): string => {
   switch (type) {

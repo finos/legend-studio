@@ -18,12 +18,12 @@ import {
   MULTIPLICITY_INFINITE,
   MULTIPLICITY_RANGE_OPERATOR,
   PRIMITIVE_TYPE,
-} from '../MetaModelConst';
-import type { ConcreteFunctionDefinition } from '../models/metamodels/pure/packageableElements/domain/ConcreteFunctionDefinition';
-import type { Type } from '../models/metamodels/pure/packageableElements/domain/Type';
-import { PrimitiveType } from '../models/metamodels/pure/packageableElements/domain/PrimitiveType';
-import { Enumeration } from '../models/metamodels/pure/packageableElements/domain/Enumeration';
-import format from 'date-fns/format';
+} from '../MetaModelConst.js';
+import type { ConcreteFunctionDefinition } from '../models/metamodels/pure/packageableElements/domain/ConcreteFunctionDefinition.js';
+import type { Type } from '../models/metamodels/pure/packageableElements/domain/Type.js';
+import { PrimitiveType } from '../models/metamodels/pure/packageableElements/domain/PrimitiveType.js';
+import { Enumeration } from '../models/metamodels/pure/packageableElements/domain/Enumeration.js';
+import { format } from 'date-fns';
 
 export enum PURE_ELEMENT_NAME {
   PROFILE = 'Profile',
@@ -60,7 +60,7 @@ export enum PURE_PARSER {
   FLATDATA = 'FlatData',
   RELATIONAL = 'Relational',
   GENERATION_SPECIFICATION = 'GenerationSpecification',
-  FILE_GENERATION = 'FileGeneration',
+  FILE_GENERATION_SPECIFICATION = 'FileGeneration',
   DATA = 'Data',
 }
 

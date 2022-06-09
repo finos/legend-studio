@@ -15,20 +15,20 @@
  */
 
 // metamodels
-export { FlatData } from './models/metamodels/pure/packageableElements/store/flatData/model/FlatData';
-export { FlatDataSection } from './models/metamodels/pure/packageableElements/store/flatData/model/FlatDataSection';
+export { FlatData } from './models/metamodels/pure/packageableElements/store/flatData/model/FlatData.js';
+export { FlatDataSection } from './models/metamodels/pure/packageableElements/store/flatData/model/FlatDataSection.js';
 export {
   FlatDataSectionReference,
   FlatDataSectionExplicitReference,
-} from './models/metamodels/pure/packageableElements/store/flatData/model/FlatDataSectionReference';
-export { RootFlatDataRecordTypeExplicitReference } from './models/metamodels/pure/packageableElements/store/flatData/model/RootFlatDataRecordTypeReference';
-export { FlatDataInstanceSetImplementation } from './models/metamodels/pure/packageableElements/store/flatData/mapping/FlatDataInstanceSetImplementation';
-export { AbstractFlatDataPropertyMapping } from './models/metamodels/pure/packageableElements/store/flatData/mapping/AbstractFlatDataPropertyMapping';
-export { EmbeddedFlatDataPropertyMapping } from './models/metamodels/pure/packageableElements/store/flatData/mapping/EmbeddedFlatDataPropertyMapping';
-export { FlatDataPropertyMapping } from './models/metamodels/pure/packageableElements/store/flatData/mapping/FlatDataPropertyMapping';
-export { FlatDataConnection } from './models/metamodels/pure/packageableElements/store/flatData/connection/FlatDataConnection';
+} from './models/metamodels/pure/packageableElements/store/flatData/model/FlatDataSectionReference.js';
+export { RootFlatDataRecordTypeExplicitReference } from './models/metamodels/pure/packageableElements/store/flatData/model/RootFlatDataRecordTypeReference.js';
+export { FlatDataInstanceSetImplementation } from './models/metamodels/pure/packageableElements/store/flatData/mapping/FlatDataInstanceSetImplementation.js';
+export { AbstractFlatDataPropertyMapping } from './models/metamodels/pure/packageableElements/store/flatData/mapping/AbstractFlatDataPropertyMapping.js';
+export { EmbeddedFlatDataPropertyMapping } from './models/metamodels/pure/packageableElements/store/flatData/mapping/EmbeddedFlatDataPropertyMapping.js';
+export { FlatDataPropertyMapping } from './models/metamodels/pure/packageableElements/store/flatData/mapping/FlatDataPropertyMapping.js';
+export { FlatDataConnection } from './models/metamodels/pure/packageableElements/store/flatData/connection/FlatDataConnection.js';
 export {
   RootFlatDataRecordType,
   FlatDataRecordField,
-} from './models/metamodels/pure/packageableElements/store/flatData/model/FlatDataDataType';
-export { FlatDataInputData } from './models/metamodels/pure/packageableElements/store/flatData/mapping/FlatDataInputData';
+} from './models/metamodels/pure/packageableElements/store/flatData/model/FlatDataDataType.js';
+export { FlatDataInputData } from './models/metamodels/pure/packageableElements/store/flatData/mapping/FlatDataInputData.js';

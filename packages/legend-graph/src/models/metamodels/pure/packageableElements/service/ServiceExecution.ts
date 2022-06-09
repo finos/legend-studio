@@ -15,16 +15,12 @@
  */
 
 import { hashArray, uuid, type Hashable } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
-import type { Mapping } from '../mapping/Mapping';
-import type { RawLambda } from '../../rawValueSpecification/RawLambda';
-import type { Service } from './Service';
-import type { Runtime } from '../runtime/Runtime';
-import {
-  type ValidationIssue,
-  createValidationError,
-} from '../../../../../helpers/ValidationHelper';
-import type { PackageableElementReference } from '../PackageableElementReference';
+import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst.js';
+import type { Mapping } from '../mapping/Mapping.js';
+import type { RawLambda } from '../../rawValueSpecification/RawLambda.js';
+import type { Service } from './Service.js';
+import type { Runtime } from '../runtime/Runtime.js';
+import type { PackageableElementReference } from '../PackageableElementReference.js';
 
 export abstract class ServiceExecution implements Hashable {
   abstract get hashCode(): string;
@@ -46,20 +42,6 @@ export class PureExecution extends ServiceExecution implements Hashable {
     this._OWNER = owner;
   }
 
-  get queryValidationResult(): ValidationIssue | undefined {
-    // TODO: use `isStubbed_RawLambda` when we refactor validation
-    if (!this.func.parameters && !this.func.body) {
-      return createValidationError([
-        'Service execution function cannot be empty',
-      ]);
-    }
-    // TODO: put this logic back when we properly process lambda - we can't pass the graph manager here to check this
-    // else if (isGetAllLambda(this.func)) {
-    //   return createValidationError(['Non-empty graph fetch tree is required']);
-    // }
-    return undefined;
-  }
-
   get hashCode(): string {
     return hashArray([CORE_HASH_STRUCTURE.SERVICE_PURE_EXECUTION, this.func]);
   }
@@ -78,13 +60,6 @@ export class PureSingleExecution extends PureExecution implements Hashable {
     super(func, owner);
     this.mapping = mapping;
     this.runtime = runtime;
-  }
-
-  get mappingValidationResult(): ValidationIssue | undefined {
-    // TODO: use `isStubbed_PackageableElement` when we refactor validation
-    return !this.mapping.value.package && !this.mapping.value.name
-      ? createValidationError(['Service execution mapping cannot be empty'])
-      : undefined;
   }
 
   override get hashCode(): string {
@@ -112,13 +87,6 @@ export class KeyedExecutionParameter implements Hashable {
     this.key = key;
     this.mapping = mapping;
     this.runtime = runtime;
-  }
-
-  get mappingValidationResult(): ValidationIssue | undefined {
-    // TODO: use `isStubbed_PackageableElement` when we refactor validation
-    return !this.mapping.value.package && !this.mapping.value.name
-      ? createValidationError(['Service execution mapping cannot be empty'])
-      : undefined;
   }
 
   get hashCode(): string {

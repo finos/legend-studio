@@ -33,16 +33,16 @@ import {
   serializeArray,
   deserializeArray,
 } from '@finos/legend-shared';
-import { V1_ModelChainConnection } from '../../../model/packageableElements/store/modelToModel/connection/V1_ModelChainConnection';
-import { V1_PackageableConnection } from '../../../model/packageableElements/connection/V1_PackageableConnection';
-import type { V1_Connection } from '../../../model/packageableElements/connection/V1_Connection';
-import { V1_JsonModelConnection } from '../../../model/packageableElements/store/modelToModel/connection/V1_JsonModelConnection';
-import { V1_XmlModelConnection } from '../../../model/packageableElements/store/modelToModel/connection/V1_XmlModelConnection';
-import { V1_FlatDataConnection } from '../../../model/packageableElements/store/flatData/connection/V1_FlatDataConnection';
+import { V1_ModelChainConnection } from '../../../model/packageableElements/store/modelToModel/connection/V1_ModelChainConnection.js';
+import { V1_PackageableConnection } from '../../../model/packageableElements/connection/V1_PackageableConnection.js';
+import type { V1_Connection } from '../../../model/packageableElements/connection/V1_Connection.js';
+import { V1_JsonModelConnection } from '../../../model/packageableElements/store/modelToModel/connection/V1_JsonModelConnection.js';
+import { V1_XmlModelConnection } from '../../../model/packageableElements/store/modelToModel/connection/V1_XmlModelConnection.js';
+import { V1_FlatDataConnection } from '../../../model/packageableElements/store/flatData/connection/V1_FlatDataConnection.js';
 import {
   type V1_DatabaseConnection,
   V1_RelationalDatabaseConnection,
-} from '../../../model/packageableElements/store/relational/connection/V1_RelationalDatabaseConnection';
+} from '../../../model/packageableElements/store/relational/connection/V1_RelationalDatabaseConnection.js';
 import {
   type V1_DatasourceSpecification,
   V1_LocalH2DataSourceSpecification,
@@ -52,7 +52,7 @@ import {
   V1_StaticDatasourceSpecification,
   V1_EmbeddedH2DatasourceSpecification,
   V1_RedshiftDatasourceSpecification,
-} from '../../../model/packageableElements/store/relational/connection/V1_DatasourceSpecification';
+} from '../../../model/packageableElements/store/relational/connection/V1_DatasourceSpecification.js';
 import {
   type V1_AuthenticationStrategy,
   V1_ApiTokenAuthenticationStrategy,
@@ -62,11 +62,12 @@ import {
   V1_DefaultH2AuthenticationStrategy,
   V1_DelegatedKerberosAuthenticationStrategy,
   V1_UsernamePasswordAuthenticationStrategy,
-} from '../../../model/packageableElements/store/relational/connection/V1_AuthenticationStrategy';
-import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin';
-import type { StoreRelational_PureProtocolProcessorPlugin_Extension } from '../../../../StoreRelational_PureProtocolProcessorPlugin_Extension';
-import type { DSLMapping_PureProtocolProcessorPlugin_Extension } from '../../../../DSLMapping_PureProtocolProcessorPlugin_Extension';
-import { V1_ConnectionPointer } from '../../../model/packageableElements/connection/V1_ConnectionPointer';
+  V1_GCPWorkloadIdentityFederationAuthenticationStrategy,
+} from '../../../model/packageableElements/store/relational/connection/V1_AuthenticationStrategy.js';
+import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin.js';
+import type { StoreRelational_PureProtocolProcessorPlugin_Extension } from '../../../../StoreRelational_PureProtocolProcessorPlugin_Extension.js';
+import type { DSLMapping_PureProtocolProcessorPlugin_Extension } from '../../../../DSLMapping_PureProtocolProcessorPlugin_Extension.js';
+import { V1_ConnectionPointer } from '../../../model/packageableElements/connection/V1_ConnectionPointer.js';
 
 export const V1_PACKAGEABLE_CONNECTION_ELEMENT_PROTOCOL_TYPE = 'connection';
 
@@ -249,6 +250,8 @@ const bigqueryDatasourceSpecificationModelSchema = createModelSchema(
     _type: usingConstantValueSchema(V1_DatasourceSpecificationType.BIGQUERY),
     defaultDataset: primitive(),
     projectId: primitive(),
+    proxyHost: optional(primitive()),
+    proxyPort: optional(primitive()),
   },
 );
 
@@ -342,6 +345,7 @@ enum V1_AuthenticationStrategyType {
   H2_DEFAULT = 'h2Default',
   OAUTH = 'oauth',
   USERNAME_PASSWORD = 'userNamePassword',
+  GCP_WORKLOAD_IDENTITY_FEDERATION = 'gcpWorkloadIdentityFederation',
 }
 
 const V1_delegatedKerberosAuthenticationStrategyModelSchema = createModelSchema(
@@ -384,6 +388,15 @@ const V1_GCPApplicationDefaultCredentialsAuthenticationStrategyModelSchema =
     _type: usingConstantValueSchema(
       V1_AuthenticationStrategyType.GCP_APPLICATION_DEFAULT_CREDENTIALS,
     ),
+  });
+
+const V1_GCPWorkloadIdentityFederationAuthenticationStrategyModelSchema =
+  createModelSchema(V1_GCPWorkloadIdentityFederationAuthenticationStrategy, {
+    _type: usingConstantValueSchema(
+      V1_AuthenticationStrategyType.GCP_WORKLOAD_IDENTITY_FEDERATION,
+    ),
+    additionalGcpScopes: list(primitive()),
+    serviceAccountEmail: primitive(),
   });
 
 const V1_UsernamePasswordAuthenticationStrategyModelSchema = createModelSchema(
@@ -431,6 +444,13 @@ export const V1_serializeAuthenticationStrategy = (
   ) {
     return serialize(
       V1_GCPApplicationDefaultCredentialsAuthenticationStrategyModelSchema,
+      protocol,
+    );
+  } else if (
+    protocol instanceof V1_GCPWorkloadIdentityFederationAuthenticationStrategy
+  ) {
+    return serialize(
+      V1_GCPWorkloadIdentityFederationAuthenticationStrategyModelSchema,
       protocol,
     );
   } else if (protocol instanceof V1_OAuthAuthenticationStrategy) {
@@ -483,6 +503,11 @@ export const V1_deserializeAuthenticationStrategy = (
     case V1_AuthenticationStrategyType.GCP_APPLICATION_DEFAULT_CREDENTIALS:
       return deserialize(
         V1_GCPApplicationDefaultCredentialsAuthenticationStrategyModelSchema,
+        json,
+      );
+    case V1_AuthenticationStrategyType.GCP_WORKLOAD_IDENTITY_FEDERATION:
+      return deserialize(
+        V1_GCPWorkloadIdentityFederationAuthenticationStrategyModelSchema,
         json,
       );
     case V1_AuthenticationStrategyType.OAUTH:

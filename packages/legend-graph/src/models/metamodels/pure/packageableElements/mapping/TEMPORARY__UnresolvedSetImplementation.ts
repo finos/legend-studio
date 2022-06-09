@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-import { Class } from '../domain/Class';
-import { PackageableElementExplicitReference } from '../PackageableElementReference';
-import { InferableMappingElementIdExplicitValue } from './InferableMappingElementId';
-import { InferableMappingElementRootExplicitValue } from './InferableMappingElementRoot';
-import type { Mapping } from './Mapping';
+import { Class } from '../domain/Class.js';
+import { PackageableElementExplicitReference } from '../PackageableElementReference.js';
+import { InferableMappingElementIdExplicitValue } from './InferableMappingElementId.js';
+import { InferableMappingElementRootExplicitValue } from './InferableMappingElementRoot.js';
+import type { Mapping } from './Mapping.js';
 import {
   SetImplementation,
   type SetImplementationVisitor,
-} from './SetImplementation';
+} from './SetImplementation.js';
 
 /**
  * When set implementation cannot be resolved by ID,

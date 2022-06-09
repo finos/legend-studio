@@ -24,16 +24,24 @@ import {
   tryToFormatLosslessJSONString,
   UnsupportedOperationError,
   guaranteeType,
+  filterByType,
 } from '@finos/legend-shared';
-import { LegacySingleExecutionTestState } from './LegacyServiceTestState';
-import type { EditorStore } from '../../../EditorStore';
-import type { ServiceEditorState } from './ServiceEditorState';
+import { LegacySingleExecutionTestState } from './LegacyServiceTestState.js';
+import type { EditorStore } from '../../../EditorStore.js';
+import type { ServiceEditorState } from './ServiceEditorState.js';
 import {
   decorateRuntimeWithNewMapping,
   RuntimeEditorState,
-} from '../../../editor-state/element-editor-state/RuntimeEditorState';
-import { LambdaEditorState, TAB_SIZE } from '@finos/legend-application';
-import { ExecutionPlanState } from '../../../ExecutionPlanState';
+} from '../../../editor-state/element-editor-state/RuntimeEditorState.js';
+import {
+  buildParametersLetLambdaFunc,
+  LambdaEditorState,
+  LambdaParametersState,
+  LambdaParameterState,
+  PARAMETER_SUBMIT_ACTION,
+  TAB_SIZE,
+} from '@finos/legend-application';
+import { ExecutionPlanState } from '../../../ExecutionPlanState.js';
 import {
   type ServiceExecution,
   type KeyedExecutionParameter,
@@ -56,20 +64,76 @@ import {
   QuerySearchSpecification,
   type RawExecutionPlan,
   DEPRECATED__SingleExecutionTest,
+  buildLambdaVariableExpressions,
+  observe_ValueSpecification,
+  VariableExpression,
+  buildRawLambdaFromLambdaFunction,
 } from '@finos/legend-graph';
 import type { Entity } from '@finos/legend-model-storage';
 import { parseGACoordinates } from '@finos/legend-server-depot';
-import { runtime_addMapping } from '../../../graphModifier/DSLMapping_GraphModifierHelper';
+import { runtime_addMapping } from '../../../graphModifier/DSLMapping_GraphModifierHelper.js';
 import {
   pureExecution_setFunction,
   pureSingleExecution_setRuntime,
   singleExecTest_setData,
-} from '../../../graphModifier/DSLService_GraphModifierHelper';
-import { ServiceTestSuiteState } from './ServiceTestSuiteState';
+} from '../../../graphModifier/DSLService_GraphModifierHelper.js';
+import { ServiceTestSuiteState } from './ServiceTestSuiteState.js';
 
 export enum SERVICE_EXECUTION_TAB {
   EXECUTION_CONTEXT = 'EXECUTION_CONTEXT',
   TESTS = 'TESTS',
+}
+
+export class ServiceExecutionParameterState extends LambdaParametersState {
+  executionState: ServicePureExecutionState;
+
+  constructor(executionState: ServicePureExecutionState) {
+    super();
+    makeObservable(this, {
+      parameterValuesEditorState: observable,
+      parameterStates: observable,
+      addParameter: action,
+      removeParameter: action,
+      openModal: action,
+      build: action,
+      setParameters: action,
+    });
+    this.executionState = executionState;
+  }
+
+  openModal(query: RawLambda): void {
+    this.parameterStates = this.build(query);
+    this.parameterValuesEditorState.open(
+      (): Promise<void> =>
+        flowResult(this.executionState.execute()).catch(
+          this.executionState.editorStore.applicationStore.alertUnhandledError,
+        ),
+      PARAMETER_SUBMIT_ACTION.EXECUTE,
+    );
+  }
+
+  build(query: RawLambda): LambdaParameterState[] {
+    const parameters = buildLambdaVariableExpressions(
+      query,
+      this.executionState.editorStore.graphManagerState,
+    )
+      .map((p) =>
+        observe_ValueSpecification(
+          p,
+          this.executionState.editorStore.changeDetectionState.observerContext,
+        ),
+      )
+      .filter(filterByType(VariableExpression));
+    const states = parameters.map((p) => {
+      const parmeterState = new LambdaParameterState(
+        p,
+        this.executionState.editorStore.changeDetectionState.observerContext,
+      );
+      parmeterState.mockParameterValue();
+      return parmeterState;
+    });
+    return states;
+  }
 }
 
 export abstract class ServiceExecutionState {
@@ -220,7 +284,6 @@ export class ServicePureExecutionQueryState extends LambdaEditorState {
                 query.id,
               )) as string,
             )) as RawLambda,
-            '',
             true,
           )) as string;
         this.selectedQueryInfo = {
@@ -361,6 +424,7 @@ export class ServicePureExecutionState extends ServiceExecutionState {
   isOpeningQueryEditor = false;
   executionResultText?: string | undefined; // NOTE: stored as lossless JSON string
   executionPlanState: ExecutionPlanState;
+  parameterState: ServiceExecutionParameterState;
 
   constructor(
     editorStore: EditorStore,
@@ -378,6 +442,7 @@ export class ServicePureExecutionState extends ServiceExecutionState {
       isOpeningQueryEditor: observable,
       executionResultText: observable,
       executionPlanState: observable,
+      parameterState: observable,
       setExecutionResultText: action,
       closeRuntimeEditor: action,
       openRuntimeEditor: action,
@@ -387,6 +452,7 @@ export class ServicePureExecutionState extends ServiceExecutionState {
       updateExecutionQuery: action,
       setOpeningQueryEditor: action,
       generatePlan: flow,
+      handleExecute: flow,
       execute: flow,
     });
 
@@ -398,6 +464,7 @@ export class ServicePureExecutionState extends ServiceExecutionState {
       execution,
     );
     this.executionPlanState = new ExecutionPlanState(this.editorStore);
+    this.parameterState = new ServiceExecutionParameterState(this);
   }
 
   setOpeningQueryEditor(val: boolean): void {
@@ -462,13 +529,27 @@ export class ServicePureExecutionState extends ServiceExecutionState {
     }
   }
 
+  *handleExecute(): GeneratorFn<void> {
+    if (!this.selectedExecutionConfiguration || this.isExecuting) {
+      return;
+    }
+    const query = this.queryState.query;
+    const parameters = (query.parameters ?? []) as object[];
+    if (parameters.length) {
+      this.parameterState.openModal(query);
+      return;
+    } else {
+      this.execute();
+    }
+  }
+
   *execute(): GeneratorFn<void> {
     if (!this.selectedExecutionConfiguration || this.isExecuting) {
       return;
     }
     try {
       this.isExecuting = true;
-      const query = this.queryState.query;
+      const query = this.getExecutionQuery();
       const result =
         (yield this.editorStore.graphManagerState.graphManager.executeMapping(
           this.editorStore.graphManagerState.graph,
@@ -483,6 +564,7 @@ export class ServicePureExecutionState extends ServiceExecutionState {
       this.setExecutionResultText(
         losslessStringify(result, undefined, TAB_SIZE),
       );
+      this.parameterState.setParameters([]);
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
@@ -493,6 +575,31 @@ export class ServicePureExecutionState extends ServiceExecutionState {
     } finally {
       this.isExecuting = false;
     }
+  }
+
+  getExecutionQuery(): RawLambda {
+    if (this.parameterState.parameterStates.length) {
+      const letlambdaFunction = buildParametersLetLambdaFunc(
+        this.editorStore.graphManagerState.graph,
+        this.parameterState.parameterStates,
+      );
+      const letRawLambda = buildRawLambdaFromLambdaFunction(
+        letlambdaFunction,
+        this.editorStore.graphManagerState,
+      );
+      // reset parameters
+      if (
+        Array.isArray(this.queryState.query.body) &&
+        Array.isArray(letRawLambda.body)
+      ) {
+        letRawLambda.body = [
+          ...(letRawLambda.body as object[]),
+          ...(this.queryState.query.body as object[]),
+        ];
+        return letRawLambda;
+      }
+    }
+    return this.queryState.query;
   }
 
   get serviceExecutionParameters():
@@ -512,6 +619,7 @@ export class ServicePureExecutionState extends ServiceExecutionState {
   closeRuntimeEditor(): void {
     this.runtimeEditorState = undefined;
   }
+
   openRuntimeEditor(): void {
     if (
       this.selectedExecutionConfiguration &&

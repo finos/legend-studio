@@ -16,9 +16,9 @@
 
 import { createModelSchema, optional, primitive, raw } from 'serializr';
 import { SerializationFactory } from '@finos/legend-shared';
-import type { V1_PureModelContext } from '../../model/context/V1_PureModelContext';
-import { PureClientVersion } from '../../../../../../graphManager/GraphManagerUtils';
-import { V1_pureModelContextPropSchema } from '../../transformation/pureProtocol/V1_PureProtocolSerialization';
+import type { V1_PureModelContext } from '../../model/context/V1_PureModelContext.js';
+import { PureClientVersion } from '../../../../../../graphManager/GraphManagerUtils.js';
+import { V1_pureModelContextPropSchema } from '../../transformation/pureProtocol/V1_PureProtocolSerialization.js';
 
 export class V1_ExternalFormatModelGenerationInput {
   clientVersion?: string | undefined;

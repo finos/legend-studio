@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import type { V1_ValueSpecificationVisitor } from '../V1_ValueSpecification';
-import { V1_PackageableElementPtr } from './V1_PackageableElementPtr';
+import type { V1_ValueSpecificationVisitor } from '../V1_ValueSpecification.js';
+import { V1_PackageableElementPtr } from './V1_PackageableElementPtr.js';
 
 export class V1_HackedClass extends V1_PackageableElementPtr {
   override accept_ValueSpecificationVisitor<T>(

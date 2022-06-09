@@ -14,21 +14,28 @@
  * limitations under the License.
  */
 
+import type { LegendApplicationDocumentationEntryConfig } from '@finos/legend-application';
+
 export enum EXTERNAL_STORE_SERVICE_LEGEND_STUDIO_DOCUMENTATION_KEY {
-  GRAMMAR_PARSER = 'es-service__grammar-parser',
-  GRAMMAR_SERVICE_STORE_ELEMENT = 'es-service__grammar--element',
+  GRAMMAR_PARSER = 'es-service.grammar.parser',
+  GRAMMAR_ELEMENT_SERVICE_STORE = 'es-service.grammar.element.service-store',
 }
 
-export const EXTERNAL_STORE_SERVICE_DOCUMENTATION_ENTRIES = {
+export const EXTERNAL_STORE_SERVICE_DOCUMENTATION_ENTRIES: Record<
+  string,
+  LegendApplicationDocumentationEntryConfig
+> = {
   [EXTERNAL_STORE_SERVICE_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER]: {
+    title: `What is External Store Service DSL about?`,
     markdownText: {
-      value: `External store DSL Service (\`###ServiceStore\`) concerns with data store specifications which enable accessing  data from API endpoints`,
+      value: `\`External Store Service DSL\` (coressponding to \`###ServiceStore\` section in \`Pure\`) concerns with data store specifications which enable accessing  data from API endpoints`,
     },
   },
-  [EXTERNAL_STORE_SERVICE_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_SERVICE_STORE_ELEMENT]:
+  [EXTERNAL_STORE_SERVICE_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_ELEMENT_SERVICE_STORE]:
     {
+      title: `What is a service store element?`,
       markdownText: {
-        value: `A service-store element specifies API endpoints as data source`,
+        value: `A service store element specifies API endpoints as data source`,
       },
     },
 };

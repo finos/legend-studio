@@ -19,15 +19,15 @@ import { observer } from 'mobx-react-lite';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { useResizeDetector } from 'react-resize-detector';
-import { EditPanel } from '../editor/edit-panel/EditPanel';
-import { GrammarTextEditor } from '../editor/edit-panel/GrammarTextEditor';
+import { EditPanel } from '../editor/edit-panel/EditPanel.js';
+import { GrammarTextEditor } from '../editor/edit-panel/GrammarTextEditor.js';
 import { useParams, Link } from 'react-router-dom';
-import { LEGEND_STUDIO_TEST_ID } from '../LegendStudioTestID';
+import { LEGEND_STUDIO_TEST_ID } from '../LegendStudioTestID.js';
 import {
   ACTIVITY_MODE,
   LEGEND_STUDIO_HOTKEY,
   LEGEND_STUDIO_HOTKEY_MAP,
-} from '../../stores/EditorConfig';
+} from '../../stores/EditorConfig.js';
 import {
   type ResizablePanelHandlerProps,
   clsx,
@@ -36,32 +36,34 @@ import {
   ResizablePanelSplitter,
   getControlledResizablePanelProps,
   RepoIcon,
-  ListIcon,
   CodeBranchIcon,
-  WindowMaximizeIcon,
   HackerIcon,
   WrenchIcon,
+  FileTrayIcon,
+  AssistantIcon,
 } from '@finos/legend-art';
 import { isNonNullable } from '@finos/legend-shared';
 import { GlobalHotKeys } from 'react-hotkeys';
-import { useViewerStore, ViewerStoreProvider } from './ViewerStoreProvider';
+import { useViewerStore, ViewerStoreProvider } from './ViewerStoreProvider.js';
 import {
   type ViewerPathParams,
   generateSetupRoute,
-} from '../../stores/LegendStudioRouter';
-import { LegendStudioAppHeaderMenu } from '../editor/header/LegendStudioAppHeaderMenu';
-import { ProjectSearchCommand } from '../editor/command-center/ProjectSearchCommand';
+} from '../../stores/LegendStudioRouter.js';
+import { ProjectSearchCommand } from '../editor/command-center/ProjectSearchCommand.js';
 import { flowResult } from 'mobx';
 import {
   EditorStoreProvider,
   useEditorStore,
-} from '../editor/EditorStoreProvider';
-import { AppHeader, useApplicationStore } from '@finos/legend-application';
-import type { LegendStudioConfig } from '../../application/LegendStudioConfig';
-import type { ActivityDisplay } from '../editor/ActivityBar';
-import { Explorer } from '../editor/side-bar/Explorer';
-import { ProjectOverview } from '../editor/side-bar/ProjectOverview';
-import { WorkflowManager } from '../editor/side-bar/WorkflowManager';
+} from '../editor/EditorStoreProvider.js';
+import { useApplicationStore } from '@finos/legend-application';
+import type { LegendStudioConfig } from '../../application/LegendStudioConfig.js';
+import {
+  ActivityBarMenu,
+  type ActivityDisplay,
+} from '../editor/ActivityBar.js';
+import { Explorer } from '../editor/side-bar/Explorer.js';
+import { ProjectOverview } from '../editor/side-bar/ProjectOverview.js';
+import { WorkflowManager } from '../editor/side-bar/WorkflowManager.js';
 
 const ViewerStatusBar = observer(() => {
   const params = useParams<ViewerPathParams>();
@@ -87,11 +89,11 @@ const ViewerStatusBar = observer(() => {
       ? 'current'
       : ''
   }`;
-  const toggleExpandMode = (): void =>
-    editorStore.setExpandedMode(!editorStore.isInExpandedMode);
   const handleTextModeClick = applicationStore.guardUnhandledError(() =>
     flowResult(editorStore.toggleTextMode()),
   );
+  const toggleAssistant = (): void =>
+    applicationStore.assistantService.toggleAssistant();
 
   return (
     <div
@@ -127,20 +129,6 @@ const ViewerStatusBar = observer(() => {
             'editor__status-bar__action editor__status-bar__action__toggler',
             {
               'editor__status-bar__action__toggler--active':
-                editorStore.isInExpandedMode,
-            },
-          )}
-          onClick={toggleExpandMode}
-          tabIndex={-1}
-          title={'Maximize/Minimize'}
-        >
-          <WindowMaximizeIcon />
-        </button>
-        <button
-          className={clsx(
-            'editor__status-bar__action editor__status-bar__action__toggler',
-            {
-              'editor__status-bar__action editor__status-bar__action__toggler--active':
                 editorStore.isInGrammarTextMode,
             },
           )}
@@ -149,6 +137,20 @@ const ViewerStatusBar = observer(() => {
           title={'Toggle text mode (F8)'}
         >
           <HackerIcon />
+        </button>
+        <button
+          className={clsx(
+            'editor__status-bar__action editor__status-bar__action__toggler',
+            {
+              'editor__status-bar__action__toggler--active':
+                !applicationStore.assistantService.isHidden,
+            },
+          )}
+          onClick={toggleAssistant}
+          tabIndex={-1}
+          title="Toggle assistant"
+        >
+          <AssistantIcon />
         </button>
       </div>
     </div>
@@ -193,7 +195,7 @@ const ViewerActivityBar = observer(() => {
     {
       mode: ACTIVITY_MODE.EXPLORER,
       title: 'Explorer (Ctrl + Shift + X)',
-      icon: <ListIcon />,
+      icon: <FileTrayIcon />,
     },
     !editorStore.isInConflictResolutionMode && {
       mode: ACTIVITY_MODE.PROJECT_OVERVIEW,
@@ -213,6 +215,7 @@ const ViewerActivityBar = observer(() => {
 
   return (
     <div className="activity-bar">
+      <ActivityBarMenu />
       <div className="activity-bar__items">
         {activities.map((activity) => (
           <button
@@ -302,47 +305,38 @@ export const ViewerInner = observer(() => {
 
   return (
     <div className="app__page">
-      <AppHeader>
-        <LegendStudioAppHeaderMenu />
-      </AppHeader>
-      <div className="app__content">
-        <div className="editor viewer">
-          <GlobalHotKeys keyMap={keyMap} handlers={handlers}>
-            <div className="editor__body">
-              <ViewerActivityBar />
-              <div ref={ref} className="editor__content-container">
-                <div
-                  className={clsx('editor__content', {
-                    'editor__content--expanded': editorStore.isInExpandedMode,
-                  })}
-                >
-                  <ResizablePanelGroup orientation="vertical">
-                    <ResizablePanel
-                      {...getControlledResizablePanelProps(
-                        editorStore.sideBarDisplayState.size === 0,
-                        {
-                          onStopResize: resizeSideBar,
-                        },
-                      )}
-                      direction={1}
-                      size={editorStore.sideBarDisplayState.size}
-                    >
-                      <ViewerSideBar />
-                    </ResizablePanel>
-                    <ResizablePanelSplitter />
-                    <ResizablePanel minSize={300}>
-                      {editorStore.isInFormMode && <EditPanel />}
-                      {editorStore.isInGrammarTextMode && <GrammarTextEditor />}
-                    </ResizablePanel>
-                  </ResizablePanelGroup>
-                </div>
+      <div className="editor viewer">
+        <GlobalHotKeys keyMap={keyMap} handlers={handlers}>
+          <div className="editor__body">
+            <ViewerActivityBar />
+            <div ref={ref} className="editor__content-container">
+              <div className="editor__content">
+                <ResizablePanelGroup orientation="vertical">
+                  <ResizablePanel
+                    {...getControlledResizablePanelProps(
+                      editorStore.sideBarDisplayState.size === 0,
+                      {
+                        onStopResize: resizeSideBar,
+                      },
+                    )}
+                    direction={1}
+                    size={editorStore.sideBarDisplayState.size}
+                  >
+                    <ViewerSideBar />
+                  </ResizablePanel>
+                  <ResizablePanelSplitter />
+                  <ResizablePanel minSize={300}>
+                    {editorStore.isInFormMode && <EditPanel />}
+                    {editorStore.isInGrammarTextMode && <GrammarTextEditor />}
+                  </ResizablePanel>
+                </ResizablePanelGroup>
               </div>
             </div>
-            <ViewerStatusBar />
-            {extraEditorExtensionComponents}
-            {allowOpeningElement && <ProjectSearchCommand />}
-          </GlobalHotKeys>
-        </div>
+          </div>
+          <ViewerStatusBar />
+          {extraEditorExtensionComponents}
+          {allowOpeningElement && <ProjectSearchCommand />}
+        </GlobalHotKeys>
       </div>
     </div>
   );

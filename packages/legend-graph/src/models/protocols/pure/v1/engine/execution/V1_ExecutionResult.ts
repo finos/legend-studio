@@ -21,7 +21,7 @@ import {
   usingModelSchema,
   isString,
 } from '@finos/legend-shared';
-import { BuilderType } from '../../../../../../graphManager/action/execution/ExecutionResult';
+import { BuilderType } from '../../../../../../graphManager/action/execution/ExecutionResult.js';
 
 export class V1_ResultBuilder {
   static readonly builderSerialization = new SerializationFactory(

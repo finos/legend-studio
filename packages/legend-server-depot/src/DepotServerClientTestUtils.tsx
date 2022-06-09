@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-import { DepotServerClient } from './DepotServerClient';
-import { DepotServerClientProvider } from './DepotServerClientProvider';
+import { jest } from '@jest/globals';
+import { DepotServerClient } from './DepotServerClient.js';
+import { DepotServerClientProvider } from './DepotServerClientProvider.js';
 
 export const TEST__getTestDepotServerClient = (): DepotServerClient =>
   new DepotServerClient({
@@ -26,7 +27,7 @@ export const TEST__provideMockedDepotServerClient = (customization?: {
   mock?: DepotServerClient;
 }): DepotServerClient => {
   const value = customization?.mock ?? TEST__getTestDepotServerClient();
-  const MockedDepotServerClientProvider = require('./DepotServerClientProvider'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+  const MockedDepotServerClientProvider = require('./DepotServerClientProvider.js'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
   MockedDepotServerClientProvider.useDepotServerClient = jest.fn();
   MockedDepotServerClientProvider.useDepotServerClient.mockReturnValue(value);
   return value;

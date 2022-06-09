@@ -14,6 +14,6 @@
  * limitations under the License.
  */
 
-import { V1_ExecutionNode } from './V1_ExecutionNode';
+import { V1_ExecutionNode } from './V1_ExecutionNode.js';
 
 export abstract class V1_RelationalInstantiationExecutionNode extends V1_ExecutionNode {}

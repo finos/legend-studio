@@ -15,7 +15,7 @@
  */
 
 import packageJson from '../../package.json';
-import { Text } from '../models/metamodels/pure/model/packageableElements/text/DSLText_Text';
+import { Text } from '../models/metamodels/pure/model/packageableElements/text/DSLText_Text.js';
 import type { Clazz } from '@finos/legend-shared';
 import { type PackageableElement, PureGraphPlugin } from '@finos/legend-graph';
 

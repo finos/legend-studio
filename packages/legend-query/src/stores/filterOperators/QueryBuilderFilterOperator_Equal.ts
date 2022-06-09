@@ -18,7 +18,7 @@ import {
   QueryBuilderFilterOperator,
   type QueryBuilderFilterState,
   type FilterConditionState,
-} from '../QueryBuilderFilterState';
+} from '../QueryBuilderFilterState.js';
 import {
   type ValueSpecification,
   type SimpleFunctionExpression,
@@ -32,20 +32,21 @@ import {
   Enumeration,
   PRIMITIVE_TYPE,
   isSuperType,
+  SUPPORTED_FUNCTIONS,
+  buildPrimitiveInstanceValue,
 } from '@finos/legend-graph';
 import { UnsupportedOperationError } from '@finos/legend-shared';
 import {
   buildFilterConditionState,
   buildFilterConditionExpression,
-} from './QueryBuilderFilterOperatorHelper';
-import { SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
-import { generateDefaultValueForPrimitiveType } from '../QueryBuilderValueSpecificationBuilderHelper';
+} from './QueryBuilderFilterOperatorHelper.js';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const.js';
+import { generateDefaultValueForPrimitiveType } from '../QueryBuilderValueSpecificationBuilderHelper.js';
 import {
   buildNotExpression,
   unwrapNotExpression,
-  buildPrimitiveInstanceValue,
   getNonCollectionValueSpecificationType,
-} from '../QueryBuilderOperatorsHelper';
+} from '../QueryBuilderOperatorsHelper.js';
 
 export class QueryBuilderFilterOperator_Equal extends QueryBuilderFilterOperator {
   getLabel(filterConditionState: FilterConditionState): string {
@@ -183,7 +184,7 @@ export class QueryBuilderFilterOperator_Equal extends QueryBuilderFilterOperator
         filterConditionState.value?.genericType?.value.rawType.path !==
           PRIMITIVE_TYPE.DATETIME
         ? SUPPORTED_FUNCTIONS.IS_ON_DAY
-        : SUPPORTED_FUNCTIONS.EQUAL,
+        : QUERY_BUILDER_SUPPORTED_FUNCTIONS.EQUAL,
     );
   }
 
@@ -199,7 +200,7 @@ export class QueryBuilderFilterOperator_Equal extends QueryBuilderFilterOperator
         expression.parametersValues[1]?.genericType?.value.rawType.path !==
           PRIMITIVE_TYPE.DATETIME
         ? SUPPORTED_FUNCTIONS.IS_ON_DAY
-        : SUPPORTED_FUNCTIONS.EQUAL,
+        : QUERY_BUILDER_SUPPORTED_FUNCTIONS.EQUAL,
       this,
     );
   }

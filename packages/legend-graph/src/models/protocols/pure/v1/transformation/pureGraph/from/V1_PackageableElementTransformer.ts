@@ -21,25 +21,25 @@ import {
 import type {
   PackageableElement,
   PackageableElementVisitor,
-} from '../../../../../../metamodels/pure/packageableElements/PackageableElement';
-import type { Profile } from '../../../../../../metamodels/pure/packageableElements/domain/Profile';
-import type { Enumeration } from '../../../../../../metamodels/pure/packageableElements/domain/Enumeration';
-import type { Measure } from '../../../../../../metamodels/pure/packageableElements/domain/Measure';
-import type { Class } from '../../../../../../metamodels/pure/packageableElements/domain/Class';
-import type { Association } from '../../../../../../metamodels/pure/packageableElements/domain/Association';
-import type { ConcreteFunctionDefinition } from '../../../../../../metamodels/pure/packageableElements/domain/ConcreteFunctionDefinition';
-import type { FlatData } from '../../../../../../metamodels/pure/packageableElements/store/flatData/model/FlatData';
-import type { Database } from '../../../../../../metamodels/pure/packageableElements/store/relational/model/Database';
-import type { Mapping } from '../../../../../../metamodels/pure/packageableElements/mapping/Mapping';
-import type { Service } from '../../../../../../metamodels/pure/packageableElements/service/Service';
-import type { PackageableRuntime } from '../../../../../../metamodels/pure/packageableElements/runtime/PackageableRuntime';
-import type { PackageableConnection } from '../../../../../../metamodels/pure/packageableElements/connection/PackageableConnection';
-import type { FileGenerationSpecification } from '../../../../../../metamodels/pure/packageableElements/fileGeneration/FileGenerationSpecification';
-import type { GenerationSpecification } from '../../../../../../metamodels/pure/packageableElements/generationSpecification/GenerationSpecification';
-import type { Package } from '../../../../../../metamodels/pure/packageableElements/domain/Package';
-import type { PrimitiveType } from '../../../../../../metamodels/pure/packageableElements/domain/PrimitiveType';
-import type { SectionIndex } from '../../../../../../metamodels/pure/packageableElements/section/SectionIndex';
-import type { V1_PackageableElement } from '../../../model/packageableElements/V1_PackageableElement';
+} from '../../../../../../metamodels/pure/packageableElements/PackageableElement.js';
+import type { Profile } from '../../../../../../metamodels/pure/packageableElements/domain/Profile.js';
+import type { Enumeration } from '../../../../../../metamodels/pure/packageableElements/domain/Enumeration.js';
+import type { Measure } from '../../../../../../metamodels/pure/packageableElements/domain/Measure.js';
+import type { Class } from '../../../../../../metamodels/pure/packageableElements/domain/Class.js';
+import type { Association } from '../../../../../../metamodels/pure/packageableElements/domain/Association.js';
+import type { ConcreteFunctionDefinition } from '../../../../../../metamodels/pure/packageableElements/domain/ConcreteFunctionDefinition.js';
+import type { FlatData } from '../../../../../../metamodels/pure/packageableElements/store/flatData/model/FlatData.js';
+import type { Database } from '../../../../../../metamodels/pure/packageableElements/store/relational/model/Database.js';
+import type { Mapping } from '../../../../../../metamodels/pure/packageableElements/mapping/Mapping.js';
+import type { Service } from '../../../../../../metamodels/pure/packageableElements/service/Service.js';
+import type { PackageableRuntime } from '../../../../../../metamodels/pure/packageableElements/runtime/PackageableRuntime.js';
+import type { PackageableConnection } from '../../../../../../metamodels/pure/packageableElements/connection/PackageableConnection.js';
+import type { FileGenerationSpecification } from '../../../../../../metamodels/pure/packageableElements/fileGeneration/FileGenerationSpecification.js';
+import type { GenerationSpecification } from '../../../../../../metamodels/pure/packageableElements/generationSpecification/GenerationSpecification.js';
+import type { Package } from '../../../../../../metamodels/pure/packageableElements/domain/Package.js';
+import type { PrimitiveType } from '../../../../../../metamodels/pure/packageableElements/domain/PrimitiveType.js';
+import type { SectionIndex } from '../../../../../../metamodels/pure/packageableElements/section/SectionIndex.js';
+import type { V1_PackageableElement } from '../../../model/packageableElements/V1_PackageableElement.js';
 import {
   V1_transformAssociation,
   V1_transformClass,
@@ -47,25 +47,25 @@ import {
   V1_transformFunction,
   V1_transformMeasure,
   V1_transformProfile,
-} from './V1_DomainTransformer';
-import { V1_transformSectionIndex } from './V1_SectionIndexTransformer';
+} from './V1_DomainTransformer.js';
+import { V1_transformSectionIndex } from './V1_SectionIndexTransformer.js';
 import {
   V1_transformFileGeneration,
   V1_transformGenerationSpecification,
-} from './V1_GenerationSpecificationTransformer';
-import { V1_transformFlatData } from './V1_FlatDataTransformer';
-import { V1_transformDatabase } from './V1_DatabaseTransformer';
-import { V1_transformMapping } from './V1_MappingTransformer';
-import { V1_transformService } from './V1_ServiceTransformer';
-import { V1_transformPackageableRuntime } from './V1_RuntimeTransformer';
-import { V1_transformPackageableConnection } from './V1_ConnectionTransformer';
+} from './V1_GenerationSpecificationTransformer.js';
+import { V1_transformFlatData } from './V1_FlatDataTransformer.js';
+import { V1_transformDatabase } from './V1_DatabaseTransformer.js';
+import { V1_transformMapping } from './V1_MappingTransformer.js';
+import { V1_transformService } from './V1_ServiceTransformer.js';
+import { V1_transformPackageableRuntime } from './V1_RuntimeTransformer.js';
+import { V1_transformPackageableConnection } from './V1_ConnectionTransformer.js';
 import type {
   V1_ElementTransformer,
   PureProtocolProcessorPlugin,
-} from '../../../../PureProtocolProcessorPlugin';
-import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext';
-import type { DataElement } from '../../../../../../metamodels/pure/packageableElements/data/DataElement';
-import { V1_transformDataElement } from './V1_DataElementTransformer';
+} from '../../../../PureProtocolProcessorPlugin.js';
+import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext.js';
+import type { DataElement } from '../../../../../../metamodels/pure/packageableElements/data/DataElement.js';
+import { V1_transformDataElement } from './V1_DataElementTransformer.js';
 
 class V1_PackageableElementTransformer
   implements PackageableElementVisitor<V1_PackageableElement>

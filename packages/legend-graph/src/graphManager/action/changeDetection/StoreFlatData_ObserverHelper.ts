@@ -15,9 +15,9 @@
  */
 
 import { computed, makeObservable, observable, override } from 'mobx';
-import type { FlatDataConnection } from '../../../models/metamodels/pure/packageableElements/store/flatData/connection/FlatDataConnection';
-import type { FlatDataInstanceSetImplementation } from '../../../models/metamodels/pure/packageableElements/store/flatData/mapping/FlatDataInstanceSetImplementation';
-import type { FlatData } from '../../../models/metamodels/pure/packageableElements/store/flatData/model/FlatData';
+import type { FlatDataConnection } from '../../../models/metamodels/pure/packageableElements/store/flatData/connection/FlatDataConnection.js';
+import type { FlatDataInstanceSetImplementation } from '../../../models/metamodels/pure/packageableElements/store/flatData/mapping/FlatDataInstanceSetImplementation.js';
+import type { FlatData } from '../../../models/metamodels/pure/packageableElements/store/flatData/model/FlatData.js';
 import {
   type FlatDataRecordField,
   type FlatDataDataType,
@@ -26,27 +26,27 @@ import {
   FlatDataDate,
   FlatDataNumber,
   FlatDataString,
-} from '../../../models/metamodels/pure/packageableElements/store/flatData/model/FlatDataDataType';
-import type { FlatDataProperty } from '../../../models/metamodels/pure/packageableElements/store/flatData/model/FlatDataProperty';
-import type { FlatDataSection } from '../../../models/metamodels/pure/packageableElements/store/flatData/model/FlatDataSection';
-import type { RootFlatDataRecordTypeReference } from '../../../models/metamodels/pure/packageableElements/store/flatData/model/RootFlatDataRecordTypeReference';
+} from '../../../models/metamodels/pure/packageableElements/store/flatData/model/FlatDataDataType.js';
+import type { FlatDataProperty } from '../../../models/metamodels/pure/packageableElements/store/flatData/model/FlatDataProperty.js';
+import type { FlatDataSection } from '../../../models/metamodels/pure/packageableElements/store/flatData/model/FlatDataSection.js';
+import type { RootFlatDataRecordTypeReference } from '../../../models/metamodels/pure/packageableElements/store/flatData/model/RootFlatDataRecordTypeReference.js';
 import type {
   EmbeddedFlatDataPropertyMapping,
   FlatDataInputData,
   FlatDataPropertyMapping,
   FlatDataSectionReference,
-} from '../../../StoreFlatData_Exports';
+} from '../../../StoreFlatData_Exports.js';
 import {
   observe_Abstract_PackageableElement,
   observe_PackageableElementReference,
   skipObserved,
   skipObservedWithContext,
-} from './CoreObserverHelper';
+} from './CoreObserverHelper.js';
 import {
   observe_Abstract_InstanceSetImplementation,
   observe_Abstract_PropertyMapping,
-} from './DSLMapping_ObserverHelper';
-import { observe_RawLambda } from './RawValueSpecificationObserver';
+} from './DSLMapping_ObserverHelper.js';
+import { observe_RawLambda } from './RawValueSpecificationObserver.js';
 
 // ------------------------------------- Store -------------------------------------
 
@@ -250,7 +250,6 @@ export const observe_FlatDataInputData = skipObserved(
   (metamodel: FlatDataInputData): FlatDataInputData => {
     makeObservable(metamodel, {
       data: observable,
-      validationResult: computed,
       hashCode: computed,
     });
 

@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import type { TaggedValue } from './TaggedValue';
-import type { StereotypeReference } from './StereotypeReference';
+import type { TaggedValue } from './TaggedValue.js';
+import type { StereotypeReference } from './StereotypeReference.js';
 
 export interface AnnotatedElement {
   stereotypes: StereotypeReference[];

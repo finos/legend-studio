@@ -15,12 +15,12 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst.js';
 import {
   type V1_PackageableElementVisitor,
   V1_PackageableElement,
-} from '../../../model/packageableElements/V1_PackageableElement';
-import type { V1_EngineRuntime } from '../../../model/packageableElements/runtime/V1_Runtime';
+} from '../../../model/packageableElements/V1_PackageableElement.js';
+import type { V1_EngineRuntime } from '../../../model/packageableElements/runtime/V1_Runtime.js';
 
 export class V1_PackageableRuntime
   extends V1_PackageableElement

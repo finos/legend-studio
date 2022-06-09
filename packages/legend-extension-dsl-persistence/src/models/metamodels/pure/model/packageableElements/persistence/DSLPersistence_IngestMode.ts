@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-import type { Auditing } from './DSLPersistence_Auditing';
-import type { MergeStrategy } from './DSLPersistence_MergeStrategy';
+import type { Auditing } from './DSLPersistence_Auditing.js';
+import type { MergeStrategy } from './DSLPersistence_MergeStrategy.js';
 import type {
   TransactionMilestoning,
   ValidityMilestoning,
-} from './DSLPersistence_Milestoning';
-import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../DSLPersistence_ModelUtils';
+} from './DSLPersistence_Milestoning.js';
+import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../DSLPersistence_ModelUtils.js';
 import { type Hashable, hashArray } from '@finos/legend-shared';
 
 export abstract class IngestMode implements Hashable {

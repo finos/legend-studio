@@ -15,8 +15,8 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
-import type { V1_TagPtr } from '../../../model/packageableElements/domain/V1_TagPtr';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst.js';
+import type { V1_TagPtr } from '../../../model/packageableElements/domain/V1_TagPtr.js';
 
 export class V1_TaggedValue implements Hashable {
   tag!: V1_TagPtr;

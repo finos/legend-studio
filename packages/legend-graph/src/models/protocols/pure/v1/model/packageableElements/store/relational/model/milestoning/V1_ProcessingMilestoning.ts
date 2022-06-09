@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import { V1_Milestoning } from './V1_Milestoning';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../../../../MetaModelConst';
+import { V1_Milestoning } from './V1_Milestoning.js';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../../../../MetaModelConst.js';
 import { hashArray } from '@finos/legend-shared';
 
 export class V1_ProcessingMilestoning extends V1_Milestoning {

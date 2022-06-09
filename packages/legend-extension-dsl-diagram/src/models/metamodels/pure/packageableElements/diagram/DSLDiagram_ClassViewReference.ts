@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import type { Diagram } from './DSLDiagram_Diagram';
-import type { ClassView } from './DSLDiagram_ClassView';
+import type { Diagram } from './DSLDiagram_Diagram.js';
+import type { ClassView } from './DSLDiagram_ClassView.js';
 import {
   PackageableElementExplicitReference,
   ReferenceWithOwner,

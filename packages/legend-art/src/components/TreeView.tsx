@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import { ChevronDownIcon, ChevronRightIcon } from './Icon';
+import { ChevronDownIcon, ChevronRightIcon } from './CJS__Icon.cjs';
 import { isNonNullable } from '@finos/legend-shared';
-import clsx from 'clsx';
+import { clsx } from '../utils/CJS__clsx.cjs';
 
 const DEFAULT_STEP_PADDING_IN_REM = 1;
 type InnerProps = Record<PropertyKey, unknown>;

@@ -15,7 +15,7 @@
  */
 
 import packageJson from '../package.json';
-import SpanBuilder from 'zipkin-javascript-opentracing';
+import { SpanBuilder } from './CJS__Zipkin.cjs';
 import { BatchRecorder, jsonEncoder } from 'zipkin';
 import { HttpLogger } from 'zipkin-transport-http';
 import type { Span as ZipkinSpan } from 'opentracing';
@@ -26,6 +26,9 @@ import {
   guaranteeNonNullable,
   isNonNullable,
   TracerServicePlugin,
+  HttpHeader,
+  ContentType,
+  CHARSET,
 } from '@finos/legend-shared';
 
 interface ZipkinTracerPluginConfigData {
@@ -68,8 +71,8 @@ export class ZipkinTracerPlugin extends TracerServicePlugin<ZipkinSpan> {
               credentials: 'include', // allow sending credentials to other domain
               redirect: 'manual', // avoid following authentication redirects
               headers: {
-                'Content-Type': 'application/json; charset=utf-8',
-                Accept: 'application/json',
+                [HttpHeader.CONTENT_TYPE]: `${ContentType.APPLICATION_JSON};${CHARSET}`,
+                [HttpHeader.ACCPEPT]: ContentType.APPLICATION_JSON,
               },
             }),
           // eslint-disable-next-line @typescript-eslint/no-explicit-any

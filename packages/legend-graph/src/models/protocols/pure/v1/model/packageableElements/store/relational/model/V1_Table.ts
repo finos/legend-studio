@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import { CORE_HASH_STRUCTURE } from '../../../../../../../../../MetaModelConst';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../../../MetaModelConst.js';
 import { type Hashable, hashArray } from '@finos/legend-shared';
-import type { V1_Column } from './V1_Column';
-import type { V1_Milestoning } from './milestoning/V1_Milestoning';
+import type { V1_Column } from './V1_Column.js';
+import type { V1_Milestoning } from './milestoning/V1_Milestoning.js';
 
 export class V1_Table implements Hashable {
   name!: string;

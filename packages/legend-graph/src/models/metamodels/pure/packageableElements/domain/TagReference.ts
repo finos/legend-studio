@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst';
+import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst.js';
 import { hashString } from '@finos/legend-shared';
 import {
   PackageableElementExplicitReference,
   type PackageableElementReference,
   type PackageableElementImplicitReference,
-} from '../PackageableElementReference';
-import type { Profile } from './Profile';
-import type { Tag } from './Tag';
-import { ReferenceWithOwner } from '../../Reference';
+} from '../PackageableElementReference.js';
+import type { Profile } from './Profile.js';
+import type { Tag } from './Tag.js';
+import { ReferenceWithOwner } from '../../Reference.js';
 
 export abstract class TagReference extends ReferenceWithOwner {
   override readonly ownerReference: PackageableElementReference<Profile>;

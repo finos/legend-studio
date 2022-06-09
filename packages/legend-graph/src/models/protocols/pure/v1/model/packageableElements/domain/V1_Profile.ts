@@ -15,11 +15,11 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst.js';
 import {
   type V1_PackageableElementVisitor,
   V1_PackageableElement,
-} from '../../../model/packageableElements/V1_PackageableElement';
+} from '../../../model/packageableElements/V1_PackageableElement.js';
 
 export class V1_Profile extends V1_PackageableElement implements Hashable {
   stereotypes: string[] = [];

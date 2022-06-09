@@ -15,9 +15,9 @@
  */
 
 import { type Hashable, hashArray } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../MetaModelConst';
-import type { PackageableElementReference } from '../../PackageableElementReference';
-import type { Binding } from './DSLExternalFormat_Binding';
+import { CORE_HASH_STRUCTURE } from '../../../../../../MetaModelConst.js';
+import type { PackageableElementReference } from '../../PackageableElementReference.js';
+import type { Binding } from './DSLExternalFormat_Binding.js';
 
 export class BindingTransformer implements Hashable {
   binding!: PackageableElementReference<Binding>;

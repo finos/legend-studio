@@ -15,24 +15,24 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { FlatDataConnectionEditor } from './FlatDataConnectionEditor';
-import { RelationalDatabaseConnectionEditor } from './RelationalDatabaseConnectionEditor';
+import { FlatDataConnectionEditor } from './FlatDataConnectionEditor.js';
+import { RelationalDatabaseConnectionEditor } from './RelationalDatabaseConnectionEditor.js';
 import {
   type ConnectionEditorState,
   RelationalDatabaseConnectionValueState,
   JsonModelConnectionValueState,
   FlatDataConnectionValueState,
   PackageableConnectionEditorState,
-} from '../../../../stores/editor-state/element-editor-state/connection/ConnectionEditorState';
-import { UnsupportedEditorPanel } from '../../../editor/edit-panel/UnsupportedElementEditor';
+} from '../../../../stores/editor-state/element-editor-state/connection/ConnectionEditorState.js';
+import { UnsupportedEditorPanel } from '../../../editor/edit-panel/UnsupportedElementEditor.js';
 import type { Class } from '@finos/legend-graph';
 import { CustomSelectorInput, LockIcon } from '@finos/legend-art';
-import { useEditorStore } from '../../EditorStoreProvider';
-import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../../stores/DSLMapping_LegendStudioPlugin_Extension';
+import { useEditorStore } from '../../EditorStoreProvider.js';
+import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../../stores/DSLMapping_LegendStudioPlugin_Extension.js';
 import {
   modelConnection_setClass,
   modelConnection_setUrl,
-} from '../../../../stores/graphModifier/DSLMapping_GraphModifierHelper';
+} from '../../../../stores/graphModifier/DSLMapping_GraphModifierHelper.js';
 
 const ModelConnectionEditor = observer(
   (props: {

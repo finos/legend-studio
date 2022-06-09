@@ -24,7 +24,7 @@ import {
   MenuContent,
   MenuContentItem,
   CaretDownIcon,
-  GripVerticalIcon,
+  VerticalDragHandleIcon,
   ContextMenu,
   InputWithInlineValidation,
   SigmaIcon,
@@ -34,7 +34,7 @@ import {
   type QueryBuilderExplorerTreePropertyNodeData,
   buildPropertyExpressionFromExplorerTreeNodeData,
   QUERY_BUILDER_EXPLORER_TREE_DND_TYPE,
-} from '../stores/QueryBuilderExplorerState';
+} from '../stores/QueryBuilderExplorerState.js';
 import {
   type DropTargetMonitor,
   type XYCoord,
@@ -49,19 +49,19 @@ import {
   QueryBuilderDerivationProjectionColumnState,
   QueryBuilderSimpleProjectionColumnState,
   QUERY_BUILDER_PROJECTION_DND_TYPE,
-} from '../stores/QueryBuilderProjectionState';
-import { QueryBuilderPropertyExpressionBadge } from './QueryBuilderPropertyExpressionEditor';
-import type { QueryBuilderState } from '../stores/QueryBuilderState';
-import { QueryResultModifierModal } from './QueryBuilderResultModifierPanel';
-import { QUERY_BUILDER_TEST_ID } from './QueryBuilder_TestID';
-import type { QueryBuilderAggregateOperator } from '../stores/QueryBuilderAggregationState';
+} from '../stores/QueryBuilderProjectionState.js';
+import { QueryBuilderPropertyExpressionBadge } from './QueryBuilderPropertyExpressionEditor.js';
+import type { QueryBuilderState } from '../stores/QueryBuilderState.js';
+import { QueryResultModifierModal } from './QueryBuilderResultModifierPanel.js';
+import { QUERY_BUILDER_TEST_ID } from './QueryBuilder_TestID.js';
+import type { QueryBuilderAggregateOperator } from '../stores/QueryBuilderAggregationState.js';
 import { flowResult } from 'mobx';
-import { QueryBuilderLambdaEditor } from './QueryBuilderLambdaEditor';
+import { QueryBuilderLambdaEditor } from './QueryBuilderLambdaEditor.js';
 import { useApplicationStore } from '@finos/legend-application';
 import {
   type QueryBuilderParameterDragSource,
   QUERY_BUILDER_PARAMETER_TREE_DND_TYPE,
-} from '../stores/QueryParametersState';
+} from '../stores/QueryParametersState.js';
 import {
   type ConcreteFunctionDefinition,
   generateFunctionCallString,
@@ -71,8 +71,8 @@ import {
 import {
   type QueryBuilderFunctionsExplorerDragSource,
   QUERY_BUILDER_FUNCTIONS_EXPLORER_TREE_DND_TYPE,
-} from '../stores/QueryFunctionsExplorerState';
-import { DEFAULT_LAMBDA_VARIABLE_NAME } from '../QueryBuilder_Const';
+} from '../stores/QueryFunctionsExplorerState.js';
+import { DEFAULT_LAMBDA_VARIABLE_NAME } from '../QueryBuilder_Const.js';
 
 const ProjectionColumnDragLayer: React.FC = () => {
   const { itemType, item, isDragging, currentPosition } = useDragLayer(
@@ -409,7 +409,7 @@ const QueryBuilderProjectionColumnEditor = observer(
           >
             <div className="query-builder__projection__column__dnd__indicator">
               <div className="query-builder__projection__column__dnd__indicator__handler">
-                <GripVerticalIcon />
+                <VerticalDragHandleIcon />
               </div>
             </div>
             <div className="query-builder__projection__column__name">

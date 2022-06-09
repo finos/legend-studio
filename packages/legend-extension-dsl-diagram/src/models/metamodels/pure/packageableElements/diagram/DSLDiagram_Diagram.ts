@@ -15,15 +15,15 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import type { ClassView } from './DSLDiagram_ClassView';
-import type { PropertyView } from './DSLDiagram_PropertyView';
-import type { GeneralizationView } from './DSLDiagram_GeneralizationView';
-import type { AssociationView } from './DSLDiagram_AssociationView';
+import type { ClassView } from './DSLDiagram_ClassView.js';
+import type { PropertyView } from './DSLDiagram_PropertyView.js';
+import type { GeneralizationView } from './DSLDiagram_GeneralizationView.js';
+import type { AssociationView } from './DSLDiagram_AssociationView.js';
 import {
   type PackageableElementVisitor,
   PackageableElement,
 } from '@finos/legend-graph';
-import { DIAGRAM_HASH_STRUCTURE } from '../../../../DSLDiagram_ModelUtils';
+import { DIAGRAM_HASH_STRUCTURE } from '../../../../DSLDiagram_ModelUtils.js';
 
 export class Diagram extends PackageableElement implements Hashable {
   classViews: ClassView[] = [];

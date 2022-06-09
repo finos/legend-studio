@@ -19,15 +19,16 @@ import {
   type ValueSpecification,
   AbstractPropertyExpression,
   PRIMITIVE_TYPE,
+  SUPPORTED_FUNCTIONS,
 } from '@finos/legend-graph';
-import { SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const';
-import { buildPostFilterConditionState } from '../QueryBuilderPostFilterProcessor';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const.js';
+import { buildPostFilterConditionState } from '../QueryBuilderPostFilterProcessor.js';
 import type {
   PostFilterConditionState,
   QueryBuilderPostFilterState,
-} from '../QueryBuilderPostFilterState';
-import { buildPostFilterConditionExpression } from './QueryBuilderPostFilterOperatorHelper';
-import { QueryBuilderPostFilterOperator_GreaterThan } from './QueryBuilderPostFilterOperator_GreaterThan';
+} from '../QueryBuilderPostFilterState.js';
+import { buildPostFilterConditionExpression } from './QueryBuilderPostFilterOperatorHelper.js';
+import { QueryBuilderPostFilterOperator_GreaterThan } from './QueryBuilderPostFilterOperator_GreaterThan.js';
 
 export class QueryBuilderPostFilterOperator_GreaterThanEqual extends QueryBuilderPostFilterOperator_GreaterThan {
   override getLabel(): string {
@@ -45,7 +46,7 @@ export class QueryBuilderPostFilterOperator_GreaterThanEqual extends QueryBuilde
         postFilterConditionState.value?.genericType?.value.rawType.path !==
           PRIMITIVE_TYPE.DATETIME
         ? SUPPORTED_FUNCTIONS.IS_AFTER_DAY
-        : SUPPORTED_FUNCTIONS.GREATER_THAN,
+        : QUERY_BUILDER_SUPPORTED_FUNCTIONS.GREATER_THAN,
     );
   }
 
@@ -62,7 +63,7 @@ export class QueryBuilderPostFilterOperator_GreaterThanEqual extends QueryBuilde
         expression.parametersValues[1]?.genericType?.value.rawType.path !==
           PRIMITIVE_TYPE.DATETIME
         ? SUPPORTED_FUNCTIONS.IS_AFTER_DAY
-        : SUPPORTED_FUNCTIONS.GREATER_THAN,
+        : QUERY_BUILDER_SUPPORTED_FUNCTIONS.GREATER_THAN,
       this,
     );
   }

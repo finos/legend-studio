@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import type { Multiplicity } from '../../packageableElements/domain/Multiplicity';
-import type { ResultType } from '../result/ResultType';
+import type { Multiplicity } from '../../packageableElements/domain/Multiplicity.js';
+import type { ResultType } from '../result/ResultType.js';
 
 export class ExecutionNode {
   // fromCluster : ClusteredValueSpecification[0..1];

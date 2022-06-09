@@ -16,8 +16,8 @@
 
 import { createModelSchema, optional, primitive } from 'serializr';
 import { SerializationFactory, usingModelSchema } from '@finos/legend-shared';
-import type { V1_SourceInformation } from '../model/V1_SourceInformation';
-import { V1_sourceInformationSerialization } from '../transformation/pureProtocol/serializationHelpers/V1_CoreSerializationHelper';
+import type { V1_SourceInformation } from '../model/V1_SourceInformation.js';
+import { V1_sourceInformationSerialization } from '../transformation/pureProtocol/serializationHelpers/V1_CoreSerializationHelper.js';
 
 export enum V1_EngineErrorType {
   COMPILATION = 'COMPILATION',

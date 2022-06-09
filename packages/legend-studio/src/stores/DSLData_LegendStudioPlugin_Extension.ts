@@ -18,12 +18,12 @@ import type { EmbeddedData } from '@finos/legend-graph';
 import type {
   EmbeddedDataState,
   EmbeddedDataTypeOption,
-} from './editor-state/element-editor-state/data/DataEditorState';
-import type { EditorStore } from './EditorStore';
+} from './editor-state/element-editor-state/data/DataEditorState.js';
+import type { EditorStore } from './EditorStore.js';
 import type {
   DSL_LegendStudioPlugin_Extension,
   ElementEmbeddedContentSnippetSuggestion,
-} from './LegendStudioPlugin';
+} from './LegendStudioPlugin.js';
 
 export type EmbeddedDataEditorStateBuilder = (
   editorStore: EditorStore,

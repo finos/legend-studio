@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { getDiagram } from '../../../../../../graphManager/DSLDiagram_GraphManagerHelper';
+import { getDiagram } from '../../../../../../graphManager/DSLDiagram_GraphManagerHelper.js';
 import type {
   PackageableElementImplicitReference,
   V1_GraphBuilderContext,
@@ -24,21 +24,21 @@ import {
   assertNonNullable,
   guaranteeNonNullable,
 } from '@finos/legend-shared';
-import type { Diagram } from '../../../../../metamodels/pure/packageableElements/diagram/DSLDiagram_Diagram';
-import { ClassView } from '../../../../../metamodels/pure/packageableElements/diagram/DSLDiagram_ClassView';
-import { Point } from '../../../../../metamodels/pure/packageableElements/diagram/geometry/DSLDiagram_Point';
-import { Rectangle } from '../../../../../metamodels/pure/packageableElements/diagram/geometry/DSLDiagram_Rectangle';
-import { PropertyView } from '../../../../../metamodels/pure/packageableElements/diagram/DSLDiagram_PropertyView';
-import { GeneralizationView } from '../../../../../metamodels/pure/packageableElements/diagram/DSLDiagram_GeneralizationView';
-import type { V1_ClassView } from '../../model/packageableElements/diagram/V1_DSLDiagram_ClassView';
-import type { V1_Point } from '../../model/packageableElements/diagram/geometry/V1_DSLDiagram_Point';
-import type { V1_Rectangle } from '../../model/packageableElements/diagram/geometry/V1_DSLDiagram_Rectangle';
-import type { V1_PropertyView } from '../../model/packageableElements/diagram/V1_DSLDiagram_PropertyView';
-import type { V1_GeneralizationView } from '../../model/packageableElements/diagram/V1_DSLDiagram_GeneralizationView';
+import type { Diagram } from '../../../../../metamodels/pure/packageableElements/diagram/DSLDiagram_Diagram.js';
+import { ClassView } from '../../../../../metamodels/pure/packageableElements/diagram/DSLDiagram_ClassView.js';
+import { Point } from '../../../../../metamodels/pure/packageableElements/diagram/geometry/DSLDiagram_Point.js';
+import { Rectangle } from '../../../../../metamodels/pure/packageableElements/diagram/geometry/DSLDiagram_Rectangle.js';
+import { PropertyView } from '../../../../../metamodels/pure/packageableElements/diagram/DSLDiagram_PropertyView.js';
+import { GeneralizationView } from '../../../../../metamodels/pure/packageableElements/diagram/DSLDiagram_GeneralizationView.js';
+import type { V1_ClassView } from '../../model/packageableElements/diagram/V1_DSLDiagram_ClassView.js';
+import type { V1_Point } from '../../model/packageableElements/diagram/geometry/V1_DSLDiagram_Point.js';
+import type { V1_Rectangle } from '../../model/packageableElements/diagram/geometry/V1_DSLDiagram_Rectangle.js';
+import type { V1_PropertyView } from '../../model/packageableElements/diagram/V1_DSLDiagram_PropertyView.js';
+import type { V1_GeneralizationView } from '../../model/packageableElements/diagram/V1_DSLDiagram_GeneralizationView.js';
 import {
   getClassView,
   _relationshipView_simplifyPath,
-} from '../../../../../../helpers/DiagramHelper';
+} from '../../../../../../helpers/DSLDiagram_Helper.js';
 
 const buildPoint = (point: V1_Point): Point => {
   const x = guaranteeNonNullable(point.x, `Point 'x' coordinate is missing`);

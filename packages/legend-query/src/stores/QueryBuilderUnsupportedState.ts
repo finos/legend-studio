@@ -15,7 +15,7 @@
  */
 
 import { makeAutoObservable, action } from 'mobx';
-import type { QueryBuilderState } from './QueryBuilderState';
+import type { QueryBuilderState } from './QueryBuilderState.js';
 import type { RawLambda } from '@finos/legend-graph';
 
 export class QueryBuilderUnsupportedState {
