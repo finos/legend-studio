@@ -16,7 +16,7 @@ aliases:
     restore_cache:
       name: Restore node_modules cache
       keys:
-        - v2-node-{{ arch }}-{{ .Branch }}-{{ checksum "yarn.lock" }}-node-modules
+        - node-{{ arch }}-{{ .Branch }}-{{ checksum "yarn.lock" }}-node-modules
 
   - &attach_workspace
     at: build
@@ -30,10 +30,13 @@ jobs:
       - run:
           name: Nodejs Version
           command: node --version
+      - run:
+          name: Setup Yarn cache folder
+          command: yarn config set enableGlobalCache false
       - *restore_yarn_cache
       - run:
           name: Install Dependencies
-          command: yarn install
+          command: yarn install --immutable
       - save_cache:
           # Store the yarn cache and node_modules globally for all lock files with this same
           # checksum. This will speed up the setup job for all PRs where the
@@ -52,7 +55,7 @@ jobs:
           # all jobs run on this branch with the same lockfile.
           name: Save node_modules cache
           # This cache key is per branch, a yarn install in setup is required.
-          key: v2-node-{{ arch }}-{{ .Branch }}-{{ checksum "yarn.lock" }}-node-modules
+          key: node-{{ arch }}-{{ .Branch }}-{{ checksum "yarn.lock" }}-node-modules
           paths:
             - node_modules
 
