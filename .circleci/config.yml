@@ -55,3 +55,14 @@ jobs:
       - run:
           name: Run lint
           command: yarn lint:ci
+
+workflows:
+  version: 2
+
+  # New workflow that will replace "stable" and "experimental"
+  build_and_test:
+    jobs:
+      - setup
+      - yarn_lint:
+          requires:
+            - setup
