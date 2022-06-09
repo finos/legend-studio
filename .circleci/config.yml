@@ -13,10 +13,10 @@ aliases:
       key: yarn-packages-{{ checksum "yarn.lock" }}
 
   - &restore_node_modules
-  restore_cache:
-    name: Restore node_modules cache
-    keys:
-      - v2-node-{{ arch }}-{{ .Branch }}-{{ checksum "yarn.lock" }}-node-modules
+    restore_cache:
+      name: Restore node_modules cache
+      keys:
+        - v2-node-{{ arch }}-{{ .Branch }}-{{ checksum "yarn.lock" }}-node-modules
 
   - &attach_workspace
     at: build
