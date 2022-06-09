@@ -24,15 +24,15 @@ import type { Stereotype } from './Stereotype.js';
 import type { Tag } from './Tag.js';
 
 export class Profile extends PackageableElement implements Hashable {
-  stereotypes: Stereotype[] = [];
-  tags: Tag[] = [];
+  p_stereotypes: Stereotype[] = [];
+  p_tags: Tag[] = [];
 
   protected override get _elementHashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.PROFILE,
       this.path,
-      hashArray(this.stereotypes.map((st) => st.value)),
-      hashArray(this.tags.map((st) => st.value)),
+      hashArray(this.p_stereotypes.map((st) => st.value)),
+      hashArray(this.p_tags.map((st) => st.value)),
     ]);
   }
 

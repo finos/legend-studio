@@ -21,9 +21,6 @@ import {
   PackageableElement,
 } from '../PackageableElement.js';
 import type { Property } from './Property.js';
-import type { AnnotatedElement } from './AnnotatedElement.js';
-import type { TaggedValue } from './TaggedValue.js';
-import type { StereotypeReference } from './StereotypeReference.js';
 import type { DerivedProperty } from './DerivedProperty.js';
 import type { AbstractProperty } from './AbstractProperty.js';
 import {
@@ -48,10 +45,7 @@ import {
  * root package to verify this in the UI and make this a validation error in a way.
  * See https://github.com/finos/legend-studio/issues/282
  */
-export class Association
-  extends PackageableElement
-  implements AnnotatedElement, Hashable
-{
+export class Association extends PackageableElement implements Hashable {
   /**
    * To store the abstract properties generated while processing the milestoning properties. The properties
    * generated are `allVersions`, `allVersionsInRange` and derived property with date parameter.
@@ -61,8 +55,6 @@ export class Association
   _generatedMilestonedProperties: AbstractProperty[] = [];
 
   properties!: [Property, Property];
-  stereotypes: StereotypeReference[] = [];
-  taggedValues: TaggedValue[] = [];
   derivedProperties: DerivedProperty[] = [];
 
   constructor(name: string) {

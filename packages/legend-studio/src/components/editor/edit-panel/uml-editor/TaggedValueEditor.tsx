@@ -58,7 +58,7 @@ export const TaggedValueEditor = observer(
     > = (event) => taggedValue_setValue(taggedValue, event.target.value);
     // Profile
     const profileOptions = editorStore.profileOptions.filter(
-      (p) => p.value.tags.length,
+      (p) => p.value.p_tags.length,
     );
     const profileFilterOption = createFilter({
       ignoreCase: true,
@@ -73,15 +73,15 @@ export const TaggedValueEditor = observer(
       label: taggedValue.tag.value._OWNER.name,
     });
     const changeProfile = (val: PackageableElementOption<Profile>): void => {
-      if (val.value.tags.length) {
+      if (val.value.p_tags.length) {
         setSelectedProfile(val);
-        taggedValue_setTag(taggedValue, val.value.tags[0] as Tag);
+        taggedValue_setTag(taggedValue, val.value.p_tags[0] as Tag);
       }
     };
     const visitProfile = (): void =>
       editorStore.openElement(selectedProfile.value);
     // Tag
-    const tagOptions = selectedProfile.value.tags.map((tag) => ({
+    const tagOptions = selectedProfile.value.p_tags.map((tag) => ({
       label: tag.value,
       value: tag,
     }));

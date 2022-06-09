@@ -256,13 +256,13 @@ export const getMilestoneTemporalStereotype = (
 
 export const getTag = (profile: Profile, value: string): Tag =>
   guaranteeNonNullable(
-    profile.tags.find((tag) => tag.value === value),
+    profile.p_tags.find((tag) => tag.value === value),
     `Can't find tag '${value}' in profile '${profile.path}'`,
   );
 
 export const getStereotype = (profile: Profile, value: string): Stereotype =>
   guaranteeNonNullable(
-    profile.stereotypes.find((stereotype) => stereotype.value === value),
+    profile.p_stereotypes.find((stereotype) => stereotype.value === value),
     `Can't find stereotype '${value}' in profile '${profile.path}'`,
   );
 

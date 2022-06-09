@@ -17,6 +17,7 @@
 import { uuid } from '@finos/legend-shared';
 import type { Profile } from './Profile.js';
 
+// NOTE: in Pure metamodel, this extends `Annotation`
 export class Tag {
   readonly _UUID = uuid();
   readonly _OWNER: Profile;

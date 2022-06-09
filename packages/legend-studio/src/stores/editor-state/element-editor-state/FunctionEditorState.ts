@@ -76,7 +76,7 @@ export class FunctionBodyEditorState extends LambdaEditorState {
             this.lambdaId,
           )) as RawLambda;
         this.setParserError(undefined);
-        this.functionElement.body = lambda.body as object[];
+        this.functionElement.expressionSequence = lambda.body as object[];
       } catch (error) {
         assertErrorThrown(error);
         if (error instanceof ParserError) {
@@ -89,7 +89,7 @@ export class FunctionBodyEditorState extends LambdaEditorState {
       }
     } else {
       this.clearErrors();
-      this.functionElement.body = [];
+      this.functionElement.expressionSequence = [];
     }
   }
 
@@ -103,7 +103,7 @@ export class FunctionBodyEditorState extends LambdaEditorState {
         const lambdas = new Map<string, RawLambda>();
         const functionLamba = new RawLambda(
           [],
-          this.functionElement.body as object,
+          this.functionElement.expressionSequence as object,
         );
         lambdas.set(this.lambdaId, functionLamba);
         const isolatedLambdas =
@@ -115,7 +115,7 @@ export class FunctionBodyEditorState extends LambdaEditorState {
         if (grammarText) {
           let grammarString = this.extractLambdaString(grammarText);
           if (
-            this.functionElement.body.length > 1 &&
+            this.functionElement.expressionSequence.length > 1 &&
             grammarString.endsWith('}')
           ) {
             // The lambda object to string converter wraps the lambda inside a '{}' in the case where there are more than one expressions inside the function
