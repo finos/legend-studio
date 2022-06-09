@@ -2,7 +2,7 @@ version: 2.1
 
 aliases:
   - &docker
-    - image: cimg/openjdk:16.15
+    - image: cimg/node:16.15
 
   - &environment
     TZ: /usr/share/zoneinfo/UTC
@@ -62,7 +62,7 @@ jobs:
     resource_class: xlarge
     steps:
       - checkout
-      *restore_node_modules
+      - *restore_node_modules
       - run:
           name: Check typings
           command: yarn check:ts
