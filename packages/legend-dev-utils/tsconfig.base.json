@@ -2,7 +2,6 @@
   // See https://www.typescriptlang.org/docs/handbook/compiler-options.html
   "compilerOptions": {
     "lib": ["dom", "dom.iterable", "esnext", "webworker", "scripthost"],
-    // Project reference related settings
     "composite": true,
     "declaration": true,
     "declarationMap": true,
@@ -10,12 +9,11 @@
     // Module settings
     "target": "esnext",
     "module": "NodeNext",
-    "moduleResolution": "NodeNext",
     "skipLibCheck": true, // skip type checking of all declaration files (*.d.ts)
     "resolveJsonModule": true, // include JSON files module and auto-interpret types
-    // --isolatedModules is needed by `babel`.
-    // It perform additional checks to ensure that separate compilation
-    // (such as with transpileModule or @babel/plugin-transform-typescript) would be safe.
+    // `babel` will always behave as if `isolatedModules=true`
+    // so we enable this to catch problems early
+    // See https://babeljs.io/docs/en/babel-plugin-transform-typescript#caveats
     "isolatedModules": true,
     "importsNotUsedAsValues": "error", // enforce differentiating between type-imports and standard imports
     // Other settings
