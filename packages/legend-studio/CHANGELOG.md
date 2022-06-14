@@ -1,5 +1,40 @@
 # @finos/legend-studio
 
+## 10.0.0
+
+### Major Changes
+
+- [#1190](https://github.com/finos/legend-studio/pull/1190) [`4c076c98`](https://github.com/finos/legend-studio/commit/4c076c985b5efd0da3ec2f141ddc9cd53f0ba8f6) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Use `NodeNext` (`ESM` module resolution strategy for `Typescript`). Read more about this [here](https://devblogs.microsoft.com/typescript/announcing-typescript-4-7/#esm-nodejs). This transition would be relatively smooth, except that we must use `ESM`-styled import (with extensions) for relative path. For example:
+
+  ```ts
+  // before
+  import { someFunction } from './Utils';
+  // after
+  import { someFunction } from './Utils.js';
+  ```
+
+* [#1166](https://github.com/finos/legend-studio/pull/1166) [`41805dba`](https://github.com/finos/legend-studio/commit/41805dbaf92d7dfca14f954d1bc00ff5f5acaa5a) ([@akphi](https://github.com/akphi)) - Remove `AppHeader` component.
+
+### Minor Changes
+
+- [#1166](https://github.com/finos/legend-studio/pull/1166) [`41805dba`](https://github.com/finos/legend-studio/commit/41805dbaf92d7dfca14f954d1bc00ff5f5acaa5a) ([@akphi](https://github.com/akphi)) - Add `virtual assistant` to provide contextual help and documentation look-up.
+
+* [#1194](https://github.com/finos/legend-studio/pull/1194) [`82fdd174`](https://github.com/finos/legend-studio/commit/82fdd17496364f9780d1a558f47e610c8630d1e0) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Support executing service queries with parameters.
+
+- [#1166](https://github.com/finos/legend-studio/pull/1166) [`41805dba`](https://github.com/finos/legend-studio/commit/41805dbaf92d7dfca14f954d1bc00ff5f5acaa5a) ([@akphi](https://github.com/akphi)) - Remove application header, the menu bar is now moved to `activity bar`. Revamped `About` dialog (now called `application info dialog`) to show more informations around the extensions and allow user to copy application info to clipboard to make it easer for support.
+
+### Patch Changes
+
+- [#1166](https://github.com/finos/legend-studio/pull/1166) [`41805dba`](https://github.com/finos/legend-studio/commit/41805dbaf92d7dfca14f954d1bc00ff5f5acaa5a) ([@akphi](https://github.com/akphi)) - Remove `maximize/minimize` feature as we are trying to simplify the status bar. This feature could easily be achived for wide-screen users by resizing browser window instead.
+
+* [#1166](https://github.com/finos/legend-studio/pull/1166) [`41805dba`](https://github.com/finos/legend-studio/commit/41805dbaf92d7dfca14f954d1bc00ff5f5acaa5a) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Update documentation key to `dot-separated` form.
+
+- [#1183](https://github.com/finos/legend-studio/pull/1183) [`8885ce46`](https://github.com/finos/legend-studio/commit/8885ce46d47f24128c216e6b9ebdd333e41c0878) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Fix an issue with the rendering of `SemiStructured` columns in mapping source tree ([#1182](https://github.com/finos/legend-studio/issues/1182)).
+
+* [#870](https://github.com/finos/legend-studio/pull/870) [`8334cdcf`](https://github.com/finos/legend-studio/commit/8334cdcff278964f465435413e2b18578ae20b9e) ([@abhishoya-gs](https://github.com/abhishoya-gs)) - Add GCP Workload Identity Federation Authentication Strategy
+
+- [#1199](https://github.com/finos/legend-studio/pull/1199) [`4ff8c329`](https://github.com/finos/legend-studio/commit/4ff8c329429041b7ddac65227748737a18c2c73d) ([@akphi](https://github.com/akphi)) - Properly reveal compilation error in `text-mode` when loading a project in `viewer mode` ([#868](https://github.com/finos/legend-studio/issues/868)).
+
 ## 9.1.0
 
 ### Minor Changes
