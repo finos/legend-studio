@@ -130,6 +130,13 @@ export const TEST_DATA__ServiceRoundtrip = [
           },
           value: 'something',
         },
+        {
+          tag: {
+            profile: 'meta::legend::service::telemetry',
+            value: 'metricGroup',
+          },
+          value: 'Metric group',
+        },
       ],
       autoActivateUpdates: true,
       documentation: 'this is just for context',

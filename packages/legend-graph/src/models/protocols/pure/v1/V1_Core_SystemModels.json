@@ -67,6 +67,12 @@
       "tags": ["doc", "todo"]
     },
     {
+      "package": "meta::legend::service",
+      "_type": "profile",
+      "name": "telemetry",
+      "tags": ["metricGroup"]
+    },
+    {
       "stereotypes": ["bitemporal", "businesstemporal", "processingtemporal"],
       "package": "meta::pure::profiles",
       "_type": "profile",
