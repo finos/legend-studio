@@ -47,8 +47,8 @@
     "test:watch": "jest --watch"
   },
   "dependencies": {
-    "@emotion/react": "11.9.0",
-    "@emotion/styled": "11.8.1",
+    "@emotion/react": "11.9.3",
+    "@emotion/styled": "11.9.3",
     "@finos/legend-shared": "workspace:*",
     "@fontsource/raleway": "4.5.9",
     "@fontsource/roboto": "4.5.7",
