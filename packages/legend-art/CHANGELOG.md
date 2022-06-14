@@ -1,5 +1,22 @@
 # @finos/legend-art
 
+## 2.0.0
+
+### Major Changes
+
+- [#1190](https://github.com/finos/legend-studio/pull/1190) [`4c076c98`](https://github.com/finos/legend-studio/commit/4c076c985b5efd0da3ec2f141ddc9cd53f0ba8f6) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Use `NodeNext` (`ESM` module resolution strategy for `Typescript`). Read more about this [here](https://devblogs.microsoft.com/typescript/announcing-typescript-4-7/#esm-nodejs). This transition would be relatively smooth, except that we must use `ESM`-styled import (with extensions) for relative path. For example:
+
+  ```ts
+  // before
+  import { someFunction } from './Utils';
+  // after
+  import { someFunction } from './Utils.js';
+  ```
+
+### Minor Changes
+
+- [#1166](https://github.com/finos/legend-studio/pull/1166) [`41805dba`](https://github.com/finos/legend-studio/commit/41805dbaf92d7dfca14f954d1bc00ff5f5acaa5a) ([@akphi](https://github.com/akphi)) - Add `BasePopper` component, `popper` is similar to `popover`, except that it does not come with a `backdrop`.
+
 ## 1.0.1
 
 ## 1.0.0

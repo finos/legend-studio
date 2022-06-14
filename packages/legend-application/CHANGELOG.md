@@ -1,5 +1,32 @@
 # @finos/legend-application
 
+## 4.0.0
+
+### Major Changes
+
+- [#1190](https://github.com/finos/legend-studio/pull/1190) [`4c076c98`](https://github.com/finos/legend-studio/commit/4c076c985b5efd0da3ec2f141ddc9cd53f0ba8f6) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Use `NodeNext` (`ESM` module resolution strategy for `Typescript`). Read more about this [here](https://devblogs.microsoft.com/typescript/announcing-typescript-4-7/#esm-nodejs). This transition would be relatively smooth, except that we must use `ESM`-styled import (with extensions) for relative path. For example:
+
+  ```ts
+  // before
+  import { someFunction } from './Utils';
+  // after
+  import { someFunction } from './Utils.js';
+  ```
+
+* [#1166](https://github.com/finos/legend-studio/pull/1166) [`41805dba`](https://github.com/finos/legend-studio/commit/41805dbaf92d7dfca14f954d1bc00ff5f5acaa5a) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Renamed `LegendApplicationDocumentationRegistry` to `LegendApplicationDocumentationService`; the corresponding exposed attribute from `ApplicationStore` is renamed from `docRegistry` to `docService`.
+
+### Minor Changes
+
+- [#1166](https://github.com/finos/legend-studio/pull/1166) [`41805dba`](https://github.com/finos/legend-studio/commit/41805dbaf92d7dfca14f954d1bc00ff5f5acaa5a) ([@akphi](https://github.com/akphi)) - Add `LegendApplicationAssistantService` and `VirtualAssistant` which makes use of `LegendApplicationDocumentationService` to provide documentation library and contextual documentation for `Legend` applications.
+
+* [#1191](https://github.com/finos/legend-studio/pull/1191) [`353b505b`](https://github.com/finos/legend-studio/commit/353b505b12fe6f5ba05e504a4deeaa1e76d58713) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add `BasicValueSpecificationEditor` to allow editing/updating basic value specifications like primitive values, time values (such as `now()`, `today()`), etc.
+
+- [#1166](https://github.com/finos/legend-studio/pull/1166) [`41805dba`](https://github.com/finos/legend-studio/commit/41805dbaf92d7dfca14f954d1bc00ff5f5acaa5a) ([@akphi](https://github.com/akphi)) - Introduce `LegendApplicationNavigationContextService`, which is used to track user's navigation in the app using contexts (or area/layer of the app). This is crucial to support contextual documentation help provided by `virtual assistant`.
+
+* [#1166](https://github.com/finos/legend-studio/pull/1166) [`41805dba`](https://github.com/finos/legend-studio/commit/41805dbaf92d7dfca14f954d1bc00ff5f5acaa5a) ([@akphi](https://github.com/akphi)) - Introduce `LegendApplicationEventService` which is used to manage application events, as of now, we only use it to notify events, i.e. as a direct replacement of `EventNotifierService`.
+
+- [#1194](https://github.com/finos/legend-studio/pull/1194) [`82fdd174`](https://github.com/finos/legend-studio/commit/82fdd17496364f9780d1a558f47e610c8630d1e0) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add `LambdaParameterValuesEditor` to edit parameter values for a lambda.
+
 ## 3.0.3
 
 ## 3.0.2
