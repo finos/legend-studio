@@ -30,8 +30,6 @@ import {
   ResizablePanelSplitter,
   ResizablePanelSplitterLine,
   TimesIcon,
-  ToggleOffIcon,
-  ToggleOnIcon,
 } from '@finos/legend-art';
 import { ExternalFormatData } from '@finos/legend-graph';
 import {
@@ -585,27 +583,40 @@ export const ServiceRequestPatternEditor = observer(
       (tab: SERVICE_REQUEST_PATTERN_TAB_TYPE): (() => void) =>
       (): void =>
         serviceStubMappingState.setSelectedServiceRequestPatternTab(tab);
-    const changeToggleOn = (): void => {
-      serviceStubMappingState.setToggleOn();
-      serviceStubMappingState.toggleOn
-        ? serviceStubMappingState.setUrlValue(serviceRequestPattern.url ?? '')
-        : serviceStubMappingState.setUrlValue(
-            serviceRequestPattern.urlPath ?? '',
-          );
-    };
-    const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
+    const changeUrlPathValue: React.ChangeEventHandler<HTMLInputElement> = (
+      event,
+    ) => {
       const stringValue = event.target.value;
+      serviceStubMappingState.setUrlPath(stringValue);
       const updatedValue = stringValue ? stringValue : undefined;
-      serviceStubMappingState.toggleOn
-        ? serviceStore_serviceRequestPattern_setUrl(
-            serviceRequestPattern,
-            updatedValue,
-          )
-        : serviceStore_serviceRequestPattern_setUrlPath(
-            serviceRequestPattern,
-            updatedValue,
-          );
-      serviceStubMappingState.setUrlValue(stringValue);
+      if (!updatedValue) {
+        serviceStore_serviceRequestPattern_setUrlPath(
+          serviceRequestPattern,
+          updatedValue,
+        );
+        serviceStore_serviceRequestPattern_setUrl(
+          serviceRequestPattern,
+          updatedValue,
+        );
+      } else if (updatedValue.includes('?')) {
+        serviceStore_serviceRequestPattern_setUrl(
+          serviceRequestPattern,
+          updatedValue,
+        );
+        serviceStore_serviceRequestPattern_setUrlPath(
+          serviceRequestPattern,
+          undefined,
+        );
+      } else {
+        serviceStore_serviceRequestPattern_setUrlPath(
+          serviceRequestPattern,
+          updatedValue,
+        );
+        serviceStore_serviceRequestPattern_setUrl(
+          serviceRequestPattern,
+          undefined,
+        );
+      }
     };
 
     return (
@@ -659,30 +670,14 @@ export const ServiceRequestPatternEditor = observer(
               <div className="panel__content service-request-pattern-editor__url">
                 <div className="panel__content__form__section">
                   <div className="panel__content__form__section__header__label">
-                    Url
-                    <button
-                      className="url-editor__action"
-                      onClick={changeToggleOn}
-                      disabled={isReadOnly}
-                      tabIndex={-1}
-                      title={'Toggle'}
-                    >
-                      {serviceStubMappingState.toggleOn ? (
-                        <ToggleOnIcon className="url-editor__icon" />
-                      ) : (
-                        <ToggleOffIcon className="url-editor__icon" />
-                      )}
-                    </button>
-                  </div>
-                  <div className="panel__content__form__section__header__prompt">
-                    Toggles between Url and UrlPath
+                    UrlPath
                   </div>
                   <input
                     className="panel__content__form__section__input"
                     spellCheck={false}
                     disabled={isReadOnly}
-                    value={serviceStubMappingState.urlValue}
-                    onChange={changeValue}
+                    value={serviceStubMappingState.urlPath}
+                    onChange={changeUrlPathValue}
                   />
                 </div>
               </div>
