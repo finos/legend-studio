@@ -1658,3 +1658,89 @@ export const TEST_DATA__graphFetchWithSubtype = {
   ],
   parameters: [],
 };
+
+export const TEST_DATA__simpleProjectionWithSubtypeFromSubtypeModel = {
+  _type: 'lambda',
+  body: [
+    {
+      _type: 'func',
+      function: 'project',
+      parameters: [
+        {
+          _type: 'func',
+          function: 'getAll',
+          parameters: [
+            {
+              _type: 'packageableElementPtr',
+              fullPath: 'model::LegalEntity',
+            },
+          ],
+        },
+        {
+          _type: 'collection',
+          values: [
+            {
+              _type: 'lambda',
+              body: [
+                {
+                  _type: 'property',
+                  parameters: [
+                    {
+                      _type: 'property',
+                      parameters: [
+                        {
+                          _type: 'func',
+                          function: 'subType',
+                          parameters: [
+                            {
+                              _type: 'var',
+                              name: 'x',
+                            },
+                            {
+                              _type: 'hackedClass',
+                              fullPath: 'model::Firm',
+                            },
+                          ],
+                        },
+                      ],
+                      property: 'employees',
+                    },
+                  ],
+                  property: 'firstName',
+                },
+              ],
+              parameters: [
+                {
+                  _type: 'var',
+                  name: 'x',
+                },
+              ],
+            },
+          ],
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+        },
+        {
+          _type: 'collection',
+          values: [
+            {
+              _type: 'string',
+              values: ['(@Firm)/Employees/First Name'],
+              multiplicity: {
+                lowerBound: 1,
+                upperBound: 1,
+              },
+            },
+          ],
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+        },
+      ],
+    },
+  ],
+  parameters: [],
+};

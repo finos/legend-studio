@@ -83,7 +83,7 @@ import { V1_ServiceStorage } from './service/V1_ServiceStorage.js';
 import { V1_ServiceRegistrationResult } from './service/V1_ServiceRegistrationResult.js';
 import type { V1_PureModelContext } from '../model/context/V1_PureModelContext.js';
 import { ServiceExecutionMode } from '../../../../../graphManager/action/service/ServiceExecutionMode.js';
-import { serialize } from 'serializr';
+import { deserialize, serialize } from 'serializr';
 import { V1_ExecutionError } from './execution/V1_ExecutionError.js';
 import { V1_PureModelContextText } from '../model/context/V1_PureModelContextText.js';
 import { V1_QuerySearchSpecification } from './query/V1_QuerySearchSpecification.js';
@@ -95,6 +95,10 @@ import { GRAPH_MANAGER_EVENT } from '../../../../../graphManager/GraphManagerEve
 import { V1_RunTestsInput } from './test/V1_RunTestsInput.js';
 import { V1_RunTestsResult } from './test/V1_RunTestsResult.js';
 import { V1_RenderStyle } from './grammar/V1_RenderStyle.js';
+import {
+  V1_MappingModelCoverageAnalysisInput,
+  V1_MappingModelCoverageAnalysisResult,
+} from './analytics/V1_MappingAnalytics.js';
 
 class V1_EngineConfig extends TEMPORARY__AbstractEngineConfig {
   private engine: V1_Engine;
@@ -717,6 +721,19 @@ export class V1_Engine {
 
   async deleteQuery(queryId: string): Promise<void> {
     await this.engineServerClient.deleteQuery(queryId);
+  }
+
+  // ------------------------------------------ Analysis ------------------------------------------
+
+  async analyzeMappingModelCoverage(
+    input: V1_MappingModelCoverageAnalysisInput,
+  ): Promise<V1_MappingModelCoverageAnalysisResult> {
+    return deserialize(
+      V1_MappingModelCoverageAnalysisResult,
+      await this.engineServerClient.analyzeMappingModelCoverage(
+        V1_MappingModelCoverageAnalysisInput.serialization.toJson(input),
+      ),
+    );
   }
 
   // --------------------------------------------- Utilities ---------------------------------------------

@@ -327,10 +327,6 @@ export class QueryBuilderState {
     this.fetchStructureState.graphFetchTreeState.initialize();
   }
 
-  setQuerySetupState(val: QueryBuilderSetupState): void {
-    this.querySetupState = val;
-  }
-
   initialize(rawLambda: RawLambda, options?: { notifyError: boolean }): void {
     try {
       this.buildStateFromRawLambda(rawLambda);

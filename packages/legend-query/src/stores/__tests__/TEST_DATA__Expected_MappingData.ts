@@ -28,7 +28,7 @@ export const EXPECTED__MappingData_ComplexM2MModel = [
   {
     childNodes: [
       { childNodes: [], mappingData: { mapped: true }, name: 'fullName' },
-      { childNodes: [], mappingData: { mapped: true }, name: 'age' },
+      { childNodes: [], mappingData: { mapped: false }, name: 'age' },
     ],
     mappingData: { mapped: true },
     name: 'firstEmployee',

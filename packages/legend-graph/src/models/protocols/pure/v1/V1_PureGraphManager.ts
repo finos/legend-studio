@@ -269,6 +269,16 @@ import {
 import { V1_getIncludedMappingPath } from './helper/V1_DSLMapping_Helper.js';
 import { pruneSourceInformation } from '../../../../MetaModelUtils.js';
 import { stub_Mapping } from '../../../../graphManager/action/creation/DSLMapping_ModelCreatorHelper.js';
+import {
+  V1_buildModelCoverageAnalysisResult,
+  V1_MappingModelCoverageAnalysisInput,
+  V1_MappingModelCoverageAnalysisResult,
+} from './engine/analytics/V1_MappingAnalytics.js';
+import type {
+  MappingModelCoverageAnalysisResult,
+  RawMappingModelCoverageAnalysisResult,
+} from '../../../../graphManager/action/analytics/MappingAnalytics.js';
+import { deserialize } from 'serializr';
 
 const V1_FUNCTION_SUFFIX_MULTIPLICITY_INFINITE = 'MANY';
 
@@ -2487,6 +2497,63 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       ),
     );
     return hashMap;
+  }
+
+  // ---------------------------------------- Analysis ----------------------------------------
+
+  private buildMappingModelCoverageAnalysisInputContextData = (
+    graph: PureModel,
+  ): V1_PureModelContextData => {
+    const graphData = this.getFullGraphModelData(graph);
+    const prunedGraphData = new V1_PureModelContextData();
+    const extraElements = this.pluginManager
+      .getPureProtocolProcessorPlugins()
+      .flatMap(
+        (element) =>
+          element.V1_getExtraMappingModelCoverageAnalysisInputCollectors?.() ??
+          [],
+      )
+      .flatMap((getter) => getter(graph, graphData));
+    prunedGraphData.elements = this.getFullGraphModelData(graph)
+      .elements.filter(
+        (element) =>
+          element instanceof V1_Class ||
+          element instanceof V1_Enumeration ||
+          element instanceof V1_Profile ||
+          element instanceof V1_Association ||
+          element instanceof V1_ConcreteFunctionDefinition ||
+          element instanceof V1_Measure ||
+          element instanceof V1_Store ||
+          element instanceof V1_Mapping,
+      )
+      .concat(extraElements);
+    return prunedGraphData;
+  };
+
+  async analyzeMappingModelCoverage(
+    graph: PureModel,
+    mapping: Mapping,
+  ): Promise<MappingModelCoverageAnalysisResult> {
+    const modelCoverageAnalysisInput =
+      new V1_MappingModelCoverageAnalysisInput();
+    modelCoverageAnalysisInput.clientVersion = PureClientVersion.VX_X_X;
+    modelCoverageAnalysisInput.mapping = mapping.path;
+    modelCoverageAnalysisInput.model =
+      this.buildMappingModelCoverageAnalysisInputContextData(graph);
+    return V1_buildModelCoverageAnalysisResult(
+      await this.engine.analyzeMappingModelCoverage(modelCoverageAnalysisInput),
+    );
+  }
+
+  buildMappingModelCoverageAnalysisResult(
+    input: RawMappingModelCoverageAnalysisResult,
+  ): MappingModelCoverageAnalysisResult {
+    return V1_buildModelCoverageAnalysisResult(
+      deserialize(
+        V1_MappingModelCoverageAnalysisResult,
+        input as PlainObject<V1_MappingModelCoverageAnalysisResult>,
+      ),
+    );
   }
 
   // --------------------------------------------- Utilities ---------------------------------------------

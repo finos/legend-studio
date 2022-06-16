@@ -25,10 +25,15 @@ import {
   TEST_DATA__projectWithDerivedProperty,
   TEST_DATA__complexGraphFetch,
   TEST_DATA__simpleGraphFetch,
-  TEST_DATA__simpleProjectionWithSubtype,
+  TEST_DATA__simpleProjectionWithSubtypeFromSubtypeModel,
 } from '../../stores/__tests__/TEST_DATA__QueryBuilder_Generic.js';
+import {
+  Mocked_ModelCoverageAnalyticsResult_ComplexRelationalModel,
+  Mocked_ModelCoverageAnalyticsResult_SimpleSubtype,
+} from '../../stores/__tests__/TEST_DATA__Mocked_ModelCoverageAnalyticsResult.js';
 import TEST_DATA__ComplexRelationalModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_ComplexRelational.json';
 import TEST_DATA__ComplexM2MModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_ComplexM2M.json';
+import TEST_DATA_SimpleSubtypeModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_SimpleSubtype.json';
 import {
   integrationTest,
   guaranteeNonNullable,
@@ -39,7 +44,6 @@ import {
   AbstractPropertyExpression,
   create_RawLambda,
   getClassProperty,
-  getRootSetImplementation,
   stub_RawLambda,
 } from '@finos/legend-graph';
 import {
@@ -73,6 +77,7 @@ test(
       stub_RawLambda(),
       'model::relational::tests::simpleRelationalMapping',
       'model::MyRuntime',
+      Mocked_ModelCoverageAnalyticsResult_ComplexRelationalModel,
     );
     const queryBuilderState = mockedQueryStore.queryBuilderState;
 
@@ -82,11 +87,8 @@ test(
     const _firmClass = mockedQueryStore.graphManagerState.graph.getClass(
       'model::pure::tests::model::simple::Firm',
     );
-    const mapping = mockedQueryStore.graphManagerState.graph.getMapping(
-      'model::relational::tests::simpleRelationalMapping',
-    );
 
-    act(() => {
+    await act(async () => {
       queryBuilderState.changeClass(_personClass);
     });
     const queryBuilderSetup = await waitFor(() =>
@@ -105,13 +107,10 @@ test(
       QueryBuilderExplorerTreeRootNodeData,
     );
 
-    expect(getRootSetImplementation(mapping, _personClass)).toBe(
-      rootNode.mappingData.targetSetImpl,
-    );
     expect(rootNode.mappingData.mapped).toBe(true);
 
     // simpleProjection
-    act(() => {
+    await act(async () => {
       queryBuilderState.initialize(
         create_RawLambda(
           TEST_DATA__simpleProjection.parameters,
@@ -161,7 +160,7 @@ test(
 
     // chainedProperty
     const CHAINED_PROPERTY_ALIAS = 'Firm/Legal Name';
-    act(() => {
+    await act(async () => {
       queryBuilderState.initialize(
         create_RawLambda(
           TEST_DATA__projectionWithChainedProperty.parameters,
@@ -206,7 +205,7 @@ test(
 
     // result set modifiers
     const RESULT_LIMIT = 500;
-    act(() => {
+    await act(async () => {
       queryBuilderState.initialize(
         create_RawLambda(
           TEST_DATA__projectionWithResultSetModifiers.parameters,
@@ -284,7 +283,7 @@ test(
 
     // filter with simple condition
     await waitFor(() => renderResult.getByText('Add a filter condition'));
-    act(() => {
+    await act(async () => {
       queryBuilderState.initialize(
         create_RawLambda(
           TEST_DATA__getAllWithOneConditionFilter.parameters,
@@ -315,7 +314,7 @@ test(
       queryBuilderState.resetQuerySetup();
     });
     await waitFor(() => renderResult.getByText('Add a filter condition'));
-    act(() => {
+    await act(async () => {
       queryBuilderState.initialize(
         create_RawLambda(
           TEST_DATA__getAllWithGroupedFilter.parameters,
@@ -355,7 +354,7 @@ test(
       queryBuilderState.resetQuerySetup();
     });
     await waitFor(() => renderResult.getByText('Add a filter condition'));
-    act(() => {
+    await act(async () => {
       queryBuilderState.initialize(
         create_RawLambda(
           TEST_DATA__projectWithDerivedProperty.parameters,
@@ -400,30 +399,23 @@ test(
     });
     const renderResult = await TEST__setUpQueryEditor(
       mockedQueryStore,
-      TEST_DATA__ComplexRelationalModel,
+      TEST_DATA_SimpleSubtypeModel,
       stub_RawLambda(),
-      'model::relational::tests::simpleRelationalMapping',
-      'model::MyRuntime',
+      'model::NewMapping',
+      'model::Runtime',
+      Mocked_ModelCoverageAnalyticsResult_SimpleSubtype,
     );
     const queryBuilderState = mockedQueryStore.queryBuilderState;
-
-    const _personClass = mockedQueryStore.graphManagerState.graph.getClass(
-      'model::pure::tests::model::simple::Person',
-    );
-    const mapping = mockedQueryStore.graphManagerState.graph.getMapping(
-      'model::relational::tests::simpleRelationalMapping',
-    );
-    act(() => {
-      queryBuilderState.changeClass(_personClass);
+    const _legalEntityClass =
+      mockedQueryStore.graphManagerState.graph.getClass('model::LegalEntity');
+    await act(async () => {
+      queryBuilderState.changeClass(_legalEntityClass);
     });
     const queryBuilderSetup = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
     );
-    await waitFor(() => getByText(queryBuilderSetup, 'Person'));
-    await waitFor(() =>
-      getByText(queryBuilderSetup, 'simpleRelationalMapping'),
-    );
-    await waitFor(() => getByText(queryBuilderSetup, 'MyRuntime'));
+    await waitFor(() => getAllByText(queryBuilderSetup, 'LegalEntity'));
+    await waitFor(() => getAllByText(queryBuilderSetup, 'NewMapping'));
 
     // check subclass display in the explorer tree
     const treeData = guaranteeNonNullable(
@@ -433,35 +425,30 @@ test(
       treeData.nodes.get(treeData.rootIds[0] as string),
       QueryBuilderExplorerTreeRootNodeData,
     );
-    expect(getRootSetImplementation(mapping, _personClass)).toBe(
-      rootNode.mappingData.targetSetImpl,
-    );
     expect(rootNode.mappingData.mapped).toBe(true);
     const subTypeNodes = [...treeData.nodes.values()].filter(
       (node) => node instanceof QueryBuilderExplorerTreeSubTypeNodeData,
     );
-    expect(subTypeNodes.length).toBe(2);
+    expect(subTypeNodes.length).toBe(1);
+    expect(guaranteeNonNullable(subTypeNodes[0]).mappingData.mapped).toBe(true);
     const queryBuilderExplorerTreeSetup = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER),
     );
-    await waitFor(() => getByText(queryBuilderExplorerTreeSetup, '@Person'));
-    await waitFor(() =>
-      getByText(queryBuilderExplorerTreeSetup, '@Person Extension'),
-    );
+    await waitFor(() => getByText(queryBuilderExplorerTreeSetup, '@Firm'));
 
     // simpleProjection with subType
-    act(() => {
+    await act(async () => {
       queryBuilderState.initialize(
         create_RawLambda(
-          TEST_DATA__simpleProjectionWithSubtype.parameters,
-          TEST_DATA__simpleProjectionWithSubtype.body,
+          TEST_DATA__simpleProjectionWithSubtypeFromSubtypeModel.parameters,
+          TEST_DATA__simpleProjectionWithSubtypeFromSubtypeModel.body,
         ),
       );
     });
     const projectionColsWithSubType = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PROJECTION),
     );
-    const NAME_ALIAS = '(@Person)/First Name';
+    const NAME_ALIAS = '(@Firm)/Employees/First Name';
     await waitFor(() => getByText(projectionColsWithSubType, NAME_ALIAS));
     expect(
       await waitFor(() =>
@@ -471,16 +458,6 @@ test(
     expect(
       queryBuilderState.fetchStructureState.projectionState.columns.length,
     ).toBe(1);
-    const nameCol = guaranteeNonNullable(
-      queryBuilderState.fetchStructureState.projectionState.columns.find(
-        (e) => e.columnName === NAME_ALIAS,
-      ),
-    );
-    const nameProperty = guaranteeType(
-      nameCol,
-      QueryBuilderSimpleProjectionColumnState,
-    ).propertyExpressionState.propertyExpression.func;
-    expect(nameProperty).toBe(getClassProperty(_personClass, 'firstName'));
   },
 );
 
