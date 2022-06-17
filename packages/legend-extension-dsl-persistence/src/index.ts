@@ -20,33 +20,12 @@ export { DSLPersistence_LegendStudioPlugin } from './components/studio/DSLPersis
 // ---------- PACKAGEABLE ELEMENT ----------
 
 // metamodels
-export * from './models/metamodels/pure/model/packageableElements/persistence/DSLPersistence_Auditing.js';
-export * from './models/metamodels/pure/model/packageableElements/persistence/DSLPersistence_DeduplicationStrategy.js';
-export * from './models/metamodels/pure/model/packageableElements/persistence/DSLPersistence_IngestMode.js';
-export * from './models/metamodels/pure/model/packageableElements/persistence/DSLPersistence_MergeStrategy.js';
-export * from './models/metamodels/pure/model/packageableElements/persistence/DSLPersistence_Milestoning.js';
-export * from './models/metamodels/pure/model/packageableElements/persistence/DSLPersistence_Notifier.js';
-export * from './models/metamodels/pure/model/packageableElements/persistence/DSLPersistence_Persistence.js';
-export * from './models/metamodels/pure/model/packageableElements/persistence/DSLPersistence_Persister.js';
-export * from './models/metamodels/pure/model/packageableElements/persistence/DSLPersistence_Sink.js';
-export * from './models/metamodels/pure/model/packageableElements/persistence/DSLPersistence_TargetShape.js';
-export * from './models/metamodels/pure/model/packageableElements/persistence/DSLPersistence_Trigger.js';
+export { Persistence } from './models/metamodels/pure/model/packageableElements/persistence/DSLPersistence_Persistence.js';
 
 // v1 protocols
-export * from './models/protocols/pure/v1/model/packageableElements/persistence/V1_DSLPersistence_Auditing.js';
-export * from './models/protocols/pure/v1/model/packageableElements/persistence/V1_DSLPersistence_DeduplicationStrategy.js';
-export * from './models/protocols/pure/v1/model/packageableElements/persistence/V1_DSLPersistence_IngestMode.js';
-export * from './models/protocols/pure/v1/model/packageableElements/persistence/V1_DSLPersistence_MergeStrategy.js';
-export * from './models/protocols/pure/v1/model/packageableElements/persistence/V1_DSLPersistence_Milestoning.js';
-export * from './models/protocols/pure/v1/model/packageableElements/persistence/V1_DSLPersistence_Notifier.js';
-export * from './models/protocols/pure/v1/model/packageableElements/persistence/V1_DSLPersistence_Persistence.js';
-export * from './models/protocols/pure/v1/model/packageableElements/persistence/V1_DSLPersistence_Persister.js';
-export * from './models/protocols/pure/v1/model/packageableElements/persistence/V1_DSLPersistence_Sink.js';
-export * from './models/protocols/pure/v1/model/packageableElements/persistence/V1_DSLPersistence_TargetShape.js';
-export * from './models/protocols/pure/v1/model/packageableElements/persistence/V1_DSLPersistence_Trigger.js';
+export { V1_Persistence } from './models/protocols/pure/v1/model/packageableElements/persistence/V1_DSLPersistence_Persistence.js';
 
 // ---------- TRANSFORMATION ----------
 
-export * from './models/protocols/pure/v1/transformation/pureGraph/from/V1_PersistenceTransformer.js';
-export * from './models/protocols/pure/v1/transformation/pureGraph/to/V1_PersistenceBuilder.js';
-export * from './models/protocols/pure/v1/transformation/pureProtocol/V1_DSLPersistence_ProtocolHelper.js';
+export { V1_transformPersistence } from './models/protocols/pure/v1/transformation/pureGraph/from/V1_PersistenceTransformer.js';
+export { V1_buildPersistence } from './models/protocols/pure/v1/transformation/pureGraph/to/V1_PersistenceBuilder.js';
