@@ -97,7 +97,6 @@ const EXCLUSIONS: { [key: string]: ROUNTRIP_TEST_PHASES[] | typeof SKIP } = {
   'mapping-include-enum-mapping.pure': [
     ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP,
   ],
-  'DSLPersistence-basic.pure': [ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP],
 
   // TODO: Unskip once https://github.com/finos/legend-engine/pull/658 is resolved
   'relational-dataElement.pure': SKIP,

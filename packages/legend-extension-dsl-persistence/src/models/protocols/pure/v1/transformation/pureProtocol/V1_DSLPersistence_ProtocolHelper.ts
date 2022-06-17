@@ -111,17 +111,17 @@ import {
  * notifier
  **********/
 
-export enum V1_NotifyeeType {
+enum V1_NotifyeeType {
   EMAIL_NOTIFYEE = 'emailNotifyee',
   PAGER_DUTY_NOTIFYEE = 'pagerDutyNotifyee',
 }
 
-export const V1_emailNotifyeeModelSchema = createModelSchema(V1_EmailNotifyee, {
+const V1_emailNotifyeeModelSchema = createModelSchema(V1_EmailNotifyee, {
   _type: usingConstantValueSchema(V1_NotifyeeType.EMAIL_NOTIFYEE),
   address: primitive(),
 });
 
-export const V1_pagerDutyNotifyeeModelSchema = createModelSchema(
+const V1_pagerDutyNotifyeeModelSchema = createModelSchema(
   V1_PagerDutyNotifyee,
   {
     _type: usingConstantValueSchema(V1_NotifyeeType.PAGER_DUTY_NOTIFYEE),
@@ -155,7 +155,7 @@ export const V1_deserializeNotifyee = (
   }
 };
 
-export const V1_notifierModelSchema = createModelSchema(V1_Notifier, {
+const V1_notifierModelSchema = createModelSchema(V1_Notifier, {
   notifyees: custom(
     (val) =>
       serializeArray(val, (v: V1_Notifyee) => V1_serializeNotifyee(v), {
@@ -173,22 +173,19 @@ export const V1_notifierModelSchema = createModelSchema(V1_Notifier, {
  * auditing
  **********/
 
-export enum V1_AuditingType {
+enum V1_AuditingType {
   NO_AUDITING = 'noAuditing',
   DATE_TIME_AUDITING = 'batchDateTimeAuditing',
 }
 
-export const V1_noAuditingModelSchema = createModelSchema(V1_NoAuditing, {
+const V1_noAuditingModelSchema = createModelSchema(V1_NoAuditing, {
   _type: usingConstantValueSchema(V1_AuditingType.NO_AUDITING),
 });
 
-export const V1_dateTimeAuditingModelSchema = createModelSchema(
-  V1_DateTimeAuditing,
-  {
-    _type: usingConstantValueSchema(V1_AuditingType.DATE_TIME_AUDITING),
-    dateTimeName: primitive(),
-  },
-);
+const V1_dateTimeAuditingModelSchema = createModelSchema(V1_DateTimeAuditing, {
+  _type: usingConstantValueSchema(V1_AuditingType.DATE_TIME_AUDITING),
+  dateTimeName: primitive(),
+});
 
 export const V1_serializeAuditing = (
   protocol: V1_Auditing,
@@ -220,12 +217,12 @@ export const V1_deserializeAuditing = (
  * merge strategy
  **********/
 
-export enum V1_MergeStrategyType {
+enum V1_MergeStrategyType {
   NO_DELETES_MERGE_STRATEGY = 'noDeletesMergeStrategy',
   DELETE_INDICATOR_MERGE_STRATEGY = 'deleteIndicatorMergeStrategy',
 }
 
-export const V1_noDeletesMergeStrategyModelSchema = createModelSchema(
+const V1_noDeletesMergeStrategyModelSchema = createModelSchema(
   V1_NoDeletesMergeStrategy,
   {
     _type: usingConstantValueSchema(
@@ -234,7 +231,7 @@ export const V1_noDeletesMergeStrategyModelSchema = createModelSchema(
   },
 );
 
-export const V1_deleteIndicatorMergeStrategyModelSchema = createModelSchema(
+const V1_deleteIndicatorMergeStrategyModelSchema = createModelSchema(
   V1_DeleteIndicatorMergeStrategy,
   {
     _type: usingConstantValueSchema(
@@ -278,12 +275,12 @@ export const V1_deserializeMergeStrategy = (
  * transaction derivation
  **********/
 
-export enum V1_TransactionDerivationType {
+enum V1_TransactionDerivationType {
   SOURCE_SPECIFIES_IN_DATE_TIME = 'sourceSpecifiesInDateTime',
   SOURCE_SPECIFIES_IN_AND_OUT_DATE_TIME = 'sourceSpecifiesInAndOutDateTime',
 }
 
-export const V1_sourceSpecifiesInDateTimeModelSchema = createModelSchema(
+const V1_sourceSpecifiesInDateTimeModelSchema = createModelSchema(
   V1_SourceSpecifiesInDateTime,
   {
     _type: usingConstantValueSchema(
@@ -293,7 +290,7 @@ export const V1_sourceSpecifiesInDateTimeModelSchema = createModelSchema(
   },
 );
 
-export const V1_sourceSpecifiesInAndOutDateTimeModelSchema = createModelSchema(
+const V1_sourceSpecifiesInAndOutDateTimeModelSchema = createModelSchema(
   V1_SourceSpecifiesInAndOutDateTime,
   {
     _type: usingConstantValueSchema(
@@ -337,13 +334,13 @@ export const V1_deserializeTransactionDerivation = (
  * transaction milestoning
  **********/
 
-export enum V1_TransactionMilestoningType {
+enum V1_TransactionMilestoningType {
   BATCH_ID_TRANSACTION_MILESTONING = 'batchIdTransactionMilestoning',
   DATE_TIME_TRANSACTION_MILESTONING = 'dateTimeTransactionMilestoning',
   BATCH_ID_AND_DATE_TIME_TRANSACTION_MILESTONING = 'batchIdAndDateTimeTransactionMilestoning',
 }
 
-export const V1_batchIdTransactionMilestoningModelSchema = createModelSchema(
+const V1_batchIdTransactionMilestoningModelSchema = createModelSchema(
   V1_BatchIdTransactionMilestoning,
   {
     _type: usingConstantValueSchema(
@@ -354,7 +351,7 @@ export const V1_batchIdTransactionMilestoningModelSchema = createModelSchema(
   },
 );
 
-export const V1_dateTimeTransactionMilestoningModelSchema = createModelSchema(
+const V1_dateTimeTransactionMilestoningModelSchema = createModelSchema(
   V1_DateTimeTransactionMilestoning,
   {
     _type: usingConstantValueSchema(
@@ -369,7 +366,7 @@ export const V1_dateTimeTransactionMilestoningModelSchema = createModelSchema(
   },
 );
 
-export const V1_batchIdAndDateTimeTransactionMilestoningModelSchema =
+const V1_batchIdAndDateTimeTransactionMilestoningModelSchema =
   createModelSchema(V1_BatchIdAndDateTimeTransactionMilestoning, {
     _type: usingConstantValueSchema(
       V1_TransactionMilestoningType.BATCH_ID_AND_DATE_TIME_TRANSACTION_MILESTONING,
@@ -429,12 +426,12 @@ export const V1_deserializeTransactionMilestoning = (
  * validity derivation
  **********/
 
-export enum V1_ValidityDerivationType {
+enum V1_ValidityDerivationType {
   SOURCE_SPECIFIES_FROM_DATE_TIME = 'sourceSpecifiesFromDateTime',
   SOURCE_SPECIFIES_FROM_AND_THRU_DATE_TIME = 'sourceSpecifiesFromAndThruDateTime',
 }
 
-export const V1_sourceSpecifiesFromDateTimeModelSchema = createModelSchema(
+const V1_sourceSpecifiesFromDateTimeModelSchema = createModelSchema(
   V1_SourceSpecifiesFromDateTime,
   {
     _type: usingConstantValueSchema(
@@ -444,14 +441,16 @@ export const V1_sourceSpecifiesFromDateTimeModelSchema = createModelSchema(
   },
 );
 
-export const V1_sourceSpecifiesFromAndThruDateTimeModelSchema =
-  createModelSchema(V1_SourceSpecifiesFromAndThruDateTime, {
+const V1_sourceSpecifiesFromAndThruDateTimeModelSchema = createModelSchema(
+  V1_SourceSpecifiesFromAndThruDateTime,
+  {
     _type: usingConstantValueSchema(
       V1_ValidityDerivationType.SOURCE_SPECIFIES_FROM_AND_THRU_DATE_TIME,
     ),
     sourceDateTimeFromField: primitive(),
     sourceDateTimeThruField: primitive(),
-  });
+  },
+);
 
 export const V1_serializeValidityDerivation = (
   protocol: V1_ValidityDerivation,
@@ -492,11 +491,11 @@ export const V1_deserializeValidityDerivation = (
  * validity milestoning
  **********/
 
-export enum V1_ValidityMilestoningType {
+enum V1_ValidityMilestoningType {
   DATE_TIME_VALIDITY_MILESTONING = 'dateTimeValidityMilestoning',
 }
 
-export const V1_dateTimeValidityMilestoningModelSchema = createModelSchema(
+const V1_dateTimeValidityMilestoningModelSchema = createModelSchema(
   V1_DateTimeValidityMilestoning,
   {
     _type: usingConstantValueSchema(
@@ -540,7 +539,7 @@ export const V1_deserializeValidityMilestoning = (
  * ingest mode
  **********/
 
-export enum V1_IngestModeType {
+enum V1_IngestModeType {
   NONTEMPORAL_SNAPSHOT = 'nontemporalSnapshot',
   UNITEMPORAL_SNAPSHOT = 'unitemporalSnapshot',
   BITEMPORAL_SNAPSHOT = 'bitemporalSnapshot',
@@ -550,7 +549,7 @@ export enum V1_IngestModeType {
   APPEND_ONLY = 'appendOnly',
 }
 
-export const V1_nontemporalSnapshotModelSchema = createModelSchema(
+const V1_nontemporalSnapshotModelSchema = createModelSchema(
   V1_NontemporalSnapshot,
   {
     _type: usingConstantValueSchema(V1_IngestModeType.NONTEMPORAL_SNAPSHOT),
@@ -561,7 +560,7 @@ export const V1_nontemporalSnapshotModelSchema = createModelSchema(
   },
 );
 
-export const V1_unitemporalSnapshotModelSchema = createModelSchema(
+const V1_unitemporalSnapshotModelSchema = createModelSchema(
   V1_UnitemporalSnapshot,
   {
     _type: usingConstantValueSchema(V1_IngestModeType.UNITEMPORAL_SNAPSHOT),
@@ -572,7 +571,7 @@ export const V1_unitemporalSnapshotModelSchema = createModelSchema(
   },
 );
 
-export const V1_bitemporalSnapshotModelSchema = createModelSchema(
+const V1_bitemporalSnapshotModelSchema = createModelSchema(
   V1_BitemporalSnapshot,
   {
     _type: usingConstantValueSchema(V1_IngestModeType.BITEMPORAL_SNAPSHOT),
@@ -587,56 +586,47 @@ export const V1_bitemporalSnapshotModelSchema = createModelSchema(
   },
 );
 
-export const V1_nontemporalDeltaModelSchema = createModelSchema(
-  V1_NontemporalDelta,
-  {
-    _type: usingConstantValueSchema(V1_IngestModeType.NONTEMPORAL_DELTA),
-    auditing: custom(
-      (val) => V1_serializeAuditing(val),
-      (val) => V1_deserializeAuditing(val),
-    ),
-    mergeStrategy: custom(
-      (val) => V1_serializeMergeStrategy(val),
-      (val) => V1_deserializeMergeStrategy(val),
-    ),
-  },
-);
+const V1_nontemporalDeltaModelSchema = createModelSchema(V1_NontemporalDelta, {
+  _type: usingConstantValueSchema(V1_IngestModeType.NONTEMPORAL_DELTA),
+  auditing: custom(
+    (val) => V1_serializeAuditing(val),
+    (val) => V1_deserializeAuditing(val),
+  ),
+  mergeStrategy: custom(
+    (val) => V1_serializeMergeStrategy(val),
+    (val) => V1_deserializeMergeStrategy(val),
+  ),
+});
 
-export const V1_unitemporalDeltaModelSchema = createModelSchema(
-  V1_UnitemporalDelta,
-  {
-    _type: usingConstantValueSchema(V1_IngestModeType.UNITEMPORAL_DELTA),
-    mergeStrategy: custom(
-      (val) => V1_serializeMergeStrategy(val),
-      (val) => V1_deserializeMergeStrategy(val),
-    ),
-    transactionMilestoning: custom(
-      (val) => V1_serializeTransactionMilestoning(val),
-      (val) => V1_deserializeTransactionMilestoning(val),
-    ),
-  },
-);
+const V1_unitemporalDeltaModelSchema = createModelSchema(V1_UnitemporalDelta, {
+  _type: usingConstantValueSchema(V1_IngestModeType.UNITEMPORAL_DELTA),
+  mergeStrategy: custom(
+    (val) => V1_serializeMergeStrategy(val),
+    (val) => V1_deserializeMergeStrategy(val),
+  ),
+  transactionMilestoning: custom(
+    (val) => V1_serializeTransactionMilestoning(val),
+    (val) => V1_deserializeTransactionMilestoning(val),
+  ),
+});
 
-export const V1_bitemporalDeltaModelSchema = createModelSchema(
-  V1_BitemporalDelta,
-  {
-    _type: usingConstantValueSchema(V1_IngestModeType.BITEMPORAL_DELTA),
-    mergeStrategy: custom(
-      (val) => V1_serializeMergeStrategy(val),
-      (val) => V1_deserializeMergeStrategy(val),
-    ),
-    transactionMilestoning: custom(
-      (val) => V1_serializeTransactionMilestoning(val),
-      (val) => V1_deserializeTransactionMilestoning(val),
-    ),
-    validityMilestoning: custom(
-      (val) => V1_serializeValidityMilestoning(val),
-      (val) => V1_deserializeValidityMilestoning(val),
-    ),
-  },
-);
+const V1_bitemporalDeltaModelSchema = createModelSchema(V1_BitemporalDelta, {
+  _type: usingConstantValueSchema(V1_IngestModeType.BITEMPORAL_DELTA),
+  mergeStrategy: custom(
+    (val) => V1_serializeMergeStrategy(val),
+    (val) => V1_deserializeMergeStrategy(val),
+  ),
+  transactionMilestoning: custom(
+    (val) => V1_serializeTransactionMilestoning(val),
+    (val) => V1_deserializeTransactionMilestoning(val),
+  ),
+  validityMilestoning: custom(
+    (val) => V1_serializeValidityMilestoning(val),
+    (val) => V1_deserializeValidityMilestoning(val),
+  ),
+});
 
-export const V1_appendOnlyModelSchema = createModelSchema(V1_AppendOnly, {
+const V1_appendOnlyModelSchema = createModelSchema(V1_AppendOnly, {
   _type: usingConstantValueSchema(V1_IngestModeType.APPEND_ONLY),
   auditing: custom(
     (val) => V1_serializeAuditing(val),
@@ -695,12 +685,12 @@ export const V1_deserializeIngestMode = (
  * sink
  **********/
 
-export enum V1_SinkType {
+enum V1_SinkType {
   RELATIONAL_SINK = 'relationalSink',
   OBJECT_STORAGE_SINK = 'objectStorageSink',
 }
 
-export const V1_relationalSinkModelSchema = (
+const V1_relationalSinkModelSchema = (
   plugins: PureProtocolProcessorPlugin[],
 ): ModelSchema<V1_RelationalSink> =>
   createModelSchema(V1_RelationalSink, {
@@ -711,7 +701,7 @@ export const V1_relationalSinkModelSchema = (
     ),
   });
 
-export const V1_objectStorageSinkModelSchema = (
+const V1_objectStorageSinkModelSchema = (
   plugins: PureProtocolProcessorPlugin[],
 ): ModelSchema<V1_ObjectStorageSink> =>
   createModelSchema(V1_ObjectStorageSink, {
@@ -755,14 +745,14 @@ export const V1_deserializeSink = (
  * deduplication strategy
  **********/
 
-export enum V1_DeduplicationStrategyType {
+enum V1_DeduplicationStrategyType {
   NO_DEDUPLICATION_STRATEGY = 'noDeduplicationStrategy',
   ANY_VERSION_DEDUPLICATION_STRATEGY = 'anyVersionDeduplicationStrategy',
   MAX_VERSION_DEDUPLICATION_STRATEGY = 'maxVersionDeduplicationStrategy',
   DUPLICATE_COUNT_DEDUPLICATION_STRATEGY = 'duplicateCountDeduplicationStrategy',
 }
 
-export const V1_noDeduplicationStrategyModelSchema = createModelSchema(
+const V1_noDeduplicationStrategyModelSchema = createModelSchema(
   V1_NoDeduplicationStrategy,
   {
     _type: usingConstantValueSchema(
@@ -771,7 +761,7 @@ export const V1_noDeduplicationStrategyModelSchema = createModelSchema(
   },
 );
 
-export const V1_anyVersionDeduplicationStrategyModelSchema = createModelSchema(
+const V1_anyVersionDeduplicationStrategyModelSchema = createModelSchema(
   V1_AnyVersionDeduplicationStrategy,
   {
     _type: usingConstantValueSchema(
@@ -780,7 +770,7 @@ export const V1_anyVersionDeduplicationStrategyModelSchema = createModelSchema(
   },
 );
 
-export const V1_maxVersionDeduplicationStrategyModelSchema = createModelSchema(
+const V1_maxVersionDeduplicationStrategyModelSchema = createModelSchema(
   V1_MaxVersionDeduplicationStrategy,
   {
     _type: usingConstantValueSchema(
@@ -790,13 +780,15 @@ export const V1_maxVersionDeduplicationStrategyModelSchema = createModelSchema(
   },
 );
 
-export const V1_duplicateCountDeduplicationStrategyModelSchema =
-  createModelSchema(V1_DuplicateCountDeduplicationStrategy, {
+const V1_duplicateCountDeduplicationStrategyModelSchema = createModelSchema(
+  V1_DuplicateCountDeduplicationStrategy,
+  {
     _type: usingConstantValueSchema(
       V1_DeduplicationStrategyType.DUPLICATE_COUNT_DEDUPLICATION_STRATEGY,
     ),
     duplicateCountName: primitive(),
-  });
+  },
+);
 
 export const V1_serializeDeduplicationStrategy = (
   protocol: V1_DeduplicationStrategy,
@@ -845,12 +837,12 @@ export const V1_deserializeDeduplicationStrategy = (
  * target shape
  **********/
 
-export enum V1_TargetShapeType {
+enum V1_TargetShapeType {
   FLAT_TARGET = 'flatTarget',
   MULTI_FLAT_TARGET = 'multiFlatTarget',
 }
 
-export const V1_flatTargetModelSchema = createModelSchema(V1_FlatTarget, {
+const V1_flatTargetModelSchema = createModelSchema(V1_FlatTarget, {
   _type: usingConstantValueSchema(V1_TargetShapeType.FLAT_TARGET),
   deduplicationStrategy: custom(
     (val) => V1_serializeDeduplicationStrategy(val),
@@ -861,42 +853,36 @@ export const V1_flatTargetModelSchema = createModelSchema(V1_FlatTarget, {
   targetName: primitive(),
 });
 
-export const V1_multiFlatTargetPartSchema = createModelSchema(
-  V1_MultiFlatTargetPart,
-  {
-    deduplicationStrategy: custom(
-      (val) => V1_serializeDeduplicationStrategy(val),
-      (val) => V1_deserializeDeduplicationStrategy(val),
-    ),
-    modelProperty: primitive(),
-    partitionFields: list(primitive()),
-    targetName: primitive(),
-  },
-);
+const V1_multiFlatTargetPartSchema = createModelSchema(V1_MultiFlatTargetPart, {
+  deduplicationStrategy: custom(
+    (val) => V1_serializeDeduplicationStrategy(val),
+    (val) => V1_deserializeDeduplicationStrategy(val),
+  ),
+  modelProperty: primitive(),
+  partitionFields: list(primitive()),
+  targetName: primitive(),
+});
 
-export const V1_multiFlatTargetModelSchema = createModelSchema(
-  V1_MultiFlatTarget,
-  {
-    _type: usingConstantValueSchema(V1_TargetShapeType.MULTI_FLAT_TARGET),
-    modelClass: primitive(),
-    parts: custom(
-      (val) =>
-        serializeArray(val, (v) => serialize(V1_multiFlatTargetPartSchema, v), {
-          skipIfEmpty: true,
-          INTERNAL__forceReturnEmptyInTest: true,
-        }),
-      (val) =>
-        deserializeArray(
-          val,
-          (v) => deserialize(V1_multiFlatTargetPartSchema, v),
-          {
-            skipIfEmpty: false,
-          },
-        ),
-    ),
-    transactionScope: primitive(),
-  },
-);
+const V1_multiFlatTargetModelSchema = createModelSchema(V1_MultiFlatTarget, {
+  _type: usingConstantValueSchema(V1_TargetShapeType.MULTI_FLAT_TARGET),
+  modelClass: primitive(),
+  parts: custom(
+    (val) =>
+      serializeArray(val, (v) => serialize(V1_multiFlatTargetPartSchema, v), {
+        skipIfEmpty: true,
+        INTERNAL__forceReturnEmptyInTest: true,
+      }),
+    (val) =>
+      deserializeArray(
+        val,
+        (v) => deserialize(V1_multiFlatTargetPartSchema, v),
+        {
+          skipIfEmpty: false,
+        },
+      ),
+  ),
+  transactionScope: primitive(),
+});
 
 export const V1_serializeTargetShape = (
   protocol: V1_TargetShape,
@@ -928,12 +914,12 @@ export const V1_deserializeTargetShape = (
  * persister
  **********/
 
-export enum V1_PersisterType {
+enum V1_PersisterType {
   STREAMING_PERSISTER = 'streamingPersister',
   BATCH_PERSISTER = 'batchPersister',
 }
 
-export const V1_streamingPersisterModelSchema = (
+const V1_streamingPersisterModelSchema = (
   plugins: PureProtocolProcessorPlugin[],
 ): ModelSchema<V1_StreamingPersister> =>
   createModelSchema(V1_StreamingPersister, {
@@ -944,7 +930,7 @@ export const V1_streamingPersisterModelSchema = (
     ),
   });
 
-export const V1_batchPersisterModelSchema = (
+const V1_batchPersisterModelSchema = (
   plugins: PureProtocolProcessorPlugin[],
 ): ModelSchema<V1_BatchPersister> =>
   createModelSchema(V1_BatchPersister, {
@@ -995,16 +981,16 @@ export const V1_deserializePersister = (
  * trigger
  **********/
 
-export enum V1_TriggerType {
+enum V1_TriggerType {
   MANUAL_TRIGGER = 'manualTrigger',
   CRON_TRIGGER = 'cronTrigger',
 }
 
-export const V1_manualTriggerModelSchema = createModelSchema(V1_ManualTrigger, {
+const V1_manualTriggerModelSchema = createModelSchema(V1_ManualTrigger, {
   _type: usingConstantValueSchema(V1_TriggerType.MANUAL_TRIGGER),
 });
 
-export const V1_cronTriggerModelSchema = createModelSchema(V1_CronTrigger, {
+const V1_cronTriggerModelSchema = createModelSchema(V1_CronTrigger, {
   _type: usingConstantValueSchema(V1_TriggerType.CRON_TRIGGER),
   minutes: primitive(),
   hours: primitive(),
