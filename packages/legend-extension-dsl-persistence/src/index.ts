@@ -16,5 +16,16 @@
 
 export * from './DSLPersistence_Extension.js';
 export { DSLPersistence_LegendStudioPlugin } from './components/studio/DSLPersistence_LegendStudioPlugin.js';
+
+// ---------- PACKAGEABLE ELEMENT ----------
+
+// metamodels
 export { Persistence } from './models/metamodels/pure/model/packageableElements/persistence/DSLPersistence_Persistence.js';
+
+// v1 protocols
 export { V1_Persistence } from './models/protocols/pure/v1/model/packageableElements/persistence/V1_DSLPersistence_Persistence.js';
+
+// ---------- TRANSFORMATION ----------
+
+export { V1_transformPersistence } from './models/protocols/pure/v1/transformation/pureGraph/from/V1_PersistenceTransformer.js';
+export { V1_buildPersistence } from './models/protocols/pure/v1/transformation/pureGraph/to/V1_PersistenceBuilder.js';

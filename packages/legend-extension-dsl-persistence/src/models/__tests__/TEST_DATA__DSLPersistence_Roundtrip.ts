@@ -236,6 +236,11 @@ export const TEST_DATA__roundtrip = [
             batchIdOutName: 'batchIdOut',
             dateTimeInName: 'IN_Z',
             dateTimeOutName: 'OUT_Z',
+            derivation: {
+              _type: 'sourceSpecifiesInAndOutDateTime',
+              sourceDateTimeInField: 'systemIn',
+              sourceDateTimeOutField: 'systemOut',
+            },
           },
           validityMilestoning: {
             _type: 'dateTimeValidityMilestoning',
