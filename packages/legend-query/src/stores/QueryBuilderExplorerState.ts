@@ -247,8 +247,8 @@ const resolveTargetSetImplementationForPropertyMapping = (
 ): SetImplementation | undefined => {
   if (propertyMapping._isEmbedded) {
     return propertyMapping as unknown as SetImplementation;
-  } else if (propertyMapping.targetSetImplementation) {
-    return propertyMapping.targetSetImplementation;
+  } else if (propertyMapping.targetSetImplementation.value) {
+    return propertyMapping.targetSetImplementation.value;
   }
   return undefined;
 };
@@ -272,7 +272,7 @@ const resolvePropertyMappingsForSetImpl = (
       .map((am) => am.propertyMappings)
       .flat()
       .forEach((pm) => {
-        if (pm.sourceSetImplementation === setImpl) {
+        if (pm.sourceSetImplementation.value === setImpl) {
           propertyMappings.push(pm);
         }
       });

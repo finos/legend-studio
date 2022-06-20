@@ -49,6 +49,10 @@ import {
   buildSourceInformationSourceId,
   stub_RawLambda,
   isStubbed_RawLambda,
+  OptionalPackageableElementImplicitReference,
+  PackageableElementImplicitReference,
+  SetImplementationImplicitReference,
+  OptionalSetImplementationImplicitReference,
 } from '@finos/legend-graph';
 import { MAPPING_ELEMENT_SOURCE_ID_LABEL } from './MappingEditorState.js';
 
@@ -255,15 +259,34 @@ export abstract class FlatDataInstanceSetImplementationState extends InstanceSet
       this.mappingElement,
       PropertyExplicitReference.create(property),
       rootInstanceSetImplementation,
-      this.mappingElement,
+      SetImplementationImplicitReference.create(
+        PackageableElementImplicitReference.create(
+          this.mappingElement._PARENT,
+          '',
+        ),
+        this.mappingElement,
+      ),
       PackageableElementExplicitReference.create(_class),
       InferableMappingElementIdExplicitValue.create(
         `${this.mappingElement.id.value}.${property.name}`,
         '',
       ),
-      undefined,
+      OptionalSetImplementationImplicitReference.create(
+        OptionalPackageableElementImplicitReference.create(
+          this.mappingElement._PARENT,
+          '',
+        ),
+        undefined,
+      ),
     );
-    embeddedPropertyMapping.targetSetImplementation = embeddedPropertyMapping;
+    embeddedPropertyMapping.targetSetImplementation =
+      OptionalSetImplementationImplicitReference.create(
+        OptionalPackageableElementImplicitReference.create(
+          embeddedPropertyMapping._PARENT,
+          '',
+        ),
+        embeddedPropertyMapping,
+      );
     this.mappingElement.propertyMappings.push(embeddedPropertyMapping);
     return embeddedPropertyMapping;
   }

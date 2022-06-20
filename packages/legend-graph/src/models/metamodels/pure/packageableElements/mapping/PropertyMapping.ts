@@ -18,7 +18,6 @@ import { hashArray, type Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst.js';
 import type { PropertyReference } from '../domain/PropertyReference.js';
 import type { PropertyMappingsImplementation } from './PropertyMappingsImplementation.js';
-import type { SetImplementation } from './SetImplementation.js';
 import type { PurePropertyMapping } from '../store/modelToModel/mapping/PurePropertyMapping.js';
 import type { FlatDataPropertyMapping } from '../store/flatData/mapping/FlatDataPropertyMapping.js';
 import type { EmbeddedFlatDataPropertyMapping } from '../store/flatData/mapping/EmbeddedFlatDataPropertyMapping.js';
@@ -29,6 +28,10 @@ import type { InlineEmbeddedRelationalInstanceSetImplementation } from '../store
 import type { AggregationAwarePropertyMapping } from './aggregationAware/AggregationAwarePropertyMapping.js';
 import type { XStorePropertyMapping } from './xStore/XStorePropertyMapping.js';
 import type { LocalMappingPropertyInfo } from './LocalMappingPropertyInfo.js';
+import type {
+  OptionalSetImplementationReference,
+  SetImplementationReference,
+} from './SetImplementationReference.js';
 
 export interface PropertyMappingVisitor<T> {
   visit_PropertyMapping(propertyMapping: PropertyMapping): T;
@@ -63,42 +66,34 @@ export abstract class PropertyMapping implements Hashable {
   readonly _isEmbedded: boolean = false;
 
   property: PropertyReference;
+  sourceSetImplementation: SetImplementationReference;
   /**
-   * NOTE: in case the holder of this property mapping is an embedded property mapping,
-   * that embedded property mapping is considered the source otherwise, it is always
-   * the top/root `InstanceSetImplementation` that is considered the source implementation
+   * Studio might not be able to resolve `targetSetImplementation` for all `target` IDs hence
+   * defined as optional
    *
-   * TODO: change this to use `SetImplemenetationReference`
+   * @discrepancy pure model
    */
-  sourceSetImplementation: SetImplementation;
-  /**
-   * NOTE: in Pure, we actually only store `targetId` and `sourceId` instead of the
-   * reference but for convenience and graph completeness validation purpose we will
-   * resolve to the actual set implementations here
-   *
-   * TODO: change this to use `OptionalSetImplemenetationReference`
-   */
-  targetSetImplementation?: SetImplementation | undefined;
+  targetSetImplementation: OptionalSetImplementationReference;
   localMappingProperty?: LocalMappingPropertyInfo | undefined;
   // store?: Store | undefined;
 
   constructor(
     owner: PropertyMappingsImplementation,
     property: PropertyReference,
-    source: SetImplementation,
-    target?: SetImplementation,
+    source: SetImplementationReference,
+    target: OptionalSetImplementationReference,
   ) {
     this._OWNER = owner;
     this.sourceSetImplementation = source;
-    this.targetSetImplementation = target;
     this.property = property;
+    this.targetSetImplementation = target;
   }
 
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.PROPERTY_MAPPING,
       this.property.pointerHashCode,
-      this.targetSetImplementation?.id.value ?? '',
+      this.targetSetImplementation.value?.id.value ?? '',
       this.localMappingProperty ?? '',
     ]);
   }

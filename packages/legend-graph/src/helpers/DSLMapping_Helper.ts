@@ -214,8 +214,8 @@ export const findPropertyMapping = (
   }
   return properties.find(
     (propertyMapping) =>
-      propertyMapping.targetSetImplementation &&
-      propertyMapping.targetSetImplementation.id.value === targetId,
+      propertyMapping.targetSetImplementation.value &&
+      propertyMapping.targetSetImplementation.value.id.value === targetId,
   );
 };
 

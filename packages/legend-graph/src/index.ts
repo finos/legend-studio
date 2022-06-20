@@ -21,6 +21,7 @@ export * from './models/metamodels/pure/Reference.js';
 export * from './models/metamodels/pure/packageableElements/connection/Connection.js';
 export * from './models/metamodels/pure/packageableElements/PackageableElement.js';
 export * from './models/metamodels/pure/packageableElements/PackageableElementReference.js';
+export * from './models/metamodels/pure/packageableElements/mapping/SetImplementationReference.js';
 export { SectionIndex } from './models/metamodels/pure/packageableElements/section/SectionIndex.js';
 
 export { Multiplicity } from './models/metamodels/pure/packageableElements/domain/Multiplicity.js';

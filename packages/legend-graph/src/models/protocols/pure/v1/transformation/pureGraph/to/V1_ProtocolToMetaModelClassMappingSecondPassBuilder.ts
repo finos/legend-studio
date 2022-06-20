@@ -127,6 +127,7 @@ export class V1_ProtocolToMetaModelClassMappingSecondPassBuilder
           SetImplementationImplicitReference.create(
             PackageableElementImplicitReference.create(this.parent, ''),
             setImplementation,
+            undefined,
           ),
         );
       })

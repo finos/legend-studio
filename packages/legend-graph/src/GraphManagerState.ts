@@ -190,7 +190,7 @@ export class GraphManagerState {
       // NOTE: for now we will grab all property mappings from the main otherwise embedded mapping and the otherwise property mapping.
       // In the future we may want to incorporate some smartness as to when the otherwise set implementation isinvoked.
       const otherwiseSetImpl =
-        instanceSetImpl.otherwisePropertyMapping.targetSetImplementation;
+        instanceSetImpl.otherwisePropertyMapping.targetSetImplementation.value;
       const otherwisePropertyMappings = otherwiseSetImpl
         ? this.getMappingElementPropertyMappings(otherwiseSetImpl)
         : [];

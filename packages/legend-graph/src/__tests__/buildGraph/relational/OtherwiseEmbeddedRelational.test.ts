@@ -71,17 +71,19 @@ test(unitTest('Otherwise Embedded Relational Mapping'), () => {
   // expect(legalNamePropertyMapping.owner).toBe(otherwiseFirmMapping);
   expect(otherwiseFirmMapping.id.value).toBe('alias1_firm');
   expect(otherwiseFirmMapping.primaryKey).toHaveLength(1);
-  expect(otherwiseFirmMapping.sourceSetImplementation).toBe(personClassMapping);
+  expect(otherwiseFirmMapping.sourceSetImplementation.value).toBe(
+    personClassMapping,
+  );
   const otherwisePropertyMapping = guaranteeType(
     otherwiseFirmMapping.otherwisePropertyMapping,
     RelationalPropertyMapping,
   );
   // expect(otherwisePropertyMapping.property.ownerReference.value).toBe(graph.getClass('other::Firm'));
   expect(otherwisePropertyMapping.relationalOperation).toBeDefined();
-  expect(otherwisePropertyMapping.targetSetImplementation?.id.value).toBe(
+  expect(otherwisePropertyMapping.targetSetImplementation.value?.id.value).toBe(
     'firm1',
   );
-  expect(otherwisePropertyMapping.targetSetImplementation?.class.value).toBe(
-    graph.getClass('other::Firm'),
-  );
+  expect(
+    otherwisePropertyMapping.targetSetImplementation.value?.class.value,
+  ).toBe(graph.getClass('other::Firm'));
 });

@@ -41,6 +41,8 @@ export abstract class SetImplementationReference extends ReferenceWithOwner {
     this.ownerReference = ownerReference;
     this.value = value;
   }
+
+  abstract get valueForSerialization(): string | undefined;
 }
 
 export class SetImplementationExplicitReference extends SetImplementationReference {
@@ -57,24 +59,36 @@ export class SetImplementationExplicitReference extends SetImplementationReferen
   static create(value: SetImplementation): SetImplementationExplicitReference {
     return new SetImplementationExplicitReference(value);
   }
+
+  get valueForSerialization(): string | undefined {
+    return this.value.id.value;
+  }
 }
 
 export class SetImplementationImplicitReference extends SetImplementationReference {
   override readonly ownerReference: PackageableElementImplicitReference<Mapping>;
+  readonly input?: string | undefined;
 
   private constructor(
     ownerReference: PackageableElementImplicitReference<Mapping>,
     value: SetImplementation,
+    input: string | undefined,
   ) {
     super(ownerReference, value);
     this.ownerReference = ownerReference;
+    this.input = input;
   }
 
   static create(
     ownerReference: PackageableElementImplicitReference<Mapping>,
     value: SetImplementation,
+    input?: string | undefined,
   ): SetImplementationImplicitReference {
-    return new SetImplementationImplicitReference(ownerReference, value);
+    return new SetImplementationImplicitReference(ownerReference, value, input);
+  }
+
+  get valueForSerialization(): string | undefined {
+    return this.input;
   }
 }
 
@@ -90,6 +104,8 @@ export abstract class OptionalSetImplementationReference extends OptionalReferen
     this.ownerReference = ownerReference;
     this.value = value;
   }
+
+  abstract get valueForSerialization(): string | undefined;
 }
 
 export class OptionalSetImplementationExplicitReference extends OptionalSetImplementationReference {
@@ -108,26 +124,39 @@ export class OptionalSetImplementationExplicitReference extends OptionalSetImple
   ): OptionalSetImplementationExplicitReference {
     return new OptionalSetImplementationExplicitReference(value);
   }
+
+  get valueForSerialization(): string | undefined {
+    return this.value?.id.value;
+  }
 }
 
 export class OptionalSetImplementationImplicitReference extends OptionalSetImplementationReference {
   override readonly ownerReference: OptionalPackageableElementReference<Mapping>;
+  readonly input?: string | undefined;
 
   private constructor(
     ownerReference: OptionalPackageableElementImplicitReference<Mapping>,
     value: SetImplementation | undefined,
+    input: string | undefined,
   ) {
     super(ownerReference, value);
     this.ownerReference = ownerReference;
+    this.input = input;
   }
 
   static create(
-    ownerReference: PackageableElementImplicitReference<Mapping>,
-    value: SetImplementation,
+    ownerReference: OptionalPackageableElementImplicitReference<Mapping>,
+    value: SetImplementation | undefined,
+    input?: string | undefined,
   ): OptionalSetImplementationImplicitReference {
     return new OptionalSetImplementationImplicitReference(
       ownerReference,
       value,
+      input,
     );
+  }
+
+  get valueForSerialization(): string | undefined {
+    return this.input;
   }
 }

@@ -22,9 +22,12 @@ import {
 } from '../../../mapping/PropertyMapping.js';
 import type { EnumerationMapping } from '../../../mapping/EnumerationMapping.js';
 import type { PropertyReference } from '../../../domain/PropertyReference.js';
-import type { SetImplementation } from '../../../mapping/SetImplementation.js';
 import type { PropertyMappingsImplementation } from '../../../mapping/PropertyMappingsImplementation.js';
 import type { RawLambda } from '../../../../rawValueSpecification/RawLambda.js';
+import type {
+  OptionalSetImplementationReference,
+  SetImplementationReference,
+} from '../../../mapping/SetImplementationReference.js';
 
 export class PurePropertyMapping extends PropertyMapping implements Hashable {
   // TODO: convert to reference
@@ -41,8 +44,8 @@ export class PurePropertyMapping extends PropertyMapping implements Hashable {
     owner: PropertyMappingsImplementation,
     property: PropertyReference,
     transform: RawLambda,
-    source: SetImplementation,
-    target?: SetImplementation,
+    source: SetImplementationReference,
+    target: OptionalSetImplementationReference,
     explodeProperty?: boolean,
   ) {
     super(owner, property, source, target);

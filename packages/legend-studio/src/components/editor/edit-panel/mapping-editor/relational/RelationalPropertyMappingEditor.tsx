@@ -185,20 +185,17 @@ const ClassPropertyMappingEditor = observer(
     const mappingEditorState =
       editorStore.getCurrentEditorState(MappingEditorState);
     const propertyMapping = propertyMappingState.propertyMapping;
-    const isDefaultId = propertyMapping.targetSetImplementation?.id.isDefault;
-    const target = propertyMapping.targetSetImplementation ? (
-      isDefaultId ? (
-        <div className="property-mapping-editor__entry__id__label__default-badge">
-          default
-        </div>
-      ) : (
-        propertyMapping.targetSetImplementation.id.value
-      )
+    const isDefaultId =
+      propertyMapping.targetSetImplementation.value?.id.isDefault;
+    const target = isDefaultId ? (
+      <div className="property-mapping-editor__entry__id__label__default-badge">
+        default
+      </div>
     ) : (
-      ''
+      propertyMapping.targetSetImplementation.value?.id.value
     );
     const expectedType = getExpectedReturnType(
-      propertyMapping.targetSetImplementation,
+      propertyMapping.targetSetImplementation.value,
     );
     const onExpectedTypeLabelSelect = (): void =>
       propertyMappingState.instanceSetImplementationState.setSelectedType(
@@ -211,9 +208,9 @@ const ClassPropertyMappingEditor = observer(
 
     // Walker
     const visit = (): void => {
-      if (propertyMapping.targetSetImplementation) {
+      if (propertyMapping.targetSetImplementation.value) {
         mappingEditorState.openMappingElement(
-          propertyMapping.targetSetImplementation,
+          propertyMapping.targetSetImplementation.value,
           true,
         );
       }

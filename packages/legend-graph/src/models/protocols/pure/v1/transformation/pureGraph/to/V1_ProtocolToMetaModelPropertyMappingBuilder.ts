@@ -40,6 +40,7 @@ import { InferableMappingElementIdExplicitValue } from '../../../../../../metamo
 import {
   type PackageableElementReference,
   PackageableElementImplicitReference,
+  OptionalPackageableElementImplicitReference,
 } from '../../../../../../metamodels/pure/packageableElements/PackageableElementReference.js';
 import {
   type PropertyReference,
@@ -96,6 +97,10 @@ import {
   getOwnProperty,
   getClassProperty,
 } from '../../../../../../../helpers/DomainHelper.js';
+import {
+  OptionalSetImplementationImplicitReference,
+  SetImplementationImplicitReference,
+} from '../../../../../../metamodels/pure/packageableElements/mapping/SetImplementationReference.js';
 import type { DSLMapping_PureProtocolProcessorPlugin_Extension } from '../../../../DSLMapping_PureProtocolProcessorPlugin_Extension.js';
 
 /**
@@ -279,8 +284,19 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
         protocol.transform.body,
         this.context,
       ),
-      sourceSetImplementation ?? topParent,
-      targetSetImplementation,
+      SetImplementationImplicitReference.create(
+        PackageableElementImplicitReference.create(topParent._PARENT, ''),
+        sourceSetImplementation ?? topParent,
+        protocol.source,
+      ),
+      OptionalSetImplementationImplicitReference.create(
+        OptionalPackageableElementImplicitReference.create(
+          topParent._PARENT,
+          '',
+        ),
+        targetSetImplementation,
+        protocol.target,
+      ),
       protocol.explodeProperty,
     );
     if (protocol.enumMappingId) {
@@ -367,8 +383,22 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
         protocol.transform.body,
         this.context,
       ),
-      sourceSetImplementation,
-      targetSetImplementation,
+      SetImplementationImplicitReference.create(
+        PackageableElementImplicitReference.create(
+          sourceSetImplementation._PARENT,
+          '',
+        ),
+        sourceSetImplementation,
+        protocol.source,
+      ),
+      OptionalSetImplementationImplicitReference.create(
+        OptionalPackageableElementImplicitReference.create(
+          targetSetImplementation?._PARENT,
+          '',
+        ),
+        targetSetImplementation,
+        protocol.target,
+      ),
     );
     if (protocol.enumMappingId) {
       const enumerationMapping = this.allEnumerationMappings.find(
@@ -445,15 +475,37 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
         property,
       ),
       guaranteeNonNullable(this.topParent),
-      sourceSetImplementation,
+      SetImplementationImplicitReference.create(
+        PackageableElementImplicitReference.create(
+          sourceSetImplementation._PARENT,
+          '',
+        ),
+        sourceSetImplementation,
+        protocol.source,
+      ),
       _class,
       InferableMappingElementIdExplicitValue.create(
         `${sourceSetImplementation.id.value}.${property.name}`,
         '',
       ),
-      undefined,
+      OptionalSetImplementationImplicitReference.create(
+        OptionalPackageableElementImplicitReference.create(
+          sourceSetImplementation._PARENT,
+          '',
+        ),
+        undefined,
+        protocol.target,
+      ),
     );
-    embeddedPropertyMapping.targetSetImplementation = embeddedPropertyMapping;
+    embeddedPropertyMapping.targetSetImplementation =
+      OptionalSetImplementationImplicitReference.create(
+        OptionalPackageableElementImplicitReference.create(
+          embeddedPropertyMapping._PARENT,
+          '',
+        ),
+        embeddedPropertyMapping,
+        protocol.target,
+      );
     embeddedPropertyMapping.propertyMappings = protocol.propertyMappings.map(
       (propertyMapping) =>
         propertyMapping.accept_PropertyMappingVisitor(
@@ -582,8 +634,22 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
         ),
         property,
       ),
-      sourceSetImplementation,
-      targetSetImplementation,
+      SetImplementationImplicitReference.create(
+        PackageableElementImplicitReference.create(
+          sourceSetImplementation._PARENT,
+          '',
+        ),
+        sourceSetImplementation,
+        protocol.source,
+      ),
+      OptionalSetImplementationImplicitReference.create(
+        OptionalPackageableElementImplicitReference.create(
+          targetSetImplementation?._PARENT,
+          '',
+        ),
+        targetSetImplementation,
+        protocol.target,
+      ),
     );
     if (protocol.bindingTransformer?.binding) {
       const bindingTransformer = new BindingTransformer();
@@ -701,9 +767,24 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
         property,
       ),
       guaranteeType(this.topParent, RootRelationalInstanceSetImplementation),
-      sourceSetImplementation,
+      SetImplementationImplicitReference.create(
+        PackageableElementImplicitReference.create(
+          sourceSetImplementation._PARENT,
+          '',
+        ),
+        sourceSetImplementation,
+        protocol.source,
+      ),
       _class,
       InferableMappingElementIdExplicitValue.create(id, ''),
+      OptionalSetImplementationImplicitReference.create(
+        OptionalPackageableElementImplicitReference.create(
+          sourceSetImplementation._PARENT,
+          '',
+        ),
+        undefined,
+        protocol.target,
+      ),
     );
     inline.inlineSetImplementation =
       TEMPORARY__getClassMappingByIdOrReturnUnresolved(
@@ -740,9 +821,24 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
         property.property,
       ),
       guaranteeType(this.topParent, RootRelationalInstanceSetImplementation),
-      property.sourceSetImplementation,
+      SetImplementationImplicitReference.create(
+        PackageableElementImplicitReference.create(
+          property.sourceSetImplementation._PARENT,
+          '',
+        ),
+        property.sourceSetImplementation,
+        protocol.source,
+      ),
       property._class,
       InferableMappingElementIdExplicitValue.create(`${property.id.value}`, ''),
+      OptionalSetImplementationImplicitReference.create(
+        OptionalPackageableElementImplicitReference.create(
+          property.sourceSetImplementation._PARENT,
+          '',
+        ),
+        undefined,
+        protocol.target,
+      ),
     );
     embedded.primaryKey = protocol.classMapping.primaryKey.map((key) =>
       V1_buildRelationalOperationElement(
@@ -797,11 +893,26 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
           property.property,
         ),
         guaranteeType(this.topParent, RootRelationalInstanceSetImplementation),
-        property.sourceSetImplementation,
+        SetImplementationImplicitReference.create(
+          PackageableElementImplicitReference.create(
+            property.sourceSetImplementation._PARENT,
+            '',
+          ),
+          property.sourceSetImplementation,
+          protocol.source,
+        ),
         property._class,
         InferableMappingElementIdExplicitValue.create(
           `${property.id.value}`,
           '',
+        ),
+        OptionalSetImplementationImplicitReference.create(
+          OptionalPackageableElementImplicitReference.create(
+            property.sourceSetImplementation._PARENT,
+            '',
+          ),
+          undefined,
+          protocol.target,
         ),
       );
     otherwiseEmbedded.primaryKey = protocol.classMapping.primaryKey.map((key) =>
@@ -884,8 +995,22 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
         ),
         property,
       ),
-      guaranteeNonNullable(sourceSetImplementation),
-      targetSetImplementation,
+      SetImplementationImplicitReference.create(
+        PackageableElementImplicitReference.create(
+          guaranteeNonNullable(sourceSetImplementation)._PARENT,
+          '',
+        ),
+        guaranteeNonNullable(sourceSetImplementation),
+        protocol.source,
+      ),
+      OptionalSetImplementationImplicitReference.create(
+        OptionalPackageableElementImplicitReference.create(
+          targetSetImplementation?._PARENT,
+          '',
+        ),
+        targetSetImplementation,
+        protocol.target,
+      ),
     );
     xStorePropertyMapping.crossExpression = V1_buildRawLambdaWithResolvedPaths(
       protocol.crossExpression.parameters,
@@ -934,8 +1059,22 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
     const aggregationAwarePropertyMapping = new AggregationAwarePropertyMapping(
       this.topParent ?? this.immediateParent,
       property,
-      guaranteeNonNullable(sourceSetImplementation),
-      targetSetImplementation,
+      SetImplementationImplicitReference.create(
+        PackageableElementImplicitReference.create(
+          guaranteeNonNullable(sourceSetImplementation)._PARENT,
+          '',
+        ),
+        guaranteeNonNullable(sourceSetImplementation),
+        protocol.source,
+      ),
+      OptionalSetImplementationImplicitReference.create(
+        OptionalPackageableElementImplicitReference.create(
+          targetSetImplementation?._PARENT,
+          '',
+        ),
+        targetSetImplementation,
+        protocol.target,
+      ),
     );
 
     if (

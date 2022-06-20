@@ -66,7 +66,7 @@ export class PurePropertyMappingState extends PropertyMappingState {
         MAPPING_ELEMENT_SOURCE_ID_LABEL.PURE_INSTANCE_CLASS_MAPPING,
         this.propertyMapping._OWNER.id.value,
         this.propertyMapping.property.value.name,
-        this.propertyMapping.targetSetImplementation?.id.value,
+        this.propertyMapping.targetSetImplementation.value?.id.value,
         this.uuid, // in case of duplications
       ].filter(isNonNullable),
     );
