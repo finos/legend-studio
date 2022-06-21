@@ -32,9 +32,7 @@ import {
 } from '../../../../../../../../graph/metamodel/pure/packageableElements/connection/Connection.js';
 import { JsonModelConnection } from '../../../../../../../../graph/metamodel/pure/packageableElements/store/modelToModel/connection/JsonModelConnection.js';
 import { XmlModelConnection } from '../../../../../../../../graph/metamodel/pure/packageableElements/store/modelToModel/connection/XmlModelConnection.js';
-import { FlatDataConnection } from '../../../../../../../../graph/metamodel/pure/packageableElements/store/flatData/connection/FlatDataConnection.js';
 import type { Store } from '../../../../../../../../graph/metamodel/pure/packageableElements/store/Store.js';
-import { FlatData } from '../../../../../../../../graph/metamodel/pure/packageableElements/store/flatData/model/FlatData.js';
 import { Database } from '../../../../../../../../graph/metamodel/pure/packageableElements/store/relational/model/Database.js';
 import { ModelStore } from '../../../../../../../../graph/metamodel/pure/packageableElements/store/modelToModel/model/ModelStore.js';
 import {
@@ -49,7 +47,6 @@ import type {
 } from '../../../../model/packageableElements/connection/V1_Connection.js';
 import type { V1_JsonModelConnection } from '../../../../model/packageableElements/store/modelToModel/connection/V1_JsonModelConnection.js';
 import type { V1_XmlModelConnection } from '../../../../model/packageableElements/store/modelToModel/connection/V1_XmlModelConnection.js';
-import type { V1_FlatDataConnection } from '../../../../model/packageableElements/store/flatData/connection/V1_FlatDataConnection.js';
 import type { V1_ConnectionPointer } from '../../../../model/packageableElements/connection/V1_ConnectionPointer.js';
 import type { V1_RelationalDatabaseConnection } from '../../../../model/packageableElements/store/relational/connection/V1_RelationalDatabaseConnection.js';
 import {
@@ -189,32 +186,6 @@ class V1_ConnectionBuilder implements V1_ConnectionVisitor<Connection> {
       this.context.resolveClass(connection.class),
       connection.url,
     );
-  }
-
-  visit_FlatDataConnection(connection: V1_FlatDataConnection): Connection {
-    const store = !this.embeddedConnectionStore
-      ? this.context.resolveFlatDataStore(
-          guaranteeNonNullable(
-            connection.store,
-            `Flat-data connection 'store' field is missing`,
-          ),
-        )
-      : connection.store
-      ? this.context.resolveFlatDataStore(connection.store)
-      : ((): PackageableElementReference<FlatData> => {
-          assertType(
-            this.embeddedConnectionStore.value,
-            FlatData,
-            `Flat-data connection store must be a flat-data store`,
-          );
-          return this
-            .embeddedConnectionStore as PackageableElementReference<FlatData>;
-        })();
-    assertNonNullable(
-      connection.url,
-      `Flat-data connection 'url' field is missing`,
-    );
-    return new FlatDataConnection(store, connection.url);
   }
 
   visit_RelationalDatabaseConnection(

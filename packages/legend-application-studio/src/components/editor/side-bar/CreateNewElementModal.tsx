@@ -67,8 +67,6 @@ export const getElementTypeLabel = (
     case PACKAGEABLE_ELEMENT_TYPE.RUNTIME:
     case PACKAGEABLE_ELEMENT_TYPE.SERVICE:
       return type.toLowerCase();
-    case PACKAGEABLE_ELEMENT_TYPE.FLAT_DATA_STORE:
-      return 'flat-data store';
     case PACKAGEABLE_ELEMENT_TYPE.DATABASE:
       return 'relational database';
     case PACKAGEABLE_ELEMENT_TYPE.SERVICE_STORE:

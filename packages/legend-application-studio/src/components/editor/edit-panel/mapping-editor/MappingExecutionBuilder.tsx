@@ -56,7 +56,6 @@ import {
   type MappingExecutionState,
   MappingExecutionEmptyInputDataState,
   MappingExecutionObjectInputDataState,
-  MappingExecutionFlatDataInputDataState,
   MappingExecutionRelationalInputDataState,
 } from '../../../../stores/editor-state/element-editor-state/mapping/MappingExecutionState.js';
 import {
@@ -79,7 +78,6 @@ import {
 import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor.js';
 import type { DSLMapping_LegendStudioApplicationPlugin_Extension } from '../../../../stores/DSLMapping_LegendStudioApplicationPlugin_Extension.js';
 import { objectInputData_setData } from '../../../../stores/graphModifier/DSLMapping_GraphModifierHelper.js';
-import { flatData_setData } from '../../../../stores/graphModifier/StoreFlatData_GraphModifierHelper.js';
 import {
   relationalInputData_setData,
   relationalInputData_setInputType,
@@ -206,7 +204,10 @@ const MappingExecutionQueryEditor = observer(
             setImplementation
               ? editorStore.graphManagerState.graphManager.HACKY__createGetAllLambda(
                   guaranteeType(
-                    getMappingElementTarget(setImplementation),
+                    getMappingElementTarget(
+                      setImplementation,
+                      editorStore.pluginManager.getStudioPlugins(),
+                    ),
                     Class,
                   ),
                 )
@@ -375,26 +376,6 @@ export const MappingExecutionObjectInputDataBuilder = observer(
   },
 );
 
-export const MappingExecutionFlatDataInputDataBuilder = observer(
-  (props: { inputDataState: MappingExecutionFlatDataInputDataState }) => {
-    const { inputDataState } = props;
-
-    // Input data
-    const updateInput = (val: string): void =>
-      flatData_setData(inputDataState.inputData, val);
-
-    return (
-      <div className="panel__content mapping-execution-builder__input-data-panel__content">
-        <StudioTextInputEditor
-          language={EDITOR_LANGUAGE.TEXT}
-          inputValue={inputDataState.inputData.data}
-          updateInput={updateInput}
-        />
-      </div>
-    );
-  },
-);
-
 /**
  * Right now, we always default this to use Local H2 connection.
  */
@@ -541,7 +522,7 @@ export const MappingExecutionInputDataBuilder = observer(
       !(setImp instanceof OperationSetImplementation);
 
     // Input data builder
-    let inputDataBuilder: React.ReactNode;
+    let inputDataBuilder: React.ReactNode = null;
     if (inputDataState instanceof MappingExecutionEmptyInputDataState) {
       inputDataBuilder = (
         <MappingExecutionEmptyInputDataBuilder
@@ -557,14 +538,6 @@ export const MappingExecutionInputDataBuilder = observer(
         />
       );
     } else if (
-      inputDataState instanceof MappingExecutionFlatDataInputDataState
-    ) {
-      inputDataBuilder = (
-        <MappingExecutionFlatDataInputDataBuilder
-          inputDataState={inputDataState}
-        />
-      );
-    } else if (
       inputDataState instanceof MappingExecutionRelationalInputDataState
     ) {
       inputDataBuilder = (
@@ -573,7 +546,20 @@ export const MappingExecutionInputDataBuilder = observer(
         />
       );
     } else {
-      inputDataBuilder = null;
+      const extraMappingInputDataStateBuilders = editorStore.pluginManager
+        .getStudioPlugins()
+        .flatMap(
+          (plugin) =>
+            (
+              plugin as DSLMapping_LegendStudioPlugin_Extension
+            ).getExtraMappingInputDataStateBuilders?.() ?? [],
+        );
+      for (const builder of extraMappingInputDataStateBuilders) {
+        const mappingInputDataBuilder = builder(inputDataState);
+        if (mappingInputDataBuilder) {
+          inputDataBuilder = mappingInputDataBuilder;
+        }
+      }
     }
 
     // input type builder

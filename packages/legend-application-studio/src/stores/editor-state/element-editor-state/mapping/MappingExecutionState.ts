@@ -77,11 +77,8 @@ import {
   IdentifiedConnection,
   EngineRuntime,
   JsonModelConnection,
-  FlatDataConnection,
-  FlatDataInputData,
   Service,
   PureSingleExecution,
-  RootFlatDataRecordType,
   PackageableElementExplicitReference,
   DatabaseType,
   RelationalDatabaseConnection,
@@ -112,7 +109,6 @@ import {
   runtime_addIdentifiedConnection,
   runtime_addMapping,
 } from '../../../graphModifier/DSLMapping_GraphModifierHelper.js';
-import { flatData_setData } from '../../../graphModifier/StoreFlatData_GraphModifierHelper.js';
 import {
   service_addTestSuite,
   service_initNewService,
@@ -128,6 +124,7 @@ import {
   createBareExternalFormat,
 } from '../../../shared/testable/TestableUtils.js';
 import { SERIALIZATION_FORMAT } from '../service/testable/ServiceTestEditorState.js';
+import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../DSLMapping_LegendStudioPlugin_Extension.js';
 
 export class MappingExecutionQueryState extends LambdaEditorState {
   editorStore: EditorStore;
@@ -197,7 +194,7 @@ export class MappingExecutionQueryState extends LambdaEditorState {
   }
 }
 
-abstract class MappingExecutionInputDataState {
+export abstract class MappingExecutionInputDataState {
   readonly uuid = uuid();
   editorStore: EditorStore;
   mapping: Mapping;
@@ -345,63 +342,6 @@ export class MappingExecutionObjectInputDataState extends MappingExecutionInputD
       ),
       this.inputData.inputType,
       tryToMinifyJSONString(this.inputData.data),
-    );
-  }
-}
-
-export class MappingExecutionFlatDataInputDataState extends MappingExecutionInputDataState {
-  declare inputData: FlatDataInputData;
-
-  constructor(
-    editorStore: EditorStore,
-    mapping: Mapping,
-    rootFlatDataRecordType: RootFlatDataRecordType,
-  ) {
-    super(
-      editorStore,
-      mapping,
-      new FlatDataInputData(
-        PackageableElementExplicitReference.create(
-          guaranteeNonNullable(rootFlatDataRecordType._OWNER._OWNER),
-        ),
-        '',
-      ),
-    );
-
-    makeObservable(this, {
-      isValid: computed,
-    });
-  }
-
-  get isValid(): boolean {
-    return true;
-  }
-
-  get runtime(): EngineRuntime {
-    const engineConfig =
-      this.editorStore.graphManagerState.graphManager.TEMPORARY__getEngineConfig();
-    return createRuntimeForExecution(
-      this.mapping,
-      new FlatDataConnection(
-        PackageableElementExplicitReference.create(
-          guaranteeNonNullable(this.inputData.sourceFlatData.value),
-        ),
-        createUrlStringFromData(
-          this.inputData.data,
-          ContentType.TEXT_PLAIN,
-          engineConfig.useBase64ForAdhocConnectionDataUrls,
-        ),
-      ),
-      this.editorStore,
-    );
-  }
-
-  buildInputDataForTest(): InputData {
-    return new FlatDataInputData(
-      PackageableElementExplicitReference.create(
-        guaranteeNonNullable(this.inputData.sourceFlatData.value),
-      ),
-      this.inputData.data,
     );
   }
 }
@@ -576,19 +516,6 @@ export class MappingExecutionState {
         );
       }
       this.setInputDataState(newRuntimeState);
-    } else if (source instanceof RootFlatDataRecordType) {
-      const newRuntimeState = new MappingExecutionFlatDataInputDataState(
-        this.editorStore,
-        this.mappingEditorState.mapping,
-        source,
-      );
-      if (populateWithMockData) {
-        flatData_setData(
-          newRuntimeState.inputData,
-          createMockDataForMappingElementSource(source, this.editorStore),
-        );
-      }
-      this.setInputDataState(newRuntimeState);
     } else if (source instanceof TableAlias) {
       const newRuntimeState = new MappingExecutionRelationalInputDataState(
         this.editorStore,
@@ -611,12 +538,35 @@ export class MappingExecutionState {
         ),
       );
     } else {
-      this.editorStore.applicationStore.notifyWarning(
-        new UnsupportedOperationError(
-          `Can't build input data for the specified source`,
+      let inputDataStateUpdated = false;
+      const extraInputDataStateGetters = this.editorStore.pluginManager
+        .getStudioPlugins()
+        .flatMap(
+          (plugin) =>
+            (
+              plugin as DSLMapping_LegendStudioPlugin_Extension
+            ).getExtraInputDataStateGetters?.() ?? [],
+        );
+      for (const inputDataStateGetter of extraInputDataStateGetters) {
+        const inputDataState = inputDataStateGetter(
           source,
-        ),
-      );
+          this.editorStore,
+          this.mappingEditorState.mapping,
+          populateWithMockData,
+        );
+        if (inputDataState) {
+          this.setInputDataState(inputDataState);
+          inputDataStateUpdated = true;
+        }
+      }
+      if (!inputDataStateUpdated) {
+        this.editorStore.applicationStore.notifyWarning(
+          new UnsupportedOperationError(
+            `Can't build input data for the specified source`,
+            source,
+          ),
+        );
+      }
     }
   }
 
@@ -835,7 +785,13 @@ export class MappingExecutionState {
       this.queryState.updateLamba(
         setImplementation
           ? this.editorStore.graphManagerState.graphManager.HACKY__createGetAllLambda(
-              guaranteeType(getMappingElementTarget(setImplementation), Class),
+              guaranteeType(
+                getMappingElementTarget(
+                  setImplementation,
+                  this.editorStore.pluginManager.getStudioPlugins(),
+                ),
+                Class,
+              ),
             )
           : stub_RawLambda(),
       ),

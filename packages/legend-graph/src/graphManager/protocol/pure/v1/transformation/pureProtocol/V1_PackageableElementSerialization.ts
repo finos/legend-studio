@@ -38,12 +38,7 @@ import type {
 import type { V1_PackageableRuntime } from '../../model/packageableElements/runtime/V1_PackageableRuntime.js';
 import type { V1_SectionIndex } from '../../model/packageableElements/section/V1_SectionIndex.js';
 import type { V1_Service } from '../../model/packageableElements/service/V1_Service.js';
-import type { V1_FlatData } from '../../model/packageableElements/store/flatData/model/V1_FlatData.js';
 import type { V1_Database } from '../../model/packageableElements/store/relational/model/V1_Database.js';
-import {
-  V1_flatDataModelSchema,
-  V1_FLAT_DATA_ELEMENT_PROTOCOL_TYPE,
-} from './serializationHelpers/V1_StoreSerializationHelper.js';
 import {
   V1_mappingModelSchema,
   V1_MAPPING_ELEMENT_PROTOCOL_TYPE,
@@ -158,10 +153,6 @@ class V1_PackageableElementSerializer
     return serialize(V1_functionSchema, element);
   }
 
-  visit_FlatData(element: V1_FlatData): PlainObject<V1_PackageableElement> {
-    return serialize(V1_flatDataModelSchema, element);
-  }
-
   visit_Database(element: V1_Database): PlainObject<V1_PackageableElement> {
     return serialize(V1_databaseModelSchema, element);
   }
@@ -260,8 +251,6 @@ export const V1_deserializePackageableElement = (
         return deserialize(V1_associationSchema, json);
       case V1_FUNCTION_ELEMENT_PROTOCOL_TYPE:
         return deserialize(V1_functionSchema, json);
-      case V1_FLAT_DATA_ELEMENT_PROTOCOL_TYPE:
-        return deserialize(V1_flatDataModelSchema, json);
       case V1_DATABASE_ELEMENT_PROTOCOL_TYPE:
         return deserialize(V1_databaseModelSchema, json);
       case V1_MAPPING_ELEMENT_PROTOCOL_TYPE:

@@ -38,14 +38,6 @@ import {
   TEST_DATA__FileGenerationRoundtrip,
   TEST_DATA__FileGenerationWithPackageSameAsSystemElement,
 } from './roundtripTestData/TEST_DATA__FileGenerationRoundtrip.js';
-import {
-  TEST_DATA__FlatDataRoundtrip,
-  TEST_DATA__FlatDataMappingRoundtrip,
-  TEST_DATA__FlatDataConnectionRoundtrip,
-  TEST_DATA__FlatDataInputDataRoundtrip,
-  TEST_DATA__FlatDataRoundtrip2,
-  TEST_DATA__EmbeddedFlatDataMappingRoundtrip,
-} from './roundtripTestData/TEST_DATA__FlatDataRoundtrip.js';
 import { TEST_DATA__GenerationSpecificationRoundtrip } from './roundtripTestData/TEST_DATA__GenerationSpecification.js';
 import {
   TEST_DATA__DatabaseRoundtrip,
@@ -125,23 +117,6 @@ describe(unitTest('Mapping import resolution roundtrip'), () => {
     [
       'Relational mapping with local property',
       TEST_DATA__Relational_LocalPropertyMappingRoundtrip,
-    ],
-  ])('%s', async (testName, entities) => {
-    await TEST__checkBuildingElementsRoundtrip(entities);
-  });
-});
-
-describe(unitTest('Flat-data import resolution roundtrip'), () => {
-  test.each([
-    // TODO: import resolution for included stores?
-    ['Simple flat-data store', TEST_DATA__FlatDataRoundtrip],
-    ['Complex flat-data store', TEST_DATA__FlatDataRoundtrip2],
-    ['Flat-data mapping', TEST_DATA__FlatDataMappingRoundtrip],
-    ['Flat-data embedded mapping', TEST_DATA__EmbeddedFlatDataMappingRoundtrip],
-    ['Flat-data connection', TEST_DATA__FlatDataConnectionRoundtrip],
-    [
-      'Flat-data mapping test input data',
-      TEST_DATA__FlatDataInputDataRoundtrip,
     ],
   ])('%s', async (testName, entities) => {
     await TEST__checkBuildingElementsRoundtrip(entities);

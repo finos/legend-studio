@@ -2639,6 +2639,35 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@finos/legend-extension-external-store-flat-data@workspace:packages/legend-extension-external-store-flat-data":
+  version: 0.0.0-use.local
+  resolution: "@finos/legend-extension-external-store-flat-data@workspace:packages/legend-extension-external-store-flat-data"
+  dependencies:
+    "@finos/legend-application": "workspace:*"
+    "@finos/legend-application-studio": "workspace:*"
+    "@finos/legend-art": "workspace:*"
+    "@finos/legend-dev-utils": "workspace:*"
+    "@finos/legend-graph": "workspace:*"
+    "@finos/legend-shared": "workspace:*"
+    "@finos/legend-storage": "workspace:*"
+    "@jest/globals": 28.1.3
+    "@types/react": 18.0.15
+    cross-env: 7.0.3
+    eslint: 8.20.0
+    jest: 28.1.3
+    mobx: 6.6.1
+    mobx-react-lite: 3.4.0
+    npm-run-all: 4.1.5
+    react: 18.2.0
+    rimraf: 3.0.2
+    sass: 1.54.0
+    serializr: 2.0.5
+    typescript: 4.7.4
+  peerDependencies:
+    react: ^18.0.0
+  languageName: unknown
+  linkType: soft
+
 "@finos/legend-extension-external-store-service@workspace:*, @finos/legend-extension-external-store-service@workspace:packages/legend-extension-external-store-service":
   version: 0.0.0-use.local
   resolution: "@finos/legend-extension-external-store-service@workspace:packages/legend-extension-external-store-service"

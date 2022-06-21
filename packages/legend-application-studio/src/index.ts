@@ -65,11 +65,22 @@ export {
 export * from './components/LegendStudioTestID.js';
 export * from './stores/EditorStoreTestUtils.js';
 
-export { MappingExecutionState } from './stores/editor-state/element-editor-state/mapping/MappingExecutionState.js';
-export { MappingTestState } from './stores/editor-state/element-editor-state/mapping/MappingTestState.js';
+export {
+  MappingExecutionState,
+  MappingExecutionInputDataState,
+  createRuntimeForExecution,
+} from './stores/editor-state/element-editor-state/mapping/MappingExecutionState.js';
+export {
+  MappingTestState,
+  MappingTestInputDataState,
+} from './stores/editor-state/element-editor-state/mapping/MappingTestState.js';
 export { ConnectionValueState } from './stores/editor-state/element-editor-state/connection/ConnectionEditorState.js';
 export * from './stores/editor-state/element-editor-state/mapping/MappingEditorState.js';
-export { MappingElementState } from './stores/editor-state/element-editor-state/mapping/MappingElementState.js';
+export {
+  MappingElementState,
+  PropertyMappingState,
+  InstanceSetImplementationState,
+} from './stores/editor-state/element-editor-state/mapping/MappingElementState.js';
 export { UnsupportedInstanceSetImplementationState } from './stores/editor-state/element-editor-state/mapping/UnsupportedInstanceSetImplementationState.js';
 export { getElementIcon } from './components/shared/ElementIconUtils.js';
 
@@ -106,6 +117,22 @@ export {
   externalFormatData_setContentType,
 } from './stores/graphModifier/DSLData_GraphModifierHelper.js';
 export { ExternalFormatDataEditor } from './components/editor/edit-panel/data-editor/DataElementEditor.js';
+export {
+  MappingElementDecorator,
+  getDecoratedSetImplementationPropertyMappings,
+} from './stores/editor-state/element-editor-state/mapping/MappingElementDecorator.js';
+export { StudioLambdaEditor } from './components/shared/StudioLambdaEditor.js';
+export {
+  getClassPropertyType,
+  CLASS_PROPERTY_TYPE,
+} from './stores/shared/ModelUtil.js';
+export { createMockDataForMappingElementSource } from './stores/shared/MockDataUtil.js';
+export {
+  mapping_setPropertyMappings,
+  runtime_addMapping,
+  runtime_addIdentifiedConnection,
+} from './stores/graphModifier/DSLMapping_GraphModifierHelper.js';
+export type { MappingElementSourceSelectOption } from './components/editor/edit-panel/mapping-editor/InstanceSetImplementationSourceSelectorModal.js';
 export {
   ExternalFormatDataState,
   EmbeddedDataState,

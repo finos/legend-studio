@@ -15,13 +15,11 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { FlatDataConnectionEditor } from './FlatDataConnectionEditor.js';
 import { RelationalDatabaseConnectionEditor } from './RelationalDatabaseConnectionEditor.js';
 import {
   type ConnectionEditorState,
   RelationalDatabaseConnectionValueState,
   JsonModelConnectionValueState,
-  FlatDataConnectionValueState,
   PackageableConnectionEditorState,
 } from '../../../../stores/editor-state/element-editor-state/connection/ConnectionEditorState.js';
 import { UnsupportedEditorPanel } from '../../../editor/edit-panel/UnsupportedElementEditor.js';
@@ -118,13 +116,6 @@ export const ConnectionEditor = observer(
             connectionValueState={connectionValueState}
             isReadOnly={isReadOnly}
             disableChangingClass={disableChangingStore}
-          />
-        );
-      } else if (connectionValueState instanceof FlatDataConnectionValueState) {
-        return (
-          <FlatDataConnectionEditor
-            connectionValueState={connectionValueState}
-            isReadOnly={isReadOnly}
           />
         );
       } else if (

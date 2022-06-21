@@ -69,9 +69,6 @@ import {
   Mapping,
   ConcreteFunctionDefinition,
   Service,
-  FlatData,
-  FlatDataInstanceSetImplementation,
-  EmbeddedFlatDataPropertyMapping,
   PackageableConnection,
   PackageableRuntime,
   FileGenerationSpecification,
@@ -1161,8 +1158,6 @@ export class EditorGraphState {
       return PACKAGEABLE_ELEMENT_TYPE.PROFILE;
     } else if (element instanceof ConcreteFunctionDefinition) {
       return PACKAGEABLE_ELEMENT_TYPE.FUNCTION;
-    } else if (element instanceof FlatData) {
-      return PACKAGEABLE_ELEMENT_TYPE.FLAT_DATA_STORE;
     } else if (element instanceof Database) {
       return PACKAGEABLE_ELEMENT_TYPE.DATABASE;
     } else if (element instanceof Mapping) {
@@ -1206,10 +1201,6 @@ export class EditorGraphState {
       return SET_IMPLEMENTATION_TYPE.PUREINSTANCE;
     } else if (setImplementation instanceof OperationSetImplementation) {
       return SET_IMPLEMENTATION_TYPE.OPERATION;
-    } else if (setImplementation instanceof FlatDataInstanceSetImplementation) {
-      return SET_IMPLEMENTATION_TYPE.FLAT_DATA;
-    } else if (setImplementation instanceof EmbeddedFlatDataPropertyMapping) {
-      return SET_IMPLEMENTATION_TYPE.EMBEDDED_FLAT_DATA;
     } else if (
       setImplementation instanceof RootRelationalInstanceSetImplementation
     ) {

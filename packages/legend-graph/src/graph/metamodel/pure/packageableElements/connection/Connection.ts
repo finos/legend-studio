@@ -19,7 +19,6 @@ import { CORE_HASH_STRUCTURE } from '../../../../../graph/Core_HashUtils.js';
 import type { Store } from '../store/Store.js';
 import type { JsonModelConnection } from '../store/modelToModel/connection/JsonModelConnection.js';
 import type { XmlModelConnection } from '../store/modelToModel/connection/XmlModelConnection.js';
-import type { FlatDataConnection } from '../store/flatData/connection/FlatDataConnection.js';
 import type { PackageableConnection } from './PackageableConnection.js';
 import type { RelationalDatabaseConnection } from '../store/relational/connection/RelationalDatabaseConnection.js';
 import type { PackageableElementReference } from '../PackageableElementReference.js';
@@ -31,7 +30,6 @@ export interface ConnectionVisitor<T> {
   visit_ModelChainConnection(connection: ModelChainConnection): T;
   visit_JsonModelConnection(connection: JsonModelConnection): T;
   visit_XmlModelConnection(connection: XmlModelConnection): T;
-  visit_FlatDataConnection(connection: FlatDataConnection): T;
   visit_RelationalDatabaseConnection(
     connection: RelationalDatabaseConnection,
   ): T;

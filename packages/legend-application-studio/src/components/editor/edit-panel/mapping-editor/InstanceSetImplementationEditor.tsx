@@ -48,10 +48,8 @@ import {
   type MappingElementSource,
 } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState.js';
 import { TypeTree } from '../../../shared/TypeTree.js';
-import { FlatDataRecordTypeTree } from './FlatDataRecordTypeTree.js';
 import { PropertyMappingsEditor } from './PropertyMappingsEditor.js';
 import { useDrop } from 'react-dnd';
-import { FlatDataInstanceSetImplementationState } from '../../../../stores/editor-state/element-editor-state/mapping/FlatDataInstanceSetImplementationState.js';
 import { MappingElementDecorationCleaner } from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementDecorator.js';
 import { UnsupportedInstanceSetImplementationState } from '../../../../stores/editor-state/element-editor-state/mapping/UnsupportedInstanceSetImplementationState.js';
 import { UnsupportedEditorPanel } from '../../../editor/edit-panel/UnsupportedElementEditor.js';
@@ -73,16 +71,13 @@ import {
   type View,
   Class,
   Type,
-  FlatData,
-  RootFlatDataRecordType,
-  Table,
   Database,
   PRIMITIVE_TYPE,
   TableAlias,
   TableExplicitReference,
   ViewExplicitReference,
-  getAllRecordTypes,
   getAllClassProperties,
+  Table,
 } from '@finos/legend-graph';
 import { StudioLambdaEditor } from '../../../shared/StudioLambdaEditor.js';
 import type { EditorStore } from '../../../../stores/EditorStore.js';
@@ -106,7 +101,10 @@ export const InstanceSetImplementationSourceExplorer = observer(
       setImplementation,
       editorStore.pluginManager.getApplicationPlugins(),
     );
-    const sourceLabel = getSourceElementLabel(srcElement);
+    const sourceLabel = getSourceElementLabel(
+      srcElement,
+      editorStore.pluginManager.getStudioPlugins(),
+    );
     // `null` is when we want to open the modal using the existing source
     // `undefined` is to close the source modal
     // any other value to open the source modal using that value as the initial state of the modal
@@ -145,10 +143,18 @@ export const InstanceSetImplementationSourceExplorer = observer(
     const hideSourceSelectorModal = (): void =>
       setSourceElementForSourceSelectorModal(undefined);
     // Drag and Drop
+    const extraDnDTypes = editorStore.pluginManager
+      .getStudioPlugins()
+      .flatMap(
+        (plugin) =>
+          (
+            plugin as DSLMapping_LegendStudioPlugin_Extension
+          ).getExtraDnDSourceTypes?.() ?? [],
+      );
     const dndType = [
       CORE_DND_TYPE.PROJECT_EXPLORER_CLASS,
-      CORE_DND_TYPE.PROJECT_EXPLORER_FLAT_DATA,
       CORE_DND_TYPE.PROJECT_EXPLORER_DATABASE,
+      ...extraDnDTypes,
     ];
     // smartly analyze the content of the source and automatically assign it or its sub-part
     // as class mapping source when possible
@@ -161,24 +167,6 @@ export const InstanceSetImplementationSourceExplorer = observer(
               droppedPackagableElement,
             ),
           ).catch(applicationStore.alertUnhandledError);
-        } else if (droppedPackagableElement instanceof FlatData) {
-          const allRecordTypes = getAllRecordTypes(droppedPackagableElement);
-          if (allRecordTypes.length === 0) {
-            applicationStore.notifyWarning(
-              `Source flat-data store '${droppedPackagableElement.path}' must have at least one action`,
-            );
-            return;
-          }
-          if (allRecordTypes.length === 1) {
-            flowResult(
-              mappingEditorState.changeClassMappingSourceDriver(
-                setImplementation,
-                allRecordTypes[0],
-              ),
-            ).catch(applicationStore.alertUnhandledError);
-          } else {
-            setSourceElementForSourceSelectorModal(allRecordTypes[0]);
-          }
         } else if (droppedPackagableElement instanceof Database) {
           const relations = droppedPackagableElement.schemas.flatMap((schema) =>
             (schema.tables as (Table | View)[]).concat(schema.views),
@@ -205,9 +193,34 @@ export const InstanceSetImplementationSourceExplorer = observer(
           } else {
             setSourceElementForSourceSelectorModal(mainTableAlias);
           }
+        } else {
+          const extraClassMappingSourceDriverGetters = editorStore.pluginManager
+            .getStudioPlugins()
+            .flatMap(
+              (plugin) =>
+                (
+                  plugin as DSLMapping_LegendStudioPlugin_Extension
+                ).getExtraClassMappingSourceDriverGetters?.() ?? [],
+            );
+          for (const getter of extraClassMappingSourceDriverGetters) {
+            const source = getter(
+              droppedPackagableElement,
+              applicationStore,
+              mappingEditorState,
+              setImplementation,
+            );
+            if (source) {
+              setSourceElementForSourceSelectorModal(source);
+            }
+          }
         }
       },
-      [applicationStore, mappingEditorState, setImplementation],
+      [
+        applicationStore,
+        mappingEditorState,
+        setImplementation,
+        editorStore.pluginManager,
+      ],
     );
     const handleDrop = useCallback(
       (item: MappingElementSourceDropTarget): void => {
@@ -283,6 +296,42 @@ export const InstanceSetImplementationSourceExplorer = observer(
         hasParseError = instanceSetImplementationBlockingErrorChecker;
       }
     }
+    const renderSourceElementTree = (): React.ReactNode => {
+      if (srcElement instanceof Type) {
+        return (
+          <TypeTree
+            type={srcElement}
+            selectedType={instanceSetImplementationState.selectedType}
+          />
+        );
+      } else if (srcElement instanceof TableAlias) {
+        return (
+          <TableOrViewSourceTree
+            relation={srcElement.relation.value}
+            selectedType={instanceSetImplementationState.selectedType}
+          />
+        );
+      } else {
+        const extraSourceElementTreeRenderers = editorStore.pluginManager
+          .getStudioPlugins()
+          .flatMap(
+            (plugin) =>
+              (
+                plugin as DSLMapping_LegendStudioPlugin_Extension
+              ).getExtraSourceElementTreeRenderers?.() ?? [],
+          );
+        for (const editorRenderer of extraSourceElementTreeRenderers) {
+          const editor = editorRenderer(
+            srcElement,
+            instanceSetImplementationState,
+          );
+          if (editor) {
+            return editor;
+          }
+        }
+      }
+      return <></>;
+    };
     return (
       <div
         data-testid={LEGEND_STUDIO_TEST_ID.SOURCE_PANEL}
@@ -291,12 +340,7 @@ export const InstanceSetImplementationSourceExplorer = observer(
             (instanceSetImplementationState instanceof
             PureInstanceSetImplementationState
               ? instanceSetImplementationState.hasParserError
-              : false) ||
-            (instanceSetImplementationState instanceof
-            FlatDataInstanceSetImplementationState
-              ? instanceSetImplementationState.hasParserError
-              : false) ||
-            hasParseError,
+              : false) || hasParseError,
         })}
       >
         <div className="panel__header">
@@ -325,24 +369,7 @@ export const InstanceSetImplementationSourceExplorer = observer(
             )}
             {srcElement ? (
               <div className="source-panel__explorer">
-                {srcElement instanceof Type && (
-                  <TypeTree
-                    type={srcElement}
-                    selectedType={instanceSetImplementationState.selectedType}
-                  />
-                )}
-                {srcElement instanceof RootFlatDataRecordType && (
-                  <FlatDataRecordTypeTree
-                    recordType={srcElement}
-                    selectedType={instanceSetImplementationState.selectedType}
-                  />
-                )}
-                {srcElement instanceof TableAlias && (
-                  <TableOrViewSourceTree
-                    relation={srcElement.relation.value}
-                    selectedType={instanceSetImplementationState.selectedType}
-                  />
-                )}
+                {renderSourceElementTree()}
               </div>
             ) : (
               <BlankPanelPlaceholder

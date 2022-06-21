@@ -239,7 +239,10 @@ export const MappingElementExplorer = observer(
         : undefined;
     const openMappingElement = (): void =>
       mappingEditorState.openMappingElement(mappingElement, false);
-    const mappingElementTarget = getMappingElementTarget(mappingElement);
+    const mappingElementTarget = getMappingElementTarget(
+      mappingElement,
+      editorStore.pluginManager.getStudioPlugins(),
+    );
     // Drag and Drop
     const [, dragRef] = useDrag(
       () => ({
@@ -288,7 +291,10 @@ export const MappingElementExplorer = observer(
             onClick={openMappingElement}
             tabIndex={-1}
             title={`${toSentenceCase(
-              getMappingElementType(mappingElement),
+              getMappingElementType(
+                mappingElement,
+                editorStore.pluginManager.getStudioPlugins(),
+              ),
             ).toLowerCase()} mapping '${mappingElement.id.value}' for '${
               mappingElementTarget.name
             }'`}
@@ -336,12 +342,18 @@ const MappingElementTreeNodeContainer = observer(
     ) : (
       <div />
     );
-    const mappingElementTarget = getMappingElementTarget(mappingElement);
+    const mappingElementTarget = getMappingElementTarget(
+      mappingElement,
+      editorStore.pluginManager.getStudioPlugins(),
+    );
     const mappingElementTooltipText =
       mappingElement instanceof PropertyMapping && mappingElement._isEmbedded
         ? `Embedded class mapping '${mappingElement.id.value}' for property '${mappingElement.property.value.name}' (${mappingElement.property.value.genericType.value.rawType.name}) of type '${mappingElement.sourceSetImplementation.value.class.value.name}'`
         : `${toSentenceCase(
-            getMappingElementType(mappingElement).toLowerCase(),
+            getMappingElementType(
+              mappingElement,
+              editorStore.pluginManager.getStudioPlugins(),
+            ).toLowerCase(),
           )} mapping '${mappingElement.id.value}' for '${
             mappingElementTarget.name
           }'`;
@@ -432,8 +444,17 @@ export const MappingExplorer = observer((props: { isReadOnly: boolean }) => {
     editorStore.getCurrentEditorState(MappingEditorState);
   const mapping = mappingEditorState.mapping;
   const mappingElements = getAllMappingElements(mapping).sort((a, b) =>
-    getMappingIdentitySortString(a, getMappingElementTarget(a)).localeCompare(
-      getMappingIdentitySortString(b, getMappingElementTarget(b)),
+    getMappingIdentitySortString(
+      a,
+      getMappingElementTarget(a, editorStore.pluginManager.getStudioPlugins()),
+    ).localeCompare(
+      getMappingIdentitySortString(
+        b,
+        getMappingElementTarget(
+          b,
+          editorStore.pluginManager.getStudioPlugins(),
+        ),
+      ),
     ),
   );
   const openNewMapingModal = (): void =>

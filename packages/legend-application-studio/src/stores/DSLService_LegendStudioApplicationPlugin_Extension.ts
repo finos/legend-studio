@@ -15,8 +15,9 @@
  */
 
 import type { DSL_LegendStudioApplicationPlugin_Extension } from './LegendStudioApplicationPlugin.js';
-import type { Connection, Runtime } from '@finos/legend-graph';
+import type { Connection, EngineRuntime } from '@finos/legend-graph';
 import type { ServicePureExecutionState } from './editor-state/element-editor-state/service/ServiceExecutionState.js';
+import type { EditorStore } from './EditorStore.js';
 
 export type ServiceQueryEditorActionConfiguration = {
   key: string;
@@ -28,8 +29,9 @@ export type ServiceQueryEditorActionConfiguration = {
 
 export type ServiceTestRuntimeConnectionBuilder = (
   sourceConnection: Connection,
-  runtime: Runtime,
+  runtime: EngineRuntime,
   testData: string,
+  editorStore: EditorStore,
 ) => Connection | undefined;
 
 export interface DSLService_LegendStudioApplicationPlugin_Extension

@@ -19,7 +19,6 @@ import { ExpectedOutputMappingTestAssert } from '../../../graph/metamodel/pure/p
 import type { InputData } from '../../../graph/metamodel/pure/packageableElements/mapping/InputData.js';
 import type { MappingTest } from '../../../graph/metamodel/pure/packageableElements/mapping/MappingTest.js';
 import type { MappingTestAssert } from '../../../graph/metamodel/pure/packageableElements/mapping/MappingTestAssert.js';
-import { FlatDataInputData } from '../../../graph/metamodel/pure/packageableElements/store/flatData/mapping/FlatDataInputData.js';
 import {
   ObjectInputData,
   ObjectInputType,
@@ -27,12 +26,13 @@ import {
 import { RelationalInputData } from '../../../graph/metamodel/pure/packageableElements/store/relational/mapping/RelationalInputData.js';
 import { isStubbed_PackageableElement } from '../../../graph/helpers/creator/DomainModelCreatorHelper.js';
 import { isStubbed_RawLambda } from '../../../graph/helpers/creator/RawValueSpecificationCreatorHelper.js';
-import { DEPRECATED__validate_FlatDataInputData } from './StoreFlatData_ValidationHelper.js';
 import { DEPRECATED__validation_RelationalInputData } from './StoreRelational_ValidationHelper.js';
 import {
   type ValidationIssue,
   createValidationError,
 } from './ValidationHelper.js';
+import type { PureGraphManagerPlugin } from '../../PureGraphManagerPlugin.js';
+import type { DSLMapping_PureGraphManagerPlugin_Extension } from '../../DSLMapping_PureGraphManagerPlugin_Extension.js';
 
 /**
  * @deprecated
@@ -75,20 +75,31 @@ export const DEPRECATED__validate_ObjectInputData = (
  */
 export const DEPRECATED__validate_InputData = (
   metamodel: InputData,
+  plugins: PureGraphManagerPlugin[],
 ): ValidationIssue | undefined => {
   if (metamodel instanceof ObjectInputData) {
     return DEPRECATED__validate_ObjectInputData(metamodel);
   } else if (metamodel instanceof RelationalInputData) {
     return DEPRECATED__validation_RelationalInputData(metamodel);
-  } else if (metamodel instanceof FlatDataInputData) {
-    return DEPRECATED__validate_FlatDataInputData(metamodel);
   }
-  // NOTE: technically we need to modularize these, but they are deprecated, so we will leave them alone for now
+  const extraMappingTestInputDataValidators = plugins.flatMap(
+    (plugin) =>
+      (
+        plugin as DSLMapping_PureGraphManagerPlugin_Extension
+      ).getExtraMappingTestInputDataValidators?.() ?? [],
+  );
+  for (const inputDataValidator of extraMappingTestInputDataValidators) {
+    const mappingTestInputDataValidators = inputDataValidator(metamodel);
+    if (mappingTestInputDataValidators) {
+      return mappingTestInputDataValidators;
+    }
+  }
   return undefined;
 };
 
 export const DEPRECATED__validate_MappingTest = (
   metamodel: MappingTest,
+  plugins: PureGraphManagerPlugin[],
 ): ValidationIssue[] | undefined => {
   let problems: ValidationIssue[] = [];
   // query
@@ -99,10 +110,15 @@ export const DEPRECATED__validate_MappingTest = (
   }
   // input data
   problems = problems.concat(
-    metamodel.inputData.flatMap((i) => DEPRECATED__validate_InputData(i) ?? []),
+    metamodel.inputData.flatMap(
+      (i) => DEPRECATED__validate_InputData(i, plugins) ?? [],
+    ),
   );
   // assertion
-  const assertionIssue = DEPRECATED__validate_InputData(metamodel.assert);
+  const assertionIssue = DEPRECATED__validate_InputData(
+    metamodel.assert,
+    plugins,
+  );
   if (assertionIssue) {
     problems.push(assertionIssue);
   }

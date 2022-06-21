@@ -35,7 +35,6 @@ import {
 import { MappingTest } from '../../../../../../../../graph/metamodel/pure/packageableElements/mapping/MappingTest.js';
 import { ObjectInputData } from '../../../../../../../../graph/metamodel/pure/packageableElements/store/modelToModel/mapping/ObjectInputData.js';
 import type { InputData } from '../../../../../../../../graph/metamodel/pure/packageableElements/mapping/InputData.js';
-import { FlatDataInputData } from '../../../../../../../../graph/metamodel/pure/packageableElements/store/flatData/mapping/FlatDataInputData.js';
 import { ExpectedOutputMappingTestAssert } from '../../../../../../../../graph/metamodel/pure/packageableElements/mapping/ExpectedOutputMappingTestAssert.js';
 import type { Class } from '../../../../../../../../graph/metamodel/pure/packageableElements/domain/Class.js';
 import { InferableMappingElementIdImplicitValue } from '../../../../../../../../graph/metamodel/pure/packageableElements/mapping/InferableMappingElementId.js';
@@ -55,7 +54,6 @@ import type { V1_MappingTest } from '../../../../model/packageableElements/mappi
 import { V1_ExpectedOutputMappingTestAssert } from '../../../../model/packageableElements/mapping/V1_ExpectedOutputMappingTestAssert.js';
 import type { V1_InputData } from '../../../../model/packageableElements/mapping/V1_InputData.js';
 import { V1_ObjectInputData } from '../../../../model/packageableElements/store/modelToModel/mapping/V1_ObjectInputData.js';
-import { V1_FlatDataInputData } from '../../../../model/packageableElements/store/flatData/mapping/V1_FlatDataInputData.js';
 import type { V1_ClassMapping } from '../../../../model/packageableElements/mapping/V1_ClassMapping.js';
 import type { V1_MappingInclude } from '../../../../model/packageableElements/mapping/V1_MappingInclude.js';
 import { V1_buildRawLambdaWithResolvedPaths } from './V1_ValueSpecificationPathResolver.js';
@@ -68,6 +66,7 @@ import {
 import { getRelationalInputType } from '../../../../../../../../graph/helpers/StoreRelational_Helper.js';
 import { getEnumValue } from '../../../../../../../../graph/helpers/DomainHelper.js';
 import { V1_getIncludedMappingPath } from '../../../../helpers/V1_DSLMapping_Helper.js';
+import type { DSLMapping_PureProtocolProcessorPlugin_Extension } from '../../../../../DSLMapping_PureProtocolProcessorPlugin_Extension.js';
 
 export const V1_getInferredClassMappingId = (
   _class: Class,
@@ -219,19 +218,6 @@ const V1_buildMappingTestInputData = (
       getObjectInputType(inputData.inputType),
       inputData.data,
     );
-  } else if (inputData instanceof V1_FlatDataInputData) {
-    assertNonNullable(
-      inputData.sourceFlatData,
-      `Flat-data input data 'sourceFlatData' field is missing`,
-    );
-    assertNonNullable(
-      inputData.data,
-      `Flat-data input data 'data' field is missing`,
-    );
-    return new FlatDataInputData(
-      context.resolveFlatDataStore(inputData.sourceFlatData.path),
-      inputData.data,
-    );
   } else if (inputData instanceof V1_RelationalInputData) {
     assertNonNullable(
       inputData.database,
@@ -250,6 +236,18 @@ const V1_buildMappingTestInputData = (
       inputData.data,
       getRelationalInputType(inputData.inputType),
     );
+  }
+  const extraInputDataBuilders = context.extensions.plugins.flatMap(
+    (plugin) =>
+      (
+        plugin as DSLMapping_PureProtocolProcessorPlugin_Extension
+      ).V1_getExtraMappingTestInputDataBuilders?.() ?? [],
+  );
+  for (const builder of extraInputDataBuilders) {
+    const extraInputData = builder(inputData, context);
+    if (extraInputData) {
+      return extraInputData;
+    }
   }
   throw new UnsupportedOperationError(
     `Can't build mapping test input data`,

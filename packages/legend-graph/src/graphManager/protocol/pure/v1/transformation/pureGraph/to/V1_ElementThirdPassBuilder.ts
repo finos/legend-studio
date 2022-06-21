@@ -38,7 +38,6 @@ import type { V1_Enumeration } from '../../../model/packageableElements/domain/V
 import type { V1_Class } from '../../../model/packageableElements/domain/V1_Class.js';
 import type { V1_ConcreteFunctionDefinition } from '../../../model/packageableElements/function/V1_ConcreteFunctionDefinition.js';
 import type { V1_Association } from '../../../model/packageableElements/domain/V1_Association.js';
-import type { V1_FlatData } from '../../../model/packageableElements/store/flatData/model/V1_FlatData.js';
 import type { V1_Database } from '../../../model/packageableElements/store/relational/model/V1_Database.js';
 import type { V1_Mapping } from '../../../model/packageableElements/mapping/V1_Mapping.js';
 import type { V1_Service } from '../../../model/packageableElements/service/V1_Service.js';
@@ -179,10 +178,6 @@ export class V1_ElementThirdPassBuilder
     element: V1_ConcreteFunctionDefinition,
   ): void {
     throw new UnsupportedOperationError();
-  }
-
-  visit_FlatData(element: V1_FlatData): void {
-    return;
   }
 
   visit_Database(element: V1_Database): void {

@@ -19,8 +19,6 @@ import { CORE_HASH_STRUCTURE } from '../../../../../graph/Core_HashUtils.js';
 import type { PropertyReference } from '../domain/PropertyReference.js';
 import type { PropertyMappingsImplementation } from './PropertyMappingsImplementation.js';
 import type { PurePropertyMapping } from '../store/modelToModel/mapping/PurePropertyMapping.js';
-import type { FlatDataPropertyMapping } from '../store/flatData/mapping/FlatDataPropertyMapping.js';
-import type { EmbeddedFlatDataPropertyMapping } from '../store/flatData/mapping/EmbeddedFlatDataPropertyMapping.js';
 import type { RelationalPropertyMapping } from '../store/relational/mapping/RelationalPropertyMapping.js';
 import type { OtherwiseEmbeddedRelationalInstanceSetImplementation } from '../store/relational/mapping/OtherwiseEmbeddedRelationalInstanceSetImplementation.js';
 import type { EmbeddedRelationalInstanceSetImplementation } from '../store/relational/mapping/EmbeddedRelationalInstanceSetImplementation.js';
@@ -33,10 +31,6 @@ import type { SetImplementationReference } from './SetImplementationReference.js
 export interface PropertyMappingVisitor<T> {
   visit_PropertyMapping(propertyMapping: PropertyMapping): T;
   visit_PurePropertyMapping(propertyMapping: PurePropertyMapping): T;
-  visit_FlatDataPropertyMapping(propertyMapping: FlatDataPropertyMapping): T;
-  visit_EmbeddedFlatDataPropertyMapping(
-    propertyMapping: EmbeddedFlatDataPropertyMapping,
-  ): T;
   visit_RelationalPropertyMapping(
     propertyMapping: RelationalPropertyMapping,
   ): T;

@@ -164,7 +164,6 @@ export * from './graph/Core_HashUtils.js';
 export * from './graph/helpers/DomainHelper.js';
 export * from './graph/helpers/DSLMapping_Helper.js';
 export * from './graph/helpers/StoreRelational_Helper.js';
-export * from './graph/helpers/StoreFlatData_Helper.js';
 export * from './graph/helpers/DSLGeneration_Helper.js';
 export * from './graph/helpers/ValueSpecificationHelper.js';
 
@@ -190,6 +189,7 @@ export {
 } from './graph/PureModel.js';
 export * from './graph/PureGraphExtension.js';
 export * from './graph/PureGraphPlugin.js';
+export * from './graph/DSLMapping_PureGraphPlugin_Extension.js';
 
 // --------------------------------------------- GRAPH MANAGER --------------------------------------------------
 
@@ -322,7 +322,6 @@ export * from './graphManager/action/changeDetection/DSLMapping_ObserverHelper.j
 export * from './graphManager/action/changeDetection/RawValueSpecificationObserver.js';
 export * from './graphManager/action/changeDetection/ValueSpecificationObserver.js';
 export * from './graphManager/action/changeDetection/StoreRelational_ObserverHelper.js';
-export * from './graphManager/action/changeDetection/StoreFlatData_ObserverHelper.js';
 export * from './graphManager/action/changeDetection/GraphObserverHelper.js';
 export * from './graphManager/action/changeDetection/DSLExternalFormat_ObserverHelper.js';
 export * from './graphManager/action/changeDetection/DSLService_ObserverHelper.js';
@@ -340,6 +339,5 @@ export * from './graphManager/action/changeDetection/EngineObserverHelper.js';
 export * from './DSLMapping_Exports.js';
 export * from './DSLService_Exports.js';
 export * from './DSLGenerationSpecification_Exports.js';
-export * from './StoreFlatData_Exports.js';
 export * from './StoreRelational_Exports.js';
 export * from './DSLData_Exports.js';

@@ -19,7 +19,6 @@ import type { V1_ModelChainConnection } from '../../../model/packageableElements
 import type { V1_RelationalDatabaseConnection } from '../../../model/packageableElements/store/relational/connection/V1_RelationalDatabaseConnection.js';
 import type { V1_JsonModelConnection } from '../../../model/packageableElements/store/modelToModel/connection/V1_JsonModelConnection.js';
 import type { V1_XmlModelConnection } from '../../../model/packageableElements/store/modelToModel/connection/V1_XmlModelConnection.js';
-import type { V1_FlatDataConnection } from '../../../model/packageableElements/store/flatData/connection/V1_FlatDataConnection.js';
 import type { V1_ConnectionPointer } from './V1_ConnectionPointer.js';
 
 export interface V1_ConnectionVisitor<T> {
@@ -28,7 +27,6 @@ export interface V1_ConnectionVisitor<T> {
   visit_JsonModelConnection(connection: V1_JsonModelConnection): T;
   visit_ModelChainConnection(connection: V1_ModelChainConnection): T;
   visit_XmlModelConnection(connection: V1_XmlModelConnection): T;
-  visit_FlatDataConnection(connection: V1_FlatDataConnection): T;
   visit_RelationalDatabaseConnection(
     connection: V1_RelationalDatabaseConnection,
   ): T;

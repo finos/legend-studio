@@ -41,7 +41,6 @@ import { DependencyManager } from '../graph/DependencyManager.js';
 import { ConcreteFunctionDefinition } from '../graph/metamodel/pure/packageableElements/domain/ConcreteFunctionDefinition.js';
 import type { Service } from '../graph/metamodel/pure/packageableElements/service/Service.js';
 import { BasicModel } from './BasicModel.js';
-import { FlatData } from '../graph/metamodel/pure/packageableElements/store/flatData/model/FlatData.js';
 import { Database } from '../graph/metamodel/pure/packageableElements/store/relational/model/Database.js';
 import type { PackageableConnection } from '../graph/metamodel/pure/packageableElements/connection/PackageableConnection.js';
 import type { PackageableRuntime } from '../graph/metamodel/pure/packageableElements/runtime/PackageableRuntime.js';
@@ -436,12 +435,6 @@ export class PureModel extends BasicModel {
         this.systemModel.getOwnNullableStore(path) ??
         this.coreModel.getOwnNullableStore(path),
       `Can't find store '${path}'`,
-    );
-  getFlatDataStore = (path: string): FlatData =>
-    guaranteeType(
-      this.getStore(path),
-      FlatData,
-      `Can't find flat-data store '${path}'`,
     );
   getDatabase = (path: string): Database =>
     guaranteeType(

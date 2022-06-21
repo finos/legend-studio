@@ -28,7 +28,6 @@ import type { Enumeration } from './domain/Enumeration.js';
 import type { Class } from './domain/Class.js';
 import type { Association } from './domain/Association.js';
 import type { ConcreteFunctionDefinition } from './domain/ConcreteFunctionDefinition.js';
-import type { FlatData } from './store/flatData/model/FlatData.js';
 import type { Mapping } from './mapping/Mapping.js';
 import type { Service } from './service/Service.js';
 import type { PrimitiveType } from './domain/PrimitiveType.js';
@@ -57,7 +56,6 @@ export interface PackageableElementVisitor<T> {
   visit_Mapping(element: Mapping): T;
   visit_PackageableRuntime(element: PackageableRuntime): T;
 
-  visit_FlatData(element: FlatData): T;
   visit_Database(element: Database): T;
   visit_Service(element: Service): T;
   visit_FileGenerationSpecification(element: FileGenerationSpecification): T;

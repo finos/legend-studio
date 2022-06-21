@@ -28,7 +28,6 @@ import type { Measure } from '../../../../../../../graph/metamodel/pure/packagea
 import type { Class } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/Class.js';
 import type { Association } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/Association.js';
 import type { ConcreteFunctionDefinition } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/ConcreteFunctionDefinition.js';
-import type { FlatData } from '../../../../../../../graph/metamodel/pure/packageableElements/store/flatData/model/FlatData.js';
 import type { Database } from '../../../../../../../graph/metamodel/pure/packageableElements/store/relational/model/Database.js';
 import type { Mapping } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/Mapping.js';
 import type { Service } from '../../../../../../../graph/metamodel/pure/packageableElements/service/Service.js';
@@ -53,7 +52,6 @@ import {
   V1_transformFileGeneration,
   V1_transformGenerationSpecification,
 } from './V1_GenerationSpecificationTransformer.js';
-import { V1_transformFlatData } from './V1_FlatDataTransformer.js';
 import { V1_transformDatabase } from './V1_DatabaseTransformer.js';
 import { V1_transformMapping } from './V1_MappingTransformer.js';
 import { V1_transformService } from './V1_ServiceTransformer.js';
@@ -132,10 +130,6 @@ class V1_PackageableElementTransformer
     element: ConcreteFunctionDefinition,
   ): V1_PackageableElement {
     return V1_transformFunction(element, this.context);
-  }
-
-  visit_FlatData(element: FlatData): V1_PackageableElement {
-    return V1_transformFlatData(element);
   }
 
   visit_Database(element: Database): V1_PackageableElement {

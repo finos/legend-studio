@@ -37,7 +37,6 @@ import { Profile } from '../graph/metamodel/pure/packageableElements/domain/Prof
 import { Service } from '../graph/metamodel/pure/packageableElements/service/Service.js';
 import { ConcreteFunctionDefinition } from '../graph/metamodel/pure/packageableElements/domain/ConcreteFunctionDefinition.js';
 import { Store } from '../graph/metamodel/pure/packageableElements/store/Store.js';
-import { FlatData } from '../graph/metamodel/pure/packageableElements/store/flatData/model/FlatData.js';
 import { PackageableRuntime } from '../graph/metamodel/pure/packageableElements/runtime/PackageableRuntime.js';
 import { PackageableConnection } from '../graph/metamodel/pure/packageableElements/connection/PackageableConnection.js';
 import { FileGenerationSpecification } from '../graph/metamodel/pure/packageableElements/fileGeneration/FileGenerationSpecification.js';
@@ -175,9 +174,6 @@ export abstract class BasicModel {
   }
   get ownStores(): Store[] {
     return Array.from(this.storesIndex.values());
-  }
-  get ownFlatDatas(): FlatData[] {
-    return Array.from(this.storesIndex.values()).filter(filterByType(FlatData));
   }
   get ownDatabases(): Database[] {
     return Array.from(this.storesIndex.values()).filter(filterByType(Database));
@@ -333,12 +329,6 @@ export abstract class BasicModel {
       this.getOwnNullableStore(path),
       Database,
       `Can't find database '${path}'`,
-    );
-  getOwnFlatDataStore = (path: string): FlatData =>
-    guaranteeType(
-      this.getOwnNullableStore(path),
-      FlatData,
-      `Can't find flat-data store '${path}'`,
     );
   getOwnMapping = (path: string): Mapping =>
     guaranteeNonNullable(

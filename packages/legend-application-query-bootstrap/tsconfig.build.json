@@ -13,6 +13,13 @@
     { "path": "../legend-application-query/tsconfig.build.json" },
     { "path": "../legend-extension-dsl-data-space/tsconfig.build.json" },
     { "path": "../legend-extension-dsl-diagram/tsconfig.build.json" },
+    {
+      "path": "../legend-extension-external-store-service/tsconfig.build.json"
+    },
+    {
+      "path": "../legend-extension-external-store-flat-data/tsconfig.build.json"
+    },
+    { "path": "../legend-extension-dsl-text/tsconfig.build.json" },
     { "path": "../legend-extension-dsl-persistence/tsconfig.build.json" },
     { "path": "../legend-extension-dsl-persistence-cloud/tsconfig.build.json" },
     { "path": "../legend-extension-dsl-text/tsconfig.build.json" },

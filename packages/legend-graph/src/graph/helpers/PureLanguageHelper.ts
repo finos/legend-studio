@@ -33,7 +33,6 @@ export enum PURE_ELEMENT_NAME {
   ASSOCIATION = 'Association',
   FUNCTION = 'function',
   MAPPING = 'Mapping',
-  FLAT_DATA = 'FlatData',
   DATABASE = 'Database',
   SERVICE = 'Service',
   RUNTIME = 'Runtime',
@@ -48,7 +47,6 @@ export enum PURE_CONNECTION_NAME {
   XML_MODEL_CONNECTION = 'XmlModelConnection',
   MODEL_CHAIN_CONNECTION = 'ModelChainConnection',
   RELATIONAL_DATABASE_CONNECTION = 'RelationalDatabaseConnection',
-  FLAT_DATA_CONNECTION = 'FlatDataConnection',
 }
 
 export enum PURE_PARSER {
@@ -57,7 +55,6 @@ export enum PURE_PARSER {
   RUNTIME = 'Runtime',
   MAPPING = 'Mapping',
   SERVICE = 'Service',
-  FLATDATA = 'FlatData',
   RELATIONAL = 'Relational',
   GENERATION_SPECIFICATION = 'GenerationSpecification',
   FILE_GENERATION_SPECIFICATION = 'FileGeneration',

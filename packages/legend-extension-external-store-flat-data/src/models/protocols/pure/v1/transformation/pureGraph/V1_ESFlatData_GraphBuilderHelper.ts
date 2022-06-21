@@ -1,0 +1,249 @@
+/**
+ * Copyright (c) 2020-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import {
+  type V1_GraphBuilderContext,
+  type PackageableElementImplicitReference,
+  PRIMITIVE_TYPE,
+} from '@finos/legend-graph';
+import {
+  assertNonEmptyString,
+  assertNonNullable,
+  assertTrue,
+  guaranteeType,
+  isBoolean,
+  isNumber,
+  isString,
+  UnsupportedOperationError,
+} from '@finos/legend-shared';
+import { getFlatDataStore } from '../../../../../../graphManager/ESFlatData_GraphManagerHelper.js';
+import {
+  getRootRecordType,
+  getSection,
+} from '../../../../../../helpers/ESFlatData_Helper.js';
+import type { FlatData } from '../../../../../metamodels/pure/model/store/flatData/model/ESFlatData_FlatData.js';
+import {
+  type FlatDataDataType,
+  FlatDataRecordField,
+  FlatDataString,
+  FlatDataBoolean,
+  FlatDataInteger,
+  FlatDataDecimal,
+  FlatDataFloat,
+  FlatDataNumber,
+  FlatDataDate,
+  FlatDataStrictDate,
+  FlatDataDateTime,
+  FlatDataRecordType,
+  RootFlatDataRecordType,
+} from '../../../../../metamodels/pure/model/store/flatData/model/ESFlatData_FlatDataDataType.js';
+import { FlatDataProperty } from '../../../../../metamodels/pure/model/store/flatData/model/ESFlatData_FlatDataProperty.js';
+import { FlatDataSection } from '../../../../../metamodels/pure/model/store/flatData/model/ESFlatData_FlatDataSection.js';
+import { RootFlatDataRecordTypeImplicitReference } from '../../../../../metamodels/pure/model/store/flatData/model/ESFlatData_RootFlatDataRecordTypeReference.js';
+import type { V1_RootFlatDataClassMapping } from '../../model/store/flatData/mapping/V1_ESFlatData_RootFlatDataClassMapping.js';
+import type { V1_FlatDataProperty } from '../../model/store/flatData/model/V1_ESFlataData_FlatDataProperty.js';
+import {
+  type V1_FlatDataDataType,
+  type V1_FlatDataRecordField,
+  V1_FlatDataString,
+  V1_FlatDataBoolean,
+  V1_FlatDataNumber,
+  V1_FlatDataInteger,
+  V1_FlatDataDecimal,
+  V1_FlatDataFloat,
+  V1_FlatDataDate,
+  V1_FlatDataStrictDate,
+  V1_FlatDataDateTime,
+  V1_FlatDataRecordType,
+  V1_RootFlatDataRecordType,
+} from '../../model/store/flatData/model/V1_ESFlatData_FlatDataDataType.js';
+import type { V1_FlatDataSection } from '../../model/store/flatData/model/V1_ESFlatData_FlatDataSection.js';
+
+export const V1_resolveFlatDataStore = (
+  path: string,
+  context: V1_GraphBuilderContext,
+): PackageableElementImplicitReference<FlatData> =>
+  context.createImplicitPackageableElementReference(path, (_path: string) =>
+    getFlatDataStore(_path, context.graph),
+  );
+
+export const V1_resolveRootFlatDataRecordType = (
+  classMapping: V1_RootFlatDataClassMapping,
+  context: V1_GraphBuilderContext,
+): RootFlatDataRecordTypeImplicitReference => {
+  assertNonEmptyString(
+    classMapping.flatData,
+    `Flat-data class mapping 'flatData' field is missing or empty`,
+  );
+  assertNonEmptyString(
+    classMapping.sectionName,
+    `Flat-data class mapping 'sectionName' field is missing or empty`,
+  );
+  const ownerReference = V1_resolveFlatDataStore(
+    classMapping.flatData,
+    context,
+  );
+  const value = getRootRecordType(
+    getSection(ownerReference.value, classMapping.sectionName),
+  );
+  return RootFlatDataRecordTypeImplicitReference.create(ownerReference, value);
+};
+
+const buildFlatDataDataType = (
+  type: V1_FlatDataDataType,
+  parentSection: FlatDataSection,
+  context: V1_GraphBuilderContext,
+): FlatDataDataType => {
+  const buildFlatDataField = (
+    field: V1_FlatDataRecordField,
+  ): FlatDataRecordField => {
+    assertNonEmptyString(
+      field.label,
+      `Flat-data record field 'label' field is missing or empty`,
+    );
+    assertNonNullable(
+      field.flatDataDataType,
+      `Flat-data record field 'flatDataDataType' field is missing`,
+    );
+    assertNonNullable(
+      field.optional,
+      `Flat-data record field 'optional' field is missing`,
+    );
+    const recordField = new FlatDataRecordField(
+      field.label,
+      buildFlatDataDataType(field.flatDataDataType, parentSection, context),
+      field.optional,
+    );
+    recordField.address = field.address;
+    return recordField;
+  };
+  if (type instanceof V1_FlatDataString) {
+    return new FlatDataString(
+      context.graph.getPrimitiveType(PRIMITIVE_TYPE.STRING),
+    );
+  } else if (type instanceof V1_FlatDataBoolean) {
+    const booleanType = new FlatDataBoolean(
+      context.graph.getPrimitiveType(PRIMITIVE_TYPE.BOOLEAN),
+    );
+    booleanType.trueString = type.trueString;
+    booleanType.falseString = type.falseString;
+    return booleanType;
+  } else if (type instanceof V1_FlatDataNumber) {
+    if (type instanceof V1_FlatDataInteger) {
+      return new FlatDataInteger(
+        context.graph.getPrimitiveType(PRIMITIVE_TYPE.INTEGER),
+      );
+    } else if (type instanceof V1_FlatDataDecimal) {
+      return new FlatDataDecimal(
+        context.graph.getPrimitiveType(PRIMITIVE_TYPE.DECIMAL),
+      );
+    } else if (type instanceof V1_FlatDataFloat) {
+      return new FlatDataFloat(
+        context.graph.getPrimitiveType(PRIMITIVE_TYPE.FLOAT),
+      );
+    }
+    return new FlatDataNumber(
+      context.graph.getPrimitiveType(PRIMITIVE_TYPE.NUMBER),
+    );
+  } else if (type instanceof V1_FlatDataDate) {
+    let timeType: FlatDataDate;
+    if (type instanceof V1_FlatDataStrictDate) {
+      timeType = new FlatDataStrictDate(
+        context.graph.getPrimitiveType(PRIMITIVE_TYPE.STRICTDATE),
+      );
+    } else if (type instanceof V1_FlatDataDateTime) {
+      timeType = new FlatDataDateTime(
+        context.graph.getPrimitiveType(PRIMITIVE_TYPE.DATETIME),
+      );
+    } else {
+      timeType = new FlatDataDate(
+        context.graph.getPrimitiveType(PRIMITIVE_TYPE.DATE),
+      );
+    }
+    timeType.dateFormat = type.dateFormat;
+    timeType.timeZone = type.timeZone;
+    return timeType;
+  } else if (type instanceof V1_FlatDataRecordType) {
+    let recordType = new FlatDataRecordType();
+    if (type instanceof V1_RootFlatDataRecordType) {
+      recordType = new RootFlatDataRecordType(parentSection);
+    }
+    recordType.fields = type.fields.map((field) => buildFlatDataField(field));
+    return recordType;
+  }
+  throw new UnsupportedOperationError('Unsupported flat-data data type');
+};
+
+const buildFlatDataRecordType = (
+  recordType: V1_RootFlatDataRecordType,
+  parentSection: FlatDataSection,
+  context: V1_GraphBuilderContext,
+): RootFlatDataRecordType =>
+  guaranteeType(
+    buildFlatDataDataType(recordType, parentSection, context),
+    RootFlatDataRecordType,
+  );
+
+const buildFlatDataProperty = (
+  property: V1_FlatDataProperty,
+): FlatDataProperty => {
+  assertNonEmptyString(
+    property.name,
+    `Flat-data property 'name' field is missing or empty`,
+  );
+  assertNonNullable(
+    property.value,
+    `Flat-data property 'value' field is missing`,
+  );
+  assertTrue(
+    isString(property.value) ||
+      isNumber(property.value) ||
+      isBoolean(property.value),
+    `Flat-data property value must be either a string, a boolean, or a number`,
+  );
+  return new FlatDataProperty(property.name, property.value);
+};
+
+export const V1_buildFlatDataSection = (
+  section: V1_FlatDataSection,
+  parentFlatData: FlatData,
+  context: V1_GraphBuilderContext,
+): FlatDataSection => {
+  assertNonEmptyString(
+    section.name,
+    `Flat-data section 'name' field is missing or empty`,
+  );
+  assertNonEmptyString(
+    section.driverId,
+    `Flat-data section 'driverId' field is missing`,
+  );
+  const flatDataSection = new FlatDataSection(
+    section.driverId,
+    section.name,
+    parentFlatData,
+  );
+  flatDataSection.sectionProperties = section.sectionProperties.map(
+    (sectionProperty) => buildFlatDataProperty(sectionProperty),
+  );
+  if (section.recordType) {
+    flatDataSection.recordType = buildFlatDataRecordType(
+      section.recordType,
+      flatDataSection,
+      context,
+    );
+  }
+  return flatDataSection;
+};

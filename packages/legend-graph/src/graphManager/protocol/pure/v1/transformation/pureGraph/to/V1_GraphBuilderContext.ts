@@ -45,7 +45,6 @@ import type { Profile } from '../../../../../../../graph/metamodel/pure/packagea
 import type { ConcreteFunctionDefinition } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/ConcreteFunctionDefinition.js';
 import type { Store } from '../../../../../../../graph/metamodel/pure/packageableElements/store/Store.js';
 import type { Service } from '../../../../../../../graph/metamodel/pure/packageableElements/service/Service.js';
-import type { FlatData } from '../../../../../../../graph/metamodel/pure/packageableElements/store/flatData/model/FlatData.js';
 import type { Database } from '../../../../../../../graph/metamodel/pure/packageableElements/store/relational/model/Database.js';
 import type { PackageableConnection } from '../../../../../../../graph/metamodel/pure/packageableElements/connection/PackageableConnection.js';
 import type { PackageableRuntime } from '../../../../../../../graph/metamodel/pure/packageableElements/runtime/PackageableRuntime.js';
@@ -60,7 +59,6 @@ import { TagImplicitReference } from '../../../../../../../graph/metamodel/pure/
 import { PropertyImplicitReference } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/PropertyReference.js';
 import { JoinImplicitReference } from '../../../../../../../graph/metamodel/pure/packageableElements/store/relational/model/JoinReference.js';
 import { FilterImplicitReference } from '../../../../../../../graph/metamodel/pure/packageableElements/store/relational/model/FilterReference.js';
-import { RootFlatDataRecordTypeImplicitReference } from '../../../../../../../graph/metamodel/pure/packageableElements/store/flatData/model/RootFlatDataRecordTypeReference.js';
 import type { ViewImplicitReference } from '../../../../../../../graph/metamodel/pure/packageableElements/store/relational/model/ViewReference.js';
 import type { TableImplicitReference } from '../../../../../../../graph/metamodel/pure/packageableElements/store/relational/model/TableReference.js';
 import { createImplicitRelationReference } from '../../../../../../../graph/metamodel/pure/packageableElements/store/relational/model/RelationReference.js';
@@ -71,7 +69,6 @@ import type { V1_TagPtr } from '../../../model/packageableElements/domain/V1_Tag
 import type { V1_PropertyPointer } from '../../../model/packageableElements/domain/V1_PropertyPointer.js';
 import type { V1_JoinPointer } from '../../../model/packageableElements/store/relational/model/V1_JoinPointer.js';
 import type { V1_FilterPointer } from '../../../model/packageableElements/store/relational/mapping/V1_FilterPointer.js';
-import type { V1_RootFlatDataClassMapping } from '../../../model/packageableElements/store/flatData/mapping/V1_RootFlatDataClassMapping.js';
 import type { V1_TablePtr } from '../../../model/packageableElements/store/relational/model/V1_TablePtr.js';
 import { V1_getRelation } from './helpers/V1_DatabaseBuilderHelper.js';
 import type { BasicModel } from '../../../../../../../graph/BasicModel.js';
@@ -91,10 +88,6 @@ import {
   getFilter,
   getJoin,
 } from '../../../../../../../graph/helpers/StoreRelational_Helper.js';
-import {
-  getRootRecordType,
-  getSection,
-} from '../../../../../../../graph/helpers/StoreFlatData_Helper.js';
 
 export const V1_buildFullPath = (
   packagePath: string | undefined,
@@ -349,27 +342,6 @@ export class V1_GraphBuilderContext {
     return PropertyImplicitReference.create(ownerReference, value);
   };
 
-  resolveRootFlatDataRecordType = (
-    classMapping: V1_RootFlatDataClassMapping,
-  ): RootFlatDataRecordTypeImplicitReference => {
-    assertNonEmptyString(
-      classMapping.flatData,
-      `Flat-data class mapping 'flatData' field is missing or empty`,
-    );
-    assertNonEmptyString(
-      classMapping.sectionName,
-      `Flat-data class mapping 'sectionName' field is missing or empty`,
-    );
-    const ownerReference = this.resolveFlatDataStore(classMapping.flatData);
-    const value = getRootRecordType(
-      getSection(ownerReference.value, classMapping.sectionName),
-    );
-    return RootFlatDataRecordTypeImplicitReference.create(
-      ownerReference,
-      value,
-    );
-  };
-
   resolveRelation = (
     tablePtr: V1_TablePtr,
   ): ViewImplicitReference | TableImplicitReference => {
@@ -485,13 +457,6 @@ export class V1_GraphBuilderContext {
     );
   resolveStore = (path: string): PackageableElementImplicitReference<Store> =>
     this.createImplicitPackageableElementReference(path, this.graph.getStore);
-  resolveFlatDataStore = (
-    path: string,
-  ): PackageableElementImplicitReference<FlatData> =>
-    this.createImplicitPackageableElementReference(
-      path,
-      this.graph.getFlatDataStore,
-    );
   resolveDatabase = (
     path: string,
   ): PackageableElementImplicitReference<Database> =>

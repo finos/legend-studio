@@ -28,12 +28,10 @@ import {
   Mapping,
   ConcreteFunctionDefinition,
   Service,
-  FlatData,
   PackageableConnection,
   PackageableRuntime,
   JsonModelConnection,
   XmlModelConnection,
-  FlatDataConnection,
   FileGenerationSpecification,
   GenerationSpecification,
   Measure,
@@ -108,8 +106,6 @@ export class GrammarTextEditorState {
       typeLabel = PURE_ELEMENT_NAME.PROFILE;
     } else if (element instanceof ConcreteFunctionDefinition) {
       typeLabel = PURE_ELEMENT_NAME.FUNCTION;
-    } else if (element instanceof FlatData) {
-      typeLabel = PURE_ELEMENT_NAME.FLAT_DATA;
     } else if (element instanceof Database) {
       typeLabel = PURE_ELEMENT_NAME.DATABASE;
     } else if (element instanceof Mapping) {
@@ -125,8 +121,6 @@ export class GrammarTextEditorState {
         typeLabel = PURE_CONNECTION_NAME.JSON_MODEL_CONNECTION;
       } else if (element.connectionValue instanceof XmlModelConnection) {
         typeLabel = PURE_CONNECTION_NAME.XML_MODEL_CONNECTION;
-      } else if (element.connectionValue instanceof FlatDataConnection) {
-        typeLabel = PURE_CONNECTION_NAME.FLAT_DATA_CONNECTION;
       } else if (element.connectionValue instanceof ModelChainConnection) {
         typeLabel = PURE_CONNECTION_NAME.MODEL_CHAIN_CONNECTION;
       } else if (

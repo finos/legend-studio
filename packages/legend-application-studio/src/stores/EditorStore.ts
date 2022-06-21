@@ -107,7 +107,6 @@ import {
   ConcreteFunctionDefinition,
   Measure,
   Database,
-  FlatData,
   Mapping,
   Service,
   PackageableRuntime,
@@ -1036,11 +1035,7 @@ export class EditorStore {
       return new UMLEditorState(this, element);
     } else if (element instanceof ConcreteFunctionDefinition) {
       return new FunctionEditorState(this, element);
-    } else if (
-      element instanceof Measure ||
-      element instanceof Database ||
-      element instanceof FlatData
-    ) {
+    } else if (element instanceof Measure || element instanceof Database) {
       return new UnsupportedElementEditorState(this, element);
     } else if (element instanceof PackageableRuntime) {
       return new PackageableRuntimeEditorState(this, element);
@@ -1445,7 +1440,6 @@ export class EditorStore {
         PACKAGEABLE_ELEMENT_TYPE.SERVICE,
         PACKAGEABLE_ELEMENT_TYPE.GENERATION_SPECIFICATION,
         PACKAGEABLE_ELEMENT_TYPE.FILE_GENERATION,
-        PACKAGEABLE_ELEMENT_TYPE.FLAT_DATA_STORE,
         PACKAGEABLE_ELEMENT_TYPE.DATABASE,
         PACKAGEABLE_ELEMENT_TYPE.DATA,
       ] as string[]

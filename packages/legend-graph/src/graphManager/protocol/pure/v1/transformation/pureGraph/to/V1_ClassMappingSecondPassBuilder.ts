@@ -33,9 +33,7 @@ import { SetImplementationContainer } from '../../../../../../../graph/metamodel
 import { PureInstanceSetImplementation } from '../../../../../../../graph/metamodel/pure/packageableElements/store/modelToModel/mapping/PureInstanceSetImplementation.js';
 import { TableAlias } from '../../../../../../../graph/metamodel/pure/packageableElements/store/relational/model/RelationalOperationElement.js';
 import { GroupByMapping } from '../../../../../../../graph/metamodel/pure/packageableElements/store/relational/mapping/GroupByMapping.js';
-import { FlatDataInstanceSetImplementation } from '../../../../../../../graph/metamodel/pure/packageableElements/store/flatData/mapping/FlatDataInstanceSetImplementation.js';
 import { RootRelationalInstanceSetImplementation } from '../../../../../../../graph/metamodel/pure/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation.js';
-import type { AbstractFlatDataPropertyMapping } from '../../../../../../../graph/metamodel/pure/packageableElements/store/flatData/mapping/AbstractFlatDataPropertyMapping.js';
 import { SetImplementationImplicitReference } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/SetImplementationReference.js';
 import type { EmbeddedRelationalInstanceSetImplementation } from '../../../../../../../graph/metamodel/pure/packageableElements/store/relational/mapping/EmbeddedRelationalInstanceSetImplementation.js';
 import type { V1_GraphBuilderContext } from './V1_GraphBuilderContext.js';
@@ -52,7 +50,6 @@ import type { V1_OperationClassMapping } from '../../../model/packageableElement
 import type { V1_PureInstanceClassMapping } from '../../../model/packageableElements/store/modelToModel/mapping/V1_PureInstanceClassMapping.js';
 import type { V1_RelationalClassMapping } from '../../../model/packageableElements/store/relational/mapping/V1_RelationalClassMapping.js';
 import { V1_PropertyMappingBuilder } from './V1_PropertyMappingBuilder.js';
-import type { V1_RootFlatDataClassMapping } from '../../../model/packageableElements/store/flatData/mapping/V1_RootFlatDataClassMapping.js';
 import type { V1_RootRelationalClassMapping } from '../../../model/packageableElements/store/relational/mapping/V1_RootRelationalClassMapping.js';
 import type { V1_AggregationAwareClassMapping } from '../../../model/packageableElements/store/relational/mapping/aggregationAware/V1_AggregationAwareClassMapping.js';
 import { V1_getInferredClassMappingId } from './helpers/V1_MappingBuilderHelper.js';
@@ -173,40 +170,6 @@ export class V1_ClassMappingSecondPassBuilder
           ),
         ),
       ) as PurePropertyMapping[];
-  }
-
-  visit_RootFlatDataClassMapping(
-    classMapping: V1_RootFlatDataClassMapping,
-  ): void {
-    assertNonEmptyString(
-      classMapping.class,
-      `Flat-data class mapping 'class' field is missing or empty`,
-    );
-    const flatDataInstanceSetImplementation = guaranteeType(
-      getOwnClassMappingById(
-        this.parent,
-        V1_getInferredClassMappingId(
-          this.context.resolveClass(classMapping.class).value,
-          classMapping,
-        ).value,
-      ),
-      FlatDataInstanceSetImplementation,
-    );
-    if (classMapping.extendsClassMappingId) {
-      flatDataInstanceSetImplementation.superSetImplementationId =
-        classMapping.extendsClassMappingId;
-    }
-    flatDataInstanceSetImplementation.propertyMappings =
-      classMapping.propertyMappings.map((propertyMapping) =>
-        propertyMapping.accept_PropertyMappingVisitor(
-          new V1_PropertyMappingBuilder(
-            this.context,
-            flatDataInstanceSetImplementation,
-            flatDataInstanceSetImplementation,
-            getAllEnumerationMappings(this.parent),
-          ),
-        ),
-      ) as AbstractFlatDataPropertyMapping[];
   }
 
   visit_RelationalClassMapping(classMapping: V1_RelationalClassMapping): void {

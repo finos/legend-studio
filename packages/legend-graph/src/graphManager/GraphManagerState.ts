@@ -43,11 +43,11 @@ import { OperationSetImplementation } from '../graph/metamodel/pure/packageableE
 import type { PropertyMapping } from '../graph/metamodel/pure/packageableElements/mapping/PropertyMapping.js';
 import type { SetImplementation } from '../graph/metamodel/pure/packageableElements/mapping/SetImplementation.js';
 import type { PackageableElement } from '../graph/metamodel/pure/packageableElements/PackageableElement.js';
-import { EmbeddedFlatDataPropertyMapping } from '../graph/metamodel/pure/packageableElements/store/flatData/mapping/EmbeddedFlatDataPropertyMapping.js';
 import { EmbeddedRelationalInstanceSetImplementation } from '../graph/metamodel/pure/packageableElements/store/relational/mapping/EmbeddedRelationalInstanceSetImplementation.js';
 import { InlineEmbeddedRelationalInstanceSetImplementation } from '../graph/metamodel/pure/packageableElements/store/relational/mapping/InlineEmbeddedRelationalInstanceSetImplementation.js';
 import { OtherwiseEmbeddedRelationalInstanceSetImplementation } from '../graph/metamodel/pure/packageableElements/store/relational/mapping/OtherwiseEmbeddedRelationalInstanceSetImplementation.js';
 import { buildPureGraphManager } from '../graphManager/protocol/pure/PureGraphManagerBuilder.js';
+import type { DSLMapping_PureGraphPlugin_Extension } from '../graph/DSLMapping_PureGraphPlugin_Extension.js';
 
 export class BasicGraphManagerState {
   pluginManager: GraphManagerPluginManager;
@@ -80,9 +80,22 @@ export class BasicGraphManagerState {
       | SetImplementation
       | AssociationImplementation,
   ): setImplementation is InstanceSetImplementation {
+    const extraInstanceSetImplementationCheckers = this.pluginManager
+      .getPureGraphPlugins()
+      .flatMap(
+        (plugin) =>
+          (
+            plugin as DSLMapping_PureGraphPlugin_Extension
+          ).getExtraInstanceSetImplementationCheckers?.() ?? [],
+      );
+    for (const checker of extraInstanceSetImplementationCheckers) {
+      const isInstanceSetImp = checker(setImplementation);
+      if (isInstanceSetImp) {
+        return isInstanceSetImp;
+      }
+    }
     return (
       setImplementation instanceof InstanceSetImplementation ||
-      setImplementation instanceof EmbeddedFlatDataPropertyMapping ||
       setImplementation instanceof EmbeddedRelationalInstanceSetImplementation
     );
   }

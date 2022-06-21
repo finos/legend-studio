@@ -210,7 +210,10 @@ export class ESService_LegendStudioApplicationPlugin
 
   getExtraMappingElementSourceExtractors(): MappingElementSourceExtractor[] {
     return [
-      (mappingElement: MappingElement): MappingElementSource | undefined => {
+      (
+        mappingElement: MappingElement,
+        plugins: LegendStudioPlugin[],
+      ): MappingElementSource | undefined => {
         if (mappingElement instanceof RootServiceInstanceSetImplementation) {
           return mappingElement.class.value;
         }

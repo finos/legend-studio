@@ -23,7 +23,6 @@ import {
   LogEvent,
   hashObject,
   UnsupportedOperationError,
-  guaranteeNonNullable,
   uuid,
   assertTrue,
   assertErrorThrown,
@@ -65,10 +64,7 @@ import {
   ObjectInputType,
   IdentifiedConnection,
   EngineRuntime,
-  FlatDataInputData,
   JsonModelConnection,
-  FlatDataConnection,
-  RootFlatDataRecordType,
   PackageableElementExplicitReference,
   RelationalInputData,
   RelationalInputType,
@@ -89,7 +85,6 @@ import {
   LambdaEditorState,
   TAB_SIZE,
 } from '@finos/legend-application';
-import { flatData_setData } from '../../../graphModifier/StoreFlatData_GraphModifierHelper.js';
 import {
   expectedOutputMappingTestAssert_setExpectedOutput,
   mappingTest_setAssert,
@@ -103,6 +98,7 @@ import {
   localH2DatasourceSpecification_setTestDataSetupSqls,
   relationalInputData_setData,
 } from '../../../graphModifier/StoreRelational_GraphModifierHelper.js';
+import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../DSLMapping_LegendStudioPlugin_Extension.js';
 
 export enum TEST_RESULT {
   NONE = 'NONE', // test has not run yet
@@ -182,7 +178,7 @@ export class MappingTestQueryState extends LambdaEditorState {
   }
 }
 
-abstract class MappingTestInputDataState {
+export abstract class MappingTestInputDataState {
   readonly uuid = uuid();
   editorStore: EditorStore;
   mapping: Mapping;
@@ -252,39 +248,6 @@ export class MappingTestObjectInputDataState extends MappingTestInputDataState {
       createUrlStringFromData(
         this.inputData.data,
         ContentType.APPLICATION_JSON,
-        engineConfig.useBase64ForAdhocConnectionDataUrls,
-      ),
-    );
-    runtime_addIdentifiedConnection(
-      runtime,
-      new IdentifiedConnection(
-        generateIdentifiedConnectionId(runtime),
-        connection,
-      ),
-      this.editorStore.changeDetectionState.observerContext,
-    );
-    return runtime;
-  }
-}
-
-export class MappingTestFlatDataInputDataState extends MappingTestInputDataState {
-  declare inputData: FlatDataInputData;
-
-  get runtime(): Runtime {
-    const engineConfig =
-      this.editorStore.graphManagerState.graphManager.TEMPORARY__getEngineConfig();
-    const runtime = new EngineRuntime();
-    runtime_addMapping(
-      runtime,
-      PackageableElementExplicitReference.create(this.mapping),
-    );
-    const connection = new FlatDataConnection(
-      PackageableElementExplicitReference.create(
-        this.inputData.sourceFlatData.value,
-      ),
-      createUrlStringFromData(
-        this.inputData.data,
-        ContentType.TEXT_PLAIN,
         engineConfig.useBase64ForAdhocConnectionDataUrls,
       ),
     );
@@ -476,18 +439,32 @@ export class MappingTestState {
         this.mappingEditorState.mapping,
         inputData,
       );
-    } else if (inputData instanceof FlatDataInputData) {
-      return new MappingTestFlatDataInputDataState(
-        this.editorStore,
-        this.mappingEditorState.mapping,
-        inputData,
-      );
     } else if (inputData instanceof RelationalInputData) {
       return new MappingTestRelationalInputDataState(
         this.editorStore,
         this.mappingEditorState.mapping,
         inputData,
       );
+    }
+    if (inputData) {
+      const extraInputDataStateBuilders = this.editorStore.pluginManager
+        .getStudioPlugins()
+        .flatMap(
+          (plugin) =>
+            (
+              plugin as DSLMapping_LegendStudioPlugin_Extension
+            ).getExtraInputDataStateBuilders?.() ?? [],
+        );
+      for (const inputDataStateBuilder of extraInputDataStateBuilders) {
+        const inputDataState = inputDataStateBuilder(
+          inputData,
+          this.editorStore,
+          this.mappingEditorState.mapping,
+        );
+        if (inputDataState) {
+          return inputDataState;
+        }
+      }
     }
     throw new UnsupportedOperationError(
       `Can't build state for mapping test input data`,
@@ -551,24 +528,6 @@ export class MappingTestState {
         }
       }
       this.setInputDataState(newInputDataState);
-    } else if (source instanceof RootFlatDataRecordType) {
-      const newInputDataState = new MappingTestFlatDataInputDataState(
-        this.editorStore,
-        this.mappingEditorState.mapping,
-        new FlatDataInputData(
-          PackageableElementExplicitReference.create(
-            guaranteeNonNullable(source._OWNER._OWNER),
-          ),
-          '',
-        ),
-      );
-      if (populateWithMockData) {
-        flatData_setData(
-          newInputDataState.inputData,
-          createMockDataForMappingElementSource(source, this.editorStore),
-        );
-      }
-      this.setInputDataState(newInputDataState);
     } else if (source instanceof TableAlias) {
       const newInputDataState = new MappingTestRelationalInputDataState(
         this.editorStore,
@@ -589,12 +548,35 @@ export class MappingTestState {
       }
       this.setInputDataState(newInputDataState);
     } else {
-      this.editorStore.applicationStore.notifyWarning(
-        new UnsupportedOperationError(
-          `Can't build input data for source`,
+      let inputDataStateUpdated = false;
+      const extraInputDataStateGetters = this.editorStore.pluginManager
+        .getStudioPlugins()
+        .flatMap(
+          (plugin) =>
+            (
+              plugin as DSLMapping_LegendStudioPlugin_Extension
+            ).getExtraMappingTestInputDataStateGetters?.() ?? [],
+        );
+      for (const inputDataStateGetter of extraInputDataStateGetters) {
+        const inputDataState = inputDataStateGetter(
           source,
-        ),
-      );
+          this.editorStore,
+          this.mappingEditorState.mapping,
+          populateWithMockData,
+        );
+        if (inputDataState) {
+          this.setInputDataState(inputDataState);
+          inputDataStateUpdated = true;
+        }
+      }
+      if (!inputDataStateUpdated) {
+        this.editorStore.applicationStore.notifyWarning(
+          new UnsupportedOperationError(
+            `Can't build input data for source`,
+            source,
+          ),
+        );
+      }
     }
   }
 
@@ -602,7 +584,12 @@ export class MappingTestState {
    * Execute mapping using current info in the test detail panel then set the execution result value as test expected result
    */
   *regenerateExpectedResult(): GeneratorFn<void> {
-    if (DEPRECATED__validate_MappingTest(this.test)) {
+    if (
+      DEPRECATED__validate_MappingTest(
+        this.test,
+        this.editorStore.pluginManager.getPureGraphManagerPlugins(),
+      )
+    ) {
       this.editorStore.applicationStore.notifyError(
         `Can't execute test '${this.test.name}'. Please make sure that the test query and input data are valid`,
       );
@@ -662,7 +649,12 @@ export class MappingTestState {
   }
 
   *runTest(): GeneratorFn<void> {
-    if (DEPRECATED__validate_MappingTest(this.test)) {
+    if (
+      DEPRECATED__validate_MappingTest(
+        this.test,
+        this.editorStore.pluginManager.getPureGraphManagerPlugins(),
+      )
+    ) {
       this.editorStore.applicationStore.notifyError(
         `Can't run test '${this.test.name}'. Please make sure that the test is valid`,
       );

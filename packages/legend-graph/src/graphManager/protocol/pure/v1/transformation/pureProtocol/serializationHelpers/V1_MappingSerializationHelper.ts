@@ -45,12 +45,8 @@ import { PRIMITIVE_TYPE } from '../../../../../../../graph/MetaModelConst.js';
 import type { V1_InputData } from '../../../model/packageableElements/mapping/V1_InputData.js';
 import { V1_Mapping } from '../../../model/packageableElements/mapping/V1_Mapping.js';
 import { V1_MappingTest } from '../../../model/packageableElements/mapping/V1_MappingTest.js';
-import {
-  V1_multiplicitySchema,
-  V1_packageableElementPointerDeserializerSchema,
-} from '../../../transformation/pureProtocol/serializationHelpers/V1_CoreSerializationHelper.js';
+import { V1_multiplicitySchema } from '../../../transformation/pureProtocol/serializationHelpers/V1_CoreSerializationHelper.js';
 import { V1_propertyPointerModelSchema } from './V1_DomainSerializationHelper.js';
-import { V1_FlatDataInputData } from '../../../model/packageableElements/store/flatData/mapping/V1_FlatDataInputData.js';
 import { V1_ObjectInputData } from '../../../model/packageableElements/store/modelToModel/mapping/V1_ObjectInputData.js';
 import { V1_ExpectedOutputMappingTestAssert } from '../../../model/packageableElements/mapping/V1_ExpectedOutputMappingTestAssert.js';
 import type { V1_MappingTestAssert } from '../../../model/packageableElements/mapping/V1_MappingTestAssert.js';
@@ -78,9 +74,6 @@ import type { V1_ClassMapping } from '../../../model/packageableElements/mapping
 import { V1_OperationClassMapping } from '../../../model/packageableElements/mapping/V1_OperationClassMapping.js';
 import { V1_PureInstanceClassMapping } from '../../../model/packageableElements/store/modelToModel/mapping/V1_PureInstanceClassMapping.js';
 import { V1_PurePropertyMapping } from '../../../model/packageableElements/store/modelToModel/mapping/V1_PurePropertyMapping.js';
-import { V1_FlatDataPropertyMapping } from '../../../model/packageableElements/store/flatData/mapping/V1_FlatDataPropertyMapping.js';
-import { V1_EmbeddedFlatDataPropertyMapping } from '../../../model/packageableElements/store/flatData/mapping/V1_EmbeddedFlatDataPropertyMapping.js';
-import { V1_RootFlatDataClassMapping } from '../../../model/packageableElements/store/flatData/mapping/V1_RootFlatDataClassMapping.js';
 import { V1_RootRelationalClassMapping } from '../../../model/packageableElements/store/relational/mapping/V1_RootRelationalClassMapping.js';
 import { V1_RelationalClassMapping } from '../../../model/packageableElements/store/relational/mapping/V1_RelationalClassMapping.js';
 import { V1_EmbeddedRelationalPropertyMapping } from '../../../model/packageableElements/store/relational/mapping/V1_EmbeddedRelationalPropertyMapping.js';
@@ -93,7 +86,6 @@ import { V1_AggregateSpecification } from '../../../model/packageableElements/st
 import { V1_AggregateFunction } from '../../../model/packageableElements/store/relational/mapping/aggregationAware/V1_AggregateFunction.js';
 import { V1_GroupByFunction } from '../../../model/packageableElements/store/relational/mapping/aggregationAware/V1_GroupByFunction.js';
 import { V1_AggregationAwarePropertyMapping } from '../../../model/packageableElements/store/relational/mapping/aggregationAware/V1_AggregationAwarePropertyMapping.js';
-import type { V1_AbstractFlatDataPropertyMapping } from '../../../model/packageableElements/store/flatData/mapping/V1_AbstractFlatDataPropertyMapping.js';
 import { V1_XStorePropertyMapping } from '../../../model/packageableElements/mapping/xStore/V1_XStorePropertyMapping.js';
 import { V1_XStoreAssociationMapping } from '../../../model/packageableElements/mapping/xStore/V1_XStoreAssociationMapping.js';
 import { V1_RelationalInputData } from '../../../model/packageableElements/store/relational/mapping/V1_RelationalInputData.js';
@@ -107,7 +99,6 @@ enum V1_ClassMappingType {
   OPERATION = 'operation',
   MERGE_OPERATION = 'mergeOperation',
   PUREINSTANCE = 'pureInstance',
-  ROOT_FLAT_DATA = 'flatData',
   ROOT_RELATIONAL = 'relational',
   RELATIONAL = 'embedded',
   AGGREGATION_AWARE = 'aggregationAware',
@@ -115,8 +106,6 @@ enum V1_ClassMappingType {
 
 enum V1_PropertyMappingType {
   PURE = 'purePropertyMapping',
-  FLAT_DATA = 'flatDataPropertyMapping',
-  EMBEDDED_FLAT_DATA = 'embeddedFlatDataPropertyMapping',
   RELATIONAL = 'relationalPropertyMapping',
   EMBEDDED_RELATIONAL = 'embeddedPropertyMapping',
   INLINE_EMBEDDED_RELATIONAL = 'inlineEmbeddedPropertyMapping',
@@ -127,7 +116,7 @@ enum V1_PropertyMappingType {
 
 // ------------------------------------- Shared -------------------------------------
 
-const V1_localMappingPropertyInfoModelSchema = createModelSchema(
+export const V1_localMappingPropertyInfoModelSchema = createModelSchema(
   V1_LocalMappingPropertyInfo,
   {
     multiplicity: usingModelSchema(V1_multiplicitySchema),
@@ -447,89 +436,6 @@ function V1_deserializeRelationalPropertyMapping(
   }
 }
 
-// ------------------------------------- Flat-data Mapping -------------------------------------
-
-const flatDataPropertyMappingModelSchema = createModelSchema(
-  V1_FlatDataPropertyMapping,
-  {
-    _type: usingConstantValueSchema(V1_PropertyMappingType.FLAT_DATA),
-    enumMappingId: optional(primitive()),
-    localMappingProperty: usingModelSchema(
-      V1_localMappingPropertyInfoModelSchema,
-    ),
-    property: usingModelSchema(V1_propertyPointerModelSchema),
-    source: primitive(),
-    target: optional(primitive()),
-    transform: usingModelSchema(V1_rawLambdaModelSchema),
-  },
-);
-
-const embeddedFlatDataPropertyMappingModelSchema = createModelSchema(
-  V1_EmbeddedFlatDataPropertyMapping,
-  {
-    _type: usingConstantValueSchema(V1_PropertyMappingType.EMBEDDED_FLAT_DATA),
-    class: primitive(),
-    id: optional(primitive()),
-    localMappingProperty: usingModelSchema(
-      V1_localMappingPropertyInfoModelSchema,
-    ),
-    property: usingModelSchema(V1_propertyPointerModelSchema),
-    propertyMappings: list(
-      custom(
-        (val) => V1_serializeFlatDataPropertyMapping(val),
-        (val) => V1_deserializeFlatDataPropertyMapping(val),
-      ),
-    ),
-    root: primitive(),
-    source: primitive(),
-    target: optional(primitive()),
-  },
-);
-
-function V1_serializeFlatDataPropertyMapping(
-  protocol: V1_AbstractFlatDataPropertyMapping,
-): PlainObject<V1_AbstractFlatDataPropertyMapping> | typeof SKIP {
-  if (protocol instanceof V1_FlatDataPropertyMapping) {
-    return serialize(flatDataPropertyMappingModelSchema, protocol);
-  } else if (protocol instanceof V1_EmbeddedFlatDataPropertyMapping) {
-    return serialize(embeddedFlatDataPropertyMappingModelSchema, protocol);
-  }
-  return SKIP;
-}
-
-function V1_deserializeFlatDataPropertyMapping(
-  json: PlainObject<V1_AbstractFlatDataPropertyMapping>,
-): V1_AbstractFlatDataPropertyMapping | typeof SKIP {
-  switch (json._type) {
-    case V1_PropertyMappingType.FLAT_DATA:
-      return deserialize(flatDataPropertyMappingModelSchema, json);
-    case V1_PropertyMappingType.EMBEDDED_FLAT_DATA:
-      return deserialize(embeddedFlatDataPropertyMappingModelSchema, json);
-    default:
-      return SKIP;
-  }
-}
-
-const rootFlatDataCLassMappingModelSchema = createModelSchema(
-  V1_RootFlatDataClassMapping,
-  {
-    _type: usingConstantValueSchema(V1_ClassMappingType.ROOT_FLAT_DATA),
-    class: primitive(),
-    extendsClassMappingId: optional(primitive()),
-    filter: usingModelSchema(V1_rawLambdaModelSchema),
-    flatData: primitive(),
-    id: optional(primitive()),
-    propertyMappings: list(
-      custom(
-        (val) => V1_serializeFlatDataPropertyMapping(val),
-        (val) => V1_deserializeFlatDataPropertyMapping(val),
-      ),
-    ),
-    root: primitive(),
-    sectionName: primitive(),
-  },
-);
-
 // ------------------------------------- Aggregation Aware Mapping -------------------------------------
 
 const aggregationAwarePropertyMappingModelSchema = createModelSchema(
@@ -631,8 +537,6 @@ function V1_serializeClassMapping(
     return serialize(operationClassMappingModelSchema, value);
   } else if (value instanceof V1_PureInstanceClassMapping) {
     return serialize(pureInstanceClassMappingModelSchema, value);
-  } else if (value instanceof V1_RootFlatDataClassMapping) {
-    return serialize(rootFlatDataCLassMappingModelSchema, value);
   } else if (value instanceof V1_RootRelationalClassMapping) {
     return serialize(rootRelationalClassMappingModelSchema, value);
   } else if (value instanceof V1_RelationalClassMapping) {
@@ -671,8 +575,6 @@ function V1_deserializeClassMapping(
       return deserialize(operationClassMappingModelSchema, json);
     case V1_ClassMappingType.PUREINSTANCE:
       return deserialize(pureInstanceClassMappingModelSchema, json);
-    case V1_ClassMappingType.ROOT_FLAT_DATA:
-      return deserialize(rootFlatDataCLassMappingModelSchema, json);
     case V1_ClassMappingType.ROOT_RELATIONAL:
       return deserialize(rootRelationalClassMappingModelSchema, json);
     case V1_ClassMappingType.RELATIONAL:
@@ -705,7 +607,6 @@ function V1_deserializeClassMapping(
 
 enum V1_InputDataType {
   OBJECT = 'object',
-  FLAT_DATA = 'flatData',
   RELATIONAL = 'relational',
 }
 
@@ -718,14 +619,6 @@ const V1_objectInputData = createModelSchema(V1_ObjectInputData, {
   data: primitive(),
   inputType: primitive(),
   sourceClass: primitive(),
-});
-
-const V1_flatDataInputData = createModelSchema(V1_FlatDataInputData, {
-  _type: usingConstantValueSchema(V1_InputDataType.FLAT_DATA),
-  data: primitive(),
-  sourceFlatData: usingModelSchema(
-    V1_packageableElementPointerDeserializerSchema,
-  ),
 });
 
 const V1_relationalInputData = createModelSchema(V1_RelationalInputData, {
@@ -747,13 +640,24 @@ const V1_expectedOutputMappingTestAssertModelSchema = createModelSchema(
 
 const V1_serializeInputData = (
   protocol: V1_InputData,
+  plugins?: PureProtocolProcessorPlugin[],
 ): PlainObject<V1_InputData> => {
   if (protocol instanceof V1_ObjectInputData) {
     return serialize(V1_objectInputData, protocol);
-  } else if (protocol instanceof V1_FlatDataInputData) {
-    return serialize(V1_flatDataInputData, protocol);
   } else if (protocol instanceof V1_RelationalInputData) {
     return serialize(V1_relationalInputData, protocol);
+  }
+  const extraMappingTestInputDataSerializers = (plugins ?? []).flatMap(
+    (plugin) =>
+      (
+        plugin as DSLMapping_PureProtocolProcessorPlugin_Extension
+      ).V1_getExtraMappingTestInputDataSerializers?.() ?? [],
+  );
+  for (const serializer of extraMappingTestInputDataSerializers) {
+    const json = serializer(protocol);
+    if (json) {
+      return json;
+    }
   }
   throw new UnsupportedOperationError(
     `Can't serialize mapping test input data`,
@@ -763,18 +667,32 @@ const V1_serializeInputData = (
 
 const V1_deserializeInputData = (
   json: PlainObject<V1_InputData>,
+  plugins?: PureProtocolProcessorPlugin[],
 ): V1_InputData => {
   switch (json._type) {
     case V1_InputDataType.OBJECT:
       return deserialize(V1_objectInputData, json);
-    case V1_InputDataType.FLAT_DATA:
-      return deserialize(V1_flatDataInputData, json);
     case V1_InputDataType.RELATIONAL:
       return deserialize(V1_relationalInputData, json);
-    default:
+    default: {
+      if (plugins) {
+        const extraMappingTestInputDataDeserializers = plugins.flatMap(
+          (plugin) =>
+            (
+              plugin as DSLMapping_PureProtocolProcessorPlugin_Extension
+            ).V1_getExtraMappingTestInputDataDeserializers?.() ?? [],
+        );
+        for (const deserializer of extraMappingTestInputDataDeserializers) {
+          const protocol = deserializer(json);
+          if (protocol) {
+            return protocol;
+          }
+        }
+      }
       throw new UnsupportedOperationError(
         `Can't deserialize mapping test input data of type '${json._type}'`,
       );
+    }
   }
 };
 
@@ -804,20 +722,23 @@ const V1_deserializeTestAssert = (
   }
 };
 
-const V1_mappingTestModelSchema = createModelSchema(V1_MappingTest, {
-  assert: custom(
-    (val) => V1_serializeTestAssert(val),
-    (val) => V1_deserializeTestAssert(val),
-  ),
-  inputData: list(
-    custom(
-      (val) => V1_serializeInputData(val),
-      (val) => V1_deserializeInputData(val),
+const V1_mappingTestModelSchema = (
+  plugins?: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_MappingTest> =>
+  createModelSchema(V1_MappingTest, {
+    assert: custom(
+      (val) => V1_serializeTestAssert(val),
+      (val) => V1_deserializeTestAssert(val),
     ),
-  ),
-  name: primitive(),
-  query: usingModelSchema(V1_rawLambdaModelSchema),
-});
+    inputData: list(
+      custom(
+        (val) => V1_serializeInputData(val, plugins),
+        (val) => V1_deserializeInputData(val, plugins),
+      ),
+    ),
+    name: primitive(),
+    query: usingModelSchema(V1_rawLambdaModelSchema),
+  });
 
 // ------------------------------------- Association Mapping -------------------------------------
 
@@ -1103,5 +1024,5 @@ export const V1_mappingModelSchema = (
     includedMappings: list(usingModelSchema(V1_mappingIncludeModelSchema)),
     name: primitive(),
     package: primitive(),
-    tests: list(usingModelSchema(V1_mappingTestModelSchema)),
+    tests: list(usingModelSchema(V1_mappingTestModelSchema(plugins))),
   });

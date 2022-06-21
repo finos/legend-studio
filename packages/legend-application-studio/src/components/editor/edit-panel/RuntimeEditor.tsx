@@ -84,7 +84,6 @@ import {
   PackageableConnection,
   JsonModelConnection,
   XmlModelConnection,
-  FlatDataConnection,
   RelationalDatabaseConnection,
   PackageableElementExplicitReference,
   ModelChainConnection,
@@ -115,8 +114,6 @@ const getConnectionTooltipText = (
     return `JSON model connection \u2022 Class ${connectionValue.class.value.path}`;
   } else if (connectionValue instanceof XmlModelConnection) {
     return `XML model connection \u2022 Class ${connectionValue.class.value.path}`;
-  } else if (connectionValue instanceof FlatDataConnection) {
-    return `Flat-data connection \u2022 Flat-data store ${connectionValue.store.value.path}`;
   } else if (connectionValue instanceof RelationalDatabaseConnection) {
     return `Relational database connection \u2020 database store ${connectionValue.store.value.path}`;
   } else if (connectionValue instanceof ModelChainConnection) {

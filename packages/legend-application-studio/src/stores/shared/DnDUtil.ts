@@ -16,7 +16,6 @@
 
 import type { MappingElement } from '../editor-state/element-editor-state/mapping/MappingEditorState.js';
 import type {
-  FlatDataRecordTypeTreeNodeData,
   TypeTreeNodeData,
   PackageTreeNodeData,
 } from '../shared/TreeUtil.js';
@@ -36,7 +35,6 @@ export enum CORE_DND_TYPE {
   PROJECT_EXPLORER_ENUMERATION = 'PROJECT_EXPLORER_ENUMERATION',
   PROJECT_EXPLORER_PROFILE = 'PROJECT_EXPLORER_PROFILE',
   PROJECT_EXPLORER_FUNCTION = 'PROJECT_EXPLORER_FUNCTION',
-  PROJECT_EXPLORER_FLAT_DATA = 'PROJECT_EXPLORER_FLAT_DATA',
   PROJECT_EXPLORER_DATABASE = 'PROJECT_EXPLORER_DATABASE',
   PROJECT_EXPLORER_MAPPING = 'PROJECT_EXPLORER_MAPPING',
   PROJECT_EXPLORER_SERVICE = 'PROJECT_EXPLORER_SERVICE',
@@ -67,14 +65,6 @@ export class TypeDragSource {
   }
 }
 
-export class FlatDataColumnDragSource {
-  data: FlatDataRecordTypeTreeNodeData;
-
-  constructor(data: FlatDataRecordTypeTreeNodeData) {
-    this.data = data;
-  }
-}
-
 export class ElementDragSource {
   data: PackageTreeNodeData;
 
@@ -92,8 +82,6 @@ export class MappingElementDragSource {
 }
 
 // TODO: disperse all of these to the editor, we should probably remove all of these
-export type FlatDataPropertyMappingTransformDropTarget =
-  FlatDataColumnDragSource;
 export type TransformDropTarget = TypeDragSource;
 export type OperationSetImplementationDropTarget = MappingElementDragSource;
 export type MappingElementSourceDropTarget = ElementDragSource;

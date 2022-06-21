@@ -24,17 +24,11 @@ import type { V1_RelationalPropertyMapping } from '../../../model/packageableEle
 import type { V1_LocalMappingPropertyInfo } from './V1_LocalMappingPropertyInfo.js';
 import type { V1_PropertyPointer } from '../../../model/packageableElements/domain/V1_PropertyPointer.js';
 import type { V1_PurePropertyMapping } from '../../../model/packageableElements/store/modelToModel/mapping/V1_PurePropertyMapping.js';
-import type { V1_FlatDataPropertyMapping } from '../../../model/packageableElements/store/flatData/mapping/V1_FlatDataPropertyMapping.js';
-import type { V1_EmbeddedFlatDataPropertyMapping } from '../../../model/packageableElements/store/flatData/mapping/V1_EmbeddedFlatDataPropertyMapping.js';
 import type { V1_XStorePropertyMapping } from './xStore/V1_XStorePropertyMapping.js';
 
 export interface V1_PropertyMappingVisitor<T> {
   visit_PropertyMapping(propertyMapping: V1_PropertyMapping): T;
   visit_PurePropertyMapping(propertyMapping: V1_PurePropertyMapping): T;
-  visit_FlatDataPropertyMapping(propertyMapping: V1_FlatDataPropertyMapping): T;
-  visit_EmbeddedFlatDataPropertyMapping(
-    propertyMapping: V1_EmbeddedFlatDataPropertyMapping,
-  ): T;
   visit_RelationalPropertyMapping(
     propertyMapping: V1_RelationalPropertyMapping,
   ): T;

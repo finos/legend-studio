@@ -21,7 +21,6 @@ import {
   MAPPING_TEST_EDITOR_TAB_TYPE,
   TEST_RESULT,
   MappingTestObjectInputDataState,
-  MappingTestFlatDataInputDataState,
   MappingTestExpectedOutputAssertionState,
   MappingTestRelationalInputDataState,
 } from '../../../../stores/editor-state/element-editor-state/mapping/MappingTestState.js';
@@ -83,7 +82,6 @@ import {
 } from '@finos/legend-graph';
 import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor.js';
 import type { DSLMapping_LegendStudioApplicationPlugin_Extension } from '../../../../stores/DSLMapping_LegendStudioApplicationPlugin_Extension.js';
-import { flatData_setData } from '../../../../stores/graphModifier/StoreFlatData_GraphModifierHelper.js';
 import {
   relationalInputData_setData,
   relationalInputData_setInputType,
@@ -125,7 +123,10 @@ const MappingTestQueryEditor = observer(
             setImplementation
               ? editorStore.graphManagerState.graphManager.HACKY__createGetAllLambda(
                   guaranteeType(
-                    getMappingElementTarget(setImplementation),
+                    getMappingElementTarget(
+                      setImplementation,
+                      editorStore.pluginManager.getStudioPlugins(),
+                    ),
                     Class,
                   ),
                 )
@@ -272,30 +273,6 @@ export const MappingTestObjectInputDataBuilder = observer(
   },
 );
 
-export const MappingTestFlatDataInputDataBuilder = observer(
-  (props: {
-    inputDataState: MappingTestFlatDataInputDataState;
-    isReadOnly: boolean;
-  }) => {
-    const { inputDataState, isReadOnly } = props;
-
-    // Input data
-    const updateInput = (val: string): void =>
-      flatData_setData(inputDataState.inputData, val);
-
-    return (
-      <div className="panel__content mapping-test-editor__input-data-panel__content">
-        <StudioTextInputEditor
-          language={EDITOR_LANGUAGE.TEXT}
-          inputValue={inputDataState.inputData.data}
-          isReadOnly={isReadOnly}
-          updateInput={updateInput}
-        />
-      </div>
-    );
-  },
-);
-
 /**
  * Right now, we always default this to use Local H2 connection.
  */
@@ -401,17 +378,10 @@ export const MappingTestInputDataBuilder = observer(
       !(setImp instanceof OperationSetImplementation);
 
     // input data builder
-    let inputDataBuilder: React.ReactNode;
+    let inputDataBuilder: React.ReactNode = null;
     if (inputDataState instanceof MappingTestObjectInputDataState) {
       inputDataBuilder = (
         <MappingTestObjectInputDataBuilder
-          inputDataState={inputDataState}
-          isReadOnly={isReadOnly}
-        />
-      );
-    } else if (inputDataState instanceof MappingTestFlatDataInputDataState) {
-      inputDataBuilder = (
-        <MappingTestFlatDataInputDataBuilder
           inputDataState={inputDataState}
           isReadOnly={isReadOnly}
         />
@@ -424,7 +394,20 @@ export const MappingTestInputDataBuilder = observer(
         />
       );
     } else {
-      inputDataBuilder = null;
+      const extraMappingInputDataStateBuilders = editorStore.pluginManager
+        .getStudioPlugins()
+        .flatMap(
+          (plugin) =>
+            (
+              plugin as DSLMapping_LegendStudioPlugin_Extension
+            ).getExtraMappingTestInputDataStateBuilders?.() ?? [],
+        );
+      for (const builder of extraMappingInputDataStateBuilders) {
+        const mappingInputDataBuilder = builder(inputDataState, isReadOnly);
+        if (mappingInputDataBuilder) {
+          inputDataBuilder = mappingInputDataBuilder;
+        }
+      }
     }
 
     // input type

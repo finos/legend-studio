@@ -51,9 +51,6 @@ import {
   JsonModelConnection,
   XmlModelConnection,
   Class,
-  RootFlatDataRecordType,
-  FlatData,
-  FlatDataConnection,
   PackageableElementExplicitReference,
   Database,
   TableAlias,
@@ -86,8 +83,6 @@ export const getClassMappingStore = (
   );
   if (sourceElement instanceof Class) {
     return editorStore.graphManagerState.graph.modelStore;
-  } else if (sourceElement instanceof RootFlatDataRecordType) {
-    return sourceElement._OWNER._OWNER;
   } else if (sourceElement instanceof TableAlias) {
     return sourceElement.relation.ownerReference.value;
   }
@@ -487,11 +482,7 @@ export class IdentifiedConnectionsPerStoreEditorTabState extends IdentifiedConne
   }
 
   createDefaultConnection(): Connection {
-    if (this.store instanceof FlatData) {
-      return new FlatDataConnection(
-        PackageableElementExplicitReference.create(this.store),
-      );
-    } else if (this.store instanceof Database) {
+    if (this.store instanceof Database) {
       return new RelationalDatabaseConnection(
         PackageableElementExplicitReference.create(this.store),
         DatabaseType.H2,

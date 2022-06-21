@@ -54,7 +54,6 @@ import {
   ConcreteFunctionDefinition,
   Profile,
   Mapping,
-  FlatData,
   Service,
   PackageableConnection,
   PackageableRuntime,
@@ -63,7 +62,6 @@ import {
   JsonModelConnection,
   FileGenerationSpecification,
   GenerationSpecification,
-  FlatDataConnection,
   Database,
   PackageableElementExplicitReference,
   RelationalDatabaseConnection,
@@ -264,26 +262,6 @@ export class NewPureModelConnectionDriver extends NewConnectionValueDriver<PureM
   }
 }
 
-export class NewFlatDataConnectionDriver extends NewConnectionValueDriver<FlatDataConnection> {
-  constructor(editorStore: EditorStore) {
-    super(editorStore);
-
-    makeObservable(this, {
-      isValid: computed,
-    });
-  }
-
-  get isValid(): boolean {
-    return true;
-  }
-
-  createConnection(store: FlatData): FlatDataConnection {
-    return new FlatDataConnection(
-      PackageableElementExplicitReference.create(store),
-    );
-  }
-}
-
 export class NewRelationalDatabaseConnectionDriver extends NewConnectionValueDriver<RelationalDatabaseConnection> {
   constructor(editorStore: EditorStore) {
     super(editorStore);
@@ -372,8 +350,6 @@ export class NewPackageableConnectionDriver extends NewElementDriver<Packageable
   ): NewConnectionValueDriver<Connection> {
     if (store === undefined) {
       return new NewPureModelConnectionDriver(this.editorStore);
-    } else if (store instanceof FlatData) {
-      return new NewFlatDataConnectionDriver(this.editorStore);
     } else if (store instanceof Database) {
       return new NewRelationalDatabaseConnectionDriver(this.editorStore);
     }
@@ -773,9 +749,6 @@ export class NewElementState {
         break;
       case PACKAGEABLE_ELEMENT_TYPE.MAPPING:
         element = new Mapping(name);
-        break;
-      case PACKAGEABLE_ELEMENT_TYPE.FLAT_DATA_STORE:
-        element = new FlatData(name);
         break;
       case PACKAGEABLE_ELEMENT_TYPE.DATABASE:
         element = new Database(name);

@@ -38,7 +38,6 @@ import { V1_PackageableConnection } from '../../../model/packageableElements/con
 import type { V1_Connection } from '../../../model/packageableElements/connection/V1_Connection.js';
 import { V1_JsonModelConnection } from '../../../model/packageableElements/store/modelToModel/connection/V1_JsonModelConnection.js';
 import { V1_XmlModelConnection } from '../../../model/packageableElements/store/modelToModel/connection/V1_XmlModelConnection.js';
-import { V1_FlatDataConnection } from '../../../model/packageableElements/store/flatData/connection/V1_FlatDataConnection.js';
 import {
   type V1_DatabaseConnection,
   V1_RelationalDatabaseConnection,
@@ -77,7 +76,6 @@ export enum V1_ConnectionType {
   MODEL_CHAIN_CONNECTION = 'ModelChainConnection',
   JSON_MODEL_CONNECTION = 'JsonModelConnection',
   XML_MODEL_CONNECTION = 'XmlModelConnection',
-  FLAT_DATA_CONNECTION = 'FlatDataConnection',
   RELATIONAL_DATABASE_CONNECTION = 'RelationalDatabaseConnection',
 }
 
@@ -138,15 +136,6 @@ export const V1_xmlModelConnectionModelSchema = createModelSchema(
      * @discrepancy grammar-roundtrip
      */
     store: alias('element', optional(primitive())),
-    url: primitive(),
-  },
-);
-
-export const V1_flatDataConnectionModelSchema = createModelSchema(
-  V1_FlatDataConnection,
-  {
-    _type: usingConstantValueSchema(V1_ConnectionType.FLAT_DATA_CONNECTION),
-    store: alias('element', primitive()),
     url: primitive(),
   },
 );
@@ -550,8 +539,6 @@ export const V1_serializeConnectionValue = (
     return serialize(V1_modelChainConnectionModelSchema, protocol);
   } else if (protocol instanceof V1_XmlModelConnection) {
     return serialize(V1_xmlModelConnectionModelSchema, protocol);
-  } else if (protocol instanceof V1_FlatDataConnection) {
-    return serialize(V1_flatDataConnectionModelSchema, protocol);
   } else if (protocol instanceof V1_RelationalDatabaseConnection) {
     return serialize(V1_RelationalDatabaseConnection, protocol);
   } else if (protocol instanceof V1_ConnectionPointer) {
@@ -592,8 +579,6 @@ export const V1_deserializeConnectionValue = (
       return deserialize(V1_modelChainConnectionModelSchema, json);
     case V1_ConnectionType.XML_MODEL_CONNECTION:
       return deserialize(V1_xmlModelConnectionModelSchema, json);
-    case V1_ConnectionType.FLAT_DATA_CONNECTION:
-      return deserialize(V1_flatDataConnectionModelSchema, json);
     case V1_ConnectionType.RELATIONAL_DATABASE_CONNECTION:
       return deserialize(V1_RelationalDatabaseConnection, json);
     case V1_ConnectionType.CONNECTION_POINTER:

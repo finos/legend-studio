@@ -26,10 +26,8 @@ import {
   type SetImplementation,
   OperationSetImplementation,
   type PureInstanceSetImplementation,
-  type FlatDataInstanceSetImplementation,
   type EnumerationMapping,
   type Property,
-  type AbstractFlatDataPropertyMapping,
   type RelationalInstanceSetImplementation,
   type RootRelationalInstanceSetImplementation,
   type AggregationAwareSetImplementation,
@@ -39,12 +37,10 @@ import {
   type Mapping,
   getAllClassMappings,
   PurePropertyMapping,
-  EmbeddedFlatDataPropertyMapping,
   EnumValueMapping,
   PrimitiveType,
   Enumeration,
   Class,
-  FlatDataPropertyMapping,
   Measure,
   Unit,
   EnumValueExplicitReference,
@@ -332,131 +328,6 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
     );
   }
 
-  visit_FlatDataInstanceSetImplementation(
-    setImplementation:
-      | FlatDataInstanceSetImplementation
-      | EmbeddedFlatDataPropertyMapping,
-  ): void {
-    const decoratePropertyMapping = (
-      propertyMappings: AbstractFlatDataPropertyMapping[] | undefined,
-      property: Property,
-    ): AbstractFlatDataPropertyMapping[] => {
-      // before decoration, make sure to prune stubbed property mappings in case they are nolonger compatible
-      // with the set implemenetation (this happens when we switch sources)
-      const existingPropertyMappings = (propertyMappings ?? []).filter((pm) => {
-        if (pm instanceof FlatDataPropertyMapping) {
-          return !isStubbed_RawLambda(pm.transform);
-        }
-        return true;
-      });
-      const propertyType = property.genericType.value.rawType;
-      if (
-        propertyType instanceof PrimitiveType ||
-        propertyType instanceof Unit ||
-        propertyType instanceof Measure
-      ) {
-        // only allow one property mapping per primitive property
-        assertTrue(
-          !existingPropertyMappings.length ||
-            existingPropertyMappings.length === 1,
-          'Only one property mapping should exist per simple type (e.g. primitive, measure, unit) property',
-        );
-        return existingPropertyMappings.length
-          ? [existingPropertyMappings[0] as FlatDataPropertyMapping]
-          : [
-              new FlatDataPropertyMapping(
-                setImplementation,
-                PropertyExplicitReference.create(property),
-                stub_RawLambda(),
-                SetImplementationExplicitReference.create(setImplementation),
-                undefined,
-              ),
-            ];
-      } else if (propertyType instanceof Enumeration) {
-        // only allow one property mapping per enumeration property
-        assertTrue(
-          !existingPropertyMappings.length ||
-            existingPropertyMappings.length === 1,
-          'Only one property mapping should exist per enumeration type property',
-        );
-        const ePropertyMapping = existingPropertyMappings.length
-          ? [existingPropertyMappings[0] as FlatDataPropertyMapping]
-          : [
-              new FlatDataPropertyMapping(
-                setImplementation,
-                PropertyExplicitReference.create(property),
-                stub_RawLambda(),
-                SetImplementationExplicitReference.create(setImplementation),
-                undefined,
-              ),
-            ];
-        // Find existing enumeration mappings for the property enumeration
-        const existingEnumerationMappings = getEnumerationMappingsByEnumeration(
-          setImplementation._PARENT,
-          getRawGenericType(
-            (ePropertyMapping[0] as FlatDataPropertyMapping).property.value
-              .genericType.value,
-            Enumeration,
-          ),
-        );
-        ePropertyMapping.forEach((epm) => {
-          assertType(
-            epm,
-            FlatDataPropertyMapping,
-            'Property mapping for enumeration type property must be a simple property mapping',
-          );
-          // If there are no enumeration mappings, delete the transformer of the property mapping
-          // If there is only 1 enumeration mapping, make it the transformer of the property mapping
-          // Else, delete current transformer if it's not in the list of extisting enumeration mappings
-          if (existingEnumerationMappings.length === 1) {
-            epm.transformer = EnumerationMappingExplicitReference.create(
-              guaranteeNonNullable(existingEnumerationMappings[0]),
-            );
-          } else if (
-            existingEnumerationMappings.length === 0 ||
-            !existingEnumerationMappings.find(
-              (eem) => eem === epm.transformer?.value,
-            )
-          ) {
-            epm.transformer = undefined;
-          }
-        });
-        return ePropertyMapping;
-      } else if (propertyType instanceof Class) {
-        // NOTE: flat data property mapping for complex property might change to use union.
-        // As such, for now we won't support it, and will hide this from the UI for now. Since the exact playout of this is not known
-        // we cannot do decoration as well.
-
-        // assertTrue(!existingPropertyMappings.length || existingPropertyMappings.length === 1, 'Only one property mapping should exist per complex class');
-        // return existingPropertyMappings.length ? [existingPropertyMappings[0]] : [];
-        return existingPropertyMappings;
-      }
-      return [];
-    };
-    const propertyMappingsBeforeDecoration = setImplementation.propertyMappings;
-    const decoratedPropertyMappings =
-      getDecoratedSetImplementationPropertyMappings<AbstractFlatDataPropertyMapping>(
-        setImplementation,
-        decoratePropertyMapping,
-      );
-    mapping_setPropertyMappings(
-      setImplementation,
-      decoratedPropertyMappings.concat(
-        propertyMappingsBeforeDecoration.filter(
-          (propertyMapping) =>
-            !decoratedPropertyMappings.includes(propertyMapping),
-        ),
-      ),
-      this.editorStore.changeDetectionState.observerContext,
-    );
-  }
-
-  visit_EmbeddedFlatDataSetImplementation(
-    setImplementation: EmbeddedFlatDataPropertyMapping,
-  ): void {
-    this.visit_FlatDataInstanceSetImplementation(setImplementation);
-  }
-
   visit_RelationalInstanceSetImplementation(
     setImplementation: RelationalInstanceSetImplementation,
   ): void {
@@ -641,7 +512,7 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
           ).getExtraSetImplementationDecorators?.() ?? [],
       );
     for (const decorator of extraSetImplementationDecorators) {
-      decorator(setImplementation);
+      decorator(setImplementation, this.editorStore);
     }
   }
 
@@ -717,30 +588,6 @@ export class MappingElementDecorationCleaner
     );
   }
 
-  visit_FlatDataInstanceSetImplementation(
-    setImplementation:
-      | FlatDataInstanceSetImplementation
-      | EmbeddedFlatDataPropertyMapping,
-  ): void {
-    mapping_setPropertyMappings(
-      setImplementation,
-      setImplementation.propertyMappings.filter(
-        (propertyMapping) =>
-          (propertyMapping instanceof FlatDataPropertyMapping &&
-            !isStubbed_RawLambda(propertyMapping.transform)) ||
-          (propertyMapping instanceof EmbeddedFlatDataPropertyMapping &&
-            propertyMapping.property),
-      ),
-      this.editorStore.changeDetectionState.observerContext,
-    );
-  }
-
-  visit_EmbeddedFlatDataSetImplementation(
-    setImplementation: EmbeddedFlatDataPropertyMapping,
-  ): void {
-    this.visit_FlatDataInstanceSetImplementation(setImplementation);
-  }
-
   visit_RelationalInstanceSetImplementation(
     setImplementation: RelationalInstanceSetImplementation,
   ): void {
@@ -782,7 +629,7 @@ export class MappingElementDecorationCleaner
             ).getExtraSetImplementationDecorationCleaners?.() ?? [],
         );
     for (const decorationCleaner of extraSetImplementationDecorationCleaners) {
-      decorationCleaner(setImplementation);
+      decorationCleaner(setImplementation, this.editorStore);
     }
   }
 

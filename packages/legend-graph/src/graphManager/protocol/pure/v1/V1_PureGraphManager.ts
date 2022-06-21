@@ -161,7 +161,6 @@ import {
   V1_TargetDatabase,
 } from './engine/generation/V1_DatabaseBuilderInput.js';
 import { V1_transformRelationalDatabaseConnection } from './transformation/pureGraph/from/V1_ConnectionTransformer.js';
-import { V1_FlatData } from './model/packageableElements/store/flatData/model/V1_FlatData.js';
 import { V1_Database } from './model/packageableElements/store/relational/model/V1_Database.js';
 import { V1_setupDatabaseSerialization } from './transformation/pureProtocol/serializationHelpers/V1_DatabaseSerializationHelper.js';
 import {
@@ -2681,8 +2680,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       return CORE_PURE_PATH.RUNTIME;
     } else if (protocol instanceof V1_SectionIndex) {
       return CORE_PURE_PATH.SECTION_INDEX;
-    } else if (protocol instanceof V1_FlatData) {
-      return CORE_PURE_PATH.FLAT_DATA;
     } else if (protocol instanceof V1_Database) {
       return CORE_PURE_PATH.DATABASE;
     } else if (protocol instanceof V1_Service) {

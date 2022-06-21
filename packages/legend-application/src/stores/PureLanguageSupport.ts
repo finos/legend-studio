@@ -124,7 +124,6 @@ const generateLanguageMonarch = (
       PURE_ELEMENT_NAME.MEASURE,
       PURE_ELEMENT_NAME.PROFILE,
       PURE_ELEMENT_NAME.FUNCTION,
-      PURE_ELEMENT_NAME.FLAT_DATA,
       PURE_ELEMENT_NAME.DATABASE,
       PURE_ELEMENT_NAME.MAPPING,
       PURE_ELEMENT_NAME.SERVICE,
@@ -148,7 +147,6 @@ const generateLanguageMonarch = (
        * @modularize
        * See https://github.com/finos/legend-studio/issues/65
        */
-      PURE_CONNECTION_NAME.FLAT_DATA_CONNECTION,
       PURE_CONNECTION_NAME.RELATIONAL_DATABASE_CONNECTION,
       'Relational',
     ],
@@ -191,7 +189,6 @@ const generateLanguageMonarch = (
         PURE_PARSER.RUNTIME,
         PURE_PARSER.MAPPING,
         PURE_PARSER.SERVICE,
-        PURE_PARSER.FLATDATA,
         PURE_PARSER.RELATIONAL,
         PURE_PARSER.GENERATION_SPECIFICATION,
         PURE_PARSER.FILE_GENERATION_SPECIFICATION,

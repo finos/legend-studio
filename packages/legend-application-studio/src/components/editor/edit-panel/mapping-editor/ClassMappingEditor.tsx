@@ -30,8 +30,6 @@ import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
   type SetImplementation,
   type PureInstanceSetImplementation,
-  type FlatDataInstanceSetImplementation,
-  type EmbeddedFlatDataPropertyMapping,
   type RootRelationalInstanceSetImplementation,
   fromElementPathToMappingElementId,
   OperationSetImplementation,
@@ -83,7 +81,6 @@ export const OperatorSelector = observer(
 
 export enum CLASS_MAPPING_SOURCE_TYPE {
   CLASS = 'CLASS',
-  FLAT_DATA = 'FLAT DATA',
   OPERATION = 'OPERATION',
   RELATIONAL = 'DATABASE TABLE',
 }
@@ -118,21 +115,6 @@ export const ClassMappingEditor = observer(
         sourceType = CLASS_MAPPING_SOURCE_TYPE.CLASS;
         sourceName = (setImplementation as PureInstanceSetImplementation)
           .srcClass?.value.name;
-        break;
-      }
-      case SET_IMPLEMENTATION_TYPE.FLAT_DATA: {
-        sourceType = CLASS_MAPPING_SOURCE_TYPE.FLAT_DATA;
-        sourceName = (setImplementation as FlatDataInstanceSetImplementation)
-          .sourceRootRecordType.value._OWNER.name;
-        break;
-      }
-      case SET_IMPLEMENTATION_TYPE.EMBEDDED_FLAT_DATA: {
-        sourceType = CLASS_MAPPING_SOURCE_TYPE.FLAT_DATA;
-        const flatDataInstanceSetImpl =
-          setImplementation as EmbeddedFlatDataPropertyMapping;
-        sourceName = (
-          flatDataInstanceSetImpl.rootInstanceSetImplementation as FlatDataInstanceSetImplementation
-        ).sourceRootRecordType.value._OWNER.name;
         break;
       }
       case SET_IMPLEMENTATION_TYPE.RELATIONAL: {

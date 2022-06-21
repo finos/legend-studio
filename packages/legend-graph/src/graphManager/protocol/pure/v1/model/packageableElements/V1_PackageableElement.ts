@@ -19,7 +19,6 @@ import { hashArray, type Hashable } from '@finos/legend-shared';
 import type { V1_Profile } from './domain/V1_Profile.js';
 import type { V1_Class } from './domain/V1_Class.js';
 import type { V1_Enumeration } from './domain/V1_Enumeration.js';
-import type { V1_FlatData } from './store/flatData/model/V1_FlatData.js';
 import type { V1_Database } from './store/relational/model/V1_Database.js';
 import type { V1_Mapping } from './mapping/V1_Mapping.js';
 import type { V1_Service } from './service/V1_Service.js';
@@ -47,7 +46,6 @@ export interface V1_PackageableElementVisitor<T> {
   visit_Mapping(element: V1_Mapping): T;
   visit_PackageableRuntime(element: V1_PackageableRuntime): T;
 
-  visit_FlatData(element: V1_FlatData): T;
   visit_Database(element: V1_Database): T;
   visit_Service(element: V1_Service): T;
   visit_GenerationSpecification(element: V1_GenerationSpecification): T;

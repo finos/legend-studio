@@ -22,11 +22,16 @@ import type {
   Connection,
   SetImplementation,
   InstanceSetImplementation,
+  PackageableElement,
+  Mapping,
+  InputData,
+  Property,
 } from '@finos/legend-graph';
 import type { MappingTestState } from './editor-state/element-editor-state/mapping/MappingTestState.js';
 import type { MappingExecutionState } from './editor-state/element-editor-state/mapping/MappingExecutionState.js';
 import type { NewConnectionValueDriver } from './editor/NewElementState.js';
 import type {
+  MappingEditorState,
   MappingElement,
   MappingElementSource,
 } from './editor-state/element-editor-state/mapping/MappingEditorState.js';
@@ -36,17 +41,19 @@ import type {
   PropertyMappingState,
 } from './editor-state/element-editor-state/mapping/MappingElementState.js';
 
-type MappingSourceTypeInfo = {
+export type MappingSourceTypeInfo = {
   sourceType: string;
   sourceName: string;
 };
 
 export type SetImplementationDecorator = (
   setImplementation: SetImplementation,
+  editorStore: EditorStore,
 ) => void;
 
 export type SetImplementationDecorationCleaner = (
   setImplementation: SetImplementation,
+  editorStore: EditorStore,
 ) => void;
 
 export interface MappingElementLabel {
@@ -61,6 +68,7 @@ export type SetImplementationMappingElementLabelInfoBuilder = (
 
 export type MappingElementSourceExtractor = (
   mappingElement: MappingElement,
+  plugins: LegendStudioPlugin[],
 ) => MappingElementSource | undefined;
 
 export type SetImplemtationClassifier = (
@@ -135,8 +143,116 @@ export type InstanceSetImplementationStoreExtractor = (
   sourceElement: MappingElementSource,
 ) => Store | undefined;
 
+export type MappingElementTargetExtractor = (
+  mappingElement: MappingElement,
+) => PackageableElement | undefined;
+
+export type MappingElementTypeGetter = (
+  mappingElement: MappingElement,
+) => MAPPING_ELEMENT_TYPE | undefined;
+
+export type NewSetImplementationGetter = (
+  newSource: unknown,
+  setImplementation: SetImplementation,
+  mapping: Mapping,
+) => InstanceSetImplementation | undefined;
+
+export type InputDataGetter = (
+  source: unknown,
+  editorStore: EditorStore,
+) => InputData | undefined;
+
+export type MappingElementGetter = (
+  mapping: Mapping,
+  mappingElementId: string,
+) => MappingElement | undefined;
+
+export type MappingElementTreeNodeDataChildIdsGetter = (
+  mappingElement: MappingElement,
+  nodeData: MappingExplorerTreeNodeData,
+) => string[] | undefined;
+
+export type MappingElementDeleteEntryGetter = (
+  mappingElement: MappingElement,
+) => void;
+
+export type MappingElementReprocessor = (
+  mappingElement: MappingElement,
+  nodeData: MappingExplorerTreeNodeData,
+  treeNodes: Map<string, MappingExplorerTreeNodeData>,
+  openNodes: string[],
+  editorStore: EditorStore,
+) => void;
+
+export type MappingExplorerTreeNodeExpandActionSetter = (
+  node: MappingExplorerTreeNodeData,
+  editorStore: EditorStore,
+  treeData: TreeData<MappingExplorerTreeNodeData>,
+) => void;
+
+export type InputDataStateGetter = (
+  source: unknown,
+  editorStore: EditorStore,
+  mapping: Mapping,
+  populateWithMockData: boolean,
+) => MappingExecutionInputDataState | undefined;
+
+export type InputDataStateBuilder = (
+  inputData: InputData,
+  editorStore: EditorStore,
+  mapping: Mapping,
+) => MappingTestInputDataState | undefined;
+
+export type MappingTestInputDataStateGetter = (
+  source: unknown,
+  editorStore: EditorStore,
+  mapping: Mapping,
+  populateWithMockData: boolean,
+) => MappingTestInputDataState | undefined;
+
+export type MappingInputDataStateBuilder = (
+  inputDataState: MappingExecutionInputDataState,
+) => React.ReactNode | undefined;
+
+export type MappingTestInputDataStateBuilder = (
+  inputDataState: MappingTestInputDataState,
+  isReadOnly: boolean,
+) => React.ReactNode | undefined;
+
+export type MappingElementVisitor = (
+  instanceSetImplementationState: InstanceSetImplementationState,
+  mappingEditorState: MappingEditorState,
+  property: Property,
+) => void;
+
+export type MappingElementSourceFilterTextGetter = (
+  value: unknown,
+) => string | undefined;
+
+export type SourceElementLabelerGetter = (
+  source: unknown,
+) => string | undefined;
+
+export type MappingElementSourceOptionBuilder = (
+  source: MappingElementSource,
+) => MappingElementSourceSelectOption | undefined;
+
+export type SourceOptionGetter = (editorStore: EditorStore) => unknown[];
+
+export type ClassMappingSourceDriverGetter = (
+  element: PackageableElement,
+  applicationStore: ApplicationStore<LegendApplicationConfig>,
+  mappingEditorState: MappingEditorState,
+  setImplementation: InstanceSetImplementation,
+) => unknown | undefined;
+
+export type SourceElementTreeRenderer = (
+  srcElement: unknown,
+  instanceSetImplementationStat: InstanceSetImplementationState,
+) => React.ReactNode | undefined;
+
 export interface DSLMapping_LegendStudioApplicationPlugin_Extension
-  extends DSL_LegendStudioApplicationPlugin_Extension {
+  extends DSL_LegendStudioPlugin_Extension {
   /**
    * Get the list of set implementation decorators.
    */
@@ -227,4 +343,114 @@ export interface DSLMapping_LegendStudioApplicationPlugin_Extension
    * Get the list of store extractor for the given set implementation source.
    */
   getExtraInstanceSetImplementationStoreExtractors?(): InstanceSetImplementationStoreExtractor[];
+
+  /**
+   * Get the list of target extractors for the specified mapping element.
+   */
+  getExtraMappingElementTargetExtractors?(): MappingElementTargetExtractor[];
+
+  /**
+   * Get the list of mapping element types for the specified mapping element.
+   */
+  getExtraMappingElementTypeGetters?(): MappingElementTypeGetter[];
+
+  /**
+   * Get the list of new setImplementation for the specified source element.
+   */
+  getExtraNewSetImplementationGetters?(): NewSetImplementationGetter[];
+
+  /**
+   * Get the list of input data for the specified source element.
+   */
+  getExtraInputDataGetters?(): InputDataGetter[];
+
+  /**
+   * Get the list of mapping element for the specified mapping by type and ID.
+   */
+  getExtraMappingElementGetters?(): MappingElementGetter[];
+
+  /**
+   * Get the list of tree node child IDs for specified mapping element.
+   */
+  getExtraMappingElementTreeNodeDataChildIdsGetters?(): MappingElementTreeNodeDataChildIdsGetter[];
+
+  /**
+   * Get the list of mapping element delete entry getters for a specified mapping element.
+   */
+  getExtraMappingElementDeleteEntryGetters?(): MappingElementDeleteEntryGetter[];
+
+  /**
+   * Get the list of reprocessors for a specified mapping element.
+   */
+  getExtraMappingElementReprocessors?(): MappingElementReprocessor[];
+
+  /**
+   * Get the list of action getters on expanding mapping explorer tree node.
+   */
+  getExtraMappingExplorerTreeNodeExpandActionSetters?(): MappingExplorerTreeNodeExpandActionSetter[];
+
+  /**
+   * Get the list of input data state getters for mapping execution for specified source element.
+   */
+  getExtraInputDataStateGetters?(): InputDataStateGetter[];
+
+  /**
+   * Get the list of input data state builders for mapping execution for specified input data.
+   */
+  getExtraInputDataStateBuilders?(): InputDataStateBuilder[];
+
+  /**
+   * Get the list of mapping test input data state getters for mapping execution for specified source element.
+   */
+  getExtraMappingTestInputDataStateGetters?(): MappingTestInputDataStateGetter[];
+
+  /**
+   * Get the list of mapping execution input data state builders for mapping execution for specified source element.
+   */
+  getExtraMappingInputDataStateBuilders?(): MappingInputDataStateBuilder[];
+
+  /**
+   * Get the list of mapping test input data state builders for mapping execution for specified source element.
+   */
+  getExtraMappingTestInputDataStateBuilders?(): MappingTestInputDataStateBuilder[];
+
+  /**
+   * Get the list of mapping element visitor for a specified setimplementation state.
+   */
+  getExtraMappingElementVisitors?(): MappingElementVisitor[];
+
+  /**
+   * Get the list of filter text getters for a specified mapping element source.
+   */
+  getExtraMappingElementSourceFilterTextGetters?(): MappingElementSourceFilterTextGetter[];
+
+  /**
+   * Get the list of labelers for a specified source element.
+   */
+  getExtraSourceElementLabelerGetters?(): SourceElementLabelerGetter[];
+
+  /**
+   * Get the list of source option builders for a specified source element.
+   */
+  getExtraMappingElementSourceOptionBuilders?(): MappingElementSourceOptionBuilder[];
+
+  /**
+   * Get the list of extra source options for a mapping
+   */
+  getExtraSourceOptionGetters?(): SourceOptionGetter[];
+
+  /**
+   * Get the list of DnD source types for a mapping.
+   */
+  getExtraDnDSourceTypes?(): string[];
+
+  /**
+   * Get the list of class mapping source driver setters for a given mapping element source.
+   */
+  getExtraClassMappingSourceDriverGetters?(): ClassMappingSourceDriverGetter[];
+
+  /**
+   * Get the list of source element tree renderers for a specified mapping.
+   */
+  getExtraSourceElementTreeRenderers?(): SourceElementTreeRenderer[];
 }

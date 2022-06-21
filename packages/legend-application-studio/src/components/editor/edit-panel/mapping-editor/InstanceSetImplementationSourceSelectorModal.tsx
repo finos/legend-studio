@@ -31,13 +31,11 @@ import {
   type InstanceSetImplementation,
   type View,
   Class,
-  RootFlatDataRecordType,
   Table,
   DEFAULT_DATABASE_SCHEMA_NAME,
   TableAlias,
   TableExplicitReference,
   ViewExplicitReference,
-  getAllRecordTypes,
 } from '@finos/legend-graph';
 import { UnsupportedOperationError } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
@@ -49,14 +47,25 @@ import {
 
 export const getMappingElementSourceFilterText = (
   option: MappingElementSourceSelectOption,
+  plugins: LegendStudioPlugin[],
 ): string => {
   const val = option.value;
   if (val instanceof Class) {
     return val.path;
-  } else if (val instanceof RootFlatDataRecordType) {
-    return val._OWNER.name;
   } else if (val instanceof TableAlias) {
     return `${val.relation.ownerReference.value.path}.${val.relation.value.schema.name}.${val.relation.value.name}`;
+  }
+  const extraMappingElementSourceFilterTextGetters = plugins.flatMap(
+    (plugin) =>
+      (
+        plugin as DSLMapping_LegendStudioPlugin_Extension
+      ).getExtraMappingElementSourceFilterTextGetters?.() ?? [],
+  );
+  for (const getter of extraMappingElementSourceFilterTextGetters) {
+    const filterText = getter(option);
+    if (filterText) {
+      return filterText;
+    }
   }
   throw new UnsupportedOperationError();
 };
@@ -68,12 +77,11 @@ export interface MappingElementSourceSelectOption {
 
 export const getSourceElementLabel = (
   srcElement: unknown | undefined,
+  plugins: LegendStudioPlugin[],
 ): string => {
   let sourceLabel = '(none)';
   if (srcElement instanceof Class) {
     sourceLabel = srcElement.name;
-  } else if (srcElement instanceof RootFlatDataRecordType) {
-    sourceLabel = srcElement._OWNER.name;
   } else if (srcElement instanceof TableAlias) {
     sourceLabel = `${srcElement.relation.ownerReference.value.name}.${
       srcElement.relation.value.schema.name === DEFAULT_DATABASE_SCHEMA_NAME
@@ -81,20 +89,30 @@ export const getSourceElementLabel = (
         : `${srcElement.relation.value.schema.name}.`
     }${srcElement.relation.value.name}`;
   }
+  if (srcElement) {
+    const extraSourceElementLabelerGetters = plugins.flatMap(
+      (plugin) =>
+        (
+          plugin as DSLMapping_LegendStudioPlugin_Extension
+        ).getExtraSourceElementLabelerGetters?.() ?? [],
+    );
+    for (const getter of extraSourceElementLabelerGetters) {
+      const label = getter(srcElement);
+      if (label) {
+        sourceLabel = label;
+      }
+    }
+  }
   return sourceLabel;
 };
 
 // TODO: add more visual cue to the type of source (class vs. flat-data vs. db)
 export const buildMappingElementSourceOption = (
   source: MappingElementSource | undefined,
+  plugins: LegendStudioPlugin[],
 ): MappingElementSourceSelectOption | null => {
   if (source instanceof Class) {
     return buildElementOption(source) as MappingElementSourceSelectOption;
-  } else if (source instanceof RootFlatDataRecordType) {
-    return {
-      label: `${source._OWNER._OWNER.name}.${source._OWNER.name}`,
-      value: source,
-    };
   } else if (source instanceof TableAlias) {
     return {
       label: `${source.relation.ownerReference.value.name}.${
@@ -104,6 +122,20 @@ export const buildMappingElementSourceOption = (
       }${source.relation.value.name}`,
       value: source,
     };
+  }
+  if (source) {
+    const extraMappingElementSourceOptionBuilders = plugins.flatMap(
+      (plugin) =>
+        (
+          plugin as DSLMapping_LegendStudioPlugin_Extension
+        ).getExtraMappingElementSourceOptionBuilders?.() ?? [],
+    );
+    for (const builder of extraMappingElementSourceOptionBuilders) {
+      const option = builder(source);
+      if (option) {
+        return option;
+      }
+    }
   }
   return null;
 };
@@ -127,17 +159,25 @@ export const InstanceSetImplementationSourceSelectorModal = observer(
     } = props;
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
+    let extraOptions: unknown[] = [];
+    const extraSourceOptionGetters = editorStore.pluginManager
+      .getStudioPlugins()
+      .flatMap(
+        (plugin) =>
+          (
+            plugin as DSLMapping_LegendStudioPlugin_Extension
+          ).getExtraSourceOptionGetters?.() ?? [],
+      );
+    for (const getter of extraSourceOptionGetters) {
+      const sources = getter(editorStore);
+      extraOptions = extraOptions.concat(sources);
+    }
     const options = (
       editorStore.graphManagerState.graph.ownClasses as MappingElementSource[]
     )
       .concat(
         editorStore.graphManagerState.graph.dependencyManager
           .classes as MappingElementSource[],
-      )
-      .concat(
-        editorStore.graphManagerState.graph.ownFlatDatas.flatMap(
-          getAllRecordTypes,
-        ),
       )
       .concat(
         editorStore.graphManagerState.graph.ownDatabases
@@ -159,11 +199,21 @@ export const InstanceSetImplementationSourceSelectorModal = observer(
             return mainTableAlias;
           }),
       )
-      .map(buildMappingElementSourceOption);
+      .concat(extraOptions)
+      .map((option) =>
+        buildMappingElementSourceOption(
+          option,
+          editorStore.pluginManager.getStudioPlugins(),
+        ),
+      );
     const filterOption = createFilter({
       ignoreCase: true,
       ignoreAccents: false,
-      stringify: getMappingElementSourceFilterText,
+      stringify: (option) =>
+        getMappingElementSourceFilterText(
+          option,
+          editorStore.pluginManager.getStudioPlugins(),
+        ),
     });
     const sourceSelectorRef = useRef<SelectComponent>(null);
     const selectedSourceType = buildMappingElementSourceOption(
@@ -172,6 +222,7 @@ export const InstanceSetImplementationSourceSelectorModal = observer(
           setImplementation,
           editorStore.pluginManager.getApplicationPlugins(),
         ),
+      editorStore.pluginManager.getStudioPlugins(),
     );
     const changeSourceType = (
       val: MappingElementSourceSelectOption | null,

@@ -52,7 +52,6 @@ import {
   filterByType,
 } from '@finos/legend-shared';
 import { MappingExecutionState } from './MappingExecutionState.js';
-import { RootFlatDataInstanceSetImplementationState } from './FlatDataInstanceSetImplementationState.js';
 import type { TreeNodeData, TreeData } from '@finos/legend-art';
 import { UnsupportedInstanceSetImplementationState } from './UnsupportedInstanceSetImplementationState.js';
 import { RootRelationalInstanceSetImplementationState } from './relational/RelationalInstanceSetImplementationState.js';
@@ -78,13 +77,9 @@ import {
   ExpectedOutputMappingTestAssert,
   ObjectInputData,
   ObjectInputType,
-  FlatDataInstanceSetImplementation,
   InstanceSetImplementation,
-  EmbeddedFlatDataPropertyMapping,
-  FlatDataInputData,
-  RootFlatDataRecordType,
   PackageableElementExplicitReference,
-  RootFlatDataRecordTypeExplicitReference,
+  OptionalPackageableElementExplicitReference,
   RootRelationalInstanceSetImplementation,
   EmbeddedRelationalInstanceSetImplementation,
   AggregationAwareSetImplementation,
@@ -103,9 +98,8 @@ import { LambdaEditorState } from '@finos/legend-application';
 import type {
   DSLMapping_LegendStudioApplicationPlugin_Extension,
   MappingElementLabel,
-} from '../../../DSLMapping_LegendStudioApplicationPlugin_Extension.js';
-import type { LegendStudioApplicationPlugin } from '../../../LegendStudioApplicationPlugin.js';
-import { flatData_setSourceRootRecordType } from '../../../graphModifier/StoreFlatData_GraphModifierHelper.js';
+} from '../../../DSLMapping_LegendStudioPlugin_Extension.js';
+import type { LegendStudioPlugin } from '../../../LegendStudioPlugin.js';
 import {
   pureInstanceSetImpl_setSrcClass,
   mapping_addClassMapping,
@@ -141,7 +135,6 @@ export enum MAPPING_ELEMENT_SOURCE_ID_LABEL {
   ENUMERATION_MAPPING = 'enumerationMapping',
   OPERATION_CLASS_MAPPING = 'operationClassMapping',
   PURE_INSTANCE_CLASS_MAPPING = 'pureInstanceClassMapping',
-  FLAT_DATA_CLASS_MAPPING = 'flatDataClassMapping',
   RELATIONAL_CLASS_MAPPING = 'relationalClassMapping',
   AGGREGATION_AWARE_CLASS_MAPPING = 'aggregationAwareClassMapping',
 }
@@ -165,19 +158,30 @@ export type MappingElementSource = unknown;
 
 export const getMappingElementTarget = (
   mappingElement: MappingElement,
+  plugins: LegendStudioPlugin[],
 ): PackageableElement => {
   if (mappingElement instanceof EnumerationMapping) {
     return mappingElement.enumeration.value;
   } else if (mappingElement instanceof AssociationImplementation) {
     return mappingElement.association.value;
-  } else if (mappingElement instanceof EmbeddedFlatDataPropertyMapping) {
-    return mappingElement.class.value;
   } else if (
     mappingElement instanceof EmbeddedRelationalInstanceSetImplementation
   ) {
     return mappingElement.class.value;
   } else if (mappingElement instanceof SetImplementation) {
     return mappingElement.class.value;
+  }
+  const extraMappingElementTargetExtractors = plugins.flatMap(
+    (plugin) =>
+      (
+        plugin as DSLMapping_LegendStudioPlugin_Extension
+      ).getExtraMappingElementTargetExtractors?.() ?? [],
+  );
+  for (const extractor of extraMappingElementTargetExtractors) {
+    const mappingElementTarget = extractor(mappingElement);
+    if (mappingElementTarget) {
+      return mappingElementTarget;
+    }
   }
   throw new UnsupportedOperationError(
     `Can't derive target of mapping element`,
@@ -214,13 +218,6 @@ export const getMappingElementLabel = (
       tooltip: mappingElement.association.value.path,
     };
   } else if (mappingElement instanceof SetImplementation) {
-    if (mappingElement instanceof EmbeddedFlatDataPropertyMapping) {
-      return {
-        value: `${mappingElement.class.value.name} [${mappingElement.property.value.name}]`,
-        root: mappingElement.root.value,
-        tooltip: mappingElement.class.value.path,
-      };
-    }
     const extraSetImplementationMappingElementLabelInfoBuilders =
       editorStore.pluginManager
         .getApplicationPlugins()
@@ -269,17 +266,7 @@ export const getMappingElementSource = (
   } else if (mappingElement instanceof AssociationImplementation) {
     throw new UnsupportedOperationError();
   } else if (mappingElement instanceof PureInstanceSetImplementation) {
-    return mappingElement.srcClass?.value;
-  } else if (mappingElement instanceof FlatDataInstanceSetImplementation) {
-    return mappingElement.sourceRootRecordType.value;
-  } else if (mappingElement instanceof EmbeddedFlatDataPropertyMapping) {
-    return getMappingElementSource(
-      guaranteeType(
-        mappingElement.rootInstanceSetImplementation,
-        FlatDataInstanceSetImplementation,
-      ),
-      plugins,
-    );
+    return mappingElement.srcClass.value;
   } else if (
     mappingElement instanceof RootRelationalInstanceSetImplementation
   ) {
@@ -301,7 +288,7 @@ export const getMappingElementSource = (
       ).getExtraMappingElementSourceExtractors?.() ?? [],
   );
   for (const extractor of extraMappingElementSourceExtractors) {
-    const mappingElementSource = extractor(mappingElement);
+    const mappingElementSource = extractor(mappingElement, plugins);
     if (mappingElementSource) {
       return mappingElementSource;
     }
@@ -314,15 +301,26 @@ export const getMappingElementSource = (
 
 export const getMappingElementType = (
   mappingElement: MappingElement,
+  plugins: LegendStudioPlugin[],
 ): MAPPING_ELEMENT_TYPE => {
   if (mappingElement instanceof EnumerationMapping) {
     return MAPPING_ELEMENT_TYPE.ENUMERATION;
   } else if (mappingElement instanceof AssociationImplementation) {
     return MAPPING_ELEMENT_TYPE.ASSOCIATION;
-  } else if (mappingElement instanceof EmbeddedFlatDataPropertyMapping) {
-    return MAPPING_ELEMENT_TYPE.CLASS;
   } else if (mappingElement instanceof SetImplementation) {
     return MAPPING_ELEMENT_TYPE.CLASS;
+  }
+  const extraMappingElementTypeGetters = plugins.flatMap(
+    (plugin) =>
+      (
+        plugin as DSLMapping_LegendStudioPlugin_Extension
+      ).getExtraMappingElementTypeGetters?.() ?? [],
+  );
+  for (const getter of extraMappingElementTypeGetters) {
+    const mappingElementType = getter(mappingElement);
+    if (mappingElementType) {
+      return mappingElementType;
+    }
   }
   throw new UnsupportedOperationError(
     `Can't classify mapping element`,
@@ -403,32 +401,37 @@ export const getEmbeddedSetImplementations = (
     .concat(embeddedPropertyMappings);
 };
 
-// We only care to get `own` class mapping as embedded set implementations can only be within the
-// current class mapping i.e current mapping.
-const getMappingEmbeddedSetImplementations = (
-  mapping: Mapping,
-): InstanceSetImplementation[] =>
-  mapping.classMappings
-    .filter(filterByType(InstanceSetImplementation))
-    .map(getEmbeddedSetImplementations)
-    .flat();
-
 const getMappingElementByTypeAndId = (
   mapping: Mapping,
   mappingElementType: string,
   mappingElementId: string,
+  plugins: LegendStudioPlugin[],
 ): MappingElement | undefined => {
   // NOTE: ID must be unique across all mapping elements of the same type
   switch (mappingElementType) {
-    case MAPPING_ELEMENT_TYPE.CLASS:
+    case MAPPING_ELEMENT_TYPE.CLASS: {
+      let mappingEmbeddedSetImplementation;
+      const extraMappingEmbeddedSetImplementationsGetters = plugins.flatMap(
+        (plugin) =>
+          (
+            plugin as DSLMapping_LegendStudioPlugin_Extension
+          ).getExtraMappingElementGetters?.() ?? [],
+      );
+      for (const getter of extraMappingEmbeddedSetImplementationsGetters) {
+        const extraInstanceSetImplementation = getter(
+          mapping,
+          mappingElementId,
+        );
+        if (extraInstanceSetImplementation) {
+          mappingEmbeddedSetImplementation = extraInstanceSetImplementation;
+        }
+      }
       return (
         getAllClassMappings(mapping).find(
           (classMapping) => classMapping.id.value === mappingElementId,
-        ) ??
-        getMappingEmbeddedSetImplementations(mapping)
-          .filter(filterByType(EmbeddedFlatDataPropertyMapping))
-          .find((me) => me.id.value === mappingElementId)
+        ) ?? mappingEmbeddedSetImplementation
       );
+    }
     case MAPPING_ELEMENT_TYPE.ASSOCIATION:
       return mapping.associationMappings.find(
         (associationMapping) =>
@@ -462,7 +465,7 @@ const constructMappingElementNodeData = (
   label: getMappingElementLabel(mappingElement, editorStore).value,
 });
 
-const getMappingElementTreeNodeData = (
+export const getMappingElementTreeNodeData = (
   mappingElement: MappingElement,
   editorStore: EditorStore,
 ): MappingExplorerTreeNodeData => {
@@ -470,16 +473,20 @@ const getMappingElementTreeNodeData = (
     mappingElement,
     editorStore,
   );
-  if (
-    mappingElement instanceof FlatDataInstanceSetImplementation ||
-    mappingElement instanceof EmbeddedFlatDataPropertyMapping
-  ) {
-    const embedded = mappingElement.propertyMappings.filter(
-      filterByType(EmbeddedFlatDataPropertyMapping),
-    );
-    nodeData.childrenIds = embedded.map(
-      (e) => `${nodeData.id}.${e.property.value.name}`,
-    );
+  const extraMappingElementTreeNodeDataChildIdsGetters =
+    editorStore.pluginManager
+      .getStudioPlugins()
+      .flatMap(
+        (plugin) =>
+          (
+            plugin as DSLMapping_LegendStudioPlugin_Extension
+          ).getExtraMappingElementTreeNodeDataChildIdsGetters?.() ?? [],
+      );
+  for (const getter of extraMappingElementTreeNodeDataChildIdsGetters) {
+    const childIds = getter(mappingElement, nodeData);
+    if (childIds) {
+      nodeData.childrenIds = childIds;
+    }
   }
   return nodeData;
 };
@@ -496,8 +503,17 @@ const getMappingElementTreeData = (
   const rootIds: string[] = [];
   const nodes = new Map<string, MappingExplorerTreeNodeData>();
   const rootMappingElements = getAllMappingElements(mapping).sort((a, b) =>
-    getMappingIdentitySortString(a, getMappingElementTarget(a)).localeCompare(
-      getMappingIdentitySortString(b, getMappingElementTarget(b)),
+    getMappingIdentitySortString(
+      a,
+      getMappingElementTarget(a, editorStore.pluginManager.getStudioPlugins()),
+    ).localeCompare(
+      getMappingIdentitySortString(
+        b,
+        getMappingElementTarget(
+          b,
+          editorStore.pluginManager.getStudioPlugins(),
+        ),
+      ),
     ),
   );
   rootMappingElements.forEach((mappingElement) => {
@@ -511,7 +527,7 @@ const getMappingElementTreeData = (
   return { rootIds, nodes };
 };
 
-const reprocessMappingElement = (
+export const reprocessMappingElement = (
   mappingElement: MappingElement,
   treeNodes: Map<string, MappingExplorerTreeNodeData>,
   openNodes: string[],
@@ -521,22 +537,16 @@ const reprocessMappingElement = (
     mappingElement,
     editorStore,
   );
-  if (
-    mappingElement instanceof FlatDataInstanceSetImplementation ||
-    mappingElement instanceof EmbeddedFlatDataPropertyMapping
-  ) {
-    const embedded = mappingElement.propertyMappings.filter(
-      filterByType(EmbeddedFlatDataPropertyMapping),
+  const extraMappingElementReprocessors = editorStore.pluginManager
+    .getStudioPlugins()
+    .flatMap(
+      (plugin) =>
+        (
+          plugin as DSLMapping_LegendStudioPlugin_Extension
+        ).getExtraMappingElementReprocessors?.() ?? [],
     );
-    nodeData.childrenIds = embedded.map(
-      (e) => `${nodeData.id}.${e.property.value.name}`,
-    );
-    if (openNodes.includes(mappingElement.id.value)) {
-      nodeData.isOpen = true;
-      embedded.forEach((e) =>
-        reprocessMappingElement(e, treeNodes, openNodes, editorStore),
-      );
-    }
+  for (const reprocessor of extraMappingElementReprocessors) {
+    reprocessor(mappingElement, nodeData, treeNodes, openNodes, editorStore);
   }
   treeNodes.set(nodeData.id, nodeData);
   return nodeData;
@@ -550,8 +560,17 @@ const reprocessMappingElementNodes = (
   const rootIds: string[] = [];
   const nodes = new Map<string, MappingExplorerTreeNodeData>();
   const rootMappingElements = getAllMappingElements(mapping).sort((a, b) =>
-    getMappingIdentitySortString(a, getMappingElementTarget(a)).localeCompare(
-      getMappingIdentitySortString(b, getMappingElementTarget(b)),
+    getMappingIdentitySortString(
+      a,
+      getMappingElementTarget(a, editorStore.pluginManager.getStudioPlugins()),
+    ).localeCompare(
+      getMappingIdentitySortString(
+        b,
+        getMappingElementTarget(
+          b,
+          editorStore.pluginManager.getStudioPlugins(),
+        ),
+      ),
     ),
   );
   rootMappingElements.forEach((mappingElement) => {
@@ -651,7 +670,12 @@ export class MappingEditorState extends ElementEditorState {
   get mappingElementsWithSimilarTarget(): MappingElement[] {
     if (this.currentTabState instanceof MappingElementState) {
       const mappingElement = this.currentTabState.mappingElement;
-      switch (getMappingElementType(mappingElement)) {
+      switch (
+        getMappingElementType(
+          mappingElement,
+          this.editorStore.pluginManager.getStudioPlugins(),
+        )
+      ) {
         case MAPPING_ELEMENT_TYPE.CLASS:
           return this.mapping.classMappings.filter(
             (cm) =>
@@ -743,23 +767,20 @@ export class MappingEditorState extends ElementEditorState {
   onMappingExplorerTreeNodeExpand = (
     node: MappingExplorerTreeNodeData,
   ): void => {
-    const mappingElement = node.mappingElement;
     const treeData = this.mappingExplorerTreeData;
     if (node.childrenIds?.length) {
       node.isOpen = !node.isOpen;
-      if (
-        mappingElement instanceof FlatDataInstanceSetImplementation ||
-        mappingElement instanceof EmbeddedFlatDataPropertyMapping
-      ) {
-        mappingElement.propertyMappings
-          .filter(filterByType(EmbeddedFlatDataPropertyMapping))
-          .forEach((embeddedPM) => {
-            const embeddedPropertyNode = getMappingElementTreeNodeData(
-              embeddedPM,
-              this.editorStore,
-            );
-            treeData.nodes.set(embeddedPropertyNode.id, embeddedPropertyNode);
-          });
+      const extraMappingExplorerTreeNodeExpandActionSetters =
+        this.editorStore.pluginManager
+          .getStudioPlugins()
+          .flatMap(
+            (plugin) =>
+              (
+                plugin as DSLMapping_LegendStudioPlugin_Extension
+              ).getExtraMappingExplorerTreeNodeExpandActionSetters?.() ?? [],
+          );
+      for (const getter of extraMappingExplorerTreeNodeExpandActionSetters) {
+        getter(node, this.editorStore, treeData);
       }
     }
     this.setMappingExplorerTreeNodeData({ ...treeData });
@@ -917,16 +938,6 @@ export class MappingEditorState extends ElementEditorState {
           sourceUpdated = true;
         }
       } else if (
-        setImplementation instanceof FlatDataInstanceSetImplementation
-      ) {
-        if (
-          newSource instanceof RootFlatDataRecordType &&
-          !getEmbeddedSetImplementations(setImplementation).length
-        ) {
-          flatData_setSourceRootRecordType(setImplementation, newSource);
-          sourceUpdated = true;
-        }
-      } else if (
         setImplementation instanceof RootRelationalInstanceSetImplementation
       ) {
         if (
@@ -956,7 +967,7 @@ export class MappingEditorState extends ElementEditorState {
 
       // here we require a change of set implementation as the source type does not match the what the current class mapping supports
       if (!sourceUpdated) {
-        let newSetImp: InstanceSetImplementation;
+        let newSetImp: InstanceSetImplementation | undefined;
         if (newSource instanceof Class || newSource === undefined) {
           newSetImp = new PureInstanceSetImplementation(
             setImplementation.id,
@@ -966,16 +977,6 @@ export class MappingEditorState extends ElementEditorState {
             newSource
               ? PackageableElementExplicitReference.create(newSource)
               : undefined,
-          );
-        } else if (newSource instanceof RootFlatDataRecordType) {
-          newSetImp = new FlatDataInstanceSetImplementation(
-            setImplementation.id,
-            this.mapping,
-            PackageableElementExplicitReference.create(
-              setImplementation.class.value,
-            ),
-            setImplementation.root,
-            RootFlatDataRecordTypeExplicitReference.create(newSource),
           );
         } else if (newSource instanceof TableAlias) {
           const newRootRelationalInstanceSetImplementation =
@@ -988,10 +989,31 @@ export class MappingEditorState extends ElementEditorState {
           newRootRelationalInstanceSetImplementation.mainTableAlias = newSource;
           newSetImp = newRootRelationalInstanceSetImplementation;
         } else {
-          throw new UnsupportedOperationError(
-            `Can't use the specified class mapping source`,
-            newSource,
-          );
+          const extraNewSetImplementationGetters =
+            this.editorStore.pluginManager
+              .getStudioPlugins()
+              .flatMap(
+                (plugin) =>
+                  (
+                    plugin as DSLMapping_LegendStudioPlugin_Extension
+                  ).getExtraNewSetImplementationGetters?.() ?? [],
+              );
+          for (const getter of extraNewSetImplementationGetters) {
+            const newSetImplementation = getter(
+              newSource,
+              setImplementation,
+              this.mapping,
+            );
+            if (newSetImplementation) {
+              newSetImp = newSetImplementation;
+            }
+          }
+          if (!newSetImp) {
+            throw new UnsupportedOperationError(
+              `Can't use the specified class mapping source`,
+              newSource,
+            );
+          }
         }
 
         // replace the instance set implementation in mapping
@@ -1058,14 +1080,25 @@ export class MappingEditorState extends ElementEditorState {
       mapping_deleteEnumerationMapping(this.mapping, mappingElement);
     } else if (mappingElement instanceof AssociationImplementation) {
       mapping_deleteAssociationMapping(this.mapping, mappingElement);
-    } else if (mappingElement instanceof EmbeddedFlatDataPropertyMapping) {
-      deleteEntry(mappingElement._OWNER.propertyMappings, mappingElement);
     } else if (
       mappingElement instanceof EmbeddedRelationalInstanceSetImplementation
     ) {
       deleteEntry(mappingElement._OWNER.propertyMappings, mappingElement);
     } else if (mappingElement instanceof SetImplementation) {
       mapping_deleteClassMapping(this.mapping, mappingElement);
+    } else {
+      const extraMappingElementDeleteEntryGetters =
+        this.editorStore.pluginManager
+          .getStudioPlugins()
+          .flatMap(
+            (plugin) =>
+              (
+                plugin as DSLMapping_LegendStudioPlugin_Extension
+              ).getExtraMappingElementDeleteEntryGetters?.() ?? [],
+          );
+      for (const deleteEntryGetter of extraMappingElementDeleteEntryGetters) {
+        deleteEntryGetter(mappingElement);
+      }
     }
     if (mappingElement instanceof SetImplementation) {
       setImpl_updateRootOnDelete(mappingElement);
@@ -1130,15 +1163,6 @@ export class MappingEditorState extends ElementEditorState {
         this.editorStore,
         mappingElement,
       );
-    } else if (mappingElement instanceof FlatDataInstanceSetImplementation) {
-      return new RootFlatDataInstanceSetImplementationState(
-        this.editorStore,
-        mappingElement,
-      );
-    } else if (mappingElement instanceof EmbeddedFlatDataPropertyMapping) {
-      throw new UnsupportedOperationError(
-        `Can't create mapping element state for emebdded property mapping`,
-      );
     } else if (
       mappingElement instanceof RootRelationalInstanceSetImplementation
     ) {
@@ -1186,8 +1210,12 @@ export class MappingEditorState extends ElementEditorState {
         if (tabState instanceof MappingElementState) {
           const mappingElement = getMappingElementByTypeAndId(
             mappingEditorState.mapping,
-            getMappingElementType(tabState.mappingElement),
+            getMappingElementType(
+              tabState.mappingElement,
+              this.editorStore.pluginManager.getStudioPlugins(),
+            ),
             tabState.mappingElement.id.value,
+            this.editorStore.pluginManager.getStudioPlugins(),
           );
           return this.createMappingElementState(mappingElement);
         } else if (tabState instanceof MappingTestState) {
@@ -1207,8 +1235,12 @@ export class MappingEditorState extends ElementEditorState {
     if (this.currentTabState instanceof MappingElementState) {
       const currentlyOpenedMappingElement = getMappingElementByTypeAndId(
         mappingEditorState.mapping,
-        getMappingElementType(this.currentTabState.mappingElement),
+        getMappingElementType(
+          this.currentTabState.mappingElement,
+          this.editorStore.pluginManager.getStudioPlugins(),
+        ),
         this.currentTabState.mappingElement.id.value,
+        this.editorStore.pluginManager.getStudioPlugins(),
       );
       mappingEditorState.currentTabState = this.openedTabStates.find(
         (tabState) =>
@@ -1262,6 +1294,7 @@ export class MappingEditorState extends ElementEditorState {
               mappingElementId,
               `Can't reveal compilation error: mapping ID is missing`,
             ),
+            this.editorStore.pluginManager.getStudioPlugins(),
           );
           // TODO: take care of operation mapping using systematic coordinates
           // See https://github.com/finos/legend-studio/issues/1168
@@ -1480,7 +1513,7 @@ export class MappingEditorState extends ElementEditorState {
         `Can't auto-generate input data for operation class mapping. Please pick a concrete class mapping instead`,
       );
     }
-    let inputData: InputData;
+    let inputData: InputData | undefined;
     if (source === undefined || source instanceof Class) {
       inputData = new ObjectInputData(
         PackageableElementExplicitReference.create(source ?? stub_Class()),
@@ -1488,11 +1521,6 @@ export class MappingEditorState extends ElementEditorState {
         source
           ? createMockDataForMappingElementSource(source, this.editorStore)
           : '{}',
-      );
-    } else if (source instanceof RootFlatDataRecordType) {
-      inputData = new FlatDataInputData(
-        PackageableElementExplicitReference.create(source._OWNER._OWNER),
-        createMockDataForMappingElementSource(source, this.editorStore),
       );
     } else if (source instanceof TableAlias) {
       inputData = new RelationalInputData(
@@ -1503,10 +1531,26 @@ export class MappingEditorState extends ElementEditorState {
         RelationalInputType.SQL,
       );
     } else {
-      throw new UnsupportedOperationError(
-        `Can't create new mapping test input data with the specified source`,
-        source,
-      );
+      const extraInputDataGetters = this.editorStore.pluginManager
+        .getStudioPlugins()
+        .flatMap(
+          (plugin) =>
+            (
+              plugin as DSLMapping_LegendStudioPlugin_Extension
+            ).getExtraInputDataGetters?.() ?? [],
+        );
+      for (const getter of extraInputDataGetters) {
+        const extraInputData = getter(source, this.editorStore);
+        if (extraInputData) {
+          inputData = extraInputData;
+        }
+      }
+      if (!inputData) {
+        throw new UnsupportedOperationError(
+          `Can't create new mapping test input data with the specified source`,
+          source,
+        );
+      }
     }
     const newTest = new MappingTest(
       generateMappingTestName(this.mapping),

@@ -19,6 +19,7 @@ import type { InputData } from '../graph/metamodel/pure/packageableElements/mapp
 import type { PropertyMapping } from '../graph/metamodel/pure/packageableElements/mapping/PropertyMapping.js';
 import type { SetImplementation } from '../graph/metamodel/pure/packageableElements/mapping/SetImplementation.js';
 import type { ObserverContext } from './action/changeDetection/CoreObserverHelper.js';
+import type { ValidationIssue } from './action/validation/ValidationHelper.js';
 import type { PureGraphManagerPlugin } from './PureGraphManagerPlugin.js';
 
 export type PureGrammarConnectionLabeler = (
@@ -49,6 +50,10 @@ export type MappingTestInputDataObserver = (
   context: ObserverContext,
 ) => InputData | undefined;
 
+export type MappingTestInputDataValidator = (
+  metamodel: InputData,
+) => ValidationIssue | undefined;
+
 export interface DSLMapping_PureGraphManagerPlugin_Extension
   extends PureGraphManagerPlugin {
   /**
@@ -69,4 +74,9 @@ export interface DSLMapping_PureGraphManagerPlugin_Extension
    * stubbed (potentially prunable) or not
    */
   getExtraPropertyMappingStubCheckers?(): PropertyMappingStubChecker[];
+
+  /**
+   * Get the list of mapping test input data validators for specified input data.
+   */
+  getExtraMappingTestInputDataValidators?(): MappingTestInputDataValidator[];
 }

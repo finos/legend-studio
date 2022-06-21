@@ -22,7 +22,6 @@ import type { V1_RelationalClassMapping } from '../../../model/packageableElemen
 import type { V1_MappingClass } from './V1_MappingClass.js';
 import type { V1_OperationClassMapping } from './V1_OperationClassMapping.js';
 import type { V1_PureInstanceClassMapping } from '../../../model/packageableElements/store/modelToModel/mapping/V1_PureInstanceClassMapping.js';
-import type { V1_RootFlatDataClassMapping } from '../../../model/packageableElements/store/flatData/mapping/V1_RootFlatDataClassMapping.js';
 import type { V1_MergeOperationClassMapping } from './V1_MergeOperationClassMapping.js';
 
 export interface V1_ClassMappingVisitor<T> {
@@ -32,7 +31,6 @@ export interface V1_ClassMappingVisitor<T> {
   ): T;
   visit_OperationClassMapping(classMapping: V1_OperationClassMapping): T;
   visit_PureInstanceClassMapping(classMapping: V1_PureInstanceClassMapping): T;
-  visit_RootFlatDataClassMapping(classMapping: V1_RootFlatDataClassMapping): T;
   visit_RelationalClassMapping(classMapping: V1_RelationalClassMapping): T;
   visit_RootRelationalClassMapping(
     classMapping: V1_RootRelationalClassMapping,

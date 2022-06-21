@@ -29,18 +29,13 @@ import { PurePropertyMapping } from '../../../../../../../graph/metamodel/pure/p
 import { RelationalPropertyMapping } from '../../../../../../../graph/metamodel/pure/packageableElements/store/relational/mapping/RelationalPropertyMapping.js';
 import type { InstanceSetImplementation } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/InstanceSetImplementation.js';
 import type { PropertyMappingsImplementation } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/PropertyMappingsImplementation.js';
-import { EmbeddedFlatDataPropertyMapping } from '../../../../../../../graph/metamodel/pure/packageableElements/store/flatData/mapping/EmbeddedFlatDataPropertyMapping.js';
-import { FlatDataPropertyMapping } from '../../../../../../../graph/metamodel/pure/packageableElements/store/flatData/mapping/FlatDataPropertyMapping.js';
 import type { EnumerationMapping } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/EnumerationMapping.js';
 import type { SetImplementation } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/SetImplementation.js';
 import { Class } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/Class.js';
 import type { Association } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/Association.js';
 import type { TableAlias } from '../../../../../../../graph/metamodel/pure/packageableElements/store/relational/model/RelationalOperationElement.js';
 import { InferableMappingElementIdExplicitValue } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/InferableMappingElementId.js';
-import {
-  type PackageableElementReference,
-  PackageableElementImplicitReference,
-} from '../../../../../../../graph/metamodel/pure/packageableElements/PackageableElementReference.js';
+import { PackageableElementImplicitReference } from '../../../../../../../graph/metamodel/pure/packageableElements/PackageableElementReference.js';
 import {
   type PropertyReference,
   PropertyImplicitReference,
@@ -59,8 +54,6 @@ import type { V1_PurePropertyMapping } from '../../../model/packageableElements/
 import type { V1_InlineEmbeddedPropertyMapping } from '../../../model/packageableElements/store/relational/mapping/V1_InlineEmbeddedPropertyMapping.js';
 import type { V1_AggregationAwarePropertyMapping } from '../../../model/packageableElements/store/relational/mapping/aggregationAware/V1_AggregationAwarePropertyMapping.js';
 import type { V1_RelationalPropertyMapping } from '../../../model/packageableElements/store/relational/mapping/V1_RelationalPropertyMapping.js';
-import type { V1_EmbeddedFlatDataPropertyMapping } from '../../../model/packageableElements/store/flatData/mapping/V1_EmbeddedFlatDataPropertyMapping.js';
-import type { V1_FlatDataPropertyMapping } from '../../../model/packageableElements/store/flatData/mapping/V1_FlatDataPropertyMapping.js';
 import type { V1_OtherwiseEmbeddedRelationalPropertyMapping } from '../../../model/packageableElements/store/relational/mapping/V1_OtherwiseEmbeddedRelationalPropertyMapping.js';
 import type { V1_EmbeddedRelationalPropertyMapping } from '../../../model/packageableElements/store/relational/mapping/V1_EmbeddedRelationalPropertyMapping.js';
 import { V1_buildRelationalOperationElement } from './helpers/V1_DatabaseBuilderHelper.js';
@@ -107,7 +100,7 @@ import { EnumerationMappingExplicitReference } from '../../../../../../../graph/
  *
  * @discrepancy graph-building
  */
-const TEMPORARY__getClassMappingByIdOrReturnUnresolved = (
+export const V1_TEMPORARY__getClassMappingByIdOrReturnUnresolved = (
   mapping: Mapping,
   id: string,
 ): SetImplementation =>
@@ -121,7 +114,7 @@ const resolveRelationalPropertyMappingSource = (
 ): SetImplementation | undefined => {
   if (immediateParent instanceof AssociationImplementation) {
     if (value.source) {
-      return TEMPORARY__getClassMappingByIdOrReturnUnresolved(
+      return V1_TEMPORARY__getClassMappingByIdOrReturnUnresolved(
         immediateParent._PARENT,
         value.source,
       );
@@ -183,7 +176,13 @@ export class V1_PropertyMappingBuilder
           ).V1_getExtraPropertyMappingBuilders?.() ?? [],
       );
     for (const builder of extraPropertyMappingBuilders) {
-      const extraPropertyMapping = builder(propertyMapping, this.context);
+      const extraPropertyMapping = builder(
+        propertyMapping,
+        this.context,
+        this.topParent,
+        this.immediateParent,
+        this.allEnumerationMappings,
+      );
       if (extraPropertyMapping) {
         return extraPropertyMapping;
       }
@@ -251,7 +250,7 @@ export class V1_PropertyMappingBuilder
     if (propertyType instanceof Class) {
       if (protocol.target) {
         targetSetImplementation =
-          TEMPORARY__getClassMappingByIdOrReturnUnresolved(
+          V1_TEMPORARY__getClassMappingByIdOrReturnUnresolved(
             topParent._PARENT,
             protocol.target,
           );
@@ -268,7 +267,7 @@ export class V1_PropertyMappingBuilder
       }
     }
     const sourceSetImplementation = protocol.source
-      ? TEMPORARY__getClassMappingByIdOrReturnUnresolved(
+      ? V1_TEMPORARY__getClassMappingByIdOrReturnUnresolved(
           topParent._PARENT,
           protocol.source,
         )
@@ -310,192 +309,6 @@ export class V1_PropertyMappingBuilder
     }
     purePropertyMapping.localMappingProperty = localMapping;
     return purePropertyMapping;
-  }
-
-  visit_FlatDataPropertyMapping(
-    protocol: V1_FlatDataPropertyMapping,
-  ): PropertyMapping {
-    assertNonNullable(
-      protocol.property,
-      `Flat-data property mapping 'property' field is missing`,
-    );
-    assertNonEmptyString(
-      protocol.property.property,
-      `Flat-data property mapping 'property.property' field is missing or empty`,
-    );
-    assertNonNullable(
-      protocol.transform,
-      `Flat-data property mapping 'transform' field is missing`,
-    );
-    // NOTE: there are cases that property pointer class might be missing, such as when we transform grammar to JSON
-    // since we do not do look up, due to nesting structure introudced by embedded mappings, we might not have the class information
-    // as such, here we have to resolve the class being mapped depending on where the property mapping is in the class mapping
-    let propertyOwnerClass: Class;
-    if (protocol.property.class) {
-      propertyOwnerClass = this.context.resolveClass(
-        protocol.property.class,
-      ).value;
-    } else if (
-      this.immediateParent instanceof EmbeddedFlatDataPropertyMapping
-    ) {
-      propertyOwnerClass = this.immediateParent.class.value;
-    } else {
-      throw new GraphBuilderError(
-        `Can't find property owner class for property '${protocol.property.property}'`,
-      );
-    }
-    // NOTE: mapping for derived property is not supported
-    const property = getClassProperty(
-      propertyOwnerClass,
-      protocol.property.property,
-    );
-    const sourceSetImplementation = guaranteeNonNullable(
-      this.immediateParent instanceof EmbeddedFlatDataPropertyMapping
-        ? this.immediateParent
-        : this.topParent,
-    );
-    // target
-    let targetSetImplementation: SetImplementation | undefined;
-    const propertyType = property.genericType.value.rawType;
-    if (propertyType instanceof Class && protocol.target) {
-      targetSetImplementation = this.topParent
-        ? TEMPORARY__getClassMappingByIdOrReturnUnresolved(
-            this.topParent._PARENT,
-            protocol.target,
-          )
-        : undefined;
-    }
-    const flatDataPropertyMapping = new FlatDataPropertyMapping(
-      this.immediateParent,
-      PropertyImplicitReference.create(
-        PackageableElementImplicitReference.create(
-          propertyOwnerClass,
-          protocol.property.class ?? '',
-        ),
-        property,
-      ),
-      V1_buildRawLambdaWithResolvedPaths(
-        [],
-        protocol.transform.body,
-        this.context,
-      ),
-      SetImplementationImplicitReference.create(
-        sourceSetImplementation,
-        protocol.source,
-      ),
-      targetSetImplementation
-        ? SetImplementationImplicitReference.create(
-            targetSetImplementation,
-            protocol.target,
-          )
-        : undefined,
-    );
-    if (protocol.enumMappingId) {
-      const enumerationMapping = this.allEnumerationMappings.find(
-        (em) => em.id.value === protocol.enumMappingId,
-      );
-      if (!enumerationMapping) {
-        // TODO: Since we don't support includedMappings, this will throw errors, but right now we can just make it undefined.
-        this.context.log.debug(
-          LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_FAILURE),
-          `Can't find enumeration mapping with ID '${protocol.enumMappingId}' in mapping '${this.topParent?._PARENT.path} (perhaps because we haven't supported included mappings)`,
-        );
-      }
-      flatDataPropertyMapping.transformer = enumerationMapping
-        ? EnumerationMappingExplicitReference.create(enumerationMapping)
-        : undefined;
-    }
-    return flatDataPropertyMapping;
-  }
-
-  visit_EmbeddedFlatDataPropertyMapping(
-    protocol: V1_EmbeddedFlatDataPropertyMapping,
-  ): PropertyMapping {
-    assertNonNullable(
-      protocol.property,
-      `Embedded flat-data property mapping 'property' field is missing`,
-    );
-    assertNonEmptyString(
-      protocol.property.property,
-      `Embedded flat-data property mapping property 'property.property' field is missing or empty`,
-    );
-    // NOTE: there are cases that property pointer class might be missing, such as when we transform grammar to JSON
-    // since we do not do look up, due to nesting structure introudced by embedded mappings, we might not have the class information
-    // as such, here we have to resolve the class being mapped depending on where the property mapping is in the class mapping
-    let propertyOwnerClass: Class;
-    if (protocol.property.class) {
-      propertyOwnerClass = this.context.resolveClass(
-        protocol.property.class,
-      ).value;
-    } else if (
-      this.immediateParent instanceof EmbeddedFlatDataPropertyMapping
-    ) {
-      propertyOwnerClass = this.immediateParent.class.value;
-    } else {
-      throw new GraphBuilderError(
-        `Can't find property owner class for property '${protocol.property.property}'`,
-      );
-    }
-    const property = getClassProperty(
-      propertyOwnerClass,
-      protocol.property.property,
-    );
-    let _class: PackageableElementReference<Class>;
-    if (protocol.class) {
-      _class = this.context.resolveClass(protocol.class);
-    } else {
-      const propertyType = property.genericType.value.rawType;
-      const complexClass = guaranteeType(
-        propertyType,
-        Class,
-        'Only complex classes can be the target of an embedded property mapping',
-      );
-      _class = PackageableElementImplicitReference.create(complexClass, '');
-    }
-    const sourceSetImplementation = guaranteeNonNullable(
-      this.immediateParent instanceof EmbeddedFlatDataPropertyMapping
-        ? this.immediateParent
-        : this.topParent,
-    );
-    const embeddedPropertyMapping = new EmbeddedFlatDataPropertyMapping(
-      this.immediateParent,
-      PropertyImplicitReference.create(
-        PackageableElementImplicitReference.create(
-          propertyOwnerClass,
-          protocol.property.class ?? '',
-        ),
-        property,
-      ),
-      guaranteeNonNullable(this.topParent),
-      SetImplementationImplicitReference.create(
-        sourceSetImplementation,
-        protocol.source,
-      ),
-      _class,
-      InferableMappingElementIdExplicitValue.create(
-        `${sourceSetImplementation.id.value}.${property.name}`,
-        '',
-      ),
-      undefined,
-    );
-    embeddedPropertyMapping.targetSetImplementation = protocol.target
-      ? SetImplementationImplicitReference.create(
-          embeddedPropertyMapping,
-          protocol.target,
-        )
-      : undefined;
-    embeddedPropertyMapping.propertyMappings = protocol.propertyMappings.map(
-      (propertyMapping) =>
-        propertyMapping.accept_PropertyMappingVisitor(
-          new V1_PropertyMappingBuilder(
-            this.context,
-            embeddedPropertyMapping,
-            this.topParent,
-            this.allEnumerationMappings,
-          ),
-        ),
-    );
-    return embeddedPropertyMapping;
   }
 
   visit_RelationalPropertyMapping(
@@ -582,7 +395,7 @@ export class V1_PropertyMappingBuilder
       }
       if (protocol.target) {
         targetSetImplementation = parentMapping
-          ? TEMPORARY__getClassMappingByIdOrReturnUnresolved(
+          ? V1_TEMPORARY__getClassMappingByIdOrReturnUnresolved(
               parentMapping,
               protocol.target,
             )
@@ -750,7 +563,7 @@ export class V1_PropertyMappingBuilder
       undefined,
     );
     inline.inlineSetImplementation =
-      TEMPORARY__getClassMappingByIdOrReturnUnresolved(
+      V1_TEMPORARY__getClassMappingByIdOrReturnUnresolved(
         topParent._PARENT,
         protocol.setImplementationId,
       );

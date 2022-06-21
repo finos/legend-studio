@@ -24,7 +24,6 @@ import type { Measure } from '../../../graph/metamodel/pure/packageableElements/
 import type { Class } from '../../../graph/metamodel/pure/packageableElements/domain/Class.js';
 import type { Association } from '../../../graph/metamodel/pure/packageableElements/domain/Association.js';
 import type { ConcreteFunctionDefinition } from '../../../graph/metamodel/pure/packageableElements/domain/ConcreteFunctionDefinition.js';
-import type { FlatData } from '../../../graph/metamodel/pure/packageableElements/store/flatData/model/FlatData.js';
 import type { Database } from '../../../graph/metamodel/pure/packageableElements/store/relational/model/Database.js';
 import type { Mapping } from '../../../graph/metamodel/pure/packageableElements/mapping/Mapping.js';
 import type { Service } from '../../../graph/metamodel/pure/packageableElements/service/Service.js';
@@ -59,7 +58,6 @@ import {
   observe_PackageableRuntime,
 } from './DSLMapping_ObserverHelper.js';
 import { observe_Service } from './DSLService_ObserverHelper.js';
-import { observe_FlatData } from './StoreFlatData_ObserverHelper.js';
 import { observe_Database } from './StoreRelational_ObserverHelper.js';
 import type { DataElement } from '../../../graph/metamodel/pure/packageableElements/data/DataElement.js';
 import { observe_DataElement } from './DSLData_ObserverHelper.js';
@@ -117,10 +115,6 @@ class PackageableElementObserver implements PackageableElementVisitor<void> {
 
   visit_ConcreteFunctionDefinition(element: ConcreteFunctionDefinition): void {
     observe_ConcreteFunctionDefinition(element);
-  }
-
-  visit_FlatData(element: FlatData): void {
-    observe_FlatData(element);
   }
 
   visit_Database(element: Database): void {

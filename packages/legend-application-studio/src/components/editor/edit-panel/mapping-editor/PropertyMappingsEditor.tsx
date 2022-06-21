@@ -29,11 +29,6 @@ import {
 } from '../../../../stores/editor-state/element-editor-state/mapping/PureInstanceSetImplementationState.js';
 import { clsx, ArrowCircleRightIcon } from '@finos/legend-art';
 import { guaranteeType, UnsupportedOperationError } from '@finos/legend-shared';
-import {
-  type FlatDataPropertyMappingState,
-  FlatDataInstanceSetImplementationState,
-} from '../../../../stores/editor-state/element-editor-state/mapping/FlatDataInstanceSetImplementationState.js';
-import { FlatDataPropertyMappingEditor } from './FlatDataPropertyMappingEditor.js';
 import { RelationalPropertyMappingEditor } from './relational/RelationalPropertyMappingEditor.js';
 import type {
   RelationalPropertyMappingState,
@@ -48,7 +43,6 @@ import {
   SetImplementation,
   PrimitiveType,
   PureInstanceSetImplementation,
-  EmbeddedFlatDataPropertyMapping,
   OperationSetImplementation,
 } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
@@ -153,27 +147,22 @@ export const PropertyMappingsEditor = observer(
               });
             }
           }
-        } else if (
-          instanceSetImplementationState instanceof
-          FlatDataInstanceSetImplementationState
-        ) {
-          if (
-            propertyMappingStates.length === 1 &&
-            propertyMappingStates[0]?.propertyMapping instanceof
-              EmbeddedFlatDataPropertyMapping
-          ) {
-            mappingEditorState.openMappingElement(
-              propertyMappingStates[0].propertyMapping,
-              true,
-            );
-          } else if (!propertyMappingStates.length) {
-            const embedded =
-              instanceSetImplementationState.addEmbeddedPropertyMapping(
-                property,
-              );
-            mappingEditorState.openMappingElement(embedded, true);
-          }
         } else {
+          const extraMappingElementVisitors = editorStore.pluginManager
+            .getStudioPlugins()
+            .flatMap(
+              (plugin) =>
+                (
+                  plugin as DSLMapping_LegendStudioPlugin_Extension
+                ).getExtraMappingElementVisitors?.() ?? [],
+            );
+          for (const visitor of extraMappingElementVisitors) {
+            visitor(
+              instanceSetImplementationState,
+              mappingEditorState,
+              property,
+            );
+          }
           applicationStore.notifyWarning(
             `Can't visit mapping element for type '${propertyRawType.name}'`,
           );
@@ -245,24 +234,6 @@ export const PropertyMappingsEditor = observer(
                       propertyMappingState,
                       PurePropertyMappingState,
                     )}
-                    setImplementationHasParserError={
-                      setImplementationHasParserError
-                    }
-                  />
-                );
-              }
-              case SET_IMPLEMENTATION_TYPE.FLAT_DATA:
-              case SET_IMPLEMENTATION_TYPE.EMBEDDED_FLAT_DATA: {
-                return (
-                  <FlatDataPropertyMappingEditor
-                    key={propertyMappingState.uuid}
-                    isReadOnly={isReadOnly}
-                    flatDataInstanceSetImplementationState={
-                      instanceSetImplementationState as FlatDataInstanceSetImplementationState
-                    }
-                    flatDataPropertyMappingState={
-                      propertyMappingState as FlatDataPropertyMappingState
-                    }
                     setImplementationHasParserError={
                       setImplementationHasParserError
                     }

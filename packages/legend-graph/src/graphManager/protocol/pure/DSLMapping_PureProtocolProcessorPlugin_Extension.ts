@@ -25,8 +25,10 @@ import type { V1_ClassMapping } from '../pure/v1/model/packageableElements/mappi
 import type { V1_GraphBuilderContext } from './v1/transformation/pureGraph/to/V1_GraphBuilderContext.js';
 import type { Store } from '../../../graph/metamodel/pure/packageableElements/store/Store.js';
 import type { PackageableElementReference } from '../../../graph/metamodel/pure/packageableElements/PackageableElementReference.js';
-import type { PropertyMapping } from '../../../DSLMapping_Exports.js';
+import type { EnumerationMapping, InputData, PropertyMapping } from '../../../DSLMapping_Exports.js';
 import type { V1_PropertyMapping } from './v1/model/packageableElements/mapping/V1_PropertyMapping.js';
+import type { PropertyMappingsImplementation } from '../../../graph/metamodel/pure/packageableElements/mapping/PropertyMappingsImplementation.js';
+import type { V1_InputData } from './v1/model/packageableElements/mapping/V1_InputData.js';
 
 export type V1_ClassMappingFirstPassBuilder = (
   classMapping: V1_ClassMapping,
@@ -77,14 +79,35 @@ export type V1_ConnectionProtocolDeserializer = (
 ) => V1_Connection | undefined;
 
 export type V1_PropertyMappingBuilder = (
-  connection: V1_PropertyMapping,
+  propertyMapping: V1_PropertyMapping,
   context: V1_GraphBuilderContext,
+  topParent: InstanceSetImplementation | undefined,
+  immediateParent: PropertyMappingsImplementation,
+  allEnumerationMappings: EnumerationMapping[],
 ) => PropertyMapping | undefined;
 
 export type V1_PropertyMappingTransformer = (
   metamodel: PropertyMapping,
   context: V1_GraphTransformerContext,
 ) => V1_PropertyMapping | undefined;
+
+export type V1_MappingTestInputDataBuilder = (
+  inputData: V1_InputData,
+  context: V1_GraphBuilderContext,
+) => InputData | undefined;
+
+export type V1_MappingTestInputDataTransformer = (
+  metamodel: InputData,
+  context: V1_GraphTransformerContext,
+) => V1_InputData | undefined;
+
+export type V1_MappingTestInputDataSerializer = (
+  value: V1_InputData,
+) => PlainObject<V1_InputData> | undefined;
+
+export type V1_MappingTestInputDataDeserializer = (
+  json: PlainObject<V1_InputData>,
+) => V1_InputData | undefined;
 
 export interface DSLMapping_PureProtocolProcessorPlugin_Extension
   extends PureProtocolProcessorPlugin {
@@ -97,6 +120,14 @@ export interface DSLMapping_PureProtocolProcessorPlugin_Extension
   V1_getExtraPropertyMappingBuilders?(): V1_PropertyMappingBuilder[];
 
   V1_getExtraPropertyMappingTransformers?(): V1_PropertyMappingTransformer[];
+
+  V1_getExtraMappingTestInputDataBuilders?(): V1_MappingTestInputDataBuilder[];
+
+  V1_getExtraMappingTestInputDataTransformers?(): V1_MappingTestInputDataTransformer[];
+
+  V1_getExtraMappingTestInputDataSerializers?(): V1_MappingTestInputDataSerializer[];
+
+  V1_getExtraMappingTestInputDataDeserializers?(): V1_MappingTestInputDataDeserializer[];
 
   V1_getExtraClassMappingFirstPassBuilders?(): V1_ClassMappingFirstPassBuilder[];
 

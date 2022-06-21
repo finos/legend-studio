@@ -26,7 +26,6 @@ import {
 } from '../../../../../../../graph/metamodel/pure/packageableElements/connection/Connection.js';
 import type { JsonModelConnection } from '../../../../../../../graph/metamodel/pure/packageableElements/store/modelToModel/connection/JsonModelConnection.js';
 import type { XmlModelConnection } from '../../../../../../../graph/metamodel/pure/packageableElements/store/modelToModel/connection/XmlModelConnection.js';
-import type { FlatDataConnection } from '../../../../../../../graph/metamodel/pure/packageableElements/store/flatData/connection/FlatDataConnection.js';
 import type { RelationalDatabaseConnection } from '../../../../../../../graph/metamodel/pure/packageableElements/store/relational/connection/RelationalDatabaseConnection.js';
 import {
   type AuthenticationStrategy,
@@ -81,7 +80,6 @@ import {
 import { V1_ConnectionPointer } from '../../../model/packageableElements/connection/V1_ConnectionPointer.js';
 import { V1_JsonModelConnection } from '../../../model/packageableElements/store/modelToModel/connection/V1_JsonModelConnection.js';
 import { V1_XmlModelConnection } from '../../../model/packageableElements/store/modelToModel/connection/V1_XmlModelConnection.js';
-import { V1_FlatDataConnection } from '../../../model/packageableElements/store/flatData/connection/V1_FlatDataConnection.js';
 import { V1_ModelChainConnection } from '../../../model/packageableElements/store/modelToModel/connection/V1_ModelChainConnection.js';
 import { V1_transformPostProcessor } from './V1_PostProcessorTransformer.js';
 import type { StoreRelational_PureProtocolProcessorPlugin_Extension } from '../../../../StoreRelational_PureProtocolProcessorPlugin_Extension.js';
@@ -339,15 +337,6 @@ const transformXmlModelConnection = (
   return connection;
 };
 
-const transformFlatDataConnection = (
-  element: FlatDataConnection,
-): V1_FlatDataConnection => {
-  const connection = new V1_FlatDataConnection();
-  connection.store = element.store.valueForSerialization ?? '';
-  connection.url = element.url;
-  return connection;
-};
-
 class ConnectionTransformer implements ConnectionVisitor<V1_Connection> {
   context: V1_GraphTransformerContext;
 
@@ -388,10 +377,6 @@ class ConnectionTransformer implements ConnectionVisitor<V1_Connection> {
 
   visit_XmlModelConnection(connection: XmlModelConnection): V1_Connection {
     return transformXmlModelConnection(connection);
-  }
-
-  visit_FlatDataConnection(connection: FlatDataConnection): V1_Connection {
-    return transformFlatDataConnection(connection);
   }
 
   visit_RelationalDatabaseConnection(

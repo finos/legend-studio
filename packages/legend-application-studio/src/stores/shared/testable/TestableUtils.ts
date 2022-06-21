@@ -19,7 +19,6 @@ import {
   type ConnectionPointer,
   type ConnectionVisitor,
   type EmbeddedData,
-  type FlatDataConnection,
   type JsonModelConnection,
   type ModelChainConnection,
   type RelationalDatabaseConnection,
@@ -107,9 +106,6 @@ export class TEMPORARY_EmbeddedDataConnectionVisitor
   visit_XmlModelConnection(connection: XmlModelConnection): EmbeddedData {
     throw new Error('Method not implemented.');
   }
-  visit_FlatDataConnection(connection: FlatDataConnection): EmbeddedData {
-    throw new Error('Method not implemented.');
-  }
   visit_RelationalDatabaseConnection(
     connection: RelationalDatabaseConnection,
   ): EmbeddedData {
@@ -140,10 +136,6 @@ export class EmbeddedDataConnectionTypeVisitor
     return EmbeddedDataType.EXTERNAL_FORMAT_DATA;
   }
   visit_XmlModelConnection(connection: XmlModelConnection): string {
-    return EmbeddedDataType.EXTERNAL_FORMAT_DATA;
-  }
-
-  visit_FlatDataConnection(connection: FlatDataConnection): string {
     return EmbeddedDataType.EXTERNAL_FORMAT_DATA;
   }
   visit_RelationalDatabaseConnection(

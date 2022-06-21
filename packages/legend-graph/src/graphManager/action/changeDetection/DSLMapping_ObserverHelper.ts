@@ -64,11 +64,6 @@ import {
   type Runtime,
   type StoreConnections,
 } from '../../../graph/metamodel/pure/packageableElements/runtime/Runtime.js';
-import type { FlatDataConnection } from '../../../graph/metamodel/pure/packageableElements/store/flatData/connection/FlatDataConnection.js';
-import type { EmbeddedFlatDataPropertyMapping } from '../../../graph/metamodel/pure/packageableElements/store/flatData/mapping/EmbeddedFlatDataPropertyMapping.js';
-import { FlatDataInputData } from '../../../graph/metamodel/pure/packageableElements/store/flatData/mapping/FlatDataInputData.js';
-import type { FlatDataInstanceSetImplementation } from '../../../graph/metamodel/pure/packageableElements/store/flatData/mapping/FlatDataInstanceSetImplementation.js';
-import type { FlatDataPropertyMapping } from '../../../graph/metamodel/pure/packageableElements/store/flatData/mapping/FlatDataPropertyMapping.js';
 import type { JsonModelConnection } from '../../../graph/metamodel/pure/packageableElements/store/modelToModel/connection/JsonModelConnection.js';
 import type { ModelChainConnection } from '../../../graph/metamodel/pure/packageableElements/store/modelToModel/connection/ModelChainConnection.js';
 import type { XmlModelConnection } from '../../../graph/metamodel/pure/packageableElements/store/modelToModel/connection/XmlModelConnection.js';
@@ -98,13 +93,6 @@ import {
   observe_PropertyReference,
 } from './DomainObserverHelper.js';
 import { observe_RawLambda } from './RawValueSpecificationObserver.js';
-import {
-  observe_EmbeddedFlatDataPropertyMapping,
-  observe_FlatDataConnection,
-  observe_FlatDataInputData,
-  observe_FlatDataInstanceSetImplementation,
-  observe_FlatDataPropertyMapping,
-} from './StoreFlatData_ObserverHelper.js';
 import {
   observe_EmbeddedRelationalInstanceSetImplementation,
   observe_InlineEmbeddedRelationalInstanceSetImplementation,
@@ -237,21 +225,6 @@ class PropertyMappingObserver implements PropertyMappingVisitor<void> {
 
   visit_PurePropertyMapping(propertyMapping: PurePropertyMapping): void {
     observe_PurePropertyMapping(propertyMapping, this.observerContext);
-  }
-
-  visit_FlatDataPropertyMapping(
-    propertyMapping: FlatDataPropertyMapping,
-  ): void {
-    observe_FlatDataPropertyMapping(propertyMapping, this.observerContext);
-  }
-
-  visit_EmbeddedFlatDataPropertyMapping(
-    propertyMapping: EmbeddedFlatDataPropertyMapping,
-  ): void {
-    observe_EmbeddedFlatDataPropertyMapping(
-      propertyMapping,
-      this.observerContext,
-    );
   }
 
   visit_RelationalPropertyMapping(
@@ -483,21 +456,6 @@ class SetImplementationObserver implements SetImplementationVisitor<void> {
     );
   }
 
-  visit_FlatDataInstanceSetImplementation(
-    setImplementation: FlatDataInstanceSetImplementation,
-  ): void {
-    observe_FlatDataInstanceSetImplementation(
-      setImplementation,
-      this.observerContext,
-    );
-  }
-
-  visit_EmbeddedFlatDataSetImplementation(
-    setImplementation: EmbeddedFlatDataPropertyMapping,
-  ): void {
-    return;
-  }
-
   visit_RelationalInstanceSetImplementation(
     setImplementation: RelationalInstanceSetImplementation,
   ): void {
@@ -650,8 +608,6 @@ export const observe_InputData = (
 ): InputData => {
   if (metamodel instanceof ObjectInputData) {
     return observe_ObjectInputData(metamodel);
-  } else if (metamodel instanceof FlatDataInputData) {
-    return observe_FlatDataInputData(metamodel);
   } else if (metamodel instanceof RelationalInputData) {
     return observe_RelationalInputData(metamodel);
   }
@@ -837,10 +793,6 @@ class ConnectionObserver implements ConnectionVisitor<void> {
 
   visit_XmlModelConnection(connection: XmlModelConnection): void {
     observe_XmlModelConnection(connection);
-  }
-
-  visit_FlatDataConnection(connection: FlatDataConnection): void {
-    observe_FlatDataConnection(connection);
   }
 
   visit_RelationalDatabaseConnection(

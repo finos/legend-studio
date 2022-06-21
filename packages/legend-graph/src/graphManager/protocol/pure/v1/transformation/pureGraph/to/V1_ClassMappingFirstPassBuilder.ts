@@ -27,7 +27,6 @@ import {
   OperationType,
 } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/OperationSetImplementation.js';
 import { PureInstanceSetImplementation } from '../../../../../../../graph/metamodel/pure/packageableElements/store/modelToModel/mapping/PureInstanceSetImplementation.js';
-import { FlatDataInstanceSetImplementation } from '../../../../../../../graph/metamodel/pure/packageableElements/store/flatData/mapping/FlatDataInstanceSetImplementation.js';
 import { RootRelationalInstanceSetImplementation } from '../../../../../../../graph/metamodel/pure/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation.js';
 import { InferableMappingElementRootExplicitValue } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/InferableMappingElementRoot.js';
 import type { V1_GraphBuilderContext } from './V1_GraphBuilderContext.js';
@@ -38,7 +37,6 @@ import type {
 import type { V1_OperationClassMapping } from '../../../model/packageableElements/mapping/V1_OperationClassMapping.js';
 import type { V1_PureInstanceClassMapping } from '../../../model/packageableElements/store/modelToModel/mapping/V1_PureInstanceClassMapping.js';
 import type { V1_RelationalClassMapping } from '../../../model/packageableElements/store/relational/mapping/V1_RelationalClassMapping.js';
-import type { V1_RootFlatDataClassMapping } from '../../../model/packageableElements/store/flatData/mapping/V1_RootFlatDataClassMapping.js';
 import type { V1_RootRelationalClassMapping } from '../../../model/packageableElements/store/relational/mapping/V1_RootRelationalClassMapping.js';
 import type { V1_AggregationAwareClassMapping } from '../../../model/packageableElements/store/relational/mapping/aggregationAware/V1_AggregationAwareClassMapping.js';
 import { V1_getInferredClassMappingId } from './helpers/V1_MappingBuilderHelper.js';
@@ -176,38 +174,6 @@ export class V1_ClassMappingFirstPassBuilder
         )
       : undefined;
     return pureInstanceSetImplementation;
-  }
-
-  visit_RootFlatDataClassMapping(
-    classMapping: V1_RootFlatDataClassMapping,
-  ): SetImplementation {
-    assertNonEmptyString(
-      classMapping.class,
-      `Flat-data class mapping 'class' field is missing or empty`,
-    );
-    assertNonNullable(
-      classMapping.root,
-      `Flat-data class mapping 'root' field is missing`,
-    );
-    const targetClass = this.context.resolveClass(classMapping.class);
-    const sourceRootRecordType =
-      this.context.resolveRootFlatDataRecordType(classMapping);
-    const flatDataInstanceSetImplementation =
-      new FlatDataInstanceSetImplementation(
-        V1_getInferredClassMappingId(targetClass.value, classMapping),
-        this.parent,
-        targetClass,
-        InferableMappingElementRootExplicitValue.create(classMapping.root),
-        sourceRootRecordType,
-      );
-    flatDataInstanceSetImplementation.filter = classMapping.filter
-      ? V1_buildRawLambdaWithResolvedPaths(
-          [],
-          classMapping.filter.body,
-          this.context,
-        )
-      : undefined;
-    return flatDataInstanceSetImplementation;
   }
 
   visit_RelationalClassMapping(

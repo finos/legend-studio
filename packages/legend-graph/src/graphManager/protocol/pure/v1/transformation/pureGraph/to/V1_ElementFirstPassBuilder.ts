@@ -26,7 +26,6 @@ import { Measure } from '../../../../../../../graph/metamodel/pure/packageableEl
 import { Class } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/Class.js';
 import { Association } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/Association.js';
 import { ConcreteFunctionDefinition } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/ConcreteFunctionDefinition.js';
-import { FlatData } from '../../../../../../../graph/metamodel/pure/packageableElements/store/flatData/model/FlatData.js';
 import { Database } from '../../../../../../../graph/metamodel/pure/packageableElements/store/relational/model/Database.js';
 import { Mapping } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/Mapping.js';
 import { Service } from '../../../../../../../graph/metamodel/pure/packageableElements/service/Service.js';
@@ -49,7 +48,6 @@ import type { V1_Enumeration } from '../../../model/packageableElements/domain/V
 import type { V1_Class } from '../../../model/packageableElements/domain/V1_Class.js';
 import type { V1_Association } from '../../../model/packageableElements/domain/V1_Association.js';
 import type { V1_ConcreteFunctionDefinition } from '../../../model/packageableElements/function/V1_ConcreteFunctionDefinition.js';
-import type { V1_FlatData } from '../../../model/packageableElements/store/flatData/model/V1_FlatData.js';
 import type { V1_Database } from '../../../model/packageableElements/store/relational/model/V1_Database.js';
 import type { V1_Mapping } from '../../../model/packageableElements/mapping/V1_Mapping.js';
 import type { V1_Service } from '../../../model/packageableElements/service/V1_Service.js';
@@ -266,30 +264,6 @@ export class V1_ElementFirstPassBuilder
     );
     this.context.currentSubGraph.setOwnFunction(path, func);
     return func;
-  }
-
-  visit_FlatData(element: V1_FlatData): PackageableElement {
-    assertNonEmptyString(
-      element.package,
-      `Flat-data store 'package' field is missing or empty`,
-    );
-    assertNonEmptyString(
-      element.name,
-      `Flat data store 'name' field is missing or empty`,
-    );
-    const flatData = new FlatData(element.name);
-    const path = V1_buildFullPath(element.package, element.name);
-    V1_checkDuplicatedElement(path, this.context, this.elementPathCache);
-    addElementToPackage(
-      getOrCreateGraphPackage(
-        this.context.currentSubGraph,
-        element.package,
-        this.packageCache,
-      ),
-      flatData,
-    );
-    this.context.currentSubGraph.setOwnStore(path, flatData);
-    return flatData;
   }
 
   visit_Database(element: V1_Database): PackageableElement {

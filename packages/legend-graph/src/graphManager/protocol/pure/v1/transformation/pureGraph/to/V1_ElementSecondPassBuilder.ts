@@ -41,7 +41,6 @@ import type { V1_Enumeration } from '../../../model/packageableElements/domain/V
 import type { V1_Class } from '../../../model/packageableElements/domain/V1_Class.js';
 import type { V1_ConcreteFunctionDefinition } from '../../../model/packageableElements/function/V1_ConcreteFunctionDefinition.js';
 import type { V1_Association } from '../../../model/packageableElements/domain/V1_Association.js';
-import type { V1_FlatData } from '../../../model/packageableElements/store/flatData/model/V1_FlatData.js';
 import type { V1_Database } from '../../../model/packageableElements/store/relational/model/V1_Database.js';
 import type { V1_Mapping } from '../../../model/packageableElements/mapping/V1_Mapping.js';
 import type { V1_Service } from '../../../model/packageableElements/service/V1_Service.js';
@@ -58,7 +57,6 @@ import {
   V1_buildEnumerationMapping,
   V1_buildMappingInclude,
 } from './helpers/V1_MappingBuilderHelper.js';
-import { V1_buildFlatDataSection } from './helpers/V1_FlatDataStoreBuilderHelper.js';
 import { V1_buildSchema } from './helpers/V1_DatabaseBuilderHelper.js';
 import {
   V1_buildConfigurationProperty,
@@ -251,15 +249,6 @@ export class V1_ElementSecondPassBuilder
       V1_buildVariable(param, this.context),
     );
     func.expressionSequence = protocol.body;
-  }
-
-  visit_FlatData(element: V1_FlatData): void {
-    const flatData = this.context.currentSubGraph.getOwnFlatDataStore(
-      V1_buildFullPath(element.package, element.name),
-    );
-    flatData.sections = element.sections.map((section) =>
-      V1_buildFlatDataSection(section, flatData, this.context),
-    );
   }
 
   visit_Database(element: V1_Database): void {

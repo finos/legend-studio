@@ -32,7 +32,6 @@ import {
   type DatasourceSpecification,
   PackageableConnection,
   JsonModelConnection,
-  FlatDataConnection,
   RelationalDatabaseConnection,
   DefaultH2AuthenticationStrategy,
   DelegatedKerberosAuthenticationStrategy,
@@ -371,19 +370,6 @@ export class JsonModelConnectionValueState extends ConnectionValueState {
   }
 }
 
-export class FlatDataConnectionValueState extends ConnectionValueState {
-  override connection: FlatDataConnection;
-
-  constructor(editorStore: EditorStore, connection: FlatDataConnection) {
-    super(editorStore, connection);
-    this.connection = connection;
-  }
-
-  label(): string {
-    return 'flat-data connection';
-  }
-}
-
 export class UnsupportedConnectionValueState extends ConnectionValueState {
   label(): string {
     return 'unsupported connection';
@@ -409,8 +395,6 @@ export class ConnectionEditorState {
     const connection = this.connection;
     if (connection instanceof JsonModelConnection) {
       return new JsonModelConnectionValueState(this.editorStore, connection);
-    } else if (connection instanceof FlatDataConnection) {
-      return new FlatDataConnectionValueState(this.editorStore, connection);
     } else if (connection instanceof RelationalDatabaseConnection) {
       return new RelationalDatabaseConnectionValueState(
         this.editorStore,

@@ -22,19 +22,12 @@ import type {
   Runtime,
   Store,
   Class,
-  FlatDataRecordField,
-  RootFlatDataRecordType,
   AbstractProperty,
 } from '@finos/legend-graph';
 
 export interface PackageTreeNodeData extends TreeNodeData {
   dndType: string;
   packageableElement: PackageableElement;
-}
-
-export interface FlatDataRecordTypeTreeNodeData extends TreeNodeData {
-  field: FlatDataRecordField;
-  parentType: RootFlatDataRecordType;
 }
 
 export interface RuntimeExplorerTreeNodeData extends TreeNodeData {

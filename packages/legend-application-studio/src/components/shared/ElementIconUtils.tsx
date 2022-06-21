@@ -39,7 +39,6 @@ import {
   PURE_ConnectionIcon,
   PURE_FunctionIcon,
   PURE_DatabaseIcon,
-  PURE_FlatDataStoreIcon,
   PURE_FileGenerationIcon,
   PURE_GenerationSpecificationIcon,
   PURE_UnknownElementTypeIcon,
@@ -87,8 +86,6 @@ export const getElementTypeIcon = (
       return <PURE_ProfileIcon />;
     case PACKAGEABLE_ELEMENT_TYPE.FUNCTION:
       return <PURE_FunctionIcon />;
-    case PACKAGEABLE_ELEMENT_TYPE.FLAT_DATA_STORE:
-      return <PURE_FlatDataStoreIcon />;
     case PACKAGEABLE_ELEMENT_TYPE.DATABASE:
       return <PURE_DatabaseIcon />;
     case PACKAGEABLE_ELEMENT_TYPE.MAPPING:

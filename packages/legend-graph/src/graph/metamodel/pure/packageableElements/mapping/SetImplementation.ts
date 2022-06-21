@@ -21,8 +21,6 @@ import type { PropertyOwnerImplementation } from './PropertyOwnerImplementation.
 import type { Mapping } from './Mapping.js';
 import type { OperationSetImplementation } from './OperationSetImplementation.js';
 import type { PureInstanceSetImplementation } from '../store/modelToModel/mapping/PureInstanceSetImplementation.js';
-import type { FlatDataInstanceSetImplementation } from '../store/flatData/mapping/FlatDataInstanceSetImplementation.js';
-import type { EmbeddedFlatDataPropertyMapping } from '../store/flatData/mapping/EmbeddedFlatDataPropertyMapping.js';
 import type { RelationalInstanceSetImplementation } from '../store/relational/mapping/RelationalInstanceSetImplementation.js';
 import type { RootRelationalInstanceSetImplementation } from '../store/relational/mapping/RootRelationalInstanceSetImplementation.js';
 import type { InferableMappingElementIdValue } from './InferableMappingElementId.js';
@@ -43,13 +41,6 @@ export interface SetImplementationVisitor<T> {
   ): T;
   visit_PureInstanceSetImplementation(
     setImplementation: PureInstanceSetImplementation,
-  ): T;
-  visit_FlatDataInstanceSetImplementation(
-    setImplementation: FlatDataInstanceSetImplementation,
-  ): T;
-  // NOTE: since embedded mappings are also treated as a set implementation, we have a visit method for them here
-  visit_EmbeddedFlatDataSetImplementation(
-    setImplementation: EmbeddedFlatDataPropertyMapping,
   ): T;
   visit_RelationalInstanceSetImplementation(
     setImplementation: RelationalInstanceSetImplementation,

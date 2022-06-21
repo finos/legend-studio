@@ -67,6 +67,7 @@ import {
   useApplicationStore,
 } from '@finos/legend-application';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../stores/LegendStudioApplicationNavigationContext.js';
+import type { LegendStudioPlugin } from '../../../../stores/LegendStudioPlugin.js';
 
 export const MappingEditorSplashScreen: React.FC = () => {
   const logoWidth = 280;
@@ -139,8 +140,9 @@ const MappingEditorHeaderTabContextMenu = observer(
 
 const getMappingElementTargetIcon = (
   mappingElement: MappingElement,
+  plugins: LegendStudioPlugin[],
 ): React.ReactNode => {
-  const target = getMappingElementTarget(mappingElement);
+  const target = getMappingElementTarget(mappingElement, plugins);
   if (target instanceof Class) {
     return <PURE_ClassIcon />;
   } else if (target instanceof Enumeration) {
@@ -169,7 +171,12 @@ export const MappingEditor = observer(() => {
       );
     } else if (currentTabState instanceof MappingElementState) {
       const currentMappingElement = currentTabState.mappingElement;
-      switch (getMappingElementType(currentMappingElement)) {
+      switch (
+        getMappingElementType(
+          currentMappingElement,
+          editorStore.pluginManager.getStudioPlugins(),
+        )
+      ) {
         case MAPPING_ELEMENT_TYPE.CLASS:
           return (
             <ClassMappingEditor
@@ -284,10 +291,12 @@ export const MappingEditor = observer(() => {
                           <div
                             className={`mapping-editor__header__tab__element__type icon color--${getMappingElementType(
                               tabState.mappingElement,
+                              editorStore.pluginManager.getStudioPlugins(),
                             ).toLowerCase()}`}
                           >
                             {getMappingElementTargetIcon(
                               tabState.mappingElement,
+                              editorStore.pluginManager.getStudioPlugins(),
                             )}
                           </div>
                           <button
@@ -295,12 +304,17 @@ export const MappingEditor = observer(() => {
                             tabIndex={-1}
                             onClick={openTab(tabState)}
                             title={`${toSentenceCase(
-                              getMappingElementType(tabState.mappingElement),
+                              getMappingElementType(
+                                tabState.mappingElement,
+                                editorStore.pluginManager.getStudioPlugins(),
+                              ),
                             ).toLowerCase()} mapping '${
                               tabState.mappingElement.id.value
                             }' for '${
-                              getMappingElementTarget(tabState.mappingElement)
-                                .name
+                              getMappingElementTarget(
+                                tabState.mappingElement,
+                                editorStore.pluginManager.getStudioPlugins(),
+                              ).name
                             }'`}
                           >
                             {

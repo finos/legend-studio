@@ -32,7 +32,6 @@ import {
   Measure,
   Unit,
   Database,
-  FlatData,
   Mapping,
   Service,
   PackageableRuntime,
@@ -60,8 +59,6 @@ const getElementProjectExplorerDnDType = (
     return CORE_DND_TYPE.PROJECT_EXPLORER_FUNCTION;
   } else if (element instanceof Measure) {
     return CORE_DND_TYPE.PROJECT_EXPLORER_MEASURE;
-  } else if (element instanceof FlatData) {
-    return CORE_DND_TYPE.PROJECT_EXPLORER_FLAT_DATA;
   } else if (element instanceof Database) {
     return CORE_DND_TYPE.PROJECT_EXPLORER_DATABASE;
   } else if (element instanceof Mapping) {

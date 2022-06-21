@@ -48,6 +48,9 @@
       "path": "packages/legend-extension-external-store-service/tsconfig.build.json"
     },
     {
+      "path": "packages/legend-extension-external-store-flat-data/tsconfig.build.json"
+    },
+    {
       "path": "packages/legend-extension-external-language-morphir/tsconfig.build.json"
     },
     {
