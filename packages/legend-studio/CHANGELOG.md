@@ -1,5 +1,7 @@
 # @finos/legend-studio
 
+## 10.1.1
+
 ## 10.1.0
 
 ### Minor Changes

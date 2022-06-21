@@ -1,5 +1,7 @@
 # @finos/legend-graph
 
+## 8.0.2
+
 ## 8.0.1
 
 ### Patch Changes
