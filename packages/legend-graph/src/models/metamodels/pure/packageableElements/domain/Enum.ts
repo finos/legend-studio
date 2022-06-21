@@ -17,19 +17,16 @@
 import { type Hashable, uuid, hashArray } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst.js';
 import type { Enumeration } from './Enumeration.js';
-import type { TaggedValue } from './TaggedValue.js';
-import type { AnnotatedElement } from './AnnotatedElement.js';
-import type { StereotypeReference } from './StereotypeReference.js';
+import { AnnotatedElement } from './AnnotatedElement.js';
 
-export class Enum implements AnnotatedElement, Hashable {
+export class Enum extends AnnotatedElement implements Hashable {
   readonly _UUID = uuid();
   readonly _OWNER: Enumeration;
 
   name: string;
-  stereotypes: StereotypeReference[] = [];
-  taggedValues: TaggedValue[] = [];
 
   constructor(name: string, owner: Enumeration) {
+    super();
     this.name = name;
     this._OWNER = owner;
   }

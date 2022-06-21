@@ -18,8 +18,6 @@ import { hashArray, type Hashable } from '@finos/legend-shared';
 import {
   PackageableElement,
   type PackageableElementVisitor,
-  type StereotypeReference,
-  type TaggedValue,
 } from '@finos/legend-graph';
 import { DATA_SPACE_HASH_STRUCTURE } from '../../../../../DSLDataSpace_ModelUtils.js';
 
@@ -59,8 +57,6 @@ export class DataSpaceExecutionContext implements Hashable {
 }
 
 export class DataSpace extends PackageableElement implements Hashable {
-  stereotypes: StereotypeReference[] = [];
-  taggedValues: TaggedValue[] = [];
   groupId!: string;
   artifactId!: string;
   versionId!: string;

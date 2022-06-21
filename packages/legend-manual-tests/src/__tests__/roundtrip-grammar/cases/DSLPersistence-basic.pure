@@ -31,6 +31,11 @@ Persistence org::legend::ZooPersistence
         batchIdOutName: 'batchIdOut';
         dateTimeInName: 'IN_Z';
         dateTimeOutName: 'OUT_Z';
+        derivation: SourceSpecifiesInAndOutDateTime
+        {
+          sourceDateTimeInField: systemIn;
+          sourceDateTimeOutField: systemOut;
+        }
       }
       validityMilestoning: DateTime
       {
@@ -52,7 +57,6 @@ Persistence org::legend::ZooPersistence
         {
           modelProperty: zookeeper;
           targetName: 'PersonDataset_1';
-          deduplicationStrategy: None;
         },
         {
           modelProperty: admin;
@@ -65,7 +69,10 @@ Persistence org::legend::ZooPersistence
         {
           modelProperty: owner;
           targetName: 'PersonDataset_3';
-          deduplicationStrategy: None;
+          deduplicationStrategy: DuplicateCount
+          {
+            duplicateCountName: 'DUP_COUNT';
+          }
         }
       ];
     }
@@ -142,6 +149,8 @@ Class org::legend::Zoo
 Class org::legend::Person
 {
   name: String[1];
+  systemIn: DateTime[1];
+  systemOut: DateTime[1];
   effectiveFrom: DateTime[1];
   effectiveThru: DateTime[1];
   version: Integer[1];

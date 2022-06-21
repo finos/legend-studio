@@ -242,21 +242,21 @@ export const constraint_setFunctionDefinition = action(
 // --------------------------------------------- Profile -------------------------------------
 
 export const profile_addTag = action((profile: Profile, value: Tag): void => {
-  addUniqueEntry(profile.tags, observe_Tag(value));
+  addUniqueEntry(profile.p_tags, observe_Tag(value));
 });
 export const profile_deleteTag = action(
   (profile: Profile, value: Tag): void => {
-    deleteEntry(profile.tags, value);
+    deleteEntry(profile.p_tags, value);
   },
 );
 export const profile_addStereotype = action(
   (profile: Profile, value: Stereotype): void => {
-    addUniqueEntry(profile.stereotypes, observe_Stereotype(value));
+    addUniqueEntry(profile.p_stereotypes, observe_Stereotype(value));
   },
 );
 export const profile_deleteStereotype = action(
   (profile: Profile, value: Stereotype): void => {
-    deleteEntry(profile.stereotypes, value);
+    deleteEntry(profile.p_stereotypes, value);
   },
 );
 

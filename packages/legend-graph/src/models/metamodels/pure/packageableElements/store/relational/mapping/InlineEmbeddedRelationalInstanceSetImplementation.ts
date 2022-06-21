@@ -46,7 +46,7 @@ export class InlineEmbeddedRelationalInstanceSetImplementation
     return hashArray([
       CORE_HASH_STRUCTURE.INLINE_EMBEDDED_REALTIONAL_PROPERTY_MAPPING,
       this.property.pointerHashCode,
-      this.inlineSetImplementation.id.valueForSerialization ?? '',
+      this.inlineSetImplementation.id.value,
     ]);
   }
 }

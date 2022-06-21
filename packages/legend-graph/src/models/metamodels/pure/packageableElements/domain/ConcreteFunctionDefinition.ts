@@ -21,8 +21,6 @@ import type { PackageableElementVisitor } from '../PackageableElement.js';
 import type { RawVariableExpression } from '../../rawValueSpecification/RawVariableExpression.js';
 import type { Type } from './Type.js';
 import type { Multiplicity } from './Multiplicity.js';
-import type { StereotypeReference } from './StereotypeReference.js';
-import type { TaggedValue } from './TaggedValue.js';
 import type { PackageableElementReference } from '../PackageableElementReference.js';
 import { FunctionDefinition } from './Function.js';
 
@@ -43,9 +41,7 @@ export class ConcreteFunctionDefinition
    *
    * @discrepancy model
    */
-  body: object[] = [];
-  stereotypes: StereotypeReference[] = [];
-  taggedValues: TaggedValue[] = [];
+  expressionSequence: object[] = [];
 
   constructor(
     name: string,
@@ -65,7 +61,7 @@ export class ConcreteFunctionDefinition
       this.returnType.hashValue,
       hashArray(this.taggedValues),
       hashArray(this.stereotypes.map((val) => val.pointerHashCode)),
-      hashRawLambda(undefined, this.body),
+      hashRawLambda(undefined, this.expressionSequence),
     ]);
   }
 

@@ -232,13 +232,13 @@ export const observe_Profile = skipObserved((metamodel: Profile): Profile => {
   observe_Abstract_PackageableElement(metamodel);
 
   makeObservable<Profile, '_elementHashCode'>(metamodel, {
-    stereotypes: observable,
-    tags: observable,
+    p_stereotypes: observable,
+    p_tags: observable,
     _elementHashCode: override,
   });
 
-  metamodel.stereotypes.forEach(observe_Stereotype);
-  metamodel.tags.forEach(observe_Tag);
+  metamodel.p_stereotypes.forEach(observe_Stereotype);
+  metamodel.p_tags.forEach(observe_Tag);
 
   return metamodel;
 });
@@ -458,7 +458,7 @@ export const observe_ConcreteFunctionDefinition = skipObserved(
     makeObservable<ConcreteFunctionDefinition, '_elementHashCode'>(metamodel, {
       returnMultiplicity: observable,
       parameters: observable.shallow, // only observe the list structure, each object itself is not observed
-      body: observable.ref, // only observe the reference, the object itself is not observed
+      expressionSequence: observable.ref, // only observe the reference, the object itself is not observed
       stereotypes: observable,
       taggedValues: observable,
       _elementHashCode: override,

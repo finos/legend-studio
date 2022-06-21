@@ -17,7 +17,7 @@
 import type { TaggedValue } from './TaggedValue.js';
 import type { StereotypeReference } from './StereotypeReference.js';
 
-export interface AnnotatedElement {
-  stereotypes: StereotypeReference[];
-  taggedValues: TaggedValue[];
+export class AnnotatedElement {
+  stereotypes: StereotypeReference[] = [];
+  taggedValues: TaggedValue[] = [];
 }

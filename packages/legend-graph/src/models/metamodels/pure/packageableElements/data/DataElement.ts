@@ -17,16 +17,12 @@
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst.js';
 import type { EmbeddedData } from '../../data/EmbeddedData.js';
-import type { StereotypeReference } from '../domain/StereotypeReference.js';
-import type { TaggedValue } from '../domain/TaggedValue.js';
 import {
   PackageableElement,
   type PackageableElementVisitor,
 } from '../PackageableElement.js';
 
 export class DataElement extends PackageableElement implements Hashable {
-  stereotypes: StereotypeReference[] = [];
-  taggedValues: TaggedValue[] = [];
   data!: EmbeddedData;
 
   override get hashCode(): string {

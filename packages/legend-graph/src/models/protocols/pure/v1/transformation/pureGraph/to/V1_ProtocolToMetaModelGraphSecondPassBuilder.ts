@@ -103,7 +103,7 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
       V1_buildFullPath(element.package, element.name),
     );
     const uniqueStereotypes = new Set<string>();
-    profile.stereotypes = element.stereotypes.map((stereotype) => {
+    profile.p_stereotypes = element.stereotypes.map((stereotype) => {
       if (uniqueStereotypes.has(stereotype)) {
         /**
          * This test is skipped because we want to temporarily relax graph building algorithm
@@ -122,7 +122,7 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
       return new Stereotype(profile, stereotype);
     });
     const uniqueTags = new Set<string>();
-    profile.tags = element.tags.map((tag) => {
+    profile.p_tags = element.tags.map((tag) => {
       if (uniqueTags.has(tag)) {
         /**
          * This test is skipped because we want to temporarily relax graph building algorithm
@@ -249,7 +249,7 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
     func.parameters = protocol.parameters.map((param) =>
       V1_buildVariable(param, this.context),
     );
-    func.body = protocol.body;
+    func.expressionSequence = protocol.body;
   }
 
   visit_FlatData(element: V1_FlatData): void {

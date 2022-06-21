@@ -48,7 +48,7 @@ export const StereotypeSelector = observer(
     const editorStore = useEditorStore();
     // Profile
     const profileOptions = editorStore.profileOptions.filter(
-      (p) => p.value.stereotypes.length,
+      (p) => p.value.p_stereotypes.length,
     );
     const filterOption = createFilter({
       ignoreCase: true,
@@ -60,18 +60,18 @@ export const StereotypeSelector = observer(
       PackageableElementOption<Profile>
     >({ value: stereotype.value._OWNER, label: stereotype.value._OWNER.name });
     const changeProfile = (val: PackageableElementOption<Profile>): void => {
-      if (val.value.stereotypes.length) {
+      if (val.value.p_stereotypes.length) {
         setSelectedProfile(val);
         stereotypeReference_setValue(
           stereotype,
-          val.value.stereotypes[0] as Stereotype,
+          val.value.p_stereotypes[0] as Stereotype,
         );
       }
     };
     const visitProfile = (): void =>
       editorStore.openElement(selectedProfile.value);
     // Stereotype
-    const stereotypeOptions = selectedProfile.value.stereotypes.map((st) => ({
+    const stereotypeOptions = selectedProfile.value.p_stereotypes.map((st) => ({
       label: st.value,
       value: st,
     }));

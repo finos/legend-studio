@@ -1,5 +1,22 @@
 # @finos/legend-dev-utils
 
+## 2.0.0
+
+### Major Changes
+
+- [#1190](https://github.com/finos/legend-studio/pull/1190) [`4c076c98`](https://github.com/finos/legend-studio/commit/4c076c985b5efd0da3ec2f141ddc9cd53f0ba8f6) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Use `NodeNext` (`ESM` module resolution strategy for `Typescript`). Read more about this [here](https://devblogs.microsoft.com/typescript/announcing-typescript-4-7/#esm-nodejs). This transition would be relatively smooth, except that we must use `ESM`-styled import (with extensions) for relative path. For example:
+
+  ```ts
+  // before
+  import { someFunction } from './Utils';
+  // after
+  import { someFunction } from './Utils.js';
+  ```
+
+* [#1190](https://github.com/finos/legend-studio/pull/1190) [`4c076c98`](https://github.com/finos/legend-studio/commit/4c076c985b5efd0da3ec2f141ddc9cd53f0ba8f6) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Use `@jest/globals` to import `jest` constructs, such as, `expect`, `test`, etc. We bumped into some problem when trying to disable `injectGlobals` in `Jest` config, so that would be left on as default for now, but at least with this change, we restrict usage of `jest` globals in the codebase.
+
+- [#1190](https://github.com/finos/legend-studio/pull/1190) [`4c076c98`](https://github.com/finos/legend-studio/commit/4c076c985b5efd0da3ec2f141ddc9cd53f0ba8f6) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Cleanup `Webpack` configuration utility: removed field `extraBabelLoaderIncludePatterns`.
+
 ## 1.0.1
 
 ## 1.0.0

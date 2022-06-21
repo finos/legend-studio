@@ -19,13 +19,9 @@ import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst.js';
 import { DataType } from './DataType.js';
 import type { Enum } from './Enum.js';
 import type { PackageableElementVisitor } from '../PackageableElement.js';
-import type { StereotypeReference } from './StereotypeReference.js';
-import type { TaggedValue } from './TaggedValue.js';
 
 export class Enumeration extends DataType implements Hashable {
   values: Enum[] = [];
-  stereotypes: StereotypeReference[] = [];
-  taggedValues: TaggedValue[] = [];
 
   protected override get _elementHashCode(): string {
     return hashArray([

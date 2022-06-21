@@ -1,5 +1,22 @@
 # @finos/legend-extension-dsl-diagram
 
+## 3.0.0
+
+### Major Changes
+
+- [#1190](https://github.com/finos/legend-studio/pull/1190) [`4c076c98`](https://github.com/finos/legend-studio/commit/4c076c985b5efd0da3ec2f141ddc9cd53f0ba8f6) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Use `NodeNext` (`ESM` module resolution strategy for `Typescript`). Read more about this [here](https://devblogs.microsoft.com/typescript/announcing-typescript-4-7/#esm-nodejs). This transition would be relatively smooth, except that we must use `ESM`-styled import (with extensions) for relative path. For example:
+
+  ```ts
+  // before
+  import { someFunction } from './Utils';
+  // after
+  import { someFunction } from './Utils.js';
+  ```
+
+### Patch Changes
+
+- [#1201](https://github.com/finos/legend-studio/pull/1201) [`b700e876`](https://github.com/finos/legend-studio/commit/b700e8765b4a7411b751dba3bb3a7f8df533d527) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Fix class's association property edges getting dropped when cleaning up the diagram. ([#1200](https://github.com/finos/legend-studio/issues/1200)).
+
 ## 2.0.3
 
 ## 2.0.2
