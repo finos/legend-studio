@@ -16,7 +16,7 @@
 
 import type { ClassViewReference } from './DSLDiagram_ClassViewReference.js';
 
-export class RelationshipEdgeView {
+export class RelationshipViewEnd {
   /**
    * Offsets from the center of the class view.
    *
