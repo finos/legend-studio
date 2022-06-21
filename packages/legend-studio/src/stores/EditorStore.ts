@@ -94,7 +94,7 @@ import type { DSL_LegendStudioPlugin_Extension } from './LegendStudioPlugin.js';
 import type { Entity } from '@finos/legend-model-storage';
 import {
   ProjectConfiguration,
-  convertVersionToObj,
+  convertVersionObjectToString,
   type SDLCServerClient,
   type WorkspaceType,
 } from '@finos/legend-server-sdlc';
@@ -813,7 +813,7 @@ export class EditorStore {
         projectDependencyList.map(
           (item: { projectId: string; versionId: string }) => ({
             projectId: item.projectId,
-            versionId: convertVersionToObj(item.versionId),
+            versionId: convertVersionObjectToString(item.versionId),
           }),
         );
 

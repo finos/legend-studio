@@ -276,7 +276,7 @@ export class WorkspaceReviewState {
         for (i; i < listLength; i++) {
           if (
             !VERSION_REGEX.test(
-              originalProjectDependencies[i]?.version ?? 'x.x.x',
+              originalProjectDependencies[i]?.versionId ?? 'x.x.x',
             )
           ) {
             versionError = true;
