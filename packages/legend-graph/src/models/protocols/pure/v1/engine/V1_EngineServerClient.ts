@@ -274,7 +274,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
       `${this._JSONToGrammar()}/lambda`,
       input,
       {},
-      undefined,
+      { [HttpHeader.ACCPEPT]: ContentType.TEXT_PLAIN },
       { renderStyle },
       { enableCompression: true },
     );
@@ -302,7 +302,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
       `${this._JSONToGrammar()}/relationalOperationElement`,
       input,
       {},
-      undefined,
+      { [HttpHeader.ACCPEPT]: ContentType.TEXT_PLAIN },
       { renderStyle },
       { enableCompression: true },
     );
