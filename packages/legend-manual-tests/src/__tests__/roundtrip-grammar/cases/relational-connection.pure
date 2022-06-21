@@ -98,6 +98,23 @@ RelationalDatabaseConnection connection::relational::H2Connection
   auth: DefaultH2;
 }
 
+RelationalDatabaseConnection connection::relational::MiddleTierUsernamePasswordConnection
+{
+  store: store::db;
+  type: MemSQL;
+  specification: Static
+  {
+    name: 'myDb';
+    host: 'somehost';
+    port: 999;
+  };
+  auth: MiddleTierUsernamePassword
+  {
+    vaultReference: 'value';
+  };
+}
+
+
 RelationalDatabaseConnection connection::relational::H2ConnectionWithQuoteIdentifiers
 {
   store: store::db;

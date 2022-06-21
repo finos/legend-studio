@@ -4072,6 +4072,32 @@ export const TEST_DATA__RelationalDatabaseConnectionRoundtrip = [
     classifierPath: 'meta::pure::runtime::PackageableConnection',
   },
   {
+    path: 'apps::middleTierUsernamePasswordConnection',
+    content: {
+      _type: 'connection',
+      connectionValue: {
+        _type: 'RelationalDatabaseConnection',
+        authenticationStrategy: {
+          _type: 'middleTierUsernamePassword',
+          vaultReference: 'value',
+        },
+        databaseType: 'Memsql',
+        datasourceSpecification: {
+          _type: 'memsql',
+          defaultDataset: 'legend_testing_dataset',
+          projectId: 'legend-integration-testing',
+          proxyHost: 'proxy-host',
+          proxyPort: '8080',
+        },
+        element: 'apps::pure::studio::relational::tests::dbInc',
+        type: 'MemSQL',
+      },
+      name: 'myMiddleTierUsernamePassword',
+      package: 'apps',
+    },
+    classifierPath: 'meta::pure::runtime::PackageableConnection',
+  },
+  {
     path: 'apps::myBigQueryWithWorkloadIdentityFederation',
     content: {
       _type: 'connection',

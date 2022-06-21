@@ -63,6 +63,7 @@ import {
   V1_DelegatedKerberosAuthenticationStrategy,
   V1_UsernamePasswordAuthenticationStrategy,
   V1_GCPWorkloadIdentityFederationAuthenticationStrategy,
+  V1_MiddleTierUsernamePasswordAuthenticationStrategy,
 } from '../../../model/packageableElements/store/relational/connection/V1_AuthenticationStrategy.js';
 import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin.js';
 import type { StoreRelational_PureProtocolProcessorPlugin_Extension } from '../../../../StoreRelational_PureProtocolProcessorPlugin_Extension.js';
@@ -346,6 +347,7 @@ enum V1_AuthenticationStrategyType {
   OAUTH = 'oauth',
   USERNAME_PASSWORD = 'userNamePassword',
   GCP_WORKLOAD_IDENTITY_FEDERATION = 'gcpWorkloadIdentityFederation',
+  MIDDLE_TIER_USERNAME_PASSWORD = 'middleTierUsernamePassword',
 }
 
 const V1_delegatedKerberosAuthenticationStrategyModelSchema = createModelSchema(
@@ -388,6 +390,14 @@ const V1_GCPApplicationDefaultCredentialsAuthenticationStrategyModelSchema =
     _type: usingConstantValueSchema(
       V1_AuthenticationStrategyType.GCP_APPLICATION_DEFAULT_CREDENTIALS,
     ),
+  });
+
+const V1_MiddleTierUsernamePasswordAuthenticationStrategyModelSchema =
+  createModelSchema(V1_MiddleTierUsernamePasswordAuthenticationStrategy, {
+    _type: usingConstantValueSchema(
+      V1_AuthenticationStrategyType.MIDDLE_TIER_USERNAME_PASSWORD,
+    ),
+    vaultReference: primitive(),
   });
 
 const V1_GCPWorkloadIdentityFederationAuthenticationStrategyModelSchema =
