@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 8.0.1
+
+### Patch Changes
+
+- [#1216](https://github.com/finos/legend-studio/pull/1216) [`16b268f7`](https://github.com/finos/legend-studio/commit/16b268f75ba5b5d0c36223c4e391e5df2ac8220b) ([@gayathrir11](https://github.com/gayathrir11)) - Fix inaccurate change detection for inline mapping ([#1198](https://github.com/finos/legend-studio/issues/1198)).
+
 ## 8.0.0
 
 ### Major Changes
