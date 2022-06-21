@@ -242,7 +242,12 @@ export const ModelLoader = observer(() => {
       <div className="panel__content model-loader__editor">
         {loaderExtensionConfig?.renderer(editorStore) ?? (
           <StudioTextInputEditor
-            language={EDITOR_LANGUAGE.JSON}
+            language={
+              modelLoaderState.currentModelLoadType ===
+              MODEL_UPDATER_INPUT_TYPE.PURE_GRAMMAR
+                ? EDITOR_LANGUAGE.PURE
+                : EDITOR_LANGUAGE.JSON
+            }
             inputValue={modelLoaderState.modelText}
             updateInput={updateModel}
             showMiniMap={true}

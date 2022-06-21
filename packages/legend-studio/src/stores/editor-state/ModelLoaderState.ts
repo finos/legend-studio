@@ -39,6 +39,7 @@ import type {
 export enum MODEL_UPDATER_INPUT_TYPE {
   ENTITIES = 'ENTITIES',
   PURE_PROTOCOL = 'PURE_PROTOCOL',
+  PURE_GRAMMAR = 'PURE_GRAMMAR',
 }
 
 export class ModelLoaderState extends EditorState {
@@ -156,6 +157,13 @@ export class ModelLoaderState extends EditorState {
         this.modelText = JSON.stringify(graphEntities, undefined, TAB_SIZE);
         break;
       }
+      case MODEL_UPDATER_INPUT_TYPE.PURE_GRAMMAR: {
+        this.modelText =
+          (yield this.editorStore.graphManagerState.graphManager.graphToPureCode(
+            this.editorStore.graphManagerState.graph,
+          )) as string;
+        break;
+      }
       default:
         throw new UnsupportedOperationError(
           `Can't load current project entities for input type of type '${this.currentModelLoadType}'`,
@@ -193,6 +201,20 @@ export class ModelLoaderState extends EditorState {
           }
           case MODEL_UPDATER_INPUT_TYPE.ENTITIES: {
             entities = JSON.parse(this.modelText) as Entity[];
+            break;
+          }
+          case MODEL_UPDATER_INPUT_TYPE.PURE_GRAMMAR: {
+            entities = (
+              (yield this.editorStore.graphManagerState.graphManager.pureCodeToEntities(
+                this.modelText,
+              )) as Entity[]
+            ).map((entity) => ({
+              ...entity,
+              content:
+                this.editorStore.graphManagerState.graphManager.pruneSourceInformation(
+                  entity.content,
+                ),
+            }));
             break;
           }
           default:
