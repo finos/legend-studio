@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-diagram
 
+## 4.0.0
+
+### Major Changes
+
+- [#1223](https://github.com/finos/legend-studio/pull/1223) [`f5f72a2d`](https://github.com/finos/legend-studio/commit/f5f72a2de0a1bacd1d614ea1e3ecb782fce15bf8) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Renamed `RelationshipEdgeView` to `RelationshipViewEnd`.
+
 ## 3.0.0
 
 ### Major Changes

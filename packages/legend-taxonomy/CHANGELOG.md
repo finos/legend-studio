@@ -1,5 +1,7 @@
 # @finos/legend-taxonomy
 
+## 4.0.1
+
 ## 4.0.0
 
 ### Major Changes
