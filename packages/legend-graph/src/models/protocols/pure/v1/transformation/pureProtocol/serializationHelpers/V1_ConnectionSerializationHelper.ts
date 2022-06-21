@@ -470,6 +470,13 @@ export const V1_serializeAuthenticationStrategy = (
       V1_UsernamePasswordAuthenticationStrategyModelSchema,
       protocol,
     );
+  } else if (
+    protocol instanceof V1_MiddleTierUsernamePasswordAuthenticationStrategy
+  ) {
+    return serialize(
+      V1_MiddleTierUsernamePasswordAuthenticationStrategyModelSchema,
+      protocol,
+    );
   }
   const extraConnectionAuthenticationStrategyProtocolSerializers =
     plugins.flatMap(
@@ -525,6 +532,11 @@ export const V1_deserializeAuthenticationStrategy = (
     case V1_AuthenticationStrategyType.USERNAME_PASSWORD:
       return deserialize(
         V1_UsernamePasswordAuthenticationStrategyModelSchema,
+        json,
+      );
+    case V1_AuthenticationStrategyType.MIDDLE_TIER_USERNAME_PASSWORD:
+      return deserialize(
+        V1_MiddleTierUsernamePasswordAuthenticationStrategyModelSchema,
         json,
       );
     default: {
