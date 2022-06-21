@@ -44,7 +44,7 @@ export const CHARSET = 'charset=utf-8';
 
 export enum HttpHeader {
   CONTENT_TYPE = 'Content-Type',
-  ACCPEPT = 'Accept',
+  ACCEPT = 'Accept',
 }
 
 export enum ContentType {

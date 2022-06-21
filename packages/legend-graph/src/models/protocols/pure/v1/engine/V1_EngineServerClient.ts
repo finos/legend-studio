@@ -260,7 +260,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
       `${this._JSONToGrammar()}/model`,
       input,
       {},
-      { [HttpHeader.ACCPEPT]: ContentType.TEXT_PLAIN },
+      { [HttpHeader.ACCEPT]: ContentType.TEXT_PLAIN },
       { renderStyle },
       { enableCompression: true },
     );
@@ -274,7 +274,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
       `${this._JSONToGrammar()}/lambda`,
       input,
       {},
-      undefined,
+      { [HttpHeader.ACCEPT]: ContentType.TEXT_PLAIN },
       { renderStyle },
       { enableCompression: true },
     );
@@ -302,7 +302,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
       `${this._JSONToGrammar()}/relationalOperationElement`,
       input,
       {},
-      undefined,
+      { [HttpHeader.ACCEPT]: ContentType.TEXT_PLAIN },
       { renderStyle },
       { enableCompression: true },
     );
@@ -497,7 +497,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
       `${this._execution()}/testDataGeneration/generateTestData_WithDefaultSeed`,
       input,
       {},
-      { [HttpHeader.ACCPEPT]: ContentType.TEXT_PLAIN },
+      { [HttpHeader.ACCEPT]: ContentType.TEXT_PLAIN },
       undefined,
       { enableCompression: true },
     );

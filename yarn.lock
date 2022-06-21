@@ -2024,7 +2024,7 @@ __metadata:
     "@fontsource/roboto-condensed": 4.5.8
     "@fontsource/roboto-mono": 4.5.7
     "@jest/globals": 28.1.1
-    "@mui/material": 5.8.4
+    "@mui/material": 5.8.5
     "@types/react": 18.0.14
     "@types/react-select": 4.0.18
     "@types/react-window": 1.8.5
@@ -3275,9 +3275,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mui/base@npm:5.0.0-alpha.85":
-  version: 5.0.0-alpha.85
-  resolution: "@mui/base@npm:5.0.0-alpha.85"
+"@mui/base@npm:5.0.0-alpha.86":
+  version: 5.0.0-alpha.86
+  resolution: "@mui/base@npm:5.0.0-alpha.86"
   dependencies:
     "@babel/runtime": ^7.17.2
     "@emotion/is-prop-valid": ^1.1.2
@@ -3294,17 +3294,17 @@ __metadata:
   peerDependenciesMeta:
     "@types/react":
       optional: true
-  checksum: 36970ceeaf95298f28b284632ad4f7fd78da93334f30f93fe789233b64f2745d4af2f51e8bd108e49863b0c70071859d1100eaf902a16cb51f79db731e81600e
+  checksum: fea157d932b7230c155ff2cdce167cfe4763ae819367513db551f2cafda89b627a06701ae963b10b9b6a57242480288830f177bc823973eb79c14f26e4be81b0
   languageName: node
   linkType: hard
 
-"@mui/material@npm:5.8.4":
-  version: 5.8.4
-  resolution: "@mui/material@npm:5.8.4"
+"@mui/material@npm:5.8.5":
+  version: 5.8.5
+  resolution: "@mui/material@npm:5.8.5"
   dependencies:
     "@babel/runtime": ^7.17.2
-    "@mui/base": 5.0.0-alpha.85
-    "@mui/system": ^5.8.4
+    "@mui/base": 5.0.0-alpha.86
+    "@mui/system": ^5.8.5
     "@mui/types": ^7.1.4
     "@mui/utils": ^5.8.4
     "@types/react-transition-group": ^4.4.4
@@ -3326,7 +3326,7 @@ __metadata:
       optional: true
     "@types/react":
       optional: true
-  checksum: 904d545254981a38c8b28218b8219c324ab564a6387a8ebbc7ba0511c779c9cb29dbbd0cb97ae617eadedece75465def3beeee87541623f6b1b82b9b045e5855
+  checksum: c315c5e7ca2eb3a0afce76066f0ba816932d46252ea8ab572895e27a85dcf9952cb2128ce3b87b087ce5e86c844c85cf7876c0112f058111539290b4a387e8e7
   languageName: node
   linkType: hard
 
@@ -3367,9 +3367,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mui/system@npm:^5.8.4":
-  version: 5.8.4
-  resolution: "@mui/system@npm:5.8.4"
+"@mui/system@npm:^5.8.5":
+  version: 5.8.5
+  resolution: "@mui/system@npm:5.8.5"
   dependencies:
     "@babel/runtime": ^7.17.2
     "@mui/private-theming": ^5.8.4
@@ -3391,7 +3391,7 @@ __metadata:
       optional: true
     "@types/react":
       optional: true
-  checksum: 304cc1c95b165fa6fbf604d416cf94bcaa9c4c06bdb3475eb7bc2d473cd657ac12a3dfd09a5ceb3d185119b3e3d3d019a5861b37f4f4f63b3c5f1123155b0022
+  checksum: ffce524a6dcd5cd74b045a36386ebeb35ef0bfc2629ce12e2d630a85e8cdfca0cdc842375b930ea66d7d7588493af96c87320528aca39937c2a645c5a7642cd8
   languageName: node
   linkType: hard
 
