@@ -2335,7 +2335,7 @@ __metadata:
     "@finos/legend-dev-utils": "workspace:*"
     cross-env: 7.0.3
     eslint: 8.18.0
-    fastify: 4.0.3
+    fastify: 4.1.0
     nodemon: 2.0.16
     npm-run-all: 4.1.5
     rimraf: 3.0.2
@@ -2746,7 +2746,7 @@ __metadata:
     rimraf: 3.0.2
     sass: 1.52.3
     serializr: 2.0.5
-    sql-formatter: 7.0.1
+    sql-formatter: 7.0.2
     typescript: 4.7.4
   peerDependencies:
     react: ^18.0.0
@@ -7689,9 +7689,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fastify@npm:4.0.3":
-  version: 4.0.3
-  resolution: "fastify@npm:4.0.3"
+"fastify@npm:4.1.0":
+  version: 4.1.0
+  resolution: "fastify@npm:4.1.0"
   dependencies:
     "@fastify/ajv-compiler": ^3.1.0
     "@fastify/error": ^3.0.0
@@ -7707,7 +7707,7 @@ __metadata:
     secure-json-parse: ^2.4.0
     semver: ^7.3.7
     tiny-lru: ^8.0.2
-  checksum: 8b449e2567eb0e0826ad16e9a6ceec4b8bdd6dfc1bf418429fee0b5abd167b0ceaf3b8ec01ef5108d0319de37f0cc67e2b657d534385c830e747226982aad28a
+  checksum: 066b93b64f02d74cb381a99996c09a63a6ff1ce61416e2cbbb92e91cae2558ff8eeb2c3422275e5caeda254c21f97d7866bd450f79baae24c76472e83ece35a5
   languageName: node
   linkType: hard
 
@@ -14630,14 +14630,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sql-formatter@npm:7.0.1":
-  version: 7.0.1
-  resolution: "sql-formatter@npm:7.0.1"
+"sql-formatter@npm:7.0.2":
+  version: 7.0.2
+  resolution: "sql-formatter@npm:7.0.2"
   dependencies:
     argparse: ^2.0.1
   bin:
     sql-formatter: bin/sql-formatter-cli.js
-  checksum: 937f73bbcafaeaf7964be73462dd3245c5197da68404f7cc1928502457e98b8d356b9a8df1f2cd5aa5a07ae9882f96b47798dd168ebe2644e5e6661841bce0fa
+  checksum: 3bf6e5fd9bfdac5bd9f8dfa6582b072d020a4b111c34c7b9daf1c5c1ffd79c8745582efd5b7f5d69b6e73f1b0fd3b83e8f54c81bffaaf7627e5aa087e8aff9b3
   languageName: node
   linkType: hard
 
