@@ -26,7 +26,7 @@ import {
   _relationshipView_setPath,
 } from '../../helpers/DSLDiagram_Helper.js';
 import type { PropertyView } from '../../models/metamodels/pure/packageableElements/diagram/DSLDiagram_PropertyView.js';
-import type { RelationshipEdgeView } from '../../models/metamodels/pure/packageableElements/diagram/DSLDiagram_RelationshipEdgeView.js';
+import type { RelationshipViewEnd } from '../../models/metamodels/pure/packageableElements/diagram/DSLDiagram_RelationshipViewEnd.js';
 import type { RelationshipView } from '../../models/metamodels/pure/packageableElements/diagram/DSLDiagram_RelationshipView.js';
 import type { Point } from '../../models/metamodels/pure/packageableElements/diagram/geometry/DSLDiagram_Point.js';
 import type { PositionedRectangle } from '../../models/metamodels/pure/packageableElements/diagram/geometry/DSLDiagram_PositionedRectangle.js';
@@ -113,12 +113,12 @@ export const classView_setHideTaggedValues = action(
   },
 );
 export const relationshipEdgeView_setOffsetX = action(
-  (r: RelationshipEdgeView, val: number): void => {
+  (r: RelationshipViewEnd, val: number): void => {
     r._offsetX = val;
   },
 );
 export const relationshipEdgeView_setOffsetY = action(
-  (r: RelationshipEdgeView, val: number): void => {
+  (r: RelationshipViewEnd, val: number): void => {
     r._offsetY = val;
   },
 );

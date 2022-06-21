@@ -49,7 +49,7 @@ export const parseGACoordinates = (
 } => {
   const parts = ga.split(GAV_DELIMITER);
   assertTrue(
-    parts.length === 3,
+    parts.length === 2,
     `Can't parse GA coordinates '${ga}': expect the coordinates to follow format {groupID}${GAV_DELIMITER}{artifactID}`,
   );
   return {

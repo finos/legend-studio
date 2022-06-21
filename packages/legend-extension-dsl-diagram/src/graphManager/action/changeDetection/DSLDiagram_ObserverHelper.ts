@@ -27,7 +27,7 @@ import type { ClassViewReference } from '../../../models/metamodels/pure/package
 import type { Diagram } from '../../../models/metamodels/pure/packageableElements/diagram/DSLDiagram_Diagram.js';
 import type { GeneralizationView } from '../../../models/metamodels/pure/packageableElements/diagram/DSLDiagram_GeneralizationView.js';
 import type { PropertyView } from '../../../models/metamodels/pure/packageableElements/diagram/DSLDiagram_PropertyView.js';
-import type { RelationshipEdgeView } from '../../../models/metamodels/pure/packageableElements/diagram/DSLDiagram_RelationshipEdgeView.js';
+import type { RelationshipViewEnd } from '../../../models/metamodels/pure/packageableElements/diagram/DSLDiagram_RelationshipViewEnd.js';
 import type { RelationshipView } from '../../../models/metamodels/pure/packageableElements/diagram/DSLDiagram_RelationshipView.js';
 import type { PositionedRectangle } from '../../../models/metamodels/pure/packageableElements/diagram/geometry/DSLDiagram_PositionedRectangle.js';
 
@@ -69,7 +69,7 @@ export const observe_ClassView = skipObserved(
 );
 
 export const observe_RelationShipEdgeView = skipObserved(
-  (metamodel: RelationshipEdgeView): RelationshipEdgeView => {
+  (metamodel: RelationshipViewEnd): RelationshipViewEnd => {
     observe_ClassViewReference(metamodel.classView);
 
     return metamodel;

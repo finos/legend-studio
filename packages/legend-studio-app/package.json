@@ -55,17 +55,17 @@
     "@finos/legend-shared": "workspace:*",
     "@finos/legend-studio": "workspace:*",
     "@finos/legend-studio-extension-query-builder": "workspace:*",
-    "@types/react": "18.0.12",
-    "react": "18.1.0"
+    "@types/react": "18.0.14",
+    "react": "18.2.0"
   },
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",
     "cross-env": "7.0.3",
-    "eslint": "8.17.0",
+    "eslint": "8.18.0",
     "npm-run-all": "4.1.5",
     "rimraf": "3.0.2",
     "sass": "1.52.3",
-    "typescript": "4.7.3"
+    "typescript": "4.7.4"
   },
   "publishConfig": {
     "directory": "build/publishContent"

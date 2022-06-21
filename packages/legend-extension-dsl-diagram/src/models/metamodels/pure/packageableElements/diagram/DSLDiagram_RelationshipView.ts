@@ -15,7 +15,7 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { RelationshipEdgeView } from './DSLDiagram_RelationshipEdgeView.js';
+import { RelationshipViewEnd } from './DSLDiagram_RelationshipViewEnd.js';
 import { Point } from './geometry/DSLDiagram_Point.js';
 import type { ClassView } from './DSLDiagram_ClassView.js';
 import type { Diagram } from './DSLDiagram_Diagram.js';
@@ -25,8 +25,8 @@ import { DIAGRAM_HASH_STRUCTURE } from '../../../../DSLDiagram_ModelUtils.js';
 export class RelationshipView implements Hashable {
   readonly _OWNER: Diagram;
 
-  from: RelationshipEdgeView;
-  to: RelationshipEdgeView;
+  from: RelationshipViewEnd;
+  to: RelationshipViewEnd;
   /**
    * NOTE: Unlike in the protocol model, we don't store the end points in the path but only store the
    * offsets of that point from the center of the end/start classviews. The main purpose here is to
@@ -41,10 +41,10 @@ export class RelationshipView implements Hashable {
 
   constructor(owner: Diagram, from: ClassView, to: ClassView) {
     this._OWNER = owner;
-    this.from = new RelationshipEdgeView(
+    this.from = new RelationshipViewEnd(
       ClassViewExplicitReference.create(from),
     );
-    this.to = new RelationshipEdgeView(ClassViewExplicitReference.create(to));
+    this.to = new RelationshipViewEnd(ClassViewExplicitReference.create(to));
   }
 
   // TODO: to be simplified out of metamodel
@@ -53,7 +53,7 @@ export class RelationshipView implements Hashable {
    * Calculate the end points of the edge using offset, otherwise, use the center
    */
   private computeEdgeEndpoint(
-    edgeView: RelationshipEdgeView,
+    edgeView: RelationshipViewEnd,
     allowChange = true,
   ): Point {
     const box = edgeView.classView.value;
