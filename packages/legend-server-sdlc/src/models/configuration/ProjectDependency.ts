@@ -20,19 +20,35 @@ import {
   hashArray,
   uuid,
   SerializationFactory,
-  usingModelSchema,
 } from '@finos/legend-shared';
-import { VersionId } from '../version/VersionId.js';
 import { observable, action, computed, makeObservable } from 'mobx';
 
+type VersionIdType = {
+  majorVersion: number;
+  minorVersion: number;
+  patchVersion: number;
+};
+
 const PROJECT_DEPENDENCY_HASH_STRUCTURE = 'PROJECT_DEPENDENCY';
+
+export const SNAPSHOT_VERSION_ALIAS = 'master-SNAPSHOT';
+
+export const convertVersionObjectToString = (
+  version: string | VersionIdType,
+): string => {
+  if (typeof version === `string`) {
+    return version;
+  } else {
+    return `${version.majorVersion}.${version.minorVersion}.${version.patchVersion}`;
+  }
+};
 
 export class ProjectDependency implements Hashable {
   readonly _UUID = uuid();
   projectId: string;
-  versionId: VersionId;
+  versionId: string;
 
-  constructor(projectId: string, versionId?: VersionId) {
+  constructor(projectId: string, versionId?: string) {
     makeObservable(this, {
       projectId: observable,
       versionId: observable,
@@ -42,13 +58,13 @@ export class ProjectDependency implements Hashable {
     });
 
     this.projectId = projectId;
-    this.versionId = versionId ?? new VersionId();
+    this.versionId = versionId ?? '0.0.1';
   }
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(ProjectDependency, {
       projectId: primitive(),
-      versionId: usingModelSchema(VersionId.serialization.schema),
+      versionId: primitive(),
     }),
   );
 
@@ -57,7 +73,7 @@ export class ProjectDependency implements Hashable {
   }
 
   setVersionId(id: string): void {
-    this.versionId.setId(id);
+    this.versionId = id;
   }
 
   get isLegacyDependency(): boolean {
@@ -82,9 +98,7 @@ export class ProjectDependency implements Hashable {
     return hashArray([
       PROJECT_DEPENDENCY_HASH_STRUCTURE,
       this.projectId,
-      this.versionId.majorVersion.toString(),
-      this.versionId.minorVersion.toString(),
-      this.versionId.patchVersion.toString(),
+      this.versionId,
     ]);
   }
 }

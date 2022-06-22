@@ -94,6 +94,7 @@ import type { DSL_LegendStudioPlugin_Extension } from './LegendStudioPlugin.js';
 import type { Entity } from '@finos/legend-model-storage';
 import {
   ProjectConfiguration,
+  convertVersionObjectToString,
   type SDLCServerClient,
   type WorkspaceType,
 } from '@finos/legend-server-sdlc';
@@ -790,24 +791,39 @@ export class EditorStore {
     this.initState.setMessage(`Fetching entities...`);
     try {
       // fetch workspace entities and config at the same time
+      const projectId = this.sdlcState.activeProject.projectId;
+      const activeWorkspace = this.sdlcState.activeWorkspace;
       const result = (yield Promise.all([
-        this.sdlcServerClient.getEntities(
-          this.sdlcState.activeProject.projectId,
-          this.sdlcState.activeWorkspace,
-        ),
-        this.sdlcServerClient.getConfiguration(
-          this.sdlcState.activeProject.projectId,
-          this.sdlcState.activeWorkspace,
-        ),
+        this.sdlcServerClient.getEntities(projectId, activeWorkspace),
+        this.sdlcServerClient.getConfiguration(projectId, activeWorkspace),
       ])) as [Entity[], PlainObject<ProjectConfiguration>];
       entities = result[0];
       projectConfiguration = result[1];
+
+      const projectConfigurationPayload = projectConfiguration;
+      const projectDependencyList =
+        projectConfiguration.projectDependencies as {
+          projectId: string;
+          versionId: string;
+        }[];
+      projectConfigurationPayload.projectDependencies =
+        projectDependencyList.map(
+          (item: { projectId: string; versionId: string }) => ({
+            projectId: item.projectId,
+            versionId: convertVersionObjectToString(item.versionId),
+          }),
+        );
+
       this.projectConfigurationEditorState.setProjectConfiguration(
-        ProjectConfiguration.serialization.fromJson(projectConfiguration),
+        ProjectConfiguration.serialization.fromJson(
+          projectConfigurationPayload,
+        ),
       );
       // make sure we set the original project configuration to a different object
       this.projectConfigurationEditorState.setOriginalProjectConfiguration(
-        ProjectConfiguration.serialization.fromJson(projectConfiguration),
+        ProjectConfiguration.serialization.fromJson(
+          projectConfigurationPayload,
+        ),
       );
       this.changeDetectionState.workspaceLocalLatestRevisionState.setEntities(
         entities,

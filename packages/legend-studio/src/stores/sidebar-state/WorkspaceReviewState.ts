@@ -262,20 +262,47 @@ export class WorkspaceReviewState {
   ): GeneratorFn<void> {
     this.isCreatingWorkspaceReview = true;
     try {
-      const description =
-        reviewDescription ??
-        `review from ${this.editorStore.applicationStore.config.appName} for workspace ${this.sdlcState.activeWorkspace.workspaceId}`;
-      this.workspaceReview = Review.serialization.fromJson(
-        (yield this.editorStore.sdlcServerClient.createReview(
-          this.sdlcState.activeProject.projectId,
-          {
-            workspaceId: this.sdlcState.activeWorkspace.workspaceId,
-            title,
-            workspaceType: this.sdlcState.activeWorkspace.workspaceType,
-            description,
-          },
-        )) as PlainObject<Review>,
-      );
+      const originalProjectDependencies =
+        this.editorStore.projectConfigurationEditorState
+          .originalProjectConfiguration?.projectDependencies;
+      const listLength = originalProjectDependencies?.length ?? 0;
+      let versionError = false;
+      let i = 0;
+
+      // eslint-disable-next-line
+      const VERSION_REGEX = new RegExp('((0|([1-9]d*)).){2}(0|[1-9]d*)');
+      if (originalProjectDependencies) {
+        for (i; i < listLength; i++) {
+          if (
+            !VERSION_REGEX.test(
+              originalProjectDependencies[i]?.versionId ?? 'x.x.x',
+            )
+          ) {
+            versionError = true;
+          }
+        }
+      }
+
+      if (!versionError) {
+        const description =
+          reviewDescription ??
+          `review from ${this.editorStore.applicationStore.config.appName} for workspace ${this.sdlcState.activeWorkspace.workspaceId}`;
+        this.workspaceReview = Review.serialization.fromJson(
+          (yield this.editorStore.sdlcServerClient.createReview(
+            this.sdlcState.activeProject.projectId,
+            {
+              workspaceId: this.sdlcState.activeWorkspace.workspaceId,
+              title,
+              workspaceType: this.sdlcState.activeWorkspace.workspaceType,
+              description,
+            },
+          )) as PlainObject<Review>,
+        );
+      } else {
+        this.editorStore.applicationStore.notifyError(
+          `Project dependency verison should not be set to HEAD when creating a review.`,
+        );
+      }
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(

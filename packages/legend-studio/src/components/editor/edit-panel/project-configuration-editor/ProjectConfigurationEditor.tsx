@@ -40,6 +40,7 @@ import {
 import { flowResult } from 'mobx';
 import {
   ProjectDependency,
+  SNAPSHOT_VERSION_ALIAS,
   type ProjectConfiguration,
 } from '@finos/legend-server-sdlc';
 import { useEditorStore } from '../../EditorStoreProvider.js';
@@ -232,12 +233,18 @@ const ProjectDependencyEditor = observer(
     // version
     const version = projectDependency.versionId;
     const versions = selectedProject?.versions ?? [];
-    const versionOptions = versions
+    let versionOptions = versions
       .slice()
       .sort((v1, v2) => compareSemVerVersions(v2, v1))
       .map((v) => ({ value: v, label: v }));
+
+    versionOptions = [
+      { label: 'HEAD', value: SNAPSHOT_VERSION_ALIAS },
+      ...versionOptions,
+    ];
+
     const selectedVersionOption: VersionOption | null =
-      versionOptions.find((v) => v.value === version.id) ?? null;
+      versionOptions.find((v) => v.value === version) ?? null;
     const versionDisabled =
       Boolean(!versions.length || !projectDependency.projectId.length) ||
       !configState.associatedProjectsAndVersionsFetched ||
@@ -263,13 +270,17 @@ const ProjectDependencyEditor = observer(
     };
     const openProject = (): void => {
       if (!projectDependency.isLegacyDependency) {
+        const projectDependencyVersionId =
+          projectDependency.versionId === SNAPSHOT_VERSION_ALIAS
+            ? 'HEAD'
+            : projectDependency.versionId;
         applicationStore.navigator.openNewWindow(
           `${
             applicationStore.config.baseUrl
           }view/archive/${generateGAVCoordinates(
             guaranteeNonNullable(projectDependency.groupId),
             guaranteeNonNullable(projectDependency.artifactId),
-            projectDependency.versionId.id,
+            projectDependencyVersionId,
           )}`,
         );
       }
