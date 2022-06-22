@@ -328,8 +328,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
   ): Promise<PlainObject<V1_TestResult[]>> =>
     this.postWithTracing(
       this.getTraceData(CORE_ENGINE_TRACER_SPAN.RUN_TESTS),
-      // TODO: rename to `runTests` once engine changes are out
-      `${this._pure()}/testable/doTests`,
+      `${this._pure()}/testable/runTests`,
       input,
       {},
       undefined,
