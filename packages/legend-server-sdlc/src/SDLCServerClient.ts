@@ -478,7 +478,7 @@ export class SDLCServerClient extends AbstractServerClient {
         workflowJob.id,
       )}/logs`,
       {},
-      { [HttpHeader.ACCPEPT]: ContentType.TEXT_PLAIN },
+      { [HttpHeader.ACCEPT]: ContentType.TEXT_PLAIN },
     );
   cancelWorkflowJob = (
     projectId: string,
@@ -613,7 +613,7 @@ export class SDLCServerClient extends AbstractServerClient {
         workflowJob.id,
       )}/logs`,
       {},
-      { [HttpHeader.ACCPEPT]: ContentType.TEXT_PLAIN },
+      { [HttpHeader.ACCEPT]: ContentType.TEXT_PLAIN },
     );
   cancelWorkflowJobByVersion = (
     projectId: string,

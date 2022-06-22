@@ -279,7 +279,7 @@ const checkGrammarRoundtrip = async (
     modelDataContext,
     {
       headers: {
-        [HttpHeader.ACCPEPT]: ContentType.TEXT_PLAIN,
+        [HttpHeader.ACCEPT]: ContentType.TEXT_PLAIN,
       },
       params: {
         renderStyle: 'STANDARD',

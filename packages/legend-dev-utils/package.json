@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-dev-utils",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Legend Studio development utilities, helpers, and scripts",
   "keywords": [
     "legend",
@@ -69,7 +69,7 @@
     "circular-dependency-plugin": "5.2.2",
     "clean-webpack-plugin": "4.0.0",
     "css-loader": "6.7.1",
-    "cssnano": "5.1.11",
+    "cssnano": "5.1.12",
     "html-webpack-plugin": "5.5.0",
     "isbinaryfile": "5.0.0",
     "jest": "28.1.1",
@@ -78,21 +78,21 @@
     "jest-watch-typeahead": "1.1.0",
     "jsonc-parser": "3.0.0",
     "micromatch": "4.0.5",
-    "mini-css-extract-plugin": "2.6.0",
+    "mini-css-extract-plugin": "2.6.1",
     "monaco-editor": "0.33.0",
     "monaco-editor-webpack-plugin": "7.0.1",
     "postcss": "8.4.14",
     "postcss-loader": "7.0.0",
-    "react-refresh": "0.13.0",
-    "resolve": "1.22.0",
+    "react-refresh": "0.14.0",
+    "resolve": "1.22.1",
     "sass": "1.52.3",
     "sass-loader": "13.0.0",
-    "typescript": "4.7.3",
+    "typescript": "4.7.4",
     "webpack": "5.73.0"
   },
   "devDependencies": {
     "cross-env": "7.0.3",
-    "eslint": "8.17.0",
+    "eslint": "8.18.0",
     "rimraf": "3.0.2"
   },
   "publishConfig": {
