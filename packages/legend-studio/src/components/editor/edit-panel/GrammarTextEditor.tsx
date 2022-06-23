@@ -467,25 +467,21 @@ const getParserElementSnippetSuggestions = (
         // profile
         {
           text: PURE_ELEMENT_NAME.PROFILE,
-          description: 'simple',
           insertText: SIMPLE_PROFILE_SNIPPET,
         },
         // enumeration
         {
           text: PURE_ELEMENT_NAME.ENUMERATION,
-          description: 'simple',
           insertText: SIMPLE_ENUMERATION_SNIPPET,
         },
         // association
         {
           text: PURE_ELEMENT_NAME.ASSOCIATION,
-          description: 'simple',
           insertText: SIMPLE_ASSOCIATION_SNIPPET,
         },
         // measure
         {
           text: PURE_ELEMENT_NAME.MEASURE,
-          description: 'simple',
           insertText: SIMPLE_MEASURE_SNIPPET,
         },
         // function
@@ -496,7 +492,6 @@ const getParserElementSnippetSuggestions = (
         },
         {
           text: PURE_ELEMENT_NAME.FUNCTION,
-          description: 'simple',
           insertText: SIMPLE_FUNCTION_SNIPPET,
         },
       ];
@@ -554,7 +549,6 @@ const getParserElementSnippetSuggestions = (
       return [
         {
           text: PURE_ELEMENT_NAME.RUNTIME,
-          description: 'simple',
           insertText: SIMPLE_RUNTIME_SNIPPET,
         },
       ];

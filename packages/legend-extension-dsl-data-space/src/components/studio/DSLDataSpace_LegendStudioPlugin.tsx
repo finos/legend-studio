@@ -220,7 +220,6 @@ export class DSLDataSpace_LegendStudioPlugin
           ? [
               {
                 text: PURE_GRAMMAR_DATA_SPACE_ELEMENT_TYPE_LABEL,
-                description: 'simple',
                 insertText: SIMPLE_DATA_SPACE_SNIPPET,
               },
             ]
