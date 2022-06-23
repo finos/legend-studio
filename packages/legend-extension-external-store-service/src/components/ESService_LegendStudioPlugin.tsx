@@ -32,7 +32,7 @@ import {
   type MappingElementStateCreator,
   type MappingElement,
   type MappingElementState,
-  type MappingElementSourceGetter,
+  type MappingElementSourceExtractor,
   type ElementIconGetter,
   type DSLData_LegendStudioPlugin_Extension,
   type EmbeddedDataTypeOption,
@@ -46,6 +46,7 @@ import {
   type EmbeddedDataState,
   type EmbeddedDataEditorRenderer,
   type EmbeddedDataCreator,
+  type MappingElementSource,
 } from '@finos/legend-studio';
 import { SwaggerIcon } from '@finos/legend-art';
 import type {
@@ -213,9 +214,9 @@ export class ESService_LegendStudioPlugin
     ];
   }
 
-  getExtraMappingElementSourceGetters(): MappingElementSourceGetter[] {
+  getExtraMappingElementSourceExtractors(): MappingElementSourceExtractor[] {
     return [
-      (mappingElement: MappingElement): unknown | undefined => {
+      (mappingElement: MappingElement): MappingElementSource | undefined => {
         if (mappingElement instanceof RootServiceInstanceSetImplementation) {
           return mappingElement.class.value;
         }

@@ -47,8 +47,7 @@ export const DEPRECATED__validate_MappingTestAssert = (
         ])
       : undefined;
   }
-  /* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
-  // TODO: we might need to modularize this
+  // NOTE: technically we need to modularize these, but they are deprecated, so we will leave them alone for now
   return undefined;
 };
 
@@ -84,8 +83,7 @@ export const DEPRECATED__validate_InputData = (
   } else if (metamodel instanceof FlatDataInputData) {
     return DEPRECATED__validate_FlatDataInputData(metamodel);
   }
-  /* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
-  // TODO: we might need to modularize this
+  // NOTE: technically we need to modularize these, but they are deprecated, so we will leave them alone for now
   return undefined;
 };
 

@@ -92,23 +92,23 @@ export const getClassMappingStore = (
     return sourceElement.relation.ownerReference.value;
   }
   if (sourceElement) {
-    const extraInstanceSetImplementationStoreGetters = editorStore.pluginManager
-      .getStudioPlugins()
-      .flatMap(
-        (plugin) =>
-          (
-            plugin as DSLMapping_LegendStudioPlugin_Extension
-          ).getExtraInstanceSetImplementationStoreGetters?.() ?? [],
-      );
-    for (const instanceSetImplementationStoreGetter of extraInstanceSetImplementationStoreGetters) {
-      const instanceSetImplementationStore =
-        instanceSetImplementationStoreGetter(sourceElement);
+    const extraInstanceSetImplementationStoreExtractors =
+      editorStore.pluginManager
+        .getStudioPlugins()
+        .flatMap(
+          (plugin) =>
+            (
+              plugin as DSLMapping_LegendStudioPlugin_Extension
+            ).getExtraInstanceSetImplementationStoreExtractors?.() ?? [],
+        );
+    for (const extractor of extraInstanceSetImplementationStoreExtractors) {
+      const instanceSetImplementationStore = extractor(sourceElement);
       if (instanceSetImplementationStore) {
         return instanceSetImplementationStore;
       }
     }
     throw new UnsupportedOperationError(
-      `Can't find suitable store for class mapping: no compatible store available from plugins`,
+      `Can't extract store for class mapping: no compatible extractor available from plugins`,
       setImplementation,
     );
   }

@@ -154,9 +154,8 @@ export const ClassMappingEditor = observer(
                 plugin as DSLMapping_LegendStudioPlugin_Extension
               ).getExtraMappingSourceTypeInfoGetters?.() ?? [],
           );
-        for (const mappingSourceTypeInfoGetter of extraMappingSourceTypeInfoGetters) {
-          const mappingSourceTypeInfo =
-            mappingSourceTypeInfoGetter(setImplementation);
+        for (const sourceTypeInfoGetter of extraMappingSourceTypeInfoGetters) {
+          const mappingSourceTypeInfo = sourceTypeInfoGetter(setImplementation);
           if (mappingSourceTypeInfo) {
             sourceType = mappingSourceTypeInfo.sourceType;
             sourceName = mappingSourceTypeInfo.sourceName;

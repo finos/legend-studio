@@ -26,7 +26,10 @@ import type {
 import type { MappingTestState } from './editor-state/element-editor-state/mapping/MappingTestState.js';
 import type { MappingExecutionState } from './editor-state/element-editor-state/mapping/MappingExecutionState.js';
 import type { NewConnectionValueDriver } from './NewElementState.js';
-import type { MappingElement } from '../stores/editor-state/element-editor-state/mapping/MappingEditorState.js';
+import type {
+  MappingElement,
+  MappingElementSource,
+} from '../stores/editor-state/element-editor-state/mapping/MappingEditorState.js';
 import type {
   InstanceSetImplementationState,
   MappingElementState,
@@ -56,9 +59,9 @@ export type SetImplementationMappingElementLabelInfoBuilder = (
   setImplementation: SetImplementation,
 ) => MappingElementLabel | undefined;
 
-export type MappingElementSourceGetter = (
+export type MappingElementSourceExtractor = (
   mappingElement: MappingElement,
-) => unknown | undefined;
+) => MappingElementSource | undefined;
 
 export type SetImplemtationClassifier = (
   setImplementation: SetImplementation,
@@ -121,16 +124,12 @@ export type PropertyMappingEditorRenderer = (
   propertyMappingState: PropertyMappingState,
 ) => React.ReactNode | undefined;
 
-export type InstanceSetImplementationEditorCompilationErrorRevealer = (
-  instanceSetImplementation: InstanceSetImplementation,
-) => boolean | undefined;
-
 export type InstanceSetImplementationBlockingErrorChecker = (
   setImplementationState: InstanceSetImplementationState,
 ) => boolean | undefined;
 
-export type InstanceSetImplementationStoreGetter = (
-  sourceElement: unknown,
+export type InstanceSetImplementationStoreExtractor = (
+  sourceElement: MappingElementSource,
 ) => Store | undefined;
 
 export interface DSLMapping_LegendStudioPlugin_Extension
@@ -161,9 +160,9 @@ export interface DSLMapping_LegendStudioPlugin_Extension
   getExtraMappingElementStateCreators?(): MappingElementStateCreator[];
 
   /**
-   * Get the list of the element source getters for the given class mapping.
+   * Get the list of source extractors for the specified mapping element.
    */
-  getExtraMappingElementSourceGetters?(): MappingElementSourceGetter[];
+  getExtraMappingElementSourceExtractors?(): MappingElementSourceExtractor[];
 
   /**
    * Get the list of the default connection value builder for a specified store.
@@ -206,31 +205,23 @@ export interface DSLMapping_LegendStudioPlugin_Extension
   getExtraInstanceSetImplementationSourceUpdaters?(): InstanceSetImplementationSourceUpdater[];
 
   /**
-   * Get the list of mapping source type info getters.
+   * Get the list of source-type info getters for mapping.
    */
   getExtraMappingSourceTypeInfoGetters?(): MappingSourceTypeInfoGetter[];
 
   /**
-   * Get the list of property mapping editor renderers.
+   * Get the list of renderers for property mapping editor.
    */
   getExtraPropertyMappingEditorRenderers?(): PropertyMappingEditorRenderer[];
 
   /**
-   * Get the list of compilation error revealers for the specified instance set implementation editor
-   *
-   * This is marked as temporary as we might not need this mechanism anymore if we implement
-   * the new error reveal mechanism
-   * See https://github.com/finos/legend-studio/issues/1168
-   */
-  TEMPORARY__getExtraInstanceSetImplementationEditorCompilationErrorRevealers?(): InstanceSetImplementationEditorCompilationErrorRevealer[];
-
-  /**
-   * Get the list of checkers for errors in the specified instance set implementation that could potentially block the user interaction until fixed (e.g. parser error in some property mapping transform lambda editor).
+   * Get the list of checkers for errors in the specified instance set implementation that could
+   * potentially block the user interaction until fixed (e.g. parser error in some property mapping transform lambda editor).
    */
   getExtraInstanceSetImplementationBlockingErrorCheckers?(): InstanceSetImplementationBlockingErrorChecker[];
 
   /**
-   * Get the list of suitable stores for the given set implementation source.
+   * Get the list of store extractor for the given set implementation source.
    */
-  getExtraInstanceSetImplementationStoreGetters?(): InstanceSetImplementationStoreGetter[];
+  getExtraInstanceSetImplementationStoreExtractors?(): InstanceSetImplementationStoreExtractor[];
 }

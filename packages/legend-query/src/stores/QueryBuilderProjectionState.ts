@@ -212,6 +212,8 @@ class QueryBuilderDerivationProjectionLambdaState extends LambdaEditorState {
 
   get lambdaId(): string {
     return buildSourceInformationSourceId([
+      // TODO: to be reworked
+      // See https://github.com/finos/legend-studio/issues/1168
       QUERY_BUILDER_SOURCE_ID_LABEL.QUERY_BUILDER,
       QUERY_BUILDER_SOURCE_ID_LABEL.PROJECTION,
       this.derivationProjectionColumnState.uuid,

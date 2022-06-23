@@ -52,16 +52,10 @@ import {
   filterByType,
 } from '@finos/legend-shared';
 import { MappingExecutionState } from './MappingExecutionState.js';
-import {
-  FlatDataInstanceSetImplementationState,
-  RootFlatDataInstanceSetImplementationState,
-} from './FlatDataInstanceSetImplementationState.js';
+import { RootFlatDataInstanceSetImplementationState } from './FlatDataInstanceSetImplementationState.js';
 import type { TreeNodeData, TreeData } from '@finos/legend-art';
 import { UnsupportedInstanceSetImplementationState } from './UnsupportedInstanceSetImplementationState.js';
-import {
-  RelationalInstanceSetImplementationState,
-  RootRelationalInstanceSetImplementationState,
-} from './relational/RelationalInstanceSetImplementationState.js';
+import { RootRelationalInstanceSetImplementationState } from './relational/RelationalInstanceSetImplementationState.js';
 import {
   type CompilationError,
   type PackageableElement,
@@ -163,6 +157,12 @@ export type MappingElement =
   | SetImplementation
   | AssociationImplementation;
 
+/**
+ * Mapping element source could be just about anything, even `undefined`
+ * We cannot really extend this type since it hinders modularity
+ */
+export type MappingElementSource = unknown;
+
 export const getMappingElementTarget = (
   mappingElement: MappingElement,
 ): PackageableElement => {
@@ -259,7 +259,7 @@ export const getMappingElementLabel = (
 export const getMappingElementSource = (
   mappingElement: MappingElement,
   plugins: LegendStudioPlugin[],
-): unknown | undefined => {
+): MappingElementSource | undefined => {
   if (mappingElement instanceof OperationSetImplementation) {
     // NOTE: we don't need to resolve operation union because at the end of the day, it uses other class mappings
     // in the mapping, so if we use this method on all class mappings of a mapping, we don't miss anything
@@ -294,21 +294,20 @@ export const getMappingElementSource = (
       plugins,
     );
   }
-  const extraMappingElementSourceGetters = plugins.flatMap(
+  const extraMappingElementSourceExtractors = plugins.flatMap(
     (plugin) =>
       (
         plugin as DSLMapping_LegendStudioPlugin_Extension
-      ).getExtraMappingElementSourceGetters?.() ?? [],
+      ).getExtraMappingElementSourceExtractors?.() ?? [],
   );
-  for (const sourceGetter of extraMappingElementSourceGetters) {
-    const mappingElementSource = sourceGetter(mappingElement);
+  for (const extractor of extraMappingElementSourceExtractors) {
+    const mappingElementSource = extractor(mappingElement);
     if (mappingElementSource) {
       return mappingElementSource;
     }
   }
-
   throw new UnsupportedOperationError(
-    `Can't derive source of mapping element: no compatible source available from plugins`,
+    `Can't extract source of mapping element: no compatible extractor available from plugins`,
     mappingElement,
   );
 };
@@ -416,27 +415,29 @@ const getMappingEmbeddedSetImplementations = (
 
 const getMappingElementByTypeAndId = (
   mapping: Mapping,
-  type: string,
-  id: string,
+  mappingElementType: string,
+  mappingElementId: string,
 ): MappingElement | undefined => {
   // NOTE: ID must be unique across all mapping elements of the same type
-  switch (type) {
+  switch (mappingElementType) {
     case MAPPING_ELEMENT_TYPE.CLASS:
       return (
         getAllClassMappings(mapping).find(
-          (classMapping) => classMapping.id.value === id,
+          (classMapping) => classMapping.id.value === mappingElementId,
         ) ??
         getMappingEmbeddedSetImplementations(mapping)
           .filter(filterByType(EmbeddedFlatDataPropertyMapping))
-          .find((me) => me.id.value === id)
+          .find((me) => me.id.value === mappingElementId)
       );
     case MAPPING_ELEMENT_TYPE.ASSOCIATION:
       return mapping.associationMappings.find(
-        (associationMapping) => associationMapping.id.value === id,
+        (associationMapping) =>
+          associationMapping.id.value === mappingElementId,
       );
     case MAPPING_ELEMENT_TYPE.ENUMERATION:
       return getAllEnumerationMappings(mapping).find(
-        (enumerationMapping) => enumerationMapping.id.value === id,
+        (enumerationMapping) =>
+          enumerationMapping.id.value === mappingElementId,
       );
     default:
       return undefined;
@@ -891,7 +892,7 @@ export class MappingEditorState extends ElementEditorState {
 
   *changeClassMappingSourceDriver(
     setImplementation: InstanceSetImplementation,
-    newSource: unknown | undefined,
+    newSource: MappingElementSource | undefined,
   ): GeneratorFn<void> {
     const currentSource = getMappingElementSource(
       setImplementation,
@@ -912,22 +913,17 @@ export class MappingEditorState extends ElementEditorState {
           flatData_setSourceRootRecordType(setImplementation, newSource);
         }
       } else {
-        if (setImplementation instanceof InstanceSetImplementation) {
-          const extraInstanceSetImplementationSourceUpdaters =
-            this.editorStore.pluginManager
-              .getStudioPlugins()
-              .flatMap(
-                (plugin) =>
-                  (
-                    plugin as DSLMapping_LegendStudioPlugin_Extension
-                  ).getExtraInstanceSetImplementationSourceUpdaters?.() ?? [],
-              );
-          for (const instanceSetImplementationSourceUpdaters of extraInstanceSetImplementationSourceUpdaters) {
-            instanceSetImplementationSourceUpdaters(
-              setImplementation,
-              newSource,
+        const extraInstanceSetImplementationSourceUpdaters =
+          this.editorStore.pluginManager
+            .getStudioPlugins()
+            .flatMap(
+              (plugin) =>
+                (
+                  plugin as DSLMapping_LegendStudioPlugin_Extension
+                ).getExtraInstanceSetImplementationSourceUpdaters?.() ?? [],
             );
-          }
+        for (const updater of extraInstanceSetImplementationSourceUpdaters) {
+          updater(setImplementation, newSource);
         }
         // here we require a change of set implementation as the source type does not match the what the current class mapping supports
         let newSetImp: InstanceSetImplementation;
@@ -1217,16 +1213,21 @@ export class MappingEditorState extends ElementEditorState {
         if (errorCoordinates) {
           const sourceId = compilationError.sourceInformation.sourceId;
           assertTrue(errorCoordinates.length >= 5);
-          const [, mappingType, mappingId, propertyName, targetPropertyId] =
-            errorCoordinates;
+          const [
+            ,
+            mappingElementType,
+            mappingElementId,
+            propertyName,
+            targetPropertyId,
+          ] = errorCoordinates;
           const newMappingElement = getMappingElementByTypeAndId(
             this.mapping,
             guaranteeNonNullable(
-              mappingType,
+              mappingElementType,
               `Can't reveal compilation error: mapping type is missing`,
             ),
             guaranteeNonNullable(
-              mappingId,
+              mappingElementId,
               `Can't reveal compilation error: mapping ID is missing`,
             ),
           );
@@ -1251,12 +1252,7 @@ export class MappingEditorState extends ElementEditorState {
               if (
                 // TODO: take care of operation mapping using systematic coordinates
                 // See https://github.com/finos/legend-studio/issues/1168
-                this.currentTabState instanceof
-                  PureInstanceSetImplementationState ||
-                this.currentTabState instanceof
-                  FlatDataInstanceSetImplementationState ||
-                this.currentTabState instanceof
-                  RelationalInstanceSetImplementationState
+                this.currentTabState instanceof InstanceSetImplementationState
               ) {
                 const propertyMappingState: LambdaEditorState | undefined = (
                   this.currentTabState.propertyMappingStates as unknown[]
@@ -1267,27 +1263,6 @@ export class MappingEditorState extends ElementEditorState {
                   propertyMappingState.setCompilationError(compilationError);
                   revealed = true;
                 }
-              } else {
-                const extraCompilationErrorRevealers =
-                  this.editorStore.pluginManager
-                    .getStudioPlugins()
-                    .flatMap(
-                      (plugin) =>
-                        (
-                          plugin as DSLMapping_LegendStudioPlugin_Extension
-                        ).TEMPORARY__getExtraInstanceSetImplementationEditorCompilationErrorRevealers?.() ??
-                        [],
-                    );
-                for (const compilationErrorRevealersGetter of extraCompilationErrorRevealers) {
-                  const compilationErrorRevealer =
-                    compilationErrorRevealersGetter(newMappingElement);
-                  if (compilationErrorRevealer) {
-                    revealed = compilationErrorRevealer;
-                  }
-                }
-                throw new IllegalStateError(
-                  'Expected to have current mapping editor state to be of consistent type with current mapping element',
-                );
               }
             }
           }
