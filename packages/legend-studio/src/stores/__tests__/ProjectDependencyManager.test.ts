@@ -122,19 +122,11 @@ const PROJECT_CONFIG = {
   projectDependencies: [
     {
       projectId: 'PROD_1',
-      versionId: {
-        majorVersion: 1,
-        minorVersion: 0,
-        patchVersion: 0,
-      },
+      versionId: '1.0.0',
     },
     {
       projectId: 'groupId:artifactId',
-      versionId: {
-        majorVersion: 1,
-        minorVersion: 0,
-        patchVersion: 0,
-      },
+      versionId: '1.0.0',
     },
   ],
   metamodelDependencies: [],
