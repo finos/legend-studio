@@ -25,6 +25,8 @@ import type { V1_ClassMapping } from '../pure/v1/model/packageableElements/mappi
 import type { V1_GraphBuilderContext } from './v1/transformation/pureGraph/to/V1_GraphBuilderContext.js';
 import type { Store } from '../../metamodels/pure/packageableElements/store/Store.js';
 import type { PackageableElementReference } from '../../metamodels/pure/packageableElements/PackageableElementReference.js';
+import type { PropertyMapping } from '../../../DSLMapping_Exports.js';
+import type { V1_PropertyMapping } from './v1/model/packageableElements/mapping/V1_PropertyMapping.js';
 
 export type V1_ClassMappingFirstPassBuilder = (
   classMapping: V1_ClassMapping,
@@ -70,8 +72,22 @@ export type V1_ConnectionProtocolDeserializer = (
   json: PlainObject<V1_Connection>,
 ) => V1_Connection | undefined;
 
+export type V1_PropertyMappingBuilder = (
+  connection: V1_PropertyMapping,
+  context: V1_GraphBuilderContext,
+) => PropertyMapping | undefined;
+
+export type V1_PropertyMappingTransformer = (
+  metamodel: PropertyMapping,
+  context: V1_GraphTransformerContext,
+) => V1_PropertyMapping | undefined;
+
 export interface DSLMapping_PureProtocolProcessorPlugin_Extension
   extends PureProtocolProcessorPlugin {
+  V1_getExtraPropertyMappingBuilders?(): V1_PropertyMappingBuilder[];
+
+  V1_getExtraPropertyMappingTransformers?(): V1_PropertyMappingTransformer[];
+
   V1_getExtraClassMappingFirstPassBuilders?(): V1_ClassMappingFirstPassBuilder[];
 
   V1_getExtraClassMappingSecondPassBuilders?(): V1_ClassMappingSecondPassBuilder[];

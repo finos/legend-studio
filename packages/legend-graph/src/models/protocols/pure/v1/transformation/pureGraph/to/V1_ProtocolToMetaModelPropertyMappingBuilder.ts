@@ -21,6 +21,7 @@ import {
   guaranteeType,
   guaranteeNonNullable,
   returnUndefOnError,
+  UnsupportedOperationError,
 } from '@finos/legend-shared';
 import { GRAPH_MANAGER_EVENT } from '../../../../../../../graphManager/GraphManagerEvent.js';
 import type { PropertyMapping } from '../../../../../../metamodels/pure/packageableElements/mapping/PropertyMapping.js';
@@ -95,6 +96,7 @@ import {
   getOwnProperty,
   getClassProperty,
 } from '../../../../../../../helpers/DomainHelper.js';
+import type { DSLMapping_PureProtocolProcessorPlugin_Extension } from '../../../../DSLMapping_PureProtocolProcessorPlugin_Extension.js';
 
 /**
  * This test is skipped because we want to temporarily relax graph building algorithm
@@ -168,6 +170,26 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
     this.allClassMappings = allClassMappings ?? [];
     this.xStoreParent = xStoreParent;
     this.aggregationAwareParent = aggregationAwareParent;
+  }
+
+  visit_PropertyMapping(propertyMapping: V1_PropertyMapping): PropertyMapping {
+    const extraPropertyMappingBuilders =
+      this.context.extensions.plugins.flatMap(
+        (plugin) =>
+          (
+            plugin as DSLMapping_PureProtocolProcessorPlugin_Extension
+          ).V1_getExtraPropertyMappingBuilders?.() ?? [],
+      );
+    for (const builder of extraPropertyMappingBuilders) {
+      const extraPropertyMapping = builder(propertyMapping, this.context);
+      if (extraPropertyMapping) {
+        return extraPropertyMapping;
+      }
+    }
+    throw new UnsupportedOperationError(
+      `Can't build property mapping: no compatible builder available from plugins`,
+      propertyMapping,
+    );
   }
 
   visit_PurePropertyMapping(protocol: V1_PurePropertyMapping): PropertyMapping {

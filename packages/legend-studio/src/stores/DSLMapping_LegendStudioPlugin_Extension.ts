@@ -17,15 +17,26 @@
 import type { DSL_LegendStudioPlugin_Extension } from './LegendStudioPlugin.js';
 import type { ConnectionValueState } from './editor-state/element-editor-state/connection/ConnectionEditorState.js';
 import type { EditorStore } from './EditorStore.js';
-import type { Store, Connection, SetImplementation } from '@finos/legend-graph';
+import type {
+  Store,
+  Connection,
+  SetImplementation,
+  InstanceSetImplementation,
+} from '@finos/legend-graph';
 import type { MappingTestState } from './editor-state/element-editor-state/mapping/MappingTestState.js';
 import type { MappingExecutionState } from './editor-state/element-editor-state/mapping/MappingExecutionState.js';
 import type { NewConnectionValueDriver } from './NewElementState.js';
+import type { MappingElement } from '../stores/editor-state/element-editor-state/mapping/MappingEditorState.js';
 import type {
-  MappingElement,
-  MappingElementSource,
-} from '../stores/editor-state/element-editor-state/mapping/MappingEditorState.js';
-import type { MappingElementState } from '../stores/editor-state/element-editor-state/mapping/MappingElementState.js';
+  InstanceSetImplementationState,
+  MappingElementState,
+  PropertyMappingState,
+} from '../stores/editor-state/element-editor-state/mapping/MappingElementState.js';
+
+type MappingSourceTypeInfo = {
+  sourceType: string;
+  sourceName: string;
+};
 
 export type SetImplementationDecorator = (
   setImplementation: SetImplementation,
@@ -47,7 +58,7 @@ export type SetImplementationMappingElementLabelInfoBuilder = (
 
 export type MappingElementSourceGetter = (
   mappingElement: MappingElement,
-) => MappingElementSource | undefined;
+) => unknown | undefined;
 
 export type SetImplemtationClassifier = (
   setImplementation: SetImplementation,
@@ -96,25 +107,51 @@ export type MappingTestQueryEditorActionConfiguration = {
   ) => React.ReactNode | undefined;
 };
 
+export type InstanceSetImplementationSourceUpdater = (
+  setImplementation: InstanceSetImplementation,
+  newSource: unknown | undefined,
+) => void;
+
+export type MappingSourceTypeInfoGetter = (
+  setImplementation: SetImplementation,
+) => MappingSourceTypeInfo | undefined;
+
+export type PropertyMappingEditorRenderer = (
+  instanceSetImplementationState: InstanceSetImplementationState,
+  propertyMappingState: PropertyMappingState,
+) => React.ReactNode | undefined;
+
+export type InstanceSetImplementationEditorCompilationErrorRevealer = (
+  instanceSetImplementation: InstanceSetImplementation,
+) => boolean | undefined;
+
+export type InstanceSetImplementationBlockingErrorChecker = (
+  setImplementationState: InstanceSetImplementationState,
+) => boolean | undefined;
+
+export type InstanceSetImplementationStoreGetter = (
+  sourceElement: unknown,
+) => Store | undefined;
+
 export interface DSLMapping_LegendStudioPlugin_Extension
   extends DSL_LegendStudioPlugin_Extension {
   /**
-   * Get the list of extra set implementation decorators.
+   * Get the list of set implementation decorators.
    */
   getExtraSetImplementationDecorationCleaners?(): SetImplementationDecorationCleaner[];
 
   /**
-   * Get the list of extra set implementation decorators.
+   * Get the list of set implementation decorators.
    */
   getExtraSetImplementationDecorators?(): SetImplementationDecorator[];
 
   /**
-   * Get the list of extra mapping element info builders for set implemenetation.
+   * Get the list of mapping element info builders for set implemenetation.
    */
   getExtraSetImplementationMappingElementLabelInfoBuilders?(): SetImplementationMappingElementLabelInfoBuilder[];
 
   /**
-   * Get the list of extra set implementation classifiers.
+   * Get the list of set implementation classifiers.
    */
   getExtraSetImplementationClassifiers?(): SetImplemtationClassifier[];
 
@@ -139,7 +176,7 @@ export interface DSLMapping_LegendStudioPlugin_Extension
   getExtraConnectionValueEditorStateBuilders?(): ConnectionValueEditorStateBuilder[];
 
   /**
-   * Get the list renderers for a specified connection editor state.
+   * Get the list of renderers for a specified connection editor state.
    */
   getExtraConnectionEditorRenderers?(): ConnectionEditorRenderer[];
 
@@ -162,4 +199,38 @@ export interface DSLMapping_LegendStudioPlugin_Extension
    * Get the list of actions for mapping test query editor.
    */
   getExtraMappingTestQueryEditorActionConfigurations?(): MappingTestQueryEditorActionConfiguration[];
+
+  /**
+   * Get the list of instance set implementation source updaters.
+   */
+  getExtraInstanceSetImplementationSourceUpdaters?(): InstanceSetImplementationSourceUpdater[];
+
+  /**
+   * Get the list of mapping source type info getters.
+   */
+  getExtraMappingSourceTypeInfoGetters?(): MappingSourceTypeInfoGetter[];
+
+  /**
+   * Get the list of property mapping editor renderers.
+   */
+  getExtraPropertyMappingEditorRenderers?(): PropertyMappingEditorRenderer[];
+
+  /**
+   * Get the list of compilation error revealers for the specified instance set implementation editor
+   *
+   * This is marked as temporary as we might not need this mechanism anymore if we implement
+   * the new error reveal mechanism
+   * See https://github.com/finos/legend-studio/issues/1168
+   */
+  TEMPORARY__getExtraInstanceSetImplementationEditorCompilationErrorRevealers?(): InstanceSetImplementationEditorCompilationErrorRevealer[];
+
+  /**
+   * Get the list of checkers for errors in the specified instance set implementation that could potentially block the user interaction until fixed (e.g. parser error in some property mapping transform lambda editor).
+   */
+  getExtraInstanceSetImplementationBlockingErrorCheckers?(): InstanceSetImplementationBlockingErrorChecker[];
+
+  /**
+   * Get the list of suitable stores for the given set implementation source.
+   */
+  getExtraInstanceSetImplementationStoreGetters?(): InstanceSetImplementationStoreGetter[];
 }

@@ -25,7 +25,6 @@ import {
 import {
   getMappingElementSource,
   type MappingEditorState,
-  type MappingElementSource,
 } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState.js';
 import {
   type InstanceSetImplementation,
@@ -45,7 +44,6 @@ import { buildElementOption } from '../../../../stores/shared/PackageableElement
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import { useApplicationStore } from '@finos/legend-application';
 
-/* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
 export const getMappingElementSourceFilterText = (
   option: MappingElementSourceSelectOption,
 ): string => {
@@ -62,12 +60,11 @@ export const getMappingElementSourceFilterText = (
 
 export interface MappingElementSourceSelectOption {
   label: string;
-  value: MappingElementSource;
+  value: unknown;
 }
 
-/* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
 export const getSourceElementLabel = (
-  srcElement: MappingElementSource | undefined,
+  srcElement: unknown | undefined,
 ): string => {
   let sourceLabel = '(none)';
   if (srcElement instanceof Class) {
@@ -84,10 +81,9 @@ export const getSourceElementLabel = (
   return sourceLabel;
 };
 
-/* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
 // TODO: add more visual cue to the type of source (class vs. flat-data vs. db)
 export const buildMappingElementSourceOption = (
-  source: MappingElementSource | undefined,
+  source: unknown | undefined,
 ): MappingElementSourceSelectOption | null => {
   if (source instanceof Class) {
     return buildElementOption(source) as MappingElementSourceSelectOption;
@@ -117,7 +113,7 @@ export const InstanceSetImplementationSourceSelectorModal = observer(
      * Pass in `null` when we want to open the modal using the existing source.
      * Pass any other to open the source modal using that value as the initial state of the modal.
      */
-    sourceElementToSelect: MappingElementSource | null;
+    sourceElementToSelect: unknown | null;
     closeModal: () => void;
   }) => {
     const {
@@ -128,13 +124,12 @@ export const InstanceSetImplementationSourceSelectorModal = observer(
     } = props;
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
-    /* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
     const options = (
-      editorStore.graphManagerState.graph.ownClasses as MappingElementSource[]
+      editorStore.graphManagerState.graph.ownClasses as unknown[]
     )
       .concat(
         editorStore.graphManagerState.graph.dependencyManager
-          .classes as MappingElementSource[],
+          .classes as unknown[],
       )
       .concat(
         editorStore.graphManagerState.graph.ownFlatDatas.flatMap(

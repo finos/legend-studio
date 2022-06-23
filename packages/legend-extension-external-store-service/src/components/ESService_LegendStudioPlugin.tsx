@@ -33,7 +33,6 @@ import {
   type MappingElement,
   type MappingElementState,
   type MappingElementSourceGetter,
-  type MappingElementSource,
   type ElementIconGetter,
   type DSLData_LegendStudioPlugin_Extension,
   type EmbeddedDataTypeOption,
@@ -216,7 +215,7 @@ export class ESService_LegendStudioPlugin
 
   getExtraMappingElementSourceGetters(): MappingElementSourceGetter[] {
     return [
-      (mappingElement: MappingElement): MappingElementSource | undefined => {
+      (mappingElement: MappingElement): unknown | undefined => {
         if (mappingElement instanceof RootServiceInstanceSetImplementation) {
           return mappingElement.class.value;
         }

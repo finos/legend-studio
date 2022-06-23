@@ -747,6 +747,28 @@ class PropertyMappingTransformer
     this.isTransformingSourceId = isTransformingSourceId;
   }
 
+  visit_PropertyMapping(propertyMapping: PropertyMapping): V1_PropertyMapping {
+    const extraPropertyMappingTransformers = this.context.plugins.flatMap(
+      (plugin) =>
+        (
+          plugin as DSLMapping_PureProtocolProcessorPlugin_Extension
+        ).V1_getExtraPropertyMappingTransformers?.() ?? [],
+    );
+    for (const transformer of extraPropertyMappingTransformers) {
+      const propertyMappingProtocol = transformer(
+        propertyMapping,
+        this.context,
+      );
+      if (propertyMappingProtocol) {
+        return propertyMappingProtocol;
+      }
+    }
+    throw new UnsupportedOperationError(
+      `Can't transform property mapping: no compatible transformer available from plugins`,
+      propertyMapping,
+    );
+  }
+
   visit_PurePropertyMapping(
     propertyMapping: PurePropertyMapping,
   ): V1_PurePropertyMapping {
