@@ -36,24 +36,24 @@ export class ServiceStubMappingState {
   selectedServiceRequestPatternTab?:
     | SERVICE_REQUEST_PATTERN_TAB_TYPE
     | undefined;
-  toggleOn = true;
-  urlValue: string;
+  urlPath: string;
 
   constructor(
     editorStore: EditorStore,
     serviceStubMapping: ServiceStubMapping | undefined,
   ) {
     this.serviceStubMapping = serviceStubMapping;
-    this.urlValue = serviceStubMapping?.requestPattern.url ?? '';
+    this.urlPath =
+      serviceStubMapping?.requestPattern.urlPath ??
+      serviceStubMapping?.requestPattern.url ??
+      '';
 
     makeObservable(this, {
       selectedTab: observable,
       serviceStubMapping: observable,
-      toggleOn: observable,
-      urlValue: observable,
+      urlPath: observable,
       selectedServiceRequestPatternTab: observable,
-      setToggleOn: action,
-      setUrlValue: action,
+      setUrlPath: action,
       setSelectedTab: action,
     });
   }
@@ -62,12 +62,8 @@ export class ServiceStubMappingState {
     this.selectedTab = val;
   }
 
-  setToggleOn(): void {
-    this.toggleOn = !this.toggleOn;
-  }
-
-  setUrlValue(val: string): void {
-    this.urlValue = val;
+  setUrlPath(val: string): void {
+    this.urlPath = val;
   }
 
   setSelectedServiceRequestPatternTab(
