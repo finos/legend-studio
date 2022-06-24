@@ -16,21 +16,12 @@
 
 import type { Multiplicity } from '../../../../../../metamodels/pure/packageableElements/domain/Multiplicity.js';
 import type { PackageableElement } from '../../../../../../metamodels/pure/packageableElements/PackageableElement.js';
-import type {
-  OptionalPackageableElementReference,
-  PackageableElementReference,
-} from '../../../../../../metamodels/pure/packageableElements/PackageableElementReference.js';
+import type { PackageableElementReference } from '../../../../../../metamodels/pure/packageableElements/PackageableElementReference.js';
 import { V1_Multiplicity } from '../../../model/packageableElements/domain/V1_Multiplicity.js';
 import {
   V1_PackageableElementPointer,
   type V1_PackageableElement,
 } from '../../../model/packageableElements/V1_PackageableElement.js';
-
-export const V1_transformOptionalElementReference = <
-  T extends PackageableElement,
->(
-  ref: OptionalPackageableElementReference<T>,
-): string | undefined => ref.valueForSerialization;
 
 export const V1_transformElementReference = <T extends PackageableElement>(
   ref: PackageableElementReference<T>,

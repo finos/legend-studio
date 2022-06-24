@@ -33,7 +33,7 @@ import type { Mapping } from '../../metamodels/pure/packageableElements/mapping/
 import type { PackageableElement } from '../../metamodels/pure/packageableElements/PackageableElement.js';
 import {
   PackageableElementReference,
-  toOptionalPackageableElementReference,
+  optionalizePackageableElementReference,
 } from '../../metamodels/pure/packageableElements/PackageableElementReference.js';
 import type { Runtime } from '../../metamodels/pure/packageableElements/runtime/Runtime.js';
 import { ExternalFormatConnection } from '../../metamodels/pure/packageableElements/externalFormat/connection/DSLExternalFormat_ExternalFormatConnection.js';
@@ -134,11 +134,12 @@ export class DSLExternalFormat_PureProtocolProcessorPlugin
             elementProtocol.name,
           );
           const element = getOwnBinding(path, context.currentSubGraph);
-          const schemaSet = elementProtocol.schemaSet
-            ? V1_resolveSchemaSet(elementProtocol.schemaSet, context)
-            : undefined;
           element.schemaId = elementProtocol.schemaId;
-          element.schemaSet = toOptionalPackageableElementReference(schemaSet);
+          element.schemaSet = optionalizePackageableElementReference(
+            elementProtocol.schemaSet
+              ? V1_resolveSchemaSet(elementProtocol.schemaSet, context)
+              : undefined,
+          );
 
           element.contentType = guaranteeNonEmptyString(
             elementProtocol.contentType,

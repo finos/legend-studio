@@ -41,7 +41,7 @@ import type { Class } from '../../../../../../../metamodels/pure/packageableElem
 import { InferableMappingElementIdImplicitValue } from '../../../../../../../metamodels/pure/packageableElements/mapping/InferableMappingElementId.js';
 import {
   type PackageableElementImplicitReference,
-  toOptionalPackageableElementReference,
+  optionalizePackageableElementReference,
 } from '../../../../../../../metamodels/pure/packageableElements/PackageableElementReference.js';
 import { EnumValueImplicitReference } from '../../../../../../../metamodels/pure/packageableElements/domain/EnumValueReference.js';
 import { MappingInclude } from '../../../../../../../metamodels/pure/packageableElements/mapping/MappingInclude.js';
@@ -166,7 +166,7 @@ export const V1_buildEnumerationMapping = (
     ),
     targetEnumeration,
     parentMapping,
-    toOptionalPackageableElementReference(sourceTypeReference),
+    optionalizePackageableElementReference(sourceTypeReference),
   );
   enumerationMapping.enumValueMappings =
     srcEnumerationMapping.enumValueMappings.map((enumValueMapping) =>

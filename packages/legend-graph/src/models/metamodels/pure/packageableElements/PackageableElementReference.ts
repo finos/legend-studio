@@ -248,7 +248,7 @@ export class OptionalPackageableElementImplicitReference<
   }
 }
 
-export const toOptionalPackageableElementReference = <
+export const optionalizePackageableElementReference = <
   V extends PackageableElement,
 >(
   reference: PackageableElementReference<V> | undefined,

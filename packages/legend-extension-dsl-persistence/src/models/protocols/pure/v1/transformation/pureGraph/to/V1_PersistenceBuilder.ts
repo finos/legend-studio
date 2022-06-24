@@ -160,6 +160,7 @@ import {
   type V1_GraphBuilderContext,
   V1_ProtocolToMetaModelConnectionBuilder,
   V1_buildFullPath,
+  optionalizePackageableElementReference,
 } from '@finos/legend-graph';
 import {
   guaranteeNonEmptyString,
@@ -495,9 +496,10 @@ export const V1_buildFlatTarget = (
   context: V1_GraphBuilderContext,
 ): FlatTarget => {
   const targetShape = new FlatTarget();
-  if (modelClass) {
-    targetShape.modelClass = context.resolveClass(modelClass);
-  }
+  targetShape.modelClass = optionalizePackageableElementReference(
+    modelClass ? context.resolveClass(modelClass) : undefined,
+  );
+
   targetShape.targetName = guaranteeNonEmptyString(protocol.targetName);
   targetShape.partitionFields = protocol.partitionFields;
   targetShape.deduplicationStrategy = V1_buildDeduplicationStrategy(

@@ -74,7 +74,6 @@ import {
   V1_transformElementReference,
   V1_transformElementReferencePointer,
   V1_transformMultiplicity,
-  V1_transformOptionalElementReference,
 } from './V1_CoreTransformerHelper.js';
 import { V1_Mapping } from '../../../model/packageableElements/mapping/V1_Mapping.js';
 import {
@@ -884,9 +883,7 @@ const transformPureInstanceSetImplementation = (
   if (root !== undefined) {
     classMapping.root = root;
   }
-  classMapping.srcClass = V1_transformOptionalElementReference(
-    element.srcClass,
-  );
+  classMapping.srcClass = element.srcClass.valueForSerialization;
   return classMapping;
 };
 

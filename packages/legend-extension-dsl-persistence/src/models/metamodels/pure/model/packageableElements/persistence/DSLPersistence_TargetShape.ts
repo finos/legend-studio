@@ -17,14 +17,18 @@
 import type { DeduplicationStrategy } from './DSLPersistence_DeduplicationStrategy.js';
 import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../DSLPersistence_ModelUtils.js';
 import { type Hashable, hashArray } from '@finos/legend-shared';
-import type { Class, PackageableElementReference } from '@finos/legend-graph';
+import type {
+  Class,
+  OptionalPackageableElementReference,
+  PackageableElementReference,
+} from '@finos/legend-graph';
 
 export abstract class TargetShape implements Hashable {
   abstract get hashCode(): string;
 }
 
 export class FlatTarget extends TargetShape implements Hashable {
-  modelClass?: PackageableElementReference<Class>;
+  modelClass!: OptionalPackageableElementReference<Class>;
   targetName!: string;
   partitionFields: string[] = [];
   deduplicationStrategy!: DeduplicationStrategy;
@@ -32,7 +36,7 @@ export class FlatTarget extends TargetShape implements Hashable {
   override get hashCode(): string {
     return hashArray([
       PERSISTENCE_HASH_STRUCTURE.FLAT_TARGET,
-      this.modelClass?.valueForSerialization ?? '' ?? '',
+      this.modelClass.valueForSerialization ?? '',
       this.targetName,
       hashArray(this.partitionFields),
       this.deduplicationStrategy,

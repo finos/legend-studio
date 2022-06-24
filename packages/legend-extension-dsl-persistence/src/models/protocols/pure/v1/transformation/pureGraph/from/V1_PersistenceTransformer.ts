@@ -490,9 +490,7 @@ export const V1_transformFlatTarget = (
   context: V1_GraphTransformerContext,
 ): V1_FlatTarget => {
   const protocol = new V1_FlatTarget();
-  if (element.modelClass) {
-    protocol.modelClass = V1_transformElementReference(element.modelClass);
-  }
+  protocol.modelClass = element.modelClass.valueForSerialization;
   protocol.targetName = element.targetName;
   protocol.partitionFields = element.partitionFields;
   protocol.deduplicationStrategy = V1_transformDeduplicationStrategy(
