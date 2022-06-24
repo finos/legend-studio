@@ -75,7 +75,6 @@ import {
   Multiplicity,
   V1_ElementBuilder,
   V1_initPackageableElement,
-  V1_transformElementReference,
   V1_buildFullPath,
 } from '@finos/legend-graph';
 import { V1_RootServiceStoreClassMapping } from './v1/model/packageableElements/store/serviceStore/mapping/V1_ESService_RootServiceStoreClassMapping.js';
@@ -321,9 +320,8 @@ export class ESService_PureProtocolProcessorPlugin
       ): V1_ClassMapping | undefined => {
         if (setImplementation instanceof RootServiceInstanceSetImplementation) {
           const classMapping = new V1_RootServiceStoreClassMapping();
-          classMapping.class = V1_transformElementReference(
-            setImplementation.class,
-          );
+          classMapping.class =
+            setImplementation.class.valueForSerialization ?? '';
           classMapping.id = setImplementation.id.valueForSerialization;
           classMapping.root = setImplementation.root.valueForSerialization;
           classMapping.localMappingProperties =
@@ -393,7 +391,7 @@ export class ESService_PureProtocolProcessorPlugin
       ): V1_Connection | undefined => {
         if (metamodel instanceof ServiceStoreConnection) {
           const connection = new V1_ServiceStoreConnection();
-          connection.store = V1_transformElementReference(metamodel.store);
+          connection.store = metamodel.store.valueForSerialization ?? '';
           connection.baseUrl = metamodel.baseUrl;
           return connection;
         }

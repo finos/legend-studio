@@ -50,10 +50,7 @@ import {
   BigQueryDatasourceSpecification,
 } from '../../../../../../metamodels/pure/packageableElements/store/relational/connection/DatasourceSpecification.js';
 import type { ModelChainConnection } from '../../../../../../metamodels/pure/packageableElements/store/modelToModel/connection/ModelChainConnection.js';
-import {
-  V1_initPackageableElement,
-  V1_transformElementReference,
-} from './V1_CoreTransformerHelper.js';
+import { V1_initPackageableElement } from './V1_CoreTransformerHelper.js';
 import { V1_PackageableConnection } from '../../../model/packageableElements/connection/V1_PackageableConnection.js';
 import {
   type V1_DatasourceSpecification,
@@ -281,7 +278,7 @@ export const V1_transformRelationalDatabaseConnection = (
   context: V1_GraphTransformerContext,
 ): V1_RelationalDatabaseConnection => {
   const connection = new V1_RelationalDatabaseConnection();
-  connection.store = V1_transformElementReference(metamodel.store);
+  connection.store = metamodel.store.valueForSerialization ?? '';
   connection.authenticationStrategy = transformAuthenticationStrategy(
     metamodel.authenticationStrategy,
     context,
@@ -306,9 +303,8 @@ const transformConnectionPointer = (
   metamodel: ConnectionPointer,
 ): V1_ConnectionPointer => {
   const connection = new V1_ConnectionPointer();
-  connection.connection = V1_transformElementReference(
-    metamodel.packageableConnection,
-  );
+  connection.connection =
+    metamodel.packageableConnection.valueForSerialization ?? '';
   return connection;
 };
 
@@ -317,7 +313,9 @@ const transformModelChainConnection = (
 ): V1_ModelChainConnection => {
   const connection = new V1_ModelChainConnection();
   connection.store = element.store.valueForSerialization;
-  connection.mappings = element.mappings.map(V1_transformElementReference);
+  connection.mappings = element.mappings.map(
+    (mapping) => mapping.valueForSerialization ?? '',
+  );
   return connection;
 };
 
@@ -325,7 +323,7 @@ const transformJsonModelConnection = (
   element: JsonModelConnection,
 ): V1_JsonModelConnection => {
   const connection = new V1_JsonModelConnection();
-  connection.class = V1_transformElementReference(element.class);
+  connection.class = element.class.valueForSerialization ?? '';
   connection.store = element.store.valueForSerialization;
   connection.url = element.url;
   return connection;
@@ -335,7 +333,7 @@ const transformXmlModelConnection = (
   element: XmlModelConnection,
 ): V1_XmlModelConnection => {
   const connection = new V1_XmlModelConnection();
-  connection.class = V1_transformElementReference(element.class);
+  connection.class = element.class.valueForSerialization ?? '';
   connection.store = element.store.valueForSerialization;
   connection.url = element.url;
   return connection;
@@ -345,7 +343,7 @@ const transformFlatDataConnection = (
   element: FlatDataConnection,
 ): V1_FlatDataConnection => {
   const connection = new V1_FlatDataConnection();
-  connection.store = V1_transformElementReference(element.store);
+  connection.store = element.store.valueForSerialization ?? '';
   connection.url = element.url;
   return connection;
 };

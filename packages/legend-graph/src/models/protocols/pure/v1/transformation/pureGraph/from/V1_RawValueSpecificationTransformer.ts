@@ -19,10 +19,7 @@ import type { RawLambda } from '../../../../../../metamodels/pure/rawValueSpecif
 import type { RawVariableExpression } from '../../../../../../metamodels/pure/rawValueSpecification/RawVariableExpression.js';
 import { V1_RawLambda } from '../../../model/rawValueSpecification/V1_RawLambda.js';
 import { V1_RawVariable } from '../../../model/rawValueSpecification/V1_RawVariable.js';
-import {
-  V1_transformMultiplicity,
-  V1_transformElementReference,
-} from './V1_CoreTransformerHelper.js';
+import { V1_transformMultiplicity } from './V1_CoreTransformerHelper.js';
 import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext.js';
 import type { V1_RawValueSpecification } from '../../../model/rawValueSpecification/V1_RawValueSpecification.js';
 import { V1_RawPrimitiveInstanceValue } from '../../../model/rawValueSpecification/V1_RawPrimitiveInstanceValue.js';
@@ -65,9 +62,7 @@ export class V1_RawValueSpecificationTransformer
     rawValueSpecification: RawVariableExpression,
   ): V1_RawValueSpecification {
     const rawVariable = new V1_RawVariable();
-    rawVariable.class = V1_transformElementReference(
-      rawValueSpecification.type,
-    );
+    rawVariable.class = rawValueSpecification.type.valueForSerialization ?? '';
     rawVariable.multiplicity = V1_transformMultiplicity(
       rawValueSpecification.multiplicity,
     );
@@ -79,7 +74,7 @@ export class V1_RawValueSpecificationTransformer
     rawValueSpecification: RawPrimitiveInstanceValue,
   ): V1_RawValueSpecification {
     const protocol = new V1_RawPrimitiveInstanceValue();
-    protocol.type = V1_transformElementReference(rawValueSpecification.type);
+    protocol.type = rawValueSpecification.type.valueForSerialization ?? '';
     protocol.multiplicity = V1_transformMultiplicity(
       rawValueSpecification.multiplicity,
     );

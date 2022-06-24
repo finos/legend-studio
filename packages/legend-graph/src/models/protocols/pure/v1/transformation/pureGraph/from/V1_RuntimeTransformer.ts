@@ -24,7 +24,6 @@ import {
 } from '../../../../../../metamodels/pure/packageableElements/runtime/Runtime.js';
 import {
   V1_initPackageableElement,
-  V1_transformElementReference,
   V1_transformElementReferencePointer,
 } from './V1_CoreTransformerHelper.js';
 import { V1_PackageableRuntime } from '../../../model/packageableElements/runtime/V1_PackageableRuntime.js';
@@ -78,7 +77,7 @@ const transformRunTimePointer = (
   element: RuntimePointer,
 ): V1_RuntimePointer => {
   const runtime = new V1_RuntimePointer();
-  runtime.runtime = V1_transformElementReference(element.packageableRuntime);
+  runtime.runtime = element.packageableRuntime.valueForSerialization ?? '';
   return runtime;
 };
 

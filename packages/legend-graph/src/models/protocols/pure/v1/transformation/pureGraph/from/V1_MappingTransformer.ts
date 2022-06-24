@@ -71,7 +71,6 @@ import type { GroupByFunctionSpecification } from '../../../../../../metamodels/
 import type { V1_RawLambda } from '../../../model/rawValueSpecification/V1_RawLambda.js';
 import {
   V1_initPackageableElement,
-  V1_transformElementReference,
   V1_transformElementReferencePointer,
   V1_transformMultiplicity,
 } from './V1_CoreTransformerHelper.js';
@@ -162,7 +161,7 @@ export const V1_transformPropertyReference = (
     options?.isTransformingEmbeddedPropertyMapping ||
     options?.isTransformingLocalPropertyMapping
       ? undefined
-      : V1_transformElementReference(element.ownerReference);
+      : element.ownerReference.valueForSerialization ?? '';
   property.property = element.value.name;
   return property;
 };
@@ -220,9 +219,8 @@ const transformEnumerationMapping = (
   enumerationMapping.enumValueMappings = element.enumValueMappings
     .filter((e) => !isStubbed_EnumValueMapping(e))
     .map(transformEnumValueMapping);
-  enumerationMapping.enumeration = V1_transformElementReference(
-    element.enumeration,
-  );
+  enumerationMapping.enumeration =
+    element.enumeration.valueForSerialization ?? '';
   enumerationMapping.id = mappingElementIdSerializer(element.id);
   return enumerationMapping;
 };
@@ -248,7 +246,7 @@ const transformObjectInputData = (
   const inputData = new V1_ObjectInputData();
   inputData.data = element.data;
   inputData.inputType = V1_getObjectInputType(element.inputType);
-  inputData.sourceClass = V1_transformElementReference(element.sourceClass);
+  inputData.sourceClass = element.sourceClass.valueForSerialization ?? '';
   return inputData;
 };
 
@@ -270,7 +268,7 @@ const transformRelationalInputData = (
   const inputData = new V1_RelationalInputData();
   inputData.data = element.data;
   inputData.inputType = element.inputType;
-  inputData.database = V1_transformElementReference(element.database);
+  inputData.database = element.database.valueForSerialization ?? '';
   return inputData;
 };
 
@@ -410,7 +408,7 @@ const transformEmbeddedFlatDataPropertyMapping = (
   if (id) {
     embedded.id = id;
   }
-  embedded.class = V1_transformElementReference(element.class);
+  embedded.class = element.class.valueForSerialization ?? '';
   embedded.property = V1_transformPropertyReference(element.property); // TODO: we might ned to turn 'isTransformingEmbeddedPropertyMapping' on in the future once we start working on the gramar roundtrip for flat-data
   embedded.propertyMappings = transformClassMappingPropertyMappings(
     element.propertyMappings,
@@ -823,7 +821,7 @@ const transformOperationSetImplementation = (
   element: OperationSetImplementation,
 ): V1_OperationClassMapping => {
   const classMapping = new V1_OperationClassMapping();
-  classMapping.class = V1_transformElementReference(element.class);
+  classMapping.class = element.class.valueForSerialization ?? '';
   classMapping.id = mappingElementIdSerializer(element.id);
   classMapping.operation = transformOperationType(element.operation);
   classMapping.parameters = element.parameters.map(
@@ -842,7 +840,7 @@ const transformMergeOperationSetImplementation = (
   context: V1_GraphTransformerContext,
 ): V1_MergeOperationClassMapping => {
   const classMapping = new V1_MergeOperationClassMapping();
-  classMapping.class = V1_transformElementReference(element.class);
+  classMapping.class = element.class.valueForSerialization ?? '';
   classMapping.id = mappingElementIdSerializer(element.id);
   classMapping.operation = transformOperationType(element.operation);
   classMapping.validationFunction =
@@ -865,7 +863,7 @@ const transformPureInstanceSetImplementation = (
   context: V1_GraphTransformerContext,
 ): V1_PureInstanceClassMapping => {
   const classMapping = new V1_PureInstanceClassMapping();
-  classMapping.class = V1_transformElementReference(element.class);
+  classMapping.class = element.class.valueForSerialization ?? '';
   if (element.filter) {
     classMapping.filter = element.filter.accept_RawValueSpecificationVisitor(
       new V1_RawValueSpecificationTransformer(context),
@@ -892,7 +890,7 @@ const transformFlatDataInstanceSetImpl = (
   context: V1_GraphTransformerContext,
 ): V1_RootFlatDataClassMapping => {
   const classMapping = new V1_RootFlatDataClassMapping();
-  classMapping.class = V1_transformElementReference(element.class);
+  classMapping.class = element.class.valueForSerialization ?? '';
   if (element.filter) {
     classMapping.filter = element.filter.accept_RawValueSpecificationVisitor(
       new V1_RawValueSpecificationTransformer(context),
@@ -921,7 +919,7 @@ const transformRootRelationalSetImpl = (
   context: V1_GraphTransformerContext,
 ): V1_RootRelationalClassMapping => {
   const classMapping = new V1_RootRelationalClassMapping();
-  classMapping.class = V1_transformElementReference(element.class);
+  classMapping.class = element.class.valueForSerialization ?? '';
   classMapping.distinct = element.distinct ?? false;
   classMapping.id = mappingElementIdSerializer(element.id);
   if (element.mainTableAlias) {
@@ -1067,7 +1065,7 @@ const transformAggregationAwareSetImplementation = (
 ): V1_AggregationAwareClassMapping => {
   const classMapping = new V1_AggregationAwareClassMapping();
   classMapping.id = mappingElementIdSerializer(element.id);
-  classMapping.class = V1_transformElementReference(element.class);
+  classMapping.class = element.class.valueForSerialization ?? '';
   const root = element.root.valueForSerialization;
   if (root !== undefined) {
     classMapping.root = root;
@@ -1232,12 +1230,11 @@ const transformRelationalAssociationImplementation = (
   context: V1_GraphTransformerContext,
 ): V1_RelationalAssociationMapping => {
   const relationalMapping = new V1_RelationalAssociationMapping();
-  relationalMapping.stores = element.stores.map((store) =>
-    V1_transformElementReference(store),
+  relationalMapping.stores = element.stores.map(
+    (store) => store.valueForSerialization ?? '',
   );
-  relationalMapping.association = V1_transformElementReference(
-    element.association,
-  );
+  relationalMapping.association =
+    element.association.valueForSerialization ?? '';
   relationalMapping.propertyMappings = transformClassMappingPropertyMappings(
     element.propertyMappings,
     true,
@@ -1253,8 +1250,10 @@ const transformXStorelAssociationImplementation = (
   context: V1_GraphTransformerContext,
 ): V1_XStoreAssociationMapping => {
   const xStoreMapping = new V1_XStoreAssociationMapping();
-  xStoreMapping.stores = element.stores.map(V1_transformElementReference);
-  xStoreMapping.association = V1_transformElementReference(element.association);
+  xStoreMapping.stores = element.stores.map(
+    (store) => store.valueForSerialization ?? '',
+  );
+  xStoreMapping.association = element.association.valueForSerialization ?? '';
   xStoreMapping.propertyMappings = transformClassMappingPropertyMappings(
     element.propertyMappings,
     false,

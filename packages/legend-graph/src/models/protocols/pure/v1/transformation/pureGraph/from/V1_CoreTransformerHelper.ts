@@ -23,10 +23,6 @@ import {
   type V1_PackageableElement,
 } from '../../../model/packageableElements/V1_PackageableElement.js';
 
-export const V1_transformElementReference = <T extends PackageableElement>(
-  ref: PackageableElementReference<T>,
-): string => ref.valueForSerialization ?? '';
-
 export const V1_transformElementReferencePointer = <
   T extends PackageableElement,
 >(

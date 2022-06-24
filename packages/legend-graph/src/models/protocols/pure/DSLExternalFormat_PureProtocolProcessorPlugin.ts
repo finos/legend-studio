@@ -67,10 +67,7 @@ import { V1_SchemaSet } from './v1/model/packageableElements/externalFormat/sche
 import { V1_Binding } from './v1/model/packageableElements/externalFormat/store/V1_DSLExternalFormat_Binding.js';
 import { V1_ModelUnit } from './v1/model/packageableElements/externalFormat/store/V1_DSLExternalFormat_ModelUnit.js';
 import type { V1_PackageableElement } from './v1/model/packageableElements/V1_PackageableElement.js';
-import {
-  V1_initPackageableElement,
-  V1_transformElementReference,
-} from './v1/transformation/pureGraph/from/V1_CoreTransformerHelper.js';
+import { V1_initPackageableElement } from './v1/transformation/pureGraph/from/V1_CoreTransformerHelper.js';
 import type { V1_GraphTransformerContext } from './v1/transformation/pureGraph/from/V1_GraphTransformerContext.js';
 import {
   V1_resolveBinding,
@@ -372,7 +369,7 @@ export class DSLExternalFormat_PureProtocolProcessorPlugin
       ): V1_Connection | undefined => {
         if (metamodel instanceof ExternalFormatConnection) {
           const connection = new V1_ExternalFormatConnection();
-          connection.store = V1_transformElementReference(metamodel.store);
+          connection.store = metamodel.store.valueForSerialization ?? '';
           const urlStream = new V1_UrlStream();
           urlStream.url = metamodel.externalSource.url;
           connection.externalSource = urlStream;
