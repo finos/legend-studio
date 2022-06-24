@@ -76,7 +76,6 @@ import {
   runtime_deleteMapping,
 } from '../../graphModifier/DSLMapping_GraphModifierHelper.js';
 
-/* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
 export const getClassMappingStore = (
   setImplementation: SetImplementation,
   editorStore: EditorStore,
@@ -91,6 +90,27 @@ export const getClassMappingStore = (
     return sourceElement._OWNER._OWNER;
   } else if (sourceElement instanceof TableAlias) {
     return sourceElement.relation.ownerReference.value;
+  }
+  if (sourceElement) {
+    const extraInstanceSetImplementationStoreGetters = editorStore.pluginManager
+      .getStudioPlugins()
+      .flatMap(
+        (plugin) =>
+          (
+            plugin as DSLMapping_LegendStudioPlugin_Extension
+          ).getExtraInstanceSetImplementationStoreGetters?.() ?? [],
+      );
+    for (const instanceSetImplementationStoreGetter of extraInstanceSetImplementationStoreGetters) {
+      const instanceSetImplementationStore =
+        instanceSetImplementationStoreGetter(sourceElement);
+      if (instanceSetImplementationStore) {
+        return instanceSetImplementationStore;
+      }
+    }
+    throw new UnsupportedOperationError(
+      `Can't find suitable store for class mapping: no compatible store available from plugins`,
+      setImplementation,
+    );
   }
   return undefined;
 };

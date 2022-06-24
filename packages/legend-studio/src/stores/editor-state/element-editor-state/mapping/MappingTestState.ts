@@ -14,10 +14,7 @@
  * limitations under the License.
  */
 
-import type {
-  MappingEditorState,
-  MappingElementSource,
-} from './MappingEditorState.js';
+import type { MappingEditorState } from './MappingEditorState.js';
 import {
   type GeneratorFn,
   LogEvent,
@@ -522,7 +519,7 @@ export class MappingTestState {
   };
 
   setInputDataStateBasedOnSource(
-    source: MappingElementSource | undefined,
+    source: unknown | undefined,
     populateWithMockData: boolean,
   ): void {
     if (source === undefined || source instanceof Class) {

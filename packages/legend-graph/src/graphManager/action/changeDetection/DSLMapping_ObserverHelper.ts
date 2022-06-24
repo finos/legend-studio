@@ -188,6 +188,24 @@ class PropertyMappingObserver implements PropertyMappingVisitor<void> {
     this.observerContext = observerContext;
   }
 
+  visit_PropertyMapping(propertyMapping: PropertyMapping): void {
+    const extraPropertyMappingObservers = this.observerContext.plugins.flatMap(
+      (plugin) =>
+        (
+          plugin as DSLMapping_PureGraphManagerPlugin_Extension
+        ).getExtraPropertyMappingObservers?.() ?? [],
+    );
+    for (const observer of extraPropertyMappingObservers) {
+      const observedPropertyMapping = observer(
+        propertyMapping,
+        this.observerContext,
+      );
+      if (observedPropertyMapping) {
+        return;
+      }
+    }
+  }
+
   visit_PurePropertyMapping(propertyMapping: PurePropertyMapping): void {
     observe_PurePropertyMapping(propertyMapping, this.observerContext);
   }

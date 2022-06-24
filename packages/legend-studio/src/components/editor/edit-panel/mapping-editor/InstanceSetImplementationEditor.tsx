@@ -42,7 +42,6 @@ import {
 } from '../../../../stores/editor-state/element-editor-state/mapping/PureInstanceSetImplementationState.js';
 import { guaranteeNonNullable, noop } from '@finos/legend-shared';
 import {
-  type MappingElementSource,
   getMappingElementSource,
   MappingEditorState,
   getEmbeddedSetImplementations,
@@ -86,6 +85,7 @@ import {
 } from '@finos/legend-graph';
 import { StudioLambdaEditor } from '../../../shared/StudioLambdaEditor.js';
 import type { EditorStore } from '../../../../stores/EditorStore.js';
+import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../../stores/DSLMapping_LegendStudioPlugin_Extension.js';
 
 export const InstanceSetImplementationSourceExplorer = observer(
   (props: {
@@ -112,7 +112,7 @@ export const InstanceSetImplementationSourceExplorer = observer(
     const [
       sourceElementForSourceSelectorModal,
       setSourceElementForSourceSelectorModal,
-    ] = useState<MappingElementSource | undefined | null>();
+    ] = useState<unknown | undefined | null>();
     const CHANGING_SOURCE_ON_EMBEDDED =
       'Changing source on mapping with embedded children will delete all its children';
     const showSourceSelectorModal = (): void => {
@@ -144,13 +144,11 @@ export const InstanceSetImplementationSourceExplorer = observer(
     const hideSourceSelectorModal = (): void =>
       setSourceElementForSourceSelectorModal(undefined);
     // Drag and Drop
-    /* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
     const dndType = [
       CORE_DND_TYPE.PROJECT_EXPLORER_CLASS,
       CORE_DND_TYPE.PROJECT_EXPLORER_FLAT_DATA,
       CORE_DND_TYPE.PROJECT_EXPLORER_DATABASE,
     ];
-    /* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
     // smartly analyze the content of the source and automatically assign it or its sub-part
     // as class mapping source when possible
     const changeClassMappingSourceDriver = useCallback(
@@ -266,11 +264,29 @@ export const InstanceSetImplementationSourceExplorer = observer(
     ) {
       return null;
     }
+    const extraInstanceSetImplementationBlockingErrorCheckers =
+      editorStore.pluginManager
+        .getStudioPlugins()
+        .flatMap(
+          (plugin) =>
+            (
+              plugin as DSLMapping_LegendStudioPlugin_Extension
+            ).getExtraInstanceSetImplementationBlockingErrorCheckers?.() ?? [],
+        );
+    let hasParseError = false;
+    for (const instanceSetImplementationBlockingErrorCheckerGetter of extraInstanceSetImplementationBlockingErrorCheckers) {
+      const instanceSetImplementationBlockingErrorChecker =
+        instanceSetImplementationBlockingErrorCheckerGetter(
+          instanceSetImplementationState,
+        );
+      if (instanceSetImplementationBlockingErrorChecker) {
+        hasParseError = instanceSetImplementationBlockingErrorChecker;
+      }
+    }
     return (
       <div
         data-testid={LEGEND_STUDIO_TEST_ID.SOURCE_PANEL}
         className={clsx('panel source-panel', {
-          /* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
           backdrop__element:
             (instanceSetImplementationState instanceof
             PureInstanceSetImplementationState
@@ -279,7 +295,8 @@ export const InstanceSetImplementationSourceExplorer = observer(
             (instanceSetImplementationState instanceof
             FlatDataInstanceSetImplementationState
               ? instanceSetImplementationState.hasParserError
-              : false),
+              : false) ||
+            hasParseError,
         })}
       >
         <div className="panel__header">
@@ -302,10 +319,12 @@ export const InstanceSetImplementationSourceExplorer = observer(
           </div>
         </div>
         <div ref={dropRef} className="panel__content dnd__dropzone">
-          {srcElement && isDragOver && !isReadOnly && (
-            <div className="dnd__overlay"></div>
-          )}
-          {srcElement && (
+          <>
+            {srcElement && isDragOver && !isReadOnly && (
+              <div className="dnd__overlay"></div>
+            )}
+          </>
+          {srcElement ? (
             <div className="source-panel__explorer">
               {srcElement instanceof Type && (
                 <TypeTree
@@ -326,8 +345,7 @@ export const InstanceSetImplementationSourceExplorer = observer(
                 />
               )}
             </div>
-          )}
-          {!srcElement && (
+          ) : (
             <BlankPanelPlaceholder
               placeholderText="Choose a source"
               onClick={showSourceSelectorModal}

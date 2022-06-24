@@ -30,8 +30,8 @@ import type { AggregationAwarePropertyMapping } from './aggregationAware/Aggrega
 import type { XStorePropertyMapping } from './xStore/XStorePropertyMapping.js';
 import type { LocalMappingPropertyInfo } from './LocalMappingPropertyInfo.js';
 
-/* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
 export interface PropertyMappingVisitor<T> {
+  visit_PropertyMapping(propertyMapping: PropertyMapping): T;
   visit_PurePropertyMapping(propertyMapping: PurePropertyMapping): T;
   visit_FlatDataPropertyMapping(propertyMapping: FlatDataPropertyMapping): T;
   visit_EmbeddedFlatDataPropertyMapping(

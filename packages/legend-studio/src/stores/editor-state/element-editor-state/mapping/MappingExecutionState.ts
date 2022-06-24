@@ -16,7 +16,6 @@
 
 import {
   type MappingEditorState,
-  type MappingElementSource,
   getMappingElementSource,
   getMappingElementTarget,
   generateMappingTestName,
@@ -515,7 +514,7 @@ export class MappingExecutionState {
   }
 
   setInputDataStateBasedOnSource(
-    source: MappingElementSource | undefined,
+    source: unknown | undefined,
     populateWithMockData: boolean,
   ): void {
     if (source instanceof Class) {
