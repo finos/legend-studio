@@ -20,6 +20,7 @@ import {
   addUniqueEntry,
   uniq,
   returnUndefOnError,
+  isNonNullable,
 } from '@finos/legend-shared';
 import {
   type AbstractProperty,
@@ -59,6 +60,7 @@ import {
   getClassProperty,
   getAllOwnClassProperties,
   getAllClassDerivedProperties,
+  type DSLMapping_PureGraphManagerPlugin_Extension,
 } from '@finos/legend-graph';
 import type { QueryBuilderState } from './QueryBuilderState.js';
 import { action, makeAutoObservable, observable } from 'mobx';
@@ -333,8 +335,6 @@ export const getPropertyNodeMappingData = (
             .flat(),
         )
         .filter((p) => {
-          // TODO: we should also handle of other property mapping types
-          // using some form of extension mechanism
           if (p instanceof PurePropertyMapping) {
             return !isStubbed_RawLambda(p.transform);
           } else if (p instanceof FlatDataPropertyMapping) {
@@ -344,7 +344,17 @@ export const getPropertyNodeMappingData = (
               p.relationalOperation,
             );
           }
-          return true;
+          return graphManagerState.pluginManager
+            .getPureGraphManagerPlugins()
+            .flatMap(
+              (plugin) =>
+                (
+                  plugin as DSLMapping_PureGraphManagerPlugin_Extension
+                ).getExtraPropertyMappingStubCheckers?.() ?? [],
+            )
+            .map((checker) => checker(p))
+            .filter(isNonNullable)
+            .some(Boolean);
         });
       // NOTE: observe how we scan and prepare the list of property mappings above,
       // searching for the property mapping to be used takes into account

@@ -96,6 +96,7 @@ export class EmbeddedRelationalInstanceSetImplementation
         this.propertyMappings.filter((propertyMapping) => {
           // TODO: we should also handle of other property mapping types
           // using some form of extension mechanism
+          // This is a rather optimistic check as we make assumption on the type of property mapping included here
           if (propertyMapping instanceof RelationalPropertyMapping) {
             // TODO: use `isStubbed_RawRelationalOperationElement` when we move this out of the metamodel
             return !isEmpty(propertyMapping.relationalOperation);

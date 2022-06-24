@@ -63,6 +63,7 @@ export class PureInstanceSetImplementation
         this.propertyMappings.filter(
           // TODO: we should also handle of other property mapping types
           // using some form of extension mechanism
+          // This is a rather optimistic check as we make assumption on the type of property mapping included here
           (propertyMapping) =>
             // TODO: use `isStubbed_RawLambda` when we move this out of the metamodel
             Boolean(propertyMapping.transform.parameters) ||

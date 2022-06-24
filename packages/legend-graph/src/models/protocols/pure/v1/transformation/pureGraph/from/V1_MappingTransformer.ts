@@ -366,10 +366,7 @@ const transformClassMappingPropertyMappings = (
   isTransformingSourceId: boolean,
 ): V1_PropertyMapping[] =>
   values
-    // TODO: we should also handle of other property mapping types
-    // using some form of extension mechanism
     .filter((value) => {
-      /* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
       if (value instanceof PurePropertyMapping) {
         return !isStubbed_RawLambda(value.transform);
       } else if (value instanceof FlatDataPropertyMapping) {
@@ -379,7 +376,17 @@ const transformClassMappingPropertyMappings = (
           value.relationalOperation,
         );
       }
-      return true;
+      return context.plugins
+        .flatMap(
+          (plugin) =>
+            (
+              plugin as DSLMapping_PureProtocolProcessorPlugin_Extension
+            ).getExtraPropertyMappingTransformationExcludabilityCheckers?.() ??
+            [],
+        )
+        .map((checker) => checker(value))
+        .filter(isNonNullable)
+        .some(Boolean);
     })
     .map((value) =>
       transformProperyMapping(
