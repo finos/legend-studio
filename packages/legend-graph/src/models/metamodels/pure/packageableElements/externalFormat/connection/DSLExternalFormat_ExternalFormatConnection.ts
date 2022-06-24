@@ -31,7 +31,7 @@ export class ExternalFormatConnection extends Connection implements Hashable {
   get hashCode(): string {
     return hashArray([
       DSL_EXTERNAL_FORMAT_HASH_STRUCTURE.EXTERNAL_FORMAT_CONNECTION,
-      this.store.hashValue,
+      this.store.valueForSerialization ?? '',
       this.externalSource,
     ]);
   }

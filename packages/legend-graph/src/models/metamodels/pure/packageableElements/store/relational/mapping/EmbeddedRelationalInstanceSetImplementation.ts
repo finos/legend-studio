@@ -89,7 +89,7 @@ export class EmbeddedRelationalInstanceSetImplementation
     return hashArray([
       CORE_HASH_STRUCTURE.EMBEDDED_REALTIONAL_PROPERTY_MAPPING,
       super.hashCode,
-      this.class.hashValue,
+      this.class.valueForSerialization ?? '',
       hashArray(this.primaryKey),
       // skip `root` since we disregard it in embedded property mappings
       hashArray(

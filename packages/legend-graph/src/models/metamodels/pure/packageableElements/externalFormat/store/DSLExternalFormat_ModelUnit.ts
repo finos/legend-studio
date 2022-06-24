@@ -29,10 +29,14 @@ export class ModelUnit implements Hashable {
     return hashArray([
       DSL_EXTERNAL_FORMAT_HASH_STRUCTURE.MODEL_UNIT,
       hashArray(
-        this.packageableElementIncludes.map((element) => element.hashValue),
+        this.packageableElementIncludes.map(
+          (element) => element.valueForSerialization ?? '',
+        ),
       ),
       hashArray(
-        this.packageableElementExcludes.map((element) => element.hashValue),
+        this.packageableElementExcludes.map(
+          (element) => element.valueForSerialization ?? '',
+        ),
       ),
     ]);
   }

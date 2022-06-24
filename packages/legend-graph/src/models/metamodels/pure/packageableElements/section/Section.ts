@@ -36,7 +36,7 @@ export abstract class Section implements Hashable {
     return hashArray([
       CORE_HASH_STRUCTURE.SECTION,
       this.parserName,
-      hashArray(this.elements.map((e) => e.hashValue)),
+      hashArray(this.elements.map((e) => e.valueForSerialization ?? '')),
     ]);
   }
 }
@@ -48,7 +48,7 @@ export class ImportAwareCodeSection extends Section {
     return hashArray([
       CORE_HASH_STRUCTURE.IMPORT_AWARE_CODE_SECTION,
       super.hashCode,
-      hashArray(this.imports.map((e) => e.hashValue)),
+      hashArray(this.imports.map((e) => e.valueForSerialization ?? '')),
     ]);
   }
 }

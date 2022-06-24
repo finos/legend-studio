@@ -43,7 +43,7 @@ export class FileGenerationSpecification
       hashArray(
         this.scopeElements.map((element) =>
           element instanceof PackageableElementReference
-            ? element.hashValue
+            ? element.valueForSerialization ?? ''
             : element,
         ),
       ),

@@ -42,7 +42,7 @@ export abstract class StereotypeReference extends ReferenceWithOwner {
     return [
       CORE_HASH_STRUCTURE.STEREOTYPE_POINTER,
       this.value.value,
-      this.ownerReference.hashValue,
+      this.ownerReference.valueForSerialization ?? '',
     ]
       .map(hashString)
       .join(',');

@@ -28,7 +28,7 @@ export class LocalMappingPropertyInfo implements Hashable {
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.LOCAL_MAPPING_PROPERTY,
-      this.localMappingPropertyType.hashValue,
+      this.localMappingPropertyType.valueForSerialization ?? '',
       this.localMappingPropertyMultiplicity,
     ]);
   }

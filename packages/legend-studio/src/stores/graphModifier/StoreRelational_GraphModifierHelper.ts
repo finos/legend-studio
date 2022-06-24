@@ -25,7 +25,6 @@ import {
   type DatasourceSpecification,
   type DelegatedKerberosAuthenticationStrategy,
   type EmbeddedH2DatasourceSpecification,
-  type EnumerationMapping,
   type LocalH2DatasourceSpecification,
   type OAuthAuthenticationStrategy,
   type PropertyMapping,
@@ -44,8 +43,9 @@ import {
   observe_DatasourceSpecification,
   observe_AuthenticationStrategy,
   observe_BindingTransformer,
-  observe_EnumerationMapping,
   observe_PropertyMapping,
+  observe_OptionalEnumerationMappingReference,
+  type OptionalEnumerationMappingReference,
 } from '@finos/legend-graph';
 import { action } from 'mobx';
 
@@ -374,9 +374,9 @@ export const relationalInputData_setInputType = action(
 export const relationalPropertyMapping_setTransformer = action(
   (
     v: RelationalPropertyMapping,
-    value: EnumerationMapping | undefined,
+    value: OptionalEnumerationMappingReference,
   ): void => {
-    v.transformer = value ? observe_EnumerationMapping(value) : undefined;
+    v.transformer = observe_OptionalEnumerationMappingReference(value);
   },
 );
 export const relationalPropertyMapping_setBindingTransformer = action(

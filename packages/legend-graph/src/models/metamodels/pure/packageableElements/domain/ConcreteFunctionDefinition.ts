@@ -58,7 +58,7 @@ export class ConcreteFunctionDefinition
       CORE_HASH_STRUCTURE.FUNCTION,
       this.path,
       hashArray(this.parameters),
-      this.returnType.hashValue,
+      this.returnType.valueForSerialization ?? '',
       hashArray(this.taggedValues),
       hashArray(this.stereotypes.map((val) => val.pointerHashCode)),
       hashRawLambda(undefined, this.expressionSequence),

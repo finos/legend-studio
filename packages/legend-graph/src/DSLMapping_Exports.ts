@@ -56,6 +56,7 @@ export { AggregationAwareSetImplementation } from './models/metamodels/pure/pack
 export * from './models/metamodels/pure/packageableElements/mapping/InferableMappingElementId.js';
 export * from './models/metamodels/pure/packageableElements/mapping/InferableMappingElementRoot.js';
 export { SetImplementationExplicitReference } from './models/metamodels/pure/packageableElements/mapping/SetImplementationReference.js';
+export * from './models/metamodels/pure/packageableElements/mapping/EnumerationMappingReference.js';
 export { MappingTest } from './models/metamodels/pure/packageableElements/mapping/MappingTest.js';
 export { InputData } from './models/metamodels/pure/packageableElements/mapping/InputData.js';
 export { MappingTestAssert } from './models/metamodels/pure/packageableElements/mapping/MappingTestAssert.js';

@@ -32,7 +32,7 @@ export class FlatTarget extends TargetShape implements Hashable {
   override get hashCode(): string {
     return hashArray([
       PERSISTENCE_HASH_STRUCTURE.FLAT_TARGET,
-      this.modelClass?.hashValue ?? '',
+      this.modelClass?.valueForSerialization ?? '' ?? '',
       this.targetName,
       hashArray(this.partitionFields),
       this.deduplicationStrategy,
@@ -48,7 +48,7 @@ export class MultiFlatTarget extends TargetShape implements Hashable {
   override get hashCode(): string {
     return hashArray([
       PERSISTENCE_HASH_STRUCTURE.MULTI_FLAT_TARGET,
-      this.modelClass.hashValue,
+      this.modelClass.valueForSerialization ?? '',
       this.transactionScope,
       hashArray(this.parts),
     ]);

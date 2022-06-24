@@ -31,7 +31,9 @@ export class Database extends Store implements Hashable {
     return hashArray([
       CORE_HASH_STRUCTURE.DATABASE,
       this.path,
-      hashArray(this.includes.map((include) => include.hashValue)),
+      hashArray(
+        this.includes.map((include) => include.valueForSerialization ?? ''),
+      ),
       hashArray(this.schemas),
       hashArray(this.joins),
       hashArray(this.filters),

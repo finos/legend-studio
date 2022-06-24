@@ -34,10 +34,14 @@ export class MappingInclude {
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.MAPPING_INCLUDE,
-      this.included.hashValue,
-      getNullableFirstElement(this.storeSubstitutions)?.original.hashValue ??
+      this.included.valueForSerialization ?? '',
+      getNullableFirstElement(this.storeSubstitutions)?.original
+        .valueForSerialization ??
+        '' ??
         '',
-      getNullableFirstElement(this.storeSubstitutions)?.substitute.hashValue ??
+      getNullableFirstElement(this.storeSubstitutions)?.substitute
+        .valueForSerialization ??
+        '' ??
         '',
     ]);
   }

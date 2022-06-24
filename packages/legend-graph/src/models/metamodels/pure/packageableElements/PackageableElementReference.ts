@@ -30,10 +30,6 @@ export abstract class PackageableElementReference<
   }
 
   abstract get valueForSerialization(): string | undefined;
-
-  get hashValue(): string {
-    return this.valueForSerialization ?? '';
-  }
 }
 
 export class PackageableElementExplicitReference<

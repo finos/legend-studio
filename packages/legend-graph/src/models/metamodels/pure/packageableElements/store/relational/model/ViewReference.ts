@@ -40,7 +40,7 @@ export abstract class ViewReference extends NamedRelationalReference {
   get pointerHashCode(): string {
     return [
       CORE_HASH_STRUCTURE.RELATIONAL_OPERATION_TABLE_POINTER,
-      this.ownerReference.hashValue,
+      this.ownerReference.valueForSerialization ?? '',
       this.value.schema.name,
       this.value.name,
     ]
@@ -51,7 +51,7 @@ export abstract class ViewReference extends NamedRelationalReference {
   get selfJoinPointerHashCode(): string {
     return [
       CORE_HASH_STRUCTURE.RELATIONAL_OPERATION_TABLE_POINTER,
-      this.ownerReference.hashValue,
+      this.ownerReference.valueForSerialization ?? '',
       SELF_JOIN_SCHEMA_NAME,
       SELF_JOIN_TABLE_NAME,
     ]
