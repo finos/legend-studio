@@ -39,7 +39,10 @@ import {
   RevisionAlias,
 } from '@finos/legend-server-sdlc';
 import { ActionAlertActionType } from '@finos/legend-application';
-import { SNAPSHOT_VERSION_ALIAS } from '@finos/legend-server-depot';
+import {
+  MASTER_SNAPSHOT_ALIAS,
+  SNAPSHOT_VERSION_ALIAS,
+} from '@finos/legend-server-depot';
 
 export class WorkspaceReviewState {
   editorStore: EditorStore;
@@ -270,14 +273,10 @@ export class WorkspaceReviewState {
       let versionError = false;
       let i = 0;
 
-      // eslint-disable-next-line
-      const VERSION_REGEX = new RegExp('((0|([1-9]d*)).){2}(0|[1-9]d*)');
       if (originalProjectDependencies) {
         for (i; i < listLength; i++) {
           if (
-            !VERSION_REGEX.test(
-              originalProjectDependencies[i]?.versionId ?? 'x.x.x',
-            )
+            originalProjectDependencies[i]?.versionId === MASTER_SNAPSHOT_ALIAS
           ) {
             versionError = true;
           }
