@@ -344,7 +344,7 @@ export const getPropertyNodeMappingData = (
               p.relationalOperation,
             );
           }
-          return graphManagerState.pluginManager
+          const checkerResult = graphManagerState.pluginManager
             .getPureGraphManagerPlugins()
             .flatMap(
               (plugin) =>
@@ -353,8 +353,8 @@ export const getPropertyNodeMappingData = (
                 ).getExtraPropertyMappingStubCheckers?.() ?? [],
             )
             .map((checker) => checker(p))
-            .filter(isNonNullable)
-            .some(Boolean);
+            .filter(isNonNullable);
+          return !checkerResult.length || checkerResult.some(Boolean);
         });
       // NOTE: observe how we scan and prepare the list of property mappings above,
       // searching for the property mapping to be used takes into account

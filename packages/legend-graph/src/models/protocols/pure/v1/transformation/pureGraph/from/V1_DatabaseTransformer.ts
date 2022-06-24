@@ -81,10 +81,7 @@ import {
   V1_SemiStructured,
 } from '../../../model/packageableElements/store/relational/model/V1_RelationalDataType.js';
 import { V1_Database } from '../../../model/packageableElements/store/relational/model/V1_Database.js';
-import {
-  V1_initPackageableElement,
-  V1_transformElementReference,
-} from './V1_CoreTransformerHelper.js';
+import { V1_initPackageableElement } from './V1_CoreTransformerHelper.js';
 import {
   type V1_RelationalOperationElement,
   V1_ElementWithJoins,
@@ -413,6 +410,8 @@ export const V1_transformDatabase = (
   database.schemas = element.schemas.map((schema) =>
     transformSchema(schema, context),
   );
-  database.includedStores = element.includes.map(V1_transformElementReference);
+  database.includedStores = element.includes.map(
+    (store) => store.valueForSerialization ?? '',
+  );
   return database;
 };

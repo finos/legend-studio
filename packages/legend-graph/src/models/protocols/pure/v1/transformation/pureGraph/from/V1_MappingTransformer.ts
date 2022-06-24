@@ -357,7 +357,7 @@ const transformClassMappingPropertyMappings = (
           value.relationalOperation,
         );
       }
-      return context.plugins
+      const checkerResult = context.plugins
         .flatMap(
           (plugin) =>
             (
@@ -366,8 +366,8 @@ const transformClassMappingPropertyMappings = (
             [],
         )
         .map((checker) => checker(value))
-        .filter(isNonNullable)
-        .some(Boolean);
+        .filter(isNonNullable);
+      return !checkerResult.length || checkerResult.some(Boolean);
     })
     .map((value) =>
       transformProperyMapping(
@@ -541,10 +541,7 @@ const transformEmbeddedRelationalPropertyMapping = (
     context,
     false,
   );
-  const root = element.root.valueForSerialization;
-  if (root !== undefined) {
-    classMapping.root = root;
-  }
+  classMapping.root = element.root.valueForSerialization;
   /**
    * Omit this information during protocol transformation as it can be
    * interpreted while building the graph; and will help grammar-roundtrip
@@ -621,10 +618,7 @@ const transformOtherwiseEmbeddedRelationalPropertyMapping = (
     context,
     false,
   );
-  const root = element.root.valueForSerialization;
-  if (root !== undefined) {
-    classMapping.root = root;
-  }
+  classMapping.root = element.root.valueForSerialization;
   /**
    * Omit this information during protocol transformation as it can be
    * interpreted while building the graph; and will help grammar-roundtrip
@@ -827,10 +821,7 @@ const transformOperationSetImplementation = (
   classMapping.parameters = element.parameters.map(
     (e) => e.setImplementation.value.id.value,
   );
-  const root = element.root.valueForSerialization;
-  if (root !== undefined) {
-    classMapping.root = root;
-  }
+  classMapping.root = element.root.valueForSerialization;
   classMapping.extendsClassMappingId = element.superSetImplementationId;
   return classMapping;
 };
@@ -851,10 +842,7 @@ const transformMergeOperationSetImplementation = (
     (e) => e.setImplementation.value.id.value,
   );
   classMapping.extendsClassMappingId = element.superSetImplementationId;
-  const root = element.root.valueForSerialization;
-  if (root !== undefined) {
-    classMapping.root = root;
-  }
+  classMapping.root = element.root.valueForSerialization;
   return classMapping;
 };
 
@@ -877,10 +865,7 @@ const transformPureInstanceSetImplementation = (
     false,
   );
   classMapping.extendsClassMappingId = element.superSetImplementationId;
-  const root = element.root.valueForSerialization;
-  if (root !== undefined) {
-    classMapping.root = root;
-  }
+  classMapping.root = element.root.valueForSerialization;
   classMapping.srcClass = element.srcClass.valueForSerialization;
   return classMapping;
 };
@@ -905,10 +890,7 @@ const transformFlatDataInstanceSetImpl = (
     context,
     false,
   );
-  const root = element.root.valueForSerialization;
-  if (root !== undefined) {
-    classMapping.root = root;
-  }
+  classMapping.root = element.root.valueForSerialization;
   classMapping.extendsClassMappingId = element.superSetImplementationId;
   classMapping.sectionName = element.sourceRootRecordType.value._OWNER.name;
   return classMapping;
@@ -954,10 +936,7 @@ const transformRootRelationalSetImpl = (
     context,
     false,
   );
-  const root = element.root.valueForSerialization;
-  if (root !== undefined) {
-    classMapping.root = root;
-  }
+  classMapping.root = element.root.valueForSerialization;
   return classMapping;
 };
 
@@ -976,10 +955,7 @@ const transformRelationalInstanceSetImpl = (
     context,
     false,
   );
-  const root = element.root.valueForSerialization;
-  if (root !== undefined) {
-    classMapping.root = root;
-  }
+  classMapping.root = element.root.valueForSerialization;
   /**
    * Omit this information during protocol transformation as it can be
    * interpreted while building the graph; and will help grammar-roundtrip
@@ -1066,10 +1042,7 @@ const transformAggregationAwareSetImplementation = (
   const classMapping = new V1_AggregationAwareClassMapping();
   classMapping.id = mappingElementIdSerializer(element.id);
   classMapping.class = element.class.valueForSerialization ?? '';
-  const root = element.root.valueForSerialization;
-  if (root !== undefined) {
-    classMapping.root = root;
-  }
+  classMapping.root = element.root.valueForSerialization;
   const mainSetImplementation = transformSetImplementation(
     element.mainSetImplementation,
     context,

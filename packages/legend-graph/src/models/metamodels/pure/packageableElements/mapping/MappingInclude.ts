@@ -36,13 +36,9 @@ export class MappingInclude {
       CORE_HASH_STRUCTURE.MAPPING_INCLUDE,
       this.included.valueForSerialization ?? '',
       getNullableFirstElement(this.storeSubstitutions)?.original
-        .valueForSerialization ??
-        '' ??
-        '',
+        .valueForSerialization ?? '',
       getNullableFirstElement(this.storeSubstitutions)?.substitute
-        .valueForSerialization ??
-        '' ??
-        '',
+        .valueForSerialization ?? '',
     ]);
   }
 }
