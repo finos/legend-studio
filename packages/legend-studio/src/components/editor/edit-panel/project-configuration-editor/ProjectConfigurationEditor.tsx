@@ -40,7 +40,6 @@ import {
 import { flowResult } from 'mobx';
 import {
   ProjectDependency,
-  SNAPSHOT_VERSION_ALIAS,
   type ProjectConfiguration,
 } from '@finos/legend-server-sdlc';
 import { useEditorStore } from '../../EditorStoreProvider.js';
@@ -51,6 +50,8 @@ import {
 } from '@finos/legend-application';
 import { LEGEND_STUDIO_APP_EVENT } from '../../../../stores/LegendStudioAppEvent.js';
 import {
+  SNAPSHOT_VERSION_ALIAS,
+  MASTER_SNAPSHOT_ALIAS,
   type ProjectData,
   compareSemVerVersions,
   generateGAVCoordinates,
@@ -239,7 +240,7 @@ const ProjectDependencyEditor = observer(
       .map((v) => ({ value: v, label: v }));
 
     versionOptions = [
-      { label: 'HEAD', value: SNAPSHOT_VERSION_ALIAS },
+      { label: SNAPSHOT_VERSION_ALIAS, value: MASTER_SNAPSHOT_ALIAS },
       ...versionOptions,
     ];
 
@@ -271,8 +272,8 @@ const ProjectDependencyEditor = observer(
     const openProject = (): void => {
       if (!projectDependency.isLegacyDependency) {
         const projectDependencyVersionId =
-          projectDependency.versionId === SNAPSHOT_VERSION_ALIAS
-            ? 'HEAD'
+          projectDependency.versionId === MASTER_SNAPSHOT_ALIAS
+            ? SNAPSHOT_VERSION_ALIAS
             : projectDependency.versionId;
         applicationStore.navigator.openNewWindow(
           `${

@@ -42,6 +42,7 @@ export * from './models/version/Version.js';
 export * from './models/version/VersionCommands.js';
 
 export * from './models/configuration/ProjectDependency.js';
+export * from './models/configuration/ProjectDependencyUtils.js';
 export * from './models/configuration/ProjectConfiguration.js';
 export * from './models/configuration/ProjectStructureVersion.js';
 export * from './models/configuration/ProjectConfigurationCommands.js';

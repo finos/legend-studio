@@ -23,25 +23,7 @@ import {
 } from '@finos/legend-shared';
 import { observable, action, computed, makeObservable } from 'mobx';
 
-type VersionIdType = {
-  majorVersion: number;
-  minorVersion: number;
-  patchVersion: number;
-};
-
 const PROJECT_DEPENDENCY_HASH_STRUCTURE = 'PROJECT_DEPENDENCY';
-
-export const SNAPSHOT_VERSION_ALIAS = 'master-SNAPSHOT';
-
-export const convertVersionObjectToString = (
-  version: string | VersionIdType,
-): string => {
-  if (typeof version === `string`) {
-    return version;
-  } else {
-    return `${version.majorVersion}.${version.minorVersion}.${version.patchVersion}`;
-  }
-};
 
 export class ProjectDependency implements Hashable {
   readonly _UUID = uuid();
@@ -58,7 +40,7 @@ export class ProjectDependency implements Hashable {
     });
 
     this.projectId = projectId;
-    this.versionId = versionId ?? '0.0.1';
+    this.versionId = versionId ?? '0.0.0';
   }
 
   static readonly serialization = new SerializationFactory(

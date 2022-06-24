@@ -39,6 +39,7 @@ import {
   RevisionAlias,
 } from '@finos/legend-server-sdlc';
 import { ActionAlertActionType } from '@finos/legend-application';
+import { SNAPSHOT_VERSION_ALIAS } from '@finos/legend-server-depot';
 
 export class WorkspaceReviewState {
   editorStore: EditorStore;
@@ -300,7 +301,7 @@ export class WorkspaceReviewState {
         );
       } else {
         this.editorStore.applicationStore.notifyError(
-          `Project dependency verison should not be set to HEAD when creating a review.`,
+          `Project dependency verison should not be set to ${SNAPSHOT_VERSION_ALIAS} when creating a review.`,
         );
       }
     } catch (error) {
