@@ -33,7 +33,9 @@ import {
 } from '../../stores/studio/DSLText_GraphModifierHelper.js';
 import { TEXT_TYPE } from '../../helper/DSLText_Helper.js';
 
-const getTextElementEditorLanguage = (type: string): EDITOR_LANGUAGE => {
+const getTextElementEditorLanguage = (
+  type: string | undefined,
+): EDITOR_LANGUAGE => {
   switch (type) {
     case TEXT_TYPE.MARKDOWN:
       return EDITOR_LANGUAGE.MARKDOWN;
