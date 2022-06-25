@@ -25,6 +25,7 @@ import type { AggregationAwarePropertyMapping } from '../../../models/metamodels
 import type { AggregationAwareSetImplementation } from '../../../models/metamodels/pure/packageableElements/mapping/aggregationAware/AggregationAwareSetImplementation.js';
 import type { AssociationImplementation } from '../../../models/metamodels/pure/packageableElements/mapping/AssociationImplementation.js';
 import type { EnumerationMapping } from '../../../models/metamodels/pure/packageableElements/mapping/EnumerationMapping.js';
+import type { OptionalEnumerationMappingReference } from '../../../models/metamodels/pure/packageableElements/mapping/EnumerationMappingReference.js';
 import type {
   EnumValueMapping,
   SourceValue,
@@ -130,6 +131,33 @@ export const observe_Abstract_Store = (metamodel: Store): void => {
 
 // ------------------------------------- Mapping -------------------------------------
 
+export const observe_OptionalEnumerationMappingReference = skipObserved(
+  (
+    metamodel: OptionalEnumerationMappingReference,
+  ): OptionalEnumerationMappingReference => {
+    makeObservable(metamodel, {
+      value: observable,
+      valueForSerialization: computed,
+    });
+
+    observe_OptionalPackageableElementReference(metamodel.ownerReference);
+
+    return metamodel;
+  },
+);
+
+export const observe_SetImplementationReference = skipObserved(
+  (metamodel: SetImplementationReference): SetImplementationReference => {
+    makeObservable(metamodel, {
+      value: observable,
+    });
+
+    observe_PackageableElementReference(metamodel.ownerReference);
+
+    return metamodel;
+  },
+);
+
 export const observe_LocalMappingPropertyInfo = skipObserved(
   (metamodel: LocalMappingPropertyInfo): LocalMappingPropertyInfo => {
     makeObservable(metamodel, {
@@ -174,7 +202,7 @@ export const observe_PurePropertyMapping = skipObservedWithContext(
       hashCode: computed,
     });
 
-    // TODO transformer?: EnumerationMapping | undefined;
+    observe_OptionalEnumerationMappingReference(metamodel.transformer);
     observe_RawLambda(metamodel.transform);
 
     return metamodel;
@@ -336,18 +364,6 @@ export const observe_Abstract_InstanceSetImplementation = (
     observe_PropertyMapping(propertyMapping, context),
   );
 };
-
-export const observe_SetImplementationReference = skipObserved(
-  (metamodel: SetImplementationReference): SetImplementationReference => {
-    makeObservable(metamodel, {
-      value: observable,
-    });
-
-    observe_PackageableElementReference(metamodel.ownerReference);
-
-    return metamodel;
-  },
-);
 
 export const observe_SetImplementationContainer = skipObserved(
   (metamodel: SetImplementationContainer): SetImplementationContainer => {

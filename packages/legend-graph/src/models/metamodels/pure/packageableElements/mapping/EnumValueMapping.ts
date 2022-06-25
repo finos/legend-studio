@@ -25,12 +25,14 @@ import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst.js';
 import { Enum } from '../domain/Enum.js';
 import type { EnumValueReference } from '../domain/EnumValueReference.js';
 
+export type SourceValueType = Enum | string | number | undefined;
+
 export class SourceValue {
   readonly _UUID = uuid();
 
-  value: Enum | string | number | undefined;
+  value: SourceValueType;
 
-  constructor(value: Enum | string | number | undefined) {
+  constructor(value: SourceValueType) {
     this.value = value;
   }
 }

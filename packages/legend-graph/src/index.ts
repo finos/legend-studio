@@ -239,10 +239,7 @@ export { V1_RawLambda } from './models/protocols/pure/v1/model/rawValueSpecifica
 export { V1_ProcessingContext } from './models/protocols/pure/v1/transformation/pureGraph/to/helpers/V1_ProcessingContext.js';
 export { V1_ProtocolToMetaModelConnectionBuilder } from './models/protocols/pure/v1/transformation/pureGraph/to/V1_ProtocolToMetaModelConnectionBuilder.js';
 export * from './models/protocols/pure/v1/transformation/pureGraph/from/V1_GraphTransformerContext.js';
-export {
-  V1_initPackageableElement,
-  V1_transformElementReference,
-} from './models/protocols/pure/v1/transformation/pureGraph/from/V1_CoreTransformerHelper.js';
+export * from './models/protocols/pure/v1/transformation/pureGraph/from/V1_CoreTransformerHelper.js';
 export {
   V1_RawValueSpecificationTransformer,
   V1_transformRawLambda,

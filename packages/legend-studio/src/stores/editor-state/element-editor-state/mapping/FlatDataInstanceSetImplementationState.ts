@@ -50,7 +50,7 @@ import {
   stub_RawLambda,
   isStubbed_RawLambda,
 } from '@finos/legend-graph';
-import { MAPPING_ELEMENT_SOURCE_ID_LABEL } from './MappingEditorState.js';
+import { MAPPING_ELEMENT_TYPE } from './MappingEditorState.js';
 
 export class FlatDataPropertyMappingState extends PropertyMappingState {
   editorStore: EditorStore;
@@ -70,7 +70,7 @@ export class FlatDataPropertyMappingState extends PropertyMappingState {
   get lambdaId(): string {
     return buildSourceInformationSourceId([
       this.propertyMapping._OWNER._PARENT.path,
-      MAPPING_ELEMENT_SOURCE_ID_LABEL.FLAT_DATA_CLASS_MAPPING,
+      MAPPING_ELEMENT_TYPE.CLASS,
       this.propertyMapping._OWNER.id.value,
       this.propertyMapping.property.value.name,
       this.uuid, // in case of duplications

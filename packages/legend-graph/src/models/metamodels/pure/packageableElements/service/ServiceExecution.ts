@@ -66,7 +66,7 @@ export class PureSingleExecution extends PureExecution implements Hashable {
     return hashArray([
       CORE_HASH_STRUCTURE.SERVICE_PURE_SINGLE_EXECUTION,
       super.hashCode,
-      this.mapping.hashValue,
+      this.mapping.valueForSerialization ?? '',
       this.runtime,
     ]);
   }
@@ -93,7 +93,7 @@ export class KeyedExecutionParameter implements Hashable {
     return hashArray([
       CORE_HASH_STRUCTURE.SERVICE_KEYED_EXECUTION_PARAMETER,
       this.key,
-      this.mapping.hashValue,
+      this.mapping.valueForSerialization ?? '',
       this.runtime,
     ]);
   }

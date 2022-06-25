@@ -30,6 +30,7 @@ import {
 } from '@finos/legend-graph';
 import { DATE_FORMAT, DATE_TIME_FORMAT } from '@finos/legend-application';
 import { CLASS_PROPERTY_TYPE, getClassPropertyType } from './ModelUtil.js';
+import type { MappingElementSource } from '../../index.js';
 
 export const createMockPrimitiveProperty = (
   primitiveType: PrimitiveType,
@@ -165,7 +166,7 @@ export const createMockDataForClass = (
 };
 
 export const createMockDataForMappingElementSource = (
-  srcElement: unknown,
+  srcElement: MappingElementSource,
   editorStore: EditorStore,
 ): string => {
   if (srcElement instanceof Class) {

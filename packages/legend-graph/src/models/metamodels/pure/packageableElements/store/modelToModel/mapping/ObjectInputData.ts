@@ -54,7 +54,7 @@ export class ObjectInputData extends InputData implements Hashable {
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.OBJECT_INPUT_DATA,
-      this.sourceClass.hashValue,
+      this.sourceClass.valueForSerialization ?? '',
       this.inputType,
       this.data,
     ]);

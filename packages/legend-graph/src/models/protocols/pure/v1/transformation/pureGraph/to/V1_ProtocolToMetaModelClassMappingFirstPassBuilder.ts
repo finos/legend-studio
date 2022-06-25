@@ -47,7 +47,7 @@ import type { InstanceSetImplementation } from '../../../../../../metamodels/pur
 import { V1_buildAggregateContainer } from './helpers/V1_AggregationAwareClassMappingBuilderHelper.js';
 import { V1_buildRawLambdaWithResolvedPaths } from './helpers/V1_ValueSpecificationPathResolver.js';
 import { V1_buildRelationalMappingFilter } from './helpers/V1_RelationalClassMappingBuilderHelper.js';
-import { toOptionalPackageableElementReference } from '../../../../../../metamodels/pure/packageableElements/PackageableElementReference.js';
+import { optionalizePackageableElementReference } from '../../../../../../metamodels/pure/packageableElements/PackageableElementReference.js';
 import type { DSLMapping_PureProtocolProcessorPlugin_Extension } from '../../../../DSLMapping_PureProtocolProcessorPlugin_Extension.js';
 import type { V1_MergeOperationClassMapping } from '../../../model/packageableElements/mapping/V1_MergeOperationClassMapping.js';
 import { MergeOperationSetImplementation } from '../../../../../../metamodels/pure/packageableElements/mapping/MergeOperationSetImplementation.js';
@@ -167,7 +167,7 @@ export class V1_ProtocolToMetaModelClassMappingFirstPassBuilder
       this.parent,
       targetClass,
       InferableMappingElementRootExplicitValue.create(classMapping.root),
-      toOptionalPackageableElementReference(srcClassReference),
+      optionalizePackageableElementReference(srcClassReference),
     );
     pureInstanceSetImplementation.filter = classMapping.filter
       ? V1_buildRawLambdaWithResolvedPaths(

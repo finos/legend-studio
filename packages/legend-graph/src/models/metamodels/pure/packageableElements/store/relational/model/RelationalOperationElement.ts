@@ -101,7 +101,7 @@ export class JoinTreeNode {
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.DATABASE_JOIN,
-      this.join.ownerReference.hashValue,
+      this.join.ownerReference.valueForSerialization ?? '',
       this.join.value.name,
       this.joinType ?? '',
     ]);

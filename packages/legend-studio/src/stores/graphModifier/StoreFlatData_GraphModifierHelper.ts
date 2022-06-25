@@ -19,10 +19,10 @@ import {
   type RootFlatDataRecordType,
   type FlatDataInputData,
   type FlatDataPropertyMapping,
-  type EnumerationMapping,
   type FlatDataConnection,
-  observe_EnumerationMapping,
   observe_RootFlatDataRecordType,
+  observe_OptionalEnumerationMappingReference,
+  type OptionalEnumerationMappingExplicitReference,
 } from '@finos/legend-graph';
 import { action } from 'mobx';
 
@@ -36,19 +36,20 @@ export const flatData_setSourceRootRecordType = action(
   },
 );
 
-export const flatData_setData = (
-  input: FlatDataInputData,
-  value: string,
-): void => {
-  input.data = value;
-};
+export const flatData_setData = action(
+  (input: FlatDataInputData, value: string): void => {
+    input.data = value;
+  },
+);
 
-export const flatDataPropertyMapping_setTransformer = (
-  val: FlatDataPropertyMapping,
-  value: EnumerationMapping | undefined,
-): void => {
-  val.transformer = value ? observe_EnumerationMapping(value) : value;
-};
+export const flatDataPropertyMapping_setTransformer = action(
+  (
+    val: FlatDataPropertyMapping,
+    value: OptionalEnumerationMappingExplicitReference,
+  ): void => {
+    val.transformer = observe_OptionalEnumerationMappingReference(value);
+  },
+);
 
 export const flatDataConnection_setUrl = action(
   (fD: FlatDataConnection, url: string): void => {

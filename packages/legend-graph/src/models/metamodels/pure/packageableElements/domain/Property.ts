@@ -50,7 +50,7 @@ export class Property implements AbstractProperty, AnnotatedElement, Hashable {
       CORE_HASH_STRUCTURE.PROPERTY,
       this.name,
       this.multiplicity,
-      this.genericType.ownerReference.hashValue,
+      this.genericType.ownerReference.valueForSerialization ?? '',
       hashArray(this.stereotypes.map((val) => val.pointerHashCode)),
       hashArray(this.taggedValues),
     ]);

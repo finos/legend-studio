@@ -16,7 +16,6 @@
 
 import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst.js';
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import type { EnumerationMapping } from '../../../mapping/EnumerationMapping.js';
 import {
   type PropertyMappingVisitor,
   PropertyMapping,
@@ -24,13 +23,13 @@ import {
 import { hashObjectWithoutSourceInformation } from '../../../../../../../MetaModelUtils.js';
 import type { RawRelationalOperationElement } from '../model/RawRelationalOperationElement.js';
 import type { BindingTransformer } from '../../../externalFormat/store/DSLExternalFormat_BindingTransformer.js';
+import { OptionalEnumerationMappingExplicitReference } from '../../../mapping/EnumerationMappingReference.js';
 
 export class RelationalPropertyMapping
   extends PropertyMapping
   implements Hashable
 {
-  // TODO: convert to reference
-  transformer?: EnumerationMapping | undefined;
+  transformer = OptionalEnumerationMappingExplicitReference.create(undefined);
   /**
    * Studio does not process value specification, they are left in raw JSON form
    *
@@ -47,7 +46,7 @@ export class RelationalPropertyMapping
     return hashArray([
       CORE_HASH_STRUCTURE.REALTIONAL_PROPERTY_MAPPING,
       super.hashCode,
-      this.transformer?.id.value ?? '',
+      this.transformer.valueForSerialization ?? '',
       this.bindingTransformer ?? '',
       hashObjectWithoutSourceInformation(this.relationalOperation),
     ]);

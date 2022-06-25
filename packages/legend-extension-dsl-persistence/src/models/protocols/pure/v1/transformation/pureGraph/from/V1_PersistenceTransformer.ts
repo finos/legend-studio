@@ -158,7 +158,6 @@ import {
   type V1_GraphTransformerContext,
   V1_initPackageableElement,
   V1_transformConnection,
-  V1_transformElementReference,
 } from '@finos/legend-graph';
 import { UnsupportedOperationError } from '@finos/legend-shared';
 
@@ -490,9 +489,7 @@ export const V1_transformFlatTarget = (
   context: V1_GraphTransformerContext,
 ): V1_FlatTarget => {
   const protocol = new V1_FlatTarget();
-  if (element.modelClass) {
-    protocol.modelClass = V1_transformElementReference(element.modelClass);
-  }
+  protocol.modelClass = element.modelClass.valueForSerialization;
   protocol.targetName = element.targetName;
   protocol.partitionFields = element.partitionFields;
   protocol.deduplicationStrategy = V1_transformDeduplicationStrategy(
@@ -545,7 +542,7 @@ export const V1_transformMultiFlatTarget = (
   context: V1_GraphTransformerContext,
 ): V1_MultiFlatTarget => {
   const protocol = new V1_MultiFlatTarget();
-  protocol.modelClass = V1_transformElementReference(element.modelClass);
+  protocol.modelClass = element.modelClass.valueForSerialization ?? '';
   protocol.transactionScope = V1_transformTransactionScope(
     element.transactionScope,
     context,
@@ -638,7 +635,7 @@ export const V1_transformPersistence = (
   V1_initPackageableElement(protocol, element);
   protocol.documentation = element.documentation;
   protocol.trigger = V1_transformTrigger(element.trigger, context);
-  protocol.service = V1_transformElementReference(element.service);
+  protocol.service = element.service.valueForSerialization ?? '';
   protocol.persister = V1_transformPersister(element.persister, context);
   protocol.notifier = V1_transformNotifier(element.notifier, context);
   return protocol;

@@ -45,6 +45,10 @@ export type V1_ClassMappingTransformer = (
   context: V1_GraphTransformerContext,
 ) => V1_ClassMapping | undefined;
 
+export type PropertyMappingTransformationExcludabilityChecker = (
+  propertyMapping: PropertyMapping,
+) => boolean | undefined;
+
 export type V1_ClassMappingSerializer = (
   value: V1_ClassMapping,
 ) => V1_ClassMapping | undefined;
@@ -84,6 +88,12 @@ export type V1_PropertyMappingTransformer = (
 
 export interface DSLMapping_PureProtocolProcessorPlugin_Extension
   extends PureProtocolProcessorPlugin {
+  /**
+   * Get the list of checkers which can be used to verify if the
+   * specified property mapping can be excluded from transformation
+   */
+  getExtraPropertyMappingTransformationExcludabilityCheckers?(): PropertyMappingTransformationExcludabilityChecker[];
+
   V1_getExtraPropertyMappingBuilders?(): V1_PropertyMappingBuilder[];
 
   V1_getExtraPropertyMappingTransformers?(): V1_PropertyMappingTransformer[];

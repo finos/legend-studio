@@ -28,7 +28,6 @@ import { V1_Rectangle } from '../../model/packageableElements/diagram/geometry/V
 import { V1_PropertyView } from '../../model/packageableElements/diagram/V1_DSLDiagram_PropertyView.js';
 import {
   V1_initPackageableElement,
-  V1_transformElementReference,
   V1_transformPropertyReference,
 } from '@finos/legend-graph';
 
@@ -74,7 +73,7 @@ const transformGenerationView = (
 
 const transformClassView = (element: ClassView): V1_ClassView => {
   const _classView = new V1_ClassView();
-  _classView.class = V1_transformElementReference(element.class);
+  _classView.class = element.class.valueForSerialization ?? '';
   _classView.hideProperties = element.hideProperties;
   _classView.hideStereotypes = element.hideStereotypes;
   _classView.hideTaggedValues = element.hideTaggedValues;

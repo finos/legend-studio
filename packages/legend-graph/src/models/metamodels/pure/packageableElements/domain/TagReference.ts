@@ -42,7 +42,7 @@ export abstract class TagReference extends ReferenceWithOwner {
     return [
       CORE_HASH_STRUCTURE.TAG_POINTER,
       this.value.value,
-      this.ownerReference.hashValue,
+      this.ownerReference.valueForSerialization ?? '',
     ]
       .map(hashString)
       .join(',');

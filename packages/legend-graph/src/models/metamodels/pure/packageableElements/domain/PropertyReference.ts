@@ -46,7 +46,7 @@ export abstract class PropertyReference extends ReferenceWithOwner {
     return [
       CORE_HASH_STRUCTURE.PROPERTY_POINTER,
       this.value.name,
-      this.ownerReference.hashValue,
+      this.ownerReference.valueForSerialization ?? '',
     ]
       .map(hashString)
       .join(',');

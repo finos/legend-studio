@@ -45,6 +45,7 @@ import {
   getMappingElementSource,
   MappingEditorState,
   getEmbeddedSetImplementations,
+  type MappingElementSource,
 } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState.js';
 import { TypeTree } from '../../../shared/TypeTree.js';
 import { FlatDataRecordTypeTree } from './FlatDataRecordTypeTree.js';
@@ -112,7 +113,7 @@ export const InstanceSetImplementationSourceExplorer = observer(
     const [
       sourceElementForSourceSelectorModal,
       setSourceElementForSourceSelectorModal,
-    ] = useState<unknown | undefined | null>();
+    ] = useState<MappingElementSource | undefined | null>();
     const CHANGING_SOURCE_ON_EMBEDDED =
       'Changing source on mapping with embedded children will delete all its children';
     const showSourceSelectorModal = (): void => {
@@ -274,11 +275,10 @@ export const InstanceSetImplementationSourceExplorer = observer(
             ).getExtraInstanceSetImplementationBlockingErrorCheckers?.() ?? [],
         );
     let hasParseError = false;
-    for (const instanceSetImplementationBlockingErrorCheckerGetter of extraInstanceSetImplementationBlockingErrorCheckers) {
-      const instanceSetImplementationBlockingErrorChecker =
-        instanceSetImplementationBlockingErrorCheckerGetter(
-          instanceSetImplementationState,
-        );
+    for (const checker of extraInstanceSetImplementationBlockingErrorCheckers) {
+      const instanceSetImplementationBlockingErrorChecker = checker(
+        instanceSetImplementationState,
+      );
       if (instanceSetImplementationBlockingErrorChecker) {
         hasParseError = instanceSetImplementationBlockingErrorChecker;
       }
@@ -321,63 +321,63 @@ export const InstanceSetImplementationSourceExplorer = observer(
         <div ref={dropRef} className="panel__content dnd__dropzone">
           <>
             {srcElement && isDragOver && !isReadOnly && (
-              <div className="dnd__overlay"></div>
+              <div className="dnd__overlay" />
+            )}
+            {srcElement ? (
+              <div className="source-panel__explorer">
+                {srcElement instanceof Type && (
+                  <TypeTree
+                    type={srcElement}
+                    selectedType={instanceSetImplementationState.selectedType}
+                  />
+                )}
+                {srcElement instanceof RootFlatDataRecordType && (
+                  <FlatDataRecordTypeTree
+                    recordType={srcElement}
+                    selectedType={instanceSetImplementationState.selectedType}
+                  />
+                )}
+                {srcElement instanceof TableAlias && (
+                  <TableOrViewSourceTree
+                    relation={srcElement.relation.value}
+                    selectedType={instanceSetImplementationState.selectedType}
+                  />
+                )}
+              </div>
+            ) : (
+              <BlankPanelPlaceholder
+                placeholderText="Choose a source"
+                onClick={showSourceSelectorModal}
+                clickActionType="add"
+                tooltipText="Drop a class mapping source, or click to choose one"
+                dndProps={{
+                  isDragOver: isDragOver && !isReadOnly,
+                  canDrop: canDrop && !isReadOnly,
+                }}
+                readOnlyProps={
+                  !isReadOnly
+                    ? undefined
+                    : {
+                        placeholderText: 'No source',
+                      }
+                }
+              />
+            )}
+            {isUnsupported && (
+              <UnsupportedEditorPanel
+                isReadOnly={isReadOnly}
+                text={`Can't display class mapping source in form mode`}
+              ></UnsupportedEditorPanel>
+            )}
+            {sourceElementForSourceSelectorModal !== undefined && (
+              <InstanceSetImplementationSourceSelectorModal
+                mappingEditorState={mappingEditorState}
+                setImplementation={setImplementation}
+                sourceElementToSelect={sourceElementForSourceSelectorModal}
+                closeModal={hideSourceSelectorModal}
+              />
             )}
           </>
-          {srcElement ? (
-            <div className="source-panel__explorer">
-              {srcElement instanceof Type && (
-                <TypeTree
-                  type={srcElement}
-                  selectedType={instanceSetImplementationState.selectedType}
-                />
-              )}
-              {srcElement instanceof RootFlatDataRecordType && (
-                <FlatDataRecordTypeTree
-                  recordType={srcElement}
-                  selectedType={instanceSetImplementationState.selectedType}
-                />
-              )}
-              {srcElement instanceof TableAlias && (
-                <TableOrViewSourceTree
-                  relation={srcElement.relation.value}
-                  selectedType={instanceSetImplementationState.selectedType}
-                />
-              )}
-            </div>
-          ) : (
-            <BlankPanelPlaceholder
-              placeholderText="Choose a source"
-              onClick={showSourceSelectorModal}
-              clickActionType="add"
-              tooltipText="Drop a class mapping source, or click to choose one"
-              dndProps={{
-                isDragOver: isDragOver && !isReadOnly,
-                canDrop: canDrop && !isReadOnly,
-              }}
-              readOnlyProps={
-                !isReadOnly
-                  ? undefined
-                  : {
-                      placeholderText: 'No source',
-                    }
-              }
-            />
-          )}
-          {isUnsupported && (
-            <UnsupportedEditorPanel
-              isReadOnly={isReadOnly}
-              text={`Can't display class mapping source in form mode`}
-            ></UnsupportedEditorPanel>
-          )}
-          {sourceElementForSourceSelectorModal !== undefined && (
-            <InstanceSetImplementationSourceSelectorModal
-              mappingEditorState={mappingEditorState}
-              setImplementation={setImplementation}
-              sourceElementToSelect={sourceElementForSourceSelectorModal}
-              closeModal={hideSourceSelectorModal}
-            />
-          )}
         </div>
       </div>
     );

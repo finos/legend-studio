@@ -46,16 +46,14 @@ export * from './models/metamodels/pure/packageableElements/mapping/TEMPORARY__U
 export { PurePropertyMapping } from './models/metamodels/pure/packageableElements/store/modelToModel/mapping/PurePropertyMapping.js';
 export { InstanceSetImplementation } from './models/metamodels/pure/packageableElements/mapping/InstanceSetImplementation.js';
 export { EnumerationMapping } from './models/metamodels/pure/packageableElements/mapping/EnumerationMapping.js';
-export {
-  EnumValueMapping,
-  SourceValue,
-} from './models/metamodels/pure/packageableElements/mapping/EnumValueMapping.js';
+export * from './models/metamodels/pure/packageableElements/mapping/EnumValueMapping.js';
 export { AssociationImplementation } from './models/metamodels/pure/packageableElements/mapping/AssociationImplementation.js';
 export { SetImplementationContainer } from './models/metamodels/pure/packageableElements/mapping/SetImplementationContainer.js';
 export { AggregationAwareSetImplementation } from './models/metamodels/pure/packageableElements/mapping/aggregationAware/AggregationAwareSetImplementation.js';
 export * from './models/metamodels/pure/packageableElements/mapping/InferableMappingElementId.js';
 export * from './models/metamodels/pure/packageableElements/mapping/InferableMappingElementRoot.js';
 export { SetImplementationExplicitReference } from './models/metamodels/pure/packageableElements/mapping/SetImplementationReference.js';
+export * from './models/metamodels/pure/packageableElements/mapping/EnumerationMappingReference.js';
 export { MappingTest } from './models/metamodels/pure/packageableElements/mapping/MappingTest.js';
 export { InputData } from './models/metamodels/pure/packageableElements/mapping/InputData.js';
 export { MappingTestAssert } from './models/metamodels/pure/packageableElements/mapping/MappingTestAssert.js';

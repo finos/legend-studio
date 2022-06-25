@@ -24,18 +24,26 @@ import type { PureGraphManagerPlugin } from './PureGraphManagerPlugin.js';
 export type PureGrammarConnectionLabeler = (
   connection: Connection,
 ) => string | undefined;
+
 export type ConnectionObserver = (
   connection: Connection,
   context: ObserverContext,
 ) => Connection | undefined;
+
 export type SetImplementationObserver = (
   setImplementation: SetImplementation,
   context: ObserverContext,
 ) => SetImplementation | undefined;
+
 export type PropertyMappingObserver = (
   propertyMapping: PropertyMapping,
   context: ObserverContext,
 ) => PropertyMapping | undefined;
+
+export type PropertyMappingStubChecker = (
+  propertyMapping: PropertyMapping,
+) => boolean | undefined;
+
 export type MappingTestInputDataObserver = (
   inputData: InputData,
   context: ObserverContext,
@@ -55,4 +63,10 @@ export interface DSLMapping_PureGraphManagerPlugin_Extension
   getExtraPropertyMappingObservers?(): PropertyMappingObserver[];
 
   getExtraConnectionObservers?(): ConnectionObserver[];
+
+  /**
+   * Get the list of checkers which can verify if the specified property mapping is
+   * stubbed (potentially prunable) or not
+   */
+  getExtraPropertyMappingStubCheckers?(): PropertyMappingStubChecker[];
 }

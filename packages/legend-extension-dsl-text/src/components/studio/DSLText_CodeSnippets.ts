@@ -16,7 +16,6 @@
 
 export const PLAIN_TEXT_SNIPPET = `Text \${1:model::NewText}
 {
-  type: plainText;
   content: '\${2:}';
 }`;
 

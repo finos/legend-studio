@@ -44,7 +44,7 @@ export class ObjectStorageSink extends Sink implements Hashable {
   override get hashCode(): string {
     return hashArray([
       PERSISTENCE_HASH_STRUCTURE.OBJECT_STORAGE_SINK,
-      this.binding.hashValue,
+      this.binding.valueForSerialization ?? '',
       this.connection,
     ]);
   }

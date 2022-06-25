@@ -296,18 +296,17 @@ export const PropertyMappingsEditor = observer(
                           plugin as DSLMapping_LegendStudioPlugin_Extension
                         ).getExtraPropertyMappingEditorRenderers?.() ?? [],
                     );
-                for (const propertyMappingEditorRendererGetter of extraPropertyMappingEditorRenderers) {
-                  const propertyMappingEditorRenderer =
-                    propertyMappingEditorRendererGetter(
-                      instanceSetImplementationState,
-                      propertyMappingState,
-                    );
-                  if (propertyMappingEditorRenderer) {
-                    return propertyMappingEditorRenderer;
+                for (const renderer of extraPropertyMappingEditorRenderers) {
+                  const renderedPropertyMappingEditor = renderer(
+                    instanceSetImplementationState,
+                    propertyMappingState,
+                  );
+                  if (renderedPropertyMappingEditor) {
+                    return renderedPropertyMappingEditor;
                   }
                 }
                 throw new UnsupportedOperationError(
-                  `Can't render property mapping editor: no compatible getter available from plugins`,
+                  `Can't render property mapping editor: no compatible renderer available from plugins`,
                 );
               }
             }

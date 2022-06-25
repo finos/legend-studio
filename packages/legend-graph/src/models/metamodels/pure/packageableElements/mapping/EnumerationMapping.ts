@@ -50,7 +50,7 @@ export class EnumerationMapping implements Hashable {
     return hashArray([
       CORE_HASH_STRUCTURE.ENUMERATION_MAPPING,
       this.id.valueForSerialization ?? '',
-      this.enumeration.hashValue,
+      this.enumeration.valueForSerialization ?? '',
       // If there are no enum value mapping, source type means nothing since it's not in the protocol anyway
       this.enumValueMappings.filter(
         // TODO: use `isStubbed_EnumValueMapping` when we refactor hashing

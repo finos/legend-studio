@@ -43,7 +43,7 @@ export class AssociationView extends PropertyHolderView implements Hashable {
     return hashArray([
       DIAGRAM_HASH_STRUCTURE.ASSOCIATION_VIEW,
       super.hashCode,
-      this.association.hashValue,
+      this.association.valueForSerialization ?? '',
     ]);
   }
 }

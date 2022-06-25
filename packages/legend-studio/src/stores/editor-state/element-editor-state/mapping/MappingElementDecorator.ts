@@ -61,6 +61,7 @@ import {
   getLeafSetImplementations,
   getAllClassProperties,
   getRawGenericType,
+  OptionalEnumerationMappingExplicitReference,
 } from '@finos/legend-graph';
 import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../DSLMapping_LegendStudioPlugin_Extension.js';
 import type { EditorStore } from '../../../EditorStore.js';
@@ -134,6 +135,7 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
   constructor(editorStore: EditorStore) {
     this.editorStore = editorStore;
   }
+
   visitEnumerationMapping(enumerationMapping: EnumerationMapping): void {
     const enumValueMappingsToAdd: EnumValueMapping[] = [];
     enumerationMapping.enumeration.value.values.forEach((enumValue) => {
@@ -145,7 +147,7 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
         const newEnumValueMapping = new EnumValueMapping(
           EnumValueExplicitReference.create(enumValue),
         );
-        enumValueMapping_addSourceValue(newEnumValueMapping);
+        enumValueMapping_addSourceValue(newEnumValueMapping, undefined);
         enumValueMappingsToAdd.push(newEnumValueMapping);
       }
     });
@@ -250,13 +252,20 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
           if (existingEnumerationMappings.length === 1) {
             purePropertyMapping_setTransformer(
               epm,
-              existingEnumerationMappings[0],
+              OptionalEnumerationMappingExplicitReference.create(
+                existingEnumerationMappings[0],
+              ),
             );
           } else if (
             existingEnumerationMappings.length === 0 ||
-            !existingEnumerationMappings.find((eem) => eem === epm.transformer)
+            !existingEnumerationMappings.find(
+              (eem) => eem === epm.transformer.value,
+            )
           ) {
-            purePropertyMapping_setTransformer(epm, undefined);
+            purePropertyMapping_setTransformer(
+              epm,
+              OptionalEnumerationMappingExplicitReference.create(undefined),
+            );
           }
         });
         return enumerationPropertyMapping;
@@ -396,12 +405,18 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
           // If there is only 1 enumeration mapping, make it the transformer of the property mapping
           // Else, delete current transformer if it's not in the list of extisting enumeration mappings
           if (existingEnumerationMappings.length === 1) {
-            epm.transformer = existingEnumerationMappings[0];
+            epm.transformer =
+              OptionalEnumerationMappingExplicitReference.create(
+                existingEnumerationMappings[0],
+              );
           } else if (
             existingEnumerationMappings.length === 0 ||
-            !existingEnumerationMappings.find((eem) => eem === epm.transformer)
+            !existingEnumerationMappings.find(
+              (eem) => eem === epm.transformer.value,
+            )
           ) {
-            epm.transformer = undefined;
+            epm.transformer =
+              OptionalEnumerationMappingExplicitReference.create(undefined);
           }
         });
         return ePropertyMapping;
@@ -527,12 +542,18 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
           // If there is only 1 enumeration mapping, make it the transformer of the property mapping
           // Else, delete current transformer if it's not in the list of extisting enumeration mappings
           if (existingEnumerationMappings.length === 1) {
-            epm.transformer = existingEnumerationMappings[0];
+            epm.transformer =
+              OptionalEnumerationMappingExplicitReference.create(
+                existingEnumerationMappings[0],
+              );
           } else if (
             existingEnumerationMappings.length === 0 ||
-            !existingEnumerationMappings.find((eem) => eem === epm.transformer)
+            !existingEnumerationMappings.find(
+              (eem) => eem === epm.transformer.value,
+            )
           ) {
-            epm.transformer = undefined;
+            epm.transformer =
+              OptionalEnumerationMappingExplicitReference.create(undefined);
           }
         });
         return ePropertyMapping;
@@ -642,6 +663,7 @@ export class MappingElementDecorationCleaner
   constructor(editorStore: EditorStore) {
     this.editorStore = editorStore;
   }
+
   visitEnumerationMapping(enumerationMapping: EnumerationMapping): void {
     // Remove the enum value mapping if all of its source values are empty
     const nonEmptyEnumValueMappings =

@@ -46,7 +46,7 @@ export class RawPrimitiveInstanceValue
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.RAW_INSTANCE_VALUE,
-      this.type.hashValue,
+      this.type.valueForSerialization ?? '',
       this.multiplicity,
       this.values
         ? hashArray(this.values.map((value) => value.toString()))

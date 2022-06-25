@@ -41,7 +41,7 @@ export class DataElementReference extends EmbeddedData implements Hashable {
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.DATA_ELEMENT_REFERENCE,
-      this.dataElement.hashValue,
+      this.dataElement.valueForSerialization ?? '',
     ]);
   }
   accept_EmbeddedDataVisitor<T>(visitor: EmbeddedDataVisitor<T>): T {

@@ -24,6 +24,7 @@ import {
 } from '@finos/legend-art';
 import {
   getMappingElementSource,
+  type MappingElementSource,
   type MappingEditorState,
 } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState.js';
 import {
@@ -83,7 +84,7 @@ export const getSourceElementLabel = (
 
 // TODO: add more visual cue to the type of source (class vs. flat-data vs. db)
 export const buildMappingElementSourceOption = (
-  source: unknown | undefined,
+  source: MappingElementSource | undefined,
 ): MappingElementSourceSelectOption | null => {
   if (source instanceof Class) {
     return buildElementOption(source) as MappingElementSourceSelectOption;
@@ -113,7 +114,7 @@ export const InstanceSetImplementationSourceSelectorModal = observer(
      * Pass in `null` when we want to open the modal using the existing source.
      * Pass any other to open the source modal using that value as the initial state of the modal.
      */
-    sourceElementToSelect: unknown | null;
+    sourceElementToSelect: MappingElementSource | null;
     closeModal: () => void;
   }) => {
     const {
@@ -125,11 +126,11 @@ export const InstanceSetImplementationSourceSelectorModal = observer(
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
     const options = (
-      editorStore.graphManagerState.graph.ownClasses as unknown[]
+      editorStore.graphManagerState.graph.ownClasses as MappingElementSource[]
     )
       .concat(
         editorStore.graphManagerState.graph.dependencyManager
-          .classes as unknown[],
+          .classes as MappingElementSource[],
       )
       .concat(
         editorStore.graphManagerState.graph.ownFlatDatas.flatMap(
