@@ -135,6 +135,7 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
   constructor(editorStore: EditorStore) {
     this.editorStore = editorStore;
   }
+
   visitEnumerationMapping(enumerationMapping: EnumerationMapping): void {
     const enumValueMappingsToAdd: EnumValueMapping[] = [];
     enumerationMapping.enumeration.value.values.forEach((enumValue) => {
@@ -146,7 +147,7 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
         const newEnumValueMapping = new EnumValueMapping(
           EnumValueExplicitReference.create(enumValue),
         );
-        enumValueMapping_addSourceValue(newEnumValueMapping);
+        enumValueMapping_addSourceValue(newEnumValueMapping, undefined);
         enumValueMappingsToAdd.push(newEnumValueMapping);
       }
     });
@@ -662,6 +663,7 @@ export class MappingElementDecorationCleaner
   constructor(editorStore: EditorStore) {
     this.editorStore = editorStore;
   }
+
   visitEnumerationMapping(enumerationMapping: EnumerationMapping): void {
     // Remove the enum value mapping if all of its source values are empty
     const nonEmptyEnumValueMappings =

@@ -76,6 +76,7 @@ import {
   getEnumValue,
   observe_OptionalEnumerationMappingReference,
   type OptionalEnumerationMappingReference,
+  type SourceValueType,
 } from '@finos/legend-graph';
 import {
   addUniqueEntry,
@@ -205,9 +206,9 @@ export const sourceValue_setValue = action(
   },
 );
 export const enumValueMapping_addSourceValue = action(
-  (enumMapping: EnumValueMapping): void => {
+  (enumMapping: EnumValueMapping, sourceValue: SourceValueType): void => {
     enumMapping.sourceValues.push(
-      observe_SourceValue(new SourceValue(undefined)),
+      observe_SourceValue(new SourceValue(sourceValue)),
     );
   },
 );

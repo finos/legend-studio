@@ -265,7 +265,7 @@ const EnumValueMappingEditor = observer(
     );
     const addSourceValue = (): void =>
       matchingEnumValueMapping
-        ? enumValueMapping_addSourceValue(matchingEnumValueMapping)
+        ? enumValueMapping_addSourceValue(matchingEnumValueMapping, undefined)
         : undefined;
 
     return (

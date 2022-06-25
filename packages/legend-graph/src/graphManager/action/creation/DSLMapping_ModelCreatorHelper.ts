@@ -23,7 +23,8 @@ import type { StoreConnections } from '../../../models/metamodels/pure/packageab
 export const stub_Mapping = (): Mapping => new Mapping('');
 
 export const isStubbed_EnumValueMapping = (value: EnumValueMapping): boolean =>
-  !value.sourceValues.filter(isNonNullable).length;
+  !value.sourceValues.filter((sourceValue) => isNonNullable(sourceValue.value))
+    .length;
 
 export const isStubbed_StoreConnections = (value: StoreConnections): boolean =>
   !value.storeConnections.length;
