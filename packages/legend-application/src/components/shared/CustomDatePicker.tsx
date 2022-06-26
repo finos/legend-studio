@@ -47,7 +47,7 @@ import { useEffect, useState } from 'react';
 import {
   genericType_setRawType,
   instanceValue_changeValue,
-} from '../stores/ValueSpecificationModifierHelper.js';
+} from '../../stores/shared/ValueSpecificationModifierHelper.js';
 
 enum CUSTOM_DATE_PICKER_OPTION {
   ABSOLUTE_DATE = 'Absolute Date',
