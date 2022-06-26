@@ -27,7 +27,7 @@ After setting up, visit http://localhost:8080/studio and the application should 
 
 You can find our documentation [on the website](https://legend.finos.org/).
 
-Check out the [Getting Started](https://legend.finos.org/docs/getting-started/getting-started-guide) page for a quick overview. Also check out the [Installatiton Guide](https://legend.finos.org/docs/installation/installation-guide) to find out how to setup your Legend ecosystem.
+Check out the [Getting Started](https://legend.finos.org/docs/getting-started/getting-started-guide) page for a quick overview. Also check out the [Installation Guide](https://legend.finos.org/docs/installation/installation-guide) to find out how to setup your Legend ecosystem.
 
 You can improve it by sending pull requests to [this repository](https://github.com/finos/legend).
 

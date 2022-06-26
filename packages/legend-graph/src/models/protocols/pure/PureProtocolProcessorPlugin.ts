@@ -124,12 +124,6 @@ export abstract class PureProtocolProcessorPlugin extends AbstractPlugin {
   V1_getExtraElementTransformers?(): V1_ElementTransformer[];
 
   /**
-   * Get the list of fields in element JSON which hold source information
-   * (a product of the grammar parsing process).
-   */
-  V1_getExtraSourceInformationKeys?(): string[];
-
-  /**
    * Get the list of builders for function expression.
    *
    * NOTE: this process is complicated, as it involes advanced procedures like type inferencing,

@@ -24,7 +24,6 @@
  */
 
 import {
-  SOURCE_INFORMATION_KEY,
   ELEMENT_PATH_DELIMITER,
   CORE_HASH_STRUCTURE,
 } from './MetaModelConst.js';
@@ -34,6 +33,7 @@ import {
   hashArray,
   hashObject,
   hashString,
+  isString,
   recursiveOmit,
 } from '@finos/legend-shared';
 
@@ -86,27 +86,47 @@ export const isValidPath = (path: string): boolean =>
 export const fromElementPathToMappingElementId = (className: string): string =>
   className.split(ELEMENT_PATH_DELIMITER).join('_');
 
+const SOURCE_INFORMATION_PROPERTY_KEY_SUFFIX = 'sourceInformation';
+
 /**
  * Prune source information from object such as raw lambda, raw value specification, etc.
  *
  * NOTE: currently, there is no exhaustive way to do this. Majority of the cases, the source information field
- * is named `sourceInformation`, however, we have sometimes deviated from this pattern in our protocol model,
- * so we have fields like `classSourceInformation`, etc. So this is really an optimistic, non-exhaustive prune.
- * To do this exhaustively, we might need to make use of engine grammar API endpoints or do a full roundtrip
- * raw object-protocol transformation to prune unrecognized fields, which include source information fields.
+ * is suffixed with `sourceInformation` (e.g. `profileSourceInformation`, `propertyTypeSourceInformation`),
+ * however, we have sometimes deviated from this pattern in our protocol model, so we have fields like `classSourceInformation`,
+ * etc. So this is really an optimistic, non-exhaustive prune.
+ *
+ * To do this exhaustively, we need to tweak this method to also check for the structure of the (sub)object to make sure
+ * it is structually equivalent to the shape of source information to prune it. However, this is computationally expensive.
+ *
+ * NOTE: That aside, We should cleanup these in the backend and use pointer instead so source information is coupled
+ * with the value instead of having custom-name source information fields like these, polluting the protocol models.
  */
 export const pruneSourceInformation = (
   object: Record<PropertyKey, unknown>,
 ): Record<PropertyKey, unknown> =>
-  recursiveOmit(object, [SOURCE_INFORMATION_KEY]);
+  recursiveOmit(
+    object,
+    (obj, propKey) =>
+      isString(propKey) &&
+      propKey
+        .toLowerCase()
+        .endsWith(SOURCE_INFORMATION_PROPERTY_KEY_SUFFIX.toLowerCase()),
+  );
 
 // -------------------------------- HASHING -------------------------------------
 // TODO: this should be moved after we refactor `hashing` out of metamodels
 
-// NOTE: this is over-simplification as there could be source information fields with other names
 export const hashObjectWithoutSourceInformation = (val: object): string =>
   hashObject(val, {
-    excludeKeys: (key: string) => key === SOURCE_INFORMATION_KEY,
+    /**
+     * NOTE: this is over-simplification as there could be source information fields with other names
+     * see note in {@link pruneSourceInformation}
+     */
+    excludeKeys: (propKey: string) =>
+      propKey
+        .toLowerCase()
+        .endsWith(SOURCE_INFORMATION_PROPERTY_KEY_SUFFIX.toLowerCase()),
   });
 
 export const hashRawLambda = (

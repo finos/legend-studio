@@ -206,7 +206,9 @@ export class LocalChangesState {
       const entity =
         this.editorStore.graphManagerState.graphManager.elementToEntity(
           element,
-          true,
+          {
+            pruneSourceInformation: true,
+          },
         );
       return entity;
     };
@@ -252,7 +254,9 @@ export class LocalChangesState {
       const entity =
         this.editorStore.graphManagerState.graphManager.elementToEntity(
           element,
-          true,
+          {
+            pruneSourceInformation: true,
+          },
         );
       return entity;
     };

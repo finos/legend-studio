@@ -24,6 +24,7 @@ import {
   isValidPath,
   isValidPathIdentifier,
   resolvePackagePathAndElementName,
+  pruneSourceInformation,
 } from '../MetaModelUtils.js';
 import {
   losslessParse,
@@ -45,6 +46,26 @@ import type { Entity } from '@finos/legend-model-storage';
 import { getMilestoneTemporalStereotype } from '../helpers/DomainHelper.js';
 import { stub_Class } from '../graphManager/action/creation/DomainModelCreatorHelper.js';
 
+test(unitTest('Source information should be pruned properly'), () => {
+  expect(
+    pruneSourceInformation({
+      parameters: [{ a: 1 }, { b: 2, sourceInformation: {} }],
+      body: {
+        a: 3,
+        sourceInformation: {
+          nestedSourceInformation: {},
+        },
+        someSourceInformation: {},
+        classSourceInformation: {},
+        profileSourceInformation: {},
+      },
+    }),
+  ).toEqual({
+    parameters: [{ a: 1 }, { b: 2 }],
+    body: { a: 3 },
+  });
+});
+
 test(
   unitTest(
     'Lambda hash should ignore source information and ignore object properties order',
@@ -54,7 +75,6 @@ test(
       parameters: [{ a: 1 }, { b: 2 }],
       body: { a: 3 },
     };
-
     const lambda2 = {
       parameters: [{ a: 1 }, { b: 2, sourceInformation: {} }],
       body: {
@@ -62,7 +82,6 @@ test(
         sourceInformation: {},
       },
     };
-
     const lambda3 = {
       parameters: [{ b: 2 }, { a: 1 }],
       body: { a: 3 },
@@ -165,22 +184,25 @@ test(unitTest('Converts element path to mapping element default ID'), () => {
   expect(fromElementPathToMappingElementId('Person')).toBe('Person');
 });
 
-test(unitTest('Milestoned class'), async () => {
-  const graphManagerState = TEST__getTestGraphManagerState();
-  const data = TEST_DATA__MilestonedClassRoundtrip as Entity[];
-  await TEST__buildGraphWithEntities(graphManagerState, data, {
-    TEMPORARY__preserveSectionIndex: true,
-  });
-  expect(
-    getMilestoneTemporalStereotype(
-      graphManagerState.graph.getClass('test::C'),
-      graphManagerState.graph,
-    ),
-  ).toBe(MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL);
-  expect(
-    getMilestoneTemporalStereotype(
-      graphManagerState.graph.getClass('test::D'),
-      graphManagerState.graph,
-    ),
-  ).toBe(MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL);
-});
+test(
+  unitTest('Class milestoning stereotypes should be identified properly'),
+  async () => {
+    const graphManagerState = TEST__getTestGraphManagerState();
+    const data = TEST_DATA__MilestonedClassRoundtrip as Entity[];
+    await TEST__buildGraphWithEntities(graphManagerState, data, {
+      TEMPORARY__preserveSectionIndex: true,
+    });
+    expect(
+      getMilestoneTemporalStereotype(
+        graphManagerState.graph.getClass('test::C'),
+        graphManagerState.graph,
+      ),
+    ).toBe(MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL);
+    expect(
+      getMilestoneTemporalStereotype(
+        graphManagerState.graph.getClass('test::D'),
+        graphManagerState.graph,
+      ),
+    ).toBe(MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL);
+  },
+);

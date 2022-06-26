@@ -204,17 +204,10 @@ export class ModelLoaderState extends EditorState {
             break;
           }
           case MODEL_UPDATER_INPUT_TYPE.PURE_GRAMMAR: {
-            entities = (
+            entities =
               (yield this.editorStore.graphManagerState.graphManager.pureCodeToEntities(
                 this.modelText,
-              )) as Entity[]
-            ).map((entity) => ({
-              ...entity,
-              content:
-                this.editorStore.graphManagerState.graphManager.pruneSourceInformation(
-                  entity.content,
-                ),
-            }));
+              )) as Entity[];
             break;
           }
           default:

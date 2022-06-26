@@ -313,10 +313,6 @@ export class DSLExternalFormat_PureProtocolProcessorPlugin
     ];
   }
 
-  override V1_getExtraSourceInformationKeys(): string[] {
-    return ['contentSourceInformation'];
-  }
-
   V1_getExtraConnectionBuilders(): V1_ConnectionBuilder[] {
     return [
       (
