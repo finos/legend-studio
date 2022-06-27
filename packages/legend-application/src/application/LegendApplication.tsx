@@ -33,9 +33,13 @@ import {
 } from '@finos/legend-shared';
 import { APPLICATION_EVENT } from '../stores/ApplicationEvent.js';
 import { configureComponents } from '@finos/legend-art';
-import type { GraphPluginManager } from '@finos/legend-graph';
+import type {
+  GraphPluginManager,
+  PackageableElement,
+} from '@finos/legend-graph';
 import type { LegendApplicationPluginManager } from './LegendApplicationPluginManager.js';
 import { setupPureLanguageService } from '../stores/PureLanguageSupport.js';
+import type { PackageableElementOption } from '../stores/PackageableElementOption.js';
 
 export abstract class LegendApplicationLogger {
   abstract debug(event: LogEvent, ...data: unknown[]): void;
@@ -268,3 +272,21 @@ export abstract class LegendApplication {
     }
   }
 }
+
+export const packageableElementFormatOptionLabel = (option: {
+  label: string;
+  value: PackageableElement;
+  darkMode?: boolean;
+}): React.ReactNode => {
+  const stylePrefix = option.darkMode
+    ? 'packageable-element-format-option-label--dark'
+    : 'packageable-element-format-option-label';
+  return (
+    <div className={stylePrefix}>
+      <div className={`${stylePrefix}__name`}>{option.label}</div>
+      {option.value.package && (
+        <div className={`${stylePrefix}__tag`}>{`${option.value.path}`}</div>
+      )}
+    </div>
+  );
+};
