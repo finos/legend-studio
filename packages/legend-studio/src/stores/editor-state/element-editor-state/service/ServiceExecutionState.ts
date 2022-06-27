@@ -35,13 +35,13 @@ import {
 } from '../../../editor-state/element-editor-state/RuntimeEditorState.js';
 import {
   buildParametersLetLambdaFunc,
+  ExecutionPlanState,
   LambdaEditorState,
   LambdaParametersState,
   LambdaParameterState,
   PARAMETER_SUBMIT_ACTION,
   TAB_SIZE,
 } from '@finos/legend-application';
-import { ExecutionPlanState } from '../../../ExecutionPlanState.js';
 import {
   type ServiceExecution,
   type KeyedExecutionParameter,
@@ -463,7 +463,10 @@ export class ServicePureExecutionState extends ServiceExecutionState {
       this.editorStore,
       execution,
     );
-    this.executionPlanState = new ExecutionPlanState(this.editorStore);
+    this.executionPlanState = new ExecutionPlanState(
+      this.editorStore.applicationStore,
+      this.editorStore.graphManagerState,
+    );
     this.parameterState = new ServiceExecutionParameterState(this);
   }
 

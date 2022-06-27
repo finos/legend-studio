@@ -48,8 +48,10 @@ export * from './components/shared/TextInputEditor.js';
 export * from './components/shared/LambdaEditor.js';
 export * from './components/shared/BasicValueSpecificationEditor.js';
 export * from './components/shared/LambdaParameterValuesEditor.js';
+export * from './components/shared/execution-plan-viewer/ExecutionPlanViewer.js';
 
 export { LambdaEditorState } from './stores/shared/LambdaEditorState.js';
 export * from './stores/shared/PackageableElementOption.js';
 export * from './stores/shared/LambdaParameterState.js';
 export * from './stores/shared/ValueSpecificationModifierHelper.js';
+export * from './stores/shared/ExecutionPlanState.js';

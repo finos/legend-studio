@@ -321,7 +321,11 @@ export * from './graphManager/action/creation/DSLMapping_ModelCreatorHelper.js';
 export * from './graphManager/action/creation/RawValueSpecificationCreatorHelper.js';
 export * from './graphManager/action/creation/StoreRelational_ModelCreatorHelper.js';
 
-// --------------------------------------------- TO BE MODULARIZED --------------------------------------------------
+// --------------------------------------------- DSL --------------------------------------------------
+/**
+ * @modularize
+ * See https://github.com/finos/legend-studio/issues/65
+ */
 
 export * from './DSLMapping_Exports.js';
 export * from './DSLService_Exports.js';

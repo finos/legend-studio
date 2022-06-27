@@ -440,23 +440,23 @@ export const EditPanel = observer(() => {
         <div className="edit-panel__header__actions">
           {currentEditorState instanceof ElementEditorState && (
             <DropdownMenu
-              className="edit-panel__element-view"
+              className="edit-panel__view-mode"
               content={
                 <MenuContent
                   data-testid={
                     LEGEND_STUDIO_TEST_ID.EDIT_PANEL__ELEMENT_VIEW__OPTIONS
                   }
-                  className="edit-panel__element-view__options edit-panel__element-view__options--with-group"
+                  className="edit-panel__view-mode__options edit-panel__view-mode__options--with-group"
                 >
-                  <div className="edit-panel__element-view__option__group edit-panel__element-view__option__group--native">
-                    <div className="edit-panel__element-view__option__group__name">
+                  <div className="edit-panel__view-mode__option__group edit-panel__view-mode__option__group--native">
+                    <div className="edit-panel__view-mode__option__group__name">
                       native
                     </div>
-                    <div className="edit-panel__element-view__option__group__options">
+                    <div className="edit-panel__view-mode__option__group__options">
                       {nativeViewModes.map((mode) => (
                         <MenuContentItem
                           key={mode}
-                          className="edit-panel__element-view__option"
+                          className="edit-panel__view-mode__option"
                           onClick={(): void =>
                             currentEditorState.setEditMode(mode)
                           }
@@ -468,16 +468,16 @@ export const EditPanel = observer(() => {
                   </div>
                   {Boolean(generationViewModes.length) && (
                     <>
-                      <div className="edit-panel__element-view__option__group__separator" />
-                      <div className="edit-panel__element-view__option__group edit-panel__element-view__option__group--generation">
-                        <div className="edit-panel__element-view__option__group__name">
+                      <div className="edit-panel__view-mode__option__group__separator" />
+                      <div className="edit-panel__view-mode__option__group edit-panel__view-mode__option__group--generation">
+                        <div className="edit-panel__view-mode__option__group__name">
                           generation
                         </div>
-                        <div className="edit-panel__element-view__option__group__options">
+                        <div className="edit-panel__view-mode__option__group__options">
                           {generationViewModes.map((mode) => (
                             <MenuContentItem
                               key={mode.key}
-                              className="edit-panel__element-view__option"
+                              className="edit-panel__view-mode__option"
                               disabled={
                                 !editorStore.graphState.graphGenerationState.supportedFileGenerationConfigurationsForCurrentElement.includes(
                                   mode,
@@ -504,10 +504,10 @@ export const EditPanel = observer(() => {
               }}
             >
               <button
-                className="edit-panel__element-view__type"
+                className="edit-panel__view-mode__type"
                 title="View as..."
               >
-                <div className="edit-panel__element-view__type__label">
+                <div className="edit-panel__view-mode__type__label">
                   {currentEditorState.generationViewMode
                     ? editorStore.graphState.graphGenerationState.getFileGenerationConfiguration(
                         currentEditorState.generationViewMode,
@@ -519,16 +519,16 @@ export const EditPanel = observer(() => {
           )}
           {currentEditorState instanceof EntityDiffViewState && (
             <DropdownMenu
-              className="edit-panel__element-view"
+              className="edit-panel__view-mode"
               content={
                 <MenuContent
                   data-testid={
                     LEGEND_STUDIO_TEST_ID.EDIT_PANEL__ELEMENT_VIEW__OPTIONS
                   }
-                  className="edit-panel__element-view__options"
+                  className="edit-panel__view-mode__options"
                 >
                   <MenuContentItem
-                    className="edit-panel__element-view__option"
+                    className="edit-panel__view-mode__option"
                     onClick={(): void =>
                       currentEditorState.setDiffMode(DIFF_VIEW_MODE.GRAMMAR)
                     }
@@ -536,7 +536,7 @@ export const EditPanel = observer(() => {
                     {DIFF_VIEW_MODE.GRAMMAR}
                   </MenuContentItem>
                   <MenuContentItem
-                    className="edit-panel__element-view__option"
+                    className="edit-panel__view-mode__option"
                     onClick={(): void =>
                       currentEditorState.setDiffMode(DIFF_VIEW_MODE.JSON)
                     }
@@ -551,10 +551,10 @@ export const EditPanel = observer(() => {
               }}
             >
               <button
-                className="edit-panel__element-view__type"
+                className="edit-panel__view-mode__type"
                 title="View as..."
               >
-                <div className="edit-panel__element-view__type__label">
+                <div className="edit-panel__view-mode__type__label">
                   {currentEditorState.diffMode}
                 </div>
               </button>

@@ -22,16 +22,11 @@
     min-width: 4rem;
   }
 
-  &__expand-icon,
   &__type-icon {
     @include flexCenter;
 
     width: 1.7rem;
     height: 1.4rem;
-  }
-
-  &__expand-icon svg {
-    font-size: 1rem;
   }
 
   &__node__container--highlighted {

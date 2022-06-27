@@ -82,7 +82,11 @@ export {
 export { SetupStore } from './stores/SetupStore.js';
 export { ProjectSelector } from './components/setup/ProjectSelector.js';
 
-// --------------------------------------------- TO BE MODULARIZED --------------------------------------------------
+// --------------------------------------------- DSL --------------------------------------------------
+/**
+ * @modularize
+ * See https://github.com/finos/legend-studio/issues/65
+ */
 
 export {
   ConnectionEditor_StringEditor,

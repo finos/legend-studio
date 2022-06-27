@@ -336,8 +336,10 @@ export abstract class AbstractPureGraphManager {
   ): Promise<string>;
 
   // ------------------------------------------- Service -------------------------------------------
-  // NOTE: to be modularized
-  // See https://github.com/finos/legend-studio/issues/65
+  /**
+   * @modularize
+   * See https://github.com/finos/legend-studio/issues/65
+   */
 
   abstract registerService(
     graph: PureModel,
@@ -362,8 +364,10 @@ export abstract class AbstractPureGraphManager {
   ): Promise<DEPRECATED__ServiceTestResult[]>;
 
   // ------------------------------------------- Database -------------------------------------------
-  // NOTE: to be modularized
-  // See https://github.com/finos/legend-studio/issues/65
+  /**
+   * @modularize
+   * See https://github.com/finos/legend-studio/issues/65
+   */
 
   abstract buildDatabase(
     databaseBuilderInput: DatabaseBuilderInput,
@@ -382,8 +386,10 @@ export abstract class AbstractPureGraphManager {
   abstract deleteQuery(queryId: string): Promise<void>;
 
   // ------------------------------------------- Legend Query -------------------------------------
-  // NOTE: to be modularized
-  // See https://github.com/finos/legend-studio/issues/65
+  /**
+   * @modularize
+   * See https://github.com/finos/legend-studio/issues/65
+   */
 
   abstract buildGraphForCreateQuerySetup(
     graph: PureModel,

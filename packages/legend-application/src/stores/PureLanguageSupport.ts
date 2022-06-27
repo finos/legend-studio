@@ -137,15 +137,19 @@ const generateLanguageMonarch = (
       PURE_CONNECTION_NAME.JSON_MODEL_CONNECTION,
       PURE_CONNECTION_NAME.MODEL_CHAIN_CONNECTION,
       PURE_CONNECTION_NAME.XML_MODEL_CONNECTION,
-      PURE_CONNECTION_NAME.FLAT_DATA_CONNECTION,
-      PURE_CONNECTION_NAME.RELATIONAL_DATABASE_CONNECTION,
       // mapping
       'EnumerationMapping',
       'Pure',
-      'Relational', // to be modularized
       'AssociationMapping',
       'XStore',
       'AggregationAware',
+      /**
+       * @modularize
+       * See https://github.com/finos/legend-studio/issues/65
+       */
+      PURE_CONNECTION_NAME.FLAT_DATA_CONNECTION,
+      PURE_CONNECTION_NAME.RELATIONAL_DATABASE_CONNECTION,
+      'Relational',
     ],
 
     operators: [

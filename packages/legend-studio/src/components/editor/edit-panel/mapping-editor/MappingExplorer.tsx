@@ -395,7 +395,10 @@ const MappingElementTreeNodeContainer = observer(
             tabIndex={-1}
             title={mappingElementTooltipText}
           >
-            <div className="type-tree__expand-icon" onClick={onExpandIconClick}>
+            <div
+              className="tree-view__node__expand-icon"
+              onClick={onExpandIconClick}
+            >
               {nodeExpandIcon}
             </div>
             <div className="mapping-explorer__item__label__icon">

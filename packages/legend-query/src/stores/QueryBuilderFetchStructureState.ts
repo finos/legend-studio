@@ -38,6 +38,7 @@ export class QueryBuilderFetchStructureState {
 
     this.queryBuilderState = queryBuilderState;
     // TODO: we probably should modularize this a bit better
+    // See https://github.com/finos/legend-studio/issues/731
     this.projectionState = new QueryBuilderProjectionState(queryBuilderState);
     this.graphFetchTreeState = new QueryBuilderGraphFetchTreeState(
       queryBuilderState,

@@ -59,6 +59,7 @@ import {
   useApplicationStore,
   ActionAlertActionType,
   ActionAlertType,
+  ExecutionPlanViewer,
 } from '@finos/legend-application';
 import {
   ClassMappingSelectorModal,
@@ -66,7 +67,6 @@ import {
 } from './MappingExecutionBuilder.js';
 import { flowResult } from 'mobx';
 import { MappingTestStatusIndicator } from './MappingTestsExplorer.js';
-import { ExecutionPlanViewer } from './execution-plan-viewer/ExecutionPlanViewer.js';
 import {
   getMappingElementSource,
   getMappingElementTarget,

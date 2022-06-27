@@ -14,22 +14,45 @@
  * limitations under the License.
  */
 
-import type { EditorStore } from './EditorStore.js';
 import { observable, action, makeObservable } from 'mobx';
-import type {
-  ExecutionNodeTreeNodeData,
-  ExecutionPlanViewTreeNodeData,
-} from '../components/editor/edit-panel/mapping-editor/execution-plan-viewer/ExecutionPlanTree.js';
 import {
   type RawExecutionPlan,
+  type GraphManagerState,
   ExecutionPlan,
   ExecutionNode,
 } from '@finos/legend-graph';
+import type { ApplicationStore } from '../ApplicationStore.js';
+import type { LegendApplicationConfig } from '../LegendApplicationConfig.js';
+import type { TreeNodeData } from '@finos/legend-art';
 
-export enum SQL_DISPLAY_TABS {
-  SQL_QUERY = 'SQL_QUERY',
-  RESULT_COLUMNS = 'RESULT_COLUMNS',
-  DATABASE_CONNECTION = 'DATABASE_CONNECTION',
+export class ExecutionPlanViewTreeNodeData implements TreeNodeData {
+  id: string;
+  label: string;
+  isSelected?: boolean;
+  isOpen?: boolean;
+  childrenIds?: string[];
+  executionPlan!: ExecutionPlan;
+
+  constructor(id: string, label: string, executionPlan: ExecutionPlan) {
+    this.id = id;
+    this.label = label;
+    this.executionPlan = executionPlan;
+  }
+}
+
+export class ExecutionNodeTreeNodeData implements TreeNodeData {
+  id: string;
+  label: string;
+  isSelected?: boolean;
+  isOpen?: boolean;
+  childrenIds?: string[];
+  executionNode: ExecutionNode;
+
+  constructor(id: string, label: string, executionNode: ExecutionNode) {
+    this.id = id;
+    this.label = label;
+    this.executionNode = executionNode;
+  }
 }
 
 export enum EXECUTION_PLAN_VIEW_MODE {
@@ -38,24 +61,26 @@ export enum EXECUTION_PLAN_VIEW_MODE {
 }
 
 export class ExecutionPlanState {
-  editorStore: EditorStore;
+  applicationStore: ApplicationStore<LegendApplicationConfig>;
+  graphManagerState: GraphManagerState;
   displayDataJson: object = {};
   displayData = '';
   selectedNode:
     | ExecutionNodeTreeNodeData
     | ExecutionPlanViewTreeNodeData
     | undefined = undefined;
-  sqlSelectedTab: SQL_DISPLAY_TABS = SQL_DISPLAY_TABS.SQL_QUERY;
   viewMode: EXECUTION_PLAN_VIEW_MODE = EXECUTION_PLAN_VIEW_MODE.FORM;
   rawPlan?: RawExecutionPlan | undefined;
   plan?: ExecutionPlan | undefined;
   debugText?: string | undefined;
 
-  constructor(editorStore: EditorStore) {
+  constructor(
+    applicationStore: ApplicationStore<LegendApplicationConfig>,
+    graphManagerState: GraphManagerState,
+  ) {
     makeObservable(this, {
       displayData: observable,
       displayDataJson: observable,
-      sqlSelectedTab: observable,
       viewMode: observable,
       rawPlan: observable,
       plan: observable,
@@ -64,17 +89,13 @@ export class ExecutionPlanState {
       setExecutionPlanDisplayDataJson: action,
       transformMetadataToProtocolJson: action,
       setSelectedNode: action,
-      setSqlSelectedTab: action,
       setRawPlan: action,
       setPlan: action,
       setViewMode: action,
       setDebugText: action,
     });
-    this.editorStore = editorStore;
-  }
-
-  setSqlSelectedTab(tab: SQL_DISPLAY_TABS): void {
-    this.sqlSelectedTab = tab;
+    this.applicationStore = applicationStore;
+    this.graphManagerState = graphManagerState;
   }
 
   setViewMode(val: EXECUTION_PLAN_VIEW_MODE): void {
@@ -103,11 +124,12 @@ export class ExecutionPlanState {
       node.isSelected = true;
     }
     this.selectedNode = node;
-    this.setSqlSelectedTab(SQL_DISPLAY_TABS.SQL_QUERY);
   }
+
   setExecutionPlanDisplayData(val: string): void {
     this.displayData = val;
   }
+
   setExecutionPlanDisplayDataJson(val: object): void {
     this.displayDataJson = val;
 
@@ -121,15 +143,11 @@ export class ExecutionPlanState {
   ): void {
     if (metaModel instanceof ExecutionPlan) {
       const protocolJson =
-        this.editorStore.graphManagerState.graphManager.serializeExecutionPlan(
-          metaModel,
-        );
+        this.graphManagerState.graphManager.serializeExecutionPlan(metaModel);
       this.setExecutionPlanDisplayDataJson(protocolJson);
     } else if (metaModel instanceof ExecutionNode) {
       const protocolJson =
-        this.editorStore.graphManagerState.graphManager.serializeExecutionNode(
-          metaModel,
-        );
+        this.graphManagerState.graphManager.serializeExecutionNode(metaModel);
       this.setExecutionPlanDisplayDataJson(protocolJson);
     }
   }

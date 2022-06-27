@@ -119,9 +119,8 @@ export const ModelLoader = observer(() => {
       <div className="panel__header model-loader__header">
         <div className="model-loader__header__configs">
           <DropdownMenu
-            className="edit-panel__element-view"
             content={
-              <MenuContent className="model-loader__header__configs__types">
+              <MenuContent className="model-loader__header__configs__type__menu">
                 <div className="model-loader__header__configs__type-option__group model-loader__header__configs__type-option__group--native">
                   <div className="model-loader__header__configs__type-option__group__name">
                     native

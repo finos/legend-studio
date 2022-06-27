@@ -40,7 +40,7 @@ export enum LEGEND_STUDIO_TEST_ID {
   EDIT_PANEL = 'edit-panel',
   EDIT_PANEL_CONTENT = 'edit-panel__content',
   EDIT_PANEL__HEADER_TABS = 'edit-panel__header-tabs',
-  EDIT_PANEL__ELEMENT_VIEW__OPTIONS = 'edit-panel__element-view__options',
+  EDIT_PANEL__ELEMENT_VIEW__OPTIONS = 'edit-panel__view-mode__options',
   EDITOR__TABS__HEADER = 'editor__tabs__header',
 
   CLASS_FORM_EDITOR = 'class-form-editor',

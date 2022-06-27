@@ -430,11 +430,7 @@ const PureSingleExecutionEditorWrapper = observer(
     }
     return (
       <div className="service-execution-editor__execution">
-        <BlankPanelContent>
-          <div className="unsupported-element-editor__main">
-            <div className="unsupported-element-editor__summary">{`No execution selected`}</div>
-          </div>
-        </BlankPanelContent>
+        <BlankPanelContent>No execution selected</BlankPanelContent>
       </div>
     );
   },

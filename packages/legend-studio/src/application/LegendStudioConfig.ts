@@ -64,6 +64,9 @@ class LegendStudioApplicationCoreOptions {
    *
    * TODO: when we modularize service, we can move this config to DSL Service preset. Then, we can remove
    * the TEMPORARY__ prefix.
+   *
+   * @modularize
+   * See https://github.com/finos/legend-studio/issues/65
    */
   TEMPORARY__serviceRegistrationConfig: ServiceRegistrationEnvInfo[] = [];
 
