@@ -39,7 +39,6 @@ import type {
 } from '@finos/legend-graph';
 import type { LegendApplicationPluginManager } from './LegendApplicationPluginManager.js';
 import { setupPureLanguageService } from '../stores/PureLanguageSupport.js';
-import type { PackageableElementOption } from '../stores/PackageableElementOption.js';
 
 export abstract class LegendApplicationLogger {
   abstract debug(event: LogEvent, ...data: unknown[]): void;
