@@ -194,6 +194,14 @@ export {
   BsFillFileEarmarkSpreadsheetFill as TabulatedDataFileIcon,
   BsBoxSeam as BundleIcon,
   BsGripVertical as VerticalDragHandleThinIcon,
+  BsAlignTop as AlignTopIcon,
+  BsAlignMiddle as AlignMiddleIcon,
+  BsAlignBottom as AlignBottomIcon,
+  BsAlignStart as AlignStartIcon,
+  BsAlignCenter as AlignCenterIcon,
+  BsAlignEnd as AlignEndIcon,
+  BsDistributeHorizontal as DistributeHorizontalIcon,
+  BsDistributeVertical as DistributeVerticalIcon,
 } from 'react-icons/bs';
 export { BiShapeTriangle as ShapeTriangleIcon } from 'react-icons/bi';
 export { CgOptions as OptionsIcon } from 'react-icons/cg';

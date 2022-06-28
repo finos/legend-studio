@@ -26,6 +26,7 @@ import { useResizeDetector } from 'react-resize-detector';
 import { type DropTargetMonitor, useDrop } from 'react-dnd';
 import { observer } from 'mobx-react-lite';
 import {
+  ALIGNER_OPERATOR,
   DiagramRenderer,
   DIAGRAM_INTERACTION_MODE,
   DIAGRAM_RELATIONSHIP_EDIT_MODE,
@@ -70,6 +71,14 @@ import {
   ZoomInIcon,
   ZoomOutIcon,
   Dialog,
+  AlignEndIcon,
+  DistributeHorizontalIcon,
+  DistributeVerticalIcon,
+  AlignStartIcon,
+  AlignCenterIcon,
+  AlignTopIcon,
+  AlignMiddleIcon,
+  AlignBottomIcon,
 } from '@finos/legend-art';
 import {
   type Type,
@@ -1258,9 +1267,111 @@ const DiagramEditorHeader = observer(
         diagramEditorState.setSidePanelState(undefined);
       }
     };
+    const isAlignerDisabled =
+      diagramEditorState.renderer.selectedClasses.length < 2;
 
     return (
       <>
+        <div className="diagram-editor__header__group">
+          <button
+            className="diagram-editor__header__action diagram-editor__header__group__action"
+            title="Align left"
+            disabled={isAlignerDisabled}
+            tabIndex={-1}
+            onClick={(): void =>
+              diagramEditorState.renderer.align(ALIGNER_OPERATOR.ALIGN_LEFT)
+            }
+          >
+            <AlignStartIcon className="diagram-editor__icon--aligner" />
+          </button>
+          <button
+            className="diagram-editor__header__action diagram-editor__header__group__action"
+            title="Align center"
+            disabled={isAlignerDisabled}
+            tabIndex={-1}
+            onClick={(): void =>
+              diagramEditorState.renderer.align(ALIGNER_OPERATOR.ALIGN_CENTER)
+            }
+          >
+            <AlignCenterIcon className="diagram-editor__icon--aligner" />
+          </button>
+          <button
+            className="diagram-editor__header__action diagram-editor__header__group__action"
+            title="Align right"
+            disabled={isAlignerDisabled}
+            tabIndex={-1}
+            onClick={(): void =>
+              diagramEditorState.renderer.align(ALIGNER_OPERATOR.ALIGN_RIGHT)
+            }
+          >
+            <AlignEndIcon className="diagram-editor__icon--aligner" />
+          </button>
+        </div>
+        <div className="diagram-editor__header__group__separator" />
+        <div className="diagram-editor__header__group">
+          <button
+            className="diagram-editor__header__action diagram-editor__header__group__action"
+            title="Align top"
+            disabled={isAlignerDisabled}
+            tabIndex={-1}
+            onClick={(): void =>
+              diagramEditorState.renderer.align(ALIGNER_OPERATOR.ALIGN_TOP)
+            }
+          >
+            <AlignTopIcon className="diagram-editor__icon--aligner" />
+          </button>
+          <button
+            className="diagram-editor__header__action diagram-editor__header__group__action"
+            title="Align middle"
+            disabled={isAlignerDisabled}
+            tabIndex={-1}
+            onClick={(): void =>
+              diagramEditorState.renderer.align(ALIGNER_OPERATOR.ALIGN_MIDDLE)
+            }
+          >
+            <AlignMiddleIcon className="diagram-editor__icon--aligner" />
+          </button>
+          <button
+            className="diagram-editor__header__action diagram-editor__header__group__action"
+            title="Align bottom"
+            disabled={isAlignerDisabled}
+            tabIndex={-1}
+            onClick={(): void =>
+              diagramEditorState.renderer.align(ALIGNER_OPERATOR.ALIGN_BOTTOM)
+            }
+          >
+            <AlignBottomIcon className="diagram-editor__icon--aligner" />
+          </button>
+        </div>
+        <div className="diagram-editor__header__group__separator" />
+        <div className="diagram-editor__header__group">
+          <button
+            className="diagram-editor__header__action diagram-editor__header__group__action"
+            title="Space horizontally"
+            disabled={isAlignerDisabled}
+            tabIndex={-1}
+            onClick={(): void =>
+              diagramEditorState.renderer.align(
+                ALIGNER_OPERATOR.SPACE_HORIZONTALLY,
+              )
+            }
+          >
+            <DistributeHorizontalIcon className="diagram-editor__icon--aligner" />
+          </button>
+          <button
+            className="diagram-editor__header__action diagram-editor__header__group__action"
+            title="Space vertically"
+            disabled={isAlignerDisabled}
+            tabIndex={-1}
+            onClick={(): void =>
+              diagramEditorState.renderer.align(
+                ALIGNER_OPERATOR.SPACE_VERTICALLY,
+              )
+            }
+          >
+            <DistributeVerticalIcon className="diagram-editor__icon--aligner" />
+          </button>
+        </div>
         <DropdownMenu
           className="diagram-editor__header__dropdown"
           content={

@@ -103,6 +103,17 @@ export enum DIAGRAM_RELATIONSHIP_EDIT_MODE {
   NONE,
 }
 
+export enum ALIGNER_OPERATOR {
+  ALIGN_LEFT,
+  ALIGN_CENTER,
+  ALIGN_RIGHT,
+  ALIGN_TOP,
+  ALIGN_MIDDLE,
+  ALIGN_BOTTOM,
+  SPACE_HORIZONTALLY,
+  SPACE_VERTICALLY,
+}
+
 const MIN_ZOOM_LEVEL = 0.05; // 5%
 const FIT_ZOOM_PADDING = 10;
 export const DIAGRAM_ZOOM_LEVELS = [
@@ -317,6 +328,7 @@ export class DiagramRenderer {
       setMiddleClick: action,
       setRightClick: action,
       setZoomLevel: action,
+      align: action,
     });
 
     this.diagram = diagram;
@@ -678,6 +690,186 @@ export class DiagramRenderer {
           );
       }
     }
+  }
+
+  align(op: ALIGNER_OPERATOR): void {
+    if (this.selectedClasses.length < 2) {
+      return;
+    }
+    switch (op) {
+      case ALIGNER_OPERATOR.ALIGN_LEFT: {
+        const leftBound = this.selectedClasses.reduce(
+          (val, view) => Math.min(val, view.position.x),
+          Number.MAX_SAFE_INTEGER,
+        );
+        this.selectedClasses.forEach((view) =>
+          positionedRectangle_setPosition(
+            view,
+            new Point(leftBound, view.position.y),
+          ),
+        );
+        break;
+      }
+      case ALIGNER_OPERATOR.ALIGN_CENTER: {
+        const center =
+          this.selectedClasses.reduce(
+            (val, view) => val + view.position.x + view.rectangle.width,
+            0,
+          ) / this.selectedClasses.length;
+        this.selectedClasses.forEach((view) =>
+          positionedRectangle_setPosition(
+            view,
+            new Point(center - view.rectangle.width / 2, view.position.y),
+          ),
+        );
+        break;
+      }
+      case ALIGNER_OPERATOR.ALIGN_RIGHT: {
+        const rightBound = this.selectedClasses.reduce(
+          (val, view) => Math.max(val, view.position.x + view.rectangle.width),
+          -Number.MAX_SAFE_INTEGER,
+        );
+        this.selectedClasses.forEach((view) =>
+          positionedRectangle_setPosition(
+            view,
+            new Point(rightBound - view.rectangle.width, view.position.y),
+          ),
+        );
+        break;
+      }
+      case ALIGNER_OPERATOR.ALIGN_TOP: {
+        const topBound = this.selectedClasses.reduce(
+          (val, view) => Math.min(val, view.position.y),
+          Number.MAX_SAFE_INTEGER,
+        );
+        this.selectedClasses.forEach((view) =>
+          positionedRectangle_setPosition(
+            view,
+            new Point(view.position.x, topBound),
+          ),
+        );
+        break;
+      }
+      case ALIGNER_OPERATOR.ALIGN_MIDDLE: {
+        const middle =
+          this.selectedClasses.reduce(
+            (val, view) => val + view.position.y + view.rectangle.height,
+            0,
+          ) / this.selectedClasses.length;
+        this.selectedClasses.forEach((view) =>
+          positionedRectangle_setPosition(
+            view,
+            new Point(view.position.x, middle - view.rectangle.height / 2),
+          ),
+        );
+        break;
+      }
+      case ALIGNER_OPERATOR.ALIGN_BOTTOM: {
+        const bottomBound = this.selectedClasses.reduce(
+          (val, view) => Math.max(val, view.position.y + view.rectangle.height),
+          -Number.MAX_SAFE_INTEGER,
+        );
+        this.selectedClasses.forEach((view) =>
+          positionedRectangle_setPosition(
+            view,
+            new Point(view.position.x, bottomBound - view.rectangle.height),
+          ),
+        );
+        break;
+      }
+      case ALIGNER_OPERATOR.SPACE_HORIZONTALLY: {
+        const sorted = this.selectedClasses
+          .slice()
+          .sort((a, b) => a.position.x - b.position.x);
+        // NOTE: handle special case where there are only 2 views, make them adjacent
+        if (sorted.length === 2) {
+          const previousView = sorted[0] as ClassView;
+          const currentView = sorted[1] as ClassView;
+          positionedRectangle_setPosition(
+            currentView,
+            new Point(
+              previousView.position.x + previousView.rectangle.width,
+              currentView.position.y,
+            ),
+          );
+        } else {
+          const spacings = [];
+          for (let idx = 1; idx < sorted.length; idx++) {
+            const previousView = sorted[idx - 1] as ClassView;
+            const currentView = sorted[idx] as ClassView;
+            spacings.push(
+              currentView.position.x -
+                (previousView.position.x + previousView.rectangle.width),
+            );
+          }
+          const averageSpacing =
+            spacings.reduce((val, distance) => val + distance, 0) /
+            spacings.length;
+          for (let idx = 1; idx < sorted.length; idx++) {
+            const previousView = sorted[idx - 1] as ClassView;
+            const currentView = sorted[idx] as ClassView;
+            positionedRectangle_setPosition(
+              currentView,
+              new Point(
+                previousView.position.x +
+                  previousView.rectangle.width +
+                  averageSpacing,
+                currentView.position.y,
+              ),
+            );
+          }
+        }
+        break;
+      }
+      case ALIGNER_OPERATOR.SPACE_VERTICALLY: {
+        const sorted = this.selectedClasses
+          .slice()
+          .sort((a, b) => a.position.y - b.position.y);
+        // NOTE: handle special case where there are only 2 views, make them adjacent
+        if (sorted.length === 2) {
+          const previousView = sorted[0] as ClassView;
+          const currentView = sorted[1] as ClassView;
+          positionedRectangle_setPosition(
+            currentView,
+            new Point(
+              currentView.position.x,
+              previousView.position.y + previousView.rectangle.height,
+            ),
+          );
+        } else {
+          const spacings = [];
+          for (let idx = 1; idx < sorted.length; idx++) {
+            const previousView = sorted[idx - 1] as ClassView;
+            const currentView = sorted[idx] as ClassView;
+            spacings.push(
+              currentView.position.y -
+                (previousView.position.y + previousView.rectangle.height),
+            );
+          }
+          const averageSpacing =
+            spacings.reduce((val, distance) => val + distance, 0) /
+            spacings.length;
+          for (let idx = 1; idx < sorted.length; idx++) {
+            const previousView = sorted[idx - 1] as ClassView;
+            const currentView = sorted[idx] as ClassView;
+            positionedRectangle_setPosition(
+              currentView,
+              new Point(
+                currentView.position.x,
+                previousView.position.y +
+                  previousView.rectangle.height +
+                  averageSpacing,
+              ),
+            );
+          }
+        }
+        break;
+      }
+      default:
+        break;
+    }
+
+    this.drawScreen();
   }
 
   truncateTextWithEllipsis(val: string, limit = this.maxLineLength): string {

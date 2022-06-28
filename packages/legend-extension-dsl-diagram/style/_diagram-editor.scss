@@ -55,6 +55,29 @@
         color: var(--color-light-grey-300);
       }
     }
+
+    &[disabled],
+    &[disabled]:hover {
+      svg {
+        color: var(--color-dark-grey-300);
+      }
+    }
+  }
+
+  &__header__group {
+    @include flexVCenter;
+
+    height: 100%;
+    padding: 0 0.5rem;
+
+    &__separator {
+      height: 1.6rem;
+      border: 0.05rem solid var(--color-dark-shade-100);
+    }
+
+    &__action {
+      width: 2rem;
+    }
   }
 
   &__header__dropdown {
@@ -192,6 +215,10 @@
     &--zoom-in,
     &--zoom-out {
       font-size: 1.8rem;
+    }
+
+    &--aligner {
+      font-size: 1.4rem;
     }
 
     &--property {
