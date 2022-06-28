@@ -138,6 +138,7 @@ const generateLanguageMonarch = (
       PURE_CONNECTION_NAME.MODEL_CHAIN_CONNECTION,
       PURE_CONNECTION_NAME.XML_MODEL_CONNECTION,
       // mapping
+      'include',
       'EnumerationMapping',
       'Pure',
       'AssociationMapping',

@@ -20,8 +20,6 @@ import {
   type Writable,
   SerializationFactory,
   LogEvent,
-  uniq,
-  guaranteeNonNullable,
 } from '@finos/legend-shared';
 import {
   createModelSchema,
@@ -39,6 +37,7 @@ export type LegendApplicationDocumentationEntryConfig = {
   title?: string | undefined;
   text?: string | undefined;
   url?: string | undefined;
+  related?: string[] | undefined;
 };
 
 export class LegendApplicationDocumentationEntry {
@@ -48,6 +47,7 @@ export class LegendApplicationDocumentationEntry {
   title?: string | undefined;
   text?: string | undefined;
   url?: string | undefined;
+  related?: string[] | undefined;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(LegendApplicationDocumentationEntry, {
@@ -55,6 +55,7 @@ export class LegendApplicationDocumentationEntry {
         (val) => val,
         (val) => (val.value ? val : undefined),
       ),
+      related: optional(list(primitive())),
       title: optional(primitive()),
       text: optional(primitive()),
       url: optional(primitive()),
@@ -73,67 +74,6 @@ export class LegendApplicationDocumentationEntry {
   }
 }
 
-export type LegendApplicationContextualDocumentationEntryConfig =
-  LegendApplicationDocumentationEntryConfig & {
-    related?: string[];
-  };
-
-export class LegendApplicationContextualDocumentationEntry {
-  readonly _context!: string;
-
-  markdownText?: MarkdownText | undefined;
-  title?: string | undefined;
-  text?: string | undefined;
-  url?: string | undefined;
-  related: string[] = [];
-
-  static readonly serialization = new SerializationFactory(
-    createModelSchema(LegendApplicationContextualDocumentationEntry, {
-      markdownText: custom(
-        (val) => val,
-        (val) => (val.value ? val : undefined),
-      ),
-      title: optional(primitive()),
-      text: optional(primitive()),
-      url: optional(primitive()),
-      related: list(primitive()),
-    }),
-  );
-
-  static create(
-    json: PlainObject<LegendApplicationContextualDocumentationEntry>,
-    context: string,
-  ): LegendApplicationContextualDocumentationEntry {
-    const entry =
-      LegendApplicationContextualDocumentationEntry.serialization.fromJson(
-        json,
-      );
-    (
-      entry as Writable<LegendApplicationContextualDocumentationEntry>
-    )._context = context;
-    return entry;
-  }
-}
-
-export interface LegendApplicationKeyedContextualDocumentationEntry {
-  key: string;
-  content: LegendApplicationContextualDocumentationEntry;
-}
-
-export const collectKeyedContextualDocumentationEntriesFromConfig = (
-  rawEntries: Record<
-    string,
-    LegendApplicationContextualDocumentationEntryConfig
-  >,
-): LegendApplicationKeyedContextualDocumentationEntry[] =>
-  Object.entries(rawEntries).map((entry) => ({
-    key: entry[0],
-    content: LegendApplicationContextualDocumentationEntry.create(
-      entry[1],
-      entry[0],
-    ),
-  }));
-
 export interface LegendApplicationKeyedDocumentationEntry {
   key: string;
   content: LegendApplicationDocumentationEntry;
@@ -147,22 +87,42 @@ export const collectKeyedDocumnetationEntriesFromConfig = (
     content: LegendApplicationDocumentationEntry.create(entry[1], entry[0]),
   }));
 
+export type LegendApplicationContextualDocumentationMapConfig = Record<
+  string,
+  string
+>;
+export type LegendApplicationContextualDocumentationEntry = {
+  context: string;
+  documentationKey: string;
+};
+export const collectContextualDocumnetationEntry = (
+  contextualDocMap: LegendApplicationContextualDocumentationMapConfig,
+): LegendApplicationContextualDocumentationEntry[] =>
+  Object.entries(contextualDocMap).map((entry) => ({
+    context: entry[0],
+    documentationKey: entry[1],
+  }));
+
 export class LegendApplicationDocumentationService {
   url?: string | undefined;
 
   private docRegistry = new Map<string, LegendApplicationDocumentationEntry>();
-  private contextualDocRegistry = new Map<
+  private contextualDocMap = new Map<
     string,
-    LegendApplicationContextualDocumentationEntry
+    LegendApplicationDocumentationEntry
   >();
 
   constructor(applicationStore: ApplicationStore<LegendApplicationConfig>) {
+    // set the main documenation site url
+    this.url = applicationStore.config.documentationUrl;
+
+    // build doc registry
     applicationStore.pluginManager
       .getApplicationPlugins()
       .flatMap((plugin) => plugin.getExtraKeyedDocumentationEntries?.() ?? [])
       .forEach((entry) => {
         // Entries specified natively will not override each other. This is to prevent entries from extensions
-        // overriding entries from core.
+        // accidentally overide entries from core.
         if (this.hasDocEntry(entry.key)) {
           applicationStore.log.warn(
             LogEvent.create(
@@ -174,6 +134,7 @@ export class LegendApplicationDocumentationService {
           this.docRegistry.set(entry.key, entry.content);
         }
       });
+
     // entries from config will override entries specified natively
     applicationStore.config.keyedDocumentationEntries.forEach((entry) =>
       this.docRegistry.set(entry.key, entry.content),
@@ -183,46 +144,37 @@ export class LegendApplicationDocumentationService {
     applicationStore.pluginManager
       .getApplicationPlugins()
       .flatMap(
-        (plugin) =>
-          plugin.getExtraKeyedContextualDocumentationEntries?.() ?? [],
+        (plugin) => plugin.getExtraContextualDocumentationEntries?.() ?? [],
       )
       .forEach((entry) => {
-        // Entries specified natively will not override each other. This is to prevent entries from extensions
-        // overriding entries from core. However, we will merge the list of related doc entries. This allows
-        // extensions to broaden related doc entries for certain contexts
-        if (this.hasContextualDocEntry(entry.key)) {
+        // NOTE: Entries specified natively will not override each other. This is to prevent entries from extensions
+        // overriding entries from core.
+        //
+        // However, it might be useful to allow extending the list of related doc entries.
+        // This allows extensions to broaden related doc entries for contextual docs
+        // If we need to support this behavior, we could create a dedicated extension method
+        if (this.hasContextualDocEntry(entry.context)) {
           applicationStore.log.warn(
             LogEvent.create(
               APPLICATION_EVENT.APPLICATION_CONTEXTUAL_DOCUMTENTION_LOAD_SKIPPED,
             ),
-            entry.key,
+            entry.context,
           );
-          const existingEntry = guaranteeNonNullable(
-            this.getContextualDocEntry(entry.key),
-          );
-          existingEntry.related = uniq([
-            ...existingEntry.related,
-            ...entry.content.related,
-          ]);
         } else {
-          this.contextualDocRegistry.set(entry.key, entry.content);
+          const existingDocEntry = this.getDocEntry(entry.documentationKey);
+          if (existingDocEntry) {
+            this.contextualDocMap.set(entry.context, existingDocEntry);
+          }
         }
       });
+
     // entries from config will override entries specified natively
-    // however, we will keep merging related doc entries list
-    applicationStore.config.keyedContextualDocumentationEntries.forEach(
-      (entry) => {
-        const existingEntry = this.getContextualDocEntry(entry.key);
-        if (existingEntry) {
-          entry.content.related = uniq([
-            ...existingEntry.related,
-            ...entry.content.related,
-          ]);
-        }
-        this.contextualDocRegistry.set(entry.key, entry.content);
-      },
-    );
-    this.url = applicationStore.config.documentationUrl;
+    applicationStore.config.contextualDocEntries.forEach((entry) => {
+      const existingDocEntry = this.getDocEntry(entry.documentationKey);
+      if (existingDocEntry) {
+        this.contextualDocMap.set(entry.context, existingDocEntry);
+      }
+    });
   }
 
   getDocEntry(key: string): LegendApplicationDocumentationEntry | undefined {
@@ -235,12 +187,12 @@ export class LegendApplicationDocumentationService {
 
   getContextualDocEntry(
     key: string,
-  ): LegendApplicationContextualDocumentationEntry | undefined {
-    return this.contextualDocRegistry.get(key);
+  ): LegendApplicationDocumentationEntry | undefined {
+    return this.contextualDocMap.get(key);
   }
 
   hasContextualDocEntry(key: string): boolean {
-    return this.contextualDocRegistry.has(key);
+    return this.contextualDocMap.has(key);
   }
 
   getAllDocEntries(): LegendApplicationDocumentationEntry[] {
@@ -260,16 +212,10 @@ export class LegendApplicationDocumentationService {
     return result;
   }
 
-  publishContextualDocRegistry(): object {
-    const result: Record<
-      string,
-      LegendApplicationContextualDocumentationEntryConfig
-    > = {};
-    this.contextualDocRegistry.forEach((value, key) => {
-      result[key] =
-        LegendApplicationContextualDocumentationEntry.serialization.toJson(
-          value,
-        );
+  publishContextualDocMap(): LegendApplicationContextualDocumentationMapConfig {
+    const result: LegendApplicationContextualDocumentationMapConfig = {};
+    this.contextualDocMap.forEach((value, key) => {
+      result[key] = value._documentationKey;
     });
     return result;
   }

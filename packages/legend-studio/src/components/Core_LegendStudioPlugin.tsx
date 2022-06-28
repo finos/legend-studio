@@ -15,14 +15,14 @@
  */
 
 import {
-  collectKeyedContextualDocumentationEntriesFromConfig,
+  collectContextualDocumnetationEntry,
   collectKeyedDocumnetationEntriesFromConfig,
-  type LegendApplicationKeyedContextualDocumentationEntry,
+  type LegendApplicationContextualDocumentationEntry,
   type LegendApplicationKeyedDocumentationEntry,
 } from '@finos/legend-application';
 import packageJson from '../../package.json';
 import {
-  CORE_CONTEXTUAL_DOCUMENTATION_ENTRIES,
+  CORE_CONTEXTUAL_DOCUMENTATION_MAP,
   CORE_DOCUMENTATION_ENTRIES,
 } from '../stores/LegendStudioDocumentation.js';
 import { LegendStudioPlugin } from '../stores/LegendStudioPlugin.js';
@@ -40,9 +40,9 @@ export class Core_LegendStudioPlugin extends LegendStudioPlugin {
     );
   }
 
-  override getExtraKeyedContextualDocumentationEntries(): LegendApplicationKeyedContextualDocumentationEntry[] {
-    return collectKeyedContextualDocumentationEntriesFromConfig(
-      CORE_CONTEXTUAL_DOCUMENTATION_ENTRIES,
+  override getExtraContextualDocumentationEntries(): LegendApplicationContextualDocumentationEntry[] {
+    return collectContextualDocumnetationEntry(
+      CORE_CONTEXTUAL_DOCUMENTATION_MAP,
     );
   }
 }

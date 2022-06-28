@@ -19,12 +19,12 @@ import {
   guaranteeNonNullable,
 } from '@finos/legend-shared';
 import {
+  collectKeyedDocumnetationEntriesFromConfig,
+  collectContextualDocumnetationEntry,
   type LegendApplicationKeyedDocumentationEntry,
   type LegendApplicationDocumentationEntryConfig,
-  type LegendApplicationKeyedContextualDocumentationEntry,
-  type LegendApplicationContextualDocumentationEntryConfig,
-  collectKeyedDocumnetationEntriesFromConfig,
-  collectKeyedContextualDocumentationEntriesFromConfig,
+  type LegendApplicationContextualDocumentationMapConfig,
+  type LegendApplicationContextualDocumentationEntry,
 } from './LegendApplicationDocumentationService.js';
 
 export interface LegendApplicationVersionData {
@@ -39,12 +39,9 @@ export interface LegendApplicationConfigurationData {
   documentation?: {
     url: string;
     entries?: Record<string, LegendApplicationDocumentationEntryConfig>;
-    contextualEntries?: Record<
-      string,
-      LegendApplicationContextualDocumentationEntryConfig
-    >;
+    contextualDocMap?: LegendApplicationContextualDocumentationMapConfig;
   };
-  // TODO: when we support vault-like settings
+  // TODO: when we support vault-like settings, we could support `settingOverrides`
   // See https://github.com/finos/legend-studio/issues/407
   // settingOverrides
   extensions?: Record<PropertyKey, unknown>;
@@ -59,7 +56,7 @@ export abstract class LegendApplicationConfig {
   readonly documentationUrl: string | undefined;
   readonly keyedDocumentationEntries: LegendApplicationKeyedDocumentationEntry[] =
     [];
-  readonly keyedContextualDocumentationEntries: LegendApplicationKeyedContextualDocumentationEntry[] =
+  readonly contextualDocEntries: LegendApplicationContextualDocumentationEntry[] =
     [];
 
   // version
@@ -87,10 +84,9 @@ export abstract class LegendApplicationConfig {
     this.keyedDocumentationEntries = collectKeyedDocumnetationEntriesFromConfig(
       configData.documentation?.entries ?? {},
     );
-    this.keyedContextualDocumentationEntries =
-      collectKeyedContextualDocumentationEntriesFromConfig(
-        configData.documentation?.contextualEntries ?? {},
-      );
+    this.contextualDocEntries = collectContextualDocumnetationEntry(
+      configData.documentation?.contextualDocMap ?? {},
+    );
 
     // Version
     this.appVersion = guaranteeNonNullable(

@@ -271,14 +271,14 @@ const VirtualAssistantSearchPanel = observer(() => {
       ContentType.APPLICATION_JSON,
     );
   };
-  const downloadContextualDocRegistry = (): void => {
+  const downloadContextualDocMap = (): void => {
     downloadFileUsingDataURI(
       `documentation-registry_${format(
         new Date(Date.now()),
         DATE_TIME_FORMAT,
       )}.json`,
       JSON.stringify(
-        applicationStore.documentationService.publishContextualDocRegistry(),
+        applicationStore.documentationService.publishContextualDocMap(),
         undefined,
         TAB_SIZE,
       ),
@@ -363,8 +363,8 @@ const VirtualAssistantSearchPanel = observer(() => {
                 <MenuContentItem onClick={downloadDocRegistry}>
                   Download documentation registry
                 </MenuContentItem>
-                <MenuContentItem onClick={downloadContextualDocRegistry}>
-                  Download contextual documentation registry
+                <MenuContentItem onClick={downloadContextualDocMap}>
+                  Download contextual documentation mapping
                 </MenuContentItem>
               </MenuContent>
             }

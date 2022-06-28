@@ -141,9 +141,11 @@ const PureSingleExecutionConfigurationEditor = observer(
           label: string | React.ReactNode;
           value?: Runtime;
         }[]);
+    // NOTE: for now, only include runtime associated with the mapping
+    // TODO?: Should we bring the runtime compatibility check from query to here?
     const runtimes = editorStore.graphManagerState.graph.runtimes.filter((rt) =>
       rt.runtimeValue.mappings.map((m) => m.value).includes(mapping),
-    ); // only include runtime associated with the mapping
+    );
     runtimeOptions = runtimeOptions.concat(
       runtimes.map((rt) => ({
         label: rt.path,

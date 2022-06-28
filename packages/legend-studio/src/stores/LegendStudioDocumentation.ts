@@ -15,7 +15,7 @@
  */
 
 import type {
-  LegendApplicationContextualDocumentationEntryConfig,
+  LegendApplicationContextualDocumentationMapConfig,
   LegendApplicationDocumentationEntryConfig,
 } from '@finos/legend-application';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT } from './LegendStudioApplicationNavigationContext.js';
@@ -67,8 +67,13 @@ export enum LEGEND_STUDIO_DOCUMENTATION_KEY {
   QUESTION_HOW_TO_DEFINE_A_CLASS = 'question.how-to-define-a-class',
   QUESTION_HOW_TO_DEFINE_A_PROPERTY = 'question.how-to-define-a-class-property',
   QUESTION_HOW_TO_DEFINE_A_DERIVATION = 'question.how-to-define-a-class-derivation',
+  QUESTION_HOW_TO_WRITE_A_DERIVATION_LAMBDA = 'question.how-to-write-a-class-derivation-lambda',
   QUESTION_HOW_TO_DEFINE_A_CONSTRAINT = 'question.how-to-define-a-class-constraint',
+  QUESTION_HOW_TO_WRITE_A_CONSTRAINT_LAMBDA = 'question.how-to-write-a-class-constraint-lambda',
   QUESTION_HOW_TO_SPECIFY_A_SUPERTYPE = 'question.how-to-specify-a-class-supertype',
+
+  // contexts
+  CONTEXT_CLASS_EDITOR = 'context.class-editor',
 }
 
 export const CORE_DOCUMENTATION_ENTRIES: Record<
@@ -263,21 +268,31 @@ export const CORE_DOCUMENTATION_ENTRIES: Record<
     title: `How do I define a class derivation (derived property)?`,
     url: `https://legend.finos.org/docs/studio/create-data-model#add-a-derived-property`,
   },
+  [LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_HOW_TO_WRITE_A_DERIVATION_LAMBDA]: {
+    title: `How to write a derived property lambda in Pure?`,
+    url: `https://legend.finos.org/docs/language/legend-language#derivation`,
+    related: [
+      LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_HOW_TO_WRITE_PURE_LAMBDA,
+      LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_WHAT_IS_BASIC_PURE_LANGUAGE,
+    ],
+  },
   [LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_HOW_TO_DEFINE_A_CONSTRAINT]: {
     title: `How do I put constraint on a class?`,
     url: `https://legend.finos.org/docs/studio/create-data-model#add-a-constraint`,
+  },
+  [LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_HOW_TO_WRITE_A_CONSTRAINT_LAMBDA]: {
+    title: `How to write a constraint lambda in Pure?`,
+    url: `https://legend.finos.org/docs/language/legend-language#constraint`,
+    related: [
+      LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_HOW_TO_WRITE_PURE_LAMBDA,
+      LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_WHAT_IS_BASIC_PURE_LANGUAGE,
+    ],
   },
   [LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_HOW_TO_SPECIFY_A_SUPERTYPE]: {
     title: `How do I specify a supertype of a class?`,
     url: `https://legend.finos.org/docs/studio/create-data-model#add-a-super-type`,
   },
-};
-
-export const CORE_CONTEXTUAL_DOCUMENTATION_ENTRIES: Record<
-  string,
-  LegendApplicationContextualDocumentationEntryConfig
-> = {
-  [LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT.CLASS_EDITOR]: {
+  [LEGEND_STUDIO_DOCUMENTATION_KEY.CONTEXT_CLASS_EDITOR]: {
     related: [
       LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_HOW_TO_DEFINE_A_CLASS,
       LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_HOW_TO_DEFINE_A_PROPERTY,
@@ -286,22 +301,14 @@ export const CORE_CONTEXTUAL_DOCUMENTATION_ENTRIES: Record<
       LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_HOW_TO_SPECIFY_A_SUPERTYPE,
     ],
   },
-  [LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT.CLASS_DERIVED_PROPERTY_LAMBDA_EDITOR]:
-    {
-      title: `How to write a derived property lambda in Pure?`,
-      url: `https://legend.finos.org/docs/language/legend-language#derivation`,
-      related: [
-        LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_HOW_TO_WRITE_PURE_LAMBDA,
-        LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_WHAT_IS_BASIC_PURE_LANGUAGE,
-      ],
-    },
-  [LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT.CLASS_CONTRAINT_LAMBDA_EDITOR]:
-    {
-      title: `How to write a constraint lambda in Pure?`,
-      url: `https://legend.finos.org/docs/language/legend-language#constraint`,
-      related: [
-        LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_HOW_TO_WRITE_PURE_LAMBDA,
-        LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_WHAT_IS_BASIC_PURE_LANGUAGE,
-      ],
-    },
 };
+
+export const CORE_CONTEXTUAL_DOCUMENTATION_MAP: LegendApplicationContextualDocumentationMapConfig =
+  {
+    [LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT.CLASS_EDITOR]:
+      LEGEND_STUDIO_DOCUMENTATION_KEY.CONTEXT_CLASS_EDITOR,
+    [LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT.CLASS_DERIVED_PROPERTY_LAMBDA_EDITOR]:
+      LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_HOW_TO_WRITE_A_CONSTRAINT_LAMBDA,
+    [LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT.CLASS_CONTRAINT_LAMBDA_EDITOR]:
+      LEGEND_STUDIO_DOCUMENTATION_KEY.QUESTION_HOW_TO_WRITE_A_CONSTRAINT_LAMBDA,
+  };
