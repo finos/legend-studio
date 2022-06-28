@@ -41,7 +41,10 @@ import {
 } from '@finos/legend-graph';
 import type { FileGenerationTypeOption } from '../../../stores/editor-state/GraphGenerationState.js';
 import { flowResult } from 'mobx';
-import { useApplicationStore } from '@finos/legend-application';
+import {
+  packageableElementFormatOptionLabel,
+  useApplicationStore,
+} from '@finos/legend-application';
 import type { EmbeddedDataTypeOption } from '../../../stores/editor-state/element-editor-state/data/DataEditorState.js';
 import type { DSLData_LegendStudioPlugin_Extension } from '../../../stores/DSLData_LegendStudioPlugin_Extension.js';
 import { PACKAGEABLE_ELEMENT_TYPE } from '../../../stores/shared/ModelUtil.js';
@@ -211,11 +214,15 @@ const NewPureModelConnectionDriverEditor = observer(
     // class
     const _class = newConnectionValueDriver.class;
     const classOptions = editorStore.classOptions.slice().sort(compareLabelFn);
+    const classOptionsWithTheme = classOptions.map((co) => ({
+      ...co,
+      darkMode: true,
+    }));
     const selectedClassOption = _class
-      ? { label: _class.path, value: _class }
+      ? { label: _class.path, value: _class, darkMode: true }
       : null;
     const onClassSelectionChange = (
-      val: { label: string; value: Class } | null,
+      val: { label: string; value: Class; darkMode: true } | null,
     ): void => {
       if (val) {
         newConnectionValueDriver.setClass(val.value);
@@ -240,10 +247,11 @@ const NewPureModelConnectionDriverEditor = observer(
         <div className="">
           <CustomSelectorInput
             className="panel__content__form__section__dropdown"
-            options={classOptions}
+            options={classOptionsWithTheme}
             onChange={onClassSelectionChange}
             value={selectedClassOption}
             darkMode={true}
+            formatOptionLabel={packageableElementFormatOptionLabel}
           />
         </div>
       </div>
@@ -333,6 +341,7 @@ const NewFileGenerationDriverEditor = observer(() => {
           options={options}
           onChange={onTypeSelectionChange}
           value={newConnectionDriver.typeOption}
+          darkMode={true}
         />
       </div>
     </div>
