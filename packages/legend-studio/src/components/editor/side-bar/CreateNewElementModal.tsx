@@ -214,15 +214,11 @@ const NewPureModelConnectionDriverEditor = observer(
     // class
     const _class = newConnectionValueDriver.class;
     const classOptions = editorStore.classOptions.slice().sort(compareLabelFn);
-    const classOptionsWithTheme = classOptions.map((co) => ({
-      ...co,
-      darkMode: true,
-    }));
     const selectedClassOption = _class
-      ? { label: _class.path, value: _class, darkMode: true }
+      ? { label: _class.path, value: _class }
       : null;
     const onClassSelectionChange = (
-      val: { label: string; value: Class; darkMode: true } | null,
+      val: { label: string; value: Class } | null,
     ): void => {
       if (val) {
         newConnectionValueDriver.setClass(val.value);
@@ -247,7 +243,7 @@ const NewPureModelConnectionDriverEditor = observer(
         <div className="">
           <CustomSelectorInput
             className="panel__content__form__section__dropdown"
-            options={classOptionsWithTheme}
+            options={classOptions}
             onChange={onClassSelectionChange}
             value={selectedClassOption}
             darkMode={true}
