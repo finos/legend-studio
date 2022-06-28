@@ -1,5 +1,23 @@
 # @finos/legend-graph
 
+## 9.0.0
+
+### Major Changes
+
+- [#1239](https://github.com/finos/legend-studio/pull/1239) [`4dacea12`](https://github.com/finos/legend-studio/commit/4dacea12f53e93eab6e53f29febe94c7693109e2) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Removed `V1_getExtraSourceInformationKeys` and `AbstractPureGraphManager.pruneSourceInformation` as we have refactored to do this more systematically. If you need to prune source information, you can still use `MetaModalUtils.pruneSourceInformation`, which is now configured to remove all fields with the suffix `sourceInformation`.
+
+  **BREAKING CHANGE:** `AbstractPureGraphManager.elementToEntity` now takes an `option: { pruneSourceInformation?: boolean }` instead of a boolean flag to determine if it should prune the source information.
+
+* [#1236](https://github.com/finos/legend-studio/pull/1236) [`ed3da137`](https://github.com/finos/legend-studio/commit/ed3da13775cb37560dea814fc665bd1ff16c998d) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Remove `hashValue` from `PackageableElementReference` and remove `V1_transformElementReference`.
+
+### Minor Changes
+
+- [#893](https://github.com/finos/legend-studio/pull/893) [`24ea81a8`](https://github.com/finos/legend-studio/commit/24ea81a83f97189f3c914d6b7f2561e191ad5e89) ([@gayathrir11](https://github.com/gayathrir11)) - Introduce extension mechanism consistently and exhaustively for class mapping
+
+### Patch Changes
+
+- [#1236](https://github.com/finos/legend-studio/pull/1236) [`ed3da137`](https://github.com/finos/legend-studio/commit/ed3da13775cb37560dea814fc665bd1ff16c998d) ([@akphi](https://github.com/akphi)) - Fix a regression where stubbed `enum-value mappings` are not properly detected ([#1237](https://github.com/finos/legend-studio/issues/1237)).
+
 ## 8.0.3
 
 ## 8.0.2

@@ -1,5 +1,31 @@
 # @finos/legend-application
 
+## 5.0.0
+
+### Major Changes
+
+- [#1239](https://github.com/finos/legend-studio/pull/1239) [`4dacea12`](https://github.com/finos/legend-studio/commit/4dacea12f53e93eab6e53f29febe94c7693109e2) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Restructured documentation registry, each documentation entry now can also relate to other documentation (referring to others by their keys). Contextual documentation registry is now simplified to become a map between `context` and `documentation key`. As a result, in `LegendApplicationConfigurationData.documentation`, `contextualDocEntries` now becomes `contextualDocMap`, also, in `LegendApplicationPlugin`, `getExtraKeyedContextualDocumentationEntries()` now becomes `getExtraContextualDocumentationEntries()`. Renamed `LegendApplicationDocumentationEntryConfig` to `LegendApplicationDocumentationConfigEntry`.
+
+* [#1239](https://github.com/finos/legend-studio/pull/1239) [`4dacea12`](https://github.com/finos/legend-studio/commit/4dacea12f53e93eab6e53f29febe94c7693109e2) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Change `LegendApplication` contructor to take a `LegendApplicationConfigurationInput<T extends LegendApplicationConfigurationData>` to make it more scalable.
+
+### Minor Changes
+
+- [#1239](https://github.com/finos/legend-studio/pull/1239) [`4dacea12`](https://github.com/finos/legend-studio/commit/4dacea12f53e93eab6e53f29febe94c7693109e2) ([@akphi](https://github.com/akphi)) - Expose `execution plan viewer` component.
+
+* [#1239](https://github.com/finos/legend-studio/pull/1239) [`4dacea12`](https://github.com/finos/legend-studio/commit/4dacea12f53e93eab6e53f29febe94c7693109e2) ([@akphi](https://github.com/akphi)) - Support loading documentation regitry entries from an external source, e.g. `documentation.registry: [{ url: 'https://legend.finos.org/resource/studio/documentation' }]`; this config takes an additional flag `simple` when the endpoint is only just a `JSON` file and the server has a fairly relaxed `CORS` policy (Access-Control-Allow-Origin", "\*"), e.g. `documentation.registry: [{ url: 'https://legend.finos.org/resource/studio/documentation.json', simple: true }]`.
+
+  Also, we have finalized the order of overriding for documentation entries. The later will override the former in order:
+
+  - Natively specified: specified in the codebase (no overriding allowed within this group of documentation entries): _since we have extension mechanism, the order of plugins matter, we do not allow overriding, i.e. so the first specification for a documentation key wins_
+  - Fetched from documentation registries (no overriding allowed within this group of documentation entries): _since we have extension mechanism and allow specifying multiple registry URLS, we do not allow overriding, i.e. so the first specification for a documentation key wins_
+  - Configured in application config (overiding allowed within this group)
+
+  We also provided an extension mechanism to specify required documentation entries. When we build the documentation registry, we will check these keys and any documentation keys configured in the contextual documentation map to ensure the application documentation show up properly for crucial use cases. Missing entries will trigger warnings.
+
+### Patch Changes
+
+- [#1240](https://github.com/finos/legend-studio/pull/1240) [`7b5dfbee`](https://github.com/finos/legend-studio/commit/7b5dfbee145143cd8f08ce70d849691609310a50) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Add element path to element dropdown.
+
 ## 4.0.3
 
 ## 4.0.2

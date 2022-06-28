@@ -1,5 +1,11 @@
 # @finos/legend-studio
 
+## 10.2.0
+
+### Minor Changes
+
+- [#893](https://github.com/finos/legend-studio/pull/893) [`24ea81a8`](https://github.com/finos/legend-studio/commit/24ea81a83f97189f3c914d6b7f2561e191ad5e89) ([@gayathrir11](https://github.com/gayathrir11)) - Introduce extension mechanism consistently and exhaustively for class mapping
+
 ## 10.1.2
 
 ## 10.1.1

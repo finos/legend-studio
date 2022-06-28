@@ -1,5 +1,7 @@
 # @finos/legend-query-app
 
+## 6.1.0
+
 ## 6.0.0
 
 ## 5.7.0

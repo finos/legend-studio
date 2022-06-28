@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-text
 
+## 3.0.4
+
+### Patch Changes
+
+- [#1236](https://github.com/finos/legend-studio/pull/1236) [`ed3da137`](https://github.com/finos/legend-studio/commit/ed3da13775cb37560dea814fc665bd1ff16c998d) ([@akphi](https://github.com/akphi)) - `Test.type` is now optional, when not provided, we will render the content as plain text.
+
 ## 3.0.3
 
 ## 3.0.2
