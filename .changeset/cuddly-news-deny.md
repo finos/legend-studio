@@ -9,3 +9,5 @@ Also, we have finalized the order of overriding for documentation entries. The l
 - Natively specified: specified in the codebase (no overriding allowed within this group of documentation entries): _since we have extension mechanism, the order of plugins matter, we do not allow overriding, i.e. so the first specification for a documentation key wins_
 - Fetched from documentation registries (no overriding allowed within this group of documentation entries): _since we have extension mechanism and allow specifying multiple registry URLS, we do not allow overriding, i.e. so the first specification for a documentation key wins_
 - Configured in application config (overiding allowed within this group)
+
+We also provided an extension mechanism to specify required documentation entries. When we build the documentation registry, we will check these keys and any documentation keys configured in the contextual documentation map to ensure the application documentation show up properly for crucial use cases. Missing entries will trigger warnings.

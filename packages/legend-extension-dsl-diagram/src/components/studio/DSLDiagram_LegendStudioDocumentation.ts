@@ -14,27 +14,7 @@
  * limitations under the License.
  */
 
-import type { LegendApplicationDocumentationConfigEntry } from '@finos/legend-application';
-
 export enum DSL_DIAGRAM_LEGEND_STUDIO_DOCUMENTATION_KEY {
   GRAMMAR_PARSER = 'dsl-diagram.grammar.parser',
   GRAMMAR_ELEMENT_DIAGRAM = 'dsl-diagram.grammar.element.diagram',
 }
-
-export const DSL_DIAGRAM_DOCUMENTATION_ENTRIES: Record<
-  string,
-  LegendApplicationDocumentationConfigEntry
-> = {
-  [DSL_DIAGRAM_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER]: {
-    title: `What is Diagram DSL about?`,
-    markdownText: {
-      value: `\`Diagram DSL\`  (coressponding to \`###Diagram\` section in \`Pure\`) concerns with visualizing data models and their relationship`,
-    },
-  },
-  [DSL_DIAGRAM_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_ELEMENT_DIAGRAM]: {
-    title: `What is a diagram element?`,
-    markdownText: {
-      value: `A \`Diagram\` element specifies the visualization/rendering of data models and their relationship`,
-    },
-  },
-};

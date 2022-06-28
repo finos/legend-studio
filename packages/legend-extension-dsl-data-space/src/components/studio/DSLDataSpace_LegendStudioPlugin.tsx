@@ -40,20 +40,13 @@ import {
   DataSpaceExecutionContext,
 } from '../../models/metamodels/pure/model/packageableElements/dataSpace/DSLDataSpace_DataSpace.js';
 import { LATEST_VERSION_ALIAS } from '@finos/legend-server-depot';
-import {
-  collectKeyedDocumnetationEntriesFromConfig,
-  type LegendApplicationDocumentationEntry,
-  type LegendApplicationKeyedDocumentationEntry,
-} from '@finos/legend-application';
-import {
-  DSL_DATA_SPACE_DOCUMENTATION_ENTRIES,
-  DSL_DATA_SPACE_LEGEND_STUDIO_DOCUMENTATION_KEY,
-} from './DSLDataSpace_LegendStudioDocumentation.js';
+import { DSL_DATA_SPACE_LEGEND_STUDIO_DOCUMENTATION_KEY } from './DSLDataSpace_LegendStudioDocumentation.js';
 import {
   PURE_GRAMMAR_DATA_SPACE_ELEMENT_TYPE_LABEL,
   PURE_GRAMMAR_DATA_SPACE_PARSER_NAME,
 } from '../../graphManager/DSLDataSpace_PureGraphManagerPlugin.js';
 import { SIMPLE_DATA_SPACE_SNIPPET } from './DSLDataSpace_CodeSnippets.js';
+import type { LegendApplicationDocumentationEntry } from '@finos/legend-application';
 
 const DATA_SPACE_ELEMENT_TYPE = 'DATA SPACE';
 const DATA_SPACE_ELEMENT_PROJECT_EXPLORER_DND_TYPE =
@@ -67,10 +60,11 @@ export class DSLDataSpace_LegendStudioPlugin
     super(packageJson.extensions.studioPlugin, packageJson.version);
   }
 
-  override getExtraKeyedDocumentationEntries(): LegendApplicationKeyedDocumentationEntry[] {
-    return collectKeyedDocumnetationEntriesFromConfig(
-      DSL_DATA_SPACE_DOCUMENTATION_ENTRIES,
-    );
+  override getExtraRequiredDocumentationKeys(): string[] {
+    return [
+      DSL_DATA_SPACE_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_ELEMENT_DATA_SPACE,
+      DSL_DATA_SPACE_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER,
+    ];
   }
 
   getExtraSupportedElementTypes(): string[] {

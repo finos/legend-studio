@@ -34,6 +34,13 @@ export abstract class LegendApplicationPlugin extends AbstractPlugin {
   getExtraKeyedDocumentationEntries?(): LegendApplicationKeyedDocumentationEntry[];
 
   /**
+   * Get the list of documentation keys whose corresponding documentation entry is required
+   * in the application. The documentation registry will be scanned for the presence of these,
+   * if they are not available, warnings will be issued.
+   */
+  getExtraRequiredDocumentationKeys?(): string[];
+
+  /**
    * Get the list of contextual documentation entries to be registered with documentation service.
    */
   getExtraContextualDocumentationEntries?(): LegendApplicationContextualDocumentationEntry[];

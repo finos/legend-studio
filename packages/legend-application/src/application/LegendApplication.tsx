@@ -305,7 +305,7 @@ export abstract class LegendApplication {
           assertErrorThrown(error);
           this.logger.warn(
             LogEvent.create(
-              APPLICATION_EVENT.APPLICATION_DOCUMTENTION_FETCH_FAILURE,
+              APPLICATION_EVENT.APPLICATION_DOCUMENTATION_FETCH_FAILURE,
             ),
             error,
           );

@@ -38,15 +38,7 @@ import { TextEditorState } from '../../stores/studio/TextEditorState.js';
 import { TextElementEditor } from './TextElementEditor.js';
 import type { PackageableElement } from '@finos/legend-graph';
 import { Text } from '../../models/metamodels/pure/model/packageableElements/text/DSLText_Text.js';
-import {
-  collectKeyedDocumnetationEntriesFromConfig,
-  type LegendApplicationDocumentationEntry,
-  type LegendApplicationKeyedDocumentationEntry,
-} from '@finos/legend-application';
-import {
-  DSL_TEXT_DOCUMENTATION_ENTRIES,
-  DSL_TEXT_LEGEND_STUDIO_DOCUMENTATION_KEY,
-} from './DSLText_LegendStudioDocumentation.js';
+import { DSL_TEXT_LEGEND_STUDIO_DOCUMENTATION_KEY } from './DSLText_LegendStudioDocumentation.js';
 import {
   PURE_GRAMMAR_TEXT_ELEMENT_TYPE_LABEL,
   PURE_GRAMMAR_TEXT_PARSER_NAME,
@@ -56,6 +48,7 @@ import {
   PLAIN_TEXT_SNIPPET,
 } from './DSLText_CodeSnippets.js';
 import { create_TextElement } from '../../helper/DSLText_Helper.js';
+import type { LegendApplicationDocumentationEntry } from '@finos/legend-application';
 
 const TEXT_ELEMENT_TYPE = 'TEXT';
 const TEXT_ELEMENT_PROJECT_EXPLORER_DND_TYPE = 'PROJECT_EXPLORER_TEXT';
@@ -68,10 +61,11 @@ export class DSLText_LegendStudioPlugin
     super(packageJson.extensions.studioPlugin, packageJson.version);
   }
 
-  override getExtraKeyedDocumentationEntries(): LegendApplicationKeyedDocumentationEntry[] {
-    return collectKeyedDocumnetationEntriesFromConfig(
-      DSL_TEXT_DOCUMENTATION_ENTRIES,
-    );
+  override getExtraRequiredDocumentationKeys(): string[] {
+    return [
+      DSL_TEXT_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_ELEMENT_TEXT,
+      DSL_TEXT_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER,
+    ];
   }
 
   getExtraSupportedElementTypes(): string[] {

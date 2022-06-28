@@ -59,18 +59,10 @@ import { ServiceStore } from '../models/metamodels/pure/model/packageableElement
 import { RootServiceInstanceSetImplementation } from '../models/metamodels/pure/model/packageableElements/store/serviceStore/mapping/ESService_RootServiceInstanceSetImplementation.js';
 import { ServiceStoreConnection } from '../models/metamodels/pure/model/packageableElements/store/serviceStore/connection/ESService_ServiceStoreConnection.js';
 import {
-  collectKeyedDocumnetationEntriesFromConfig,
-  type LegendApplicationDocumentationEntry,
-  type LegendApplicationKeyedDocumentationEntry,
-} from '@finos/legend-application';
-import {
   PURE_GRAMMAR_SERVICE_STORE_ELEMENT_TYPE_LABEL,
   PURE_GRAMMAR_SERVICE_STORE_PARSER_NAME,
 } from '../graphManager/ESService_PureGraphManagerPlugin.js';
-import {
-  EXTERNAL_STORE_SERVICE_DOCUMENTATION_ENTRIES,
-  EXTERNAL_STORE_SERVICE_LEGEND_STUDIO_DOCUMENTATION_KEY,
-} from './ESService_LegendStudioDocumentation.js';
+import { EXTERNAL_STORE_SERVICE_LEGEND_STUDIO_DOCUMENTATION_KEY } from './ESService_LegendStudioDocumentation.js';
 import {
   BLANK_SERVICE_STORE_SNIPPET,
   SERVICE_STORE_EMBEDDED_DATA,
@@ -81,6 +73,7 @@ import {
 import { ServiceStoreEmbeddedData } from '../models/metamodels/pure/model/data/ESService_ServiceStoreEmbeddedData.js';
 import { ServiceStoreEmbeddedDataState } from '../stores/studio/ESService_ServiceStoreEmbeddedDataEditorState.js';
 import { ServiceStoreEmbeddedDataEditor } from './ESService_ServiceStoreEmbeddedData.js';
+import type { LegendApplicationDocumentationEntry } from '@finos/legend-application';
 
 const SERVICE_STORE_ELEMENT_TYPE = 'SERVICE_STORE';
 const SERVICE_STORE_ELEMENT_PROJECT_EXPLORER_DND_TYPE =
@@ -98,10 +91,11 @@ export class ESService_LegendStudioPlugin
     super(packageJson.extensions.studioPlugin, packageJson.version);
   }
 
-  override getExtraKeyedDocumentationEntries(): LegendApplicationKeyedDocumentationEntry[] {
-    return collectKeyedDocumnetationEntriesFromConfig(
-      EXTERNAL_STORE_SERVICE_DOCUMENTATION_ENTRIES,
-    );
+  override getExtraRequiredDocumentationKeys(): string[] {
+    return [
+      EXTERNAL_STORE_SERVICE_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_ELEMENT_SERVICE_STORE,
+      EXTERNAL_STORE_SERVICE_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER,
+    ];
   }
 
   getExtraSupportedElementTypes(): string[] {

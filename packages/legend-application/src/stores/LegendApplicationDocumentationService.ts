@@ -20,6 +20,7 @@ import {
   type Writable,
   SerializationFactory,
   LogEvent,
+  uniq,
 } from '@finos/legend-shared';
 import {
   createModelSchema,
@@ -159,7 +160,7 @@ export class LegendApplicationDocumentationService {
         if (this.hasDocEntry(entry.key)) {
           applicationStore.log.warn(
             LogEvent.create(
-              APPLICATION_EVENT.APPLICATION_DOCUMTENTION_LOAD_SKIPPED,
+              APPLICATION_EVENT.APPLICATION_DOCUMENTATION_LOAD_SKIPPED,
             ),
             entry.key,
           );
@@ -173,33 +174,57 @@ export class LegendApplicationDocumentationService {
       this.docRegistry.set(entry.key, entry.content),
     );
 
-    // Contextual Documentation
-    applicationStore.pluginManager
+    const contextualDocEntries = applicationStore.pluginManager
       .getApplicationPlugins()
       .flatMap(
         (plugin) => plugin.getExtraContextualDocumentationEntries?.() ?? [],
-      )
-      .forEach((entry) => {
-        // NOTE: Entries specified natively will not override each other. This is to prevent entries from extensions
-        // overriding entries from core.
-        //
-        // However, it might be useful to allow extending the list of related doc entries.
-        // This allows extensions to broaden related doc entries for contextual docs
-        // If we need to support this behavior, we could create a dedicated extension method
-        if (this.hasContextualDocEntry(entry.context)) {
-          applicationStore.log.warn(
-            LogEvent.create(
-              APPLICATION_EVENT.APPLICATION_CONTEXTUAL_DOCUMTENTION_LOAD_SKIPPED,
-            ),
-            entry.context,
-          );
-        } else {
-          const existingDocEntry = this.getDocEntry(entry.documentationKey);
-          if (existingDocEntry) {
-            this.contextualDocMap.set(entry.context, existingDocEntry);
-          }
+      );
+
+    // verify that required documentations are available
+    const missingDocumentationEntries: string[] = [];
+    uniq(
+      applicationStore.pluginManager
+        .getApplicationPlugins()
+        .flatMap((plugin) => plugin.getExtraRequiredDocumentationKeys?.() ?? [])
+        .concat(contextualDocEntries.map((entry) => entry.documentationKey)),
+    ).forEach((key) => {
+      if (!this.docRegistry.has(key)) {
+        missingDocumentationEntries.push(key);
+      }
+    });
+    if (missingDocumentationEntries.length) {
+      applicationStore.log.warn(
+        LogEvent.create(
+          APPLICATION_EVENT.APPLICATION_DOCUMENTATION_REQUIREMENT_CHECK_FAILURE,
+        ),
+        `Can't find corresponding documentation entry for keys:\n${missingDocumentationEntries
+          .map((key) => `- ${key}`)
+          .join('\n')}`,
+      );
+    }
+
+    // Contextual Documentation
+    contextualDocEntries.forEach((entry) => {
+      // NOTE: Entries specified natively will not override each other. This is to prevent entries from extensions
+      // overriding entries from core.
+      //
+      // However, it might be useful to allow extending the list of related doc entries.
+      // This allows extensions to broaden related doc entries for contextual docs
+      // If we need to support this behavior, we could create a dedicated extension method
+      if (this.hasContextualDocEntry(entry.context)) {
+        applicationStore.log.warn(
+          LogEvent.create(
+            APPLICATION_EVENT.APPLICATION_CONTEXTUAL_DOCUMENTATION_LOAD_SKIPPED,
+          ),
+          entry.context,
+        );
+      } else {
+        const existingDocEntry = this.getDocEntry(entry.documentationKey);
+        if (existingDocEntry) {
+          this.contextualDocMap.set(entry.context, existingDocEntry);
         }
-      });
+      }
+    });
 
     // entries from config will override entries specified natively
     applicationStore.config.contextualDocEntries.forEach((entry) => {
