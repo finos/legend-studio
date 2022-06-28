@@ -53,6 +53,7 @@ export class QueryBuilderResultState {
   isGeneratingPlan = false;
   executionResult?: ExecutionResult | undefined;
   executionPlanState: ExecutionPlanState;
+  executionDuration?: number | undefined;
 
   constructor(queryBuilderState: QueryBuilderState) {
     makeAutoObservable(this, {
@@ -70,6 +71,9 @@ export class QueryBuilderResultState {
 
   setExecutionResult = (val: ExecutionResult | undefined): void => {
     this.executionResult = val;
+  };
+  setExecutionDuration = (val: number | undefined): void => {
+    this.executionDuration = val;
   };
   setPreviewLimit = (val: number): void => {
     this.previewLimit = Math.max(1, val);
@@ -182,6 +186,7 @@ export class QueryBuilderResultState {
         `Runtime is required to execute query`,
       );
       const query = this.buildExecutionRawLambda();
+      const startTime = Date.now();
       const result =
         (yield this.queryBuilderState.graphManagerState.graphManager.executeMapping(
           this.queryBuilderState.graphManagerState.graph,
@@ -191,6 +196,7 @@ export class QueryBuilderResultState {
           PureClientVersion.VX_X_X,
         )) as ExecutionResult;
       this.setExecutionResult(result);
+      this.setExecutionDuration(Date.now() - startTime);
     } catch (error) {
       assertErrorThrown(error);
       this.queryBuilderState.applicationStore.log.error(
