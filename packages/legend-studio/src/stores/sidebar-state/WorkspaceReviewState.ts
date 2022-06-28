@@ -26,6 +26,7 @@ import {
   assertErrorThrown,
   assertNonNullable,
   guaranteeNonNullable,
+  UnsupportedOperationError,
 } from '@finos/legend-shared';
 import { EntityDiffViewState } from '../editor-state/entity-diff-editor-state/EntityDiffViewState.js';
 import { SPECIAL_REVISION_ALIAS } from '../editor-state/entity-diff-editor-state/EntityDiffEditorState.js';
@@ -39,6 +40,10 @@ import {
   RevisionAlias,
 } from '@finos/legend-server-sdlc';
 import { ActionAlertActionType } from '@finos/legend-application';
+import {
+  MASTER_SNAPSHOT_ALIAS,
+  SNAPSHOT_VERSION_ALIAS,
+} from '@finos/legend-server-depot';
 
 export class WorkspaceReviewState {
   editorStore: EditorStore;
@@ -262,6 +267,16 @@ export class WorkspaceReviewState {
   ): GeneratorFn<void> {
     this.isCreatingWorkspaceReview = true;
     try {
+      // We will provide this check on review creation. During merging of review, SDLC will validate that no dependencies have `SNAPSHOT_VERSION_ALIAS` version.
+      this.editorStore.projectConfigurationEditorState.originalProjectConfiguration?.projectDependencies.forEach(
+        (dependency) => {
+          if (dependency.versionId === MASTER_SNAPSHOT_ALIAS) {
+            throw new UnsupportedOperationError(
+              `Project dependency verison for project ${dependency.projectId} should not be set to ${SNAPSHOT_VERSION_ALIAS} when creating a review.`,
+            );
+          }
+        },
+      );
       const description =
         reviewDescription ??
         `review from ${this.editorStore.applicationStore.config.appName} for workspace ${this.sdlcState.activeWorkspace.workspaceId}`;

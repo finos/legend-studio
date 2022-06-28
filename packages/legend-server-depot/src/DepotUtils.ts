@@ -27,6 +27,7 @@ export const GAV_DELIMITER = ':';
  */
 export const SNAPSHOT_VERSION_ALIAS = 'HEAD';
 export const LATEST_VERSION_ALIAS = 'latest';
+export const MASTER_SNAPSHOT_ALIAS = 'master-SNAPSHOT';
 
 export interface ProjectGAVCoordinates {
   groupId: string;
