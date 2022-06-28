@@ -42,7 +42,7 @@ import {
 import type { FileGenerationTypeOption } from '../../../stores/editor-state/GraphGenerationState.js';
 import { flowResult } from 'mobx';
 import {
-  packageableElementFormatOptionLabel,
+  getPackageableElementOptionalFormatter,
   useApplicationStore,
 } from '@finos/legend-application';
 import type { EmbeddedDataTypeOption } from '../../../stores/editor-state/element-editor-state/data/DataEditorState.js';
@@ -251,7 +251,9 @@ const NewPureModelConnectionDriverEditor = observer(
             onChange={onClassSelectionChange}
             value={selectedClassOption}
             darkMode={true}
-            formatOptionLabel={packageableElementFormatOptionLabel}
+            formatOptionLabel={getPackageableElementOptionalFormatter({
+              darkMode: true,
+            })}
           />
         </div>
       </div>
