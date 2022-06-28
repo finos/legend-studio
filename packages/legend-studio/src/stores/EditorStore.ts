@@ -790,15 +790,11 @@ export class EditorStore {
     this.initState.setMessage(`Fetching entities...`);
     try {
       // fetch workspace entities and config at the same time
+      const projectId = this.sdlcState.activeProject.projectId;
+      const activeWorkspace = this.sdlcState.activeWorkspace;
       const result = (yield Promise.all([
-        this.sdlcServerClient.getEntities(
-          this.sdlcState.activeProject.projectId,
-          this.sdlcState.activeWorkspace,
-        ),
-        this.sdlcServerClient.getConfiguration(
-          this.sdlcState.activeProject.projectId,
-          this.sdlcState.activeWorkspace,
-        ),
+        this.sdlcServerClient.getEntities(projectId, activeWorkspace),
+        this.sdlcServerClient.getConfiguration(projectId, activeWorkspace),
       ])) as [Entity[], PlainObject<ProjectConfiguration>];
       entities = result[0];
       projectConfiguration = result[1];

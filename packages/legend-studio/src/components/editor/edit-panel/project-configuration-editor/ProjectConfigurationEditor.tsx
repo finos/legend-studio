@@ -50,6 +50,8 @@ import {
 } from '@finos/legend-application';
 import { LEGEND_STUDIO_APP_EVENT } from '../../../../stores/LegendStudioAppEvent.js';
 import {
+  SNAPSHOT_VERSION_ALIAS,
+  MASTER_SNAPSHOT_ALIAS,
   type ProjectData,
   compareSemVerVersions,
   generateGAVCoordinates,
@@ -232,12 +234,16 @@ const ProjectDependencyEditor = observer(
     // version
     const version = projectDependency.versionId;
     const versions = selectedProject?.versions ?? [];
-    const versionOptions = versions
+    let versionOptions = versions
       .slice()
       .sort((v1, v2) => compareSemVerVersions(v2, v1))
       .map((v) => ({ value: v, label: v }));
+    versionOptions = [
+      { label: SNAPSHOT_VERSION_ALIAS, value: MASTER_SNAPSHOT_ALIAS },
+      ...versionOptions,
+    ];
     const selectedVersionOption: VersionOption | null =
-      versionOptions.find((v) => v.value === version.id) ?? null;
+      versionOptions.find((v) => v.value === version) ?? null;
     const versionDisabled =
       Boolean(!versions.length || !projectDependency.projectId.length) ||
       !configState.associatedProjectsAndVersionsFetched ||
@@ -263,13 +269,17 @@ const ProjectDependencyEditor = observer(
     };
     const openProject = (): void => {
       if (!projectDependency.isLegacyDependency) {
+        const projectDependencyVersionId =
+          projectDependency.versionId === MASTER_SNAPSHOT_ALIAS
+            ? SNAPSHOT_VERSION_ALIAS
+            : projectDependency.versionId;
         applicationStore.navigator.openNewWindow(
           `${
             applicationStore.config.baseUrl
           }view/archive/${generateGAVCoordinates(
             guaranteeNonNullable(projectDependency.groupId),
             guaranteeNonNullable(projectDependency.artifactId),
-            projectDependency.versionId.id,
+            projectDependencyVersionId,
           )}`,
         );
       }
