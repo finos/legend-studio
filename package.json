@@ -81,7 +81,7 @@
   "devDependencies": {
     "@actions/core": "1.9.0",
     "@actions/github": "5.0.3",
-    "@babel/core": "7.18.5",
+    "@babel/core": "7.18.6",
     "@changesets/cli": "2.23.0",
     "@finos/babel-preset-legend-studio": "workspace:*",
     "@finos/eslint-plugin-legend-studio": "workspace:*",
