@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-diagram
 
+## 4.1.0
+
+### Minor Changes
+
+- [#1239](https://github.com/finos/legend-studio/pull/1239) [`4dacea12`](https://github.com/finos/legend-studio/commit/4dacea12f53e93eab6e53f29febe94c7693109e2) ([@akphi](https://github.com/akphi)) - Support `align` and `distribute spacing` operators (e.g. align left, align right, distribute spacing horizontally etc.) when selecting multiple class views.
+
 ## 4.0.2
 
 ## 4.0.1

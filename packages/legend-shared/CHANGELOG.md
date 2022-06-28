@@ -1,5 +1,11 @@
 # @finos/legend-shared
 
+## 4.0.0
+
+### Major Changes
+
+- [#1239](https://github.com/finos/legend-studio/pull/1239) [`4dacea12`](https://github.com/finos/legend-studio/commit/4dacea12f53e93eab6e53f29febe94c7693109e2) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** `recursiveOmit()` utility now takes a checker function instead of a list of property keys to prune.
+
 ## 3.0.2
 
 ## 3.0.1
