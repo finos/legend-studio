@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { LegendApplicationDocumentationEntryConfig } from '@finos/legend-application';
+import type { LegendApplicationDocumentationConfigEntry } from '@finos/legend-application';
 
 export enum EXTERNAL_STORE_SERVICE_LEGEND_STUDIO_DOCUMENTATION_KEY {
   GRAMMAR_PARSER = 'es-service.grammar.parser',
@@ -23,7 +23,7 @@ export enum EXTERNAL_STORE_SERVICE_LEGEND_STUDIO_DOCUMENTATION_KEY {
 
 export const EXTERNAL_STORE_SERVICE_DOCUMENTATION_ENTRIES: Record<
   string,
-  LegendApplicationDocumentationEntryConfig
+  LegendApplicationDocumentationConfigEntry
 > = {
   [EXTERNAL_STORE_SERVICE_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER]: {
     title: `What is External Store Service DSL about?`,

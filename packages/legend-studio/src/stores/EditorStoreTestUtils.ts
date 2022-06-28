@@ -45,14 +45,14 @@ export const TEST_DATA__studioConfig = {
 export const TEST__getTestStudioConfig = (
   extraConfigData = {},
 ): LegendStudioConfig => {
-  const config = new LegendStudioConfig(
-    {
+  const config = new LegendStudioConfig({
+    configData: {
       ...TEST_DATA__studioConfig,
       ...extraConfigData,
     },
-    TEST_DATA__applicationVersion,
-    '/studio/',
-  );
+    versionData: TEST_DATA__applicationVersion,
+    baseUrl: '/studio/',
+  });
   return config;
 };
 

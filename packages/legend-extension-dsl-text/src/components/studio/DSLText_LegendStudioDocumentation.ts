@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { LegendApplicationDocumentationEntryConfig } from '@finos/legend-application';
+import type { LegendApplicationDocumentationConfigEntry } from '@finos/legend-application';
 
 export enum DSL_TEXT_LEGEND_STUDIO_DOCUMENTATION_KEY {
   GRAMMAR_PARSER = 'dsl-text.grammar.parser',
@@ -23,7 +23,7 @@ export enum DSL_TEXT_LEGEND_STUDIO_DOCUMENTATION_KEY {
 
 export const DSL_TEXT_DOCUMENTATION_ENTRIES: Record<
   string,
-  LegendApplicationDocumentationEntryConfig
+  LegendApplicationDocumentationConfigEntry
 > = {
   [DSL_TEXT_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER]: {
     title: 'What is Text DSL about?',

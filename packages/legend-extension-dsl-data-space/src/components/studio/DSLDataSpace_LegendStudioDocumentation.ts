@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { LegendApplicationDocumentationEntryConfig } from '@finos/legend-application';
+import type { LegendApplicationDocumentationConfigEntry } from '@finos/legend-application';
 
 export enum DSL_DATA_SPACE_LEGEND_STUDIO_DOCUMENTATION_KEY {
   GRAMMAR_PARSER = 'dsl-dataspace.grammar.parser',
@@ -23,7 +23,7 @@ export enum DSL_DATA_SPACE_LEGEND_STUDIO_DOCUMENTATION_KEY {
 
 export const DSL_DATA_SPACE_DOCUMENTATION_ENTRIES: Record<
   string,
-  LegendApplicationDocumentationEntryConfig
+  LegendApplicationDocumentationConfigEntry
 > = {
   [DSL_DATA_SPACE_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER]: {
     title: `What is DataSpace DSL about?`,

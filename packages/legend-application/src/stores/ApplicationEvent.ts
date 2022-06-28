@@ -21,6 +21,7 @@ export enum APPLICATION_EVENT {
   ILLEGAL_APPLICATION_STATE_OCCURRED = 'application.error.illegal-state',
   APPLICATION_CONFIGURATION_FAILURE = 'application.configuration.failure',
 
+  APPLICATION_DOCUMTENTION_FETCH_FAILURE = 'application.fetch.documentation.failure',
   APPLICATION_DOCUMTENTION_LOAD_SKIPPED = 'application.load.documentation.skipped',
   APPLICATION_CONTEXTUAL_DOCUMTENTION_LOAD_SKIPPED = 'application.load.contextual-documentation.skipped',
 

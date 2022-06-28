@@ -30,12 +30,19 @@ import {
   guaranteeNonEmptyString,
   assertNonNullable,
   NetworkClient,
+  type Writable,
 } from '@finos/legend-shared';
 import { APPLICATION_EVENT } from '../stores/ApplicationEvent.js';
 import { configureComponents } from '@finos/legend-art';
 import type { GraphPluginManager } from '@finos/legend-graph';
 import type { LegendApplicationPluginManager } from './LegendApplicationPluginManager.js';
 import { setupPureLanguageService } from '../stores/PureLanguageSupport.js';
+import {
+  collectKeyedDocumnetationEntriesFromConfig,
+  type LegendApplicationDocumentationConfigEntry,
+  type LegendApplicationDocumentationRegistryData,
+  type LegendApplicationDocumentationRegistryEntry,
+} from '../stores/LegendApplicationDocumentationService.js';
 
 export abstract class LegendApplicationLogger {
   abstract debug(event: LogEvent, ...data: unknown[]): void;
@@ -126,6 +133,15 @@ export const setupLegendApplicationUILibrary = async (
   configureComponents();
 };
 
+export interface LegendApplicationConfigurationInput<
+  T extends LegendApplicationConfigurationData,
+> {
+  baseUrl: string;
+  configData: T;
+  versionData: LegendApplicationVersionData;
+  docEntries?: Record<string, LegendApplicationDocumentationConfigEntry>;
+}
+
 export abstract class LegendApplication {
   protected config!: LegendApplicationConfig;
   protected logger!: LegendApplicationLogger;
@@ -193,6 +209,8 @@ export abstract class LegendApplication {
     baseUrl: string,
   ): Promise<[LegendApplicationConfig, Record<PropertyKey, object>]> {
     const client = new NetworkClient();
+
+    // app config
     let configData: LegendApplicationConfigurationData | undefined;
     try {
       configData = await client.get<LegendApplicationConfigurationData>(
@@ -209,6 +227,8 @@ export abstract class LegendApplication {
       configData,
       `Can't fetch Legend application configuration`,
     );
+
+    // app version
     let versionData;
     try {
       versionData = await client.get<LegendApplicationVersionData>(
@@ -222,16 +242,86 @@ export abstract class LegendApplication {
       );
     }
     assertNonNullable(versionData, `Can't fetch Legend application version`);
+
     return [
-      await this.configureApplication(configData, versionData, baseUrl),
+      await this.configureApplication({
+        configData,
+        versionData,
+        baseUrl,
+      }),
       (configData.extensions ?? {}) as Record<PropertyKey, object>,
     ];
   }
 
+  async loadDocumentationRegistryData(
+    config: LegendApplicationConfig,
+  ): Promise<void> {
+    const entries: Record<string, LegendApplicationDocumentationConfigEntry> =
+      {};
+
+    await Promise.all(
+      [
+        ...config.documentationRegistryEntries,
+        ...this.pluginManager
+          .getApplicationPlugins()
+          .flatMap(
+            (plugin) => plugin.getExtraDocumentationRegistryEntries?.() ?? [],
+          ),
+      ].map(async (entry: LegendApplicationDocumentationRegistryEntry) => {
+        try {
+          const client = new NetworkClient(
+            entry.simple
+              ? {
+                  /**
+                   * NOTE: see the documentation for `simple` flag {@link LegendApplicationDocumentationRegistryEntry}
+                   * here, basically, we expect to fetch just the JSON from an endpoint where `Access-Control-Allow-Origin", "*"` is set
+                   * as such, we must not include the credential in our request
+                   * See https://stackoverflow.com/questions/19743396/cors-cannot-use-wildcard-in-access-control-allow-origin-when-credentials-flag-i
+                   */
+                  options: {
+                    credentials: 'omit',
+                  },
+                }
+              : {},
+          );
+          const docData =
+            await client.get<LegendApplicationDocumentationRegistryData>(
+              guaranteeNonEmptyString(
+                entry.url,
+                `Can't load documentation registry: 'url' field is missing or empty`,
+              ),
+            );
+          assertNonNullable(
+            docData.entries,
+            `Can't load documentation registry data: 'entries' field is missing`,
+          );
+          Object.entries(docData.entries).forEach(([key, docEntry]) => {
+            // NOTE: entries will NOT override
+            if (!entries[key]) {
+              entries[key] = docEntry;
+            }
+          });
+        } catch (error) {
+          assertErrorThrown(error);
+          this.logger.warn(
+            LogEvent.create(
+              APPLICATION_EVENT.APPLICATION_DOCUMTENTION_FETCH_FAILURE,
+            ),
+            error,
+          );
+        }
+      }) ?? [],
+    );
+
+    // NOTE: config entries will override
+    (config as Writable<LegendApplicationConfig>).keyedDocumentationEntries = [
+      ...collectKeyedDocumnetationEntriesFromConfig(entries),
+      ...config.keyedDocumentationEntries,
+    ];
+  }
+
   protected abstract configureApplication(
-    configData: LegendApplicationConfigurationData,
-    versionData: LegendApplicationVersionData,
-    baseUrl: string,
+    input: LegendApplicationConfigurationInput<LegendApplicationConfigurationData>,
   ): Promise<LegendApplicationConfig>;
 
   protected abstract loadApplication(): Promise<void>;
@@ -251,6 +341,12 @@ export abstract class LegendApplication {
       this.pluginRegister?.(this.pluginManager, this.config);
       this.pluginManager.configure(extensionConfigData);
       this.pluginManager.install();
+
+      // Other setups
+      await Promise.all(
+        // NOTE: to be done in parallel to save time
+        [this.loadDocumentationRegistryData(config)],
+      );
 
       await this.loadApplication();
 

@@ -18,13 +18,15 @@ import {
   guaranteeNonEmptyString,
   guaranteeNonNullable,
 } from '@finos/legend-shared';
+import type { LegendApplicationConfigurationInput } from '../index.js';
 import {
   collectKeyedDocumnetationEntriesFromConfig,
   collectContextualDocumnetationEntry,
   type LegendApplicationKeyedDocumentationEntry,
-  type LegendApplicationDocumentationEntryConfig,
+  type LegendApplicationDocumentationConfigEntry,
   type LegendApplicationContextualDocumentationMapConfig,
   type LegendApplicationContextualDocumentationEntry,
+  type LegendApplicationDocumentationRegistryEntry,
 } from './LegendApplicationDocumentationService.js';
 
 export interface LegendApplicationVersionData {
@@ -38,7 +40,8 @@ export interface LegendApplicationConfigurationData {
   env: string;
   documentation?: {
     url: string;
-    entries?: Record<string, LegendApplicationDocumentationEntryConfig>;
+    registry?: LegendApplicationDocumentationRegistryEntry[];
+    entries?: Record<string, LegendApplicationDocumentationConfigEntry>;
     contextualDocMap?: LegendApplicationContextualDocumentationMapConfig;
   };
   // TODO: when we support vault-like settings, we could support `settingOverrides`
@@ -54,6 +57,8 @@ export abstract class LegendApplicationConfig {
 
   // documentation
   readonly documentationUrl: string | undefined;
+  readonly documentationRegistryEntries: LegendApplicationDocumentationRegistryEntry[] =
+    [];
   readonly keyedDocumentationEntries: LegendApplicationKeyedDocumentationEntry[] =
     [];
   readonly contextualDocEntries: LegendApplicationContextualDocumentationEntry[] =
@@ -65,40 +70,40 @@ export abstract class LegendApplicationConfig {
   readonly appVersionCommitId: string;
 
   constructor(
-    configData: LegendApplicationConfigurationData,
-    versionData: LegendApplicationVersionData,
-    baseUrl: string,
+    input: LegendApplicationConfigurationInput<LegendApplicationConfigurationData>,
   ) {
-    this.baseUrl = baseUrl;
+    this.baseUrl = input.baseUrl;
     this.appName = guaranteeNonEmptyString(
-      configData.appName,
+      input.configData.appName,
       `Can't configure application: 'appName' field is missing or empty`,
     );
     this.env = guaranteeNonEmptyString(
-      configData.env,
+      input.configData.env,
       `Can't configure application: 'env' field is missing or empty`,
     );
 
     // Documentation
-    this.documentationUrl = configData.documentation?.url;
+    this.documentationUrl = input.configData.documentation?.url;
+    this.documentationRegistryEntries =
+      input.configData.documentation?.registry ?? [];
     this.keyedDocumentationEntries = collectKeyedDocumnetationEntriesFromConfig(
-      configData.documentation?.entries ?? {},
+      input.configData.documentation?.entries ?? {},
     );
     this.contextualDocEntries = collectContextualDocumnetationEntry(
-      configData.documentation?.contextualDocMap ?? {},
+      input.configData.documentation?.contextualDocMap ?? {},
     );
 
     // Version
     this.appVersion = guaranteeNonNullable(
-      versionData.version,
+      input.versionData.version,
       `Can't collect application version: 'version' field is missing`,
     );
     this.appVersionBuildTime = guaranteeNonNullable(
-      versionData.buildTime,
+      input.versionData.buildTime,
       `Can't collect application version: 'buildTime' field is missing`,
     );
     this.appVersionCommitId = guaranteeNonNullable(
-      versionData.commitSHA,
+      input.versionData.commitSHA,
       `Can't collect application version: 'commitSHA' field is missing`,
     );
   }

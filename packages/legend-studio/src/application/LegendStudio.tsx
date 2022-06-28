@@ -22,11 +22,11 @@ import { LegendStudioPluginManager } from './LegendStudioPluginManager.js';
 import {
   type LegendApplicationConfig,
   type LegendApplicationLogger,
-  type LegendApplicationVersionData,
   ApplicationStoreProvider,
   LegendApplication,
   setupLegendApplicationUILibrary,
   WebApplicationNavigatorProvider,
+  type LegendApplicationConfigurationInput,
 } from '@finos/legend-application';
 import { CorePureGraphManagerPlugin } from '@finos/legend-graph';
 import { getRootElement } from '@finos/legend-art';
@@ -71,11 +71,9 @@ export class LegendStudio extends LegendApplication {
   }
 
   async configureApplication(
-    configData: LegendStudioConfigurationData,
-    versionData: LegendApplicationVersionData,
-    baseUrl: string,
+    input: LegendApplicationConfigurationInput<LegendStudioConfigurationData>,
   ): Promise<LegendApplicationConfig> {
-    return new LegendStudioConfig(configData, versionData, baseUrl);
+    return new LegendStudioConfig(input);
   }
 
   async loadApplication(): Promise<void> {

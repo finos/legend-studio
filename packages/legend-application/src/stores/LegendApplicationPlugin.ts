@@ -17,17 +17,24 @@
 import { AbstractPlugin } from '@finos/legend-shared';
 import type {
   LegendApplicationContextualDocumentationEntry,
+  LegendApplicationDocumentationRegistryEntry,
   LegendApplicationKeyedDocumentationEntry,
 } from './LegendApplicationDocumentationService.js';
 
 export abstract class LegendApplicationPlugin extends AbstractPlugin {
+  /**
+   * Get the list of documentation registry entries from which the application can fetch
+   * documentation config data and load the documentation registry
+   */
+  getExtraDocumentationRegistryEntries?(): LegendApplicationDocumentationRegistryEntry[];
+
   /**
    * Get the list of keyed documentation entries to be registered with documentation service.
    */
   getExtraKeyedDocumentationEntries?(): LegendApplicationKeyedDocumentationEntry[];
 
   /**
-   * Get the list of keyed contextual documentation entries to be registered with documentation service.
+   * Get the list of contextual documentation entries to be registered with documentation service.
    */
   getExtraContextualDocumentationEntries?(): LegendApplicationContextualDocumentationEntry[];
 }

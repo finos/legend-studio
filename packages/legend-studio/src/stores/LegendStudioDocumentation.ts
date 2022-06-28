@@ -16,7 +16,7 @@
 
 import type {
   LegendApplicationContextualDocumentationMapConfig,
-  LegendApplicationDocumentationEntryConfig,
+  LegendApplicationDocumentationConfigEntry,
 } from '@finos/legend-application';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT } from './LegendStudioApplicationNavigationContext.js';
 
@@ -78,7 +78,7 @@ export enum LEGEND_STUDIO_DOCUMENTATION_KEY {
 
 export const CORE_DOCUMENTATION_ENTRIES: Record<
   string,
-  LegendApplicationDocumentationEntryConfig
+  LegendApplicationDocumentationConfigEntry
 > = {
   // parsers
   [LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER_PURE]: {

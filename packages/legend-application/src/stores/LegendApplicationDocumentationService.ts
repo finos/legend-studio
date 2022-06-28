@@ -32,7 +32,29 @@ import { APPLICATION_EVENT } from './ApplicationEvent.js';
 import type { ApplicationStore } from './ApplicationStore.js';
 import type { LegendApplicationConfig } from './LegendApplicationConfig.js';
 
-export type LegendApplicationDocumentationEntryConfig = {
+export type LegendApplicationDocumentationRegistryEntry = {
+  url: string;
+  /**
+   * Sometimes, we don't need to expose an endpoint to get the documentation data
+   * we support the `simple` mode where the endpoint is really just a JSON
+   *
+   * The caveat about this mode is that the endpoint must have CORS enabled
+   * ideally, the CORS-enabled endpoint should be setup with "Access-Control-Allow-Origin", "*"
+   * (e.g. Github Pages - See https://stackoverflow.com/questions/26416727/cross-origin-resource-sharing-on-github-pages)
+   * With that, the network client used to fetch this request must also be simplified to not include credential
+   * See https://stackoverflow.com/questions/19743396/cors-cannot-use-wildcard-in-access-control-allow-origin-when-credentials-flag-i
+   *
+   * During development, an option is to use our mock-server or some sort of CORS proxies, for example `cors-anywhere`
+   * See https://cors-anywhere.herokuapp.com/
+   */
+  simple?: boolean | undefined;
+};
+
+export type LegendApplicationDocumentationRegistryData = {
+  entries: Record<string, LegendApplicationDocumentationConfigEntry>;
+};
+
+export type LegendApplicationDocumentationConfigEntry = {
   markdownText?: MarkdownText | undefined;
   title?: string | undefined;
   text?: string | undefined;
@@ -80,7 +102,7 @@ export interface LegendApplicationKeyedDocumentationEntry {
 }
 
 export const collectKeyedDocumnetationEntriesFromConfig = (
-  rawEntries: Record<string, LegendApplicationDocumentationEntryConfig>,
+  rawEntries: Record<string, LegendApplicationDocumentationConfigEntry>,
 ): LegendApplicationKeyedDocumentationEntry[] =>
   Object.entries(rawEntries).map((entry) => ({
     key: entry[0],
@@ -116,12 +138,23 @@ export class LegendApplicationDocumentationService {
     // set the main documenation site url
     this.url = applicationStore.config.documentationUrl;
 
+    /**
+     * NOTE: the order of documentation entry overidding is (the later override the former):
+     * 1. Natively specified: specified in the codebase (no overriding allowed within this group of documentation entries):
+     *    since we have extension mechanism, the order of plugins matter,
+     *    we do not allow overriding, i.e. so the first specification for a documentation key wins
+     * 2. Fetched from documentation registries (no overriding allowed within this group of documentation entries):
+     *    since we have extension mechanism and allow specifying multiple registry URLS,
+     *    we do not allow overriding, i.e. so the first specification for a documentation key wins
+     * 3. Configured in application config (overiding allowed within this group)
+     */
+
     // build doc registry
     applicationStore.pluginManager
       .getApplicationPlugins()
       .flatMap((plugin) => plugin.getExtraKeyedDocumentationEntries?.() ?? [])
       .forEach((entry) => {
-        // Entries specified natively will not override each other. This is to prevent entries from extensions
+        // NOTE: Entries specified natively will not override each other. This is to prevent entries from extensions
         // accidentally overide entries from core.
         if (this.hasDocEntry(entry.key)) {
           applicationStore.log.warn(
@@ -201,9 +234,9 @@ export class LegendApplicationDocumentationService {
 
   publishDocRegistry(): Record<
     string,
-    LegendApplicationDocumentationEntryConfig
+    LegendApplicationDocumentationConfigEntry
   > {
-    const result: Record<string, LegendApplicationDocumentationEntryConfig> =
+    const result: Record<string, LegendApplicationDocumentationConfigEntry> =
       {};
     this.docRegistry.forEach((value, key) => {
       result[key] =
