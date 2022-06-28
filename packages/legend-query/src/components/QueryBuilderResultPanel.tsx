@@ -185,6 +185,12 @@ export const QueryBuilderResultPanel = observer(
       );
     };
     const allowSettingPreviewLimit = queryBuilderState.isQuerySupported();
+    const resultSetSize = (result: ExecutionResult | undefined): string =>
+      result && result instanceof TdsExecutionResult
+        ? `${
+            result.result.rows.length
+          } row(s) in ${resultState.executionDuration?.toString()} ms`
+        : '';
 
     return (
       <div className="panel query-builder__result">
@@ -198,6 +204,9 @@ export const QueryBuilderResultPanel = observer(
         <div className="panel__header">
           <div className="panel__header__title">
             <div className="panel__header__title__label">result</div>
+            <div className="query-builder__result__analytics">
+              {resultSetSize(executionResult)}
+            </div>
           </div>
           <div className="panel__header__actions query-builder__result__header__actions">
             {allowSettingPreviewLimit && (
