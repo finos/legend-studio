@@ -14,20 +14,23 @@
  * limitations under the License.
  */
 
-// Dependencies
-@forward 'extensions';
+import type { PackageableElement } from '@finos/legend-graph';
 
-// Components
-@forward 'components/app';
-@forward 'components/blocking-alert';
-@forward 'components/backdrop';
-@forward 'components/notification';
-@forward 'components/virtual-assistant';
+export const packageableElementFormatOptionLabel = (option: {
+  label: string;
+  value: PackageableElement;
+  darkMode?: boolean;
+}): React.ReactNode => {
+  const className = option.darkMode
+    ? 'packageable-element-format-option-label--dark'
+    : 'packageable-element-format-option-label';
 
-// Shared
-@forward 'components/shared/documentation-link';
-@forward 'components/shared/lambda-editor';
-@forward 'components/shared/text-editor';
-@forward 'components/shared/value-spec-editor';
-@forward 'components/shared/packageable-element-format-option';
-@forward 'components/shared/execution-plan-viewer';
+  return (
+    <div className={className}>
+      <div className={`${className}__name`}>{option.label}</div>
+      {option.value.package && (
+        <div className={`${className}__tag`}>{option.value.path}</div>
+      )}
+    </div>
+  );
+};
