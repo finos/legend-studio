@@ -310,7 +310,7 @@ export abstract class LegendApplication {
             error,
           );
         }
-      }) ?? [],
+      }),
     );
 
     // NOTE: config entries will override
