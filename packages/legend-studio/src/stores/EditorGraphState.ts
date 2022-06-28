@@ -398,7 +398,9 @@ export class EditorGraphState {
           const entity =
             this.editorStore.graphManagerState.graphManager.elementToEntity(
               element,
-              true,
+              {
+                pruneSourceInformation: true,
+              },
             );
           entityChanges.push({
             classifierPath: entity.classifierPath,

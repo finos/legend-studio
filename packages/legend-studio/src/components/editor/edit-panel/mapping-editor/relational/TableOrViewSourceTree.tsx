@@ -283,7 +283,7 @@ const RelationalOperationElementTreeNodeContainer: React.FC<
       }}
     >
       <div className="tree-view__node__icon">
-        <div className="type-tree__expand-icon">{nodeExpandIcon}</div>
+        <div className="tree-view__node__expand-icon">{nodeExpandIcon}</div>
         <div className="type-tree__type-icon">{nodeTypeIcon}</div>
       </div>
       <div className="tree-view__node__label type-tree__node__label">

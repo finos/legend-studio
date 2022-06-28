@@ -36,10 +36,10 @@ import {
 } from '@finos/legend-art';
 import { debounce } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
-import { ExecutionPlanViewer } from '../mapping-editor/execution-plan-viewer/ExecutionPlanViewer.js';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
   EDITOR_LANGUAGE,
+  ExecutionPlanViewer,
   LambdaParameterValuesEditor,
   useApplicationStore,
 } from '@finos/legend-application';

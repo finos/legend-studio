@@ -30,8 +30,8 @@ import {
 } from '@finos/legend-shared';
 import {
   LegendApplicationConfig,
+  type LegendApplicationConfigurationInput,
   type LegendApplicationConfigurationData,
-  type LegendApplicationVersionData,
 } from '@finos/legend-application';
 
 export class ServiceRegistrationEnvInfo {
@@ -64,6 +64,9 @@ class LegendStudioApplicationCoreOptions {
    *
    * TODO: when we modularize service, we can move this config to DSL Service preset. Then, we can remove
    * the TEMPORARY__ prefix.
+   *
+   * @modularize
+   * See https://github.com/finos/legend-studio/issues/65
    */
   TEMPORARY__serviceRegistrationConfig: ServiceRegistrationEnvInfo[] = [];
 
@@ -104,43 +107,41 @@ export class LegendStudioConfig extends LegendApplicationConfig {
   readonly SDLCServerBaseHeaders?: RequestHeaders | undefined;
 
   constructor(
-    configData: LegendStudioConfigurationData,
-    versionData: LegendApplicationVersionData,
-    baseUrl: string,
+    input: LegendApplicationConfigurationInput<LegendStudioConfigurationData>,
   ) {
-    super(configData, versionData, baseUrl);
+    super(input);
 
     assertNonNullable(
-      configData.engine,
+      input.configData.engine,
       `Can't configure application: 'engine' field is missing`,
     );
     this.engineServerUrl = guaranteeNonEmptyString(
-      configData.engine.url,
+      input.configData.engine.url,
       `Can't configure application: 'engine.url' field is missing or empty`,
     );
 
-    this.engineQueryServerUrl = configData.engine.queryUrl;
+    this.engineQueryServerUrl = input.configData.engine.queryUrl;
     assertNonNullable(
-      configData.depot,
+      input.configData.depot,
       `Can't configure application: 'depot' field is missing`,
     );
     this.depotServerUrl = guaranteeNonEmptyString(
-      configData.depot.url,
+      input.configData.depot.url,
       `Can't configure application: 'depot.url' field is missing or empty`,
     );
 
     assertNonNullable(
-      configData.sdlc,
+      input.configData.sdlc,
       `Can't configure application: 'sdlc' field is missing`,
     );
     this.sdlcServerUrl = guaranteeNonEmptyString(
-      configData.sdlc.url,
+      input.configData.sdlc.url,
       `Can't configure application: 'sdlc.url' field is missing or empty`,
     );
-    this.SDLCServerBaseHeaders = configData.sdlc.baseHeaders;
+    this.SDLCServerBaseHeaders = input.configData.sdlc.baseHeaders;
 
     this.options = LegendStudioApplicationCoreOptions.create(
-      (configData.extensions?.core ??
+      (input.configData.extensions?.core ??
         {}) as PlainObject<LegendStudioApplicationCoreOptions>,
     );
   }

@@ -204,24 +204,23 @@ export class V1_Engine {
     options?: { onError?: () => void },
   ): Promise<V1_PureModelContextData> {
     return V1_deserializePureModelContextData(
-      await this.pureCodeToPureModelContextDataJSON(code, false, options),
+      await this.pureCodeToPureModelContextDataJSON(code, {
+        ...options,
+        returnSourceInformation: false,
+      }),
     );
   }
 
   private async pureCodeToPureModelContextDataJSON(
     code: string,
-    returnSourceInformation: boolean,
-    options?: { onError?: () => void },
+    options?: { onError?: () => void; returnSourceInformation?: boolean },
   ): Promise<PlainObject<V1_PureModelContextData>> {
     try {
       return await this.engineServerClient.grammarToJSON_model(
         code,
         undefined,
         undefined,
-        // TODO: we should use the passed `returnSourceInformation`
-        // but right now, we must test if this works for engine
-        // See https://github.com/finos/legend-engine/pull/692
-        undefined,
+        options?.returnSourceInformation,
       );
     } catch (error) {
       assertErrorThrown(error);
@@ -387,13 +386,12 @@ export class V1_Engine {
     compileContext?: V1_PureModelContextData,
     options?: { onError?: () => void },
   ): Promise<V1_PureModelContextData> {
-    const mainGraph = await this.pureCodeToPureModelContextDataJSON(
-      graphText,
+    const mainGraph = await this.pureCodeToPureModelContextDataJSON(graphText, {
+      ...options,
       // NOTE: we need to return source information here so we can locate the compilation
       // errors/warnings
-      true,
-      options,
-    );
+      returnSourceInformation: true,
+    });
     const pureModelContextDataJson = compileContext
       ? mergeObjects(
           this.serializePureModelContextData(compileContext),

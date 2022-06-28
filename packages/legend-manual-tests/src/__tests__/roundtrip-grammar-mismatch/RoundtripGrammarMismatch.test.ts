@@ -142,11 +142,9 @@ const checkGrammarRoundtripMismatch = async (
     headers: {
       [HttpHeader.CONTENT_TYPE]: ContentType.TEXT_PLAIN,
     },
-    // TODO: we should enable this, but we need to make sure engine works first
-    // See https://github.com/finos/legend-engine/pull/692
-    // params: {
-    //   returnSourceInformation: false,
-    // },
+    params: {
+      returnSourceInformation: false,
+    },
   });
   const entities = graphManagerState.graphManager.pureProtocolTextToEntities(
     JSON.stringify(transformGrammarToJsonResult.data),

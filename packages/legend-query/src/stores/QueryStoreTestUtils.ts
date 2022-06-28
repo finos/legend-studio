@@ -34,13 +34,13 @@ export const TEST_DATA__queryConfig = {
 export const TEST__getTestQueryConfig = (
   extraConfigData = {},
 ): LegendQueryConfig => {
-  const config = new LegendQueryConfig(
-    {
+  const config = new LegendQueryConfig({
+    configData: {
       ...TEST_DATA__queryConfig,
       ...extraConfigData,
     },
-    TEST_DATA__applicationVersion,
-    '/query/',
-  );
+    versionData: TEST_DATA__applicationVersion,
+    baseUrl: '/query/',
+  });
   return config;
 };

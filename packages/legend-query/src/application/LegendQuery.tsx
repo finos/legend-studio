@@ -17,11 +17,11 @@
 import { createRoot } from 'react-dom/client';
 import {
   type LegendApplicationConfig,
-  type LegendApplicationVersionData,
   ApplicationStoreProvider,
   LegendApplication,
   setupLegendApplicationUILibrary,
   WebApplicationNavigatorProvider,
+  type LegendApplicationConfigurationInput,
 } from '@finos/legend-application';
 import { configure as configureReactHotkeys } from 'react-hotkeys';
 import { ModuleRegistry as agGrid_ModuleRegistry } from '@ag-grid-community/core';
@@ -61,11 +61,9 @@ export class LegendQuery extends LegendApplication {
   }
 
   async configureApplication(
-    configData: LegendQueryConfigurationData,
-    versionData: LegendApplicationVersionData,
-    baseUrl: string,
+    input: LegendApplicationConfigurationInput<LegendQueryConfigurationData>,
   ): Promise<LegendApplicationConfig> {
-    return new LegendQueryConfig(configData, versionData, baseUrl);
+    return new LegendQueryConfig(input);
   }
 
   async loadApplication(): Promise<void> {

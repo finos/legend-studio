@@ -495,6 +495,7 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
         disabled={
           !showContextMenu ||
           // NOTE: this might make it hard to modularize
+          // See https://github.com/finos/legend-studio/issues/731
           queryBuilderState.fetchStructureState.projectionState.hasParserError
         }
         menuProps={{ elevation: 7 }}
@@ -807,6 +808,7 @@ export const QueryBuilderExplorerPanel = observer(
         data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER}
         className={clsx('panel query-builder__explorer', {
           // NOTE: this might make it hard to modularize
+          // See https://github.com/finos/legend-studio/issues/731
           backdrop__element:
             queryBuilderState.fetchStructureState.projectionState
               .hasParserError,

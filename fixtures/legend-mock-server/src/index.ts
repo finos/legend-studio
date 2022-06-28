@@ -27,9 +27,11 @@
 import { default as Fastify } from 'fastify';
 import { default as FastifyCORS } from '@fastify/cors';
 import TAXONOMY_TREE_DATA from './TEST_DATA__TaxonomyTreeData.json' assert { type: 'json' };
+import DOCUMENTATION_DATA from './DummyDocumentationData.json' assert { type: 'json' };
 
 const PORT = 60001;
-const BASE_URL = '/api/';
+const API_BASE_URL = '/api';
+const STUDIO_BASE_URL = '/studio';
 
 const fastify = Fastify({
   logger: true,
@@ -42,8 +44,15 @@ fastify.register(FastifyCORS, {
   credentials: true,
 });
 
-fastify.get(`${BASE_URL}taxonomy-tree`, async (request, reply) => {
-  await reply.send(TAXONOMY_TREE_DATA);
+fastify.get(
+  `${API_BASE_URL}/taxonomy/taxonomy-tree`,
+  async (request, reply) => {
+    await reply.send(TAXONOMY_TREE_DATA);
+  },
+);
+
+fastify.get(`${STUDIO_BASE_URL}/documentation.json`, async (request, reply) => {
+  await reply.send(DOCUMENTATION_DATA);
 });
 
 fastify.listen(PORT, (error, address) => {

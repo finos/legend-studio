@@ -17,11 +17,11 @@
 import { createRoot } from 'react-dom/client';
 import {
   type LegendApplicationConfig,
-  type LegendApplicationVersionData,
   LegendApplication,
   ApplicationStoreProvider,
   setupLegendApplicationUILibrary,
   WebApplicationNavigatorProvider,
+  type LegendApplicationConfigurationInput,
 } from '@finos/legend-application';
 import { configure as configureReactHotkeys } from 'react-hotkeys';
 import { BrowserRouter } from 'react-router-dom';
@@ -56,11 +56,9 @@ export class LegendTaxonomy extends LegendApplication {
   }
 
   async configureApplication(
-    configData: LegendTaxonomyConfigurationData,
-    versionData: LegendApplicationVersionData,
-    baseUrl: string,
+    input: LegendApplicationConfigurationInput<LegendTaxonomyConfigurationData>,
   ): Promise<LegendApplicationConfig> {
-    return new LegendTaxonomyConfig(configData, versionData, baseUrl);
+    return new LegendTaxonomyConfig(input);
   }
 
   async loadApplication(): Promise<void> {

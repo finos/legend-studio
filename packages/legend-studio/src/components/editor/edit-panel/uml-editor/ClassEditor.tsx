@@ -85,7 +85,7 @@ import {
 import { StudioLambdaEditor } from '../../../shared/StudioLambdaEditor.js';
 import {
   ApplicationNavigationContextData,
-  packageableElementFormatOptionLabel,
+  getPackageableElementOptionalFormatter,
   useApplicationNavigationContext,
   useApplicationStore,
 } from '@finos/legend-application';
@@ -242,7 +242,7 @@ const PropertyBasicEditor = observer(
             value={selectedPropertyType}
             placeholder={'Choose a data type or enumeration'}
             filterOption={filterOption}
-            formatOptionLabel={packageableElementFormatOptionLabel}
+            formatOptionLabel={getPackageableElementOptionalFormatter()}
           />
         )}
         {!isIndirectProperty && !isReadOnly && !isEditingType && (
@@ -519,7 +519,7 @@ const DerivedPropertyBasicEditor = observer(
               value={selectedPropertyType}
               placeholder="Choose a data type or enumeration"
               filterOption={filterOption}
-              formatOptionLabel={packageableElementFormatOptionLabel}
+              formatOptionLabel={getPackageableElementOptionalFormatter()}
             />
           )}
           {!isInheritedProperty && !isReadOnly && !isEditingType && (
@@ -809,7 +809,7 @@ const SuperTypeEditor = observer(
           value={selectedType}
           placeholder={'Choose a class'}
           filterOption={filterOption}
-          formatOptionLabel={packageableElementFormatOptionLabel}
+          formatOptionLabel={getPackageableElementOptionalFormatter()}
         />
         <button
           className="uml-element-editor__basic__detail-btn"

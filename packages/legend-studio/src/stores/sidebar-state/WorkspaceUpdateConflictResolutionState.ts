@@ -665,7 +665,9 @@ export class WorkspaceUpdateConflictResolutionState extends AbstractConflictReso
         const entity =
           this.editorStore.graphManagerState.graphManager.elementToEntity(
             element,
-            true,
+            {
+              pruneSourceInformation: true,
+            },
           );
         return entity;
       }

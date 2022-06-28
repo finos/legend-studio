@@ -38,48 +38,42 @@ import {
   buildRawLambdaFromLambdaFunction,
 } from '@finos/legend-graph';
 import { buildLambdaFunction } from './QueryBuilderLambdaBuilder.js';
-import { buildParametersLetLambdaFunc } from '@finos/legend-application';
+import {
+  buildParametersLetLambdaFunc,
+  ExecutionPlanState,
+} from '@finos/legend-application';
 
 const DEFAULT_LIMIT = 1000;
 
 export class QueryBuilderResultState {
   queryBuilderState: QueryBuilderState;
   exportDataState = ActionState.create();
-  showServicePathModal = false;
   previewLimit = DEFAULT_LIMIT;
   isExecutingQuery = false;
   isGeneratingPlan = false;
   executionResult?: ExecutionResult | undefined;
-  executionPlan?: RawExecutionPlan | undefined;
-  debugText?: string | undefined;
+  executionPlanState: ExecutionPlanState;
 
   constructor(queryBuilderState: QueryBuilderState) {
     makeAutoObservable(this, {
       queryBuilderState: false,
-      setShowServicePathModal: action,
+      executionPlanState: false,
       setExecutionResult: action,
-      setExecutionPlan: action,
     });
 
     this.queryBuilderState = queryBuilderState;
+    this.executionPlanState = new ExecutionPlanState(
+      this.queryBuilderState.applicationStore,
+      this.queryBuilderState.graphManagerState,
+    );
   }
 
-  setShowServicePathModal = (val: boolean): void => {
-    this.showServicePathModal = val;
-  };
   setExecutionResult = (val: ExecutionResult | undefined): void => {
     this.executionResult = val;
-  };
-  setExecutionPlan = (val: RawExecutionPlan | undefined): void => {
-    this.executionPlan = val;
   };
   setPreviewLimit = (val: number): void => {
     this.previewLimit = Math.max(1, val);
   };
-
-  setDebugText(val: string | undefined): void {
-    this.debugText = val;
-  }
 
   buildExecutionRawLambda(): RawLambda {
     let query: RawLambda;
@@ -221,6 +215,7 @@ export class QueryBuilderResultState {
         `Runtime is required to execute query`,
       );
       const query = this.queryBuilderState.getQuery();
+      let rawPlan: RawExecutionPlan;
       if (debug) {
         const debugResult =
           (yield this.queryBuilderState.graphManagerState.graphManager.debugExecutionPlanGeneration(
@@ -230,10 +225,10 @@ export class QueryBuilderResultState {
             runtime,
             PureClientVersion.VX_X_X,
           )) as { plan: RawExecutionPlan; debug: string };
-        this.setExecutionPlan(debugResult.plan);
-        this.setDebugText(debugResult.debug);
+        rawPlan = debugResult.plan;
+        this.executionPlanState.setDebugText(debugResult.debug);
       } else {
-        const result =
+        rawPlan =
           (yield this.queryBuilderState.graphManagerState.graphManager.generateExecutionPlan(
             this.queryBuilderState.graphManagerState.graph,
             mapping,
@@ -241,7 +236,17 @@ export class QueryBuilderResultState {
             runtime,
             PureClientVersion.VX_X_X,
           )) as object;
-        this.setExecutionPlan(result);
+      }
+      try {
+        this.executionPlanState.setRawPlan(rawPlan);
+        const plan =
+          this.queryBuilderState.graphManagerState.graphManager.buildExecutionPlan(
+            rawPlan,
+            this.queryBuilderState.graphManagerState.graph,
+          );
+        this.executionPlanState.setPlan(plan);
+      } catch {
+        // do nothing
       }
     } catch (error) {
       assertErrorThrown(error);

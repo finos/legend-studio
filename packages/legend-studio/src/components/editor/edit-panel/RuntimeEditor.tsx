@@ -319,7 +319,10 @@ const RuntimeExplorerTreeNodeContainer = observer(
           tabIndex={-1}
           title={getRuntimeExplorerTreeNodeTooltipText(node)}
         >
-          <div className="type-tree__expand-icon" onClick={onExpandIconClick}>
+          <div
+            className="tree-view__node__expand-icon"
+            onClick={onExpandIconClick}
+          >
             {nodeExpandIcon}
           </div>
           <div className="runtime-explorer__item__label__icon">

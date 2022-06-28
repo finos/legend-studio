@@ -117,25 +117,34 @@ export const noop = (): (() => void) => (): void => {
  */
 export const recursiveOmit = (
   obj: Record<PropertyKey, unknown>,
-  keysToRemove: string[],
+  /**
+   * Checker function which returns `true` if the object field should be omit
+   */
+  checker: (
+    object: Record<PropertyKey, unknown>,
+    propKey: PropertyKey,
+  ) => boolean,
 ): Record<PropertyKey, unknown> => {
   const newObj = deepClone(obj);
   const omit = (
     _obj: Record<PropertyKey, unknown>,
-    _keysToRemove: string[],
+    _checker: (
+      object: Record<PropertyKey, unknown>,
+      propKey: string,
+    ) => boolean,
   ): void => {
-    for (const prop in _obj) {
-      if (Object.prototype.hasOwnProperty.call(_obj, prop)) {
-        const value = _obj[prop] as Record<PropertyKey, unknown>;
-        if (_keysToRemove.includes(prop)) {
-          delete _obj[prop];
+    for (const propKey in _obj) {
+      if (Object.prototype.hasOwnProperty.call(_obj, propKey)) {
+        const value = _obj[propKey] as Record<PropertyKey, unknown>;
+        if (_checker(_obj, propKey)) {
+          delete _obj[propKey];
         } else if (typeof value === 'object') {
-          omit(value, _keysToRemove);
+          omit(value, _checker);
         }
       }
     }
   };
-  omit(newObj, keysToRemove);
+  omit(newObj, checker);
   return newObj;
 };
 

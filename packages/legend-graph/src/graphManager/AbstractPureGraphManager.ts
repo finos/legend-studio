@@ -336,6 +336,10 @@ export abstract class AbstractPureGraphManager {
   ): Promise<string>;
 
   // ------------------------------------------- Service -------------------------------------------
+  /**
+   * @modularize
+   * See https://github.com/finos/legend-studio/issues/65
+   */
 
   abstract registerService(
     graph: PureModel,
@@ -359,6 +363,16 @@ export abstract class AbstractPureGraphManager {
     graph: PureModel,
   ): Promise<DEPRECATED__ServiceTestResult[]>;
 
+  // ------------------------------------------- Database -------------------------------------------
+  /**
+   * @modularize
+   * See https://github.com/finos/legend-studio/issues/65
+   */
+
+  abstract buildDatabase(
+    databaseBuilderInput: DatabaseBuilderInput,
+  ): Promise<Entity[]>;
+
   // ------------------------------------------- Query -------------------------------------------
 
   abstract searchQueries(
@@ -372,6 +386,10 @@ export abstract class AbstractPureGraphManager {
   abstract deleteQuery(queryId: string): Promise<void>;
 
   // ------------------------------------------- Legend Query -------------------------------------
+  /**
+   * @modularize
+   * See https://github.com/finos/legend-studio/issues/65
+   */
 
   abstract buildGraphForCreateQuerySetup(
     graph: PureModel,
@@ -387,24 +405,16 @@ export abstract class AbstractPureGraphManager {
 
   // ------------------------------------------- Utilities -------------------------------------------
 
-  abstract buildDatabase(
-    databaseBuilderInput: DatabaseBuilderInput,
-  ): Promise<Entity[]>;
+  abstract elementToEntity(
+    element: PackageableElement,
+    options?: {
+      pruneSourceInformation?: boolean;
+    },
+  ): Entity;
 
   // ------------------------------------------- Change detection -------------------------------------------
 
   abstract buildHashesIndex(entities: Entity[]): Promise<Map<string, string>>;
-
-  // ------------------------------------------- Raw Protocol Handling -------------------------------------------
-  // This is the set of method that exposes the protocol out into the app, these are for readonly purpose like
-  // displaying, or for interacting with SDLC server.
-  // As such, most of these methods will only deal with `string` or `plain object`
-
-  abstract pruneSourceInformation(object: object): Record<PropertyKey, unknown>;
-  abstract elementToEntity(
-    element: PackageableElement,
-    pruneSourceInformation?: boolean,
-  ): Entity;
 
   // --------------------------------------------- HACKY ---------------------------------------------
   // As the name suggested, these methods are temporary hacks since we don't handle value-specification

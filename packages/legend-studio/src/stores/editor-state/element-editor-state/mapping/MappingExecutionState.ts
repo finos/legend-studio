@@ -48,7 +48,6 @@ import {
   ContentType,
 } from '@finos/legend-shared';
 import { createMockDataForMappingElementSource } from '../../../shared/MockDataUtil.js';
-import { ExecutionPlanState } from '../../../ExecutionPlanState.js';
 import {
   type Runtime,
   type InputData,
@@ -96,6 +95,7 @@ import {
 import {
   ActionAlertActionType,
   ActionAlertType,
+  ExecutionPlanState,
   LambdaEditorState,
   TAB_SIZE,
 } from '@finos/legend-application';
@@ -481,7 +481,10 @@ export class MappingExecutionState {
       mappingEditorState.mapping,
       undefined,
     );
-    this.executionPlanState = new ExecutionPlanState(this.editorStore);
+    this.executionPlanState = new ExecutionPlanState(
+      this.editorStore.applicationStore,
+      this.editorStore.graphManagerState,
+    );
   }
 
   setQueryState = (val: MappingExecutionQueryState): void => {

@@ -18,7 +18,6 @@ import { GRAPH_MANAGER_EVENT } from '../../../../graphManager/GraphManagerEvent.
 import {
   CORE_PURE_PATH,
   ELEMENT_PATH_DELIMITER,
-  SOURCE_INFORMATION_KEY,
   PackageableElementPointerType,
 } from '../../../../MetaModelConst.js';
 import {
@@ -32,7 +31,6 @@ import {
   getClass,
   guaranteeNonNullable,
   UnsupportedOperationError,
-  recursiveOmit,
   assertTrue,
   assertErrorThrown,
   promisify,
@@ -255,6 +253,7 @@ import {
   getNullableTestable,
 } from '../../../../helpers/Testable_Helper.js';
 import { V1_getIncludedMappingPath } from './helper/V1_DSLMapping_Helper.js';
+import { pruneSourceInformation } from '../../../../MetaModelUtils.js';
 
 const V1_FUNCTION_SUFFIX_MULTIPLICITY_INFINITE = 'MANY';
 
@@ -2416,64 +2415,167 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     return hashMap;
   }
 
-  // ------------------------------------------- Raw Protocol Handling -------------------------------------------
-
-  /**
-   * As mentioned, this method is needed because sometimes we want to parse and store protocol from grammar
-   * However, we want to prune away the source information. There is no realy good way to do this, other than
-   * hard-coding the source informations fields like this. We should cleanup these in the backend and use
-   * pointer instead so source information is coupled with the value instead of having custom-name source information
-   * fields like these, polluting the protocol models.
-   */
-  pruneSourceInformation = (
-    object: Record<PropertyKey, unknown>,
-  ): Record<PropertyKey, unknown> =>
-    recursiveOmit(
-      object,
-      [
-        SOURCE_INFORMATION_KEY,
-        // domain
-        'profileSourceInformation',
-        'propertyTypeSourceInformation',
-        // connection
-        'elementSourceInformation',
-        'classSourceInformation',
-        'mappingsSourceInformation',
-        // mapping
-        'classSourceInformation',
-        'sourceClassSourceInformation',
-        'enumMappingIdSourceInformation',
-        'flatDataSourceInformation',
-        // service
-        'mappingSourceInformation',
-        // flat-data store
-        'nameSourceInformation',
-        'driverIdSourceInformation',
-        // file generation
-        'typeSourceInformation',
-      ].concat(
-        this.pluginManager
-          .getPureProtocolProcessorPlugins()
-          .flatMap(
-            (plugin) => plugin.V1_getExtraSourceInformationKeys?.() ?? [],
-          ),
-      ),
-    );
+  // --------------------------------------------- Utilities ---------------------------------------------
 
   elementToEntity = (
     element: PackageableElement,
-    pruneSourceInformation?: boolean,
+    options?: {
+      pruneSourceInformation?: boolean;
+    },
   ): Entity => {
     const entity = this.elementProtocolToEntity(
       this.elementToProtocol<V1_PackageableElement>(element),
     );
-    if (pruneSourceInformation) {
-      entity.content = this.pruneSourceInformation(entity.content);
+    if (options?.pruneSourceInformation) {
+      entity.content = pruneSourceInformation(entity.content);
     }
     return entity;
   };
 
-  // --------------------------------------------- SHARED ---------------------------------------------
+  async buildDatabase(input: DatabaseBuilderInput): Promise<Entity[]> {
+    const dbBuilderInput = new V1_DatabaseBuilderInput();
+    dbBuilderInput.connection = V1_transformRelationalDatabaseConnection(
+      input.connection,
+      new V1_GraphTransformerContextBuilder(
+        this.pluginManager.getPureProtocolProcessorPlugins(),
+      ).build(),
+    );
+    const targetDatabase = new V1_TargetDatabase();
+    targetDatabase.package = input.targetDatabase.package;
+    targetDatabase.name = input.targetDatabase.name;
+    dbBuilderInput.targetDatabase = targetDatabase;
+    const config = new V1_DatabaseBuilderConfig();
+    config.maxTables = input.config.maxTables;
+    config.enrichTables = input.config.enrichTables;
+    config.enrichPrimaryKeys = input.config.enrichPrimaryKeys;
+    config.enrichColumns = input.config.enrichColumns;
+    config.patterns = input.config.patterns.map(
+      (storePattern: DatabasePattern): V1_DatabasePattern => {
+        const pattern = new V1_DatabasePattern();
+        pattern.schemaPattern = storePattern.schemaPattern;
+        pattern.tablePattern = storePattern.tablePattern;
+        pattern.escapeSchemaPattern = storePattern.escapeSchemaPattern;
+        pattern.escapeTablePattern = storePattern.escapeTablePattern;
+        return pattern;
+      },
+    );
+    dbBuilderInput.config = config;
+    return this.pureModelContextDataToEntities(
+      await this.engine.buildDatabase(dbBuilderInput),
+    );
+  }
+
+  // --------------------------------------------- HACKY ---------------------------------------------
+
+  HACKY__createGetAllLambda(_class: Class): RawLambda {
+    return new RawLambda(
+      [],
+      [
+        {
+          _type: 'func',
+          function: 'getAll',
+          parameters: [
+            {
+              _type: 'packageableElementPtr',
+              fullPath: _class.path,
+            },
+          ],
+        },
+      ],
+    );
+  }
+
+  HACKY__createServiceTestAssertLambda(assertData: string): RawLambda {
+    return new RawLambda(
+      [
+        {
+          _type: 'var',
+          class: 'meta::pure::mapping::Result',
+          multiplicity: { lowerBound: 1, upperBound: 1 },
+          name: 'res',
+        },
+      ],
+      [
+        {
+          _type: 'func',
+          function: 'equalJsonStrings',
+          parameters: [
+            {
+              _type: 'func',
+              function: 'toString',
+              parameters: [
+                {
+                  _type: 'func',
+                  function: 'toOne',
+                  parameters: [
+                    {
+                      _type: 'property',
+                      parameters: [
+                        {
+                          _type: 'var',
+                          name: 'res',
+                        },
+                      ],
+                      property: 'values',
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              _type: 'string',
+              multiplicity: {
+                lowerBound: 1,
+                upperBound: 1,
+              },
+              values: [assertData],
+            },
+          ],
+        },
+      ],
+    );
+  }
+
+  HACKY__extractServiceTestAssertionData(query: RawLambda): string | undefined {
+    let json: string | undefined;
+    try {
+      json = (
+        (
+          ((query.body as unknown[])[0] as Record<PropertyKey, unknown>) // FunctionValue
+            .parameters as unknown[]
+        )[1] as {
+          values: (string | undefined)[];
+        }
+      ).values[0];
+      assertTrue(typeof json === 'string', `Expected value of type 'string'`);
+    } catch (error) {
+      assertErrorThrown(error);
+      this.log.warn(
+        LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_MANAGER_FAILURE),
+        `Can't extract assertion result`,
+      );
+      json = undefined;
+    }
+    if (!json) {
+      /* Add other assertion cases if we read others */
+    }
+    return json;
+  }
+
+  HACKY__createDefaultBlankLambda(): RawLambda {
+    return new RawLambda(
+      [{ _type: 'var', name: 'x' }],
+      [
+        {
+          _type: 'string',
+          multiplicity: { lowerBound: 1, upperBound: 1 },
+          values: [''],
+        },
+      ],
+    );
+  }
+
+  // --------------------------------------------- Shared ---------------------------------------------
 
   private async entitiesToPureModelContextData(
     entities: Entity[],
@@ -2643,149 +2745,4 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
     return graphData;
   };
-
-  // --------------------------------------------- Utilities ---------------------------------------------
-
-  async buildDatabase(input: DatabaseBuilderInput): Promise<Entity[]> {
-    const dbBuilderInput = new V1_DatabaseBuilderInput();
-    dbBuilderInput.connection = V1_transformRelationalDatabaseConnection(
-      input.connection,
-      new V1_GraphTransformerContextBuilder(
-        this.pluginManager.getPureProtocolProcessorPlugins(),
-      ).build(),
-    );
-    const targetDatabase = new V1_TargetDatabase();
-    targetDatabase.package = input.targetDatabase.package;
-    targetDatabase.name = input.targetDatabase.name;
-    dbBuilderInput.targetDatabase = targetDatabase;
-    const config = new V1_DatabaseBuilderConfig();
-    config.maxTables = input.config.maxTables;
-    config.enrichTables = input.config.enrichTables;
-    config.enrichPrimaryKeys = input.config.enrichPrimaryKeys;
-    config.enrichColumns = input.config.enrichColumns;
-    config.patterns = input.config.patterns.map(
-      (storePattern: DatabasePattern): V1_DatabasePattern => {
-        const pattern = new V1_DatabasePattern();
-        pattern.schemaPattern = storePattern.schemaPattern;
-        pattern.tablePattern = storePattern.tablePattern;
-        pattern.escapeSchemaPattern = storePattern.escapeSchemaPattern;
-        pattern.escapeTablePattern = storePattern.escapeTablePattern;
-        return pattern;
-      },
-    );
-    dbBuilderInput.config = config;
-    return this.pureModelContextDataToEntities(
-      await this.engine.buildDatabase(dbBuilderInput),
-    );
-  }
-
-  // --------------------------------------------- HACKY ---------------------------------------------
-
-  HACKY__createGetAllLambda(_class: Class): RawLambda {
-    return new RawLambda(
-      [],
-      [
-        {
-          _type: 'func',
-          function: 'getAll',
-          parameters: [
-            {
-              _type: 'packageableElementPtr',
-              fullPath: _class.path,
-            },
-          ],
-        },
-      ],
-    );
-  }
-
-  HACKY__createServiceTestAssertLambda(assertData: string): RawLambda {
-    return new RawLambda(
-      [
-        {
-          _type: 'var',
-          class: 'meta::pure::mapping::Result',
-          multiplicity: { lowerBound: 1, upperBound: 1 },
-          name: 'res',
-        },
-      ],
-      [
-        {
-          _type: 'func',
-          function: 'equalJsonStrings',
-          parameters: [
-            {
-              _type: 'func',
-              function: 'toString',
-              parameters: [
-                {
-                  _type: 'func',
-                  function: 'toOne',
-                  parameters: [
-                    {
-                      _type: 'property',
-                      parameters: [
-                        {
-                          _type: 'var',
-                          name: 'res',
-                        },
-                      ],
-                      property: 'values',
-                    },
-                  ],
-                },
-              ],
-            },
-            {
-              _type: 'string',
-              multiplicity: {
-                lowerBound: 1,
-                upperBound: 1,
-              },
-              values: [assertData],
-            },
-          ],
-        },
-      ],
-    );
-  }
-
-  HACKY__extractServiceTestAssertionData(query: RawLambda): string | undefined {
-    let json: string | undefined;
-    try {
-      json = (
-        (
-          ((query.body as unknown[])[0] as Record<PropertyKey, unknown>) // FunctionValue
-            .parameters as unknown[]
-        )[1] as {
-          values: (string | undefined)[];
-        }
-      ).values[0];
-      assertTrue(typeof json === 'string', `Expected value of type 'string'`);
-    } catch (error) {
-      assertErrorThrown(error);
-      this.log.warn(
-        LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_MANAGER_FAILURE),
-        `Can't extract assertion result`,
-      );
-      json = undefined;
-    }
-    if (!json) {
-      /* Add other assertion cases if we read others */
-    }
-    return json;
-  }
-
-  HACKY__createDefaultBlankLambda(): RawLambda {
-    return new RawLambda(
-      [{ _type: 'var', name: 'x' }],
-      [
-        {
-          _type: 'string',
-          multiplicity: { lowerBound: 1, upperBound: 1 },
-          values: [''],
-        },
-      ],
-    );
-  }
 }

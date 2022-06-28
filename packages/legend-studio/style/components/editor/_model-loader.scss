@@ -47,6 +47,10 @@
     &__configs {
       display: flex;
 
+      &__type__menu {
+        padding: 0;
+      }
+
       &__type {
         @include flexVCenter;
 

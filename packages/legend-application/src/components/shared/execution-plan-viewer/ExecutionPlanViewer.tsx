@@ -16,10 +16,9 @@
 
 import { useState } from 'react';
 import {
-  Dialog,
   type TreeNodeContainerProps,
   type TreeData,
-  type TreeNodeData,
+  Dialog,
   ResizablePanelGroup,
   ResizablePanelSplitter,
   ResizablePanel,
@@ -28,70 +27,39 @@ import {
   TreeView,
   ChevronDownIcon,
   ChevronRightIcon,
+  MenuContentItem,
+  MenuContent,
+  DropdownMenu,
+  BlankPanelContent,
 } from '@finos/legend-art';
 import {
   addUniqueEntry,
   filterByType,
   isNonNullable,
 } from '@finos/legend-shared';
-import type { ExecutionPlanState } from '../../../../../stores/ExecutionPlanState.js';
-import { observer } from 'mobx-react-lite';
-import { ExecutionNodesViewer } from './ExecutionNodesViewer.js';
-import { EDITOR_LANGUAGE, TAB_SIZE } from '@finos/legend-application';
 import {
-  type ExecutionPlan,
+  ExecutionNodeTreeNodeData,
+  ExecutionPlanViewTreeNodeData,
+  EXECUTION_PLAN_VIEW_MODE,
+  type ExecutionPlanState,
+} from '../../../stores/shared/ExecutionPlanState.js';
+import { observer } from 'mobx-react-lite';
+import {
+  ExecutionPlan,
   ExecutionNode,
   SQLExecutionNode,
   RelationalTDSInstantiationExecutionNode,
   type RawExecutionPlan,
 } from '@finos/legend-graph';
-import { StudioTextInputEditor } from '../../../../shared/StudioTextInputEditor.js';
+import { EDITOR_LANGUAGE, TAB_SIZE } from '../../../const.js';
+import { TextInputEditor } from '../TextInputEditor.js';
+import { SQLExecutionNodeViewer } from './SQLExecutionNodeViewer.js';
 
-export class ExecutionPlanViewTreeNodeData implements TreeNodeData {
-  id: string;
-  label: string;
-  isSelected?: boolean;
-  isOpen?: boolean;
-  childrenIds?: string[];
-  executionPlan!: ExecutionPlan;
-
-  constructor(id: string, label: string, executionPlan: ExecutionPlan) {
-    this.id = id;
-    this.label = label;
-    this.executionPlan = executionPlan;
-  }
-}
-
-export class ExecutionNodeTreeNodeData implements TreeNodeData {
-  id: string;
-  label: string;
-  isSelected?: boolean;
-  isOpen?: boolean;
-  childrenIds?: string[];
-  executionNode: ExecutionNode;
-
-  constructor(id: string, label: string, executionNode: ExecutionNode) {
-    this.id = id;
-    this.label = label;
-    this.executionNode = executionNode;
-  }
-}
-export class ExecutionNodesTreeNodeData implements TreeNodeData {
-  id: string;
-  label: string;
-  isSelected?: boolean;
-  isOpen?: boolean;
-  childrenIds?: string[];
-  executionNodes: ExecutionNode[];
-
-  constructor(id: string, label: string, executionNodes: ExecutionNode[]) {
-    this.id = id;
-    this.label = label;
-    this.executionNodes = executionNodes;
-  }
-}
-
-const generateExecutionNodeTypeLabel = (type: ExecutionNode): string => {
+/**
+ * @modularize
+ * See https://github.com/finos/legend-studio/issues/65
+ */
+const generateExecutionNodeLabel = (type: ExecutionNode): string => {
   if (type instanceof SQLExecutionNode) {
     return `SQL Execution Node`;
   } else if (type instanceof RelationalTDSInstantiationExecutionNode) {
@@ -99,21 +67,6 @@ const generateExecutionNodeTypeLabel = (type: ExecutionNode): string => {
   } else {
     return 'Other';
   }
-};
-
-const generateExecutionNodeTreeNodeId = (
-  executionNode: ExecutionNode,
-  parentNode:
-    | ExecutionNodeTreeNodeData
-    | ExecutionPlanViewTreeNodeData
-    | undefined,
-): string => {
-  if (executionNode instanceof SQLExecutionNode) {
-    return `SQL::${parentNode?.id ?? ``}`;
-  } else if (executionNode instanceof RelationalTDSInstantiationExecutionNode) {
-    return `RELTDS::${parentNode?.id ?? ``}`;
-  }
-  return `EXEC::${parentNode?.id ?? ``}`;
 };
 
 const generateExecutionNodeTreeNodeData = (
@@ -125,7 +78,7 @@ const generateExecutionNodeTreeNodeData = (
     | undefined,
 ): ExecutionNodeTreeNodeData => {
   const executionNodeTreeNode = new ExecutionNodeTreeNodeData(
-    generateExecutionNodeTreeNodeId(executionNode, parentNode),
+    executionNode._UUID,
     label,
     executionNode,
   );
@@ -135,11 +88,8 @@ const generateExecutionNodeTreeNodeData = (
   executionNode.executionNodes
     .slice()
     .filter(filterByType(ExecutionNode))
-    .forEach((exen) => {
-      addUniqueEntry(
-        childrenIds,
-        generateExecutionNodeTreeNodeId(exen, executionNodeTreeNode),
-      );
+    .forEach((childExecutionNode) => {
+      addUniqueEntry(childrenIds, childExecutionNode._UUID);
     });
 
   executionNodeTreeNode.childrenIds = childrenIds;
@@ -158,10 +108,7 @@ const generateExecutionPlanTreeNodeData = (
 
   const childrenIds: string[] = [];
 
-  const rootNodeId = generateExecutionNodeTreeNodeId(
-    executionPlan.rootExecutionNode,
-    executionPlanNode,
-  );
+  const rootNodeId = executionPlan.rootExecutionNode._UUID;
   addUniqueEntry(childrenIds, rootNodeId);
   executionPlanNode.childrenIds = childrenIds;
   return executionPlanNode;
@@ -210,31 +157,29 @@ const ExecutionNodeElementTreeNodeContainer: React.FC<
   return (
     <div
       className={clsx(
-        'tree-view__node__container explorer__package-tree__node__container',
+        'tree-view__node__container execution-plan-viewer__explorer-tree__node__container',
         {
           'menu__trigger--on-menu-open': !node.isSelected,
         },
         {
-          'explorer__package-tree__node__container--selected': node.isSelected,
+          'execution-plan-viewer__explorer-tree__node__container--selected':
+            node.isSelected,
         },
       )}
       style={{
         paddingLeft: `${(level - 1) * (stepPaddingInRem ?? 1)}rem`,
-        paddingTop: `0.1rem`,
-        display: 'flex',
       }}
+      onClick={selectNode}
     >
       <div className="tree-view__node__icon">
-        <div className="type-tree__expand-icon" onClick={expandNode}>
+        <div className="tree-view__node__expand-icon" onClick={expandNode}>
           {nodeExpandIcon}
         </div>
       </div>
-
       <button
-        onClick={selectNode}
-        className="tree-view__node__label explorer__package-tree__node__label"
+        className="tree-view__node__label execution-plan-viewer__explorer-tree__node__label"
         tabIndex={-1}
-        title={`${node.id}`}
+        title={node.id}
       >
         {node.label}
       </button>
@@ -272,17 +217,16 @@ export const ExecutionPlanTree: React.FC<{
         const rootNode = node.executionPlan.rootExecutionNode;
         const rootNodeTreeNode = generateExecutionNodeTreeNodeData(
           rootNode,
-          generateExecutionNodeTypeLabel(rootNode),
+          generateExecutionNodeLabel(rootNode),
           node,
         );
-
         treeData.nodes.set(rootNodeTreeNode.id, rootNodeTreeNode);
       } else if (node instanceof ExecutionNodeTreeNodeData) {
         if (node.executionNode.executionNodes.length > 0) {
           node.executionNode.executionNodes.forEach((exen) => {
             const executionNodeTreeNode = generateExecutionNodeTreeNodeData(
               exen,
-              generateExecutionNodeTypeLabel(exen),
+              generateExecutionNodeLabel(exen),
               node,
             );
 
@@ -322,6 +266,155 @@ export const ExecutionPlanTree: React.FC<{
   );
 };
 
+const ExecutionNodeViewer = observer(
+  (props: {
+    executionNode: ExecutionNode;
+    executionPlanState: ExecutionPlanState;
+  }) => {
+    const { executionNode, executionPlanState } = props;
+    if (executionNode instanceof SQLExecutionNode) {
+      return (
+        <SQLExecutionNodeViewer
+          query={executionNode.sqlQuery}
+          resultColumns={executionNode.resultColumns}
+          executionPlanState={executionPlanState}
+        />
+      );
+    }
+    return (
+      <BlankPanelContent>
+        <div className="execution-node-viewer__unsupported-view">
+          <div className="execution-node-viewer__unsupported-view__summary">
+            {`Can't display execution node`}
+          </div>
+          <button
+            className="btn--dark execution-node-viewer__unsupported-view__to-text-mode__btn"
+            onClick={(): void =>
+              executionPlanState.setViewMode(EXECUTION_PLAN_VIEW_MODE.JSON)
+            }
+          >
+            View JSON
+          </button>
+        </div>
+      </BlankPanelContent>
+    );
+  },
+);
+
+const ExecutionPlanViewPanel = observer(
+  (props: { displayData: string; executionPlanState: ExecutionPlanState }) => {
+    const { displayData, executionPlanState } = props;
+    let currentElement;
+    if (executionPlanState.selectedNode !== undefined) {
+      if (
+        executionPlanState.selectedNode instanceof ExecutionPlanViewTreeNodeData
+      ) {
+        currentElement = executionPlanState.selectedNode.executionPlan;
+      } else if (
+        executionPlanState.selectedNode instanceof ExecutionNodeTreeNodeData
+      ) {
+        currentElement = executionPlanState.selectedNode.executionNode;
+      }
+    }
+    const nativeViewModes = Object.values(EXECUTION_PLAN_VIEW_MODE);
+
+    return (
+      <div className="execution-plan-viewer__panel">
+        {executionPlanState.selectedNode !== undefined && (
+          <>
+            <div className="panel__header execution-plan-viewer__panel__header">
+              <div className="execution-plan-viewer__panel__header__tabs">
+                <button className="execution-plan-viewer__panel__header__tab execution-plan-viewer__panel__header__tab--active">
+                  {executionPlanState.selectedNode.label}
+                </button>
+              </div>
+              <DropdownMenu
+                className="execution-plan-viewer__panel__view-mode"
+                content={
+                  <MenuContent className="execution-plan-viewer__panel__view-mode__options execution-plan-viewer__panel__view-mode__options--with-group">
+                    <div className="execution-plan-viewer__panel__view-mode__option__group execution-plan-viewer__panel__view-mode__option__group--native">
+                      <div className="execution-plan-viewer__panel__view-mode__option__group__name">
+                        native
+                      </div>
+                      <div className="execution-plan-viewer__panel__view-mode__option__group__options">
+                        {nativeViewModes.map((mode) => (
+                          <MenuContentItem
+                            key={mode}
+                            className="execution-plan-viewer__panel__view-mode__option"
+                            onClick={(): void =>
+                              executionPlanState.setViewMode(mode)
+                            }
+                          >
+                            {mode}
+                          </MenuContentItem>
+                        ))}
+                      </div>
+                    </div>
+                  </MenuContent>
+                }
+                menuProps={{
+                  anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
+                  transformOrigin: { vertical: 'top', horizontal: 'right' },
+                }}
+              >
+                <button
+                  className="execution-plan-viewer__panel__view-mode__type"
+                  title="View as..."
+                >
+                  <div className="execution-plan-viewer__panel__view-mode__type__label">
+                    {executionPlanState.viewMode}
+                  </div>
+                </button>
+              </DropdownMenu>
+            </div>
+            <div className="panel__content execution-plan-viewer__panel__content">
+              {executionPlanState.viewMode === EXECUTION_PLAN_VIEW_MODE.JSON &&
+                Boolean(displayData) && (
+                  <TextInputEditor
+                    inputValue={displayData}
+                    isReadOnly={true}
+                    language={EDITOR_LANGUAGE.JSON}
+                    showMiniMap={false}
+                  />
+                )}
+              {executionPlanState.viewMode ===
+                EXECUTION_PLAN_VIEW_MODE.FORM && (
+                <>
+                  {currentElement instanceof ExecutionNode && (
+                    <ExecutionNodeViewer
+                      executionNode={currentElement}
+                      executionPlanState={executionPlanState}
+                    />
+                  )}
+                  {currentElement instanceof ExecutionPlan && (
+                    <BlankPanelContent>
+                      <div className="execution-plan-viewer__unsupported-view">
+                        <div className="execution-plan-viewer__unsupported-view__summary">
+                          {`Can't display full execution plan`}
+                        </div>
+                        <button
+                          className="btn--dark execution-plan-viewer__unsupported-view__to-text-mode__btn"
+                          onClick={(): void =>
+                            executionPlanState.setViewMode(
+                              EXECUTION_PLAN_VIEW_MODE.JSON,
+                            )
+                          }
+                        >
+                          View JSON
+                        </button>
+                      </div>
+                    </BlankPanelContent>
+                  )}
+                </>
+              )}
+            </div>
+          </>
+        )}
+      </div>
+    );
+  },
+);
+
 const ExecutionPlanViewerContent = observer(
   (props: {
     executionPlanState: ExecutionPlanState;
@@ -335,7 +428,7 @@ const ExecutionPlanViewerContent = observer(
         {plan ? (
           <ResizablePanelGroup orientation="vertical">
             <ResizablePanel size={300} minSize={300}>
-              <div className="panel explorer">
+              <div className="panel execution-plan-viewer__explorer">
                 <div className="panel__header side-bar__header">
                   <div className="panel__header__title">
                     <div className="panel__header__title__content side-bar__header__title__content">
@@ -343,7 +436,7 @@ const ExecutionPlanViewerContent = observer(
                     </div>
                   </div>
                 </div>
-                <div className="panel__content explorer__content__container">
+                <div className="panel__content execution-plan-viewer__explorer__content__container">
                   <ExecutionPlanTree
                     executionPlanState={executionPlanState}
                     executionPlan={plan}
@@ -355,14 +448,14 @@ const ExecutionPlanViewerContent = observer(
               <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
             </ResizablePanelSplitter>
             <ResizablePanel>
-              <ExecutionNodesViewer
+              <ExecutionPlanViewPanel
                 displayData={executionPlanState.displayData}
                 executionPlanState={executionPlanState}
               />
             </ResizablePanel>
           </ResizablePanelGroup>
         ) : (
-          <StudioTextInputEditor
+          <TextInputEditor
             inputValue={JSON.stringify(rawPlan, undefined, TAB_SIZE)}
             isReadOnly={true}
             language={EDITOR_LANGUAGE.JSON}
@@ -424,9 +517,8 @@ export const ExecutionPlanViewer = observer(
                         </div>
                       </div>
                     </div>
-
                     <div className="panel__content">
-                      <StudioTextInputEditor
+                      <TextInputEditor
                         inputValue={executionPlanState.debugText}
                         isReadOnly={true}
                         language={EDITOR_LANGUAGE.TEXT}

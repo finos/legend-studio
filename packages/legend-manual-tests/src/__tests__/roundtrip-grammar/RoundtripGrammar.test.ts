@@ -174,11 +174,9 @@ const checkGrammarRoundtrip = async (
     headers: {
       [HttpHeader.CONTENT_TYPE]: ContentType.TEXT_PLAIN,
     },
-    // TODO: we should enable this, but we need to make sure engine works first
-    // See https://github.com/finos/legend-engine/pull/692
-    // params: {
-    //   returnSourceInformation: false,
-    // },
+    params: {
+      returnSourceInformation: false,
+    },
   });
   if (options?.debug) {
     log.info(
@@ -227,21 +225,17 @@ const checkGrammarRoundtrip = async (
     (
       expect(
         // received: transformed entity
-        transformedEntities
-          .map((entity) => entity.content)
-          .map(graphManagerState.graphManager.pruneSourceInformation),
+        transformedEntities.map((entity) => entity.content),
       ) as TEMPORARRY__JestMatcher
     ).toIncludeSameMembers(
       // expected: protocol JSON parsed from grammar text
       (
         (transformGrammarToJsonResult.data as { elements: object[] })
           .elements as PlainObject<V1_PackageableElement>[]
-      )
-        .map(graphManagerState.graphManager.pruneSourceInformation)
-        .filter(
-          (elementProtocol: PlainObject<V1_PackageableElement>) =>
-            elementProtocol._type !== 'sectionIndex',
-        ),
+      ).filter(
+        (elementProtocol: PlainObject<V1_PackageableElement>) =>
+          elementProtocol._type !== 'sectionIndex',
+      ),
     );
     logSuccess(phase, log, options?.debug);
   }

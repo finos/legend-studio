@@ -15,7 +15,7 @@
  */
 
 import { clsx, QuestionCircleIcon } from '@finos/legend-art';
-import { useApplicationStore } from './ApplicationStoreProvider.js';
+import { useApplicationStore } from '../ApplicationStoreProvider.js';
 
 export const DocumentationLink: React.FC<{
   documentationKey: string;

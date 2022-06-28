@@ -29,8 +29,8 @@ import {
   getEditorValue,
   normalizeLineEnding,
 } from '@finos/legend-art';
-import { type EDITOR_LANGUAGE, EDITOR_THEME, TAB_SIZE } from '../const.js';
-import { useApplicationStore } from './ApplicationStoreProvider.js';
+import { type EDITOR_LANGUAGE, EDITOR_THEME, TAB_SIZE } from '../../const.js';
+import { useApplicationStore } from '../ApplicationStoreProvider.js';
 
 export type TextInputEditorOnKeyDownEventHandler = {
   matcher: (event: IKeyboardEvent) => boolean;

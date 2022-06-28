@@ -76,7 +76,6 @@ export const TextElementEditor = observer(() => {
           )}
           <DropdownMenu
             disabled={isReadOnly}
-            className="edit-panel__element-view"
             content={
               <MenuContent>
                 {/* TODO: account for unknown types */}

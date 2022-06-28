@@ -16,7 +16,6 @@
 
 import { AgGridColumn, AgGridReact } from '@ag-grid-community/react';
 import {
-  Dialog,
   BlankPanelContent,
   PanelLoadingIndicator,
   PlayIcon,
@@ -24,10 +23,6 @@ import {
   MenuContent,
   MenuContentItem,
   CaretDownIcon,
-  ResizablePanelGroup,
-  ResizablePanel,
-  ResizablePanelSplitter,
-  ResizablePanelSplitterLine,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { flowResult } from 'mobx';
@@ -43,6 +38,7 @@ import {
   ActionAlertActionType,
   ActionAlertType,
   EDITOR_LANGUAGE,
+  ExecutionPlanViewer,
   PARAMETER_SUBMIT_ACTION,
   TAB_SIZE,
   TextInputEditor,
@@ -182,9 +178,6 @@ export const QueryBuilderResultPanel = observer(
     const debugPlanGeneration = applicationStore.guardUnhandledError(() =>
       flowResult(resultState.generatePlan(true)),
     );
-    const planText = resultState.executionPlan
-      ? JSON.stringify(resultState.executionPlan, undefined, TAB_SIZE)
-      : '';
     const changeLimit: React.ChangeEventHandler<HTMLInputElement> = (event) => {
       const val = event.target.value;
       queryBuilderState.resultState.setPreviewLimit(
@@ -312,77 +305,9 @@ export const QueryBuilderResultPanel = observer(
             </div>
           )}
         </div>
-        {/*
-          NOTE: we should be able to use <ExecutionPlanViewer> component when it's properly modularized
-          See https://github.com/finos/legend-studio/issues/717
-         */}
-        <Dialog
-          open={Boolean(resultState.executionPlan)}
-          onClose={(): void => resultState.setExecutionPlan(undefined)}
-          classes={{
-            root: 'editor-modal__root-container',
-            container: 'editor-modal__container',
-            paper: 'editor-modal__content',
-          }}
-        >
-          <div className="modal modal--dark editor-modal">
-            <div className="modal__header">
-              <div className="modal__title">Execution Plan</div>
-            </div>
-            <div className="modal__body">
-              {resultState.debugText ? (
-                <ResizablePanelGroup orientation="horizontal">
-                  <ResizablePanel minSize={100}>
-                    <TextInputEditor
-                      inputValue={planText}
-                      isReadOnly={true}
-                      language={EDITOR_LANGUAGE.JSON}
-                      showMiniMap={true}
-                    />
-                  </ResizablePanel>
-                  <ResizablePanelSplitter>
-                    <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
-                  </ResizablePanelSplitter>
-                  <ResizablePanel size={200} minSize={28}>
-                    <div className="panel execution-plan-viewer__debug-panel">
-                      <div className="panel__header">
-                        <div className="panel__header__title">
-                          <div className="panel__header__title__label">
-                            DEBUG LOG
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="panel__content">
-                        <TextInputEditor
-                          inputValue={resultState.debugText}
-                          isReadOnly={true}
-                          language={EDITOR_LANGUAGE.TEXT}
-                          showMiniMap={true}
-                        />
-                      </div>
-                    </div>
-                  </ResizablePanel>
-                </ResizablePanelGroup>
-              ) : (
-                <TextInputEditor
-                  inputValue={planText}
-                  isReadOnly={true}
-                  language={EDITOR_LANGUAGE.JSON}
-                  showMiniMap={true}
-                />
-              )}
-            </div>
-            <div className="modal__footer">
-              <button
-                className="btn modal__footer__close-btn"
-                onClick={(): void => resultState.setExecutionPlan(undefined)}
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </Dialog>
+        <ExecutionPlanViewer
+          executionPlanState={resultState.executionPlanState}
+        />
       </div>
     );
   },

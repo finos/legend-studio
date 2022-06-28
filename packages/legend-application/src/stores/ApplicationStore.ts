@@ -147,11 +147,13 @@ export class ApplicationStore<T extends LegendApplicationConfig> {
     this.config = config;
     this.navigator = navigator;
     this.pluginManager = pluginManager;
+    // NOTE: set the logger first so other loading could use the configured logger
+    this.log.registerPlugins(pluginManager.getLoggerPlugins());
+
     this.navigationContextService =
       new LegendApplicationNavigationContextService();
     this.documentationService = new LegendApplicationDocumentationService(this);
     this.assistantService = new LegendApplicationAssistantService(this);
-    this.log.registerPlugins(pluginManager.getLoggerPlugins());
     this.telemetryService.registerPlugins(
       pluginManager.getTelemetryServicePlugins(),
     );

@@ -25,10 +25,18 @@ import { unitTest } from '../application/TestUtils.js';
 
 test(unitTest('Recursive omit'), () => {
   const obj: Record<PropertyKey, unknown> = { a: '', b: { c: '', d: '' } };
-  expect(recursiveOmit(obj, [])).toEqual(obj);
-  expect(recursiveOmit(obj, [])).not.toBe(obj);
-  expect(recursiveOmit(obj, ['a', 'b'])).toEqual({});
-  expect(recursiveOmit(obj, ['a', 'c'])).toEqual({ b: { d: '' } });
+  expect(recursiveOmit(obj, () => true)).toEqual({});
+  expect(recursiveOmit(obj, () => false)).not.toBe(obj); // make sure we return a different object
+  expect(
+    recursiveOmit(obj, (object, propKey) =>
+      (['a', 'b'] as PropertyKey[]).includes(propKey),
+    ),
+  ).toEqual({});
+  expect(
+    recursiveOmit(obj, (object, propKey) =>
+      (['a', 'c'] as PropertyKey[]).includes(propKey),
+    ),
+  ).toEqual({ b: { d: '' } });
 });
 
 test(unitTest('Merge objects'), () => {

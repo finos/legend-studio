@@ -48,7 +48,6 @@ import {
   flowResult,
 } from 'mobx';
 import { createMockDataForMappingElementSource } from '../../../shared/MockDataUtil.js';
-import { ExecutionPlanState } from '../../../ExecutionPlanState.js';
 import {
   type MappingTest,
   type RawLambda,
@@ -86,7 +85,11 @@ import {
   generateIdentifiedConnectionId,
   DEPRECATED__validate_MappingTest,
 } from '@finos/legend-graph';
-import { LambdaEditorState, TAB_SIZE } from '@finos/legend-application';
+import {
+  ExecutionPlanState,
+  LambdaEditorState,
+  TAB_SIZE,
+} from '@finos/legend-application';
 import { flatData_setData } from '../../../graphModifier/StoreFlatData_GraphModifierHelper.js';
 import {
   expectedOutputMappingTestAssert_setExpectedOutput,
@@ -420,6 +423,7 @@ export class MappingTestState {
       uuid: false,
       editorStore: false,
       mappingEditorState: false,
+      executionPlanState: false,
       setSelectedTab: action,
       resetTestRunStatus: action,
       setResult: action,
@@ -438,7 +442,10 @@ export class MappingTestState {
     this.queryState = this.buildQueryState();
     this.inputDataState = this.buildInputDataState();
     this.assertionState = this.buildAssertionState();
-    this.executionPlanState = new ExecutionPlanState(this.editorStore);
+    this.executionPlanState = new ExecutionPlanState(
+      this.editorStore.applicationStore,
+      this.editorStore.graphManagerState,
+    );
   }
 
   setSelectedTab(val: MAPPING_TEST_EDITOR_TAB_TYPE): void {
