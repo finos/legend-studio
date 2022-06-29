@@ -71,6 +71,8 @@ export {
   RuntimePointer,
   StoreConnections,
 } from './models/metamodels/pure/packageableElements/runtime/Runtime.js';
+// relational packageable elements
+export { Database } from './models/metamodels/pure/packageableElements/store/relational/model/Database.js';
 // metamodel external formats
 export { Binding } from './models/metamodels/pure/packageableElements/externalFormat/store/DSLExternalFormat_Binding.js';
 export { ModelUnit } from './models/metamodels/pure/packageableElements/externalFormat/store/DSLExternalFormat_ModelUnit.js';
