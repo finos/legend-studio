@@ -125,7 +125,7 @@ export class ProjectConfigurationEditorState extends EditorState {
   get containsSnapshotDependencies(): boolean {
     return Boolean(
       this.originalProjectConfiguration?.projectDependencies.some(
-        (dependency) => dependency.versionId.id === MASTER_SNAPSHOT_ALIAS,
+        (dependency) => dependency.versionId === MASTER_SNAPSHOT_ALIAS,
       ),
     );
   }

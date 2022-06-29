@@ -267,7 +267,7 @@ export class V1_Engine {
     pretty: boolean,
     plugins: PureProtocolProcessorPlugin[],
   ): Promise<string> {
-    return await this.engineServerClient.JSONToGrammar_lambda(
+    return this.engineServerClient.JSONToGrammar_lambda(
       V1_serializeRawValueSpecification(
         V1_transformRawLambda(
           lambda,
