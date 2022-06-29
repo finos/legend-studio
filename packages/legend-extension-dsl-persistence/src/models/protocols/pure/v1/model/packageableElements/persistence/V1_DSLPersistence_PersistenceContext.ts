@@ -16,7 +16,7 @@
 
 import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../../DSLPersistence_ModelUtils.js';
 import type { V1_PersistencePlatform } from './V1_DSLPersistence_PersistencePlatform.js';
-import type { V1_ServiceParameter } from './V1_ServiceParameter.js';
+import type { V1_ServiceParameter } from './V1_DSLPersistence_ServiceParameter.js';
 import {
   V1_Connection,
   V1_PackageableElement,
