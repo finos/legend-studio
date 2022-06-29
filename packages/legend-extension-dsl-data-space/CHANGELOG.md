@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-space
 
+## 4.0.0
+
+### Major Changes
+
+- [#1248](https://github.com/finos/legend-studio/pull/1248) [`fa4734e0`](https://github.com/finos/legend-studio/commit/fa4734e07b1b25d102b8012e776bba2661ba55c7) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Previously, `data space` allows specifying a `Maven coordinates` (GAV - groupId, artifactId, version) to point at a project to get the models from. This may have given users a great deal of flexibility, but it sacrifices compilability of dataspaces, also, in soem case, it ends up confusing users even more. As such, we have decided to [remove these coordinates altogether](https://github.com/finos/legend-engine/pull/742). As a result, we will start building data space when building the graph.
+
 ## 3.0.4
 
 ## 3.0.3
