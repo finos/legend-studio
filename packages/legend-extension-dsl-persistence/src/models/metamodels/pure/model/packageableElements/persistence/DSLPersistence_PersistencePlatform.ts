@@ -14,8 +14,11 @@
  * limitations under the License.
  */
 
-export enum DSL_PERSISTENCE_LEGEND_STUDIO_DOCUMENTATION_KEY {
-  GRAMMAR_PARSER = 'dsl-persistence.grammar.parser',
-  GRAMMAR_ELEMENT_PERSISTENCE = 'dsl-persistence.grammar.element.persistence',
-  GRAMMAR_ELEMENT_PERSISTENCE_CONTEXT = 'dsl-persistence.grammar.element.persistence-context',
+import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../DSLPersistence_ModelUtils.js';
+import { type Hashable, hashArray } from '@finos/legend-shared';
+
+export class PersistencePlatform implements Hashable {
+  get hashCode(): string {
+    return hashArray([PERSISTENCE_HASH_STRUCTURE.PERSISTENCE_PLATFORM]);
+  }
 }

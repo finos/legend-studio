@@ -15,7 +15,11 @@
  */
 
 import type { Persistence } from '../../../../../metamodels/pure/model/packageableElements/persistence/DSLPersistence_Persistence.js';
-import { getPersistence } from '../../../../../../graphManager/DSLPersistence_GraphManagerHelper.js';
+import type { PersistenceContext } from '../../../../../metamodels/pure/model/packageableElements/persistence/DSLPersistence_PersistenceContext.js';
+import {
+  getPersistence,
+  getPersistenceContext,
+} from '../../../../../../graphManager/DSLPersistence_GraphManagerHelper.js';
 import type {
   PackageableElementImplicitReference,
   V1_GraphBuilderContext,
@@ -27,4 +31,12 @@ export const V1_resolvePersistence = (
 ): PackageableElementImplicitReference<Persistence> =>
   context.createImplicitPackageableElementReference(path, (_path: string) =>
     getPersistence(_path, context.graph),
+  );
+
+export const V1_resolvePersistenceContext = (
+  path: string,
+  context: V1_GraphBuilderContext,
+): PackageableElementImplicitReference<PersistenceContext> =>
+  context.createImplicitPackageableElementReference(path, (_path: string) =>
+    getPersistenceContext(_path, context.graph),
   );
