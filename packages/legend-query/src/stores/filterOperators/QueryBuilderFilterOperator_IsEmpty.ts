@@ -20,11 +20,10 @@ import {
   type FilterConditionState,
 } from '../QueryBuilderFilterState.js';
 import {
-  PRIMITIVE_TYPE,
   type ValueSpecification,
-  SimpleFunctionExpression,
+  type SimpleFunctionExpression,
+  PRIMITIVE_TYPE,
   Enumeration,
-  AbstractPropertyExpression,
 } from '@finos/legend-graph';
 import {
   buildFilterConditionState,
