@@ -44,9 +44,9 @@ export enum DATA_SPACE_VIEWER_ACTIVITY_MODE {
 
 export class DataSpaceViewerState {
   graphManagerState: GraphManagerState;
-  dataSpaceGroupId: string;
-  dataSpaceArtifactId: string;
-  dataSpaceVersionId: string;
+  groupId: string;
+  artifactId: string;
+  versionId: string;
   dataSpace: ResolvedDataSpace;
   _renderer?: DiagramRenderer | undefined;
   currentDiagram?: Diagram | undefined;
@@ -65,9 +65,9 @@ export class DataSpaceViewerState {
 
   constructor(
     graphManagerState: GraphManagerState,
-    dataSpaceGroupId: string,
-    dataSpaceArtifactId: string,
-    dataSpaceVersionId: string,
+    groupId: string,
+    artifactId: string,
+    versionId: string,
     dataSpace: ResolvedDataSpace,
     options?: {
       viewProject?: (
@@ -95,9 +95,9 @@ export class DataSpaceViewerState {
 
     this.graphManagerState = graphManagerState;
     this.dataSpace = dataSpace;
-    this.dataSpaceGroupId = dataSpaceGroupId;
-    this.dataSpaceArtifactId = dataSpaceArtifactId;
-    this.dataSpaceVersionId = dataSpaceVersionId;
+    this.groupId = groupId;
+    this.artifactId = artifactId;
+    this.versionId = versionId;
     this.currentExecutionContext = this.dataSpace.defaultExecutionContext;
     this.currentRuntime =
       this.dataSpace.defaultExecutionContext.defaultRuntime.value;

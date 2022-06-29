@@ -125,18 +125,6 @@ export class DSLDataSpace_PureProtocolProcessorPlugin extends PureProtocolProces
           element.taggedValues = elementProtocol.taggedValues
             .map((taggedValue) => V1_buildTaggedValue(taggedValue, context))
             .filter(isNonNullable);
-          element.groupId = guaranteeNonEmptyString(
-            elementProtocol.groupId,
-            `Data space 'groupId' field is missing or empty`,
-          );
-          element.artifactId = guaranteeNonEmptyString(
-            elementProtocol.artifactId,
-            `Data space 'artifactId' field is missing or empty`,
-          );
-          element.versionId = guaranteeNonEmptyString(
-            elementProtocol.versionId,
-            `Data space 'versionId' field is missing or empty`,
-          );
           element.executionContexts = guaranteeNonNullable(
             elementProtocol.executionContexts,
             `Data space 'executionContexts' field is missing`,
@@ -254,9 +242,6 @@ export class DSLDataSpace_PureProtocolProcessorPlugin extends PureProtocolProces
           protocol.taggedValues = metamodel.taggedValues.map(
             V1_transformTaggedValue,
           );
-          protocol.groupId = metamodel.groupId;
-          protocol.artifactId = metamodel.artifactId;
-          protocol.versionId = metamodel.versionId;
           protocol.executionContexts = metamodel.executionContexts.map(
             (execContext) => {
               const contextProtocol = new V1_DataSpaceExecutionContext();
@@ -314,6 +299,11 @@ export class ResolvedDataSpaceExecutionContext {
 /**
  * When we actually need to use the data space, we want to resolve all of its
  * element pointers to actual reference, hence this model.
+ *
+ * @deprecated
+ *
+ * We will remove this and use the data-space analytics endpoint
+ * See https://github.com/finos/legend-studio/issues/936
  */
 export class ResolvedDataSpace {
   taggedValues: {
@@ -324,9 +314,6 @@ export class ResolvedDataSpace {
   }[] = [];
   stereotypes: { uuid: string; profile: string; stereotype: string }[] = [];
   path!: string;
-  groupId!: string;
-  artifactId!: string;
-  versionId!: string;
   executionContexts: ResolvedDataSpaceExecutionContext[] = [];
   defaultExecutionContext!: ResolvedDataSpaceExecutionContext;
   featuredDiagrams: PackageableElementReference<Diagram>[] = [];
@@ -334,7 +321,13 @@ export class ResolvedDataSpace {
   supportInfo?: DataSpaceSupportInfo | undefined;
 }
 
-export const getResolvedDataSpace = (
+/**
+ * @deprecated
+ *
+ * We will remove this and use the data-space analytics endpoint
+ * See https://github.com/finos/legend-studio/issues/936
+ */
+export const V1_getResolvedDataSpace = (
   json: PlainObject<V1_DataSpace>,
   graph: PureModel,
 ): ResolvedDataSpace => {
@@ -369,18 +362,6 @@ export const getResolvedDataSpace = (
           stereotype: stereotypePtr.value,
         }));
     }
-    dataSpace.groupId = guaranteeNonEmptyString(
-      protocol.groupId,
-      `Data space 'groupId' field is missing or empty`,
-    );
-    dataSpace.artifactId = guaranteeNonEmptyString(
-      protocol.artifactId,
-      `Data space 'artifactId' field is missing or empty`,
-    );
-    dataSpace.versionId = guaranteeNonEmptyString(
-      protocol.versionId,
-      `Data space 'versionId' field is missing or empty`,
-    );
     dataSpace.executionContexts = protocol.executionContexts.map(
       (contextProtocol) => {
         const context = new ResolvedDataSpaceExecutionContext();

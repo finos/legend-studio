@@ -206,9 +206,9 @@ const TaxonomyNodeDataSpaceViewer = observer(
         applicationStore.navigator.generateLocation(
           generateStandaloneDataSpaceViewerRoute(
             generateGAVCoordinates(
-              dataSpaceViewerState.dataSpaceGroupId,
-              dataSpaceViewerState.dataSpaceArtifactId,
-              dataSpaceViewerState.dataSpaceVersionId,
+              dataSpaceViewerState.groupId,
+              dataSpaceViewerState.artifactId,
+              dataSpaceViewerState.versionId,
             ),
             dataSpaceViewerState.dataSpace.path,
           ),

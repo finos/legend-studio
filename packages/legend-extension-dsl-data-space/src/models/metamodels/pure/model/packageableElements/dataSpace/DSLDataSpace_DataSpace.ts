@@ -57,9 +57,6 @@ export class DataSpaceExecutionContext implements Hashable {
 }
 
 export class DataSpace extends PackageableElement implements Hashable {
-  groupId!: string;
-  artifactId!: string;
-  versionId!: string;
   executionContexts: DataSpaceExecutionContext[] = [];
   defaultExecutionContext!: DataSpaceExecutionContext;
   featuredDiagrams: string[] = [];
@@ -73,9 +70,6 @@ export class DataSpace extends PackageableElement implements Hashable {
         this.stereotypes.map((stereotype) => stereotype.pointerHashCode),
       ),
       hashArray(this.taggedValues),
-      this.groupId,
-      this.artifactId,
-      this.versionId,
       hashArray(this.executionContexts),
       this.defaultExecutionContext.name,
       hashArray(this.featuredDiagrams),

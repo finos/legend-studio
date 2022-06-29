@@ -16,9 +16,6 @@
 
 export const SIMPLE_DATA_SPACE_SNIPPET = `DataSpace \${1:model::NewDataSpace}
 {
-  groupId: '\${2:test.group}';
-  artifactId: '\${3:test-data-space}';
-  versionId: '\${4:1.0.0}';
   executionContexts:
   [
     {

@@ -19,7 +19,6 @@ export const TEST_DATA__roundtrip = [
     path: 'test::model::TestDataSpace',
     content: {
       _type: 'dataSpace',
-      artifactId: 'test-data-space',
       defaultExecutionContext: 'INT',
       description: 'some description 2',
       executionContexts: [
@@ -46,14 +45,12 @@ export const TEST_DATA__roundtrip = [
           type: 'DIAGRAM',
         },
       ],
-      groupId: 'test.group',
       name: 'TestDataSpace',
       package: 'test::model',
       supportInfo: {
         _type: 'email',
         address: 'testEmail@test.org',
       },
-      versionId: '0.4.3',
     },
     classifierPath: 'meta::pure::metamodel::dataSpace::DataSpace',
   },

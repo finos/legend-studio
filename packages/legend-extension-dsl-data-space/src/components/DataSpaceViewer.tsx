@@ -31,7 +31,6 @@ import {
   KeyIcon,
   FlaskIcon,
   ExternalLinkSquareIcon,
-  ExternalLinkIcon,
   ShieldIcon,
   TagsIcon,
   LightBulbIcon,
@@ -478,19 +477,12 @@ export const DataSpaceViewer = observer(
       },
     ];
 
-    const viewDataSpaceProject = (): void =>
-      dataSpaceViewerState.viewProject?.(
-        dataSpaceViewerState.dataSpaceGroupId,
-        dataSpaceViewerState.dataSpaceArtifactId,
-        dataSpaceViewerState.dataSpaceVersionId,
-        dataSpace.path,
-      );
     const viewProject = (): void =>
       dataSpaceViewerState.viewProject?.(
-        dataSpace.groupId,
-        dataSpace.artifactId,
-        dataSpace.versionId,
-        undefined,
+        dataSpaceViewerState.groupId,
+        dataSpaceViewerState.artifactId,
+        dataSpaceViewerState.versionId,
+        dataSpace.path,
       );
 
     return (
@@ -499,35 +491,14 @@ export const DataSpaceViewer = observer(
           <button
             className="data-space__viewer__path"
             tabIndex={-1}
-            title="View Data Space in Project"
-            onClick={viewDataSpaceProject}
+            title="View Project"
+            onClick={viewProject}
           >
             <div className="data-space__viewer__path__label">
               {dataSpace.path}
             </div>
             <div className="data-space__viewer__path__link">
               <ExternalLinkSquareIcon />
-            </div>
-          </button>
-          <button
-            className="data-space__viewer__gav"
-            tabIndex={-1}
-            title="View Project"
-            onClick={viewProject}
-          >
-            <div className="data-space__viewer__gav__group-id">
-              {dataSpace.groupId}
-            </div>
-            <div className="data-space__viewer__gav__separator">:</div>
-            <div className="data-space__viewer__gav__artifact-id">
-              {dataSpace.artifactId}
-            </div>
-            <div className="data-space__viewer__gav__separator">:</div>
-            <div className="data-space__viewer__gav__version-id">
-              {dataSpace.versionId}
-            </div>
-            <div className="data-space__viewer__gav__link">
-              <ExternalLinkIcon />
             </div>
           </button>
           <div

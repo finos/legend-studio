@@ -337,9 +337,9 @@ export class TaxonomyNodeViewerState {
       ): void => {
         this.taxonomyStore.applicationStore.navigator.openNewWindow(
           `${this.taxonomyStore.applicationStore.config.queryUrl}/create/` +
-            `${dataSpaceViewerState.dataSpace.groupId}/` +
-            `${dataSpaceViewerState.dataSpace.artifactId}/` +
-            `${dataSpaceViewerState.dataSpace.versionId}/` +
+            `${dataSpaceViewerState.groupId}/` +
+            `${dataSpaceViewerState.artifactId}/` +
+            `${dataSpaceViewerState.versionId}/` +
             `${dataSpaceViewerState.currentExecutionContext.mapping.value.path}/` +
             `${dataSpaceViewerState.currentRuntime.path}/` +
             `${classView.class.value.path}/`,
@@ -901,9 +901,9 @@ export class LegendTaxonomyStore {
       ): void => {
         this.applicationStore.navigator.openNewWindow(
           `${this.applicationStore.config.queryUrl}/create/` +
-            `${dataSpaceViewerState.dataSpace.groupId}/` +
-            `${dataSpaceViewerState.dataSpace.artifactId}/` +
-            `${dataSpaceViewerState.dataSpace.versionId}/` +
+            `${dataSpaceViewerState.groupId}/` +
+            `${dataSpaceViewerState.artifactId}/` +
+            `${dataSpaceViewerState.versionId}/` +
             `${dataSpaceViewerState.currentExecutionContext.mapping.value.path}/` +
             `${dataSpaceViewerState.currentRuntime.path}/` +
             `${classView.class.value.path}/`,
@@ -923,9 +923,9 @@ export class LegendTaxonomyStore {
   queryUsingDataSpace(dataSpaceViewerState: DataSpaceViewerState): void {
     this.applicationStore.navigator.openNewWindow(
       `${this.applicationStore.config.queryUrl}/create/` +
-        `${dataSpaceViewerState.dataSpace.groupId}/` +
-        `${dataSpaceViewerState.dataSpace.artifactId}/` +
-        `${dataSpaceViewerState.dataSpace.versionId}/` +
+        `${dataSpaceViewerState.groupId}/` +
+        `${dataSpaceViewerState.artifactId}/` +
+        `${dataSpaceViewerState.versionId}/` +
         `${dataSpaceViewerState.currentExecutionContext.mapping.value.path}/` +
         `${dataSpaceViewerState.currentRuntime.path}`,
     );

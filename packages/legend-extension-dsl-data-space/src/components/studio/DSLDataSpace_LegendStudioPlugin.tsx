@@ -39,7 +39,6 @@ import {
   DataSpace,
   DataSpaceExecutionContext,
 } from '../../models/metamodels/pure/model/packageableElements/dataSpace/DSLDataSpace_DataSpace.js';
-import { LATEST_VERSION_ALIAS } from '@finos/legend-server-depot';
 import { DSL_DATA_SPACE_LEGEND_STUDIO_DOCUMENTATION_KEY } from './DSLDataSpace_LegendStudioDocumentation.js';
 import {
   PURE_GRAMMAR_DATA_SPACE_ELEMENT_TYPE_LABEL,
@@ -106,11 +105,6 @@ export class DSLDataSpace_LegendStudioPlugin
       ): PackageableElement | undefined => {
         if (type === DATA_SPACE_ELEMENT_TYPE) {
           const dataSpace = new DataSpace(name);
-          dataSpace.groupId =
-            state.editorStore.projectConfigurationEditorState.currentProjectConfiguration.groupId;
-          dataSpace.artifactId =
-            state.editorStore.projectConfigurationEditorState.currentProjectConfiguration.artifactId;
-          dataSpace.versionId = LATEST_VERSION_ALIAS;
           const dataSpaceExecutionContext = new DataSpaceExecutionContext();
           dataSpaceExecutionContext.name = 'dummyContext';
           dataSpaceExecutionContext.mapping = 'dummyMapping';

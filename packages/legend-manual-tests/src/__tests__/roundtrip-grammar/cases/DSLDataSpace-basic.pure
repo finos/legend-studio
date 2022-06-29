@@ -1,9 +1,6 @@
 ###DataSpace
 DataSpace <<meta::pure::profiles::typemodifiers.abstract>> {doc.doc = 'bla'} model::dataSpace
 {
-  groupId: 'test.group';
-  artifactId: 'test-data-space';
-  versionId: '1.0.0';
   executionContexts:
   [
     {

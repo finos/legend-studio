@@ -35,14 +35,14 @@ import { observer } from 'mobx-react-lite';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type {
   DataSpaceQuerySetupState,
-  LightDataSpace,
+  DataSpaceContext,
 } from '../../stores/query/DataSpaceQuerySetupState.js';
 import { DataSpaceViewer } from '../DataSpaceViewer.js';
 
-type DataSpaceOption = { label: string; value: LightDataSpace };
-const buildDataSpaceOption = (dataSpace: LightDataSpace): DataSpaceOption => ({
-  label: dataSpace.path,
-  value: dataSpace,
+type DataSpaceOption = { label: string; value: DataSpaceContext };
+const buildDataSpaceOption = (value: DataSpaceContext): DataSpaceOption => ({
+  label: value.path,
+  value: value,
 });
 
 export const DataspaceQuerySetup = observer(
