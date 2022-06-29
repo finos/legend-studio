@@ -16,6 +16,38 @@
 
 export const TEST_DATA__roundtrip = [
   {
+    path: 'test::model::TestMapping',
+    content: {
+      _type: 'mapping',
+      classMappings: [],
+      enumerationMappings: [],
+      includedMappings: [],
+      name: 'TestMapping',
+      package: 'test::model',
+      tests: [],
+    },
+    classifierPath: 'meta::pure::mapping::Mapping',
+  },
+  {
+    path: 'test::model::TestRuntime',
+    content: {
+      _type: 'runtime',
+      name: 'TestRuntime',
+      package: 'test::model',
+      runtimeValue: {
+        _type: 'engineRuntime',
+        connections: [],
+        mappings: [
+          {
+            path: 'test::model::TestMapping',
+            type: 'MAPPING',
+          },
+        ],
+      },
+    },
+    classifierPath: 'meta::pure::runtime::PackageableRuntime',
+  },
+  {
     path: 'test::model::TestDataSpace',
     content: {
       _type: 'dataSpace',
@@ -33,16 +65,6 @@ export const TEST_DATA__roundtrip = [
             type: 'MAPPING',
           },
           name: 'INT',
-        },
-      ],
-      featuredDiagrams: [
-        {
-          path: 'test::model::TestDiagram1',
-          type: 'DIAGRAM',
-        },
-        {
-          path: 'test::model::TestDiagram2',
-          type: 'DIAGRAM',
         },
       ],
       name: 'TestDataSpace',
