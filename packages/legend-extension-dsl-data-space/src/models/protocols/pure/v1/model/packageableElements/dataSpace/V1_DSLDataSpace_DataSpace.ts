@@ -62,9 +62,6 @@ export class V1_DataSpaceExecutionContext implements Hashable {
 export class V1_DataSpace extends V1_PackageableElement implements Hashable {
   stereotypes: V1_StereotypePtr[] = [];
   taggedValues: V1_TaggedValue[] = [];
-  groupId!: string;
-  artifactId!: string;
-  versionId!: string;
   executionContexts!: V1_DataSpaceExecutionContext[];
   defaultExecutionContext!: string;
   featuredDiagrams?: V1_PackageableElementPointer[] | undefined;
@@ -76,9 +73,6 @@ export class V1_DataSpace extends V1_PackageableElement implements Hashable {
       DATA_SPACE_HASH_STRUCTURE.DATA_SPACE,
       hashArray(this.stereotypes),
       hashArray(this.taggedValues),
-      this.groupId,
-      this.artifactId,
-      this.versionId,
       hashArray(this.executionContexts),
       this.defaultExecutionContext,
       hashArray((this.featuredDiagrams ?? []).map((pointer) => pointer.path)),

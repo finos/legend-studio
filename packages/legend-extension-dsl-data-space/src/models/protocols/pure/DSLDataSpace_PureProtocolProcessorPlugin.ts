@@ -23,7 +23,6 @@ import {
 } from './v1/model/packageableElements/dataSpace/V1_DSLDataSpace_DataSpace.js';
 import {
   type PlainObject,
-  uuid,
   guaranteeNonEmptyString,
   guaranteeNonNullable,
   UnsupportedOperationError,
@@ -37,17 +36,12 @@ import {
 } from './v1/transformation/pureProtocol/V1_DSLDataSpace_ProtocolHelper.js';
 import { getOwnDataSpace } from '../../../graphManager/DSLDataSpace_GraphManagerHelper.js';
 import {
-  type DataSpaceSupportInfo,
   DataSpace,
   DataSpaceExecutionContext,
   DataSpaceSupportEmail,
 } from '../../metamodels/pure/model/packageableElements/dataSpace/DSLDataSpace_DataSpace.js';
 import {
-  type Mapping,
   type PackageableElement,
-  type PackageableElementReference,
-  type PackageableRuntime,
-  type PureModel,
   type V1_ElementProtocolClassifierPathGetter,
   type V1_ElementProtocolDeserializer,
   type V1_ElementProtocolSerializer,
@@ -67,11 +61,9 @@ import {
   PureProtocolProcessorPlugin,
   V1_ElementBuilder,
   V1_initPackageableElement,
-  V1_StereotypePtr,
   V1_buildFullPath,
 } from '@finos/legend-graph';
 import {
-  type Diagram,
   V1_DSLDiagram_PackageableElementPointerType,
   getDiagram,
 } from '@finos/legend-extension-dsl-diagram';
@@ -125,18 +117,6 @@ export class DSLDataSpace_PureProtocolProcessorPlugin extends PureProtocolProces
           element.taggedValues = elementProtocol.taggedValues
             .map((taggedValue) => V1_buildTaggedValue(taggedValue, context))
             .filter(isNonNullable);
-          element.groupId = guaranteeNonEmptyString(
-            elementProtocol.groupId,
-            `Data space 'groupId' field is missing or empty`,
-          );
-          element.artifactId = guaranteeNonEmptyString(
-            elementProtocol.artifactId,
-            `Data space 'artifactId' field is missing or empty`,
-          );
-          element.versionId = guaranteeNonEmptyString(
-            elementProtocol.versionId,
-            `Data space 'versionId' field is missing or empty`,
-          );
           element.executionContexts = guaranteeNonNullable(
             elementProtocol.executionContexts,
             `Data space 'executionContexts' field is missing`,
@@ -147,14 +127,13 @@ export class DSLDataSpace_PureProtocolProcessorPlugin extends PureProtocolProces
               `Data space execution context 'name' field is missing or empty`,
             );
             execContext.description = contextProtocol.description;
-            execContext.mapping = guaranteeNonNullable(
-              contextProtocol.mapping,
-              `Data space execution context 'mapping' field is missing or empty`,
-            ).path;
-            execContext.defaultRuntime = guaranteeNonNullable(
-              contextProtocol.defaultRuntime,
-              `Data space execution context 'defaultRuntime' field is missing or empty`,
-            ).path;
+            execContext.mapping = PackageableElementExplicitReference.create(
+              context.graph.getMapping(contextProtocol.mapping.path),
+            );
+            execContext.defaultRuntime =
+              PackageableElementExplicitReference.create(
+                context.graph.getRuntime(contextProtocol.defaultRuntime.path),
+              );
             return execContext;
           });
           element.defaultExecutionContext = guaranteeNonNullable(
@@ -171,7 +150,10 @@ export class DSLDataSpace_PureProtocolProcessorPlugin extends PureProtocolProces
           element.description = elementProtocol.description;
           if (elementProtocol.featuredDiagrams) {
             element.featuredDiagrams = elementProtocol.featuredDiagrams.map(
-              (pointer) => pointer.path,
+              (pointer) =>
+                PackageableElementExplicitReference.create(
+                  getDiagram(pointer.path, context.graph),
+                ),
             );
           }
           if (elementProtocol.supportInfo) {
@@ -254,9 +236,6 @@ export class DSLDataSpace_PureProtocolProcessorPlugin extends PureProtocolProces
           protocol.taggedValues = metamodel.taggedValues.map(
             V1_transformTaggedValue,
           );
-          protocol.groupId = metamodel.groupId;
-          protocol.artifactId = metamodel.artifactId;
-          protocol.versionId = metamodel.versionId;
           protocol.executionContexts = metamodel.executionContexts.map(
             (execContext) => {
               const contextProtocol = new V1_DataSpaceExecutionContext();
@@ -264,11 +243,11 @@ export class DSLDataSpace_PureProtocolProcessorPlugin extends PureProtocolProces
               contextProtocol.description = execContext.description;
               contextProtocol.mapping = new V1_PackageableElementPointer(
                 PackageableElementPointerType.MAPPING,
-                execContext.mapping,
+                execContext.mapping.valueForSerialization ?? '',
               );
               contextProtocol.defaultRuntime = new V1_PackageableElementPointer(
                 PackageableElementPointerType.RUNTIME,
-                execContext.defaultRuntime,
+                execContext.defaultRuntime.valueForSerialization ?? '',
               );
               return contextProtocol;
             },
@@ -276,11 +255,11 @@ export class DSLDataSpace_PureProtocolProcessorPlugin extends PureProtocolProces
           protocol.defaultExecutionContext =
             metamodel.defaultExecutionContext.name;
           protocol.description = metamodel.description;
-          protocol.featuredDiagrams = metamodel.featuredDiagrams.map(
+          protocol.featuredDiagrams = metamodel.featuredDiagrams?.map(
             (diagramPath) =>
               new V1_PackageableElementPointer(
                 V1_DSLDiagram_PackageableElementPointerType,
-                diagramPath,
+                diagramPath.valueForSerialization ?? '',
               ),
           );
           if (metamodel.supportInfo) {
@@ -295,7 +274,6 @@ export class DSLDataSpace_PureProtocolProcessorPlugin extends PureProtocolProces
               );
             }
           }
-          // protocol.supportInfo = metamodel.supportInfo;
           return protocol;
         }
         return undefined;
@@ -303,139 +281,6 @@ export class DSLDataSpace_PureProtocolProcessorPlugin extends PureProtocolProces
     ];
   }
 }
-
-export class ResolvedDataSpaceExecutionContext {
-  name!: string;
-  description?: string | undefined;
-  mapping!: PackageableElementReference<Mapping>;
-  defaultRuntime!: PackageableElementReference<PackageableRuntime>;
-}
-
-/**
- * When we actually need to use the data space, we want to resolve all of its
- * element pointers to actual reference, hence this model.
- */
-export class ResolvedDataSpace {
-  taggedValues: {
-    uuid: string;
-    profile: string;
-    tag: string;
-    value: string;
-  }[] = [];
-  stereotypes: { uuid: string; profile: string; stereotype: string }[] = [];
-  path!: string;
-  groupId!: string;
-  artifactId!: string;
-  versionId!: string;
-  executionContexts: ResolvedDataSpaceExecutionContext[] = [];
-  defaultExecutionContext!: ResolvedDataSpaceExecutionContext;
-  featuredDiagrams: PackageableElementReference<Diagram>[] = [];
-  description?: string | undefined;
-  supportInfo?: DataSpaceSupportInfo | undefined;
-}
-
-export const getResolvedDataSpace = (
-  json: PlainObject<V1_DataSpace>,
-  graph: PureModel,
-): ResolvedDataSpace => {
-  const dataSpace = new ResolvedDataSpace();
-  if (json._type === V1_DATA_SPACE_ELEMENT_PROTOCOL_TYPE) {
-    const protocol = deserialize(V1_dataSpaceModelSchema, json);
-    dataSpace.path = protocol.path;
-    if (Array.isArray(json.taggedValues)) {
-      dataSpace.taggedValues = (
-        json.taggedValues as PlainObject<V1_TaggedValue>[]
-      )
-        .map((taggedValueJson) =>
-          deserialize(V1_taggedValueSchema, taggedValueJson),
-        )
-        .map((taggedValue) => ({
-          uuid: uuid(),
-          profile: taggedValue.tag.profile,
-          tag: taggedValue.tag.value,
-          value: taggedValue.value,
-        }));
-    }
-    if (Array.isArray(json.stereotypes)) {
-      dataSpace.stereotypes = (
-        json.stereotypes as PlainObject<V1_StereotypePtr>[]
-      )
-        .map((stereotypePtrJson) =>
-          deserialize(V1_StereotypePtr, stereotypePtrJson),
-        )
-        .map((stereotypePtr) => ({
-          uuid: uuid(),
-          profile: stereotypePtr.profile,
-          stereotype: stereotypePtr.value,
-        }));
-    }
-    dataSpace.groupId = guaranteeNonEmptyString(
-      protocol.groupId,
-      `Data space 'groupId' field is missing or empty`,
-    );
-    dataSpace.artifactId = guaranteeNonEmptyString(
-      protocol.artifactId,
-      `Data space 'artifactId' field is missing or empty`,
-    );
-    dataSpace.versionId = guaranteeNonEmptyString(
-      protocol.versionId,
-      `Data space 'versionId' field is missing or empty`,
-    );
-    dataSpace.executionContexts = protocol.executionContexts.map(
-      (contextProtocol) => {
-        const context = new ResolvedDataSpaceExecutionContext();
-        context.name = guaranteeNonEmptyString(
-          contextProtocol.name,
-          `Data space execution context 'name' field is missing or empty`,
-        );
-        context.description = contextProtocol.description;
-        context.mapping = PackageableElementExplicitReference.create(
-          graph.getMapping(contextProtocol.mapping.path),
-        );
-        context.defaultRuntime = PackageableElementExplicitReference.create(
-          graph.getRuntime(contextProtocol.defaultRuntime.path),
-        );
-        return context;
-      },
-    );
-    dataSpace.defaultExecutionContext = guaranteeNonNullable(
-      dataSpace.executionContexts.find(
-        (context) =>
-          context.name ===
-          guaranteeNonEmptyString(
-            protocol.defaultExecutionContext,
-            `Data space 'defaultExecutionContext' field is missing or empty`,
-          ),
-      ),
-      `Can't find default execution context '${protocol.defaultExecutionContext}'`,
-    );
-    dataSpace.description = protocol.description;
-    if (protocol.featuredDiagrams) {
-      dataSpace.featuredDiagrams = protocol.featuredDiagrams.map((pointer) =>
-        PackageableElementExplicitReference.create(
-          getDiagram(pointer.path, graph),
-        ),
-      );
-    }
-    if (protocol.supportInfo) {
-      if (protocol.supportInfo instanceof V1_DataSpaceSupportEmail) {
-        const supportEmail = new DataSpaceSupportEmail();
-        supportEmail.address = guaranteeNonEmptyString(
-          protocol.supportInfo.address,
-          `Data space support email 'address' field is missing or empty`,
-        );
-        dataSpace.supportInfo = supportEmail;
-      } else {
-        throw new UnsupportedOperationError(
-          `Can't build data space support info`,
-          protocol.supportInfo,
-        );
-      }
-    }
-    return dataSpace;
-  }
-  throw new UnsupportedOperationError(`Can't resolve data space`, json);
-};
 
 export const extractDataSpaceTaxonomyNodes = (
   json: PlainObject<V1_DataSpace>,

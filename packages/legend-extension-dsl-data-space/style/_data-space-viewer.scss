@@ -28,7 +28,7 @@
 
     flex-direction: column;
     padding: 2rem;
-    height: 17rem;
+    height: 13rem;
   }
 
   &__path {
@@ -62,43 +62,11 @@
     }
   }
 
-  &__gav {
-    @include flexCenter;
-
-    user-select: none;
-    height: 2.8rem;
-    font-size: 1.4rem;
-    color: var(--color-dark-grey-400);
-    border: 0.1rem solid var(--color-dark-grey-85);
-    padding: 0.5rem 1rem;
-    margin: 1rem;
-    font-family: 'Roboto Mono', monospace;
-
-    &__artifact-id {
-      color: var(--color-light-grey-400);
-      white-space: nowrap;
-    }
-
-    &__version-id {
-      color: var(--color-blue-50);
-      font-weight: 700;
-    }
-
-    &__link {
-      @include flexCenter;
-
-      margin-left: 0.5rem;
-
-      svg {
-        color: var(--color-blue-50);
-      }
-    }
-  }
-
   &__description {
     cursor: default;
     user-select: none;
     padding: 1rem;
+    margin-top: 1rem;
     height: 5rem;
     width: 100%;
     background: var(--color-dark-grey-100);
@@ -119,7 +87,7 @@
   &__content {
     @include flexCenter;
 
-    height: calc(100% - 17rem);
+    height: calc(100% - 13rem);
     padding: 0 2rem 2rem;
   }
 

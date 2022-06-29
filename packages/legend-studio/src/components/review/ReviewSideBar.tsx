@@ -39,6 +39,8 @@ export const ReviewSideBar = observer(() => {
   const reviewStore = useReviewStore();
   const editorStore = useEditorStore();
   const applicationStore = useApplicationStore();
+  const workspaceContainsSnapshotDependencies =
+    editorStore.projectConfigurationEditorState.containsSnapshotDependencies;
   // Review infos
   const review = reviewStore.review;
   const currentUser = editorStore.sdlcServerClient.currentUser;
@@ -181,12 +183,23 @@ export const ReviewSideBar = observer(() => {
                   <CheckIcon />
                 </button>
                 <button
-                  className="btn--dark btn--sm review__side-bar__merge-btn"
+                  className={clsx(
+                    'btn--dark btn--sm review__side-bar__merge-btn',
+                    {
+                      'btn--error': workspaceContainsSnapshotDependencies,
+                    },
+                  )}
                   onClick={commitReview}
                   // TODO: when we improve approval APIs we can know when to hide/disable this button altogether
-                  disabled={isDispatchingAction}
+                  disabled={
+                    isDispatchingAction || workspaceContainsSnapshotDependencies
+                  }
                   tabIndex={-1}
-                  title={'Commit review'}
+                  title={
+                    !workspaceContainsSnapshotDependencies
+                      ? 'Commit review'
+                      : `Can't commit review: workspace has snapshot dependencies`
+                  }
                 >
                   <TruncatedGitMergeIcon />
                 </button>

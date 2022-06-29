@@ -109,6 +109,14 @@ export class DSLExternalFormat_LegendStudioPlugin
     );
   }
 
+  override getExtraRequiredDocumentationKeys(): string[] {
+    return [
+      DSL_EXTERNAL_FORMAT_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_ELEMENT_BINDING,
+      DSL_EXTERNAL_FORMAT_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_ELEMENT_SCHEMASET,
+      DSL_EXTERNAL_FORMAT_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER,
+    ];
+  }
+
   getExtraSupportedElementTypes(): string[] {
     return [SCHEMA_SET_ELEMENT_TYPE, BINDING_ELEMENT_TYPE];
   }

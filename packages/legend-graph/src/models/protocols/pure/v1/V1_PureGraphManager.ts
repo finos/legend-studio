@@ -46,7 +46,7 @@ import {
   type GraphBuilderOptions,
   type ExecutionOptions,
 } from '../../../../graphManager/AbstractPureGraphManager.js';
-import { Mapping } from '../../../metamodels/pure/packageableElements/mapping/Mapping.js';
+import type { Mapping } from '../../../metamodels/pure/packageableElements/mapping/Mapping.js';
 import {
   type Runtime,
   EngineRuntime,
@@ -254,6 +254,7 @@ import {
 } from '../../../../helpers/Testable_Helper.js';
 import { V1_getIncludedMappingPath } from './helper/V1_DSLMapping_Helper.js';
 import { pruneSourceInformation } from '../../../../MetaModelUtils.js';
+import { stub_Mapping } from '../../../../graphManager/action/creation/DSLMapping_ModelCreatorHelper.js';
 
 const V1_FUNCTION_SUFFIX_MULTIPLICITY_INFINITE = 'MANY';
 
@@ -2338,7 +2339,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
                 (keyedExecutionParameter) =>
                   new KeyedExecutionParameter(
                     keyedExecutionParameter.key,
-                    PackageableElementExplicitReference.create(new Mapping('')),
+                    PackageableElementExplicitReference.create(stub_Mapping()),
                     new EngineRuntime(),
                   ),
               );
@@ -2347,7 +2348,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
             service.execution = new PureSingleExecution(
               stub_RawLambda(),
               service,
-              PackageableElementExplicitReference.create(new Mapping('')),
+              PackageableElementExplicitReference.create(stub_Mapping()),
               new EngineRuntime(),
             );
           }

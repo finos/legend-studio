@@ -126,3 +126,9 @@
   flex: 2.8rem 0 0;
   height: 2.8rem;
 }
+
+.btn--error[disabled],
+.btn--error {
+  background: var(--color-carmine-200);
+  color: var(--color-dark-shade-250);
+}
