@@ -256,11 +256,6 @@ export const TEST_DATA__roundtrip = [
         sink: {
           _type: 'objectStorageSink',
           binding: 'org::dxl::ZooBinding',
-          connection: {
-            _type: 'JsonModelConnection',
-            class: 'org::dxl::Animal',
-            url: 'file:///foo',
-          },
         },
         targetShape: {
           _type: 'multiFlatTarget',

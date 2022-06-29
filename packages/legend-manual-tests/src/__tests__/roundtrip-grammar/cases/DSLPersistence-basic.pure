@@ -9,14 +9,6 @@ Persistence org::legend::ZooPersistence
     sink: ObjectStorage
     {
       binding: org::legend::ZooBinding;
-      connection:
-      #{
-        JsonModelConnection
-        {
-          class: org::legend::Animal;
-          url: 'my_url2';
-        }
-      }#
     }
     ingestMode: BitemporalDelta
     {
