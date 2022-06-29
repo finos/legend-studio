@@ -100,6 +100,8 @@ export const WorkspaceReview = observer(() => {
   const editorStore = useEditorStore();
   const applicationStore = useApplicationStore<LegendStudioConfig>();
   const workspaceReviewState = editorStore.workspaceReviewState;
+  const workspaceContainsSnapshotDependencies =
+    editorStore.projectConfigurationEditorState.containsSnapshotDependencies;
   const workspaceReview = workspaceReviewState.workspaceReview;
   // Review Title
   const reviewTitleInputRef = useRef<HTMLInputElement>(null);
@@ -255,14 +257,21 @@ export const WorkspaceReview = observer(() => {
                   />
                 </div>
                 <button
-                  className="btn--dark btn--sm"
+                  className={clsx('btn--dark btn--sm', {
+                    'btn--error': workspaceContainsSnapshotDependencies,
+                  })}
                   onClick={createReview}
                   disabled={
                     isDispatchingAction ||
                     Boolean(workspaceReview) ||
-                    !workspaceReviewState.reviewTitle
+                    !workspaceReviewState.reviewTitle ||
+                    workspaceContainsSnapshotDependencies
                   }
-                  title={'Create review'}
+                  title={
+                    !workspaceContainsSnapshotDependencies
+                      ? 'Create review'
+                      : `Can't create review: workspace has snapshot dependencies`
+                  }
                 >
                   <PlusIcon />
                 </button>
@@ -296,11 +305,22 @@ export const WorkspaceReview = observer(() => {
                   </div>
                 </div>
                 <button
-                  className="btn--dark btn--sm workspace-review__merge-review-btn"
+                  className={clsx(
+                    'btn--dark btn--sm workspace-review__merge-review-btn',
+                    { 'btn--error': workspaceContainsSnapshotDependencies },
+                  )}
                   onClick={commitReview}
-                  disabled={isDispatchingAction || Boolean(!workspaceReview)}
+                  disabled={
+                    isDispatchingAction ||
+                    Boolean(!workspaceReview) ||
+                    workspaceContainsSnapshotDependencies
+                  }
                   tabIndex={-1}
-                  title={'Commit review'}
+                  title={
+                    !workspaceContainsSnapshotDependencies
+                      ? 'Commit review'
+                      : `Can't commit review: workspace has snapshot dependencies`
+                  }
                 >
                   <TruncatedGitMergeIcon />
                 </button>
