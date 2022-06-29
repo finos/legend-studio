@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../DSLPersistence_ModelUtils.js';
-import type { Connection, ValueSpecification } from '@finos/legend-graph';
+import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../../DSLPersistence_ModelUtils.js';
+import type { V1_Connection, V1_ValueSpecification } from '@finos/legend-graph';
 import { type Hashable, hashArray } from '@finos/legend-shared';
 
-export class ServiceParameter implements Hashable {
+export class V1_ServiceParameter implements Hashable {
   name!: string;
-  value!: ServiceParameterValue;
+  value!: V1_ServiceParameterValue;
 
   get hashCode(): string {
     return hashArray([
@@ -31,15 +31,15 @@ export class ServiceParameter implements Hashable {
   }
 }
 
-export abstract class ServiceParameterValue implements Hashable {
+export abstract class V1_ServiceParameterValue implements Hashable {
   abstract get hashCode(): string;
 }
 
-export class PrimitiveTypeValue
-  extends ServiceParameterValue
+export class V1_PrimitiveTypeValue
+  extends V1_ServiceParameterValue
   implements Hashable
 {
-  primitiveType!: ValueSpecification;
+  primitiveType!: V1_ValueSpecification;
 
   override get hashCode(): string {
     return hashArray([
@@ -49,8 +49,11 @@ export class PrimitiveTypeValue
   }
 }
 
-export class ConnectionValue extends ServiceParameterValue implements Hashable {
-  connection!: Connection;
+export class V1_ConnectionValue
+  extends V1_ServiceParameterValue
+  implements Hashable
+{
+  connection!: V1_Connection;
 
   override get hashCode(): string {
     return hashArray([
