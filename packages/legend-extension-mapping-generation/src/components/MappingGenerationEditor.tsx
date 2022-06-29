@@ -42,7 +42,7 @@ import {
 import type { MappingGenerationEditorState } from '../stores/MappingGenerationEditorState.js';
 import { flowResult, runInAction } from 'mobx';
 import {
-  Mapping,
+  type Mapping,
   createValidationError,
   isStubbed_PackageableElement,
   stub_Mapping,

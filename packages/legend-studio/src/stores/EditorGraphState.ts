@@ -1111,7 +1111,7 @@ export class EditorGraphState {
               return new ProjectDependencyCoordinates(
                 projectData.groupId,
                 projectData.artifactId,
-                dep.versionId,
+                dep.versionId.id,
               );
             });
         } else {
@@ -1119,7 +1119,7 @@ export class EditorGraphState {
             new ProjectDependencyCoordinates(
               guaranteeNonNullable(dep.groupId),
               guaranteeNonNullable(dep.artifactId),
-              dep.versionId,
+              dep.versionId.id,
             ),
           );
         }

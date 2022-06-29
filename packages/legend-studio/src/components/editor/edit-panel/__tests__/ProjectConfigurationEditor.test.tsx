@@ -41,11 +41,19 @@ const TEST_DATA__ProjectConfiguration = {
   projectDependencies: [
     {
       projectId: 'PROD-1',
-      versionId: '2.0.0',
+      versionId: {
+        majorVersion: 2,
+        minorVersion: 0,
+        patchVersion: 0,
+      },
     },
     {
       projectId: 'org.finos.legend:prod-2',
-      versionId: '3.0.0',
+      versionId: {
+        majorVersion: 3,
+        minorVersion: 0,
+        patchVersion: 0,
+      },
     },
   ],
   metamodelDependencies: [],
