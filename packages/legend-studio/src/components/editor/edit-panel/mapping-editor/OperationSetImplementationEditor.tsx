@@ -37,11 +37,9 @@ import {
   MappingElementDecorationCleaner,
 } from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementDecorator.js';
 import {
-  Mapping,
   OperationSetImplementation,
   OperationType,
   SetImplementation,
-  Class,
   SetImplementationContainer,
   InferableMappingElementIdExplicitValue,
   PackageableElementExplicitReference,

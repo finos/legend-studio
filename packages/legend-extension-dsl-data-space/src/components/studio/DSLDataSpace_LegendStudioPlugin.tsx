@@ -35,11 +35,10 @@ import {
 } from '@finos/legend-studio';
 import { SquareIcon } from '@finos/legend-art';
 import {
-  Mapping,
-  PackageableElement,
   PackageableElementExplicitReference,
   stub_Mapping,
   stub_PackageableRuntime,
+  type PackageableElement,
 } from '@finos/legend-graph';
 import {
   DataSpace,
