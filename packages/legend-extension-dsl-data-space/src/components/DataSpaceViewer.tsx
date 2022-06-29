@@ -41,9 +41,9 @@ import {
 } from '@finos/legend-extension-dsl-diagram';
 import {
   DataSpaceSupportEmail,
+  type DataSpaceExecutionContext,
   type DataSpaceSupportInfo,
 } from '../models/metamodels/pure/model/packageableElements/dataSpace/DSLDataSpace_DataSpace.js';
-import type { ResolvedDataSpaceExecutionContext } from '../models/protocols/pure/DSLDataSpace_PureProtocolProcessorPlugin.js';
 import type { PackageableRuntime } from '@finos/legend-graph';
 import {
   type DataSpaceViewerState,
@@ -186,10 +186,10 @@ const DataSpaceModelsOverview = observer(
 
 type ExecutionContextOption = {
   label: string;
-  value: ResolvedDataSpaceExecutionContext;
+  value: DataSpaceExecutionContext;
 };
 const buildExecutionContextOption = (
-  value: ResolvedDataSpaceExecutionContext,
+  value: DataSpaceExecutionContext,
 ): ExecutionContextOption => ({
   label: value.name,
   value: value,
@@ -334,19 +334,19 @@ const DataSpaceTags = observer(
             Tagged Values
           </div>
           {dataSpace.taggedValues.length !== 0 &&
-            dataSpace.taggedValues.map((taggedValueData) => (
+            dataSpace.taggedValues.map((taggedValue) => (
               <div
-                key={taggedValueData.uuid}
+                key={taggedValue._UUID}
                 className="data-space__viewer__tags__section__entry"
               >
                 <div
                   className="data-space__viewer__tags__tagged-value__tag"
-                  title={`${taggedValueData.profile}.${taggedValueData.tag}`}
+                  title={`${taggedValue.tag.ownerReference.value.name}.${taggedValue.tag.value.value}`}
                 >
-                  {taggedValueData.tag}
+                  {taggedValue.tag.value.value}
                 </div>
                 <div className="data-space__viewer__tags__tagged-value__value">
-                  {taggedValueData.value}
+                  {taggedValue.value}
                 </div>
               </div>
             ))}
@@ -361,14 +361,14 @@ const DataSpaceTags = observer(
             Stereotypes
           </div>
           {dataSpace.stereotypes.length !== 0 &&
-            dataSpace.stereotypes.map((stereotypeData) => (
+            dataSpace.stereotypes.map((stereotype) => (
               <div
-                key={stereotypeData.uuid}
+                key={stereotype.value._UUID}
                 className="data-space__viewer__tags__section__entry"
-                title={`${stereotypeData.profile}.${stereotypeData.stereotype}`}
+                title={`${stereotype.ownerReference.value.name}.${stereotype.value.value}`}
               >
                 <div className="data-space__viewer__tags__steoreotype">
-                  {stereotypeData.stereotype}
+                  {stereotype.value.value}
                 </div>
               </div>
             ))}

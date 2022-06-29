@@ -28,9 +28,9 @@ import type {
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { action, computed, makeObservable, observable } from 'mobx';
 import type {
-  ResolvedDataSpace,
-  ResolvedDataSpaceExecutionContext,
-} from '../models/protocols/pure/DSLDataSpace_PureProtocolProcessorPlugin.js';
+  DataSpace,
+  DataSpaceExecutionContext,
+} from '../models/metamodels/pure/model/packageableElements/dataSpace/DSLDataSpace_DataSpace.js';
 
 export enum DATA_SPACE_VIEWER_ACTIVITY_MODE {
   MODELS_OVERVIEW = 'MODELS_OVERVIEW',
@@ -47,11 +47,11 @@ export class DataSpaceViewerState {
   groupId: string;
   artifactId: string;
   versionId: string;
-  dataSpace: ResolvedDataSpace;
+  dataSpace: DataSpace;
   _renderer?: DiagramRenderer | undefined;
   currentDiagram?: Diagram | undefined;
   currentActivity = DATA_SPACE_VIEWER_ACTIVITY_MODE.MODELS_OVERVIEW;
-  currentExecutionContext: ResolvedDataSpaceExecutionContext;
+  currentExecutionContext: DataSpaceExecutionContext;
   currentRuntime: PackageableRuntime;
   viewProject?:
     | ((
@@ -68,7 +68,7 @@ export class DataSpaceViewerState {
     groupId: string,
     artifactId: string,
     versionId: string,
-    dataSpace: ResolvedDataSpace,
+    dataSpace: DataSpace,
     options?: {
       viewProject?: (
         groupId: string,
@@ -183,7 +183,7 @@ export class DataSpaceViewerState {
     this.currentActivity = val;
   }
 
-  setCurrentExecutionContext(val: ResolvedDataSpaceExecutionContext): void {
+  setCurrentExecutionContext(val: DataSpaceExecutionContext): void {
     this.currentExecutionContext = val;
     this.currentRuntime = val.defaultRuntime.value;
   }

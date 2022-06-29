@@ -16,7 +16,6 @@
 
 import type { ClassView } from '@finos/legend-extension-dsl-diagram';
 import { type Class, QueryTaggedValue } from '@finos/legend-graph';
-import type { Entity } from '@finos/legend-model-storage';
 import {
   type QuerySetupStore,
   CreateQueryInfoState,
@@ -37,18 +36,16 @@ import {
   assertErrorThrown,
 } from '@finos/legend-shared';
 import { action, flow, flowResult, makeObservable, observable } from 'mobx';
-import {
-  DATA_SPACE_ELEMENT_CLASSIFIER_PATH,
-  V1_getResolvedDataSpace,
-} from '../../models/protocols/pure/DSLDataSpace_PureProtocolProcessorPlugin.js';
+import { getDataSpace } from '../../graphManager/DSLDataSpace_GraphManagerHelper.js';
+import { DATA_SPACE_ELEMENT_CLASSIFIER_PATH } from '../../models/protocols/pure/DSLDataSpace_PureProtocolProcessorPlugin.js';
 import { DataSpaceViewerState } from '../DataSpaceViewerState.js';
 
-export type DataSpaceContext = Entity & {
+export interface DataSpaceContext {
   groupId: string;
   artifactId: string;
   versionId: string;
   path: string;
-};
+}
 
 const QUERY_PROFILE_PATH = 'meta::pure::profiles::query';
 const QUERY_PROFILE_TAG_DATA_SPACE = 'dataSpace';
@@ -129,12 +126,12 @@ export class DataSpaceQuerySetupState extends QuerySetupState {
           },
         )) as StoredEntity[]
       ).map((storedEntity) => ({
-        ...storedEntity.entity,
         groupId: storedEntity.groupId,
         artifactId: storedEntity.artifactId,
         versionId: this.toGetSnapShot
           ? SNAPSHOT_VERSION_ALIAS
           : storedEntity.versionId,
+        path: storedEntity.entity.path,
       }));
       this.loadDataSpacesState.pass();
     } catch (error) {
@@ -164,16 +161,13 @@ export class DataSpaceQuerySetupState extends QuerySetupState {
       yield flowResult(
         this.queryStore.buildGraph(projectData, dataSpace.versionId),
       );
-      const resolvedDataSpace = V1_getResolvedDataSpace(
-        dataSpace.content,
-        this.queryStore.graphManagerState.graph,
-      );
+
       this.dataSpaceViewerState = new DataSpaceViewerState(
         this.queryStore.graphManagerState,
         dataSpace.groupId,
         dataSpace.artifactId,
         dataSpace.versionId,
-        resolvedDataSpace,
+        getDataSpace(dataSpace.path, this.queryStore.graphManagerState.graph),
         {
           viewProject: (
             groupId: string,

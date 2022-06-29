@@ -34,7 +34,13 @@ import {
   LegendStudioPlugin,
 } from '@finos/legend-studio';
 import { SquareIcon } from '@finos/legend-art';
-import type { PackageableElement } from '@finos/legend-graph';
+import {
+  Mapping,
+  PackageableElement,
+  PackageableElementExplicitReference,
+  stub_Mapping,
+  stub_PackageableRuntime,
+} from '@finos/legend-graph';
 import {
   DataSpace,
   DataSpaceExecutionContext,
@@ -107,8 +113,12 @@ export class DSLDataSpace_LegendStudioPlugin
           const dataSpace = new DataSpace(name);
           const dataSpaceExecutionContext = new DataSpaceExecutionContext();
           dataSpaceExecutionContext.name = 'dummyContext';
-          dataSpaceExecutionContext.mapping = 'dummyMapping';
-          dataSpaceExecutionContext.defaultRuntime = 'dummyRuntime';
+          dataSpaceExecutionContext.mapping =
+            PackageableElementExplicitReference.create(stub_Mapping());
+          dataSpaceExecutionContext.defaultRuntime =
+            PackageableElementExplicitReference.create(
+              stub_PackageableRuntime(),
+            );
           dataSpace.executionContexts = [dataSpaceExecutionContext];
           dataSpace.defaultExecutionContext = dataSpaceExecutionContext;
           return dataSpace;

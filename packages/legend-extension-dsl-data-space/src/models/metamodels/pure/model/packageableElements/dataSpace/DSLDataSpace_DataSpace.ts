@@ -17,9 +17,13 @@
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import {
   PackageableElement,
+  type PackageableElementReference,
+  type Mapping,
+  type PackageableRuntime,
   type PackageableElementVisitor,
 } from '@finos/legend-graph';
 import { DATA_SPACE_HASH_STRUCTURE } from '../../../../../DSLDataSpace_ModelUtils.js';
+import type { Diagram } from '@finos/legend-extension-dsl-diagram';
 
 export abstract class DataSpaceSupportInfo implements Hashable {
   abstract get hashCode(): string;
@@ -42,16 +46,16 @@ export class DataSpaceSupportEmail
 export class DataSpaceExecutionContext implements Hashable {
   name!: string;
   description?: string | undefined;
-  mapping!: string;
-  defaultRuntime!: string;
+  mapping!: PackageableElementReference<Mapping>;
+  defaultRuntime!: PackageableElementReference<PackageableRuntime>;
 
   get hashCode(): string {
     return hashArray([
       DATA_SPACE_HASH_STRUCTURE.DATA_SPACE_EXECUTION_CONTEXT,
       this.name,
       this.description ?? '',
-      this.mapping,
-      this.defaultRuntime,
+      this.mapping.valueForSerialization ?? '',
+      this.defaultRuntime.valueForSerialization ?? '',
     ]);
   }
 }
@@ -59,7 +63,7 @@ export class DataSpaceExecutionContext implements Hashable {
 export class DataSpace extends PackageableElement implements Hashable {
   executionContexts: DataSpaceExecutionContext[] = [];
   defaultExecutionContext!: DataSpaceExecutionContext;
-  featuredDiagrams: string[] = [];
+  featuredDiagrams: PackageableElementReference<Diagram>[] = [];
   description?: string | undefined;
   supportInfo?: DataSpaceSupportInfo | undefined;
 
@@ -72,7 +76,11 @@ export class DataSpace extends PackageableElement implements Hashable {
       hashArray(this.taggedValues),
       hashArray(this.executionContexts),
       this.defaultExecutionContext.name,
-      hashArray(this.featuredDiagrams),
+      hashArray(
+        this.featuredDiagrams.map(
+          (diagram) => diagram.valueForSerialization ?? '',
+        ),
+      ),
       this.description ?? '',
       this.supportInfo ?? '',
     ]);

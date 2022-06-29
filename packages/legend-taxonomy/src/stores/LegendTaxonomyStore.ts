@@ -26,7 +26,7 @@ import {
   DataSpaceViewerState,
   DATA_SPACE_ELEMENT_CLASSIFIER_PATH,
   extractDataSpaceTaxonomyNodes,
-  getResolvedDataSpace,
+  getDataSpace,
 } from '@finos/legend-extension-dsl-data-space';
 import type { ClassView } from '@finos/legend-extension-dsl-diagram';
 import {
@@ -81,12 +81,11 @@ import {
 const DATA_SPACE_ID_DELIMITER = '@';
 const TAXONOMY_NODE_PATH_DELIMITER = '::';
 
-export class RawDataSpace {
+export class DataSpaceTaxonomyContext {
   groupId: string;
   artifactId: string;
   versionId: string;
   path: string;
-  json: Record<PropertyKey, unknown>;
   taxonomyNodes: string[] = [];
 
   constructor(
@@ -100,8 +99,7 @@ export class RawDataSpace {
     this.artifactId = artifactId;
     this.versionId = versionId;
     this.path = path;
-    this.json = json;
-    this.taxonomyNodes = extractDataSpaceTaxonomyNodes(this.json);
+    this.taxonomyNodes = extractDataSpaceTaxonomyNodes(json);
   }
 
   get id(): string {
@@ -120,7 +118,7 @@ export class TaxonomyTreeNodeData implements TreeNodeData {
   readonly id: string;
   taxonomyData?: TaxonomyNodeData | undefined;
   childrenIds: string[] = [];
-  rawDataSpaces: RawDataSpace[] = [];
+  dataSpaceTaxonomyContexts: DataSpaceTaxonomyContext[] = [];
 
   constructor(id: string, label: string) {
     this.id = id;
@@ -134,11 +132,11 @@ export class TaxonomyTreeNodeData implements TreeNodeData {
 
 interface TaxonomyNodeDataSpaceOption {
   label: string;
-  value: RawDataSpace;
+  value: DataSpaceTaxonomyContext;
 }
 
 export const buildTaxonomyNodeDataSpaceOption = (
-  value: RawDataSpace,
+  value: DataSpaceTaxonomyContext,
 ): TaxonomyNodeDataSpaceOption => ({
   label: value.path,
   value,
@@ -149,7 +147,7 @@ export class TaxonomyNodeViewerState {
   taxonomyNode: TaxonomyTreeNodeData;
   initDataSpaceViewerState = ActionState.create();
   dataSpaceViewerState?: DataSpaceViewerState | undefined;
-  currentDataSpace?: RawDataSpace | undefined;
+  currentDataSpace?: DataSpaceTaxonomyContext | undefined;
   dataSpaceSearchText = '';
 
   constructor(
@@ -170,7 +168,7 @@ export class TaxonomyNodeViewerState {
   }
 
   get dataSpaceOptions(): TaxonomyNodeDataSpaceOption[] {
-    return this.taxonomyNode.rawDataSpaces
+    return this.taxonomyNode.dataSpaceTaxonomyContexts
       .map(buildTaxonomyNodeDataSpaceOption)
       .filter(
         (option) =>
@@ -190,7 +188,9 @@ export class TaxonomyNodeViewerState {
     this.currentDataSpace = undefined;
   }
 
-  *initializeDataSpaceViewer(rawDataSpace: RawDataSpace): GeneratorFn<void> {
+  *initializeDataSpaceViewer(
+    dataSpaceTaxonomyContext: DataSpaceTaxonomyContext,
+  ): GeneratorFn<void> {
     this.clearDataSpaceViewerState();
     try {
       this.initDataSpaceViewerState.inProgress();
@@ -199,19 +199,7 @@ export class TaxonomyNodeViewerState {
       // reset
       this.taxonomyStore.graphManagerState.resetGraph();
 
-      const groupId = guaranteeNonNullable(
-        rawDataSpace.json.groupId,
-        `Data space 'groupId' field is missing`,
-      ) as string;
-      const artifactId = guaranteeNonNullable(
-        rawDataSpace.json.artifactId,
-        `Data space 'artifactId' field is missing`,
-      ) as string;
-      const versionId = guaranteeNonNullable(
-        rawDataSpace.json.versionId,
-        `Data space 'versionId' field is missing`,
-      ) as string;
-
+      const { groupId, artifactId, versionId } = dataSpaceTaxonomyContext;
       // fetch entities
       stopWatch.record();
       this.initDataSpaceViewerState.setMessage(`Fetching entities...`);
@@ -303,16 +291,15 @@ export class TaxonomyNodeViewerState {
 
       // build dataspace
       this.initDataSpaceViewerState.setMessage(`Building dataspace...`);
-      const resolvedDataSpace = getResolvedDataSpace(
-        rawDataSpace.json,
-        this.taxonomyStore.graphManagerState.graph,
-      );
       const dataSpaceViewerState = new DataSpaceViewerState(
         this.taxonomyStore.graphManagerState,
-        rawDataSpace.groupId,
-        rawDataSpace.artifactId,
-        rawDataSpace.versionId,
-        resolvedDataSpace,
+        dataSpaceTaxonomyContext.groupId,
+        dataSpaceTaxonomyContext.artifactId,
+        dataSpaceTaxonomyContext.versionId,
+        getDataSpace(
+          dataSpaceTaxonomyContext.path,
+          this.taxonomyStore.graphManagerState.graph,
+        ),
         {
           viewProject: (
             _groupId: string,
@@ -348,7 +335,7 @@ export class TaxonomyNodeViewerState {
       this.dataSpaceViewerState = dataSpaceViewerState;
       this.initDataSpaceViewerState.setMessage(undefined);
 
-      this.currentDataSpace = rawDataSpace;
+      this.currentDataSpace = dataSpaceTaxonomyContext;
     } catch (error) {
       assertErrorThrown(error);
       this.taxonomyStore.applicationStore.notifyError(error);
@@ -384,7 +371,7 @@ export class LegendTaxonomyStore {
 
   initState = ActionState.create();
 
-  dataSpaceIndex = new Map<string, RawDataSpace>();
+  dataSpaceIndex = new Map<string, DataSpaceTaxonomyContext>();
   treeData?: TreeData<TaxonomyTreeNodeData> | undefined;
 
   initialTaxonomyPath?: string | undefined;
@@ -552,25 +539,30 @@ export class LegendTaxonomyStore {
 
     // Add dataspaces to tree nodes
     // NOTE: If we add a dataspace to a node, we will also add it to all of its ancestor nodes
-    Array.from(this.dataSpaceIndex.values()).forEach((rawDataSpace) => {
-      const taxonomyNodeIds = rawDataSpace.taxonomyNodes;
-      taxonomyNodeIds.forEach((nodeId) => {
-        const taxonomyNodeData = taxonomyData.find(
-          (nodeData) => nodeData.guid === nodeId,
-        );
-        if (taxonomyNodeData) {
-          let currentPath = taxonomyNodeData.package;
-          while (currentPath) {
-            const treeNode = treeData.nodes.get(currentPath);
-            if (treeNode) {
-              addUniqueEntry(treeNode.rawDataSpaces, rawDataSpace);
+    Array.from(this.dataSpaceIndex.values()).forEach(
+      (dataSpaceTaxonomyContext) => {
+        const taxonomyNodeIds = dataSpaceTaxonomyContext.taxonomyNodes;
+        taxonomyNodeIds.forEach((nodeId) => {
+          const taxonomyNodeData = taxonomyData.find(
+            (nodeData) => nodeData.guid === nodeId,
+          );
+          if (taxonomyNodeData) {
+            let currentPath = taxonomyNodeData.package;
+            while (currentPath) {
+              const treeNode = treeData.nodes.get(currentPath);
+              if (treeNode) {
+                addUniqueEntry(
+                  treeNode.dataSpaceTaxonomyContexts,
+                  dataSpaceTaxonomyContext,
+                );
+              }
+              const idx = currentPath.lastIndexOf(TAXONOMY_NODE_PATH_DELIMITER);
+              currentPath = idx === -1 ? '' : currentPath.substring(0, idx);
             }
-            const idx = currentPath.lastIndexOf(TAXONOMY_NODE_PATH_DELIMITER);
-            currentPath = idx === -1 ? '' : currentPath.substring(0, idx);
           }
-        }
-      });
-    });
+        });
+      },
+    );
 
     this.setTreeData({ rootIds, nodes });
   }
@@ -627,7 +619,7 @@ export class LegendTaxonomyStore {
       )
         .map(
           (storedEntity) =>
-            new RawDataSpace(
+            new DataSpaceTaxonomyContext(
               storedEntity.groupId,
               storedEntity.artifactId,
               storedEntity.versionId,
@@ -636,9 +628,15 @@ export class LegendTaxonomyStore {
             ),
         )
         // NOTE: only care about data space tagged with taxonomy information
-        .filter((rawDataSpace) => rawDataSpace.taxonomyNodes.length)
-        .forEach((rawDataSpace) => {
-          this.dataSpaceIndex.set(rawDataSpace.id, rawDataSpace);
+        .filter(
+          (dataSpaceTaxonomyContext) =>
+            dataSpaceTaxonomyContext.taxonomyNodes.length,
+        )
+        .forEach((dataSpaceTaxonomyContext) => {
+          this.dataSpaceIndex.set(
+            dataSpaceTaxonomyContext.id,
+            dataSpaceTaxonomyContext,
+          );
         });
 
       yield this.graphManagerState.graphManager.initialize(
@@ -671,16 +669,18 @@ export class LegendTaxonomyStore {
           if (node) {
             // open data space if specified
             if (this.initialDataSpaceId) {
-              const dataSpaceToOpen = node.rawDataSpaces.find(
-                (rawDataSpace) => rawDataSpace.id === this.initialDataSpaceId,
-              );
+              const dataSpaceContextToOpen =
+                node.dataSpaceTaxonomyContexts.find(
+                  (dataSpaceTaxonomyContext) =>
+                    dataSpaceTaxonomyContext.id === this.initialDataSpaceId,
+                );
               const initialDataSpaceId = this.initialDataSpaceId;
               this.initialDataSpaceId = undefined;
-              if (dataSpaceToOpen) {
+              if (dataSpaceContextToOpen) {
                 assertNonNullable(this.currentTaxonomyNodeViewerState);
                 yield flowResult(
                   this.currentTaxonomyNodeViewerState.initializeDataSpaceViewer(
-                    dataSpaceToOpen,
+                    dataSpaceContextToOpen,
                   ),
                 );
               } else {
@@ -750,40 +750,11 @@ export class LegendTaxonomyStore {
           ),
         )) as PlainObject<ProjectData>,
       );
-      const resolvedDataSpaceVersionId =
+      const { groupId, artifactId } = dataSpaceGAVCoordinates;
+      const versionId =
         dataSpaceGAVCoordinates.versionId === LATEST_VERSION_ALIAS
           ? dataSpaceProjectData.latestVersion
           : dataSpaceGAVCoordinates.versionId;
-      this.depotServerClient.get;
-      const dataSpaceEntity = (yield this.depotServerClient.getVersionEntity(
-        dataSpaceGAVCoordinates.groupId,
-        dataSpaceGAVCoordinates.artifactId,
-        resolvedDataSpaceVersionId,
-        dataSpacePath,
-      )) as Entity;
-
-      const groupId = guaranteeNonNullable(
-        dataSpaceEntity.content.groupId,
-        `Data space 'groupId' field is missing`,
-      ) as string;
-      const artifactId = guaranteeNonNullable(
-        dataSpaceEntity.content.artifactId,
-        `Data space 'artifactId' field is missing`,
-      ) as string;
-      const versionId = guaranteeNonNullable(
-        dataSpaceEntity.content.versionId,
-        `Data space 'versionId' field is missing`,
-      ) as string;
-
-      const projectData = ProjectData.serialization.fromJson(
-        (yield flowResult(
-          this.depotServerClient.getProject(groupId, artifactId),
-        )) as PlainObject<ProjectData>,
-      );
-      const resolvedVersionId =
-        versionId === LATEST_VERSION_ALIAS
-          ? projectData.latestVersion
-          : versionId;
 
       // fetch entities
       stopWatch.record();
@@ -793,7 +764,7 @@ export class LegendTaxonomyStore {
       const entities = (yield this.depotServerClient.getVersionEntities(
         groupId,
         artifactId,
-        resolvedVersionId,
+        versionId,
       )) as Entity[];
       this.initStandaloneDataSpaceViewerState.setMessage(undefined);
       stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_ENTITIES_FETCHED);
@@ -811,7 +782,7 @@ export class LegendTaxonomyStore {
         (yield this.depotServerClient.getDependencyEntities(
           groupId,
           artifactId,
-          resolvedVersionId,
+          versionId,
           true,
           false,
         )) as PlainObject<ProjectVersionEntities>[]
@@ -866,17 +837,12 @@ export class LegendTaxonomyStore {
       this.initStandaloneDataSpaceViewerState.setMessage(
         `Building dataspace...`,
       );
-      const resolvedDataSpace = getResolvedDataSpace(
-        dataSpaceEntity.content,
-        this.graphManagerState.graph,
-      );
-
       const dataSpaceViewerState = new DataSpaceViewerState(
         this.graphManagerState,
         groupId,
         artifactId,
         versionId,
-        resolvedDataSpace,
+        getDataSpace(dataSpacePath, this.graphManagerState.graph),
         {
           viewProject: (
             _groupId: string,

@@ -134,6 +134,8 @@ export enum CORE_PURE_PATH {
  * code anyway, but sometimes when polymorphism manifests, such as when we have an array of structure
  * which are subclasses of an abstract stucture, hashing the marker is sometimes the only way to
  * discern between instances of different sub-structures
+ *
+ * TODO: when we refactor hashing, let's move this to the hashing util class where hashing logic belongs
  */
 export enum CORE_HASH_STRUCTURE {
   PACKAGE = 'PACKAGE',
