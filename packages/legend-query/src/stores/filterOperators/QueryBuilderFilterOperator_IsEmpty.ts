@@ -20,9 +20,9 @@ import {
   type FilterConditionState,
 } from '../QueryBuilderFilterState.js';
 import {
-  PRIMITIVE_TYPE,
   type ValueSpecification,
   type SimpleFunctionExpression,
+  PRIMITIVE_TYPE,
   Enumeration,
 } from '@finos/legend-graph';
 import {
@@ -32,6 +32,7 @@ import {
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const.js';
 import {
   buildNotExpression,
+  isPropertyExpressionChainOptional,
   unwrapNotExpression,
 } from '../QueryBuilderOperatorsHelper.js';
 
@@ -46,11 +47,12 @@ export class QueryBuilderFilterOperator_IsEmpty extends QueryBuilderFilterOperat
     const propertyType =
       filterConditionState.propertyExpressionState.propertyExpression.func
         .genericType.value.rawType;
-    const multiplicity =
-      filterConditionState.propertyExpressionState.propertyExpression.func
-        .multiplicity;
     // First check if property is optional
-    if (multiplicity.lowerBound !== 0) {
+    if (
+      !isPropertyExpressionChainOptional(
+        filterConditionState.propertyExpressionState.propertyExpression,
+      )
+    ) {
       return false;
     }
     if (propertyType instanceof Enumeration) {

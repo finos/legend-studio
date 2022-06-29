@@ -21,7 +21,7 @@ import {
   Enumeration,
   PRIMITIVE_TYPE,
 } from '@finos/legend-graph';
-import { returnUndefOnError } from '@finos/legend-shared';
+import { isPropertyExpressionChainOptional } from '../QueryBuilderOperatorsHelper.js';
 import { QueryBuilderPostFilterOperator } from '../QueryBuilderPostFilterOperator.js';
 import { buildPostFilterConditionState } from '../QueryBuilderPostFilterProcessor.js';
 import {
@@ -29,10 +29,8 @@ import {
   type QueryBuilderPostFilterState,
   TDS_COLUMN_GETTER,
 } from '../QueryBuilderPostFilterState.js';
-import {
-  buildPostFilterConditionExpression,
-  getColumnMultiplicity,
-} from './QueryBuilderPostFilterOperatorHelper.js';
+import { QueryBuilderSimpleProjectionColumnState } from '../QueryBuilderProjectionState.js';
+import { buildPostFilterConditionExpression } from './QueryBuilderPostFilterOperatorHelper.js';
 
 export class QueryBuilderPostFilterOperator_IsEmpty extends QueryBuilderPostFilterOperator {
   getLabel(): string {
@@ -61,12 +59,14 @@ export class QueryBuilderPostFilterOperator_IsEmpty extends QueryBuilderPostFilt
   ): boolean {
     const columnType = postFilterState.columnState.getReturnType();
     if (columnType && this.isCompatibleWithType(columnType)) {
-      const multiplicity = returnUndefOnError(() =>
-        getColumnMultiplicity(postFilterState.columnState),
-      );
-      // only take multiplicity into account if its known
-      if (multiplicity && multiplicity.lowerBound === 1) {
-        return false;
+      if (
+        postFilterState.columnState instanceof
+        QueryBuilderSimpleProjectionColumnState
+      ) {
+        return isPropertyExpressionChainOptional(
+          postFilterState.columnState.propertyExpressionState
+            .propertyExpression,
+        );
       }
       return true;
     }
