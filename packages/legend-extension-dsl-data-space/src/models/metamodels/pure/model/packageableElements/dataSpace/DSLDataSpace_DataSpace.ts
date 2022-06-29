@@ -63,7 +63,7 @@ export class DataSpaceExecutionContext implements Hashable {
 export class DataSpace extends PackageableElement implements Hashable {
   executionContexts: DataSpaceExecutionContext[] = [];
   defaultExecutionContext!: DataSpaceExecutionContext;
-  featuredDiagrams: PackageableElementReference<Diagram>[] = [];
+  featuredDiagrams?: PackageableElementReference<Diagram>[] | undefined;
   description?: string | undefined;
   supportInfo?: DataSpaceSupportInfo | undefined;
 
@@ -77,7 +77,7 @@ export class DataSpace extends PackageableElement implements Hashable {
       hashArray(this.executionContexts),
       this.defaultExecutionContext.name,
       hashArray(
-        this.featuredDiagrams.map(
+        (this.featuredDiagrams ?? []).map(
           (diagram) => diagram.valueForSerialization ?? '',
         ),
       ),

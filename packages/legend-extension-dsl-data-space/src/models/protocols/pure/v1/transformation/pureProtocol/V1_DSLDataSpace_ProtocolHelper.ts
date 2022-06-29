@@ -37,6 +37,7 @@ import {
   UnsupportedOperationError,
   usingConstantValueSchema,
   usingModelSchema,
+  optionalCustom,
 } from '@finos/legend-shared';
 import {
   type V1_DataSpaceSupportInfo,
@@ -99,7 +100,7 @@ export const V1_dataSpaceModelSchema = createModelSchema(V1_DataSpace, {
   defaultExecutionContext: primitive(),
   description: optional(primitive()),
   executionContexts: list(object(V1_dataSpaceExecutionContextModelSchema)),
-  featuredDiagrams: custom(
+  featuredDiagrams: optionalCustom(
     (values) =>
       serializeArray(
         values,

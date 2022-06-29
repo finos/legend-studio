@@ -1,3 +1,19 @@
+###Mapping
+Mapping model::DummyMapping
+(
+)
+
+
+###Runtime
+Runtime model::DummyRuntime
+{
+  mappings:
+  [
+    model::DummyMapping
+  ];
+}
+
+
 ###DataSpace
 DataSpace <<meta::pure::profiles::typemodifiers.abstract>> {doc.doc = 'bla'} model::dataSpace
 {
@@ -6,17 +22,12 @@ DataSpace <<meta::pure::profiles::typemodifiers.abstract>> {doc.doc = 'bla'} mod
     {
       name: 'Context 1';
       description: 'some information about the context';
-      mapping: model::String;
-      defaultRuntime: model::Runtime;
+      mapping: model::DummyMapping;
+      defaultRuntime: model::DummyRuntime;
     }
   ];
   defaultExecutionContext: 'Context 1';
   description: 'some description';
-  featuredDiagrams:
-  [
-    model::Diagram,
-    model::Diagram2
-  ];
   supportInfo: Email {
     address: 'someEmail@test.org';
   };

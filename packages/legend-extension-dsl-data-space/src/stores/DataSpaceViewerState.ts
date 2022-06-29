@@ -101,7 +101,7 @@ export class DataSpaceViewerState {
     this.currentExecutionContext = this.dataSpace.defaultExecutionContext;
     this.currentRuntime =
       this.dataSpace.defaultExecutionContext.defaultRuntime.value;
-    this.currentDiagram = this.dataSpace.featuredDiagrams.length
+    this.currentDiagram = this.dataSpace.featuredDiagrams?.length
       ? (
           this.dataSpace
             .featuredDiagrams[0] as PackageableElementReference<Diagram>
@@ -125,7 +125,7 @@ export class DataSpaceViewerState {
   }
 
   get featuredDiagrams(): Diagram[] {
-    return this.dataSpace.featuredDiagrams.map((ref) => ref.value);
+    return this.dataSpace.featuredDiagrams?.map((ref) => ref.value) ?? [];
   }
 
   get diagrams(): Diagram[] {

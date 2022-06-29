@@ -255,7 +255,7 @@ export class DSLDataSpace_PureProtocolProcessorPlugin extends PureProtocolProces
           protocol.defaultExecutionContext =
             metamodel.defaultExecutionContext.name;
           protocol.description = metamodel.description;
-          protocol.featuredDiagrams = metamodel.featuredDiagrams.map(
+          protocol.featuredDiagrams = metamodel.featuredDiagrams?.map(
             (diagramPath) =>
               new V1_PackageableElementPointer(
                 V1_DSLDiagram_PackageableElementPointerType,
