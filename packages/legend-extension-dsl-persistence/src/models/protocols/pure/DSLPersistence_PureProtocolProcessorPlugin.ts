@@ -16,6 +16,7 @@
 
 import packageJson from '../../../../package.json';
 import { Persistence } from '../../metamodels/pure/model/packageableElements/persistence/DSLPersistence_Persistence.js';
+import { PersistenceContext } from '../../metamodels/pure/model/packageableElements/persistence/DSLPersistence_PersistenceContext.js';
 import { V1_Persistence } from './v1/model/packageableElements/persistence/V1_DSLPersistence_Persistence.js';
 import {
   V1_PERSISTENCE_ELEMENT_PROTOCOL_TYPE,
@@ -23,6 +24,7 @@ import {
 } from './v1/transformation/pureProtocol/V1_DSLPersistence_ProtocolHelper.js';
 import { V1_buildPersistence } from './v1/transformation/pureGraph/to/V1_PersistenceBuilder.js';
 import { V1_transformPersistence } from './v1/transformation/pureGraph/from/V1_PersistenceTransformer.js';
+import { V1_transformPersistenceContext } from './v1/transformation/pureGraph/from/V1_PersistenceContextTransformer.js';
 import {
   type PackageableElement,
   PureProtocolProcessorPlugin,
@@ -130,6 +132,8 @@ export class DSLPersistence_PureProtocolProcessorPlugin extends PureProtocolProc
       ): V1_PackageableElement | undefined => {
         if (metamodel instanceof Persistence) {
           return V1_transformPersistence(metamodel, context);
+        } else if (metamodel instanceof PersistenceContext) {
+          return V1_transformPersistenceContext(metamodel, context);
         }
         return undefined;
       },

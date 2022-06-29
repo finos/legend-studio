@@ -18,9 +18,9 @@ import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../../DSLPersistence_Mod
 import type { V1_PersistencePlatform } from './V1_DSLPersistence_PersistencePlatform.js';
 import type { V1_ServiceParameter } from './V1_DSLPersistence_ServiceParameter.js';
 import {
-  V1_Connection,
+  type V1_Connection,
   V1_PackageableElement,
-  V1_PackageableElementVisitor,
+  type V1_PackageableElementVisitor,
 } from '@finos/legend-graph';
 import { type Hashable, hashArray } from '@finos/legend-shared';
 

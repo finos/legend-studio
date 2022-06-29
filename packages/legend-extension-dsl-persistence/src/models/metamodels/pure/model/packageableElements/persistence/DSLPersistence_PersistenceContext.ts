@@ -19,10 +19,10 @@ import type { PersistencePlatform } from './DSLPersistence_PersistencePlatform.j
 import type { ServiceParameter } from './DSLPersistence_ServiceParameter.js';
 import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../DSLPersistence_ModelUtils.js';
 import {
-  Connection,
+  type Connection,
   PackageableElement,
-  PackageableElementReference,
-  PackageableElementVisitor,
+  type PackageableElementReference,
+  type PackageableElementVisitor,
 } from '@finos/legend-graph';
 import { type Hashable, hashArray } from '@finos/legend-shared';
 
