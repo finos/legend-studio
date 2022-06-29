@@ -540,7 +540,6 @@ export class ServicePureExecutionState extends ServiceExecutionState {
     const parameters = (query.parameters ?? []) as object[];
     if (parameters.length) {
       this.parameterState.openModal(query);
-      return;
     } else {
       this.execute();
     }
