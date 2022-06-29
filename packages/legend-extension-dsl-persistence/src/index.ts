@@ -33,3 +33,4 @@ export { V1_transformPersistence } from './models/protocols/pure/v1/transformati
 export { V1_buildPersistence } from './models/protocols/pure/v1/transformation/pureGraph/to/V1_PersistenceBuilder.js';
 
 export { V1_transformPersistenceContext } from './models/protocols/pure/v1/transformation/pureGraph/from/V1_PersistenceContextTransformer.js';
+export { V1_buildPersistenceContext } from './models/protocols/pure/v1/transformation/pureGraph/to/V1_PersistenceContextBuilder.js';

@@ -18,11 +18,13 @@ import packageJson from '../../../../package.json';
 import { Persistence } from '../../metamodels/pure/model/packageableElements/persistence/DSLPersistence_Persistence.js';
 import { PersistenceContext } from '../../metamodels/pure/model/packageableElements/persistence/DSLPersistence_PersistenceContext.js';
 import { V1_Persistence } from './v1/model/packageableElements/persistence/V1_DSLPersistence_Persistence.js';
+import { V1_PersistenceContext } from './v1/model/packageableElements/persistence/V1_DSLPersistence_PersistenceContext.js';
 import {
   V1_PERSISTENCE_ELEMENT_PROTOCOL_TYPE,
   V1_persistenceModelSchema,
 } from './v1/transformation/pureProtocol/V1_DSLPersistence_ProtocolHelper.js';
 import { V1_buildPersistence } from './v1/transformation/pureGraph/to/V1_PersistenceBuilder.js';
+import { V1_buildPersistenceContext } from './v1/transformation/pureGraph/to/V1_PersistenceContextBuilder.js';
 import { V1_transformPersistence } from './v1/transformation/pureGraph/from/V1_PersistenceTransformer.js';
 import { V1_transformPersistenceContext } from './v1/transformation/pureGraph/from/V1_PersistenceContextTransformer.js';
 import {
@@ -43,6 +45,9 @@ import { deserialize, serialize } from 'serializr';
 
 export const PERSISTENCE_ELEMENT_CLASSIFIER_PATH =
   'meta::pure::persistence::metamodel::Persistence';
+
+export const PERSISTENCE_CONTEXT_ELEMENT_CLASSIFIER_PATH =
+  'meta::pure::persistence::metamodel::PersistenceContext';
 
 export class DSLPersistence_PureProtocolProcessorPlugin extends PureProtocolProcessorPlugin {
   constructor() {
@@ -82,6 +87,34 @@ export class DSLPersistence_PureProtocolProcessorPlugin extends PureProtocolProc
           V1_buildPersistence(elementProtocol, context);
         },
       }),
+      new V1_ElementBuilder<V1_PersistenceContext>({
+        elementClassName: 'PersistenceContext',
+        _class: V1_PersistenceContext,
+        firstPass: (
+          elementProtocol: V1_PackageableElement,
+          context: V1_GraphBuilderContext,
+        ): PackageableElement => {
+          assertType(elementProtocol, V1_PersistenceContext);
+          const element = new PersistenceContext(elementProtocol.name);
+          const path = V1_buildFullPath(
+            elementProtocol.package,
+            elementProtocol.name,
+          );
+          context.currentSubGraph.setOwnElementInExtension(
+            path,
+            element,
+            PersistenceContext,
+          );
+          return element;
+        },
+        secondPass: (
+          elementProtocol: V1_PackageableElement,
+          context: V1_GraphBuilderContext,
+        ): void => {
+          assertType(elementProtocol, V1_PersistenceContext);
+          V1_buildPersistenceContext(elementProtocol, context);
+        },
+      }),
     ];
   }
 
@@ -90,6 +123,8 @@ export class DSLPersistence_PureProtocolProcessorPlugin extends PureProtocolProc
       (elementProtocol: V1_PackageableElement): string | undefined => {
         if (elementProtocol instanceof V1_Persistence) {
           return PERSISTENCE_ELEMENT_CLASSIFIER_PATH;
+        } else if (elementProtocol instanceof V1_PersistenceContext) {
+          return PERSISTENCE_CONTEXT_ELEMENT_CLASSIFIER_PATH;
         }
         return undefined;
       },
