@@ -1,5 +1,13 @@
 # @finos/legend-query
 
+## 3.0.5
+
+### Patch Changes
+
+- [#1244](https://github.com/finos/legend-studio/pull/1244) [`f104edbd`](https://github.com/finos/legend-studio/commit/f104edbd5231a843ca44854daea7bf797c75fea8) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Show execution time and result set size in query builder's result panel ([#939](https://github.com/finos/legend-studio/issues/939)).
+
+* [#1249](https://github.com/finos/legend-studio/pull/1249) [`06df9be4`](https://github.com/finos/legend-studio/commit/06df9be4d738dd9cee2988b3ce91bdc44862aee6) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Check full property expression tree when checking if `isEmpty/isNotEmpty` operator is supported ([#1119](https://github.com/finos/legend-studio/issues/1119)).
+
 ## 3.0.4
 
 ## 3.0.3
