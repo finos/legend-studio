@@ -150,6 +150,8 @@ export const V1_persistenceContextModelSchema = (
     _type: usingConstantValueSchema(
       V1_PERSISTENCE_CONTEXT_ELEMENT_PROTOCOL_TYPE,
     ),
+    name: primitive(),
+    package: primitive(),
     persistence: primitive(),
     platform: custom(
       (val) => serialize(V1_persistencePlatformModelSchema, val),
