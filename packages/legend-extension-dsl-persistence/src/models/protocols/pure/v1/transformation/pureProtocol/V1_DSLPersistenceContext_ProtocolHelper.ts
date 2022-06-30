@@ -171,7 +171,8 @@ export const V1_persistenceContextModelSchema = (
       (val) =>
         deserializeArray(
           val,
-          (v) => deserialize(V1_serviceParameterModelSchema(plugins), v),
+          (v: V1_ServiceParameter) =>
+            deserialize(V1_serviceParameterModelSchema(plugins), v),
           {
             skipIfEmpty: false,
           },

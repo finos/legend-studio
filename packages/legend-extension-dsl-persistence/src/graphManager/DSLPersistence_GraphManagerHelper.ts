@@ -25,6 +25,7 @@ export const getPersistence = (path: string, graph: PureModel): Persistence =>
     Persistence,
     `Can't find persistence '${path}'`,
   );
+
 export const getPersistenceContext = (
   path: string,
   graph: PureModel,
