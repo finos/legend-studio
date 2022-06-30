@@ -38,7 +38,7 @@ export * from './components/menu/DropdownMenu.js';
 
 export * from './components/popover/BasePopover.js';
 export * from './components/popover/BasePopper.js';
-export * from './components/RadioGroup/BaseRadioGroup.js';
+export * from './components/radio-group/BaseRadioGroup.js';
 
 export * from './components/panel/BlankPanelContent.js';
 export * from './components/panel/BlankPanelPlaceholder.js';

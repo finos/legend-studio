@@ -16,7 +16,6 @@
 
 import {
   clsx,
-  BasePopper,
   TimesIcon,
   SearchIcon,
   MapMarkerIcon,
@@ -35,6 +34,8 @@ import {
   VerticalDragHandleThinIcon,
   CircleIcon,
   PanelLoadingIndicator,
+  BasePopover,
+  FaceSadTearIcon,
 } from '@finos/legend-art';
 import {
   ContentType,
@@ -217,12 +218,12 @@ const VirtualAssistantContextualSupportPanel = observer(() => {
       )}
       {!contextualEntry && (
         <BlankPanelContent>
-          <div className="virtual-assistant__contextual-support__placeholder">
-            <FaceLaughWinkIcon className="virtual-assistant__contextual-support__placeholder__icon" />
-            <div className="virtual-assistant__contextual-support__placeholder__message">
+          <div className="virtual-assistant__panel__placeholder">
+            <FaceLaughWinkIcon className="virtual-assistant__panel__placeholder__icon" />
+            <div className="virtual-assistant__panel__placeholder__message">
               No contextual documentation found!
             </div>
-            <div className="virtual-assistant__contextual-support__placeholder__instruction">
+            <div className="virtual-assistant__panel__placeholder__instruction">
               Keep using the app, when contextual doc available, we will let you
               know!
             </div>
@@ -295,6 +296,37 @@ const VirtualAssistantSearchPanel = observer(() => {
       <div className="virtual-assistant__search__header">
         <input
           ref={searchInputRef}
+          /**
+           * NOTE: In the scenario where another modal is opened at the same time the assistant panel
+           * is open, the focus will be stolen by the newly opened modal. In that case, we need
+           * to take back the focus. The trick here is to remount the whole panel (modal/popover)
+           * by refreshing the `key` prop of the panel. This will cause `mui` to recompute the
+           * focus-trap and allow the input field to be selectable again. Basically, we are stealing
+           * back the focus for the assistant.
+           *
+           * However, the caveat is that this will cause the component states, such as scroll positions,
+           * to be reset as such, we need to do this really sparingly. In fact, the only
+           * scenario where we need to do this is when a new modal is opened when the assistant panel
+           * is already opened. Basically, Other scenarios, such as when the assistant is opened after the modal
+           * is opened seem to pose no issue.
+           */
+          onClick={(): void => {
+            if (
+              // only when there are dialogs being opened
+              // NOTE: this seems rather hacky, but querying by role is the least
+              // vendor-dependent approach we can think of at the moment
+              document.querySelectorAll('[role="dialog"]').length &&
+              // only when the focus is not already with the input field
+              // this means the focus is being stolen from the assistant because
+              // the newly opened modal is opened more recently than the assistant
+              //
+              // once the focus has been gained by the assistant
+              // we will not need to do this anymore
+              searchInputRef.current !== document.activeElement
+            ) {
+              assistantService.refreshPanelRendering();
+            }
+          }}
           className={clsx('virtual-assistant__search__input input--dark', {
             'virtual-assistant__search__input--searching': searchText,
           })}
@@ -338,8 +370,11 @@ const VirtualAssistantSearchPanel = observer(() => {
         )}
         {searchText && !results.length && (
           <BlankPanelContent>
-            <div className="virtual-assistant__search__results__placeholder">
-              no result
+            <div className="virtual-assistant__panel__placeholder">
+              <FaceSadTearIcon className="virtual-assistant__panel__placeholder__icon" />
+              <div className="virtual-assistant__panel__placeholder__message">
+                No result...
+              </div>
             </div>
           </BlankPanelContent>
         )}
@@ -405,14 +440,68 @@ const VirtualAssistantPanel = observer(
     const closeAssistantPanel = (): void => assistantService.setIsOpen(false);
 
     return (
-      <BasePopper
+      /**
+       * The most appropriate component to use is `Popper`
+       * as it does not block click-away
+       * See https://mui.com/material-ui/react-popper/
+       *
+       * However, the caveat is that in the implementation of mui Popper
+       * focus trap is not supported. As such, we could end up in a situation
+       * where the assistant input fields will not be focusable
+       * when another modal is being opened, as that newly opened modal will
+       * **steal** the focus
+       *
+       * See https://github.com/finos/legend-studio/issues/1255
+       * See https://mui.com/material-ui/react-modal/#focus-trap
+       * See https://github.com/mui/material-ui/issues/17497
+       */
+      <BasePopover
         open={assistantService.isOpen}
         className="virtual-assistant__panel__container"
         anchorEl={triggerElement}
+        // we need to get rid of the backdrop and the click-away trap
+        // to make popover behave like a popper
+        hideBackdrop={true}
+        PaperProps={{
+          // we will cancel the effect of click-away trap using CSS
+          classes: { root: 'virtual-assistant__panel__container__root' },
+        }}
+        // allow other modals to take the focus from the virtual assistant
+        disableEnforceFocus={true}
         // NOTE: make sure the assistant is always fully displayed (not cropped)
-        placement="auto-start"
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'left',
+        }}
+        transformOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        key={assistantService.panelRenderingKey}
       >
-        <div className="virtual-assistant__panel">
+        <div
+          className="virtual-assistant__panel"
+          // NOTE: here we block `tabbing` (to move focus). This is to counter the effect of
+          // `disableEnforceFocus={true}` set in the assistant panel popover
+          // this is the poor-man focus trap for the assistant to ensure
+          // that we don't leak focus tab down to other parts of the app
+          //
+          // Especially, due to the hack we do to compete for focus when another modal
+          // is opened, we need to do this to avoid leaking of focus to components
+          // beneath the modal via assistant
+          //
+          // setting `tabIndex={0}` is a hack to make this DOM node focusable
+          // and hence, we could trap the focus here using `onKeyDown`
+          // See https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/tabindex
+          tabIndex={0}
+          onKeyDown={(event): void => {
+            if (event.key === 'Tab') {
+              event.preventDefault();
+              event.stopPropagation();
+              return;
+            }
+          }}
+        >
           <div className="virtual-assistant__panel__header">
             <div className="virtual-assistant__panel__header__tabs">
               <div
@@ -466,7 +555,7 @@ const VirtualAssistantPanel = observer(
             )}
           </div>
         </div>
-      </BasePopper>
+      </BasePopover>
     );
   },
 );

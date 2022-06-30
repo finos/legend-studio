@@ -109,11 +109,7 @@
   &__header__lock {
     @include flexCenter;
 
-    width: 4rem;
-    min-width: 4rem;
-    padding-left: 0.5rem;
-    padding-right: 0.5rem;
-    background: var(--color-light-grey-100);
+    padding: 0 0.5rem;
   }
 
   &__header__action[disabled] svg {

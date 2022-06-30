@@ -20,7 +20,10 @@
   position: absolute;
   // NOTE: we must take into account of UI component libraries, such as MUI
   // See https://mui.com/material-ui/customization/z-index/
-  z-index: 10000;
+  // this has to have higher z-index than that of the assistant panel so whatever
+  // modal mode (popover, popper, etc.) we can still interact with the asistant
+  // while the panel is open
+  z-index: 10100;
 
   // currently we hard-code these to the bottom right
   // so we must make sure we avoid visually blocking notification
@@ -141,7 +144,6 @@
 .virtual-assistant__panel {
   height: 40rem;
   width: 30rem;
-  margin: 1rem;
   border-radius: 0.2rem;
   background: var(--color-dark-grey-100);
   border: 0.1rem solid var(--color-dark-grey-200);
@@ -149,10 +151,24 @@
     0 2.4rem 3.8rem 0.3rem var(--color-light-shade-280),
     0 0.9rem 4.6rem 0.8rem var(--color-light-shade-280);
 
+  // make sure we cancel the effect of the `pointer-events: none` set
+  // on the container of the panel so we could interact with the panel
+  pointer-events: all;
+
   &__container {
     // NOTE: we must take into account of UI component libraries, such as MUI
     // See https://mui.com/material-ui/customization/z-index/
     z-index: 10000;
+
+    // NOTE: since we use a popover for the panel, we need to
+    // disable click-away trap so we could mimic the behavior of
+    // popper. See the note on the usage of popover for virtual
+    // assistant panel for more details
+    pointer-events: none;
+
+    &__root {
+      margin: -1rem;
+    }
   }
 
   &__header {
@@ -242,6 +258,32 @@
 
   &__icon__close {
     font-size: 2.4rem;
+  }
+
+  &__placeholder {
+    @include flexCenter;
+
+    flex-direction: column;
+
+    &__icon {
+      font-size: 5rem;
+      color: var(--color-yellow-200);
+    }
+
+    &__message {
+      font-family: 'Roboto Mono', monospace;
+      font-size: 1.3rem;
+      color: var(--color-light-grey-400);
+      margin-top: 1rem;
+    }
+
+    &__instruction {
+      font-family: 'Roboto Mono', monospace;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--color-dark-grey-300);
+      margin-top: 0.5rem;
+    }
   }
 }
 
@@ -496,32 +538,6 @@
       font-family: 'Roboto Mono', monospace;
       font-size: 1.3rem;
       margin-bottom: 1rem;
-    }
-  }
-
-  &__placeholder {
-    @include flexCenter;
-
-    flex-direction: column;
-
-    &__icon {
-      font-size: 5rem;
-      color: var(--color-yellow-200);
-    }
-
-    &__message {
-      font-family: 'Roboto Mono', monospace;
-      font-size: 1.3rem;
-      color: var(--color-light-grey-400);
-      margin-top: 1rem;
-    }
-
-    &__instruction {
-      font-family: 'Roboto Mono', monospace;
-      font-size: 1.3rem;
-      font-weight: 700;
-      color: var(--color-dark-grey-300);
-      margin-top: 0.5rem;
     }
   }
 }
