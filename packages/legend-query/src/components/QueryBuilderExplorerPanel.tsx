@@ -248,7 +248,7 @@ const QueryBuilderExplorerPropertyDragLayer = observer(
   },
 );
 
-export const QueryBuilderExplorerContextMenu = observer(
+const QueryBuilderExplorerContextMenu = observer(
   forwardRef<
     HTMLDivElement,
     {
@@ -393,7 +393,7 @@ export const renderPropertyTypeIcon = (type: Type): React.ReactNode => {
   return getClassPropertyIcon(type);
 };
 
-export const QueryBuilderExplorerTreeNodeContainer = observer(
+const QueryBuilderExplorerTreeNodeContainer = observer(
   (
     props: TreeNodeContainerProps<
       QueryBuilderExplorerTreeNodeData,
@@ -511,11 +511,10 @@ export const QueryBuilderExplorerTreeNodeContainer = observer(
                 isSelectedFromContextMenu,
               'query-builder-explorer-tree__node__container--unmapped':
                 !node.mappingData.mapped,
-              'query-builder-explorer-tree__node__container--highlight-in-tree':
+              'query-builder-explorer-tree__node__container--selected':
                 node.isSelected,
             },
           )}
-          id={`query-builder-tree-node-${node.id}`}
           title={
             !node.mappingData.mapped ? 'Property is not mapped' : undefined
           }

@@ -481,6 +481,7 @@ export class QueryBuilderExplorerState {
     makeAutoObservable(this, {
       queryBuilderState: false,
       previewDataState: false,
+      propertySearchPanelState: observable,
       treeData: observable.ref,
       setTreeData: action,
       refreshTree: action,

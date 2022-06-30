@@ -219,16 +219,8 @@ export const QueryBuilderGraphFetchTreePanel = observer(
     const handleDrop = useCallback(
       (item: QueryBuilderExplorerTreeDragSource): void => {
         graphFetchState.addProperty(item.node);
-        if (
-          queryBuilderState.explorerState.propertySearchPanelState
-            .searchedPropertyName.length >= 3
-        ) {
-          queryBuilderState.explorerState.propertySearchPanelState.setIsSearchPanelOpen(
-            true,
-          );
-        }
       },
-      [graphFetchState, queryBuilderState],
+      [graphFetchState],
     );
     const [{ isPropertyDragOver }, dropConnector] = useDrop(
       () => ({

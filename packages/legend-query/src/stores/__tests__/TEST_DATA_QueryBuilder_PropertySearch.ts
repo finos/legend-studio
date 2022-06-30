@@ -14,13 +14,19 @@
  * limitations under the License.
  */
 
-export enum QUERY_BUILDER_TEST_ID {
-  QUERY_BUILDER = 'query__builder',
-  QUERY_BUILDER_SETUP = 'query__builder__setup',
-  QUERY_BUILDER_PROJECTION = 'query__builder__projection',
-  QUERY_BUILDER_GRAPH_FETCH = 'query__builder__graph__fetch',
-  QUERY_BUILDER_FILTER = 'query__builder__filter',
-  QUERY_BUILDER_POST_FILTER = 'query__builder__post-filter',
-  QUERY_BUILDER_EXPLORER = 'query__builder__explorer',
-  QUERY_BUILDER_PROPERTY_SEARCH_PANEL = 'query__builder__property__search__panel',
-}
+export const TEST_DATA__simplegetAllForPropertySearch = {
+  _type: 'lambda',
+  body: [
+    {
+      _type: 'func',
+      function: 'getAll',
+      parameters: [
+        {
+          _type: 'packageableElementPtr',
+          fullPath: 'my::Firm',
+        },
+      ],
+    },
+  ],
+  parameters: [],
+};

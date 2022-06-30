@@ -729,16 +729,8 @@ export const QueryBuilderFilterPanel = observer(
           ),
           undefined,
         );
-        if (
-          queryBuilderState.explorerState.propertySearchPanelState
-            .searchedPropertyName.length >= 3
-        ) {
-          queryBuilderState.explorerState.propertySearchPanelState.setIsSearchPanelOpen(
-            true,
-          );
-        }
       },
-      [applicationStore, filterState, queryBuilderState],
+      [applicationStore, filterState],
     );
     const [{ isPropertyDragOver }, dropConnector] = useDrop(
       () => ({

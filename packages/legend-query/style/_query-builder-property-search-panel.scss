@@ -21,25 +21,15 @@
   width: 40vw;
   padding: 1rem;
 
+  &__content {
+    height: calc(100% - 3rem);
+    overflow-y: auto;
+  }
+
   &__filter__element {
     @include flexVCenter;
 
     cursor: pointer;
-  }
-
-  &__only__element {
-    display: none;
-  }
-
-  &__filter__element:hover &__only__element {
-    @include flexCenter;
-
-    position: absolute;
-    right: 0.3rem;
-    height: 2.8rem;
-    width: 2.8rem;
-    color: var(--color-light-grey-400);
-    text-decoration: underline;
   }
 
   &__node__icon {
@@ -91,6 +81,16 @@
     display: flex;
     height: 2rem;
     padding-right: 0.5rem;
+  }
+
+  &__info__label {
+    @include flexCenter;
+
+    right: 0.3rem;
+    font-size: 1.3rem;
+    height: 2.8rem;
+    width: 2.8rem;
+    color: var(--color-light-grey-400);
   }
 
   &__node__action {
@@ -257,7 +257,7 @@
     }
   }
 
-  &__content {
+  &__search__content {
     padding: 0.5rem;
     height: calc(100% - 3.4rem);
     overflow-y: auto;
