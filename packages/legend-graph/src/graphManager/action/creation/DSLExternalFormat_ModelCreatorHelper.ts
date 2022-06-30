@@ -14,18 +14,8 @@
  * limitations under the License.
  */
 
-import type { EditorStore } from '../../../EditorStore.js';
-import type { ServiceEditorState } from './ServiceEditorState.js';
+import type { ExternalFormatData } from '../../../models/metamodels/pure/data/EmbeddedData.js';
 
-export class ServiceTestSuiteState {
-  editorStore: EditorStore;
-  serviceEditorState: ServiceEditorState;
-
-  constructor(
-    editorStore: EditorStore,
-    serviceEditorState: ServiceEditorState,
-  ) {
-    this.editorStore = editorStore;
-    this.serviceEditorState = serviceEditorState;
-  }
-}
+export const isStubbed_ExternalFormatData = (
+  value: ExternalFormatData,
+): boolean => value.data === '';

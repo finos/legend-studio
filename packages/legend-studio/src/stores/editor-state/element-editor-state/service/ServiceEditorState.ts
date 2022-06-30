@@ -15,23 +15,26 @@
  */
 
 import { observable, computed, action, makeObservable } from 'mobx';
-import { guaranteeType, UnsupportedOperationError } from '@finos/legend-shared';
+import { guaranteeType } from '@finos/legend-shared';
 import type { EditorStore } from '../../../EditorStore.js';
 import {
   type ServiceExecutionState,
-  ServicePureExecutionState,
+  UnsupportedServiceExecutionState,
+  SingleServicePureExecutionState,
 } from './ServiceExecutionState.js';
 import { ServiceRegistrationState } from '../../../editor-state/element-editor-state/service/ServiceRegistrationState.js';
 import { ElementEditorState } from '../../../editor-state/element-editor-state/ElementEditorState.js';
 import {
   type PackageableElement,
   Service,
-  PureExecution,
+  PureSingleExecution,
 } from '@finos/legend-graph';
+import { ServiceTestableState } from './testable/ServiceTestableState.js';
 
 export enum SERVICE_TAB {
   GENERAL = 'GENERAL',
   EXECUTION = 'EXECUTION',
+  TEST = 'TEST',
   REGISTRATION = 'REGISTRATION',
 }
 
@@ -39,6 +42,7 @@ export const MINIMUM_SERVICE_OWNERS = 2;
 export class ServiceEditorState extends ElementEditorState {
   executionState: ServiceExecutionState;
   registrationState: ServiceRegistrationState;
+  testableState: ServiceTestableState;
   selectedTab = SERVICE_TAB.GENERAL;
 
   constructor(editorStore: EditorStore, element: PackageableElement) {
@@ -55,6 +59,7 @@ export class ServiceEditorState extends ElementEditorState {
 
     this.executionState = this.buildExecutionState();
     this.registrationState = new ServiceRegistrationState(editorStore, this);
+    this.testableState = new ServiceTestableState(editorStore, this);
   }
 
   setSelectedTab(tab: SERVICE_TAB): void {
@@ -62,14 +67,19 @@ export class ServiceEditorState extends ElementEditorState {
   }
 
   buildExecutionState(): ServiceExecutionState {
-    if (this.service.execution instanceof PureExecution) {
-      return new ServicePureExecutionState(
+    const execution = this.service.execution;
+    if (execution instanceof PureSingleExecution) {
+      return new SingleServicePureExecutionState(
         this.editorStore,
         this,
-        this.service.execution,
+        execution,
       );
     }
-    throw new UnsupportedOperationError();
+    return new UnsupportedServiceExecutionState(
+      this.editorStore,
+      this,
+      this.service.execution,
+    );
   }
 
   get service(): Service {

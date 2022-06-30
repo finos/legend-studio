@@ -20,14 +20,14 @@ import { hashObjectWithoutSourceInformation } from '../../../../MetaModelUtils.j
 import type { DataElement } from '../packageableElements/data/DataElement.js';
 import type { Class } from '../packageableElements/domain/Class.js';
 import type { PackageableElementReference } from '../packageableElements/PackageableElementReference.js';
-import type { RelationalData } from './RelationalData.js';
+import type { RelationalCSVData } from './RelationalCSVData.js';
 
 export interface EmbeddedDataVisitor<T> {
   visit_EmbeddedData(embeddedData: EmbeddedData): T;
   visit_ExternalFormatData(externalFormatData: ExternalFormatData): T;
   visit_ModelStoreData(modelStoreData: ModelStoreData): T;
   visit_DataElementReference(dataElementReference: DataElementReference): T;
-  visit_RelationalData(relationalData: RelationalData): T;
+  visit_RelationalCSVData(relationalData: RelationalCSVData): T;
 }
 
 export abstract class EmbeddedData implements Hashable {

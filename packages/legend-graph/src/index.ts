@@ -289,6 +289,9 @@ export * from './models/metamodels/pure/test/assertion/status/AssertPass.js';
 export * from './models/metamodels/pure/test/assertion/status/EqualToJsonAssertFail.js';
 export * from './models/metamodels/pure/test/assertion/TestAssertion.js';
 export * from './models/metamodels/pure/test/Test.js';
+export * from './models/metamodels/pure/test/assertion/EqualTo.js';
+export * from './models/metamodels/pure/test/assertion/EqualToJson.js';
+export * from './models/metamodels/pure/test/assertion/EqualToTDS.js';
 export * from './models/metamodels/pure/test/result/AtomicTestId.js';
 
 // --------------------------------------------- VALIDATION --------------------------------------------------
@@ -311,6 +314,7 @@ export * from './graphManager/action/changeDetection/GraphObserverHelper.js';
 export * from './graphManager/action/changeDetection/DSLExternalFormat_ObserverHelper.js';
 export * from './graphManager/action/changeDetection/DSLService_ObserverHelper.js';
 export * from './graphManager/action/changeDetection/DSLGenerationSpecification_ObserverHelper.js';
+export * from './graphManager/action/changeDetection/Testable_ObserverHelper.js';
 
 export * from './graphManager/action/changeDetection/EngineObserverHelper.js';
 

@@ -40,6 +40,7 @@
 @forward 'editor/generation-spec-editor';
 @forward 'editor/file-generation-viewer';
 @forward 'editor/data-editor';
+@forward 'editor/testable-editor';
 
 .editor {
   height: 100%;

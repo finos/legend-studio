@@ -56,7 +56,6 @@ import type {
 } from '@finos/legend-shared';
 import type { LightQuery, Query } from './action/query/Query.js';
 import type { Entity } from '@finos/legend-model-storage';
-import type { GraphPluginManager } from '../GraphPluginManager.js';
 import type { QuerySearchSpecification } from './action/query/QuerySearchSpecification.js';
 import type { ExternalFormatDescription } from './action/externalFormat/ExternalFormatDescription.js';
 import type { ConfigurationProperty } from '../models/metamodels/pure/packageableElements/fileGeneration/ConfigurationProperty.js';
@@ -65,6 +64,11 @@ import type { ModelGenerationConfiguration } from '../models/ModelGenerationConf
 import type { DEPRECATED__ServiceTestResult } from './action/service/DEPRECATED__ServiceTestResult.js';
 import type { RunTestsTestableInput } from '../models/metamodels/pure/test/result/RunTestsTestableInput.js';
 import type { TestResult } from '../models/metamodels/pure/test/result/TestResult.js';
+import type { GraphPluginManager } from '../GraphPluginManager.js';
+import type { Testable } from '../models/metamodels/pure/test/Testable.js';
+import type { AtomicTest } from '../models/metamodels/pure/test/Test.js';
+import type { TestAssertion } from '../models/metamodels/pure/test/assertion/TestAssertion.js';
+import type { AssertFail } from '../models/metamodels/pure/test/assertion/status/AssertFail.js';
 
 export interface TEMPORARY__EngineSetupConfig {
   env: string;
@@ -222,6 +226,13 @@ export abstract class AbstractPureGraphManager {
     graph: PureModel,
   ): Promise<TestResult[]>;
 
+  abstract generateExpectedResult(
+    testable: Testable,
+    test: AtomicTest,
+    assertion: TestAssertion,
+    graph: PureModel,
+  ): Promise<AssertFail>;
+
   // ------------------------------------------- Value Specification  -------------------------------------------
 
   abstract buildValueSpecification(
@@ -322,7 +333,7 @@ export abstract class AbstractPureGraphManager {
 
   abstract serializeExecutionNode(executionNode: ExecutionNode): object;
 
-  abstract generateMappingTestData(
+  abstract generateExecuteTestData(
     graph: PureModel,
     mapping: Mapping,
     lambda: RawLambda,

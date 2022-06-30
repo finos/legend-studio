@@ -18,53 +18,30 @@ import { type Hashable, hashArray } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../MetaModelConst.js';
 import { type EmbeddedDataVisitor, EmbeddedData } from './EmbeddedData.js';
 
-export class RelationalDataTableColumn implements Hashable {
-  value!: string;
-
-  get hashCode(): string {
-    return hashArray([
-      CORE_HASH_STRUCTURE.RELATIONAL_DATA_TABLE_COLUMN,
-      this.value,
-    ]);
-  }
-}
-export class RelationalDataTableRow implements Hashable {
+export class RelationalCSVDataTable implements Hashable {
+  schema!: string;
+  table!: string;
   values!: string;
 
   get hashCode(): string {
     return hashArray([
-      CORE_HASH_STRUCTURE.RELATIONAL_DATA_TABLE_ROW,
+      CORE_HASH_STRUCTURE.RELATIONAL_CSV_DATA_TABLE,
+      this.schema,
+      this.table,
       this.values,
     ]);
   }
 }
-
-export class RelationalDataTable implements Hashable {
-  schemaName: string | undefined;
-  tableName!: string;
-  columns: RelationalDataTableColumn[] = [];
-  rows: RelationalDataTableRow[] = [];
-
-  get hashCode(): string {
-    return hashArray([
-      CORE_HASH_STRUCTURE.RELATIONAL_DATA_TABLE,
-      this.schemaName ?? '',
-      this.tableName,
-      hashArray(this.columns),
-      hashArray(this.rows),
-    ]);
-  }
-}
-export class RelationalData extends EmbeddedData implements Hashable {
-  tables: RelationalDataTable[] = [];
+export class RelationalCSVData extends EmbeddedData implements Hashable {
+  tables: RelationalCSVDataTable[] = [];
 
   accept_EmbeddedDataVisitor<T>(visitor: EmbeddedDataVisitor<T>): T {
-    return visitor.visit_RelationalData(this);
+    return visitor.visit_RelationalCSVData(this);
   }
 
   get hashCode(): string {
     return hashArray([
-      CORE_HASH_STRUCTURE.RELATIONAL_DATA_TABLE,
+      CORE_HASH_STRUCTURE.RELATIONAL_CSV_DATA_TABLE,
       hashArray(this.tables),
     ]);
   }

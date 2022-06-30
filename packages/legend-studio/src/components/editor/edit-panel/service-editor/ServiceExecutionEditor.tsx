@@ -18,14 +18,10 @@ import { useEffect, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
 import { ServiceEditorState } from '../../../../stores/editor-state/element-editor-state/service/ServiceEditorState.js';
 import {
-  SERVICE_EXECUTION_TAB,
+  SingleServicePureExecutionState,
   ServicePureExecutionState,
+  MultiServicePureExecutionState,
 } from '../../../../stores/editor-state/element-editor-state/service/ServiceExecutionState.js';
-import {
-  prettyCONSTName,
-  UnsupportedOperationError,
-} from '@finos/legend-shared';
-import { LegacySingleExecutionTestState } from '../../../../stores/editor-state/element-editor-state/service/LegacyServiceTestState.js';
 import { EmbeddedRuntimeEditor } from '../../../editor/edit-panel/RuntimeEditor.js';
 import { useDrop } from 'react-dnd';
 import {
@@ -36,9 +32,6 @@ import {
 import { UnsupportedEditorPanel } from '../../../editor/edit-panel/UnsupportedElementEditor.js';
 import {
   clsx,
-  BlankPanelContent,
-  BlankPanelPlaceholder,
-  CustomSelectorInput,
   ResizablePanelGroup,
   ResizablePanel,
   ResizablePanelSplitter,
@@ -49,39 +42,29 @@ import {
   CogIcon,
   LongArrowRightIcon,
   ExclamationTriangleIcon,
+  CustomSelectorInput,
 } from '@finos/legend-art';
 import { ServiceExecutionQueryEditor } from '../../../editor/edit-panel/service-editor/ServiceExecutionQueryEditor.js';
-import { ServiceTestEditor } from '../../../editor/edit-panel/service-editor/ServiceTestEditor.js';
 import type { PackageableElementOption } from '../../../../stores/shared/PackageableElementOptionUtil.js';
-import { flowResult } from 'mobx';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
-  type KeyedExecutionParameter,
   type Runtime,
-  PureSingleExecution,
-  PureMultiExecution,
   Mapping,
   RuntimePointer,
   PackageableRuntime,
   PackageableElementExplicitReference,
   validate_PureExecutionMapping,
 } from '@finos/legend-graph';
-import { useApplicationStore } from '@finos/legend-application';
 import {
   pureSingleExecution_setMapping,
   pureSingleExecution_setRuntime,
 } from '../../../../stores/graphModifier/DSLService_GraphModifierHelper.js';
-import { ServiceTestSuiteState } from '../../../../stores/editor-state/element-editor-state/service/ServiceTestSuiteState.js';
 
 const PureSingleExecutionConfigurationEditor = observer(
-  (props: {
-    executionState: ServicePureExecutionState;
-    selectedExecution: PureSingleExecution | KeyedExecutionParameter;
-    selectedTestState: LegacySingleExecutionTestState | ServiceTestSuiteState;
-  }) => {
-    const { executionState, selectedExecution, selectedTestState } = props;
+  (props: { singleExecutionState: SingleServicePureExecutionState }) => {
+    const { singleExecutionState } = props;
+    const selectedExecution = singleExecutionState.execution;
     const editorStore = useEditorStore();
-    const applicationStore = useApplicationStore();
     const serviceState = editorStore.getCurrentEditorState(ServiceEditorState);
     const isReadOnly = serviceState.isReadOnly;
     // mapping
@@ -114,12 +97,7 @@ const PureSingleExecutionConfigurationEditor = observer(
           val.value,
           editorStore.changeDetectionState.observerContext,
         );
-        executionState.autoSelectRuntimeOnMappingChange(val.value);
-        if (selectedTestState instanceof LegacySingleExecutionTestState) {
-          flowResult(selectedTestState.generateTestData()).catch(
-            applicationStore.alertUnhandledError,
-          );
-        }
+        singleExecutionState.autoSelectRuntimeOnMappingChange(val.value);
       }
     };
     const visitMapping = (): void => editorStore.openElement(mapping);
@@ -196,7 +174,7 @@ const PureSingleExecutionConfigurationEditor = observer(
       value?: Runtime;
     }): void => {
       if (val.value === undefined) {
-        executionState.useCustomRuntime();
+        singleExecutionState.useCustomRuntime();
       } else if (val.value !== runtime) {
         pureSingleExecution_setRuntime(
           selectedExecution,
@@ -210,7 +188,8 @@ const PureSingleExecutionConfigurationEditor = observer(
         editorStore.openElement(runtime.packageableRuntime.value);
       }
     };
-    const openRuntimeEditor = (): void => executionState.openRuntimeEditor();
+    const openRuntimeEditor = (): void =>
+      singleExecutionState.openRuntimeEditor();
     // DnD
     const handleMappingOrRuntimeDrop = useCallback(
       (item: UMLEditorElementDropTarget): void => {
@@ -222,12 +201,7 @@ const PureSingleExecutionConfigurationEditor = observer(
               element,
               editorStore.changeDetectionState.observerContext,
             );
-            if (selectedTestState instanceof LegacySingleExecutionTestState) {
-              flowResult(selectedTestState.generateTestData()).catch(
-                applicationStore.alertUnhandledError,
-              );
-            }
-            executionState.autoSelectRuntimeOnMappingChange(element);
+            singleExecutionState.autoSelectRuntimeOnMappingChange(element);
           } else if (
             element instanceof PackageableRuntime &&
             element.runtimeValue.mappings.map((m) => m.value).includes(mapping)
@@ -243,13 +217,11 @@ const PureSingleExecutionConfigurationEditor = observer(
         }
       },
       [
-        applicationStore.alertUnhandledError,
         editorStore.changeDetectionState.observerContext,
-        executionState,
+        singleExecutionState,
         isReadOnly,
         mapping,
         selectedExecution,
-        selectedTestState,
       ],
     );
     const [{ isMappingOrRuntimeDragOver }, dropMappingOrRuntimeRef] = useDrop(
@@ -268,8 +240,8 @@ const PureSingleExecutionConfigurationEditor = observer(
     );
     // close runtime editor as we leave service editor
     useEffect(
-      () => (): void => executionState.closeRuntimeEditor(),
-      [executionState],
+      () => (): void => singleExecutionState.closeRuntimeEditor(),
+      [singleExecutionState],
     );
 
     return (
@@ -339,9 +311,9 @@ const PureSingleExecutionConfigurationEditor = observer(
               </button>
             )}
             <EmbeddedRuntimeEditor
-              runtimeEditorState={executionState.runtimeEditorState}
+              runtimeEditorState={singleExecutionState.runtimeEditorState}
               isReadOnly={serviceState.isReadOnly}
-              onClose={(): void => executionState.closeRuntimeEditor()}
+              onClose={(): void => singleExecutionState.closeRuntimeEditor()}
             />
           </div>
         </div>
@@ -351,64 +323,21 @@ const PureSingleExecutionConfigurationEditor = observer(
 );
 
 const PureSingleExecutionEditor = observer(
-  (props: {
-    executionState: ServicePureExecutionState;
-    selectedExecution: PureSingleExecution | KeyedExecutionParameter;
-    selectedTestState: LegacySingleExecutionTestState | ServiceTestSuiteState;
-  }) => {
-    const { executionState, selectedExecution, selectedTestState } = props;
-    // tab
-    const selectedTab = executionState.selectedTab;
-    const changeTab =
-      (tab: SERVICE_EXECUTION_TAB): (() => void) =>
-      (): void =>
-        executionState.setSelectedTab(tab);
+  (props: { singleExecutionState: SingleServicePureExecutionState }) => {
+    const { singleExecutionState } = props;
     // close runtime editor as we leave service editor
     useEffect(
-      () => (): void => executionState.closeRuntimeEditor(),
-      [executionState],
+      () => (): void => singleExecutionState.closeRuntimeEditor(),
+      [singleExecutionState],
     );
 
     return (
       <div className="service-execution-editor__execution">
         <div className="panel">
-          <div className="panel__header service-editor__header--with-tabs">
-            <div className="uml-element-editor__tabs">
-              {Object.values(SERVICE_EXECUTION_TAB).map((tab) => (
-                <div
-                  key={tab}
-                  onClick={changeTab(tab)}
-                  className={clsx('service-editor__tab', {
-                    'service-editor__tab--active': tab === selectedTab,
-                  })}
-                >
-                  {prettyCONSTName(tab)}
-                </div>
-              ))}
-            </div>
-          </div>
           <div className="panel__content service-editor__content">
-            {selectedTab === SERVICE_EXECUTION_TAB.EXECUTION_CONTEXT && (
-              <PureSingleExecutionConfigurationEditor
-                executionState={executionState}
-                selectedExecution={selectedExecution}
-                selectedTestState={selectedTestState}
-              />
-            )}
-            {selectedTab === SERVICE_EXECUTION_TAB.TESTS &&
-              selectedTestState instanceof LegacySingleExecutionTestState && (
-                <ServiceTestEditor
-                  executionState={executionState}
-                  selectedTestState={selectedTestState}
-                />
-              )}
-            {selectedTab === SERVICE_EXECUTION_TAB.TESTS &&
-              selectedTestState instanceof ServiceTestSuiteState && (
-                <UnsupportedEditorPanel
-                  text={`Can't display this element in form-mode`}
-                  isReadOnly={selectedTestState.serviceEditorState.isReadOnly}
-                />
-              )}
+            <PureSingleExecutionConfigurationEditor
+              singleExecutionState={singleExecutionState}
+            />
           </div>
         </div>
       </div>
@@ -416,47 +345,43 @@ const PureSingleExecutionEditor = observer(
   },
 );
 
-const PureSingleExecutionEditorWrapper = observer(
-  (props: { executionState: ServicePureExecutionState }) => {
-    const { executionState } = props;
-    const selectedExecution = executionState.selectedExecutionConfiguration;
-    const selectedTestState = executionState.selectedSingeExecutionTestState;
-    if (selectedExecution && selectedTestState) {
-      return (
-        <PureSingleExecutionEditor
-          executionState={executionState}
-          selectedExecution={selectedExecution}
-          selectedTestState={selectedTestState}
-        />
-      );
-    }
-    return (
-      <div className="service-execution-editor__execution">
-        <BlankPanelContent>No execution selected</BlankPanelContent>
-      </div>
-    );
-  },
-);
-
-const PureExecutionEditor = observer(
+const ServicePureExecutionEditor = observer(
   (props: {
-    executionState: ServicePureExecutionState;
+    singleExecutionState: ServicePureExecutionState;
     isReadOnly: boolean;
   }) => {
-    const { executionState, isReadOnly } = props;
-    const execution = executionState.execution;
-    const applicationStore = useApplicationStore();
-    const addKey = (): void =>
-      applicationStore.notifyError(
-        'Multi key execution currently not supported',
+    const { singleExecutionState, isReadOnly } = props;
+    const serviceState = singleExecutionState.serviceEditorState;
+    const renderExecutionEditor = (): React.ReactNode => {
+      if (singleExecutionState instanceof SingleServicePureExecutionState) {
+        return (
+          <PureSingleExecutionEditor
+            singleExecutionState={singleExecutionState}
+          />
+        );
+      } else if (
+        singleExecutionState instanceof MultiServicePureExecutionState
+      ) {
+        return (
+          <UnsupportedEditorPanel
+            text="Can't display multi execution in form-mode"
+            isReadOnly={serviceState.isReadOnly}
+          />
+        );
+      }
+      return (
+        <UnsupportedEditorPanel
+          text="Can't display this execution in form-mode"
+          isReadOnly={serviceState.isReadOnly}
+        />
       );
-
+    };
     return (
       <div className="service-execution-editor">
         <ResizablePanelGroup orientation="horizontal">
-          <ResizablePanel size={200} minSize={28}>
+          <ResizablePanel size={500} minSize={28}>
             <ServiceExecutionQueryEditor
-              executionState={executionState}
+              executionState={singleExecutionState}
               isReadOnly={isReadOnly}
             />
           </ResizablePanel>
@@ -469,48 +394,12 @@ const PureExecutionEditor = observer(
                 <div className="panel__header">
                   <div className="panel__header__title">
                     <div className="panel__header__title__label service-editor__execution__label--test">
-                      configuration
+                      context
                     </div>
                   </div>
                 </div>
                 <div className="panel__content service-execution-editor__configuration__content">
-                  <ResizablePanelGroup orientation="vertical">
-                    <ResizablePanel size={250} minSize={50}>
-                      <div className="service-execution-editor__keys">
-                        <div className="panel__header">
-                          <div className="panel__header__title">
-                            <div className="panel__header__title__label service-editor__execution__label--execution">
-                              keys
-                            </div>
-                          </div>
-                        </div>
-                        <div className="panel__content">
-                          <BlankPanelPlaceholder
-                            placeholderText="Add a key"
-                            onClick={addKey}
-                            clickActionType="add"
-                            tooltipText="Click to add a test"
-                          />
-                        </div>
-                      </div>
-                    </ResizablePanel>
-                    <ResizablePanelSplitter>
-                      <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
-                    </ResizablePanelSplitter>
-                    <ResizablePanel minSize={300}>
-                      {execution instanceof PureSingleExecution && (
-                        <PureSingleExecutionEditorWrapper
-                          executionState={executionState}
-                        />
-                      )}
-                      {execution instanceof PureMultiExecution && (
-                        <UnsupportedEditorPanel
-                          text={`Can't display service multi-execution in form-mode`}
-                          isReadOnly={isReadOnly}
-                        />
-                      )}
-                    </ResizablePanel>
-                  </ResizablePanelGroup>
+                  {renderExecutionEditor()}
                 </div>
               </div>
             </div>
@@ -526,15 +415,18 @@ export const ServiceExecutionEditor = observer(() => {
   const serviceState = editorStore.getCurrentEditorState(ServiceEditorState);
   const executionState = serviceState.executionState;
   const isReadOnly = serviceState.isReadOnly;
-
-  // TODO: we might need support things like TDS execution in the future
   if (executionState instanceof ServicePureExecutionState) {
     return (
-      <PureExecutionEditor
-        executionState={executionState}
+      <ServicePureExecutionEditor
+        singleExecutionState={executionState}
         isReadOnly={isReadOnly}
       />
     );
   }
-  throw new UnsupportedOperationError();
+  return (
+    <UnsupportedEditorPanel
+      text="Can't display thie service execution in form-mode"
+      isReadOnly={serviceState.isReadOnly}
+    />
+  );
 });

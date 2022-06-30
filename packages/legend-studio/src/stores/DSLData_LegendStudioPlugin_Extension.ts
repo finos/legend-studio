@@ -15,10 +15,8 @@
  */
 
 import type { EmbeddedData } from '@finos/legend-graph';
-import type {
-  EmbeddedDataState,
-  EmbeddedDataTypeOption,
-} from './editor-state/element-editor-state/data/DataEditorState.js';
+import type { EmbeddedDataTypeOption } from './editor-state/element-editor-state/data/DataEditorState.js';
+import type { EmbeddedDataState } from './editor-state/element-editor-state/data/EmbeddedDataState.js';
 import type { EditorStore } from './EditorStore.js';
 import type {
   DSL_LegendStudioPlugin_Extension,

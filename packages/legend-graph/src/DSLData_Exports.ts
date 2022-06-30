@@ -28,12 +28,15 @@ export {
   V1_ExternalFormatData,
   type V1_EmbeddedDataVisitor,
 } from './models/protocols/pure/v1/model/data/V1_EmbeddedData.js';
+export * from './models/metamodels/pure/data/RelationalCSVData.js';
 export * from './models/protocols/pure/DSLData_PureProtocolProcessorPlugin_Extension.js';
 export * from './graphManager/EmbeddedData_PureGraphManagerPlugin_Extension.js';
 export { V1_ProtocolToMetaModelEmbeddedDataBuilder } from './models/protocols/pure/v1/transformation/pureGraph/to/helpers/V1_DataElementBuilderHelper.js';
 export {
   observe_ExternalFormatData,
   observe_EmbeddedData,
+  observe_RelationalDataTable,
+  observe_DataElement,
 } from './graphManager/action/changeDetection/DSLData_ObserverHelper.js';
 export { V1_transformExternalFormatData } from './models/protocols/pure/v1/transformation/pureGraph/from/V1_DataElementTransformer.js';
 export { V1_externalFormatDataModelSchema } from './models/protocols/pure/v1/transformation/pureProtocol/serializationHelpers/V1_DataElementSerializationHelper.js';

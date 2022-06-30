@@ -18,29 +18,22 @@ import { guaranteeType, UnsupportedOperationError } from '@finos/legend-shared';
 import { ExternalFormatData } from '../../../../../../../metamodels/pure/data/EmbeddedData.js';
 import { EqualTo } from '../../../../../../../metamodels/pure/test/assertion/EqualTo.js';
 import { EqualToJson } from '../../../../../../../metamodels/pure/test/assertion/EqualToJson.js';
-import {
-  EqualToTDS,
-  RelationalTDS,
-} from '../../../../../../../metamodels/pure/test/assertion/EqualToTDS.js';
+import { EqualToTDS } from '../../../../../../../metamodels/pure/test/assertion/EqualToTDS.js';
 import type { TestAssertion } from '../../../../../../../metamodels/pure/test/assertion/TestAssertion.js';
 import type {
   AtomicTest,
   TestSuite,
 } from '../../../../../../../metamodels/pure/test/Test.js';
-import { V1_ServiceTest } from '../../../../model/packageableElements/service/V1_ServiceTest.js';
+import type { Testable } from '../../../../../../../metamodels/pure/test/Testable.js';
 import { V1_ServiceTestSuite } from '../../../../model/packageableElements/service/V1_ServiceTestSuite.js';
 import { V1_EqualTo } from '../../../../model/test/assertion/V1_EqualTo.js';
 import { V1_EqualToJson } from '../../../../model/test/assertion/V1_EqualToJson.js';
 import { V1_EqualToTDS } from '../../../../model/test/assertion/V1_EqualToTDS.js';
 import type { V1_TestAssertion } from '../../../../model/test/assertion/V1_TestAssertion.js';
-import type { V1_AtomicTest } from '../../../../model/test/V1_AtomicTest.js';
 import type { V1_TestSuite } from '../../../../model/test/V1_TestSuite.js';
 import type { V1_GraphBuilderContext } from '../V1_GraphBuilderContext.js';
 import { V1_ProtocolToMetaModelEmbeddedDataBuilder } from './V1_DataElementBuilderHelper.js';
-import {
-  V1_buildServiceTest,
-  V1_buildServiceTestSuite,
-} from './V1_ServiceBuilderHelper.js';
+import { V1_buildServiceTestSuite } from './V1_ServiceBuilderHelper.js';
 
 const buildEqualTo = (
   element: V1_EqualTo,
@@ -78,22 +71,13 @@ const buildEqualToTDS = (
   const equalToTDS = new EqualToTDS();
   equalToTDS.id = element.id;
   equalToTDS.parentTest = parentTest;
-  const expected = new RelationalTDS();
-  expected.columns = element.expected.columns;
-  expected.rows = element.expected.rows;
-  equalToTDS.expected = expected;
+  equalToTDS.expected = guaranteeType(
+    element.expected.accept_EmbeddedDataVisitor(
+      new V1_ProtocolToMetaModelEmbeddedDataBuilder(context),
+    ),
+    ExternalFormatData,
+  );
   return equalToTDS;
-};
-
-export const V1_buildAtomicTest = (
-  value: V1_AtomicTest,
-  parentSuite: TestSuite | undefined,
-  context: V1_GraphBuilderContext,
-): AtomicTest => {
-  if (value instanceof V1_ServiceTest) {
-    return V1_buildServiceTest(value, parentSuite, context);
-  }
-  throw new UnsupportedOperationError(`Can't build atomic test`, value);
 };
 
 export const V1_buildTestAssertion = (
@@ -112,11 +96,17 @@ export const V1_buildTestAssertion = (
 };
 
 export const V1_buildTestSuite = (
+  parent: Testable,
   value: V1_TestSuite,
   context: V1_GraphBuilderContext,
 ): TestSuite => {
+  let suite: TestSuite | undefined;
   if (value instanceof V1_ServiceTestSuite) {
-    return V1_buildServiceTestSuite(value, context);
+    suite = V1_buildServiceTestSuite(value, context);
+  }
+  if (suite) {
+    suite.__parent = parent;
+    return suite;
   }
   throw new UnsupportedOperationError(`Can't build test suite`, value);
 };

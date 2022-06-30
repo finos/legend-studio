@@ -281,6 +281,11 @@ export const ActivityBar = observer(() => {
       icon: <FileTrayIcon className="activity-bar__explorer-icon" />,
     },
     !editorStore.isInConflictResolutionMode && {
+      mode: ACTIVITY_MODE.GLOBAL_TEST_RUNNER,
+      title: 'Global Test Runner',
+      icon: <FlaskIcon />,
+    },
+    !editorStore.isInConflictResolutionMode && {
       mode: ACTIVITY_MODE.LOCAL_CHANGES,
       title: 'Local Changes (Ctrl + Shift + G)',
       info: localChanges ? `${localChanges} unpushed changes` : undefined,
@@ -347,11 +352,6 @@ export const ActivityBar = observer(() => {
       mode: ACTIVITY_MODE.WORKFLOW_MANAGER,
       title: 'Workflow Manager',
       icon: <WrenchIcon />,
-    },
-    !editorStore.isInConflictResolutionMode && {
-      mode: ACTIVITY_MODE.GLOBAL_TEST_RUNNER,
-      title: 'Global Test Runner',
-      icon: <FlaskIcon />,
     },
   ].filter((activity): activity is ActivityDisplay => Boolean(activity));
 
