@@ -34,6 +34,7 @@ import { getOwnPersistenceContext } from '../../../../../../../graphManager/DSLP
 import {
   type PackageableElementImplicitReference,
   V1_buildFullPath,
+  V1_buildValueSpecification,
   type V1_GraphBuilderContext,
   V1_ProtocolToMetaModelConnectionBuilder,
 } from '@finos/legend-graph';
@@ -58,7 +59,10 @@ export const V1_buildServiceParameterValue = (
 ): ServiceParameterValue => {
   if (protocol instanceof V1_PrimitiveTypeValue) {
     const serviceParameterValue = new PrimitiveTypeValue();
-    //TODO: ledav -- build value specification
+    serviceParameterValue.primitiveType = V1_buildValueSpecification(
+      protocol.primitiveType,
+      context,
+    );
     return serviceParameterValue;
   } else if (protocol instanceof V1_ConnectionValue) {
     const serviceParameterValue = new ConnectionValue();

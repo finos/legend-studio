@@ -25,7 +25,9 @@ import {
 import {
   type PureProtocolProcessorPlugin,
   V1_deserializeConnectionValue,
+  V1_deserializeValueSpecification,
   V1_serializeConnectionValue,
+  V1_serializeValueSpecification,
 } from '@finos/legend-graph';
 import {
   deserializeArray,
@@ -62,24 +64,44 @@ const V1_persistencePlatformModelSchema = createModelSchema(
  **********/
 
 enum V1_ServiceParameterValueType {
-  PRIMITIVE_TYPE_VALUE = 'primitiveType',
-  CONNECTION_VALUE = 'connection',
+  PRIMITIVE_TYPE_VALUE = 'primitiveTypeValue',
+  CONNECTION_VALUE = 'connectionValue',
 }
 
 const V1_primitiveTypeValueModelSchema = createModelSchema(
   V1_PrimitiveTypeValue,
-  {},
+  {
+    _type: usingConstantValueSchema(
+      V1_ServiceParameterValueType.PRIMITIVE_TYPE_VALUE,
+    ),
+    primitiveType: custom(
+      (val) => V1_serializeValueSpecification(val),
+      (val) => V1_deserializeValueSpecification(val),
+    ),
+  },
 );
 
-const V1_connectionValueModelSchema = createModelSchema(V1_ConnectionValue, {});
+const V1_connectionValueModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_ConnectionValue> =>
+  createModelSchema(V1_ConnectionValue, {
+    _type: usingConstantValueSchema(
+      V1_ServiceParameterValueType.CONNECTION_VALUE,
+    ),
+    connection: custom(
+      (val) => (val ? V1_serializeConnectionValue(val, true, plugins) : SKIP),
+      (val) => V1_deserializeConnectionValue(val, true, plugins),
+    ),
+  });
 
 export const V1_serializeServiceParameterValue = (
   protocol: V1_ServiceParameterValue,
+  plugins: PureProtocolProcessorPlugin[],
 ): PlainObject<V1_ServiceParameterValue> => {
   if (protocol instanceof V1_PrimitiveTypeValue) {
     return serialize(V1_primitiveTypeValueModelSchema, protocol);
   } else if (protocol instanceof V1_ConnectionValue) {
-    return serialize(V1_connectionValueModelSchema, protocol);
+    return serialize(V1_connectionValueModelSchema(plugins), protocol);
   }
   throw new UnsupportedOperationError(
     `Can't serialize service parameter value`,
@@ -89,12 +111,13 @@ export const V1_serializeServiceParameterValue = (
 
 export const V1_deserializeServiceParameterValue = (
   json: PlainObject<V1_ServiceParameterValue>,
+  plugins: PureProtocolProcessorPlugin[],
 ): V1_ServiceParameterValue => {
   switch (json._type) {
     case V1_ServiceParameterValueType.PRIMITIVE_TYPE_VALUE:
       return deserialize(V1_primitiveTypeValueModelSchema, json);
     case V1_ServiceParameterValueType.CONNECTION_VALUE:
-      return deserialize(V1_connectionValueModelSchema, json);
+      return deserialize(V1_connectionValueModelSchema(plugins), json);
     default:
       throw new UnsupportedOperationError(
         `Can't deserialize service parameter value '${json._type}'`,
@@ -102,13 +125,16 @@ export const V1_deserializeServiceParameterValue = (
   }
 };
 
-const V1_serviceParameterModelSchema = createModelSchema(V1_ServiceParameter, {
-  name: primitive(),
-  value: custom(
-    (val) => V1_serializeServiceParameterValue(val),
-    (val) => V1_deserializeServiceParameterValue(val),
-  ),
-});
+const V1_serviceParameterModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_ServiceParameterValue> =>
+  createModelSchema(V1_ServiceParameter, {
+    name: primitive(),
+    value: custom(
+      (val) => V1_serializeServiceParameterValue(val, plugins),
+      (val) => V1_deserializeServiceParameterValue(val, plugins),
+    ),
+  });
 
 /**********
  * persistence context
@@ -134,7 +160,7 @@ export const V1_persistenceContextModelSchema = (
         serializeArray(
           val,
           (v: V1_ServiceParameter) =>
-            serialize(V1_serviceParameterModelSchema, v),
+            serialize(V1_serviceParameterModelSchema(plugins), v),
           {
             skipIfEmpty: true,
             INTERNAL__forceReturnEmptyInTest: true,
@@ -143,7 +169,7 @@ export const V1_persistenceContextModelSchema = (
       (val) =>
         deserializeArray(
           val,
-          (v) => deserialize(V1_serviceParameterModelSchema, v),
+          (v) => deserialize(V1_serviceParameterModelSchema(plugins), v),
           {
             skipIfEmpty: false,
           },

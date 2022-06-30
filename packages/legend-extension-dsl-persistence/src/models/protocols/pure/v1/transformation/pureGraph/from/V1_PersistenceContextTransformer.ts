@@ -34,6 +34,7 @@ import {
   type V1_GraphTransformerContext,
   V1_initPackageableElement,
   V1_transformConnection,
+  V1_transformRootValueSpecification,
 } from '@finos/legend-graph';
 import { UnsupportedOperationError } from '@finos/legend-shared';
 
@@ -56,7 +57,9 @@ export const V1_transformServiceParameterValue = (
 ): V1_ServiceParameterValue => {
   if (element instanceof PrimitiveTypeValue) {
     const protocol = new V1_PrimitiveTypeValue();
-    //TODO: ledav -- transform value specification
+    protocol.primitiveType = V1_transformRootValueSpecification(
+      element.primitiveType,
+    );
     return protocol;
   } else if (element instanceof ConnectionValue) {
     const protocol = new V1_ConnectionValue();

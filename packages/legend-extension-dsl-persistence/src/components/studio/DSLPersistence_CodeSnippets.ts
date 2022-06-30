@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-// TODO: ledav -- added a suggestion snippet for persistence and persistence context
+// TODO: ledav -- add a suggestion snippet for persistence and persistence context
 //
 // ###Persistence
 // Persistence test::TestPersistence

@@ -277,8 +277,13 @@ export {
   V1_stereotypePtrSchema,
   V1_taggedValueSchema,
 } from './models/protocols/pure/v1/transformation/pureProtocol/serializationHelpers/V1_DomainSerializationHelper.js';
-export { V1_serializeValueSpecification } from './models/protocols/pure/v1/transformation/pureProtocol/serializationHelpers/V1_ValueSpecificationSerializer.js';
 export {
+  V1_deserializeValueSpecification,
+  V1_serializeValueSpecification,
+} from './models/protocols/pure/v1/transformation/pureProtocol/serializationHelpers/V1_ValueSpecificationSerializer.js';
+export { V1_transformRootValueSpecification } from './models/protocols/pure/v1/transformation/pureGraph/from/V1_ValueSpecificationTransformer.js';
+export {
+  V1_buildValueSpecification,
   V1_ValueSpecificationBuilder,
   V1_buildGenericFunctionExpression,
   V1_buildBaseSimpleFunctionExpression,
