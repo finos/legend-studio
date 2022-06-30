@@ -15,25 +15,6 @@
  */
 
 import { V1_Persistence } from '../../model/packageableElements/persistence/V1_DSLPersistence_Persistence.js';
-import type { PureProtocolProcessorPlugin } from '@finos/legend-graph';
-import {
-  deserializeArray,
-  type PlainObject,
-  serializeArray,
-  UnsupportedOperationError,
-  usingConstantValueSchema,
-} from '@finos/legend-shared';
-import {
-  createModelSchema,
-  custom,
-  deserialize,
-  list,
-  type ModelSchema,
-  optional,
-  primitive,
-  serialize,
-  SKIP,
-} from 'serializr';
 import {
   V1_CronTrigger,
   V1_ManualTrigger,
@@ -102,6 +83,25 @@ import {
   type V1_Persister,
   V1_StreamingPersister,
 } from '../../model/packageableElements/persistence/V1_DSLPersistence_Persister.js';
+import type { PureProtocolProcessorPlugin } from '@finos/legend-graph';
+import {
+  deserializeArray,
+  type PlainObject,
+  serializeArray,
+  UnsupportedOperationError,
+  usingConstantValueSchema,
+} from '@finos/legend-shared';
+import {
+  createModelSchema,
+  custom,
+  deserialize,
+  list,
+  type ModelSchema,
+  optional,
+  primitive,
+  serialize,
+  SKIP,
+} from 'serializr';
 
 /**********
  * notifier

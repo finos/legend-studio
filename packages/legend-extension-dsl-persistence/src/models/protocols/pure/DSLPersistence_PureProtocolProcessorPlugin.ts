@@ -23,6 +23,10 @@ import {
   V1_PERSISTENCE_ELEMENT_PROTOCOL_TYPE,
   V1_persistenceModelSchema,
 } from './v1/transformation/pureProtocol/V1_DSLPersistence_ProtocolHelper.js';
+import {
+  V1_PERSISTENCE_CONTEXT_ELEMENT_PROTOCOL_TYPE,
+  V1_persistenceContextModelSchema,
+} from './v1/transformation/pureProtocol/V1_DSLPersistenceContext_ProtocolHelper.js';
 import { V1_buildPersistence } from './v1/transformation/pureGraph/to/V1_PersistenceBuilder.js';
 import { V1_buildPersistenceContext } from './v1/transformation/pureGraph/to/V1_PersistenceContextBuilder.js';
 import { V1_transformPersistence } from './v1/transformation/pureGraph/from/V1_PersistenceTransformer.js';
@@ -139,6 +143,11 @@ export class DSLPersistence_PureProtocolProcessorPlugin extends PureProtocolProc
       ): PlainObject<V1_PackageableElement> | undefined => {
         if (elementProtocol instanceof V1_Persistence) {
           return serialize(V1_persistenceModelSchema(plugins), elementProtocol);
+        } else if (elementProtocol instanceof V1_PersistenceContext) {
+          return serialize(
+            V1_persistenceContextModelSchema(plugins),
+            elementProtocol,
+          );
         }
         return undefined;
       },
@@ -153,6 +162,10 @@ export class DSLPersistence_PureProtocolProcessorPlugin extends PureProtocolProc
       ): V1_PackageableElement | undefined => {
         if (json._type === V1_PERSISTENCE_ELEMENT_PROTOCOL_TYPE) {
           return deserialize(V1_persistenceModelSchema(plugins), json);
+        } else if (
+          json._type === V1_PERSISTENCE_CONTEXT_ELEMENT_PROTOCOL_TYPE
+        ) {
+          return deserialize(V1_persistenceContextModelSchema(plugins), json);
         }
         return undefined;
       },
