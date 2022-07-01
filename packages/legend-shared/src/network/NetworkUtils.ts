@@ -210,7 +210,7 @@ const couldBeCORS = (error: Error): boolean =>
 
 export interface ResponseProcessConfig {
   skipProcessing?: boolean | undefined;
-  preprocess?: (response: Response) => void | undefined;
+  preprocess?: ((response: Response) => void) | undefined;
   autoReAuthenticateUrl?: string | undefined;
 }
 
