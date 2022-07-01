@@ -16,8 +16,13 @@
 
 :root {
   --color-persistence: var(--color-orange-50);
+  --color-persistence-context: var(--color-orange-50);
 }
 
 .icon--persistence {
   color: var(--color-persistence);
+}
+
+.icon--persistence-context {
+  color: var(--color-persistence-context);
 }

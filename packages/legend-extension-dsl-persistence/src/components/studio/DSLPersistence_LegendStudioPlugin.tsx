@@ -16,7 +16,7 @@
 
 import packageJson from '../../../package.json';
 import type { LegendApplicationDocumentationEntry } from '@finos/legend-application';
-import { MeteorIcon } from '@finos/legend-art';
+import { CogsIcon, MeteorIcon } from '@finos/legend-art';
 import type { PackageableElement } from '@finos/legend-graph';
 import {
   LegendStudioPlugin,
@@ -100,10 +100,9 @@ export class DSLPersistence_LegendStudioPlugin
             </div>
           );
         } else if (type === PERSISTENCE_CONTEXT_ELEMENT_TYPE) {
-          //TODO: ledav -- pick an icon for persistence context
           return (
-            <div className="icon icon--persistence">
-              <MeteorIcon />
+            <div className="icon icon--persistence-context">
+              <CogsIcon />
             </div>
           );
         }

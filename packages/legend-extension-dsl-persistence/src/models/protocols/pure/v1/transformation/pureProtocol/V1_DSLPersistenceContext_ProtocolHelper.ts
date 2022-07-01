@@ -127,7 +127,7 @@ export const V1_deserializeServiceParameterValue = (
 
 const V1_serviceParameterModelSchema = (
   plugins: PureProtocolProcessorPlugin[],
-): ModelSchema<V1_ServiceParameterValue> =>
+): ModelSchema<V1_ServiceParameter> =>
   createModelSchema(V1_ServiceParameter, {
     name: primitive(),
     value: custom(
@@ -171,8 +171,7 @@ export const V1_persistenceContextModelSchema = (
       (val) =>
         deserializeArray(
           val,
-          (v: V1_ServiceParameter) =>
-            deserialize(V1_serviceParameterModelSchema(plugins), v),
+          (v) => deserialize(V1_serviceParameterModelSchema(plugins), v),
           {
             skipIfEmpty: false,
           },
