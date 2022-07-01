@@ -16,7 +16,7 @@
 
 import packageJson from '../../../package.json';
 import type { LegendApplicationDocumentationEntry } from '@finos/legend-application';
-import { CogsIcon, MeteorIcon } from '@finos/legend-art';
+import { MeteorIcon, PuzzlePieceIcon } from '@finos/legend-art';
 import type { PackageableElement } from '@finos/legend-graph';
 import {
   LegendStudioPlugin,
@@ -102,7 +102,7 @@ export class DSLPersistence_LegendStudioPlugin
         } else if (type === PERSISTENCE_CONTEXT_ELEMENT_TYPE) {
           return (
             <div className="icon icon--persistence-context">
-              <CogsIcon />
+              <PuzzlePieceIcon />
             </div>
           );
         }

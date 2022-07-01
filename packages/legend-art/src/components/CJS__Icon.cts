@@ -127,7 +127,7 @@ export {
   FaLongArrowAltDown as LongArrowAltDownIcon, // to be reviewed/combined
   FaLongArrowAltUp as LongArrowAltUpIcon, // to be reviewed/combined
   FaMeteor as MeteorIcon, // to be reviewed/combined
-  FaCogs as CogsIcon, // to be reviewed/combined
+  FaPuzzlePiece as PuzzlePieceIcon, // to be reviewed/combined
   FaToggleOn as ToggleOnIcon,
   FaToggleOff as ToggleOffIcon,
   FaMapMarkerAlt as MapMarkerIcon,
