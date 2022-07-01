@@ -496,14 +496,11 @@ export class GlobalTestRunnerState {
       .filter(isNonNullable);
   }
 
-  init(force?: boolean): void {
-    if (!this.testableStates || force) {
-      const testables =
-        this.editorStore.graphManagerState.graph.allOwnTestables;
-      this.testableStates = testables.map(
-        (testable) => new TestableState(this.editorStore, this, testable),
-      );
-    }
+  init(): void {
+    const testables = this.editorStore.graphManagerState.graph.allOwnTestables;
+    this.testableStates = testables.map(
+      (testable) => new TestableState(this.editorStore, this, testable),
+    );
   }
 
   get testables(): TestableState[] {

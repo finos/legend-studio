@@ -395,7 +395,7 @@ export const GlobalTestRunner = observer(
     const runAllTests = (): GeneratorFn<void> =>
       globalTestRunnerState.runAllTests(undefined);
 
-    const reset = (): void => globalTestRunnerState.init(true);
+    const reset = (): void => globalTestRunnerState.init();
     return (
       <div
         data-testid={LEGEND_STUDIO_TEST_ID.GLOBAL_TEST_RUNNER}
@@ -419,7 +419,7 @@ export const GlobalTestRunner = observer(
               disabled={isDispatchingAction}
               onClick={reset}
               tabIndex={-1}
-              title="Run All Tests"
+              title="Refresh"
             >
               <RefreshIcon />
             </button>
