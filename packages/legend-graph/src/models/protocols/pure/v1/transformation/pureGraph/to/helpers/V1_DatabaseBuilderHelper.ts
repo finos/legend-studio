@@ -202,7 +202,7 @@ export const V1_getRelation = (
   schemaName: string,
   relationName: string,
 ): Relation => {
-  V1_assertSchemaExists(db, schemaName);
+  V1_findSchema(db, schemaName);
   return guaranteeNonNullable(
     V1_findRelation(db, schemaName, relationName),
     `Can't find table '${relationName}' in schema '${schemaName}' and database '${db.path}'`,
