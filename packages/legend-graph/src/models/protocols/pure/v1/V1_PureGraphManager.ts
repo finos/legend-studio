@@ -210,7 +210,7 @@ import {
   V1_buildLightQuery,
   V1_transformQuerySearchSpecification,
 } from './engine/V1_EngineHelper.js';
-import { V1_buildExecutionResult } from './engine/V1_ExecutionHelper.js';
+import { V1_buildExecutionResult } from './engine/execution/V1_ExecutionHelper.js';
 import {
   type Entity,
   ENTITY_PATH_DELIMITER,
@@ -218,6 +218,7 @@ import {
 import {
   DependencyGraphBuilderError,
   GraphBuilderError,
+  PureClientVersion,
   SystemGraphBuilderError,
 } from '../../../../graphManager/GraphManagerUtils.js';
 import {
@@ -1952,7 +1953,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     mapping: Mapping,
     lambda: RawLambda,
     runtime: Runtime,
-    clientVersion: string,
     options?: ExecutionOptions,
   ): Promise<ExecutionResult> {
     return V1_buildExecutionResult(
@@ -1962,7 +1962,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           mapping,
           lambda,
           runtime,
-          clientVersion,
+          PureClientVersion.VX_X_X,
         ),
         options,
       ),
@@ -1974,7 +1974,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     mapping: Mapping,
     lambda: RawLambda,
     runtime: Runtime,
-    clientVersion: string,
     parameters: (string | number | boolean)[],
     options?: {
       anonymizeGeneratedData?: boolean;
@@ -1987,7 +1986,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       mapping,
       lambda,
       runtime,
-      clientVersion,
+      PureClientVersion.VX_X_X,
       testDataGenerationExecuteInput,
     );
     testDataGenerationExecuteInput.parameters = parameters;
@@ -2002,10 +2001,15 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     mapping: Mapping,
     lambda: RawLambda,
     runtime: Runtime,
-    clientVersion: string,
   ): Promise<RawExecutionPlan> {
     return this.engine.generateExecutionPlan(
-      this.createExecutionInput(graph, mapping, lambda, runtime, clientVersion),
+      this.createExecutionInput(
+        graph,
+        mapping,
+        lambda,
+        runtime,
+        PureClientVersion.VX_X_X,
+      ),
     );
   }
 
@@ -2014,10 +2018,15 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     mapping: Mapping,
     lambda: RawLambda,
     runtime: Runtime,
-    clientVersion: string,
   ): Promise<{ plan: RawExecutionPlan; debug: string }> {
     const result = await this.engine.debugExecutionPlanGeneration(
-      this.createExecutionInput(graph, mapping, lambda, runtime, clientVersion),
+      this.createExecutionInput(
+        graph,
+        mapping,
+        lambda,
+        runtime,
+        PureClientVersion.VX_X_X,
+      ),
     );
     return {
       plan: result.plan,

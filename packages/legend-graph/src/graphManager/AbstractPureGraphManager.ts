@@ -302,7 +302,6 @@ export abstract class AbstractPureGraphManager {
     mapping: Mapping,
     lambda: RawLambda,
     runtime: Runtime,
-    clientVersion: string,
     options?: ExecutionOptions,
   ): Promise<ExecutionResult>;
 
@@ -311,7 +310,6 @@ export abstract class AbstractPureGraphManager {
     mapping: Mapping,
     lambda: RawLambda,
     runtime: Runtime,
-    clientVersion: string,
   ): Promise<RawExecutionPlan>;
 
   abstract debugExecutionPlanGeneration(
@@ -319,7 +317,6 @@ export abstract class AbstractPureGraphManager {
     mapping: Mapping,
     lambda: RawLambda,
     runtime: Runtime,
-    clientVersion: string,
   ): Promise<{ plan: RawExecutionPlan; debug: string }>;
 
   abstract buildExecutionPlan(
@@ -338,7 +335,6 @@ export abstract class AbstractPureGraphManager {
     mapping: Mapping,
     lambda: RawLambda,
     runtime: Runtime,
-    clientVersion: string,
     parameters: (string | number | boolean)[],
     options?: {
       // Anonymizes data by hashing any string values in the generated data

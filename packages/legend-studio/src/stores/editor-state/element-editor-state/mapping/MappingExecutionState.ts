@@ -91,7 +91,6 @@ import {
   RelationalInputType,
   OperationSetImplementation,
   buildSourceInformationSourceId,
-  PureClientVersion,
   TableAlias,
   stub_RawLambda,
   isStubbed_RawLambda,
@@ -746,7 +745,6 @@ export class MappingExecutionState {
             this.mappingEditorState.mapping,
             query,
             runtime,
-            PureClientVersion.VX_X_X,
             {
               useLosslessParse: true,
             },
@@ -790,7 +788,6 @@ export class MappingExecutionState {
               this.mappingEditorState.mapping,
               query,
               runtime,
-              PureClientVersion.VX_X_X,
             )) as { plan: RawExecutionPlan; debug: string };
           rawPlan = debugResult.plan;
           this.executionPlanState.setDebugText(debugResult.debug);
@@ -801,7 +798,6 @@ export class MappingExecutionState {
               this.mappingEditorState.mapping,
               query,
               runtime,
-              PureClientVersion.VX_X_X,
             )) as object;
         }
         try {

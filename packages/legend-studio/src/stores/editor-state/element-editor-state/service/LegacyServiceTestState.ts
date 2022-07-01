@@ -334,7 +334,6 @@ export class TestContainerState {
             execution.mapping.value,
             execution.func,
             decoratedRuntime,
-            PureClientVersion.VX_X_X,
             {
               useLosslessParse: true,
             },
@@ -388,7 +387,6 @@ export class TestContainerState {
             execution.mapping.value,
             execution.func,
             decoratedRuntime,
-            PureClientVersion.VX_X_X,
             {
               useLosslessParse: true,
             },
@@ -566,7 +564,6 @@ export class LegacySingleExecutionTestState {
           executionInput.mapping,
           executionInput.query,
           executionInput.runtime,
-          PureClientVersion.VX_X_X,
           buildTestDataParameters(executionInput.query, this.editorStore),
           {
             anonymizeGeneratedData: this.anonymizeGeneratedData,
