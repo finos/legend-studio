@@ -1,14 +1,14 @@
 /**
  * Copyright (c) 2020-present, Goldman Sachs
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Apache License, Version 2.0 (the 'License');
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
+ * distributed under the License is distributed on an 'AS IS' BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
@@ -136,6 +136,19 @@ export const TEST_DATA__roundtrip = [
     },
   },
   {
+    classifierPath: 'meta::relational::metamodel::Database',
+    path: 'org::dxl::ZooDb',
+    content: {
+      _type: 'relational',
+      filters: [],
+      includedStores: [],
+      joins: [],
+      name: 'ZooDb',
+      package: 'org::dxl',
+      schemas: [],
+    },
+  },
+  {
     path: 'org::dxl::Mapping',
     classifierPath: 'meta::pure::mapping::Mapping',
     content: {
@@ -204,6 +217,27 @@ export const TEST_DATA__roundtrip = [
         asserts: [],
         data: 'test',
       },
+    },
+  },
+  {
+    classifierPath: 'meta::pure::runtime::PackageableConnection',
+    path: 'org::dxl::ZooDbConnection',
+    content: {
+      _type: 'connection',
+      connectionValue: {
+        _type: 'RelationalDatabaseConnection',
+        authenticationStrategy: {
+          _type: 'h2Default',
+        },
+        databaseType: 'H2',
+        datasourceSpecification: {
+          _type: 'h2Local',
+        },
+        element: 'org::dxl::ZooDb',
+        type: 'H2',
+      },
+      name: 'ZooDbConnection',
+      package: 'org::dxl',
     },
   },
   {
@@ -294,6 +328,85 @@ export const TEST_DATA__roundtrip = [
       service: 'org::dxl::ZooService',
       trigger: {
         _type: 'manualTrigger',
+      },
+    },
+  },
+  {
+    path: 'org::dxl::ZooPersistenceContext',
+    classifierPath: 'meta::pure::persistence::metamodel::PersistenceContext',
+    content: {
+      _type: 'persistenceContext',
+      name: 'ZooPersistenceContext',
+      package: 'org::dxl',
+      persistence: 'org::dxl::ZooPersistence',
+      platform: {
+        _type: 'default',
+      },
+      serviceParameters: [
+        {
+          name: 'connection',
+          value: {
+            _type: 'connectionValue',
+            connection: {
+              _type: 'connectionPointer',
+              connection: 'org::dxl::ZooDbConnection',
+            },
+          },
+        },
+        {
+          name: 'foo',
+          value: {
+            _type: 'primitiveTypeValue',
+            primitiveType: {
+              _type: 'string',
+              multiplicity: {
+                lowerBound: 1,
+                upperBound: 1,
+              },
+              values: ['Hello'],
+            },
+          },
+        },
+        {
+          name: 'bar',
+          value: {
+            _type: 'primitiveTypeValue',
+            primitiveType: {
+              _type: 'integer',
+              multiplicity: {
+                lowerBound: 1,
+                upperBound: 1,
+              },
+              values: [29],
+            },
+          },
+        },
+        {
+          name: 'qux',
+          value: {
+            _type: 'primitiveTypeValue',
+            primitiveType: {
+              _type: 'float',
+              multiplicity: {
+                lowerBound: 1,
+                upperBound: 1,
+              },
+              values: [27.5],
+            },
+          },
+        },
+      ],
+      sinkConnection: {
+        _type: 'RelationalDatabaseConnection',
+        authenticationStrategy: {
+          _type: 'h2Default',
+        },
+        databaseType: 'H2',
+        datasourceSpecification: {
+          _type: 'h2Local',
+        },
+        element: 'org::dxl::ZooDb',
+        type: 'H2',
       },
     },
   },
