@@ -2,4 +2,4 @@
 '@finos/legend-graph': minor
 ---
 
-Export function to validate a relational schema exists on a given database to allow extensions to leverage it.
+Expose builder utility function `V1_findSchema()` to find a schema on a given database (including `included` databases).
