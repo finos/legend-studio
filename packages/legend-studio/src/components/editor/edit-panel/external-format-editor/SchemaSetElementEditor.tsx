@@ -18,8 +18,6 @@ import { observer } from 'mobx-react-lite';
 import {
   clsx,
   ContextMenu,
-  MenuContent,
-  MenuContentItem,
   ResizablePanel,
   ResizablePanelGroup,
   ResizablePanelSplitter,
@@ -32,6 +30,8 @@ import {
   Dialog,
   TimesIcon,
   BlankPanelContent,
+  MenuContent,
+  MenuContentItem,
 } from '@finos/legend-art';
 import {
   type GenerationProperty,
@@ -282,40 +282,30 @@ const SchemaSetGeneralEditor = observer(
                 </button>
               </div>
             </div>
-            <ContextMenu
-              className="schema-set-panel__content"
-              disabled={isReadOnly}
-              content={
-                !isReadOnly &&
-                currentSchema !== undefined && (
-                  <div
-                    className="schema-set-panel__context-menu"
-                    onClick={deleteSchema(currentSchema)}
-                  >
-                    Delete
-                  </div>
-                )
-              }
-              menuProps={{ elevation: 7 }}
-            >
-              <div className="schema-set-panel__content__lists">
-                <MenuContent className="schema-set-panel__dropdown">
-                  {schemaSet.schemas.map((schema: Schema, index: number) => (
-                    <MenuContentItem
-                      key={schema._UUID}
-                      className={
-                        currentSchema === schema
-                          ? 'schema-set-panel__option schema-set-panel__option__active'
-                          : 'schema-set-panel__option'
-                      }
-                      onClick={changeState(schema)}
-                    >
-                      {schema.id ? schema.id : `Schema${index + 1}`}
+            {schemaSet.schemas.map((schema: Schema, index: number) => (
+              <ContextMenu
+                key={schema._UUID}
+                className={clsx('schema-set-panel__item', {
+                  'schema-set-panel__item--active': currentSchema === schema,
+                })}
+                disabled={isReadOnly}
+                content={
+                  <MenuContent>
+                    <MenuContentItem onClick={deleteSchema(schema)}>
+                      Delete
                     </MenuContentItem>
-                  ))}
-                </MenuContent>
-              </div>
-            </ContextMenu>
+                  </MenuContent>
+                }
+                menuProps={{ elevation: 7 }}
+              >
+                <div
+                  className="schema-set-panel__item__label"
+                  onClick={changeState(schema)}
+                >
+                  {schema.id ? schema.id : `Schema${index + 1}`}
+                </div>
+              </ContextMenu>
+            ))}
           </div>
         </ResizablePanel>
         <ResizablePanelSplitter>
