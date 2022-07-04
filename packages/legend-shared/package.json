@@ -75,5 +75,6 @@
   "extensions": {
     "iframeEventNotifierPlugin": "@finos/legend-event-notifier-plugin-iframe",
     "webConsoleLoggerPlugin": "@finos/legend-logger-plugin-web-console"
-  }
+  },
+  "typedocMain": "./src/index.ts"
 }
