@@ -161,10 +161,7 @@ const schemaExists = (database: Database, _schema: string): boolean =>
   DEFAULT_DATABASE_SCHEMA_NAME === _schema ||
   _schemaExists(database, _schema, new Set<Database>());
 
-export const V1_findSchema = (
-  database: Database,
-  _schema: string,
-): void =>
+export const V1_findSchema = (database: Database, _schema: string): void =>
   assertTrue(
     schemaExists(database, _schema),
     `Can't find schema '${_schema}' in database '${database}'`,
