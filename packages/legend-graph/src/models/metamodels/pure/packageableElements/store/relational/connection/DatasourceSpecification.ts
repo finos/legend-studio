@@ -200,6 +200,7 @@ export class RedshiftDatasourceSpecification
     this.endpointURL = endpointURL;
     this.port = port;
   }
+
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.REDSHIFT_DATASOURCE_SPECIFICATION,
@@ -235,6 +236,43 @@ export class BigQueryDatasourceSpecification
       this.defaultDataset,
       this.proxyHost ?? '',
       this.proxyPort ?? '',
+    ]);
+  }
+}
+
+export class SpannerDatasourceSpecification
+  extends DatasourceSpecification
+  implements Hashable
+{
+  projectId!: string;
+  instanceId!: string;
+  databaseId!: string;
+  host?: string | undefined;
+  port?: string | undefined;
+
+  constructor(
+    projectId: string,
+    instanceId: string,
+    databaseId: string,
+    host: string | undefined,
+    port: string | undefined,
+  ) {
+    super();
+    this.projectId = projectId;
+    this.instanceId = instanceId;
+    this.databaseId = databaseId;
+    this.host = host;
+    this.port = port;
+  }
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.SPANNER_DATASOURCE_SPECIFICATION,
+      this.projectId,
+      this.instanceId,
+      this.databaseId,
+      this.host ?? '',
+      this.port ?? '',
     ]);
   }
 }

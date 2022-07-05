@@ -87,6 +87,8 @@ import { V1_transformPostProcessor } from './V1_PostProcessorTransformer.js';
 import type { StoreRelational_PureProtocolProcessorPlugin_Extension } from '../../../../StoreRelational_PureProtocolProcessorPlugin_Extension.js';
 import type { DSLMapping_PureProtocolProcessorPlugin_Extension } from '../../../../DSLMapping_PureProtocolProcessorPlugin_Extension.js';
 import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext.js';
+import { V1_SpannerDatasourceSpecification } from '../../../model/packageableElements/store/relational/connection/V1_DatasourceSpecification.js';
+import { SpannerDatasourceSpecification } from '../../../../../../metamodels/pure/packageableElements/store/relational/connection/DatasourceSpecification.js';
 
 const transformStaticDatasourceSpecification = (
   metamodel: StaticDatasourceSpecification,
@@ -162,6 +164,18 @@ const transformBigQueryDatasourceSpecification = (
   return source;
 };
 
+const transformSpannerQueryDatasourceSpecification = (
+  metamodel: SpannerDatasourceSpecification,
+): V1_SpannerDatasourceSpecification => {
+  const source = new V1_SpannerDatasourceSpecification();
+  source.projectId = metamodel.projectId;
+  source.instanceId = metamodel.instanceId;
+  source.databaseId = metamodel.databaseId;
+  source.host = metamodel.host;
+  source.port = metamodel.port;
+  return source;
+};
+
 const transformDatasourceSpecification = (
   metamodel: DatasourceSpecification,
   context: V1_GraphTransformerContext,
@@ -176,6 +190,8 @@ const transformDatasourceSpecification = (
     return transformSnowflakeDatasourceSpecification(metamodel);
   } else if (metamodel instanceof BigQueryDatasourceSpecification) {
     return transformBigQueryDatasourceSpecification(metamodel);
+  } else if (metamodel instanceof SpannerDatasourceSpecification) {
+    return transformSpannerQueryDatasourceSpecification(metamodel);
   } else if (metamodel instanceof LocalH2DatasourceSpecification) {
     const protocol = new V1_LocalH2DataSourceSpecification();
     protocol.testDataSetupCsv = metamodel.testDataSetupCsv;

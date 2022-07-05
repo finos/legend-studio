@@ -157,6 +157,28 @@ export class V1_BigQueryDatasourceSpecification
   }
 }
 
+export class V1_SpannerDatasourceSpecification
+  extends V1_DatasourceSpecification
+  implements Hashable
+{
+  projectId!: string;
+  instanceId!: string;
+  databaseId!: string;
+  host?: string | undefined;
+  port?: string | undefined;
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.SPANNER_DATASOURCE_SPECIFICATION,
+      this.projectId,
+      this.instanceId,
+      this.databaseId,
+      this.host ?? '',
+      this.port ?? '',
+    ]);
+  }
+}
+
 export class V1_LocalH2DataSourceSpecification
   extends V1_DatasourceSpecification
   implements Hashable

@@ -161,6 +161,7 @@ enum V1_DatasourceSpecificationType {
   SNOWFLAKE = 'snowflake',
   REDSHIFT = 'redshift',
   BIGQUERY = 'bigQuery',
+  SPANNER = 'Spanner',
 }
 
 const staticDatasourceSpecificationModelSchema = createModelSchema(
@@ -248,6 +249,17 @@ const bigqueryDatasourceSpecificationModelSchema = createModelSchema(
   V1_BigQueryDatasourceSpecification,
   {
     _type: usingConstantValueSchema(V1_DatasourceSpecificationType.BIGQUERY),
+    defaultDataset: primitive(),
+    projectId: primitive(),
+    proxyHost: optional(primitive()),
+    proxyPort: optional(primitive()),
+  },
+);
+
+const spannerDatasourceSpecificationModelSchema = createModelSchema(
+  V1_SpannerDatasourceSpecification,
+  {
+    _type: usingConstantValueSchema(V1_DatasourceSpecificationType.SPANNER),
     defaultDataset: primitive(),
     projectId: primitive(),
     proxyHost: optional(primitive()),
