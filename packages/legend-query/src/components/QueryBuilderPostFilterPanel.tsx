@@ -506,7 +506,7 @@ const QueryBuilderPostFilterConditionEditor = observer(
               )}
               <BasicValueSpecificationEditor
                 valueSpecification={node.condition.value}
-                updateValue={(val: ValueSpecification): void =>
+                setValueSpecification={(val: ValueSpecification): void =>
                   node.condition.setValue(val)
                 }
                 graph={graph}

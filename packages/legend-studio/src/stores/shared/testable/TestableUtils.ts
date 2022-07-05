@@ -149,7 +149,7 @@ export class EmbeddedDataConnectionTypeVisitor
   visit_RelationalDatabaseConnection(
     connection: RelationalDatabaseConnection,
   ): string {
-    return EmbeddedDataType.REALTIONAL_CSV;
+    return EmbeddedDataType.RELATIONAL_CSV;
   }
 }
 

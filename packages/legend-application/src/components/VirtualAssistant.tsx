@@ -47,13 +47,14 @@ import {
 import { format } from 'date-fns';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { DATE_TIME_FORMAT, TAB_SIZE } from '../const.js';
+import { TAB_SIZE } from '../const.js';
 import {
   type VirtualAssistantDocumentationEntry,
   VIRTUAL_ASSISTANT_TAB,
 } from '../stores/LegendApplicationAssistantService.js';
 import { useApplicationStore } from './ApplicationStoreProvider.js';
 import Draggable from 'react-draggable';
+import { DATE_TIME_FORMAT } from '@finos/legend-graph';
 
 const WIZARD_GREETING = `Bonjour, It's Pierre!`;
 

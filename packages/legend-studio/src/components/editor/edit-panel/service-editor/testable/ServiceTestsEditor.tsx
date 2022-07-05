@@ -202,6 +202,73 @@ export const NewParameterModal = observer(
     );
   },
 );
+
+const ServiceTestParameterEditor = observer(
+  (props: {
+    isReadOnly: boolean;
+    paramState: ServiceValueSpecificationTestParameterState;
+    serviceTestState: ServiceTestState;
+  }) => {
+    const { serviceTestState, paramState, isReadOnly } = props;
+    const setupState = serviceTestState.setupState;
+    const paramIsRequired =
+      paramState.varExpression.multiplicity.lowerBound > 0;
+    return (
+      <div
+        key={paramState.parameterValue.name}
+        className="panel__content__form__section"
+      >
+        <div className="panel__content__form__section__header__label">
+          {paramState.parameterValue.name}
+          <button
+            className={clsx('type-tree__node__type__label', {})}
+            tabIndex={-1}
+            title={
+              paramState.varExpression.genericType?.value.rawType.name ?? ''
+            }
+          >
+            {paramState.varExpression.genericType?.value.rawType.name ??
+              'unknown'}
+          </button>
+        </div>
+        <div className="service-test-editor__setup__parameter__value">
+          <BasicValueSpecificationEditor
+            valueSpecification={paramState.valueSpec}
+            setValueSpecification={(val: ValueSpecification): void => {
+              paramState.updateValueSpecification(val);
+            }}
+            graph={setupState.editorStore.graphManagerState.graph}
+            typeCheckOption={{
+              expectedType:
+                paramState.varExpression.genericType?.value.rawType ??
+                setupState.editorStore.graphManagerState.graph.getPrimitiveType(
+                  PRIMITIVE_TYPE.STRING,
+                ),
+            }}
+            className="query-builder__parameters__value__editor"
+            resetValue={(): void => {
+              paramState.resetValueSpec();
+            }}
+          />
+          <div className="service-test-editor__setup__parameter__value__actions">
+            <button
+              className="btn--icon btn--dark btn--sm"
+              disabled={isReadOnly || paramIsRequired}
+              onClick={(): void => setupState.removeParamValueState(paramState)}
+              tabIndex={-1}
+              title={
+                paramIsRequired ? 'Parameter Required' : 'Remove Parameter'
+              }
+            >
+              <TimesIcon />
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  },
+);
+
 const ServiceTestSetupEditor = observer(
   (props: { serviceTestState: ServiceTestState }) => {
     const { serviceTestState } = props;
@@ -313,74 +380,14 @@ const ServiceTestSetupEditor = observer(
                     .filter(
                       filterByType(ServiceValueSpecificationTestParameterState),
                     )
-                    .map((paramState) => {
-                      const paramIsRequired =
-                        paramState.varExpression.multiplicity.lowerBound > 0;
-                      return (
-                        <div
-                          key={paramState.parameterValue.name}
-                          className="panel__content__form__section"
-                        >
-                          <div className="panel__content__form__section__header__label">
-                            {paramState.parameterValue.name}
-                            <button
-                              className={clsx(
-                                'type-tree__node__type__label',
-                                {},
-                              )}
-                              tabIndex={-1}
-                              title={
-                                paramState.varExpression.genericType?.value
-                                  .rawType.name ?? ''
-                              }
-                            >
-                              {paramState.varExpression.genericType?.value
-                                .rawType.name ?? 'unknown'}
-                            </button>
-                          </div>
-                          <div className="service-test-editor__setup__parameter__value">
-                            <BasicValueSpecificationEditor
-                              valueSpecification={paramState.valueSpec}
-                              updateValue={(val: ValueSpecification): void => {
-                                paramState.updateValueSpecification(val);
-                              }}
-                              graph={
-                                setupState.editorStore.graphManagerState.graph
-                              }
-                              typeCheckOption={{
-                                expectedType:
-                                  paramState.varExpression.genericType?.value
-                                    .rawType ??
-                                  setupState.editorStore.graphManagerState.graph.getPrimitiveType(
-                                    PRIMITIVE_TYPE.STRING,
-                                  ),
-                              }}
-                              className="query-builder__parameters__value__editor"
-                              resetValue={(): void => {
-                                paramState.resetValueSpec();
-                              }}
-                            />
-                            <div className="service-test-editor__setup__parameter__value__actions">
-                              <button
-                                className="btn--icon btn--dark btn--sm"
-                                disabled={isReadOnly || paramIsRequired}
-                                onClick={(): void =>
-                                  setupState.removeParamValueState(paramState)
-                                }
-                                tabIndex={-1}
-                                title={
-                                  paramIsRequired
-                                    ? 'Parameter Required'
-                                    : 'Remove Parameter'
-                                }
-                              >
-                                <TimesIcon />
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
+                    .map((paramState) => (
+                      <ServiceTestParameterEditor
+                        key={paramState.uuid}
+                        isReadOnly={isReadOnly}
+                        paramState={paramState}
+                        serviceTestState={serviceTestState}
+                      />
+                    ))}
                 </div>
                 {setupState.showNewParameterModal && (
                   <NewParameterModal

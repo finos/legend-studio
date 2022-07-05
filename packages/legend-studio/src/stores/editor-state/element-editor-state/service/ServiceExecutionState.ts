@@ -686,7 +686,6 @@ export class MultiServicePureExecutionState extends ServicePureExecutionState {
   getInitiallySelectedExecution():
     | PureSingleExecution
     | KeyedExecutionParameter
-    | undefined
     | undefined {
     return this.execution.executionParameters[0];
   }

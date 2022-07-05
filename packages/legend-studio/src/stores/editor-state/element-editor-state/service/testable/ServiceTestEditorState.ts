@@ -23,6 +23,7 @@ import {
   ParameterValue,
   buildLambdaVariableExpressions,
   VariableExpression,
+  generateVariableExpressionMockValue,
 } from '@finos/legend-graph';
 import { action, flow, makeObservable, observable } from 'mobx';
 import type { EditorStore } from '../../../../../index.js';
@@ -43,8 +44,8 @@ import {
   guaranteeNonNullable,
   isNonNullable,
   returnUndefOnError,
+  uuid,
 } from '@finos/legend-shared';
-import { generateVariableExpressionMockValues } from '@finos/legend-application';
 
 export enum SERIALIZATION_FORMAT {
   DEFAULT = 'DEFAULT',
@@ -73,6 +74,7 @@ export type SerializationFormatOption = {
 };
 
 export class ServiceTestParameterState {
+  readonly uuid = uuid();
   readonly editorStore: EditorStore;
   readonly setupState: ServiceTestSetupState;
   parameterValue: ParameterValue;
@@ -99,11 +101,12 @@ export class ServiceValueSpecificationTestParameterState extends ServiceTestPara
   ) {
     super(parameterValue, editorStore, setupState);
     makeObservable(this, {
-      updateValueSpecification: observable,
       setName: observable,
-      resetValueSpec: action,
       valueSpec: observable,
       parameterValue: observable,
+      resetValueSpec: action,
+      updateValueSpecification: action,
+      updateParameterValue: action,
     });
     this.valueSpec = valueSpec;
     this.varExpression = varExpression;
@@ -114,10 +117,13 @@ export class ServiceValueSpecificationTestParameterState extends ServiceTestPara
       val,
       this.editorStore.changeDetectionState.observerContext,
     );
+    this.updateParameterValue();
+  }
 
+  updateParameterValue(): void {
     const updatedValueSpec =
       this.editorStore.graphManagerState.graphManager.serializeValueSpecification(
-        val,
+        this.valueSpec,
       );
     service_setParameterValueSpec(this.parameterValue, updatedValueSpec);
   }
@@ -127,7 +133,7 @@ export class ServiceValueSpecificationTestParameterState extends ServiceTestPara
   }
 
   resetValueSpec(): void {
-    const mockValue = generateVariableExpressionMockValues(this.varExpression);
+    const mockValue = generateVariableExpressionMockValue(this.varExpression);
     if (mockValue) {
       this.updateValueSpecification(mockValue);
     }
@@ -249,7 +255,7 @@ export class ServiceTestSetupState {
   addExpressionParameterValue(expression: VariableExpression): void {
     try {
       const mockValue = guaranteeNonNullable(
-        generateVariableExpressionMockValues(expression),
+        generateVariableExpressionMockValue(expression),
       );
       const paramValue = new ParameterValue();
       paramValue.name = expression.name;
@@ -335,7 +341,7 @@ export class ServiceTestSetupState {
       const varExpressions = this.queryVariableExpressions;
       const parameterValueStates = varExpressions
         .map((varExpression) => {
-          const mockValue = generateVariableExpressionMockValues(varExpression);
+          const mockValue = generateVariableExpressionMockValue(varExpression);
           if (mockValue) {
             const paramValue = new ParameterValue();
             paramValue.name = varExpression.name;

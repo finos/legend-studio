@@ -138,7 +138,7 @@ const DerivedPropertyParameterValueEditor = observer(
             valueSpecification={guaranteeNonNullable(
               derivedPropertyExpressionState.parameterValues[idx],
             )}
-            updateValue={(val: ValueSpecification): void => {
+            setValueSpecification={(val: ValueSpecification): void => {
               propertyExpression_setParametersValue(
                 derivedPropertyExpressionState.propertyExpression,
                 idx + 1,

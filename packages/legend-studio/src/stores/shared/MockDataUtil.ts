@@ -27,8 +27,9 @@ import {
   PRIMITIVE_TYPE,
   Class,
   getAllClassProperties,
+  DATE_FORMAT,
+  DATE_TIME_FORMAT,
 } from '@finos/legend-graph';
-import { DATE_FORMAT, DATE_TIME_FORMAT } from '@finos/legend-application';
 import { CLASS_PROPERTY_TYPE, getClassPropertyType } from './ModelUtil.js';
 import type { MappingElementSource } from '../../index.js';
 

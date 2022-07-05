@@ -117,11 +117,11 @@ export class TestAssertionResultState {
       const status = val.assertStatuses.find(
         (_status) => _status.assertion === this.assertionState.assertion,
       );
-      this.statusState = this.buildStauts(status);
+      this.statusState = this.buildStatus(status);
     }
   }
 
-  buildStauts(
+  buildStatus(
     val: AssertionStatus | undefined,
   ): TestAssertionStatusState | undefined {
     if (val) {

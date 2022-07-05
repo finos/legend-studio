@@ -79,6 +79,7 @@ export class TestableTestEditorState {
   runningTestAction = ActionState.create();
   testResultState: TestableTestResultState;
   isReadOnly: boolean;
+
   constructor(
     testable: Testable,
     test: AtomicTest,
@@ -96,6 +97,7 @@ export class TestableTestEditorState {
     this.selectedAsertionState = this.assertionEditorStates[0];
     this.isReadOnly = isReadOnly;
   }
+
   setSelectedTab(val: TESTABLE_TEST_TAB): void {
     this.selectedTab = val;
   }
@@ -172,8 +174,8 @@ export class TestableTestEditorState {
   handleTestResult(testResult: TestResult): void {
     this.testResultState.setResult(testResult);
     this.assertionEditorStates.forEach((assertionState) => {
-      assertionState.assertionResultState.setTestResult(testResult),
-        assertionState.setSelectedTab(TEST_ASSERTION_TAB.ASSERTION_RESULT);
+      assertionState.assertionResultState.setTestResult(testResult);
+      assertionState.setSelectedTab(TEST_ASSERTION_TAB.ASSERTION_RESULT);
     });
   }
 

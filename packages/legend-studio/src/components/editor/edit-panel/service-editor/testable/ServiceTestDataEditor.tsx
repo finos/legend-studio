@@ -305,7 +305,6 @@ export const NewConnectionDataModal = observer(
               darkMode={true}
             />
           </div>
-
           <div className="search-modal__actions">
             <button
               type="button"
