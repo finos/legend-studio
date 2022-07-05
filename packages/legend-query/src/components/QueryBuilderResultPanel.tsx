@@ -23,12 +23,15 @@ import {
   MenuContent,
   MenuContentItem,
   CaretDownIcon,
+  ContextMenu,
+  clsx,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { flowResult } from 'mobx';
 import type { QueryBuilderState } from '../stores/QueryBuilderState.js';
 import {
   type ExecutionResult,
+  InstanceValue,
   extractExecutionResultValues,
   TdsExecutionResult,
   RawExecutionResult,
@@ -39,17 +42,557 @@ import {
   ActionAlertType,
   EDITOR_LANGUAGE,
   ExecutionPlanViewer,
+  instanceValue_changeValue,
   PARAMETER_SUBMIT_ACTION,
   TAB_SIZE,
   TextInputEditor,
   useApplicationStore,
 } from '@finos/legend-application';
-import { isBoolean } from '@finos/legend-shared';
+import { assertErrorThrown, isBoolean } from '@finos/legend-shared';
+import { forwardRef, useState } from 'react';
+import type { CellMouseOverEvent } from '@ag-grid-community/core';
+import {
+  FilterConditionState,
+  QueryBuilderFilterTreeConditionNodeData,
+} from '../stores/QueryBuilderFilterState.js';
+import {
+  QueryBuilderSimpleProjectionColumnState,
+  QueryBuilderProjectionColumnState,
+} from '../stores/QueryBuilderProjectionState.js';
+import { getPropertyChainName } from '../stores/QueryBuilderPropertyEditorState.js';
+import {
+  QueryBuilderFilterOperator_Equal,
+  QueryBuilderFilterOperator_NotEqual,
+} from '../stores/filterOperators/QueryBuilderFilterOperator_Equal.js';
+import {
+  QueryBuilderFilterOperator_In,
+  QueryBuilderFilterOperator_NotIn,
+} from '../stores/filterOperators/QueryBuilderFilterOperator_In.js';
+import {
+  PostFilterConditionState,
+  QueryBuilderPostFilterTreeConditionNodeData,
+} from '../stores/QueryBuilderPostFilterState.js';
+import {
+  QueryBuilderPostFilterOperator_Equal,
+  QueryBuilderPostFilterOperator_NotEqual,
+} from '../stores/postFilterOperators/QueryBuilderPostFilterOperator_Equal.js';
+import {
+  QueryBuilderPostFilterOperator_In,
+  QueryBuilderPostFilterOperator_NotIn,
+} from '../stores/postFilterOperators/QueryBuilderPostFilterOperator_In.js';
+
+const QueryBuilderResultContextMenu = observer(
+  forwardRef<
+    HTMLDivElement,
+    {
+      event: CellMouseOverEvent | null;
+      queryBuilderState: QueryBuilderState;
+    }
+  >(function QueryBuilderResultContextMenu(props, ref) {
+    const { event, queryBuilderState } = props;
+    const applicationStore = useApplicationStore();
+    const filterState = queryBuilderState.filterState;
+    const postFilterState = queryBuilderState.postFilterState;
+    const theColumnState =
+      queryBuilderState.fetchStructureState.projectionState.columns
+        .filter((c) => c.columnName === event?.column.getColId())
+        .filter((c) => c instanceof QueryBuilderSimpleProjectionColumnState)
+        .map((c) => c as QueryBuilderSimpleProjectionColumnState)[0];
+
+    const filterBy = (): void => {
+      if (theColumnState === undefined) {
+        applicationStore.notifyWarning(
+          'Filter by on derivation column is not supported',
+        );
+        return;
+      }
+      // If it is MANY multiplicity, add to post filter, otherwise add to filter.
+      const theColumnMultiplicity =
+        theColumnState.propertyExpressionState.propertyExpression.func
+          .multiplicity;
+      if (
+        theColumnMultiplicity.upperBound === undefined ||
+        (theColumnMultiplicity.upperBound &&
+          theColumnMultiplicity.upperBound > 1)
+      ) {
+        postFilterState.setShowPostFilterPanel(true);
+        const existingPostFilterNode = Array.from(
+          postFilterState.nodes.values(),
+        )
+          .filter(
+            (v) =>
+              v instanceof QueryBuilderPostFilterTreeConditionNodeData &&
+              v.condition.columnState instanceof
+                QueryBuilderProjectionColumnState,
+          )
+          .filter(
+            (n) =>
+              (n as QueryBuilderPostFilterTreeConditionNodeData).condition
+                .columnState.columnName === theColumnState.columnName &&
+              [
+                new QueryBuilderPostFilterOperator_Equal().getLabel(),
+                new QueryBuilderPostFilterOperator_In().getLabel(),
+              ].includes(
+                (
+                  n as QueryBuilderPostFilterTreeConditionNodeData
+                ).condition.operator.getLabel(),
+              ),
+          );
+        if (existingPostFilterNode.length === 0) {
+          let postFilterConditionState: PostFilterConditionState;
+          try {
+            postFilterConditionState = new PostFilterConditionState(
+              postFilterState,
+              theColumnState,
+              undefined,
+              undefined,
+            );
+            postFilterConditionState.setValue(
+              postFilterConditionState.operator.getDefaultFilterConditionValue(
+                postFilterConditionState,
+              ),
+            );
+          } catch (error) {
+            assertErrorThrown(error);
+            applicationStore.notifyWarning(error.message);
+            return;
+          }
+          postFilterState.addNodeFromNode(
+            new QueryBuilderPostFilterTreeConditionNodeData(
+              undefined,
+              postFilterConditionState,
+            ),
+            undefined,
+          );
+        } else {
+          const conditionState = (
+            existingPostFilterNode[0] as QueryBuilderPostFilterTreeConditionNodeData
+          ).condition;
+          if (
+            conditionState.operator.getLabel() ===
+            new QueryBuilderPostFilterOperator_Equal().getLabel()
+          ) {
+            if (
+              !(
+                conditionState.value instanceof InstanceValue &&
+                conditionState.value.values.includes(event?.value)
+              )
+            ) {
+              const currentValueSpecificaton = conditionState.value;
+              const newValueSpecification =
+                conditionState.operator.getDefaultFilterConditionValue(
+                  conditionState,
+                );
+              instanceValue_changeValue(
+                newValueSpecification as InstanceValue,
+                event?.value,
+                0,
+              );
+              conditionState.changeOperator(
+                new QueryBuilderPostFilterOperator_In(),
+              );
+              (conditionState.value as InstanceValue).values = [
+                currentValueSpecificaton,
+                newValueSpecification,
+              ];
+            }
+          } else {
+            // to do : limit new()
+            if (
+              !(
+                conditionState.value instanceof InstanceValue &&
+                conditionState.value.values
+                  .filter((v) => v instanceof InstanceValue)
+                  .map((v) => (v as InstanceValue).values[0])
+                  .includes(event?.value)
+              )
+            ) {
+              const newValueSpecification =
+                new QueryBuilderPostFilterOperator_Equal().getDefaultFilterConditionValue(
+                  conditionState,
+                );
+              instanceValue_changeValue(
+                newValueSpecification as InstanceValue,
+                event?.value,
+                0,
+              );
+              (conditionState.value as InstanceValue).values = [
+                ...(conditionState.value as InstanceValue).values,
+                newValueSpecification,
+              ];
+            }
+          }
+        }
+      } else {
+        const existingFilterNode = Array.from(filterState.nodes.values())
+          .filter((v) => v instanceof QueryBuilderFilterTreeConditionNodeData)
+          .filter(
+            (n) =>
+              getPropertyChainName(
+                (n as QueryBuilderFilterTreeConditionNodeData).condition
+                  .propertyExpressionState.propertyExpression,
+                false,
+              ) ===
+                getPropertyChainName(
+                  theColumnState.propertyExpressionState.propertyExpression,
+                  false,
+                ) &&
+              [
+                new QueryBuilderFilterOperator_Equal().getLabel(
+                  (n as QueryBuilderFilterTreeConditionNodeData).condition,
+                ),
+                new QueryBuilderFilterOperator_In().getLabel(
+                  (n as QueryBuilderFilterTreeConditionNodeData).condition,
+                ),
+              ].includes(
+                (
+                  n as QueryBuilderFilterTreeConditionNodeData
+                ).condition.operator.getLabel(
+                  (n as QueryBuilderFilterTreeConditionNodeData).condition,
+                ),
+              ),
+          );
+        if (existingFilterNode.length === 0) {
+          let filterConditionState: FilterConditionState;
+          try {
+            filterConditionState = new FilterConditionState(
+              filterState,
+              theColumnState.propertyExpressionState.propertyExpression,
+            );
+            (filterConditionState.value as InstanceValue).values[0] =
+              event?.value;
+          } catch (error) {
+            assertErrorThrown(error);
+            applicationStore.notifyWarning(error.message);
+            return;
+          }
+          filterState.setSelectedNode(undefined);
+          filterState.addNodeFromNode(
+            new QueryBuilderFilterTreeConditionNodeData(
+              undefined,
+              filterConditionState,
+            ),
+            undefined,
+          );
+        } else {
+          const conditionState = (
+            existingFilterNode[0] as QueryBuilderFilterTreeConditionNodeData
+          ).condition;
+          if (
+            conditionState.operator.getLabel(conditionState) ===
+            new QueryBuilderFilterOperator_Equal().getLabel(conditionState)
+          ) {
+            if (
+              !(
+                conditionState.value instanceof InstanceValue &&
+                conditionState.value.values.includes(event?.value)
+              )
+            ) {
+              const currentValueSpecificaton = conditionState.value;
+              const newValueSpecification =
+                conditionState.operator.getDefaultFilterConditionValue(
+                  conditionState,
+                );
+              instanceValue_changeValue(
+                newValueSpecification as InstanceValue,
+                event?.value,
+                0,
+              );
+              conditionState.changeOperator(
+                new QueryBuilderFilterOperator_In(),
+              );
+              (conditionState.value as InstanceValue).values = [
+                currentValueSpecificaton,
+                newValueSpecification,
+              ];
+            }
+          } else {
+            // to do : limit new()
+            if (
+              !(
+                conditionState.value instanceof InstanceValue &&
+                conditionState.value.values
+                  .filter((v) => v instanceof InstanceValue)
+                  .map((v) => (v as InstanceValue).values[0])
+                  .includes(event?.value)
+              )
+            ) {
+              const newValueSpecification =
+                new QueryBuilderFilterOperator_Equal().getDefaultFilterConditionValue(
+                  conditionState,
+                );
+              instanceValue_changeValue(
+                newValueSpecification as InstanceValue,
+                event?.value,
+                0,
+              );
+              (conditionState.value as InstanceValue).values = [
+                ...(conditionState.value as InstanceValue).values,
+                newValueSpecification,
+              ];
+            }
+          }
+        }
+      }
+    };
+    const filterOut = (): void => {
+      if (theColumnState === undefined) {
+        applicationStore.notifyWarning(
+          'Filter out on derivation column is not supported',
+        );
+        return;
+      }
+      // If it is MANY multiplicity, add to post filter, otherwise add to filter.
+      const theColumnMultiplicity =
+        theColumnState.propertyExpressionState.propertyExpression.func
+          .multiplicity;
+      if (
+        theColumnMultiplicity.upperBound === undefined ||
+        (theColumnMultiplicity.upperBound &&
+          theColumnMultiplicity.upperBound > 1)
+      ) {
+        postFilterState.setShowPostFilterPanel(true);
+        const existingPostFilterNode = Array.from(
+          postFilterState.nodes.values(),
+        )
+          .filter(
+            (v) =>
+              v instanceof QueryBuilderPostFilterTreeConditionNodeData &&
+              v.condition.columnState instanceof
+                QueryBuilderProjectionColumnState,
+          )
+          .filter(
+            (n) =>
+              (n as QueryBuilderPostFilterTreeConditionNodeData).condition
+                .columnState.columnName === theColumnState.columnName &&
+              [
+                new QueryBuilderPostFilterOperator_NotEqual().getLabel(),
+                new QueryBuilderPostFilterOperator_NotIn().getLabel(),
+              ].includes(
+                (
+                  n as QueryBuilderPostFilterTreeConditionNodeData
+                ).condition.operator.getLabel(),
+              ),
+          );
+        if (existingPostFilterNode.length === 0) {
+          let postFilterConditionState: PostFilterConditionState;
+          try {
+            postFilterConditionState = new PostFilterConditionState(
+              postFilterState,
+              theColumnState,
+              undefined,
+              new QueryBuilderPostFilterOperator_NotEqual(),
+            );
+            postFilterConditionState.setValue(
+              postFilterConditionState.operator.getDefaultFilterConditionValue(
+                postFilterConditionState,
+              ),
+            );
+          } catch (error) {
+            assertErrorThrown(error);
+            applicationStore.notifyWarning(error.message);
+            return;
+          }
+          postFilterState.addNodeFromNode(
+            new QueryBuilderPostFilterTreeConditionNodeData(
+              undefined,
+              postFilterConditionState,
+            ),
+            undefined,
+          );
+        } else {
+          const conditionState = (
+            existingPostFilterNode[0] as QueryBuilderPostFilterTreeConditionNodeData
+          ).condition;
+          if (
+            conditionState.operator.getLabel() ===
+            new QueryBuilderPostFilterOperator_NotEqual().getLabel()
+          ) {
+            if (
+              !(
+                conditionState.value instanceof InstanceValue &&
+                conditionState.value.values.includes(event?.value)
+              )
+            ) {
+              const currentValueSpecificaton = conditionState.value;
+              const newValueSpecification =
+                conditionState.operator.getDefaultFilterConditionValue(
+                  conditionState,
+                );
+              instanceValue_changeValue(
+                newValueSpecification as InstanceValue,
+                event?.value,
+                0,
+              );
+              conditionState.changeOperator(
+                new QueryBuilderPostFilterOperator_NotIn(),
+              );
+              (conditionState.value as InstanceValue).values = [
+                currentValueSpecificaton,
+                newValueSpecification,
+              ];
+            }
+          } else {
+            // to do : limit new()
+            if (
+              !(
+                conditionState.value instanceof InstanceValue &&
+                conditionState.value.values
+                  .filter((v) => v instanceof InstanceValue)
+                  .map((v) => (v as InstanceValue).values[0])
+                  .includes(event?.value)
+              )
+            ) {
+              const newValueSpecification =
+                new QueryBuilderPostFilterOperator_NotEqual().getDefaultFilterConditionValue(
+                  conditionState,
+                );
+              instanceValue_changeValue(
+                newValueSpecification as InstanceValue,
+                event?.value,
+                0,
+              );
+              (conditionState.value as InstanceValue).values = [
+                ...(conditionState.value as InstanceValue).values,
+                newValueSpecification,
+              ];
+            }
+          }
+        }
+      } else {
+        const existingFilterNode = Array.from(filterState.nodes.values())
+          .filter((v) => v instanceof QueryBuilderFilterTreeConditionNodeData)
+          .filter(
+            (n) =>
+              getPropertyChainName(
+                (n as QueryBuilderFilterTreeConditionNodeData).condition
+                  .propertyExpressionState.propertyExpression,
+                false,
+              ) ===
+                getPropertyChainName(
+                  theColumnState.propertyExpressionState.propertyExpression,
+                  false,
+                ) &&
+              [
+                new QueryBuilderFilterOperator_NotEqual().getLabel(
+                  (n as QueryBuilderFilterTreeConditionNodeData).condition,
+                ),
+                new QueryBuilderFilterOperator_NotIn().getLabel(
+                  (n as QueryBuilderFilterTreeConditionNodeData).condition,
+                ),
+              ].includes(
+                (
+                  n as QueryBuilderFilterTreeConditionNodeData
+                ).condition.operator.getLabel(
+                  (n as QueryBuilderFilterTreeConditionNodeData).condition,
+                ),
+              ),
+          );
+        if (existingFilterNode.length === 0) {
+          let filterConditionState: FilterConditionState;
+          try {
+            filterConditionState = new FilterConditionState(
+              filterState,
+              theColumnState.propertyExpressionState.propertyExpression,
+            );
+            filterConditionState.setOperator(
+              new QueryBuilderFilterOperator_NotEqual(),
+            );
+            (filterConditionState.value as InstanceValue).values[0] =
+              event?.value;
+          } catch (error) {
+            assertErrorThrown(error);
+            applicationStore.notifyWarning(error.message);
+            return;
+          }
+          filterState.setSelectedNode(undefined);
+          filterState.addNodeFromNode(
+            new QueryBuilderFilterTreeConditionNodeData(
+              undefined,
+              filterConditionState,
+            ),
+            undefined,
+          );
+        } else {
+          const conditionState = (
+            existingFilterNode[0] as QueryBuilderFilterTreeConditionNodeData
+          ).condition;
+          if (
+            conditionState.operator.getLabel(conditionState) ===
+            new QueryBuilderFilterOperator_NotEqual().getLabel(conditionState)
+          ) {
+            if (
+              !(
+                conditionState.value instanceof InstanceValue &&
+                conditionState.value.values.includes(event?.value)
+              )
+            ) {
+              const currentValueSpecificaton = conditionState.value;
+              const newValueSpecification =
+                conditionState.operator.getDefaultFilterConditionValue(
+                  conditionState,
+                );
+              instanceValue_changeValue(
+                newValueSpecification as InstanceValue,
+                event?.value,
+                0,
+              );
+              conditionState.changeOperator(
+                new QueryBuilderFilterOperator_NotIn(),
+              );
+              (conditionState.value as InstanceValue).values = [
+                currentValueSpecificaton,
+                newValueSpecification,
+              ];
+            }
+          } else {
+            // to do : limit new()
+            if (
+              !(
+                conditionState.value instanceof InstanceValue &&
+                conditionState.value.values
+                  .filter((v) => v instanceof InstanceValue)
+                  .map((v) => (v as InstanceValue).values[0])
+                  .includes(event?.value)
+              )
+            ) {
+              const newValueSpecification =
+                new QueryBuilderFilterOperator_NotEqual().getDefaultFilterConditionValue(
+                  conditionState,
+                );
+              instanceValue_changeValue(
+                newValueSpecification as InstanceValue,
+                event?.value,
+                0,
+              );
+              (conditionState.value as InstanceValue).values = [
+                ...(conditionState.value as InstanceValue).values,
+                newValueSpecification,
+              ];
+            }
+          }
+        }
+      }
+    };
+
+    return (
+      <MenuContent ref={ref}>
+        <MenuContentItem onClick={filterBy}>Filter By</MenuContentItem>
+        <MenuContentItem onClick={filterOut}>Filter Out</MenuContentItem>
+      </MenuContent>
+    );
+  }),
+);
 
 const QueryBuilderResultValues = observer(
-  (props: { executionResult: ExecutionResult }) => {
-    const { executionResult } = props;
+  (props: {
+    executionResult: ExecutionResult;
+    queryBuilderState: QueryBuilderState;
+  }) => {
+    const { executionResult, queryBuilderState } = props;
     if (executionResult instanceof TdsExecutionResult) {
+      const [cellDoubleClickedEvent, setCellDoubleClickedEvent] =
+        useState<CellMouseOverEvent | null>(null);
       const columns = executionResult.result.columns;
       const rowData = executionResult.result.rows.map((_row) => {
         const row: Record<PropertyKey, unknown> = {};
@@ -63,15 +606,25 @@ const QueryBuilderResultValues = observer(
         return row;
       });
       return (
-        <div
-          // NOTE: since we use the column name as the key the column
-          // if we execute once then immediate add another column and execute again
-          // the old columns rendering will be kept the same and the new column
-          // will be pushed to last regardless of its type (aggregation or simple projection)
+        <ContextMenu
+          content={
+            <QueryBuilderResultContextMenu
+              event={cellDoubleClickedEvent}
+              queryBuilderState={queryBuilderState}
+            />
+          }
+          menuProps={{ elevation: 7 }}
           key={executionResult._UUID}
-          className="ag-theme-balham-dark query-builder__result__tds-grid"
+          className={clsx(
+            'ag-theme-balham-dark query-builder__result__tds-grid',
+          )}
         >
-          <AgGridReact rowData={rowData}>
+          <AgGridReact
+            rowData={rowData}
+            onCellMouseOver={(event): void => {
+              setCellDoubleClickedEvent(event);
+            }}
+          >
             {columns.map((colName) => (
               <AgGridColumn
                 minWidth={50}
@@ -83,7 +636,7 @@ const QueryBuilderResultValues = observer(
               />
             ))}
           </AgGridReact>
-        </div>
+        </ContextMenu>
       );
     } else if (executionResult instanceof RawExecutionResult) {
       return (
@@ -310,7 +863,10 @@ export const QueryBuilderResultPanel = observer(
           )}
           {executionResult && (
             <div className="query-builder__result__values">
-              <QueryBuilderResultValues executionResult={executionResult} />
+              <QueryBuilderResultValues
+                executionResult={executionResult}
+                queryBuilderState={queryBuilderState}
+              />
             </div>
           )}
         </div>
