@@ -17,8 +17,14 @@
 import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../DSLPersistence_ModelUtils.js';
 import { type Hashable, hashArray } from '@finos/legend-shared';
 
-export class PersistencePlatform implements Hashable {
-  get hashCode(): string {
-    return hashArray([PERSISTENCE_HASH_STRUCTURE.PERSISTENCE_PLATFORM]);
+export abstract class PersistencePlatform implements Hashable {
+  abstract get hashCode(): string;
+}
+export class DefaultPersistencePlatform
+  extends PersistencePlatform
+  implements Hashable
+{
+  override get hashCode(): string {
+    return hashArray([PERSISTENCE_HASH_STRUCTURE.DEFAULT_PERSISTENCE_PLATFORM]);
   }
 }

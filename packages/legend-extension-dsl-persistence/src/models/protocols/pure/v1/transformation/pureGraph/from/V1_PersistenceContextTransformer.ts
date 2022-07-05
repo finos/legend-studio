@@ -15,7 +15,10 @@
  */
 
 import type { PersistenceContext } from '../../../../../../metamodels/pure/model/packageableElements/persistence/DSLPersistence_PersistenceContext.js';
-import type { PersistencePlatform } from '../../../../../../metamodels/pure/model/packageableElements/persistence/DSLPersistence_PersistencePlatform.js';
+import {
+  type PersistencePlatform,
+  DefaultPersistencePlatform,
+} from '../../../../../../metamodels/pure/model/packageableElements/persistence/DSLPersistence_PersistencePlatform.js';
 import {
   ConnectionValue,
   PrimitiveTypeValue,
@@ -23,13 +26,17 @@ import {
   type ServiceParameterValue,
 } from '../../../../../../metamodels/pure/model/packageableElements/persistence/DSLPersistence_ServiceParameter.js';
 import { V1_PersistenceContext } from '../../../model/packageableElements/persistence/V1_DSLPersistence_PersistenceContext.js';
-import { V1_PersistencePlatform } from '../../../model/packageableElements/persistence/V1_DSLPersistence_PersistencePlatform.js';
+import {
+  V1_DefaultPersistencePlatform,
+  type V1_PersistencePlatform,
+} from '../../../model/packageableElements/persistence/V1_DSLPersistence_PersistencePlatform.js';
 import {
   V1_ConnectionValue,
   V1_PrimitiveTypeValue,
   V1_ServiceParameter,
   type V1_ServiceParameterValue,
 } from '../../../model/packageableElements/persistence/V1_DSLPersistence_ServiceParameter.js';
+import type { DSLPersistence_PureProtocolProcessorPlugin_Extension } from '../../../../DSLPersistence_PureProtocolProcessorPlugin_Extension.js';
 import {
   type V1_GraphTransformerContext,
   V1_initPackageableElement,
@@ -45,7 +52,27 @@ import { UnsupportedOperationError } from '@finos/legend-shared';
 export const V1_transformPersistencePlatform = (
   element: PersistencePlatform,
   context: V1_GraphTransformerContext,
-): V1_PersistencePlatform => new V1_PersistencePlatform();
+): V1_PersistencePlatform => {
+  if (element instanceof DefaultPersistencePlatform) {
+    return new V1_DefaultPersistencePlatform();
+  }
+  const extraPersistencePlatformTransformers = context.plugins.flatMap(
+    (plugin) =>
+      (
+        plugin as DSLPersistence_PureProtocolProcessorPlugin_Extension
+      ).V1_getExtraPersistencePlatformTransformers?.() ?? [],
+  );
+  for (const transformer of extraPersistencePlatformTransformers) {
+    const protocol = transformer(element, context);
+    if (protocol) {
+      return protocol;
+    }
+  }
+  throw new UnsupportedOperationError(
+    `Can't transform persistence platform: no compatible transformer available from plugins`,
+    element,
+  );
+};
 
 /**********
  * service parameter

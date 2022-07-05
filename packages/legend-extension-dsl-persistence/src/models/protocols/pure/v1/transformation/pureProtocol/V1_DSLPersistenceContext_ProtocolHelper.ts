@@ -15,13 +15,17 @@
  */
 
 import { V1_PersistenceContext } from '../../model/packageableElements/persistence/V1_DSLPersistence_PersistenceContext.js';
-import { V1_PersistencePlatform } from '../../model/packageableElements/persistence/V1_DSLPersistence_PersistencePlatform.js';
+import {
+  V1_DefaultPersistencePlatform,
+  type V1_PersistencePlatform,
+} from '../../model/packageableElements/persistence/V1_DSLPersistence_PersistencePlatform.js';
 import {
   V1_ConnectionValue,
   V1_PrimitiveTypeValue,
   V1_ServiceParameter,
   type V1_ServiceParameterValue,
 } from '../../model/packageableElements/persistence/V1_DSLPersistence_ServiceParameter.js';
+import type { DSLPersistence_PureProtocolProcessorPlugin_Extension } from '../../../DSLPersistence_PureProtocolProcessorPlugin_Extension.js';
 import {
   type PureProtocolProcessorPlugin,
   V1_deserializeConnectionValue,
@@ -50,14 +54,68 @@ import {
  * persistence platfrom
  **********/
 
-const PERSISTENCE_PLATFORM_DEFAULT_TYPE = 'default';
+enum V1_PersistencePlatformType {
+  DEFAULT = 'default',
+}
 
-const V1_persistencePlatformModelSchema = createModelSchema(
-  V1_PersistencePlatform,
+const V1_defaultPersistencePlatformModelSchema = createModelSchema(
+  V1_DefaultPersistencePlatform,
   {
-    _type: usingConstantValueSchema(PERSISTENCE_PLATFORM_DEFAULT_TYPE),
+    _type: usingConstantValueSchema(V1_PersistencePlatformType.DEFAULT),
   },
 );
+
+export const V1_serializePersistencePlatform = (
+  protocol: V1_PersistencePlatform,
+  plugins: PureProtocolProcessorPlugin[],
+): PlainObject<V1_PersistencePlatform> => {
+  if (protocol instanceof V1_DefaultPersistencePlatform) {
+    return serialize(V1_defaultPersistencePlatformModelSchema, protocol);
+  }
+  const extraPersistencePlatformProtocolSerializers = plugins.flatMap(
+    (plugin) =>
+      (
+        plugin as DSLPersistence_PureProtocolProcessorPlugin_Extension
+      ).V1_getExtraPersistencePlatformProtocolSerializers?.() ?? [],
+  );
+  for (const serializer of extraPersistencePlatformProtocolSerializers) {
+    const persistencePlatformProtocolJson = serializer(protocol);
+    if (persistencePlatformProtocolJson) {
+      return persistencePlatformProtocolJson;
+    }
+  }
+  throw new UnsupportedOperationError(
+    `Can't serialize persistence platform: no compatible serializer available from plugins`,
+    protocol,
+  );
+};
+
+export const V1_deserializePersistencePlatform = (
+  json: PlainObject<V1_PersistencePlatform>,
+  plugins: PureProtocolProcessorPlugin[],
+): V1_PersistencePlatform => {
+  switch (json._type) {
+    case V1_PersistencePlatformType.DEFAULT:
+      return deserialize(V1_defaultPersistencePlatformModelSchema, json);
+    default: {
+      const extraPersistencePlatformProtocolDeserializers = plugins.flatMap(
+        (plugin) =>
+          (
+            plugin as DSLPersistence_PureProtocolProcessorPlugin_Extension
+          ).V1_getExtraPersistencePlatformProtocolDeserializers?.() ?? [],
+      );
+      for (const deserializer of extraPersistencePlatformProtocolDeserializers) {
+        const persistencePlatformProtocol = deserializer(json);
+        if (persistencePlatformProtocol) {
+          return persistencePlatformProtocol;
+        }
+      }
+      throw new UnsupportedOperationError(
+        `Can't deserialize persistence platform of type '${json._type}': no compatible deserializer available from plugins`,
+      );
+    }
+  }
+};
 
 /**********
  * service parameters
@@ -154,8 +212,8 @@ export const V1_persistenceContextModelSchema = (
     package: primitive(),
     persistence: primitive(),
     platform: custom(
-      (val) => serialize(V1_persistencePlatformModelSchema, val),
-      (val) => deserialize(V1_persistencePlatformModelSchema, val),
+      (val) => V1_serializePersistencePlatform(val, plugins),
+      (val) => V1_deserializePersistencePlatform(val, plugins),
     ),
     serviceParameters: custom(
       (val) =>

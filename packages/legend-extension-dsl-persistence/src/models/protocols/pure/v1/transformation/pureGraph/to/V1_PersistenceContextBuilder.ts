@@ -15,7 +15,10 @@
  */
 
 import type { V1_PersistenceContext } from '../../../model/packageableElements/persistence/V1_DSLPersistence_PersistenceContext.js';
-import type { V1_PersistencePlatform } from '../../../model/packageableElements/persistence/V1_DSLPersistence_PersistencePlatform.js';
+import {
+  type V1_PersistencePlatform,
+  V1_DefaultPersistencePlatform,
+} from '../../../model/packageableElements/persistence/V1_DSLPersistence_PersistencePlatform.js';
 import {
   V1_ConnectionValue,
   V1_PrimitiveTypeValue,
@@ -23,7 +26,10 @@ import {
   type V1_ServiceParameterValue,
 } from '../../../model/packageableElements/persistence/V1_DSLPersistence_ServiceParameter.js';
 import type { Persistence } from '../../../../../../metamodels/pure/model/packageableElements/persistence/DSLPersistence_Persistence.js';
-import { PersistencePlatform } from '../../../../../../metamodels/pure/model/packageableElements/persistence/DSLPersistence_PersistencePlatform.js';
+import {
+  DefaultPersistencePlatform,
+  type PersistencePlatform,
+} from '../../../../../../metamodels/pure/model/packageableElements/persistence/DSLPersistence_PersistencePlatform.js';
 import {
   ConnectionValue,
   PrimitiveTypeValue,
@@ -31,6 +37,7 @@ import {
   type ServiceParameterValue,
 } from '../../../../../../metamodels/pure/model/packageableElements/persistence/DSLPersistence_ServiceParameter.js';
 import { getOwnPersistenceContext } from '../../../../../../../graphManager/DSLPersistence_GraphManagerHelper.js';
+import type { DSLPersistence_PureProtocolProcessorPlugin_Extension } from '../../../../DSLPersistence_PureProtocolProcessorPlugin_Extension.js';
 import {
   type PackageableElementImplicitReference,
   V1_buildFullPath,
@@ -47,7 +54,27 @@ import { UnsupportedOperationError } from '@finos/legend-shared';
 export const V1_buildPersistencePlatform = (
   protocol: V1_PersistencePlatform,
   context: V1_GraphBuilderContext,
-): PersistencePlatform => new PersistencePlatform();
+): PersistencePlatform => {
+  if (protocol instanceof V1_DefaultPersistencePlatform) {
+    return new DefaultPersistencePlatform();
+  }
+  const extraPersistencePlatformBuilders = context.extensions.plugins.flatMap(
+    (plugin) =>
+      (
+        plugin as DSLPersistence_PureProtocolProcessorPlugin_Extension
+      ).V1_getExtraPersistencePlatformBuilders?.() ?? [],
+  );
+  for (const builder of extraPersistencePlatformBuilders) {
+    const metamodel = builder(protocol, context);
+    if (metamodel) {
+      return metamodel;
+    }
+  }
+  throw new UnsupportedOperationError(
+    `Can't build persistence platform: no compatible builder available from plugins`,
+    protocol,
+  );
+};
 
 /**********
  * service parameter
@@ -108,7 +135,10 @@ export const V1_buildPersistenceContext = (
     protocol.persistence,
     false,
   ) as PackageableElementImplicitReference<Persistence>;
-  persistenceContext.platform = V1_buildPersistencePlatform(protocol, context);
+  persistenceContext.platform = V1_buildPersistencePlatform(
+    protocol.platform,
+    context,
+  );
   persistenceContext.serviceParameters = protocol.serviceParameters.map((sp) =>
     V1_buildServiceParameter(sp, context),
   );
