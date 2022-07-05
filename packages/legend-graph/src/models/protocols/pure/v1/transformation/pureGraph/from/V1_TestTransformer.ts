@@ -36,10 +36,7 @@ import type {
   TestSuite,
 } from '../../../../../../metamodels/pure/test/Test.js';
 import { EqualToTDS } from '../../../../../../metamodels/pure/test/assertion/EqualToTDS.js';
-import {
-  V1_EqualToTDS,
-  V1_RelationalTDS,
-} from '../../../model/test/assertion/V1_EqualToTDS.js';
+import { V1_EqualToTDS } from '../../../model/test/assertion/V1_EqualToTDS.js';
 
 const transformEqualTo = (element: EqualTo): V1_EqualTo => {
   const equalTo = new V1_EqualTo();
@@ -58,9 +55,7 @@ const transformEqualToJson = (element: EqualToJson): V1_EqualToJson => {
 const transformEqualToTDS = (element: EqualToTDS): V1_EqualToTDS => {
   const equalToTDS = new V1_EqualToTDS();
   equalToTDS.id = element.id;
-  equalToTDS.expected = new V1_RelationalTDS();
-  equalToTDS.expected.columns = element.expected.columns;
-  equalToTDS.expected.rows = element.expected.rows;
+  equalToTDS.expected = V1_transformExternalFormatData(element.expected);
   return equalToTDS;
 };
 

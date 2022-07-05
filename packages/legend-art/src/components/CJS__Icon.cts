@@ -167,6 +167,8 @@ export {
   VscWordWrap as WordWrapIcon,
   VscGoToFile as GoToFileIcon,
   VscClose as CloseIcon,
+  VscRunAll as RunAllIcon,
+  VscRunErrors as RunErrorsIcon,
 } from 'react-icons/vsc';
 export {
   GoChevronDown as ChevronDownIcon,
@@ -188,6 +190,7 @@ export {
   IoResize as ResizeIcon,
   IoFileTrayFullOutline as FileTrayIcon,
   IoMenuOutline as MenuIcon,
+  IoBeaker as BeakerIcon,
 } from 'react-icons/io5';
 export {
   BsFillTriangleFill as FilledTriangleIcon,
@@ -217,4 +220,7 @@ export {
   FiZoomOut as ZoomOutIcon,
   FiGitMerge as TruncatedGitMergeIcon, // to be reviewed/combined
 } from 'react-icons/fi';
-export { RiShapeLine as ShapeLineIcon } from 'react-icons/ri';
+export {
+  RiShapeLine as ShapeLineIcon,
+  RiTestTubeFill as TestTubeIcon,
+} from 'react-icons/ri';

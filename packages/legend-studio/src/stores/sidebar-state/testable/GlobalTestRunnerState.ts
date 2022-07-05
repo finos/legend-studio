@@ -254,14 +254,14 @@ const getTestable_TestResult = (
 ): (TestResult | undefined)[] =>
   test.tests.flatMap((t) => getTest_TestResults(t, results));
 export enum TESTABLE_RESULT {
-  NONE = 'NONE',
+  DID_NOT_RUN = 'DID_NOT_RUN',
   ERROR = 'ERROR',
   FAILED = 'FAILED',
   PASSED = 'PASSED',
   IN_PROGRESS = 'IN_PROGRESS',
 }
 
-const getTestableResultFromTestResult = (
+export const getTestableResultFromTestResult = (
   testResult: TestResult | undefined,
 ): TESTABLE_RESULT => {
   if (testResult instanceof TestPassed) {
@@ -271,10 +271,10 @@ const getTestableResultFromTestResult = (
   } else if (testResult instanceof TestError) {
     return TESTABLE_RESULT.ERROR;
   }
-  return TESTABLE_RESULT.NONE;
+  return TESTABLE_RESULT.DID_NOT_RUN;
 };
 
-const getTestableResultFromAssertionStatus = (
+export const getTestableResultFromAssertionStatus = (
   assertionStatus: AssertionStatus | undefined,
 ): TESTABLE_RESULT => {
   if (assertionStatus instanceof AssertPass) {
@@ -282,9 +282,9 @@ const getTestableResultFromAssertionStatus = (
   } else if (assertionStatus instanceof AssertFail) {
     return TESTABLE_RESULT.FAILED;
   }
-  return TESTABLE_RESULT.NONE;
+  return TESTABLE_RESULT.DID_NOT_RUN;
 };
-const getTestableResultFromTestResults = (
+export const getTestableResultFromTestResults = (
   testResults: (TestResult | undefined)[],
 ): TESTABLE_RESULT => {
   if (testResults.every((t) => t instanceof TestPassed)) {
@@ -294,7 +294,7 @@ const getTestableResultFromTestResults = (
   } else if (testResults.find((t) => t instanceof TestFailed)) {
     return TESTABLE_RESULT.FAILED;
   }
-  return TESTABLE_RESULT.NONE;
+  return TESTABLE_RESULT.DID_NOT_RUN;
 };
 
 export const getNodeTestableResult = (
@@ -334,7 +334,7 @@ export const getNodeTestableResult = (
       getTestable_TestResult(node.testableMetadata.testable, results),
     );
   }
-  return TESTABLE_RESULT.NONE;
+  return TESTABLE_RESULT.DID_NOT_RUN;
 };
 
 export class TestableState {
@@ -379,7 +379,10 @@ export class TestableState {
     try {
       if (node instanceof AssertionTestTreeNodeData) {
         const atomicTest = guaranteeNonNullable(node.assertion.parentTest);
-        const suite = atomicTest.__parentSuite;
+        const suite =
+          atomicTest.__parent instanceof TestSuite
+            ? atomicTest.__parent
+            : undefined;
         input = new RunTestsTestableInput(this.testableMetadata.testable);
         input.unitTestIds = [new AtomicTestId(suite, atomicTest)];
         const parentNode = Array.from(this.treeData.nodes.values())
@@ -391,7 +394,10 @@ export class TestableState {
         }
       } else if (node instanceof AtomicTestTreeNodeData) {
         const atomicTest = node.atomicTest;
-        const suite = atomicTest.__parentSuite;
+        const suite =
+          atomicTest.__parent instanceof TestSuite
+            ? atomicTest.__parent
+            : undefined;
         input = new RunTestsTestableInput(this.testableMetadata.testable);
         input.unitTestIds = [new AtomicTestId(suite, atomicTest)];
         node.isRunning = true;

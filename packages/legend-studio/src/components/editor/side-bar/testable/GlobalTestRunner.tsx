@@ -27,13 +27,13 @@ import {
   RefreshIcon,
   TimesCircleIcon,
   CheckCircleIcon,
-  CircleIcon,
   ContextMenu,
   MenuContent,
   MenuContentItem,
   Dialog,
   WarningIcon,
   CircleNotchIcon,
+  EmptyCircleIcon,
 } from '@finos/legend-art';
 import {
   AssertFail,
@@ -61,7 +61,7 @@ import { TextDiffView } from '../../../shared/DiffView.js';
 import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor.js';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 
-const getTestableResultIcon = (
+export const getTestableResultIcon = (
   testableResult: TESTABLE_RESULT,
 ): React.ReactNode => {
   switch (testableResult) {
@@ -104,10 +104,10 @@ const getTestableResultIcon = (
     default:
       return (
         <div
-          title="Test status is none"
+          title="Test did not run"
           className="global-test-runner__item__link__content__status__indicator global-test-runner__item__link__content__status__indicator--unknown"
         >
-          <CircleIcon />
+          <EmptyCircleIcon />
         </div>
       );
   }
@@ -141,12 +141,8 @@ const TestFailViewer = observer(
     const { globalTestRunnerState, failure } = props;
     const id =
       failure instanceof TestError
-        ? `${failure.atomicTestId.atomicTest.__parentSuite ?? ''}.${
-            failure.atomicTestId.atomicTest.id
-          }`
-        : `${failure.assertion.parentTest?.__parentSuite?.id ?? ''}.${
-            failure.assertion.parentTest?.id ?? ''
-          }.${failure.assertion.id}`;
+        ? failure.atomicTestId.atomicTest.id
+        : failure.assertion.id;
     const closeLogViewer = (): void =>
       globalTestRunnerState.setFailureViewing(undefined);
 

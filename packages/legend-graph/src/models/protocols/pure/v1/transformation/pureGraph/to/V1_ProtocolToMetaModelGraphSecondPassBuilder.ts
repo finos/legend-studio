@@ -82,6 +82,7 @@ import { V1_ProtocolToMetaModelEmbeddedDataBuilder } from './helpers/V1_DataElem
 import { V1_buildTestSuite } from './helpers/V1_TestBuilderHelper.js';
 import { ServiceTestSuite } from '../../../../../../metamodels/pure/packageableElements/service/ServiceTestSuite.js';
 import { V1_getIncludedMappingPath } from '../../../helper/V1_DSLMapping_Helper.js';
+import { V1_DataElementReference } from '../../../model/data/V1_EmbeddedData.js';
 
 export class V1_ProtocolToMetaModelGraphSecondPassBuilder
   implements V1_PackageableElementVisitor<void>
@@ -329,7 +330,7 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
       );
     }
     service.tests = element.testSuites
-      .map((testSuite) => V1_buildTestSuite(testSuite, this.context))
+      .map((testSuite) => V1_buildTestSuite(service, testSuite, this.context))
       .map((e) => guaranteeType(e, ServiceTestSuite));
   }
 
@@ -407,6 +408,11 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
     dataElement.taggedValues = element.taggedValues
       .map((taggedValue) => V1_buildTaggedValue(taggedValue, this.context))
       .filter(isNonNullable);
+    if (element.data instanceof V1_DataElementReference) {
+      throw new IllegalStateError(
+        'Cannot use Data element reference in a Data element',
+      );
+    }
     dataElement.data = element.data.accept_EmbeddedDataVisitor(
       new V1_ProtocolToMetaModelEmbeddedDataBuilder(this.context),
     );

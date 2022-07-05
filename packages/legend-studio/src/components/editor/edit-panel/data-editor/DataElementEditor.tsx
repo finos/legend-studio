@@ -19,7 +19,6 @@ import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
   DATA_TAB_TYPE,
   type EmbeddedDataEditorState,
-  ExternalFormatDataState,
   PackageableDataEditorState,
 } from '../../../../stores/editor-state/element-editor-state/data/DataEditorState.js';
 import {
@@ -32,6 +31,7 @@ import {
   PlusIcon,
 } from '@finos/legend-art';
 import { prettyCONSTName } from '@finos/legend-shared';
+import { RelationalCSVDataEditor } from './RelationalCSVDataEditor.js';
 import {
   type TaggedValue,
   type StereotypeReference,
@@ -65,6 +65,10 @@ import {
 import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor.js';
 import type { DSLData_LegendStudioPlugin_Extension } from '../../../../stores/DSLData_LegendStudioPlugin_Extension.js';
 import { getEditorLanguageFromFormat } from '../../../../stores/editor-state/FileGenerationViewerState.js';
+import {
+  ExternalFormatDataState,
+  RelationalCSVDataState,
+} from '../../../../stores/editor-state/element-editor-state/data/EmbeddedDataState.js';
 
 export const ExternalFormatDataEditor = observer(
   (props: {
@@ -169,6 +173,13 @@ export const EmbeddedDataEditor = observer(
         return (
           <ExternalFormatDataEditor
             externalFormatDataState={embeddedDataState}
+            isReadOnly={isReadOnly}
+          />
+        );
+      } else if (embeddedDataState instanceof RelationalCSVDataState) {
+        return (
+          <RelationalCSVDataEditor
+            dataState={embeddedDataState}
             isReadOnly={isReadOnly}
           />
         );

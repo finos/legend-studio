@@ -20,6 +20,7 @@ import { AtomicTest } from '../../test/Test.js';
 import type { ParameterValue } from './ParameterValue.js';
 
 export class ServiceTest extends AtomicTest implements Hashable {
+  serializationFormat: string | undefined;
   parameters: ParameterValue[] = [];
 
   get hashCode(): string {
@@ -28,6 +29,7 @@ export class ServiceTest extends AtomicTest implements Hashable {
       this.id,
       hashArray(this.assertions),
       hashArray(this.parameters),
+      this.serializationFormat ?? '',
     ]);
   }
 }

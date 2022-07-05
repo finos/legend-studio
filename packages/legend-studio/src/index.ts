@@ -103,12 +103,12 @@ export { GenerationFile } from './stores/shared/FileGenerationTreeUtil.js';
 export { FileGenerationState } from './stores/editor-state/FileGenerationState.js';
 export { DSLExternalFormat_LegendStudioPlugin } from './components/DSLExternalFormat_LegendStudioPlugin.js';
 export {
-  EmbeddedDataState,
-  type EmbeddedDataTypeOption,
-  ExternalFormatDataState,
-} from './stores/editor-state/element-editor-state/data/DataEditorState.js';
-export {
   externalFormatData_setData,
   externalFormatData_setContentType,
 } from './stores/graphModifier/DSLData_GraphModifierHelper.js';
 export { ExternalFormatDataEditor } from './components/editor/edit-panel/data-editor/DataElementEditor.js';
+export {
+  ExternalFormatDataState,
+  EmbeddedDataState,
+} from './stores/editor-state/element-editor-state/data/EmbeddedDataState.js';
+export type { EmbeddedDataTypeOption } from './stores/editor-state/element-editor-state/data/DataEditorState.js';

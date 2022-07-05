@@ -23,6 +23,7 @@ import {
   serialize,
   raw,
   type ModelSchema,
+  optional,
 } from 'serializr';
 import {
   type PlainObject,
@@ -151,6 +152,7 @@ export const V1_serviceTestModelSchema = createModelSchema(V1_ServiceTest, {
         },
       ),
   ),
+  serializationFormat: optional(primitive()),
 });
 
 export const V1_serviceTestSuiteModelSchema = (

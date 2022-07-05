@@ -17,14 +17,14 @@
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../MetaModelConst.js';
 import { hashObjectWithoutSourceInformation } from '../../../../../../MetaModelUtils.js';
-import type { V1_RelationalData } from './V1_RelationalData.js';
+import type { V1_RelationalCSVData } from './V1_RelationalCSVData.js';
 
 export interface V1_EmbeddedDataVisitor<T> {
   visit_EmbeddedData(embeddedData: V1_EmbeddedData): T;
   visit_ExternalFormatData(externalFormatData: V1_ExternalFormatData): T;
   visit_ModelStoreData(modelStoreData: V1_ModelStoreData): T;
   visit_DataElementReference(dataElementReference: V1_DataElementReference): T;
-  visit_RelationalData(relationalData: V1_RelationalData): T;
+  visit_RelationalData(relationalData: V1_RelationalCSVData): T;
 }
 
 export abstract class V1_EmbeddedData implements Hashable {

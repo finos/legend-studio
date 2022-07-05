@@ -561,7 +561,7 @@ export class LegacySingleExecutionTestState {
         'Service execution context (query, mapping, runtime) is needed to generate test data',
       );
       const generatedTestData =
-        (yield this.editorStore.graphManagerState.graphManager.generateMappingTestData(
+        (yield this.editorStore.graphManagerState.graphManager.generateExecuteTestData(
           this.editorStore.graphManagerState.graph,
           executionInput.mapping,
           executionInput.query,

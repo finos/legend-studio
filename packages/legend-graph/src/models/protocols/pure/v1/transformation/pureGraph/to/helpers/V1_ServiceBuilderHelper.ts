@@ -20,6 +20,7 @@ import {
   assertNonEmptyString,
   assertType,
   assertNonNullable,
+  guaranteeType,
 } from '@finos/legend-shared';
 import { GRAPH_MANAGER_EVENT } from '../../../../../../../../graphManager/GraphManagerEvent.js';
 import {
@@ -35,7 +36,7 @@ import {
   KeyedExecutionParameter,
 } from '../../../../../../../metamodels/pure/packageableElements/service/ServiceExecution.js';
 import type { V1_GraphBuilderContext } from '../../../../transformation/pureGraph/to/V1_GraphBuilderContext.js';
-import type { V1_ServiceTest } from '../../../../model/packageableElements/service/V1_ServiceTest.js';
+import { V1_ServiceTest } from '../../../../model/packageableElements/service/V1_ServiceTest.js';
 import {
   type V1_ServiceExecution,
   V1_PureSingleExecution,
@@ -54,32 +55,29 @@ import { V1_PackageableElementPointer } from '../../../../model/packageableEleme
 import { V1_buildRawLambdaWithResolvedPaths } from './V1_ValueSpecificationPathResolver.js';
 import { GraphBuilderError } from '../../../../../../../../graphManager/GraphManagerUtils.js';
 import {
-  type DEPRECATED__ServiceTest,
-  DEPRECATED__KeyedSingleExecutionTest,
-  DEPRECATED__MultiExecutionTest,
-  DEPRECATED__SingleExecutionTest,
-  DEPRECATED__TestContainer,
-} from '../../../../../../../metamodels/pure/packageableElements/service/DEPRECATED__ServiceTest.js';
-import { ConnectionTestData } from '../../../../../../../metamodels/pure/packageableElements/service/ConnectionTestData.js';
-import { ParameterValue } from '../../../../../../../metamodels/pure/packageableElements/service/ParameterValue.js';
-import { ServiceTestSuite } from '../../../../../../../metamodels/pure/packageableElements/service/ServiceTestSuite.js';
-import { TestData } from '../../../../../../../metamodels/pure/packageableElements/service/ServiceTestData.js';
-import type { V1_ConnectionTestData } from '../../../../model/packageableElements/service/V1_ConnectionTestData.js';
-import type { V1_ParameterValue } from '../../../../model/packageableElements/service/V1_ParameterValue.js';
-import type { V1_ServiceTestSuite } from '../../../../model/packageableElements/service/V1_ServiceTestSuite.js';
-import type { V1_TestData } from '../../../../model/packageableElements/service/V1_TestData.js';
-import {
-  V1_buildTestAssertion,
-  V1_buildAtomicTest,
-} from './V1_TestBuilderHelper.js';
-import { V1_ProtocolToMetaModelEmbeddedDataBuilder } from './V1_DataElementBuilderHelper.js';
-import {
   type V1_DEPRECATED__ServiceTest,
   V1_DEPRECATED__SingleExecutionTest,
   V1_DEPRECATED__MultiExecutionTest,
 } from '../../../../model/packageableElements/service/V1_DEPRECATED__ServiceTest.js';
 import type { TestSuite } from '../../../../../../../metamodels/pure/test/Test.js';
 import { PackageableElementPointerType } from '../../../../../../../../MetaModelConst.js';
+import type { V1_ConnectionTestData } from '../../../../model/packageableElements/service/V1_ConnectionTestData.js';
+import { ConnectionTestData } from '../../../../../../../metamodels/pure/packageableElements/service/ConnectionTestData.js';
+import { V1_ProtocolToMetaModelEmbeddedDataBuilder } from './V1_DataElementBuilderHelper.js';
+import type { V1_ParameterValue } from '../../../../model/packageableElements/service/V1_ParameterValue.js';
+import { ParameterValue } from '../../../../../../../metamodels/pure/packageableElements/service/ParameterValue.js';
+import type { V1_TestData } from '../../../../model/packageableElements/service/V1_TestData.js';
+import { TestData } from '../../../../../../../metamodels/pure/packageableElements/service/ServiceTestData.js';
+import { V1_buildTestAssertion } from './V1_TestBuilderHelper.js';
+import type { V1_ServiceTestSuite } from '../../../../model/packageableElements/service/V1_ServiceTestSuite.js';
+import { ServiceTestSuite } from '../../../../../../../metamodels/pure/packageableElements/service/ServiceTestSuite.js';
+import {
+  type DEPRECATED__ServiceTest,
+  DEPRECATED__KeyedSingleExecutionTest,
+  DEPRECATED__SingleExecutionTest,
+  DEPRECATED__TestContainer,
+  DEPRECATED__MultiExecutionTest,
+} from '../../../../../../../metamodels/pure/packageableElements/service/DEPRECATED__ServiceTest.js';
 
 const buildConnectionTestData = (
   element: V1_ConnectionTestData,
@@ -114,12 +112,13 @@ const buildTestData = (
 
 export const V1_buildServiceTest = (
   element: V1_ServiceTest,
-  parentSuite: TestSuite | undefined,
+  parentSuite: TestSuite,
   context: V1_GraphBuilderContext,
 ): ServiceTest => {
   const serviceTest = new ServiceTest();
   serviceTest.id = element.id;
-  serviceTest.__parentSuite = parentSuite;
+  serviceTest.__parent = parentSuite;
+  serviceTest.serializationFormat = element.serializationFormat;
   serviceTest.parameters = element.parameters.map((parameter) =>
     buildParameterValue(parameter),
   );
@@ -137,7 +136,11 @@ export const V1_buildServiceTestSuite = (
   serviceTestSuite.id = element.id;
   serviceTestSuite.testData = buildTestData(element.testData, context);
   serviceTestSuite.tests = element.tests.map((test) =>
-    V1_buildAtomicTest(test, serviceTestSuite, context),
+    V1_buildServiceTest(
+      guaranteeType(test, V1_ServiceTest),
+      serviceTestSuite,
+      context,
+    ),
   );
   return serviceTestSuite;
 };

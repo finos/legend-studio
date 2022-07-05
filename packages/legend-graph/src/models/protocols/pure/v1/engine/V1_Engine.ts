@@ -497,7 +497,7 @@ export class V1_Engine {
     );
   }
 
-  generateMappingTestData(
+  generateExecuteTestData(
     input: V1_TestDataGenerationExecutionInput,
   ): Promise<string> {
     return this.engineServerClient.generateTestDataWithDefaultSeed(

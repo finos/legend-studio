@@ -105,6 +105,7 @@ export const V1_transformServiceTest = (
 ): V1_ServiceTest => {
   const serviceTest = new V1_ServiceTest();
   serviceTest.id = element.id;
+  serviceTest.serializationFormat = element.serializationFormat;
   serviceTest.parameters = element.parameters.map((parameter) =>
     transformParameterValue(parameter),
   );

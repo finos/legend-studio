@@ -16,7 +16,6 @@
 
 import {
   type InstanceValue,
-  type Multiplicity,
   type ObserverContext,
   type Type,
   type ValueSpecification,
@@ -142,6 +141,44 @@ export const buildParametersLetLambdaFunc = (
   return letlambdaFunction;
 };
 
+export const generateVariableExpressionMockValues = (
+  parameter: VariableExpression,
+): InstanceValue | undefined => {
+  const varType = parameter.genericType?.value.rawType;
+  const multiplicity = parameter.multiplicity;
+  if ((!multiplicity.upperBound || multiplicity.upperBound > 1) && varType) {
+    return new CollectionInstanceValue(
+      multiplicity,
+      GenericTypeExplicitReference.create(new GenericType(varType)),
+    );
+  }
+  if (varType instanceof PrimitiveType) {
+    const primitiveInst = new PrimitiveInstanceValue(
+      GenericTypeExplicitReference.create(new GenericType(varType)),
+      multiplicity,
+    );
+    primitiveInst.values = [
+      createMockPrimitiveProperty(
+        varType,
+        parameter.name === '' ? 'myVar' : parameter.name,
+      ),
+    ];
+    return primitiveInst;
+  } else if (varType instanceof Enumeration) {
+    const enumValueInstance = new EnumValueInstanceValue(
+      GenericTypeExplicitReference.create(new GenericType(varType)),
+      multiplicity,
+    );
+    const mock = createMockEnumerationProperty(varType);
+    if (mock !== '') {
+      enumValueInstance.values = [
+        EnumValueExplicitReference.create(getEnumValue(varType, mock)),
+      ];
+    }
+    return enumValueInstance;
+  }
+  return undefined;
+};
 export class LambdaParameterState {
   readonly uuid = uuid();
   readonly parameter: VariableExpression;
@@ -162,50 +199,7 @@ export class LambdaParameterState {
   }
 
   mockParameterValue(): void {
-    this.setValue(
-      this.generateMockValues(
-        this.parameter.genericType?.value.rawType,
-        this.parameter.multiplicity,
-      ),
-    );
-  }
-
-  private generateMockValues(
-    varType: Type | undefined,
-    multiplicity: Multiplicity,
-  ): InstanceValue | undefined {
-    if ((!multiplicity.upperBound || multiplicity.upperBound > 1) && varType) {
-      return new CollectionInstanceValue(
-        multiplicity,
-        GenericTypeExplicitReference.create(new GenericType(varType)),
-      );
-    }
-    if (varType instanceof PrimitiveType) {
-      const primitiveInst = new PrimitiveInstanceValue(
-        GenericTypeExplicitReference.create(new GenericType(varType)),
-        multiplicity,
-      );
-      primitiveInst.values = [
-        createMockPrimitiveProperty(
-          varType,
-          this.parameter.name === '' ? 'myVar' : this.parameter.name,
-        ),
-      ];
-      return primitiveInst;
-    } else if (varType instanceof Enumeration) {
-      const enumValueInstance = new EnumValueInstanceValue(
-        GenericTypeExplicitReference.create(new GenericType(varType)),
-        multiplicity,
-      );
-      const mock = createMockEnumerationProperty(varType);
-      if (mock !== '') {
-        enumValueInstance.values = [
-          EnumValueExplicitReference.create(getEnumValue(varType, mock)),
-        ];
-      }
-      return enumValueInstance;
-    }
-    return undefined;
+    this.setValue(generateVariableExpressionMockValues(this.parameter));
   }
 
   setValue(value: ValueSpecification | undefined): void {

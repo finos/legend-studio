@@ -47,6 +47,7 @@ import {
   service_updateOwner,
 } from '../../../../stores/graphModifier/DSLService_GraphModifierHelper.js';
 import { validate_ServicePattern } from '@finos/legend-graph';
+import { ServiceTestableEditor } from './testable/ServiceTestableEditor.js';
 
 const ServiceGeneralEditor = observer(() => {
   const editorStore = useEditorStore();
@@ -465,6 +466,11 @@ export const ServiceEditor = observer(() => {
           {selectedTab === SERVICE_TAB.EXECUTION && <ServiceExecutionEditor />}
           {selectedTab === SERVICE_TAB.REGISTRATION && (
             <ServiceRegistrationEditor />
+          )}
+          {selectedTab === SERVICE_TAB.TEST && (
+            <ServiceTestableEditor
+              serviceTestableState={serviceState.testableState}
+            />
           )}
         </div>
       </div>

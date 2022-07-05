@@ -38,6 +38,10 @@ import {
   filterByType,
   isNonNullable,
   guaranteeNonEmptyString,
+  addUniqueEntry,
+  uuid,
+  deleteEntry,
+  assertType,
 } from '@finos/legend-shared';
 import type { TEMPORARY__AbstractEngineConfig } from '../../../../graphManager/action/TEMPORARY__AbstractEngineConfig.js';
 import {
@@ -244,7 +248,10 @@ import {
 import { V1_AtomicTestId } from './model/test/V1_AtomicTestId.js';
 import type { RunTestsTestableInput } from '../../../metamodels/pure/test/result/RunTestsTestableInput.js';
 import { V1_buildTestsResult } from './engine/test/V1_RunTestsResult.js';
-import type { TestResult } from '../../../metamodels/pure/test/result/TestResult.js';
+import {
+  type TestResult,
+  TestFailed,
+} from '../../../metamodels/pure/test/result/TestResult.js';
 import type { Service } from '../../../../DSLService_Exports.js';
 import type { Testable } from '../../../metamodels/pure/test/Testable.js';
 import { stub_RawLambda } from '../../../../graphManager/action/creation/RawValueSpecificationCreatorHelper.js';
@@ -252,6 +259,12 @@ import {
   getNullableIDFromTestable,
   getNullableTestable,
 } from '../../../../helpers/Testable_Helper.js';
+import type { TestAssertion } from '../../../metamodels/pure/test/assertion/TestAssertion.js';
+import type { AssertFail } from '../../../metamodels/pure/test/assertion/status/AssertFail.js';
+import {
+  type AtomicTest,
+  TestSuite,
+} from '../../../metamodels/pure/test/Test.js';
 import { V1_getIncludedMappingPath } from './helper/V1_DSLMapping_Helper.js';
 import { pruneSourceInformation } from '../../../../MetaModelUtils.js';
 import { stub_Mapping } from '../../../../graphManager/action/creation/DSLMapping_ModelCreatorHelper.js';
@@ -1666,6 +1679,56 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     return result;
   }
 
+  async generateExpectedResult(
+    testable: Testable,
+    test: AtomicTest,
+    baseAssertion: TestAssertion,
+    graph: PureModel,
+  ): Promise<AssertFail> {
+    const id = uuid();
+    try {
+      baseAssertion.id = id;
+      addUniqueEntry(test.assertions, baseAssertion);
+      const runTestsInput = new V1_RunTestsInput();
+      runTestsInput.model = this.getFullGraphModelData(graph);
+      const runTestableInput = new V1_RunTestsTestableInput();
+      const unitAtomicTest = new V1_AtomicTestId();
+      runTestableInput.testable = guaranteeNonNullable(
+        getNullableIDFromTestable(
+          testable,
+          graph,
+          this.pluginManager.getPureGraphManagerPlugins(),
+        ),
+      );
+      runTestsInput.testables = [runTestableInput];
+      const parent = test.__parent;
+      unitAtomicTest.testSuiteId =
+        parent instanceof TestSuite ? parent.id : undefined;
+      unitAtomicTest.atomicTestId = test.id;
+      const runTestsResult = await this.engine.runTests(runTestsInput);
+      const results = V1_buildTestsResult(
+        runTestsResult,
+        (_id: string): Testable | undefined =>
+          getNullableTestable(
+            _id,
+            graph,
+            this.pluginManager.getPureGraphManagerPlugins(),
+          ),
+      );
+      const result = results[0];
+      assertType(result, TestFailed);
+      const status = result.assertStatuses.find(
+        (e) => e.assertion === baseAssertion,
+      );
+      return guaranteeNonNullable(status);
+    } catch (error) {
+      assertErrorThrown(error);
+      throw error;
+    } finally {
+      deleteEntry(test.assertions, baseAssertion);
+    }
+  }
+
   // ------------------------------------------- ValueSpecification -------------------------------------------
 
   buildValueSpecification(
@@ -1906,7 +1969,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
-  generateMappingTestData(
+  generateExecuteTestData(
     graph: PureModel,
     mapping: Mapping,
     lambda: RawLambda,
@@ -1931,7 +1994,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     testDataGenerationExecuteInput.hashStrings = Boolean(
       options?.anonymizeGeneratedData,
     );
-    return this.engine.generateMappingTestData(testDataGenerationExecuteInput);
+    return this.engine.generateExecuteTestData(testDataGenerationExecuteInput);
   }
 
   generateExecutionPlan(

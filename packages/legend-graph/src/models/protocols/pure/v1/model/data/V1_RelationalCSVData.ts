@@ -21,47 +21,23 @@ import {
   type V1_EmbeddedDataVisitor,
 } from './V1_EmbeddedData.js';
 
-export class V1_RelationalDataTableColumn implements Hashable {
-  value!: string;
-
-  get hashCode(): string {
-    return hashArray([
-      CORE_HASH_STRUCTURE.RELATIONAL_DATA_TABLE_COLUMN,
-      this.value,
-    ]);
-  }
-}
-
-export class V1_RelationalDataTableRow implements Hashable {
+export class V1_RelationalCSVDataTable implements Hashable {
+  schema!: string;
+  table!: string;
   values!: string;
 
   get hashCode(): string {
     return hashArray([
-      CORE_HASH_STRUCTURE.RELATIONAL_DATA_TABLE_ROW,
+      CORE_HASH_STRUCTURE.RELATIONAL_CSV_DATA_TABLE,
+      this.schema,
+      this.table,
       this.values,
     ]);
   }
 }
 
-export class V1_RelationalDataTable implements Hashable {
-  schemaName: string | undefined;
-  tableName!: string;
-  columns: V1_RelationalDataTableColumn[] = [];
-  rows: V1_RelationalDataTableRow[] = [];
-
-  get hashCode(): string {
-    return hashArray([
-      CORE_HASH_STRUCTURE.RELATIONAL_DATA_TABLE,
-      this.schemaName ?? '',
-      this.tableName,
-      hashArray(this.columns),
-      hashArray(this.rows),
-    ]);
-  }
-}
-
-export class V1_RelationalData extends V1_EmbeddedData implements Hashable {
-  tables: V1_RelationalDataTable[] = [];
+export class V1_RelationalCSVData extends V1_EmbeddedData implements Hashable {
+  tables: V1_RelationalCSVDataTable[] = [];
 
   accept_EmbeddedDataVisitor<T>(visitor: V1_EmbeddedDataVisitor<T>): T {
     return visitor.visit_RelationalData(this);
@@ -69,7 +45,7 @@ export class V1_RelationalData extends V1_EmbeddedData implements Hashable {
 
   get hashCode(): string {
     return hashArray([
-      CORE_HASH_STRUCTURE.RELATIONAL_DATA_TABLE,
+      CORE_HASH_STRUCTURE.RELATIONAL_CSV_DATA_TABLE,
       hashArray(this.tables),
     ]);
   }

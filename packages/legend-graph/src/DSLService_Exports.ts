@@ -19,5 +19,9 @@ export {
   DEFAULT_SERVICE_PATTERN,
 } from './models/metamodels/pure/packageableElements/service/Service.js';
 export * from './models/metamodels/pure/packageableElements/service/ServiceTest.js';
+export * from './models/metamodels/pure/packageableElements/service/ServiceTestSuite.js';
 export * from './models/metamodels/pure/packageableElements/service/ServiceExecution.js';
+export * from './models/metamodels/pure/packageableElements/service/ConnectionTestData.js';
+export * from './models/metamodels/pure/packageableElements/service/ServiceTestData.js';
 export * from './models/metamodels/pure/packageableElements/service/DEPRECATED__ServiceTest.js';
+export * from './models/metamodels/pure/packageableElements/service/ParameterValue.js';
