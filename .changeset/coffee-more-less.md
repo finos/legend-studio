@@ -1,5 +1,6 @@
 ---
-'@finos/legend-graph': mino
+'@finos/legend-graph': minor
 ---
 
-Add `RelationalCSVData` models and add serilizationFormat to `ServiceTest.
+pr: 1195
+Support `RelationalCSVData` models and serialization format for `ServiceTest`.
