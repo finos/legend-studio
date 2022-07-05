@@ -55,7 +55,7 @@ import {
   type V1_ElementProtocolDeserializer,
   type V1_ElementProtocolSerializer,
   type V1_ElementTransformer,
-  type V1_ExecutionInputGetter,
+  type V1_ExecutionInputCollector,
   PureProtocolProcessorPlugin,
 } from './PureProtocolProcessorPlugin.js';
 import type { V1_PureModelContextData } from './v1/model/context/V1_PureModelContextData.js';
@@ -299,7 +299,7 @@ export class DSLExternalFormat_PureProtocolProcessorPlugin
     ];
   }
 
-  override V1_getExtraExecutionInputGetters(): V1_ExecutionInputGetter[] {
+  override V1_getExtraExecutionInputCollectors(): V1_ExecutionInputCollector[] {
     return [
       (
         graph: PureModel,

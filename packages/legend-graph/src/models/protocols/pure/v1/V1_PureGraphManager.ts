@@ -1904,13 +1904,14 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
      * object to identify relevant classes yet. so the more economical way to to base on the classification above and the knowledge about hierarchy between
      * models (e.g. service can use mapping, runtime, connection, store, etc.) we can roughly prune the graph model data by group. Following is an example
      * for mapping used for execution, but this can generalized if we introduce hierarchy/ranking for model type
-     *
      */
     const graphData = this.getFullGraphModelData(graph);
     const prunedGraphData = new V1_PureModelContextData();
     const extraExecutionElements = this.pluginManager
       .getPureProtocolProcessorPlugins()
-      .flatMap((element) => element.V1_getExtraExecutionInputGetters?.() ?? [])
+      .flatMap(
+        (element) => element.V1_getExtraExecutionInputCollectors?.() ?? [],
+      )
       .flatMap((getter) => getter(graph, mapping, runtime, graphData));
     prunedGraphData.elements = graphData.elements
       .filter(

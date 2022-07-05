@@ -58,7 +58,7 @@ export type V1_FunctionExpressionBuilder = (
   processingContext: V1_ProcessingContext,
 ) => [SimpleFunctionExpression, ValueSpecification[]] | undefined;
 
-export type V1_ExecutionInputGetter = (
+export type V1_ExecutionInputCollector = (
   graph: PureModel,
   mapping: Mapping,
   runtime: Runtime,
@@ -141,7 +141,7 @@ export abstract class PureProtocolProcessorPlugin extends AbstractPlugin {
    * We prune the graph to avoid sending the server additional elements not needed for execution.
    * This would provide a mechanism to add more elements in this reduced graph.
    */
-  V1_getExtraExecutionInputGetters?(): V1_ExecutionInputGetter[];
+  V1_getExtraExecutionInputCollectors?(): V1_ExecutionInputCollector[];
 
   /**
    * Get the list of type inferrers for property expression.
