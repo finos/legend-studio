@@ -62,7 +62,6 @@ import {
   DefaultH2AuthenticationStrategy,
   ConnectionPointer,
   PackageableElementExplicitReference,
-  PureClientVersion,
   generateIdentifiedConnectionId,
 } from '@finos/legend-graph';
 import { TAB_SIZE } from '@finos/legend-application';

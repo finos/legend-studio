@@ -25,7 +25,6 @@ import {
   PureSingleExecution,
   PureMultiExecution,
   DatabaseConnection,
-  PureClientVersion,
   buildLambdaVariableExpressions,
   VariableExpression,
   PrimitiveType,
@@ -140,7 +139,6 @@ export class ConnectionTestDataState {
             serviceExecutionParameters.mapping,
             serviceExecutionParameters.query,
             serviceExecutionParameters.runtime,
-            PureClientVersion.VX_X_X,
             buildTestDataParameters(
               serviceExecutionParameters.query,
               this.editorStore,
