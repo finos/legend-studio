@@ -32,7 +32,6 @@ import {
   type ExecutionResult,
   type RawLambda,
   GRAPH_MANAGER_EVENT,
-  PureClientVersion,
   EXECUTION_SERIALIZATION_FORMAT,
   RawExecutionResult,
   buildRawLambdaFromLambdaFunction,
@@ -139,7 +138,6 @@ export class QueryBuilderResultState {
           mapping,
           query,
           runtime,
-          PureClientVersion.VX_X_X,
           {
             serializationFormat,
           },
@@ -193,7 +191,6 @@ export class QueryBuilderResultState {
           mapping,
           query,
           runtime,
-          PureClientVersion.VX_X_X,
         )) as ExecutionResult;
       this.setExecutionResult(result);
       this.setExecutionDuration(Date.now() - startTime);
@@ -229,7 +226,6 @@ export class QueryBuilderResultState {
             mapping,
             query,
             runtime,
-            PureClientVersion.VX_X_X,
           )) as { plan: RawExecutionPlan; debug: string };
         rawPlan = debugResult.plan;
         this.executionPlanState.setDebugText(debugResult.debug);
@@ -240,7 +236,6 @@ export class QueryBuilderResultState {
             mapping,
             query,
             runtime,
-            PureClientVersion.VX_X_X,
           )) as object;
       }
       try {

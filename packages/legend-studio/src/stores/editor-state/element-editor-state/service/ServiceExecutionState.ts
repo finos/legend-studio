@@ -55,7 +55,6 @@ import {
   RuntimePointer,
   PackageableElementExplicitReference,
   buildSourceInformationSourceId,
-  PureClientVersion,
   QueryProjectCoordinates,
   QuerySearchSpecification,
   type RawExecutionPlan,
@@ -415,7 +414,6 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
             this.selectedExecutionContext.mapping.value,
             query,
             this.selectedExecutionContext.runtime,
-            PureClientVersion.VX_X_X,
           )) as { plan: RawExecutionPlan; debug: string };
         rawPlan = debugResult.plan;
         this.executionPlanState.setDebugText(debugResult.debug);
@@ -426,7 +424,6 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
             this.selectedExecutionContext.mapping.value,
             query,
             this.selectedExecutionContext.runtime,
-            PureClientVersion.VX_X_X,
           )) as object;
       }
       try {
@@ -478,7 +475,6 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
           this.selectedExecutionContext.mapping.value,
           query,
           this.selectedExecutionContext.runtime,
-          PureClientVersion.VX_X_X,
           {
             useLosslessParse: true,
           },

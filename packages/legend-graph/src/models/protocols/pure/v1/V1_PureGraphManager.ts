@@ -210,7 +210,7 @@ import {
   V1_buildLightQuery,
   V1_transformQuerySearchSpecification,
 } from './engine/V1_EngineHelper.js';
-import { V1_buildExecutionResult } from './engine/V1_ExecutionHelper.js';
+import { V1_buildExecutionResult } from './engine/execution/V1_ExecutionHelper.js';
 import {
   type Entity,
   ENTITY_PATH_DELIMITER,
@@ -218,6 +218,7 @@ import {
 import {
   DependencyGraphBuilderError,
   GraphBuilderError,
+  PureClientVersion,
   SystemGraphBuilderError,
 } from '../../../../graphManager/GraphManagerUtils.js';
 import {
@@ -1903,13 +1904,14 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
      * object to identify relevant classes yet. so the more economical way to to base on the classification above and the knowledge about hierarchy between
      * models (e.g. service can use mapping, runtime, connection, store, etc.) we can roughly prune the graph model data by group. Following is an example
      * for mapping used for execution, but this can generalized if we introduce hierarchy/ranking for model type
-     *
      */
     const graphData = this.getFullGraphModelData(graph);
     const prunedGraphData = new V1_PureModelContextData();
     const extraExecutionElements = this.pluginManager
       .getPureProtocolProcessorPlugins()
-      .flatMap((element) => element.V1_getExtraExecutionInputGetters?.() ?? [])
+      .flatMap(
+        (element) => element.V1_getExtraExecutionInputCollectors?.() ?? [],
+      )
       .flatMap((getter) => getter(graph, mapping, runtime, graphData));
     prunedGraphData.elements = graphData.elements
       .filter(
@@ -1952,7 +1954,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     mapping: Mapping,
     lambda: RawLambda,
     runtime: Runtime,
-    clientVersion: string,
     options?: ExecutionOptions,
   ): Promise<ExecutionResult> {
     return V1_buildExecutionResult(
@@ -1962,7 +1963,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           mapping,
           lambda,
           runtime,
-          clientVersion,
+          PureClientVersion.VX_X_X,
         ),
         options,
       ),
@@ -1974,7 +1975,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     mapping: Mapping,
     lambda: RawLambda,
     runtime: Runtime,
-    clientVersion: string,
     parameters: (string | number | boolean)[],
     options?: {
       anonymizeGeneratedData?: boolean;
@@ -1987,7 +1987,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       mapping,
       lambda,
       runtime,
-      clientVersion,
+      PureClientVersion.VX_X_X,
       testDataGenerationExecuteInput,
     );
     testDataGenerationExecuteInput.parameters = parameters;
@@ -2002,10 +2002,15 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     mapping: Mapping,
     lambda: RawLambda,
     runtime: Runtime,
-    clientVersion: string,
   ): Promise<RawExecutionPlan> {
     return this.engine.generateExecutionPlan(
-      this.createExecutionInput(graph, mapping, lambda, runtime, clientVersion),
+      this.createExecutionInput(
+        graph,
+        mapping,
+        lambda,
+        runtime,
+        PureClientVersion.VX_X_X,
+      ),
     );
   }
 
@@ -2014,10 +2019,15 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     mapping: Mapping,
     lambda: RawLambda,
     runtime: Runtime,
-    clientVersion: string,
   ): Promise<{ plan: RawExecutionPlan; debug: string }> {
     const result = await this.engine.debugExecutionPlanGeneration(
-      this.createExecutionInput(graph, mapping, lambda, runtime, clientVersion),
+      this.createExecutionInput(
+        graph,
+        mapping,
+        lambda,
+        runtime,
+        PureClientVersion.VX_X_X,
+      ),
     );
     return {
       plan: result.plan,

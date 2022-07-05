@@ -132,6 +132,7 @@ export {
   FaMapMarkerAlt as MapMarkerIcon,
   FaHatWizard as WizardHatIcon,
   FaRegLaughWink as FaceLaughWinkIcon,
+  FaRegSadTear as FaceSadTearIcon,
   FaBusinessTime as BusinessTimeIcon, // to be reviewed/combined
   FaDatabase as DatabaseIcon,
   FaServer as ServerIcon,

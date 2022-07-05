@@ -34,7 +34,7 @@ export const BaseRadioGroup: React.FC<
   {
     options: unknown[];
     /**
-     * Display raidios in a [n, size] matrix
+     * Display raidio buttons in a [n, size] matrix
      */
     size: number;
   } & MuiRadioGroupProps

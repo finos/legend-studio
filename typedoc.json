@@ -1,0 +1,37 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "out": "build/docs",
+  "entryPoints": ["packages/*"],
+  "entryPointStrategy": "Packages",
+  "exclude": [
+    // NOTE: this uses `minimatch` pattern
+    "**/__tests__/**",
+    "**/__mocks__/**",
+    "**/node_modules/**",
+    "**/packages", // since we don't need to document all of the modules
+    // NOTE: update package.json config when `typedoc` has better support
+    // for `--entryPointStrategy Packages`
+    // See https://github.com/TypeStrong/typedoc/pull/1977
+    "!packages/legend-shared"
+  ],
+  "intentionallyNotExported": [],
+  "excludeExternals": false,
+  "excludeInternal": true,
+  "excludePrivate": true,
+  "excludeNotDocumented": true,
+  "validation": {
+    "notExported": false,
+    "invalidLink": true,
+    "notDocumented": false
+  },
+  // NOTE: to be updated when we structure the doc better
+  "readme": "README.md",
+  "visibilityFilters": {
+    "protected": false,
+    "private": false,
+    "inherited": true,
+    "external": false,
+    "@internal": false
+  },
+  "logLevel": "Verbose"
+}

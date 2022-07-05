@@ -57,7 +57,6 @@ import {
   PackageableElementExplicitReference,
   GRAPH_MANAGER_EVENT,
   TdsExecutionResult,
-  PureClientVersion,
   PRIMITIVE_TYPE,
   extractSourceInformationCoordinates,
   buildSourceInformationSourceId,
@@ -717,7 +716,6 @@ export class QueryBuilderProjectionState {
                 this.queryBuilderState.graphManagerState,
               ),
               runtime,
-              PureClientVersion.VX_X_X,
             )) as ExecutionResult;
           assertType(
             previewResult,
@@ -761,7 +759,6 @@ export class QueryBuilderProjectionState {
                 this.queryBuilderState.graphManagerState,
               ),
               runtime,
-              PureClientVersion.VX_X_X,
             )) as ExecutionResult;
           assertType(
             previewResult,
