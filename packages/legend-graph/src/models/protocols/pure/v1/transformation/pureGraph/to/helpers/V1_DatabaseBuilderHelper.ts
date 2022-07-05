@@ -161,6 +161,15 @@ const schemaExists = (database: Database, _schema: string): boolean =>
   DEFAULT_DATABASE_SCHEMA_NAME === _schema ||
   _schemaExists(database, _schema, new Set<Database>());
 
+export const V1_findSchema = (
+  database: Database,
+  _schema: string,
+): void =>
+  assertTrue(
+    schemaExists(database, _schema),
+    `Can't find schema '${_schema}' in database '${database}'`,
+  );
+
 export const V1_findRelation = (
   database: Database,
   schemaName: string,
@@ -193,10 +202,7 @@ export const V1_getRelation = (
   schemaName: string,
   relationName: string,
 ): Relation => {
-  assertTrue(
-    schemaExists(db, schemaName),
-    `Can't find schema '${schemaName}' in database '${db}'`,
-  );
+  V1_findSchema(db, schemaName);
   return guaranteeNonNullable(
     V1_findRelation(db, schemaName, relationName),
     `Can't find table '${relationName}' in schema '${schemaName}' and database '${db.path}'`,
