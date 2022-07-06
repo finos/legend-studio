@@ -25,7 +25,6 @@ import {
   type EditorExtensionState,
   type EditorExtensionStateCreator,
   type EditorStore,
-  type LegendStudioPluginManager,
   type EditorExtensionComponentRendererConfiguration,
   type ExplorerContextMenuItemRendererConfiguration,
   type ServicePureExecutionState,
@@ -171,7 +170,7 @@ export class QueryBuilder_LegendStudioPlugin
 
   override getExtraApplicationSetups(): LegendApplicationSetup[] {
     return [
-      async (pluginManager) => {
+      async (pluginManager): Promise<void> => {
         await setupLegendQueryUILibrary();
       },
     ];

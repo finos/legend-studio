@@ -57,7 +57,6 @@ export class ApplicationTelemetry {
     telemetryService: TelemetryService,
     data: VirtualAssistantDocumentationEntryAccessed_TelemetryData,
   ): void {
-    console.log('pied', data);
     telemetryService.logEvent(
       APPLICATION_EVENT.VIRTUAL_ASSISTANT_DOCUMENTATION_ENTRY_ACCESSED,
       data,
