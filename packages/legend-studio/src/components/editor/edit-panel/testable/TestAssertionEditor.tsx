@@ -179,6 +179,17 @@ const AssertFailViewer = observer(
   },
 );
 
+const TestErrorViewer = observer((props: { testError: TestError }) => {
+  const { testError } = props;
+  return (
+    <>
+      <div className="testable-test-assertion-result__summary-info">
+        {testError.error}
+      </div>
+    </>
+  );
+});
+
 const TestAssertionResultViewer = observer(
   (props: { testAssertionEditorState: TestAssertionEditorState }) => {
     const { testAssertionEditorState } = props;

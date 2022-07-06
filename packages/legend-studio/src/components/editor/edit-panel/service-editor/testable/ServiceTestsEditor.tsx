@@ -50,7 +50,7 @@ import {
   type ServiceTestSetupState,
   type ServiceTestState,
 } from '../../../../../stores/editor-state/element-editor-state/service/testable/ServiceTestEditorState.js';
-import { TESTABLE_TEST_TAB } from '../../../../../stores/editor-state/element-editor-state/testable/TestableEditorState.js';
+import { TESTABLE_TEST_TAB } from '../../../../../stores/editor-state/element-editor-state/testable/TestableTestEditorState.js';
 import type { TestAssertionEditorState } from '../../../../../stores/editor-state/element-editor-state/testable/TestAssertionState.js';
 import {
   atomicTest_setId,

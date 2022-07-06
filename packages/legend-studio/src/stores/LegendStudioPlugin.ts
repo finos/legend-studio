@@ -29,6 +29,7 @@ import {
   LegendApplicationPlugin,
 } from '@finos/legend-application';
 import type { TestableMetadata } from './sidebar-state/testable/GlobalTestRunnerState.js';
+import type { TestableElementEditorState } from './editor-state/element-editor-state/testable/TestableElementEditorState.js';
 
 export type ExplorerContextMenuItemRendererConfiguration = {
   key: string;
@@ -58,10 +59,20 @@ export type ModelLoaderExtensionConfiguration = {
   renderer: (editorStore: EditorStore) => React.ReactNode | undefined;
 };
 
-export type TestableMetadataGetter = (
+export type TestableElementEditorOpener = (
   testable: Testable,
   editorStore: EditorStore,
-) => TestableMetadata | undefined;
+) => TestableElementEditorState | undefined;
+
+export type TestableExtension = {
+  metadata: TestableMetadata;
+  testableEditorOpener?: TestableElementEditorOpener;
+};
+
+export type TestableExtensionGetter = (
+  testable: Testable,
+  editorStore: EditorStore,
+) => TestableExtension | undefined;
 
 export abstract class LegendStudioPlugin extends LegendApplicationPlugin {
   /**
@@ -105,7 +116,7 @@ export abstract class LegendStudioPlugin extends LegendApplicationPlugin {
   /**
    * Get the list of extension for testables
    */
-  getExtraTestableMetadata?(): TestableMetadataGetter[];
+  getExtraTestableExtensionGetters?(): TestableExtensionGetter[];
 }
 
 export type ElementTypeGetter = (

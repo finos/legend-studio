@@ -45,14 +45,20 @@ import {
   UnsupportedOperationError,
   filterByType,
 } from '@finos/legend-shared';
-import { action, flow, makeObservable, observable } from 'mobx';
+import { action, computed, flow, makeObservable, observable } from 'mobx';
 import { getElementTypeIcon } from '../../../components/shared/ElementIconUtils.js';
 import type { EditorSDLCState } from '../../EditorSDLCState.js';
 import type { EditorStore } from '../../EditorStore.js';
 import type {
   LegendStudioPlugin,
-  TestableMetadataGetter,
+  TestableExtensionGetter,
 } from '../../LegendStudioPlugin.js';
+import {
+  openTestable,
+  openTestableAssertion,
+  openTestableSuite,
+  openTestableTest,
+} from '../../shared/testable/TestableUtils.js';
 
 // Testable Metadata
 export interface TestableMetadata {
@@ -65,7 +71,7 @@ export interface TestableMetadata {
 export const getTestableMetadata = (
   testable: Testable,
   editorStore: EditorStore,
-  extraTestableMetadataGetters: TestableMetadataGetter[],
+  extensionGetters: TestableExtensionGetter[],
 ): TestableMetadata => {
   if (testable instanceof PackageableElement) {
     return {
@@ -83,11 +89,11 @@ export const getTestableMetadata = (
       ),
     };
   }
-  const extraTestables = extraTestableMetadataGetters
+  const extraTestableExtensions = extensionGetters
     .map((getter) => getter(testable, editorStore))
     .filter(isNonNullable);
   return (
-    extraTestables[0] ?? {
+    extraTestableExtensions[0]?.metadata ?? {
       testable,
       id: uuid(),
       name: '(unknown)',
@@ -487,7 +493,7 @@ export class GlobalTestRunnerState {
   sdlcState: EditorSDLCState;
   testableStates: TestableState[] | undefined;
   isRunningTests = ActionState.create();
-  extraTestableMetadataGetters: TestableMetadataGetter[] = [];
+  extraTestableMetadataGetters: TestableExtensionGetter[] = [];
   failureViewing: AssertFail | TestError | undefined;
 
   constructor(editorStore: EditorStore, sdlcState: EditorSDLCState) {
@@ -499,6 +505,7 @@ export class GlobalTestRunnerState {
       runAllTests: flow,
       failureViewing: observable,
       setFailureViewing: action,
+      isInSync: computed,
     });
     this.editorStore = editorStore;
     this.sdlcState = sdlcState;
@@ -506,13 +513,96 @@ export class GlobalTestRunnerState {
       .getStudioPlugins()
       .flatMap(
         (plugin: LegendStudioPlugin) =>
-          plugin.getExtraTestableMetadata?.() ?? [],
+          plugin.getExtraTestableExtensionGetters?.() ?? [],
       )
       .filter(isNonNullable);
   }
 
+  get isInSync(): boolean {
+    if (!this.testableStates) {
+      return false;
+    }
+    const currentStateIds = this.testableStates.map(
+      (t) => t.testableMetadata.id,
+    );
+    const currentTestableIds =
+      this.editorStore.graphManagerState.graph.allOwnTestables
+        .map((t) =>
+          getTestableMetadata(
+            t,
+            this.editorStore,
+            this.extraTestableMetadataGetters,
+          ),
+        )
+        .map((t) => t.id);
+    if (currentStateIds.length !== currentTestableIds.length) {
+      return false;
+    }
+    return !currentTestableIds.find((t) => {
+      if (currentStateIds.includes(t)) {
+        return false;
+      }
+      return true;
+    });
+  }
+
+  openTestable(testable: Testable): void {
+    try {
+      openTestable(
+        testable,
+        this.editorStore,
+        this.extraTestableMetadataGetters,
+      );
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.notifyError(error);
+    }
+  }
+
+  openTestableSuite(testable: Testable, suite: TestSuite): void {
+    try {
+      openTestableSuite(
+        testable,
+        suite,
+        this.editorStore,
+        this.extraTestableMetadataGetters,
+      );
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.notifyError(error);
+    }
+  }
+
+  openTestableTest(testable: Testable, test: Test): void {
+    try {
+      openTestableTest(
+        testable,
+        test,
+        this.editorStore,
+        this.extraTestableMetadataGetters,
+      );
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.notifyError(error);
+    }
+  }
+
+  openTestableAssertion(testable: Testable, assertion: TestAssertion): void {
+    try {
+      openTestableAssertion(
+        testable,
+        assertion,
+        this.editorStore,
+        this.extraTestableMetadataGetters,
+      );
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.notifyError(error);
+    }
+  }
+
   init(force?: boolean): void {
-    if (!this.testableStates || force) {
+    if (!this.isInSync || force) {
       const testables =
         this.editorStore.graphManagerState.graph.allOwnTestables;
       this.testableStates = testables.map(

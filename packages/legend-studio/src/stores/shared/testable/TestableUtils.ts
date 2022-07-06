@@ -28,6 +28,9 @@ import {
   type IdentifiedConnection,
   type TestAssertion,
   type AtomicTest,
+  type TestSuite,
+  type Testable,
+  type Test,
   ExternalFormatData,
   RelationalCSVData,
   ConnectionTestData,
@@ -36,17 +39,23 @@ import {
   EqualToJson,
   DEFAULT_TEST_ASSERTION_PREFIX,
   RelationalCSVDataTable,
+  PackageableElement,
+  Service,
 } from '@finos/legend-graph';
 import {
   assertTrue,
   ContentType,
   generateEnumerableNameFromToken,
   guaranteeNonEmptyString,
+  guaranteeNonNullable,
   isNonNullable,
   returnUndefOnError,
 } from '@finos/legend-shared';
+import { ServiceEditorState } from '../../editor-state/element-editor-state/service/ServiceEditorState.js';
+import type { TestableElementEditorState } from '../../editor-state/element-editor-state/testable/TestableElementEditorState.js';
 import { EmbeddedDataType } from '../../editor-state/ExternalFormatState.js';
 import type { EditorStore } from '../../EditorStore.js';
+import type { TestableExtensionGetter } from '../../LegendStudioPlugin.js';
 import { createMockDataForMappingElementSource } from '../MockDataUtil.js';
 
 export const createBareExternalFormat = (
@@ -210,4 +219,93 @@ export const createRelationalDataFromCSV = (val: string): RelationalCSVData => {
     data.tables.push(table);
   });
   return data;
+};
+
+export const openTestableElementEditorState = (
+  testable: Testable,
+  editorStore: EditorStore,
+  extraTestableMetadataGetters: TestableExtensionGetter[],
+): TestableElementEditorState | undefined => {
+  if (testable instanceof PackageableElement) {
+    if (testable instanceof Service) {
+      editorStore.openElement(testable);
+      return editorStore.getCurrentEditorState(ServiceEditorState);
+    }
+    const testableEditorOpener = extraTestableMetadataGetters
+      .map((getter) => getter(testable, editorStore))
+      .filter(isNonNullable)[0]?.testableEditorOpener;
+    if (testableEditorOpener) {
+      return testableEditorOpener(testable, editorStore);
+    }
+    return undefined;
+  }
+  return undefined;
+};
+
+export const openTestable = (
+  testable: Testable,
+  editorStore: EditorStore,
+  extraTestableMetadataGetters: TestableExtensionGetter[],
+): void => {
+  const editorState = guaranteeNonNullable(
+    openTestableElementEditorState(
+      testable,
+      editorStore,
+      extraTestableMetadataGetters,
+    ),
+    'Unable to open testable',
+  );
+  editorState.openTestable();
+};
+
+export const openTestableSuite = (
+  testable: Testable,
+  suite: TestSuite,
+  editorStore: EditorStore,
+  extraTestableMetadataGetters: TestableExtensionGetter[],
+): void => {
+  const testableEditorState = guaranteeNonNullable(
+    openTestableElementEditorState(
+      testable,
+      editorStore,
+      extraTestableMetadataGetters,
+    ),
+    'Unable to open testable',
+  );
+  testableEditorState?.openTestableSuite(suite);
+  testableEditorState.openTestableSuite(suite);
+};
+
+export const openTestableTest = (
+  testable: Testable,
+  suite: Test,
+  editorStore: EditorStore,
+  extraTestableMetadataGetters: TestableExtensionGetter[],
+): void => {
+  const editorState = guaranteeNonNullable(
+    openTestableElementEditorState(
+      testable,
+      editorStore,
+      extraTestableMetadataGetters,
+    ),
+    'Unable to open testable',
+  );
+  editorState.openTestableTest(suite);
+};
+
+export const openTestableAssertion = (
+  testable: Testable,
+  suite: TestAssertion,
+  editorStore: EditorStore,
+  extraTestableMetadataGetters: TestableExtensionGetter[],
+): void => {
+  const editorState = guaranteeNonNullable(
+    openTestableElementEditorState(
+      testable,
+      editorStore,
+      extraTestableMetadataGetters,
+    ),
+    'Unable to open testable',
+  );
+  editorState.openTestableAssert(suite);
 };

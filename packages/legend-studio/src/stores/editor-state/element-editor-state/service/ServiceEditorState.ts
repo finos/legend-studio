@@ -27,11 +27,17 @@ import { ServiceRegistrationState } from '../../../editor-state/element-editor-s
 import { ElementEditorState } from '../../../editor-state/element-editor-state/ElementEditorState.js';
 import {
   type PackageableElement,
+  type Test,
+  type TestAssertion,
+  type TestSuite,
   Service,
   PureSingleExecution,
   PureMultiExecution,
+  ServiceTestSuite,
+  ServiceTest,
 } from '@finos/legend-graph';
 import { ServiceTestableState } from './testable/ServiceTestableState.js';
+import type { TestableElementEditorState } from '../testable/TestableElementEditorState.js';
 
 export enum SERVICE_TAB {
   GENERAL = 'GENERAL',
@@ -41,11 +47,15 @@ export enum SERVICE_TAB {
 }
 
 export const MINIMUM_SERVICE_OWNERS = 2;
-export class ServiceEditorState extends ElementEditorState {
+export class ServiceEditorState
+  extends ElementEditorState
+  implements TestableElementEditorState
+{
   executionState: ServiceExecutionState;
   registrationState: ServiceRegistrationState;
   testableState: ServiceTestableState;
   selectedTab = SERVICE_TAB.GENERAL;
+  testable: Service;
 
   constructor(editorStore: EditorStore, element: PackageableElement) {
     super(editorStore, element);
@@ -58,11 +68,54 @@ export class ServiceEditorState extends ElementEditorState {
       resetExecutionState: action,
       service: computed,
       reprocess: action,
+      openTestable: action,
+      openTestableAssert: action,
+      openTestableSuite: action,
+      openTestableTest: action,
     });
 
     this.executionState = this.buildExecutionState();
     this.registrationState = new ServiceRegistrationState(editorStore, this);
     this.testableState = new ServiceTestableState(editorStore, this);
+    this.testable = this.service;
+  }
+
+  openTestable(): void {
+    this.setSelectedTab(SERVICE_TAB.TEST);
+  }
+
+  openTestableSuite(suite: TestSuite): void {
+    this.openTestable();
+    if (suite instanceof ServiceTestSuite) {
+      this.testableState.changeSuite(suite);
+    }
+  }
+
+  openTestableTest(test: Test): void {
+    if (test instanceof ServiceTest) {
+      const parent = test.__parent;
+      if (parent instanceof ServiceTestSuite) {
+        this.openTestableSuite(parent);
+        const suiteState = this.testableState.selectedSuiteState;
+        if (suiteState) {
+          suiteState.selectedTestState = suiteState.testStates.find(
+            (t) => t.test === test,
+          );
+        }
+      }
+    }
+  }
+
+  openTestableAssert(test: TestAssertion): void {
+    const parent = test.parentTest;
+    if (parent) {
+      this.openTestableTest(parent);
+      const testState =
+        this.testableState.selectedSuiteState?.selectedTestState;
+      if (testState) {
+        testState.openAssertion(test);
+      }
+    }
   }
 
   setSelectedTab(tab: SERVICE_TAB): void {
