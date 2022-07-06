@@ -262,7 +262,7 @@ const generateSubtypeNodeMappingData = (
     const mappedProperty = parentMappingData.mappedEntity.properties.filter(
       (p) => p instanceof EntityMappedProperty && p.subType === subclass.path,
     );
-    if (mappedProperty !== undefined && mappedProperty.length > 0) {
+    if (mappedProperty.length > 0) {
       return {
         mapped: true,
         mappedEntity: modelCoverageAnalysisResult.__PATH_TO_ENTITY.get(
