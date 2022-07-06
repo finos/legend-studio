@@ -15,31 +15,19 @@
  */
 
 import type { TreeNodeData, TreeData } from '@finos/legend-art';
-import {
-  guaranteeNonNullable,
-  addUniqueEntry,
-  uniq,
-  returnUndefOnError,
-  isNonNullable,
-} from '@finos/legend-shared';
+import { guaranteeNonNullable, addUniqueEntry } from '@finos/legend-shared';
 import {
   type AbstractProperty,
-  type GraphManagerState,
-  type Mapping,
-  type PropertyMapping,
   type PureModel,
-  type SetImplementation,
   type Type,
-  getRootSetImplementation,
+  type MappingModelCoverageAnalysisResult,
+  type EnumMappedProperty,
+  type MappedEntity,
   TYPICAL_MULTIPLICITY_TYPE,
-  OperationSetImplementation,
   AbstractPropertyExpression,
   Class,
   DerivedProperty,
-  Enumeration,
-  Property,
   VariableExpression,
-  PureInstanceSetImplementation,
   GenericType,
   GenericTypeExplicitReference,
   SimpleFunctionExpression,
@@ -50,17 +38,12 @@ import {
   VARIABLE_REFERENCE_TOKEN,
   ARROW_FUNCTION_TOKEN,
   Multiplicity,
-  getAllSuperSetImplementations,
-  PurePropertyMapping,
-  isStubbed_RawLambda,
-  FlatDataPropertyMapping,
-  RelationalPropertyMapping,
-  isStubbed_RawRelationalOperationElement,
   getAllClassProperties,
-  getClassProperty,
   getAllOwnClassProperties,
   getAllClassDerivedProperties,
-  type DSLMapping_PureGraphManagerPlugin_Extension,
+  Enum,
+  EntityMappedProperty,
+  Enumeration,
 } from '@finos/legend-graph';
 import type { QueryBuilderState } from './QueryBuilderState.js';
 import { action, makeAutoObservable, observable } from 'mobx';
@@ -110,14 +93,7 @@ export abstract class QueryBuilderExplorerTreeNodeData implements TreeNodeData {
 
 export type QueryBuilderPropertyMappingData = {
   mapped: boolean;
-  /**
-   * This flag is used to skip mappedness checking for the whole branch (i.e. every children of
-   * a node with this property set to `true` will also be skipped in mappedness checking).
-   * This is to facillitate complicated mappedness checkings that Studio would not attempt to handle:
-   * e.g. derived properties, operation class mappings, etc.
-   */
-  skipMappingCheck: boolean;
-  targetSetImpl?: SetImplementation | undefined;
+  mappedEntity?: MappedEntity | undefined;
 };
 
 export class QueryBuilderExplorerTreeRootNodeData extends QueryBuilderExplorerTreeNodeData {}
@@ -244,163 +220,67 @@ export const buildPropertyExpressionFromExplorerTreeNodeData = (
   return propertyExpression;
 };
 
-const resolveTargetSetImplementationForPropertyMapping = (
-  propertyMapping: PropertyMapping,
-): SetImplementation | undefined => {
-  if (propertyMapping._isEmbedded) {
-    return propertyMapping as unknown as SetImplementation;
-  } else if (propertyMapping.targetSetImplementation) {
-    return propertyMapping.targetSetImplementation;
-  }
-  return undefined;
-};
-
-const resolvePropertyMappingsForSetImpl = (
-  graphManagerState: GraphManagerState,
-  setImpl: SetImplementation,
-  rootMapping: Mapping,
-): PropertyMapping[] => {
-  const propertyMappings =
-    graphManagerState.getMappingElementPropertyMappings(setImpl);
-  // Resolve association properties
-  // To resolve we look for all association property mappings which match our setImpl
-  // and their sourceImpl.
-  if (
-    graphManagerState.isInstanceSetImplementation(setImpl) &&
-    setImpl.class.value.propertiesFromAssociations.length
-  ) {
-    // Always choose the mapping used in the query builder setup panel
-    rootMapping.associationMappings
-      .map((am) => am.propertyMappings)
-      .flat()
-      .forEach((pm) => {
-        if (pm.sourceSetImplementation === setImpl) {
-          propertyMappings.push(pm);
-        }
-      });
-  }
-  return uniq(propertyMappings);
-};
-
-const isAutoMappedProperty = (
-  property: AbstractProperty,
-  setImpl: SetImplementation,
-): boolean => {
-  if (setImpl instanceof PureInstanceSetImplementation) {
-    const sourceClass = setImpl.srcClass.value;
-    return Boolean(
-      sourceClass
-        ? returnUndefOnError(() => getClassProperty(sourceClass, property.name))
-        : undefined,
-    );
-  }
-  return false;
-};
-
-export const getPropertyNodeMappingData = (
-  graphManagerState: GraphManagerState,
+export const generatePropertyNodeMappingData = (
   property: AbstractProperty,
   parentMappingData: QueryBuilderPropertyMappingData,
-  rootMapping: Mapping,
+  modelCoverageAnalysisResult: MappingModelCoverageAnalysisResult,
 ): QueryBuilderPropertyMappingData => {
-  const parentTargetSetImpl = parentMappingData.targetSetImpl;
-  // For now, derived properties will be considered mapped if its parent class is mapped.
-  // NOTE: we don't want to do complex analytics such as to drill down into the body
-  // of the derived properties to see if each properties being used are mapped to determine
-  // if the derived property itself is considered mapped.
-  if (property instanceof DerivedProperty) {
-    return {
-      mapped: parentMappingData.mapped,
-      skipMappingCheck: true,
-    };
-  } else if (property instanceof Property) {
-    if (parentMappingData.skipMappingCheck) {
-      return { mapped: true, skipMappingCheck: true };
-    } else if (parentTargetSetImpl) {
-      const propertyMappings = resolvePropertyMappingsForSetImpl(
-        graphManagerState,
-        parentTargetSetImpl,
-        rootMapping,
-      )
-        // property mappings from super set implementations
-        .concat(
-          getAllSuperSetImplementations(parentTargetSetImpl)
-            .map((s) =>
-              resolvePropertyMappingsForSetImpl(
-                graphManagerState,
-                s,
-                rootMapping,
-              ),
-            )
-            .flat(),
-        )
-        .filter((p) => {
-          if (p instanceof PurePropertyMapping) {
-            return !isStubbed_RawLambda(p.transform);
-          } else if (p instanceof FlatDataPropertyMapping) {
-            return !isStubbed_RawLambda(p.transform);
-          } else if (p instanceof RelationalPropertyMapping) {
-            return !isStubbed_RawRelationalOperationElement(
-              p.relationalOperation,
-            );
-          }
-          const checkerResult = graphManagerState.pluginManager
-            .getPureGraphManagerPlugins()
-            .flatMap(
-              (plugin) =>
-                (
-                  plugin as DSLMapping_PureGraphManagerPlugin_Extension
-                ).getExtraPropertyMappingStubCheckers?.() ?? [],
-            )
-            .map((checker) => checker(p))
-            .filter(isNonNullable);
-          return !checkerResult.length || checkerResult.some(Boolean);
-        });
-      // NOTE: observe how we scan and prepare the list of property mappings above,
-      // searching for the property mapping to be used takes into account
-      // precedence, i.e. property mappings from super set implementations are of lower precedence
-      const propertyMapping = propertyMappings.find(
-        (pm) => pm.property.value === property,
-      );
-      // check if property is mapped through defined property mappings
-      if (propertyMapping) {
-        // if class we need to resolve the set implementation
-        if (property.genericType.value.rawType instanceof Class) {
-          const targetSetImpl =
-            resolveTargetSetImplementationForPropertyMapping(propertyMapping);
-          return {
-            mapped: true,
-            // NOTE: we could potentially resolve all the leaves and then overlap them somehow to
-            // help identifying the mapped properties. However, we would not do that here
-            // as opertion mapping can support more complicated branching logic (right now we just assume
-            // it's always simple union), that Studio should not try to analyze.
-            skipMappingCheck:
-              targetSetImpl instanceof OperationSetImplementation,
-            targetSetImpl,
-          };
-        }
-        return { mapped: true, skipMappingCheck: false };
-      }
-      // check if property is auto mapped
-      if (isAutoMappedProperty(property, parentTargetSetImpl)) {
-        return { mapped: true, skipMappingCheck: false };
+  // If this property's owner has no corresponding entity, i.e. it means the parent is not mapped
+  // Therefore, this property is not mapped either.
+  if (parentMappingData.mappedEntity) {
+    const mappedProp = parentMappingData.mappedEntity.__NAME_TO_PROPERTY.get(
+      property.name,
+    );
+    if (
+      property.genericType.value.rawType instanceof Class ||
+      property.genericType.value.rawType instanceof Enum
+    ) {
+      if (mappedProp) {
+        return {
+          mapped: true,
+          mappedEntity: modelCoverageAnalysisResult.__PATH_TO_ENTITY.get(
+            mappedProp instanceof EntityMappedProperty
+              ? mappedProp.entityPath
+              : (mappedProp as EnumMappedProperty).enumPath,
+          ),
+        };
       }
     }
+    return { mapped: mappedProp !== undefined };
   }
-  return { mapped: false, skipMappingCheck: false };
+  return { mapped: false };
+};
+
+const generateSubtypeNodeMappingData = (
+  subclass: Class,
+  parentMappingData: QueryBuilderPropertyMappingData,
+  modelCoverageAnalysisResult: MappingModelCoverageAnalysisResult,
+): QueryBuilderPropertyMappingData => {
+  // If this property's owner has no corresponding entity, i.e. it means the parent is not mapped
+  // Therefore, this property is not mapped either.
+  if (parentMappingData.mappedEntity) {
+    const mappedProperty = parentMappingData.mappedEntity.properties.filter(
+      (p) => p instanceof EntityMappedProperty && p.subType === subclass.path,
+    );
+    if (mappedProperty.length > 0) {
+      return {
+        mapped: true,
+        mappedEntity: modelCoverageAnalysisResult.__PATH_TO_ENTITY.get(
+          (mappedProperty[0] as EntityMappedProperty).entityPath,
+        ),
+      };
+    }
+  }
+  return { mapped: false };
 };
 
 export const getRootMappingData = (
-  mapping: Mapping,
   _class: Class,
-): QueryBuilderPropertyMappingData => {
-  const rootSetImpl = getRootSetImplementation(mapping, _class);
-  return {
-    mapped: true,
-    skipMappingCheck: rootSetImpl instanceof OperationSetImplementation,
-    targetSetImpl: rootSetImpl,
-  };
-};
+  modelCoverageAnalysisResult: MappingModelCoverageAnalysisResult,
+): QueryBuilderPropertyMappingData => ({
+  mapped: true,
+  mappedEntity: modelCoverageAnalysisResult.__PATH_TO_ENTITY.get(_class.path),
+});
 
 const generateExplorerTreeClassNodeChildrenIDs = (
   node: QueryBuilderExplorerTreeNodeData,
@@ -420,16 +300,14 @@ const generateExplorerTreeClassNodeChildrenIDs = (
 };
 
 export const getQueryBuilderPropertyNodeData = (
-  graphManagerState: GraphManagerState,
   property: AbstractProperty,
   parentNode: QueryBuilderExplorerTreeNodeData,
-  rootMapping: Mapping,
+  modelCoverageAnalyticsResult: MappingModelCoverageAnalysisResult,
 ): QueryBuilderExplorerTreePropertyNodeData => {
-  const mappingNodeData = getPropertyNodeMappingData(
-    graphManagerState,
+  const mappingNodeData = generatePropertyNodeMappingData(
     property,
     parentNode.mappingData,
-    rootMapping,
+    modelCoverageAnalyticsResult,
   );
   const isPartOfDerivedPropertyBranch =
     property instanceof DerivedProperty ||
@@ -463,6 +341,7 @@ export const getQueryBuilderPropertyNodeData = (
 export const getQueryBuilderSubTypeNodeData = (
   subclass: Class,
   parentNode: QueryBuilderExplorerTreeNodeData,
+  modelCoverageAnalysisResult: MappingModelCoverageAnalysisResult,
 ): QueryBuilderExplorerTreeSubTypeNodeData => {
   const subTypeNode = new QueryBuilderExplorerTreeSubTypeNodeData(
     `${
@@ -485,9 +364,11 @@ export const getQueryBuilderSubTypeNodeData = (
     subclass,
     parentNode.id,
     false,
-    //Display subclasses, anyway.
-    //TODO: Enchance mapping algo to take into account this
-    { mapped: true, skipMappingCheck: true },
+    generateSubtypeNodeMappingData(
+      subclass,
+      parentNode.mappingData,
+      modelCoverageAnalysisResult,
+    ),
     parentNode instanceof QueryBuilderExplorerTreePropertyNodeData
       ? parentNode.property.multiplicity
       : parentNode instanceof QueryBuilderExplorerTreeSubTypeNodeData
@@ -500,13 +381,15 @@ export const getQueryBuilderSubTypeNodeData = (
 };
 
 const getQueryBuilderTreeData = (
-  graphManagerState: GraphManagerState,
   rootClass: Class,
-  rootMapping: Mapping,
+  modelCoverageAnalysisResult: MappingModelCoverageAnalysisResult,
 ): TreeData<QueryBuilderExplorerTreeNodeData> => {
   const rootIds = [];
   const nodes = new Map<string, QueryBuilderExplorerTreeNodeData>();
-  const mappingData = getRootMappingData(rootMapping, rootClass);
+  const mappingData = getRootMappingData(
+    rootClass,
+    modelCoverageAnalysisResult,
+  );
   const treeRootNode = new QueryBuilderExplorerTreeRootNodeData(
     '@dummy_rootNode',
     rootClass.name,
@@ -529,10 +412,9 @@ const getQueryBuilderTreeData = (
     )
     .forEach((property) => {
       const propertyTreeNodeData = getQueryBuilderPropertyNodeData(
-        graphManagerState,
         property,
         treeRootNode,
-        rootMapping,
+        modelCoverageAnalysisResult,
       );
       addUniqueEntry(treeRootNode.childrenIds, propertyTreeNodeData.id);
       nodes.set(propertyTreeNodeData.id, propertyTreeNodeData);
@@ -541,6 +423,7 @@ const getQueryBuilderTreeData = (
     const subTypeTreeNodeData = getQueryBuilderSubTypeNodeData(
       subclass,
       treeRootNode,
+      modelCoverageAnalysisResult,
     );
     addUniqueEntry(treeRootNode.childrenIds, subTypeTreeNodeData.id);
     nodes.set(subTypeTreeNodeData.id, subTypeTreeNodeData);
@@ -628,11 +511,14 @@ export class QueryBuilderExplorerState {
     const _class = this.queryBuilderState.querySetupState._class;
     const _mapping = this.queryBuilderState.querySetupState.mapping;
     this.setTreeData(
-      _class && _mapping
+      _class &&
+        _mapping &&
+        this.queryBuilderState.querySetupState
+          .mappingModelCoverageAnalysisResult
         ? getQueryBuilderTreeData(
-            this.queryBuilderState.graphManagerState,
             _class,
-            _mapping,
+            this.queryBuilderState.querySetupState
+              .mappingModelCoverageAnalysisResult,
           )
         : undefined,
     );

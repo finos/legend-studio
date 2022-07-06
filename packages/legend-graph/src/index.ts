@@ -218,7 +218,14 @@ export { ServiceExecutionMode } from './graphManager/action/service/ServiceExecu
 export { ServiceRegistrationResult } from './graphManager/action/service/ServiceRegistrationResult.js';
 export { DEPRECATED__ServiceTestResult } from './graphManager/action/service/DEPRECATED__ServiceTestResult.js';
 export { SourceInformation } from './graphManager/action/SourceInformation.js';
-
+export {
+  MappingModelCoverageAnalysisResult,
+  MappedEntity,
+  MappedProperty,
+  EntityMappedProperty,
+  EnumMappedProperty,
+} from './graphManager/action/analytics/MappingAnalytics.js';
+export { V1_MappingModelCoverageAnalysisResult } from './models/protocols/pure/v1/engine/analytics/V1_MappingAnalytics.js';
 export * from './models/protocols/pure/PureProtocolProcessorPlugin.js';
 
 // --------------------------------------------- TRANSFORMATION --------------------------------------------------

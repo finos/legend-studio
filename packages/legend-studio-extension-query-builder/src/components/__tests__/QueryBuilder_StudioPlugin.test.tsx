@@ -228,6 +228,9 @@ test(integrationTest('Open query builder by executing a class'), async () => {
   MOBX__enableSpyOrMock();
   mockedEditorStore.graphState.globalCompileInFormMode =
     jest.fn<TEMPORARY__JestMock>();
+  mockedEditorStore.graphManagerState.graphManager.analyzeMappingModelCoverage =
+    jest.fn<TEMPORARY__JestMock>();
+  MockedMonacoEditorInstance.getValue.mockReturnValue('');
   MOBX__disableSpyOrMock();
 
   await TEST__openElementFromExplorerTree('model::Person', renderResult);
@@ -261,6 +264,8 @@ test(
     mockedEditorStore.graphState.globalCompileInFormMode =
       jest.fn<TEMPORARY__JestMock>();
     mockedEditorStore.graphManagerState.graphManager.lambdasToPureCode =
+      jest.fn<TEMPORARY__JestMock>();
+    mockedEditorStore.graphManagerState.graphManager.analyzeMappingModelCoverage =
       jest.fn<TEMPORARY__JestMock>();
     MockedMonacoEditorInstance.getValue.mockReturnValue('');
     MOBX__disableSpyOrMock();
@@ -297,6 +302,8 @@ test(
       jest.fn<TEMPORARY__JestMock>();
     mockedEditorStore.graphManagerState.graphManager.lambdasToPureCode =
       jest.fn<TEMPORARY__JestMock>();
+    mockedEditorStore.graphManagerState.graphManager.analyzeMappingModelCoverage =
+      jest.fn<TEMPORARY__JestMock>();
     MockedMonacoEditorInstance.getValue.mockReturnValue('');
     MOBX__disableSpyOrMock();
 
@@ -324,6 +331,8 @@ test(
     mockedEditorStore.graphState.globalCompileInFormMode =
       jest.fn<TEMPORARY__JestMock>();
     mockedEditorStore.graphManagerState.graphManager.lambdasToPureCode =
+      jest.fn<TEMPORARY__JestMock>();
+    mockedEditorStore.graphManagerState.graphManager.analyzeMappingModelCoverage =
       jest.fn<TEMPORARY__JestMock>();
     MockedMonacoEditorInstance.getValue.mockReturnValue('');
     MOBX__disableSpyOrMock();

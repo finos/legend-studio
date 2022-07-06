@@ -56,6 +56,7 @@ import {
   type V1_ElementProtocolSerializer,
   type V1_ElementTransformer,
   type V1_ExecutionInputCollector,
+  type V1_MappingModelCoverageAnalysisInputCollector,
   PureProtocolProcessorPlugin,
 } from './PureProtocolProcessorPlugin.js';
 import type { V1_PureModelContextData } from './v1/model/context/V1_PureModelContextData.js';
@@ -305,6 +306,18 @@ export class DSLExternalFormat_PureProtocolProcessorPlugin
         graph: PureModel,
         mapping: Mapping,
         runtime: Runtime,
+        protocolGraph: V1_PureModelContextData,
+      ): V1_PackageableElement[] =>
+        protocolGraph.elements.filter(
+          (element) => element instanceof V1_SchemaSet,
+        ),
+    ];
+  }
+
+  override V1_getExtraMappingModelCoverageAnalysisInputCollectors(): V1_MappingModelCoverageAnalysisInputCollector[] {
+    return [
+      (
+        graph: PureModel,
         protocolGraph: V1_PureModelContextData,
       ): V1_PackageableElement[] =>
         protocolGraph.elements.filter(

@@ -724,10 +724,12 @@ const QueryBuilderExplorerTree = observer(
               )
           ).forEach((property) => {
             const propertyTreeNodeData = getQueryBuilderPropertyNodeData(
-              queryBuilderState.graphManagerState,
               property,
               node,
-              guaranteeNonNullable(queryBuilderState.querySetupState.mapping),
+              guaranteeNonNullable(
+                explorerState.queryBuilderState.querySetupState
+                  .mappingModelCoverageAnalysisResult,
+              ),
             );
             treeData.nodes.set(propertyTreeNodeData.id, propertyTreeNodeData);
           });
@@ -735,6 +737,10 @@ const QueryBuilderExplorerTree = observer(
             const subTypeTreeNodeData = getQueryBuilderSubTypeNodeData(
               subclass,
               node,
+              guaranteeNonNullable(
+                explorerState.queryBuilderState.querySetupState
+                  .mappingModelCoverageAnalysisResult,
+              ),
             );
             treeData.nodes.set(subTypeTreeNodeData.id, subTypeTreeNodeData);
           });
@@ -786,6 +792,7 @@ export const QueryBuilderExplorerPanel = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
     const explorerState = queryBuilderState.explorerState;
+    const applicationStore = useApplicationStore();
     const collapseTree = (): void => {
       if (explorerState.treeData) {
         Array.from(explorerState.treeData.nodes.values()).forEach((node) => {
@@ -802,6 +809,15 @@ export const QueryBuilderExplorerPanel = observer(
       explorerState.setHumanizePropertyName(
         !explorerState.humanizePropertyName,
       );
+    useEffect(() => {
+      flowResult(
+        queryBuilderState.querySetupState.analyzeMappingModelCoverage(),
+      ).catch(applicationStore.alertUnhandledError);
+    }, [
+      applicationStore,
+      queryBuilderState,
+      queryBuilderState.querySetupState.mapping,
+    ]);
 
     return (
       <div

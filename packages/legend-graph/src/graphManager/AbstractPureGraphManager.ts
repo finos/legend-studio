@@ -69,6 +69,10 @@ import type { Testable } from '../models/metamodels/pure/test/Testable.js';
 import type { AtomicTest } from '../models/metamodels/pure/test/Test.js';
 import type { TestAssertion } from '../models/metamodels/pure/test/assertion/TestAssertion.js';
 import type { AssertFail } from '../models/metamodels/pure/test/assertion/status/AssertFail.js';
+import type {
+  MappingModelCoverageAnalysisResult,
+  RawMappingModelCoverageAnalysisResult,
+} from './action/analytics/MappingAnalytics.js';
 
 export interface TEMPORARY__EngineSetupConfig {
   env: string;
@@ -409,6 +413,17 @@ export abstract class AbstractPureGraphManager {
     entities: Entity[],
     dependencyEntitiesMap: Map<string, Entity[]>,
   ): Promise<void>;
+
+  // -------------------------------------- Analysis --------------------------------------
+
+  abstract analyzeMappingModelCoverage(
+    graph: PureModel,
+    mapping: Mapping,
+  ): Promise<MappingModelCoverageAnalysisResult>;
+
+  abstract buildMappingModelCoverageAnalysisResult(
+    input: RawMappingModelCoverageAnalysisResult,
+  ): MappingModelCoverageAnalysisResult;
 
   // ------------------------------------------- Utilities -------------------------------------------
 

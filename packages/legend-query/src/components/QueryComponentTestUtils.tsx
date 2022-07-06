@@ -20,11 +20,13 @@ import { Router } from 'react-router-dom';
 import { createMemoryHistory } from 'history';
 import {
   type TEMPORARY__JestMock,
+  type PlainObject,
   MOBX__disableSpyOrMock,
   MOBX__enableSpyOrMock,
 } from '@finos/legend-shared';
 import {
   type GraphManagerState,
+  type V1_MappingModelCoverageAnalysisResult,
   Query,
   LightQuery,
   RawLambda,
@@ -96,6 +98,7 @@ export const TEST__setUpQueryEditor = async (
   lambda: RawLambda,
   mappingPath: string,
   runtimePath: string,
+  rawMappingModelCoverageAnalysisResult?: PlainObject<V1_MappingModelCoverageAnalysisResult>,
 ): Promise<RenderResult> => {
   const projectData = {
     id: 'test-id',
@@ -151,7 +154,18 @@ export const TEST__setUpQueryEditor = async (
   jest
     .spyOn(mockedQueryStore.graphManagerState.graphManager, 'getQuery')
     .mockResolvedValue(query);
-
+  if (rawMappingModelCoverageAnalysisResult) {
+    jest
+      .spyOn(
+        mockedQueryStore.graphManagerState.graphManager,
+        'analyzeMappingModelCoverage',
+      )
+      .mockResolvedValue(
+        mockedQueryStore.graphManagerState.graphManager.buildMappingModelCoverageAnalysisResult(
+          rawMappingModelCoverageAnalysisResult,
+        ),
+      );
+  }
   mockedQueryStore.buildGraph = jest.fn<TEMPORARY__JestMock>();
   // TODO: we need to think of how we will mock these calls when we modularize
   // See https://github.com/finos/legend-studio/issues/731
