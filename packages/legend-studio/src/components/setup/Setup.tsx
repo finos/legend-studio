@@ -49,7 +49,7 @@ import type { LegendStudioConfig } from '../../application/LegendStudioConfig.js
 import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../stores/LegendStudioDocumentation.js';
 import { CreateProjectModal } from './ProjectCreateModal.js';
 import { ActivityBarMenu } from '../editor/ActivityBar.js';
-import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT } from '../../stores/LegendStudioApplicationNavigationContext.js';
+import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../stores/LegendStudioApplicationNavigationContext.js';
 
 const CreateWorkspaceModal = observer(() => {
   const setupStore = useSetupStore();
@@ -394,7 +394,7 @@ export const SetupInner = observer(() => {
   }, [applicationStore, setupStore]);
 
   useApplicationNavigationContext(
-    LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT.SETUP,
+    LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.SETUP,
   );
 
   return <SetupSelection />;

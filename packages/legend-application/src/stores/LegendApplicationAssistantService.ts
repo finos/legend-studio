@@ -155,7 +155,7 @@ export class LegendApplicationAssistantService {
       return undefined;
     }
     const currentContext =
-      this.applicationStore.navigationContextService.currentContext.value;
+      this.applicationStore.navigationContextService.currentContext.key;
     const currentContextualDocumentationEntry =
       this.applicationStore.documentationService.getContextualDocEntry(
         currentContext,

@@ -30,10 +30,6 @@ import {
 } from '@finos/legend-application';
 import type { TestableMetadata } from './sidebar-state/testable/GlobalTestRunnerState.js';
 
-export type ApplicationSetup = (
-  pluginManager: LegendStudioPluginManager,
-) => Promise<void>;
-
 export type ApplicationPageRenderEntry = {
   key: string;
   urlPatterns: string[];
@@ -84,13 +80,6 @@ export abstract class LegendStudioPlugin extends LegendApplicationPlugin {
     pluginManager.registerApplicationPlugin(this);
     pluginManager.registerStudioPlugin(this);
   }
-
-  /**
-   * Get the list of setup procedures to be run when booting up the application.
-   *
-   * NOTE: The application will call the setup provedures from all extensions concurrently.
-   */
-  getExtraApplicationSetups?(): ApplicationSetup[];
 
   /**
    * Get the list of application pages to be rendered.

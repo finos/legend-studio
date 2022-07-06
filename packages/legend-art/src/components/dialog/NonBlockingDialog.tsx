@@ -22,7 +22,7 @@ import {
 } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 import { action, makeAutoObservable } from 'mobx';
-import { clsx } from '../../utils/CJS__clsx.cjs';
+import { clsx } from 'clsx';
 
 export class NonBlockingDialogState {
   isOpen = false;

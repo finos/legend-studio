@@ -62,7 +62,11 @@ import {
   type SetImplementation,
   type EnumerationMapping,
 } from '@finos/legend-graph';
-import { useApplicationStore } from '@finos/legend-application';
+import {
+  useApplicationNavigationContext,
+  useApplicationStore,
+} from '@finos/legend-application';
+import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../stores/LegendStudioApplicationNavigationContext.js';
 
 export const MappingEditorSplashScreen: React.FC = () => {
   const logoWidth = 280;
@@ -212,6 +216,10 @@ export const MappingEditor = observer(() => {
     applicationStore.guardUnhandledError(() =>
       flowResult(mappingEditorState.openTab(tabState)),
     );
+
+  useApplicationNavigationContext(
+    LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.MAPPING_EDITOR,
+  );
 
   return (
     <div className="mapping-editor">

@@ -35,7 +35,7 @@ import {
 } from '@finos/legend-application';
 import type { LegendStudioConfig } from '../../application/LegendStudioConfig.js';
 import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../stores/LegendStudioDocumentation.js';
-import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT } from '../../stores/LegendStudioApplicationNavigationContext.js';
+import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../stores/LegendStudioApplicationNavigationContext.js';
 
 enum CREATE_PROJECT_MODAL_TAB {
   CREATE = 'CREATE',
@@ -692,7 +692,7 @@ export const CreateProjectModal = observer(() => {
       setSelectedTab(val);
 
   useConditionedApplicationNavigationContext(
-    LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT.SETUP_CREATE_PROJECT_DIALOG,
+    LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.SETUP_CREATE_PROJECT_DIALOG,
     setupStore.showCreateProjectModal,
   );
 

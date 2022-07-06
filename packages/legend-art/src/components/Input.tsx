@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { clsx } from '../utils/CJS__clsx.cjs';
+import { clsx } from 'clsx';
 import { TimesCircleIcon } from './CJS__Icon.cjs';
 
 export const InputWithInlineValidation: React.FC<

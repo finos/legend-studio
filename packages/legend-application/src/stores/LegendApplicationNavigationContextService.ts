@@ -16,6 +16,9 @@
 
 import { IllegalStateError } from '@finos/legend-shared';
 import { action, computed, makeObservable, observable } from 'mobx';
+import type { ApplicationStore } from './ApplicationStore.js';
+import { ApplicationTelemetry } from './ApplicationTelemetry.js';
+import type { LegendApplicationConfig } from './LegendApplicationConfig.js';
 
 /**
  * Context data refers to the area of the application that the user is
@@ -29,7 +32,7 @@ import { action, computed, makeObservable, observable } from 'mobx';
  * for instance, the setup page.
  */
 export class ApplicationNavigationContextData {
-  value: string;
+  key: string;
   /**
    * There are 2 types of context data: `standard` and `transient`
    * 1. standard context data represents an application context layer that
@@ -49,30 +52,33 @@ export class ApplicationNavigationContextData {
    */
   isTransient = false;
 
-  private constructor(value: string, isTransient: boolean) {
-    this.value = value;
+  private constructor(key: string, isTransient: boolean) {
+    this.key = key;
     this.isTransient = isTransient;
   }
 
-  static create(value: string): ApplicationNavigationContextData {
-    return new ApplicationNavigationContextData(value, false);
+  static create(key: string): ApplicationNavigationContextData {
+    return new ApplicationNavigationContextData(key, false);
   }
 
-  static createTransient(value: string): ApplicationNavigationContextData {
-    return new ApplicationNavigationContextData(value, true);
+  static createTransient(key: string): ApplicationNavigationContextData {
+    return new ApplicationNavigationContextData(key, true);
   }
 }
 
 export class LegendApplicationNavigationContextService {
+  applicationStore: ApplicationStore<LegendApplicationConfig>;
   contextStack: ApplicationNavigationContextData[] = [];
 
-  constructor() {
+  constructor(applicationStore: ApplicationStore<LegendApplicationConfig>) {
     makeObservable(this, {
       contextStack: observable,
       currentContext: computed,
       push: action,
       pop: action,
     });
+
+    this.applicationStore = applicationStore;
   }
 
   get currentContext(): ApplicationNavigationContextData | undefined {
@@ -93,12 +99,29 @@ export class LegendApplicationNavigationContextService {
     // all of the remaining contexts are standard and they should be cleaned up properly
     // this makes our duplication meaningful
     const newContextStack = this.contextStack.filter((ctx) => !ctx.isTransient);
-    if (newContextStack.find((ctx) => ctx.value === context.value)) {
+    if (newContextStack.find((ctx) => ctx.key === context.key)) {
       throw new IllegalStateError(
-        `Found multiple context '${context.value}' in application navigation context stack`,
+        `Found multiple context '${context.key}' in application navigation context stack`,
       );
     }
     newContextStack.push(context);
+    // log the context being accessed if it's in the list of interested context keys
+    if (
+      this.applicationStore.pluginManager
+        .getApplicationPlugins()
+        .flatMap(
+          (plugin) =>
+            plugin.getExtraAccessEventLoggingApplicationContextKeys?.() ?? [],
+        )
+        .includes(context.key)
+    ) {
+      ApplicationTelemetry.logEvent_ApplicationContextAccessed(
+        this.applicationStore.telemetryService,
+        {
+          key: context.key,
+        },
+      );
+    }
     this.contextStack = newContextStack;
   }
 
@@ -113,7 +136,7 @@ export class LegendApplicationNavigationContextService {
    */
   pop(context: ApplicationNavigationContextData): void {
     const existingCtx = this.contextStack.find(
-      (ctx) => ctx.value === context.value,
+      (ctx) => ctx.key === context.key,
     );
     if (!existingCtx) {
       return;

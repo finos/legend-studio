@@ -245,7 +245,7 @@ test(integrationTest('Open query builder by executing a class'), async () => {
     LEGEND_STUDIO_TEST_ID.EXPLORER_CONTEXT_MENU,
   );
 
-  fireEvent.click(getByText(explorerContextMenu, 'Execute...'));
+  fireEvent.click(getByText(explorerContextMenu, 'Query...'));
   await waitFor(() =>
     renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER),
   );

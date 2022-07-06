@@ -17,7 +17,7 @@
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import type { MarkdownText } from '@finos/legend-shared';
-import { clsx } from '../../utils/CJS__clsx.cjs';
+import { clsx } from 'clsx';
 
 export const MarkdownTextViewer: React.FC<{
   value: MarkdownText;

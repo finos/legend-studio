@@ -27,11 +27,40 @@ type ApplicationLoaded_TelemetryData = {
   };
 };
 
+type ApplicationContextAccessed_TelemetryData = {
+  key: string;
+};
+
+type VirtualAssistantDocumentationEntryAccessed_TelemetryData = {
+  key: string;
+};
+
 export class ApplicationTelemetry {
-  static logEvent_AppInitialized(
+  static logEvent_ApplicationInitialized(
     telemetryService: TelemetryService,
     data: ApplicationLoaded_TelemetryData,
   ): void {
     telemetryService.logEvent(APPLICATION_EVENT.APPLICATION_LOADED, data);
+  }
+
+  static logEvent_ApplicationContextAccessed(
+    telemetryService: TelemetryService,
+    data: ApplicationContextAccessed_TelemetryData,
+  ): void {
+    telemetryService.logEvent(
+      APPLICATION_EVENT.APPLICATION_CONTEXT_ACCESSED,
+      data,
+    );
+  }
+
+  static logEvent_VirtualAssistantDocumentationEntryAccessed(
+    telemetryService: TelemetryService,
+    data: VirtualAssistantDocumentationEntryAccessed_TelemetryData,
+  ): void {
+    console.log('pied', data);
+    telemetryService.logEvent(
+      APPLICATION_EVENT.VIRTUAL_ASSISTANT_DOCUMENTATION_ENTRY_ACCESSED,
+      data,
+    );
   }
 }

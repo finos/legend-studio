@@ -151,7 +151,7 @@ export class ApplicationStore<T extends LegendApplicationConfig> {
     this.log.registerPlugins(pluginManager.getLoggerPlugins());
 
     this.navigationContextService =
-      new LegendApplicationNavigationContextService();
+      new LegendApplicationNavigationContextService(this);
     this.documentationService = new LegendApplicationDocumentationService(this);
     this.assistantService = new LegendApplicationAssistantService(this);
     this.telemetryService.registerPlugins(

@@ -14,13 +14,16 @@
  * limitations under the License.
  */
 
-export enum LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT {
+export enum LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY {
   // SETUP
   SETUP = 'setup',
   SETUP_CREATE_PROJECT_DIALOG = 'setup.create-project-dialog',
 
   // EDITOR
   EDITOR = 'editor',
+
+  MODEL_LOADER = 'editor.model-loader',
+  TEXT_MODE_EDITOR = 'editor.text-mode-editor',
 
   CLASS_EDITOR = 'editor.class-editor',
   CLASS_EDITOR_PROPERTIES = 'editor.class-editor.properties',
@@ -29,4 +32,6 @@ export enum LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT {
   CLASS_EDITOR_SUPERTYPES = 'editor.class-editor.supertypes',
   CLASS_DERIVED_PROPERTY_LAMBDA_EDITOR = 'editor.class-editor.derived-properties.lambda-editor',
   CLASS_CONTRAINT_LAMBDA_EDITOR = 'editor.class-editor.constraints.lambda-editor',
+
+  MAPPING_EDITOR = 'editor.mapping-editor',
 }

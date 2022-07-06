@@ -19,6 +19,7 @@ import {
   type LegendApplicationContextualDocumentationEntry,
 } from '@finos/legend-application';
 import packageJson from '../../package.json';
+import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../stores/LegendStudioApplicationNavigationContext.js';
 import {
   CORE_CONTEXTUAL_DOCUMENTATION_MAP,
   LEGEND_STUDIO_DOCUMENTATION_KEY,
@@ -71,5 +72,14 @@ export class Core_LegendStudioPlugin extends LegendStudioPlugin {
     return collectContextualDocumnetationEntry(
       CORE_CONTEXTUAL_DOCUMENTATION_MAP,
     );
+  }
+
+  override getExtraAccessEventLoggingApplicationContextKeys(): string[] {
+    return [
+      LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.TEXT_MODE_EDITOR,
+      LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.MODEL_LOADER,
+      LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.CLASS_EDITOR,
+      LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.MAPPING_EDITOR,
+    ];
   }
 }

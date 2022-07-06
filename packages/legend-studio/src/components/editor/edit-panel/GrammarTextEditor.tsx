@@ -43,6 +43,7 @@ import {
   EDITOR_LANGUAGE,
   useApplicationStore,
   type LegendApplicationDocumentationEntry,
+  useApplicationNavigationContext,
 } from '@finos/legend-application';
 import { useResizeDetector } from 'react-resize-detector';
 import {
@@ -99,6 +100,7 @@ import {
   MAPPING_WITH_RELATIONAL_CLASS_MAPPING_SNIPPET,
 } from '../../../stores/LegendStudioCodeSnippets.js';
 import type { DSLData_LegendStudioPlugin_Extension } from '../../../stores/DSLData_LegendStudioPlugin_Extension.js';
+import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../stores/LegendStudioApplicationNavigationContext.js';
 
 const getSectionParserNameFromLineText = (
   lineText: string,
@@ -1185,6 +1187,10 @@ export const GrammarTextEditor = observer(() => {
       suggestionProviderDisposer.current?.dispose();
     },
     [editor],
+  );
+
+  useApplicationNavigationContext(
+    LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.TEXT_MODE_EDITOR,
   );
 
   return (

@@ -36,9 +36,11 @@ import {
   ActionAlertActionType,
   useApplicationStore,
   EDITOR_LANGUAGE,
+  useApplicationNavigationContext,
 } from '@finos/legend-application';
 import { StudioTextInputEditor } from '../../shared/StudioTextInputEditor.js';
 import type { ModelLoaderExtensionConfiguration } from '../../../stores/LegendStudioPlugin.js';
+import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../stores/LegendStudioApplicationNavigationContext.js';
 
 export const ModelLoader = observer(() => {
   const editorStore = useEditorStore();
@@ -113,6 +115,10 @@ export const ModelLoader = observer(() => {
     }
   };
   const updateModel = (val: string): void => modelLoaderState.setModelText(val);
+
+  useApplicationNavigationContext(
+    LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.MODEL_LOADER,
+  );
 
   return (
     <div className="panel model-loader">

@@ -33,7 +33,6 @@ import {
   type MappingExecutionState,
   type MappingTestQueryEditorActionConfiguration,
   type MappingTestState,
-  type ApplicationSetup,
   type DSLService_LegendStudioPlugin_Extension,
   type ServiceQueryEditorActionConfiguration,
   NewServiceModal,
@@ -65,6 +64,7 @@ import {
 import { assertErrorThrown, guaranteeNonNullable } from '@finos/legend-shared';
 import { useState } from 'react';
 import { observer } from 'mobx-react-lite';
+import type { LegendApplicationSetup } from '@finos/legend-application';
 
 const promoteQueryToService = async (
   packagePath: string,
@@ -169,9 +169,9 @@ export class QueryBuilder_LegendStudioPlugin
     super(packageJson.extensions.studioPlugin, packageJson.version);
   }
 
-  override getExtraApplicationSetups(): ApplicationSetup[] {
+  override getExtraApplicationSetups(): LegendApplicationSetup[] {
     return [
-      async (pluginManager: LegendStudioPluginManager): Promise<void> => {
+      async (pluginManager) => {
         await setupLegendQueryUILibrary();
       },
     ];
@@ -232,7 +232,7 @@ export class QueryBuilder_LegendStudioPlugin
             );
 
             return (
-              <MenuContentItem onClick={buildQuery}>Execute...</MenuContentItem>
+              <MenuContentItem onClick={buildQuery}>Query...</MenuContentItem>
             );
           }
           return undefined;
@@ -332,7 +332,7 @@ export class QueryBuilder_LegendStudioPlugin
               );
 
             return (
-              <MenuContentItem onClick={buildQuery}>Execute...</MenuContentItem>
+              <MenuContentItem onClick={buildQuery}>Query...</MenuContentItem>
             );
           }
           return undefined;
