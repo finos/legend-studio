@@ -29,6 +29,8 @@ export { V1_PersistenceContext } from './models/protocols/pure/v1/model/packagea
 
 // ---------- TRANSFORMATION ----------
 
+export * from './models/protocols/pure/DSLPersistence_PureProtocolProcessorPlugin_Extension.js';
+
 export { V1_transformPersistence } from './models/protocols/pure/v1/transformation/pureGraph/from/V1_PersistenceTransformer.js';
 export { V1_buildPersistence } from './models/protocols/pure/v1/transformation/pureGraph/to/V1_PersistenceBuilder.js';
 
