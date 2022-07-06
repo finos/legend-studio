@@ -253,6 +253,20 @@
         font-weight: 500;
       }
     }
+
+    &__name {
+      height: 100%;
+      width: 100%;
+
+      &__input {
+        padding: 0.5rem;
+        height: 2.8rem;
+        line-height: 2.8rem;
+        background: var(--color-dark-grey-100);
+        border: 0.1rem solid var(--color-dark-grey-300);
+        color: var(--color-light-grey-200);
+      }
+    }
   }
 
   &__parameter:hover {
