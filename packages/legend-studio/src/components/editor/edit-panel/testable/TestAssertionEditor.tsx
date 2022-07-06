@@ -42,7 +42,7 @@ import { JsonDiffView } from '../../../shared/DiffView.js';
 import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor.js';
 import { UnsupportedEditorPanel } from '../UnsupportedElementEditor.js';
 
-export const EqualToJsonAsssertionEditor = observer(
+const EqualToJsonAsssertionEditor = observer(
   (props: {
     testAssertionEditorState: TestAssertionEditorState;
     equalToJsonAssertionState: EqualToJsonAssertionState;
@@ -90,6 +90,7 @@ export const EqualToJsonAsssertionEditor = observer(
     );
   },
 );
+
 const EqualToJsonAssertFailViewer = observer(
   (props: { equalToJsonAssertFailState: EqualToJsonAssertFailState }) => {
     const { equalToJsonAssertFailState } = props;
@@ -112,14 +113,14 @@ const EqualToJsonAssertFailViewer = observer(
           >
             <div className="modal modal--dark editor-modal">
               <div className="modal__header">
-                <div className="service-test-editor__test__diff__header__info">
-                  <div className="service-test-editor__test__diff__header__info__label">
+                <div className="equal-to-json-result__diff__summary">
+                  <div className="equal-to-json-result__diff__header__label">
                     expected
                   </div>
-                  <div className="service-test-editor__test__diff__header__info__icon">
+                  <div className="equal-to-json-result__diff__icon">
                     <CompareIcon />
                   </div>
-                  <div className="service-test-editor__test__diff__header__info__label">
+                  <div className="equal-to-json-result__diff__header__label">
                     actual
                   </div>
                 </div>
@@ -163,6 +164,7 @@ const AssertFailViewer = observer(
     );
   },
 );
+
 const TestAssertionResultViewer = observer(
   (props: { testAssertionEditorState: TestAssertionEditorState }) => {
     const { testAssertionEditorState } = props;
@@ -270,7 +272,7 @@ export const TestAssertionEditor = observer(
             <button
               className="panel__header__action service-execution-editor__test-data__generate-btn"
               onClick={generate}
-              title="Generate expected result is possible"
+              title="Generate expected result if possible"
               disabled={isReadOnly}
               tabIndex={-1}
             >

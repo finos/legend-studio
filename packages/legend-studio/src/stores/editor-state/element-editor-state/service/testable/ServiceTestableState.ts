@@ -29,6 +29,7 @@ import {
   AtomicTestId,
   DEFAULT_TEST_SUITE_PREFIX,
   DEFAULT_TEST_PREFIX,
+  TestError,
 } from '@finos/legend-graph';
 import {
   type GeneratorFn,
@@ -178,7 +179,7 @@ export class ServiceTestSuiteState {
       input.unitTestIds = this.testStates
         .map((testState) => {
           const result = testState.testResultState.result;
-          if (result instanceof TestFailed || result instanceof TestFailed) {
+          if (result instanceof TestFailed || result instanceof TestError) {
             testState.runningTestAction.inProgress();
             return new AtomicTestId(this.suite, testState.test);
           }

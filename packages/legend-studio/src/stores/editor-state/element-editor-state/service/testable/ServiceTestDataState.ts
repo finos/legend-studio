@@ -265,6 +265,7 @@ export class ServiceTestDataState {
       openConnectionTestData: action,
       createConnectionTestData: action,
       newConnectionDataState: observable,
+      selectedDataState: observable,
     });
     this.testData = testData;
     this.testSuiteState = testSuiteState;
