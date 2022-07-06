@@ -912,44 +912,35 @@ export const ServiceStoreEmbeddedDataEditor = observer(
                 </button>
               </div>
             </div>
-            <ContextMenu
-              className="service-store-embedded-data-editor__content"
-              disabled={isReadOnly}
-              content={
-                !isReadOnly &&
-                currentServiceStubMapping !== undefined && (
-                  <div
-                    className="service-store-embedded-data-editor__context-menu"
-                    onClick={deleteServiceStubMapping(
-                      currentServiceStubMapping,
-                    )}
-                  >
-                    Delete
-                  </div>
-                )
-              }
-              menuProps={{ elevation: 7 }}
-            >
-              <div className="service-store-embedded-data-editor__content__lists">
-                <MenuContent className="service-store-embedded-data-editor__dropdown">
-                  {serviceStoreEmbeddedDataState.embeddedData.serviceStubMappings.map(
-                    (serviceStubMapping: ServiceStubMapping, index: number) => (
+            {serviceStoreEmbeddedDataState.embeddedData.serviceStubMappings.map(
+              (serviceStubMapping: ServiceStubMapping, index: number) => (
+                <ContextMenu
+                  key={serviceStubMapping._UUID}
+                  className={clsx('service-store-embedded-data-editor__item', {
+                    'service-store-embedded-data-editor__item--active':
+                      currentServiceStubMapping === serviceStubMapping,
+                  })}
+                  disabled={isReadOnly}
+                  content={
+                    <MenuContent>
                       <MenuContentItem
-                        key={serviceStubMapping._UUID}
-                        className={
-                          currentServiceStubMapping === serviceStubMapping
-                            ? 'service-store-embedded-data-editor__option service-store-embedded-data-editor__option__active'
-                            : 'service-store-embedded-data-editor__option'
-                        }
-                        onClick={changeState(serviceStubMapping)}
+                        onClick={deleteServiceStubMapping(serviceStubMapping)}
                       >
-                        ServiceStubMapping{index + 1}
+                        Delete
                       </MenuContentItem>
-                    ),
-                  )}
-                </MenuContent>
-              </div>
-            </ContextMenu>
+                    </MenuContent>
+                  }
+                  menuProps={{ elevation: 7 }}
+                >
+                  <div
+                    className="service-store-embedded-data-editor__item__label"
+                    onClick={changeState(serviceStubMapping)}
+                  >
+                    ServiceStubMapping{index + 1}
+                  </div>
+                </ContextMenu>
+              ),
+            )}
           </div>
         </ResizablePanel>
         <ResizablePanelSplitter>

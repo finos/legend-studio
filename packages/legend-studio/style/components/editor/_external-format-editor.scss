@@ -326,20 +326,6 @@
     @include ellipsisTextOverflow;
   }
 
-  &__context-menu {
-    @include flexVCenter;
-
-    cursor: default;
-    color: var(--color-light-grey-50);
-    height: 2.8rem;
-    padding: 0 1rem;
-  }
-
-  &__context-menu:hover {
-    background: var(--color-light-blue-200);
-    color: var(--color-light-grey-0);
-  }
-
   &__content {
     background: var(--color-dark-grey-50);
     height: calc(100% - 2.8rem);
@@ -357,21 +343,33 @@
     padding: 0;
   }
 
-  &__option {
-    padding: 1rem;
-    height: 2.8rem;
-    background: var(--color-dark-grey-50);
-    color: var(--color-light-grey-200);
+  &__item {
+    @include flexVCenter;
+    @include flexHSpaceBetween;
 
-    &__active {
-      background: var(--color-light-blue-400);
-      color: var(--color-light-grey-50);
-    }
+    height: 2.4rem;
+    color: var(--color-light-grey-400);
   }
 
-  &__option:hover {
-    background: var(--color-light-grey-100);
+  &__item:hover {
+    background: var(--color-dark-blue-shade-100);
+  }
+
+  &__item--active,
+  &__item--active:hover {
+    background: var(--color-light-blue-450);
     color: var(--color-light-grey-50);
+  }
+
+  &__item__label {
+    @include flexVCenter;
+
+    height: 100%;
+    width: calc(100% - 2.8rem);
+    max-width: calc(100% - 2.8rem);
+    background: none;
+    color: inherit;
+    padding-left: 1rem;
   }
 }
 
