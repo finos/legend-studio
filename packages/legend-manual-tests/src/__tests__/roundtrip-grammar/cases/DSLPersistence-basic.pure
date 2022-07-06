@@ -1,4 +1,17 @@
 ###Persistence
+PersistenceContext org::legend::ZooPersistenceContext1
+{
+  persistence: org::legend::ZooPersistence;
+  serviceParameters:
+  [
+    connection=org::legend::ZooDbConnection,
+    foo='Hello',
+    bar=29,
+    qux=27.5
+  ];
+  sinkConnection: org::legend::ZooDbConnection;
+}
+
 Persistence org::legend::ZooPersistence
 {
   doc: 'A persistence specification for Zoos.';
@@ -118,6 +131,12 @@ Service org::legend::ZooService
 }
 
 
+###Relational
+Database org::legend::ZooDb
+(
+)
+
+
 ###ExternalFormat
 Binding org::legend::ZooBinding
 {
@@ -165,3 +184,15 @@ Association org::legend::ZooAnimal
 Mapping org::legend::Mapping
 (
 )
+
+
+###Connection
+RelationalDatabaseConnection org::legend::ZooDbConnection
+{
+  store: org::legend::ZooDb;
+  type: H2;
+  specification: LocalH2
+  {
+  };
+  auth: DefaultH2;
+}
