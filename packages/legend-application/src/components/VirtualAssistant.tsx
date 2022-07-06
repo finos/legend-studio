@@ -637,8 +637,8 @@ export const VirtualAssistant = observer(() => {
         ref={assistantRef}
       >
         <div
-          //  NOTE: make sure when we change the documentation entry, the flashing animation
-          // is replayed
+          //  NOTE: make sure when we change the documentation entry,
+          // the flashing animation is replayed in the virtual assistant station
           key={currentContextualDocumentationEntry?.uuid ?? ''}
           className={clsx('virtual-assistant__station', {
             'virtual-assistant__station--hidden': assistantService.isHidden,
@@ -667,13 +667,6 @@ export const VirtualAssistant = observer(() => {
               <CircleIcon className="virtual-assistant__station__trigger__circle" />
             ) : null}
           </button>
-          {/* NOTE: temporarily hide the assistant panel while dragging so the position is re-calculated */}
-          {!isDragging &&
-            assistantService.isOpen &&
-            !assistantService.isHidden &&
-            assistantRef.current && (
-              <VirtualAssistantPanel triggerElement={assistantRef.current} />
-            )}
 
           <ContextMenu
             className={clsx('virtual-assistant__station__drag-handle', {
@@ -704,6 +697,14 @@ export const VirtualAssistant = observer(() => {
             </div>
           </ContextMenu>
         </div>
+
+        {/* NOTE: temporarily hide the assistant panel while dragging so the position is re-calculated */}
+        {!isDragging &&
+          assistantService.isOpen &&
+          !assistantService.isHidden &&
+          assistantRef.current && (
+            <VirtualAssistantPanel triggerElement={assistantRef.current} />
+          )}
       </div>
     </Draggable>
   );
