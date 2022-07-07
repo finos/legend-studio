@@ -132,6 +132,7 @@ const QueryBuilderTreeNodeViewer = observer(
         collect: (monitor): { isDragging: boolean } => ({
           isDragging: monitor.isDragging(),
         }),
+        // To open the property search panel after the user is done with dropping property in the fetch structure/ filter panels.
         end: (): void => {
           propertySearchPanelState.setIsSearchPanelOpen(true);
         },
@@ -198,6 +199,8 @@ const QueryBuilderTreeNodeViewer = observer(
           }}
           onClick={(): void => setIsExpandable(!isExpandable)}
           draggable="true"
+          // To close the property search panel when user is dragging a property so that PopOver doesn't disable dropping
+          // properties to panels.
           onDrag={(): void =>
             propertySearchPanelState.setIsSearchPanelOpen(false)
           }
