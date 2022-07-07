@@ -39,6 +39,7 @@ import {
   type UsernamePasswordAuthenticationStrategy,
   type GCPWorkloadIdentityFederationAuthenticationStrategy,
   type ObserverContext,
+  type SpannerDatasourceSpecification,
   getRelationalInputType,
   observe_DatasourceSpecification,
   observe_AuthenticationStrategy,
@@ -355,6 +356,31 @@ export const bigQueryDatasourceSpecification_setProxyHost = action(
 export const bigQueryDatasourceSpecification_setProxyPort = action(
   (spec: BigQueryDatasourceSpecification, val: string | undefined): void => {
     spec.proxyPort = val;
+  },
+);
+export const spannerDatasourceSpecification_setProjectId = action(
+  (spec: SpannerDatasourceSpecification, val: string): void => {
+    spec.projectId = val;
+  },
+);
+export const spannerDatasourceSpecification_setInstanceId = action(
+  (spec: SpannerDatasourceSpecification, val: string): void => {
+    spec.instanceId = val;
+  },
+);
+export const spannerDatasourceSpecification_setDatabaseId = action(
+  (spec: SpannerDatasourceSpecification, val: string): void => {
+    spec.databaseId = val;
+  },
+);
+export const spannerDatasourceSpecification_setHost = action(
+  (spec: SpannerDatasourceSpecification, val: string | undefined): void => {
+    spec.host = val;
+  },
+);
+export const spannerDatasourceSpecification_setPort = action(
+  (spec: SpannerDatasourceSpecification, val: string | undefined): void => {
+    spec.port = val;
   },
 );
 //

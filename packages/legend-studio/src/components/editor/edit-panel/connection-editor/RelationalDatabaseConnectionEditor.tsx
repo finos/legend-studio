@@ -15,50 +15,21 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import {
-  type RelationalDatabaseConnectionValueState,
-  CORE_AUTHENTICATION_STRATEGY_TYPE,
-  CORE_DATASOURCE_SPEC_TYPE,
-  RELATIONAL_DATABASE_TAB_TYPE,
-} from '../../../../stores/editor-state/element-editor-state/connection/ConnectionEditorState.js';
 import { useState } from 'react';
 import {
-  ResizablePanelGroup,
-  ResizablePanel,
-  ResizablePanelSplitter,
+  CheckSquareIcon,
   clsx,
   CustomSelectorInput,
-  CheckSquareIcon,
-  SquareIcon,
-  TimesIcon,
   ErrorIcon,
   PencilIcon,
+  ResizablePanel,
+  ResizablePanelGroup,
+  ResizablePanelSplitter,
+  SquareIcon,
+  TimesIcon,
 } from '@finos/legend-art';
 import { capitalize, prettyCONSTName } from '@finos/legend-shared';
-import {
-  type RelationalDatabaseConnection,
-  type Store,
-  DatabaseType,
-  DelegatedKerberosAuthenticationStrategy,
-  OAuthAuthenticationStrategy,
-  SnowflakePublicAuthenticationStrategy,
-  ApiTokenAuthenticationStrategy,
-  UsernamePasswordAuthenticationStrategy,
-  GCPWorkloadIdentityFederationAuthenticationStrategy,
-  EmbeddedH2DatasourceSpecification,
-  LocalH2DatasourceSpecification,
-  SnowflakeDatasourceSpecification,
-  DatabricksDatasourceSpecification,
-  StaticDatasourceSpecification,
-  BigQueryDatasourceSpecification,
-  RedshiftDatasourceSpecification,
-  PackageableElementExplicitReference,
-} from '@finos/legend-graph';
 import { runInAction } from 'mobx';
-import {
-  buildElementOption,
-  type PackageableElementOption,
-} from '../../../../stores/shared/PackageableElementOptionUtil.js';
 import type { LegendStudioPlugin } from '../../../../stores/LegendStudioPlugin.js';
 import type { StoreRelational_LegendStudioPlugin_Extension } from '../../../../stores/StoreRelational_LegendStudioPlugin_Extension.js';
 import { DatabaseBuilder } from './DatabaseBuilder.js';
@@ -82,6 +53,8 @@ import {
   embeddedH2DatasourceSpecification_setAutoServerMode,
   embeddedH2DatasourceSpecification_setDatabaseName,
   embeddedH2DatasourceSpecification_setDirectory,
+  gcpWorkloadIdentityFederationAuthenticationStrategy_setAdditionalGcpScopes,
+  gcpWorkloadIdentityFederationAuthenticationStrategy_setServiceAccountEmail,
   localH2DatasourceSpecification_setTestDataSetupSqls,
   oAuthAuthenticationStrategy_setOauthKey,
   oAuthAuthenticationStrategy_setScopeName,
@@ -106,15 +79,48 @@ import {
   snowflakePublicAuthenticationStrategy_setPassPhraseVaultReference,
   snowflakePublicAuthenticationStrategy_setPrivateKeyVaultReference,
   snowflakePublicAuthenticationStrategy_setPublicUserName,
+  spannerDatasourceSpecification_setDatabaseId,
+  spannerDatasourceSpecification_setHost,
+  spannerDatasourceSpecification_setInstanceId,
+  spannerDatasourceSpecification_setPort,
+  spannerDatasourceSpecification_setProjectId,
   staticDatasourceSpecification_setDatabaseName,
   staticDatasourceSpecification_setHost,
   staticDatasourceSpecification_setPort,
   usernamePasswordAuthenticationStrategy_setBaseVaultReference,
   usernamePasswordAuthenticationStrategy_setPasswordVaultReference,
   usernamePasswordAuthenticationStrategy_setUserNameVaultReference,
-  gcpWorkloadIdentityFederationAuthenticationStrategy_setServiceAccountEmail,
-  gcpWorkloadIdentityFederationAuthenticationStrategy_setAdditionalGcpScopes,
 } from '../../../../stores/graphModifier/StoreRelational_GraphModifierHelper.js';
+import {
+  type RelationalDatabaseConnectionValueState,
+  CORE_AUTHENTICATION_STRATEGY_TYPE,
+  CORE_DATASOURCE_SPEC_TYPE,
+  RELATIONAL_DATABASE_TAB_TYPE,
+} from '../../../../stores/editor-state/element-editor-state/connection/ConnectionEditorState.js';
+import {
+  type RelationalDatabaseConnection,
+  type Store,
+  DatabaseType,
+  DelegatedKerberosAuthenticationStrategy,
+  OAuthAuthenticationStrategy,
+  SnowflakePublicAuthenticationStrategy,
+  ApiTokenAuthenticationStrategy,
+  UsernamePasswordAuthenticationStrategy,
+  GCPWorkloadIdentityFederationAuthenticationStrategy,
+  EmbeddedH2DatasourceSpecification,
+  LocalH2DatasourceSpecification,
+  SnowflakeDatasourceSpecification,
+  DatabricksDatasourceSpecification,
+  StaticDatasourceSpecification,
+  BigQueryDatasourceSpecification,
+  RedshiftDatasourceSpecification,
+  PackageableElementExplicitReference,
+  SpannerDatasourceSpecification,
+} from '@finos/legend-graph';
+import {
+  buildElementOption,
+  type PackageableElementOption,
+} from '../../../../stores/shared/PackageableElementOptionUtil.js';
 
 /**
  * NOTE: this is a WIP we did to quickly assemble a modular UI for relational database connection editor
@@ -850,6 +856,70 @@ const BigQueryDatasourceSpecificationEditor = observer(
   },
 );
 
+const SpannerDatasourceSpecificationEditor = observer(
+  (props: {
+    sourceSpec: SpannerDatasourceSpecification;
+    isReadOnly: boolean;
+  }) => {
+    const { sourceSpec, isReadOnly } = props;
+    return (
+      <>
+        <ConnectionEditor_StringEditor
+          isReadOnly={isReadOnly}
+          value={sourceSpec.projectId}
+          propertyName={'project id'}
+          description={'Your google cloud project identifier'}
+          update={(value: string | undefined): void =>
+            spannerDatasourceSpecification_setProjectId(sourceSpec, value ?? '')
+          }
+        />
+        <ConnectionEditor_StringEditor
+          isReadOnly={isReadOnly}
+          value={sourceSpec.instanceId}
+          propertyName={'instance id'}
+          description={'Spanner instance identifier in google cloud product'}
+          update={(value: string | undefined): void =>
+            spannerDatasourceSpecification_setInstanceId(
+              sourceSpec,
+              value ?? '',
+            )
+          }
+        />
+        <ConnectionEditor_StringEditor
+          isReadOnly={isReadOnly}
+          value={sourceSpec.databaseId}
+          propertyName="database id"
+          description="Spanner's Database identifier you want to connect to"
+          update={(value: string | undefined): void =>
+            spannerDatasourceSpecification_setDatabaseId(
+              sourceSpec,
+              value ?? '',
+            )
+          }
+        />
+        <ConnectionEditor_StringEditor
+          isReadOnly={isReadOnly}
+          value={sourceSpec.host}
+          propertyName="host"
+          description="Specifies host for connection. Leave blank for google cloud defaults"
+          update={(value: string | undefined): void =>
+            spannerDatasourceSpecification_setHost(sourceSpec, value ?? '')
+          }
+        />
+        <ConnectionEditor_StringEditor
+          isReadOnly={isReadOnly}
+          value={sourceSpec.port}
+          propertyName="port"
+          description="Specifies port for connection. Leave blank for google cloud defaults"
+          update={(value: string | undefined): void =>
+            spannerDatasourceSpecification_setPort(sourceSpec, value ?? '')
+          }
+        />
+      </>
+    );
+  },
+);
+
 // auth strategy
 
 const DelegatedKerberosAuthenticationStrategyEditor = observer(
@@ -1179,6 +1249,13 @@ const renderDatasourceSpecificationEditor = (
         isReadOnly={isReadOnly}
       />
     );
+  } else if (sourceSpec instanceof SpannerDatasourceSpecification) {
+    return (
+      <SpannerDatasourceSpecificationEditor
+        sourceSpec={sourceSpec}
+        isReadOnly={isReadOnly}
+      />
+    );
   } else {
     const extraDatasourceSpecificationEditorRenderers = plugins.flatMap(
       (plugin) =>
@@ -1264,7 +1341,6 @@ const renderAuthenticationStrategyEditor = (
     return null;
   }
 };
-
 const RelationalConnectionGeneralEditor = observer(
   (props: {
     connectionValueState: RelationalDatabaseConnectionValueState;

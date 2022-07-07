@@ -29,6 +29,7 @@ import {
   SnowflakeDatasourceSpecification,
   RedshiftDatasourceSpecification,
   BigQueryDatasourceSpecification,
+  SpannerDatasourceSpecification,
 } from '../../../../../../../metamodels/pure/packageableElements/store/relational/connection/DatasourceSpecification.js';
 import {
   type AuthenticationStrategy,
@@ -51,6 +52,7 @@ import {
   V1_SnowflakeDatasourceSpecification,
   V1_RedshiftDatasourceSpecification,
   V1_BigQueryDatasourceSpecification,
+  V1_SpannerDatasourceSpecification,
 } from '../../../../model/packageableElements/store/relational/connection/V1_DatasourceSpecification.js';
 import {
   type V1_AuthenticationStrategy,
@@ -213,6 +215,37 @@ export const V1_buildDatasourceSpecification = (
       protocol.region,
     );
     return redshiftSpec;
+  } else if (protocol instanceof V1_SpannerDatasourceSpecification) {
+    assertNonNullable(
+      protocol.projectId,
+      `Spanner datasource specification 'projectId' field is missing`,
+    );
+    assertNonNullable(
+      protocol.instanceId,
+      `Spanner datasource specification 'istance' field is missing`,
+    );
+    assertNonNullable(
+      protocol.databaseId,
+      `Spanner datasource specification 'databaseId' field is missing`,
+    );
+
+    assertNonEmptyString(
+      protocol.host,
+      `Redshift datasource specification 'host' if exist should not be empty`,
+    );
+    assertNonEmptyString(
+      protocol.port,
+      `Redshift datasource specification 'port' if exist should not be empty`,
+    );
+
+    const spannerSpec = new SpannerDatasourceSpecification(
+      protocol.projectId,
+      protocol.instanceId,
+      protocol.databaseId,
+      protocol.host,
+      protocol.port,
+    );
+    return spannerSpec;
   }
   const extraConnectionDatasourceSpecificationBuilders =
     context.extensions.plugins.flatMap(

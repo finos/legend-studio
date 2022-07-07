@@ -46,6 +46,7 @@ export enum V1_DatabaseType {
   Databricks = 'Databricks',
   Presto = 'Presto',
   Redshift = 'Redshift',
+  Spanner = 'Spanner',
 }
 
 export abstract class V1_DatabaseConnection extends V1_Connection {
