@@ -24,6 +24,7 @@ import {
   TimesIcon,
   DollarIcon,
   PlusIcon,
+  InputWithInlineValidation,
 } from '@finos/legend-art';
 import {
   type QueryBuilderParameterDragSource,
@@ -64,6 +65,18 @@ const VariableExpressionEditor = observer(
       !queryParametersState.parameterStates.includes(lambdaParameterState);
     const varState = lambdaParameterState.parameter;
     const multiplity = varState.multiplicity;
+    const validationMessage = !varState.name
+      ? `Parameter name can't be empty`
+      : (isCreating &&
+          queryParametersState.parameterStates.find(
+            (p) => p.parameter.name === varState.name,
+          )) ||
+        (!isCreating &&
+          queryParametersState.parameterStates.filter(
+            (p) => p.parameter.name === varState.name,
+          ).length > 1)
+      ? 'Parameter name already exists'
+      : undefined;
     // variable
     const changeVariableName: React.ChangeEventHandler<HTMLInputElement> = (
       event,
@@ -152,12 +165,16 @@ const VariableExpressionEditor = observer(
               <div className="panel__content__form__section__header__prompt">
                 Name of the parameter. Should be descriptive of its purpose.
               </div>
-              <input
-                className="panel__content__form__section__input panel__content__form__section__number-input"
-                spellCheck={false}
-                value={varState.name}
-                onChange={changeVariableName}
-              />
+              <div className="query-builder__parameters__parameter__name">
+                <InputWithInlineValidation
+                  className="query-builder__parameters__parameter__name__input input-group__input"
+                  spellCheck={false}
+                  value={varState.name}
+                  onChange={changeVariableName}
+                  placeholder={`Parameter name`}
+                  validationErrorMessage={validationMessage}
+                />
+              </div>
             </div>
             <div className="panel__content__form__section">
               <div className="panel__content__form__section__header__label">
@@ -204,8 +221,9 @@ const VariableExpressionEditor = observer(
           <div className="modal__footer">
             {isCreating && (
               <button
-                className="btn modal__footer__close-btn"
+                className="btn modal__footer__close-btn btn--dark"
                 onClick={onAction}
+                disabled={Boolean(validationMessage)}
               >
                 Create
               </button>
