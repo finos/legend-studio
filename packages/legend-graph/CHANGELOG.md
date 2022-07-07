@@ -1,5 +1,23 @@
 # @finos/legend-graph
 
+## 10.0.0
+
+### Major Changes
+
+- [#1257](https://github.com/finos/legend-studio/pull/1257) [`d8f3991b`](https://github.com/finos/legend-studio/commit/d8f3991b1130355b31f016d2a2f8059c436046c9) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Remove the required `clientVersion` call from execution-related methods in `AbstractPureGraphManager`, we will always assume `vX_X_X` is the chosen version until we come up with a more generic handling for protocol versions.
+
+* [#1257](https://github.com/finos/legend-studio/pull/1257) [`d8f3991b`](https://github.com/finos/legend-studio/commit/d8f3991b1130355b31f016d2a2f8059c436046c9) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Renamed `V1_getExtraExecutionInputGetters()` to `V1_getExtraExecutionInputCollectors()`.
+
+### Minor Changes
+
+- [#1195](https://github.com/finos/legend-studio/pull/1195) [`b429420`](https://github.com/finos/legend-studio/commit/b429420ec1fd56186233505657c40a046428cf2b) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Support `RelationalCSVData` models and serialization format for `ServiceTest`.
+
+* [#1259](https://github.com/finos/legend-studio/pull/1259) [`91afdec3`](https://github.com/finos/legend-studio/commit/91afdec3def61aeafa05783b8eb5d220503f98ec) ([@rafaelbey](https://github.com/rafaelbey)) - Expose builder utility function `V1_findSchema()` to find a schema on a given database (including `included` databases).
+
+- [#1186](https://github.com/finos/legend-studio/pull/1186) [`cce3d6d4`](https://github.com/finos/legend-studio/commit/cce3d6d4e28bdfec3626eb5775ba3cf45acc343d) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Introduced the mapping-analysis API from Engine.
+
+* [#1264](https://github.com/finos/legend-studio/pull/1264) [`e674c59c`](https://github.com/finos/legend-studio/commit/e674c59cc173856392a9abaf7c61475be55b6cd8) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add `generateVariableExpressionMockValue` to generate mock value for a variable expression.
+
 ## 9.0.1
 
 ## 9.0.0

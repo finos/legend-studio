@@ -1,5 +1,15 @@
 # @finos/legend-application
 
+## 5.1.0
+
+### Minor Changes
+
+- [#1264](https://github.com/finos/legend-studio/pull/1264) [`e674c59c`](https://github.com/finos/legend-studio/commit/e674c59cc173856392a9abaf7c61475be55b6cd8) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add `setValueSpecification` to `BasicValueSpecificationEditor` for handling any post actions for changes in ValueSpecification.
+
+### Patch Changes
+
+- [#1257](https://github.com/finos/legend-studio/pull/1257) [`d8f3991b`](https://github.com/finos/legend-studio/commit/d8f3991b1130355b31f016d2a2f8059c436046c9) ([@akphi](https://github.com/akphi)) - Fix a problem with virtual assistant does not receive proper focus when other modal dialogs are open ([#1255](https://github.com/finos/legend-studio/issues/1255)).
+
 ## 5.0.1
 
 ## 5.0.0

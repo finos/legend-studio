@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-query-deployment",
-  "version": "6.2.0",
+  "version": "6.3.0",
   "private": true,
   "description": "Legend Query web application deployment",
   "keywords": [

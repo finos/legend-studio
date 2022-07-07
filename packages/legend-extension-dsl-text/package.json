@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-extension-dsl-text",
-  "version": "3.0.5",
+  "version": "3.0.6",
   "description": "Legend extension for Text DSL",
   "keywords": [
     "legend",
