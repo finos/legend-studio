@@ -40,7 +40,7 @@ import {
   generatePropertyNodeMappingData,
 } from '../../stores/QueryBuilderExplorerState.js';
 import { LegendQueryPluginManager } from '../../application/LegendQueryPluginManager.js';
-import { Query_GraphPreset } from '../../models/Query_GraphPreset.js';
+import { QueryBuilder_GraphPreset } from '../../models/QueryBuilder_GraphPreset.js';
 import { TEST__provideMockedLegendQueryStore } from '../../components/QueryComponentTestUtils.js';
 import {
   TEST_DATA__Auto_M2M,
@@ -253,7 +253,7 @@ describe(integrationTest('Build property mapping data'), () => {
         rawMappingModelCoverageAnalysisResult,
       } = testCase;
       const pluginManager = LegendQueryPluginManager.create();
-      pluginManager.usePresets([new Query_GraphPreset()]).install();
+      pluginManager.usePresets([new QueryBuilder_GraphPreset()]).install();
       const mockedQueryStore = TEST__provideMockedLegendQueryStore({
         pluginManager,
       });

@@ -89,6 +89,7 @@
   },
   "extensions": {
     "graphPreset": "@finos/legend-graph-preset-query-builder",
-    "pureProtocolProcessorPlugin": "@finos/legend-graph-plugin-query-builder-pure-protocol-processor"
+    "pureProtocolProcessorPlugin": "@finos/legend-graph-plugin-query-builder-pure-protocol-processor",
+    "pureGraphManagerPlugin": "@finos/legend-graph-plugin-query-builder-pure-graph-manager"
   }
 }

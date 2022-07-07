@@ -84,6 +84,7 @@ import {
 import type { LegendQueryPluginManager } from '../application/LegendQueryPluginManager.js';
 import type { LegendQueryConfig } from '../application/LegendQueryConfig.js';
 import { LegendQueryEventService } from './LegendQueryEventService.js';
+import { getQueryBuilderGraphManagerExtension } from '../graphManager/pure/QueryBuilder_PureGraphManagerExtension.js';
 
 export abstract class QueryInfoState {
   queryStore: LegendQueryStore;
@@ -869,7 +870,9 @@ export class LegendQueryStore {
 
       // build light create query graph
       yield flowResult(
-        this.graphManagerState.graphManager.buildGraphForCreateQuerySetup(
+        getQueryBuilderGraphManagerExtension(
+          this.graphManagerState.graphManager,
+        ).buildGraphForCreateQuerySetup(
           this.graphManagerState.graph,
           entities,
           dependencyEntitiesMap,
@@ -936,7 +939,9 @@ export class LegendQueryStore {
 
       // build light service query graph
       yield flowResult(
-        this.graphManagerState.graphManager.buildGraphForServiceQuerySetup(
+        getQueryBuilderGraphManagerExtension(
+          this.graphManagerState.graphManager,
+        ).buildGraphForServiceQuerySetup(
           this.graphManagerState.graph,
           entities,
           dependencyEntitiesMap,

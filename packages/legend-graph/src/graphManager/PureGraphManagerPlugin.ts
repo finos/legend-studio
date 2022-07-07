@@ -19,7 +19,20 @@ import type { PureModel } from '../graph/PureModel.js';
 import type { GraphPluginManager } from '../GraphPluginManager.js';
 import type { PackageableElement } from '../models/metamodels/pure/packageableElements/PackageableElement.js';
 import type { Testable } from '../models/metamodels/pure/test/Testable.js';
+import type {
+  AbstractPureGraphManager,
+  AbstractPureGraphManagerExtension,
+} from './AbstractPureGraphManager.js';
 import type { ObserverContext } from './action/changeDetection/CoreObserverHelper.js';
+
+export type PureGraphManagerExtensionBuilder = (
+  graphManager: AbstractPureGraphManager,
+) => AbstractPureGraphManagerExtension;
+
+export type ElementObserver = (
+  metamodel: PackageableElement,
+  context: ObserverContext,
+) => PackageableElement | undefined;
 
 /**
  * Unlike `PureGraphPlugin`, this is for plugins of graph manager, i.e. operations acting
@@ -29,11 +42,6 @@ import type { ObserverContext } from './action/changeDetection/CoreObserverHelpe
 export type PureGrammarElementLabeler = (
   metamodel: PackageableElement,
 ) => string | undefined;
-
-export type ElementObserver = (
-  metamodel: PackageableElement,
-  context: ObserverContext,
-) => PackageableElement | undefined;
 
 export type TestableIDBuilder = (
   testable: Testable,
@@ -47,7 +55,7 @@ export type TestableFinder = (
 
 export abstract class PureGraphManagerPlugin extends AbstractPlugin {
   /**
-   * This helps to better type-checking for this empty abtract type
+   * This helps to better type-check for this empty abtract type
    * See https://github.com/finos/legend-studio/blob/master/docs/technical/typescript-usage.md#understand-typescript-structual-type-system
    */
   private readonly _$nominalTypeBrand!: 'PureGraphManagerPlugin';
@@ -55,6 +63,8 @@ export abstract class PureGraphManagerPlugin extends AbstractPlugin {
   install(pluginManager: GraphPluginManager): void {
     pluginManager.registerPureGraphManagerPlugin(this);
   }
+
+  getExtraPureGraphManagerExtensionBuilders?(): PureGraphManagerExtensionBuilder[];
 
   /**
    * Get the list of system element qualified paths to be exposed for common usages.
@@ -88,12 +98,12 @@ export abstract class PureGraphManagerPlugin extends AbstractPlugin {
   getExtraPureGrammarElementLabelers?(): PureGrammarElementLabeler[];
 
   /**
-   * Get the list of Testable id builders.
+   * Get the list of testable ID builders.
    */
   getExtraTestableIDBuilders?(): TestableIDBuilder[];
 
   /**
-   * Get the list of Testable finders.
+   * Get the list of testable finders.
    */
   getExtraTestableFinders?(): TestableFinder[];
 }

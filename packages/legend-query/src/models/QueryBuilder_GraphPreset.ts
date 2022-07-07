@@ -17,10 +17,12 @@
 import packageJson from '../../package.json';
 import { AbstractPreset } from '@finos/legend-shared';
 import { QueryBuilder_PureProtocolProcessorPlugin } from './protocols/pure/QueryBuilder_PureProtocolProcessorPlugin.js';
+import { QueryBuilder_PureGraphManagerPlugin } from '../graphManager/QueryBuilder_GraphManagerPlugin.js';
 
-export class Query_GraphPreset extends AbstractPreset {
+export class QueryBuilder_GraphPreset extends AbstractPreset {
   constructor() {
     super(packageJson.extensions.graphPreset, packageJson.version, [
+      new QueryBuilder_PureGraphManagerPlugin(),
       new QueryBuilder_PureProtocolProcessorPlugin(),
     ]);
   }

@@ -188,6 +188,7 @@ export { GraphManagerState } from './GraphManagerState.js';
 export * from './GraphManagerStateProvider.js';
 export * from './GraphManagerTestUtils.js';
 export {
+  AbstractPureGraphManagerExtension,
   AbstractPureGraphManager,
   type GraphBuilderOptions,
 } from './graphManager/AbstractPureGraphManager.js';

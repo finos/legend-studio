@@ -34,7 +34,7 @@ import {
   TEST__getTestGraphManagerState,
 } from '@finos/legend-graph';
 import { LegendQueryPluginManager } from '../../application/LegendQueryPluginManager.js';
-import { Query_GraphPreset } from '../../models/Query_GraphPreset.js';
+import { QueryBuilder_GraphPreset } from '../../models/QueryBuilder_GraphPreset.js';
 import { TEST__getTestApplicationStore } from '@finos/legend-application';
 import {
   QueryBuilderState,
@@ -119,7 +119,7 @@ describe(
       ) => {
         const { entities } = context;
         const pluginManager = LegendQueryPluginManager.create();
-        pluginManager.usePresets([new Query_GraphPreset()]).install();
+        pluginManager.usePresets([new QueryBuilder_GraphPreset()]).install();
         const applicationStore = TEST__getTestApplicationStore(
           TEST__getTestQueryConfig(),
           LegendQueryPluginManager.create(),
