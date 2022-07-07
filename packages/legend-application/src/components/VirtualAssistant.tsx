@@ -481,10 +481,10 @@ const VirtualAssistantPanel = observer(
         className="virtual-assistant__panel__container"
         anchorEl={triggerElement}
         // we need to get rid of the backdrop and the click-away trap
-        // to make popover behave like a popper
+        // to make this popover behave like a popper
+        // NOTE: we will cancel the effect of click-away trap using CSS
         hideBackdrop={true}
         PaperProps={{
-          // we will cancel the effect of click-away trap using CSS
           classes: { root: 'virtual-assistant__panel__container__root' },
         }}
         // allow other modals to take the focus from the virtual assistant
@@ -697,7 +697,6 @@ export const VirtualAssistant = observer(() => {
             </div>
           </ContextMenu>
         </div>
-
         {/* NOTE: temporarily hide the assistant panel while dragging so the position is re-calculated */}
         {!isDragging &&
           assistantService.isOpen &&

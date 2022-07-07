@@ -63,7 +63,7 @@ test(
     const queryBuilder = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER),
     );
-    fireEvent.click(getByTitle(queryBuilder, 'Search for property'));
+    fireEvent.click(getByTitle(queryBuilder, 'Toggle property search'));
     const searchPanel = await waitFor(() =>
       renderResult.getByTestId(
         QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PROPERTY_SEARCH_PANEL,

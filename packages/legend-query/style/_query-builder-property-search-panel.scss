@@ -17,12 +17,31 @@
 @use 'mixins' as *;
 
 .query-builder-property-search-panel {
-  height: 30vw;
-  width: 40vw;
-  padding: 1rem;
+  height: 50vh;
+  width: 30vw;
+
+  // make sure we cancel the effect of the `pointer-events: none` set
+  // on the container of the panel so we could interact with the panel
+  pointer-events: all;
+
+  &__container {
+    // NOTE: since we use a popover for the panel, we need to
+    // disable click-away trap so we could mimic the behavior of
+    // popper. See the note on the usage of popover for virtual
+    // assistant panel for more details
+    pointer-events: none;
+
+    &__root {
+      border-radius: 0;
+    }
+
+    &--hidden {
+      visibility: hidden;
+    }
+  }
 
   &__content {
-    height: calc(100% - 3rem);
+    height: calc(100% - 4.4rem);
     overflow-y: auto;
   }
 
@@ -120,10 +139,16 @@
   &__header {
     @include flexCenter;
 
-    padding: 0.3rem;
+    padding: 0.5rem;
     border-bottom: 0.1rem solid var(--color-dark-grey-250);
-    height: 3.4rem;
+    height: 4.4rem;
     position: relative;
+  }
+
+  &__close-btn {
+    height: 2.8rem;
+    width: 2.8rem;
+    margin-left: 0.5rem;
   }
 
   &__input {
@@ -135,6 +160,14 @@
     background: var(--color-dark-grey-85);
     border-radius: 0.2rem;
     border: 0.1rem solid var(--color-dark-grey-200);
+
+    &__container {
+      @include flexCenter;
+
+      position: relative;
+      height: 2.8rem;
+      width: 100%;
+    }
 
     &--searching {
       padding-right: 5.6rem;
@@ -257,9 +290,14 @@
     }
   }
 
-  &__search__content {
-    padding: 0.5rem;
-    height: calc(100% - 3.4rem);
+  &__config,
+  &__results {
+    height: 100%;
+    padding: 1rem;
     overflow-y: auto;
+  }
+
+  &__search__results {
+    padding: 0.5rem;
   }
 }

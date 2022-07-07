@@ -103,6 +103,13 @@
     z-index: 101;
   }
 
+  &__header__action--active.panel__header__action:hover,
+  &__header__action--active.panel__header__action {
+    svg {
+      color: var(--color-light-grey-100);
+    }
+  }
+
   &__content {
     overflow-y: auto;
     padding: 0.5rem 0;
