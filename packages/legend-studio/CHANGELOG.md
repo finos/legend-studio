@@ -1,5 +1,19 @@
 # @finos/legend-studio
 
+## 10.3.0
+
+### Minor Changes
+
+- [#1195](https://github.com/finos/legend-studio/pull/1195) [`b429420`](https://github.com/finos/legend-studio/commit/b429420ec1fd56186233505657c40a046428cf2b) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add `RelationalCSVData` editor for relational embedded data.
+
+* [#1195](https://github.com/finos/legend-studio/pull/1195) [`b429420e`](https://github.com/finos/legend-studio/commit/b429420ec1fd56186233505657c40a046428cf2b) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Revamp service test editor to account for testable service tests, which includes support for test parameters, generating expected results, generating test data and seeing diffs for executed tests.
+
+- [#1252](https://github.com/finos/legend-studio/pull/1252) [`790665dd`](https://github.com/finos/legend-studio/commit/790665dd1b34b3f06c96ab4b7afd3425f70ca73d) ([@akphi](https://github.com/akphi)) - Allow the project dependency configuration to contain `HEAD` as a alid version option and added restrictions on review-creation to ensure no project dependency is set to the `HEAD` option in the project.
+
+### Patch Changes
+
+- [#1272](https://github.com/finos/legend-studio/pull/1272) [`72253bd9`](https://github.com/finos/legend-studio/commit/72253bd99c6eb3c05fc2c8ddc06d5f81a98ccd8f) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix rendering of multi execution service query.
+
 ## 10.2.1
 
 ## 10.2.0

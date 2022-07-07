@@ -1,5 +1,7 @@
 # @finos/legend-extension-external-language-morphir
 
+## 2.0.6
+
 ## 2.0.5
 
 ## 2.0.4

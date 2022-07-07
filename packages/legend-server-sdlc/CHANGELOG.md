@@ -1,5 +1,11 @@
 # @finos/legend-server-sdlc
 
+## 4.0.0
+
+### Major Changes
+
+- [#1252](https://github.com/finos/legend-studio/pull/1252) [`790665dd`](https://github.com/finos/legend-studio/commit/790665dd1b34b3f06c96ab4b7afd3425f70ca73d) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Change `versionId` in `ProjectDependency` to be of string format.
+
 ## 3.0.4
 
 ## 3.0.3

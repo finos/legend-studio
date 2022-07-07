@@ -1,5 +1,7 @@
 # @finos/legend-studio-deployment
 
+## 6.3.0
+
 ## 6.2.0
 
 ## 6.1.0

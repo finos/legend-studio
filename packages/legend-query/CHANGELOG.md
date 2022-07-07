@@ -1,5 +1,15 @@
 # @finos/legend-query
 
+## 3.1.0
+
+### Minor Changes
+
+- [#1186](https://github.com/finos/legend-studio/pull/1186) [`cce3d6d4`](https://github.com/finos/legend-studio/commit/cce3d6d4e28bdfec3626eb5775ba3cf45acc343d) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Make use of `engine` [mapping analytics](https://github.com/finos/legend-engine/pull/740) API to improve `mappedness check` for query builder explorer.
+
+### Patch Changes
+
+- [#1271](https://github.com/finos/legend-studio/pull/1271) [`7b4c4d81`](https://github.com/finos/legend-studio/commit/7b4c4d81941d6a304bc2375519ed111b71de9e75) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add parameter name validation when creating/updating query parameter.
+
 ## 3.0.5
 
 ### Patch Changes
