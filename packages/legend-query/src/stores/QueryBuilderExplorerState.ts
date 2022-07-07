@@ -46,12 +46,13 @@ import {
   Enumeration,
 } from '@finos/legend-graph';
 import type { QueryBuilderState } from './QueryBuilderState.js';
-import { action, makeAutoObservable, observable } from 'mobx';
+import { action, makeAutoObservable, makeObservable, observable } from 'mobx';
 import {
   DEFAULT_LAMBDA_VARIABLE_NAME,
   QUERY_BUILDER_SUPPORTED_FUNCTIONS,
 } from '../QueryBuilder_Const.js';
 import type { QueryBuilderPreviewData } from './QueryBuilderPreviewDataHelper.js';
+import { QueryBuilderPropertySearchPanelState } from './QueryBuilderPropertySearchPanelState.js';
 
 export enum QUERY_BUILDER_EXPLORER_TREE_DND_TYPE {
   ROOT = 'ROOT',
@@ -59,6 +60,7 @@ export enum QUERY_BUILDER_EXPLORER_TREE_DND_TYPE {
   ENUM_PROPERTY = 'ENUM_PROPERTY',
   PRIMITIVE_PROPERTY = 'PRIMITIVE_PROPERTY',
 }
+
 export interface QueryBuilderExplorerTreeDragSource {
   node: QueryBuilderExplorerTreePropertyNodeData;
 }
@@ -82,12 +84,21 @@ export abstract class QueryBuilderExplorerTreeNodeData implements TreeNodeData {
     type: Type,
     mappingData: QueryBuilderPropertyMappingData,
   ) {
+    makeObservable(this, {
+      isSelected: observable,
+      setIsSelected: action,
+    });
+
     this.id = id;
     this.label = label;
     this.dndText = dndText;
     this.isPartOfDerivedPropertyBranch = isPartOfDerivedPropertyBranch;
     this.type = type;
     this.mappingData = mappingData;
+  }
+
+  setIsSelected(val: boolean | undefined): void {
+    this.isSelected = val;
   }
 }
 
@@ -464,11 +475,13 @@ export class QueryBuilderExplorerState {
   treeData?: TreeData<QueryBuilderExplorerTreeNodeData> | undefined;
   humanizePropertyName = true;
   showUnmappedProperties = false;
+  propertySearchPanelState: QueryBuilderPropertySearchPanelState;
 
   constructor(queryBuilderState: QueryBuilderState) {
     makeAutoObservable(this, {
       queryBuilderState: false,
       previewDataState: false,
+      propertySearchPanelState: observable,
       treeData: observable.ref,
       setTreeData: action,
       refreshTree: action,
@@ -478,6 +491,9 @@ export class QueryBuilderExplorerState {
     });
 
     this.queryBuilderState = queryBuilderState;
+    this.propertySearchPanelState = new QueryBuilderPropertySearchPanelState(
+      this.queryBuilderState,
+    );
   }
 
   get nonNullableTreeData(): TreeData<QueryBuilderExplorerTreeNodeData> {

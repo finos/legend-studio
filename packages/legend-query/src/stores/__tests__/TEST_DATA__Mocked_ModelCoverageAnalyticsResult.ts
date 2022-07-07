@@ -1069,3 +1069,26 @@ export const Mocked_ModelCoverageAnalyticsResult_SimpleSubtype = {
     },
   ],
 };
+
+export const Mocked_ModelCoverageAnalyticsResult_SimpleRelationalModel = {
+  mappedEntities: [
+    {
+      path: 'my::Firm',
+      properties: [
+        { _type: 'MappedProperty', name: 'legalName' },
+        { _type: 'entity', entityPath: 'my::Person', name: 'employees' },
+        { _type: 'MappedProperty', name: 'id' },
+      ],
+    },
+    {
+      path: 'my::Person',
+      properties: [
+        { _type: 'MappedProperty', name: 'age' },
+        { _type: 'MappedProperty', name: 'firmID' },
+        { _type: 'MappedProperty', name: 'lastName' },
+        { _type: 'MappedProperty', name: 'firstName' },
+        { _type: 'MappedProperty', name: 'hobbies' },
+      ],
+    },
+  ],
+};

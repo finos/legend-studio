@@ -51,8 +51,8 @@ import {
   QueryBuilderExplorerTreeRootNodeData,
   QueryBuilderExplorerTreePropertyNodeData,
   buildPropertyExpressionFromExplorerTreeNodeData,
-  getQueryBuilderPropertyNodeData,
   QueryBuilderExplorerTreeSubTypeNodeData,
+  getQueryBuilderPropertyNodeData,
   getQueryBuilderSubTypeNodeData,
 } from '../stores/QueryBuilderExplorerState.js';
 import { useDrag, useDragLayer } from 'react-dnd';
@@ -72,17 +72,18 @@ import {
   PRIMITIVE_TYPE,
   Enumeration,
   TYPE_CAST_TOKEN,
-  getAllOwnClassProperties,
-  getAllClassProperties,
   getAllClassDerivedProperties,
   getMultiplicityDescription,
+  getAllClassProperties,
+  getAllOwnClassProperties,
 } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
 import { getClassPropertyIcon } from './shared/ElementIconUtils.js';
 import { QUERY_BUILDER_TEST_ID } from './QueryBuilder_TestID.js';
 import { filterByType, guaranteeNonNullable } from '@finos/legend-shared';
+import { QueryBuilderPropertySearchPanel } from './QueryBuilderPropertySearchPanel.js';
 
-const QueryBuilderSubclassInfoTooltip: React.FC<{
+export const QueryBuilderSubclassInfoTooltip: React.FC<{
   subclass: Class;
   path: string;
   isMapped: boolean;
@@ -360,7 +361,7 @@ const QueryBuilderExplorerContextMenu = observer(
   }),
 );
 
-const renderPropertyTypeIcon = (type: Type): React.ReactNode => {
+export const renderPropertyTypeIcon = (type: Type): React.ReactNode => {
   if (type instanceof PrimitiveType) {
     if (type.name === PRIMITIVE_TYPE.STRING) {
       return (
@@ -510,6 +511,8 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
                 isSelectedFromContextMenu,
               'query-builder-explorer-tree__node__container--unmapped':
                 !node.mappingData.mapped,
+              'query-builder-explorer-tree__node__container--selected':
+                node.isSelected,
             },
           )}
           title={
@@ -835,6 +838,9 @@ export const QueryBuilderExplorerPanel = observer(
             <div className="panel__header__title__label">explorer</div>
           </div>
           <div className="panel__header__actions">
+            <QueryBuilderPropertySearchPanel
+              queryBuilderState={queryBuilderState}
+            />
             <button
               className="panel__header__action"
               onClick={collapseTree}

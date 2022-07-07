@@ -22,4 +22,5 @@ export enum QUERY_BUILDER_TEST_ID {
   QUERY_BUILDER_FILTER = 'query__builder__filter',
   QUERY_BUILDER_POST_FILTER = 'query__builder__post-filter',
   QUERY_BUILDER_EXPLORER = 'query__builder__explorer',
+  QUERY_BUILDER_PROPERTY_SEARCH_PANEL = 'query__builder__property__search__panel',
 }

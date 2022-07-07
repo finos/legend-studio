@@ -14,14 +14,19 @@
  * limitations under the License.
  */
 
-@forward 'deps';
-@forward 'query-builder';
-@forward 'query-builder-explorer';
-@forward 'query-builder-filter';
-@forward 'query-builder-post-filter';
-@forward 'query-builder-projection';
-@forward 'graph-fetch-tree';
-@forward 'query-setup';
-@forward 'query-editor';
-@forward 'query-builder-functions-explorer';
-@forward 'query-builder-property-search-panel';
+export const TEST_DATA__simplegetAllForPropertySearch = {
+  _type: 'lambda',
+  body: [
+    {
+      _type: 'func',
+      function: 'getAll',
+      parameters: [
+        {
+          _type: 'packageableElementPtr',
+          fullPath: 'my::Firm',
+        },
+      ],
+    },
+  ],
+  parameters: [],
+};
