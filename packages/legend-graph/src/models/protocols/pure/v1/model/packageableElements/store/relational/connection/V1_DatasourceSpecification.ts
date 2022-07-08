@@ -164,8 +164,8 @@ export class V1_SpannerDatasourceSpecification
   projectId!: string;
   instanceId!: string;
   databaseId!: string;
-  host?: string | undefined;
-  port?: string | undefined;
+  proxyHost?: string | undefined;
+  proxyPort?: string | undefined;
 
   get hashCode(): string {
     return hashArray([
@@ -173,8 +173,8 @@ export class V1_SpannerDatasourceSpecification
       this.projectId,
       this.instanceId,
       this.databaseId,
-      this.host ?? '',
-      this.port ?? '',
+      this.proxyHost ?? '',
+      this.proxyPort ?? '',
     ]);
   }
 }

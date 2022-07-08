@@ -171,8 +171,8 @@ const transformSpannerQueryDatasourceSpecification = (
   source.projectId = metamodel.projectId;
   source.instanceId = metamodel.instanceId;
   source.databaseId = metamodel.databaseId;
-  source.host = metamodel.host;
-  source.port = metamodel.port;
+  source.proxyHost = metamodel.proxyHost;
+  source.proxyPort = metamodel.proxyPort;
   return source;
 };
 

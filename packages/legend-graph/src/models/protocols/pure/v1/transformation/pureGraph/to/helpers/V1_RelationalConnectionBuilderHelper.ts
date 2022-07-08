@@ -229,21 +229,12 @@ export const V1_buildDatasourceSpecification = (
       `Spanner datasource specification 'databaseId' field is missing`,
     );
 
-    assertNonEmptyString(
-      protocol.host,
-      `Redshift datasource specification 'host' if exist should not be empty`,
-    );
-    assertNonEmptyString(
-      protocol.port,
-      `Redshift datasource specification 'port' if exist should not be empty`,
-    );
-
     const spannerSpec = new SpannerDatasourceSpecification(
       protocol.projectId,
       protocol.instanceId,
       protocol.databaseId,
-      protocol.host,
-      protocol.port,
+      protocol.proxyHost,
+      protocol.proxyPort,
     );
     return spannerSpec;
   }

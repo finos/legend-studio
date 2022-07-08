@@ -247,8 +247,8 @@ export class SpannerDatasourceSpecification
   projectId!: string;
   instanceId!: string;
   databaseId!: string;
-  host?: string | undefined;
-  port?: string | undefined;
+  proxyHost?: string | undefined;
+  proxyPort?: string | undefined;
 
   constructor(
     projectId: string,
@@ -261,8 +261,8 @@ export class SpannerDatasourceSpecification
     this.projectId = projectId;
     this.instanceId = instanceId;
     this.databaseId = databaseId;
-    this.host = host;
-    this.port = port;
+    this.proxyHost = host;
+    this.proxyPort = port;
   }
 
   get hashCode(): string {
@@ -271,8 +271,8 @@ export class SpannerDatasourceSpecification
       this.projectId,
       this.instanceId,
       this.databaseId,
-      this.host ?? '',
-      this.port ?? '',
+      this.proxyHost ?? '',
+      this.proxyPort ?? '',
     ]);
   }
 }

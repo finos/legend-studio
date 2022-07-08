@@ -899,7 +899,7 @@ const SpannerDatasourceSpecificationEditor = observer(
         />
         <ConnectionEditor_StringEditor
           isReadOnly={isReadOnly}
-          value={sourceSpec.host}
+          value={sourceSpec.proxyHost}
           propertyName="host"
           description="Specifies host for connection. Leave blank for google cloud defaults"
           update={(value: string | undefined): void =>
@@ -908,7 +908,7 @@ const SpannerDatasourceSpecificationEditor = observer(
         />
         <ConnectionEditor_StringEditor
           isReadOnly={isReadOnly}
-          value={sourceSpec.port}
+          value={sourceSpec.proxyPort}
           propertyName="port"
           description="Specifies port for connection. Leave blank for google cloud defaults"
           update={(value: string | undefined): void =>

@@ -829,8 +829,8 @@ export const observe_SpannerDatasourceSpecification = skipObserved(
       projectId: observable,
       instanceId: observable,
       databaseId: observable,
-      host: observable,
-      port: observable,
+      proxyHost: observable,
+      proxyPort: observable,
       hashCode: computed,
     }),
 );
