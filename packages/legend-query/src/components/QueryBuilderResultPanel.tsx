@@ -203,15 +203,13 @@ const QueryBuilderResultContextMenu = observer(
           : postFilterNotEqualOperator
         ).getLabel()
       ) {
-        if (
-          !(
-            conditionState.value instanceof InstanceValue &&
-            (conditionState.value instanceof EnumValueInstanceValue
-              ? conditionState.value.values.map((ef) => ef.value.name)
-              : conditionState.value.values
-            ).includes(event?.value)
-          )
-        ) {
+        const doesValueAlreadyExist =
+          conditionState.value instanceof InstanceValue &&
+          (conditionState.value instanceof EnumValueInstanceValue
+            ? conditionState.value.values.map((ef) => ef.value.name)
+            : conditionState.value.values
+          ).includes(event?.value);
+        if (!doesValueAlreadyExist) {
           const currentValueSpecificaton = conditionState.value;
           const newValueSpecification =
             conditionState.operator.getDefaultFilterConditionValue(
@@ -227,20 +225,18 @@ const QueryBuilderResultContextMenu = observer(
           ]);
         }
       } else {
-        if (
-          !(
-            conditionState.value instanceof InstanceValue &&
-            conditionState.value.values
-              .filter((v) => v instanceof InstanceValue)
-              .map((v) =>
-                v instanceof EnumValueInstanceValue
-                  ? v.values.map((ef) => ef.value.name)
-                  : (v as InstanceValue).values,
-              )
-              .flat()
-              .includes(event?.value)
-          )
-        ) {
+        const doesValueAlreadyExist =
+          conditionState.value instanceof InstanceValue &&
+          conditionState.value.values
+            .filter((v) => v instanceof InstanceValue)
+            .map((v) =>
+              v instanceof EnumValueInstanceValue
+                ? v.values.map((ef) => ef.value.name)
+                : (v as InstanceValue).values,
+            )
+            .flat()
+            .includes(event?.value);
+        if (!doesValueAlreadyExist) {
           const newValueSpecification = (
             isFilterBy ? postFilterEqualOperator : postFilterNotEqualOperator
           ).getDefaultFilterConditionValue(conditionState);
