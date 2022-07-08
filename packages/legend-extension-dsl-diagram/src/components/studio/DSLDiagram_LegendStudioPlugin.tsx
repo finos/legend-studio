@@ -54,6 +54,7 @@ import {
   getDiagramSnippetWithPropertyView,
 } from './DSLDiagram_CodeSnippets.js';
 import type { LegendApplicationDocumentationEntry } from '@finos/legend-application';
+import { DSL_DIAGRAM_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../stores/studio/DSLDiagram_LegendStudioApplicationNavigationContext.js';
 
 const DIAGRAM_ELEMENT_TYPE = 'DIAGRAM';
 const DIAGRAM_ELEMENT_PROJECT_EXPLORER_DND_TYPE = 'PROJECT_EXPLORER_DIAGRAM';
@@ -78,6 +79,12 @@ export class DSLDiagram_LegendStudioPlugin
       (_class: Class): React.ReactNode => (
         <ClassDiagramPreview _class={_class} />
       ),
+    ];
+  }
+
+  override getExtraAccessEventLoggingApplicationContextKeys(): string[] {
+    return [
+      DSL_DIAGRAM_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.DIAGRAM_EDITOR,
     ];
   }
 

@@ -49,6 +49,7 @@ import {
 } from './DSLText_CodeSnippets.js';
 import { create_TextElement } from '../../helper/DSLText_Helper.js';
 import type { LegendApplicationDocumentationEntry } from '@finos/legend-application';
+import { DSL_TEXT_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../stores/studio/DSLText_LegendStudioApplicationNavigationContext.js';
 
 const TEXT_ELEMENT_TYPE = 'TEXT';
 const TEXT_ELEMENT_PROJECT_EXPLORER_DND_TYPE = 'PROJECT_EXPLORER_TEXT';
@@ -65,6 +66,12 @@ export class DSLText_LegendStudioPlugin
     return [
       DSL_TEXT_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_ELEMENT_TEXT,
       DSL_TEXT_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER,
+    ];
+  }
+
+  override getExtraAccessEventLoggingApplicationContextKeys(): string[] {
+    return [
+      DSL_TEXT_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.TEXT_EDITOR,
     ];
   }
 

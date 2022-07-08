@@ -42,7 +42,7 @@ import {
   service_setLegacyTest,
 } from '@finos/legend-studio';
 import { MenuContentItem } from '@finos/legend-art';
-import { QueryBuilderDialog } from './QueryBuilderDialog.js';
+import { EmbeddedQueryBuilder } from './EmbeddedQueryBuilder.js';
 import { ServiceQueryBuilder } from './ServiceQueryBuilder.js';
 import { MappingExecutionQueryBuilder } from './MappingExecutionQueryBuilder.js';
 import { MappingTestQueryBuilder } from './MappingTestQueryBuilder.js';
@@ -64,6 +64,7 @@ import { assertErrorThrown, guaranteeNonNullable } from '@finos/legend-shared';
 import { useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import type { LegendApplicationSetup } from '@finos/legend-application';
+import { QUERY_BUILDER_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../stores/QueryBuilder_LegendStudioApplicationNavigationContext.js';
 
 const promoteQueryToService = async (
   packagePath: string,
@@ -183,7 +184,7 @@ export class QueryBuilder_LegendStudioPlugin
         renderer: function QueryBuilderDialogRenderer(
           editorStore: EditorStore,
         ): React.ReactNode | undefined {
-          return <QueryBuilderDialog />;
+          return <EmbeddedQueryBuilder />;
         },
       },
     ];
@@ -237,6 +238,12 @@ export class QueryBuilder_LegendStudioPlugin
           return undefined;
         },
       },
+    ];
+  }
+
+  override getExtraAccessEventLoggingApplicationContextKeys(): string[] {
+    return [
+      QUERY_BUILDER_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.EMBEDDED_QUERY_BUILDER,
     ];
   }
 

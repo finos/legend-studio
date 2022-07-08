@@ -66,7 +66,10 @@ import {
   stub_Stereotype,
   stub_RawVariableExpression,
 } from '@finos/legend-graph';
-import { useApplicationStore } from '@finos/legend-application';
+import {
+  useApplicationNavigationContext,
+  useApplicationStore,
+} from '@finos/legend-application';
 import { StudioLambdaEditor } from '../../shared/StudioLambdaEditor.js';
 import { getElementIcon } from '../../shared/ElementIconUtils.js';
 import {
@@ -84,6 +87,7 @@ import {
   rawVariableExpression_setName,
   rawVariableExpression_setType,
 } from '../../../stores/graphModifier/ValueSpecificationGraphModifierHelper.js';
+import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../stores/LegendStudioApplicationNavigationContext.js';
 
 enum FUNCTION_PARAMETER_TYPE {
   CLASS = 'CLASS',
@@ -735,6 +739,10 @@ export const FunctionEditor = observer(() => {
       ),
     ).catch(applicationStore.alertUnhandledError);
   }, [applicationStore, functionEditorState]);
+
+  useApplicationNavigationContext(
+    LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.FUNCTION_EDITOR,
+  );
 
   return (
     <div className="function-editor">
