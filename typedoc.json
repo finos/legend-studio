@@ -1,18 +1,31 @@
 {
   "$schema": "https://typedoc.org/schema.json",
+  "name": "Legend Studio",
+  "hideGenerator": true,
+  "gitRemote": "origin",
+  "gitRevision": "master",
+  "includeVersion": true,
   "out": "build/docs",
   "entryPoints": ["packages/*"],
-  "entryPointStrategy": "Packages",
+  "entryPointStrategy": "packages",
   "exclude": [
     // NOTE: this uses `minimatch` pattern
     "**/__tests__/**",
     "**/__mocks__/**",
     "**/node_modules/**",
-    "**/packages", // since we don't need to document all of the modules
-    // NOTE: update package.json config when `typedoc` has better support
-    // for `--entryPointStrategy Packages`
-    // See https://github.com/TypeStrong/typedoc/pull/1977
-    "!packages/legend-shared"
+    "**/packages/babel-preset",
+    "**/packages/eslint-plugin",
+    "**/packages/stylelint-config",
+    "**/packages/legend-dev-utils",
+    "**/packages/legend-application",
+    "**/packages/legend-art",
+    "**/packages/legend-extension-*",
+    "**/packages/legend-graph-extension-collection",
+    "**/packages/legend-manual-tests",
+    "**/packages/legend-studio-*",
+    "**/packages/legend-query-*",
+    "**/packages/legend-taxonomy-*",
+    "**/packages/legend-tracer-*"
   ],
   "intentionallyNotExported": [],
   "excludeExternals": false,
@@ -33,5 +46,6 @@
     "external": false,
     "@internal": false
   },
-  "logLevel": "Verbose"
+  "logLevel": "Verbose",
+  "treatWarningsAsErrors": true
 }

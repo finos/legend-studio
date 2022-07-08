@@ -77,7 +77,6 @@
     "webConsoleLoggerPlugin": "@finos/legend-logger-plugin-web-console"
   },
   "typedoc": {
-    "entryPoint": "./src/index.ts",
-    "readmeFile": "./README.md"
+    "entryPoint": "./src/index.ts"
   }
 }

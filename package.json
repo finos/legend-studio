@@ -9,6 +9,7 @@
   ],
   "scripts": {
     "build": "yarn clean && npm-run-all build:ts build:sass",
+    "build:doc": "yarn typedoc",
     "build:sass": "node ./scripts/workflow/buildSassAll.js --compressed",
     "build:ts": "tsc --build tsconfig.build.json",
     "changeset": "node ./scripts/workflow/generateChangeset.js",
@@ -29,7 +30,6 @@
     "dev:studio": "yarn workspace @finos/legend-studio-deployment dev",
     "dev:taxonomy": "yarn workspace @finos/legend-taxonomy-deployment dev",
     "dev:ts": "tsc --build --watch",
-    "doc": "yarn typedoc",
     "fix": "yarn fix:copyright && yarn fix:style && yarn fix:js && yarn fix:format",
     "fix:copyright": "node ./scripts/copyright/checkCopyrightHeaders.js --update",
     "fix:format": "prettier --write --loglevel=warn \"(scripts|docs)/**/*.{md,json,mjs,cjs,js,ts,tsx,html,scss,css}\" \"packages/*/**/*.{md,json,mjs,cjs,js,ts,tsx,html,scss,css}\" && yarn sort-package-json \"package.json\" \"packages/*/package.json\"",

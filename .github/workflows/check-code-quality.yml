@@ -127,3 +127,9 @@ jobs:
         run: yarn check:format
       - name: Check copyright headers
         run: yarn check:copyright
+      - name: Check code documentation
+        env:
+          # Typeodc build could consume a large amount of memory
+          # See https://github.com/TypeStrong/typedoc/issues/1606
+          NODE_OPTIONS: '--max_old_space_size=4096'
+        run: yarn build:ts && yarn build:doc
