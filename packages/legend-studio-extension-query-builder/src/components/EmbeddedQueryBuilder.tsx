@@ -38,19 +38,6 @@ import { QUERY_BUILDER_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '
  * NOTE: Query builder is by right a mini-app so we have it hosted in a full-screen modal dialog
  * See https://material.io/components/dialogs#full-screen-dialog
  */
-
-export const EmbeddedQueryBuilder = observer(() => {
-  const editorStore = useEditorStore();
-  const queryBuilderExtensionState = editorStore.getEditorExtensionState(
-    QueryBuilder_EditorExtensionState,
-  );
-
-  if (!queryBuilderExtensionState.mode) {
-    return null;
-  }
-  return <QueryBuilderDialog />;
-});
-
 const QueryBuilderDialog = observer(() => {
   const applicationStore = useApplicationStore();
   const editorStore = useEditorStore();
@@ -120,4 +107,16 @@ const QueryBuilderDialog = observer(() => {
       </div>
     </Dialog>
   );
+});
+
+export const EmbeddedQueryBuilder = observer(() => {
+  const editorStore = useEditorStore();
+  const queryBuilderExtensionState = editorStore.getEditorExtensionState(
+    QueryBuilder_EditorExtensionState,
+  );
+
+  if (!queryBuilderExtensionState.mode) {
+    return null;
+  }
+  return <QueryBuilderDialog />;
 });
