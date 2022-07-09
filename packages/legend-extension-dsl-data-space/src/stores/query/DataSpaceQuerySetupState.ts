@@ -24,7 +24,6 @@ import {
 } from '@finos/legend-query';
 import {
   type StoredEntity,
-  generateGAVCoordinates,
   DepotScope,
   ProjectData,
   SNAPSHOT_VERSION_ALIAS,
@@ -49,22 +48,14 @@ export interface DataSpaceContext {
 
 const QUERY_PROFILE_PATH = 'meta::pure::profiles::query';
 const QUERY_PROFILE_TAG_DATA_SPACE = 'dataSpace';
-const DATA_SPACE_ID_DELIMITER = '@';
 
 export const createQueryDataSpaceTaggedValue = (
   dataSpacePath: string,
-  groupId: string,
-  artifactId: string,
-  versionId: string,
 ): QueryTaggedValue => {
   const taggedValue = new QueryTaggedValue();
   taggedValue.profile = QUERY_PROFILE_PATH;
   taggedValue.tag = QUERY_PROFILE_TAG_DATA_SPACE;
-  taggedValue.value = `${generateGAVCoordinates(
-    groupId,
-    artifactId,
-    versionId,
-  )}${DATA_SPACE_ID_DELIMITER}${dataSpacePath}`;
+  taggedValue.value = dataSpacePath;
   return taggedValue;
 };
 
@@ -214,9 +205,6 @@ export class DataSpaceQuerySetupState extends QuerySetupState {
       queryInfoState.taggedValues = [
         createQueryDataSpaceTaggedValue(
           this.dataSpaceViewerState.dataSpace.path,
-          this.dataSpaceViewerState.groupId,
-          this.dataSpaceViewerState.artifactId,
-          this.dataSpaceViewerState.versionId,
         ),
       ];
       this.queryStore.setQueryInfoState(queryInfoState);
