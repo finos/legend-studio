@@ -44,7 +44,7 @@ import {
   CreateQuerySetupState,
   ExistingQuerySetupState,
   ServiceQuerySetupState,
-} from '../stores/QuerySetupStore.js';
+} from '../stores/LegendQuerySetupStore.js';
 import {
   CreateQueryInfoState,
   ExistingQueryInfoState,
@@ -53,7 +53,7 @@ import {
 import {
   QuerySetupStoreProvider,
   useQuerySetupStore,
-} from './QuerySetupStoreProvider.js';
+} from './LegendQuerySetupStoreProvider.js';
 import { useLegendQueryStore } from './LegendQueryStoreProvider.js';
 import {
   type ProjectData,

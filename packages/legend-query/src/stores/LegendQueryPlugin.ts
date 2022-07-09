@@ -16,7 +16,10 @@
 
 import { AbstractPlugin } from '@finos/legend-shared';
 import type { LegendQueryPluginManager } from '../application/LegendQueryPluginManager.js';
-import type { QuerySetupState, QuerySetupStore } from './QuerySetupStore.js';
+import type {
+  QuerySetupState,
+  QuerySetupStore,
+} from './LegendQuerySetupStore.js';
 
 export type QuerySetupOptionRendererConfiguration = {
   key: string;

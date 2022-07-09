@@ -80,7 +80,7 @@ import {
 } from '../QueryBuilderState.js';
 import { LegendQueryPluginManager } from '../../application/LegendQueryPluginManager.js';
 import { QueryBuilder_GraphPreset } from '../../models/QueryBuilder_GraphPreset.js';
-import { TEST__getTestQueryConfig } from '../QueryStoreTestUtils.js';
+import { TEST__getTestQueryConfig } from '../LegendQueryStoreTestUtils.js';
 import {
   TEST_DATA__lambda_simpleConditionPostFilter,
   TEST_DATA__lambda_aggregationPostFilter,

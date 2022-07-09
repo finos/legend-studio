@@ -41,7 +41,7 @@ import { stub_RawLambda, create_RawLambda } from '@finos/legend-graph';
 import {
   TEST__provideMockedLegendQueryStore,
   TEST__setUpQueryEditor,
-} from '../QueryComponentTestUtils.js';
+} from '../LegendQueryComponentTestUtils.js';
 import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_TestID.js';
 import { QueryBuilderSimpleProjectionColumnState } from '../../stores/QueryBuilderProjectionState.js';
 import { LegendQueryPluginManager } from '../../application/LegendQueryPluginManager.js';

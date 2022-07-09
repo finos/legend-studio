@@ -40,7 +40,7 @@ import {
   QueryBuilderState,
   StandardQueryBuilderMode,
 } from '../QueryBuilderState.js';
-import { TEST__getTestQueryConfig } from '../QueryStoreTestUtils.js';
+import { TEST__getTestQueryConfig } from '../LegendQueryStoreTestUtils.js';
 
 type TestCase = [
   string,

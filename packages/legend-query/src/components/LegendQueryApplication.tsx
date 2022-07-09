@@ -18,12 +18,12 @@ import { useEffect } from 'react';
 import { Redirect, Route, Switch } from 'react-router-dom';
 import { observer } from 'mobx-react-lite';
 import { LEGEND_QUERY_ROUTE_PATTERN } from '../stores/LegendQueryRouter.js';
-import { QuerySetup } from './QuerySetup.js';
+import { QuerySetup } from './LegendQuerySetup.js';
 import {
   CreateQueryLoader,
   ExistingQueryLoader,
   ServiceQueryLoader,
-} from './QueryEditor.js';
+} from './LegendQueryEditor.js';
 import { flowResult } from 'mobx';
 import { PanelLoadingIndicator } from '@finos/legend-art';
 import {

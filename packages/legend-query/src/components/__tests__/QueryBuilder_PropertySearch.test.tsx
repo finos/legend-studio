@@ -23,7 +23,7 @@ import { QueryBuilder_GraphPreset } from '../../models/QueryBuilder_GraphPreset.
 import {
   TEST__provideMockedLegendQueryStore,
   TEST__setUpQueryEditor,
-} from '../QueryComponentTestUtils.js';
+} from '../LegendQueryComponentTestUtils.js';
 import TEST_DATA__QueryBuilder_Model_PropertySearch from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_PropertySearch.json';
 import { stub_RawLambda } from '@finos/legend-graph';
 import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_TestID.js';

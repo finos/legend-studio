@@ -47,10 +47,10 @@ import {
   WebApplicationNavigator,
 } from '@finos/legend-application';
 import { LegendQueryStore } from '../stores/LegendQueryStore.js';
-import { TEST__getTestQueryConfig } from '../stores/QueryStoreTestUtils.js';
+import { TEST__getTestQueryConfig } from '../stores/LegendQueryStoreTestUtils.js';
 import { LegendQueryStoreProvider } from './LegendQueryStoreProvider.js';
 import { LegendQueryPluginManager } from '../application/LegendQueryPluginManager.js';
-import { ExistingQueryLoader } from './QueryEditor.js';
+import { ExistingQueryLoader } from './LegendQueryEditor.js';
 import { generateExistingQueryRoute } from '../stores/LegendQueryRouter.js';
 import { QUERY_BUILDER_TEST_ID } from './QueryBuilder_TestID.js';
 import type { LegendQueryConfig } from '../application/LegendQueryConfig.js';
