@@ -233,7 +233,7 @@ export const EmbeddedDataEditor = observer(
   },
 );
 
-function renderEmbeddedDataEditor(
+export function renderEmbeddedDataEditor(
   embeddedDataState: EmbeddedDataState,
   isReadOnly: boolean,
 ): React.ReactNode {

@@ -116,6 +116,12 @@ const NewDataElementDriverEditor = observer(() => {
   const editorStore = useEditorStore();
   const newDataELementDriver =
     editorStore.newElementState.getNewElementDriver(NewDataElementDriver);
+  const selectedOption = newDataELementDriver.embeddedDataOption
+    ? {
+        label: prettyCONSTName(newDataELementDriver.embeddedDataOption.label),
+        value: newDataELementDriver.embeddedDataOption.value,
+      }
+    : undefined;
   const extraOptionTypes = editorStore.pluginManager
     .getStudioPlugins()
     .flatMap(
@@ -124,12 +130,12 @@ const NewDataElementDriverEditor = observer(() => {
           plugin as DSLData_LegendStudioPlugin_Extension
         ).getExtraEmbeddedDataTypeOptions?.() ?? [],
     );
-  let options: EmbeddedDataTypeOption[] = Object.values(EmbeddedDataType).map(
-    (typeOption) => ({
-      label: typeOption,
+  let options: EmbeddedDataTypeOption[] = Object.values(EmbeddedDataType)
+    .filter((type) => type !== EmbeddedDataType.DATA_ELEMENT)
+    .map((typeOption) => ({
+      label: prettyCONSTName(typeOption),
       value: typeOption,
-    }),
-  );
+    }));
   options = options.concat(extraOptionTypes);
   const onTypeSelectionChange = (val: EmbeddedDataTypeOption | null): void => {
     if (!val) {
@@ -144,7 +150,7 @@ const NewDataElementDriverEditor = observer(() => {
         className="explorer__new-element-modal__driver__dropdown"
         options={options}
         onChange={onTypeSelectionChange}
-        value={newDataELementDriver.embeddedDataOption}
+        value={selectedOption}
         darkMode={true}
       />
     </div>

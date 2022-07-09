@@ -21,6 +21,7 @@ import {
   type Runtime,
   type EmbeddedData,
   type RawLambda,
+  type DataElement,
   ConnectionTestData,
   PureSingleExecution,
   PureMultiExecution,
@@ -29,6 +30,8 @@ import {
   VariableExpression,
   PrimitiveType,
   Enumeration,
+  DataElementReference,
+  PackageableElementExplicitReference,
 } from '@finos/legend-graph';
 import {
   type GeneratorFn,
@@ -56,6 +59,7 @@ import {
   getAllIdentifiedConnectionsFromRuntime,
   TEMPORARY_EmbeddedDataConnectionVisitor,
 } from '../../../../shared/testable/TestableUtils.js';
+import { EmbeddedDataType } from '../../../ExternalFormatState.js';
 import {
   type EmbeddedDataTypeOption,
   EmbeddedDataEditorState,
@@ -195,22 +199,30 @@ export class NewConnectionDataState {
   showModal = false;
   connection: IdentifiedConnection | undefined;
   embeddedDataType: EmbeddedDataTypeOption | undefined;
+  dataElement: DataElement | undefined;
 
   constructor(suite: ServiceTestDataState) {
     makeObservable(this, {
       showModal: observable,
       connection: observable,
       embeddedDataType: observable,
+      dataElement: observable,
       setModal: action,
       openModal: action,
       setEmbeddedDataType: action,
       handleConnectionChange: action,
+      setDataElement: action,
     });
     this.testSuiteState = suite;
+    this.dataElement = this.testSuiteState.editorStore.dataOptions[0]?.value;
   }
 
   setModal(val: boolean): void {
     this.showModal = val;
+  }
+
+  setDataElement(val: DataElement | undefined): void {
+    this.dataElement = val;
   }
 
   setEmbeddedDataType(val: EmbeddedDataTypeOption | undefined): void {
@@ -244,10 +256,23 @@ export class NewConnectionDataState {
     const embeddedDataType = guaranteeNonNullable(this.embeddedDataType);
     const connectionTestData = new ConnectionTestData();
     connectionTestData.connectionId = val.id;
-    connectionTestData.testData = createEmbeddedData(
-      embeddedDataType.value,
-      this.testSuiteState.editorStore,
-    );
+    let testData: EmbeddedData;
+    if (
+      this.embeddedDataType?.value === EmbeddedDataType.DATA_ELEMENT &&
+      this.dataElement
+    ) {
+      const value = new DataElementReference();
+      value.dataElement = PackageableElementExplicitReference.create(
+        this.dataElement,
+      );
+      testData = value;
+    } else {
+      testData = createEmbeddedData(
+        embeddedDataType.value,
+        this.testSuiteState.editorStore,
+      );
+    }
+    connectionTestData.testData = testData;
     return connectionTestData;
   }
 }
