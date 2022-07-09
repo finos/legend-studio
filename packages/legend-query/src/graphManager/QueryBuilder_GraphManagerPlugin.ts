@@ -19,7 +19,7 @@ import {
   PureGraphManagerPlugin,
   type PureGraphManagerExtensionBuilder,
 } from '@finos/legend-graph';
-import { buildQueryBuilderGraphManagerExtension } from './pure/QueryBuilder_PureGraphManagerExtensionBuilder.js';
+import { QueryBuilder_buildGraphManagerExtension } from './protocol/QueryBuilder_PureGraphManagerExtensionBuilder.js';
 
 export class QueryBuilder_PureGraphManagerPlugin extends PureGraphManagerPlugin {
   constructor() {
@@ -27,6 +27,6 @@ export class QueryBuilder_PureGraphManagerPlugin extends PureGraphManagerPlugin 
   }
 
   override getExtraPureGraphManagerExtensionBuilders(): PureGraphManagerExtensionBuilder[] {
-    return [buildQueryBuilderGraphManagerExtension];
+    return [QueryBuilder_buildGraphManagerExtension];
   }
 }

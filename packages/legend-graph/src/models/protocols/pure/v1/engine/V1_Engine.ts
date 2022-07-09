@@ -180,6 +180,10 @@ export class V1_Engine {
     return this.engineServerClient;
   }
 
+  getCurrentUserId(): string | undefined {
+    return this.engineServerClient.currentUserId;
+  }
+
   async setup(config: V1_EngineSetupConfig): Promise<void> {
     this.config.setEnv(config.env);
     this.config.setTabSize(config.tabSize);

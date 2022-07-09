@@ -41,6 +41,7 @@ import {
   uuid,
   deleteEntry,
   assertType,
+  uniq,
 } from '@finos/legend-shared';
 import type { TEMPORARY__AbstractEngineConfig } from '../../../../graphManager/action/TEMPORARY__AbstractEngineConfig.js';
 import {
@@ -1929,21 +1930,23 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         (element) => element.V1_getExtraExecutionInputCollectors?.() ?? [],
       )
       .flatMap((getter) => getter(graph, mapping, runtime, graphData));
-    prunedGraphData.elements = graphData.elements
-      .filter(
-        (element) =>
-          element instanceof V1_Class ||
-          element instanceof V1_Enumeration ||
-          element instanceof V1_Profile ||
-          element instanceof V1_Association ||
-          element instanceof V1_ConcreteFunctionDefinition ||
-          element instanceof V1_Measure ||
-          element instanceof V1_Store ||
-          element instanceof V1_PackageableConnection ||
-          element instanceof V1_PackageableRuntime ||
-          element instanceof V1_Mapping,
-      )
-      .concat(extraExecutionElements);
+    prunedGraphData.elements = uniq(
+      graphData.elements
+        .filter(
+          (element) =>
+            element instanceof V1_Class ||
+            element instanceof V1_Enumeration ||
+            element instanceof V1_Profile ||
+            element instanceof V1_Association ||
+            element instanceof V1_ConcreteFunctionDefinition ||
+            element instanceof V1_Measure ||
+            element instanceof V1_Store ||
+            element instanceof V1_PackageableConnection ||
+            element instanceof V1_PackageableRuntime ||
+            element instanceof V1_Mapping,
+        )
+        .concat(extraExecutionElements),
+    );
     // NOTE: for execution, we usually will just assume that we send the connections embedded in the runtime value, since we don't want the user to have to create
     // packageable runtime and connection just to play with execution.
     executeInput.clientVersion = clientVersion;
@@ -2231,17 +2234,14 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         V1_transformQuerySearchSpecification(searchSpecification),
       )
     ).map((protocol) =>
-      V1_buildLightQuery(
-        protocol,
-        this.engine.getEngineServerClient().currentUserId,
-      ),
+      V1_buildLightQuery(protocol, this.engine.getCurrentUserId()),
     );
   }
 
   async getLightQuery(queryId: string): Promise<LightQuery> {
     return V1_buildLightQuery(
       await this.engine.getQuery(queryId),
-      this.engine.getEngineServerClient().currentUserId,
+      this.engine.getCurrentUserId(),
     );
   }
 
@@ -2323,7 +2323,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     return V1_buildQuery(
       await this.engine.getQuery(queryId),
       graph,
-      this.engine.getEngineServerClient().currentUserId,
+      this.engine.getCurrentUserId(),
     );
   }
 
@@ -2335,7 +2335,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     return V1_buildQuery(
       await this.engine.createQuery(V1_transformQuery(query)),
       graph,
-      this.engine.getEngineServerClient().currentUserId,
+      this.engine.getCurrentUserId(),
     );
   }
 
@@ -2343,7 +2343,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     return V1_buildQuery(
       await this.engine.updateQuery(V1_transformQuery(query)),
       graph,
-      this.engine.getEngineServerClient().currentUserId,
+      this.engine.getCurrentUserId(),
     );
   }
 
@@ -2384,19 +2384,21 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           [],
       )
       .flatMap((getter) => getter(graph, graphData));
-    prunedGraphData.elements = this.getFullGraphModelData(graph)
-      .elements.filter(
-        (element) =>
-          element instanceof V1_Class ||
-          element instanceof V1_Enumeration ||
-          element instanceof V1_Profile ||
-          element instanceof V1_Association ||
-          element instanceof V1_ConcreteFunctionDefinition ||
-          element instanceof V1_Measure ||
-          element instanceof V1_Store ||
-          element instanceof V1_Mapping,
-      )
-      .concat(extraElements);
+    prunedGraphData.elements = uniq(
+      this.getFullGraphModelData(graph)
+        .elements.filter(
+          (element) =>
+            element instanceof V1_Class ||
+            element instanceof V1_Enumeration ||
+            element instanceof V1_Profile ||
+            element instanceof V1_Association ||
+            element instanceof V1_ConcreteFunctionDefinition ||
+            element instanceof V1_Measure ||
+            element instanceof V1_Store ||
+            element instanceof V1_Mapping,
+        )
+        .concat(extraElements),
+    );
     return prunedGraphData;
   };
 

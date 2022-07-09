@@ -20,7 +20,7 @@ import type {
 } from '@finos/legend-graph';
 import { V1_QueryBuilder_PureGraphManagerExtension } from './v1/V1_QueryBuilder_PureGraphManagerExtension.js';
 
-export const buildQueryBuilderGraphManagerExtension = (
+export const QueryBuilder_buildGraphManagerExtension = (
   graphManager: AbstractPureGraphManager,
 ): AbstractPureGraphManagerExtension =>
   // NOTE: until we support more client versions, we always default to return V1

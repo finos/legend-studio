@@ -84,7 +84,7 @@ import {
 import type { LegendQueryPluginManager } from '../application/LegendQueryPluginManager.js';
 import type { LegendQueryConfig } from '../application/LegendQueryConfig.js';
 import { LegendQueryEventService } from './LegendQueryEventService.js';
-import { getQueryBuilderGraphManagerExtension } from '../graphManager/pure/QueryBuilder_PureGraphManagerExtension.js';
+import { getQueryBuilderGraphManagerExtension } from '../graphManager/protocol/QueryBuilder_PureGraphManagerExtension.js';
 
 export abstract class QueryInfoState {
   queryStore: LegendQueryStore;
