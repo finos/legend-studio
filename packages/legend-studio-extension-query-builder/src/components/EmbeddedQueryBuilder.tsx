@@ -27,14 +27,18 @@ import { useEditorStore } from '@finos/legend-studio';
 import { flowResult } from 'mobx';
 import { noop } from '@finos/legend-shared';
 import { QueryBuilder_EditorExtensionState } from '../stores/QueryBuilder_EditorExtensionState.js';
-import { useApplicationStore } from '@finos/legend-application';
+import {
+  useApplicationNavigationContext,
+  useApplicationStore,
+} from '@finos/legend-application';
 import { QueryBuilder } from '@finos/legend-query';
+import { QUERY_BUILDER_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../stores/QueryBuilder_LegendStudioApplicationNavigationContext.js';
 
 /**
  * NOTE: Query builder is by right a mini-app so we have it hosted in a full-screen modal dialog
  * See https://material.io/components/dialogs#full-screen-dialog
  */
-export const QueryBuilderDialog = observer(() => {
+const QueryBuilderDialog = observer(() => {
   const applicationStore = useApplicationStore();
   const editorStore = useEditorStore();
   const queryBuilderExtensionState = editorStore.getEditorExtensionState(
@@ -48,6 +52,10 @@ export const QueryBuilderDialog = observer(() => {
     ).catch(applicationStore.alertUnhandledError);
     queryBuilderExtensionState.reset();
   };
+
+  useApplicationNavigationContext(
+    QUERY_BUILDER_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.EMBEDDED_QUERY_BUILDER,
+  );
 
   return (
     <Dialog
@@ -99,4 +107,16 @@ export const QueryBuilderDialog = observer(() => {
       </div>
     </Dialog>
   );
+});
+
+export const EmbeddedQueryBuilder = observer(() => {
+  const editorStore = useEditorStore();
+  const queryBuilderExtensionState = editorStore.getEditorExtensionState(
+    QueryBuilder_EditorExtensionState,
+  );
+
+  if (!queryBuilderExtensionState.mode) {
+    return null;
+  }
+  return <QueryBuilderDialog />;
 });

@@ -55,7 +55,7 @@ import {
 } from '@finos/legend-application';
 import { WorkspaceType } from '@finos/legend-server-sdlc';
 import { WorkspaceSyncConflictResolver } from './side-bar/WorkspaceSyncConflictResolver.js';
-import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT } from '../../stores/LegendStudioApplicationNavigationContext.js';
+import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../stores/LegendStudioApplicationNavigationContext.js';
 
 export const EditorInner = observer(() => {
   const params = useParams<EditorPathParams | GroupEditorPathParams>();
@@ -223,7 +223,7 @@ export const EditorInner = observer(() => {
   );
 
   useApplicationNavigationContext(
-    LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT.EDITOR,
+    LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.EDITOR,
   );
 
   return (

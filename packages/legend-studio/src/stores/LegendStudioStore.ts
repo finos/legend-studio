@@ -116,7 +116,7 @@ export class LegendStudioStore {
     // setup telemetry service
     this.applicationStore.telemetryService.setUserId(currentUserID);
 
-    ApplicationTelemetry.logEvent_AppInitialized(
+    ApplicationTelemetry.logEvent_ApplicationInitialized(
       this.applicationStore.telemetryService,
       {
         browser: {

@@ -65,5 +65,9 @@
     "dsl_external_format_pureProtocolProcessorPlugin": "@finos/legend-graph-plugin-dsl-external-format-pure-protocol-processor",
     "dsl_external_format_pureGraphManagerPlugin": "@finos/legend-graph-plugin-dsl-external-format-pure-graph-manager",
     "dsl_external_format_pureGraphPlugin": "@finos/legend-graph-plugin-dsl-external-format-pure-graph"
+  },
+  "typedoc": {
+    "entryPoint": "./src/index.ts",
+    "readmeFile": "./README.md"
   }
 }

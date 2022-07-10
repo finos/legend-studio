@@ -55,6 +55,7 @@ import {
 import { useApplicationStore } from './ApplicationStoreProvider.js';
 import Draggable from 'react-draggable';
 import { DATE_TIME_FORMAT } from '@finos/legend-graph';
+import { ApplicationTelemetry } from '../index.js';
 
 const WIZARD_GREETING = `Bonjour, It's Pierre!`;
 
@@ -62,7 +63,25 @@ const VirtualAssistantDocumentationEntryViewer = observer(
   (props: { entry: VirtualAssistantDocumentationEntry }) => {
     const { entry } = props;
     const applicationStore = useApplicationStore();
-    const toggleExpand = (): void => entry.setIsOpen(!entry.isOpen);
+    const toggleExpand = (): void => {
+      if (!entry.isOpen) {
+        ApplicationTelemetry.logEvent_VirtualAssistantDocumentationEntryAccessed(
+          applicationStore.telemetryService,
+          {
+            key: entry.documentationKey,
+          },
+        );
+      }
+      entry.setIsOpen(!entry.isOpen);
+    };
+    const onDocumentationLinkClick = (): void => {
+      ApplicationTelemetry.logEvent_VirtualAssistantDocumentationEntryAccessed(
+        applicationStore.telemetryService,
+        {
+          key: entry.documentationKey,
+        },
+      );
+    };
     const copyDocumentationKey = applicationStore.guardUnhandledError(() =>
       applicationStore.copyTextToClipboard(entry.documentationKey),
     );
@@ -103,6 +122,7 @@ const VirtualAssistantDocumentationEntryViewer = observer(
                 rel="noopener noreferrer"
                 target="_blank"
                 href={entry.url}
+                onClick={onDocumentationLinkClick}
                 title="Click to see external documentation"
               >
                 {entry.title}
@@ -146,13 +166,13 @@ const VirtualAssistantContextualSupportPanel = observer(() => {
   const copyCurrentContextIDToClipboard = applicationStore.guardUnhandledError(
     () =>
       applicationStore.copyTextToClipboard(
-        applicationStore.navigationContextService.currentContext?.value ?? '',
+        applicationStore.navigationContextService.currentContext?.key ?? '',
       ),
   );
   const copyContextStackToClipboard = applicationStore.guardUnhandledError(() =>
     applicationStore.copyTextToClipboard(
       applicationStore.navigationContextService.contextStack
-        .map((context) => context.value)
+        .map((context) => context.key)
         .join(' > '),
     ),
   );
@@ -461,10 +481,10 @@ const VirtualAssistantPanel = observer(
         className="virtual-assistant__panel__container"
         anchorEl={triggerElement}
         // we need to get rid of the backdrop and the click-away trap
-        // to make popover behave like a popper
+        // to make this popover behave like a popper
+        // NOTE: we will cancel the effect of click-away trap using CSS
         hideBackdrop={true}
         PaperProps={{
-          // we will cancel the effect of click-away trap using CSS
           classes: { root: 'virtual-assistant__panel__container__root' },
         }}
         // allow other modals to take the focus from the virtual assistant
@@ -617,8 +637,8 @@ export const VirtualAssistant = observer(() => {
         ref={assistantRef}
       >
         <div
-          //  NOTE: make sure when we change the documentation entry, the flashing animation
-          // is replayed
+          //  NOTE: make sure when we change the documentation entry,
+          // the flashing animation is replayed in the virtual assistant station
           key={currentContextualDocumentationEntry?.uuid ?? ''}
           className={clsx('virtual-assistant__station', {
             'virtual-assistant__station--hidden': assistantService.isHidden,
@@ -647,13 +667,6 @@ export const VirtualAssistant = observer(() => {
               <CircleIcon className="virtual-assistant__station__trigger__circle" />
             ) : null}
           </button>
-          {/* NOTE: temporarily hide the assistant panel while dragging so the position is re-calculated */}
-          {!isDragging &&
-            assistantService.isOpen &&
-            !assistantService.isHidden &&
-            assistantRef.current && (
-              <VirtualAssistantPanel triggerElement={assistantRef.current} />
-            )}
 
           <ContextMenu
             className={clsx('virtual-assistant__station__drag-handle', {
@@ -684,6 +697,13 @@ export const VirtualAssistant = observer(() => {
             </div>
           </ContextMenu>
         </div>
+        {/* NOTE: temporarily hide the assistant panel while dragging so the position is re-calculated */}
+        {!isDragging &&
+          assistantService.isOpen &&
+          !assistantService.isHidden &&
+          assistantRef.current && (
+            <VirtualAssistantPanel triggerElement={assistantRef.current} />
+          )}
       </div>
     </Draggable>
   );

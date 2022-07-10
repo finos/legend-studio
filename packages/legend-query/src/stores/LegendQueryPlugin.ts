@@ -16,7 +16,10 @@
 
 import { AbstractPlugin } from '@finos/legend-shared';
 import type { LegendQueryPluginManager } from '../application/LegendQueryPluginManager.js';
-import type { QuerySetupState, QuerySetupStore } from './QuerySetupStore.js';
+import type {
+  QuerySetupState,
+  QuerySetupStore,
+} from './LegendQuerySetupStore.js';
 
 export type QuerySetupOptionRendererConfiguration = {
   key: string;
@@ -29,7 +32,7 @@ export type QuerySetupRenderer = (
 
 export abstract class LegendQueryPlugin extends AbstractPlugin {
   /**
-   * This helps to better type-checking for this empty abtract type
+   * This helps to better type-check for this empty abtract type
    * See https://github.com/finos/legend-studio/blob/master/docs/technical/typescript-usage.md#understand-typescript-structual-type-system
    */
   private readonly _$nominalTypeBrand!: 'LegendQueryPlugin';

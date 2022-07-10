@@ -46,6 +46,7 @@ export class QueryBuilderPropertySearchPanelState {
   allMappedPropertyNodes: QueryBuilderExplorerTreeNodeData[] = [];
   searchedMappedPropertyNodes: QueryBuilderExplorerTreeNodeData[] = [];
   isSearchPanelOpen = false;
+  isSearchPanelHidden = false;
   searchText = '';
   filterByMultiple: boolean;
   typeFilters: QUERY_BUILDER_PROPERTY_SEARCH_TYPE[];
@@ -55,11 +56,13 @@ export class QueryBuilderPropertySearchPanelState {
       queryBuilderState: false,
       searchedMappedPropertyNodes: observable,
       isSearchPanelOpen: observable,
+      isSearchPanelHidden: observable,
       searchText: observable,
       filteredPropertyNodes: computed,
       setSearchText: action,
       setSearchedMappedPropertyNodes: action,
       setIsSearchPanelOpen: action,
+      setIsSearchPanelHidden: action,
       refreshPropertyState: action,
       setFilterByMultiple: action,
       toggleTypeFilter: action,
@@ -303,6 +306,10 @@ export class QueryBuilderPropertySearchPanelState {
 
   setIsSearchPanelOpen(val: boolean): void {
     this.isSearchPanelOpen = val;
+  }
+
+  setIsSearchPanelHidden(val: boolean): void {
+    this.isSearchPanelHidden = val;
   }
 
   setSearchText(val: string): void {

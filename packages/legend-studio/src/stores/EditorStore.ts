@@ -149,7 +149,7 @@ import { GlobalTestRunnerState } from './sidebar-state/testable/GlobalTestRunner
 
 export abstract class EditorExtensionState {
   /**
-   * This helps to better type-checking for this empty abtract type
+   * This helps to better type-check for this empty abtract type
    * See https://github.com/finos/legend-studio/blob/master/docs/technical/typescript-usage.md#understand-typescript-structual-type-system
    */
   private readonly _$nominalTypeBrand!: 'EditorExtensionState';

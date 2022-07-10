@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-export * from './utils/CJS__clsx.cjs';
 export * from './utils/ComponentUtils.js';
 export * from './utils/PanelDisplayState.js';
 export * from './utils/TextEditorUtils.js';

@@ -52,7 +52,7 @@
     "@finos/legend-server-depot": "workspace:*",
     "@finos/legend-shared": "workspace:*",
     "@finos/legend-studio": "workspace:*",
-    "@types/react": "18.0.14",
+    "@types/react": "18.0.15",
     "mobx": "6.6.1",
     "mobx-react-lite": "3.4.0",
     "react": "18.2.0",

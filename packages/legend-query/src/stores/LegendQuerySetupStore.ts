@@ -19,7 +19,6 @@ import {
   computed,
   flow,
   flowResult,
-  makeAutoObservable,
   makeObservable,
   observable,
 } from 'mobx';
@@ -280,12 +279,14 @@ export class ServiceQuerySetupState extends QuerySetupState {
 
 export class QuerySetupStore {
   queryStore: LegendQueryStore;
+  // graphManagerState: GraphManagerState;
   querySetupState?: QuerySetupState | undefined;
 
   constructor(queryStore: LegendQueryStore) {
-    makeAutoObservable(this, {
-      queryStore: false,
+    makeObservable(this, {
+      querySetupState: observable,
       setSetupState: action,
+      initialize: flow,
     });
 
     this.queryStore = queryStore;

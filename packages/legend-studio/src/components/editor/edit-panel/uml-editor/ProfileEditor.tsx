@@ -43,6 +43,8 @@ import {
   profile_deleteStereotype,
   tagStereotype_setValue,
 } from '../../../../stores/graphModifier/DomainGraphModifierHelper.js';
+import { useApplicationNavigationContext } from '@finos/legend-application';
+import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../stores/LegendStudioApplicationNavigationContext.js';
 
 const TagBasicEditor = observer(
   (props: { tag: Tag; deleteValue: () => void; isReadOnly: boolean }) => {
@@ -168,6 +170,11 @@ export const ProfileEditor = observer((props: { profile: Profile }) => {
     (val: Tag): (() => void) =>
     (): void =>
       profile_deleteTag(profile, val);
+
+  useApplicationNavigationContext(
+    LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.PROFILE_EDITOR,
+  );
+
   return (
     <div className="uml-element-editor profile-editor">
       <div className="panel">

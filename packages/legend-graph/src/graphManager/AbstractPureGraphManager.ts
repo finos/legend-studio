@@ -99,13 +99,35 @@ export interface ExecutionOptions {
   serializationFormat?: EXECUTION_SERIALIZATION_FORMAT | undefined;
 }
 
+export abstract class AbstractPureGraphManagerExtension {
+  graphManager: AbstractPureGraphManager;
+
+  constructor(graphManager: AbstractPureGraphManager) {
+    this.graphManager = graphManager;
+  }
+
+  abstract getSupportedProtocolVersion(): string;
+}
+
 export abstract class AbstractPureGraphManager {
+  extensions: AbstractPureGraphManagerExtension[] = [];
   pluginManager: GraphPluginManager;
   log: Log;
 
   constructor(pluginManager: GraphPluginManager, log: Log) {
     this.pluginManager = pluginManager;
     this.log = log;
+    this.extensions = pluginManager
+      .getPureGraphManagerPlugins()
+      .flatMap(
+        (plugin) => plugin.getExtraPureGraphManagerExtensionBuilders?.() ?? [],
+      )
+      .map((builder) => builder(this))
+      .filter(
+        (extension) =>
+          extension.getSupportedProtocolVersion() ===
+          this.getSupportedProtocolVersion(),
+      );
   }
 
   /**
@@ -124,6 +146,8 @@ export abstract class AbstractPureGraphManager {
       tracerService?: TracerService | undefined;
     },
   ): Promise<void>;
+
+  abstract getSupportedProtocolVersion(): string;
 
   // --------------------------------------------- Graph Builder ---------------------------------------------
 
@@ -395,24 +419,6 @@ export abstract class AbstractPureGraphManager {
   abstract createQuery(query: Query, graph: PureModel): Promise<Query>;
   abstract updateQuery(query: Query, graph: PureModel): Promise<Query>;
   abstract deleteQuery(queryId: string): Promise<void>;
-
-  // ------------------------------------------- Legend Query -------------------------------------
-  /**
-   * @modularize
-   * See https://github.com/finos/legend-studio/issues/65
-   */
-
-  abstract buildGraphForCreateQuerySetup(
-    graph: PureModel,
-    entities: Entity[],
-    dependencyEntitiesMap: Map<string, Entity[]>,
-  ): Promise<void>;
-
-  abstract buildGraphForServiceQuerySetup(
-    graph: PureModel,
-    entities: Entity[],
-    dependencyEntitiesMap: Map<string, Entity[]>,
-  ): Promise<void>;
 
   // -------------------------------------- Analysis --------------------------------------
 

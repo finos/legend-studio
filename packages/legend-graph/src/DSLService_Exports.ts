@@ -25,3 +25,9 @@ export * from './models/metamodels/pure/packageableElements/service/ConnectionTe
 export * from './models/metamodels/pure/packageableElements/service/ServiceTestData.js';
 export * from './models/metamodels/pure/packageableElements/service/DEPRECATED__ServiceTest.js';
 export * from './models/metamodels/pure/packageableElements/service/ParameterValue.js';
+export { V1_SERVICE_ELEMENT_PROTOCOL_TYPE } from './models/protocols/pure/v1/transformation/pureProtocol/serializationHelpers/V1_ServiceSerializationHelper.js';
+export { V1_Service } from './models/protocols/pure/v1/model/packageableElements/service/V1_Service.js';
+export {
+  V1_PureMultiExecution,
+  V1_PureSingleExecution,
+} from './models/protocols/pure/v1/model/packageableElements/service/V1_ServiceExecution.js';

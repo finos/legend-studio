@@ -49,7 +49,7 @@ import {
 import {
   TEST__provideMockedLegendQueryStore,
   TEST__setUpQueryEditor,
-} from '../QueryComponentTestUtils.js';
+} from '../LegendQueryComponentTestUtils.js';
 import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_TestID.js';
 import {
   QueryBuilderExplorerTreeRootNodeData,
@@ -58,7 +58,7 @@ import {
 import { QueryBuilderSimpleProjectionColumnState } from '../../stores/QueryBuilderProjectionState.js';
 import { COLUMN_SORT_TYPE } from '../../stores/QueryResultSetModifierState.js';
 import { LegendQueryPluginManager } from '../../application/LegendQueryPluginManager.js';
-import { Query_GraphPreset } from '../../models/Query_GraphPreset.js';
+import { QueryBuilder_GraphPreset } from '../../models/QueryBuilder_GraphPreset.js';
 import { FETCH_STRUCTURE_MODE } from '../../stores/QueryBuilderFetchStructureState.js';
 
 test(
@@ -67,7 +67,7 @@ test(
   ),
   async () => {
     const pluginManager = LegendQueryPluginManager.create();
-    pluginManager.usePresets([new Query_GraphPreset()]).install();
+    pluginManager.usePresets([new QueryBuilder_GraphPreset()]).install();
     const mockedQueryStore = TEST__provideMockedLegendQueryStore({
       pluginManager,
     });
@@ -393,7 +393,7 @@ test(
   ),
   async () => {
     const pluginManager = LegendQueryPluginManager.create();
-    pluginManager.usePresets([new Query_GraphPreset()]).install();
+    pluginManager.usePresets([new QueryBuilder_GraphPreset()]).install();
     const mockedQueryStore = TEST__provideMockedLegendQueryStore({
       pluginManager,
     });
@@ -467,7 +467,7 @@ test(
   ),
   async () => {
     const pluginManager = LegendQueryPluginManager.create();
-    pluginManager.usePresets([new Query_GraphPreset()]).install();
+    pluginManager.usePresets([new QueryBuilder_GraphPreset()]).install();
     const mockedQueryStore = TEST__provideMockedLegendQueryStore({
       pluginManager,
     });

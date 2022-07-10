@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { forwardRef, useEffect, useState } from 'react';
+import { forwardRef, useEffect, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   type TreeNodeContainerProps,
@@ -43,6 +43,7 @@ import {
   InfoCircleIcon,
   PURE_ClassIcon,
   CheckIcon,
+  SearchIcon,
 } from '@finos/legend-art';
 import {
   type QueryBuilderExplorerTreeDragSource,
@@ -794,7 +795,9 @@ const QueryBuilderExplorerTree = observer(
 export const QueryBuilderExplorerPanel = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
+    const searchButtonRef = useRef<HTMLButtonElement>(null);
     const explorerState = queryBuilderState.explorerState;
+    const propertySearchPanelState = explorerState.propertySearchPanelState;
     const applicationStore = useApplicationStore();
     const collapseTree = (): void => {
       if (explorerState.treeData) {
@@ -812,6 +815,19 @@ export const QueryBuilderExplorerPanel = observer(
       explorerState.setHumanizePropertyName(
         !explorerState.humanizePropertyName,
       );
+    const togglePropertySearch = (): void => {
+      if (explorerState.treeData) {
+        if (!propertySearchPanelState.isSearchPanelOpen) {
+          propertySearchPanelState.setIsSearchPanelOpen(true);
+          if (!propertySearchPanelState.allMappedPropertyNodes.length) {
+            propertySearchPanelState.fetchAllPropertyNodes();
+          }
+        } else {
+          propertySearchPanelState.setIsSearchPanelOpen(false);
+        }
+      }
+    };
+
     useEffect(() => {
       flowResult(
         queryBuilderState.querySetupState.analyzeMappingModelCoverage(),
@@ -838,9 +854,18 @@ export const QueryBuilderExplorerPanel = observer(
             <div className="panel__header__title__label">explorer</div>
           </div>
           <div className="panel__header__actions">
-            <QueryBuilderPropertySearchPanel
-              queryBuilderState={queryBuilderState}
-            />
+            <button
+              ref={searchButtonRef}
+              className={clsx('panel__header__action', {
+                'query-builder__explorer__header__action--active':
+                  propertySearchPanelState.isSearchPanelOpen,
+              })}
+              onClick={togglePropertySearch}
+              tabIndex={-1}
+              title="Toggle property search"
+            >
+              <SearchIcon />
+            </button>
             <button
               className="panel__header__action"
               onClick={collapseTree}
@@ -887,6 +912,12 @@ export const QueryBuilderExplorerPanel = observer(
               />
             </DropdownMenu>
           </div>
+          {propertySearchPanelState.isSearchPanelOpen && (
+            <QueryBuilderPropertySearchPanel
+              queryBuilderState={queryBuilderState}
+              triggerElement={searchButtonRef.current}
+            />
+          )}
         </div>
         <div className="panel__content query-builder-explorer-tree__content">
           <QueryBuilderExplorerPropertyDragLayer

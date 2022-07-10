@@ -14,15 +14,14 @@
  * limitations under the License.
  */
 
-/**
- * Previously, these exports rely on ES module interop to expose `default` export
- * properly. But since we use `ESM` for Typescript resolution now, we lose this
- * so we have to workaround by importing these and re-export them from CJS
- *
- * TODO: remove these when the package properly work with Typescript's nodenext
- * module resolution
- *
- * @workaround ESM
- * See https://github.com/microsoft/TypeScript/issues/49298
- */
-export { default as clsx, type ClassValue } from 'clsx';
+import type {
+  AbstractPureGraphManager,
+  AbstractPureGraphManagerExtension,
+} from '@finos/legend-graph';
+import { V1_QueryBuilder_PureGraphManagerExtension } from './v1/V1_QueryBuilder_PureGraphManagerExtension.js';
+
+export const QueryBuilder_buildGraphManagerExtension = (
+  graphManager: AbstractPureGraphManager,
+): AbstractPureGraphManagerExtension =>
+  // NOTE: until we support more client versions, we always default to return V1
+  new V1_QueryBuilder_PureGraphManagerExtension(graphManager);

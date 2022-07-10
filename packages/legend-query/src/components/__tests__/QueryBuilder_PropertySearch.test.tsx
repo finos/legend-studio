@@ -19,11 +19,11 @@ import { fireEvent, getByTitle, getByText, act } from '@testing-library/react';
 import { integrationTest } from '@finos/legend-shared';
 import { getByDisplayValue, waitFor } from '@testing-library/dom';
 import { LegendQueryPluginManager } from '../../application/LegendQueryPluginManager.js';
-import { Query_GraphPreset } from '../../models/Query_GraphPreset.js';
+import { QueryBuilder_GraphPreset } from '../../models/QueryBuilder_GraphPreset.js';
 import {
   TEST__provideMockedLegendQueryStore,
   TEST__setUpQueryEditor,
-} from '../QueryComponentTestUtils.js';
+} from '../LegendQueryComponentTestUtils.js';
 import TEST_DATA__QueryBuilder_Model_PropertySearch from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_PropertySearch.json';
 import { stub_RawLambda } from '@finos/legend-graph';
 import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_TestID.js';
@@ -35,7 +35,7 @@ test(
   ),
   async () => {
     const pluginManager = LegendQueryPluginManager.create();
-    pluginManager.usePresets([new Query_GraphPreset()]).install();
+    pluginManager.usePresets([new QueryBuilder_GraphPreset()]).install();
     const mockedQueryStore = TEST__provideMockedLegendQueryStore({
       pluginManager,
     });
@@ -63,7 +63,7 @@ test(
     const queryBuilder = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER),
     );
-    fireEvent.click(getByTitle(queryBuilder, 'Search for property'));
+    fireEvent.click(getByTitle(queryBuilder, 'Toggle property search'));
     const searchPanel = await waitFor(() =>
       renderResult.getByTestId(
         QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PROPERTY_SEARCH_PANEL,

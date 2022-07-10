@@ -26,12 +26,16 @@ import {
   MenuContent,
   MenuContentItem,
 } from '@finos/legend-art';
-import { EDITOR_LANGUAGE } from '@finos/legend-application';
+import {
+  EDITOR_LANGUAGE,
+  useApplicationNavigationContext,
+} from '@finos/legend-application';
 import {
   text_setContent,
   text_setType,
 } from '../../stores/studio/DSLText_GraphModifierHelper.js';
 import { TEXT_TYPE } from '../../helper/DSLText_Helper.js';
+import { DSL_TEXT_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../stores/studio/DSLText_LegendStudioApplicationNavigationContext.js';
 
 const getTextElementEditorLanguage = (
   type: string | undefined,
@@ -64,6 +68,10 @@ export const TextElementEditor = observer(() => {
       typeNameRef.current?.focus();
     }
   }, [isReadOnly]);
+
+  useApplicationNavigationContext(
+    DSL_TEXT_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.TEXT_EDITOR,
+  );
 
   return (
     <div className="panel text-element-editor">
