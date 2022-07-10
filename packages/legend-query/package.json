@@ -72,7 +72,7 @@
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",
     "@jest/globals": "28.1.2",
-    "@testing-library/dom": "8.14.0",
+    "@testing-library/dom": "8.14.1",
     "cross-env": "7.0.3",
     "eslint": "8.19.0",
     "jest": "28.1.2",
@@ -93,6 +93,7 @@
     "pureGraphManagerPlugin": "@finos/legend-graph-plugin-query-builder-pure-graph-manager"
   },
   "typedoc": {
-    "entryPoint": "./src/index.ts"
+    "entryPoint": "./src/index.ts",
+    "readmeFile": "./README.md"
   }
 }

@@ -54,6 +54,7 @@
     "directory": "build/publishContent"
   },
   "typedoc": {
-    "entryPoint": "./src/index.ts"
+    "entryPoint": "./src/index.ts",
+    "readmeFile": "./README.md"
   }
 }
