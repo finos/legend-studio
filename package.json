@@ -9,7 +9,7 @@
   ],
   "scripts": {
     "build": "yarn clean && npm-run-all build:ts build:sass",
-    "build:doc": "yarn typedoc",
+    "build:doc": "yarn typedoc && node ./scripts/website/prepareSiteContent.js",
     "build:sass": "node ./scripts/workflow/buildSassAll.js --compressed",
     "build:ts": "tsc --build tsconfig.build.json",
     "changeset": "node ./scripts/workflow/generateChangeset.js",
