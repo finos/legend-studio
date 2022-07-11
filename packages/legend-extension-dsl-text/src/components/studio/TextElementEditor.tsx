@@ -26,6 +26,10 @@ import {
   MenuContent,
   MenuContentItem,
   MarkdownTextViewer,
+  ResizablePanel,
+  ResizablePanelGroup,
+  ResizablePanelSplitter,
+  getControlledResizablePanelProps,
 } from '@finos/legend-art';
 import {
   EDITOR_LANGUAGE,
@@ -117,35 +121,41 @@ export const TextElementEditor = observer(() => {
           </DropdownMenu>
           {isMarkdown ? (
             <button
-              title={
-                previewState
-                  ? `Edit markdown content`
-                  : `Preview markdown content`
-              }
+              title={previewState ? `Hide Preview` : `Show Preview`}
               className="text-element-editor__preview-btn btn--sm"
               onClick={(): void => setPreviewState(!previewState)}
             >
-              {previewState ? `Edit` : `Preview`}
+              {previewState ? `Hide Preview` : `Show Preview`}
             </button>
           ) : null}
         </div>
       </div>
-      {isMarkdown && previewState ? (
-        <div className="panel_content text-element-editor__preview">
-          {MarkdownTextViewer({
-            value: { value: textElement.content },
-            className: `text-element-editor__preview__markdown`,
-          })}
-        </div>
-      ) : (
-        <div className="panel__content text-element-editor__editor">
-          <StudioTextInputEditor
-            language={getTextElementEditorLanguage(textElement.type)}
-            inputValue={textElement.content}
-            updateInput={changeContent}
-          />
-        </div>
-      )}
+
+      <ResizablePanelGroup
+        {...getControlledResizablePanelProps(true)}
+        orientation="vertical"
+      >
+        <ResizablePanel minSize={250}>
+          <div className="panel__content text-element-editor__editor">
+            <StudioTextInputEditor
+              language={getTextElementEditorLanguage(textElement.type)}
+              inputValue={textElement.content}
+              updateInput={changeContent}
+            />
+          </div>
+        </ResizablePanel>
+        {isMarkdown && previewState && <ResizablePanelSplitter />}
+        {isMarkdown && previewState && (
+          <ResizablePanel>
+            <div className="panel_content text-element-editor__preview">
+              {MarkdownTextViewer({
+                value: { value: textElement.content },
+                className: `text-element-editor__preview__markdown`,
+              })}
+            </div>
+          </ResizablePanel>
+        )}
+      </ResizablePanelGroup>
     </div>
   );
 });
