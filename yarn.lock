@@ -2195,7 +2195,7 @@ __metadata:
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-studio": "workspace:*"
     "@jest/globals": 28.1.2
-    "@types/react": 18.0.14
+    "@types/react": 18.0.15
     cross-env: 7.0.3
     eslint: 8.19.0
     jest: 28.1.2
