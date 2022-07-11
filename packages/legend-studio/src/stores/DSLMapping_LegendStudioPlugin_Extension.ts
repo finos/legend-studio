@@ -110,10 +110,13 @@ export type MappingTestQueryEditorActionConfiguration = {
   ) => React.ReactNode | undefined;
 };
 
+/**
+ * @return a boolean indicating whether the update has ocurred or not
+ */
 export type InstanceSetImplementationSourceUpdater = (
   setImplementation: InstanceSetImplementation,
   newSource: unknown | undefined,
-) => void;
+) => boolean;
 
 export type MappingSourceTypeInfoGetter = (
   setImplementation: SetImplementation,
