@@ -44,10 +44,11 @@
     "protected": false,
     "private": false,
     "inherited": true,
-    "external": false,
+    "external": false
     // "@internal": false,
   },
-  "customCss": "./website/typedoc-custom-theme.css",
+  "theme": "legend",
+  "customCss": "./website/legend-typedoc-theme.css",
   "logLevel": "Verbose",
   "treatWarningsAsErrors": true
 }

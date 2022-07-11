@@ -49,7 +49,7 @@ We adopted a Code of Conduct that we expect project participants to adhere to. P
 
 We have a list of [good first issues](https://github.com/finos/legend-studio/labels/good%20first%20issue) that contain bugs which have a relatively limited scope. This is a great place to get started, gain experience, and get familiar with our contribution process.
 
-### License
+## License
 
 Copyright (c) 2020-present, Goldman Sachs
 

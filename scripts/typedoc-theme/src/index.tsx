@@ -14,20 +14,47 @@
  * limitations under the License.
  */
 
-import { type Application, JSX } from 'typedoc';
+import {
+  type Application,
+  JSX,
+  DefaultTheme,
+  type PageEvent,
+  type Reflection,
+} from 'typedoc';
+import { resolve, dirname, relative } from 'path';
+
+const ROOT_DIR = resolve(__dirname, '../../../');
+const typeDocBuildDir = resolve(ROOT_DIR, 'build/docs');
+const faviconPath = resolve(typeDocBuildDir, 'img/favicon.ico');
+const TEMP_FAVICON_PATH = 'favicon.ico';
+
+export class LegendTheme extends DefaultTheme {
+  override render(page: PageEvent<Reflection>): string {
+    let pageContent = super.render(page);
+
+    // replace the temporary favicon path by the relative path
+    const relativeFaviconPath = relative(dirname(page.filename), faviconPath);
+    pageContent = pageContent.replace(TEMP_FAVICON_PATH, relativeFaviconPath);
+
+    return pageContent;
+  }
+}
 
 /**
  * Called by TypeDoc when loading this theme as a plugin. Should be used to define themes which
  * can be selected by the user.
  */
 export function load(app: Application): void {
+  // First, add a temporary favicon header tag which will be properly searched and replaced later
   app.renderer.hooks.on(
     'head.end',
     () =>
       (
-        <link rel="shortcut icon" href="/img/favicon.ico" />
+        <link rel="shortcut icon" href={TEMP_FAVICON_PATH} />
       ) as unknown as JSX.Element,
   );
+
+  app.renderer.defineTheme('legend', LegendTheme);
 
   // TODO?: consider hiding the settings as well
 }
