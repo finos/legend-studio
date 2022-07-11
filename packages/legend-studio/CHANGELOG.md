@@ -1,5 +1,17 @@
 # @finos/legend-studio
 
+## 11.0.0
+
+### Major Changes
+
+- [#1266](https://github.com/finos/legend-studio/pull/1266) [`7a967b82`](https://github.com/finos/legend-studio/commit/7a967b827c0e201df068c12ccbd0f3e4413bd8e6) ([@akphi](https://github.com/akphi)) - Moved `getExtraApplicationSetups()` from `LegendStudioPlugin` to `LegendApplicationPlugin`, also renamed type `ApplicationSetup` to `LegendApplicationSetup`.
+
+### Patch Changes
+
+- [#1266](https://github.com/finos/legend-studio/pull/1266) [`7a967b82`](https://github.com/finos/legend-studio/commit/7a967b827c0e201df068c12ccbd0f3e4413bd8e6) ([@akphi](https://github.com/akphi)) - Renamed `LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT` to `LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY`.
+
+* [#1279](https://github.com/finos/legend-studio/pull/1279) [`9a8b095a`](https://github.com/finos/legend-studio/commit/9a8b095a763f1f28fb34fb28ac8f2c237baf6b9b) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add `DataElement` option to `EmbeddedDataType` to leverage in service test data.
+
 ## 10.3.0
 
 ### Minor Changes

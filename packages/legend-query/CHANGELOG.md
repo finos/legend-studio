@@ -1,5 +1,13 @@
 # @finos/legend-query
 
+## 3.2.0
+
+### Minor Changes
+
+- [#1212](https://github.com/finos/legend-studio/pull/1212) [`ac58c746`](https://github.com/finos/legend-studio/commit/ac58c746863a7372add17d5f5e41630ca0900ced) ([@gayathrir11](https://github.com/gayathrir11)) - Support property search in query builder
+
+* [#1270](https://github.com/finos/legend-studio/pull/1270) [`3ae5c562`](https://github.com/finos/legend-studio/commit/3ae5c562841efaafc81854bb6ddee525f09306f5) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Add Filter by/out on TDS Result ([#1204] https://github.com/finos/legend-studio/issues/1204).
+
 ## 3.1.0
 
 ### Minor Changes

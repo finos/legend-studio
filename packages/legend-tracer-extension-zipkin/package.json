@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-tracer-extension-zipkin",
-  "version": "2.0.5",
+  "version": "2.0.6",
   "description": "Legend application extension for tracer using Zipkin and OpenTracing",
   "keywords": [
     "legend",
