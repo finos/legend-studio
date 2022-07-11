@@ -56,5 +56,7 @@ export function load(app: Application): void {
 
   app.renderer.defineTheme('legend', LegendTheme);
 
-  // TODO?: consider hiding the settings as well
+  // TODO?: consider hiding the settings panel
+  // TODO?: consider changing the theme in DefaultThemeRenderContext.icons
+  // See https://github.com/Gerrit0/typedoc-custom-theme-demo
 }

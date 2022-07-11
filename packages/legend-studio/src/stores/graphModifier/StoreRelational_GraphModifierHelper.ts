@@ -39,13 +39,15 @@ import {
   type UsernamePasswordAuthenticationStrategy,
   type GCPWorkloadIdentityFederationAuthenticationStrategy,
   type ObserverContext,
+  type OptionalEnumerationMappingReference,
+  type TableAlias,
   getRelationalInputType,
   observe_DatasourceSpecification,
   observe_AuthenticationStrategy,
   observe_BindingTransformer,
   observe_PropertyMapping,
   observe_OptionalEnumerationMappingReference,
-  type OptionalEnumerationMappingReference,
+  observe_TableAlias,
 } from '@finos/legend-graph';
 import { action } from 'mobx';
 
@@ -387,6 +389,12 @@ export const relationalPropertyMapping_setBindingTransformer = action(
     v.bindingTransformer = value
       ? observe_BindingTransformer(value)
       : undefined;
+  },
+);
+
+export const rootRelationalSetImp_setMainTableAlias = action(
+  (v: RootRelationalInstanceSetImplementation, value: TableAlias): void => {
+    v.mainTableAlias = observe_TableAlias(value);
   },
 );
 
