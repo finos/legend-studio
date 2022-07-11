@@ -2496,7 +2496,7 @@ __metadata:
     "@finos/legend-server-depot": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@jest/globals": 28.1.2
-    "@testing-library/dom": 8.14.1
+    "@testing-library/dom": 8.15.0
     "@testing-library/react": 13.3.0
     "@types/react": 18.0.15
     "@types/react-dom": 18.0.6
@@ -2692,7 +2692,7 @@ __metadata:
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-studio": "workspace:*"
     "@jest/globals": 28.1.2
-    "@testing-library/dom": 8.14.1
+    "@testing-library/dom": 8.15.0
     "@testing-library/react": 13.3.0
     "@types/react": 18.0.15
     cross-env: 7.0.3
@@ -2724,7 +2724,7 @@ __metadata:
     "@finos/legend-server-sdlc": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@jest/globals": 28.1.2
-    "@testing-library/dom": 8.14.1
+    "@testing-library/dom": 8.15.0
     "@testing-library/react": 13.3.0
     "@types/react": 18.0.15
     "@types/react-dom": 18.0.6
@@ -2853,6 +2853,21 @@ __metadata:
     zipkin: 0.22.0
     zipkin-javascript-opentracing: 3.0.0
     zipkin-transport-http: 0.22.0
+  languageName: unknown
+  linkType: soft
+
+"@finos/legend-typedoc-theme@workspace:scripts/typedoc-theme":
+  version: 0.0.0-use.local
+  resolution: "@finos/legend-typedoc-theme@workspace:scripts/typedoc-theme"
+  dependencies:
+    "@types/react": 18.0.15
+    cross-env: 7.0.3
+    eslint: 8.19.0
+    npm-run-all: 4.1.5
+    react: 18.2.0
+    rimraf: 3.0.2
+    typedoc: 0.23.7
+    typescript: 4.7.4
   languageName: unknown
   linkType: soft
 
@@ -3683,9 +3698,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@testing-library/dom@npm:8.14.1, @testing-library/dom@npm:^8.5.0":
-  version: 8.14.1
-  resolution: "@testing-library/dom@npm:8.14.1"
+"@testing-library/dom@npm:8.15.0, @testing-library/dom@npm:^8.5.0":
+  version: 8.15.0
+  resolution: "@testing-library/dom@npm:8.15.0"
   dependencies:
     "@babel/code-frame": ^7.10.4
     "@babel/runtime": ^7.12.5
@@ -3695,7 +3710,7 @@ __metadata:
     dom-accessibility-api: ^0.5.9
     lz-string: ^1.4.4
     pretty-format: ^27.0.2
-  checksum: d59204b21d4f0ad5809a218b0a3daf44d3ef46bc5b44c9eda793848ebdb3d9e644790e8857c30069fcc8a9f9c0cd1a6c027f22fae8635adfa9a25ec97a65bdfb
+  checksum: f3551f5c63a1ab95e433d5935a414e669ab7a3db080892ee021b8ca06542a5dfd696bebdc2357aef02ed175c564c01e4f54a7640087009ed6f1ddce5c54974eb
   languageName: node
   linkType: hard
 
@@ -5578,9 +5593,9 @@ __metadata:
   linkType: hard
 
 "caniuse-lite@npm:^1.0.0, caniuse-lite@npm:^1.0.30001335, caniuse-lite@npm:^1.0.30001359":
-  version: 1.0.30001363
-  resolution: "caniuse-lite@npm:1.0.30001363"
-  checksum: 8dfcb2fa97724349cbbe61d988810bd90bfb40106a289ed6613188fa96dd1f5885c7e9924e46bb30a641bd1579ec34096fdc2b21b47d8500f8a2bfb0db069323
+  version: 1.0.30001364
+  resolution: "caniuse-lite@npm:1.0.30001364"
+  checksum: 4765640fcc28acfd6f51742f2b315792df09648d3590fedcd1051cb5a5201c70df315aaff9bf29ad41bd1176926ce25d8b3b597c4f5bf6361c1f6c3d29250b15
   languageName: node
   linkType: hard
 
@@ -9920,10 +9935,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lilconfig@npm:2.0.5, lilconfig@npm:^2.0.3":
+"lilconfig@npm:2.0.5":
   version: 2.0.5
   resolution: "lilconfig@npm:2.0.5"
   checksum: f7bb9e42656f06930ad04e583026f087508ae408d3526b8b54895e934eb2a966b7aafae569656f2c79a29fe6d779b3ec44ba577e80814734c8655d6f71cdf2d1
+  languageName: node
+  linkType: hard
+
+"lilconfig@npm:^2.0.3":
+  version: 2.0.6
+  resolution: "lilconfig@npm:2.0.6"
+  checksum: 40a3cd72f103b1be5975f2ac1850810b61d4053e20ab09be8d3aeddfe042187e1ba70b4651a7e70f95efa1642e7dc8b2ae395b317b7d7753b241b43cef7c0f7d
   languageName: node
   linkType: hard
 

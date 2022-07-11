@@ -1,6 +1,6 @@
 {
   "$schema": "https://typedoc.org/schema.json",
-  "name": "Legend Studio",
+  "name": "Legend Studio API Documentation",
   "hideGenerator": true,
   "gitRemote": "origin",
   "gitRevision": "master",
@@ -16,17 +16,18 @@
     "**/packages/babel-preset",
     "**/packages/eslint-plugin",
     "**/packages/stylelint-config",
+    "**/packages/legend-manual-tests",
     "**/packages/legend-dev-utils",
     "**/packages/legend-art",
     // "**/packages/legend-application-*",
     "**/packages/legend-extension-*",
     "**/packages/legend-graph-extension-collection",
-    "**/packages/legend-manual-tests",
     "**/packages/legend-studio-*",
     "**/packages/legend-query-*",
     "**/packages/legend-taxonomy-*",
     "**/packages/legend-tracer-*"
   ],
+  "plugin": ["./scripts/typedoc-theme/lib/index.js"],
   "intentionallyNotExported": [],
   "excludeExternals": false,
   "excludeInternal": true,
@@ -38,14 +39,15 @@
     "notDocumented": false
   },
   // NOTE: to be updated when we structure the doc better
-  "readme": "README.md",
+  "readme": "./website/api.md",
   "visibilityFilters": {
     "protected": false,
     "private": false,
     "inherited": true,
     "external": false,
-    "@internal": false
+    // "@internal": false,
   },
+  "customCss": "./website/typedoc-custom-theme.css",
   "logLevel": "Verbose",
   "treatWarningsAsErrors": true
 }

@@ -5,13 +5,15 @@
   "workspaces": [
     "packages/*",
     "fixtures/*",
-    "scripts/github-bot"
+    "scripts/github-bot",
+    "scripts/typedoc-theme"
   ],
   "scripts": {
     "build": "yarn clean && npm-run-all build:ts build:sass",
-    "build:doc": "yarn typedoc && node ./scripts/website/prepareSiteContent.js",
+    "build:doc": "yarn workspace @finos/legend-typedoc-theme build && yarn typedoc",
     "build:sass": "node ./scripts/workflow/buildSassAll.js --compressed",
     "build:ts": "tsc --build tsconfig.build.json",
+    "build:website": "rimraf \"build/docs\" && yarn build:doc && node ./scripts/website/prepareSiteContent.js",
     "changeset": "node ./scripts/workflow/generateChangeset.js",
     "changeset:cli": "changeset",
     "check:changeset": "node ./scripts/workflow/checkChangesets.js",
@@ -30,6 +32,7 @@
     "dev:studio": "yarn workspace @finos/legend-studio-deployment dev",
     "dev:taxonomy": "yarn workspace @finos/legend-taxonomy-deployment dev",
     "dev:ts": "tsc --build --watch",
+    "dev:website": "npx http-server ./build/docs -p 3000 -a localhost -g --cors -o",
     "fix": "yarn fix:copyright && yarn fix:style && yarn fix:js && yarn fix:format",
     "fix:copyright": "node ./scripts/copyright/checkCopyrightHeaders.js --update",
     "fix:format": "prettier --write --loglevel=warn \"(scripts|docs)/**/*.{md,json,mjs,cjs,js,ts,tsx,html,scss,css}\" \"packages/*/**/*.{md,json,mjs,cjs,js,ts,tsx,html,scss,css}\" && yarn sort-package-json \"package.json\" \"packages/*/package.json\"",
