@@ -18,7 +18,6 @@ import type { ClassView } from '@finos/legend-extension-dsl-diagram';
 import { type Class, QueryTaggedValue } from '@finos/legend-graph';
 import {
   type QuerySetupStore,
-  CreateQueryInfoState,
   QuerySetupState,
   generateCreateQueryRoute,
 } from '@finos/legend-query';
@@ -187,27 +186,6 @@ export class DataSpaceQuerySetupState extends QuerySetupState {
 
   *proceedToCreateQuery(_class?: Class): GeneratorFn<void> {
     if (this.dataSpaceViewerState) {
-      const projectData = ProjectData.serialization.fromJson(
-        (yield flowResult(
-          this.queryStore.depotServerClient.getProject(
-            this.dataSpaceViewerState.groupId,
-            this.dataSpaceViewerState.artifactId,
-          ),
-        )) as PlainObject<ProjectData>,
-      );
-      const queryInfoState = new CreateQueryInfoState(
-        this.queryStore,
-        projectData,
-        this.dataSpaceViewerState.versionId,
-        this.dataSpaceViewerState.currentExecutionContext.mapping.value,
-        this.dataSpaceViewerState.currentRuntime,
-      );
-      queryInfoState.taggedValues = [
-        createQueryDataSpaceTaggedValue(
-          this.dataSpaceViewerState.dataSpace.path,
-        ),
-      ];
-      this.queryStore.setQueryInfoState(queryInfoState);
       this.queryStore.applicationStore.navigator.goTo(
         generateCreateQueryRoute(
           this.dataSpaceViewerState.groupId,

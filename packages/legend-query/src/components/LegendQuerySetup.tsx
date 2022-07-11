@@ -46,11 +46,6 @@ import {
   ServiceQuerySetupState,
 } from '../stores/LegendQuerySetupStore.js';
 import {
-  CreateQueryInfoState,
-  ExistingQueryInfoState,
-  ServiceQueryInfoState,
-} from '../stores/LegendQueryStore.js';
-import {
   QuerySetupStoreProvider,
   useQuerySetupStore,
 } from './LegendQuerySetupStoreProvider.js';
@@ -96,12 +91,6 @@ const ExistingQuerySetup = observer(
     };
     const next = (): void => {
       if (querySetupState.currentQuery) {
-        queryStore.setQueryInfoState(
-          new ExistingQueryInfoState(
-            querySetupState.queryStore,
-            querySetupState.currentQuery,
-          ),
-        );
         applicationStore.navigator.goTo(
           generateExistingQueryRoute(querySetupState.currentQuery.id),
         );
@@ -296,7 +285,6 @@ const ServiceQuerySetup = observer(
       setupStore.setSetupState(undefined);
       querySetupState.setCurrentVersionId(undefined);
       querySetupState.setCurrentProject(undefined);
-      queryStore.setQueryInfoState(undefined);
       setupStore.queryStore.graphManagerState.resetGraph();
     };
     const next = (): void => {
@@ -305,15 +293,6 @@ const ServiceQuerySetup = observer(
         querySetupState.currentVersionId &&
         querySetupState.currentService
       ) {
-        queryStore.setQueryInfoState(
-          new ServiceQueryInfoState(
-            querySetupState.queryStore,
-            querySetupState.currentProject,
-            querySetupState.currentVersionId,
-            querySetupState.currentService,
-            querySetupState.currentServiceExecutionKey,
-          ),
-        );
         applicationStore.navigator.goTo(
           generateServiceQueryRoute(
             querySetupState.currentProject.groupId,
@@ -587,7 +566,6 @@ const CreateQuerySetup = observer(
       setupStore.setSetupState(undefined);
       querySetupState.setCurrentVersionId(undefined);
       querySetupState.setCurrentProject(undefined);
-      queryStore.setQueryInfoState(undefined);
       setupStore.queryStore.graphManagerState.resetGraph();
     };
     const next = (): void => {
@@ -597,15 +575,6 @@ const CreateQuerySetup = observer(
         querySetupState.currentMapping &&
         querySetupState.currentRuntime
       ) {
-        queryStore.setQueryInfoState(
-          new CreateQueryInfoState(
-            querySetupState.queryStore,
-            querySetupState.currentProject,
-            querySetupState.currentVersionId,
-            querySetupState.currentMapping,
-            querySetupState.currentRuntime,
-          ),
-        );
         applicationStore.navigator.goTo(
           generateCreateQueryRoute(
             querySetupState.currentProject.groupId,
