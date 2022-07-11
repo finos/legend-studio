@@ -21,5 +21,4 @@
 '@finos/legend-taxonomy': patch
 '@finos/legend-taxonomy-app': patch
 '@finos/stylelint-config-legend-studio': patch
-'@finos/typedoc-theme-legend': patch
 ---
