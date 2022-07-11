@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { prettyCONSTName } from '@finos/legend-shared';
 import { StudioTextInputEditor, useEditorStore } from '@finos/legend-studio';
@@ -25,6 +25,7 @@ import {
   DropdownMenu,
   MenuContent,
   MenuContentItem,
+  MarkdownTextViewer,
 } from '@finos/legend-art';
 import {
   EDITOR_LANGUAGE,
@@ -62,6 +63,8 @@ export const TextElementEditor = observer(() => {
     };
   const changeContent = (val: string): void =>
     text_setContent(textElement, val);
+  const [previewState, setPreviewState] = useState(false);
+  const isMarkdown = textElement.type === EDITOR_LANGUAGE.MARKDOWN;
 
   useEffect(() => {
     if (!isReadOnly) {
@@ -112,15 +115,37 @@ export const TextElementEditor = observer(() => {
               </div>
             </div>
           </DropdownMenu>
+          {isMarkdown ? (
+            <button
+              title={
+                previewState
+                  ? `Edit markdown content`
+                  : `Preview markdown content`
+              }
+              className="text-element-editor__preview-btn btn--sm"
+              onClick={(): void => setPreviewState(!previewState)}
+            >
+              {previewState ? `Edit` : `Preview`}
+            </button>
+          ) : null}
         </div>
       </div>
-      <div className="panel__content text-element-editor__editor">
-        <StudioTextInputEditor
-          language={getTextElementEditorLanguage(textElement.type)}
-          inputValue={textElement.content}
-          updateInput={changeContent}
-        />
-      </div>
+      {isMarkdown && previewState ? (
+        <div className="panel_content text-element-editor__preview">
+          {MarkdownTextViewer({
+            value: { value: textElement.content },
+            className: `text-element-editor__preview__markdown`,
+          })}
+        </div>
+      ) : (
+        <div className="panel__content text-element-editor__editor">
+          <StudioTextInputEditor
+            language={getTextElementEditorLanguage(textElement.type)}
+            inputValue={textElement.content}
+            updateInput={changeContent}
+          />
+        </div>
+      )}
     </div>
   );
 });
