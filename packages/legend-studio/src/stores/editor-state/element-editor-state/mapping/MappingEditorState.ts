@@ -899,19 +899,17 @@ export class MappingEditorState extends ElementEditorState {
       this.editorStore.pluginManager.getStudioPlugins(),
     );
     if (currentSource !== newSource) {
-      if (setImplementation instanceof PureInstanceSetImplementation) {
-        if (newSource instanceof Class || newSource === undefined) {
-          pureInstanceSetImpl_setSrcClass(setImplementation, newSource);
-        }
-      } else if (
-        setImplementation instanceof FlatDataInstanceSetImplementation
+      if (
+        setImplementation instanceof PureInstanceSetImplementation &&
+        (newSource instanceof Class || newSource === undefined)
       ) {
-        if (
-          newSource instanceof RootFlatDataRecordType &&
-          !getEmbeddedSetImplementations(setImplementation).length
-        ) {
-          flatData_setSourceRootRecordType(setImplementation, newSource);
-        }
+        pureInstanceSetImpl_setSrcClass(setImplementation, newSource);
+      } else if (
+        setImplementation instanceof FlatDataInstanceSetImplementation &&
+        newSource instanceof RootFlatDataRecordType &&
+        !getEmbeddedSetImplementations(setImplementation).length
+      ) {
+        flatData_setSourceRootRecordType(setImplementation, newSource);
       } else {
         const extraInstanceSetImplementationSourceUpdaters =
           this.editorStore.pluginManager
