@@ -23,6 +23,7 @@ import {
   PlusIcon,
   ContextMenu,
   Dialog,
+  BlankPanelPlaceholder,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import type { ServiceTestSuite } from '@finos/legend-graph';
@@ -158,32 +159,36 @@ export const ServiceTestableEditor = observer(
     return (
       <div className="service-test-suite-editor panel">
         <div className="panel__header">
-          <div className="panel__header service-test-suite-editor__header service-test-suite-editor__header--with-tabs">
-            <div className="uml-element-editor__tabs">
-              {service.tests.map((suite) => (
-                <div
-                  key={suite.id}
-                  onClick={(): void => changeSuite(suite)}
-                  className={clsx('service-test-suite-editor__tab', {
-                    'service-test-suite-editor__tab--active':
-                      suite === selectedSuite,
-                  })}
-                >
-                  <ContextMenu
-                    className="mapping-editor__header__tab__content"
-                    content={
-                      <ServiceSuiteHeaderTabContextMenu
-                        testableState={serviceTestableState}
-                        testSuite={suite}
-                      />
-                    }
+          {service.tests.length ? (
+            <div className="panel__header service-test-suite-editor__header service-test-suite-editor__header--with-tabs">
+              <div className="uml-element-editor__tabs">
+                {service.tests.map((suite) => (
+                  <div
+                    key={suite.id}
+                    onClick={(): void => changeSuite(suite)}
+                    className={clsx('service-test-suite-editor__tab', {
+                      'service-test-suite-editor__tab--active':
+                        suite === selectedSuite,
+                    })}
                   >
-                    {suite.id}
-                  </ContextMenu>
-                </div>
-              ))}
+                    <ContextMenu
+                      className="mapping-editor__header__tab__content"
+                      content={
+                        <ServiceSuiteHeaderTabContextMenu
+                          testableState={serviceTestableState}
+                          testSuite={suite}
+                        />
+                      }
+                    >
+                      {suite.id}
+                    </ContextMenu>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
+          ) : (
+            <div></div>
+          )}
           <div className="panel__header__actions">
             <button
               className="panel__header__action"
@@ -199,6 +204,14 @@ export const ServiceTestableEditor = observer(
           {serviceTestableState.selectedSuiteState && (
             <ServiceTestSuiteEditor
               serviceTestSuiteState={serviceTestableState.selectedSuiteState}
+            />
+          )}
+          {!service.tests.length && (
+            <BlankPanelPlaceholder
+              placeholderText="Add Test Suite"
+              onClick={addSuite}
+              clickActionType="add"
+              tooltipText="Click to add test"
             />
           )}
           {serviceTestableState.suiteToRename && (
