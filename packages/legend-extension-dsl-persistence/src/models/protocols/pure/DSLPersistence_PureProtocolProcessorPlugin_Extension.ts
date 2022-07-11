@@ -36,7 +36,7 @@ export type V1_PersistencePlatformTransformer = (
 ) => V1_PersistencePlatform | undefined;
 
 export type V1_PersistencePlatformProtocolSerializer = (
-  protocol: PersistencePlatform,
+  protocol: V1_PersistencePlatform,
 ) => PlainObject<V1_PersistencePlatform> | undefined;
 
 export type V1_PersistencePlatformProtocolDeserializer = (

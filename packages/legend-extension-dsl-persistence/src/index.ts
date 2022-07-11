@@ -22,10 +22,12 @@ export { DSLPersistence_LegendStudioPlugin } from './components/studio/DSLPersis
 // metamodels
 export { Persistence } from './models/metamodels/pure/model/packageableElements/persistence/DSLPersistence_Persistence.js';
 export { PersistenceContext } from './models/metamodels/pure/model/packageableElements/persistence/DSLPersistence_PersistenceContext.js';
+export { PersistencePlatform } from './models/metamodels/pure/model/packageableElements/persistence/DSLPersistence_PersistencePlatform.js';
 
 // v1 protocols
 export { V1_Persistence } from './models/protocols/pure/v1/model/packageableElements/persistence/V1_DSLPersistence_Persistence.js';
 export { V1_PersistenceContext } from './models/protocols/pure/v1/model/packageableElements/persistence/V1_DSLPersistence_PersistenceContext.js';
+export { V1_PersistencePlatform } from './models/protocols/pure/v1/model/packageableElements/persistence/V1_DSLPersistence_PersistencePlatform.js';
 
 // ---------- TRANSFORMATION ----------
 
