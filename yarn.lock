@@ -2403,6 +2403,21 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@finos/legend-internal-typedoc-theme@workspace:scripts/typedoc-theme":
+  version: 0.0.0-use.local
+  resolution: "@finos/legend-internal-typedoc-theme@workspace:scripts/typedoc-theme"
+  dependencies:
+    "@types/react": 18.0.15
+    cross-env: 7.0.3
+    eslint: 8.19.0
+    npm-run-all: 4.1.5
+    react: 18.2.0
+    rimraf: 3.0.2
+    typedoc: 0.23.7
+    typescript: 4.7.4
+  languageName: unknown
+  linkType: soft
+
 "@finos/legend-manual-tests@workspace:packages/legend-manual-tests":
   version: 0.0.0-use.local
   resolution: "@finos/legend-manual-tests@workspace:packages/legend-manual-tests"
@@ -2853,21 +2868,6 @@ __metadata:
     zipkin: 0.22.0
     zipkin-javascript-opentracing: 3.0.0
     zipkin-transport-http: 0.22.0
-  languageName: unknown
-  linkType: soft
-
-"@finos/legend-typedoc-theme@workspace:scripts/typedoc-theme":
-  version: 0.0.0-use.local
-  resolution: "@finos/legend-typedoc-theme@workspace:scripts/typedoc-theme"
-  dependencies:
-    "@types/react": 18.0.15
-    cross-env: 7.0.3
-    eslint: 8.19.0
-    npm-run-all: 4.1.5
-    react: 18.2.0
-    rimraf: 3.0.2
-    typedoc: 0.23.7
-    typescript: 4.7.4
   languageName: unknown
   linkType: soft
 

@@ -1,7 +1,7 @@
 {
-  "name": "@finos/legend-typedoc-theme",
+  "name": "@finos/legend-internal-typedoc-theme",
   "private": true,
-  "description": "Legend TypeDoc theme",
+  "description": "Custom TypeDoc theme for finos/legend-studio repository",
   "repository": {
     "type": "git",
     "url": "https://github.com/finos/legend-studio.git",
