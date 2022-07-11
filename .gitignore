@@ -25,6 +25,8 @@ yarn-error.log*
 /fixtures/*/build/
 /fixtures/*/dist/
 /fixtures/*/lib/
+/scripts/typedoc-theme/build/
+/scripts/typedoc-theme/lib/
 
 # Dependencies
 **/node_modules
