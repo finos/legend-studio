@@ -13,7 +13,7 @@
     // NOTE: TypeDoc currently does not allow loading ESM-based plugins
     // When we fix this, change package.json to use `type: module`
     // See https://github.com/TypeStrong/typedoc/issues/1635
-    "module": "CommonJS",
+    "module": "CommonJS"
   },
   "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.json"]
 }
