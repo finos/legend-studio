@@ -9,6 +9,8 @@
 /fixtures/*/build/
 /fixtures/*/dist/
 /fixtures/*/lib/
+/scripts/*/build/
+/scripts/*/lib/
 
 # Yarn
 .yarn/*

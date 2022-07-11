@@ -20,7 +20,7 @@ import { type Application, JSX } from 'typedoc';
  * Called by TypeDoc when loading this theme as a plugin. Should be used to define themes which
  * can be selected by the user.
  */
-export function load(app: Application) {
+export function load(app: Application): void {
   app.renderer.hooks.on(
     'head.end',
     () =>
