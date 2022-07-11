@@ -1,5 +1,11 @@
 # @finos/legend-application
 
+## 6.0.0
+
+### Major Changes
+
+- [#1266](https://github.com/finos/legend-studio/pull/1266) [`7a967b82`](https://github.com/finos/legend-studio/commit/7a967b827c0e201df068c12ccbd0f3e4413bd8e6) ([@akphi](https://github.com/akphi)) - Moved `getExtraApplicationSetups()` from `LegendStudioPlugin` to `LegendApplicationPlugin`, also renamed type `ApplicationSetup` to `LegendApplicationSetup`.
+
 ## 5.1.0
 
 ### Minor Changes

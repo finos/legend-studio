@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 10.1.0
+
+### Minor Changes
+
+- [#1266](https://github.com/finos/legend-studio/pull/1266) [`7a967b82`](https://github.com/finos/legend-studio/commit/7a967b827c0e201df068c12ccbd0f3e4413bd8e6) ([@akphi](https://github.com/akphi)) - Support extension mechanism for `AbstractPureGraphManager` as the graph manager now hold a list of extensions (`AbstractPureGraphManagerExtension`) each of which must support a compatible protocol version with the graph manager.
+
 ## 10.0.0
 
 ### Major Changes
