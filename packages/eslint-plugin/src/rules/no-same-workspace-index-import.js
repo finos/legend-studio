@@ -30,7 +30,10 @@ module.exports = {
   create(context) {
     return {
       ImportDeclaration(node) {
-        if (node.source && node.source.value.match(/^[./]*$/)) {
+        if (
+          node.source &&
+          node.source.value.match(/^[./]*(?:index(?:.js)?)?$/)
+        ) {
           context.report({
             node: node.source,
             message: `Do not import from an 'index' file within the same workspace`,
