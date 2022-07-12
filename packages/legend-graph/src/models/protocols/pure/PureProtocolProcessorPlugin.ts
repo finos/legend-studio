@@ -70,6 +70,11 @@ export type V1_MappingModelCoverageAnalysisInputCollector = (
   protocolGraph: V1_PureModelContextData,
 ) => V1_PackageableElement[];
 
+export type V1_MappingModelRuntimeCompatibilityAnalysisInputCollector = (
+  graph: PureModel,
+  protocolGraph: V1_PureModelContextData,
+) => V1_PackageableElement[];
+
 export type V1_PropertyExpressionTypeInferrer = (
   variable: ValueSpecification | undefined,
 ) => Type | undefined;
@@ -141,19 +146,14 @@ export abstract class PureProtocolProcessorPlugin extends AbstractPlugin {
   /**
    * Get the list of collectors of graph elements to build execution input.
    *
-   * In particular, such collector is used to specify any additional packageable elements
-   * added to the graph that is used when executing a query against the engine server.
-   * We prune the graph to avoid sending the server additional elements not needed for execution.
-   * This would provide a mechanism to add more elements in this reduced graph.
+   * In particular, these collectors are used to produce the minimal graph that is needed for such execution.
    */
   V1_getExtraExecutionInputCollectors?(): V1_ExecutionInputCollector[];
 
   /**
-   * Get the list of collectors of graph elements to build mapping-model-coverage-analysis input.
+   * Get the list of collectors of graph elements to build the input for mapping model-coverage analysis.
    *
-   * In particular, such collector is used to specify any additional packageable elements
-   * added to the graph that is used when analyzing mapped properties in the mapping.
-   * This would provide a mechanism to add more elements in this reduced graph.
+   * In particular, these collectors are used to produce the minimal graph that is needed for such analysis.
    */
   V1_getExtraMappingModelCoverageAnalysisInputCollectors?(): V1_MappingModelCoverageAnalysisInputCollector[];
 

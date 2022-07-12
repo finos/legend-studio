@@ -50,7 +50,7 @@ import type { V1_TestResult } from '../model/test/result/V1_TestResult.js';
 import type { V1_RawRelationalOperationElement } from '../model/packageableElements/store/relational/model/V1_RawRelationalOperationElement.js';
 import type { V1_RenderStyle } from './grammar/V1_RenderStyle.js';
 import type { V1_ParserError } from './grammar/V1_ParserError.js';
-import type { V1_MappingModelCoverageAnalysisResult } from './analytics/V1_MappingAnalytics.js';
+import type { V1_MappingModelCoverageAnalysisResult } from './analytics/V1_MappingModelCoverageAnalysis.js';
 
 enum CORE_ENGINE_TRACER_SPAN {
   GRAMMAR_TO_JSON = 'transform Pure code to protocol',

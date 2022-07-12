@@ -22,8 +22,10 @@ import {
   type ElementObserver,
   type PackageableElement,
   type PureGrammarElementLabeler,
+  type PureGraphManagerExtensionBuilder,
 } from '@finos/legend-graph';
 import { observe_DataSpace } from './action/changeDetection/DSLDataSpace_ObserverHelper.js';
+import { DSLDataSpace_buildGraphManagerExtension } from './protocol/DSLDataSpace_PureGraphManagerExtensionBuilder.js';
 
 export const PURE_GRAMMAR_DATA_SPACE_PARSER_NAME = 'DataSpace';
 export const PURE_GRAMMAR_DATA_SPACE_ELEMENT_TYPE_LABEL = 'DataSpace';
@@ -31,6 +33,10 @@ export const PURE_GRAMMAR_DATA_SPACE_ELEMENT_TYPE_LABEL = 'DataSpace';
 export class DSLDataSpace_PureGraphManagerPlugin extends PureGraphManagerPlugin {
   constructor() {
     super(packageJson.extensions.pureGraphManagerPlugin, packageJson.version);
+  }
+
+  override getExtraPureGraphManagerExtensionBuilders(): PureGraphManagerExtensionBuilder[] {
+    return [DSLDataSpace_buildGraphManagerExtension];
   }
 
   override getExtraPureGrammarParserNames(): string[] {

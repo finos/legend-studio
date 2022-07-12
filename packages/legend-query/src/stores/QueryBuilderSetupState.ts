@@ -228,8 +228,8 @@ export class QueryBuilderSetupState {
       try {
         this.mappingModelCoverageAnalysisResult = (yield flowResult(
           this.queryBuilderState.graphManagerState.graphManager.analyzeMappingModelCoverage(
+            this.mapping,
             this.queryBuilderState.graphManagerState.graph,
-            guaranteeNonNullable(this.mapping),
           ),
         )) as MappingModelCoverageAnalysisResult;
         this.queryBuilderState.explorerState.refreshTreeData();

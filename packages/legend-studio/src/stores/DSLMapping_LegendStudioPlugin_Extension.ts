@@ -111,7 +111,7 @@ export type MappingTestQueryEditorActionConfiguration = {
 };
 
 /**
- * @return a boolean indicating whether the update has ocurred or not
+ * @returns a boolean indicating whether the update has ocurred or not
  */
 export type InstanceSetImplementationSourceUpdater = (
   setImplementation: InstanceSetImplementation,

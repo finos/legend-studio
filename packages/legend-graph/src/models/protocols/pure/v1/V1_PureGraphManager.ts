@@ -17,7 +17,6 @@
 import { GRAPH_MANAGER_EVENT } from '../../../../graphManager/GraphManagerEvent.js';
 import {
   CORE_PURE_PATH,
-  ELEMENT_PATH_DELIMITER,
   PackageableElementPointerType,
 } from '../../../../MetaModelConst.js';
 import {
@@ -164,8 +163,6 @@ import {
 import { V1_transformRelationalDatabaseConnection } from './transformation/pureGraph/from/V1_ConnectionTransformer.js';
 import { V1_FlatData } from './model/packageableElements/store/flatData/model/V1_FlatData.js';
 import { V1_Database } from './model/packageableElements/store/relational/model/V1_Database.js';
-import type { V1_Multiplicity } from './model/packageableElements/domain/V1_Multiplicity.js';
-import type { V1_RawVariable } from './model/rawValueSpecification/V1_RawVariable.js';
 import { V1_setupDatabaseSerialization } from './transformation/pureProtocol/serializationHelpers/V1_DatabaseSerializationHelper.js';
 import {
   V1_setupEngineRuntimeSerialization,
@@ -254,38 +251,13 @@ import {
   V1_buildModelCoverageAnalysisResult,
   V1_MappingModelCoverageAnalysisInput,
   V1_MappingModelCoverageAnalysisResult,
-} from './engine/analytics/V1_MappingAnalytics.js';
+} from './engine/analytics/V1_MappingModelCoverageAnalysis.js';
 import type {
   MappingModelCoverageAnalysisResult,
   RawMappingModelCoverageAnalysisResult,
-} from '../../../../graphManager/action/analytics/MappingAnalytics.js';
+} from '../../../../graphManager/action/analytics/MappingModelCoverageAnalysis.js';
 import { deserialize } from 'serializr';
-
-const V1_FUNCTION_SUFFIX_MULTIPLICITY_INFINITE = 'MANY';
-
-const getMultiplicitySuffix = (multiplicity: V1_Multiplicity): string => {
-  if (multiplicity.lowerBound === multiplicity.upperBound) {
-    return multiplicity.lowerBound.toString();
-  } else if (
-    multiplicity.lowerBound === 0 &&
-    multiplicity.upperBound === undefined
-  ) {
-    return V1_FUNCTION_SUFFIX_MULTIPLICITY_INFINITE;
-  }
-  return `$${multiplicity.lowerBound}_${
-    multiplicity.upperBound ?? V1_FUNCTION_SUFFIX_MULTIPLICITY_INFINITE
-  }$`;
-};
-
-const getVariableSuffix = (variable: V1_RawVariable): string =>
-  `${variable.class
-    .split(ELEMENT_PATH_DELIMITER)
-    .pop()}_${getMultiplicitySuffix(variable.multiplicity)}_`;
-
-const getFunctionSuffix = (fn: V1_ConcreteFunctionDefinition): string =>
-  `${fn.parameters.map((p) => getVariableSuffix(p)).join('_')}_${fn.returnType
-    .split(ELEMENT_PATH_DELIMITER)
-    .pop()}_${getMultiplicitySuffix(fn.returnMultiplicity)}_`;
+import { V1_getFunctionSuffix } from './helper/V1_DomainHelper.js';
 
 class V1_PureModelContextDataIndex {
   elements: V1_PackageableElement[] = [];
@@ -333,7 +305,7 @@ const mergePureModelContextData = (
   return mergedData;
 };
 
-const indexPureModelContextData = (
+export const V1_indexPureModelContextData = (
   report: GraphBuilderReport,
   data: V1_PureModelContextData,
   extensions: V1_GraphBuilderExtensions,
@@ -438,7 +410,7 @@ const indexPureModelContextData = (
 // NOTE: this interface is somewhat naive since `model` is of type `BasicModel`,
 // so this can only be used for pre-processing/indexing
 // we might need to change model to PureModel in the future when we support other use case
-interface V1_GraphBuilderInput {
+interface V1_PureGraphBuilderInput {
   model: BasicModel;
   data: V1_PureModelContextDataIndex;
 }
@@ -543,7 +515,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       const buildInputs = [
         {
           model: systemModel,
-          data: indexPureModelContextData(
+          data: V1_indexPureModelContextData(
             report,
             systemData,
             this.graphBuilderExtensions,
@@ -622,11 +594,11 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_ELEMENTS_DESERIALIZED);
 
       // prepare build inputs
-      const buildInputs: V1_GraphBuilderInput[] = Array.from(
+      const buildInputs: V1_PureGraphBuilderInput[] = Array.from(
         dependencyDataMap.entries(),
       ).map(([dependencyKey, dependencyData]) => ({
         model: graph.dependencyManager.getModel(dependencyKey),
-        data: indexPureModelContextData(
+        data: V1_indexPureModelContextData(
           report,
           dependencyData,
           this.graphBuilderExtensions,
@@ -685,10 +657,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_ELEMENTS_DESERIALIZED);
 
       // prepare build inputs
-      const buildInputs: V1_GraphBuilderInput[] = [
+      const buildInputs: V1_PureGraphBuilderInput[] = [
         {
           model: graph,
-          data: indexPureModelContextData(
+          data: V1_indexPureModelContextData(
             report,
             data,
             this.graphBuilderExtensions,
@@ -771,11 +743,11 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_ELEMENTS_DESERIALIZED);
 
       // prepare build inputs
-      const buildInputs: V1_GraphBuilderInput[] = Array.from(
+      const buildInputs: V1_PureGraphBuilderInput[] = Array.from(
         generatedDataMap.entries(),
       ).map(([generationParentPath, generatedData]) => ({
         model: generatedModel,
-        data: indexPureModelContextData(
+        data: V1_indexPureModelContextData(
           report,
           generatedData,
           this.graphBuilderExtensions,
@@ -820,7 +792,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   private async buildGraphFromInputs(
     graph: PureModel,
-    inputs: V1_GraphBuilderInput[],
+    inputs: V1_PureGraphBuilderInput[],
     report: GraphBuilderReport,
     stopWatch: StopWatch,
     graphBuilderState: ActionState,
@@ -905,7 +877,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
    */
   private async initializeAndIndexElements(
     graph: PureModel,
-    inputs: V1_GraphBuilderInput[],
+    inputs: V1_PureGraphBuilderInput[],
     options?: GraphBuilderOptions,
   ): Promise<void> {
     // create the element path cache for faster duplication check
@@ -961,7 +933,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   private async buildTypes(
     graph: PureModel,
-    inputs: V1_GraphBuilderInput[],
+    inputs: V1_PureGraphBuilderInput[],
     options?: GraphBuilderOptions,
   ): Promise<void> {
     // Second pass
@@ -1092,7 +1064,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   private async buildStores(
     graph: PureModel,
-    inputs: V1_GraphBuilderInput[],
+    inputs: V1_PureGraphBuilderInput[],
     options?: GraphBuilderOptions,
   ): Promise<void> {
     await Promise.all(
@@ -1147,7 +1119,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   private async buildMappings(
     graph: PureModel,
-    inputs: V1_GraphBuilderInput[],
+    inputs: V1_PureGraphBuilderInput[],
     options?: GraphBuilderOptions,
   ): Promise<void> {
     await Promise.all(
@@ -1190,7 +1162,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   private async buildConnectionsAndRuntimes(
     graph: PureModel,
-    inputs: V1_GraphBuilderInput[],
+    inputs: V1_PureGraphBuilderInput[],
     options?: GraphBuilderOptions,
   ): Promise<void> {
     // NOTE: connections must be built before runtimes
@@ -1222,7 +1194,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   private async buildServices(
     graph: PureModel,
-    inputs: V1_GraphBuilderInput[],
+    inputs: V1_PureGraphBuilderInput[],
     options?: GraphBuilderOptions,
   ): Promise<void> {
     await Promise.all(
@@ -1241,7 +1213,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   private async buildDataElements(
     graph: PureModel,
-    inputs: V1_GraphBuilderInput[],
+    inputs: V1_PureGraphBuilderInput[],
     options?: GraphBuilderOptions,
   ): Promise<void> {
     await Promise.all(
@@ -1260,7 +1232,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   private async buildFileGenerations(
     graph: PureModel,
-    inputs: V1_GraphBuilderInput[],
+    inputs: V1_PureGraphBuilderInput[],
     options?: GraphBuilderOptions,
   ): Promise<void> {
     await Promise.all(
@@ -1279,7 +1251,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   private async buildGenerationSpecifications(
     graph: PureModel,
-    inputs: V1_GraphBuilderInput[],
+    inputs: V1_PureGraphBuilderInput[],
     options?: GraphBuilderOptions,
   ): Promise<void> {
     await Promise.all(
@@ -1298,7 +1270,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   private async buildSectionIndices(
     graph: PureModel,
-    inputs: V1_GraphBuilderInput[],
+    inputs: V1_PureGraphBuilderInput[],
     options?: GraphBuilderOptions,
   ): Promise<void> {
     await Promise.all(
@@ -1317,7 +1289,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   private async buildOtherElements(
     graph: PureModel,
-    inputs: V1_GraphBuilderInput[],
+    inputs: V1_PureGraphBuilderInput[],
     options?: GraphBuilderOptions,
   ): Promise<void> {
     await Promise.all(
@@ -2227,78 +2199,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
-  // TODO: we could potentially reshape this method to build light graph with just indexing
-  // and return a slightly more complicated object instead: separating the graph and the dependencies part instead of
-  // return a list of `V1_GraphBuilderInput`. This method would be useful for any other light graph builder algo.
-  async indexEntitiesWithDependencyIntoGraph(
-    graph: PureModel,
-    _entities: Entity[],
-    dependencyEntities: Map<string, Entity[]>,
-    entityFilterFunc?: (entity: Entity) => boolean,
-  ): Promise<V1_GraphBuilderInput[]> {
-    let entities = _entities;
-    graph.dependencyManager.initialize(dependencyEntities);
-    if (entityFilterFunc) {
-      Array.from(dependencyEntities.entries()).forEach(
-        ([dependencyKey, dEntities]) => {
-          dependencyEntities.set(
-            dependencyKey,
-            dEntities.filter(entityFilterFunc),
-          );
-        },
-      );
-      entities = _entities.filter(entityFilterFunc);
-    }
-    const report = new GraphBuilderReport();
-    // build dependency pmcd models
-    const dependencyDataMap = new Map<string, V1_PureModelContextData>();
-    await Promise.all(
-      Array.from(dependencyEntities.entries()).map(([dependencyKey, value]) => {
-        const projectModelData = new V1_PureModelContextData();
-        dependencyDataMap.set(dependencyKey, projectModelData);
-        return V1_entitiesToPureModelContextData(
-          value,
-          projectModelData,
-
-          this.pluginManager.getPureProtocolProcessorPlugins(),
-        );
-      }),
-    );
-    const dependencyGraphBuilderInput: V1_GraphBuilderInput[] = Array.from(
-      dependencyDataMap.entries(),
-    ).map(([dependencyKey, dependencyData]) => ({
-      data: indexPureModelContextData(
-        report,
-        dependencyData,
-        this.graphBuilderExtensions,
-      ),
-      model: graph.dependencyManager.getModel(dependencyKey),
-    }));
-    // build main pmcd
-    const data = new V1_PureModelContextData();
-    await V1_entitiesToPureModelContextData(
-      entities,
-      data,
-      this.pluginManager.getPureProtocolProcessorPlugins(),
-    );
-    const mainGraphBuilderInput: V1_GraphBuilderInput[] = [
-      {
-        model: graph,
-        data: indexPureModelContextData(
-          report,
-          data,
-          this.graphBuilderExtensions,
-        ),
-      },
-    ];
-    const graphBuilderInput = [
-      ...dependencyGraphBuilderInput,
-      ...mainGraphBuilderInput,
-    ];
-    await this.initializeAndIndexElements(graph, graphBuilderInput);
-    return graphBuilderInput;
-  }
-
   // --------------------------------------------- Query ------------------------------------------------------
 
   async getQuery(queryId: string, graph: PureModel): Promise<Query> {
@@ -2385,18 +2285,15 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   };
 
   async analyzeMappingModelCoverage(
-    graph: PureModel,
     mapping: Mapping,
+    graph: PureModel,
   ): Promise<MappingModelCoverageAnalysisResult> {
-    const modelCoverageAnalysisInput =
-      new V1_MappingModelCoverageAnalysisInput();
-    modelCoverageAnalysisInput.clientVersion =
-      V1_PureGraphManager.TARGET_PROTOCOL_VERSION;
-    modelCoverageAnalysisInput.mapping = mapping.path;
-    modelCoverageAnalysisInput.model =
-      this.buildMappingModelCoverageAnalysisInputContextData(graph);
+    const input = new V1_MappingModelCoverageAnalysisInput();
+    input.clientVersion = V1_PureGraphManager.TARGET_PROTOCOL_VERSION;
+    input.mapping = mapping.path;
+    input.model = this.buildMappingModelCoverageAnalysisInputContextData(graph);
     return V1_buildModelCoverageAnalysisResult(
-      await this.engine.analyzeMappingModelCoverage(modelCoverageAnalysisInput),
+      await this.engine.analyzeMappingModelCoverage(input),
     );
   }
 
@@ -2427,6 +2324,105 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     }
     return entity;
   };
+
+  /**
+   * This method helps indexing the graph from graph and dependencies' entities
+   * This will produce a _light_ graph with empty unprocesed elements, they are just indexed in the graph
+   * and the Pure model context data which can be used to further build the graph
+   *
+   * There are a few simple analytics we want to do on the graph which does not necessarily
+   * require us to build the full-graph, in fact, doing so would be too costly. In those scenarios,
+   * we need to build the _light_ graph, hence the existence of this utility method
+   *
+   * TODO?: do we need to account for system elements?
+   */
+  async indexLightGraph(
+    graph: PureModel,
+    entities: Entity[],
+    dependencyEntities: Map<string, Entity[]>,
+    entityFilterFn?: ((entity: Entity) => boolean) | undefined,
+    entityProcessorFn?: ((entity: Entity) => Entity) | undefined,
+  ): Promise<V1_PureGraphBuilderInput[]> {
+    const report = new GraphBuilderReport();
+
+    // build main graph builder input
+    const data = new V1_PureModelContextData();
+    await V1_entitiesToPureModelContextData(
+      entities
+        .filter((entity) => {
+          // never exclude section index as it could be used for path resolution when building the graph later
+          if (entity.classifierPath === CORE_PURE_PATH.SECTION_INDEX) {
+            return true;
+          }
+          if (entityFilterFn) {
+            return entityFilterFn(entity);
+          }
+          return true;
+        })
+        .map((entity) =>
+          entityProcessorFn ? entityProcessorFn(entity) : entity,
+        ),
+      data,
+      this.pluginManager.getPureProtocolProcessorPlugins(),
+    );
+    const mainGraphBuilderInput: V1_PureGraphBuilderInput[] = [
+      {
+        model: graph,
+        data: V1_indexPureModelContextData(
+          report,
+          data,
+          this.graphBuilderExtensions,
+        ),
+      },
+    ];
+
+    // build dependencies graph builder input
+    graph.dependencyManager.initialize(dependencyEntities);
+    const dependencyDataMap = new Map<string, V1_PureModelContextData>();
+    await Promise.all(
+      Array.from(dependencyEntities.entries()).map(([dependencyKey, value]) => {
+        const projectModelData = new V1_PureModelContextData();
+        dependencyDataMap.set(dependencyKey, projectModelData);
+        return V1_entitiesToPureModelContextData(
+          value
+            .filter((entity) => {
+              // never exclude section index as it could be used for path resolution when building the graph later
+              if (entity.classifierPath === CORE_PURE_PATH.SECTION_INDEX) {
+                return true;
+              }
+              if (entityFilterFn) {
+                return entityFilterFn(entity);
+              }
+              return true;
+            })
+            .map((entity) =>
+              entityProcessorFn ? entityProcessorFn(entity) : entity,
+            ),
+          projectModelData,
+          this.pluginManager.getPureProtocolProcessorPlugins(),
+        );
+      }),
+    );
+    const dependencyGraphBuilderInput: V1_PureGraphBuilderInput[] = Array.from(
+      dependencyDataMap.entries(),
+    ).map(([dependencyKey, dependencyData]) => ({
+      data: V1_indexPureModelContextData(
+        report,
+        dependencyData,
+        this.graphBuilderExtensions,
+      ),
+      model: graph.dependencyManager.getModel(dependencyKey),
+    }));
+
+    // index simplified graph
+    const graphBuilderInput = [
+      ...dependencyGraphBuilderInput,
+      ...mainGraphBuilderInput,
+    ];
+    await this.initializeAndIndexElements(graph, graphBuilderInput);
+
+    return graphBuilderInput;
+  }
 
   async buildDatabase(input: DatabaseBuilderInput): Promise<Entity[]> {
     const dbBuilderInput = new V1_DatabaseBuilderInput();
@@ -2640,7 +2636,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     // TODO: to be revised when we support function overloading
     if (elementProtocol instanceof V1_ConcreteFunctionDefinition) {
       const suffixIndex = elementProtocol.name.indexOf(
-        getFunctionSuffix(elementProtocol),
+        V1_getFunctionSuffix(elementProtocol),
       );
       if (suffixIndex > 0) {
         name = elementProtocol.name.substring(0, suffixIndex - 1);

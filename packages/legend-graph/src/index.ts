@@ -227,8 +227,8 @@ export {
   MappedProperty,
   EntityMappedProperty,
   EnumMappedProperty,
-} from './graphManager/action/analytics/MappingAnalytics.js';
-export { V1_MappingModelCoverageAnalysisResult } from './models/protocols/pure/v1/engine/analytics/V1_MappingAnalytics.js';
+} from './graphManager/action/analytics/MappingModelCoverageAnalysis.js';
+export { V1_MappingModelCoverageAnalysisResult } from './models/protocols/pure/v1/engine/analytics/V1_MappingModelCoverageAnalysis.js';
 export * from './models/protocols/pure/PureProtocolProcessorPlugin.js';
 
 // --------------------------------------------- TRANSFORMATION --------------------------------------------------

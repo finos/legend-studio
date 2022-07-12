@@ -71,7 +71,7 @@ import type { AssertFail } from '../models/metamodels/pure/test/assertion/status
 import type {
   MappingModelCoverageAnalysisResult,
   RawMappingModelCoverageAnalysisResult,
-} from './action/analytics/MappingAnalytics.js';
+} from './action/analytics/MappingModelCoverageAnalysis.js';
 
 export interface TEMPORARY__EngineSetupConfig {
   env: string;
@@ -414,8 +414,8 @@ export abstract class AbstractPureGraphManager {
   // -------------------------------------- Analysis --------------------------------------
 
   abstract analyzeMappingModelCoverage(
-    graph: PureModel,
     mapping: Mapping,
+    graph: PureModel,
   ): Promise<MappingModelCoverageAnalysisResult>;
 
   abstract buildMappingModelCoverageAnalysisResult(

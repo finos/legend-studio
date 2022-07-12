@@ -35,7 +35,7 @@ import {
   MappedEntity,
   MappedProperty,
   MappingModelCoverageAnalysisResult,
-} from '../../../../../../graphManager/action/analytics/MappingAnalytics.js';
+} from '../../../../../../graphManager/action/analytics/MappingModelCoverageAnalysis.js';
 import { V1_PureModelContextData } from '../../model/context/V1_PureModelContextData.js';
 
 enum V1_MappedPropertyType {

@@ -535,6 +535,10 @@ export class PureModel extends BasicModel {
     returnUndefOnError(() => this.getClass(path));
   getNullableMapping = (path: string): Mapping | undefined =>
     returnUndefOnError(() => this.getMapping(path));
+  getNullableService = (path: string): Service | undefined =>
+    returnUndefOnError(() => this.getService(path));
+  getNullableRuntime = (path: string): PackageableRuntime | undefined =>
+    returnUndefOnError(() => this.getRuntime(path));
   getNullableFileGeneration = (
     path: string,
   ): FileGenerationSpecification | undefined =>
