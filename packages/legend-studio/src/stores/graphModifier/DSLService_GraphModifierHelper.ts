@@ -246,6 +246,11 @@ export const pureMultiExecution_addExecutionParameter = action(
     );
   },
 );
+export const pureMultiExecution_deleteExecutionParameter = action(
+  (pe: PureMultiExecution, value: KeyedExecutionParameter): void => {
+    deleteEntry(pe.executionParameters, value);
+  },
+);
 export const singleExecTest_setData = action(
   (val: DEPRECATED__SingleExecutionTest, value: string): void => {
     val.data = value;

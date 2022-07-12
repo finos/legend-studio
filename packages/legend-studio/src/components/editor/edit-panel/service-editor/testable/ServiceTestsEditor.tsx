@@ -154,6 +154,7 @@ const TestAssertionItem = observer(
     );
   },
 );
+
 export const NewParameterModal = observer(
   (props: { setupState: ServiceTestSetupState; isReadOnly: boolean }) => {
     const { setupState, isReadOnly } = props;

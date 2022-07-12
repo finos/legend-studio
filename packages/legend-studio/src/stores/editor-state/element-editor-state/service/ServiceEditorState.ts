@@ -55,6 +55,7 @@ export class ServiceEditorState extends ElementEditorState {
       registrationState: observable,
       selectedTab: observable,
       setSelectedTab: action,
+      resetExecutionState: action,
       service: computed,
       reprocess: action,
     });
@@ -66,6 +67,10 @@ export class ServiceEditorState extends ElementEditorState {
 
   setSelectedTab(tab: SERVICE_TAB): void {
     this.selectedTab = tab;
+  }
+
+  resetExecutionState(): void {
+    this.executionState = this.buildExecutionState();
   }
 
   buildExecutionState(): ServiceExecutionState {
