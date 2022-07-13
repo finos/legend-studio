@@ -50,7 +50,7 @@ import {
 export enum SERIALIZATION_FORMAT {
   PURE = 'PURE',
   // Temporary remove this option as it is currently not being read correctly.
-  // Readd upon release of https://github.com/finos/legend-engine/pull/799
+  // See https://github.com/finos/legend-engine/pull/799
   // DEFAULT = 'DEFAULT',
   PURE_TDSOBJECT = 'PURE_TDSOBJECT',
 }
