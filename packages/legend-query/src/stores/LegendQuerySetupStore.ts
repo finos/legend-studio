@@ -27,21 +27,29 @@ import {
   type PlainObject,
   ActionState,
   assertErrorThrown,
+  LogEvent,
 } from '@finos/legend-shared';
 import {
   type LightQuery,
   type Mapping,
   type PackageableRuntime,
-  type Service,
   QuerySearchSpecification,
   getAllIncludedMappings,
 } from '@finos/legend-graph';
 import type { LegendQueryStore } from './LegendQueryStore.js';
-import { ProjectData } from '@finos/legend-server-depot';
+import {
+  LATEST_VERSION_ALIAS,
+  ProjectData,
+  SNAPSHOT_VERSION_ALIAS,
+} from '@finos/legend-server-depot';
 import {
   buildElementOption,
   type PackageableElementOption,
 } from '@finos/legend-application';
+import type { Entity } from '@finos/legend-model-storage';
+import { getQueryBuilderGraphManagerExtension } from '../graphManager/protocol/QueryBuilder_PureGraphManagerExtension.js';
+import { LEGEND_QUERY_APP_EVENT } from '../LegendQueryAppEvent.js';
+import type { ServiceExecutionAnalysisResult } from '../graphManager/action/analytics/ServiceExecutionAnalysis.js';
 
 export abstract class QuerySetupState {
   setupStore: QuerySetupStore;
@@ -212,16 +220,34 @@ export class CreateQuerySetupState extends QuerySetupState {
 
 export interface ServiceExecutionOption {
   label: string;
-  value: { service: Service; key?: string };
+  value: {
+    path: string;
+    name: string;
+    package: string;
+    key?: string | undefined;
+  };
 }
+
+const buildServiceExecutionOption = (
+  result: ServiceExecutionAnalysisResult,
+  key?: string | undefined,
+): ServiceExecutionOption => ({
+  label: `${result.name}${key ? ` [${key}]` : ''}`,
+  value: {
+    path: result.path,
+    name: result.name,
+    package: result.package,
+    key,
+  },
+});
 
 export class ServiceQuerySetupState extends QuerySetupState {
   projects: ProjectData[] = [];
   loadProjectsState = ActionState.create();
+  loadServiceExecutionsState = ActionState.create();
   currentProject?: ProjectData | undefined;
   currentVersionId?: string | undefined;
-  currentService?: Service | undefined;
-  currentServiceExecutionKey?: string | undefined;
+  currentServiceExecutionOption?: ServiceExecutionOption | undefined;
   serviceExecutionOptions: ServiceExecutionOption[] = [];
 
   constructor(setupStore: QuerySetupStore) {
@@ -232,13 +258,13 @@ export class ServiceQuerySetupState extends QuerySetupState {
       projects: observable,
       currentProject: observable,
       currentVersionId: observable,
-      currentService: observable,
-      currentServiceExecutionKey: observable,
+      currentServiceExecutionOption: observable,
       setCurrentProject: action,
       setCurrentVersionId: action,
-      setCurrentServiceExecution: action,
+      setCurrentServiceExecutionOption: action,
       setServiceExecutionOptions: action,
       loadProjects: flow,
+      loadServiceExecutionOptions: flow,
     });
   }
 
@@ -250,12 +276,10 @@ export class ServiceQuerySetupState extends QuerySetupState {
     this.currentVersionId = val;
   }
 
-  setCurrentServiceExecution(
-    service: Service | undefined,
-    key: string | undefined,
+  setCurrentServiceExecutionOption(
+    val: ServiceExecutionOption | undefined,
   ): void {
-    this.currentService = service;
-    this.currentServiceExecutionKey = key;
+    this.currentServiceExecutionOption = val;
   }
 
   setServiceExecutionOptions(val: ServiceExecutionOption[]): void {
@@ -275,11 +299,74 @@ export class ServiceQuerySetupState extends QuerySetupState {
       this.queryStore.applicationStore.notifyError(error);
     }
   }
+
+  *loadServiceExecutionOptions(
+    project: ProjectData,
+    versionId: string,
+  ): GeneratorFn<void> {
+    this.loadServiceExecutionsState.inProgress();
+    try {
+      // fetch entities
+      let entities: Entity[] = [];
+      if (versionId === SNAPSHOT_VERSION_ALIAS) {
+        entities =
+          (yield this.queryStore.depotServerClient.getLatestRevisionEntities(
+            project.groupId,
+            project.artifactId,
+          )) as Entity[];
+      } else {
+        entities = (yield this.queryStore.depotServerClient.getVersionEntities(
+          project.groupId,
+          project.artifactId,
+          versionId === LATEST_VERSION_ALIAS
+            ? project.latestVersion
+            : versionId,
+        )) as Entity[];
+      }
+
+      // fetch and build dependencies
+      const dependencyEntitiesMap = (yield flowResult(
+        this.queryStore.depotServerClient.getIndexedDependencyEntities(
+          project,
+          versionId,
+        ),
+      )) as Map<string, Entity[]>;
+
+      const serviceExecutionAnalysisResults = (yield flowResult(
+        getQueryBuilderGraphManagerExtension(
+          this.queryStore.graphManagerState.graphManager,
+        ).surveyServiceExecution(
+          this.queryStore.graphManagerState.createEmptyGraph(),
+          entities,
+          dependencyEntitiesMap,
+        ),
+      )) as ServiceExecutionAnalysisResult[];
+
+      this.setServiceExecutionOptions(
+        serviceExecutionAnalysisResults.flatMap((result) => {
+          if (result.executionKeys && result.executionKeys.length) {
+            return result.executionKeys.map((key) =>
+              buildServiceExecutionOption(result, key),
+            );
+          }
+          return buildServiceExecutionOption(result);
+        }),
+      );
+      this.loadServiceExecutionsState.pass();
+    } catch (error) {
+      this.loadServiceExecutionsState.fail();
+      assertErrorThrown(error);
+      this.queryStore.applicationStore.log.error(
+        LogEvent.create(LEGEND_QUERY_APP_EVENT.QUERY_PROBLEM),
+        error,
+      );
+      this.queryStore.applicationStore.notifyError(error);
+    }
+  }
 }
 
 export class QuerySetupStore {
   queryStore: LegendQueryStore;
-  // graphManagerState: GraphManagerState;
   querySetupState?: QuerySetupState | undefined;
 
   constructor(queryStore: LegendQueryStore) {

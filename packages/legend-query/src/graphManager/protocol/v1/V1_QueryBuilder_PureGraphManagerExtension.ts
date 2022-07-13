@@ -17,22 +17,14 @@
 import {
   EngineRuntime,
   GraphBuilderError,
-  KeyedExecutionParameter,
   MappingInclude,
-  PackageableElementExplicitReference,
-  PureMultiExecution,
-  PureSingleExecution,
-  stub_Mapping,
-  stub_RawLambda,
   V1_getIncludedMappingPath,
   V1_GraphBuilderContextBuilder,
   V1_Mapping,
   V1_MAPPING_ELEMENT_PROTOCOL_TYPE,
   V1_PACKAGEABLE_RUNTIME_ELEMENT_PROTOCOL_TYPE,
   V1_PureMultiExecution,
-  V1_PureSingleExecution,
   V1_Service,
-  V1_SERVICE_ELEMENT_PROTOCOL_TYPE,
   V1_PackageableRuntime,
   type V1_PackageableElement,
   type PureModel,
@@ -132,73 +124,6 @@ export class V1_QueryBuilder_PureGraphManagerExtension extends QueryBuilder_Pure
           runtimeValue.mappings = element.runtimeValue.mappings.map((mapping) =>
             context.resolveMapping(mapping.path),
           );
-        }
-      });
-    } catch (error) {
-      assertErrorThrown(error);
-      /**
-       * Wrap all error with `GraphBuilderError`, as we throw a lot of assertion error in the graph builder
-       * But we might want to rethink this decision in the future and throw appropriate type of error
-       */
-      throw error instanceof GraphBuilderError
-        ? error
-        : new GraphBuilderError(error);
-    }
-  }
-
-  // We could optimize this further by omitting parts of the entities we don't need
-  // i.e service entity would only keep execution
-  async buildGraphForServiceQuerySetup(
-    graph: PureModel,
-    entities: Entity[],
-    dependencyEntities: Map<string, Entity[]>,
-  ): Promise<void> {
-    try {
-      const graphBuilderInput = await this.graphManager.indexLightGraph(
-        graph,
-        entities,
-        dependencyEntities,
-        (entity: Entity): boolean =>
-          ((entity.content as PlainObject<V1_PackageableElement>)
-            ._type as string) === V1_SERVICE_ELEMENT_PROTOCOL_TYPE,
-      );
-      // handle services
-      const services = [
-        ...graph.ownServices,
-        ...graph.dependencyManager.services,
-      ];
-      const v1Services = graphBuilderInput
-        .map((e) => e.data.elements.filter(filterByType(V1_Service)))
-        .flat();
-      // build service multi execution keys
-      v1Services.forEach((element) => {
-        const service = services.find((e) => e.path === element.path);
-        if (service) {
-          const serviceExecution = element.execution;
-          if (serviceExecution instanceof V1_PureMultiExecution) {
-            const execution = new PureMultiExecution(
-              serviceExecution.executionKey,
-              stub_RawLambda(),
-              service,
-            );
-            execution.executionParameters =
-              serviceExecution.executionParameters.map(
-                (keyedExecutionParameter) =>
-                  new KeyedExecutionParameter(
-                    keyedExecutionParameter.key,
-                    PackageableElementExplicitReference.create(stub_Mapping()),
-                    new EngineRuntime(),
-                  ),
-              );
-            service.execution = execution;
-          } else if (serviceExecution instanceof V1_PureSingleExecution) {
-            service.execution = new PureSingleExecution(
-              stub_RawLambda(),
-              service,
-              PackageableElementExplicitReference.create(stub_Mapping()),
-              new EngineRuntime(),
-            );
-          }
         }
       });
     } catch (error) {

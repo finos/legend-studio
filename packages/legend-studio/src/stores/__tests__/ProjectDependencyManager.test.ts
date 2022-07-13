@@ -208,7 +208,7 @@ const testDependencyElements = async (
   jest
     .spyOn(
       guaranteeNonNullable(editorStore.depotServerClient),
-      'getProjectVersionsDependencyEntities',
+      'collectDependencyEntities',
     )
     .mockResolvedValue(dependencyEntities);
   if (projectsData) {

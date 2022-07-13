@@ -16,10 +16,11 @@
 
 import type { Entity } from '@finos/legend-model-storage';
 import { type PlainObject, AbstractServerClient } from '@finos/legend-shared';
+import { LATEST_VERSION_ALIAS, SNAPSHOT_VERSION_ALIAS } from './DepotUtils.js';
 import type { DepotScope } from './models/DepotScope.js';
 import type { ProjectData } from './models/ProjectData.js';
-import type {
-  ProjectDependencyCoordinates,
+import {
+  type ProjectDependencyCoordinates,
   ProjectVersionEntities,
 } from './models/ProjectVersionEntities.js';
 import type { StoredEntity } from './models/StoredEntity.js';
@@ -170,7 +171,7 @@ export class DepotServerClient extends AbstractServerClient {
       },
     );
 
-  getLatestDependencyEntities = (
+  getLatestRevisionDependencyEntities = (
     groupId: string,
     artifactId: string,
     /**
@@ -193,7 +194,39 @@ export class DepotServerClient extends AbstractServerClient {
       },
     );
 
-  getProjectVersionsDependencyEntities = (
+  async getIndexedDependencyEntities(
+    project: ProjectData,
+    versionIdOrAlias: string,
+  ): Promise<Map<string, Entity[]>> {
+    const dependencyEntitiesMap = new Map<string, Entity[]>();
+    let dependencies: PlainObject<ProjectVersionEntities>[] = [];
+    if (versionIdOrAlias === SNAPSHOT_VERSION_ALIAS) {
+      dependencies = await this.getLatestRevisionDependencyEntities(
+        project.groupId,
+        project.artifactId,
+        true,
+        false,
+      );
+    } else {
+      dependencies = await this.getDependencyEntities(
+        project.groupId,
+        project.artifactId,
+        versionIdOrAlias === LATEST_VERSION_ALIAS
+          ? project.latestVersion
+          : versionIdOrAlias,
+        true,
+        false,
+      );
+    }
+    dependencies
+      .map((v) => ProjectVersionEntities.serialization.fromJson(v))
+      .forEach((dependencyInfo) => {
+        dependencyEntitiesMap.set(dependencyInfo.id, dependencyInfo.entities);
+      });
+    return dependencyEntitiesMap;
+  }
+
+  collectDependencyEntities = (
     /**
      * List of (direct) dependencies.
      */

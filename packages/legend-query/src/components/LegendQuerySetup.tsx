@@ -56,13 +56,10 @@ import {
   SNAPSHOT_VERSION_ALIAS,
   compareSemVerVersions,
 } from '@finos/legend-server-depot';
-import {
-  type LightQuery,
-  type Mapping,
-  type Service,
-  type PackageableRuntime,
-  PureMultiExecution,
-  PureSingleExecution,
+import type {
+  LightQuery,
+  Mapping,
+  PackageableRuntime,
 } from '@finos/legend-graph';
 import {
   type PackageableElementOption,
@@ -291,15 +288,15 @@ const ServiceQuerySetup = observer(
       if (
         querySetupState.currentProject &&
         querySetupState.currentVersionId &&
-        querySetupState.currentService
+        querySetupState.currentServiceExecutionOption
       ) {
         applicationStore.navigator.goTo(
           generateServiceQueryRoute(
             querySetupState.currentProject.groupId,
             querySetupState.currentProject.artifactId,
             querySetupState.currentVersionId,
-            querySetupState.currentService.path,
-            querySetupState.currentServiceExecutionKey,
+            querySetupState.currentServiceExecutionOption.value.path,
+            querySetupState.currentServiceExecutionOption.value.key,
           ),
         );
       }
@@ -309,7 +306,7 @@ const ServiceQuerySetup = observer(
       querySetupState.currentProject &&
       querySetupState.currentVersionId &&
       queryStore.buildGraphState.hasSucceeded &&
-      querySetupState.currentService;
+      querySetupState.currentServiceExecutionOption;
 
     // project
     const projectOptions = querySetupState.projects.map(buildProjectOption);
@@ -329,7 +326,7 @@ const ServiceQuerySetup = observer(
         querySetupState.setCurrentProject(option?.value);
         // cascade
         querySetupState.setCurrentVersionId(undefined);
-        querySetupState.setCurrentServiceExecution(undefined, undefined);
+        querySetupState.setCurrentServiceExecutionOption(undefined);
       }
     };
 
@@ -355,79 +352,32 @@ const ServiceQuerySetup = observer(
         querySetupState.setCurrentVersionId(option?.value);
         // cascade
         queryStore.graphManagerState.resetGraph();
-        querySetupState.setCurrentServiceExecution(undefined, undefined);
+        querySetupState.setCurrentServiceExecutionOption(undefined);
         if (
           querySetupState.currentProject &&
           querySetupState.currentVersionId
         ) {
           await flowResult(
-            queryStore.buildGraphForServiceQuerySetup(
+            querySetupState.loadServiceExecutionOptions(
               querySetupState.currentProject,
               querySetupState.currentVersionId,
             ),
           ).catch(applicationStore.alertUnhandledError);
-
-          querySetupState.setServiceExecutionOptions(
-            querySetupState.queryStore.queryBuilderState.graphManagerState.graph.ownServices
-              .map(
-                (e) =>
-                  buildElementOption(e) as PackageableElementOption<Service>,
-              )
-              .flatMap((serviceOption) => {
-                const service = serviceOption.value;
-                const serviceExecution = service.execution;
-                if (serviceExecution instanceof PureSingleExecution) {
-                  return {
-                    label: service.name,
-                    value: {
-                      service,
-                    },
-                  };
-                } else if (serviceExecution instanceof PureMultiExecution) {
-                  return serviceExecution.executionParameters.map(
-                    (parameter) => ({
-                      label: `${service.name} [${parameter.key}]`,
-                      value: {
-                        service,
-                        key: parameter.key,
-                      },
-                    }),
-                  );
-                }
-                return [];
-              }),
-          );
         }
       }
     };
 
     // service and key
     const serviceExecutionOptions = querySetupState.serviceExecutionOptions;
-    const selectedServiceExecutionOptions = querySetupState.currentService
-      ? {
-          label: `${querySetupState.currentService.name}${
-            querySetupState.currentServiceExecutionKey
-              ? ` [${querySetupState.currentServiceExecutionKey}]`
-              : ''
-          }`,
-          value: querySetupState.currentServiceExecutionKey
-            ? {
-                service: querySetupState.currentService,
-                key: querySetupState.currentServiceExecutionKey,
-              }
-            : { service: querySetupState.currentService },
-        }
-      : null;
+    const selectedServiceExecutionOption =
+      querySetupState.currentServiceExecutionOption ?? null;
     const serviceExecutionSelectorPlaceholder = serviceExecutionOptions.length
       ? 'Choose a service'
       : 'No service available';
     const onServiceExecutionOptionChange = (
       option: ServiceExecutionOption | null,
     ): void => {
-      querySetupState.setCurrentServiceExecution(
-        option?.value.service,
-        option?.value.key,
-      );
+      querySetupState.setCurrentServiceExecutionOption(option ?? undefined);
     };
 
     useEffect(() => {
@@ -498,38 +448,27 @@ const ServiceQuerySetup = observer(
           <div className="query-setup__service-query__graph">
             {(!querySetupState.currentProject ||
               !querySetupState.currentVersionId ||
-              !queryStore.buildGraphState.hasSucceeded) && (
+              !querySetupState.loadServiceExecutionsState.hasSucceeded) && (
               <div className="query-setup__service-query__graph__loader">
                 <PanelLoadingIndicator
                   isLoading={
                     Boolean(querySetupState.currentProject) &&
                     Boolean(querySetupState.currentVersionId) &&
-                    !queryStore.buildGraphState.hasSucceeded
+                    !querySetupState.loadServiceExecutionsState.isInProgress
                   }
                 />
-                {queryStore.buildGraphState.isInProgress && (
-                  <BlankPanelContent>
-                    {queryStore.buildGraphState.message ??
-                      queryStore.graphManagerState.systemBuildState.message ??
-                      queryStore.graphManagerState.dependenciesBuildState
-                        .message ??
-                      queryStore.graphManagerState.generationsBuildState
-                        .message ??
-                      queryStore.graphManagerState.graphBuildState.message}
-                  </BlankPanelContent>
-                )}
-                {!queryStore.buildGraphState.isInProgress && (
-                  <BlankPanelContent>
-                    {queryStore.buildGraphState.hasFailed
-                      ? `Can't build graph`
-                      : 'Project and version must be specified'}
-                  </BlankPanelContent>
-                )}
+                <BlankPanelContent>
+                  {querySetupState.loadServiceExecutionsState.isInProgress
+                    ? `Surveying service executions...`
+                    : querySetupState.loadServiceExecutionsState.hasFailed
+                    ? `Can't load service executions`
+                    : 'Project and version must be specified'}
+                </BlankPanelContent>
               </div>
             )}
             {querySetupState.currentProject &&
               querySetupState.currentVersionId &&
-              queryStore.buildGraphState.hasSucceeded && (
+              querySetupState.loadServiceExecutionsState.hasSucceeded && (
                 <>
                   <div className="query-setup__wizard__group">
                     <div className="query-setup__wizard__group__title">
@@ -540,7 +479,7 @@ const ServiceQuerySetup = observer(
                       options={serviceExecutionOptions}
                       disabled={!serviceExecutionOptions.length}
                       onChange={onServiceExecutionOptionChange}
-                      value={selectedServiceExecutionOptions}
+                      value={selectedServiceExecutionOption}
                       placeholder={serviceExecutionSelectorPlaceholder}
                       isClearable={true}
                       escapeClearsValue={true}

@@ -309,10 +309,7 @@ export const TEST__setUpEditor = async (
     .spyOn(mockedEditorStore.depotServerClient, 'getProjectById')
     .mockResolvedValue(projectData);
   jest
-    .spyOn(
-      mockedEditorStore.depotServerClient,
-      'getProjectVersionsDependencyEntities',
-    )
+    .spyOn(mockedEditorStore.depotServerClient, 'collectDependencyEntities')
     .mockResolvedValue(projectDependency);
 
   // TODO: we need to think of how we will mock these calls when we modularize

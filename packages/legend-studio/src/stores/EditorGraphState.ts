@@ -1027,7 +1027,7 @@ export class EditorGraphState {
         // NOTE: if A@v1 is transitive dependencies of 2 or more
         // direct dependencies, metadata server will take care of deduplication
         const dependencyEntitiesJson =
-          (yield this.editorStore.depotServerClient.getProjectVersionsDependencyEntities(
+          (yield this.editorStore.depotServerClient.collectDependencyEntities(
             dependencyCoordinates.map((e) =>
               ProjectDependencyCoordinates.serialization.toJson(e),
             ),

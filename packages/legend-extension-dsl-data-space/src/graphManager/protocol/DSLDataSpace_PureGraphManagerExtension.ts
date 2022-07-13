@@ -14,26 +14,13 @@
  * limitations under the License.
  */
 
-import type { Entity } from '@finos/legend-model-storage';
 import {
-  type PureModel,
   type AbstractPureGraphManager,
   AbstractPureGraphManagerExtension,
 } from '@finos/legend-graph';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 
-export abstract class DSLDataSpace_PureGraphManagerExtension extends AbstractPureGraphManagerExtension {
-  // abstract buildGraphForCreateQuerySetup(
-  //   graph: PureModel,
-  //   entities: Entity[],
-  //   dependencyEntitiesMap: Map<string, Entity[]>,
-  // ): Promise<void>;
-  // abstract buildGraphForServiceQuerySetup(
-  //   graph: PureModel,
-  //   entities: Entity[],
-  //   dependencyEntitiesMap: Map<string, Entity[]>,
-  // ): Promise<void>;
-}
+export abstract class DSLDataSpace_PureGraphManagerExtension extends AbstractPureGraphManagerExtension {}
 
 export const getDSLDataSpaceGraphManagerExtension = (
   graphManager: AbstractPureGraphManager,

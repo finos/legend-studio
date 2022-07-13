@@ -529,7 +529,7 @@ export class EditorStore {
   }
 
   /**
-   * This is the entry of the app logic where initialization of editor states happens
+   * This is the entry of the app logic where the initialization of editor states happens
    * Here, we ensure the order of calls after checking existence of current project and workspace
    * If either of them does not exist, we cannot proceed.
    */

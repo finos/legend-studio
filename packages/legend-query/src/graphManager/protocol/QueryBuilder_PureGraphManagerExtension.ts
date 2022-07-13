@@ -31,12 +31,6 @@ export abstract class QueryBuilder_PureGraphManagerExtension extends AbstractPur
     dependencyEntitiesMap: Map<string, Entity[]>,
   ): Promise<void>;
 
-  abstract buildGraphForServiceQuerySetup(
-    graph: PureModel,
-    entities: Entity[],
-    dependencyEntitiesMap: Map<string, Entity[]>,
-  ): Promise<void>;
-
   abstract surveyMappingRuntimeCompatibility(
     graph: PureModel,
     entities: Entity[],

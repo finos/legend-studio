@@ -93,7 +93,7 @@ export class GraphManagerState {
 
   /**
    * NOTE: this is temporary. System entities might eventually be collected from a metadata project.
-   * Right now the essential profiles have been extracted from Pure to load the minimum system models.
+   * Right now the essential models have been extracted from Pure to load the minimum system.
    * We might add more system entities as needed until the system model project(s) are setup.
    */
   async initializeSystem(options?: GraphBuilderOptions): Promise<void> {

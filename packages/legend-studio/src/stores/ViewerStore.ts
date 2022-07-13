@@ -353,7 +353,7 @@ export class ViewerStore {
     );
     const dependencyEntitiesMap = new Map<string, Entity[]>();
     (versionId === SNAPSHOT_VERSION_ALIAS
-      ? ((yield this.editorStore.depotServerClient.getLatestDependencyEntities(
+      ? ((yield this.editorStore.depotServerClient.getLatestRevisionDependencyEntities(
           groupId,
           artifactId,
           true,
