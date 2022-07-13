@@ -258,7 +258,7 @@ export class V1_ProtocolToMetaModelClassMappingSecondPassBuilder
       rootRelationalInstanceSetImplementation.groupBy = groupBy;
     }
     const embedded: EmbeddedRelationalInstanceSetImplementation[] = [];
-    const tableAliasMap = new Map<string, TableAlias>();
+    const tableAliasIndex = new Map<string, TableAlias>();
     V1_buildRelationalClassMapping(
       classMapping,
       this.context,
@@ -267,16 +267,16 @@ export class V1_ProtocolToMetaModelClassMappingSecondPassBuilder
       this.parent,
       embedded,
       getAllEnumerationMappings(this.parent),
-      tableAliasMap,
+      tableAliasIndex,
     );
     // TODO filterMapping
     // NOTE: why are we adding embedded relational property mappings to class mapping in the backend????
     if (!mainTableAlias && !classMapping.extendsClassMappingId) {
       const tables = new Set(
-        Array.from(tableAliasMap.values()).map((e) => e.relation),
+        Array.from(tableAliasIndex.values()).map((e) => e.relation),
       );
       const dbs = new Set(
-        Array.from(tableAliasMap.values()).map(
+        Array.from(tableAliasIndex.values()).map(
           (e) => e.relation.value.schema._OWNER,
         ),
       );

@@ -71,36 +71,53 @@ export class DepotServerClient extends AbstractServerClient {
   private _version = (
     groupId: string,
     artifactId: string,
-    versionId: string,
+    version: string,
   ): string =>
-    `${this._versions(groupId, artifactId)}/${encodeURIComponent(versionId)}`;
+    `${this._versions(groupId, artifactId)}/${encodeURIComponent(version)}`;
 
   getVersionEntities = (
     groupId: string,
     artifactId: string,
-    versionId: string,
+    version: string,
   ): Promise<PlainObject<Entity>[]> =>
-    this.get(this._version(groupId, artifactId, versionId));
-
-  getVersionEntity = (
-    groupId: string,
-    artifactId: string,
-    versionId: string,
-    entityPath: string,
-  ): Promise<PlainObject<Entity>[]> =>
-    this.get(
-      `${this._version(
-        groupId,
-        artifactId,
-        versionId,
-      )}/entities/${encodeURIComponent(entityPath)}`,
-    );
+    this.get(this._version(groupId, artifactId, version));
 
   getLatestRevisionEntities = (
     groupId: string,
     artifactId: string,
   ): Promise<PlainObject<Entity>[]> =>
     this.get(`${this._revisions(groupId, artifactId)}/latest`);
+
+  getEntities(
+    project: ProjectData,
+    versionId: string,
+  ): Promise<PlainObject<Entity>[]> {
+    if (versionId === SNAPSHOT_VERSION_ALIAS) {
+      return this.getLatestRevisionEntities(
+        project.groupId,
+        project.artifactId,
+      );
+    }
+    return this.getVersionEntities(
+      project.groupId,
+      project.artifactId,
+      versionId === LATEST_VERSION_ALIAS ? project.latestVersion : versionId,
+    );
+  }
+
+  getVersionEntity = (
+    groupId: string,
+    artifactId: string,
+    version: string,
+    entityPath: string,
+  ): Promise<PlainObject<Entity>> =>
+    this.get(
+      `${this._version(
+        groupId,
+        artifactId,
+        version,
+      )}/entities/${encodeURIComponent(entityPath)}`,
+    );
 
   getLatestRevisionEntity = (
     groupId: string,
@@ -113,6 +130,26 @@ export class DepotServerClient extends AbstractServerClient {
         artifactId,
       )}/latest/entities/${encodeURIComponent(entityPath)}`,
     );
+
+  getEntity(
+    project: ProjectData,
+    versionId: string,
+    entityPath: string,
+  ): Promise<PlainObject<Entity>> {
+    if (versionId === SNAPSHOT_VERSION_ALIAS) {
+      return this.getLatestRevisionEntity(
+        project.groupId,
+        project.artifactId,
+        entityPath,
+      );
+    }
+    return this.getVersionEntity(
+      project.groupId,
+      project.artifactId,
+      versionId === LATEST_VERSION_ALIAS ? project.latestVersion : versionId,
+      entityPath,
+    );
+  }
 
   // NOTE: this is experimental API to get elements by classifier path
   getEntitiesByClassifierPath = (
@@ -150,7 +187,7 @@ export class DepotServerClient extends AbstractServerClient {
   getDependencyEntities = (
     groupId: string,
     artifactId: string,
-    versionId: string,
+    version: string,
     /**
      * Flag indicating if transitive dependencies should be returned.
      */
@@ -161,7 +198,7 @@ export class DepotServerClient extends AbstractServerClient {
     includeOrigin: boolean,
   ): Promise<PlainObject<ProjectVersionEntities>[]> =>
     this.get(
-      `${this._version(groupId, artifactId, versionId)}/dependencies`,
+      `${this._version(groupId, artifactId, version)}/dependencies`,
       undefined,
       undefined,
       {
@@ -196,11 +233,11 @@ export class DepotServerClient extends AbstractServerClient {
 
   async getIndexedDependencyEntities(
     project: ProjectData,
-    versionIdOrAlias: string,
+    versionId: string,
   ): Promise<Map<string, Entity[]>> {
-    const dependencyEntitiesMap = new Map<string, Entity[]>();
+    const dependencyEntitiesIndex = new Map<string, Entity[]>();
     let dependencies: PlainObject<ProjectVersionEntities>[] = [];
-    if (versionIdOrAlias === SNAPSHOT_VERSION_ALIAS) {
+    if (versionId === SNAPSHOT_VERSION_ALIAS) {
       dependencies = await this.getLatestRevisionDependencyEntities(
         project.groupId,
         project.artifactId,
@@ -211,9 +248,7 @@ export class DepotServerClient extends AbstractServerClient {
       dependencies = await this.getDependencyEntities(
         project.groupId,
         project.artifactId,
-        versionIdOrAlias === LATEST_VERSION_ALIAS
-          ? project.latestVersion
-          : versionIdOrAlias,
+        versionId === LATEST_VERSION_ALIAS ? project.latestVersion : versionId,
         true,
         false,
       );
@@ -221,9 +256,9 @@ export class DepotServerClient extends AbstractServerClient {
     dependencies
       .map((v) => ProjectVersionEntities.serialization.fromJson(v))
       .forEach((dependencyInfo) => {
-        dependencyEntitiesMap.set(dependencyInfo.id, dependencyInfo.entities);
+        dependencyEntitiesIndex.set(dependencyInfo.id, dependencyInfo.entities);
       });
-    return dependencyEntitiesMap;
+    return dependencyEntitiesIndex;
   }
 
   collectDependencyEntities = (

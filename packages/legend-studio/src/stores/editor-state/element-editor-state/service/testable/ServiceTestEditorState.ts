@@ -26,7 +26,6 @@ import {
   generateVariableExpressionMockValue,
 } from '@finos/legend-graph';
 import { action, flow, makeObservable, observable } from 'mobx';
-import type { EditorStore } from '../../../../../index.js';
 import { TestableTestEditorState } from '../../testable/TestableEditorState.js';
 import type { ServiceTestSuiteState } from './ServiceTestableState.js';
 import {
@@ -46,6 +45,7 @@ import {
   returnUndefOnError,
   uuid,
 } from '@finos/legend-shared';
+import type { EditorStore } from '../../../../EditorStore.js';
 
 export enum SERIALIZATION_FORMAT {
   PURE = 'PURE',

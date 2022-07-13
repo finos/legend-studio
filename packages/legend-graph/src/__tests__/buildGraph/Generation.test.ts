@@ -63,11 +63,11 @@ const testGeneratedElements = async (
 
   expect(graphManagerState.graphBuildState.hasSucceeded).toBe(true);
   // build generation graph
-  const generatedEntitiesMap = new Map<string, Entity[]>();
-  generatedEntitiesMap.set(PARENT_ELEMENT_PATH, generatedEntities);
+  const generatedEntitiesIndex = new Map<string, Entity[]>();
+  generatedEntitiesIndex.set(PARENT_ELEMENT_PATH, generatedEntities);
   await graphManagerState.graphManager.buildGenerations(
     graphManagerState.graph,
-    generatedEntitiesMap,
+    generatedEntitiesIndex,
     graphManagerState.generationsBuildState,
   );
 

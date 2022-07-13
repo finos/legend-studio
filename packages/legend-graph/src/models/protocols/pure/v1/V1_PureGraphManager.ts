@@ -556,7 +556,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     coreModel: CoreModel,
     systemModel: SystemModel,
     dependencyManager: DependencyManager,
-    dependencyEntitiesMap: Map<string, Entity[]>,
+    dependencyEntitiesIndex: Map<string, Entity[]>,
     buildState: ActionState,
     options?: GraphBuilderOptions,
   ): Promise<GraphBuilderReport> {
@@ -573,16 +573,19 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     graph.dependencyManager = dependencyManager;
 
     try {
-      dependencyManager.initialize(dependencyEntitiesMap);
+      dependencyManager.initialize(dependencyEntitiesIndex);
 
       // deserialize
       buildState.setMessage(`Partitioning and deserializing elements...`);
-      const dependencyDataMap = new Map<string, V1_PureModelContextData>();
+      const dependencyGraphDataIndex = new Map<
+        string,
+        V1_PureModelContextData
+      >();
       await Promise.all(
-        Array.from(dependencyEntitiesMap.entries()).map(
+        Array.from(dependencyEntitiesIndex.entries()).map(
           ([dependencyKey, entities]) => {
             const projectModelData = new V1_PureModelContextData();
-            dependencyDataMap.set(dependencyKey, projectModelData);
+            dependencyGraphDataIndex.set(dependencyKey, projectModelData);
             return V1_entitiesToPureModelContextData(
               entities,
               projectModelData,
@@ -595,7 +598,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
       // prepare build inputs
       const buildInputs: V1_PureGraphBuilderInput[] = Array.from(
-        dependencyDataMap.entries(),
+        dependencyGraphDataIndex.entries(),
       ).map(([dependencyKey, dependencyData]) => ({
         model: graph.dependencyManager.getModel(dependencyKey),
         data: V1_indexPureModelContextData(
@@ -616,7 +619,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       );
 
       buildState.pass();
-      report.otherStats.projectCount = dependencyEntitiesMap.size;
+      report.otherStats.projectCount = dependencyEntitiesIndex.size;
       report.timings = {
         ...Object.fromEntries(stopWatch.records),
         [GRAPH_MANAGER_EVENT.GRAPH_BUILDER_COMPLETED]: stopWatch.elapsed,
@@ -726,12 +729,15 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     try {
       // deserialize
       buildState.setMessage(`Deserializing elements...`);
-      const generatedDataMap = new Map<string, V1_PureModelContextData>();
+      const generationGraphDataIndex = new Map<
+        string,
+        V1_PureModelContextData
+      >();
       await Promise.all(
         Array.from(generatedEntities.entries()).map(
           ([generationParentPath, entities]) => {
             const generatedData = new V1_PureModelContextData();
-            generatedDataMap.set(generationParentPath, generatedData);
+            generationGraphDataIndex.set(generationParentPath, generatedData);
             return V1_entitiesToPureModelContextData(
               entities,
               generatedData,
@@ -744,7 +750,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
       // prepare build inputs
       const buildInputs: V1_PureGraphBuilderInput[] = Array.from(
-        generatedDataMap.entries(),
+        generationGraphDataIndex.entries(),
       ).map(([generationParentPath, generatedData]) => ({
         model: generatedModel,
         data: V1_indexPureModelContextData(
@@ -765,7 +771,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       );
 
       buildState.pass();
-      report.otherStats.generationCount = generatedDataMap.size;
+      report.otherStats.generationCount = generationGraphDataIndex.size;
       report.timings = {
         ...Object.fromEntries(stopWatch.records),
         [GRAPH_MANAGER_EVENT.GRAPH_BUILDER_COMPLETED]: stopWatch.elapsed,
@@ -2378,11 +2384,11 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
     // build dependencies graph builder input
     graph.dependencyManager.initialize(dependencyEntities);
-    const dependencyDataMap = new Map<string, V1_PureModelContextData>();
+    const dependencyGraphDataIndex = new Map<string, V1_PureModelContextData>();
     await Promise.all(
       Array.from(dependencyEntities.entries()).map(([dependencyKey, value]) => {
         const projectModelData = new V1_PureModelContextData();
-        dependencyDataMap.set(dependencyKey, projectModelData);
+        dependencyGraphDataIndex.set(dependencyKey, projectModelData);
         return V1_entitiesToPureModelContextData(
           value
             .filter((entity) => {
@@ -2404,7 +2410,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       }),
     );
     const dependencyGraphBuilderInput: V1_PureGraphBuilderInput[] = Array.from(
-      dependencyDataMap.entries(),
+      dependencyGraphDataIndex.entries(),
     ).map(([dependencyKey, dependencyData]) => ({
       data: V1_indexPureModelContextData(
         report,

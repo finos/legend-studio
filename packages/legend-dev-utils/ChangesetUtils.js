@@ -70,7 +70,7 @@ export async function validateChangesets(cwd, sinceRef) {
   // This is useful in case the current PR deletes some packages
   // making some changesets invalid and can potentially break the release
   const knownPackages = packages.packages.map((pkg) => pkg.packageJson.name);
-  const unknownPackagesMap = new Map();
+  const unknownPackagesIndex = new Map();
   const allExistingChangesets = await readChangesets.default(cwd);
   allExistingChangesets.forEach((changeset) => {
     const unknownPackages = new Set();
@@ -80,12 +80,12 @@ export async function validateChangesets(cwd, sinceRef) {
       }
     });
     if (unknownPackages.size) {
-      unknownPackagesMap.set(changeset.id, unknownPackages);
+      unknownPackagesIndex.set(changeset.id, unknownPackages);
     }
   });
 
-  if (unknownPackagesMap.size) {
-    unknownPackagesMap.forEach((unknownPackages, changesetId) => {
+  if (unknownPackagesIndex.size) {
+    unknownPackagesIndex.forEach((unknownPackages, changesetId) => {
       error(
         `Found ${
           unknownPackages.size

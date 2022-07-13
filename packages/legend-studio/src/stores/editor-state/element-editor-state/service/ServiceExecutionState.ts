@@ -293,7 +293,7 @@ export class ServicePureExecutionQueryState extends LambdaEditorState {
         ...Array.from(
           (
             (yield flowResult(
-              this.editorStore.graphState.getConfigurationProjectDependencyEntities(),
+              this.editorStore.graphState.getIndexedDependencyEntities(),
             )) as Map<string, Entity[]>
           ).keys(),
         ).map((coordinatesInText) => {

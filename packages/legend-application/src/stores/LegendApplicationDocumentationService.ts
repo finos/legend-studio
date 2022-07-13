@@ -110,7 +110,7 @@ export const collectKeyedDocumnetationEntriesFromConfig = (
     content: LegendApplicationDocumentationEntry.create(entry[1], entry[0]),
   }));
 
-export type LegendApplicationContextualDocumentationMapConfig = Record<
+export type LegendApplicationContextualDocumentationConfig = Record<
   string,
   string
 >;
@@ -118,10 +118,10 @@ export type LegendApplicationContextualDocumentationEntry = {
   context: string;
   documentationKey: string;
 };
-export const collectContextualDocumnetationEntry = (
-  contextualDocMap: LegendApplicationContextualDocumentationMapConfig,
+export const collectContextualDocumnetationEntries = (
+  config: LegendApplicationContextualDocumentationConfig,
 ): LegendApplicationContextualDocumentationEntry[] =>
-  Object.entries(contextualDocMap).map((entry) => ({
+  Object.entries(config).map((entry) => ({
     context: entry[0],
     documentationKey: entry[1],
   }));
@@ -130,7 +130,7 @@ export class LegendApplicationDocumentationService {
   url?: string | undefined;
 
   private docRegistry = new Map<string, LegendApplicationDocumentationEntry>();
-  private contextualDocMap = new Map<
+  private contextualDocIndex = new Map<
     string,
     LegendApplicationDocumentationEntry
   >();
@@ -221,7 +221,7 @@ export class LegendApplicationDocumentationService {
       } else {
         const existingDocEntry = this.getDocEntry(entry.documentationKey);
         if (existingDocEntry) {
-          this.contextualDocMap.set(entry.context, existingDocEntry);
+          this.contextualDocIndex.set(entry.context, existingDocEntry);
         }
       }
     });
@@ -230,7 +230,7 @@ export class LegendApplicationDocumentationService {
     applicationStore.config.contextualDocEntries.forEach((entry) => {
       const existingDocEntry = this.getDocEntry(entry.documentationKey);
       if (existingDocEntry) {
-        this.contextualDocMap.set(entry.context, existingDocEntry);
+        this.contextualDocIndex.set(entry.context, existingDocEntry);
       }
     });
   }
@@ -246,11 +246,11 @@ export class LegendApplicationDocumentationService {
   getContextualDocEntry(
     key: string,
   ): LegendApplicationDocumentationEntry | undefined {
-    return this.contextualDocMap.get(key);
+    return this.contextualDocIndex.get(key);
   }
 
   hasContextualDocEntry(key: string): boolean {
-    return this.contextualDocMap.has(key);
+    return this.contextualDocIndex.has(key);
   }
 
   getAllDocEntries(): LegendApplicationDocumentationEntry[] {
@@ -270,9 +270,9 @@ export class LegendApplicationDocumentationService {
     return result;
   }
 
-  publishContextualDocMap(): LegendApplicationContextualDocumentationMapConfig {
-    const result: LegendApplicationContextualDocumentationMapConfig = {};
-    this.contextualDocMap.forEach((value, key) => {
+  publishContextualDocIndex(): LegendApplicationContextualDocumentationConfig {
+    const result: LegendApplicationContextualDocumentationConfig = {};
+    this.contextualDocIndex.forEach((value, key) => {
       result[key] = value._documentationKey;
     });
     return result;

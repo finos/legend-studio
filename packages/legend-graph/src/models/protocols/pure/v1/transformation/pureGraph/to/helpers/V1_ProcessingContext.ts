@@ -68,8 +68,7 @@ export class V1_ProcessingContext {
   }
 
   addVariableLevel(): void {
-    const map = new Map<string, ValueSpecification>();
-    this.inferredVariableList.push(map);
+    this.inferredVariableList.push(new Map<string, ValueSpecification>());
   }
 
   getInferredVariable(name: string): ValueSpecification | undefined {
@@ -84,20 +83,20 @@ export class V1_ProcessingContext {
     name: string,
     variable: ValueSpecification,
   ): void {
-    const map = new Map<string, ValueSpecification>();
-    map.set(name, variable);
-    this.inferredVariableList.push(map);
+    const varIndex = new Map<string, ValueSpecification>();
+    varIndex.set(name, variable);
+    this.inferredVariableList.push(varIndex);
   }
 
   clone(): V1_ProcessingContext {
     const ctx = new V1_ProcessingContext('');
     ctx.tags = this.tags.clone();
     ctx.inferredVariableList = this.inferredVariableList.map((varMap) => {
-      const newVarMap = new Map<string, ValueSpecification>();
+      const varIndex = new Map<string, ValueSpecification>();
       varMap.forEach((valueSpec, key) => {
-        newVarMap.set(key, valueSpec);
+        varIndex.set(key, valueSpec);
       });
-      return newVarMap;
+      return varIndex;
     });
     return ctx;
   }

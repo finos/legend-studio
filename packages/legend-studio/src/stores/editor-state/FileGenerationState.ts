@@ -147,28 +147,28 @@ export class FileGenerationState {
           .filter((node) => node.isOpen)
           .map((node) => node.id)
       : [];
-    const generationResultMap = new Map<string, GenerationOutputResult>();
+    const generationResultIndex = new Map<string, GenerationOutputResult>();
     const rootFolder =
       this.fileGeneration.generationOutputPath ??
       this.fileGeneration.path.split(ELEMENT_PATH_DELIMITER).join('_');
     output.forEach((entry) => {
       entry.cleanFileName(rootFolder);
-      if (generationResultMap.has(entry.fileName)) {
+      if (generationResultIndex.has(entry.fileName)) {
         this.editorStore.applicationStore.log.warn(
           LogEvent.create(LEGEND_STUDIO_APP_EVENT.GENERATION_FAILURE),
           'Found 2 generation outputs with same path',
         );
       }
-      generationResultMap.set(entry.fileName, {
+      generationResultIndex.set(entry.fileName, {
         generationOutput: entry,
         parentId: this.fileGeneration.path,
       });
     });
     // take generation outputs and put them into the root directory
-    buildGenerationDirectory(this.root, generationResultMap, this.filesIndex);
+    buildGenerationDirectory(this.root, generationResultIndex, this.filesIndex);
     this.directoryTreeData = getGenerationTreeData(this.root);
     this.reprocessNodeTree(
-      Array.from(generationResultMap.values()),
+      Array.from(generationResultIndex.values()),
       this.directoryTreeData,
       openedNodeIds,
     );

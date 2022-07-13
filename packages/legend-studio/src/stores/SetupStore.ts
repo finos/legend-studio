@@ -178,9 +178,11 @@ export class SetupStore {
           undefined,
         )) as PlainObject<Project>[]
       ).map((v) => Project.serialization.fromJson(v));
-      const projectMap = observable<string, Project>(new Map());
-      projects.forEach((project) => projectMap.set(project.projectId, project));
-      this.projects = projectMap;
+      const projectIndex = observable<string, Project>(new Map());
+      projects.forEach((project) =>
+        projectIndex.set(project.projectId, project),
+      );
+      this.projects = projectIndex;
       this.loadProjectsState.pass();
     } catch (error) {
       assertErrorThrown(error);
@@ -286,7 +288,7 @@ export class SetupStore {
           projectId,
         )) as Workspace[]
       ).map((workspace) => workspace.workspaceId);
-      const workspaceMap = observable<string, Workspace>(new Map());
+      const workspaceIndex = observable<string, Workspace>(new Map());
 
       (
         (yield this.sdlcServerClient.getWorkspaces(
@@ -302,12 +304,12 @@ export class SetupStore {
           ) {
             workspace.accessType = WorkspaceAccessType.CONFLICT_RESOLUTION;
           }
-          workspaceMap.set(
+          workspaceIndex.set(
             this.buildWorkspaceCompositeId(workspace),
             workspace,
           );
         });
-      this.workspacesByProject.set(projectId, workspaceMap);
+      this.workspacesByProject.set(projectId, workspaceIndex);
     } catch (error) {
       assertErrorThrown(error);
       // TODO handle error when fetching workspaces for an individual project
@@ -346,12 +348,12 @@ export class SetupStore {
           workspace,
         );
       } else {
-        const newWorkspaceMap = observable<string, Workspace>(new Map());
-        newWorkspaceMap.set(
+        const workspaceIndex = observable<string, Workspace>(new Map());
+        workspaceIndex.set(
           this.buildWorkspaceCompositeId(workspace),
           workspace,
         );
-        this.workspacesByProject.set(projectId, newWorkspaceMap);
+        this.workspacesByProject.set(projectId, workspaceIndex);
       }
       this.applicationStore.notifySuccess(
         `Workspace '${workspace.workspaceId}' is succesfully created`,

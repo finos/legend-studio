@@ -191,6 +191,8 @@ export class TaxonomyNodeViewerState {
   *initializeDataSpaceViewer(
     dataSpaceTaxonomyContext: DataSpaceTaxonomyContext,
   ): GeneratorFn<void> {
+    const { groupId, artifactId, versionId } = dataSpaceTaxonomyContext;
+
     this.clearDataSpaceViewerState();
     try {
       this.initDataSpaceViewerState.inProgress();
@@ -199,25 +201,18 @@ export class TaxonomyNodeViewerState {
       // reset
       this.taxonomyStore.graphManagerState.resetGraph();
 
-      const { groupId, artifactId, versionId } = dataSpaceTaxonomyContext;
       // fetch entities
       stopWatch.record();
       this.initDataSpaceViewerState.setMessage(`Fetching entities...`);
-      const projectData = ProjectData.serialization.fromJson(
+      const project = ProjectData.serialization.fromJson(
         (yield flowResult(
           this.taxonomyStore.depotServerClient.getProject(groupId, artifactId),
         )) as PlainObject<ProjectData>,
       );
-      const resolvedVersionId =
-        versionId === LATEST_VERSION_ALIAS
-          ? projectData.latestVersion
-          : versionId;
-      const entities =
-        (yield this.taxonomyStore.depotServerClient.getVersionEntities(
-          groupId,
-          artifactId,
-          resolvedVersionId,
-        )) as Entity[];
+      const entities = (yield this.taxonomyStore.depotServerClient.getEntities(
+        project,
+        versionId,
+      )) as Entity[];
       this.initDataSpaceViewerState.setMessage(undefined);
       stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_ENTITIES_FETCHED);
 
@@ -230,20 +225,12 @@ export class TaxonomyNodeViewerState {
       this.taxonomyStore.graphManagerState.dependenciesBuildState.setMessage(
         `Fetching dependencies...`,
       );
-      const dependencyEntitiesMap = new Map<string, Entity[]>();
-      (
-        (yield this.taxonomyStore.depotServerClient.getDependencyEntities(
-          groupId,
-          artifactId,
-          resolvedVersionId,
-          true,
-          false,
-        )) as PlainObject<ProjectVersionEntities>[]
-      )
-        .map((v) => ProjectVersionEntities.serialization.fromJson(v))
-        .forEach((dependencyInfo) => {
-          dependencyEntitiesMap.set(dependencyInfo.id, dependencyInfo.entities);
-        });
+      const dependencyEntitiesIndex = (yield flowResult(
+        this.taxonomyStore.depotServerClient.getIndexedDependencyEntities(
+          project,
+          versionId,
+        ),
+      )) as Map<string, Entity[]>;
       stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED);
 
       // build dependencies
@@ -252,7 +239,7 @@ export class TaxonomyNodeViewerState {
           this.taxonomyStore.graphManagerState.coreModel,
           this.taxonomyStore.graphManagerState.systemModel,
           dependencyManager,
-          dependencyEntitiesMap,
+          dependencyEntitiesIndex,
           this.taxonomyStore.graphManagerState.dependenciesBuildState,
         )) as GraphBuilderReport;
       dependency_buildReport.timings[
@@ -741,29 +728,20 @@ export class LegendTaxonomyStore {
         `Analyzing dataspace...`,
       );
       const { dataSpacePath, gav } = params;
-      const dataSpaceGAVCoordinates = parseGAVCoordinates(gav);
-      const dataSpaceProjectData = ProjectData.serialization.fromJson(
+      const { groupId, artifactId, versionId } = parseGAVCoordinates(gav);
+      const project = ProjectData.serialization.fromJson(
         (yield flowResult(
-          this.depotServerClient.getProject(
-            dataSpaceGAVCoordinates.groupId,
-            dataSpaceGAVCoordinates.artifactId,
-          ),
+          this.depotServerClient.getProject(groupId, artifactId),
         )) as PlainObject<ProjectData>,
       );
-      const { groupId, artifactId } = dataSpaceGAVCoordinates;
-      const versionId =
-        dataSpaceGAVCoordinates.versionId === LATEST_VERSION_ALIAS
-          ? dataSpaceProjectData.latestVersion
-          : dataSpaceGAVCoordinates.versionId;
 
       // fetch entities
       stopWatch.record();
       this.initStandaloneDataSpaceViewerState.setMessage(
         `Fetching entities...`,
       );
-      const entities = (yield this.depotServerClient.getVersionEntities(
-        groupId,
-        artifactId,
+      const entities = (yield this.depotServerClient.getEntities(
+        project,
         versionId,
       )) as Entity[];
       this.initStandaloneDataSpaceViewerState.setMessage(undefined);
@@ -777,20 +755,9 @@ export class LegendTaxonomyStore {
       this.graphManagerState.dependenciesBuildState.setMessage(
         `Fetching dependencies...`,
       );
-      const dependencyEntitiesMap = new Map<string, Entity[]>();
-      (
-        (yield this.depotServerClient.getDependencyEntities(
-          groupId,
-          artifactId,
-          versionId,
-          true,
-          false,
-        )) as PlainObject<ProjectVersionEntities>[]
-      )
-        .map((v) => ProjectVersionEntities.serialization.fromJson(v))
-        .forEach((dependencyInfo) => {
-          dependencyEntitiesMap.set(dependencyInfo.id, dependencyInfo.entities);
-        });
+      const dependencyEntitiesIndex = (yield flowResult(
+        this.depotServerClient.getIndexedDependencyEntities(project, versionId),
+      )) as Map<string, Entity[]>;
       stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED);
 
       const dependency_buildReport =
@@ -798,7 +765,7 @@ export class LegendTaxonomyStore {
           this.graphManagerState.coreModel,
           this.graphManagerState.systemModel,
           dependencyManager,
-          dependencyEntitiesMap,
+          dependencyEntitiesIndex,
           this.graphManagerState.dependenciesBuildState,
         )) as GraphBuilderReport;
       dependency_buildReport.timings[
@@ -839,9 +806,9 @@ export class LegendTaxonomyStore {
       );
       const dataSpaceViewerState = new DataSpaceViewerState(
         this.graphManagerState,
-        groupId,
-        artifactId,
-        versionId,
+        project.groupId,
+        project.artifactId,
+        versionId === LATEST_VERSION_ALIAS ? project.latestVersion : versionId,
         getDataSpace(dataSpacePath, this.graphManagerState.graph),
         {
           viewProject: (

@@ -185,7 +185,7 @@ export abstract class AbstractPureGraphManager {
     coreModel: CoreModel,
     systemModel: SystemModel,
     dependencyManager: DependencyManager,
-    dependencyEntitiesMap: Map<string, Entity[]>,
+    dependencyEntitiesIndex: Map<string, Entity[]>,
     buildState: ActionState,
     options?: GraphBuilderOptions,
   ): Promise<GraphBuilderReport>;

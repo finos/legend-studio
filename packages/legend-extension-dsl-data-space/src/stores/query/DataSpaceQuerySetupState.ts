@@ -139,7 +139,7 @@ export class DataSpaceQuerySetupState extends QuerySetupState {
     }
     this.setUpDataSpaceState.inProgress();
     try {
-      const projectData = ProjectData.serialization.fromJson(
+      const project = ProjectData.serialization.fromJson(
         (yield flowResult(
           this.queryStore.depotServerClient.getProject(
             dataSpace.groupId,
@@ -149,7 +149,7 @@ export class DataSpaceQuerySetupState extends QuerySetupState {
       );
 
       yield flowResult(
-        this.queryStore.buildGraph(projectData, dataSpace.versionId),
+        this.queryStore.buildGraph(project, dataSpace.versionId),
       );
 
       this.dataSpaceViewerState = new DataSpaceViewerState(

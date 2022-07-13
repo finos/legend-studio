@@ -37,11 +37,7 @@ import {
   getAllIncludedMappings,
 } from '@finos/legend-graph';
 import type { LegendQueryStore } from './LegendQueryStore.js';
-import {
-  LATEST_VERSION_ALIAS,
-  ProjectData,
-  SNAPSHOT_VERSION_ALIAS,
-} from '@finos/legend-server-depot';
+import { ProjectData } from '@finos/legend-server-depot';
 import {
   buildElementOption,
   type PackageableElementOption,
@@ -306,26 +302,12 @@ export class ServiceQuerySetupState extends QuerySetupState {
   ): GeneratorFn<void> {
     this.loadServiceExecutionsState.inProgress();
     try {
-      // fetch entities
-      let entities: Entity[] = [];
-      if (versionId === SNAPSHOT_VERSION_ALIAS) {
-        entities =
-          (yield this.queryStore.depotServerClient.getLatestRevisionEntities(
-            project.groupId,
-            project.artifactId,
-          )) as Entity[];
-      } else {
-        entities = (yield this.queryStore.depotServerClient.getVersionEntities(
-          project.groupId,
-          project.artifactId,
-          versionId === LATEST_VERSION_ALIAS
-            ? project.latestVersion
-            : versionId,
-        )) as Entity[];
-      }
-
-      // fetch and build dependencies
-      const dependencyEntitiesMap = (yield flowResult(
+      // fetch entities and dependencies
+      const entities = (yield this.queryStore.depotServerClient.getEntities(
+        project,
+        versionId,
+      )) as Entity[];
+      const dependencyEntitiesIndex = (yield flowResult(
         this.queryStore.depotServerClient.getIndexedDependencyEntities(
           project,
           versionId,
@@ -338,7 +320,7 @@ export class ServiceQuerySetupState extends QuerySetupState {
         ).surveyServiceExecution(
           this.queryStore.graphManagerState.createEmptyGraph(),
           entities,
-          dependencyEntitiesMap,
+          dependencyEntitiesIndex,
         ),
       )) as ServiceExecutionAnalysisResult[];
 
