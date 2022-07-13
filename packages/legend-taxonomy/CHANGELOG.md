@@ -1,5 +1,7 @@
 # @finos/legend-taxonomy
 
+## 4.0.8
+
 ## 4.0.7
 
 ## 4.0.6
