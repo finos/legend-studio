@@ -33,19 +33,16 @@ import {
   type LightQuery,
   type Mapping,
   type PackageableRuntime,
+  type Service,
   QuerySearchSpecification,
-  getAllIncludedMappings,
 } from '@finos/legend-graph';
 import type { LegendQueryStore } from './LegendQueryStore.js';
 import { ProjectData } from '@finos/legend-server-depot';
-import {
-  buildElementOption,
-  type PackageableElementOption,
-} from '@finos/legend-application';
 import type { Entity } from '@finos/legend-model-storage';
 import { getQueryBuilderGraphManagerExtension } from '../graphManager/protocol/QueryBuilder_PureGraphManagerExtension.js';
 import { LEGEND_QUERY_APP_EVENT } from '../LegendQueryAppEvent.js';
 import type { ServiceExecutionAnalysisResult } from '../graphManager/action/analytics/ServiceExecutionAnalysis.js';
+import type { MappingRuntimeCompatibilityAnalysisResult } from '../graphManager/action/analytics/MappingRuntimeCompatibilityAnalysis.js';
 
 export abstract class QuerySetupState {
   setupStore: QuerySetupStore;
@@ -132,11 +129,13 @@ export class ExistingQuerySetupState extends QuerySetupState {
 export class CreateQuerySetupState extends QuerySetupState {
   projects: ProjectData[] = [];
   loadProjectsState = ActionState.create();
+  surveyMappingRuntimeCompatibilityState = ActionState.create();
   currentProject?: ProjectData | undefined;
   currentVersionId?: string | undefined;
   currentMapping?: Mapping | undefined;
   currentRuntime?: PackageableRuntime | undefined;
-  mappingOptions: PackageableElementOption<Mapping>[] = [];
+  mappingRuntimeCompatibilitySurveyResult: MappingRuntimeCompatibilityAnalysisResult[] =
+    [];
 
   constructor(setupStore: QuerySetupStore) {
     super(setupStore);
@@ -147,14 +146,14 @@ export class CreateQuerySetupState extends QuerySetupState {
       currentVersionId: observable,
       currentMapping: observable,
       currentRuntime: observable,
-      mappingOptions: observable,
-      runtimeOptions: computed,
+      mappingRuntimeCompatibilitySurveyResult: observable,
+      compatibleRuntimes: computed,
       setCurrentProject: action,
       setCurrentVersionId: action,
       setCurrentMapping: action,
       setCurrentRuntime: action,
-      setMappingOptions: action,
       loadProjects: flow,
+      surveyMappingRuntimeCompatibility: flow,
     });
   }
 
@@ -174,29 +173,16 @@ export class CreateQuerySetupState extends QuerySetupState {
     this.currentRuntime = val;
   }
 
-  setMappingOptions(val: PackageableElementOption<Mapping>[]): void {
-    this.mappingOptions = val;
-  }
-
-  get runtimeOptions(): PackageableElementOption<PackageableRuntime>[] {
+  get compatibleRuntimes(): PackageableRuntime[] {
     const currentMapping = this.currentMapping;
-    if (!currentMapping) {
+    const surveyResult = this.mappingRuntimeCompatibilitySurveyResult;
+    if (!currentMapping || !surveyResult) {
       return [];
     }
-    return this.queryStore.queryBuilderState.runtimes
-      .map(
-        (e) =>
-          buildElementOption(e) as PackageableElementOption<PackageableRuntime>,
-      )
-      .filter((runtime) =>
-        runtime.value.runtimeValue.mappings
-          .map((mappingReference) => [
-            mappingReference.value,
-            ...getAllIncludedMappings(mappingReference.value),
-          ])
-          .flat()
-          .includes(currentMapping),
-      );
+    return (
+      surveyResult.find((result) => result.mapping === currentMapping)
+        ?.runtimes ?? []
+    );
   }
 
   *loadProjects(): GeneratorFn<void> {
@@ -212,30 +198,52 @@ export class CreateQuerySetupState extends QuerySetupState {
       this.queryStore.applicationStore.notifyError(error);
     }
   }
+
+  *surveyMappingRuntimeCompatibility(
+    project: ProjectData,
+    versionId: string,
+  ): GeneratorFn<void> {
+    this.surveyMappingRuntimeCompatibilityState.inProgress();
+    try {
+      // fetch entities and dependencies
+      const entities = (yield this.queryStore.depotServerClient.getEntities(
+        project,
+        versionId,
+      )) as Entity[];
+      const dependencyEntitiesIndex = (yield flowResult(
+        this.queryStore.depotServerClient.getIndexedDependencyEntities(
+          project,
+          versionId,
+        ),
+      )) as Map<string, Entity[]>;
+
+      this.mappingRuntimeCompatibilitySurveyResult = (yield flowResult(
+        getQueryBuilderGraphManagerExtension(
+          this.queryStore.graphManagerState.graphManager,
+        ).surveyMappingRuntimeCompatibility(
+          this.queryStore.graphManagerState.createEmptyGraph(),
+          entities,
+          dependencyEntitiesIndex,
+        ),
+      )) as MappingRuntimeCompatibilityAnalysisResult[];
+
+      this.surveyMappingRuntimeCompatibilityState.pass();
+    } catch (error) {
+      this.surveyMappingRuntimeCompatibilityState.fail();
+      assertErrorThrown(error);
+      this.queryStore.applicationStore.log.error(
+        LogEvent.create(LEGEND_QUERY_APP_EVENT.QUERY_PROBLEM),
+        error,
+      );
+      this.queryStore.applicationStore.notifyError(error);
+    }
+  }
 }
 
 export interface ServiceExecutionOption {
-  label: string;
-  value: {
-    path: string;
-    name: string;
-    package: string;
-    key?: string | undefined;
-  };
+  service: Service;
+  key?: string | undefined;
 }
-
-const buildServiceExecutionOption = (
-  result: ServiceExecutionAnalysisResult,
-  key?: string | undefined,
-): ServiceExecutionOption => ({
-  label: `${result.name}${key ? ` [${key}]` : ''}`,
-  value: {
-    path: result.path,
-    name: result.name,
-    package: result.package,
-    key,
-  },
-});
 
 export class ServiceQuerySetupState extends QuerySetupState {
   projects: ProjectData[] = [];
@@ -327,11 +335,14 @@ export class ServiceQuerySetupState extends QuerySetupState {
       this.setServiceExecutionOptions(
         serviceExecutionAnalysisResults.flatMap((result) => {
           if (result.executionKeys && result.executionKeys.length) {
-            return result.executionKeys.map((key) =>
-              buildServiceExecutionOption(result, key),
-            );
+            return result.executionKeys.map((key) => ({
+              service: result.service,
+              key,
+            }));
           }
-          return buildServiceExecutionOption(result);
+          return {
+            service: result.service,
+          };
         }),
       );
       this.loadServiceExecutionsState.pass();

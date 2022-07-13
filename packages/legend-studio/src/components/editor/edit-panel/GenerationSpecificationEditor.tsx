@@ -51,10 +51,6 @@ import {
   type ElementDragSource,
   type FileGenerationSourceDropTarget,
 } from '../../../stores/shared/DnDUtil.js';
-import {
-  type PackageableElementOption,
-  buildElementOption,
-} from '../../../stores/shared/PackageableElementOptionUtil.js';
 import { getNullableFirstElement } from '@finos/legend-shared';
 import type { DSLGenerationSpecification_LegendStudioPlugin_Extension } from '../../../stores/DSLGenerationSpecification_LegendStudioPlugin_Extension.js';
 import { flowResult } from 'mobx';
@@ -67,7 +63,11 @@ import {
   PackageableElementExplicitReference,
   GenerationTreeNode,
 } from '@finos/legend-graph';
-import { useApplicationStore } from '@finos/legend-application';
+import {
+  buildElementOption,
+  useApplicationStore,
+  type PackageableElementOption,
+} from '@finos/legend-application';
 import { packageableElementReference_setValue } from '../../../stores/graphModifier/DomainGraphModifierHelper.js';
 import {
   generationSpecification_addFileGeneration,
@@ -449,9 +449,7 @@ const FileGenerationSpecifications = observer(
       editorStore.graphManagerState.graph.ownFileGenerations;
     const fileGenerationsOptions = fileGenerationInGraph
       .filter((f) => !fileGenerations.includes(f))
-      .map(
-        buildElementOption,
-      ) as PackageableElementOption<FileGenerationSpecification>[];
+      .map(buildElementOption);
     const addFileGeneration = (): void => {
       const option = getNullableFirstElement(fileGenerationsOptions);
       if (option) {

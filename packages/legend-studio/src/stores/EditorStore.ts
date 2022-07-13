@@ -86,10 +86,6 @@ import {
   NonBlockingDialogState,
   PanelDisplayState,
 } from '@finos/legend-art';
-import {
-  type PackageableElementOption,
-  buildElementOption,
-} from './shared/PackageableElementOptionUtil.js';
 import type { DSL_LegendStudioPlugin_Extension } from './LegendStudioPlugin.js';
 import type { Entity } from '@finos/legend-model-storage';
 import {
@@ -132,6 +128,8 @@ import {
   ActionAlertType,
   APPLICATION_EVENT,
   TAB_SIZE,
+  buildElementOption,
+  type PackageableElementOption,
 } from '@finos/legend-application';
 import { LEGEND_STUDIO_APP_EVENT } from './LegendStudioAppEvent.js';
 import type { LegendStudioConfig } from '../application/LegendStudioConfig.js';
@@ -1351,9 +1349,7 @@ export class EditorStore {
   get enumerationOptions(): PackageableElementOption<Enumeration>[] {
     return this.graphManagerState.graph.ownEnumerations
       .concat(this.graphManagerState.graph.dependencyManager.enumerations)
-      .map(
-        (e) => buildElementOption(e) as PackageableElementOption<Enumeration>,
-      );
+      .map(buildElementOption);
   }
 
   get classOptions(): PackageableElementOption<Class>[] {
@@ -1364,7 +1360,7 @@ export class EditorStore {
         ),
       )
       .concat(this.graphManagerState.graph.dependencyManager.classes)
-      .map((e) => buildElementOption(e) as PackageableElementOption<Class>);
+      .map(buildElementOption);
   }
 
   get associationOptions(): PackageableElementOption<Association>[] {
@@ -1375,9 +1371,7 @@ export class EditorStore {
         ),
       )
       .concat(this.graphManagerState.graph.dependencyManager.associations)
-      .map(
-        (e) => buildElementOption(e) as PackageableElementOption<Association>,
-      );
+      .map(buildElementOption);
   }
 
   get profileOptions(): PackageableElementOption<Profile>[] {
@@ -1388,13 +1382,13 @@ export class EditorStore {
         ),
       )
       .concat(this.graphManagerState.graph.dependencyManager.profiles)
-      .map((e) => buildElementOption(e) as PackageableElementOption<Profile>);
+      .map(buildElementOption);
   }
 
   get classPropertyGenericTypeOptions(): PackageableElementOption<Type>[] {
     return this.graphManagerState.graph.primitiveTypes
       .filter((p) => p.path !== PRIMITIVE_TYPE.LATESTDATE)
-      .map((e) => buildElementOption(e) as PackageableElementOption<Type>)
+      .map(buildElementOption)
       .concat(
         this.graphManagerState.graph.ownTypes
           .concat(
@@ -1403,43 +1397,38 @@ export class EditorStore {
             ),
           )
           .concat(this.graphManagerState.graph.dependencyManager.types)
-          .map((e) => buildElementOption(e) as PackageableElementOption<Type>),
+          .map(buildElementOption),
       );
   }
 
   get mappingOptions(): PackageableElementOption<Mapping>[] {
     return this.graphManagerState.graph.ownMappings
       .concat(this.graphManagerState.graph.dependencyManager.mappings)
-      .map((e) => buildElementOption(e) as PackageableElementOption<Mapping>);
+      .map(buildElementOption);
   }
 
   get runtimeOptions(): PackageableElementOption<PackageableRuntime>[] {
     return this.graphManagerState.graph.ownRuntimes
       .concat(this.graphManagerState.graph.dependencyManager.runtimes)
-      .map(
-        (e) =>
-          buildElementOption(e) as PackageableElementOption<PackageableRuntime>,
-      );
+      .map(buildElementOption);
   }
 
   get serviceOptions(): PackageableElementOption<Service>[] {
     return this.graphManagerState.graph.ownServices
       .concat(this.graphManagerState.graph.dependencyManager.services)
-      .map((e) => buildElementOption(e) as PackageableElementOption<Service>);
+      .map(buildElementOption);
   }
 
   get storeOptions(): PackageableElementOption<Store>[] {
     return this.graphManagerState.graph.ownStores
       .concat(this.graphManagerState.graph.dependencyManager.stores)
-      .map((e) => buildElementOption(e) as PackageableElementOption<Store>);
+      .map(buildElementOption);
   }
 
   get dataOptions(): PackageableElementOption<DataElement>[] {
     return this.graphManagerState.graph.ownDataElements
       .concat(this.graphManagerState.graph.dependencyManager.dataElements)
-      .map(
-        (e) => buildElementOption(e) as PackageableElementOption<DataElement>,
-      );
+      .map(buildElementOption);
   }
 
   getSupportedElementTypes(): string[] {

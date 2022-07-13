@@ -47,10 +47,6 @@ import {
   MappingElementDecorator,
   MappingElementDecorationCleaner,
 } from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementDecorator.js';
-import {
-  buildElementOption,
-  type PackageableElementOption,
-} from '../../../../stores/shared/PackageableElementOptionUtil.js';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
   PRIMITIVE_TYPE,
@@ -69,6 +65,10 @@ import {
   enumValueMapping_deleteSourceValue,
   enumValueMapping_updateSourceValue,
 } from '../../../../stores/graphModifier/DSLMapping_GraphModifierHelper.js';
+import {
+  buildElementOption,
+  type PackageableElementOption,
+} from '@finos/legend-application';
 
 const EnumerationMappingSourceSelectorModal = observer(
   (props: {

@@ -42,7 +42,6 @@ import {
 import { LEGEND_STUDIO_TEST_ID } from '../../LegendStudioTestID.js';
 import { StereotypeSelector } from './uml-editor/StereotypeSelector.js';
 import { TaggedValueEditor } from './uml-editor/TaggedValueEditor.js';
-import type { PackageableElementOption } from '../../../stores/shared/PackageableElementOptionUtil.js';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../EditorStoreProvider.js';
 import {
@@ -67,6 +66,7 @@ import {
   stub_RawVariableExpression,
 } from '@finos/legend-graph';
 import {
+  PackageableElementOption,
   useApplicationNavigationContext,
   useApplicationStore,
 } from '@finos/legend-application';

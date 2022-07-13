@@ -48,7 +48,6 @@ import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID.js';
 import { StereotypeSelector } from './StereotypeSelector.js';
 import { TaggedValueEditor } from './TaggedValueEditor.js';
 import { PropertyEditor } from './PropertyEditor.js';
-import type { PackageableElementOption } from '../../../../stores/shared/PackageableElementOptionUtil.js';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
   type Association,
@@ -83,7 +82,10 @@ import {
   CLASS_PROPERTY_TYPE,
   getClassPropertyType,
 } from '../../../../stores/shared/ModelUtil.js';
-import { useApplicationNavigationContext } from '@finos/legend-application';
+import {
+  useApplicationNavigationContext,
+  type PackageableElementOption,
+} from '@finos/legend-application';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../stores/LegendStudioApplicationNavigationContext.js';
 
 const AssociationPropertyBasicEditor = observer(

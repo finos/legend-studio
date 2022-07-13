@@ -81,7 +81,6 @@ import {
 import type { LegendQueryPluginManager } from '../application/LegendQueryPluginManager.js';
 import type { LegendQueryConfig } from '../application/LegendQueryConfig.js';
 import { LegendQueryEventService } from './LegendQueryEventService.js';
-import { getQueryBuilderGraphManagerExtension } from '../graphManager/protocol/QueryBuilder_PureGraphManagerExtension.js';
 
 export abstract class QueryInfoState {
   queryStore: LegendQueryStore;
@@ -790,64 +789,6 @@ export class LegendQueryStore {
       GraphManagerTelemetry.logEvent_GraphInitialized(
         this.applicationStore.telemetryService,
         graphBuilderReportData,
-      );
-
-      this.buildGraphState.pass();
-    } catch (error) {
-      assertErrorThrown(error);
-      this.applicationStore.log.error(
-        LogEvent.create(LEGEND_QUERY_APP_EVENT.QUERY_PROBLEM),
-        error,
-      );
-      this.applicationStore.notifyError(error);
-      this.buildGraphState.fail();
-    }
-  }
-
-  *buildGraphForCreateQuerySetup(
-    project: ProjectData,
-    versionId: string,
-    options?: { quiet?: boolean },
-  ): GeneratorFn<void> {
-    try {
-      this.buildGraphState.inProgress();
-      const stopWatch = new StopWatch();
-
-      // reset
-      this.graphManagerState.resetGraph();
-
-      // fetch entities
-      stopWatch.record();
-      this.buildGraphState.setMessage(`Fetching entities...`);
-      const entities = (yield this.depotServerClient.getEntities(
-        project,
-        versionId,
-      )) as Entity[];
-      this.buildGraphState.setMessage(undefined);
-      stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_ENTITIES_FETCHED);
-
-      // fetch and build dependencies
-      stopWatch.record();
-      const dependencyManager =
-        this.graphManagerState.createEmptyDependencyManager();
-      this.graphManagerState.dependenciesBuildState.setMessage(
-        `Fetching dependencies...`,
-      );
-      const dependencyEntitiesIndex = (yield flowResult(
-        this.depotServerClient.getIndexedDependencyEntities(project, versionId),
-      )) as Map<string, Entity[]>;
-      stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED);
-      this.graphManagerState.graph.dependencyManager = dependencyManager;
-
-      // build light create query graph
-      yield flowResult(
-        getQueryBuilderGraphManagerExtension(
-          this.graphManagerState.graphManager,
-        ).buildGraphForCreateQuerySetup(
-          this.graphManagerState.graph,
-          entities,
-          dependencyEntitiesIndex,
-        ),
       );
 
       this.buildGraphState.pass();

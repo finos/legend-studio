@@ -29,7 +29,11 @@ import {
   UserIcon,
   QuestionCircleIcon,
 } from '@finos/legend-art';
-import { debounce, isNonNullable } from '@finos/legend-shared';
+import {
+  debounce,
+  getNullableFirstElement,
+  isNonNullable,
+} from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
@@ -295,8 +299,8 @@ const ServiceQuerySetup = observer(
             querySetupState.currentProject.groupId,
             querySetupState.currentProject.artifactId,
             querySetupState.currentVersionId,
-            querySetupState.currentServiceExecutionOption.value.path,
-            querySetupState.currentServiceExecutionOption.value.key,
+            querySetupState.currentServiceExecutionOption.service.path,
+            querySetupState.currentServiceExecutionOption.key,
           ),
         );
       }
@@ -305,7 +309,6 @@ const ServiceQuerySetup = observer(
     const canProceed =
       querySetupState.currentProject &&
       querySetupState.currentVersionId &&
-      queryStore.buildGraphState.hasSucceeded &&
       querySetupState.currentServiceExecutionOption;
 
     // project
@@ -368,16 +371,34 @@ const ServiceQuerySetup = observer(
     };
 
     // service and key
-    const serviceExecutionOptions = querySetupState.serviceExecutionOptions;
+    const serviceExecutionOptions = querySetupState.serviceExecutionOptions.map(
+      (option) => ({
+        label: `${option.service.name}${option.key ? ` [${option.key}]` : ''}`,
+        value: option,
+      }),
+    );
     const selectedServiceExecutionOption =
-      querySetupState.currentServiceExecutionOption ?? null;
+      querySetupState.currentServiceExecutionOption
+        ? {
+            label: `${
+              querySetupState.currentServiceExecutionOption.service.name
+            }${
+              querySetupState.currentServiceExecutionOption.key
+                ? ` [${querySetupState.currentServiceExecutionOption.key}]`
+                : ''
+            }`,
+            value: querySetupState.currentServiceExecutionOption,
+          }
+        : null;
     const serviceExecutionSelectorPlaceholder = serviceExecutionOptions.length
       ? 'Choose a service'
       : 'No service available';
     const onServiceExecutionOptionChange = (
-      option: ServiceExecutionOption | null,
+      option: { value: ServiceExecutionOption } | null,
     ): void => {
-      querySetupState.setCurrentServiceExecutionOption(option ?? undefined);
+      querySetupState.setCurrentServiceExecutionOption(
+        option?.value ?? undefined,
+      );
     };
 
     useEffect(() => {
@@ -530,7 +551,6 @@ const CreateQuerySetup = observer(
     const canProceed =
       querySetupState.currentProject &&
       querySetupState.currentVersionId &&
-      queryStore.buildGraphState.hasSucceeded &&
       querySetupState.currentMapping &&
       querySetupState.currentRuntime;
 
@@ -586,23 +606,22 @@ const CreateQuerySetup = observer(
           querySetupState.currentVersionId
         ) {
           await flowResult(
-            queryStore.buildGraphForCreateQuerySetup(
+            querySetupState.surveyMappingRuntimeCompatibility(
               querySetupState.currentProject,
               querySetupState.currentVersionId,
             ),
           ).catch(applicationStore.alertUnhandledError);
-
-          querySetupState.setMappingOptions(
-            querySetupState.queryStore.queryBuilderState.mappings.map(
-              (e) => buildElementOption(e) as PackageableElementOption<Mapping>,
-            ),
-          );
         }
       }
     };
 
     // mapping
-    const mappingOptions = querySetupState.mappingOptions;
+    const mappingRuntimeCompatibilitySurveyResult =
+      querySetupState.mappingRuntimeCompatibilitySurveyResult;
+    const mappingOptions =
+      mappingRuntimeCompatibilitySurveyResult?.map((result) =>
+        buildElementOption(result.mapping),
+      ) ?? [];
     const selectedMappingOption = querySetupState.currentMapping
       ? {
           label: querySetupState.currentMapping.name,
@@ -617,22 +636,21 @@ const CreateQuerySetup = observer(
     ): void => {
       querySetupState.setCurrentMapping(option?.value);
       // cascade
-      if (querySetupState.currentMapping) {
-        if (querySetupState.runtimeOptions.length) {
-          querySetupState.setCurrentRuntime(
-            (
-              querySetupState
-                .runtimeOptions[0] as PackageableElementOption<PackageableRuntime>
-            ).value,
-          );
-        }
+      if (
+        querySetupState.currentMapping &&
+        querySetupState.mappingRuntimeCompatibilitySurveyResult
+      ) {
+        querySetupState.setCurrentRuntime(
+          getNullableFirstElement(querySetupState.compatibleRuntimes ?? []),
+        );
       } else {
         querySetupState.setCurrentRuntime(undefined);
       }
     };
 
     // runtime
-    const runtimeOptions = querySetupState.runtimeOptions;
+    const runtimeOptions =
+      querySetupState.compatibleRuntimes.map(buildElementOption);
     const selectedRuntimeOption = querySetupState.currentRuntime
       ? {
           label: querySetupState.currentRuntime.name,
@@ -718,38 +736,32 @@ const CreateQuerySetup = observer(
           <div className="query-setup__create-query__graph">
             {(!querySetupState.currentProject ||
               !querySetupState.currentVersionId ||
-              !queryStore.buildGraphState.hasSucceeded) && (
+              !querySetupState.surveyMappingRuntimeCompatibilityState
+                .hasSucceeded) && (
               <div className="query-setup__create-query__graph__loader">
                 <PanelLoadingIndicator
                   isLoading={
                     Boolean(querySetupState.currentProject) &&
                     Boolean(querySetupState.currentVersionId) &&
-                    !queryStore.buildGraphState.hasSucceeded
+                    !querySetupState.surveyMappingRuntimeCompatibilityState
+                      .hasSucceeded
                   }
                 />
-                {queryStore.buildGraphState.isInProgress && (
-                  <BlankPanelContent>
-                    {queryStore.buildGraphState.message ??
-                      queryStore.graphManagerState.systemBuildState.message ??
-                      queryStore.graphManagerState.dependenciesBuildState
-                        .message ??
-                      queryStore.graphManagerState.generationsBuildState
-                        .message ??
-                      queryStore.graphManagerState.graphBuildState.message}
-                  </BlankPanelContent>
-                )}
-                {!queryStore.buildGraphState.isInProgress && (
-                  <BlankPanelContent>
-                    {queryStore.buildGraphState.hasFailed
-                      ? `Can't build graph`
-                      : 'Project and version must be specified'}
-                  </BlankPanelContent>
-                )}
+                <BlankPanelContent>
+                  {querySetupState.surveyMappingRuntimeCompatibilityState
+                    .isInProgress
+                    ? `Surveying runtime and mapping compatibility...`
+                    : querySetupState.surveyMappingRuntimeCompatibilityState
+                        .hasFailed
+                    ? `Can't load runtime and mapping`
+                    : 'Project and version must be specified'}
+                </BlankPanelContent>
               </div>
             )}
             {querySetupState.currentProject &&
               querySetupState.currentVersionId &&
-              queryStore.buildGraphState.hasSucceeded && (
+              querySetupState.surveyMappingRuntimeCompatibilityState
+                .hasSucceeded && (
                 <>
                   <div className="query-setup__wizard__group">
                     <div className="query-setup__wizard__group__title">

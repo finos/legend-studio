@@ -277,9 +277,7 @@ export class V1_QueryBuilder_PureGraphManagerExtension extends QueryBuilder_Pure
         const service = graph.getNullableService(protocol.path);
         if (service) {
           const serviceAnalysisResult = new ServiceExecutionAnalysisResult();
-          serviceAnalysisResult.name = protocol.name;
-          serviceAnalysisResult.package = protocol.package;
-          serviceAnalysisResult.path = protocol.path;
+          serviceAnalysisResult.service = service;
           if (protocol.execution instanceof V1_PureMultiExecution) {
             serviceAnalysisResult.executionKeys =
               protocol.execution.executionParameters.map((param) => param.key);

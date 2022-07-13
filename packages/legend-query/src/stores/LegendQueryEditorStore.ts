@@ -180,10 +180,7 @@ export class CreateQuerySetupState extends QuerySetupState {
       return [];
     }
     return this.queryStore.queryBuilderState.runtimes
-      .map(
-        (e) =>
-          buildElementOption(e) as PackageableElementOption<PackageableRuntime>,
-      )
+      .map(buildElementOption)
       .filter((runtime) =>
         runtime.value.runtimeValue.mappings
           .map((mappingReference) => [

@@ -21,9 +21,9 @@ export interface PackageableElementOption<T extends PackageableElement> {
   value: T;
 }
 
-export const buildElementOption = (
-  element: PackageableElement,
-): PackageableElementOption<PackageableElement> => ({
+export const buildElementOption = <T extends PackageableElement>(
+  element: T,
+): PackageableElementOption<T> => ({
   label: element.name,
   value: element,
 });

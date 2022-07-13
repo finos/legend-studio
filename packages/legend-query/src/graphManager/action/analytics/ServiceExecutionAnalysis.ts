@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
+import type { Service } from '@finos/legend-graph';
+
 export class ServiceExecutionAnalysisResult {
-  name!: string;
-  package!: string;
-  path!: string;
+  service!: Service;
   executionKeys?: string[] | undefined;
 }

@@ -15,10 +15,7 @@
  */
 
 import { action, flow, makeObservable, observable } from 'mobx';
-import type {
-  EditorStore,
-  PackageableElementOption,
-} from '@finos/legend-studio';
+import type { EditorStore } from '@finos/legend-studio';
 import type {
   Mapping,
   ModelGenerationConfiguration,
@@ -30,6 +27,7 @@ import {
   type GeneratorFn,
 } from '@finos/legend-shared';
 import type { Entity } from '@finos/legend-model-storage';
+import type { PackageableElementOption } from '@finos/legend-application';
 
 const MAPPING_GENERATION_LOG_EVENT_TYPE = 'MAPPING_GENERATION_FAILURE';
 export class MappingGenerationEditorState {

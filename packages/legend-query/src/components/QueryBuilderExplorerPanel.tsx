@@ -940,8 +940,7 @@ export const QueryBuilderExplorerPanel = observer(
               </BlankPanelContent>
             ) : (
               <BlankPanelContent>
-                Specify the class, mapping, and connection to start building
-                query
+                Specify the class, mapping, and runtime to start building query
               </BlankPanelContent>
             ))}
           {explorerState.treeData &&

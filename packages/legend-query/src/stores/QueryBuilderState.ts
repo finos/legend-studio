@@ -550,15 +550,13 @@ export class QueryBuilderState {
         ),
       )
       .concat(this.graphManagerState.graph.dependencyManager.classes)
-      .map((e) => buildElementOption(e) as PackageableElementOption<Class>);
+      .map(buildElementOption);
   }
 
   get enumerationOptions(): PackageableElementOption<Enumeration>[] {
     return this.graphManagerState.graph.ownEnumerations
       .concat(this.graphManagerState.graph.dependencyManager.enumerations)
-      .map(
-        (e) => buildElementOption(e) as PackageableElementOption<Enumeration>,
-      );
+      .map(buildElementOption);
   }
 
   get mappings(): Mapping[] {

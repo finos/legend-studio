@@ -92,7 +92,7 @@ const VariableExpressionEditor = observer(
     const selectedType = buildElementOption(variableType);
     const typeOptions: PackageableElementOption<Type>[] =
       queryBuilderState.graphManagerState.graph.primitiveTypes
-        .map((p) => buildElementOption(p) as PackageableElementOption<Type>)
+        .map(buildElementOption)
         .concat(queryBuilderState.enumerationOptions);
     const changeType = (val: PackageableElementOption<Type>): void => {
       if (variableType !== val.value) {

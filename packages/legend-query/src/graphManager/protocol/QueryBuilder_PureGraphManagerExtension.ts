@@ -25,12 +25,6 @@ import type { MappingRuntimeCompatibilityAnalysisResult } from '../action/analyt
 import type { ServiceExecutionAnalysisResult } from '../action/analytics/ServiceExecutionAnalysis.js';
 
 export abstract class QueryBuilder_PureGraphManagerExtension extends AbstractPureGraphManagerExtension {
-  abstract buildGraphForCreateQuerySetup(
-    graph: PureModel,
-    entities: Entity[],
-    dependencyEntitiesIndex: Map<string, Entity[]>,
-  ): Promise<void>;
-
   abstract surveyMappingRuntimeCompatibility(
     graph: PureModel,
     entities: Entity[],
