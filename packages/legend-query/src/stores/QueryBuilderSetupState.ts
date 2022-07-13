@@ -18,7 +18,6 @@ import { action, flow, flowResult, makeAutoObservable, observable } from 'mobx';
 import {
   type GeneratorFn,
   getNullableFirstElement,
-  isNonNullable,
   uniq,
   assertErrorThrown,
   guaranteeNonNullable,
@@ -46,12 +45,13 @@ export class QueryBuilderSetupState {
   _class?: Class | undefined;
   mapping?: Mapping | undefined;
   mappingModelCoverageAnalysisResult?: MappingModelCoverageAnalysisResult;
-  runtime?: Runtime | undefined;
+  runtimeValue?: Runtime | undefined;
   mappingIsReadOnly = false;
   runtimeIsReadOnly = false;
   showSetupPanel = true;
 
   // TODO: Change this when we modify how we deal with milestoning.
+  // See https://github.com/finos/legend-studio/issues/1149
   businessDate?: ValueSpecification | undefined;
   processingDate?: ValueSpecification | undefined;
 
@@ -64,7 +64,7 @@ export class QueryBuilderSetupState {
       setQueryBuilderState: action,
       setClass: action,
       setMapping: action,
-      setRuntime: action,
+      setRuntimeValue: action,
       setProcessingDate: action,
       setBusinessDate: action,
       setShowSetupPanel: action,
@@ -109,49 +109,64 @@ export class QueryBuilderSetupState {
     }
   }
 
-  get possibleMappings(): Mapping[] {
-    const mappingsWithClassMapped = this.queryBuilderState.mappings.filter(
-      (mapping) =>
-        mapping.classMappings.some((cm) => cm.class.value === this._class),
-    );
-    const resolvedMappingIncludes = this.queryBuilderState.mappings.filter(
-      (mapping) =>
-        getAllIncludedMappings(mapping).some((e) =>
-          mappingsWithClassMapped.includes(e),
+  get classes(): Class[] {
+    return this.queryBuilderState.graphManagerState.graph.ownClasses
+      .concat(
+        this.queryBuilderState.graphManagerState.filterSystemElementOptions(
+          this.queryBuilderState.graphManagerState.graph.systemModel.ownClasses,
         ),
+      )
+      .concat(
+        this.queryBuilderState.graphManagerState.graph.dependencyManager
+          .classes,
+      );
+  }
+
+  get mappings(): Mapping[] {
+    return this.queryBuilderState.graphManagerState.graph.mappings;
+  }
+
+  get runtimes(): PackageableRuntime[] {
+    return this.queryBuilderState.graphManagerState.graph.runtimes;
+  }
+
+  private get compatibleMappings(): Mapping[] {
+    const mappingsWithClassMapped = this.mappings.filter((mapping) =>
+      mapping.classMappings.some((cm) => cm.class.value === this._class),
+    );
+    const resolvedMappingIncludes = this.mappings.filter((mapping) =>
+      getAllIncludedMappings(mapping).some((e) =>
+        mappingsWithClassMapped.includes(e),
+      ),
     );
     return this._class
       ? uniq([...mappingsWithClassMapped, ...resolvedMappingIncludes])
       : [];
   }
 
-  get possibleRuntimes(): PackageableRuntime[] {
-    return this._class && this.mapping
-      ? this.queryBuilderState.runtimes
-          .map((packageableRuntime) =>
-            packageableRuntime.runtimeValue.mappings.some((mapping) =>
-              this.possibleMappings.includes(mapping.value),
-            )
-              ? packageableRuntime
-              : undefined,
-          )
-          .filter(isNonNullable)
+  get compatibleRuntimes(): PackageableRuntime[] {
+    const mapping = this.mapping;
+    // If the runtime claims to cover some mappings which include the specified mapping,
+    // then we deem the runtime to be compatible with the such mapping
+    return mapping
+      ? this.runtimes.filter((runtime) =>
+          runtime.runtimeValue.mappings
+            .map((mappingReference) => [
+              mappingReference.value,
+              ...getAllIncludedMappings(mappingReference.value),
+            ])
+            .flat()
+            .includes(mapping),
+        )
       : [];
-  }
-
-  get isMappingCompatible(): boolean {
-    if (this.mapping && this._class) {
-      return this.possibleMappings.includes(this.mapping);
-    }
-    return false;
   }
 
   setQueryBuilderState(queryBuilderState: QueryBuilderState): void {
     this.queryBuilderState = queryBuilderState;
   }
-  setRuntime(val: Runtime | undefined): void {
+  setRuntimeValue(val: Runtime | undefined): void {
     if (!this.runtimeIsReadOnly) {
-      this.runtime = val;
+      this.runtimeValue = val;
     }
   }
   setShowSetupPanel(val: boolean): void {
@@ -167,8 +182,9 @@ export class QueryBuilderSetupState {
   setClass(val: Class | undefined, isRebuildingState?: boolean): void {
     this._class = val;
     const isMappingEditable = !isRebuildingState && !this.mappingIsReadOnly;
-    if (isMappingEditable && !this.isMappingCompatible) {
-      const possibleMapping = getNullableFirstElement(this.possibleMappings);
+    if (isMappingEditable) {
+      // try to select the first compatible mapping
+      const possibleMapping = getNullableFirstElement(this.compatibleMappings);
       if (possibleMapping) {
         this.setMapping(possibleMapping);
       }
@@ -188,16 +204,16 @@ export class QueryBuilderSetupState {
 
   setMapping(val: Mapping | undefined): void {
     this.mapping = val;
-    const runtimeToPick = getNullableFirstElement(this.possibleRuntimes);
+    const runtimeToPick = getNullableFirstElement(this.compatibleRuntimes);
     if (runtimeToPick) {
-      this.setRuntime(
+      this.setRuntimeValue(
         new RuntimePointer(
           PackageableElementExplicitReference.create(runtimeToPick),
         ),
       );
     } else {
-      // TODO?: we should consider if we allow people to use custom runtime here
-      this.setRuntime(undefined);
+      // TODO?: we should consider if we allow users to use custom runtime here
+      this.setRuntimeValue(undefined);
     }
   }
 

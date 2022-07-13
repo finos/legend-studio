@@ -43,10 +43,7 @@ import {
 import { QueryBuilderUnsupportedState } from './QueryBuilderUnsupportedState.js';
 import {
   type Class,
-  type Enumeration,
   type GraphManagerState,
-  type Mapping,
-  type PackageableRuntime,
   type ValueSpecification,
   GenericTypeExplicitReference,
   GenericType,
@@ -94,11 +91,9 @@ import {
 } from './filterOperators/QueryBuilderFilterOperator_In.js';
 import { buildLambdaFunction } from './QueryBuilderLambdaBuilder.js';
 import {
-  buildElementOption,
   LambdaParameterState,
   type ApplicationStore,
   type LegendApplicationConfig,
-  type PackageableElementOption,
 } from '@finos/legend-application';
 import { QueryBuilderPostFilterState } from './QueryBuilderPostFilterState.js';
 import {
@@ -540,34 +535,5 @@ export class QueryBuilderState {
     if (!treeData) {
       this.fetchStructureState.graphFetchTreeState.initialize();
     }
-  }
-
-  get classOptions(): PackageableElementOption<Class>[] {
-    return this.graphManagerState.graph.ownClasses
-      .concat(
-        this.graphManagerState.filterSystemElementOptions(
-          this.graphManagerState.graph.systemModel.ownClasses,
-        ),
-      )
-      .concat(this.graphManagerState.graph.dependencyManager.classes)
-      .map(buildElementOption);
-  }
-
-  get enumerationOptions(): PackageableElementOption<Enumeration>[] {
-    return this.graphManagerState.graph.ownEnumerations
-      .concat(this.graphManagerState.graph.dependencyManager.enumerations)
-      .map(buildElementOption);
-  }
-
-  get mappings(): Mapping[] {
-    return this.graphManagerState.graph.ownMappings.concat(
-      this.graphManagerState.graph.dependencyManager.mappings,
-    );
-  }
-
-  get runtimes(): PackageableRuntime[] {
-    return this.graphManagerState.graph.ownRuntimes.concat(
-      this.graphManagerState.graph.dependencyManager.runtimes,
-    );
   }
 }

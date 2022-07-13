@@ -252,7 +252,7 @@ export class QueryExportState {
       !this.persistQueryState.isInProgress &&
       Boolean(this.queryStore.queryInfoState) &&
       Boolean(this.queryStore.queryBuilderState.querySetupState.mapping) &&
-      this.queryStore.queryBuilderState.querySetupState.runtime instanceof
+      this.queryStore.queryBuilderState.querySetupState.runtimeValue instanceof
         RuntimePointer
     );
   }
@@ -262,8 +262,8 @@ export class QueryExportState {
       !this.queryStore.queryInfoState ||
       !this.queryStore.queryBuilderState.querySetupState.mapping ||
       !(
-        this.queryStore.queryBuilderState.querySetupState.runtime instanceof
-        RuntimePointer
+        this.queryStore.queryBuilderState.querySetupState
+          .runtimeValue instanceof RuntimePointer
       )
     ) {
       return;
@@ -275,7 +275,7 @@ export class QueryExportState {
       this.queryStore.queryBuilderState.querySetupState.mapping,
     );
     query.runtime =
-      this.queryStore.queryBuilderState.querySetupState.runtime.packageableRuntime;
+      this.queryStore.queryBuilderState.querySetupState.runtimeValue.packageableRuntime;
     this.queryStore.queryInfoState.decorateQuery(query);
     try {
       query.content =
@@ -446,7 +446,7 @@ export class LegendQueryStore {
         this.graphManagerState.graph,
       )) as Query;
       this.queryBuilderState.querySetupState.mapping = query.mapping.value;
-      this.queryBuilderState.querySetupState.runtime = new RuntimePointer(
+      this.queryBuilderState.querySetupState.runtimeValue = new RuntimePointer(
         PackageableElementExplicitReference.create(query.runtime.value),
       );
       this.queryBuilderState.querySetupState.setMappingIsReadOnly(true);
@@ -537,7 +537,7 @@ export class LegendQueryStore {
         );
         this.queryBuilderState.querySetupState.mapping =
           serviceExecution.mapping.value;
-        this.queryBuilderState.querySetupState.runtime =
+        this.queryBuilderState.querySetupState.runtimeValue =
           serviceExecution.runtime;
       } else {
         assertType(
@@ -547,7 +547,7 @@ export class LegendQueryStore {
         );
         this.queryBuilderState.querySetupState.mapping =
           queryInfoState.service.execution.mapping.value;
-        this.queryBuilderState.querySetupState.runtime =
+        this.queryBuilderState.querySetupState.runtimeValue =
           queryInfoState.service.execution.runtime;
       }
       this.queryBuilderState.querySetupState.setMappingIsReadOnly(true);
@@ -622,7 +622,7 @@ export class LegendQueryStore {
         this.setQueryInfoState(queryInfoState);
       }
       this.queryBuilderState.querySetupState.mapping = queryInfoState.mapping;
-      this.queryBuilderState.querySetupState.runtime = new RuntimePointer(
+      this.queryBuilderState.querySetupState.runtimeValue = new RuntimePointer(
         PackageableElementExplicitReference.create(queryInfoState.runtime),
       );
       if (classPath) {

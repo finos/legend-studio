@@ -285,10 +285,10 @@ export const CreateQueryLoader = observer(() => {
   const params = useParams<CreateQueryPathParams>();
   const currentMapping = queryStore.queryBuilderState.querySetupState.mapping;
   const currentRuntime =
-    queryStore.queryBuilderState.querySetupState.runtime instanceof
+    queryStore.queryBuilderState.querySetupState.runtimeValue instanceof
     RuntimePointer
-      ? queryStore.queryBuilderState.querySetupState.runtime.packageableRuntime
-          .value
+      ? queryStore.queryBuilderState.querySetupState.runtimeValue
+          .packageableRuntime.value
       : undefined;
 
   useEffect(() => {

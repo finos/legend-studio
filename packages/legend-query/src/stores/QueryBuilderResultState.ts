@@ -128,7 +128,7 @@ export class QueryBuilderResultState {
         'Mapping is required to execute query',
       );
       const runtime = guaranteeNonNullable(
-        this.queryBuilderState.querySetupState.runtime,
+        this.queryBuilderState.querySetupState.runtimeValue,
         `Runtime is required to execute query`,
       );
       const query = this.buildExecutionRawLambda();
@@ -180,7 +180,7 @@ export class QueryBuilderResultState {
         'Mapping is required to execute query',
       );
       const runtime = guaranteeNonNullable(
-        this.queryBuilderState.querySetupState.runtime,
+        this.queryBuilderState.querySetupState.runtimeValue,
         `Runtime is required to execute query`,
       );
       const query = this.buildExecutionRawLambda();
@@ -214,7 +214,7 @@ export class QueryBuilderResultState {
         'Mapping is required to execute query',
       );
       const runtime = guaranteeNonNullable(
-        this.queryBuilderState.querySetupState.runtime,
+        this.queryBuilderState.querySetupState.runtimeValue,
         `Runtime is required to execute query`,
       );
       const query = this.queryBuilderState.getQuery();

@@ -483,11 +483,7 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
       dragPreviewConnector(getEmptyImage(), { captureDraggingState: true });
     }, [dragPreviewConnector]);
 
-    if (
-      !node.mappingData.mapped &&
-      !explorerState.showUnmappedProperties &&
-      queryBuilderState.querySetupState.isMappingCompatible
-    ) {
+    if (!node.mappingData.mapped && !explorerState.showUnmappedProperties) {
       return null;
     }
     return (
@@ -660,8 +656,7 @@ const QueryBuilderExplorerTreeNodeView = observer(
 
     if (
       !node.mappingData.mapped &&
-      !queryBuilderState.explorerState.showUnmappedProperties &&
-      queryBuilderState.querySetupState.isMappingCompatible
+      !queryBuilderState.explorerState.showUnmappedProperties
     ) {
       return null;
     }

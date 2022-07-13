@@ -45,6 +45,7 @@ import {
 import {
   type PackageableElementOption,
   getPackageableElementOptionalFormatter,
+  buildElementOption,
 } from '@finos/legend-application';
 import { MilestoningParametersEditor } from './QueryBuilderMilestoneEditor.js';
 import { useState } from 'react';
@@ -131,7 +132,7 @@ export const QueryBuilderSetupPanel = observer(
     });
     const isQuerySupported = queryBuilderState.isQuerySupported();
     // class
-    const classOptions = queryBuilderState.classOptions;
+    const classOptions = querySetupState.classes.map(buildElementOption);
     const selectedClassOption = querySetupState._class
       ? {
           value: querySetupState._class,
@@ -142,15 +143,9 @@ export const QueryBuilderSetupPanel = observer(
       queryBuilderState.changeClass(val.value);
     };
     // mapping
-    const mappingOptions = querySetupState.possibleMappings.map((mapping) => ({
-      value: mapping,
-      label: mapping.name,
-    }));
+    const mappingOptions = querySetupState.mappings.map(buildElementOption);
     const selectedMappingOption = querySetupState.mapping
-      ? {
-          value: querySetupState.mapping,
-          label: querySetupState.mapping.name,
-        }
+      ? buildElementOption(querySetupState.mapping)
       : null;
     const changeMapping = (val: PackageableElementOption<Mapping>): void => {
       if (querySetupState._class && !querySetupState.mappingIsReadOnly) {
@@ -160,7 +155,7 @@ export const QueryBuilderSetupPanel = observer(
       }
     };
     // runtime
-    const runtime = querySetupState.runtime;
+    const runtime = querySetupState.runtimeValue;
     const isRuntimePointer = runtime instanceof RuntimePointer;
     const customRuntimeLabel = (
       <div className="service-execution-editor__configuration__runtime-option--custom">
@@ -178,7 +173,7 @@ export const QueryBuilderSetupPanel = observer(
           value?: Runtime;
         }[]);
     runtimeOptions = runtimeOptions.concat(
-      querySetupState.possibleRuntimes.map((rt) => ({
+      querySetupState.compatibleRuntimes.map((rt) => ({
         value: new RuntimePointer(
           PackageableElementExplicitReference.create(rt),
         ),
@@ -197,7 +192,7 @@ export const QueryBuilderSetupPanel = observer(
       value?: Runtime;
     }): void => {
       if (val.value !== runtime) {
-        querySetupState.setRuntime(val.value);
+        querySetupState.setRuntimeValue(val.value);
       }
     };
     const runtimeFilterOption = createFilter({

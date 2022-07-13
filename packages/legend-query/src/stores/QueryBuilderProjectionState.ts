@@ -664,7 +664,7 @@ export class QueryBuilderProjectionState {
   *previewData(
     node: QueryBuilderExplorerTreePropertyNodeData,
   ): GeneratorFn<void> {
-    const runtime = this.queryBuilderState.querySetupState.runtime;
+    const runtime = this.queryBuilderState.querySetupState.runtimeValue;
     if (!runtime) {
       this.queryBuilderState.applicationStore.notifyWarning(
         `Can't preview data for property '${node.property.name}': runtime is not specified`,
