@@ -170,6 +170,7 @@ export {
   VscClose as CloseIcon,
   VscRunAll as RunAllIcon,
   VscRunErrors as RunErrorsIcon,
+  VscOpenPreview as OpenPreviewIcon
 } from 'react-icons/vsc';
 export {
   GoChevronDown as ChevronDownIcon,

@@ -108,14 +108,14 @@
   }
 
   &__preview-btn {
-    background: var(--color-blue-200);
-    color: var(--color-light-grey-0);
-    border-radius: 0.2rem;
-    width: 10rem;
+    color: var(--color-blue-400);
     cursor: pointer;
-    height: 2rem;
-    font-size: 1.2rem;
+    font-size: 1.8rem;
     margin: auto 0.5rem auto auto;
+
+    &__active {
+      color: var(--color-light-grey-100);
+    }
 
     &:hover {
       background: var(--color-blue-100);

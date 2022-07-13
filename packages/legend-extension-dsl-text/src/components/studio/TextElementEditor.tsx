@@ -20,6 +20,7 @@ import { prettyCONSTName } from '@finos/legend-shared';
 import { StudioTextInputEditor, useEditorStore } from '@finos/legend-studio';
 import { TextEditorState } from '../../stores/studio/TextEditorState.js';
 import {
+  OpenPreviewIcon,
   LockIcon,
   CaretDownIcon,
   DropdownMenu,
@@ -38,6 +39,7 @@ import {
 import {
   text_setContent,
   text_setType,
+  text_setPreview,
 } from '../../stores/studio/DSLText_GraphModifierHelper.js';
 import { TEXT_TYPE } from '../../helper/DSLText_Helper.js';
 import { DSL_TEXT_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../stores/studio/DSLText_LegendStudioApplicationNavigationContext.js';
@@ -60,6 +62,11 @@ export const TextElementEditor = observer(() => {
   const textElement = textEditorState.textElement;
   const isReadOnly = textEditorState.isReadOnly;
   const typeNameRef = useRef<HTMLInputElement>(null);
+  const [showPreview, setShowPreview] = useState(
+    textElement.preview ? true : false,
+  );
+  const isMarkdown = textElement.type === EDITOR_LANGUAGE.MARKDOWN;
+
   const changeType =
     (val: TEXT_TYPE): (() => void) =>
     (): void => {
@@ -67,8 +74,10 @@ export const TextElementEditor = observer(() => {
     };
   const changeContent = (val: string): void =>
     text_setContent(textElement, val);
-  const [previewState, setPreviewState] = useState(false);
-  const isMarkdown = textElement.type === EDITOR_LANGUAGE.MARKDOWN;
+  const changePreview = (val: boolean): void => {
+    setShowPreview(val);
+    text_setPreview(textElement, val);
+  };
 
   useEffect(() => {
     if (!isReadOnly) {
@@ -121,11 +130,13 @@ export const TextElementEditor = observer(() => {
           </DropdownMenu>
           {isMarkdown ? (
             <button
-              title={previewState ? `Hide Preview` : `Show Preview`}
-              className="text-element-editor__preview-btn btn--sm"
-              onClick={(): void => setPreviewState(!previewState)}
+              title={showPreview ? `Hide Preview` : `Show Preview`}
+              className={`text-element-editor__preview-btn ${
+                showPreview ? `text-element-editor__preview-btn__active` : ''
+              }`}
+              onClick={(): void => changePreview(!showPreview)}
             >
-              {previewState ? `Hide Preview` : `Show Preview`}
+              <OpenPreviewIcon />
             </button>
           ) : null}
         </div>
@@ -144,8 +155,8 @@ export const TextElementEditor = observer(() => {
             />
           </div>
         </ResizablePanel>
-        {isMarkdown && previewState && <ResizablePanelSplitter />}
-        {isMarkdown && previewState && (
+        {isMarkdown && showPreview && <ResizablePanelSplitter />}
+        {isMarkdown && showPreview && (
           <ResizablePanel>
             <div className="panel_content text-element-editor__preview">
               {MarkdownTextViewer({

@@ -24,6 +24,7 @@ import {
 export class Text extends PackageableElement implements Hashable {
   type?: string | undefined;
   content!: string;
+  preview?: boolean | undefined;
 
   protected override get _elementHashCode(): string {
     return hashArray([
@@ -31,6 +32,7 @@ export class Text extends PackageableElement implements Hashable {
       this.path,
       this.type ?? '',
       this.content,
+      this.preview ? 'true' : 'false',
     ]);
   }
 
