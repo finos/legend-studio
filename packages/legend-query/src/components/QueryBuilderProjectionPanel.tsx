@@ -73,6 +73,8 @@ import {
   QUERY_BUILDER_FUNCTIONS_EXPLORER_TREE_DND_TYPE,
 } from '../stores/QueryFunctionsExplorerState.js';
 import { DEFAULT_LAMBDA_VARIABLE_NAME } from '../QueryBuilder_Const.js';
+import { QueryBuilderPostFilterTreeConditionNodeData } from '../stores/QueryBuilderPostFilterState.js';
+import { filterByType } from '@finos/legend-shared';
 
 const ProjectionColumnDragLayer: React.FC = () => {
   const { itemType, item, isDragging, currentPosition } = useDragLayer(
@@ -284,6 +286,14 @@ const QueryBuilderProjectionColumnEditor = observer(
       projectionColumnState.projectionState.queryBuilderState;
     const projectionState =
       queryBuilderState.fetchStructureState.projectionState;
+
+    const isRemovalDisabled = Array.from(
+      queryBuilderState.postFilterState.nodes.values(),
+    )
+      .filter(filterByType(QueryBuilderPostFilterTreeConditionNodeData))
+      .map((n) => n.condition.columnState)
+      .includes(projectionColumnState);
+
     const removeColumn = (): void =>
       projectionState.removeColumn(projectionColumnState);
 
@@ -505,7 +515,12 @@ const QueryBuilderProjectionColumnEditor = observer(
                 className="query-builder__projection__column__action"
                 tabIndex={-1}
                 onClick={removeColumn}
-                title="Remove"
+                disabled={isRemovalDisabled}
+                title={
+                  isRemovalDisabled
+                    ? "This column is used in the post filter and can't be removed"
+                    : 'Remove'
+                }
               >
                 <TimesIcon />
               </button>
