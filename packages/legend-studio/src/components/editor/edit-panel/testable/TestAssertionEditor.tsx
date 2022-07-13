@@ -23,6 +23,7 @@ import {
   RefreshIcon,
   WrenchIcon,
 } from '@finos/legend-art';
+import { TestError } from '@finos/legend-graph';
 import {
   prettyCONSTName,
   tryToFormatLosslessJSONString,
@@ -147,6 +148,17 @@ const EqualToJsonAssertFailViewer = observer(
   },
 );
 
+const TestErrorViewer = observer((props: { testError: TestError }) => {
+  const { testError } = props;
+  return (
+    <>
+      <div className="testable-test-assertion-result__summary-info">
+        {testError.error}
+      </div>
+    </>
+  );
+});
+
 const AssertFailViewer = observer(
   (props: { assertFailState: AssertFailState }) => {
     const { assertFailState } = props;
@@ -211,6 +223,14 @@ const TestAssertionResultViewer = observer(
                 </div>
                 {statusState instanceof AssertFailState && (
                   <AssertFailViewer assertFailState={statusState} />
+                )}
+                {testAssertionEditorState.assertionResultState
+                  .testResult instanceof TestError && (
+                  <TestErrorViewer
+                    testError={
+                      testAssertionEditorState.assertionResultState.testResult
+                    }
+                  />
                 )}
               </>
             )}
