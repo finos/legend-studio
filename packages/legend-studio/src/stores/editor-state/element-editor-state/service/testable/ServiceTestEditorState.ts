@@ -48,19 +48,22 @@ import {
 } from '@finos/legend-shared';
 
 export enum SERIALIZATION_FORMAT {
-  DEFAULT = 'DEFAULT',
+  PURE = 'PURE',
+  // Temporary remove this option as it is currently not being read correctly.
+  // See https://github.com/finos/legend-engine/pull/799
+  // DEFAULT = 'DEFAULT',
   PURE_TDSOBJECT = 'PURE_TDSOBJECT',
 }
 
 export enum SERIALIZATION_FORMAT_LABEL {
-  DEFAULT = 'DEFAULT',
+  PURE = 'PURE',
   TDS = 'TDS',
 }
 
 const getSerializationFormatLabel = (val: string): string => {
   switch (val) {
-    case SERIALIZATION_FORMAT.DEFAULT:
-      return SERIALIZATION_FORMAT_LABEL.DEFAULT;
+    case SERIALIZATION_FORMAT.PURE:
+      return SERIALIZATION_FORMAT.PURE;
     case SERIALIZATION_FORMAT.PURE_TDSOBJECT:
       return SERIALIZATION_FORMAT_LABEL.TDS;
     default:
@@ -323,17 +326,11 @@ export class ServiceTestSetupState {
         label: getSerializationFormatLabel(test.serializationFormat),
       };
     }
-    return {
-      value: SERIALIZATION_FORMAT.DEFAULT,
-      label: SERIALIZATION_FORMAT.DEFAULT,
-    };
+    return undefined;
   }
 
   changeSerializationFormat(val: string | undefined): void {
-    service_setSerializationFormat(
-      this.testState.test,
-      val === SERIALIZATION_FORMAT.DEFAULT ? undefined : val,
-    );
+    service_setSerializationFormat(this.testState.test, val);
   }
 
   generateTestParameterValues(): void {

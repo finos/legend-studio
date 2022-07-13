@@ -48,7 +48,10 @@ import {
 import { createEmptyEqualToJsonAssertion } from '../../../../shared/testable/TestableUtils.js';
 import type { ServiceEditorState } from '../ServiceEditorState.js';
 import { ServiceTestDataState } from './ServiceTestDataState.js';
-import { ServiceTestState } from './ServiceTestEditorState.js';
+import {
+  SERIALIZATION_FORMAT,
+  ServiceTestState,
+} from './ServiceTestEditorState.js';
 
 const createEmptyServiceTestSuite = (service: Service): ServiceTestSuite => {
   const suite = new ServiceTestSuite();
@@ -58,6 +61,7 @@ const createEmptyServiceTestSuite = (service: Service): ServiceTestSuite => {
   );
   suite.testData = new TestData();
   const test = new ServiceTest();
+  test.serializationFormat = SERIALIZATION_FORMAT.PURE;
   test.id = generateEnumerableNameFromToken([], DEFAULT_TEST_PREFIX);
   test.__parent = suite;
   suite.tests = [test];
@@ -109,6 +113,7 @@ export class ServiceTestSuiteState {
 
   addServiceTest(): void {
     const test = new ServiceTest();
+    test.serializationFormat = SERIALIZATION_FORMAT.PURE;
     test.id = generateEnumerableNameFromToken(
       this.suite.tests.map((t) => t.id),
       DEFAULT_TEST_PREFIX,
