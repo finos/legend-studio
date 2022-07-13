@@ -287,7 +287,7 @@ const QueryBuilderProjectionColumnEditor = observer(
     const projectionState =
       queryBuilderState.fetchStructureState.projectionState;
 
-    const disableButton = Array.from(
+    const isRemovalDisabled = Array.from(
       queryBuilderState.postFilterState.nodes.values(),
     )
       .filter(filterByType(QueryBuilderPostFilterTreeConditionNodeData))
@@ -519,9 +519,9 @@ const QueryBuilderProjectionColumnEditor = observer(
                 className="query-builder__projection__column__action"
                 tabIndex={-1}
                 onClick={removeColumn}
-                disabled={disableButton}
+                disabled={isRemovalDisabled}
                 title={
-                  disableButton
+                  isRemovalDisabled
                     ? "This column is used in the post filter and can't be removed"
                     : 'Remove'
                 }
