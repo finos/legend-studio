@@ -1,5 +1,11 @@
 # @finos/legend-studio
 
+## 11.0.1
+
+### Patch Changes
+
+- [#1293](https://github.com/finos/legend-studio/pull/1293) [`ddbb0a8e`](https://github.com/finos/legend-studio/commit/ddbb0a8e36c062b9d1a35dc23a2e4c3c6c7d8a9b) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add TestError viewer in service test editor.
+
 ## 11.0.0
 
 ### Major Changes
