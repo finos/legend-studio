@@ -30,6 +30,7 @@ import {
 import { makeAutoObservable, observable, computed, action } from 'mobx';
 import {
   QUERY_BUILDER_PROPERTY_SEARCH_MAX_DEPTH,
+  QUERY_BUILDER_PROPERTY_SEARCH_RESULTS_LIMIT,
   QUERY_BUILDER_PROPERTY_SEARCH_TYPE,
 } from '../QueryBuilder_Const.js';
 import {
@@ -224,28 +225,24 @@ export class QueryBuilderPropertySearchPanelState {
   }
 
   fetchAllPropertyNodes(): void {
-    const treeData = this.queryBuilderState.explorerState.treeData;
+    const treeData = this.queryBuilderState.explorerState.nonNullableTreeData;
     let currentLevelPropertyNodes: QueryBuilderExplorerTreeNodeData[] = [];
     let nextLevelPropertyNodes: QueryBuilderExplorerTreeNodeData[] = [];
-    if (treeData?.nodes.values()) {
-      Array.from(treeData.nodes.values())
-        .slice(1)
-        .forEach((node) => {
-          if (node.mappingData.mapped && !node.isPartOfDerivedPropertyBranch) {
-            currentLevelPropertyNodes.push(node);
-            this.allMappedPropertyNodes.push(node);
-          }
-        });
-    }
+    Array.from(treeData.nodes.values())
+      .slice(1)
+      .forEach((node) => {
+        if (node.mappingData.mapped && !node.isPartOfDerivedPropertyBranch) {
+          currentLevelPropertyNodes.push(node);
+          this.allMappedPropertyNodes.push(node);
+        }
+      });
     let currentDepth = 1;
     const maxDepth = QUERY_BUILDER_PROPERTY_SEARCH_MAX_DEPTH;
     while (currentLevelPropertyNodes.length && currentDepth <= maxDepth) {
       const node = currentLevelPropertyNodes.shift();
       if (node) {
         if (node.childrenIds.length) {
-          node.isOpen = !node.isOpen;
           if (
-            node.isOpen &&
             (node instanceof QueryBuilderExplorerTreePropertyNodeData ||
               node instanceof QueryBuilderExplorerTreeSubTypeNodeData) &&
             node.type instanceof Class
@@ -297,11 +294,18 @@ export class QueryBuilderPropertySearchPanelState {
 
   fetchMappedPropertyNodes(propName: string): void {
     const propertyName = propName.toLowerCase();
-    this.allMappedPropertyNodes.forEach((node) => {
+    for (let i = 0; i < this.allMappedPropertyNodes.length; i++) {
+      const node = guaranteeNonNullable(this.allMappedPropertyNodes[i]);
       if (node.label.toLowerCase().includes(propertyName)) {
         this.searchedMappedPropertyNodes.push(node);
+        if (
+          this.searchedMappedPropertyNodes.length >
+          QUERY_BUILDER_PROPERTY_SEARCH_RESULTS_LIMIT
+        ) {
+          break;
+        }
       }
-    });
+    }
   }
 
   setIsSearchPanelOpen(val: boolean): void {
