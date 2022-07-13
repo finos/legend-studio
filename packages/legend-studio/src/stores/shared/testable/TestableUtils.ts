@@ -233,7 +233,7 @@ export const openTestableElementEditorState = (
     }
     const testableEditorOpener = extraTestableMetadataGetters
       .map((getter) => getter(testable, editorStore))
-      .filter(isNonNullable)[0]?.testableEditorOpener;
+      .filter(isNonNullable)[0]?.findTestableEditorState;
     if (testableEditorOpener) {
       return testableEditorOpener(testable, editorStore);
     }

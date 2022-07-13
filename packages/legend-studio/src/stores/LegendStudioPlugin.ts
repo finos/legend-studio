@@ -59,14 +59,12 @@ export type ModelLoaderExtensionConfiguration = {
   renderer: (editorStore: EditorStore) => React.ReactNode | undefined;
 };
 
-export type TestableElementEditorOpener = (
-  testable: Testable,
-  editorStore: EditorStore,
-) => TestableElementEditorState | undefined;
-
 export type TestableExtension = {
   metadata: TestableMetadata;
-  testableEditorOpener?: TestableElementEditorOpener;
+  findTestableEditorState?: (
+    testable: Testable,
+    editorStore: EditorStore,
+  ) => TestableElementEditorState | undefined;
 };
 
 export type TestableExtensionGetter = (
