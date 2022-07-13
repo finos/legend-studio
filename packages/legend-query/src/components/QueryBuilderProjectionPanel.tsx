@@ -291,11 +291,7 @@ const QueryBuilderProjectionColumnEditor = observer(
       queryBuilderState.postFilterState.nodes.values(),
     )
       .filter(filterByType(QueryBuilderPostFilterTreeConditionNodeData))
-      .map(
-        (n) =>
-          (n as QueryBuilderPostFilterTreeConditionNodeData).condition
-            .columnState,
-      )
+      .map((n) => n.condition.columnState)
       .includes(projectionColumnState);
 
     const removeColumn = (): void =>
