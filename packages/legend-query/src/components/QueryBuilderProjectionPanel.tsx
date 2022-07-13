@@ -74,6 +74,7 @@ import {
 } from '../stores/QueryFunctionsExplorerState.js';
 import { DEFAULT_LAMBDA_VARIABLE_NAME } from '../QueryBuilder_Const.js';
 import { QueryBuilderPostFilterTreeConditionNodeData } from '../stores/QueryBuilderPostFilterState.js';
+import { filterByType } from '@finos/legend-shared';
 
 const ProjectionColumnDragLayer: React.FC = () => {
   const { itemType, item, isDragging, currentPosition } = useDragLayer(
@@ -281,29 +282,24 @@ const QueryBuilderProjectionColumnEditor = observer(
     const onContextMenuClose = (): void => setIsSelectedFromContextMenu(false);
 
     const { projectionColumnState, isRearrangingColumns } = props;
-    const applicationStore = useApplicationStore();
     const queryBuilderState =
       projectionColumnState.projectionState.queryBuilderState;
     const projectionState =
       queryBuilderState.fetchStructureState.projectionState;
-    const removeColumn = (): void => {
-      const columnsUsedInPostFilter = Array.from(
-        queryBuilderState.postFilterState.nodes.values(),
+
+    const disableButton = Array.from(
+      queryBuilderState.postFilterState.nodes.values(),
+    )
+      .filter(filterByType(QueryBuilderPostFilterTreeConditionNodeData))
+      .map(
+        (n) =>
+          (n as QueryBuilderPostFilterTreeConditionNodeData).condition
+            .columnState,
       )
-        .filter((n) => n instanceof QueryBuilderPostFilterTreeConditionNodeData)
-        .map(
-          (n) =>
-            (n as QueryBuilderPostFilterTreeConditionNodeData).condition
-              .columnState,
-        );
-      if (columnsUsedInPostFilter.includes(projectionColumnState)) {
-        applicationStore.notifyWarning(
-          "This column is used in the post filter and can't be removed",
-        );
-      } else {
-        projectionState.removeColumn(projectionColumnState);
-      }
-    };
+      .includes(projectionColumnState);
+
+    const removeColumn = (): void =>
+      projectionState.removeColumn(projectionColumnState);
 
     // name
     const changeColumnName: React.ChangeEventHandler<HTMLInputElement> = (
@@ -523,7 +519,12 @@ const QueryBuilderProjectionColumnEditor = observer(
                 className="query-builder__projection__column__action"
                 tabIndex={-1}
                 onClick={removeColumn}
-                title="Remove"
+                disabled={disableButton}
+                title={
+                  disableButton
+                    ? "This column is used in the post filter and can't be removed"
+                    : 'Remove'
+                }
               >
                 <TimesIcon />
               </button>
