@@ -22,6 +22,7 @@ import {
   MaskIcon,
   MenuContent,
   MenuContentItem,
+  PanelLoadingIndicator,
   PlusIcon,
   PURE_ConnectionIcon,
   RefreshIcon,
@@ -404,6 +405,12 @@ export const ServiceTestDataEditor = observer(
               <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
             </ResizablePanelSplitter>
             <ResizablePanel minSize={600}>
+              <PanelLoadingIndicator
+                isLoading={Boolean(
+                  testDataState.selectedDataState?.generatingTestDataSate
+                    .isInProgress,
+                )}
+              />
               {testDataState.selectedDataState && (
                 <ConnectionTestDataEditor
                   connectionTestDataState={testDataState.selectedDataState}

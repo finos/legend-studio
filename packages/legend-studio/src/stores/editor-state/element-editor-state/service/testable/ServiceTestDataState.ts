@@ -32,6 +32,7 @@ import {
   Enumeration,
   DataElementReference,
   PackageableElementExplicitReference,
+  ConnectionPointer,
 } from '@finos/legend-graph';
 import {
   type GeneratorFn,
@@ -126,8 +127,9 @@ export class ConnectionTestDataState {
 
   *generateTestData(): GeneratorFn<void> {
     try {
+      this.generatingTestDataSate.inProgress();
       const connection = guaranteeNonNullable(
-        this.resolveConnection(this.connectionData.connectionId),
+        this.resolveConnectionValue(this.connectionData.connectionId),
         `Unable to resolve connection id '${this.connectionData.connectionId}`,
       );
 
@@ -167,17 +169,24 @@ export class ConnectionTestDataState {
         this.testDataState.editorStore,
         this.connectionData.testData,
       );
+      this.generatingTestDataSate.pass();
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.notifyError(
         `Unable to generate test data: ${error.message}`,
       );
+      this.generatingTestDataSate.fail();
     }
   }
 
-  resolveConnection(id: string): Connection | undefined {
-    return this.getAllIdentifiedConnections().find((c) => c.id === id)
-      ?.connection;
+  resolveConnectionValue(id: string): Connection | undefined {
+    const connection = this.getAllIdentifiedConnections().find(
+      (c) => c.id === id,
+    )?.connection;
+    if (connection instanceof ConnectionPointer) {
+      return connection.packageableConnection.value.connectionValue;
+    }
+    return connection;
   }
 
   getAllIdentifiedConnections(): IdentifiedConnection[] {
