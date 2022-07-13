@@ -14,14 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  action,
-  computed,
-  flow,
-  flowResult,
-  makeObservable,
-  observable,
-} from 'mobx';
+import { action, flow, flowResult, makeObservable, observable } from 'mobx';
 import {
   type GeneratorFn,
   type PlainObject,
@@ -34,14 +27,9 @@ import {
   type PackageableRuntime,
   type Service,
   QuerySearchSpecification,
-  getAllIncludedMappings,
 } from '@finos/legend-graph';
 import type { LegendQueryStore } from './LegendQueryStore.js';
 import { ProjectData } from '@finos/legend-server-depot';
-import {
-  buildElementOption,
-  type PackageableElementOption,
-} from '@finos/legend-application';
 
 export abstract class QuerySetupState {
   setupStore: QuerySetupStore;
@@ -132,7 +120,7 @@ export class CreateQuerySetupState extends QuerySetupState {
   currentVersionId?: string | undefined;
   currentMapping?: Mapping | undefined;
   currentRuntime?: PackageableRuntime | undefined;
-  mappingOptions: PackageableElementOption<Mapping>[] = [];
+  // mappingOptions: PackageableElementOption<Mapping>[] = [];
 
   constructor(setupStore: QuerySetupStore) {
     super(setupStore);
@@ -143,13 +131,13 @@ export class CreateQuerySetupState extends QuerySetupState {
       currentVersionId: observable,
       currentMapping: observable,
       currentRuntime: observable,
-      mappingOptions: observable,
-      runtimeOptions: computed,
+      // mappingOptions: observable,
+      // runtimeOptions: computed,
       setCurrentProject: action,
       setCurrentVersionId: action,
       setCurrentMapping: action,
       setCurrentRuntime: action,
-      setMappingOptions: action,
+      // setMappingOptions: action,
       loadProjects: flow,
     });
   }
@@ -170,27 +158,9 @@ export class CreateQuerySetupState extends QuerySetupState {
     this.currentRuntime = val;
   }
 
-  setMappingOptions(val: PackageableElementOption<Mapping>[]): void {
-    this.mappingOptions = val;
-  }
-
-  get runtimeOptions(): PackageableElementOption<PackageableRuntime>[] {
-    const currentMapping = this.currentMapping;
-    if (!currentMapping) {
-      return [];
-    }
-    return this.queryStore.queryBuilderState.runtimes
-      .map(buildElementOption)
-      .filter((runtime) =>
-        runtime.value.runtimeValue.mappings
-          .map((mappingReference) => [
-            mappingReference.value,
-            ...getAllIncludedMappings(mappingReference.value),
-          ])
-          .flat()
-          .includes(currentMapping),
-      );
-  }
+  // setMappingOptions(val: PackageableElementOption<Mapping>[]): void {
+  //   this.mappingOptions = val;
+  // }
 
   *loadProjects(): GeneratorFn<void> {
     this.loadProjectsState.inProgress();

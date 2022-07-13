@@ -164,16 +164,6 @@ export abstract class AbstractPureGraphManager {
   ): Promise<GraphBuilderReport>;
 
   /**
-   * Process entities and build the main graph.
-   */
-  abstract buildGraph(
-    graph: PureModel,
-    entities: Entity[],
-    buildState: ActionState,
-    options?: GraphBuilderOptions,
-  ): Promise<GraphBuilderReport>;
-
-  /**
    * Build immutable models which holds dependencies.
    * Dependency models MUST not depend on the main model.
    *
@@ -186,6 +176,16 @@ export abstract class AbstractPureGraphManager {
     systemModel: SystemModel,
     dependencyManager: DependencyManager,
     dependencyEntitiesIndex: Map<string, Entity[]>,
+    buildState: ActionState,
+    options?: GraphBuilderOptions,
+  ): Promise<GraphBuilderReport>;
+
+  /**
+   * Process entities and build the main graph.
+   */
+  abstract buildGraph(
+    graph: PureModel,
+    entities: Entity[],
     buildState: ActionState,
     options?: GraphBuilderOptions,
   ): Promise<GraphBuilderReport>;
@@ -325,25 +325,25 @@ export abstract class AbstractPureGraphManager {
   // ------------------------------------------- Execute -------------------------------------------
 
   abstract executeMapping(
-    graph: PureModel,
-    mapping: Mapping,
     lambda: RawLambda,
+    mapping: Mapping,
     runtime: Runtime,
+    graph: PureModel,
     options?: ExecutionOptions,
   ): Promise<ExecutionResult>;
 
   abstract generateExecutionPlan(
-    graph: PureModel,
-    mapping: Mapping,
     lambda: RawLambda,
+    mapping: Mapping,
     runtime: Runtime,
+    graph: PureModel,
   ): Promise<RawExecutionPlan>;
 
   abstract debugExecutionPlanGeneration(
-    graph: PureModel,
-    mapping: Mapping,
     lambda: RawLambda,
+    mapping: Mapping,
     runtime: Runtime,
+    graph: PureModel,
   ): Promise<{ plan: RawExecutionPlan; debug: string }>;
 
   abstract buildExecutionPlan(
@@ -358,11 +358,11 @@ export abstract class AbstractPureGraphManager {
   abstract serializeExecutionNode(executionNode: ExecutionNode): object;
 
   abstract generateExecuteTestData(
-    graph: PureModel,
-    mapping: Mapping,
     lambda: RawLambda,
-    runtime: Runtime,
     parameters: (string | number | boolean)[],
+    mapping: Mapping,
+    runtime: Runtime,
+    graph: PureModel,
     options?: {
       // Anonymizes data by hashing any string values in the generated data
       anonymizeGeneratedData?: boolean;
@@ -376,13 +376,13 @@ export abstract class AbstractPureGraphManager {
    */
 
   abstract registerService(
-    graph: PureModel,
     service: Service,
+    graph: PureModel,
     groupId: string,
     artifactId: string,
+    version: string | undefined,
     server: string,
     executionMode: ServiceExecutionMode,
-    version: string | undefined,
   ): Promise<ServiceRegistrationResult>;
   abstract activateService(
     serviceUrl: string,

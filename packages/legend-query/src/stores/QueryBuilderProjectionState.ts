@@ -709,8 +709,6 @@ export class QueryBuilderProjectionState {
         case PRIMITIVE_TYPE.FLOAT: {
           const previewResult =
             (yield this.queryBuilderState.graphManagerState.graphManager.executeMapping(
-              this.queryBuilderState.graphManagerState.graph,
-              this.queryBuilderState.querySetupState.mapping,
               buildRawLambdaFromLambdaFunction(
                 buildNumericPreviewDataQuery(
                   propertyExpression,
@@ -719,7 +717,9 @@ export class QueryBuilderProjectionState {
                 ),
                 this.queryBuilderState.graphManagerState,
               ),
+              this.queryBuilderState.querySetupState.mapping,
               runtime,
+              this.queryBuilderState.graphManagerState.graph,
             )) as ExecutionResult;
           assertType(
             previewResult,
@@ -752,8 +752,6 @@ export class QueryBuilderProjectionState {
         case PRIMITIVE_TYPE.DATETIME: {
           const previewResult =
             (yield this.queryBuilderState.graphManagerState.graphManager.executeMapping(
-              this.queryBuilderState.graphManagerState.graph,
-              this.queryBuilderState.querySetupState.mapping,
               buildRawLambdaFromLambdaFunction(
                 buildNonNumericPreviewDataQuery(
                   propertyExpression,
@@ -762,7 +760,9 @@ export class QueryBuilderProjectionState {
                 ),
                 this.queryBuilderState.graphManagerState,
               ),
+              this.queryBuilderState.querySetupState.mapping,
               runtime,
+              this.queryBuilderState.graphManagerState.graph,
             )) as ExecutionResult;
           assertType(
             previewResult,

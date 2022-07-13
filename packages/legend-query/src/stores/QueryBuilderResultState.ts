@@ -134,10 +134,10 @@ export class QueryBuilderResultState {
       const query = this.buildExecutionRawLambda();
       const result =
         (yield this.queryBuilderState.graphManagerState.graphManager.executeMapping(
-          this.queryBuilderState.graphManagerState.graph,
-          mapping,
           query,
+          mapping,
           runtime,
+          this.queryBuilderState.graphManagerState.graph,
           {
             serializationFormat,
           },
@@ -187,10 +187,10 @@ export class QueryBuilderResultState {
       const startTime = Date.now();
       const result =
         (yield this.queryBuilderState.graphManagerState.graphManager.executeMapping(
-          this.queryBuilderState.graphManagerState.graph,
-          mapping,
           query,
+          mapping,
           runtime,
+          this.queryBuilderState.graphManagerState.graph,
         )) as ExecutionResult;
       this.setExecutionResult(result);
       this.setExecutionDuration(Date.now() - startTime);
@@ -222,20 +222,20 @@ export class QueryBuilderResultState {
       if (debug) {
         const debugResult =
           (yield this.queryBuilderState.graphManagerState.graphManager.debugExecutionPlanGeneration(
-            this.queryBuilderState.graphManagerState.graph,
-            mapping,
             query,
+            mapping,
             runtime,
+            this.queryBuilderState.graphManagerState.graph,
           )) as { plan: RawExecutionPlan; debug: string };
         rawPlan = debugResult.plan;
         this.executionPlanState.setDebugText(debugResult.debug);
       } else {
         rawPlan =
           (yield this.queryBuilderState.graphManagerState.graphManager.generateExecutionPlan(
-            this.queryBuilderState.graphManagerState.graph,
-            mapping,
             query,
+            mapping,
             runtime,
+            this.queryBuilderState.graphManagerState.graph,
           )) as object;
       }
       try {

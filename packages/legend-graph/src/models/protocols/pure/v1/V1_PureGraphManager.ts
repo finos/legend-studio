@@ -1949,10 +1949,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   };
 
   async executeMapping(
-    graph: PureModel,
-    mapping: Mapping,
     lambda: RawLambda,
+    mapping: Mapping,
     runtime: Runtime,
+    graph: PureModel,
     options?: ExecutionOptions,
   ): Promise<ExecutionResult> {
     return V1_buildExecutionResult(
@@ -1970,11 +1970,11 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   }
 
   generateExecuteTestData(
-    graph: PureModel,
-    mapping: Mapping,
     lambda: RawLambda,
-    runtime: Runtime,
     parameters: (string | number | boolean)[],
+    mapping: Mapping,
+    runtime: Runtime,
+    graph: PureModel,
     options?: {
       anonymizeGeneratedData?: boolean;
     },
@@ -1997,10 +1997,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   }
 
   generateExecutionPlan(
-    graph: PureModel,
-    mapping: Mapping,
     lambda: RawLambda,
+    mapping: Mapping,
     runtime: Runtime,
+    graph: PureModel,
   ): Promise<RawExecutionPlan> {
     return this.engine.generateExecutionPlan(
       this.createExecutionInput(
@@ -2014,10 +2014,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   }
 
   async debugExecutionPlanGeneration(
-    graph: PureModel,
-    mapping: Mapping,
     lambda: RawLambda,
+    mapping: Mapping,
     runtime: Runtime,
+    graph: PureModel,
   ): Promise<{ plan: RawExecutionPlan; debug: string }> {
     const result = await this.engine.debugExecutionPlanGeneration(
       this.createExecutionInput(
@@ -2078,13 +2078,13 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   // --------------------------------------------- Service ---------------------------------------------
 
   async registerService(
-    graph: PureModel,
     service: Service,
-    groupdId: string,
+    graph: PureModel,
+    groupId: string,
     artifactId: string,
+    version: string | undefined,
     server: string,
     executionMode: ServiceExecutionMode,
-    version: string | undefined,
   ): Promise<ServiceRegistrationResult> {
     const serverServiceInfo = await this.engine.getServerServiceInfo();
     // input
@@ -2101,7 +2101,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         break;
       }
       case ServiceExecutionMode.SEMI_INTERACTIVE: {
-        const sdlcInfo = new V1_AlloySDLC(groupdId, artifactId, version);
+        const sdlcInfo = new V1_AlloySDLC(groupId, artifactId, version);
         const pointer = new V1_PureModelContextPointer(protocol, sdlcInfo);
         // data
         const data = new V1_PureModelContextData();
@@ -2138,7 +2138,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         break;
       }
       case ServiceExecutionMode.PROD: {
-        const sdlcInfo = new V1_AlloySDLC(groupdId, artifactId, version);
+        const sdlcInfo = new V1_AlloySDLC(groupId, artifactId, version);
         const pointer = new V1_PureModelContextPointer(protocol, sdlcInfo);
         sdlcInfo.packageableElementPointers = [
           new V1_PackageableElementPointer(
