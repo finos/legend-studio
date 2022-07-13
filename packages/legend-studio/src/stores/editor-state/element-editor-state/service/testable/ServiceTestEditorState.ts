@@ -48,11 +48,13 @@ import {
 } from '@finos/legend-shared';
 
 export enum SERIALIZATION_FORMAT {
+  PURE = 'PURE',
   DEFAULT = 'DEFAULT',
   PURE_TDSOBJECT = 'PURE_TDSOBJECT',
 }
 
 export enum SERIALIZATION_FORMAT_LABEL {
+  PURE = 'PURE',
   DEFAULT = 'DEFAULT',
   TDS = 'TDS',
 }
@@ -61,6 +63,8 @@ const getSerializationFormatLabel = (val: string): string => {
   switch (val) {
     case SERIALIZATION_FORMAT.DEFAULT:
       return SERIALIZATION_FORMAT_LABEL.DEFAULT;
+    case SERIALIZATION_FORMAT.PURE:
+      return SERIALIZATION_FORMAT.PURE;
     case SERIALIZATION_FORMAT.PURE_TDSOBJECT:
       return SERIALIZATION_FORMAT_LABEL.TDS;
     default:

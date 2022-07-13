@@ -127,6 +127,7 @@ import {
   createEmptyEqualToJsonAssertion,
   createBareExternalFormat,
 } from '../../../shared/testable/TestableUtils.js';
+import { SERIALIZATION_FORMAT } from '../service/testable/ServiceTestEditorState.js';
 
 export class MappingExecutionQueryState extends LambdaEditorState {
   editorStore: EditorStore;
@@ -696,6 +697,7 @@ export class MappingExecutionState {
             suite.testData.connectionsTestData = [connectionTestData];
           }
           const test = new ServiceTest();
+          test.serializationFormat = SERIALIZATION_FORMAT.PURE;
           test.id = generateEnumerableNameFromToken([], DEFAULT_TEST_PREFIX);
           test.__parent = suite;
           suite.tests = [test];
