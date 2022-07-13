@@ -17,7 +17,6 @@
 import {
   CustomSelectorInput,
   createFilter,
-  ErrorIcon,
   CogIcon,
   PURE_ClassIcon,
   PURE_MappingIcon,
@@ -147,24 +146,10 @@ export const QueryBuilderSetupPanel = observer(
       value: mapping,
       label: mapping.name,
     }));
-    const inCompatibleMappingLabel = (
-      <div
-        className="query-builder__setup__config__item__mapping-option--incompatible"
-        title={'Mapping incompatibe with class'}
-      >
-        <div className="query-builder__setup__config__item__mapping-option--incompatible__label">
-          {querySetupState.mapping?.name ?? ''}
-        </div>
-        <ErrorIcon />
-      </div>
-    );
     const selectedMappingOption = querySetupState.mapping
       ? {
           value: querySetupState.mapping,
-          label:
-            querySetupState.isMappingCompatible || !isQuerySupported
-              ? querySetupState.mapping.name
-              : inCompatibleMappingLabel,
+          label: querySetupState.mapping.name,
         }
       : null;
     const changeMapping = (val: PackageableElementOption<Mapping>): void => {
@@ -289,11 +274,6 @@ export const QueryBuilderSetupPanel = observer(
               value={selectedMappingOption}
               darkMode={true}
               filterOption={elementFilterOption}
-              hasError={
-                querySetupState.mapping &&
-                !querySetupState.isMappingCompatible &&
-                isQuerySupported
-              }
               formatOptionLabel={getPackageableElementOptionalFormatter({
                 darkMode: true,
               })}
