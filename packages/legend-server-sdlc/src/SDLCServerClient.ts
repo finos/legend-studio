@@ -53,7 +53,7 @@ import type {
 import type { WorkflowJob } from './models/workflow/WorkflowJob.js';
 import type { SDLCServerFeaturesConfiguration } from './models/server/SDLCServerFeaturesConfiguration.js';
 
-enum SDLC_TRACER_SPAN {
+enum SDLC_ACTIVITY_TRACE {
   IMPORT_PROJECT = 'import project',
   CREATE_PROJECT = 'create project',
   UPDATE_PROJECT = 'update project',
@@ -106,10 +106,10 @@ export class SDLCServerClient extends AbstractServerClient {
   }
 
   private getTraceData = (
-    spanName: SDLC_TRACER_SPAN,
+    name: SDLC_ACTIVITY_TRACE,
     tracingTags?: Record<PropertyKey, unknown>,
   ): TraceData => ({
-    spanName,
+    name,
     tags: {
       env: this.env,
       userId: this.currentUser?.userId ?? '(unknown)',
@@ -172,7 +172,7 @@ export class SDLCServerClient extends AbstractServerClient {
     command: PlainObject<CreateProjectCommand>,
   ): Promise<PlainObject<Project>> =>
     this.postWithTracing(
-      this.getTraceData(SDLC_TRACER_SPAN.CREATE_PROJECT),
+      this.getTraceData(SDLC_ACTIVITY_TRACE.CREATE_PROJECT),
       this._projects(),
       command,
     );
@@ -180,7 +180,7 @@ export class SDLCServerClient extends AbstractServerClient {
     command: PlainObject<ImportProjectCommand>,
   ): Promise<PlainObject<ImportReport>> =>
     this.postWithTracing(
-      this.getTraceData(SDLC_TRACER_SPAN.IMPORT_PROJECT),
+      this.getTraceData(SDLC_ACTIVITY_TRACE.IMPORT_PROJECT),
       `${this._projects()}/import`,
       command,
     );
@@ -189,7 +189,7 @@ export class SDLCServerClient extends AbstractServerClient {
     command: PlainObject<UpdateProjectCommand>,
   ): Promise<void> =>
     this.putWithTracing(
-      this.getTraceData(SDLC_TRACER_SPAN.UPDATE_PROJECT),
+      this.getTraceData(SDLC_ACTIVITY_TRACE.UPDATE_PROJECT),
       this._project(projectId),
       command,
     );
@@ -258,7 +258,7 @@ export class SDLCServerClient extends AbstractServerClient {
     workspaceType: WorkspaceType,
   ): Promise<PlainObject<Workspace>> =>
     this.postWithTracing(
-      this.getTraceData(SDLC_TRACER_SPAN.CREATE_WORKSPACE),
+      this.getTraceData(SDLC_ACTIVITY_TRACE.CREATE_WORKSPACE),
       this._workspaceByType(projectId, workspaceId, workspaceType),
     );
   updateWorkspace = (
@@ -266,7 +266,7 @@ export class SDLCServerClient extends AbstractServerClient {
     workspace: Workspace,
   ): Promise<PlainObject<WorkspaceUpdateReport>> =>
     this.postWithTracing(
-      this.getTraceData(SDLC_TRACER_SPAN.UPDATE_WORKSPACE),
+      this.getTraceData(SDLC_ACTIVITY_TRACE.UPDATE_WORKSPACE),
       `${this._workspace(projectId, workspace)}/update`,
     );
   deleteWorkspace = (
@@ -274,7 +274,7 @@ export class SDLCServerClient extends AbstractServerClient {
     workspace: Workspace,
   ): Promise<PlainObject<Workspace>> =>
     this.deleteWithTracing(
-      this.getTraceData(SDLC_TRACER_SPAN.DELETE_WORKSPACE),
+      this.getTraceData(SDLC_ACTIVITY_TRACE.DELETE_WORKSPACE),
       this._workspace(projectId, workspace),
     );
 
@@ -332,7 +332,7 @@ export class SDLCServerClient extends AbstractServerClient {
     command: PlainObject<CreateVersionCommand>,
   ): Promise<PlainObject<Version>> =>
     this.postWithTracing(
-      this.getTraceData(SDLC_TRACER_SPAN.CREATE_VERSION),
+      this.getTraceData(SDLC_ACTIVITY_TRACE.CREATE_VERSION),
       this._versions(projectId),
       command,
     );
@@ -372,7 +372,7 @@ export class SDLCServerClient extends AbstractServerClient {
     command: PlainObject<UpdateProjectConfigurationCommand>,
   ): Promise<PlainObject<Revision>> =>
     this.postWithTracing(
-      this.getTraceData(SDLC_TRACER_SPAN.UPDATE_CONFIGURATION),
+      this.getTraceData(SDLC_ACTIVITY_TRACE.UPDATE_CONFIGURATION),
       this._configuration(projectId, workspace),
       command,
     );
@@ -684,7 +684,7 @@ export class SDLCServerClient extends AbstractServerClient {
     command: PlainObject<UpdateEntitiesCommand>,
   ): Promise<PlainObject<Revision> | undefined> =>
     this.postWithTracing(
-      this.getTraceData(SDLC_TRACER_SPAN.UPDATE_ENTITIES),
+      this.getTraceData(SDLC_ACTIVITY_TRACE.UPDATE_ENTITIES),
       this._entities(projectId, workspace),
       command,
     );
@@ -694,7 +694,7 @@ export class SDLCServerClient extends AbstractServerClient {
     command: PerformEntitiesChangesCommand,
   ): Promise<PlainObject<Revision> | undefined> =>
     this.postWithTracing(
-      this.getTraceData(SDLC_TRACER_SPAN.PERFORM_ENTITY_CHANGES),
+      this.getTraceData(SDLC_ACTIVITY_TRACE.PERFORM_ENTITY_CHANGES),
       `${this._adaptiveWorkspace(projectId, workspace)}/entityChanges`,
       command,
     );
@@ -731,7 +731,7 @@ export class SDLCServerClient extends AbstractServerClient {
     command: PlainObject<CreateReviewCommand>,
   ): Promise<PlainObject<Review>> =>
     this.postWithTracing(
-      this.getTraceData(SDLC_TRACER_SPAN.CREATE_REVIEW),
+      this.getTraceData(SDLC_ACTIVITY_TRACE.CREATE_REVIEW),
       this._reviews(projectId),
       command,
     );
