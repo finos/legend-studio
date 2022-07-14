@@ -40,15 +40,17 @@ import {
 } from '@finos/legend-application';
 import {
   type ServiceExecution,
-  type KeyedExecutionParameter,
+  KeyedExecutionParameter,
   type PureExecution,
   type Mapping,
   type Runtime,
   type ExecutionResult,
   type LightQuery,
   type PackageableRuntime,
-  type PureSingleExecution,
-  type PureMultiExecution,
+  PureSingleExecution,
+  PureMultiExecution,
+  type RawExecutionPlan,
+  type PackageableElementReference,
   GRAPH_MANAGER_EVENT,
   RawLambda,
   EngineRuntime,
@@ -57,19 +59,26 @@ import {
   buildSourceInformationSourceId,
   QueryProjectCoordinates,
   QuerySearchSpecification,
-  type RawExecutionPlan,
   buildLambdaVariableExpressions,
   observe_ValueSpecification,
   VariableExpression,
   buildRawLambdaFromLambdaFunction,
+  stub_PackageableRuntime,
+  stub_Mapping,
 } from '@finos/legend-graph';
 import type { Entity } from '@finos/legend-model-storage';
 import { parseGACoordinates } from '@finos/legend-server-depot';
 import { runtime_addMapping } from '../../../graphModifier/DSLMapping_GraphModifierHelper.js';
 import type { EditorStore } from '../../../EditorStore.js';
 import {
+  keyedExecutionParameter_setKey,
   pureExecution_setFunction,
+  pureMultiExecution_addExecutionParameter,
+  pureMultiExecution_deleteExecutionParameter,
+  pureMultiExecution_setExecutionKey,
+  pureSingleExecution_setMapping,
   pureSingleExecution_setRuntime,
+  service_setExecution,
 } from '../../../graphModifier/DSLService_GraphModifierHelper.js';
 
 export class ServiceExecutionParameterState extends LambdaParametersState {
@@ -354,13 +363,82 @@ export class ServicePureExecutionQueryState extends LambdaEditorState {
   }
 }
 
+export interface ServiceExecutionContext {
+  mapping: PackageableElementReference<Mapping>;
+  runtime: Runtime;
+}
+
+export abstract class ServiceExecutionContextState {
+  executionContext: ServiceExecutionContext;
+  executionState: ServiceExecutionState;
+
+  constructor(
+    executionContext: ServiceExecutionContext,
+    executionState: ServiceExecutionState,
+  ) {
+    this.executionContext = executionContext;
+    this.executionState = executionState;
+  }
+
+  abstract setMapping(value: Mapping): void;
+  abstract setRuntime(value: Runtime): void;
+}
+
+export class SingleExecutionContextState extends ServiceExecutionContextState {
+  declare executionContext: PureSingleExecution;
+
+  constructor(
+    executionContext: PureSingleExecution,
+    executionState: ServiceExecutionState,
+  ) {
+    super(executionContext, executionState);
+    makeObservable(this, {
+      executionContext: observable,
+      setMapping: action,
+      setRuntime: action,
+    });
+  }
+
+  setMapping(value: Mapping): void {
+    pureSingleExecution_setMapping(
+      this.executionContext,
+      value,
+      this.executionState.editorStore.changeDetectionState.observerContext,
+    );
+  }
+  setRuntime(value: Runtime): void {
+    pureSingleExecution_setRuntime(
+      this.executionContext,
+      value,
+      this.executionState.editorStore.changeDetectionState.observerContext,
+    );
+  }
+}
+
+export class KeyedExecutionContextState extends ServiceExecutionContextState {
+  declare executionContext: KeyedExecutionParameter;
+
+  setMapping(value: Mapping): void {
+    pureSingleExecution_setMapping(
+      this.executionContext,
+      value,
+      this.executionState.editorStore.changeDetectionState.observerContext,
+    );
+  }
+
+  setRuntime(value: Runtime): void {
+    pureSingleExecution_setRuntime(
+      this.executionContext,
+      value,
+      this.executionState.editorStore.changeDetectionState.observerContext,
+    );
+  }
+}
+
 export abstract class ServicePureExecutionState extends ServiceExecutionState {
   queryState: ServicePureExecutionQueryState;
   declare execution: PureExecution;
-  selectedExecutionContext?:
-    | PureSingleExecution
-    | KeyedExecutionParameter
-    | undefined;
+  selectedExecutionContextState: ServiceExecutionContextState | undefined;
   runtimeEditorState?: RuntimeEditorState | undefined;
   isExecuting = false;
   isGeneratingPlan = false;
@@ -368,6 +446,7 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
   executionResultText?: string | undefined; // NOTE: stored as lossless JSON string
   executionPlanState: ExecutionPlanState;
   parameterState: ServiceExecutionParameterState;
+  showChangeExecModal = false;
 
   constructor(
     editorStore: EditorStore,
@@ -377,7 +456,6 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
     super(editorStore, serviceEditorState, execution);
 
     this.execution = execution;
-    this.selectedExecutionContext = this.getInitiallySelectedExecution();
     this.queryState = new ServicePureExecutionQueryState(
       this.editorStore,
       execution,
@@ -387,6 +465,16 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
       this.editorStore.graphManagerState,
     );
     this.parameterState = new ServiceExecutionParameterState(this);
+  }
+
+  abstract changeExecution(): void;
+
+  isChangeExecutionDisabled(): boolean {
+    return false;
+  }
+
+  setShowChangeExecModal(val: boolean): void {
+    this.showChangeExecModal = val;
   }
 
   setOpeningQueryEditor(val: boolean): void {
@@ -400,7 +488,7 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
   };
 
   *generatePlan(debug: boolean): GeneratorFn<void> {
-    if (!this.selectedExecutionContext || this.isGeneratingPlan) {
+    if (!this.selectedExecutionContextState || this.isGeneratingPlan) {
       return;
     }
     try {
@@ -411,9 +499,9 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
         const debugResult =
           (yield this.editorStore.graphManagerState.graphManager.debugExecutionPlanGeneration(
             this.editorStore.graphManagerState.graph,
-            this.selectedExecutionContext.mapping.value,
+            this.selectedExecutionContextState.executionContext.mapping.value,
             query,
-            this.selectedExecutionContext.runtime,
+            this.selectedExecutionContextState.executionContext.runtime,
           )) as { plan: RawExecutionPlan; debug: string };
         rawPlan = debugResult.plan;
         this.executionPlanState.setDebugText(debugResult.debug);
@@ -421,9 +509,9 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
         rawPlan =
           (yield this.editorStore.graphManagerState.graphManager.generateExecutionPlan(
             this.editorStore.graphManagerState.graph,
-            this.selectedExecutionContext.mapping.value,
+            this.selectedExecutionContextState.executionContext.mapping.value,
             query,
-            this.selectedExecutionContext.runtime,
+            this.selectedExecutionContextState.executionContext.runtime,
           )) as object;
       }
       try {
@@ -450,7 +538,7 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
   }
 
   *handleExecute(): GeneratorFn<void> {
-    if (!this.selectedExecutionContext || this.isExecuting) {
+    if (!this.selectedExecutionContextState || this.isExecuting) {
       return;
     }
     const query = this.queryState.query;
@@ -463,7 +551,7 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
   }
 
   *execute(): GeneratorFn<void> {
-    if (!this.selectedExecutionContext || this.isExecuting) {
+    if (!this.selectedExecutionContextState || this.isExecuting) {
       return;
     }
     try {
@@ -472,9 +560,9 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
       const result =
         (yield this.editorStore.graphManagerState.graphManager.executeMapping(
           this.editorStore.graphManagerState.graph,
-          this.selectedExecutionContext.mapping.value,
+          this.selectedExecutionContextState.executionContext.mapping.value,
           query,
-          this.selectedExecutionContext.runtime,
+          this.selectedExecutionContextState.executionContext.runtime,
           {
             useLosslessParse: true,
           },
@@ -523,14 +611,15 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
   get serviceExecutionParameters():
     | { query: RawLambda; mapping: Mapping; runtime: Runtime }
     | undefined {
-    if (!this.selectedExecutionContext || this.isExecuting) {
+    if (!this.selectedExecutionContextState || this.isExecuting) {
       return undefined;
     }
     const query = this.queryState.query;
     return {
       query,
-      mapping: this.selectedExecutionContext.mapping.value,
-      runtime: this.selectedExecutionContext.runtime,
+      mapping:
+        this.selectedExecutionContextState.executionContext.mapping.value,
+      runtime: this.selectedExecutionContextState.executionContext.runtime,
     };
   }
 
@@ -540,50 +629,47 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
 
   openRuntimeEditor(): void {
     if (
-      this.selectedExecutionContext &&
-      !(this.selectedExecutionContext.runtime instanceof RuntimePointer)
+      this.selectedExecutionContextState &&
+      !(
+        this.selectedExecutionContextState.executionContext.runtime instanceof
+        RuntimePointer
+      )
     ) {
       this.runtimeEditorState = new RuntimeEditorState(
         this.editorStore,
-        this.selectedExecutionContext.runtime,
+        this.selectedExecutionContextState.executionContext.runtime,
         true,
       );
     }
   }
 
   useCustomRuntime(): void {
-    if (this.selectedExecutionContext) {
+    if (this.selectedExecutionContextState) {
       const customRuntime = new EngineRuntime();
       runtime_addMapping(
         customRuntime,
         PackageableElementExplicitReference.create(
-          this.selectedExecutionContext.mapping.value,
+          this.selectedExecutionContextState.executionContext.mapping.value,
         ),
       );
       decorateRuntimeWithNewMapping(
-        this.selectedExecutionContext.runtime,
-        this.selectedExecutionContext.mapping.value,
+        this.selectedExecutionContextState.executionContext.runtime,
+        this.selectedExecutionContextState.executionContext.mapping.value,
         this.editorStore,
       );
-      pureSingleExecution_setRuntime(
-        this.selectedExecutionContext,
-        customRuntime,
-        this.editorStore.changeDetectionState.observerContext,
-      );
+      this.selectedExecutionContextState.setRuntime(customRuntime);
     }
   }
 
   autoSelectRuntimeOnMappingChange(mapping: Mapping): void {
-    if (this.selectedExecutionContext) {
+    if (this.selectedExecutionContextState) {
       const runtimes =
         this.editorStore.graphManagerState.graph.ownRuntimes.filter((runtime) =>
           runtime.runtimeValue.mappings.map((m) => m.value).includes(mapping),
         );
       if (runtimes.length) {
-        pureSingleExecution_setRuntime(
-          this.selectedExecutionContext,
+        this.selectedExecutionContextState.setRuntime(
           (runtimes[0] as PackageableRuntime).runtimeValue,
-          this.editorStore.changeDetectionState.observerContext,
         );
       } else {
         this.useCustomRuntime();
@@ -591,16 +677,18 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
     }
   }
 
-  abstract getInitiallySelectedExecution():
-    | PureSingleExecution
-    | KeyedExecutionParameter
+  abstract getInitiallySelectedExecutionContextState():
+    | ServiceExecutionContextState
     | undefined;
   updateExecutionQuery(): void {
     pureExecution_setFunction(this.execution, this.queryState.query);
   }
 }
+
 export class SingleServicePureExecutionState extends ServicePureExecutionState {
   declare execution: PureSingleExecution;
+  declare selectedExecutionContextState: ServiceExecutionContextState;
+  multiExecutionKey = 'key';
 
   constructor(
     editorStore: EditorStore,
@@ -611,14 +699,16 @@ export class SingleServicePureExecutionState extends ServicePureExecutionState {
 
     makeObservable(this, {
       queryState: observable,
-      selectedExecutionContext: observable,
+      getInitiallySelectedExecutionContextState: observable,
       runtimeEditorState: observable,
       isExecuting: observable,
       isGeneratingPlan: observable,
       isOpeningQueryEditor: observable,
       executionResultText: observable,
       executionPlanState: observable,
+      showChangeExecModal: observable,
       parameterState: observable,
+      multiExecutionKey: observable,
       setExecutionResultText: action,
       closeRuntimeEditor: action,
       openRuntimeEditor: action,
@@ -627,21 +717,55 @@ export class SingleServicePureExecutionState extends ServicePureExecutionState {
       autoSelectRuntimeOnMappingChange: action,
       updateExecutionQuery: action,
       setOpeningQueryEditor: action,
+      changeExecution: action,
+      setMultiExecutionKey: action,
+      setShowChangeExecModal: action,
       generatePlan: flow,
       handleExecute: flow,
       execute: flow,
     });
+    this.selectedExecutionContextState =
+      this.getInitiallySelectedExecutionContextState();
   }
-  getInitiallySelectedExecution():
-    | PureSingleExecution
-    | KeyedExecutionParameter
-    | undefined {
-    return this.execution;
+
+  override isChangeExecutionDisabled(): boolean {
+    return this.multiExecutionKey === '';
+  }
+
+  getInitiallySelectedExecutionContextState(): ServiceExecutionContextState {
+    return new SingleExecutionContextState(this.execution, this);
+  }
+
+  setMultiExecutionKey(val: string): void {
+    this.multiExecutionKey = val;
+  }
+
+  changeExecution(): void {
+    const _execution = new PureMultiExecution(
+      this.multiExecutionKey,
+      this.execution.func,
+      this.serviceEditorState.service,
+    );
+    const _parameter = new KeyedExecutionParameter(
+      `execContext_1`,
+      this.execution.mapping,
+      this.execution.runtime,
+    );
+    _execution.executionParameters = [_parameter];
+    service_setExecution(
+      this.serviceEditorState.service,
+      _execution,
+      this.editorStore.changeDetectionState.observerContext,
+    );
+    this.serviceEditorState.resetExecutionState();
   }
 }
 
 export class MultiServicePureExecutionState extends ServicePureExecutionState {
   declare execution: PureMultiExecution;
+  newKeyParameterModal = false;
+  renameKey: KeyedExecutionParameter | undefined;
+  singleExecutionKey: KeyedExecutionParameter | undefined;
 
   constructor(
     editorStore: EditorStore,
@@ -652,13 +776,17 @@ export class MultiServicePureExecutionState extends ServicePureExecutionState {
 
     makeObservable(this, {
       queryState: observable,
-      selectedExecutionContext: observable,
+      selectedExecutionContextState: observable,
       runtimeEditorState: observable,
       isExecuting: observable,
       isGeneratingPlan: observable,
       isOpeningQueryEditor: observable,
       executionResultText: observable,
       executionPlanState: observable,
+      newKeyParameterModal: observable,
+      renameKey: observable,
+      singleExecutionKey: observable,
+      showChangeExecModal: observable,
       setExecutionResultText: action,
       closeRuntimeEditor: action,
       openRuntimeEditor: action,
@@ -667,12 +795,23 @@ export class MultiServicePureExecutionState extends ServicePureExecutionState {
       autoSelectRuntimeOnMappingChange: action,
       updateExecutionQuery: action,
       setOpeningQueryEditor: action,
+      deleteKeyExecutionParameter: action,
+      setNewKeyParameterModal: action,
+      changeKeyedExecutionParameter: action,
+      setRenameKey: action,
+      addExecutionParameter: action,
+      setExecutionKey: action,
+      changeKeyValue: action,
+      setSingleExecutionKey: action,
+      setShowChangeExecModal: action,
+      changeExecution: action,
       generatePlan: flow,
       execute: flow,
     });
 
     this.execution = execution;
-    this.selectedExecutionContext = this.getInitiallySelectedExecution();
+    this.selectedExecutionContextState =
+      this.getInitiallySelectedExecutionContextState();
     this.queryState = new ServicePureExecutionQueryState(
       this.editorStore,
       execution,
@@ -683,10 +822,86 @@ export class MultiServicePureExecutionState extends ServicePureExecutionState {
     );
   }
 
-  getInitiallySelectedExecution():
-    | PureSingleExecution
-    | KeyedExecutionParameter
+  setSingleExecutionKey(val: KeyedExecutionParameter | undefined): void {
+    this.singleExecutionKey = val;
+  }
+
+  changeExecution(): void {
+    const mappingExecution = this.singleExecutionKey;
+    // stub
+    const _mapping = mappingExecution?.mapping.value ?? stub_Mapping();
+    const mapping = PackageableElementExplicitReference.create(_mapping);
+    const runtime = mappingExecution?.runtime ?? stub_PackageableRuntime();
+    const _execution = new PureSingleExecution(
+      this.execution.func,
+      this.serviceEditorState.service,
+      mapping,
+      runtime,
+    );
+    service_setExecution(
+      this.serviceEditorState.service,
+      _execution,
+      this.editorStore.changeDetectionState.observerContext,
+    );
+    this.serviceEditorState.resetExecutionState();
+  }
+
+  setRenameKey(key: KeyedExecutionParameter | undefined): void {
+    this.renameKey = key;
+  }
+
+  setNewKeyParameterModal(val: boolean): void {
+    this.newKeyParameterModal = val;
+  }
+
+  setExecutionKey(val: string): void {
+    pureMultiExecution_setExecutionKey(this.execution, val);
+  }
+
+  getInitiallySelectedExecutionContextState():
+    | ServiceExecutionContextState
     | undefined {
-    return this.execution.executionParameters[0];
+    const parameter = this.execution.executionParameters[0];
+    return parameter
+      ? new KeyedExecutionContextState(parameter, this)
+      : undefined;
+  }
+
+  changeKeyedExecutionParameter(value: KeyedExecutionParameter): void {
+    this.selectedExecutionContextState = new KeyedExecutionContextState(
+      value,
+      this,
+    );
+  }
+
+  deleteKeyExecutionParameter(value: KeyedExecutionParameter): void {
+    pureMultiExecution_deleteExecutionParameter(this.execution, value);
+    if (value === this.selectedExecutionContextState?.executionContext) {
+      this.selectedExecutionContextState =
+        this.getInitiallySelectedExecutionContextState();
+    }
+  }
+
+  addExecutionParameter(value: string): void {
+    const _mapping =
+      this.editorStore.mappingOptions[0]?.value ?? stub_Mapping();
+    const _key = new KeyedExecutionParameter(
+      value,
+      PackageableElementExplicitReference.create(_mapping),
+      stub_PackageableRuntime(),
+    );
+    pureMultiExecution_addExecutionParameter(
+      this.execution,
+      _key,
+      this.editorStore.changeDetectionState.observerContext,
+    );
+    this.selectedExecutionContextState = new KeyedExecutionContextState(
+      _key,
+      this,
+    );
+  }
+
+  changeKeyValue(key: KeyedExecutionParameter, value: string): void {
+    keyedExecutionParameter_setKey(key, value);
   }
 }

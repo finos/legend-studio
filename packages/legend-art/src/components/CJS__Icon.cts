@@ -142,6 +142,7 @@ export {
   GiWaterDrop as WaterDropIcon,
   GiBeard as BeardIcon,
   GiSunglasses as SunglassesIcon,
+  GiHouseKeys as HouseKeys,
 } from 'react-icons/gi';
 export {
   MdModeEdit as PencilIcon,
@@ -226,3 +227,7 @@ export {
   RiShapeLine as ShapeLineIcon,
   RiTestTubeFill as TestTubeIcon,
 } from 'react-icons/ri';
+export {
+  TbArrowsJoin2 as ArrowsJoinIcon,
+  TbArrowsSplit2 as ArrowsSplitIcon,
+} from 'react-icons/tb';
