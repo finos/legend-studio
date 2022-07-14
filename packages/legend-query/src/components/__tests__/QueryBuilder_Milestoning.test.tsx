@@ -68,7 +68,7 @@ test(
 
     const _personClass =
       mockedQueryStore.graphManagerState.graph.getClass('my::Person');
-    act(() => {
+    await act(async () => {
       queryBuilderState.changeClass(_personClass);
     });
     const queryBuilderSetup = await waitFor(() =>
@@ -78,7 +78,7 @@ test(
     await waitFor(() => getByText(queryBuilderSetup, 'map'));
     await waitFor(() => getByText(queryBuilderSetup, 'runtime'));
 
-    act(() => {
+    await act(async () => {
       queryBuilderState.initialize(
         create_RawLambda(
           TEST_DATA__simpleProjectionWithBusinessTemporalSourceAndProcessingTemporalTarget.parameters,
@@ -126,7 +126,7 @@ test(
 
     const _personClass =
       mockedQueryStore.graphManagerState.graph.getClass('my::Person');
-    act(() => {
+    await act(async () => {
       queryBuilderState.changeClass(_personClass);
     });
     const queryBuilderSetup = await waitFor(() =>
@@ -136,7 +136,7 @@ test(
     await waitFor(() => getByText(queryBuilderSetup, 'map'));
     await waitFor(() => getByText(queryBuilderSetup, 'runtime'));
 
-    act(() => {
+    await act(async () => {
       queryBuilderState.initialize(
         create_RawLambda(
           TEST_DATA__simpleProjectionWithBusinessTemporalSourceAndBusinessTemporalTarget.parameters,
@@ -184,7 +184,7 @@ test(
 
     const _personClass =
       mockedQueryStore.graphManagerState.graph.getClass('my::Person');
-    act(() => {
+    await act(async () => {
       queryBuilderState.changeClass(_personClass);
     });
     const queryBuilderSetup = await waitFor(() =>
@@ -194,7 +194,7 @@ test(
     await waitFor(() => getByText(queryBuilderSetup, 'map'));
     await waitFor(() => getByText(queryBuilderSetup, 'runtime'));
 
-    act(() => {
+    await act(async () => {
       queryBuilderState.initialize(
         create_RawLambda(
           TEST_DATA__simpleProjectionWithBusinessTemporalSourceAndBiTemporalTarget.parameters,
@@ -242,7 +242,7 @@ test(
 
     const _personClass =
       mockedQueryStore.graphManagerState.graph.getClass('my::Person1');
-    act(() => {
+    await act(async () => {
       queryBuilderState.changeClass(_personClass);
     });
     const queryBuilderSetup = await waitFor(() =>
@@ -252,7 +252,7 @@ test(
     await waitFor(() => getByText(queryBuilderSetup, 'map'));
     await waitFor(() => getByText(queryBuilderSetup, 'runtime'));
 
-    act(() => {
+    await act(async () => {
       queryBuilderState.initialize(
         create_RawLambda(
           TEST_DATA__simpleProjectionWithBiTemporalSourceAndBiTemporalTarget.parameters,
@@ -300,7 +300,7 @@ test(
 
     const _personClass =
       mockedQueryStore.graphManagerState.graph.getClass('my::Person1');
-    act(() => {
+    await act(async () => {
       queryBuilderState.changeClass(_personClass);
     });
     const queryBuilderSetup = await waitFor(() =>
@@ -310,7 +310,7 @@ test(
     await waitFor(() => getByText(queryBuilderSetup, 'map'));
     await waitFor(() => getByText(queryBuilderSetup, 'runtime'));
 
-    act(() => {
+    await act(async () => {
       queryBuilderState.initialize(
         create_RawLambda(
           TEST_DATA__simpleProjectionWithBiTemporalSourceAndBusinessTemporalTarget.parameters,
@@ -358,7 +358,7 @@ test(
 
     const _personClass =
       mockedQueryStore.graphManagerState.graph.getClass('my::Person1');
-    act(() => {
+    await act(async () => {
       queryBuilderState.changeClass(_personClass);
     });
     const queryBuilderSetup = await waitFor(() =>
@@ -368,7 +368,7 @@ test(
     await waitFor(() => getByText(queryBuilderSetup, 'map'));
     await waitFor(() => getByText(queryBuilderSetup, 'runtime'));
 
-    act(() => {
+    await act(async () => {
       queryBuilderState.initialize(
         create_RawLambda(
           TEST_DATA__simpleProjectionWithBiTemporalSourceAndProcessingTemporalTarget.parameters,
@@ -416,7 +416,7 @@ test(
 
     const _personClass =
       mockedQueryStore.graphManagerState.graph.getClass('my::Person2');
-    act(() => {
+    await act(async () => {
       queryBuilderState.changeClass(_personClass);
     });
     const queryBuilderSetup = await waitFor(() =>
@@ -426,7 +426,7 @@ test(
     await waitFor(() => getByText(queryBuilderSetup, 'map'));
     await waitFor(() => getByText(queryBuilderSetup, 'runtime'));
 
-    act(() => {
+    await act(async () => {
       queryBuilderState.initialize(
         create_RawLambda(
           TEST_DATA__simpleProjectionWithProcessingTemporalSourceAndBiTemporalTarget.parameters,
@@ -474,7 +474,7 @@ test(
 
     const _personClass =
       mockedQueryStore.graphManagerState.graph.getClass('my::Person2');
-    act(() => {
+    await act(async () => {
       queryBuilderState.changeClass(_personClass);
     });
     const queryBuilderSetup = await waitFor(() =>
@@ -484,7 +484,7 @@ test(
     await waitFor(() => getByText(queryBuilderSetup, 'map'));
     await waitFor(() => getByText(queryBuilderSetup, 'runtime'));
 
-    act(() => {
+    await act(async () => {
       queryBuilderState.initialize(
         create_RawLambda(
           TEST_DATA__simpleProjectionWithProcessingTemporalSourceAndBusinessTemporalTarget.parameters,
@@ -532,7 +532,7 @@ test(
 
     const _personClass =
       mockedQueryStore.graphManagerState.graph.getClass('my::Person2');
-    act(() => {
+    await act(async () => {
       queryBuilderState.changeClass(_personClass);
     });
     const queryBuilderSetup = await waitFor(() =>
@@ -542,7 +542,7 @@ test(
     await waitFor(() => getByText(queryBuilderSetup, 'map'));
     await waitFor(() => getByText(queryBuilderSetup, 'runtime'));
 
-    act(() => {
+    await act(async () => {
       queryBuilderState.initialize(
         create_RawLambda(
           TEST_DATA__simpleProjectionWithProcessingTemporalSourceAndProcessingTemporalTarget.parameters,
@@ -590,7 +590,7 @@ test(
 
     const _personClass =
       mockedQueryStore.graphManagerState.graph.getClass('my::Firm');
-    act(() => {
+    await act(async () => {
       queryBuilderState.changeClass(_personClass);
     });
     const queryBuilderSetup = await waitFor(() =>
@@ -600,7 +600,7 @@ test(
     await waitFor(() => getByText(queryBuilderSetup, 'map'));
     await waitFor(() => getByText(queryBuilderSetup, 'runtime'));
 
-    act(() => {
+    await act(async () => {
       queryBuilderState.initialize(
         create_RawLambda(
           TEST_DATA__simpleProjectionWithNonTemporalSourceAndProcessingTemporalTarget.parameters,
@@ -648,7 +648,7 @@ test(
 
     const _personClass =
       mockedQueryStore.graphManagerState.graph.getClass('my::Firm');
-    act(() => {
+    await act(async () => {
       queryBuilderState.changeClass(_personClass);
     });
     const queryBuilderSetup = await waitFor(() =>
@@ -658,7 +658,7 @@ test(
     await waitFor(() => getByText(queryBuilderSetup, 'map'));
     await waitFor(() => getByText(queryBuilderSetup, 'runtime'));
 
-    act(() => {
+    await act(async () => {
       queryBuilderState.initialize(
         create_RawLambda(
           TEST_DATA__simpleProjectionWithNonTemporalSourceAndBusinessTemporalTarget.parameters,
@@ -706,7 +706,7 @@ test(
 
     const _personClass =
       mockedQueryStore.graphManagerState.graph.getClass('my::Firm');
-    act(() => {
+    await act(async () => {
       queryBuilderState.changeClass(_personClass);
     });
     const queryBuilderSetup = await waitFor(() =>
@@ -716,7 +716,7 @@ test(
     await waitFor(() => getByText(queryBuilderSetup, 'map'));
     await waitFor(() => getByText(queryBuilderSetup, 'runtime'));
 
-    act(() => {
+    await act(async () => {
       queryBuilderState.initialize(
         create_RawLambda(
           TEST_DATA__simpleProjectionWithNonTemporalSourceAndBiTemporalTarget.parameters,

@@ -19,6 +19,8 @@ import {
   guaranteeNonNullable,
   addUniqueEntry,
   ActionState,
+  assertErrorThrown,
+  type GeneratorFn,
 } from '@finos/legend-shared';
 import {
   type AbstractProperty,
@@ -50,7 +52,14 @@ import {
   Enumeration,
 } from '@finos/legend-graph';
 import type { QueryBuilderState } from './QueryBuilderState.js';
-import { action, makeAutoObservable, makeObservable, observable } from 'mobx';
+import {
+  action,
+  flow,
+  flowResult,
+  makeAutoObservable,
+  makeObservable,
+  observable,
+} from 'mobx';
 import {
   DEFAULT_LAMBDA_VARIABLE_NAME,
   QUERY_BUILDER_SUPPORTED_FUNCTIONS,
@@ -495,27 +504,26 @@ export class QueryBuilderExplorerState {
   humanizePropertyName = true;
   showUnmappedProperties = false;
   propertySearchPanelState: QueryBuilderPropertySearchPanelState;
-  mappingModelCoverageAnalysisState: ActionState;
+  mappingModelCoverageAnalysisResult?: MappingModelCoverageAnalysisResult;
+  mappingModelCoverageAnalysisState = ActionState.create();
 
   constructor(queryBuilderState: QueryBuilderState) {
     makeAutoObservable(this, {
       queryBuilderState: false,
       previewDataState: false,
-      propertySearchPanelState: observable,
-      mappingModelCoverageAnalysisState: observable,
       treeData: observable.ref,
       setTreeData: action,
       refreshTree: action,
       refreshTreeData: action,
       setHumanizePropertyName: action,
       setShowUnmappedProperties: action,
+      analyzeMappingModelCoverage: flow,
     });
 
     this.queryBuilderState = queryBuilderState;
     this.propertySearchPanelState = new QueryBuilderPropertySearchPanelState(
       this.queryBuilderState,
     );
-    this.mappingModelCoverageAnalysisState = ActionState.create();
   }
 
   get nonNullableTreeData(): TreeData<QueryBuilderExplorerTreeNodeData> {
@@ -549,16 +557,34 @@ export class QueryBuilderExplorerState {
     const _class = this.queryBuilderState.querySetupState._class;
     const _mapping = this.queryBuilderState.querySetupState.mapping;
     this.setTreeData(
-      _class &&
-        _mapping &&
-        this.queryBuilderState.querySetupState
-          .mappingModelCoverageAnalysisResult
+      _class && _mapping && this.mappingModelCoverageAnalysisResult
         ? getQueryBuilderTreeData(
             _class,
-            this.queryBuilderState.querySetupState
-              .mappingModelCoverageAnalysisResult,
+            this.mappingModelCoverageAnalysisResult,
           )
         : undefined,
     );
+  }
+
+  *analyzeMappingModelCoverage(): GeneratorFn<void> {
+    if (this.queryBuilderState.querySetupState.mapping) {
+      this.queryBuilderState.explorerState.mappingModelCoverageAnalysisState.inProgress();
+      this.queryBuilderState.explorerState.mappingModelCoverageAnalysisState.setMessage(
+        'Analyzing Mapping...',
+      );
+      try {
+        this.mappingModelCoverageAnalysisResult = (yield flowResult(
+          this.queryBuilderState.graphManagerState.graphManager.analyzeMappingModelCoverage(
+            this.queryBuilderState.querySetupState.mapping,
+            this.queryBuilderState.graphManagerState.graph,
+          ),
+        )) as MappingModelCoverageAnalysisResult;
+        this.queryBuilderState.explorerState.refreshTreeData();
+      } catch (error) {
+        assertErrorThrown(error);
+        this.queryBuilderState.applicationStore.notifyError(error.message);
+      }
+      this.queryBuilderState.explorerState.mappingModelCoverageAnalysisState.pass();
+    }
   }
 }

@@ -51,7 +51,7 @@ test(
     const _firmClass =
       mockedQueryStore.graphManagerState.graph.getClass('my::Firm');
 
-    act(() => {
+    await act(async () => {
       queryBuilderState.changeClass(_firmClass);
     });
     const queryBuilderSetup = await waitFor(() =>

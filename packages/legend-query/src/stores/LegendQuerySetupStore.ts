@@ -175,13 +175,13 @@ export class CreateQuerySetupState extends QuerySetupState {
 
   get compatibleRuntimes(): PackageableRuntime[] {
     const currentMapping = this.currentMapping;
-    const surveyResult = this.mappingRuntimeCompatibilitySurveyResult;
-    if (!currentMapping || !surveyResult) {
+    if (!currentMapping) {
       return [];
     }
     return (
-      surveyResult.find((result) => result.mapping === currentMapping)
-        ?.runtimes ?? []
+      this.mappingRuntimeCompatibilitySurveyResult.find(
+        (result) => result.mapping === currentMapping,
+      )?.runtimes ?? []
     );
   }
 
@@ -334,7 +334,7 @@ export class ServiceQuerySetupState extends QuerySetupState {
 
       this.setServiceExecutionOptions(
         serviceExecutionAnalysisResults.flatMap((result) => {
-          if (result.executionKeys && result.executionKeys.length) {
+          if (result.executionKeys?.length) {
             return result.executionKeys.map((key) => ({
               service: result.service,
               key,

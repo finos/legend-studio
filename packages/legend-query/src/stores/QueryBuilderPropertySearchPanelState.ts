@@ -257,7 +257,7 @@ export class QueryBuilderPropertySearchPanelState {
                 property,
                 node,
                 guaranteeNonNullable(
-                  this.queryBuilderState.querySetupState
+                  this.queryBuilderState.explorerState
                     .mappingModelCoverageAnalysisResult,
                 ),
               );
@@ -274,7 +274,7 @@ export class QueryBuilderPropertySearchPanelState {
                 subclass,
                 node,
                 guaranteeNonNullable(
-                  this.queryBuilderState.querySetupState
+                  this.queryBuilderState.explorerState
                     .mappingModelCoverageAnalysisResult,
                 ),
               );

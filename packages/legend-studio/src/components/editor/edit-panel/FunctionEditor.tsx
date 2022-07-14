@@ -66,7 +66,7 @@ import {
   stub_RawVariableExpression,
 } from '@finos/legend-graph';
 import {
-  PackageableElementOption,
+  type PackageableElementOption,
   useApplicationNavigationContext,
   useApplicationStore,
 } from '@finos/legend-application';

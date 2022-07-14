@@ -41,7 +41,6 @@ import {
   type StoredEntity,
   parseGAVCoordinates,
   LATEST_VERSION_ALIAS,
-  ProjectVersionEntities,
   ProjectData,
   generateGAVCoordinates,
 } from '@finos/legend-server-depot';

@@ -487,7 +487,7 @@ test(
       'model::target::NFirm',
     );
 
-    act(() => {
+    await act(async () => {
       queryBuilderState.changeClass(_personClass);
     });
     const queryBuilderSetup = await waitFor(() =>
@@ -509,7 +509,7 @@ test(
       FETCH_STRUCTURE_MODE.GRAPH_FETCH,
     );
 
-    act(() => {
+    await act(async () => {
       queryBuilderState.initialize(
         create_RawLambda(
           TEST_DATA__complexGraphFetch.parameters,

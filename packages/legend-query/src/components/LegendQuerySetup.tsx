@@ -616,12 +616,10 @@ const CreateQuerySetup = observer(
     };
 
     // mapping
-    const mappingRuntimeCompatibilitySurveyResult =
-      querySetupState.mappingRuntimeCompatibilitySurveyResult;
     const mappingOptions =
-      mappingRuntimeCompatibilitySurveyResult?.map((result) =>
+      querySetupState.mappingRuntimeCompatibilitySurveyResult.map((result) =>
         buildElementOption(result.mapping),
-      ) ?? [];
+      );
     const selectedMappingOption = querySetupState.currentMapping
       ? {
           label: querySetupState.currentMapping.name,
@@ -636,12 +634,9 @@ const CreateQuerySetup = observer(
     ): void => {
       querySetupState.setCurrentMapping(option?.value);
       // cascade
-      if (
-        querySetupState.currentMapping &&
-        querySetupState.mappingRuntimeCompatibilitySurveyResult
-      ) {
+      if (querySetupState.currentMapping) {
         querySetupState.setCurrentRuntime(
-          getNullableFirstElement(querySetupState.compatibleRuntimes ?? []),
+          getNullableFirstElement(querySetupState.compatibleRuntimes),
         );
       } else {
         querySetupState.setCurrentRuntime(undefined);

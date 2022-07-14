@@ -498,20 +498,20 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
       if (debug) {
         const debugResult =
           (yield this.editorStore.graphManagerState.graphManager.debugExecutionPlanGeneration(
-            this.editorStore.graphManagerState.graph,
-            this.selectedExecutionContextState.executionContext.mapping.value,
             query,
+            this.selectedExecutionContextState.executionContext.mapping.value,
             this.selectedExecutionContextState.executionContext.runtime,
+            this.editorStore.graphManagerState.graph,
           )) as { plan: RawExecutionPlan; debug: string };
         rawPlan = debugResult.plan;
         this.executionPlanState.setDebugText(debugResult.debug);
       } else {
         rawPlan =
           (yield this.editorStore.graphManagerState.graphManager.generateExecutionPlan(
-            this.editorStore.graphManagerState.graph,
-            this.selectedExecutionContextState.executionContext.mapping.value,
             query,
+            this.selectedExecutionContextState.executionContext.mapping.value,
             this.selectedExecutionContextState.executionContext.runtime,
+            this.editorStore.graphManagerState.graph,
           )) as object;
       }
       try {
@@ -559,10 +559,10 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
       const query = this.getExecutionQuery();
       const result =
         (yield this.editorStore.graphManagerState.graphManager.executeMapping(
-          this.editorStore.graphManagerState.graph,
-          this.selectedExecutionContextState.executionContext.mapping.value,
           query,
+          this.selectedExecutionContextState.executionContext.mapping.value,
           this.selectedExecutionContextState.executionContext.runtime,
+          this.editorStore.graphManagerState.graph,
           {
             useLosslessParse: true,
           },
