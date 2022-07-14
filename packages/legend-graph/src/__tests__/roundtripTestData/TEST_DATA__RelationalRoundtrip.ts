@@ -4091,7 +4091,7 @@ export const TEST_DATA__RelationalDatabaseConnectionRoundtrip = [
         element: 'apps::pure::studio::relational::tests::dbInc',
         type: 'H2',
       },
-      name: 'myMiddleTierUsernamePassword',
+      name: 'middleTierUsernamePasswordConnection',
       package: 'apps',
     },
     classifierPath: 'meta::pure::runtime::PackageableConnection',
