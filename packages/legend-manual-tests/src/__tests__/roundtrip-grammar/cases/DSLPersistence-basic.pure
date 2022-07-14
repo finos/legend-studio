@@ -179,10 +179,7 @@ PersistenceContext org::legend::ZooPersistenceContext1
   persistence: org::legend::ZooPersistence;
   serviceParameters:
   [
-    connection=org::legend::ZooDbConnection,
-    foo='Hello',
-    bar=29,
-    qux=27.5
+    connection=org::legend::ZooDbConnection
   ];
   sinkConnection: org::legend::ZooDbConnection;
 }
