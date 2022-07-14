@@ -292,7 +292,9 @@ export const CreateQueryLoader = observer(() => {
       : undefined;
 
   useEffect(() => {
-    queryStore.setupCreateQueryInfoState(params);
+    if (queryStore.editorInitState.isInInitialState) {
+      queryStore.setupCreateQueryInfoState(params);
+    }
   }, [queryStore, params]);
 
   // TODO: this will make the route change as the users select another mapping and runtime
