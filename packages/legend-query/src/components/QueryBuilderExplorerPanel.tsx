@@ -44,6 +44,7 @@ import {
   PURE_ClassIcon,
   CheckIcon,
   SearchIcon,
+  PanelLoadingIndicator,
 } from '@finos/legend-art';
 import {
   type QueryBuilderExplorerTreeDragSource,
@@ -924,17 +925,33 @@ export const QueryBuilderExplorerPanel = observer(
           )}
         </div>
         <div className="panel__content query-builder-explorer-tree__content">
+          <PanelLoadingIndicator
+            isLoading={
+              explorerState.mappingModelCoverageAnalysisState.isInProgress
+            }
+          />
           <QueryBuilderExplorerPropertyDragLayer
             queryBuilderState={queryBuilderState}
           />
-          {!explorerState.treeData && (
-            <BlankPanelContent>
-              Specify the class, mapping, and connection to start building query
-            </BlankPanelContent>
-          )}
-          {explorerState.treeData && (
-            <QueryBuilderExplorerTree queryBuilderState={queryBuilderState} />
-          )}
+          {!explorerState.treeData &&
+            (explorerState.mappingModelCoverageAnalysisState.isInProgress ? (
+              <BlankPanelContent>
+                {explorerState.mappingModelCoverageAnalysisState.message}
+              </BlankPanelContent>
+            ) : (
+              <BlankPanelContent>
+                Specify the class, mapping, and connection to start building
+                query
+              </BlankPanelContent>
+            ))}
+          {explorerState.treeData &&
+            (explorerState.mappingModelCoverageAnalysisState.isInProgress ? (
+              <BlankPanelContent>
+                {explorerState.mappingModelCoverageAnalysisState.message}
+              </BlankPanelContent>
+            ) : (
+              <QueryBuilderExplorerTree queryBuilderState={queryBuilderState} />
+            ))}
           <QueryBuilderExplorerPreviewDataModal
             queryBuilderState={queryBuilderState}
           />

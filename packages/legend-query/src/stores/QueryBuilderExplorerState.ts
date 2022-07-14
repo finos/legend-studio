@@ -15,7 +15,11 @@
  */
 
 import type { TreeNodeData, TreeData } from '@finos/legend-art';
-import { guaranteeNonNullable, addUniqueEntry } from '@finos/legend-shared';
+import {
+  guaranteeNonNullable,
+  addUniqueEntry,
+  ActionState,
+} from '@finos/legend-shared';
 import {
   type AbstractProperty,
   type PureModel,
@@ -491,12 +495,14 @@ export class QueryBuilderExplorerState {
   humanizePropertyName = true;
   showUnmappedProperties = false;
   propertySearchPanelState: QueryBuilderPropertySearchPanelState;
+  mappingModelCoverageAnalysisState: ActionState;
 
   constructor(queryBuilderState: QueryBuilderState) {
     makeAutoObservable(this, {
       queryBuilderState: false,
       previewDataState: false,
       propertySearchPanelState: observable,
+      mappingModelCoverageAnalysisState: observable,
       treeData: observable.ref,
       setTreeData: action,
       refreshTree: action,
@@ -509,6 +515,7 @@ export class QueryBuilderExplorerState {
     this.propertySearchPanelState = new QueryBuilderPropertySearchPanelState(
       this.queryBuilderState,
     );
+    this.mappingModelCoverageAnalysisState = ActionState.create();
   }
 
   get nonNullableTreeData(): TreeData<QueryBuilderExplorerTreeNodeData> {
