@@ -53,6 +53,7 @@
 
     &__configs {
       display: flex;
+      width: 100%;
 
       &__type {
         @include flexVCenter;
@@ -94,5 +95,30 @@
   &__editor {
     overflow-y: hidden;
     position: relative;
+  }
+
+  &__preview {
+    overflow-y: hidden;
+    position: relative;
+
+    &__markdown {
+      height: 100%;
+      overflow-y: scroll;
+    }
+  }
+
+  &__preview-btn {
+    color: var(--color-blue-400);
+    cursor: pointer;
+    font-size: 1.8rem;
+    margin: auto 0.5rem auto auto;
+
+    &__active {
+      color: var(--color-light-grey-100);
+    }
+
+    &:hover {
+      background: var(--color-blue-100);
+    }
   }
 }

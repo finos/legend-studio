@@ -14,17 +14,23 @@
  * limitations under the License.
  */
 
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { prettyCONSTName } from '@finos/legend-shared';
 import { StudioTextInputEditor, useEditorStore } from '@finos/legend-studio';
 import { TextEditorState } from '../../stores/studio/TextEditorState.js';
 import {
+  OpenPreviewIcon,
   LockIcon,
   CaretDownIcon,
   DropdownMenu,
   MenuContent,
   MenuContentItem,
+  MarkdownTextViewer,
+  ResizablePanel,
+  ResizablePanelGroup,
+  ResizablePanelSplitter,
+  getControlledResizablePanelProps,
 } from '@finos/legend-art';
 import {
   EDITOR_LANGUAGE,
@@ -55,6 +61,9 @@ export const TextElementEditor = observer(() => {
   const textElement = textEditorState.textElement;
   const isReadOnly = textEditorState.isReadOnly;
   const typeNameRef = useRef<HTMLInputElement>(null);
+  const [showPreview, setShowPreview] = useState(false);
+  const isMarkdown = textElement.type === EDITOR_LANGUAGE.MARKDOWN;
+
   const changeType =
     (val: TEXT_TYPE): (() => void) =>
     (): void => {
@@ -62,6 +71,7 @@ export const TextElementEditor = observer(() => {
     };
   const changeContent = (val: string): void =>
     text_setContent(textElement, val);
+  const changePreview = (val: boolean): void => setShowPreview(val);
 
   useEffect(() => {
     if (!isReadOnly) {
@@ -71,6 +81,38 @@ export const TextElementEditor = observer(() => {
 
   useApplicationNavigationContext(
     DSL_TEXT_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.TEXT_EDITOR,
+  );
+
+  const renderPlainTextEditorView = (): JSX.Element => (
+    <div className="panel__content text-element-editor__editor">
+      <StudioTextInputEditor
+        language={getTextElementEditorLanguage(textElement.type)}
+        inputValue={textElement.content}
+        updateInput={changeContent}
+      />
+    </div>
+  );
+
+  const renderMarkdownView = (): JSX.Element => (
+    <ResizablePanelGroup
+      {...getControlledResizablePanelProps(true)}
+      orientation="vertical"
+    >
+      <ResizablePanel minSize={250}>
+        {renderPlainTextEditorView()}
+      </ResizablePanel>
+      {showPreview && <ResizablePanelSplitter />}
+      {showPreview && (
+        <ResizablePanel>
+          <div className="panel_content text-element-editor__preview">
+            {MarkdownTextViewer({
+              value: { value: textElement.content },
+              className: `text-element-editor__preview__markdown`,
+            })}
+          </div>
+        </ResizablePanel>
+      )}
+    </ResizablePanelGroup>
   );
 
   return (
@@ -112,15 +154,20 @@ export const TextElementEditor = observer(() => {
               </div>
             </div>
           </DropdownMenu>
+          {isMarkdown ? (
+            <button
+              title={showPreview ? `Hide Preview` : `Show Preview`}
+              className={`text-element-editor__preview-btn ${
+                showPreview ? `text-element-editor__preview-btn__active` : ''
+              }`}
+              onClick={(): void => changePreview(!showPreview)}
+            >
+              <OpenPreviewIcon />
+            </button>
+          ) : null}
         </div>
       </div>
-      <div className="panel__content text-element-editor__editor">
-        <StudioTextInputEditor
-          language={getTextElementEditorLanguage(textElement.type)}
-          inputValue={textElement.content}
-          updateInput={changeContent}
-        />
-      </div>
+      {isMarkdown ? renderMarkdownView() : renderPlainTextEditorView()}
     </div>
   );
 });
