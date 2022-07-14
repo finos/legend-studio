@@ -168,6 +168,7 @@ export const buildPropertyExpressionFromExplorerTreeNodeData = (
   treeData: TreeData<QueryBuilderExplorerTreeNodeData>,
   node: QueryBuilderExplorerTreePropertyNodeData,
   graph: PureModel,
+  allMappedPropertyNodes: QueryBuilderExplorerTreeNodeData[],
 ): AbstractPropertyExpression => {
   const multiplicityOne = graph.getTypicalMultiplicity(
     TYPICAL_MULTIPLICITY_TYPE.ONE,
@@ -183,7 +184,9 @@ export const buildPropertyExpressionFromExplorerTreeNodeData = (
   propertyExpression.func = guaranteeNonNullable(node.property);
   let currentExpression: AbstractPropertyExpression | SimpleFunctionExpression =
     propertyExpression;
-  let parentNode = treeData.nodes.get(node.parentId);
+  let parentNode =
+    treeData.nodes.get(node.parentId) ??
+    allMappedPropertyNodes.find((n) => n.id === node.parentId);
   let currentNode: QueryBuilderExplorerTreeNodeData = node;
   while (
     parentNode instanceof QueryBuilderExplorerTreePropertyNodeData ||
@@ -219,6 +222,18 @@ export const buildPropertyExpressionFromExplorerTreeNodeData = (
     currentExpression = parentPropertyExpression;
     currentNode = parentNode;
     parentNode = treeData.nodes.get(parentNode.parentId);
+    if (
+      !parentNode &&
+      (currentNode instanceof QueryBuilderExplorerTreePropertyNodeData ||
+        currentNode instanceof QueryBuilderExplorerTreeSubTypeNodeData)
+    ) {
+      for (let i = 0; i < allMappedPropertyNodes.length; i++) {
+        if (allMappedPropertyNodes[i]?.id === currentNode.parentId) {
+          parentNode = allMappedPropertyNodes[i];
+          break;
+        }
+      }
+    }
   }
   currentExpression.parametersValues.push(projectionColumnLambdaVariable);
   if (currentExpression instanceof SimpleFunctionExpression) {

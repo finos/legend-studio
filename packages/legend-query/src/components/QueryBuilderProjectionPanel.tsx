@@ -575,6 +575,8 @@ export const QueryBuilderProjectionPanel = observer(
                   queryBuilderState.explorerState.nonNullableTreeData,
                   (item as QueryBuilderExplorerTreeDragSource).node,
                   projectionState.queryBuilderState.graphManagerState.graph,
+                  queryBuilderState.explorerState.propertySearchPanelState
+                    .allMappedPropertyNodes,
                 ),
                 queryBuilderState.explorerState.humanizePropertyName,
               ),

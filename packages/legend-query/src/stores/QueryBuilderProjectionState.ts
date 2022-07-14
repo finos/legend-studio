@@ -177,6 +177,8 @@ export class QueryBuilderSimpleProjectionColumnState extends QueryBuilderProject
           .nonNullableTreeData,
         node,
         this.projectionState.queryBuilderState.graphManagerState.graph,
+        this.projectionState.queryBuilderState.explorerState
+          .propertySearchPanelState.allMappedPropertyNodes,
       ),
     );
     this.columnName = getPropertyChainName(
@@ -695,6 +697,8 @@ export class QueryBuilderProjectionState {
       this.queryBuilderState.explorerState.nonNullableTreeData,
       node,
       this.queryBuilderState.graphManagerState.graph,
+      this.queryBuilderState.explorerState.propertySearchPanelState
+        .allMappedPropertyNodes,
     );
     const propertyType = node.property.genericType.value.rawType;
     try {

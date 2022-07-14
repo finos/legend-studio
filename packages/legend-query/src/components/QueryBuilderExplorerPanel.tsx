@@ -281,6 +281,8 @@ const QueryBuilderExplorerContextMenu = observer(
                 queryBuilderState.explorerState.nonNullableTreeData,
                 node,
                 projectionState.queryBuilderState.graphManagerState.graph,
+                queryBuilderState.explorerState.propertySearchPanelState
+                  .allMappedPropertyNodes,
               ),
               projectionState.queryBuilderState.explorerState.humanizePropertyName,
             ),
@@ -334,6 +336,8 @@ const QueryBuilderExplorerContextMenu = observer(
                   queryBuilderState.explorerState.nonNullableTreeData,
                   nodeToAdd,
                   projectionState.queryBuilderState.graphManagerState.graph,
+                  queryBuilderState.explorerState.propertySearchPanelState
+                    .allMappedPropertyNodes,
                 ),
                 projectionState.queryBuilderState.explorerState.humanizePropertyName,
               ),

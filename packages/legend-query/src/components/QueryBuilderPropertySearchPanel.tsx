@@ -593,7 +593,7 @@ export const QueryBuilderPropertySearchPanel = observer(
                 <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
               </ResizablePanelSplitter>
               <ResizablePanel>
-                <div className="query-builder-property-search-panel__search__results">
+                <div className="query-builder-property-search-panel__results">
                   {propertySearchPanelState.filteredPropertyNodes.map(
                     (node) => (
                       <QueryBuilderTreeNodeViewer

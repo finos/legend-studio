@@ -18,7 +18,7 @@
 
 .query-builder-property-search-panel {
   height: 50vh;
-  width: 30vw;
+  width: 40vw;
 
   // make sure we cancel the effect of the `pointer-events: none` set
   // on the container of the panel so we could interact with the panel
@@ -295,9 +295,5 @@
     height: 100%;
     padding: 1rem;
     overflow-y: auto;
-  }
-
-  &__search__results {
-    padding: 0.5rem;
   }
 }
