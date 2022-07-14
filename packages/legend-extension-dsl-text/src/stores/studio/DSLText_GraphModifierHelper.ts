@@ -24,7 +24,3 @@ export const text_setType = action((text: Text, type: string): void => {
 export const text_setContent = action((text: Text, content: string): void => {
   text.content = content;
 });
-
-export const text_setPreview = action((text: Text, preview: boolean): void => {
-  text.preview = preview;
-});

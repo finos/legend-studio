@@ -1,5 +1,5 @@
 ---
-'@finos/legend-extension-dsl-text': patch
+'@finos/legend-extension-dsl-text': minor
 ---
 
-Addition of preview feature for markdown type text editor element.
+Support previewing `Markdown` in editor.

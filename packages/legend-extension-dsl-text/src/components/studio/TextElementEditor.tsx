@@ -39,7 +39,6 @@ import {
 import {
   text_setContent,
   text_setType,
-  text_setPreview,
 } from '../../stores/studio/DSLText_GraphModifierHelper.js';
 import { TEXT_TYPE } from '../../helper/DSLText_Helper.js';
 import { DSL_TEXT_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../stores/studio/DSLText_LegendStudioApplicationNavigationContext.js';
@@ -62,9 +61,7 @@ export const TextElementEditor = observer(() => {
   const textElement = textEditorState.textElement;
   const isReadOnly = textEditorState.isReadOnly;
   const typeNameRef = useRef<HTMLInputElement>(null);
-  const [showPreview, setShowPreview] = useState(
-    textElement.preview ? true : false,
-  );
+  const [showPreview, setShowPreview] = useState(false);
   const isMarkdown = textElement.type === EDITOR_LANGUAGE.MARKDOWN;
 
   const changeType =
@@ -74,10 +71,7 @@ export const TextElementEditor = observer(() => {
     };
   const changeContent = (val: string): void =>
     text_setContent(textElement, val);
-  const changePreview = (val: boolean): void => {
-    setShowPreview(val);
-    text_setPreview(textElement, val);
-  };
+  const changePreview = (val: boolean): void => setShowPreview(val);
 
   useEffect(() => {
     if (!isReadOnly) {
@@ -87,6 +81,38 @@ export const TextElementEditor = observer(() => {
 
   useApplicationNavigationContext(
     DSL_TEXT_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.TEXT_EDITOR,
+  );
+
+  const renderPlainTextEditorView = (): JSX.Element => (
+    <div className="panel__content text-element-editor__editor">
+      <StudioTextInputEditor
+        language={getTextElementEditorLanguage(textElement.type)}
+        inputValue={textElement.content}
+        updateInput={changeContent}
+      />
+    </div>
+  );
+
+  const renderMarkdownView = (): JSX.Element => (
+    <ResizablePanelGroup
+      {...getControlledResizablePanelProps(true)}
+      orientation="vertical"
+    >
+      <ResizablePanel minSize={250}>
+        {renderPlainTextEditorView()}
+      </ResizablePanel>
+      {showPreview && <ResizablePanelSplitter />}
+      {showPreview && (
+        <ResizablePanel>
+          <div className="panel_content text-element-editor__preview">
+            {MarkdownTextViewer({
+              value: { value: textElement.content },
+              className: `text-element-editor__preview__markdown`,
+            })}
+          </div>
+        </ResizablePanel>
+      )}
+    </ResizablePanelGroup>
   );
 
   return (
@@ -141,32 +167,7 @@ export const TextElementEditor = observer(() => {
           ) : null}
         </div>
       </div>
-
-      <ResizablePanelGroup
-        {...getControlledResizablePanelProps(true)}
-        orientation="vertical"
-      >
-        <ResizablePanel minSize={250}>
-          <div className="panel__content text-element-editor__editor">
-            <StudioTextInputEditor
-              language={getTextElementEditorLanguage(textElement.type)}
-              inputValue={textElement.content}
-              updateInput={changeContent}
-            />
-          </div>
-        </ResizablePanel>
-        {isMarkdown && showPreview && <ResizablePanelSplitter />}
-        {isMarkdown && showPreview && (
-          <ResizablePanel>
-            <div className="panel_content text-element-editor__preview">
-              {MarkdownTextViewer({
-                value: { value: textElement.content },
-                className: `text-element-editor__preview__markdown`,
-              })}
-            </div>
-          </ResizablePanel>
-        )}
-      </ResizablePanelGroup>
+      {isMarkdown ? renderMarkdownView() : renderPlainTextEditorView()}
     </div>
   );
 });
