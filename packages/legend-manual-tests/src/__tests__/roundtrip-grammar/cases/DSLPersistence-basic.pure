@@ -1,17 +1,93 @@
-###Persistence
-PersistenceContext org::legend::ZooPersistenceContext1
+###Pure
+Class org::legend::Zoo
 {
-  persistence: org::legend::ZooPersistence;
-  serviceParameters:
-  [
-    connection=org::legend::ZooDbConnection,
-    foo='Hello',
-    bar=29,
-    qux=27.5
-  ];
-  sinkConnection: org::legend::ZooDbConnection;
+  name: String[1];
+  zookeeper: org::legend::Person[1];
+  admin: org::legend::Person[1];
+  owner: org::legend::Person[1];
+  version: Integer[1];
 }
 
+Class org::legend::Person
+{
+  name: String[1];
+  systemIn: DateTime[1];
+  systemOut: DateTime[1];
+  effectiveFrom: DateTime[1];
+  effectiveThru: DateTime[1];
+  version: Integer[1];
+  deleted: Boolean[1];
+}
+
+Class org::legend::Animal
+{
+  name: String[1];
+}
+
+Association org::legend::ZooAnimal
+{
+  zoo: org::legend::Zoo[1];
+  animals: org::legend::Animal[*];
+}
+
+
+###Relational
+Database org::legend::ZooDb
+(
+)
+
+
+###Mapping
+Mapping org::legend::Mapping
+(
+)
+
+
+###Service
+Service org::legend::ZooService
+{
+  pattern: 'test';
+  documentation: 'test';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: src: org::legend::Zoo[1]|$src.name;
+    mapping: org::legend::Mapping;
+    runtime:
+    #{
+      mappings:
+      [
+        org::legend::Mapping
+      ];
+    }#;
+  }
+  testSuites:
+  [
+
+  ]
+  test: Single
+  {
+    data: 'test';
+    asserts:
+    [
+    ];
+  }
+}
+
+
+###Connection
+RelationalDatabaseConnection org::legend::ZooDbConnection
+{
+  store: org::legend::ZooDb;
+  type: H2;
+  specification: LocalH2
+  {
+  };
+  auth: DefaultH2;
+}
+
+
+###Persistence
 Persistence org::legend::ZooPersistence
 {
   doc: 'A persistence specification for Zoos.';
@@ -19,9 +95,9 @@ Persistence org::legend::ZooPersistence
   service: org::legend::ZooService;
   persister: Batch
   {
-    sink: ObjectStorage
+    sink: Relational
     {
-      binding: org::legend::ZooBinding;
+      database: org::legend::ZooDb;
     }
     ingestMode: BitemporalDelta
     {
@@ -94,105 +170,19 @@ Persistence org::legend::ZooPersistence
       {
         address: 'http://xyz.com';
       }
-    ]
-  }
-}
-
-
-###Service
-Service org::legend::ZooService
-{
-  pattern: 'test';
-  documentation: 'test';
-  autoActivateUpdates: true;
-  execution: Single
-  {
-    query: src: org::legend::Zoo[1]|$src.name;
-    mapping: org::legend::Mapping;
-    runtime:
-    #{
-      mappings:
-      [
-        org::legend::Mapping
-      ];
-    }#;
-  }
-  testSuites:
-  [
-
-  ]
-  test: Single
-  {
-    data: 'test';
-    asserts:
-    [
     ];
   }
 }
 
-
-###Relational
-Database org::legend::ZooDb
-(
-)
-
-
-###ExternalFormat
-Binding org::legend::ZooBinding
+PersistenceContext org::legend::ZooPersistenceContext1
 {
-  contentType: 'application/json';
-  modelIncludes: [
-    org::legend::Person
+  persistence: org::legend::ZooPersistence;
+  serviceParameters:
+  [
+    connection=org::legend::ZooDbConnection,
+    foo='Hello',
+    bar=29,
+    qux=27.5
   ];
-}
-
-
-###Pure
-Class org::legend::Zoo
-{
-  name: String[1];
-  zookeeper: org::legend::Person[1];
-  admin: org::legend::Person[1];
-  owner: org::legend::Person[1];
-  version: Integer[1];
-}
-
-Class org::legend::Person
-{
-  name: String[1];
-  systemIn: DateTime[1];
-  systemOut: DateTime[1];
-  effectiveFrom: DateTime[1];
-  effectiveThru: DateTime[1];
-  version: Integer[1];
-  deleted: Boolean[1];
-}
-
-Class org::legend::Animal
-{
-  name: String[1];
-}
-
-Association org::legend::ZooAnimal
-{
-  zoo: org::legend::Zoo[1];
-  animals: org::legend::Animal[*];
-}
-
-
-###Mapping
-Mapping org::legend::Mapping
-(
-)
-
-
-###Connection
-RelationalDatabaseConnection org::legend::ZooDbConnection
-{
-  store: org::legend::ZooDb;
-  type: H2;
-  specification: LocalH2
-  {
-  };
-  auth: DefaultH2;
+  sinkConnection: org::legend::ZooDbConnection;
 }
