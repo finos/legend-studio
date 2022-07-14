@@ -186,6 +186,7 @@ export const createEmptyEqualToJsonAssertion = (
     DEFAULT_TEST_ASSERTION_PREFIX,
   );
   assert.expected = createBareExternalFormat();
+  assert.parentTest = test;
   return assert;
 };
 
