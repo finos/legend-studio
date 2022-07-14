@@ -31,7 +31,6 @@ import {
   ActionState,
   assertErrorThrown,
   ContentType,
-  guaranteeNonNullable,
 } from '@finos/legend-shared';
 import { action, flow, makeObservable, observable } from 'mobx';
 import type { EditorStore } from '../../../EditorStore.js';
@@ -248,7 +247,8 @@ export class TestAssertionEditorState {
       const status =
         (yield this.editorStore.graphManagerState.graphManager.generateExpectedResult(
           this.testState.testable,
-          guaranteeNonNullable(this.assertion.parentTest),
+          this.testState.test,
+
           bare,
           this.editorStore.graphManagerState.graph,
         )) as AssertFail;
