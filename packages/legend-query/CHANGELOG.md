@@ -1,5 +1,15 @@
 # @finos/legend-query
 
+## 3.2.2
+
+### Patch Changes
+
+- [#1304](https://github.com/finos/legend-studio/pull/1304) [`8781d63b`](https://github.com/finos/legend-studio/commit/8781d63b281025b0e41464ef6c81484d00e5cac3) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Provide a UI feedback when fetching mapped properties from Engine ([#1307] https://github.com/finos/legend-studio/issues/1307).
+
+* [#1292](https://github.com/finos/legend-studio/pull/1292) [`3dee7f31`](https://github.com/finos/legend-studio/commit/3dee7f310b27aa15bd03a31c441a8b0e303ad5cf) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Forbid removal of projection columns used in the post filter ([#1288] https://github.com/finos/legend-studio/issues/1288).
+
+- [#1298](https://github.com/finos/legend-studio/pull/1298) [`5ef7e36a`](https://github.com/finos/legend-studio/commit/5ef7e36a715d29f5a010d3b922163f1da9fa56c8) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Hide Parameter panel by default.
+
 ## 3.2.1
 
 ## 3.2.0

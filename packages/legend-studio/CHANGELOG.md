@@ -1,5 +1,11 @@
 # @finos/legend-studio
 
+## 11.0.2
+
+### Patch Changes
+
+- [#1277](https://github.com/finos/legend-studio/pull/1277) [`be5a1f7b`](https://github.com/finos/legend-studio/commit/be5a1f7b1b4a412f41c4256c591a95bc3ae76336) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add editor for multi-execution services ([#943] https://github.com/finos/legend-studio/issues/943).
+
 ## 11.0.1
 
 ### Patch Changes
