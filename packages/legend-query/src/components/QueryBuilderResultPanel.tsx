@@ -450,13 +450,6 @@ export const QueryBuilderResultPanel = observer(
 
     return (
       <div className="panel query-builder__result">
-        <PanelLoadingIndicator
-          isLoading={
-            resultState.isExecutingQuery ||
-            resultState.isGeneratingPlan ||
-            resultState.exportDataState.isInProgress
-          }
-        />
         <div className="panel__header">
           <div className="panel__header__title">
             <div className="panel__header__title__label">result</div>
@@ -559,6 +552,13 @@ export const QueryBuilderResultPanel = observer(
           </div>
         </div>
         <div className="panel__content">
+          <PanelLoadingIndicator
+            isLoading={
+              resultState.isExecutingQuery ||
+              resultState.isGeneratingPlan ||
+              resultState.exportDataState.isInProgress
+            }
+          />
           {!executionResult && (
             <BlankPanelContent>
               Build or load a valid query first

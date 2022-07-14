@@ -21,6 +21,7 @@ import {
   isNonNullable,
   uniq,
   assertErrorThrown,
+  guaranteeNonNullable,
 } from '@finos/legend-shared';
 import type { QueryBuilderState } from './QueryBuilderState.js';
 import {
@@ -220,11 +221,15 @@ export class QueryBuilderSetupState {
 
   *analyzeMappingModelCoverage(): GeneratorFn<void> {
     if (this.mapping) {
+      this.queryBuilderState.explorerState.mappingModelCoverageAnalysisState.inProgress();
+      this.queryBuilderState.explorerState.mappingModelCoverageAnalysisState.setMessage(
+        'Analyzing Mapping...',
+      );
       try {
         this.mappingModelCoverageAnalysisResult = (yield flowResult(
           this.queryBuilderState.graphManagerState.graphManager.analyzeMappingModelCoverage(
             this.queryBuilderState.graphManagerState.graph,
-            this.mapping,
+            guaranteeNonNullable(this.mapping),
           ),
         )) as MappingModelCoverageAnalysisResult;
         this.queryBuilderState.explorerState.refreshTreeData();
@@ -232,6 +237,7 @@ export class QueryBuilderSetupState {
         assertErrorThrown(error);
         this.queryBuilderState.applicationStore.notifyError(error.message);
       }
+      this.queryBuilderState.explorerState.mappingModelCoverageAnalysisState.pass();
     }
   }
 }
