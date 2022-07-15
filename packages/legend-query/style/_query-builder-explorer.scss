@@ -60,6 +60,10 @@
     }
   }
 
+  &__config__item__class-label--deprecated {
+    text-decoration: line-through 2px;
+  }
+
   &__config__item__label {
     @include flexCenter;
 
@@ -354,6 +358,14 @@
     min-width: 0;
     color: var(--color-light-grey-400);
     user-select: none;
+  }
+
+  &__node__label--property--name {
+    display: inline-flex;
+  }
+
+  &__node__label--deprecated {
+    text-decoration: line-through 2px;
   }
 
   &__node__label--with-action {

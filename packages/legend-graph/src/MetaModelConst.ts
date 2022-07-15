@@ -126,6 +126,8 @@ export enum CORE_PURE_PATH {
   DATA_ELEMENT = 'meta::pure::data::DataElement',
 }
 
+export const PURE_DEPRECATED_STEREOTYPE = 'deprecated';
+
 export enum MILESTONING_STEREOTYPE {
   BUSINESS_TEMPORAL = 'businesstemporal',
   PROCESSING_TEMPORAL = 'processingtemporal',
