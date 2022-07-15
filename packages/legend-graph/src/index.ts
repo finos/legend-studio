@@ -188,6 +188,7 @@ export { GraphManagerState } from './GraphManagerState.js';
 export * from './GraphManagerStateProvider.js';
 export * from './GraphManagerTestUtils.js';
 export {
+  AbstractPureGraphManagerExtension,
   AbstractPureGraphManager,
   type GraphBuilderOptions,
 } from './graphManager/AbstractPureGraphManager.js';
@@ -218,7 +219,14 @@ export { ServiceExecutionMode } from './graphManager/action/service/ServiceExecu
 export { ServiceRegistrationResult } from './graphManager/action/service/ServiceRegistrationResult.js';
 export { DEPRECATED__ServiceTestResult } from './graphManager/action/service/DEPRECATED__ServiceTestResult.js';
 export { SourceInformation } from './graphManager/action/SourceInformation.js';
-
+export {
+  MappingModelCoverageAnalysisResult,
+  MappedEntity,
+  MappedProperty,
+  EntityMappedProperty,
+  EnumMappedProperty,
+} from './graphManager/action/analytics/MappingAnalytics.js';
+export { V1_MappingModelCoverageAnalysisResult } from './models/protocols/pure/v1/engine/analytics/V1_MappingAnalytics.js';
 export * from './models/protocols/pure/PureProtocolProcessorPlugin.js';
 
 // --------------------------------------------- TRANSFORMATION --------------------------------------------------
@@ -239,10 +247,7 @@ export { V1_RawLambda } from './models/protocols/pure/v1/model/rawValueSpecifica
 export { V1_ProcessingContext } from './models/protocols/pure/v1/transformation/pureGraph/to/helpers/V1_ProcessingContext.js';
 export { V1_ProtocolToMetaModelConnectionBuilder } from './models/protocols/pure/v1/transformation/pureGraph/to/V1_ProtocolToMetaModelConnectionBuilder.js';
 export * from './models/protocols/pure/v1/transformation/pureGraph/from/V1_GraphTransformerContext.js';
-export {
-  V1_initPackageableElement,
-  V1_transformElementReference,
-} from './models/protocols/pure/v1/transformation/pureGraph/from/V1_CoreTransformerHelper.js';
+export * from './models/protocols/pure/v1/transformation/pureGraph/from/V1_CoreTransformerHelper.js';
 export {
   V1_RawValueSpecificationTransformer,
   V1_transformRawLambda,
@@ -292,6 +297,9 @@ export * from './models/metamodels/pure/test/assertion/status/AssertPass.js';
 export * from './models/metamodels/pure/test/assertion/status/EqualToJsonAssertFail.js';
 export * from './models/metamodels/pure/test/assertion/TestAssertion.js';
 export * from './models/metamodels/pure/test/Test.js';
+export * from './models/metamodels/pure/test/assertion/EqualTo.js';
+export * from './models/metamodels/pure/test/assertion/EqualToJson.js';
+export * from './models/metamodels/pure/test/assertion/EqualToTDS.js';
 export * from './models/metamodels/pure/test/result/AtomicTestId.js';
 
 // --------------------------------------------- VALIDATION --------------------------------------------------
@@ -314,6 +322,7 @@ export * from './graphManager/action/changeDetection/GraphObserverHelper.js';
 export * from './graphManager/action/changeDetection/DSLExternalFormat_ObserverHelper.js';
 export * from './graphManager/action/changeDetection/DSLService_ObserverHelper.js';
 export * from './graphManager/action/changeDetection/DSLGenerationSpecification_ObserverHelper.js';
+export * from './graphManager/action/changeDetection/Testable_ObserverHelper.js';
 
 export * from './graphManager/action/changeDetection/EngineObserverHelper.js';
 
@@ -324,7 +333,11 @@ export * from './graphManager/action/creation/DSLMapping_ModelCreatorHelper.js';
 export * from './graphManager/action/creation/RawValueSpecificationCreatorHelper.js';
 export * from './graphManager/action/creation/StoreRelational_ModelCreatorHelper.js';
 
-// --------------------------------------------- TO BE MODULARIZED --------------------------------------------------
+// --------------------------------------------- DSL --------------------------------------------------
+/**
+ * @modularize
+ * See https://github.com/finos/legend-studio/issues/65
+ */
 
 export * from './DSLMapping_Exports.js';
 export * from './DSLService_Exports.js';

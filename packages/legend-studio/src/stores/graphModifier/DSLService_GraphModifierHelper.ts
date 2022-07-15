@@ -28,6 +28,13 @@ import {
   type DEPRECATED__SingleExecutionTest,
   type DEPRECATED__TestContainer,
   type ObserverContext,
+  type ServiceTestSuite,
+  type ServiceTest,
+  type ConnectionTestData,
+  type EmbeddedData,
+  type ParameterValue,
+  observe_ParameterValue,
+  observe_ConnectionTestData,
   DEFAULT_SERVICE_PATTERN,
   observe_ServiceExecution,
   observe_KeyedExecutionParameter,
@@ -36,9 +43,103 @@ import {
   observe_RawLambda,
   observe_Runtime,
   observe_ServiceTest_Legacy,
+  observe_ServiceTestSuite,
+  observe_ServiceTest,
+  observe_EmbeddedData,
 } from '@finos/legend-graph';
 import { addUniqueEntry, deleteEntry, uuid } from '@finos/legend-shared';
 import { action } from 'mobx';
+
+export const service_addConnectionTestData = action(
+  (
+    suite: ServiceTestSuite,
+    val: ConnectionTestData,
+    observerContext: ObserverContext,
+  ): void => {
+    addUniqueEntry(
+      suite.testData.connectionsTestData,
+      observe_ConnectionTestData(val, observerContext),
+    );
+  },
+);
+
+export const service_setConnectionTestData = action(
+  (suite: ServiceTestSuite, val: ConnectionTestData[]): void => {
+    suite.testData.connectionsTestData = val;
+  },
+);
+
+export const service_setConnectionTestDataEmbeddedData = action(
+  (
+    val: ConnectionTestData,
+    data: EmbeddedData,
+    observerContext: ObserverContext,
+  ): void => {
+    val.testData = observe_EmbeddedData(data, observerContext);
+  },
+);
+
+export const service_addTest = action(
+  (suite: ServiceTestSuite, test: ServiceTest) => {
+    test.__parent = suite;
+    addUniqueEntry(suite.tests, observe_ServiceTest(test));
+  },
+);
+
+export const service_setSerializationFormat = action(
+  (test: ServiceTest, serializationFormat: string | undefined) => {
+    test.serializationFormat = serializationFormat;
+  },
+);
+
+export const service_addTestSuite = action(
+  (
+    service: Service,
+    suite: ServiceTestSuite,
+    observerContext: ObserverContext,
+  ) => {
+    suite.__parent = service;
+    addUniqueEntry(
+      service.tests,
+      observe_ServiceTestSuite(suite, observerContext),
+    );
+  },
+);
+
+export const service_setParameterValueSpec = action(
+  (parameterValue: ParameterValue, val: object) => {
+    parameterValue.value = val;
+  },
+);
+
+export const service_setParameterValues = action(
+  (test: ServiceTest, values: ParameterValue[]) => {
+    test.parameters = values.map(observe_ParameterValue);
+  },
+);
+
+export const service_deleteParameterValue = action(
+  (test: ServiceTest, value: ParameterValue) => {
+    deleteEntry(test.parameters, value);
+  },
+);
+
+export const service_addParameterValue = action(
+  (test: ServiceTest, value: ParameterValue) => {
+    test.parameters.push(observe_ParameterValue(value));
+  },
+);
+
+export const service_setParameterName = action(
+  (parameterValue: ParameterValue, val: string) => {
+    parameterValue.name = val;
+  },
+);
+export const service_deleteTestSuite = action(
+  (service: Service, suite: ServiceTestSuite) => {
+    deleteEntry(service.tests, suite);
+  },
+);
 
 export const service_initNewService = action(
   (service: Service, userId?: string): void => {
@@ -143,6 +244,11 @@ export const pureMultiExecution_addExecutionParameter = action(
       pe.executionParameters,
       observe_KeyedExecutionParameter(value, context),
     );
+  },
+);
+export const pureMultiExecution_deleteExecutionParameter = action(
+  (pe: PureMultiExecution, value: KeyedExecutionParameter): void => {
+    deleteEntry(pe.executionParameters, value);
   },
 );
 export const singleExecTest_setData = action(

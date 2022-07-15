@@ -12,7 +12,7 @@ Thank you so much for being interested in contributing to our project! Before su
 We welcome any type of contribution, not only code. You can help with
 
 - **:bug: QA**: file bug reports, (see [issue guidelines](#issue-reporting-guidelines)). Don't hesitate to try out new features and give us feedback :raised_hands:, ...
-- **:memo: Documentation**: improving documentation (by sending pull requests to [this repository](https://github.com/finos/legend)), add demos and examples, ...
+- **:memo: Documentation**: improving documentation (by sending pull requests to [this repository](https://github.com/finos/legend)), add code comments, add demos and examples, ...
 - **:speech_balloon: Community**: writing blog posts, guides, howto's, ... presenting the project at meetups, organizing a workshop or meetup for the local community, ...
 - **:pencil2: Code**: take a look at the [open issues](https://github.com/finos/legend-studio/issues). Even if you can't write code, commenting on them, engaging in the conversation, showing that you care about a given issue matters. It helps us triage them.
 
@@ -217,7 +217,10 @@ These are the conventions we hope you can follow to keep our codebase consistent
 
 ## Codebase Documentation
 
-To help new developers gain deeper understanding of Studio, we highly recommend checking out our [codebase documentation](https://github.com/finos/legend-studio/tree/master/docs) where we documented various aspects of the codebase such as testing strategy, UX guidelines, and [design decision](https://github.com/finos/legend-studio/tree/master/docs/design), which we believe to be essential for exploring Studio core and Legend stack in general.
+To help new developers gain deeper understanding of Studio, we highly recommend checking out the following resources:
+
+1. Our [codebase documentation](https://github.com/finos/legend-studio/tree/master/docs) where we documented various aspects of the codebase such as testing strategy, UX guidelines, and [design decision](https://github.com/finos/legend-studio/tree/master/docs/design), which we believe to be essential for exploring Studio core and Legend stack in general.
+2. Our [API documentation](https://finos.github.io/legend-studio/): most of the content are auto-generated from code comments and documentation.
 
 ## License
 

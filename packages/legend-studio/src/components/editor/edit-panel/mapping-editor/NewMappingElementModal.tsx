@@ -45,6 +45,7 @@ import {
   Association,
 } from '@finos/legend-graph';
 import { BASIC_SET_IMPLEMENTATION_TYPE } from '../../../../stores/shared/ModelUtil.js';
+import { getPackageableElementOptionalFormatter } from '@finos/legend-application';
 
 interface ClassMappingSubTypeOption {
   label: string;
@@ -232,6 +233,7 @@ export const NewMappingElementModal = observer(() => {
               filterOption={filterOption}
               onChange={handleTargetChange}
               value={selectedOption}
+              formatOptionLabel={getPackageableElementOptionalFormatter()}
               placeholder="Choose a target"
               isClearable={true}
             />

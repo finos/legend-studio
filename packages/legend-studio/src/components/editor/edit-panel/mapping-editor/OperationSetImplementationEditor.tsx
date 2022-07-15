@@ -37,11 +37,9 @@ import {
   MappingElementDecorationCleaner,
 } from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementDecorator.js';
 import {
-  Mapping,
   OperationSetImplementation,
   OperationType,
   SetImplementation,
-  Class,
   SetImplementationContainer,
   InferableMappingElementIdExplicitValue,
   PackageableElementExplicitReference,
@@ -49,6 +47,8 @@ import {
   InferableMappingElementRootExplicitValue,
   getClassMappingsByClass,
   getAllChildSetImplementations,
+  stub_Mapping,
+  stub_Class,
 } from '@finos/legend-graph';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
@@ -95,8 +95,8 @@ export const OperationSetImplementationEditor = observer(
           SetImplementationExplicitReference.create(
             new OperationSetImplementation(
               InferableMappingElementIdExplicitValue.create('', ''),
-              new Mapping(''),
-              PackageableElementExplicitReference.create(new Class('')),
+              stub_Mapping(),
+              PackageableElementExplicitReference.create(stub_Class()),
               InferableMappingElementRootExplicitValue.create(false),
               OperationType.STORE_UNION,
             ),

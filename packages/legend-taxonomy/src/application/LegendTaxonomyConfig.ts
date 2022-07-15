@@ -24,8 +24,8 @@ import {
 } from '@finos/legend-shared';
 import {
   LegendApplicationConfig,
+  type LegendApplicationConfigurationInput,
   type LegendApplicationConfigurationData,
-  type LegendApplicationVersionData,
 } from '@finos/legend-application';
 import { createModelSchema, optional, primitive } from 'serializr';
 import { action, computed, makeObservable, observable } from 'mobx';
@@ -78,11 +78,9 @@ export class LegendTaxonomyConfig extends LegendApplicationConfig {
   taxonomyTreeOptions: TaxonomyTreeOption[] = [];
 
   constructor(
-    configData: LegendTaxonomyConfigurationData,
-    versionData: LegendApplicationVersionData,
-    baseUrl: string,
+    input: LegendApplicationConfigurationInput<LegendTaxonomyConfigurationData>,
   ) {
-    super(configData, versionData, baseUrl);
+    super(input);
 
     makeObservable(this, {
       currentTaxonomyTreeOption: observable,
@@ -91,11 +89,11 @@ export class LegendTaxonomyConfig extends LegendApplicationConfig {
     });
 
     assertNonNullable(
-      configData.taxonomy,
+      input.configData.taxonomy,
       `Can't configure application: 'taxonomy' field is missing`,
     );
-    if (Array.isArray(configData.taxonomy)) {
-      const options = configData.taxonomy.map((optionData) =>
+    if (Array.isArray(input.configData.taxonomy)) {
+      const options = input.configData.taxonomy.map((optionData) =>
         TaxonomyTreeOption.serialization.fromJson(optionData),
       );
       if (options.length === 0) {
@@ -131,33 +129,33 @@ export class LegendTaxonomyConfig extends LegendApplicationConfig {
     this.currentTaxonomyTreeOption = this.defaultTaxonomyTreeOption;
 
     assertNonNullable(
-      configData.engine,
+      input.configData.engine,
       `Can't configure application: 'engine' field is missing`,
     );
 
     assertNonNullable(
-      configData.engine,
+      input.configData.engine,
       `Can't configure application: 'engine' field is missing`,
     );
     this.engineServerUrl = guaranteeNonEmptyString(
-      configData.engine.url,
+      input.configData.engine.url,
       `Can't configure application: 'engine.url' field is missing or empty`,
     );
-    this.engineQueryServerUrl = configData.engine.queryUrl;
+    this.engineQueryServerUrl = input.configData.engine.queryUrl;
     this.depotServerUrl = guaranteeNonEmptyString(
-      configData.depot.url,
+      input.configData.depot.url,
       `Can't configure application: 'depot.url' field is missing or empty`,
     );
     this.queryUrl = guaranteeNonEmptyString(
-      configData.query.url,
+      input.configData.query.url,
       `Can't configure application: 'query.url' field is missing or empty`,
     );
     this.studioUrl = guaranteeNonEmptyString(
-      configData.studio.url,
+      input.configData.studio.url,
       `Can't configure application: 'studio.url' field is missing or empty`,
     );
     this.TEMPORARY__useLegacyDepotServerAPIRoutes =
-      configData.depot.TEMPORARY__useLegacyDepotServerAPIRoutes;
+      input.configData.depot.TEMPORARY__useLegacyDepotServerAPIRoutes;
   }
 
   get defaultTaxonomyTreeOption(): TaxonomyTreeOption {

@@ -16,7 +16,7 @@
 
 import { ChevronDownIcon, ChevronRightIcon } from './CJS__Icon.cjs';
 import { isNonNullable } from '@finos/legend-shared';
-import { clsx } from '../utils/CJS__clsx.cjs';
+import { clsx } from 'clsx';
 
 const DEFAULT_STEP_PADDING_IN_REM = 1;
 type InnerProps = Record<PropertyKey, unknown>;

@@ -26,8 +26,13 @@ import type { Database } from '../model/Database.js';
 import type { PackageableElementReference } from '../../../PackageableElementReference.js';
 import type { PostProcessor } from './postprocessor/PostProcessor.js';
 
-// TODO: to be modularized or handled differently
-// See https://github.com/finos/legend-studio/issues/946
+/**
+ * TODO: to be modularized or handled differently
+ *
+ * @modularize
+ * See https://github.com/finos/legend-studio/issues/946
+ * See https://github.com/finos/legend-studio/issues/65
+ */
 export enum DatabaseType {
   DB2 = 'DB2',
   H2 = 'H2',
@@ -81,7 +86,7 @@ export class RelationalDatabaseConnection extends DatabaseConnection {
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.RELATIONAL_DATABASE_CONNECTION,
-      this.store.hashValue,
+      this.store.valueForSerialization ?? '',
       this.timeZone ?? '',
       this.quoteIdentifiers?.toString() ?? '',
       this.datasourceSpecification,

@@ -43,7 +43,10 @@ import {
   RuntimePointer,
   VARIABLE_REFERENCE_TOKEN,
 } from '@finos/legend-graph';
-import type { PackageableElementOption } from '@finos/legend-application';
+import {
+  type PackageableElementOption,
+  getPackageableElementOptionalFormatter,
+} from '@finos/legend-application';
 import { MilestoningParametersEditor } from './QueryBuilderMilestoneEditor.js';
 import { useState } from 'react';
 
@@ -251,6 +254,9 @@ export const QueryBuilderSetupPanel = observer(
               darkMode={true}
               disabled={!isQuerySupported}
               filterOption={elementFilterOption}
+              formatOptionLabel={getPackageableElementOptionalFormatter({
+                darkMode: true,
+              })}
             />
             <button
               className="btn--dark btn__icon--dark"
@@ -288,6 +294,9 @@ export const QueryBuilderSetupPanel = observer(
                 !querySetupState.isMappingCompatible &&
                 isQuerySupported
               }
+              formatOptionLabel={getPackageableElementOptionalFormatter({
+                darkMode: true,
+              })}
             />
           </div>
           {isMilestoneEditorOpened && isMilestonedQuery && (

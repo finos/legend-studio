@@ -23,7 +23,7 @@ export abstract class V1_TargetShape implements Hashable {
 }
 
 export class V1_FlatTarget extends V1_TargetShape implements Hashable {
-  modelClass?: string;
+  modelClass?: string | undefined;
   targetName!: string;
   partitionFields: string[] = [];
   deduplicationStrategy!: V1_DeduplicationStrategy;

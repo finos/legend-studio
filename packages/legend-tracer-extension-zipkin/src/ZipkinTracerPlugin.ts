@@ -72,7 +72,7 @@ export class ZipkinTracerPlugin extends TracerServicePlugin<ZipkinSpan> {
               redirect: 'manual', // avoid following authentication redirects
               headers: {
                 [HttpHeader.CONTENT_TYPE]: `${ContentType.APPLICATION_JSON};${CHARSET}`,
-                [HttpHeader.ACCPEPT]: ContentType.APPLICATION_JSON,
+                [HttpHeader.ACCEPT]: ContentType.APPLICATION_JSON,
               },
             }),
           // eslint-disable-next-line @typescript-eslint/no-explicit-any

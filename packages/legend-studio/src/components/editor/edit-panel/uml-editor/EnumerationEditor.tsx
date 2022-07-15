@@ -69,6 +69,8 @@ import {
   enum_deleteValue,
   enum_addValue,
 } from '../../../../stores/graphModifier/DomainGraphModifierHelper.js';
+import { useApplicationNavigationContext } from '@finos/legend-application';
+import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../stores/LegendStudioApplicationNavigationContext.js';
 
 const EnumBasicEditor = observer(
   (props: {
@@ -446,6 +448,10 @@ export const EnumerationEditor = observer(
         editorStore.openElement(generationParentElement);
       }
     };
+
+    useApplicationNavigationContext(
+      LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.ENUMERATION_EDITOR,
+    );
 
     return (
       <div

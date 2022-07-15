@@ -81,7 +81,9 @@ export class Class extends Type implements Hashable {
       hashArray(this.properties),
       hashArray(this.derivedProperties),
       hashArray(
-        this.generalizations.map((gen) => gen.ownerReference.hashValue),
+        this.generalizations.map(
+          (gen) => gen.ownerReference.valueForSerialization ?? '',
+        ),
       ),
       hashArray(this.constraints),
       hashArray(this.stereotypes.map((val) => val.pointerHashCode)),

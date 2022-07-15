@@ -48,6 +48,9 @@ import {
   DateTimeValidityMilestoning,
   SourceSpecifiesFromAndThruDateTime,
   SourceSpecifiesFromDateTime,
+  SourceSpecifiesInAndOutDateTime,
+  SourceSpecifiesInDateTime,
+  type TransactionDerivation,
   type TransactionMilestoning,
   type ValidityDerivation,
   type ValidityMilestoning,
@@ -115,6 +118,9 @@ import {
   V1_DateTimeValidityMilestoning,
   V1_SourceSpecifiesFromAndThruDateTime,
   V1_SourceSpecifiesFromDateTime,
+  V1_SourceSpecifiesInAndOutDateTime,
+  V1_SourceSpecifiesInDateTime,
+  type V1_TransactionDerivation,
   type V1_TransactionMilestoning,
   type V1_ValidityDerivation,
   type V1_ValidityMilestoning,
@@ -152,7 +158,6 @@ import {
   type V1_GraphTransformerContext,
   V1_initPackageableElement,
   V1_transformConnection,
-  V1_transformElementReference,
 } from '@finos/legend-graph';
 import { UnsupportedOperationError } from '@finos/legend-shared';
 
@@ -263,6 +268,29 @@ export const V1_transformMergeStrategy = (
 };
 
 /**********
+ * transaction derivation
+ **********/
+
+export const V1_transformTransactionDerivation = (
+  element: TransactionDerivation,
+  context: V1_GraphTransformerContext,
+): V1_TransactionDerivation => {
+  if (element instanceof SourceSpecifiesInDateTime) {
+    const protocol = new V1_SourceSpecifiesInDateTime();
+    protocol.sourceDateTimeInField = element.sourceDateTimeInField;
+    return protocol;
+  } else if (element instanceof SourceSpecifiesInAndOutDateTime) {
+    const protocol = new V1_SourceSpecifiesInAndOutDateTime();
+    protocol.sourceDateTimeInField = element.sourceDateTimeInField;
+    protocol.sourceDateTimeOutField = element.sourceDateTimeOutField;
+    return protocol;
+  }
+  throw new UnsupportedOperationError(
+    `Can't transform transaction derivation '${element}'`,
+  );
+};
+
+/**********
  * transaction milestoning
  **********/
 
@@ -279,6 +307,12 @@ export const V1_transformTransactionMilestoning = (
     const protocol = new V1_DateTimeTransactionMilestoning();
     protocol.dateTimeInName = element.dateTimeInName;
     protocol.dateTimeOutName = element.dateTimeOutName;
+    if (element.derivation) {
+      protocol.derivation = V1_transformTransactionDerivation(
+        element.derivation,
+        context,
+      );
+    }
     return protocol;
   } else if (element instanceof BatchIdAndDateTimeTransactionMilestoning) {
     const protocol = new V1_BatchIdAndDateTimeTransactionMilestoning();
@@ -286,6 +320,12 @@ export const V1_transformTransactionMilestoning = (
     protocol.batchIdOutName = element.batchIdOutName;
     protocol.dateTimeInName = element.dateTimeInName;
     protocol.dateTimeOutName = element.dateTimeOutName;
+    if (element.derivation) {
+      protocol.derivation = V1_transformTransactionDerivation(
+        element.derivation,
+        context,
+      );
+    }
     return protocol;
   }
   throw new UnsupportedOperationError(
@@ -449,9 +489,7 @@ export const V1_transformFlatTarget = (
   context: V1_GraphTransformerContext,
 ): V1_FlatTarget => {
   const protocol = new V1_FlatTarget();
-  if (element.modelClass) {
-    protocol.modelClass = V1_transformElementReference(element.modelClass);
-  }
+  protocol.modelClass = element.modelClass.valueForSerialization;
   protocol.targetName = element.targetName;
   protocol.partitionFields = element.partitionFields;
   protocol.deduplicationStrategy = V1_transformDeduplicationStrategy(
@@ -504,7 +542,7 @@ export const V1_transformMultiFlatTarget = (
   context: V1_GraphTransformerContext,
 ): V1_MultiFlatTarget => {
   const protocol = new V1_MultiFlatTarget();
-  protocol.modelClass = V1_transformElementReference(element.modelClass);
+  protocol.modelClass = element.modelClass.valueForSerialization ?? '';
   protocol.transactionScope = V1_transformTransactionScope(
     element.transactionScope,
     context,
@@ -597,7 +635,7 @@ export const V1_transformPersistence = (
   V1_initPackageableElement(protocol, element);
   protocol.documentation = element.documentation;
   protocol.trigger = V1_transformTrigger(element.trigger, context);
-  protocol.service = V1_transformElementReference(element.service);
+  protocol.service = element.service.valueForSerialization ?? '';
   protocol.persister = V1_transformPersister(element.persister, context);
   protocol.notifier = V1_transformNotifier(element.notifier, context);
   return protocol;

@@ -85,6 +85,7 @@ import {
 import { StudioLambdaEditor } from '../../../shared/StudioLambdaEditor.js';
 import {
   ApplicationNavigationContextData,
+  getPackageableElementOptionalFormatter,
   useApplicationNavigationContext,
   useApplicationStore,
 } from '@finos/legend-application';
@@ -115,7 +116,7 @@ import {
   CLASS_PROPERTY_TYPE,
   getClassPropertyType,
 } from '../../../../stores/shared/ModelUtil.js';
-import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT } from '../../../../stores/LegendStudioApplicationNavigationContext.js';
+import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../stores/LegendStudioApplicationNavigationContext.js';
 
 const PropertyBasicEditor = observer(
   (props: {
@@ -241,6 +242,7 @@ const PropertyBasicEditor = observer(
             value={selectedPropertyType}
             placeholder={'Choose a data type or enumeration'}
             filterOption={filterOption}
+            formatOptionLabel={getPackageableElementOptionalFormatter()}
           />
         )}
         {!isIndirectProperty && !isReadOnly && !isEditingType && (
@@ -464,7 +466,7 @@ const DerivedPropertyBasicEditor = observer(
     const onLambdaEditorFocus = (): void =>
       applicationStore.navigationContextService.push(
         ApplicationNavigationContextData.createTransient(
-          LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT.CLASS_DERIVED_PROPERTY_LAMBDA_EDITOR,
+          LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.CLASS_DERIVED_PROPERTY_LAMBDA_EDITOR,
         ),
       );
     const openElement = (): void => {
@@ -517,6 +519,7 @@ const DerivedPropertyBasicEditor = observer(
               value={selectedPropertyType}
               placeholder="Choose a data type or enumeration"
               filterOption={filterOption}
+              formatOptionLabel={getPackageableElementOptionalFormatter()}
             />
           )}
           {!isInheritedProperty && !isReadOnly && !isEditingType && (
@@ -685,7 +688,7 @@ const ConstraintEditor = observer(
     const onLambdaEditorFocus = (): void =>
       applicationStore.navigationContextService.push(
         ApplicationNavigationContextData.createTransient(
-          LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT.CLASS_CONTRAINT_LAMBDA_EDITOR,
+          LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.CLASS_CONTRAINT_LAMBDA_EDITOR,
         ),
       );
     const remove = applicationStore.guardUnhandledError(async () => {
@@ -806,6 +809,7 @@ const SuperTypeEditor = observer(
           value={selectedType}
           placeholder={'Choose a class'}
           filterOption={filterOption}
+          formatOptionLabel={getPackageableElementOptionalFormatter()}
         />
         <button
           className="uml-element-editor__basic__detail-btn"
@@ -878,7 +882,7 @@ const PropertiesEditor = observer(
     );
 
     useApplicationNavigationContext(
-      LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT.CLASS_EDITOR_PROPERTIES,
+      LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.CLASS_EDITOR_PROPERTIES,
     );
 
     return (
@@ -952,7 +956,7 @@ const DerviedPropertiesEditor = observer(
     );
 
     useApplicationNavigationContext(
-      LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT.CLASS_EDITOR_DERIVED_PROPERTIES,
+      LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.CLASS_EDITOR_DERIVED_PROPERTIES,
     );
 
     return (
@@ -1000,7 +1004,7 @@ const ConstraintsEditor = observer(
     );
 
     useApplicationNavigationContext(
-      LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT.CLASS_EDITOR_CONSTRAINTS,
+      LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.CLASS_EDITOR_CONSTRAINTS,
     );
 
     return (
@@ -1077,7 +1081,7 @@ const SupertypesEditor = observer(
     );
 
     useApplicationNavigationContext(
-      LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT.CLASS_EDITOR_SUPERTYPES,
+      LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.CLASS_EDITOR_SUPERTYPES,
     );
 
     return (
@@ -1508,7 +1512,7 @@ export const ClassEditor = observer((props: { _class: Class }) => {
     .filter(isNonNullable);
 
   useApplicationNavigationContext(
-    LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT.CLASS_EDITOR,
+    LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.CLASS_EDITOR,
   );
 
   return (

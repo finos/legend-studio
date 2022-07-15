@@ -366,13 +366,9 @@ const ModelGenerationSpecifications = observer(
             </div>
           ) : (
             <BlankPanelContent>
-              <div className="unsupported-element-editor__main">
-                <div className="unsupported-element-editor__summary">
-                  {modelGenerationElementsInGraph.length
-                    ? 'No model generation included in spec'
-                    : 'Create a model generation element to include in spec'}
-                </div>
-              </div>
+              {modelGenerationElementsInGraph.length
+                ? 'No model generation included in spec'
+                : 'Create a model generation element to include in spec'}
             </BlankPanelContent>
           )}
         </div>
@@ -527,13 +523,9 @@ const FileGenerationSpecifications = observer(
             </div>
           ) : (
             <BlankPanelContent>
-              <div className="unsupported-element-editor__main">
-                <div className="unsupported-element-editor__summary">
-                  {fileGenerationInGraph.length
-                    ? 'Add file generation to spec'
-                    : 'Create a file generation to include in spec'}
-                </div>
-              </div>
+              {fileGenerationInGraph.length
+                ? 'Add file generation to spec'
+                : 'Create a file generation to include in spec'}
             </BlankPanelContent>
           )}
         </div>

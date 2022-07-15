@@ -30,10 +30,6 @@ export abstract class PackageableElementReference<
   }
 
   abstract get valueForSerialization(): string | undefined;
-
-  get hashValue(): string {
-    return this.valueForSerialization ?? '';
-  }
 }
 
 export class PackageableElementExplicitReference<
@@ -252,7 +248,7 @@ export class OptionalPackageableElementImplicitReference<
   }
 }
 
-export const toOptionalPackageableElementReference = <
+export const optionalizePackageableElementReference = <
   V extends PackageableElement,
 >(
   reference: PackageableElementReference<V> | undefined,

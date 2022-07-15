@@ -23,10 +23,7 @@ import {
   PureSingleExecution,
   PureMultiExecution,
 } from '../../../../../../metamodels/pure/packageableElements/service/ServiceExecution.js';
-import {
-  V1_initPackageableElement,
-  V1_transformElementReference,
-} from './V1_CoreTransformerHelper.js';
+import { V1_initPackageableElement } from './V1_CoreTransformerHelper.js';
 import { V1_Service } from '../../../model/packageableElements/service/V1_Service.js';
 import {
   type V1_ServiceExecution,
@@ -108,6 +105,7 @@ export const V1_transformServiceTest = (
 ): V1_ServiceTest => {
   const serviceTest = new V1_ServiceTest();
   serviceTest.id = element.id;
+  serviceTest.serializationFormat = element.serializationFormat;
   serviceTest.parameters = element.parameters.map((parameter) =>
     transformParameterValue(parameter),
   );
@@ -138,7 +136,7 @@ const transformSingleExecution = (
   execution.func = element.func.accept_RawValueSpecificationVisitor(
     new V1_RawValueSpecificationTransformer(context),
   ) as V1_RawLambda;
-  execution.mapping = V1_transformElementReference(element.mapping);
+  execution.mapping = element.mapping.valueForSerialization ?? '';
   execution.runtime = V1_transformRuntime(element.runtime, context);
   return execution;
 };
@@ -149,7 +147,7 @@ const transformKeyedParameter = (
 ): V1_KeyedExecutionParameter => {
   const parameter = new V1_KeyedExecutionParameter();
   parameter.key = element.key;
-  parameter.mapping = V1_transformElementReference(element.mapping);
+  parameter.mapping = element.mapping.valueForSerialization ?? '';
   parameter.runtime = V1_transformRuntime(element.runtime, context);
   return parameter;
 };

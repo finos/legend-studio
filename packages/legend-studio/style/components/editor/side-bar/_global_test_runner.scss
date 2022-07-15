@@ -47,11 +47,11 @@
     }
 
     &--succeeded svg {
-      color: var(--color-green-100);
+      color: var(--color-green-100) !important;
     }
 
     &--failed svg {
-      color: var(--color-red-100);
+      color: var(--color-red-100) !important;
     }
 
     &--in-progress svg {

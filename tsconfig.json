@@ -1,5 +1,13 @@
 {
-  // This will prevent an incorrect invocation of `tsc` without `--build` from
+  // This is a `Solution Style` tsconfig that really does nothing but manage other project files.
+  // In a sense, a solution project is a composite project with references to other projects, but no files of its own.
+  // See https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-9.html#support-for-solution-style-tsconfigjson-files
+  //
+  // Here, none of these tsconfig.*.json files get picked up by the server,
+  // but we’d really like the language server to understand that the current .ts file
+  // probably belongs to one of the mentioned projects in this tsconfig.json.
+  //
+  // In other words, this will prevent an incorrect invocation of `tsc` without `--build` from
   // trying to build the entire packages folder source files as one compilation
   // (which will fail, but drop a bunch of .js files in random places as an annoying side effect).
   // See https://github.com/RyanCavanaugh/learn-a

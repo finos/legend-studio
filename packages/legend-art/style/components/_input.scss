@@ -18,17 +18,6 @@
   position: relative;
   width: 100%;
 
-  &--error {
-    border: 0.1rem solid var(--color-red-300);
-    background: var(--color-red-500);
-    padding-right: 2.3rem;
-    color: var(--color-light-grey-100);
-
-    :focus {
-      border: 0.1rem solid var(--color-red-300);
-    }
-  }
-
   &__error {
     position: absolute;
     right: 0.5rem;
@@ -37,5 +26,16 @@
 
   &__error__indicator {
     color: var(--color-red-180);
+  }
+}
+
+input.input--with-validation--error {
+  border: 0.1rem solid var(--color-red-300);
+  background: var(--color-red-500);
+  padding-right: 2.3rem;
+  color: var(--color-light-grey-100);
+
+  :focus {
+    border: 0.1rem solid var(--color-red-300);
   }
 }

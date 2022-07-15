@@ -22,14 +22,14 @@ import {
 } from '@finos/legend-graph';
 
 export class V1_Text extends V1_PackageableElement implements Hashable {
-  type!: string;
+  type?: string | undefined;
   content!: string;
 
   override get hashCode(): string {
     return hashArray([
       TEXT_HASH_STRUCTURE.TEXT,
       this.path,
-      this.type,
+      this.type ?? '',
       this.content,
     ]);
   }

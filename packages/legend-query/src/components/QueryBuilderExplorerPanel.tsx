@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { forwardRef, useEffect, useState } from 'react';
+import { forwardRef, useEffect, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   type TreeNodeContainerProps,
@@ -43,6 +43,8 @@ import {
   InfoCircleIcon,
   PURE_ClassIcon,
   CheckIcon,
+  SearchIcon,
+  PanelLoadingIndicator,
 } from '@finos/legend-art';
 import {
   type QueryBuilderExplorerTreeDragSource,
@@ -51,8 +53,8 @@ import {
   QueryBuilderExplorerTreeRootNodeData,
   QueryBuilderExplorerTreePropertyNodeData,
   buildPropertyExpressionFromExplorerTreeNodeData,
-  getQueryBuilderPropertyNodeData,
   QueryBuilderExplorerTreeSubTypeNodeData,
+  getQueryBuilderPropertyNodeData,
   getQueryBuilderSubTypeNodeData,
 } from '../stores/QueryBuilderExplorerState.js';
 import { useDrag, useDragLayer } from 'react-dnd';
@@ -72,17 +74,18 @@ import {
   PRIMITIVE_TYPE,
   Enumeration,
   TYPE_CAST_TOKEN,
-  getAllOwnClassProperties,
-  getAllClassProperties,
   getAllClassDerivedProperties,
   getMultiplicityDescription,
+  getAllClassProperties,
+  getAllOwnClassProperties,
 } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
 import { getClassPropertyIcon } from './shared/ElementIconUtils.js';
 import { QUERY_BUILDER_TEST_ID } from './QueryBuilder_TestID.js';
 import { filterByType, guaranteeNonNullable } from '@finos/legend-shared';
+import { QueryBuilderPropertySearchPanel } from './QueryBuilderPropertySearchPanel.js';
 
-const QueryBuilderSubclassInfoTooltip: React.FC<{
+export const QueryBuilderSubclassInfoTooltip: React.FC<{
   subclass: Class;
   path: string;
   isMapped: boolean;
@@ -279,6 +282,8 @@ const QueryBuilderExplorerContextMenu = observer(
                 queryBuilderState.explorerState.nonNullableTreeData,
                 node,
                 projectionState.queryBuilderState.graphManagerState.graph,
+                queryBuilderState.explorerState.propertySearchPanelState
+                  .allMappedPropertyNodes,
               ),
               projectionState.queryBuilderState.explorerState.humanizePropertyName,
             ),
@@ -332,6 +337,8 @@ const QueryBuilderExplorerContextMenu = observer(
                   queryBuilderState.explorerState.nonNullableTreeData,
                   nodeToAdd,
                   projectionState.queryBuilderState.graphManagerState.graph,
+                  queryBuilderState.explorerState.propertySearchPanelState
+                    .allMappedPropertyNodes,
                 ),
                 projectionState.queryBuilderState.explorerState.humanizePropertyName,
               ),
@@ -360,7 +367,7 @@ const QueryBuilderExplorerContextMenu = observer(
   }),
 );
 
-const renderPropertyTypeIcon = (type: Type): React.ReactNode => {
+export const renderPropertyTypeIcon = (type: Type): React.ReactNode => {
   if (type instanceof PrimitiveType) {
     if (type.name === PRIMITIVE_TYPE.STRING) {
       return (
@@ -495,6 +502,7 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
         disabled={
           !showContextMenu ||
           // NOTE: this might make it hard to modularize
+          // See https://github.com/finos/legend-studio/issues/731
           queryBuilderState.fetchStructureState.projectionState.hasParserError
         }
         menuProps={{ elevation: 7 }}
@@ -509,6 +517,8 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
                 isSelectedFromContextMenu,
               'query-builder-explorer-tree__node__container--unmapped':
                 !node.mappingData.mapped,
+              'query-builder-explorer-tree__node__container--selected':
+                node.isSelected,
             },
           )}
           title={
@@ -723,10 +733,12 @@ const QueryBuilderExplorerTree = observer(
               )
           ).forEach((property) => {
             const propertyTreeNodeData = getQueryBuilderPropertyNodeData(
-              queryBuilderState.graphManagerState,
               property,
               node,
-              guaranteeNonNullable(queryBuilderState.querySetupState.mapping),
+              guaranteeNonNullable(
+                explorerState.queryBuilderState.querySetupState
+                  .mappingModelCoverageAnalysisResult,
+              ),
             );
             treeData.nodes.set(propertyTreeNodeData.id, propertyTreeNodeData);
           });
@@ -734,6 +746,10 @@ const QueryBuilderExplorerTree = observer(
             const subTypeTreeNodeData = getQueryBuilderSubTypeNodeData(
               subclass,
               node,
+              guaranteeNonNullable(
+                explorerState.queryBuilderState.querySetupState
+                  .mappingModelCoverageAnalysisResult,
+              ),
             );
             treeData.nodes.set(subTypeTreeNodeData.id, subTypeTreeNodeData);
           });
@@ -784,7 +800,10 @@ const QueryBuilderExplorerTree = observer(
 export const QueryBuilderExplorerPanel = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
+    const searchButtonRef = useRef<HTMLButtonElement>(null);
     const explorerState = queryBuilderState.explorerState;
+    const propertySearchPanelState = explorerState.propertySearchPanelState;
+    const applicationStore = useApplicationStore();
     const collapseTree = (): void => {
       if (explorerState.treeData) {
         Array.from(explorerState.treeData.nodes.values()).forEach((node) => {
@@ -801,12 +820,35 @@ export const QueryBuilderExplorerPanel = observer(
       explorerState.setHumanizePropertyName(
         !explorerState.humanizePropertyName,
       );
+    const togglePropertySearch = (): void => {
+      if (explorerState.treeData) {
+        if (!propertySearchPanelState.isSearchPanelOpen) {
+          propertySearchPanelState.setIsSearchPanelOpen(true);
+          if (!propertySearchPanelState.allMappedPropertyNodes.length) {
+            propertySearchPanelState.fetchAllPropertyNodes();
+          }
+        } else {
+          propertySearchPanelState.setIsSearchPanelOpen(false);
+        }
+      }
+    };
+
+    useEffect(() => {
+      flowResult(
+        queryBuilderState.querySetupState.analyzeMappingModelCoverage(),
+      ).catch(applicationStore.alertUnhandledError);
+    }, [
+      applicationStore,
+      queryBuilderState,
+      queryBuilderState.querySetupState.mapping,
+    ]);
 
     return (
       <div
         data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER}
         className={clsx('panel query-builder__explorer', {
           // NOTE: this might make it hard to modularize
+          // See https://github.com/finos/legend-studio/issues/731
           backdrop__element:
             queryBuilderState.fetchStructureState.projectionState
               .hasParserError,
@@ -817,6 +859,18 @@ export const QueryBuilderExplorerPanel = observer(
             <div className="panel__header__title__label">explorer</div>
           </div>
           <div className="panel__header__actions">
+            <button
+              ref={searchButtonRef}
+              className={clsx('panel__header__action', {
+                'query-builder__explorer__header__action--active':
+                  propertySearchPanelState.isSearchPanelOpen,
+              })}
+              onClick={togglePropertySearch}
+              tabIndex={-1}
+              title="Toggle property search"
+            >
+              <SearchIcon />
+            </button>
             <button
               className="panel__header__action"
               onClick={collapseTree}
@@ -863,19 +917,41 @@ export const QueryBuilderExplorerPanel = observer(
               />
             </DropdownMenu>
           </div>
+          {propertySearchPanelState.isSearchPanelOpen && (
+            <QueryBuilderPropertySearchPanel
+              queryBuilderState={queryBuilderState}
+              triggerElement={searchButtonRef.current}
+            />
+          )}
         </div>
         <div className="panel__content query-builder-explorer-tree__content">
+          <PanelLoadingIndicator
+            isLoading={
+              explorerState.mappingModelCoverageAnalysisState.isInProgress
+            }
+          />
           <QueryBuilderExplorerPropertyDragLayer
             queryBuilderState={queryBuilderState}
           />
-          {!explorerState.treeData && (
-            <BlankPanelContent>
-              Specify the class, mapping, and connection to start building query
-            </BlankPanelContent>
-          )}
-          {explorerState.treeData && (
-            <QueryBuilderExplorerTree queryBuilderState={queryBuilderState} />
-          )}
+          {!explorerState.treeData &&
+            (explorerState.mappingModelCoverageAnalysisState.isInProgress ? (
+              <BlankPanelContent>
+                {explorerState.mappingModelCoverageAnalysisState.message}
+              </BlankPanelContent>
+            ) : (
+              <BlankPanelContent>
+                Specify the class, mapping, and connection to start building
+                query
+              </BlankPanelContent>
+            ))}
+          {explorerState.treeData &&
+            (explorerState.mappingModelCoverageAnalysisState.isInProgress ? (
+              <BlankPanelContent>
+                {explorerState.mappingModelCoverageAnalysisState.message}
+              </BlankPanelContent>
+            ) : (
+              <QueryBuilderExplorerTree queryBuilderState={queryBuilderState} />
+            ))}
           <QueryBuilderExplorerPreviewDataModal
             queryBuilderState={queryBuilderState}
           />

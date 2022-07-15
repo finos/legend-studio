@@ -16,7 +16,6 @@
 
 import {
   type MappingEditorState,
-  type MappingElementSource,
   getMappingElementSource,
   getMappingElementTarget,
   generateMappingTestName,
@@ -47,11 +46,11 @@ import {
   losslessStringify,
   guaranteeType,
   ContentType,
+  generateEnumerableNameFromToken,
+  tryToFormatLosslessJSONString,
 } from '@finos/legend-shared';
 import { createMockDataForMappingElementSource } from '../../../shared/MockDataUtil.js';
-import { ExecutionPlanState } from '../../../ExecutionPlanState.js';
 import {
-  type Runtime,
   type InputData,
   type Mapping,
   type Connection,
@@ -61,6 +60,12 @@ import {
   type View,
   type RawLambda,
   type RawExecutionPlan,
+  type EmbeddedData,
+  type TestAssertion,
+  DEFAULT_TEST_ASSERTION_PREFIX,
+  DEFAULT_TEST_PREFIX,
+  EqualToJson,
+  ServiceTest,
   extractExecutionResultValues,
   LAMBDA_PIPE,
   GRAPH_MANAGER_EVENT,
@@ -75,8 +80,6 @@ import {
   FlatDataConnection,
   FlatDataInputData,
   Service,
-  DEPRECATED__SingleExecutionTest,
-  DEPRECATED__TestContainer,
   PureSingleExecution,
   RootFlatDataRecordType,
   PackageableElementExplicitReference,
@@ -88,15 +91,19 @@ import {
   RelationalInputType,
   OperationSetImplementation,
   buildSourceInformationSourceId,
-  PureClientVersion,
   TableAlias,
   stub_RawLambda,
   isStubbed_RawLambda,
   generateIdentifiedConnectionId,
+  ServiceTestSuite,
+  TestData,
+  ConnectionTestData,
+  DEFAULT_TEST_SUITE_PREFIX,
 } from '@finos/legend-graph';
 import {
   ActionAlertActionType,
   ActionAlertType,
+  ExecutionPlanState,
   LambdaEditorState,
   TAB_SIZE,
 } from '@finos/legend-application';
@@ -107,6 +114,7 @@ import {
 } from '../../../graphModifier/DSLMapping_GraphModifierHelper.js';
 import { flatData_setData } from '../../../graphModifier/StoreFlatData_GraphModifierHelper.js';
 import {
+  service_addTestSuite,
   service_initNewService,
   service_setExecution,
 } from '../../../graphModifier/DSLService_GraphModifierHelper.js';
@@ -115,6 +123,11 @@ import {
   localH2DatasourceSpecification_setTestDataSetupSqls,
   relationalInputData_setData,
 } from '../../../graphModifier/StoreRelational_GraphModifierHelper.js';
+import {
+  createEmptyEqualToJsonAssertion,
+  createBareExternalFormat,
+} from '../../../shared/testable/TestableUtils.js';
+import { SERIALIZATION_FORMAT } from '../service/testable/ServiceTestEditorState.js';
 
 export class MappingExecutionQueryState extends LambdaEditorState {
   editorStore: EditorStore;
@@ -201,7 +214,16 @@ abstract class MappingExecutionInputDataState {
   }
 
   abstract get isValid(): boolean;
-  abstract get runtime(): Runtime;
+  abstract get runtime(): EngineRuntime;
+
+  createEmbeddedData(): EmbeddedData | undefined {
+    return undefined;
+  }
+
+  createAssertion(executionResult: string): TestAssertion | undefined {
+    return undefined;
+  }
+
   abstract buildInputDataForTest(): InputData;
 }
 
@@ -209,7 +231,7 @@ export const createRuntimeForExecution = (
   mapping: Mapping,
   connection: Connection,
   editorStore: EditorStore,
-): Runtime => {
+): EngineRuntime => {
   const runtime = new EngineRuntime();
   runtime_addMapping(
     runtime,
@@ -231,7 +253,7 @@ export class MappingExecutionEmptyInputDataState extends MappingExecutionInputDa
     return false;
   }
 
-  get runtime(): Runtime {
+  get runtime(): EngineRuntime {
     throw new IllegalStateError(
       'Mapping execution runtime information is not specified',
     );
@@ -270,7 +292,7 @@ export class MappingExecutionObjectInputDataState extends MappingExecutionInputD
     return isValidJSONString(this.inputData.data);
   }
 
-  get runtime(): Runtime {
+  get runtime(): EngineRuntime {
     assertTrue(
       this.isValid,
       'Model-to-model mapping execution test data is not a valid JSON string',
@@ -294,6 +316,26 @@ export class MappingExecutionObjectInputDataState extends MappingExecutionInputD
       ),
       this.editorStore,
     );
+  }
+
+  override createEmbeddedData(): EmbeddedData | undefined {
+    const embeddedData = createBareExternalFormat();
+    embeddedData.data = tryToFormatLosslessJSONString(
+      tryToMinifyJSONString(this.inputData.data),
+    );
+    return embeddedData;
+  }
+
+  override createAssertion(executionResult: string): TestAssertion | undefined {
+    const jsonAssertion = new EqualToJson();
+    jsonAssertion.id = generateEnumerableNameFromToken(
+      [],
+      DEFAULT_TEST_ASSERTION_PREFIX,
+    );
+    const expected = createBareExternalFormat();
+    expected.data = toGrammarString(executionResult);
+    jsonAssertion.expected = expected;
+    return jsonAssertion;
   }
 
   buildInputDataForTest(): InputData {
@@ -335,7 +377,7 @@ export class MappingExecutionFlatDataInputDataState extends MappingExecutionInpu
     return true;
   }
 
-  get runtime(): Runtime {
+  get runtime(): EngineRuntime {
     const engineConfig =
       this.editorStore.graphManagerState.graphManager.TEMPORARY__getEngineConfig();
     return createRuntimeForExecution(
@@ -393,7 +435,7 @@ export class MappingExecutionRelationalInputDataState extends MappingExecutionIn
     return true;
   }
 
-  get runtime(): Runtime {
+  get runtime(): EngineRuntime {
     const datasourceSpecification = new LocalH2DatasourceSpecification();
     switch (this.inputData.inputType) {
       case RelationalInputType.SQL:
@@ -482,7 +524,10 @@ export class MappingExecutionState {
       mappingEditorState.mapping,
       undefined,
     );
-    this.executionPlanState = new ExecutionPlanState(this.editorStore);
+    this.executionPlanState = new ExecutionPlanState(
+      this.editorStore.applicationStore,
+      this.editorStore.graphManagerState,
+    );
   }
 
   setQueryState = (val: MappingExecutionQueryState): void => {
@@ -515,7 +560,7 @@ export class MappingExecutionState {
   }
 
   setInputDataStateBasedOnSource(
-    source: MappingElementSource | undefined,
+    source: unknown | undefined,
     populateWithMockData: boolean,
   ): void {
     if (source instanceof Class) {
@@ -622,6 +667,7 @@ export class MappingExecutionState {
           this.inputDataState instanceof MappingExecutionObjectInputDataState
         ) {
           const service = new Service(serviceName);
+          const engineRuntime = this.inputDataState.runtime;
           service_initNewService(service);
           const pureSingleExecution = new PureSingleExecution(
             query,
@@ -629,25 +675,42 @@ export class MappingExecutionState {
             PackageableElementExplicitReference.create(
               this.mappingEditorState.mapping,
             ),
-            this.inputDataState.runtime,
+            engineRuntime,
           );
           service_setExecution(
             service,
             pureSingleExecution,
             this.editorStore.changeDetectionState.observerContext,
           );
-          const singleExecutionTest = new DEPRECATED__SingleExecutionTest(
+          const suite = new ServiceTestSuite();
+          suite.id = generateEnumerableNameFromToken(
+            [],
+            DEFAULT_TEST_SUITE_PREFIX,
+          );
+          suite.testData = new TestData();
+          const embeddedData = this.inputDataState.createEmbeddedData();
+          const connection = engineRuntime.connections[0]?.storeConnections[0];
+          if (embeddedData && connection) {
+            const connectionTestData = new ConnectionTestData();
+            connectionTestData.connectionId = connection.id;
+            connectionTestData.testData = embeddedData;
+            suite.testData.connectionsTestData = [connectionTestData];
+          }
+          const test = new ServiceTest();
+          test.serializationFormat = SERIALIZATION_FORMAT.PURE;
+          test.id = generateEnumerableNameFromToken([], DEFAULT_TEST_PREFIX);
+          test.__parent = suite;
+          suite.tests = [test];
+          const assertion =
+            this.inputDataState.createAssertion(this.executionResultText) ??
+            createEmptyEqualToJsonAssertion(test);
+          test.assertions = [assertion];
+          assertion.parentTest = test;
+          service_addTestSuite(
             service,
-            tryToMinifyJSONString(this.inputDataState.inputData.data),
+            suite,
+            this.editorStore.changeDetectionState.observerContext,
           );
-          const testContainer = new DEPRECATED__TestContainer(
-            this.editorStore.graphManagerState.graphManager.HACKY__createServiceTestAssertLambda(
-              this.executionResultText,
-            ),
-            singleExecutionTest,
-          );
-          singleExecutionTest.asserts.push(testContainer);
-          service.test = singleExecutionTest;
           yield flowResult(
             this.editorStore.addElement(service, packagePath, true),
           );
@@ -684,7 +747,6 @@ export class MappingExecutionState {
             this.mappingEditorState.mapping,
             query,
             runtime,
-            PureClientVersion.VX_X_X,
             {
               useLosslessParse: true,
             },
@@ -728,7 +790,6 @@ export class MappingExecutionState {
               this.mappingEditorState.mapping,
               query,
               runtime,
-              PureClientVersion.VX_X_X,
             )) as { plan: RawExecutionPlan; debug: string };
           rawPlan = debugResult.plan;
           this.executionPlanState.setDebugText(debugResult.debug);
@@ -739,7 +800,6 @@ export class MappingExecutionState {
               this.mappingEditorState.mapping,
               query,
               runtime,
-              PureClientVersion.VX_X_X,
             )) as object;
         }
         try {

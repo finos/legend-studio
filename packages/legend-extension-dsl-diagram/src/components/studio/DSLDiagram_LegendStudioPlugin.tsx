@@ -43,24 +43,18 @@ import { DiagramEditorState } from '../../stores/studio/DiagramEditorState.js';
 import { DiagramEditor } from './DiagramEditor.js';
 import { ClassDiagramPreview } from './ClassDiagramPreview.js';
 import {
-  type LegendApplicationDocumentationEntry,
-  type LegendApplicationKeyedDocumentationEntry,
-  collectKeyedDocumnetationEntriesFromConfig,
-} from '@finos/legend-application';
-import {
   PURE_GRAMMAR_DIAGRAM_ELEMENT_TYPE_LABEL,
   PURE_GRAMMAR_DIAGRAM_PARSER_NAME,
 } from '../../graphManager/DSLDiagram_PureGraphManagerPlugin.js';
-import {
-  DSL_DIAGRAM_DOCUMENTATION_ENTRIES,
-  DSL_DIAGRAM_LEGEND_STUDIO_DOCUMENTATION_KEY,
-} from './DSLDiagram_LegendStudioDocumentation.js';
+import { DSL_DIAGRAM_LEGEND_STUDIO_DOCUMENTATION_KEY } from './DSLDiagram_LegendStudioDocumentation.js';
 import {
   EMPTY_DIAGRAM_SNIPPET,
   getDiagramSnippetWithGeneralizationView,
   getDiagramSnippetWithOneClassView,
   getDiagramSnippetWithPropertyView,
 } from './DSLDiagram_CodeSnippets.js';
+import type { LegendApplicationDocumentationEntry } from '@finos/legend-application';
+import { DSL_DIAGRAM_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../stores/studio/DSLDiagram_LegendStudioApplicationNavigationContext.js';
 
 const DIAGRAM_ELEMENT_TYPE = 'DIAGRAM';
 const DIAGRAM_ELEMENT_PROJECT_EXPLORER_DND_TYPE = 'PROJECT_EXPLORER_DIAGRAM';
@@ -73,10 +67,11 @@ export class DSLDiagram_LegendStudioPlugin
     super(packageJson.extensions.studioPlugin, packageJson.version);
   }
 
-  override getExtraKeyedDocumentationEntries(): LegendApplicationKeyedDocumentationEntry[] {
-    return collectKeyedDocumnetationEntriesFromConfig(
-      DSL_DIAGRAM_DOCUMENTATION_ENTRIES,
-    );
+  override getExtraRequiredDocumentationKeys(): string[] {
+    return [
+      DSL_DIAGRAM_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_ELEMENT_DIAGRAM,
+      DSL_DIAGRAM_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER,
+    ];
   }
 
   override getExtraClassPreviewRenderers(): ClassPreviewRenderer[] {
@@ -84,6 +79,12 @@ export class DSLDiagram_LegendStudioPlugin
       (_class: Class): React.ReactNode => (
         <ClassDiagramPreview _class={_class} />
       ),
+    ];
+  }
+
+  override getExtraAccessEventLoggingApplicationContextKeys(): string[] {
+    return [
+      DSL_DIAGRAM_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.DIAGRAM_EDITOR,
     ];
   }
 

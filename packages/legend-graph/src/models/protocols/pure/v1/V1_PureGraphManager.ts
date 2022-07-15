@@ -18,7 +18,6 @@ import { GRAPH_MANAGER_EVENT } from '../../../../graphManager/GraphManagerEvent.
 import {
   CORE_PURE_PATH,
   ELEMENT_PATH_DELIMITER,
-  SOURCE_INFORMATION_KEY,
   PackageableElementPointerType,
 } from '../../../../MetaModelConst.js';
 import {
@@ -32,14 +31,17 @@ import {
   getClass,
   guaranteeNonNullable,
   UnsupportedOperationError,
-  recursiveOmit,
   assertTrue,
   assertErrorThrown,
   promisify,
   StopWatch,
   filterByType,
   isNonNullable,
-  guaranteeNonEmptyString,
+  addUniqueEntry,
+  uuid,
+  deleteEntry,
+  assertType,
+  uniq,
 } from '@finos/legend-shared';
 import type { TEMPORARY__AbstractEngineConfig } from '../../../../graphManager/action/TEMPORARY__AbstractEngineConfig.js';
 import {
@@ -48,11 +50,8 @@ import {
   type GraphBuilderOptions,
   type ExecutionOptions,
 } from '../../../../graphManager/AbstractPureGraphManager.js';
-import { Mapping } from '../../../metamodels/pure/packageableElements/mapping/Mapping.js';
-import {
-  type Runtime,
-  EngineRuntime,
-} from '../../../metamodels/pure/packageableElements/runtime/Runtime.js';
+import type { Mapping } from '../../../metamodels/pure/packageableElements/mapping/Mapping.js';
+import type { Runtime } from '../../../metamodels/pure/packageableElements/runtime/Runtime.js';
 import type {
   ImportConfigurationDescription,
   ImportMode,
@@ -80,7 +79,6 @@ import type { GenerationOutput } from '../../../../graphManager/action/generatio
 import type { ValueSpecification } from '../../../metamodels/pure/valueSpecification/ValueSpecification.js';
 import { ServiceExecutionMode } from '../../../../graphManager/action/service/ServiceExecutionMode.js';
 import {
-  KeyedExecutionParameter,
   PureMultiExecution,
   PureSingleExecution,
 } from '../../../metamodels/pure/packageableElements/service/ServiceExecution.js';
@@ -171,7 +169,6 @@ import type { V1_Multiplicity } from './model/packageableElements/domain/V1_Mult
 import type { V1_RawVariable } from './model/rawValueSpecification/V1_RawVariable.js';
 import { V1_setupDatabaseSerialization } from './transformation/pureProtocol/serializationHelpers/V1_DatabaseSerializationHelper.js';
 import {
-  V1_PACKAGEABLE_RUNTIME_ELEMENT_PROTOCOL_TYPE,
   V1_setupEngineRuntimeSerialization,
   V1_setupLegacyRuntimeSerialization,
 } from './transformation/pureProtocol/serializationHelpers/V1_RuntimeSerializationHelper.js';
@@ -208,7 +205,7 @@ import {
   V1_buildLightQuery,
   V1_transformQuerySearchSpecification,
 } from './engine/V1_EngineHelper.js';
-import { V1_buildExecutionResult } from './engine/V1_ExecutionHelper.js';
+import { V1_buildExecutionResult } from './engine/execution/V1_ExecutionHelper.js';
 import {
   type Entity,
   ENTITY_PATH_DELIMITER,
@@ -216,25 +213,16 @@ import {
 import {
   DependencyGraphBuilderError,
   GraphBuilderError,
+  PureClientVersion,
   SystemGraphBuilderError,
 } from '../../../../graphManager/GraphManagerUtils.js';
-import {
-  PackageableElementExplicitReference,
-  PackageableElementReference,
-} from '../../../metamodels/pure/packageableElements/PackageableElementReference.js';
+import { PackageableElementReference } from '../../../metamodels/pure/packageableElements/PackageableElementReference.js';
 import type { GraphPluginManager } from '../../../../GraphPluginManager.js';
 import type { QuerySearchSpecification } from '../../../../graphManager/action/query/QuerySearchSpecification.js';
 import type { ExternalFormatDescription } from '../../../../graphManager/action/externalFormat/ExternalFormatDescription.js';
 import type { ConfigurationProperty } from '../../../metamodels/pure/packageableElements/fileGeneration/ConfigurationProperty.js';
 import { V1_ExternalFormatModelGenerationInput } from './engine/externalFormat/V1_ExternalFormatModelGeneration.js';
 import { GraphBuilderReport } from '../../../../graphManager/GraphBuilderReport.js';
-import {
-  V1_PureMultiExecution,
-  V1_PureSingleExecution,
-} from './model/packageableElements/service/V1_ServiceExecution.js';
-import { V1_MAPPING_ELEMENT_PROTOCOL_TYPE } from './transformation/pureProtocol/serializationHelpers/V1_MappingSerializationHelper.js';
-import { V1_SERVICE_ELEMENT_PROTOCOL_TYPE } from './transformation/pureProtocol/serializationHelpers/V1_ServiceSerializationHelper.js';
-import { MappingInclude } from '../../../metamodels/pure/packageableElements/mapping/MappingInclude.js';
 import type { ModelGenerationConfiguration } from '../../../ModelGenerationConfiguration.js';
 import type { MappingGeneration_PureProtocolProcessorPlugin_Extension } from '../MappingGeneration_PureProtocolProcessorPlugin_Extension.js';
 import type { Package } from '../../../metamodels/pure/packageableElements/domain/Package.js';
@@ -246,15 +234,33 @@ import {
 import { V1_AtomicTestId } from './model/test/V1_AtomicTestId.js';
 import type { RunTestsTestableInput } from '../../../metamodels/pure/test/result/RunTestsTestableInput.js';
 import { V1_buildTestsResult } from './engine/test/V1_RunTestsResult.js';
-import type { TestResult } from '../../../metamodels/pure/test/result/TestResult.js';
+import {
+  type TestResult,
+  TestFailed,
+} from '../../../metamodels/pure/test/result/TestResult.js';
 import type { Service } from '../../../../DSLService_Exports.js';
 import type { Testable } from '../../../metamodels/pure/test/Testable.js';
-import { stub_RawLambda } from '../../../../graphManager/action/creation/RawValueSpecificationCreatorHelper.js';
 import {
   getNullableIDFromTestable,
   getNullableTestable,
 } from '../../../../helpers/Testable_Helper.js';
-import { V1_getIncludedMappingPath } from './helper/V1_DSLMapping_Helper.js';
+import type { TestAssertion } from '../../../metamodels/pure/test/assertion/TestAssertion.js';
+import type { AssertFail } from '../../../metamodels/pure/test/assertion/status/AssertFail.js';
+import {
+  type AtomicTest,
+  TestSuite,
+} from '../../../metamodels/pure/test/Test.js';
+import { pruneSourceInformation } from '../../../../MetaModelUtils.js';
+import {
+  V1_buildModelCoverageAnalysisResult,
+  V1_MappingModelCoverageAnalysisInput,
+  V1_MappingModelCoverageAnalysisResult,
+} from './engine/analytics/V1_MappingAnalytics.js';
+import type {
+  MappingModelCoverageAnalysisResult,
+  RawMappingModelCoverageAnalysisResult,
+} from '../../../../graphManager/action/analytics/MappingAnalytics.js';
+import { deserialize } from 'serializr';
 
 const V1_FUNCTION_SUFFIX_MULTIPLICITY_INFINITE = 'MANY';
 
@@ -445,17 +451,23 @@ export interface V1_EngineSetupConfig {
 }
 
 export class V1_PureGraphManager extends AbstractPureGraphManager {
+  // Organizing these constants will help with configuring
+  // target protocol version in the future
+  // See https://github.com/finos/legend-studio/issues/475
+  private static readonly TARGET_PROTOCOL_VERSION = PureClientVersion.VX_X_X;
+
   engine: V1_Engine;
-  extensions: V1_GraphBuilderExtensions;
+  graphBuilderExtensions: V1_GraphBuilderExtensions;
 
   constructor(pluginManager: GraphPluginManager, log: Log) {
     super(pluginManager, log);
     this.engine = new V1_Engine({}, log);
 
     // setup plugins
-    this.extensions = new V1_GraphBuilderExtensions(
+    this.graphBuilderExtensions = new V1_GraphBuilderExtensions(
       this.pluginManager.getPureProtocolProcessorPlugins(),
     );
+
     // setup serialization plugins
     V1_setupPureModelContextDataSerialization(
       this.pluginManager.getPureProtocolProcessorPlugins(),
@@ -489,6 +501,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       .getEngineServerClient()
       .setTracerService(options?.tracerService ?? new TracerService());
     await this.engine.setup(config);
+  }
+
+  getSupportedProtocolVersion(): string {
+    return PureClientVersion.V1_0_0;
   }
 
   // --------------------------------------------- Graph Builder ---------------------------------------------
@@ -528,7 +544,11 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       const buildInputs = [
         {
           model: systemModel,
-          data: indexPureModelContextData(report, systemData, this.extensions),
+          data: indexPureModelContextData(
+            report,
+            systemData,
+            this.graphBuilderExtensions,
+          ),
         },
       ];
 
@@ -610,7 +630,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         data: indexPureModelContextData(
           report,
           dependencyData,
-          this.extensions,
+          this.graphBuilderExtensions,
         ),
       }));
 
@@ -669,7 +689,11 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       const buildInputs: V1_GraphBuilderInput[] = [
         {
           model: graph,
-          data: indexPureModelContextData(report, data, this.extensions),
+          data: indexPureModelContextData(
+            report,
+            data,
+            this.graphBuilderExtensions,
+          ),
         },
       ];
 
@@ -752,7 +776,11 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         generatedDataMap.entries(),
       ).map(([generationParentPath, generatedData]) => ({
         model: generatedModel,
-        data: indexPureModelContextData(report, generatedData, this.extensions),
+        data: indexPureModelContextData(
+          report,
+          generatedData,
+          this.graphBuilderExtensions,
+        ),
       }));
 
       // build
@@ -860,7 +888,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     return new V1_GraphBuilderContextBuilder(
       graph,
       currentSubGraph,
-      this.extensions,
+      this.graphBuilderExtensions,
       this.log,
       options,
     )
@@ -908,23 +936,24 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           ),
         );
         await Promise.all(
-          this.extensions.sortedExtraElementBuilders.flatMap(async (builder) =>
-            (input.data.otherElementsByBuilder.get(builder) ?? []).map(
-              (element) =>
-                this.visitWithGraphBuilderErrorHandling(
-                  element,
-                  new V1_ProtocolToMetaModelGraphFirstPassBuilder(
-                    this.getBuilderContext(
-                      graph,
-                      input.model,
-                      element,
-                      options,
+          this.graphBuilderExtensions.sortedExtraElementBuilders.flatMap(
+            async (builder) =>
+              (input.data.otherElementsByBuilder.get(builder) ?? []).map(
+                (element) =>
+                  this.visitWithGraphBuilderErrorHandling(
+                    element,
+                    new V1_ProtocolToMetaModelGraphFirstPassBuilder(
+                      this.getBuilderContext(
+                        graph,
+                        input.model,
+                        element,
+                        options,
+                      ),
+                      packageCache,
+                      elementPathCache,
                     ),
-                    packageCache,
-                    elementPathCache,
                   ),
-                ),
-            ),
+              ),
           ),
         );
       }),
@@ -1293,80 +1322,82 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     options?: GraphBuilderOptions,
   ): Promise<void> {
     await Promise.all(
-      this.extensions.sortedExtraElementBuilders.map(async (builder) => {
-        await Promise.all(
-          inputs.flatMap((input) =>
-            (input.data.otherElementsByBuilder.get(builder) ?? []).map(
-              (element) =>
-                this.visitWithGraphBuilderErrorHandling(
-                  element,
-                  new V1_ProtocolToMetaModelGraphSecondPassBuilder(
-                    this.getBuilderContext(
-                      graph,
-                      input.model,
-                      element,
-                      options,
+      this.graphBuilderExtensions.sortedExtraElementBuilders.map(
+        async (builder) => {
+          await Promise.all(
+            inputs.flatMap((input) =>
+              (input.data.otherElementsByBuilder.get(builder) ?? []).map(
+                (element) =>
+                  this.visitWithGraphBuilderErrorHandling(
+                    element,
+                    new V1_ProtocolToMetaModelGraphSecondPassBuilder(
+                      this.getBuilderContext(
+                        graph,
+                        input.model,
+                        element,
+                        options,
+                      ),
                     ),
                   ),
-                ),
+              ),
             ),
-          ),
-        );
-        await Promise.all(
-          inputs.flatMap((input) =>
-            (input.data.otherElementsByBuilder.get(builder) ?? []).map(
-              (element) =>
-                this.visitWithGraphBuilderErrorHandling(
-                  element,
-                  new V1_ProtocolToMetaModelGraphThirdPassBuilder(
-                    this.getBuilderContext(
-                      graph,
-                      input.model,
-                      element,
-                      options,
+          );
+          await Promise.all(
+            inputs.flatMap((input) =>
+              (input.data.otherElementsByBuilder.get(builder) ?? []).map(
+                (element) =>
+                  this.visitWithGraphBuilderErrorHandling(
+                    element,
+                    new V1_ProtocolToMetaModelGraphThirdPassBuilder(
+                      this.getBuilderContext(
+                        graph,
+                        input.model,
+                        element,
+                        options,
+                      ),
                     ),
                   ),
-                ),
+              ),
             ),
-          ),
-        );
-        await Promise.all(
-          inputs.flatMap((input) =>
-            (input.data.otherElementsByBuilder.get(builder) ?? []).map(
-              (element) =>
-                this.visitWithGraphBuilderErrorHandling(
-                  element,
-                  new V1_ProtocolToMetaModelGraphFourthPassBuilder(
-                    this.getBuilderContext(
-                      graph,
-                      input.model,
-                      element,
-                      options,
+          );
+          await Promise.all(
+            inputs.flatMap((input) =>
+              (input.data.otherElementsByBuilder.get(builder) ?? []).map(
+                (element) =>
+                  this.visitWithGraphBuilderErrorHandling(
+                    element,
+                    new V1_ProtocolToMetaModelGraphFourthPassBuilder(
+                      this.getBuilderContext(
+                        graph,
+                        input.model,
+                        element,
+                        options,
+                      ),
                     ),
                   ),
-                ),
+              ),
             ),
-          ),
-        );
-        await Promise.all(
-          inputs.flatMap((input) =>
-            (input.data.otherElementsByBuilder.get(builder) ?? []).map(
-              (element) =>
-                this.visitWithGraphBuilderErrorHandling(
-                  element,
-                  new V1_ProtocolToMetaModelGraphFifthPassBuilder(
-                    this.getBuilderContext(
-                      graph,
-                      input.model,
-                      element,
-                      options,
+          );
+          await Promise.all(
+            inputs.flatMap((input) =>
+              (input.data.otherElementsByBuilder.get(builder) ?? []).map(
+                (element) =>
+                  this.visitWithGraphBuilderErrorHandling(
+                    element,
+                    new V1_ProtocolToMetaModelGraphFifthPassBuilder(
+                      this.getBuilderContext(
+                        graph,
+                        input.model,
+                        element,
+                        options,
+                      ),
                     ),
                   ),
-                ),
+              ),
             ),
-          ),
-        );
-      }),
+          );
+        },
+      ),
     );
   }
 
@@ -1666,6 +1697,56 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     return result;
   }
 
+  async generateExpectedResult(
+    testable: Testable,
+    test: AtomicTest,
+    baseAssertion: TestAssertion,
+    graph: PureModel,
+  ): Promise<AssertFail> {
+    const id = uuid();
+    try {
+      baseAssertion.id = id;
+      addUniqueEntry(test.assertions, baseAssertion);
+      const runTestsInput = new V1_RunTestsInput();
+      runTestsInput.model = this.getFullGraphModelData(graph);
+      const runTestableInput = new V1_RunTestsTestableInput();
+      const unitAtomicTest = new V1_AtomicTestId();
+      runTestableInput.testable = guaranteeNonNullable(
+        getNullableIDFromTestable(
+          testable,
+          graph,
+          this.pluginManager.getPureGraphManagerPlugins(),
+        ),
+      );
+      runTestsInput.testables = [runTestableInput];
+      const parent = test.__parent;
+      unitAtomicTest.testSuiteId =
+        parent instanceof TestSuite ? parent.id : undefined;
+      unitAtomicTest.atomicTestId = test.id;
+      const runTestsResult = await this.engine.runTests(runTestsInput);
+      const results = V1_buildTestsResult(
+        runTestsResult,
+        (_id: string): Testable | undefined =>
+          getNullableTestable(
+            _id,
+            graph,
+            this.pluginManager.getPureGraphManagerPlugins(),
+          ),
+      );
+      const result = results[0];
+      assertType(result, TestFailed);
+      const status = result.assertStatuses.find(
+        (e) => e.assertion === baseAssertion,
+      );
+      return guaranteeNonNullable(status);
+    } catch (error) {
+      assertErrorThrown(error);
+      throw error;
+    } finally {
+      deleteEntry(test.assertions, baseAssertion);
+    }
+  }
+
   // ------------------------------------------- ValueSpecification -------------------------------------------
 
   buildValueSpecification(
@@ -1677,7 +1758,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       new V1_GraphBuilderContextBuilder(
         graph,
         graph,
-        this.extensions,
+        this.graphBuilderExtensions,
         this.log,
       ).build(),
     );
@@ -1704,7 +1785,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         new V1_GraphBuilderContextBuilder(
           graph,
           graph,
-          this.extensions,
+          this.graphBuilderExtensions,
           this.log,
         ).build(),
       ),
@@ -1840,29 +1921,32 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
      * object to identify relevant classes yet. so the more economical way to to base on the classification above and the knowledge about hierarchy between
      * models (e.g. service can use mapping, runtime, connection, store, etc.) we can roughly prune the graph model data by group. Following is an example
      * for mapping used for execution, but this can generalized if we introduce hierarchy/ranking for model type
-     *
      */
     const graphData = this.getFullGraphModelData(graph);
     const prunedGraphData = new V1_PureModelContextData();
     const extraExecutionElements = this.pluginManager
       .getPureProtocolProcessorPlugins()
-      .flatMap((element) => element.V1_getExtraExecutionInputGetters?.() ?? [])
-      .flatMap((getter) => getter(graph, mapping, runtime, graphData));
-    prunedGraphData.elements = graphData.elements
-      .filter(
-        (element) =>
-          element instanceof V1_Class ||
-          element instanceof V1_Enumeration ||
-          element instanceof V1_Profile ||
-          element instanceof V1_Association ||
-          element instanceof V1_ConcreteFunctionDefinition ||
-          element instanceof V1_Measure ||
-          element instanceof V1_Store ||
-          element instanceof V1_PackageableConnection ||
-          element instanceof V1_PackageableRuntime ||
-          element instanceof V1_Mapping,
+      .flatMap(
+        (element) => element.V1_getExtraExecutionInputCollectors?.() ?? [],
       )
-      .concat(extraExecutionElements);
+      .flatMap((getter) => getter(graph, mapping, runtime, graphData));
+    prunedGraphData.elements = uniq(
+      graphData.elements
+        .filter(
+          (element) =>
+            element instanceof V1_Class ||
+            element instanceof V1_Enumeration ||
+            element instanceof V1_Profile ||
+            element instanceof V1_Association ||
+            element instanceof V1_ConcreteFunctionDefinition ||
+            element instanceof V1_Measure ||
+            element instanceof V1_Store ||
+            element instanceof V1_PackageableConnection ||
+            element instanceof V1_PackageableRuntime ||
+            element instanceof V1_Mapping,
+        )
+        .concat(extraExecutionElements),
+    );
     // NOTE: for execution, we usually will just assume that we send the connections embedded in the runtime value, since we don't want the user to have to create
     // packageable runtime and connection just to play with execution.
     executeInput.clientVersion = clientVersion;
@@ -1889,7 +1973,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     mapping: Mapping,
     lambda: RawLambda,
     runtime: Runtime,
-    clientVersion: string,
     options?: ExecutionOptions,
   ): Promise<ExecutionResult> {
     return V1_buildExecutionResult(
@@ -1899,19 +1982,18 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           mapping,
           lambda,
           runtime,
-          clientVersion,
+          V1_PureGraphManager.TARGET_PROTOCOL_VERSION,
         ),
         options,
       ),
     );
   }
 
-  generateMappingTestData(
+  generateExecuteTestData(
     graph: PureModel,
     mapping: Mapping,
     lambda: RawLambda,
     runtime: Runtime,
-    clientVersion: string,
     parameters: (string | number | boolean)[],
     options?: {
       anonymizeGeneratedData?: boolean;
@@ -1924,14 +2006,14 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       mapping,
       lambda,
       runtime,
-      clientVersion,
+      V1_PureGraphManager.TARGET_PROTOCOL_VERSION,
       testDataGenerationExecuteInput,
     );
     testDataGenerationExecuteInput.parameters = parameters;
     testDataGenerationExecuteInput.hashStrings = Boolean(
       options?.anonymizeGeneratedData,
     );
-    return this.engine.generateMappingTestData(testDataGenerationExecuteInput);
+    return this.engine.generateExecuteTestData(testDataGenerationExecuteInput);
   }
 
   generateExecutionPlan(
@@ -1939,10 +2021,15 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     mapping: Mapping,
     lambda: RawLambda,
     runtime: Runtime,
-    clientVersion: string,
   ): Promise<RawExecutionPlan> {
     return this.engine.generateExecutionPlan(
-      this.createExecutionInput(graph, mapping, lambda, runtime, clientVersion),
+      this.createExecutionInput(
+        graph,
+        mapping,
+        lambda,
+        runtime,
+        V1_PureGraphManager.TARGET_PROTOCOL_VERSION,
+      ),
     );
   }
 
@@ -1951,10 +2038,15 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     mapping: Mapping,
     lambda: RawLambda,
     runtime: Runtime,
-    clientVersion: string,
   ): Promise<{ plan: RawExecutionPlan; debug: string }> {
     const result = await this.engine.debugExecutionPlanGeneration(
-      this.createExecutionInput(graph, mapping, lambda, runtime, clientVersion),
+      this.createExecutionInput(
+        graph,
+        mapping,
+        lambda,
+        runtime,
+        V1_PureGraphManager.TARGET_PROTOCOL_VERSION,
+      ),
     );
     return {
       plan: result.plan,
@@ -1971,7 +2063,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       new V1_GraphBuilderContextBuilder(
         graph,
         graph,
-        this.extensions,
+        this.graphBuilderExtensions,
         this.log,
       ).build(),
     );
@@ -2142,17 +2234,14 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         V1_transformQuerySearchSpecification(searchSpecification),
       )
     ).map((protocol) =>
-      V1_buildLightQuery(
-        protocol,
-        this.engine.getEngineServerClient().currentUserId,
-      ),
+      V1_buildLightQuery(protocol, this.engine.getCurrentUserId()),
     );
   }
 
   async getLightQuery(queryId: string): Promise<LightQuery> {
     return V1_buildLightQuery(
       await this.engine.getQuery(queryId),
-      this.engine.getEngineServerClient().currentUserId,
+      this.engine.getCurrentUserId(),
     );
   }
 
@@ -2196,7 +2285,11 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     const dependencyGraphBuilderInput: V1_GraphBuilderInput[] = Array.from(
       dependencyDataMap.entries(),
     ).map(([dependencyKey, dependencyData]) => ({
-      data: indexPureModelContextData(report, dependencyData, this.extensions),
+      data: indexPureModelContextData(
+        report,
+        dependencyData,
+        this.graphBuilderExtensions,
+      ),
       model: graph.dependencyManager.getModel(dependencyKey),
     }));
     // build main pmcd
@@ -2209,7 +2302,11 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     const mainGraphBuilderInput: V1_GraphBuilderInput[] = [
       {
         model: graph,
-        data: indexPureModelContextData(report, data, this.extensions),
+        data: indexPureModelContextData(
+          report,
+          data,
+          this.graphBuilderExtensions,
+        ),
       },
     ];
     const graphBuilderInput = [
@@ -2220,157 +2317,13 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     return graphBuilderInput;
   }
 
-  // We could optimize this further by omitting parts of the entities we don't need
-  async buildGraphForCreateQuerySetup(
-    graph: PureModel,
-    entities: Entity[],
-    dependencyEntities: Map<string, Entity[]>,
-  ): Promise<void> {
-    try {
-      const graphBuilderInput = await this.indexEntitiesWithDependencyIntoGraph(
-        graph,
-        entities,
-        dependencyEntities,
-        (entity: Entity): boolean =>
-          ((entity.content as PlainObject<V1_PackageableElement>)
-            ._type as string) === V1_MAPPING_ELEMENT_PROTOCOL_TYPE ||
-          ((entity.content as PlainObject<V1_PackageableElement>)
-            ._type as string) === V1_PACKAGEABLE_RUNTIME_ELEMENT_PROTOCOL_TYPE,
-      );
-      // handle mapping includes
-      const mappings = [
-        ...graph.ownMappings,
-        ...graph.dependencyManager.mappings,
-      ];
-      const v1Mappings = graphBuilderInput
-        .map((e) => e.data.elements.filter(filterByType(V1_Mapping)))
-        .flat();
-      const context = new V1_GraphBuilderContextBuilder(
-        graph,
-        graph,
-        this.extensions,
-        this.log,
-      ).build();
-      // build include index for compatible runtime analysis
-      v1Mappings.forEach((element) => {
-        const mapping = mappings.find((e) => e.path === element.path);
-        if (mapping) {
-          mapping.includes = element.includedMappings.map(
-            (i) =>
-              new MappingInclude(
-                mapping,
-                context.resolveMapping(
-                  guaranteeNonEmptyString(
-                    V1_getIncludedMappingPath(i),
-                    `Mapping include path is missing or empty`,
-                  ),
-                ),
-              ),
-          );
-        }
-      });
-      // handle runtimes
-      const runtimes = [
-        ...graph.ownRuntimes,
-        ...graph.dependencyManager.runtimes,
-      ];
-      const v1Runtimes = graphBuilderInput
-        .map((e) => e.data.elements.filter(filterByType(V1_PackageableRuntime)))
-        .flat();
-      v1Runtimes.forEach((element) => {
-        const runtime = runtimes.find((e) => e.path === element.path);
-        if (runtime) {
-          const runtimeValue = new EngineRuntime();
-          runtime.runtimeValue = runtimeValue;
-          runtimeValue.mappings = element.runtimeValue.mappings.map((mapping) =>
-            context.resolveMapping(mapping.path),
-          );
-        }
-      });
-    } catch (error) {
-      assertErrorThrown(error);
-      /**
-       * Wrap all error with `GraphBuilderError`, as we throw a lot of assertion error in the graph builder
-       * But we might want to rethink this decision in the future and throw appropriate type of error
-       */
-      throw error instanceof GraphBuilderError
-        ? error
-        : new GraphBuilderError(error);
-    }
-  }
-
-  // We could optimize this further by omitting parts of the entities we don't need
-  // i.e service entity would only keep execution
-  async buildGraphForServiceQuerySetup(
-    graph: PureModel,
-    entities: Entity[],
-    dependencyEntities: Map<string, Entity[]>,
-  ): Promise<void> {
-    try {
-      const graphBuilderInput = await this.indexEntitiesWithDependencyIntoGraph(
-        graph,
-        entities,
-        dependencyEntities,
-        (entity: Entity): boolean =>
-          ((entity.content as PlainObject<V1_PackageableElement>)
-            ._type as string) === V1_SERVICE_ELEMENT_PROTOCOL_TYPE,
-      );
-      // handle servicess
-      const services = [
-        ...graph.ownServices,
-        ...graph.dependencyManager.services,
-      ];
-      const v1Services = graphBuilderInput
-        .map((e) => e.data.elements.filter(filterByType(V1_Service)))
-        .flat();
-      // build service multi execution keys
-      v1Services.forEach((element) => {
-        const service = services.find((e) => e.path === element.path);
-        if (service) {
-          const serviceExecution = element.execution;
-          if (serviceExecution instanceof V1_PureMultiExecution) {
-            const execution = new PureMultiExecution(
-              serviceExecution.executionKey,
-              stub_RawLambda(),
-              service,
-            );
-            execution.executionParameters =
-              serviceExecution.executionParameters.map(
-                (keyedExecutionParameter) =>
-                  new KeyedExecutionParameter(
-                    keyedExecutionParameter.key,
-                    PackageableElementExplicitReference.create(new Mapping('')),
-                    new EngineRuntime(),
-                  ),
-              );
-            service.execution = execution;
-          } else if (serviceExecution instanceof V1_PureSingleExecution) {
-            service.execution = new PureSingleExecution(
-              stub_RawLambda(),
-              service,
-              PackageableElementExplicitReference.create(new Mapping('')),
-              new EngineRuntime(),
-            );
-          }
-        }
-      });
-    } catch (error) {
-      assertErrorThrown(error);
-      /**
-       * Wrap all error with `GraphBuilderError`, as we throw a lot of assertion error in the graph builder
-       * But we might want to rethink this decision in the future and throw appropriate type of error
-       */
-      throw error instanceof GraphBuilderError
-        ? error
-        : new GraphBuilderError(error);
-    }
-  }
+  // --------------------------------------------- Query ------------------------------------------------------
 
   async getQuery(queryId: string, graph: PureModel): Promise<Query> {
     return V1_buildQuery(
       await this.engine.getQuery(queryId),
       graph,
-      this.engine.getEngineServerClient().currentUserId,
+      this.engine.getCurrentUserId(),
     );
   }
 
@@ -2382,7 +2335,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     return V1_buildQuery(
       await this.engine.createQuery(V1_transformQuery(query)),
       graph,
-      this.engine.getEngineServerClient().currentUserId,
+      this.engine.getCurrentUserId(),
     );
   }
 
@@ -2390,7 +2343,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     return V1_buildQuery(
       await this.engine.updateQuery(V1_transformQuery(query)),
       graph,
-      this.engine.getEngineServerClient().currentUserId,
+      this.engine.getCurrentUserId(),
     );
   }
 
@@ -2416,64 +2369,227 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     return hashMap;
   }
 
-  // ------------------------------------------- Raw Protocol Handling -------------------------------------------
+  // ---------------------------------------- Analysis ----------------------------------------
 
-  /**
-   * As mentioned, this method is needed because sometimes we want to parse and store protocol from grammar
-   * However, we want to prune away the source information. There is no realy good way to do this, other than
-   * hard-coding the source informations fields like this. We should cleanup these in the backend and use
-   * pointer instead so source information is coupled with the value instead of having custom-name source information
-   * fields like these, polluting the protocol models.
-   */
-  pruneSourceInformation = (
-    object: Record<PropertyKey, unknown>,
-  ): Record<PropertyKey, unknown> =>
-    recursiveOmit(
-      object,
-      [
-        SOURCE_INFORMATION_KEY,
-        // domain
-        'profileSourceInformation',
-        'propertyTypeSourceInformation',
-        // connection
-        'elementSourceInformation',
-        'classSourceInformation',
-        'mappingsSourceInformation',
-        // mapping
-        'classSourceInformation',
-        'sourceClassSourceInformation',
-        'enumMappingIdSourceInformation',
-        'flatDataSourceInformation',
-        // service
-        'mappingSourceInformation',
-        // flat-data store
-        'nameSourceInformation',
-        'driverIdSourceInformation',
-        // file generation
-        'typeSourceInformation',
-      ].concat(
-        this.pluginManager
-          .getPureProtocolProcessorPlugins()
-          .flatMap(
-            (plugin) => plugin.V1_getExtraSourceInformationKeys?.() ?? [],
-          ),
+  private buildMappingModelCoverageAnalysisInputContextData = (
+    graph: PureModel,
+  ): V1_PureModelContextData => {
+    const graphData = this.getFullGraphModelData(graph);
+    const prunedGraphData = new V1_PureModelContextData();
+    const extraElements = this.pluginManager
+      .getPureProtocolProcessorPlugins()
+      .flatMap(
+        (element) =>
+          element.V1_getExtraMappingModelCoverageAnalysisInputCollectors?.() ??
+          [],
+      )
+      .flatMap((getter) => getter(graph, graphData));
+    prunedGraphData.elements = uniq(
+      this.getFullGraphModelData(graph)
+        .elements.filter(
+          (element) =>
+            element instanceof V1_Class ||
+            element instanceof V1_Enumeration ||
+            element instanceof V1_Profile ||
+            element instanceof V1_Association ||
+            element instanceof V1_ConcreteFunctionDefinition ||
+            element instanceof V1_Measure ||
+            element instanceof V1_Store ||
+            element instanceof V1_Mapping,
+        )
+        .concat(extraElements),
+    );
+    return prunedGraphData;
+  };
+
+  async analyzeMappingModelCoverage(
+    graph: PureModel,
+    mapping: Mapping,
+  ): Promise<MappingModelCoverageAnalysisResult> {
+    const modelCoverageAnalysisInput =
+      new V1_MappingModelCoverageAnalysisInput();
+    modelCoverageAnalysisInput.clientVersion =
+      V1_PureGraphManager.TARGET_PROTOCOL_VERSION;
+    modelCoverageAnalysisInput.mapping = mapping.path;
+    modelCoverageAnalysisInput.model =
+      this.buildMappingModelCoverageAnalysisInputContextData(graph);
+    return V1_buildModelCoverageAnalysisResult(
+      await this.engine.analyzeMappingModelCoverage(modelCoverageAnalysisInput),
+    );
+  }
+
+  buildMappingModelCoverageAnalysisResult(
+    input: RawMappingModelCoverageAnalysisResult,
+  ): MappingModelCoverageAnalysisResult {
+    return V1_buildModelCoverageAnalysisResult(
+      deserialize(
+        V1_MappingModelCoverageAnalysisResult,
+        input as PlainObject<V1_MappingModelCoverageAnalysisResult>,
       ),
     );
+  }
+
+  // --------------------------------------------- Utilities ---------------------------------------------
 
   elementToEntity = (
     element: PackageableElement,
-    pruneSourceInformation?: boolean,
+    options?: {
+      pruneSourceInformation?: boolean;
+    },
   ): Entity => {
     const entity = this.elementProtocolToEntity(
       this.elementToProtocol<V1_PackageableElement>(element),
     );
-    if (pruneSourceInformation) {
-      entity.content = this.pruneSourceInformation(entity.content);
+    if (options?.pruneSourceInformation) {
+      entity.content = pruneSourceInformation(entity.content);
     }
     return entity;
   };
 
-  // --------------------------------------------- SHARED ---------------------------------------------
+  async buildDatabase(input: DatabaseBuilderInput): Promise<Entity[]> {
+    const dbBuilderInput = new V1_DatabaseBuilderInput();
+    dbBuilderInput.connection = V1_transformRelationalDatabaseConnection(
+      input.connection,
+      new V1_GraphTransformerContextBuilder(
+        this.pluginManager.getPureProtocolProcessorPlugins(),
+      ).build(),
+    );
+    const targetDatabase = new V1_TargetDatabase();
+    targetDatabase.package = input.targetDatabase.package;
+    targetDatabase.name = input.targetDatabase.name;
+    dbBuilderInput.targetDatabase = targetDatabase;
+    const config = new V1_DatabaseBuilderConfig();
+    config.maxTables = input.config.maxTables;
+    config.enrichTables = input.config.enrichTables;
+    config.enrichPrimaryKeys = input.config.enrichPrimaryKeys;
+    config.enrichColumns = input.config.enrichColumns;
+    config.patterns = input.config.patterns.map(
+      (storePattern: DatabasePattern): V1_DatabasePattern => {
+        const pattern = new V1_DatabasePattern();
+        pattern.schemaPattern = storePattern.schemaPattern;
+        pattern.tablePattern = storePattern.tablePattern;
+        pattern.escapeSchemaPattern = storePattern.escapeSchemaPattern;
+        pattern.escapeTablePattern = storePattern.escapeTablePattern;
+        return pattern;
+      },
+    );
+    dbBuilderInput.config = config;
+    return this.pureModelContextDataToEntities(
+      await this.engine.buildDatabase(dbBuilderInput),
+    );
+  }
+
+  // --------------------------------------------- HACKY ---------------------------------------------
+
+  HACKY__createGetAllLambda(_class: Class): RawLambda {
+    return new RawLambda(
+      [],
+      [
+        {
+          _type: 'func',
+          function: 'getAll',
+          parameters: [
+            {
+              _type: 'packageableElementPtr',
+              fullPath: _class.path,
+            },
+          ],
+        },
+      ],
+    );
+  }
+
+  HACKY__createServiceTestAssertLambda(assertData: string): RawLambda {
+    return new RawLambda(
+      [
+        {
+          _type: 'var',
+          class: 'meta::pure::mapping::Result',
+          multiplicity: { lowerBound: 1, upperBound: 1 },
+          name: 'res',
+        },
+      ],
+      [
+        {
+          _type: 'func',
+          function: 'equalJsonStrings',
+          parameters: [
+            {
+              _type: 'func',
+              function: 'toString',
+              parameters: [
+                {
+                  _type: 'func',
+                  function: 'toOne',
+                  parameters: [
+                    {
+                      _type: 'property',
+                      parameters: [
+                        {
+                          _type: 'var',
+                          name: 'res',
+                        },
+                      ],
+                      property: 'values',
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              _type: 'string',
+              multiplicity: {
+                lowerBound: 1,
+                upperBound: 1,
+              },
+              values: [assertData],
+            },
+          ],
+        },
+      ],
+    );
+  }
+
+  HACKY__extractServiceTestAssertionData(query: RawLambda): string | undefined {
+    let json: string | undefined;
+    try {
+      json = (
+        (
+          ((query.body as unknown[])[0] as Record<PropertyKey, unknown>) // FunctionValue
+            .parameters as unknown[]
+        )[1] as {
+          values: (string | undefined)[];
+        }
+      ).values[0];
+      assertTrue(typeof json === 'string', `Expected value of type 'string'`);
+    } catch (error) {
+      assertErrorThrown(error);
+      this.log.warn(
+        LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_MANAGER_FAILURE),
+        `Can't extract assertion result`,
+      );
+      json = undefined;
+    }
+    if (!json) {
+      /* Add other assertion cases if we read others */
+    }
+    return json;
+  }
+
+  HACKY__createDefaultBlankLambda(): RawLambda {
+    return new RawLambda(
+      [{ _type: 'var', name: 'x' }],
+      [
+        {
+          _type: 'string',
+          multiplicity: { lowerBound: 1, upperBound: 1 },
+          values: [''],
+        },
+      ],
+    );
+  }
+
+  // --------------------------------------------- Shared ---------------------------------------------
 
   private async entitiesToPureModelContextData(
     entities: Entity[],
@@ -2643,149 +2759,4 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
     return graphData;
   };
-
-  // --------------------------------------------- Utilities ---------------------------------------------
-
-  async buildDatabase(input: DatabaseBuilderInput): Promise<Entity[]> {
-    const dbBuilderInput = new V1_DatabaseBuilderInput();
-    dbBuilderInput.connection = V1_transformRelationalDatabaseConnection(
-      input.connection,
-      new V1_GraphTransformerContextBuilder(
-        this.pluginManager.getPureProtocolProcessorPlugins(),
-      ).build(),
-    );
-    const targetDatabase = new V1_TargetDatabase();
-    targetDatabase.package = input.targetDatabase.package;
-    targetDatabase.name = input.targetDatabase.name;
-    dbBuilderInput.targetDatabase = targetDatabase;
-    const config = new V1_DatabaseBuilderConfig();
-    config.maxTables = input.config.maxTables;
-    config.enrichTables = input.config.enrichTables;
-    config.enrichPrimaryKeys = input.config.enrichPrimaryKeys;
-    config.enrichColumns = input.config.enrichColumns;
-    config.patterns = input.config.patterns.map(
-      (storePattern: DatabasePattern): V1_DatabasePattern => {
-        const pattern = new V1_DatabasePattern();
-        pattern.schemaPattern = storePattern.schemaPattern;
-        pattern.tablePattern = storePattern.tablePattern;
-        pattern.escapeSchemaPattern = storePattern.escapeSchemaPattern;
-        pattern.escapeTablePattern = storePattern.escapeTablePattern;
-        return pattern;
-      },
-    );
-    dbBuilderInput.config = config;
-    return this.pureModelContextDataToEntities(
-      await this.engine.buildDatabase(dbBuilderInput),
-    );
-  }
-
-  // --------------------------------------------- HACKY ---------------------------------------------
-
-  HACKY__createGetAllLambda(_class: Class): RawLambda {
-    return new RawLambda(
-      [],
-      [
-        {
-          _type: 'func',
-          function: 'getAll',
-          parameters: [
-            {
-              _type: 'packageableElementPtr',
-              fullPath: _class.path,
-            },
-          ],
-        },
-      ],
-    );
-  }
-
-  HACKY__createServiceTestAssertLambda(assertData: string): RawLambda {
-    return new RawLambda(
-      [
-        {
-          _type: 'var',
-          class: 'meta::pure::mapping::Result',
-          multiplicity: { lowerBound: 1, upperBound: 1 },
-          name: 'res',
-        },
-      ],
-      [
-        {
-          _type: 'func',
-          function: 'equalJsonStrings',
-          parameters: [
-            {
-              _type: 'func',
-              function: 'toString',
-              parameters: [
-                {
-                  _type: 'func',
-                  function: 'toOne',
-                  parameters: [
-                    {
-                      _type: 'property',
-                      parameters: [
-                        {
-                          _type: 'var',
-                          name: 'res',
-                        },
-                      ],
-                      property: 'values',
-                    },
-                  ],
-                },
-              ],
-            },
-            {
-              _type: 'string',
-              multiplicity: {
-                lowerBound: 1,
-                upperBound: 1,
-              },
-              values: [assertData],
-            },
-          ],
-        },
-      ],
-    );
-  }
-
-  HACKY__extractServiceTestAssertionData(query: RawLambda): string | undefined {
-    let json: string | undefined;
-    try {
-      json = (
-        (
-          ((query.body as unknown[])[0] as Record<PropertyKey, unknown>) // FunctionValue
-            .parameters as unknown[]
-        )[1] as {
-          values: (string | undefined)[];
-        }
-      ).values[0];
-      assertTrue(typeof json === 'string', `Expected value of type 'string'`);
-    } catch (error) {
-      assertErrorThrown(error);
-      this.log.warn(
-        LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_MANAGER_FAILURE),
-        `Can't extract assertion result`,
-      );
-      json = undefined;
-    }
-    if (!json) {
-      /* Add other assertion cases if we read others */
-    }
-    return json;
-  }
-
-  HACKY__createDefaultBlankLambda(): RawLambda {
-    return new RawLambda(
-      [{ _type: 'var', name: 'x' }],
-      [
-        {
-          _type: 'string',
-          multiplicity: { lowerBound: 1, upperBound: 1 },
-          values: [''],
-        },
-      ],
-    );
-  }
 }

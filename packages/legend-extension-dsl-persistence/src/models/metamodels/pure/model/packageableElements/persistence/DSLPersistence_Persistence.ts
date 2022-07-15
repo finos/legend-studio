@@ -38,7 +38,7 @@ export class Persistence extends PackageableElement implements Hashable {
       PERSISTENCE_HASH_STRUCTURE.PERSISTENCE,
       this.documentation,
       this.trigger,
-      this.service.hashValue,
+      this.service.valueForSerialization ?? '',
       this.persister,
       this.notifier,
     ]);

@@ -48,7 +48,7 @@ export class RawVariableExpression
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.RAW_VARIABLE,
-      this.type.hashValue,
+      this.type.valueForSerialization ?? '',
       this.name,
       this.multiplicity,
     ]);

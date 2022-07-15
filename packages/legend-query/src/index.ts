@@ -21,14 +21,17 @@ export { QUERY_BUILDER_TEST_ID } from './components/QueryBuilder_TestID.js';
 export { QueryBuilder_PureProtocolProcessorPlugin } from './models/protocols/pure/QueryBuilder_PureProtocolProcessorPlugin.js';
 
 export { QueryBuilder } from './components/QueryBuilder.js';
-export { useQuerySetupStore } from './components/QuerySetupStoreProvider.js';
+export { useQuerySetupStore } from './components/LegendQuerySetupStoreProvider.js';
 export { useLegendQueryStore } from './components/LegendQueryStoreProvider.js';
 
 export { LegendQueryPluginManager } from './application/LegendQueryPluginManager.js';
 
 export * from './stores/LegendQueryPlugin.js';
 export * from './stores/LegendQueryRouter.js';
-export { QuerySetupState, QuerySetupStore } from './stores/QuerySetupStore.js';
+export {
+  QuerySetupState,
+  QuerySetupStore,
+} from './stores/LegendQuerySetupStore.js';
 export {
   LegendQueryStore,
   CreateQueryInfoState,

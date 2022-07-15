@@ -115,6 +115,16 @@ const isDefaultDatePropagationSupported = (
 ): boolean => {
   const property = currentPropertyExpression.func;
   const graph = queryBuilderState.graphManagerState.graph;
+  // Default date propagation is not supported for current expression when the previous property expression is a derived property.
+  if (
+    prevPropertyExpression &&
+    prevPropertyExpression.func instanceof DerivedProperty &&
+    prevPropertyExpression.func._OWNER.derivedProperties.includes(
+      prevPropertyExpression.func,
+    )
+  ) {
+    return false;
+  }
   // Default date propagation is not supported for current expression when the milestonedParameterValues of
   // the previous property expression doesn't match with the global milestonedParameterValues
   if (

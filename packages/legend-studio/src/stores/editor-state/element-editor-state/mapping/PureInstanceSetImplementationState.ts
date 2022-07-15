@@ -27,7 +27,7 @@ import {
   LogEvent,
   isNonNullable,
 } from '@finos/legend-shared';
-import { MAPPING_ELEMENT_SOURCE_ID_LABEL } from './MappingEditorState.js';
+import { MAPPING_ELEMENT_TYPE } from './MappingEditorState.js';
 import {
   type PurePropertyMapping,
   type PureInstanceSetImplementation,
@@ -41,8 +41,6 @@ import {
 } from '@finos/legend-graph';
 import { LambdaEditorState } from '@finos/legend-application';
 import { pureInstanceSetImpl_setMappingFilter } from '../../../graphModifier/DSLMapping_GraphModifierHelper.js';
-
-export const FILTER_SOURCE_ID_LABEL = 'filter';
 
 export class PurePropertyMappingState extends PropertyMappingState {
   editorStore: EditorStore;
@@ -63,7 +61,7 @@ export class PurePropertyMappingState extends PropertyMappingState {
     return buildSourceInformationSourceId(
       [
         this.propertyMapping._OWNER._PARENT.path,
-        MAPPING_ELEMENT_SOURCE_ID_LABEL.PURE_INSTANCE_CLASS_MAPPING,
+        MAPPING_ELEMENT_TYPE.CLASS,
         this.propertyMapping._OWNER.id.value,
         this.propertyMapping.property.value.name,
         this.propertyMapping.targetSetImplementation?.id.value,
@@ -148,10 +146,11 @@ export class PureInstanceSetImplementationFilterState extends LambdaEditorState 
   }
 
   get lambdaId(): string {
+    // TODO: we need to fix this when we need to properly reveal compilation error for filter
+    // or when we refactor error reveal in form mode
+    // See https://github.com/finos/legend-studio/issues/1168
     return buildSourceInformationSourceId([
       this.instanceSetImplementation._PARENT.path,
-      MAPPING_ELEMENT_SOURCE_ID_LABEL.PURE_INSTANCE_CLASS_MAPPING,
-      FILTER_SOURCE_ID_LABEL,
       this.uuid,
     ]);
   }

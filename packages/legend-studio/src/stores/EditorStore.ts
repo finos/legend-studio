@@ -149,7 +149,7 @@ import { GlobalTestRunnerState } from './sidebar-state/testable/GlobalTestRunner
 
 export abstract class EditorExtensionState {
   /**
-   * This helps to better type-checking for this empty abtract type
+   * This helps to better type-check for this empty abtract type
    * See https://github.com/finos/legend-studio/blob/master/docs/technical/typescript-usage.md#understand-typescript-structual-type-system
    */
   private readonly _$nominalTypeBrand!: 'EditorExtensionState';
@@ -790,15 +790,11 @@ export class EditorStore {
     this.initState.setMessage(`Fetching entities...`);
     try {
       // fetch workspace entities and config at the same time
+      const projectId = this.sdlcState.activeProject.projectId;
+      const activeWorkspace = this.sdlcState.activeWorkspace;
       const result = (yield Promise.all([
-        this.sdlcServerClient.getEntities(
-          this.sdlcState.activeProject.projectId,
-          this.sdlcState.activeWorkspace,
-        ),
-        this.sdlcServerClient.getConfiguration(
-          this.sdlcState.activeProject.projectId,
-          this.sdlcState.activeWorkspace,
-        ),
+        this.sdlcServerClient.getEntities(projectId, activeWorkspace),
+        this.sdlcServerClient.getConfiguration(projectId, activeWorkspace),
       ])) as [Entity[], PlainObject<ProjectConfiguration>];
       entities = result[0];
       projectConfiguration = result[1];
@@ -1436,6 +1432,14 @@ export class EditorStore {
     return this.graphManagerState.graph.ownStores
       .concat(this.graphManagerState.graph.dependencyManager.stores)
       .map((e) => buildElementOption(e) as PackageableElementOption<Store>);
+  }
+
+  get dataOptions(): PackageableElementOption<DataElement>[] {
+    return this.graphManagerState.graph.ownDataElements
+      .concat(this.graphManagerState.graph.dependencyManager.dataElements)
+      .map(
+        (e) => buildElementOption(e) as PackageableElementOption<DataElement>,
+      );
   }
 
   getSupportedElementTypes(): string[] {

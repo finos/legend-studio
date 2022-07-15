@@ -21,16 +21,17 @@ import {
   UnsupportedOperationError,
 } from '@finos/legend-shared';
 import type { EditorStore } from '../EditorStore.js';
-import type { MappingElementSource } from '../editor-state/element-editor-state/mapping/MappingEditorState.js';
 import {
   type PrimitiveType,
   type Enumeration,
   PRIMITIVE_TYPE,
   Class,
   getAllClassProperties,
+  DATE_FORMAT,
+  DATE_TIME_FORMAT,
 } from '@finos/legend-graph';
-import { DATE_FORMAT, DATE_TIME_FORMAT } from '@finos/legend-application';
 import { CLASS_PROPERTY_TYPE, getClassPropertyType } from './ModelUtil.js';
+import type { MappingElementSource } from '../../index.js';
 
 export const createMockPrimitiveProperty = (
   primitiveType: PrimitiveType,

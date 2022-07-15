@@ -40,16 +40,9 @@ import {
   PURE_GRAMMAR_PERSISTENCE_ELEMENT_TYPE_LABEL,
   PURE_GRAMMAR_PERSISTENCE_PARSER_NAME,
 } from '../../graphManager/DSLPersistence_PureGraphManagerPlugin.js';
-import {
-  DSL_PERSISTENCE_DOCUMENTATION_ENTRIES,
-  DSL_PERSISTENCE_LEGEND_STUDIO_DOCUMENTATION_KEY,
-} from './DSLPersistence_LegendStudioDocumentation.js';
-import {
-  collectKeyedDocumnetationEntriesFromConfig,
-  type LegendApplicationDocumentationEntry,
-  type LegendApplicationKeyedDocumentationEntry,
-} from '@finos/legend-application';
+import { DSL_PERSISTENCE_LEGEND_STUDIO_DOCUMENTATION_KEY } from './DSLPersistence_LegendStudioDocumentation.js';
 import { BLANK_PERSISTENCE_SNIPPET } from './DSLPersistence_CodeSnippets.js';
+import type { LegendApplicationDocumentationEntry } from '@finos/legend-application';
 
 const PERSISTENCE_ELEMENT_TYPE = 'PERSISTENCE';
 const PERSISTENCE_ELEMENT_PROJECT_EXPLORER_DND_TYPE =
@@ -63,10 +56,11 @@ export class DSLPersistence_LegendStudioPlugin
     super(packageJson.extensions.studioPlugin, packageJson.version);
   }
 
-  override getExtraKeyedDocumentationEntries(): LegendApplicationKeyedDocumentationEntry[] {
-    return collectKeyedDocumnetationEntriesFromConfig(
-      DSL_PERSISTENCE_DOCUMENTATION_ENTRIES,
-    );
+  override getExtraRequiredDocumentationKeys(): string[] {
+    return [
+      DSL_PERSISTENCE_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_ELEMENT_PERSISTENCE,
+      DSL_PERSISTENCE_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER,
+    ];
   }
 
   getExtraSupportedElementTypes(): string[] {

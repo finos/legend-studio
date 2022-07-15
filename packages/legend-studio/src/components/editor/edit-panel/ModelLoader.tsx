@@ -36,9 +36,11 @@ import {
   ActionAlertActionType,
   useApplicationStore,
   EDITOR_LANGUAGE,
+  useApplicationNavigationContext,
 } from '@finos/legend-application';
 import { StudioTextInputEditor } from '../../shared/StudioTextInputEditor.js';
 import type { ModelLoaderExtensionConfiguration } from '../../../stores/LegendStudioPlugin.js';
+import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../stores/LegendStudioApplicationNavigationContext.js';
 
 export const ModelLoader = observer(() => {
   const editorStore = useEditorStore();
@@ -114,14 +116,17 @@ export const ModelLoader = observer(() => {
   };
   const updateModel = (val: string): void => modelLoaderState.setModelText(val);
 
+  useApplicationNavigationContext(
+    LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.MODEL_LOADER,
+  );
+
   return (
     <div className="panel model-loader">
       <div className="panel__header model-loader__header">
         <div className="model-loader__header__configs">
           <DropdownMenu
-            className="edit-panel__element-view"
             content={
-              <MenuContent className="model-loader__header__configs__types">
+              <MenuContent className="model-loader__header__configs__type__menu">
                 <div className="model-loader__header__configs__type-option__group model-loader__header__configs__type-option__group--native">
                   <div className="model-loader__header__configs__type-option__group__name">
                     native
@@ -242,7 +247,12 @@ export const ModelLoader = observer(() => {
       <div className="panel__content model-loader__editor">
         {loaderExtensionConfig?.renderer(editorStore) ?? (
           <StudioTextInputEditor
-            language={EDITOR_LANGUAGE.JSON}
+            language={
+              modelLoaderState.currentModelLoadType ===
+              MODEL_UPDATER_INPUT_TYPE.PURE_GRAMMAR
+                ? EDITOR_LANGUAGE.PURE
+                : EDITOR_LANGUAGE.JSON
+            }
             inputValue={modelLoaderState.modelText}
             updateInput={updateModel}
             showMiniMap={true}

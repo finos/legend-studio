@@ -25,6 +25,8 @@ yarn-error.log*
 /fixtures/*/build/
 /fixtures/*/dist/
 /fixtures/*/lib/
+/scripts/*/build/
+/scripts/*/lib/
 
 # Dependencies
 **/node_modules

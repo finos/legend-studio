@@ -22,11 +22,11 @@ import { LegendStudioPluginManager } from './LegendStudioPluginManager.js';
 import {
   type LegendApplicationConfig,
   type LegendApplicationLogger,
-  type LegendApplicationVersionData,
   ApplicationStoreProvider,
   LegendApplication,
   setupLegendApplicationUILibrary,
   WebApplicationNavigatorProvider,
+  type LegendApplicationConfigurationInput,
 } from '@finos/legend-application';
 import { CorePureGraphManagerPlugin } from '@finos/legend-graph';
 import { getRootElement } from '@finos/legend-art';
@@ -48,13 +48,6 @@ const setupLegendStudioUILibrary = async (
     // See https://github.com/greena13/react-hotkeys#ignoring-events
     ignoreTags: [],
   });
-
-  await Promise.all(
-    pluginManager
-      .getStudioPlugins()
-      .flatMap((plugin) => plugin.getExtraApplicationSetups?.() ?? [])
-      .map((setup) => setup(pluginManager)),
-  );
 };
 
 export class LegendStudio extends LegendApplication {
@@ -71,11 +64,9 @@ export class LegendStudio extends LegendApplication {
   }
 
   async configureApplication(
-    configData: LegendStudioConfigurationData,
-    versionData: LegendApplicationVersionData,
-    baseUrl: string,
+    input: LegendApplicationConfigurationInput<LegendStudioConfigurationData>,
   ): Promise<LegendApplicationConfig> {
-    return new LegendStudioConfig(configData, versionData, baseUrl);
+    return new LegendStudioConfig(input);
   }
 
   async loadApplication(): Promise<void> {

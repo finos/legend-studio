@@ -276,6 +276,13 @@
     width: 100%;
   }
 
+  &__analytics {
+    font-size: 1.1rem;
+    color: var(--color-dark-grey-400);
+    margin-left: 0.5rem;
+    font-family: 'Roboto Mono', monospace;
+  }
+
   &__limit {
     @include flexVCenter;
 

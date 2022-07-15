@@ -15,11 +15,8 @@
  */
 
 import { addUniqueEntry } from '@finos/legend-shared';
-import type {
-  KeyedExecutionParameter,
-  PureExecution,
-  PureSingleExecution,
-} from '../../../models/metamodels/pure/packageableElements/service/ServiceExecution.js';
+import type { Mapping } from '../../../models/metamodels/pure/packageableElements/mapping/Mapping.js';
+import type { PureExecution } from '../../../models/metamodels/pure/packageableElements/service/ServiceExecution.js';
 import { isStubbed_PackageableElement } from '../creation/DomainModelCreatorHelper.js';
 import { isStubbed_RawLambda } from '../creation/RawValueSpecificationCreatorHelper.js';
 import {
@@ -56,8 +53,8 @@ export const validate_PureExecutionQuery = (
 };
 
 export const validate_PureExecutionMapping = (
-  metamodel: PureSingleExecution | KeyedExecutionParameter,
+  mapping: Mapping,
 ): ValidationIssue | undefined =>
-  isStubbed_PackageableElement(metamodel.mapping.value)
+  isStubbed_PackageableElement(mapping)
     ? createValidationError(['Service execution mapping cannot be empty'])
     : undefined;

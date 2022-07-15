@@ -25,7 +25,7 @@ export class BindingTransformer implements Hashable {
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.BINDING_TRANSFORMER,
-      this.binding.hashValue,
+      this.binding.valueForSerialization ?? '',
     ]);
   }
 }

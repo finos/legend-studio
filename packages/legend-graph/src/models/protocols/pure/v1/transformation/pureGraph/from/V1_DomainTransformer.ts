@@ -34,7 +34,6 @@ import { V1_StereotypePtr } from '../../../model/packageableElements/domain/V1_S
 import {
   V1_initPackageableElement,
   V1_transformMultiplicity,
-  V1_transformElementReference,
 } from './V1_CoreTransformerHelper.js';
 import { V1_TaggedValue } from '../../../model/packageableElements/domain/V1_TaggedValue.js';
 import { V1_TagPtr } from '../../../model/packageableElements/domain/V1_TagPtr.js';
@@ -68,7 +67,7 @@ export const V1_transformStereotype = (
   element: StereotypeReference,
 ): V1_StereotypePtr => {
   const stereotype = new V1_StereotypePtr();
-  stereotype.profile = V1_transformElementReference(element.ownerReference);
+  stereotype.profile = element.ownerReference.valueForSerialization ?? '';
   stereotype.value = element.value.value;
   return stereotype;
 };
@@ -79,9 +78,8 @@ export const V1_transformTaggedValue = (
   const taggedValue = new V1_TaggedValue();
   taggedValue.value = element.value;
   taggedValue.tag = new V1_TagPtr();
-  taggedValue.tag.profile = V1_transformElementReference(
-    element.tag.ownerReference,
-  );
+  taggedValue.tag.profile =
+    element.tag.ownerReference.valueForSerialization ?? '';
   taggedValue.tag.value = element.tag.value.value;
   return taggedValue;
 };
@@ -238,7 +236,7 @@ export const V1_transformFunction = (
         new V1_RawValueSpecificationTransformer(context),
       ) as V1_RawVariable,
   );
-  _function.returnType = V1_transformElementReference(element.returnType);
+  _function.returnType = element.returnType.valueForSerialization ?? '';
   _function.stereotypes = element.stereotypes.map(V1_transformStereotype);
   _function.taggedValues = element.taggedValues.map(V1_transformTaggedValue);
   _function.returnMultiplicity = V1_transformMultiplicity(

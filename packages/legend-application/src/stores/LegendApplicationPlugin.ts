@@ -15,19 +15,51 @@
  */
 
 import { AbstractPlugin } from '@finos/legend-shared';
+import type { LegendApplicationPluginManager } from '../application/LegendApplicationPluginManager.js';
 import type {
-  LegendApplicationKeyedContextualDocumentationEntry,
+  LegendApplicationContextualDocumentationEntry,
+  LegendApplicationDocumentationRegistryEntry,
   LegendApplicationKeyedDocumentationEntry,
 } from './LegendApplicationDocumentationService.js';
 
+export type LegendApplicationSetup = (
+  pluginManager: LegendApplicationPluginManager,
+) => Promise<void>;
+
 export abstract class LegendApplicationPlugin extends AbstractPlugin {
+  /**
+   * Get the list of setup procedures to be run when booting up the application.
+   *
+   * NOTE: The application will call the setup procedures from all extensions concurrently.
+   */
+  getExtraApplicationSetups?(): LegendApplicationSetup[];
+
+  /**
+   * Get the list of documentation registry entries from which the application can fetch
+   * documentation config data and load the documentation registry
+   */
+  getExtraDocumentationRegistryEntries?(): LegendApplicationDocumentationRegistryEntry[];
+
   /**
    * Get the list of keyed documentation entries to be registered with documentation service.
    */
   getExtraKeyedDocumentationEntries?(): LegendApplicationKeyedDocumentationEntry[];
 
   /**
-   * Get the list of keyed contextual documentation entries to be registered with documentation service.
+   * Get the list of documentation keys whose corresponding documentation entry is required
+   * in the application. The documentation registry will be scanned for the presence of these,
+   * if they are not available, warnings will be issued.
    */
-  getExtraKeyedContextualDocumentationEntries?(): LegendApplicationKeyedContextualDocumentationEntry[];
+  getExtraRequiredDocumentationKeys?(): string[];
+
+  /**
+   * Get the list of contextual documentation entries to be registered with documentation service.
+   */
+  getExtraContextualDocumentationEntries?(): LegendApplicationContextualDocumentationEntry[];
+
+  /**
+   * Get the list of application context keys for which the application will log event for
+   * when their corresponding contexts are accessed
+   */
+  getExtraAccessEventLoggingApplicationContextKeys?(): string[];
 }

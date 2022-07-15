@@ -16,7 +16,6 @@
 
 import { AgGridColumn, AgGridReact } from '@ag-grid-community/react';
 import {
-  Dialog,
   BlankPanelContent,
   PanelLoadingIndicator,
   PlayIcon,
@@ -24,36 +23,279 @@ import {
   MenuContent,
   MenuContentItem,
   CaretDownIcon,
-  ResizablePanelGroup,
-  ResizablePanel,
-  ResizablePanelSplitter,
-  ResizablePanelSplitterLine,
+  ContextMenu,
+  clsx,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { flowResult } from 'mobx';
 import type { QueryBuilderState } from '../stores/QueryBuilderState.js';
 import {
   type ExecutionResult,
+  type Enumeration,
+  InstanceValue,
   extractExecutionResultValues,
   TdsExecutionResult,
   RawExecutionResult,
   EXECUTION_SERIALIZATION_FORMAT,
+  EnumValueInstanceValue,
+  EnumValueExplicitReference,
 } from '@finos/legend-graph';
 import {
   ActionAlertActionType,
   ActionAlertType,
   EDITOR_LANGUAGE,
+  ExecutionPlanViewer,
+  instanceValue_changeValue,
+  instanceValue_changeValues,
   PARAMETER_SUBMIT_ACTION,
   TAB_SIZE,
   TextInputEditor,
   useApplicationStore,
 } from '@finos/legend-application';
-import { isBoolean } from '@finos/legend-shared';
+import {
+  assertErrorThrown,
+  guaranteeNonNullable,
+  isBoolean,
+} from '@finos/legend-shared';
+import { forwardRef, useState } from 'react';
+import type { CellMouseOverEvent } from '@ag-grid-community/core';
+import {
+  QueryBuilderDerivationProjectionColumnState,
+  QueryBuilderProjectionColumnState,
+} from '../stores/QueryBuilderProjectionState.js';
+import {
+  type QueryBuilderPostFilterTreeNodeData,
+  PostFilterConditionState,
+  QueryBuilderPostFilterTreeConditionNodeData,
+} from '../stores/QueryBuilderPostFilterState.js';
+import {
+  QueryBuilderPostFilterOperator_Equal,
+  QueryBuilderPostFilterOperator_NotEqual,
+} from '../stores/postFilterOperators/QueryBuilderPostFilterOperator_Equal.js';
+import {
+  QueryBuilderPostFilterOperator_In,
+  QueryBuilderPostFilterOperator_NotIn,
+} from '../stores/postFilterOperators/QueryBuilderPostFilterOperator_In.js';
+import type { QueryBuilderPostFilterOperator } from '../stores/QueryBuilderPostFilterOperator.js';
+
+const QueryBuilderResultContextMenu = observer(
+  forwardRef<
+    HTMLDivElement,
+    {
+      event: CellMouseOverEvent | null;
+      queryBuilderState: QueryBuilderState;
+    }
+  >(function QueryBuilderResultContextMenu(props, ref) {
+    const { event, queryBuilderState } = props;
+    const applicationStore = useApplicationStore();
+    const postFilterEqualOperator = new QueryBuilderPostFilterOperator_Equal();
+    const postFilterInOperator = new QueryBuilderPostFilterOperator_In();
+    const postFilterNotEqualOperator =
+      new QueryBuilderPostFilterOperator_NotEqual();
+    const postFilterNotInOperator = new QueryBuilderPostFilterOperator_NotIn();
+    const postFilterState = queryBuilderState.postFilterState;
+    const projectionColumnState = guaranteeNonNullable(
+      queryBuilderState.fetchStructureState.projectionState.columns
+        .filter((c) => c.columnName === event?.column.getColId())
+        .concat(
+          queryBuilderState.fetchStructureState.projectionState.aggregationState.columns
+            .filter((c) => c.columnName === event?.column.getColId())
+            .map((ag) => ag.projectionColumnState),
+        )[0],
+    );
+
+    const getExistingPostFilterNode = (
+      operators: QueryBuilderPostFilterOperator[],
+    ): QueryBuilderPostFilterTreeNodeData | undefined =>
+      Array.from(postFilterState.nodes.values())
+        .filter(
+          (v) =>
+            v instanceof QueryBuilderPostFilterTreeConditionNodeData &&
+            v.condition.columnState instanceof
+              QueryBuilderProjectionColumnState,
+        )
+        .filter(
+          (n) =>
+            (n as QueryBuilderPostFilterTreeConditionNodeData).condition
+              .columnState.columnName === projectionColumnState.columnName &&
+            operators
+              .map((op) => op.getLabel())
+              .includes(
+                (
+                  n as QueryBuilderPostFilterTreeConditionNodeData
+                ).condition.operator.getLabel(),
+              ),
+        )[0];
+
+    const updateFilterConditionValue = (
+      conditionValue: InstanceValue,
+    ): void => {
+      if (event?.value !== null) {
+        instanceValue_changeValue(
+          conditionValue,
+          conditionValue instanceof EnumValueInstanceValue
+            ? EnumValueExplicitReference.create(
+                guaranteeNonNullable(
+                  (
+                    conditionValue.genericType?.ownerReference
+                      .value as Enumeration
+                  ).values.filter((v) => v.name === event?.value)[0],
+                ),
+              )
+            : event?.value,
+          0,
+        );
+      }
+    };
+
+    const generateNewPostFilterConditionNodeData = async (
+      operator: QueryBuilderPostFilterOperator,
+    ): Promise<void> => {
+      let postFilterConditionState: PostFilterConditionState;
+      try {
+        postFilterConditionState = new PostFilterConditionState(
+          postFilterState,
+          projectionColumnState,
+          undefined,
+          operator,
+        );
+        if (
+          projectionColumnState instanceof
+          QueryBuilderDerivationProjectionColumnState
+        ) {
+          await flowResult(
+            projectionColumnState.fetchDerivationLambdaReturnType(),
+          );
+        }
+        const defaultFilterConditionValue =
+          postFilterConditionState.operator.getDefaultFilterConditionValue(
+            postFilterConditionState,
+          );
+        postFilterConditionState.setValue(defaultFilterConditionValue);
+        updateFilterConditionValue(
+          defaultFilterConditionValue as InstanceValue,
+        );
+      } catch (error) {
+        assertErrorThrown(error);
+        applicationStore.notifyWarning(error.message);
+        return;
+      }
+      postFilterState.addNodeFromNode(
+        new QueryBuilderPostFilterTreeConditionNodeData(
+          undefined,
+          postFilterConditionState,
+        ),
+        undefined,
+      );
+    };
+
+    const updateExistingPostFilterConditionNodeData = (
+      existingPostFilterNode: QueryBuilderPostFilterTreeNodeData,
+      isFilterBy: boolean,
+    ): void => {
+      const conditionState = (
+        existingPostFilterNode as QueryBuilderPostFilterTreeConditionNodeData
+      ).condition;
+      if (
+        conditionState.operator.getLabel() ===
+        (isFilterBy
+          ? postFilterEqualOperator
+          : postFilterNotEqualOperator
+        ).getLabel()
+      ) {
+        const doesValueAlreadyExist =
+          conditionState.value instanceof InstanceValue &&
+          (conditionState.value instanceof EnumValueInstanceValue
+            ? conditionState.value.values.map((ef) => ef.value.name)
+            : conditionState.value.values
+          ).includes(event?.value);
+        if (!doesValueAlreadyExist) {
+          const currentValueSpecificaton = conditionState.value;
+          const newValueSpecification =
+            conditionState.operator.getDefaultFilterConditionValue(
+              conditionState,
+            );
+          updateFilterConditionValue(newValueSpecification as InstanceValue);
+          conditionState.changeOperator(
+            isFilterBy ? postFilterInOperator : postFilterNotInOperator,
+          );
+          instanceValue_changeValues(conditionState.value as InstanceValue, [
+            currentValueSpecificaton,
+            newValueSpecification,
+          ]);
+        }
+      } else {
+        const doesValueAlreadyExist =
+          conditionState.value instanceof InstanceValue &&
+          conditionState.value.values
+            .filter((v) => v instanceof InstanceValue)
+            .map((v) =>
+              v instanceof EnumValueInstanceValue
+                ? v.values.map((ef) => ef.value.name)
+                : (v as InstanceValue).values,
+            )
+            .flat()
+            .includes(event?.value);
+        if (!doesValueAlreadyExist) {
+          const newValueSpecification = (
+            isFilterBy ? postFilterEqualOperator : postFilterNotEqualOperator
+          ).getDefaultFilterConditionValue(conditionState);
+          updateFilterConditionValue(newValueSpecification as InstanceValue);
+          instanceValue_changeValues(conditionState.value as InstanceValue, [
+            ...(conditionState.value as InstanceValue).values,
+            newValueSpecification,
+          ]);
+        }
+      }
+    };
+
+    const filterByOrOut = (isFilterBy: boolean): void => {
+      postFilterState.setShowPostFilterPanel(true);
+      const existingPostFilterNode = getExistingPostFilterNode(
+        isFilterBy
+          ? [postFilterEqualOperator, postFilterInOperator]
+          : [postFilterNotEqualOperator, postFilterNotInOperator],
+      );
+      existingPostFilterNode === undefined
+        ? generateNewPostFilterConditionNodeData(
+            isFilterBy ? postFilterEqualOperator : postFilterNotEqualOperator,
+          ).catch(applicationStore.alertUnhandledError)
+        : updateExistingPostFilterConditionNodeData(
+            existingPostFilterNode,
+            isFilterBy,
+          );
+    };
+
+    return (
+      <MenuContent ref={ref}>
+        <MenuContentItem
+          onClick={(): void => {
+            filterByOrOut(true);
+          }}
+        >
+          Filter By
+        </MenuContentItem>
+        <MenuContentItem
+          onClick={(): void => {
+            filterByOrOut(false);
+          }}
+        >
+          Filter Out
+        </MenuContentItem>
+      </MenuContent>
+    );
+  }),
+);
 
 const QueryBuilderResultValues = observer(
-  (props: { executionResult: ExecutionResult }) => {
-    const { executionResult } = props;
+  (props: {
+    executionResult: ExecutionResult;
+    queryBuilderState: QueryBuilderState;
+  }) => {
+    const { executionResult, queryBuilderState } = props;
     if (executionResult instanceof TdsExecutionResult) {
+      const [cellDoubleClickedEvent, setCellDoubleClickedEvent] =
+        useState<CellMouseOverEvent | null>(null);
       const columns = executionResult.result.columns;
       const rowData = executionResult.result.rows.map((_row) => {
         const row: Record<PropertyKey, unknown> = {};
@@ -67,15 +309,25 @@ const QueryBuilderResultValues = observer(
         return row;
       });
       return (
-        <div
-          // NOTE: since we use the column name as the key the column
-          // if we execute once then immediate add another column and execute again
-          // the old columns rendering will be kept the same and the new column
-          // will be pushed to last regardless of its type (aggregation or simple projection)
+        <ContextMenu
+          content={
+            <QueryBuilderResultContextMenu
+              event={cellDoubleClickedEvent}
+              queryBuilderState={queryBuilderState}
+            />
+          }
+          menuProps={{ elevation: 7 }}
           key={executionResult._UUID}
-          className="ag-theme-balham-dark query-builder__result__tds-grid"
+          className={clsx(
+            'ag-theme-balham-dark query-builder__result__tds-grid',
+          )}
         >
-          <AgGridReact rowData={rowData}>
+          <AgGridReact
+            rowData={rowData}
+            onCellMouseOver={(event): void => {
+              setCellDoubleClickedEvent(event);
+            }}
+          >
             {columns.map((colName) => (
               <AgGridColumn
                 minWidth={50}
@@ -87,7 +339,7 @@ const QueryBuilderResultValues = observer(
               />
             ))}
           </AgGridReact>
-        </div>
+        </ContextMenu>
       );
     } else if (executionResult instanceof RawExecutionResult) {
       return (
@@ -182,9 +434,6 @@ export const QueryBuilderResultPanel = observer(
     const debugPlanGeneration = applicationStore.guardUnhandledError(() =>
       flowResult(resultState.generatePlan(true)),
     );
-    const planText = resultState.executionPlan
-      ? JSON.stringify(resultState.executionPlan, undefined, TAB_SIZE)
-      : '';
     const changeLimit: React.ChangeEventHandler<HTMLInputElement> = (event) => {
       const val = event.target.value;
       queryBuilderState.resultState.setPreviewLimit(
@@ -192,19 +441,21 @@ export const QueryBuilderResultPanel = observer(
       );
     };
     const allowSettingPreviewLimit = queryBuilderState.isQuerySupported();
+    const resultSetSize = (result: ExecutionResult | undefined): string =>
+      result && result instanceof TdsExecutionResult
+        ? `${
+            result.result.rows.length
+          } row(s) in ${resultState.executionDuration?.toString()} ms`
+        : '';
 
     return (
       <div className="panel query-builder__result">
-        <PanelLoadingIndicator
-          isLoading={
-            resultState.isExecutingQuery ||
-            resultState.isGeneratingPlan ||
-            resultState.exportDataState.isInProgress
-          }
-        />
         <div className="panel__header">
           <div className="panel__header__title">
             <div className="panel__header__title__label">result</div>
+            <div className="query-builder__result__analytics">
+              {resultSetSize(executionResult)}
+            </div>
           </div>
           <div className="panel__header__actions query-builder__result__header__actions">
             {allowSettingPreviewLimit && (
@@ -301,6 +552,13 @@ export const QueryBuilderResultPanel = observer(
           </div>
         </div>
         <div className="panel__content">
+          <PanelLoadingIndicator
+            isLoading={
+              resultState.isExecutingQuery ||
+              resultState.isGeneratingPlan ||
+              resultState.exportDataState.isInProgress
+            }
+          />
           {!executionResult && (
             <BlankPanelContent>
               Build or load a valid query first
@@ -308,81 +566,16 @@ export const QueryBuilderResultPanel = observer(
           )}
           {executionResult && (
             <div className="query-builder__result__values">
-              <QueryBuilderResultValues executionResult={executionResult} />
+              <QueryBuilderResultValues
+                executionResult={executionResult}
+                queryBuilderState={queryBuilderState}
+              />
             </div>
           )}
         </div>
-        {/*
-          NOTE: we should be able to use <ExecutionPlanViewer> component when it's properly modularized
-          See https://github.com/finos/legend-studio/issues/717
-         */}
-        <Dialog
-          open={Boolean(resultState.executionPlan)}
-          onClose={(): void => resultState.setExecutionPlan(undefined)}
-          classes={{
-            root: 'editor-modal__root-container',
-            container: 'editor-modal__container',
-            paper: 'editor-modal__content',
-          }}
-        >
-          <div className="modal modal--dark editor-modal">
-            <div className="modal__header">
-              <div className="modal__title">Execution Plan</div>
-            </div>
-            <div className="modal__body">
-              {resultState.debugText ? (
-                <ResizablePanelGroup orientation="horizontal">
-                  <ResizablePanel minSize={100}>
-                    <TextInputEditor
-                      inputValue={planText}
-                      isReadOnly={true}
-                      language={EDITOR_LANGUAGE.JSON}
-                      showMiniMap={true}
-                    />
-                  </ResizablePanel>
-                  <ResizablePanelSplitter>
-                    <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
-                  </ResizablePanelSplitter>
-                  <ResizablePanel size={200} minSize={28}>
-                    <div className="panel execution-plan-viewer__debug-panel">
-                      <div className="panel__header">
-                        <div className="panel__header__title">
-                          <div className="panel__header__title__label">
-                            DEBUG LOG
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="panel__content">
-                        <TextInputEditor
-                          inputValue={resultState.debugText}
-                          isReadOnly={true}
-                          language={EDITOR_LANGUAGE.TEXT}
-                          showMiniMap={true}
-                        />
-                      </div>
-                    </div>
-                  </ResizablePanel>
-                </ResizablePanelGroup>
-              ) : (
-                <TextInputEditor
-                  inputValue={planText}
-                  isReadOnly={true}
-                  language={EDITOR_LANGUAGE.JSON}
-                  showMiniMap={true}
-                />
-              )}
-            </div>
-            <div className="modal__footer">
-              <button
-                className="btn modal__footer__close-btn"
-                onClick={(): void => resultState.setExecutionPlan(undefined)}
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </Dialog>
+        <ExecutionPlanViewer
+          executionPlanState={resultState.executionPlanState}
+        />
       </div>
     );
   },

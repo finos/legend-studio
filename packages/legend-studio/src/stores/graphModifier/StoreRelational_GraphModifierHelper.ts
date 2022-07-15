@@ -25,7 +25,6 @@ import {
   type DatasourceSpecification,
   type DelegatedKerberosAuthenticationStrategy,
   type EmbeddedH2DatasourceSpecification,
-  type EnumerationMapping,
   type LocalH2DatasourceSpecification,
   type OAuthAuthenticationStrategy,
   type PropertyMapping,
@@ -41,12 +40,15 @@ import {
   type GCPWorkloadIdentityFederationAuthenticationStrategy,
   type MiddleTierUsernamePasswordAuthenticationStrategy,
   type ObserverContext,
+  type OptionalEnumerationMappingReference,
+  type TableAlias,
   getRelationalInputType,
   observe_DatasourceSpecification,
   observe_AuthenticationStrategy,
   observe_BindingTransformer,
-  observe_EnumerationMapping,
   observe_PropertyMapping,
+  observe_OptionalEnumerationMappingReference,
+  observe_TableAlias,
 } from '@finos/legend-graph';
 import { action } from 'mobx';
 
@@ -384,9 +386,9 @@ export const relationalInputData_setInputType = action(
 export const relationalPropertyMapping_setTransformer = action(
   (
     v: RelationalPropertyMapping,
-    value: EnumerationMapping | undefined,
+    value: OptionalEnumerationMappingReference,
   ): void => {
-    v.transformer = value ? observe_EnumerationMapping(value) : undefined;
+    v.transformer = observe_OptionalEnumerationMappingReference(value);
   },
 );
 export const relationalPropertyMapping_setBindingTransformer = action(
@@ -397,6 +399,12 @@ export const relationalPropertyMapping_setBindingTransformer = action(
     v.bindingTransformer = value
       ? observe_BindingTransformer(value)
       : undefined;
+  },
+);
+
+export const rootRelationalSetImp_setMainTableAlias = action(
+  (v: RootRelationalInstanceSetImplementation, value: TableAlias): void => {
+    v.mainTableAlias = observe_TableAlias(value);
   },
 );
 

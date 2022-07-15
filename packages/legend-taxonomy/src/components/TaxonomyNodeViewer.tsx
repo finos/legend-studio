@@ -34,7 +34,7 @@ import { flowResult } from 'mobx';
 import { useApplicationStore } from '@finos/legend-application';
 import { generateGAVCoordinates } from '@finos/legend-server-depot';
 import type {
-  RawDataSpace,
+  DataSpaceTaxonomyContext,
   TaxonomyNodeViewerState,
 } from '../stores/LegendTaxonomyStore.js';
 import {
@@ -51,32 +51,40 @@ import { useLegendTaxonomyStore } from './LegendTaxonomyStoreProvider.js';
 
 const TaxonomyNodeDataSpaceItem = observer(
   (props: {
-    rawDataSpace: RawDataSpace;
+    dataSpaceTaxonomyContext: DataSpaceTaxonomyContext;
     taxonomyNodeViewerState: TaxonomyNodeViewerState;
     selectDataSpace: () => void;
   }) => {
-    const { rawDataSpace, taxonomyNodeViewerState, selectDataSpace } = props;
+    const {
+      dataSpaceTaxonomyContext,
+      taxonomyNodeViewerState,
+      selectDataSpace,
+    } = props;
     const [isSelectedFromContextMenu, setIsSelectedFromContextMenu] =
       useState(false);
     const applicationStore = useApplicationStore<LegendTaxonomyConfig>();
     const isSelected =
-      rawDataSpace === taxonomyNodeViewerState.currentDataSpace;
-    const idx = rawDataSpace.path.lastIndexOf(ELEMENT_PATH_DELIMITER);
+      dataSpaceTaxonomyContext === taxonomyNodeViewerState.currentDataSpace;
+    const idx = dataSpaceTaxonomyContext.path.lastIndexOf(
+      ELEMENT_PATH_DELIMITER,
+    );
     const dataSpaceLabel =
       idx === -1 ? (
         <div className="taxonomy-node-viewer__explorer__entry__path taxonomy-node-viewer__explorer__entry__path--simple">
-          {rawDataSpace.path}
+          {dataSpaceTaxonomyContext.path}
         </div>
       ) : (
         <div className="taxonomy-node-viewer__explorer__entry__path">
           <div className="taxonomy-node-viewer__explorer__entry__path__package">
-            {rawDataSpace.path.substring(
+            {dataSpaceTaxonomyContext.path.substring(
               0,
               idx + ELEMENT_PATH_DELIMITER.length,
             )}
           </div>
           <div className="taxonomy-node-viewer__explorer__entry__path__name">
-            {rawDataSpace.path.substring(idx + ELEMENT_PATH_DELIMITER.length)}
+            {dataSpaceTaxonomyContext.path.substring(
+              idx + ELEMENT_PATH_DELIMITER.length,
+            )}
           </div>
         </div>
       );
@@ -90,11 +98,11 @@ const TaxonomyNodeDataSpaceItem = observer(
               applicationStore.config.currentTaxonomyTreeOption.key,
               taxonomyNodeViewerState.taxonomyNode.id,
               generateGAVCoordinates(
-                rawDataSpace.groupId,
-                rawDataSpace.artifactId,
-                rawDataSpace.versionId,
+                dataSpaceTaxonomyContext.groupId,
+                dataSpaceTaxonomyContext.artifactId,
+                dataSpaceTaxonomyContext.versionId,
               ),
-              rawDataSpace.path,
+              dataSpaceTaxonomyContext.path,
             ),
           ),
         )
@@ -114,7 +122,7 @@ const TaxonomyNodeDataSpaceItem = observer(
         menuProps={{ elevation: 7 }}
         onOpen={onContextMenuOpen}
         onClose={onContextMenuClose}
-        key={rawDataSpace.id}
+        key={dataSpaceTaxonomyContext.id}
       >
         <button
           className={clsx(
@@ -129,7 +137,7 @@ const TaxonomyNodeDataSpaceItem = observer(
           )}
           tabIndex={-1}
           onClick={selectDataSpace}
-          title={rawDataSpace.id}
+          title={dataSpaceTaxonomyContext.id}
         >
           <div className="taxonomy-node-viewer__explorer__entry__icon">
             <SquareIcon />
@@ -152,10 +160,12 @@ const TaxonomyNodeViewerExplorer = observer(
     ): void =>
       taxonomyNodeViewerState.setDataSpaceSearchText(event.target.value);
     const selectDataSpace =
-      (rawDataSpace: RawDataSpace): (() => void) =>
+      (dataSpaceTaxonomyContext: DataSpaceTaxonomyContext): (() => void) =>
       (): void => {
         flowResult(
-          taxonomyNodeViewerState.initializeDataSpaceViewer(rawDataSpace),
+          taxonomyNodeViewerState.initializeDataSpaceViewer(
+            dataSpaceTaxonomyContext,
+          ),
         ).catch(applicationStore.alertUnhandledError);
       };
 
@@ -164,7 +174,7 @@ const TaxonomyNodeViewerExplorer = observer(
         <div className="panel__header taxonomy-node-viewer__explorer__header">
           <div className="panel__header__title taxonomy-node-viewer__explorer__header__title">
             Dataspaces ({dataSpaceOptions.length}/
-            {taxonomyNode.rawDataSpaces.length})
+            {taxonomyNode.dataSpaceTaxonomyContexts.length})
           </div>
         </div>
         <div className="panel__header taxonomy-node-viewer__explorer__search">
@@ -179,11 +189,11 @@ const TaxonomyNodeViewerExplorer = observer(
           {dataSpaceOptions.length === 0 && (
             <BlankPanelContent>No data space available</BlankPanelContent>
           )}
-          {taxonomyNode.rawDataSpaces.length !== 0 &&
+          {taxonomyNode.dataSpaceTaxonomyContexts.length !== 0 &&
             dataSpaceOptions.map((dataSpaceOption) => (
               <TaxonomyNodeDataSpaceItem
                 key={dataSpaceOption.value.id}
-                rawDataSpace={dataSpaceOption.value}
+                dataSpaceTaxonomyContext={dataSpaceOption.value}
                 selectDataSpace={selectDataSpace(dataSpaceOption.value)}
                 taxonomyNodeViewerState={taxonomyNodeViewerState}
               />
@@ -206,9 +216,9 @@ const TaxonomyNodeDataSpaceViewer = observer(
         applicationStore.navigator.generateLocation(
           generateStandaloneDataSpaceViewerRoute(
             generateGAVCoordinates(
-              dataSpaceViewerState.dataSpaceGroupId,
-              dataSpaceViewerState.dataSpaceArtifactId,
-              dataSpaceViewerState.dataSpaceVersionId,
+              dataSpaceViewerState.groupId,
+              dataSpaceViewerState.artifactId,
+              dataSpaceViewerState.versionId,
             ),
             dataSpaceViewerState.dataSpace.path,
           ),

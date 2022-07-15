@@ -22,9 +22,9 @@ import {
   ModelStoreData,
 } from '../../../../../../metamodels/pure/data/EmbeddedData.js';
 import {
-  type RelationalDataTable,
-  RelationalData,
-} from '../../../../../../metamodels/pure/data/RelationalData.js';
+  type RelationalCSVDataTable,
+  RelationalCSVData,
+} from '../../../../../../metamodels/pure/data/RelationalCSVData.js';
 import type { DataElement } from '../../../../../../metamodels/pure/packageableElements/data/DataElement.js';
 import type { DSLData_PureProtocolProcessorPlugin_Extension } from '../../../../DSLData_PureProtocolProcessorPlugin_Extension.js';
 import {
@@ -34,11 +34,9 @@ import {
   V1_ModelStoreData,
 } from '../../../model/data/V1_EmbeddedData.js';
 import {
-  V1_RelationalData,
-  V1_RelationalDataTable,
-  V1_RelationalDataTableColumn,
-  V1_RelationalDataTableRow,
-} from '../../../model/data/V1_RelationalData.js';
+  V1_RelationalCSVData,
+  V1_RelationalCSVDataTable,
+} from '../../../model/data/V1_RelationalCSVData.js';
 import { V1_DataElement } from '../../../model/packageableElements/data/V1_DataElement.js';
 import { V1_initPackageableElement } from './V1_CoreTransformerHelper.js';
 import {
@@ -79,30 +77,21 @@ const V1_transformDataElementReference = (
   return dataElementReference;
 };
 
-const V1_transformRelationalDataTable = (
-  element: RelationalDataTable,
-): V1_RelationalDataTable => {
-  const table = new V1_RelationalDataTable();
-  table.tableName = element.tableName;
-  table.schemaName = element.schemaName;
-  table.rows = element.rows.map((e) => {
-    const row = new V1_RelationalDataTableRow();
-    row.values = e.values;
-    return row;
-  });
-  table.columns = element.columns.map((e) => {
-    const col = new V1_RelationalDataTableColumn();
-    col.value = e.value;
-    return col;
-  });
+const V1_transformRelationalCSVDataTable = (
+  element: RelationalCSVDataTable,
+): V1_RelationalCSVDataTable => {
+  const table = new V1_RelationalCSVDataTable();
+  table.table = element.table;
+  table.schema = element.schema;
+  table.values = element.values;
   return table;
 };
 
-const V1_transformRelationalData = (
-  element: RelationalData,
-): V1_RelationalData => {
-  const data = new V1_RelationalData();
-  data.tables = element.tables.map(V1_transformRelationalDataTable);
+const V1_transformRelationalCSVData = (
+  element: RelationalCSVData,
+): V1_RelationalCSVData => {
+  const data = new V1_RelationalCSVData();
+  data.tables = element.tables.map(V1_transformRelationalCSVDataTable);
   return data;
 };
 
@@ -116,8 +105,8 @@ export const V1_transformEmbeddedData = (
     return V1_transformExternalFormatData(metamodel);
   } else if (metamodel instanceof DataElementReference) {
     return V1_transformDataElementReference(metamodel);
-  } else if (metamodel instanceof RelationalData) {
-    return V1_transformRelationalData(metamodel);
+  } else if (metamodel instanceof RelationalCSVData) {
+    return V1_transformRelationalCSVData(metamodel);
   }
   const extraEmbeddedDataTransformers = context.plugins.flatMap(
     (plugin) =>

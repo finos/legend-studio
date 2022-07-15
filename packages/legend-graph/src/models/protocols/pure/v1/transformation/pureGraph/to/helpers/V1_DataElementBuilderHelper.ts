@@ -22,11 +22,9 @@ import {
   ModelStoreData,
 } from '../../../../../../../metamodels/pure/data/EmbeddedData.js';
 import {
-  RelationalData,
-  RelationalDataTable,
-  RelationalDataTableColumn,
-  RelationalDataTableRow,
-} from '../../../../../../../metamodels/pure/data/RelationalData.js';
+  RelationalCSVData,
+  RelationalCSVDataTable,
+} from '../../../../../../../metamodels/pure/data/RelationalCSVData.js';
 import type { Class } from '../../../../../../../metamodels/pure/packageableElements/domain/Class.js';
 import type { DSLData_PureProtocolProcessorPlugin_Extension } from '../../../../../DSLData_PureProtocolProcessorPlugin_Extension.js';
 import type {
@@ -36,8 +34,7 @@ import type {
   V1_ExternalFormatData,
   V1_ModelStoreData,
 } from '../../../../model/data/V1_EmbeddedData.js';
-import type { V1_RelationalData } from '../../../../model/data/V1_RelationalData.js';
-
+import type { V1_RelationalCSVData } from '../../../../model/data/V1_RelationalCSVData.js';
 import type { V1_GraphBuilderContext } from '../V1_GraphBuilderContext.js';
 
 export class V1_ProtocolToMetaModelEmbeddedDataBuilder
@@ -98,22 +95,13 @@ export class V1_ProtocolToMetaModelEmbeddedDataBuilder
     return metamodel;
   }
 
-  visit_RelationalData(relationalData: V1_RelationalData): EmbeddedData {
-    const metamodel = new RelationalData();
+  visit_RelationalData(relationalData: V1_RelationalCSVData): EmbeddedData {
+    const metamodel = new RelationalCSVData();
     metamodel.tables = relationalData.tables.map((t) => {
-      const table = new RelationalDataTable();
-      table.schemaName = t.schemaName;
-      table.columns = t.columns.map((c) => {
-        const col = new RelationalDataTableColumn();
-        col.value = c.value;
-        return col;
-      });
-      table.tableName = t.tableName;
-      table.rows = t.rows.map((r) => {
-        const row = new RelationalDataTableRow();
-        row.values = r.values;
-        return row;
-      });
+      const table = new RelationalCSVDataTable();
+      table.schema = t.schema;
+      table.table = t.table;
+      table.values = t.values;
       return table;
     });
     return metamodel;

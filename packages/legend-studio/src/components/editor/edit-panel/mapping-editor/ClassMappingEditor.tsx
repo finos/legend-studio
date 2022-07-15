@@ -44,6 +44,7 @@ import {
   setImpl_setRoot,
 } from '../../../../stores/graphModifier/DSLMapping_GraphModifierHelper.js';
 import { SET_IMPLEMENTATION_TYPE } from '../../../../stores/shared/ModelUtil.js';
+import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../../stores/DSLMapping_LegendStudioPlugin_Extension.js';
 
 export const OperatorSelector = observer(
   (props: {
@@ -112,7 +113,6 @@ export const ClassMappingEditor = observer(
     let sourceType = '';
     let sourceName: string | undefined;
 
-    /* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
     switch (setImplementationType) {
       case SET_IMPLEMENTATION_TYPE.PUREINSTANCE: {
         sourceType = CLASS_MAPPING_SOURCE_TYPE.CLASS;
@@ -145,8 +145,24 @@ export const ClassMappingEditor = observer(
       case SET_IMPLEMENTATION_TYPE.OPERATION:
         sourceType = CLASS_MAPPING_SOURCE_TYPE.OPERATION;
         break;
-      default:
+      default: {
+        const extraMappingSourceTypeInfoGetters = editorStore.pluginManager
+          .getStudioPlugins()
+          .flatMap(
+            (plugin) =>
+              (
+                plugin as DSLMapping_LegendStudioPlugin_Extension
+              ).getExtraMappingSourceTypeInfoGetters?.() ?? [],
+          );
+        for (const sourceTypeInfoGetter of extraMappingSourceTypeInfoGetters) {
+          const mappingSourceTypeInfo = sourceTypeInfoGetter(setImplementation);
+          if (mappingSourceTypeInfo) {
+            sourceType = mappingSourceTypeInfo.sourceType;
+            sourceName = mappingSourceTypeInfo.sourceName;
+          }
+        }
         break;
+      }
     }
 
     const toggleRoot = (): void => {

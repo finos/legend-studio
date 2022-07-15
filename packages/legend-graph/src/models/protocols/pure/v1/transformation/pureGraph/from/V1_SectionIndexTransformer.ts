@@ -25,17 +25,14 @@ import {
   V1_ImportAwareCodeSection,
 } from '../../../model/packageableElements/section/V1_Section.js';
 import { V1_SectionIndex } from '../../../model/packageableElements/section/V1_SectionIndex.js';
-import {
-  V1_initPackageableElement,
-  V1_transformElementReference,
-} from './V1_CoreTransformerHelper.js';
+import { V1_initPackageableElement } from './V1_CoreTransformerHelper.js';
 
 const transformDefaultCodeSectionSchema = (
   element: DefaultCodeSection,
 ): V1_DefaultCodeSection => {
   const defaultCodeSection = new V1_DefaultCodeSection();
-  defaultCodeSection.elements = element.elements.map((e) =>
-    V1_transformElementReference(e),
+  defaultCodeSection.elements = element.elements.map(
+    (el) => el.valueForSerialization ?? '',
   );
   defaultCodeSection.parserName = element.parserName;
   return defaultCodeSection;
@@ -45,11 +42,11 @@ const transformImportAwareCodeSectionSchema = (
   element: ImportAwareCodeSection,
 ): V1_ImportAwareCodeSection => {
   const importAware = new V1_ImportAwareCodeSection();
-  importAware.imports = element.imports.map((e) =>
-    V1_transformElementReference(e),
+  importAware.imports = element.imports.map(
+    (el) => el.valueForSerialization ?? '',
   );
-  importAware.elements = element.elements.map((e) =>
-    V1_transformElementReference(e),
+  importAware.elements = element.elements.map(
+    (el) => el.valueForSerialization ?? '',
   );
   importAware.parserName = element.parserName;
   return importAware;

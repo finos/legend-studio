@@ -15,6 +15,7 @@
  */
 
 import { isNonNullable } from '@finos/legend-shared';
+import { PackageableRuntime } from '../../../DSLMapping_Exports.js';
 import type { EnumValueMapping } from '../../../models/metamodels/pure/packageableElements/mapping/EnumValueMapping.js';
 import { Mapping } from '../../../models/metamodels/pure/packageableElements/mapping/Mapping.js';
 import type { SetImplementationContainer } from '../../../models/metamodels/pure/packageableElements/mapping/SetImplementationContainer.js';
@@ -23,7 +24,8 @@ import type { StoreConnections } from '../../../models/metamodels/pure/packageab
 export const stub_Mapping = (): Mapping => new Mapping('');
 
 export const isStubbed_EnumValueMapping = (value: EnumValueMapping): boolean =>
-  !value.sourceValues.filter(isNonNullable).length;
+  !value.sourceValues.filter((sourceValue) => isNonNullable(sourceValue.value))
+    .length;
 
 export const isStubbed_StoreConnections = (value: StoreConnections): boolean =>
   !value.storeConnections.length;
@@ -31,3 +33,6 @@ export const isStubbed_StoreConnections = (value: StoreConnections): boolean =>
 export const isStubbed_SetImplementationContainer = (
   value: SetImplementationContainer,
 ): boolean => !value.setImplementation.value.id.value;
+
+export const stub_PackageableRuntime = (): PackageableRuntime =>
+  new PackageableRuntime('');

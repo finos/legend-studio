@@ -18,32 +18,21 @@ export * from './const.js';
 
 export * from './application/LegendApplicationPluginManager.js';
 export * from './application/LegendApplication.js';
-
 export * from './components/ApplicationStoreProvider.js';
 export * from './components/WebApplicationNavigatorProvider.js';
 export * from './components/LegendApplicationComponentFrameworkProvider.js';
 export * from './components/LegendApplicationNavigationContextServiceUtils.js';
-
 export * from './components/ApplicationStoreProviderTestUtils.js';
 export * from './components/WebApplicationNavigatorProviderTestUtils.js';
-
 // TODO: consider moving this to `LegendApplicationComponentFrameworkProvider`
 // once we think we can add virtual assistant support for all apps
 export * from './components/VirtualAssistant.js';
-
-export * from './components/DocumentationLink.js';
-export * from './components/TextInputEditor.js';
-export * from './components/LambdaEditor.js';
-export * from './components/BasicValueSpecificationEditor.js';
-export * from './components/LambdaParameterValuesEditor.js';
 
 export * from './stores/ApplicationStore.js';
 export * from './stores/ApplicationTelemetry.js';
 export * from './stores/ApplicationEvent.js';
 export * from './stores/LegendApplicationConfig.js';
 export { WebApplicationNavigator } from './stores/WebApplicationNavigator.js';
-export { LambdaEditorState } from './stores/LambdaEditorState.js';
-export * from './stores/PackageableElementOption.js';
 export * from './stores/LegendApplicationDocumentationService.js';
 export * from './stores/LegendApplicationEventService.js';
 export * from './stores/LegendApplicationAssistantService.js';
@@ -51,5 +40,19 @@ export * from './stores/LegendApplicationNavigationContextService.js';
 export * from './stores/LegendApplicationPlugin.js';
 
 export * from './stores/ApplicationStoreTestUtils.js';
-export * from './stores/ValueSpecificationModifierHelper.js';
-export * from './stores/LambdaParameterState.js';
+
+// ------------------------------------------- Shared components -------------------------------------------
+
+export * from './components/shared/DocumentationLink.js';
+export * from './components/shared/TextInputEditor.js';
+export * from './components/shared/LambdaEditor.js';
+export * from './components/shared/BasicValueSpecificationEditor.js';
+export * from './components/shared/LambdaParameterValuesEditor.js';
+export * from './components/shared/PackageableElementOptionRenderer.js';
+export * from './components/shared/execution-plan-viewer/ExecutionPlanViewer.js';
+
+export { LambdaEditorState } from './stores/shared/LambdaEditorState.js';
+export * from './stores/shared/PackageableElementOption.js';
+export * from './stores/shared/LambdaParameterState.js';
+export * from './stores/shared/ValueSpecificationModifierHelper.js';
+export * from './stores/shared/ExecutionPlanState.js';

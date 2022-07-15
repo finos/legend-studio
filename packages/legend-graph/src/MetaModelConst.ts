@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-export const SOURCE_INFORMATION_KEY = 'sourceInformation';
 export const MULTIPLICITY_INFINITE = '*';
 export const ELEMENT_PATH_DELIMITER = '::';
 export const MULTIPLICITY_RANGE_OPERATOR = '..';
@@ -135,6 +134,8 @@ export enum CORE_PURE_PATH {
  * code anyway, but sometimes when polymorphism manifests, such as when we have an array of structure
  * which are subclasses of an abstract stucture, hashing the marker is sometimes the only way to
  * discern between instances of different sub-structures
+ *
+ * TODO: when we refactor hashing, let's move this to the hashing util class where hashing logic belongs
  */
 export enum CORE_HASH_STRUCTURE {
   PACKAGE = 'PACKAGE',
@@ -341,11 +342,9 @@ export enum CORE_HASH_STRUCTURE {
   MODEL_STORE_DATA = 'MODEL_STORE_DATA',
   DATA_ELEMENT_REFERENCE = 'DATA_ELEMENT_REFERENCE',
   DATA_ELEMENT = 'DATA_ELEMENT',
-  RELATIONAL_DATA = 'RELATIONAL_DATA',
+  RELATIONAL_CSV_DATA = 'RELATIONAL_CSV_DATA',
   RELATIONAL_TDS = 'RELATIONAL_TDS',
-  RELATIONAL_DATA_TABLE = 'RELATIONAL_DATA_TABLE',
-  RELATIONAL_DATA_TABLE_ROW = 'RELATIONAL_DATA_TABLE_ROW',
-  RELATIONAL_DATA_TABLE_COLUMN = 'RELATIONAL_DATA_TABLE_COLUMN',
+  RELATIONAL_CSV_DATA_TABLE = 'RELATIONAL_CSV_DATA_TABLE',
 }
 
 export enum MILESTONING_STEREOTYPE {
@@ -397,3 +396,9 @@ export enum SUPPORTED_FUNCTIONS {
   // variables
   LET = 'meta::pure::functions::lang::letFunction',
 }
+
+// Date Metamodel Constants
+export const DATE_TIME_FORMAT_WITH_MILLISECONDS =
+  "yyyy-MM-dd'T'HH:mm:ss.SSSxxxx";
+export const DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ssxxxx";
+export const DATE_FORMAT = 'yyyy-MM-dd';

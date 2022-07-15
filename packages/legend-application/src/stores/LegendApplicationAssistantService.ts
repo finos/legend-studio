@@ -15,10 +15,7 @@
  */
 
 import { action, makeObservable, observable, computed } from 'mobx';
-import type {
-  LegendApplicationContextualDocumentationEntry,
-  LegendApplicationDocumentationEntry,
-} from './LegendApplicationDocumentationService.js';
+import type { LegendApplicationDocumentationEntry } from './LegendApplicationDocumentationService.js';
 import type { LegendApplicationConfig } from './LegendApplicationConfig.js';
 import type { ApplicationStore } from './ApplicationStore.js';
 import { Fuse } from './CJS__Fuse.cjs';
@@ -69,13 +66,14 @@ export class VirtualAssistantContextualDocumentationEntry {
   related: VirtualAssistantDocumentationEntry[];
 
   constructor(
-    contextualDocEntry: LegendApplicationContextualDocumentationEntry,
+    context: string,
+    docEntry: LegendApplicationDocumentationEntry,
     related: VirtualAssistantDocumentationEntry[],
   ) {
-    this.context = contextualDocEntry._context;
-    this.title = contextualDocEntry.title;
-    this.content = contextualDocEntry.markdownText ?? contextualDocEntry.text;
-    this.url = contextualDocEntry.url;
+    this.context = context;
+    this.title = docEntry.title;
+    this.content = docEntry.markdownText ?? docEntry.text;
+    this.url = docEntry.url;
     this.related = related;
   }
 }
@@ -83,6 +81,10 @@ export class VirtualAssistantContextualDocumentationEntry {
 export class LegendApplicationAssistantService {
   readonly applicationStore: ApplicationStore<LegendApplicationConfig>;
   private readonly searchEngine: Fuse<LegendApplicationDocumentationEntry>;
+  /**
+   * This key is used to allow programmatic re-rendering of the assistant panel
+   */
+  panelRenderingKey = uuid();
   isHidden = false;
   isOpen = false;
   selectedTab = VIRTUAL_ASSISTANT_TAB.SEARCH;
@@ -95,6 +97,7 @@ export class LegendApplicationAssistantService {
     makeObservable(this, {
       isHidden: observable,
       isOpen: observable,
+      panelRenderingKey: observable,
       selectedTab: observable,
       searchText: observable,
       searchResults: observable,
@@ -105,6 +108,7 @@ export class LegendApplicationAssistantService {
       setSearchText: action,
       resetSearch: action,
       search: action,
+      refreshPanelRendering: action,
     });
 
     this.applicationStore = applicationStore;
@@ -147,16 +151,20 @@ export class LegendApplicationAssistantService {
   get currentContextualDocumentationEntry():
     | VirtualAssistantContextualDocumentationEntry
     | undefined {
-    const currentContextualDocumentationEntry = this.applicationStore
-      .navigationContextService.currentContext
-      ? this.applicationStore.documentationService.getContextualDocEntry(
-          this.applicationStore.navigationContextService.currentContext.value,
-        )
-      : undefined;
+    if (!this.applicationStore.navigationContextService.currentContext) {
+      return undefined;
+    }
+    const currentContext =
+      this.applicationStore.navigationContextService.currentContext.key;
+    const currentContextualDocumentationEntry =
+      this.applicationStore.documentationService.getContextualDocEntry(
+        currentContext,
+      );
     return currentContextualDocumentationEntry
       ? new VirtualAssistantContextualDocumentationEntry(
+          currentContext,
           currentContextualDocumentationEntry,
-          currentContextualDocumentationEntry.related
+          (currentContextualDocumentationEntry.related ?? [])
             .map((entry) =>
               this.applicationStore.documentationService.getDocEntry(entry),
             )
@@ -165,6 +173,8 @@ export class LegendApplicationAssistantService {
               (entry) =>
                 // NOTE: since we're searching for user-friendly docs, we will discard anything that
                 // doesn't come with a title, or does not have any content/url
+                //
+                // We could also consider having a flag in each documentation entry to be hidden from users
                 entry.title && (entry.url ?? entry.text ?? entry.markdownText),
             )
             .map((entry) => new VirtualAssistantDocumentationEntry(entry)),
@@ -196,6 +206,10 @@ export class LegendApplicationAssistantService {
 
   setSelectedTab(val: VIRTUAL_ASSISTANT_TAB): void {
     this.selectedTab = val;
+  }
+
+  refreshPanelRendering(): void {
+    this.panelRenderingKey = uuid();
   }
 
   setSearchText(val: string): void {

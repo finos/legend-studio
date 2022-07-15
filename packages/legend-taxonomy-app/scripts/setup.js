@@ -45,7 +45,7 @@ export const setup = (outputDir) => {
           {
             label: 'Enterprise',
             key: 'example',
-            url: 'http://localhost:60001/api/taxonomy-tree',
+            url: 'http://localhost:60001/api/taxonomy/taxonomy-tree',
             default: true,
           },
         ],

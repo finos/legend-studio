@@ -132,6 +132,7 @@ export {
   FaMapMarkerAlt as MapMarkerIcon,
   FaHatWizard as WizardHatIcon,
   FaRegLaughWink as FaceLaughWinkIcon,
+  FaRegSadTear as FaceSadTearIcon,
   FaBusinessTime as BusinessTimeIcon, // to be reviewed/combined
   FaDatabase as DatabaseIcon,
   FaServer as ServerIcon,
@@ -141,6 +142,7 @@ export {
   GiWaterDrop as WaterDropIcon,
   GiBeard as BeardIcon,
   GiSunglasses as SunglassesIcon,
+  GiHouseKeys as HouseKeys,
 } from 'react-icons/gi';
 export {
   MdModeEdit as PencilIcon,
@@ -167,6 +169,9 @@ export {
   VscWordWrap as WordWrapIcon,
   VscGoToFile as GoToFileIcon,
   VscClose as CloseIcon,
+  VscRunAll as RunAllIcon,
+  VscRunErrors as RunErrorsIcon,
+  VscOpenPreview as OpenPreviewIcon
 } from 'react-icons/vsc';
 export {
   GoChevronDown as ChevronDownIcon,
@@ -188,12 +193,21 @@ export {
   IoResize as ResizeIcon,
   IoFileTrayFullOutline as FileTrayIcon,
   IoMenuOutline as MenuIcon,
+  IoBeaker as BeakerIcon,
 } from 'react-icons/io5';
 export {
   BsFillTriangleFill as FilledTriangleIcon,
   BsFillFileEarmarkSpreadsheetFill as TabulatedDataFileIcon,
   BsBoxSeam as BundleIcon,
   BsGripVertical as VerticalDragHandleThinIcon,
+  BsAlignTop as AlignTopIcon,
+  BsAlignMiddle as AlignMiddleIcon,
+  BsAlignBottom as AlignBottomIcon,
+  BsAlignStart as AlignStartIcon,
+  BsAlignCenter as AlignCenterIcon,
+  BsAlignEnd as AlignEndIcon,
+  BsDistributeHorizontal as DistributeHorizontalIcon,
+  BsDistributeVertical as DistributeVerticalIcon,
 } from 'react-icons/bs';
 export { BiShapeTriangle as ShapeTriangleIcon } from 'react-icons/bi';
 export { CgOptions as OptionsIcon } from 'react-icons/cg';
@@ -209,4 +223,11 @@ export {
   FiZoomOut as ZoomOutIcon,
   FiGitMerge as TruncatedGitMergeIcon, // to be reviewed/combined
 } from 'react-icons/fi';
-export { RiShapeLine as ShapeLineIcon } from 'react-icons/ri';
+export {
+  RiShapeLine as ShapeLineIcon,
+  RiTestTubeFill as TestTubeIcon,
+} from 'react-icons/ri';
+export {
+  TbArrowsJoin2 as ArrowsJoinIcon,
+  TbArrowsSplit2 as ArrowsSplitIcon,
+} from 'react-icons/tb';

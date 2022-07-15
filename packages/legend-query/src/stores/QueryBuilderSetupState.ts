@@ -14,11 +14,14 @@
  * limitations under the License.
  */
 
-import { action, makeAutoObservable, observable } from 'mobx';
+import { action, flow, flowResult, makeAutoObservable, observable } from 'mobx';
 import {
+  type GeneratorFn,
   getNullableFirstElement,
   isNonNullable,
   uniq,
+  assertErrorThrown,
+  guaranteeNonNullable,
 } from '@finos/legend-shared';
 import type { QueryBuilderState } from './QueryBuilderState.js';
 import {
@@ -27,6 +30,7 @@ import {
   type PackageableRuntime,
   type Runtime,
   type ValueSpecification,
+  type MappingModelCoverageAnalysisResult,
   getMilestoneTemporalStereotype,
   PackageableElementExplicitReference,
   RuntimePointer,
@@ -41,6 +45,7 @@ export class QueryBuilderSetupState {
   queryBuilderState: QueryBuilderState;
   _class?: Class | undefined;
   mapping?: Mapping | undefined;
+  mappingModelCoverageAnalysisResult?: MappingModelCoverageAnalysisResult;
   runtime?: Runtime | undefined;
   mappingIsReadOnly = false;
   runtimeIsReadOnly = false;
@@ -55,6 +60,7 @@ export class QueryBuilderSetupState {
       queryBuilderState: false,
       processingDate: observable,
       businessDate: observable,
+      mappingModelCoverageAnalysisResult: observable,
       setQueryBuilderState: action,
       setClass: action,
       setMapping: action,
@@ -62,6 +68,7 @@ export class QueryBuilderSetupState {
       setProcessingDate: action,
       setBusinessDate: action,
       setShowSetupPanel: action,
+      analyzeMappingModelCoverage: flow,
     });
 
     this.queryBuilderState = queryBuilderState;
@@ -210,5 +217,27 @@ export class QueryBuilderSetupState {
           this.queryBuilderState.observableContext,
         )
       : val;
+  }
+
+  *analyzeMappingModelCoverage(): GeneratorFn<void> {
+    if (this.mapping) {
+      this.queryBuilderState.explorerState.mappingModelCoverageAnalysisState.inProgress();
+      this.queryBuilderState.explorerState.mappingModelCoverageAnalysisState.setMessage(
+        'Analyzing Mapping...',
+      );
+      try {
+        this.mappingModelCoverageAnalysisResult = (yield flowResult(
+          this.queryBuilderState.graphManagerState.graphManager.analyzeMappingModelCoverage(
+            this.queryBuilderState.graphManagerState.graph,
+            guaranteeNonNullable(this.mapping),
+          ),
+        )) as MappingModelCoverageAnalysisResult;
+        this.queryBuilderState.explorerState.refreshTreeData();
+      } catch (error) {
+        assertErrorThrown(error);
+        this.queryBuilderState.applicationStore.notifyError(error.message);
+      }
+      this.queryBuilderState.explorerState.mappingModelCoverageAnalysisState.pass();
+    }
   }
 }

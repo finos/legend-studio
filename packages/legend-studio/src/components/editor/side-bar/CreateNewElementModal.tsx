@@ -25,7 +25,7 @@ import {
   resolvePackageAndElementName,
   CONNECTION_TYPE,
   NewDataElementDriver,
-  EmbeddedDataTypeOptions,
+  NewServiceDriver,
 } from '../../../stores/NewElementState.js';
 import { Dialog, compareLabelFn, CustomSelectorInput } from '@finos/legend-art';
 import type { EditorStore } from '../../../stores/EditorStore.js';
@@ -41,10 +41,14 @@ import {
 } from '@finos/legend-graph';
 import type { FileGenerationTypeOption } from '../../../stores/editor-state/GraphGenerationState.js';
 import { flowResult } from 'mobx';
-import { useApplicationStore } from '@finos/legend-application';
+import {
+  getPackageableElementOptionalFormatter,
+  useApplicationStore,
+} from '@finos/legend-application';
 import type { EmbeddedDataTypeOption } from '../../../stores/editor-state/element-editor-state/data/DataEditorState.js';
 import type { DSLData_LegendStudioPlugin_Extension } from '../../../stores/DSLData_LegendStudioPlugin_Extension.js';
 import { PACKAGEABLE_ELEMENT_TYPE } from '../../../stores/shared/ModelUtil.js';
+import { EmbeddedDataType } from '../../../stores/editor-state/ExternalFormatState.js';
 
 export const getElementTypeLabel = (
   editorStore: EditorStore,
@@ -112,6 +116,12 @@ const NewDataElementDriverEditor = observer(() => {
   const editorStore = useEditorStore();
   const newDataELementDriver =
     editorStore.newElementState.getNewElementDriver(NewDataElementDriver);
+  const selectedOption = newDataELementDriver.embeddedDataOption
+    ? {
+        label: prettyCONSTName(newDataELementDriver.embeddedDataOption.label),
+        value: newDataELementDriver.embeddedDataOption.value,
+      }
+    : undefined;
   const extraOptionTypes = editorStore.pluginManager
     .getStudioPlugins()
     .flatMap(
@@ -120,12 +130,12 @@ const NewDataElementDriverEditor = observer(() => {
           plugin as DSLData_LegendStudioPlugin_Extension
         ).getExtraEmbeddedDataTypeOptions?.() ?? [],
     );
-  let options: EmbeddedDataTypeOption[] = Object.values(
-    EmbeddedDataTypeOptions,
-  ).map((typeOption) => ({
-    label: typeOption,
-    value: typeOption,
-  }));
+  let options: EmbeddedDataTypeOption[] = Object.values(EmbeddedDataType)
+    .filter((type) => type !== EmbeddedDataType.DATA_ELEMENT)
+    .map((typeOption) => ({
+      label: prettyCONSTName(typeOption),
+      value: typeOption,
+    }));
   options = options.concat(extraOptionTypes);
   const onTypeSelectionChange = (val: EmbeddedDataTypeOption | null): void => {
     if (!val) {
@@ -135,16 +145,14 @@ const NewDataElementDriverEditor = observer(() => {
     }
   };
   return (
-    <div>
-      <div className="">
-        <CustomSelectorInput
-          className="sub-panel__content__form__section__dropdown"
-          options={options}
-          onChange={onTypeSelectionChange}
-          value={newDataELementDriver.embeddedDataOption}
-          darkMode={true}
-        />
-      </div>
+    <div className="explorer__new-element-modal__driver">
+      <CustomSelectorInput
+        className="explorer__new-element-modal__driver__dropdown"
+        options={options}
+        onChange={onTypeSelectionChange}
+        value={selectedOption}
+        darkMode={true}
+      />
     </div>
   );
 });
@@ -171,16 +179,14 @@ const NewRuntimeDriverEditor = observer(() => {
     return <div>no mapping found</div>;
   }
   return (
-    <div>
-      <div className="">
-        <CustomSelectorInput
-          className="panel__content__form__section__dropdown"
-          options={mappingOptions}
-          onChange={onMappingSelectionChange}
-          value={selectedMappingOption}
-          darkMode={true}
-        />
-      </div>
+    <div className="explorer__new-element-modal__driver">
+      <CustomSelectorInput
+        className="explorer__new-element-modal__driver__dropdown"
+        options={mappingOptions}
+        onChange={onMappingSelectionChange}
+        value={selectedMappingOption}
+        darkMode={true}
+      />
     </div>
   );
 });
@@ -227,26 +233,29 @@ const NewPureModelConnectionDriverEditor = observer(
       return <div>no class found</div>;
     }
     return (
-      <div>
-        <div className="">
+      <>
+        <div className="explorer__new-element-modal__driver">
           <CustomSelectorInput
-            className="panel__content__form__section__dropdown"
+            className="explorer__new-element-modal__driver__dropdown"
             options={storeOptions}
             onChange={onStoreSelectionChange}
             value={selectedStoreOption}
             darkMode={true}
           />
         </div>
-        <div className="">
+        <div className="explorer__new-element-modal__driver">
           <CustomSelectorInput
-            className="panel__content__form__section__dropdown"
+            className="sub-panel__content__form__section__dropdown panel__content__form__section__dropdown"
             options={classOptions}
             onChange={onClassSelectionChange}
             value={selectedClassOption}
             darkMode={true}
+            formatOptionLabel={getPackageableElementOptionalFormatter({
+              darkMode: true,
+            })}
           />
         </div>
-      </div>
+      </>
     );
   },
 );
@@ -291,19 +300,46 @@ const NewConnectionDriverEditor = observer(() => {
     }
   };
   return (
-    <div>
-      <div>
-        <div>
-          <CustomSelectorInput
-            className="panel__content__form__section__dropdown"
-            options={connectionOptions}
-            onChange={onConnectionChange}
-            value={currentConnectionTypeOption}
-            darkMode={true}
-          />
-        </div>
+    <>
+      <div className="explorer__new-element-modal__driver">
+        <CustomSelectorInput
+          className="explorer__new-element-modal__driver__dropdown"
+          options={connectionOptions}
+          onChange={onConnectionChange}
+          value={currentConnectionTypeOption}
+          darkMode={true}
+        />
       </div>
       <NewConnectionValueDriverEditor />
+    </>
+  );
+});
+
+const NewServiceDriverEditor = observer(() => {
+  const editorStore = useEditorStore();
+  const newServiceDriver =
+    editorStore.newElementState.getNewElementDriver(NewServiceDriver);
+  // mapping
+  const currentMappingOption = newServiceDriver.mappingOption;
+  const mappingOptions = editorStore.mappingOptions;
+  const onMappingChange = (
+    val: PackageableElementOption<Mapping> | null,
+  ): void => {
+    if (!val) {
+      newServiceDriver.setMappingOption(undefined);
+    } else {
+      newServiceDriver.setMappingOption(val);
+    }
+  };
+  return (
+    <div className="explorer__new-element-modal__driver">
+      <CustomSelectorInput
+        className="explorer__new-element-modal__driver__dropdown"
+        options={mappingOptions}
+        onChange={onMappingChange}
+        value={currentMappingOption}
+        darkMode={true}
+      />
     </div>
   );
 });
@@ -326,15 +362,13 @@ const NewFileGenerationDriverEditor = observer(() => {
     }
   };
   return (
-    <div>
-      <div className="">
-        <CustomSelectorInput
-          className="sub-panel__content__form__section__dropdown"
-          options={options}
-          onChange={onTypeSelectionChange}
-          value={newConnectionDriver.typeOption}
-        />
-      </div>
+    <div className="explorer__new-element-modal__driver">
+      <CustomSelectorInput
+        className="sub-panel__content__form__section__dropdown explorer__new-element-modal__driver__dropdown"
+        options={options}
+        onChange={onTypeSelectionChange}
+        value={newConnectionDriver.typeOption}
+      />
     </div>
   );
 });
@@ -352,6 +386,8 @@ const renderNewElementDriver = (
       return <NewFileGenerationDriverEditor />;
     case PACKAGEABLE_ELEMENT_TYPE.DATA:
       return <NewDataElementDriverEditor />;
+    case PACKAGEABLE_ELEMENT_TYPE.SERVICE:
+      return <NewServiceDriverEditor />;
     default: {
       const extraNewElementDriverEditorCreators = editorStore.pluginManager
         .getStudioPlugins()

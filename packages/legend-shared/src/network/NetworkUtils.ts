@@ -44,7 +44,7 @@ export const CHARSET = 'charset=utf-8';
 
 export enum HttpHeader {
   CONTENT_TYPE = 'Content-Type',
-  ACCPEPT = 'Accept',
+  ACCEPT = 'Accept',
 }
 
 export enum ContentType {
@@ -210,7 +210,7 @@ const couldBeCORS = (error: Error): boolean =>
 
 export interface ResponseProcessConfig {
   skipProcessing?: boolean | undefined;
-  preprocess?: (response: Response) => void | undefined;
+  preprocess?: ((response: Response) => void) | undefined;
   autoReAuthenticateUrl?: string | undefined;
 }
 

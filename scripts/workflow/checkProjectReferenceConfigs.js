@@ -26,7 +26,7 @@ console.log(
 
 checkProjectReferenceConfig({
   rootDir: resolve(__dirname, '../../'),
-  excludePackagePatterns: [],
+  excludePackagePatterns: ['@finos/legend-internal-typedoc-theme'],
   excludeReferencePatterns: ['**/tsconfig.package.json'],
 });
 
@@ -40,6 +40,7 @@ checkProjectReferenceConfig({
   excludePackagePatterns: [
     '@finos/legend-manual-tests',
     '@finos/legend-*-deployment',
+    '@finos/legend-internal-typedoc-theme',
   ],
   excludeReferencePatterns: ['**/tsconfig.package.json'],
 });

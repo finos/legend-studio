@@ -56,13 +56,14 @@ export class FlatDataInstanceSetImplementation
     return hashArray([
       CORE_HASH_STRUCTURE.FLAT_DATA_INSTANCE_SET_IMPLEMENTATION,
       super.hashCode,
-      this.sourceRootRecordType.ownerReference.hashValue,
+      this.sourceRootRecordType.ownerReference.valueForSerialization ?? '',
       this.sourceRootRecordType.value._OWNER.name,
       this.filter ?? '',
       hashArray(
         this.propertyMappings.filter(
           // TODO: we should also handle of other property mapping types
           // using some form of extension mechanism
+          // This is a rather optimistic check as we make assumption on the type of property mapping included here
           (propertyMapping) => {
             if (propertyMapping instanceof FlatDataPropertyMapping) {
               // TODO: use `isStubbed_RawLambda` when we move this out of the metamodel

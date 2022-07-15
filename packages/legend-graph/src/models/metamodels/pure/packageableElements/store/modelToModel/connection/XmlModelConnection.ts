@@ -43,7 +43,7 @@ export class XmlModelConnection
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.XML_MODEL_CONNECTION,
-      this.class.hashValue,
+      this.class.valueForSerialization ?? '',
       this.url,
     ]);
   }

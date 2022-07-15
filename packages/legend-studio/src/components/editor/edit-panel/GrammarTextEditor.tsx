@@ -43,6 +43,7 @@ import {
   EDITOR_LANGUAGE,
   useApplicationStore,
   type LegendApplicationDocumentationEntry,
+  useApplicationNavigationContext,
 } from '@finos/legend-application';
 import { useResizeDetector } from 'react-resize-detector';
 import {
@@ -99,6 +100,7 @@ import {
   MAPPING_WITH_RELATIONAL_CLASS_MAPPING_SNIPPET,
 } from '../../../stores/LegendStudioCodeSnippets.js';
 import type { DSLData_LegendStudioPlugin_Extension } from '../../../stores/DSLData_LegendStudioPlugin_Extension.js';
+import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../stores/LegendStudioApplicationNavigationContext.js';
 
 const getSectionParserNameFromLineText = (
   lineText: string,
@@ -467,25 +469,21 @@ const getParserElementSnippetSuggestions = (
         // profile
         {
           text: PURE_ELEMENT_NAME.PROFILE,
-          description: 'simple',
           insertText: SIMPLE_PROFILE_SNIPPET,
         },
         // enumeration
         {
           text: PURE_ELEMENT_NAME.ENUMERATION,
-          description: 'simple',
           insertText: SIMPLE_ENUMERATION_SNIPPET,
         },
         // association
         {
           text: PURE_ELEMENT_NAME.ASSOCIATION,
-          description: 'simple',
           insertText: SIMPLE_ASSOCIATION_SNIPPET,
         },
         // measure
         {
           text: PURE_ELEMENT_NAME.MEASURE,
-          description: 'simple',
           insertText: SIMPLE_MEASURE_SNIPPET,
         },
         // function
@@ -496,7 +494,6 @@ const getParserElementSnippetSuggestions = (
         },
         {
           text: PURE_ELEMENT_NAME.FUNCTION,
-          description: 'simple',
           insertText: SIMPLE_FUNCTION_SNIPPET,
         },
       ];
@@ -554,7 +551,6 @@ const getParserElementSnippetSuggestions = (
       return [
         {
           text: PURE_ELEMENT_NAME.RUNTIME,
-          description: 'simple',
           insertText: SIMPLE_RUNTIME_SNIPPET,
         },
       ];
@@ -1191,6 +1187,10 @@ export const GrammarTextEditor = observer(() => {
       suggestionProviderDisposer.current?.dispose();
     },
     [editor],
+  );
+
+  useApplicationNavigationContext(
+    LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.TEXT_MODE_EDITOR,
   );
 
   return (

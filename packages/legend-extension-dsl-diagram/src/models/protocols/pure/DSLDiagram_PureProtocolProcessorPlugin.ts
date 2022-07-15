@@ -157,12 +157,4 @@ export class DSLDiagram_PureProtocolProcessorPlugin extends PureProtocolProcesso
       },
     ];
   }
-
-  override V1_getExtraSourceInformationKeys(): string[] {
-    return [
-      'classSourceInformation',
-      'sourceViewSourceInformation',
-      'targetViewSourceInformation',
-    ];
-  }
 }

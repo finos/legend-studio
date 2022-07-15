@@ -20,10 +20,14 @@
 // Components
 @forward 'components/app';
 @forward 'components/blocking-alert';
-@forward 'components/documentation-link';
 @forward 'components/backdrop';
-@forward 'components/lambda-editor';
 @forward 'components/notification';
-@forward 'components/text-editor';
 @forward 'components/virtual-assistant';
-@forward 'components/value-spec-editor';
+
+// Shared
+@forward 'components/shared/documentation-link';
+@forward 'components/shared/lambda-editor';
+@forward 'components/shared/text-editor';
+@forward 'components/shared/value-spec-editor';
+@forward 'components/shared/packageable-element-format-option';
+@forward 'components/shared/execution-plan-viewer';

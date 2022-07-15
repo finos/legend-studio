@@ -56,7 +56,6 @@ import type {
 } from '@finos/legend-shared';
 import type { LightQuery, Query } from './action/query/Query.js';
 import type { Entity } from '@finos/legend-model-storage';
-import type { GraphPluginManager } from '../GraphPluginManager.js';
 import type { QuerySearchSpecification } from './action/query/QuerySearchSpecification.js';
 import type { ExternalFormatDescription } from './action/externalFormat/ExternalFormatDescription.js';
 import type { ConfigurationProperty } from '../models/metamodels/pure/packageableElements/fileGeneration/ConfigurationProperty.js';
@@ -65,6 +64,15 @@ import type { ModelGenerationConfiguration } from '../models/ModelGenerationConf
 import type { DEPRECATED__ServiceTestResult } from './action/service/DEPRECATED__ServiceTestResult.js';
 import type { RunTestsTestableInput } from '../models/metamodels/pure/test/result/RunTestsTestableInput.js';
 import type { TestResult } from '../models/metamodels/pure/test/result/TestResult.js';
+import type { GraphPluginManager } from '../GraphPluginManager.js';
+import type { Testable } from '../models/metamodels/pure/test/Testable.js';
+import type { AtomicTest } from '../models/metamodels/pure/test/Test.js';
+import type { TestAssertion } from '../models/metamodels/pure/test/assertion/TestAssertion.js';
+import type { AssertFail } from '../models/metamodels/pure/test/assertion/status/AssertFail.js';
+import type {
+  MappingModelCoverageAnalysisResult,
+  RawMappingModelCoverageAnalysisResult,
+} from './action/analytics/MappingAnalytics.js';
 
 export interface TEMPORARY__EngineSetupConfig {
   env: string;
@@ -91,13 +99,35 @@ export interface ExecutionOptions {
   serializationFormat?: EXECUTION_SERIALIZATION_FORMAT | undefined;
 }
 
+export abstract class AbstractPureGraphManagerExtension {
+  graphManager: AbstractPureGraphManager;
+
+  constructor(graphManager: AbstractPureGraphManager) {
+    this.graphManager = graphManager;
+  }
+
+  abstract getSupportedProtocolVersion(): string;
+}
+
 export abstract class AbstractPureGraphManager {
+  extensions: AbstractPureGraphManagerExtension[] = [];
   pluginManager: GraphPluginManager;
   log: Log;
 
   constructor(pluginManager: GraphPluginManager, log: Log) {
     this.pluginManager = pluginManager;
     this.log = log;
+    this.extensions = pluginManager
+      .getPureGraphManagerPlugins()
+      .flatMap(
+        (plugin) => plugin.getExtraPureGraphManagerExtensionBuilders?.() ?? [],
+      )
+      .map((builder) => builder(this))
+      .filter(
+        (extension) =>
+          extension.getSupportedProtocolVersion() ===
+          this.getSupportedProtocolVersion(),
+      );
   }
 
   /**
@@ -116,6 +146,8 @@ export abstract class AbstractPureGraphManager {
       tracerService?: TracerService | undefined;
     },
   ): Promise<void>;
+
+  abstract getSupportedProtocolVersion(): string;
 
   // --------------------------------------------- Graph Builder ---------------------------------------------
 
@@ -222,6 +254,13 @@ export abstract class AbstractPureGraphManager {
     graph: PureModel,
   ): Promise<TestResult[]>;
 
+  abstract generateExpectedResult(
+    testable: Testable,
+    test: AtomicTest,
+    assertion: TestAssertion,
+    graph: PureModel,
+  ): Promise<AssertFail>;
+
   // ------------------------------------------- Value Specification  -------------------------------------------
 
   abstract buildValueSpecification(
@@ -291,7 +330,6 @@ export abstract class AbstractPureGraphManager {
     mapping: Mapping,
     lambda: RawLambda,
     runtime: Runtime,
-    clientVersion: string,
     options?: ExecutionOptions,
   ): Promise<ExecutionResult>;
 
@@ -300,7 +338,6 @@ export abstract class AbstractPureGraphManager {
     mapping: Mapping,
     lambda: RawLambda,
     runtime: Runtime,
-    clientVersion: string,
   ): Promise<RawExecutionPlan>;
 
   abstract debugExecutionPlanGeneration(
@@ -308,7 +345,6 @@ export abstract class AbstractPureGraphManager {
     mapping: Mapping,
     lambda: RawLambda,
     runtime: Runtime,
-    clientVersion: string,
   ): Promise<{ plan: RawExecutionPlan; debug: string }>;
 
   abstract buildExecutionPlan(
@@ -322,12 +358,11 @@ export abstract class AbstractPureGraphManager {
 
   abstract serializeExecutionNode(executionNode: ExecutionNode): object;
 
-  abstract generateMappingTestData(
+  abstract generateExecuteTestData(
     graph: PureModel,
     mapping: Mapping,
     lambda: RawLambda,
     runtime: Runtime,
-    clientVersion: string,
     parameters: (string | number | boolean)[],
     options?: {
       // Anonymizes data by hashing any string values in the generated data
@@ -336,6 +371,10 @@ export abstract class AbstractPureGraphManager {
   ): Promise<string>;
 
   // ------------------------------------------- Service -------------------------------------------
+  /**
+   * @modularize
+   * See https://github.com/finos/legend-studio/issues/65
+   */
 
   abstract registerService(
     graph: PureModel,
@@ -359,6 +398,16 @@ export abstract class AbstractPureGraphManager {
     graph: PureModel,
   ): Promise<DEPRECATED__ServiceTestResult[]>;
 
+  // ------------------------------------------- Database -------------------------------------------
+  /**
+   * @modularize
+   * See https://github.com/finos/legend-studio/issues/65
+   */
+
+  abstract buildDatabase(
+    databaseBuilderInput: DatabaseBuilderInput,
+  ): Promise<Entity[]>;
+
   // ------------------------------------------- Query -------------------------------------------
 
   abstract searchQueries(
@@ -371,40 +420,29 @@ export abstract class AbstractPureGraphManager {
   abstract updateQuery(query: Query, graph: PureModel): Promise<Query>;
   abstract deleteQuery(queryId: string): Promise<void>;
 
-  // ------------------------------------------- Legend Query -------------------------------------
+  // -------------------------------------- Analysis --------------------------------------
 
-  abstract buildGraphForCreateQuerySetup(
+  abstract analyzeMappingModelCoverage(
     graph: PureModel,
-    entities: Entity[],
-    dependencyEntitiesMap: Map<string, Entity[]>,
-  ): Promise<void>;
+    mapping: Mapping,
+  ): Promise<MappingModelCoverageAnalysisResult>;
 
-  abstract buildGraphForServiceQuerySetup(
-    graph: PureModel,
-    entities: Entity[],
-    dependencyEntitiesMap: Map<string, Entity[]>,
-  ): Promise<void>;
+  abstract buildMappingModelCoverageAnalysisResult(
+    input: RawMappingModelCoverageAnalysisResult,
+  ): MappingModelCoverageAnalysisResult;
 
   // ------------------------------------------- Utilities -------------------------------------------
 
-  abstract buildDatabase(
-    databaseBuilderInput: DatabaseBuilderInput,
-  ): Promise<Entity[]>;
+  abstract elementToEntity(
+    element: PackageableElement,
+    options?: {
+      pruneSourceInformation?: boolean;
+    },
+  ): Entity;
 
   // ------------------------------------------- Change detection -------------------------------------------
 
   abstract buildHashesIndex(entities: Entity[]): Promise<Map<string, string>>;
-
-  // ------------------------------------------- Raw Protocol Handling -------------------------------------------
-  // This is the set of method that exposes the protocol out into the app, these are for readonly purpose like
-  // displaying, or for interacting with SDLC server.
-  // As such, most of these methods will only deal with `string` or `plain object`
-
-  abstract pruneSourceInformation(object: object): Record<PropertyKey, unknown>;
-  abstract elementToEntity(
-    element: PackageableElement,
-    pruneSourceInformation?: boolean,
-  ): Entity;
 
   // --------------------------------------------- HACKY ---------------------------------------------
   // As the name suggested, these methods are temporary hacks since we don't handle value-specification

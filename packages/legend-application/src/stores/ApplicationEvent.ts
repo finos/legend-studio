@@ -21,11 +21,17 @@ export enum APPLICATION_EVENT {
   ILLEGAL_APPLICATION_STATE_OCCURRED = 'application.error.illegal-state',
   APPLICATION_CONFIGURATION_FAILURE = 'application.configuration.failure',
 
-  APPLICATION_DOCUMTENTION_LOAD_SKIPPED = 'application.load.documentation.skipped',
-  APPLICATION_CONTEXTUAL_DOCUMTENTION_LOAD_SKIPPED = 'application.load.contextual-documentation.skipped',
+  APPLICATION_DOCUMENTATION_FETCH_FAILURE = 'application.fetch.documentation.failure',
+  APPLICATION_DOCUMENTATION_LOAD_SKIPPED = 'application.load.documentation.skipped',
+  APPLICATION_DOCUMENTATION_REQUIREMENT_CHECK_FAILURE = 'application.load.documentation.requirement-check.failure',
+  APPLICATION_CONTEXTUAL_DOCUMENTATION_LOAD_SKIPPED = 'application.load.contextual-documentation.skipped',
 
   APPLICATION_LOADED = 'application.load.success',
   APPLICATION_LOAD_FAILURE = 'application.load.failure',
 
   DEVELOPMENT_ISSUE = 'development.issue',
+
+  APPLICATION_CONTEXT_ACCESSED = 'application.context.accessed',
+
+  VIRTUAL_ASSISTANT_DOCUMENTATION_ENTRY_ACCESSED = 'application.virtual-assistant.documentation-entry.accessed',
 }

@@ -65,7 +65,7 @@ export class DerivedProperty
       CORE_HASH_STRUCTURE.DERIVED_PROPERTY,
       this.name,
       this.multiplicity,
-      this.genericType.ownerReference.hashValue,
+      this.genericType.ownerReference.valueForSerialization ?? '',
       hashArray(this.stereotypes.map((val) => val.pointerHashCode)),
       hashArray(this.taggedValues),
       hashRawLambda(this.parameters, this.body),

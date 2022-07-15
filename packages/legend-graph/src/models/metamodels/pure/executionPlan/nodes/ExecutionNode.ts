@@ -14,10 +14,13 @@
  * limitations under the License.
  */
 
+import { uuid } from '@finos/legend-shared';
 import type { Multiplicity } from '../../packageableElements/domain/Multiplicity.js';
 import type { ResultType } from '../result/ResultType.js';
 
 export class ExecutionNode {
+  readonly _UUID = uuid();
+
   // fromCluster : ClusteredValueSpecification[0..1];
   resultType!: ResultType;
   resultSizeRange?: Multiplicity | undefined;

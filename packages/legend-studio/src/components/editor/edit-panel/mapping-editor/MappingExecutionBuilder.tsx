@@ -64,8 +64,8 @@ import {
   ActionAlertActionType,
   ActionAlertType,
   useApplicationStore,
+  ExecutionPlanViewer,
 } from '@finos/legend-application';
-import { ExecutionPlanViewer } from './execution-plan-viewer/ExecutionPlanViewer.js';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
   Class,

@@ -88,7 +88,9 @@ export abstract class ElementEditorState extends EditorState {
       const elementEntity =
         this.editorStore.graphManagerState.graphManager.elementToEntity(
           this.element,
-          true,
+          {
+            pruneSourceInformation: true,
+          },
         );
       this.setTextContent(
         JSON.stringify(elementEntity.content, undefined, TAB_SIZE),
@@ -110,14 +112,13 @@ export abstract class ElementEditorState extends EditorState {
 
   *generateElementGrammar(): GeneratorFn<void> {
     try {
-      const elementEntity =
-        this.editorStore.graphManagerState.graphManager.elementToEntity(
-          this.element,
-          false,
-        );
       const grammar =
         (yield this.editorStore.graphManagerState.graphManager.entitiesToPureCode(
-          [elementEntity],
+          [
+            this.editorStore.graphManagerState.graphManager.elementToEntity(
+              this.element,
+            ),
+          ],
         )) as string;
       this.setTextContent(grammar);
     } catch (error) {

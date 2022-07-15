@@ -260,6 +260,19 @@ export class WorkspaceReviewState {
     title: string,
     reviewDescription?: string,
   ): GeneratorFn<void> {
+    // NOTE: We will only allow having dependencies on snapshots in workspace, not in project
+    // Therefore, we block creation of review and committing review containing a change
+    // in dependency on snapshot versions
+    if (
+      this.editorStore.projectConfigurationEditorState
+        .containsSnapshotDependencies
+    ) {
+      this.editorStore.applicationStore.notifyWarning(
+        `Can't create review: workspace contains snapshot dependencies`,
+      );
+      return;
+    }
+
     this.isCreatingWorkspaceReview = true;
     try {
       const description =
@@ -289,6 +302,19 @@ export class WorkspaceReviewState {
   }
 
   *commitWorkspaceReview(review: Review): GeneratorFn<void> {
+    // NOTE: We will only allow having dependencies on snapshots in workspace, not in project
+    // Therefore, we block creation of review and committing review containing a change
+    // in dependency on snapshot versions
+    if (
+      this.editorStore.projectConfigurationEditorState
+        .containsSnapshotDependencies
+    ) {
+      this.editorStore.applicationStore.notifyWarning(
+        `Can't commit review: workspace contains snapshot dependencies`,
+      );
+      return;
+    }
+
     this.isCommittingWorkspaceReview = true;
 
     // check if the workspace is in conflict resolution mode

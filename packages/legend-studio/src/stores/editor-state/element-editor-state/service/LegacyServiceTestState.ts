@@ -62,7 +62,6 @@ import {
   DefaultH2AuthenticationStrategy,
   ConnectionPointer,
   PackageableElementExplicitReference,
-  PureClientVersion,
   generateIdentifiedConnectionId,
 } from '@finos/legend-graph';
 import { TAB_SIZE } from '@finos/legend-application';
@@ -334,7 +333,6 @@ export class TestContainerState {
             execution.mapping.value,
             execution.func,
             decoratedRuntime,
-            PureClientVersion.VX_X_X,
             {
               useLosslessParse: true,
             },
@@ -388,7 +386,6 @@ export class TestContainerState {
             execution.mapping.value,
             execution.func,
             decoratedRuntime,
-            PureClientVersion.VX_X_X,
             {
               useLosslessParse: true,
             },
@@ -561,12 +558,11 @@ export class LegacySingleExecutionTestState {
         'Service execution context (query, mapping, runtime) is needed to generate test data',
       );
       const generatedTestData =
-        (yield this.editorStore.graphManagerState.graphManager.generateMappingTestData(
+        (yield this.editorStore.graphManagerState.graphManager.generateExecuteTestData(
           this.editorStore.graphManagerState.graph,
           executionInput.mapping,
           executionInput.query,
           executionInput.runtime,
-          PureClientVersion.VX_X_X,
           buildTestDataParameters(executionInput.query, this.editorStore),
           {
             anonymizeGeneratedData: this.anonymizeGeneratedData,

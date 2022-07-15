@@ -83,7 +83,7 @@ import { V1_ServiceStorage } from './service/V1_ServiceStorage.js';
 import { V1_ServiceRegistrationResult } from './service/V1_ServiceRegistrationResult.js';
 import type { V1_PureModelContext } from '../model/context/V1_PureModelContext.js';
 import { ServiceExecutionMode } from '../../../../../graphManager/action/service/ServiceExecutionMode.js';
-import { serialize } from 'serializr';
+import { deserialize, serialize } from 'serializr';
 import { V1_ExecutionError } from './execution/V1_ExecutionError.js';
 import { V1_PureModelContextText } from '../model/context/V1_PureModelContextText.js';
 import { V1_QuerySearchSpecification } from './query/V1_QuerySearchSpecification.js';
@@ -95,6 +95,10 @@ import { GRAPH_MANAGER_EVENT } from '../../../../../graphManager/GraphManagerEve
 import { V1_RunTestsInput } from './test/V1_RunTestsInput.js';
 import { V1_RunTestsResult } from './test/V1_RunTestsResult.js';
 import { V1_RenderStyle } from './grammar/V1_RenderStyle.js';
+import {
+  V1_MappingModelCoverageAnalysisInput,
+  V1_MappingModelCoverageAnalysisResult,
+} from './analytics/V1_MappingAnalytics.js';
 
 class V1_EngineConfig extends TEMPORARY__AbstractEngineConfig {
   private engine: V1_Engine;
@@ -176,6 +180,10 @@ export class V1_Engine {
     return this.engineServerClient;
   }
 
+  getCurrentUserId(): string | undefined {
+    return this.engineServerClient.currentUserId;
+  }
+
   async setup(config: V1_EngineSetupConfig): Promise<void> {
     this.config.setEnv(config.env);
     this.config.setTabSize(config.tabSize);
@@ -204,24 +212,23 @@ export class V1_Engine {
     options?: { onError?: () => void },
   ): Promise<V1_PureModelContextData> {
     return V1_deserializePureModelContextData(
-      await this.pureCodeToPureModelContextDataJSON(code, false, options),
+      await this.pureCodeToPureModelContextDataJSON(code, {
+        ...options,
+        returnSourceInformation: false,
+      }),
     );
   }
 
   private async pureCodeToPureModelContextDataJSON(
     code: string,
-    returnSourceInformation: boolean,
-    options?: { onError?: () => void },
+    options?: { onError?: () => void; returnSourceInformation?: boolean },
   ): Promise<PlainObject<V1_PureModelContextData>> {
     try {
       return await this.engineServerClient.grammarToJSON_model(
         code,
         undefined,
         undefined,
-        // TODO: we should use the passed `returnSourceInformation`
-        // but right now, we must test if this works for engine
-        // See https://github.com/finos/legend-engine/pull/692
-        undefined,
+        options?.returnSourceInformation,
       );
     } catch (error) {
       assertErrorThrown(error);
@@ -268,7 +275,7 @@ export class V1_Engine {
     pretty: boolean,
     plugins: PureProtocolProcessorPlugin[],
   ): Promise<string> {
-    return await this.engineServerClient.JSONToGrammar_lambda(
+    return this.engineServerClient.JSONToGrammar_lambda(
       V1_serializeRawValueSpecification(
         V1_transformRawLambda(
           lambda,
@@ -387,13 +394,12 @@ export class V1_Engine {
     compileContext?: V1_PureModelContextData,
     options?: { onError?: () => void },
   ): Promise<V1_PureModelContextData> {
-    const mainGraph = await this.pureCodeToPureModelContextDataJSON(
-      graphText,
+    const mainGraph = await this.pureCodeToPureModelContextDataJSON(graphText, {
+      ...options,
       // NOTE: we need to return source information here so we can locate the compilation
       // errors/warnings
-      true,
-      options,
-    );
+      returnSourceInformation: true,
+    });
     const pureModelContextDataJson = compileContext
       ? mergeObjects(
           this.serializePureModelContextData(compileContext),
@@ -499,7 +505,7 @@ export class V1_Engine {
     );
   }
 
-  generateMappingTestData(
+  generateExecuteTestData(
     input: V1_TestDataGenerationExecutionInput,
   ): Promise<string> {
     return this.engineServerClient.generateTestDataWithDefaultSeed(
@@ -719,6 +725,19 @@ export class V1_Engine {
 
   async deleteQuery(queryId: string): Promise<void> {
     await this.engineServerClient.deleteQuery(queryId);
+  }
+
+  // ------------------------------------------ Analysis ------------------------------------------
+
+  async analyzeMappingModelCoverage(
+    input: V1_MappingModelCoverageAnalysisInput,
+  ): Promise<V1_MappingModelCoverageAnalysisResult> {
+    return deserialize(
+      V1_MappingModelCoverageAnalysisResult,
+      await this.engineServerClient.analyzeMappingModelCoverage(
+        V1_MappingModelCoverageAnalysisInput.serialization.toJson(input),
+      ),
+    );
   }
 
   // --------------------------------------------- Utilities ---------------------------------------------

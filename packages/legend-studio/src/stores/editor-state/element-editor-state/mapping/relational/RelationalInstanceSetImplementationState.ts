@@ -29,7 +29,7 @@ import {
 } from '@finos/legend-shared';
 import type { EditorStore } from '../../../../EditorStore.js';
 import { MappingElementDecorator } from '../MappingElementDecorator.js';
-import { MAPPING_ELEMENT_SOURCE_ID_LABEL } from '../MappingEditorState.js';
+import { MAPPING_ELEMENT_TYPE } from '../MappingEditorState.js';
 import {
   type PropertyMapping,
   type RelationalInstanceSetImplementation,
@@ -69,7 +69,7 @@ export class RelationalPropertyMappingState extends PropertyMappingState {
     return buildSourceInformationSourceId(
       [
         this.propertyMapping._OWNER._PARENT.path,
-        MAPPING_ELEMENT_SOURCE_ID_LABEL.RELATIONAL_CLASS_MAPPING,
+        MAPPING_ELEMENT_TYPE.CLASS,
         this.propertyMapping._OWNER.id.value,
         this.propertyMapping.property.value.name,
         this.propertyMapping.targetSetImplementation?.id.value,

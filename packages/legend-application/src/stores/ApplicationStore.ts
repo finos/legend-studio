@@ -147,11 +147,13 @@ export class ApplicationStore<T extends LegendApplicationConfig> {
     this.config = config;
     this.navigator = navigator;
     this.pluginManager = pluginManager;
+    // NOTE: set the logger first so other loading could use the configured logger
+    this.log.registerPlugins(pluginManager.getLoggerPlugins());
+
     this.navigationContextService =
-      new LegendApplicationNavigationContextService();
+      new LegendApplicationNavigationContextService(this);
     this.documentationService = new LegendApplicationDocumentationService(this);
     this.assistantService = new LegendApplicationAssistantService(this);
-    this.log.registerPlugins(pluginManager.getLoggerPlugins());
     this.telemetryService.registerPlugins(
       pluginManager.getTelemetryServicePlugins(),
     );
@@ -311,7 +313,10 @@ export class ApplicationStore<T extends LegendApplicationConfig> {
     };
 
   async copyTextToClipboard(text: string): Promise<void> {
-    if (typeof navigator.clipboard.writeText === 'function') {
+    if (
+      typeof navigator.clipboard === 'object' &&
+      typeof navigator.clipboard.writeText === 'function'
+    ) {
       // This is a much cleaner way which requires HTTPS
       // See https://developers.google.com/web/updates/2018/03/clipboardapi
       await navigator.clipboard.writeText(text).catch((error) => {

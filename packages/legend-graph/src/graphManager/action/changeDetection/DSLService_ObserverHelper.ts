@@ -75,7 +75,7 @@ export const observe_ParameterValue = skipObserved(
   (metamodel: ParameterValue): ParameterValue => {
     makeObservable(metamodel, {
       name: observable,
-      value: observable,
+      value: observable.ref,
       hashCode: computed,
     });
 
@@ -102,6 +102,7 @@ export const observe_ServiceTest = skipObserved(
   (metamodel: ServiceTest): ServiceTest => {
     makeObservable(metamodel, {
       id: observable,
+      serializationFormat: observable,
       assertions: observable,
       parameters: observable,
       hashCode: computed,

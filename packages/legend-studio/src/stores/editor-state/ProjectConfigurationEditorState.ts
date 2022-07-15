@@ -38,7 +38,7 @@ import {
   UpdateProjectConfigurationCommand,
 } from '@finos/legend-server-sdlc';
 import { LEGEND_STUDIO_APP_EVENT } from '../LegendStudioAppEvent.js';
-import { ProjectData } from '@finos/legend-server-depot';
+import { MASTER_SNAPSHOT_ALIAS, ProjectData } from '@finos/legend-server-depot';
 
 export enum CONFIGURATION_EDITOR_TAB {
   PROJECT_STRUCTURE = 'PROJECT_STRUCTURE',
@@ -119,6 +119,14 @@ export class ProjectConfigurationEditorState extends EditorState {
     return guaranteeNonNullable(
       this.originalProjectConfiguration,
       'Original project configuration is not set',
+    );
+  }
+
+  get containsSnapshotDependencies(): boolean {
+    return Boolean(
+      this.originalProjectConfiguration?.projectDependencies.some(
+        (dependency) => dependency.versionId === MASTER_SNAPSHOT_ALIAS,
+      ),
     );
   }
 

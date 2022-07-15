@@ -28,7 +28,7 @@ import {
   PureInstanceSetImplementationState,
 } from '../../../../stores/editor-state/element-editor-state/mapping/PureInstanceSetImplementationState.js';
 import { clsx, ArrowCircleRightIcon } from '@finos/legend-art';
-import { guaranteeType } from '@finos/legend-shared';
+import { guaranteeType, UnsupportedOperationError } from '@finos/legend-shared';
 import {
   type FlatDataPropertyMappingState,
   FlatDataInstanceSetImplementationState,
@@ -61,6 +61,7 @@ import {
   getClassPropertyType,
   SET_IMPLEMENTATION_TYPE,
 } from '../../../../stores/shared/ModelUtil.js';
+import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../../stores/DSLMapping_LegendStudioPlugin_Extension.js';
 
 export const getExpectedReturnType = (
   targetSetImplementation: SetImplementation | undefined,
@@ -230,7 +231,6 @@ export const PropertyMappingsEditor = observer(
         </div>
         <div className="property-mapping-editor__content">
           {propertyMappingStates.map((propertyMappingState) => {
-            /* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
             switch (instanceSetImplementationType) {
               case SET_IMPLEMENTATION_TYPE.PUREINSTANCE: {
                 return (
@@ -286,8 +286,29 @@ export const PropertyMappingsEditor = observer(
                   />
                 );
               }
-              default:
-                return null;
+              default: {
+                const extraPropertyMappingEditorRenderers =
+                  editorStore.pluginManager
+                    .getStudioPlugins()
+                    .flatMap(
+                      (plugin) =>
+                        (
+                          plugin as DSLMapping_LegendStudioPlugin_Extension
+                        ).getExtraPropertyMappingEditorRenderers?.() ?? [],
+                    );
+                for (const renderer of extraPropertyMappingEditorRenderers) {
+                  const renderedPropertyMappingEditor = renderer(
+                    instanceSetImplementationState,
+                    propertyMappingState,
+                  );
+                  if (renderedPropertyMappingEditor) {
+                    return renderedPropertyMappingEditor;
+                  }
+                }
+                throw new UnsupportedOperationError(
+                  `Can't render property mapping editor: no compatible renderer available from plugins`,
+                );
+              }
             }
           })}
           {propertyBasicType === CLASS_PROPERTY_TYPE.CLASS &&

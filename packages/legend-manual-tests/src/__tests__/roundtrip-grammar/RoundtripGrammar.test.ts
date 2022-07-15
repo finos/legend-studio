@@ -98,9 +98,6 @@ const EXCLUSIONS: { [key: string]: ROUNTRIP_TEST_PHASES[] | typeof SKIP } = {
     ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP,
   ],
 
-  // TODO: Unskip this test when we merge https://github.com/finos/legend-studio/pull/1108
-  'DSLPersistence-basic.pure': SKIP,
-
   // TODO: Unskip once https://github.com/finos/legend-engine/pull/658 is resolved
   'relational-dataElement.pure': SKIP,
 };
@@ -174,11 +171,9 @@ const checkGrammarRoundtrip = async (
     headers: {
       [HttpHeader.CONTENT_TYPE]: ContentType.TEXT_PLAIN,
     },
-    // TODO: we should enable this, but we need to make sure engine works first
-    // See https://github.com/finos/legend-engine/pull/692
-    // params: {
-    //   returnSourceInformation: false,
-    // },
+    params: {
+      returnSourceInformation: false,
+    },
   });
   if (options?.debug) {
     log.info(
@@ -227,21 +222,17 @@ const checkGrammarRoundtrip = async (
     (
       expect(
         // received: transformed entity
-        transformedEntities
-          .map((entity) => entity.content)
-          .map(graphManagerState.graphManager.pruneSourceInformation),
+        transformedEntities.map((entity) => entity.content),
       ) as TEMPORARRY__JestMatcher
     ).toIncludeSameMembers(
       // expected: protocol JSON parsed from grammar text
       (
         (transformGrammarToJsonResult.data as { elements: object[] })
           .elements as PlainObject<V1_PackageableElement>[]
-      )
-        .map(graphManagerState.graphManager.pruneSourceInformation)
-        .filter(
-          (elementProtocol: PlainObject<V1_PackageableElement>) =>
-            elementProtocol._type !== 'sectionIndex',
-        ),
+      ).filter(
+        (elementProtocol: PlainObject<V1_PackageableElement>) =>
+          elementProtocol._type !== 'sectionIndex',
+      ),
     );
     logSuccess(phase, log, options?.debug);
   }
@@ -282,7 +273,7 @@ const checkGrammarRoundtrip = async (
     modelDataContext,
     {
       headers: {
-        [HttpHeader.ACCPEPT]: ContentType.TEXT_PLAIN,
+        [HttpHeader.ACCEPT]: ContentType.TEXT_PLAIN,
       },
       params: {
         renderStyle: 'STANDARD',

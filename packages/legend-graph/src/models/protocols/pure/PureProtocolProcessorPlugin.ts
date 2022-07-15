@@ -58,10 +58,15 @@ export type V1_FunctionExpressionBuilder = (
   processingContext: V1_ProcessingContext,
 ) => [SimpleFunctionExpression, ValueSpecification[]] | undefined;
 
-export type V1_ExecutionInputGetter = (
+export type V1_ExecutionInputCollector = (
   graph: PureModel,
   mapping: Mapping,
   runtime: Runtime,
+  protocolGraph: V1_PureModelContextData,
+) => V1_PackageableElement[];
+
+export type V1_MappingModelCoverageAnalysisInputCollector = (
+  graph: PureModel,
   protocolGraph: V1_PureModelContextData,
 ) => V1_PackageableElement[];
 
@@ -80,7 +85,7 @@ export type V1_PropertyExpressionTypeInferrer = (
  */
 export abstract class PureProtocolProcessorPlugin extends AbstractPlugin {
   /**
-   * This helps to better type-checking for this empty abtract type
+   * This helps to better type-check for this empty abtract type
    * See https://github.com/finos/legend-studio/blob/master/docs/technical/typescript-usage.md#understand-typescript-structual-type-system
    */
   private readonly _$nominalTypeBrand!: 'PureProtocolProcessorPlugin';
@@ -124,12 +129,6 @@ export abstract class PureProtocolProcessorPlugin extends AbstractPlugin {
   V1_getExtraElementTransformers?(): V1_ElementTransformer[];
 
   /**
-   * Get the list of fields in element JSON which hold source information
-   * (a product of the grammar parsing process).
-   */
-  V1_getExtraSourceInformationKeys?(): string[];
-
-  /**
    * Get the list of builders for function expression.
    *
    * NOTE: this process is complicated, as it involes advanced procedures like type inferencing,
@@ -147,7 +146,16 @@ export abstract class PureProtocolProcessorPlugin extends AbstractPlugin {
    * We prune the graph to avoid sending the server additional elements not needed for execution.
    * This would provide a mechanism to add more elements in this reduced graph.
    */
-  V1_getExtraExecutionInputGetters?(): V1_ExecutionInputGetter[];
+  V1_getExtraExecutionInputCollectors?(): V1_ExecutionInputCollector[];
+
+  /**
+   * Get the list of collectors of graph elements to build mapping-model-coverage-analysis input.
+   *
+   * In particular, such collector is used to specify any additional packageable elements
+   * added to the graph that is used when analyzing mapped properties in the mapping.
+   * This would provide a mechanism to add more elements in this reduced graph.
+   */
+  V1_getExtraMappingModelCoverageAnalysisInputCollectors?(): V1_MappingModelCoverageAnalysisInputCollector[];
 
   /**
    * Get the list of type inferrers for property expression.

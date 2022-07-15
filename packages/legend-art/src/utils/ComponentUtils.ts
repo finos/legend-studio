@@ -16,6 +16,8 @@
 
 import { useState, useEffect } from 'react';
 
+export { clsx, type ClassValue } from 'clsx';
+
 // React `setState` used to come with a callback that runs after the state is updated
 // See https://www.robinwieruch.de/react-usestate-callback
 export const useStateWithCallback = <T>(

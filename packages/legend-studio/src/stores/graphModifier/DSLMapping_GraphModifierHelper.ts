@@ -74,6 +74,9 @@ import {
   observe_EngineRuntime,
   getEnumValueNames,
   getEnumValue,
+  observe_OptionalEnumerationMappingReference,
+  type OptionalEnumerationMappingReference,
+  type SourceValueType,
 } from '@finos/legend-graph';
 import {
   addUniqueEntry,
@@ -203,9 +206,9 @@ export const sourceValue_setValue = action(
   },
 );
 export const enumValueMapping_addSourceValue = action(
-  (enumMapping: EnumValueMapping): void => {
+  (enumMapping: EnumValueMapping, sourceValue: SourceValueType): void => {
     enumMapping.sourceValues.push(
-      observe_SourceValue(new SourceValue(undefined)),
+      observe_SourceValue(new SourceValue(sourceValue)),
     );
   },
 );
@@ -397,41 +400,44 @@ export const setImpl_nominateRoot = action(
 
 // --------------------------------------------- M2M -------------------------------------
 
-export const objectInputData_setData = (
-  o: ObjectInputData,
-  val: string,
-): void => {
-  o.data = val;
-};
+export const objectInputData_setData = action(
+  (o: ObjectInputData, val: string): void => {
+    o.data = val;
+  },
+);
 
-export const pureInstanceSetImpl_setPropertyMappings = (
-  val: PureInstanceSetImplementation,
-  value: PurePropertyMapping[],
-  observeContext: ObserverContext,
-): void => {
-  val.propertyMappings = value.map((pm) =>
-    observe_PurePropertyMapping(pm, observeContext),
-  );
-};
-export const pureInstanceSetImpl_setSrcClass = (
-  val: PureInstanceSetImplementation,
-  value: Class | undefined,
-): void => {
-  val.srcClass.value = value ? observe_Class(value) : undefined;
-};
-export const pureInstanceSetImpl_setMappingFilter = (
-  val: PureInstanceSetImplementation,
-  value: RawLambda | undefined,
-): void => {
-  val.filter = value ? observe_RawLambda(value) : undefined;
-};
+export const pureInstanceSetImpl_setPropertyMappings = action(
+  (
+    val: PureInstanceSetImplementation,
+    value: PurePropertyMapping[],
+    observeContext: ObserverContext,
+  ): void => {
+    val.propertyMappings = value.map((pm) =>
+      observe_PurePropertyMapping(pm, observeContext),
+    );
+  },
+);
 
-export const purePropertyMapping_setTransformer = (
-  val: PurePropertyMapping,
-  value: EnumerationMapping | undefined,
-): void => {
-  val.transformer = value ? observe_EnumerationMapping(value) : undefined;
-};
+export const pureInstanceSetImpl_setSrcClass = action(
+  (val: PureInstanceSetImplementation, value: Class | undefined): void => {
+    val.srcClass.value = value ? observe_Class(value) : undefined;
+  },
+);
+
+export const pureInstanceSetImpl_setMappingFilter = action(
+  (val: PureInstanceSetImplementation, value: RawLambda | undefined): void => {
+    val.filter = value ? observe_RawLambda(value) : undefined;
+  },
+);
+
+export const purePropertyMapping_setTransformer = action(
+  (
+    val: PurePropertyMapping,
+    value: OptionalEnumerationMappingReference,
+  ): void => {
+    val.transformer = observe_OptionalEnumerationMappingReference(value);
+  },
+);
 
 // --------------------------------------------- Connection -------------------------------------
 

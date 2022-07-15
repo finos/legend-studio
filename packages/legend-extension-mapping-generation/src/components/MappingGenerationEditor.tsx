@@ -42,9 +42,10 @@ import {
 import type { MappingGenerationEditorState } from '../stores/MappingGenerationEditorState.js';
 import { flowResult, runInAction } from 'mobx';
 import {
-  Mapping,
+  type Mapping,
   createValidationError,
   isStubbed_PackageableElement,
+  stub_Mapping,
 } from '@finos/legend-graph';
 
 const StringEditor = observer(
@@ -106,7 +107,7 @@ const ArrayEditor = observer(
     const [showEditInput, setShowEditInput] = useState<boolean | number>(false);
     const [itemValue, setItemValue] = useState<
       PackageableElementOption<Mapping>
-    >({ label: '', value: new Mapping('') });
+    >({ label: '', value: stub_Mapping() });
     const showAddItemInput = (): void => setShowEditInput(true);
     const showEditItemInput =
       (value: PackageableElementOption<Mapping>, idx: number): (() => void) =>
@@ -116,7 +117,7 @@ const ArrayEditor = observer(
       };
     const hideAddOrEditItemInput = (): void => {
       setShowEditInput(false);
-      setItemValue({ label: '', value: new Mapping('') });
+      setItemValue({ label: '', value: stub_Mapping() });
     };
     const changeItemInputValue = (
       val: PackageableElementOption<Mapping>,

@@ -59,7 +59,7 @@ export class StoreConnections implements Hashable {
       CORE_HASH_STRUCTURE.STORE_CONNECTIONS,
       hashElementPointer(
         PackageableElementPointerType.STORE,
-        this.store.hashValue,
+        this.store.valueForSerialization ?? '',
       ),
       hashArray(this.storeConnections),
     ]);
@@ -81,7 +81,7 @@ export class EngineRuntime extends Runtime implements Hashable {
         this.mappings.map((mapping) =>
           hashElementPointer(
             PackageableElementPointerType.MAPPING,
-            mapping.hashValue,
+            mapping.valueForSerialization ?? '',
           ),
         ),
       ),
@@ -108,7 +108,7 @@ export class RuntimePointer extends Runtime implements Hashable {
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.RUNTIME_POINTER,
-      this.packageableRuntime.hashValue,
+      this.packageableRuntime.valueForSerialization ?? '',
     ]);
   }
 }

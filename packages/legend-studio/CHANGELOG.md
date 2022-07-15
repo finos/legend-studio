@@ -1,5 +1,61 @@
 # @finos/legend-studio
 
+## 11.0.2
+
+### Patch Changes
+
+- [#1277](https://github.com/finos/legend-studio/pull/1277) [`be5a1f7b`](https://github.com/finos/legend-studio/commit/be5a1f7b1b4a412f41c4256c591a95bc3ae76336) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add editor for multi-execution services ([#943] https://github.com/finos/legend-studio/issues/943).
+
+## 11.0.1
+
+### Patch Changes
+
+- [#1293](https://github.com/finos/legend-studio/pull/1293) [`ddbb0a8e`](https://github.com/finos/legend-studio/commit/ddbb0a8e36c062b9d1a35dc23a2e4c3c6c7d8a9b) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add TestError viewer in service test editor.
+
+## 11.0.0
+
+### Major Changes
+
+- [#1266](https://github.com/finos/legend-studio/pull/1266) [`7a967b82`](https://github.com/finos/legend-studio/commit/7a967b827c0e201df068c12ccbd0f3e4413bd8e6) ([@akphi](https://github.com/akphi)) - Moved `getExtraApplicationSetups()` from `LegendStudioPlugin` to `LegendApplicationPlugin`, also renamed type `ApplicationSetup` to `LegendApplicationSetup`.
+
+### Patch Changes
+
+- [#1266](https://github.com/finos/legend-studio/pull/1266) [`7a967b82`](https://github.com/finos/legend-studio/commit/7a967b827c0e201df068c12ccbd0f3e4413bd8e6) ([@akphi](https://github.com/akphi)) - Renamed `LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT` to `LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY`.
+
+* [#1279](https://github.com/finos/legend-studio/pull/1279) [`9a8b095a`](https://github.com/finos/legend-studio/commit/9a8b095a763f1f28fb34fb28ac8f2c237baf6b9b) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add `DataElement` option to `EmbeddedDataType` to leverage in service test data.
+
+## 10.3.0
+
+### Minor Changes
+
+- [#1195](https://github.com/finos/legend-studio/pull/1195) [`b429420`](https://github.com/finos/legend-studio/commit/b429420ec1fd56186233505657c40a046428cf2b) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add `RelationalCSVData` editor for relational embedded data.
+
+* [#1195](https://github.com/finos/legend-studio/pull/1195) [`b429420e`](https://github.com/finos/legend-studio/commit/b429420ec1fd56186233505657c40a046428cf2b) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Revamp service test editor to account for testable service tests, which includes support for test parameters, generating expected results, generating test data and seeing diffs for executed tests.
+
+- [#1252](https://github.com/finos/legend-studio/pull/1252) [`790665dd`](https://github.com/finos/legend-studio/commit/790665dd1b34b3f06c96ab4b7afd3425f70ca73d) ([@akphi](https://github.com/akphi)) - Allow the project dependency configuration to contain `HEAD` as a alid version option and added restrictions on review-creation to ensure no project dependency is set to the `HEAD` option in the project.
+
+### Patch Changes
+
+- [#1272](https://github.com/finos/legend-studio/pull/1272) [`72253bd9`](https://github.com/finos/legend-studio/commit/72253bd99c6eb3c05fc2c8ddc06d5f81a98ccd8f) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix rendering of multi execution service query.
+
+## 10.2.1
+
+## 10.2.0
+
+### Minor Changes
+
+- [#893](https://github.com/finos/legend-studio/pull/893) [`24ea81a8`](https://github.com/finos/legend-studio/commit/24ea81a83f97189f3c914d6b7f2561e191ad5e89) ([@gayathrir11](https://github.com/gayathrir11)) - Introduce extension mechanism consistently and exhaustively for class mapping
+
+## 10.1.2
+
+## 10.1.1
+
+## 10.1.0
+
+### Minor Changes
+
+- [#1223](https://github.com/finos/legend-studio/pull/1223) [`f5f72a2d`](https://github.com/finos/legend-studio/commit/f5f72a2de0a1bacd1d614ea1e3ecb782fce15bf8) ([@akphi](https://github.com/akphi)) - Support `Pure grammar` mode in `model loader`.
+
 ## 10.0.0
 
 ### Major Changes

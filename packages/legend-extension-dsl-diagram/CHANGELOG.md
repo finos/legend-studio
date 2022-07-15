@@ -1,5 +1,31 @@
 # @finos/legend-extension-dsl-diagram
 
+## 4.1.5
+
+## 4.1.4
+
+## 4.1.3
+
+## 4.1.2
+
+## 4.1.1
+
+## 4.1.0
+
+### Minor Changes
+
+- [#1239](https://github.com/finos/legend-studio/pull/1239) [`4dacea12`](https://github.com/finos/legend-studio/commit/4dacea12f53e93eab6e53f29febe94c7693109e2) ([@akphi](https://github.com/akphi)) - Support `align` and `distribute spacing` operators (e.g. align left, align right, distribute spacing horizontally etc.) when selecting multiple class views.
+
+## 4.0.2
+
+## 4.0.1
+
+## 4.0.0
+
+### Major Changes
+
+- [#1223](https://github.com/finos/legend-studio/pull/1223) [`f5f72a2d`](https://github.com/finos/legend-studio/commit/f5f72a2de0a1bacd1d614ea1e3ecb782fce15bf8) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Renamed `RelationshipEdgeView` to `RelationshipViewEnd`.
+
 ## 3.0.0
 
 ### Major Changes

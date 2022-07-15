@@ -24,8 +24,8 @@ import {
 } from '@finos/legend-art';
 import {
   getMappingElementSource,
-  type MappingEditorState,
   type MappingElementSource,
+  type MappingEditorState,
 } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState.js';
 import {
   type InstanceSetImplementation,
@@ -45,7 +45,6 @@ import { buildElementOption } from '../../../../stores/shared/PackageableElement
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import { useApplicationStore } from '@finos/legend-application';
 
-/* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
 export const getMappingElementSourceFilterText = (
   option: MappingElementSourceSelectOption,
 ): string => {
@@ -62,12 +61,11 @@ export const getMappingElementSourceFilterText = (
 
 export interface MappingElementSourceSelectOption {
   label: string;
-  value: MappingElementSource;
+  value: unknown;
 }
 
-/* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
 export const getSourceElementLabel = (
-  srcElement: MappingElementSource | undefined,
+  srcElement: unknown | undefined,
 ): string => {
   let sourceLabel = '(none)';
   if (srcElement instanceof Class) {
@@ -84,7 +82,6 @@ export const getSourceElementLabel = (
   return sourceLabel;
 };
 
-/* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
 // TODO: add more visual cue to the type of source (class vs. flat-data vs. db)
 export const buildMappingElementSourceOption = (
   source: MappingElementSource | undefined,
@@ -128,7 +125,6 @@ export const InstanceSetImplementationSourceSelectorModal = observer(
     } = props;
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
-    /* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
     const options = (
       editorStore.graphManagerState.graph.ownClasses as MappingElementSource[]
     )

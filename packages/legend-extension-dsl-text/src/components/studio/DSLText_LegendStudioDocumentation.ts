@@ -14,27 +14,7 @@
  * limitations under the License.
  */
 
-import type { LegendApplicationDocumentationEntryConfig } from '@finos/legend-application';
-
 export enum DSL_TEXT_LEGEND_STUDIO_DOCUMENTATION_KEY {
   GRAMMAR_PARSER = 'dsl-text.grammar.parser',
   GRAMMAR_ELEMENT_TEXT = 'dsl-text.grammar.element.text',
 }
-
-export const DSL_TEXT_DOCUMENTATION_ENTRIES: Record<
-  string,
-  LegendApplicationDocumentationEntryConfig
-> = {
-  [DSL_TEXT_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER]: {
-    title: 'What is Text DSL about?',
-    markdownText: {
-      value: `\`Text DSL\` (corresponding to header \`###DataSpace\` section in \`Pure\`) concerns with storing data in plain-text`,
-    },
-  },
-  [DSL_TEXT_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_ELEMENT_TEXT]: {
-    title: 'What is a text element?',
-    markdownText: {
-      value: `A \`Text\` element stores plain-text content with a specified content-type, which can be used for formatting, syntax-highlighting`,
-    },
-  },
-};

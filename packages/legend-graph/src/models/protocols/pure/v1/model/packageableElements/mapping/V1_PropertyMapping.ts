@@ -28,8 +28,8 @@ import type { V1_FlatDataPropertyMapping } from '../../../model/packageableEleme
 import type { V1_EmbeddedFlatDataPropertyMapping } from '../../../model/packageableElements/store/flatData/mapping/V1_EmbeddedFlatDataPropertyMapping.js';
 import type { V1_XStorePropertyMapping } from './xStore/V1_XStorePropertyMapping.js';
 
-/* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
 export interface V1_PropertyMappingVisitor<T> {
+  visit_PropertyMapping(propertyMapping: V1_PropertyMapping): T;
   visit_PurePropertyMapping(propertyMapping: V1_PurePropertyMapping): T;
   visit_FlatDataPropertyMapping(propertyMapping: V1_FlatDataPropertyMapping): T;
   visit_EmbeddedFlatDataPropertyMapping(

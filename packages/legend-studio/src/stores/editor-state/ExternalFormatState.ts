@@ -31,6 +31,13 @@ export type ExternalFormatTypeOption = {
   label: string;
 };
 
+export enum EmbeddedDataType {
+  EXTERNAL_FORMAT_DATA = 'EXTERNAL_FORMAT',
+  MODEL_STORE_DATA = 'MODEL_STORE',
+  RELATIONAL_CSV = 'RELATIONAL',
+  DATA_ELEMENT = 'DATA_ELEMENT',
+}
+
 export class ExternalFormatState {
   fetchingDescriptionsState = ActionState.create();
   editorStore: EditorStore;

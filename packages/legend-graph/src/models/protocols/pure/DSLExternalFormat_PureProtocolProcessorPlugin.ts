@@ -33,7 +33,7 @@ import type { Mapping } from '../../metamodels/pure/packageableElements/mapping/
 import type { PackageableElement } from '../../metamodels/pure/packageableElements/PackageableElement.js';
 import {
   PackageableElementReference,
-  toOptionalPackageableElementReference,
+  optionalizePackageableElementReference,
 } from '../../metamodels/pure/packageableElements/PackageableElementReference.js';
 import type { Runtime } from '../../metamodels/pure/packageableElements/runtime/Runtime.js';
 import { ExternalFormatConnection } from '../../metamodels/pure/packageableElements/externalFormat/connection/DSLExternalFormat_ExternalFormatConnection.js';
@@ -55,7 +55,8 @@ import {
   type V1_ElementProtocolDeserializer,
   type V1_ElementProtocolSerializer,
   type V1_ElementTransformer,
-  type V1_ExecutionInputGetter,
+  type V1_ExecutionInputCollector,
+  type V1_MappingModelCoverageAnalysisInputCollector,
   PureProtocolProcessorPlugin,
 } from './PureProtocolProcessorPlugin.js';
 import type { V1_PureModelContextData } from './v1/model/context/V1_PureModelContextData.js';
@@ -67,10 +68,7 @@ import { V1_SchemaSet } from './v1/model/packageableElements/externalFormat/sche
 import { V1_Binding } from './v1/model/packageableElements/externalFormat/store/V1_DSLExternalFormat_Binding.js';
 import { V1_ModelUnit } from './v1/model/packageableElements/externalFormat/store/V1_DSLExternalFormat_ModelUnit.js';
 import type { V1_PackageableElement } from './v1/model/packageableElements/V1_PackageableElement.js';
-import {
-  V1_initPackageableElement,
-  V1_transformElementReference,
-} from './v1/transformation/pureGraph/from/V1_CoreTransformerHelper.js';
+import { V1_initPackageableElement } from './v1/transformation/pureGraph/from/V1_CoreTransformerHelper.js';
 import type { V1_GraphTransformerContext } from './v1/transformation/pureGraph/from/V1_GraphTransformerContext.js';
 import {
   V1_resolveBinding,
@@ -134,11 +132,12 @@ export class DSLExternalFormat_PureProtocolProcessorPlugin
             elementProtocol.name,
           );
           const element = getOwnBinding(path, context.currentSubGraph);
-          const schemaSet = elementProtocol.schemaSet
-            ? V1_resolveSchemaSet(elementProtocol.schemaSet, context)
-            : undefined;
           element.schemaId = elementProtocol.schemaId;
-          element.schemaSet = toOptionalPackageableElementReference(schemaSet);
+          element.schemaSet = optionalizePackageableElementReference(
+            elementProtocol.schemaSet
+              ? V1_resolveSchemaSet(elementProtocol.schemaSet, context)
+              : undefined,
+          );
 
           element.contentType = guaranteeNonEmptyString(
             elementProtocol.contentType,
@@ -301,7 +300,7 @@ export class DSLExternalFormat_PureProtocolProcessorPlugin
     ];
   }
 
-  override V1_getExtraExecutionInputGetters(): V1_ExecutionInputGetter[] {
+  override V1_getExtraExecutionInputCollectors(): V1_ExecutionInputCollector[] {
     return [
       (
         graph: PureModel,
@@ -315,8 +314,16 @@ export class DSLExternalFormat_PureProtocolProcessorPlugin
     ];
   }
 
-  override V1_getExtraSourceInformationKeys(): string[] {
-    return ['contentSourceInformation'];
+  override V1_getExtraMappingModelCoverageAnalysisInputCollectors(): V1_MappingModelCoverageAnalysisInputCollector[] {
+    return [
+      (
+        graph: PureModel,
+        protocolGraph: V1_PureModelContextData,
+      ): V1_PackageableElement[] =>
+        protocolGraph.elements.filter(
+          (element) => element instanceof V1_SchemaSet,
+        ),
+    ];
   }
 
   V1_getExtraConnectionBuilders(): V1_ConnectionBuilder[] {
@@ -371,7 +378,7 @@ export class DSLExternalFormat_PureProtocolProcessorPlugin
       ): V1_Connection | undefined => {
         if (metamodel instanceof ExternalFormatConnection) {
           const connection = new V1_ExternalFormatConnection();
-          connection.store = V1_transformElementReference(metamodel.store);
+          connection.store = metamodel.store.valueForSerialization ?? '';
           const urlStream = new V1_UrlStream();
           urlStream.url = metamodel.externalSource.url;
           connection.externalSource = urlStream;

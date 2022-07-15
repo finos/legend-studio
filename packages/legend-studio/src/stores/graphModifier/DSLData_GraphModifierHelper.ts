@@ -21,8 +21,15 @@ import {
   type ExternalFormatData,
   type ModelStoreData,
   type Class,
+  type DataElementReference,
+  type RelationalCSVDataTable,
+  type RelationalCSVData,
   observe_EmbeddedData,
+  observe_DataElement,
+  observe_RelationalDataTable,
+  PackageableElementExplicitReference,
 } from '@finos/legend-graph';
+import { addUniqueEntry, deleteEntry } from '@finos/legend-shared';
 import { action } from 'mobx';
 
 export const dataElement_setEmbeddedData = action(
@@ -50,5 +57,48 @@ export const externalFormatData_setData = action(
 export const modelStoreData_setInstance = action(
   (modelStoreData: ModelStoreData, value: Map<Class, object>): void => {
     modelStoreData.instances = value;
+  },
+);
+
+export const relationalData_setTableValues = action(
+  (data: RelationalCSVDataTable, values: string): void => {
+    data.values = values;
+  },
+);
+
+export const relationalData_setTableSchemaName = action(
+  (data: RelationalCSVDataTable, value: string): void => {
+    data.schema = value;
+  },
+);
+
+export const relationalData_addTable = action(
+  (data: RelationalCSVData, val: RelationalCSVDataTable): void => {
+    addUniqueEntry(data.tables, observe_RelationalDataTable(val));
+  },
+);
+
+export const relationalData_setTableName = action(
+  (data: RelationalCSVDataTable, value: string): void => {
+    data.table = value;
+  },
+);
+
+export const relationalData_deleteData = action(
+  (data: RelationalCSVData, val: RelationalCSVDataTable): void => {
+    deleteEntry(data.tables, val);
+  },
+);
+
+export const dataElementReference_setDataElement = action(
+  (
+    dataElementReference: DataElementReference,
+    value: DataElement,
+    context: ObserverContext,
+  ): void => {
+    dataElementReference.dataElement =
+      PackageableElementExplicitReference.create(
+        observe_DataElement(value, context),
+      );
   },
 );

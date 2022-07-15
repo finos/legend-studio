@@ -1,5 +1,31 @@
 # @finos/legend-extension-dsl-text
 
+## 3.1.0
+
+### Minor Changes
+
+- [#1282](https://github.com/finos/legend-studio/pull/1282) [`280b6bbe`](https://github.com/finos/legend-studio/commit/280b6bbe9ba88006f245fc36c2baa4179a72937d) ([@ijeh-i](https://github.com/ijeh-i)) - Support previewing `Markdown` in editor.
+
+## 3.0.8
+
+## 3.0.7
+
+## 3.0.6
+
+## 3.0.5
+
+## 3.0.4
+
+### Patch Changes
+
+- [#1236](https://github.com/finos/legend-studio/pull/1236) [`ed3da137`](https://github.com/finos/legend-studio/commit/ed3da13775cb37560dea814fc665bd1ff16c998d) ([@akphi](https://github.com/akphi)) - `Test.type` is now optional, when not provided, we will render the content as plain text.
+
+## 3.0.3
+
+## 3.0.2
+
+## 3.0.1
+
 ## 3.0.0
 
 ### Major Changes

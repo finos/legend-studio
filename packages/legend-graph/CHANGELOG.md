@@ -1,5 +1,61 @@
 # @finos/legend-graph
 
+## 10.1.1
+
+## 10.1.0
+
+### Minor Changes
+
+- [#1266](https://github.com/finos/legend-studio/pull/1266) [`7a967b82`](https://github.com/finos/legend-studio/commit/7a967b827c0e201df068c12ccbd0f3e4413bd8e6) ([@akphi](https://github.com/akphi)) - Support extension mechanism for `AbstractPureGraphManager` as the graph manager now hold a list of extensions (`AbstractPureGraphManagerExtension`) each of which must support a compatible protocol version with the graph manager.
+
+## 10.0.0
+
+### Major Changes
+
+- [#1257](https://github.com/finos/legend-studio/pull/1257) [`d8f3991b`](https://github.com/finos/legend-studio/commit/d8f3991b1130355b31f016d2a2f8059c436046c9) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Remove the required `clientVersion` call from execution-related methods in `AbstractPureGraphManager`, we will always assume `vX_X_X` is the chosen version until we come up with a more generic handling for protocol versions.
+
+* [#1257](https://github.com/finos/legend-studio/pull/1257) [`d8f3991b`](https://github.com/finos/legend-studio/commit/d8f3991b1130355b31f016d2a2f8059c436046c9) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Renamed `V1_getExtraExecutionInputGetters()` to `V1_getExtraExecutionInputCollectors()`.
+
+### Minor Changes
+
+- [#1195](https://github.com/finos/legend-studio/pull/1195) [`b429420`](https://github.com/finos/legend-studio/commit/b429420ec1fd56186233505657c40a046428cf2b) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Support `RelationalCSVData` models and serialization format for `ServiceTest`.
+
+* [#1259](https://github.com/finos/legend-studio/pull/1259) [`91afdec3`](https://github.com/finos/legend-studio/commit/91afdec3def61aeafa05783b8eb5d220503f98ec) ([@rafaelbey](https://github.com/rafaelbey)) - Expose builder utility function `V1_findSchema()` to find a schema on a given database (including `included` databases).
+
+- [#1186](https://github.com/finos/legend-studio/pull/1186) [`cce3d6d4`](https://github.com/finos/legend-studio/commit/cce3d6d4e28bdfec3626eb5775ba3cf45acc343d) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Introduced the mapping-analysis API from Engine.
+
+* [#1264](https://github.com/finos/legend-studio/pull/1264) [`e674c59c`](https://github.com/finos/legend-studio/commit/e674c59cc173856392a9abaf7c61475be55b6cd8) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add `generateVariableExpressionMockValue` to generate mock value for a variable expression.
+
+## 9.0.1
+
+## 9.0.0
+
+### Major Changes
+
+- [#1239](https://github.com/finos/legend-studio/pull/1239) [`4dacea12`](https://github.com/finos/legend-studio/commit/4dacea12f53e93eab6e53f29febe94c7693109e2) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Removed `V1_getExtraSourceInformationKeys` and `AbstractPureGraphManager.pruneSourceInformation` as we have refactored to do this more systematically. If you need to prune source information, you can still use `MetaModalUtils.pruneSourceInformation`, which is now configured to remove all fields with the suffix `sourceInformation`.
+
+  **BREAKING CHANGE:** `AbstractPureGraphManager.elementToEntity` now takes an `option: { pruneSourceInformation?: boolean }` instead of a boolean flag to determine if it should prune the source information.
+
+* [#1236](https://github.com/finos/legend-studio/pull/1236) [`ed3da137`](https://github.com/finos/legend-studio/commit/ed3da13775cb37560dea814fc665bd1ff16c998d) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Remove `hashValue` from `PackageableElementReference` and remove `V1_transformElementReference`.
+
+### Minor Changes
+
+- [#893](https://github.com/finos/legend-studio/pull/893) [`24ea81a8`](https://github.com/finos/legend-studio/commit/24ea81a83f97189f3c914d6b7f2561e191ad5e89) ([@gayathrir11](https://github.com/gayathrir11)) - Introduce extension mechanism consistently and exhaustively for class mapping
+
+### Patch Changes
+
+- [#1236](https://github.com/finos/legend-studio/pull/1236) [`ed3da137`](https://github.com/finos/legend-studio/commit/ed3da13775cb37560dea814fc665bd1ff16c998d) ([@akphi](https://github.com/akphi)) - Fix a regression where stubbed `enum-value mappings` are not properly detected ([#1237](https://github.com/finos/legend-studio/issues/1237)).
+
+## 8.0.3
+
+## 8.0.2
+
+## 8.0.1
+
+### Patch Changes
+
+- [#1216](https://github.com/finos/legend-studio/pull/1216) [`16b268f7`](https://github.com/finos/legend-studio/commit/16b268f75ba5b5d0c36223c4e391e5df2ac8220b) ([@gayathrir11](https://github.com/gayathrir11)) - Fix inaccurate change detection for inline mapping ([#1198](https://github.com/finos/legend-studio/issues/1198)).
+
 ## 8.0.0
 
 ### Major Changes

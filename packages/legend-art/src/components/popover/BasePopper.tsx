@@ -21,6 +21,8 @@ import {
 
 /**
  * Similar to `Popover` but does not come with a backdrop
+ *
+ * Clickaway and scroll are not blocked like `Popover`
  */
 export const BasePopper: React.FC<MuiPopperProps> = (props) => {
   const { children, ...otherProps } = props;

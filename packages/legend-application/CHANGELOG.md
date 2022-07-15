@@ -1,5 +1,57 @@
 # @finos/legend-application
 
+## 6.0.1
+
+## 6.0.0
+
+### Major Changes
+
+- [#1266](https://github.com/finos/legend-studio/pull/1266) [`7a967b82`](https://github.com/finos/legend-studio/commit/7a967b827c0e201df068c12ccbd0f3e4413bd8e6) ([@akphi](https://github.com/akphi)) - Moved `getExtraApplicationSetups()` from `LegendStudioPlugin` to `LegendApplicationPlugin`, also renamed type `ApplicationSetup` to `LegendApplicationSetup`.
+
+## 5.1.0
+
+### Minor Changes
+
+- [#1264](https://github.com/finos/legend-studio/pull/1264) [`e674c59c`](https://github.com/finos/legend-studio/commit/e674c59cc173856392a9abaf7c61475be55b6cd8) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add `setValueSpecification` to `BasicValueSpecificationEditor` for handling any post actions for changes in ValueSpecification.
+
+### Patch Changes
+
+- [#1257](https://github.com/finos/legend-studio/pull/1257) [`d8f3991b`](https://github.com/finos/legend-studio/commit/d8f3991b1130355b31f016d2a2f8059c436046c9) ([@akphi](https://github.com/akphi)) - Fix a problem with virtual assistant does not receive proper focus when other modal dialogs are open ([#1255](https://github.com/finos/legend-studio/issues/1255)).
+
+## 5.0.1
+
+## 5.0.0
+
+### Major Changes
+
+- [#1239](https://github.com/finos/legend-studio/pull/1239) [`4dacea12`](https://github.com/finos/legend-studio/commit/4dacea12f53e93eab6e53f29febe94c7693109e2) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Restructured documentation registry, each documentation entry now can also relate to other documentation (referring to others by their keys). Contextual documentation registry is now simplified to become a map between `context` and `documentation key`. As a result, in `LegendApplicationConfigurationData.documentation`, `contextualDocEntries` now becomes `contextualDocMap`, also, in `LegendApplicationPlugin`, `getExtraKeyedContextualDocumentationEntries()` now becomes `getExtraContextualDocumentationEntries()`. Renamed `LegendApplicationDocumentationEntryConfig` to `LegendApplicationDocumentationConfigEntry`.
+
+* [#1239](https://github.com/finos/legend-studio/pull/1239) [`4dacea12`](https://github.com/finos/legend-studio/commit/4dacea12f53e93eab6e53f29febe94c7693109e2) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Change `LegendApplication` contructor to take a `LegendApplicationConfigurationInput<T extends LegendApplicationConfigurationData>` to make it more scalable.
+
+### Minor Changes
+
+- [#1239](https://github.com/finos/legend-studio/pull/1239) [`4dacea12`](https://github.com/finos/legend-studio/commit/4dacea12f53e93eab6e53f29febe94c7693109e2) ([@akphi](https://github.com/akphi)) - Expose `execution plan viewer` component.
+
+* [#1239](https://github.com/finos/legend-studio/pull/1239) [`4dacea12`](https://github.com/finos/legend-studio/commit/4dacea12f53e93eab6e53f29febe94c7693109e2) ([@akphi](https://github.com/akphi)) - Support loading documentation regitry entries from an external source, e.g. `documentation.registry: [{ url: 'https://legend.finos.org/resource/studio/documentation' }]`; this config takes an additional flag `simple` when the endpoint is only just a `JSON` file and the server has a fairly relaxed `CORS` policy (Access-Control-Allow-Origin", "\*"), e.g. `documentation.registry: [{ url: 'https://legend.finos.org/resource/studio/documentation.json', simple: true }]`.
+
+  Also, we have finalized the order of overriding for documentation entries. The later will override the former in order:
+
+  - Natively specified: specified in the codebase (no overriding allowed within this group of documentation entries): _since we have extension mechanism, the order of plugins matter, we do not allow overriding, i.e. so the first specification for a documentation key wins_
+  - Fetched from documentation registries (no overriding allowed within this group of documentation entries): _since we have extension mechanism and allow specifying multiple registry URLS, we do not allow overriding, i.e. so the first specification for a documentation key wins_
+  - Configured in application config (overiding allowed within this group)
+
+  We also provided an extension mechanism to specify required documentation entries. When we build the documentation registry, we will check these keys and any documentation keys configured in the contextual documentation map to ensure the application documentation show up properly for crucial use cases. Missing entries will trigger warnings.
+
+### Patch Changes
+
+- [#1240](https://github.com/finos/legend-studio/pull/1240) [`7b5dfbee`](https://github.com/finos/legend-studio/commit/7b5dfbee145143cd8f08ce70d849691609310a50) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Add element path to element dropdown.
+
+## 4.0.3
+
+## 4.0.2
+
+## 4.0.1
+
 ## 4.0.0
 
 ### Major Changes

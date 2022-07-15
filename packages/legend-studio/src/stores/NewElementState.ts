@@ -30,7 +30,6 @@ import {
   guaranteeType,
   UnsupportedOperationError,
   guaranteeNonNullable,
-  guaranteeNonEmptyString,
 } from '@finos/legend-shared';
 import { decorateRuntimeWithNewMapping } from './editor-state/element-editor-state/RuntimeEditorState.js';
 import type { DSL_LegendStudioPlugin_Extension } from './LegendStudioPlugin.js';
@@ -73,10 +72,6 @@ import {
   DefaultH2AuthenticationStrategy,
   ModelGenerationSpecification,
   DataElement,
-  ExternalFormatData,
-  ModelStoreData,
-  DEPRECATED__SingleExecutionTest,
-  stub_Mapping,
   stub_RawLambda,
   stub_Database,
 } from '@finos/legend-graph';
@@ -93,17 +88,13 @@ import {
 import {
   service_initNewService,
   service_setExecution,
-  service_setLegacyTest,
 } from './graphModifier/DSLService_GraphModifierHelper.js';
 import type { EmbeddedDataTypeOption } from './editor-state/element-editor-state/data/DataEditorState.js';
-import {
-  externalFormatData_setData,
-  externalFormatData_setContentType,
-  dataElement_setEmbeddedData,
-  modelStoreData_setInstance,
-} from './graphModifier/DSLData_GraphModifierHelper.js';
+import { dataElement_setEmbeddedData } from './graphModifier/DSLData_GraphModifierHelper.js';
 import { PACKAGEABLE_ELEMENT_TYPE } from './shared/ModelUtil.js';
-import type { DSLData_LegendStudioPlugin_Extension } from './DSLData_LegendStudioPlugin_Extension.js';
+import type { PackageableElementOption } from '@finos/legend-application';
+import { EmbeddedDataType } from './editor-state/ExternalFormatState.js';
+import { createEmbeddedData } from './editor-state/element-editor-state/data/EmbeddedDataState.js';
 
 export const resolvePackageAndElementName = (
   _package: Package,
@@ -382,6 +373,65 @@ export class NewPackageableConnectionDriver extends NewElementDriver<Packageable
   }
 }
 
+export class NewServiceDriver extends NewElementDriver<Service> {
+  mappingOption?: PackageableElementOption<Mapping> | undefined;
+  constructor(editorStore: EditorStore) {
+    super(editorStore);
+
+    makeObservable(this, {
+      mappingOption: observable,
+      setMappingOption: action,
+      isValid: computed,
+      createElement: action,
+    });
+    this.mappingOption = editorStore.mappingOptions[0];
+  }
+
+  setMappingOption(val: PackageableElementOption<Mapping> | undefined): void {
+    this.mappingOption = val;
+  }
+
+  get isValid(): boolean {
+    return Boolean(this.mappingOption);
+  }
+
+  createElement(name: string): Service {
+    const mappingOption = guaranteeNonNullable(this.mappingOption);
+    const _mapping = mappingOption.value;
+    const mapping = PackageableElementExplicitReference.create(_mapping);
+    const service = new Service(name);
+    const runtimes =
+      this.editorStore.graphManagerState.graph.ownRuntimes.concat(
+        this.editorStore.graphManagerState.graph.dependencyManager.runtimes,
+      );
+    const compatibleRuntimes = runtimes.filter((runtime) =>
+      runtime.runtimeValue.mappings.map((m) => m.value).includes(_mapping),
+    );
+    let runtimeValue: Runtime;
+    if (compatibleRuntimes.length) {
+      runtimeValue = (compatibleRuntimes[0] as PackageableRuntime).runtimeValue;
+    } else {
+      const engineRuntime = new EngineRuntime();
+      runtime_addMapping(engineRuntime, mapping);
+      decorateRuntimeWithNewMapping(engineRuntime, _mapping, this.editorStore);
+      runtimeValue = engineRuntime;
+    }
+    service_setExecution(
+      service,
+      new PureSingleExecution(stub_RawLambda(), service, mapping, runtimeValue),
+      this.editorStore.changeDetectionState.observerContext,
+    );
+    service_initNewService(service);
+    const currentUserId =
+      this.editorStore.graphManagerState.graphManager.TEMPORARY__getEngineConfig()
+        .currentUserId;
+    if (currentUserId) {
+      service.owners = [currentUserId];
+    }
+    return service;
+  }
+}
+
 export class NewFileGenerationDriver extends NewElementDriver<FileGenerationSpecification> {
   typeOption?: FileGenerationTypeOption | undefined;
 
@@ -445,11 +495,6 @@ export class NewGenerationSpecificationDriver extends NewElementDriver<Generatio
   }
 }
 
-export enum EmbeddedDataTypeOptions {
-  EXTERNAL_FORMAT_DATA = 'ExternalFormat',
-  MODEL_STORE_DATA = 'ModelStore',
-}
-
 export class NewDataElementDriver extends NewElementDriver<DataElement> {
   embeddedDataOption?: EmbeddedDataTypeOption | undefined;
 
@@ -462,8 +507,8 @@ export class NewDataElementDriver extends NewElementDriver<DataElement> {
     });
 
     this.embeddedDataOption = {
-      label: EmbeddedDataTypeOptions.EXTERNAL_FORMAT_DATA,
-      value: EmbeddedDataTypeOptions.EXTERNAL_FORMAT_DATA,
+      label: EmbeddedDataType.EXTERNAL_FORMAT_DATA,
+      value: EmbeddedDataType.EXTERNAL_FORMAT_DATA,
     };
   }
 
@@ -472,65 +517,17 @@ export class NewDataElementDriver extends NewElementDriver<DataElement> {
   }
 
   createElement(name: string): DataElement {
+    const embeddedDataOption = guaranteeNonNullable(this.embeddedDataOption);
     const dataElement = new DataElement(name);
-    if (
-      this.embeddedDataOption?.value ===
-      EmbeddedDataTypeOptions.EXTERNAL_FORMAT_DATA
-    ) {
-      const externalFormatData = new ExternalFormatData();
-      externalFormatData_setData(externalFormatData, '');
-      externalFormatData_setContentType(
-        externalFormatData,
-        guaranteeNonEmptyString(
-          this.editorStore.graphState.graphGenerationState.externalFormatState
-            .formatContentTypes[0],
-        ),
-      );
-      dataElement_setEmbeddedData(
-        dataElement,
-        externalFormatData,
-        this.editorStore.changeDetectionState.observerContext,
-      );
-      return dataElement;
-    } else if (
-      this.embeddedDataOption?.value ===
-      EmbeddedDataTypeOptions.MODEL_STORE_DATA
-    ) {
-      const modelStoreData = new ModelStoreData();
-      modelStoreData_setInstance(modelStoreData, new Map<Class, object>());
-      dataElement_setEmbeddedData(
-        dataElement,
-        modelStoreData,
-        this.editorStore.changeDetectionState.observerContext,
-      );
-      return dataElement;
-    } else {
-      const extraEmbeddedDataCreator = this.editorStore.pluginManager
-        .getStudioPlugins()
-        .flatMap(
-          (plugin) =>
-            (
-              plugin as DSLData_LegendStudioPlugin_Extension
-            ).getExtraEmbeddedDataCreators?.() ?? [],
-        );
-      for (const creator of extraEmbeddedDataCreator) {
-        const embeddedData = creator(
-          guaranteeNonEmptyString(this.embeddedDataOption?.value),
-        );
-        if (embeddedData) {
-          dataElement_setEmbeddedData(
-            dataElement,
-            embeddedData,
-            this.editorStore.changeDetectionState.observerContext,
-          );
-          return dataElement;
-        }
-      }
-      throw new UnsupportedOperationError(
-        `Can't create embedded data: no compatible creators available from plugins`,
-        this.embeddedDataOption?.value,
-      );
-    }
+
+    const data = createEmbeddedData(embeddedDataOption.value, this.editorStore);
+    dataElement_setEmbeddedData(
+      dataElement,
+      data,
+      this.editorStore.changeDetectionState.observerContext,
+    );
+
+    return dataElement;
   }
 
   get isValid(): boolean {
@@ -627,6 +624,9 @@ export class NewElementState {
           break;
         case PACKAGEABLE_ELEMENT_TYPE.DATA:
           driver = new NewDataElementDriver(this.editorStore);
+          break;
+        case PACKAGEABLE_ELEMENT_TYPE.SERVICE:
+          driver = new NewServiceDriver(this.editorStore);
           break;
         default: {
           const extraNewElementDriverCreators = this.editorStore.pluginManager
@@ -776,49 +776,8 @@ export class NewElementState {
         element = new Database(name);
         break;
       case PACKAGEABLE_ELEMENT_TYPE.SERVICE: {
-        const service = new Service(name);
-        // since it does not really make sense to start with the first available mapping, we start with a stub
-        const mapping = stub_Mapping();
-        const runtimes =
-          this.editorStore.graphManagerState.graph.ownRuntimes.filter(
-            (runtime) =>
-              runtime.runtimeValue.mappings
-                .map((m) => m.value)
-                .includes(mapping),
-          );
-        let runtimeValue: Runtime;
-        if (runtimes.length) {
-          runtimeValue = (runtimes[0] as PackageableRuntime).runtimeValue;
-        } else {
-          runtimeValue = new EngineRuntime();
-          decorateRuntimeWithNewMapping(
-            runtimeValue,
-            mapping,
-            this.editorStore,
-          );
-        }
-        service_setLegacyTest(
-          service,
-          new DEPRECATED__SingleExecutionTest(service, ''),
-        );
-        service_setExecution(
-          service,
-          new PureSingleExecution(
-            stub_RawLambda(),
-            service,
-            PackageableElementExplicitReference.create(mapping),
-            runtimeValue,
-          ),
-          this.editorStore.changeDetectionState.observerContext,
-        );
-        service_initNewService(service);
-        const currentUserId =
-          this.editorStore.graphManagerState.graphManager.TEMPORARY__getEngineConfig()
-            .currentUserId;
-        if (currentUserId) {
-          service.owners = [currentUserId];
-        }
-        element = service;
+        element =
+          this.getNewElementDriver(NewServiceDriver).createElement(name);
         break;
       }
       case PACKAGEABLE_ELEMENT_TYPE.CONNECTION:

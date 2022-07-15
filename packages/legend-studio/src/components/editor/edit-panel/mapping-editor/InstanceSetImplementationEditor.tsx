@@ -42,10 +42,10 @@ import {
 } from '../../../../stores/editor-state/element-editor-state/mapping/PureInstanceSetImplementationState.js';
 import { guaranteeNonNullable, noop } from '@finos/legend-shared';
 import {
-  type MappingElementSource,
   getMappingElementSource,
   MappingEditorState,
   getEmbeddedSetImplementations,
+  type MappingElementSource,
 } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState.js';
 import { TypeTree } from '../../../shared/TypeTree.js';
 import { FlatDataRecordTypeTree } from './FlatDataRecordTypeTree.js';
@@ -86,6 +86,7 @@ import {
 } from '@finos/legend-graph';
 import { StudioLambdaEditor } from '../../../shared/StudioLambdaEditor.js';
 import type { EditorStore } from '../../../../stores/EditorStore.js';
+import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../../stores/DSLMapping_LegendStudioPlugin_Extension.js';
 
 export const InstanceSetImplementationSourceExplorer = observer(
   (props: {
@@ -144,13 +145,11 @@ export const InstanceSetImplementationSourceExplorer = observer(
     const hideSourceSelectorModal = (): void =>
       setSourceElementForSourceSelectorModal(undefined);
     // Drag and Drop
-    /* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
     const dndType = [
       CORE_DND_TYPE.PROJECT_EXPLORER_CLASS,
       CORE_DND_TYPE.PROJECT_EXPLORER_FLAT_DATA,
       CORE_DND_TYPE.PROJECT_EXPLORER_DATABASE,
     ];
-    /* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
     // smartly analyze the content of the source and automatically assign it or its sub-part
     // as class mapping source when possible
     const changeClassMappingSourceDriver = useCallback(
@@ -266,11 +265,28 @@ export const InstanceSetImplementationSourceExplorer = observer(
     ) {
       return null;
     }
+    const extraInstanceSetImplementationBlockingErrorCheckers =
+      editorStore.pluginManager
+        .getStudioPlugins()
+        .flatMap(
+          (plugin) =>
+            (
+              plugin as DSLMapping_LegendStudioPlugin_Extension
+            ).getExtraInstanceSetImplementationBlockingErrorCheckers?.() ?? [],
+        );
+    let hasParseError = false;
+    for (const checker of extraInstanceSetImplementationBlockingErrorCheckers) {
+      const instanceSetImplementationBlockingErrorChecker = checker(
+        instanceSetImplementationState,
+      );
+      if (instanceSetImplementationBlockingErrorChecker) {
+        hasParseError = instanceSetImplementationBlockingErrorChecker;
+      }
+    }
     return (
       <div
         data-testid={LEGEND_STUDIO_TEST_ID.SOURCE_PANEL}
         className={clsx('panel source-panel', {
-          /* @MARKER: NEW CLASS MAPPING TYPE SUPPORT --- consider adding class mapping type handler here whenever support for a new one is added to the app */
           backdrop__element:
             (instanceSetImplementationState instanceof
             PureInstanceSetImplementationState
@@ -279,7 +295,8 @@ export const InstanceSetImplementationSourceExplorer = observer(
             (instanceSetImplementationState instanceof
             FlatDataInstanceSetImplementationState
               ? instanceSetImplementationState.hasParserError
-              : false),
+              : false) ||
+            hasParseError,
         })}
       >
         <div className="panel__header">
@@ -302,64 +319,65 @@ export const InstanceSetImplementationSourceExplorer = observer(
           </div>
         </div>
         <div ref={dropRef} className="panel__content dnd__dropzone">
-          {srcElement && isDragOver && !isReadOnly && (
-            <div className="dnd__overlay"></div>
-          )}
-          {srcElement && (
-            <div className="source-panel__explorer">
-              {srcElement instanceof Type && (
-                <TypeTree
-                  type={srcElement}
-                  selectedType={instanceSetImplementationState.selectedType}
-                />
-              )}
-              {srcElement instanceof RootFlatDataRecordType && (
-                <FlatDataRecordTypeTree
-                  recordType={srcElement}
-                  selectedType={instanceSetImplementationState.selectedType}
-                />
-              )}
-              {srcElement instanceof TableAlias && (
-                <TableOrViewSourceTree
-                  relation={srcElement.relation.value}
-                  selectedType={instanceSetImplementationState.selectedType}
-                />
-              )}
-            </div>
-          )}
-          {!srcElement && (
-            <BlankPanelPlaceholder
-              placeholderText="Choose a source"
-              onClick={showSourceSelectorModal}
-              clickActionType="add"
-              tooltipText="Drop a class mapping source, or click to choose one"
-              dndProps={{
-                isDragOver: isDragOver && !isReadOnly,
-                canDrop: canDrop && !isReadOnly,
-              }}
-              readOnlyProps={
-                !isReadOnly
-                  ? undefined
-                  : {
-                      placeholderText: 'No source',
-                    }
-              }
-            />
-          )}
-          {isUnsupported && (
-            <UnsupportedEditorPanel
-              isReadOnly={isReadOnly}
-              text={`Can't display class mapping source in form mode`}
-            ></UnsupportedEditorPanel>
-          )}
-          {sourceElementForSourceSelectorModal !== undefined && (
-            <InstanceSetImplementationSourceSelectorModal
-              mappingEditorState={mappingEditorState}
-              setImplementation={setImplementation}
-              sourceElementToSelect={sourceElementForSourceSelectorModal}
-              closeModal={hideSourceSelectorModal}
-            />
-          )}
+          <>
+            {srcElement && isDragOver && !isReadOnly && (
+              <div className="dnd__overlay" />
+            )}
+            {srcElement ? (
+              <div className="source-panel__explorer">
+                {srcElement instanceof Type && (
+                  <TypeTree
+                    type={srcElement}
+                    selectedType={instanceSetImplementationState.selectedType}
+                  />
+                )}
+                {srcElement instanceof RootFlatDataRecordType && (
+                  <FlatDataRecordTypeTree
+                    recordType={srcElement}
+                    selectedType={instanceSetImplementationState.selectedType}
+                  />
+                )}
+                {srcElement instanceof TableAlias && (
+                  <TableOrViewSourceTree
+                    relation={srcElement.relation.value}
+                    selectedType={instanceSetImplementationState.selectedType}
+                  />
+                )}
+              </div>
+            ) : (
+              <BlankPanelPlaceholder
+                placeholderText="Choose a source"
+                onClick={showSourceSelectorModal}
+                clickActionType="add"
+                tooltipText="Drop a class mapping source, or click to choose one"
+                dndProps={{
+                  isDragOver: isDragOver && !isReadOnly,
+                  canDrop: canDrop && !isReadOnly,
+                }}
+                readOnlyProps={
+                  !isReadOnly
+                    ? undefined
+                    : {
+                        placeholderText: 'No source',
+                      }
+                }
+              />
+            )}
+            {isUnsupported && (
+              <UnsupportedEditorPanel
+                isReadOnly={isReadOnly}
+                text={`Can't display class mapping source in form mode`}
+              ></UnsupportedEditorPanel>
+            )}
+            {sourceElementForSourceSelectorModal !== undefined && (
+              <InstanceSetImplementationSourceSelectorModal
+                mappingEditorState={mappingEditorState}
+                setImplementation={setImplementation}
+                sourceElementToSelect={sourceElementForSourceSelectorModal}
+                closeModal={hideSourceSelectorModal}
+              />
+            )}
+          </>
         </div>
       </div>
     );

@@ -34,7 +34,7 @@ export class RootServiceInstanceSetImplementation
     return hashArray([
       SERVICE_STORE_HASH_STRUCTURE.ROOT_SERVICE_STORE_CLASS_MAPPING,
       this.id.valueForSerialization ?? '',
-      this.class.hashValue,
+      this.class.valueForSerialization ?? '',
       this.root.valueForSerialization.toString(),
       hashArray(this.localMappingProperties),
       hashArray(this.servicesMapping),

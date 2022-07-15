@@ -43,6 +43,7 @@ import {
   FlatDataPropertyMapping,
   getEnumerationMappingsByEnumeration,
   getRawGenericType,
+  OptionalEnumerationMappingExplicitReference,
 } from '@finos/legend-graph';
 import { StudioLambdaEditor } from '../../../shared/StudioLambdaEditor.js';
 import { flatDataPropertyMapping_setTransformer } from '../../../../stores/graphModifier/StoreFlatData_GraphModifierHelper.js';
@@ -122,8 +123,8 @@ const EnumerationPropertyMappingEditor = observer(
       propertyMapping.property.value.genericType.value,
       Enumeration,
     );
-    const expectedType = propertyMapping.transformer
-      ? propertyMapping.transformer.sourceType.value
+    const expectedType = propertyMapping.transformer.value
+      ? propertyMapping.transformer.value.sourceType.value
       : enumeration;
     const onExpectedTypeLabelSelect = (): void =>
       propertyMappingState.instanceSetImplementationState.setSelectedType(
@@ -138,16 +139,23 @@ const EnumerationPropertyMappingEditor = observer(
       mappingEditorState.mapping,
       enumeration,
     ).map((em) => ({ value: em, label: em.id.value }));
-    const transformer = propertyMapping.transformer?.id.value ?? '';
+    const transformerLabel = propertyMapping.transformer.valueForSerialization;
     const handleSelectionChange = (
       val: { label: string; value: EnumerationMapping } | null,
     ): void =>
-      flatDataPropertyMapping_setTransformer(propertyMapping, val?.value);
+      flatDataPropertyMapping_setTransformer(
+        propertyMapping,
+        OptionalEnumerationMappingExplicitReference.create(val?.value),
+      );
     // Walker
     const visit = (): void => {
-      const currentTransformer = propertyMapping.transformer;
-      if (currentTransformer) {
-        mappingEditorState.openMappingElement(currentTransformer, true);
+      const currentTransformerEnumerationMaping =
+        propertyMapping.transformer.value;
+      if (currentTransformerEnumerationMaping) {
+        mappingEditorState.openMappingElement(
+          currentTransformerEnumerationMaping,
+          true,
+        );
       } else {
         if (!isReadOnly) {
           mappingEditorState.createMappingElement({
@@ -160,7 +168,9 @@ const EnumerationPropertyMappingEditor = observer(
               if (newEnumerationMapping instanceof EnumerationMapping) {
                 flatDataPropertyMapping_setTransformer(
                   propertyMapping,
-                  newEnumerationMapping,
+                  OptionalEnumerationMappingExplicitReference.create(
+                    newEnumerationMapping,
+                  ),
                 );
               }
             },
@@ -182,7 +192,7 @@ const EnumerationPropertyMappingEditor = observer(
               disabled={options.length <= 1 || isReadOnly}
               options={options}
               onChange={handleSelectionChange}
-              value={{ value: transformer, label: transformer }}
+              value={{ value: transformerLabel, label: transformerLabel }}
               placeholder={`Select an existing enumeration mapping`}
             />
             <button

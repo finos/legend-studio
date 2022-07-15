@@ -31,7 +31,6 @@ import {
 import {
   V1_transformElementReferencePointer,
   V1_initPackageableElement,
-  V1_transformElementReference,
 } from './V1_CoreTransformerHelper.js';
 
 // ----------------------------------------------- GENERATION SPECIFICATION ----------------------------------------
@@ -40,9 +39,8 @@ const transformGenerationTreeNode = (
   element: GenerationTreeNode,
 ): V1_GenerationTreeNode => {
   const treeNode = new V1_GenerationTreeNode();
-  treeNode.generationElement = V1_transformElementReference(
-    element.generationElement,
-  );
+  treeNode.generationElement =
+    element.generationElement.valueForSerialization ?? '';
   treeNode.id = element.id;
   return treeNode;
 };

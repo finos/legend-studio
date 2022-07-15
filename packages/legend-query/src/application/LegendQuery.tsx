@@ -17,11 +17,11 @@
 import { createRoot } from 'react-dom/client';
 import {
   type LegendApplicationConfig,
-  type LegendApplicationVersionData,
   ApplicationStoreProvider,
   LegendApplication,
   setupLegendApplicationUILibrary,
   WebApplicationNavigatorProvider,
+  type LegendApplicationConfigurationInput,
 } from '@finos/legend-application';
 import { configure as configureReactHotkeys } from 'react-hotkeys';
 import { ModuleRegistry as agGrid_ModuleRegistry } from '@ag-grid-community/core';
@@ -29,7 +29,7 @@ import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-mod
 import { BrowserRouter } from 'react-router-dom';
 import { LegendQueryApplication } from '../components/LegendQueryApplication.js';
 import { LegendQueryPluginManager } from './LegendQueryPluginManager.js';
-import { Query_GraphPreset } from '../models/Query_GraphPreset.js';
+import { QueryBuilder_GraphPreset } from '../models/QueryBuilder_GraphPreset.js';
 import { getRootElement } from '@finos/legend-art';
 import { CorePureGraphManagerPlugin } from '@finos/legend-graph';
 import {
@@ -56,16 +56,14 @@ export class LegendQuery extends LegendApplication {
   static create(): LegendQuery {
     const application = new LegendQuery(LegendQueryPluginManager.create());
     application.withBasePlugins([new CorePureGraphManagerPlugin()]);
-    application.withBasePresets([new Query_GraphPreset()]);
+    application.withBasePresets([new QueryBuilder_GraphPreset()]);
     return application;
   }
 
   async configureApplication(
-    configData: LegendQueryConfigurationData,
-    versionData: LegendApplicationVersionData,
-    baseUrl: string,
+    input: LegendApplicationConfigurationInput<LegendQueryConfigurationData>,
   ): Promise<LegendApplicationConfig> {
-    return new LegendQueryConfig(configData, versionData, baseUrl);
+    return new LegendQueryConfig(input);
   }
 
   async loadApplication(): Promise<void> {

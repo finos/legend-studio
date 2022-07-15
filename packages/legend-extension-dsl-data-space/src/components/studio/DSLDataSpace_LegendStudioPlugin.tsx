@@ -34,26 +34,23 @@ import {
   LegendStudioPlugin,
 } from '@finos/legend-studio';
 import { SquareIcon } from '@finos/legend-art';
-import type { PackageableElement } from '@finos/legend-graph';
+import {
+  PackageableElementExplicitReference,
+  stub_Mapping,
+  stub_PackageableRuntime,
+  type PackageableElement,
+} from '@finos/legend-graph';
 import {
   DataSpace,
   DataSpaceExecutionContext,
 } from '../../models/metamodels/pure/model/packageableElements/dataSpace/DSLDataSpace_DataSpace.js';
-import { LATEST_VERSION_ALIAS } from '@finos/legend-server-depot';
-import {
-  collectKeyedDocumnetationEntriesFromConfig,
-  type LegendApplicationDocumentationEntry,
-  type LegendApplicationKeyedDocumentationEntry,
-} from '@finos/legend-application';
-import {
-  DSL_DATA_SPACE_DOCUMENTATION_ENTRIES,
-  DSL_DATA_SPACE_LEGEND_STUDIO_DOCUMENTATION_KEY,
-} from './DSLDataSpace_LegendStudioDocumentation.js';
+import { DSL_DATA_SPACE_LEGEND_STUDIO_DOCUMENTATION_KEY } from './DSLDataSpace_LegendStudioDocumentation.js';
 import {
   PURE_GRAMMAR_DATA_SPACE_ELEMENT_TYPE_LABEL,
   PURE_GRAMMAR_DATA_SPACE_PARSER_NAME,
 } from '../../graphManager/DSLDataSpace_PureGraphManagerPlugin.js';
 import { SIMPLE_DATA_SPACE_SNIPPET } from './DSLDataSpace_CodeSnippets.js';
+import type { LegendApplicationDocumentationEntry } from '@finos/legend-application';
 
 const DATA_SPACE_ELEMENT_TYPE = 'DATA SPACE';
 const DATA_SPACE_ELEMENT_PROJECT_EXPLORER_DND_TYPE =
@@ -67,10 +64,11 @@ export class DSLDataSpace_LegendStudioPlugin
     super(packageJson.extensions.studioPlugin, packageJson.version);
   }
 
-  override getExtraKeyedDocumentationEntries(): LegendApplicationKeyedDocumentationEntry[] {
-    return collectKeyedDocumnetationEntriesFromConfig(
-      DSL_DATA_SPACE_DOCUMENTATION_ENTRIES,
-    );
+  override getExtraRequiredDocumentationKeys(): string[] {
+    return [
+      DSL_DATA_SPACE_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_ELEMENT_DATA_SPACE,
+      DSL_DATA_SPACE_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER,
+    ];
   }
 
   getExtraSupportedElementTypes(): string[] {
@@ -112,15 +110,14 @@ export class DSLDataSpace_LegendStudioPlugin
       ): PackageableElement | undefined => {
         if (type === DATA_SPACE_ELEMENT_TYPE) {
           const dataSpace = new DataSpace(name);
-          dataSpace.groupId =
-            state.editorStore.projectConfigurationEditorState.currentProjectConfiguration.groupId;
-          dataSpace.artifactId =
-            state.editorStore.projectConfigurationEditorState.currentProjectConfiguration.artifactId;
-          dataSpace.versionId = LATEST_VERSION_ALIAS;
           const dataSpaceExecutionContext = new DataSpaceExecutionContext();
           dataSpaceExecutionContext.name = 'dummyContext';
-          dataSpaceExecutionContext.mapping = 'dummyMapping';
-          dataSpaceExecutionContext.defaultRuntime = 'dummyRuntime';
+          dataSpaceExecutionContext.mapping =
+            PackageableElementExplicitReference.create(stub_Mapping());
+          dataSpaceExecutionContext.defaultRuntime =
+            PackageableElementExplicitReference.create(
+              stub_PackageableRuntime(),
+            );
           dataSpace.executionContexts = [dataSpaceExecutionContext];
           dataSpace.defaultExecutionContext = dataSpaceExecutionContext;
           return dataSpace;
@@ -220,7 +217,6 @@ export class DSLDataSpace_LegendStudioPlugin
           ? [
               {
                 text: PURE_GRAMMAR_DATA_SPACE_ELEMENT_TYPE_LABEL,
-                description: 'simple',
                 insertText: SIMPLE_DATA_SPACE_SNIPPET,
               },
             ]

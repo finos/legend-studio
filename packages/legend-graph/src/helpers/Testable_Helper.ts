@@ -20,6 +20,10 @@ import type { PureGraphManagerPlugin } from '../graphManager/PureGraphManagerPlu
 import { PackageableElement } from '../models/metamodels/pure/packageableElements/PackageableElement.js';
 import type { Testable } from '../models/metamodels/pure/test/Testable.js';
 
+export const DEFAULT_TEST_SUITE_PREFIX = 'testSuite';
+export const DEFAULT_TEST_PREFIX = 'test';
+export const DEFAULT_TEST_ASSERTION_PREFIX = 'assertion';
+
 export const getNullableTestable = (
   id: string,
   graph: PureModel,

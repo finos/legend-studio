@@ -398,7 +398,9 @@ export class EditorGraphState {
           const entity =
             this.editorStore.graphManagerState.graphManager.elementToEntity(
               element,
-              true,
+              {
+                pruneSourceInformation: true,
+              },
             );
           entityChanges.push({
             classifierPath: entity.classifierPath,
@@ -1109,7 +1111,7 @@ export class EditorGraphState {
               return new ProjectDependencyCoordinates(
                 projectData.groupId,
                 projectData.artifactId,
-                dep.versionId.id,
+                dep.versionId,
               );
             });
         } else {
@@ -1117,7 +1119,7 @@ export class EditorGraphState {
             new ProjectDependencyCoordinates(
               guaranteeNonNullable(dep.groupId),
               guaranteeNonNullable(dep.artifactId),
-              dep.versionId.id,
+              dep.versionId,
             ),
           );
         }

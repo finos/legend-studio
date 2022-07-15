@@ -20,8 +20,9 @@ import TEST_DATA__SimpleRelationalInheritanceModel from '../../stores/__tests__/
 import TEST_DATA__COVIDDataSimpleModel from './TEST_DATA__QueryBuilder_Model_COVID.json';
 import TEST_DATA_AssociationMappingModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_AssociationMappingModel.json';
 import {
-  integrationTest,
   type TEMPORARRY__JestMatcher,
+  type PlainObject,
+  integrationTest,
 } from '@finos/legend-shared';
 import type { Entity } from '@finos/legend-model-storage';
 import {
@@ -31,15 +32,16 @@ import {
   type AbstractProperty,
   type GraphManagerState,
   type Mapping,
+  type MappingModelCoverageAnalysisResult,
 } from '@finos/legend-graph';
 import {
   type QueryBuilderPropertyMappingData,
-  getPropertyNodeMappingData,
   getRootMappingData,
+  generatePropertyNodeMappingData,
 } from '../../stores/QueryBuilderExplorerState.js';
 import { LegendQueryPluginManager } from '../../application/LegendQueryPluginManager.js';
-import { Query_GraphPreset } from '../../models/Query_GraphPreset.js';
-import { TEST__provideMockedLegendQueryStore } from '../../components/QueryComponentTestUtils.js';
+import { QueryBuilder_GraphPreset } from '../../models/QueryBuilder_GraphPreset.js';
+import { TEST__provideMockedLegendQueryStore } from '../../components/LegendQueryComponentTestUtils.js';
 import {
   TEST_DATA__Auto_M2M,
   TEST_DATA__Relational_Inline,
@@ -52,6 +54,14 @@ import {
   EXPECTED__MappingData__Relational_Inheritance,
   EXPECTED__MappingData__Relational_Inline,
 } from './TEST_DATA__Expected_MappingData.js';
+import {
+  Mocked_ModelCoverageAnalyticsResult_AssociationMappingModel,
+  Mocked_ModelCoverageAnalyticsResult_Auto_M2M,
+  Mocked_ModelCoverageAnalyticsResult_ComplexM2MModel,
+  Mocked_ModelCoverageAnalyticsResult_COVIDDataSimpleModel,
+  Mocked_ModelCoverageAnalyticsResult_Relational_Inline,
+  Mocked_ModelCoverageAnalyticsResult_SimpleRelationalInheritanceModel,
+} from './TEST_DATA__Mocked_ModelCoverageAnalyticsResult.js';
 
 interface NodePropertyMappingData {
   property: AbstractProperty;
@@ -74,6 +84,7 @@ type TestCase = [
     rootClass: string;
     expectedMappingData: TestNodePropertyMappingData[];
     entities: Entity[];
+    rawMappingModelCoverageAnalysisResult: PlainObject<unknown>;
     maxDepth?: number;
   },
 ];
@@ -87,6 +98,8 @@ const cases: TestCase[] = [
       expectedMappingData:
         EXPECTED__MappingData_ComplexM2MModel as TestNodePropertyMappingData[],
       entities: TEST_DATA__ComplexM2MModel,
+      rawMappingModelCoverageAnalysisResult:
+        Mocked_ModelCoverageAnalyticsResult_ComplexM2MModel,
     },
   ],
   [
@@ -97,6 +110,8 @@ const cases: TestCase[] = [
       expectedMappingData:
         EXPECTED__MappingData__COVIDDataSimpleModel as TestNodePropertyMappingData[],
       entities: TEST_DATA__COVIDDataSimpleModel,
+      rawMappingModelCoverageAnalysisResult:
+        Mocked_ModelCoverageAnalyticsResult_COVIDDataSimpleModel,
     },
   ],
   [
@@ -107,6 +122,8 @@ const cases: TestCase[] = [
       expectedMappingData:
         EXPECTED__MappingData__Auto_M2M as TestNodePropertyMappingData[],
       entities: TEST_DATA__Auto_M2M,
+      rawMappingModelCoverageAnalysisResult:
+        Mocked_ModelCoverageAnalyticsResult_Auto_M2M,
     },
   ],
   [
@@ -117,6 +134,8 @@ const cases: TestCase[] = [
       expectedMappingData:
         EXPECTED__MappingData__Relational_Inline as TestNodePropertyMappingData[],
       entities: TEST_DATA__Relational_Inline,
+      rawMappingModelCoverageAnalysisResult:
+        Mocked_ModelCoverageAnalyticsResult_Relational_Inline,
     },
   ],
   [
@@ -127,6 +146,8 @@ const cases: TestCase[] = [
       expectedMappingData:
         EXPECTED__MappingData__Relational_Inheritance as TestNodePropertyMappingData[],
       entities: TEST_DATA__SimpleRelationalInheritanceModel,
+      rawMappingModelCoverageAnalysisResult:
+        Mocked_ModelCoverageAnalyticsResult_SimpleRelationalInheritanceModel,
     },
   ],
   [
@@ -138,6 +159,8 @@ const cases: TestCase[] = [
         EXPECTED__MappingData__AssociationMapping as TestNodePropertyMappingData[],
       entities: TEST_DATA_AssociationMappingModel,
       maxDepth: 2,
+      rawMappingModelCoverageAnalysisResult:
+        Mocked_ModelCoverageAnalyticsResult_AssociationMappingModel,
     },
   ],
 ];
@@ -148,17 +171,17 @@ const buildMappingData = (
   mappingData: QueryBuilderPropertyMappingData,
   max_depth: number,
   mapping: Mapping,
+  mappingModelCoverageAnalysisResult: MappingModelCoverageAnalysisResult,
   current_depth?: number | undefined,
 ): NodePropertyMappingData => {
   const depth = current_depth === undefined ? 0 : current_depth;
   const type = property.genericType.value.rawType;
   const propertyMappingData: NodePropertyMappingData = {
     property,
-    mappingData: getPropertyNodeMappingData(
-      graphManagerState,
+    mappingData: generatePropertyNodeMappingData(
       property,
       mappingData,
-      mapping,
+      mappingModelCoverageAnalysisResult,
     ),
     childNodes: [],
   };
@@ -174,6 +197,7 @@ const buildMappingData = (
           propertyMappingData.mappingData,
           max_depth,
           mapping,
+          mappingModelCoverageAnalysisResult,
           depth + 1,
         ),
       );
@@ -186,14 +210,22 @@ const generatePropertyMappingDataTree = (
   mapping: Mapping,
   _class: Class,
   graphManagerState: GraphManagerState,
+  modelCoverageAnalysisResult: MappingModelCoverageAnalysisResult,
   max_depth: number,
 ): NodePropertyMappingData[] => {
-  const mappingData = getRootMappingData(mapping, _class);
+  const mappingData = getRootMappingData(_class, modelCoverageAnalysisResult);
   const properties = getAllClassProperties(_class).concat(
     getAllClassDerivedProperties(_class),
   );
   return properties.map((p) =>
-    buildMappingData(p, graphManagerState, mappingData, max_depth, mapping),
+    buildMappingData(
+      p,
+      graphManagerState,
+      mappingData,
+      max_depth,
+      mapping,
+      modelCoverageAnalysisResult,
+    ),
   );
 };
 
@@ -212,10 +244,16 @@ describe(integrationTest('Build property mapping data'), () => {
   test.each(cases)(
     '%s',
     async (testName: TestCase[0], testCase: TestCase[1]) => {
-      const { mapping, rootClass, expectedMappingData, entities, maxDepth } =
-        testCase;
+      const {
+        mapping,
+        rootClass,
+        expectedMappingData,
+        entities,
+        maxDepth,
+        rawMappingModelCoverageAnalysisResult,
+      } = testCase;
       const pluginManager = LegendQueryPluginManager.create();
-      pluginManager.usePresets([new Query_GraphPreset()]).install();
+      pluginManager.usePresets([new QueryBuilder_GraphPreset()]).install();
       const mockedQueryStore = TEST__provideMockedLegendQueryStore({
         pluginManager,
       });
@@ -233,6 +271,9 @@ describe(integrationTest('Build property mapping data'), () => {
         _mapping,
         _class,
         graphManagerState,
+        graphManagerState.graphManager.buildMappingModelCoverageAnalysisResult(
+          rawMappingModelCoverageAnalysisResult,
+        ),
         maxDepth === undefined ? 1000 : maxDepth,
       );
       (

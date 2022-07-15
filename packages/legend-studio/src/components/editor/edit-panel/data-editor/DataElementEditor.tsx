@@ -19,7 +19,6 @@ import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
   DATA_TAB_TYPE,
   type EmbeddedDataEditorState,
-  ExternalFormatDataState,
   PackageableDataEditorState,
 } from '../../../../stores/editor-state/element-editor-state/data/DataEditorState.js';
 import {
@@ -57,14 +56,14 @@ import {
 import { TaggedValueEditor } from '../uml-editor/TaggedValueEditor.js';
 import { useCallback, useEffect, useRef } from 'react';
 import { StereotypeSelector } from '../uml-editor/StereotypeSelector.js';
-import { UnsupportedEditorPanel } from '../UnsupportedElementEditor.js';
 import {
   externalFormatData_setContentType,
   externalFormatData_setData,
 } from '../../../../stores/graphModifier/DSLData_GraphModifierHelper.js';
 import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor.js';
-import type { DSLData_LegendStudioPlugin_Extension } from '../../../../stores/DSLData_LegendStudioPlugin_Extension.js';
 import { getEditorLanguageFromFormat } from '../../../../stores/editor-state/FileGenerationViewerState.js';
+import type { ExternalFormatDataState } from '../../../../stores/editor-state/element-editor-state/data/EmbeddedDataState.js';
+import { renderEmbeddedDataEditor } from './EmbeddedDataEditor.js';
 
 export const ExternalFormatDataEditor = observer(
   (props: {
@@ -161,57 +160,10 @@ export const EmbeddedDataEditor = observer(
     isReadOnly: boolean;
   }) => {
     const { embeddedDataEditorState, isReadOnly } = props;
-    const editorStore = useEditorStore();
-    const plugins = editorStore.pluginManager.getStudioPlugins();
     const embeddedDataState = embeddedDataEditorState.embeddedDataState;
-    const renderEmbeddedDataEditor = (): React.ReactNode => {
-      if (embeddedDataState instanceof ExternalFormatDataState) {
-        return (
-          <ExternalFormatDataEditor
-            externalFormatDataState={embeddedDataState}
-            isReadOnly={isReadOnly}
-          />
-        );
-      } else {
-        const extraEmbeddedDataEditorRenderers = plugins.flatMap(
-          (plugin) =>
-            (
-              plugin as DSLData_LegendStudioPlugin_Extension
-            ).getExtraEmbeddedDataEditorRenderers?.() ?? [],
-        );
-        for (const editorRenderer of extraEmbeddedDataEditorRenderers) {
-          const editor = editorRenderer(embeddedDataState, isReadOnly);
-          if (editor) {
-            return editor;
-          }
-        }
-        return (
-          <div className="panel connection-editor">
-            <div className="data-editor__header">
-              <div className="data-editor__header__title">
-                {isReadOnly && (
-                  <div className="element-editor__header__lock">
-                    <LockIcon />
-                  </div>
-                )}
-                <div className="data-editor__header__title__label">
-                  {embeddedDataState.label()}
-                </div>
-              </div>
-            </div>
-            <div className="panel__content">
-              <UnsupportedEditorPanel
-                text="Can't display this embedded data in form-mode"
-                isReadOnly={isReadOnly}
-              />
-            </div>
-          </div>
-        );
-      }
-    };
     return (
       <div className="panel connection-editor">
-        {renderEmbeddedDataEditor()}
+        {renderEmbeddedDataEditor(embeddedDataState, isReadOnly)}
       </div>
     );
   },

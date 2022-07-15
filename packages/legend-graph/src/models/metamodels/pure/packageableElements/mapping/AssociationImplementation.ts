@@ -52,7 +52,7 @@ export abstract class AssociationImplementation
       CORE_HASH_STRUCTURE.ASSOCIATION_IMPLEMENTATION,
       this.association.value.path,
       this.id.valueForSerialization ?? '',
-      hashArray(this.stores.map((e) => e.hashValue)),
+      hashArray(this.stores.map((e) => e.valueForSerialization ?? '')),
     ]);
   }
 }

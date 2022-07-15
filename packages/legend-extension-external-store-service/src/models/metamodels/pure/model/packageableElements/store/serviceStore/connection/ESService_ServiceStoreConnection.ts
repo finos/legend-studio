@@ -30,7 +30,7 @@ export class ServiceStoreConnection extends Connection implements Hashable {
   get hashCode(): string {
     return hashArray([
       SERVICE_STORE_HASH_STRUCTURE.SERVICE_STORE_CONNECTION,
-      this.store.hashValue,
+      this.store.valueForSerialization ?? '',
       this.baseUrl,
     ]);
   }

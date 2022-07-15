@@ -47,6 +47,9 @@ import {
   service_updateOwner,
 } from '../../../../stores/graphModifier/DSLService_GraphModifierHelper.js';
 import { validate_ServicePattern } from '@finos/legend-graph';
+import { ServiceTestableEditor } from './testable/ServiceTestableEditor.js';
+import { useApplicationNavigationContext } from '@finos/legend-application';
+import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../stores/LegendStudioApplicationNavigationContext.js';
 
 const ServiceGeneralEditor = observer(() => {
   const editorStore = useEditorStore();
@@ -427,6 +430,10 @@ export const ServiceEditor = observer(() => {
       .TEMPORARY__serviceRegistrationConfig.length,
   );
 
+  useApplicationNavigationContext(
+    LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.SERVICE_EDITOR,
+  );
+
   return (
     <div className="service-editor">
       <div className="panel">
@@ -465,6 +472,11 @@ export const ServiceEditor = observer(() => {
           {selectedTab === SERVICE_TAB.EXECUTION && <ServiceExecutionEditor />}
           {selectedTab === SERVICE_TAB.REGISTRATION && (
             <ServiceRegistrationEditor />
+          )}
+          {selectedTab === SERVICE_TAB.TEST && (
+            <ServiceTestableEditor
+              serviceTestableState={serviceState.testableState}
+            />
           )}
         </div>
       </div>

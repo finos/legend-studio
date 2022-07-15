@@ -28,6 +28,7 @@ import {
   PrimitiveInstanceValue,
   EnumValueInstanceValue,
   VariableExpression,
+  AbstractPropertyExpression,
 } from '@finos/legend-graph';
 import {
   addUniqueEntry,
@@ -166,4 +167,25 @@ export const buildNotExpression = (
   );
   expressionNot.parametersValues.push(expression);
   return expressionNot;
+};
+
+export const isPropertyExpressionChainOptional = (
+  expression: ValueSpecification | undefined,
+): boolean => {
+  let isOptional = false;
+  let propertyExpression = expression;
+  while (
+    propertyExpression &&
+    propertyExpression instanceof AbstractPropertyExpression
+  ) {
+    if (propertyExpression.func.multiplicity.lowerBound === 0) {
+      isOptional = true;
+      break;
+    }
+    propertyExpression = propertyExpression.parametersValues.at(0);
+    while (propertyExpression instanceof SimpleFunctionExpression) {
+      propertyExpression = propertyExpression.parametersValues.at(0);
+    }
+  }
+  return isOptional;
 };
